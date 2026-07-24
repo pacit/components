@@ -1,4 +1,8 @@
-import { Component, input } from '@angular/core';
+import {
+  Component,
+  input,
+  provideZonelessChangeDetection,
+} from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { providePctConfig } from '@pacit/components/core';
 import { PctButton } from './button';
@@ -51,6 +55,13 @@ async function stateHost(inputs: Record<string, unknown> = {}) {
 }
 
 describe('PctButton', () => {
+  // Komponenty muszą być zoneless-safe (wym-api-2) — testy biegną bez zone.js.
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+  });
+
   it('renderuje natywny <button> z domyślnymi atrybutami stanu', async () => {
     const btn = await stableBare();
     expect(btn.tagName).toBe('BUTTON');
@@ -88,7 +99,10 @@ describe('PctButton', () => {
   it('respektuje domyślny rozmiar z providePctConfig', async () => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
-      providers: [providePctConfig({ defaultSize: 'lg' })],
+      providers: [
+        provideZonelessChangeDetection(),
+        providePctConfig({ defaultSize: 'lg' }),
+      ],
     });
     const btn = await stableBare();
     expect(btn.getAttribute('data-pct-size')).toBe('lg');

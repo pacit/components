@@ -1,6 +1,7 @@
 import {
   ApplicationConfig,
   provideBrowserGlobalErrorListeners,
+  provideZonelessChangeDetection,
 } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { appRoutes } from './app.routes';
@@ -12,6 +13,9 @@ import { providePctConfig } from '@pacit/components';
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    // Zoneless (wym-tech-3) — zone.js nie jest ładowany, detekcja zmian opiera się
+    // na signals. Jawna deklaracja zamiast polegania na domyślnych ustawieniach.
+    provideZonelessChangeDetection(),
     provideClientHydration(withEventReplay()),
     provideBrowserGlobalErrorListeners(),
     provideRouter(appRoutes),

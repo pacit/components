@@ -11,7 +11,7 @@ Angular 22 · TypeScript 6 · NX 23 · Vitest · Playwright · SSR (Angular Univ
 ## Zasady
 
 - Minimalne zależności runtime (dozwolone: `@angular/cdk`).
-- Standalone, OnPush, signals, zoneless-safe, SSR.
+- Standalone, OnPush, signals, zoneless (bez zone.js), SSR.
 - Dostępność: minimum WCAG 2.2 AA.
 - Theming przez design tokens (DTCG) → CSS custom properties, z zachowaniem referencji `var()` (kaskada, scoped theme).
 

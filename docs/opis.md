@@ -159,8 +159,8 @@ Powstało:
 - `libs/tokens` — źródło DTCG + build (`build.mjs`) generujący `pct.css` / `_tokens.scss` / `tokens.ts`, z **bramką kontrastu WCAG 2.2 AA** (build faila, gdy para tekst/tło < 4.5:1).
 - `libs/components` — pakiet `@pacit/components` z secondary entrypoints `./core` i `./button` (czysta mapa `exports`).
 - `PctButton` — selektor atrybutowy `button[pct-button]`, standalone, OnPush, signals, `booleanAttribute`, stan jako `data-pct-*`, elementy wewnętrzne jako `data-pct-part`, `providePctConfig`.
-- `apps/sandbox` — SSR + hydration, prezentacja Buttona i **scoped theme** (panel `data-theme="dark"` przethemowany samą kaskadą CSS).
-- Testy: `components` 6/6 (Vitest), `sandbox` 2/2, `sandbox-e2e` 4/4 (Playwright).
+- `apps/sandbox` — **zoneless** (`provideZonelessChangeDetection`), SSR + hydration, prezentacja Buttona i **scoped theme** (panel `data-theme="dark"` przethemowany samą kaskadą CSS).
+- Testy: `components` 6/6 (Vitest), `sandbox` 2/2, `sandbox-e2e` 4/4 (Playwright) — testy jednostkowe biegną pod zoneless.
 
 Wnioski, które doprecyzowują „przepis":
 
@@ -170,3 +170,5 @@ Wnioski, które doprecyzowują „przepis":
 - `wym-real-4` Build tokenów jest na razie lekkim własnym transformem (kontrakt DTCG bez zmian); podmiana na Style Dictionary pozostaje opcją bez wpływu na źródła (`wym-token-2`).
 - `wym-real-5` _(do zrobienia)_ Raport pokrycia wymaga konfiguracji `coverageInclude` w targecie testowym, by egzekwować próg z `wym-proj-4`.
 - `wym-real-6` Pierwotny guard (token-level) przepuścił disabled o realnym kontraście ~1.6:1, bo stan był robiony przez `opacity` (kompozycja z tłem w runtime, niewidoczna dla matematyki na hexach). Stąd `wym-token-11` (policy per motyw/rozmiar, severity) i `wym-token-12` (zakaz `opacity` dla warstw tekstowych). Wdrożone: `libs/tokens/src/contrast.policy.json` + silnik w `build.mjs`; `PctButton` używa tokenów `disabled-*` zamiast `opacity`.
+- `wym-real-7` **Zoneless jest deklarowany jawnie** przez `provideZonelessChangeDetection()` w `app.config.ts`, mimo że generator nie dodaje polyfilla `zone.js` (bundle i tak go nie zawiera). Jawna deklaracja zamyka `wym-tech-3` i chroni przed przypadkowym powrotem do trybu zone-based. Testy jednostkowe biblioteki i aplikacji również konfigurują zoneless w `TestBed`, dzięki czemu `wym-api-2` (komponenty zoneless-safe) jest **weryfikowane**, a nie tylko deklarowane.
+- `wym-real-8` Pakiet `zone.js` pozostaje w zależnościach — jest wykorzystywany przez infrastrukturę testową Angulara (runner ładuje go dynamicznie, gdy projekt nie definiuje `polyfills`). Aplikacja go nie ładuje (zweryfikowane w runtime: brak `window.Zone`, `__zone_symbol__`, niepatchowany `Promise`).
