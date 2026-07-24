@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "angular-cli": {
+      "command": "bash",
+      "args": [
+        "-c",
+        "export NVM_DIR=\"$HOME/.nvm\"; . \"$NVM_DIR/nvm.sh\"; exec npx ng mcp --read-only"
+      ]
+    }
+  }
+}
