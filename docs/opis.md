@@ -29,7 +29,7 @@ Biblioteka komponentów angular pozwalająca na budowanie skomplikowanych, skalo
   - standalone components,
   - signals,
   - signal forms,
-  - `ChangeDetectionStrategy.OnPush`,
+  - OnPush (domyślne w v22+, nieustawiane jawnie — `wym-api-2`),
   - zoneless,
   - SSR.
 
@@ -55,7 +55,9 @@ Biblioteka komponentów angular pozwalająca na budowanie skomplikowanych, skalo
 
 - `wym-api-1` Nazewnictwo wg nowego style guide Angulara: klasa `PctButton` (bez sufiksu `Component`), plik `button.ts` (bez `.component.`), selektor elementu `pct-button`, dyrektywy `[pctTooltip]`. Szablon i style zawsze w osobnych plikach — **świadome odstępstwo** od oficjalnej wskazówki „prefer inline templates for smaller components", podyktowane spójnością struktury plików w bibliotece o dziesiątkach komponentów (`wym-ws-6`).
 
-- `wym-api-2` Fundament każdego komponentu: `standalone`, `ChangeDetectionStrategy.OnPush`, zoneless-safe (stan wyłącznie przez signals, brak polegania na zone.js). Zamiast `ngOnChanges` → `computed`/`effect`.
+- `wym-api-2` Fundament każdego komponentu: standalone, OnPush, zoneless-safe (stan wyłącznie przez signals, brak polegania na zone.js). Zamiast `ngOnChanges` → `computed`/`effect`.
+
+  **Ani `standalone: true`, ani `changeDetection: ChangeDetectionStrategy.OnPush` nie są ustawiane jawnie** — w Angularze v22+ oba są domyślne, a oficjalny przewodnik zabrania ich powtarzania (zweryfikowane: komponent bez jawnej deklaracji ma `ɵcmp.onPush === true`).
 
 - `wym-api-3` Wejścia/wyjścia przez signals: `input()` / `input.required()` / `output()`, dwukierunkowe przez `model()`. Boolean z `booleanAttribute`, liczby z `numberAttribute`. Nazwy inputów zgodne z natywnym HTML tam gdzie to możliwe (`disabled`, `readonly`, `size`, `variant`, `loading`, `invalid`), bez prefiksu `pct`.
 
@@ -174,6 +176,7 @@ Wnioski, które doprecyzowują „przepis":
 - `wym-real-5` _(do zrobienia)_ Raport pokrycia wymaga konfiguracji `coverageInclude` w targecie testowym, by egzekwować próg z `wym-proj-4`.
 - `wym-real-6` Pierwotny guard (token-level) przepuścił disabled o realnym kontraście ~1.6:1, bo stan był robiony przez `opacity` (kompozycja z tłem w runtime, niewidoczna dla matematyki na hexach). Stąd `wym-token-11` (policy per motyw/rozmiar, severity) i `wym-token-12` (zakaz `opacity` dla warstw tekstowych). Wdrożone: `libs/tokens/src/contrast.policy.json` + silnik w `build.mjs`; `PctButton` używa tokenów `disabled-*` zamiast `opacity`.
 - `wym-real-7` **Zoneless jest deklarowany jawnie** przez `provideZonelessChangeDetection()` w `app.config.ts`, mimo że generator nie dodaje polyfilla `zone.js` (bundle i tak go nie zawiera). Jawna deklaracja zamyka `wym-tech-3` i chroni przed przypadkowym powrotem do trybu zone-based. Testy jednostkowe biblioteki i aplikacji również konfigurują zoneless w `TestBed`, dzięki czemu `wym-api-2` (komponenty zoneless-safe) jest **weryfikowane**, a nie tylko deklarowane. (Uwaga: `setupTestBed()` z `@analogjs/vitest-angular` domyślnie już ustawia `zoneless: true` — jawna konfiguracja w spec-ach jest zabezpieczeniem na wypadek zmiany domyślnych.)
+- `wym-real-11` **MCP Angular CLI (`.mcp.json`) dostarcza wskazówki dopasowane do wersji.** Ogólny plik `best-practices.md` pobrany ze strony nie zawierał reguły „nie ustawiaj jawnie `OnPush` — jest domyślne w v22+", którą zwraca `get_best_practices` przez MCP. Stąd korekta `wym-api-2`. Uwaga: `list_projects` zwraca pustą listę, bo czyta `angular.json`, a workspace jest oparty na Nx (`project.json`) — narzędzia wymagające kontekstu workspace nie działają, ale `search_documentation` i `get_best_practices` tak.
 - `wym-real-9` **CVA okazało się zbędne.** Zakładaliśmy, że kompatybilność z reactive/template-driven forms wymaga `ControlValueAccessor` (i rozważaliśmy osobną dyrektywę-adapter). Eksperyment na `PctInput` (kontrolka implementująca wyłącznie `FormValueControl`) wykazał, że `[formControl]` i `[(ngModel)]` synchronizują wartość w obie strony bez żadnego kodu kompatybilności — zgodnie z dokumentacją Angulara. Rdzeń biblioteki nie importuje klasycznego API formularzy. Zachowanie jest zabezpieczone testami regresyjnymi w `input.spec.ts`.
 - `wym-real-10` Bramka kontrastu obejmuje teraz także **pary nietekstowe wg SC 1.4.11** (`level: "UI"`, próg 3:1) — obramowanie inputu, obramowanie focus/błędu, focus ring. To wychwytuje typową wadę bibliotek UI: zbyt jasne obramowania pól. Tokeny komponentowe są auto-odkrywane (`component.*.json`), więc dodanie komponentu nie wymaga zmian w `build.mjs`.
 - `wym-real-8` **Pakiet `zone.js` został całkowicie usunięty z zależności.** Jest opcjonalnym peer-dependency (`peerDependenciesMeta.zone.js.optional: true`) zarówno w `@angular/core`, jak i `@analogjs/vitest-angular`, a runner testów Angulara przy nieudanym `resolve('zone.js')` przechodzi w tryb bez zone (`catch → 'none'`). Zweryfikowane empirycznie po odinstalowaniu: testy 6/6 i 2/2, e2e 4/4, build biblioteki i aplikacji (SSR + prerender) — wszystko zielone; w runtime brak `window.Zone`, `__zone_symbol__` i niepatchowany `Promise`. Dzięki temu powrót do trybu zone-based jest niemożliwy przez przypadek.

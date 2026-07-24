@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { email, form, FormField, required } from '@angular/forms/signals';
 import { PctButton } from '@pacit/components/button';
 import { PctInput } from '@pacit/components/input';
@@ -8,7 +8,6 @@ import { PctInput } from '@pacit/components/input';
   imports: [PctButton, PctInput, FormField],
   templateUrl: './app.html',
   styleUrl: './app.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class App {
   /** Motyw drugiego panelu — demonstracja scoped theme (wym-theme-4). */

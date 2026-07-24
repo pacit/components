@@ -1,6 +1,5 @@
 import {
   booleanAttribute,
-  ChangeDetectionStrategy,
   Component,
   computed,
   inject,
@@ -28,7 +27,6 @@ import { PctInputType } from './input.types';
   selector: 'pct-input',
   templateUrl: './input.html',
   styleUrl: './input.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'pct-input',
     '[attr.data-pct-size]': 'size()',

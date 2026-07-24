@@ -1,6 +1,5 @@
 import {
   booleanAttribute,
-  ChangeDetectionStrategy,
   Component,
   computed,
   inject,
@@ -20,7 +19,6 @@ import { PctButtonSize, PctButtonVariant } from './button.types';
   selector: 'button[pct-button]',
   templateUrl: './button.html',
   styleUrl: './button.scss',
-  changeDetection: ChangeDetectionStrategy.OnPush,
   host: {
     class: 'pct-button',
     '[attr.data-pct-variant]': 'variant()',
