@@ -1,0 +1,53 @@
+<main class="page">
+  <header class="page__head">
+    <h1>@pacit/components — sandbox</h1>
+    <p>
+      Komponent referencyjny: <code>PctButton</code> otokenizowany przez design
+      tokens.
+    </p>
+  </header>
+
+  <section class="panel" data-testid="panel-light">
+    <h2>Motyw jasny (:root)</h2>
+
+    <div class="row">
+      <button pct-button data-testid="btn-solid">Solid</button>
+      <button pct-button variant="outline" data-testid="btn-outline">
+        Outline
+      </button>
+      <button pct-button disabled data-testid="btn-disabled">Disabled</button>
+      <button pct-button loading data-testid="btn-loading">Loading</button>
+    </div>
+
+    <div class="row">
+      <button pct-button size="sm">Small</button>
+      <button pct-button size="md">Medium</button>
+      <button pct-button size="lg">Large</button>
+    </div>
+  </section>
+
+  <section
+    class="panel"
+    [attr.data-theme]="panelDark() ? 'dark' : null"
+    data-testid="panel-scoped"
+  >
+    <div class="panel__head">
+      <h2>Scoped theme — te same komponenty, inny motyw</h2>
+      <button
+        pct-button
+        variant="outline"
+        size="sm"
+        (click)="togglePanel()"
+        data-testid="toggle"
+      >
+        Przełącz motyw panelu
+      </button>
+    </div>
+
+    <div class="row">
+      <button pct-button data-testid="scoped-solid">Solid</button>
+      <button pct-button variant="outline">Outline</button>
+      <button pct-button loading>Loading</button>
+    </div>
+  </section>
+</main>

@@ -1,0 +1,10 @@
+@if (loading()) {
+<span
+  class="pct-button__spinner"
+  data-pct-part="spinner"
+  aria-hidden="true"
+></span>
+}
+<span class="pct-button__label" data-pct-part="label">
+  <ng-content></ng-content>
+</span>

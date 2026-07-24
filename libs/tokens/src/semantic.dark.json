@@ -1,0 +1,14 @@
+{
+  "pct": {
+    "primary": { "$type": "color", "$value": "{pct.blue.500}" },
+    "primary-hover": { "$type": "color", "$value": "{pct.blue.600}" },
+    "primary-active": { "$type": "color", "$value": "{pct.blue.700}" },
+    "on-primary": { "$type": "color", "$value": "{pct.slate.900}" },
+    "surface": { "$type": "color", "$value": "{pct.slate.900}" },
+    "surface-100": { "$type": "color", "$value": "{pct.slate.800}" },
+    "text": { "$type": "color", "$value": "{pct.slate.0}" },
+    "text-muted": { "$type": "color", "$value": "{pct.slate.200}" },
+    "border": { "$type": "color", "$value": "{pct.slate.700}" },
+    "focus-ring": { "$type": "color", "$value": "{pct.blue.500}" }
+  }
+}

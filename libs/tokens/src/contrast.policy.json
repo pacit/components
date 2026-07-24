@@ -1,0 +1,33 @@
+{
+  "$comment": "Polityka kontrastu skórki. Każdy wpis = para fg/bg (rola × stan) sprawdzana wobec progów WCAG. severity=error blokuje build; severity=warn tylko ostrzega. Progi domyślne wynikają z poziomu WCAG (patrz build.mjs).",
+  "checks": [
+    {
+      "name": "tekst podstawowy",
+      "fg": "pct.text",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "tekst przygaszony",
+      "fg": "pct.text-muted",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button/solid — etykieta",
+      "fg": "pct.button.fg",
+      "bg": "pct.button.bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button/disabled — etykieta",
+      "fg": "pct.button.disabled-fg",
+      "bg": "pct.button.disabled-bg",
+      "level": "AA",
+      "severity": "warn"
+    }
+  ]
+}

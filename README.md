@@ -1,0 +1,75 @@
+# @pacit/components
+
+Biblioteka komponentów Angular — budowana jako nowoczesna, dostępna alternatywa dla rozwiązań typu PrimeNG. Monorepo NX.
+
+> **Status:** wczesny etap. Działa _walking skeleton_ — komponent referencyjny `PctButton` przechodzi całą ścieżkę end-to-end (tokeny → build → komponent → SSR → testy → e2e). Pełne ustalenia i wymagania: [docs/opis.md](docs/opis.md).
+
+## Stack
+
+Angular 22 · TypeScript 6 · NX 23 · Vitest · Playwright · SSR (Angular Universal)
+
+## Zasady
+
+- Minimalne zależności runtime (dozwolone: `@angular/cdk`).
+- Standalone, OnPush, signals, zoneless-safe, SSR.
+- Dostępność: minimum WCAG 2.2 AA.
+- Theming przez design tokens (DTCG) → CSS custom properties, z zachowaniem referencji `var()` (kaskada, scoped theme).
+
+## Struktura
+
+```
+apps/
+  sandbox/       aplikacja demo / playground
+  sandbox-e2e/   testy e2e (Playwright)
+libs/
+  components/    pakiet @pacit/components (secondary entrypoints: ./core, ./button)
+  tokens/        źródło DTCG + build -> CSS/SCSS/TS + bramka kontrastu
+docs/opis.md     ustalenia i wymagania
+```
+
+## Wymagania wstępne
+
+Node 24 (repo używa nvm). W nieinteraktywnej powłoce najpierw:
+
+```bash
+export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"
+```
+
+## Start
+
+```bash
+npm ci
+node libs/tokens/build.mjs         # wygeneruj tokeny (CSS/SCSS/TS) — wymagane przed buildem
+npx nx serve sandbox --port 4200   # uruchom demo na http://localhost:4200
+```
+
+## Testy
+
+```bash
+npx nx test components      # testy jednostkowe biblioteki (Vitest)
+npx nx vite:test sandbox    # testy jednostkowe aplikacji (uwaga: inny target niż `test`)
+npx nx e2e sandbox-e2e      # e2e (wymaga: npx playwright install chromium)
+node libs/tokens/build.mjs  # bramka kontrastu (policy WCAG) — błędy blokują, ostrzeżenia informują
+```
+
+## Design tokens
+
+Źródło: `libs/tokens/src/*.json` (format DTCG). Build (`libs/tokens/build.mjs`) generuje:
+
+- `dist/pct.css` — CSS custom properties (motyw jasny + `[data-theme="dark"]`),
+- `dist/_tokens.scss` — zmienne SCSS do użytku wewnętrznego,
+- `dist/tokens.ts` — typowane nazwy tokenów.
+
+Trzy poziomy: **prymitywne → semantyczne → komponentowe**; referencje zachowane jako `var()`, więc nadpisanie jednej zmiennej w dowolnym scope kaskaduje bez rekompilacji. Polityka kontrastu (`src/contrast.policy.json`) waliduje pary tekst/tło wobec progów WCAG, per motyw — `error` blokuje build, `warn` informuje (np. `disabled`, zwolniony z SC 1.4.3).
+
+## Komponent referencyjny
+
+`PctButton` (`@pacit/components/button`) — selektor atrybutowy na natywnym `<button>`, warianty `solid|outline`, rozmiary `sm|md|lg`, stany `disabled`/`loading`. Stan wystawiany jako `data-pct-*`, elementy wewnętrzne jako `data-pct-part`.
+
+```html
+<button pct-button variant="outline" size="lg">Zapisz</button>
+```
+
+## Dokumentacja
+
+Pełne wymagania i decyzje architektoniczne (identyfikatory `wym-*`): [docs/opis.md](docs/opis.md).

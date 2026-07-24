@@ -1,0 +1,96 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--pct-space-2);
+  box-sizing: border-box;
+  border: 1px solid var(--pct-button-border);
+  border-radius: var(--pct-button-radius);
+  background: var(--pct-button-bg);
+  color: var(--pct-button-fg);
+  font: inherit;
+  font-size: var(--pct-button-font-size);
+  font-weight: var(--pct-button-font-weight);
+  line-height: 1.2;
+  padding: var(--pct-button-padding-y) var(--pct-button-padding-x);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+:host(:hover:not([disabled])) {
+  background: var(--pct-button-bg-hover);
+}
+
+:host(:active:not([disabled])) {
+  background: var(--pct-button-bg-active);
+}
+
+/* Fokus tylko dla nawigacji klawiaturą; kolor z tokenu (wym-a11y-1). */
+:host(:focus-visible) {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: 2px;
+}
+
+/* Stan disabled wyrażony konkretnymi tokenami koloru — bez opacity, żeby kontrast
+   był weryfikowalny przez bramkę policy (wym-a11y, wym-token-6). Selektor złożony
+   wygrywa też z wariantem outline niezależnie od kolejności reguł. */
+:host([disabled]:not([data-pct-loading])),
+:host([disabled][data-pct-variant='outline']:not([data-pct-loading])) {
+  background: var(--pct-button-disabled-bg);
+  color: var(--pct-button-disabled-fg);
+  border-color: var(--pct-button-disabled-border);
+  cursor: not-allowed;
+}
+
+/* Loading pozostaje w kolorze wariantu (primary), tylko bez interakcji. */
+:host([disabled]) {
+  cursor: not-allowed;
+}
+
+/* Wariant outline */
+:host([data-pct-variant='outline']) {
+  background: transparent;
+  color: var(--pct-primary);
+}
+
+:host([data-pct-variant='outline']:hover:not([disabled])) {
+  background: var(--pct-surface-100);
+}
+
+/* Rozmiary sterowane atrybutem stanu (wym-api-4) */
+:host([data-pct-size='sm']) {
+  font-size: var(--pct-font-size-sm);
+  padding: var(--pct-space-2) var(--pct-space-4);
+}
+
+:host([data-pct-size='lg']) {
+  font-size: var(--pct-font-size-lg);
+  padding: var(--pct-space-4) var(--pct-space-5);
+}
+
+.pct-button__label {
+  display: inline-flex;
+  align-items: center;
+}
+
+.pct-button__spinner {
+  width: 1em;
+  height: 1em;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  /* Animacja bez @angular/animations — czysty CSS (wym-api-9) */
+  animation: pct-button-spin 0.6s linear infinite;
+}
+
+@keyframes pct-button-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pct-button__spinner {
+    animation-duration: 1.5s;
+  }
+}
