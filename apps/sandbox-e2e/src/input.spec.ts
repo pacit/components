@@ -40,12 +40,11 @@ test.describe('PctInput — signal forms', () => {
     await expect(input).toHaveAttribute('aria-invalid', 'true');
     await expect(page.getByTestId('submit')).toBeDisabled();
 
-    // Poprawna wartość -> błąd znika, formularz gotowy.
+    // Poprawna wartość -> błąd znika (stan przycisku zależy od całego
+    // formularza, w tym od zgody — sprawdzany w checkbox.spec.ts).
     await input.fill('marek@pacit.pl');
     await expect(error).toHaveCount(0);
     await expect(input).not.toHaveAttribute('aria-invalid', 'true');
-    await expect(page.getByTestId('submit')).toBeEnabled();
-    await expect(page.getByTestId('form-state')).toContainText('poprawny: tak');
   });
 
   test('obramowanie pola spełnia kontrast SC 1.4.11 (min 3:1)', async ({

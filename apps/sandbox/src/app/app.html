@@ -39,6 +39,13 @@
         data-testid="input-email"
       />
 
+      <pct-checkbox
+        label="Akceptuję regulamin"
+        hint="Wymagane do założenia konta"
+        [formField]="userForm.terms"
+        data-testid="checkbox-terms"
+      />
+
       <div class="row">
         <button
           pct-button
@@ -57,6 +64,12 @@
     <div class="stack">
       <pct-input label="Wyłączone" value="nie do edycji" disabled />
       <pct-input label="Tylko do odczytu" value="tylko podgląd" readonly />
+      <pct-checkbox
+        label="Stan nieokreślony"
+        [indeterminate]="partial()"
+        data-testid="checkbox-mixed"
+      />
+      <pct-checkbox label="Zaznaczone, wyłączone" [checked]="true" disabled />
     </div>
   </section>
 

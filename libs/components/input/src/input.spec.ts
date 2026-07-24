@@ -186,6 +186,23 @@ describe('PctInput', () => {
     expect(inputOf(fixture).disabled).toBe(true);
   });
 
+  it('udostępnia metody focus() i reset() z kontraktu', async () => {
+    const fixture = await render(Host);
+    const instance = fixture.debugElement.children[0]
+      .componentInstance as PctInput;
+
+    instance.focus();
+    expect(document.activeElement).toBe(inputOf(fixture));
+
+    fixture.componentInstance.value.set('coś');
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    instance.reset();
+    await fixture.whenStable();
+    expect(fixture.componentInstance.value()).toBe('');
+  });
+
   describe('signal forms', () => {
     it('dwukierunkowo synchronizuje wartość z modelem formularza', async () => {
       const fixture = await render(SignalFormHost);

@@ -1,0 +1,118 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pct-space-2);
+  font-family: inherit;
+}
+
+.pct-checkbox__row {
+  display: flex;
+  align-items: center;
+  gap: var(--pct-checkbox-gap);
+}
+
+/* Pudełko trzyma natywny input (przezroczysty, na wierzchu) i rysowany znacznik.
+   Input zachowuje pełną semantykę i obsługę klawiatury (wym-api-6). */
+.pct-checkbox__box {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--pct-checkbox-size);
+  height: var(--pct-checkbox-size);
+  background: var(--pct-checkbox-bg);
+  border: 1px solid var(--pct-checkbox-border);
+  border-radius: var(--pct-checkbox-radius);
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.pct-checkbox__control {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.pct-checkbox__mark {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: var(--pct-checkbox-checked-fg);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  /* Widoczny dopiero w stanie zaznaczonym/nieokreślonym. */
+  visibility: hidden;
+}
+
+:host([data-pct-checked]) .pct-checkbox__box,
+:host([data-pct-indeterminate]) .pct-checkbox__box {
+  background: var(--pct-checkbox-checked-bg);
+  border-color: var(--pct-checkbox-checked-border);
+}
+
+:host([data-pct-checked]) .pct-checkbox__mark,
+:host([data-pct-indeterminate]) .pct-checkbox__mark {
+  visibility: visible;
+}
+
+:host(:not([data-pct-disabled])) .pct-checkbox__box:hover {
+  border-color: var(--pct-checkbox-border-hover);
+}
+
+/* Fokus rysowany na pudełku, bo natywny input jest przezroczysty. */
+.pct-checkbox__control:focus-visible + .pct-checkbox__mark,
+.pct-checkbox__box:has(.pct-checkbox__control:focus-visible) {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: 2px;
+}
+
+:host([data-pct-invalid]) .pct-checkbox__box {
+  border-color: var(--pct-checkbox-invalid-border);
+}
+
+/* Disabled bez opacity (wym-token-12) — konkretne tokeny koloru. */
+:host([data-pct-disabled]) .pct-checkbox__box {
+  background: var(--pct-checkbox-disabled-bg);
+  border-color: var(--pct-checkbox-disabled-border);
+}
+
+:host([data-pct-disabled]) .pct-checkbox__mark {
+  stroke: var(--pct-checkbox-disabled-fg);
+}
+
+:host([data-pct-disabled]) .pct-checkbox__control,
+:host([data-pct-disabled]) .pct-checkbox__label {
+  cursor: not-allowed;
+}
+
+:host([data-pct-disabled]) .pct-checkbox__label {
+  color: var(--pct-checkbox-disabled-fg);
+}
+
+.pct-checkbox__label {
+  color: var(--pct-checkbox-label-fg);
+  font-size: var(--pct-font-size-md);
+  cursor: pointer;
+}
+
+.pct-checkbox__required {
+  color: var(--pct-checkbox-invalid-fg);
+  margin-inline-start: 2px;
+}
+
+.pct-checkbox__hint {
+  color: var(--pct-checkbox-hint-fg);
+  font-size: var(--pct-font-size-sm);
+}
+
+.pct-checkbox__error {
+  color: var(--pct-checkbox-invalid-fg);
+  font-size: var(--pct-font-size-sm);
+}

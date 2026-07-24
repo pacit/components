@@ -3,46 +3,43 @@ import {
   Component,
   computed,
   ElementRef,
-  inject,
   input,
   model,
   output,
   viewChild,
 } from '@angular/core';
-import type { FormValueControl, ValidationError } from '@angular/forms/signals';
-import { nextPctId, PCT_CONFIG, PctSize } from '@pacit/components/core';
-import { PctInputType } from './input.types';
+import type {
+  FormCheckboxControl,
+  ValidationError,
+} from '@angular/forms/signals';
+import { nextPctId } from '@pacit/components/core';
 
 /**
- * Pole tekstowe. Natywna kontrolka signal forms — implementuje `FormValueControl`
- * (wym-api-5), więc działa z dyrektywą `Field` bez warstwy pośredniej.
- *
- * Pola z `FormUiControl` (disabled, readonly, invalid, errors, required, name)
- * są opcjonalne w kontrakcie; zadeklarowane tutaj, są automatycznie
- * synchronizowane ze stanem pola formularza.
+ * Pole wyboru. Natywna kontrolka signal forms — implementuje `FormCheckboxControl`
+ * (wym-api-5). W tym kontrakcie wymagane jest `checked`, a komponent **nie może**
+ * definiować własności `value` (zarezerwowana dla `FormValueControl`).
  *
  * @example
- * <pct-input label="E-mail" [field]="form.email" />
- * <pct-input label="E-mail" [(value)]="email" />
+ * <pct-checkbox label="Akceptuję regulamin" [formField]="form.terms" />
+ * <pct-checkbox label="Zapamiętaj mnie" [(checked)]="remember" />
  */
 @Component({
-  selector: 'pct-input',
-  templateUrl: './input.html',
-  styleUrl: './input.scss',
+  selector: 'pct-checkbox',
+  templateUrl: './checkbox.html',
+  styleUrl: './checkbox.scss',
   host: {
-    class: 'pct-input',
-    '[attr.data-pct-size]': 'size()',
+    class: 'pct-checkbox',
+    '[attr.data-pct-checked]': 'checked() ? "" : null',
+    '[attr.data-pct-indeterminate]': 'indeterminate() ? "" : null',
     '[attr.data-pct-invalid]': 'showInvalid() ? "" : null',
     '[attr.data-pct-disabled]': 'disabled() ? "" : null',
   },
 })
-export class PctInput implements FormValueControl<string> {
-  private readonly config = inject(PCT_CONFIG);
+export class PctCheckbox implements FormCheckboxControl {
+  /** Stan zaznaczenia — jedyne wymagane pole kontraktu `FormCheckboxControl`. */
+  readonly checked = model(false);
 
-  /** Wartość — jedyne wymagane pole kontraktu `FormValueControl`. */
-  readonly value = model<string>('');
-
-  // --- FormUiControl (synchronizowane przez dyrektywę Field) ---
+  // --- FormUiControl (synchronizowane przez dyrektywę FormField) ---
 
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly readonly = input(false, { transform: booleanAttribute });
@@ -59,31 +56,26 @@ export class PctInput implements FormValueControl<string> {
 
   readonly label = input<string>('');
   readonly hint = input<string>('');
-  readonly placeholder = input<string>('');
-  readonly type = input<PctInputType>('text');
-  readonly size = input<PctSize>(this.config.defaultSize);
+
+  /** Stan nieokreślony (np. częściowy wybór w grupie); ARIA: `aria-checked="mixed"`. */
+  readonly indeterminate = input(false, { transform: booleanAttribute });
 
   private readonly control =
     viewChild.required<ElementRef<HTMLInputElement>>('control');
 
   // --- a11y: stabilne id do powiązań ARIA (wym-api-6) ---
 
-  private readonly uid = nextPctId('pct-input');
+  private readonly uid = nextPctId('pct-checkbox');
   protected readonly controlId = `${this.uid}-control`;
   protected readonly hintId = `${this.uid}-hint`;
   protected readonly errorId = `${this.uid}-error`;
 
-  /** Komunikat pierwszego błędu walidacji. */
   protected readonly errorText = computed(() => {
     const first = this.errors()?.[0] as { message?: string } | undefined;
     return first?.message ?? '';
   });
 
-  /**
-   * Błąd pokazujemy dopiero po dotknięciu pola — inaczej pusty, nietknięty
-   * formularz od razu świeci na czerwono. `touched` jest synchronizowane przez
-   * dyrektywę `FormField` (blur emituje `touch`).
-   */
+  /** Błąd pokazujemy dopiero po dotknięciu pola — jak w `PctInput`. */
   protected readonly showInvalid = computed(
     () => this.invalid() && this.touched(),
   );
@@ -92,7 +84,6 @@ export class PctInput implements FormValueControl<string> {
     () => this.showInvalid() && this.errorText() !== '',
   );
 
-  /** Powiązanie opisu i błędu z polem (aria-describedby). */
   protected readonly describedBy = computed(() => {
     const ids: string[] = [];
     if (this.hint()) ids.push(this.hintId);
@@ -100,8 +91,24 @@ export class PctInput implements FormValueControl<string> {
     return ids.length > 0 ? ids.join(' ') : null;
   });
 
-  protected onInput(event: Event): void {
-    this.value.set((event.target as HTMLInputElement).value);
+  /** `aria-checked` musi być „mixed" dla stanu nieokreślonego. */
+  protected readonly ariaChecked = computed(() =>
+    this.indeterminate() ? 'mixed' : this.checked() ? 'true' : 'false',
+  );
+
+  /**
+   * Natywny checkbox nie ma atrybutu `readonly` — blokujemy więc zmianę stanu,
+   * zachowując fokusowalność (inaczej niż `disabled`, które wyklucza z nawigacji).
+   */
+  protected onClick(event: Event): void {
+    if (this.readonly()) {
+      event.preventDefault();
+    }
+  }
+
+  protected onChange(event: Event): void {
+    if (this.readonly()) return;
+    this.checked.set((event.target as HTMLInputElement).checked);
   }
 
   protected onBlur(): void {
@@ -115,6 +122,6 @@ export class PctInput implements FormValueControl<string> {
 
   /** Wywoływane przez signal forms przy resecie formularza. */
   reset(): void {
-    this.value.set('');
+    this.checked.set(false);
   }
 }

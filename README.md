@@ -22,7 +22,7 @@ apps/
   sandbox/       aplikacja demo / playground
   sandbox-e2e/   testy e2e (Playwright)
 libs/
-  components/    pakiet @pacit/components (entrypoints: ./core, ./button, ./input)
+  components/    pakiet @pacit/components (entrypoints: ./core, ./button, ./input, ./checkbox)
   tokens/        źródło DTCG + build -> CSS/SCSS/TS + bramka kontrastu
 docs/opis.md     ustalenia i wymagania
 ```
@@ -81,6 +81,14 @@ Trzy poziomy: **prymitywne → semantyczne → komponentowe**; referencje zachow
 
 <!-- kompatybilnie z reactive forms -->
 <pct-input label="E-mail" [formControl]="emailCtrl" />
+```
+
+`PctCheckbox` (`@pacit/components/checkbox`) — natywna kontrolka **signal forms** (`FormCheckboxControl`). Wymaganym polem jest `checked` (nie `value`), więc wiąże się je nawiasami.
+
+```html
+<pct-checkbox label="Akceptuję regulamin" [formField]="userForm.terms" />
+<pct-checkbox label="Zapamiętaj mnie" [(checked)]="remember" />
+<pct-checkbox label="Częściowy wybór" [indeterminate]="true" />
 ```
 
 ## Dokumentacja

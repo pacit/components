@@ -9,6 +9,7 @@
     "src/**/*.d.ts",
     "core/**/*.ts",
     "button/**/*.ts",
-    "input/**/*.ts"
+    "input/**/*.ts",
+    "checkbox/**/*.ts"
   ]
 }

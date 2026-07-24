@@ -1,0 +1,65 @@
+<div class="pct-checkbox__row">
+  <span class="pct-checkbox__box" data-pct-part="box">
+    <input
+      #control
+      class="pct-checkbox__control"
+      data-pct-part="control"
+      type="checkbox"
+      [id]="controlId"
+      [checked]="checked()"
+      [indeterminate]="indeterminate()"
+      [disabled]="disabled()"
+      [attr.name]="name() || null"
+      [attr.required]="required() || null"
+      [attr.aria-checked]="ariaChecked()"
+      [attr.aria-invalid]="showInvalid() ? 'true' : null"
+      [attr.aria-readonly]="readonly() ? 'true' : null"
+      [attr.aria-describedby]="describedBy()"
+      (click)="onClick($event)"
+      (change)="onChange($event)"
+      (blur)="onBlur()"
+    />
+
+    <!-- Znacznik rysowany SVG w currentColor — bez zależności od zestawu ikon. -->
+    <svg
+      class="pct-checkbox__mark"
+      data-pct-part="mark"
+      viewBox="0 0 16 16"
+      aria-hidden="true"
+      focusable="false"
+    >
+      @if (indeterminate()) {
+      <path d="M4 8h8" />
+      } @else {
+      <path d="M3.5 8.5l3 3 6-6.5" />
+      }
+    </svg>
+  </span>
+
+  @if (label()) {
+  <label
+    class="pct-checkbox__label"
+    data-pct-part="label"
+    [attr.for]="controlId"
+  >
+    {{ label() }} @if (required()) {
+    <span class="pct-checkbox__required" aria-hidden="true">*</span>
+    }
+  </label>
+  }
+</div>
+
+@if (hint()) {
+<span class="pct-checkbox__hint" data-pct-part="hint" [id]="hintId">
+  {{ hint() }}
+</span>
+} @if (showError()) {
+<span
+  class="pct-checkbox__error"
+  data-pct-part="error"
+  [id]="errorId"
+  role="alert"
+>
+  {{ errorText() }}
+</span>
+}

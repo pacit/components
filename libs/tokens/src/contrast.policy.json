@@ -98,6 +98,48 @@
       "bg": "pct.surface",
       "level": "UI",
       "severity": "error"
+    },
+    {
+      "name": "checkbox — etykieta",
+      "fg": "pct.checkbox.label-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "checkbox — podpowiedź",
+      "fg": "pct.checkbox.hint-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "UI: obramowanie checkboxa",
+      "fg": "pct.checkbox.border",
+      "bg": "pct.checkbox.bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: checkbox zaznaczony na tle strony",
+      "fg": "pct.checkbox.checked-bg",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: znacznik na zaznaczonym checkboxie",
+      "fg": "pct.checkbox.checked-fg",
+      "bg": "pct.checkbox.checked-bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: obramowanie checkboxa (błąd)",
+      "fg": "pct.checkbox.invalid-border",
+      "bg": "pct.checkbox.bg",
+      "level": "UI",
+      "severity": "error"
     }
   ]
 }
