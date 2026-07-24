@@ -25,7 +25,9 @@ const DIST = join(__dirname, 'dist');
 const WCAG = {
   AA: { normal: 4.5, large: 3.0 },
   AAA: { normal: 7.0, large: 4.5 },
-  UI: 3.0,
+  // SC 1.4.11 — elementy nietekstowe (obramowania, focus ring): 3:1, bez
+  // rozróżnienia na rozmiar, stąd oba progi równe.
+  UI: { normal: 3.0, large: 3.0, nonText: true },
 };
 
 // --- ładowanie / scalanie DTCG ------------------------------------------------
@@ -126,14 +128,19 @@ function checkTheme(themeName, tree, policy) {
         ? 'ERR '
         : 'WARN';
     console.log(
-      `  [${flag}] ${check.name}: ${ratio.toFixed(2)}:1  ` +
-        `normal(${check.level}>=${th.normal}) ${passNormal ? 'PASS' : 'FAIL'} | ` +
-        `duzy(>=${th.large}) ${passLarge ? 'PASS' : 'FAIL'}`,
+      th.nonText
+        ? `  [${flag}] ${check.name}: ${ratio.toFixed(2)}:1  ` +
+            `UI SC1.4.11(>=${th.normal}) ${passNormal ? 'PASS' : 'FAIL'}`
+        : `  [${flag}] ${check.name}: ${ratio.toFixed(2)}:1  ` +
+            `normal(${check.level}>=${th.normal}) ${passNormal ? 'PASS' : 'FAIL'} | ` +
+            `duzy(>=${th.large}) ${passLarge ? 'PASS' : 'FAIL'}`,
     );
     if (!passNormal) {
-      const note = passLarge
-        ? 'czytelny dla duzego tekstu, ale nie dla normalnego'
-        : 'niewystarczajacy takze dla duzego tekstu';
+      const note = th.nonText
+        ? 'element nietekstowy ponizej progu SC 1.4.11'
+        : passLarge
+          ? 'czytelny dla duzego tekstu, ale nie dla normalnego'
+          : 'niewystarczajacy takze dla duzego tekstu';
       const msg = `${themeName} / ${check.name}: ${ratio.toFixed(2)}:1 < ${th.normal} — ${note}`;
       if (check.severity === 'error') errors.push(msg);
       else warnings.push(msg);
@@ -154,14 +161,19 @@ function run() {
   const primitive = load('primitive.json');
   const semanticLight = load('semantic.light.json');
   const semanticDark = load('semantic.dark.json');
-  const button = load('component.button.json');
+  // Tokeny komponentowe: auto-odkrywanie `component.*.json` — dodanie nowego
+  // komponentu nie wymaga zmian w tym pliku.
+  const componentFiles = readdirSync(SRC)
+    .filter((f) => f.startsWith('component.') && f.endsWith('.json'))
+    .sort();
+  const components = componentFiles.map(load);
 
   const policy = JSON.parse(
     readFileSync(join(SRC, 'contrast.policy.json'), 'utf8'),
   );
 
-  const lightTree = merge(primitive, semanticLight, button); // :root
-  const darkTree = merge(primitive, semanticLight, button, semanticDark); // dark nakladany na base
+  const lightTree = merge(primitive, semanticLight, ...components); // :root
+  const darkTree = merge(primitive, semanticLight, ...components, semanticDark); // dark nakladany na base
   const darkOverrides = flatten(semanticDark); // tylko nadpisania -> [data-theme=dark]
 
   // Bramka a11y wg policy skorki (progi WCAG 2.2), per motyw.

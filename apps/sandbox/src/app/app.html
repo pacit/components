@@ -26,6 +26,40 @@
     </div>
   </section>
 
+  <section class="panel" data-testid="panel-form">
+    <h2>PctInput — signal forms</h2>
+
+    <div class="stack">
+      <pct-input
+        label="E-mail"
+        type="email"
+        placeholder="jan@example.com"
+        hint="Adres służbowy"
+        [formField]="userForm.email"
+        data-testid="input-email"
+      />
+
+      <div class="row">
+        <button
+          pct-button
+          [disabled]="userForm().invalid()"
+          data-testid="submit"
+        >
+          Zapisz
+        </button>
+        <span class="muted" data-testid="form-state">
+          wartość: „{{ model().email }}" · poprawny: {{ userForm().valid() ?
+          'tak' : 'nie' }}
+        </span>
+      </div>
+    </div>
+
+    <div class="stack">
+      <pct-input label="Wyłączone" value="nie do edycji" disabled />
+      <pct-input label="Tylko do odczytu" value="tylko podgląd" readonly />
+    </div>
+  </section>
+
   <section
     class="panel"
     [attr.data-theme]="panelDark() ? 'dark' : null"

@@ -9,6 +9,9 @@
     "text": { "$type": "color", "$value": "{pct.slate.900}" },
     "text-muted": { "$type": "color", "$value": "{pct.slate.700}" },
     "border": { "$type": "color", "$value": "{pct.slate.200}" },
+    "border-strong": { "$type": "color", "$value": "{pct.slate.500}" },
+    "danger": { "$type": "color", "$value": "{pct.red.600}" },
+    "on-danger": { "$type": "color", "$value": "{pct.slate.0}" },
     "focus-ring": { "$type": "color", "$value": "{pct.blue.500}" },
     "disabled-bg": { "$type": "color", "$value": "{pct.surface-100}" },
     "disabled-fg": { "$type": "color", "$value": "{pct.slate.500}" }

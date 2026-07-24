@@ -1,0 +1,39 @@
+@if (label()) {
+<label class="pct-input__label" data-pct-part="label" [attr.for]="controlId">
+  {{ label() }} @if (required()) {
+  <span class="pct-input__required" aria-hidden="true">*</span>
+  }
+</label>
+}
+
+<input
+  class="pct-input__control"
+  data-pct-part="control"
+  [id]="controlId"
+  [type]="type()"
+  [value]="value()"
+  [disabled]="disabled()"
+  [readOnly]="readonly()"
+  [attr.name]="name() || null"
+  [attr.placeholder]="placeholder() || null"
+  [attr.required]="required() || null"
+  [attr.aria-invalid]="showInvalid() ? 'true' : null"
+  [attr.aria-describedby]="describedBy()"
+  (input)="onInput($event)"
+  (blur)="onBlur()"
+/>
+
+@if (hint()) {
+<span class="pct-input__hint" data-pct-part="hint" [id]="hintId">
+  {{ hint() }}
+</span>
+} @if (showError()) {
+<span
+  class="pct-input__error"
+  data-pct-part="error"
+  [id]="errorId"
+  role="alert"
+>
+  {{ errorText() }}
+</span>
+}

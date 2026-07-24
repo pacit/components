@@ -1,0 +1,79 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pct-space-2);
+  font-family: inherit;
+}
+
+.pct-input__label {
+  color: var(--pct-input-label-fg);
+  font-size: var(--pct-font-size-sm);
+  font-weight: var(--pct-font-weight-medium);
+}
+
+.pct-input__required {
+  color: var(--pct-input-invalid-fg);
+  margin-inline-start: 2px;
+}
+
+.pct-input__control {
+  box-sizing: border-box;
+  width: 100%;
+  background: var(--pct-input-bg);
+  color: var(--pct-input-fg);
+  border: 1px solid var(--pct-input-border);
+  border-radius: var(--pct-input-radius);
+  font: inherit;
+  font-size: var(--pct-input-font-size);
+  line-height: 1.4;
+  padding: var(--pct-input-padding-y) var(--pct-input-padding-x);
+  transition: border-color 0.15s ease;
+}
+
+.pct-input__control::placeholder {
+  color: var(--pct-input-placeholder-fg);
+}
+
+.pct-input__control:hover:not(:disabled):not(:read-only) {
+  border-color: var(--pct-input-border-hover);
+}
+
+.pct-input__control:focus-visible {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: 1px;
+  border-color: var(--pct-input-border-focus);
+}
+
+/* Stan błędu — kolor z tokenu, weryfikowany bramką kontrastu (SC 1.4.11). */
+:host([data-pct-invalid]) .pct-input__control {
+  border-color: var(--pct-input-invalid-border);
+}
+
+/* Disabled bez opacity (wym-token-12) — konkretne tokeny koloru. */
+.pct-input__control:disabled {
+  background: var(--pct-input-disabled-bg);
+  color: var(--pct-input-disabled-fg);
+  border-color: var(--pct-input-disabled-border);
+  cursor: not-allowed;
+}
+
+.pct-input__hint {
+  color: var(--pct-input-hint-fg);
+  font-size: var(--pct-font-size-sm);
+}
+
+.pct-input__error {
+  color: var(--pct-input-invalid-fg);
+  font-size: var(--pct-font-size-sm);
+}
+
+/* Rozmiary sterowane atrybutem stanu (wym-api-4) */
+:host([data-pct-size='sm']) .pct-input__control {
+  font-size: var(--pct-font-size-sm);
+  padding: var(--pct-space-2) var(--pct-space-3);
+}
+
+:host([data-pct-size='lg']) .pct-input__control {
+  font-size: var(--pct-font-size-lg);
+  padding: var(--pct-space-4) var(--pct-space-5);
+}

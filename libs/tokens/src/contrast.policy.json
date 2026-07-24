@@ -1,5 +1,5 @@
 {
-  "$comment": "Polityka kontrastu skórki. Każdy wpis = para fg/bg (rola × stan) sprawdzana wobec progów WCAG. severity=error blokuje build; severity=warn tylko ostrzega. Progi domyślne wynikają z poziomu WCAG (patrz build.mjs).",
+  "$comment": "Polityka kontrastu skórki. Każdy wpis = para fg/bg (rola × stan) sprawdzana wobec progów WCAG. level: AA/AAA -> progi tekstowe (normal/duży); UI -> SC 1.4.11 (3:1, elementy nietekstowe: obramowania, focus ring). severity=error blokuje build; severity=warn tylko ostrzega.",
   "checks": [
     {
       "name": "tekst podstawowy",
@@ -28,6 +28,76 @@
       "bg": "pct.button.disabled-bg",
       "level": "AA",
       "severity": "warn"
+    },
+    {
+      "name": "input — tekst",
+      "fg": "pct.input.fg",
+      "bg": "pct.input.bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "input — placeholder",
+      "fg": "pct.input.placeholder-fg",
+      "bg": "pct.input.bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "input — etykieta",
+      "fg": "pct.input.label-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "input — podpowiedź",
+      "fg": "pct.input.hint-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "input — komunikat błędu",
+      "fg": "pct.input.invalid-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "input/disabled — tekst",
+      "fg": "pct.input.disabled-fg",
+      "bg": "pct.input.disabled-bg",
+      "level": "AA",
+      "severity": "warn"
+    },
+    {
+      "name": "UI: obramowanie inputu",
+      "fg": "pct.input.border",
+      "bg": "pct.input.bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: obramowanie inputu (focus)",
+      "fg": "pct.input.border-focus",
+      "bg": "pct.input.bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: obramowanie inputu (błąd)",
+      "fg": "pct.input.invalid-border",
+      "bg": "pct.input.bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: focus ring",
+      "fg": "pct.focus-ring",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
     }
   ]
 }

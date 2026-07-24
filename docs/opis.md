@@ -53,7 +53,7 @@ Biblioteka komponentów angular pozwalająca na budowanie skomplikowanych, skalo
 
 ## Konwencje API komponentów
 
-- `wym-api-1` Nazewnictwo wg nowego style guide Angulara: klasa `PctButton` (bez sufiksu `Component`), plik `button.ts` (bez `.component.`), selektor elementu `pct-button`, dyrektywy `[pctTooltip]`. Szablon i style zawsze w osobnych plikach.
+- `wym-api-1` Nazewnictwo wg nowego style guide Angulara: klasa `PctButton` (bez sufiksu `Component`), plik `button.ts` (bez `.component.`), selektor elementu `pct-button`, dyrektywy `[pctTooltip]`. Szablon i style zawsze w osobnych plikach — **świadome odstępstwo** od oficjalnej wskazówki „prefer inline templates for smaller components", podyktowane spójnością struktury plików w bibliotece o dziesiątkach komponentów (`wym-ws-6`).
 
 - `wym-api-2` Fundament każdego komponentu: `standalone`, `ChangeDetectionStrategy.OnPush`, zoneless-safe (stan wyłącznie przez signals, brak polegania na zone.js). Zamiast `ngOnChanges` → `computed`/`effect`.
 
@@ -61,7 +61,9 @@ Biblioteka komponentów angular pozwalająca na budowanie skomplikowanych, skalo
 
 - `wym-api-4` Stan reflektowany na hoście jako atrybuty `data-pct-*` (np. `data-pct-size`, `data-pct-disabled`), a nie jako klasy CSS. Elementy wewnętrzne oznaczone `data-pct-part="..."` (`wym-token-7`).
 
-- `wym-api-5` Komponenty-kontrolki formularzy implementują `ControlValueAccessor` (kompatybilność z reactive i template-driven forms) oraz wystawiają wartość przez `model()`. Signal forms są docelowym, pierwszoklasowym sposobem wiązania; CVA pozostaje stabilnym fundamentem.
+- `wym-api-5` **Kontrolki formularzy to natywne kontrolki signal forms** — implementują `FormValueControl` (lub `FormCheckboxControl`) z `@angular/forms/signals`, czyli wystawiają wymagany `value = model<T>()` oraz opcjonalne pola `FormUiControl` (`disabled`, `readonly`, `invalid`, `errors`, `required`, `name`, `touch`), które dyrektywa `FormField` synchronizuje ze stanem pola.
+
+  **`ControlValueAccessor` NIE jest implementowany.** Kontrolka spełniająca `FormValueControl` działa z reactive forms (`[formControl]`, `formControlName`) i template-driven (`[(ngModel)]`) bez żadnej warstwy kompatybilności — zweryfikowane testami (`wym-real-9`). Dzięki temu rdzeń komponentów pozostaje wolny od klasycznego API formularzy przy zachowaniu pełnej kompatybilności z istniejącymi aplikacjami.
 
 - `wym-api-6` Dostępność wbudowana w każdy komponent — ARIA zarządzane wewnętrznie, wykorzystanie CDK a11y (`FocusMonitor`, `LiveAnnouncer`, `FocusTrap`), id generowane util-em (`wym-a11y-1`).
 
@@ -157,10 +159,11 @@ Zbudowano pionowy plaster end-to-end weryfikujący powyższe ustalenia. Stack: *
 Powstało:
 
 - `libs/tokens` — źródło DTCG + build (`build.mjs`) generujący `pct.css` / `_tokens.scss` / `tokens.ts`, z **bramką kontrastu WCAG 2.2 AA** (build faila, gdy para tekst/tło < 4.5:1).
-- `libs/components` — pakiet `@pacit/components` z secondary entrypoints `./core` i `./button` (czysta mapa `exports`).
+- `libs/components` — pakiet `@pacit/components` z secondary entrypoints `./core`, `./button` i `./input` (czysta mapa `exports`).
 - `PctButton` — selektor atrybutowy `button[pct-button]`, standalone, OnPush, signals, `booleanAttribute`, stan jako `data-pct-*`, elementy wewnętrzne jako `data-pct-part`, `providePctConfig`.
 - `apps/sandbox` — **zoneless** (`provideZonelessChangeDetection`), SSR + hydration, prezentacja Buttona i **scoped theme** (panel `data-theme="dark"` przethemowany samą kaskadą CSS).
-- Testy: `components` 6/6 (Vitest), `sandbox` 2/2, `sandbox-e2e` 4/4 (Playwright) — testy jednostkowe biegną pod zoneless.
+- `PctInput` — natywna kontrolka signal forms (`FormValueControl`), etykieta/podpowiedź/błąd powiązane przez generowane id (`for`, `aria-describedby`, `aria-invalid`, `role="alert"`), błąd pokazywany dopiero po dotknięciu pola, stan bez `opacity`.
+- Testy: `components` 18/18 (Vitest), `sandbox` 2/2, `sandbox-e2e` 7/7 (Playwright) — testy jednostkowe biegną pod zoneless.
 
 Wnioski, które doprecyzowują „przepis":
 
@@ -171,4 +174,6 @@ Wnioski, które doprecyzowują „przepis":
 - `wym-real-5` _(do zrobienia)_ Raport pokrycia wymaga konfiguracji `coverageInclude` w targecie testowym, by egzekwować próg z `wym-proj-4`.
 - `wym-real-6` Pierwotny guard (token-level) przepuścił disabled o realnym kontraście ~1.6:1, bo stan był robiony przez `opacity` (kompozycja z tłem w runtime, niewidoczna dla matematyki na hexach). Stąd `wym-token-11` (policy per motyw/rozmiar, severity) i `wym-token-12` (zakaz `opacity` dla warstw tekstowych). Wdrożone: `libs/tokens/src/contrast.policy.json` + silnik w `build.mjs`; `PctButton` używa tokenów `disabled-*` zamiast `opacity`.
 - `wym-real-7` **Zoneless jest deklarowany jawnie** przez `provideZonelessChangeDetection()` w `app.config.ts`, mimo że generator nie dodaje polyfilla `zone.js` (bundle i tak go nie zawiera). Jawna deklaracja zamyka `wym-tech-3` i chroni przed przypadkowym powrotem do trybu zone-based. Testy jednostkowe biblioteki i aplikacji również konfigurują zoneless w `TestBed`, dzięki czemu `wym-api-2` (komponenty zoneless-safe) jest **weryfikowane**, a nie tylko deklarowane. (Uwaga: `setupTestBed()` z `@analogjs/vitest-angular` domyślnie już ustawia `zoneless: true` — jawna konfiguracja w spec-ach jest zabezpieczeniem na wypadek zmiany domyślnych.)
+- `wym-real-9` **CVA okazało się zbędne.** Zakładaliśmy, że kompatybilność z reactive/template-driven forms wymaga `ControlValueAccessor` (i rozważaliśmy osobną dyrektywę-adapter). Eksperyment na `PctInput` (kontrolka implementująca wyłącznie `FormValueControl`) wykazał, że `[formControl]` i `[(ngModel)]` synchronizują wartość w obie strony bez żadnego kodu kompatybilności — zgodnie z dokumentacją Angulara. Rdzeń biblioteki nie importuje klasycznego API formularzy. Zachowanie jest zabezpieczone testami regresyjnymi w `input.spec.ts`.
+- `wym-real-10` Bramka kontrastu obejmuje teraz także **pary nietekstowe wg SC 1.4.11** (`level: "UI"`, próg 3:1) — obramowanie inputu, obramowanie focus/błędu, focus ring. To wychwytuje typową wadę bibliotek UI: zbyt jasne obramowania pól. Tokeny komponentowe są auto-odkrywane (`component.*.json`), więc dodanie komponentu nie wymaga zmian w `build.mjs`.
 - `wym-real-8` **Pakiet `zone.js` został całkowicie usunięty z zależności.** Jest opcjonalnym peer-dependency (`peerDependenciesMeta.zone.js.optional: true`) zarówno w `@angular/core`, jak i `@analogjs/vitest-angular`, a runner testów Angulara przy nieudanym `resolve('zone.js')` przechodzi w tryb bez zone (`catch → 'none'`). Zweryfikowane empirycznie po odinstalowaniu: testy 6/6 i 2/2, e2e 4/4, build biblioteki i aplikacji (SSR + prerender) — wszystko zielone; w runtime brak `window.Zone`, `__zone_symbol__` i niepatchowany `Promise`. Dzięki temu powrót do trybu zone-based jest niemożliwy przez przypadek.

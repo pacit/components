@@ -1,0 +1,23 @@
+{
+  "pct": {
+    "input": {
+      "bg": { "$type": "color", "$value": "{pct.surface}" },
+      "fg": { "$type": "color", "$value": "{pct.text}" },
+      "placeholder-fg": { "$type": "color", "$value": "{pct.text-muted}" },
+      "border": { "$type": "color", "$value": "{pct.border-strong}" },
+      "border-hover": { "$type": "color", "$value": "{pct.text-muted}" },
+      "border-focus": { "$type": "color", "$value": "{pct.primary}" },
+      "invalid-border": { "$type": "color", "$value": "{pct.danger}" },
+      "invalid-fg": { "$type": "color", "$value": "{pct.danger}" },
+      "disabled-bg": { "$type": "color", "$value": "{pct.disabled-bg}" },
+      "disabled-fg": { "$type": "color", "$value": "{pct.disabled-fg}" },
+      "disabled-border": { "$type": "color", "$value": "{pct.border}" },
+      "label-fg": { "$type": "color", "$value": "{pct.text}" },
+      "hint-fg": { "$type": "color", "$value": "{pct.text-muted}" },
+      "radius": { "$type": "dimension", "$value": "{pct.radius.md}" },
+      "font-size": { "$type": "dimension", "$value": "{pct.font.size.md}" },
+      "padding-y": { "$type": "dimension", "$value": "{pct.space.3}" },
+      "padding-x": { "$type": "dimension", "$value": "{pct.space.4}" }
+    }
+  }
+}

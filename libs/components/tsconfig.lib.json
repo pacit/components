@@ -7,6 +7,6 @@
     "inlineSources": true,
     "types": []
   },
-  "include": ["src/**/*.ts", "core/**/*.ts", "button/**/*.ts"],
+  "include": ["src/**/*.ts", "core/**/*.ts", "button/**/*.ts", "input/**/*.ts"],
   "exclude": ["**/*.spec.ts", "**/*.test.ts"]
 }

@@ -63,3 +63,19 @@
     margin-top: 12px;
   }
 }
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 380px;
+
+  & + .stack {
+    margin-top: 24px;
+  }
+}
+
+.muted {
+  color: var(--pct-text-muted);
+  font-size: 13px;
+}

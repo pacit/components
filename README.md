@@ -22,7 +22,7 @@ apps/
   sandbox/       aplikacja demo / playground
   sandbox-e2e/   testy e2e (Playwright)
 libs/
-  components/    pakiet @pacit/components (secondary entrypoints: ./core, ./button)
+  components/    pakiet @pacit/components (entrypoints: ./core, ./button, ./input)
   tokens/        źródło DTCG + build -> CSS/SCSS/TS + bramka kontrastu
 docs/opis.md     ustalenia i wymagania
 ```
@@ -62,12 +62,25 @@ node libs/tokens/build.mjs  # bramka kontrastu (policy WCAG) — błędy blokuj�
 
 Trzy poziomy: **prymitywne → semantyczne → komponentowe**; referencje zachowane jako `var()`, więc nadpisanie jednej zmiennej w dowolnym scope kaskaduje bez rekompilacji. Polityka kontrastu (`src/contrast.policy.json`) waliduje pary tekst/tło wobec progów WCAG, per motyw — `error` blokuje build, `warn` informuje (np. `disabled`, zwolniony z SC 1.4.3).
 
-## Komponent referencyjny
+## Komponenty
 
 `PctButton` (`@pacit/components/button`) — selektor atrybutowy na natywnym `<button>`, warianty `solid|outline`, rozmiary `sm|md|lg`, stany `disabled`/`loading`. Stan wystawiany jako `data-pct-*`, elementy wewnętrzne jako `data-pct-part`.
 
 ```html
 <button pct-button variant="outline" size="lg">Zapisz</button>
+```
+
+`PctInput` (`@pacit/components/input`) — natywna kontrolka **signal forms** (`FormValueControl`), z etykietą, podpowiedzią i komunikatem błędu powiązanymi przez ARIA. Działa również z reactive forms i `ngModel` — bez `ControlValueAccessor`.
+
+```html
+<!-- signal forms -->
+<pct-input label="E-mail" type="email" [formField]="userForm.email" />
+
+<!-- dwukierunkowo, bez formularza -->
+<pct-input label="E-mail" [(value)]="email" />
+
+<!-- kompatybilnie z reactive forms -->
+<pct-input label="E-mail" [formControl]="emailCtrl" />
 ```
 
 ## Dokumentacja

@@ -4,5 +4,11 @@
     "outDir": "../../dist/out-tsc",
     "types": ["vitest/globals"]
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "core/**/*.ts", "button/**/*.ts"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "core/**/*.ts",
+    "button/**/*.ts",
+    "input/**/*.ts"
+  ]
 }
