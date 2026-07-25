@@ -1,0 +1,305 @@
+import { OverlayModule } from '@angular/cdk/overlay';
+import {
+  booleanAttribute,
+  Component,
+  computed,
+  effect,
+  ElementRef,
+  inject,
+  input,
+  model,
+  output,
+  signal,
+  viewChild,
+} from '@angular/core';
+import type { FormValueControl, ValidationError } from '@angular/forms/signals';
+import { nextPctId, PCT_CONFIG, PctSize } from '@pacit/components/core';
+import { PctSelectOption } from './select.types';
+
+/**
+ * Lista wyboru jednokrotnego z własnym panelem (nie natywny `<select>`).
+ *
+ * Realizuje wzorzec ARIA „select-only combobox": trigger ma `role="combobox"`,
+ * panel `role="listbox"`, a fokus **nie opuszcza triggera** — aktywna opcja jest
+ * wskazywana przez `aria-activedescendant`.
+ *
+ * Pozycjonowanie panelu opiera się na CDK Overlay (`wym-proj-3`) — to jedyna
+ * dopuszczona zależność runtime. Obsługa klawiatury jest własna, bo dla
+ * customowego listboxa nie ma natywnego odpowiednika (`wym-api-11`).
+ *
+ * @example
+ * <pct-select label="Kraj" [options]="kraje" [formField]="form.country" />
+ */
+@Component({
+  selector: 'pct-select',
+  imports: [OverlayModule],
+  templateUrl: './select.html',
+  styleUrl: './select.scss',
+  host: {
+    class: 'pct-select',
+    '[attr.data-pct-size]': 'size()',
+    '[attr.data-pct-open]': 'open() ? "" : null',
+    '[attr.data-pct-invalid]': 'showInvalid() ? "" : null',
+    '[attr.data-pct-disabled]': 'disabled() ? "" : null',
+  },
+})
+export class PctSelect implements FormValueControl<string> {
+  private readonly config = inject(PCT_CONFIG);
+
+  /** Wybrana wartość — wymagane pole kontraktu `FormValueControl`. */
+  readonly value = model<string>('');
+
+  // --- FormUiControl (synchronizowane przez dyrektywę FormField) ---
+
+  readonly disabled = input(false, { transform: booleanAttribute });
+  readonly readonly = input(false, { transform: booleanAttribute });
+  readonly invalid = input(false, { transform: booleanAttribute });
+  readonly touched = input(false, { transform: booleanAttribute });
+  readonly required = input(false, { transform: booleanAttribute });
+  readonly errors = input<readonly ValidationError.WithOptionalFieldTree[]>([]);
+  readonly name = input<string>('');
+
+  readonly touch = output<void>();
+
+  // --- API komponentu ---
+
+  readonly options = input<readonly PctSelectOption[]>([]);
+  readonly label = input<string>('');
+  readonly hint = input<string>('');
+  readonly placeholder = input<string>('Wybierz…');
+  readonly size = input<PctSize>(this.config.defaultSize);
+
+  private readonly trigger =
+    viewChild.required<ElementRef<HTMLButtonElement>>('trigger');
+  private readonly panel = viewChild<ElementRef<HTMLElement>>('panel');
+
+  // --- a11y ---
+
+  private readonly uid = nextPctId('pct-select');
+  protected readonly triggerId = `${this.uid}-trigger`;
+  protected readonly labelId = `${this.uid}-label`;
+  protected readonly listboxId = `${this.uid}-listbox`;
+  protected readonly hintId = `${this.uid}-hint`;
+  protected readonly errorId = `${this.uid}-error`;
+
+  private readonly hostRef = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  protected readonly open = signal(false);
+
+  /**
+   * Panel renderuje się w nakładce CDK, poza drzewem hosta, więc kaskada
+   * scoped theme (`wym-theme-4`) do niego nie dociera. Przenosimy więc motyw
+   * z najbliższego przodka hosta na sam panel.
+   */
+  protected readonly panelTheme = signal<string | null>(null);
+
+  /** Szerokość panelu zrównana z triggerem; mierzona przy otwarciu. */
+  protected readonly panelWidth = signal(0);
+
+  /** Indeks opcji aktywnej klawiaturą (nie to samo co wybrana). */
+  protected readonly activeIndex = signal(-1);
+
+  protected readonly selectedOption = computed(
+    () => this.options().find((o) => o.value === this.value()) ?? null,
+  );
+
+  protected readonly displayText = computed(
+    () => this.selectedOption()?.label ?? '',
+  );
+
+  protected readonly errorText = computed(() => {
+    const first = this.errors()?.[0] as { message?: string } | undefined;
+    return first?.message ?? '';
+  });
+
+  readonly showInvalid = computed(() => this.invalid() && this.touched());
+
+  protected readonly showError = computed(
+    () => this.showInvalid() && this.errorText() !== '',
+  );
+
+  protected readonly describedBy = computed(() => {
+    const ids: string[] = [];
+    if (this.hint()) ids.push(this.hintId);
+    if (this.showError()) ids.push(this.errorId);
+    return ids.length > 0 ? ids.join(' ') : null;
+  });
+
+  /** Id aktywnej opcji dla `aria-activedescendant`. */
+  protected readonly activeOptionId = computed(() => {
+    const i = this.activeIndex();
+    return this.open() && i >= 0 ? this.optionId(i) : null;
+  });
+
+  protected optionId(index: number): string {
+    return `${this.uid}-option-${index}`;
+  }
+
+  constructor() {
+    // Aktywna opcja musi być widoczna na liście przewijanej.
+    effect(() => {
+      const i = this.activeIndex();
+      if (!this.open() || i < 0) return;
+      // Indeksujemy listę zamiast budować selektor po id — nie wymaga
+      // `CSS.escape` (brak w jsdom) i wprost odpowiada semantyce activeIndex.
+      const el = this.panel()?.nativeElement.querySelectorAll<HTMLElement>(
+        '[data-pct-part="option"]',
+      )[i];
+      el?.scrollIntoView?.({ block: 'nearest' });
+    });
+  }
+
+  // --- interakcja ---
+
+  private get interactive(): boolean {
+    return !this.disabled() && !this.readonly();
+  }
+
+  protected toggle(): void {
+    if (!this.interactive) return;
+    this.open() ? this.close() : this.openPanel();
+  }
+
+  protected openPanel(): void {
+    if (!this.interactive) return;
+    this.panelTheme.set(
+      this.hostRef.nativeElement
+        .closest('[data-theme]')
+        ?.getAttribute('data-theme') ?? null,
+    );
+    this.panelWidth.set(this.trigger().nativeElement.offsetWidth);
+    this.open.set(true);
+    // Aktywna staje się wybrana opcja, a bez wyboru pierwsza dostępna.
+    const selected = this.options().findIndex((o) => o.value === this.value());
+    this.activeIndex.set(selected >= 0 ? selected : this.firstEnabled());
+  }
+
+  protected close(): void {
+    if (!this.open()) return;
+    this.open.set(false);
+    this.activeIndex.set(-1);
+  }
+
+  protected selectAt(index: number): void {
+    const option = this.options()[index];
+    if (!option || option.disabled || !this.interactive) return;
+    this.value.set(option.value);
+    this.close();
+    this.trigger().nativeElement.focus();
+  }
+
+  protected onBlur(): void {
+    this.touch.emit();
+  }
+
+  protected onKeydown(event: KeyboardEvent): void {
+    if (!this.interactive) return;
+    const key = event.key;
+
+    if (!this.open()) {
+      // Otwarcie: strzałki, Enter, spacja lub Alt+strzałka w dół.
+      if (
+        key === 'ArrowDown' ||
+        key === 'ArrowUp' ||
+        key === 'Enter' ||
+        key === ' '
+      ) {
+        event.preventDefault();
+        this.openPanel();
+      }
+      return;
+    }
+
+    switch (key) {
+      case 'ArrowDown':
+        event.preventDefault();
+        this.moveActive(1);
+        break;
+      case 'ArrowUp':
+        event.preventDefault();
+        this.moveActive(-1);
+        break;
+      case 'Home':
+        event.preventDefault();
+        this.activeIndex.set(this.firstEnabled());
+        break;
+      case 'End':
+        event.preventDefault();
+        this.activeIndex.set(this.lastEnabled());
+        break;
+      case 'Enter':
+      case ' ':
+        event.preventDefault();
+        this.selectAt(this.activeIndex());
+        break;
+      case 'Escape':
+        event.preventDefault();
+        this.close();
+        break;
+      case 'Tab':
+        // Tab zamyka listę i pozwala wyjść z kontrolki.
+        this.close();
+        break;
+      default:
+        if (key.length === 1) this.typeahead(key);
+    }
+  }
+
+  // --- nawigacja ---
+
+  private enabledIndexes(): number[] {
+    return this.options()
+      .map((o, i) => (o.disabled ? -1 : i))
+      .filter((i) => i >= 0);
+  }
+
+  private firstEnabled(): number {
+    const list = this.enabledIndexes();
+    return list.length > 0 ? list[0] : -1;
+  }
+
+  private lastEnabled(): number {
+    const list = this.enabledIndexes();
+    return list.length > 0 ? list[list.length - 1] : -1;
+  }
+
+  /** Przesuwa aktywną opcję, pomijając wyłączone; bez zawijania (jak natywny select). */
+  private moveActive(delta: number): void {
+    const list = this.enabledIndexes();
+    if (list.length === 0) return;
+    const current = list.indexOf(this.activeIndex());
+    if (current === -1) {
+      this.activeIndex.set(delta > 0 ? list[0] : list[list.length - 1]);
+      return;
+    }
+    const next = Math.min(Math.max(current + delta, 0), list.length - 1);
+    this.activeIndex.set(list[next]);
+  }
+
+  private typeaheadBuffer = '';
+  private typeaheadTimer: ReturnType<typeof setTimeout> | undefined;
+
+  /** Wyszukiwanie po pierwszych literach — parytet z natywnym `<select>`. */
+  private typeahead(char: string): void {
+    this.typeaheadBuffer += char.toLowerCase();
+    clearTimeout(this.typeaheadTimer);
+    this.typeaheadTimer = setTimeout(() => (this.typeaheadBuffer = ''), 500);
+
+    const match = this.options().findIndex(
+      (o) =>
+        !o.disabled && o.label.toLowerCase().startsWith(this.typeaheadBuffer),
+    );
+    if (match >= 0) this.activeIndex.set(match);
+  }
+
+  /** Wywoływane przez signal forms (np. `focusBoundControl()`). */
+  focus(options?: FocusOptions): void {
+    this.trigger().nativeElement.focus(options);
+  }
+
+  /** Wywoływane przez signal forms przy resecie formularza. */
+  reset(): void {
+    this.value.set('');
+    this.close();
+  }
+}

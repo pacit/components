@@ -97,6 +97,15 @@ test.describe('PctCheckbox — signal forms', () => {
       .locator('pct-radio', { hasText: 'Pro' })
       .locator('input')
       .check();
+    await expect(submit).toBeDisabled(); // brak kraju i zgody
+
+    await page
+      .getByTestId('select-country')
+      .locator('[data-pct-part="trigger"]')
+      .click();
+    await page
+      .locator('[data-pct-part="option"]', { hasText: 'Polska' })
+      .click();
     await expect(submit).toBeDisabled(); // brak zgody
 
     await page.getByTestId('checkbox-terms').locator('input').check();

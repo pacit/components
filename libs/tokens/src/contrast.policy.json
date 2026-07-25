@@ -189,6 +189,76 @@
       "bg": "pct.radio.bg",
       "level": "UI",
       "severity": "error"
+    },
+    {
+      "name": "select — tekst wybranej wartości",
+      "fg": "pct.select.fg",
+      "bg": "pct.select.bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "select — tekst zastępczy",
+      "fg": "pct.select.placeholder-fg",
+      "bg": "pct.select.bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "select — etykieta",
+      "fg": "pct.select.label-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "select — podpowiedź",
+      "fg": "pct.select.hint-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "select — opcja na liście",
+      "fg": "pct.select.option-fg",
+      "bg": "pct.select.option-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "select — opcja aktywna (klawiatura)",
+      "fg": "pct.select.option-active-fg",
+      "bg": "pct.select.option-active-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "select — opcja wybrana",
+      "fg": "pct.select.option-selected-fg",
+      "bg": "pct.select.option-selected-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "UI: obramowanie selecta",
+      "fg": "pct.select.border",
+      "bg": "pct.select.bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: strzałka selecta",
+      "fg": "pct.select.arrow-fg",
+      "bg": "pct.select.bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: obramowanie panelu selecta",
+      "fg": "pct.select.panel-border",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
     }
   ]
 }

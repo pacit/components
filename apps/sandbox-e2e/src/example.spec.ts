@@ -48,4 +48,37 @@ test.describe('PctButton — sandbox', () => {
     await expect(panel).not.toHaveAttribute('data-theme', 'dark');
     expect(await surfaceOf()).toBe('#ffffff'); // wraca do :root
   });
+
+  /**
+   * Regresja: scoped theme musi przethemowywać także tokeny KOMPONENTOWE, nie
+   * tylko semantyczne. Custom properties są podstawiane w miejscu deklaracji,
+   * więc token komponentowy zadeklarowany w `:root` zamraża jasną wartość —
+   * dlatego build emituje w bloku motywu domknięcie przechodnie (wym-real-17).
+   */
+  test('scoped theme przethemowuje również tokeny komponentowe', async ({
+    page,
+  }) => {
+    const tokenAt = (selector: string, token: string) =>
+      page
+        .locator(selector)
+        .evaluate(
+          (el, t) => getComputedStyle(el).getPropertyValue(t).trim(),
+          token,
+        );
+
+    const rootButtonBg = await page.evaluate(() =>
+      getComputedStyle(document.documentElement)
+        .getPropertyValue('--pct-button-bg')
+        .trim(),
+    );
+    const scopedButtonBg = await tokenAt(
+      '[data-testid="panel-scoped"]',
+      '--pct-button-bg',
+    );
+
+    // :root -> primary = blue-600, dark scope -> primary = blue-500
+    expect(rootButtonBg).toBe('#2563eb');
+    expect(scopedButtonBg).toBe('#3b82f6');
+    expect(scopedButtonBg).not.toBe(rootButtonBg);
+  });
 });

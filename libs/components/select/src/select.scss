@@ -1,0 +1,154 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pct-space-2);
+  font-family: inherit;
+}
+
+.pct-select__label {
+  color: var(--pct-select-label-fg);
+  font-size: var(--pct-font-size-sm);
+  font-weight: var(--pct-font-weight-medium);
+}
+
+.pct-select__required {
+  color: var(--pct-select-invalid-fg);
+  margin-inline-start: 2px;
+}
+
+.pct-select__trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--pct-space-3);
+  box-sizing: border-box;
+  width: 100%;
+  background: var(--pct-select-bg);
+  color: var(--pct-select-fg);
+  border: 1px solid var(--pct-select-border);
+  border-radius: var(--pct-select-radius);
+  font: inherit;
+  font-size: var(--pct-select-font-size);
+  line-height: 1.4;
+  padding: var(--pct-select-padding-y) var(--pct-select-padding-x);
+  text-align: start;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.pct-select__trigger:hover:not(:disabled) {
+  border-color: var(--pct-select-border-hover);
+}
+
+.pct-select__trigger:focus-visible {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: 1px;
+  border-color: var(--pct-select-border-focus);
+}
+
+.pct-select__trigger:disabled {
+  background: var(--pct-select-disabled-bg);
+  color: var(--pct-select-disabled-fg);
+  border-color: var(--pct-select-disabled-border);
+  cursor: not-allowed;
+}
+
+:host([data-pct-invalid]) .pct-select__trigger {
+  border-color: var(--pct-select-invalid-border);
+}
+
+.pct-select__placeholder {
+  color: var(--pct-select-placeholder-fg);
+}
+
+.pct-select__text,
+.pct-select__placeholder {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pct-select__arrow {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: var(--pct-select-arrow-fg);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform 0.15s ease;
+}
+
+:host([data-pct-open]) .pct-select__arrow {
+  transform: rotate(180deg);
+}
+
+/* Rozmiary sterowane atrybutem stanu (wym-api-4) */
+:host([data-pct-size='sm']) .pct-select__trigger {
+  font-size: var(--pct-font-size-sm);
+  padding: var(--pct-space-2) var(--pct-space-3);
+}
+
+:host([data-pct-size='lg']) .pct-select__trigger {
+  font-size: var(--pct-font-size-lg);
+  padding: var(--pct-space-4) var(--pct-space-5);
+}
+
+/* Panel żyje w nakładce CDK, czyli POZA drzewem hosta. Nie można więc używać
+   selektorów `:host(...)` — stany opcji są oznaczone atrybutami na nich samych.
+   Tokeny działają, bo są zdefiniowane na `:root` (zaleta podejścia CSS-first). */
+.pct-select__panel {
+  box-sizing: border-box;
+  /* CDK ustawia szerokość na kontenerze nakładki — panel musi ją wypełnić. */
+  width: 100%;
+  max-height: var(--pct-select-panel-max-height);
+  overflow-y: auto;
+  background: var(--pct-select-panel-bg);
+  border: 1px solid var(--pct-select-panel-border);
+  border-radius: var(--pct-select-panel-radius);
+  box-shadow: var(--pct-select-panel-shadow);
+  padding: var(--pct-space-2) 0;
+}
+
+.pct-select__option {
+  padding: var(--pct-select-option-padding-y) var(--pct-select-option-padding-x);
+  color: var(--pct-select-option-fg);
+  background: var(--pct-select-option-bg);
+  font-size: var(--pct-select-font-size);
+  line-height: 1.4;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Aktywna klawiaturą (aria-activedescendant) — wyróżnienie tłem. */
+.pct-select__option[data-pct-active] {
+  background: var(--pct-select-option-active-bg);
+  color: var(--pct-select-option-active-fg);
+}
+
+.pct-select__option[data-pct-selected] {
+  background: var(--pct-select-option-selected-bg);
+  color: var(--pct-select-option-selected-fg);
+}
+
+.pct-select__option[data-pct-disabled] {
+  color: var(--pct-select-option-disabled-fg);
+  cursor: not-allowed;
+}
+
+.pct-select__empty {
+  padding: var(--pct-select-option-padding-y) var(--pct-select-option-padding-x);
+  color: var(--pct-select-hint-fg);
+  font-size: var(--pct-select-font-size);
+}
+
+.pct-select__hint {
+  color: var(--pct-select-hint-fg);
+  font-size: var(--pct-font-size-sm);
+}
+
+.pct-select__error {
+  color: var(--pct-select-invalid-fg);
+  font-size: var(--pct-font-size-sm);
+}

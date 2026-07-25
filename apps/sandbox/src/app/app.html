@@ -39,6 +39,14 @@
         data-testid="input-email"
       />
 
+      <pct-select
+        label="Kraj"
+        hint="Lista z własnym panelem (CDK Overlay)"
+        [options]="countries"
+        [formField]="userForm.country"
+        data-testid="select-country"
+      />
+
       <pct-radio-group
         label="Plan"
         hint="Możesz zmienić w każdej chwili"
@@ -118,6 +126,15 @@
       <button pct-button data-testid="scoped-solid">Solid</button>
       <button pct-button variant="outline">Outline</button>
       <button pct-button loading>Loading</button>
+    </div>
+
+    <div class="stack">
+      <pct-select
+        label="Kraj (w panelu ciemnym)"
+        [options]="countries"
+        [(value)]="scopedCountry"
+        data-testid="select-scoped"
+      />
     </div>
   </section>
 </main>

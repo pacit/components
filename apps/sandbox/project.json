@@ -21,7 +21,11 @@
             "input": "apps/sandbox/public"
           }
         ],
-        "styles": ["libs/tokens/dist/pct.css", "apps/sandbox/src/styles.scss"],
+        "styles": [
+          "node_modules/@angular/cdk/overlay-prebuilt.css",
+          "libs/tokens/dist/pct.css",
+          "apps/sandbox/src/styles.scss"
+        ],
         "server": "apps/sandbox/src/main.server.ts",
         "ssr": {
           "entry": "apps/sandbox/src/server.ts"

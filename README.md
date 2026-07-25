@@ -10,7 +10,7 @@ Angular 22 · TypeScript 6 · NX 23 · Vitest · Playwright · SSR (Angular Univ
 
 ## Zasady
 
-- Minimalne zależności runtime (dozwolone: `@angular/cdk`).
+- Minimalne zależności runtime: jedynie `@angular/cdk` (CDK Overlay w `PctSelect`).
 - Standalone, OnPush, signals, zoneless (`zone.js` nie jest zależnością projektu), SSR.
 - Dostępność: minimum WCAG 2.2 AA, weryfikowane automatycznie audytem axe-core w testach e2e (plus obszar dotyku ≥ 24×24 px).
 - Theming przez design tokens (DTCG) → CSS custom properties, z zachowaniem referencji `var()` (kaskada, scoped theme).
@@ -22,7 +22,7 @@ apps/
   sandbox/       aplikacja demo / playground
   sandbox-e2e/   testy e2e (Playwright)
 libs/
-  components/    pakiet @pacit/components (entrypoints: ./core, ./button, ./input, ./checkbox, ./radio)
+  components/    pakiet @pacit/components (entrypoints: ./core, ./button, ./input, ./checkbox, ./radio, ./select)
   tokens/        źródło DTCG + build -> CSS/SCSS/TS + bramka kontrastu
 docs/opis.md     ustalenia i wymagania
 ```
@@ -99,6 +99,14 @@ Trzy poziomy: **prymitywne → semantyczne → komponentowe**; referencje zachow
   <pct-radio value="pro">Pro</pct-radio>
 </pct-radio-group>
 ```
+
+`PctSelect` (`@pacit/components/select`) — lista wyboru z własnym panelem (nie natywny `<select>`), wzorzec ARIA „select-only combobox": fokus zostaje na triggerze, aktywna opcja wskazywana przez `aria-activedescendant`. Obsługa klawiatury: strzałki, Home/End, Enter, Escape, typeahead.
+
+```html
+<pct-select label="Kraj" [options]="countries" [formField]="userForm.country" />
+```
+
+> Wymaga dołączenia stylów nakładki CDK: `node_modules/@angular/cdk/overlay-prebuilt.css`.
 
 ## Dokumentacja
 

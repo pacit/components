@@ -11,6 +11,7 @@
     "button/**/*.ts",
     "input/**/*.ts",
     "checkbox/**/*.ts",
-    "radio/**/*.ts"
+    "radio/**/*.ts",
+    "select/**/*.ts"
   ]
 }

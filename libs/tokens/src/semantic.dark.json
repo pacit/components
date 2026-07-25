@@ -1,19 +1,68 @@
 {
   "pct": {
-    "primary": { "$type": "color", "$value": "{pct.blue.500}" },
-    "primary-hover": { "$type": "color", "$value": "{pct.blue.600}" },
-    "primary-active": { "$type": "color", "$value": "{pct.blue.700}" },
-    "on-primary": { "$type": "color", "$value": "{pct.slate.900}" },
-    "surface": { "$type": "color", "$value": "{pct.slate.900}" },
-    "surface-100": { "$type": "color", "$value": "{pct.slate.800}" },
-    "text": { "$type": "color", "$value": "{pct.slate.0}" },
-    "text-muted": { "$type": "color", "$value": "{pct.slate.200}" },
-    "border": { "$type": "color", "$value": "{pct.slate.700}" },
-    "border-strong": { "$type": "color", "$value": "{pct.slate.500}" },
-    "danger": { "$type": "color", "$value": "{pct.red.400}" },
-    "on-danger": { "$type": "color", "$value": "{pct.slate.900}" },
-    "disabled-bg": { "$type": "color", "$value": "{pct.slate.800}" },
-    "disabled-fg": { "$type": "color", "$value": "{pct.slate.500}" },
-    "focus-ring": { "$type": "color", "$value": "{pct.blue.500}" }
+    "primary": {
+      "$type": "color",
+      "$value": "{pct.blue.500}"
+    },
+    "primary-hover": {
+      "$type": "color",
+      "$value": "{pct.blue.600}"
+    },
+    "primary-active": {
+      "$type": "color",
+      "$value": "{pct.blue.700}"
+    },
+    "on-primary": {
+      "$type": "color",
+      "$value": "{pct.slate.900}"
+    },
+    "surface": {
+      "$type": "color",
+      "$value": "{pct.slate.900}"
+    },
+    "surface-100": {
+      "$type": "color",
+      "$value": "{pct.slate.800}"
+    },
+    "text": {
+      "$type": "color",
+      "$value": "{pct.slate.0}"
+    },
+    "text-muted": {
+      "$type": "color",
+      "$value": "{pct.slate.200}"
+    },
+    "border": {
+      "$type": "color",
+      "$value": "{pct.slate.700}"
+    },
+    "border-strong": {
+      "$type": "color",
+      "$value": "{pct.slate.500}"
+    },
+    "danger": {
+      "$type": "color",
+      "$value": "{pct.red.400}"
+    },
+    "on-danger": {
+      "$type": "color",
+      "$value": "{pct.slate.900}"
+    },
+    "disabled-bg": {
+      "$type": "color",
+      "$value": "{pct.slate.800}"
+    },
+    "disabled-fg": {
+      "$type": "color",
+      "$value": "{pct.slate.500}"
+    },
+    "focus-ring": {
+      "$type": "color",
+      "$value": "{pct.blue.500}"
+    },
+    "shadow-panel": {
+      "$type": "shadow",
+      "$value": "0 8px 24px rgba(0, 0, 0, 0.55)"
+    }
   }
 }

@@ -1,0 +1,107 @@
+@if (label()) {
+<span class="pct-select__label" data-pct-part="label" [id]="labelId">
+  {{ label() }} @if (required()) {
+  <span class="pct-select__required" aria-hidden="true">*</span>
+  }
+</span>
+}
+
+<button
+  #trigger
+  cdkOverlayOrigin
+  #origin="cdkOverlayOrigin"
+  class="pct-select__trigger"
+  data-pct-part="trigger"
+  type="button"
+  role="combobox"
+  [id]="triggerId"
+  [disabled]="disabled()"
+  [attr.name]="name() || null"
+  [attr.aria-expanded]="open()"
+  [attr.aria-controls]="open() ? listboxId : null"
+  aria-haspopup="listbox"
+  [attr.aria-activedescendant]="activeOptionId()"
+  [attr.aria-labelledby]="label() ? labelId : null"
+  [attr.aria-describedby]="describedBy()"
+  [attr.aria-invalid]="showInvalid() ? 'true' : null"
+  [attr.aria-required]="required() || null"
+  [attr.aria-readonly]="readonly() ? 'true' : null"
+  (click)="toggle()"
+  (keydown)="onKeydown($event)"
+  (blur)="onBlur()"
+>
+  @if (displayText()) {
+  <span class="pct-select__text" data-pct-part="value"
+    >{{ displayText() }}</span
+  >
+  } @else {
+  <span class="pct-select__placeholder" data-pct-part="placeholder">
+    {{ placeholder() }}
+  </span>
+  }
+
+  <svg
+    class="pct-select__arrow"
+    data-pct-part="arrow"
+    viewBox="0 0 16 16"
+    aria-hidden="true"
+    focusable="false"
+  >
+    <path d="M4 6l4 4 4-4" />
+  </svg>
+</button>
+
+<ng-template
+  cdkConnectedOverlay
+  [cdkConnectedOverlayOrigin]="origin"
+  [cdkConnectedOverlayOpen]="open()"
+  [cdkConnectedOverlayWidth]="panelWidth()"
+  cdkConnectedOverlayPanelClass="pct-select__overlay"
+  (overlayOutsideClick)="close()"
+  (detach)="close()"
+>
+  <div
+    #panel
+    class="pct-select__panel"
+    data-pct-part="panel"
+    role="listbox"
+    [id]="listboxId"
+    [attr.data-theme]="panelTheme()"
+    [attr.aria-labelledby]="label() ? labelId : null"
+  >
+    @for (option of options(); track option.value; let i = $index) {
+    <div
+      class="pct-select__option"
+      data-pct-part="option"
+      role="option"
+      [id]="optionId(i)"
+      [attr.aria-selected]="option.value === value()"
+      [attr.aria-disabled]="option.disabled ? 'true' : null"
+      [attr.data-pct-active]="i === activeIndex() ? '' : null"
+      [attr.data-pct-selected]="option.value === value() ? '' : null"
+      [attr.data-pct-disabled]="option.disabled ? '' : null"
+      (click)="selectAt(i)"
+      (mouseenter)="option.disabled ? null : activeIndex.set(i)"
+    >
+      {{ option.label }}
+    </div>
+    } @empty {
+    <div class="pct-select__empty" data-pct-part="empty">Brak opcji</div>
+    }
+  </div>
+</ng-template>
+
+@if (hint()) {
+<span class="pct-select__hint" data-pct-part="hint" [id]="hintId">
+  {{ hint() }}
+</span>
+} @if (showError()) {
+<span
+  class="pct-select__error"
+  data-pct-part="error"
+  [id]="errorId"
+  role="alert"
+>
+  {{ errorText() }}
+</span>
+}

@@ -149,6 +149,34 @@ function checkTheme(themeName, tree, policy) {
   return { errors, warnings };
 }
 
+/**
+ * Rozszerza zbior nadpisan o wszystkie tokeny, ktore od nich zaleza (domkniecie
+ * przechodnie po referencjach). Zachowuje kolejnosc z drzewa bazowego, by
+ * referencje w wygenerowanym CSS byly deklarowane przed uzyciem.
+ */
+function withDependents(overrides, tree) {
+  const affected = new Set(Object.keys(overrides));
+  let grew = true;
+  while (grew) {
+    grew = false;
+    for (const [path, tok] of Object.entries(tree)) {
+      if (affected.has(path)) continue;
+      const m = typeof tok.value === 'string' ? tok.value.match(REF) : null;
+      if (m && affected.has(m[1])) {
+        affected.add(path);
+        grew = true;
+      }
+    }
+  }
+  // Wynik w kolejnosci drzewa: nadpisania biora wartosc z motywu, pozostale
+  // zachowuja swoja referencje (ktora teraz wskaze na przethemowany token).
+  const out = {};
+  for (const [path, tok] of Object.entries(tree)) {
+    if (affected.has(path)) out[path] = overrides[path] ?? tok;
+  }
+  return out;
+}
+
 // --- generowanie --------------------------------------------------------------
 function emitCssBlock(selector, entries, all) {
   const lines = Object.entries(entries).map(
@@ -174,7 +202,13 @@ function run() {
 
   const lightTree = merge(primitive, semanticLight, ...components); // :root
   const darkTree = merge(primitive, semanticLight, ...components, semanticDark); // dark nakladany na base
-  const darkOverrides = flatten(semanticDark); // tylko nadpisania -> [data-theme=dark]
+  // Custom properties sa podstawiane w MIEJSCU DEKLARACJI, nie uzycia: token
+  // `--a: var(--b)` zadeklarowany w :root dziedziczy juz rozwinieta wartosc,
+  // wiec nadpisanie `--b` w zageszczonym scope go nie zmieni. Do bloku motywu
+  // musi trafic domkniecie przechodnie: nadpisania + wszystko, co je uzywa
+  // (bezposrednio lub przez lancuch). Inaczej scoped theme dziala tylko na
+  // warstwie semantycznej (wym-theme-4, wym-real-17).
+  const darkOverrides = withDependents(flatten(semanticDark), darkTree);
 
   // Bramka a11y wg policy skorki (progi WCAG 2.2), per motyw.
   console.log('Walidacja kontrastu skorki (policy, progi WCAG 2.2):');

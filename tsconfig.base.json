@@ -19,7 +19,8 @@
       "@pacit/components/button": ["./libs/components/button/src/index.ts"],
       "@pacit/components/input": ["./libs/components/input/src/index.ts"],
       "@pacit/components/checkbox": ["./libs/components/checkbox/src/index.ts"],
-      "@pacit/components/radio": ["./libs/components/radio/src/index.ts"]
+      "@pacit/components/radio": ["./libs/components/radio/src/index.ts"],
+      "@pacit/components/select": ["./libs/components/select/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
