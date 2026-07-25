@@ -21,6 +21,7 @@ import {
   pctFieldMessages,
   PctFieldAppearance,
   PctFieldControl,
+  PctFieldCursor,
   PctLabelStrategy,
   PctSize,
 } from '@pacit/components/core';
@@ -105,6 +106,12 @@ export class PctSelect implements FormValueControl<string>, PctFieldControl {
   readonly controlId = this.triggerId;
   readonly labelStrategy: PctLabelStrategy = 'for';
   readonly fieldAppearance: PctFieldAppearance = 'boxed';
+  readonly fieldCursor: PctFieldCursor = 'pointer';
+
+  /** Klik w ramkę poza triggerem otwiera listę — tak jak klik w sam trigger. */
+  activate(): void {
+    this.toggle();
+  }
 
   /** Ustawiane przez obudowę, gdy jest obecna. */
   private readonly fieldDescribedBy = signal<string | null>(null);

@@ -17,6 +17,7 @@ import {
   nextPctId,
   PCT_FIELD,
   PctFieldControl,
+  PctFieldCursor,
   PctLabelStrategy,
 } from '@pacit/components/core';
 
@@ -76,6 +77,7 @@ export class PctText implements FormValueControl<string>, PctFieldControl {
 
   readonly controlId = nextPctId('pct-text');
   readonly labelStrategy: PctLabelStrategy = 'for';
+  readonly fieldCursor: PctFieldCursor = 'text';
 
   /** Ustawiane przez obudowę; wystawiane na natywnym elemencie. */
   protected readonly describedBy = signal<string | null>(null);

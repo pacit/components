@@ -21,6 +21,12 @@
 :host([data-pct-appearance='bare']) .pct-field__row {
   background: none;
   border: none;
+}
+
+/* Bez ramki nie ma czego wyściełać — padding kolumn odpada razem z nią. */
+:host([data-pct-appearance='bare']) .pct-field__prefix,
+:host([data-pct-appearance='bare']) .pct-field__control,
+:host([data-pct-appearance='bare']) .pct-field__suffix {
   padding: 0;
 }
 
@@ -29,18 +35,22 @@
 }
 
 /* Ramkę rysuje obudowa, nie kontrolka — inaczej dekoracje prefix/suffix
-   znalazłyby się poza polem. Kontrolka w środku jest przezroczysta. */
+   znalazłyby się poza polem. Kontrolka w środku jest przezroczysta.
+
+   Rząd **nie ma własnego paddingu ani `gap`**: odstępy niosą kolumny w środku
+   (`prefix`, `control`, `suffix`), a kolumny rozciągają się na całą wysokość.
+   Inaczej większość powierzchni ramki nie należy do żadnej z nich i nie da się
+   jej nadać ani kursora, ani stanu `:hover` zgodnego z tym, co zrobi klik. */
 .pct-field__row {
   display: flex;
-  align-items: center;
-  gap: var(--pct-field-gap);
+  align-items: stretch;
   box-sizing: border-box;
   background: var(--pct-field-bg);
   color: var(--pct-field-fg);
   border: 1px solid var(--pct-field-border);
   border-radius: var(--pct-field-radius);
-  padding: var(--pct-field-padding-y) var(--pct-field-padding-x);
   transition: border-color 0.15s ease;
+  overflow: clip;
 }
 
 .pct-field__row:hover {
@@ -65,25 +75,24 @@
   color: var(--pct-field-disabled-fg);
 }
 
-/* `stretch` zamiast wyśrodkowania: kontrolka wypełnia wysokość rzędu, więc nad
-   nią i pod nią nie powstaje martwa strefa — istotne, gdy w slocie jest wyższy
-   element (np. przycisk), który podnosi wysokość całego rzędu. */
+/* Padding rzędu przeniesiony do kolumn. Pion zawsze pełny, żeby trzy kolumny
+   szczelnie kafelkowały wnętrze ramki. */
+.pct-field__prefix,
+.pct-field__control,
+.pct-field__suffix {
+  padding-block: var(--pct-field-padding-y);
+}
+
 .pct-field__control {
   display: flex;
   align-items: stretch;
-  align-self: stretch;
   flex: 1 1 auto;
   min-width: 0; /* pozwala kontrolce się skracać zamiast rozpychać pole */
   /* Obudowa gwarantuje minimalny obszar dotyku (wym-a11y-2) niezależnie od tego,
      jaka kontrolka jest w środku — sama wysokość linii tekstu to ~20 px, czyli
      poniżej progu SC 2.5.8. */
   min-height: var(--pct-target-min);
-}
-
-/* Gdy w polu jest kontrolka tekstowa, kursor sygnalizuje możliwość pisania
-   na całej powierzchni ramki, nie tylko nad samym inputem. */
-.pct-field__row:has(input.pct-text, textarea.pct-text) {
-  cursor: text;
+  box-sizing: content-box;
 }
 
 .pct-field__prefix,
@@ -95,10 +104,55 @@
   font-size: var(--pct-field-font-size);
 }
 
-/* Puste slotu nie zajmują miejsca ani nie tworzą odstępu. */
-.pct-field__prefix:empty,
+/* Cały odstęp poziomy niosą sloty dekoracji: od krawędzi ramki na zewnątrz,
+   `gap` od strony kontrolki. Pusty slot **nie znika** — zwija się do samego
+   paddingu krawędzi i tym samym jest lewym/prawym marginesem wnętrza ramki.
+   Dzięki temu każdy piksel rzędu należy do którejś z trzech kolumn, niezależnie
+   od tego, czy dekoracje są. */
+.pct-field__prefix {
+  padding-inline-start: var(--pct-field-padding-x);
+  padding-inline-end: var(--pct-field-gap);
+}
+
+.pct-field__suffix {
+  padding-inline-start: var(--pct-field-gap);
+  padding-inline-end: var(--pct-field-padding-x);
+}
+
+.pct-field__prefix:empty {
+  padding-inline-end: 0;
+}
+
 .pct-field__suffix:empty {
-  display: none;
+  padding-inline-start: 0;
+}
+
+/* Dekoracja interaktywna (przycisk, link) sama jest celem kliknięcia, więc
+   dostaje całą wysokość slotu — bez tego pas nad nią i pod nią wyglądał na jej
+   część, a klik w niego trafiał w pole. Dekoracja bierna (ikona, jednostka)
+   zostaje wyśrodkowana: należy do powierzchni pola i klik w nią fokusuje
+   kontrolkę, więc dziedziczy też jego kursor. */
+.pct-field__prefix:has(button, a, [tabindex]),
+.pct-field__suffix:has(button, a, [tabindex]) {
+  align-items: stretch;
+  padding-block: 0;
+}
+
+/* Kursor zapowiada skutek kliknięcia na całej powierzchni ramki. Rodzaj zgłasza
+   kontrolka przez `PctFieldControl.fieldCursor` — arkusz obudowy nie zna klas
+   poszczególnych kontrolek. */
+:host([data-pct-cursor='text']) .pct-field__row {
+  cursor: text;
+}
+
+:host([data-pct-cursor='pointer']) .pct-field__row {
+  cursor: pointer;
+}
+
+/* Po regułach kursora, żeby je przykryć: nad polem, w którym nic nie zrobisz,
+   kursor nie może zapraszać do pisania ani do klikania. */
+:host([data-pct-disabled]) .pct-field__row {
+  cursor: not-allowed;
 }
 
 .pct-field__hint {
