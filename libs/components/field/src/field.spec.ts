@@ -201,6 +201,58 @@ describe('PctField + PctText', () => {
     expect(host.hasAttribute('data-pct-disabled')).toBe(true);
   });
 
+  describe('brak martwej strefy w ramce pola', () => {
+    it('kliknięcie w padding ramki ustawia fokus na kontrolce', async () => {
+      const fixture = await render(Host);
+      const row = part(fixture, 'row')!;
+
+      // Cel zdarzenia to sam rząd, czyli obszar paddingu — nie kontrolka.
+      row.dispatchEvent(
+        new MouseEvent('mousedown', { bubbles: true, cancelable: true }),
+      );
+      await fixture.whenStable();
+
+      expect(document.activeElement).toBe(inputOf(fixture));
+    });
+
+    it('kliknięcie w dekorację prefix też fokusuje kontrolkę', async () => {
+      const fixture = await render(AffixHost);
+      const prefix = part(fixture, 'prefix')!;
+
+      prefix.dispatchEvent(
+        new MouseEvent('mousedown', { bubbles: true, cancelable: true }),
+      );
+      await fixture.whenStable();
+
+      expect(document.activeElement).toBe(inputOf(fixture));
+    });
+
+    it('kliknięcie w przycisk slotu NIE przechwytuje fokusu na kontrolkę', async () => {
+      const fixture = await render(AffixHost);
+      const btn = part(fixture, 'suffix')!.querySelector(
+        'button',
+      ) as HTMLButtonElement;
+
+      btn.dispatchEvent(
+        new MouseEvent('mousedown', { bubbles: true, cancelable: true }),
+      );
+      await fixture.whenStable();
+
+      // Fokus nie został przeniesiony na input — przycisk obsługuje się sam.
+      expect(document.activeElement).not.toBe(inputOf(fixture));
+    });
+
+    it('kontrolka wypełnia wysokość rzędu (brak martwej strefy w pionie)', async () => {
+      const fixture = await render(AffixHost);
+      const row = part(fixture, 'row')!;
+      const control = part(fixture, 'control')!;
+
+      // W jsdom brak realnego layoutu, więc sprawdzamy zadeklarowany mechanizm.
+      expect(getComputedStyle(control).alignSelf).toBe('stretch');
+      expect(row.contains(control)).toBe(true);
+    });
+  });
+
   describe('sloty prefix/suffix', () => {
     it('renderują się wewnątrz rzędu pola, w kolejności prefix → pole → suffix', async () => {
       const fixture = await render(AffixHost);

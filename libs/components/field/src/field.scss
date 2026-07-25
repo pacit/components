@@ -53,11 +53,21 @@
   color: var(--pct-field-disabled-fg);
 }
 
+/* `stretch` zamiast wyśrodkowania: kontrolka wypełnia wysokość rzędu, więc nad
+   nią i pod nią nie powstaje martwa strefa — istotne, gdy w slocie jest wyższy
+   element (np. przycisk), który podnosi wysokość całego rzędu. */
 .pct-field__control {
   display: flex;
-  align-items: center;
+  align-items: stretch;
+  align-self: stretch;
   flex: 1 1 auto;
   min-width: 0; /* pozwala kontrolce się skracać zamiast rozpychać pole */
+}
+
+/* Gdy w polu jest kontrolka tekstowa, kursor sygnalizuje możliwość pisania
+   na całej powierzchni ramki, nie tylko nad samym inputem. */
+.pct-field__row:has(input.pct-text, textarea.pct-text) {
+  cursor: text;
 }
 
 .pct-field__prefix,

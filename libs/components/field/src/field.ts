@@ -88,6 +88,23 @@ export class PctField implements PctFieldApi {
     this.control.set(control);
   }
 
+  /**
+   * Klik w obszar pola, który nie jest kontrolką (padding ramki, odstęp między
+   * dekoracjami), przekazujemy kontrolce. Bez tego powstaje „martwa strefa":
+   * kursor jest wewnątrz ramki, ale kliknięcie nie ustawia fokusu.
+   * Kliknięcia w elementy interaktywne (przycisk w slocie, sama kontrolka)
+   * zostawiamy w spokoju — obsługują się same.
+   */
+  protected onRowPointerDown(event: MouseEvent): void {
+    const target = event.target as HTMLElement | null;
+    if (target?.closest('button, a, input, textarea, select, [tabindex]')) {
+      return;
+    }
+    // Zapobiega utracie fokusu przy kliknięciu w tło rzędu.
+    event.preventDefault();
+    this.control()?.focus?.();
+  }
+
   constructor() {
     // Identyfikatory opisów należą do obudowy, ale wystawić je musi kontrolka
     // (to na niej ma być `aria-describedby`). To zapis do kontrolki, nie wartość

@@ -28,6 +28,12 @@ export interface PctFieldControl {
   readonly errors: Signal<readonly PctValidationError[]>;
   /** Obudowa przekazuje id podpowiedzi i błędu; kontrolka wystawia je na sobie. */
   setDescribedBy(ids: string | null): void;
+  /**
+   * Fokusuje kontrolkę. Obudowa wywołuje to, gdy użytkownik kliknie w obszar
+   * pola poza samą kontrolką (padding ramki, odstęp między dekoracjami) —
+   * inaczej powstaje „martwa strefa", w której kliknięcie nic nie robi.
+   */
+  focus?(options?: FocusOptions): void;
 }
 
 /** API obudowy widoczne dla kontrolek wewnętrznych. */

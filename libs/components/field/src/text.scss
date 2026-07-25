@@ -2,6 +2,9 @@
 :host {
   flex: 1 1 auto;
   min-width: 0;
+  /* Wypełnia wysokość rzędu, żeby klikalny obszar pokrywał całą kolumnę
+     kontrolki — bez tego nad i pod tekstem powstaje martwa strefa. */
+  align-self: stretch;
   background: transparent;
   border: none;
   padding: 0;

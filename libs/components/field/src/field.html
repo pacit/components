@@ -13,7 +13,11 @@
 
 <!-- Rząd pola: dekoracje po bokach i kontrolka w środku. Sloty są opcjonalne;
      kolejność w DOM odpowiada kolejności wizualnej, więc fokus idzie naturalnie. -->
-<div class="pct-field__row" data-pct-part="row">
+<div
+  class="pct-field__row"
+  data-pct-part="row"
+  (mousedown)="onRowPointerDown($event)"
+>
   <span class="pct-field__prefix" data-pct-part="prefix">
     <ng-content select="[pctPrefix]"></ng-content>
   </span>
