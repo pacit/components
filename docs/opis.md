@@ -79,6 +79,12 @@ Biblioteka komponentów angular pozwalająca na budowanie skomplikowanych, skalo
 
 - `wym-a11y-1` Komponenty spełniają minimum WCAG 2.2 na poziomie AA, a tam gdzie to możliwe celujemy wyżej.
 
+- `wym-a11y-2` **Obszar dotyku ≥ 24×24 px** (SC 2.5.8) dla każdej kontrolki interaktywnej, spełniony **wprost, a nie przez wyjątek odstępu**. Obszar klikalny jest niezależny od rozmiaru wizualnego — mały wizualnie element (np. pudełko checkboxa 18 px) ma powiększoną, wyśrodkowaną strefę trafienia. Wartość w tokenie `--pct-target-min`.
+
+- `wym-a11y-3` **Automatyczny audyt axe-core** w testach e2e (`apps/sandbox-e2e/src/a11y.spec.ts`) z tagami WCAG 2.0/2.1/2.2 na poziomach A i AA. Audytowane są: cała strona, panel ze scoped theme, formularz w stanie błędu walidacji oraz stany szczególne komponentów. Audyt **uzupełnia** bramkę kontrastu tokenów, nie dubluje jej: bramka bada wartości w palecie, axe — realnie wyrenderowany DOM (role, powiązania ARIA, kontrast po złożeniu warstw).
+
+- `wym-a11y-4` **Bramka a11y ma własny test kontrolny.** Audyt, który zawsze przechodzi (np. po błędnej konfiguracji tagów), jest groźniejszy niż jego brak. Test wstrzykuje oczywiste defekty i wymaga ich wykrycia oraz sprawdza, że liczba uruchomionych reguł jest sensowna.
+
 ## Stylowanie
 
 - `wym-styl-1` Stylowanie oparte o design tokens tłumaczone (kompilowane) na natywne CSS custom properties.
@@ -166,7 +172,7 @@ Powstało:
 - `apps/sandbox` — **zoneless** (`provideZonelessChangeDetection`), SSR + hydration, prezentacja Buttona i **scoped theme** (panel `data-theme="dark"` przethemowany samą kaskadą CSS).
 - `PctInput` — natywna kontrolka signal forms (`FormValueControl`), etykieta/podpowiedź/błąd powiązane przez generowane id (`for`, `aria-describedby`, `aria-invalid`, `role="alert"`), błąd pokazywany dopiero po dotknięciu pola, stan bez `opacity`.
 - `PctCheckbox` — natywna kontrolka signal forms (`FormCheckboxControl`), stan nieokreślony z `aria-checked="mixed"`, `readonly` blokujące zmianę bez utraty fokusowalności, znacznik rysowany SVG w `currentColor` (bez zależności od zestawu ikon).
-- Testy: `components` 31/31 (Vitest), `sandbox` 2/2, `sandbox-e2e` 11/11 (Playwright) — testy jednostkowe biegną pod zoneless.
+- Testy: `components` 31/31 (Vitest), `sandbox` 2/2, `sandbox-e2e` 18/18 (Playwright, w tym 5 audytów axe-core) — testy jednostkowe biegną pod zoneless.
 
 Wnioski, które doprecyzowują „przepis":
 
@@ -177,6 +183,7 @@ Wnioski, które doprecyzowują „przepis":
 - `wym-real-5` _(do zrobienia)_ Raport pokrycia wymaga konfiguracji `coverageInclude` w targecie testowym, by egzekwować próg z `wym-proj-4`.
 - `wym-real-6` Pierwotny guard (token-level) przepuścił disabled o realnym kontraście ~1.6:1, bo stan był robiony przez `opacity` (kompozycja z tłem w runtime, niewidoczna dla matematyki na hexach). Stąd `wym-token-11` (policy per motyw/rozmiar, severity) i `wym-token-12` (zakaz `opacity` dla warstw tekstowych). Wdrożone: `libs/tokens/src/contrast.policy.json` + silnik w `build.mjs`; `PctButton` używa tokenów `disabled-*` zamiast `opacity`.
 - `wym-real-7` **Zoneless jest deklarowany jawnie** przez `provideZonelessChangeDetection()` w `app.config.ts`, mimo że generator nie dodaje polyfilla `zone.js` (bundle i tak go nie zawiera). Jawna deklaracja zamyka `wym-tech-3` i chroni przed przypadkowym powrotem do trybu zone-based. Testy jednostkowe biblioteki i aplikacji również konfigurują zoneless w `TestBed`, dzięki czemu `wym-api-2` (komponenty zoneless-safe) jest **weryfikowane**, a nie tylko deklarowane. (Uwaga: `setupTestBed()` z `@analogjs/vitest-angular` domyślnie już ustawia `zoneless: true` — jawna konfiguracja w spec-ach jest zabezpieczeniem na wypadek zmiany domyślnych.)
+- `wym-real-14` **Zgodność formalna nie znaczy dobra jakość.** Pierwszy audyt axe nie wykazał naruszeń, a reguła `target-size` **przeszła** przy obszarze klikalnym checkboxa 18×18 px — bo SC 2.5.8 dopuszcza wyjątek odstępu, a wokół kontrolki było dużo wolnego miejsca. Wystarczyłoby zagęścić układ w aplikacji konsumenta, żeby to samo przestało być zgodne. Stąd `wym-a11y-2`: obszar dotyku spełniamy wprost, niezależnie od otoczenia.
 - `wym-real-12` **Kontrolki kontraktu `FormCheckboxControl` wymagają `checked`, nie `value`** (definiowanie `value` jest zabronione). Ponieważ `model()` nie przyjmuje transformacji `booleanAttribute`, `checked` trzeba wiązać nawiasami (`[checked]="true"`), a nie gołym atrybutem — inaczej szablon nie kompiluje się (`Type 'string' is not assignable to type 'boolean'`). Kontrakt przewiduje też opcjonalne metody `focus()` i `reset()`; zaimplementowane w `PctCheckbox` i `PctInput`.
 - `wym-real-13` Odczyty `getComputedStyle` z panelu podglądu potrafią być **nieaktualne**, gdy panel nie jest wyświetlany („the page is not compositing frames") — prowadzi to do fałszywych diagnoz błędów CSS. Wiarygodną weryfikacją stylów są testy e2e (Playwright), które działają w normalnie renderującej przeglądarce.
 - `wym-real-11` **MCP Angular CLI (`.mcp.json`) dostarcza wskazówki dopasowane do wersji.** Ogólny plik `best-practices.md` pobrany ze strony nie zawierał reguły „nie ustawiaj jawnie `OnPush` — jest domyślne w v22+", którą zwraca `get_best_practices` przez MCP. Stąd korekta `wym-api-2`. Uwaga: `list_projects` zwraca pustą listę, bo czyta `angular.json`, a workspace jest oparty na Nx (`project.json`) — narzędzia wymagające kontekstu workspace nie działają, ale `search_documentation` i `get_best_practices` tak.

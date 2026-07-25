@@ -2,6 +2,7 @@
   "pct": {
     "checkbox": {
       "size": { "$type": "dimension", "$value": "18px" },
+      "target-min": { "$type": "dimension", "$value": "{pct.target.min}" },
       "bg": { "$type": "color", "$value": "{pct.surface}" },
       "border": { "$type": "color", "$value": "{pct.border-strong}" },
       "border-hover": { "$type": "color", "$value": "{pct.text-muted}" },

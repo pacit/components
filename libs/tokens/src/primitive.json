@@ -30,6 +30,10 @@
     "radius": {
       "md": { "$type": "dimension", "$value": "8px" }
     },
+    "target": {
+      "$comment": "Minimalny obszar dotyku wg WCAG 2.2 SC 2.5.8 (24x24 px).",
+      "min": { "$type": "dimension", "$value": "24px" }
+    },
     "font": {
       "size": {
         "sm": { "$type": "dimension", "$value": "13px" },

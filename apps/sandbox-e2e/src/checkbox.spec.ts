@@ -36,6 +36,37 @@ test.describe('PctCheckbox — signal forms', () => {
     ).toBe(true);
   });
 
+  test('obszar klikalny ma minimum 24x24 px (WCAG 2.2 SC 2.5.8)', async ({
+    page,
+  }) => {
+    const field = page.getByTestId('checkbox-terms');
+    const control = field.locator('input');
+    const box = field.locator('[data-pct-part="box"]');
+
+    const hit = await control.boundingBox();
+    const visual = await box.boundingBox();
+
+    // Wymóg spełniony wprost, nie przez wyjątek odstępu.
+    expect(hit!.width).toBeGreaterThanOrEqual(24);
+    expect(hit!.height).toBeGreaterThanOrEqual(24);
+
+    // Wizualne pudełko pozostaje małe — obszar dotyku jest od niego niezależny.
+    expect(visual!.width).toBeLessThan(24);
+
+    // Obszar klikalny jest wyśrodkowany na pudełku (tolerancja 1 px).
+    const srodek = (b: { x: number; width: number }) => b.x + b.width / 2;
+    expect(Math.abs(srodek(hit!) - srodek(visual!))).toBeLessThanOrEqual(1);
+  });
+
+  test('powiększony obszar dotyku nie przechwytuje kliknięć etykiety', async ({
+    page,
+  }) => {
+    const field = page.getByTestId('checkbox-mixed');
+    // Kliknięcie w tekst etykiety musi trafić w etykietę, nie w input obok.
+    await field.locator('[data-pct-part="label"]').click();
+    await expect(field.locator('input')).toBeChecked();
+  });
+
   test('obsługa klawiatury: spacja przełącza zaznaczenie', async ({ page }) => {
     const control = page.getByTestId('checkbox-terms').locator('input');
 

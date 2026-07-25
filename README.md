@@ -12,7 +12,7 @@ Angular 22 · TypeScript 6 · NX 23 · Vitest · Playwright · SSR (Angular Univ
 
 - Minimalne zależności runtime (dozwolone: `@angular/cdk`).
 - Standalone, OnPush, signals, zoneless (`zone.js` nie jest zależnością projektu), SSR.
-- Dostępność: minimum WCAG 2.2 AA.
+- Dostępność: minimum WCAG 2.2 AA, weryfikowane automatycznie audytem axe-core w testach e2e (plus obszar dotyku ≥ 24×24 px).
 - Theming przez design tokens (DTCG) → CSS custom properties, z zachowaniem referencji `var()` (kaskada, scoped theme).
 
 ## Struktura
@@ -48,7 +48,7 @@ npx nx serve sandbox --port 4200   # uruchom demo na http://localhost:4200
 ```bash
 npx nx test components      # testy jednostkowe biblioteki (Vitest)
 npx nx vite:test sandbox    # testy jednostkowe aplikacji (uwaga: inny target niż `test`)
-npx nx e2e sandbox-e2e      # e2e (wymaga: npx playwright install chromium)
+npx nx e2e sandbox-e2e      # e2e + audyt a11y axe-core (wymaga: npx playwright install chromium)
 node libs/tokens/build.mjs  # bramka kontrastu (policy WCAG) — błędy blokują, ostrzeżenia informują
 ```
 
