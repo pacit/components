@@ -38,6 +38,7 @@ import {
   providers: [{ provide: PCT_FIELD, useExisting: PctField }],
   host: {
     class: 'pct-field',
+    '[attr.data-pct-appearance]': 'appearance()',
     '[attr.data-pct-invalid]': 'showInvalid() ? "" : null',
     '[attr.data-pct-disabled]': 'disabled() ? "" : null',
   },
@@ -84,6 +85,11 @@ export class PctField implements PctFieldApi {
     return c && c.labelStrategy === 'for' ? c.controlId : null;
   });
 
+  /** Ramkę rysujemy tylko dla kontrolek, którym ona przystaje (`wym-api-16`). */
+  protected readonly appearance = computed(
+    () => this.control()?.fieldAppearance ?? 'boxed',
+  );
+
   attach(control: PctFieldControl): void {
     this.control.set(control);
   }
@@ -116,6 +122,14 @@ export class PctField implements PctFieldApi {
           [this.errorId, this.showError()],
         ]),
       );
+    });
+
+    // Grupy (labelStrategy: 'labelledby') nazywa się przez aria-labelledby,
+    // bo `<label for>` nie nazywa zbioru elementów.
+    effect(() => {
+      const c = this.control();
+      if (!c || c.labelStrategy !== 'labelledby') return;
+      c.setLabelledBy?.(this.label() ? this.labelId : null);
     });
   }
 }

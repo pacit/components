@@ -7,9 +7,18 @@ import {
   input,
   model,
   output,
+  signal,
 } from '@angular/core';
 import type { FormValueControl, ValidationError } from '@angular/forms/signals';
-import { nextPctId } from '@pacit/components/core';
+import {
+  nextPctId,
+  PCT_FIELD,
+  pctDescribedBy,
+  pctFieldMessages,
+  PctFieldAppearance,
+  PctFieldControl,
+  PctLabelStrategy,
+} from '@pacit/components/core';
 
 /**
  * Grupa pól wyboru jednokrotnego. **To grupa jest kontrolką formularza**
@@ -35,7 +44,7 @@ import { nextPctId } from '@pacit/components/core';
   host: {
     class: 'pct-radio-group',
     role: 'radiogroup',
-    '[attr.aria-labelledby]': 'label() ? labelId : null',
+    '[attr.aria-labelledby]': 'labelledBy()',
     '[attr.aria-describedby]': 'describedBy()',
     '[attr.aria-invalid]': 'showInvalid() ? "true" : null',
     '[attr.aria-required]': 'required() ? "true" : null',
@@ -43,9 +52,12 @@ import { nextPctId } from '@pacit/components/core';
     '[attr.data-pct-orientation]': 'orientation()',
     '[attr.data-pct-invalid]': 'showInvalid() ? "" : null',
     '[attr.data-pct-disabled]': 'disabled() ? "" : null',
+    '[attr.data-pct-in-field]': 'inField ? "" : null',
   },
 })
-export class PctRadioGroup implements FormValueControl<string> {
+export class PctRadioGroup
+  implements FormValueControl<string>, PctFieldControl
+{
   /** Wybrana wartość — wymagane pole kontraktu `FormValueControl`. */
   readonly value = model<string>('');
 
@@ -92,24 +104,56 @@ export class PctRadioGroup implements FormValueControl<string> {
   /** Nazwa grupująca natywne radia — bez niej przeglądarka nie zrobi grupy. */
   readonly groupName = computed(() => this.name() || this.uid);
 
-  protected readonly errorText = computed(() => {
-    const first = this.errors()?.[0] as { message?: string } | undefined;
-    return first?.message ?? '';
-  });
+  // --- współpraca z obudową (wym-api-14) ---
 
-  /** Błąd dopiero po dotknięciu grupy — spójnie z pozostałymi kontrolkami. */
-  readonly showInvalid = computed(() => this.invalid() && this.touched());
+  private readonly fieldApi = inject(PCT_FIELD, { optional: true });
+  protected readonly inField = this.fieldApi !== null;
 
-  protected readonly showError = computed(
-    () => this.showInvalid() && this.errorText() !== '',
+  /** Grupy nazywa się przez `aria-labelledby`, nie `<label for>`. */
+  readonly controlId = this.uid;
+  readonly labelStrategy: PctLabelStrategy = 'labelledby';
+  readonly fieldAppearance: PctFieldAppearance = 'bare';
+
+  private readonly fieldDescribedBy = signal<string | null>(null);
+  private readonly fieldLabelledBy = signal<string | null>(null);
+
+  setDescribedBy(ids: string | null): void {
+    this.fieldDescribedBy.set(ids);
+  }
+
+  setLabelledBy(id: string | null): void {
+    this.fieldLabelledBy.set(id);
+  }
+
+  /** Nazwa grupy: etykieta obudowy albo własna. */
+  protected readonly labelledBy = computed(() =>
+    this.inField ? this.fieldLabelledBy() : this.label() ? this.labelId : null,
   );
 
-  protected readonly describedBy = computed(() => {
-    const ids: string[] = [];
-    if (this.hint()) ids.push(this.hintId);
-    if (this.showError()) ids.push(this.errorId);
-    return ids.length > 0 ? ids.join(' ') : null;
+  private readonly messages = pctFieldMessages({
+    invalid: this.invalid,
+    touched: this.touched,
+    errors: this.errors,
   });
+  protected readonly errorText = this.messages.errorText;
+  readonly showInvalid = this.messages.showInvalid;
+
+  protected readonly showError = computed(
+    () => !this.inField && this.messages.showError(),
+  );
+
+  protected readonly describedBy = computed(() =>
+    this.inField
+      ? this.fieldDescribedBy()
+      : pctDescribedBy([
+          [this.hintId, this.hint() !== ''],
+          [this.errorId, this.messages.showError()],
+        ]),
+  );
+
+  constructor() {
+    this.fieldApi?.attach(this);
+  }
 
   /** Czy dana opcja jest wybrana (używane przez `pct-radio`). */
   isSelected(optionValue: string): boolean {

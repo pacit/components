@@ -11,7 +11,6 @@
     "src/**/*.ts",
     "core/**/*.ts",
     "button/**/*.ts",
-    "input/**/*.ts",
     "checkbox/**/*.ts",
     "radio/**/*.ts",
     "select/**/*.ts",

@@ -12,13 +12,17 @@ test.describe('PctCheckbox — signal forms', () => {
     const control = field.locator('input');
     const box = field.locator('[data-pct-part="box"]');
     const mark = field.locator('[data-pct-part="mark"]');
+    // W obudowie etykietę renderuje pct-field.
+    const label = page
+      .getByTestId('field-terms')
+      .locator('[data-pct-part="field-label"]');
 
     await expect(control).not.toBeChecked();
     await expect(mark).toBeHidden();
     await expect(box).toHaveCSS('background-color', 'rgb(255, 255, 255)');
 
     // Kliknięcie w etykietę musi działać (powiązanie for/id).
-    await field.locator('[data-pct-part="label"]').click();
+    await label.click();
 
     await expect(control).toBeChecked();
     await expect(control).toHaveAttribute('aria-checked', 'true');
@@ -87,7 +91,7 @@ test.describe('PctCheckbox — signal forms', () => {
     await expect(submit).toBeDisabled();
 
     await page
-      .getByTestId('input-email')
+      .getByTestId('field-email')
       .locator('input')
       .fill('marek@pacit.pl');
     await expect(submit).toBeDisabled(); // brak planu i zgody

@@ -51,11 +51,11 @@ test.describe('Dostępność (axe-core, WCAG 2.2 AA)', () => {
 
   test('formularz w stanie błędu jest bez naruszeń', async ({ page }) => {
     // Wywołaj widoczny błąd walidacji: niepoprawny e-mail + opuszczenie pola.
-    const input = page.getByTestId('input-email').locator('input');
+    const input = page.getByTestId('field-email').locator('input');
     await input.fill('to-nie-jest-email');
     await input.press('Tab');
     await expect(
-      page.getByTestId('input-email').locator('[data-pct-part="error"]'),
+      page.getByTestId('field-email').locator('[data-pct-part="field-error"]'),
     ).toBeVisible();
 
     const violations = await audit(page, '[data-testid="panel-form"]');

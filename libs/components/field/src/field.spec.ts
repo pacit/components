@@ -116,7 +116,7 @@ describe('PctField + PctText', () => {
   it('renderuje natywny input i wiąże etykietę obudowy przez for/id', async () => {
     const fixture = await render(Host);
     const input = inputOf(fixture);
-    const label = part(fixture, 'label') as HTMLLabelElement;
+    const label = part(fixture, 'field-label') as HTMLLabelElement;
 
     expect(input.tagName).toBe('INPUT');
     expect(input.type).toBe('email');
@@ -150,7 +150,7 @@ describe('PctField + PctText', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const hint = part(fixture, 'hint')!;
+    const hint = part(fixture, 'field-hint')!;
     expect(inputOf(fixture).getAttribute('aria-describedby')).toBe(hint.id);
   });
 
@@ -161,7 +161,7 @@ describe('PctField + PctText', () => {
     await fixture.whenStable();
 
     expect(inputOf(fixture).hasAttribute('required')).toBe(true);
-    expect(part(fixture, 'label')!.textContent).toContain('*');
+    expect(part(fixture, 'field-label')!.textContent).toContain('*');
   });
 
   it('błąd pojawia się dopiero po dotknięciu i jest wiązany z kontrolką', async () => {
@@ -174,14 +174,14 @@ describe('PctField + PctText', () => {
     await fixture.whenStable();
 
     // nietknięte -> brak błędu
-    expect(part(fixture, 'error')).toBeNull();
+    expect(part(fixture, 'field-error')).toBeNull();
     expect(inputOf(fixture).getAttribute('aria-invalid')).toBeNull();
 
     fixture.componentInstance.touched.set(true);
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const error = part(fixture, 'error')!;
+    const error = part(fixture, 'field-error')!;
     expect(error.getAttribute('role')).toBe('alert');
     expect(error.textContent?.trim()).toBe('Adres jest wymagany');
     expect(inputOf(fixture).getAttribute('aria-invalid')).toBe('true');
@@ -204,7 +204,7 @@ describe('PctField + PctText', () => {
   describe('brak martwej strefy w ramce pola', () => {
     it('kliknięcie w padding ramki ustawia fokus na kontrolce', async () => {
       const fixture = await render(Host);
-      const row = part(fixture, 'row')!;
+      const row = part(fixture, 'field-row')!;
 
       // Cel zdarzenia to sam rząd, czyli obszar paddingu — nie kontrolka.
       row.dispatchEvent(
@@ -217,7 +217,7 @@ describe('PctField + PctText', () => {
 
     it('kliknięcie w dekorację prefix też fokusuje kontrolkę', async () => {
       const fixture = await render(AffixHost);
-      const prefix = part(fixture, 'prefix')!;
+      const prefix = part(fixture, 'field-prefix')!;
 
       prefix.dispatchEvent(
         new MouseEvent('mousedown', { bubbles: true, cancelable: true }),
@@ -229,7 +229,7 @@ describe('PctField + PctText', () => {
 
     it('kliknięcie w przycisk slotu NIE przechwytuje fokusu na kontrolkę', async () => {
       const fixture = await render(AffixHost);
-      const btn = part(fixture, 'suffix')!.querySelector(
+      const btn = part(fixture, 'field-suffix')!.querySelector(
         'button',
       ) as HTMLButtonElement;
 
@@ -244,8 +244,8 @@ describe('PctField + PctText', () => {
 
     it('kontrolka wypełnia wysokość rzędu (brak martwej strefy w pionie)', async () => {
       const fixture = await render(AffixHost);
-      const row = part(fixture, 'row')!;
-      const control = part(fixture, 'control')!;
+      const row = part(fixture, 'field-row')!;
+      const control = part(fixture, 'field-control')!;
 
       // W jsdom brak realnego layoutu, więc sprawdzamy zadeklarowany mechanizm.
       expect(getComputedStyle(control).alignSelf).toBe('stretch');
@@ -256,19 +256,21 @@ describe('PctField + PctText', () => {
   describe('sloty prefix/suffix', () => {
     it('renderują się wewnątrz rzędu pola, w kolejności prefix → pole → suffix', async () => {
       const fixture = await render(AffixHost);
-      const row = part(fixture, 'row')!;
+      const row = part(fixture, 'field-row')!;
       const order = Array.from(row.children).map((c) =>
         c.getAttribute('data-pct-part'),
       );
 
-      expect(order).toEqual(['prefix', 'control', 'suffix']);
-      expect(part(fixture, 'prefix')!.textContent).toContain('PLN');
-      expect(part(fixture, 'suffix')!.querySelector('button')).toBeTruthy();
+      expect(order).toEqual(['field-prefix', 'field-control', 'field-suffix']);
+      expect(part(fixture, 'field-prefix')!.textContent).toContain('PLN');
+      expect(
+        part(fixture, 'field-suffix')!.querySelector('button'),
+      ).toBeTruthy();
     });
 
     it('przycisk w slocie suffix jest osiągalny i ma nazwę dostępną', async () => {
       const fixture = await render(AffixHost);
-      const btn = part(fixture, 'suffix')!.querySelector(
+      const btn = part(fixture, 'field-suffix')!.querySelector(
         'button',
       ) as HTMLButtonElement;
 
@@ -292,7 +294,7 @@ describe('PctField + PctText', () => {
 
       expect(host.model().email).toBe('to-nie-email');
       expect(host.f.email().valid()).toBe(false);
-      expect(part(fixture, 'error')?.textContent?.trim()).toBe(
+      expect(part(fixture, 'field-error')?.textContent?.trim()).toBe(
         'Niepoprawny adres',
       );
     });

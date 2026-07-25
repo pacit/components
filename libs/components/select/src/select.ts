@@ -13,7 +13,17 @@ import {
   viewChild,
 } from '@angular/core';
 import type { FormValueControl, ValidationError } from '@angular/forms/signals';
-import { nextPctId, PCT_CONFIG, PctSize } from '@pacit/components/core';
+import {
+  nextPctId,
+  PCT_CONFIG,
+  PCT_FIELD,
+  pctDescribedBy,
+  pctFieldMessages,
+  PctFieldAppearance,
+  PctFieldControl,
+  PctLabelStrategy,
+  PctSize,
+} from '@pacit/components/core';
 import { PctSelectOption } from './select.types';
 
 /**
@@ -41,9 +51,11 @@ import { PctSelectOption } from './select.types';
     '[attr.data-pct-open]': 'open() ? "" : null',
     '[attr.data-pct-invalid]': 'showInvalid() ? "" : null',
     '[attr.data-pct-disabled]': 'disabled() ? "" : null',
+    // W obudowie ramkę i etykietę rysuje `pct-field` — kontrolka je oddaje.
+    '[attr.data-pct-in-field]': 'inField ? "" : null',
   },
 })
-export class PctSelect implements FormValueControl<string> {
+export class PctSelect implements FormValueControl<string>, PctFieldControl {
   private readonly config = inject(PCT_CONFIG);
 
   /** Wybrana wartość — wymagane pole kontraktu `FormValueControl`. */
@@ -82,6 +94,25 @@ export class PctSelect implements FormValueControl<string> {
   protected readonly hintId = `${this.uid}-hint`;
   protected readonly errorId = `${this.uid}-error`;
 
+  // --- współpraca z obudową (wym-api-13) ---
+
+  private readonly fieldApi = inject(PCT_FIELD, { optional: true });
+
+  /** Czy kontrolka jest w obudowie — wtedy oddaje jej etykietę i komunikaty. */
+  protected readonly inField = this.fieldApi !== null;
+
+  /** `<button>` jest elementem etykietowalnym, więc `<label for>` działa. */
+  readonly controlId = this.triggerId;
+  readonly labelStrategy: PctLabelStrategy = 'for';
+  readonly fieldAppearance: PctFieldAppearance = 'boxed';
+
+  /** Ustawiane przez obudowę, gdy jest obecna. */
+  private readonly fieldDescribedBy = signal<string | null>(null);
+
+  setDescribedBy(ids: string | null): void {
+    this.fieldDescribedBy.set(ids);
+  }
+
   private readonly hostRef = inject<ElementRef<HTMLElement>>(ElementRef);
 
   protected readonly open = signal(false);
@@ -107,23 +138,28 @@ export class PctSelect implements FormValueControl<string> {
     () => this.selectedOption()?.label ?? '',
   );
 
-  protected readonly errorText = computed(() => {
-    const first = this.errors()?.[0] as { message?: string } | undefined;
-    return first?.message ?? '';
+  // Wspólna logika komunikatów z `core` — bez duplikowania w każdej kontrolce.
+  private readonly messages = pctFieldMessages({
+    invalid: this.invalid,
+    touched: this.touched,
+    errors: this.errors,
   });
+  protected readonly errorText = this.messages.errorText;
+  readonly showInvalid = this.messages.showInvalid;
 
-  readonly showInvalid = computed(() => this.invalid() && this.touched());
-
+  /** W obudowie komunikat renderuje ona, nie kontrolka. */
   protected readonly showError = computed(
-    () => this.showInvalid() && this.errorText() !== '',
+    () => !this.inField && this.messages.showError(),
   );
 
-  protected readonly describedBy = computed(() => {
-    const ids: string[] = [];
-    if (this.hint()) ids.push(this.hintId);
-    if (this.showError()) ids.push(this.errorId);
-    return ids.length > 0 ? ids.join(' ') : null;
-  });
+  protected readonly describedBy = computed(() =>
+    this.inField
+      ? this.fieldDescribedBy()
+      : pctDescribedBy([
+          [this.hintId, this.hint() !== ''],
+          [this.errorId, this.messages.showError()],
+        ]),
+  );
 
   /** Id aktywnej opcji dla `aria-activedescendant`. */
   protected readonly activeOptionId = computed(() => {
@@ -136,6 +172,8 @@ export class PctSelect implements FormValueControl<string> {
   }
 
   constructor() {
+    this.fieldApi?.attach(this);
+
     // Aktywna opcja musi być widoczna na liście przewijanej.
     effect(() => {
       const i = this.activeIndex();

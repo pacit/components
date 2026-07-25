@@ -2,7 +2,6 @@ import { Component, signal } from '@angular/core';
 import { email, form, FormField, required } from '@angular/forms/signals';
 import { PctButton } from '@pacit/components/button';
 import { PctCheckbox } from '@pacit/components/checkbox';
-import { PctInput } from '@pacit/components/input';
 import { PctRadio, PctRadioGroup } from '@pacit/components/radio';
 import {
   PctField,
@@ -16,7 +15,6 @@ import { PctSelect, PctSelectOption } from '@pacit/components/select';
   selector: 'app-root',
   imports: [
     PctButton,
-    PctInput,
     PctCheckbox,
     PctRadioGroup,
     PctRadio,

@@ -36,6 +36,26 @@
   transition: border-color 0.15s ease;
 }
 
+/* W obudowie ramkę, tło i padding rysuje `pct-field` — trigger je oddaje,
+   inaczej powstałaby podwójna ramka (wym-api-13). */
+:host([data-pct-in-field]) {
+  display: contents;
+}
+
+:host([data-pct-in-field]) .pct-select__trigger {
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  width: 100%;
+  align-self: stretch;
+}
+
+:host([data-pct-in-field]) .pct-select__trigger:focus-visible {
+  /* Focus ring rysuje obudowa na całym rzędzie. */
+  outline: none;
+}
+
 .pct-select__trigger:hover:not(:disabled) {
   border-color: var(--pct-select-border-hover);
 }

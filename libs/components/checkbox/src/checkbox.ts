@@ -3,16 +3,26 @@ import {
   Component,
   computed,
   ElementRef,
+  inject,
   input,
   model,
   output,
+  signal,
   viewChild,
 } from '@angular/core';
 import type {
   FormCheckboxControl,
   ValidationError,
 } from '@angular/forms/signals';
-import { nextPctId } from '@pacit/components/core';
+import {
+  nextPctId,
+  PCT_FIELD,
+  pctDescribedBy,
+  pctFieldMessages,
+  PctFieldAppearance,
+  PctFieldControl,
+  PctLabelStrategy,
+} from '@pacit/components/core';
 
 /**
  * Pole wyboru. Natywna kontrolka signal forms — implementuje `FormCheckboxControl`
@@ -33,9 +43,10 @@ import { nextPctId } from '@pacit/components/core';
     '[attr.data-pct-indeterminate]': 'indeterminate() ? "" : null',
     '[attr.data-pct-invalid]': 'showInvalid() ? "" : null',
     '[attr.data-pct-disabled]': 'disabled() ? "" : null',
+    '[attr.data-pct-in-field]': 'inField ? "" : null',
   },
 })
-export class PctCheckbox implements FormCheckboxControl {
+export class PctCheckbox implements FormCheckboxControl, PctFieldControl {
   /** Stan zaznaczenia — jedyne wymagane pole kontraktu `FormCheckboxControl`. */
   readonly checked = model(false);
 
@@ -66,35 +77,56 @@ export class PctCheckbox implements FormCheckboxControl {
   // --- a11y: stabilne id do powiązań ARIA (wym-api-6) ---
 
   private readonly uid = nextPctId('pct-checkbox');
-  protected readonly controlId = `${this.uid}-control`;
+  readonly controlId = `${this.uid}-control`;
   protected readonly hintId = `${this.uid}-hint`;
   protected readonly errorId = `${this.uid}-error`;
 
-  protected readonly errorText = computed(() => {
-    const first = this.errors()?.[0] as { message?: string } | undefined;
-    return first?.message ?? '';
+  // --- współpraca z obudową (wym-api-14): checkbox działa samodzielnie
+  // (własna etykieta obok kontrolki) albo oddaje obudowę `pct-field`.
+
+  private readonly fieldApi = inject(PCT_FIELD, { optional: true });
+  protected readonly inField = this.fieldApi !== null;
+
+  readonly labelStrategy: PctLabelStrategy = 'for';
+  /** Ramka pola wokół checkboxa wygląda obco — obudowa jej nie rysuje. */
+  readonly fieldAppearance: PctFieldAppearance = 'bare';
+
+  private readonly fieldDescribedBy = signal<string | null>(null);
+
+  setDescribedBy(ids: string | null): void {
+    this.fieldDescribedBy.set(ids);
+  }
+
+  private readonly messages = pctFieldMessages({
+    invalid: this.invalid,
+    touched: this.touched,
+    errors: this.errors,
   });
+  protected readonly errorText = this.messages.errorText;
+  protected readonly showInvalid = this.messages.showInvalid;
 
-  /** Błąd pokazujemy dopiero po dotknięciu pola — jak w `PctInput`. */
-  protected readonly showInvalid = computed(
-    () => this.invalid() && this.touched(),
-  );
-
+  /** W obudowie komunikat renderuje ona. */
   protected readonly showError = computed(
-    () => this.showInvalid() && this.errorText() !== '',
+    () => !this.inField && this.messages.showError(),
   );
 
-  protected readonly describedBy = computed(() => {
-    const ids: string[] = [];
-    if (this.hint()) ids.push(this.hintId);
-    if (this.showError()) ids.push(this.errorId);
-    return ids.length > 0 ? ids.join(' ') : null;
-  });
+  protected readonly describedBy = computed(() =>
+    this.inField
+      ? this.fieldDescribedBy()
+      : pctDescribedBy([
+          [this.hintId, this.hint() !== ''],
+          [this.errorId, this.messages.showError()],
+        ]),
+  );
 
   /** `aria-checked` musi być „mixed" dla stanu nieokreślonego. */
   protected readonly ariaChecked = computed(() =>
     this.indeterminate() ? 'mixed' : this.checked() ? 'true' : 'false',
   );
+
+  constructor() {
+    this.fieldApi?.attach(this);
+  }
 
   /**
    * Natywny checkbox nie ma atrybutu `readonly` — blokujemy więc zmianę stanu,

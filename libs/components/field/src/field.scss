@@ -16,6 +16,18 @@
   margin-inline-start: 2px;
 }
 
+/* Wariant `bare`: checkbox i grupa radiów nie dostają ramki — obudowa daje im
+   tylko etykietę, podpowiedź i komunikat błędu (wym-api-16). */
+:host([data-pct-appearance='bare']) .pct-field__row {
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+:host([data-pct-appearance='bare']) .pct-field__row:has(:focus-visible) {
+  outline: none;
+}
+
 /* Ramkę rysuje obudowa, nie kontrolka — inaczej dekoracje prefix/suffix
    znalazłyby się poza polem. Kontrolka w środku jest przezroczysta. */
 .pct-field__row {
@@ -62,6 +74,10 @@
   align-self: stretch;
   flex: 1 1 auto;
   min-width: 0; /* pozwala kontrolce się skracać zamiast rozpychać pole */
+  /* Obudowa gwarantuje minimalny obszar dotyku (wym-a11y-2) niezależnie od tego,
+     jaka kontrolka jest w środku — sama wysokość linii tekstu to ~20 px, czyli
+     poniżej progu SC 2.5.8. */
+  min-height: var(--pct-target-min);
 }
 
 /* Gdy w polu jest kontrolka tekstowa, kursor sygnalizuje możliwość pisania

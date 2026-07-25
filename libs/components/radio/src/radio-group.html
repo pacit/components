@@ -1,4 +1,4 @@
-@if (label()) {
+@if (label() && !inField) {
 <span class="pct-radio-group__label" data-pct-part="group-label" [id]="labelId">
   {{ label() }} @if (required()) {
   <span class="pct-radio-group__required" aria-hidden="true">*</span>
@@ -10,7 +10,7 @@
   <ng-content select="pct-radio"></ng-content>
 </div>
 
-@if (hint()) {
+@if (hint() && !inField) {
 <span class="pct-radio-group__hint" data-pct-part="group-hint" [id]="hintId">
   {{ hint() }}
 </span>

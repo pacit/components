@@ -5,14 +5,20 @@ test.describe('PctRadioGroup — signal forms', () => {
     await page.goto('/');
   });
 
-  test('grupa ma rolę radiogroup i nazwę z etykiety', async ({ page }) => {
+  test('grupa ma rolę radiogroup i jest nazwana etykietą obudowy', async ({
+    page,
+  }) => {
     const group = page.getByTestId('radio-plan');
     await expect(group).toHaveRole('radiogroup');
 
-    const labelId = await group
-      .locator('[data-pct-part="group-label"]')
+    // W obudowie etykietę renderuje pct-field; grupa wskazuje ją przez
+    // aria-labelledby, bo `<label for>` nie nazywa zbioru elementów.
+    const labelId = await page
+      .getByTestId('field-plan')
+      .locator('[data-pct-part="field-label"]')
       .getAttribute('id');
     await expect(group).toHaveAttribute('aria-labelledby', labelId!);
+    await expect(group.locator('[data-pct-part="group-label"]')).toHaveCount(0);
   });
 
   test('kliknięcie w etykietę opcji wybiera ją i zaznacza kropkę', async ({

@@ -13,6 +13,14 @@ export interface PctValidationError {
 export type PctLabelStrategy = 'for' | 'labelledby';
 
 /**
+ * Czy obudowa ma narysować wokół kontrolki ramkę pola.
+ * - `boxed` — pole tekstowe, select, data: ramka jest właściwa,
+ * - `bare` — checkbox, grupa radiów: ramka wokół nich wygląda obco, obudowa
+ *   dostarcza wyłącznie etykietę, podpowiedź i komunikat błędu.
+ */
+export type PctFieldAppearance = 'boxed' | 'bare';
+
+/**
  * Kontrakt, którym kontrolka przedstawia się obudowie `pct-field`.
  * Obudowa jest prezentacyjna: czyta stan kontrolki i oddaje jej z powrotem
  * identyfikatory opisów (`aria-describedby`).
@@ -21,6 +29,8 @@ export interface PctFieldControl {
   /** Id elementu, który ma być celem etykiety / nazwany przez nią. */
   readonly controlId: string;
   readonly labelStrategy: PctLabelStrategy;
+  /** Domyślnie `boxed`, jeśli kontrolka nie zgłosi inaczej. */
+  readonly fieldAppearance?: PctFieldAppearance;
   readonly invalid: Signal<boolean>;
   readonly touched: Signal<boolean>;
   readonly required: Signal<boolean>;
@@ -34,6 +44,12 @@ export interface PctFieldControl {
    * inaczej powstaje „martwa strefa", w której kliknięcie nic nie robi.
    */
   focus?(options?: FocusOptions): void;
+  /**
+   * Dla `labelStrategy: 'labelledby'` obudowa przekazuje id swojej etykiety —
+   * kontrolka-kontener (np. grupa radiów) wystawia je jako `aria-labelledby`,
+   * bo `<label for>` nie nazywa grupy elementów.
+   */
+  setLabelledBy?(id: string | null): void;
 }
 
 /** API obudowy widoczne dla kontrolek wewnętrznych. */

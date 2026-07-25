@@ -11,11 +11,11 @@ test.describe('PctField — obudowa pola', () => {
     const field = page.getByTestId('field-email');
     const input = field.locator('input');
 
-    await field.locator('[data-pct-part="label"]').click();
+    await field.locator('[data-pct-part="field-label"]').click();
     await expect(input).toBeFocused();
 
     const hintId = await field
-      .locator('[data-pct-part="hint"]')
+      .locator('[data-pct-part="field-hint"]')
       .getAttribute('id');
     await expect(input).toHaveAttribute('aria-describedby', hintId!);
   });
@@ -25,11 +25,11 @@ test.describe('PctField — obudowa pola', () => {
   }) => {
     const row = page
       .getByTestId('field-price')
-      .locator('[data-pct-part="row"]');
+      .locator('[data-pct-part="field-row"]');
     const parts = await row
       .locator('> *')
       .evaluateAll((els) => els.map((e) => e.getAttribute('data-pct-part')));
-    expect(parts).toEqual(['prefix', 'control', 'suffix']);
+    expect(parts).toEqual(['field-prefix', 'field-control', 'field-suffix']);
 
     // Ramka należy do rzędu, kontrolka jest przezroczysta i bez obramowania.
     await expect(row).toHaveCSS('border-width', '1px');
@@ -48,15 +48,16 @@ test.describe('PctField — obudowa pola', () => {
     page,
   }) => {
     const field = page.getByTestId('field-price');
-    const row = field.locator('[data-pct-part="row"]');
+    const row = field.locator('[data-pct-part="field-row"]');
     const input = field.locator('input');
 
     const ringWidth = () =>
       row.evaluate((el) => getComputedStyle(el).outlineWidth);
 
-    // Dojście klawiaturą do pola ceny.
-    await page.getByTestId('field-email').locator('input').focus();
-    await page.keyboard.press('Tab');
+    // Klik w pole tekstowe daje :focus-visible (przeglądarki stosują je dla
+    // elementów przyjmujących tekst), więc nie polegamy na globalnej
+    // kolejności Taba, która zmienia się wraz z układem strony.
+    await input.click();
     await expect(input).toBeFocused();
     expect(await ringWidth()).toBe('2px');
 
@@ -80,7 +81,7 @@ test.describe('PctField — obudowa pola', () => {
   }) => {
     const field = page.getByTestId('field-email');
     const input = field.locator('input');
-    const error = field.locator('[data-pct-part="error"]');
+    const error = field.locator('[data-pct-part="field-error"]');
 
     await expect(error).toHaveCount(0);
 
@@ -96,7 +97,7 @@ test.describe('PctField — obudowa pola', () => {
     );
 
     // Ramka pola sygnalizuje błąd kolorem z tokenu.
-    await expect(field.locator('[data-pct-part="row"]')).toHaveCSS(
+    await expect(field.locator('[data-pct-part="field-row"]')).toHaveCSS(
       'border-color',
       'rgb(220, 38, 38)',
     );

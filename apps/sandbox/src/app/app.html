@@ -2,8 +2,8 @@
   <header class="page__head">
     <h1>@pacit/components — sandbox</h1>
     <p>
-      Komponent referencyjny: <code>PctButton</code> otokenizowany przez design
-      tokens.
+      Kontrolki formularza budowane jako obudowa <code>pct-field</code> z
+      kontrolką w środku.
     </p>
   </header>
 
@@ -27,45 +27,58 @@
   </section>
 
   <section class="panel" data-testid="panel-form">
-    <h2>PctInput — signal forms</h2>
+    <h2>Formularz — obudowa + kontrolka</h2>
 
     <div class="stack">
-      <pct-input
-        label="E-mail"
-        type="email"
-        placeholder="jan@example.com"
-        hint="Adres służbowy"
-        [formField]="userForm.email"
-        data-testid="input-email"
-      />
+      <!-- Pole tekstowe: natywny input w obudowie -->
+      <pct-field label="E-mail" hint="Adres służbowy" data-testid="field-email">
+        <input
+          pctText
+          type="email"
+          placeholder="jan@example.com"
+          [formField]="userForm.email"
+        />
+      </pct-field>
 
-      <pct-select
+      <!-- Ta sama obudowa, w środku select z panelem -->
+      <pct-field
         label="Kraj"
         hint="Lista z własnym panelem (CDK Overlay)"
-        [options]="countries"
-        [formField]="userForm.country"
-        data-testid="select-country"
-      />
+        data-testid="field-country"
+      >
+        <pct-select
+          [options]="countries"
+          [formField]="userForm.country"
+          data-testid="select-country"
+        />
+      </pct-field>
 
-      <pct-radio-group
+      <!-- Grupa radiów: obudowa nazywa ją przez aria-labelledby, bez ramki -->
+      <pct-field
         label="Plan"
         hint="Możesz zmienić w każdej chwili"
-        [formField]="userForm.plan"
-        data-testid="radio-plan"
+        data-testid="field-plan"
       >
-        <pct-radio value="free">Darmowy</pct-radio>
-        <pct-radio value="pro">Pro</pct-radio>
-        <pct-radio value="enterprise" disabled
-          >Enterprise (niedostępny)</pct-radio
-        >
-      </pct-radio-group>
+        <pct-radio-group [formField]="userForm.plan" data-testid="radio-plan">
+          <pct-radio value="free">Darmowy</pct-radio>
+          <pct-radio value="pro">Pro</pct-radio>
+          <pct-radio value="enterprise" disabled
+            >Enterprise (niedostępny)</pct-radio
+          >
+        </pct-radio-group>
+      </pct-field>
 
-      <pct-checkbox
-        label="Akceptuję regulamin"
+      <!-- Checkbox w obudowie: etykieta obudowy, bez ramki -->
+      <pct-field
+        label="Zgody"
         hint="Wymagane do założenia konta"
-        [formField]="userForm.terms"
-        data-testid="checkbox-terms"
-      />
+        data-testid="field-terms"
+      >
+        <pct-checkbox
+          [formField]="userForm.terms"
+          data-testid="checkbox-terms"
+        />
+      </pct-field>
 
       <div class="row">
         <button
@@ -81,41 +94,13 @@
         </span>
       </div>
     </div>
-
-    <div class="stack">
-      <pct-input label="Wyłączone" value="nie do edycji" disabled />
-      <pct-input label="Tylko do odczytu" value="tylko podgląd" readonly />
-      <pct-checkbox
-        label="Stan nieokreślony"
-        [indeterminate]="partial()"
-        data-testid="checkbox-mixed"
-      />
-      <pct-checkbox label="Zaznaczone, wyłączone" [checked]="true" disabled />
-
-      <pct-radio-group
-        label="Układ poziomy"
-        orientation="horizontal"
-        [(value)]="layoutDemo"
-        data-testid="radio-horizontal"
-      >
-        <pct-radio value="a">Opcja A</pct-radio>
-        <pct-radio value="b">Opcja B</pct-radio>
-      </pct-radio-group>
-    </div>
   </section>
 
-  <section class="panel" data-testid="panel-field">
-    <h2>PctField — obudowa pola z kontrolką w środku</h2>
+  <section class="panel" data-testid="panel-variants">
+    <h2>Dekoracje, stany i kontrolki samodzielne</h2>
 
     <div class="stack">
-      <pct-field
-        label="E-mail"
-        hint="Etykieta, podpowiedź i błąd należą do obudowy"
-        data-testid="field-email"
-      >
-        <input pctText type="email" [formField]="userForm.email" />
-      </pct-field>
-
+      <!-- Sloty wewnątrz ramki pola -->
       <pct-field
         label="Cena"
         hint="Dekoracje w środku ramki"
@@ -136,6 +121,34 @@
           ×
         </button>
       </pct-field>
+
+      <pct-field label="Wyłączone" data-testid="field-disabled">
+        <input pctText value="nie do edycji" disabled />
+      </pct-field>
+
+      <pct-field label="Tylko do odczytu">
+        <input pctText value="tylko podgląd" readonly />
+      </pct-field>
+    </div>
+
+    <div class="stack">
+      <!-- Te same kontrolki bez obudowy: rysują własną etykietę -->
+      <pct-checkbox
+        label="Stan nieokreślony (bez obudowy)"
+        [indeterminate]="partial()"
+        data-testid="checkbox-mixed"
+      />
+      <pct-checkbox label="Zaznaczone, wyłączone" [checked]="true" disabled />
+
+      <pct-radio-group
+        label="Układ poziomy (bez obudowy)"
+        orientation="horizontal"
+        [(value)]="layoutDemo"
+        data-testid="radio-horizontal"
+      >
+        <pct-radio value="a">Opcja A</pct-radio>
+        <pct-radio value="b">Opcja B</pct-radio>
+      </pct-radio-group>
     </div>
   </section>
 
@@ -164,12 +177,13 @@
     </div>
 
     <div class="stack">
-      <pct-select
-        label="Kraj (w panelu ciemnym)"
-        [options]="countries"
-        [(value)]="scopedCountry"
-        data-testid="select-scoped"
-      />
+      <pct-field label="Kraj (w panelu ciemnym)">
+        <pct-select
+          [options]="countries"
+          [(value)]="scopedCountry"
+          data-testid="select-scoped"
+        />
+      </pct-field>
     </div>
   </section>
 </main>

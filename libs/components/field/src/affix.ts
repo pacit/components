@@ -7,13 +7,13 @@ import { Directive } from '@angular/core';
  */
 @Directive({
   selector: '[pctPrefix]',
-  host: { class: 'pct-affix', 'data-pct-part': 'prefix-item' },
+  host: { class: 'pct-affix', 'data-pct-part': 'field-prefix-item' },
 })
 export class PctPrefix {}
 
 /** Dekoracja po kontrolce, wewnątrz ramki pola (np. przycisk czyszczenia). */
 @Directive({
   selector: '[pctSuffix]',
-  host: { class: 'pct-affix', 'data-pct-part': 'suffix-item' },
+  host: { class: 'pct-affix', 'data-pct-part': 'field-suffix-item' },
 })
 export class PctSuffix {}

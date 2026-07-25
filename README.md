@@ -2,7 +2,7 @@
 
 Biblioteka komponentów Angular — budowana jako nowoczesna, dostępna alternatywa dla rozwiązań typu PrimeNG. Monorepo NX.
 
-> **Status:** wczesny etap. Działa _walking skeleton_ — komponent referencyjny `PctButton` przechodzi całą ścieżkę end-to-end (tokeny → build → komponent → SSR → testy → e2e). Pełne ustalenia i wymagania: [docs/opis.md](docs/opis.md).
+> **Status:** wczesny etap, API wciąż się zmienia. Kontrolki formularza budowane są jako obudowa `pct-field` + kontrolka w środku. Pełne ustalenia i wymagania: [docs/opis.md](docs/opis.md).
 
 ## Stack
 
@@ -22,7 +22,7 @@ apps/
   sandbox/       aplikacja demo / playground
   sandbox-e2e/   testy e2e (Playwright)
 libs/
-  components/    pakiet @pacit/components (entrypoints: ./core, ./button, ./input, ./checkbox, ./radio, ./select)
+  components/    pakiet @pacit/components (entrypoints: ./core, ./field, ./button, ./checkbox, ./radio, ./select)
   tokens/        źródło DTCG + build -> CSS/SCSS/TS + bramka kontrastu
 docs/opis.md     ustalenia i wymagania
 ```
@@ -70,23 +70,34 @@ Trzy poziomy: **prymitywne → semantyczne → komponentowe**; referencje zachow
 <button pct-button variant="outline" size="lg">Zapisz</button>
 ```
 
-`PctInput` (`@pacit/components/input`) — natywna kontrolka **signal forms** (`FormValueControl`), z etykietą, podpowiedzią i komunikatem błędu powiązanymi przez ARIA. Działa również z reactive forms i `ngModel` — bez `ControlValueAccessor`.
+`PctField` (`@pacit/components/field`) — **obudowa pola**: etykieta, podpowiedź, komunikat błędu, znacznik wymagalności i sloty `[pctPrefix]` / `[pctSuffix]` wewnątrz ramki. Kontraktu formularza nie implementuje obudowa, lecz kontrolka w środku, więc typowanie zostaje przy rodzaju pola. W środku może stać dowolna kontrolka — pole tekstowe, select, checkbox, grupa radiów.
 
 ```html
-<!-- signal forms -->
-<pct-input label="E-mail" type="email" [formField]="userForm.email" />
+<!-- pole tekstowe: komponent na natywnym <input> -->
+<pct-field label="E-mail" hint="Adres służbowy">
+  <input pctText type="email" [formField]="userForm.email" />
+</pct-field>
 
-<!-- dwukierunkowo, bez formularza -->
-<pct-input label="E-mail" [(value)]="email" />
+<!-- ta sama obudowa, inna kontrolka -->
+<pct-field label="Kraj">
+  <pct-select [options]="countries" [formField]="userForm.country" />
+</pct-field>
 
-<!-- kompatybilnie z reactive forms -->
-<pct-input label="E-mail" [formControl]="emailCtrl" />
+<!-- dekoracje wewnątrz ramki -->
+<pct-field label="Cena">
+  <span pctPrefix aria-hidden="true">PLN</span>
+  <input pctText inputmode="numeric" [(value)]="price" />
+  <button pctSuffix pct-button size="sm" aria-label="Wyczyść">×</button>
+</pct-field>
 ```
+
+Kontrolki działają też **bez obudowy** (wtedy bez etykiety i komunikatów), a checkbox i grupa radiów rysują wówczas własną etykietę.
 
 `PctCheckbox` (`@pacit/components/checkbox`) — natywna kontrolka **signal forms** (`FormCheckboxControl`). Wymaganym polem jest `checked` (nie `value`), więc wiąże się je nawiasami.
 
 ```html
 <pct-checkbox label="Akceptuję regulamin" [formField]="userForm.terms" />
+<!-- w obudowie: etykietę renderuje pct-field, checkbox jej nie powtarza -->
 <pct-checkbox label="Zapamiętaj mnie" [(checked)]="remember" />
 <pct-checkbox label="Częściowy wybór" [indeterminate]="true" />
 ```
@@ -103,7 +114,9 @@ Trzy poziomy: **prymitywne → semantyczne → komponentowe**; referencje zachow
 `PctSelect` (`@pacit/components/select`) — lista wyboru z własnym panelem (nie natywny `<select>`), wzorzec ARIA „select-only combobox": fokus zostaje na triggerze, aktywna opcja wskazywana przez `aria-activedescendant`. Obsługa klawiatury: strzałki, Home/End, Enter, Escape, typeahead.
 
 ```html
-<pct-select label="Kraj" [options]="countries" [formField]="userForm.country" />
+<pct-field label="Kraj">
+  <pct-select [options]="countries" [formField]="userForm.country" />
+</pct-field>
 ```
 
 > Wymaga dołączenia stylów nakładki CDK: `node_modules/@angular/cdk/overlay-prebuilt.css`.

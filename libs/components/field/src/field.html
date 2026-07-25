@@ -1,7 +1,7 @@
 @if (label()) {
 <label
   class="pct-field__label"
-  data-pct-part="label"
+  data-pct-part="field-label"
   [id]="labelId"
   [attr.for]="labelFor()"
 >
@@ -15,30 +15,30 @@
      kolejność w DOM odpowiada kolejności wizualnej, więc fokus idzie naturalnie. -->
 <div
   class="pct-field__row"
-  data-pct-part="row"
+  data-pct-part="field-row"
   (mousedown)="onRowPointerDown($event)"
 >
-  <span class="pct-field__prefix" data-pct-part="prefix">
+  <span class="pct-field__prefix" data-pct-part="field-prefix">
     <ng-content select="[pctPrefix]"></ng-content>
   </span>
 
-  <span class="pct-field__control" data-pct-part="control">
+  <span class="pct-field__control" data-pct-part="field-control">
     <ng-content></ng-content>
   </span>
 
-  <span class="pct-field__suffix" data-pct-part="suffix">
+  <span class="pct-field__suffix" data-pct-part="field-suffix">
     <ng-content select="[pctSuffix]"></ng-content>
   </span>
 </div>
 
 @if (hint()) {
-<span class="pct-field__hint" data-pct-part="hint" [id]="hintId">
+<span class="pct-field__hint" data-pct-part="field-hint" [id]="hintId">
   {{ hint() }}
 </span>
 } @if (showError()) {
 <span
   class="pct-field__error"
-  data-pct-part="error"
+  data-pct-part="field-error"
   [id]="errorId"
   role="alert"
 >

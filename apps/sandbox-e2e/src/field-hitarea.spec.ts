@@ -12,7 +12,7 @@ test.describe('PctField — obszar klikalny bez martwej strefy', () => {
 
   test('kliknięcie w lewy padding ramki fokusuje pole', async ({ page }) => {
     const field = page.getByTestId('field-price');
-    const row = field.locator('[data-pct-part="row"]');
+    const row = field.locator('[data-pct-part="field-row"]');
     const input = field.locator('input');
 
     // mouse.click() używa współrzędnych widoku i sam nie przewija — inaczej
@@ -27,7 +27,7 @@ test.describe('PctField — obszar klikalny bez martwej strefy', () => {
 
   test('kliknięcie u góry i u dołu ramki fokusuje pole', async ({ page }) => {
     const field = page.getByTestId('field-price');
-    const row = field.locator('[data-pct-part="row"]');
+    const row = field.locator('[data-pct-part="field-row"]');
     const input = field.locator('input');
 
     await row.scrollIntoViewIfNeeded();
@@ -46,7 +46,7 @@ test.describe('PctField — obszar klikalny bez martwej strefy', () => {
     const field = page.getByTestId('field-price');
     const input = field.locator('input');
 
-    await field.locator('[data-pct-part="prefix"]').click();
+    await field.locator('[data-pct-part="field-prefix"]').click();
     await expect(input).toBeFocused();
   });
 
@@ -55,10 +55,10 @@ test.describe('PctField — obszar klikalny bez martwej strefy', () => {
   }) => {
     const field = page.getByTestId('field-price');
     const rowBox = (await field
-      .locator('[data-pct-part="row"]')
+      .locator('[data-pct-part="field-row"]')
       .boundingBox())!;
     const controlBox = (await field
-      .locator('[data-pct-part="control"]')
+      .locator('[data-pct-part="field-control"]')
       .boundingBox())!;
 
     // Kolumna kontrolki obejmuje całą wysokość wnętrza rzędu (bez paddingu).
@@ -80,7 +80,7 @@ test.describe('PctField — obszar klikalny bez martwej strefy', () => {
 
   test('cała ramka pokazuje kursor tekstowy', async ({ page }) => {
     await expect(
-      page.getByTestId('field-price').locator('[data-pct-part="row"]'),
+      page.getByTestId('field-price').locator('[data-pct-part="field-row"]'),
     ).toHaveCSS('cursor', 'text');
   });
 });

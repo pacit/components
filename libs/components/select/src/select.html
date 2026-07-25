@@ -1,4 +1,4 @@
-@if (label()) {
+@if (label() && !inField) {
 <span class="pct-select__label" data-pct-part="label" [id]="labelId">
   {{ label() }} @if (required()) {
   <span class="pct-select__required" aria-hidden="true">*</span>
@@ -21,7 +21,7 @@
   [attr.aria-controls]="open() ? listboxId : null"
   aria-haspopup="listbox"
   [attr.aria-activedescendant]="activeOptionId()"
-  [attr.aria-labelledby]="label() ? labelId : null"
+  [attr.aria-labelledby]="!inField && label() ? labelId : null"
   [attr.aria-describedby]="describedBy()"
   [attr.aria-invalid]="showInvalid() ? 'true' : null"
   [attr.aria-required]="required() || null"
@@ -91,7 +91,7 @@
   </div>
 </ng-template>
 
-@if (hint()) {
+@if (hint() && !inField) {
 <span class="pct-select__hint" data-pct-part="hint" [id]="hintId">
   {{ hint() }}
 </span>
