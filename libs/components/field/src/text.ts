@@ -11,6 +11,7 @@ import {
   signal,
 } from '@angular/core';
 import { NgControl } from '@angular/forms';
+import { FormField } from '@angular/forms/signals';
 import type { FormValueControl, ValidationError } from '@angular/forms/signals';
 import {
   nextPctId,
@@ -90,11 +91,22 @@ export class PctText implements FormValueControl<string>, PctFieldControl {
    * konflikt dwóch autorów wartości (`wym-real-20`). Wykrywamy więc, czy
    * klasyczna dyrektywa formularza jest na tym samym elemencie, i wtedy
    * oddajemy jej własność wartości, pozostając przy obudowie i stanie.
+   *
+   * Sama obecność `NgControl` nie wystarcza: dyrektywa `FormField` **też** go
+   * dostarcza (interop dla starych `ControlValueAccessor`ów), a signal forms
+   * przy własnej kontrolce ustawiają wyłącznie `value` i do DOM nie piszą —
+   * oddanie im własności zostawiało pole puste (`wym-real-26`).
    */
   private readonly classicForms = inject(NgControl, {
     optional: true,
     self: true,
   });
+  private readonly signalForms = inject(FormField, {
+    optional: true,
+    self: true,
+  });
+  private readonly domOwnedElsewhere =
+    this.classicForms !== null && this.signalForms === null;
 
   constructor() {
     // Obecność obudowy jest opcjonalna: bez niej kontrolka działa samodzielnie
@@ -104,7 +116,7 @@ export class PctText implements FormValueControl<string>, PctFieldControl {
     // Sygnał -> DOM tylko wtedy, gdy nie prowadzą klasyczne formularze.
     effect(() => {
       const next = this.value();
-      if (this.classicForms) return;
+      if (this.domOwnedElsewhere) return;
       const el = this.el.nativeElement;
       if (el.value !== next) el.value = next;
     });

@@ -70,7 +70,7 @@ class AffixHost {
   </pct-field>`,
 })
 class SignalFormHost {
-  model = signal({ email: '' });
+  model = signal({ email: 'start@example.com' });
   f = form(this.model, (p) => {
     required(p.email, { message: 'Adres jest wymagany' });
     email(p.email, { message: 'Niepoprawny adres' });
@@ -281,6 +281,16 @@ describe('PctField + PctText', () => {
   });
 
   describe('signal forms', () => {
+    it('pokazuje wartość początkową modelu', async () => {
+      const fixture = await render(SignalFormHost);
+
+      // Regresja: dyrektywa FormField dostarcza NgControl (interop dla CVA),
+      // więc heurystyka „NgControl => ktoś inny pisze do DOM" wykluczała także
+      // signal forms — a te przy własnej kontrolce ustawiają tylko `value`
+      // i do DOM nie piszą. Pole startowało puste (wym-real-26).
+      expect(inputOf(fixture).value).toBe('start@example.com');
+    });
+
     it('synchronizuje wartość i pokazuje błąd walidacji po dotknięciu', async () => {
       const fixture = await render(SignalFormHost);
       const host = fixture.componentInstance;

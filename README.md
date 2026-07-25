@@ -93,6 +93,29 @@ Trzy poziomy: **prymitywne → semantyczne → komponentowe**; referencje zachow
 
 Kontrolki działają też **bez obudowy** (wtedy bez etykiety i komunikatów), a checkbox i grupa radiów rysują wówczas własną etykietę.
 
+`PctNumber` (`@pacit/components/field`) — pole liczbowe (`input[pctNumber]`) o wartości `number | null`. Świadomie **nie** opiera się na `<input type="number">`: to pole nie zna lokalnego separatora dziesiętnego, nie grupuje tysięcy i przy błędnej treści zwraca puste `value`. Zamiast tego `<input type="text">` z `role="spinbutton"` i formatowaniem przez `Intl.NumberFormat` wg `LOCALE_ID`.
+
+```html
+<!-- domyślnie pole całkowite; granice biorą się z walidatorów min()/max() schematu -->
+<pct-field label="Liczba stanowisk">
+  <input pctNumber [formField]="form.seats" />
+</pct-field>
+
+<!-- kwota: dwa miejsca po przecinku, krok pół złotego -->
+<pct-field label="Cena">
+  <span pctPrefix aria-hidden="true">PLN</span>
+  <input
+    pctNumber
+    [minFractionDigits]="2"
+    [maxFractionDigits]="2"
+    [step]="0.5"
+    [(value)]="price"
+  />
+</pct-field>
+```
+
+Puste pole to `null`, nie `0`. Wpisując, można używać przecinka i kropki niezależnie od locale. Zaokrąglenie i domknięcie do `min`/`max` następuje przy opuszczeniu pola, nie w trakcie pisania. Strzałki góra/dół zmieniają wartość o `step`, PageUp/PageDown dziesięciokrotnie, Home/End skaczą do granic.
+
 `PctCheckbox` (`@pacit/components/checkbox`) — natywna kontrolka **signal forms** (`FormCheckboxControl`). Wymaganym polem jest `checked` (nie `value`), więc wiąże się je nawiasami.
 
 ```html

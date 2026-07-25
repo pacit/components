@@ -1,5 +1,6 @@
 import {
   ApplicationConfig,
+  LOCALE_ID,
   provideBrowserGlobalErrorListeners,
   provideZonelessChangeDetection,
 } from '@angular/core';
@@ -21,5 +22,8 @@ export const appConfig: ApplicationConfig = {
     provideRouter(appRoutes),
     // Globalna konfiguracja biblioteki (wym-api-8).
     providePctConfig({ defaultSize: 'md' }),
+    // Pole liczbowe formatuje wg LOCALE_ID — tu widać przecinek dziesiętny
+    // i wąską spację jako separator tysięcy.
+    { provide: LOCALE_ID, useValue: 'pl-PL' },
   ],
 };

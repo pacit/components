@@ -68,6 +68,22 @@
         </pct-radio-group>
       </pct-field>
 
+      <!-- Pole liczbowe: całkowite, ze skokiem strzałkami i granicami -->
+      <!-- Granic (1..500) nie ma w szablonie: dyrektywa FormField przekazuje je
+           z walidatorów min()/max() ze schematu formularza. -->
+      <pct-field
+        label="Liczba stanowisk"
+        hint="Strzałki góra/dół zmieniają wartość"
+        data-testid="field-seats"
+      >
+        <input
+          pctNumber
+          [formField]="userForm.seats"
+          data-testid="number-seats"
+        />
+        <span pctSuffix aria-hidden="true">szt.</span>
+      </pct-field>
+
       <!-- Checkbox w obudowie: etykieta obudowy, bez ramki -->
       <pct-field
         label="Zgody"
@@ -103,11 +119,18 @@
       <!-- Sloty wewnątrz ramki pola -->
       <pct-field
         label="Cena"
-        hint="Dekoracje w środku ramki"
+        hint="Dekoracje w środku ramki, kwota z groszami"
         data-testid="field-price"
       >
         <span pctPrefix aria-hidden="true">PLN</span>
-        <input pctText inputmode="numeric" [(value)]="price" />
+        <input
+          pctNumber
+          [minFractionDigits]="2"
+          [maxFractionDigits]="2"
+          [step]="0.5"
+          [(value)]="price"
+          data-testid="number-price"
+        />
         <button
           pctSuffix
           pct-button

@@ -1,10 +1,18 @@
 import { Component, signal } from '@angular/core';
-import { email, form, FormField, required } from '@angular/forms/signals';
+import {
+  email,
+  form,
+  FormField,
+  max,
+  min,
+  required,
+} from '@angular/forms/signals';
 import { PctButton } from '@pacit/components/button';
 import { PctCheckbox } from '@pacit/components/checkbox';
 import { PctRadio, PctRadioGroup } from '@pacit/components/radio';
 import {
   PctField,
+  PctNumber,
   PctPrefix,
   PctSuffix,
   PctText,
@@ -21,6 +29,7 @@ import { PctSelect, PctSelectOption } from '@pacit/components/select';
     PctSelect,
     PctField,
     PctText,
+    PctNumber,
     PctPrefix,
     PctSuffix,
     FormField,
@@ -42,11 +51,18 @@ export class App {
     { value: 'lt', label: 'Litwa' },
   ];
 
-  protected readonly model = signal({
+  protected readonly model = signal<{
+    email: string;
+    terms: boolean;
+    plan: string;
+    country: string;
+    seats: number | null;
+  }>({
     email: '',
     terms: false,
     plan: '',
     country: '',
+    seats: 1,
   });
 
   protected readonly userForm = form(this.model, (p) => {
@@ -55,16 +71,21 @@ export class App {
     required(p.terms, { message: 'Musisz zaakceptować regulamin' });
     required(p.plan, { message: 'Wybierz plan' });
     required(p.country, { message: 'Wybierz kraj' });
+    required(p.seats, { message: 'Podaj liczbę stanowisk' });
+    min(p.seats, 1, { message: 'Minimum jedno stanowisko' });
+    max(p.seats, 500, {
+      message: 'Powyżej 500 stanowisk skontaktuj się z nami',
+    });
   });
 
   /** Select w panelu ciemnym — sprawdza propagację motywu do nakładki. */
   protected readonly scopedCountry = signal('');
 
-  /** Demo obudowy pct-field ze slotami. */
-  protected readonly price = signal('1499');
+  /** Demo obudowy pct-field ze slotami — kwota z dwoma miejscami po przecinku. */
+  protected readonly price = signal<number | null>(1499.9);
 
   protected clearPrice(): void {
-    this.price.set('');
+    this.price.set(null);
   }
 
   /** Stan nieokreślony — demonstracja aria-checked="mixed". */

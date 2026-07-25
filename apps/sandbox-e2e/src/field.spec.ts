@@ -71,7 +71,7 @@ test.describe('PctField — obudowa pola', () => {
     const field = page.getByTestId('field-price');
     const input = field.locator('input');
 
-    await expect(input).toHaveValue('1499');
+    await expect(input).toHaveValue('1\u00a0499,90');
     await field.getByTestId('field-price-clear').click();
     await expect(input).toHaveValue('');
   });
