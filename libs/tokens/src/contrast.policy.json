@@ -140,6 +140,55 @@
       "bg": "pct.checkbox.bg",
       "level": "UI",
       "severity": "error"
+    },
+    {
+      "name": "radio — etykieta opcji",
+      "fg": "pct.radio.label-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "radio — etykieta grupy",
+      "fg": "pct.radio.group-label-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "radio — podpowiedź",
+      "fg": "pct.radio.hint-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "UI: obramowanie radia",
+      "fg": "pct.radio.border",
+      "bg": "pct.radio.bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: kropka wybranego radia",
+      "fg": "pct.radio.dot",
+      "bg": "pct.radio.bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: obramowanie radia (wybrane)",
+      "fg": "pct.radio.checked-border",
+      "bg": "pct.radio.bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: obramowanie radia (błąd)",
+      "fg": "pct.radio.invalid-border",
+      "bg": "pct.radio.bg",
+      "level": "UI",
+      "severity": "error"
     }
   ]
 }

@@ -1,0 +1,22 @@
+<span class="pct-radio__circle" data-pct-part="circle">
+  <input
+    #control
+    class="pct-radio__control"
+    data-pct-part="control"
+    type="radio"
+    [id]="controlId"
+    [name]="name()"
+    [value]="value()"
+    [checked]="checked()"
+    [disabled]="isDisabled()"
+    [attr.aria-readonly]="group.readonly() ? 'true' : null"
+    (click)="onClick($event)"
+    (change)="onChange()"
+    (blur)="onBlur()"
+  />
+  <span class="pct-radio__dot" data-pct-part="dot" aria-hidden="true"></span>
+</span>
+
+<label class="pct-radio__label" data-pct-part="label" [attr.for]="controlId">
+  <ng-content></ng-content>
+</label>

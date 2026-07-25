@@ -67,6 +67,12 @@ Biblioteka komponentów angular pozwalająca na budowanie skomplikowanych, skalo
 
   **`ControlValueAccessor` NIE jest implementowany.** Kontrolka spełniająca `FormValueControl` działa z reactive forms (`[formControl]`, `formControlName`) i template-driven (`[(ngModel)]`) bez żadnej warstwy kompatybilności — zweryfikowane testami (`wym-real-9`). Dzięki temu rdzeń komponentów pozostaje wolny od klasycznego API formularzy przy zachowaniu pełnej kompatybilności z istniejącymi aplikacjami.
 
+- `wym-api-10` **Komponenty złożone: kontrolką formularza jest kontener, nie elementy składowe.** W grupie (np. `pct-radio-group` + `pct-radio`) kontrakt `FormValueControl` implementuje wyłącznie kontener — z punktu widzenia formularza edytowana jest jedna wartość. Elementy składowe komunikują się z kontenerem przez DI i nie mają własnego stanu formularza.
+
+- `wym-api-11` **Zachowania klawiatury nie implementujemy sami, jeśli daje je platforma.** Grupa radiów opiera się na natywnych `<input type="radio">` ze wspólnym `name`, dzięki czemu nawigacja strzałkami, zawijanie i „jedno miejsce w kolejności Taba" pochodzą od przeglądarki — bez własnego roving tabindex. Własną obsługę klawiatury dodajemy tylko tam, gdzie nie istnieje natywny odpowiednik.
+
+- `wym-api-12` **Nazwy części (`data-pct-part`) muszą być jednoznaczne w obrębie zagnieżdżenia.** W komponentach złożonych części kontenera dostają własny przedrostek (`group-label`, `group-hint`, `group-error`), żeby selektor konsumenta nie trafiał przypadkiem w części elementów składowych.
+
 - `wym-api-6` Dostępność wbudowana w każdy komponent — ARIA zarządzane wewnętrznie, wykorzystanie CDK a11y (`FocusMonitor`, `LiveAnnouncer`, `FocusTrap`), id generowane util-em (`wym-a11y-1`).
 
 - `wym-api-7` Customizacja przez projekcję treści `<ng-content select="...">` oraz przekazywanie szablonów jako `TemplateRef` / dyrektywa `*pctTemplate` (odpowiednik `pTemplate`) dla elementów typu szablon itemu.
@@ -167,12 +173,13 @@ Zbudowano pionowy plaster end-to-end weryfikujący powyższe ustalenia. Stack: *
 Powstało:
 
 - `libs/tokens` — źródło DTCG + build (`build.mjs`) generujący `pct.css` / `_tokens.scss` / `tokens.ts`, z **bramką kontrastu WCAG 2.2 AA** (build faila, gdy para tekst/tło < 4.5:1).
-- `libs/components` — pakiet `@pacit/components` z secondary entrypoints `./core`, `./button`, `./input` i `./checkbox` (czysta mapa `exports`).
+- `libs/components` — pakiet `@pacit/components` z secondary entrypoints `./core`, `./button`, `./input`, `./checkbox` i `./radio` (czysta mapa `exports`).
 - `PctButton` — selektor atrybutowy `button[pct-button]`, standalone, OnPush, signals, `booleanAttribute`, stan jako `data-pct-*`, elementy wewnętrzne jako `data-pct-part`, `providePctConfig`.
 - `apps/sandbox` — **zoneless** (`provideZonelessChangeDetection`), SSR + hydration, prezentacja Buttona i **scoped theme** (panel `data-theme="dark"` przethemowany samą kaskadą CSS).
 - `PctInput` — natywna kontrolka signal forms (`FormValueControl`), etykieta/podpowiedź/błąd powiązane przez generowane id (`for`, `aria-describedby`, `aria-invalid`, `role="alert"`), błąd pokazywany dopiero po dotknięciu pola, stan bez `opacity`.
 - `PctCheckbox` — natywna kontrolka signal forms (`FormCheckboxControl`), stan nieokreślony z `aria-checked="mixed"`, `readonly` blokujące zmianę bez utraty fokusowalności, znacznik rysowany SVG w `currentColor` (bez zależności od zestawu ikon).
-- Testy: `components` 31/31 (Vitest), `sandbox` 2/2, `sandbox-e2e` 18/18 (Playwright, w tym 5 audytów axe-core) — testy jednostkowe biegną pod zoneless.
+- `PctRadioGroup` + `PctRadio` — pierwszy komponent złożony: **kontrolką formularza jest grupa**, opcje nie są samodzielnymi kontrolkami. Grupa ma `role="radiogroup"`, `aria-labelledby`/`aria-orientation`, generuje wspólny `name` dla natywnych radiów.
+- Testy: `components` 46/46 (Vitest), `sandbox` 2/2, `sandbox-e2e` 25/25 (Playwright, w tym 5 audytów axe-core) — testy jednostkowe biegną pod zoneless.
 
 Wnioski, które doprecyzowują „przepis":
 
@@ -183,6 +190,8 @@ Wnioski, które doprecyzowują „przepis":
 - `wym-real-5` _(do zrobienia)_ Raport pokrycia wymaga konfiguracji `coverageInclude` w targecie testowym, by egzekwować próg z `wym-proj-4`.
 - `wym-real-6` Pierwotny guard (token-level) przepuścił disabled o realnym kontraście ~1.6:1, bo stan był robiony przez `opacity` (kompozycja z tłem w runtime, niewidoczna dla matematyki na hexach). Stąd `wym-token-11` (policy per motyw/rozmiar, severity) i `wym-token-12` (zakaz `opacity` dla warstw tekstowych). Wdrożone: `libs/tokens/src/contrast.policy.json` + silnik w `build.mjs`; `PctButton` używa tokenów `disabled-*` zamiast `opacity`.
 - `wym-real-7` **Zoneless jest deklarowany jawnie** przez `provideZonelessChangeDetection()` w `app.config.ts`, mimo że generator nie dodaje polyfilla `zone.js` (bundle i tak go nie zawiera). Jawna deklaracja zamyka `wym-tech-3` i chroni przed przypadkowym powrotem do trybu zone-based. Testy jednostkowe biblioteki i aplikacji również konfigurują zoneless w `TestBed`, dzięki czemu `wym-api-2` (komponenty zoneless-safe) jest **weryfikowane**, a nie tylko deklarowane. (Uwaga: `setupTestBed()` z `@analogjs/vitest-angular` domyślnie już ustawia `zoneless: true` — jawna konfiguracja w spec-ach jest zabezpieczeniem na wypadek zmiany domyślnych.)
+- `wym-real-15` Kolizja nazw części wyszła dopiero w teście e2e: selektor `[data-pct-part="label"]` w obrębie `pct-radio-group` pasował do 4 elementów (etykieta grupy + etykiety opcji). Stąd `wym-api-12`. Testy jednostkowe tego nie wychwyciły, bo odpytywały konkretny element, a nie kolekcję.
+- `wym-real-16` W grupie opcje są **treścią rzutowaną**, więc kontener nie widzi ich zapytaniem `viewChildren`; `contentChildren(PctRadio)` tworzyłoby cykliczny import kontener↔element. `focus()` grupy odpytuje więc DOM hosta (`input[type="radio"]`).
 - `wym-real-14` **Zgodność formalna nie znaczy dobra jakość.** Pierwszy audyt axe nie wykazał naruszeń, a reguła `target-size` **przeszła** przy obszarze klikalnym checkboxa 18×18 px — bo SC 2.5.8 dopuszcza wyjątek odstępu, a wokół kontrolki było dużo wolnego miejsca. Wystarczyłoby zagęścić układ w aplikacji konsumenta, żeby to samo przestało być zgodne. Stąd `wym-a11y-2`: obszar dotyku spełniamy wprost, niezależnie od otoczenia.
 - `wym-real-12` **Kontrolki kontraktu `FormCheckboxControl` wymagają `checked`, nie `value`** (definiowanie `value` jest zabronione). Ponieważ `model()` nie przyjmuje transformacji `booleanAttribute`, `checked` trzeba wiązać nawiasami (`[checked]="true"`), a nie gołym atrybutem — inaczej szablon nie kompiluje się (`Type 'string' is not assignable to type 'boolean'`). Kontrakt przewiduje też opcjonalne metody `focus()` i `reset()`; zaimplementowane w `PctCheckbox` i `PctInput`.
 - `wym-real-13` Odczyty `getComputedStyle` z panelu podglądu potrafią być **nieaktualne**, gdy panel nie jest wyświetlany („the page is not compositing frames") — prowadzi to do fałszywych diagnoz błędów CSS. Wiarygodną weryfikacją stylów są testy e2e (Playwright), które działają w normalnie renderującej przeglądarce.

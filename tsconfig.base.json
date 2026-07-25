@@ -18,7 +18,8 @@
       "@pacit/components/core": ["./libs/components/core/src/index.ts"],
       "@pacit/components/button": ["./libs/components/button/src/index.ts"],
       "@pacit/components/input": ["./libs/components/input/src/index.ts"],
-      "@pacit/components/checkbox": ["./libs/components/checkbox/src/index.ts"]
+      "@pacit/components/checkbox": ["./libs/components/checkbox/src/index.ts"],
+      "@pacit/components/radio": ["./libs/components/radio/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

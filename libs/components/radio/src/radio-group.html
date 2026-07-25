@@ -1,0 +1,26 @@
+@if (label()) {
+<span class="pct-radio-group__label" data-pct-part="group-label" [id]="labelId">
+  {{ label() }} @if (required()) {
+  <span class="pct-radio-group__required" aria-hidden="true">*</span>
+  }
+</span>
+}
+
+<div class="pct-radio-group__options" data-pct-part="options">
+  <ng-content select="pct-radio"></ng-content>
+</div>
+
+@if (hint()) {
+<span class="pct-radio-group__hint" data-pct-part="group-hint" [id]="hintId">
+  {{ hint() }}
+</span>
+} @if (showError()) {
+<span
+  class="pct-radio-group__error"
+  data-pct-part="group-error"
+  [id]="errorId"
+  role="alert"
+>
+  {{ errorText() }}
+</span>
+}

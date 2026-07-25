@@ -12,7 +12,8 @@
     "core/**/*.ts",
     "button/**/*.ts",
     "input/**/*.ts",
-    "checkbox/**/*.ts"
+    "checkbox/**/*.ts",
+    "radio/**/*.ts"
   ],
   "exclude": ["**/*.spec.ts", "**/*.test.ts"]
 }

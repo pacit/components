@@ -80,7 +80,7 @@ test.describe('PctCheckbox — signal forms', () => {
     await expect(control).not.toBeChecked();
   });
 
-  test('formularz staje się poprawny dopiero po e-mailu i zgodzie', async ({
+  test('formularz staje się poprawny dopiero po wypełnieniu wszystkich wymaganych pól', async ({
     page,
   }) => {
     const submit = page.getByTestId('submit');
@@ -90,6 +90,13 @@ test.describe('PctCheckbox — signal forms', () => {
       .getByTestId('input-email')
       .locator('input')
       .fill('marek@pacit.pl');
+    await expect(submit).toBeDisabled(); // brak planu i zgody
+
+    await page
+      .getByTestId('radio-plan')
+      .locator('pct-radio', { hasText: 'Pro' })
+      .locator('input')
+      .check();
     await expect(submit).toBeDisabled(); // brak zgody
 
     await page.getByTestId('checkbox-terms').locator('input').check();

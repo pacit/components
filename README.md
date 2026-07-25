@@ -22,7 +22,7 @@ apps/
   sandbox/       aplikacja demo / playground
   sandbox-e2e/   testy e2e (Playwright)
 libs/
-  components/    pakiet @pacit/components (entrypoints: ./core, ./button, ./input, ./checkbox)
+  components/    pakiet @pacit/components (entrypoints: ./core, ./button, ./input, ./checkbox, ./radio)
   tokens/        źródło DTCG + build -> CSS/SCSS/TS + bramka kontrastu
 docs/opis.md     ustalenia i wymagania
 ```
@@ -89,6 +89,15 @@ Trzy poziomy: **prymitywne → semantyczne → komponentowe**; referencje zachow
 <pct-checkbox label="Akceptuję regulamin" [formField]="userForm.terms" />
 <pct-checkbox label="Zapamiętaj mnie" [(checked)]="remember" />
 <pct-checkbox label="Częściowy wybór" [indeterminate]="true" />
+```
+
+`PctRadioGroup` + `PctRadio` (`@pacit/components/radio`) — komponent złożony: kontrolką formularza jest **grupa**, nie poszczególne opcje. Nawigacja strzałkami pochodzi od przeglądarki (natywne radia ze wspólnym `name`), bez własnego roving tabindex.
+
+```html
+<pct-radio-group label="Plan" [formField]="userForm.plan">
+  <pct-radio value="free">Darmowy</pct-radio>
+  <pct-radio value="pro">Pro</pct-radio>
+</pct-radio-group>
 ```
 
 ## Dokumentacja

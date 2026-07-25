@@ -1,0 +1,86 @@
+:host {
+  display: flex;
+  align-items: center;
+  gap: var(--pct-radio-gap);
+}
+
+.pct-radio__circle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--pct-radio-size);
+  height: var(--pct-radio-size);
+  background: var(--pct-radio-bg);
+  border: 1px solid var(--pct-radio-border);
+  border-radius: 50%;
+  transition: border-color 0.15s ease;
+}
+
+/* Obszar dotyku >= 24x24 px, niezależny od rozmiaru wizualnego (wym-a11y-2). */
+.pct-radio__control {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  width: max(100%, var(--pct-radio-target-min));
+  height: max(100%, var(--pct-radio-target-min));
+  opacity: 0;
+  cursor: pointer;
+}
+
+.pct-radio__dot {
+  width: var(--pct-radio-dot-size);
+  height: var(--pct-radio-dot-size);
+  border-radius: 50%;
+  background: var(--pct-radio-dot);
+  visibility: hidden;
+}
+
+:host([data-pct-checked]) .pct-radio__circle {
+  border-color: var(--pct-radio-checked-border);
+}
+
+:host([data-pct-checked]) .pct-radio__dot {
+  visibility: visible;
+}
+
+:host(:not([data-pct-disabled])) .pct-radio__circle:hover {
+  border-color: var(--pct-radio-border-hover);
+}
+
+.pct-radio__circle:has(.pct-radio__control:focus-visible) {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: 2px;
+}
+
+:host([data-pct-invalid]) .pct-radio__circle {
+  border-color: var(--pct-radio-invalid-border);
+}
+
+/* Disabled bez opacity (wym-token-12). */
+:host([data-pct-disabled]) .pct-radio__circle {
+  background: var(--pct-radio-disabled-bg);
+  border-color: var(--pct-radio-disabled-border);
+}
+
+:host([data-pct-disabled]) .pct-radio__dot {
+  background: var(--pct-radio-disabled-fg);
+}
+
+:host([data-pct-disabled]) .pct-radio__control,
+:host([data-pct-disabled]) .pct-radio__label {
+  cursor: not-allowed;
+}
+
+:host([data-pct-disabled]) .pct-radio__label {
+  color: var(--pct-radio-disabled-fg);
+}
+
+.pct-radio__label {
+  color: var(--pct-radio-label-fg);
+  font-size: var(--pct-font-size-md);
+  cursor: pointer;
+}

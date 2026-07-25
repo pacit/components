@@ -1,0 +1,39 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pct-space-2);
+  font-family: inherit;
+}
+
+.pct-radio-group__label {
+  color: var(--pct-radio-group-label-fg);
+  font-size: var(--pct-font-size-sm);
+  font-weight: var(--pct-font-weight-medium);
+}
+
+.pct-radio-group__required {
+  color: var(--pct-radio-invalid-fg);
+  margin-inline-start: 2px;
+}
+
+.pct-radio-group__options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pct-radio-option-gap);
+}
+
+:host([data-pct-orientation='horizontal']) .pct-radio-group__options {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--pct-space-5);
+}
+
+.pct-radio-group__hint {
+  color: var(--pct-radio-hint-fg);
+  font-size: var(--pct-font-size-sm);
+}
+
+.pct-radio-group__error {
+  color: var(--pct-radio-invalid-fg);
+  font-size: var(--pct-font-size-sm);
+}

@@ -39,6 +39,19 @@
         data-testid="input-email"
       />
 
+      <pct-radio-group
+        label="Plan"
+        hint="Możesz zmienić w każdej chwili"
+        [formField]="userForm.plan"
+        data-testid="radio-plan"
+      >
+        <pct-radio value="free">Darmowy</pct-radio>
+        <pct-radio value="pro">Pro</pct-radio>
+        <pct-radio value="enterprise" disabled
+          >Enterprise (niedostępny)</pct-radio
+        >
+      </pct-radio-group>
+
       <pct-checkbox
         label="Akceptuję regulamin"
         hint="Wymagane do założenia konta"
@@ -70,6 +83,16 @@
         data-testid="checkbox-mixed"
       />
       <pct-checkbox label="Zaznaczone, wyłączone" [checked]="true" disabled />
+
+      <pct-radio-group
+        label="Układ poziomy"
+        orientation="horizontal"
+        [(value)]="layoutDemo"
+        data-testid="radio-horizontal"
+      >
+        <pct-radio value="a">Opcja A</pct-radio>
+        <pct-radio value="b">Opcja B</pct-radio>
+      </pct-radio-group>
     </div>
   </section>
 
