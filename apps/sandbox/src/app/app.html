@@ -11,18 +11,18 @@
     <h2>Motyw jasny (:root)</h2>
 
     <div class="row">
-      <button pct-button data-testid="btn-solid">Solid</button>
-      <button pct-button variant="outline" data-testid="btn-outline">
+      <button pctButton data-testid="btn-solid">Solid</button>
+      <button pctButton variant="outline" data-testid="btn-outline">
         Outline
       </button>
-      <button pct-button disabled data-testid="btn-disabled">Disabled</button>
-      <button pct-button loading data-testid="btn-loading">Loading</button>
+      <button pctButton disabled data-testid="btn-disabled">Disabled</button>
+      <button pctButton loading data-testid="btn-loading">Loading</button>
     </div>
 
     <div class="row">
-      <button pct-button size="sm">Small</button>
-      <button pct-button size="md">Medium</button>
-      <button pct-button size="lg">Large</button>
+      <button pctButton size="sm">Small</button>
+      <button pctButton size="md">Medium</button>
+      <button pctButton size="lg">Large</button>
     </div>
   </section>
 
@@ -98,7 +98,7 @@
 
       <div class="row">
         <button
-          pct-button
+          pctButton
           [disabled]="userForm().invalid()"
           data-testid="submit"
         >
@@ -133,7 +133,7 @@
         />
         <button
           pctSuffix
-          pct-button
+          pctButton
           type="button"
           variant="outline"
           size="sm"
@@ -183,7 +183,7 @@
     <div class="panel__head">
       <h2>Scoped theme — te same komponenty, inny motyw</h2>
       <button
-        pct-button
+        pctButton
         variant="outline"
         size="sm"
         (click)="togglePanel()"
@@ -194,9 +194,9 @@
     </div>
 
     <div class="row">
-      <button pct-button data-testid="scoped-solid">Solid</button>
-      <button pct-button variant="outline">Outline</button>
-      <button pct-button loading>Loading</button>
+      <button pctButton data-testid="scoped-solid">Solid</button>
+      <button pctButton variant="outline">Outline</button>
+      <button pctButton loading>Loading</button>
     </div>
 
     <div class="stack">

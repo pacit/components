@@ -7,7 +7,7 @@ test.describe('PctButton — sandbox', () => {
 
   test('renderuje stronę biblioteki i przyciski', async ({ page }) => {
     await expect(page.locator('h1')).toContainText('@pacit/components');
-    await expect(page.locator('button[pct-button]').first()).toBeVisible();
+    await expect(page.locator('button[pctButton]').first()).toBeVisible();
   });
 
   test('solid button ma tło z tokenu (--pct-button-bg)', async ({ page }) => {

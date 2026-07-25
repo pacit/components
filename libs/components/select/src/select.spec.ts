@@ -13,6 +13,7 @@ import {
   requiredError,
   ValidationError,
 } from '@angular/forms/signals';
+import { part } from '../../testing/src/dom';
 import { PctSelect } from './select';
 import { PctSelectOption } from './select.types';
 
@@ -156,7 +157,9 @@ describe('PctSelect', () => {
     expect(panel()?.getAttribute('role')).toBe('listbox');
     expect(optionsInPanel()).toHaveLength(4);
     expect(triggerOf(fixture).getAttribute('aria-expanded')).toBe('true');
-    expect(triggerOf(fixture).getAttribute('aria-controls')).toBe(panel()!.id);
+    expect(triggerOf(fixture).getAttribute('aria-controls')).toBe(
+      part(document, 'panel').id,
+    );
   });
 
   it('wybór opcji ustawia wartość, zamyka panel i pokazuje etykietę', async () => {

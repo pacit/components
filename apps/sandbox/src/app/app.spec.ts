@@ -27,7 +27,7 @@ describe('App', () => {
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(
-      compiled.querySelectorAll('button[pct-button]').length,
+      compiled.querySelectorAll('button[pctButton]').length,
     ).toBeGreaterThan(0);
   });
 });

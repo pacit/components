@@ -4,22 +4,13 @@ import {
   signal,
   Type,
 } from '@angular/core';
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
 import { requiredError, ValidationError } from '@angular/forms/signals';
 import { PctCheckbox } from '@pacit/components/checkbox';
 import { PctRadio, PctRadioGroup } from '@pacit/components/radio';
 import { PctSelect, PctSelectOption } from '@pacit/components/select';
+import { allParts, part } from '../../testing/src/dom';
 import { PctField } from './field';
-
-const part = (f: ComponentFixture<unknown>, name: string) =>
-  f.nativeElement.querySelector(
-    `[data-pct-part="${name}"]`,
-  ) as HTMLElement | null;
-
-const allParts = (f: ComponentFixture<unknown>, name: string) =>
-  Array.from(
-    f.nativeElement.querySelectorAll(`[data-pct-part="${name}"]`),
-  ) as HTMLElement[];
 
 async function render<T>(type: Type<T>) {
   const fixture = TestBed.createComponent(type);
@@ -95,7 +86,7 @@ describe('Kontrolki w obudowie pct-field', () => {
     it('oddaje etykietę obudowie i nie renderuje własnej', async () => {
       const fixture = await render(SelectInFieldHost);
       const labels = allParts(fixture, 'field-label');
-      const trigger = part(fixture, 'trigger')!;
+      const trigger = part(fixture, 'trigger');
 
       // Dokładnie jedna etykieta — należy do obudowy i wskazuje trigger.
       expect(labels).toHaveLength(1);
@@ -126,15 +117,15 @@ describe('Kontrolki w obudowie pct-field', () => {
 
       expect(allParts(fixture, 'field-hint')).toHaveLength(1);
       expect(allParts(fixture, 'field-error')).toHaveLength(1);
-      expect(part(fixture, 'field-error')!.closest('pct-field')).toBeTruthy();
+      expect(part(fixture, 'field-error').closest('pct-field')).toBeTruthy();
 
       // Komunikaty obudowy są powiązane z triggerem.
-      const trigger = part(fixture, 'trigger')!;
+      const trigger = part(fixture, 'trigger');
       expect(trigger.getAttribute('aria-describedby')).toContain(
-        part(fixture, 'field-hint')!.id,
+        part(fixture, 'field-hint').id,
       );
       expect(trigger.getAttribute('aria-describedby')).toContain(
-        part(fixture, 'field-error')!.id,
+        part(fixture, 'field-error').id,
       );
     });
   });
@@ -161,8 +152,8 @@ describe('Kontrolki w obudowie pct-field', () => {
     it('poza obudową rysuje własną etykietę i podpowiedź', async () => {
       const fixture = await render(CheckboxStandaloneHost);
 
-      expect(part(fixture, 'label')!.textContent).toContain('Samodzielny');
-      expect(part(fixture, 'hint')!.textContent).toContain('Własna podpowiedź');
+      expect(part(fixture, 'label').textContent).toContain('Samodzielny');
+      expect(part(fixture, 'hint').textContent).toContain('Własna podpowiedź');
       expect(fixture.nativeElement.querySelector('pct-field')).toBeNull();
     });
   });
@@ -171,7 +162,7 @@ describe('Kontrolki w obudowie pct-field', () => {
     it('nazywa grupę przez aria-labelledby wskazujące etykietę obudowy', async () => {
       const fixture = await render(RadioInFieldHost);
       const group = fixture.nativeElement.querySelector('pct-radio-group');
-      const label = part(fixture, 'field-label')!;
+      const label = part(fixture, 'field-label');
 
       expect(group.getAttribute('role')).toBe('radiogroup');
       expect(group.getAttribute('aria-labelledby')).toBe(label.id);

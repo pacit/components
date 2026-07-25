@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { boxOf } from './support/dom';
 
 /**
  * Pole liczbowe w prawdziwej przeglądarce: formatowanie wg locale aplikacji
@@ -125,7 +126,7 @@ test.describe('PctNumber', () => {
   test('obszar dotyku pola liczbowego spełnia próg SC 2.5.8', async ({
     page,
   }) => {
-    const box = (await page.getByTestId('number-seats').boundingBox())!;
+    const box = await boxOf(page.getByTestId('number-seats'));
     expect(box.height).toBeGreaterThanOrEqual(24);
   });
 });

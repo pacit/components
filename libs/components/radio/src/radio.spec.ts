@@ -142,7 +142,7 @@ describe('PctRadioGroup / PctRadio', () => {
 
   it('dwie grupy na stronie mają różne nazwy i niezależny stan', async () => {
     const fixture = await render(TwoGroupsHost);
-    const [a1, a2, b1, b2] = radiosOf(fixture);
+    const [a1, a2, b1] = radiosOf(fixture);
 
     expect(a1.name).not.toBe(b1.name);
 

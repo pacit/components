@@ -19,22 +19,26 @@ export default [
         {
           enforceBuildableLibDependency: true,
           allow: ['^.*/eslint(\\.base)?\\.config\\.[cm]?[jt]s$'],
+          // Warstwy workspace'u, od najniższej: tokens -> lib -> app -> e2e.
+          // Każdy projekt ma dokładnie jeden tag `type:*` (patrz project.json).
           depConstraints: [
+            // Tokeny są fundamentem systemu (wym-token-1) i muszą pozostać
+            // liściem — zależność od komponentów zrobiłaby z tego cykl warstw.
             {
-              sourceTag: 'scope:shared',
-              onlyDependOnLibsWithTags: ['scope:shared'],
+              sourceTag: 'type:tokens',
+              onlyDependOnLibsWithTags: ['type:tokens'],
             },
             {
-              sourceTag: 'scope:shop',
-              onlyDependOnLibsWithTags: ['scope:shop', 'scope:shared'],
+              sourceTag: 'type:lib',
+              onlyDependOnLibsWithTags: ['type:lib', 'type:tokens'],
             },
             {
-              sourceTag: 'scope:api',
-              onlyDependOnLibsWithTags: ['scope:api', 'scope:shared'],
+              sourceTag: 'type:app',
+              onlyDependOnLibsWithTags: ['type:lib', 'type:tokens'],
             },
             {
-              sourceTag: 'type:data',
-              onlyDependOnLibsWithTags: ['type:data'],
+              sourceTag: 'type:e2e',
+              onlyDependOnLibsWithTags: ['type:app', 'type:lib', 'type:tokens'],
             },
           ],
         },

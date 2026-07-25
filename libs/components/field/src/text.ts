@@ -36,7 +36,7 @@ import {
  */
 @Component({
   selector: 'input[pctText], textarea[pctText]',
-  // Komponent (nie dyrektywa) na natywnym elemencie — jak `button[pct-button]`.
+  // Komponent (nie dyrektywa) na natywnym elemencie — jak `button[pctButton]`.
   // Dyrektywa nie może mieć styli, a nie chcemy opierać API na `::ng-deep`.
   template: '',
   styleUrl: './text.scss',

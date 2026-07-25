@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { boxOf } from './support/dom';
 
 /**
  * Regresja: padding ramki i wyśrodkowanie w pionie tworzyły „martwą strefę" —
@@ -18,7 +19,7 @@ test.describe('PctField — obszar klikalny bez martwej strefy', () => {
     // mouse.click() używa współrzędnych widoku i sam nie przewija — inaczej
     // klik trafia poza ekran, w <html>.
     await row.scrollIntoViewIfNeeded();
-    const box = (await row.boundingBox())!;
+    const box = await boxOf(row);
     // 3 px od lewej krawędzi — obszar paddingu, przed dekoracją prefix.
     await page.mouse.click(box.x + 3, box.y + box.height / 2);
 
@@ -31,7 +32,7 @@ test.describe('PctField — obszar klikalny bez martwej strefy', () => {
     const input = field.locator('input');
 
     await row.scrollIntoViewIfNeeded();
-    const box = (await row.boundingBox())!;
+    const box = await boxOf(row);
     const middleX = box.x + box.width / 2;
 
     await page.mouse.click(middleX, box.y + 3);
@@ -54,12 +55,10 @@ test.describe('PctField — obszar klikalny bez martwej strefy', () => {
     page,
   }) => {
     const field = page.getByTestId('field-price');
-    const rowBox = (await field
-      .locator('[data-pct-part="field-row"]')
-      .boundingBox())!;
-    const controlBox = (await field
-      .locator('[data-pct-part="field-control"]')
-      .boundingBox())!;
+    const rowBox = await boxOf(field.locator('[data-pct-part="field-row"]'));
+    const controlBox = await boxOf(
+      field.locator('[data-pct-part="field-control"]'),
+    );
 
     // Kolumna kontrolki obejmuje całą wysokość wnętrza rzędu (bez paddingu).
     const paddingY = 2 * 8; // --pct-field-padding-y = space-3 = 8px

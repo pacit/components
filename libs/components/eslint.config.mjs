@@ -30,13 +30,23 @@ export default [
           style: 'camelCase',
         },
       ],
+      // Komponenty występują w dwóch postaciach: własny element (`pct-field`)
+      // oraz komponent na natywnym elemencie (`input[pctText]`, `button[pctButton]`
+      // — wym-api-15). Każdy typ selektora ma własny styl zapisu.
       '@angular-eslint/component-selector': [
         'error',
-        {
-          type: 'element',
-          prefix: 'pct',
-          style: 'kebab-case',
-        },
+        [
+          {
+            type: 'element',
+            prefix: 'pct',
+            style: 'kebab-case',
+          },
+          {
+            type: 'attribute',
+            prefix: 'pct',
+            style: 'camelCase',
+          },
+        ],
       ],
     },
   },

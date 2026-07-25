@@ -12,6 +12,7 @@
     "checkbox/**/*.ts",
     "radio/**/*.ts",
     "select/**/*.ts",
-    "field/**/*.ts"
+    "field/**/*.ts",
+    "testing/**/*.ts"
   ]
 }

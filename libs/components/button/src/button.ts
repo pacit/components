@@ -13,10 +13,10 @@ import { PctButtonSize, PctButtonVariant } from './button.types';
  * obsługa klawiatury i fokus działają natywnie (wym-api-6).
  *
  * @example
- * <button pct-button variant="outline" size="lg">Zapisz</button>
+ * <button pctButton variant="outline" size="lg">Zapisz</button>
  */
 @Component({
-  selector: 'button[pct-button]',
+  selector: 'button[pctButton]',
   templateUrl: './button.html',
   styleUrl: './button.scss',
   host: {

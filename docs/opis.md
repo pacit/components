@@ -53,7 +53,7 @@ Biblioteka komponentów angular pozwalająca na budowanie skomplikowanych, skalo
 
 ## Konwencje API komponentów
 
-- `wym-api-1` Nazewnictwo wg nowego style guide Angulara: klasa `PctButton` (bez sufiksu `Component`), plik `button.ts` (bez `.component.`), selektor elementu `pct-button`, dyrektywy `[pctTooltip]`. Szablon i style zawsze w osobnych plikach — **świadome odstępstwo** od oficjalnej wskazówki „prefer inline templates for smaller components", podyktowane spójnością struktury plików w bibliotece o dziesiątkach komponentów (`wym-ws-6`).
+- `wym-api-1` Nazewnictwo wg nowego style guide Angulara: klasa `PctButton` (bez sufiksu `Component`), plik `button.ts` (bez `.component.`), selektor elementu `pct-field` (kebab-case), selektor atrybutowy `[pctButton]` (camelCase), dyrektywy `[pctTooltip]`. Szablon i style zawsze w osobnych plikach — **świadome odstępstwo** od oficjalnej wskazówki „prefer inline templates for smaller components", podyktowane spójnością struktury plików w bibliotece o dziesiątkach komponentów (`wym-ws-6`).
 
 - `wym-api-2` Fundament każdego komponentu: standalone, OnPush, zoneless-safe (stan wyłącznie przez signals, brak polegania na zone.js). Zamiast `ngOnChanges` → `computed`/`effect`.
 
@@ -194,7 +194,7 @@ Powstało:
 
 - `libs/tokens` — źródło DTCG + build (`build.mjs`) generujący `pct.css` / `_tokens.scss` / `tokens.ts`, z **bramką kontrastu WCAG 2.2 AA** (build faila, gdy para tekst/tło < 4.5:1).
 - `libs/components` — pakiet `@pacit/components` z secondary entrypoints `./core`, `./field`, `./button`, `./checkbox`, `./radio` i `./select` (czysta mapa `exports`).
-- `PctButton` — selektor atrybutowy `button[pct-button]`, standalone, OnPush, signals, `booleanAttribute`, stan jako `data-pct-*`, elementy wewnętrzne jako `data-pct-part`, `providePctConfig`.
+- `PctButton` — selektor atrybutowy `button[pctButton]`, standalone, OnPush, signals, `booleanAttribute`, stan jako `data-pct-*`, elementy wewnętrzne jako `data-pct-part`, `providePctConfig`.
 - `apps/sandbox` — **zoneless** (`provideZonelessChangeDetection`), SSR + hydration, prezentacja Buttona i **scoped theme** (panel `data-theme="dark"` przethemowany samą kaskadą CSS).
 - `PctField` + `[pctText]` — obudowa pola i pole tekstowe na natywnym `<input>`; etykieta, podpowiedź, błąd i sloty `prefix`/`suffix` należą do obudowy. Zastąpiło wcześniejszy `PctInput`. Kontrolki działają dwutrybowo: w obudowie oddają jej etykietę i komunikaty, poza nią radzą sobie same (`wym-api-14`).
 - `PctCheckbox` — natywna kontrolka signal forms (`FormCheckboxControl`), stan nieokreślony z `aria-checked="mixed"`, `readonly` blokujące zmianę bez utraty fokusowalności, znacznik rysowany SVG w `currentColor` (bez zależności od zestawu ikon).

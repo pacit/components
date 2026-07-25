@@ -195,7 +195,11 @@ export class PctSelect implements FormValueControl<string>, PctFieldControl {
 
   protected toggle(): void {
     if (!this.interactive) return;
-    this.open() ? this.close() : this.openPanel();
+    if (this.open()) {
+      this.close();
+    } else {
+      this.openPanel();
+    }
   }
 
   protected openPanel(): void {

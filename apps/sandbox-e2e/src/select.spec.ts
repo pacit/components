@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { attrOf, boxOf } from './support/dom';
 
 test.describe('PctSelect — combobox z panelem', () => {
   test.beforeEach(async ({ page }) => {
@@ -39,13 +40,11 @@ test.describe('PctSelect — combobox z panelem', () => {
 
   test('panel ma szerokość triggera', async ({ page }) => {
     const t = trigger(page);
-    const triggerBox = await t.boundingBox();
+    const triggerBox = await boxOf(t);
     await t.click();
-    const panelBox = await panel(page).boundingBox();
+    const panelBox = await boxOf(panel(page));
 
-    expect(Math.abs(panelBox!.width - triggerBox!.width)).toBeLessThanOrEqual(
-      2,
-    );
+    expect(Math.abs(panelBox.width - triggerBox.width)).toBeLessThanOrEqual(2);
   });
 
   /**
@@ -64,7 +63,7 @@ test.describe('PctSelect — combobox z panelem', () => {
     await expect(first).toHaveAttribute('data-pct-active', '');
     await expect(t).toHaveAttribute(
       'aria-activedescendant',
-      (await first.getAttribute('id'))!,
+      await attrOf(first, 'id'),
     );
 
     await page.keyboard.press('End');
@@ -142,7 +141,7 @@ test.describe('PctSelect — combobox z panelem', () => {
   test('obszar klikalny triggera ma minimum 24 px wysokości', async ({
     page,
   }) => {
-    const box = await trigger(page).boundingBox();
-    expect(box!.height).toBeGreaterThanOrEqual(24);
+    const box = await boxOf(trigger(page));
+    expect(box.height).toBeGreaterThanOrEqual(24);
   });
 });

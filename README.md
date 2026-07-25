@@ -67,7 +67,7 @@ Trzy poziomy: **prymitywne → semantyczne → komponentowe**; referencje zachow
 `PctButton` (`@pacit/components/button`) — selektor atrybutowy na natywnym `<button>`, warianty `solid|outline`, rozmiary `sm|md|lg`, stany `disabled`/`loading`. Stan wystawiany jako `data-pct-*`, elementy wewnętrzne jako `data-pct-part`.
 
 ```html
-<button pct-button variant="outline" size="lg">Zapisz</button>
+<button pctButton variant="outline" size="lg">Zapisz</button>
 ```
 
 `PctField` (`@pacit/components/field`) — **obudowa pola**: etykieta, podpowiedź, komunikat błędu, znacznik wymagalności i sloty `[pctPrefix]` / `[pctSuffix]` wewnątrz ramki. Kontraktu formularza nie implementuje obudowa, lecz kontrolka w środku, więc typowanie zostaje przy rodzaju pola. W środku może stać dowolna kontrolka — pole tekstowe, select, checkbox, grupa radiów.
@@ -87,7 +87,7 @@ Trzy poziomy: **prymitywne → semantyczne → komponentowe**; referencje zachow
 <pct-field label="Cena">
   <span pctPrefix aria-hidden="true">PLN</span>
   <input pctText inputmode="numeric" [(value)]="price" />
-  <button pctSuffix pct-button size="sm" aria-label="Wyczyść">×</button>
+  <button pctSuffix pctButton size="sm" aria-label="Wyczyść">×</button>
 </pct-field>
 ```
 

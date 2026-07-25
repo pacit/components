@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { attrOf, boxOf } from './support/dom';
 
 test.describe('PctRadioGroup — signal forms', () => {
   test.beforeEach(async ({ page }) => {
@@ -13,11 +14,11 @@ test.describe('PctRadioGroup — signal forms', () => {
 
     // W obudowie etykietę renderuje pct-field; grupa wskazuje ją przez
     // aria-labelledby, bo `<label for>` nie nazywa zbioru elementów.
-    const labelId = await page
-      .getByTestId('field-plan')
-      .locator('[data-pct-part="field-label"]')
-      .getAttribute('id');
-    await expect(group).toHaveAttribute('aria-labelledby', labelId!);
+    const labelId = await attrOf(
+      page.getByTestId('field-plan').locator('[data-pct-part="field-label"]'),
+      'id',
+    );
+    await expect(group).toHaveAttribute('aria-labelledby', labelId);
     await expect(group.locator('[data-pct-part="group-label"]')).toHaveCount(0);
   });
 
@@ -110,9 +111,9 @@ test.describe('PctRadioGroup — signal forms', () => {
       .first()
       .locator('input');
 
-    const hit = await control.boundingBox();
-    expect(hit!.width).toBeGreaterThanOrEqual(24);
-    expect(hit!.height).toBeGreaterThanOrEqual(24);
+    const hit = await boxOf(control);
+    expect(hit.width).toBeGreaterThanOrEqual(24);
+    expect(hit.height).toBeGreaterThanOrEqual(24);
   });
 
   test('układ poziomy ustawia aria-orientation', async ({ page }) => {

@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { attrOf } from './support/dom';
 
 test.describe('PctField — obudowa pola', () => {
   test.beforeEach(async ({ page }) => {
@@ -14,10 +15,11 @@ test.describe('PctField — obudowa pola', () => {
     await field.locator('[data-pct-part="field-label"]').click();
     await expect(input).toBeFocused();
 
-    const hintId = await field
-      .locator('[data-pct-part="field-hint"]')
-      .getAttribute('id');
-    await expect(input).toHaveAttribute('aria-describedby', hintId!);
+    const hintId = await attrOf(
+      field.locator('[data-pct-part="field-hint"]'),
+      'id',
+    );
+    await expect(input).toHaveAttribute('aria-describedby', hintId);
   });
 
   test('dekoracje są w środku ramki, w kolejności prefix → pole → suffix', async ({
@@ -93,7 +95,7 @@ test.describe('PctField — obudowa pola', () => {
     await expect(input).toHaveAttribute('aria-invalid', 'true');
     await expect(input).toHaveAttribute(
       'aria-describedby',
-      new RegExp((await error.getAttribute('id'))!),
+      new RegExp(await attrOf(error, 'id')),
     );
 
     // Ramka pola sygnalizuje błąd kolorem z tokenu.

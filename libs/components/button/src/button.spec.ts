@@ -8,11 +8,11 @@ import { providePctConfig } from '@pacit/components/core';
 import { PctButton } from './button';
 import { PctButtonSize, PctButtonVariant } from './button.types';
 
-// Host ze sterowalnym stanem — realny <button pct-button>.
+// Host ze sterowalnym stanem — realny <button pctButton>.
 @Component({
   imports: [PctButton],
   template: `<button
-    pct-button
+    pctButton
     [variant]="variant()"
     [size]="size()"
     [loading]="loading()"
@@ -31,7 +31,7 @@ class StateHost {
 // Host bez wiązań — komponent używa własnych wartości domyślnych (m.in. z konfiguracji).
 @Component({
   imports: [PctButton],
-  template: `<button pct-button>Zapisz</button>`,
+  template: `<button pctButton>Zapisz</button>`,
 })
 class BareHost {}
 
