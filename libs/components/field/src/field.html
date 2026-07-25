@@ -1,0 +1,43 @@
+@if (label()) {
+<label
+  class="pct-field__label"
+  data-pct-part="label"
+  [id]="labelId"
+  [attr.for]="labelFor()"
+>
+  {{ label() }} @if (isRequired()) {
+  <span class="pct-field__required" aria-hidden="true">*</span>
+  }
+</label>
+}
+
+<!-- Rząd pola: dekoracje po bokach i kontrolka w środku. Sloty są opcjonalne;
+     kolejność w DOM odpowiada kolejności wizualnej, więc fokus idzie naturalnie. -->
+<div class="pct-field__row" data-pct-part="row">
+  <span class="pct-field__prefix" data-pct-part="prefix">
+    <ng-content select="[pctPrefix]"></ng-content>
+  </span>
+
+  <span class="pct-field__control" data-pct-part="control">
+    <ng-content></ng-content>
+  </span>
+
+  <span class="pct-field__suffix" data-pct-part="suffix">
+    <ng-content select="[pctSuffix]"></ng-content>
+  </span>
+</div>
+
+@if (hint()) {
+<span class="pct-field__hint" data-pct-part="hint" [id]="hintId">
+  {{ hint() }}
+</span>
+} @if (showError()) {
+<span
+  class="pct-field__error"
+  data-pct-part="error"
+  [id]="errorId"
+  role="alert"
+>
+  {{ errorText() }}
+</span>
+}

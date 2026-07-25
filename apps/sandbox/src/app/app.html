@@ -104,6 +104,41 @@
     </div>
   </section>
 
+  <section class="panel" data-testid="panel-field">
+    <h2>PctField — obudowa pola z kontrolką w środku</h2>
+
+    <div class="stack">
+      <pct-field
+        label="E-mail"
+        hint="Etykieta, podpowiedź i błąd należą do obudowy"
+        data-testid="field-email"
+      >
+        <input pctText type="email" [formField]="userForm.email" />
+      </pct-field>
+
+      <pct-field
+        label="Cena"
+        hint="Dekoracje w środku ramki"
+        data-testid="field-price"
+      >
+        <span pctPrefix aria-hidden="true">PLN</span>
+        <input pctText inputmode="numeric" [(value)]="price" />
+        <button
+          pctSuffix
+          pct-button
+          type="button"
+          variant="outline"
+          size="sm"
+          aria-label="Wyczyść cenę"
+          (click)="clearPrice()"
+          data-testid="field-price-clear"
+        >
+          ×
+        </button>
+      </pct-field>
+    </div>
+  </section>
+
   <section
     class="panel"
     [attr.data-theme]="panelDark() ? 'dark' : null"

@@ -259,6 +259,76 @@
       "bg": "pct.surface",
       "level": "UI",
       "severity": "error"
+    },
+    {
+      "name": "field — tekst",
+      "fg": "pct.field.fg",
+      "bg": "pct.field.bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "field — tekst zastępczy",
+      "fg": "pct.field.placeholder-fg",
+      "bg": "pct.field.bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "field — etykieta",
+      "fg": "pct.field.label-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "field — podpowiedź",
+      "fg": "pct.field.hint-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "field — komunikat błędu",
+      "fg": "pct.field.invalid-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "field — dekoracja prefix/suffix",
+      "fg": "pct.field.affix-fg",
+      "bg": "pct.field.bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "field/disabled — tekst",
+      "fg": "pct.field.disabled-fg",
+      "bg": "pct.field.disabled-bg",
+      "level": "AA",
+      "severity": "warn"
+    },
+    {
+      "name": "UI: obramowanie pola",
+      "fg": "pct.field.border",
+      "bg": "pct.field.bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: obramowanie pola (focus)",
+      "fg": "pct.field.border-focus",
+      "bg": "pct.field.bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: obramowanie pola (błąd)",
+      "fg": "pct.field.invalid-border",
+      "bg": "pct.field.bg",
+      "level": "UI",
+      "severity": "error"
     }
   ]
 }

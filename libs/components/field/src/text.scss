@@ -1,0 +1,27 @@
+/* Pole tekstowe jest przezroczyste: ramkę, tło i padding rysuje pct-field. */
+:host {
+  flex: 1 1 auto;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  color: inherit;
+  font: inherit;
+  font-size: var(--pct-field-font-size);
+  line-height: 1.4;
+}
+
+:host:focus {
+  /* Fokus rysuje obudowa na całym rzędzie (:has(:focus-visible)). */
+  outline: none;
+}
+
+:host::placeholder {
+  color: var(--pct-field-placeholder-fg);
+}
+
+:host:disabled {
+  color: var(--pct-field-disabled-fg);
+  cursor: not-allowed;
+}

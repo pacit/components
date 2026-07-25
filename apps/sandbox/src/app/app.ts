@@ -4,6 +4,12 @@ import { PctButton } from '@pacit/components/button';
 import { PctCheckbox } from '@pacit/components/checkbox';
 import { PctInput } from '@pacit/components/input';
 import { PctRadio, PctRadioGroup } from '@pacit/components/radio';
+import {
+  PctField,
+  PctPrefix,
+  PctSuffix,
+  PctText,
+} from '@pacit/components/field';
 import { PctSelect, PctSelectOption } from '@pacit/components/select';
 
 @Component({
@@ -15,6 +21,10 @@ import { PctSelect, PctSelectOption } from '@pacit/components/select';
     PctRadioGroup,
     PctRadio,
     PctSelect,
+    PctField,
+    PctText,
+    PctPrefix,
+    PctSuffix,
     FormField,
   ],
   templateUrl: './app.html',
@@ -51,6 +61,13 @@ export class App {
 
   /** Select w panelu ciemnym — sprawdza propagację motywu do nakładki. */
   protected readonly scopedCountry = signal('');
+
+  /** Demo obudowy pct-field ze slotami. */
+  protected readonly price = signal('1499');
+
+  protected clearPrice(): void {
+    this.price.set('');
+  }
 
   /** Stan nieokreślony — demonstracja aria-checked="mixed". */
   protected readonly partial = signal(true);

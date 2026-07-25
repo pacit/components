@@ -1,0 +1,86 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pct-field-label-gap);
+  font-family: inherit;
+}
+
+.pct-field__label {
+  color: var(--pct-field-label-fg);
+  font-size: var(--pct-font-size-sm);
+  font-weight: var(--pct-font-weight-medium);
+}
+
+.pct-field__required {
+  color: var(--pct-field-invalid-fg);
+  margin-inline-start: 2px;
+}
+
+/* Ramkę rysuje obudowa, nie kontrolka — inaczej dekoracje prefix/suffix
+   znalazłyby się poza polem. Kontrolka w środku jest przezroczysta. */
+.pct-field__row {
+  display: flex;
+  align-items: center;
+  gap: var(--pct-field-gap);
+  box-sizing: border-box;
+  background: var(--pct-field-bg);
+  color: var(--pct-field-fg);
+  border: 1px solid var(--pct-field-border);
+  border-radius: var(--pct-field-radius);
+  padding: var(--pct-field-padding-y) var(--pct-field-padding-x);
+  transition: border-color 0.15s ease;
+}
+
+.pct-field__row:hover {
+  border-color: var(--pct-field-border-hover);
+}
+
+/* Fokus dowolnego elementu w środku podświetla całe pole — także gdy fokus
+   trafi na przycisk w slocie suffix. */
+.pct-field__row:has(:focus-visible) {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: 1px;
+  border-color: var(--pct-field-border-focus);
+}
+
+:host([data-pct-invalid]) .pct-field__row {
+  border-color: var(--pct-field-invalid-border);
+}
+
+:host([data-pct-disabled]) .pct-field__row {
+  background: var(--pct-field-disabled-bg);
+  border-color: var(--pct-field-disabled-border);
+  color: var(--pct-field-disabled-fg);
+}
+
+.pct-field__control {
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  min-width: 0; /* pozwala kontrolce się skracać zamiast rozpychać pole */
+}
+
+.pct-field__prefix,
+.pct-field__suffix {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  color: var(--pct-field-affix-fg);
+  font-size: var(--pct-field-font-size);
+}
+
+/* Puste slotu nie zajmują miejsca ani nie tworzą odstępu. */
+.pct-field__prefix:empty,
+.pct-field__suffix:empty {
+  display: none;
+}
+
+.pct-field__hint {
+  color: var(--pct-field-hint-fg);
+  font-size: var(--pct-font-size-sm);
+}
+
+.pct-field__error {
+  color: var(--pct-field-invalid-fg);
+  font-size: var(--pct-font-size-sm);
+}

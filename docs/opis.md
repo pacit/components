@@ -67,6 +67,16 @@ Biblioteka komponentów angular pozwalająca na budowanie skomplikowanych, skalo
 
   **`ControlValueAccessor` NIE jest implementowany.** Kontrolka spełniająca `FormValueControl` działa z reactive forms (`[formControl]`, `formControlName`) i template-driven (`[(ngModel)]`) bez żadnej warstwy kompatybilności — zweryfikowane testami (`wym-real-9`). Dzięki temu rdzeń komponentów pozostaje wolny od klasycznego API formularzy przy zachowaniu pełnej kompatybilności z istniejącymi aplikacjami.
 
+- `wym-api-13` **Kontrolki formularza budujemy jako obudowa + kontrolka.** `pct-field` dostarcza etykietę, podpowiedź, komunikat błędu, znacznik wymagalności oraz sloty `[pctPrefix]` / `[pctSuffix]` wewnątrz ramki. Kontraktu formularza **nie implementuje obudowa**, lecz kontrolka w środku — dzięki temu typowanie zostaje przy rodzaju pola (`string`, `number`, `Date`, `string[]`). Kontrolka rejestruje się przez token `PCT_FIELD` (wstrzykiwany opcjonalnie), a obudowa oddaje jej identyfikatory opisów do `aria-describedby`.
+
+  Wspólna logika komunikatów (tekst błędu, bramkowanie na `touched`, składanie `aria-describedby`) mieszka w `core` — była wcześniej skopiowana do każdej kontrolki osobno (`wym-real-21`).
+
+  **Ramkę pola rysuje obudowa**, nie kontrolka: inaczej dekoracje `prefix`/`suffix` znalazłyby się poza polem. Kontrolka w środku jest przezroczysta i bez obramowania, a focus ring obejmuje cały rząd (`:has(:focus-visible)`), także gdy fokus trafi na przycisk w slocie.
+
+- `wym-api-14` **Obudowa jest opcjonalna.** Kontrolki działają też bez `pct-field` (wtedy bez etykiety i komunikatów) — przydatne np. w komórce tabeli. Kontrolki z własnym układem etykiety (checkbox, radiogroup) rysują ją samodzielnie, a wewnątrz `pct-field` oddają obudowie.
+
+- `wym-api-15` **Pole tekstowe to komponent na natywnym `<input>`** (`input[pctText]`), nie własny element. Zachowujemy `type`, autouzupełnianie przeglądarki i tryby klawiatury mobilnej. Komponent, a nie dyrektywa, bo dyrektywy nie mogą mieć styli, a nie chcemy opierać API na `::ng-deep`.
+
 - `wym-api-10` **Komponenty złożone: kontrolką formularza jest kontener, nie elementy składowe.** W grupie (np. `pct-radio-group` + `pct-radio`) kontrakt `FormValueControl` implementuje wyłącznie kontener — z punktu widzenia formularza edytowana jest jedna wartość. Elementy składowe komunikują się z kontenerem przez DI i nie mają własnego stanu formularza.
 
 - `wym-api-11` **Zachowania klawiatury nie implementujemy sami, jeśli daje je platforma.** Grupa radiów opiera się na natywnych `<input type="radio">` ze wspólnym `name`, dzięki czemu nawigacja strzałkami, zawijanie i „jedno miejsce w kolejności Taba" pochodzą od przeglądarki — bez własnego roving tabindex. Własną obsługę klawiatury dodajemy tylko tam, gdzie nie istnieje natywny odpowiednik.
@@ -175,14 +185,14 @@ Zbudowano pionowy plaster end-to-end weryfikujący powyższe ustalenia. Stack: *
 Powstało:
 
 - `libs/tokens` — źródło DTCG + build (`build.mjs`) generujący `pct.css` / `_tokens.scss` / `tokens.ts`, z **bramką kontrastu WCAG 2.2 AA** (build faila, gdy para tekst/tło < 4.5:1).
-- `libs/components` — pakiet `@pacit/components` z secondary entrypoints `./core`, `./button`, `./input`, `./checkbox`, `./radio` i `./select` (czysta mapa `exports`).
+- `libs/components` — pakiet `@pacit/components` z secondary entrypoints `./core`, `./field`, `./button`, `./input`, `./checkbox`, `./radio` i `./select` (czysta mapa `exports`).
 - `PctButton` — selektor atrybutowy `button[pct-button]`, standalone, OnPush, signals, `booleanAttribute`, stan jako `data-pct-*`, elementy wewnętrzne jako `data-pct-part`, `providePctConfig`.
 - `apps/sandbox` — **zoneless** (`provideZonelessChangeDetection`), SSR + hydration, prezentacja Buttona i **scoped theme** (panel `data-theme="dark"` przethemowany samą kaskadą CSS).
 - `PctInput` — natywna kontrolka signal forms (`FormValueControl`), etykieta/podpowiedź/błąd powiązane przez generowane id (`for`, `aria-describedby`, `aria-invalid`, `role="alert"`), błąd pokazywany dopiero po dotknięciu pola, stan bez `opacity`.
 - `PctCheckbox` — natywna kontrolka signal forms (`FormCheckboxControl`), stan nieokreślony z `aria-checked="mixed"`, `readonly` blokujące zmianę bez utraty fokusowalności, znacznik rysowany SVG w `currentColor` (bez zależności od zestawu ikon).
 - `PctRadioGroup` + `PctRadio` — pierwszy komponent złożony: **kontrolką formularza jest grupa**, opcje nie są samodzielnymi kontrolkami. Grupa ma `role="radiogroup"`, `aria-labelledby`/`aria-orientation`, generuje wspólny `name` dla natywnych radiów.
 - `PctSelect` — lista wyboru z własnym panelem (nie natywny `<select>`): wzorzec ARIA „select-only combobox" (`role="combobox"` + `role="listbox"`, fokus zostaje na triggerze, aktywna opcja przez `aria-activedescendant`), własna obsługa klawiatury (strzałki, Home/End, Enter, Escape, typeahead) i **pierwsze użycie CDK Overlay**.
-- Testy: `components` 67/67 (Vitest), `sandbox` 2/2, `sandbox-e2e` 35/35 (Playwright, w tym 5 audytów axe-core) — testy jednostkowe biegną pod zoneless.
+- Testy: `components` 80/80 (Vitest), `sandbox` 2/2, `sandbox-e2e` 40/40 (Playwright, w tym 5 audytów axe-core) — testy jednostkowe biegną pod zoneless.
 
 Wnioski, które doprecyzowują „przepis":
 
@@ -193,6 +203,8 @@ Wnioski, które doprecyzowują „przepis":
 - `wym-real-5` _(do zrobienia)_ Raport pokrycia wymaga konfiguracji `coverageInclude` w targecie testowym, by egzekwować próg z `wym-proj-4`.
 - `wym-real-6` Pierwotny guard (token-level) przepuścił disabled o realnym kontraście ~1.6:1, bo stan był robiony przez `opacity` (kompozycja z tłem w runtime, niewidoczna dla matematyki na hexach). Stąd `wym-token-11` (policy per motyw/rozmiar, severity) i `wym-token-12` (zakaz `opacity` dla warstw tekstowych). Wdrożone: `libs/tokens/src/contrast.policy.json` + silnik w `build.mjs`; `PctButton` używa tokenów `disabled-*` zamiast `opacity`.
 - `wym-real-7` **Zoneless jest deklarowany jawnie** przez `provideZonelessChangeDetection()` w `app.config.ts`, mimo że generator nie dodaje polyfilla `zone.js` (bundle i tak go nie zawiera). Jawna deklaracja zamyka `wym-tech-3` i chroni przed przypadkowym powrotem do trybu zone-based. Testy jednostkowe biblioteki i aplikacji również konfigurują zoneless w `TestBed`, dzięki czemu `wym-api-2` (komponenty zoneless-safe) jest **weryfikowane**, a nie tylko deklarowane. (Uwaga: `setupTestBed()` z `@analogjs/vitest-angular` domyślnie już ustawia `zoneless: true` — jawna konfiguracja w spec-ach jest zabezpieczeniem na wypadek zmiany domyślnych.)
+- `wym-real-21` Ta sama logika komunikatów (`errorText`, `showInvalid`, `showError`, `describedBy`, `hintId`, `errorId`, `touch`) była **skopiowana do 4 kontrolek**. Poprawka wymagała czterech identycznych zmian — stąd wydzielenie do `core` (`wym-api-13`).
+- `wym-real-20` **Na natywnym elemencie klasyczne formularze prowadzą przez wbudowany `DefaultValueAccessor`.** `[formControl]` na `<input pctText>` jest obsługiwany przez akcesor Angulara, który sam pisze do DOM. Nasze równoległe wiązanie wartości powodowało konflikt dwóch autorów (input startował pusty zamiast z wartością kontrolki). Kontrolka wykrywa więc `NgControl` na tym samym elemencie i wtedy oddaje własność wartości, pozostając przy obudowie i stanie.
 - `wym-real-17` **Scoped theme był zepsuty na warstwie komponentowej i nikt tego nie widział.** Sonda w przeglądarce wykazała, że w panelu `[data-theme="dark"]` token semantyczny `--pct-surface` miał poprawną wartość ciemną, ale `--pct-button-bg` i `--pct-select-panel-bg` nadal zwracały wartości jasne. Przyczyna w `wym-token-13`. Wada przetrwała tak długo, bo wcześniejszy test scoped theme sprawdzał **tylko token semantyczny**, a różnica między `blue-600` i `blue-500` jest wizualnie subtelna. Poprawione w buildzie; dodany test regresyjny porównujący token komponentowy w `:root` i w scope.
 - `wym-real-18` Panel nakładki CDK renderuje się **poza drzewem hosta**, co ma dwie konsekwencje: (1) selektory `:host(...)` nie obejmują jego treści — stany opcji trzeba oznaczać atrybutami na samych opcjach; (2) kaskada scoped theme do niego nie dociera — motyw z najbliższego przodka hosta jest przenoszony jawnie na panel (`data-theme`). Tokeny działają, bo są zdefiniowane na `:root` — zaleta podejścia CSS-first (`wym-token-1`).
 - `wym-real-19` `CSS.escape` nie istnieje w jsdom, więc budowanie selektorów po id wywala testy jednostkowe. Aktywną opcję znajdujemy indeksem w kolekcji, co dodatkowo wprost odpowiada semantyce `activeIndex`.
