@@ -21,6 +21,19 @@ export type PctLabelStrategy = 'for' | 'labelledby';
 export type PctFieldAppearance = 'boxed' | 'bare';
 
 /**
+ * Kursor nad powierzchnią pola. Ramka jest jednym obszarem klikalnym, więc
+ * kursor musi zapowiadać to, co kliknięcie zrobi — na **całej** jej powierzchni,
+ * nie tylko nad samą kontrolką:
+ * - `text` — klik ustawia karetkę (pole tekstowe, liczbowe),
+ * - `pointer` — klik otwiera lub przełącza (select, data),
+ * - `default` — kontrolka bez ramki (`bare`) albo neutralna.
+ *
+ * Zgłasza to kontrolka, a nie arkusz obudowy: inaczej `field.scss` musiałby
+ * znać klasy każdej kontrolki z osobna i każda nowa zaczynałaby od tego błędu.
+ */
+export type PctFieldCursor = 'text' | 'pointer' | 'default';
+
+/**
  * Kontrakt, którym kontrolka przedstawia się obudowie `pct-field`.
  * Obudowa jest prezentacyjna: czyta stan kontrolki i oddaje jej z powrotem
  * identyfikatory opisów (`aria-describedby`).
@@ -31,6 +44,8 @@ export interface PctFieldControl {
   readonly labelStrategy: PctLabelStrategy;
   /** Domyślnie `boxed`, jeśli kontrolka nie zgłosi inaczej. */
   readonly fieldAppearance?: PctFieldAppearance;
+  /** Domyślnie `default`, jeśli kontrolka nie zgłosi inaczej. */
+  readonly fieldCursor?: PctFieldCursor;
   readonly invalid: Signal<boolean>;
   readonly touched: Signal<boolean>;
   readonly required: Signal<boolean>;
@@ -44,6 +59,14 @@ export interface PctFieldControl {
    * inaczej powstaje „martwa strefa", w której kliknięcie nic nie robi.
    */
   focus?(options?: FocusOptions): void;
+  /**
+   * Uruchamia kontrolkę tak, jak zrobiłoby to kliknięcie w nią samą. Obudowa
+   * woła to po kliknięciu w ramkę poza kontrolką — inaczej `cursor: pointer`
+   * nad całą ramką selecta obiecywałby otwarcie listy, a klik w padding tylko
+   * przenosiłby fokus. Kontrolki tekstowe tego nie implementują: dla nich
+   * sam `focus()` jest pełną odpowiedzią na kliknięcie.
+   */
+  activate?(): void;
   /**
    * Dla `labelStrategy: 'labelledby'` obudowa przekazuje id swojej etykiety —
    * kontrolka-kontener (np. grupa radiów) wystawia je jako `aria-labelledby`,

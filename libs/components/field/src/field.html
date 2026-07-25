@@ -13,10 +13,18 @@
 
 <!-- Rząd pola: dekoracje po bokach i kontrolka w środku. Sloty są opcjonalne;
      kolejność w DOM odpowiada kolejności wizualnej, więc fokus idzie naturalnie. -->
+
+<!--
+  Rząd nie jest własnym celem interakcji — tylko przekazuje kliknięcie w swoje
+  tło kontrolce, która leży w środku i ma pełną obsługę klawiatury. Duplikat
+  obsługi klawiszy tutaj tworzyłby drugi cel Taba. Reguła jest fałszywie dodatnia.
+-->
+<!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
 <div
   class="pct-field__row"
   data-pct-part="field-row"
   (mousedown)="onRowPointerDown($event)"
+  (click)="onRowClick($event)"
 >
   <span class="pct-field__prefix" data-pct-part="field-prefix">
     <ng-content select="[pctPrefix]"></ng-content>

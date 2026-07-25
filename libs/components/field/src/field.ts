@@ -39,6 +39,7 @@ import {
   host: {
     class: 'pct-field',
     '[attr.data-pct-appearance]': 'appearance()',
+    '[attr.data-pct-cursor]': 'cursor()',
     '[attr.data-pct-invalid]': 'showInvalid() ? "" : null',
     '[attr.data-pct-disabled]': 'disabled() ? "" : null',
   },
@@ -90,25 +91,47 @@ export class PctField implements PctFieldApi {
     () => this.control()?.fieldAppearance ?? 'boxed',
   );
 
+  /** Kursor nad ramką zgłasza kontrolka; wyłączenie przykrywa go w CSS. */
+  protected readonly cursor = computed(
+    () => this.control()?.fieldCursor ?? 'default',
+  );
+
   attach(control: PctFieldControl): void {
     this.control.set(control);
   }
 
   /**
+   * Czy zdarzenie trafiło w element, który obsłuży się sam (sama kontrolka,
+   * przycisk lub link w slocie) — wtedy obudowa nie miesza się do kliknięcia.
+   */
+  private handledByTarget(event: MouseEvent): boolean {
+    const target = event.target as HTMLElement | null;
+    return target?.closest(PctField.interactive) != null;
+  }
+
+  private static readonly interactive =
+    'button, a, input, textarea, select, [tabindex]';
+
+  /**
    * Klik w obszar pola, który nie jest kontrolką (padding ramki, odstęp między
    * dekoracjami), przekazujemy kontrolce. Bez tego powstaje „martwa strefa":
    * kursor jest wewnątrz ramki, ale kliknięcie nie ustawia fokusu.
-   * Kliknięcia w elementy interaktywne (przycisk w slocie, sama kontrolka)
-   * zostawiamy w spokoju — obsługują się same.
    */
   protected onRowPointerDown(event: MouseEvent): void {
-    const target = event.target as HTMLElement | null;
-    if (target?.closest('button, a, input, textarea, select, [tabindex]')) {
-      return;
-    }
+    if (this.handledByTarget(event)) return;
     // Zapobiega utracie fokusu przy kliknięciu w tło rzędu.
     event.preventDefault();
     this.control()?.focus?.();
+  }
+
+  /**
+   * Uruchomienie kontrolki idzie po `click`, nie po `mousedown`: nakładka CDK
+   * otwarta na `mousedown` zamknęłaby się od razu, biorąc dopełniający `click`
+   * za kliknięcie poza panelem.
+   */
+  protected onRowClick(event: MouseEvent): void {
+    if (this.handledByTarget(event)) return;
+    this.control()?.activate?.();
   }
 
   constructor() {

@@ -239,14 +239,24 @@ describe('PctField + PctText', () => {
       expect(document.activeElement).not.toBe(inputOf(fixture));
     });
 
-    it('kontrolka wypełnia wysokość rzędu (brak martwej strefy w pionie)', async () => {
+    it('odstępy niesie wnętrze rzędu, nie sam rząd (brak strefy niczyjej)', async () => {
       const fixture = await render(AffixHost);
       const row = part(fixture, 'field-row');
-      const control = part(fixture, 'field-control');
 
-      // W jsdom brak realnego layoutu, więc sprawdzamy zadeklarowany mechanizm.
-      expect(getComputedStyle(control).alignSelf).toBe('stretch');
-      expect(row.contains(control)).toBe(true);
+      // W jsdom brak realnego layoutu, więc sprawdzamy zadeklarowany mechanizm:
+      // rząd nie ma własnego paddingu ani `gap`, a kolumny rozciągają się na
+      // jego wysokość — inaczej większość powierzchni ramki nie należy do
+      // żadnej z nich i nie da się jej nadać kursora zgodnego z kliknięciem.
+      const rowStyle = getComputedStyle(row);
+      expect(rowStyle.alignItems).toBe('stretch');
+      expect(rowStyle.padding).toBe('');
+      expect(rowStyle.gap).toBe('');
+
+      // Że kolumny naprawdę kafelkują wnętrze ramki, sprawdza test e2e —
+      // tu jest tylko ich obecność, bo jsdom nie liczy layoutu.
+      for (const name of ['field-prefix', 'field-control', 'field-suffix']) {
+        expect(row.contains(part(fixture, name))).toBe(true);
+      }
     });
   });
 

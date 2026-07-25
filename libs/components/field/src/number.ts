@@ -20,6 +20,7 @@ import {
   nextPctId,
   PCT_FIELD,
   PctFieldControl,
+  PctFieldCursor,
   PctLabelStrategy,
 } from '@pacit/components/core';
 
@@ -148,6 +149,7 @@ export class PctNumber
 
   readonly controlId = nextPctId('pct-number');
   readonly labelStrategy: PctLabelStrategy = 'for';
+  readonly fieldCursor: PctFieldCursor = 'text';
 
   protected readonly describedBy = signal<string | null>(null);
 

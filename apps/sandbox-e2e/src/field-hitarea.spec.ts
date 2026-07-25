@@ -51,19 +51,30 @@ test.describe('PctField — obszar klikalny bez martwej strefy', () => {
     await expect(input).toBeFocused();
   });
 
-  test('kontrolka wypełnia wysokość rzędu, gdy w slocie jest wyższy przycisk', async ({
-    page,
-  }) => {
+  test('kolumny szczelnie kafelkują wnętrze ramki', async ({ page }) => {
+    // Sedno poprawki: rząd nie ma własnego paddingu, więc nie ma w nim pasa,
+    // który nie należy do żadnej kolumny. Wcześniej było to ~60% powierzchni.
     const field = page.getByTestId('field-price');
-    const rowBox = await boxOf(field.locator('[data-pct-part="field-row"]'));
-    const controlBox = await boxOf(
-      field.locator('[data-pct-part="field-control"]'),
-    );
+    const row = await boxOf(field.locator('[data-pct-part="field-row"]'));
+    const border = 1;
 
-    // Kolumna kontrolki obejmuje całą wysokość wnętrza rzędu (bez paddingu).
-    const paddingY = 2 * 8; // --pct-field-padding-y = space-3 = 8px
-    expect(controlBox.height).toBeGreaterThanOrEqual(
-      rowBox.height - paddingY - 2,
+    const columns = [];
+    for (const part of ['field-prefix', 'field-control', 'field-suffix']) {
+      columns.push(await boxOf(field.locator(`[data-pct-part="${part}"]`)));
+    }
+
+    for (const column of columns) {
+      expect(column.height).toBeCloseTo(row.height - 2 * border, 0);
+      expect(column.y).toBeCloseTo(row.y + border, 0);
+    }
+
+    // Kolumny stykają się bez luk i sięgają obu krawędzi wnętrza rzędu.
+    expect(columns[0].x).toBeCloseTo(row.x + border, 0);
+    expect(columns[1].x).toBeCloseTo(columns[0].x + columns[0].width, 0);
+    expect(columns[2].x).toBeCloseTo(columns[1].x + columns[1].width, 0);
+    expect(columns[2].x + columns[2].width).toBeCloseTo(
+      row.x + row.width - border,
+      0,
     );
   });
 
@@ -80,6 +91,57 @@ test.describe('PctField — obszar klikalny bez martwej strefy', () => {
   test('cała ramka pokazuje kursor tekstowy', async ({ page }) => {
     await expect(
       page.getByTestId('field-price').locator('[data-pct-part="field-row"]'),
+    ).toHaveCSS('cursor', 'text');
+  });
+
+  test('pole z listą pokazuje kursor wskaźnika na całej ramce', async ({
+    page,
+  }) => {
+    await expect(
+      page.getByTestId('field-country').locator('[data-pct-part="field-row"]'),
+    ).toHaveCSS('cursor', 'pointer');
+  });
+
+  test('pole wyłączone nie zaprasza do pisania', async ({ page }) => {
+    await expect(
+      page.getByTestId('field-disabled').locator('[data-pct-part="field-row"]'),
+    ).toHaveCSS('cursor', 'not-allowed');
+  });
+
+  test('kliknięcie w padding pola z listą otwiera panel', async ({ page }) => {
+    // Kursor `pointer` nad całą ramką obiecuje otwarcie listy — obietnica musi
+    // obowiązywać też w paddingu, nie tylko nad samym triggerem.
+    const field = page.getByTestId('field-country');
+    const row = field.locator('[data-pct-part="field-row"]');
+    const trigger = field.locator('[data-pct-part="trigger"]');
+
+    await row.scrollIntoViewIfNeeded();
+    const box = await boxOf(row);
+    await page.mouse.click(box.x + 3, box.y + 3);
+
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.locator('[data-pct-part="panel"]')).toBeVisible();
+  });
+
+  test('interaktywna dekoracja zajmuje całą wysokość swojego slotu', async ({
+    page,
+  }) => {
+    // Pas nad przyciskiem i pod nim należy do przycisku, nie do pola — inaczej
+    // kursor i obszar kliknięcia rozjeżdżają się na jego krawędziach.
+    const field = page.getByTestId('field-price');
+    const clear = field.getByTestId('field-price-clear');
+    const slot = await boxOf(field.locator('[data-pct-part="field-suffix"]'));
+    const button = await boxOf(clear);
+
+    expect(button.height).toBeCloseTo(slot.height, 0);
+    await expect(clear).toHaveCSS('cursor', 'pointer');
+  });
+
+  test('bierna dekoracja dziedziczy kursor pola', async ({ page }) => {
+    // Jednostka „PLN" nie jest celem kliknięcia — klik w nią fokusuje kontrolkę,
+    // więc kursor ma mówić to samo co reszta ramki.
+    await expect(
+      page.getByTestId('field-price').locator('[data-pct-part="field-prefix"]'),
     ).toHaveCSS('cursor', 'text');
   });
 });
