@@ -26,6 +26,7 @@
     "@angular/cli": "22.0.6",
     "@angular/compiler-cli": "22.0.6",
     "@angular/language-service": "22.0.6",
+    "@axe-core/playwright": "^4.12.1",
     "@eslint/js": "^9.8.0",
     "@nx/angular": "23.1.0",
     "@nx/devkit": "23.1.0",
