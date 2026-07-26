@@ -2,6 +2,19 @@
 
 Biblioteka komponentów angular pozwalająca na budowanie skomplikowanych, skalowalnych widoków aplikacji.
 
+## Jak czytać ten dokument
+
+Wymagania (`wym-*`) opisują **cel**, nie stan kodu — i przez to łatwo je przeczytać jako opis tego,
+co już działa. Żeby to rozdzielić, wymaganie, którego jeszcze nie spełniamy, ma adnotację przy samej
+treści:
+
+- _(niezrealizowane)_ — nic z tego jeszcze nie powstało,
+- _(częściowo)_ — działa część; adnotacja mówi, która nie.
+
+Brak adnotacji znaczy „zrealizowane". Zbiorcze zestawienie z uzasadnieniem kolejności jest
+w sekcji **Czego jeszcze nie ma**, a wnioski wyciągnięte po drodze — w **Stanie realizacji**
+(`wym-real-*`).
+
 ## Wymagania projektowe
 
 - `wym-proj-1` Całość powstaje jako NX workspace (monorepo).
@@ -11,11 +24,13 @@ Biblioteka komponentów angular pozwalająca na budowanie skomplikowanych, skalo
 - `wym-proj-3` Biblioteka ma możliwie najmniej zależności runtime od innych bibliotek TS/JS. Dopuszczone zależności runtime:
   - `@angular/cdk` — używany (CDK Overlay w `PctSelect`); zadeklarowany jako `peerDependency` pakietu. Konsument musi dołączyć `@angular/cdk/overlay-prebuilt.css`.
 
-- `wym-proj-4` Kod biblioteki jest możliwie pełnie pokryty testami. Spełnia minimum SonarQube, czyli >=80% pokrycia linii kodu.
+- `wym-proj-4` _(częściowo)_ Kod biblioteki jest możliwie pełnie pokryty testami. Spełnia minimum SonarQube, czyli >=80% pokrycia linii kodu.
 
-- `wym-proj-5` W ramach workspace powstaje:
+  Testy są (`components` + `sandbox` + e2e), ale **próg nie jest egzekwowany**: żaden target nie zbiera pokrycia biblioteki ani nie faila poniżej 80% (`wym-real-5`). Do czasu konfiguracji `coverageInclude` liczba „80%" jest deklaracją, nie bramką.
+
+- `wym-proj-5` _(częściowo)_ W ramach workspace powstaje:
   - biblioteka komponentów,
-  - aplikacja angular z dokumentacją i prezentacją biblioteki — możliwa do publikacji w internecie jako strona biblioteki,
+  - aplikacja angular z dokumentacją i prezentacją biblioteki — możliwa do publikacji w internecie jako strona biblioteki, **_(niezrealizowane — `apps/docs` nie istnieje)_**
   - aplikacja angular "sandbox" pokazująca jak najwięcej możliwości używania i konfigurowania komponentów,
   - testy e2e bazujące na aplikacji "sandbox".
 
@@ -37,8 +52,8 @@ Biblioteka komponentów angular pozwalająca na budowanie skomplikowanych, skalo
 
 ## Struktura workspace
 
-- `wym-ws-1` Layout NX monorepo:
-  - `apps/` — `docs` (aplikacja dokumentacji, publikowalna), `sandbox` (playground, baza dla e2e), `sandbox-e2e` (Playwright),
+- `wym-ws-1` _(częściowo)_ Layout NX monorepo:
+  - `apps/` — `docs` (aplikacja dokumentacji, publikowalna) **_(niezrealizowane)_**, `sandbox` (playground, baza dla e2e), `sandbox-e2e` (Playwright),
   - `libs/` — `components` (publikowalny pakiet), `tokens` (źródło DTCG + build).
 
 - `wym-ws-2` Lib `components` publikuje pakiet `@pacit/components` z secondary entrypoints per komponent (kanonicznie przez ng-packagr — folder + własny `ng-package.json` + `index.ts`; generator `@nx/angular:library-secondary-entry-point`). Wszystko trafia do jednego pakietu npm, a entrypointy mogą od siebie zależeć.
@@ -129,13 +144,21 @@ Biblioteka komponentów angular pozwalająca na budowanie skomplikowanych, skalo
 
   **Panel nie dziedziczy niczego po hoście** — renderuje się poza jego drzewem (`wym-real-18`). Poza motywem dotyczy to również pisma: krój należy do aplikacji, a wielkość do kontekstu kontrolki (`pct-field[size]` albo własny `size`), więc jedno i drugie kontrolka odczytuje z triggera przy otwarciu i przenosi na panel. Inaczej lista pisze domyślną czcionką przeglądarki, a w polu `lg` — tekstem wielkości `md`.
 
-- `wym-api-6` Dostępność wbudowana w każdy komponent — ARIA zarządzane wewnętrznie, wykorzystanie CDK a11y (`FocusMonitor`, `LiveAnnouncer`, `FocusTrap`), id generowane util-em (`wym-a11y-1`).
+- `wym-api-6` _(częściowo)_ Dostępność wbudowana w każdy komponent — ARIA zarządzane wewnętrznie, wykorzystanie CDK a11y (`FocusMonitor`, `LiveAnnouncer`, `FocusTrap`), id generowane util-em (`wym-a11y-1`).
 
-- `wym-api-7` Customizacja przez projekcję treści `<ng-content select="...">` oraz przekazywanie szablonów jako `TemplateRef` / dyrektywa `*pctTemplate` (odpowiednik `pTemplate`) dla elementów typu szablon itemu.
+  ARIA i generowanie id działają (`nextPctId` w `core`, `wym-real-31`). **Z CDK a11y nie korzysta jeszcze nic** — dotychczasowe komponenty go nie potrzebowały: fokus w selekcie zostaje na triggerze (`wym-real-18`), więc nie ma czego pułapkować, a żaden komponent nie ogłasza jeszcze zmian asynchronicznie. Wiąże dopiero przy dialogu, drawerze i toaście.
 
-- `wym-api-8` Konfiguracja globalna wzorcem `providePctConfig({...})` z tokenem DI (domyślny `size`, locale, ripple itd.), nadpisywalna per-komponent przez inputy.
+- `wym-api-7` _(niezrealizowane)_ Customizacja przez projekcję treści `<ng-content select="...">` oraz przekazywanie szablonów jako `TemplateRef` / dyrektywa `*pctTemplate` (odpowiednik `pTemplate`) dla elementów typu szablon itemu.
 
-- `wym-api-9` Animacje bez zależności `@angular/animations` — realizowane na CSS + Web Animations API (zgodnie z `wym-proj-3`).
+  Projekcja treści działa (sloty obudowy pola). **Szablonów nie ma wcale** — `TemplateRef` nie pada nigdzie w bibliotece, więc opcji selecta nie da się dziś ostylować własnym szablonem. To pierwszy brak, w który uderza realne użycie selecta.
+
+- `wym-api-8` _(częściowo)_ Konfiguracja globalna wzorcem `providePctConfig({...})` z tokenem DI (domyślny `size`, locale, ripple itd.), nadpisywalna per-komponent przez inputy.
+
+  Mechanizm działa, ale `PctConfig` ma **jedno pole** (`defaultSize`) — locale ani ripple jeszcze w nim nie ma. Kształt konfiguracji warto domknąć, zanim zacznie ją czytać kilkanaście komponentów; kandydatem jest też kanał na teksty komponentów (patrz **Czego jeszcze nie ma → braki w samych wymaganiach**).
+
+- `wym-api-9` _(niezrealizowane)_ Animacje bez zależności `@angular/animations` — realizowane na CSS + Web Animations API (zgodnie z `wym-proj-3`).
+
+  Zakaz jest dotrzymany (`@angular/animations` nie jest zależnością), ale to na razie jedyne, co z tego wymagania obowiązuje: **z WAAPI nie korzysta nic**, a jedyne przejścia to `transition` w arkuszach. Reguła zostanie sprawdzona dopiero przy pierwszym komponencie z wejściem/wyjściem (panel, dialog, toast) — wtedy trzeba też ustalić, jak animacje respektują `prefers-reduced-motion` systemowo, a nie per komponent.
 
 ## Dostępność (a11y)
 
@@ -163,7 +186,9 @@ Biblioteka komponentów angular pozwalająca na budowanie skomplikowanych, skalo
 
 - `wym-theme-4` Możliwość ustawienia innego motywu dla części aplikacji (scoped theme) — realizowana przez kaskadę CSS custom properties na wybranym poddrzewie (np. `.pct-theme-x`), bez rekompilacji.
 
-- `wym-theme-5` **Skórka jest w pełni parametryzowana** — autor motywu definiuje wszystkie kolory (wszystkich stanów). Komponenty nie mają wbudowanych kolorów ani nie przyciemniają stanów przez `opacity` (`wym-token-12`); korzystają wyłącznie z tokenów. Budowanie skórki uruchamia bramkę kontrastu (`wym-token-11`), która daje autorowi konkretny raport błędów i ostrzeżeń.
+- `wym-theme-5` _(częściowo)_ **Skórka jest w pełni parametryzowana** — autor motywu definiuje wszystkie kolory (wszystkich stanów). Komponenty nie mają wbudowanych kolorów ani nie przyciemniają stanów przez `opacity` (`wym-token-12`); korzystają wyłącznie z tokenów. Budowanie skórki uruchamia bramkę kontrastu (`wym-token-11`), która daje autorowi konkretny raport błędów i ostrzeżeń.
+
+  Parametryzacja jest pełna i bramka działa — ale **wyłącznie dla skórki wbudowanej**. Nie ma ścieżki, którą ktoś z zewnątrz zbudowałby własną: `build.mjs` czyta sztywny zestaw plików z `libs/tokens/src`, a pakiet `@pacit/tokens` jest `private`. Sandbox ma już oś skórki z jedną pozycją (`base`) czekającą na tę ścieżkę.
 
 ## Architektura design tokens
 
@@ -171,12 +196,14 @@ Zasada nadrzędna: **CSS-first, zero-runtime**. Motyw w runtime to wyłącznie k
 
 - `wym-token-1` **Źródło prawdy: format DTCG** (W3C Design Tokens Community Group, JSON z `$type`/`$value` i referencjami `{...}`). Format jest przenośny — może być czytany/zapisywany przez narzędzia projektowe (np. Figma / Tokens Studio).
 
-- `wym-token-2` **Build-time generuje artefakty** ze źródła DTCG (narzędziem typu Style Dictionary):
+- `wym-token-2` _(częściowo)_ **Build-time generuje artefakty** ze źródła DTCG (narzędziem typu Style Dictionary):
   - CSS z custom properties (dystrybuowane motywy),
   - mapy/funkcje SCSS do użytku wewnętrznego biblioteki,
   - typy/const TS z nazwami tokenów (bezpieczeństwo typów, brak cichych literówek).
 
   TS jest **generowany** ze źródła DTCG, nie pisany ręcznie.
+
+  Wszystkie trzy artefakty powstają, ale `tokens.ts` **nie jest przez nikogo importowany** i nie jedzie w pakiecie (`@pacit/tokens` jest `private`). Cel z tego punktu — brak cichych literówek w nazwach tokenów — nie jest więc dziś osiągany: nazwy w arkuszach nadal są zwykłymi łańcuchami znaków, których nikt nie sprawdza. Bramka `nx check-package components` łapie to dopiero na poziomie pakietu (użyty token bez deklaracji), czyli po fakcie i tylko dla biblioteki, nie dla konsumenta.
 
 - `wym-token-3` **Trzy poziomy tokenów:**
   - prymitywne — surowe wartości bez znaczenia (np. `--pct-blue-500`, `--pct-space-4`, `--pct-radius-md`), rampy kolorów 50–950,
@@ -193,18 +220,24 @@ Zasada nadrzędna: **CSS-first, zero-runtime**. Motyw w runtime to wyłącznie k
 
 - `wym-token-6` **Tokeny kontrastu a11y** — dla powierzchni istnieją odpowiadające tokeny tekstu (`--pct-on-*`, np. `--pct-on-primary`). Kontrast jest weryfikowany przez bramkę policy (`wym-token-11`), spójnie z `wym-a11y-1`.
 
-- `wym-token-11` **Bramka kontrastu jako policy skórki.** Definicja skórki zawiera policy — listę par `fg`/`bg` (rola × stan, np. `button/solid`, `button/disabled`) z poziomem WCAG i `severity`. Podczas budowania skórki bramka, dla każdego motywu (light/dark/skórka użytkownika):
+- `wym-token-11` **Bramka kontrastu jako policy skórki.** Definicja skórki zawiera policy — listę par `fg`/`bg` (rola × stan, np. `button/solid`, `button/disabled`) z poziomem WCAG i `severity`. Podczas budowania skórki bramka, dla każdego motywu (light/dark; **skórka użytkownika — _niezrealizowane_**, patrz `wym-theme-5`):
   - liczy kontrast i porównuje go z **domyślnymi progami WCAG 2.2** dla tekstu normalnego (AA 4.5:1), dużego (AA 3:1) oraz elementów UI (SC 1.4.11, 3:1),
   - `severity: error` blokuje build; `severity: warn` tylko ostrzega (np. `disabled`, zwolniony z SC 1.4.3),
   - zwraca konkretny komunikat, który wariant rozmiaru przechodzi, a który nie (np. „czytelny dla dużego tekstu, ale nie dla normalnego").
 
 - `wym-token-12` **Stany komponentów nie używają `opacity`** do przyciemniania tekstu — każdy stan (hover, active, disabled, …) ma własne, konkretne tokeny koloru. `opacity` zmienia kontrast w runtime w sposób niewidoczny dla bramki (kompozycja z tłem), więc jest zakazana dla warstw tekstowych.
 
-- `wym-token-7` **Kontrakt part-names jako publiczne API stylowania** — elementy wewnętrzne komponentów mają stabilne, udokumentowane atrybuty `data-pct-part="..."`. Umożliwiają celowanie w elementy wewnętrzne (np. `[data-pct-part="icon"]`) w sposób odporny na aktualizacje. Kontrakt jest wersjonowany.
+- `wym-token-7` _(częściowo)_ **Kontrakt part-names jako publiczne API stylowania** — elementy wewnętrzne komponentów mają stabilne, udokumentowane atrybuty `data-pct-part="..."`. Umożliwiają celowanie w elementy wewnętrzne (np. `[data-pct-part="icon"]`) w sposób odporny na aktualizacje. Kontrakt jest wersjonowany.
 
-- `wym-token-8` **Oś gęstości (density)** — osobny wymiar tokenów (np. `comfortable` / `compact`) przełączany atrybutem/scope, niezależny od motywu kolorystycznego.
+  Atrybuty są wystawiane i mają regułę jednoznaczności (`wym-api-12`), ale **nie są ani spisane, ani wersjonowane**: nie ma listy części per komponent, więc konsument poznaje je z czytania szablonów, a biblioteka nie ma czym odróżnić zmiany łamiącej od kosmetycznej. To wymaganie domyka się razem z `apps/docs` — spis części jest treścią dokumentacji, nie osobnym plikiem.
 
-- `wym-token-9` **Tryb ciemny i scoped theme przez CSS** — schematy kolorów (light/dark) i motywy lokalne realizowane atrybutem/klasą na poddrzewie (np. `[data-theme="dark"]`, `.pct-theme-x`), bez silnika JS. Zapewniona dyrektywa-cukier `[pctTheme]`, ale mechanizm bazowy to sama kaskada.
+- `wym-token-8` _(niezrealizowane)_ **Oś gęstości (density)** — osobny wymiar tokenów (np. `comfortable` / `compact`) przełączany atrybutem/scope, niezależny od motywu kolorystycznego.
+
+  W źródłach DTCG nie ma ani jednego tokenu gęstości. Oś wielkości (`wym-api-18`) jest gotowym wzorcem do powtórzenia — ale uwaga: gęstość zejdzie poniżej progu obszaru dotyku szybciej niż wielkość `sm`, więc razem z nią trzeba przetestować `--pct-target-min` (dokładnie ten warunek, dla którego kolumna kontrolki ma osobną wysokość minimalną — `wym-api-16`).
+
+- `wym-token-9` _(częściowo)_ **Tryb ciemny i scoped theme przez CSS** — schematy kolorów (light/dark) i motywy lokalne realizowane atrybutem/klasą na poddrzewie (np. `[data-theme="dark"]`, `.pct-theme-x`), bez silnika JS. Zapewniona dyrektywa-cukier `[pctTheme]`, ale mechanizm bazowy to sama kaskada.
+
+  Mechanizm bazowy działa i jest przetestowany (`wym-real-17`). **Dyrektywy `[pctTheme]` nie ma** — motyw ustawia się dziś ręcznym `data-theme`. Brakuje też automatycznego trybu ciemnego: skórka nie emituje `@media (prefers-color-scheme: dark)`, więc bez jawnego atrybutu strona zostaje jasna niezależnie od ustawień systemu.
 
 - `wym-token-10` **Motywy dystrybuowane jako zwykłe pliki CSS** (np. `@pacit/components/themes/...`), importowane bez konfiguracji JS.
 
@@ -212,17 +245,71 @@ Zasada nadrzędna: **CSS-first, zero-runtime**. Motyw w runtime to wyłącznie k
 
 - `wym-ikon-1` Na obecnym etapie biblioteka nie dostarcza własnego zestawu ikon.
 
-- `wym-ikon-2` Biblioteka umożliwia łatwe użycie ikon z popularnych zestawów (FontAwesome, PrimeIcons, Material) oraz dostarczenie przez użytkownika własnych ikon (SVG / fonty ikon). _(mechanizm do doprecyzowania)_
+- `wym-ikon-2` _(niezrealizowane — mechanizm do doprecyzowania)_ Biblioteka umożliwia łatwe użycie ikon z popularnych zestawów (FontAwesome, PrimeIcons, Material) oraz dostarczenie przez użytkownika własnych ikon (SVG / fonty ikon).
+
+  Dziś każda ikona jest **wpisana w szablon** jako SVG w `currentColor` (znacznik checkboxa, strzałka selecta). Działa to i nie wnosi zależności, ale nie jest mechanizmem: konsument nie ma jak podmienić strzałki selecta na ikonę ze swojego zestawu, a każdy nowy komponent dokłada kolejny wpisany SVG. Decyzja wiąże z `wym-api-7` — najprostszym mechanizmem podmiany jest szablon, którego jeszcze nie ma.
 
 ## Testy
 
 - `wym-test-1` Testy jednostkowe: Vitest.
 
-- `wym-test-2` Testy e2e: Playwright (na późniejszym etapie prawdopodobnie także testy wizualne / screenshot).
+- `wym-test-2` _(częściowo)_ Testy e2e: Playwright (na późniejszym etapie prawdopodobnie także testy wizualne / screenshot).
+
+  Playwright działa (105 testów, w tym audyt axe każdego widoku). **Testów wizualnych nie ma** — a metodyka projektu opiera się na pomiarze w przeglądarce (mapa kursora z `wym-real-27`, pomiar wysokości z `wym-real-29`), więc screenshot diff jest jej naturalnym przedłużeniem, nie nowym pomysłem. Widok `/all` jest utrzymywany właśnie pod to (`wym-sbx-1`).
 
 ## Wersjonowanie
 
-- `wym-wer-1` Wersjonowanie zgodne z SemVer, z kanałami przedwydawniczymi (`beta`, `rc`). _(do doprecyzowania na późniejszym etapie)_
+- `wym-wer-1` _(niezrealizowane — do doprecyzowania na późniejszym etapie)_ Wersjonowanie zgodne z SemVer, z kanałami przedwydawniczymi (`beta`, `rc`).
+
+  `nx release` jest skonfigurowany (`nx.json` → `release.projects: ["components"]`), ale **nikt go jeszcze nie uruchamia**: nie ma CHANGELOG-a, workflow publikującego ani provenance. Wersja jest przy tym wpisana w **dwóch** miejscach — `libs/components/package.json` i stała `PCT_VERSION` w `src/index.ts` — i przy pierwszym wydaniu się rozjedzie, bo `nx release` podbija tylko manifest. Stała powinna być generowana.
+
+## Czego jeszcze nie ma
+
+Zestawienie wszystkich adnotacji z tego dokumentu w jednym miejscu. Kolumna „wiąże przy" mówi,
+co wymusi domknięcie danego punktu — bo o kolejności nie decyduje numer wymagania, tylko to,
+który brak zaczyna blokować następną pracę.
+
+| Wymaganie                     | Czego brakuje                                                | Wiąże przy                                                           |
+| ----------------------------- | ------------------------------------------------------------ | -------------------------------------------------------------------- |
+| `wym-proj-5`, `wym-ws-1`      | `apps/docs` — aplikacja dokumentacji                         | pierwszym zewnętrznym użytkowniku; bez niej nie ma adopcji           |
+| `wym-proj-4`                  | egzekwowanie progu 80% pokrycia (`wym-real-5`)               | zawsze — im później, tym większy dług do nadrobienia                 |
+| `wym-api-7`                   | `TemplateRef` / `*pctTemplate`                               | pierwszym realnym użyciu selecta (szablon opcji) i przy `wym-ikon-2` |
+| `wym-api-8`                   | pola konfiguracji poza `defaultSize`                         | zanim `PctConfig` zacznie czytać kilkanaście komponentów             |
+| `wym-api-6`                   | użycie CDK a11y (`FocusTrap`, `LiveAnnouncer`)               | dialogu, drawerze, toaście                                           |
+| `wym-api-9`                   | animacje na WAAPI + systemowe `prefers-reduced-motion`       | pierwszym komponencie z wejściem/wyjściem                            |
+| `wym-token-2`                 | użycie generowanego `tokens.ts` (dziś nikt go nie importuje) | gdy literówka w nazwie tokenu przejdzie do wydania                   |
+| `wym-token-7`                 | spisanie i wersjonowanie kontraktu `data-pct-part`           | razem z `apps/docs`                                                  |
+| `wym-token-8`                 | oś gęstości                                                  | po ustabilizowaniu osi wielkości; wymaga retestu obszaru dotyku      |
+| `wym-token-9`                 | dyrektywa `[pctTheme]`, `prefers-color-scheme`               | przy pierwszej integracji, gdzie motyw idzie za systemem             |
+| `wym-theme-5`, `wym-token-11` | ścieżka budowania skórki przez osobę z zewnątrz              | gdy ktoś zechce własny motyw                                         |
+| `wym-ikon-2`                  | mechanizm ikon (dziś SVG wpisane w szablony)                 | drugim komponencie potrzebującym podmienialnej ikony                 |
+| `wym-test-2`                  | testy wizualne / screenshot                                  | przy komponencie, którego nie da się opisać asercją na DOM           |
+| `wym-wer-1`                   | automatyzacja wydania, jedno źródło wersji                   | przed pierwszą publikacją na npm                                     |
+
+### Braki w samych wymaganiach
+
+Rzeczy, których w tym dokumencie **nie ma, a powinny być** — czyli nie „niezrealizowane wymaganie",
+tylko brakujące ustalenie. Wypisane, żeby nie wyglądały na przeoczenie:
+
+- **Teksty komponentów i i18n.** Dokument nie mówi nic o tym, skąd komponent bierze napisy. Skutek już
+  jest w kodzie: `placeholder` selecta domyśla się na `'Wybierz…'`, pusta lista pisze `'Brak opcji'`,
+  a `[pctNumber]` ostrzega w konsoli po polsku. Biblioteka o zasięgu międzynarodowym potrzebuje
+  neutralnych wartości domyślnych i kanału tłumaczeń (kandydat: `providePctConfig`, `wym-api-8`).
+  **To zmiana łamiąca publiczne API** — dziś kosztuje nic, po pierwszym wydaniu kosztuje major.
+- **Typ wartości kontrolek.** Nie ustalono, czy kontrolki wiążą wyłącznie `string`, czy dowolne `T`.
+  Dziś `PctSelect` i `PctRadioGroup` są zapięte na `string`, a realne formularze wiążą obiekty,
+  identyfikatory liczbowe i enumy. Potrzebne ustalenie o generykach i `compareWith`. Ta sama uwaga
+  o koszcie w czasie co wyżej.
+- **`forced-colors` (Windows High Contrast).** `wym-a11y-1` mówi o WCAG AA, ale nie o trybie wysokiego
+  kontrastu systemu — a to osobny mechanizm, w którym kolory z tokenów są ignorowane przez system
+  i liczy się tylko to, czy komponent nie zniknie. W bibliotece nie ma dziś ani jednej reguły
+  `@media (forced-colors: active)`.
+- **RTL.** Arkusze konsekwentnie używają właściwości logicznych (`padding-inline-*`), czyli intencja
+  jest, ale nigdzie nie zapisana jako wymaganie i **nigdzie nie sprawdzana** — nie ma widoku ani testu
+  z `dir="rtl"`.
+- **Regresja hydracji.** `wym-tech-4` wymaga poprawnego SSR, ale nic nie sprawdza, czy hydracja nie
+  zgłasza błędów (NG0500/NG0501). `wym-real-31` pokazał, jak cicho taka wada żyje; tani test to
+  przechwycenie konsoli w e2e.
 
 ## Stan realizacji — komponent referencyjny (walking skeleton)
 
@@ -239,7 +326,7 @@ Powstało:
 - `PctRadioGroup` + `PctRadio` — pierwszy komponent złożony: **kontrolką formularza jest grupa**, opcje nie są samodzielnymi kontrolkami. Grupa ma `role="radiogroup"`, `aria-labelledby`/`aria-orientation`, generuje wspólny `name` dla natywnych radiów.
 - `[pctNumber]` — pole liczbowe na natywnym `<input type="text">` z `role="spinbutton"`: wartość `number | null`, formatowanie i parsowanie wg `Intl.NumberFormat` (locale aplikacji), krokowanie strzałkami i PageUp/PageDown, zaokrąglanie i domykanie do granic przy zatwierdzeniu. Granice pobiera z walidatorów `min()`/`max()` schematu (`wym-api-17`).
 - `PctSelect` — lista wyboru z własnym panelem (nie natywny `<select>`): wzorzec ARIA „select-only combobox" (`role="combobox"` + `role="listbox"`, fokus zostaje na triggerze, aktywna opcja przez `aria-activedescendant`), własna obsługa klawiatury (strzałki, Home/End, Enter, Escape, typeahead) i **pierwsze użycie CDK Overlay**.
-- Testy: `components` 116/116 (Vitest), `sandbox` 7/7, `sandbox-e2e` 94/94 (Playwright, w tym audyt axe-core **każdego widoku** z osobna) — testy jednostkowe biegną pod zoneless. Każdy spec komponentu wchodzi na własny widok, więc jego zakres nie zależy od zawartości sąsiednich przykładów. Osobno stoi bramka pakietu (`nx check-package components`), która bada **spakowany artefakt**, a nie źródła (`wym-real-36`).
+- Testy: `components` 124/124 (Vitest), `sandbox` 7/7, `sandbox-e2e` 105/105 (Playwright, w tym audyt axe-core **każdego widoku** z osobna) — testy jednostkowe biegną pod zoneless. Każdy spec komponentu wchodzi na własny widok, więc jego zakres nie zależy od zawartości sąsiednich przykładów. Osobno stoi bramka pakietu (`nx check-package components`), która bada **spakowany artefakt**, a nie źródła (`wym-real-36`).
 
 Wnioski, które doprecyzowują „przepis":
 

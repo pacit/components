@@ -2,7 +2,7 @@
 
 Biblioteka komponentów Angular — budowana jako nowoczesna, dostępna alternatywa dla rozwiązań typu PrimeNG. Monorepo NX.
 
-> **Status:** wczesny etap, API wciąż się zmienia. Kontrolki formularza budowane są jako obudowa `pct-field` + kontrolka w środku. Pełne ustalenia i wymagania: [docs/opis.md](docs/opis.md).
+> **Status:** wczesny etap, API wciąż się zmienia. Kontrolki formularza budowane są jako obudowa `pct-field` + kontrolka w środku. Pełne ustalenia i wymagania: [docs/opis.md](docs/opis.md) — w tym zestawienie [czego jeszcze nie ma](docs/opis.md#czego-jeszcze-nie-ma).
 
 ## Stack
 
