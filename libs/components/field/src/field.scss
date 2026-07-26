@@ -174,14 +174,41 @@
   padding-inline-start: 0;
 }
 
-/* Dekoracja interaktywna (przycisk, link) sama jest celem kliknięcia, więc
-   dostaje całą wysokość slotu — bez tego pas nad nią i pod nią wyglądał na jej
-   część, a klik w niego trafiał w pole. Dekoracja bierna (ikona, jednostka)
-   zostaje wyśrodkowana: należy do powierzchni pola i klik w nią fokusuje
-   kontrolkę, więc dziedziczy też jego kursor. */
-.pct-field__prefix:has(button, a, [tabindex]),
-.pct-field__suffix:has(button, a, [tabindex]) {
+/* Dopasowanie dekoracji do slotu zgłasza autor pola (`pctPrefix="fill"`), a nie
+   arkusz po zawartości slotu. Domyślne `inset` zostawia dekorację wyśrodkowaną
+   i wpisaną w padding ramki: należy do powierzchni pola, klik w nią fokusuje
+   kontrolkę, więc dziedziczy też jej kursor.
+
+   `fill` oddaje dekoracji **cały** slot — od krawędzi ramki po odstęp kontrolki,
+   na pełną wysokość — bo to ona jest tam powierzchnią: ma własne tło, własny
+   kursor i sama przyjmuje kliknięcie. Wcześniej decydowała tu obecność elementu
+   interaktywnego (`:has(button, a, [tabindex])`), co wiązało dwie niezależne
+   rzeczy: przycisk **nie mógł** być mniejszy od slotu, a kafelek z tłem większy
+   (`wym-real-34`). */
+.pct-field__prefix:has([data-pct-fit='fill']),
+.pct-field__suffix:has([data-pct-fit='fill']) {
   align-items: stretch;
+  padding: 0;
+  /* Powierzchnia dekoracji nie zapowiada pisania w polu. Przycisk w slocie ma
+     własny `pointer` — kursor bierze się z elementu, nie z dziedziczenia. */
+  cursor: default;
+  /* Dekoracja jest wspawana w ramkę, więc róg docina jej ramka (`overflow: clip`).
+     Własny róg przycisku zostawiłby przy rogu pola prześwit tła. */
+  --pct-button-radius: 0;
+}
+
+/* Odstęp między dekoracją `fill` a kontrolką przechodzi na kolumnę kontrolki:
+   slot oddał całą swoją powierzchnię dekoracji, a tekst nie może dotykać jej
+   tła. Pas nadal ma właściciela — kontrolkę, którą klik w niego fokusuje, więc
+   kursor nad nim mówi to samo co klik. */
+.pct-field__row:has(.pct-field__prefix [data-pct-fit='fill'])
+  .pct-field__control {
+  padding-inline-start: var(--pct-field-gap);
+}
+
+.pct-field__row:has(.pct-field__suffix [data-pct-fit='fill'])
+  .pct-field__control {
+  padding-inline-end: var(--pct-field-gap);
 }
 
 /* Kursor zapowiada skutek kliknięcia na całej powierzchni ramki. Rodzaj zgłasza
@@ -196,8 +223,11 @@
 }
 
 /* Po regułach kursora, żeby je przykryć: nad polem, w którym nic nie zrobisz,
-   kursor nie może zapraszać do pisania ani do klikania. */
-:host([data-pct-disabled]) .pct-field__row {
+   kursor nie może zapraszać do pisania ani do klikania. Sloty wymieniamy osobno,
+   bo dekoracja `fill` deklaruje własny kursor i nie dziedziczy go po rzędzie. */
+:host([data-pct-disabled]) .pct-field__row,
+:host([data-pct-disabled]) .pct-field__prefix,
+:host([data-pct-disabled]) .pct-field__suffix {
   cursor: not-allowed;
 }
 

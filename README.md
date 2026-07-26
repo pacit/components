@@ -83,11 +83,17 @@ Trzy poziomy: **prymitywne → semantyczne → komponentowe**; referencje zachow
   <pct-select [options]="countries" [formField]="userForm.country" />
 </pct-field>
 
-<!-- dekoracje wewnątrz ramki -->
+<!-- dekoracje wewnątrz ramki; `inset` (domyślnie) leży na powierzchni pola,
+     `fill` bierze cały slot i jest własną powierzchnią -->
 <pct-field label="Cena">
   <span pctPrefix aria-hidden="true">PLN</span>
   <input pctText inputmode="numeric" [(value)]="price" />
   <button pctSuffix pctButton size="sm" aria-label="Wyczyść">×</button>
+</pct-field>
+
+<pct-field label="Szukaj">
+  <input pctText [(value)]="query" />
+  <button pctSuffix="fill" pctButton>Szukaj</button>
 </pct-field>
 ```
 
@@ -104,13 +110,7 @@ Kontrolki działają też **bez obudowy** (wtedy bez etykiety i komunikatów), a
 <!-- kwota: dwa miejsca po przecinku, krok pół złotego -->
 <pct-field label="Cena">
   <span pctPrefix aria-hidden="true">PLN</span>
-  <input
-    pctNumber
-    [minFractionDigits]="2"
-    [maxFractionDigits]="2"
-    [step]="0.5"
-    [(value)]="price"
-  />
+  <input pctNumber [minFractionDigits]="2" [maxFractionDigits]="2" [step]="0.5" [(value)]="price" />
 </pct-field>
 ```
 

@@ -127,16 +127,21 @@ export class PctField implements PctFieldApi {
   }
 
   /**
-   * Czy zdarzenie trafiło w element, który obsłuży się sam (sama kontrolka,
-   * przycisk lub link w slocie) — wtedy obudowa nie miesza się do kliknięcia.
+   * Czy zdarzenie trafiło w element, do którego obudowa nie sięga — wtedy nie
+   * miesza się do kliknięcia.
    */
   private handledByTarget(event: MouseEvent): boolean {
     const target = event.target as HTMLElement | null;
-    return target?.closest(PctField.interactive) != null;
+    return target?.closest(PctField.ownSurface) != null;
   }
 
-  private static readonly interactive =
-    'button, a, input, textarea, select, [tabindex]';
+  /**
+   * Sama kontrolka i elementy interaktywne obsłużą kliknięcie same. Dekoracja
+   * `fill` niczego nie obsługuje, ale jest własną powierzchnią: skoro pokazuje
+   * własny kursor, klik w nią nie może po cichu robić czegoś innego.
+   */
+  private static readonly ownSurface =
+    'button, a, input, textarea, select, [tabindex], [data-pct-fit="fill"]';
 
   /**
    * Klik w obszar pola, który nie jest kontrolką (padding ramki, odstęp między

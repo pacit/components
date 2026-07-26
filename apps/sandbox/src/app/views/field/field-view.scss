@@ -22,3 +22,15 @@
 .field-view__info:hover {
   color: var(--pct-text);
 }
+
+/* Jednostka w slocie `pctPrefix="fill"`. Slot oddaje jej całą swoją powierzchnię,
+   więc tło i odstęp poziomy są jej — obudowa daje tylko wysokość, docięcie rogu
+   do ramki i kursor `default` (klik w nią niczego nie robi). */
+.field-view__unit {
+  display: inline-flex;
+  align-items: center;
+  padding-inline: var(--pct-space-3);
+  background: var(--pct-surface-100);
+  border-inline-end: 1px solid var(--pct-border);
+  color: var(--pct-text-muted);
+}

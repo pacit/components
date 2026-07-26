@@ -63,6 +63,19 @@ class AffixHost {
   value = signal('100');
 }
 
+/** To samo pole, ale obie dekoracje wypełniają swoje sloty (`fill`). */
+@Component({
+  imports: [PctField, PctText, PctPrefix, PctSuffix],
+  template: `<pct-field label="Cena">
+    <span pctPrefix="fill" aria-hidden="true">PLN</span>
+    <input pctText [(value)]="value" />
+    <button pctSuffix="fill" type="button" aria-label="Szukaj">→</button>
+  </pct-field>`,
+})
+class FillAffixHost {
+  value = signal('100');
+}
+
 /** Pole z podpowiedzią i dwoma slotami pobocznymi (dodatek etykiety + komunikatu). */
 @Component({
   imports: [PctField, PctText, PctLabelAux, PctMessageAux],
@@ -327,6 +340,51 @@ describe('PctField + PctText', () => {
       expect(btn.getAttribute('aria-label')).toBe('Wyczyść');
       btn.focus();
       expect(document.activeElement).toBe(btn);
+    });
+
+    describe('dopasowanie do slotu (fit)', () => {
+      it('sam atrybut, bez wartości, znaczy `inset`', async () => {
+        const fixture = await render(AffixHost);
+
+        for (const name of ['field-prefix-item', 'field-suffix-item']) {
+          expect(part(fixture, name).getAttribute('data-pct-fit')).toBe(
+            'inset',
+          );
+        }
+      });
+
+      it('`fill` zgłasza się atrybutem stanu, także na dekoracji biernej', async () => {
+        const fixture = await render(FillAffixHost);
+
+        for (const name of ['field-prefix-item', 'field-suffix-item']) {
+          expect(part(fixture, name).getAttribute('data-pct-fit')).toBe('fill');
+        }
+      });
+
+      it('dekoracja `fill` bierze wysokość ze slotu, nie z siebie', async () => {
+        // Bez tego przycisk w slocie wnosi własną wysokość minimalną i rozpycha
+        // wiersz ponad wysokość pola tej samej wielkości (wym-api-18).
+        const fill = await render(FillAffixHost);
+        const inset = await render(AffixHost);
+
+        expect(part(fill, 'field-suffix-item').style.minHeight).toBe('0');
+        expect(part(inset, 'field-suffix-item').style.minHeight).toBe('');
+      });
+
+      it('klik w dekorację `fill` NIE przenosi fokusu na kontrolkę', async () => {
+        // Dekoracja `fill` jest własną powierzchnią: pokazuje własny kursor,
+        // więc klik w nią nie może po cichu robić czegoś innego. Dotyczy to
+        // także dekoracji biernej — tu kafelka „PLN", nie przycisku.
+        const fixture = await render(FillAffixHost);
+        const unit = part(fixture, 'field-prefix-item');
+
+        unit.dispatchEvent(
+          new MouseEvent('mousedown', { bubbles: true, cancelable: true }),
+        );
+        await fixture.whenStable();
+
+        expect(document.activeElement).not.toBe(inputOf(fixture));
+      });
     });
   });
 

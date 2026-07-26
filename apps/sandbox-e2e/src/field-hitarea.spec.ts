@@ -12,7 +12,9 @@ test.describe('PctField — obszar klikalny bez martwej strefy', () => {
   });
 
   test('kliknięcie w lewy padding ramki fokusuje pole', async ({ page }) => {
-    const field = page.getByTestId('field-price');
+    // Pole z dekoracją `inset`: padding krawędzi należy do slotu dekoracji, ale
+    // ta leży na powierzchni pola, więc klik w niego trafia w kontrolkę.
+    const field = page.getByTestId('field-search');
     const row = field.locator('[data-pct-part="field-row"]');
     const input = field.locator('input');
 
@@ -43,8 +45,8 @@ test.describe('PctField — obszar klikalny bez martwej strefy', () => {
     await expect(input).toBeFocused();
   });
 
-  test('kliknięcie w dekorację prefix fokusuje pole', async ({ page }) => {
-    const field = page.getByTestId('field-price');
+  test('kliknięcie w dekorację inset fokusuje pole', async ({ page }) => {
+    const field = page.getByTestId('field-search');
     const input = field.locator('input');
 
     await field.locator('[data-pct-part="field-prefix"]').click();
@@ -123,25 +125,86 @@ test.describe('PctField — obszar klikalny bez martwej strefy', () => {
     await expect(page.locator('[data-pct-part="panel"]')).toBeVisible();
   });
 
-  test('interaktywna dekoracja zajmuje całą wysokość swojego slotu', async ({
+  test('dekoracja `fill` wypełnia swój slot co do piksela', async ({
     page,
   }) => {
-    // Pas nad przyciskiem i pod nim należy do przycisku, nie do pola — inaczej
-    // kursor i obszar kliknięcia rozjeżdżają się na jego krawędziach.
-    const field = page.getByTestId('field-price');
-    const clear = field.getByTestId('field-price-clear');
+    // Pas wokół dekoracji, która sama jest powierzchnią, wyglądałby na jej
+    // część, a klik w niego trafiałby w pole — slot nie zostawia takiego pasa.
+    const field = page.getByTestId('field-search');
     const slot = await boxOf(field.locator('[data-pct-part="field-suffix"]'));
-    const button = await boxOf(clear);
+    const button = await boxOf(field.getByTestId('field-search-submit'));
 
     expect(button.height).toBeCloseTo(slot.height, 0);
-    await expect(clear).toHaveCSS('cursor', 'pointer');
+    expect(button.width).toBeCloseTo(slot.width, 0);
+    expect(button.x).toBeCloseTo(slot.x, 0);
   });
 
-  test('bierna dekoracja dziedziczy kursor pola', async ({ page }) => {
-    // Jednostka „PLN" nie jest celem kliknięcia — klik w nią fokusuje kontrolkę,
+  test('dekoracja `inset` jest mniejsza od slotu, a pas wokół niej należy do pola', async ({
+    page,
+  }) => {
+    const field = page.getByTestId('field-price');
+    const clear = field.getByTestId('field-price-clear');
+    const slot = field.locator('[data-pct-part="field-suffix"]');
+    const button = await boxOf(clear);
+
+    expect(button.height).toBeLessThan((await boxOf(slot)).height);
+    await expect(clear).toHaveCSS('cursor', 'pointer');
+    // Pas wokół przycisku obiecuje to, co robi klik w niego: fokus kontrolki.
+    await expect(slot).toHaveCSS('cursor', 'text');
+  });
+
+  test('dekoracja `fill` nie rozpycha wiersza ponad wysokość pola', async ({
+    page,
+  }) => {
+    // Przycisk wspawany w slot wnosiłby własną wysokość minimalną, równą
+    // wysokości pola tej samej wielkości — wiersz urósłby o grubość ramki.
+    const plain = await boxOf(
+      page.getByTestId('field-email').locator('[data-pct-part="field-row"]'),
+    );
+    const withFill = await boxOf(
+      page.getByTestId('field-search').locator('[data-pct-part="field-row"]'),
+    );
+
+    expect(withFill.height).toBeCloseTo(plain.height, 0);
+  });
+
+  test('dekoracja `inset` dziedziczy kursor pola i przekazuje mu klik', async ({
+    page,
+  }) => {
+    // Ikona lupy nie jest celem kliknięcia — klik w nią fokusuje kontrolkę,
     // więc kursor ma mówić to samo co reszta ramki.
-    await expect(
-      page.getByTestId('field-price').locator('[data-pct-part="field-prefix"]'),
-    ).toHaveCSS('cursor', 'text');
+    const field = page.getByTestId('field-search');
+
+    await expect(field.locator('[data-pct-part="field-prefix"]')).toHaveCSS(
+      'cursor',
+      'text',
+    );
+
+    await field.getByTestId('field-search-icon').click();
+    await expect(field.locator('input')).toBeFocused();
+  });
+
+  test('dekoracja `fill` ma własny kursor i nie oddaje kliknięcia polu', async ({
+    page,
+  }) => {
+    // Kafelek „PLN" jest własną powierzchnią: nic nie robi, więc nie zaprasza
+    // kursorem do pisania i nie przenosi fokusu na kontrolkę.
+    const field = page.getByTestId('field-price');
+    const unit = field.getByTestId('field-price-unit');
+
+    await expect(unit).toHaveCSS('cursor', 'default');
+
+    await unit.click();
+    await expect(field.locator('input')).not.toBeFocused();
+  });
+
+  test('dekoracja `fill` sięga krawędzi wnętrza ramki', async ({ page }) => {
+    const field = page.getByTestId('field-price');
+    const row = await boxOf(field.locator('[data-pct-part="field-row"]'));
+    const unit = await boxOf(field.getByTestId('field-price-unit'));
+    const border = 1;
+
+    expect(unit.x).toBeCloseTo(row.x + border, 0);
+    expect(unit.height).toBeCloseTo(row.height - 2 * border, 0);
   });
 });

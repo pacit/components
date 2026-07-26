@@ -69,18 +69,26 @@
 <sbx-demo
   #dekoracje
   heading="Dekoracje wewnątrz ramki"
-  summary="Prefix i suffix leżą w ramce, więc focus ring obejmuje cały rząd — także gdy fokus trafi na przycisk w slocie."
-  [reqs]="['wym-api-13', 'wym-real-27']"
+  summary="Prefix i suffix leżą w ramce, więc focus ring obejmuje cały rząd — także gdy fokus trafi na przycisk w slocie. Dopasowanie slotu wybiera autor: „inset” leży na powierzchni pola (dziedziczy jej kursor, klik fokusuje kontrolkę), „fill” bierze cały slot i jest własną powierzchnią (własne tło, własny kursor, sam przyjmuje kliknięcie)."
+  [reqs]="['wym-api-13', 'wym-real-27', 'wym-real-34']"
   data-testid="demo-affix"
 >
   <div class="stack">
+    <!-- Kafelek „PLN" (fill) + przycisk mniejszy od swojego slotu (inset). -->
     <pct-field
       label="Cena"
-      hint="Dekoracje w środku ramki, kwota z groszami"
+      hint="Kafelek z jednostką jest własną powierzchnią; przycisk czyszczenia siedzi w odstępie ramki"
       [size]="dekoracje.activeSize()"
       data-testid="field-price"
     >
-      <span pctPrefix aria-hidden="true">PLN</span>
+      <span
+        pctPrefix="fill"
+        class="field-view__unit"
+        aria-hidden="true"
+        data-testid="field-price-unit"
+      >
+        PLN
+      </span>
       <input
         pctNumber
         [minFractionDigits]="2"
@@ -100,6 +108,33 @@
         data-testid="field-price-clear"
       >
         ×
+      </button>
+    </pct-field>
+
+    <!-- Ikona bez tła (inset) + przycisk wypełniający swój slot (fill). -->
+    <pct-field
+      label="Szukaj w katalogu"
+      hint="Ikona należy do powierzchni pola; przycisk jest wspawany w róg ramki"
+      [size]="dekoracje.activeSize()"
+      data-testid="field-search"
+    >
+      <span pctPrefix aria-hidden="true" data-testid="field-search-icon">
+        🔍
+      </span>
+      <input
+        pctText
+        placeholder="nazwa albo symbol"
+        [(value)]="query"
+        data-testid="text-search"
+      />
+      <button
+        pctSuffix="fill"
+        pctButton
+        type="button"
+        [size]="dekoracje.activeSize()"
+        data-testid="field-search-submit"
+      >
+        Szukaj
       </button>
     </pct-field>
   </div>
