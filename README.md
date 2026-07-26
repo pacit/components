@@ -39,17 +39,21 @@ export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"
 
 ```bash
 npm ci
-node libs/tokens/build.mjs         # wygeneruj tokeny (CSS/SCSS/TS) — wymagane przed buildem
 npx nx serve sandbox --port 4200   # uruchom demo na http://localhost:4200
 ```
+
+Tokeny (`libs/tokens/dist`) budują się same — `tokens` jest zależnością `components`
+i `sandbox` w grafie NX, więc `nx serve`/`nx build` generuje je przed konsumentami.
+Osobno uruchamia je `npx nx build tokens`.
 
 ## Testy
 
 ```bash
-npx nx test components      # testy jednostkowe biblioteki (Vitest)
-npx nx vite:test sandbox    # testy jednostkowe aplikacji (uwaga: inny target niż `test`)
-npx nx e2e sandbox-e2e      # e2e + audyt a11y axe-core (wymaga: npx playwright install chromium)
-node libs/tokens/build.mjs  # bramka kontrastu (policy WCAG) — błędy blokują, ostrzeżenia informują
+npx nx test components           # testy jednostkowe biblioteki (Vitest)
+npx nx vite:test sandbox         # testy jednostkowe aplikacji (uwaga: inny target niż `test`)
+npx nx e2e sandbox-e2e           # e2e + audyt a11y axe-core (wymaga: npx playwright install chromium)
+npx nx build tokens              # bramka kontrastu (policy WCAG) — błędy blokują, ostrzeżenia informują
+npx nx check-package components  # bramka pakietu — czy dist wozi skórkę i domyka użyte tokeny
 ```
 
 ## Design tokens
@@ -59,6 +63,23 @@ node libs/tokens/build.mjs  # bramka kontrastu (policy WCAG) — błędy blokuj�
 - `dist/pct.css` — CSS custom properties (motyw jasny + `[data-theme="dark"]`),
 - `dist/_tokens.scss` — zmienne SCSS do użytku wewnętrznego,
 - `dist/tokens.ts` — typowane nazwy tokenów.
+
+Skórka jedzie w pakiecie i **musi zostać dołączona** — bez niej komponenty odwołują się do
+nieistniejących custom properties i renderują się bez wyglądu:
+
+```jsonc
+// angular.json / project.json — styles
+"node_modules/@pacit/components/themes/pct.css"
+```
+
+```scss
+// albo z poziomu arkusza
+@use '@pacit/components/themes/pct.css';
+```
+
+Pilnuje tego bramka `nx check-package components`: sprawdza, czy `dist` zawiera `themes/pct.css`,
+czy plik jest osiągalny przez `exports`, i czy **każdy** `var(--pct-*)` użyty w pakiecie ma w nim
+swoją deklarację.
 
 Trzy poziomy: **prymitywne → semantyczne → komponentowe**; referencje zachowane jako `var()`, więc nadpisanie jednej zmiennej w dowolnym scope kaskaduje bez rekompilacji. Polityka kontrastu (`src/contrast.policy.json`) waliduje pary tekst/tło wobec progów WCAG, per motyw — `error` blokuje build, `warn` informuje (np. `disabled`, zwolniony z SC 1.4.3).
 

@@ -12,11 +12,26 @@
     }
   },
   "tags": ["type:lib"],
+  "// implicitDependencies": "Pakiet wozi skórkę wygenerowaną przez `tokens`, ale nie importuje z niej niczego w TS — bez tego wpisu graf nie zna tej krawędzi i build startuje przed wygenerowaniem CSS.",
+  "implicitDependencies": ["tokens"],
+  "// themes": "ng-packagr nie czyta assetów spoza katalogu projektu, więc skórka musi najpierw stać się wejściem pakietu. `themes/` jest generowane i gitignorowane — jedynym źródłem prawdy pozostają pliki DTCG w libs/tokens/src.",
   "targets": {
+    "themes": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "dependsOn": ["tokens:build"],
+      "inputs": [{ "dependentTasksOutputFiles": "**/*" }],
+      "outputs": ["{projectRoot}/themes"],
+      "options": {
+        "command": "mkdir -p themes && cp ../tokens/dist/pct.css ../tokens/dist/_tokens.scss themes/",
+        "cwd": "libs/components"
+      }
+    },
     "build": {
       "executor": "@nx/angular:package",
       "outputs": ["{workspaceRoot}/dist/{projectRoot}"],
       "defaultConfiguration": "production",
+      "dependsOn": ["^build", "themes"],
       "options": {
         "project": "libs/components/ng-package.json",
         "tsConfig": "libs/components/tsconfig.lib.json"
@@ -26,6 +41,18 @@
           "tsConfig": "libs/components/tsconfig.lib.prod.json"
         },
         "development": {}
+      }
+    },
+    "check-package": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "dependsOn": ["build"],
+      "inputs": [
+        { "dependentTasksOutputFiles": "**/*", "transitive": false },
+        "{projectRoot}/check-package.mjs"
+      ],
+      "options": {
+        "command": "node libs/components/check-package.mjs"
       }
     },
     "nx-release-publish": {

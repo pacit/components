@@ -27,9 +27,11 @@ jobs:
       - run: npm ci
       - run: npx playwright install --with-deps chromium
 
-      # Tokeny generują CSS/SCSS/TS (dist/ jest w .gitignore) i uruchamiają bramkę
-      # kontrastu — muszą powstać przed build/test/e2e.
-      - run: node libs/tokens/build.mjs
-
       - run: npx nx format:check
-      - run: npx nx run-many -t lint test vite:test build typecheck e2e
+
+      # Tokeny (CSS/SCSS/TS + bramka kontrastu) buduje graf: `tokens` jest
+      # zależnością `components` i `sandbox`, więc powstają same, przed
+      # konsumentami. Ręczny krok przed run-many maskowałby brak tej krawędzi.
+      # `check-package` weryfikuje spakowany artefakt — że wozi skórkę i że
+      # każdy użyty token ma w pakiecie deklarację.
+      - run: npx nx run-many -t lint test vite:test build typecheck check-package e2e

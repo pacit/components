@@ -5,6 +5,8 @@
   "prefix": "app",
   "sourceRoot": "apps/sandbox/src",
   "tags": ["type:app"],
+  "// implicitDependencies": "`styles` sięga po libs/tokens/dist/pct.css — artefakt generowany i gitignorowany. Bez tej krawędzi build wchodzi na pusty katalog i kończy się SUKCESEM, tyle że bez ani jednej definicji tokenu.",
+  "implicitDependencies": ["tokens"],
   "targets": {
     "build": {
       "executor": "@angular/build:application",
@@ -59,6 +61,7 @@
       "continuous": true,
       "executor": "@angular/build:dev-server",
       "defaultConfiguration": "development",
+      "dependsOn": [{ "projects": "tokens", "target": "build" }],
       "configurations": {
         "production": {
           "buildTarget": "sandbox:build:production"

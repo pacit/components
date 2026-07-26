@@ -4,6 +4,9 @@
 dist
 tmp
 out-tsc
+# skórka kopiowana z libs/tokens/dist, żeby ng-packagr mógł ją wziąć jako asset
+# (assety muszą leżeć w katalogu projektu) — źródłem prawdy jest libs/tokens/src
+/libs/components/themes
 
 # dependencies
 node_modules
