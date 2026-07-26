@@ -61,6 +61,12 @@
   background: none;
   border: none;
   min-height: 0;
+  /* Bez ramki nie ma do czego docinać zaokrąglonych rogów — a `border-radius`
+     z `overflow: clip` (potrzebne tylko przy widocznej ramce) obcinałyby róg
+     kontrolki stojącej w rogu wiersza (checkbox) i jej pierścień fokusu
+     (`outline-offset`). Dlatego w wariancie `bare` róg i przycinanie znikają. */
+  border-radius: 0;
+  overflow: visible;
 }
 
 /* Bez ramki nie ma czego wyściełać — padding kolumn odpada razem z nią. */

@@ -155,4 +155,23 @@ test.describe('PctField — obudowa pola', () => {
     await field.getByTestId('bio-input').fill('dwanaście!!!');
     await expect(counter).toHaveText('12/120');
   });
+
+  test('kontrolka bez ramki (bare) nie ma ściętego rogu', async ({ page }) => {
+    const bareRow = page
+      .getByTestId('field-bare-checkbox')
+      .locator('[data-pct-part="field-row"]');
+
+    // Bez widocznej ramki wiersz nie zaokrągla rogów ani nie przycina zawartości —
+    // inaczej róg checkboxa stojącego w rogu wiersza (i jego pierścień fokusu)
+    // zostaje ścięty przez `border-radius` + `overflow: clip`.
+    await expect(bareRow).toHaveCSS('overflow', 'visible');
+    await expect(bareRow).toHaveCSS('border-top-left-radius', '0px');
+
+    // Wariant z ramką (boxed) nadal przycina dekoracje do zaokrąglonej ramki.
+    const boxedRow = page
+      .getByTestId('field-email')
+      .locator('[data-pct-part="field-row"]');
+    await expect(boxedRow).toHaveCSS('overflow', 'clip');
+    await expect(boxedRow).toHaveCSS('border-top-left-radius', '8px');
+  });
 });
