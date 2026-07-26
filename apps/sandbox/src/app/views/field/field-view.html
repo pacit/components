@@ -1,0 +1,165 @@
+<h2 class="view__title">Field</h2>
+<p class="muted view__intro">
+  Obudowa dostarcza etykietę, podpowiedź, komunikat błędu i sloty dekoracji.
+  Kontraktu formularza nie implementuje — robi to kontrolka w środku.
+</p>
+
+<sbx-demo
+  #podstawy
+  heading="Etykieta, podpowiedź i błąd"
+  summary="Pod polem jest tylko jedna linia: podpowiedź, a po opuszczeniu pola z błędem — komunikat błędu w jej miejsce. Etykieta wskazuje kontrolkę przez granicę projekcji, a aria-describedby wskazuje tę linię, która akurat świeci."
+  [reqs]="['wym-api-13', 'wym-api-6']"
+  data-testid="demo-basics"
+>
+  <div class="stack">
+    <pct-field
+      label="E-mail"
+      hint="Adres służbowy"
+      [size]="podstawy.activeSize()"
+      data-testid="field-email"
+    >
+      <input
+        pctText
+        type="email"
+        placeholder="jan@example.com"
+        [formField]="userForm.email"
+      />
+    </pct-field>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  #dodatki
+  heading="Dodatek etykiety i licznik znaków"
+  summary="Sloty poza ramką niosą treść poboczną: [pctLabelAux] przy etykiecie (np. ikona „i”) i [pctMessageAux] w linii komunikatu (np. licznik znaków). Licznik trwa niezależnie od tego, czy pod polem świeci podpowiedź, czy błąd."
+  [reqs]="['wym-api-13']"
+  data-testid="demo-aux"
+>
+  <div class="stack">
+    <pct-field
+      label="Krótki opis"
+      hint="Zwięźle — napisz przynajmniej 10 znaków"
+      [size]="dodatki.activeSize()"
+      data-testid="field-bio"
+    >
+      <button
+        pctLabelAux
+        type="button"
+        class="field-view__info"
+        aria-label="Opis pojawia się na Twoim profilu"
+        title="Opis pojawia się na Twoim profilu"
+      >
+        ⓘ
+      </button>
+
+      <input
+        pctText
+        placeholder="Kilka słów o sobie"
+        [formField]="bioForm.bio"
+        data-testid="bio-input"
+      />
+
+      <span pctMessageAux aria-hidden="true" data-testid="bio-counter">
+        {{ bioModel().bio.length }}/{{ bioMax }}
+      </span>
+    </pct-field>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  #dekoracje
+  heading="Dekoracje wewnątrz ramki"
+  summary="Prefix i suffix leżą w ramce, więc focus ring obejmuje cały rząd — także gdy fokus trafi na przycisk w slocie."
+  [reqs]="['wym-api-13', 'wym-real-27']"
+  data-testid="demo-affix"
+>
+  <div class="stack">
+    <pct-field
+      label="Cena"
+      hint="Dekoracje w środku ramki, kwota z groszami"
+      [size]="dekoracje.activeSize()"
+      data-testid="field-price"
+    >
+      <span pctPrefix aria-hidden="true">PLN</span>
+      <input
+        pctNumber
+        [minFractionDigits]="2"
+        [maxFractionDigits]="2"
+        [step]="0.5"
+        [(value)]="price"
+        data-testid="number-price"
+      />
+      <button
+        pctSuffix
+        pctButton
+        type="button"
+        variant="outline"
+        size="sm"
+        aria-label="Wyczyść cenę"
+        (click)="clearPrice()"
+        data-testid="field-price-clear"
+      >
+        ×
+      </button>
+    </pct-field>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  #powierzchnia
+  heading="Cała powierzchnia ramki ma właściciela"
+  summary="Kursor zapowiada skutek kliknięcia na całej ramce: tekst, wskaźnik, a przy wyłączeniu — brak akcji."
+  [reqs]="['wym-real-27', 'wym-api-16']"
+  data-testid="demo-surface"
+>
+  <div class="stack">
+    <pct-field
+      label="Kraj"
+      hint="Klik w padding otwiera listę"
+      [size]="powierzchnia.activeSize()"
+      data-testid="field-country"
+    >
+      <pct-select [options]="countries" [formField]="userForm.country" />
+    </pct-field>
+
+    <pct-field
+      label="Wyłączone"
+      [size]="powierzchnia.activeSize()"
+      data-testid="field-disabled"
+    >
+      <input pctText value="nie do edycji" disabled />
+    </pct-field>
+
+    <pct-field
+      label="Tylko do odczytu"
+      [size]="powierzchnia.activeSize()"
+      data-testid="field-readonly"
+    >
+      <input pctText value="tylko podgląd" readonly />
+    </pct-field>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="Kontrolki bez ramki (bare)"
+  summary="Wokół checkboxa i grupy radiów ramka wygląda obco — obudowa daje wtedy wyłącznie etykietę, podpowiedź i komunikat."
+  [reqs]="['wym-api-16']"
+  data-testid="demo-bare"
+>
+  <div class="stack">
+    <pct-field
+      label="Zgody"
+      hint="Wymagane do założenia konta"
+      data-testid="field-bare-checkbox"
+    >
+      <pct-checkbox [(checked)]="consent" />
+    </pct-field>
+
+    <pct-field label="Plan" data-testid="field-bare-radio">
+      <pct-radio-group [(value)]="plan">
+        <pct-radio value="free">Darmowy</pct-radio>
+        <pct-radio value="pro">Pro</pct-radio>
+      </pct-radio-group>
+    </pct-field>
+  </div>
+</sbx-demo>

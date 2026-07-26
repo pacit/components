@@ -1,30 +1,17 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+import { visit } from './support/dom';
 
-test.describe('PctButton — sandbox', () => {
+/**
+ * Scoped theme na dowolnym poddrzewie (`data-theme` na sekcji), niezależnie od
+ * kart sandboxa — te sprawdza `shell.spec.ts`. Tutaj chodzi o sam mechanizm
+ * kaskady: warstwa semantyczna i komponentowa muszą przełączyć się razem.
+ */
+test.describe('Scoped theme — kaskada CSS custom properties', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await visit(page, '/all');
   });
 
-  test('renderuje stronę biblioteki i przyciski', async ({ page }) => {
-    await expect(page.locator('h1')).toContainText('@pacit/components');
-    await expect(page.locator('button[pctButton]').first()).toBeVisible();
-  });
-
-  test('solid button ma tło z tokenu (--pct-button-bg)', async ({ page }) => {
-    const bg = await page
-      .getByTestId('btn-solid')
-      .evaluate((el) => getComputedStyle(el).backgroundColor);
-    // --pct-primary = blue-600 = #2563eb
-    expect(bg).toBe('rgb(37, 99, 235)');
-  });
-
-  test('loading pokazuje part=spinner i blokuje przycisk', async ({ page }) => {
-    const loading = page.getByTestId('btn-loading');
-    await expect(loading).toBeDisabled();
-    await expect(loading.locator('[data-pct-part="spinner"]')).toBeVisible();
-  });
-
-  test('scoped theme: panel dark ma inną powierzchnię niż :root, a toggle ją przełącza', async ({
+  test('panel dark ma inną powierzchnię niż :root, a toggle ją przełącza', async ({
     page,
   }) => {
     const rootSurface = await page.evaluate(() =>
@@ -46,7 +33,7 @@ test.describe('PctButton — sandbox', () => {
 
     await page.getByTestId('toggle').click();
     await expect(panel).not.toHaveAttribute('data-theme', 'dark');
-    expect(await surfaceOf()).toBe('#ffffff'); // wraca do :root
+    expect(await surfaceOf()).toBe('#ffffff'); // wraca do motywu strony
   });
 
   /**
@@ -58,23 +45,16 @@ test.describe('PctButton — sandbox', () => {
   test('scoped theme przethemowuje również tokeny komponentowe', async ({
     page,
   }) => {
-    const tokenAt = (selector: string, token: string) =>
-      page
-        .locator(selector)
-        .evaluate(
-          (el, t) => getComputedStyle(el).getPropertyValue(t).trim(),
-          token,
-        );
-
     const rootButtonBg = await page.evaluate(() =>
       getComputedStyle(document.documentElement)
         .getPropertyValue('--pct-button-bg')
         .trim(),
     );
-    const scopedButtonBg = await tokenAt(
-      '[data-testid="panel-scoped"]',
-      '--pct-button-bg',
-    );
+    const scopedButtonBg = await page
+      .getByTestId('panel-scoped')
+      .evaluate((el) =>
+        getComputedStyle(el).getPropertyValue('--pct-button-bg').trim(),
+      );
 
     // :root -> primary = blue-600, dark scope -> primary = blue-500
     expect(rootButtonBg).toBe('#2563eb');

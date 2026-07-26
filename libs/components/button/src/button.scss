@@ -12,7 +12,13 @@
   font-size: var(--pct-button-font-size);
   font-weight: var(--pct-button-font-weight);
   line-height: 1.2;
-  padding: var(--pct-button-padding-y) var(--pct-button-padding-x);
+  /* Wysokość jest wartością wprost, nie sumą paddingu i wysokości linii — tylko
+     tak przycisk zgadza się co do piksela z wierszem pola tej samej wielkości
+     (wym-api-18). Pion niesie `min-height`, więc etykieta łamana na dwie linie
+     nadal rozpycha przycisk zamiast się przycinać. */
+  min-height: var(--pct-button-height);
+  padding-block: 0;
+  padding-inline: var(--pct-button-padding-x);
   cursor: pointer;
   transition: background-color 0.15s ease;
 }
@@ -57,15 +63,21 @@
   background: var(--pct-surface-100);
 }
 
-/* Rozmiary sterowane atrybutem stanu (wym-api-4) */
+/* Rozmiary sterowane atrybutem stanu (wym-api-4). Wariant podmienia tokeny
+   bazowe na swoje odpowiedniki, zamiast powtarzać reguły wyglądu — reguła wyżej
+   zostaje jedynym miejscem, które wie, gdzie która wartość trafia. Wielkość `md`
+   nie nadpisuje niczego, więc nadpisanie tokenu bazowego w motywie nadal działa
+   (wym-theme-3). */
 :host([data-pct-size='sm']) {
-  font-size: var(--pct-font-size-sm);
-  padding: var(--pct-space-2) var(--pct-space-4);
+  --pct-button-height: var(--pct-button-height-sm);
+  --pct-button-font-size: var(--pct-button-font-size-sm);
+  --pct-button-padding-x: var(--pct-button-padding-x-sm);
 }
 
 :host([data-pct-size='lg']) {
-  font-size: var(--pct-font-size-lg);
-  padding: var(--pct-space-4) var(--pct-space-5);
+  --pct-button-height: var(--pct-button-height-lg);
+  --pct-button-font-size: var(--pct-button-font-size-lg);
+  --pct-button-padding-x: var(--pct-button-padding-x-lg);
 }
 
 .pct-button__label {

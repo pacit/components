@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { boxOf } from './support/dom';
+import { boxOf, visit } from './support/dom';
 
 /**
  * Pole liczbowe w prawdziwej przeglądarce: formatowanie wg locale aplikacji
@@ -8,7 +8,7 @@ import { boxOf } from './support/dom';
  */
 test.describe('PctNumber', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await visit(page, '/number');
   });
 
   test('formatuje wartość wg locale aplikacji', async ({ page }) => {

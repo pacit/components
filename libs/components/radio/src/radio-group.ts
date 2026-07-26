@@ -48,6 +48,10 @@ import {
     '[attr.aria-describedby]': 'describedBy()',
     '[attr.aria-invalid]': 'showInvalid() ? "true" : null',
     '[attr.aria-required]': 'required() ? "true" : null',
+    // `aria-readonly` należy do GRUPY, nie do opcji: rola `radio` go nie
+    // wspiera (wspiera go `radiogroup`), a atrybut niedozwolony dla roli jest
+    // naruszeniem krytycznym, nie kosmetycznym (`wym-real-33`).
+    '[attr.aria-readonly]': 'readonly() ? "true" : null',
     '[attr.aria-orientation]': 'orientation()',
     '[attr.data-pct-orientation]': 'orientation()',
     '[attr.data-pct-invalid]': 'showInvalid() ? "" : null',

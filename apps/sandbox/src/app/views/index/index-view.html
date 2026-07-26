@@ -1,0 +1,26 @@
+<h2 class="view__title">Widoki</h2>
+<p class="muted view__intro">
+  Widok per komponent pokazuje jego warianty i stany. Widoki przekrojowe
+  zestawiają wszystkie komponenty na jednej osi — część wad widać wyłącznie
+  w zestawieniu.
+</p>
+
+@for (group of groups; track group.id) {
+<section class="index__group">
+  <h3 class="index__group-title">{{ group.label }}</h3>
+  <ul class="index__list">
+    @for (view of group.views; track view.path) {
+    <li>
+      <a
+        class="index__card"
+        [routerLink]="'/' + view.path"
+        [attr.data-testid]="'index-' + view.path"
+      >
+        <span class="index__card-title">{{ view.title }}</span>
+        <span class="index__card-summary muted">{{ view.summary }}</span>
+      </a>
+    </li>
+    }
+  </ul>
+</section>
+}

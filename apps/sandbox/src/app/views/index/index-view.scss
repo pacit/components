@@ -1,0 +1,55 @@
+:host {
+  display: block;
+}
+
+.index__group {
+  margin-bottom: 28px;
+}
+
+.index__group-title {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--pct-text-muted);
+}
+
+.index__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.index__card {
+  display: block;
+  height: 100%;
+  padding: 14px 16px;
+  border: 1px solid var(--pct-border);
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+
+  &:hover {
+    background: var(--pct-surface-100);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--pct-focus-ring);
+    outline-offset: 2px;
+  }
+}
+
+.index__card-title {
+  display: block;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.index__card-summary {
+  display: block;
+  margin-top: 4px;
+}

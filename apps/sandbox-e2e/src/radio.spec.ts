@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test';
-import { attrOf, boxOf } from './support/dom';
+import { attrOf, boxOf, visit } from './support/dom';
 
 test.describe('PctRadioGroup — signal forms', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await visit(page, '/radio');
   });
 
   test('grupa ma rolę radiogroup i jest nazwana etykietą obudowy', async ({

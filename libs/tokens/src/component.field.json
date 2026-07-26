@@ -1,7 +1,7 @@
 {
   "pct": {
     "field": {
-      "$comment": "Obudowa rysuje ramkę pola, bo sloty prefix/suffix muszą znaleźć się w jej środku. Kontrolka wewnątrz jest przezroczysta i bez obramowania.",
+      "$comment": "Obudowa rysuje ramkę pola, bo sloty prefix/suffix muszą znaleźć się w jej środku. Kontrolka wewnątrz jest przezroczysta i bez obramowania. Wysokość wiersza bierze się z tokenu wspólnego z przyciskiem ({pct.control.height}), nie z paddingu pionowego — wiersz pola i przycisk tej samej wielkości są przez to równe z definicji (wym-api-18).",
       "bg": { "$type": "color", "$value": "{pct.surface}" },
       "fg": { "$type": "color", "$value": "{pct.text}" },
       "placeholder-fg": { "$type": "color", "$value": "{pct.text-muted}" },
@@ -17,9 +17,21 @@
       "hint-fg": { "$type": "color", "$value": "{pct.text-muted}" },
       "affix-fg": { "$type": "color", "$value": "{pct.text-muted}" },
       "radius": { "$type": "dimension", "$value": "{pct.radius.md}" },
+      "height": { "$type": "dimension", "$value": "{pct.control.height.md}" },
+      "height-sm": {
+        "$type": "dimension",
+        "$value": "{pct.control.height.sm}"
+      },
+      "height-lg": {
+        "$type": "dimension",
+        "$value": "{pct.control.height.lg}"
+      },
       "font-size": { "$type": "dimension", "$value": "{pct.font.size.md}" },
-      "padding-y": { "$type": "dimension", "$value": "{pct.space.3}" },
+      "font-size-sm": { "$type": "dimension", "$value": "{pct.font.size.sm}" },
+      "font-size-lg": { "$type": "dimension", "$value": "{pct.font.size.lg}" },
       "padding-x": { "$type": "dimension", "$value": "{pct.space.4}" },
+      "padding-x-sm": { "$type": "dimension", "$value": "{pct.space.3}" },
+      "padding-x-lg": { "$type": "dimension", "$value": "{pct.space.5}" },
       "gap": { "$type": "dimension", "$value": "{pct.space.3}" },
       "label-gap": { "$type": "dimension", "$value": "{pct.space.2}" }
     }

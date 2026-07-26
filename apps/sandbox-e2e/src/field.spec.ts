@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test';
-import { attrOf } from './support/dom';
+import { attrOf, visit } from './support/dom';
 
 test.describe('PctField — obudowa pola', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await visit(page, '/field');
   });
 
   test('etykieta obudowy wskazuje kontrolkę w środku (przez granicę projekcji)', async ({
@@ -103,5 +103,56 @@ test.describe('PctField — obudowa pola', () => {
       'border-color',
       'rgb(220, 38, 38)',
     );
+  });
+
+  test('pod polem jest jedna linia: błąd zastępuje podpowiedź', async ({
+    page,
+  }) => {
+    const field = page.getByTestId('field-bio');
+    const input = field.getByTestId('bio-input');
+    const hint = field.locator('[data-pct-part="field-hint"]');
+    const error = field.locator('[data-pct-part="field-error"]');
+
+    // Na starcie widać podpowiedź, nie ma błędu.
+    await expect(hint).toBeVisible();
+    await expect(error).toHaveCount(0);
+    await expect(input).toHaveAttribute(
+      'aria-describedby',
+      await attrOf(hint, 'id'),
+    );
+
+    // Za krótki opis + opuszczenie pola: błąd wchodzi na miejsce podpowiedzi.
+    await input.fill('krótko');
+    await input.press('Tab');
+
+    await expect(error).toBeVisible();
+    await expect(hint).toHaveCount(0);
+    // describedby wskazuje wyłącznie widoczny komunikat (bez wiszącego id podpowiedzi).
+    await expect(input).toHaveAttribute(
+      'aria-describedby',
+      await attrOf(error, 'id'),
+    );
+  });
+
+  test('sloty poboczne: ikona przy etykiecie i licznik znaków', async ({
+    page,
+  }) => {
+    const field = page.getByTestId('field-bio');
+    const header = field.locator('[data-pct-part="field-header"]');
+    const footer = field.locator('[data-pct-part="field-footer"]');
+    const counter = field.getByTestId('bio-counter');
+
+    // Dodatek etykiety leży w wierszu etykiety, po prawej.
+    await expect(
+      header.locator('[data-pct-part="field-label-aux"] button'),
+    ).toHaveAttribute('aria-label', /profilu/);
+
+    // Licznik leży w wierszu komunikatu i liczy wpisane znaki.
+    await expect(footer.locator('[data-pct-part="field-message-aux"]')).toHaveCount(
+      1,
+    );
+    await expect(counter).toHaveText('0/120');
+    await field.getByTestId('bio-input').fill('dwanaście!!!');
+    await expect(counter).toHaveText('12/120');
   });
 });

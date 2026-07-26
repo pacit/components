@@ -1,0 +1,28 @@
+@if (has('scheme')) {
+<pct-radio-group
+  label="Motyw"
+  orientation="horizontal"
+  [value]="scheme()"
+  (valueChange)="setScheme($event)"
+  data-testid="control-scheme"
+>
+  <pct-radio value="light">jasny</pct-radio>
+  <pct-radio value="dark">ciemny</pct-radio>
+</pct-radio-group>
+} @if (has('size')) {
+<pct-radio-group
+  label="Wielkość"
+  orientation="horizontal"
+  [value]="size()"
+  (valueChange)="setSize($event)"
+  data-testid="control-size"
+>
+  <pct-radio value="sm">sm</pct-radio>
+  <pct-radio value="md">md</pct-radio>
+  <pct-radio value="lg">lg</pct-radio>
+</pct-radio-group>
+} @if (has('skin') && hasSkins) {
+<pct-field label="Skórka" size="sm" data-testid="control-skin">
+  <pct-select [options]="skins" [(value)]="skin" />
+</pct-field>
+}

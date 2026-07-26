@@ -1,0 +1,46 @@
+<h2 class="view__title">Radio</h2>
+<p class="muted view__intro">
+  Opcje to natywne <code>&lt;input type="radio"&gt;</code> ze wspólnym
+  <code>name</code>, więc nawigacja strzałkami, zawijanie i „jedno miejsce
+  w kolejności Taba" pochodzą od przeglądarki — bez własnego roving tabindex.
+</p>
+
+<sbx-demo
+  heading="W obudowie"
+  summary="Obudowa nazywa grupę przez aria-labelledby — <label for> nie nazywa zbioru elementów."
+  [reqs]="['wym-api-10', 'wym-api-12']"
+  data-testid="demo-in-field"
+>
+  <div class="stack">
+    <pct-field
+      label="Plan"
+      hint="Możesz zmienić w każdej chwili"
+      data-testid="field-plan"
+    >
+      <pct-radio-group [formField]="userForm.plan" data-testid="radio-plan">
+        <pct-radio value="free">Darmowy</pct-radio>
+        <pct-radio value="pro">Pro</pct-radio>
+        <pct-radio value="enterprise" disabled
+          >Enterprise (niedostępny)</pct-radio
+        >
+      </pct-radio-group>
+    </pct-field>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="Bez obudowy, układ poziomy"
+  summary="Poza pct-field grupa rysuje własną etykietę i wystawia aria-orientation."
+  [reqs]="['wym-api-14', 'wym-api-11']"
+  data-testid="demo-standalone"
+>
+  <pct-radio-group
+    label="Układ poziomy"
+    orientation="horizontal"
+    [(value)]="layoutDemo"
+    data-testid="radio-horizontal"
+  >
+    <pct-radio value="a">Opcja A</pct-radio>
+    <pct-radio value="b">Opcja B</pct-radio>
+  </pct-radio-group>
+</sbx-demo>

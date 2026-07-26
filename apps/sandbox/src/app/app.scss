@@ -6,76 +6,98 @@
   font-family: system-ui, sans-serif;
 }
 
-.page {
-  max-width: 880px;
-  margin: 0 auto;
-  padding: 32px 24px 64px;
-}
-
-.page__head {
-  margin-bottom: 24px;
+.shell__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--pct-border);
 
   h1 {
     margin: 0 0 4px;
-    font-size: 24px;
+    font-size: 20px;
   }
 
   p {
     margin: 0;
+    max-width: 56ch;
     color: var(--pct-text-muted);
-  }
-
-  code {
-    font-family: ui-monospace, monospace;
+    font-size: 13px;
   }
 }
 
-.panel {
-  background: var(--pct-surface);
-  color: var(--pct-text);
-  border: 1px solid var(--pct-border);
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 20px;
+.shell__body {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  padding: 24px;
+}
 
-  h2 {
-    margin: 0 0 16px;
-    font-size: 15px;
+.shell__nav {
+  position: sticky;
+  top: 24px;
+  flex: 0 0 180px;
+
+  ul {
+    list-style: none;
+    margin: 0 0 20px;
+    padding: 0;
+  }
+
+  a {
+    display: block;
+    padding: 5px 10px;
+    border-radius: 8px;
     color: var(--pct-text-muted);
-    font-weight: 600;
+    text-decoration: none;
+    font-size: 14px;
+
+    &:hover {
+      color: var(--pct-text);
+      background: var(--pct-surface-100);
+    }
+
+    /* Fokus z tokenu — nawigacja sandboxa trzyma się tych samych reguł
+       widoczności fokusu co komponenty biblioteki. */
+    &:focus-visible {
+      outline: 2px solid var(--pct-focus-ring);
+      outline-offset: 2px;
+    }
+
+    &.is-active {
+      color: var(--pct-text);
+      background: var(--pct-surface-100);
+      font-weight: 600;
+    }
   }
 }
 
-.panel__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px;
-
-  & + .row {
-    margin-top: 12px;
-  }
-}
-
-.stack {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  max-width: 380px;
-
-  & + .stack {
-    margin-top: 24px;
-  }
-}
-
-.muted {
+.shell__nav-heading {
+  margin: 0 0 6px;
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: var(--pct-text-muted);
-  font-size: 13px;
+}
+
+.shell__view {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 960px;
+}
+
+@media (max-width: 720px) {
+  .shell__body {
+    flex-direction: column;
+  }
+
+  .shell__nav {
+    position: static;
+    flex: 1 1 auto;
+    align-self: stretch;
+  }
 }

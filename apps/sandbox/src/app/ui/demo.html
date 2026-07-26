@@ -1,0 +1,34 @@
+<header class="demo__head">
+  <div class="demo__intro">
+    <h3 class="demo__heading">{{ heading() }}</h3>
+    @if (summary()) {
+    <p class="demo__summary">{{ summary() }}</p>
+    } @if (reqs().length) {
+    <p class="demo__reqs">
+      @for (req of reqs(); track req) {
+      <code>{{ req }}</code>
+      }
+    </p>
+    }
+  </div>
+
+  @if (controls().length) {
+  <sbx-controls
+    class="demo__controls"
+    [show]="controls()"
+    [(scheme)]="activeScheme"
+    [(skin)]="activeSkin"
+    [(size)]="activeSize"
+  />
+  }
+</header>
+
+<!-- Scena: jedyne miejsce, gdzie obowiązuje motyw karty. -->
+<div
+  class="demo__stage"
+  [attr.data-theme]="activeScheme()"
+  [attr.data-skin]="activeSkin()"
+  data-testid="demo-stage"
+>
+  <ng-content />
+</div>

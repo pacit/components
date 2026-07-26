@@ -104,9 +104,21 @@ describe('Kontrolki w obudowie pct-field', () => {
       expect(field.getAttribute('data-pct-appearance')).toBe('boxed');
     });
 
-    it('podpowiedź i błąd renderuje obudowa, nie kontrolka', async () => {
+    it('podpowiedź i błąd renderuje obudowa, nie kontrolka (jedna linia)', async () => {
       const fixture = await render(SelectInFieldHost);
+      const trigger = part(fixture, 'trigger');
+
+      // Sama podpowiedź: rysuje ją obudowa i wiąże z triggerem.
       fixture.componentInstance.hint.set('Wybierz z listy');
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(part(fixture, 'field-hint').closest('pct-field')).toBeTruthy();
+      expect(trigger.getAttribute('aria-describedby')).toContain(
+        part(fixture, 'field-hint').id,
+      );
+
+      // Błąd przejmuje jedyną linię pod polem — podpowiedź ustępuje.
       fixture.componentInstance.invalid.set(true);
       fixture.componentInstance.touched.set(true);
       fixture.componentInstance.errors.set([
@@ -115,16 +127,10 @@ describe('Kontrolki w obudowie pct-field', () => {
       fixture.detectChanges();
       await fixture.whenStable();
 
-      expect(allParts(fixture, 'field-hint')).toHaveLength(1);
+      expect(allParts(fixture, 'field-hint')).toHaveLength(0);
       expect(allParts(fixture, 'field-error')).toHaveLength(1);
       expect(part(fixture, 'field-error').closest('pct-field')).toBeTruthy();
-
-      // Komunikaty obudowy są powiązane z triggerem.
-      const trigger = part(fixture, 'trigger');
-      expect(trigger.getAttribute('aria-describedby')).toContain(
-        part(fixture, 'field-hint').id,
-      );
-      expect(trigger.getAttribute('aria-describedby')).toContain(
+      expect(trigger.getAttribute('aria-describedby')).toBe(
         part(fixture, 'field-error').id,
       );
     });

@@ -7,9 +7,12 @@ import {
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { email, form, FormField, required } from '@angular/forms/signals';
+import { providePctConfig } from '@pacit/components/core';
 import { allParts, part, query } from '../../testing/src/dom';
 import { PctPrefix, PctSuffix } from './affix';
+import { PctLabelAux, PctMessageAux } from './aux';
 import { PctField } from './field';
+import { PctFieldSize } from './field.types';
 import { PctText } from './text';
 
 const inputOf = (f: ComponentFixture<unknown>) =>
@@ -60,6 +63,29 @@ class AffixHost {
   value = signal('100');
 }
 
+/** Pole z podpowiedzią i dwoma slotami pobocznymi (dodatek etykiety + komunikatu). */
+@Component({
+  imports: [PctField, PctText, PctLabelAux, PctMessageAux],
+  template: `<pct-field label="Opis" [hint]="hint()">
+    <button pctLabelAux type="button" aria-label="Pomoc">ⓘ</button>
+    <input
+      pctText
+      [invalid]="invalid()"
+      [touched]="touched()"
+      [errors]="errors()"
+      [(value)]="value"
+    />
+    <span pctMessageAux>{{ value().length }}/120</span>
+  </pct-field>`,
+})
+class AuxHost {
+  hint = signal('Krótko o sobie');
+  invalid = signal(false);
+  touched = signal(false);
+  errors = signal<readonly { kind: string; message?: string }[]>([]);
+  value = signal('');
+}
+
 @Component({
   imports: [PctField, PctText, FormField],
   template: `<pct-field label="E-mail" hint="Adres służbowy">
@@ -102,6 +128,23 @@ class NgModelHost {
 class BareHost {
   value = signal('bez obudowy');
 }
+
+@Component({
+  imports: [PctField, PctText],
+  template: `<pct-field label="E-mail" [size]="size()">
+    <input pctText />
+  </pct-field>`,
+})
+class SizeHost {
+  size = signal<PctFieldSize>('lg');
+}
+
+/** Obudowa bez jawnej wielkości — bierze ją z globalnej konfiguracji. */
+@Component({
+  imports: [PctField, PctText],
+  template: `<pct-field label="E-mail"><input pctText /></pct-field>`,
+})
+class DefaultSizeHost {}
 
 describe('PctField + PctText', () => {
   beforeEach(() => {
@@ -346,6 +389,137 @@ describe('PctField + PctText', () => {
       input.dispatchEvent(new Event('input'));
       await fixture.whenStable();
       expect(fixture.componentInstance.text).toBe('z-widoku');
+    });
+  });
+
+  describe('wielkość pola', () => {
+    const fieldOf = (f: ComponentFixture<unknown>) =>
+      query(f, 'pct-field') as HTMLElement;
+
+    it('odzwierciedla wielkość jako atrybut stanu, tak jak przycisk', async () => {
+      const fixture = await render(SizeHost);
+      expect(fieldOf(fixture).getAttribute('data-pct-size')).toBe('lg');
+
+      fixture.componentInstance.size.set('sm');
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(fieldOf(fixture).getAttribute('data-pct-size')).toBe('sm');
+    });
+
+    it('bez jawnej wielkości bierze domyślną z konfiguracji', async () => {
+      const fixture = await render(DefaultSizeHost);
+      expect(fieldOf(fixture).getAttribute('data-pct-size')).toBe('md');
+    });
+
+    it('respektuje domyślny rozmiar z providePctConfig (wym-api-8)', async () => {
+      TestBed.resetTestingModule();
+      TestBed.configureTestingModule({
+        providers: [
+          provideZonelessChangeDetection(),
+          providePctConfig({ defaultSize: 'sm' }),
+        ],
+      });
+      const fixture = await render(DefaultSizeHost);
+      expect(fieldOf(fixture).getAttribute('data-pct-size')).toBe('sm');
+    });
+
+    it('wysokość wiersza bierze się z tokenu wielkości, nie z paddingu', async () => {
+      // jsdom nie liczy layoutu, więc sprawdzamy zadeklarowany mechanizm:
+      // pion niesie `min-height` rzędu, a kolumny nie mają już paddingu
+      // pionowego. Że wychodzi z tego dokładnie wysokość przycisku tej samej
+      // wielkości, sprawdza test e2e (size.spec.ts).
+      const fixture = await render(SizeHost);
+      const row = part(fixture, 'field-row');
+      expect(getComputedStyle(row).minHeight).toBe('var(--pct-field-height)');
+
+      for (const name of ['field-prefix', 'field-control', 'field-suffix']) {
+        expect(getComputedStyle(part(fixture, name)).paddingBlock).toBe('');
+      }
+    });
+  });
+
+  describe('jedna linia pod polem: podpowiedź albo błąd', () => {
+    it('błąd zastępuje podpowiedź, nie dokłada się do niej', async () => {
+      const fixture = await render(AuxHost);
+      const host = fixture.componentInstance;
+
+      // Bez błędu widać podpowiedź.
+      expect(part(fixture, 'field-hint').textContent?.trim()).toBe(
+        'Krótko o sobie',
+      );
+      expect(allParts(fixture, 'field-error')).toHaveLength(0);
+
+      host.invalid.set(true);
+      host.touched.set(true);
+      host.errors.set([{ kind: 'custom', message: 'Za krótki opis' }]);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      // Świeci wyłącznie błąd — podpowiedź znika (jedna linia).
+      expect(part(fixture, 'field-error').textContent?.trim()).toBe(
+        'Za krótki opis',
+      );
+      expect(allParts(fixture, 'field-hint')).toHaveLength(0);
+    });
+
+    it('aria-describedby wskazuje tylko widoczny komunikat', async () => {
+      const fixture = await render(AuxHost);
+      const host = fixture.componentInstance;
+      const input = inputOf(fixture);
+
+      // Sama podpowiedź -> describedby to jej id.
+      expect(input.getAttribute('aria-describedby')).toBe(
+        part(fixture, 'field-hint').id,
+      );
+
+      host.invalid.set(true);
+      host.touched.set(true);
+      host.errors.set([{ kind: 'custom', message: 'Za krótki opis' }]);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      // Błąd przejmuje linię -> describedby to id błędu, bez wiszącego id podpowiedzi.
+      const errorId = part(fixture, 'field-error').id;
+      expect(input.getAttribute('aria-describedby')).toBe(errorId);
+    });
+  });
+
+  describe('sloty poboczne: dodatek etykiety i komunikatu', () => {
+    it('dodatek etykiety renderuje się w wierszu etykiety', async () => {
+      const fixture = await render(AuxHost);
+      const header = part(fixture, 'field-header');
+      const aux = part(fixture, 'field-label-aux');
+
+      expect(header.contains(aux)).toBe(true);
+      expect(header.contains(part(fixture, 'field-label'))).toBe(true);
+      expect(aux.querySelector('button')?.getAttribute('aria-label')).toBe(
+        'Pomoc',
+      );
+    });
+
+    it('dodatek komunikatu dzieli wiersz z podpowiedzią, a potem z błędem', async () => {
+      const fixture = await render(AuxHost);
+      const host = fixture.componentInstance;
+
+      host.value.set('abc');
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const footer = part(fixture, 'field-footer');
+      const aux = part(fixture, 'field-message-aux');
+      expect(footer.contains(aux)).toBe(true);
+      expect(footer.contains(part(fixture, 'field-hint'))).toBe(true);
+      expect(aux.textContent?.trim()).toBe('3/120');
+
+      // Gdy podpowiedź ustąpi błędowi, dodatek zostaje w tym samym wierszu.
+      host.invalid.set(true);
+      host.touched.set(true);
+      host.errors.set([{ kind: 'custom', message: 'Za krótki opis' }]);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(footer.contains(part(fixture, 'field-error'))).toBe(true);
+      expect(footer.contains(part(fixture, 'field-message-aux'))).toBe(true);
     });
   });
 

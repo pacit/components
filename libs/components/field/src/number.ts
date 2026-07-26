@@ -329,10 +329,18 @@ export class PctNumber
 
   private stepBy(delta: number, event: KeyboardEvent): void {
     event.preventDefault();
-    // Punkt wyjścia bierzemy z tekstu, nie z sygnału — użytkownik mógł już
-    // coś wpisać, a jeszcze nie zatwierdzić.
+    // Punkt wyjścia zależy od tego, kto ostatnio pisał do pola:
+    //   - użytkownik pisze -> tekst, bo wpisana wartość nie jest zatwierdzona,
+    //   - poza tym -> sygnał, bo tekst w DOM bywa o jeden przebieg detekcji do
+    //     tyłu: zapisuje go efekt, a ten biegnie asynchronicznie. Czytanie
+    //     wtedy tekstu gubi krok przy szybkim powtarzaniu strzałki — dwa
+    //     naciśnięcia przed odświeżeniem widziały tę samą wartość wyjściową
+    //     i drugie było bez efektu (`wym-real-32`).
     const current =
-      this.parse(this.el.nativeElement.value) ?? this.min() ?? this.max() ?? 0;
+      (this.typing() ? this.parse(this.el.nativeElement.value) : this.value()) ??
+      this.min() ??
+      this.max() ??
+      0;
     this.commit(current + delta);
   }
 

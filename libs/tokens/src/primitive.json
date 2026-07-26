@@ -34,6 +34,14 @@
       "$comment": "Minimalny obszar dotyku wg WCAG 2.2 SC 2.5.8 (24x24 px).",
       "min": { "$type": "dimension", "$value": "24px" }
     },
+    "control": {
+      "$comment": "Wysokość kontrolki w danej wielkości — wspólna oś przycisku i wiersza pola. Wysokość jest tu wartością wprost, a nie wynikiem paddingu i wysokości linii: tylko wtedy pole i przycisk tej samej wielkości są równe z definicji (wym-api-18).",
+      "height": {
+        "sm": { "$type": "dimension", "$value": "28px" },
+        "md": { "$type": "dimension", "$value": "36px" },
+        "lg": { "$type": "dimension", "$value": "44px" }
+      }
+    },
     "font": {
       "size": {
         "sm": { "$type": "dimension", "$value": "13px" },

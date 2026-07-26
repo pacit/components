@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test';
-import { boxOf } from './support/dom';
+import { boxOf, visit } from './support/dom';
 
 test.describe('PctCheckbox — signal forms', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await visit(page, '/checkbox');
   });
 
   test('kliknięcie w etykietę przełącza stan i maluje pudełko kolorem z tokenu', async ({
@@ -85,36 +85,4 @@ test.describe('PctCheckbox — signal forms', () => {
     await expect(control).not.toBeChecked();
   });
 
-  test('formularz staje się poprawny dopiero po wypełnieniu wszystkich wymaganych pól', async ({
-    page,
-  }) => {
-    const submit = page.getByTestId('submit');
-    await expect(submit).toBeDisabled();
-
-    await page
-      .getByTestId('field-email')
-      .locator('input')
-      .fill('marek@pacit.pl');
-    await expect(submit).toBeDisabled(); // brak planu i zgody
-
-    await page
-      .getByTestId('radio-plan')
-      .locator('pct-radio', { hasText: 'Pro' })
-      .locator('input')
-      .check();
-    await expect(submit).toBeDisabled(); // brak kraju i zgody
-
-    await page
-      .getByTestId('select-country')
-      .locator('[data-pct-part="trigger"]')
-      .click();
-    await page
-      .locator('[data-pct-part="option"]', { hasText: 'Polska' })
-      .click();
-    await expect(submit).toBeDisabled(); // brak zgody
-
-    await page.getByTestId('checkbox-terms').locator('input').check();
-    await expect(submit).toBeEnabled();
-    await expect(page.getByTestId('form-state')).toContainText('poprawny: tak');
-  });
 });

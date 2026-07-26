@@ -277,6 +277,27 @@ describe('PctNumber', () => {
       expect(fixture.componentInstance.value()).toBe(4);
     });
 
+    /**
+     * Regresja: krok liczony z tekstu w DOM gubił naciśnięcia. Tekst zapisuje
+     * efekt, czyli asynchronicznie — dwa zdarzenia w jednym przebiegu widziały
+     * tę samą wartość wyjściową. Test celowo NIE stabilizuje między
+     * naciśnięciami; z `await` po każdym z nich wada jest niewidoczna.
+     */
+    it('szybkie powtórzenie strzałki nie gubi kroku', async () => {
+      const fixture = await render(Host);
+      fixture.componentInstance.value.set(5);
+      await fixture.whenStable();
+
+      const el = inputOf(fixture);
+      el.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+      el.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+      el.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown' }));
+      await fixture.whenStable();
+
+      expect(fixture.componentInstance.value()).toBe(2);
+      expect(el.value).toBe('2');
+    });
+
     it('PageUp/PageDown skacze dziesięciokrotnie', async () => {
       const fixture = await render(Host);
       fixture.componentInstance.value.set(100);

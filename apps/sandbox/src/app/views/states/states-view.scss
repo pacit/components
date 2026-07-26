@@ -1,0 +1,21 @@
+:host {
+  display: block;
+}
+
+/* Siatka zamiast kolumny: stany porównuje się poziomo, komponent do komponentu,
+   a nie przewijając stronę. */
+.states {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px 20px;
+  align-items: start;
+}
+
+.states__cell {
+  align-self: end;
+}
+
+.states__note {
+  align-self: center;
+  margin: 0;
+}

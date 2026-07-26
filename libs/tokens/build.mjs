@@ -7,6 +7,9 @@
  *  - referencje token -> token są ZACHOWYWANE jako var() w CSS (wym-token-4),
  *    dzięki czemu nadpisanie jednej zmiennej w scope kaskaduje samo,
  *  - light -> :root, dark -> [data-theme="dark"] (nadpisania semantyczne),
+ *  - light jest emitowany DRUGI RAZ jako [data-theme="light"], żeby motyw dał
+ *    się przełączyć w obie strony w zagnieżdżeniu (jasna karta w ciemnej
+ *    stronie); bez tego "light" jest tylko brakiem atrybutu (wym-theme-4),
  *  - bramka a11y: walidacja kontrastu par tekst/tło wg WCAG 2.2 AA (wym-token-6).
  *
  * W docelowym projekcie ten transform można zastąpić Style Dictionary —
@@ -209,6 +212,12 @@ function run() {
   // (bezposrednio lub przez lancuch). Inaczej scoped theme dziala tylko na
   // warstwie semantycznej (wym-theme-4, wym-real-17).
   const darkOverrides = withDependents(flatten(semanticDark), darkTree);
+  // Ten sam zbiór tokenów co w dark, ale z wartościami jasnymi: `light` musi
+  // być czynnym motywem, a nie samym brakiem atrybutu — inaczej jasna karta
+  // wewnątrz ciemnej strony dziedziczy ciemne wartości i nie ma czym ich cofnąć.
+  const lightOverrides = Object.fromEntries(
+    Object.keys(darkOverrides).map((path) => [path, lightTree[path]]),
+  );
 
   // Bramka a11y wg policy skorki (progi WCAG 2.2), per motyw.
   console.log('Walidacja kontrastu skorki (policy, progi WCAG 2.2):');
@@ -239,6 +248,8 @@ function run() {
   const css =
     '/* AUTOGENEROWANE z libs/tokens/src/*.json — nie edytuj ręcznie. */\n' +
     emitCssBlock(':root', base, base) +
+    '\n\n' +
+    emitCssBlock('[data-theme="light"]', lightOverrides, lightTree) +
     '\n\n' +
     emitCssBlock('[data-theme="dark"]', darkOverrides, darkTree) +
     '\n';

@@ -1,4 +1,4 @@
-import type { Locator } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
 /**
  * Pomocniki do zapytań DOM w testach e2e.
@@ -11,6 +11,19 @@ import type { Locator } from '@playwright/test';
  * Plik celowo nie ma w nazwie `.spec.`, więc Playwright go nie zbiera
  * (`testMatch` domyślnie dopasowuje tylko `*.spec.*` / `*.test.*`).
  */
+
+/**
+ * Wejście na stronę sandboxa — czeka na hydrację, nie tylko na `load`.
+ *
+ * Sam `goto()` kończy się, gdy w DOM stoi HTML z serwera. Kliknięcie czy `fill`
+ * w tym oknie trafia w martwy DOM, a hydracja nadpisuje wynik stanem z modelu —
+ * objaw wygląda jak wada komponentu („wpisana wartość wróciła do początkowej"),
+ * choć jest wyścigiem w teście. Powłoka wystawia znacznik po `whenStable()`.
+ */
+export async function visit(page: Page, path = '/'): Promise<void> {
+  await page.goto(path);
+  await page.locator('html[data-sbx-ready]').waitFor();
+}
 
 /** Prostokąt elementu; `boundingBox()` nie ma publicznie eksportowanego typu. */
 type Box = NonNullable<Awaited<ReturnType<Locator['boundingBox']>>>;

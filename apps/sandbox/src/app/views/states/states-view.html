@@ -1,0 +1,297 @@
+<h2 class="view__title">Stany</h2>
+<p class="muted view__intro">
+  Ten sam zestaw stanów dla każdej kontrolki. Żaden stan nie jest robiony przez
+  <code>opacity</code> — każdy ma własne tokeny koloru, bo przezroczystość
+  zmienia kontrast w runtime w sposób niewidoczny dla bramki.
+</p>
+
+<sbx-demo
+  #spoczynek
+  heading="Spoczynek"
+  summary="Punkt odniesienia dla pozostałych kart."
+  [controls]="['scheme', 'skin', 'size']"
+  data-testid="states-idle"
+>
+  <div class="states">
+    <pct-field label="Tekst" [size]="spoczynek.activeSize()">
+      <input pctText [(value)]="text" data-testid="idle-text" />
+    </pct-field>
+
+    <pct-field label="Liczba" [size]="spoczynek.activeSize()">
+      <input
+        pctNumber
+        [maxFractionDigits]="2"
+        [(value)]="amount"
+        data-testid="idle-number"
+      />
+    </pct-field>
+
+    <pct-field label="Lista" [size]="spoczynek.activeSize()">
+      <pct-select
+        [options]="countries"
+        [(value)]="country"
+        data-testid="idle-select"
+      />
+    </pct-field>
+
+    <pct-field label="Zgoda">
+      <pct-checkbox [(checked)]="checked" data-testid="idle-checkbox" />
+    </pct-field>
+
+    <pct-field label="Plan">
+      <pct-radio-group [(value)]="plan" data-testid="idle-radio">
+        <pct-radio value="a">A</pct-radio>
+        <pct-radio value="b">B</pct-radio>
+      </pct-radio-group>
+    </pct-field>
+
+    <div class="states__cell">
+      <button pctButton [size]="spoczynek.activeSize()" data-testid="idle-button">
+        Przycisk
+      </button>
+    </div>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  #wylaczone
+  heading="Wyłączone"
+  summary="Kursor zapowiada brak akcji na całej powierzchni ramki, a kolory pochodzą z tokenów disabled-*."
+  [reqs]="['wym-token-12', 'wym-real-27']"
+  [controls]="['scheme', 'skin', 'size']"
+  data-testid="states-disabled"
+>
+  <div class="states">
+    <pct-field label="Tekst" [size]="wylaczone.activeSize()">
+      <input pctText [value]="text()" disabled data-testid="disabled-text" />
+    </pct-field>
+
+    <pct-field label="Liczba" [size]="wylaczone.activeSize()">
+      <input
+        pctNumber
+        [maxFractionDigits]="2"
+        [value]="amount()"
+        disabled
+        data-testid="disabled-number"
+      />
+    </pct-field>
+
+    <pct-field label="Lista" [size]="wylaczone.activeSize()">
+      <pct-select
+        [options]="countries"
+        [value]="country()"
+        disabled
+        data-testid="disabled-select"
+      />
+    </pct-field>
+
+    <pct-field label="Zgoda">
+      <pct-checkbox
+        [checked]="true"
+        disabled
+        data-testid="disabled-checkbox"
+      />
+    </pct-field>
+
+    <pct-field label="Plan">
+      <pct-radio-group [value]="plan()" disabled data-testid="disabled-radio">
+        <pct-radio value="a">A</pct-radio>
+        <pct-radio value="b">B</pct-radio>
+      </pct-radio-group>
+    </pct-field>
+
+    <div class="states__cell">
+      <button
+        pctButton
+        [size]="wylaczone.activeSize()"
+        disabled
+        data-testid="disabled-button"
+      >
+        Przycisk
+      </button>
+    </div>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  #odczyt
+  heading="Tylko do odczytu"
+  summary="Wartości nie da się zmienić, ale kontrolka zostaje fokusowalna — inaczej znikałaby z kolejności Taba i czytnik ekranu by jej nie odczytał."
+  [reqs]="['wym-api-3']"
+  [controls]="['scheme', 'skin', 'size']"
+  data-testid="states-readonly"
+>
+  <div class="states">
+    <pct-field label="Tekst" [size]="odczyt.activeSize()">
+      <input pctText [value]="text()" readonly data-testid="readonly-text" />
+    </pct-field>
+
+    <pct-field label="Liczba" [size]="odczyt.activeSize()">
+      <input
+        pctNumber
+        [maxFractionDigits]="2"
+        [value]="amount()"
+        readonly
+        data-testid="readonly-number"
+      />
+    </pct-field>
+
+    <pct-field label="Lista" [size]="odczyt.activeSize()">
+      <pct-select
+        [options]="countries"
+        [value]="country()"
+        readonly
+        data-testid="readonly-select"
+      />
+    </pct-field>
+
+    <pct-field label="Zgoda">
+      <pct-checkbox
+        [checked]="true"
+        readonly
+        data-testid="readonly-checkbox"
+      />
+    </pct-field>
+
+    <pct-field label="Plan">
+      <pct-radio-group [value]="plan()" readonly data-testid="readonly-radio">
+        <pct-radio value="a">A</pct-radio>
+        <pct-radio value="b">B</pct-radio>
+      </pct-radio-group>
+    </pct-field>
+
+    <p class="muted states__note">
+      Przycisk nie ma stanu „tylko do odczytu" — jego odpowiednikiem jest
+      wyłączenie.
+    </p>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  #blad
+  heading="Błąd walidacji"
+  summary="Komunikat rysuje obudowa i wiąże go z kontrolką przez aria-describedby; ramka sygnalizuje błąd kolorem z tokenu."
+  [reqs]="['wym-api-13', 'wym-api-6']"
+  [controls]="['scheme', 'skin', 'size']"
+  data-testid="states-invalid"
+>
+  <div class="states">
+    <pct-field label="Tekst" [size]="blad.activeSize()">
+      <input
+        pctText
+        [value]="text()"
+        [invalid]="true"
+        [touched]="true"
+        [errors]="errors"
+        data-testid="invalid-text"
+      />
+    </pct-field>
+
+    <pct-field label="Liczba" [size]="blad.activeSize()">
+      <input
+        pctNumber
+        [maxFractionDigits]="2"
+        [value]="amount()"
+        [invalid]="true"
+        [touched]="true"
+        [errors]="errors"
+        data-testid="invalid-number"
+      />
+    </pct-field>
+
+    <pct-field label="Lista" [size]="blad.activeSize()">
+      <pct-select
+        [options]="countries"
+        [value]="country()"
+        [invalid]="true"
+        [touched]="true"
+        [errors]="errors"
+        data-testid="invalid-select"
+      />
+    </pct-field>
+
+    <pct-field label="Zgoda">
+      <pct-checkbox
+        [checked]="false"
+        [invalid]="true"
+        [touched]="true"
+        [errors]="errors"
+        data-testid="invalid-checkbox"
+      />
+    </pct-field>
+
+    <pct-field label="Plan">
+      <pct-radio-group
+        [value]="''"
+        [invalid]="true"
+        [touched]="true"
+        [errors]="errors"
+        data-testid="invalid-radio"
+      >
+        <pct-radio value="a">A</pct-radio>
+        <pct-radio value="b">B</pct-radio>
+      </pct-radio-group>
+    </pct-field>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  #wymagane
+  heading="Wymagane"
+  summary="Znacznik wymagalności należy do obudowy — kontrolka zgłasza jej tylko, że jest wymagana."
+  [reqs]="['wym-api-13']"
+  [controls]="['scheme', 'skin', 'size']"
+  data-testid="states-required"
+>
+  <div class="states">
+    <pct-field label="Tekst" [size]="wymagane.activeSize()">
+      <input
+        pctText
+        [value]="text()"
+        [required]="true"
+        data-testid="required-text"
+      />
+    </pct-field>
+
+    <pct-field label="Lista" [size]="wymagane.activeSize()">
+      <pct-select
+        [options]="countries"
+        [value]="country()"
+        [required]="true"
+        data-testid="required-select"
+      />
+    </pct-field>
+
+    <pct-field label="Zgoda">
+      <pct-checkbox
+        [checked]="false"
+        [required]="true"
+        data-testid="required-checkbox"
+      />
+    </pct-field>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  #ladowanie
+  heading="Ładowanie"
+  summary="Stan wyłącznie przycisku: blokuje kliknięcie i zapowiada je przez aria-busy."
+  [reqs]="['wym-api-3']"
+  [controls]="['scheme', 'skin', 'size']"
+  data-testid="states-loading"
+>
+  <div class="row">
+    <button pctButton [size]="ladowanie.activeSize()" loading data-testid="loading-button">
+      Zapisywanie
+    </button>
+    <button
+      pctButton
+      variant="outline"
+      [size]="ladowanie.activeSize()"
+      loading
+      data-testid="loading-outline"
+    >
+      Zapisywanie
+    </button>
+  </div>
+</sbx-demo>

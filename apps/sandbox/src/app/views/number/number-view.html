@@ -1,0 +1,65 @@
+<h2 class="view__title">Number</h2>
+<p class="muted view__intro">
+  Świadomy wyjątek od „nie implementuj tego, co daje platforma": natywne
+  <code>&lt;input type="number"&gt;</code> nie zna lokalnego separatora
+  dziesiętnego, nie grupuje tysięcy i gubi treść, której nie umie sparsować.
+</p>
+
+<sbx-demo
+  #kwota
+  heading="Kwota z groszami"
+  summary="Formatowanie wg locale aplikacji (pl-PL): przecinek dziesiętny, wąska spacja jako separator tysięcy. Tekst nie jest przepisywany w trakcie pisania."
+  [reqs]="['wym-api-17']"
+  data-testid="demo-price"
+>
+  <div class="stack">
+    <pct-field
+      label="Cena"
+      hint="Strzałki zmieniają wartość o 0,5"
+      [size]="kwota.activeSize()"
+      data-testid="field-price"
+    >
+      <span pctPrefix aria-hidden="true">PLN</span>
+      <input
+        pctNumber
+        [minFractionDigits]="2"
+        [maxFractionDigits]="2"
+        [step]="0.5"
+        [(value)]="price"
+        data-testid="number-price"
+      />
+      <button
+        pctSuffix
+        pctButton
+        type="button"
+        variant="outline"
+        size="sm"
+        aria-label="Wyczyść cenę"
+        (click)="clearPrice()"
+        data-testid="field-price-clear"
+      >
+        ×
+      </button>
+    </pct-field>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  #stanowiska
+  heading="Pole całkowite z granicami ze schematu"
+  summary="Granic nie ma w szablonie — dyrektywa FormField bierze je z walidatorów min()/max(), więc walidacja, ARIA i domykanie wartości mają jedno źródło."
+  [reqs]="['wym-api-17', 'wym-api-5']"
+  data-testid="demo-seats"
+>
+  <div class="stack">
+    <pct-field
+      label="Liczba stanowisk"
+      hint="Zakres 1–500; ułamek zostaje zaokrąglony przy zatwierdzeniu"
+      [size]="stanowiska.activeSize()"
+      data-testid="field-seats"
+    >
+      <input pctNumber [formField]="userForm.seats" data-testid="number-seats" />
+      <span pctSuffix aria-hidden="true">szt.</span>
+    </pct-field>
+  </div>
+</sbx-demo>

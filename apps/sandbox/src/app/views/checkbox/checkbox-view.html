@@ -1,0 +1,45 @@
+<h2 class="view__title">Checkbox</h2>
+<p class="muted view__intro">
+  Kontrakt <code>FormCheckboxControl</code> wymaga <code>checked</code>, nie
+  <code>value</code>. Znacznik rysowany jest SVG w <code>currentColor</code> —
+  bez zależności od zestawu ikon.
+</p>
+
+<sbx-demo
+  heading="W obudowie"
+  summary="Etykietę rysuje pct-field; ramki nie ma, bo checkbox zgłasza wygląd bare."
+  [reqs]="['wym-api-16', 'wym-api-14']"
+  data-testid="demo-in-field"
+>
+  <div class="stack">
+    <pct-field
+      label="Zgody"
+      hint="Wymagane do założenia konta"
+      data-testid="field-terms"
+    >
+      <pct-checkbox [formField]="userForm.terms" data-testid="checkbox-terms" />
+    </pct-field>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="Bez obudowy"
+  summary="Poza pct-field kontrolka rysuje własną etykietę — przydatne np. w komórce tabeli."
+  [reqs]="['wym-api-14', 'wym-a11y-2']"
+  data-testid="demo-standalone"
+>
+  <div class="stack">
+    <pct-checkbox
+      label="Stan nieokreślony (aria-checked=&quot;mixed&quot;)"
+      [indeterminate]="partial()"
+      data-testid="checkbox-mixed"
+    />
+    <pct-checkbox label="Zaznaczone, wyłączone" [checked]="true" disabled />
+    <pct-checkbox
+      label="Tylko do odczytu — fokusowalne, ale bez zmiany"
+      [checked]="true"
+      readonly
+      data-testid="checkbox-readonly"
+    />
+  </div>
+</sbx-demo>

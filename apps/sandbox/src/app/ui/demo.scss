@@ -1,0 +1,62 @@
+:host {
+  display: block;
+  border: 1px solid var(--pct-border);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--pct-surface);
+
+  & + & {
+    margin-top: 20px;
+  }
+}
+
+.demo__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--pct-border);
+}
+
+.demo__intro {
+  min-width: 240px;
+}
+
+.demo__heading {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.demo__summary {
+  margin: 4px 0 0;
+  color: var(--pct-text-muted);
+  font-size: 13px;
+  max-width: 60ch;
+}
+
+.demo__reqs {
+  margin: 8px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+
+  code {
+    font-family: ui-monospace, monospace;
+    font-size: 11px;
+    color: var(--pct-text-muted);
+    border: 1px solid var(--pct-border);
+    border-radius: 999px;
+    padding: 1px 8px;
+  }
+}
+
+/* Scena niesie motyw karty, więc tło i tekst muszą brać się z tokenów —
+   inaczej ciemna karta zostałaby jasnym prostokątem z ciemnymi komponentami. */
+.demo__stage {
+  padding: 20px;
+  background: var(--pct-surface);
+  color: var(--pct-text);
+}

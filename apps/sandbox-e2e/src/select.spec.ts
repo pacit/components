@@ -1,9 +1,9 @@
 import { expect, test } from '@playwright/test';
-import { attrOf, boxOf } from './support/dom';
+import { attrOf, boxOf, visit } from './support/dom';
 
 test.describe('PctSelect — combobox z panelem', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await visit(page, '/select');
   });
 
   const trigger = (

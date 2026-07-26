@@ -5,6 +5,33 @@
   font-family: inherit;
 }
 
+/* Wielkość sterowana atrybutem stanu (wym-api-4), tak samo jak w przycisku:
+   wariant podmienia tokeny bazowe na swoje odpowiedniki. Podmiana siedzi na
+   hoście, a nie na samym wierszu, bo z tych tokenów korzystają też elementy
+   w środku (kontrolka bierze `--pct-field-font-size`) — inaczej rozmiar ramki
+   i rozmiar tekstu w niej rozjeżdżałyby się. Wielkość `md` nie nadpisuje
+   niczego, więc nadpisanie tokenu bazowego w motywie nadal działa. */
+:host([data-pct-size='sm']) {
+  --pct-field-height: var(--pct-field-height-sm);
+  --pct-field-font-size: var(--pct-field-font-size-sm);
+  --pct-field-padding-x: var(--pct-field-padding-x-sm);
+}
+
+:host([data-pct-size='lg']) {
+  --pct-field-height: var(--pct-field-height-lg);
+  --pct-field-font-size: var(--pct-field-font-size-lg);
+  --pct-field-padding-x: var(--pct-field-padding-x-lg);
+}
+
+/* Wiersz etykiety: nazwa po lewej, dodatek (`[pctLabelAux]`) po prawej. Dodatek
+   trzyma się prawej krawędzi także wtedy, gdy etykiety nie ma — inaczej
+   pojedynczy dodatek lądowałby po lewej. */
+.pct-field__header {
+  display: flex;
+  align-items: center;
+  gap: var(--pct-field-gap);
+}
+
 .pct-field__label {
   color: var(--pct-field-label-fg);
   font-size: var(--pct-font-size-sm);
@@ -16,11 +43,24 @@
   margin-inline-start: 2px;
 }
 
+.pct-field__label-aux {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--pct-field-gap);
+  margin-inline-start: auto;
+  color: var(--pct-field-hint-fg);
+  font-size: var(--pct-font-size-sm);
+}
+
 /* Wariant `bare`: checkbox i grupa radiów nie dostają ramki — obudowa daje im
-   tylko etykietę, podpowiedź i komunikat błędu (wym-api-16). */
+   tylko etykietę, podpowiedź i komunikat błędu (wym-api-16). Nie ma tu też czego
+   wyrównywać do wysokości przycisku: te kontrolki wnoszą własny układ, a
+   wymuszona wysokość wiersza dokładałaby im samego pustego miejsca. Obszar
+   dotyku pilnuje kolumna kontrolki, nie wiersz. */
 :host([data-pct-appearance='bare']) .pct-field__row {
   background: none;
   border: none;
+  min-height: 0;
 }
 
 /* Bez ramki nie ma czego wyściełać — padding kolumn odpada razem z nią. */
@@ -40,15 +80,22 @@
    Rząd **nie ma własnego paddingu ani `gap`**: odstępy niosą kolumny w środku
    (`prefix`, `control`, `suffix`), a kolumny rozciągają się na całą wysokość.
    Inaczej większość powierzchni ramki nie należy do żadnej z nich i nie da się
-   jej nadać ani kursora, ani stanu `:hover` zgodnego z tym, co zrobi klik. */
+   jej nadać ani kursora, ani stanu `:hover` zgodnego z tym, co zrobi klik.
+
+   Wysokość wiersza jest wartością wprost (`--pct-field-height`), a nie sumą
+   paddingu i wysokości linii — dopiero to pozwala zgrać ją co do piksela
+   z przyciskiem tej samej wielkości (wym-api-18). `min-height`, a nie `height`,
+   bo wyższa zawartość (textarea, przycisk w slocie) ma wiersz rozpychać. */
 .pct-field__row {
   display: flex;
   align-items: stretch;
   box-sizing: border-box;
+  min-height: var(--pct-field-height);
   background: var(--pct-field-bg);
   color: var(--pct-field-fg);
   border: 1px solid var(--pct-field-border);
   border-radius: var(--pct-field-radius);
+  font-size: var(--pct-field-font-size);
   transition: border-color 0.15s ease;
   overflow: clip;
 }
@@ -75,14 +122,9 @@
   color: var(--pct-field-disabled-fg);
 }
 
-/* Padding rzędu przeniesiony do kolumn. Pion zawsze pełny, żeby trzy kolumny
-   szczelnie kafelkowały wnętrze ramki. */
-.pct-field__prefix,
-.pct-field__control,
-.pct-field__suffix {
-  padding-block: var(--pct-field-padding-y);
-}
-
+/* Pion kolumn niesie teraz wysokość wiersza (`align-items: stretch`), a nie ich
+   własny padding — inaczej wysokość pola byłaby sumą, której nie da się zgrać
+   z przyciskiem. Kolumny nadal kafelkują wnętrze ramki szczelnie. */
 .pct-field__control {
   display: flex;
   align-items: stretch;
@@ -90,9 +132,9 @@
   min-width: 0; /* pozwala kontrolce się skracać zamiast rozpychać pole */
   /* Obudowa gwarantuje minimalny obszar dotyku (wym-a11y-2) niezależnie od tego,
      jaka kontrolka jest w środku — sama wysokość linii tekstu to ~20 px, czyli
-     poniżej progu SC 2.5.8. */
+     poniżej progu SC 2.5.8. Wysokość wielkości `sm` jest wyższa, więc warunek
+     wiąże dopiero przy motywie zagęszczającym pola poniżej progu. */
   min-height: var(--pct-target-min);
-  box-sizing: content-box;
 }
 
 .pct-field__prefix,
@@ -101,7 +143,6 @@
   align-items: center;
   flex: none;
   color: var(--pct-field-affix-fg);
-  font-size: var(--pct-field-font-size);
 }
 
 /* Cały odstęp poziomy niosą sloty dekoracji: od krawędzi ramki na zewnątrz,
@@ -135,7 +176,6 @@
 .pct-field__prefix:has(button, a, [tabindex]),
 .pct-field__suffix:has(button, a, [tabindex]) {
   align-items: stretch;
-  padding-block: 0;
 }
 
 /* Kursor zapowiada skutek kliknięcia na całej powierzchni ramki. Rodzaj zgłasza
@@ -153,6 +193,27 @@
    kursor nie może zapraszać do pisania ani do klikania. */
 :host([data-pct-disabled]) .pct-field__row {
   cursor: not-allowed;
+}
+
+/* Wiersz komunikatu: pojedyncza linia (podpowiedź albo błąd) po lewej, dodatek
+   (`[pctMessageAux]`, np. licznik) po prawej. Komunikat może się zawijać, więc
+   dodatek wyrównujemy do jego pierwszej linii, a nie do środka. */
+.pct-field__footer {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--pct-field-gap);
+}
+
+.pct-field__message {
+  flex: 1 1 auto;
+  min-width: 0; /* pozwala długiemu komunikatowi się zawijać, nie rozpychać wiersza */
+}
+
+.pct-field__message-aux {
+  flex: none;
+  color: var(--pct-field-hint-fg);
+  font-size: var(--pct-font-size-sm);
+  white-space: nowrap;
 }
 
 .pct-field__hint {

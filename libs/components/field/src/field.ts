@@ -2,22 +2,32 @@ import {
   booleanAttribute,
   Component,
   computed,
+  contentChild,
   effect,
+  inject,
   input,
   signal,
 } from '@angular/core';
 import {
   nextPctId,
+  PCT_CONFIG,
   PCT_FIELD,
   pctDescribedBy,
   pctFieldMessages,
   PctFieldApi,
   PctFieldControl,
 } from '@pacit/components/core';
+import { PctLabelAux, PctMessageAux } from './aux';
+import { PctFieldSize } from './field.types';
 
 /**
  * Obudowa pola formularza: etykieta, podpowiedź, komunikat błędu, znacznik
  * wymagalności oraz sloty `[pctPrefix]` / `[pctSuffix]` wewnątrz pola.
+ *
+ * Pod polem jest **jedna linia**: podpowiedź albo błąd (błąd ma pierwszeństwo).
+ * Dwa dodatkowe sloty wyrównane do prawej niosą treść poboczną: `[pctLabelAux]`
+ * w wierszu etykiety (np. ikona „i") i `[pctMessageAux]` w wierszu komunikatu
+ * (np. licznik znaków).
  *
  * Obudowa jest **prezentacyjna** — kontraktu formularza nie implementuje ona,
  * lecz kontrolka w środku (`wym-api-13`). Dzięki temu typowanie wartości
@@ -38,6 +48,7 @@ import {
   providers: [{ provide: PCT_FIELD, useExisting: PctField }],
   host: {
     class: 'pct-field',
+    '[attr.data-pct-size]': 'size()',
     '[attr.data-pct-appearance]': 'appearance()',
     '[attr.data-pct-cursor]': 'cursor()',
     '[attr.data-pct-invalid]': 'showInvalid() ? "" : null',
@@ -45,13 +56,28 @@ import {
   },
 })
 export class PctField implements PctFieldApi {
+  private readonly config = inject(PCT_CONFIG);
+
   readonly label = input<string>('');
   readonly hint = input<string>('');
+
+  /**
+   * Wielkość pola; domyślnie z globalnej konfiguracji (wym-api-8). Dotyczy
+   * **wiersza pola** — wysokość jest tu ta sama co przycisku tej samej
+   * wielkości, bo obie biorą ją z tokenu `--pct-control-height-*` (wym-api-18).
+   */
+  readonly size = input<PctFieldSize>(this.config.defaultSize);
 
   /** Wymagalność można podać wprost, gdy kontrolka jej nie zgłasza. */
   readonly required = input(false, { transform: booleanAttribute });
 
   private readonly control = signal<PctFieldControl | null>(null);
+
+  // Obecność slotów pobocznych decyduje o tym, czy w ogóle rysować ich wiersz —
+  // pusty wiersz etykiety/komunikatu dokładałby tylko odstęp. Zapytania celują
+  // w dyrektywy, więc consument musi je zaimportować (jak `pctPrefix`).
+  protected readonly labelAux = contentChild(PctLabelAux);
+  protected readonly messageAux = contentChild(PctMessageAux);
 
   private readonly uid = nextPctId('pct-field');
   protected readonly labelId = `${this.uid}-label`;
@@ -138,11 +164,14 @@ export class PctField implements PctFieldApi {
     // Identyfikatory opisów należą do obudowy, ale wystawić je musi kontrolka
     // (to na niej ma być `aria-describedby`). To zapis do kontrolki, nie wartość
     // pochodna — więc effect, nie computed.
+    // Pod polem świeci tylko jeden komunikat, więc `aria-describedby` wskazuje
+    // dokładnie ten, który jest w DOM: błąd, a gdy go nie ma — podpowiedź.
+    // Wskazanie na ukryty element byłoby wiszącą referencją dla czytnika.
     effect(() => {
       this.control()?.setDescribedBy(
         pctDescribedBy([
-          [this.hintId, this.hint() !== ''],
           [this.errorId, this.showError()],
+          [this.hintId, !this.showError() && this.hint() !== ''],
         ]),
       );
     });

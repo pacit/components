@@ -49,6 +49,10 @@
   padding: 0;
   width: 100%;
   align-self: stretch;
+  /* Wielkość w obudowie należy do niej (`pct-field[size]`) — trigger bierze
+     rozmiar tekstu z wiersza, zamiast trzymać się własnego tokenu. Inaczej pole
+     `lg` miałoby wysokość `lg`, a tekst w środku `md`. */
+  font-size: inherit;
 }
 
 :host([data-pct-in-field]) .pct-select__trigger:focus-visible {
@@ -104,13 +108,15 @@
   transform: rotate(180deg);
 }
 
-/* Rozmiary sterowane atrybutem stanu (wym-api-4) */
-:host([data-pct-size='sm']) .pct-select__trigger {
+/* Rozmiary sterowane atrybutem stanu (wym-api-4). W obudowie własny rozmiar
+   triggera nie obowiązuje — tam wielkość ustawia `pct-field` i to ona rozstrzyga
+   (inaczej dwa `size` w jednym polu dawałyby sprzeczny wynik). */
+:host([data-pct-size='sm']:not([data-pct-in-field])) .pct-select__trigger {
   font-size: var(--pct-font-size-sm);
   padding: var(--pct-space-2) var(--pct-space-3);
 }
 
-:host([data-pct-size='lg']) .pct-select__trigger {
+:host([data-pct-size='lg']:not([data-pct-in-field])) .pct-select__trigger {
   font-size: var(--pct-font-size-lg);
   padding: var(--pct-space-4) var(--pct-space-5);
 }

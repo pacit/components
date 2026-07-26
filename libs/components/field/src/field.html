@@ -1,14 +1,24 @@
-@if (label()) {
-<label
-  class="pct-field__label"
-  data-pct-part="field-label"
-  [id]="labelId"
-  [attr.for]="labelFor()"
->
-  {{ label() }} @if (isRequired()) {
-  <span class="pct-field__required" aria-hidden="true">*</span>
+<!-- Wiersz etykiety: nazwa pola po lewej, opcjonalny dodatek (np. ikona „i",
+     licznik) po prawej. Renderujemy go, gdy jest etykieta albo dodatek —
+     inaczej pusty wiersz dokładałby sam odstęp. -->
+@if (label() || labelAux()) {
+<div class="pct-field__header" data-pct-part="field-header">
+  @if (label()) {
+  <label
+    class="pct-field__label"
+    data-pct-part="field-label"
+    [id]="labelId"
+    [attr.for]="labelFor()"
+  >
+    {{ label() }} @if (isRequired()) {
+    <span class="pct-field__required" aria-hidden="true">*</span>
+    }
+  </label>
   }
-</label>
+  <span class="pct-field__label-aux" data-pct-part="field-label-aux">
+    <ng-content select="[pctLabelAux]"></ng-content>
+  </span>
+</div>
 }
 
 <!-- Rząd pola: dekoracje po bokach i kontrolka w środku. Sloty są opcjonalne;
@@ -39,17 +49,33 @@
   </span>
 </div>
 
-@if (hint()) {
-<span class="pct-field__hint" data-pct-part="field-hint" [id]="hintId">
-  {{ hint() }}
-</span>
-} @if (showError()) {
-<span
-  class="pct-field__error"
-  data-pct-part="field-error"
-  [id]="errorId"
-  role="alert"
->
-  {{ errorText() }}
-</span>
+<!--
+  Pod polem tylko jedna linia. Błąd ma pierwszeństwo nad podpowiedzią: gdy
+  świeci, podpowiedź znika — inaczej pole rosłoby o wiersz przy każdym błędzie,
+  a `aria-describedby` mógłby wskazywać element, którego użytkownik nie widzi.
+  Po prawej stronie tej samej linii stoi opcjonalny dodatek (np. licznik znaków),
+  niezależny od tego, który komunikat akurat świeci.
+-->
+@if (showError() || hint() || messageAux()) {
+<div class="pct-field__footer" data-pct-part="field-footer">
+  <span class="pct-field__message">
+    @if (showError()) {
+    <span
+      class="pct-field__error"
+      data-pct-part="field-error"
+      [id]="errorId"
+      role="alert"
+    >
+      {{ errorText() }}
+    </span>
+    } @else if (hint()) {
+    <span class="pct-field__hint" data-pct-part="field-hint" [id]="hintId">
+      {{ hint() }}
+    </span>
+    }
+  </span>
+  <span class="pct-field__message-aux" data-pct-part="field-message-aux">
+    <ng-content select="[pctMessageAux]"></ng-content>
+  </span>
+</div>
 }

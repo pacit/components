@@ -1,100 +1,52 @@
-import { Component, signal } from '@angular/core';
 import {
-  email,
-  form,
-  FormField,
-  max,
-  min,
-  required,
-} from '@angular/forms/signals';
-import { PctButton } from '@pacit/components/button';
-import { PctCheckbox } from '@pacit/components/checkbox';
-import { PctRadio, PctRadioGroup } from '@pacit/components/radio';
-import {
-  PctField,
-  PctNumber,
-  PctPrefix,
-  PctSuffix,
-  PctText,
-} from '@pacit/components/field';
-import { PctSelect, PctSelectOption } from '@pacit/components/select';
+  afterNextRender,
+  ApplicationRef,
+  Component,
+  inject,
+} from '@angular/core';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { SbxControls } from './ui/controls';
+import { SbxSettings } from './ui/settings';
+import { SBX_VIEW_GROUPS, viewsOf } from './views';
 
+/**
+ * Powłoka sandboxa: nawigacja po widokach + globalne ustawienia osi
+ * przekrojowych (motyw, skórka, wielkość).
+ *
+ * Motyw siedzi na hoście powłoki, a nie na `:root` — cała strona jest więc
+ * takim samym scoped theme jak każda karta (wym-theme-4), a `:root` zostaje
+ * czystym punktem odniesienia dla testów.
+ */
 @Component({
   selector: 'app-root',
-  imports: [
-    PctButton,
-    PctCheckbox,
-    PctRadioGroup,
-    PctRadio,
-    PctSelect,
-    PctField,
-    PctText,
-    PctNumber,
-    PctPrefix,
-    PctSuffix,
-    FormField,
-  ],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, SbxControls],
   templateUrl: './app.html',
   styleUrl: './app.scss',
+  host: {
+    '[attr.data-theme]': 'settings.scheme()',
+    '[attr.data-skin]': 'settings.skin()',
+  },
 })
 export class App {
-  /** Motyw drugiego panelu — demonstracja scoped theme (wym-theme-4). */
-  protected readonly panelDark = signal(true);
+  protected readonly settings = inject(SbxSettings);
 
-  /** Model formularza — signal forms (wym-api-5). */
-  protected readonly countries: readonly PctSelectOption[] = [
-    { value: 'pl', label: 'Polska' },
-    { value: 'de', label: 'Niemcy' },
-    { value: 'cz', label: 'Czechy', disabled: true },
-    { value: 'sk', label: 'Słowacja' },
-    { value: 'ua', label: 'Ukraina' },
-    { value: 'lt', label: 'Litwa' },
-  ];
+  protected readonly groups = SBX_VIEW_GROUPS.map((group) => ({
+    ...group,
+    views: viewsOf(group.id),
+  }));
 
-  protected readonly model = signal<{
-    email: string;
-    terms: boolean;
-    plan: string;
-    country: string;
-    seats: number | null;
-  }>({
-    email: '',
-    terms: false,
-    plan: '',
-    country: '',
-    seats: 1,
-  });
+  constructor() {
+    const appRef = inject(ApplicationRef);
 
-  protected readonly userForm = form(this.model, (p) => {
-    required(p.email, { message: 'Adres e-mail jest wymagany' });
-    email(p.email, { message: 'To nie wygląda na poprawny adres e-mail' });
-    required(p.terms, { message: 'Musisz zaakceptować regulamin' });
-    required(p.plan, { message: 'Wybierz plan' });
-    required(p.country, { message: 'Wybierz kraj' });
-    required(p.seats, { message: 'Podaj liczbę stanowisk' });
-    min(p.seats, 1, { message: 'Minimum jedno stanowisko' });
-    max(p.seats, 500, {
-      message: 'Powyżej 500 stanowisk skontaktuj się z nami',
+    // Znacznik „strona jest interaktywna" dla testów e2e. Do czasu hydracji
+    // w DOM stoi HTML z serwera: da się w niego kliknąć i wpisać, ale nic tego
+    // nie słucha, a hydracja i tak nadpisze wartość stanem z modelu. Odkąd
+    // widoki ładują się leniwie, okno między „element widoczny" a „element
+    // podłączony" trwa tyle, co pobranie chunka — dość, by test zdążył wejść
+    // w środek (wym-real-30).
+    afterNextRender(async () => {
+      await appRef.whenStable();
+      document.documentElement.setAttribute('data-sbx-ready', '');
     });
-  });
-
-  /** Select w panelu ciemnym — sprawdza propagację motywu do nakładki. */
-  protected readonly scopedCountry = signal('');
-
-  /** Demo obudowy pct-field ze slotami — kwota z dwoma miejscami po przecinku. */
-  protected readonly price = signal<number | null>(1499.9);
-
-  protected clearPrice(): void {
-    this.price.set(null);
-  }
-
-  /** Stan nieokreślony — demonstracja aria-checked="mixed". */
-  protected readonly partial = signal(true);
-
-  /** Demo układu poziomego radiogroup. */
-  protected readonly layoutDemo = signal('a');
-
-  protected togglePanel(): void {
-    this.panelDark.update((v) => !v);
   }
 }

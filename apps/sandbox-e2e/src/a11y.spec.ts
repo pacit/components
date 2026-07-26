@@ -1,5 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, Page, test } from '@playwright/test';
+import { visit } from './support/dom';
+import { SBX_ROUTES } from './support/views';
 
 /**
  * Automatyczny audyt dostępności (wym-a11y-1). Uzupełnia bramkę kontrastu
@@ -36,13 +38,16 @@ async function audit(page: Page, scope?: string) {
 
 test.describe('Dostępność (axe-core, WCAG 2.2 AA)', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await visit(page, '/all');
   });
 
-  test('cała strona sandboxa jest bez naruszeń', async ({ page }) => {
-    const violations = await audit(page);
-    expect(report(violations)).toBe('');
-  });
+  for (const path of SBX_ROUTES) {
+    test(`widok ${path} jest bez naruszeń`, async ({ page }) => {
+      await visit(page, path);
+      const violations = await audit(page);
+      expect(report(violations)).toBe('');
+    });
+  }
 
   test('panel ze scoped theme (ciemny) jest bez naruszeń', async ({ page }) => {
     const violations = await audit(page, '[data-testid="panel-scoped"]');
@@ -66,6 +71,12 @@ test.describe('Dostępność (axe-core, WCAG 2.2 AA)', () => {
     page,
   }) => {
     const violations = await audit(page, '[data-testid="checkbox-mixed"]');
+    expect(report(violations)).toBe('');
+  });
+
+  test('karta z ciemną sceną jest bez naruszeń', async ({ page }) => {
+    await visit(page, '/button');
+    const violations = await audit(page, '[data-testid="demo-dark"]');
     expect(report(violations)).toBe('');
   });
 

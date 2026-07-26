@@ -1,6 +1,7 @@
 {
   "pct": {
     "button": {
+      "$comment": "Wysokość bierze się z tokenu wspólnego z polem ({pct.control.height}), a nie z paddingu pionowego — inaczej przycisk i wiersz pola tej samej wielkości nie dają się zgrać (wym-api-18). Warianty `-sm` / `-lg` podmieniają tokeny bazowe; wielkość `md` zostaje przy nich samych.",
       "bg": { "$type": "color", "$value": "{pct.primary}" },
       "bg-hover": { "$type": "color", "$value": "{pct.primary-hover}" },
       "bg-active": { "$type": "color", "$value": "{pct.primary-active}" },
@@ -10,13 +11,25 @@
       "disabled-fg": { "$type": "color", "$value": "{pct.disabled-fg}" },
       "disabled-border": { "$type": "color", "$value": "{pct.border}" },
       "radius": { "$type": "dimension", "$value": "{pct.radius.md}" },
+      "height": { "$type": "dimension", "$value": "{pct.control.height.md}" },
+      "height-sm": {
+        "$type": "dimension",
+        "$value": "{pct.control.height.sm}"
+      },
+      "height-lg": {
+        "$type": "dimension",
+        "$value": "{pct.control.height.lg}"
+      },
       "font-size": { "$type": "dimension", "$value": "{pct.font.size.md}" },
+      "font-size-sm": { "$type": "dimension", "$value": "{pct.font.size.sm}" },
+      "font-size-lg": { "$type": "dimension", "$value": "{pct.font.size.lg}" },
       "font-weight": {
         "$type": "fontWeight",
         "$value": "{pct.font.weight.medium}"
       },
-      "padding-y": { "$type": "dimension", "$value": "{pct.space.3}" },
-      "padding-x": { "$type": "dimension", "$value": "{pct.space.5}" }
+      "padding-x": { "$type": "dimension", "$value": "{pct.space.5}" },
+      "padding-x-sm": { "$type": "dimension", "$value": "{pct.space.4}" },
+      "padding-x-lg": { "$type": "dimension", "$value": "{pct.space.5}" }
     }
   }
 }

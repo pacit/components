@@ -1,0 +1,9 @@
+:host {
+  display: block;
+}
+
+/* Wiersze wielkości oddzielone wyraźniej niż zwykłe `.row` — każdy z nich jest
+   osobnym pomiarem, a nie ciągiem dalszym poprzedniego. */
+.row + .row {
+  margin-top: 20px;
+}

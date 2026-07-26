@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { boxOf } from './support/dom';
+import { boxOf, visit } from './support/dom';
 
 /**
  * Regresja: padding ramki i wyśrodkowanie w pionie tworzyły „martwą strefę" —
@@ -8,7 +8,7 @@ import { boxOf } from './support/dom';
  */
 test.describe('PctField — obszar klikalny bez martwej strefy', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/');
+    await visit(page, '/field');
   });
 
   test('kliknięcie w lewy padding ramki fokusuje pole', async ({ page }) => {

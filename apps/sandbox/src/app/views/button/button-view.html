@@ -1,0 +1,108 @@
+<h2 class="view__title">Button</h2>
+<p class="muted view__intro">
+  Selektor atrybutowy na natywnym <code>&lt;button&gt;</code> — semantyka,
+  klawiatura i fokus pochodzą od przeglądarki.
+</p>
+
+<sbx-demo
+  #variants
+  heading="Warianty"
+  summary="Kolory wszystkich stanów pochodzą z tokenów; komponent nie ma wbudowanych barw."
+  [reqs]="['wym-api-3', 'wym-theme-5']"
+  data-testid="demo-variants"
+>
+  <div class="row">
+    <button pctButton [size]="variants.activeSize()" data-testid="btn-solid">
+      Solid
+    </button>
+    <button
+      pctButton
+      variant="outline"
+      [size]="variants.activeSize()"
+      data-testid="btn-outline"
+    >
+      Outline
+    </button>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="Wielkości"
+  summary="Trzy wielkości obok siebie — tu oś wielkości jest treścią przykładu, więc karta jej nie przestawia."
+  [reqs]="['wym-api-18']"
+  [controls]="['scheme', 'skin']"
+  data-testid="demo-sizes"
+>
+  <div class="row row--bottom">
+    <button pctButton size="sm">Small</button>
+    <button pctButton size="md">Medium</button>
+    <button pctButton size="lg">Large</button>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  #states
+  heading="Stany"
+  summary="Wyłączenie i ładowanie mają własne tokeny koloru — bez przyciemniania przez opacity."
+  [reqs]="['wym-token-12']"
+  data-testid="demo-states"
+>
+  <div class="row">
+    <button
+      pctButton
+      [size]="states.activeSize()"
+      disabled
+      data-testid="btn-disabled"
+    >
+      Disabled
+    </button>
+    <button
+      pctButton
+      [size]="states.activeSize()"
+      loading
+      data-testid="btn-loading"
+    >
+      Loading
+    </button>
+    <button pctButton variant="outline" [size]="states.activeSize()" disabled>
+      Outline disabled
+    </button>
+    <button pctButton variant="outline" [size]="states.activeSize()" loading>
+      Outline loading
+    </button>
+  </div>
+</sbx-demo>
+
+<h3 class="view__title">Ten sam przykład w dwóch motywach</h3>
+<p class="muted view__intro">
+  Karty ze stałym motywem, niezależnym od ustawienia globalnego — porównanie
+  obok siebie wychwytuje różnice, których nie widać przy przełączaniu.
+</p>
+
+<div class="grid-2">
+  <sbx-demo
+    heading="Jasny"
+    scheme="light"
+    [controls]="[]"
+    data-testid="demo-light"
+  >
+    <div class="row">
+      <button pctButton>Solid</button>
+      <button pctButton variant="outline">Outline</button>
+      <button pctButton disabled>Disabled</button>
+    </div>
+  </sbx-demo>
+
+  <sbx-demo
+    heading="Ciemny"
+    scheme="dark"
+    [controls]="[]"
+    data-testid="demo-dark"
+  >
+    <div class="row">
+      <button pctButton>Solid</button>
+      <button pctButton variant="outline">Outline</button>
+      <button pctButton disabled>Disabled</button>
+    </div>
+  </sbx-demo>
+</div>

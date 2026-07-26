@@ -1,0 +1,72 @@
+<h2 class="view__title">Text</h2>
+<p class="muted view__intro">
+  Komponent na natywnym <code>&lt;input&gt;</code>, nie własny element: zostaje
+  <code>type</code>, autouzupełnianie przeglądarki i tryb klawiatury mobilnej.
+</p>
+
+<sbx-demo
+  #rodzaje
+  heading="Rodzaje pola"
+  summary="type przechodzi do natywnego inputa, więc klawiatura mobilna i walidacja przeglądarki działają same."
+  [reqs]="['wym-api-15']"
+  data-testid="demo-types"
+>
+  <div class="stack">
+    <pct-field label="Imię" [size]="rodzaje.activeSize()">
+      <input pctText placeholder="Jan" data-testid="text-plain" />
+    </pct-field>
+
+    <pct-field label="E-mail" [size]="rodzaje.activeSize()">
+      <input pctText type="email" placeholder="jan@example.com" />
+    </pct-field>
+
+    <pct-field label="Hasło" [size]="rodzaje.activeSize()">
+      <input pctText type="password" autocomplete="current-password" />
+    </pct-field>
+
+    <pct-field label="Wyszukiwanie" [size]="rodzaje.activeSize()">
+      <input pctText type="search" placeholder="Szukaj…" />
+    </pct-field>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  #stany
+  heading="Stany"
+  summary="Wyłączone pole nie zaprasza do pisania; pole tylko do odczytu zostaje fokusowalne."
+  [reqs]="['wym-api-3']"
+  data-testid="demo-states"
+>
+  <div class="stack">
+    <pct-field label="Wyłączone" [size]="stany.activeSize()">
+      <input pctText value="nie do edycji" disabled data-testid="text-disabled" />
+    </pct-field>
+
+    <pct-field label="Tylko do odczytu" [size]="stany.activeSize()">
+      <input pctText value="tylko podgląd" readonly data-testid="text-readonly" />
+    </pct-field>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="Zgodność ze starym API formularzy"
+  summary="Kontrolka implementuje wyłącznie FormValueControl. [formControl] i [(ngModel)] i tak synchronizują wartość w obie strony — bez ControlValueAccessor."
+  [reqs]="['wym-api-5', 'wym-real-9', 'wym-real-26']"
+  data-testid="demo-interop"
+>
+  <div class="stack">
+    <pct-field label="Reactive forms ([formControl])" data-testid="field-reactive">
+      <input pctText [formControl]="reactive" data-testid="text-reactive" />
+    </pct-field>
+    <p class="muted" data-testid="reactive-state">
+      wartość kontrolki: „{{ reactive.value }}"
+    </p>
+
+    <pct-field label="Template-driven ([(ngModel)])" data-testid="field-ngmodel">
+      <input pctText [(ngModel)]="ngModelValue" data-testid="text-ngmodel" />
+    </pct-field>
+    <p class="muted" data-testid="ngmodel-state">
+      wartość modelu: „{{ ngModelValue() }}"
+    </p>
+  </div>
+</sbx-demo>

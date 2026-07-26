@@ -1,0 +1,110 @@
+<h2 class="view__title">Wielkość</h2>
+<p class="muted view__intro">
+  Każdy komponent przyjmujący <code>size</code> bierze wysokość z tego samego
+  tokenu <code>--pct-control-height-*</code>. Wysokość jest wartością wprost,
+  nie wynikiem paddingu i wysokości linii — inaczej nie da się jej zgrać między
+  komponentami.
+</p>
+
+<sbx-demo
+  heading="Pole i przycisk na jednej osi"
+  summary="Wyrównanie do dolnej krawędzi: przy równych wysokościach elementy stykają się tą samą linią, więc rozjazd widać gołym okiem, a nie dopiero w pomiarze."
+  [reqs]="['wym-api-18', 'wym-real-29']"
+  [controls]="['scheme', 'skin']"
+  data-testid="demo-axis"
+>
+  @for (size of sizes; track size) {
+  <div class="row row--bottom">
+    <pct-field
+      [size]="size"
+      [label]="'Pole ' + size"
+      [attr.data-testid]="'size-field-' + size"
+    >
+      <input pctText [value]="'Tekst ' + size" />
+    </pct-field>
+
+    <button pctButton [size]="size" [attr.data-testid]="'size-button-' + size">
+      Przycisk {{ size }}
+    </button>
+
+    <pct-field
+      [size]="size"
+      [label]="'Lista ' + size"
+      [attr.data-testid]="'size-select-' + size"
+    >
+      <pct-select [options]="countries" [(value)]="country" />
+    </pct-field>
+  </div>
+  }
+</sbx-demo>
+
+<sbx-demo
+  heading="Wszystkie kontrolki w ramce"
+  summary="Pole liczbowe i pole z dekoracją trzymają tę samą oś co zwykły input — dekoracja nie rozpycha wiersza."
+  [reqs]="['wym-api-18']"
+  [controls]="['scheme', 'skin']"
+  data-testid="demo-boxed"
+>
+  @for (size of sizes; track size) {
+  <div class="row row--bottom">
+    <pct-field
+      [size]="size"
+      [label]="'Liczba ' + size"
+      [attr.data-testid]="'size-number-' + size"
+    >
+      <input pctNumber [maxFractionDigits]="2" [(value)]="amount" />
+      <span pctSuffix aria-hidden="true">zł</span>
+    </pct-field>
+
+    <pct-field
+      [size]="size"
+      [label]="'Wyłączone ' + size"
+      [attr.data-testid]="'size-disabled-' + size"
+    >
+      <input pctText value="nieaktywne" disabled />
+    </pct-field>
+
+    <button
+      pctButton
+      variant="outline"
+      [size]="size"
+      [attr.data-testid]="'size-outline-' + size"
+    >
+      Outline {{ size }}
+    </button>
+  </div>
+  }
+</sbx-demo>
+
+<sbx-demo
+  heading="Wariant bare wysokości nie wyrównuje"
+  summary="Bez ramki nie ma czego zgrywać z przyciskiem, a wymuszona wysokość dokładałaby pustego miejsca. Obszaru dotyku pilnuje kolumna kontrolki."
+  [reqs]="['wym-api-18', 'wym-a11y-2']"
+  [controls]="['scheme', 'skin']"
+  data-testid="demo-bare"
+>
+  @for (size of sizes; track size) {
+  <div class="row row--bottom">
+    <pct-field
+      [size]="size"
+      [label]="'Zgoda ' + size"
+      [attr.data-testid]="'size-checkbox-' + size"
+    >
+      <pct-checkbox [(checked)]="consent" />
+    </pct-field>
+
+    <pct-field
+      [size]="size"
+      [label]="'Plan ' + size"
+      [attr.data-testid]="'size-radio-' + size"
+    >
+      <pct-radio-group orientation="horizontal" [(value)]="plan">
+        <pct-radio value="a">A</pct-radio>
+        <pct-radio value="b">B</pct-radio>
+      </pct-radio-group>
+    </pct-field>
+
+    <button pctButton [size]="size">Odniesienie {{ size }}</button>
+  </div>
+  }
+</sbx-demo>
