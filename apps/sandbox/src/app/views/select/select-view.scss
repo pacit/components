@@ -1,3 +1,10 @@
 :host {
   display: block;
 }
+
+/* Wąska kolumna dla przykładu szerokości panelu: przy szerokim polu warianty
+   `field` i `auto` dałyby ten sam obraz — różnicę widać dopiero, gdy najdłuższa
+   opcja nie mieści się w kontrolce. */
+.stack--narrow {
+  max-width: 240px;
+}

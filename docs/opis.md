@@ -123,6 +123,12 @@ Biblioteka komponentów angular pozwalająca na budowanie skomplikowanych, skalo
 
   Wariant `bare` (checkbox, grupa radiów) wysokości nie wyrównuje: bez ramki nie ma czego zgrywać z przyciskiem, a wymuszona wysokość dokładałaby tym kontrolkom pustego miejsca. Obszar dotyku pilnuje tam kolumna kontrolki (`wym-api-16`).
 
+- `wym-api-19` **Nakładka wychodzi z widocznej krawędzi kontrolki, nie z elementu, który ją otwiera.** W obudowie ramkę rysuje `pct-field`, a trigger stoi w kolumnie odsuniętej od niej o padding i sloty dekoracji — panel oparty o trigger jest więc węższy od pola i przesunięty względem niego. Obudowa udostępnia kontrolkom swój wiersz jako **powierzchnię odniesienia** (`PctFieldApi.surface`), a kontrolka kotwiczy w nim panel; bez obudowy kotwicą jest sam trigger, który jest wtedy własną ramką (`wym-real-35`).
+
+  Szerokość panelu jest osią API, a nie stałą: `panelWidth="field"` (domyślnie) zrównuje panel z kontrolką, `"auto"` dopasowuje go do najdłuższej opcji, nie zwężając poniżej kontrolki, a długość CSS ustawia go wprost. Gdy panel nie ma szerokości kontrolki, o krawędź, do której przylega, pyta `panelAlign` (`start` / `center` / `end`); panel wychodzący poza okno jest wsuwany z powrotem (`push` strategii CDK), bo przycięte opcje są nie do odczytania.
+
+  **Panel nie dziedziczy niczego po hoście** — renderuje się poza jego drzewem (`wym-real-18`). Poza motywem dotyczy to również pisma: krój należy do aplikacji, a wielkość do kontekstu kontrolki (`pct-field[size]` albo własny `size`), więc jedno i drugie kontrolka odczytuje z triggera przy otwarciu i przenosi na panel. Inaczej lista pisze domyślną czcionką przeglądarki, a w polu `lg` — tekstem wielkości `md`.
+
 - `wym-api-6` Dostępność wbudowana w każdy komponent — ARIA zarządzane wewnętrznie, wykorzystanie CDK a11y (`FocusMonitor`, `LiveAnnouncer`, `FocusTrap`), id generowane util-em (`wym-a11y-1`).
 
 - `wym-api-7` Customizacja przez projekcję treści `<ng-content select="...">` oraz przekazywanie szablonów jako `TemplateRef` / dyrektywa `*pctTemplate` (odpowiednik `pTemplate`) dla elementów typu szablon itemu.
@@ -260,6 +266,12 @@ Wnioski, które doprecyzowują „przepis":
   Dwa szczegóły wyszły dopiero z pomiaru w przeglądarce, nie z rozumowania. Po pierwsze, wspawany przycisk wnosił własną wysokość minimalną, równą z założenia wysokości pola tej samej wielkości (`wym-api-18`), więc wiersz rósł o grubość swojej ramki — pole z przyciskiem było o 2 px wyższe od pola bez niego. Dekoracja `fill` dostaje więc `min-height: 0`: wysokość ma brać ze slotu, bo to slot ją wypełnia. Po drugie, po oddaniu slotu dekoracji odstęp między nią a kontrolką musiał przejść na kolumnę kontrolki — bez tego byłby pasem bez właściciela, czyli powrotem do wady `wym-real-27` w mikroskali.
 
   Symetryczne ograniczenie zostaje po stronie autora i jest nieusuwalne: przycisk `inset` musi być o stopień mniejszy od pola, bo wysokości obu w tej samej wielkości są z założenia równe. W najmniejszej wielkości nie ma już stopnia niżej, więc przycisk wypełnia tam wysokość i rozpycha wiersz o grubość ramki — to nie wada dopasowania, tylko wniosek z `wym-api-18`.
+
+- `wym-real-35` **Kontrolka oddała obudowie ramkę, ale nie oddała jej panelu.** Po `wym-api-13` trigger selecta w polu przestał być własną ramką — a nakładka nadal kotwiczyła się w nim, więc panel wychodził z krawędzi kolumny kontrolki, nie pola: przy zmierzonym polu 301 px panel miał 275 px i był przesunięty o 13 px w prawo. Samodzielny select wyglądał przy tym bez zarzutu, bo tam trigger **jest** widoczną krawędzią — czyli objaw pojawiał się dokładnie w konfiguracji, w której obudowa przejmuje wygląd. Stąd `wym-api-19`: obudowa udostępnia swój wiersz jako powierzchnię odniesienia, a kotwica jest częścią kontraktu, nie domysłem kontrolki.
+
+  Przy tej samej okazji wyszło, że **pismo panelu też nie miało właściciela**. Panel żyje w nakładce CDK, czyli jako dziecko `body`, więc dziedziczy krój po nim, a nie po aplikacji: sandbox ustawia `font-family` na hoście powłoki, w efekcie lista pisała domyślną szeryfową czcionką przeglądarki (pomiar: `Times New Roman` w panelu wobec `system-ui` w kontrolce). Rozmiar miał wadę bliźniaczą, ale w drugą stronę — brał się z tokenu `--pct-select-font-size`, więc w polu `lg` opcje zostawały przy 14 px, gdy trigger pisał 16 px. Oba rozwiązane tak samo: pismo odczytujemy z triggera przy otwarciu (jak motyw w `wym-real-18`), zamiast liczyć na dziedziczenie albo na token.
+
+  Lekcja: **każda właściwość dziedziczona jest po cichu zerwana w nakładce.** Motyw był już przenoszony jawnie, ale traktowano to jako osobliwość motywu, nie jako regułę — a reguła brzmi: co ma wyglądać jak przedłużenie kontrolki, musi być z niej odczytane, bo drzewo DOM tego nie zrobi.
 
   Lekcja: **reguła CSS wnioskująca o zamiarze z zawartości slotu jest ukrytym API** — tanim, dopóki przykład jest jeden. Gdy autor chce wariantu, którego heurystyka nie przewiduje, nie ma go jak wyrazić i zostaje walka z arkuszem. Wariant, który biblioteka dopuszcza, ma być nazwany w API.
 

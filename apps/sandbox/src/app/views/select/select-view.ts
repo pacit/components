@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { PctField } from '@pacit/components/field';
 import { PctSelect } from '@pacit/components/select';
-import { COUNTRIES } from '../../ui/data';
+import { COUNTRIES, LANGUAGES } from '../../ui/data';
 import { SbxDemo } from '../../ui/demo';
 
 /**
@@ -16,8 +16,13 @@ import { SbxDemo } from '../../ui/demo';
 })
 export class SelectView {
   protected readonly countries = COUNTRIES;
+  protected readonly languages = LANGUAGES;
 
   protected readonly country = signal('');
   protected readonly scopedCountry = signal('');
   protected readonly bareCountry = signal('pl');
+
+  protected readonly widthField = signal('pl');
+  protected readonly widthAuto = signal('pl');
+  protected readonly widthFixed = signal('pl');
 }

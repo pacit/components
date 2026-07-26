@@ -9,3 +9,11 @@ export const COUNTRIES: readonly PctSelectOption[] = [
   { value: 'ua', label: 'Ukraina' },
   { value: 'lt', label: 'Litwa' },
 ];
+
+/** Etykiety dłuższe niż typowe pole — do przykładów szerokości panelu. */
+export const LANGUAGES: readonly PctSelectOption[] = [
+  { value: 'pl', label: 'polski' },
+  { value: 'en', label: 'angielski (Wielka Brytania)' },
+  { value: 'pt', label: 'portugalski (Brazylia) — wariant formalny' },
+  { value: 'zh', label: 'chiński uproszczony (Singapur)' },
+];

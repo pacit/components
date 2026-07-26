@@ -51,11 +51,20 @@
   </svg>
 </button>
 
+<!--
+  Panel: szerokość i wyrównanie liczone względem kotwicy (ramka pola w obudowie,
+  trigger poza nią). `push` wsuwa do okna panel, który się w nim nie mieści —
+  szerszy od kontrolki (`panelWidth="auto"` albo szerokość wprost) potrafi wyjść
+  poza krawędź, a przycięte opcje są nie do odczytania.
+-->
 <ng-template
   cdkConnectedOverlay
-  [cdkConnectedOverlayOrigin]="origin"
+  [cdkConnectedOverlayOrigin]="anchor() ?? origin"
   [cdkConnectedOverlayOpen]="open()"
-  [cdkConnectedOverlayWidth]="panelWidth()"
+  [cdkConnectedOverlayPositions]="panelPositions()"
+  [cdkConnectedOverlayWidth]="overlayWidth()"
+  [cdkConnectedOverlayMinWidth]="overlayMinWidth()"
+  [cdkConnectedOverlayPush]="true"
   cdkConnectedOverlayPanelClass="pct-select__overlay"
   (overlayOutsideClick)="close()"
   (detach)="close()"
@@ -67,6 +76,8 @@
     role="listbox"
     [id]="listboxId"
     [attr.data-theme]="panelTheme()"
+    [style.font-family]="panelFont()?.family"
+    [style.font-size]="panelFont()?.size"
     [attr.aria-labelledby]="label() ? labelId : null"
   >
     @for (option of options(); track option.value; let i = $index) {

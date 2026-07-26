@@ -128,6 +128,11 @@
   box-sizing: border-box;
   /* CDK ustawia szerokość na kontenerze nakładki — panel musi ją wypełnić. */
   width: 100%;
+  /* Pismo panelu ustawia kontrolka przy otwarciu (krój aplikacji i wielkość
+     kontekstu — patrz `panelFont`). Token jest wartością zapasową na wypadek,
+     gdyby panel wyrenderował się przed odczytem. Opcje dziedziczą je z panelu,
+     żeby całą listę opisywała jedna reguła. */
+  font-size: var(--pct-select-font-size);
   max-height: var(--pct-select-panel-max-height);
   overflow-y: auto;
   background: var(--pct-select-panel-bg);
@@ -141,7 +146,6 @@
   padding: var(--pct-select-option-padding-y) var(--pct-select-option-padding-x);
   color: var(--pct-select-option-fg);
   background: var(--pct-select-option-bg);
-  font-size: var(--pct-select-font-size);
   line-height: 1.4;
   cursor: pointer;
   user-select: none;
@@ -166,7 +170,6 @@
 .pct-select__empty {
   padding: var(--pct-select-option-padding-y) var(--pct-select-option-padding-x);
   color: var(--pct-select-hint-fg);
-  font-size: var(--pct-select-font-size);
 }
 
 .pct-select__hint {

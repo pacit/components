@@ -29,6 +29,46 @@
 </sbx-demo>
 
 <sbx-demo
+  heading="Szerokość panelu"
+  summary="Domyślnie panel ma szerokość widocznej kontrolki — w obudowie liczoną od ramki pola, nie od triggera w środku. Można ją oddać treści (auto) albo podać wprost; wtedy decyduje jeszcze wyrównanie."
+  [reqs]="['wym-api-13']"
+  [controls]="[]"
+  data-testid="demo-panel-width"
+>
+  <div class="stack stack--narrow">
+    <pct-field label="field (domyślnie)" data-testid="field-width-field">
+      <pct-select
+        [options]="languages"
+        [(value)]="widthField"
+        data-testid="select-width-field"
+      />
+    </pct-field>
+
+    <pct-field label="auto — do najdłuższej opcji" data-testid="field-width-auto">
+      <pct-select
+        panelWidth="auto"
+        [options]="languages"
+        [(value)]="widthAuto"
+        data-testid="select-width-auto"
+      />
+    </pct-field>
+
+    <pct-field
+      label="320px, wyrównanie do końca"
+      data-testid="field-width-fixed"
+    >
+      <pct-select
+        panelWidth="320px"
+        panelAlign="end"
+        [options]="languages"
+        [(value)]="widthFixed"
+        data-testid="select-width-fixed"
+      />
+    </pct-field>
+  </div>
+</sbx-demo>
+
+<sbx-demo
   heading="Panel a scoped theme"
   summary="Panel renderuje się poza drzewem hosta, więc kaskada motywu do niego nie dociera — motyw z najbliższego przodka jest przenoszony na panel jawnie."
   [reqs]="['wym-real-18', 'wym-theme-4']"

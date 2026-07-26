@@ -1,4 +1,4 @@
-import { OverlayModule } from '@angular/cdk/overlay';
+import { ConnectedPosition, OverlayModule } from '@angular/cdk/overlay';
 import {
   booleanAttribute,
   Component,
@@ -25,7 +25,11 @@ import {
   PctLabelStrategy,
   PctSize,
 } from '@pacit/components/core';
-import { PctSelectOption } from './select.types';
+import {
+  PctSelectOption,
+  PctSelectPanelAlign,
+  PctSelectPanelWidth,
+} from './select.types';
 
 /**
  * Lista wyboru jednokrotnego z własnym panelem (nie natywny `<select>`).
@@ -82,6 +86,17 @@ export class PctSelect implements FormValueControl<string>, PctFieldControl {
   readonly placeholder = input<string>('Wybierz…');
   readonly size = input<PctSize>(this.config.defaultSize);
 
+  /**
+   * Szerokość rozwijanego panelu — domyślnie równa kontrolce (`'field'`).
+   * Panel wychodzi wtedy dokładnie z jej krawędzi, więc lista czyta się jak
+   * przedłużenie pola. `'auto'` dopasowuje szerokość do najdłuższej opcji
+   * (nie zwężając panelu poniżej kontrolki), a długość CSS ustawia ją wprost.
+   */
+  readonly panelWidth = input<PctSelectPanelWidth>('field');
+
+  /** Wyrównanie panelu do kontrolki, gdy jest od niej szerszy lub węższy. */
+  readonly panelAlign = input<PctSelectPanelAlign>('start');
+
   private readonly trigger =
     viewChild.required<ElementRef<HTMLButtonElement>>('trigger');
   private readonly panel = viewChild<ElementRef<HTMLElement>>('panel');
@@ -131,8 +146,56 @@ export class PctSelect implements FormValueControl<string>, PctFieldControl {
    */
   protected readonly panelTheme = signal<string | null>(null);
 
-  /** Szerokość panelu zrównana z triggerem; mierzona przy otwarciu. */
-  protected readonly panelWidth = signal(0);
+  /**
+   * Z tego samego powodu panel nie dziedziczy pisma — poza drzewem hosta bierze
+   * je z `body`, czyli domyślną szeryfową czcionkę przeglądarki zamiast
+   * czcionki aplikacji. Krój należy do aplikacji (nie ma dla niego tokenu),
+   * a wielkość do kontekstu kontrolki: w obudowie ustawia ją `pct-field[size]`,
+   * samodzielnej — własny `size`. Dlatego jedno i drugie odczytujemy z triggera
+   * przy otwarciu: panel pisze dokładnie tym, czym pisze widoczna kontrolka.
+   */
+  protected readonly panelFont = signal<{
+    family: string;
+    size: string;
+  } | null>(null);
+
+  /**
+   * Szerokość panelu i punkt zaczepienia: w obudowie ramkę rysuje `pct-field`,
+   * więc panel równa się z **nią**, a nie z triggerem stojącym w kolumnie
+   * odsuniętej o padding i dekoracje. Samodzielna kontrolka jest własną ramką.
+   */
+  protected readonly anchor = computed(() => this.fieldApi?.surface() ?? null);
+
+  /** Zmierzona przy otwarciu szerokość kotwicy — odniesienie dla panelu. */
+  private readonly anchorWidth = signal(0);
+
+  /**
+   * Szerokość przekazywana nakładce. Pusty napis znaczy „nie ustawiaj" —
+   * wtedy o szerokości decyduje treść, a `overlayMinWidth` pilnuje dolnej
+   * granicy, żeby panel nie był węższy od kontrolki.
+   */
+  protected readonly overlayWidth = computed(() => {
+    const width = this.panelWidth();
+    if (width === 'auto') return '';
+    return width === 'field' ? this.anchorWidth() : width;
+  });
+
+  protected readonly overlayMinWidth = computed(() =>
+    this.panelWidth() === 'auto' ? this.anchorWidth() : '',
+  );
+
+  /**
+   * Panel schodzi pod kontrolkę, a przy braku miejsca na dole wskakuje nad nią
+   * (druga pozycja). W poziomie trzyma się zadeklarowanego wyrównania —
+   * o mieszczenie się w oknie dba `push` strategii CDK.
+   */
+  protected readonly panelPositions = computed<ConnectedPosition[]>(() => {
+    const x = this.panelAlign();
+    return [
+      { originX: x, originY: 'bottom', overlayX: x, overlayY: 'top' },
+      { originX: x, originY: 'top', overlayX: x, overlayY: 'bottom' },
+    ];
+  });
 
   /** Indeks opcji aktywnej klawiaturą (nie to samo co wybrana). */
   protected readonly activeIndex = signal(-1);
@@ -211,12 +274,15 @@ export class PctSelect implements FormValueControl<string>, PctFieldControl {
 
   protected openPanel(): void {
     if (!this.interactive) return;
+    const trigger = this.trigger().nativeElement;
     this.panelTheme.set(
       this.hostRef.nativeElement
         .closest('[data-theme]')
         ?.getAttribute('data-theme') ?? null,
     );
-    this.panelWidth.set(this.trigger().nativeElement.offsetWidth);
+    const style = getComputedStyle(trigger);
+    this.panelFont.set({ family: style.fontFamily, size: style.fontSize });
+    this.anchorWidth.set((this.anchor() ?? trigger).offsetWidth);
     this.open.set(true);
     // Aktywna staje się wybrana opcja, a bez wyboru pierwsza dostępna.
     const selected = this.options().findIndex((o) => o.value === this.value());

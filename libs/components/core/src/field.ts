@@ -79,6 +79,14 @@ export interface PctFieldControl {
 export interface PctFieldApi {
   /** Kontrolka rejestruje się w obudowie (wywoływane w jej konstruktorze). */
   attach(control: PctFieldControl): void;
+  /**
+   * Element ramki pola — powierzchnia, do której kontrolka z własną nakładką
+   * (select, a w przyszłości data) wyrównuje panel. Kontrolka w obudowie stoi
+   * w kolumnie odsuniętej od ramki o padding i dekoracje, więc panel oparty
+   * o nią sam byłby węższy od pola i przesunięty. Krawędź, którą widzi
+   * użytkownik, jest ramką obudowy i to ona wyznacza szerokość panelu.
+   */
+  readonly surface: Signal<HTMLElement | null>;
 }
 
 /**

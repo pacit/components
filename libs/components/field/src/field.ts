@@ -4,9 +4,11 @@ import {
   computed,
   contentChild,
   effect,
+  ElementRef,
   inject,
   input,
   signal,
+  viewChild,
 } from '@angular/core';
 import {
   nextPctId,
@@ -125,6 +127,15 @@ export class PctField implements PctFieldApi {
   attach(control: PctFieldControl): void {
     this.control.set(control);
   }
+
+  private readonly row = viewChild<ElementRef<HTMLElement>>('row');
+
+  /**
+   * Ramka pola jako powierzchnia odniesienia dla nakładek kontrolki (wym-api-13).
+   * `null` tylko zanim widok się zbuduje — kontrolka pyta o nią przy otwieraniu
+   * panelu, więc wtedy wiersz już stoi.
+   */
+  readonly surface = computed(() => this.row()?.nativeElement ?? null);
 
   /**
    * Czy zdarzenie trafiło w element, do którego obudowa nie sięga — wtedy nie

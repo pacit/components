@@ -38,13 +38,91 @@ test.describe('PctSelect — combobox z panelem', () => {
     ).toHaveText('Niemcy');
   });
 
-  test('panel ma szerokość triggera', async ({ page }) => {
-    const t = trigger(page);
+  /**
+   * W obudowie widoczną krawędzią jest ramka pola, a trigger stoi w kolumnie
+   * odsuniętej o padding — panel oparty o trigger byłby od pola węższy
+   * i przesunięty (wym-real-35).
+   */
+  test('w obudowie panel pokrywa się z ramką pola, nie z triggerem', async ({
+    page,
+  }) => {
+    const row = page
+      .getByTestId('field-country')
+      .locator('[data-pct-part="field-row"]');
+    const rowBox = await boxOf(row);
+    const triggerBox = await boxOf(trigger(page));
+    // Założenie testu: trigger jest węższy od pola — inaczej test nic nie mierzy.
+    expect(rowBox.width).toBeGreaterThan(triggerBox.width);
+
+    await trigger(page).click();
+    const panelBox = await boxOf(panel(page));
+
+    expect(Math.abs(panelBox.width - rowBox.width)).toBeLessThanOrEqual(1);
+    expect(Math.abs(panelBox.x - rowBox.x)).toBeLessThanOrEqual(1);
+  });
+
+  test('bez obudowy panel ma szerokość triggera — on jest tam ramką', async ({
+    page,
+  }) => {
+    const t = trigger(page, 'select-bare');
     const triggerBox = await boxOf(t);
     await t.click();
     const panelBox = await boxOf(panel(page));
 
-    expect(Math.abs(panelBox.width - triggerBox.width)).toBeLessThanOrEqual(2);
+    expect(Math.abs(panelBox.width - triggerBox.width)).toBeLessThanOrEqual(1);
+    expect(Math.abs(panelBox.x - triggerBox.x)).toBeLessThanOrEqual(1);
+  });
+
+  test('panelWidth="auto" rozszerza panel do najdłuższej opcji', async ({
+    page,
+  }) => {
+    const rowBox = await boxOf(
+      page
+        .getByTestId('field-width-auto')
+        .locator('[data-pct-part="field-row"]'),
+    );
+    await trigger(page, 'select-width-auto').click();
+    const panelBox = await boxOf(panel(page));
+
+    expect(panelBox.width).toBeGreaterThan(rowBox.width);
+    // Opcje mieszczą się w jednej linii — po to jest to dopasowanie.
+    const optionBox = await boxOf(options(page).nth(2));
+    expect(optionBox.height).toBeLessThan(2 * rowBox.height);
+  });
+
+  test('panelWidth wprost i panelAlign="end" przyklejają panel do prawej krawędzi pola', async ({
+    page,
+  }) => {
+    const rowBox = await boxOf(
+      page
+        .getByTestId('field-width-fixed')
+        .locator('[data-pct-part="field-row"]'),
+    );
+    await trigger(page, 'select-width-fixed').click();
+    const panelBox = await boxOf(panel(page));
+
+    expect(Math.round(panelBox.width)).toBe(320);
+    expect(
+      Math.abs(panelBox.x + panelBox.width - (rowBox.x + rowBox.width)),
+    ).toBeLessThanOrEqual(1);
+  });
+
+  /**
+   * Panel jest dzieckiem `body`, więc dziedziczy pismo po nim, a nie po
+   * aplikacji — krój i wielkość musi dostać wprost z kontrolki (wym-real-35).
+   */
+  test('opcje piszą tym samym krojem i wielkością co trigger', async ({
+    page,
+  }) => {
+    const t = trigger(page);
+    const font = await t.evaluate((el) => {
+      const s = getComputedStyle(el);
+      return { family: s.fontFamily, size: s.fontSize };
+    });
+    await t.click();
+
+    await expect(options(page).first()).toHaveCSS('font-family', font.family);
+    await expect(options(page).first()).toHaveCSS('font-size', font.size);
   });
 
   /**
