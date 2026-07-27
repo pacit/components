@@ -93,10 +93,10 @@
       data-pct-part="option"
       role="option"
       [id]="optionId(i)"
-      [attr.aria-selected]="option.value === value()"
+      [attr.aria-selected]="i === selectedIndex()"
       [attr.aria-disabled]="option.disabled ? 'true' : null"
       [attr.data-pct-active]="i === activeIndex() ? '' : null"
-      [attr.data-pct-selected]="option.value === value() ? '' : null"
+      [attr.data-pct-selected]="i === selectedIndex() ? '' : null"
       [attr.data-pct-disabled]="option.disabled ? '' : null"
       (click)="selectAt(i)"
       (mouseenter)="option.disabled ? null : activeIndex.set(i)"
@@ -104,7 +104,9 @@
       {{ option.label }}
     </div>
     } @empty {
-    <div class="pct-select__empty" data-pct-part="empty">Brak opcji</div>
+    <div class="pct-select__empty" data-pct-part="empty">
+      {{ texts.selectEmpty }}
+    </div>
     }
   </div>
 </ng-template>

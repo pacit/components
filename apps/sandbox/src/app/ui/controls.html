@@ -23,6 +23,10 @@
 </pct-radio-group>
 } @if (has('skin') && hasSkins) {
 <pct-field label="Skórka" size="sm" data-testid="control-skin">
-  <pct-select [options]="skins" [(value)]="skin" />
+  <pct-select
+    [options]="skins"
+    [value]="skin()"
+    (valueChange)="setSkin($event)"
+  />
 </pct-field>
 }

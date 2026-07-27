@@ -18,11 +18,11 @@ export class SelectView {
   protected readonly countries = COUNTRIES;
   protected readonly languages = LANGUAGES;
 
-  protected readonly country = signal('');
-  protected readonly scopedCountry = signal('');
-  protected readonly bareCountry = signal('pl');
+  protected readonly country = signal<string | null>('');
+  protected readonly scopedCountry = signal<string | null>('');
+  protected readonly bareCountry = signal<string | null>('pl');
 
-  protected readonly widthField = signal('pl');
-  protected readonly widthAuto = signal('pl');
-  protected readonly widthFixed = signal('pl');
+  protected readonly widthField = signal<string | null>('pl');
+  protected readonly widthAuto = signal<string | null>('pl');
+  protected readonly widthFixed = signal<string | null>('pl');
 }

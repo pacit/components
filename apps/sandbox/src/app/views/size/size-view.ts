@@ -1,7 +1,12 @@
 import { Component, signal } from '@angular/core';
 import { PctButton } from '@pacit/components/button';
 import { PctCheckbox } from '@pacit/components/checkbox';
-import { PctField, PctNumber, PctSuffix, PctText } from '@pacit/components/field';
+import {
+  PctField,
+  PctNumber,
+  PctSuffix,
+  PctText,
+} from '@pacit/components/field';
 import { PctRadio, PctRadioGroup } from '@pacit/components/radio';
 import { PctSelect } from '@pacit/components/select';
 import { PctSize } from '@pacit/components';
@@ -36,7 +41,7 @@ export class SizeView {
 
   protected readonly text = signal('Tekst');
   protected readonly amount = signal<number | null>(1499.9);
-  protected readonly country = signal('pl');
+  protected readonly country = signal<string | null>('pl');
   protected readonly consent = signal(true);
-  protected readonly plan = signal('a');
+  protected readonly plan = signal<string | null>('a');
 }

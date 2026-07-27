@@ -31,11 +31,11 @@ import { PctRadioGroup } from './radio-group';
     '[attr.data-pct-invalid]': 'group.showInvalid() ? "" : null',
   },
 })
-export class PctRadio {
-  protected readonly group = inject(PctRadioGroup);
+export class PctRadio<T = string> {
+  protected readonly group = inject<PctRadioGroup<T>>(PctRadioGroup);
 
   /** Wartość reprezentowana przez tę opcję. */
-  readonly value = input.required<string>();
+  readonly value = input.required<T>();
 
   /** Wyłączenie pojedynczej opcji; grupa może wyłączyć wszystkie. */
   readonly disabled = input(false, { transform: booleanAttribute });
@@ -49,6 +49,22 @@ export class PctRadio {
   protected readonly checked = computed(() =>
     this.group.isSelected(this.value()),
   );
+
+  /**
+   * Natywny atrybut `value` opisuje opcję, ale **nie bierze udziału w wyborze**:
+   * zaznaczenie ustawia `checked`, a zmianę zgłasza `onChange()`, przekazując
+   * grupie wartość z inputu. Skoro wartością może być teraz obiekt, wystawiamy
+   * atrybut tylko dla prymitywów — `String({})` dałoby `[object Object]`,
+   * czyli napis, który niczego nie identyfikuje i mylnie wygląda na wartość.
+   */
+  protected readonly valueAttr = computed(() => {
+    const value = this.value();
+    return typeof value === 'string' ||
+      typeof value === 'number' ||
+      typeof value === 'boolean'
+      ? String(value)
+      : null;
+  });
   protected readonly isDisabled = computed(
     () => this.disabled() || this.group.disabled(),
   );

@@ -15,9 +15,11 @@ import {
   PCT_FIELD,
   pctDescribedBy,
   pctFieldMessages,
+  PctCompareWith,
   PctFieldAppearance,
   PctFieldControl,
   PctLabelStrategy,
+  pctSameValue,
 } from '@pacit/components/core';
 
 /**
@@ -29,12 +31,21 @@ import {
  * atrybutem `name`, dzięki czemu przeglądarka sama zapewnia nawigację
  * strzałkami i poprawne zachowanie Taba (fokusowalna jest tylko wybrana opcja).
  *
- * Wartości są napisami — tak jak w natywnym DOM (`input.value`).
+ * Wartość jest dowolnego typu `T` (domyślnie napis): grupa nie czyta jej
+ * z DOM-u — atrybut `value` natywnego radia jest tylko opisem, a wybór zgłasza
+ * `pct-radio`, przekazując wartość, którą dostało w inpucie. Dzięki temu opcją
+ * może być wariant unii albo encja, a nie tylko napis.
  *
  * @example
  * <pct-radio-group label="Plan" [formField]="form.plan">
  *   <pct-radio value="free">Darmowy</pct-radio>
  *   <pct-radio value="pro">Pro</pct-radio>
+ * </pct-radio-group>
+ *
+ * @example
+ * // `T` bierze się z wiązania; opcje muszą podać wartość tego samego typu.
+ * <pct-radio-group [(value)]="wielkosc">
+ *   <pct-radio [value]="'sm'">Mała</pct-radio>
  * </pct-radio-group>
  */
 @Component({
@@ -59,11 +70,15 @@ import {
     '[attr.data-pct-in-field]': 'inField ? "" : null',
   },
 })
-export class PctRadioGroup
-  implements FormValueControl<string>, PctFieldControl
+export class PctRadioGroup<T = string>
+  implements FormValueControl<T | null>, PctFieldControl
 {
-  /** Wybrana wartość — wymagane pole kontraktu `FormValueControl`. */
-  readonly value = model<string>('');
+  /**
+   * Wybrana wartość — wymagane pole kontraktu `FormValueControl`. `null` znaczy
+   * „żadna opcja nie jest zaznaczona": to stan, w którym grupa się rodzi i do
+   * którego wraca reset.
+   */
+  readonly value = model<T | null>(null);
 
   // --- FormUiControl (synchronizowane przez dyrektywę FormField) ---
 
@@ -84,6 +99,12 @@ export class PctRadioGroup
   readonly label = input<string>('');
   readonly hint = input<string>('');
   readonly orientation = input<'vertical' | 'horizontal'>('vertical');
+
+  /** Równość wartości — jak w `pct-select`; encje porównuje się po kluczu. */
+  readonly compareWith = input<PctCompareWith<T>>(pctSameValue);
+
+  /** Wartość „brak wyboru", ustawiana przy resecie formularza. */
+  readonly emptyValue = input<T | null>(null);
 
   /** Opcje są treścią rzutowaną z zewnątrz, więc odpytujemy DOM hosta —
       zapytanie `viewChildren` nie widzi szablonów komponentów potomnych,
@@ -159,13 +180,19 @@ export class PctRadioGroup
     this.fieldApi?.attach(this);
   }
 
-  /** Czy dana opcja jest wybrana (używane przez `pct-radio`). */
-  isSelected(optionValue: string): boolean {
-    return this.value() === optionValue;
+  /**
+   * Czy dana opcja jest wybrana (używane przez `pct-radio`). Brak wyboru
+   * odsiewamy przed porównaniem — komparator aplikacji dostaje wyłącznie
+   * wartości, dla których został napisany.
+   */
+  isSelected(optionValue: T): boolean {
+    const current = this.value();
+    if (current === null || current === undefined) return false;
+    return this.compareWith()(current, optionValue);
   }
 
   /** Wybór opcji; ignorowany w trybie readonly. */
-  select(optionValue: string): void {
+  select(optionValue: T): void {
     if (this.readonly()) return;
     this.value.set(optionValue);
   }
@@ -183,6 +210,6 @@ export class PctRadioGroup
 
   /** Wywoływane przez signal forms przy resecie formularza. */
   reset(): void {
-    this.value.set('');
+    this.value.set(this.emptyValue());
   }
 }

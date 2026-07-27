@@ -44,7 +44,7 @@ export class StatesView {
 
   protected readonly text = signal('Tekst');
   protected readonly amount = signal<number | null>(1499.9);
-  protected readonly country = signal('pl');
+  protected readonly country = signal<string | null>('pl');
   protected readonly checked = signal(true);
-  protected readonly plan = signal('a');
+  protected readonly plan = signal<string | null>('a');
 }

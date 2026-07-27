@@ -337,7 +337,9 @@ export class PctNumber
     //     naciśnięcia przed odświeżeniem widziały tę samą wartość wyjściową
     //     i drugie było bez efektu (`wym-real-32`).
     const current =
-      (this.typing() ? this.parse(this.el.nativeElement.value) : this.value()) ??
+      (this.typing()
+        ? this.parse(this.el.nativeElement.value)
+        : this.value()) ??
       this.min() ??
       this.max() ??
       0;
@@ -362,15 +364,15 @@ export class PctNumber
   private warnOnUnsupportedUsage(): void {
     if (this.classicForms && !this.signalForms) {
       console.warn(
-        '[pctNumber] Klasyczne formularze ([formControl], [(ngModel)]) przejmują ' +
-          'zapis wartości i psują formatowanie. Użyj signal forms ([formField]) ' +
-          'albo [(value)].',
+        '[pctNumber] Classic forms ([formControl], [(ngModel)]) take over writing ' +
+          'the value and break locale formatting. Use signal forms ([formField]) ' +
+          'or [(value)] instead.',
       );
     }
     if (this.el.nativeElement.type !== 'text') {
       console.warn(
-        `[pctNumber] Oczekiwano type="text" (pole samo parsuje liczby wg locale), ` +
-          `a jest type="${this.el.nativeElement.type}".`,
+        `[pctNumber] Expected type="text" (the control parses numbers per locale ` +
+          `itself), but got type="${this.el.nativeElement.type}".`,
       );
     }
   }

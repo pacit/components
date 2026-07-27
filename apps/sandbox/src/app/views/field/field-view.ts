@@ -67,7 +67,7 @@ export class FieldView {
   protected readonly price = signal<number | null>(1499.9);
   protected readonly query = signal('');
   protected readonly consent = signal(false);
-  protected readonly plan = signal('free');
+  protected readonly plan = signal<string | null>('free');
 
   protected clearPrice(): void {
     this.price.set(null);

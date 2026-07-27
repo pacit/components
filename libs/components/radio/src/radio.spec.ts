@@ -56,7 +56,7 @@ class Host {
   errors = signal<readonly ValidationError.WithOptionalFieldTree[]>([]);
   disabled = signal(false);
   ro = signal(false);
-  value = signal('');
+  value = signal<string | null>('');
   touchCount = 0;
 }
 
@@ -96,6 +96,34 @@ class NgModelHost {
   plan = 'pro';
 }
 
+interface Miasto {
+  readonly id: number;
+  readonly nazwa: string;
+}
+
+const GDANSK: Miasto = { id: 1, nazwa: 'Gdańsk' };
+const KRAKOW: Miasto = { id: 2, nazwa: 'Kraków' };
+
+@Component({
+  imports: [PctRadioGroup, PctRadio],
+  template: `<pct-radio-group
+    [compareWith]="poId"
+    [emptyValue]="emptyValue"
+    [(value)]="value"
+  >
+    <pct-radio [value]="gdansk">Gdańsk</pct-radio>
+    <pct-radio [value]="krakow">Kraków</pct-radio>
+  </pct-radio-group>`,
+})
+class EntityHost {
+  readonly gdansk = GDANSK;
+  readonly krakow = KRAKOW;
+  emptyValue: Miasto | null = null;
+  /** Inna instancja niż opcja na liście — tożsamość ta sama. */
+  value = signal<Miasto | null>({ id: 2, nazwa: 'Kraków' });
+  poId = (a: Miasto, b: Miasto) => a.id === b.id;
+}
+
 // Dwie niezależne grupy — sprawdza, że nazwy nie kolidują.
 @Component({
   imports: [PctRadioGroup, PctRadio],
@@ -111,8 +139,8 @@ class NgModelHost {
   `,
 })
 class TwoGroupsHost {
-  a = signal('');
-  b = signal('');
+  a = signal<string | null>('');
+  b = signal<string | null>('');
 }
 
 describe('PctRadioGroup / PctRadio', () => {
@@ -326,6 +354,54 @@ describe('PctRadioGroup / PctRadio', () => {
       free.click();
       await fixture.whenStable();
       expect(fixture.componentInstance.plan).toBe('free');
+    });
+  });
+
+  describe('wartości nienapisowe', () => {
+    it('compareWith dopasowuje encję po kluczu, nie po referencji', async () => {
+      const fixture = await render(EntityHost);
+      const [gdansk, krakow] = radiosOf(fixture);
+
+      expect(krakow.checked).toBe(true);
+      expect(gdansk.checked).toBe(false);
+    });
+
+    it('wybór oddaje grupie obiekt opcji, nie jego zapis tekstowy', async () => {
+      const fixture = await render(EntityHost);
+      radiosOf(fixture)[0].click();
+      await fixture.whenStable();
+
+      expect(fixture.componentInstance.value()).toBe(GDANSK);
+    });
+
+    it('atrybut value zostaje pusty dla wartości nieprymitywnych', async () => {
+      const fixture = await render(EntityHost);
+      // `[object Object]` w DOM wyglądałby jak wartość, a niczego nie identyfikuje.
+      expect(radiosOf(fixture)[0].hasAttribute('value')).toBe(false);
+    });
+
+    it('atrybut value nadal opisuje opcje prymitywne', async () => {
+      const fixture = await render(Host);
+      expect(radiosOf(fixture)[0].getAttribute('value')).toBe('free');
+    });
+
+    it('reset() wraca do emptyValue zgłoszonego przez aplikację', async () => {
+      const fixture = await render(EntityHost);
+      const group = fixture.debugElement.children[0]
+        .componentInstance as PctRadioGroup<Miasto>;
+
+      group.reset();
+      await fixture.whenStable();
+      expect(fixture.componentInstance.value()).toBeNull();
+
+      fixture.componentInstance.emptyValue = GDANSK;
+      fixture.componentInstance.value.set(KRAKOW);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      group.reset();
+      await fixture.whenStable();
+      expect(fixture.componentInstance.value()).toBe(GDANSK);
     });
   });
 });

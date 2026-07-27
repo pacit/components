@@ -11,11 +11,12 @@
  * bez wyglądu. Żaden test jednostkowy ani e2e tego nie widzi, bo one działają
  * na źródłach i na sandboxie, nie na spakowanym artefakcie.
  *
- * Sprawdzane są trzy rzeczy:
+ * Sprawdzane są cztery rzeczy:
  *  1. skórka jest w pakiecie (`themes/pct.css`, niepusta),
  *  2. jest osiągalna importem (`exports` w package.json),
  *  3. domknięcie tokenów: każdy `var(--pct-*)` użyty gdziekolwiek w pakiecie
- *     ma w tym pakiecie swoją deklarację.
+ *     ma w tym pakiecie swoją deklarację,
+ *  4. `PCT_VERSION` w kodzie zgadza się z `version` z manifestu.
  *
  * Punkt 3 jest tym, który faktycznie łapie regresję — warunki 1 i 2 spełni
  * też pusty plik albo skórka, z której ktoś usunął warstwę komponentową.
@@ -122,7 +123,33 @@ if (missing.length) {
   );
 }
 
+// 4. wersja w kodzie == wersja w manifeście. `PCT_VERSION` jest stałą wpisaną
+// ręcznie (patrz komentarz przy niej), a `nx release` podbija tylko manifest —
+// bez tej kontroli obie liczby rozjeżdżają się przy pierwszym wydaniu i to
+// pakiet zaczyna kłamać o samym sobie. Brak stałej jest błędem tak samo jak
+// zła wartość: znaczy, że zmienił się kształt wyjścia i kontrola przestała
+// cokolwiek sprawdzać.
+const VERSION_CONST = /PCT_VERSION\s*=\s*['"]([^'"]+)['"]/;
+const stamped = files
+  .map((path) => readFileSync(path, 'utf8').match(VERSION_CONST)?.[1])
+  .filter((v) => v !== undefined);
+
+if (stamped.length === 0) {
+  fail(
+    `nie znaleziono stalej PCT_VERSION w zbudowanym pakiecie — kontrola wersji przestala dzialac.\n` +
+      `  Sprawdz, czy stala nadal jest eksportowana z libs/components/src/index.ts.`,
+  );
+}
+const wrong = [...new Set(stamped)].filter((v) => v !== pkg.version);
+if (wrong.length) {
+  fail(
+    `PCT_VERSION (${wrong.join(', ')}) nie zgadza sie z wersja pakietu (${pkg.version}).\n` +
+      `  Zaktualizuj stala w libs/components/src/index.ts.`,
+  );
+}
+
 console.log(
   `✓ Pakiet kompletny: ${THEME} obecny i wyeksportowany, ` +
-    `${used.size} uzytych tokenow ma pokrycie w ${defined.size} deklaracjach.`,
+    `${used.size} uzytych tokenow ma pokrycie w ${defined.size} deklaracjach, ` +
+    `PCT_VERSION = ${pkg.version}.`,
 );

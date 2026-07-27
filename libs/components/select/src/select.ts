@@ -3,6 +3,7 @@ import {
   booleanAttribute,
   Component,
   computed,
+  DestroyRef,
   effect,
   ElementRef,
   inject,
@@ -17,12 +18,15 @@ import {
   nextPctId,
   PCT_CONFIG,
   PCT_FIELD,
+  PCT_TEXTS,
   pctDescribedBy,
   pctFieldMessages,
+  PctCompareWith,
   PctFieldAppearance,
   PctFieldControl,
   PctFieldCursor,
   PctLabelStrategy,
+  pctSameValue,
   PctSize,
 } from '@pacit/components/core';
 import {
@@ -42,8 +46,20 @@ import {
  * dopuszczona zależność runtime. Obsługa klawiatury jest własna, bo dla
  * customowego listboxa nie ma natywnego odpowiednika (`wym-api-11`).
  *
+ * Wartość jest dowolnego typu `T` (domyślnie napis) — patrz `PctSelectOption`.
+ * Brak wyboru reprezentuje `emptyValue`, domyślnie `null`.
+ *
  * @example
  * <pct-select label="Kraj" [options]="kraje" [formField]="form.country" />
+ *
+ * @example
+ * // Wartości nienapisowe: `T` bierze się z listy opcji.
+ * <pct-select [options]="priorytety" [(value)]="priorytet" />
+ * // protected priorytety: PctSelectOption<number>[] = [{ value: 1, label: 'Niski' }];
+ *
+ * @example
+ * // Encje: równość liczona po kluczu, bo po HTTP przychodzi inna instancja.
+ * <pct-select [options]="miasta" [compareWith]="poId" [(value)]="miasto" />
  */
 @Component({
   selector: 'pct-select',
@@ -60,11 +76,23 @@ import {
     '[attr.data-pct-in-field]': 'inField ? "" : null',
   },
 })
-export class PctSelect implements FormValueControl<string>, PctFieldControl {
+export class PctSelect<T = string>
+  implements FormValueControl<T | null>, PctFieldControl
+{
   private readonly config = inject(PCT_CONFIG);
+  protected readonly texts = inject(PCT_TEXTS);
 
-  /** Wybrana wartość — wymagane pole kontraktu `FormValueControl`. */
-  readonly value = model<string>('');
+  /**
+   * Wybrana wartość — wymagane pole kontraktu `FormValueControl`. Typ jest
+   * `T | null`, bo „nic nie wybrano" jest stanem osiągalnym dla każdego `T`:
+   * lista startuje pusta i można z niej wyjść resetem formularza.
+   *
+   * `NoInfer` odbiera temu wiązaniu prawo **ustalania** `T` — typ bierze się
+   * wyłącznie z listy opcji, a wartość jest wobec niego sprawdzana. Bez tego
+   * `T` rozszerzał się do unii kandydatów (`string | number`) i lista liczb
+   * z wartością napisową przechodziła kompilację, bo obie pasowały do unii.
+   */
+  readonly value = model<NoInfer<T> | null>(null);
 
   // --- FormUiControl (synchronizowane przez dyrektywę FormField) ---
 
@@ -80,11 +108,27 @@ export class PctSelect implements FormValueControl<string>, PctFieldControl {
 
   // --- API komponentu ---
 
-  readonly options = input<readonly PctSelectOption[]>([]);
+  readonly options = input<readonly PctSelectOption<T>[]>([]);
   readonly label = input<string>('');
   readonly hint = input<string>('');
-  readonly placeholder = input<string>('Wybierz…');
+  readonly placeholder = input<string>(this.texts.selectPlaceholder);
   readonly size = input<PctSize>(this.config.defaultSize);
+
+  /**
+   * Równość wartości. Domyślnie tożsamość, co dla napisów i liczb jest tym
+   * samym co `===`. Encje wymagają porównania po kluczu — instancja z serwera
+   * nie jest tą samą referencją co opcja na liście, więc bez tego wybrana
+   * pozycja nie podświetlałaby się po wczytaniu formularza.
+   */
+  readonly compareWith = input<PctCompareWith<T>>(pctSameValue);
+
+  /**
+   * Wartość oznaczająca brak wyboru — ustawiana przy resecie formularza.
+   * Domyślnie `null`, ale aplikacja z polem nienullowalnym (`plan: string`)
+   * podaje własną (`emptyValue=""`), żeby reset nie wpisywał do modelu `null`
+   * wbrew jego typowi.
+   */
+  readonly emptyValue = input<NoInfer<T> | null>(null);
 
   /**
    * Szerokość rozwijanego panelu — domyślnie równa kontrolce (`'field'`).
@@ -200,8 +244,24 @@ export class PctSelect implements FormValueControl<string>, PctFieldControl {
   /** Indeks opcji aktywnej klawiaturą (nie to samo co wybrana). */
   protected readonly activeIndex = signal(-1);
 
+  /**
+   * Indeks wybranej opcji (`-1`, gdy żadna). Liczymy **indeks**, a nie samą
+   * opcję, bo szablon i tak porównuje po pozycji — inaczej każdy wiersz listy
+   * wołałby porównanie przy każdym przebiegu detekcji.
+   *
+   * `null`/`undefined` odsiewamy przed porównaniem: własny komparator dostaje
+   * wtedy tylko wartości, które sam zadeklarował (`(a, b) => a.id === b.id`
+   * na `null` by wybuchł).
+   */
+  protected readonly selectedIndex = computed(() => {
+    const current = this.value();
+    if (current === null || current === undefined) return -1;
+    const same = this.compareWith();
+    return this.options().findIndex((o) => same(o.value, current));
+  });
+
   protected readonly selectedOption = computed(
-    () => this.options().find((o) => o.value === this.value()) ?? null,
+    () => this.options()[this.selectedIndex()] ?? null,
   );
 
   protected readonly displayText = computed(
@@ -285,7 +345,7 @@ export class PctSelect implements FormValueControl<string>, PctFieldControl {
     this.anchorWidth.set((this.anchor() ?? trigger).offsetWidth);
     this.open.set(true);
     // Aktywna staje się wybrana opcja, a bez wyboru pierwsza dostępna.
-    const selected = this.options().findIndex((o) => o.value === this.value());
+    const selected = this.selectedIndex();
     this.activeIndex.set(selected >= 0 ? selected : this.firstEnabled());
   }
 
@@ -394,6 +454,15 @@ export class PctSelect implements FormValueControl<string>, PctFieldControl {
   private typeaheadBuffer = '';
   private typeaheadTimer: ReturnType<typeof setTimeout> | undefined;
 
+  /**
+   * Zegar czyszczący bufor przeżyłby komponent: zamknięcie panelu klawiszem
+   * zaraz po pisaniu zostawia zaplanowane wywołanie, które po zniszczeniu
+   * kontrolki trzyma ją w pamięci, a w testach dorzuca robotę do następnego.
+   */
+  private readonly typeaheadCleanup = inject(DestroyRef).onDestroy(() =>
+    clearTimeout(this.typeaheadTimer),
+  );
+
   /** Wyszukiwanie po pierwszych literach — parytet z natywnym `<select>`. */
   private typeahead(char: string): void {
     this.typeaheadBuffer += char.toLowerCase();
@@ -414,7 +483,7 @@ export class PctSelect implements FormValueControl<string>, PctFieldControl {
 
   /** Wywoływane przez signal forms przy resecie formularza. */
   reset(): void {
-    this.value.set('');
+    this.value.set(this.emptyValue());
     this.close();
   }
 }

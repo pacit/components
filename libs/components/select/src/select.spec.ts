@@ -13,6 +13,7 @@ import {
   requiredError,
   ValidationError,
 } from '@angular/forms/signals';
+import { providePctTexts } from '@pacit/components/core';
 import { part } from '../../testing/src/dom';
 import { PctSelect } from './select';
 import { PctSelectOption } from './select.types';
@@ -82,7 +83,7 @@ class Host {
   errors = signal<readonly ValidationError.WithOptionalFieldTree[]>([]);
   disabled = signal(false);
   ro = signal(false);
-  value = signal('');
+  value = signal<string | null>('');
   touchCount = 0;
 }
 
@@ -100,6 +101,60 @@ class SignalFormHost {
   f = form(this.model, (p) => {
     required(p.country, { message: 'Wybierz kraj' });
   });
+}
+
+/** Encja: po HTTP przychodzi inna instancja o tej samej tożsamości. */
+interface Miasto {
+  readonly id: number;
+  readonly nazwa: string;
+}
+
+@Component({
+  imports: [PctSelect],
+  template: `<pct-select
+    [options]="options"
+    [compareWith]="poId"
+    [(value)]="value"
+  />`,
+})
+class EntityHost {
+  readonly options: readonly PctSelectOption<Miasto>[] = [
+    { value: { id: 1, nazwa: 'Gdańsk' }, label: 'Gdańsk' },
+    { value: { id: 2, nazwa: 'Kraków' }, label: 'Kraków' },
+  ];
+  /** Celowo NIE ta sama referencja co opcja na liście. */
+  value = signal<Miasto | null>({ id: 2, nazwa: 'Kraków' });
+  poId = (a: Miasto, b: Miasto) => a.id === b.id;
+}
+
+/** Ten sam układ bez `compareWith` — kontrola, że to on robi robotę. */
+@Component({
+  imports: [PctSelect],
+  template: `<pct-select [options]="options" [(value)]="value" />`,
+})
+class EntityWithoutCompareHost {
+  readonly options: readonly PctSelectOption<Miasto>[] = [
+    { value: { id: 1, nazwa: 'Gdańsk' }, label: 'Gdańsk' },
+    { value: { id: 2, nazwa: 'Kraków' }, label: 'Kraków' },
+  ];
+  value = signal<Miasto | null>({ id: 2, nazwa: 'Kraków' });
+}
+
+@Component({
+  imports: [PctSelect],
+  template: `<pct-select
+    [options]="options"
+    [emptyValue]="emptyValue"
+    [(value)]="value"
+  />`,
+})
+class NumberHost {
+  readonly options: readonly PctSelectOption<number>[] = [
+    { value: 10, label: 'Dziesięć' },
+    { value: 20, label: 'Dwadzieścia' },
+  ];
+  emptyValue: number | null = null;
+  value = signal<number | null>(null);
 }
 
 @Component({
@@ -413,6 +468,105 @@ describe('PctSelect', () => {
       await fixture.whenStable();
 
       expect(fixture.componentInstance.country).toBe('pl');
+    });
+  });
+
+  describe('teksty', () => {
+    it('domyślne napisy są angielskie — biblioteka nie narzuca języka', async () => {
+      const fixture = await render(Host);
+      fixture.componentInstance.options.set([]);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(
+        fixture.nativeElement
+          .querySelector('[data-pct-part="placeholder"]')
+          ?.textContent?.trim(),
+      ).toBe('Select…');
+
+      triggerOf(fixture).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(
+        document.querySelector('[data-pct-part="empty"]')?.textContent?.trim(),
+      ).toBe('No options');
+    });
+
+    it('providePctTexts podmienia napisy, a niepodane zostają domyślne', async () => {
+      TestBed.configureTestingModule({
+        providers: [providePctTexts({ selectEmpty: 'Brak opcji' })],
+      });
+
+      const fixture = await render(Host);
+      fixture.componentInstance.options.set([]);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      triggerOf(fixture).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(
+        document.querySelector('[data-pct-part="empty"]')?.textContent?.trim(),
+      ).toBe('Brak opcji');
+      // Nieprzetłumaczony napis nie znika — zostaje przy wartości domyślnej.
+      expect(
+        fixture.nativeElement
+          .querySelector('[data-pct-part="placeholder"]')
+          ?.textContent?.trim(),
+      ).toBe('Select…');
+    });
+  });
+
+  describe('wartości nienapisowe', () => {
+    it('wybór ustawia liczbę, a nie jej zapis tekstowy', async () => {
+      const fixture = await render(NumberHost);
+      triggerOf(fixture).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      optionsInPanel()[1].click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(fixture.componentInstance.value()).toBe(20);
+    });
+
+    it('compareWith dopasowuje encję po kluczu, nie po referencji', async () => {
+      const fixture = await render(EntityHost);
+
+      expect(
+        fixture.nativeElement.querySelector('[data-pct-part="value"]')
+          ?.textContent,
+      ).toContain('Kraków');
+
+      triggerOf(fixture).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(optionsInPanel()[1].getAttribute('aria-selected')).toBe('true');
+    });
+
+    it('bez compareWith inna instancja tej samej encji nie jest wybrana', async () => {
+      const fixture = await render(EntityWithoutCompareHost);
+      expect(
+        fixture.nativeElement.querySelector('[data-pct-part="value"]'),
+      ).toBeNull();
+    });
+
+    it('reset() wraca do emptyValue zgłoszonego przez aplikację', async () => {
+      const fixture = await render(NumberHost);
+      const select = fixture.debugElement.children[0]
+        .componentInstance as PctSelect<number>;
+
+      fixture.componentInstance.emptyValue = -1;
+      fixture.componentInstance.value.set(10);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      select.reset();
+      await fixture.whenStable();
+      expect(fixture.componentInstance.value()).toBe(-1);
     });
   });
 });

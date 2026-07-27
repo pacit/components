@@ -155,6 +155,8 @@ Puste pole to `null`, nie `0`. Wpisując, można używać przecinka i kropki nie
 </pct-radio-group>
 ```
 
+Wartość jest dowolnego typu (`PctRadioGroup<T>`, domyślnie `string`) — opcją może być wariant unii albo encja. Równość zgłasza aplikacja przez `compareWith`, a brak wyboru to `null`.
+
 `PctSelect` (`@pacit/components/select`) — lista wyboru z własnym panelem (nie natywny `<select>`), wzorzec ARIA „select-only combobox": fokus zostaje na triggerze, aktywna opcja wskazywana przez `aria-activedescendant`. Obsługa klawiatury: strzałki, Home/End, Enter, Escape, typeahead.
 
 ```html
@@ -163,7 +165,28 @@ Puste pole to `null`, nie `0`. Wpisując, można używać przecinka i kropki nie
 </pct-field>
 ```
 
+Wartość jest dowolnego typu (`PctSelect<T>` / `PctSelectOption<T>`, domyślnie `string`), a typ bierze się z listy opcji. Encje porównuje się po kluczu — instancja z serwera nie jest tą samą referencją co opcja na liście:
+
+```html
+<!-- protected poId = (a: Miasto, b: Miasto) => a.id === b.id; -->
+<pct-select [options]="miasta" [compareWith]="poId" [(value)]="miasto" />
+```
+
+Brak wyboru to `null`. Aplikacja z polem nienullowalnym podaje własną wartość pustą (`[emptyValue]="''"`), żeby reset formularza nie wpisywał `null` wbrew typowi modelu.
+
 > Wymaga dołączenia stylów nakładki CDK: `node_modules/@angular/cdk/overlay-prebuilt.css`.
+
+## Teksty i tłumaczenia
+
+Napisy, które komponent wypisuje sam (tekst zastępczy listy, komunikat pustej listy), są **angielskie** i idą przez token DI. Podane pola nadpisują domyślne, reszta zostaje:
+
+```ts
+bootstrapApplication(App, {
+  providers: [providePctTexts({ selectPlaceholder: 'Wybierz…', selectEmpty: 'Brak opcji' })],
+});
+```
+
+`providePctTexts` działa też w zasięgu lokalnym (`providers` komponentu) — sekcja aplikacji może mieć inny język niż reszta. Ostrzeżenia deweloperskie w konsoli nie należą do tego kanału: są po angielsku i gasną poza trybem deweloperskim.
 
 ## Dokumentacja
 

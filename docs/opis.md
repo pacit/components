@@ -154,7 +154,15 @@ w sekcji **Czego jeszcze nie ma**, a wnioski wyciągnięte po drodze — w **Sta
 
 - `wym-api-8` _(częściowo)_ Konfiguracja globalna wzorcem `providePctConfig({...})` z tokenem DI (domyślny `size`, locale, ripple itd.), nadpisywalna per-komponent przez inputy.
 
-  Mechanizm działa, ale `PctConfig` ma **jedno pole** (`defaultSize`) — locale ani ripple jeszcze w nim nie ma. Kształt konfiguracji warto domknąć, zanim zacznie ją czytać kilkanaście komponentów; kandydatem jest też kanał na teksty komponentów (patrz **Czego jeszcze nie ma → braki w samych wymaganiach**).
+  Mechanizm działa, ale `PctConfig` ma **jedno pole** (`defaultSize`) — locale ani ripple jeszcze w nim nie ma. Kształt konfiguracji warto domknąć, zanim zacznie ją czytać kilkanaście komponentów. Teksty poszły osobnym tokenem (`wym-api-21`), nie polem konfiguracji.
+
+- `wym-api-20` **Wartość kontrolki wyboru jest dowolnego typu `T`, nie napisem.** `PctSelect<T>`, `PctSelectOption<T>` i `PctRadioGroup<T>` są generyczne (`T = string` domyślnie, więc listy napisowe pisze się bez zmian). Realne formularze wiążą identyfikatory liczbowe, warianty unii i całe encje — zawężenie do napisu przerzucało na każdą aplikację ręczne mapowanie tam i z powrotem, czyli dokładnie tę pracę, którą biblioteka ma zdejmować.
+
+  Trzy rzeczy wynikają z tego wprost. **Równość zgłasza aplikacja** (`compareWith`, domyślnie tożsamość): encja wczytana z serwera nie jest tą samą referencją co opcja na liście, więc bez tego wybrana pozycja nie podświetlałaby się po otwarciu formularza. **Brak wyboru jest osobnym stanem** — wartość ma typ `T | null`, bo „nic nie wybrano" jest osiągalne dla każdego `T`; aplikacja z polem nienullowalnym zgłasza własną wartość pustą (`emptyValue`), żeby reset nie wpisywał do modelu `null` wbrew jego typowi. **Atrybut `value` natywnego radia opisuje opcję, ale nie bierze udziału w wyborze** i dla wartości nieprymitywnych po prostu znika — `[object Object]` w DOM wyglądałby jak wartość, a niczego nie identyfikuje.
+
+- `wym-api-21` **Napisy biblioteki są wystawione do tłumaczenia, a domyślne są angielskie.** Teksty, które komponent wypisuje sam (tekst zastępczy listy, komunikat pustej listy), idą przez token `PCT_TEXTS` i `providePctTexts({...})`; podane pola nadpisują domyślne, reszta zostaje, więc nowy napis w bibliotece nie wywraca aplikacji tłumaczącej tylko część.
+
+  Token jest **osobny od `PctConfig`**, bo podmienia się go w innym rytmie i zasięgu: konfigurację ustawia się raz przy starcie, a teksty potrafią różnić się w obrębie jednego drzewa (sekcja w innym języku, podgląd tłumaczenia) — osobny token pozwala nadpisać same napisy w poddrzewie, nie powtarzając reszty konfiguracji. Ostrzeżenia deweloperskie (`console.warn` w `[pctNumber]`) do tego kanału **nie należą**: są po angielsku na stałe, bo czyta je programista, nie użytkownik, i gasną poza `isDevMode()`.
 
 - `wym-api-9` _(niezrealizowane)_ Animacje bez zależności `@angular/animations` — realizowane na CSS + Web Animations API (zgodnie z `wym-proj-3`).
 
@@ -284,22 +292,13 @@ który brak zaczyna blokować następną pracę.
 | `wym-theme-5`, `wym-token-11` | ścieżka budowania skórki przez osobę z zewnątrz              | gdy ktoś zechce własny motyw                                         |
 | `wym-ikon-2`                  | mechanizm ikon (dziś SVG wpisane w szablony)                 | drugim komponencie potrzebującym podmienialnej ikony                 |
 | `wym-test-2`                  | testy wizualne / screenshot                                  | przy komponencie, którego nie da się opisać asercją na DOM           |
-| `wym-wer-1`                   | automatyzacja wydania, jedno źródło wersji                   | przed pierwszą publikacją na npm                                     |
+| `wym-wer-1`                   | automatyzacja wydania (CHANGELOG, publish, provenance)       | przed pierwszą publikacją na npm                                     |
 
 ### Braki w samych wymaganiach
 
 Rzeczy, których w tym dokumencie **nie ma, a powinny być** — czyli nie „niezrealizowane wymaganie",
 tylko brakujące ustalenie. Wypisane, żeby nie wyglądały na przeoczenie:
 
-- **Teksty komponentów i i18n.** Dokument nie mówi nic o tym, skąd komponent bierze napisy. Skutek już
-  jest w kodzie: `placeholder` selecta domyśla się na `'Wybierz…'`, pusta lista pisze `'Brak opcji'`,
-  a `[pctNumber]` ostrzega w konsoli po polsku. Biblioteka o zasięgu międzynarodowym potrzebuje
-  neutralnych wartości domyślnych i kanału tłumaczeń (kandydat: `providePctConfig`, `wym-api-8`).
-  **To zmiana łamiąca publiczne API** — dziś kosztuje nic, po pierwszym wydaniu kosztuje major.
-- **Typ wartości kontrolek.** Nie ustalono, czy kontrolki wiążą wyłącznie `string`, czy dowolne `T`.
-  Dziś `PctSelect` i `PctRadioGroup` są zapięte na `string`, a realne formularze wiążą obiekty,
-  identyfikatory liczbowe i enumy. Potrzebne ustalenie o generykach i `compareWith`. Ta sama uwaga
-  o koszcie w czasie co wyżej.
 - **`forced-colors` (Windows High Contrast).** `wym-a11y-1` mówi o WCAG AA, ale nie o trybie wysokiego
   kontrastu systemu — a to osobny mechanizm, w którym kolory z tokenów są ignorowane przez system
   i liczy się tylko to, czy komponent nie zniknie. W bibliotece nie ma dziś ani jednej reguły
@@ -342,6 +341,14 @@ Wnioski, które doprecyzowują „przepis":
   Naprawa jest trójdzielna, bo trzy różne rzeczy mogły zawieść niezależnie: (1) `implicitDependencies: ["tokens"]` w `components` i `sandbox` plus jawne `dependsOn` na `serve` — graf zna krawędź, ręczny krok w CI znika; (2) skórka jest kopiowana do `libs/components/themes` i stamtąd brana przez `assets` w `ng-package.json` — ng-packagr **nie czyta assetów spoza katalogu projektu**, więc staging jest wymuszony, nie kosmetyczny; do tego wpis `./themes/*` w `exports` źródłowego `package.json` (ng-packagr scala go z generowanymi wejściami), bo mapa `exports` jest zamknięta i plik bez wpisu jest dla konsumenta niewidoczny; (3) bramka `nx check-package components`.
 
   Lekcja: **zielony build nie jest dowodem, że artefakt da się użyć** — jeśli nic nie sprawdza spakowanego wyjścia, biblioteka może przez cały pipeline nieść wadę, którą zobaczy dopiero pierwszy konsument po `npm i`. Bramka sprawdza domknięcie tokenów (każdy `var(--pct-*)` użyty w pakiecie ma w nim deklarację), a nie samą obecność pliku — obecność spełniłby też pusty plik albo skórka, z której ktoś usunął warstwę komponentową. To ta sama klasa wady co `wym-real-17`, przeniesiona z runtime na dystrybucję: brakująca definicja custom property nie jest błędem, tylko cichym powrotem do wartości początkowej.
+
+- `wym-real-37` **Generyk w komponencie nie oznacza, że szablon go sprawdza.** Po uogólnieniu `PctSelect` do `PctSelect<T>` (`wym-api-20`) sonda w sandboxie pokazała, że kompilator przepuszcza wiązania jawnie sprzeczne: lista opcji `PctSelectOption<number>[]` z wartością `'napis'`, `emptyValue` innego typu niż opcje, a nawet `$event` z `(valueChange)` podany metodzie o niepasującym parametrze. Sprawdzanie szablonów **działało** (`NG8002` na wymyślonym inpucie łapane od razu) — problem był węższy: `T` ma kilka miejsc wnioskowania (`options`, `value`, `emptyValue`), więc TypeScript wybierał unię kandydatów (`string | number`), do której pasowały obie strony konfliktu.
+
+  Naprawą jest odebranie prawa do **ustalania** `T` tym wiązaniom, które mają być wobec niego tylko sprawdzane: `value` i `emptyValue` są zadeklarowane jako `NoInfer<T>`, więc typ bierze się wyłącznie z listy opcji. To domknęło cztery z pięciu przypadków sondy — łącznie z typowaniem `$event`, które wcześniej milczało.
+
+  Piąty przypadek został i jest ograniczeniem Angulara, nie API: `PctRadioGroup` nie ma inputu z opcjami (są treścią rzutowaną), więc jedynym źródłem `T` jest samo `value` — i tam `$event` z `(valueChange)` nadal nie jest sprawdzane. Generyk daje tej grupie bezpieczeństwo po stronie TypeScriptu (`isSelected`, `select`, odczyt `value()`), ale nie po stronie szablonu.
+
+  Lekcja: **przy generycznym komponencie trzeba osobno sprawdzić, czy szablon faktycznie egzekwuje typ** — sam fakt, że build przechodzi na poprawnym użyciu, nie odróżnia „typ się zgadza" od „typ jest ignorowany". Rozstrzyga dopiero kontrola negatywna: celowo błędne wiązanie, które **ma** wywalić build.
 
 - `wym-real-6` Pierwotny guard (token-level) przepuścił disabled o realnym kontraście ~1.6:1, bo stan był robiony przez `opacity` (kompozycja z tłem w runtime, niewidoczna dla matematyki na hexach). Stąd `wym-token-11` (policy per motyw/rozmiar, severity) i `wym-token-12` (zakaz `opacity` dla warstw tekstowych). Wdrożone: `libs/tokens/src/contrast.policy.json` + silnik w `build.mjs`; `PctButton` używa tokenów `disabled-*` zamiast `opacity`.
 - `wym-real-7` **Zoneless jest deklarowany jawnie** przez `provideZonelessChangeDetection()` w `app.config.ts`, mimo że generator nie dodaje polyfilla `zone.js` (bundle i tak go nie zawiera). Jawna deklaracja zamyka `wym-tech-3` i chroni przed przypadkowym powrotem do trybu zone-based. Testy jednostkowe biblioteki i aplikacji również konfigurują zoneless w `TestBed`, dzięki czemu `wym-api-2` (komponenty zoneless-safe) jest **weryfikowane**, a nie tylko deklarowane. (Uwaga: `setupTestBed()` z `@analogjs/vitest-angular` domyślnie już ustawia `zoneless: true` — jawna konfiguracja w spec-ach jest zabezpieczeniem na wypadek zmiany domyślnych.)

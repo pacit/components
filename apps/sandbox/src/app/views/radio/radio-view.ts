@@ -22,5 +22,5 @@ export class RadioView {
   });
 
   /** Demo układu poziomego. */
-  protected readonly layoutDemo = signal('a');
+  protected readonly layoutDemo = signal<string | null>('a');
 }

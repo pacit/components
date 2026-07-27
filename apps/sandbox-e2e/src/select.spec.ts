@@ -23,6 +23,22 @@ test.describe('PctSelect — combobox z panelem', () => {
     await expect(panel(page)).toHaveCount(0);
   });
 
+  /**
+   * Napisy biblioteki są angielskie, a sandbox tłumaczy je przez
+   * `providePctTexts` (wym-api-21). Ten test pilnuje całego łańcucha —
+   * token DI, render serwerowy i hydracja — bo widoczny tu tekst zastępczy
+   * nie pada nigdzie w kodzie aplikacji poza konfiguracją providerów.
+   */
+  test('tekst zastępczy pochodzi z tłumaczenia aplikacji, nie z biblioteki', async ({
+    page,
+  }) => {
+    await expect(
+      page
+        .getByTestId('select-country')
+        .locator('[data-pct-part="placeholder"]'),
+    ).toHaveText('Wybierz…');
+  });
+
   test('kliknięcie otwiera panel, wybór zamyka i pokazuje etykietę', async ({
     page,
   }) => {

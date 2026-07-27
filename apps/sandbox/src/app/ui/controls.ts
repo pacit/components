@@ -39,13 +39,24 @@ export class SbxControls {
     return this.show().includes(control);
   }
 
-  // `pct-radio-group` niesie wartość jako `string` — tak jak natywny DOM.
-  // Zawężenie do typu osi robimy tutaj, zamiast rzutować w szablonie.
-  protected setScheme(value: string): void {
-    this.scheme.set(value === 'dark' ? 'dark' : 'light');
+  /**
+   * Kontrolki wyboru są generyczne, więc typ osi idzie przez nie bez zmian —
+   * wcześniej trzeba tu było zawężać napis z powrotem do unii (`value === 'dark'
+   * ? 'dark' : 'light'`), co przechodziło kompilację także dla wartości spoza osi.
+   *
+   * Zostaje tylko domknięcie `null`: kontrolka dopuszcza „nic nie wybrano", a te
+   * osie zawsze mają wybór. Dlatego wartość pusta wraca do pozycji domyślnej
+   * zamiast rozlewać `null` po całym sandboxie.
+   */
+  protected setScheme(value: SbxScheme | null): void {
+    this.scheme.set(value ?? 'light');
   }
 
-  protected setSize(value: string): void {
-    this.size.set(value === 'sm' || value === 'lg' ? value : 'md');
+  protected setSize(value: PctSize | null): void {
+    this.size.set(value ?? 'md');
+  }
+
+  protected setSkin(value: string | null): void {
+    this.skin.set(value ?? SBX_SKINS[0].id);
   }
 }

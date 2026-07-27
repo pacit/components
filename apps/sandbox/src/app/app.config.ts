@@ -10,7 +10,7 @@ import {
   provideClientHydration,
   withEventReplay,
 } from '@angular/platform-browser';
-import { providePctConfig } from '@pacit/components';
+import { providePctConfig, providePctTexts } from '@pacit/components';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -22,6 +22,13 @@ export const appConfig: ApplicationConfig = {
     provideRouter(appRoutes),
     // Globalna konfiguracja biblioteki (wym-api-8).
     providePctConfig({ defaultSize: 'md' }),
+    // Napisy biblioteki są angielskie (wym-api-21) — sandbox jest po polsku,
+    // więc tłumaczy je u siebie. To zarazem jedyne miejsce, w którym ten kanał
+    // jest realnie użyty: gdyby przestał działać, widać to na pierwszym ekranie.
+    providePctTexts({
+      selectPlaceholder: 'Wybierz…',
+      selectEmpty: 'Brak opcji',
+    }),
     // Pole liczbowe formatuje wg LOCALE_ID — tu widać przecinek dziesiętny
     // i wąską spację jako separator tysięcy.
     { provide: LOCALE_ID, useValue: 'pl-PL' },

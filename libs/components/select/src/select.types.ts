@@ -1,6 +1,14 @@
-/** Opcja listy wyboru. Wartości są napisami — spójnie z `PctRadioGroup`. */
-export interface PctSelectOption {
-  readonly value: string;
+/**
+ * Opcja listy wyboru. Wartość jest dowolnego typu `T` — formularze biznesowe
+ * wiążą identyfikatory liczbowe, warianty unii i całe encje, a zawężenie do
+ * napisu zmuszało każdą aplikację do ręcznego mapowania tam i z powrotem.
+ * `T` domyślnie jest napisem, więc listy napisowe pisze się jak dotąd.
+ *
+ * Etykieta zostaje napisem: to ona jest tekstem widocznym na ekranie i po niej
+ * działa wyszukiwanie po pierwszych literach.
+ */
+export interface PctSelectOption<T = string> {
+  readonly value: T;
   readonly label: string;
   readonly disabled?: boolean;
 }

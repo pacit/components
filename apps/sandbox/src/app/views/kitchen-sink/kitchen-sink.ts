@@ -85,13 +85,13 @@ export class KitchenSink {
   });
 
   /** Select w panelu ciemnym — sprawdza propagację motywu do nakładki. */
-  protected readonly scopedCountry = signal('');
+  protected readonly scopedCountry = signal<string | null>('');
 
   /** Wielkości do zestawienia „pole obok przycisku" (wym-api-18). */
   protected readonly sizes = ['sm', 'md', 'lg'] as const;
 
   /** Select w zestawieniu wielkości — wielkość bierze z obudowy. */
-  protected readonly sizeCountry = signal('pl');
+  protected readonly sizeCountry = signal<string | null>('pl');
 
   /** Demo obudowy pct-field ze slotami — kwota z dwoma miejscami po przecinku. */
   protected readonly price = signal<number | null>(1499.9);
@@ -104,7 +104,7 @@ export class KitchenSink {
   protected readonly partial = signal(true);
 
   /** Demo układu poziomego radiogroup. */
-  protected readonly layoutDemo = signal('a');
+  protected readonly layoutDemo = signal<string | null>('a');
 
   protected togglePanel(): void {
     this.panelDark.update((v) => !v);
