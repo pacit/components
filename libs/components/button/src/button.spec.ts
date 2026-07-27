@@ -84,6 +84,11 @@ describe('PctButton', () => {
     expect(btn.querySelector('[data-pct-part="spinner"]')).toBeTruthy();
   });
 
+  it('poza stanem loading nie wypisuje aria-busy', async () => {
+    const btn = await stableBare();
+    expect(btn.hasAttribute('aria-busy')).toBe(false);
+  });
+
   it('disabled blokuje przycisk bez spinnera', async () => {
     const { btn } = await stateHost({ disabled: true });
     expect(btn.disabled).toBe(true);

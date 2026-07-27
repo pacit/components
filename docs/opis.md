@@ -178,6 +178,25 @@ w sekcji **Czego jeszcze nie ma**, a wnioski wyciągnięte po drodze — w **Sta
 
 - `wym-a11y-4` **Bramka a11y ma własny test kontrolny.** Audyt, który zawsze przechodzi (np. po błędnej konfiguracji tagów), jest groźniejszy niż jego brak. Test wstrzykuje oczywiste defekty i wymaga ich wykrycia oraz sprawdza, że liczba uruchomionych reguł jest sensowna.
 
+- `wym-a11y-5` **Redukcja ruchu jest osią tokenów, nie regułą w arkuszu.** Czas trwania ruchu niosą tokeny `--pct-motion-transition-duration` i `--pct-motion-loop-duration`, a `motion.reduced.json` jest dla nich tym, czym `semantic.dark.json` dla motywu: osobnym zestawem wartości, który build emituje w bloku `@media (prefers-reduced-motion: reduce)`. Dzięki temu preferencja obowiązuje **wszystkie** komponenty z jednej reguły, a nowy komponent dziedziczy ją przez samo użycie tokenu, zamiast startować od jej braku.
+
+  Podział osi idzie po **rodzaju ruchu**, nie po prędkości, bo redukcja robi z nimi dwie różne rzeczy: przejście stanu ma zniknąć (`0.01ms` — nie `0s`, żeby nie zgubić zdarzenia `transitionend`), a wskaźnik ciągły tylko zwolnić (600 ms → 1500 ms). Zatrzymany spinner przestałby informować, że przycisk pracuje — „mniej ruchu" nie może znaczyć „mniej informacji".
+
+- `wym-a11y-6` **Tryb wymuszonych kolorów** (`forced-colors: active`, Windows High Contrast). Przeglądarka podmienia wtedy każdy kolor autora na kolor z palety użytkownika, więc tokeny przestają cokolwiek znaczyć, a **każdy stan wyrażony wyłącznie kolorem znika** — dwa różne tła stają się tym samym prostokątem. Odpowiedzią nie jest `forced-color-adjust: none` (to odbiera użytkownikowi jego paletę), tylko przepisanie takich stanów na słowa kluczowe palety systemowej. Reguła obowiązuje w całej bibliotece:
+
+  | rola                        | paleta                                                 |
+  | --------------------------- | ------------------------------------------------------ |
+  | powierzchnia kontrolki      | `Field` / `FieldText`                                  |
+  | powierzchnia panelu         | `Canvas` / `CanvasText`                                |
+  | fokus                       | `Highlight`                                            |
+  | wybrana pozycja listy       | `SelectedItem` / `SelectedItemText`                    |
+  | wyłączone                   | `GrayText`                                             |
+  | znaczniki (ptaszek, kropka) | kolor tekstu — stan niesie ich **obecność**, nie barwa |
+
+  Obramowań nie wymieniamy: przeglądarka sama wymusza na nich `ButtonBorder`. Tam, gdzie jeden kanał nie wystarcza, stany rozdzielamy na dwa niezależne — w panelu listy wybór niesie tło (`SelectedItem`), a kursor klawiatury obrys (`Highlight`), więc opcja jednocześnie wybrana i aktywna pokazuje oba stany naraz.
+
+- `wym-a11y-7` **Bramka hydracji w e2e.** Niezgodność drzewa serwerowego z klienckim nie przewraca strony: Angular loguje `NG05xx` i po cichu odtwarza poddrzewo od nowa, więc aplikacja wygląda poprawnie, a płaci podwójnym renderem i utratą stanu DOM. Sprawdzenie siedzi w pomocniku `visit()`, przez który wchodzi każdy test e2e — obejmuje więc wszystkie widoki naraz, zamiast czekać na dopisanie do kolejnych speców. Bramka ma własny test kontrolny, tak samo jak audyt axe (`wym-a11y-4`).
+
 ## Stylowanie
 
 - `wym-styl-1` Stylowanie oparte o design tokens tłumaczone (kompilowane) na natywne CSS custom properties.
@@ -197,6 +216,10 @@ w sekcji **Czego jeszcze nie ma**, a wnioski wyciągnięte po drodze — w **Sta
 - `wym-theme-5` _(częściowo)_ **Skórka jest w pełni parametryzowana** — autor motywu definiuje wszystkie kolory (wszystkich stanów). Komponenty nie mają wbudowanych kolorów ani nie przyciemniają stanów przez `opacity` (`wym-token-12`); korzystają wyłącznie z tokenów. Budowanie skórki uruchamia bramkę kontrastu (`wym-token-11`), która daje autorowi konkretny raport błędów i ostrzeżeń.
 
   Parametryzacja jest pełna i bramka działa — ale **wyłącznie dla skórki wbudowanej**. Nie ma ścieżki, którą ktoś z zewnątrz zbudowałby własną: `build.mjs` czyta sztywny zestaw plików z `libs/tokens/src`, a pakiet `@pacit/tokens` jest `private`. Sandbox ma już oś skórki z jedną pozycją (`base`) czekającą na tę ścieżkę.
+
+- `wym-theme-6` **Motyw idzie za systemem, dopóki nikt nie powie inaczej.** Build emituje `@media (prefers-color-scheme: dark) { :root:not([data-theme]) { … } }`, więc strona bez jawnej deklaracji dostaje ciemny motyw z pudełka. Selektor `:not([data-theme])` czyni z preferencji systemu **wartość domyślną, nie rozkaz**: `data-theme="light"` na `<html>` jest wyłącznikiem, a aplikacja, która świadomie wybrała motyw, zachowuje nad nim kontrolę.
+
+  Mechanizm składa się z zagnieżdżeniem tylko dlatego, że `light` jest w tej bibliotece **czynnym motywem**, a nie brakiem atrybutu (`wym-theme-4`): blok `[data-theme="light"]` niesie pełne przeciwnadpisania, więc jasna karta na ciemnym systemie ma czym cofnąć wartości odziedziczone z `:root`.
 
 ## Architektura design tokens
 
@@ -261,9 +284,11 @@ Zasada nadrzędna: **CSS-first, zero-runtime**. Motyw w runtime to wyłącznie k
 
 - `wym-test-1` Testy jednostkowe: Vitest.
 
-- `wym-test-2` _(częściowo)_ Testy e2e: Playwright (na późniejszym etapie prawdopodobnie także testy wizualne / screenshot).
+- `wym-test-2` Testy e2e: Playwright, w tym **testy wizualne** (screenshot diff).
 
-  Playwright działa (105 testów, w tym audyt axe każdego widoku). **Testów wizualnych nie ma** — a metodyka projektu opiera się na pomiarze w przeglądarce (mapa kursora z `wym-real-27`, pomiar wysokości z `wym-real-29`), więc screenshot diff jest jej naturalnym przedłużeniem, nie nowym pomysłem. Widok `/all` jest utrzymywany właśnie pod to (`wym-sbx-1`).
+  Testy geometrii sprawdzają to, o co ktoś wcześniej zapytał („czy kolumna kafelkuje ramkę szczelnie"); zrzut łapie także to, o co nikt nie zapytał, bo porównuje cały obraz — a regresje z `wym-real-27` i `wym-real-34` były dokładnie tego rodzaju. Porównywane są **karty sandboxa** (`toHaveScreenshot` na elemencie), nie całe strony, więc zmiana w powłoce nie unieważnia wzorców wszystkich komponentów naraz. Wzorce leżą w `apps/sandbox-e2e/src/__screenshots__/{platform}/` i **są w repozytorium** — bez tego Playwright zapisałby wzorzec przy pierwszym przebiegu jako poprawny i bramka nigdy nie mogłaby zapalić (`wym-real-39`).
+
+  Dwie rzeczy decydują o tym, czy taki test mierzy kod, czy maszynę. **Krój pisma** jest przypinany na czas zrzutu (`Liberation Sans`), bo `system-ui` rozwiązuje się inaczej na każdym systemie i różnica metryki przesuwa układ. **Próg różnicy jest bezwzględny** (`maxDiffPixels`), nie ułamkowy — ułamek daje tym większą pobłażliwość, im większa karta (`wym-real-39`).
 
 ## Wersjonowanie
 
@@ -277,38 +302,35 @@ Zestawienie wszystkich adnotacji z tego dokumentu w jednym miejscu. Kolumna „w
 co wymusi domknięcie danego punktu — bo o kolejności nie decyduje numer wymagania, tylko to,
 który brak zaczyna blokować następną pracę.
 
-| Wymaganie                     | Czego brakuje                                                | Wiąże przy                                                           |
-| ----------------------------- | ------------------------------------------------------------ | -------------------------------------------------------------------- |
-| `wym-proj-5`, `wym-ws-1`      | `apps/docs` — aplikacja dokumentacji                         | pierwszym zewnętrznym użytkowniku; bez niej nie ma adopcji           |
-| `wym-proj-4`                  | egzekwowanie progu 80% pokrycia (`wym-real-5`)               | zawsze — im później, tym większy dług do nadrobienia                 |
-| `wym-api-7`                   | `TemplateRef` / `*pctTemplate`                               | pierwszym realnym użyciu selecta (szablon opcji) i przy `wym-ikon-2` |
-| `wym-api-8`                   | pola konfiguracji poza `defaultSize`                         | zanim `PctConfig` zacznie czytać kilkanaście komponentów             |
-| `wym-api-6`                   | użycie CDK a11y (`FocusTrap`, `LiveAnnouncer`)               | dialogu, drawerze, toaście                                           |
-| `wym-api-9`                   | animacje na WAAPI + systemowe `prefers-reduced-motion`       | pierwszym komponencie z wejściem/wyjściem                            |
-| `wym-token-2`                 | użycie generowanego `tokens.ts` (dziś nikt go nie importuje) | gdy literówka w nazwie tokenu przejdzie do wydania                   |
-| `wym-token-7`                 | spisanie i wersjonowanie kontraktu `data-pct-part`           | razem z `apps/docs`                                                  |
-| `wym-token-8`                 | oś gęstości                                                  | po ustabilizowaniu osi wielkości; wymaga retestu obszaru dotyku      |
-| `wym-token-9`                 | dyrektywa `[pctTheme]`, `prefers-color-scheme`               | przy pierwszej integracji, gdzie motyw idzie za systemem             |
-| `wym-theme-5`, `wym-token-11` | ścieżka budowania skórki przez osobę z zewnątrz              | gdy ktoś zechce własny motyw                                         |
-| `wym-ikon-2`                  | mechanizm ikon (dziś SVG wpisane w szablony)                 | drugim komponencie potrzebującym podmienialnej ikony                 |
-| `wym-test-2`                  | testy wizualne / screenshot                                  | przy komponencie, którego nie da się opisać asercją na DOM           |
-| `wym-wer-1`                   | automatyzacja wydania (CHANGELOG, publish, provenance)       | przed pierwszą publikacją na npm                                     |
+| Wymaganie                     | Czego brakuje                                                              | Wiąże przy                                                           |
+| ----------------------------- | -------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| `wym-proj-5`, `wym-ws-1`      | `apps/docs` — aplikacja dokumentacji                                       | pierwszym zewnętrznym użytkowniku; bez niej nie ma adopcji           |
+| `wym-proj-4`                  | egzekwowanie progu 80% pokrycia (`wym-real-5`)                             | zawsze — im później, tym większy dług do nadrobienia                 |
+| `wym-api-7`                   | `TemplateRef` / `*pctTemplate`                                             | pierwszym realnym użyciu selecta (szablon opcji) i przy `wym-ikon-2` |
+| `wym-api-8`                   | pola konfiguracji poza `defaultSize`                                       | zanim `PctConfig` zacznie czytać kilkanaście komponentów             |
+| `wym-api-6`                   | użycie CDK a11y (`FocusTrap`, `LiveAnnouncer`)                             | dialogu, drawerze, toaście                                           |
+| `wym-api-9`                   | animacje na WAAPI (samo `prefers-reduced-motion` gotowe — `wym-a11y-5`)    | pierwszym komponencie z wejściem/wyjściem                            |
+| `wym-token-2`                 | użycie generowanego `tokens.ts` (dziś nikt go nie importuje)               | gdy literówka w nazwie tokenu przejdzie do wydania                   |
+| `wym-token-7`                 | spisanie i wersjonowanie kontraktu `data-pct-part`                         | razem z `apps/docs`                                                  |
+| `wym-token-8`                 | oś gęstości                                                                | po ustabilizowaniu osi wielkości; wymaga retestu obszaru dotyku      |
+| `wym-token-9`                 | dyrektywa `[pctTheme]` (sam `prefers-color-scheme` gotowy — `wym-theme-6`) | gdy ustawianie `data-theme` z szablonu zacznie się powtarzać         |
+| `wym-theme-5`, `wym-token-11` | ścieżka budowania skórki przez osobę z zewnątrz                            | gdy ktoś zechce własny motyw                                         |
+| `wym-ikon-2`                  | mechanizm ikon (dziś SVG wpisane w szablony)                               | drugim komponencie potrzebującym podmienialnej ikony                 |
+| `wym-wer-1`                   | automatyzacja wydania (CHANGELOG, publish, provenance)                     | przed pierwszą publikacją na npm                                     |
 
 ### Braki w samych wymaganiach
 
 Rzeczy, których w tym dokumencie **nie ma, a powinny być** — czyli nie „niezrealizowane wymaganie",
 tylko brakujące ustalenie. Wypisane, żeby nie wyglądały na przeoczenie:
 
-- **`forced-colors` (Windows High Contrast).** `wym-a11y-1` mówi o WCAG AA, ale nie o trybie wysokiego
-  kontrastu systemu — a to osobny mechanizm, w którym kolory z tokenów są ignorowane przez system
-  i liczy się tylko to, czy komponent nie zniknie. W bibliotece nie ma dziś ani jednej reguły
-  `@media (forced-colors: active)`.
 - **RTL.** Arkusze konsekwentnie używają właściwości logicznych (`padding-inline-*`), czyli intencja
   jest, ale nigdzie nie zapisana jako wymaganie i **nigdzie nie sprawdzana** — nie ma widoku ani testu
-  z `dir="rtl"`.
-- **Regresja hydracji.** `wym-tech-4` wymaga poprawnego SSR, ale nic nie sprawdza, czy hydracja nie
-  zgłasza błędów (NG0500/NG0501). `wym-real-31` pokazał, jak cicho taka wada żyje; tani test to
-  przechwycenie konsoli w e2e.
+  z `dir="rtl"`. Jedyne trafienia fizyczne są RTL-bezpieczne (`border-right-color` spinnera,
+  symetryczne `left: 50%` w strefach trafienia checkboxa i radia), więc koszt domknięcia to widok
+  i test, nie przepisywanie arkuszy. Świadomie odłożone.
+
+Domknięte od poprzedniej wersji tej listy: `forced-colors` → `wym-a11y-6`, regresja hydracji →
+`wym-a11y-7`, systemowa redukcja ruchu → `wym-a11y-5`, `prefers-color-scheme` → `wym-theme-6`.
 
 ## Stan realizacji — komponent referencyjny (walking skeleton)
 
@@ -325,7 +347,7 @@ Powstało:
 - `PctRadioGroup` + `PctRadio` — pierwszy komponent złożony: **kontrolką formularza jest grupa**, opcje nie są samodzielnymi kontrolkami. Grupa ma `role="radiogroup"`, `aria-labelledby`/`aria-orientation`, generuje wspólny `name` dla natywnych radiów.
 - `[pctNumber]` — pole liczbowe na natywnym `<input type="text">` z `role="spinbutton"`: wartość `number | null`, formatowanie i parsowanie wg `Intl.NumberFormat` (locale aplikacji), krokowanie strzałkami i PageUp/PageDown, zaokrąglanie i domykanie do granic przy zatwierdzeniu. Granice pobiera z walidatorów `min()`/`max()` schematu (`wym-api-17`).
 - `PctSelect` — lista wyboru z własnym panelem (nie natywny `<select>`): wzorzec ARIA „select-only combobox" (`role="combobox"` + `role="listbox"`, fokus zostaje na triggerze, aktywna opcja przez `aria-activedescendant`), własna obsługa klawiatury (strzałki, Home/End, Enter, Escape, typeahead) i **pierwsze użycie CDK Overlay**.
-- Testy: `components` 124/124 (Vitest), `sandbox` 7/7, `sandbox-e2e` 105/105 (Playwright, w tym audyt axe-core **każdego widoku** z osobna) — testy jednostkowe biegną pod zoneless. Każdy spec komponentu wchodzi na własny widok, więc jego zakres nie zależy od zawartości sąsiednich przykładów. Osobno stoi bramka pakietu (`nx check-package components`), która bada **spakowany artefakt**, a nie źródła (`wym-real-36`).
+- Testy: `components` 136/136 (Vitest), `sandbox` 7/7, `sandbox-e2e` 149/149 (Playwright, w tym audyt axe-core **każdego widoku** z osobna, bramka hydracji na każdej trasie, preferencje systemowe i 17 porównań wizualnych) — testy jednostkowe biegną pod zoneless. Każdy spec komponentu wchodzi na własny widok, więc jego zakres nie zależy od zawartości sąsiednich przykładów. Osobno stoi bramka pakietu (`nx check-package components`), która bada **spakowany artefakt**, a nie źródła (`wym-real-36`).
 
 Wnioski, które doprecyzowują „przepis":
 
@@ -349,6 +371,22 @@ Wnioski, które doprecyzowują „przepis":
   Piąty przypadek został i jest ograniczeniem Angulara, nie API: `PctRadioGroup` nie ma inputu z opcjami (są treścią rzutowaną), więc jedynym źródłem `T` jest samo `value` — i tam `$event` z `(valueChange)` nadal nie jest sprawdzane. Generyk daje tej grupie bezpieczeństwo po stronie TypeScriptu (`isSelected`, `select`, odczyt `value()`), ale nie po stronie szablonu.
 
   Lekcja: **przy generycznym komponencie trzeba osobno sprawdzić, czy szablon faktycznie egzekwuje typ** — sam fakt, że build przechodzi na poprawnym użyciu, nie odróżnia „typ się zgadza" od „typ jest ignorowany". Rozstrzyga dopiero kontrola negatywna: celowo błędne wiązanie, które **ma** wywalić build.
+
+- `wym-real-38` **Idiomatyczny zapis emulacji w Playwrighcie po cichu nie działa i test przechodzi na wartościach domyślnych.** `test.use({ reducedMotion: 'reduce' })` i `test.use({ forcedColors: 'active' })` w wersji 1.61.1 **nie docierają do kontekstu przeglądarki**: w stronie `matchMedia('(prefers-reduced-motion: reduce)').matches` zwraca `false`, choć konfiguracja wygląda poprawnie i nic nie ostrzega. Ten sam kod przez `browser.newContext({ reducedMotion })` i przez `page.emulateMedia({ … })` działa bez zarzutu, a `test.use({ colorScheme })` — jedna z trzech osi — działa również. Czyli: sposób zapisu decyduje o tym, czy test cokolwiek bada, a rozbieżność jest niewidoczna z lektury.
+
+  Wykryła to **kontrola odniesienia**, nie test właściwy. Gdyby istniał sam test redukcji z asercją „czas przejścia jest mały", przeszedłby na wartości bazowej `150ms` interpretowanej jako „dość mało" i nikt nie zauważyłby, że media query nigdy się nie zapaliło. Zapaliło się dopiero porównanie pary: bez preferencji **dokładnie** `150ms`, z preferencją **dokładnie** `0.01ms`.
+
+  Stąd dwie reguły dla wszystkich testów preferencji systemowych: emulacja idzie przez `page.emulateMedia()` w pomocniku `visit()`, a każdy taki test **najpierw sprawdza `matchMedia`**, czyli pyta przeglądarkę, czy w ogóle jest w mierzonym trybie. To ta sama zasada co `wym-a11y-4`: bramka musi umieć powiedzieć, że działa.
+
+- `wym-real-39` **Test wizualny może urodzić się martwy na dwa niezależne sposoby — oba wyglądają jak działający test.** Pierwszy: `__screenshots__/` było w `.gitignore`, więc wzorce nigdy nie trafiłyby do repozytorium, a Playwright przy braku wzorca **zapisuje bieżący zrzut jako poprawny i przechodzi** — na CI test świeciłby na zielono zawsze, porównując każdy przebieg z samym sobą. Drugi: pierwsza wersja progu miała `maxDiffPixelRatio: 0.01` i **przepuszczała** zmianę `border-radius` przycisku z 8 px na 1 px.
+
+  Drugi przypadek jest pouczający liczbowo. Próg jako **ułamek** obrazu daje tym większą pobłażliwość, im większa karta — a różnica realnej regresji nie skaluje się z rozmiarem zrzutu, bo dotyczy kilku krawędzi. Pomiar: ten sam kod w powtórzonym przebiegu daje **0** różniących się pikseli, a zmiana promienia — **74**. Próg jest więc bezwzględny (`maxDiffPixels: 20`) i wynika z tych dwóch liczb, a nie z wyczucia.
+
+  Obie wady wyszły dopiero po **celowym wprowadzeniu regresji** i sprawdzeniu, że bramka zapala. Lekcja: nowa bramka nie jest gotowa, gdy przechodzi — jest gotowa, gdy pokazano, że potrafi nie przejść.
+
+- `wym-real-40` **Stan niesiony samym tłem znika w trybie wysokiego kontrastu.** Kropka zaznaczonego radiobuttona to zwykły `<div>` z `background`, a w `forced-colors: active` przeglądarka wymusza na tle paletę systemu — kropka i okrąg dostawały ten sam `rgb(255,255,255)` i **zaznaczona opcja wyglądała identycznie jak pusta**. Ani bramka kontrastu tokenów, ani audyt axe tego nie widzą: obie badają tryb normalny, w którym kolory są poprawne.
+
+  Naprawa jest jednozdaniowa, ale reguła z niej wynikająca jest szersza i weszła do `wym-a11y-6`: **stan ma nieść obecność kształtu, nie barwa**. Ptaszek checkboxa był odporny od początku, bo przełącza się `visibility` — kropka radia była wyjątkiem, nie regułą. Tam, gdzie kształtu nie ma (opcja listy to prostokąt), rozdzielamy stany na dwa niezależne kanały: tło dla wyboru, obrys dla kursora klawiatury.
 
 - `wym-real-6` Pierwotny guard (token-level) przepuścił disabled o realnym kontraście ~1.6:1, bo stan był robiony przez `opacity` (kompozycja z tłem w runtime, niewidoczna dla matematyki na hexach). Stąd `wym-token-11` (policy per motyw/rozmiar, severity) i `wym-token-12` (zakaz `opacity` dla warstw tekstowych). Wdrożone: `libs/tokens/src/contrast.policy.json` + silnik w `build.mjs`; `PctButton` używa tokenów `disabled-*` zamiast `opacity`.
 - `wym-real-7` **Zoneless jest deklarowany jawnie** przez `provideZonelessChangeDetection()` w `app.config.ts`, mimo że generator nie dodaje polyfilla `zone.js` (bundle i tak go nie zawiera). Jawna deklaracja zamyka `wym-tech-3` i chroni przed przypadkowym powrotem do trybu zone-based. Testy jednostkowe biblioteki i aplikacji również konfigurują zoneless w `TestBed`, dzięki czemu `wym-api-2` (komponenty zoneless-safe) jest **weryfikowane**, a nie tylko deklarowane. (Uwaga: `setupTestBed()` z `@analogjs/vitest-angular` domyślnie już ustawia `zoneless: true` — jawna konfiguracja w spec-ach jest zabezpieczeniem na wypadek zmiany domyślnych.)

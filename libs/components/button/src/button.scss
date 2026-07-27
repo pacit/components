@@ -20,7 +20,8 @@
   padding-block: 0;
   padding-inline: var(--pct-button-padding-x);
   cursor: pointer;
-  transition: background-color 0.15s ease;
+  transition: background-color var(--pct-motion-transition-duration)
+    var(--pct-motion-transition-easing);
 }
 
 :host(:hover:not([disabled])) {
@@ -91,8 +92,11 @@
   border: 2px solid currentColor;
   border-right-color: transparent;
   border-radius: 50%;
-  /* Animacja bez @angular/animations — czysty CSS (wym-api-9) */
-  animation: pct-button-spin 0.6s linear infinite;
+  /* Animacja bez @angular/animations — czysty CSS (wym-api-9). Czas obrotu
+     bierze się z osi ruchu, więc `prefers-reduced-motion` obsługuje ten spinner
+     tą samą regułą co wszystkie przejścia w bibliotece — arkusz komponentu nie
+     powtarza media query (wym-a11y-5). */
+  animation: pct-button-spin var(--pct-motion-loop-duration) linear infinite;
 }
 
 @keyframes pct-button-spin {
@@ -101,8 +105,25 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
+/* Tryb wymuszonych kolorów — reguła opisana w `field.scss`. Tło i ramkę
+   przycisku przeglądarka wymusza sama (`ButtonFace`/`ButtonBorder`), więc
+   zostają trzy rzeczy, które by przepadły. */
+@media (forced-colors: active) {
+  :host(:focus-visible) {
+    outline-color: Highlight;
+  }
+
+  :host([disabled]) {
+    color: GrayText;
+    border-color: GrayText;
+  }
+
+  /* Spinner rysuje przerwę w pierścieniu, a nie kolorem: gdyby wymuszenie
+     zamalowało wszystkie cztery krawędzie, zostałby nieruchomy z wyglądu okrąg
+     i przycisk przestałby pokazywać, że pracuje. `currentColor` idzie za
+     stanem przycisku, więc w spinnerze wyłączonym pierścień też szarzeje. */
   .pct-button__spinner {
-    animation-duration: 1.5s;
+    border-color: currentColor;
+    border-right-color: transparent;
   }
 }

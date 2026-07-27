@@ -25,8 +25,10 @@
   border: 1px solid var(--pct-checkbox-border);
   border-radius: var(--pct-checkbox-radius);
   transition:
-    background-color 0.15s ease,
-    border-color 0.15s ease;
+    background-color var(--pct-motion-transition-duration)
+      var(--pct-motion-transition-easing),
+    border-color var(--pct-motion-transition-duration)
+      var(--pct-motion-transition-easing);
 }
 
 /* Obszar klikalny jest niezależny od rozmiaru wizualnego pudełka: natywny input
@@ -120,4 +122,35 @@
 .pct-checkbox__error {
   color: var(--pct-checkbox-invalid-fg);
   font-size: var(--pct-font-size-sm);
+}
+
+/* Tryb wymuszonych kolorów — reguła opisana w `field.scss`. Zaznaczenie niesie
+   tu SAMA OBECNOŚĆ ptaszka (`visibility`), więc przetrwa dowolną paletę i nie
+   trzeba go przemalowywać — wystarczy, że pudełko nie zamaluje go tłem. */
+@media (forced-colors: active) {
+  .pct-checkbox__box,
+  :host([data-pct-checked]) .pct-checkbox__box,
+  :host([data-pct-indeterminate]) .pct-checkbox__box {
+    background: Field;
+  }
+
+  .pct-checkbox__mark {
+    stroke: FieldText;
+  }
+
+  .pct-checkbox__box:has(.pct-checkbox__control:focus-visible) {
+    outline-color: Highlight;
+  }
+
+  :host([data-pct-disabled]) .pct-checkbox__box {
+    border-color: GrayText;
+  }
+
+  :host([data-pct-disabled]) .pct-checkbox__mark {
+    stroke: GrayText;
+  }
+
+  :host([data-pct-disabled]) .pct-checkbox__label {
+    color: GrayText;
+  }
 }

@@ -10,6 +10,9 @@
  *  - light jest emitowany DRUGI RAZ jako [data-theme="light"], żeby motyw dał
  *    się przełączyć w obie strony w zagnieżdżeniu (jasna karta w ciemnej
  *    stronie); bez tego "light" jest tylko brakiem atrybutu (wym-theme-4),
+ *  - preferencje systemowe (`prefers-color-scheme`, `prefers-reduced-motion`)
+ *    to takie same zestawy nadpisań, tylko w bloku @media zamiast pod
+ *    selektorem atrybutu (wym-a11y-5, wym-theme-5),
  *  - bramka a11y: walidacja kontrastu par tekst/tło wg WCAG 2.2 AA (wym-token-6).
  *
  * W docelowym projekcie ten transform można zastąpić Style Dictionary —
@@ -188,10 +191,21 @@ function emitCssBlock(selector, entries, all) {
   return `${selector} {\n${lines.join('\n')}\n}`;
 }
 
+/** Blok warunkowy — ten sam zestaw nadpisań, tylko pod media query. */
+function emitMedia(condition, block, comment) {
+  const body = block
+    .split('\n')
+    .map((l) => (l ? `  ${l}` : l))
+    .join('\n');
+  const head = comment ? `${comment}\n` : '';
+  return `${head}@media ${condition} {\n${body}\n}`;
+}
+
 function run() {
   const primitive = load('primitive.json');
   const semanticLight = load('semantic.light.json');
   const semanticDark = load('semantic.dark.json');
+  const motionReduced = load('motion.reduced.json');
   // Tokeny komponentowe: auto-odkrywanie `component.*.json` — dodanie nowego
   // komponentu nie wymaga zmian w tym pliku.
   const componentFiles = readdirSync(SRC)
@@ -218,6 +232,19 @@ function run() {
   const lightOverrides = Object.fromEntries(
     Object.keys(darkOverrides).map((path) => [path, lightTree[path]]),
   );
+
+  // Redukcja ruchu jest ortogonalna do motywu — nadpisuje tylko oś `motion`,
+  // więc nie wchodzi w konflikt z blokami `[data-theme]`. Domknięcie
+  // przechodnie liczymy tą samą funkcją co dla motywu: dziś oś nie ma
+  // zależnych, ale gdy komponent dorobi własny token czasu (`--pct-x-duration:
+  // var(--pct-motion-transition-duration)`), zadziała bez zmian w buildzie.
+  const reducedTree = merge(
+    primitive,
+    semanticLight,
+    ...components,
+    motionReduced,
+  );
+  const reducedOverrides = withDependents(flatten(motionReduced), reducedTree);
 
   // Bramka a11y wg policy skorki (progi WCAG 2.2), per motyw.
   console.log('Walidacja kontrastu skorki (policy, progi WCAG 2.2):');
@@ -246,13 +273,28 @@ function run() {
 
   // CSS
   const css =
-    '/* AUTOGENEROWANE z libs/tokens/src/*.json — nie edytuj ręcznie. */\n' +
-    emitCssBlock(':root', base, base) +
-    '\n\n' +
-    emitCssBlock('[data-theme="light"]', lightOverrides, lightTree) +
-    '\n\n' +
-    emitCssBlock('[data-theme="dark"]', darkOverrides, darkTree) +
-    '\n';
+    [
+      '/* AUTOGENEROWANE z libs/tokens/src/*.json — nie edytuj ręcznie. */',
+      emitCssBlock(':root', base, base),
+      emitCssBlock('[data-theme="light"]', lightOverrides, lightTree),
+      emitCssBlock('[data-theme="dark"]', darkOverrides, darkTree),
+      // Automatyczny tryb ciemny (wym-theme-5). `:not([data-theme])` sprawia,
+      // że preferencja systemu jest tylko WARTOŚCIĄ DOMYŚLNĄ: strona, która
+      // deklaruje motyw wprost, wygrywa w obie strony (`data-theme="light"` na
+      // <html> jest wyłącznikiem). Zagnieżdżone motywy działają dalej, bo blok
+      // `[data-theme="light"]` niesie pełne przeciwnadpisania — to ten sam
+      // powód, dla którego "light" jest tu czynnym motywem, a nie brakiem
+      // atrybutu.
+      emitMedia(
+        '(prefers-color-scheme: dark)',
+        emitCssBlock(':root:not([data-theme])', darkOverrides, darkTree),
+      ),
+      // Redukcja ruchu (wym-a11y-5) — jedna reguła dla całej biblioteki.
+      emitMedia(
+        '(prefers-reduced-motion: reduce)',
+        emitCssBlock(':root', reducedOverrides, reducedTree),
+      ),
+    ].join('\n\n') + '\n';
   writeFileSync(join(DIST, 'pct.css'), css);
 
   // SCSS (zmienne wskazujące na CSS custom properties — do użytku wewnętrznego)
@@ -278,7 +320,10 @@ function run() {
   writeFileSync(join(DIST, 'tokens.ts'), ts);
 
   console.log(
-    `\n✓ Zbudowano ${Object.keys(base).length} tokenów (+${Object.keys(darkOverrides).length} dark) -> dist/{pct.css,_tokens.scss,tokens.ts}`,
+    `\n✓ Zbudowano ${Object.keys(base).length} tokenów ` +
+      `(+${Object.keys(darkOverrides).length} dark, ` +
+      `+${Object.keys(reducedOverrides).length} reduced-motion) ` +
+      `-> dist/{pct.css,_tokens.scss,tokens.ts}`,
   );
 }
 

@@ -14,6 +14,7 @@ Angular 22 · TypeScript 6 · NX 23 · Vitest · Playwright · SSR (Angular Univ
 - Standalone, OnPush, signals, zoneless (`zone.js` nie jest zależnością projektu), SSR.
 - Dostępność: minimum WCAG 2.2 AA, weryfikowane automatycznie audytem axe-core w testach e2e (plus obszar dotyku ≥ 24×24 px).
 - Theming przez design tokens (DTCG) → CSS custom properties, z zachowaniem referencji `var()` (kaskada, scoped theme).
+- Preferencje systemowe obsłużone z pudełka: tryb ciemny (`prefers-color-scheme`), redukcja ruchu (`prefers-reduced-motion`) i tryb wysokiego kontrastu (`forced-colors`).
 
 ## Struktura
 
@@ -56,13 +57,33 @@ npx nx build tokens              # bramka kontrastu (policy WCAG) — błędy bl
 npx nx check-package components  # bramka pakietu — czy dist wozi skórkę i domyka użyte tokeny
 ```
 
+E2E obejmuje audyt axe-core każdego widoku, bramkę błędów hydracji SSR, preferencje systemowe
+(tryb ciemny / redukcja ruchu / wysoki kontrast) oraz **testy wizualne**. Wzorce zrzutów leżą
+w `apps/sandbox-e2e/src/__screenshots__/<platforma>/` i są wersjonowane razem z kodem — bez tego
+Playwright zapisałby przy pierwszym przebiegu bieżący zrzut jako poprawny i bramka nigdy by nie
+zapaliła. Po świadomej zmianie wyglądu trzeba je odświeżyć i przejrzeć różnice w commicie:
+
+```bash
+npx nx e2e sandbox-e2e -- --update-snapshots=changed visual.spec.ts
+```
+
 ## Design tokens
 
 Źródło: `libs/tokens/src/*.json` (format DTCG). Build (`libs/tokens/build.mjs`) generuje:
 
-- `dist/pct.css` — CSS custom properties (motyw jasny + `[data-theme="dark"]`),
+- `dist/pct.css` — CSS custom properties: motyw jasny na `:root`, `[data-theme="light"]`,
+  `[data-theme="dark"]` oraz bloki warunkowe `@media` dla preferencji systemowych,
 - `dist/_tokens.scss` — zmienne SCSS do użytku wewnętrznego,
 - `dist/tokens.ts` — typowane nazwy tokenów.
+
+Preferencje systemu są w tym samym pliku i tym samym mechanizmem co motywy:
+
+- **tryb ciemny** — `@media (prefers-color-scheme: dark)` obowiązuje tylko `:root:not([data-theme])`,
+  więc preferencja systemu jest wartością domyślną, a nie rozkazem. Wyłącznik to
+  `<html data-theme="light">`; zagnieżdżone `data-theme` działają jak wcześniej.
+- **redukcja ruchu** — `@media (prefers-reduced-motion: reduce)` podmienia oś ruchu
+  (`--pct-motion-transition-duration`, `--pct-motion-loop-duration`). Komponent, który bierze czas
+  z tokenu, dostaje obsługę tej preferencji za darmo.
 
 Skórka jedzie w pakiecie i **musi zostać dołączona** — bez niej komponenty odwołują się do
 nieistniejących custom properties i renderują się bez wyglądu:

@@ -102,7 +102,8 @@
   border: 1px solid var(--pct-field-border);
   border-radius: var(--pct-field-radius);
   font-size: var(--pct-field-font-size);
-  transition: border-color 0.15s ease;
+  transition: border-color var(--pct-motion-transition-duration)
+    var(--pct-motion-transition-easing);
   overflow: clip;
 }
 
@@ -260,4 +261,43 @@
 .pct-field__error {
   color: var(--pct-field-invalid-fg);
   font-size: var(--pct-font-size-sm);
+}
+
+/* --- Tryb wymuszonych kolorów (Windows High Contrast) ---------------------
+   W tym trybie przeglądarka podmienia KAŻDY kolor autora na kolor z palety
+   użytkownika. Tokeny przestają więc cokolwiek znaczyć, a każdy stan wyrażony
+   wyłącznie kolorem znika — dwa różne tła stają się tym samym `Canvas`.
+   Odpowiedzią nie jest `forced-color-adjust: none` (to zabrania użytkownikowi
+   jego własnej palety), tylko przepisanie tych stanów na słowa kluczowe palety
+   systemowej. Reguła obowiązuje w całej bibliotece (wym-a11y-6):
+
+     powierzchnia kontrolki   -> Field / FieldText
+     powierzchnia panelu      -> Canvas / CanvasText
+     fokus                    -> Highlight
+     wybrana pozycja listy    -> SelectedItem / SelectedItemText
+     wyłączone                -> GrayText
+     znaczniki (ptaszek, kropka) -> kolor tekstu; stan niesie ICH OBECNOŚĆ,
+       nie barwa — to jedyny zapis odporny na dowolną paletę
+
+   Obramowań nie wymieniamy: przeglądarka sama wymusza na nich `ButtonBorder`,
+   który z definicji odcina się od tła. */
+@media (forced-colors: active) {
+  .pct-field__row {
+    background: Field;
+    color: FieldText;
+  }
+
+  /* Bez tego pierścień fokusu dostaje wymuszony kolor obramowania i zlewa się
+     z ramką pola — czyli znika dokładnie tam, gdzie jest najbardziej potrzebny. */
+  .pct-field__row:has(:focus-visible) {
+    outline-color: Highlight;
+  }
+
+  /* `color` na wierszu, żeby stan dziedziczyły też kontrolka i dekoracje
+     w środku — inaczej wygaszone pole zostaje z tekstem w kolorze aktywnego. */
+  :host([data-pct-disabled]) .pct-field__row {
+    background: Field;
+    color: GrayText;
+    border-color: GrayText;
+  }
 }

@@ -42,6 +42,16 @@
         "lg": { "$type": "dimension", "$value": "44px" }
       }
     },
+    "motion": {
+      "$comment": "Ruch jest osią tokenów, nie wyjątkiem w arkuszu komponentu: dopiero to sprawia, że `prefers-reduced-motion` obowiązuje w całej bibliotece z jednej reguły (wym-a11y-5). Podział nie idzie po prędkości, tylko po RODZAJU ruchu, bo redukcja robi z nimi dwie różne rzeczy: przejście stanu ma zniknąć, a wskaźnik ciągły (spinner) tylko zwolnić — zatrzymany przestałby informować, że przycisk pracuje.",
+      "transition": {
+        "duration": { "$type": "duration", "$value": "150ms" },
+        "easing": { "$type": "cubicBezier", "$value": "ease" }
+      },
+      "loop": {
+        "duration": { "$type": "duration", "$value": "600ms" }
+      }
+    },
     "font": {
       "size": {
         "sm": { "$type": "dimension", "$value": "13px" },

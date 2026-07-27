@@ -33,7 +33,8 @@
   padding: var(--pct-select-padding-y) var(--pct-select-padding-x);
   text-align: start;
   cursor: pointer;
-  transition: border-color 0.15s ease;
+  transition: border-color var(--pct-motion-transition-duration)
+    var(--pct-motion-transition-easing);
 }
 
 /* W obudowie ramkę, tło i padding rysuje `pct-field` — trigger je oddaje,
@@ -101,7 +102,8 @@
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
-  transition: transform 0.15s ease;
+  transition: transform var(--pct-motion-transition-duration)
+    var(--pct-motion-transition-easing);
 }
 
 :host([data-pct-open]) .pct-select__arrow {
@@ -180,4 +182,71 @@
 .pct-select__error {
   color: var(--pct-select-invalid-fg);
   font-size: var(--pct-font-size-sm);
+}
+
+/* Tryb wymuszonych kolorów — reguła opisana w `field.scss`.
+   To tutaj wymuszenie boli najbardziej: aktywna, wybrana i zwykła opcja różnią
+   się w tej liście WYŁĄCZNIE tłem, więc po podmianie palety wszystkie trzy są
+   tym samym prostokątem. Rozdzielamy je na dwa niezależne kanały — wybór niesie
+   tło (`SelectedItem`, jedyna para przeznaczona w palecie właśnie do zaznaczeń
+   na listach), a kursor klawiatury obrys. Dzięki temu opcja jednocześnie
+   wybrana i aktywna pokazuje oba stany naraz, czego jeden kanał nie potrafi. */
+@media (forced-colors: active) {
+  .pct-select__trigger {
+    background: Field;
+    color: FieldText;
+  }
+
+  :host([data-pct-in-field]) .pct-select__trigger {
+    /* Tło i ramkę rysuje obudowa — trigger wnosi tylko kolor pisma. */
+    background: none;
+  }
+
+  .pct-select__trigger:focus-visible {
+    outline-color: Highlight;
+  }
+
+  .pct-select__trigger:disabled {
+    background: Field;
+    color: GrayText;
+    border-color: GrayText;
+  }
+
+  /* Strzałka idzie za stanem triggera zamiast mieć własny wymuszony kolor. */
+  .pct-select__arrow {
+    stroke: currentColor;
+  }
+
+  .pct-select__placeholder,
+  .pct-select__empty {
+    color: GrayText;
+  }
+
+  /* Panel jest powierzchnią strony, nie kontrolki — `box-shadow` w tym trybie
+     jest usuwany, więc od tła oddziela go wyłącznie ramka. */
+  .pct-select__panel {
+    background: Canvas;
+    color: CanvasText;
+  }
+
+  .pct-select__option {
+    background: Canvas;
+    color: CanvasText;
+  }
+
+  .pct-select__option[data-pct-selected] {
+    background: SelectedItem;
+    color: SelectedItemText;
+  }
+
+  /* Obrys do środka, żeby kursor nie rozpychał wiersza ani nie wychodził poza
+     zaokrąglony róg panelu. */
+  .pct-select__option[data-pct-active] {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+
+  .pct-select__option[data-pct-disabled] {
+    color: GrayText;
+  }
 }

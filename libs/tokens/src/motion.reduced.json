@@ -1,0 +1,15 @@
+{
+  "$comment": "Nadpisania dla `prefers-reduced-motion: reduce`. Ten plik jest do ruchu tym, czym `semantic.dark.json` jest do motywu: osobnym zestawem wartości, który build emituje w bloku warunkowym. Dzięki temu redukcja ruchu jest deklaracją w źródle tokenów, a nie regułą dopisywaną osobno w każdym arkuszu.",
+  "pct": {
+    "motion": {
+      "transition": {
+        "$comment": "Nie `0s`: zerowy czas w części przeglądarek nie emituje `transitionend`, więc kod czekający na koniec przejścia przestaje dostawać zdarzenie. `0.01ms` jest wizualnie natychmiastowy i zachowuje zdarzenie.",
+        "duration": { "$type": "duration", "$value": "0.01ms" }
+      },
+      "loop": {
+        "$comment": "Wskaźnik ciągły zwalnia zamiast znikać — użytkownik nadal widzi, że trwa praca, ale obrót przestaje być bodźcem przedsionkowym.",
+        "duration": { "$type": "duration", "$value": "1500ms" }
+      }
+    }
+  }
+}

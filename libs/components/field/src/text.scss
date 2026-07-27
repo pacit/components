@@ -28,3 +28,16 @@
   color: var(--pct-field-disabled-fg);
   cursor: not-allowed;
 }
+
+/* Tryb wymuszonych kolorów — reguła opisana w `field.scss`. Pole jest
+   przezroczyste i dziedziczy kolor po wierszu obudowy; wymieniamy tylko to,
+   co ma własny kolor. */
+@media (forced-colors: active) {
+  :host::placeholder {
+    color: GrayText;
+  }
+
+  :host:disabled {
+    color: GrayText;
+  }
+}

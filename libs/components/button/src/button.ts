@@ -25,7 +25,10 @@ import { PctButtonSize, PctButtonVariant } from './button.types';
     '[attr.data-pct-size]': 'size()',
     '[attr.data-pct-loading]': 'loading() ? "" : null',
     '[disabled]': 'isDisabled()',
-    '[attr.aria-busy]': 'loading()',
+    // Tylko gdy przycisk faktycznie pracuje. `aria-busy="false"` jest wartością
+    // domyślną, więc wypisany wprost niczego nie wnosi, a stoi w drzewie
+    // dostępności na każdym przycisku strony.
+    '[attr.aria-busy]': 'loading() ? "true" : null',
   },
 })
 export class PctButton {

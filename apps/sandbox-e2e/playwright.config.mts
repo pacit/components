@@ -29,6 +29,37 @@ export default defineConfig({
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
   },
+  /*
+   * Wzorce odniesienia testów wizualnych. `{platform}` w ścieżce jest istotny:
+   * rasteryzacja pisma różni się między systemami, więc jeden zestaw wzorców
+   * nie może obsługiwać naraz Linuksa i macOS-a — bez tego rozdziału zrzuty
+   * z innej maszyny „naprawiałyby" się nawzajem przy każdym `--update-snapshots`.
+   */
+  snapshotPathTemplate: '{testDir}/__screenshots__/{platform}/{arg}{ext}',
+  expect: {
+    toHaveScreenshot: {
+      /*
+       * Budżet BEZWZGLĘDNY, nie ułamek obrazu — i to celowo.
+       *
+       * `maxDiffPixelRatio` skaluje się z wielkością zrzutu, czyli daje tym
+       * większą pobłażliwość, im większa karta. Pierwsza wersja tej konfiguracji
+       * miała `maxDiffPixelRatio: 0.01` i PRZEPUSZCZAŁA zmianę `border-radius`
+       * przycisku z 8px na 1px — bramka wyglądała na działającą, a nie łapała
+       * regresji, którą miała łapać.
+       *
+       * Wartość wynika z pomiaru, nie z wyczucia:
+       *   - ten sam kod, powtórzony przebieg   ->   0 różniących się pikseli,
+       *   - promień przycisku 8px -> 1px       ->  74 różniące się piksele.
+       * 20 leży bezpiecznie nad zerem (pojedyncze piksele wygładzania krawędzi
+       * nie robią szumu w commitach) i blisko czterokrotnie pod najmniejszą
+       * realną regresją, jaką umiałem wywołać.
+       */
+      maxDiffPixels: 20,
+      animations: 'disabled',
+      caret: 'hide',
+      scale: 'css',
+    },
+  },
   /* Run your local dev server before starting the tests */
   webServer: {
     command: 'npx nx run sandbox:serve',

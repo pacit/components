@@ -57,4 +57,11 @@ vitest.config.*.timestamp*
 .nx/polygraph
 .nx/self-healing
 .nx/migrate-runs
-__screenshots__/
+
+# Wzorce testów wizualnych (apps/sandbox-e2e/src/__screenshots__) SĄ w repozytorium
+# i muszą w nim zostać: bez nich Playwright generuje wzorzec przy pierwszym
+# przebiegu i zapisuje go jako poprawny, więc bramka nigdy nie może zapalić.
+# Ignorowany jest tylko wynik nieudanego porównania (obraz otrzymany i różnica),
+# który powstaje w katalogu wyjściowym przebiegu.
+*-actual.png
+*-diff.png
