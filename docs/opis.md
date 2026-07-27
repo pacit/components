@@ -17,6 +17,28 @@ w sekcji **Czego jeszcze nie ma**, a wnioski wyciągnięte po drodze — w **Sta
 
 ## Wymagania projektowe
 
+- `wym-proj-0` **Nic nie psuje się po cichu.** Każdy stan, w którym błędne zachowanie nie daje sygnału, jest wadą **samą w sobie** — niezależnie od tego, czy ktoś już na niego trafił. Każda obietnica z tego dokumentu ma bramkę, która potrafi na niej zapalić, a każda bramka ma kontrolę odniesienia dowodzącą, że potrafi **nie** przejść.
+
+  To nie jest hasło, tylko wniosek z własnej historii. Log `wym-real-*` wygląda na zbiór niezależnych lekcji, a jest dziewięcioma wystąpieniami **jednej**:
+
+  | wniosek       | zdanie kluczowe                                                       |
+  | ------------- | --------------------------------------------------------------------- |
+  | `wym-real-36` | „Awaria była **cicha w obie strony**"                                 |
+  | `wym-real-43` | „nie jest błędem, tylko **pustym łańcuchem**"                         |
+  | `wym-real-38` | „**po cichu nie działa** i test przechodzi"                           |
+  | `wym-real-39` | „może **urodzić się martwy** na dwa niezależne sposoby"               |
+  | `wym-real-17` | „był zepsuty i **nikt tego nie widział**"                             |
+  | `wym-real-31` | „był niebezpieczny przy SSR i **nikt tego nie widział**"              |
+  | `wym-real-42` | „nigdy nie był typecheckowany i **nikt tego nie zauważył**"           |
+  | `wym-real-40` | „ani bramka kontrastu, ani axe **tego nie widzą**"                    |
+  | `wym-real-26` | „wada **przetrwała**, bo wszystkie testy startowały z pustym modelem" |
+
+  Wspólnym mianownikiem jest to, że **domyślnym zachowaniem warstwy jest „nic się nie stało"**. Brak definicji `var()` nie jest błędem, tylko powrotem do wartości początkowej. Odczyt nieistniejącego tokenu nie jest błędem, tylko pustym łańcuchem. Brak wzorca zrzutu nie jest błędem, tylko zapisaniem bieżącego obrazu jako poprawnego. Brak krawędzi w grafie nie jest błędem, tylko buildem, który się udaje. Dlatego **brak bramki nigdy nie objawia się jako brak — objawia się jako zieleń**.
+
+  Stąd też wymóg kontroli odniesienia (`wym-a11y-4`, `wym-real-38`, `wym-real-39`): bramka bez dowodu, że potrafi zapalić, jest kolejną cichą wadą, tylko piętro wyżej.
+
+  Konsekwencja praktyczna dla kolejności prac: wymaganie bez bramki jest **niedokończone**, a nie „zrealizowane, tylko niesprawdzone". Nie chodzi o to, żeby każda bramka istniała od pierwszego dnia — chodzi o to, żeby jej brak był policzalny, a nie niewidoczny. Pilnuje tego `wym-proj-6`.
+
 - `wym-proj-1` Całość powstaje jako NX workspace (monorepo).
 
 - `wym-proj-2` Na obecnym etapie (przed pierwszym publicznym wydaniem) używane są najnowsze dostępne w chwili tworzenia wersje bibliotek i frameworków. Dopiero po wydaniu pierwszej wersji publicznej rozpoczniemy prowadzenie macierzy kompatybilności (które wersje Angulara są wspierane).
@@ -33,6 +55,14 @@ w sekcji **Czego jeszcze nie ma**, a wnioski wyciągnięte po drodze — w **Sta
   - aplikacja angular z dokumentacją i prezentacją biblioteki — możliwa do publikacji w internecie jako strona biblioteki, **_(niezrealizowane — `apps/docs` nie istnieje)_**
   - aplikacja angular "sandbox" pokazująca jak najwięcej możliwości używania i konfigurowania komponentów,
   - testy e2e bazujące na aplikacji "sandbox".
+
+- `wym-proj-6` _(niezrealizowane)_ **Bramka dla `wym-proj-0`: rejestr obietnica → bramka → kontrola.** Każde wymaganie z tego dokumentu wskazuje maszynowo, co je egzekwuje i co dowodzi, że ta bramka potrafi nie przejść. Skrypt (w duchu `check-package.mjs`) czyta `opis.md` i sprawdza trzy rzeczy: wymaganie ma wpis, wskazany target/plik **istnieje i jest wpięty w CI**, kontrola odniesienia istnieje. Świadomy brak bramki jest dozwolony — musi być wpisany **wraz z powodem**.
+
+  Powód, dla którego to musi być kod, a nie dyscyplina: rozjazd między tym dokumentem a rzeczywistością już wystąpił i już go raz łatano ręcznie. Nagłówek „Jak czytać ten dokument" istnieje właśnie dlatego, że wymagania dawały się czytać jako opis stanu kodu; odpowiedzią było **ręczne dopisanie adnotacji** `_(niezrealizowane)_` / `_(częściowo)_` do 18 punktów. To ten sam wzorzec co ręczny `node libs/tokens/build.mjs` w CI przed `wym-real-36`: obejście, które **maskuje brak struktury zamiast go ujawnić**, i rozjeżdża się przy pierwszym commicie robiącym coś innego, niż mówi.
+
+  Po wdrożeniu adnotacja stanu przestaje być czymś, co ktoś pamiętał dopisać, a staje się **wyprowadzoną konsekwencją** zawartości rejestru — dokument przestaje kłamać z definicji, a nie z dyscypliny. Efekt uboczny jest właściwie główną korzyścią: dopisanie nowego wymagania bez bramki przestaje być możliwe po cichu, czyli `wym-proj-0` zaczyna egzekwować sam siebie.
+
+  To wymaganie jest przy tym **własnym pierwszym przypadkiem testowym**: dopóki rejestru nie ma, `wym-proj-0` jest obietnicą bez bramki — dokładnie tym, czego zakazuje.
 
 ## Wymagania techniczne
 
@@ -312,6 +342,7 @@ który brak zaczyna blokować następną pracę.
 
 | Wymaganie                     | Czego brakuje                                                              | Wiąże przy                                                           |
 | ----------------------------- | -------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| `wym-proj-6`                  | rejestr obietnica → bramka → kontrola (bramka dla `wym-proj-0`)            | natychmiast — do tego czasu nie wiadomo, ilu braków się nie widzi    |
 | `wym-proj-5`, `wym-ws-1`      | `apps/docs` — aplikacja dokumentacji                                       | pierwszym zewnętrznym użytkowniku; bez niej nie ma adopcji           |
 | `wym-proj-4`                  | egzekwowanie progu 80% pokrycia (`wym-real-5`)                             | zawsze — im później, tym większy dług do nadrobienia                 |
 | `wym-api-7`                   | `TemplateRef` / `*pctTemplate`                                             | pierwszym realnym użyciu selecta (szablon opcji) i przy `wym-ikon-2` |
