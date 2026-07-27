@@ -21,3 +21,15 @@
 - The `nx-generate` skill handles generator discovery internally - don't call nx_docs just to look up generator syntax
 
 <!-- nx configuration end-->
+
+## Ten plik a CLAUDE.md
+
+Ten plik jest **źródłem prawdy**. `CLAUDE.md` to trzy zdania i import `@AGENTS.md`,
+który Claude Code rozwija przy wczytywaniu. Wcześniej były to dwa niezależne pliki
+bajt w bajt identyczne, czyli rozjazd czekający na pierwszą edycję jednego z nich.
+Zmiany wpisuj tutaj.
+
+Dowiązanie symboliczne byłoby czystsze, ale **łamie `nx format:check`**: prettier
+odrzuca dowiązania przekazane wprost jako ścieżki (`Explicitly specified pattern
+is a symbolic link`), a Nx przekazuje mu zmienione pliki właśnie w ten sposób.
+`.prettierignore` tego nie ratuje — odmowa następuje przed filtrowaniem.

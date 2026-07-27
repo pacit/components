@@ -17,6 +17,8 @@ jobs:
       - uses: actions/checkout@v5
         with:
           filter: tree:0
+          # Pełna historia jest potrzebna `nx affected` do wyznaczenia bazy
+          # porównania — bez niej nie ma jak ustalić, co się zmieniło.
           fetch-depth: 0
 
       - uses: actions/setup-node@v5
@@ -25,13 +27,40 @@ jobs:
           cache: 'npm'
 
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+
+      # Ustawia NX_BASE i NX_HEAD: na PR-ze to punkt rozejścia z gałęzią bazową,
+      # na main — ostatni commit z zielonym przebiegiem tego workflow. Dzięki
+      # temu po nieudanym przebiegu następny bierze pod uwagę także zmiany,
+      # których tamten nie zdążył sprawdzić.
+      - uses: nrwl/nx-set-shas@v4
+
+      # Przeglądarka Playwrighta waży kilkaset MB i nie zmienia się między
+      # commitami — klucz to jego wersja, więc cache unieważnia się dokładnie
+      # przy podbiciu paczki, a nie przy każdej zmianie package-lock.json.
+      - name: Ustal wersję Playwrighta
+        id: playwright
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+
+      # Zależności systemowe (apt) instalujemy zawsze — nie leżą w katalogu
+      # przeglądarki, więc cache ich nie obejmuje. Samą przeglądarkę tylko
+      # przy pudle.
+      - if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+
+      - if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
 
       - run: npx nx format:check
 
       # Tokeny (CSS/SCSS/TS + bramka kontrastu) buduje graf: `tokens` jest
       # zależnością `components` i `sandbox`, więc powstają same, przed
-      # konsumentami. Ręczny krok przed run-many maskowałby brak tej krawędzi.
-      # `check-package` weryfikuje spakowany artefakt — że wozi skórkę i że
-      # każdy użyty token ma w pakiecie deklarację.
-      - run: npx nx run-many -t lint test vite:test build typecheck check-package e2e
+      # konsumentami. Ręczny krok przed uruchomieniem maskowałby brak tej krawędzi.
+      # `check-package` weryfikuje spakowany artefakt — że wozi skórkę, że każdy
+      # użyty token ma w pakiecie deklarację i że `ng add` jest osiągalne.
+      - run: npx nx affected -t lint test vite:test build typecheck check-package e2e

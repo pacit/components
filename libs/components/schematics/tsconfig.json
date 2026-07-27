@@ -1,0 +1,17 @@
+{
+  "// ": "Schematics żyją poza pakietem Angulara: uruchamia je Angular CLI w Node, nie przeglądarka, więc kompilują się osobno do CommonJS. ng-packagr ich nie widzi (nie są w grafie entrypointów), stąd własny build wpinany do dist po nim.",
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es2022",
+    "lib": ["es2022"],
+    "types": ["node"],
+    "declaration": false,
+    "sourceMap": false,
+    "strict": true,
+    "skipLibCheck": true,
+    "outDir": "../../../dist/libs/components/schematics",
+    "rootDir": "."
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["**/*.spec.ts"]
+}

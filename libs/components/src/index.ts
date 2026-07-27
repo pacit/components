@@ -11,12 +11,10 @@ export {
 export type { PctConfig, PctSize, PctTexts } from '@pacit/components/core';
 
 /**
- * Wersja biblioteki. Powtarza `version` z `package.json`, bo pakiet nie ma jak
- * jej stamtąd wczytać: import JSON-a wciągnąłby cały manifest do bundla,
- * a generowanie pliku przed buildem dokładałoby krok, który da się pominąć.
- *
- * Rozjazd blokuje bramka pakietu (`check-package.mjs`): sprawdza tę stałą
- * w **zbudowanym** artefakcie wobec wersji z jego `package.json`, więc ręczna
- * edycja jednego miejsca nie przejdzie przez CI.
+ * Wersja biblioteki. Stała jest **generowana** z `version` w `package.json`
+ * przez `nx stamp-version components` — nikt jej nie wpisuje ręcznie, bo
+ * `nx release version` podbija wyłącznie manifest i drugie miejsce zostawałoby
+ * w tyle. Rozjazd blokuje bramka pakietu (`check-package.mjs`), która czyta
+ * **zbudowany** artefakt, więc nie da się jej ominąć edytując same źródła.
  */
-export const PCT_VERSION = '0.0.1';
+export { PCT_VERSION } from './version';

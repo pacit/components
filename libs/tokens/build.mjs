@@ -313,10 +313,19 @@ function run() {
   const tsEntries = publicPaths
     .map((p) => `  '${p}': 'var(${cssVar(p)})',`)
     .join('\n');
+  // Dwa różne kształty tej samej wiedzy, bo używa się jej na dwa sposoby.
+  // `PctTokenName` to ścieżka DTCG (`pct.surface`) — nią adresuje się token
+  // w źródłach. `PctCssVar` to nazwa custom property (`--pct-surface`) — nią
+  // odpytuje się przeglądarkę w testach i w kodzie budującym motyw. Bez tego
+  // drugiego typu literówka w `getPropertyValue('--pct-surfce')` zwraca pusty
+  // łańcuch, a test porównujący dwa puste łańcuchy przechodzi.
+  const cssVarUnion = publicPaths.map((p) => `  | '${cssVar(p)}'`).join('\n');
   const ts =
     '// AUTOGENEROWANE z libs/tokens/src/*.json — nie edytuj ręcznie.\n' +
     `export const pctTokens = {\n${tsEntries}\n} as const;\n\n` +
-    'export type PctTokenName = keyof typeof pctTokens;\n';
+    'export type PctTokenName = keyof typeof pctTokens;\n\n' +
+    '/** Nazwa custom property tokenu — tak, jak pyta o nią przeglądarka. */\n' +
+    `export type PctCssVar =\n${cssVarUnion};\n`;
   writeFileSync(join(DIST, 'tokens.ts'), ts);
 
   console.log(

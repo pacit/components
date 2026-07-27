@@ -12,6 +12,14 @@ export default [
         'error',
         {
           ignoredFiles: ['{projectRoot}/eslint.config.{js,cjs,mjs,ts,cts,mts}'],
+          // Schematics (`ng add`) sięgają po `@angular-devkit/schematics`
+          // WYŁĄCZNIE po typy — skompilowany `schematics/ng-add/index.js` nie ma
+          // ani jednego odwołania do tej paczki, bo `import type` znika przy
+          // kompilacji. Runtime dostarcza Angular CLI, które te schematics
+          // uruchamia. Wpisanie tego w `peerDependencies` kazałoby każdemu
+          // konsumentowi biblioteki ciągnąć narzędzia budowania, a `wym-proj-3`
+          // dopuszcza jedną zależność runtime i jest nią CDK.
+          ignoredDependencies: ['@angular-devkit/schematics'],
         },
       ],
     },

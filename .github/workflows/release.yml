@@ -1,0 +1,76 @@
+name: Wydanie
+
+# Uruchamiane wyłącznie ręcznie i domyślnie jako PRÓBA. Wydanie jest operacją
+# nieodwracalną — opublikowanej wersji npm nie da się wycofać, a tylko oznaczyć
+# jako wycofaną — więc świadome kliknięcie jest tu bezpieczniejsze od automatu
+# na każdym merge'u do main.
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Próba — nic nie zostanie otagowane ani opublikowane'
+        type: boolean
+        default: true
+      specifier:
+        description: 'Wersja: puste = wyliczona z konwencjonalnych commitów; albo patch/minor/major/1.2.3'
+        type: string
+        required: false
+        default: ''
+      first_release:
+        description: 'Pierwsze wydanie (brak poprzedniego taga, od którego liczyć zakres)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write # commit CHANGELOG-a, tag, wpis GitHub Release
+  id-token: write # OIDC dla `npm publish --provenance`
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wydajemy tylko z main
+        if: github.ref != 'refs/heads/main'
+        run: |
+          echo "::error::Wydanie idzie z main, a workflow uruchomiono z ${{ github.ref }}."
+          exit 1
+
+      - uses: actions/checkout@v5
+        with:
+          # Pełna historia i tagi: z nich biorą się zarówno bieżąca wersja
+          # (`currentVersionResolver: git-tag`), jak i treść CHANGELOG-a.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: 'npm'
+          # Ustawia .npmrc wskazujący na rejestr i czytający NODE_AUTH_TOKEN.
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: npm ci
+
+      - name: Tożsamość gita dla commita wydania
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Wydanie
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          # npm dokłada provenance samo, gdy widzi tę zmienną i token OIDC.
+          # Wymaga poprawnego pola `repository` w manifeście pakietu — pilnuje
+          # tego `check-package.mjs --release`, uruchamiany przed publikacją.
+          NPM_CONFIG_PROVENANCE: true
+          # Wejścia idą przez środowisko, a nie przez interpolację do `run` —
+          # inaczej treść pola tekstowego trafiałaby wprost do powłoki.
+          SPECIFIER: ${{ inputs.specifier }}
+          FIRST_RELEASE: ${{ inputs.first_release }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          ARGS=()
+          if [ -n "$SPECIFIER" ]; then ARGS+=("--specifier=$SPECIFIER"); fi
+          if [ "$FIRST_RELEASE" = "true" ]; then ARGS+=("--first-release"); fi
+          if [ "$DRY_RUN" = "true" ]; then ARGS+=("--dry-run"); fi
+          node tools/release.mjs "${ARGS[@]}"

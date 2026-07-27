@@ -4,9 +4,9 @@
   "sourceRoot": "libs/components",
   "prefix": "pct",
   "projectType": "library",
+  "// release": "Bez `manifestRootsToUpdate`: pakiet powstaje PO podbiciu wersji (tools/release.mjs), więc dist niesie właściwą wersję z samego builda. Łatanie manifestu w dist było potrzebne tylko przy odwrotnej kolejności — i było półśrodkiem, bo poprawiało jeden plik, a nie stałą wkompilowaną w bundle.",
   "release": {
     "version": {
-      "manifestRootsToUpdate": ["dist/{projectRoot}"],
       "currentVersionResolver": "git-tag",
       "fallbackCurrentVersionResolver": "disk"
     }
@@ -15,6 +15,8 @@
   "// implicitDependencies": "Pakiet wozi skórkę wygenerowaną przez `tokens`, ale nie importuje z niej niczego w TS — bez tego wpisu graf nie zna tej krawędzi i build startuje przed wygenerowaniem CSS.",
   "implicitDependencies": ["tokens"],
   "// themes": "ng-packagr nie czyta assetów spoza katalogu projektu, więc skórka musi najpierw stać się wejściem pakietu. `themes/` jest generowane i gitignorowane — jedynym źródłem prawdy pozostają pliki DTCG w libs/tokens/src.",
+  "// schematics": "Kompilowane osobno i PO ng-packagr, bo ng-packagr czyści dist na starcie — build schematics wpięty wcześniej zostałby skasowany. Kolekcja migracji jest w pakiecie od pierwszego wydania celowo: `ng update` czyta ją z wersji ZAINSTALOWANEJ, więc dopisanie jej dopiero przy pierwszej zmianie łamiącej nie pomogłoby nikomu, kto zainstalował wcześniej.",
+  "// stamp-version": "Przepisuje `version` z manifestu do stałej PCT_VERSION. Celowo NIE jest zależnością `build`: gdyby build sam się stemplował, artefakt zawsze by się zgadzał, a bramka `check-package` przestałaby cokolwiek badać. Uruchamia to wydanie (po podbiciu wersji) i człowiek — a bramka pilnuje, że nikt nie zapomniał.",
   "targets": {
     "themes": {
       "executor": "nx:run-commands",
@@ -43,10 +45,38 @@
         "development": {}
       }
     },
-    "check-package": {
+    "stamp-version": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/package.json",
+        "{projectRoot}/stamp-version.mjs"
+      ],
+      "outputs": ["{projectRoot}/src/version.ts"],
+      "options": {
+        "command": "node libs/components/stamp-version.mjs"
+      }
+    },
+    "schematics": {
       "executor": "nx:run-commands",
       "cache": true,
       "dependsOn": ["build"],
+      "inputs": ["{projectRoot}/schematics/**/*"],
+      "outputs": ["{workspaceRoot}/dist/{projectRoot}/schematics"],
+      "options": {
+        "cwd": "libs/components",
+        "commands": [
+          "tsc -p schematics/tsconfig.json",
+          "cp schematics/collection.json schematics/migration.json ../../dist/libs/components/schematics/",
+          "cp schematics/ng-add/schema.json ../../dist/libs/components/schematics/ng-add/"
+        ],
+        "parallel": false
+      }
+    },
+    "check-package": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "dependsOn": ["build", "schematics"],
       "inputs": [
         { "dependentTasksOutputFiles": "**/*", "transitive": false },
         "{projectRoot}/check-package.mjs"

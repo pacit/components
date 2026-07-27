@@ -1,5 +1,6 @@
 {
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "// sharedGlobals": "Pliki spoza któregokolwiek projektu, których zmiana musi unieważnić wszystko. Puste `sharedGlobals` przy `nx affected` znaczyłoby, że podbicie wersji Angulara w package.json albo zmiana ścieżek w tsconfig.base.json nie uruchamia ANI JEDNEGO zadania — pipeline świeciłby na zielono, nie sprawdziwszy niczego. Uwaga: wartości w `namedInputs` muszą być tablicami, więc komentarz nie może stać w środku.",
   "namedInputs": {
     "default": [
       "{projectRoot}/**/*",
@@ -16,7 +17,13 @@
       "!{projectRoot}/jest.config.[jt]s",
       "!{projectRoot}/test-setup.[jt]s"
     ],
-    "sharedGlobals": []
+    "sharedGlobals": [
+      "{workspaceRoot}/nx.json",
+      "{workspaceRoot}/package.json",
+      "{workspaceRoot}/package-lock.json",
+      "{workspaceRoot}/tsconfig.base.json",
+      "{workspaceRoot}/.github/workflows/ci.yml"
+    ]
   },
   "targetDefaults": {
     "@angular/build:application": {
@@ -59,11 +66,40 @@
       "inputs": ["default", "^production"]
     }
   },
+  "// release": "Wydanie prowadzi tools/release.mjs, a nie `nx release` wprost. Powód: build MUSI iść PO podbiciu wersji. `preVersionCommand` uruchamia się przed nim, więc artefakt niósłby starą stałą PCT_VERSION, a `manifestRootsToUpdate` załatałoby tylko manifest w dist — pakiet zgadzałby się sam ze sobą w jednym pliku i kłamał w bundlu.",
   "release": {
     "projects": ["components"],
     "projectsRelationship": "independent",
+    "releaseTag": {
+      "pattern": "{projectName}@{version}"
+    },
+    "// conventionalCommits": "Tytuły sekcji po polsku, bo taki jest język historii commitów i dokumentacji. Ukryte typy nie znikają z historii — tylko z CHANGELOG-a, który czyta konsument biblioteki, a nie osoba pracująca nad repozytorium.",
+    "conventionalCommits": {
+      "types": {
+        "feat": { "changelog": { "title": "Nowe możliwości" } },
+        "fix": { "changelog": { "title": "Poprawki" } },
+        "perf": { "changelog": { "title": "Wydajność" } },
+        "refactor": { "changelog": { "title": "Przebudowa", "hidden": false } },
+        "docs": { "changelog": { "title": "Dokumentacja", "hidden": false } },
+        "build": { "changelog": { "hidden": true } },
+        "chore": { "changelog": { "hidden": true } },
+        "ci": { "changelog": { "hidden": true } },
+        "test": { "changelog": { "hidden": true } }
+      }
+    },
     "version": {
-      "preVersionCommand": "npx nx run-many -t build"
+      "conventionalCommits": true,
+      "// adjustSemverBumpsForZeroMajorVersion": "Przed 1.0 zmiana łamiąca podbija minor, a nie major. Inaczej pierwsze `feat(api)!` wyrzuciłoby bibliotekę prosto do 1.0.0 i odebrało jej prawo do niestabilnego API, które `wym-proj-2` wprost zakłada.",
+      "adjustSemverBumpsForZeroMajorVersion": true
+    },
+    "changelog": {
+      "// automaticFromRef": "Pierwsze wydanie nie ma poprzedniego tagu, od którego liczyć zakres — bez tego `nx release` nie miałby skąd wziąć historii.",
+      "automaticFromRef": true,
+      "// workspaceChangelog": "Publikowalny projekt jest jeden, więc changelog workspace'u byłby drugą kopią tej samej treści.",
+      "workspaceChangelog": false,
+      "projectChangelogs": {
+        "createRelease": "github"
+      }
     }
   },
   "plugins": [

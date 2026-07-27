@@ -11,12 +11,16 @@
  * bez wyglądu. Żaden test jednostkowy ani e2e tego nie widzi, bo one działają
  * na źródłach i na sandboxie, nie na spakowanym artefakcie.
  *
- * Sprawdzane są cztery rzeczy:
+ * Sprawdzane jest pięć rzeczy:
  *  1. skórka jest w pakiecie (`themes/pct.css`, niepusta),
  *  2. jest osiągalna importem (`exports` w package.json),
  *  3. domknięcie tokenów: każdy `var(--pct-*)` użyty gdziekolwiek w pakiecie
  *     ma w tym pakiecie swoją deklarację,
- *  4. `PCT_VERSION` w kodzie zgadza się z `version` z manifestu.
+ *  4. `PCT_VERSION` w kodzie zgadza się z `version` z manifestu,
+ *  5. kolekcje `ng add` / `ng update` są w pakiecie, a ich fabryki wskazują na
+ *     skompilowane pliki,
+ *  6. manifest ma metadane wymagane do publikacji (tylko ostrzeżenie; przy
+ *     `--release` blokuje).
  *
  * Punkt 3 jest tym, który faktycznie łapie regresję — warunki 1 i 2 spełni
  * też pusty plik albo skórka, z której ktoś usunął warstwę komponentową.
@@ -123,12 +127,13 @@ if (missing.length) {
   );
 }
 
-// 4. wersja w kodzie == wersja w manifeście. `PCT_VERSION` jest stałą wpisaną
-// ręcznie (patrz komentarz przy niej), a `nx release` podbija tylko manifest —
-// bez tej kontroli obie liczby rozjeżdżają się przy pierwszym wydaniu i to
-// pakiet zaczyna kłamać o samym sobie. Brak stałej jest błędem tak samo jak
-// zła wartość: znaczy, że zmienił się kształt wyjścia i kontrola przestała
-// cokolwiek sprawdzać.
+// 4. wersja w kodzie == wersja w manifeście. `PCT_VERSION` jest generowane
+// przez `stamp-version.mjs`, ale generator **nie jest** zależnością builda —
+// inaczej artefakt zawsze by się zgadzał i ta kontrola nic by nie badała.
+// `nx release version` podbija sam manifest, więc bez niej pierwsze wydanie
+// wypuściłoby pakiet, który kłamie o własnej wersji. Brak stałej jest błędem
+// tak samo jak zła wartość: znaczy, że zmienił się kształt wyjścia i kontrola
+// przestała cokolwiek sprawdzać.
 const VERSION_CONST = /PCT_VERSION\s*=\s*['"]([^'"]+)['"]/;
 const stamped = files
   .map((path) => readFileSync(path, 'utf8').match(VERSION_CONST)?.[1])
@@ -144,7 +149,79 @@ const wrong = [...new Set(stamped)].filter((v) => v !== pkg.version);
 if (wrong.length) {
   fail(
     `PCT_VERSION (${wrong.join(', ')}) nie zgadza sie z wersja pakietu (${pkg.version}).\n` +
-      `  Zaktualizuj stala w libs/components/src/index.ts.`,
+      `  Uruchom: npx nx stamp-version components  (a potem przebuduj pakiet)`,
+  );
+}
+
+// 5. `ng add` i `ng update` są osiągalne. Manifest wskazuje na kolekcje
+// plikami, a te powstają w osobnym kroku (`nx schematics components`) już PO
+// ng-packagr — czyli w miejscu, które łatwo pominąć. Sam wpis w manifeście
+// niczego nie gwarantuje: gdy pliku nie ma, `ng add @pacit/components`
+// wywala się u konsumenta na „Collection not found", a biblioteka wygląda
+// na zepsutą przy pierwszej komendzie, jaką ktoś wpisze.
+for (const [field, pointer] of [
+  ['schematics', pkg.schematics],
+  ['ng-update.migrations', pkg['ng-update']?.migrations],
+]) {
+  if (!pointer) {
+    fail(
+      `manifest nie ma pola \`${field}\` — \`ng add\`/\`ng update\` nie zadzialaja.`,
+    );
+  }
+  let collection;
+  try {
+    collection = JSON.parse(readFileSync(join(ROOT, pointer), 'utf8'));
+  } catch {
+    fail(
+      `\`${field}\` wskazuje na ${pointer}, ktorego w pakiecie nie ma.\n` +
+        `  Uruchom: npx nx schematics components`,
+    );
+  }
+  // Fabryka musi istnieć jako skompilowany plik — wpis w kolekcji wskazuje
+  // ścieżkę TS-a sprzed builda tak samo chętnie jak istniejący JS.
+  for (const [name, def] of Object.entries(collection.schematics ?? {})) {
+    const factory = String(def.factory ?? '').split('#')[0];
+    const resolved = join(ROOT, dirname(pointer), `${factory}.js`);
+    try {
+      statSync(resolved);
+    } catch {
+      fail(
+        `schematic \`${name}\` z \`${field}\` wskazuje na ${factory}, ` +
+          `ale ${relative(ROOT, resolved)} nie istnieje w pakiecie.`,
+      );
+    }
+  }
+}
+
+// 6. metadane wymagane do publikacji. Osobna surowość, bo to jedyny warunek,
+// którego nie da się spełnić kodem: `repository` musi wskazywać realne
+// repozytorium, a npm **odmawia** wystawienia provenance, gdy go brakuje albo
+// gdy nie zgadza się z repozytorium, z którego leci publikacja. Dopóki projekt
+// nie ma zdalnego repozytorium, brak tego pola nie jest błędem budowania —
+// jest brakiem gotowości do wydania, więc na co dzień tylko ostrzega,
+// a blokuje dopiero przy `--release`.
+const RELEASE_MODE = process.argv.includes('--release');
+const REQUIRED_META = {
+  description:
+    'npm pokazuje ten opis na stronie pakietu i w wynikach wyszukiwania',
+  license: 'bez niego npm oznacza pakiet jako UNLICENSED',
+  repository:
+    'wymagane przez `npm publish --provenance`; musi wskazywać repozytorium, z ktorego leci publikacja',
+};
+
+const missingMeta = Object.entries(REQUIRED_META).filter(([key]) => !pkg[key]);
+if (missingMeta.length) {
+  const list = missingMeta
+    .map(([key, why]) => `  - ${key}  (${why})`)
+    .join('\n');
+  if (RELEASE_MODE) {
+    fail(
+      `manifest pakietu nie ma pol wymaganych do publikacji:\n${list}\n` +
+        `  Uzupelnij libs/components/package.json.`,
+    );
+  }
+  console.warn(
+    `! Pakiet zbuduje sie i zadziala, ale NIE jest gotowy do publikacji — brakuje:\n${list}`,
   );
 }
 

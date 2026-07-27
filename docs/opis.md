@@ -234,7 +234,9 @@ Zasada nadrzędna: **CSS-first, zero-runtime**. Motyw w runtime to wyłącznie k
 
   TS jest **generowany** ze źródła DTCG, nie pisany ręcznie.
 
-  Wszystkie trzy artefakty powstają, ale `tokens.ts` **nie jest przez nikogo importowany** i nie jedzie w pakiecie (`@pacit/tokens` jest `private`). Cel z tego punktu — brak cichych literówek w nazwach tokenów — nie jest więc dziś osiągany: nazwy w arkuszach nadal są zwykłymi łańcuchami znaków, których nikt nie sprawdza. Bramka `nx check-package components` łapie to dopiero na poziomie pakietu (użyty token bez deklaracji), czyli po fakcie i tylko dla biblioteki, nie dla konsumenta.
+  `tokens.ts` emituje dwa kształty tej samej wiedzy, bo używa się jej na dwa sposoby: `PctTokenName` to ścieżka DTCG (`pct.surface`), a `PctCssVar` — nazwa custom property (`--pct-surface`), czyli to, czym odpytuje się przeglądarkę. Konsumentem jest dziś warstwa testów: pomocniki `tokenOf`/`rootToken` przyjmują `PctCssVar`, więc literówka w nazwie tokenu jest błędem kompilacji, a nie zielonym testem porównującym dwa puste łańcuchy (`wym-real-43`). Egzekwuje to target `typecheck` projektu `sandbox-e2e`, którego wcześniej **w ogóle nie było** (`wym-real-42`).
+
+  Zostaje część _(częściowo)_: artefakt nie jedzie jeszcze w pakiecie (`@pacit/tokens` jest `private`), więc typowanych nazw nie ma kto użyć **po stronie konsumenta**. Wiąże to dopiero z `wym-theme-5` — gdy ktoś z zewnątrz zacznie budować własną skórkę.
 
 - `wym-token-3` **Trzy poziomy tokenów:**
   - prymitywne — surowe wartości bez znaczenia (np. `--pct-blue-500`, `--pct-space-4`, `--pct-radius-md`), rampy kolorów 50–950,
@@ -292,9 +294,15 @@ Zasada nadrzędna: **CSS-first, zero-runtime**. Motyw w runtime to wyłącznie k
 
 ## Wersjonowanie
 
-- `wym-wer-1` _(niezrealizowane — do doprecyzowania na późniejszym etapie)_ Wersjonowanie zgodne z SemVer, z kanałami przedwydawniczymi (`beta`, `rc`).
+- `wym-wer-1` _(zrealizowane; kanały przedwydawnicze do doprecyzowania)_ Wersjonowanie zgodne z SemVer, z kanałami przedwydawniczymi (`beta`, `rc`).
 
-  `nx release` jest skonfigurowany (`nx.json` → `release.projects: ["components"]`), ale **nikt go jeszcze nie uruchamia**: nie ma CHANGELOG-a, workflow publikującego ani provenance. Wersja jest przy tym wpisana w **dwóch** miejscach — `libs/components/package.json` i stała `PCT_VERSION` w `src/index.ts` — i przy pierwszym wydaniu się rozjedzie, bo `nx release` podbija tylko manifest. Stała powinna być generowana.
+  Wydanie prowadzi `tools/release.mjs` (programistyczne API `nx/release`), uruchamiane ręcznym workflow `release.yml` — domyślnie jako próba. CHANGELOG powstaje z konwencjonalnych commitów, tag ma wzorzec `{projectName}@{version}`, a publikacja idzie z `NPM_CONFIG_PROVENANCE`. Przed 1.0 zmiana łamiąca podbija **minor**, nie major (`adjustSemverBumpsForZeroMajorVersion`) — inaczej pierwsze `feat(api)!` wyrzuciłoby bibliotekę do 1.0.0 i odebrało jej prawo do niestabilnego API, które `wym-proj-2` wprost zakłada.
+
+  Stała `PCT_VERSION` nie jest już pisana ręcznie: generuje ją `stamp-version.mjs` z pola `version` w manifeście. Kanały `beta`/`rc` są dostępne przez `--specifier`, ale nie mają jeszcze własnego przebiegu ani `dist-tag` — to zostaje do doprecyzowania.
+
+- `wym-wer-2` **Dostarczane są `ng add` i kolekcja migracji `ng update`.** `ng add @pacit/components` dopina skórkę i style nakładki CDK do konfiguracji builda — dwie rzeczy, których konsument nie zgadnie, a bez których biblioteka wygląda na zepsutą (brak definicji `var()` nie jest błędem, tylko cichym powrotem do wartości początkowej).
+
+  Kolekcja migracji jest w pakiecie **od pierwszego wydania**, choć jest pusta. Powód nie jest kosmetyczny: `ng update` czyta kolekcję z wersji **zainstalowanej** u konsumenta, więc dopisanie jej dopiero przy pierwszej zmianie łamiącej nie pomogłoby nikomu, kto zainstalował wcześniej.
 
 ## Czego jeszcze nie ma
 
@@ -310,13 +318,14 @@ który brak zaczyna blokować następną pracę.
 | `wym-api-8`                   | pola konfiguracji poza `defaultSize`                                       | zanim `PctConfig` zacznie czytać kilkanaście komponentów             |
 | `wym-api-6`                   | użycie CDK a11y (`FocusTrap`, `LiveAnnouncer`)                             | dialogu, drawerze, toaście                                           |
 | `wym-api-9`                   | animacje na WAAPI (samo `prefers-reduced-motion` gotowe — `wym-a11y-5`)    | pierwszym komponencie z wejściem/wyjściem                            |
-| `wym-token-2`                 | użycie generowanego `tokens.ts` (dziś nikt go nie importuje)               | gdy literówka w nazwie tokenu przejdzie do wydania                   |
+| `wym-token-2`                 | wystawienie typowanych nazw tokenów konsumentom (dziś użytek wewnętrzny)   | razem z `wym-theme-5` — gdy ktoś z zewnątrz zacznie budować motyw    |
 | `wym-token-7`                 | spisanie i wersjonowanie kontraktu `data-pct-part`                         | razem z `apps/docs`                                                  |
 | `wym-token-8`                 | oś gęstości                                                                | po ustabilizowaniu osi wielkości; wymaga retestu obszaru dotyku      |
 | `wym-token-9`                 | dyrektywa `[pctTheme]` (sam `prefers-color-scheme` gotowy — `wym-theme-6`) | gdy ustawianie `data-theme` z szablonu zacznie się powtarzać         |
 | `wym-theme-5`, `wym-token-11` | ścieżka budowania skórki przez osobę z zewnątrz                            | gdy ktoś zechce własny motyw                                         |
 | `wym-ikon-2`                  | mechanizm ikon (dziś SVG wpisane w szablony)                               | drugim komponencie potrzebującym podmienialnej ikony                 |
-| `wym-wer-1`                   | automatyzacja wydania (CHANGELOG, publish, provenance)                     | przed pierwszą publikacją na npm                                     |
+| `wym-wer-1`                   | kanały przedwydawnicze (`beta`/`rc`) i ich `dist-tag`                      | pierwszym wydaniu, które nie ma iść od razu do wszystkich            |
+| —                             | `repository` i `LICENSE` w manifeście pakietu                              | pierwszej publikacji — bez nich npm odmawia provenance               |
 
 ### Braki w samych wymaganiach
 
@@ -347,7 +356,7 @@ Powstało:
 - `PctRadioGroup` + `PctRadio` — pierwszy komponent złożony: **kontrolką formularza jest grupa**, opcje nie są samodzielnymi kontrolkami. Grupa ma `role="radiogroup"`, `aria-labelledby`/`aria-orientation`, generuje wspólny `name` dla natywnych radiów.
 - `[pctNumber]` — pole liczbowe na natywnym `<input type="text">` z `role="spinbutton"`: wartość `number | null`, formatowanie i parsowanie wg `Intl.NumberFormat` (locale aplikacji), krokowanie strzałkami i PageUp/PageDown, zaokrąglanie i domykanie do granic przy zatwierdzeniu. Granice pobiera z walidatorów `min()`/`max()` schematu (`wym-api-17`).
 - `PctSelect` — lista wyboru z własnym panelem (nie natywny `<select>`): wzorzec ARIA „select-only combobox" (`role="combobox"` + `role="listbox"`, fokus zostaje na triggerze, aktywna opcja przez `aria-activedescendant`), własna obsługa klawiatury (strzałki, Home/End, Enter, Escape, typeahead) i **pierwsze użycie CDK Overlay**.
-- Testy: `components` 136/136 (Vitest), `sandbox` 7/7, `sandbox-e2e` 149/149 (Playwright, w tym audyt axe-core **każdego widoku** z osobna, bramka hydracji na każdej trasie, preferencje systemowe i 17 porównań wizualnych) — testy jednostkowe biegną pod zoneless. Każdy spec komponentu wchodzi na własny widok, więc jego zakres nie zależy od zawartości sąsiednich przykładów. Osobno stoi bramka pakietu (`nx check-package components`), która bada **spakowany artefakt**, a nie źródła (`wym-real-36`).
+- Testy: `components` 136/136 (Vitest), `sandbox` 7/7, `sandbox-e2e` 149/149 (Playwright, w tym audyt axe-core **każdego widoku** z osobna, bramka hydracji na każdej trasie, preferencje systemowe i 17 porównań wizualnych) — testy jednostkowe biegną pod zoneless. Każdy spec komponentu wchodzi na własny widok, więc jego zakres nie zależy od zawartości sąsiednich przykładów. Osobno stoi bramka pakietu (`nx check-package components`), która bada **spakowany artefakt**, a nie źródła (`wym-real-36`): skórka obecna i wyeksportowana, domknięcie tokenów, zgodność `PCT_VERSION` z manifestem, osiągalność `ng add`/`ng update` oraz — jako ostrzeżenie, a przy `--release` jako błąd — metadane wymagane przez npm.
 
 Wnioski, które doprecyzowują „przepis":
 
@@ -387,6 +396,20 @@ Wnioski, które doprecyzowują „przepis":
 - `wym-real-40` **Stan niesiony samym tłem znika w trybie wysokiego kontrastu.** Kropka zaznaczonego radiobuttona to zwykły `<div>` z `background`, a w `forced-colors: active` przeglądarka wymusza na tle paletę systemu — kropka i okrąg dostawały ten sam `rgb(255,255,255)` i **zaznaczona opcja wyglądała identycznie jak pusta**. Ani bramka kontrastu tokenów, ani audyt axe tego nie widzą: obie badają tryb normalny, w którym kolory są poprawne.
 
   Naprawa jest jednozdaniowa, ale reguła z niej wynikająca jest szersza i weszła do `wym-a11y-6`: **stan ma nieść obecność kształtu, nie barwa**. Ptaszek checkboxa był odporny od początku, bo przełącza się `visibility` — kropka radia była wyjątkiem, nie regułą. Tam, gdzie kształtu nie ma (opcja listy to prostokąt), rozdzielamy stany na dwa niezależne kanały: tło dla wyboru, obrys dla kursora klawiatury.
+
+- `wym-real-41` **Narzędzie miało hak tylko „przed", a potrzebny był „po".** `nx release` udostępnia `preVersionCommand`, czyli komendę uruchamianą **przed** podbiciem wersji. Pakiet zbudowany w tym momencie niesie starą stałą `PCT_VERSION`, więc pierwsze wydanie wypuściłoby artefakt kłamiący o własnej wersji. Podpowiedź z dokumentacji — `manifestRootsToUpdate: ["dist/{projectRoot}"]` — jest półśrodkiem: poprawia `package.json` w `dist`, czyli **jeden plik**, a wartość wkompilowana w bundle zostaje stara. Pakiet zgadza się wtedy sam ze sobą w manifeście i kłamie w kodzie.
+
+  Naprawa polega na odwróceniu kolejności, a nie na łataniu skutku: wydanie prowadzi `tools/release.mjs` na programistycznym API (`releaseVersion` → stempel → build → bramka → `releaseChangelog` → `releasePublish`). Build stoi po podbiciu wersji, więc dist niesie właściwą wartość z samego kompilatora i `manifestRootsToUpdate` przestaje być potrzebne. Bramka pakietu stoi **przed** commitem, tagiem i publikacją — czyli przed wszystkim, co trzeba by potem odkręcać.
+
+  Osobna decyzja: `stamp-version` **nie jest** zależnością `build`. Gdyby był, artefakt zawsze zgadzałby się sam ze sobą, a kontrola wersji w `check-package` przestałaby cokolwiek badać — dokładnie tak, jak bramka, która nie umie nie przejść (`wym-real-39`).
+
+- `wym-real-42` **Projekt e2e nigdy nie był typecheckowany i nikt tego nie zauważył.** `sandbox-e2e` miał `lint` i `e2e`, ale **żadnego** targetu typecheck — czyli kilkanaście plików TypeScriptu, których kompilator nie widział ani razu. Wyszło to przy okazji `wym-token-2`: dodanie targetu ujawniło w pierwszym uruchomieniu 3 błędy w `playwright.config.mts`. Nie były to wady testów — `tsconfig.json` opisywał projekt nieprawdziwie (`module: commonjs` przy pliku `.mts`, który jest ESM, i brak `types: ["node"]` przy użyciu `process`). Kod działał, bo Playwright i Nx ładują `.mts` własnymi loaderami, więc deklaracja z tsconfiga nigdy nie była konfrontowana z rzeczywistością.
+
+  Lekcja: **lint nie zastępuje typechecku.** ESLint parsuje i sprawdza reguły, ale nie zgłasza błędów typów ani niespójności konfiguracji modułów. Projekt bez targetu `typecheck` to kod, o którym wiadomo tylko tyle, że da się go sparsować.
+
+- `wym-real-43` **Odczyt nieistniejącego tokenu nie jest błędem, tylko pustym łańcuchem.** `getComputedStyle(el).getPropertyValue('--pct-surfce')` zwraca `''` — więc test porównujący dwa takie odczyty przechodzi na `'' === ''` i milczy o tym, że nie zmierzył niczego. To ta sama klasa cichej wady co `wym-real-38`, tylko wywołana literówką zamiast zapisu emulacji. Stąd realny użytek z generowanego `tokens.ts` (`wym-token-2`): pomocniki `tokenOf`/`rootToken` przyjmują `PctCssVar` — unię **nazw custom properties**, nie ścieżek DTCG — więc literówka jest błędem kompilacji, a nie zielonym testem. Bramkę zweryfikowano kontrolą negatywną: podmiana jednej nazwy na błędną daje 6 błędów typu.
+
+  Przy okazji trzy razy z rzędu ta sama pułapka narzędziowa: „komentarz" w JSON-ie (`"// klucz"`) da się wstawić tylko tam, gdzie schemat dopuszcza dowolne klucze. W `targets` (project.json), `namedInputs` (nx.json) i `paths` (tsconfig) wartość musi mieć konkretny typ, więc łańcuch znaków wywala odpowiednio graf Nx (`Cannot use 'in' operator`), jego wczytywanie (`Given napi value is not an array`) i `tsc` (`TS5025`).
 
 - `wym-real-6` Pierwotny guard (token-level) przepuścił disabled o realnym kontraście ~1.6:1, bo stan był robiony przez `opacity` (kompozycja z tłem w runtime, niewidoczna dla matematyki na hexach). Stąd `wym-token-11` (policy per motyw/rozmiar, severity) i `wym-token-12` (zakaz `opacity` dla warstw tekstowych). Wdrożone: `libs/tokens/src/contrast.policy.json` + silnik w `build.mjs`; `PctButton` używa tokenów `disabled-*` zamiast `opacity`.
 - `wym-real-7` **Zoneless jest deklarowany jawnie** przez `provideZonelessChangeDetection()` w `app.config.ts`, mimo że generator nie dodaje polyfilla `zone.js` (bundle i tak go nie zawiera). Jawna deklaracja zamyka `wym-tech-3` i chroni przed przypadkowym powrotem do trybu zone-based. Testy jednostkowe biblioteki i aplikacji również konfigurują zoneless w `TestBed`, dzięki czemu `wym-api-2` (komponenty zoneless-safe) jest **weryfikowane**, a nie tylko deklarowane. (Uwaga: `setupTestBed()` z `@analogjs/vitest-angular` domyślnie już ustawia `zoneless: true` — jawna konfiguracja w spec-ach jest zabezpieczeniem na wypadek zmiany domyślnych.)

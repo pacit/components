@@ -15,6 +15,7 @@
     "skipDefaultLibCheck": true,
     "paths": {
       "@pacit/components": ["./libs/components/src/index.ts"],
+      "@pacit/tokens": ["./libs/tokens/dist/tokens.ts"],
       "@pacit/components/core": ["./libs/components/core/src/index.ts"],
       "@pacit/components/button": ["./libs/components/button/src/index.ts"],
       "@pacit/components/checkbox": ["./libs/components/checkbox/src/index.ts"],

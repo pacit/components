@@ -43,6 +43,18 @@ npm ci
 npx nx serve sandbox --port 4200   # uruchom demo na http://localhost:4200
 ```
 
+## Instalacja w aplikacji
+
+```bash
+ng add @pacit/components
+```
+
+Schematic dopina do konfiguracji builda dwa arkusze: skórkę (`@pacit/components/themes/pct.css`) i style nakładki CDK (`@angular/cdk/overlay-prebuilt.css`). Bez pierwszego komponenty odwołują się do nieistniejących custom properties i renderują się bez wyglądu — cicho, bo brak definicji `var()` nie jest błędem, tylko powrotem do wartości początkowej. Bez drugiego panel `PctSelect` pojawia się w losowym miejscu strony.
+
+Skórka trafia na **początek** listy, żeby nadpisanie tokenu w arkuszach aplikacji wygrywało z wartością domyślną. W workspace bez `angular.json` (np. Nx) schematic niczego nie zgaduje — wypisuje oba wpisy do dodania ręcznie.
+
+## Rozwój biblioteki
+
 Tokeny (`libs/tokens/dist`) budują się same — `tokens` jest zależnością `components`
 i `sandbox` w grafie NX, więc `nx serve`/`nx build` generuje je przed konsumentami.
 Osobno uruchamia je `npx nx build tokens`.
@@ -208,6 +220,18 @@ bootstrapApplication(App, {
 ```
 
 `providePctTexts` działa też w zasięgu lokalnym (`providers` komponentu) — sekcja aplikacji może mieć inny język niż reszta. Ostrzeżenia deweloperskie w konsoli nie należą do tego kanału: są po angielsku i gasną poza trybem deweloperskim.
+
+## Wydanie
+
+Wydania idą ręcznym workflow **Wydanie** (`.github/workflows/release.yml`), domyślnie jako próba. Lokalnie to samo robi:
+
+```bash
+node tools/release.mjs --dry-run --first-release
+```
+
+Kolejność jest istotna i dlatego wydanie prowadzi skrypt, a nie samo `nx release`: wersja → stempel stałej `PCT_VERSION` → build → bramka pakietu → CHANGELOG, tag, GitHub Release → publikacja. Build **musi** stać po podbiciu wersji, inaczej artefakt niesie starą stałą (`wym-real-41`). Wersja bierze się z konwencjonalnych commitów; przed 1.0 zmiana łamiąca podbija minor.
+
+Publikacja wymaga w `libs/components/package.json` pola `repository` — bez niego npm odmawia wystawienia provenance. Pilnuje tego `check-package.mjs --release`; na co dzień ten warunek tylko ostrzega.
 
 ## Dokumentacja
 

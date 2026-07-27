@@ -1,13 +1,34 @@
 {
   "name": "@pacit/components",
   "version": "0.0.1",
+  "description": "Dostępna biblioteka komponentów Angular: standalone, zoneless, signal forms, SSR i theming na design tokenach.",
+  "license": "MIT",
+  "keywords": [
+    "angular",
+    "components",
+    "ui",
+    "design-tokens",
+    "accessibility",
+    "wcag",
+    "signal-forms",
+    "zoneless",
+    "ssr"
+  ],
   "peerDependencies": {
     "@angular/cdk": "^22.0.0",
     "@angular/core": "^22.0.0",
     "@angular/forms": "^22.0.0"
   },
   "sideEffects": false,
+  "schematics": "./schematics/collection.json",
+  "ng-update": {
+    "migrations": "./schematics/migration.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
-    "./themes/*": "./themes/*"
+    "./themes/*": "./themes/*",
+    "./schematics/*": "./schematics/*"
   }
 }

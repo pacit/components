@@ -1,4 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
+import type { PctCssVar } from '@pacit/tokens';
 
 /**
  * Odczyt wartości WYLICZONYCH przez przeglądarkę.
@@ -20,13 +21,21 @@ export function styleOf(locator: Locator, property: string): Promise<string> {
   );
 }
 
-/** Wartość custom property odziedziczona w miejscu danego elementu. */
-export function tokenOf(locator: Locator, token: string): Promise<string> {
+/**
+ * Wartość custom property odziedziczona w miejscu danego elementu.
+ *
+ * Nazwa tokenu jest typowana (`PctCssVar` z generowanego `tokens.ts`), a nie
+ * dowolnym łańcuchem, bo `getPropertyValue` na nieistniejącej właściwości
+ * zwraca **pusty łańcuch, nie błąd**. Test porównujący dwa takie odczyty
+ * przechodzi wtedy na `'' === ''` i milczy o tym, że nie zmierzył niczego —
+ * ta sama klasa cichej wady co `wym-real-38`, tylko wywołana literówką.
+ */
+export function tokenOf(locator: Locator, token: PctCssVar): Promise<string> {
   return styleOf(locator, token);
 }
 
 /** Wartość custom property na `:root` — punkt odniesienia dla motywu strony. */
-export function rootToken(page: Page, token: string): Promise<string> {
+export function rootToken(page: Page, token: PctCssVar): Promise<string> {
   return page.evaluate(
     (t) =>
       getComputedStyle(document.documentElement).getPropertyValue(t).trim(),
