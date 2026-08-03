@@ -89,7 +89,7 @@
     },
     "version": {
       "conventionalCommits": true,
-      "// adjustSemverBumpsForZeroMajorVersion": "Przed 1.0 zmiana łamiąca podbija minor, a nie major. Inaczej pierwsze `feat(api)!` wyrzuciłoby bibliotekę prosto do 1.0.0 i odebrało jej prawo do niestabilnego API, które `wym-proj-2` wprost zakłada.",
+      "// adjustSemverBumpsForZeroMajorVersion": "Przed 1.0 zmiana łamiąca podbija minor, a nie major. Inaczej pierwsze `feat(api)!` wyrzuciłoby bibliotekę prosto do 1.0.0 i odebrało jej prawo do niestabilnego API, które `wym-projekt-najnowsze` wprost zakłada.",
       "adjustSemverBumpsForZeroMajorVersion": true
     },
     "changelog": {

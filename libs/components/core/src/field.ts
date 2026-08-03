@@ -100,7 +100,7 @@ export const PCT_FIELD = new InjectionToken<PctFieldApi>('PCT_FIELD');
 /**
  * Wspólna logika komunikatów: tekst pierwszego błędu i bramkowanie widoczności
  * na `touched`. Wydzielona, bo była kopiowana do każdej kontrolki osobno —
- * poprawka musiała być powtarzana N razy (wym-api-13).
+ * poprawka musiała być powtarzana N razy (wym-api-obudowa).
  */
 export function pctFieldMessages(src: {
   invalid: Signal<boolean>;

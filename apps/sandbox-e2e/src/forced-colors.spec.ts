@@ -10,7 +10,7 @@ import { styleOf, systemColors } from './support/css';
  * wyłącznie kolorem znika: dwa różne tła stają się tym samym prostokątem.
  * Testy nie sprawdzają więc, „jaki jest kolor" — sprawdzają, czy stany, które
  * mają się od siebie różnić, nadal się różnią, i czy to, co ma być z palety,
- * faktycznie z niej pochodzi (wym-a11y-6).
+ * faktycznie z niej pochodzi (wym-a11y-kolory-wymuszone).
  *
  * Emulacja przez `visit(page, path, { media })` — powód w `support/dom.ts`.
  */

@@ -1,9 +1,9 @@
 import { InjectionToken, Provider } from '@angular/core';
 
-/** Rozmiary współdzielone przez komponenty (wym-api-3). */
+/** Rozmiary współdzielone przez komponenty (wym-api-sygnaly). */
 export type PctSize = 'sm' | 'md' | 'lg';
 
-/** Globalna konfiguracja biblioteki, nadpisywalna per-komponent inputami (wym-api-8). */
+/** Globalna konfiguracja biblioteki, nadpisywalna per-komponent inputami (wym-api-konfiguracja). */
 export interface PctConfig {
   /** Domyślny rozmiar komponentów. */
   defaultSize: PctSize;
@@ -18,7 +18,7 @@ export const PCT_CONFIG = new InjectionToken<PctConfig>('PCT_CONFIG', {
 });
 
 /**
- * Rejestruje globalną konfigurację biblioteki (wzorzec provideX, wym-api-8).
+ * Rejestruje globalną konfigurację biblioteki (wzorzec provideX, wym-api-konfiguracja).
  *
  * @example
  * bootstrapApplication(App, {

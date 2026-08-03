@@ -6,7 +6,7 @@ import { SbxDemo } from '../../ui/demo';
 
 /**
  * Grupa radiów — pierwszy komponent złożony: kontrolką formularza jest
- * kontener, opcje nie mają własnego stanu formularza (wym-api-10).
+ * kontener, opcje nie mają własnego stanu formularza (wym-api-kontener).
  */
 @Component({
   selector: 'sbx-radio-view',

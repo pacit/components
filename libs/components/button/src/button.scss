@@ -14,7 +14,7 @@
   line-height: 1.2;
   /* Wysokość jest wartością wprost, nie sumą paddingu i wysokości linii — tylko
      tak przycisk zgadza się co do piksela z wierszem pola tej samej wielkości
-     (wym-api-18). Pion niesie `min-height`, więc etykieta łamana na dwie linie
+     (wym-api-wielkosc). Pion niesie `min-height`, więc etykieta łamana na dwie linie
      nadal rozpycha przycisk zamiast się przycinać. */
   min-height: var(--pct-button-height);
   padding-block: 0;
@@ -32,14 +32,14 @@
   background: var(--pct-button-bg-active);
 }
 
-/* Fokus tylko dla nawigacji klawiaturą; kolor z tokenu (wym-a11y-1). */
+/* Fokus tylko dla nawigacji klawiaturą; kolor z tokenu (wym-a11y-wcag). */
 :host(:focus-visible) {
   outline: 2px solid var(--pct-focus-ring);
   outline-offset: 2px;
 }
 
 /* Stan disabled wyrażony konkretnymi tokenami koloru — bez opacity, żeby kontrast
-   był weryfikowalny przez bramkę policy (wym-a11y, wym-token-6). Selektor złożony
+   był weryfikowalny przez bramkę policy (wym-a11y-wcag, wym-token-pary-tekstu). Selektor złożony
    wygrywa też z wariantem outline niezależnie od kolejności reguł. */
 :host([disabled]:not([data-pct-loading])),
 :host([disabled][data-pct-variant='outline']:not([data-pct-loading])) {
@@ -64,11 +64,11 @@
   background: var(--pct-surface-100);
 }
 
-/* Rozmiary sterowane atrybutem stanu (wym-api-4). Wariant podmienia tokeny
+/* Rozmiary sterowane atrybutem stanu (wym-api-atrybuty). Wariant podmienia tokeny
    bazowe na swoje odpowiedniki, zamiast powtarzać reguły wyglądu — reguła wyżej
    zostaje jedynym miejscem, które wie, gdzie która wartość trafia. Wielkość `md`
    nie nadpisuje niczego, więc nadpisanie tokenu bazowego w motywie nadal działa
-   (wym-theme-3). */
+   (wym-token-nadpisanie). */
 :host([data-pct-size='sm']) {
   --pct-button-height: var(--pct-button-height-sm);
   --pct-button-font-size: var(--pct-button-font-size-sm);
@@ -92,10 +92,10 @@
   border: 2px solid currentColor;
   border-right-color: transparent;
   border-radius: 50%;
-  /* Animacja bez @angular/animations — czysty CSS (wym-api-9). Czas obrotu
+  /* Animacja bez @angular/animations — czysty CSS (wym-api-animacje). Czas obrotu
      bierze się z osi ruchu, więc `prefers-reduced-motion` obsługuje ten spinner
      tą samą regułą co wszystkie przejścia w bibliotece — arkusz komponentu nie
-     powtarza media query (wym-a11y-5). */
+     powtarza media query (wym-a11y-ruch). */
   animation: pct-button-spin var(--pct-motion-loop-duration) linear infinite;
 }
 

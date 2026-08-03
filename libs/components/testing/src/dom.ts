@@ -6,7 +6,7 @@ import type { ComponentFixture } from '@angular/core/testing';
  * własnego `ng-package.json`, więc nie trafia do publikowanego pakietu.
  *
  * Zwracają element nie-nullowalny i rzucają z opisem, gdy go brak. Dzięki temu
- * testy nie potrzebują `!` (wym-ws: `@typescript-eslint/no-non-null-assertion`),
+ * testy nie potrzebują `!` (reguła `@typescript-eslint/no-non-null-assertion`),
  * a nieudane zapytanie mówi, czego szukano i co było dostępne — zamiast
  * „Cannot read properties of null".
  */

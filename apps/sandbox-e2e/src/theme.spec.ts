@@ -40,7 +40,7 @@ test.describe('Scoped theme — kaskada CSS custom properties', () => {
    * Regresja: scoped theme musi przethemowywać także tokeny KOMPONENTOWE, nie
    * tylko semantyczne. Custom properties są podstawiane w miejscu deklaracji,
    * więc token komponentowy zadeklarowany w `:root` zamraża jasną wartość —
-   * dlatego build emituje w bloku motywu domknięcie przechodnie (wym-real-17).
+   * dlatego build emituje w bloku motywu domknięcie przechodnie (lekcja-17).
    */
   test('scoped theme przethemowuje również tokeny komponentowe', async ({
     page,

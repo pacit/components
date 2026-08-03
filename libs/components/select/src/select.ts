@@ -42,9 +42,9 @@ import {
  * panel `role="listbox"`, a fokus **nie opuszcza triggera** — aktywna opcja jest
  * wskazywana przez `aria-activedescendant`.
  *
- * Pozycjonowanie panelu opiera się na CDK Overlay (`wym-proj-3`) — to jedyna
+ * Pozycjonowanie panelu opiera się na CDK Overlay (`wym-projekt-zaleznosci`) — to jedyna
  * dopuszczona zależność runtime. Obsługa klawiatury jest własna, bo dla
- * customowego listboxa nie ma natywnego odpowiednika (`wym-api-11`).
+ * customowego listboxa nie ma natywnego odpowiednika (`wym-api-platforma`).
  *
  * Wartość jest dowolnego typu `T` (domyślnie napis) — patrz `PctSelectOption`.
  * Brak wyboru reprezentuje `emptyValue`, domyślnie `null`.
@@ -154,7 +154,7 @@ export class PctSelect<T = string>
   protected readonly hintId = `${this.uid}-hint`;
   protected readonly errorId = `${this.uid}-error`;
 
-  // --- współpraca z obudową (wym-api-13) ---
+  // --- współpraca z obudową (wym-api-obudowa) ---
 
   private readonly fieldApi = inject(PCT_FIELD, { optional: true });
 
@@ -185,7 +185,7 @@ export class PctSelect<T = string>
 
   /**
    * Panel renderuje się w nakładce CDK, poza drzewem hosta, więc kaskada
-   * scoped theme (`wym-theme-4`) do niego nie dociera. Przenosimy więc motyw
+   * scoped theme (`wym-token-scoped`) do niego nie dociera. Przenosimy więc motyw
    * z najbliższego przodka hosta na sam panel.
    */
   protected readonly panelTheme = signal<string | null>(null);

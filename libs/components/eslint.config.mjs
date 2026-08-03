@@ -17,7 +17,7 @@ export default [
           // ani jednego odwołania do tej paczki, bo `import type` znika przy
           // kompilacji. Runtime dostarcza Angular CLI, które te schematics
           // uruchamia. Wpisanie tego w `peerDependencies` kazałoby każdemu
-          // konsumentowi biblioteki ciągnąć narzędzia budowania, a `wym-proj-3`
+          // konsumentowi biblioteki ciągnąć narzędzia budowania, a `wym-projekt-zaleznosci`
           // dopuszcza jedną zależność runtime i jest nią CDK.
           ignoredDependencies: ['@angular-devkit/schematics'],
         },
@@ -40,7 +40,7 @@ export default [
       ],
       // Komponenty występują w dwóch postaciach: własny element (`pct-field`)
       // oraz komponent na natywnym elemencie (`input[pctText]`, `button[pctButton]`
-      // — wym-api-15). Każdy typ selektora ma własny styl zapisu.
+      // — wym-api-natywne-pole). Każdy typ selektora ma własny styl zapisu.
       '@angular-eslint/component-selector': [
         'error',
         [

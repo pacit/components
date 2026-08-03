@@ -73,11 +73,11 @@ export function uncaughtErrors(page: Page): readonly string[] {
  * objaw wygląda jak wada komponentu („wpisana wartość wróciła do początkowej"),
  * choć jest wyścigiem w teście. Powłoka wystawia znacznik po `whenStable()`.
  *
- * Przy okazji jest to BRAMKA HYDRACJI (wym-a11y-7 / wym-tech-4): niezgodność
+ * Przy okazji jest to BRAMKA HYDRACJI (wym-jakosc-hydracja / wym-projekt-ssr): niezgodność
  * drzewa serwerowego z klienckim nie przewraca strony — Angular loguje NG0500
  * i po cichu odtwarza poddrzewo od nowa. Cały dotychczasowy zestaw e2e
  * przechodził więc na zielono także wtedy, gdy SSR realnie się rozjeżdżał
- * (dokładnie ta klasa wady co w wym-real-31). Skoro każdy test i tak wchodzi na
+ * (dokładnie ta klasa wady co w lekcja-31). Skoro każdy test i tak wchodzi na
  * stronę przez `visit()`, sprawdzenie siedzi tutaj i obejmuje wszystkie widoki
  * naraz, zamiast czekać na dopisanie do każdego speca z osobna.
  */

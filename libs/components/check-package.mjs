@@ -3,7 +3,7 @@
  * Bramka pakietu: sprawdza, czy `dist/libs/components` da się zainstalować
  * i użyć — czyli czy wozi skórkę, a nie tylko kod.
  *
- * Powód istnienia (wym-real-17 w wersji dla dystrybucji): build biblioteki
+ * Powód istnienia (lekcja-17 w wersji dla dystrybucji): build biblioteki
  * kończy się SUKCESEM także wtedy, gdy w pakiecie nie ma ani jednej definicji
  * tokenu. Komponenty odwołują się wtedy do `var(--pct-*)`, których nikt nie
  * deklaruje — przeglądarka po cichu bierze wartość początkową (`background`

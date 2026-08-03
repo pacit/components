@@ -412,7 +412,7 @@ describe('PctNumber', () => {
       // Regresja: `FormField` dostarcza NgControl (interop dla CVA), więc
       // heurystyka „NgControl => ktoś inny pisze do DOM" wykluczała też signal
       // forms, choć te przy własnej kontrolce ustawiają tylko `value`
-      // (wym-real-26).
+      // (lekcja-26).
       expect(inputOf(fixture).value).toBe('12\u00a0345');
     });
 

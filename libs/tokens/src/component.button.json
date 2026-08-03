@@ -1,7 +1,7 @@
 {
   "pct": {
     "button": {
-      "$comment": "Wysokość bierze się z tokenu wspólnego z polem ({pct.control.height}), a nie z paddingu pionowego — inaczej przycisk i wiersz pola tej samej wielkości nie dają się zgrać (wym-api-18). Warianty `-sm` / `-lg` podmieniają tokeny bazowe; wielkość `md` zostaje przy nich samych.",
+      "$comment": "Wysokość bierze się z tokenu wspólnego z polem ({pct.control.height}), a nie z paddingu pionowego — inaczej przycisk i wiersz pola tej samej wielkości nie dają się zgrać (wym-api-wielkosc). Warianty `-sm` / `-lg` podmieniają tokeny bazowe; wielkość `md` zostaje przy nich samych.",
       "bg": { "$type": "color", "$value": "{pct.primary}" },
       "bg-hover": { "$type": "color", "$value": "{pct.primary-hover}" },
       "bg-active": { "$type": "color", "$value": "{pct.primary-active}" },

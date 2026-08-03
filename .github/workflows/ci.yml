@@ -63,4 +63,8 @@ jobs:
       # konsumentami. Ręczny krok przed uruchomieniem maskowałby brak tej krawędzi.
       # `check-package` weryfikuje spakowany artefakt — że wozi skórkę, że każdy
       # użyty token ma w pakiecie deklarację i że `ng add` jest osiągalne.
-      - run: npx nx affected -t lint test vite:test build typecheck check-package e2e
+      # `check-docs` czyta docs/ i sprawdza, że każda obietnica wskazuje maszynę,
+      # która potrafi na niej zapalić — i że ta maszyna istnieje oraz biegnie tutaj.
+      # Bez tego dokumentacja jest jedynym miejscem w repo, gdzie obietnica nie ma
+      # bramki, czyli dokładnie tym, czego zakazuje `wym-os`.
+      - run: npx nx affected -t lint test vite:test build typecheck check-package check-docs e2e

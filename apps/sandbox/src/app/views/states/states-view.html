@@ -46,7 +46,11 @@
     </pct-field>
 
     <div class="states__cell">
-      <button pctButton [size]="spoczynek.activeSize()" data-testid="idle-button">
+      <button
+        pctButton
+        [size]="spoczynek.activeSize()"
+        data-testid="idle-button"
+      >
         Przycisk
       </button>
     </div>
@@ -57,7 +61,7 @@
   #wylaczone
   heading="Wyłączone"
   summary="Kursor zapowiada brak akcji na całej powierzchni ramki, a kolory pochodzą z tokenów disabled-*."
-  [reqs]="['wym-token-12', 'wym-real-27']"
+  [reqs]="['wym-token-bez-opacity', 'lekcja-27']"
   [controls]="['scheme', 'skin', 'size']"
   data-testid="states-disabled"
 >
@@ -86,11 +90,7 @@
     </pct-field>
 
     <pct-field label="Zgoda">
-      <pct-checkbox
-        [checked]="true"
-        disabled
-        data-testid="disabled-checkbox"
-      />
+      <pct-checkbox [checked]="true" disabled data-testid="disabled-checkbox" />
     </pct-field>
 
     <pct-field label="Plan">
@@ -117,7 +117,7 @@
   #odczyt
   heading="Tylko do odczytu"
   summary="Wartości nie da się zmienić, ale kontrolka zostaje fokusowalna — inaczej znikałaby z kolejności Taba i czytnik ekranu by jej nie odczytał."
-  [reqs]="['wym-api-3']"
+  [reqs]="['wym-api-sygnaly']"
   [controls]="['scheme', 'skin', 'size']"
   data-testid="states-readonly"
 >
@@ -146,11 +146,7 @@
     </pct-field>
 
     <pct-field label="Zgoda">
-      <pct-checkbox
-        [checked]="true"
-        readonly
-        data-testid="readonly-checkbox"
-      />
+      <pct-checkbox [checked]="true" readonly data-testid="readonly-checkbox" />
     </pct-field>
 
     <pct-field label="Plan">
@@ -171,7 +167,7 @@
   #blad
   heading="Błąd walidacji"
   summary="Komunikat rysuje obudowa i wiąże go z kontrolką przez aria-describedby; ramka sygnalizuje błąd kolorem z tokenu."
-  [reqs]="['wym-api-13', 'wym-api-6']"
+  [reqs]="['wym-api-obudowa', 'wym-a11y-wbudowana']"
   [controls]="['scheme', 'skin', 'size']"
   data-testid="states-invalid"
 >
@@ -239,7 +235,7 @@
   #wymagane
   heading="Wymagane"
   summary="Znacznik wymagalności należy do obudowy — kontrolka zgłasza jej tylko, że jest wymagana."
-  [reqs]="['wym-api-13']"
+  [reqs]="['wym-api-obudowa']"
   [controls]="['scheme', 'skin', 'size']"
   data-testid="states-required"
 >
@@ -276,12 +272,17 @@
   #ladowanie
   heading="Ładowanie"
   summary="Stan wyłącznie przycisku: blokuje kliknięcie i zapowiada je przez aria-busy."
-  [reqs]="['wym-api-3']"
+  [reqs]="['wym-api-sygnaly']"
   [controls]="['scheme', 'skin', 'size']"
   data-testid="states-loading"
 >
   <div class="row">
-    <button pctButton [size]="ladowanie.activeSize()" loading data-testid="loading-button">
+    <button
+      pctButton
+      [size]="ladowanie.activeSize()"
+      loading
+      data-testid="loading-button"
+    >
       Zapisywanie
     </button>
     <button

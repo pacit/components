@@ -9,7 +9,7 @@
   #wobudowie
   heading="W obudowie"
   summary="Wielkość należy do obudowy — kontrolka oddaje jej swoją, tak jak oddaje ramkę."
-  [reqs]="['wym-api-13', 'wym-api-18']"
+  [reqs]="['wym-api-obudowa', 'wym-api-wielkosc']"
   data-testid="demo-in-field"
 >
   <div class="stack">
@@ -31,7 +31,7 @@
 <sbx-demo
   heading="Szerokość panelu"
   summary="Domyślnie panel ma szerokość widocznej kontrolki — w obudowie liczoną od ramki pola, nie od triggera w środku. Można ją oddać treści (auto) albo podać wprost; wtedy decyduje jeszcze wyrównanie."
-  [reqs]="['wym-api-13']"
+  [reqs]="['wym-api-obudowa']"
   [controls]="[]"
   data-testid="demo-panel-width"
 >
@@ -44,7 +44,10 @@
       />
     </pct-field>
 
-    <pct-field label="auto — do najdłuższej opcji" data-testid="field-width-auto">
+    <pct-field
+      label="auto — do najdłuższej opcji"
+      data-testid="field-width-auto"
+    >
       <pct-select
         panelWidth="auto"
         [options]="languages"
@@ -71,7 +74,7 @@
 <sbx-demo
   heading="Panel a scoped theme"
   summary="Panel renderuje się poza drzewem hosta, więc kaskada motywu do niego nie dociera — motyw z najbliższego przodka jest przenoszony na panel jawnie."
-  [reqs]="['wym-real-18', 'wym-theme-4']"
+  [reqs]="['lekcja-18', 'wym-token-scoped']"
   scheme="dark"
   [controls]="[]"
   data-testid="demo-scoped"
@@ -90,7 +93,7 @@
 <sbx-demo
   heading="Bez obudowy"
   summary="Poza pct-field select rysuje własną etykietę i sam pilnuje obszaru dotyku."
-  [reqs]="['wym-api-14', 'wym-a11y-2']"
+  [reqs]="['wym-api-bez-obudowy', 'wym-a11y-dotyk']"
   data-testid="demo-standalone"
 >
   <pct-select

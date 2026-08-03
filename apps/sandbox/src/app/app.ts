@@ -14,7 +14,7 @@ import { SBX_VIEW_GROUPS, viewsOf } from './views';
  * przekrojowych (motyw, skórka, wielkość).
  *
  * Motyw siedzi na hoście powłoki, a nie na `:root` — cała strona jest więc
- * takim samym scoped theme jak każda karta (wym-theme-4), a `:root` zostaje
+ * takim samym scoped theme jak każda karta (wym-token-scoped), a `:root` zostaje
  * czystym punktem odniesienia dla testów.
  */
 @Component({
@@ -43,7 +43,7 @@ export class App {
     // nie słucha, a hydracja i tak nadpisze wartość stanem z modelu. Odkąd
     // widoki ładują się leniwie, okno między „element widoczny" a „element
     // podłączony" trwa tyle, co pobranie chunka — dość, by test zdążył wejść
-    // w środek (wym-real-30).
+    // w środek (lekcja-30).
     afterNextRender(async () => {
       await appRef.whenStable();
       document.documentElement.setAttribute('data-sbx-ready', '');

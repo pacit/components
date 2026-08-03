@@ -25,7 +25,7 @@ import {
 /**
  * Grupa pól wyboru jednokrotnego. **To grupa jest kontrolką formularza**
  * (`FormValueControl`), a nie poszczególne opcje — z punktu widzenia formularza
- * radiogroup edytuje jedną wartość (wym-api-5).
+ * radiogroup edytuje jedną wartość (wym-api-signal-forms).
  *
  * Opcje (`pct-radio`) używają natywnych `<input type="radio">` ze wspólnym
  * atrybutem `name`, dzięki czemu przeglądarka sama zapewnia nawigację
@@ -61,7 +61,7 @@ import {
     '[attr.aria-required]': 'required() ? "true" : null',
     // `aria-readonly` należy do GRUPY, nie do opcji: rola `radio` go nie
     // wspiera (wspiera go `radiogroup`), a atrybut niedozwolony dla roli jest
-    // naruszeniem krytycznym, nie kosmetycznym (`wym-real-33`).
+    // naruszeniem krytycznym, nie kosmetycznym (`lekcja-33`).
     '[attr.aria-readonly]': 'readonly() ? "true" : null',
     '[attr.aria-orientation]': 'orientation()',
     '[attr.data-pct-orientation]': 'orientation()',
@@ -129,7 +129,7 @@ export class PctRadioGroup<T = string>
   /** Nazwa grupująca natywne radia — bez niej przeglądarka nie zrobi grupy. */
   readonly groupName = computed(() => this.name() || this.uid);
 
-  // --- współpraca z obudową (wym-api-14) ---
+  // --- współpraca z obudową (wym-api-bez-obudowy) ---
 
   private readonly fieldApi = inject(PCT_FIELD, { optional: true });
   protected readonly inField = this.fieldApi !== null;

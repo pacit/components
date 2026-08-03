@@ -1,7 +1,7 @@
 // Import wyłącznie typowy: runtime schematics dostarcza Angular CLI, które je
 // uruchamia. Gdyby `@angular-devkit/schematics` trafiło do zależności pakietu,
 // każdy konsument biblioteki komponentów ciągnąłby narzędzia budowania —
-// a `wym-proj-3` dopuszcza jedną zależność runtime i jest nią CDK.
+// a `wym-projekt-zaleznosci` dopuszcza jedną zależność runtime i jest nią CDK.
 import type { Rule, SchematicContext, Tree } from '@angular-devkit/schematics';
 
 /**
@@ -12,7 +12,7 @@ import type { Rule, SchematicContext, Tree } from '@angular-devkit/schematics';
  * Bez skórki komponenty odwołują się do nieistniejących custom properties
  * i renderują się bez wyglądu — cicho, bo brak definicji `var()` nie jest
  * błędem, tylko powrotem do wartości początkowej (ta sama klasa wady co
- * `wym-real-36`). Bez `overlay-prebuilt.css` panel selecta pojawia się
+ * `lekcja-36`). Bez `overlay-prebuilt.css` panel selecta pojawia się
  * w losowym miejscu strony.
  *
  * Czego świadomie NIE robi: nie dopisuje providerów, nie modyfikuje kodu

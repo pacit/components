@@ -6,7 +6,7 @@ export type SbxScheme = 'light' | 'dark';
 
 /**
  * Skórka: zestaw nadpisań semantycznych, niezależny od schematu light/dark
- * (wym-theme-5). Na razie istnieje jedna — build tokenów nie emituje jeszcze
+ * (wym-token-skorka). Na razie istnieje jedna — build tokenów nie emituje jeszcze
  * bloków `[data-skin="..."]`. Oś jest tu obecna od początku, żeby karta miała
  * gdzie ją wystawić, gdy skórki powstaną.
  */
@@ -20,7 +20,11 @@ export const SBX_SKINS: readonly SbxSkin[] = [{ id: 'base', label: 'Bazowa' }];
 /** Który przełącznik pokazuje pasek karty. */
 export type SbxControl = 'scheme' | 'skin' | 'size';
 
-export const SBX_ALL_CONTROLS: readonly SbxControl[] = ['scheme', 'skin', 'size'];
+export const SBX_ALL_CONTROLS: readonly SbxControl[] = [
+  'scheme',
+  'skin',
+  'size',
+];
 
 /**
  * Globalne ustawienia sandboxa — wspólny punkt odniesienia dla wszystkich kart.

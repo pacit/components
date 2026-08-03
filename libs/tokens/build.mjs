@@ -2,18 +2,18 @@
 /**
  * Lekki build tokenów DTCG -> CSS / SCSS / TS.
  *
- * Zasady (zgodne z opis.md, sekcja "Architektura design tokens"):
+ * Zasady (zgodne z docs/wymagania/tokeny.md):
  *  - źródłem prawdy są pliki DTCG ($type/$value, referencje {a.b.c}),
- *  - referencje token -> token są ZACHOWYWANE jako var() w CSS (wym-token-4),
+ *  - referencje token -> token są ZACHOWYWANE jako var() w CSS (wym-token-referencje),
  *    dzięki czemu nadpisanie jednej zmiennej w scope kaskaduje samo,
  *  - light -> :root, dark -> [data-theme="dark"] (nadpisania semantyczne),
  *  - light jest emitowany DRUGI RAZ jako [data-theme="light"], żeby motyw dał
  *    się przełączyć w obie strony w zagnieżdżeniu (jasna karta w ciemnej
- *    stronie); bez tego "light" jest tylko brakiem atrybutu (wym-theme-4),
+ *    stronie); bez tego "light" jest tylko brakiem atrybutu (wym-token-scoped),
  *  - preferencje systemowe (`prefers-color-scheme`, `prefers-reduced-motion`)
  *    to takie same zestawy nadpisań, tylko w bloku @media zamiast pod
- *    selektorem atrybutu (wym-a11y-5, wym-theme-5),
- *  - bramka a11y: walidacja kontrastu par tekst/tło wg WCAG 2.2 AA (wym-token-6).
+ *    selektorem atrybutu (wym-a11y-ruch, wym-token-skorka),
+ *  - bramka a11y: walidacja kontrastu par tekst/tło wg WCAG 2.2 AA (wym-token-pary-tekstu).
  *
  * W docelowym projekcie ten transform można zastąpić Style Dictionary —
  * kontrakt (pliki DTCG) pozostaje ten sam.
@@ -224,7 +224,7 @@ function run() {
   // wiec nadpisanie `--b` w zageszczonym scope go nie zmieni. Do bloku motywu
   // musi trafic domkniecie przechodnie: nadpisania + wszystko, co je uzywa
   // (bezposrednio lub przez lancuch). Inaczej scoped theme dziala tylko na
-  // warstwie semantycznej (wym-theme-4, wym-real-17).
+  // warstwie semantycznej (wym-token-scoped, lekcja-17).
   const darkOverrides = withDependents(flatten(semanticDark), darkTree);
   // Ten sam zbiór tokenów co w dark, ale z wartościami jasnymi: `light` musi
   // być czynnym motywem, a nie samym brakiem atrybutu — inaczej jasna karta
@@ -278,7 +278,7 @@ function run() {
       emitCssBlock(':root', base, base),
       emitCssBlock('[data-theme="light"]', lightOverrides, lightTree),
       emitCssBlock('[data-theme="dark"]', darkOverrides, darkTree),
-      // Automatyczny tryb ciemny (wym-theme-5). `:not([data-theme])` sprawia,
+      // Automatyczny tryb ciemny (wym-token-skorka). `:not([data-theme])` sprawia,
       // że preferencja systemu jest tylko WARTOŚCIĄ DOMYŚLNĄ: strona, która
       // deklaruje motyw wprost, wygrywa w obie strony (`data-theme="light"` na
       // <html> jest wyłącznikiem). Zagnieżdżone motywy działają dalej, bo blok
@@ -289,7 +289,7 @@ function run() {
         '(prefers-color-scheme: dark)',
         emitCssBlock(':root:not([data-theme])', darkOverrides, darkTree),
       ),
-      // Redukcja ruchu (wym-a11y-5) — jedna reguła dla całej biblioteki.
+      // Redukcja ruchu (wym-a11y-ruch) — jedna reguła dla całej biblioteki.
       emitMedia(
         '(prefers-reduced-motion: reduce)',
         emitCssBlock(':root', reducedOverrides, reducedTree),

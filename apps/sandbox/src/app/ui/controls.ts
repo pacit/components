@@ -32,7 +32,7 @@ export class SbxControls {
     label: s.label,
   }));
 
-  /** Wybór skórki ma sens dopiero przy drugiej skórce (wym-theme-5). */
+  /** Wybór skórki ma sens dopiero przy drugiej skórce (wym-token-skorka). */
   protected readonly hasSkins = SBX_SKINS.length > 1;
 
   protected has(control: SbxControl): boolean {

@@ -8,7 +8,7 @@
 <sbx-demo
   heading="W obudowie"
   summary="Etykietę rysuje pct-field; ramki nie ma, bo checkbox zgłasza wygląd bare."
-  [reqs]="['wym-api-16', 'wym-api-14']"
+  [reqs]="['wym-api-ramka', 'wym-api-bez-obudowy']"
   data-testid="demo-in-field"
 >
   <div class="stack">
@@ -25,12 +25,12 @@
 <sbx-demo
   heading="Bez obudowy"
   summary="Poza pct-field kontrolka rysuje własną etykietę — przydatne np. w komórce tabeli."
-  [reqs]="['wym-api-14', 'wym-a11y-2']"
+  [reqs]="['wym-api-bez-obudowy', 'wym-a11y-dotyk']"
   data-testid="demo-standalone"
 >
   <div class="stack">
     <pct-checkbox
-      label="Stan nieokreślony (aria-checked=&quot;mixed&quot;)"
+      label='Stan nieokreślony (aria-checked="mixed")'
       [indeterminate]="partial()"
       data-testid="checkbox-mixed"
     />

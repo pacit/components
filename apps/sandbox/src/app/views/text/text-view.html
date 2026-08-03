@@ -8,7 +8,7 @@
   #rodzaje
   heading="Rodzaje pola"
   summary="type przechodzi do natywnego inputa, więc klawiatura mobilna i walidacja przeglądarki działają same."
-  [reqs]="['wym-api-15']"
+  [reqs]="['wym-api-natywne-pole']"
   data-testid="demo-types"
 >
   <div class="stack">
@@ -34,16 +34,26 @@
   #stany
   heading="Stany"
   summary="Wyłączone pole nie zaprasza do pisania; pole tylko do odczytu zostaje fokusowalne."
-  [reqs]="['wym-api-3']"
+  [reqs]="['wym-api-sygnaly']"
   data-testid="demo-states"
 >
   <div class="stack">
     <pct-field label="Wyłączone" [size]="stany.activeSize()">
-      <input pctText value="nie do edycji" disabled data-testid="text-disabled" />
+      <input
+        pctText
+        value="nie do edycji"
+        disabled
+        data-testid="text-disabled"
+      />
     </pct-field>
 
     <pct-field label="Tylko do odczytu" [size]="stany.activeSize()">
-      <input pctText value="tylko podgląd" readonly data-testid="text-readonly" />
+      <input
+        pctText
+        value="tylko podgląd"
+        readonly
+        data-testid="text-readonly"
+      />
     </pct-field>
   </div>
 </sbx-demo>
@@ -51,18 +61,24 @@
 <sbx-demo
   heading="Zgodność ze starym API formularzy"
   summary="Kontrolka implementuje wyłącznie FormValueControl. [formControl] i [(ngModel)] i tak synchronizują wartość w obie strony — bez ControlValueAccessor."
-  [reqs]="['wym-api-5', 'wym-real-9', 'wym-real-26']"
+  [reqs]="['wym-api-signal-forms', 'lekcja-9', 'lekcja-26']"
   data-testid="demo-interop"
 >
   <div class="stack">
-    <pct-field label="Reactive forms ([formControl])" data-testid="field-reactive">
+    <pct-field
+      label="Reactive forms ([formControl])"
+      data-testid="field-reactive"
+    >
       <input pctText [formControl]="reactive" data-testid="text-reactive" />
     </pct-field>
     <p class="muted" data-testid="reactive-state">
       wartość kontrolki: „{{ reactive.value }}"
     </p>
 
-    <pct-field label="Template-driven ([(ngModel)])" data-testid="field-ngmodel">
+    <pct-field
+      label="Template-driven ([(ngModel)])"
+      data-testid="field-ngmodel"
+    >
       <input pctText [(ngModel)]="ngModelValue" data-testid="text-ngmodel" />
     </pct-field>
     <p class="muted" data-testid="ngmodel-state">

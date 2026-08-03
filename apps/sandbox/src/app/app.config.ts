@@ -14,15 +14,15 @@ import { providePctConfig, providePctTexts } from '@pacit/components';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    // Zoneless (wym-tech-3) — zone.js nie jest ładowany, detekcja zmian opiera się
+    // Zoneless (wym-projekt-angular) — zone.js nie jest ładowany, detekcja zmian opiera się
     // na signals. Jawna deklaracja zamiast polegania na domyślnych ustawieniach.
     provideZonelessChangeDetection(),
     provideClientHydration(withEventReplay()),
     provideBrowserGlobalErrorListeners(),
     provideRouter(appRoutes),
-    // Globalna konfiguracja biblioteki (wym-api-8).
+    // Globalna konfiguracja biblioteki (wym-api-konfiguracja).
     providePctConfig({ defaultSize: 'md' }),
-    // Napisy biblioteki są angielskie (wym-api-21) — sandbox jest po polsku,
+    // Napisy biblioteki są angielskie (wym-api-teksty) — sandbox jest po polsku,
     // więc tłumaczy je u siebie. To zarazem jedyne miejsce, w którym ten kanał
     // jest realnie użyty: gdyby przestał działać, widać to na pierwszym ekranie.
     providePctTexts({

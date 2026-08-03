@@ -2,13 +2,13 @@ import { expect, Page, test } from '@playwright/test';
 import { visit } from './support/dom';
 
 /**
- * Testy wizualne (wym-test-2).
+ * Testy wizualne (wym-jakosc-e2e).
  *
  * Cała metodyka tego projektu opiera się na pomiarze w przeglądarce, a nie na
  * lekturze arkusza — zrzut ekranu jest jej naturalnym przedłużeniem. Testy
  * geometrii sprawdzają to, o co ktoś wcześniej zapytał („czy kolumna kafelkuje
  * ramkę szczelnie"); zrzut łapie także to, o co nikt nie zapytał, bo porównuje
- * CAŁY obraz. Regresje z wym-real-27 i wym-real-34 były dokładnie tego rodzaju.
+ * CAŁY obraz. Regresje z lekcja-27 i lekcja-34 były dokładnie tego rodzaju.
  *
  * Wzorce trzymamy w `src/__screenshots__/{platform}/`.
  * Po świadomej zmianie wyglądu:

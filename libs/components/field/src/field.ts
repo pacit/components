@@ -32,7 +32,7 @@ import { PctFieldSize } from './field.types';
  * (np. licznik znaków).
  *
  * Obudowa jest **prezentacyjna** — kontraktu formularza nie implementuje ona,
- * lecz kontrolka w środku (`wym-api-13`). Dzięki temu typowanie wartości
+ * lecz kontrolka w środku (`wym-api-obudowa`). Dzięki temu typowanie wartości
  * zostaje przy rodzaju pola (`string`, `number`, `Date`, `string[]`).
  *
  * Kontrolka rejestruje się przez token `PCT_FIELD`; obudowa czyta jej stan
@@ -64,9 +64,9 @@ export class PctField implements PctFieldApi {
   readonly hint = input<string>('');
 
   /**
-   * Wielkość pola; domyślnie z globalnej konfiguracji (wym-api-8). Dotyczy
+   * Wielkość pola; domyślnie z globalnej konfiguracji (wym-api-konfiguracja). Dotyczy
    * **wiersza pola** — wysokość jest tu ta sama co przycisku tej samej
-   * wielkości, bo obie biorą ją z tokenu `--pct-control-height-*` (wym-api-18).
+   * wielkości, bo obie biorą ją z tokenu `--pct-control-height-*` (wym-api-wielkosc).
    */
   readonly size = input<PctFieldSize>(this.config.defaultSize);
 
@@ -114,7 +114,7 @@ export class PctField implements PctFieldApi {
     return c && c.labelStrategy === 'for' ? c.controlId : null;
   });
 
-  /** Ramkę rysujemy tylko dla kontrolek, którym ona przystaje (`wym-api-16`). */
+  /** Ramkę rysujemy tylko dla kontrolek, którym ona przystaje (`wym-api-ramka`). */
   protected readonly appearance = computed(
     () => this.control()?.fieldAppearance ?? 'boxed',
   );
@@ -131,7 +131,7 @@ export class PctField implements PctFieldApi {
   private readonly row = viewChild<ElementRef<HTMLElement>>('row');
 
   /**
-   * Ramka pola jako powierzchnia odniesienia dla nakładek kontrolki (wym-api-13).
+   * Ramka pola jako powierzchnia odniesienia dla nakładek kontrolki (wym-api-obudowa).
    * `null` tylko zanim widok się zbuduje — kontrolka pyta o nią przy otwieraniu
    * panelu, więc wtedy wiersz już stoi.
    */

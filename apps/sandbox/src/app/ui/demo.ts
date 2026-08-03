@@ -1,6 +1,7 @@
 import { Component, inject, input, linkedSignal } from '@angular/core';
 import { PctSize } from '@pacit/components';
 import { SbxControls } from './controls';
+import { PctDocId } from './req-ids';
 import {
   SBX_ALL_CONTROLS,
   SbxControl,
@@ -13,7 +14,7 @@ import {
  *
  * Motyw i skórkę ustawia na **własnym poddrzewie** (`data-theme` / `data-skin`
  * na scenie), nigdy na `:root`. Dzięki temu każdy przykład jest przy okazji
- * testem scoped theme (wym-theme-4) — bez pisania osobnego przykładu na to.
+ * testem scoped theme (wym-token-scoped) — bez pisania osobnego przykładu na to.
  *
  * Karta idzie za ustawieniami globalnymi, dopóki ktoś nie przestawi jej paskiem;
  * `linkedSignal` sprawia, że zmiana globalna znów ją przejmuje.
@@ -22,7 +23,7 @@ import {
  * zmieniałby sam siebie i nie dałoby się porównać dwóch kart obok siebie.
  *
  * @example
- * <sbx-demo #d heading="Warianty" [reqs]="['wym-api-3']">
+ * <sbx-demo #d heading="Warianty" [reqs]="['wym-api-sygnaly']">
  *   <button pctButton [size]="d.activeSize()">Solid</button>
  * </sbx-demo>
  */
@@ -41,8 +42,15 @@ export class SbxDemo {
   /** Jedno zdanie: co ten przykład pokazuje. */
   readonly summary = input<string>('');
 
-  /** Wymagania z `docs/opis.md`, których dotyczy przykład (np. `wym-api-18`). */
-  readonly reqs = input<readonly string[]>([]);
+  /**
+   * Wymagania, których dotyczy przykład (np. `wym-api-wielkosc`).
+   *
+   * Typ jest **unią generowaną z dokumentacji** (`tools/check-docs.mjs --write`),
+   * a nie `string`: dopóki było to `string[]`, literówka dawała chip prowadzący
+   * donikąd, czyli cichą wadę (`wym-os`). Ten sam ruch co `PctCssVar` przy
+   * odczycie tokenów (`lekcja-43`).
+   */
+  readonly reqs = input<readonly PctDocId[]>([]);
 
   /** Które osie da się przestawić na tej karcie; `[]` chowa pasek. */
   readonly controls = input<readonly SbxControl[]>(SBX_ALL_CONTROLS);

@@ -1,0 +1,284 @@
+# Wymagania — jakość i bramki
+
+Ten obszar jest **realizacją [`wym-os`](../00-os.md)**: opisuje maszyny, które potrafią
+zapalić. Scala dawne sekcje testów i sandboxa oraz cztery wymagania rozrzucone wcześniej
+po obszarach projektu i dostępności. Mapowanie starych identyfikatorów jest w
+[tabeli migracji](../README.md#migracja-identyfikatorów-2026-07-27).
+
+Sandbox stoi tutaj, a nie w osobnej sekcji, celowo: [`lekcja-33`](../lekcje.md#lekcja-33)
+pokazała, że macierz „każdy komponent × każdy stan" nie jest ozdobnikiem, tylko
+**wejściem dla bramki a11y**. Audyt bada wyłącznie to, co ktoś wcześniej wyrenderował —
+luka w prezentacji jest luką w pokryciu, niewidoczną w raporcie, bo raport jest zielony.
+
+> Kształt wpisu i znaczenie pól **Bramka** / **Kontrola** opisuje
+> [README](../README.md#kształt-wymagania).
+
+---
+
+## Meta — bramki dla bramek
+
+### <a id="wym-jakosc-kontrola"></a>`wym-jakosc-kontrola` — Każda bramka ma kontrolę odniesienia
+
+**Obietnica.** Nowa bramka nie jest gotowa, gdy przechodzi — jest gotowa, gdy **pokazano,
+że potrafi nie przejść**. Każda bramka ma test albo udokumentowany przebieg dowodzący, że
+po wprowadzeniu celowej regresji zapala. Bramka, która zawsze przechodzi, jest
+groźniejsza niż jej brak.
+
+**Bramka:** `tools/check-docs.mjs` — pole **Kontrola** jest wymagane przy każdym
+wymaganiu, tak samo jak pole **Bramka**
+**Kontrola:** `tools/check-docs.fixtures/` — wymaganie z bramką, ale bez kontroli, musi
+zostać odrzucone
+**Lekcje:** [`lekcja-38`](../lekcje.md#lekcja-38), [`lekcja-39`](../lekcje.md#lekcja-39),
+[`lekcja-41`](../lekcje.md#lekcja-41)
+
+> Dwa przebiegi, z których wzięła się ta reguła, warto trzymać blisko:
+> [`lekcja-38`](../lekcje.md#lekcja-38) — idiomatyczny zapis emulacji **po cichu nie
+> działał**, a test przechodził na wartościach domyślnych; wykryła to dopiero kontrola
+> odniesienia, nie test właściwy. [`lekcja-39`](../lekcje.md#lekcja-39) — test wizualny
+> mógł urodzić się martwy na dwa niezależne sposoby, oba wyglądające jak działający test.
+
+---
+
+### <a id="wym-jakosc-rejestr"></a>`wym-jakosc-rejestr` — Rejestr obietnica → bramka → kontrola
+
+**Obietnica.** Każde wymaganie wskazuje **maszynowo**, co je egzekwuje i co dowodzi, że
+ta bramka potrafi nie przejść. Stan wymagania jest **wyprowadzany** z zawartości rejestru,
+nigdy wpisywany ręcznie. Świadomy brak bramki jest dozwolony — musi być wpisany **wraz
+z powodem**.
+
+**Bramka:** `tools/check-docs.mjs` (target `check-docs`, w CI) — sześć kontroli opisanych
+w [README](../README.md#bramka-dokumentacji)
+**Kontrola:** `tools/check-docs.fixtures/` — zestaw celowo wadliwych wymagań (bez bramki,
+z bramką wskazującą na nieistniejący plik, z targetem spoza CI, bez kontroli), z których
+**każde** musi zostać odrzucone
+**Lekcje:** [`lekcja-36`](../lekcje.md#lekcja-36), [`lekcja-39`](../lekcje.md#lekcja-39)
+
+> **Dlaczego to musi być kod, a nie dyscyplina.** Rozjazd między dokumentacją
+> a rzeczywistością już wystąpił i już go raz łatano ręcznie: nagłówek „Jak czytać ten
+> dokument" istniał dokładnie dlatego, że wymagania dawały się czytać jako opis stanu
+> kodu, a odpowiedzią było **ręczne dopisanie 18 adnotacji**. To ten sam wzorzec co
+> ręczny `node libs/tokens/build.mjs` w CI przed [`lekcja-36`](../lekcje.md#lekcja-36):
+> obejście, które **maskuje brak struktury zamiast go ujawnić**.
+>
+> Efekt uboczny jest właściwie główną korzyścią: **dopisanie wymagania bez bramki
+> przestaje być możliwe po cichu.** Oś zaczyna egzekwować samą siebie.
+>
+> To wymaganie jest przy tym **własnym pierwszym przypadkiem testowym**: dopóki rejestru
+> nie ma, [`wym-os`](../00-os.md) jest obietnicą bez bramki — dokładnie tym, czego
+> zakazuje.
+
+---
+
+### <a id="wym-jakosc-typecheck"></a>`wym-jakosc-typecheck` — Każdy projekt ma target `typecheck`
+
+**Obietnica.** Nie ma w workspace kodu TypeScript, którego kompilator nie widzi. **Lint
+nie zastępuje typechecku**: ESLint parsuje i sprawdza reguły, ale nie zgłasza błędów typów
+ani niespójności konfiguracji modułów.
+
+**Bramka:** `.github/workflows/ci.yml` — `typecheck` w liście `nx affected -t`
+**Kontrola:** brak — luka: nic nie zapala, gdy **nowy projekt powstanie bez tego
+targetu**. Dokładnie tak `sandbox-e2e` przeżył kilkanaście plików niewidzianych przez
+kompilator ([`lekcja-42`](../lekcje.md#lekcja-42))
+**Wiąże przy:** natychmiast — koszt to przejście po grafie projektów i porównanie list
+targetów
+**Lekcje:** [`lekcja-42`](../lekcje.md#lekcja-42)
+
+---
+
+## Testy
+
+### <a id="wym-jakosc-jednostkowe"></a>`wym-jakosc-jednostkowe` — Testy jednostkowe na Vitest
+
+**Obietnica.** Testy jednostkowe biblioteki i aplikacji biegną na Vitest, pod zoneless.
+
+**Bramka:** `.github/workflows/ci.yml` — `test` i `vite:test` w liście `nx affected -t`
+**Kontrola:** brak — luka: **testowanie mutacyjne** rdzenia (Stryker na `core`, `number`,
+`select`). To jedyna metoda odpowiadająca na pytanie „czy te testy w ogóle coś łapią" —
+czyli dokładnie to pytanie, które projekt zadaje sobie przy każdej bramce. 136 zielonych
+testów nie jest jeszcze dowodem
+**Wiąże przy:** natychmiast dla `core` — im więcej komponentów na nim stoi, tym droższa
+każda niewykryta luka
+**Lekcje:** [`lekcja-3`](../lekcje.md#lekcja-3), [`lekcja-19`](../lekcje.md#lekcja-19),
+[`lekcja-28`](../lekcje.md#lekcja-28)
+
+---
+
+### <a id="wym-jakosc-pokrycie"></a>`wym-jakosc-pokrycie` — Pokrycie ≥ 80% linii
+
+**Obietnica.** Kod biblioteki jest możliwie pełnie pokryty testami; minimum SonarQube,
+czyli ≥ 80% pokrycia linii.
+
+**Bramka:** brak — luka: **żaden target nie zbiera pokrycia biblioteki ani nie faila
+poniżej progu**. Do czasu konfiguracji `coverageInclude` liczba „80%" jest deklaracją,
+nie bramką
+**Kontrola:** brak — luka: przebieg, w którym usunięcie testu zbija pokrycie poniżej progu
+i bramka zapala
+**Wiąże przy:** natychmiast — to **najstarszy dług** w projekcie i jedyne miejsce, gdzie
+łamana jest naczelna zasada [`wym-os`](../00-os.md). Im dłużej, tym więcej do nadrobienia
+**Lekcje:** [`lekcja-5`](../lekcje.md#lekcja-5)
+
+---
+
+### <a id="wym-jakosc-e2e"></a>`wym-jakosc-e2e` — Testy e2e na Playwright, w tym wizualne
+
+**Obietnica.** Testy e2e na Playwright, w tym **testy wizualne** (screenshot diff).
+Porównywane są **karty sandboxa** (`toHaveScreenshot` na elemencie), nie całe strony —
+więc zmiana w powłoce nie unieważnia wzorców wszystkich komponentów naraz. Wzorce leżą
+w `apps/sandbox-e2e/src/__screenshots__/{platform}/` i **są w repozytorium**.
+
+**Bramka:** `apps/sandbox-e2e/src/visual.spec.ts` i pozostałe specyfikacje e2e
+**Kontrola:** próg jest **bezwzględny** (`maxDiffPixels: 20`) i wynika z pomiaru:
+powtórzony przebieg tego samego kodu daje **0** różniących się pikseli, a zmiana
+`border-radius` 8 px → 1 px — **74**. Pierwsza wersja z progiem ułamkowym
+(`maxDiffPixelRatio: 0.01`) tę regresję **przepuszczała**
+([`lekcja-39`](../lekcje.md#lekcja-39))
+**Lekcje:** [`lekcja-13`](../lekcje.md#lekcja-13), [`lekcja-23`](../lekcje.md#lekcja-23),
+[`lekcja-30`](../lekcje.md#lekcja-30), [`lekcja-39`](../lekcje.md#lekcja-39)
+
+> Dwie rzeczy decydują o tym, czy taki test mierzy kod, czy maszynę. **Krój pisma** jest
+> przypinany na czas zrzutu (`Liberation Sans`), bo `system-ui` rozwiązuje się inaczej na
+> każdym systemie. **Próg jest bezwzględny**, nie ułamkowy — ułamek daje tym większą
+> pobłażliwość, im większa karta.
+>
+> Testy geometrii sprawdzają to, o co ktoś wcześniej zapytał; zrzut łapie także to, o co
+> nikt nie zapytał, bo porównuje cały obraz.
+
+---
+
+### <a id="wym-jakosc-hydracja"></a>`wym-jakosc-hydracja` — Bramka hydracji w e2e
+
+**Obietnica.** Niezgodność drzewa serwerowego z klienckim zapala bramkę. Sprawdzenie
+siedzi w pomocniku `visit()`, przez który wchodzi **każdy** test e2e — obejmuje więc
+wszystkie widoki naraz, zamiast czekać na dopisanie do kolejnych specyfikacji.
+
+**Bramka:** `apps/sandbox-e2e/src/hydration.spec.ts` + pomocnik `visit()`
+w `apps/sandbox-e2e/src/support/`
+**Kontrola:** `hydration.spec.ts › „bramka faktycznie wykrywa błąd hydracji (kontrola
+bramki)"`
+**Lekcje:** [`lekcja-30`](../lekcje.md#lekcja-30), [`lekcja-31`](../lekcje.md#lekcja-31)
+
+> Rozjazd hydracji **nie przewraca strony**: Angular loguje `NG05xx` i po cichu odtwarza
+> poddrzewo od nowa. Aplikacja wygląda poprawnie, a płaci podwójnym renderem i utratą
+> stanu DOM — modelowy przypadek [`wym-os`](../00-os.md).
+
+---
+
+### <a id="wym-jakosc-pakiet"></a>`wym-jakosc-pakiet` — Bramka bada spakowany artefakt
+
+**Obietnica.** **Zielony build nie jest dowodem, że artefakt da się użyć.** Osobna bramka
+bada `dist/libs/components` — nie źródła: obecność i osiągalność skórki, **domknięcie
+tokenów** (każdy `var(--pct-*)` użyty w pakiecie ma w nim deklarację), zgodność
+`PCT_VERSION` z manifestem, osiągalność kolekcji `ng add` / `ng update` oraz metadane
+wymagane przez npm.
+
+**Bramka:** `libs/components/check-package.mjs` (target `check-package`, w CI)
+**Kontrola:** brak — luka: przebieg z [`lekcja-36`](../lekcje.md#lekcja-36) (usunięcie
+`libs/tokens/dist` → build **przechodzi**, a pakiet nie wozi ani jednej definicji tokenu)
+był ręczny i nie został zautomatyzowany
+**Wiąże przy:** natychmiast — bramka pilnująca sześciu obietnic sama nie ma dowodu, że
+potrafi zapalić, czyli łamie [`wym-jakosc-kontrola`](#wym-jakosc-kontrola)
+**Lekcje:** [`lekcja-36`](../lekcje.md#lekcja-36), [`lekcja-41`](../lekcje.md#lekcja-41)
+
+> Bramka sprawdza **domknięcie**, a nie obecność pliku — obecność spełniłby też pusty
+> plik albo skórka, z której ktoś usunął warstwę komponentową.
+
+---
+
+### <a id="wym-jakosc-konsument"></a>`wym-jakosc-konsument` — Test konsumenta na lokalnym rejestrze
+
+**Obietnica.** Logicznym następnym krokiem po [`wym-jakosc-pakiet`](#wym-jakosc-pakiet)
+jest sprawdzenie artefaktu **w użyciu**: `npm pack` → instalacja do świeżej aplikacji →
+build z SSR → jeden e2e.
+
+**Bramka:** brak — luka: `.verdaccio/config.yml` i target `local-registry` w root
+`project.json` **istnieją i nie są przez nic używane**
+**Kontrola:** brak — luka: aplikacja zbudowana z zainstalowanego pakietu, która nie startuje, musi zapalić — dziś nie ma czego uruchomić
+**Wiąże przy:** natychmiast — `check-package` bada artefakt **statycznie**; to
+sprawdziłoby go w użyciu, czyli domknęłoby własną lekcję projektu
+
+---
+
+### <a id="wym-jakosc-przegladarki"></a>`wym-jakosc-przegladarki` — Macierz przeglądarek
+
+**Obietnica.** Testy funkcjonalne biegną na chromium, **webkit i firefox**. Zrzuty
+wizualne zostają na jednej platformie (linux/chromium) — rasteryzacja i tak by je
+rozjechała.
+
+**Bramka:** brak — luka: `apps/sandbox-e2e/playwright.config.mts` ma **wyłącznie
+chromium**, reszta zakomentowana
+**Kontrola:** brak — luka: przebieg dowodzący, że test przechodzący na chromium potrafi nie przejść na webkicie
+**Wiąże przy:** natychmiast dla biblioteki chwalącej się a11y — Safari ma najwięcej wad
+CSS (`:has()`, `inert`, `dialog`, `field-sizing`), a `forced-colors` testujemy wyłącznie
+emulacją
+
+---
+
+## Sandbox — wejście dla bramek
+
+### <a id="wym-jakosc-widoki"></a>`wym-jakosc-widoki` — Sandbox jest rozbity na widoki
+
+**Obietnica.** Widok per komponent pokazuje jego warianty, wielkości i stany; widoki
+przekrojowe (wielkość, motyw, gęstość, stany, formularze, tokeny/części, a11y) zestawiają
+**wszystkie** komponenty na jednej osi. Rejestr widoków (`views.ts`) jest jednym źródłem
+dla routingu, nawigacji i strony wejściowej. **Test komponentu wchodzi na widok tego
+komponentu.**
+
+**Bramka:** `apps/sandbox-e2e/src/a11y.spec.ts`, `hydration.spec.ts` — obie iterują po
+rejestrze widoków, więc nowy widok jest audytowany **bez dopisywania testu**
+**Kontrola:** `apps/sandbox/src/app/app.spec.ts` — rejestr widoków wobec tras
+**Lekcje:** [`lekcja-29`](../lekcje.md#lekcja-29), [`lekcja-33`](../lekcje.md#lekcja-33)
+
+> Widoki przekrojowe zestawiają komponenty w **macierz**, nie w listę przykładów: `/size`
+> to wszystkie kontrolki × `sm`/`md`/`lg` wyrównane dolną krawędzią, `/states` to
+> wszystkie kontrolki × każdy stan. Stany są wymuszane **inputami**, a nie wyprowadzane
+> z formularza — inaczej nie da się pokazać przypadków, do których trudno doprowadzić
+> klikaniem, a to właśnie one nie mają pokrycia.
+
+---
+
+### <a id="wym-jakosc-karta"></a>`wym-jakosc-karta` — Wspólna karta `sbx-demo`
+
+**Obietnica.** Karta obudowuje każdy przykład i niesie osie przekrojowe: schemat kolorów,
+skórkę i wielkość — globalnie w powłoce, lokalnie per karta. Motyw ustawia na **własnej
+scenie**, nigdy na `:root`, więc każdy przykład jest przy okazji testem scoped theme.
+Pasek przełączników stoi **poza sceną**. Karta deklaruje też, których wymagań dotyczy
+(`[reqs]`).
+
+**Bramka:** `apps/sandbox/src/app/ui/demo.spec.ts`; `tools/check-docs.mjs` — każde
+`wym-*` w `[reqs]` musi rozwiązywać się do istniejącego wymagania
+**Kontrola:** `tools/check-docs.fixtures/` — karta z nieistniejącym identyfikatorem musi
+zostać odrzucona
+**Lekcje:** [`lekcja-13`](../lekcje.md#lekcja-13)
+
+> Wejście `reqs` jest typowane jako `PctReqId[]` — unia generowana z dokumentacji. To ten
+> sam ruch co `PctCssVar` w [`lekcja-43`](../lekcje.md#lekcja-43): literówka
+> w identyfikatorze przestaje być cichym chipem prowadzącym donikąd i staje się **błędem
+> kompilacji**.
+
+---
+
+### <a id="wym-jakosc-scena"></a>`wym-jakosc-scena` — Motyw strony też jest scoped theme
+
+**Obietnica.** Powłoka trzyma `data-theme` na swoim hoście, a nie na `:root`. Dzięki temu
+`:root` zostaje **niezmiennym punktem odniesienia** dla testów, a strona przechodzi tę
+samą ścieżkę kodu co dowolne poddrzewo.
+
+**Bramka:** `apps/sandbox-e2e/src/theme.spec.ts`, `apps/sandbox-e2e/src/shell.spec.ts`
+**Kontrola:** `preferences.spec.ts › „bez preferencji ciemnej :root zostaje jasny
+(odniesienie)"` — to `:root` jest tu kontrolą odniesienia dla wszystkich pomiarów motywu
+**Lekcje:** [`lekcja-17`](../lekcje.md#lekcja-17)
+
+> Wymusiło to emisję bloku `[data-theme="light"]` w buildzie tokenów: dopóki jasny motyw
+> był tylko brakiem atrybutu, jasna karta wewnątrz ciemnej strony nie miała czym cofnąć
+> dziedziczonych wartości.
+
+---
+
+### <a id="wym-jakosc-prefiks"></a>`wym-jakosc-prefiks` — Infrastruktura sandboxa ma prefiks `sbx`
+
+**Obietnica.** Prefiks `sbx` oddzielony od `app` (powłoka) i `pct` (biblioteka) — po
+selektorze widać, czy element jest rusztowaniem, demonstracją, czy komponentem
+publikowanym.
+
+**Bramka:** `apps/sandbox/eslint.config.mjs` — reguły selektorów z prefiksami
+**Kontrola:** brak — świadomie: reguła ESLint nie ma trybu cichego przejścia

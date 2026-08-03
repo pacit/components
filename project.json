@@ -1,7 +1,21 @@
 {
   "name": "@org/source",
   "$schema": "node_modules/nx/schemas/project-schema.json",
+  "// check-docs": "Bramka dokumentacji: każda obietnica z docs/ wskazuje bramkę i jej kontrolę odniesienia, a wskazane ścieżki istnieją i biegną w CI. Stoi w projekcie roota, bo `docs/` nie należy do żadnej biblioteki — dzięki temu zmiana w dokumentacji czyni ten projekt affected. Komentarz jest TUTAJ, a nie w `targets`: tam wartość musi być obiektem targetu i łańcuch znaków wywala graf Nx (`lekcja-43`).",
   "targets": {
+    "check-docs": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/docs/**/*.md",
+        "{workspaceRoot}/tools/check-docs.mjs",
+        "{workspaceRoot}/tools/check-docs.fixtures/**/*.md",
+        "{workspaceRoot}/.github/workflows/ci.yml"
+      ],
+      "options": {
+        "command": "node tools/check-docs.mjs"
+      }
+    },
     "local-registry": {
       "executor": "@nx/js:verdaccio",
       "options": {

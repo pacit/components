@@ -2,12 +2,12 @@ import { expect, test } from '@playwright/test';
 import { boxOf, visit } from './support/dom';
 
 /**
- * Wielkość kontrolki jest jedną osią dla całej biblioteki (wym-api-18): wiersz
+ * Wielkość kontrolki jest jedną osią dla całej biblioteki (wym-api-wielkosc): wiersz
  * pola i przycisk tej samej wielkości mają **tę samą** wysokość, bo obie biorą
  * ją z tokenu `--pct-control-height-*`, a nie z sumy paddingu i wysokości linii.
  *
  * Test mierzy realny layout w przeglądarce — jedyny wiarygodny dowód dla styli
- * (wym-real-13); w jsdom nie ma czego mierzyć.
+ * (lekcja-13); w jsdom nie ma czego mierzyć.
  */
 const SIZES = [
   { size: 'sm', height: 28, fontSize: '13px' },
@@ -69,7 +69,7 @@ test.describe('Wielkości — wspólna oś pola i przycisku', () => {
   /**
    * Wariant `bare` (checkbox, grupa radiów) celowo NIE wchodzi na wspólną oś:
    * bez ramki nie ma czego zgrywać z przyciskiem, a wymuszona wysokość
-   * dokładałaby tym kontrolkom pustego miejsca (wym-api-18).
+   * dokładałaby tym kontrolkom pustego miejsca (wym-api-wielkosc).
    */
   test('wariant bare nie skaluje wysokości, ale trzyma próg dotyku', async ({
     page,
@@ -77,7 +77,9 @@ test.describe('Wielkości — wspólna oś pola i przycisku', () => {
     for (const { size, height } of SIZES) {
       const bare = page.getByTestId(`size-checkbox-${size}`);
       const row = await boxOf(bare.locator('[data-pct-part="field-row"]'));
-      const control = await boxOf(bare.locator('[data-pct-part="field-control"]'));
+      const control = await boxOf(
+        bare.locator('[data-pct-part="field-control"]'),
+      );
 
       // Ta sama wysokość niezależnie od wielkości — to `--pct-target-min`,
       // a nie `--pct-control-height-*`.
@@ -114,7 +116,7 @@ test.describe('Wielkości — wspólna oś pola i przycisku', () => {
     page,
   }) => {
     // Najmniejsza wielkość jest tu progiem: 28 px ramki to 26 px kolumny
-    // kontrolki, wciąż powyżej 24 px (wym-a11y-2).
+    // kontrolki, wciąż powyżej 24 px (wym-a11y-dotyk).
     for (const { size } of SIZES) {
       const control = page
         .getByTestId(`size-field-${size}`)

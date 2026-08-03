@@ -43,13 +43,13 @@ function escapeRegExp(value: string): string {
  * `spinbutton`, wartością typu `number | null` i formatowaniem wg locale.
  *
  * **Dlaczego nie `<input type="number">`** — mimo że mamy zasadę „nie pisz
- * tego, co daje platforma" (`wym-api-11`), natywne pole liczbowe nie nadaje
+ * tego, co daje platforma" (`wym-api-platforma`), natywne pole liczbowe nie nadaje
  * się do formularzy biznesowych: nie zna lokalnego separatora dziesiętnego
  * (w polskim przecinka), nie umie grupować tysięcy, a przy niepoprawnej
  * treści zwraca puste `value`, więc nie da się odróżnić „puste" od „śmieci"
  * ani pokazać użytkownikowi tego, co wpisał. Dodatkowo kółko myszy
  * przypadkowo zmienia wartość. Stąd tekstowe pole z własnym parsowaniem
- * i rolą `spinbutton` (`wym-api-17`).
+ * i rolą `spinbutton` (`wym-api-liczba`).
  *
  * Domyślnie pole jest **całkowite** — ułamki włącza `maxFractionDigits`.
  * Wartość pustą reprezentuje `null`, nie `0` ani `NaN`.
@@ -206,7 +206,7 @@ export class PctNumber
   /**
    * `FormField` również dostarcza `NgControl` (interop dla starych
    * `ControlValueAccessor`ów), więc sama jego obecność nie oznacza jeszcze
-   * klasycznych formularzy (`wym-real-26`).
+   * klasycznych formularzy (`lekcja-26`).
    */
   private readonly classicForms = inject(NgControl, {
     optional: true,
@@ -335,7 +335,7 @@ export class PctNumber
     //     tyłu: zapisuje go efekt, a ten biegnie asynchronicznie. Czytanie
     //     wtedy tekstu gubi krok przy szybkim powtarzaniu strzałki — dwa
     //     naciśnięcia przed odświeżeniem widziały tę samą wartość wyjściową
-    //     i drugie było bez efektu (`wym-real-32`).
+    //     i drugie było bez efektu (`lekcja-32`).
     const current =
       (this.typing()
         ? this.parse(this.el.nativeElement.value)
@@ -358,7 +358,7 @@ export class PctNumber
   /**
    * Dwa sposoby użycia wyglądają poprawnie, a cicho psują formatowanie:
    * klasyczne formularze (ich `DefaultValueAccessor` przejmuje zapis do DOM
-   * i pisze surowe napisy — `wym-real-20`) oraz `type="number"`, przy którym
+   * i pisze surowe napisy — `lekcja-20`) oraz `type="number"`, przy którym
    * przeglądarka sama filtruje treść i gubi lokalny separator.
    */
   private warnOnUnsupportedUsage(): void {

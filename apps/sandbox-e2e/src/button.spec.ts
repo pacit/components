@@ -25,9 +25,11 @@ test.describe('PctButton', () => {
     await expect(loading.locator('[data-pct-part="spinner"]')).toBeVisible();
   });
 
-  test('wyłączony przycisk nie jest przyciemniany opacity', async ({ page }) => {
+  test('wyłączony przycisk nie jest przyciemniany opacity', async ({
+    page,
+  }) => {
     // Stany mają własne tokeny koloru — opacity zmieniałoby kontrast
-    // w sposób niewidoczny dla bramki (wym-token-12).
+    // w sposób niewidoczny dla bramki (wym-token-bez-opacity).
     await expect(page.getByTestId('btn-disabled')).toHaveCSS('opacity', '1');
   });
 });

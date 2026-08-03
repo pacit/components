@@ -5,7 +5,7 @@
   font-family: inherit;
 }
 
-/* Wielkość sterowana atrybutem stanu (wym-api-4), tak samo jak w przycisku:
+/* Wielkość sterowana atrybutem stanu (wym-api-atrybuty), tak samo jak w przycisku:
    wariant podmienia tokeny bazowe na swoje odpowiedniki. Podmiana siedzi na
    hoście, a nie na samym wierszu, bo z tych tokenów korzystają też elementy
    w środku (kontrolka bierze `--pct-field-font-size`) — inaczej rozmiar ramki
@@ -53,7 +53,7 @@
 }
 
 /* Wariant `bare`: checkbox i grupa radiów nie dostają ramki — obudowa daje im
-   tylko etykietę, podpowiedź i komunikat błędu (wym-api-16). Nie ma tu też czego
+   tylko etykietę, podpowiedź i komunikat błędu (wym-api-ramka). Nie ma tu też czego
    wyrównywać do wysokości przycisku: te kontrolki wnoszą własny układ, a
    wymuszona wysokość wiersza dokładałaby im samego pustego miejsca. Obszar
    dotyku pilnuje kolumna kontrolki, nie wiersz. */
@@ -90,7 +90,7 @@
 
    Wysokość wiersza jest wartością wprost (`--pct-field-height`), a nie sumą
    paddingu i wysokości linii — dopiero to pozwala zgrać ją co do piksela
-   z przyciskiem tej samej wielkości (wym-api-18). `min-height`, a nie `height`,
+   z przyciskiem tej samej wielkości (wym-api-wielkosc). `min-height`, a nie `height`,
    bo wyższa zawartość (textarea, przycisk w slocie) ma wiersz rozpychać. */
 .pct-field__row {
   display: flex;
@@ -137,7 +137,7 @@
   align-items: stretch;
   flex: 1 1 auto;
   min-width: 0; /* pozwala kontrolce się skracać zamiast rozpychać pole */
-  /* Obudowa gwarantuje minimalny obszar dotyku (wym-a11y-2) niezależnie od tego,
+  /* Obudowa gwarantuje minimalny obszar dotyku (wym-a11y-dotyk) niezależnie od tego,
      jaka kontrolka jest w środku — sama wysokość linii tekstu to ~20 px, czyli
      poniżej progu SC 2.5.8. Wysokość wielkości `sm` jest wyższa, więc warunek
      wiąże dopiero przy motywie zagęszczającym pola poniżej progu. */
@@ -185,7 +185,7 @@
    kursor i sama przyjmuje kliknięcie. Wcześniej decydowała tu obecność elementu
    interaktywnego (`:has(button, a, [tabindex])`), co wiązało dwie niezależne
    rzeczy: przycisk **nie mógł** być mniejszy od slotu, a kafelek z tłem większy
-   (`wym-real-34`). */
+   (`lekcja-34`). */
 .pct-field__prefix:has([data-pct-fit='fill']),
 .pct-field__suffix:has([data-pct-fit='fill']) {
   align-items: stretch;
@@ -269,7 +269,7 @@
    wyłącznie kolorem znika — dwa różne tła stają się tym samym `Canvas`.
    Odpowiedzią nie jest `forced-color-adjust: none` (to zabrania użytkownikowi
    jego własnej palety), tylko przepisanie tych stanów na słowa kluczowe palety
-   systemowej. Reguła obowiązuje w całej bibliotece (wym-a11y-6):
+   systemowej. Reguła obowiązuje w całej bibliotece (wym-a11y-kolory-wymuszone):
 
      powierzchnia kontrolki   -> Field / FieldText
      powierzchnia panelu      -> Canvas / CanvasText

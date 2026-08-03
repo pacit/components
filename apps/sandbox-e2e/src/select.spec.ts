@@ -25,7 +25,7 @@ test.describe('PctSelect — combobox z panelem', () => {
 
   /**
    * Napisy biblioteki są angielskie, a sandbox tłumaczy je przez
-   * `providePctTexts` (wym-api-21). Ten test pilnuje całego łańcucha —
+   * `providePctTexts` (wym-api-teksty). Ten test pilnuje całego łańcucha —
    * token DI, render serwerowy i hydracja — bo widoczny tu tekst zastępczy
    * nie pada nigdzie w kodzie aplikacji poza konfiguracją providerów.
    */
@@ -57,7 +57,7 @@ test.describe('PctSelect — combobox z panelem', () => {
   /**
    * W obudowie widoczną krawędzią jest ramka pola, a trigger stoi w kolumnie
    * odsuniętej o padding — panel oparty o trigger byłby od pola węższy
-   * i przesunięty (wym-real-35).
+   * i przesunięty (lekcja-35).
    */
   test('w obudowie panel pokrywa się z ramką pola, nie z triggerem', async ({
     page,
@@ -125,7 +125,7 @@ test.describe('PctSelect — combobox z panelem', () => {
 
   /**
    * Panel jest dzieckiem `body`, więc dziedziczy pismo po nim, a nie po
-   * aplikacji — krój i wielkość musi dostać wprost z kontrolki (wym-real-35).
+   * aplikacji — krój i wielkość musi dostać wprost z kontrolki (lekcja-35).
    */
   test('opcje piszą tym samym krojem i wielkością co trigger', async ({
     page,
@@ -217,7 +217,7 @@ test.describe('PctSelect — combobox z panelem', () => {
 
   /**
    * Panel renderuje się w nakładce CDK, czyli poza drzewem panelu ciemnego —
-   * motyw musi być przeniesiony jawnie, inaczej scoped theme (wym-theme-4)
+   * motyw musi być przeniesiony jawnie, inaczej scoped theme (wym-token-scoped)
    * przestaje działać dla list rozwijanych.
    */
   test('panel dziedziczy scoped theme z otoczenia triggera', async ({

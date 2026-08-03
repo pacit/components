@@ -12,7 +12,7 @@
 }
 
 /* Pudełko trzyma natywny input (przezroczysty, na wierzchu) i rysowany znacznik.
-   Input zachowuje pełną semantykę i obsługę klawiatury (wym-api-6). */
+   Input zachowuje pełną semantykę i obsługę klawiatury (wym-a11y-wbudowana). */
 .pct-checkbox__box {
   position: relative;
   display: inline-flex;
@@ -84,7 +84,7 @@
   border-color: var(--pct-checkbox-invalid-border);
 }
 
-/* Disabled bez opacity (wym-token-12) — konkretne tokeny koloru. */
+/* Disabled bez opacity (wym-token-bez-opacity) — konkretne tokeny koloru. */
 :host([data-pct-disabled]) .pct-checkbox__box {
   background: var(--pct-checkbox-disabled-bg);
   border-color: var(--pct-checkbox-disabled-border);

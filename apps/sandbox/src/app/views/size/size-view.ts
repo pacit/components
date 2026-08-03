@@ -15,7 +15,7 @@ import { SbxDemo } from '../../ui/demo';
 
 /**
  * Widok przekrojowy: wielkość jako **jedna oś dla całej biblioteki**
- * (wym-api-18). Sedno jest w zestawieniu — pojedynczy komponent zawsze wygląda
+ * (wym-api-wielkosc). Sedno jest w zestawieniu — pojedynczy komponent zawsze wygląda
  * poprawnie, rozjazd widać dopiero, gdy dwa stoją obok siebie tą samą krawędzią.
  */
 @Component({

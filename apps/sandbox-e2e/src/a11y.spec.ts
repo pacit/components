@@ -4,7 +4,7 @@ import { visit } from './support/dom';
 import { SBX_ROUTES } from './support/views';
 
 /**
- * Automatyczny audyt dostępności (wym-a11y-1). Uzupełnia bramkę kontrastu
+ * Automatyczny audyt dostępności (wym-a11y-wcag). Uzupełnia bramkę kontrastu
  * tokenów: tam badane są wartości w palecie, tutaj realnie wyrenderowany DOM
  * (role, powiązania ARIA, kontrast po złożeniu warstw).
  */

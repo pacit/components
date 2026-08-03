@@ -31,7 +31,7 @@ export const PCT_TEXTS = new InjectionToken<PctTexts>('PCT_TEXTS', {
 });
 
 /**
- * Rejestruje teksty biblioteki (wzorzec provideX, wym-api-8). Podane pola
+ * Rejestruje teksty biblioteki (wzorzec provideX, wym-api-konfiguracja). Podane pola
  * nadpisują domyślne, pozostałe zostają — dzięki temu nowy tekst dodany
  * w bibliotece nie wywraca aplikacji, która tłumaczy tylko część.
  *
