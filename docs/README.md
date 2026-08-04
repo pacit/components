@@ -14,6 +14,7 @@ komponenty/       POZIOM 3   czy ten konkretny komponent to spełnia (wypełnion
 lekcje.md                    baza dowodowa: co się naprawdę stało   (43 wpisy)
 rejestr.md                   GENEROWANY: obietnica → bramka → kontrola → stan
 review.md                    datowana migawka zewnętrznego przeglądu
+plan.md                      lista zadań i dziennik prac — jedyne miejsce ze stanem „zrobione"
 ```
 
 Kierunek czytania jest odwrotny do kierunku pisania: **wymagania powstają z lekcji.**
@@ -24,6 +25,7 @@ Kierunek czytania jest odwrotny do kierunku pisania: **wymagania powstają z lek
 | dopisać komponent                                | [`komponenty/_szablon.md`](komponenty/_szablon.md)         |
 | zrozumieć, dlaczego coś jest zrobione akurat tak | [`decyzje/`](decyzje/)                                     |
 | sprawdzić, czego jeszcze nie ma                  | [`rejestr.md`](rejestr.md) — **nie** czytaj tego z wymagań |
+| wiedzieć, co robić dalej i co już zrobiono       | [`plan.md`](plan.md)                                       |
 | dowiedzieć się, co poszło nie tak w przeszłości  | [`lekcje.md`](lekcje.md)                                   |
 
 ### Poziom 1 — wymagania
