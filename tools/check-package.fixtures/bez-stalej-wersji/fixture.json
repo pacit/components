@@ -1,0 +1,5 @@
+{
+  "punkt": 4,
+  "kontrola": "wersja",
+  "opis": "Stałej PCT_VERSION nie ma w pakiecie w ogóle. Drugi przypadek tego samego punktu, bo to inna awaria niż zła wartość: zmienił się kształt wyjścia (inny bundler, inna nazwa, wycięty eksport) i kontrola wersji przestała mieć co porównywać — przechodząc na zielono."
+}

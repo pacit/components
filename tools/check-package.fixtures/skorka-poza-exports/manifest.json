@@ -1,0 +1,23 @@
+{
+  "name": "@pacit/components",
+  "version": "0.0.1",
+  "description": "Pakiet wzorcowy kontroli odniesienia. Nie jest publikowany i nigdy nie ma nim byc.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://example.invalid/pacit/components.git"
+  },
+  "sideEffects": false,
+  "schematics": "./schematics/collection.json",
+  "ng-update": {
+    "migrations": "./schematics/migration.json"
+  },
+  "exports": {
+    "./schematics/*": "./schematics/*",
+    ".": {
+      "default": "./fesm2022/pacit-components.mjs"
+    }
+  },
+  "module": "fesm2022/pacit-components.mjs",
+  "type": "module"
+}

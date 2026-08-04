@@ -1,0 +1,6 @@
+{
+  "punkt": 5,
+  "kontrola": "schematics",
+  "opis": "Kolekcja `ng add` jest w pakiecie i wskazuje fabrykę, ale skompilowanego pliku fabryki nie ma — czyli pominięty target `schematics`, który biegnie osobno i już PO ng-packagr. U konsumenta `ng add @pacit/components` wywala się na „Collection not found\" przy pierwszej komendzie, jaką wpisze.",
+  "usun": ["schematics/ng-add/index.js"]
+}

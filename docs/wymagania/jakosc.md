@@ -172,15 +172,21 @@ tokenów** (każdy `var(--pct-*)` użyty w pakiecie ma w nim deklarację), zgodn
 wymagane przez npm.
 
 **Bramka:** `libs/components/check-package.mjs` (target `check-package`, w CI)
-**Kontrola:** brak — luka: przebieg z [`lekcja-36`](../lekcje.md#lekcja-36) (usunięcie
-`libs/tokens/dist` → build **przechodzi**, a pakiet nie wozi ani jednej definicji tokenu)
-był ręczny i nie został zautomatyzowany
-**Wiąże przy:** natychmiast — bramka pilnująca sześciu obietnic sama nie ma dowodu, że
-potrafi zapalić, czyli łamie [`wym-jakosc-kontrola`](#wym-jakosc-kontrola)
+**Kontrola:** `tools/check-package.fixtures/` — siedem spreparowanych pakietów, po jednym
+na każdy punkt bramki (punkt 4 ma dwa: zła wartość i zniknięcie stałej). Każdy musi zostać
+odrzucony **przez ten punkt, który deklaruje**, a pakiet wzorcowy — przejść. Przebieg
+z [`lekcja-36`](../lekcje.md#lekcja-36) (usunięcie `libs/tokens/dist` → build
+**przechodzi**, a pakiet nie wozi ani jednej definicji tokenu) był ręczny; to jest jego
+maszynowa postać
 **Lekcje:** [`lekcja-36`](../lekcje.md#lekcja-36), [`lekcja-41`](../lekcje.md#lekcja-41)
 
 > Bramka sprawdza **domknięcie**, a nie obecność pliku — obecność spełniłby też pusty
 > plik albo skórka, z której ktoś usunął warstwę komponentową.
+
+> Kontrola sprawdza nie tylko to, **że** spreparowany pakiet zapalił, ale i **który** punkt
+> go odrzucił. Bez tego fixture wywalający się z przypadkowego powodu — zepsuty manifest,
+> literówka w ścieżce — liczyłby się jako dowód, że badany punkt działa. Byłaby to ta sama
+> cicha wada piętro wyżej.
 
 ---
 

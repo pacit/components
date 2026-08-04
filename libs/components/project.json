@@ -79,7 +79,8 @@
       "dependsOn": ["build", "schematics"],
       "inputs": [
         { "dependentTasksOutputFiles": "**/*", "transitive": false },
-        "{projectRoot}/check-package.mjs"
+        "{projectRoot}/check-package.mjs",
+        "{workspaceRoot}/tools/check-package.fixtures/**/*"
       ],
       "options": {
         "command": "node libs/components/check-package.mjs"

@@ -11,7 +11,7 @@ konsumenta) jest po angielsku i to jest osobna reguła.
 wymagania/        POZIOM 1   obietnice: co ma być prawdą           (~80 pozycji)
 decyzje/          POZIOM 2   dlaczego akurat tak i co przez to tracimy  (12 ADR-ów)
 komponenty/       POZIOM 3   czy ten konkretny komponent to spełnia (wypełniony DoD)
-lekcje.md                    baza dowodowa: co się naprawdę stało   (43 wpisy)
+lekcje.md                    baza dowodowa: co się naprawdę stało   (44 wpisy)
 rejestr.md                   GENEROWANY: obietnica → bramka → kontrola → stan
 review.md                    datowana migawka zewnętrznego przeglądu
 plan.md                      lista zadań i dziennik prac — jedyne miejsce ze stanem „zrobione"

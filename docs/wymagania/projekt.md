@@ -77,10 +77,9 @@ z secondary entrypoints per komponent.
 
 **Bramka:** `libs/components/check-package.mjs` (target `check-package`, w CI) — bada
 **spakowany artefakt**, nie źródła: mapa `exports`, osiągalność skórki, domknięcie tokenów
-**Kontrola:** brak — luka: przebieg opisany w [`lekcja-36`](../lekcje.md#lekcja-36)
-(usunięcie `libs/tokens/dist` → bramka zapala) był ręczny i nie został zautomatyzowany
-**Wiąże przy:** natychmiast — bramka pilnująca sześciu obietnic sama nie ma dowodu, że
-potrafi zapalić, czyli łamie [`wym-jakosc-kontrola`](jakosc.md#wym-jakosc-kontrola)
+**Kontrola:** `tools/check-package.fixtures/` — spreparowany pakiet na każdy punkt bramki;
+każdy musi zapalić na swoim. Przebieg opisany w [`lekcja-36`](../lekcje.md#lekcja-36)
+(usunięcie `libs/tokens/dist` → bramka zapala) był ręczny — tutaj jest zautomatyzowany
 **Lekcje:** [`lekcja-36`](../lekcje.md#lekcja-36)
 
 ---
@@ -92,8 +91,9 @@ potrafi zapalić, czyli łamie [`wym-jakosc-kontrola`](jakosc.md#wym-jakosc-kont
 pakietu npm, a entrypointy mogą od siebie zależeć.
 
 **Bramka:** `libs/components/check-package.mjs` — mapa `exports` w spakowanym manifeście
-**Kontrola:** brak — luka: jak w [`wym-projekt-pakiet`](#wym-projekt-pakiet)
-**Wiąże przy:** razem z kontrolą odniesienia dla `check-package` — to ta sama bramka
+**Kontrola:** `tools/check-package.fixtures/skorka-poza-exports/` — plik obecny w pakiecie,
+ale bez wpisu w mapie `exports`, musi zapalić punkt 2. To jest ta wada, której punkt 1 nie
+widzi: plik przecież jest, tylko konsument nie ma jak go zaimportować
 
 ---
 
@@ -120,8 +120,10 @@ Wygenerowane motywy CSS trafiają do assetów pakietu, tak by działało
 
 **Bramka:** `libs/components/project.json` → `implicitDependencies: ["tokens"]` +
 `check-package` (punkt 3: domknięcie tokenów w artefakcie)
-**Kontrola:** brak — luka: jak w [`wym-projekt-pakiet`](#wym-projekt-pakiet)
-**Wiąże przy:** razem z kontrolą odniesienia dla `check-package` — to ta sama bramka
+**Kontrola:** `tools/check-package.fixtures/brak-skorki/` — pakiet bez `themes/pct.css`
+(czyli to, co zostawia zielony build z pustym `libs/tokens/dist`) musi zapalić punkt 1;
+`tools/check-package.fixtures/token-bez-deklaracji/` — użyty token bez deklaracji w pakiecie
+musi zapalić punkt 3
 **Decyzja:** [0002 — skórka jedzie w pakiecie](../decyzje/0002-skorka-w-pakiecie.md)
 **Lekcje:** [`lekcja-36`](../lekcje.md#lekcja-36)
 

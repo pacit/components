@@ -46,16 +46,16 @@ Punkt 4 jest jedynym twardym dowodem — pierwsze trzy bez niego są deklaracją
 
 ## Stan
 
-Migawka z **2026-08-03**, `node tools/check-docs.mjs`:
+Migawka z **2026-08-04**, `node tools/check-docs.mjs`:
 
 | miara                                 | wartość |
 | ------------------------------------- | ------: |
 | wymagań                               |      81 |
-| ✅ egzekwowane                        |      31 |
-| 🟡 częściowo (świadomie bez kontroli) |      17 |
-| ⛔ luka                               |      33 |
+| ✅ egzekwowane                        |      39 |
+| 🟡 częściowo (świadomie bez kontroli) |      16 |
+| ⛔ luka                               |      26 |
 
-Wszystkie 33 luki mają niżej swojego właściciela (A, B, D, F, G). Jeśli po dopisaniu
+Wszystkie 26 luk ma niżej swojego właściciela (A, B, D, F, G). Jeśli po dopisaniu
 wymagania liczba luk rośnie, a żadne zadanie się nie zmienia — ta lista przestała być
 kompletna i to jest błąd tej listy, nie rejestru.
 
@@ -71,28 +71,36 @@ F  powierzchnia zaufania       docs, ACR, benchmarki, most Figma
 G  luki bez terminu            czekają na wyzwalacz zapisany w polu „Wiąże przy"
 ```
 
-Pierwsze pięć, gdyby trzeba było wybrać tydzień: **A1** (sześć luk jednym ruchem),
-**A2** (najstarszy dług), **A6** i **A7** (po pół dnia, czysty zysk), **A5** (jedyna
-pozycja, której koszt retrofitu rośnie nieliniowo).
+Pierwsze cztery, gdyby trzeba było wybrać tydzień: **A2** (najstarszy dług), **A6**
+i **A7** (po pół dnia, czysty zysk), **A5** (jedyna pozycja, której koszt retrofitu
+rośnie nieliniowo).
 
 ---
 
 ## A. Faza 0 — bramki „natychmiast"
 
-15 z 33 luk ma w polu **Wiąże przy** wpisane „natychmiast". Poniższe 13 zadań domyka 21
+13 z 26 luk ma w polu **Wiąże przy** wpisane „natychmiast". Poniższe 12 zadań domyka 15
 luk.
 
-- [ ] **A1 — kontrola odniesienia dla `check-package`**
-  - domyka: `wym-jakosc-pakiet`, `wym-projekt-pakiet`, `wym-projekt-entrypointy`,
-    `wym-projekt-lib-tokenow`, `wym-token-css`, `wym-token-dystrybucja` — **6 luk**
-  - co: katalog fixtures w duchu `tools/check-docs.fixtures/` — spreparowany `dist` per
-    każdy z sześciu punktów `check-package.mjs` (brak `themes/pct.css`; skórka poza mapą
-    `exports`; użyty token bez deklaracji; zła `PCT_VERSION`; brak skompilowanego
-    schematica; brak `repository`)
-  - kontrola: **każdy** fixture musi wywalić bramkę; fixture, który przechodzi, jest
-    błędem samym w sobie — dokładnie jak punkt 6 w `tools/check-docs.mjs`
-  - dziś przebieg z [`lekcja-36`](lekcje.md#lekcja-36) był **ręczny**, czyli nie istnieje
-  - koszt: ~1 dzień · _notatki:_ —
+- [x] **A1 — kontrola odniesienia dla `check-package`** _(2026-08-04)_
+  - domknęło: `wym-jakosc-pakiet`, `wym-projekt-pakiet`, `wym-projekt-entrypointy`,
+    `wym-projekt-lib-tokenow`, `wym-token-css`, `wym-token-dystrybucja` — **6 luk**,
+    a przy okazji `wym-wydanie-ng-add` (czyli **B5**) i kontrolę dla
+    `wym-wydanie-metadane`: to te same punkty tej samej bramki, więc fixtures dla nich
+    powstały tym samym ruchem
+  - zrobione: `tools/check-package.fixtures/` — pakiet wzorcowy `_poprawny/` plus siedem
+    przypadków składanych **na jego kopii**, więc katalog przypadku zawiera wyłącznie
+    swoją wadę. `check-package.mjs` rozbity na kontrole zwracające identyfikator, żeby
+    dało się sprawdzić nie tylko **że** fixture zapalił, ale **który punkt** go odrzucił —
+    inaczej fixture wywalający się z przypadkowego powodu liczyłby się jako dowód
+  - punkt 4 ma dwa przypadki (zła wartość i zniknięcie stałej), punkt 6 jest badany
+    w obie strony: przy `--release` blokuje, na co dzień ostrzega i przepuszcza
+  - kontrola tej kontroli: przebieg dowiódł zapalenia na czterech niezależnych sposobach
+    zepsucia — rozbrojony punkt 3 w bramce, fixture przestający być wadliwym, fixture
+    zapalający na cudzym punkcie, wadliwy pakiet wzorcowy
+  - koszt: ~1 dzień · _notatki:_ udawany `package.json` w repo okazał się dla Nx
+    projektem, a `.nxignore` naprawiał to kosztem unieważniania cache — patrz
+    [`lekcja-44`](lekcje.md#lekcja-44)
 
 - [ ] **A2 — pokrycie z egzekwowanym progiem**
   - domyka: `wym-jakosc-pokrycie` — najstarszy dług w projekcie
@@ -221,7 +229,9 @@ Można prowadzić równolegle z A. Wiąże przy pierwszej publikacji — a wtedy
   - koszt: minuty · _notatki:_ —
 
 - [ ] **B2 — zdalne repozytorium + `repository` w manifeście**
-  - dotyczy: `wym-wydanie-metadane` (dziś 🟡: bramka ostrzega, nikt jej nie słucha)
+  - dotyczy: `wym-wydanie-metadane` — bramka i jej kontrola są (A1), więc w rejestrze
+    stoi ✅; brakuje **samego pola**, a bramka na co dzień tylko ostrzega i nikt jej nie
+    słucha, bo przebieg jest zielony
   - `git remote -v` jest **puste** — dopóki repo nie ma zdalnego, `repository` nie ma czego
     wskazywać, npm odmawia provenance, a `check-package.mjs --release` blokuje wydanie
   - koszt: minuty (po decyzji, gdzie repo ma stać) · _notatki:_ —
@@ -238,12 +248,11 @@ Można prowadzić równolegle z A. Wiąże przy pierwszej publikacji — a wtedy
     polsku, powierzchnia publiczna po angielsku — brakuje wykonania
   - koszt: 1–2 dni (mechaniczne) · _notatki:_ —
 
-- [ ] **B5 — kontrola odniesienia dla `ng add`**
-  - domyka: `wym-wydanie-ng-add`
-  - co: przebieg, w którym pominięcie targetu `schematics` zapala bramkę. `ng add` to
-    pierwsza komenda, jaką konsument wpisze — i pierwsza okazja, żeby biblioteka wyglądała
-    na zepsutą
-  - koszt: ~0,5 dnia (naturalnie razem z A1) · _notatki:_ —
+- [x] **B5 — kontrola odniesienia dla `ng add`** _(2026-08-04, razem z A1)_
+  - domknęło: `wym-wydanie-ng-add`
+  - zrobione: `tools/check-package.fixtures/brak-schematica/` — kolekcja wskazuje fabrykę,
+    której skompilowanego pliku nie ma, i musi zapalić punkt 5. Wyszło tym samym ruchem
+    co A1, bo to punkt tej samej bramki; osobne zadanie było zbędne od początku
 
 - [ ] **B6 — dokument polityki wsparcia**
   - domyka: `wym-wydanie-wsparcie`
@@ -391,6 +400,33 @@ Czekają na wyzwalacz zapisany w polu **Wiąże przy**. Nie są zapomniane — s
 ## Dziennik
 
 Wpis per sesja: co ruszyło, czym się skończyło, co jest następne. Najnowsze na górze.
+
+### 2026-08-04 — A1: bramka pakietu dostała kontrolę odniesienia
+
+Zrobione **A1**, a razem z nim **B5** — okazało się tym samym zadaniem, bo `ng add` to
+piąty punkt tej samej bramki. Luki: 33 → 26, egzekwowane: 31 → 39 (osiem, nie siedem:
+`wym-wydanie-metadane` przeszło z 🟡 na ✅, bo jego „brak kontroli — świadomie" przestał
+być prawdą).
+
+Trzy rzeczy warte zapamiętania poza samym kodem:
+
+- **Nie wystarczy sprawdzić, że fixture zapalił — trzeba sprawdzić, który punkt go
+  odrzucił.** Przy sześciu kontrolach w jednym skrypcie spreparowany pakiet potrafi
+  wywalić się z powodu, którego nie badał (zepsuty manifest, literówka w ścieżce),
+  i wyglądać jak dowód. Stąd identyfikator kontroli przy każdym błędzie i deklaracja
+  `kontrola` w `fixture.json`. Przebieg to potwierdził: gdy pakiet wzorcowy stał się
+  wadliwy, **wszystkie siedem** przypadków zaczęło zapalać na cudzych punktach.
+- **Pakiet wzorcowy musi przechodzić** — inaczej każdy przypadek zapala z jego powodu,
+  a nie ze swojego, i cała kontrola staje się tym, przed czym stoi.
+- **Udawany `package.json` w repozytorium jest dla Nx projektem**, a `.nxignore` naprawia
+  to kosztem unieważniania cache — czyli zamienia widoczny bałagan na cichą wadę
+  ([`lekcja-44`](lekcje.md#lekcja-44)).
+
+Sprawdzone przebiegiem, nie rozumowaniem: bramka zapala na czterech niezależnych
+sposobach zepsucia (rozbrojony punkt 3, fixture przestający być wadliwym, fixture
+zapalający na cudzym punkcie, wadliwy pakiet wzorcowy).
+
+Następne: **A2** (pokrycie z egzekwowanym progiem — najstarszy dług).
 
 ### 2026-08-03 — plan powstał
 

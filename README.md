@@ -112,7 +112,9 @@ nieistniejących custom properties i renderują się bez wyglądu:
 
 Pilnuje tego bramka `nx check-package components`: sprawdza, czy `dist` zawiera `themes/pct.css`,
 czy plik jest osiągalny przez `exports`, i czy **każdy** `var(--pct-*)` użyty w pakiecie ma w nim
-swoją deklarację.
+swoją deklarację. Ta sama komenda uruchamia kontrolę odniesienia samej bramki — siedem
+spreparowanych pakietów z `tools/check-package.fixtures/`, z których każdy musi zostać odrzucony
+przez ten punkt, który łamie.
 
 Trzy poziomy: **prymitywne → semantyczne → komponentowe**; referencje zachowane jako `var()`, więc nadpisanie jednej zmiennej w dowolnym scope kaskaduje bez rekompilacji. Polityka kontrastu (`src/contrast.policy.json`) waliduje pary tekst/tło wobec progów WCAG, per motyw — `error` blokuje build, `warn` informuje (np. `disabled`, zwolniony z SC 1.4.3).
 

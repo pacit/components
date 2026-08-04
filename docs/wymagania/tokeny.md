@@ -186,9 +186,9 @@ CSS custom properties. Zmiana motywu **nie wymaga rekompilacji SCSS** ani silnik
 
 **Bramka:** `apps/sandbox-e2e/src/theme.spec.ts`,
 `libs/components/check-package.mjs` (punkt 3: domknięcie tokenów w artefakcie)
-**Kontrola:** brak — luka: dla `check-package` przebieg z
-[`lekcja-36`](../lekcje.md#lekcja-36) był ręczny
-**Wiąże przy:** razem z kontrolą odniesienia dla `check-package` — to ta sama bramka
+**Kontrola:** `tools/check-package.fixtures/token-bez-deklaracji/` — pakiet, w którym użyty
+`var(--pct-*)` nie ma nigdzie deklaracji, musi zapalić punkt 3. Przeglądarka podstawiłaby
+za niego wartość początkową, więc bez tej kontroli awaria jest niewidoczna
 **Lekcje:** [`lekcja-18`](../lekcje.md#lekcja-18), [`lekcja-36`](../lekcje.md#lekcja-36)
 
 ---
@@ -284,8 +284,9 @@ importowane bez konfiguracji JS.
 **Bramka:** `libs/components/check-package.mjs` — punkty 1 i 2: skórka jest w pakiecie
 i **osiągalna importem** (mapa `exports` jest zamknięta; plik bez wpisu jest dla
 konsumenta niewidoczny)
-**Kontrola:** brak — luka: przebieg z [`lekcja-36`](../lekcje.md#lekcja-36) był ręczny
-**Wiąże przy:** razem z kontrolą odniesienia dla `check-package` — to ta sama bramka
+**Kontrola:** `tools/check-package.fixtures/brak-skorki/` — pakiet bez skórki musi zapalić
+punkt 1, a `tools/check-package.fixtures/skorka-poza-exports/` — skórka poza mapą `exports`
+punkt 2. Przebieg z [`lekcja-36`](../lekcje.md#lekcja-36) był ręczny
 **Lekcje:** [`lekcja-36`](../lekcje.md#lekcja-36)
 
 ---

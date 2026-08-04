@@ -1,0 +1,5 @@
+{
+  "punkt": 4,
+  "kontrola": "wersja",
+  "opis": "Manifest mówi 0.0.1, stała w kodzie 0.0.0 — czyli pakiet po `nx release version` bez `stamp-version`. Artefakt kłamie o własnej wersji, a każdy raport błędu od konsumenta wskazuje niewłaściwe źródło."
+}

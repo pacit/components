@@ -41,10 +41,10 @@ wydania**, choć pusta.
 
 **Bramka:** `libs/components/check-package.mjs` (punkt 5) — kolekcje są w pakiecie,
 a ich fabryki wskazują na **skompilowane** pliki, nie na TS sprzed builda
-**Kontrola:** brak — luka: przebieg, w którym pominięcie targetu `schematics` zapala
-bramkę. Sam wpis w manifeście niczego nie gwarantuje — przy braku pliku `ng add` wywala
-się u konsumenta na „Collection not found"
-**Wiąże przy:** pierwszym wydaniu — to pierwsza komenda, jaką konsument wpisze
+**Kontrola:** `tools/check-package.fixtures/brak-schematica/` — pakiet, w którym kolekcja
+wskazuje fabrykę bez skompilowanego pliku (czyli zbudowany bez kroku kompilującego
+schematics), musi zapalić punkt 5. Sam wpis w manifeście niczego nie gwarantuje — przy
+braku pliku `ng add` wywala się u konsumenta na „Collection not found"
 
 > Powód, dla którego pusta kolekcja jedzie od początku, nie jest kosmetyczny: `ng update`
 > czyta kolekcję z wersji **zainstalowanej** u konsumenta, więc dopisanie jej dopiero przy
@@ -61,10 +61,16 @@ provenance.
 
 **Bramka:** `libs/components/check-package.mjs` (punkt 6) — ostrzeżenie w zwykłym
 przebiegu, **błąd przy `--release`**
-**Kontrola:** brak — świadomie: to jedyny warunek, którego nie da się spełnić kodem —
-`repository` musi wskazywać realne repozytorium, a plik LICENSE musi zostać dodany ręcznie
-**Wiąże przy:** pierwszej publikacji — dziś bramka ostrzega i nikt jej nie słucha, bo
-przebieg jest zielony
+**Kontrola:** `tools/check-package.fixtures/brak-repository/` — manifest bez `repository`
+musi zapalić przy `--release` i **tylko ostrzec** w zwykłym przebiegu. Badane są oba
+kierunki: asercja wyłącznie na „blokuje" przepuściłaby regresję, po której punkt 6 blokuje
+zawsze, a wtedy repozytorium bez zdalnego nie zbudowałoby się w ogóle
+**Wiąże przy:** pierwszej publikacji — bramka i jej kontrola już są, ale samego pola nadal
+nie ma, bo nie ma zdalnego repozytorium, na które mogłoby wskazywać
+
+> Kontrola dowodzi, że **bramka** potrafi zapalić — nie że obietnica jest spełniona. Dziś
+> nie jest: przebieg jest zielony z ostrzeżeniem, na które nikt nie patrzy, i tak ma
+> zostać do czasu, aż repozytorium dostanie zdalne.
 
 ---
 

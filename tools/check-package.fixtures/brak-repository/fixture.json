@@ -1,0 +1,6 @@
+{
+  "punkt": 6,
+  "kontrola": "metadane",
+  "opis": "Manifest bez `repository`. Jedyny punkt o dwóch trybach: na co dzień ostrzega (dopóki repozytorium nie ma zdalnego, to brak gotowości do wydania, nie błąd budowania), a przy `--release` blokuje, bo npm odmawia provenance. Fixture bada oba kierunki — asercja wyłącznie na „blokuje\" przepuściłaby regresję, po której punkt 6 blokuje zawsze.",
+  "tylkoPrzyRelease": true
+}

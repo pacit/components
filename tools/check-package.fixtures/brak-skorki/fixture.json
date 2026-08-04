@@ -1,0 +1,6 @@
+{
+  "punkt": 1,
+  "kontrola": "skorka",
+  "opis": "Pakiet bez `themes/pct.css`. Dokładnie to, co zostawia po sobie zielony build z pustym `libs/tokens/dist` — komponenty odwołują się do tokenów, których nikt nie deklaruje, a przeglądarka po cichu podstawia wartość początkową (lekcja-36).",
+  "usun": ["themes/pct.css"]
+}

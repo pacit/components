@@ -1,0 +1,5 @@
+{
+  "punkt": 2,
+  "kontrola": "exports",
+  "opis": "Skórka jest w pakiecie, ale nie ma jej w mapie `exports`. Mapa jest zamknięta, więc plik obecny bez wpisu jest dla konsumenta niewidoczny: `import '@pacit/components/themes/pct.css'` kończy się ERR_PACKAGE_PATH_NOT_EXPORTED. Punkt 1 tego nie widzi — plik przecież jest."
+}

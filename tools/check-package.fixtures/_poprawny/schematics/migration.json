@@ -1,0 +1,4 @@
+{
+  "//": "Pusta kolekcja migracji — tak samo jak w prawdziwym pakiecie przed pierwszym wydaniem. Punkt 5 sprawdza fabryki wpisów, więc pusta kolekcja przechodzi, a sam brak PLIKU zapala.",
+  "schematics": {}
+}

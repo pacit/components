@@ -1,0 +1,9 @@
+/*
+ * Skórka w miniaturze. Dwa tokeny, dokładnie tyle, ile trzeba, żeby punkt 3
+ * (domknięcie) miał co domykać — pakiet wzorcowy ma być czytelny, a nie wierny
+ * co do rozmiaru.
+ */
+:root {
+  --pct-color-surface: #ffffff;
+  --pct-color-text: #111111;
+}

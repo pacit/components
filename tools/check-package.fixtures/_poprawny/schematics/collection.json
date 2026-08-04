@@ -1,0 +1,8 @@
+{
+  "schematics": {
+    "ng-add": {
+      "description": "Pakiet wzorcowy kontroli odniesienia.",
+      "factory": "./ng-add/index#ngAdd"
+    }
+  }
+}
