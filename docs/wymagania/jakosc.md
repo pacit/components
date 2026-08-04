@@ -108,14 +108,34 @@ każda niewykryta luka
 **Obietnica.** Kod biblioteki jest możliwie pełnie pokryty testami; minimum SonarQube,
 czyli ≥ 80% pokrycia linii.
 
-**Bramka:** brak — luka: **żaden target nie zbiera pokrycia biblioteki ani nie faila
-poniżej progu**. Do czasu konfiguracji `coverageInclude` liczba „80%" jest deklaracją,
-nie bramką
-**Kontrola:** brak — luka: przebieg, w którym usunięcie testu zbija pokrycie poniżej progu
-i bramka zapala
-**Wiąże przy:** natychmiast — to **najstarszy dług** w projekcie i jedyne miejsce, gdzie
-łamana jest naczelna zasada [`wym-os`](../00-os.md). Im dłużej, tym więcej do nadrobienia
-**Lekcje:** [`lekcja-5`](../lekcje.md#lekcja-5)
+**Bramka:** dwuczęściowa, bo procent i jego mianownik psują się osobno.
+`libs/components/project.json` — target `test` zbiera pokrycie (`coverage`,
+`coverageInclude`) i **faila** poniżej `coverageThresholds.lines` = 80.
+`tools/check-coverage.mjs` (target `check-coverage`, w CI) pilnuje mianownika: **każdy
+plik źródłowy biblioteki musi być w raporcie**, a próg musi być zadeklarowany i nie
+niższy niż 80. Dodatkowo `libs/components/src/public-api.spec.ts` wprowadza moduły każdej
+bramki pakietu do przebiegu — bez tego plik bez testu nie pokazuje się z zerem, tylko
+**wypada ze statystyki** ([`lekcja-45`](../lekcje.md#lekcja-45))
+**Kontrola:** `tools/check-coverage.fixtures/` — siedem spreparowanych wejść, po jednym na
+sposób rozbrojenia bramki (brak raportu, pusta lista źródeł, plik poza raportem, pomiar
+wyłączony, próg usunięty, próg zaniżony, pokrycie poniżej progu). Każde musi zostać
+odrzucone **przez ten punkt, który deklaruje**, a wejście wzorcowe — przejść. Do tego dwa
+przebiegi na prawdziwym repozytorium: usunięcie `libs/components/src/public-api.spec.ts`
+zostawia target `test` **zielony** (96,55%), a `check-coverage` zapala na
+`libs/components/src/index.ts`; usunięcie `select.spec.ts` i `number.spec.ts` zbija
+pokrycie do 64,96% i zapala oba progi naraz
+**Lekcje:** [`lekcja-5`](../lekcje.md#lekcja-5), [`lekcja-45`](../lekcje.md#lekcja-45)
+
+> Dlaczego dwie bramki na jedną liczbę. Sam próg pilnuje **licznika przez mianownik**,
+> a v8 liczy oba wyłącznie na modułach, które weszły do przebiegu. Usunięcie
+> `number.spec.ts` **podniosło** kiedyś pokrycie z 96,55% na 96,94%, bo razem z testem
+> zniknął z raportu cały nietestowany plik. Punkt 3 bramki pilnuje więc czegoś, czego
+> procent nie widzi: że mianownik obejmuje całą bibliotekę.
+
+> Próg jest **podłogą, nie zapadką**. Przy 96,58% usunięcie jednej specyfikacji nie zbija
+> go poniżej 80 (`select.spec.ts` → 81,55%, `number.spec.ts` → 80,00%) i to jest zgodne
+> z obietnicą: 80% to minimum, nie „nigdy mniej niż wczoraj". Zapadka byłaby inną
+> obietnicą i musiałaby przyjść z własną bramką.
 
 ---
 

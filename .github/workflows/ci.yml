@@ -67,4 +67,8 @@ jobs:
       # która potrafi na niej zapalić — i że ta maszyna istnieje oraz biegnie tutaj.
       # Bez tego dokumentacja jest jedynym miejscem w repo, gdzie obietnica nie ma
       # bramki, czyli dokładnie tym, czego zakazuje `wym-os`.
-      - run: npx nx affected -t lint test vite:test build typecheck check-package check-docs e2e
+      # `check-coverage` bada nie procent, tylko mianownik, z którego powstał: raport
+      # v8 obejmuje wyłącznie moduły, które weszły do przebiegu, więc plik bez testu
+      # potrafi z niego WYPAŚĆ i podnieść wynik (`lekcja-45`). Sam próg w targecie
+      # `test` pilnowałby wtedy liczby liczonej na coraz mniejszej próbce.
+      - run: npx nx affected -t lint test vite:test build typecheck check-package check-coverage check-docs e2e

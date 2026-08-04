@@ -1,0 +1,6 @@
+{
+  "punkt": 2,
+  "kontrola": "zrodla",
+  "opis": "Lista plików źródłowych jest pusta — tak wygląda literówka we wzorcu ZRODLA albo przeniesienie katalogu. Punkt 3 przechodziłby wtedy zawsze, bo nie miałby czego szukać w raporcie: kontrola kompletu bez mianownika jest pusta.",
+  "wyczyscZrodla": true
+}

@@ -1,0 +1,22 @@
+{
+  "opis": "Wejście wzorcowe. Raport obejmuje komplet plików źródłowych, target deklaruje próg, pokrycie go spełnia. Przypadki powstają na kopii tego pliku, więc każdy z nich zawiera wyłącznie swoją wadę.",
+  "target": {
+    "coverage": true,
+    "coverageThresholds": { "lines": 80 }
+  },
+  "zrodla": [
+    "libs/components/button/src/button.ts",
+    "libs/components/field/src/number.ts"
+  ],
+  "raport": {
+    "total": { "lines": { "total": 122, "covered": 116, "pct": 95.08 } },
+    "pliki": {
+      "libs/components/button/src/button.ts": {
+        "lines": { "total": 8, "covered": 8, "pct": 100 }
+      },
+      "libs/components/field/src/number.ts": {
+        "lines": { "total": 114, "covered": 108, "pct": 94.73 }
+      }
+    }
+  }
+}

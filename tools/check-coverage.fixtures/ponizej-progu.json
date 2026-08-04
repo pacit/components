@@ -1,0 +1,6 @@
+{
+  "punkt": 5,
+  "kontrola": "wynik",
+  "opis": "Komplet plików jest w raporcie, próg zadeklarowany, a pokrycie go nie spełnia. Najprostszy przypadek — i jedyny, który egzekwuje też sam target `test`.",
+  "pct": 79.9
+}

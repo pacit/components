@@ -16,6 +16,8 @@
   "implicitDependencies": ["tokens"],
   "// themes": "ng-packagr nie czyta assetów spoza katalogu projektu, więc skórka musi najpierw stać się wejściem pakietu. `themes/` jest generowane i gitignorowane — jedynym źródłem prawdy pozostają pliki DTCG w libs/tokens/src.",
   "// schematics": "Kompilowane osobno i PO ng-packagr, bo ng-packagr czyści dist na starcie — build schematics wpięty wcześniej zostałby skasowany. Kolekcja migracji jest w pakiecie od pierwszego wydania celowo: `ng update` czyta ją z wersji ZAINSTALOWANEJ, więc dopisanie jej dopiero przy pierwszej zmianie łamiącej nie pomogłoby nikomu, kto zainstalował wcześniej.",
+  "// test": "Wzorce `coverageInclude` idą od korzenia repozytorium, nie od katalogu projektu — mimo tego, co mówi schemat executora: wersja `**/src/**` wciągnęła do raportu biblioteki cały `apps/sandbox`. Szablony są tam razem z kodem, bo logika `@if`/`@for` jest kodem, a bez tej pozycji wypadają z raportu w całości. Powody wyjątków z `coverageExclude` trzyma `tools/check-coverage.mjs` (stała POMIJANE) — to ona decyduje, czego bramka WYMAGA w raporcie, a ta lista musi być jej podzbiorem: gdyby wykluczyła cokolwiek ponadto, plik wypadłby z raportu i zapalił punkt 3.",
+  "// check-coverage": "Źródła są w `inputs` WPROST, mimo że raport przychodzi z `test`: plik, którego v8 nie potrafi doliczyć, nie zmienia raportu ani o bajt, więc sam `dependentTasksOutputFiles` dałby trafienie w cache i bramka nie zapaliłaby na jedynej rzeczy, dla której powstała. Komentarze stoją TUTAJ, a nie w targecie: `options` executora ma `additionalProperties: false`, a klucz `// …` w `targets` wywala graf (`lekcja-43`).",
   "// stamp-version": "Przepisuje `version` z manifestu do stałej PCT_VERSION. Celowo NIE jest zależnością `build`: gdyby build sam się stemplował, artefakt zawsze by się zgadzał, a bramka `check-package` przestałaby cokolwiek badać. Uruchamia to wydanie (po podbiciu wersji) i człowiek — a bramka pilnuje, że nikt nie zapomniał.",
   "targets": {
     "themes": {
@@ -93,10 +95,41 @@
     },
     "test": {
       "executor": "@nx/angular:unit-test",
+      "outputs": ["{workspaceRoot}/coverage/{projectName}"],
       "options": {
         "watch": false,
         "tsConfig": "libs/components/tsconfig.spec.json",
-        "include": ["**/*.spec.ts"]
+        "include": ["**/*.spec.ts"],
+        "coverage": true,
+        "coverageInclude": [
+          "libs/components/src/**/*.ts",
+          "libs/components/src/**/*.html",
+          "libs/components/*/src/**/*.ts",
+          "libs/components/*/src/**/*.html"
+        ],
+        "coverageExclude": [
+          "libs/components/**/*.spec.ts",
+          "libs/components/**/*.types.ts",
+          "libs/components/testing/**",
+          "libs/components/src/version.ts"
+        ],
+        "coverageReporters": ["text", "json-summary"],
+        "coverageThresholds": { "lines": 80 }
+      }
+    },
+    "check-coverage": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "dependsOn": ["test"],
+      "inputs": [
+        { "dependentTasksOutputFiles": "**/*", "transitive": false },
+        "{projectRoot}/**/*.ts",
+        "{projectRoot}/project.json",
+        "{workspaceRoot}/tools/check-coverage.mjs",
+        "{workspaceRoot}/tools/check-coverage.fixtures/**/*"
+      ],
+      "options": {
+        "command": "node tools/check-coverage.mjs"
       }
     },
     "lint": {

@@ -51,11 +51,11 @@ Migawka z **2026-08-04**, `node tools/check-docs.mjs`:
 | miara                                 | wartość |
 | ------------------------------------- | ------: |
 | wymagań                               |      81 |
-| ✅ egzekwowane                        |      39 |
+| ✅ egzekwowane                        |      40 |
 | 🟡 częściowo (świadomie bez kontroli) |      16 |
-| ⛔ luka                               |      26 |
+| ⛔ luka                               |      25 |
 
-Wszystkie 26 luk ma niżej swojego właściciela (A, B, D, F, G). Jeśli po dopisaniu
+Wszystkie 25 luk ma niżej swojego właściciela (A, B, D, F, G). Jeśli po dopisaniu
 wymagania liczba luk rośnie, a żadne zadanie się nie zmienia — ta lista przestała być
 kompletna i to jest błąd tej listy, nie rejestru.
 
@@ -71,15 +71,15 @@ F  powierzchnia zaufania       docs, ACR, benchmarki, most Figma
 G  luki bez terminu            czekają na wyzwalacz zapisany w polu „Wiąże przy"
 ```
 
-Pierwsze cztery, gdyby trzeba było wybrać tydzień: **A2** (najstarszy dług), **A6**
-i **A7** (po pół dnia, czysty zysk), **A5** (jedyna pozycja, której koszt retrofitu
-rośnie nieliniowo).
+Pierwsze cztery, gdyby trzeba było wybrać tydzień: **A6** i **A7** (po pół dnia, czysty
+zysk), **A5** (jedyna pozycja, której koszt retrofitu rośnie nieliniowo), **A4** (pół dnia
+i odblokowuje F1).
 
 ---
 
 ## A. Faza 0 — bramki „natychmiast"
 
-13 z 26 luk ma w polu **Wiąże przy** wpisane „natychmiast". Poniższe 12 zadań domyka 15
+12 z 25 luk ma w polu **Wiąże przy** wpisane „natychmiast". Poniższe 11 zadań domyka 14
 luk.
 
 - [x] **A1 — kontrola odniesienia dla `check-package`** _(2026-08-04)_
@@ -102,12 +102,27 @@ luk.
     projektem, a `.nxignore` naprawiał to kosztem unieważniania cache — patrz
     [`lekcja-44`](lekcje.md#lekcja-44)
 
-- [ ] **A2 — pokrycie z egzekwowanym progiem**
-  - domyka: `wym-jakosc-pokrycie` — najstarszy dług w projekcie
-  - co: `coverageInclude` + próg 80% w targecie `test` projektu `components`, wynik do CI
-  - kontrola: przebieg, w którym usunięcie testu zbija pokrycie poniżej progu i bramka
-    zapala ([`lekcja-5`](lekcje.md#lekcja-5))
-  - koszt: ~0,5 dnia · _notatki:_ —
+- [x] **A2 — pokrycie z egzekwowanym progiem** _(2026-08-04)_
+  - domknęło: `wym-jakosc-pokrycie` — najstarszy dług w projekcie
+  - zrobione: `coverage` + `coverageInclude` + próg 80% w targecie `test`, do tego **druga
+    bramka** `tools/check-coverage.mjs` (target `check-coverage`, w CI) i
+    `libs/components/src/public-api.spec.ts`. Plan mówił „`coverageInclude` + próg" i to
+    było za mało: sam próg pilnuje liczby, a psuje się **mianownik**
+  - dlaczego dwie bramki: usunięcie `number.spec.ts` **podniosło** pokrycie z 96,55% na
+    96,94%, bo nietestowany plik wypadł z raportu razem ze swoim testem. `coverageInclude`
+    domyka to w połowie — dokłada pliki bez testu osobną ścieżką, która parsuje źródło
+    rolldownem i wywraca się na `import type`, wypisując „Excluding it from coverage"
+    i kończąc przebieg zielono ([`lekcja-45`](lekcje.md#lekcja-45))
+  - kontrola: `tools/check-coverage.fixtures/` — siedem wejść, po jednym na sposób
+    rozbrojenia bramki, każde odrzucane na swoim punkcie; plus dwa przebiegi na repo:
+    usunięcie `public-api.spec.ts` zostawia `test` zielony (96,55%), a `check-coverage`
+    zapala na `libs/components/src/index.ts`; usunięcie dwóch specyfikacji daje 64,96%
+    i zapala oba progi
+  - kontrola tej kontroli: rozbrojony punkt 3 → fixture „PRZESZŁO"; fixture przestający
+    być wadliwym → to samo; wadliwe wejście wzorcowe → przypadek zapala na cudzym punkcie
+  - koszt: ~1 dzień (plan zakładał 0,5) · _notatki:_ próg jest **podłogą, nie zapadką** —
+    przy 96,58% usunięcie jednej specyfikacji go nie przebija. Zapadka to inna obietnica
+    i musi przyjść z własną bramką
 
 - [ ] **A3 — inwentarz `data-pct-part` + bramka**
   - domyka: `wym-api-czesci`
@@ -400,6 +415,46 @@ Czekają na wyzwalacz zapisany w polu **Wiąże przy**. Nie są zapomniane — s
 ## Dziennik
 
 Wpis per sesja: co ruszyło, czym się skończyło, co jest następne. Najnowsze na górze.
+
+### 2026-08-04 — A2: pokrycie mierzy całą bibliotekę, nie swoją próbkę
+
+Zrobione **A2**. Luki: 26 → 25, egzekwowane: 39 → 40.
+
+Zadanie miało być półdniowe („`coverageInclude` + próg 80%") i przy pierwszym przebiegu
+kontroli okazało się czymś innym. Kontrola z planu brzmiała: „usunięcie testu zbija
+pokrycie poniżej progu i bramka zapala". Usunięcie `number.spec.ts` **podniosło** pokrycie
+z 96,55% na 96,94% — bo v8 zna tylko moduły, które weszły do przebiegu, więc nietestowany
+`number.ts` wypadł z raportu razem ze swoim testem. Nie licznik urósł, tylko mianownik się
+skurczył.
+
+To była pierwsza wersja bramki, gotowa do odhaczenia. Przeszłaby, i to nie dlatego, że
+pokrycie jest dobre.
+
+- **`coverageInclude` domyka to w połowie.** Pliki bez testu dokłada ścieżka, która
+  parsuje ŹRÓDŁO rolldownem — a ta wywraca się na `import type` / `export type`,
+  wypisuje „Excluding it from coverage" w środku kilku tysięcy linii logu i kończy
+  przebieg **zielono**. Sonda: zwykła funkcja, `@Directive` i `@Component` trafiają do
+  raportu z zerem; kopia `number.ts` nie, bo w 18. linii ma `import type`. W bibliotece
+  Angulara to zapis domyślny, nie egzotyczny ([`lekcja-45`](lekcje.md#lekcja-45)).
+- **Stąd dwie nogi.** `public-api.spec.ts` wprowadza moduły każdej bramki pakietu do
+  przebiegu, a `check-coverage.mjs` pilnuje, że w raporcie nie brakuje ani jednego pliku
+  źródłowego. Punkty o progu pilnują liczby; punkt 3 pilnuje mianownika, z którego ta
+  liczba powstała — i to on cicho się kurczy.
+- **Lista plików w bramce jest niezależna od `coverageInclude`.** Gdyby ją z niego czytać,
+  zawężenie konfiguracji zabierałoby plik z obu stron porównania naraz i punkt 3
+  przestałby cokolwiek widzieć. Tak samo `inputs` targetu wymieniają źródła wprost:
+  plik, którego v8 nie doliczy, nie zmienia raportu ani o bajt, więc sam
+  `dependentTasksOutputFiles` dałby trafienie w cache ([`lekcja-44`](lekcje.md#lekcja-44)
+  w innym przebraniu).
+
+Sprawdzone przebiegiem, nie rozumowaniem: usunięcie `public-api.spec.ts` zostawia `test`
+zielony na 96,55%, a `check-coverage` zapala na `libs/components/src/index.ts`; usunięcie
+dwóch specyfikacji daje 64,96% i zapala oba progi. Kontrola tej kontroli — trzy sposoby
+rozbrojenia (punkt 3 w bramce, fixture przestający być wadliwym, wadliwe wejście
+wzorcowe), każdy zauważony.
+
+Następne: **A6** (bramka zoneless + OnPush) albo **A7** (bramka targetu `typecheck`) —
+po pół dnia, bez zależności.
 
 ### 2026-08-04 — A1: bramka pakietu dostała kontrolę odniesienia
 

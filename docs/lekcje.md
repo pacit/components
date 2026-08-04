@@ -64,7 +64,7 @@ Build tokenów jest na razie lekkim własnym transformem (kontrakt DTCG bez zmia
 
 ### <a id="lekcja-5"></a>`lekcja-5` — Próg pokrycia wymaga `coverageInclude`
 
-_(do zrobienia)_ Raport pokrycia wymaga konfiguracji `coverageInclude` w targecie testowym, by egzekwować próg z `wym-jakosc-pokrycie`.
+Raport pokrycia wymaga konfiguracji `coverageInclude` w targecie testowym, by egzekwować próg z `wym-jakosc-pokrycie` — bez tego v8 mierzy wyłącznie to, co samo weszło do przebiegu. Postawione dopiero razem z bramką pokrycia; wtedy okazało się, że sam `coverageInclude` domyka to tylko w połowie (`lekcja-45`).
 
 ---
 
@@ -353,3 +353,15 @@ Przy okazji trzy razy z rzędu ta sama pułapka narzędziowa: „komentarz" w JS
 Skutek jest dokładnie tej klasy, przed którą stoi cały ten projekt: ktoś osłabia fixture, CI świeci na zielono z cache'a, a bramka nie wykonała się ani razu. Naprawą nie jest ignorowanie, tylko nieużywanie nazwy, którą narzędzie traktuje jako strukturę: manifest leży w repozytorium jako `manifest.json` i `package.json` staje się dopiero w kopii składanej do przebiegu.
 
 Reguła jest szersza niż ten jeden katalog: **„ignoruj" w narzędziach budowania prawie nigdy nie znaczy „nie jest projektem" — znaczy „nie istnieje"**, a nieistnienie propaguje się do hashowania, czyli do tego, co decyduje o ponownym uruchomieniu zadania. Zanim wyciszy się narzędzie, trzeba sprawdzić, co jeszcze przestanie widzieć — i to pomiarem trafień w cache, bo w wyniku przebiegu ta różnica nie jest widoczna: zielone jest zielone.
+
+---
+
+### <a id="lekcja-45"></a>`lekcja-45` — Usunięcie testu podniosło pokrycie
+
+**Usunięcie `number.spec.ts` podniosło pokrycie linii z 96,55% na 96,94%.** Nie jest to paradoks pomiaru, tylko jego definicja: v8 zna wyłącznie moduły, które faktycznie weszły do przebiegu, więc razem z testem z raportu wypadł cały nietestowany `number.ts` — 114 linii zniknęło z **mianownika**, nie doszło do licznika. Próg pilnujący takiej liczby jest bramką urodzoną martwą (`lekcja-39`) i to w najgorszym możliwym wariancie: świeci tym jaśniej, im mniej się testuje.
+
+`coverageInclude` domyka to **tylko w połowie**. Pliki bez testu dokłada osobna ścieżka (`getCoverageMapForUncoveredFiles`), która parsuje ŹRÓDŁO rolldownem — a ten przewraca się na `import type` / `export type`, wypisując `Failed to parse … Excluding it from coverage.` w środku kilku tysięcy linii logu i kończąc przebieg **zielono, z kodem wyjścia 0**. Sonda rozstrzygnęła, gdzie leży granica: zwykła funkcja, `@Directive` i `@Component` z `templateUrl` trafiły do raportu z zerem; kopia `number.ts` — nie, bo w 18. linii ma `import type`. W bibliotece Angulara pod `isolatedModules` to nie jest rzadki zapis, tylko domyślny.
+
+Stąd pokrycie stoi na dwóch nogach. `libs/components/src/public-api.spec.ts` importuje każdą bramkę pakietu, więc jej moduły wchodzą do przebiegu normalną drogą i plik bez testu pokazuje się z pokryciem bliskim zeru, zamiast wypaść ze statystyki. `tools/check-coverage.mjs` pilnuje, że w raporcie **nie brakuje ani jednego pliku źródłowego** — bo to mianownik cicho się kurczy, a procent zawsze wygląda zdrowo. Punkt 3 tej bramki jest jedynym, który łapie tę regresję; punkty o progu pilnują liczby, która z niej powstała.
+
+Przy okazji dwie rzeczy zmierzone, nie założone. `coverageInclude` przyjmuje wzorce względem **korzenia repozytorium**, nie katalogu projektu, mimo tego, co mówi schemat executora: zapis `**/src/**` wciągnął do raportu biblioteki cały `apps/sandbox` (pokrycie 96,55% → 70,72%). A próg 80% jest **podłogą, nie zapadką**: przy 96,58% usunięcie samego `select.spec.ts` daje 81,55%, samego `number.spec.ts` — równo 80,00%, i oba przechodzą; dopiero obie naraz dają 64,96% i zapalają. Kto chce zapadki, musi ją napisać osobno — ta bramka jej nie obiecuje.

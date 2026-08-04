@@ -9,9 +9,9 @@ Nie ma stanu „zrealizowane, tylko niesprawdzone" — patrz
 
 | stan           | znaczenie                                          | liczba |
 | -------------- | -------------------------------------------------- | -----: |
-| ✅ egzekwowane | bramka i kontrola istnieją, są wpięte w CI         |     39 |
+| ✅ egzekwowane | bramka i kontrola istnieją, są wpięte w CI         |     40 |
 | 🟡 częściowo   | bramka jest, kontroli odniesienia brak (świadomie) |     16 |
-| ⛔ luka        | brak bramki albo kontroli, z zapisanym terminem    |     26 |
+| ⛔ luka        | brak bramki albo kontroli, z zapisanym terminem    |     25 |
 | **razem**      |                                                    | **81** |
 
 ## Luki wg pilności
@@ -24,7 +24,6 @@ Kolejność bierze się z pola **Wiąże przy**, nie z numeru wymagania.
 | [`wym-api-teksty`](wymagania/api.md#wym-api-teksty)                         | nic nie sprawdza, że **każdy** napis komponentu idzie przez token. No… _(kontrola)_ | natychmiast — koszt to grep po literałach w szablonach       |
 | [`wym-jakosc-jednostkowe`](wymagania/jakosc.md#wym-jakosc-jednostkowe)      | **testowanie mutacyjne** rdzenia (Stryker na `core`, `number`, `selec… _(kontrola)_ | natychmiast dla `core` — im więcej komponentów na nim stoi,… |
 | [`wym-jakosc-konsument`](wymagania/jakosc.md#wym-jakosc-konsument)          | `.verdaccio/config.yml` i target `local-registry` w root `project.jso…              | natychmiast — `check-package` bada artefakt **statycznie**;… |
-| [`wym-jakosc-pokrycie`](wymagania/jakosc.md#wym-jakosc-pokrycie)            | **żaden target nie zbiera pokrycia biblioteki ani nie faila poniżej p…              | natychmiast — to **najstarszy dług** w projekcie i jedyne m… |
 | [`wym-jakosc-przegladarki`](wymagania/jakosc.md#wym-jakosc-przegladarki)    | `apps/sandbox-e2e/playwright.config.mts` ma **wyłącznie chromium**, r…              | natychmiast dla biblioteki chwalącej się a11y — Safari ma n… |
 | [`wym-jakosc-typecheck`](wymagania/jakosc.md#wym-jakosc-typecheck)          | nic nie zapala, gdy **nowy projekt powstanie bez tego targetu**. Dokł… _(kontrola)_ | natychmiast — koszt to przejście po grafie projektów i poró… |
 | [`wym-projekt-angular`](wymagania/projekt.md#wym-projekt-angular)           | test zapalający, gdy `zone.js` pojawi się w drzewie zależności albo `… _(kontrola)_ | natychmiast — obietnica nieodwracalności bez bramki jest do… |
@@ -100,7 +99,7 @@ Kolejność bierze się z pola **Wiąże przy**, nie z numeru wymagania.
 | [`wym-jakosc-rejestr`](wymagania/jakosc.md#wym-jakosc-rejestr)           | ✅ egzekwowane | `tools/check-docs.mjs` (target `check-docs`, w CI) — sześć kontroli o… | `tools/check-docs.fixtures/` — zestaw celowo wadliwych wymagań (bez b… |
 | [`wym-jakosc-typecheck`](wymagania/jakosc.md#wym-jakosc-typecheck)       | ⛔ luka        | `.github/workflows/ci.yml` — `typecheck` w liście `nx affected -t`     | brak — luka: nic nie zapala, gdy **nowy projekt powstanie bez tego ta… |
 | [`wym-jakosc-jednostkowe`](wymagania/jakosc.md#wym-jakosc-jednostkowe)   | ⛔ luka        | `.github/workflows/ci.yml` — `test` i `vite:test` w liście `nx affect… | brak — luka: **testowanie mutacyjne** rdzenia (Stryker na `core`, `nu… |
-| [`wym-jakosc-pokrycie`](wymagania/jakosc.md#wym-jakosc-pokrycie)         | ⛔ luka        | brak — luka: **żaden target nie zbiera pokrycia biblioteki ani nie fa… | brak — luka: przebieg, w którym usunięcie testu zbija pokrycie poniże… |
+| [`wym-jakosc-pokrycie`](wymagania/jakosc.md#wym-jakosc-pokrycie)         | ✅ egzekwowane | dwuczęściowa, bo procent i jego mianownik psują się osobno. `libs/com… | `tools/check-coverage.fixtures/` — siedem spreparowanych wejść, po je… |
 | [`wym-jakosc-e2e`](wymagania/jakosc.md#wym-jakosc-e2e)                   | ✅ egzekwowane | `apps/sandbox-e2e/src/visual.spec.ts` i pozostałe specyfikacje e2e     | próg jest **bezwzględny** (`maxDiffPixels: 20`) i wynika z pomiaru: p… |
 | [`wym-jakosc-hydracja`](wymagania/jakosc.md#wym-jakosc-hydracja)         | ✅ egzekwowane | `apps/sandbox-e2e/src/hydration.spec.ts` + pomocnik `visit()` w `apps… | `hydration.spec.ts › „bramka faktycznie wykrywa błąd hydracji (kontro… |
 | [`wym-jakosc-pakiet`](wymagania/jakosc.md#wym-jakosc-pakiet)             | ✅ egzekwowane | `libs/components/check-package.mjs` (target `check-package`, w CI)     | `tools/check-package.fixtures/` — siedem spreparowanych pakietów, po … |
@@ -213,3 +212,4 @@ Która lekcja karmi które wymaganie. Generowane z pól **Lekcje**.
 | [`lekcja-42`](lekcje.md#lekcja-42) | `wym-jakosc-typecheck`, `wym-token-artefakty`                                                                                        |
 | [`lekcja-43`](lekcje.md#lekcja-43) | `wym-jakosc-karta`, `wym-token-artefakty`                                                                                            |
 | [`lekcja-44`](lekcje.md#lekcja-44) | — _(nie cytowana)_                                                                                                                   |
+| [`lekcja-45`](lekcje.md#lekcja-45) | `wym-jakosc-pokrycie`                                                                                                                |

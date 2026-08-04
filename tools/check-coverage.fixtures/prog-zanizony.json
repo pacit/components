@@ -1,0 +1,9 @@
+{
+  "punkt": 4,
+  "kontrola": "prog",
+  "opis": "Próg zjechał poniżej minimum z `wym-jakosc-pokrycie`. Bramka nadal zapala, tylko niżej, niż obiecuje dokumentacja — to ta postać rozjazdu, której nie widać w przebiegu, bo przebieg jest zielony.",
+  "target": {
+    "coverage": true,
+    "coverageThresholds": { "lines": 50 }
+  }
+}
