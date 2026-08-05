@@ -258,14 +258,19 @@ wszystkie pięć
 atrybuty `data-pct-part="…"`, pozwalające celować w nie selektorem odpornym na
 aktualizacje.
 
-**Bramka:** brak — luka: generowany inwentarz części per komponent + bramka na
-niezaakceptowaną zmianę. Dziś atrybuty są wystawiane, ale **ani spisane, ani
-wersjonowane** — konsument poznaje je z czytania szablonów, a biblioteka nie ma czym
-odróżnić zmiany łamiącej od kosmetycznej
-**Kontrola:** brak — luka: zmiana nazwy części bez aktualizacji inwentarza musi zapalić
-**Wiąże przy:** natychmiast — to jedyne miejsce, w którym projekt zachowuje się jak
-zwykła biblioteka: obietnica sprzedażowa („możesz bezpiecznie stylować wnętrze") bez
-maszyny potrafiącej na niej zapalić
+**Bramka:** `tools/check-parts.mjs` (target `check-parts` w projekcie roota, w CI) —
+pięć punktów. Punkt 3 zakazuje wiązania nazwy części wyrażeniem (nazwa powstająca
+w runtime nie daje się spisać), punkt 4 porównuje rubryki **Części** w
+[`komponenty/`](../komponenty/) z tym, co wystawia entrypoint, a punkt 5 —
+`libs/components/czesci.snapshot.md` z bieżącym inwentarzem. Punkty 1 i 2 pilnują
+mianownika: każdy dekorator i każde wystąpienie atrybutu w szablonie musi być
+rozpoznane, a lista części powstaje **dwa razy** — ze źródeł i ze zbudowanego pakietu
+(`ɵcmp.consts`, `ɵdir.hostAttrs` po zlinkowaniu)
+**Kontrola:** `tools/check-parts.fixtures/` — dwadzieścia jeden wejść, każde odrzucane
+na swoim punkcie; plus przebiegi na repozytorium: przemianowanie części zapala punkt 2
+przy nieaktualnym `dist`, punkt 4 po przebudowie i punkt 5 po uzgodnieniu karty;
+`[attr.data-pct-part]` w szablonie — punkt 3 z obu odczytów naraz; część usunięta
+z karty — punkt 4; dyrektywa z częścią bez eksportu z entrypointu — punkt 2
 **Decyzja:** [0013 — bez podziału na rdzeń bezgłowy i skórkę](../decyzje/0013-bez-podzialu-na-rdzen-i-skorke.md)
 
 > Inwentarz jest **niezależny od `apps/docs`**. Ładna strona, która go renderuje, może

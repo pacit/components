@@ -1,0 +1,5 @@
+{
+  "punkt": 1,
+  "kontrola": "mianownik",
+  "$powod": "Szablon wpisany w dekorator. Skaner źródeł czyta pliki szablonów, więc części zapisane tutaj widzi dopiero odczyt z pakietu — czyli jako rozjazd dwóch list, a nie jako to, czym są."
+}

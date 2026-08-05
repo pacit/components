@@ -1,0 +1,11 @@
+import { Directive } from '@angular/core';
+
+@Directive({
+  selector: '[pctMarker]',
+  host: {
+    class: 'pct-marker',
+    'data-pct-part': 'widget-marker',
+    '[attr.data-pct-part]': 'part()',
+  },
+})
+export class PctMarker {}

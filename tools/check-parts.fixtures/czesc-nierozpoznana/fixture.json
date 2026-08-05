@@ -1,0 +1,5 @@
+{
+  "punkt": 1,
+  "kontrola": "mianownik",
+  "$powod": "Nazwa atrybutu pada w szablonie w postaci, której skaner nie rozpoznaje ani jako literału, ani jako wiązania. Niezależny licznik zamienia ciche pominięcie w komunikat."
+}

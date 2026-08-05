@@ -9,9 +9,9 @@ Nie ma stanu „zrealizowane, tylko niesprawdzone" — patrz
 
 | stan           | znaczenie                                          | liczba |
 | -------------- | -------------------------------------------------- | -----: |
-| ✅ egzekwowane | bramka i kontrola istnieją, są wpięte w CI         |     46 |
+| ✅ egzekwowane | bramka i kontrola istnieją, są wpięte w CI         |     47 |
 | 🟡 częściowo   | bramka jest, kontroli odniesienia brak (świadomie) |     16 |
-| ⛔ luka        | brak bramki albo kontroli, z zapisanym terminem    |     19 |
+| ⛔ luka        | brak bramki albo kontroli, z zapisanym terminem    |     18 |
 | **razem**      |                                                    | **81** |
 
 ## Luki wg pilności
@@ -20,7 +20,6 @@ Kolejność bierze się z pola **Wiąże przy**, nie z numeru wymagania.
 
 | wymaganie                                                                   | czego brakuje                                                                       | wiąże przy                                                   |
 | --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| [`wym-api-czesci`](wymagania/api.md#wym-api-czesci)                         | generowany inwentarz części per komponent + bramka na niezaakceptowan…              | natychmiast — to jedyne miejsce, w którym projekt zachowuje… |
 | [`wym-api-teksty`](wymagania/api.md#wym-api-teksty)                         | nic nie sprawdza, że **każdy** napis komponentu idzie przez token. No… _(kontrola)_ | natychmiast — koszt to grep po literałach w szablonach       |
 | [`wym-jakosc-jednostkowe`](wymagania/jakosc.md#wym-jakosc-jednostkowe)      | **testowanie mutacyjne** rdzenia (Stryker na `core`, `number`, `selec… _(kontrola)_ | natychmiast dla `core` — im więcej komponentów na nim stoi,… |
 | [`wym-jakosc-konsument`](wymagania/jakosc.md#wym-jakosc-konsument)          | `.verdaccio/config.yml` i target `local-registry` w root `project.jso…              | natychmiast — `check-package` bada artefakt **statycznie**;… |
@@ -75,7 +74,7 @@ Kolejność bierze się z pola **Wiąże przy**, nie z numeru wymagania.
 | [`wym-api-platforma`](wymagania/api.md#wym-api-platforma)             | 🟡 częściowo   | `apps/sandbox-e2e/src/radio.spec.ts` — nawigacja klawiaturą            | brak — świadomie: test nawigacji nie ma trybu, w którym przechodzi be… |
 | [`wym-api-liczba`](wymagania/api.md#wym-api-liczba)                   | ⛔ luka        | `libs/components/field/src/number.spec.ts`, `apps/sandbox-e2e/src/num… | brak — luka: testy własnościowe parsera (`parse(format(n)) === n` dla… |
 | [`wym-api-generyk`](wymagania/api.md#wym-api-generyk)                 | ✅ egzekwowane | `libs/components/select/src/select.spec.ts`, target `typecheck` proje… | sonda z `lekcja-37` — pięć celowo sprzecznych wiązań, z których czter… |
-| [`wym-api-czesci`](wymagania/api.md#wym-api-czesci)                   | ⛔ luka        | brak — luka: generowany inwentarz części per komponent + bramka na ni… | brak — luka: zmiana nazwy części bez aktualizacji inwentarza musi zap… |
+| [`wym-api-czesci`](wymagania/api.md#wym-api-czesci)                   | ✅ egzekwowane | `tools/check-parts.mjs` (target `check-parts` w projekcie roota, w CI… | `tools/check-parts.fixtures/` — dwadzieścia jeden wejść, każde odrzuc… |
 | [`wym-api-czesci-unikalne`](wymagania/api.md#wym-api-czesci-unikalne) | ✅ egzekwowane | `apps/sandbox-e2e/src/radio.spec.ts`, `apps/sandbox-e2e/src/field.spe… | kolizja z `lekcja-15` i `lekcja-24` jest udokumentowanym przebiegiem,… |
 | [`wym-api-szablony`](wymagania/api.md#wym-api-szablony)               | ⛔ luka        | brak — luka: projekcja działa (sloty obudowy), ale **`TemplateRef` ni… | brak — luka: szablon opcji podany przez konsumenta, który nie zostaje… |
 | [`wym-api-ikony`](wymagania/api.md#wym-api-ikony)                     | ⛔ luka        | brak — luka: dziś każda ikona jest **wpisana w szablon** jako SVG w `… | brak — luka: podmiana ikony przez `PCT_ICONS`, która nie dociera do k… |
@@ -211,3 +210,4 @@ Która lekcja karmi które wymaganie. Generowane z pól **Lekcje**.
 | [`lekcja-47`](lekcje.md#lekcja-47) | `wym-jakosc-typecheck`                                                                                                               |
 | [`lekcja-48`](lekcje.md#lekcja-48) | `wym-token-logiczne`                                                                                                                 |
 | [`lekcja-49`](lekcje.md#lekcja-49) | — _(nie cytowana)_                                                                                                                   |
+| [`lekcja-50`](lekcje.md#lekcja-50) | — _(nie cytowana)_                                                                                                                   |

@@ -1,0 +1,7 @@
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'pct-widget',
+  template: '<span data-pct-part="label"></span><span data-pct-part="value"></span>',
+})
+export class PctWidget {}

@@ -95,4 +95,14 @@ jobs:
       # z segmentami w innej kolejności (`disabled-bg` wobec `bg-disabled`) nie psuje
       # niczego dziś i cofa obietnicę „zgadniesz bez dokumentacji" jutro. Sam snapshot
       # tego nie łapie — zamroziłby rozjazd, bo mierzy zmianę, a nie zgadywalność.
-      - run: npx nx affected -t lint test vite:test build typecheck check-package check-coverage check-zoneless check-typecheck check-styles check-tokens check-docs e2e
+      # `check-parts` pilnuje inwentarza `data-pct-part`, czyli jedynej drogi, jaką ta
+      # biblioteka zostawia do stylowania wnętrza komponentu (decyzja 0013). Zmiana
+      # nazwy części nie daje ani jednego czerwonego testu, bo szablon i arkusz
+      # zmieniają się razem — psuje się wyłącznie u kogoś, kto tę nazwę wpisał u siebie.
+      # Sam snapshot to za mało: bramka czyta listę DWA razy — ze źródeł i ze
+      # zbudowanego pakietu przez `ɵcmp` — bo część wniesiona składnią, której skaner
+      # nie rozumie, weszłaby do wydania bez linii w diffie, a część, która wypadła
+      # z pakietu, zostałaby w inwentarzu jako obietnica bez pokrycia. Czwarty punkt
+      # porównuje rubryki **Części** w `docs/komponenty/` z pakietem: pisane ręką,
+      # więc kłamią — `field.md` wymieniał 11 części z piętnastu.
+      - run: npx nx affected -t lint test vite:test build typecheck check-package check-coverage check-zoneless check-typecheck check-styles check-tokens check-parts check-docs e2e

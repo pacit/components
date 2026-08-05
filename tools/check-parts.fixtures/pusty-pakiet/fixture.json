@@ -1,0 +1,5 @@
+{
+  "punkt": 2,
+  "kontrola": "zbior",
+  "$powod": "Pakiet bez ani jednej klasy z częściami: nieaktualne albo puste `dist`. Bez kontroli niepustości punkty 3–5 przeszłyby, nie orzekając o niczym."
+}

@@ -27,26 +27,26 @@
 
 ## Kontrole
 
-| kryterium                       | dowód                                                                                                                                              |
-| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Wzorzec ARIA APG w JSDoc        | brak — luka                                                                                                                                        |
-| Mapa klawiatury przetestowana   | `apps/sandbox-e2e/src/number.spec.ts`, `libs/components/field/src/number.spec.ts`                                                                  |
-| Audyt axe                       | `apps/sandbox-e2e/src/a11y.spec.ts` (widok `/number`)                                                                                              |
-| Zrzut wizualny                  | `apps/sandbox-e2e/src/visual.spec.ts`                                                                                                              |
-| `forced-colors: active`         | `apps/sandbox-e2e/src/forced-colors.spec.ts`                                                                                                       |
-| `prefers-reduced-motion`        | `apps/sandbox-e2e/src/preferences.spec.ts`                                                                                                         |
-| Obszar dotyku                   | `apps/sandbox-e2e/src/field-hitarea.spec.ts`                                                                                                       |
-| Oś wielkości                    | `apps/sandbox-e2e/src/size.spec.ts`                                                                                                                |
-| Oś gęstości                     | brak — luka                                                                                                                                        |
-| RTL                             | brak — luka. **Uwaga wyższego ryzyka niż w innych kontrolkach:** liczby mają własny kierunek wewnątrz tekstu RTL                                   |
-| SSR + hydracja                  | `apps/sandbox-e2e/src/hydration.spec.ts`                                                                                                           |
-| Formularze                      | `libs/components/field/src/field-controls.spec.ts`, `apps/sandbox-e2e/src/forms.spec.ts`                                                           |
-| Części w inwentarzu             | brak — luka                                                                                                                                        |
-| Tokeny + `contrast.policy.json` | wspólne z `field`                                                                                                                                  |
-| Napisy przez `PCT_TEXTS`        | nie dotyczy — ostrzeżenia deweloperskie są **po angielsku na stałe** i gasną poza `isDevMode()` ([0007](../decyzje/0007-konfiguracja-i-teksty.md)) |
-| Budżet rozmiaru                 | brak — luka                                                                                                                                        |
-| Log z czytnikiem ekranu         | brak — luka. **Najbardziej potrzebny ze wszystkich kontrolek** — `aria-valuetext` jest jedyną rzeczą, którą czytnik ogłasza zamiast surowej liczby |
-| Strona docs                     | brak — luka                                                                                                                                        |
+| kryterium                       | dowód                                                                                                                                                                                       |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Wzorzec ARIA APG w JSDoc        | brak — luka                                                                                                                                                                                 |
+| Mapa klawiatury przetestowana   | `apps/sandbox-e2e/src/number.spec.ts`, `libs/components/field/src/number.spec.ts`                                                                                                           |
+| Audyt axe                       | `apps/sandbox-e2e/src/a11y.spec.ts` (widok `/number`)                                                                                                                                       |
+| Zrzut wizualny                  | `apps/sandbox-e2e/src/visual.spec.ts`                                                                                                                                                       |
+| `forced-colors: active`         | `apps/sandbox-e2e/src/forced-colors.spec.ts`                                                                                                                                                |
+| `prefers-reduced-motion`        | `apps/sandbox-e2e/src/preferences.spec.ts`                                                                                                                                                  |
+| Obszar dotyku                   | `apps/sandbox-e2e/src/field-hitarea.spec.ts`                                                                                                                                                |
+| Oś wielkości                    | `apps/sandbox-e2e/src/size.spec.ts`                                                                                                                                                         |
+| Oś gęstości                     | brak — luka                                                                                                                                                                                 |
+| RTL                             | brak — luka. **Uwaga wyższego ryzyka niż w innych kontrolkach:** liczby mają własny kierunek wewnątrz tekstu RTL                                                                            |
+| SSR + hydracja                  | `apps/sandbox-e2e/src/hydration.spec.ts`                                                                                                                                                    |
+| Formularze                      | `libs/components/field/src/field-controls.spec.ts`, `apps/sandbox-e2e/src/forms.spec.ts`                                                                                                    |
+| Części w inwentarzu             | `libs/components/czesci.snapshot.md`, `tools/check-parts.mjs` (target `check-parts`) — dyrektywa nie wystawia własnych części; inwentarz entrypointu `field` obejmuje ją tym samym wierszem |
+| Tokeny + `contrast.policy.json` | wspólne z `field`                                                                                                                                                                           |
+| Napisy przez `PCT_TEXTS`        | nie dotyczy — ostrzeżenia deweloperskie są **po angielsku na stałe** i gasną poza `isDevMode()` ([0007](../decyzje/0007-konfiguracja-i-teksty.md))                                          |
+| Budżet rozmiaru                 | brak — luka                                                                                                                                                                                 |
+| Log z czytnikiem ekranu         | brak — luka. **Najbardziej potrzebny ze wszystkich kontrolek** — `aria-valuetext` jest jedyną rzeczą, którą czytnik ogłasza zamiast surowej liczby                                          |
+| Strona docs                     | brak — luka                                                                                                                                                                                 |
 
 ## Decyzje
 

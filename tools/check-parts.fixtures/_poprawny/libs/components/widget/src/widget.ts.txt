@@ -1,0 +1,8 @@
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'pct-widget',
+  templateUrl: './widget.html',
+  styleUrl: './widget.scss',
+})
+export class PctWidget {}

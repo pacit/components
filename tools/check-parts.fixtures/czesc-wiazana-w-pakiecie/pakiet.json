@@ -1,0 +1,17 @@
+{
+  "entrypointy": [".", "./widget"],
+  "klasy": [
+    {
+      "wejscie": "./widget",
+      "klasa": "PctWidget",
+      "czesci": ["label", "value"],
+      "dynamiczne": 1
+    },
+    {
+      "wejscie": "./widget",
+      "klasa": "PctMarker",
+      "czesci": ["widget-marker"],
+      "dynamiczne": 0
+    }
+  ]
+}

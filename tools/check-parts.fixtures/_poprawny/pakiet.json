@@ -1,0 +1,18 @@
+{
+  "$comment": "Odczyt ze ZBUDOWANEGO pakietu podany jako dane — patrz komentarz przy `zlozFixture` w tools/check-parts.mjs. Budowanie pakietu Angulara na każdy przypadek kosztowałoby minuty na przebieg, a bramka biegnie przy każdym commicie.",
+  "entrypointy": [".", "./widget"],
+  "klasy": [
+    {
+      "wejscie": "./widget",
+      "klasa": "PctWidget",
+      "czesci": ["label", "value"],
+      "dynamiczne": 0
+    },
+    {
+      "wejscie": "./widget",
+      "klasa": "PctMarker",
+      "czesci": ["widget-marker"],
+      "dynamiczne": 0
+    }
+  ]
+}

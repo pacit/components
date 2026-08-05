@@ -1,0 +1,5 @@
+{
+  "punkt": 5,
+  "kontrola": "snapshot",
+  "$powod": "Snapshot z brakującym wierszem — tak wygląda część dodana do biblioteki bez przepisania inwentarza. Rozjazd nie znaczy „błąd\", znaczy „zmiana publicznego API, która ma być widoczna w review\"."
+}

@@ -1,0 +1,7 @@
+import { Directive } from '@angular/core';
+
+@Directive({
+  selector: '[pctBadge]',
+  host: { 'data-pct-part': 'widget-badge' },
+})
+export class PctBadge {}

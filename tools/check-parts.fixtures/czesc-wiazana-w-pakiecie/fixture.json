@@ -1,0 +1,5 @@
+{
+  "punkt": 3,
+  "kontrola": "statycznosc",
+  "$powod": "Wiązanie widoczne wyłącznie w pakiecie: nazwa atrybutu pada w treści skompilowanej funkcji szablonu, a do `consts` nie trafia w ogóle. Bez tego odczytu punkt 3 miałby po stronie artefaktu ślepą stronę."
+}

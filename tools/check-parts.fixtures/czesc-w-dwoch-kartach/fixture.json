@@ -1,0 +1,5 @@
+{
+  "punkt": 4,
+  "kontrola": "dokumentacja",
+  "$powod": "Ta sama część wymieniona w dwóch kartach tego samego entrypointu. Suma się zgadza, więc porównanie zbiorów milczy — a czytelnik dostaje dwie odpowiedzi na pytanie, do czego ta część należy."
+}

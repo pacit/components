@@ -24,26 +24,26 @@ Brak własnej — pełna obsługa natywna
 
 ## Kontrole
 
-| kryterium                       | dowód                                                                                                                                                                               |
-| ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Wzorzec ARIA APG w JSDoc        | brak — luka                                                                                                                                                                         |
-| Mapa klawiatury                 | nie dotyczy — natywna                                                                                                                                                               |
-| Audyt axe                       | `apps/sandbox-e2e/src/a11y.spec.ts` (widok `/text`)                                                                                                                                 |
-| Zrzut wizualny                  | `apps/sandbox-e2e/src/visual.spec.ts`                                                                                                                                               |
-| `forced-colors: active`         | `apps/sandbox-e2e/src/forced-colors.spec.ts`                                                                                                                                        |
-| `prefers-reduced-motion`        | `apps/sandbox-e2e/src/preferences.spec.ts`                                                                                                                                          |
-| Obszar dotyku                   | `apps/sandbox-e2e/src/field-hitarea.spec.ts` (gwarantuje obudowa)                                                                                                                   |
-| Oś wielkości                    | `apps/sandbox-e2e/src/size.spec.ts` — wielkość należy do obudowy                                                                                                                    |
-| Oś gęstości                     | brak — luka                                                                                                                                                                         |
-| RTL                             | brak — luka                                                                                                                                                                         |
-| SSR + hydracja                  | `apps/sandbox-e2e/src/hydration.spec.ts`                                                                                                                                            |
-| Formularze                      | `libs/components/field/src/field-controls.spec.ts`, `apps/sandbox-e2e/src/forms.spec.ts` — signal forms, `[formControl]` i `[(ngModel)]`, **każdy startujący z niepustą wartością** |
-| Części w inwentarzu             | brak — luka                                                                                                                                                                         |
-| Tokeny + `contrast.policy.json` | `libs/tokens/src/contrast.policy.json`                                                                                                                                              |
-| Napisy przez `PCT_TEXTS`        | nie dotyczy                                                                                                                                                                         |
-| Budżet rozmiaru                 | brak — luka (wspólny entrypoint z `field`)                                                                                                                                          |
-| Log z czytnikiem ekranu         | brak — luka                                                                                                                                                                         |
-| Strona docs                     | brak — luka                                                                                                                                                                         |
+| kryterium                       | dowód                                                                                                                                                                                       |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Wzorzec ARIA APG w JSDoc        | brak — luka                                                                                                                                                                                 |
+| Mapa klawiatury                 | nie dotyczy — natywna                                                                                                                                                                       |
+| Audyt axe                       | `apps/sandbox-e2e/src/a11y.spec.ts` (widok `/text`)                                                                                                                                         |
+| Zrzut wizualny                  | `apps/sandbox-e2e/src/visual.spec.ts`                                                                                                                                                       |
+| `forced-colors: active`         | `apps/sandbox-e2e/src/forced-colors.spec.ts`                                                                                                                                                |
+| `prefers-reduced-motion`        | `apps/sandbox-e2e/src/preferences.spec.ts`                                                                                                                                                  |
+| Obszar dotyku                   | `apps/sandbox-e2e/src/field-hitarea.spec.ts` (gwarantuje obudowa)                                                                                                                           |
+| Oś wielkości                    | `apps/sandbox-e2e/src/size.spec.ts` — wielkość należy do obudowy                                                                                                                            |
+| Oś gęstości                     | brak — luka                                                                                                                                                                                 |
+| RTL                             | brak — luka                                                                                                                                                                                 |
+| SSR + hydracja                  | `apps/sandbox-e2e/src/hydration.spec.ts`                                                                                                                                                    |
+| Formularze                      | `libs/components/field/src/field-controls.spec.ts`, `apps/sandbox-e2e/src/forms.spec.ts` — signal forms, `[formControl]` i `[(ngModel)]`, **każdy startujący z niepustą wartością**         |
+| Części w inwentarzu             | `libs/components/czesci.snapshot.md`, `tools/check-parts.mjs` (target `check-parts`) — komponent nie wystawia własnych części; inwentarz entrypointu `field` obejmuje go tym samym wierszem |
+| Tokeny + `contrast.policy.json` | `libs/tokens/src/contrast.policy.json`                                                                                                                                                      |
+| Napisy przez `PCT_TEXTS`        | nie dotyczy                                                                                                                                                                                 |
+| Budżet rozmiaru                 | brak — luka (wspólny entrypoint z `field`)                                                                                                                                                  |
+| Log z czytnikiem ekranu         | brak — luka                                                                                                                                                                                 |
+| Strona docs                     | brak — luka                                                                                                                                                                                 |
 
 ## Decyzje
 

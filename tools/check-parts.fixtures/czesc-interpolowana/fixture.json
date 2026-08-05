@@ -1,0 +1,5 @@
+{
+  "punkt": 3,
+  "kontrola": "statycznosc",
+  "$powod": "Wartość z interpolacją wygląda jak literał i literałem nie jest. Zmierzone: Angular emituje ją do `consts` po markerze wiązań, czyli poza inwentarzem. Bez rozróżnienia skaner wpisałby do snapshotu część o nazwie `{{ slotName() }}`."
+}

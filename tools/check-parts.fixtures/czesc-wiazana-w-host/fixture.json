@@ -1,0 +1,5 @@
+{
+  "punkt": 3,
+  "kontrola": "statycznosc",
+  "$powod": "To samo w bloku `host` dyrektywy. Statyczna część zostaje na miejscu, żeby punkt 2 nie zapalił wcześniej — wada ma być wyłącznie ta deklarowana."
+}

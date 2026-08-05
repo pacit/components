@@ -1,0 +1,5 @@
+{
+  "punkt": 2,
+  "kontrola": "zbior",
+  "$powod": "Część dopisana do szablonu, której nie ma w pakiecie — komponent bez eksportu albo nieaktualne `dist`. Inwentarz obiecywałby konsumentowi selektor, którego w wydanym pakiecie nie ma."
+}

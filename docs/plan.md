@@ -51,11 +51,11 @@ Migawka z **2026-08-05**, `node tools/check-docs.mjs`:
 | miara                                 | wartość |
 | ------------------------------------- | ------: |
 | wymagań                               |      81 |
-| ✅ egzekwowane                        |      46 |
+| ✅ egzekwowane                        |      47 |
 | 🟡 częściowo (świadomie bez kontroli) |      16 |
-| ⛔ luka                               |      19 |
+| ⛔ luka                               |      18 |
 
-Wszystkie 19 luk mają niżej swojego właściciela (A, B, D, F, G). Jeśli po dopisaniu
+Wszystkie 18 luk mają niżej swojego właściciela (A, B, D, F, G). Jeśli po dopisaniu
 wymagania liczba luk rośnie, a żadne zadanie się nie zmienia — ta lista przestała być
 kompletna i to jest błąd tej listy, nie rejestru.
 
@@ -71,17 +71,17 @@ F  powierzchnia zaufania       docs, ACR, benchmarki, most Figma
 G  luki bez terminu            czekają na wyzwalacz zapisany w polu „Wiąże przy"
 ```
 
-Pierwsze trzy, gdyby trzeba było wybrać tydzień: **A3** (domyka odblokowanie F1 razem
-z gotowym już A4 i jest jedynym miejscem, w którym projekt zachowuje się jak zwykła
-biblioteka), **A8** (obietnica sprzedażowa dziś niesprawdzana w ogóle), **A12** (pół dnia
-na dwie luki, a jedna z nich to ta sama klasa co A4: policy bada wyłącznie to, co ktoś
-wcześniej wpisał).
+Pierwsze trzy, gdyby trzeba było wybrać tydzień: **A8** (obietnica sprzedażowa dziś
+niesprawdzana w ogóle), **A12** (pół dnia na dwie luki, a jedna z nich to ta sama klasa
+co A4: policy bada wyłącznie to, co ktoś wcześniej wpisał), **A11** (bramka tekstów, pół
+dnia, przy okazji zmusza do rozstrzygnięcia C5). F1 jest odblokowane — A3 i A4 dały mu
+oba inwentarze do wyrenderowania.
 
 ---
 
 ## A. Faza 0 — bramki „natychmiast"
 
-Zostało siedem zadań i domykają **8 z 19 luk** — blisko połowy wszystkiego, co jeszcze
+Zostało sześć zadań i domykają **7 z 18 luk** — blisko połowy wszystkiego, co jeszcze
 stoi otworem.
 
 - [x] **A1 — kontrola odniesienia dla `check-package`** _(2026-08-04)_
@@ -126,13 +126,51 @@ stoi otworem.
     przy 96,58% usunięcie jednej specyfikacji go nie przebija. Zapadka to inna obietnica
     i musi przyjść z własną bramką
 
-- [ ] **A3 — inwentarz `data-pct-part` + bramka**
-  - domyka: `wym-api-czesci`
-  - co: generowany spis części per komponent (skan szablonów) + snapshot w repo; zmiana
-    nieuzgodniona = błąd CI. To jedyne miejsce, w którym projekt zachowuje się jak zwykła
-    biblioteka: obietnica „możesz bezpiecznie stylować wnętrze" bez maszyny
-  - kontrola: zmiana nazwy części bez aktualizacji inwentarza musi zapalić
-  - koszt: ~1 dzień · _notatki:_ —
+- [x] **A3 — inwentarz `data-pct-part` + bramka** _(2026-08-05)_
+  - domknęło: `wym-api-czesci`
+  - zrobione: `tools/check-parts.mjs` (target `check-parts` w projekcie roota,
+    `dependsOn: components:build`, w CI) — pięć punktów plus generowany
+    `libs/components/czesci.snapshot.md` (41 części, 10 klas, 5 entrypointów). Reguły są
+    trzy (punkt 3: nazwa części nie może być wiązana wyrażeniem; punkt 4: rubryki
+    **Części** w `docs/komponenty/` zgadzają się z tym, co wystawia entrypoint; punkt 5:
+    snapshot zgadza się z bieżącym inwentarzem), a **dwa pozostałe pilnują mianownika**
+  - plan mówił „skan szablonów + snapshot" i skan szablonów sam z siebie jest ślepy na
+    to, co ta biblioteka naprawdę robi: **cztery części obudowy nie stoją w żadnym
+    szablonie**, tylko w blokach `host` dyrektyw (`field-prefix-item`,
+    `field-suffix-item`, `field-label-aux-item`, `field-message-aux-item`). Stąd punkt 2
+    — lista powstaje **dwa razy**: raz ze źródeł (szablony + dekoratory z indeksu gita),
+    raz ze zbudowanego pakietu przez JIT (`ɵcmp.consts`, `ɵdir.hostAttrs`), czyli z wyniku
+    prawdziwego parsera Angulara. Ten sam ruch co w A6 i A4
+  - punkt 4 jest tym, którego plan nie przewidywał, i to on **zapalił od razu**: karta
+    `field.md` wymieniała 11 części z piętnastu — dokładnie ten sam błąd, który ta sama
+    karta miała już raz (7 z jedenastu, do 2026-07-27), tylko o cztery pozycje dalej.
+    Inwentarz bez powierzchni, na której ktoś go czyta, byłby plikiem dla maszyny
+  - punkt 3 pilnuje rzeczy, której snapshot z definicji nie potrafi zobaczyć: część
+    o nazwie złożonej w runtime nie daje się spisać, więc inwentarz byłby zielony
+    dokładnie dlatego, że nie ma czego zauważyć. Mierzone po obu stronach — zmierzone,
+    nie założone: atrybut wiązany **nie trafia do `consts` w ogóle**, tylko do treści
+    skompilowanej funkcji szablonu, a interpolacja (`data-pct-part="{{ x() }}"`) wygląda
+    jak literał i literałem nie jest
+  - świadomie **nie** normalizowane: `options` w `PctRadioGroup` stoi obok `group-label`,
+    `group-hint` i `group-error`, czyli jako jedyna część kontenera bez przedrostka.
+    Z niczym dziś nie koliduje, a `wym-api-czesci` nie obiecuje zgadywalności (to
+    obietnica tokenów, nie części) — więc snapshot ją zamraża i przemianowanie staje się
+    od dziś widoczną zmianą API. Przeniesione do **C7**
+  - kontrola: `tools/check-parts.fixtures/` — dwadzieścia jeden wejść, każde odrzucane na
+    swoim punkcie; plus sześć przebiegów na prawdziwym repozytorium (przemianowanie
+    części przy nieaktualnym `dist` → punkt 2, po przebudowie → punkt 4, po uzgodnieniu
+    karty → punkt 5; `[attr.data-pct-part]` w szablonie → punkt 3 z obu odczytów naraz;
+    część usunięta z karty → punkt 4; dyrektywa z częścią bez eksportu → punkt 2)
+  - kontrola tej kontroli: rozbrojone po kolei wszystkie pięć punktów, każdy zauważony
+    przez wszystkie swoje przypadki; przypadek przestający być wadliwym → „PRZESZŁO";
+    wadliwe wejście wzorcowe → bramka zapala na nim osobno, a przypadki poniżej idą na
+    cudze punkty
+  - koszt: ~1 dzień (zgodnie z planem) · _notatki:_ punkt 5 **zapalił poprawnie
+    i wyjaśnił to fałszywie** — filtr wierszy snapshotu nie przechodził przez ukośnik
+    w `./select`, więc komunikat brzmiał „lista części jest ta sama". Kontrola odniesienia
+    nie miała jak tego zobaczyć, bo porównuje identyfikator punktu, a nie zdanie
+    ([`lekcja-50`](lekcje.md#lekcja-50)). Rozbrojenie gałęzi „brak snapshotu" dało przy
+    okazji `TypeError` — **ta sama wada co w A4 i A7, trzeci raz**
 
 - [x] **A4 — snapshot nazw tokenów** _(2026-08-05)_
   - domknęło: `wym-token-nazwy`
@@ -432,6 +470,19 @@ między większymi zadaniami. Pełny kontekst: [`review.md`](review.md) §5.
     Argument przeciw: prymityw jest implementacją skórki, a nie jej kontraktem
   - koszt: minuty na zmianę, decyzja jest całym zadaniem · _notatki:_ —
 
+- [ ] **C7 — `options` jako jedyna część kontenera bez przedrostka `group-`**
+  - `libs/components/radio/src/radio-group.html` — grupa wystawia `group-label`,
+    `group-hint`, `group-error` i `options`. Przedrostek wziął się z realnej kolizji
+    z etykietami opcji ([`lekcja-15`](lekcje.md#lekcja-15)), a ta jedna część została poza
+    regułą, którą [`wym-api-czesci-unikalne`](wymagania/api.md#wym-api-czesci-unikalne)
+    zapisuje jako fakt („części kontenera mają własny przedrostek")
+  - dziś **z niczym nie koliduje**, więc to nie jest wada a11y ani zmiana wymuszona:
+    `wym-api-czesci` obiecuje stabilność i spisanie, nie zgadywalność. Zostawione przy A3
+    świadomie, tym samym ruchem co C6 przy A4 — z tą różnicą, że od A3 przemianowanie jest
+    już widoczną zmianą publicznego API (snapshot), a nie cichą poprawką
+  - koszt: minuty na zmianę (`options` → `group-options`, nikt jej nie używa
+    w testach ani w sandboxie), decyzja jest całym zadaniem · _notatki:_ —
+
 - [ ] **C5 — `PCT_TEXTS` nie przeżyje zmiany języka w runtime**
   - `providePctTexts` zwraca statyczny obiekt, a `PctSelect` czyta go **raz przy
     konstrukcji** (`input<string>(this.texts.selectPlaceholder)`). Aplikacja przełączająca
@@ -530,6 +581,64 @@ Czekają na wyzwalacz zapisany w polu **Wiąże przy**. Nie są zapomniane — s
 ## Dziennik
 
 Wpis per sesja: co ruszyło, czym się skończyło, co jest następne. Najnowsze na górze.
+
+### 2026-08-05 — A3: bramka, która zapaliła poprawnie i wyjaśniła to fałszywie
+
+Zrobione **A3**. Luki: 19 → 18, egzekwowane: 46 → 47. Faza A ma za sobą siedem z trzynastu
+zadań i **wszystkie bramki „natychmiast", które da się napisać bez budowania czegoś
+nowego** — reszta (A8–A13) wymaga aplikacji testowej, rejestru albo macierzy przeglądarek.
+
+Zadanie wyszło na zakładany dzień i plan pomylił się w diagnozie mechanizmu, nie zakresu.
+Miało być „skan szablonów + snapshot". Skan szablonów jest ślepy na to, co ta biblioteka
+naprawdę robi.
+
+- **Cztery części nie stoją w żadnym szablonie.** `field-prefix-item`, `field-suffix-item`,
+  `field-label-aux-item`, `field-message-aux-item` siedzą w blokach `host` czterech
+  dyrektyw slotowych — bo to znaczniki treści rzutowanej, a nie elementy obudowy. Bramka
+  czytająca same szablony orzekałaby o inwentarzu bez nich i wyglądała na kompletną. Stąd
+  lista powstaje **dwa razy**: ze źródeł i ze zbudowanego pakietu przez JIT
+  (`ɵcmp.consts`, `ɵdir.hostAttrs`), czyli z wyniku prawdziwego parsera Angulara. Ten sam
+  ruch co w A6 i A4, tylko że tutaj obie strony łapią rzeczy, których druga nie widzi
+  z założenia: pierwsza — część, która nie dojechała do pakietu; druga — część wniesioną
+  składnią, na którą regex jest ślepy (rozwinięcie `...fitHost` w obiekcie `host`).
+- **Inwentarz bez czytelnika jest plikiem dla maszyny.** Rubryki **Części** w kartach
+  `docs/komponenty/` są jedyną powierzchnią, na której konsument dziś te nazwy ogląda —
+  i są pisane ręką. Punkt porównujący je z pakietem zapalił przy pierwszym przebiegu:
+  `field.md` wymieniał **11 części z piętnastu**. Ta sama karta miała już ten sam błąd raz
+  (7 z jedenastu, do 2026-07-27) i wtedy też zauważyło go dopiero policzenie. Dwa razy to
+  samo miejsce, dwa razy ta sama przyczyna: listy pisanej ręką nikt nie liczy.
+- **Snapshot nie potrafi zobaczyć części, której nazwa powstaje w runtime** — byłby wtedy
+  zielony dokładnie dlatego, że nie ma czego zauważyć. Stąd osobny punkt na zakaz
+  wiązania. Zmierzone, nie założone: atrybut wiązany **nie trafia do `consts` w ogóle**,
+  tylko do treści skompilowanej funkcji szablonu, a interpolacja
+  (`data-pct-part="{{ x() }}"`) wygląda w tekście jak literał i literałem nie jest —
+  bez rozróżnienia skaner wpisałby do snapshotu część o nazwie `{{ x() }}`.
+- **Punkt snapshotu zapalił poprawnie i wyjaśnił to fałszywie.** Przemianowanie `trigger`
+  na `activator` dało komunikat „lista części jest ta sama — rozjechał się nagłówek albo
+  kolejność wierszy": filtr wierszy danych nie przechodził przez ukośnik w `./select`,
+  więc obie listy wychodziły puste, a puste są sobie równe. Bramka odrzuciła zmianę
+  i podała poprawną diagnozę problemu, którego nie było. **Kontrola odniesienia nie miała
+  jak tego zobaczyć z konstrukcji** — porównuje identyfikator punktu, nie zdanie, i tak
+  działa każda kontrola w tym repozytorium ([`lekcja-50`](lekcje.md#lekcja-50)). Wyszło
+  z przeczytania wypisanego zdania, nie z kodu wyjścia.
+
+Sprawdzone przebiegiem, nie rozumowaniem: bramka zapala na sześciu sposobach zepsucia
+repozytorium (przemianowanie części przy nieaktualnym `dist`, po przebudowie i po
+uzgodnieniu karty — za każdym razem na innym punkcie; `[attr.data-pct-part]` w szablonie;
+część usunięta z karty; dyrektywa z częścią bez eksportu) i na trzech sposobach
+rozbrojenia własnej kontroli, przy czym rozbrojenie zmierzone **dla każdego z pięciu
+punktów osobno**. Rozbrojenie gałęzi „brak snapshotu" dało `TypeError` zamiast komunikatu
+— **ta sama wada co w A4 i A7, trzeci raz, w bramce pisanej ze świadomością dwóch
+poprzednich.**
+
+Zostawione świadomie: `options` w `PctRadioGroup` jest jedyną częścią kontenera bez
+przedrostka `group-`. Z niczym nie koliduje, a `wym-api-czesci` obiecuje stabilność
+i spisanie, nie zgadywalność — więc snapshot ją zamraża, a przemianowanie jest od dziś
+widoczną zmianą API zamiast cichej poprawki. Przeniesione do **C7**, tym samym ruchem co
+C6 przy A4.
+
+Następne: **A8** (tree-shaking + budżet rozmiaru) albo **A12** (pół dnia na dwie luki).
+F1 jest odblokowane — A3 i A4 dały mu oba inwentarze do wyrenderowania.
 
 ### 2026-08-05 — A4: snapshot, który zamroziłby to, czego miał pilnować
 

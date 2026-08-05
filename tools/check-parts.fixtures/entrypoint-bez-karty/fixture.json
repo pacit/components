@@ -1,0 +1,6 @@
+{
+  "punkt": 4,
+  "kontrola": "dokumentacja",
+  "$powod": "Entrypoint wystawia części i nie ma o nich ani jednej karty. Inwentarz istnieje po to, żeby ktoś go przeczytał.",
+  "usun": ["docs/komponenty/widget.md", "docs/komponenty/marker.md"]
+}

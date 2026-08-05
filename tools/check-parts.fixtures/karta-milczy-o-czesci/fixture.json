@@ -1,0 +1,5 @@
+{
+  "punkt": 4,
+  "kontrola": "dokumentacja",
+  "$powod": "Rubryka **Części** gubi jedną z części — dokładnie to, co `docs/komponenty/field.md` robił z czterema do 2026-08-05. Obietnica „spisane\" schodzi wtedy do zera, a nikt tego nie widzi."
+}

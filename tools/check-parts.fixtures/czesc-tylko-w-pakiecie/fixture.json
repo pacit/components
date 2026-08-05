@@ -1,0 +1,5 @@
+{
+  "punkt": 2,
+  "kontrola": "zbior",
+  "$powod": "Część, którą widzi wyłącznie odczyt z pakietu — tak wygląda część wniesiona składnią, na którą skaner źródeł jest ślepy (rozwinięcie cudzego obiektu `host`, szablon poza `templateUrl`). Weszłaby do inwentarza bez linii w diffie."
+}
