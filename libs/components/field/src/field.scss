@@ -39,7 +39,7 @@
 }
 
 .pct-field__required {
-  color: var(--pct-field-invalid-fg);
+  color: var(--pct-field-fg-invalid);
   margin-inline-start: 2px;
 }
 
@@ -120,13 +120,13 @@
 }
 
 :host([data-pct-invalid]) .pct-field__row {
-  border-color: var(--pct-field-invalid-border);
+  border-color: var(--pct-field-border-invalid);
 }
 
 :host([data-pct-disabled]) .pct-field__row {
-  background: var(--pct-field-disabled-bg);
-  border-color: var(--pct-field-disabled-border);
-  color: var(--pct-field-disabled-fg);
+  background: var(--pct-field-bg-disabled);
+  border-color: var(--pct-field-border-disabled);
+  color: var(--pct-field-fg-disabled);
 }
 
 /* Pion kolumn niesie teraz wysokość wiersza (`align-items: stretch`), a nie ich
@@ -259,7 +259,7 @@
 }
 
 .pct-field__error {
-  color: var(--pct-field-invalid-fg);
+  color: var(--pct-field-fg-invalid);
   font-size: var(--pct-font-size-sm);
 }
 

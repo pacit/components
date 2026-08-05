@@ -7,9 +7,9 @@
       "bg-active": { "$type": "color", "$value": "{pct.primary-active}" },
       "fg": { "$type": "color", "$value": "{pct.on-primary}" },
       "border": { "$type": "color", "$value": "{pct.primary}" },
-      "disabled-bg": { "$type": "color", "$value": "{pct.disabled-bg}" },
-      "disabled-fg": { "$type": "color", "$value": "{pct.disabled-fg}" },
-      "disabled-border": { "$type": "color", "$value": "{pct.border}" },
+      "bg-disabled": { "$type": "color", "$value": "{pct.surface-disabled}" },
+      "fg-disabled": { "$type": "color", "$value": "{pct.text-disabled}" },
+      "border-disabled": { "$type": "color", "$value": "{pct.border}" },
       "radius": { "$type": "dimension", "$value": "{pct.radius.md}" },
       "height": { "$type": "dimension", "$value": "{pct.control.height.md}" },
       "height-sm": {

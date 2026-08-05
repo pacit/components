@@ -43,9 +43,9 @@
    wygrywa też z wariantem outline niezależnie od kolejności reguł. */
 :host([disabled]:not([data-pct-loading])),
 :host([disabled][data-pct-variant='outline']:not([data-pct-loading])) {
-  background: var(--pct-button-disabled-bg);
-  color: var(--pct-button-disabled-fg);
-  border-color: var(--pct-button-disabled-border);
+  background: var(--pct-button-bg-disabled);
+  color: var(--pct-button-fg-disabled);
+  border-color: var(--pct-button-border-disabled);
   cursor: not-allowed;
 }
 

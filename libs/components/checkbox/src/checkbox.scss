@@ -54,7 +54,7 @@
   width: 100%;
   height: 100%;
   fill: none;
-  stroke: var(--pct-checkbox-checked-fg);
+  stroke: var(--pct-checkbox-fg-checked);
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -64,8 +64,8 @@
 
 :host([data-pct-checked]) .pct-checkbox__box,
 :host([data-pct-indeterminate]) .pct-checkbox__box {
-  background: var(--pct-checkbox-checked-bg);
-  border-color: var(--pct-checkbox-checked-border);
+  background: var(--pct-checkbox-bg-checked);
+  border-color: var(--pct-checkbox-border-checked);
 }
 
 :host([data-pct-checked]) .pct-checkbox__mark,
@@ -85,17 +85,17 @@
 }
 
 :host([data-pct-invalid]) .pct-checkbox__box {
-  border-color: var(--pct-checkbox-invalid-border);
+  border-color: var(--pct-checkbox-border-invalid);
 }
 
 /* Disabled bez opacity (wym-token-bez-opacity) — konkretne tokeny koloru. */
 :host([data-pct-disabled]) .pct-checkbox__box {
-  background: var(--pct-checkbox-disabled-bg);
-  border-color: var(--pct-checkbox-disabled-border);
+  background: var(--pct-checkbox-bg-disabled);
+  border-color: var(--pct-checkbox-border-disabled);
 }
 
 :host([data-pct-disabled]) .pct-checkbox__mark {
-  stroke: var(--pct-checkbox-disabled-fg);
+  stroke: var(--pct-checkbox-fg-disabled);
 }
 
 :host([data-pct-disabled]) .pct-checkbox__control,
@@ -104,7 +104,7 @@
 }
 
 :host([data-pct-disabled]) .pct-checkbox__label {
-  color: var(--pct-checkbox-disabled-fg);
+  color: var(--pct-checkbox-fg-disabled);
 }
 
 .pct-checkbox__label {
@@ -114,7 +114,7 @@
 }
 
 .pct-checkbox__required {
-  color: var(--pct-checkbox-invalid-fg);
+  color: var(--pct-checkbox-fg-invalid);
   margin-inline-start: 2px;
 }
 
@@ -124,7 +124,7 @@
 }
 
 .pct-checkbox__error {
-  color: var(--pct-checkbox-invalid-fg);
+  color: var(--pct-checkbox-fg-invalid);
   font-size: var(--pct-font-size-sm);
 }
 

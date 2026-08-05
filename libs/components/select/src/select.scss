@@ -12,7 +12,7 @@
 }
 
 .pct-select__required {
-  color: var(--pct-select-invalid-fg);
+  color: var(--pct-select-fg-invalid);
   margin-inline-start: 2px;
 }
 
@@ -72,14 +72,14 @@
 }
 
 .pct-select__trigger:disabled {
-  background: var(--pct-select-disabled-bg);
-  color: var(--pct-select-disabled-fg);
-  border-color: var(--pct-select-disabled-border);
+  background: var(--pct-select-bg-disabled);
+  color: var(--pct-select-fg-disabled);
+  border-color: var(--pct-select-border-disabled);
   cursor: not-allowed;
 }
 
 :host([data-pct-invalid]) .pct-select__trigger {
-  border-color: var(--pct-select-invalid-border);
+  border-color: var(--pct-select-border-invalid);
 }
 
 .pct-select__placeholder {
@@ -155,17 +155,17 @@
 
 /* Aktywna klawiaturą (aria-activedescendant) — wyróżnienie tłem. */
 .pct-select__option[data-pct-active] {
-  background: var(--pct-select-option-active-bg);
-  color: var(--pct-select-option-active-fg);
+  background: var(--pct-select-option-bg-active);
+  color: var(--pct-select-option-fg-active);
 }
 
 .pct-select__option[data-pct-selected] {
-  background: var(--pct-select-option-selected-bg);
-  color: var(--pct-select-option-selected-fg);
+  background: var(--pct-select-option-bg-selected);
+  color: var(--pct-select-option-fg-selected);
 }
 
 .pct-select__option[data-pct-disabled] {
-  color: var(--pct-select-option-disabled-fg);
+  color: var(--pct-select-option-fg-disabled);
   cursor: not-allowed;
 }
 
@@ -180,7 +180,7 @@
 }
 
 .pct-select__error {
-  color: var(--pct-select-invalid-fg);
+  color: var(--pct-select-fg-invalid);
   font-size: var(--pct-font-size-sm);
 }
 

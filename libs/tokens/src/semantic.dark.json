@@ -48,11 +48,11 @@
       "$type": "color",
       "$value": "{pct.slate.900}"
     },
-    "disabled-bg": {
+    "surface-disabled": {
       "$type": "color",
       "$value": "{pct.slate.800}"
     },
-    "disabled-fg": {
+    "text-disabled": {
       "$type": "color",
       "$value": "{pct.slate.500}"
     },

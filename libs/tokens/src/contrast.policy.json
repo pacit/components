@@ -24,8 +24,8 @@
     },
     {
       "name": "button/disabled — etykieta",
-      "fg": "pct.button.disabled-fg",
-      "bg": "pct.button.disabled-bg",
+      "fg": "pct.button.fg-disabled",
+      "bg": "pct.button.bg-disabled",
       "level": "AA",
       "severity": "warn"
     },
@@ -59,21 +59,21 @@
     },
     {
       "name": "UI: checkbox zaznaczony na tle strony",
-      "fg": "pct.checkbox.checked-bg",
+      "fg": "pct.checkbox.bg-checked",
       "bg": "pct.surface",
       "level": "UI",
       "severity": "error"
     },
     {
       "name": "UI: znacznik na zaznaczonym checkboxie",
-      "fg": "pct.checkbox.checked-fg",
-      "bg": "pct.checkbox.checked-bg",
+      "fg": "pct.checkbox.fg-checked",
+      "bg": "pct.checkbox.bg-checked",
       "level": "UI",
       "severity": "error"
     },
     {
       "name": "UI: obramowanie checkboxa (błąd)",
-      "fg": "pct.checkbox.invalid-border",
+      "fg": "pct.checkbox.border-invalid",
       "bg": "pct.checkbox.bg",
       "level": "UI",
       "severity": "error"
@@ -108,21 +108,21 @@
     },
     {
       "name": "UI: kropka wybranego radia",
-      "fg": "pct.radio.dot",
+      "fg": "pct.radio.dot-bg",
       "bg": "pct.radio.bg",
       "level": "UI",
       "severity": "error"
     },
     {
       "name": "UI: obramowanie radia (wybrane)",
-      "fg": "pct.radio.checked-border",
+      "fg": "pct.radio.border-checked",
       "bg": "pct.radio.bg",
       "level": "UI",
       "severity": "error"
     },
     {
       "name": "UI: obramowanie radia (błąd)",
-      "fg": "pct.radio.invalid-border",
+      "fg": "pct.radio.border-invalid",
       "bg": "pct.radio.bg",
       "level": "UI",
       "severity": "error"
@@ -164,15 +164,15 @@
     },
     {
       "name": "select — opcja aktywna (klawiatura)",
-      "fg": "pct.select.option-active-fg",
-      "bg": "pct.select.option-active-bg",
+      "fg": "pct.select.option-fg-active",
+      "bg": "pct.select.option-bg-active",
       "level": "AA",
       "severity": "error"
     },
     {
       "name": "select — opcja wybrana",
-      "fg": "pct.select.option-selected-fg",
-      "bg": "pct.select.option-selected-bg",
+      "fg": "pct.select.option-fg-selected",
+      "bg": "pct.select.option-bg-selected",
       "level": "AA",
       "severity": "error"
     },
@@ -227,7 +227,7 @@
     },
     {
       "name": "field — komunikat błędu",
-      "fg": "pct.field.invalid-fg",
+      "fg": "pct.field.fg-invalid",
       "bg": "pct.surface",
       "level": "AA",
       "severity": "error"
@@ -241,8 +241,8 @@
     },
     {
       "name": "field/disabled — tekst",
-      "fg": "pct.field.disabled-fg",
-      "bg": "pct.field.disabled-bg",
+      "fg": "pct.field.fg-disabled",
+      "bg": "pct.field.bg-disabled",
       "level": "AA",
       "severity": "warn"
     },
@@ -262,7 +262,7 @@
     },
     {
       "name": "UI: obramowanie pola (błąd)",
-      "fg": "pct.field.invalid-border",
+      "fg": "pct.field.border-invalid",
       "bg": "pct.field.bg",
       "level": "UI",
       "severity": "error"

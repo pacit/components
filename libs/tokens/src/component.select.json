@@ -7,11 +7,11 @@
       "border": { "$type": "color", "$value": "{pct.border-strong}" },
       "border-hover": { "$type": "color", "$value": "{pct.text-muted}" },
       "border-focus": { "$type": "color", "$value": "{pct.primary}" },
-      "invalid-border": { "$type": "color", "$value": "{pct.danger}" },
-      "invalid-fg": { "$type": "color", "$value": "{pct.danger}" },
-      "disabled-bg": { "$type": "color", "$value": "{pct.disabled-bg}" },
-      "disabled-fg": { "$type": "color", "$value": "{pct.disabled-fg}" },
-      "disabled-border": { "$type": "color", "$value": "{pct.border}" },
+      "border-invalid": { "$type": "color", "$value": "{pct.danger}" },
+      "fg-invalid": { "$type": "color", "$value": "{pct.danger}" },
+      "bg-disabled": { "$type": "color", "$value": "{pct.surface-disabled}" },
+      "fg-disabled": { "$type": "color", "$value": "{pct.text-disabled}" },
+      "border-disabled": { "$type": "color", "$value": "{pct.border}" },
       "label-fg": { "$type": "color", "$value": "{pct.text}" },
       "hint-fg": { "$type": "color", "$value": "{pct.text-muted}" },
       "arrow-fg": { "$type": "color", "$value": "{pct.text-muted}" },
@@ -28,11 +28,14 @@
 
       "option-fg": { "$type": "color", "$value": "{pct.text}" },
       "option-bg": { "$type": "color", "$value": "{pct.surface}" },
-      "option-active-bg": { "$type": "color", "$value": "{pct.surface-100}" },
-      "option-active-fg": { "$type": "color", "$value": "{pct.text}" },
-      "option-selected-bg": { "$type": "color", "$value": "{pct.primary}" },
-      "option-selected-fg": { "$type": "color", "$value": "{pct.on-primary}" },
-      "option-disabled-fg": { "$type": "color", "$value": "{pct.disabled-fg}" },
+      "option-bg-active": { "$type": "color", "$value": "{pct.surface-100}" },
+      "option-fg-active": { "$type": "color", "$value": "{pct.text}" },
+      "option-bg-selected": { "$type": "color", "$value": "{pct.primary}" },
+      "option-fg-selected": { "$type": "color", "$value": "{pct.on-primary}" },
+      "option-fg-disabled": {
+        "$type": "color",
+        "$value": "{pct.text-disabled}"
+      },
       "option-padding-y": { "$type": "dimension", "$value": "{pct.space.3}" },
       "option-padding-x": { "$type": "dimension", "$value": "{pct.space.4}" }
     }

@@ -28,7 +28,7 @@ test.describe('PctCheckbox — signal forms', () => {
     await expect(control).toBeChecked();
     await expect(control).toHaveAttribute('aria-checked', 'true');
     await expect(mark).toBeVisible();
-    // --pct-checkbox-checked-bg -> --pct-primary -> blue-600
+    // --pct-checkbox-bg-checked -> --pct-primary -> blue-600
     await expect(box).toHaveCSS('background-color', 'rgb(37, 99, 235)');
   });
 
@@ -84,5 +84,4 @@ test.describe('PctCheckbox — signal forms', () => {
     await page.keyboard.press('Space');
     await expect(control).not.toBeChecked();
   });
-
 });
