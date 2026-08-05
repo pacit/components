@@ -51,11 +51,11 @@ Migawka z **2026-08-05**, `node tools/check-docs.mjs`:
 | miara                                 | wartość |
 | ------------------------------------- | ------: |
 | wymagań                               |      81 |
-| ✅ egzekwowane                        |      45 |
+| ✅ egzekwowane                        |      46 |
 | 🟡 częściowo (świadomie bez kontroli) |      16 |
-| ⛔ luka                               |      20 |
+| ⛔ luka                               |      19 |
 
-Wszystkie 20 luk mają niżej swojego właściciela (A, B, D, F, G). Jeśli po dopisaniu
+Wszystkie 19 luk mają niżej swojego właściciela (A, B, D, F, G). Jeśli po dopisaniu
 wymagania liczba luk rośnie, a żadne zadanie się nie zmienia — ta lista przestała być
 kompletna i to jest błąd tej listy, nie rejestru.
 
@@ -71,15 +71,17 @@ F  powierzchnia zaufania       docs, ACR, benchmarki, most Figma
 G  luki bez terminu            czekają na wyzwalacz zapisany w polu „Wiąże przy"
 ```
 
-Pierwsze trzy, gdyby trzeba było wybrać tydzień: **A4** (pół dnia i odblokowuje F1),
-**A3** (drugie pół odblokowania F1 i jedyne miejsce, w którym projekt zachowuje się jak
-zwykła biblioteka), **A8** (obietnica sprzedażowa dziś niesprawdzana w ogóle).
+Pierwsze trzy, gdyby trzeba było wybrać tydzień: **A3** (domyka odblokowanie F1 razem
+z gotowym już A4 i jest jedynym miejscem, w którym projekt zachowuje się jak zwykła
+biblioteka), **A8** (obietnica sprzedażowa dziś niesprawdzana w ogóle), **A12** (pół dnia
+na dwie luki, a jedna z nich to ta sama klasa co A4: policy bada wyłącznie to, co ktoś
+wcześniej wpisał).
 
 ---
 
 ## A. Faza 0 — bramki „natychmiast"
 
-Zostało osiem zadań i domykają **9 z 20 luk** — blisko połowy wszystkiego, co jeszcze
+Zostało siedem zadań i domykają **8 z 19 luk** — blisko połowy wszystkiego, co jeszcze
 stoi otworem.
 
 - [x] **A1 — kontrola odniesienia dla `check-package`** _(2026-08-04)_
@@ -132,12 +134,48 @@ stoi otworem.
   - kontrola: zmiana nazwy części bez aktualizacji inwentarza musi zapalić
   - koszt: ~1 dzień · _notatki:_ —
 
-- [ ] **A4 — snapshot nazw tokenów**
-  - domyka: `wym-token-nazwy`
-  - co: `libs/tokens/dist/tokens.ts` już jest generowany — dołożyć wersjonowany snapshot
-    i porównanie. Nazwy tokenów są publicznym API motywu tak samo jak nazwy inputów
-  - kontrola: zmiana nazwy tokenu bez aktualizacji snapshotu musi zapalić
-  - koszt: ~0,5 dnia · _notatki:_ —
+- [x] **A4 — snapshot nazw tokenów** _(2026-08-05)_
+  - domknęło: `wym-token-nazwy`
+  - zrobione: `tools/check-tokens.mjs` (target `check-tokens` w projekcie roota,
+    `dependsOn: tokens:build`, w CI) — pięć punktów. Reguły są dwie (punkt 3: nazwa
+    parsuje się wobec słownika `libs/tokens/src/nazwy.policy.json`, a komponent w nazwie
+    jest prawdziwym entrypointem; punkt 5: `libs/tokens/tokens.snapshot.md` zgadza się
+    z bieżącą listą), a **trzy pozostałe pilnują mianownika**: dwa niezależne odczyty
+    listy nazw, zgodność `tokens.ts` i `_tokens.scss` z nią, zakaz martwych słów
+    w słowniku
+  - **plan mówił „dołożyć snapshot i porównanie" i to było za mało — było wręcz
+    szkodliwe.** Repozytorium miało **34 tokeny z segmentami w odwrotnej kolejności**
+    (`--pct-checkbox-checked-bg` sześć linii pod `--pct-checkbox-border-hover`), więc
+    snapshot dołożony przed normalizacją zapisałby ten rozjazd jako stan zaakceptowany,
+    a każde późniejsze przemianowanie byłoby już zmianą łamiącą
+    ([`lekcja-49`](lekcje.md#lekcja-49)). Stąd punkt 3 **przed** punktem 5 i stąd
+    normalizacja tym samym ruchem: 34 tokeny w 5 plikach DTCG, policy kontrastu,
+    8 arkuszach i jednym e2e — 108 podmian
+  - punkt 1 jest tym samym ruchem co punkt 2 w A5 („nie ufaj jednemu odczytowi"):
+    lista nazw powstaje **dwa razy** — raz z tekstu `dist/pct.css`, raz z obejścia drzew
+    DTCG — i musi wyjść ta sama. Pierwsze łapie generator gubiący token i nieaktualne
+    `dist`, drugie — plik źródłowy, którego generator nie wczytuje
+  - punkt 4 nie udaje, że rozstrzyga to, czego maszyna nie rozstrzygnie: słownik da się
+    rozszerzyć razem ze złą nazwą. Pilnuje węższej rzeczy — słowo zadeklarowane musi być
+    użyte — żeby dopisanie słowa było linią w diffie, którą widać w review. Ta sama
+    konstrukcja co próg uzasadnienia wyjątku w A5
+  - przy okazji: prefiksy prywatne (`pct.blue.`, `pct.slate.`) przeniesione z wyrażenia
+    w `build.mjs` do polityki, żeby bramka je **czytała**, a nie zgadywała, co ten filtr
+    znaczy. Wyszło z tego widoczne pytanie bez odpowiedzi: `pct.red.` prywatne **nie
+    jest**, więc surowa rampa czerwieni stoi w publicznej unii `PctCssVar`, a niebieska
+    i szara nie. Zostawione świadomie — to nie jest obietnica tej bramki (patrz **C6**)
+  - kontrola: `tools/check-tokens.fixtures/` — jedenaście wejść, każde odrzucane na swoim
+    punkcie; plus pięć przebiegów na prawdziwym repo (przemianowanie na inną poprawną
+    nazwę, `disabled-bg` zamiast `bg-disabled`, `component.dialog.json` bez entrypointu,
+    token usunięty z `dist/pct.css`, słowo dopisane do słownika bez użycia)
+  - kontrola tej kontroli: rozbrojone po kolei wszystkie pięć punktów — 1, 2, 4 i 5 dają
+    „PRZESZŁO", 3 przestawia cztery przypadki na cudzy punkt; przypadek przestający być
+    wadliwym → to samo; wadliwe wejście wzorcowe → bramka zapala na nim osobno, a trzy
+    przypadki idą na cudze punkty
+  - koszt: ~1 dzień (plan zakładał 0,5; różnicę zjadła normalizacja) · _notatki:_
+    rozbrojenie punktu 3 dało najpierw `TypeError` zamiast komunikatu — punkt 4 czytał
+    wynik parsera wprost, ufając poprzedniemu. **Ta sama wada co w A7**, znaleziona tą
+    samą kontrolą i naprawiona tak samo
 
 - [x] **A5 — bramka stylów: właściwości logiczne + zakaz `opacity` na tekście**
       _(2026-08-05)_
@@ -383,6 +421,17 @@ między większymi zadaniami. Pełny kontekst: [`review.md`](review.md) §5.
     kompilacji — duch [`lekcja-43`](lekcje.md#lekcja-43)), albo wyrzucić z wymagania
     i z pakietu. Dziś to martwy artefakt w publikowanym pakiecie · _notatki:_ —
 
+- [ ] **C6 — prymitywy w publicznej unii `PctCssVar`: dwie rampy prywatne, trzecia nie**
+  - `libs/tokens/src/nazwy.policy.json` deklaruje `pct.blue.` i `pct.slate.` jako
+    prywatne, a `pct.red.` nie — więc konsument widzi w typie `--pct-red-600` i nie widzi
+    `--pct-blue-600`. Rozjazd zastany, przeniesiony przy A4 z wyrażenia w `build.mjs` do
+    polityki, czyli **z niewidocznego miejsca w widoczne** — i tam zostawiony
+  - do rozstrzygnięcia szerzej niż jedna rampa: czy prymitywy w ogóle należą do
+    powierzchni publicznej. Argument za: e2e i kod budujący motyw pytają przeglądarkę
+    o wartości i typ jest jedyną ochroną przed literówką ([`lekcja-43`](lekcje.md#lekcja-43)).
+    Argument przeciw: prymityw jest implementacją skórki, a nie jej kontraktem
+  - koszt: minuty na zmianę, decyzja jest całym zadaniem · _notatki:_ —
+
 - [ ] **C5 — `PCT_TEXTS` nie przeżyje zmiany języka w runtime**
   - `providePctTexts` zwraca statyczny obiekt, a `PctSelect` czyta go **raz przy
     konstrukcji** (`input<string>(this.texts.selectPlaceholder)`). Aplikacja przełączająca
@@ -482,6 +531,55 @@ Czekają na wyzwalacz zapisany w polu **Wiąże przy**. Nie są zapomniane — s
 
 Wpis per sesja: co ruszyło, czym się skończyło, co jest następne. Najnowsze na górze.
 
+### 2026-08-05 — A4: snapshot, który zamroziłby to, czego miał pilnować
+
+Zrobione **A4**. Luki: 20 → 19, egzekwowane: 45 → 46.
+
+Zadanie miało być półdniowe („dołożyć wersjonowany snapshot i porównanie") i przy
+pierwszym czytaniu wymagania okazało się czymś innym. Plan nie pomylił się w diagnozie
+mechanizmu — snapshot rzeczywiście jest tym, czego brakuje — tylko w tym, **co on
+mierzy**. Wyszło to nie z rozumowania, tylko z wypisania listy nazw i spojrzenia na nią.
+
+- **Snapshot mierzy ZMIANĘ, a wymaganie obiecuje WŁAŚCIWOŚĆ.** `wym-token-nazwy` mówi,
+  że nazwę da się zgadnąć bez dokumentacji. Repozytorium miało **34 tokeny z segmentami
+  w odwrotnej kolejności**: `--pct-checkbox-checked-bg` stało sześć linii pod
+  `--pct-checkbox-border-hover`, `--pct-button-disabled-bg` obok `--pct-button-bg-hover`.
+  Każda z tych nazw jest z osobna poprawna; nie da się ich zgadnąć dlatego, że są obok
+  siebie. Snapshot dołożony przed normalizacją zapisałby ten rozjazd jako **stan
+  zaakceptowany**, a każde późniejsze przemianowanie byłoby już zmianą łamiącą dla
+  konsumenta ([`lekcja-49`](lekcje.md#lekcja-49)). Stąd punkt schematu **przed** punktem
+  snapshotu i stąd normalizacja tym samym ruchem — 108 podmian w 16 plikach.
+- **Reguła, która domyka się w kółko, potrzebuje węższego pilnowania.** „Nazwa składa się
+  ze słów z zamkniętego zbioru" jest prawdziwa zawsze, bo zbiór da się rozszerzyć razem
+  z nazwą. Maszyna tego nie rozstrzygnie i bramka nie udaje, że rozstrzyga: pilnuje, żeby
+  **każde zadeklarowane słowo było użyte**, czyli żeby dopisanie słowa było linią
+  w diffie, którą widać w review. Dokładnie ta sama konstrukcja co próg długości
+  uzasadnienia w A5 — bramka nie ocenia powodu, tylko pilnuje, żeby było co oceniać.
+- **Mianownik znowu, tym razem jako lista nazw.** Punkt 1 liczy ją **dwa razy**: raz
+  z tekstu `dist/pct.css`, raz z obejścia drzew DTCG. Zmierzone, że obie strony łapią co
+  innego — usunięcie deklaracji z `pct.css` zapala jako „w źródłach, a nie w artefakcie",
+  a niezacommitowany `component.dialog.json` jako „w artefakcie, a nie w źródłach", bo
+  bramka czyta indeks gita, a generator katalog.
+- **Rozbrojenie punktu znowu dało stack trace zamiast zdania.** Punkt słownika czytał
+  wynik parsera wprost, bo po punkcie schematu nazwa „na pewno" się parsuje. Wyłączenie
+  punktu schematu w ramach kontroli tej kontroli zamieniło bramkę w `TypeError`. **To ta
+  sama wada co w A7**, znaleziona tą samą kontrolą, w bramce napisanej dzień po tym, jak
+  zapisałem o niej wniosek w dzienniku.
+
+Sprawdzone przebiegiem, nie rozumowaniem: bramka zapala na pięciu sposobach zepsucia
+repozytorium (przemianowanie na inną poprawną nazwę, cofnięta normalizacja
+`--pct-button-disabled-bg`, `component.dialog.json` bez entrypointu, nieaktualne `dist`,
+martwe słowo w słowniku) i na trzech sposobach rozbrojenia własnej kontroli — przy czym
+rozbrojenie zostało zmierzone **dla każdego z pięciu punktów osobno**.
+
+Osobno zmierzone, bo w trakcie sam to zepsułem: ponowne uruchomienie skryptu zmiany nazw
+dało `--pct-radio-dot-bg-bg` (podmiana tekstu nie ma granic słowa), a `check-tokens` tego
+**nie widzi z założenia** — czyta deklaracje tokenów, nie ich użycia w arkuszach. Złapał
+to `check-package` punktem 3 (użycie ⊆ deklaracje). Podział jest właściwy, ale zielony
+przebieg jednej bramki nie wyklucza wady po drugiej stronie.
+
+Następne: **A3** (inwentarz `data-pct-part`) — razem z A4 odblokowuje F1.
+
 ### 2026-08-05 — A5: bramka, która przeszła, nie zmierzywszy niczego
 
 Zrobione **A5**. Luki: 22 → 20, egzekwowane: 43 → 45.
@@ -529,7 +627,7 @@ poprawki (`Expected "rtl", Received "ltr"`) i przechodzi z nią. Dziesięć wzor
 zmieniło się świadomie — karty biorące domyślny zestaw osi pokazują teraz czwartą.
 
 Następne: **A4** (snapshot nazw tokenów, pół dnia) albo **A3** (inwentarz
-`data-pct-part`) — razem odblokowują F1.
+`data-pct-part`) — razem odblokowują F1. _(A4 zrobione tego samego dnia — wpis wyżej.)_
 
 ### 2026-08-05 — A7: target, który istnieje, i target, który patrzy
 

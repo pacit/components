@@ -1,0 +1,25 @@
+{
+  "$comment": "Słownik z `disabled` w stanach — po to, żeby wadą tego przypadku była WYŁĄCZNIE kolejność segmentów, a nie nieznane słowo. `fg-disabled` obok parsuje się bez zarzutu tym samym słownikiem; różni je tylko to, po której stronie właściwości stoi stan.",
+
+  "prywatne": {
+    "prefiksy": ["pct.blue.", "pct.slate."]
+  },
+
+  "prymitywne": {
+    "osie": ["blue", "slate", "space", "motion"]
+  },
+
+  "semantyczne": {
+    "role": ["primary", "surface", "text"],
+    "warianty": ["muted"]
+  },
+
+  "komponentowe": {
+    "czesci": ["label"],
+    "wlasciwosci": ["bg", "fg", "padding-x"],
+    "stany": ["hover", "disabled"],
+    "wielkosci": {
+      "lista": ["sm"]
+    }
+  }
+}

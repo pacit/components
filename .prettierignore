@@ -1,6 +1,12 @@
 # Add files here to ignore them from prettier formatting
 /dist
 /coverage
+
+# Artefakty kontroli odniesienia bramki `check-tokens`. Są w repozytorium wbrew regule
+# `dist` w .gitignore, bo niosą wadę swojego przypadku — ale to dalej WYJŚCIE GENERATORA,
+# a nie kod pisany ręcznie. Formatowanie ich znaczyłoby, że fixture przestaje wyglądać
+# tak, jak wygląda prawdziwe `dist`, czyli że bada coś innego niż to, co bada w repo.
+/tools/check-tokens.fixtures/*/libs/tokens/dist
 /.nx/cache
 /.nx/workspace-data
 .angular

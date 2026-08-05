@@ -216,6 +216,12 @@ function run() {
   const policy = JSON.parse(
     readFileSync(join(SRC, 'contrast.policy.json'), 'utf8'),
   );
+  // Słownik nazw. Buildowi potrzebna jest z niego jedna rzecz — lista prefiksów
+  // wyłączonych z publicznej unii TS — ale stoi ona TAM, a nie tutaj, żeby
+  // `check-tokens` mogła ją przeczytać zamiast zgadywać, co ten filtr znaczy.
+  const nazwy = JSON.parse(
+    readFileSync(join(SRC, 'nazwy.policy.json'), 'utf8'),
+  );
 
   const lightTree = merge(primitive, semanticLight, ...components); // :root
   const darkTree = merge(primitive, semanticLight, ...components, semanticDark); // dark nakladany na base
@@ -308,7 +314,7 @@ function run() {
 
   // TS (typowane nazwy tokenów semantycznych i komponentowych)
   const publicPaths = Object.keys(base).filter(
-    (p) => !p.startsWith('pct.blue.') && !p.startsWith('pct.slate.'),
+    (p) => !nazwy.prywatne.prefiksy.some((prefiks) => p.startsWith(prefiks)),
   );
   const tsEntries = publicPaths
     .map((p) => `  '${p}': 'var(${cssVar(p)})',`)

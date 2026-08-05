@@ -1,0 +1,81 @@
+{
+  "$comment": "Słownik nazw tokenów — zamknięty zbiór słów, z których wolno złożyć nazwę. Nazwa daje się zgadnąć nie dlatego, że schemat jest zapisany w dokumentacji, tylko dlatego, że stan nazywa się `hover` WSZĘDZIE, a nie raz `hover`, raz `over`, raz `on-hover` (wym-token-nazwy). Bramka `check-tokens` parsuje każdą nazwę wobec tego pliku i wymaga, żeby każde słowo stąd było użyte — dopisanie słowa jest więc linią w diffie, którą widać w review, a nie cichym rozszerzeniem zbioru dopuszczalnych nazw. Maszyna nie oceni, czy nowe słowo jest dobre; pilnuje tylko, żeby było co oceniać.",
+
+  "prywatne": {
+    "$comment": "Prefiksy DTCG wyłączone z publicznej unii `PctCssVar` w `dist/tokens.ts`. Czyta stąd i build (filtr generatora), i bramka (punkt 2) — jedna deklaracja zamiast wyrażenia zaszytego w generatorze, o którym bramka musiałaby zgadywać. UWAGA: `pct.red.` świadomie NIE jest tu wymienione, więc surowa rampa czerwieni jest publiczna, a niebieska i szara nie. To rozjazd zastany, nie decyzja tej bramki — do rozstrzygnięcia osobno, wraz z pytaniem, czy prymitywy w ogóle należą do powierzchni publicznej.",
+    "prefiksy": ["pct.blue.", "pct.slate."]
+  },
+
+  "prymitywne": {
+    "$comment": "Warstwa prymitywna: nazwa jest ścieżką DTCG jeden do jednego (`pct.control.height.sm` → `--pct-control-height-sm`), więc zgadywalność sprowadza się do znajomości OSI. Osie są wymienione, kroki nie: `500`, `md`, `medium` należą do swojej osi i wymienianie ich tutaj byłoby drugą kopią pliku źródłowego.",
+    "osie": [
+      "blue",
+      "slate",
+      "red",
+      "space",
+      "radius",
+      "target",
+      "control",
+      "motion",
+      "font"
+    ]
+  },
+
+  "semantyczne": {
+    "$comment": "Warstwa semantyczna: `[on-]{rola}[-{wariant}]`. Przedrostek `on-` nie jest osobną rolą, tylko regułą pary tekst/tło (wym-token-pary-tekstu) — dzięki temu `--pct-on-danger` jest zgadywalne z samego istnienia `--pct-danger`, a nie z listy.",
+    "role": [
+      "primary",
+      "surface",
+      "text",
+      "border",
+      "danger",
+      "focus-ring",
+      "shadow-panel"
+    ],
+    "warianty": ["hover", "active", "disabled", "muted", "strong", "100"]
+  },
+
+  "komponentowe": {
+    "$comment": "Warstwa komponentowa: `--pct-{komponent}[-{część}]-{właściwość}[-{wariant}]`. Komponent nie jest wymieniony, bo nie jest słownikiem — musi być prawdziwym entrypointem pakietu (`libs/components/<nazwa>/ng-package.json`), i tego pilnuje punkt 3. Wariant stoi ZAWSZE na końcu: `--pct-button-bg-hover`, nigdy `--pct-button-hover-bg`. Ten porządek jest jedynym powodem, dla którego znając jedną nazwę zgadniesz siostrzaną.",
+    "czesci": [
+      "affix",
+      "arrow",
+      "dot",
+      "group-label",
+      "hint",
+      "label",
+      "option",
+      "panel",
+      "placeholder"
+    ],
+    "wlasciwosci": [
+      "bg",
+      "border",
+      "fg",
+      "font-size",
+      "font-weight",
+      "gap",
+      "height",
+      "max-height",
+      "padding-x",
+      "padding-y",
+      "radius",
+      "shadow",
+      "size",
+      "target-min"
+    ],
+    "stany": [
+      "active",
+      "checked",
+      "disabled",
+      "focus",
+      "hover",
+      "invalid",
+      "selected"
+    ],
+    "wielkosci": {
+      "$comment": "Wielkość jest wariantem jak stan i stoi w tym samym miejscu — na końcu. `md` nie występuje w nazwie, bo jest wartością bazową: `--pct-button-height` JEST wysokością `md` (wym-api-wielkosc).",
+      "lista": ["sm", "lg"]
+    }
+  }
+}

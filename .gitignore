@@ -4,6 +4,13 @@
 dist
 tmp
 out-tsc
+# Wyjątek: kontrola odniesienia bramki `check-tokens` wiezie CELOWO wadliwe artefakty
+# (`dist/pct.css` niezgodne ze źródłami, `dist/tokens.ts` z dziurą w unii) — to jest
+# cała wada tych dwóch przypadków, bez niej przychodzą do CI zdrowe. Reguła `dist`
+# wyżej dopasowuje katalog o tej nazwie na każdej głębokości, więc bez tej linii
+# fixtures przechodzą, a bramka melduje „spreparowane wejście PRZESZŁO" — czyli
+# zapala na czymś, czego w repozytorium nie widać.
+!tools/check-tokens.fixtures/*/libs/tokens/dist/
 # skórka kopiowana z libs/tokens/dist, żeby ng-packagr mógł ją wziąć jako asset
 # (assety muszą leżeć w katalogu projektu) — źródłem prawdy jest libs/tokens/src
 /libs/components/themes

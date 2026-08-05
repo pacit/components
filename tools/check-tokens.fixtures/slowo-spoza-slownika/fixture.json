@@ -1,0 +1,5 @@
+{
+  "punkt": 3,
+  "kontrola": "schemat",
+  "opis": "`--pct-przycisk-bg-over` zamiast `--pct-przycisk-bg-hover`. Kolejność segmentów jest tu poprawna — wadą jest samo słowo. To jest ta połowa obietnicy „zgadniesz bez dokumentacji\", której snapshot nie dotyka w ogóle: nazwa jest nowa, więc snapshot i tak wymaga akceptacji, a pytanie, czy wolno ją zaakceptować, zostaje bez maszyny."
+}

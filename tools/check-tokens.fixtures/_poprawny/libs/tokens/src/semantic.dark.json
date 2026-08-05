@@ -1,0 +1,6 @@
+{
+  "pct": {
+    "surface": { "$type": "color", "$value": "{pct.slate.900}" },
+    "text": { "$type": "color", "$value": "{pct.slate.0}" }
+  }
+}

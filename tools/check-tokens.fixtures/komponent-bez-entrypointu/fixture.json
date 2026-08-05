@@ -1,0 +1,5 @@
+{
+  "punkt": 3,
+  "kontrola": "schemat",
+  "opis": "`component.dialog.json` bez `libs/components/dialog/ng-package.json`. Tokeny są bez zarzutu złożone, tylko nazywają komponent, którego pakiet nie eksportuje. Zgadywalność nazwy zaczyna się od tego, że przedrostek jest tym samym słowem, którym konsument robi `import`: `--pct-dialog-bg` bez entrypointu `dialog` odsyła donikąd — albo, gorzej, do komponentu nazwanego inaczej."
+}

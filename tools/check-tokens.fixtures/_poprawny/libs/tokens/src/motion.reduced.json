@@ -1,0 +1,9 @@
+{
+  "pct": {
+    "motion": {
+      "transition": {
+        "duration": { "$type": "duration", "$value": "0.01ms" }
+      }
+    }
+  }
+}

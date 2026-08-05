@@ -88,4 +88,11 @@ jobs:
       # wartościach z palety nie widzi kompozycji z tłem. Bramka czyta źródła ORAZ
       # to, co z nich wypisuje sass: właściwość złożona interpolacją dociera do
       # przeglądarki, a w tekście arkusza nie stoi nigdzie.
-      - run: npx nx affected -t lint test vite:test build typecheck check-package check-coverage check-zoneless check-typecheck check-styles check-docs e2e
+      # `check-tokens` pilnuje nazw tokenów, czyli publicznego API motywu. Zmiana
+      # nazwy nie daje ani jednego czerwonego testu, bo biblioteka przemianowuje obie
+      # strony naraz — token i arkusz — a konsumentowi zostaje nadpisanie wskazujące
+      # donikąd. Drugą połową jest schemat: nazwa złożona ze słów spoza słownika albo
+      # z segmentami w innej kolejności (`disabled-bg` wobec `bg-disabled`) nie psuje
+      # niczego dziś i cofa obietnicę „zgadniesz bez dokumentacji" jutro. Sam snapshot
+      # tego nie łapie — zamroziłby rozjazd, bo mierzy zmianę, a nie zgadywalność.
+      - run: npx nx affected -t lint test vite:test build typecheck check-package check-coverage check-zoneless check-typecheck check-styles check-tokens check-docs e2e

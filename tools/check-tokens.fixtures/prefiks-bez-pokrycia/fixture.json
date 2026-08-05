@@ -1,0 +1,5 @@
+{
+  "punkt": 2,
+  "kontrola": "powierzchnia",
+  "opis": "Polityka deklaruje prefiks prywatny `pct.zielony.`, którego nie używa ani jeden token. Martwy prefiks wygląda w pliku jak zasięg, a nie jest żadnym — i przy najbliższym przemianowaniu rampy przestanie chronić to, co miał chronić, nie dając przy tym żadnego sygnału."
+}

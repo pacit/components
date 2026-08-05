@@ -1,0 +1,8 @@
+{
+  "pct": {
+    "dialog": {
+      "bg": { "$type": "color", "$value": "{pct.surface}" },
+      "fg": { "$type": "color", "$value": "{pct.text}" }
+    }
+  }
+}

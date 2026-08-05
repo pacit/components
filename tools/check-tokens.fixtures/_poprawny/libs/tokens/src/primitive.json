@@ -1,0 +1,21 @@
+{
+  "pct": {
+    "blue": {
+      "600": { "$type": "color", "$value": "#2563eb" }
+    },
+    "slate": {
+      "0": { "$type": "color", "$value": "#ffffff" },
+      "500": { "$type": "color", "$value": "#64748b" },
+      "900": { "$type": "color", "$value": "#0f172a" }
+    },
+    "space": {
+      "3": { "$type": "dimension", "$value": "8px" },
+      "4": { "$type": "dimension", "$value": "12px" }
+    },
+    "motion": {
+      "transition": {
+        "duration": { "$type": "duration", "$value": "150ms" }
+      }
+    }
+  }
+}

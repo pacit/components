@@ -1,0 +1,23 @@
+{
+  "prywatne": {
+    "prefiksy": ["pct.blue.", "pct.slate."]
+  },
+
+  "prymitywne": {
+    "osie": ["blue", "slate", "space", "motion"]
+  },
+
+  "semantyczne": {
+    "role": ["primary", "surface", "text"],
+    "warianty": ["muted"]
+  },
+
+  "komponentowe": {
+    "czesci": ["label"],
+    "wlasciwosci": ["bg", "fg", "padding-x"],
+    "stany": ["hover", "pressed"],
+    "wielkosci": {
+      "lista": ["sm"]
+    }
+  }
+}

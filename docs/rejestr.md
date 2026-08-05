@@ -9,9 +9,9 @@ Nie ma stanu „zrealizowane, tylko niesprawdzone" — patrz
 
 | stan           | znaczenie                                          | liczba |
 | -------------- | -------------------------------------------------- | -----: |
-| ✅ egzekwowane | bramka i kontrola istnieją, są wpięte w CI         |     45 |
+| ✅ egzekwowane | bramka i kontrola istnieją, są wpięte w CI         |     46 |
 | 🟡 częściowo   | bramka jest, kontroli odniesienia brak (świadomie) |     16 |
-| ⛔ luka        | brak bramki albo kontroli, z zapisanym terminem    |     20 |
+| ⛔ luka        | brak bramki albo kontroli, z zapisanym terminem    |     19 |
 | **razem**      |                                                    | **81** |
 
 ## Luki wg pilności
@@ -26,7 +26,6 @@ Kolejność bierze się z pola **Wiąże przy**, nie z numeru wymagania.
 | [`wym-jakosc-konsument`](wymagania/jakosc.md#wym-jakosc-konsument)          | `.verdaccio/config.yml` i target `local-registry` w root `project.jso…              | natychmiast — `check-package` bada artefakt **statycznie**;… |
 | [`wym-jakosc-przegladarki`](wymagania/jakosc.md#wym-jakosc-przegladarki)    | `apps/sandbox-e2e/playwright.config.mts` ma **wyłącznie chromium**, r…              | natychmiast dla biblioteki chwalącej się a11y — Safari ma n… |
 | [`wym-projekt-tree-shaking`](wymagania/projekt.md#wym-projekt-tree-shaking) | test budujący aplikację importującą **wyłącznie** `@pacit/components/…              | natychmiast — to obietnica sprzedażowa, dziś niesprawdzana … |
-| [`wym-token-nazwy`](wymagania/tokeny.md#wym-token-nazwy)                    | snapshot nazw tokenów (`tokens.ts` już jest generowany — zostaje doło…              | natychmiast — nazwy tokenów są publicznym API motywu tak sa… |
 | [`wym-token-pary-tekstu`](wymagania/tokeny.md#wym-token-pary-tekstu)        | nic nie zapala, gdy **powstanie nowa powierzchnia bez pary**. To ta s… _(kontrola)_ | natychmiast — koszt to porównanie listy powierzchni z listą… |
 | [`wym-api-animacje`](wymagania/api.md#wym-api-animacje)                     | zakaz jest dotrzymany, ale **nic go nie pilnuje** — jedyne, co obowią…              | pierwszym komponencie z wejściem/wyjściem (panel, dialog, t… |
 | [`wym-api-ikony`](wymagania/api.md#wym-api-ikony)                           | dziś każda ikona jest **wpisana w szablon** jako SVG w `currentColor`…              | drugim komponencie potrzebującym podmienialnej ikony         |
@@ -133,7 +132,7 @@ Kolejność bierze się z pola **Wiąże przy**, nie z numeru wymagania.
 | [`wym-token-poziomy`](wymagania/tokeny.md#wym-token-poziomy)         | ⛔ luka        | `libs/tokens/build.mjs` — tokeny komponentowe są auto-odkrywane (`com… | brak — luka: nic nie zapala, gdy token komponentowy odwoła się wprost… |
 | [`wym-token-referencje`](wymagania/tokeny.md#wym-token-referencje)   | ✅ egzekwowane | `apps/sandbox-e2e/src/theme.spec.ts` — nadpisanie tokenu semantyczneg… | test porównuje token komponentowy w `:root` **i** w scope — sam token… |
 | [`wym-token-domkniecie`](wymagania/tokeny.md#wym-token-domkniecie)   | ✅ egzekwowane | `apps/sandbox-e2e/src/theme.spec.ts` — token **komponentowy** porówny… | przebieg z `lekcja-17`: przed poprawką `--pct-surface` był poprawnie … |
-| [`wym-token-nazwy`](wymagania/tokeny.md#wym-token-nazwy)             | ⛔ luka        | brak — luka: snapshot nazw tokenów (`tokens.ts` już jest generowany —… | brak — luka: zmiana nazwy tokenu bez aktualizacji snapshotu musi zapa… |
+| [`wym-token-nazwy`](wymagania/tokeny.md#wym-token-nazwy)             | ✅ egzekwowane | `tools/check-tokens.mjs` (target `check-tokens` w projekcie roota, w … | `tools/check-tokens.fixtures/` — jedenaście wejść, każde odrzucane na… |
 | [`wym-token-pary-tekstu`](wymagania/tokeny.md#wym-token-pary-tekstu) | ⛔ luka        | `libs/tokens/src/contrast.policy.json` + silnik w `libs/tokens/build.… | brak — luka: nic nie zapala, gdy **powstanie nowa powierzchnia bez pa… |
 | [`wym-token-kontrast`](wymagania/tokeny.md#wym-token-kontrast)       | ✅ egzekwowane | `libs/tokens/build.mjs` (target `tokens:build`, w CI przez `^build`)   | przebieg z `lekcja-6`: pierwotny guard przepuścił `disabled` o realny… |
 | [`wym-token-bez-opacity`](wymagania/tokeny.md#wym-token-bez-opacity) | ✅ egzekwowane | `tools/check-styles.mjs` (target `check-styles`, w CI) — punkt 6: `op… | `tools/check-styles.fixtures/opacity-czesciowa/` (stan wyrażony przez… |
@@ -211,3 +210,4 @@ Która lekcja karmi które wymaganie. Generowane z pól **Lekcje**.
 | [`lekcja-46`](lekcje.md#lekcja-46) | `wym-api-fundament`                                                                                                                  |
 | [`lekcja-47`](lekcje.md#lekcja-47) | `wym-jakosc-typecheck`                                                                                                               |
 | [`lekcja-48`](lekcje.md#lekcja-48) | `wym-token-logiczne`                                                                                                                 |
+| [`lekcja-49`](lekcje.md#lekcja-49) | — _(nie cytowana)_                                                                                                                   |

@@ -114,17 +114,35 @@ zwracały wartości jasne — bramka na samym tokenie semantycznym **przechodzi�
 
 ### <a id="wym-token-nazwy"></a>`wym-token-nazwy` — Nazwa tokenu daje się zgadnąć
 
-**Obietnica.** Schemat `--pct-{komponent}-{część}-{właściwość}-{stan}` (np.
-`--pct-button-bg-hover`), tak by token dało się zgadnąć **bez dokumentacji**.
+**Obietnica.** Schemat `--pct-{komponent}-{część}-{właściwość}-{wariant}` (np.
+`--pct-button-bg-hover`), tak by token dało się zgadnąć **bez dokumentacji**. Wariant —
+stan (`hover`, `disabled`) albo wielkość (`sm`, `lg`) — stoi **zawsze na końcu**;
+`md` nie występuje, bo jest wartością bazową ([`wym-api-wielkosc`](api.md#wym-api-wielkosc)).
+Warstwa semantyczna ma własny, płaski kształt `[on-]{rola}[-{wariant}]`, a prymitywna
+jest ścieżką DTCG jeden do jednego.
 
-**Bramka:** brak — luka: snapshot nazw tokenów (`tokens.ts` już jest generowany —
-zostaje dołożyć bramkę na niezaakceptowaną zmianę)
-**Kontrola:** brak — luka: zmiana nazwy tokenu bez aktualizacji snapshotu musi zapalić
-**Wiąże przy:** natychmiast — nazwy tokenów są publicznym API motywu tak samo jak
-[`wym-api-czesci`](api.md#wym-api-czesci)
+**Bramka:** `tools/check-tokens.mjs` (target `check-tokens` w projekcie roota, w CI) —
+pięć punktów. Punkt 3 parsuje każdą nazwę wobec słownika w
+`libs/tokens/src/nazwy.policy.json` i wymaga, żeby komponent w nazwie był prawdziwym
+entrypointem pakietu; punkt 5 porównuje `libs/tokens/tokens.snapshot.md` z bieżącą listą.
+Punkty 1, 2 i 4 pilnują mianownika: dwa niezależne odczyty listy (`dist/pct.css` wobec
+źródeł DTCG), zgodność `tokens.ts` i `_tokens.scss` z tą listą oraz zakaz martwych słów
+w słowniku
+**Kontrola:** `tools/check-tokens.fixtures/` — jedenaście wejść, każde odrzucane na swoim
+punkcie; plus przebiegi na repozytorium: przemianowanie na inną poprawną nazwę zapala
+punkt 5, `disabled-bg` zamiast `bg-disabled` — punkt 3, `component.dialog.json` bez
+entrypointu — punkt 3, nieaktualne `dist` — punkt 1, słowo dopisane do słownika bez
+użycia — punkt 4
 
 > Ta sama reguła obowiązuje **identyfikatory wymagań** — i to z niej wzięło się
 > odejście od numerów. Patrz [README](../README.md#dlaczego-slugi-a-nie-numery).
+
+> **Sam snapshot tego nie domyka — zamraża.** Bramka powstała 2026-08-05 i zastała
+> 34 tokeny z segmentami w odwrotnej kolejności (`--pct-checkbox-checked-bg` obok
+> `--pct-checkbox-border-hover` w tym samym pliku), więc znając jedną nazwę nie dało
+> się zgadnąć siostrzanej. Snapshot dołożony przed normalizacją zapisałby ten rozjazd
+> jako stan zaakceptowany. Stąd punkt 3 **przed** punktem 5 — i stąd normalizacja
+> wykonana tym samym ruchem co bramka.
 
 ---
 

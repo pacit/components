@@ -1,0 +1,35 @@
+// AUTOGENEROWANE z libs/tokens/src/*.json — nie edytuj ręcznie.
+export const pctTokens = {
+  'pct.space.3': 'var(--pct-space-3)',
+  'pct.space.4': 'var(--pct-space-4)',
+  'pct.motion.transition.duration': 'var(--pct-motion-transition-duration)',
+  'pct.primary': 'var(--pct-primary)',
+  'pct.on-primary': 'var(--pct-on-primary)',
+  'pct.surface': 'var(--pct-surface)',
+  'pct.text': 'var(--pct-text)',
+  'pct.text-muted': 'var(--pct-text-muted)',
+  'pct.przycisk.bg': 'var(--pct-przycisk-bg)',
+  'pct.przycisk.bg-hover': 'var(--pct-przycisk-bg-hover)',
+  'pct.przycisk.fg': 'var(--pct-przycisk-fg)',
+  'pct.przycisk.label-fg': 'var(--pct-przycisk-label-fg)',
+  'pct.przycisk.padding-x': 'var(--pct-przycisk-padding-x)',
+  'pct.przycisk.padding-x-sm': 'var(--pct-przycisk-padding-x-sm)',
+} as const;
+
+export type PctTokenName = keyof typeof pctTokens;
+
+/** Nazwa custom property tokenu — tak, jak pyta o nią przeglądarka. */
+export type PctCssVar =
+  | '--pct-space-3'
+  | '--pct-space-4'
+  | '--pct-motion-transition-duration'
+  | '--pct-primary'
+  | '--pct-on-primary'
+  | '--pct-surface'
+  | '--pct-text'
+  | '--pct-text-muted'
+  | '--pct-przycisk-bg'
+  | '--pct-przycisk-bg-hover'
+  | '--pct-przycisk-label-fg'
+  | '--pct-przycisk-padding-x'
+  | '--pct-przycisk-padding-x-sm';

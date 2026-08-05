@@ -1,0 +1,9 @@
+{
+  "pct": {
+    "primary": { "$type": "color", "$value": "{pct.blue.600}" },
+    "on-primary": { "$type": "color", "$value": "{pct.slate.0}" },
+    "surface": { "$type": "color", "$value": "{pct.slate.0}" },
+    "text": { "$type": "color", "$value": "{pct.slate.900}" },
+    "text-muted": { "$type": "color", "$value": "{pct.slate.500}" }
+  }
+}

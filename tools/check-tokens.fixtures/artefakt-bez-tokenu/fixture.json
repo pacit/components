@@ -1,0 +1,5 @@
+{
+  "punkt": 1,
+  "kontrola": "zbior",
+  "opis": "`dist/pct.css` bez `--pct-przycisk-fg`, przy niezmienionych źródłach DTCG. Tak wygląda nieaktualne `dist` i tak wygląda generator, który zgubił token: artefakt niesie mniej, niż deklarują źródła. Bramka czytająca tylko jedną z tych dwóch stron orzekłaby „w porządku\" — i to na tej właśnie stronie, której konsument nie dostaje."
+}

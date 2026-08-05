@@ -1,0 +1,6 @@
+{
+  "punkt": 5,
+  "kontrola": "snapshot",
+  "usun": ["libs/tokens/tokens.snapshot.md"],
+  "opis": "Brak pliku snapshotu. Osobno od rozjazdu, bo to inna droga do tej samej ciszy: bramka bez snapshotu dalej mierzy schemat i przechodzi na zielono, przestawszy mierzyć ZMIANĘ. Przemianowanie tokenu na inną poprawną nazwę jest wtedy niewidzialne — a to jest właśnie ta zmiana, która u konsumenta psuje skórkę."
+}

@@ -1,0 +1,12 @@
+{
+  "$comment": "Minimalna policy kontrastu — build wymaga tego pliku, a ta bramka go nie czyta (nie ma korzenia `pct`, więc nie jest źródłem DTCG). Jedna para wystarczy, żeby generator przeszedł swoją ścieżką walidacji zamiast pustą.",
+  "checks": [
+    {
+      "name": "tekst podstawowy",
+      "fg": "pct.text",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    }
+  ]
+}

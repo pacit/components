@@ -1,0 +1,5 @@
+{
+  "punkt": 3,
+  "kontrola": "schemat",
+  "opis": "`--pct-przycisk-disabled-bg` zamiast `--pct-przycisk-bg-disabled`. Nazwa jest złożona z samych dobrych słów i wygląda niewinnie — właśnie dlatego jest tu jako osobny przypadek. To była PRAWDZIWA wada tego repozytorium: 34 tokeny stały w tym porządku obok `--pct-button-bg-hover` stojącego w odwrotnym, więc znając jedną nazwę nie dało się zgadnąć siostrzanej. Snapshot sam z siebie by jej nie zauważył — zamroziłby ją."
+}
