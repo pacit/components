@@ -135,12 +135,23 @@ musi zapalić punkt 3
 i wersję. Komponenty importuje się przez secondary entrypoints — co wymusza
 tree-shaking i jawne importy.
 
-**Bramka:** brak — luka: test budujący aplikację importującą **wyłącznie**
-`@pacit/components/button` i sprawdzający, że w bundlu nie ma ani `PctField`, ani CDK
-Overlay
-**Kontrola:** brak — luka: aplikacja importująca dwa entrypointy musi dać bundle
-zawierający oba
-**Wiąże przy:** natychmiast — to obietnica sprzedażowa, dziś niesprawdzana w ogóle
+**Bramka:** `tools/check-bundle.mjs` (target `check-bundle` w `components`, w CI) —
+dziesięć punktów. Sondy bundlują **artefakt** przez `node_modules` i mapę `exports`,
+czyli tą samą drogą co konsument: punkt 5 pilnuje, jakie entrypointy wciąga import
+jednego z nich, punkt 7 — jakie dochodzą przy tym zależności zewnętrzne (CDK Overlay
+ma prawo być wyłącznie w `./select`), punkt 8 — budżetu rozmiaru per entrypoint
+(`libs/components/rozmiar.snapshot.md`, tolerancja dwustronna ±5%). Punkt 4 pilnuje,
+że entrypoint główny nie wnosi ani jednego komponentu. Reszta to mianownik: dwa odczyty
+listy entrypointów, obecność mierzonego entrypointu w sondzie, drugi odczyt izolacji po
+tekście bundla, kontrola różnicowa i powtórzenie pomiaru **prawdziwym**
+`@angular/build:application`
+**Kontrola:** `tools/check-bundle.fixtures/` — 22 spreparowane wejścia, każde odrzucane
+na swoim punkcie; wśród nich `entrypoint-wciaga-sasiada/` (import `./alfa` wciąga
+`./beta`), `nowa-zaleznosc-zewnetrzna/` (entrypoint sięga po nakładkę CDK),
+`sonda-bez-swojego-entrypointu/` (pomiar przestał cokolwiek wciągać) i
+`para-nie-wieksza-od-pojedynczej/` — czyli wprost „aplikacja importująca dwa entrypointy
+musi dać bundle zauważalnie większy"
+**Lekcje:** [`lekcja-51`](../lekcje.md#lekcja-51)
 
 ---
 

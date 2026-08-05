@@ -1,0 +1,6 @@
+{
+  "// wada": "Nie ma pliku snapshotu. Punkty 5, 7 i 8 nie mają się z czym porównać, więc bramka pilnowałaby wyłącznie tego, że pomiar się wykonał.",
+  "punkt": 3,
+  "kontrola": "snapshot",
+  "usunSnapshot": true
+}

@@ -1,0 +1,6 @@
+{
+  "// wada": "Entrypoint stracił wszystkie markery, a inne sondy dowodzą jego nieobecności. Punkt 6 nie ma wtedy czego szukać w tekście, więc orzeka o nieobecności, nie umiejąc zobaczyć obecności.",
+  "punkt": 4,
+  "kontrola": "obecnosc",
+  "usunMarkery": "./alfa"
+}

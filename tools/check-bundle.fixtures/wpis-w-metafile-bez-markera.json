@@ -1,0 +1,6 @@
+{
+  "// wada": "Metafile liczy entrypoint jako wniesiony, a w tekście nie ma po nim ani jednego markera. Odwrotna strona tego samego rozjazdu: entrypoint policzony, choć nic z niego nie przetrwało.",
+  "punkt": 6,
+  "kontrola": "markery",
+  "usunWTekscie": { "ep": "./alfa", "co": "./alfa" }
+}

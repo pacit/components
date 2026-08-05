@@ -1,0 +1,6 @@
+{
+  "// wada": "Entrypoint urósł o połowę bez linii w diffie. Budżet nie zabrania wzrostu — zabrania wzrostu, na który nikt nie spojrzał.",
+  "punkt": 8,
+  "kontrola": "rozmiar",
+  "rozmiar": { "ep": "./alfa", "bajty": 12000 }
+}

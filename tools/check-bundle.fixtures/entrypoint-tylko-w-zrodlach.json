@@ -1,0 +1,6 @@
+{
+  "// wada": "Entrypoint ma `ng-package.json`, ale nie dojechał do mapy `exports` — czyli jest nieosiągalny dla konsumenta, choć w repozytorium wygląda na gotowy. Najczęstsza przyczyna w praktyce: nieaktualne `dist`.",
+  "punkt": 1,
+  "kontrola": "entrypointy",
+  "usunZExports": "./beta"
+}

@@ -1,0 +1,6 @@
+{
+  "// wada": "Prawdziwy build aplikacji importującej wyłącznie `./alfa` zawiera też `./beta`, choć sondy esbuilda tego nie widzą. Rozjazd znaczy, że szybki pomiar tej bramki przestał odpowiadać temu, co dostaje konsument.",
+  "punkt": 10,
+  "kontrola": "builder",
+  "builderZnalezione": { "i": 0, "znalezione": ["./alfa", "./beta"] }
+}

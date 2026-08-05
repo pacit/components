@@ -105,4 +105,18 @@ jobs:
       # z pakietu, zostałaby w inwentarzu jako obietnica bez pokrycia. Czwarty punkt
       # porównuje rubryki **Części** w `docs/komponenty/` z pakietem: pisane ręką,
       # więc kłamią — `field.md` wymieniał 11 części z piętnastu.
-      - run: npx nx affected -t lint test vite:test build typecheck check-package check-coverage check-zoneless check-typecheck check-styles check-tokens check-parts check-docs e2e
+      # `check-bundle` pilnuje obietnicy SPRZEDAŻOWEJ — tej, dla której ktoś tę
+      # bibliotekę wybiera: „komponenty importuje się przez secondary entrypoints, co
+      # wymusza tree-shaking". Jej złamanie nie daje ani jednego czerwonego testu:
+      # import z sąsiedniego entrypointu kompiluje się, przechodzi testy, przechodzi
+      # `check-package` i dokłada konsumentowi kilkadziesiąt kilobajtów, o których
+      # dowie się z własnego raportu bundla, jeśli go ma. Bramka BUNDLUJE artefakt
+      # przez `node_modules` i mapę `exports`, czyli tą samą drogą co konsument, i mierzy
+      # trzy rzeczy naraz: jakie entrypointy wciąga import jednego z nich, jakie
+      # zależności zewnętrzne przy tym dochodzą (`@angular/cdk/overlay` ma prawo być
+      # wyłącznie w `./select`) i ile to waży. Sondy idą własnym esbuildem, bo są tanie,
+      # ale to jest MOJE ustawienie bundlera, nie konsumenta — więc trzy z nich są
+      # powtórzone prawdziwym `@angular/build:application`, a trzecia z nich niesie
+      # komplet entrypointów i dowodzi, że tamten odczyt w ogóle potrafi cokolwiek
+      # znaleźć. Bez niej „nie ma tu PctField" byłoby prawdą pustą.
+      - run: npx nx affected -t lint test vite:test build typecheck check-package check-coverage check-zoneless check-typecheck check-styles check-tokens check-parts check-bundle check-docs e2e

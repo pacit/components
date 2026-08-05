@@ -9,35 +9,34 @@ Nie ma stanu „zrealizowane, tylko niesprawdzone" — patrz
 
 | stan           | znaczenie                                          | liczba |
 | -------------- | -------------------------------------------------- | -----: |
-| ✅ egzekwowane | bramka i kontrola istnieją, są wpięte w CI         |     47 |
+| ✅ egzekwowane | bramka i kontrola istnieją, są wpięte w CI         |     48 |
 | 🟡 częściowo   | bramka jest, kontroli odniesienia brak (świadomie) |     16 |
-| ⛔ luka        | brak bramki albo kontroli, z zapisanym terminem    |     18 |
+| ⛔ luka        | brak bramki albo kontroli, z zapisanym terminem    |     17 |
 | **razem**      |                                                    | **81** |
 
 ## Luki wg pilności
 
 Kolejność bierze się z pola **Wiąże przy**, nie z numeru wymagania.
 
-| wymaganie                                                                   | czego brakuje                                                                       | wiąże przy                                                   |
-| --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| [`wym-api-teksty`](wymagania/api.md#wym-api-teksty)                         | nic nie sprawdza, że **każdy** napis komponentu idzie przez token. No… _(kontrola)_ | natychmiast — koszt to grep po literałach w szablonach       |
-| [`wym-jakosc-jednostkowe`](wymagania/jakosc.md#wym-jakosc-jednostkowe)      | **testowanie mutacyjne** rdzenia (Stryker na `core`, `number`, `selec… _(kontrola)_ | natychmiast dla `core` — im więcej komponentów na nim stoi,… |
-| [`wym-jakosc-konsument`](wymagania/jakosc.md#wym-jakosc-konsument)          | `.verdaccio/config.yml` i target `local-registry` w root `project.jso…              | natychmiast — `check-package` bada artefakt **statycznie**;… |
-| [`wym-jakosc-przegladarki`](wymagania/jakosc.md#wym-jakosc-przegladarki)    | `apps/sandbox-e2e/playwright.config.mts` ma **wyłącznie chromium**, r…              | natychmiast dla biblioteki chwalącej się a11y — Safari ma n… |
-| [`wym-projekt-tree-shaking`](wymagania/projekt.md#wym-projekt-tree-shaking) | test budujący aplikację importującą **wyłącznie** `@pacit/components/…              | natychmiast — to obietnica sprzedażowa, dziś niesprawdzana … |
-| [`wym-token-pary-tekstu`](wymagania/tokeny.md#wym-token-pary-tekstu)        | nic nie zapala, gdy **powstanie nowa powierzchnia bez pary**. To ta s… _(kontrola)_ | natychmiast — koszt to porównanie listy powierzchni z listą… |
-| [`wym-api-animacje`](wymagania/api.md#wym-api-animacje)                     | zakaz jest dotrzymany, ale **nic go nie pilnuje** — jedyne, co obowią…              | pierwszym komponencie z wejściem/wyjściem (panel, dialog, t… |
-| [`wym-api-ikony`](wymagania/api.md#wym-api-ikony)                           | dziś każda ikona jest **wpisana w szablon** jako SVG w `currentColor`…              | drugim komponencie potrzebującym podmienialnej ikony         |
-| [`wym-api-liczba`](wymagania/api.md#wym-api-liczba)                         | testy własnościowe parsera (`parse(format(n)) === n` dla dowolnego `n… _(kontrola)_ | pierwszym locale spoza `pl`/`en` zgłoszonym przez konsumenta |
-| [`wym-api-szablony`](wymagania/api.md#wym-api-szablony)                     | projekcja działa (sloty obudowy), ale **`TemplateRef` nie pada nigdzi…              | pierwszym realnym użyciu selecta (szablon opcji) oraz przy … |
-| [`wym-projekt-aplikacje`](wymagania/projekt.md#wym-projekt-aplikacje)       | `apps/docs` nie istnieje, więc bramka opisywałaby stan, który nie zac…              | pierwszym zewnętrznym użytkowniku — bez dokumentacji nie ma… |
-| [`wym-projekt-layout`](wymagania/projekt.md#wym-projekt-layout)             | wynika z `wym-projekt-aplikacje`; domknie się razem z nim                           | powstaniu `apps/docs`                                        |
-| [`wym-projekt-pliki`](wymagania/projekt.md#wym-projekt-pliki)               | kontrola układu katalogu entrypointu (skrypt w duchu `check-package.m…              | pierwszym komponencie dopisanym przez kogoś innego niż auto… |
-| [`wym-projekt-zaleznosci`](wymagania/projekt.md#wym-projekt-zaleznosci)     | kontrola listy `dependencies` / `peerDependencies` w spakowanym manif…              | pierwszej zależności dodanej odruchowo — dziś nic nie odróż… |
-| [`wym-token-dyrektywa`](wymagania/tokeny.md#wym-token-dyrektywa)            | dyrektywy nie ma, motyw ustawia się ręcznym `data-theme`                            | gdy ustawianie `data-theme` z szablonu zacznie się powtarza… |
-| [`wym-token-gestosc`](wymagania/tokeny.md#wym-token-gestosc)                | w źródłach DTCG nie ma **ani jednego** tokenu gęstości                              | po ustabilizowaniu osi wielkości. Uwaga: gęstość zejdzie po… |
-| [`wym-token-poziomy`](wymagania/tokeny.md#wym-token-poziomy)                | nic nie zapala, gdy token komponentowy odwoła się wprost do prymitywn… _(kontrola)_ | pierwszym motywie budowanym z zewnątrz — złamanie tej reguł… |
-| [`wym-wydanie-wsparcie`](wymagania/wydanie.md#wym-wydanie-wsparcie)         | dokumentu nie ma. Kolekcja migracji istnieje (`wym-wydanie-ng-add`), …              | pierwszym zewnętrznym konsumencie — firma nie kupuje biblio… |
+| wymaganie                                                                | czego brakuje                                                                       | wiąże przy                                                   |
+| ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| [`wym-api-teksty`](wymagania/api.md#wym-api-teksty)                      | nic nie sprawdza, że **każdy** napis komponentu idzie przez token. No… _(kontrola)_ | natychmiast — koszt to grep po literałach w szablonach       |
+| [`wym-jakosc-jednostkowe`](wymagania/jakosc.md#wym-jakosc-jednostkowe)   | **testowanie mutacyjne** rdzenia (Stryker na `core`, `number`, `selec… _(kontrola)_ | natychmiast dla `core` — im więcej komponentów na nim stoi,… |
+| [`wym-jakosc-konsument`](wymagania/jakosc.md#wym-jakosc-konsument)       | `.verdaccio/config.yml` i target `local-registry` w root `project.jso…              | natychmiast — `check-package` bada artefakt **statycznie**;… |
+| [`wym-jakosc-przegladarki`](wymagania/jakosc.md#wym-jakosc-przegladarki) | `apps/sandbox-e2e/playwright.config.mts` ma **wyłącznie chromium**, r…              | natychmiast dla biblioteki chwalącej się a11y — Safari ma n… |
+| [`wym-token-pary-tekstu`](wymagania/tokeny.md#wym-token-pary-tekstu)     | nic nie zapala, gdy **powstanie nowa powierzchnia bez pary**. To ta s… _(kontrola)_ | natychmiast — koszt to porównanie listy powierzchni z listą… |
+| [`wym-api-animacje`](wymagania/api.md#wym-api-animacje)                  | zakaz jest dotrzymany, ale **nic go nie pilnuje** — jedyne, co obowią…              | pierwszym komponencie z wejściem/wyjściem (panel, dialog, t… |
+| [`wym-api-ikony`](wymagania/api.md#wym-api-ikony)                        | dziś każda ikona jest **wpisana w szablon** jako SVG w `currentColor`…              | drugim komponencie potrzebującym podmienialnej ikony         |
+| [`wym-api-liczba`](wymagania/api.md#wym-api-liczba)                      | testy własnościowe parsera (`parse(format(n)) === n` dla dowolnego `n… _(kontrola)_ | pierwszym locale spoza `pl`/`en` zgłoszonym przez konsumenta |
+| [`wym-api-szablony`](wymagania/api.md#wym-api-szablony)                  | projekcja działa (sloty obudowy), ale **`TemplateRef` nie pada nigdzi…              | pierwszym realnym użyciu selecta (szablon opcji) oraz przy … |
+| [`wym-projekt-aplikacje`](wymagania/projekt.md#wym-projekt-aplikacje)    | `apps/docs` nie istnieje, więc bramka opisywałaby stan, który nie zac…              | pierwszym zewnętrznym użytkowniku — bez dokumentacji nie ma… |
+| [`wym-projekt-layout`](wymagania/projekt.md#wym-projekt-layout)          | wynika z `wym-projekt-aplikacje`; domknie się razem z nim                           | powstaniu `apps/docs`                                        |
+| [`wym-projekt-pliki`](wymagania/projekt.md#wym-projekt-pliki)            | kontrola układu katalogu entrypointu (skrypt w duchu `check-package.m…              | pierwszym komponencie dopisanym przez kogoś innego niż auto… |
+| [`wym-projekt-zaleznosci`](wymagania/projekt.md#wym-projekt-zaleznosci)  | kontrola listy `dependencies` / `peerDependencies` w spakowanym manif…              | pierwszej zależności dodanej odruchowo — dziś nic nie odróż… |
+| [`wym-token-dyrektywa`](wymagania/tokeny.md#wym-token-dyrektywa)         | dyrektywy nie ma, motyw ustawia się ręcznym `data-theme`                            | gdy ustawianie `data-theme` z szablonu zacznie się powtarza… |
+| [`wym-token-gestosc`](wymagania/tokeny.md#wym-token-gestosc)             | w źródłach DTCG nie ma **ani jednego** tokenu gęstości                              | po ustabilizowaniu osi wielkości. Uwaga: gęstość zejdzie po… |
+| [`wym-token-poziomy`](wymagania/tokeny.md#wym-token-poziomy)             | nic nie zapala, gdy token komponentowy odwoła się wprost do prymitywn… _(kontrola)_ | pierwszym motywie budowanym z zewnątrz — złamanie tej reguł… |
+| [`wym-wydanie-wsparcie`](wymagania/wydanie.md#wym-wydanie-wsparcie)      | dokumentu nie ma. Kolekcja migracji istnieje (`wym-wydanie-ng-add`), …              | pierwszym zewnętrznym konsumencie — firma nie kupuje biblio… |
 
 ## oś
 
@@ -115,7 +114,7 @@ Kolejność bierze się z pola **Wiąże przy**, nie z numeru wymagania.
 | [`wym-projekt-entrypointy`](wymagania/projekt.md#wym-projekt-entrypointy)   | ✅ egzekwowane | `libs/components/check-package.mjs` — mapa `exports` w spakowanym man… | `tools/check-package.fixtures/skorka-poza-exports/` — plik obecny w p… |
 | [`wym-projekt-core`](wymagania/projekt.md#wym-projekt-core)                 | 🟡 częściowo   | `libs/components/field/src/field-controls.spec.ts` — wspólna logika k… | brak — świadomie: naruszeniem jest **duplikacja**, a nie awaria; łapi… |
 | [`wym-projekt-lib-tokenow`](wymagania/projekt.md#wym-projekt-lib-tokenow)   | ✅ egzekwowane | `libs/components/project.json` → `implicitDependencies: ["tokens"]` +… | `tools/check-package.fixtures/brak-skorki/` — pakiet bez `themes/pct.… |
-| [`wym-projekt-tree-shaking`](wymagania/projekt.md#wym-projekt-tree-shaking) | ⛔ luka        | brak — luka: test budujący aplikację importującą **wyłącznie** `@paci… | brak — luka: aplikacja importująca dwa entrypointy musi dać bundle za… |
+| [`wym-projekt-tree-shaking`](wymagania/projekt.md#wym-projekt-tree-shaking) | ✅ egzekwowane | `tools/check-bundle.mjs` (target `check-bundle` w `components`, w CI)… | `tools/check-bundle.fixtures/` — 22 spreparowane wejścia, każde odrzu… |
 | [`wym-projekt-pliki`](wymagania/projekt.md#wym-projekt-pliki)               | ⛔ luka        | brak — luka: kontrola układu katalogu entrypointu (skrypt w duchu `ch… | brak — luka: entrypoint z szablonem inline musi bramkę zapalić         |
 | [`wym-projekt-prefiks`](wymagania/projekt.md#wym-projekt-prefiks)           | 🟡 częściowo   | `libs/components/eslint.config.mjs` — reguły `@angular-eslint/compone… | brak — świadomie: reguła ESLint zapala przy pierwszym naruszeniu i ni… |
 | [`wym-projekt-angular`](wymagania/projekt.md#wym-projekt-angular)           | ✅ egzekwowane | `tools/check-zoneless.mjs` (target `check-zoneless`, w CI) — trzy pun… | `tools/check-zoneless.fixtures/` — spreparowane wejścia, po jednym na… |
@@ -211,3 +210,4 @@ Która lekcja karmi które wymaganie. Generowane z pól **Lekcje**.
 | [`lekcja-48`](lekcje.md#lekcja-48) | `wym-token-logiczne`                                                                                                                 |
 | [`lekcja-49`](lekcje.md#lekcja-49) | — _(nie cytowana)_                                                                                                                   |
 | [`lekcja-50`](lekcje.md#lekcja-50) | — _(nie cytowana)_                                                                                                                   |
+| [`lekcja-51`](lekcje.md#lekcja-51) | `wym-projekt-tree-shaking`                                                                                                           |

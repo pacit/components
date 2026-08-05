@@ -1,0 +1,6 @@
+{
+  "// wada": "Sonda importująca `./alfa` nie wniosła z niej ani jednego bajtu — dokładnie to, co zostaje po zbyt szerokiej liście `external` albo po aliasie wskazującym donikąd. Pusta sonda przechodzi KAŻDY punkt o izolacji, bo nie ma w niej niczego.",
+  "punkt": 4,
+  "kontrola": "obecnosc",
+  "sondaBezSwojego": "./alfa"
+}

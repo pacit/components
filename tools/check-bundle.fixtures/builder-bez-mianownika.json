@@ -1,0 +1,6 @@
+{
+  "// wada": "Zniknęła trzecia sonda buildera — ta z kompletem entrypointów. To ona dowodzi, że odczyt z prawdziwego builda POTRAFI zobaczyć to, czego w pozostałych nie znajduje; bez niej „nie ma tu PctField\" jest prawdą pustą.",
+  "punkt": 10,
+  "kontrola": "builder",
+  "usunBuilder": true
+}

@@ -1,0 +1,6 @@
+{
+  "// wada": "W tekście sondy stoi marker entrypointu, którego metafile bundlera jej nie przypisał — czyli treść weszła drogą, o której bundler nie raportuje. Odczyt z samego metafile byłby wtedy zielony.",
+  "punkt": 6,
+  "kontrola": "markery",
+  "dodajWTekscie": { "ep": "./alfa", "co": "./beta" }
+}

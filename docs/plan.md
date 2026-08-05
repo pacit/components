@@ -51,11 +51,11 @@ Migawka z **2026-08-05**, `node tools/check-docs.mjs`:
 | miara                                 | wartość |
 | ------------------------------------- | ------: |
 | wymagań                               |      81 |
-| ✅ egzekwowane                        |      47 |
+| ✅ egzekwowane                        |      48 |
 | 🟡 częściowo (świadomie bez kontroli) |      16 |
-| ⛔ luka                               |      18 |
+| ⛔ luka                               |      17 |
 
-Wszystkie 18 luk mają niżej swojego właściciela (A, B, D, F, G). Jeśli po dopisaniu
+Wszystkie 17 luk mają niżej swojego właściciela (A, B, D, F, G). Jeśli po dopisaniu
 wymagania liczba luk rośnie, a żadne zadanie się nie zmienia — ta lista przestała być
 kompletna i to jest błąd tej listy, nie rejestru.
 
@@ -71,18 +71,18 @@ F  powierzchnia zaufania       docs, ACR, benchmarki, most Figma
 G  luki bez terminu            czekają na wyzwalacz zapisany w polu „Wiąże przy"
 ```
 
-Pierwsze trzy, gdyby trzeba było wybrać tydzień: **A8** (obietnica sprzedażowa dziś
-niesprawdzana w ogóle), **A12** (pół dnia na dwie luki, a jedna z nich to ta sama klasa
-co A4: policy bada wyłącznie to, co ktoś wcześniej wpisał), **A11** (bramka tekstów, pół
-dnia, przy okazji zmusza do rozstrzygnięcia C5). F1 jest odblokowane — A3 i A4 dały mu
-oba inwentarze do wyrenderowania.
+Pierwsze trzy, gdyby trzeba było wybrać tydzień: **A12** (pół dnia na dwie luki, a jedna
+z nich to ta sama klasa co A4: policy bada wyłącznie to, co ktoś wcześniej wpisał),
+**A11** (bramka tekstów, pół dnia, przy okazji zmusza do rozstrzygnięcia C5), **A9**
+(test konsumenta na Verdaccio — jedyna pozycja badająca pakiet w użyciu, a nie
+statycznie). F1 jest odblokowane — A3 i A4 dały mu oba inwentarze do wyrenderowania.
 
 ---
 
 ## A. Faza 0 — bramki „natychmiast"
 
-Zostało sześć zadań i domykają **7 z 18 luk** — blisko połowy wszystkiego, co jeszcze
-stoi otworem.
+Zostało pięć zadań i domykają **6 z 17 luk** — ponad jedną trzecią wszystkiego, co
+jeszcze stoi otworem.
 
 - [x] **A1 — kontrola odniesienia dla `check-package`** _(2026-08-04)_
   - domknęło: `wym-jakosc-pakiet`, `wym-projekt-pakiet`, `wym-projekt-entrypointy`,
@@ -318,15 +318,54 @@ stoi otworem.
     nowego projektu), więc bramki workspace'owe biegną w każdym przebiegu — bez tego nowy
     projekt wymykałby się tej, która powstała właśnie po to
 
-- [ ] **A8 — tree-shaking + budżet rozmiaru entrypointu**
-  - domyka: `wym-projekt-tree-shaking`
-  - co: build aplikacji importującej **wyłącznie** `@pacit/components/button` i asercja,
-    że w bundlu nie ma ani `PctField`, ani CDK Overlay; do tego budżet rozmiaru per
-    entrypoint, failujący na skoku
-  - to obietnica sprzedażowa, dziś niesprawdzana w ogóle
-  - kontrola: aplikacja importująca dwa entrypointy musi dać bundle zauważalnie większy —
-    inaczej pomiar nic nie mierzy
-  - koszt: ~1 dzień · _notatki:_ —
+- [x] **A8 — tree-shaking + budżet rozmiaru entrypointu** _(2026-08-05)_
+  - domknęło: `wym-projekt-tree-shaking`
+  - zrobione: `tools/check-bundle.mjs` (target `check-bundle` w `components`,
+    `dependsOn: build`, w CI) — dziesięć punktów plus generowany
+    `libs/components/rozmiar.snapshot.md` (7 entrypointów, 114 766 B razem). Sedno to
+    dwa punkty: 5 (jakie entrypointy wciąga import jednego z nich) i 7 (jakie dochodzą
+    przy tym zależności zewnętrzne — `@angular/cdk/overlay` ma prawo być wyłącznie
+    w `./select`). Do tego budżet z tolerancją **dwustronną** i punkt 4 pilnujący, że
+    entrypoint główny nie wnosi ani jednego komponentu. Pozostałe pięć to mianownik
+  - plan mówił „build aplikacji importującej wyłącznie `@pacit/components/button`
+    i asercja, że w bundlu nie ma `PctField`" i pomylił się nie w zakresie, tylko
+    w tym, **czego taka asercja dowodzi**: sonda, z której bundler wyrzucił bibliotekę
+    w całości, też nie zawiera `PctField`. Stąd punkt 4 (sonda musi wnieść swój
+    entrypoint), punkt 9 (sonda dwóch entrypointów musi być zauważalnie większa niż
+    każda z pojedynczych — to jest kontrola z planu, wpięta jako punkt bramki)
+    i punkt 6 (drugi odczyt izolacji po tekście bundla, porównywany z metafile
+    **w obie strony**)
+  - sondy sięgają po pakiet przez `node_modules` i mapę `exports`, a **nie** przez
+    `alias` bundlera ani `paths` tsconfiga: jedno i drugie omija tę część manifestu,
+    która u konsumenta decyduje, co jest w ogóle osiągalne — sonda z aliasem byłaby
+    zielona także wtedy, gdyby `exports` nie istniało
+  - punkt 10 to ten sam ruch co „nie czytaj `include`, uruchom kompilator" z A7: siedem
+    szybkich sond idzie własnym esbuildem, ale to jest **moje** ustawienie bundlera,
+    więc trzy z nich są powtórzone prawdziwym `@angular/build:application`. Trzecia
+    niesie komplet entrypointów i jest mianownikiem dwóch pierwszych — dowodzi, że tamten
+    odczyt w ogóle potrafi znaleźć to, czego w nich nie znajduje. Zmierzone, nie
+    założone: markery **muszą** być selektorami, bo napis z FESM-a przeżywa minifikację,
+    a nie przeżywa linkowania (`button[pctButton]` staje się `[["button","pctButton",""]]`)
+  - **punkt 2 badał co innego, niż napisałem w jego uzasadnieniu**: usunięcie
+    `sideEffects` ze źródłowego manifestu nie zapala, bo ng-packagr dopisuje `false` sam
+    — sprawdzone z `--skip-nx-cache`, bo pierwszym podejrzanym był cache i to był fałszywy
+    trop ([`lekcja-51`](lekcje.md#lekcja-51)). Punkt zapala na jawnym `true` i na dniu,
+    w którym ng-packagr przestanie dopisywać domyślną
+  - kontrola: `tools/check-bundle.fixtures/` — dwadzieścia dwa wejścia, każde odrzucane
+    na swoim punkcie, na **udawanej** bibliotece (`alfa`, `beta`, `rdzen`), żeby nie
+    wymagały utrzymania przy każdym nowym komponencie; plus siedem przebiegów na
+    prawdziwym repozytorium (`button` importujący `PctField` → punkt 5; `button`
+    sięgający po `OverlayModule` → punkt 7; primary reeksportujący `PctButton` →
+    punkt 4; jawne `sideEffects: true` → punkt 2; nowy entrypoint bez przebudowy →
+    punkt 1; `button` większy o 2 kB → punkt 8; wiersz usunięty ze snapshotu → punkt 3)
+  - kontrola tej kontroli: rozbrojone po kolei **wszystkie dziesięć** punktów, każdy
+    zauważony przez wszystkie swoje przypadki; przypadek przestający być wadliwym →
+    „PRZESZŁO"; wadliwe wejście wzorcowe → bramka zapala na nim osobno, a dziesięć
+    przypadków idzie na cudze punkty
+  - koszt: ~1 dzień (zgodnie z planem) · _notatki:_ rozbrojenie punktu 4 dało najpierw
+    `TypeError` zamiast komunikatu — **ta sama wada co w A7, A4 i A3, czwarty raz,
+    i pierwszy raz WEWNĄTRZ jednego punktu**, nie między punktami. Bramka biegnie ~22 s,
+    z czego trzy czwarte to trzy prawdziwe buildy Angulara
 
 - [ ] **A9 — test konsumenta na Verdaccio**
   - domyka: `wym-jakosc-konsument`
@@ -581,6 +620,65 @@ Czekają na wyzwalacz zapisany w polu **Wiąże przy**. Nie są zapomniane — s
 ## Dziennik
 
 Wpis per sesja: co ruszyło, czym się skończyło, co jest następne. Najnowsze na górze.
+
+### 2026-08-05 — A8: pusta sonda przechodzi każdy test na to, czego w niej nie ma
+
+Zrobione **A8**. Luki: 18 → 17, egzekwowane: 47 → 48. Faza A ma za sobą osiem z trzynastu
+zadań; została pierwsza pozycja wymagająca zbudowania czegoś nowego poza samą bramką.
+
+Zadanie wyszło na zakładany dzień i plan **nie pomylił się w zakresie** — obietnica
+trzyma się dziś w całości, każdy entrypoint wciąga wyłącznie `./core`, a CDK Overlay
+stoi tylko w `./select`. Pomylił się w tym, czego dowodzi asercja, którą sam podał.
+
+- **„W bundlu nie ma `PctField`" jest prawdą pustą dokładnie wtedy, gdy pomiar
+  przestał mierzyć.** Sonda, z której bundler wyrzucił bibliotekę w całości — zły alias,
+  za szeroka lista `external`, entrypoint nieosiągalny przez `exports` — również nie
+  zawiera `PctField`, i wygląda przy tym na dowód. To ten sam mianownik co w A2, A5, A6
+  i A7, tylko w nowym kształcie: przy asercji o NIEOBECNOŚCI mianownikiem nie jest
+  „czy zmierzyłem wszystko", tylko **„czy mój pomiar potrafi cokolwiek zobaczyć"**.
+  Stąd cztery punkty z dziesięciu: sonda musi wnieść swój entrypoint, sonda dwóch
+  entrypointów musi być zauważalnie większa od pojedynczych (to była „kontrola" z planu
+  — wpięta jako punkt bramki, bo tam jest jej miejsce), izolacja czytana drugi raz po
+  tekście bundla i porównywana z metafile w obie strony, oraz komplet entrypointów
+  w trzeciej sondzie prawdziwego buildera.
+- **Sonda z aliasem byłaby zielona także wtedy, gdyby `exports` nie istniało.** Pakiet
+  jest widziany pod własną nazwą, przez `node_modules` i mapę `exports` — tą samą drogą,
+  którą pójdzie konsument. `alias` bundlera i `paths` tsconfiga omijają dokładnie tę
+  część manifestu, która u niego decyduje, co jest osiągalne, więc pomiar przez nie
+  badałby bibliotekę, do której nikt nie ma dostępu.
+- **Markery muszą być selektorami, bo napis z FESM-a nie przeżywa linkowania.** Pierwsza
+  wersja wyprowadzała je jako napisy unikalne dla entrypointu w zminifikowanym FESM-ie
+  i to działa w sondzie esbuilda. W prawdziwym buildzie `button[pctButton]` nie istnieje:
+  kompilator rozkłada go na `[["button","pctButton",""]]`. Marker wzięty z tekstu FESM-a
+  byłby więc w punkcie 10 nie do znalezienia i „nie ma tu `PctButton`" wychodziłoby na
+  zielono **zawsze**. Selektor przeżywa oba kroki, bo w obu jest daną, a nie nazwą — ta
+  sama maszyneria co w A3 i ten sam powód co w [`lekcja-46`](lekcje.md#lekcja-46).
+- **Punkt o `sideEffects` badał co innego, niż napisałem w jego uzasadnieniu.** Komentarz
+  mówił „usunięcie tej flagi nie daje ani jednego czerwonego testu". Przebieg: klucz
+  usunięty ze źródłowego manifestu, przebudowa — bramka **zielona**. Pierwszym
+  podejrzanym był cache (`nx build` zameldował `3/3 hit`) i to był fałszywy trop:
+  powtórka z `--skip-nx-cache` dała to samo, bo **ng-packagr dopisuje `false` sam**.
+  Scenariusz, dla którego punkt powstał, jest niewykonalny; punkt zapala na jawnym `true`
+  i na dniu, w którym narzędzie przestanie tę wartość dopisywać. Komentarz opisujący
+  wadę, której bramka nie łapie, jest gorszy niż brak komentarza — brzmi jak pokrycie
+  ([`lekcja-51`](lekcje.md#lekcja-51)).
+
+Sprawdzone przebiegiem, nie rozumowaniem: bramka zapala na siedmiu sposobach zepsucia
+repozytorium (`button` importujący `PctField`, `button` sięgający po `OverlayModule`,
+primary reeksportujący `PctButton`, jawne `sideEffects: true`, nowy entrypoint bez
+przebudowy, `button` większy o 2 kB, wiersz usunięty ze snapshotu) — za każdym razem na
+innym punkcie — i na trzech sposobach rozbrojenia własnej kontroli, przy czym rozbrojenie
+zmierzone **dla każdego z dziesięciu punktów osobno**.
+
+Rozbrojenie punktu 4 dało `TypeError` zamiast komunikatu — **ta sama wada co w A7, A4
+i A3, czwarty raz z rzędu.** Tym razem nie między punktami, tylko wewnątrz jednego:
+druga gałąź czytała `s.wniesione`, ufając pierwszej. Trzy poprzednie razy dały regułę
+„nie ufaj poprzedniemu punktowi"; ta dokłada, że granica punktu nie jest granicą tego
+zaufania.
+
+Następne: **A12** (pół dnia na dwie luki) albo **A11** (bramka tekstów, przy okazji
+zmusza do rozstrzygnięcia C5). A9, A10 i A13 wymagają zbudowania czegoś nowego —
+rejestru, macierzy przeglądarek, przebiegu mutacyjnego.
 
 ### 2026-08-05 — A3: bramka, która zapaliła poprawnie i wyjaśniła to fałszywie
 

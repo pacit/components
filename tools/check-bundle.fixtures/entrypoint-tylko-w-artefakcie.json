@@ -1,0 +1,6 @@
+{
+  "// wada": "Entrypoint jest w mapie `exports` pakietu, ale nie ma go w źródłach — czyli katalog stracił `ng-package.json`, a zbudowany pakiet dalej go wystawia. Odczyt z samego artefaktu byłby na to ślepy.",
+  "punkt": 1,
+  "kontrola": "entrypointy",
+  "usunZeZrodel": "./beta"
+}

@@ -1,0 +1,6 @@
+{
+  "// wada": "Prawdziwy build z entrypointem sięgającym po nakładkę CDK jej nie zawiera. To nie jest dobra wiadomość — to znak, że marker nakładki przestał być do znalezienia, czyli że wynik „nie ma tu Overlaya\" z pierwszej sondy przestał cokolwiek znaczyć.",
+  "punkt": 10,
+  "kontrola": "builder",
+  "builderOverlay": { "i": 1, "overlay": false }
+}

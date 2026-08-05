@@ -1,0 +1,6 @@
+{
+  "// wada": "Marker `pct-alfa` jest podciągiem markera `pct-alfa-mocna` z innego entrypointu, więc wyszukiwanie po tekście meldowałoby `./alfa` wszędzie tam, gdzie naprawdę jest `./beta`.",
+  "punkt": 4,
+  "kontrola": "obecnosc",
+  "dodajMarker": { "ep": "./beta", "markery": ["pct-alfa-mocna"] }
+}
