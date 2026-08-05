@@ -204,6 +204,20 @@ export class PctSelect<T = string>
   } | null>(null);
 
   /**
+   * Trzecia właściwość zerwana w nakładce, z tego samego powodu co motyw i pismo
+   * (`lekcja-35`): kierunek pisma. Panel jest dzieckiem `body`, więc dziedziczy
+   * kierunek po nim, a nie po kontrolce — w `dir="rtl"` trigger pisał od prawej,
+   * a lista pod nim od lewej (zmierzone: `direction: rtl` na triggerze wobec
+   * `ltr` na panelu). Widać to dopiero po otwarciu panelu, więc żaden zrzut stanu
+   * spoczynkowego by tego nie złapał, a arkusz jest przy tym bez zarzutu logiczny
+   * — `text-align: start` po prostu rozwiązuje się w drugą stronę.
+   *
+   * Odczyt idzie z triggera, nie z `document.dir`: kierunek bywa zakresowy tak
+   * samo jak motyw, a panel ma być przedłużeniem TEJ kontrolki, nie strony.
+   */
+  protected readonly panelDir = signal<string | null>(null);
+
+  /**
    * Szerokość panelu i punkt zaczepienia: w obudowie ramkę rysuje `pct-field`,
    * więc panel równa się z **nią**, a nie z triggerem stojącym w kolumnie
    * odsuniętej o padding i dekoracje. Samodzielna kontrolka jest własną ramką.
@@ -342,6 +356,7 @@ export class PctSelect<T = string>
     );
     const style = getComputedStyle(trigger);
     this.panelFont.set({ family: style.fontFamily, size: style.fontSize });
+    this.panelDir.set(style.direction);
     this.anchorWidth.set((this.anchor() ?? trigger).offsetWidth);
     this.open.set(true);
     // Aktywna staje się wybrana opcja, a bez wyboru pierwsza dostępna.
