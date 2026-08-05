@@ -31,14 +31,26 @@ przez signals, zero polegania na `zone.js`). Zamiast `ngOnChanges` → `computed
 **Ani `standalone: true`, ani `changeDetection` nie są ustawiane jawnie** — w Angularze
 v22+ oba są domyślne, a oficjalny przewodnik zabrania ich powtarzania.
 
-**Bramka:** testy jednostkowe biblioteki konfigurują zoneless w `TestBed`
-(`libs/components/*/src/*.spec.ts`), więc komponent polegający na `zone.js` przewraca
-własny test
-**Kontrola:** brak — luka: nic nie sprawdza, że `ɵcmp.onPush === true` dla każdego
-komponentu. Weryfikacja z [`lekcja-11`](../lekcje.md#lekcja-11) była jednorazowa
-**Wiąże przy:** zmianie domyślnych Angulara — dziś obietnica opiera się na tym, że
-domyślne się nie zmienią, a nie na pomiarze
-**Lekcje:** [`lekcja-7`](../lekcje.md#lekcja-7), [`lekcja-11`](../lekcje.md#lekcja-11)
+**Bramka:** `tools/check-zoneless.mjs` (target `check-zoneless`, w CI) — pomiar
+`ɵcmp.onPush === true` i `ɵcmp.standalone === true` dla **każdego** komponentu ze
+zbudowanego pakietu, do tego mianownik (każdy `@Component` ze źródeł musi być w pakiecie
+— inaczej „każdy" liczy się na próbce, która cicho się kurczy) i zakaz powtarzania obu
+wartości domyślnych w dekoratorze. Odczyt idzie z `dist`, nie ze źródeł, i to nie jest
+wygoda: deklaracja częściowa **pomija** `changeDetection`, gdy jest domyślne, więc
+wartość powstaje dopiero przy linkowaniu i tylko tam da się ją zmierzyć
+([`lekcja-46`](../lekcje.md#lekcja-46)). Poza tym testy jednostkowe biblioteki
+konfigurują zoneless w `TestBed` (`libs/components/*/src/*.spec.ts`), więc komponent
+polegający na `zone.js` przewraca własny test
+**Kontrola:** `tools/check-zoneless.fixtures/` — spreparowane wejścia, po jednym na sposób
+rozbrojenia pomiaru (pusty zbiór komponentów źródłowych, komponent poza pakietem,
+`onPush: false`, `standalone: false`, dekorator powtarzający domyślne). Każde musi zostać
+odrzucone **przez ten punkt, który deklaruje**, a wejście wzorcowe — przejść. Do tego
+przebieg na prawdziwym repozytorium: `ChangeDetectionStrategy.Default` dopisane do
+`PctButton` zapala punkt 6 od razu (skan źródeł), a po przebudowie pakietu punkt 5 —
+pomiar `ɵcmp` na `dist`; osobno przebieg dowodzący, że parser dekoratorów zgłasza własny
+rozjazd (7 rozpoznanych z 8) zamiast po cichu pomniejszać mianownik
+**Lekcje:** [`lekcja-7`](../lekcje.md#lekcja-7), [`lekcja-11`](../lekcje.md#lekcja-11),
+[`lekcja-46`](../lekcje.md#lekcja-46)
 
 ---
 

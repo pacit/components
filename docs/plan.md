@@ -51,11 +51,11 @@ Migawka z **2026-08-04**, `node tools/check-docs.mjs`:
 | miara                                 | wartość |
 | ------------------------------------- | ------: |
 | wymagań                               |      81 |
-| ✅ egzekwowane                        |      40 |
+| ✅ egzekwowane                        |      42 |
 | 🟡 częściowo (świadomie bez kontroli) |      16 |
-| ⛔ luka                               |      25 |
+| ⛔ luka                               |      23 |
 
-Wszystkie 25 luk ma niżej swojego właściciela (A, B, D, F, G). Jeśli po dopisaniu
+Wszystkie 23 luki mają niżej swojego właściciela (A, B, D, F, G). Jeśli po dopisaniu
 wymagania liczba luk rośnie, a żadne zadanie się nie zmienia — ta lista przestała być
 kompletna i to jest błąd tej listy, nie rejestru.
 
@@ -71,15 +71,15 @@ F  powierzchnia zaufania       docs, ACR, benchmarki, most Figma
 G  luki bez terminu            czekają na wyzwalacz zapisany w polu „Wiąże przy"
 ```
 
-Pierwsze cztery, gdyby trzeba było wybrać tydzień: **A6** i **A7** (po pół dnia, czysty
-zysk), **A5** (jedyna pozycja, której koszt retrofitu rośnie nieliniowo), **A4** (pół dnia
-i odblokowuje F1).
+Pierwsze trzy, gdyby trzeba było wybrać tydzień: **A7** (pół dnia, czysty zysk), **A5**
+(jedyna pozycja, której koszt retrofitu rośnie nieliniowo), **A4** (pół dnia i odblokowuje
+F1).
 
 ---
 
 ## A. Faza 0 — bramki „natychmiast"
 
-12 z 25 luk ma w polu **Wiąże przy** wpisane „natychmiast". Poniższe 11 zadań domyka 14
+11 z 23 luk ma w polu **Wiąże przy** wpisane „natychmiast". Pozostałe 10 zadań domyka 12
 luk.
 
 - [x] **A1 — kontrola odniesienia dla `check-package`** _(2026-08-04)_
@@ -157,16 +157,34 @@ luk.
     komponentach tygodnie plus polowanie na każdą strzałkę o zaszytym kierunku
   - koszt: ~1,5 dnia · _notatki:_ —
 
-- [ ] **A6 — bramka zoneless + OnPush**
-  - domyka: `wym-projekt-angular`, `wym-api-fundament`
-  - co: test zapalający, gdy `zone.js` pojawi się w drzewie zależności albo `Zone`
-    w zbudowanym bundlu; przy okazji asercja `ɵcmp.onPush === true` dla każdego
-    eksportowanego komponentu (ten sam plik, ten sam przebieg)
-  - dziś „powrót jest niemożliwy przez przypadek" nie ma żadnej maszyny za sobą
-    ([`lekcja-8`](lekcje.md#lekcja-8), [`lekcja-11`](lekcje.md#lekcja-11))
-  - kontrola: dopisanie `zone.js` do zależności musi zapalić; komponent z jawnym
-    `ChangeDetectionStrategy.Default` musi zapalić
-  - koszt: ~0,5 dnia · _notatki:_ —
+- [x] **A6 — bramka zoneless + OnPush** _(2026-08-04)_
+  - domknęło: `wym-projekt-angular`, `wym-api-fundament` — **2 luki**
+  - zrobione: `tools/check-zoneless.mjs` (target `check-zoneless`, `dependsOn: build`
+    - `schematics`, w CI) — sześć punktów w jednym przebiegu, tak jak zakładał plan.
+      Zoneless: manifesty z indeksu gita, drzewo `package-lock.json` (także instalacje
+      zagnieżdżone), ślad runtime w zbudowanym pakiecie. Fundament: pomiar `ɵcmp.onPush`
+      i `ɵcmp.standalone`, mianownik (każdy `@Component` ze źródeł musi być w pakiecie)
+      i zakaz powtarzania wartości domyślnych w dekoratorze
+  - plan mówił „`Zone` w zbudowanym bundlu" i to za mało precyzyjnie: `/zone/i` zapala
+    na polskim „liczone" w komentarzu. Ślady są nazwane po jednym — `import 'zone.js'`,
+    `NgZone`, `__zone_symbol__`, globalny `Zone` — żeby komunikat mówił, czego szukać
+  - odczyt `ɵcmp` idzie z `dist` przez JIT, nie ze źródeł: deklaracja częściowa
+    **pomija** `changeDetection`, gdy jest domyślne, więc wartość powstaje dopiero przy
+    linkowaniu ([`lekcja-46`](lekcje.md#lekcja-46)). Efektem ubocznym jest to, o co
+    chodziło: podbicie Angulara zmieniające domyślne zapala tę bramkę
+  - kontrola: `tools/check-zoneless.fixtures/` — dwanaście wejść, każde odrzucane na
+    swoim punkcie; plus cztery przebiegi na prawdziwym repo: `npm i -D zone.js` zapala
+    punkt 1, cofnięcie wpisu w manifeście **bez** cofnięcia w locku — punkt 2,
+    `ChangeDetectionStrategy.Default` w `PctButton` — punkt 6 od razu i punkt 5 po
+    przebudowie, złamane formatowanie dekoratora — mianownik parsera (7 z 8)
+  - kontrola tej kontroli: rozbrojony punkt 6 → fixture „PRZESZŁO"; fixture przestający
+    być wadliwym → to samo; wadliwe wejście wzorcowe → osiem przypadków zapala na cudzych
+    punktach
+  - koszt: ~0,5 dnia (zgodnie z planem) · _notatki:_ komentarz w `project.json`
+    twierdził najpierw, że jawne `standalone: true` daje bajt w bajt ten sam pakiet.
+    Pomiar to obalił — rusza `ɵɵngDeclareClassMetadata`, czyli echo dekoratora dla
+    debugowania. Źródła zostają w `inputs`, ale uzasadnieniem jest „bramka je czyta",
+    a nie funkcja diagnostyczna, która może zniknąć
 
 - [ ] **A7 — bramka pokrycia targetem `typecheck`**
   - domyka: `wym-jakosc-typecheck`
@@ -415,6 +433,46 @@ Czekają na wyzwalacz zapisany w polu **Wiąże przy**. Nie są zapomniane — s
 ## Dziennik
 
 Wpis per sesja: co ruszyło, czym się skończyło, co jest następne. Najnowsze na górze.
+
+### 2026-08-04 — A6: OnPush da się zmierzyć dopiero po linkowaniu
+
+Zrobione **A6**. Luki: 25 → 23, egzekwowane: 40 → 42.
+
+Zadanie wyszło półdniowe zgodnie z planem, ale nie tam, gdzie plan zakładał. Obie
+obietnice — „`zone.js` usunięty" i „każdy komponent jest OnPush" — są tej samej klasy:
+opierają się na tym, że nikt ich nie cofnie, a cofnięcie nie daje czerwonego testu.
+Różnią się tym, gdzie w ogóle da się je zmierzyć.
+
+- **Zoneless mierzy się na wejściu i na wyjściu.** Manifest, lock, bundle — trzy
+  niezależne drogi powrotu, więc trzy punkty. Przebieg, który to rozstrzygnął:
+  `npm i -D zone.js` zapala punkt 1; cofnięcie wpisu **w manifeście, ale nie w locku**
+  zapala punkt 2. Ten drugi wariant jest tym, którego nie widać w code review — diff
+  pokazuje usunięcie zależności, a pakiet dalej stoi w drzewie.
+- **OnPush nie mierzy się nigdzie poza `dist`.** W źródle nie stoi nic (przewodnik v22+
+  zabrania powtarzania domyślnych), w tekście bundla też nic — deklaracja częściowa
+  zapisuje wyłącznie odstępstwa od domyślnych. Wartość powstaje dopiero przy linkowaniu,
+  u konsumenta. Jedyny uczciwy odczyt to `ɵcmp.onPush` po `import '@angular/compiler'`,
+  czyli po odtworzeniu tego samego kroku ([`lekcja-46`](lekcje.md#lekcja-46)). Efekt
+  uboczny jest tym, o który chodziło: dzień zmiany domyślnych Angulara to dzień, w którym
+  ta bramka zapala.
+- **„Każdy komponent" znów potrzebowało mianownika.** Ta sama nauka co w A2, na innym
+  pomiarze: gdyby zbiór badanych komponentów brał się z samego pakietu, komponent, który
+  z niego wypadł, przestałby być sprawdzany bez śladu. Stąd punkt 4 (każdy `@Component`
+  ze źródeł musi być w pakiecie) i osobno kontrola mianownika samego parsera — złamanie
+  formatowania dekoratora daje „rozpoznałem 7 z 8", a nie cichsze o jeden pomiary.
+- **Komentarz w `project.json` skłamał, zanim go zmierzyłem.** Napisałem, że jawne
+  `standalone: true` daje bajt w bajt ten sam pakiet, więc źródła muszą być w `inputs`.
+  Porównanie sum kontrolnych to obaliło: rusza `ɵɵngDeclareClassMetadata`, echo dekoratora
+  zostawiane dla debugowania. Źródła zostają w `inputs`, ale uzasadnieniem jest „bramka je
+  czyta" — opieranie klucza cache na funkcji diagnostycznej byłaby `lekcja-44`
+  w trzecim przebraniu.
+
+Sprawdzone przebiegiem, nie rozumowaniem: bramka zapala na czterech sposobach zepsucia
+repozytorium (instalacja, instalacja ukryta w locku, jawny `Default` przed i po
+przebudowie, złamany parser) i na trzech sposobach rozbrojenia własnej kontroli
+(punkt w bramce, fixture przestający być wadliwym, wadliwe wejście wzorcowe).
+
+Następne: **A7** (bramka targetu `typecheck`) — pół dnia, bez zależności.
 
 ### 2026-08-04 — A2: pokrycie mierzy całą bibliotekę, nie swoją próbkę
 

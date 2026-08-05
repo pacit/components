@@ -71,4 +71,9 @@ jobs:
       # v8 obejmuje wyłącznie moduły, które weszły do przebiegu, więc plik bez testu
       # potrafi z niego WYPAŚĆ i podnieść wynik (`lekcja-45`). Sam próg w targecie
       # `test` pilnowałby wtedy liczby liczonej na coraz mniejszej próbce.
-      - run: npx nx affected -t lint test vite:test build typecheck check-package check-coverage check-docs e2e
+      # `check-zoneless` mierzy dwie obietnice, które dotąd opierały się wyłącznie na
+      # tym, że nikt ich nie cofnie: brak `zone.js` w drzewie i w bundlu oraz
+      # `ɵcmp.onPush` każdego komponentu. Instalacja stref niczego nie psuje — jest
+      # opcjonalnym peerem Angulara (`lekcja-8`) — a OnPush jest wartością DOMYŚLNĄ,
+      # czyli cudzą (`lekcja-11`). Jedno i drugie cofa się bez czerwonego testu.
+      - run: npx nx affected -t lint test vite:test build typecheck check-package check-coverage check-zoneless check-docs e2e

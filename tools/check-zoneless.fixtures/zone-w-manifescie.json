@@ -1,0 +1,10 @@
+{
+  "punkt": 1,
+  "kontrola": "manifesty",
+  "// wada": "`zone.js` dopisany do devDependencies roota. Nic się przez to nie psuje — jest opcjonalnym peerem @angular/core — więc bez tej kontroli przeszłoby to bez jednego czerwonego testu (lekcja-8).",
+  "dopiszZaleznosc": {
+    "plik": "package.json",
+    "pole": "devDependencies",
+    "wersja": "~0.15.0"
+  }
+}

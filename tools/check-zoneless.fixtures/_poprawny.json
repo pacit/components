@@ -1,0 +1,43 @@
+{
+  "// po co": "Wejście wzorcowe kontroli odniesienia: minimalny, ale POPRAWNY obraz projektu bez zone.js. Każdy przypadek obok powstaje na jego kopii i wnosi dokładnie jedną wadę, więc plik przypadku zawiera samą wadę, a nie kolejny egzemplarz poprawnego wejścia. Gdyby ta baza sama była wadliwa, każdy przypadek zapalałby z jej powodu — dlatego bramka sprawdza ją osobno.",
+  "manifesty": [
+    {
+      "plik": "package.json",
+      "dependencies": { "@angular/core": "22.0.6", "rxjs": "~7.8.0" },
+      "devDependencies": { "vitest": "^3.2.0" }
+    },
+    {
+      "plik": "libs/components/package.json",
+      "peerDependencies": { "@angular/core": "^22.0.0" }
+    }
+  ],
+  "pakietyLocka": [
+    "",
+    "node_modules/@angular/core",
+    "node_modules/rxjs",
+    "node_modules/@analogjs/vitest-angular"
+  ],
+  "bundle": [
+    {
+      "plik": "fesm2022/pacit-components-button.mjs",
+      "tekst": "import * as i0 from '@angular/core';\nclass PctButton {\n  // Wysokości są liczone z tokenów, nie z pikseli.\n}\nexport { PctButton };\n"
+    }
+  ],
+  "// wejscia": "Ta sama ścieżka co w `bundle`, ale z drugiego źródła — mapy `exports`. Zbieżność jest treścią punktu 3: dopóki obie listy się pokrywają, skan chodzi po tym, co pakiet naprawdę publikuje. Komentarz jest tu też po to, żeby literówka w jednej z nich nie wyglądała na przypadek.",
+  "wejscia": ["fesm2022/pacit-components-button.mjs"],
+  "zrodla": [
+    {
+      "plik": "libs/components/button/src/button.ts",
+      "klasa": "PctButton",
+      "jawne": []
+    }
+  ],
+  "komponenty": [
+    {
+      "klasa": "PctButton",
+      "wejscie": "./button",
+      "onPush": true,
+      "standalone": true
+    }
+  ]
+}

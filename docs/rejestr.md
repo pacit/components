@@ -9,9 +9,9 @@ Nie ma stanu „zrealizowane, tylko niesprawdzone" — patrz
 
 | stan           | znaczenie                                          | liczba |
 | -------------- | -------------------------------------------------- | -----: |
-| ✅ egzekwowane | bramka i kontrola istnieją, są wpięte w CI         |     40 |
+| ✅ egzekwowane | bramka i kontrola istnieją, są wpięte w CI         |     42 |
 | 🟡 częściowo   | bramka jest, kontroli odniesienia brak (świadomie) |     16 |
-| ⛔ luka        | brak bramki albo kontroli, z zapisanym terminem    |     25 |
+| ⛔ luka        | brak bramki albo kontroli, z zapisanym terminem    |     23 |
 | **razem**      |                                                    | **81** |
 
 ## Luki wg pilności
@@ -26,14 +26,12 @@ Kolejność bierze się z pola **Wiąże przy**, nie z numeru wymagania.
 | [`wym-jakosc-konsument`](wymagania/jakosc.md#wym-jakosc-konsument)          | `.verdaccio/config.yml` i target `local-registry` w root `project.jso…              | natychmiast — `check-package` bada artefakt **statycznie**;… |
 | [`wym-jakosc-przegladarki`](wymagania/jakosc.md#wym-jakosc-przegladarki)    | `apps/sandbox-e2e/playwright.config.mts` ma **wyłącznie chromium**, r…              | natychmiast dla biblioteki chwalącej się a11y — Safari ma n… |
 | [`wym-jakosc-typecheck`](wymagania/jakosc.md#wym-jakosc-typecheck)          | nic nie zapala, gdy **nowy projekt powstanie bez tego targetu**. Dokł… _(kontrola)_ | natychmiast — koszt to przejście po grafie projektów i poró… |
-| [`wym-projekt-angular`](wymagania/projekt.md#wym-projekt-angular)           | test zapalający, gdy `zone.js` pojawi się w drzewie zależności albo `… _(kontrola)_ | natychmiast — obietnica nieodwracalności bez bramki jest do… |
 | [`wym-projekt-tree-shaking`](wymagania/projekt.md#wym-projekt-tree-shaking) | test budujący aplikację importującą **wyłącznie** `@pacit/components/…              | natychmiast — to obietnica sprzedażowa, dziś niesprawdzana … |
 | [`wym-token-bez-opacity`](wymagania/tokeny.md#wym-token-bez-opacity)        | reguła lintu zakazująca `opacity` na warstwach tekstowych w `libs/com…              | natychmiast — to obietnica, której złamanie **cofa** `wym-t… |
 | [`wym-token-logiczne`](wymagania/tokeny.md#wym-token-logiczne)              | reguła lintu (stylelint albo skrypt w duchu `check-package.mjs`) zaka…              | natychmiast — koszt retrofitu jest **nieliniowy**. Dziś: re… |
 | [`wym-token-nazwy`](wymagania/tokeny.md#wym-token-nazwy)                    | snapshot nazw tokenów (`tokens.ts` już jest generowany — zostaje doło…              | natychmiast — nazwy tokenów są publicznym API motywu tak sa… |
 | [`wym-token-pary-tekstu`](wymagania/tokeny.md#wym-token-pary-tekstu)        | nic nie zapala, gdy **powstanie nowa powierzchnia bez pary**. To ta s… _(kontrola)_ | natychmiast — koszt to porównanie listy powierzchni z listą… |
 | [`wym-api-animacje`](wymagania/api.md#wym-api-animacje)                     | zakaz jest dotrzymany, ale **nic go nie pilnuje** — jedyne, co obowią…              | pierwszym komponencie z wejściem/wyjściem (panel, dialog, t… |
-| [`wym-api-fundament`](wymagania/api.md#wym-api-fundament)                   | nic nie sprawdza, że `ɵcmp.onPush === true` dla każdego komponentu. W… _(kontrola)_ | zmianie domyślnych Angulara — dziś obietnica opiera się na … |
 | [`wym-api-ikony`](wymagania/api.md#wym-api-ikony)                           | dziś każda ikona jest **wpisana w szablon** jako SVG w `currentColor`…              | drugim komponencie potrzebującym podmienialnej ikony         |
 | [`wym-api-liczba`](wymagania/api.md#wym-api-liczba)                         | testy własnościowe parsera (`parse(format(n)) === n` dla dowolnego `n… _(kontrola)_ | pierwszym locale spoza `pl`/`en` zgłoszonym przez konsumenta |
 | [`wym-api-szablony`](wymagania/api.md#wym-api-szablony)                     | projekcja działa (sloty obudowy), ale **`TemplateRef` nie pada nigdzi…              | pierwszym realnym użyciu selecta (szablon opcji) oraz przy … |
@@ -68,7 +66,7 @@ Kolejność bierze się z pola **Wiąże przy**, nie z numeru wymagania.
 | wymaganie                                                             | stan           | bramka                                                                 | kontrola                                                               |
 | --------------------------------------------------------------------- | -------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | [`wym-api-nazwy`](wymagania/api.md#wym-api-nazwy)                     | 🟡 częściowo   | `libs/components/eslint.config.mjs` — `@angular-eslint/component-sele… | brak — świadomie: reguła ESLint nie ma trybu cichego przejścia ---     |
-| [`wym-api-fundament`](wymagania/api.md#wym-api-fundament)             | ⛔ luka        | testy jednostkowe biblioteki konfigurują zoneless w `TestBed` (`libs/… | brak — luka: nic nie sprawdza, że `ɵcmp.onPush === true` dla każdego … |
+| [`wym-api-fundament`](wymagania/api.md#wym-api-fundament)             | ✅ egzekwowane | `tools/check-zoneless.mjs` (target `check-zoneless`, w CI) — pomiar `… | `tools/check-zoneless.fixtures/` — spreparowane wejścia, po jednym na… |
 | [`wym-api-sygnaly`](wymagania/api.md#wym-api-sygnaly)                 | 🟡 częściowo   | `libs/components/button/src/button.spec.ts`, `libs/components/checkbo… | brak — świadomie: błędna transformacja objawia się złym typem w szabl… |
 | [`wym-api-atrybuty`](wymagania/api.md#wym-api-atrybuty)               | 🟡 częściowo   | `apps/sandbox-e2e/src/states.spec.ts` — widok przekrojowy stanów odpy… | brak — świadomie: selektor trafiający w nic daje pusty locator, czyli… |
 | [`wym-api-konfiguracja`](wymagania/api.md#wym-api-konfiguracja)       | 🟡 częściowo   | `libs/components/button/src/button.spec.ts` — domyślny `size` z konfi… | brak — świadomie: test porównuje dwie **różne** wartości, więc nie mo… |
@@ -125,7 +123,7 @@ Kolejność bierze się z pola **Wiąże przy**, nie z numeru wymagania.
 | [`wym-projekt-tree-shaking`](wymagania/projekt.md#wym-projekt-tree-shaking) | ⛔ luka        | brak — luka: test budujący aplikację importującą **wyłącznie** `@paci… | brak — luka: aplikacja importująca dwa entrypointy musi dać bundle za… |
 | [`wym-projekt-pliki`](wymagania/projekt.md#wym-projekt-pliki)               | ⛔ luka        | brak — luka: kontrola układu katalogu entrypointu (skrypt w duchu `ch… | brak — luka: entrypoint z szablonem inline musi bramkę zapalić         |
 | [`wym-projekt-prefiks`](wymagania/projekt.md#wym-projekt-prefiks)           | 🟡 częściowo   | `libs/components/eslint.config.mjs` — reguły `@angular-eslint/compone… | brak — świadomie: reguła ESLint zapala przy pierwszym naruszeniu i ni… |
-| [`wym-projekt-angular`](wymagania/projekt.md#wym-projekt-angular)           | ⛔ luka        | `apps/sandbox/src/app/app.config.ts` → `provideZonelessChangeDetectio… | brak — luka: test zapalający, gdy `zone.js` pojawi się w drzewie zale… |
+| [`wym-projekt-angular`](wymagania/projekt.md#wym-projekt-angular)           | ✅ egzekwowane | `tools/check-zoneless.mjs` (target `check-zoneless`, w CI) — trzy pun… | `tools/check-zoneless.fixtures/` — spreparowane wejścia, po jednym na… |
 | [`wym-projekt-ssr`](wymagania/projekt.md#wym-projekt-ssr)                   | ✅ egzekwowane | `apps/sandbox-e2e/src/hydration.spec.ts` — sprawdzenie siedzi w pomoc… | `hydration.spec.ts › „bramka faktycznie wykrywa błąd hydracji (kontro… |
 | [`wym-projekt-layout`](wymagania/projekt.md#wym-projekt-layout)             | ⛔ luka        | brak — luka: wynika z `wym-projekt-aplikacje`; domknie się razem z nim | brak — luka: patrz wyżej                                               |
 
@@ -213,3 +211,4 @@ Która lekcja karmi które wymaganie. Generowane z pól **Lekcje**.
 | [`lekcja-43`](lekcje.md#lekcja-43) | `wym-jakosc-karta`, `wym-token-artefakty`                                                                                            |
 | [`lekcja-44`](lekcje.md#lekcja-44) | — _(nie cytowana)_                                                                                                                   |
 | [`lekcja-45`](lekcje.md#lekcja-45) | `wym-jakosc-pokrycie`                                                                                                                |
+| [`lekcja-46`](lekcje.md#lekcja-46) | `wym-api-fundament`                                                                                                                  |

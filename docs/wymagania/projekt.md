@@ -180,13 +180,21 @@ trybu, w którym „przechodzi po cichu" — nie należy do klasy [`wym-os`](../
 nieustawiane jawnie), zoneless, SSR. `zone.js` jest **usunięty z zależności**, nie tylko
 wyłączony.
 
-**Bramka:** `apps/sandbox/src/app/app.config.ts` → `provideZonelessChangeDetection()`;
-testy jednostkowe konfigurują zoneless w `TestBed`
-**Kontrola:** brak — luka: test zapalający, gdy `zone.js` pojawi się w drzewie
-zależności albo `window.Zone` w bundlu. [`lekcja-8`](../lekcje.md#lekcja-8) twierdzi, że
-„powrót jest niemożliwy przez przypadek" — dziś **nic tego nie pilnuje**
-**Wiąże przy:** natychmiast — obietnica nieodwracalności bez bramki jest dokładnie tym
-wzorcem, który [`wym-os`](../00-os.md) zakazuje
+**Bramka:** `tools/check-zoneless.mjs` (target `check-zoneless`, w CI) — trzy punkty na
+jedną obietnicę, bo `zone.js` wraca trzema niezależnymi drogami: deklaracją
+w którymkolwiek manifeście repozytorium (czytanym z indeksu gita, więc nowy projekt jest
+objęty od pierwszego commita), instalacją w drzewie `package-lock.json` — także
+zagnieżdżoną pod cudzym pakietem — oraz śladem runtime w zbudowanym pakiecie
+(`import 'zone.js'`, `NgZone`, `__zone_symbol__`, globalny `Zone`). Punkty 1 i 2 pilnują
+wejścia, punkt 3 wyjścia. Poza tym `apps/sandbox/src/app/app.config.ts` →
+`provideZonelessChangeDetection()`; testy jednostkowe konfigurują zoneless w `TestBed`
+**Kontrola:** `tools/check-zoneless.fixtures/` — spreparowane wejścia, po jednym na sposób
+powrotu stref (manifest roota, manifest publikowanego pakietu, instalacja w locku,
+instalacja zagnieżdżona, `NgZone` w bundlu, `__zone_symbol__` w bundlu, skan
+niewidzący pakietu). Każde musi zostać odrzucone **przez ten punkt, który deklaruje**,
+a wejście wzorcowe — przejść. Do tego dwa przebiegi na prawdziwym repozytorium:
+`npm i -D zone.js` zapala punkt 1, a cofnięcie tego wpisu **w manifeście, ale nie
+w locku** — punkt 2, czyli dokładnie ten wariant, którego nie widać w code review
 **Lekcje:** [`lekcja-7`](../lekcje.md#lekcja-7), [`lekcja-8`](../lekcje.md#lekcja-8),
 [`lekcja-11`](../lekcje.md#lekcja-11)
 

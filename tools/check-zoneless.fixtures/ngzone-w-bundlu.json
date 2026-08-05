@@ -1,0 +1,6 @@
+{
+  "punkt": 3,
+  "kontrola": "bundle",
+  "// wada": "Komponent wstrzykujący `NgZone`. Pakiet zbuduje się i przejdzie testy, bo w trybie zoneless NgZone dalej jest wstrzykiwalny — przewróci się dopiero u konsumenta, który na nim polegał.",
+  "dopiszDoBundla": "const strefa = i0.inject(NgZone);"
+}

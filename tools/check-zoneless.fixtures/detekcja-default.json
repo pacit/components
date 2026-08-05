@@ -1,0 +1,6 @@
+{
+  "punkt": 5,
+  "kontrola": "onpush",
+  "// wada": "`ɵcmp.onPush === false` — tak wygląda zarówno jawne `ChangeDetectionStrategy.Default` w dekoratorze, jak i zmiana wartości domyślnej w Angularze. Bramka nie rozróżnia tych przyczyn celowo: obie znoszą tę samą obietnicę.",
+  "onPush": { "PctButton": false }
+}

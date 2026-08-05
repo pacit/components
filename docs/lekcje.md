@@ -365,3 +365,15 @@ Reguła jest szersza niż ten jeden katalog: **„ignoruj" w narzędziach budowa
 Stąd pokrycie stoi na dwóch nogach. `libs/components/src/public-api.spec.ts` importuje każdą bramkę pakietu, więc jej moduły wchodzą do przebiegu normalną drogą i plik bez testu pokazuje się z pokryciem bliskim zeru, zamiast wypaść ze statystyki. `tools/check-coverage.mjs` pilnuje, że w raporcie **nie brakuje ani jednego pliku źródłowego** — bo to mianownik cicho się kurczy, a procent zawsze wygląda zdrowo. Punkt 3 tej bramki jest jedynym, który łapie tę regresję; punkty o progu pilnują liczby, która z niej powstała.
 
 Przy okazji dwie rzeczy zmierzone, nie założone. `coverageInclude` przyjmuje wzorce względem **korzenia repozytorium**, nie katalogu projektu, mimo tego, co mówi schemat executora: zapis `**/src/**` wciągnął do raportu biblioteki cały `apps/sandbox` (pokrycie 96,55% → 70,72%). A próg 80% jest **podłogą, nie zapadką**: przy 96,58% usunięcie samego `select.spec.ts` daje 81,55%, samego `number.spec.ts` — równo 80,00%, i oba przechodzą; dopiero obie naraz dają 64,96% i zapalają. Kto chce zapadki, musi ją napisać osobno — ta bramka jej nie obiecuje.
+
+---
+
+### <a id="lekcja-46"></a>`lekcja-46` — Deklaracja częściowa nie zapisuje wartości domyślnych, więc OnPush da się zmierzyć tylko po linkowaniu
+
+**W zbudowanym pakiecie nie ma ani jednego `changeDetection:`, a mimo to każdy komponent linkuje się jako OnPush.** Kompilacja częściowa (`ɵɵngDeclareComponent`) zapisuje wyłącznie to, co odbiega od domyślnych — wartość powstaje dopiero u konsumenta, przy linkowaniu, z domyślnych **jego** Angulara. Wniosek jest niewygodny: obietnica „każdy komponent jest OnPush" nie da się sprawdzić ani w źródle (nic tam nie stoi — przewodnik v22+ wprost zabrania powtarzania domyślnych), ani w tekście bundla (tam też nic nie stoi). Jedyny odczyt, który cokolwiek znaczy, to `ɵcmp.onPush` **po** linkowaniu, a w Node odtwarza to `import '@angular/compiler'` przed wczytaniem pakietu — ten sam krok, który wykonuje konsument.
+
+Stąd kształt bramki `check-zoneless`: mierzy `dist`, nie źródła. Efekt uboczny jest tym, o który chodziło — dzień, w którym Angular zmieni swoją wartość domyślną, jest dniem, w którym ta bramka zapala, bez czytania changelogu.
+
+Przy okazji zmierzone, nie założone: dopisanie jawnego `standalone: true` do dekoratora **nie zmienia** `ɵɵngDeclareComponent` (deklaracja i tak niesie `isStandalone: true`) i rusza wyłącznie `ɵɵngDeclareClassMetadata` — echo dekoratora zostawiane dla debugowania. Cache Nx unieważnia się więc dziś także bez wpisania źródeł do `inputs`, ale za sprawą funkcji diagnostycznej, która nie jest niczyją obietnicą. Klucz cache ma wymieniać to, co bramka **czyta**, a nie to, co zwykle się przy okazji zmienia — inaczej powtórzy się `lekcja-44` w trzecim przebraniu.
+
+I jeszcze jedno, tańsze: `git ls-files "*package.json"` wciąga także `ng-package.json`. Pathspec dopasowuje przyrostek, nie nazwę pliku. Fałszywego trafienia to nie dało — konfiguracja ng-packagr nie ma pól zależności — ale rozdęło mianownik w komunikacie bramki z 3 manifestów do 10, czyli sprawiło, że bramka kłamała o własnym zasięgu.
