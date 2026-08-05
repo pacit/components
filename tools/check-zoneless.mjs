@@ -92,10 +92,18 @@ const SLADY = [
  * dopasowań jest osobno porównywana z liczbą samych `@Component(`. Bez tego zmiana
  * formatowania nie wywaliłaby parsera, tylko po cichu ZMNIEJSZYŁA mianownik z punktu 4,
  * a bramka dalej świeciłaby na zielono — czyli dokładnie ta wada, przed którą stoi.
+ *
+ * Licznik dopuszcza WCIĘCIE, bo do 2026-08-05 tego nie robił i przez to nie robił
+ * niczego: powtarzał kotwicę parsera co do znaku, więc przesunięcie dekoratora
+ * o jedną spację gasiło obie strony porównania naraz. Zmierzone na tym repozytorium
+ * — `PctCheckbox` wcięty o spację dawał „7 komponentów" zamiast ośmiu i przebieg
+ * zielony, czyli komponent wypadał z pomiaru OnPush bez śladu (`lekcja-48`).
+ * Kontrola porównująca dwa pomiary musi mieć dwa NIEZALEŻNE pomiary; wystąpienia
+ * w komentarzu odsiewa `[ \t]*`, bo linia JSDoc zaczyna się od gwiazdki.
  */
 const KOMPONENT =
   /^@Component\(\{\r?\n([\s\S]*?)^\}\)\r?\n(?:export\s+)?(?:abstract\s+)?class\s+([A-Za-z_$][\w$]*)/gm;
-const KOMPONENT_LICZNIK = /^@Component\(/gm;
+const KOMPONENT_LICZNIK = /^[ \t]*@Component\(/gm;
 
 /** Opcje, których przewodnik Angulara zabrania powtarzać — są domyślne w v22+. */
 const OPCJE_DOMYSLNE = ['changeDetection', 'standalone'];
