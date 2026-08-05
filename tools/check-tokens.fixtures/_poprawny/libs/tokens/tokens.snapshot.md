@@ -17,9 +17,11 @@ unii `PctCssVar` (patrz `prywatne.prefiksy` w
 
 ```
 --pct-blue-600 color prymitywny prywatny
+--pct-blue-700 color prymitywny prywatny
 --pct-motion-transition-duration duration prymitywny publiczny
 --pct-on-primary color semantyczny publiczny
 --pct-primary color semantyczny publiczny
+--pct-primary-hover color semantyczny publiczny
 --pct-przycisk-bg color komponentowy publiczny
 --pct-przycisk-bg-hover color komponentowy publiczny
 --pct-przycisk-fg color komponentowy publiczny

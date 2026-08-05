@@ -40,13 +40,10 @@
       "$type": "color",
       "$value": "{pct.slate.500}"
     },
+    "$comment-danger": "`danger` nie ma pary `on-danger`, bo w tej bibliotece nie jest POWIERZCHNIĄ: maluje wyłącznie tekst komunikatu i obramowanie stanu błędu. Para wisiała tu do A12 zadeklarowana i nieużywana przez żaden token ani arkusz — czyli wyglądała na pokrycie, którego nie było. Wróci razem z pierwszym komponentem malującym tło błędem (toast, badge), i wtedy będzie to widać w diffie.",
     "danger": {
       "$type": "color",
       "$value": "{pct.red.600}"
-    },
-    "on-danger": {
-      "$type": "color",
-      "$value": "{pct.slate.0}"
     },
     "focus-ring": {
       "$type": "color",

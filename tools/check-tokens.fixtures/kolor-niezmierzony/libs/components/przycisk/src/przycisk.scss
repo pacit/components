@@ -1,0 +1,22 @@
+:host {
+  background: var(--pct-przycisk-bg);
+  color: var(--pct-przycisk-fg);
+  padding-inline: var(--pct-przycisk-padding-x);
+}
+
+:host(:hover) {
+  background: var(--pct-przycisk-bg-hover);
+}
+
+:host([data-pct-size='sm']) {
+  --pct-przycisk-padding-x: var(--pct-przycisk-padding-x-sm);
+}
+
+/* Wada przypadku: tło malowane tokenem semantycznym, którego policy nie zna. */
+:host([data-pct-variant='outline']:hover) {
+  background: var(--pct-text-muted);
+}
+
+.pct-przycisk__label {
+  color: var(--pct-przycisk-label-fg);
+}

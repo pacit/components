@@ -1,0 +1,6 @@
+{
+  "punkt": 6,
+  "kontrola": "poziomy",
+  "regula": "odwolanie-w-gore",
+  "opis": "`--pct-text-muted` — token semantyczny — wskazuje na `{pct.przycisk.bg}`, czyli w GÓRĘ, na warstwę komponentową. Model odwrócony do góry nogami dalej jest spójny jako graf i dalej się buduje; przestaje być tylko modelem, w którym autor motywu ma jedną warstwę do nauczenia się. Osobny przypadek od `odwolanie-w-bok`, bo obie reguły stoją w innych gałęziach kodu i psują się niezależnie."
+}

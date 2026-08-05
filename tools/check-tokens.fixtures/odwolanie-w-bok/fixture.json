@@ -1,0 +1,6 @@
+{
+  "punkt": 6,
+  "kontrola": "poziomy",
+  "regula": "odwolanie-w-bok",
+  "opis": "`--pct-przycisk-bg-hover` wskazuje na `{pct.przycisk.bg}`, czyli na CUDZY token tej samej warstwy. W wejściu wzorcowym jest tylko jeden komponent, więc wada wygląda niewinnie; przy dwóch to jest dokładnie mechanizm, którym nadpisanie `--pct-select-bg` zmieniałoby wygląd pola. `wym-token-nadpisanie` obiecuje coś odwrotnego — że token komponentowy dotyczy jednego komponentu — a obietnica ta nie ma innego strażnika niż ten punkt."
+}

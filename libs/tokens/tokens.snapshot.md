@@ -16,6 +16,9 @@ unii `PctCssVar` (patrz `prywatne.prefiksy` w
 [`src/nazwy.policy.json`](src/nazwy.policy.json)).
 
 ```
+--pct-blue-200 color prymitywny prywatny
+--pct-blue-300 color prymitywny prywatny
+--pct-blue-400 color prymitywny prywatny
 --pct-blue-50 color prymitywny prywatny
 --pct-blue-500 color prymitywny prywatny
 --pct-blue-600 color prymitywny prywatny
@@ -97,7 +100,6 @@ unii `PctCssVar` (patrz `prywatne.prefiksy` w
 --pct-motion-loop-duration duration prymitywny publiczny
 --pct-motion-transition-duration duration prymitywny publiczny
 --pct-motion-transition-easing cubicBezier prymitywny publiczny
---pct-on-danger color semantyczny publiczny
 --pct-on-primary color semantyczny publiczny
 --pct-primary color semantyczny publiczny
 --pct-primary-active color semantyczny publiczny

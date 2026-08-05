@@ -1,0 +1,25 @@
+{
+  "checks": [
+    {
+      "name": "tekst podstawowy",
+      "fg": "pct.text",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "przycisk/hover — etykieta",
+      "fg": "pct.przycisk.fg",
+      "bg": "pct.przycisk.bg-hover",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "przycisk — etykieta obok kontrolki",
+      "fg": "pct.przycisk.label-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    }
+  ]
+}

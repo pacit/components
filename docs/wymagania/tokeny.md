@@ -68,12 +68,35 @@ udokumentowany w [`lekcja-43`](../lekcje.md#lekcja-43)
 - **komponentowe** — per komponent (`--pct-button-bg`); referują wyłącznie do
   semantycznych, **nigdy** do prymitywnych.
 
-**Bramka:** `libs/tokens/build.mjs` — tokeny komponentowe są auto-odkrywane
-(`component.*.json`), więc dodanie komponentu nie wymaga zmian w buildzie
-**Kontrola:** brak — luka: nic nie zapala, gdy token komponentowy odwoła się wprost do
-prymitywnego. To reguła warstwowa sprawdzalna jednym przejściem po grafie referencji
-**Wiąże przy:** pierwszym motywie budowanym z zewnątrz — złamanie tej reguły odbiera
-autorowi motywu warstwę, przez którą miał sterować
+Graf referencji idzie więc **tylko w dół**: komponentowy → semantyczny → prymitywny →
+literał. Odwołanie w bok (token komponentowy jednego komponentu na token drugiego) łamie
+przy okazji [`wym-token-nadpisanie`](#wym-token-nadpisanie), a odwołanie w górę
+(semantyczny na komponentowy) odwraca cały model.
+
+**Bramka:** `tools/check-tokens.mjs` (target `check-tokens` w projekcie roota, w CI) —
+punkt 6. Dla **koloru** reguła nie ma ani jednego wyjątku: nad kolorem warstwa
+semantyczna istnieje i jest kompletna, więc kolor komponentowy wskazujący na prymityw
+albo wpisany wprost jako literał zapala. Dla **wymiaru** wyjątkiem są osie zadeklarowane
+w `libs/tokens/src/poziomy.policy.json` (dziś `control`, `font`, `radius`, `space`,
+`target`), a sama lista jest pilnowana z dwóch stron: oś nieużywana zapala, oś niosąca
+token `$type: color` zapala już na deklaracji. Do tego `libs/tokens/build.mjs` —
+auto-odkrywanie `component.*.json`, więc dodanie komponentu nie wymaga zmian w buildzie
+**Kontrola:** `tools/check-tokens.fixtures/` — po jednym wejściu na regułę:
+`kolor-pod-semantyka`, `literal-koloru`, `odwolanie-w-bok`, `odwolanie-w-gore`,
+`prymityw-z-referencja`, `os-wspolna-martwa`, `os-wspolna-kolorowa`,
+`os-niezadeklarowana`; plus przebiegi na
+repozytorium: `--pct-button-bg` przestawiony na `{pct.blue.600}`, kolor pola wpisany
+z palca, `--pct-select-bg` wskazujący na `{pct.field.bg}`, oś `space` usunięta z polityki
+(15 naruszeń), oś `motion` dopisana bez użycia
+
+> **Wyjątek dla osi wymiaru jest zapisany, a nie milczący.** Reguła w brzmieniu
+> dosłownym była w tym repozytorium złamana **35 razy** — każdy token wymiaru
+> komponentowego wskazuje wprost na prymityw, bo nad wymiarem nie ma warstwy
+> semantycznej i nie da się jej dołożyć bez wymyślenia ról, których nikt nie potrzebuje.
+> `pct.control.height.md` nie jest przy tym „surową wartością bez znaczenia": jest
+> wspólną osią przycisku i wiersza pola ([`wym-api-wielkosc`](api.md#wym-api-wielkosc)),
+> czyli tym samym leverem, którym miałaby być semantyka. Bramka pisana bez tego zapisu
+> musiałaby albo zapalać na całym repozytorium, albo cicho nie badać wymiaru.
 
 ---
 
@@ -150,15 +173,37 @@ użycia — punkt 4
 
 ### <a id="wym-token-pary-tekstu"></a>`wym-token-pary-tekstu` — Powierzchnia ma odpowiadający token tekstu
 
-**Obietnica.** Dla każdej powierzchni istnieje odpowiadający token tekstu (`--pct-on-*`,
-np. `--pct-on-primary`).
+**Obietnica.** Każdy kolor, który biblioteka **maluje** — tłem, tekstem albo obrysem —
+ma w `libs/tokens/src/contrast.policy.json` parę, wobec której jest mierzony. Tam, gdzie
+powierzchnia jest odwrócona względem strony, tekst dla niej nazywa się `--pct-on-*`
+(`--pct-on-primary`), a taka para musi mieć obie strony: istniejącą rolę i realne użycie.
 
-**Bramka:** `libs/tokens/src/contrast.policy.json` + silnik w `libs/tokens/build.mjs` —
-para bez wpisu w policy nie jest liczona, więc brak wpisu jest brakiem pokrycia
-**Kontrola:** brak — luka: nic nie zapala, gdy **powstanie nowa powierzchnia bez pary**.
-To ta sama klasa co [`lekcja-33`](../lekcje.md#lekcja-33): bramka bada wyłącznie to, co
-ktoś wcześniej wpisał
-**Wiąże przy:** natychmiast — koszt to porównanie listy powierzchni z listą par w policy
+**Bramka:** `tools/check-tokens.mjs` (target `check-tokens` w projekcie roota, w CI) —
+punkt 7. Mianownikiem nie jest lista nazw kończących się na `-bg` i `-fg`, tylko wyjście
+**sassa** dla arkuszy `libs/components`: token wniesiony mixinem albo przypisany do innej
+custom property też maluje. Reguła `on-*` czyta za to nazwy, bo para zadeklarowana
+i nigdy nienamalowana nie zostawia w arkuszu śladu. Progi liczy dalej
+`libs/tokens/build.mjs` ([`wym-token-kontrast`](#wym-token-kontrast)) — ten punkt pilnuje
+wyłącznie tego, żeby miał co liczyć
+**Kontrola:** `tools/check-tokens.fixtures/` — `kolor-niezmierzony` (arkusz maluje tłem
+token spoza policy), `para-usunieta-z-policy` (ta sama reguła od drugiej strony),
+`on-para-martwa`, `on-bez-powierzchni`, `wymiar-malowany-kolorem`, `token-spoza-skorki`
+oraz `arkusz-usuniety` na mianownik; plus przebiegi na repozytorium: nowa deklaracja
+`background: var(--pct-surface-disabled)` w `button.scss` zapala, usunięcie pary
+`button/solid — etykieta` z policy zapala, przywrócenie martwego `--pct-on-danger` zapala
+po przyjęciu snapshotu
+
+> **Do 2026-08-05 policy milczała o 27 kolorach.** Bramka kontrastu liczyła 38 par
+> i była zielona; poza jej zasięgiem stały wszystkie stany hover i disabled przycisku,
+> komunikaty błędu checkboxa, radia i selecta oraz siedem obramowań — a także dwa
+> tokeny **semantyczne** malowane wprost przez wariant outline (`--pct-surface-100` pod
+> etykietą `--pct-primary`), których żadna reguła oparta na nazwie tokenu komponentowego
+> nie potrafiłaby zobaczyć. To jest ta sama klasa co [`lekcja-33`](../lekcje.md#lekcja-33):
+> bramka bada wyłącznie to, co ktoś wcześniej wpisał.
+>
+> Dopisanie brakujących par **od razu wywróciło build**: trzy z nich nie przechodziły AA
+> w motywie ciemnym (etykieta przycisku na hover 3,45:1, na active 2,66:1, etykieta
+> wariantu outline na hover 3,98:1) — patrz [`lekcja-52`](../lekcje.md#lekcja-52).
 
 ---
 
@@ -170,7 +215,10 @@ kontrast wobec progów WCAG 2.2 (tekst normalny AA 4.5:1, duży AA 3:1, elementy
 SC 1.4.11 3:1), blokuje build przy `severity: error`, ostrzega przy `warn` i zwraca
 komunikat, **który wariant rozmiaru przechodzi, a który nie**.
 
-**Bramka:** `libs/tokens/build.mjs` (target `tokens:build`, w CI przez `^build`)
+**Bramka:** `libs/tokens/build.mjs` (target `tokens:build`, w CI przez `^build`);
+kompletność samej policy pilnuje `tools/check-tokens.mjs` punktem 7
+([`wym-token-pary-tekstu`](#wym-token-pary-tekstu)) — bez niego ta bramka mierzy
+wyłącznie to, co ktoś do niej wpisał
 **Kontrola:** przebieg z [`lekcja-6`](../lekcje.md#lekcja-6): pierwotny guard przepuścił
 `disabled` o realnym kontraście ~1,6:1 — bramka ma udokumentowany przypadek, w którym
 **nie zapaliła**, i poprawkę, która to zmieniła

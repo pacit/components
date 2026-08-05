@@ -1,16 +1,17 @@
 {
   "pct": {
+    "$comment": "Rampa `primary` idzie tu W GÓRĘ (jaśniej przy hover/active), odwrotnie niż w motywie jasnym. Powód jest mierzalny, nie estetyczny: `on-primary` jest w ciemnym motywie CIEMNY, więc przyciemnienie tła zbija kontrast etykiety zamiast go podnosić — do A12 dawało to 3,45:1 na hover i 2,66:1 na active, poniżej AA, przy zielonym buildzie. Ten sam token jest przy tym tekstem na ciemnej powierzchni (etykieta wariantu outline), a to wymaga kroku jasnego: blue.500 na `surface-100` dawało 3,98:1.",
     "primary": {
       "$type": "color",
-      "$value": "{pct.blue.500}"
+      "$value": "{pct.blue.400}"
     },
     "primary-hover": {
       "$type": "color",
-      "$value": "{pct.blue.600}"
+      "$value": "{pct.blue.300}"
     },
     "primary-active": {
       "$type": "color",
-      "$value": "{pct.blue.700}"
+      "$value": "{pct.blue.200}"
     },
     "on-primary": {
       "$type": "color",
@@ -43,10 +44,6 @@
     "danger": {
       "$type": "color",
       "$value": "{pct.red.400}"
-    },
-    "on-danger": {
-      "$type": "color",
-      "$value": "{pct.slate.900}"
     },
     "surface-disabled": {
       "$type": "color",

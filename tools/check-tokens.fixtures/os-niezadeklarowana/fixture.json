@@ -1,0 +1,6 @@
+{
+  "punkt": 6,
+  "kontrola": "poziomy",
+  "regula": "os-niezadeklarowana",
+  "opis": "Lista osi wspólnych pusta, a `--pct-przycisk-padding-x` dalej wskazuje na `{pct.space.4}`. To jest przypadek dla reguły, bez której cały wyjątek byłby jednostronny: `os-martwa` pilnuje, żeby na liście nie stało nic zbędnego, ta — żeby lista w ogóle cokolwiek znaczyła. Rozbrojenie samej tej reguły nie ruszało do A12 żadnego innego przypadku, czyli wyjątek na osie wspólne działał wtedy jak brak reguły."
+}

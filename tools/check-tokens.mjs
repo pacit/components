@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 /**
- * Bramka nazw tokenów: pilnuje obietnicy `wym-token-nazwy` — że nazwę tokenu da
- * się ZGADNĄĆ bez dokumentacji, bo składa się ze słów z zamkniętego zbioru,
- * stojących zawsze w tej samej kolejności.
+ * Bramka tokenów: nazwy, poziomy, pary. Trzy obietnice o jednym grafie —
+ * `wym-token-nazwy`, `wym-token-poziomy`, `wym-token-pary-tekstu` — pilnowane
+ * w jednym przebiegu, bo wszystkie trzy stoją na TYM SAMYM mianowniku: liście
+ * tokenów. Token, którego bramka nie zobaczy, jest niezgadywalny, poza warstwami
+ * i niezmierzony naraz, a każda z trzech reguł osobno wyglądałaby przy nim
+ * zielono.
  *
- * Powód istnienia jest podwójny i warto go rozdzielić, bo to dwie różne wady:
+ * Powód istnienia jest potrójny i warto go rozdzielić, bo to trzy różne wady:
  *
  *  - nazwa tokenu jest **publicznym API motywu** dokładnie tak samo jak nazwa
  *    inputu jest publicznym API komponentu. Przemianowanie `--pct-button-bg` psuje
@@ -13,9 +16,14 @@
  *  - nazwa NIEZGADYWALNA nie psuje niczego dziś i wszystko jutro. Zbiór, w którym
  *    stan raz nazywa się `hover`, a raz stoi przed właściwością, wymusza
  *    dokumentację przy każdym użyciu, czyli cofa obietnicę do zera przy zerowym
- *    koszcie widocznym w review.
+ *    koszcie widocznym w review;
+ *  - token komponentowy sięgający po PRYMITYW odbiera autorowi motywu warstwę,
+ *    przez którą miał sterować, a kolor, którego nie ma w policy kontrastu, nie
+ *    jest przez tę policy mierzony — i to drugie jest gorsze, bo bramka kontrastu
+ *    wygląda wtedy dokładnie tak samo jak wtedy, gdy naprawdę wszystko przechodzi
+ *    (lekcja-33).
  *
- * Sprawdzane jest pięć rzeczy:
+ * Sprawdzane jest siedem rzeczy:
  *  1. ZBIÓR: nazwy odczytane z `dist/pct.css` zgadzają się z niezależnym obejściem
  *     źródeł DTCG — i żadna strona nie jest pusta,
  *  2. POWIERZCHNIA: `dist/tokens.ts` i `dist/_tokens.scss` niosą dokładnie te
@@ -23,21 +31,37 @@
  *  3. SCHEMAT: każda nazwa parsuje się wobec słownika, a komponent w nazwie jest
  *     prawdziwym entrypointem pakietu,
  *  4. SŁOWNIK: każde zadeklarowane słowo jest użyte,
- *  5. SNAPSHOT: wersjonowana lista nazw zgadza się z bieżącą.
+ *  5. SNAPSHOT: wersjonowana lista nazw zgadza się z bieżącą,
+ *  6. POZIOMY: graf referencji idzie w dół — komponentowy do semantycznego,
+ *     semantyczny do prymitywnego, prymitywny do literału,
+ *  7. PARY: każdy kolor, który biblioteka NAPRAWDĘ maluje, stoi w policy
+ *     kontrastu, a każda para `on-*` jest używana.
  *
- * Punkty 3 i 5 to same reguły; punkty 1, 2 i 4 pilnują MIANOWNIKA, z którego te
- * reguły powstają — tego samego, który w A2 kurczył się jako próbka plików
+ * Punkty 3, 5, 6 i 7 to same reguły; punkty 1, 2 i 4 pilnują MIANOWNIKA, z którego
+ * te reguły powstają — tego samego, który w A2 kurczył się jako próbka plików
  * w raporcie pokrycia, w A6 jako zbiór mierzonych komponentów, w A7 jako zbiór
  * projektów, a w A5 jako zbiór deklaracji widzianych przez skaner. Tutaj kurczy
  * się zbiór NAZW: token, którego bramka nie zobaczy, jest dla punktów 3 i 5 tym
  * samym co plik poza raportem pokrycia — i to on wejdzie do pakietu bez śladu.
+ * Punkt 7 ma przy tym własny mianownik i własną kontrolę niepustości: mierzy
+ * ARKUSZE, a lista arkuszy, która przestała cokolwiek zwracać, przepuszcza
+ * wszystko (lekcja-48).
  *
- * Kolejność punktów nie jest przypadkowa. Punkt 5 stoi OSTATNI, bo snapshot
+ * Kolejność punktów nie jest przypadkowa. Punkt 5 stoi przed 6 i 7, bo snapshot
  * zapala na każdej zmianie nazwy, także na tej, którą punkt 3 potrafi nazwać po
- * imieniu. Odwrotna kolejność dawałaby na złą nazwę komunikat „snapshot się
- * rozjechał", czyli poprawną diagnozę problemu, którego nie ma.
+ * imieniu; odwrotna kolejność dawałaby na złą nazwę komunikat „snapshot się
+ * rozjechał", czyli poprawną diagnozę problemu, którego nie ma. Punkty 6 i 7 stoją
+ * po nim, bo mówią o WARTOŚCIACH i UŻYCIACH, a nie o liście nazw — zmiana, która
+ * je zapala, nie rusza snapshotu.
  *
- * Do tego szósty przebieg, który nie bada tokenów, tylko TĘ BRAMKĘ: kontrola
+ * Punkt 7 czyta arkusze biblioteki przez sass, a nie przez wzorzec po tekście
+ * źródła — ten sam ruch co w `check-styles` (A5) i z tego samego powodu: token
+ * wniesiony mixinem albo interpolacją dociera do przeglądarki, nie stojąc
+ * w tekście nigdzie. Czyta przy tym WYŁĄCZNIE `libs/components`, bo obietnica
+ * dotyczy skórki biblioteki; arkusz sandboxa maluje własne powierzchnie i nie
+ * jest niczyją obietnicą.
+ *
+ * Do tego ósmy przebieg, który nie bada tokenów, tylko TĘ BRAMKĘ: kontrola
  * odniesienia z `tools/check-tokens.fixtures/` (`wym-jakosc-kontrola`).
  *
  * Użycie:
@@ -64,12 +88,15 @@ import {
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import * as sass from 'sass';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const TOKENY = 'libs/tokens';
 const KOMPONENTY = 'libs/components';
 const SNAPSHOT = `${TOKENY}/tokens.snapshot.md`;
 const POLITYKA = `${TOKENY}/src/nazwy.policy.json`;
+const POZIOMY = `${TOKENY}/src/poziomy.policy.json`;
+const KONTRAST = `${TOKENY}/src/contrast.policy.json`;
 const FIXTURES = join(ROOT, 'tools/check-tokens.fixtures');
 const BAZA = '_poprawny';
 
@@ -142,15 +169,27 @@ const parsujSemantyczny = (reszta, polityka) => {
 // ── kontrole ──────────────────────────────────────────────────────────────────
 
 /**
- * Naruszenie jednej z pięciu kontroli — z identyfikatorem, nie tylko komunikatem.
+ * Naruszenie jednej z siedmiu kontroli — z identyfikatorem, nie tylko komunikatem.
  * Kontrola odniesienia musi sprawdzić, że spreparowane wejście zapaliło NA SWOIM
  * punkcie: wejście wywalające się z innego powodu, niż deklaruje, dowodzi czegoś
  * innego, niż deklaruje.
+ *
+ * Trzeci parametr — `regula` — jest odpowiedzią na `lekcja-50`. Punkt bramki to
+ * nie jest jedno zdanie: punkt 6 niesie dziewięć reguł, punkt 7 sześć.
+ * Porównanie samego identyfikatora punktu przepuszcza przypadek, który zapalił
+ * na SĄSIEDNIEJ regule tego samego punktu — czyli dowodzi czegoś innego, niż
+ * deklaruje, i wygląda przy tym na dowód. Zmierzone: rozbrojenie pięciu z tych
+ * reguł przestawia ich przypadki na sąsiednie reguły tego samego punktu i bez
+ * tego pola wszystkie te przebiegi byłyby zielone. `fixture.json` może więc
+ * dopisać `regula` i wtedy musi się zgadzać także ona. Pole jest opcjonalne:
+ * przypadki punktów 1–5, których reguł nie rozdzielono, nie mają czego
+ * doprecyzowywać.
  */
 class BladTokenu extends Error {
-  constructor(kontrola, opis) {
+  constructor(kontrola, opis, regula = null) {
     super(opis);
     this.kontrola = kontrola;
+    this.regula = regula;
   }
 }
 
@@ -161,7 +200,18 @@ class BladTokenu extends Error {
  * przed chwilą policzyła, a nie policzyć drugi raz osobną ścieżką.
  */
 const sprawdzTokeny = (we) => {
-  const { polityka, zrodla, css, ts, scss, snapshot, entrypointy } = we;
+  const {
+    polityka,
+    poziomy,
+    kontrast,
+    zrodla,
+    arkusze,
+    css,
+    ts,
+    scss,
+    snapshot,
+    entrypointy,
+  } = we;
 
   // 1. ZBIÓR — dwa niezależne odczyty tej samej listy.
   //
@@ -177,17 +227,24 @@ const sprawdzTokeny = (we) => {
   const zCss = new Set(
     [...css.matchAll(/^\s*(--pct-[a-z0-9-]+)\s*:/gm)].map((m) => m[1]),
   );
-  const zeZrodel = new Map(); // cssVar -> { sciezka, typy, pliki }
+  const zeZrodel = new Map(); // cssVar -> { sciezka, typy, pliki, wartosci }
   for (const { plik, drzewo } of zrodla)
-    for (const [sciezka, typ] of liscie(drzewo)) {
+    for (const [sciezka, typ, wartosc] of liscie(drzewo)) {
       const nazwa = cssVar(sciezka);
       const wpis = zeZrodel.get(nazwa) ?? {
         sciezka,
         typy: new Set(),
         pliki: [],
+        wartosci: [],
       };
       wpis.typy.add(typ);
       wpis.pliki.push(plik);
+      // Wartość zbiera się PER PLIK, a nie jedna na token: `semantic.dark.json`
+      // nadpisuje `semantic.light.json`, a `motion.reduced.json` — prymitywy osi
+      // ruchu. Punkt 6 musi obejrzeć każdą z nich osobno, bo motyw ciemny może
+      // wskazywać gdzie indziej niż jasny i to właśnie tam złamanie warstw
+      // byłoby najmniej widoczne.
+      wpis.wartosci.push({ plik, wartosc });
       zeZrodel.set(nazwa, wpis);
     }
 
@@ -243,6 +300,7 @@ const sprawdzTokeny = (we) => {
       nazwa,
       sciezka: w.sciezka,
       typ: [...w.typy][0],
+      wartosci: w.wartosci,
       ...warstwa(w.pliki),
     }))
     .sort((a, b) => (a.nazwa < b.nazwa ? -1 : a.nazwa > b.nazwa ? 1 : 0));
@@ -490,14 +548,385 @@ const sprawdzTokeny = (we) => {
     );
   }
 
+  // 6. POZIOMY — graf referencji idzie w dół (wym-token-poziomy).
+  //
+  //    Obietnicą nie jest porządek dla porządku, tylko DŹWIGNIA autora motywu:
+  //    warstwa semantyczna jest jedyną, którą musi znać, więc token komponentowy
+  //    sięgający pod nią zabiera mu sterowanie po cichu — skórka dalej się buduje,
+  //    testy dalej są zielone, a nadpisanie `--pct-primary` po prostu nie działa
+  //    na jednym przycisku.
+  //
+  //    Kolor nie ma tu ANI JEDNEGO wyjątku: nad nim warstwa semantyczna istnieje
+  //    i jest kompletna. Wyjątek dotyczy osi wymiaru, nad którymi semantyki nie ma,
+  //    i jest zawężony z dwóch stron naraz (patrz `poziomy.policy.json`): oś musi
+  //    być zadeklarowana, musi być używana i nie może nieść tokenu koloru. To
+  //    ostatnie jest tu najważniejsze — bez niego dopisanie `blue` do listy
+  //    rozbrajałoby regułę, dla której cały punkt powstał, i wyglądało w diffie
+  //    jak jedno słowo.
+  const zleP = [];
+  const wgSciezki = new Map(nazwy.map((n) => [n.sciezka, n]));
+  const osPrymitywu = (sciezka) => sciezka.split('.')[1];
+
+  const osieWspolne = poziomy['osie-wspolne'].osie;
+  const osieKolorowe = osieWspolne.filter((os) =>
+    nazwy.some(
+      (n) =>
+        n.warstwa === 'prymitywny' &&
+        n.typ === 'color' &&
+        osPrymitywu(n.sciezka) === os,
+    ),
+  );
+  if (osieKolorowe.length)
+    throw new BladTokenu(
+      'poziomy',
+      `${osieKolorowe.length} osi zadeklarowanych jako wspólne niesie tokeny koloru: ` +
+        osieKolorowe.map((o) => `\`${o}\``).join(', ') +
+        `\n    Wyjątek dla osi wspólnych istnieje dlatego, że nad wymiarem nie ma warstwy ` +
+        `semantycznej. Nad kolorem jest — i jest obowiązkowa. Oś kolorowa na tej liście ` +
+        `nie poszerza wyjątku, tylko kasuje regułę, dla której punkt 6 powstał.`,
+      'os-kolorowa',
+    );
+
+  const uzyteOsie = new Set();
+  for (const n of nazwy)
+    if (n.warstwa === 'komponentowy')
+      for (const { wartosc } of n.wartosci) {
+        const cel = odwolanie(wartosc);
+        const docelowy = cel === null ? null : wgSciezki.get(cel);
+        if (docelowy?.warstwa === 'prymitywny') uzyteOsie.add(osPrymitywu(cel));
+      }
+  const osieMartwe = osieWspolne.filter((os) => !uzyteOsie.has(os));
+  if (osieMartwe.length)
+    throw new BladTokenu(
+      'poziomy',
+      `${osieMartwe.length} osi zadeklarowanych jako wspólne nie używa ani jeden token ` +
+        `komponentowy: ` +
+        osieMartwe.map((o) => `\`${o}\``).join(', ') +
+        `\n    To ta sama konstrukcja co martwe słowo w słowniku nazw (punkt 4): oś bez ` +
+        `użycia powiększa zbiór odwołań, które punkt 6 przepuści, nie powiększając zbioru ` +
+        `odwołań, które ktokolwiek napisał. Oś, której w ogóle nie ma w źródłach, wygląda ` +
+        `tak samo — i tak samo tu zapala.`,
+      'os-martwa',
+    );
+
+  for (const n of nazwy)
+    for (const { plik, wartosc } of n.wartosci) {
+      const gdzie = `${n.nazwa} (${plik.split('/').pop()})`;
+      const cel = odwolanie(wartosc);
+
+      if (cel === null) {
+        // Literał. Dla wymiaru jest w porządku — token komponentowy JEST wtedy
+        // dźwignią (`--pct-checkbox-size: 18px` nadpisuje się wprost). Dla koloru
+        // nie: kolor wpisany z palca omija rampę i warstwę semantyczną naraz,
+        // czyli nie da się go przethemować niczym poza nim samym.
+        if (n.typ === 'color' && n.warstwa !== 'prymitywny')
+          zleP.push({
+            regula: 'literal-koloru',
+            opis:
+              `${gdzie}: kolor wpisany wprost (${JSON.stringify(wartosc)}) ` +
+              `w warstwie \`${n.warstwa}\` — omija rampę i semantykę naraz`,
+          });
+        continue;
+      }
+
+      const docelowy = wgSciezki.get(cel);
+      if (!docelowy) {
+        // Nieosiągalne przy zielonym buildzie (generator rzuca „Nieznana
+        // referencja"), ale czytanie `docelowy.warstwa` wprost dałoby tu
+        // `TypeError` zamiast zdania — a to jest wada, którą to repozytorium
+        // złapało już cztery razy (A3, A4, A7, A8) i za każdym razem w bramce
+        // pisanej ze świadomością poprzedniej.
+        zleP.push({
+          regula: 'referencja-donikad',
+          opis: `${gdzie}: wskazuje na nieistniejący token \`${cel}\``,
+        });
+        continue;
+      }
+
+      if (n.warstwa === 'prymitywny') {
+        zleP.push({
+          regula: 'prymityw-nie-literal',
+          opis:
+            `${gdzie}: warstwa prymitywna jest DNEM i musi być literałem, ` +
+            `a ten token wskazuje na \`${cel}\` (${docelowy.warstwa})`,
+        });
+        continue;
+      }
+
+      if (n.warstwa === 'semantyczny') {
+        // Alias semantyczny (`surface-disabled` -> `surface-100`) jest w porządku:
+        // obie strony należą do warstwy, którą autor motywu i tak zna w całości.
+        if (docelowy.warstwa === 'komponentowy')
+          zleP.push({
+            regula: 'odwolanie-w-gore',
+            opis:
+              `${gdzie}: warstwa semantyczna wskazuje W GÓRĘ, na komponentowy \`${cel}\` — ` +
+              `wtedy nadpisanie tokenu jednego komponentu przethemowuje całą skórkę`,
+          });
+        continue;
+      }
+
+      // komponentowy
+      if (docelowy.warstwa === 'komponentowy') {
+        zleP.push({
+          regula: 'odwolanie-w-bok',
+          opis:
+            `${gdzie}: wskazuje na CUDZY token komponentowy \`${cel}\` — ` +
+            `nadpisanie jednego komponentu zmieniałoby wtedy drugi ` +
+            `(wym-token-nadpisanie obiecuje coś dokładnie odwrotnego)`,
+        });
+        continue;
+      }
+      if (docelowy.warstwa !== 'prymitywny') continue; // semantyczny — tak ma być
+
+      if (n.typ === 'color')
+        zleP.push({
+          regula: 'kolor-pod-semantyka',
+          opis:
+            `${gdzie}: kolor komponentowy wskazuje wprost na prymityw \`${cel}\` — ` +
+            `warstwa semantyczna nad kolorem istnieje i nie ma od niej wyjątku`,
+        });
+      else if (!osieWspolne.includes(osPrymitywu(cel)))
+        zleP.push({
+          regula: 'os-niezadeklarowana',
+          opis:
+            `${gdzie}: wskazuje na prymityw z osi \`${osPrymitywu(cel)}\`, ` +
+            `której \`${POZIOMY}\` nie deklaruje jako wspólnej ` +
+            `(dziś: ${osieWspolne.join(', ')})`,
+        });
+    }
+  if (zleP.length)
+    throw new BladTokenu(
+      'poziomy',
+      `${zleP.length} odwołań poza modelem warstwowym (wym-token-poziomy):\n` +
+        lista(
+          skroc(
+            zleP.map((z) => `[${z.regula}] ${z.opis}`),
+            12,
+          ),
+        ) +
+        `\n    Model ma trzy piętra i jeden kierunek: komponentowy → semantyczny → ` +
+        `prymitywny → literał. Złamanie go nie psuje niczego w tym repozytorium — psuje ` +
+        `motyw budowany z zewnątrz, i to po cichu, bo skórka dalej się buduje.`,
+      // Regułą błędu jest reguła PIERWSZEGO naruszenia — przy jednej wadzie
+      // (czyli w każdym fixture) jest to jedyne naruszenie, a przy wielu i tak
+      // trzeba zacząć od jednego.
+      zleP[0].regula,
+    );
+
+  // 7. PARY — każdy kolor, który biblioteka MALUJE, jest zmierzony
+  //    (wym-token-pary-tekstu).
+  //
+  //    Mianownikiem nie jest lista nazw kończących się na `-bg` i `-fg`, tylko to,
+  //    co arkusze naprawdę malują. Różnica jest mierzalna, nie teoretyczna: przycisk
+  //    w wariancie outline maluje tło `var(--pct-surface-100)` i etykietę
+  //    `var(--pct-primary)`, czyli dwoma tokenami SEMANTYCZNYMI, których żadna
+  //    reguła oparta na nazwie tokenu komponentowego nie zobaczy. Do A12 obie stały
+  //    poza policy — i to jest dokładnie kształt `lekcja-33`: bramka kontrastu bada
+  //    wyłącznie to, co ktoś wcześniej do niej wpisał.
+  //
+  //    Odwrotnie działa reguła `on-*`: ta czyta NAZWY, bo para zadeklarowana
+  //    i nigdy nie namalowana nie zostawia w arkuszu żadnego śladu. Dwa odczyty,
+  //    dwie różne ślepoty.
+  const { malowane, przypisania } = malowaneKolory(arkusze);
+
+  // Mianownik punktu 7 mierzy się na WYNIKU, nie na wejściu. Pierwsza wersja
+  // pytała wyłącznie o liczbę arkuszy — i przeszła na zielono, wypisawszy
+  // „0 kolorów malowanych w 7 arkuszach": wzorzec deklaracji wymagał wiodącego
+  // myślnika, więc widział wyłącznie custom properties, a `background:` nie.
+  // To jest `lekcja-48` w punkcie napisanym po to, żeby jej nie powtórzyć, i ta
+  // sama pomyłka co w A5: kontrola niepustości stała po stronie WEJŚCIA, a pusty
+  // był POMIAR. Zero par do sprawdzenia to zawsze zero naruszeń.
+  if (!arkusze.length || !malowane.size || !kontrast.checks?.length)
+    throw new BladTokenu(
+      'pary',
+      `pusty mianownik punktu 7 (arkusze: ${arkusze.length}, ` +
+        `kolory malowane: ${malowane.size}, ` +
+        `wpisy w policy: ${kontrast.checks?.length ?? 0}) — ` +
+        `bez każdego z tych trzech ten punkt przechodzi, nie orzekając o niczym.\n` +
+        `    Najczęstsze przyczyny: lista arkuszy, która przestała cokolwiek zwracać ` +
+        `(lekcja-48 — pathspec gita nie jest globem powłoki), albo skaner deklaracji, ` +
+        `który przestał je rozpoznawać.`,
+      'mianownik',
+    );
+
+  const wPolicy = new Set(
+    kontrast.checks.flatMap((c) => [cssVar(c.fg), cssVar(c.bg)]),
+  );
+  const wgNazwy = new Map(nazwy.map((n) => [n.nazwa, n]));
+
+  const zleU = [];
+  for (const [token, role] of [...malowane].sort()) {
+    const n = wgNazwy.get(token);
+    const role_ = [...role].sort().join(', ');
+    // Każda z trzech reguł czyta WŁASNY warunek wstępny (`!n`, `n?.typ`), zamiast
+    // ufać poprzedniej. Zależność między nimi jest naturalna — token spoza skórki
+    // nie ma typu — ale zapisana przez sam `continue` zamieniała rozbrojenie
+    // pierwszej reguły w `TypeError` zamiast w komunikat, czyli kontrola
+    // odniesienia przestawała umieć zbadać dwie pozostałe. Ta sama wada co w A3,
+    // A4, A7 i A8; piąty raz, i drugi raz WEWNĄTRZ jednego punktu.
+    if (!n)
+      zleU.push({
+        regula: 'token-spoza-skorki',
+        opis:
+          `${token}: malowany (${role_}), a nie ma go wśród tokenów skórki — ` +
+          `nie ma czego zmierzyć`,
+      });
+    if (n && n.typ !== 'color')
+      zleU.push({
+        regula: 'nie-kolor',
+        opis: `${token}: malowany jako kolor (${role_}), a w DTCG ma \`$type: ${n.typ}\``,
+      });
+    if (n && n.typ === 'color' && !wPolicy.has(token))
+      zleU.push({
+        regula: 'niezmierzony',
+        opis: `${token}: malowany (${role_}), a nie stoi w żadnej parze policy`,
+      });
+  }
+  if (zleU.length)
+    throw new BladTokenu(
+      'pary',
+      `${zleU.length} kolorów maluje się bez wpisu w \`${KONTRAST}\`:\n` +
+        lista(
+          skroc(
+            zleU.map((z) => `[${z.regula}] ${z.opis}`),
+            12,
+          ),
+        ) +
+        `\n    Para bez wpisu nie jest liczona, więc kolor spoza policy jest kolorem, ` +
+        `o którym bramka kontrastu NIE MA ZDANIA — i wygląda to dokładnie tak samo jak ` +
+        `zielony przebieg (lekcja-33). Dobór partnera zostaje decyzją człowieka: maszyna ` +
+        `widzi, że kolor jest niezmierzony, nie widzi, na czym leży.` +
+        (przypisania
+          ? `\n    Uwaga: arkusz może wnieść token także przypisaniem do innej custom ` +
+            `property — te są rozwijane, więc \`--pct-x: var(--pct-y)\` daje \`y\` rolę \`x\`.`
+          : ''),
+      zleU[0].regula,
+    );
+
+  // Reguła `on-*` czyta NAZWY, a nie arkusze — i to jest jej cała wartość: para
+  // zadeklarowana, a nigdy nienamalowana, nie zostawia w arkuszu żadnego śladu,
+  // więc pomiar z poprzedniej reguły jest na nią ślepy z konstrukcji.
+  const bezPowierzchni = [];
+  const martwe_ = [];
+  const referowane = new Set(
+    nazwy.flatMap((n) => n.wartosci.map(({ wartosc }) => odwolanie(wartosc))),
+  );
+  for (const n of nazwy) {
+    if (n.warstwa !== 'semantyczny') continue;
+    if (!n.sciezka.startsWith('pct.on-')) continue;
+    const rola = n.sciezka.slice('pct.on-'.length);
+    if (!wgSciezki.has(`pct.${rola}`))
+      bezPowierzchni.push(
+        `${n.nazwa}: para do nieistniejącego \`--pct-${rola}\` — ` +
+          `przedrostek \`on-\` obiecuje tekst DLA powierzchni, a tej powierzchni nie ma`,
+      );
+    else if (!referowane.has(n.sciezka) && !malowane.has(n.nazwa))
+      martwe_.push(
+        `${n.nazwa}: nie używa go ani jeden token, ani jeden arkusz — ` +
+          `zadeklarowana para bez powierzchni, na której cokolwiek stoi`,
+      );
+  }
+  const bladPary = (wpisy, regula, ogon) =>
+    new BladTokenu(
+      'pary',
+      `${wpisy.length} par \`on-*\` nie trzyma swojej strony umowy:\n` +
+        lista(skroc(wpisy)) +
+        `\n    Przedrostek \`on-\` nie jest ozdobnikiem nazwy: to jedyne miejsce, w którym ` +
+        `skórka deklaruje parę tekst/tło wprost. ${ogon}`,
+      regula,
+    );
+  if (bezPowierzchni.length)
+    throw bladPary(
+      bezPowierzchni,
+      'on-bez-powierzchni',
+      `Tekst dla powierzchni, której nie ma, jest nazwą obiecującą parę tam, gdzie ` +
+        `nie ma nawet jednej strony.`,
+    );
+  if (martwe_.length)
+    throw bladPary(
+      martwe_,
+      'on-martwa',
+      `Para martwa wygląda jak pokrycie i nim nie jest — dokładnie jak martwe słowo ` +
+        `w słowniku (punkt 4).`,
+    );
+
   const publicznych = publiczne.size;
   return {
     opis:
       `${nazwy.length} tokenów (${publicznych} publicznych, ` +
       `${nazwy.length - publicznych} prywatnych), ` +
-      `${entrypointy.size} entrypointów`,
+      `${entrypointy.size} entrypointów, ` +
+      `${malowane.size} kolorów malowanych w ${arkusze.length} arkuszach, ` +
+      `${kontrast.checks.length} par w policy`,
     snapshot: tresc,
   };
+};
+
+/**
+ * Co arkusze NAPRAWDĘ malują którym tokenem — z wyjścia sassa, nie z tekstu
+ * źródła (ten sam powód co punkt 2 w `check-styles`: właściwość złożona mixinem
+ * albo interpolacją dociera do przeglądarki, nie stojąc w tekście nigdzie).
+ *
+ * Role są trzy, bo tyle progów ma WCAG: tło i tekst (SC 1.4.3) oraz obrys
+ * (SC 1.4.11). Właściwość spoza tej listy nie wnosi koloru do oceny kontrastu —
+ * `transition: background-color …` wymienia nazwę właściwości, a nie maluje nią.
+ *
+ * Przypisania do innej custom property (`--pct-button-height: var(--pct-button-height-sm)`
+ * — wzorzec osi wielkości) są ROZWIJANE do punktu stałego: token po prawej dziedziczy
+ * role tokenu po lewej. Bez tego `--pct-button-bg: var(--pct-surface-100)` w arkuszu
+ * ukryłby powierzchnię przed mianownikiem, a wyglądałoby to jak brak problemu.
+ * Zmierzone, nie założone: dziś ten wzorzec dotyczy wyłącznie osi wielkości, czyli
+ * tokenów wymiaru, więc nie wnosi ani jednej roli koloru.
+ */
+const malowaneKolory = (arkusze) => {
+  const ROLE = [
+    [/^background(-color)?$/, 'tło'],
+    [/^(color|fill|stroke|caret-color|-webkit-text-fill-color)$/, 'tekst'],
+    [
+      /^border(-(block|inline)(-(start|end))?)?(-color)?$|^outline(-color)?$/,
+      'obrys',
+    ],
+  ];
+  const bezposrednie = new Map(); // token -> Set(rola)
+  const przypisania = new Map(); // token docelowy -> Set(tokenów po prawej)
+
+  for (const { css } of arkusze)
+    for (const [, wlasciwosc, wartosc] of css.matchAll(
+      /^\s*(-{0,2}[a-z][a-z0-9-]*)\s*:\s*([^;{}]+);/gm,
+    )) {
+      const uzyte = [...wartosc.matchAll(/var\(\s*(--pct-[a-z0-9-]+)/g)].map(
+        (m) => m[1],
+      );
+      if (!uzyte.length) continue;
+      if (wlasciwosc.startsWith('--')) {
+        const wpis = przypisania.get(wlasciwosc) ?? new Set();
+        for (const t of uzyte) wpis.add(t);
+        przypisania.set(wlasciwosc, wpis);
+        continue;
+      }
+      const rola = ROLE.find(([wzorzec]) => wzorzec.test(wlasciwosc))?.[1];
+      if (!rola) continue;
+      for (const t of uzyte)
+        bezposrednie.set(t, (bezposrednie.get(t) ?? new Set()).add(rola));
+    }
+
+  const malowane = new Map([...bezposrednie].map(([t, r]) => [t, new Set(r)]));
+  for (let zmiana = true; zmiana;) {
+    zmiana = false;
+    for (const [cel, zrodla] of przypisania) {
+      const role = malowane.get(cel);
+      if (!role) continue;
+      for (const t of zrodla) {
+        const dotychczas = malowane.get(t) ?? new Set();
+        const przed = dotychczas.size;
+        for (const r of role) dotychczas.add(r);
+        malowane.set(t, dotychczas);
+        if (dotychczas.size !== przed) zmiana = true;
+      }
+    }
+  }
+  return { malowane, przypisania: przypisania.size > 0 };
 };
 
 /** Porównanie jednej powierzchni z listą, którą ma nieść. */
@@ -520,16 +949,23 @@ const porownajPowierzchnie = (gdzie, ma, powinna, czym) => {
   );
 };
 
-/** Liście DTCG: `[ścieżka, $type]` dla każdego węzła z `$value`. */
+/** Liście DTCG: `[ścieżka, $type, $value]` dla każdego węzła z `$value`. */
 function* liscie(drzewo, prefiks = []) {
   for (const [klucz, wartosc] of Object.entries(drzewo)) {
     if (klucz.startsWith('$')) continue;
     if (!wartosc || typeof wartosc !== 'object') continue;
     const sciezka = [...prefiks, klucz];
-    if ('$value' in wartosc) yield [sciezka.join('.'), wartosc.$type];
+    if ('$value' in wartosc)
+      yield [sciezka.join('.'), wartosc.$type, wartosc.$value];
     else yield* liscie(wartosc, sciezka);
   }
 }
+
+/** Ścieżka DTCG, na którą wskazuje wartość `{a.b.c}` — albo `null` dla literału. */
+const odwolanie = (wartosc) =>
+  typeof wartosc === 'string'
+    ? (wartosc.match(/^\{([^}]+)\}$/)?.[1] ?? null)
+    : null;
 
 /**
  * Warstwa tokenu z nazw plików, w których stoi. `motion.reduced.json` nadpisuje
@@ -640,9 +1076,29 @@ const zbierzWejscie = (root, pliki) => {
       ({ drzewo }) => drzewo && typeof drzewo === 'object' && 'pct' in drzewo,
     );
 
+  // Arkusze biblioteki — wyłącznie `libs/components`, i wyłącznie te, których
+  // treść jest pisana ręką: `libs/components/themes/` wiezie WYGENEROWANE
+  // artefakty tokenów (`_tokens.scss` to lista `$zmienna: var(--pct-…)`), więc
+  // policzenie ich jako malowania dopisałoby do mianownika każdy token skórki
+  // naraz i punkt 7 żądałby pary dla całej rampy prymitywów.
+  const arkusze = pliki
+    .filter(
+      (p) =>
+        p.startsWith(`${KOMPONENTY}/`) &&
+        p.endsWith('.scss') &&
+        !p.startsWith(`${KOMPONENTY}/themes/`),
+    )
+    .map((plik) => ({
+      plik,
+      css: sass.compile(join(root, plik), { style: 'expanded' }).css,
+    }));
+
   return {
     polityka: JSON.parse(czytaj(root, POLITYKA)),
+    poziomy: JSON.parse(czytaj(root, POZIOMY)),
+    kontrast: JSON.parse(czytaj(root, KONTRAST)),
     zrodla,
+    arkusze,
     css: czytaj(root, `${TOKENY}/dist/pct.css`),
     ts: czytaj(root, `${TOKENY}/dist/tokens.ts`),
     scss: czytaj(root, `${TOKENY}/dist/_tokens.scss`),
@@ -724,7 +1180,7 @@ const zlozFixture = (nazwa, fx) => {
 const wejscieFixture = (katalog) =>
   zbierzWejscie(
     katalog,
-    globSync('**/*.json', { cwd: katalog })
+    globSync('**/*.{json,scss}', { cwd: katalog })
       .map((p) => p.split('\\').join('/'))
       .sort(),
   );
@@ -820,6 +1276,14 @@ for (const nazwa of przypadki) {
         `${nazwa}: zapaliła kontrola \`${blad.kontrola}\`, a miał punkt ${fx.punkt} ` +
           `(\`${fx.kontrola}\`) — fixture dowodzi czegoś innego, niż deklaruje`,
       );
+    // Punkt to nie jedno zdanie (lekcja-50). Przypadek, który deklaruje regułę,
+    // musi zapalić na NIEJ, a nie na sąsiedniej regule tego samego punktu —
+    // inaczej identyfikator punktu potwierdza wyłącznie sam siebie.
+    else if (fx.regula && blad.regula !== fx.regula)
+      problems.push(
+        `${nazwa}: w punkcie ${fx.punkt} zapaliła reguła \`${blad.regula}\`, ` +
+          `a miała \`${fx.regula}\` — ten sam punkt, inne zdanie`,
+      );
   } finally {
     rmSync(katalog, { recursive: true, force: true });
   }
@@ -828,7 +1292,7 @@ for (const nazwa of przypadki) {
 // ── wynik ─────────────────────────────────────────────────────────────────────
 
 if (problems.length) {
-  console.error(`X Bramka nazw tokenów — ${problems.length} naruszeń:\n`);
+  console.error(`X Bramka tokenów — ${problems.length} naruszeń:\n`);
   for (const p of problems) console.error(`  - ${p}`);
   console.error('');
   process.exit(1);

@@ -1,0 +1,6 @@
+{
+  "punkt": 7,
+  "kontrola": "pary",
+  "regula": "nie-kolor",
+  "opis": "Arkusz maluje tekst tokenem `--pct-przycisk-padding-x`, czyli wymiarem. Przypadek nie bada skórki, tylko zgodność DWÓCH ODCZYTÓW: skaner arkuszy mówi „to jest kolor, bo stoi w `color:`\", a DTCG mówi „to jest `$type: dimension`\". Rozbieżność znaczy, że jeden z nich się myli — i dopóki bramka o tym nie powie, myli się po cichu ten, który wyznacza mianownik par."
+}

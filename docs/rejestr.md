@@ -9,9 +9,9 @@ Nie ma stanu „zrealizowane, tylko niesprawdzone" — patrz
 
 | stan           | znaczenie                                          | liczba |
 | -------------- | -------------------------------------------------- | -----: |
-| ✅ egzekwowane | bramka i kontrola istnieją, są wpięte w CI         |     48 |
+| ✅ egzekwowane | bramka i kontrola istnieją, są wpięte w CI         |     50 |
 | 🟡 częściowo   | bramka jest, kontroli odniesienia brak (świadomie) |     16 |
-| ⛔ luka        | brak bramki albo kontroli, z zapisanym terminem    |     17 |
+| ⛔ luka        | brak bramki albo kontroli, z zapisanym terminem    |     15 |
 | **razem**      |                                                    | **81** |
 
 ## Luki wg pilności
@@ -24,7 +24,6 @@ Kolejność bierze się z pola **Wiąże przy**, nie z numeru wymagania.
 | [`wym-jakosc-jednostkowe`](wymagania/jakosc.md#wym-jakosc-jednostkowe)   | **testowanie mutacyjne** rdzenia (Stryker na `core`, `number`, `selec… _(kontrola)_ | natychmiast dla `core` — im więcej komponentów na nim stoi,… |
 | [`wym-jakosc-konsument`](wymagania/jakosc.md#wym-jakosc-konsument)       | `.verdaccio/config.yml` i target `local-registry` w root `project.jso…              | natychmiast — `check-package` bada artefakt **statycznie**;… |
 | [`wym-jakosc-przegladarki`](wymagania/jakosc.md#wym-jakosc-przegladarki) | `apps/sandbox-e2e/playwright.config.mts` ma **wyłącznie chromium**, r…              | natychmiast dla biblioteki chwalącej się a11y — Safari ma n… |
-| [`wym-token-pary-tekstu`](wymagania/tokeny.md#wym-token-pary-tekstu)     | nic nie zapala, gdy **powstanie nowa powierzchnia bez pary**. To ta s… _(kontrola)_ | natychmiast — koszt to porównanie listy powierzchni z listą… |
 | [`wym-api-animacje`](wymagania/api.md#wym-api-animacje)                  | zakaz jest dotrzymany, ale **nic go nie pilnuje** — jedyne, co obowią…              | pierwszym komponencie z wejściem/wyjściem (panel, dialog, t… |
 | [`wym-api-ikony`](wymagania/api.md#wym-api-ikony)                        | dziś każda ikona jest **wpisana w szablon** jako SVG w `currentColor`…              | drugim komponencie potrzebującym podmienialnej ikony         |
 | [`wym-api-liczba`](wymagania/api.md#wym-api-liczba)                      | testy własnościowe parsera (`parse(format(n)) === n` dla dowolnego `n… _(kontrola)_ | pierwszym locale spoza `pl`/`en` zgłoszonym przez konsumenta |
@@ -35,7 +34,6 @@ Kolejność bierze się z pola **Wiąże przy**, nie z numeru wymagania.
 | [`wym-projekt-zaleznosci`](wymagania/projekt.md#wym-projekt-zaleznosci)  | kontrola listy `dependencies` / `peerDependencies` w spakowanym manif…              | pierwszej zależności dodanej odruchowo — dziś nic nie odróż… |
 | [`wym-token-dyrektywa`](wymagania/tokeny.md#wym-token-dyrektywa)         | dyrektywy nie ma, motyw ustawia się ręcznym `data-theme`                            | gdy ustawianie `data-theme` z szablonu zacznie się powtarza… |
 | [`wym-token-gestosc`](wymagania/tokeny.md#wym-token-gestosc)             | w źródłach DTCG nie ma **ani jednego** tokenu gęstości                              | po ustabilizowaniu osi wielkości. Uwaga: gęstość zejdzie po… |
-| [`wym-token-poziomy`](wymagania/tokeny.md#wym-token-poziomy)             | nic nie zapala, gdy token komponentowy odwoła się wprost do prymitywn… _(kontrola)_ | pierwszym motywie budowanym z zewnątrz — złamanie tej reguł… |
 | [`wym-wydanie-wsparcie`](wymagania/wydanie.md#wym-wydanie-wsparcie)      | dokumentu nie ma. Kolekcja migracji istnieje (`wym-wydanie-ng-add`), …              | pierwszym zewnętrznym konsumencie — firma nie kupuje biblio… |
 
 ## oś
@@ -92,7 +90,7 @@ Kolejność bierze się z pola **Wiąże przy**, nie z numeru wymagania.
 | [`wym-jakosc-typecheck`](wymagania/jakosc.md#wym-jakosc-typecheck)       | ✅ egzekwowane | `tools/check-typecheck.mjs` (target `check-typecheck`, w CI) — cztery… | `tools/check-typecheck.fixtures/` — jedenaście spreparowanych wejść, … |
 | [`wym-jakosc-jednostkowe`](wymagania/jakosc.md#wym-jakosc-jednostkowe)   | ⛔ luka        | `.github/workflows/ci.yml` — `test` i `vite:test` w liście `nx affect… | brak — luka: **testowanie mutacyjne** rdzenia (Stryker na `core`, `nu… |
 | [`wym-jakosc-pokrycie`](wymagania/jakosc.md#wym-jakosc-pokrycie)         | ✅ egzekwowane | dwuczęściowa, bo procent i jego mianownik psują się osobno. `libs/com… | `tools/check-coverage.fixtures/` — siedem spreparowanych wejść, po je… |
-| [`wym-jakosc-e2e`](wymagania/jakosc.md#wym-jakosc-e2e)                   | ✅ egzekwowane | `apps/sandbox-e2e/src/visual.spec.ts` i pozostałe specyfikacje e2e     | próg jest **bezwzględny** (`maxDiffPixels: 20`) i wynika z pomiaru: p… |
+| [`wym-jakosc-e2e`](wymagania/jakosc.md#wym-jakosc-e2e)                   | ✅ egzekwowane | `apps/sandbox-e2e/src/visual.spec.ts` i pozostałe specyfikacje e2e     | progi są **dwa** i oba wynikają z pomiaru. Liczba pikseli jest bezwzg… |
 | [`wym-jakosc-hydracja`](wymagania/jakosc.md#wym-jakosc-hydracja)         | ✅ egzekwowane | `apps/sandbox-e2e/src/hydration.spec.ts` + pomocnik `visit()` w `apps… | `hydration.spec.ts › „bramka faktycznie wykrywa błąd hydracji (kontro… |
 | [`wym-jakosc-pakiet`](wymagania/jakosc.md#wym-jakosc-pakiet)             | ✅ egzekwowane | `libs/components/check-package.mjs` (target `check-package`, w CI)     | `tools/check-package.fixtures/` — siedem spreparowanych pakietów, po … |
 | [`wym-jakosc-konsument`](wymagania/jakosc.md#wym-jakosc-konsument)       | ⛔ luka        | brak — luka: `.verdaccio/config.yml` i target `local-registry` w root… | brak — luka: aplikacja zbudowana z zainstalowanego pakietu, która nie… |
@@ -127,12 +125,12 @@ Kolejność bierze się z pola **Wiąże przy**, nie z numeru wymagania.
 | -------------------------------------------------------------------- | -------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | [`wym-token-dtcg`](wymagania/tokeny.md#wym-token-dtcg)               | 🟡 częściowo   | `libs/tokens/build.mjs` — build nie ruszy przy niepoprawnym kształcie… | brak — świadomie: błąd parsowania jest natychmiastowy i głośny         |
 | [`wym-token-artefakty`](wymagania/tokeny.md#wym-token-artefakty)     | ✅ egzekwowane | target `typecheck` projektu `sandbox-e2e` — pomocniki `tokenOf` / `ro… | podmiana jednej nazwy na błędną daje 6 błędów typu — przebieg udokume… |
-| [`wym-token-poziomy`](wymagania/tokeny.md#wym-token-poziomy)         | ⛔ luka        | `libs/tokens/build.mjs` — tokeny komponentowe są auto-odkrywane (`com… | brak — luka: nic nie zapala, gdy token komponentowy odwoła się wprost… |
+| [`wym-token-poziomy`](wymagania/tokeny.md#wym-token-poziomy)         | ✅ egzekwowane | `tools/check-tokens.mjs` (target `check-tokens` w projekcie roota, w … | `tools/check-tokens.fixtures/` — po jednym wejściu na regułę: `kolor-… |
 | [`wym-token-referencje`](wymagania/tokeny.md#wym-token-referencje)   | ✅ egzekwowane | `apps/sandbox-e2e/src/theme.spec.ts` — nadpisanie tokenu semantyczneg… | test porównuje token komponentowy w `:root` **i** w scope — sam token… |
 | [`wym-token-domkniecie`](wymagania/tokeny.md#wym-token-domkniecie)   | ✅ egzekwowane | `apps/sandbox-e2e/src/theme.spec.ts` — token **komponentowy** porówny… | przebieg z `lekcja-17`: przed poprawką `--pct-surface` był poprawnie … |
 | [`wym-token-nazwy`](wymagania/tokeny.md#wym-token-nazwy)             | ✅ egzekwowane | `tools/check-tokens.mjs` (target `check-tokens` w projekcie roota, w … | `tools/check-tokens.fixtures/` — jedenaście wejść, każde odrzucane na… |
-| [`wym-token-pary-tekstu`](wymagania/tokeny.md#wym-token-pary-tekstu) | ⛔ luka        | `libs/tokens/src/contrast.policy.json` + silnik w `libs/tokens/build.… | brak — luka: nic nie zapala, gdy **powstanie nowa powierzchnia bez pa… |
-| [`wym-token-kontrast`](wymagania/tokeny.md#wym-token-kontrast)       | ✅ egzekwowane | `libs/tokens/build.mjs` (target `tokens:build`, w CI przez `^build`)   | przebieg z `lekcja-6`: pierwotny guard przepuścił `disabled` o realny… |
+| [`wym-token-pary-tekstu`](wymagania/tokeny.md#wym-token-pary-tekstu) | ✅ egzekwowane | `tools/check-tokens.mjs` (target `check-tokens` w projekcie roota, w … | `tools/check-tokens.fixtures/` — `kolor-niezmierzony` (arkusz maluje … |
+| [`wym-token-kontrast`](wymagania/tokeny.md#wym-token-kontrast)       | ✅ egzekwowane | `libs/tokens/build.mjs` (target `tokens:build`, w CI przez `^build`);… | przebieg z `lekcja-6`: pierwotny guard przepuścił `disabled` o realny… |
 | [`wym-token-bez-opacity`](wymagania/tokeny.md#wym-token-bez-opacity) | ✅ egzekwowane | `tools/check-styles.mjs` (target `check-styles`, w CI) — punkt 6: `op… | `tools/check-styles.fixtures/opacity-czesciowa/` (stan wyrażony przez… |
 | [`wym-token-css`](wymagania/tokeny.md#wym-token-css)                 | ✅ egzekwowane | `apps/sandbox-e2e/src/theme.spec.ts`, `libs/components/check-package.… | `tools/check-package.fixtures/token-bez-deklaracji/` — pakiet, w któr… |
 | [`wym-token-scss`](wymagania/tokeny.md#wym-token-scss)               | 🟡 częściowo   | brak — świadomie: rozszerzenie pliku jest widoczne w review, a arkusz… | nie dotyczy ---                                                        |
@@ -211,3 +209,5 @@ Która lekcja karmi które wymaganie. Generowane z pól **Lekcje**.
 | [`lekcja-49`](lekcje.md#lekcja-49) | — _(nie cytowana)_                                                                                                                   |
 | [`lekcja-50`](lekcje.md#lekcja-50) | — _(nie cytowana)_                                                                                                                   |
 | [`lekcja-51`](lekcje.md#lekcja-51) | `wym-projekt-tree-shaking`                                                                                                           |
+| [`lekcja-52`](lekcje.md#lekcja-52) | — _(nie cytowana)_                                                                                                                   |
+| [`lekcja-53`](lekcje.md#lekcja-53) | — _(nie cytowana)_                                                                                                                   |

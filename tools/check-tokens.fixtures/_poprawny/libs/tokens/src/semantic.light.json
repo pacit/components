@@ -1,6 +1,7 @@
 {
   "pct": {
     "primary": { "$type": "color", "$value": "{pct.blue.600}" },
+    "primary-hover": { "$type": "color", "$value": "{pct.blue.700}" },
     "on-primary": { "$type": "color", "$value": "{pct.slate.0}" },
     "surface": { "$type": "color", "$value": "{pct.slate.0}" },
     "text": { "$type": "color", "$value": "{pct.slate.900}" },

@@ -1,0 +1,6 @@
+{
+  "punkt": 7,
+  "kontrola": "pary",
+  "regula": "niezmierzony",
+  "opis": "Arkusz maluje tło `var(--pct-text-muted)` — tokenem SEMANTYCZNYM, którego policy nie zna jako tła. To nie jest przypadek wymyślony: dokładnie tak wyglądał wariant outline prawdziwego przycisku, malujący `var(--pct-surface-100)` pod etykietą `var(--pct-primary)`. Żadna reguła oparta na nazwie tokenu komponentowego (`*-bg`, `*-fg`) tego nie widzi, bo obie nazwy należą do warstwy semantycznej — i stąd mianownik punktu 7 czyta arkusze, a nie listę nazw."
+}

@@ -51,11 +51,11 @@ Migawka z **2026-08-05**, `node tools/check-docs.mjs`:
 | miara                                 | wartość |
 | ------------------------------------- | ------: |
 | wymagań                               |      81 |
-| ✅ egzekwowane                        |      48 |
+| ✅ egzekwowane                        |      50 |
 | 🟡 częściowo (świadomie bez kontroli) |      16 |
-| ⛔ luka                               |      17 |
+| ⛔ luka                               |      15 |
 
-Wszystkie 17 luk mają niżej swojego właściciela (A, B, D, F, G). Jeśli po dopisaniu
+Wszystkie 15 luk mają niżej swojego właściciela (A, B, D, F, G). Jeśli po dopisaniu
 wymagania liczba luk rośnie, a żadne zadanie się nie zmienia — ta lista przestała być
 kompletna i to jest błąd tej listy, nie rejestru.
 
@@ -71,18 +71,18 @@ F  powierzchnia zaufania       docs, ACR, benchmarki, most Figma
 G  luki bez terminu            czekają na wyzwalacz zapisany w polu „Wiąże przy"
 ```
 
-Pierwsze trzy, gdyby trzeba było wybrać tydzień: **A12** (pół dnia na dwie luki, a jedna
-z nich to ta sama klasa co A4: policy bada wyłącznie to, co ktoś wcześniej wpisał),
-**A11** (bramka tekstów, pół dnia, przy okazji zmusza do rozstrzygnięcia C5), **A9**
-(test konsumenta na Verdaccio — jedyna pozycja badająca pakiet w użyciu, a nie
-statycznie). F1 jest odblokowane — A3 i A4 dały mu oba inwentarze do wyrenderowania.
+Pierwsze trzy, gdyby trzeba było wybrać tydzień: **A11** (bramka tekstów, pół dnia, przy
+okazji zmusza do rozstrzygnięcia C5), **A9** (test konsumenta na Verdaccio — jedyna
+pozycja badająca pakiet w użyciu, a nie statycznie), **A10** (macierz przeglądarek).
+F1 jest odblokowane — A3 i A4 dały mu oba inwentarze do wyrenderowania.
 
 ---
 
 ## A. Faza 0 — bramki „natychmiast"
 
-Zostało pięć zadań i domykają **6 z 17 luk** — ponad jedną trzecią wszystkiego, co
-jeszcze stoi otworem.
+Zostały cztery zadania i domykają **4 z 15 luk**. Każde wymaga zbudowania czegoś nowego
+poza samą bramką — rejestru npm, macierzy przeglądarek, przebiegu mutacyjnego — bo
+wszystkie bramki dające się napisać na miejscu są już za nami.
 
 - [x] **A1 — kontrola odniesienia dla `check-package`** _(2026-08-04)_
   - domknęło: `wym-jakosc-pakiet`, `wym-projekt-pakiet`, `wym-projekt-entrypointy`,
@@ -396,14 +396,60 @@ jeszcze stoi otworem.
   - kontrola: literał dopisany do szablonu musi zapalić
   - koszt: ~0,5 dnia · _notatki:_ —
 
-- [ ] **A12 — kompletność par tekst/tło + poziomy tokenów**
-  - domyka: `wym-token-pary-tekstu`, `wym-token-poziomy`
-  - co: (1) porównanie listy powierzchni z listą par w `libs/tokens/src/contrast.policy.json`
-    — nowa powierzchnia bez pary zapala; (2) zakaz odwołań token komponentowy → prymitywny
-    z pominięciem warstwy semantycznej
-  - kontrola: dodanie powierzchni bez pary musi zapalić; token komponentowy wskazujący
-    wprost na prymitywny musi zapalić
-  - koszt: ~0,5 dnia · _notatki:_ —
+- [x] **A12 — kompletność par tekst/tło + poziomy tokenów** _(2026-08-05)_
+  - domknęło: `wym-token-pary-tekstu`, `wym-token-poziomy` — **2 luki**
+  - zrobione: punkty **6 i 7** w `tools/check-tokens.mjs` (ten sam target, ta sama
+    kontrola odniesienia — bo obie obietnice stoją na tym samym mianowniku co nazwy:
+    liście tokenów). Punkt 6 to graf referencji „tylko w dół" z polityką
+    `libs/tokens/src/poziomy.policy.json`; punkt 7 to „każdy malowany kolor ma parę
+    w policy kontrastu" plus reguła `on-*`. Do tego `regula` w `fixture.json` —
+    odpowiedź na [`lekcja-50`](lekcje.md#lekcja-50), bo punkt to nie jedno zdanie
+  - plan mówił „porównanie listy powierzchni z listą par" i **pomylił się w mianowniku**:
+    lista powierzchni wzięta z nazw tokenów (`*-bg`) nie widzi tego, co ta biblioteka
+    naprawdę robi. Wariant outline przycisku maluje tło `var(--pct-surface-100)` pod
+    etykietą `var(--pct-primary)` — dwoma tokenami **semantycznymi**. Stąd punkt 7 czyta
+    wyjście **sassa** dla arkuszy, a nie listę nazw (ten sam ruch co A5 i A7)
+  - **policy milczała o 27 kolorach z 74**, a po ich dopisaniu **build padł na trzech**:
+    w motywie ciemnym etykieta przycisku na hover dawała 3,45:1, na active 2,66:1,
+    a etykieta outline na hover 3,98:1 — poniżej AA, od miesięcy, przy zielonym CI.
+    Przyczyna: rampa ciemna była kopią jasnej, a `on-primary` jest w niej **ciemny**,
+    więc przyciemnienie tła zbija kontrast zamiast go podnosić. Poprawione: w ciemnym
+    `primary` idzie w górę (`blue-400` → `blue-300` → `blue-200`)
+    ([`lekcja-52`](lekcje.md#lekcja-52))
+  - plan mówił też „zakaz odwołań komponentowy → prymitywny" i **w brzmieniu dosłownym
+    reguła była złamana 35 razy**: nad osiami wymiaru nie ma warstwy semantycznej. Kolor
+    jest za to czysty w 100% i tam wyjątku nie ma. Wyjątek dla wymiaru stoi w polityce,
+    jest pilnowany z dwóch stron (oś martwa zapala, oś niosąca kolor zapala **na samej
+    deklaracji**) — czyli nie da się nim rozbroić reguły, dla której punkt powstał
+  - przy okazji: `--pct-on-danger` **usunięty** — para zadeklarowana, nieużywana przez
+    żaden token ani arkusz, czyli pokrycie, którego nie było (`danger` maluje tu wyłącznie
+    tekst i obramowanie). Wróci z pierwszym komponentem malującym tło błędem
+  - **znalezione przy okazji, w innej bramce**: zmiana palety ciemnej nie ruszyła ani
+    jednego wzorca wizualnego. `toHaveScreenshot` ma **dwa** progi, a zmierzony był jeden:
+    domyślny `threshold: 0.2` jest dwunastokrotnie większy niż krok rampy (0,0163), więc
+    przemalowanie całego przycisku dawało zero różniących się pikseli. Ustawione na 0.005
+    z pomiaru, zrzuty ciemne odtworzone ([`lekcja-53`](lekcje.md#lekcja-53))
+  - kontrola: `tools/check-tokens.fixtures/` — piętnaście nowych wejść (osiem na punkt 6,
+    siedem na punkt 7), każde odrzucane na swoim punkcie **i swojej regule**; plus osiem
+    przebiegów na prawdziwym repozytorium (kolor na prymitywie, kolor z palca, tło
+    pożyczone od innego komponentu, oś usunięta z polityki, oś martwa dopisana, nowe
+    malowanie bez pary, para usunięta z policy, martwe `on-danger` przed i po przyjęciu
+    snapshotu)
+  - kontrola tej kontroli: rozbrojone po kolei **czternaście z piętnastu reguł** obu
+    punktów — dziewięć daje „PRZESZŁO", pięć przestawia przypadek na sąsiednią regułę
+    tego samego punktu i to widać **tylko dzięki polu `regula`**; przypadek przestający
+    być wadliwym → „PRZESZŁO"; wadliwe wejście wzorcowe → bramka zapala na nim osobno,
+    a siedem przypadków idzie na cudze punkty. Piętnasta reguła (`referencja-donikad`)
+    świadomie zostaje bez przypadku: fixture składa się przez prawdziwy `build.mjs`,
+    a ten rzuca na nieznanej referencji wcześniej — reguła istnieje po to, żeby
+    rozbrojenie sąsiedniej dało komunikat, a nie `TypeError`
+  - koszt: ~1,5 dnia (plan zakładał 0,5) · _notatki:_ punkt 7 **przeszedł na zielono,
+    nie zmierzywszy ani jednego koloru** — wypisał „0 kolorów malowanych w 7 arkuszach",
+    bo wzorzec deklaracji wymagał wiodącego myślnika. To jest [`lekcja-48`](lekcje.md#lekcja-48)
+    w punkcie pisanym po to, żeby jej nie powtórzyć, i ta sama pomyłka co w A5: kontrola
+    niepustości stała po stronie **wejścia**, a pusty był **pomiar**. Osobno: rozbrojenie
+    reguły `token-spoza-skorki` dało `TypeError` — **ta sama wada co w A3, A4, A7 i A8,
+    piąty raz**
 
 - [ ] **A13 — testowanie mutacyjne rdzenia**
   - domyka: `wym-jakosc-jednostkowe`
@@ -620,6 +666,71 @@ Czekają na wyzwalacz zapisany w polu **Wiąże przy**. Nie są zapomniane — s
 ## Dziennik
 
 Wpis per sesja: co ruszyło, czym się skończyło, co jest następne. Najnowsze na górze.
+
+### 2026-08-05 — A12: bramka kontrastu mierzyła 38 par z 74 i była zielona
+
+Zrobione **A12**. Luki: 17 → 15, egzekwowane: 48 → 50. Faza A ma za sobą dziewięć
+z trzynastu zadań i **wszystkie, które da się napisać bez budowania czegoś nowego**.
+
+Zadanie miało być półdniowe („porównaj listę powierzchni z listą par") i było czymś
+innym w obu połowach. Plan nie pomylił się w diagnozie mechanizmu — obie luki są dokładnie
+tam, gdzie je opisał — tylko w tym, **skąd wziąć listę**, wobec której się porównuje.
+
+- **Lista powierzchni z NAZW tokenów nie widzi tego, co ta biblioteka robi.** Wariant
+  outline przycisku maluje tło `var(--pct-surface-100)` i etykietę `var(--pct-primary)`,
+  czyli dwoma tokenami semantycznymi; reguła pytająca „czy każdy token komponentowy
+  `*-bg` ma parę" orzekłaby o kompletności, nie widząc ich z konstrukcji. Mianownik
+  czyta więc wyjście **sassa** — ten sam ruch co „nie czytaj `include`, uruchom
+  kompilator" z A7. Odwrotnie działa reguła `on-*`: ta czyta nazwy, bo para
+  zadeklarowana i nigdy nienamalowana nie zostawia w arkuszu żadnego śladu.
+- **Policy milczała o 27 kolorach z 74, a po ich dopisaniu build padł na trzech.**
+  W motywie ciemnym etykieta przycisku na hover dawała **3,45:1**, na active **2,66:1**,
+  a etykieta outline na hover **3,98:1** — wszystkie poniżej AA, wszystkie w bibliotece
+  od miesięcy, wszystkie przy zielonym CI. Przyczyna jest warta zapamiętania osobno:
+  rampa ciemna była kopią jasnej, a `on-primary` jest w ciemnym motywie **ciemny**, więc
+  przyciemnienie tła na hover zbija kontrast zamiast go podnosić. Kierunek rampy zależy
+  od tego, po której stronie stoi tekst ([`lekcja-52`](lekcje.md#lekcja-52)).
+- **Reguła „komponentowy nigdy do prymitywnego" była złamana 35 razy — i to nie jest
+  dług.** Nad osiami wymiaru nie ma warstwy semantycznej i nie da się jej dołożyć bez
+  wymyślenia ról, których nikt nie potrzebuje; `pct.control.height.md` nie jest surową
+  wartością, tylko wspólną osią przycisku i pola. Kolor jest za to czysty w 100%.
+  Wyjątek stoi więc w polityce i jest pilnowany z dwóch stron: oś nieużywana zapala, oś
+  niosąca token koloru zapala **na samej deklaracji** — czyli dopisanie `blue` do listy
+  nie rozbraja reguły, dla której punkt powstał, tylko ją uruchamia.
+- **Punkt bramki to nie jedno zdanie.** Punkt 6 niesie dziewięć reguł, punkt 7 sześć.
+  Porównanie samego identyfikatora punktu — tak działa kontrola odniesienia każdej bramki
+  w tym repozytorium ([`lekcja-50`](lekcje.md#lekcja-50)) — przepuszcza przypadek, który
+  zapalił na sąsiedniej regule. Stąd opcjonalne pole `regula` w `fixture.json`. Zmierzone,
+  że to nie jest ozdobnik: rozbrojenie pięciu reguł przestawia ich przypadki na sąsiednie
+  reguły tego samego punktu i **bez tego pola wszystkie te przebiegi byłyby zielone**.
+
+Sprawdzone przebiegiem, nie rozumowaniem: bramka zapala na ośmiu sposobach zepsucia
+repozytorium (kolor na prymitywie, kolor z palca, tło pożyczone od innego komponentu, oś
+usunięta z polityki, oś martwa dopisana, nowe malowanie bez pary, para usunięta z policy,
+martwe `on-danger` przed i po przyjęciu snapshotu) — za każdym razem na innej regule —
+i na trzech sposobach rozbrojenia własnej kontroli, przy czym rozbrojenie zmierzone
+**dla czternastu z piętnastu reguł osobno** — piętnasta (`referencja-donikad`) jest dla
+tej konstrukcji nieosiągalna, bo generator rzuca na nieznanej referencji przed bramką.
+
+Dwa wpadki własne, obie tej samej rodziny co poprzednie sesje. Punkt 7 **przeszedł na
+zielono, nie zmierzywszy ani jednego koloru** — „0 kolorów malowanych w 7 arkuszach",
+bo wzorzec deklaracji wymagał wiodącego myślnika i widział wyłącznie custom properties.
+To [`lekcja-48`](lekcje.md#lekcja-48) w punkcie pisanym po to, żeby jej nie powtórzyć,
+i ta sama pomyłka co w A5: kontrola niepustości stała po stronie **wejścia**, a pusty
+był **pomiar**. Druga: rozbrojenie reguły `token-spoza-skorki` dało `TypeError` zamiast
+komunikatu — **piąty raz ta sama wada** (A3, A4, A7, A8), naprawiona tak samo, przez
+danie każdej regule własnego warunku wstępnego zamiast łańcucha `else`.
+
+Na koniec znalezisko w **innej** bramce, wywołane tą zmianą: przemalowanie całego
+przycisku w motywie ciemnym nie ruszyło ani jednego wzorca wizualnego. `toHaveScreenshot`
+ma dwa progi, a zmierzony był jeden — domyślne `threshold: 0.2` jest dwunastokrotnie
+większe niż krok rampy (0,0163), więc zmiana koloru dawała **zero** różniących się
+pikseli ([`lekcja-53`](lekcje.md#lekcja-53)). Próg ustawiony na 0,005 z pomiaru, dwa
+zrzuty ciemne odtworzone, dwa przebiegi pod rząd bez fałszywych alarmów.
+
+Następne: **A11** (bramka tekstów, pół dnia, przy okazji zmusza do rozstrzygnięcia C5).
+A9, A10 i A13 wymagają zbudowania czegoś nowego — rejestru npm, macierzy przeglądarek,
+przebiegu mutacyjnego.
 
 ### 2026-08-05 — A8: pusta sonda przechodzi każdy test na to, czego w niej nie ma
 

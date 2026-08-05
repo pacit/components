@@ -158,11 +158,15 @@ więc zmiana w powłoce nie unieważnia wzorców wszystkich komponentów naraz. 
 w `apps/sandbox-e2e/src/__screenshots__/{platform}/` i **są w repozytorium**.
 
 **Bramka:** `apps/sandbox-e2e/src/visual.spec.ts` i pozostałe specyfikacje e2e
-**Kontrola:** próg jest **bezwzględny** (`maxDiffPixels: 20`) i wynika z pomiaru:
-powtórzony przebieg tego samego kodu daje **0** różniących się pikseli, a zmiana
-`border-radius` 8 px → 1 px — **74**. Pierwsza wersja z progiem ułamkowym
-(`maxDiffPixelRatio: 0.01`) tę regresję **przepuszczała**
-([`lekcja-39`](../lekcje.md#lekcja-39))
+**Kontrola:** progi są **dwa** i oba wynikają z pomiaru. Liczba pikseli jest bezwzględna
+(`maxDiffPixels: 20`): powtórzony przebieg tego samego kodu daje **0** różniących się
+pikseli, a zmiana `border-radius` 8 px → 1 px — **74**; pierwsza wersja z progiem
+ułamkowym (`maxDiffPixelRatio: 0.01`) tę regresję **przepuszczała**
+([`lekcja-39`](../lekcje.md#lekcja-39)). Podobieństwo koloru jest osobnym progiem
+(`threshold: 0.005`), bo domyślne `0.2` decyduje, które piksele w ogóle **trafią** do
+tamtego budżetu: krok rampy `blue-500` → `blue-400` to 0,0163 w metryce pixelmatcha, więc
+przemalowanie całego przycisku dawało **zero** różniących się pikseli
+([`lekcja-53`](../lekcje.md#lekcja-53))
 **Lekcje:** [`lekcja-13`](../lekcje.md#lekcja-13), [`lekcja-23`](../lekcje.md#lekcja-23),
 [`lekcja-30`](../lekcje.md#lekcja-30), [`lekcja-39`](../lekcje.md#lekcja-39)
 

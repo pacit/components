@@ -1,7 +1,11 @@
 {
   "pct": {
     "blue": {
+      "$comment": "Kroki 200–400 istnieją dla motywu ciemnego, nie dla jasnego: tam rampa `primary` musi iść W GÓRĘ przy hover/active, bo tło jaśnieje pod ciemnym tekstem `on-primary`. Kierunek w dół (jak w jasnym) zbijał kontrast etykiety przycisku do 3,45:1 i 2,66:1 — zmierzone przy A12, gdy policy zaczęła te pary w ogóle liczyć.",
       "50": { "$type": "color", "$value": "#eff6ff" },
+      "200": { "$type": "color", "$value": "#bfdbfe" },
+      "300": { "$type": "color", "$value": "#93c5fd" },
+      "400": { "$type": "color", "$value": "#60a5fa" },
       "500": { "$type": "color", "$value": "#3b82f6" },
       "600": { "$type": "color", "$value": "#2563eb" },
       "700": { "$type": "color", "$value": "#1d4ed8" },

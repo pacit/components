@@ -1,7 +1,8 @@
 {
   "pct": {
     "blue": {
-      "600": { "$type": "color", "$value": "#2563eb" }
+      "600": { "$type": "color", "$value": "#2563eb" },
+      "700": { "$type": "color", "$value": "#1d4ed8" }
     },
     "slate": {
       "0": { "$type": "color", "$value": "#ffffff" },

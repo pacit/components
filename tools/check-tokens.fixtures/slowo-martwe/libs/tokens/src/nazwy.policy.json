@@ -9,7 +9,7 @@
 
   "semantyczne": {
     "role": ["primary", "surface", "text"],
-    "warianty": ["muted"]
+    "warianty": ["hover", "muted"]
   },
 
   "komponentowe": {

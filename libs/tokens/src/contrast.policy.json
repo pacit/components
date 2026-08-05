@@ -1,5 +1,8 @@
 {
   "$comment": "Polityka kontrastu skórki. Każdy wpis = para fg/bg (rola × stan) sprawdzana wobec progów WCAG. level: AA/AAA -> progi tekstowe (normal/duży); UI -> SC 1.4.11 (3:1, elementy nietekstowe: obramowania, focus ring). severity=error blokuje build; severity=warn tylko ostrzega.",
+  "$comment-pokrycie": "Ta lista jest MIANOWNIKIEM bramki kontrastu: para bez wpisu nie jest liczona, więc do 2026-08-05 policy milczała o 27 kolorach, które biblioteka naprawdę maluje (lekcja-33). Od A12 pilnuje tego punkt 7 `check-tokens`: każdy token koloru, który arkusz maluje tłem, tekstem albo obrysem, musi stać w co najmniej jednym wpisie. Dobór PARTNERA zostaje decyzją człowieka — maszyna widzi, że kolor jest niezmierzony, nie widzi, na czym leży.",
+  "$comment-partner": "Konwencja doboru partnera: tekst mierzy się wobec powierzchni, na której stoi; powierzchnię wobec tekstu, który na niej leży; obramowanie wobec powierzchni PRZYLEGŁEJ — dla kontrolki z własnym wypełnieniem jest nią to wypełnienie (`pct.checkbox.bg`), a dla przycisku wypełnionego na całej powierzchni granica biegnie wobec strony (`pct.surface`).",
+  "$comment-disabled": "Stany `disabled` mają severity `warn`, nie `error`: SC 1.4.11 wprost wyłącza części nieaktywnych kontrolek, a SC 1.4.3 — tekst nieaktywny. Wpis zostaje, bo wyłączenie z wymogu nie jest powodem, żeby PRZESTAĆ MIERZYĆ — raport ma pokazywać, jak głęboko stan disabled schodzi, zamiast nie mieć o nim zdania.",
   "checks": [
     {
       "name": "tekst podstawowy",
@@ -23,10 +26,52 @@
       "severity": "error"
     },
     {
+      "name": "button/hover — etykieta",
+      "fg": "pct.button.fg",
+      "bg": "pct.button.bg-hover",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button/active — etykieta",
+      "fg": "pct.button.fg",
+      "bg": "pct.button.bg-active",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
       "name": "button/disabled — etykieta",
       "fg": "pct.button.fg-disabled",
       "bg": "pct.button.bg-disabled",
       "level": "AA",
+      "severity": "warn"
+    },
+    {
+      "name": "button/outline — etykieta",
+      "fg": "pct.primary",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button/outline hover — etykieta",
+      "fg": "pct.primary",
+      "bg": "pct.surface-100",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "UI: obramowanie przycisku",
+      "fg": "pct.button.border",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: obramowanie przycisku (disabled)",
+      "fg": "pct.button.border-disabled",
+      "bg": "pct.surface",
+      "level": "UI",
       "severity": "warn"
     },
     {
@@ -79,6 +124,48 @@
       "severity": "error"
     },
     {
+      "name": "UI: obramowanie checkboxa (hover)",
+      "fg": "pct.checkbox.border-hover",
+      "bg": "pct.checkbox.bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: obramowanie checkboxa (zaznaczony)",
+      "fg": "pct.checkbox.border-checked",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "checkbox — komunikat błędu",
+      "fg": "pct.checkbox.fg-invalid",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "checkbox/disabled — etykieta",
+      "fg": "pct.checkbox.fg-disabled",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "warn"
+    },
+    {
+      "name": "checkbox/disabled — znacznik",
+      "fg": "pct.checkbox.fg-disabled",
+      "bg": "pct.checkbox.bg-disabled",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "UI: obramowanie checkboxa (disabled)",
+      "fg": "pct.checkbox.border-disabled",
+      "bg": "pct.checkbox.bg-disabled",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
       "name": "radio — etykieta opcji",
       "fg": "pct.radio.label-fg",
       "bg": "pct.surface",
@@ -126,6 +213,41 @@
       "bg": "pct.radio.bg",
       "level": "UI",
       "severity": "error"
+    },
+    {
+      "name": "UI: obramowanie radia (hover)",
+      "fg": "pct.radio.border-hover",
+      "bg": "pct.radio.bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "radio — komunikat błędu",
+      "fg": "pct.radio.fg-invalid",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "radio/disabled — etykieta",
+      "fg": "pct.radio.fg-disabled",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "warn"
+    },
+    {
+      "name": "radio/disabled — kropka",
+      "fg": "pct.radio.fg-disabled",
+      "bg": "pct.radio.bg-disabled",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "UI: obramowanie radia (disabled)",
+      "fg": "pct.radio.border-disabled",
+      "bg": "pct.radio.bg-disabled",
+      "level": "UI",
+      "severity": "warn"
     },
     {
       "name": "select — tekst wybranej wartości",
@@ -198,6 +320,62 @@
       "severity": "error"
     },
     {
+      "name": "select — opcja na tle panelu",
+      "fg": "pct.select.option-fg",
+      "bg": "pct.select.panel-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "select — opcja wyłączona",
+      "fg": "pct.select.option-fg-disabled",
+      "bg": "pct.select.option-bg",
+      "level": "AA",
+      "severity": "warn"
+    },
+    {
+      "name": "select — komunikat błędu",
+      "fg": "pct.select.fg-invalid",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "select/disabled — tekst",
+      "fg": "pct.select.fg-disabled",
+      "bg": "pct.select.bg-disabled",
+      "level": "AA",
+      "severity": "warn"
+    },
+    {
+      "name": "UI: obramowanie selecta (hover)",
+      "fg": "pct.select.border-hover",
+      "bg": "pct.select.bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: obramowanie selecta (focus)",
+      "fg": "pct.select.border-focus",
+      "bg": "pct.select.bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: obramowanie selecta (błąd)",
+      "fg": "pct.select.border-invalid",
+      "bg": "pct.select.bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: obramowanie selecta (disabled)",
+      "fg": "pct.select.border-disabled",
+      "bg": "pct.select.bg-disabled",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
       "name": "field — tekst",
       "fg": "pct.field.fg",
       "bg": "pct.field.bg",
@@ -266,6 +444,20 @@
       "bg": "pct.field.bg",
       "level": "UI",
       "severity": "error"
+    },
+    {
+      "name": "UI: obramowanie pola (hover)",
+      "fg": "pct.field.border-hover",
+      "bg": "pct.field.bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: obramowanie pola (disabled)",
+      "fg": "pct.field.border-disabled",
+      "bg": "pct.field.bg-disabled",
+      "level": "UI",
+      "severity": "warn"
     }
   ]
 }

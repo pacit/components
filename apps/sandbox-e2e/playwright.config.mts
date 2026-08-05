@@ -55,6 +55,29 @@ export default defineConfig({
        * realną regresją, jaką umiałem wywołać.
        */
       maxDiffPixels: 20,
+      /*
+       * Próg PODOBIEŃSTWA KOLORU na piksel — bez niego budżet wyżej liczy
+       * piksele, których nikt nie policzył.
+       *
+       * Domyślne `threshold: 0.2` znaczy „różnica koloru poniżej 0,2 w metryce
+       * YIQ pixelmatcha nie jest różnicą". Zmierzone, nie założone:
+       *   - krok rampy blue-500 -> blue-400   ->  0.0163,
+       *   - krok rampy blue-500 -> blue-600   ->  0.0101,
+       *   - slate-900 -> slate-800            ->  0.0042.
+       * Czyli PRZEMALOWANIE CAŁEGO PRZYCISKU o jeden krok rampy dawało zero
+       * różniących się pikseli i zielony przebieg — znalezione przy A12, gdy
+       * zmiana `--pct-primary` w motywie ciemnym nie ruszyła ani jednego wzorca,
+       * choć zrzut po niej ma 2155 pikseli w nowym kolorze zamiast 2145
+       * w starym. Bramka wyglądała na działającą i nie łapała regresji, którą
+       * miała łapać — ta sama wada co `maxDiffPixelRatio` wyżej, tylko na osi
+       * koloru zamiast na osi liczby pikseli.
+       *
+       * 0.005 leży pod najmniejszym zmierzonym krokiem rampy (0.0042 dla pary
+       * slate to jedyna wartość niżej — dwie sąsiednie szarości tła są
+       * nierozróżnialne i tego ta bramka nie obiecuje) i wysoko nad szumem
+       * wygładzania krawędzi, który i tak absorbuje budżet 20 pikseli.
+       */
+      threshold: 0.005,
       animations: 'disabled',
       caret: 'hide',
       scale: 'css',

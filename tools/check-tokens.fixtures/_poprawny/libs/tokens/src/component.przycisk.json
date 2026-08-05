@@ -2,7 +2,7 @@
   "pct": {
     "przycisk": {
       "bg": { "$type": "color", "$value": "{pct.primary}" },
-      "bg-hover": { "$type": "color", "$value": "{pct.blue.600}" },
+      "bg-hover": { "$type": "color", "$value": "{pct.primary-hover}" },
       "fg": { "$type": "color", "$value": "{pct.on-primary}" },
       "label-fg": { "$type": "color", "$value": "{pct.text}" },
       "padding-x": { "$type": "dimension", "$value": "{pct.space.4}" },

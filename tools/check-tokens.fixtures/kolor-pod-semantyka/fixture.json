@@ -1,0 +1,6 @@
+{
+  "punkt": 6,
+  "kontrola": "poziomy",
+  "regula": "kolor-pod-semantyka",
+  "opis": "`--pct-przycisk-bg` wskazuje wprost na prymityw `{pct.blue.600}` zamiast na `{pct.primary}`. Wartość jest ta sama co do bajta — skórka wygląda identycznie, kontrast wychodzi identycznie, żaden test nie czerwienieje. Zmienia się tylko to, czego nie widać: nadpisanie `--pct-primary` przez autora motywu przestaje ruszać ten przycisk. To jest cała wada, którą punkt 6 ma łapać, i cała trudność w jej zauważeniu bez bramki."
+}

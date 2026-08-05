@@ -1,0 +1,6 @@
+{
+  "punkt": 6,
+  "kontrola": "poziomy",
+  "regula": "os-martwa",
+  "opis": "Oś `motion` zadeklarowana jako wspólna, a nieużywana przez żaden token komponentowy. Wszystkie odwołania dalej idą w dół, więc reguła grafu przechodzi — i o to chodzi. Wyjątek, którego nikt nie używa, nie kosztuje nic dziś, a jutro przepuszcza pierwsze odwołanie, jakie się pod nim znajdzie, i wygląda przy tym na zastaną decyzję. Ta sama konstrukcja co martwe słowo w słowniku nazw (punkt 4)."
+}

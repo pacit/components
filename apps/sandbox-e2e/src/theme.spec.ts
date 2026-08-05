@@ -56,9 +56,12 @@ test.describe('Scoped theme — kaskada CSS custom properties', () => {
         getComputedStyle(el).getPropertyValue('--pct-button-bg').trim(),
       );
 
-    // :root -> primary = blue-600, dark scope -> primary = blue-500
+    // :root -> primary = blue-600, dark scope -> primary = blue-400. Rampa
+    // ciemna siedzi WYŻEJ niż jasna (blue-400, nie blue-500) od A12: `on-primary`
+    // jest w niej ciemny, więc hover przyciemniający tło zbijał kontrast etykiety
+    // poniżej AA, a ten sam token bywa też tekstem na ciemnej powierzchni.
     expect(rootButtonBg).toBe('#2563eb');
-    expect(scopedButtonBg).toBe('#3b82f6');
+    expect(scopedButtonBg).toBe('#60a5fa');
     expect(scopedButtonBg).not.toBe(rootButtonBg);
   });
 });
