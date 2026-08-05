@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, Page, test } from '@playwright/test';
-import { visit } from './support/dom';
+import { setRtl, visit } from './support/dom';
 import { SBX_ROUTES } from './support/views';
 
 /**
@@ -44,6 +44,25 @@ test.describe('Dostępność (axe-core, WCAG 2.2 AA)', () => {
   for (const path of SBX_ROUTES) {
     test(`widok ${path} jest bez naruszeń`, async ({ page }) => {
       await visit(page, path);
+      const violations = await audit(page);
+      expect(report(violations)).toBe('');
+    });
+  }
+
+  /**
+   * Ten sam audyt w `dir="rtl"` (wym-token-logiczne).
+   *
+   * Kierunek nie jest wyłącznie sprawą wyglądu: axe liczy kontrast po złożeniu
+   * warstw i sprawdza powiązania ARIA na wyrenderowanym drzewie, a odbicie
+   * układu potrafi zmienić jedno i drugie — element nachodzący na sąsiada,
+   * dekoracja zasłaniająca tekst, cel dotykowy wypchnięty poza kontrolkę.
+   * Zrzuty RTL pokazują, że układ się odbił; ten audyt mówi, czy po odbiciu
+   * nadal jest dostępny.
+   */
+  for (const path of SBX_ROUTES) {
+    test(`widok ${path} jest bez naruszeń w RTL`, async ({ page }) => {
+      await visit(page, path);
+      await setRtl(page);
       const violations = await audit(page);
       expect(report(violations)).toBe('');
     });

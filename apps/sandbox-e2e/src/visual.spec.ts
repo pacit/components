@@ -1,5 +1,5 @@
 import { expect, Page, test } from '@playwright/test';
-import { visit } from './support/dom';
+import { setRtl, visit } from './support/dom';
 
 /**
  * Testy wizualne (wym-jakosc-e2e).
@@ -109,5 +109,65 @@ test.describe('Wygląd — porównanie ze wzorcem', () => {
     await expect(page.getByTestId('panel-scoped')).toHaveScreenshot(
       'stany-ciemne.png',
     );
+  });
+});
+
+/**
+ * Ten sam zestaw w `dir="rtl"` (wym-token-logiczne).
+ *
+ * Bramka `check-styles` czyta arkusze i zapala na właściwości fizycznej. To
+ * warunek konieczny i niewystarczający: arkusz może być bez zarzutu logiczny,
+ * a układ i tak nie odbić się — bo kierunek nie dociera tam, gdzie powinien
+ * (nakładka CDK), albo bo asymetrię niesie SVG, kolejność DOM czy znak
+ * przesunięcia. Żadnej z tych rzeczy nie widać w arkuszu; wszystkie widać na
+ * obrazku.
+ *
+ * Lista jest KRÓTSZA niż `CARDS` i to jest decyzja, nie zaniedbanie: zrzut RTL
+ * niesie informację tam, gdzie układ jest asymetryczny wzdłuż osi inline —
+ * dekoracje pola, ikona kontrolki, pudełko przed etykietą. Karta symetryczna
+ * dałaby drugi obrazek różniący się wyłącznie pozycją tekstu w akapicie i
+ * kosztowałaby tyle samo uwagi przy każdej świadomej zmianie wyglądu.
+ */
+const CARDS_RTL: ReadonlyArray<
+  readonly [path: string, testId: string, name: string]
+> = [
+  ['/button', 'demo-variants', 'przycisk-warianty'],
+  ['/field', 'demo-affix', 'pole-dekoracje'],
+  ['/field', 'demo-aux', 'pole-sloty-poboczne'],
+  ['/text', 'demo-types', 'tekst-rodzaje'],
+  ['/number', 'demo-price', 'liczba-kwota'],
+  ['/checkbox', 'demo-in-field', 'checkbox-w-obudowie'],
+  ['/radio', 'demo-in-field', 'radio-w-obudowie'],
+  ['/select', 'demo-in-field', 'select-w-obudowie'],
+];
+
+test.describe('Wygląd w RTL — porównanie ze wzorcem', () => {
+  for (const [path, testId, name] of CARDS_RTL) {
+    test(`${name}-rtl`, async ({ page }) => {
+      await stage(page, path);
+      await setRtl(page);
+      await expect(page.getByTestId(testId)).toHaveScreenshot(
+        `${name}-rtl.png`,
+      );
+    });
+  }
+
+  /**
+   * Panel w RTL ma osobny wzorzec, bo to jedyne miejsce, w którym kierunek nie
+   * bierze się z kaskady, tylko jest przenoszony ręcznie z triggera (`lekcja-35`).
+   * Regresję łapie już `rtl.spec.ts` pomiarem `direction`; ten zrzut pokazuje
+   * dodatkowo, po której stronie panel się zaczepia i jak układa się treść opcji.
+   */
+  test('select-panel-otwarty-rtl', async ({ page }) => {
+    await stage(page, '/select');
+    await setRtl(page);
+    await page
+      .getByTestId('select-country')
+      .locator('[data-pct-part="trigger"]')
+      .click();
+
+    const panel = page.locator('[data-pct-part="panel"]');
+    await expect(panel).toBeVisible();
+    await expect(panel).toHaveScreenshot('select-panel-otwarty-rtl.png');
   });
 });

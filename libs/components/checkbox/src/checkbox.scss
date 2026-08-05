@@ -37,6 +37,10 @@
 .pct-checkbox__control {
   position: absolute;
   top: 50%;
+  /* pct-wyjatek left: para `left: 50%` + `translate(-50%)` wyśrodkowuje symetrycznie,
+     więc w RTL wypada w tym samym miejscu. `inset-inline-start` dałoby tu WADĘ, nie
+     poprawę: w RTL znaczy `right: 50%`, a przesunięcie o -50% szerokości idzie dalej
+     w lewo, czyli strefa trafienia zjeżdża obok pudełka. */
   left: 50%;
   transform: translate(-50%, -50%);
   margin: 0;

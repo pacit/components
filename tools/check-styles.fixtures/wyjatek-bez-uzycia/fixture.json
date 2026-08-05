@@ -1,0 +1,5 @@
+{
+  "punkt": 4,
+  "kontrola": "wyjatek",
+  "opis": "Znacznik nazywa `left`, a pod nim stoi `border-right-color` — czyli powód opisuje coś innego niż to, co usprawiedliwia. Tak wygląda wyjątek po przesunięciu kodu: uzasadnienie zostaje w miejscu, deklaracja wędruje, a przykryta zostaje ta, która akurat wpadła pod komentarz. Wyjątek, który niczego nie trafia, musi zapalić, zanim zdąży przykryć cudzą regułę."
+}

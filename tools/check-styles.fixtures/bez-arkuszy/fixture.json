@@ -1,0 +1,6 @@
+{
+  "punkt": 1,
+  "kontrola": "arkusze",
+  "opis": "Ani jednego arkusza do zbadania. Nie jest to przypadek teoretyczny: wystarczy, że lista plików przestanie cokolwiek zwracać — zawężony wzorzec, przeniesiony katalog, zmiana rozszerzenia — a bramka orzeka „bez naruszeń\" o zbiorze pustym i kończy przebieg zielono. Dokładnie ta klasa wady, którą w bramce pokrycia łapie punkt 2.",
+  "usun": ["przycisk/src/przycisk.scss", "pole/src/pole.scss"]
+}

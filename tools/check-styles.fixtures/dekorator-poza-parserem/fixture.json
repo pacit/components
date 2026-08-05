@@ -1,0 +1,5 @@
+{
+  "punkt": 3,
+  "kontrola": "zrodlo-stylow",
+  "opis": "Dekorator zapisany w jednej linii, czyli inaczej, niż formatuje prettier. Parser kotwiczy się na `@Component({` w kolumnie zero, więc tego komponentu po prostu nie widzi — i bez osobnego licznika `@Component(` zmiana formatowania nie wywaliłaby bramki, tylko po cichu ZMNIEJSZYŁA zbiór mierzonych komponentów. Ta sama kontrola mianownika parsera co w `check-zoneless`."
+}

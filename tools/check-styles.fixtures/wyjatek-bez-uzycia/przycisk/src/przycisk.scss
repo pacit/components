@@ -1,0 +1,24 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+  padding-inline: var(--pct-space-3);
+  margin-inline-start: var(--pct-space-2);
+  border-inline-start: 1px solid var(--pct-przycisk-border);
+  text-align: start;
+}
+
+.przycisk__spinner {
+  width: 1em;
+  height: 1em;
+  border: 2px solid currentColor;
+  /* pct-wyjatek left: wyśrodkowanie strefy trafienia jest symetryczne, więc
+     w obu kierunkach pisma wypada w tym samym miejscu. */
+  border-right-color: transparent;
+  border-radius: 50%;
+}
+
+:host([disabled]) {
+  color: var(--pct-przycisk-disabled-fg);
+  background: var(--pct-przycisk-disabled-bg);
+  opacity: 1;
+}

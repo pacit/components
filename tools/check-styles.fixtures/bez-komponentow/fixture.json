@@ -1,0 +1,6 @@
+{
+  "punkt": 3,
+  "kontrola": "zrodlo-stylow",
+  "opis": "Ani jednego źródła z `@Component`. Ten przypadek istnieje, bo bramka na nim PRZESZŁA: pathspec gita nie jest globem powłoki, wzorzec `libs/components/*/src/**/*.ts` żądał o jeden katalog za dużo i zwracał pustą listę, a porównanie „rozpoznano N z M\" jest na zero ślepe — zero równa się zeru. Bramka wypisała wtedy „7 arkuszy, 0 komponentów\" i zakończyła przebieg zielono (lekcja-48). Zbiór po drugiej stronie porównania potrzebuje takiej samej kontroli niepustości jak lista arkuszy w punkcie 1.",
+  "usun": ["przycisk/src/przycisk.ts.txt", "pole/src/pole.ts.txt"]
+}

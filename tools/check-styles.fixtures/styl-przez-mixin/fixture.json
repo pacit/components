@@ -1,0 +1,5 @@
+{
+  "punkt": 2,
+  "kontrola": "kompilator",
+  "opis": "Arkusz składa nazwę właściwości interpolacją w mixinie, więc w tekście źródła nie stoi nigdzie `padding-left` — a przeglądarka dostaje właśnie to. Skaner bramki widzi `padding-#{$strona}` i nie rozpoznaje w tym deklaracji, punkty 5 i 6 przechodzą po arkuszu bez śladu. Zapala dopiero porównanie z tym, co z tego samego pliku wypisuje sass, czyli parser prawdziwy."
+}

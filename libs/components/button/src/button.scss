@@ -90,6 +90,9 @@
   width: 1em;
   height: 1em;
   border: 2px solid currentColor;
+  /* pct-wyjatek border-right-color: przerwa w pierścieniu nie ma kierunku pisma —
+     obraca się w kółko, więc jej krawędź startowa jest nieobserwowalna. Wersja
+     logiczna zmieniałaby wyłącznie fazę początkową animacji. */
   border-right-color: transparent;
   border-radius: 50%;
   /* Animacja bez @angular/animations — czysty CSS (wym-api-animacje). Czas obrotu
@@ -124,6 +127,9 @@
      stanem przycisku, więc w spinnerze wyłączonym pierścień też szarzeje. */
   .pct-button__spinner {
     border-color: currentColor;
+    /* pct-wyjatek border-right-color: ta sama przerwa co w regule bazowej, tylko
+       odtworzona po wymuszeniu kolorów — obracająca się krawędź nie ma kierunku
+       pisma, więc wersja logiczna niczego by tu nie naprawiła. */
     border-right-color: transparent;
   }
 }

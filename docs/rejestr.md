@@ -9,9 +9,9 @@ Nie ma stanu „zrealizowane, tylko niesprawdzone" — patrz
 
 | stan           | znaczenie                                          | liczba |
 | -------------- | -------------------------------------------------- | -----: |
-| ✅ egzekwowane | bramka i kontrola istnieją, są wpięte w CI         |     43 |
+| ✅ egzekwowane | bramka i kontrola istnieją, są wpięte w CI         |     45 |
 | 🟡 częściowo   | bramka jest, kontroli odniesienia brak (świadomie) |     16 |
-| ⛔ luka        | brak bramki albo kontroli, z zapisanym terminem    |     22 |
+| ⛔ luka        | brak bramki albo kontroli, z zapisanym terminem    |     20 |
 | **razem**      |                                                    | **81** |
 
 ## Luki wg pilności
@@ -26,8 +26,6 @@ Kolejność bierze się z pola **Wiąże przy**, nie z numeru wymagania.
 | [`wym-jakosc-konsument`](wymagania/jakosc.md#wym-jakosc-konsument)          | `.verdaccio/config.yml` i target `local-registry` w root `project.jso…              | natychmiast — `check-package` bada artefakt **statycznie**;… |
 | [`wym-jakosc-przegladarki`](wymagania/jakosc.md#wym-jakosc-przegladarki)    | `apps/sandbox-e2e/playwright.config.mts` ma **wyłącznie chromium**, r…              | natychmiast dla biblioteki chwalącej się a11y — Safari ma n… |
 | [`wym-projekt-tree-shaking`](wymagania/projekt.md#wym-projekt-tree-shaking) | test budujący aplikację importującą **wyłącznie** `@pacit/components/…              | natychmiast — to obietnica sprzedażowa, dziś niesprawdzana … |
-| [`wym-token-bez-opacity`](wymagania/tokeny.md#wym-token-bez-opacity)        | reguła lintu zakazująca `opacity` na warstwach tekstowych w `libs/com…              | natychmiast — to obietnica, której złamanie **cofa** `wym-t… |
-| [`wym-token-logiczne`](wymagania/tokeny.md#wym-token-logiczne)              | reguła lintu (stylelint albo skrypt w duchu `check-package.mjs`) zaka…              | natychmiast — koszt retrofitu jest **nieliniowy**. Dziś: re… |
 | [`wym-token-nazwy`](wymagania/tokeny.md#wym-token-nazwy)                    | snapshot nazw tokenów (`tokens.ts` już jest generowany — zostaje doło…              | natychmiast — nazwy tokenów są publicznym API motywu tak sa… |
 | [`wym-token-pary-tekstu`](wymagania/tokeny.md#wym-token-pary-tekstu)        | nic nie zapala, gdy **powstanie nowa powierzchnia bez pary**. To ta s… _(kontrola)_ | natychmiast — koszt to porównanie listy powierzchni z listą… |
 | [`wym-api-animacje`](wymagania/api.md#wym-api-animacje)                     | zakaz jest dotrzymany, ale **nic go nie pilnuje** — jedyne, co obowią…              | pierwszym komponencie z wejściem/wyjściem (panel, dialog, t… |
@@ -138,7 +136,7 @@ Kolejność bierze się z pola **Wiąże przy**, nie z numeru wymagania.
 | [`wym-token-nazwy`](wymagania/tokeny.md#wym-token-nazwy)             | ⛔ luka        | brak — luka: snapshot nazw tokenów (`tokens.ts` już jest generowany —… | brak — luka: zmiana nazwy tokenu bez aktualizacji snapshotu musi zapa… |
 | [`wym-token-pary-tekstu`](wymagania/tokeny.md#wym-token-pary-tekstu) | ⛔ luka        | `libs/tokens/src/contrast.policy.json` + silnik w `libs/tokens/build.… | brak — luka: nic nie zapala, gdy **powstanie nowa powierzchnia bez pa… |
 | [`wym-token-kontrast`](wymagania/tokeny.md#wym-token-kontrast)       | ✅ egzekwowane | `libs/tokens/build.mjs` (target `tokens:build`, w CI przez `^build`)   | przebieg z `lekcja-6`: pierwotny guard przepuścił `disabled` o realny… |
-| [`wym-token-bez-opacity`](wymagania/tokeny.md#wym-token-bez-opacity) | ⛔ luka        | brak — luka: reguła lintu zakazująca `opacity` na warstwach tekstowyc… | brak — luka: arkusz z `opacity` na tekście musi zapalić                |
+| [`wym-token-bez-opacity`](wymagania/tokeny.md#wym-token-bez-opacity) | ✅ egzekwowane | `tools/check-styles.mjs` (target `check-styles`, w CI) — punkt 6: `op… | `tools/check-styles.fixtures/opacity-czesciowa/` (stan wyrażony przez… |
 | [`wym-token-css`](wymagania/tokeny.md#wym-token-css)                 | ✅ egzekwowane | `apps/sandbox-e2e/src/theme.spec.ts`, `libs/components/check-package.… | `tools/check-package.fixtures/token-bez-deklaracji/` — pakiet, w któr… |
 | [`wym-token-scss`](wymagania/tokeny.md#wym-token-scss)               | 🟡 częściowo   | brak — świadomie: rozszerzenie pliku jest widoczne w review, a arkusz… | nie dotyczy ---                                                        |
 | [`wym-token-nadpisanie`](wymagania/tokeny.md#wym-token-nadpisanie)   | ✅ egzekwowane | `apps/sandbox-e2e/src/theme.spec.ts`                                   | jak w `wym-token-domkniecie` — porównanie tokenu komponentowego, nie … |
@@ -148,7 +146,7 @@ Kolejność bierze się z pola **Wiąże przy**, nie z numeru wymagania.
 | [`wym-token-skorka`](wymagania/tokeny.md#wym-token-skorka)           | ✅ egzekwowane | `libs/tokens/build.mjs` — ale **wyłącznie dla skórki wbudowanej**      | patrz `wym-token-kontrast`                                             |
 | [`wym-token-dystrybucja`](wymagania/tokeny.md#wym-token-dystrybucja) | ✅ egzekwowane | `libs/components/check-package.mjs` — punkty 1 i 2: skórka jest w pak… | `tools/check-package.fixtures/brak-skorki/` — pakiet bez skórki musi … |
 | [`wym-token-gestosc`](wymagania/tokeny.md#wym-token-gestosc)         | ⛔ luka        | brak — luka: w źródłach DTCG nie ma **ani jednego** tokenu gęstości    | brak — luka: układ z tokenem gęstości `compact` musi przejść próg obs… |
-| [`wym-token-logiczne`](wymagania/tokeny.md#wym-token-logiczne)       | ⛔ luka        | brak — luka: reguła lintu (stylelint albo skrypt w duchu `check-packa… | brak — luka: arkusz z `padding-left` musi zapalić                      |
+| [`wym-token-logiczne`](wymagania/tokeny.md#wym-token-logiczne)       | ✅ egzekwowane | `tools/check-styles.mjs` (target `check-styles`, w CI) — punkt 5: zak… | `tools/check-styles.fixtures/padding-fizyczny/` (nazwa właściwości) i… |
 
 ## wydanie
 
@@ -199,7 +197,7 @@ Która lekcja karmi które wymaganie. Generowane z pól **Lekcje**.
 | [`lekcja-32`](lekcje.md#lekcja-32) | `wym-api-liczba`                                                                                                                     |
 | [`lekcja-33`](lekcje.md#lekcja-33) | `wym-a11y-wbudowana`, `wym-a11y-axe`, `wym-jakosc-widoki`                                                                            |
 | [`lekcja-34`](lekcje.md#lekcja-34) | `wym-api-obudowa`, `wym-api-wielkosc`                                                                                                |
-| [`lekcja-35`](lekcje.md#lekcja-35) | `wym-api-nakladka`                                                                                                                   |
+| [`lekcja-35`](lekcje.md#lekcja-35) | `wym-api-nakladka`, `wym-token-logiczne`                                                                                             |
 | [`lekcja-36`](lekcje.md#lekcja-36) | `wym-jakosc-rejestr`, `wym-jakosc-pakiet`, `wym-projekt-pakiet`, `wym-projekt-lib-tokenow`, `wym-token-css`, `wym-token-dystrybucja` |
 | [`lekcja-37`](lekcje.md#lekcja-37) | `wym-api-generyk`                                                                                                                    |
 | [`lekcja-38`](lekcje.md#lekcja-38) | `wym-a11y-ruch`, `wym-a11y-kolory-wymuszone`, `wym-jakosc-kontrola`, `wym-token-system`                                              |
@@ -212,3 +210,4 @@ Która lekcja karmi które wymaganie. Generowane z pól **Lekcje**.
 | [`lekcja-45`](lekcje.md#lekcja-45) | `wym-jakosc-pokrycie`                                                                                                                |
 | [`lekcja-46`](lekcje.md#lekcja-46) | `wym-api-fundament`                                                                                                                  |
 | [`lekcja-47`](lekcje.md#lekcja-47) | `wym-jakosc-typecheck`                                                                                                               |
+| [`lekcja-48`](lekcje.md#lekcja-48) | `wym-token-logiczne`                                                                                                                 |

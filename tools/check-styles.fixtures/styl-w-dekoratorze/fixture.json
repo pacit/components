@@ -1,0 +1,5 @@
+{
+  "punkt": 3,
+  "kontrola": "zrodlo-stylow",
+  "opis": "Komponent trzyma style w dekoratorze (`styles: [...]`), nie w arkuszu. Style jadą do konsumenta tak samo jak wszystkie inne, ale bramka czyta pliki `.scss` — więc orzeka o tym komponencie „bez naruszeń\" wyłącznie dlatego, że go nie widzi. To ten sam mianownik co w A6: zbiór mierzonych komponentów musi mieć niezależne źródło."
+}

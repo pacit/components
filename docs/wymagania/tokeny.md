@@ -166,13 +166,23 @@ komunikat, **który wariant rozmiaru przechodzi, a który nie**.
 koloru. `opacity` jest **zakazana dla warstw tekstowych**, bo zmienia kontrast w runtime
 w sposób niewidoczny dla bramki (kompozycja z tłem).
 
-**Bramka:** brak — luka: reguła lintu zakazująca `opacity` na warstwach tekstowych
-w `libs/components/**/*.scss`. Dziś zakaz jest dotrzymany, ale pilnuje go wyłącznie
-pamięć autora
-**Kontrola:** brak — luka: arkusz z `opacity` na tekście musi zapalić
+**Bramka:** `tools/check-styles.mjs` (target `check-styles`, w CI) — punkt 6: `opacity`
+w arkuszach biblioteki wolno wyłącznie jako przełącznik widoczności (`0` albo `1`).
+Każda wartość pomiędzy **komponuje z tłem**, czyli przesuwa kontrast realny poza wynik
+bramki kontrastu; wartość niedosłowna (`var(...)`, `calc(...)`) jest nierozstrzygalna
+statycznie, więc też zapala. Rodzina obejmuje warianty SVG (`fill-opacity`,
+`stroke-opacity`), bo kompozycja jest ta sama, tylko nazwa inna
+**Kontrola:** `tools/check-styles.fixtures/opacity-czesciowa/` (stan wyrażony przez
+`opacity: 0.6`) i `opacity-ze-zmiennej/` (wartość z tokenu). Do tego przebieg na
+repozytorium: `opacity: 0` w `checkbox.scss` zmienione na `0.45` zapala punkt 6
 **Wiąże przy:** natychmiast — to obietnica, której złamanie **cofa**
 [`wym-token-kontrast`](#wym-token-kontrast) do stanu sprzed
 [`lekcja-6`](../lekcje.md#lekcja-6), i to po cichu
+
+> Świadomie przepuszczone jest `transition: opacity` i przejście 0 → 1. Stan przelotny
+> nie jest tym, o czym mówi [`wym-token-kontrast`](#wym-token-kontrast), a zakaz
+> obejmujący animacje odebrałby jedyny standardowy sposób wprowadzania nakładek.
+
 **Lekcje:** [`lekcja-6`](../lekcje.md#lekcja-6)
 
 ---
@@ -315,21 +325,37 @@ obszaru dotyku **szybciej** niż wielkość `sm`, więc razem z nią trzeba prze
 (`padding-inline-start`, nie `padding-left`). Układ **odbija się** w `dir="rtl"`.
 Wyjątki wyłącznie z komentarzem uzasadniającym.
 
-**Bramka:** brak — luka: reguła lintu (stylelint albo skrypt w duchu
-`check-package.mjs`) zakazująca `left`/`right`, `margin-left`, `padding-right`,
-`text-align: left|right`, `border-*-left` w `libs/components/**/*.scss`
-**Kontrola:** brak — luka: arkusz z `padding-left` musi zapalić
-**Wiąże przy:** natychmiast — koszt retrofitu jest **nieliniowy**. Dziś: reguła lintu
+**Bramka:** `tools/check-styles.mjs` (target `check-styles`, w CI) — punkt 5: zakaz
+właściwości fizycznych osi inline (`left`/`right`, `margin-*`, `padding-*`, `border-*`,
+promienie narożników, `direction`, wielowartościowy `inset`) oraz fizycznych WARTOŚCI
+(`text-align`, `float`, `clear`). Oś block (`top`/`bottom`) świadomie poza listą: `rtl`
+odbija wyłącznie oś inline, a pełne bidi jest [nie-celem](../00-os.md#jawne-nie-cele).
+Wyjątek wymaga znacznika `/* pct-wyjatek <właściwość>: <powód> */` przylegającego do
+deklaracji — punkt 4 zapala na znaczniku bez uzasadnienia i na takim, który nie trafia
+w żadną deklarację
+**Kontrola:** `tools/check-styles.fixtures/padding-fizyczny/` (nazwa właściwości)
+i `text-align-fizyczny/` (wartość); dla wyjątków `wyjatek-bez-uzasadnienia/`
+i `wyjatek-bez-uzycia/`. Do tego przebiegi na repozytorium: `padding-inline-start`
+zamienione na `padding-left` w `field.scss` zapala, usunięcie znacznika wyjątku nad
+`left: 50%` w `radio.scss` zapala, a `margin-right` schowany w mixinie z interpolacją
+zapala punkt 2 — porównanie tekstu źródła z tym, co z niego wypisuje sass
+**Lekcje:** [`lekcja-48`](../lekcje.md#lekcja-48)
 
-- oś `dir` w sandboxie + garść zrzutów ≈ 1–2 dni. Po 40 komponentach: tygodnie, plus
-  polowanie na każdą strzałkę i animację o zaszytym kierunku
-
-> Intencja **już obowiązuje** — arkusze konsekwentnie używają właściwości logicznych,
-> a jedyne trafienia fizyczne są RTL-bezpieczne (`border-right-color` spinnera,
-> symetryczne `left: 50%` w strefach trafienia). Brakuje wyłącznie bramki, osi `dir`
-> w sandboxie i zrzutów. **Nie ma tu dywidendy do zainkasowania z rezygnacji**:
-> `padding-inline-start` nie jest dłuższe od `padding-left`, więc rezygnacja nie
-> oszczędziłaby ani jednej linii — odebrałaby tylko gwarancję.
+> **Bramka arkuszy to warunek konieczny, nie wystarczający.** Arkusz może być bez zarzutu
+> logiczny, a układ i tak się nie odbić — bo kierunek nie dociera tam, gdzie powinien.
+> Zmierzone przy tej okazji: panel selecta żyje w nakładce CDK, czyli jako dziecko `body`,
+> więc w `dir="rtl"` trigger pisał od prawej, a lista pod nim od lewej, przy `text-align:
+start` w arkuszu ([`lekcja-35`](../lekcje.md#lekcja-35) — trzecia właściwość dziedziczona
+> po motywie i piśmie). Dlatego obietnicy pilnują trzy rzeczy naraz: bramka arkuszy,
+> zrzuty w `dir="rtl"` (`apps/sandbox-e2e/src/visual.spec.ts`) i pomiary układu
+> (`rtl.spec.ts`, `a11y.spec.ts` — audyt axe na każdym widoku w RTL).
+>
+> Oś `dir` jest osią przekrojową sandboxa jak motyw i wielkość: przestawia się ją
+> w pasku globalnym albo na pojedynczej karcie.
+>
+> **Nie ma tu dywidendy do zainkasowania z rezygnacji**: `padding-inline-start` nie jest
+> dłuższe od `padding-left`, więc rezygnacja nie oszczędziłaby ani jednej linii —
+> odebrałaby tylko gwarancję.
 >
 > Realny koszt RTL leży przy **przyszłych** komponentach: strzałki Lewo/Prawo muszą się
 > zamieniać w układach poziomych (tabs, slider, carousel), nakładki muszą się odbijać

@@ -264,6 +264,8 @@ Przy tej samej okazji wyszło, że **pismo panelu też nie miało właściciela*
 
 Lekcja: **każda właściwość dziedziczona jest po cichu zerwana w nakładce.** Motyw był już przenoszony jawnie, ale traktowano to jako osobliwość motywu, nie jako regułę — a reguła brzmi: co ma wyglądać jak przedłużenie kontrolki, musi być z niej odczytane, bo drzewo DOM tego nie zrobi.
 
+**Dopisek z 2026-08-05: trzecia właściwość.** Przy wprowadzaniu osi `dir` do sandboxa (`wym-token-logiczne`) wyszło, że kierunek pisma jest dokładnie tym samym przypadkiem — zmierzone `direction: rtl` na triggerze wobec `ltr` na panelu. Arkusz był przy tym bez zarzutu logiczny: `text-align: start` po prostu rozwiązuje się w drugą stronę, gdy kierunek nie dociera. Reguła powtórzyła się więc po raz trzeci, co jest argumentem za wyciągnięciem tego przenoszenia do warstwy nakładki w `core` (**D2**) zamiast dopisywania czwartej właściwości do `openPanel()`. Zapasowy wniosek: bramka czytająca arkusze jest warunkiem koniecznym obietnicy RTL, nigdy wystarczającym — reszta mieszka na wyrenderowanej stronie.
+
 Lekcja: **reguła CSS wnioskująca o zamiarze z zawartości slotu jest ukrytym API** — tanim, dopóki przykład jest jeden. Gdy autor chce wariantu, którego heurystyka nie przewiduje, nie ma go jak wyrazić i zostaje walka z arkuszem. Wariant, który biblioteka dopuszcza, ma być nazwany w API.
 
 ---
@@ -395,3 +397,46 @@ Trzy rzeczy zmierzone przy okazji, nie założone:
 - **Rozbrojenie punktu bywa wyjątkiem zamiast komunikatu.** Punkt 3 czytał `p.typecheck.polecenia` wprost, bo po punkcie 2 target „na pewno" istnieje. Wyłączenie punktu 2 w ramach kontroli tej kontroli zamieniło bramkę w `TypeError`, czyli kontrola odniesienia przestała umieć zbadać punkt, który miała zbadać. Zależność między punktami jest normalna; jej zapisanie tak, że jej naruszenie daje stack trace zamiast zdania — nie.
 
 I jeszcze jedno, w rodzinie `lekcja-44`: **target sprawdzający specyfikacje nie może brać `inputs: ["production"]`**, bo ten namedInput odejmuje `**/*.spec.ts` — czyli dokładnie pliki, dla których go dołożono. Pomiar: dopisanie linii do `src/public-api.spec.ts` daje przy `default` `Cache: 0/1 hit`, a przy `production` `1/1 hit`. Przebieg jest w obu przypadkach zielony i w obu wygląda tak samo; różni się tym, czy kompilator w ogóle wystartował.
+
+---
+
+### <a id="lekcja-48"></a>`lekcja-48` — Dwa pomiary pilnujące się nawzajem muszą być NIEZALEŻNE, inaczej gasną razem
+
+**Bramka stylów przeszła na zielono, wypisawszy „7 arkuszy, 0 komponentów".** Lista źródeł
+brała się z `git ls-files 'libs/components/*/src/**/*.ts'`, a **pathspec gita nie jest
+globem powłoki**: bez magii `:(glob)` gwiazdka przechodzi przez `/`, więc ten wzorzec żąda
+o jeden katalog za dużo i nie dopasowuje `button/src/button.ts`. Zwraca zero plików — nie
+błąd, nie ostrzeżenie, pustą listę.
+
+Zero komponentów przeszło przez kontrolę mianownika, bo ta porównywała **liczbę
+sparsowanych dekoratorów z liczbą wystąpień `@Component(`**. Obie strony wyszły zerowe,
+zero równa się zeru, punkt orzekł „komplet". Lek jest ten sam, którego bramka pokrycia
+używa na listę plików: zanim porówna się dwa zbiory, trzeba sprawdzić, że **któryś z nich
+w ogóle coś zawiera**. Porównanie liczb jest na zero ślepe zawsze.
+
+Gorszy wariant tej samej wady siedział w kontroli, która miała ją wykluczyć. Licznik był
+zapisany jako `/^@Component\(/gm` — **co do znaku tą samą kotwicą co parser**. Sens
+licznika polegał na tym, że mierzy niezależnie: parser kotwiczy się na formatowaniu
+prettiera, a licznik ma zauważyć, gdy rzeczywistość od tego formatowania odjedzie.
+Przy identycznej kotwicy przesunięcie dekoratora o **jedną spację** gasi jedno i drugie
+naraz, obie strony zgadzają się o jeden niżej i bramka kończy zielono.
+
+Zmierzone, nie wyrozumowane: `PctCheckbox` wcięty o spację dawał „7 komponentów" zamiast
+ośmiu, przy przebiegu bez ani jednego naruszenia.
+
+To samo zdanie stało w komentarzu przy tym kodzie — „bez tego zmiana formatowania nie
+wywaliłaby parsera, tylko po cichu ZMNIEJSZYŁA mianownik" — i było nieprawdziwe od
+początku. Komentarz opisywał zamiar, implementacja go nie realizowała, a **nic tego nie
+sprawdzało, bo kontrola odniesienia tej bramki podaje dane, nie tekst źródła**: regex nie
+biegnie na żadnym fixturze, wyłącznie na prawdziwym repozytorium. Dziura wyszła dopiero
+z ręcznego przebiegu na zepsutym repo.
+
+Ta sama wada była w `check-zoneless.mjs` ([`lekcja-46`](#lekcja-46)) i została naprawiona
+razem z tą — tam kosztowała cichy brak pomiaru `OnPush` dla całego komponentu.
+
+Reguła: **kontrola porównująca dwa pomiary jest warta tyle, ile ich niezależność.**
+Skopiowanie wyrażenia z jednej strony na drugą zamienia ją w kontrolę tego, że pewna
+stała równa się samej sobie — konstrukcja, która nigdy nie zapala i wygląda przy tym
+dokładnie jak działająca. Do tego dochodzi wniosek o zasięgu kontroli odniesienia:
+fixture podający **dane** nie bada kodu, który te dane wydobywa, więc ta warstwa musi
+mieć własny dowód — przebieg na zepsutym repozytorium.

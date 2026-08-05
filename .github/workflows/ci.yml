@@ -81,4 +81,11 @@ jobs:
       # rodzi się nietypecheckowany przy zielonym przebiegu (`lekcja-42`). Bramka mierzy
       # nie istnienie targetu, tylko jego zasięg: porównuje pliki każdego projektu
       # z programem, który jego kompilator naprawdę wypisuje.
-      - run: npx nx affected -t lint test vite:test build typecheck check-package check-coverage check-zoneless check-typecheck check-docs e2e
+      # `check-styles` pilnuje dwóch obietnic o arkuszach, których złamanie nie daje
+      # czerwonego testu: `padding-left` wygląda dobrze w każdym zrzucie LTR — czyli
+      # w każdym, jaki tu robimy — a `opacity` na warstwie tekstowej wygląda dobrze
+      # zawsze i cofa bramkę kontrastu do stanu sprzed `lekcja-6`, bo matematyka na
+      # wartościach z palety nie widzi kompozycji z tłem. Bramka czyta źródła ORAZ
+      # to, co z nich wypisuje sass: właściwość złożona interpolacją dociera do
+      # przeglądarki, a w tekście arkusza nie stoi nigdzie.
+      - run: npx nx affected -t lint test vite:test build typecheck check-package check-coverage check-zoneless check-typecheck check-styles check-docs e2e

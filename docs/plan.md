@@ -51,11 +51,11 @@ Migawka z **2026-08-05**, `node tools/check-docs.mjs`:
 | miara                                 | wartość |
 | ------------------------------------- | ------: |
 | wymagań                               |      81 |
-| ✅ egzekwowane                        |      43 |
+| ✅ egzekwowane                        |      45 |
 | 🟡 częściowo (świadomie bez kontroli) |      16 |
-| ⛔ luka                               |      22 |
+| ⛔ luka                               |      20 |
 
-Wszystkie 22 luki mają niżej swojego właściciela (A, B, D, F, G). Jeśli po dopisaniu
+Wszystkie 20 luk mają niżej swojego właściciela (A, B, D, F, G). Jeśli po dopisaniu
 wymagania liczba luk rośnie, a żadne zadanie się nie zmienia — ta lista przestała być
 kompletna i to jest błąd tej listy, nie rejestru.
 
@@ -71,16 +71,16 @@ F  powierzchnia zaufania       docs, ACR, benchmarki, most Figma
 G  luki bez terminu            czekają na wyzwalacz zapisany w polu „Wiąże przy"
 ```
 
-Pierwsze trzy, gdyby trzeba było wybrać tydzień: **A5** (jedyna pozycja, której koszt
-retrofitu rośnie nieliniowo), **A4** (pół dnia i odblokowuje F1), **A3** (drugie pół
-odblokowania F1 i jedyne miejsce, w którym projekt zachowuje się jak zwykła biblioteka).
+Pierwsze trzy, gdyby trzeba było wybrać tydzień: **A4** (pół dnia i odblokowuje F1),
+**A3** (drugie pół odblokowania F1 i jedyne miejsce, w którym projekt zachowuje się jak
+zwykła biblioteka), **A8** (obietnica sprzedażowa dziś niesprawdzana w ogóle).
 
 ---
 
 ## A. Faza 0 — bramki „natychmiast"
 
-Zostało dziewięć zadań i domykają **11 z 22 luk** — połowę wszystkiego, co jeszcze stoi
-otworem.
+Zostało osiem zadań i domykają **9 z 20 luk** — blisko połowy wszystkiego, co jeszcze
+stoi otworem.
 
 - [x] **A1 — kontrola odniesienia dla `check-package`** _(2026-08-04)_
   - domknęło: `wym-jakosc-pakiet`, `wym-projekt-pakiet`, `wym-projekt-entrypointy`,
@@ -139,23 +139,45 @@ otworem.
   - kontrola: zmiana nazwy tokenu bez aktualizacji snapshotu musi zapalić
   - koszt: ~0,5 dnia · _notatki:_ —
 
-- [ ] **A5 — bramka stylów: właściwości logiczne + zakaz `opacity` na tekście**
-  - domyka: `wym-token-logiczne`, `wym-token-bez-opacity`
-  - co: skrypt w duchu `check-package.mjs` albo stylelint — zakaz `left`/`right`,
-    `margin-left`, `padding-right`, `text-align: left|right`, `border-*-left`
-    w `libs/components/**/*.scss`; wyjątki wyłącznie z komentarzem uzasadniającym
-    (są dwa dobre: `border-right-color` spinnera, symetryczne `left: 50%` w strefach
-    trafienia). Osobno: `opacity` na warstwie tekstowej cofa
-    [`wym-token-kontrast`](wymagania/tokeny.md#wym-token-kontrast) — matematyka na hexach
-    kłamie o kompozycji z tłem ([`lekcja-6`](lekcje.md#lekcja-6))
-  - plus: **oś `dir` w powłoce sandboxa** (dziś są `scheme`/`skin`/`size` w
-    `apps/sandbox/src/app/ui/settings.ts`) + zrzut RTL per komponent + audyt axe w RTL —
-    wtedy każdy widok staje się przy okazji testem RTL
-  - kontrola: arkusz z `padding-left` musi zapalić; arkusz z `opacity` na tekście musi
-    zapalić
-  - dlaczego teraz: koszt retrofitu jest nieliniowy — dziś 1–2 dni, po czterdziestu
-    komponentach tygodnie plus polowanie na każdą strzałkę o zaszytym kierunku
-  - koszt: ~1,5 dnia · _notatki:_ —
+- [x] **A5 — bramka stylów: właściwości logiczne + zakaz `opacity` na tekście**
+      _(2026-08-05)_
+  - domknęło: `wym-token-logiczne`, `wym-token-bez-opacity` — **2 luki**
+  - zrobione: `tools/check-styles.mjs` (target `check-styles` w `components`, w CI) —
+    sześć punktów. Reguły są dwie (punkt 5: właściwości i wartości fizyczne osi inline;
+    punkt 6: `opacity` inna niż `0`/`1`), a **cztery pozostałe pilnują mianownika**:
+    niepusta lista arkuszy, zgodność skanera z tym, co wypisuje sass, niepusty i zgodny
+    zbiór komponentów, poprawność wyjątków. Wyjątek wymaga znacznika
+    `/* pct-wyjatek <właściwość>: <powód> */` **przylegającego** do deklaracji — repo ma
+    dziś cztery, dokładnie te dwa dobre, które plan przewidział
+  - plan dawał wybór „skrypt albo stylelint" i wybór padł na skrypt: stylelint raportuje
+    o plikach, które mu się poda, i **milczy o reszcie** — a milczenie o reszcie jest tu
+    całą wadą. Do tego `/* stylelint-disable */` byłoby rozbrojeniem bez śladu
+  - punkt 2 jest tym, którego plan nie przewidywał: skaner czyta tekst arkusza, a
+    właściwość złożona mixinem albo interpolacją (`padding-#{$strona}`) dociera do
+    przeglądarki, nie stojąc w tekście nigdzie. Bramka porównuje więc swój odczyt
+    z wyjściem sassa — parsera prawdziwego. To ten sam ruch co w A7 („nie czytaj
+    `include`, uruchom kompilator") i A6 („czytaj `ɵcmp` z `dist`, nie ze źródła")
+  - plus (zgodnie z planem): **oś `dir`** w `SbxSettings`, w pasku globalnym i na karcie,
+    z `[attr.dir]` na hoście powłoki i na scenie karty; **9 wzorców RTL** w
+    `visual.spec.ts` (lista krótsza niż LTR — świadomie: zrzut RTL niesie informację tam,
+    gdzie układ jest asymetryczny wzdłuż osi inline); **audyt axe na każdym widoku w RTL**
+    (11 nowych testów) i `rtl.spec.ts` z pomiarami układu
+  - **oś `dir` od razu znalazła wadę**: panel selecta żyje w nakładce CDK, czyli jako
+    dziecko `body`, więc nie dziedziczy kierunku po kontrolce — zmierzone `direction: rtl`
+    na triggerze wobec `ltr` na panelu, przy arkuszu bez ani jednej właściwości fizycznej.
+    Trzecia właściwość z [`lekcja-35`](lekcje.md#lekcja-35) po motywie i piśmie; naprawione
+    tym samym wzorcem (odczyt z triggera przy otwarciu), z testem, który bez poprawki pada
+  - kontrola: `tools/check-styles.fixtures/` — dwanaście wejść, każde odrzucane na swoim
+    punkcie; plus sześć przebiegów na prawdziwym repo (`padding-left` w `field.scss`,
+    `opacity: 0.45` w `checkbox.scss`, usunięty znacznik wyjątku, komponent przeniesiony
+    na `styles: [...]`, dekorator poza kotwicą parsera, `margin-right` schowany
+    w mixinie) i przebieg `rtl.spec.ts` z cofniętą poprawką panelu
+  - kontrola tej kontroli: rozbrojony punkt 5 → oba fixtures „PRZESZŁO"; przypadek
+    przestający być wadliwym → to samo; wadliwe wejście wzorcowe → bramka zapala na nim
+    osobno, a przypadki nieprzykrywające zepsutego arkusza przechodzą na cudze punkty
+  - koszt: ~1,5 dnia (zgodnie z planem) · _notatki:_ bramka **przeszła na zielono, nie
+    zmierzywszy ani jednego komponentu** — patrz [`lekcja-48`](lekcje.md#lekcja-48).
+    Ta sama wada siedziała w `check-zoneless.mjs` (A6) i została naprawiona przy okazji
 
 - [x] **A6 — bramka zoneless + OnPush** _(2026-08-04)_
   - domknęło: `wym-projekt-angular`, `wym-api-fundament` — **2 luki**
@@ -459,6 +481,55 @@ Czekają na wyzwalacz zapisany w polu **Wiąże przy**. Nie są zapomniane — s
 ## Dziennik
 
 Wpis per sesja: co ruszyło, czym się skończyło, co jest następne. Najnowsze na górze.
+
+### 2026-08-05 — A5: bramka, która przeszła, nie zmierzywszy niczego
+
+Zrobione **A5**. Luki: 22 → 20, egzekwowane: 43 → 45.
+
+Zadanie wyszło na zakładane półtora dnia i po raz pierwszy w tej serii **plan nie pomylił
+się w diagnozie** — obie obietnice były dokładnie tam, gdzie je opisał, a dwa przewidziane
+wyjątki (`border-right-color` spinnera, `left: 50%` w strefach trafienia) okazały się
+jedynymi w repozytorium. Pomyliłem się za to ja, i to w miejscu, które ta seria zadań
+tresuje od czterech sesji.
+
+- **Bramka przeszła na zielono, nie zmierzywszy ani jednego komponentu.** Wypisała
+  „7 arkuszy, 0 komponentów". Pathspec gita nie jest globem powłoki: bez `:(glob)`
+  gwiazdka przechodzi przez `/`, więc `libs/components/*/src/**/*.ts` żąda o jeden katalog
+  za dużo i zwraca **pustą listę** — nie błąd. Kontrola mianownika porównywała liczbę
+  sparsowanych dekoratorów z liczbą wystąpień `@Component(`, obie wyszły zerowe, a zero
+  równa się zeru. Ten sam mianownik co w A2, A6 i A7, tylko że tym razem napisałem
+  kontrolę niepustości dla listy arkuszy i **nie napisałem jej dla drugiej strony
+  porównania** ([`lekcja-48`](lekcje.md#lekcja-48)).
+- **Kontrola porównująca dwa pomiary jest warta tyle, ile ich niezależność.** Licznik
+  dekoratorów miał zauważać, że rzeczywistość odjechała od formatowania, na którym
+  kotwiczy się parser — i był zapisany **tą samą kotwicą co parser**. Przesunięcie
+  dekoratora o jedną spację gasi wtedy obie strony naraz. Zmierzone: `PctCheckbox` wcięty
+  o spację dawał „7 komponentów" zamiast ośmiu, przy przebiegu bez naruszeń. **Ta sama
+  wada siedziała w `check-zoneless.mjs`** i kosztowała tam cichy brak pomiaru `OnPush` dla
+  całego komponentu; naprawione razem. Zdanie o tym, jak to działa, stało w komentarzu
+  przy kodzie i było nieprawdziwe od pierwszego commita — bo kontrola odniesienia tej
+  bramki podaje **dane**, więc regex nie biegnie na żadnym fixturze.
+- **Arkusz może być bez zarzutu logiczny i nie odbić się w RTL.** Oś `dir` weszła do
+  sandboxa i od razu pokazała, że panel selecta pisze od lewej przy triggerze piszącym od
+  prawej — bo nakładka CDK jest dzieckiem `body` i nie dziedziczy niczego. `text-align:
+start` w arkuszu jest poprawne; rozwiązuje się tylko w drugą stronę. To trzecia
+  właściwość z [`lekcja-35`](lekcje.md#lekcja-35) po motywie i piśmie, czyli argument za
+  wyciągnięciem tego przenoszenia do warstwy nakładki w **D2**, zamiast dopisywania
+  czwartej pozycji do `openPanel()`.
+- **Skaner też ma mianownik.** Właściwość złożona interpolacją (`padding-#{$strona}`)
+  dociera do przeglądarki, a w tekście arkusza nie stoi nigdzie. Stąd punkt 2: bramka
+  porównuje swój odczyt z wyjściem sassa. Ten sam ruch co „nie czytaj `include`, uruchom
+  kompilator" z A7 — z tą różnicą, że tutaj wiedziałem, po co go robię.
+
+Sprawdzone przebiegiem, nie rozumowaniem: bramka zapala na sześciu sposobach zepsucia
+repozytorium (`padding-left`, `opacity: 0.45`, usunięty znacznik wyjątku, style
+przeniesione do dekoratora, dekorator poza kotwicą parsera, `margin-right` schowany
+w mixinie) i na trzech sposobach rozbrojenia własnej kontroli. Test panelu w RTL pada bez
+poprawki (`Expected "rtl", Received "ltr"`) i przechodzi z nią. Dziesięć wzorców LTR
+zmieniło się świadomie — karty biorące domyślny zestaw osi pokazują teraz czwartą.
+
+Następne: **A4** (snapshot nazw tokenów, pół dnia) albo **A3** (inwentarz
+`data-pct-part`) — razem odblokowują F1.
 
 ### 2026-08-05 — A7: target, który istnieje, i target, który patrzy
 
