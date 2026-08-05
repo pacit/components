@@ -19,6 +19,7 @@
     [(scheme)]="activeScheme"
     [(skin)]="activeSkin"
     [(size)]="activeSize"
+    [(dir)]="activeDir"
   />
   }
 </header>
@@ -28,6 +29,7 @@
   class="demo__stage"
   [attr.data-theme]="activeScheme()"
   [attr.data-skin]="activeSkin()"
+  [attr.dir]="activeDir()"
   data-testid="demo-stage"
 >
   <ng-content />

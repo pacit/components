@@ -117,6 +117,24 @@ export async function visit(
   }
 }
 
+/**
+ * Przestawia sandbox na pismo od prawej — przez pasek ustawień, czyli tak, jak
+ * zrobiłby to człowiek, a nie przez wstrzyknięcie atrybutu. Różnica jest istotna:
+ * `dir` ustawiony z zewnątrz sprawdzałby wyłącznie CSS, a tędy sprawdza się też,
+ * że oś w ogóle jest podłączona i że przechodzi na scenę karty.
+ *
+ * Czeka na `app-root[dir="rtl"]`, bo klik wraca przed przeliczeniem układu, a
+ * pomiar geometrii zrobiony w tym oknie mierzy stan sprzed odbicia.
+ */
+export async function setRtl(page: Page): Promise<void> {
+  await page
+    .getByTestId('global-controls')
+    .getByTestId('control-dir')
+    .getByRole('radio', { name: 'rtl' })
+    .check();
+  await page.locator('app-root[dir="rtl"]').waitFor();
+}
+
 /** Prostokąt elementu; `boundingBox()` nie ma publicznie eksportowanego typu. */
 type Box = NonNullable<Awaited<ReturnType<Locator['boundingBox']>>>;
 

@@ -3,7 +3,13 @@ import { PctField } from '@pacit/components/field';
 import { PctRadio, PctRadioGroup } from '@pacit/components/radio';
 import { PctSelect, PctSelectOption } from '@pacit/components/select';
 import { PctSize } from '@pacit/components';
-import { SBX_ALL_CONTROLS, SBX_SKINS, SbxControl, SbxScheme } from './settings';
+import {
+  SBX_ALL_CONTROLS,
+  SBX_SKINS,
+  SbxControl,
+  SbxDir,
+  SbxScheme,
+} from './settings';
 
 /**
  * Pasek osi przekrojowych: schemat kolorów, skórka, wielkość. Ten sam komponent
@@ -23,6 +29,7 @@ export class SbxControls {
   readonly scheme = model<SbxScheme>('light');
   readonly skin = model<string>(SBX_SKINS[0].id);
   readonly size = model<PctSize>('md');
+  readonly dir = model<SbxDir>('ltr');
 
   /** Które osie pokazać; pusta lista = pasek się nie renderuje. */
   readonly show = input<readonly SbxControl[]>(SBX_ALL_CONTROLS);
@@ -58,5 +65,9 @@ export class SbxControls {
 
   protected setSkin(value: string | null): void {
     this.skin.set(value ?? SBX_SKINS[0].id);
+  }
+
+  protected setDir(value: SbxDir | null): void {
+    this.dir.set(value ?? 'ltr');
   }
 }

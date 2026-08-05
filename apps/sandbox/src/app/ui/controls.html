@@ -21,6 +21,17 @@
   <pct-radio value="md">md</pct-radio>
   <pct-radio value="lg">lg</pct-radio>
 </pct-radio-group>
+} @if (has('dir')) {
+<pct-radio-group
+  label="Kierunek"
+  orientation="horizontal"
+  [value]="dir()"
+  (valueChange)="setDir($event)"
+  data-testid="control-dir"
+>
+  <pct-radio value="ltr">ltr</pct-radio>
+  <pct-radio value="rtl">rtl</pct-radio>
+</pct-radio-group>
 } @if (has('skin') && hasSkins) {
 <pct-field label="Skórka" size="sm" data-testid="control-skin">
   <pct-select

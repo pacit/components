@@ -5,6 +5,7 @@ import { PctDocId } from './req-ids';
 import {
   SBX_ALL_CONTROLS,
   SbxControl,
+  SbxDir,
   SbxScheme,
   SbxSettings,
 } from './settings';
@@ -59,6 +60,7 @@ export class SbxDemo {
   readonly scheme = input<SbxScheme | null>(null);
   readonly skin = input<string | null>(null);
   readonly size = input<PctSize | null>(null);
+  readonly dir = input<SbxDir | null>(null);
 
   /** Wartości obowiązujące na scenie — czyta je też treść karty. */
   readonly activeScheme = linkedSignal<SbxScheme>(
@@ -69,5 +71,8 @@ export class SbxDemo {
   );
   readonly activeSize = linkedSignal<PctSize>(
     () => this.size() ?? this.settings.size(),
+  );
+  readonly activeDir = linkedSignal<SbxDir>(
+    () => this.dir() ?? this.settings.dir(),
   );
 }

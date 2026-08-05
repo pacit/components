@@ -25,6 +25,12 @@ import { SBX_VIEW_GROUPS, viewsOf } from './views';
   host: {
     '[attr.data-theme]': 'settings.scheme()',
     '[attr.data-skin]': 'settings.skin()',
+    // `dir` na hoście powłoki, nie na `<html>`: kierunek jest tu osią przekrojową
+    // dokładnie jak motyw, więc odbija się cała strona razem z nawigacją, a `:root`
+    // zostaje czystym punktem odniesienia. Uwaga — to NIE dosięga nakładek CDK,
+    // które żyją jako dzieci `body`: tam kierunek trzeba przenieść jawnie, tak samo
+    // jak motyw i pismo (lekcja-35).
+    '[attr.dir]': 'settings.dir()',
   },
 })
 export class App {
