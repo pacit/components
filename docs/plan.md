@@ -46,16 +46,16 @@ Punkt 4 jest jedynym twardym dowodem — pierwsze trzy bez niego są deklaracją
 
 ## Stan
 
-Migawka z **2026-08-04**, `node tools/check-docs.mjs`:
+Migawka z **2026-08-05**, `node tools/check-docs.mjs`:
 
 | miara                                 | wartość |
 | ------------------------------------- | ------: |
 | wymagań                               |      81 |
-| ✅ egzekwowane                        |      42 |
+| ✅ egzekwowane                        |      43 |
 | 🟡 częściowo (świadomie bez kontroli) |      16 |
-| ⛔ luka                               |      23 |
+| ⛔ luka                               |      22 |
 
-Wszystkie 23 luki mają niżej swojego właściciela (A, B, D, F, G). Jeśli po dopisaniu
+Wszystkie 22 luki mają niżej swojego właściciela (A, B, D, F, G). Jeśli po dopisaniu
 wymagania liczba luk rośnie, a żadne zadanie się nie zmienia — ta lista przestała być
 kompletna i to jest błąd tej listy, nie rejestru.
 
@@ -71,16 +71,16 @@ F  powierzchnia zaufania       docs, ACR, benchmarki, most Figma
 G  luki bez terminu            czekają na wyzwalacz zapisany w polu „Wiąże przy"
 ```
 
-Pierwsze trzy, gdyby trzeba było wybrać tydzień: **A7** (pół dnia, czysty zysk), **A5**
-(jedyna pozycja, której koszt retrofitu rośnie nieliniowo), **A4** (pół dnia i odblokowuje
-F1).
+Pierwsze trzy, gdyby trzeba było wybrać tydzień: **A5** (jedyna pozycja, której koszt
+retrofitu rośnie nieliniowo), **A4** (pół dnia i odblokowuje F1), **A3** (drugie pół
+odblokowania F1 i jedyne miejsce, w którym projekt zachowuje się jak zwykła biblioteka).
 
 ---
 
 ## A. Faza 0 — bramki „natychmiast"
 
-11 z 23 luk ma w polu **Wiąże przy** wpisane „natychmiast". Pozostałe 10 zadań domyka 12
-luk.
+Zostało dziewięć zadań i domykają **11 z 22 luk** — połowę wszystkiego, co jeszcze stoi
+otworem.
 
 - [x] **A1 — kontrola odniesienia dla `check-package`** _(2026-08-04)_
   - domknęło: `wym-jakosc-pakiet`, `wym-projekt-pakiet`, `wym-projekt-entrypointy`,
@@ -186,13 +186,39 @@ luk.
     debugowania. Źródła zostają w `inputs`, ale uzasadnieniem jest „bramka je czyta",
     a nie funkcja diagnostyczna, która może zniknąć
 
-- [ ] **A7 — bramka pokrycia targetem `typecheck`**
-  - domyka: `wym-jakosc-typecheck`
-  - co: przejście po grafie Nx — projekt bez targetu `typecheck` zapala. Dziś ma go
-    **tylko** `sandbox-e2e` (z inferencji `@nx/playwright`), więc nowy projekt urodzi się
-    nietypecheckowany i nikt tego nie zauważy ([`lekcja-42`](lekcje.md#lekcja-42))
-  - kontrola: projekt z usuniętym targetem musi zapalić
-  - koszt: ~0,5 dnia · _notatki:_ —
+- [x] **A7 — bramka pokrycia targetem `typecheck`** _(2026-08-05)_
+  - domknęło: `wym-jakosc-typecheck`
+  - zrobione: `tools/check-typecheck.mjs` (target `check-typecheck` w projekcie roota,
+    w CI) — cztery punkty. Do tego **brakujące targety**: `components` (trzy rozłączne
+    programy: pakiet, specyfikacje z `testing/`, schematics), projekt roota
+    (`tsconfig.root.json` na `vitest.config.ts` i `vitest.workspace.ts`) i nadpisany
+    `sandbox`. `tokens` świadomie bez targetu — nie ma ani jednego pliku TS
+  - plan mówił „projekt bez targetu `typecheck` zapala" i to było za mało: `sandbox`
+    target **miał**, przechodził i nie oglądał czterech swoich plików, bo inferowany
+    przez `@nx/vite/plugin` obejmuje wyłącznie `tsconfig.app.json`, a ten wyklucza
+    `**/*.spec.ts` ([`lekcja-47`](lekcje.md#lekcja-47)). Stąd punkt 4: bramka nie czyta
+    `include`, tylko **uruchamia polecenie z targetu** rozszerzone o `--listFilesOnly`
+    i porównuje program kompilatora z indeksem gita
+  - plan pomylił się też w diagnozie: „dziś ma go **tylko** `sandbox-e2e`". Miał go też
+    `sandbox` — i to był gorszy przypadek, bo wyglądał na domknięty
+  - punkt 1 to mianownik na piętro wyżej: `vitest.config.ts` i `vitest.workspace.ts`
+    nie należą do żadnego projektu, więc bramka chodząca po projektach byłaby na nie
+    ślepa. Punkt 3 pilnuje, że polecenia nie da się rozbroić po cichu — operator powłoki
+    (`|| true`), `--noCheck`, brak `-p`
+  - kontrola: `tools/check-typecheck.fixtures/` — jedenaście wejść, każde odrzucane na
+    swoim punkcie; plus cztery przebiegi na prawdziwym repo: `sandbox` cofnięty do
+    targetu inferowanego zapala punkt 4 na czterech plikach, `libs/components/dialog/`
+    spoza `include` — punkt 4, nowy projekt bez targetu — punkt 2, `|| true` w poleceniu
+    — punkt 3
+  - kontrola tej kontroli: rozbrojony punkt 4 → oba fixtures „PRZESZŁO"; przypadek
+    przestający być wadliwym → to samo; wadliwe wejście wzorcowe → bramka zapala na nim
+    osobno, zanim policzy przypadki. Rozbrojony punkt 2 dał najpierw `TypeError` zamiast
+    komunikatu — punkt 3 czytał `typecheck.polecenia` wprost, ufając poprzedniemu
+  - koszt: ~0,5 dnia (zgodnie z planem) · _notatki:_ zmierzone, nie założone: projekt
+    roota jest `affected` przy **każdej** zmianie (`nx show projects --affected --files=…`
+    zwraca `@org/source` i dla źródła biblioteki, i dla `docs/`, i dla `project.json`
+    nowego projektu), więc bramki workspace'owe biegną w każdym przebiegu — bez tego nowy
+    projekt wymykałby się tej, która powstała właśnie po to
 
 - [ ] **A8 — tree-shaking + budżet rozmiaru entrypointu**
   - domyka: `wym-projekt-tree-shaking`
@@ -433,6 +459,50 @@ Czekają na wyzwalacz zapisany w polu **Wiąże przy**. Nie są zapomniane — s
 ## Dziennik
 
 Wpis per sesja: co ruszyło, czym się skończyło, co jest następne. Najnowsze na górze.
+
+### 2026-08-05 — A7: target, który istnieje, i target, który patrzy
+
+Zrobione **A7**. Luki: 23 → 22, egzekwowane: 42 → 43.
+
+Zadanie wyszło półdniowe zgodnie z planem, ale plan pomylił się w diagnozie i przez to
+w zakresie. Miało być „przejście po grafie Nx — projekt bez targetu `typecheck` zapala",
+z uwagą, że dziś ma go **tylko** `sandbox-e2e`. Sprawdzenie grafu na starcie pokazało coś
+innego: `sandbox` też go ma, inferowany przez `@nx/vite/plugin`. To wygląda na lepszy stan
+niż opisany, a jest gorszy.
+
+- **Target inferowany jest cudzą decyzją o zasięgu.** Polecenie brzmi
+  `tsc --noEmit -p tsconfig.app.json`, a ta konfiguracja **wyklucza** `**/*.spec.ts`.
+  Cztery pliki `sandboxa` — dwie specyfikacje, `test-setup.ts` i `vite.config.mts` — nie
+  przeszły przez kompilator ani razu, przy zielonym `nx affected -t typecheck`. W
+  `project.json` nie było przy tym niczego do zobaczenia, bo target nie jest tam zapisany
+  ([`lekcja-47`](lekcje.md#lekcja-47)).
+- **Stąd punkt 4, którego plan nie przewidywał.** Wymóg istnienia targetu mierzy
+  deklarację, a `lekcja-42` mówi wprost, że tsconfig potrafi kłamać o swoim zasięgu.
+  Bramka nie czyta więc `include`, tylko uruchamia **polecenie z targetu** rozszerzone
+  o `--listFilesOnly` i porównuje program kompilatora z indeksem gita. `--showConfig`
+  odpadło z tego samego powodu: rozwija wzorce, ale nie widzi plików wciągniętych przez
+  import.
+- **Mianownik znów, tylko o piętro wyżej.** W A2 kurczyła się próbka plików w raporcie,
+  w A6 — zbiór mierzonych komponentów, tutaj kurczy się **zbiór projektów**:
+  `vitest.config.ts` i `vitest.workspace.ts` leżą w korzeniu i nie należą do niczego,
+  więc bramka chodząca po projektach orzekłaby „nie ma takiego kodu" dokładnie dlatego,
+  że nie potrafi go zobaczyć. Punkt 1 przypisuje każdy plik do najgłębszego
+  projektu-przedrostka i zapala na bezpańskich.
+- **Rozbrojenie punktu dało stack trace zamiast zdania.** Punkt 3 czytał
+  `p.typecheck.polecenia` wprost, bo po punkcie 2 target „na pewno" istnieje. Wyłączenie
+  punktu 2 w ramach kontroli tej kontroli zamieniło bramkę w `TypeError` — czyli kontrola
+  odniesienia przestała umieć zbadać punkt, który miała zbadać. Zależność między punktami
+  jest normalna; zapisanie jej tak, że jej naruszenie nie daje komunikatu — nie.
+
+Sprawdzone przebiegiem, nie rozumowaniem: bramka zapala na czterech sposobach zepsucia
+repozytorium (`sandbox` cofnięty do targetu inferowanego, nowy entrypoint spoza `include`,
+nowy projekt bez targetu, `|| true` dopisane do polecenia) i na trzech sposobach
+rozbrojenia własnej kontroli. Osobno zmierzone, że projekt roota jest `affected` przy
+każdej zmianie — bez tego bramka workspace'owa nie ruszyłaby dokładnie wtedy, gdy powstaje
+nowy projekt.
+
+Następne: **A5** (bramka stylów — właściwości logiczne i zakaz `opacity` na tekście),
+jedyna pozycja, której koszt retrofitu rośnie nieliniowo z liczbą komponentów.
 
 ### 2026-08-04 — A6: OnPush da się zmierzyć dopiero po linkowaniu
 

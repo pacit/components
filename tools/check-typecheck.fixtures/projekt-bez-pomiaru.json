@@ -1,0 +1,6 @@
+{
+  "// po co": "Pusty program dla całego projektu — tak wygląda pomiar, który się nie powiódł albo trafił obok: konfiguracja z `\"include\": []`, zmieniony format wyjścia `--listFilesOnly`, przepełniony bufor. Bez tego punktu bramka przechodziłaby TYM CHĘTNIEJ, im mniej zmierzyła.",
+  "punkt": 4,
+  "kontrola": "pokrycie",
+  "wyczyscWidziane": ["components"]
+}

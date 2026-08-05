@@ -9,9 +9,9 @@ Nie ma stanu „zrealizowane, tylko niesprawdzone" — patrz
 
 | stan           | znaczenie                                          | liczba |
 | -------------- | -------------------------------------------------- | -----: |
-| ✅ egzekwowane | bramka i kontrola istnieją, są wpięte w CI         |     42 |
+| ✅ egzekwowane | bramka i kontrola istnieją, są wpięte w CI         |     43 |
 | 🟡 częściowo   | bramka jest, kontroli odniesienia brak (świadomie) |     16 |
-| ⛔ luka        | brak bramki albo kontroli, z zapisanym terminem    |     23 |
+| ⛔ luka        | brak bramki albo kontroli, z zapisanym terminem    |     22 |
 | **razem**      |                                                    | **81** |
 
 ## Luki wg pilności
@@ -25,7 +25,6 @@ Kolejność bierze się z pola **Wiąże przy**, nie z numeru wymagania.
 | [`wym-jakosc-jednostkowe`](wymagania/jakosc.md#wym-jakosc-jednostkowe)      | **testowanie mutacyjne** rdzenia (Stryker na `core`, `number`, `selec… _(kontrola)_ | natychmiast dla `core` — im więcej komponentów na nim stoi,… |
 | [`wym-jakosc-konsument`](wymagania/jakosc.md#wym-jakosc-konsument)          | `.verdaccio/config.yml` i target `local-registry` w root `project.jso…              | natychmiast — `check-package` bada artefakt **statycznie**;… |
 | [`wym-jakosc-przegladarki`](wymagania/jakosc.md#wym-jakosc-przegladarki)    | `apps/sandbox-e2e/playwright.config.mts` ma **wyłącznie chromium**, r…              | natychmiast dla biblioteki chwalącej się a11y — Safari ma n… |
-| [`wym-jakosc-typecheck`](wymagania/jakosc.md#wym-jakosc-typecheck)          | nic nie zapala, gdy **nowy projekt powstanie bez tego targetu**. Dokł… _(kontrola)_ | natychmiast — koszt to przejście po grafie projektów i poró… |
 | [`wym-projekt-tree-shaking`](wymagania/projekt.md#wym-projekt-tree-shaking) | test budujący aplikację importującą **wyłącznie** `@pacit/components/…              | natychmiast — to obietnica sprzedażowa, dziś niesprawdzana … |
 | [`wym-token-bez-opacity`](wymagania/tokeny.md#wym-token-bez-opacity)        | reguła lintu zakazująca `opacity` na warstwach tekstowych w `libs/com…              | natychmiast — to obietnica, której złamanie **cofa** `wym-t… |
 | [`wym-token-logiczne`](wymagania/tokeny.md#wym-token-logiczne)              | reguła lintu (stylelint albo skrypt w duchu `check-package.mjs`) zaka…              | natychmiast — koszt retrofitu jest **nieliniowy**. Dziś: re… |
@@ -95,7 +94,7 @@ Kolejność bierze się z pola **Wiąże przy**, nie z numeru wymagania.
 | ------------------------------------------------------------------------ | -------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | [`wym-jakosc-kontrola`](wymagania/jakosc.md#wym-jakosc-kontrola)         | ✅ egzekwowane | `tools/check-docs.mjs` — pole **Kontrola** jest wymagane przy każdym … | `tools/check-docs.fixtures/` — wymaganie z bramką, ale bez kontroli, … |
 | [`wym-jakosc-rejestr`](wymagania/jakosc.md#wym-jakosc-rejestr)           | ✅ egzekwowane | `tools/check-docs.mjs` (target `check-docs`, w CI) — sześć kontroli o… | `tools/check-docs.fixtures/` — zestaw celowo wadliwych wymagań (bez b… |
-| [`wym-jakosc-typecheck`](wymagania/jakosc.md#wym-jakosc-typecheck)       | ⛔ luka        | `.github/workflows/ci.yml` — `typecheck` w liście `nx affected -t`     | brak — luka: nic nie zapala, gdy **nowy projekt powstanie bez tego ta… |
+| [`wym-jakosc-typecheck`](wymagania/jakosc.md#wym-jakosc-typecheck)       | ✅ egzekwowane | `tools/check-typecheck.mjs` (target `check-typecheck`, w CI) — cztery… | `tools/check-typecheck.fixtures/` — jedenaście spreparowanych wejść, … |
 | [`wym-jakosc-jednostkowe`](wymagania/jakosc.md#wym-jakosc-jednostkowe)   | ⛔ luka        | `.github/workflows/ci.yml` — `test` i `vite:test` w liście `nx affect… | brak — luka: **testowanie mutacyjne** rdzenia (Stryker na `core`, `nu… |
 | [`wym-jakosc-pokrycie`](wymagania/jakosc.md#wym-jakosc-pokrycie)         | ✅ egzekwowane | dwuczęściowa, bo procent i jego mianownik psują się osobno. `libs/com… | `tools/check-coverage.fixtures/` — siedem spreparowanych wejść, po je… |
 | [`wym-jakosc-e2e`](wymagania/jakosc.md#wym-jakosc-e2e)                   | ✅ egzekwowane | `apps/sandbox-e2e/src/visual.spec.ts` i pozostałe specyfikacje e2e     | próg jest **bezwzględny** (`maxDiffPixels: 20`) i wynika z pomiaru: p… |
@@ -212,3 +211,4 @@ Która lekcja karmi które wymaganie. Generowane z pól **Lekcje**.
 | [`lekcja-44`](lekcje.md#lekcja-44) | — _(nie cytowana)_                                                                                                                   |
 | [`lekcja-45`](lekcje.md#lekcja-45) | `wym-jakosc-pokrycie`                                                                                                                |
 | [`lekcja-46`](lekcje.md#lekcja-46) | `wym-api-fundament`                                                                                                                  |
+| [`lekcja-47`](lekcje.md#lekcja-47) | `wym-jakosc-typecheck`                                                                                                               |

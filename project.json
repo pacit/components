@@ -1,8 +1,45 @@
 {
   "name": "@org/source",
   "$schema": "node_modules/nx/schemas/project-schema.json",
+  "// typecheck": "Projekt roota też ma pliki TypeScriptu — `vitest.config.ts` i `vitest.workspace.ts` — i do 2026-08-05 nie widział ich żaden kompilator, bo nie należą do biblioteki ani do aplikacji. To ta sama wada co w `lekcja-42`, tylko o piętro wyżej: tam nietypecheckowany był projekt, tutaj szczelina MIĘDZY projektami. Konfiguracja stoi w `tsconfig.root.json`, nie w `tsconfig.json`: plik o tej drugiej nazwie w korzeniu przejmuje kontrolę nad całym repozytorium w edytorze i w narzędziach szukających go w górę drzewa.",
+  "// check-typecheck": "Bramka typechecku chodzi po całym grafie, więc jak `check-docs` stoi w projekcie roota. `inputs` wymieniają WSZYSTKO, co bramka czyta: pliki TypeScriptu (mianownik), tsconfigi (programy kompilatora) oraz `project.json`, `package.json` i `nx.json` (graf razem z targetami inferowanymi przez wtyczki). Wzorce są globalne, bo nowy projekt ma być objęty od pierwszego commita — lista wpisana na sztywno rozjechałaby się przy pierwszej nowej bibliotece i to bramka przestałaby wtedy widzieć, a nie CI zapaliło.",
   "// check-docs": "Bramka dokumentacji: każda obietnica z docs/ wskazuje bramkę i jej kontrolę odniesienia, a wskazane ścieżki istnieją i biegną w CI. Stoi w projekcie roota, bo `docs/` nie należy do żadnej biblioteki — dzięki temu zmiana w dokumentacji czyni ten projekt affected. Komentarz jest TUTAJ, a nie w `targets`: tam wartość musi być obiektem targetu i łańcuch znaków wywala graf Nx (`lekcja-43`).",
   "targets": {
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/*.ts",
+        "{workspaceRoot}/*.mts",
+        "{workspaceRoot}/*.cts",
+        "{workspaceRoot}/tsconfig.root.json",
+        "{workspaceRoot}/tsconfig.base.json",
+        { "externalDependencies": ["typescript"] }
+      ],
+      "options": {
+        "command": "tsc --noEmit -p tsconfig.root.json"
+      }
+    },
+    "check-typecheck": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "dependsOn": [{ "projects": "tokens", "target": "build" }],
+      "inputs": [
+        "{workspaceRoot}/**/*.ts",
+        "{workspaceRoot}/**/*.mts",
+        "{workspaceRoot}/**/*.cts",
+        "{workspaceRoot}/**/tsconfig*.json",
+        "{workspaceRoot}/**/project.json",
+        "{workspaceRoot}/**/package.json",
+        "{workspaceRoot}/nx.json",
+        "{workspaceRoot}/tools/check-typecheck.mjs",
+        "{workspaceRoot}/tools/check-typecheck.fixtures/**/*",
+        { "externalDependencies": ["typescript"] }
+      ],
+      "options": {
+        "command": "node tools/check-typecheck.mjs"
+      }
+    },
     "check-docs": {
       "executor": "nx:run-commands",
       "cache": true,

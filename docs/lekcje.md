@@ -377,3 +377,21 @@ Stąd kształt bramki `check-zoneless`: mierzy `dist`, nie źródła. Efekt uboc
 Przy okazji zmierzone, nie założone: dopisanie jawnego `standalone: true` do dekoratora **nie zmienia** `ɵɵngDeclareComponent` (deklaracja i tak niesie `isStandalone: true`) i rusza wyłącznie `ɵɵngDeclareClassMetadata` — echo dekoratora zostawiane dla debugowania. Cache Nx unieważnia się więc dziś także bez wpisania źródeł do `inputs`, ale za sprawą funkcji diagnostycznej, która nie jest niczyją obietnicą. Klucz cache ma wymieniać to, co bramka **czyta**, a nie to, co zwykle się przy okazji zmienia — inaczej powtórzy się `lekcja-44` w trzecim przebraniu.
 
 I jeszcze jedno, tańsze: `git ls-files "*package.json"` wciąga także `ng-package.json`. Pathspec dopasowuje przyrostek, nie nazwę pliku. Fałszywego trafienia to nie dało — konfiguracja ng-packagr nie ma pól zależności — ale rozdęło mianownik w komunikacie bramki z 3 manifestów do 10, czyli sprawiło, że bramka kłamała o własnym zasięgu.
+
+---
+
+### <a id="lekcja-47"></a>`lekcja-47` — Target inferowany jest cudzą decyzją o zasięgu i wygląda dokładnie jak własna
+
+**`sandbox` miał target `typecheck`, przechodził na zielono i nie oglądał czterech swoich plików.** Target dokładał `@nx/vite/plugin` (`typecheckTargetName: "typecheck"`), a jego polecenie brzmi `tsc --noEmit -p tsconfig.app.json` — czyli obejmuje konfigurację, która **wyklucza** `**/*.spec.ts`. Specyfikacje szły przez vitest, który transpiluje bez sprawdzania typów, więc `app.spec.ts`, `demo.spec.ts`, `test-setup.ts` i `vite.config.mts` nie przeszły przez kompilator ani razu. W `project.json` nie było przy tym **niczego** do zobaczenia: target nie jest tam zapisany.
+
+To `lekcja-42` o piętro wyżej. Tam brakowało targetu i lista `nx affected -t typecheck` milczała; tutaj target jest, biegnie i sprawdza część projektu, a ta różnica nie objawia się nigdzie poza `--listFilesOnly`. Reguła: **target inferowany to decyzja wtyczki o tym, co jest projektem — nie moja.** Można ją przyjąć, ale trzeba ją najpierw zobaczyć, a `nx show project … --json` jest jedynym miejscem, gdzie widać.
+
+Stąd kształt bramki `check-typecheck`: nie czyta `include` z tsconfiga, tylko **uruchamia polecenie z targetu** rozszerzone o `--listFilesOnly` i porównuje wynik z indeksem gita. Czytanie `include` mierzyłoby drugi raz tę samą deklarację, która w `lekcja-42` okazała się nieprawdziwa; `--showConfig` odpada z tego samego powodu, bo rozwija wzorce, ale nie widzi plików wciągniętych przez import.
+
+Trzy rzeczy zmierzone przy okazji, nie założone:
+
+- **Szczelina jest też MIĘDZY projektami.** `vitest.config.ts` i `vitest.workspace.ts` leżą w korzeniu i nie należą do żadnej biblioteki ani aplikacji, więc bramka chodząca po projektach byłaby na nie ślepa i orzekła „nie ma takiego kodu" dokładnie dlatego, że nie potrafi go zobaczyć. Punkt 1 przypisuje każdy plik do najgłębszego projektu-przedrostka i zapala na tych, którym żaden nie odpowiada.
+- **Projekt roota jest affected przy każdej zmianie.** Sprawdzone `nx show projects --affected --files=…`: zarówno `libs/components/src/index.ts`, jak i `docs/plan.md`, jak i `project.json` nowego projektu dają w wyniku `@org/source`. Bramki workspace'owe (`check-docs`, `check-typecheck`) biegną więc w każdym przebiegu — inaczej nowy projekt bez targetu wymykałby się tej, która powstała właśnie po to.
+- **Rozbrojenie punktu bywa wyjątkiem zamiast komunikatu.** Punkt 3 czytał `p.typecheck.polecenia` wprost, bo po punkcie 2 target „na pewno" istnieje. Wyłączenie punktu 2 w ramach kontroli tej kontroli zamieniło bramkę w `TypeError`, czyli kontrola odniesienia przestała umieć zbadać punkt, który miała zbadać. Zależność między punktami jest normalna; jej zapisanie tak, że jej naruszenie daje stack trace zamiast zdania — nie.
+
+I jeszcze jedno, w rodzinie `lekcja-44`: **target sprawdzający specyfikacje nie może brać `inputs: ["production"]`**, bo ten namedInput odejmuje `**/*.spec.ts` — czyli dokładnie pliki, dla których go dołożono. Pomiar: dopisanie linii do `src/public-api.spec.ts` daje przy `default` `Cache: 0/1 hit`, a przy `production` `1/1 hit`. Przebieg jest w obu przypadkach zielony i w obu wygląda tak samo; różni się tym, czy kompilator w ogóle wystartował.

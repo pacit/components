@@ -1,0 +1,10 @@
+{
+  "// po co": "`--noCheck` (TS 5.6+) zostawia wyłącznie błędy parsowania i emisji. Target biegnie, zajmuje czas CI, wchodzi do cache i nie sprawdza typów — a w `project.json` różni się od zdrowego o jedną flagę. Punkt 4 by tego nie zauważył: program plików jest ten sam, zmienia się tylko to, co kompilator z nim robi.",
+  "punkt": 3,
+  "kontrola": "polecenie",
+  "podmienPolecenia": {
+    "components": [
+      "tsc --noEmit --noCheck -p libs/components/tsconfig.lib.json"
+    ]
+  }
+}

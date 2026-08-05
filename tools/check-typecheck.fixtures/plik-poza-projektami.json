@@ -1,0 +1,6 @@
+{
+  "// po co": "Plik w korzeniu repozytorium po usunięciu projektu roota — czyli dokładnie stan sprzed 2026-08-05, gdy `vitest.config.ts` i `vitest.workspace.ts` nie należały do niczego. Punkty 2–4 chodzą po projektach, więc plik bez właściciela jest dla nich niewidzialny: bez tego punktu skasowanie korzeniowego `project.json` NIE zapaliłoby bramki, tylko po cichu zabrało jej dwa pliki.",
+  "punkt": 1,
+  "kontrola": "mianownik",
+  "usunProjekty": ["@org/source"]
+}

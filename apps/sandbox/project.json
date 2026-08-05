@@ -5,6 +5,7 @@
   "prefix": "app",
   "sourceRoot": "apps/sandbox/src",
   "tags": ["type:app"],
+  "// typecheck": "Nadpisuje target inferowany przez `@nx/vite/plugin`, bo tamten uruchamia WYŁĄCZNIE `tsconfig.app.json` — a ten wyklucza `**/*.spec.ts`. Specyfikacje szły więc przez vitest, który je transpiluje bez sprawdzania typów, i nie oglądał ich żaden kompilator (`lekcja-42` w drugim wydaniu). `inputs` biorą `default`, nie `production`: `production` odejmuje właśnie te pliki, więc ich zmiana nie unieważniałaby cache — ten sam namedInput z `nx.json` i ten sam mechanizm, który zmierzono na `components` (`lekcja-47`). Bez `dependsOn` na `tokens:build` — sprawdzone `--listFilesOnly`: do żadnego z dwóch programów nie wchodzi generowany `@pacit/tokens`, sięga po niego wyłącznie `sandbox-e2e`.",
   "// implicitDependencies": "`styles` sięga po libs/tokens/dist/pct.css — artefakt generowany i gitignorowany. Bez tej krawędzi build wchodzi na pusty katalog i kończy się SUKCESEM, tyle że bez ani jednej definicji tokenu.",
   "implicitDependencies": ["tokens"],
   "targets": {
@@ -73,6 +74,23 @@
     },
     "lint": {
       "executor": "@nx/eslint:lint"
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "default",
+        "^production",
+        { "externalDependencies": ["typescript"] }
+      ],
+      "options": {
+        "cwd": "apps/sandbox",
+        "parallel": false,
+        "commands": [
+          "tsc --noEmit -p tsconfig.app.json",
+          "tsc --noEmit -p tsconfig.spec.json"
+        ]
+      }
     },
     "serve-static": {
       "continuous": true,

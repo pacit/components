@@ -19,6 +19,7 @@
   "// test": "Wzorce `coverageInclude` idą od korzenia repozytorium, nie od katalogu projektu — mimo tego, co mówi schemat executora: wersja `**/src/**` wciągnęła do raportu biblioteki cały `apps/sandbox`. Szablony są tam razem z kodem, bo logika `@if`/`@for` jest kodem, a bez tej pozycji wypadają z raportu w całości. Powody wyjątków z `coverageExclude` trzyma `tools/check-coverage.mjs` (stała POMIJANE) — to ona decyduje, czego bramka WYMAGA w raporcie, a ta lista musi być jej podzbiorem: gdyby wykluczyła cokolwiek ponadto, plik wypadłby z raportu i zapalił punkt 3.",
   "// check-coverage": "Źródła są w `inputs` WPROST, mimo że raport przychodzi z `test`: plik, którego v8 nie potrafi doliczyć, nie zmienia raportu ani o bajt, więc sam `dependentTasksOutputFiles` dałby trafienie w cache i bramka nie zapaliłaby na jedynej rzeczy, dla której powstała. Komentarze stoją TUTAJ, a nie w targecie: `options` executora ma `additionalProperties: false`, a klucz `// …` w `targets` wywala graf (`lekcja-43`).",
   "// check-zoneless": "Źródła są w `inputs` WPROST, obok wyjścia builda, bo punkty 4 i 6 czytają je BEZPOŚREDNIO — a klucz cache ma wymieniać to, co bramka czyta, nie to, co zwykle się przy okazji zmienia. Zmierzone: jawne `standalone: true` w dekoratorze zostawia `ɵɵngDeclareComponent` bez zmiany (deklaracja i tak niesie `isStandalone: true`) i rusza wyłącznie `ɵɵngDeclareClassMetadata`, czyli echo dekoratora dla debugowania. Cache unieważniłby się więc dziś także bez tej pozycji — ale za sprawą funkcji diagnostycznej, która nie jest niczyją obietnicą. Dzień, w którym ng-packagr przestanie ją emitować, byłby dniem, w którym punkt 6 po cichu przestaje zapalać (`lekcja-44` w trzecim przebraniu). Wzorzec `**/package.json` obejmuje manifesty każdego projektu, także tego, który dopiero powstanie: bramka czyta je z indeksu gita, więc lista wpisana tutaj na sztywno rozjechałaby się przy pierwszej nowej bibliotece.",
+  "// typecheck": "Trzy przebiegi, bo biblioteka ma trzy rozłączne programy: pakiet (`tsconfig.lib.json`), specyfikacje razem z `testing/` (`tsconfig.spec.json`) i schematics kompilowane do CommonJS (`schematics/tsconfig.json`). Żaden z nich nie widzi plików pozostałych dwóch, więc jedno wywołanie sprawdziłoby część biblioteki i wyglądałoby jak komplet — to `check-typecheck` porównuje tę sumę z listą plików z indeksu gita. `inputs` biorą `default`, a NIE `production`: `production` odejmuje `**/*.spec.ts`. Zmierzone, nie założone — dopisanie linii do `src/public-api.spec.ts` daje przy `default` `Cache: 0/1 hit`, a przy `production` `1/1 hit`, czyli drugi przebieg NIE rusza dokładnie wtedy, kiedy jest potrzebny (`lekcja-44` w kolejnym przebraniu). `build` sprawdza typy przy okazji, ale wyłącznie dla `tsconfig.lib.prod.json` — reszta nie ma innego kompilatora niż ten target.",
   "// stamp-version": "Przepisuje `version` z manifestu do stałej PCT_VERSION. Celowo NIE jest zależnością `build`: gdyby build sam się stemplował, artefakt zawsze by się zgadzał, a bramka `check-package` przestałaby cokolwiek badać. Uruchamia to wydanie (po podbiciu wersji) i człowiek — a bramka pilnuje, że nikt nie zapomniał.",
   "targets": {
     "themes": {
@@ -131,6 +132,23 @@
       ],
       "options": {
         "command": "node tools/check-coverage.mjs"
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "default",
+        "^production",
+        { "externalDependencies": ["typescript"] }
+      ],
+      "options": {
+        "parallel": false,
+        "commands": [
+          "tsc --noEmit -p libs/components/tsconfig.lib.json",
+          "tsc --noEmit -p libs/components/tsconfig.spec.json",
+          "tsc --noEmit -p libs/components/schematics/tsconfig.json"
+        ]
       }
     },
     "check-zoneless": {

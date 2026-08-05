@@ -1,0 +1,6 @@
+{
+  "// po co": "Target `typecheck` istnieje i nie robi nic. Dla punktu 2 jest nie do odróżnienia od zdrowego, a `nx run components:typecheck` kończy się sukcesem — bo pusta lista poleceń to zero niepowodzeń.",
+  "punkt": 3,
+  "kontrola": "polecenie",
+  "podmienPolecenia": { "components": [] }
+}

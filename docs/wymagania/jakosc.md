@@ -75,13 +75,24 @@ z bramką wskazującą na nieistniejący plik, z targetem spoza CI, bez kontroli
 nie zastępuje typechecku**: ESLint parsuje i sprawdza reguły, ale nie zgłasza błędów typów
 ani niespójności konfiguracji modułów.
 
-**Bramka:** `.github/workflows/ci.yml` — `typecheck` w liście `nx affected -t`
-**Kontrola:** brak — luka: nic nie zapala, gdy **nowy projekt powstanie bez tego
-targetu**. Dokładnie tak `sandbox-e2e` przeżył kilkanaście plików niewidzianych przez
-kompilator ([`lekcja-42`](../lekcje.md#lekcja-42))
-**Wiąże przy:** natychmiast — koszt to przejście po grafie projektów i porównanie list
-targetów
-**Lekcje:** [`lekcja-42`](../lekcje.md#lekcja-42)
+**Bramka:** `tools/check-typecheck.mjs` (target `check-typecheck`, w CI) — cztery kontrole:
+(1) każdy plik TypeScriptu z indeksu gita należy do jakiegoś projektu, (2) każdy projekt
+z plikami TypeScriptu ma target `typecheck`, (3) polecenie tego targetu daje się zmierzyć
+i nie jest rozbrojone (operator powłoki, `--noCheck`, brak `-p`), (4) każdy plik projektu
+wchodzi do programu jego kompilatora
+**Kontrola:** `tools/check-typecheck.fixtures/` — jedenaście spreparowanych wejść, każde
+odrzucane na swoim punkcie; plus przebiegi na repozytorium: `sandbox` cofnięty do targetu
+inferowanego przez `@nx/vite` zapala punkt 4 na czterech plikach, nowy entrypoint
+biblioteki spoza `include` — też punkt 4, nowy projekt bez targetu — punkt 2, `|| true`
+dopisane do polecenia — punkt 3
+**Lekcje:** [`lekcja-42`](../lekcje.md#lekcja-42), [`lekcja-47`](../lekcje.md#lekcja-47)
+
+> **Punkt 4 jest tym, po co ta bramka powstała.** Sam wymóg istnienia targetu mierzy
+> deklarację, a `lekcja-42` mówi wprost, że tsconfig potrafi kłamać o swoim zasięgu.
+> `sandbox` miał target `typecheck` **inferowany** przez `@nx/vite/plugin` i przechodził
+> na zielono, sprawdzając wyłącznie `tsconfig.app.json` — a ten wyklucza `**/*.spec.ts`.
+> Dlatego bramka nie czyta `include`, tylko uruchamia **polecenie z targetu** rozszerzone
+> o `--listFilesOnly` i porównuje wynik z indeksem gita.
 
 ---
 

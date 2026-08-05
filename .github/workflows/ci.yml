@@ -76,4 +76,9 @@ jobs:
       # `ɵcmp.onPush` każdego komponentu. Instalacja stref niczego nie psuje — jest
       # opcjonalnym peerem Angulara (`lekcja-8`) — a OnPush jest wartością DOMYŚLNĄ,
       # czyli cudzą (`lekcja-11`). Jedno i drugie cofa się bez czerwonego testu.
-      - run: npx nx affected -t lint test vite:test build typecheck check-package check-coverage check-zoneless check-docs e2e
+      # `check-typecheck` pilnuje samego `typecheck` z tej listy: `nx affected` uruchamia
+      # target tam, gdzie istnieje, i MILCZY tam, gdzie go nie ma, więc nowy projekt
+      # rodzi się nietypecheckowany przy zielonym przebiegu (`lekcja-42`). Bramka mierzy
+      # nie istnienie targetu, tylko jego zasięg: porównuje pliki każdego projektu
+      # z programem, który jego kompilator naprawdę wypisuje.
+      - run: npx nx affected -t lint test vite:test build typecheck check-package check-coverage check-zoneless check-typecheck check-docs e2e
