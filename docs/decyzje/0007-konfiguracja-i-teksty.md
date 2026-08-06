@@ -43,22 +43,11 @@ Dwie reguły uzupełniające:
 ## Co przez to tracimy
 
 - **Dwa miejsca do skonfigurowania zamiast jednego** — konsument musi wiedzieć, że są dwa.
-- **`PCT_TEXTS` nie przeżyje zmiany języka w runtime.** `providePctTexts` zwraca
-  `{ provide, useValue }`, czyli statyczny obiekt, a komponent czyta go **przy
-  konstrukcji**:
-
-  ```ts
-  protected readonly texts = inject(PCT_TEXTS);
-  readonly placeholder = input<string>(this.texts.selectPlaceholder); // odczyt raz
-  ```
-
-  Aplikacja przełączająca język bez przeładowania strony — bardzo częsty wzorzec — **nie
-  zobaczy nowych napisów**.
-
-  To jest **otwarte i musi zostać rozstrzygnięte zanim `PCT_TEXTS` urośnie**: albo token
-  niesie `Signal<PctTexts>`, albo `providePctTexts` przyjmuje fabrykę, albo zapisujemy
-  wprost, że zmiana języka wymaga przeładowania. Trzecia opcja jest obronna — ale musi być
-  **decyzją, nie przeoczeniem**, a dziś nie jest nigdzie zapisana.
+- **~~`PCT_TEXTS` nie przeżyje zmiany języka w runtime.~~** Zamknięte przez
+  [0014](0014-teksty-jako-sygnal.md): token niesie `Signal<PctTexts>`, a napis czyta się
+  przy renderowaniu. Pozycja zostaje tutaj, bo to ta decyzja ją stworzyła: statyczny
+  `useValue` był jej ceną i stał w bibliotece od `a4794a4` (2026-07-27) do 2026-08-06,
+  przy zielonym CI ([`lekcja-54`](../lekcje.md#lekcja-54)).
 
 - **Kształt `PctConfig` jest niedokończony.** Ma jedno pole (`defaultSize`). Otwarte
   pytanie nie brzmi „jakie pola dołożyć", tylko **czy domyślne per komponent idą przez

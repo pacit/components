@@ -1,0 +1,6 @@
+{
+  "punkt": 2,
+  "kontrola": "artefakt",
+  "regula": "klasa-bez-pakietu",
+  "opis": "Klasa jest w źródłach, a nie ma jej w pakiecie. Bramka mierzyłaby wtedy napisy komponentu, którego konsument nie dostaje — albo, częściej, czytałaby `dist` sprzed ostatniej zmiany i orzekała o poprzedniej wersji biblioteki."
+}

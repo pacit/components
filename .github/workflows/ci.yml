@@ -119,4 +119,15 @@ jobs:
       # powtórzone prawdziwym `@angular/build:application`, a trzecia z nich niesie
       # komplet entrypointów i dowodzi, że tamten odczyt w ogóle potrafi cokolwiek
       # znaleźć. Bez niej „nie ma tu PctField" byłoby prawdą pustą.
-      - run: npx nx affected -t lint test vite:test build typecheck check-package check-coverage check-zoneless check-typecheck check-styles check-tokens check-parts check-bundle check-docs e2e
+      # `check-texts` pilnuje kanału napisów. Dotąd sprawdzone było wyłącznie nadpisanie
+      # CZĘŚCIOWE — czyli że mechanizm działa dla napisów, które już w nim są. Nic nie
+      # sprawdzało, że nowy napis do niego trafia: literał dopisany do szablonu kompiluje
+      # się, przechodzi testy, przechodzi audyt axe i wygląda poprawnie w każdym zrzucie;
+      # psuje się dopiero u konsumenta, który tłumaczy aplikację i dostaje w środku jedno
+      # zdanie po angielsku, a w review widać poprawny szablon. Szablon czyta `parseTemplate`
+      # z `@angular/compiler`, czyli TEN parser, którym czyta go kompilator — regex byłby
+      # ślepy na to samo, na co ślepy był w `check-parts`. Druga połowa kanału jest w TS:
+      # wartość domyślna wejścia to odczyt PRZY KONSTRUKCJI, więc napis wzięty z `PCT_TEXTS`
+      # w tym miejscu jest napisem sprzed zmiany języka (decyzja 0014) — a to jest wada,
+      # której nie widzi żaden test renderujący komponent raz.
+      - run: npx nx affected -t lint test vite:test build typecheck check-package check-coverage check-zoneless check-typecheck check-styles check-texts check-tokens check-parts check-bundle check-docs e2e

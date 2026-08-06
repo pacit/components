@@ -1,0 +1,6 @@
+{
+  "punkt": 5,
+  "kontrola": "kanal",
+  "regula": "domyslna-pusta",
+  "opis": "Pusta wartość domyślna. Zamienia „biblioteka wypisuje to sama\" w „biblioteka nie wypisuje nic\" u każdego, kto nie przetłumaczył tego pola — i nie daje przy tym żadnego sygnału, bo pusty napis renderuje się bez błędu."
+}

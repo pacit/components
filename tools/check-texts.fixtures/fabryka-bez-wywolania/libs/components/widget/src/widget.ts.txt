@@ -1,0 +1,47 @@
+import {
+  Component,
+  computed,
+  inject,
+  input,
+  isDevMode,
+  signal,
+} from '@angular/core';
+import { PCT_TEXTS } from '../../core/src/texts';
+
+export type PctWidgetSize = 'sm' | 'md' | 'lg';
+
+@Component({
+  selector: 'pct-widget',
+  templateUrl: './widget.html',
+  host: {
+    class: 'pct-widget',
+    role: 'group',
+    '[attr.data-pct-size]': 'size()',
+  },
+})
+export class PctWidget {
+  protected readonly texts = inject(PCT_TEXTS);
+
+  readonly label = input;
+  readonly size = input<PctWidgetSize>('md');
+  readonly items = input<readonly string[]>([]);
+
+  /** Napis biblioteki czytany PRZY RENDEROWANIU, nie przy konstrukcji. */
+  protected readonly emptyText = computed(() => this.texts().widgetEmpty);
+  protected readonly collapseText = computed(
+    () => this.texts().widgetCollapse,
+  );
+
+  protected readonly open = signal(true);
+
+  toggle(): void {
+    this.open.set(!this.open());
+    if (isDevMode()) this.warnOnMisuse();
+  }
+
+  private warnOnMisuse(): void {
+    if (!this.items().length) {
+      console.warn('[pctWidget] Rendered without items.');
+    }
+  }
+}

@@ -9,9 +9,9 @@ Nie ma stanu „zrealizowane, tylko niesprawdzone" — patrz
 
 | stan           | znaczenie                                          | liczba |
 | -------------- | -------------------------------------------------- | -----: |
-| ✅ egzekwowane | bramka i kontrola istnieją, są wpięte w CI         |     50 |
+| ✅ egzekwowane | bramka i kontrola istnieją, są wpięte w CI         |     51 |
 | 🟡 częściowo   | bramka jest, kontroli odniesienia brak (świadomie) |     16 |
-| ⛔ luka        | brak bramki albo kontroli, z zapisanym terminem    |     15 |
+| ⛔ luka        | brak bramki albo kontroli, z zapisanym terminem    |     14 |
 | **razem**      |                                                    | **81** |
 
 ## Luki wg pilności
@@ -20,7 +20,6 @@ Kolejność bierze się z pola **Wiąże przy**, nie z numeru wymagania.
 
 | wymaganie                                                                | czego brakuje                                                                       | wiąże przy                                                   |
 | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| [`wym-api-teksty`](wymagania/api.md#wym-api-teksty)                      | nic nie sprawdza, że **każdy** napis komponentu idzie przez token. No… _(kontrola)_ | natychmiast — koszt to grep po literałach w szablonach       |
 | [`wym-jakosc-jednostkowe`](wymagania/jakosc.md#wym-jakosc-jednostkowe)   | **testowanie mutacyjne** rdzenia (Stryker na `core`, `number`, `selec… _(kontrola)_ | natychmiast dla `core` — im więcej komponentów na nim stoi,… |
 | [`wym-jakosc-konsument`](wymagania/jakosc.md#wym-jakosc-konsument)       | `.verdaccio/config.yml` i target `local-registry` w root `project.jso…              | natychmiast — `check-package` bada artefakt **statycznie**;… |
 | [`wym-jakosc-przegladarki`](wymagania/jakosc.md#wym-jakosc-przegladarki) | `apps/sandbox-e2e/playwright.config.mts` ma **wyłącznie chromium**, r…              | natychmiast dla biblioteki chwalącej się a11y — Safari ma n… |
@@ -76,7 +75,7 @@ Kolejność bierze się z pola **Wiąże przy**, nie z numeru wymagania.
 | [`wym-api-szablony`](wymagania/api.md#wym-api-szablony)               | ⛔ luka        | brak — luka: projekcja działa (sloty obudowy), ale **`TemplateRef` ni… | brak — luka: szablon opcji podany przez konsumenta, który nie zostaje… |
 | [`wym-api-ikony`](wymagania/api.md#wym-api-ikony)                     | ⛔ luka        | brak — luka: dziś każda ikona jest **wpisana w szablon** jako SVG w `… | brak — luka: podmiana ikony przez `PCT_ICONS`, która nie dociera do k… |
 | [`wym-api-ikony-wlasne`](wymagania/api.md#wym-api-ikony-wlasne)       | 🟡 częściowo   | `libs/components/check-package.mjs` — brak plików ikon w spakowanym a… | brak — świadomie: naruszeniem jest **dodanie** czegoś, a nie ciche zn… |
-| [`wym-api-teksty`](wymagania/api.md#wym-api-teksty)                   | ⛔ luka        | `libs/components/select/src/select.spec.ts` — nadpisanie częściowe zo… | brak — luka: nic nie sprawdza, że **każdy** napis komponentu idzie pr… |
+| [`wym-api-teksty`](wymagania/api.md#wym-api-teksty)                   | ✅ egzekwowane | `tools/check-texts.mjs` (target `check-texts`) — sześć punktów: napis… | `tools/check-texts.fixtures/` — 29 spreparowanych wejść, każde odrzuc… |
 | [`wym-api-nakladka`](wymagania/api.md#wym-api-nakladka)               | ✅ egzekwowane | `apps/sandbox-e2e/src/select.spec.ts` — pomiar szerokości i przesunię… | pomiar z `lekcja-35` (pole 301 px ⇒ panel 275 px, przesunięcie 13 px;… |
 | [`wym-api-wielkosc`](wymagania/api.md#wym-api-wielkosc)               | ✅ egzekwowane | `apps/sandbox-e2e/src/size.spec.ts` — pomiar w przeglądarce            | test sprawdza równość wysokości **i jej konkretną wartość** — przy sa… |
 | [`wym-api-animacje`](wymagania/api.md#wym-api-animacje)               | ⛔ luka        | brak — luka: zakaz jest dotrzymany, ale **nic go nie pilnuje** — jedy… | brak — luka: import `@angular/animations` dodany do pakietu musi zapa… |
@@ -211,3 +210,4 @@ Która lekcja karmi które wymaganie. Generowane z pól **Lekcje**.
 | [`lekcja-51`](lekcje.md#lekcja-51) | `wym-projekt-tree-shaking`                                                                                                           |
 | [`lekcja-52`](lekcje.md#lekcja-52) | — _(nie cytowana)_                                                                                                                   |
 | [`lekcja-53`](lekcje.md#lekcja-53) | — _(nie cytowana)_                                                                                                                   |
+| [`lekcja-54`](lekcje.md#lekcja-54) | `wym-api-teksty`                                                                                                                     |

@@ -1,0 +1,6 @@
+{
+  "punkt": 5,
+  "kontrola": "kanal",
+  "regula": "klucz-bez-domyslnej",
+  "opis": "Pole w `PctTexts` bez wartości domyślnej. Nadpisanie jest częściowe (decyzja 0007), więc pole bez domyślnej dociera do DOM jako `undefined` u każdego, kto akurat tego jednego napisu nie przetłumaczył — czyli u każdego, kto zaktualizował bibliotekę i nie przeczytał changeloga."
+}

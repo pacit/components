@@ -46,16 +46,16 @@ Punkt 4 jest jedynym twardym dowodem — pierwsze trzy bez niego są deklaracją
 
 ## Stan
 
-Migawka z **2026-08-05**, `node tools/check-docs.mjs`:
+Migawka z **2026-08-06**, `node tools/check-docs.mjs`:
 
 | miara                                 | wartość |
 | ------------------------------------- | ------: |
 | wymagań                               |      81 |
-| ✅ egzekwowane                        |      50 |
+| ✅ egzekwowane                        |      51 |
 | 🟡 częściowo (świadomie bez kontroli) |      16 |
-| ⛔ luka                               |      15 |
+| ⛔ luka                               |      14 |
 
-Wszystkie 15 luk mają niżej swojego właściciela (A, B, D, F, G). Jeśli po dopisaniu
+Wszystkie 14 luk mają niżej swojego właściciela (A, B, D, F, G). Jeśli po dopisaniu
 wymagania liczba luk rośnie, a żadne zadanie się nie zmienia — ta lista przestała być
 kompletna i to jest błąd tej listy, nie rejestru.
 
@@ -71,16 +71,16 @@ F  powierzchnia zaufania       docs, ACR, benchmarki, most Figma
 G  luki bez terminu            czekają na wyzwalacz zapisany w polu „Wiąże przy"
 ```
 
-Pierwsze trzy, gdyby trzeba było wybrać tydzień: **A11** (bramka tekstów, pół dnia, przy
-okazji zmusza do rozstrzygnięcia C5), **A9** (test konsumenta na Verdaccio — jedyna
-pozycja badająca pakiet w użyciu, a nie statycznie), **A10** (macierz przeglądarek).
+Zostały trzy pozycje fazy A i każda wymaga zbudowania czegoś nowego poza samą bramką:
+**A9** (test konsumenta na Verdaccio — jedyna pozycja badająca pakiet w użyciu, a nie
+statycznie), **A10** (macierz przeglądarek), **A13** (przebieg mutacyjny).
 F1 jest odblokowane — A3 i A4 dały mu oba inwentarze do wyrenderowania.
 
 ---
 
 ## A. Faza 0 — bramki „natychmiast"
 
-Zostały cztery zadania i domykają **4 z 15 luk**. Każde wymaga zbudowania czegoś nowego
+Zostały trzy zadania i domykają **3 z 14 luk**. Każde wymaga zbudowania czegoś nowego
 poza samą bramką — rejestru npm, macierzy przeglądarek, przebiegu mutacyjnego — bo
 wszystkie bramki dające się napisać na miejscu są już za nami.
 
@@ -387,14 +387,68 @@ wszystkie bramki dające się napisać na miejscu są już za nami.
     webkicie
   - koszt: ~0,5 dnia + czas CI · _notatki:_ —
 
-- [ ] **A11 — bramka tekstów**
-  - domyka: `wym-api-teksty`
-  - co: grep po literałach w szablonach biblioteki — każdy napis widoczny dla użytkownika
-    idzie przez `PCT_TEXTS`. Dziś sprawdzone jest tylko nadpisanie częściowe
-  - razem z tym: rozstrzygnąć **reaktywność `PCT_TEXTS`** (patrz C5) jako ADR, nie jako
-    przeoczenie
-  - kontrola: literał dopisany do szablonu musi zapalić
-  - koszt: ~0,5 dnia · _notatki:_ —
+- [x] **A11 — bramka tekstów** _(2026-08-06)_
+  - domknęło: `wym-api-teksty`, a razem z tym **C5** — reaktywność `PCT_TEXTS` jest od
+    dziś decyzją ([0014](decyzje/0014-teksty-jako-sygnal.md)), nie przeoczeniem
+  - zrobione: `tools/check-texts.mjs` (target `check-texts` w `components`,
+    `dependsOn: build`, w CI) — sześć punktów, 30 reguł. Reguły są w trzech punktach
+    (3: napis w węźle tekstowym, w atrybucie mówiącym albo w literale wyrażenia;
+    4: proza w wartości domyślnej sygnału i odczyt `PCT_TEXTS` przy konstrukcji;
+    6: ostrzeżenia deweloperskie poza kanałem i pod `isDevMode()`), a **trzy pozostałe
+    pilnują mianownika**: parser widzi każdy dekorator i każdy szablon, klasy i atrybuty
+    statyczne zgadzają się ze zbudowanym pakietem, a kanał `PctTexts` jest jednym zbiorem
+    (pole ⟷ wartość domyślna ⟷ odczyt)
+  - plan mówił „grep po literałach w szablonach" i grep był złym narzędziem **i za wąskim
+    miejscem**. Szablon czyta `parseTemplate` z `@angular/compiler` przez
+    `TmplAstRecursiveVisitor`, czyli parser i obejście drzewa utrzymywane przez Angulara —
+    ten sam ruch co „nie czytaj `include`, uruchom kompilator" (A7). Regex byłby ślepy
+    dokładnie na to, na co był ślepy w A3, tylko trudniej to zauważyć: napis nie ma
+    atrybutu, po którym dałoby się go policzyć
+  - **druga połowa kanału jest w TypeScripcie i to jej plan nie widział.**
+    `input<string>(this.texts.selectPlaceholder)` wygląda na odczyt reaktywny — wejście
+    JEST sygnałem — a wartość domyślna powstaje raz, przy konstrukcji. Aplikacja
+    przełączająca język bez przeładowania zostawała z napisem sprzed zmiany, od commita
+    wprowadzającego `PCT_TEXTS` (2026-07-27), przy zielonym CI: jedyny test tego kanału
+    renderował komponent **raz**, a przy jednym renderowaniu obie wersje dają to samo
+    ([`lekcja-54`](lekcje.md#lekcja-54))
+  - odczyt tekstu jest **jeden**, nie dwa — i to jest zmierzona granica, nie
+    niedopatrzenie: po zlinkowaniu literał węzła tekstowego trafia do treści zagnieżdżonej
+    funkcji szablonu, do której `ɵcmp.template` nie prowadzi. Dlatego mianownik tego
+    odczytu pilnują cztery osobne reguły (brak błędów parsera, brak nieznanego rodzaju
+    węzła, brak szablonu w dekoratorze, niezerowa liczba odwiedzonych węzłów), a odczyt
+    z pakietu przez `ɵcmp.consts`/`ɵdir.hostAttrs` odpowiada za atrybuty — tam, gdzie
+    rozwinięcie obiektu w bloku `host` czyni skaner źródeł ślepym (`...fitHost` w
+    `field/src/affix.ts`, biblioteka naprawdę tak robi)
+  - ICU jest **zakazane**, a nie czytane po połowie: warianty tekstu siedzą w drzewie
+    i18n, do którego to obejście nie sięga (zmierzone — `visitText` nie dostaje z ICU ani
+    jednego węzła), a `PCT_TEXTS` jest mapą napisów, nie gramatyką. Ten sam ruch co zakaz
+    wiązania nazwy części w A3: rzecz, której pomiar nie potrafi zobaczyć, ma być głośna
+  - świadomie **bez mechanizmu wyjątków** (inaczej niż `pct-wyjatek` w A5): repozytorium
+    nie ma dziś ani jednego kandydata, a furtka bez użytkownika jest martwym artefaktem —
+    ten sam powód, dla którego A12 usunęło `--pct-on-danger`. Znak bez litery (`*`, `×`)
+    nie jest tekstem i nie potrzebuje wyjątku, bo nie ma w nim czego przetłumaczyć
+  - kontrola: `tools/check-texts.fixtures/` — dwadzieścia dziewięć wejść, każde odrzucane
+    na swojej **regule**, nie tylko punkcie; plus dziewięć przebiegów na prawdziwym
+    repozytorium (literał zamiast `texts()` → punkt 3; `aria-label` z napisem przy
+    nieaktualnym `dist` → punkt 2, po przebudowie → punkt 3; `input(this.texts()…)` →
+    punkt 4; `console.warn` bez `isDevMode()` → punkt 6; nowe pole bez wartości domyślnej
+    i pole nieczytane → punkt 5; literał w interpolacji → punkt 3; statyczny `aria-label`
+    w bloku `host` → punkt 2)
+  - kontrola tej kontroli: rozbrojone po kolei **wszystkie 29 reguł mających przypadek** —
+    dwadzieścia daje „PRZESZŁO", dziewięć przestawia przypadek na sąsiednią regułę i to
+    widać **tylko dzięki polu `regula`** (wniosek z A12, potwierdzony drugi raz).
+    Trzydziesta (`nieznany-wezel`) świadomie zostaje bez przypadku: wymagałaby rodzaju
+    węzła, którego `parseTemplate` dziś nie produkuje — składnia selectorless jest
+    domyślnie wyłączona (zmierzone). Reguła istnieje po to, żeby dzień jej włączenia był
+    dniem, w którym bramka o tym mówi
+  - koszt: ~1,5 dnia (plan zakładał 0,5; różnicę zjadła decyzja 0014 i druga połowa
+    kanału) · _notatki:_ rozbrojenie reguły `szablon-bez-wlasciciela` dało `TypeError`
+    zamiast komunikatu — **ta sama wada co w A3, A4, A7, A8 i A12, szósty raz**: punkt 2
+    czytał właściciela szablonu, ufając punktowi 1. Osobno, wpadka nie w bramce, tylko
+    w narzędziu do jej badania: skrypt przebiegów na repozytorium odtwarzał stan przez
+    `git checkout -- libs/components` i **skasował niezacommitowaną decyzję 0014**.
+    Kontrola odniesienia na żywym repozytorium musi odtwarzać z kopii plików, dopóki
+    praca nie jest w indeksie
 
 - [x] **A12 — kompletność par tekst/tło + poziomy tokenów** _(2026-08-05)_
   - domknęło: `wym-token-pary-tekstu`, `wym-token-poziomy` — **2 luki**
@@ -568,13 +622,22 @@ między większymi zadaniami. Pełny kontekst: [`review.md`](review.md) §5.
   - koszt: minuty na zmianę (`options` → `group-options`, nikt jej nie używa
     w testach ani w sandboxie), decyzja jest całym zadaniem · _notatki:_ —
 
-- [ ] **C5 — `PCT_TEXTS` nie przeżyje zmiany języka w runtime**
-  - `providePctTexts` zwraca statyczny obiekt, a `PctSelect` czyta go **raz przy
-    konstrukcji** (`input<string>(this.texts.selectPlaceholder)`). Aplikacja przełączająca
-    język bez przeładowania nie zobaczy nowych napisów
-  - do rozstrzygnięcia **zanim `PCT_TEXTS` urośnie**: token niesie `Signal<PctTexts>`,
-    fabryka zamiast wartości, albo zapisane wprost „zmiana języka wymaga przeładowania".
-    Trzecia opcja jest obronna, ale musi być decyzją (ADR), nie przeoczeniem · _notatki:_ —
+- [x] **C5 — `PCT_TEXTS` nie przeżyje zmiany języka w runtime** _(2026-08-06, razem z A11)_
+  - rozstrzygnięte jako [0014](decyzje/0014-teksty-jako-sygnal.md): token niesie
+    `Signal<PctTexts>`, a napis czyta się **przy renderowaniu**. `providePctTexts`
+    przyjmuje też sygnał, więc przełącznik języka podaje `computed(() => SLOWNIKI[jezyk()])`
+  - wybór padł na pierwszą z trzech opcji, a nie na obronną trzecią, bo cena jest do
+    zapłacenia **tylko teraz**: `inject(PCT_TEXTS)` zmienia typ, czyli po pierwszym
+    wydaniu byłby to major z codemodem
+  - fabryka (opcja druga) nie wystarcza — DI rozwiązuje dostawcę raz, więc `useFactory`
+    daje ten sam zamrożony obiekt, tylko liczony leniwie
+  - `placeholder` stracił wartość domyślną (`input<string>()`), a napis dokłada
+    `computed()`. **`placeholder=""` zostaje pustym tekstem zastępczym** — brak wartości
+    i wartość pusta znaczą co innego
+  - test: zmiana języka w runtime dociera do napisów; bez poprawki pada na
+    `expected 'Select…' to be 'Wybierz…'`. Regułę pilnuje `check-texts`
+    (`napis-przy-konstrukcji`), bo sama wiedza już raz nie wystarczyła —
+    [`lekcja-54`](lekcje.md#lekcja-54)
 
 ---
 
@@ -666,6 +729,65 @@ Czekają na wyzwalacz zapisany w polu **Wiąże przy**. Nie są zapomniane — s
 ## Dziennik
 
 Wpis per sesja: co ruszyło, czym się skończyło, co jest następne. Najnowsze na górze.
+
+### 2026-08-06 — A11: wejście jest sygnałem, a jego wartość domyślna nie
+
+Zrobione **A11**, a razem z nim **C5** — okazały się jednym zadaniem, bo bramka pilnująca
+kanału tekstów musi najpierw wiedzieć, czym ten kanał jest. Luki: 15 → 14, egzekwowane:
+50 → 51. Faza A ma za sobą dziesięć z trzynastu zadań; zostały trzy i każde wymaga
+zbudowania czegoś nowego poza samą bramką.
+
+Zadanie miało być półdniowym grepem („każdy napis widoczny dla użytkownika idzie przez
+`PCT_TEXTS`") i pomyliło się nie w diagnozie, tylko w tym, **gdzie ten napis stoi**.
+
+- **Grep po szablonach to połowa kanału, i to ta łatwiejsza.** Druga połowa jest w TS:
+  `readonly placeholder = input<string>(this.texts.selectPlaceholder)` wygląda na odczyt
+  reaktywny, bo wejście **jest** sygnałem — a wartość domyślna powstaje raz, przy
+  konstrukcji. Aplikacja przełączająca język bez przeładowania zostawała z napisem sprzed
+  zmiany od commita, który `PCT_TEXTS` wprowadził (2026-07-27), przy zielonym CI: jedyny
+  test tego kanału renderował komponent RAZ, a przy jednym renderowaniu obie wersje dają
+  ten sam napis ([`lekcja-54`](lekcje.md#lekcja-54)). Wada była przy tym **opisana
+  w decyzji 0007 jako otwarta** — to nie brak wiedzy ją utrzymał, tylko brak maszyny.
+- **Odczyt szablonu jest jeden i to jest zmierzona granica, nie niedopatrzenie.** Wzorzec
+  „dwa niezależne odczyty" (A3, A4, A6) tutaj się nie domyka: po zlinkowaniu literał węzła
+  tekstowego trafia do treści **zagnieżdżonej** funkcji szablonu, a `ɵcmp.template`
+  prowadzi tylko do zewnętrznej. Zamiast udawać drugi odczyt, bramka bierze parser
+  Angulara (`parseTemplate` + `TmplAstRecursiveVisitor`, czyli obejście drzewa
+  utrzymywane przez Angulara, nie przeze mnie) i otacza go czterema regułami mianownika:
+  brak błędów parsera, brak nieznanego rodzaju węzła, brak szablonu w dekoratorze,
+  niezerowa liczba odwiedzonych węzłów. Odczyt z pakietu został tam, gdzie ma co robić —
+  przy atrybutach, bo blok `host` składany rozwinięciem obiektu (`...fitHost`) jest dla
+  skanera źródeł niewidzialny.
+- **Czego pomiar nie umie zobaczyć, tego się zakazuje.** ICU niesie warianty tekstu
+  w drzewie i18n, do którego to obejście nie sięga — zmierzone, `visitText` nie dostaje
+  z ICU ani jednego węzła. Czytanie go po połowie dałoby bramkę zieloną dokładnie tam,
+  gdzie tekstu jest najwięcej. Ten sam ruch co zakaz wiązania nazwy części w A3.
+- **Furtka bez użytkownika jest martwym artefaktem.** `check-styles` ma mechanizm wyjątków
+  (`pct-wyjatek`) i cztery realne użycia; tutaj kandydatów nie ma ani jednego, więc
+  mechanizmu nie ma. Znak bez litery (`*` przy polu wymaganym, cztery wystąpienia
+  w bibliotece) nie jest tekstem, bo nie ma w nim czego przetłumaczyć — i dlatego nie
+  potrzebuje wyjątku, tylko reguły.
+
+Sprawdzone przebiegiem, nie rozumowaniem: bramka zapala na dziewięciu sposobach zepsucia
+repozytorium (literał zamiast `texts()`, `aria-label` z napisem przed przebudową i po
+niej, odczyt tekstów w wartości domyślnej wejścia, `console.warn` bez `isDevMode()`, pole
+bez wartości domyślnej, pole martwe, literał w interpolacji, statyczny `aria-label`
+w bloku `host`) — za każdym razem na innej regule — i na rozbrojeniu **wszystkich 29
+reguł mających przypadek**, z czego dziewięć przestawia przypadek na regułę sąsiednią
+i widać to **tylko dzięki polu `regula`**. To jest drugie potwierdzenie wniosku z A12:
+porównanie samego identyfikatora punktu przepuściłoby dziewięć z dwudziestu dziewięciu.
+
+Dwie wpadki własne. Rozbrojenie reguły `szablon-bez-wlasciciela` dało `TypeError` zamiast
+komunikatu — **szósty raz ta sama wada** (A3, A4, A7, A8, A12): punkt 2 czytał właściciela
+szablonu, ufając punktowi 1. Druga nie była w bramce, tylko w narzędziu do jej badania:
+skrypt przebiegów na repozytorium odtwarzał stan przez `git checkout -- libs/components`
+i **skasował niezacommitowaną decyzję 0014** — całą, razem z testami. Odtworzone z kopii
+i z kontekstu, ale wniosek jest tani i trwały: przebieg psujący żywe repozytorium ma
+odtwarzać z kopii plików, dopóki praca nie jest w indeksie.
+
+Następne: **A9** (test konsumenta na Verdaccio), **A10** (macierz przeglądarek) albo
+**A13** (przebieg mutacyjny) — trzy ostatnie pozycje fazy A, każda wymaga zbudowania
+czegoś nowego.
 
 ### 2026-08-05 — A12: bramka kontrastu mierzyła 38 par z 74 i była zielona
 

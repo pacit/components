@@ -1,0 +1,6 @@
+{
+  "punkt": 3,
+  "kontrola": "szablon",
+  "regula": "atrybut-mowiacy",
+  "opis": "`title` z napisem wpisanym wprost. Wartość atrybutu mówiącego czyta użytkownik — inaczej niż `role=\"group\"` czy `type=\"button\"`, które są słowami kluczowymi specyfikacji i dlatego nie zapalają. Wpis w `pakiet.json` jest tu po to, żeby przypadek przeszedł punkt 2 i dotarł do tego, który bada."
+}

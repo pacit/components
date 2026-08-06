@@ -1,0 +1,6 @@
+{
+  "punkt": 5,
+  "kontrola": "kanal",
+  "regula": "odczyt-donikad",
+  "opis": "Odczyt `texts().widgetTitle` pola, którego nie ma w `PctTexts`. W szablonie taki odczyt NIE jest błędem kompilacji przy niepełnym trybie ścisłym szablonów — jest pustym miejscem na ekranie."
+}

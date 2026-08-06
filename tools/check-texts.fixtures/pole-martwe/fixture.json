@@ -1,0 +1,6 @@
+{
+  "punkt": 5,
+  "kontrola": "kanal",
+  "regula": "klucz-martwy",
+  "opis": "Pole zadeklarowane, z wartością domyślną, i nieczytane przez żaden komponent. To pokrycie, którego nie ma: stoi w publicznym typie, konsument je tłumaczy, a nie widać go nigdzie. Ten sam ruch co usunięcie martwego `--pct-on-danger` w A12 — para zadeklarowana i nigdy niemalowana."
+}

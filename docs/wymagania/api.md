@@ -343,19 +343,26 @@ i `providePctTexts({…})`; podane pola nadpisują domyślne, reszta zostaje. Do
 **angielskie**. Ostrzeżenia deweloperskie (`console.warn`) do tego kanału **nie
 należą** — są po angielsku na stałe i gasną poza `isDevMode()`.
 
-**Bramka:** `libs/components/select/src/select.spec.ts` — nadpisanie częściowe zostawia
-resztę domyślną
-**Kontrola:** brak — luka: nic nie sprawdza, że **każdy** napis komponentu idzie przez
-token. Nowy string wpisany w szablon przechodzi po cichu
-**Wiąże przy:** natychmiast — koszt to grep po literałach w szablonach
-**Decyzja:** [0007 — konfiguracja osobno od tekstów](../decyzje/0007-konfiguracja-i-teksty.md)
+Napis czyta się **przy renderowaniu**: token niesie `Signal<PctTexts>`, więc aplikacja
+przełączająca język bez przeładowania widzi zmianę. Wartość domyślna wejścia jest
+odczytem przy konstrukcji i dlatego napisem biblioteki być nie może.
 
-> **Otwarte:** `providePctTexts` zwraca statyczny obiekt, a `PctSelect` czyta go raz przy
-> konstrukcji. Aplikacja przełączająca język bez przeładowania **nie zobaczy nowych
-> napisów**. Do rozstrzygnięcia zanim `PCT_TEXTS` urośnie: token niesie
-> `Signal<PctTexts>`, fabryka zamiast wartości, albo zapisujemy wprost, że zmiana języka
-> wymaga przeładowania. Trzecia opcja jest obronna, ale musi być **decyzją, nie
-> przeoczeniem**.
+**Bramka:** `tools/check-texts.mjs` (target `check-texts`) — sześć punktów: napis wpisany
+w węzeł tekstowy, w atrybut mówiący albo w literał wyrażenia; proza w wartości domyślnej
+sygnału i odczyt `PCT_TEXTS` przy konstrukcji; kompletność kanału (pole ⟷ wartość
+domyślna ⟷ odczyt); ostrzeżenia deweloperskie poza kanałem i pod `isDevMode()`. Szablon
+czyta `parseTemplate` z `@angular/compiler`, a lista klas i atrybutów statycznych
+powstaje **dwa razy** — ze źródeł i ze zbudowanego pakietu. Do tego
+`libs/components/select/src/select.spec.ts` — nadpisanie częściowe zostawia resztę
+domyślną i zmiana języka w runtime dociera do napisów
+**Kontrola:** `tools/check-texts.fixtures/` — 29 spreparowanych wejść, każde odrzucane na
+swojej **regule** (nie tylko punkcie); plus dziewięć przebiegów na repozytorium (literał
+w szablonie, `aria-label` z napisem przed przebudową i po niej, odczyt tekstów w wartości
+domyślnej wejścia, `console.warn` bez `isDevMode()`, pole bez wartości domyślnej, pole
+martwe, literał w interpolacji, statyczny `aria-label` w bloku `host`)
+**Decyzja:** [0007 — konfiguracja osobno od tekstów](../decyzje/0007-konfiguracja-i-teksty.md),
+[0014 — teksty jako sygnał](../decyzje/0014-teksty-jako-sygnal.md)
+**Lekcje:** [`lekcja-54`](../lekcje.md#lekcja-54)
 
 ---
 

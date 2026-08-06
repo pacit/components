@@ -1,5 +1,6 @@
 import {
   Component,
+  computed,
   provideZonelessChangeDetection,
   signal,
   Type,
@@ -62,6 +63,7 @@ async function press(
   template: `<pct-select
     [label]="label()"
     [hint]="hint()"
+    [placeholder]="placeholder()"
     [options]="options()"
     [required]="req()"
     [invalid]="invalid()"
@@ -76,6 +78,8 @@ async function press(
 class Host {
   label = signal('Kraj');
   hint = signal('');
+  /** `undefined` znaczy „bez wartości" — napis bierze wtedy `PCT_TEXTS`. */
+  placeholder = signal<string | undefined>(undefined);
   options = signal<readonly PctSelectOption[]>(OPTIONS);
   req = signal(false);
   invalid = signal(false);
@@ -516,6 +520,56 @@ describe('PctSelect', () => {
           .querySelector('[data-pct-part="placeholder"]')
           ?.textContent?.trim(),
       ).toBe('Select…');
+    });
+
+    // Wcześniej napis brał się z wartości domyślnej wejścia, czyli z odczytu
+    // przy KONSTRUKCJI — ten test padał na `Select…` (decyzja 0014).
+    it('zmiana języka w runtime dociera do napisów bez przeładowania', async () => {
+      const jezyk = signal<'en' | 'pl'>('en');
+      TestBed.configureTestingModule({
+        providers: [
+          providePctTexts(
+            computed(() =>
+              jezyk() === 'pl'
+                ? { selectPlaceholder: 'Wybierz…', selectEmpty: 'Brak opcji' }
+                : {},
+            ),
+          ),
+        ],
+      });
+
+      const fixture = await render(Host);
+      fixture.componentInstance.options.set([]);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const placeholder = () =>
+        fixture.nativeElement
+          .querySelector('[data-pct-part="placeholder"]')
+          ?.textContent?.trim();
+
+      expect(placeholder()).toBe('Select…');
+
+      jezyk.set('pl');
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(placeholder()).toBe('Wybierz…');
+    });
+
+    // Brak wartości i wartość pusta znaczą co innego: pierwsze oddaje napis
+    // bibliotece, drugie jest świadomą decyzją autora widoku.
+    it('placeholder="" zostaje pusty, a nie wraca do domyślnego', async () => {
+      const fixture = await render(Host);
+      fixture.componentInstance.placeholder.set('');
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(
+        fixture.nativeElement
+          .querySelector('[data-pct-part="placeholder"]')
+          ?.textContent?.trim(),
+      ).toBe('');
     });
   });
 

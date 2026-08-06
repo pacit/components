@@ -1,0 +1,35 @@
+import {
+  computed,
+  InjectionToken,
+  Provider,
+  Signal,
+  signal,
+} from '@angular/core';
+
+export interface PctTexts {
+  /** Widget: gdy lista jest pusta. */
+  readonly widgetEmpty: string;
+  /** Widget: nazwa dostępna przycisku zwijania. */
+  readonly widgetCollapse: string;
+  readonly widgetExpand: string;
+}
+
+export const PCT_DEFAULT_TEXTS: PctTexts = {
+  widgetEmpty: 'No items',
+  widgetCollapse: 'Collapse',
+};
+
+export const PCT_TEXTS = new InjectionToken<Signal<PctTexts>>('PCT_TEXTS', {
+  factory: () => signal(PCT_DEFAULT_TEXTS).asReadonly(),
+});
+
+export function providePctTexts(
+  texts: Partial<PctTexts> | Signal<Partial<PctTexts>>,
+): Provider {
+  const wartosc: Signal<PctTexts> =
+    typeof texts === 'function'
+      ? computed(() => ({ ...PCT_DEFAULT_TEXTS, ...texts() }))
+      : signal({ ...PCT_DEFAULT_TEXTS, ...texts }).asReadonly();
+
+  return { provide: PCT_TEXTS, useValue: wartosc };
+}

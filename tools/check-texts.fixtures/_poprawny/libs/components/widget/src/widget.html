@@ -1,0 +1,24 @@
+@if (label()) {
+<span class="pct-widget__label" data-pct-part="label">
+  {{ label() }} @if (items().length === 0) {
+  <span class="pct-widget__mark" aria-hidden="true">*</span>
+  }
+</span>
+}
+
+<button
+  class="pct-widget__toggle"
+  data-pct-part="toggle"
+  type="button"
+  [attr.aria-label]="collapseText()"
+  [attr.aria-expanded]="open()"
+  (click)="toggle()"
+></button>
+
+<ul class="pct-widget__list" data-pct-part="list">
+  @for (item of items(); track item) {
+  <li class="pct-widget__item" data-pct-part="item">{{ item }}</li>
+  } @empty {
+  <li class="pct-widget__empty" data-pct-part="empty">{{ emptyText() }}</li>
+  }
+</ul>

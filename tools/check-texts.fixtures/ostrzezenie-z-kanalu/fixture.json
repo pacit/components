@@ -1,0 +1,6 @@
+{
+  "punkt": 6,
+  "kontrola": "ostrzezenia",
+  "regula": "ostrzezenie-z-kanalu",
+  "opis": "Ostrzeżenie deweloperskie czerpiące napis z `PCT_TEXTS`. Czyta je programista, nie użytkownik — tłumaczenie go nikomu nie pomaga, a zabiera miejsce w typie, który konsument musi wypełnić. Wymaganie zastrzega to wprost i bez bramki jest to zastrzeżenie bez pokrycia."
+}

@@ -1,0 +1,6 @@
+{
+  "punkt": 1,
+  "kontrola": "mianownik",
+  "regula": "szablon-bez-wlasciciela",
+  "opis": "Plik `.html`, do którego nie wskazuje żaden `templateUrl`. Skaner przypisuje napisy do klasy przez `templateUrl`; szablon bez właściciela jest dla tego przypisania niewidzialny, a najczęstsza przyczyna jest gorsza niż sam plik — literówka w ścieżce po przeniesieniu komponentu."
+}

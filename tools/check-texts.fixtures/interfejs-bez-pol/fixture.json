@@ -1,0 +1,6 @@
+{
+  "punkt": 5,
+  "kontrola": "kanal",
+  "regula": "pusty-pomiar",
+  "opis": "Interfejs `PctTexts` zapisany tak, że skaner nie widzi w nim pól. Cały punkt 5 porównuje trzy listy (pola, wartości domyślne, odczyty) — a przy pustej pierwszej przechodzi, nie mając czego porównać, i milczy także o kluczach martwych."
+}

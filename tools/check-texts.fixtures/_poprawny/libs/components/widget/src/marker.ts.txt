@@ -1,0 +1,20 @@
+import { Directive, input } from '@angular/core';
+
+/**
+ * Dyrektywa slotowa — istnieje po to, żeby wejście wzorcowe niosło blok `host`
+ * z atrybutem statycznym o kluczu BEZ cudzysłowu (`role`) obok wiązania
+ * z kluczem w cudzysłowie. Prettier pisze je właśnie tak i skaner musi widzieć
+ * oba.
+ */
+@Directive({
+  selector: '[pctMarker]',
+  host: {
+    class: 'pct-marker',
+    role: 'note',
+    'data-pct-part': 'widget-marker',
+    '[attr.aria-label]': 'description()',
+  },
+})
+export class PctMarker {
+  readonly description = input<string>('');
+}

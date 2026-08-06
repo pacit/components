@@ -36,7 +36,7 @@
   >
   } @else {
   <span class="pct-select__placeholder" data-pct-part="placeholder">
-    {{ placeholder() }}
+    {{ placeholderText() }}
   </span>
   }
 
@@ -106,7 +106,7 @@
     </div>
     } @empty {
     <div class="pct-select__empty" data-pct-part="empty">
-      {{ texts.selectEmpty }}
+      {{ texts().selectEmpty }}
     </div>
     }
   </div>

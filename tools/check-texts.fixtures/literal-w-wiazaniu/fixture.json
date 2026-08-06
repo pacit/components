@@ -1,0 +1,6 @@
+{
+  "punkt": 3,
+  "kontrola": "szablon",
+  "regula": "literal-w-wyrazeniu",
+  "opis": "Napis podany literałem w wyrażeniu wiązania. Omija kanał tak samo jak tekst wpisany w węzeł, z tą różnicą, że wygląda na kod — a `aria-label` jest jedynym miejscem, w którym błąd tej klasy widzi wyłącznie użytkownik czytnika ekranu."
+}

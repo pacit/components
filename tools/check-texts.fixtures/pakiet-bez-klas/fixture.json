@@ -1,0 +1,6 @@
+{
+  "punkt": 2,
+  "kontrola": "artefakt",
+  "regula": "pakiet-pusty",
+  "opis": "Zbudowany pakiet bez ani jednej klasy z definicją Angulara. Porównanie dwóch odczytów przechodzi wtedy zawsze, bo jedna strona jest pusta — a pusta jest równa wszystkiemu, czego w niej nie ma. Tak wygląda nieaktualne albo wyczyszczone `dist`."
+}

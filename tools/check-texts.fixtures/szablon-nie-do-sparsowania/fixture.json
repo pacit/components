@@ -1,0 +1,6 @@
+{
+  "punkt": 1,
+  "kontrola": "mianownik",
+  "regula": "parser-szablonu",
+  "opis": "Blok `@if` bez klamry zamykającej. Parser Angulara odrzuca taki szablon, a drzewo, którego nie ma, nie ma też ani jednego węzła tekstowego: punkt 3 przeszedłby na nim bez zastrzeżeń. Sam `errors` z `parseTemplate` jest tu jedynym sygnałem — bramka nie kompiluje szablonu drugi raz."
+}

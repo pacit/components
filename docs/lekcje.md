@@ -498,3 +498,13 @@ Powód: `toHaveScreenshot` ma **dwa** progi. `maxDiffPixels` mówi, ile pikseli 
 To jest [`lekcja-39`](#lekcja-39) na drugiej osi. Tam próg ułamkowy skalował się z wielkością karty i przepuszczał regresję geometrii; tu próg koloru przepuszcza regresję malowania. W obu przypadkach **konfiguracja miała jedną wartość zmierzoną i jedną domyślną, a bramka jest tak mocna jak ta druga.**
 
 Reguła praktyczna: **wypisz wszystkie progi bramki i zmierz każdy z osobna, także ten, którego nie ustawiałeś.** Wartość domyślna nie jest brakiem decyzji — jest decyzją kogoś, kto nie znał tego projektu. Nowy próg (`threshold: 0.005`) łapie każdy krok rampy poza sąsiednimi szarościami tła i nie wnosi szumu: 26 zrzutów, dwa przebiegi pod rząd, zero fałszywych alarmów.
+
+### <a id="lekcja-54"></a>`lekcja-54` — Wartość domyślna wejścia jest odczytem przy konstrukcji, choć wejście jest sygnałem
+
+**`readonly placeholder = input<string>(this.texts.selectPlaceholder)` wygląda na odczyt reaktywny i nim nie jest.** Reaktywne jest samo wejście — zmiana wiązania z zewnątrz przerysuje widok. Wartość **domyślna** powstaje raz, w konstruktorze, więc podmiana tekstów po starcie aplikacji nie dociera do komponentu, który już istnieje.
+
+Zmierzone celową regresją: test przełączający `providePctTexts(computed(() => …))` z angielskiego na polski dostaje `expected 'Select…' to be 'Wybierz…'` przy odczycie z konstrukcji i przechodzi przy odczycie przez `computed()`. Przy zielonym CI przez cały czas, bo **jedyny test tego kanału renderował komponent raz** — a przy jednym renderowaniu obie wersje dają ten sam napis.
+
+Rzecz jest szersza niż teksty. Sygnał w API mówi o tym, **kiedy wartość jest czytana**, a nie o tym, że każde jej użycie jest czytaniem: `input(x)`, `signal(x)`, `model(x)` przyjmują **wartość**, więc wszystko, co w tym miejscu stoi, zostaje policzone natychmiast i zamrożone. To ten sam kształt co [`lekcja-11`](#lekcja-11) i [`lekcja-46`](#lekcja-46): wartość domyślna jest cudzą decyzją podjętą wcześniej, niż się wydaje.
+
+Reguła praktyczna: **napis, wartość zależna od DI i wszystko, co konsument może podmienić po starcie, mają być czytane w `computed()`, nie w wartości domyślnej.** Zapisane jako punkt bramki (`check-texts`, reguła `napis-przy-konstrukcji`), bo samo wiedzieć nie wystarczy: poprzedni zapis stał od `a4794a4` (2026-07-27) — czyli od commita, który `PCT_TEXTS` wprowadził — i przez ten czas nie dał ani jednego czerwonego testu. Wada była przy tym **opisana w decyzji 0007 jako otwarta**; to nie brak wiedzy ją utrzymał, tylko brak maszyny.

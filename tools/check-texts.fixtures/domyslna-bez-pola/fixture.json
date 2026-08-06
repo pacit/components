@@ -1,0 +1,6 @@
+{
+  "punkt": 5,
+  "kontrola": "kanal",
+  "regula": "domyslna-bez-klucza",
+  "opis": "Wartość domyślna bez pola w `PctTexts`. Napis, którego nie ma w typie, jest napisem, którego konsument nie ma jak nadpisać: `providePctTexts` przyjmuje `Partial<PctTexts>`, więc klucz spoza interfejsu jest błędem kompilacji u niego, a nie tutaj."
+}

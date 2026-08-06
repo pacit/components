@@ -1,0 +1,6 @@
+{
+  "punkt": 6,
+  "kontrola": "ostrzezenia",
+  "regula": "ostrzezenie-bez-devmode",
+  "opis": "Ostrzeżenie bez strażnika `isDevMode()` — ani w swojej funkcji, ani przy jej wywołaniu. Wymaganie zastrzega ten kanał dla trybu deweloperskiego, bo w produkcji to jest napis w konsoli aplikacji, której autor nie ma jak go wyłączyć."
+}

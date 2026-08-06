@@ -1,0 +1,19 @@
+{
+  "$comment": "Odczyt ze ZBUDOWANEGO pakietu podany jako dane — patrz komentarz przy `zlozFixture` w tools/check-texts.mjs. Budowanie pakietu Angulara na każdy przypadek kosztowałoby minuty na przebieg, a bramka biegnie przy każdym commicie. `atrybuty` to statyczne pary nazwa/wartość tak, jak wypisuje je linker w `ɵcmp.consts` i `ɵdir.hostAttrs`.",
+  "klasy": [
+    {
+      "wejscie": "./widget",
+      "klasa": "PctWidget",
+      "atrybuty": [
+        ["data-pct-part", "label"],
+        ["aria-hidden", "true"],
+        ["data-pct-part", "toggle"],
+        ["type", "button"],
+        ["data-pct-part", "list"],
+        ["data-pct-part", "item"],
+        ["data-pct-part", "empty"],
+        ["role", "group"]
+      ]
+    }
+  ]
+}

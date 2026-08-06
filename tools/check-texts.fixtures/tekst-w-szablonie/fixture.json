@@ -1,0 +1,6 @@
+{
+  "punkt": 3,
+  "kontrola": "szablon",
+  "regula": "tekst-literalny",
+  "opis": "Napis wpisany wprost w węzeł tekstowy — cała wada, dla której ta bramka powstała. Kompiluje się, przechodzi testy, przechodzi audyt axe i wygląda poprawnie w każdym zrzucie; psuje się dopiero u konsumenta, który tłumaczy aplikację i dostaje w środku jedno zdanie po angielsku. W review widać poprawny szablon."
+}

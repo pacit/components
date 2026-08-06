@@ -1,0 +1,6 @@
+{
+  "punkt": 1,
+  "kontrola": "mianownik",
+  "regula": "szablon-w-dekoratorze",
+  "opis": "Komponent bierze szablon z dekoratora zamiast z pliku. Ten skaner czyta pliki `.html`, więc każdy napis wpisany w dekorator byłby dla niego niewidzialny — a do przeglądarki jedzie tak samo. To nie jest przypadek teoretyczny: dwie dyrektywy w bibliotece mają `template: ''` i pusty szablon jest tu jedynym dozwolonym."
+}

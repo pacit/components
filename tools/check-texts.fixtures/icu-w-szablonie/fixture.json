@@ -1,0 +1,6 @@
+{
+  "punkt": 3,
+  "kontrola": "szablon",
+  "regula": "icu",
+  "opis": "Wyrażenie ICU. Warianty tekstu siedzą w osobnym drzewie i18n, do którego to obejście nie sięga — zmierzone: `visitText` nie dostaje z ICU ani jednego węzła. Bramka nie czyta go więc po połowie, tylko zakazuje: to ten sam ruch co zakaz wiązania nazwy części w `check-parts`. Rzecz, której pomiar nie potrafi zobaczyć, ma być głośna, a nie niewidzialna."
+}

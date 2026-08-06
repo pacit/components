@@ -111,7 +111,15 @@ export class PctSelect<T = string>
   readonly options = input<readonly PctSelectOption<T>[]>([]);
   readonly label = input<string>('');
   readonly hint = input<string>('');
-  readonly placeholder = input<string>(this.texts.selectPlaceholder);
+  /**
+   * Tekst zastępczy. Bez wartości bierze się z `PCT_TEXTS` — i bierze się
+   * **przy renderowaniu**, nie przy konstrukcji: wartość domyślna wejścia
+   * powstaje raz, więc aplikacja przełączająca język w runtime zostałaby
+   * z napisem sprzed zmiany ([0014](../../../../docs/decyzje/0014-teksty-jako-sygnal.md)).
+   * `placeholder=""` zostaje pustym tekstem zastępczym, a nie powrotem do
+   * domyślnego — brak wartości i wartość pusta znaczą co innego.
+   */
+  readonly placeholder = input<string>();
   readonly size = input<PctSize>(this.config.defaultSize);
 
   /**
@@ -280,6 +288,11 @@ export class PctSelect<T = string>
 
   protected readonly displayText = computed(
     () => this.selectedOption()?.label ?? '',
+  );
+
+  /** Napis biblioteki czytany przy renderowaniu — patrz `placeholder`. */
+  protected readonly placeholderText = computed(
+    () => this.placeholder() ?? this.texts().selectPlaceholder,
   );
 
   // Wspólna logika komunikatów z `core` — bez duplikowania w każdej kontrolce.

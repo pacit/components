@@ -13,14 +13,14 @@ kontrolować — to świadomy wyjątek od
 
 ## Kontrakt
 
-|                 |                                                                                                                                                       |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Wartość**     | `T \| null`, generyczna; `value` i `emptyValue` jako `NoInfer<T>` — typ bierze się **wyłącznie z listy opcji**                                        |
-| **Wejścia**     | `options`, `value` (`model`), `label`, `hint`, `placeholder`, `size`, `compareWith`, `emptyValue`, `panelWidth`, `panelAlign`, plus `FormUiControl`   |
-| **Panel**       | `panelWidth`: `"field"` (domyślne) \| `"auto"` \| długość CSS; `panelAlign`: `start` \| `center` \| `end`; wychodzący poza okno jest wsuwany (`push`) |
-| **Części**      | `trigger`, `value`, `placeholder`, `arrow`, `panel`, `option`, `empty`, `label`, `hint`, `error`                                                      |
-| **Kontrakt DI** | `PCT_FIELD`; `fieldAppearance: 'boxed'`, `fieldCursor: 'pointer'`, `activate()` otwiera panel                                                         |
-| **Napisy**      | `placeholder` i komunikat pustej listy przez `PCT_TEXTS`                                                                                              |
+|                 |                                                                                                                                                        |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Wartość**     | `T \| null`, generyczna; `value` i `emptyValue` jako `NoInfer<T>` — typ bierze się **wyłącznie z listy opcji**                                         |
+| **Wejścia**     | `options`, `value` (`model`), `label`, `hint`, `placeholder`, `size`, `compareWith`, `emptyValue`, `panelWidth`, `panelAlign`, plus `FormUiControl`    |
+| **Panel**       | `panelWidth`: `"field"` (domyślne) \| `"auto"` \| długość CSS; `panelAlign`: `start` \| `center` \| `end`; wychodzący poza okno jest wsuwany (`push`)  |
+| **Części**      | `trigger`, `value`, `placeholder`, `arrow`, `panel`, `option`, `empty`, `label`, `hint`, `error`                                                       |
+| **Kontrakt DI** | `PCT_FIELD`; `fieldAppearance: 'boxed'`, `fieldCursor: 'pointer'`, `activate()` otwiera panel                                                          |
+| **Napisy**      | `placeholder` (gdy bez wiązania) i komunikat pustej listy przez `PCT_TEXTS`, czytane przy renderowaniu ([0014](../decyzje/0014-teksty-jako-sygnal.md)) |
 
 **Pierwsze użycie CDK Overlay w bibliotece.**
 
@@ -52,7 +52,7 @@ kontrolować — to świadomy wyjątek od
 | Formularze                      | `libs/components/select/src/select.spec.ts`, `apps/sandbox-e2e/src/forms.spec.ts`                                                                                                    |
 | Części w inwentarzu             | `libs/components/czesci.snapshot.md`, `tools/check-parts.mjs` (target `check-parts`)                                                                                                 |
 | Tokeny + `contrast.policy.json` | `libs/tokens/src/contrast.policy.json`                                                                                                                                               |
-| Napisy przez `PCT_TEXTS`        | `libs/components/select/src/select.spec.ts` — nadpisanie częściowe zostawia resztę domyślną                                                                                          |
+| Napisy przez `PCT_TEXTS`        | `tools/check-texts.mjs` + `select.spec.ts` — nadpisanie częściowe zostawia resztę domyślną, a zmiana języka w runtime dociera do napisów                                             |
 | Budżet rozmiaru                 | brak — luka. Zmierzone dziś: **~43 kB** w FESM                                                                                                                                       |
 | Log z czytnikiem ekranu         | brak — luka. **Najbardziej potrzebny**: „co czytnik ogłasza po otwarciu" i „co po zmianie wartości" to pytania, na które axe nie odpowiada — axe bada strukturę, nie słyszy          |
 | Strona docs                     | brak — luka                                                                                                                                                                          |

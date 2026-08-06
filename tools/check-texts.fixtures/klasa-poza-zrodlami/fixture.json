@@ -1,0 +1,6 @@
+{
+  "punkt": 2,
+  "kontrola": "artefakt",
+  "regula": "klasa-bez-zrodel",
+  "opis": "Klasa jest w pakiecie, a nie widzi jej skaner źródeł. To druga strona tego samego mianownika: komponent, którego skaner nie zobaczył, wnosi do wydania napisy, o których ta bramka milczy — a milczenie wygląda w CI jak zgoda."
+}

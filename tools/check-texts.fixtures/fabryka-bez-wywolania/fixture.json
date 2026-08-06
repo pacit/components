@@ -1,0 +1,6 @@
+{
+  "punkt": 4,
+  "kontrola": "typescript",
+  "regula": "pusty-pomiar",
+  "opis": "`= input` bez wywołania — skaner nie znajduje nawiasu i pomija wpis, a niezależny licznik przypisań go widzi. Bez tej pary wejście zapisane składnią, której skaner nie rozumie (generyk z `>` w środku, zapis w wielu liniach), wypadałoby z pomiaru po cichu razem ze swoją wartością domyślną."
+}

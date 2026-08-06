@@ -1,0 +1,6 @@
+{
+  "punkt": 4,
+  "kontrola": "typescript",
+  "regula": "proza-w-fabryce",
+  "opis": "Napis w wartości domyślnej sygnału. W szablonie o tym, czy literał jest tekstem, decyduje pozycja; w TS pozycji nie ma, więc decyduje kształt — wielka litera na początku albo spacja w środku. Zmierzone na całej bibliotece: przy tej regule nie zapala dziś ani jedna wartość osi (`md`, `solid`, `inset`, `pctPrefix`)."
+}

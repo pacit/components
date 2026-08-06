@@ -1,0 +1,6 @@
+{
+  "punkt": 1,
+  "kontrola": "mianownik",
+  "regula": "szablon-bez-pliku",
+  "opis": "`templateUrl` wskazuje plik, którego nie ma na liście bramki. Szablon nieobjęty listą nie wnosi do pomiaru ani jednego węzła, więc jego napisy są dla punktu 3 niewidzialne — a komponent renderuje się normalnie."
+}
