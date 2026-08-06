@@ -1,0 +1,6 @@
+{
+  "kontrola": "fakt",
+  "regula": "sonda-nieudana",
+  "opis": "Sonda nie dała wyniku dla webkita — nie wystartował, wywalił się albo zmienił nazwę w paczce. Bez wyniku nie ma jak orzec, czy wyłączenie nadal ma powód, a brak orzeczenia domyślnie znaczy „zostaje\".",
+  "fakty": { "podmiana-kolorow-autora": { "webkit": null } }
+}

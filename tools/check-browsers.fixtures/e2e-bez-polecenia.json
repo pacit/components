@@ -1,0 +1,6 @@
+{
+  "kontrola": "ci",
+  "regula": "e2e-bez-polecenia",
+  "opis": "Target `e2e` nie ma polecenia, które dałoby się przeczytać. Bramka nie ma wtedy jak sprawdzić, czy przebieg nie jest zawężony — a milczące „nie wiem\" liczyłoby się jako „w porządku\".",
+  "e2e": { "polecenie": "" }
+}

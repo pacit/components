@@ -1,0 +1,6 @@
+{
+  "kontrola": "fakt",
+  "regula": "fakt-nieodwzorowany",
+  "opis": "Firefox przestał podmieniać kolory autora, a plik biegnie tam dalej. Testy pytają wtedy o zachowanie, którego silnik nie ma: przejdą albo nie przejdą, ale w obu przypadkach zmierzą co innego, niż mówi ich nazwa.",
+  "fakty": { "podmiana-kolorow-autora": { "firefox": false } }
+}

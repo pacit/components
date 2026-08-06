@@ -1,0 +1,6 @@
+{
+  "kontrola": "mianownik",
+  "regula": "brak-plikow",
+  "opis": "Indeks gita nie daje ani jednego pliku specyfikacji. Punkt 3 porównywałby wtedy zebrane testy z pustym zbiorem: każda para plik × silnik przechodzi, bo par nie ma.",
+  "wyczyscPliki": true
+}

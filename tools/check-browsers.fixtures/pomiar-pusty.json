@@ -1,0 +1,6 @@
+{
+  "kontrola": "mianownik",
+  "regula": "pomiar-pusty",
+  "opis": "Playwright nie zebrał niczego na żadnym silniku — tak wygląda `testDir` wskazujący nie tam albo `testMatch` po literówce. Prawdziwy przebieg kończy się wtedy zerem, czyli zielono.",
+  "wyczyscZebrane": ["chromium", "firefox", "webkit"]
+}

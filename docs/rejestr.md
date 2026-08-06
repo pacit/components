@@ -9,30 +9,29 @@ Nie ma stanu „zrealizowane, tylko niesprawdzone" — patrz
 
 | stan           | znaczenie                                          | liczba |
 | -------------- | -------------------------------------------------- | -----: |
-| ✅ egzekwowane | bramka i kontrola istnieją, są wpięte w CI         |     52 |
+| ✅ egzekwowane | bramka i kontrola istnieją, są wpięte w CI         |     53 |
 | 🟡 częściowo   | bramka jest, kontroli odniesienia brak (świadomie) |     16 |
-| ⛔ luka        | brak bramki albo kontroli, z zapisanym terminem    |     13 |
+| ⛔ luka        | brak bramki albo kontroli, z zapisanym terminem    |     12 |
 | **razem**      |                                                    | **81** |
 
 ## Luki wg pilności
 
 Kolejność bierze się z pola **Wiąże przy**, nie z numeru wymagania.
 
-| wymaganie                                                                | czego brakuje                                                                       | wiąże przy                                                   |
-| ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| [`wym-jakosc-jednostkowe`](wymagania/jakosc.md#wym-jakosc-jednostkowe)   | **testowanie mutacyjne** rdzenia (Stryker na `core`, `number`, `selec… _(kontrola)_ | natychmiast dla `core` — im więcej komponentów na nim stoi,… |
-| [`wym-jakosc-przegladarki`](wymagania/jakosc.md#wym-jakosc-przegladarki) | `apps/sandbox-e2e/playwright.config.mts` ma **wyłącznie chromium**, r…              | natychmiast dla biblioteki chwalącej się a11y — Safari ma n… |
-| [`wym-api-animacje`](wymagania/api.md#wym-api-animacje)                  | zakaz jest dotrzymany, ale **nic go nie pilnuje** — jedyne, co obowią…              | pierwszym komponencie z wejściem/wyjściem (panel, dialog, t… |
-| [`wym-api-ikony`](wymagania/api.md#wym-api-ikony)                        | dziś każda ikona jest **wpisana w szablon** jako SVG w `currentColor`…              | drugim komponencie potrzebującym podmienialnej ikony         |
-| [`wym-api-liczba`](wymagania/api.md#wym-api-liczba)                      | testy własnościowe parsera (`parse(format(n)) === n` dla dowolnego `n… _(kontrola)_ | pierwszym locale spoza `pl`/`en` zgłoszonym przez konsumenta |
-| [`wym-api-szablony`](wymagania/api.md#wym-api-szablony)                  | projekcja działa (sloty obudowy), ale **`TemplateRef` nie pada nigdzi…              | pierwszym realnym użyciu selecta (szablon opcji) oraz przy … |
-| [`wym-projekt-aplikacje`](wymagania/projekt.md#wym-projekt-aplikacje)    | `apps/docs` nie istnieje, więc bramka opisywałaby stan, który nie zac…              | pierwszym zewnętrznym użytkowniku — bez dokumentacji nie ma… |
-| [`wym-projekt-layout`](wymagania/projekt.md#wym-projekt-layout)          | wynika z `wym-projekt-aplikacje`; domknie się razem z nim                           | powstaniu `apps/docs`                                        |
-| [`wym-projekt-pliki`](wymagania/projekt.md#wym-projekt-pliki)            | kontrola układu katalogu entrypointu (skrypt w duchu `check-package.m…              | pierwszym komponencie dopisanym przez kogoś innego niż auto… |
-| [`wym-projekt-zaleznosci`](wymagania/projekt.md#wym-projekt-zaleznosci)  | kontrola listy `dependencies` / `peerDependencies` w spakowanym manif…              | pierwszej zależności dodanej odruchowo — dziś nic nie odróż… |
-| [`wym-token-dyrektywa`](wymagania/tokeny.md#wym-token-dyrektywa)         | dyrektywy nie ma, motyw ustawia się ręcznym `data-theme`                            | gdy ustawianie `data-theme` z szablonu zacznie się powtarza… |
-| [`wym-token-gestosc`](wymagania/tokeny.md#wym-token-gestosc)             | w źródłach DTCG nie ma **ani jednego** tokenu gęstości                              | po ustabilizowaniu osi wielkości. Uwaga: gęstość zejdzie po… |
-| [`wym-wydanie-wsparcie`](wymagania/wydanie.md#wym-wydanie-wsparcie)      | dokumentu nie ma. Kolekcja migracji istnieje (`wym-wydanie-ng-add`), …              | pierwszym zewnętrznym konsumencie — firma nie kupuje biblio… |
+| wymaganie                                                               | czego brakuje                                                                       | wiąże przy                                                   |
+| ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| [`wym-jakosc-jednostkowe`](wymagania/jakosc.md#wym-jakosc-jednostkowe)  | **testowanie mutacyjne** rdzenia (Stryker na `core`, `number`, `selec… _(kontrola)_ | natychmiast dla `core` — im więcej komponentów na nim stoi,… |
+| [`wym-api-animacje`](wymagania/api.md#wym-api-animacje)                 | zakaz jest dotrzymany, ale **nic go nie pilnuje** — jedyne, co obowią…              | pierwszym komponencie z wejściem/wyjściem (panel, dialog, t… |
+| [`wym-api-ikony`](wymagania/api.md#wym-api-ikony)                       | dziś każda ikona jest **wpisana w szablon** jako SVG w `currentColor`…              | drugim komponencie potrzebującym podmienialnej ikony         |
+| [`wym-api-liczba`](wymagania/api.md#wym-api-liczba)                     | testy własnościowe parsera (`parse(format(n)) === n` dla dowolnego `n… _(kontrola)_ | pierwszym locale spoza `pl`/`en` zgłoszonym przez konsumenta |
+| [`wym-api-szablony`](wymagania/api.md#wym-api-szablony)                 | projekcja działa (sloty obudowy), ale **`TemplateRef` nie pada nigdzi…              | pierwszym realnym użyciu selecta (szablon opcji) oraz przy … |
+| [`wym-projekt-aplikacje`](wymagania/projekt.md#wym-projekt-aplikacje)   | `apps/docs` nie istnieje, więc bramka opisywałaby stan, który nie zac…              | pierwszym zewnętrznym użytkowniku — bez dokumentacji nie ma… |
+| [`wym-projekt-layout`](wymagania/projekt.md#wym-projekt-layout)         | wynika z `wym-projekt-aplikacje`; domknie się razem z nim                           | powstaniu `apps/docs`                                        |
+| [`wym-projekt-pliki`](wymagania/projekt.md#wym-projekt-pliki)           | kontrola układu katalogu entrypointu (skrypt w duchu `check-package.m…              | pierwszym komponencie dopisanym przez kogoś innego niż auto… |
+| [`wym-projekt-zaleznosci`](wymagania/projekt.md#wym-projekt-zaleznosci) | kontrola listy `dependencies` / `peerDependencies` w spakowanym manif…              | pierwszej zależności dodanej odruchowo — dziś nic nie odróż… |
+| [`wym-token-dyrektywa`](wymagania/tokeny.md#wym-token-dyrektywa)        | dyrektywy nie ma, motyw ustawia się ręcznym `data-theme`                            | gdy ustawianie `data-theme` z szablonu zacznie się powtarza… |
+| [`wym-token-gestosc`](wymagania/tokeny.md#wym-token-gestosc)            | w źródłach DTCG nie ma **ani jednego** tokenu gęstości                              | po ustabilizowaniu osi wielkości. Uwaga: gęstość zejdzie po… |
+| [`wym-wydanie-wsparcie`](wymagania/wydanie.md#wym-wydanie-wsparcie)     | dokumentu nie ma. Kolekcja migracji istnieje (`wym-wydanie-ng-add`), …              | pierwszym zewnętrznym konsumencie — firma nie kupuje biblio… |
 
 ## oś
 
@@ -92,7 +91,7 @@ Kolejność bierze się z pola **Wiąże przy**, nie z numeru wymagania.
 | [`wym-jakosc-hydracja`](wymagania/jakosc.md#wym-jakosc-hydracja)         | ✅ egzekwowane | `apps/sandbox-e2e/src/hydration.spec.ts` + pomocnik `visit()` w `apps… | `hydration.spec.ts › „bramka faktycznie wykrywa błąd hydracji (kontro… |
 | [`wym-jakosc-pakiet`](wymagania/jakosc.md#wym-jakosc-pakiet)             | ✅ egzekwowane | `libs/components/check-package.mjs` (target `check-package`, w CI)     | `tools/check-package.fixtures/` — siedem spreparowanych pakietów, po … |
 | [`wym-jakosc-konsument`](wymagania/jakosc.md#wym-jakosc-konsument)       | ✅ egzekwowane | `tools/check-consumer.mjs` (target `check-consumer`, w CI) — siedem p… | `tools/check-consumer.fixtures/` — 28 spreparowanych wejść, każde odr… |
-| [`wym-jakosc-przegladarki`](wymagania/jakosc.md#wym-jakosc-przegladarki) | ⛔ luka        | brak — luka: `apps/sandbox-e2e/playwright.config.mts` ma **wyłącznie … | brak — luka: przebieg dowodzący, że test przechodzący na chromium pot… |
+| [`wym-jakosc-przegladarki`](wymagania/jakosc.md#wym-jakosc-przegladarki) | ✅ egzekwowane | `apps/sandbox-e2e/playwright.config.mts` — trzy projekty (chromium, f… | `tools/check-browsers.fixtures/` — 25 spreparowanych wejść, każde odr… |
 | [`wym-jakosc-widoki`](wymagania/jakosc.md#wym-jakosc-widoki)             | ✅ egzekwowane | `apps/sandbox-e2e/src/a11y.spec.ts`, `hydration.spec.ts` — obie iteru… | `apps/sandbox/src/app/app.spec.ts` — rejestr widoków wobec tras        |
 | [`wym-jakosc-karta`](wymagania/jakosc.md#wym-jakosc-karta)               | ✅ egzekwowane | `apps/sandbox/src/app/ui/demo.spec.ts`; `tools/check-docs.mjs` — każd… | `tools/check-docs.fixtures/` — karta z nieistniejącym identyfikatorem… |
 | [`wym-jakosc-scena`](wymagania/jakosc.md#wym-jakosc-scena)               | ✅ egzekwowane | `apps/sandbox-e2e/src/theme.spec.ts`, `apps/sandbox-e2e/src/shell.spe… | `preferences.spec.ts › „bez preferencji ciemnej :root zostaje jasny (… |
@@ -211,3 +210,4 @@ Która lekcja karmi które wymaganie. Generowane z pól **Lekcje**.
 | [`lekcja-53`](lekcje.md#lekcja-53) | — _(nie cytowana)_                                                                                                                                           |
 | [`lekcja-54`](lekcje.md#lekcja-54) | `wym-api-teksty`                                                                                                                                             |
 | [`lekcja-55`](lekcje.md#lekcja-55) | `wym-jakosc-pakiet`, `wym-jakosc-konsument`, `wym-wydanie-ng-add`                                                                                            |
+| [`lekcja-56`](lekcje.md#lekcja-56) | `wym-jakosc-przegladarki`                                                                                                                                    |

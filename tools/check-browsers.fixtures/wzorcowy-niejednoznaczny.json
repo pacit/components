@@ -1,0 +1,8 @@
+{
+  "kontrola": "silniki",
+  "regula": "wzorcowy-niejednoznaczny",
+  "opis": "Dwa silniki wzorcowe naraz. Wzorcowy jest odniesieniem punktu 6 — bez jednoznacznego odniesienia nie ma jak odróżnić wady silnika od zepsutej sondy.",
+  "dopiszSilniki": {
+    "firefox": { "device": "Desktop Firefox", "wzorcowy": true }
+  }
+}

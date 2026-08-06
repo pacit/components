@@ -51,11 +51,11 @@ Migawka z **2026-08-06**, `node tools/check-docs.mjs`:
 | miara                                 | wartość |
 | ------------------------------------- | ------: |
 | wymagań                               |      81 |
-| ✅ egzekwowane                        |      52 |
+| ✅ egzekwowane                        |      53 |
 | 🟡 częściowo (świadomie bez kontroli) |      16 |
-| ⛔ luka                               |      13 |
+| ⛔ luka                               |      12 |
 
-Wszystkie 13 luk mają niżej swojego właściciela (A, B, D, F, G). Jeśli po dopisaniu
+Wszystkie 12 luk mają niżej swojego właściciela (A, B, D, F, G). Jeśli po dopisaniu
 wymagania liczba luk rośnie, a żadne zadanie się nie zmienia — ta lista przestała być
 kompletna i to jest błąd tej listy, nie rejestru.
 
@@ -71,17 +71,16 @@ F  powierzchnia zaufania       docs, ACR, benchmarki, most Figma
 G  luki bez terminu            czekają na wyzwalacz zapisany w polu „Wiąże przy"
 ```
 
-Zostały dwie pozycje fazy A i obie wymagają zbudowania czegoś nowego poza samą bramką:
-**A10** (macierz przeglądarek), **A13** (przebieg mutacyjny).
+Została jedna pozycja fazy A: **A13** (przebieg mutacyjny).
 F1 jest odblokowane — A3 i A4 dały mu oba inwentarze do wyrenderowania.
 
 ---
 
 ## A. Faza 0 — bramki „natychmiast"
 
-Zostały dwa zadania i domykają **2 z 13 luk**. Każde wymaga zbudowania czegoś nowego
-poza samą bramką — macierzy przeglądarek, przebiegu mutacyjnego — bo wszystkie bramki
-dające się napisać na miejscu są już za nami.
+Zostało jedno zadanie i domyka **1 z 12 luk**. Wymaga zbudowania czegoś nowego poza samą
+bramką — przebiegu mutacyjnego — bo wszystkie bramki dające się napisać na miejscu są już
+za nami.
 
 - [x] **A1 — kontrola odniesienia dla `check-package`** _(2026-08-04)_
   - domknęło: `wym-jakosc-pakiet`, `wym-projekt-pakiet`, `wym-projekt-entrypointy`,
@@ -417,14 +416,65 @@ dające się napisać na miejscu są już za nami.
     zmierzone, nie założone: `document` w **zasięgu modułu** biblioteki nie daje 500,
     tylko wywraca **build** — builder ładuje bundle serwera, żeby wyprowadzić trasy
 
-- [ ] **A10 — macierz przeglądarek**
-  - domyka: `wym-jakosc-przegladarki`
-  - co: webkit + firefox **funkcjonalnie** w `apps/sandbox-e2e/playwright.config.mts`
-    (dziś wyłącznie chromium, reszta zakomentowana); zrzuty wizualne zostają na
-    linux/chromium — rasteryzacja i tak by je rozjechała
-  - kontrola: przebieg dowodzący, że test przechodzący na chromium potrafi nie przejść na
-    webkicie
-  - koszt: ~0,5 dnia + czas CI · _notatki:_ —
+- [x] **A10 — macierz przeglądarek** _(2026-08-06)_
+  - domknęło: `wym-jakosc-przegladarki`
+  - zrobione: trzy projekty w `apps/sandbox-e2e/playwright.config.mts` (chromium,
+    firefox, webkit) — **458 testów w przebiegu, 5,5 min** — plus
+    `tools/check-browsers.mjs` (target `check-browsers` w projekcie roota, w CI) —
+    sześć punktów, 26 reguł, ~7 s. Do tego rejestr wyłączeń
+    `apps/sandbox-e2e/przegladarki.policy.json` i trzy silniki w kroku instalacji CI,
+    w **obu** gałęziach (pudło i trafienie w cache)
+  - **plan mówił „dopisać webkit i firefox" i to było dobre w zakresie, ale całkiem
+    ślepe na to, że ta obietnica nie ma żadnego objawu.** Playwright kończy się zerem
+    po trzech projektach dokładnie tak samo jak po jednym — i tak samo po **zerze**
+    zebranych testów. Cofa się to czterema ruchami, z których każdy wygląda w review
+    jak sprzątanie: projekt wykreślony z `projects`, plik dopisany do `testIgnore`
+    „bo miga", `--project=chromium` w poleceniu targetu, silnik zdjęty z kroku
+    instalacji. Stąd bramka: pyta `playwright test --list --reporter=json`, co silniki
+    NAPRAWDĘ zbierają, i porównuje to z polityką — ten sam ruch co „nie czytaj
+    `include`, uruchom kompilator" z A7
+  - **firefox przeszedł komplet 146 testów funkcjonalnych za pierwszym razem.**
+    Webkit — 144 ze 146, i te dwa są całym znaleziskiem tego zadania: melduje
+    `matchMedia('(forced-colors: active)').matches === true` i **nie podmienia kolorów
+    autora**. Sonda `<div style="background: rgb(1, 2, 3)">` wychodzi z niego
+    niezmieniona, a `forced-color-adjust` nie jest w nim nawet znaną właściwością.
+    Cztery z sześciu testów `forced-colors.spec.ts` przechodzą tam, mierząc kolory
+    z tokenów ([`lekcja-56`](lekcje.md#lekcja-56))
+  - przy okazji, i tylko dlatego, że webkit nie zamalowuje wyniku: `:host([disabled])`
+    w bloku forced-colors ma (0,2,0), a reguła bazowa
+    `:host([disabled]:not([data-pct-loading]))` — (0,3,0). Media query nie dokłada
+    specyfiki, więc `color: GrayText` przegrywa z tokenem. W chromium i firefoksie
+    tego nie widać **nigdy**, bo przeglądarka i tak zamaluje. Deklaracja jest dziś
+    martwa bez objawu — przeniesione do **C8**
+  - wyłączenia są dwa i **różnego rodzaju**: `visual.spec.ts` poza chromium to `zapis`
+    (26 z 26 wzorców różni się na obu pozostałych silnikach — zmierzone),
+    a `forced-colors.spec.ts` poza webkitem to `pomiar`. Punkt 6 powtarza sondę przy
+    każdym przebiegu, więc dzień, w którym webkit to zaimplementuje, jest dniem,
+    w którym bramka **każe wyłączenie zdjąć**. Mianownikiem tego punktu jest reguła
+    `fakt-bez-odniesienia`: fakt niezachodzący u nikogo nie jest wadą silników, tylko
+    zepsutą sondą — i bez niej uzasadniałby każde wyłączenie w nieskończoność
+  - kontrola: `tools/check-browsers.fixtures/` — dwadzieścia pięć wejść, każde
+    odrzucane na swojej **regule**; plus dziewięć przebiegów na prawdziwym repozytorium
+    (webkit wykreślony z `projects` → `silnik-nieobecny`; `select.spec.ts` w `testIgnore`
+    firefoksa → `luka-bez-wpisu`; wyłączenie poszerzone na firefoksa → `fakt-nieaktualny`;
+    firefox zdjęty z instalacji w CI → `ci-bez-silnika`; `--project=chromium` w targecie
+    → `e2e-zawezony`; wyłączenie usunięte z polityki → `luka-bez-wpisu`; `testIgnore`
+    zdjęty przy zostawionym wpisie → `wpis-martwy`; nowy spec wyłączony wszystkim naraz
+    → `plik-poza-pomiarem`; niedomknięty nawias w konfiguracji → `pomiar-nieczytelny`)
+  - kontrola tej kontroli: rozbrojone po kolei **wszystkie 26 reguł** — siedemnaście daje
+    „PRZESZŁO", osiem przestawia przypadek na regułę sąsiednią i widać to **tylko dzięki
+    polu `regula`** (czwarte potwierdzenie wniosku z A12). Dwudziesta szósta
+    (`pomiar-nieczytelny`) rozbrojona **nie daje żadnego objawu** i to jest o niej cała
+    prawda: należy do warstwy odczytu, więc w zdrowym repozytorium ta ścieżka nie jest
+    wykonywana. Dowodzi jej wyłącznie przebieg z zepsutą konfiguracją
+  - koszt: ~1 dzień (plan zakładał 0,5 + czas CI) · _notatki:_ bramka zapaliła na sobie
+    przy pierwszym uruchomieniu — punkt 5 policzył **cztery** kroki instalacji tam, gdzie
+    są dwa, bo ten workflow tłumaczy każdy krok akapitem prozy i zdanie o
+    `playwright install` wygląda dla wzorca jak wywołanie `playwright install`. Osobno:
+    webkit nie startuje tu bez czterech bibliotek systemowych (`libevent`, `libavif`,
+    `libmanette`, `libwoff1` plus dwie przechodnie), których `playwright install` nie
+    dociąga bez roota — w CI robi to `--with-deps`, lokalnie trzeba
+    `sudo npx playwright install-deps webkit`
 
 - [x] **A11 — bramka tekstów** _(2026-08-06)_
   - domknęło: `wym-api-teksty`, a razem z tym **C5** — reaktywność `PCT_TEXTS` jest od
@@ -661,6 +711,24 @@ między większymi zadaniami. Pełny kontekst: [`review.md`](review.md) §5.
   - koszt: minuty na zmianę (`options` → `group-options`, nikt jej nie używa
     w testach ani w sandboxie), decyzja jest całym zadaniem · _notatki:_ —
 
+- [ ] **C8 — reguły forced-colors przegrywają specyficznością z regułami bazowymi**
+      _(znalezione 2026-08-06 przy A10)_
+  - `libs/components/button/src/button.scss` — `:host([disabled])` w bloku
+    `@media (forced-colors: active)` ma specyficzność (0,2,0), a reguła bazowa
+    `:host([disabled]:not([data-pct-loading]))` — (0,3,0). Media query nie dokłada
+    specyficzności, więc `color: GrayText` **nie wygrywa**. Do sprawdzenia w pozostałych
+    pięciu arkuszach z blokiem forced-colors (`checkbox`, `radio`, `select`, `field`,
+    `text`)
+  - dziś **bez objawu**: chromium i firefox zamalowują wynik paletą użytkownika
+    niezależnie od tego, która reguła wygrała, więc pomiar wychodzi poprawny. Widać to
+    wyłącznie na webkicie, który podmiany nie robi ([`lekcja-56`](lekcje.md#lekcja-56)),
+    i będzie widać wszędzie od dnia, w którym któraś część biblioteki dostanie
+    `forced-color-adjust: none`
+  - to jest deklaracja bez pokrycia, czyli ta sama rodzina co martwe `--pct-on-danger`
+    z A12: kod, który wygląda na obsługę przypadku, i go nie obsługuje
+  - koszt: ~0,5 dnia razem z pomiarem, czy da się to zapisać jako regułę
+    `check-styles` · _notatki:_ —
+
 - [x] **C5 — `PCT_TEXTS` nie przeżyje zmiany języka w runtime** _(2026-08-06, razem z A11)_
   - rozstrzygnięte jako [0014](decyzje/0014-teksty-jako-sygnal.md): token niesie
     `Signal<PctTexts>`, a napis czyta się **przy renderowaniu**. `providePctTexts`
@@ -768,6 +836,77 @@ Czekają na wyzwalacz zapisany w polu **Wiąże przy**. Nie są zapomniane — s
 ## Dziennik
 
 Wpis per sesja: co ruszyło, czym się skończyło, co jest następne. Najnowsze na górze.
+
+### 2026-08-06 — A10: media query zapaliło się w silniku, który tego nie umie
+
+Zrobione **A10**. Luki: 13 → 12, egzekwowane: 52 → 53. Faza A ma za sobą dwanaście
+z trzynastu zadań; zostało jedno.
+
+Zadanie było zakresowo dokładnie tym, co zapisał plan — webkit i firefox funkcjonalnie,
+zrzuty na chromium — i pomyliło się w jednym: w założeniu, że dopisanie trzech projektów
+jest **wykonaniem** tej obietnicy. Jest jej deklaracją.
+
+- **Ta obietnica nie ma objawu.** Playwright kończy się zerem po trzech projektach
+  dokładnie tak samo jak po jednym, i tak samo po **zerze** zebranych testów. Cofa się
+  ją czterema ruchami, z których każdy wygląda w review jak sprzątanie: projekt
+  wykreślony z `projects`, plik dopisany do `testIgnore` „bo miga", `--project=chromium`
+  w poleceniu targetu, silnik zdjęty z kroku instalacji w CI. Trzeci z nich jest
+  niewidoczny w `playwright.config.mts`, czwarty — w całym katalogu `apps/`. Stąd bramka
+  pytająca `playwright test --list --reporter=json`, co silniki NAPRAWDĘ zbierają, i
+  porównująca to z polityką: ten sam ruch co „nie czytaj `include`, uruchom kompilator"
+  z A7, bo wzorzec `testIgnore`, który w nic nie trafia, **nie jest dla Playwrighta
+  błędem** — jest projektem zbierającym komplet.
+- **Firefox przeszedł 146 z 146 testów funkcjonalnych za pierwszym razem, webkit 144.**
+  I te dwa są całym znaleziskiem: Playwrightowy webkit melduje
+  `matchMedia('(forced-colors: active)').matches === true` i **nie podmienia kolorów
+  autora**. Sonda `<div style="background: rgb(1, 2, 3)">` wychodzi z niego niezmieniona,
+  a `forced-color-adjust` nie jest w nim nawet znaną właściwością. Cztery z sześciu
+  testów `forced-colors.spec.ts` przechodzą tam, mierząc kolory z tokenów zamiast
+  z palety — czyli plik pytałby o zachowanie, którego ten silnik nie ma, i pytałby po
+  cichu ([`lekcja-56`](lekcje.md#lekcja-56)).
+- **Wyłączenie oparte na fakcie o przeglądarce musi ten fakt mierzyć.** Zdanie „webkit
+  tego nie umie" jest zdaniem o WERSJI PACZKI, nie o tym repozytorium — przestanie
+  obowiązywać przy zmianie, która nie ruszy tu ani jednego pliku. Rejestr wyłączeń ma
+  więc dwa rodzaje wpisów: `zapis` (zrzuty wizualne poza chromium — decyzja spisana raz)
+  i `pomiar` (forced-colors poza webkitem — sonda przy każdym przebiegu). Mianownikiem
+  jest przy tym reguła `fakt-bez-odniesienia`: fakt niezachodzący u ŻADNEGO silnika nie
+  jest wadą silników, tylko zepsutą sondą, a sonda zwracająca fałsz zawsze uzasadniałaby
+  każde oparte na sobie wyłączenie w nieskończoność.
+- **Silnik, który nie zamalowuje wyniku, pokazuje wadę, której dwa pozostałe nie potrafią
+  pokazać.** `:host([disabled])` w bloku forced-colors ma specyficzność (0,2,0), a reguła
+  bazowa `:host([disabled]:not([data-pct-loading]))` — (0,3,0); media query nie dokłada
+  specyficzności, więc `color: GrayText` przegrywa z tokenem. W chromium i firefoksie
+  nie widać tego nigdy, bo przeglądarka zamaluje wynik paletą niezależnie od tego, która
+  reguła wygrała. Deklaracja w bibliotece jest martwa — dziś bez objawu, z objawem od
+  pierwszego `forced-color-adjust: none`. Przeniesione do **C8**.
+
+Sprawdzone przebiegiem, nie rozumowaniem: bramka zapala na dziewięciu sposobach zepsucia
+repozytorium (webkit wykreślony z `projects`, plik w `testIgnore` firefoksa, wyłączenie
+poszerzone na silnik przechodzący sondę, silnik zdjęty z instalacji w CI,
+`--project=chromium` w targecie, wyłączenie usunięte z polityki, `testIgnore` zdjęty przy
+zostawionym wpisie, nowy spec wyłączony wszystkim naraz, niedomknięty nawias
+w konfiguracji) — za każdym razem na innej regule — i na rozbrojeniu **wszystkich 26
+reguł**, z czego osiem przestawia przypadek na regułę sąsiednią i widać to **tylko dzięki
+polu `regula`**. To czwarte potwierdzenie wniosku z A12.
+
+Dwudziesta szósta reguła (`pomiar-nieczytelny`) rozbrojona **nie daje żadnego objawu** —
+bramka zostaje zielona, bo w zdrowym repozytorium ta ścieżka nie jest wykonywana. Dowodzi
+jej wyłącznie przebieg z zepsutą konfiguracją, i to jest o niej cała prawda; wpisana tak
+w README fixtures, żeby nie czytało się jej jako pokrytej.
+
+Wpadka własna jedna i nowa w kształcie: bramka zapaliła **na sobie** przy pierwszym
+uruchomieniu. Punkt 5 policzył cztery kroki instalacji przeglądarek tam, gdzie są dwa —
+ten workflow tłumaczy każdy swój krok akapitem prozy, więc zdanie o `playwright install`
+wygląda dla wzorca dokładnie jak wywołanie `playwright install`. Skaner tekstu czytający
+plik z komentarzami musi te komentarze obciąć, zanim zacznie szukać; wcześniejsze bramki
+nie miały tego problemu, bo czytały JSON albo wyjście parsera.
+
+Osobno, poza kodem: webkit nie startuje na tej maszynie bez czterech bibliotek
+systemowych (plus dwóch przechodnich), których `playwright install` nie dociąga bez
+roota. W CI robi to `--with-deps`; lokalnie potrzebne jest
+`sudo npx playwright install-deps webkit`.
+
+Następne: **A13** (przebieg mutacyjny, 1–2 dni) — ostatnia pozycja fazy A.
 
 ### 2026-08-06 — A9: pierwsza komenda konsumenta wywracała się przy zielonych bramkach
 

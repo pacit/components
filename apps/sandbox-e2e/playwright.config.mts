@@ -90,30 +90,64 @@ export default defineConfig({
     reuseExistingServer: true,
     cwd: workspaceRoot,
   },
+  /*
+   * Macierz przeglądarek (wym-jakosc-przegladarki).
+   *
+   * Trzy silniki, nie trzy marki: blink, gecko, webkit. `Desktop Edge`
+   * i `Google Chrome` to ten sam blink w innym opakowaniu — czwarty projekt
+   * kosztowałby czas CI i nie odpowiadał na żadne nowe pytanie.
+   *
+   * Ta sama lista stoi drugi raz w `przegladarki.policy.json` i to jest
+   * celowe powtórzenie, nie niedopatrzenie. `tools/check-browsers.mjs` nie
+   * czyta tego pliku — pyta Playwrighta, co NAPRAWDĘ zebrał — i porównuje
+   * wynik z polityką. Silnik usunięty stąd rozjeżdża się wtedy z polityką
+   * i zapala; żeby to ucichło, trzeba wykreślić go w dwóch miejscach naraz,
+   * czyli zostawić w diffie zdanie, które recenzent widzi.
+   *
+   * Wzorce `testIgnore` są tu pisane z gwiazdkami katalogu, choć zmierzone
+   * jest, że sama nazwa pliku działa tak samo — także dla speca w podkatalogu.
+   * Powód formy jest inny: wzorzec, który w nic nie trafia, NIE jest błędem
+   * dla Playwrighta, tylko projektem zbierającym komplet. Literówkę w tej
+   * liście łapie więc dopiero `check-browsers` (punkt 3), porównując zebrane
+   * pliki z polityką — i to jest jedyna rzecz, która ją tu łapie.
+   */
   projects: [
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
     },
-
-    // Uncomment for mobile browsers support
-    /* {
-      name: 'Mobile Chrome',
-      use: { ...devices['Pixel 5'] },
+    {
+      /*
+       * Zrzuty wizualne zostają na chromium: wzorce z `__screenshots__/linux/`
+       * powstały jego rasteryzacją i każdy inny silnik rozjeżdża je z powodu
+       * maszyny, a nie kodu (zmierzone: 26 z 26 wzorców różni się na firefoksie).
+       * Trzeci zestaw wzorców per silnik to trzykrotny koszt uwagi przy każdej
+       * świadomej zmianie wyglądu i zero nowych pytań — regresję układu łapią
+       * testy geometrii, które biegną tutaj w komplecie.
+       */
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
+      testIgnore: ['**/visual.spec.ts'],
     },
     {
-      name: 'Mobile Safari',
-      use: { ...devices['iPhone 12'] },
-    }, */
-
-    // Uncomment for branded browsers
-    /* {
-      name: 'Microsoft Edge',
-      use: { ...devices['Desktop Edge'], channel: 'msedge' },
+      /*
+       * Do wzorców dochodzi `forced-colors.spec.ts` — i to jest wyłączenie
+       * z POMIARU, nie z wygody. Playwrightowy webkit melduje
+       * `matchMedia('(forced-colors: active)').matches === true`, a kolorów
+       * autora nie podmienia: sonda z tłem `rgb(1, 2, 3)` wychodzi z niego
+       * niezmieniona, podczas gdy chromium i firefox oddają biel z palety
+       * użytkownika. `forced-color-adjust` nie jest w nim nawet znaną
+       * właściwością. Cały ten plik pytałby więc o zachowanie, którego ten
+       * silnik nie ma — a cztery z sześciu testów przechodziłyby, mierząc
+       * kolory z tokenów.
+       *
+       * Fakt jest pilnowany, a nie zapisany: punkt 6 `check-browsers`
+       * powtarza tę sondę przy każdym przebiegu, więc dzień, w którym webkit
+       * to zaimplementuje, jest dniem, w którym bramka każe wyłączenie zdjąć.
+       */
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'] },
+      testIgnore: ['**/visual.spec.ts', '**/forced-colors.spec.ts'],
     },
-    {
-      name: 'Google Chrome',
-      use: { ...devices['Desktop Chrome'], channel: 'chrome' },
-    } */
   ],
 });

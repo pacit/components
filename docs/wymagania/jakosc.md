@@ -270,12 +270,38 @@ z palca) — każdy na innej regule
 wizualne zostają na jednej platformie (linux/chromium) — rasteryzacja i tak by je
 rozjechała.
 
-**Bramka:** brak — luka: `apps/sandbox-e2e/playwright.config.mts` ma **wyłącznie
-chromium**, reszta zakomentowana
-**Kontrola:** brak — luka: przebieg dowodzący, że test przechodzący na chromium potrafi nie przejść na webkicie
-**Wiąże przy:** natychmiast dla biblioteki chwalącej się a11y — Safari ma najwięcej wad
-CSS (`:has()`, `inert`, `dialog`, `field-sizing`), a `forced-colors` testujemy wyłącznie
-emulacją
+**Bramka:** `apps/sandbox-e2e/playwright.config.mts` — trzy projekty (chromium, firefox,
+webkit), 458 testów w przebiegu; oraz `tools/check-browsers.mjs` (target `check-browsers`
+w projekcie roota, w CI) — sześć punktów, 26 reguł. Sam przebieg e2e jest na własną
+macierz ślepy: Playwright kończy się zerem po trzech projektach dokładnie tak samo jak
+po jednym i tak samo po **zerze** zebranych testów. Bramka pyta więc `playwright test
+--list --reporter=json`, co silniki NAPRAWDĘ zbierają, i porównuje to z polityką
+`apps/sandbox-e2e/przegladarki.policy.json`: każdy plik biegnie na każdym silniku, chyba
+że ma tam wpis z powodem. Punkt 5 czyta polecenie targetu `e2e` z grafu Nx i kroki
+instalacji z `.github/workflows/ci.yml` — `--project=chromium` w poleceniu jest jedynym
+zawężeniem niewidocznym w konfiguracji Playwrighta
+**Kontrola:** `tools/check-browsers.fixtures/` — 25 spreparowanych wejść, każde odrzucane
+na swojej **regule**; plus dziewięć przebiegów na prawdziwym repozytorium (webkit
+wykreślony z `projects`; plik dopisany do `testIgnore` firefoksa; wyłączenie poszerzone
+na silnik, który sondę przechodzi; silnik zdjęty z kroku instalacji w CI;
+`--project=chromium` w targecie; wyłączenie usunięte z polityki przy zostawionym
+`testIgnore`; `testIgnore` zdjęty przy zostawionym wpisie; nowy spec wyłączony wszystkim
+naraz; niedomknięty nawias w konfiguracji) — każdy na innej regule
+**Lekcje:** [`lekcja-56`](../lekcje.md#lekcja-56)
+
+> Wyłączenia są dwa i są **różnego rodzaju**. `visual.spec.ts` poza chromium to `zapis`
+> — decyzja spisana raz: wzorce z `__screenshots__/linux/` powstały rasteryzacją chromium,
+> więc na każdym innym silniku różni się 26 z 26 (zmierzone). `forced-colors.spec.ts`
+> poza webkitem to `pomiar`: ten silnik melduje `forced-colors: active` i **nie podmienia
+> kolorów autora**, więc cztery z sześciu testów przechodzą tam, mierząc kolory z tokenów
+> ([`lekcja-56`](../lekcje.md#lekcja-56)). Punkt 6 powtarza tę sondę przy każdym przebiegu
+> — dzień, w którym webkit to zaimplementuje, jest dniem, w którym bramka **każe
+> wyłączenie zdjąć**, zamiast dnia, w którym nikt nie zauważa, że plik nie biegnie tam
+> już bez powodu.
+
+> Reguła `fakt-bez-odniesienia` jest mianownikiem punktu 6: fakt, który nie zachodzi
+> u **żadnego** silnika, nie jest wadą silników, tylko zepsutą sondą — a sonda zwracająca
+> fałsz zawsze uzasadniałaby każde oparte na sobie wyłączenie w nieskończoność.
 
 ---
 

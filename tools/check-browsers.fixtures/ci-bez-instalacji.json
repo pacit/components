@@ -1,0 +1,6 @@
+{
+  "kontrola": "ci",
+  "regula": "ci-bez-instalacji",
+  "opis": "Workflow nie instaluje żadnej przeglądarki. Albo przebieg pada, albo — gorzej — ktoś to już naprawił, zawężając macierz do tego, co akurat jest w obrazie runnera.",
+  "ci": { "instalacje": [] }
+}

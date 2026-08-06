@@ -1,0 +1,6 @@
+{
+  "kontrola": "rejestr",
+  "regula": "wpis-martwy",
+  "opis": "Plik jednak biegnie na wyłączonym silniku. Wyłączenie bez skutku zostaje po problemie, którego już nie ma, i uczy czytać rejestr jako opis dzisiejszego stanu.",
+  "dopiszZebrane": { "webkit": ["forced-colors.spec.ts"] }
+}

@@ -1,0 +1,6 @@
+{
+  "kontrola": "ci",
+  "regula": "ci-bez-silnika",
+  "opis": "Krok instalacji przy trafieniu w cache wymienia sam chromium. Kroki są dwa i muszą wymieniać to samo: silnik zainstalowany wyłącznie przy pudle znika przy pierwszym trafieniu w cache.",
+  "ci": { "instalacje": [["chromium", "firefox", "webkit"], ["chromium"]] }
+}

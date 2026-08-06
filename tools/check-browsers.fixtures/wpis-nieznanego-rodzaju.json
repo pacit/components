@@ -1,0 +1,6 @@
+{
+  "kontrola": "rejestr",
+  "regula": "wpis-nieznanego-rodzaju",
+  "opis": "Rodzaj spoza słownika. Rodzaj rozstrzyga, czy punkt 6 ma wpis SPRAWDZIĆ sondą, czy przyjąć jako spisaną decyzję — wpis nierozpoznanego rodzaju wypadłby z tego pytania po cichu.",
+  "podmienWylaczenie": { "visual.spec.ts": { "rodzaj": "tymczasowo" } }
+}

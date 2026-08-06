@@ -34,9 +34,15 @@ jobs:
       # których tamten nie zdążył sprawdzić.
       - uses: nrwl/nx-set-shas@v4
 
-      # Przeglądarka Playwrighta waży kilkaset MB i nie zmienia się między
+      # Przeglądarki Playwrighta ważą kilkaset MB i nie zmieniają się między
       # commitami — klucz to jego wersja, więc cache unieważnia się dokładnie
       # przy podbiciu paczki, a nie przy każdej zmianie package-lock.json.
+      # Silniki są trzy (wym-jakosc-przegladarki) i muszą być wymienione w OBU
+      # krokach niżej: ten przy trafieniu w cache dociąga same biblioteki
+      # systemowe, więc silnik wpisany wyłącznie przy pudle znika z runnera
+      # przy pierwszym trafieniu — i to bez ani jednego czerwonego kroku, bo
+      # `playwright install-deps chromium` kończy się zerem także wtedy, gdy
+      # webkita nikt nie zainstalował. Pilnuje tego `check-browsers` (punkt 5).
       - name: Ustal wersję Playwrighta
         id: playwright
         run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
@@ -51,10 +57,10 @@ jobs:
       # przeglądarki, więc cache ich nie obejmuje. Samą przeglądarkę tylko
       # przy pudle.
       - if: steps.playwright-cache.outputs.cache-hit != 'true'
-        run: npx playwright install --with-deps chromium
+        run: npx playwright install --with-deps chromium firefox webkit
 
       - if: steps.playwright-cache.outputs.cache-hit == 'true'
-        run: npx playwright install-deps chromium
+        run: npx playwright install-deps chromium firefox webkit
 
       - run: npx nx format:check
 
@@ -142,4 +148,16 @@ jobs:
       # `lekcja-36` opisuje jako wadę cichą do końca: przycisk z kompletem klas i części,
       # i bez ani jednego piksela wyglądu, bo nierozwiązany `var()` nie jest błędem, tylko
       # powrotem do wartości początkowej.
-      - run: npx nx affected -t lint test vite:test build typecheck check-package check-coverage check-zoneless check-typecheck check-styles check-texts check-tokens check-parts check-bundle check-consumer check-docs e2e
+      # `check-browsers` pilnuje MACIERZY, na której biegnie `e2e` z tej samej listy.
+      # Sam `e2e` jest tu ślepy na to, ilu silników dotyczy: Playwright kończy się zerem
+      # tak samo po trzech projektach, jak po jednym — i tak samo po zerze zebranych
+      # testów. Cofnięcie macierzy nie ma więc żadnego objawu: projekt wykreślony
+      # z `projects`, plik dopisany do `testIgnore` „bo miga", `--project=chromium`
+      # w poleceniu targetu albo silnik zdjęty z kroku instalacji wyżej — każda z tych
+      # czterech rzeczy skraca przebieg i zostawia go zielonym. Bramka pyta więc
+      # Playwrighta, co NAPRAWDĘ zebrał, i porównuje to z polityką
+      # (`apps/sandbox-e2e/przegladarki.policy.json`) — a wyłączenia rodzaju `pomiar`
+      # potwierdza sondą w żywej przeglądarce, żeby powód wyłączenia nie przeżył faktu,
+      # na którym stoi: dziś webkit melduje `forced-colors: active` i nie podmienia
+      # kolorów autora, a to jest zdanie o WERSJI paczki, nie o tym repozytorium.
+      - run: npx nx affected -t lint test vite:test build typecheck check-package check-coverage check-zoneless check-typecheck check-styles check-texts check-tokens check-parts check-bundle check-consumer check-browsers check-docs e2e

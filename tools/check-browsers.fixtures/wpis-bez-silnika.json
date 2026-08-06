@@ -1,0 +1,13 @@
+{
+  "kontrola": "rejestr",
+  "regula": "wpis-bez-silnika",
+  "opis": "Wyłączenie wymienia silnik spoza polityki. Punkt 3 szuka wpisu po parze plik × silnik, więc taki wpis nie zwalnia z niczego i jednocześnie wygląda w rejestrze na uzasadnienie.",
+  "dopiszWylaczenia": [
+    {
+      "plik": "button.spec.ts",
+      "silniki": ["Mobile Safari"],
+      "rodzaj": "zapis",
+      "powod": "Powód spreparowany na potrzeby kontroli odniesienia — dostatecznie długi, żeby minąć próg treści i nie zapalić sąsiedniej reguły."
+    }
+  ]
+}

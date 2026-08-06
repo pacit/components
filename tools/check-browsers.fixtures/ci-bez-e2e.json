@@ -1,0 +1,6 @@
+{
+  "kontrola": "ci",
+  "regula": "ci-bez-e2e",
+  "opis": "W CI nie ma uruchomienia targetu `e2e`. To jest mianownik całej bramki: macierz opisuje przebieg, którego nie ma, a wszystkie punkty wyżej przechodzą, bo konfiguracja jest w porządku.",
+  "ci": { "uruchamiaE2E": false }
+}

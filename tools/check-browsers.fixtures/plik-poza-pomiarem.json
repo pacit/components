@@ -1,0 +1,6 @@
+{
+  "kontrola": "pokrycie",
+  "regula": "plik-poza-pomiarem",
+  "opis": "Plik specyfikacji jest w indeksie gita i nie zbiera go żaden silnik. Playwright nie zgłasza tego jako błędu — po prostu nie ma czego uruchomić, więc przebieg wychodzi zielony.",
+  "dopiszPliki": ["dialog.spec.ts"]
+}
