@@ -212,3 +212,4 @@ Która lekcja karmi które wymaganie. Generowane z pól **Lekcje**.
 | [`lekcja-56`](lekcje.md#lekcja-56) | `wym-jakosc-przegladarki`                                                                                                                                    |
 | [`lekcja-57`](lekcje.md#lekcja-57) | `wym-jakosc-jednostkowe`                                                                                                                                     |
 | [`lekcja-58`](lekcje.md#lekcja-58) | `wym-jakosc-jednostkowe`                                                                                                                                     |
+| [`lekcja-59`](lekcje.md#lekcja-59) | — _(nie cytowana)_                                                                                                                                           |

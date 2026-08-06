@@ -647,7 +647,11 @@ z kontrolą odniesienia. Nic tu już nie czeka.
     `pomiar-nieczytelny` dało `TypeError` zamiast komunikatu — **ta sama wada co w A3,
     A4, A7, A8, A9, A11 i A12, ósmy raz**; tym razem znaleziona przez kontrolę tej
     kontroli, zanim bramka trafiła do CI. Osobno zmierzone: przebieg trwa ~6 min na
-    ośmiu rdzeniach i jest w całości zdominowany przez 554 uruchomienia zestawu testów
+    ośmiu rdzeniach i jest w całości zdominowany przez 554 uruchomienia zestawu testów.
+    Osobno, znalezione po wpięciu do CI: target był **flaky pod zrównolegleniem** —
+    Stryker kopiuje drzewo projektu do piaskownicy i wywracał się na tymczasowym
+    tsconfigu, który kasował mu równolegle biegnący `build` ([`lekcja-59`](lekcje.md#lekcja-59)).
+    Lek: `ignorePatterns` w `stryker.config.json` — 707 kopiowanych plików zamiast 3907
 
 ---
 
@@ -948,6 +952,13 @@ jest wygodą, tylko warunkiem uruchomienia.** Bez niego dry run wywraca się na
 `output()` jest czytany statycznie przez ngtsc, a zmutowany przestaje być literałem, więc
 cały plik wraca do JIT-a. Zwęża to mianownik o 16 mutantów, więc stoi w polityce razem
 z powodem, a punkt 5 pilnuje, żeby żaden inny powód zignorowania się nie pojawił.
+
+Znalezione już po wpięciu do CI i warte zapisania osobno: **target był flaky pod
+zrównolegleniem**, a pierwszym podejrzanym był limit czasu mutanta — hipoteza wygodna,
+pasująca do objawu i fałszywa. Zapisany przebieg pokazał `ENOENT ... copyfile` na
+tymczasowym tsconfigu ng-packagra: Stryker kopiuje drzewo projektu do piaskownicy,
+chodząc po nim sam, a nie po indeksie gita (3907 plików wobec 707 znanych gitowi), więc
+każdy równoległy pisarz w `tmp/` jest dla niego wyścigiem ([`lekcja-59`](lekcje.md#lekcja-59)).
 
 Wpadka własna jedna i znajoma: rozbrojenie reguły `pomiar-nieczytelny` dało `TypeError`
 zamiast komunikatu — **ósmy raz ta sama wada** (A3, A4, A7, A8, A9, A11, A12). Tym razem
