@@ -1,0 +1,7 @@
+{
+  "punkt": 5,
+  "kontrola": "build",
+  "regula": "skorka-nieobecna",
+  "opis": "Arkusz aplikacji nie ma ani jednej deklaracji --pct-*. Stan z lekcja-36 przeniesiony o jedno piętro: nie pakiet jest bez skórki, tylko build konsumenta.",
+  "tokenyWCss": 0
+}

@@ -67,7 +67,16 @@ npx nx vite:test sandbox         # testy jednostkowe aplikacji (uwaga: inny targ
 npx nx e2e sandbox-e2e           # e2e + audyt a11y axe-core (wymaga: npx playwright install chromium)
 npx nx build tokens              # bramka kontrastu (policy WCAG) — błędy blokują, ostrzeżenia informują
 npx nx check-package components  # bramka pakietu — czy dist wozi skórkę i domyka użyte tokeny
+npx nx check-consumer components # bramka konsumenta — pakiet z rejestru w prawdziwej aplikacji
 ```
+
+`check-consumer` jest tym samym pytaniem co `check-package`, zadanym po drugiej stronie
+`npm publish`: pakuje `dist`, publikuje do lokalnego rejestru (Verdaccio), instaluje
+**po nazwie** do świeżej aplikacji, uruchamia `ng add`, buduje ją z SSR i sprawdza
+w przeglądarce, że przycisk jest pomalowany swoim tokenem. Bramka statyczna pyta, czy plik
+**jest**; ta — czy **działa**. Różnica nie jest teoretyczna: `ng add @pacit/components`
+wywracało się u konsumenta na `exports is not defined in ES module scope` przy zielonym
+`check-package`.
 
 E2E obejmuje audyt axe-core każdego widoku, bramkę błędów hydracji SSR, preferencje systemowe
 (tryb ciemny / redukcja ruchu / wysoki kontrast) oraz **testy wizualne**. Wzorce zrzutów leżą

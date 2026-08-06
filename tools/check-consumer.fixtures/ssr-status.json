@@ -1,0 +1,7 @@
+{
+  "punkt": 6,
+  "kontrola": "ssr",
+  "regula": "status",
+  "opis": "Serwer aplikacji odpowiedział błędem. Tu ląduje wywrotka renderowania po stronie serwera — biblioteka sięgająca po document przy konstrukcji.",
+  "statusSsr": 500
+}

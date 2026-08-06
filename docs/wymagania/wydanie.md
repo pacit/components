@@ -40,15 +40,24 @@ wygląda na zepsutą. Kolekcja migracji `ng update` jest w pakiecie **od pierwsz
 wydania**, choć pusta.
 
 **Bramka:** `libs/components/check-package.mjs` (punkt 5) — kolekcje są w pakiecie,
-a ich fabryki wskazują na **skompilowane** pliki, nie na TS sprzed builda
+a ich fabryki wskazują na **skompilowane** pliki, nie na TS sprzed builda. Do tego
+`tools/check-consumer.mjs` (punkt 4) — schematic z **zainstalowanego** pakietu daje się
+uruchomić prawdziwym Angular CLI i faktycznie dopina skórkę do konfiguracji builda
 **Kontrola:** `tools/check-package.fixtures/brak-schematica/` — pakiet, w którym kolekcja
 wskazuje fabrykę bez skompilowanego pliku (czyli zbudowany bez kroku kompilującego
 schematics), musi zapalić punkt 5. Sam wpis w manifeście niczego nie gwarantuje — przy
-braku pliku `ng add` wywala się u konsumenta na „Collection not found"
+braku pliku `ng add` wywala się u konsumenta na „Collection not found". Do tego
+`tools/check-consumer.fixtures/ng-add-padl.json` i przebieg na repozytorium ze zdjętą
+granicą CommonJS
+**Lekcje:** [`lekcja-55`](../lekcje.md#lekcja-55)
 
 > Powód, dla którego pusta kolekcja jedzie od początku, nie jest kosmetyczny: `ng update`
 > czyta kolekcję z wersji **zainstalowanej** u konsumenta, więc dopisanie jej dopiero przy
 > pierwszej zmianie łamiącej nie pomogłoby nikomu, kto zainstalował wcześniej.
+
+> Dwie bramki, bo to dwa różne pomiary. Statyczna pyta, czy plik fabryki **jest**;
+> ta w użyciu — czy da się go **wczytać**. Różnica kosztowała wydawany artefakt wywrotkę
+> przy pierwszej komendzie konsumenta ([`lekcja-55`](../lekcje.md#lekcja-55)).
 
 ---
 

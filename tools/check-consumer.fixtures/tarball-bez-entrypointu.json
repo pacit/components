@@ -1,0 +1,7 @@
+{
+  "punkt": 1,
+  "kontrola": "tarball",
+  "regula": "brak-entrypointu",
+  "opis": "Mapa exports obiecuje ./button, a pliku FESM w archiwum nie ma. U konsumenta to ERR_MODULE_NOT_FOUND przy pierwszym imporcie.",
+  "usunPlik": "fesm2022/pacit-components-button.mjs"
+}

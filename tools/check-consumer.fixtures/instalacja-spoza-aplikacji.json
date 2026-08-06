@@ -1,0 +1,7 @@
+{
+  "punkt": 3,
+  "kontrola": "instalacja",
+  "regula": "spoza-aplikacji",
+  "opis": "Aplikacja rozwiązuje pakiet do node_modules repozytorium, nie do własnych. Wyszukiwanie w górę drzewa daje @angular/* i tą samą drogą podałoby @pacit/components — mierzony byłby wtedy pakiet, którego bramka nie opublikowała.",
+  "rozwiazanie": "/repozytorium/node_modules/@pacit/components/fesm2022/pacit-components-button.mjs"
+}

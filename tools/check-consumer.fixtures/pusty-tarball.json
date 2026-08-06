@@ -1,0 +1,7 @@
+{
+  "punkt": 1,
+  "kontrola": "tarball",
+  "regula": "pusty",
+  "opis": "npm pack nie wypisał ani jednego pliku. Wszystkie punkty niżej przeszłyby wtedy zawsze — nie mają czego szukać, a lista pusta zawiera każdy plik, o który nikt nie zapytał.",
+  "wyczyscPliki": true
+}

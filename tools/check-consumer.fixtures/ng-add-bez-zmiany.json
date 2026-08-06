@@ -1,0 +1,7 @@
+{
+  "punkt": 4,
+  "kontrola": "ng-add",
+  "regula": "bez-zmiany",
+  "opis": "Schematic przeszedł i niczego nie zmienił. Jego własna ścieżka awaryjna kończy się wypisaniem instrukcji do wykonania ręcznie — z zerowym kodem wyjścia.",
+  "stylePo": []
+}

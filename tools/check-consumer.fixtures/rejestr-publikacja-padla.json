@@ -1,0 +1,7 @@
+{
+  "punkt": 2,
+  "kontrola": "rejestr",
+  "regula": "publikacja",
+  "opis": "npm publish zakończył się błędem. Bez tego punktu instalacja niżej poszłaby po pakiet do uplinku npmjs i bramka zmierzyłaby cudzy artefakt.",
+  "opublikowany": false
+}

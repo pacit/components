@@ -1,0 +1,7 @@
+{
+  "punkt": 2,
+  "kontrola": "rejestr",
+  "regula": "nie-lokalny",
+  "opis": "Adres archiwum wskazuje na npmjs, a nie na lokalny rejestr. Suma może się zgadzać przypadkiem (ta sama wersja), a mierzony byłby pakiet, którego ta bramka nie zbudowała.",
+  "tarballWRejestrze": "https://registry.npmjs.org/@pacit/components/-/components-0.0.1.tgz"
+}

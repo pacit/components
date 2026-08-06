@@ -1,0 +1,7 @@
+{
+  "punkt": 3,
+  "kontrola": "instalacja",
+  "regula": "brak-wpisu",
+  "opis": "Po npm install nie ma wpisu w pliku blokady aplikacji — instalacja nie doszła do skutku, a kod wyjścia mógł być zerowy.",
+  "bezWpisu": true
+}

@@ -15,12 +15,13 @@
   "// implicitDependencies": "Pakiet wozi skórkę wygenerowaną przez `tokens`, ale nie importuje z niej niczego w TS — bez tego wpisu graf nie zna tej krawędzi i build startuje przed wygenerowaniem CSS.",
   "implicitDependencies": ["tokens"],
   "// themes": "ng-packagr nie czyta assetów spoza katalogu projektu, więc skórka musi najpierw stać się wejściem pakietu. `themes/` jest generowane i gitignorowane — jedynym źródłem prawdy pozostają pliki DTCG w libs/tokens/src.",
-  "// schematics": "Kompilowane osobno i PO ng-packagr, bo ng-packagr czyści dist na starcie — build schematics wpięty wcześniej zostałby skasowany. Kolekcja migracji jest w pakiecie od pierwszego wydania celowo: `ng update` czyta ją z wersji ZAINSTALOWANEJ, więc dopisanie jej dopiero przy pierwszej zmianie łamiącej nie pomogłoby nikomu, kto zainstalował wcześniej.",
+  "// schematics": "Kompilowane osobno i PO ng-packagr, bo ng-packagr czyści dist na starcie — build schematics wpięty wcześniej zostałby skasowany. Kolekcja migracji jest w pakiecie od pierwszego wydania celowo: `ng update` czyta ją z wersji ZAINSTALOWANEJ, więc dopisanie jej dopiero przy pierwszej zmianie łamiącej nie pomogłoby nikomu, kto zainstalował wcześniej. Ostatnia kopia (`package.dist.json` → `schematics/package.json`) zamyka granicę modułów: manifest pakietu niesie `\"type\": \"module\"` od ng-packagr, a te pliki są CommonJS-em (`exports.ngAdd = …`), więc bez własnego `{ \"type\": \"commonjs\" }` Node czyta je jako ESM i `ng add @pacit/components` kończy się `exports is not defined in ES module scope` — u konsumenta, przy pierwszej komendzie, jaką wpisze. `check-package` tego nie widzi z założenia: pyta, czy plik fabryki ISTNIEJE, a nie czy da się go wczytać. Plik nazywa się `package.dist.json`, a nie `package.json`, bo prawdziwy manifest w drzewie repozytorium JEST dla Nx projektem (`lekcja-44`). Tak samo rozwiązuje to `@angular/cdk`.",
   "// test": "Wzorce `coverageInclude` idą od korzenia repozytorium, nie od katalogu projektu — mimo tego, co mówi schemat executora: wersja `**/src/**` wciągnęła do raportu biblioteki cały `apps/sandbox`. Szablony są tam razem z kodem, bo logika `@if`/`@for` jest kodem, a bez tej pozycji wypadają z raportu w całości. Powody wyjątków z `coverageExclude` trzyma `tools/check-coverage.mjs` (stała POMIJANE) — to ona decyduje, czego bramka WYMAGA w raporcie, a ta lista musi być jej podzbiorem: gdyby wykluczyła cokolwiek ponadto, plik wypadłby z raportu i zapalił punkt 3.",
   "// check-coverage": "Źródła są w `inputs` WPROST, mimo że raport przychodzi z `test`: plik, którego v8 nie potrafi doliczyć, nie zmienia raportu ani o bajt, więc sam `dependentTasksOutputFiles` dałby trafienie w cache i bramka nie zapaliłaby na jedynej rzeczy, dla której powstała. Komentarze stoją TUTAJ, a nie w targecie: `options` executora ma `additionalProperties: false`, a klucz `// …` w `targets` wywala graf (`lekcja-43`).",
   "// check-zoneless": "Źródła są w `inputs` WPROST, obok wyjścia builda, bo punkty 4 i 6 czytają je BEZPOŚREDNIO — a klucz cache ma wymieniać to, co bramka czyta, nie to, co zwykle się przy okazji zmienia. Zmierzone: jawne `standalone: true` w dekoratorze zostawia `ɵɵngDeclareComponent` bez zmiany (deklaracja i tak niesie `isStandalone: true`) i rusza wyłącznie `ɵɵngDeclareClassMetadata`, czyli echo dekoratora dla debugowania. Cache unieważniłby się więc dziś także bez tej pozycji — ale za sprawą funkcji diagnostycznej, która nie jest niczyją obietnicą. Dzień, w którym ng-packagr przestanie ją emitować, byłby dniem, w którym punkt 6 po cichu przestaje zapalać (`lekcja-44` w trzecim przebraniu). Wzorzec `**/package.json` obejmuje manifesty każdego projektu, także tego, który dopiero powstanie: bramka czyta je z indeksu gita, więc lista wpisana tutaj na sztywno rozjechałaby się przy pierwszej nowej bibliotece.",
   "// check-styles": "Bramka arkuszy: właściwości logiczne i zakaz `opacity` kompozytującej. Nie zależy od `build` — czyta ŹRÓDŁA, bo tylko w nich stoją znaczniki wyjątków i tylko one mają numery linii, którymi da się kogoś nawigować. Wyjście sassa powstaje w samej bramce, z tych samych plików. `inputs` wymieniają arkusze (materiał), źródła TS (mianownik z punktu 3 — komponent stylujący się poza arkuszem) i fixtures. Wzorce są globalne w obrębie projektu, nie listą nazw: nowy entrypoint ma być objęty od pierwszego commita, a lista wpisana na sztywno rozjechałaby się przy pierwszym i to bramka przestałaby wtedy widzieć, a nie CI zapaliło.",
   "// check-bundle": "Bramka tree-shakingu i budżetu rozmiaru. Stoi w `components`, a nie w projekcie roota, bo wszystko, co czyta, leży w bibliotece i w jej `dist` — a nowy entrypoint jest zmianą w `libs/components`, więc czyni ten projekt affected od pierwszego commita. `inputs` wymieniają manifesty entrypointów (lista, po której chodzi pomiar), snapshot (druga strona porównania), skrypt i fixtures. `dependsOn` na `build` jest twarde: bramka bundluje ARTEFAKT, nie źródła, bo to artefakt dostaje konsument — sondy sięgają po pakiet przez `node_modules` i mapę `exports`, czyli tą samą drogą co on. `externalDependencies` wymieniają esbuild (sondy szybkie) oraz `@angular/build` i `@angular/cli` (sonda prawdziwym builderem): podbicie któregokolwiek zmienia mierzone rozmiary, więc musi unieważnić cache — inaczej budżet pilnowałby liczby sprzed podbicia.",
+  "// check-consumer": "Bramka konsumenta: odtwarza całą drogę od `npm pack` przez lokalny rejestr do przycisku pomalowanego tokenem w przeglądarce. Stoi w `components`, bo mierzy TEN pakiet. `dependsOn` na `build` i `schematics` jest twarde — pakuje artefakt razem z kolekcją `ng add`, a bez niej punkt 4 nie ma czego uruchomić. `inputs` wymieniają wyjście obu targetów, konfigurację Verdaccio (bramka publikuje przez nią, a nie przez własną kopię), skrypt i fixtures. `externalDependencies` są długie, bo długa jest droga: podbicie Verdaccio zmienia rejestr, podbicie `@angular/cli`/`@angular/build`/`@angular/ssr`/`@angular/router` zmienia build i renderowanie po stronie serwera, `express` niesie serwer aplikacji, a `@playwright/test` jest przeglądarką — każde z nich potrafi zmienić WYNIK pomiaru przy niezmienionym pakiecie, więc każde musi unieważniać cache. Bramka nie instaluje `peerDependencies` z rejestru: aplikacja bierze `@angular/*` z `node_modules` repozytorium przez wyszukiwanie w górę drzewa, tak samo jak sonda buildera w `check-bundle`. Cena jest zapisana wprost — rozjazd zakresu wersji w `peerDependencies` przejdzie tę bramkę i pilnuje go dopiero `wym-projekt-zaleznosci`.",
   "// check-texts": "Bramka kanału tekstów: pilnuje, że napis wypisywany przez bibliotekę idzie przez `PCT_TEXTS`. Stoi w `components`, bo wszystko, co czyta, leży w bibliotece i w jej `dist`. `dependsOn` na `build` jest twarde: punkt 2 porównuje odczyt ze źródeł z `ɵcmp.consts` i `ɵdir.hostAttrs` po zlinkowaniu, czyli z wynikiem prawdziwego kompilatora — bez tego atrybut wniesiony rozwinięciem obiektu w bloku `host` (`...fitHost` w `field/src/affix.ts`) nie miałby jak się pokazać. `inputs` wymieniają szablony i źródła WPROST, obok wyjścia builda: bramka czyta je bezpośrednio, a klucz cache ma wymieniać to, co czyta, a nie to, co zwykle zmienia się przy okazji (`lekcja-44`). `externalDependencies` wymieniają `@angular/compiler`, bo to jego `parseTemplate` i `TmplAstRecursiveVisitor` dają odczyt szablonu — podbicie Angulara może dołożyć rodzaj węzła, którego obejście nie zna, i to ma unieważnić cache, a nie przejść niezauważone.",
   "// typecheck": "Trzy przebiegi, bo biblioteka ma trzy rozłączne programy: pakiet (`tsconfig.lib.json`), specyfikacje razem z `testing/` (`tsconfig.spec.json`) i schematics kompilowane do CommonJS (`schematics/tsconfig.json`). Żaden z nich nie widzi plików pozostałych dwóch, więc jedno wywołanie sprawdziłoby część biblioteki i wyglądałoby jak komplet — to `check-typecheck` porównuje tę sumę z listą plików z indeksu gita. `inputs` biorą `default`, a NIE `production`: `production` odejmuje `**/*.spec.ts`. Zmierzone, nie założone — dopisanie linii do `src/public-api.spec.ts` daje przy `default` `Cache: 0/1 hit`, a przy `production` `1/1 hit`, czyli drugi przebieg NIE rusza dokładnie wtedy, kiedy jest potrzebny (`lekcja-44` w kolejnym przebraniu). `build` sprawdza typy przy okazji, ale wyłącznie dla `tsconfig.lib.prod.json` — reszta nie ma innego kompilatora niż ten target.",
   "// stamp-version": "Przepisuje `version` z manifestu do stałej PCT_VERSION. Celowo NIE jest zależnością `build`: gdyby build sam się stemplował, artefakt zawsze by się zgadzał, a bramka `check-package` przestałaby cokolwiek badać. Uruchamia to wydanie (po podbiciu wersji) i człowiek — a bramka pilnuje, że nikt nie zapomniał.",
@@ -75,7 +76,8 @@
         "commands": [
           "tsc -p schematics/tsconfig.json",
           "cp schematics/collection.json schematics/migration.json ../../dist/libs/components/schematics/",
-          "cp schematics/ng-add/schema.json ../../dist/libs/components/schematics/ng-add/"
+          "cp schematics/ng-add/schema.json ../../dist/libs/components/schematics/ng-add/",
+          "cp schematics/package.dist.json ../../dist/libs/components/schematics/package.json"
         ],
         "parallel": false
       }
@@ -114,6 +116,31 @@
       ],
       "options": {
         "command": "node tools/check-bundle.mjs"
+      }
+    },
+    "check-consumer": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "dependsOn": ["build", "schematics"],
+      "inputs": [
+        { "dependentTasksOutputFiles": "**/*", "transitive": false },
+        "{workspaceRoot}/.verdaccio/config.yml",
+        "{workspaceRoot}/tools/check-consumer.mjs",
+        "{workspaceRoot}/tools/check-consumer.fixtures/**/*",
+        {
+          "externalDependencies": [
+            "verdaccio",
+            "@angular/cli",
+            "@angular/build",
+            "@angular/ssr",
+            "@angular/router",
+            "express",
+            "@playwright/test"
+          ]
+        }
+      ],
+      "options": {
+        "command": "node tools/check-consumer.mjs"
       }
     },
     "nx-release-publish": {

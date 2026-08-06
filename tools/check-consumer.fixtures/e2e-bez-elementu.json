@@ -1,0 +1,7 @@
+{
+  "punkt": 7,
+  "kontrola": "e2e",
+  "regula": "brak-elementu",
+  "opis": "Przeglądarka nie znalazła przycisku. Każda asercja o jego wyglądzie byłaby prawdą pustą — a wyglądałaby na dowód.",
+  "bezElementu": true
+}

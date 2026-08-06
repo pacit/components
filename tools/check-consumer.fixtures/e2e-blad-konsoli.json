@@ -1,0 +1,7 @@
+{
+  "punkt": 7,
+  "kontrola": "e2e",
+  "regula": "blad-konsoli",
+  "opis": "Przeglądarka zgłosiła błąd na stronie konsumenta. Tu lądują rozjazdy hydracji (NG05xx): strona wygląda poprawnie i płaci podwójnym renderem oraz utratą stanu DOM.",
+  "bledy": ["NG0500: During hydration Angular expected <span> but found <div>"]
+}

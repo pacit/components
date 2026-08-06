@@ -1,0 +1,7 @@
+{
+  "punkt": 2,
+  "kontrola": "rejestr",
+  "regula": "wersja",
+  "opis": "Rejestr nie zna wersji, którą spakowaliśmy. Publikacja zameldowała sukces, a w rejestrze stoi coś innego.",
+  "wersjeWRejestrze": ["0.0.2"]
+}

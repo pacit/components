@@ -1,0 +1,7 @@
+{
+  "punkt": 6,
+  "kontrola": "ssr",
+  "regula": "bez-komponentu",
+  "opis": "W HTML-u z serwera nie ma klasy z bloku host komponentu — dyrektywa się nie dopasowała albo komponent nie wyrenderował się po stronie serwera.",
+  "markerSsr": "pct-button"
+}

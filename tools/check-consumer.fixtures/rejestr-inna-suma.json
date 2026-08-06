@@ -1,0 +1,7 @@
+{
+  "punkt": 2,
+  "kontrola": "rejestr",
+  "regula": "integralnosc",
+  "opis": "Rejestr serwuje archiwum o innej sumie niż spakowane. Typowa przyczyna: odpowiedź przyszła z uplinku, bo publikacja poszła gdzie indziej.",
+  "integrityWRejestrze": "sha512-000000000000000000000000000000000000000000000000000000000000000000000000000000000000000w=="
+}

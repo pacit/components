@@ -1,0 +1,176 @@
+{
+  "tarball": {
+    "wersja": "0.0.1",
+    "integrity": "sha512-Wsmh+0pfky7+ljGtU1yxVFQz1eQcEM0FbZ/CUfPYjhD/aM9Vj67mK3CBVziNYv3NfOxCdgbsmLbMHsvqNKlsNQ==",
+    "pliki": [
+      "README.md",
+      "fesm2022/pacit-components-button.mjs",
+      "fesm2022/pacit-components-button.mjs.map",
+      "fesm2022/pacit-components-checkbox.mjs",
+      "fesm2022/pacit-components-checkbox.mjs.map",
+      "fesm2022/pacit-components-core.mjs",
+      "fesm2022/pacit-components-core.mjs.map",
+      "fesm2022/pacit-components-field.mjs",
+      "fesm2022/pacit-components-field.mjs.map",
+      "fesm2022/pacit-components-radio.mjs",
+      "fesm2022/pacit-components-radio.mjs.map",
+      "fesm2022/pacit-components-select.mjs",
+      "fesm2022/pacit-components-select.mjs.map",
+      "fesm2022/pacit-components.mjs",
+      "fesm2022/pacit-components.mjs.map",
+      "package.json",
+      "schematics/collection.json",
+      "schematics/migration.json",
+      "schematics/ng-add/index.js",
+      "schematics/ng-add/schema.json",
+      "schematics/package.json",
+      "themes/_tokens.scss",
+      "themes/pct.css",
+      "types/pacit-components-button.d.ts",
+      "types/pacit-components-checkbox.d.ts",
+      "types/pacit-components-core.d.ts",
+      "types/pacit-components-field.d.ts",
+      "types/pacit-components-radio.d.ts",
+      "types/pacit-components-select.d.ts",
+      "types/pacit-components.d.ts"
+    ],
+    "manifest": {
+      "name": "@pacit/components",
+      "version": "0.0.1",
+      "description": "Dostępna biblioteka komponentów Angular: standalone, zoneless, signal forms, SSR i theming na design tokenach.",
+      "license": "MIT",
+      "keywords": [
+        "angular",
+        "components",
+        "ui",
+        "design-tokens",
+        "accessibility",
+        "wcag",
+        "signal-forms",
+        "zoneless",
+        "ssr"
+      ],
+      "peerDependencies": {
+        "@angular/cdk": "^22.0.0",
+        "@angular/core": "^22.0.0",
+        "@angular/forms": "^22.0.0"
+      },
+      "sideEffects": false,
+      "schematics": "./schematics/collection.json",
+      "ng-update": {
+        "migrations": "./schematics/migration.json"
+      },
+      "publishConfig": {
+        "access": "public"
+      },
+      "exports": {
+        "./themes/*": "./themes/*",
+        "./schematics/*": "./schematics/*",
+        "./package.json": {
+          "default": "./package.json"
+        },
+        ".": {
+          "types": "./types/pacit-components.d.ts",
+          "default": "./fesm2022/pacit-components.mjs"
+        },
+        "./button": {
+          "types": "./types/pacit-components-button.d.ts",
+          "default": "./fesm2022/pacit-components-button.mjs"
+        },
+        "./checkbox": {
+          "types": "./types/pacit-components-checkbox.d.ts",
+          "default": "./fesm2022/pacit-components-checkbox.mjs"
+        },
+        "./core": {
+          "types": "./types/pacit-components-core.d.ts",
+          "default": "./fesm2022/pacit-components-core.mjs"
+        },
+        "./field": {
+          "types": "./types/pacit-components-field.d.ts",
+          "default": "./fesm2022/pacit-components-field.mjs"
+        },
+        "./radio": {
+          "types": "./types/pacit-components-radio.d.ts",
+          "default": "./fesm2022/pacit-components-radio.mjs"
+        },
+        "./select": {
+          "types": "./types/pacit-components-select.d.ts",
+          "default": "./fesm2022/pacit-components-select.mjs"
+        }
+      },
+      "module": "fesm2022/pacit-components.mjs",
+      "typings": "types/pacit-components.d.ts",
+      "type": "module",
+      "dependencies": {
+        "tslib": "^2.3.0"
+      }
+    },
+    "fabryki": ["schematics/ng-add/index.js"]
+  },
+  "rejestr": {
+    "url": "http://localhost:4873",
+    "opublikowany": true,
+    "wyjscie": "(wyjście npm publish)",
+    "metadane": {
+      "wersje": ["0.0.1"],
+      "integrity": "sha512-Wsmh+0pfky7+ljGtU1yxVFQz1eQcEM0FbZ/CUfPYjhD/aM9Vj67mK3CBVziNYv3NfOxCdgbsmLbMHsvqNKlsNQ==",
+      "tarball": "http://localhost:4873/@pacit/components/-/components-0.0.1.tgz"
+    }
+  },
+  "instalacja": {
+    "katalog": "/repozytorium/tmp/check-consumer/app",
+    "wpis": {
+      "version": "0.0.1",
+      "resolved": "http://localhost:4873/@pacit/components/-/components-0.0.1.tgz",
+      "integrity": "sha512-Wsmh+0pfky7+ljGtU1yxVFQz1eQcEM0FbZ/CUfPYjhD/aM9Vj67mK3CBVziNYv3NfOxCdgbsmLbMHsvqNKlsNQ==",
+      "license": "MIT",
+      "dependencies": {
+        "tslib": "^2.3.0"
+      },
+      "peerDependencies": {
+        "@angular/cdk": "^22.0.0",
+        "@angular/core": "^22.0.0",
+        "@angular/forms": "^22.0.0"
+      }
+    },
+    "wyjscie": "(wyjście npm install)",
+    "rozwiazanie": "/repozytorium/tmp/check-consumer/app/node_modules/@pacit/components/fesm2022/pacit-components-button.mjs"
+  },
+  "ngAdd": {
+    "kod": 0,
+    "wyjscie": "(wyjście ng generate)",
+    "stylePrzed": [],
+    "stylePo": [
+      "@pacit/components/themes/pct.css",
+      "@angular/cdk/overlay-prebuilt.css"
+    ]
+  },
+  "build": {
+    "kod": 0,
+    "wyjscie": "(wyjście ng build)",
+    "serwer": true,
+    "markery": {
+      "data-pct-part": true,
+      "pct-button": true
+    },
+    "tokenyWCss": 424
+  },
+  "ssr": {
+    "status": 200,
+    "kontekst": "ssr",
+    "czesci": ["label"],
+    "markery": {
+      "data-pct-part": true,
+      "pct-button": true
+    },
+    "tresc": "(początek HTML-a)"
+  },
+  "e2e": {
+    "element": true,
+    "token": "#2563eb",
+    "tlo": "rgb(37, 99, 235)",
+    "tloTokenu": "rgb(37, 99, 235)",
+    "czesci": ["label"],
+    "bledy": []
+  }
+}

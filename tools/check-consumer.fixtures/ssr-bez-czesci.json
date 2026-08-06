@@ -1,0 +1,7 @@
+{
+  "punkt": 6,
+  "kontrola": "ssr",
+  "regula": "bez-czesci",
+  "opis": "W HTML-u z serwera nie ma ani jednego data-pct-part. Publiczne API stylowania (wym-api-czesci) nie dojechało do konsumenta, choć komponent się wyrenderował.",
+  "bezCzesci": true
+}

@@ -9,9 +9,9 @@ Nie ma stanu „zrealizowane, tylko niesprawdzone" — patrz
 
 | stan           | znaczenie                                          | liczba |
 | -------------- | -------------------------------------------------- | -----: |
-| ✅ egzekwowane | bramka i kontrola istnieją, są wpięte w CI         |     51 |
+| ✅ egzekwowane | bramka i kontrola istnieją, są wpięte w CI         |     52 |
 | 🟡 częściowo   | bramka jest, kontroli odniesienia brak (świadomie) |     16 |
-| ⛔ luka        | brak bramki albo kontroli, z zapisanym terminem    |     14 |
+| ⛔ luka        | brak bramki albo kontroli, z zapisanym terminem    |     13 |
 | **razem**      |                                                    | **81** |
 
 ## Luki wg pilności
@@ -21,7 +21,6 @@ Kolejność bierze się z pola **Wiąże przy**, nie z numeru wymagania.
 | wymaganie                                                                | czego brakuje                                                                       | wiąże przy                                                   |
 | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- | ------------------------------------------------------------ |
 | [`wym-jakosc-jednostkowe`](wymagania/jakosc.md#wym-jakosc-jednostkowe)   | **testowanie mutacyjne** rdzenia (Stryker na `core`, `number`, `selec… _(kontrola)_ | natychmiast dla `core` — im więcej komponentów na nim stoi,… |
-| [`wym-jakosc-konsument`](wymagania/jakosc.md#wym-jakosc-konsument)       | `.verdaccio/config.yml` i target `local-registry` w root `project.jso…              | natychmiast — `check-package` bada artefakt **statycznie**;… |
 | [`wym-jakosc-przegladarki`](wymagania/jakosc.md#wym-jakosc-przegladarki) | `apps/sandbox-e2e/playwright.config.mts` ma **wyłącznie chromium**, r…              | natychmiast dla biblioteki chwalącej się a11y — Safari ma n… |
 | [`wym-api-animacje`](wymagania/api.md#wym-api-animacje)                  | zakaz jest dotrzymany, ale **nic go nie pilnuje** — jedyne, co obowią…              | pierwszym komponencie z wejściem/wyjściem (panel, dialog, t… |
 | [`wym-api-ikony`](wymagania/api.md#wym-api-ikony)                        | dziś każda ikona jest **wpisana w szablon** jako SVG w `currentColor`…              | drugim komponencie potrzebującym podmienialnej ikony         |
@@ -92,7 +91,7 @@ Kolejność bierze się z pola **Wiąże przy**, nie z numeru wymagania.
 | [`wym-jakosc-e2e`](wymagania/jakosc.md#wym-jakosc-e2e)                   | ✅ egzekwowane | `apps/sandbox-e2e/src/visual.spec.ts` i pozostałe specyfikacje e2e     | progi są **dwa** i oba wynikają z pomiaru. Liczba pikseli jest bezwzg… |
 | [`wym-jakosc-hydracja`](wymagania/jakosc.md#wym-jakosc-hydracja)         | ✅ egzekwowane | `apps/sandbox-e2e/src/hydration.spec.ts` + pomocnik `visit()` w `apps… | `hydration.spec.ts › „bramka faktycznie wykrywa błąd hydracji (kontro… |
 | [`wym-jakosc-pakiet`](wymagania/jakosc.md#wym-jakosc-pakiet)             | ✅ egzekwowane | `libs/components/check-package.mjs` (target `check-package`, w CI)     | `tools/check-package.fixtures/` — siedem spreparowanych pakietów, po … |
-| [`wym-jakosc-konsument`](wymagania/jakosc.md#wym-jakosc-konsument)       | ⛔ luka        | brak — luka: `.verdaccio/config.yml` i target `local-registry` w root… | brak — luka: aplikacja zbudowana z zainstalowanego pakietu, która nie… |
+| [`wym-jakosc-konsument`](wymagania/jakosc.md#wym-jakosc-konsument)       | ✅ egzekwowane | `tools/check-consumer.mjs` (target `check-consumer`, w CI) — siedem p… | `tools/check-consumer.fixtures/` — 28 spreparowanych wejść, każde odr… |
 | [`wym-jakosc-przegladarki`](wymagania/jakosc.md#wym-jakosc-przegladarki) | ⛔ luka        | brak — luka: `apps/sandbox-e2e/playwright.config.mts` ma **wyłącznie … | brak — luka: przebieg dowodzący, że test przechodzący na chromium pot… |
 | [`wym-jakosc-widoki`](wymagania/jakosc.md#wym-jakosc-widoki)             | ✅ egzekwowane | `apps/sandbox-e2e/src/a11y.spec.ts`, `hydration.spec.ts` — obie iteru… | `apps/sandbox/src/app/app.spec.ts` — rejestr widoków wobec tras        |
 | [`wym-jakosc-karta`](wymagania/jakosc.md#wym-jakosc-karta)               | ✅ egzekwowane | `apps/sandbox/src/app/ui/demo.spec.ts`; `tools/check-docs.mjs` — każd… | `tools/check-docs.fixtures/` — karta z nieistniejącym identyfikatorem… |
@@ -155,59 +154,60 @@ Kolejność bierze się z pola **Wiąże przy**, nie z numeru wymagania.
 
 Która lekcja karmi które wymaganie. Generowane z pól **Lekcje**.
 
-| lekcja                             | wymagania                                                                                                                            |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| [`lekcja-1`](lekcje.md#lekcja-1)   | `wym-projekt-layout`                                                                                                                 |
-| [`lekcja-2`](lekcje.md#lekcja-2)   | `wym-projekt-layout`                                                                                                                 |
-| [`lekcja-3`](lekcje.md#lekcja-3)   | `wym-jakosc-jednostkowe`                                                                                                             |
-| [`lekcja-4`](lekcje.md#lekcja-4)   | `wym-token-dtcg`                                                                                                                     |
-| [`lekcja-5`](lekcje.md#lekcja-5)   | `wym-jakosc-pokrycie`                                                                                                                |
-| [`lekcja-6`](lekcje.md#lekcja-6)   | `wym-token-kontrast`, `wym-token-bez-opacity`                                                                                        |
-| [`lekcja-7`](lekcje.md#lekcja-7)   | `wym-api-fundament`, `wym-projekt-angular`                                                                                           |
-| [`lekcja-8`](lekcje.md#lekcja-8)   | `wym-projekt-angular`                                                                                                                |
-| [`lekcja-9`](lekcje.md#lekcja-9)   | `wym-api-signal-forms`                                                                                                               |
-| [`lekcja-10`](lekcje.md#lekcja-10) | `wym-token-kontrast`                                                                                                                 |
-| [`lekcja-11`](lekcje.md#lekcja-11) | `wym-api-fundament`, `wym-projekt-angular`                                                                                           |
-| [`lekcja-12`](lekcje.md#lekcja-12) | `wym-api-sygnaly`                                                                                                                    |
-| [`lekcja-13`](lekcje.md#lekcja-13) | `wym-jakosc-e2e`, `wym-jakosc-karta`                                                                                                 |
-| [`lekcja-14`](lekcje.md#lekcja-14) | `wym-a11y-dotyk`, `wym-a11y-axe`                                                                                                     |
-| [`lekcja-15`](lekcje.md#lekcja-15) | `wym-api-czesci-unikalne`                                                                                                            |
-| [`lekcja-16`](lekcje.md#lekcja-16) | `wym-api-kontener`                                                                                                                   |
-| [`lekcja-17`](lekcje.md#lekcja-17) | `wym-jakosc-scena`, `wym-token-referencje`, `wym-token-domkniecie`, `wym-token-nadpisanie`, `wym-token-scoped`                       |
-| [`lekcja-18`](lekcje.md#lekcja-18) | `wym-api-nakladka`, `wym-token-css`, `wym-token-scoped`                                                                              |
-| [`lekcja-19`](lekcje.md#lekcja-19) | `wym-jakosc-jednostkowe`                                                                                                             |
-| [`lekcja-20`](lekcje.md#lekcja-20) | `wym-api-signal-forms`                                                                                                               |
-| [`lekcja-21`](lekcje.md#lekcja-21) | `wym-api-obudowa`, `wym-projekt-core`                                                                                                |
-| [`lekcja-22`](lekcje.md#lekcja-22) | `wym-api-obudowa`                                                                                                                    |
-| [`lekcja-23`](lekcje.md#lekcja-23) | `wym-jakosc-e2e`                                                                                                                     |
-| [`lekcja-24`](lekcje.md#lekcja-24) | `wym-api-obudowa`, `wym-api-czesci-unikalne`                                                                                         |
-| [`lekcja-25`](lekcje.md#lekcja-25) | `wym-a11y-dotyk`, `wym-api-ramka`                                                                                                    |
-| [`lekcja-26`](lekcje.md#lekcja-26) | `wym-api-signal-forms`                                                                                                               |
-| [`lekcja-27`](lekcje.md#lekcja-27) | `wym-api-obudowa`                                                                                                                    |
-| [`lekcja-28`](lekcje.md#lekcja-28) | `wym-api-obudowa`, `wym-jakosc-jednostkowe`                                                                                          |
-| [`lekcja-29`](lekcje.md#lekcja-29) | `wym-api-wielkosc`, `wym-jakosc-widoki`                                                                                              |
-| [`lekcja-30`](lekcje.md#lekcja-30) | `wym-jakosc-e2e`, `wym-jakosc-hydracja`, `wym-projekt-ssr`                                                                           |
-| [`lekcja-31`](lekcje.md#lekcja-31) | `wym-a11y-wbudowana`, `wym-jakosc-hydracja`, `wym-projekt-ssr`                                                                       |
-| [`lekcja-32`](lekcje.md#lekcja-32) | `wym-api-liczba`                                                                                                                     |
-| [`lekcja-33`](lekcje.md#lekcja-33) | `wym-a11y-wbudowana`, `wym-a11y-axe`, `wym-jakosc-widoki`                                                                            |
-| [`lekcja-34`](lekcje.md#lekcja-34) | `wym-api-obudowa`, `wym-api-wielkosc`                                                                                                |
-| [`lekcja-35`](lekcje.md#lekcja-35) | `wym-api-nakladka`, `wym-token-logiczne`                                                                                             |
-| [`lekcja-36`](lekcje.md#lekcja-36) | `wym-jakosc-rejestr`, `wym-jakosc-pakiet`, `wym-projekt-pakiet`, `wym-projekt-lib-tokenow`, `wym-token-css`, `wym-token-dystrybucja` |
-| [`lekcja-37`](lekcje.md#lekcja-37) | `wym-api-generyk`                                                                                                                    |
-| [`lekcja-38`](lekcje.md#lekcja-38) | `wym-a11y-ruch`, `wym-a11y-kolory-wymuszone`, `wym-jakosc-kontrola`, `wym-token-system`                                              |
-| [`lekcja-39`](lekcje.md#lekcja-39) | `wym-jakosc-kontrola`, `wym-jakosc-rejestr`, `wym-jakosc-e2e`                                                                        |
-| [`lekcja-40`](lekcje.md#lekcja-40) | `wym-a11y-kolory-wymuszone`                                                                                                          |
-| [`lekcja-41`](lekcje.md#lekcja-41) | `wym-jakosc-kontrola`, `wym-jakosc-pakiet`, `wym-wydanie-semver`                                                                     |
-| [`lekcja-42`](lekcje.md#lekcja-42) | `wym-jakosc-typecheck`, `wym-token-artefakty`                                                                                        |
-| [`lekcja-43`](lekcje.md#lekcja-43) | `wym-jakosc-karta`, `wym-token-artefakty`                                                                                            |
-| [`lekcja-44`](lekcje.md#lekcja-44) | — _(nie cytowana)_                                                                                                                   |
-| [`lekcja-45`](lekcje.md#lekcja-45) | `wym-jakosc-pokrycie`                                                                                                                |
-| [`lekcja-46`](lekcje.md#lekcja-46) | `wym-api-fundament`                                                                                                                  |
-| [`lekcja-47`](lekcje.md#lekcja-47) | `wym-jakosc-typecheck`                                                                                                               |
-| [`lekcja-48`](lekcje.md#lekcja-48) | `wym-token-logiczne`                                                                                                                 |
-| [`lekcja-49`](lekcje.md#lekcja-49) | — _(nie cytowana)_                                                                                                                   |
-| [`lekcja-50`](lekcje.md#lekcja-50) | — _(nie cytowana)_                                                                                                                   |
-| [`lekcja-51`](lekcje.md#lekcja-51) | `wym-projekt-tree-shaking`                                                                                                           |
-| [`lekcja-52`](lekcje.md#lekcja-52) | — _(nie cytowana)_                                                                                                                   |
-| [`lekcja-53`](lekcje.md#lekcja-53) | — _(nie cytowana)_                                                                                                                   |
-| [`lekcja-54`](lekcje.md#lekcja-54) | `wym-api-teksty`                                                                                                                     |
+| lekcja                             | wymagania                                                                                                                                                    |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [`lekcja-1`](lekcje.md#lekcja-1)   | `wym-projekt-layout`                                                                                                                                         |
+| [`lekcja-2`](lekcje.md#lekcja-2)   | `wym-projekt-layout`                                                                                                                                         |
+| [`lekcja-3`](lekcje.md#lekcja-3)   | `wym-jakosc-jednostkowe`                                                                                                                                     |
+| [`lekcja-4`](lekcje.md#lekcja-4)   | `wym-token-dtcg`                                                                                                                                             |
+| [`lekcja-5`](lekcje.md#lekcja-5)   | `wym-jakosc-pokrycie`                                                                                                                                        |
+| [`lekcja-6`](lekcje.md#lekcja-6)   | `wym-token-kontrast`, `wym-token-bez-opacity`                                                                                                                |
+| [`lekcja-7`](lekcje.md#lekcja-7)   | `wym-api-fundament`, `wym-projekt-angular`                                                                                                                   |
+| [`lekcja-8`](lekcje.md#lekcja-8)   | `wym-projekt-angular`                                                                                                                                        |
+| [`lekcja-9`](lekcje.md#lekcja-9)   | `wym-api-signal-forms`                                                                                                                                       |
+| [`lekcja-10`](lekcje.md#lekcja-10) | `wym-token-kontrast`                                                                                                                                         |
+| [`lekcja-11`](lekcje.md#lekcja-11) | `wym-api-fundament`, `wym-projekt-angular`                                                                                                                   |
+| [`lekcja-12`](lekcje.md#lekcja-12) | `wym-api-sygnaly`                                                                                                                                            |
+| [`lekcja-13`](lekcje.md#lekcja-13) | `wym-jakosc-e2e`, `wym-jakosc-karta`                                                                                                                         |
+| [`lekcja-14`](lekcje.md#lekcja-14) | `wym-a11y-dotyk`, `wym-a11y-axe`                                                                                                                             |
+| [`lekcja-15`](lekcje.md#lekcja-15) | `wym-api-czesci-unikalne`                                                                                                                                    |
+| [`lekcja-16`](lekcje.md#lekcja-16) | `wym-api-kontener`                                                                                                                                           |
+| [`lekcja-17`](lekcje.md#lekcja-17) | `wym-jakosc-scena`, `wym-token-referencje`, `wym-token-domkniecie`, `wym-token-nadpisanie`, `wym-token-scoped`                                               |
+| [`lekcja-18`](lekcje.md#lekcja-18) | `wym-api-nakladka`, `wym-token-css`, `wym-token-scoped`                                                                                                      |
+| [`lekcja-19`](lekcje.md#lekcja-19) | `wym-jakosc-jednostkowe`                                                                                                                                     |
+| [`lekcja-20`](lekcje.md#lekcja-20) | `wym-api-signal-forms`                                                                                                                                       |
+| [`lekcja-21`](lekcje.md#lekcja-21) | `wym-api-obudowa`, `wym-projekt-core`                                                                                                                        |
+| [`lekcja-22`](lekcje.md#lekcja-22) | `wym-api-obudowa`                                                                                                                                            |
+| [`lekcja-23`](lekcje.md#lekcja-23) | `wym-jakosc-e2e`                                                                                                                                             |
+| [`lekcja-24`](lekcje.md#lekcja-24) | `wym-api-obudowa`, `wym-api-czesci-unikalne`                                                                                                                 |
+| [`lekcja-25`](lekcje.md#lekcja-25) | `wym-a11y-dotyk`, `wym-api-ramka`                                                                                                                            |
+| [`lekcja-26`](lekcje.md#lekcja-26) | `wym-api-signal-forms`                                                                                                                                       |
+| [`lekcja-27`](lekcje.md#lekcja-27) | `wym-api-obudowa`                                                                                                                                            |
+| [`lekcja-28`](lekcje.md#lekcja-28) | `wym-api-obudowa`, `wym-jakosc-jednostkowe`                                                                                                                  |
+| [`lekcja-29`](lekcje.md#lekcja-29) | `wym-api-wielkosc`, `wym-jakosc-widoki`                                                                                                                      |
+| [`lekcja-30`](lekcje.md#lekcja-30) | `wym-jakosc-e2e`, `wym-jakosc-hydracja`, `wym-projekt-ssr`                                                                                                   |
+| [`lekcja-31`](lekcje.md#lekcja-31) | `wym-a11y-wbudowana`, `wym-jakosc-hydracja`, `wym-projekt-ssr`                                                                                               |
+| [`lekcja-32`](lekcje.md#lekcja-32) | `wym-api-liczba`                                                                                                                                             |
+| [`lekcja-33`](lekcje.md#lekcja-33) | `wym-a11y-wbudowana`, `wym-a11y-axe`, `wym-jakosc-widoki`                                                                                                    |
+| [`lekcja-34`](lekcje.md#lekcja-34) | `wym-api-obudowa`, `wym-api-wielkosc`                                                                                                                        |
+| [`lekcja-35`](lekcje.md#lekcja-35) | `wym-api-nakladka`, `wym-token-logiczne`                                                                                                                     |
+| [`lekcja-36`](lekcje.md#lekcja-36) | `wym-jakosc-rejestr`, `wym-jakosc-pakiet`, `wym-jakosc-konsument`, `wym-projekt-pakiet`, `wym-projekt-lib-tokenow`, `wym-token-css`, `wym-token-dystrybucja` |
+| [`lekcja-37`](lekcje.md#lekcja-37) | `wym-api-generyk`                                                                                                                                            |
+| [`lekcja-38`](lekcje.md#lekcja-38) | `wym-a11y-ruch`, `wym-a11y-kolory-wymuszone`, `wym-jakosc-kontrola`, `wym-token-system`                                                                      |
+| [`lekcja-39`](lekcje.md#lekcja-39) | `wym-jakosc-kontrola`, `wym-jakosc-rejestr`, `wym-jakosc-e2e`                                                                                                |
+| [`lekcja-40`](lekcje.md#lekcja-40) | `wym-a11y-kolory-wymuszone`                                                                                                                                  |
+| [`lekcja-41`](lekcje.md#lekcja-41) | `wym-jakosc-kontrola`, `wym-jakosc-pakiet`, `wym-wydanie-semver`                                                                                             |
+| [`lekcja-42`](lekcje.md#lekcja-42) | `wym-jakosc-typecheck`, `wym-token-artefakty`                                                                                                                |
+| [`lekcja-43`](lekcje.md#lekcja-43) | `wym-jakosc-karta`, `wym-token-artefakty`                                                                                                                    |
+| [`lekcja-44`](lekcje.md#lekcja-44) | — _(nie cytowana)_                                                                                                                                           |
+| [`lekcja-45`](lekcje.md#lekcja-45) | `wym-jakosc-pokrycie`                                                                                                                                        |
+| [`lekcja-46`](lekcje.md#lekcja-46) | `wym-api-fundament`                                                                                                                                          |
+| [`lekcja-47`](lekcje.md#lekcja-47) | `wym-jakosc-typecheck`                                                                                                                                       |
+| [`lekcja-48`](lekcje.md#lekcja-48) | `wym-token-logiczne`                                                                                                                                         |
+| [`lekcja-49`](lekcje.md#lekcja-49) | — _(nie cytowana)_                                                                                                                                           |
+| [`lekcja-50`](lekcje.md#lekcja-50) | — _(nie cytowana)_                                                                                                                                           |
+| [`lekcja-51`](lekcje.md#lekcja-51) | `wym-projekt-tree-shaking`                                                                                                                                   |
+| [`lekcja-52`](lekcje.md#lekcja-52) | — _(nie cytowana)_                                                                                                                                           |
+| [`lekcja-53`](lekcje.md#lekcja-53) | — _(nie cytowana)_                                                                                                                                           |
+| [`lekcja-54`](lekcje.md#lekcja-54) | `wym-api-teksty`                                                                                                                                             |
+| [`lekcja-55`](lekcje.md#lekcja-55) | `wym-jakosc-pakiet`, `wym-jakosc-konsument`, `wym-wydanie-ng-add`                                                                                            |

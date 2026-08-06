@@ -51,11 +51,11 @@ Migawka z **2026-08-06**, `node tools/check-docs.mjs`:
 | miara                                 | wartość |
 | ------------------------------------- | ------: |
 | wymagań                               |      81 |
-| ✅ egzekwowane                        |      51 |
+| ✅ egzekwowane                        |      52 |
 | 🟡 częściowo (świadomie bez kontroli) |      16 |
-| ⛔ luka                               |      14 |
+| ⛔ luka                               |      13 |
 
-Wszystkie 14 luk mają niżej swojego właściciela (A, B, D, F, G). Jeśli po dopisaniu
+Wszystkie 13 luk mają niżej swojego właściciela (A, B, D, F, G). Jeśli po dopisaniu
 wymagania liczba luk rośnie, a żadne zadanie się nie zmienia — ta lista przestała być
 kompletna i to jest błąd tej listy, nie rejestru.
 
@@ -71,18 +71,17 @@ F  powierzchnia zaufania       docs, ACR, benchmarki, most Figma
 G  luki bez terminu            czekają na wyzwalacz zapisany w polu „Wiąże przy"
 ```
 
-Zostały trzy pozycje fazy A i każda wymaga zbudowania czegoś nowego poza samą bramką:
-**A9** (test konsumenta na Verdaccio — jedyna pozycja badająca pakiet w użyciu, a nie
-statycznie), **A10** (macierz przeglądarek), **A13** (przebieg mutacyjny).
+Zostały dwie pozycje fazy A i obie wymagają zbudowania czegoś nowego poza samą bramką:
+**A10** (macierz przeglądarek), **A13** (przebieg mutacyjny).
 F1 jest odblokowane — A3 i A4 dały mu oba inwentarze do wyrenderowania.
 
 ---
 
 ## A. Faza 0 — bramki „natychmiast"
 
-Zostały trzy zadania i domykają **3 z 14 luk**. Każde wymaga zbudowania czegoś nowego
-poza samą bramką — rejestru npm, macierzy przeglądarek, przebiegu mutacyjnego — bo
-wszystkie bramki dające się napisać na miejscu są już za nami.
+Zostały dwa zadania i domykają **2 z 13 luk**. Każde wymaga zbudowania czegoś nowego
+poza samą bramką — macierzy przeglądarek, przebiegu mutacyjnego — bo wszystkie bramki
+dające się napisać na miejscu są już za nami.
 
 - [x] **A1 — kontrola odniesienia dla `check-package`** _(2026-08-04)_
   - domknęło: `wym-jakosc-pakiet`, `wym-projekt-pakiet`, `wym-projekt-entrypointy`,
@@ -367,16 +366,56 @@ wszystkie bramki dające się napisać na miejscu są już za nami.
     i pierwszy raz WEWNĄTRZ jednego punktu**, nie między punktami. Bramka biegnie ~22 s,
     z czego trzy czwarte to trzy prawdziwe buildy Angulara
 
-- [ ] **A9 — test konsumenta na Verdaccio**
-  - domyka: `wym-jakosc-konsument`
-  - co: `npm pack` → instalacja do świeżej aplikacji → build z SSR → jeden e2e.
-    `.verdaccio/config.yml` i target `local-registry` w root `project.json` **istnieją
-    i nie są przez nic używane**
-  - `check-package` bada artefakt **statycznie**; to sprawdziłoby go w użyciu — wprost
-    z własnej lekcji „zielony build nie jest dowodem, że artefakt da się użyć"
-    ([`lekcja-36`](lekcje.md#lekcja-36))
-  - kontrola: aplikacja zbudowana z pakietu bez skórki nie może przejść
-  - koszt: 1–2 dni · _notatki:_ —
+- [x] **A9 — test konsumenta na Verdaccio** _(2026-08-06)_
+  - domknęło: `wym-jakosc-konsument`, a przy okazji dołożyło drugą bramkę do
+    `wym-wydanie-ng-add` — bo to jego punkt zapalił jako pierwszy
+  - zrobione: `tools/check-consumer.mjs` (target `check-consumer` w `components`,
+    `dependsOn: build + schematics`, w CI) — siedem punktów, 28 reguł, ~26 s. Droga
+    konsumenta w całości: `npm pack` → publikacja do Verdaccio → `npm install` **po
+    nazwie** → `ng add` → build z SSR → serwer → jeden przebieg w przeglądarce
+  - **plan mówił „`npm pack` → instalacja → build → e2e" i to było dobre w zakresie,
+    ale za wąskie w tym, PO CO.** Bramka znalazła wadę już przy pierwszym uruchomieniu
+    i nie tam, gdzie plan patrzył: `ng add @pacit/components`, pierwsza komenda konsumenta,
+    wywracała się na `exports is not defined in ES module scope`. Manifest pakietu niesie
+    `"type": "module"` (dopisuje ng-packagr), a schematics są CommonJS-em — więc Node
+    czytał je jako ESM. `check-package` widział wtedy **komplet**: kolekcja wskazuje
+    fabrykę, plik fabryki jest w pakiecie. Był i nie dawał się wczytać
+    ([`lekcja-55`](lekcje.md#lekcja-55)). Naprawione tak, jak robi to `@angular/cdk`:
+    własna granica modułów w `schematics/package.json`
+  - punkt 1 bada **archiwum**, nie katalog, i to jest jedyna rzecz w tej bramce, której
+    `check-package` nie może zobaczyć z konstrukcji: między `dist` a `node_modules`
+    konsumenta stoją `npm pack` (pole `files`, `.npmignore`) i rejestr. Punkty 2 i 3
+    pilnują, że mierzymy **swój** pakiet: konfiguracja Verdaccio proxuje npmjs, więc
+    nieudana publikacja nie kończy się błędem instalacji, tylko zaciągnięciem cudzego
+    pakietu o tej nazwie — dziś go tam nie ma, od pierwszego wydania (B2) będzie
+  - punkt 6 nie zadowala się kodem 200: wymaga `ng-server-context="ssr"`. Zmierzone —
+    aplikacja bez routera jest **prerenderowana**, serwer oddaje wtedy plik statyczny,
+    a bundle serwera nie renderuje ani razu. Stąd trasa z `RenderMode.Server`
+  - punkt 7 mierzy tło przycisku **dwa razy**: raz jako `background-color` elementu, raz
+    jako wartość `--pct-button-bg` policzoną przez tę samą przeglądarkę na sondzie
+    w jego scope. Pusty token to skórka, która nie doszła; tło początkowe to `var()`,
+    który się nie rozwiązał; różnica między nimi to komponent malujący się czymś innym —
+    trzy różne awarie, trzy różne reguły
+  - świadomie **bez instalowania `peerDependencies` z rejestru**: `@angular/*` przychodzi
+    z `node_modules` repozytorium przez wyszukiwanie w górę drzewa, jak w sondzie buildera
+    z A8. Cena zapisana wprost — rozjazd zakresu wersji peerów przejdzie tę bramkę
+    i pilnuje go dopiero **B7**
+  - kontrola: `tools/check-consumer.fixtures/` — 28 wejść, każde odrzucane na swojej
+    **regule**; plus siedem przebiegów na prawdziwym repozytorium (pusta skórka
+    w pakiecie → build konsumenta bez ani jednej deklaracji tokenu; skórka usunięta
+    z pakietu → punkt 1; `files` odcinające schematics → punkt 1; zdjęta granica
+    CommonJS → punkt 4; `exports` na nieistniejący plik → punkt 1; `document` przy
+    konstrukcji komponentu → punkt 6; przycisk malowany kolorem z palca → punkt 7)
+  - kontrola tej kontroli: rozbrojone po kolei **wszystkie 28 reguł** — 24 dają
+    „PRZESZŁO", cztery przestawiają przypadek na regułę sąsiednią i widać to **tylko
+    dzięki polu `regula`** (trzecie potwierdzenie wniosku z A12); przypadek przestający
+    być wadliwym → „PRZESZŁO"; wadliwe wejście wzorcowe → bramka zapala na nim osobno,
+    a dziewięć przypadków idzie na cudze reguły
+  - koszt: ~1 dzień (plan zakładał 1–2) · _notatki:_ rozbrojenie reguły `brak-wpisu` dało
+    `TypeError` zamiast komunikatu — **ta sama wada co w A3, A4, A7, A8, A11 i A12, siódmy
+    raz**, tym razem w bramce, która ma o niej akapit we własnym nagłówku. Osobno
+    zmierzone, nie założone: `document` w **zasięgu modułu** biblioteki nie daje 500,
+    tylko wywraca **build** — builder ładuje bundle serwera, żeby wyprowadzić trasy
 
 - [ ] **A10 — macierz przeglądarek**
   - domyka: `wym-jakosc-przegladarki`
@@ -729,6 +768,59 @@ Czekają na wyzwalacz zapisany w polu **Wiąże przy**. Nie są zapomniane — s
 ## Dziennik
 
 Wpis per sesja: co ruszyło, czym się skończyło, co jest następne. Najnowsze na górze.
+
+### 2026-08-06 — A9: pierwsza komenda konsumenta wywracała się przy zielonych bramkach
+
+Zrobione **A9**. Luki: 14 → 13, egzekwowane: 51 → 52. Faza A ma za sobą jedenaście
+z trzynastu zadań; zostały dwa i oba wymagają zbudowania czegoś nowego.
+
+Zadanie było zakresowo dokładnie tym, co zapisał plan — `npm pack`, instalacja, build
+z SSR, jeden e2e — i **znalazło wadę przy pierwszym uruchomieniu, zanim jeszcze doszło
+do e2e**.
+
+- **`ng add @pacit/components` nie działało.** Manifest pakietu niesie `"type": "module"`
+  (dopisuje ng-packagr), schematics są kompilowane osobno do CommonJS-a i lądują jako
+  `.js` — więc Node czyta je jako ESM i przewraca się na `exports.ngAdd = …` w drugiej
+  linii. Pierwsza komenda, jaką konsument wpisuje po instalacji, w wydawanym artefakcie.
+  **`check-package` widział wtedy komplet**: manifest ma pole `schematics`, kolekcja
+  wskazuje fabrykę, plik fabryki jest w pakiecie. Wszystkie trzy odpowiedzi prawdziwe;
+  pytanie „czy da się go wczytać" nie padło, bo bramka statyczna nie ma jak go zadać
+  ([`lekcja-55`](lekcje.md#lekcja-55)). Naprawa jest tym, co robi `@angular/cdk`: własna
+  granica modułów w `schematics/package.json`.
+- **Między `dist` a `node_modules` konsumenta stoją dwa filtry.** `npm pack` (pole `files`,
+  `.npmignore`) i rejestr. Bramka chodząca po katalogu jest na nie ślepa z konstrukcji,
+  więc punkt 1 czyta listę plików z **archiwum** i porównuje ją z mapą `exports` oraz
+  z kolekcjami schematiców. Przebieg: `files: ["fesm2022", "themes", "types"]` w manifeście
+  zapala punkt 1 i **nie rusza** `check-package`.
+- **Rejestr proxuje npmjs i to jest cicha wada czekająca na pierwsze wydanie.** Nieudana
+  publikacja nie kończy się błędem instalacji — kończy się zaciągnięciem pakietu z uplinku.
+  Dziś `@pacit/components` na npmjs nie ma, więc byłoby to 404; po B2 będzie i bramka bez
+  punktu 2 badałaby artefakt sprzed wydania, wyglądając na zieloną. Stąd trzy reguły
+  porównujące sumę archiwum i adres, z którego przyszło — po obu stronach: w metadanych
+  rejestru i w pliku blokady aplikacji.
+- **„Zbudowało się z SSR" to za mało — trzeba zapytać, KTO renderował.** Aplikacja bez
+  routera jest przez builder **prerenderowana**: serwer oddaje wtedy gotowy plik
+  (`ng-server-context="ssg"`), a bundle serwera nie renderuje ani razu. Punkt 6 wymaga
+  więc `"ssr"`, a aplikacja sondy dostała trasę z `RenderMode.Server`. Zmierzone przy
+  okazji, nie założone: `document` w **zasięgu modułu** biblioteki nie daje 500, tylko
+  wywraca **build** — builder ładuje bundle serwera, żeby wyprowadzić z niego trasy.
+  Dopiero `document` przy konstrukcji komponentu wychodzi na 404 z serwera.
+
+Sprawdzone przebiegiem, nie rozumowaniem: bramka zapala na siedmiu sposobach zepsucia
+repozytorium (pusta skórka w pakiecie, skórka usunięta, `files` odcinające schematics,
+zdjęta granica CommonJS, `exports` na nieistniejący plik, `document` przy konstrukcji,
+przycisk malowany kolorem z palca) — za każdym razem na innej regule — i na rozbrojeniu
+**wszystkich 28 reguł**, z czego cztery przestawiają przypadek na regułę sąsiednią i widać
+to **tylko dzięki polu `regula`**. To trzecie potwierdzenie wniosku z A12.
+
+Wpadka własna jedna i znajoma: rozbrojenie reguły `brak-wpisu` dało `TypeError` zamiast
+komunikatu — **siódmy raz ta sama wada** (A3, A4, A7, A8, A11, A12), tym razem w bramce,
+która ma o tej wadzie akapit we własnym nagłówku. Napisanie „każdy punkt czyta wejście
+defensywnie" i napisanie kodu, który to robi, to najwyraźniej dwie różne czynności; jedyne,
+co je łączy, to przebieg rozbrajający.
+
+Następne: **A10** (macierz przeglądarek, ~0,5 dnia + czas CI) albo **A13** (przebieg
+mutacyjny, 1–2 dni) — dwie ostatnie pozycje fazy A.
 
 ### 2026-08-06 — A11: wejście jest sygnałem, a jego wartość domyślna nie
 

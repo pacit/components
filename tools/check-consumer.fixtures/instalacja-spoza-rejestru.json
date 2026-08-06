@@ -1,0 +1,7 @@
+{
+  "punkt": 3,
+  "kontrola": "instalacja",
+  "regula": "spoza-rejestru",
+  "opis": "Zainstalowany pakiet przyszedł z npmjs. Od pierwszego wydania (B2) nazwa będzie tam istniała, więc to nie jest scenariusz teoretyczny.",
+  "resolvedInstalacji": "https://registry.npmjs.org/@pacit/components/-/components-0.0.1.tgz"
+}

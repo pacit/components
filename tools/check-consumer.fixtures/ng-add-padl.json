@@ -1,0 +1,7 @@
+{
+  "punkt": 4,
+  "kontrola": "ng-add",
+  "regula": "schematic-padl",
+  "opis": "Schematic z zainstalowanego pakietu zakończył się błędem. To jest punkt, który złapał `exports is not defined in ES module scope` — plik fabryki istniał i nie dawał się wczytać, bo manifest pakietu niesie `\"type\": \"module\"`, a schematics są CommonJS-em.",
+  "kodNgAdd": 1
+}

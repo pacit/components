@@ -218,6 +218,11 @@ maszynowa postać
 > Bramka sprawdza **domknięcie**, a nie obecność pliku — obecność spełniłby też pusty
 > plik albo skórka, z której ktoś usunął warstwę komponentową.
 
+> Bada jednak **katalog `dist`**, i to jest granica zapisana, nie przeoczona: między nim
+> a `node_modules` konsumenta stoją `npm pack` i rejestr, a „plik jest" nie znaczy „plik
+> da się wczytać". Drugą stronę mierzy
+> [`wym-jakosc-konsument`](#wym-jakosc-konsument) ([`lekcja-55`](../lekcje.md#lekcja-55)).
+
 > Kontrola sprawdza nie tylko to, **że** spreparowany pakiet zapalił, ale i **który** punkt
 > go odrzucił. Bez tego fixture wywalający się z przypadkowego powodu — zepsuty manifest,
 > literówka w ścieżce — liczyłby się jako dowód, że badany punkt działa. Byłaby to ta sama
@@ -228,14 +233,34 @@ maszynowa postać
 ### <a id="wym-jakosc-konsument"></a>`wym-jakosc-konsument` — Test konsumenta na lokalnym rejestrze
 
 **Obietnica.** Logicznym następnym krokiem po [`wym-jakosc-pakiet`](#wym-jakosc-pakiet)
-jest sprawdzenie artefaktu **w użyciu**: `npm pack` → instalacja do świeżej aplikacji →
-build z SSR → jeden e2e.
+jest sprawdzenie artefaktu **w użyciu**: `npm pack` → publikacja do lokalnego rejestru →
+instalacja **po nazwie** do świeżej aplikacji → `ng add` → build z SSR → jeden e2e.
 
-**Bramka:** brak — luka: `.verdaccio/config.yml` i target `local-registry` w root
-`project.json` **istnieją i nie są przez nic używane**
-**Kontrola:** brak — luka: aplikacja zbudowana z zainstalowanego pakietu, która nie startuje, musi zapalić — dziś nie ma czego uruchomić
-**Wiąże przy:** natychmiast — `check-package` bada artefakt **statycznie**; to
-sprawdziłoby go w użyciu, czyli domknęłoby własną lekcję projektu
+Między `dist` a `node_modules` konsumenta stoją dwa filtry, których bramka statyczna nie
+widzi z założenia: `npm pack` (pole `files`, `.npmignore`) i rejestr. Do tego **„plik
+istnieje" nie znaczy „plik działa"**.
+
+**Bramka:** `tools/check-consumer.mjs` (target `check-consumer`, w CI) — siedem punktów:
+zawartość archiwum wobec mapy `exports` i kolekcji schematiców; publikacja i to, czy
+rejestr serwuje **tę samą sumę** z **lokalnego** adresu, a nie z uplinku npmjs; instalacja
+po nazwie i rozwiązanie modułu do własnego `node_modules` aplikacji; `ng add` uruchomiony
+z **zainstalowanego** pakietu prawdziwym Angular CLI; build z SSR razem ze śladem
+biblioteki w bundlu i deklaracjami tokenów w arkuszu; renderowanie **po stronie serwera**
+(`ng-server-context="ssr"`, nie prerender); jeden przebieg w przeglądarce mierzący, że
+tło przycisku jest wartością `--pct-button-bg`, przy zerowej liczbie błędów w konsoli
+**Kontrola:** `tools/check-consumer.fixtures/` — 28 spreparowanych wejść, każde odrzucane
+na swojej **regule**; plus siedem przebiegów na prawdziwym repozytorium (pusta skórka
+w pakiecie → build konsumenta bez ani jednej deklaracji tokenu; skórka usunięta z pakietu;
+`files` w manifeście odcinające schematics; zdjęta granica CommonJS; `exports` wskazujące
+na nieistniejący plik; `document` przy konstrukcji komponentu; przycisk malowany kolorem
+z palca) — każdy na innej regule
+**Lekcje:** [`lekcja-36`](../lekcje.md#lekcja-36), [`lekcja-55`](../lekcje.md#lekcja-55)
+
+> Bramka **nie** instaluje `peerDependencies` z rejestru — aplikacja bierze `@angular/*`
+> z `node_modules` repozytorium, tak samo jak sonda buildera w
+> [`wym-projekt-tree-shaking`](projekt.md#wym-projekt-tree-shaking). Rozjazd zakresu wersji
+> w `peerDependencies` przez tę bramkę przejdzie; pilnuje go
+> [`wym-projekt-zaleznosci`](projekt.md#wym-projekt-zaleznosci).
 
 ---
 

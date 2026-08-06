@@ -1,0 +1,7 @@
+{
+  "punkt": 5,
+  "kontrola": "build",
+  "regula": "build-padl",
+  "opis": "Build aplikacji konsumenta zakończył się błędem — tu ląduje niedostępny typ, zły warunek w mapie exports albo arkusz, którego bundler nie rozwiązał.",
+  "kodBuilda": 1
+}

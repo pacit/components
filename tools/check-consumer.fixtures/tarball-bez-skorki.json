@@ -1,0 +1,7 @@
+{
+  "punkt": 1,
+  "kontrola": "tarball",
+  "regula": "brak-skorki",
+  "opis": "Skórka jest w dist i nie ma jej w archiwum — czyli odfiltrował ją npm pack (files, .npmignore). Dokładnie ta różnica, której check-package nie widzi z założenia: on chodzi po katalogu, konsument dostaje archiwum.",
+  "usunPlik": "themes/pct.css"
+}

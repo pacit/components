@@ -1,0 +1,7 @@
+{
+  "punkt": 7,
+  "kontrola": "e2e",
+  "regula": "tlo-nie-z-tokenu",
+  "opis": "Skórka jest wczytana, a przycisk maluje się czymś innym niż swój token. Nadpisanie tokenu u konsumenta niczego wtedy nie zmieni, a bramka kontrastu orzeka o kolorze, którego nikt nie widzi.",
+  "tlo": "rgb(255, 0, 0)"
+}

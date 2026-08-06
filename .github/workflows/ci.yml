@@ -130,4 +130,16 @@ jobs:
       # wartość domyślna wejścia to odczyt PRZY KONSTRUKCJI, więc napis wzięty z `PCT_TEXTS`
       # w tym miejscu jest napisem sprzed zmiany języka (decyzja 0014) — a to jest wada,
       # której nie widzi żaden test renderujący komponent raz.
-      - run: npx nx affected -t lint test vite:test build typecheck check-package check-coverage check-zoneless check-typecheck check-styles check-texts check-tokens check-parts check-bundle check-docs e2e
+      # `check-consumer` bada pakiet W UŻYCIU, a nie statycznie: `npm pack`, publikacja do
+      # lokalnego rejestru, `npm install` PO NAZWIE do świeżej aplikacji, `ng add`, build
+      # z SSR i jeden przebieg w przeglądarce. `check-package` czyta katalog `dist`, a między
+      # nim a `node_modules` konsumenta stoją dwa filtry, których tamta bramka nie widzi
+      # z założenia: `npm pack` (pole `files`, `.npmignore`) i rejestr. Do tego „plik istnieje"
+      # nie znaczy „plik działa" — `ng add @pacit/components`, pierwsza komenda konsumenta,
+      # wywracała się na `exports is not defined in ES module scope`, bo manifest niesie
+      # `"type": "module"`, a schematics są CommonJS-em; bramka statyczna widziała wtedy
+      # komplet, bo plik fabryki BYŁ na miejscu. Ostatni punkt mierzy w przeglądarce to, co
+      # `lekcja-36` opisuje jako wadę cichą do końca: przycisk z kompletem klas i części,
+      # i bez ani jednego piksela wyglądu, bo nierozwiązany `var()` nie jest błędem, tylko
+      # powrotem do wartości początkowej.
+      - run: npx nx affected -t lint test vite:test build typecheck check-package check-coverage check-zoneless check-typecheck check-styles check-texts check-tokens check-parts check-bundle check-consumer check-docs e2e
