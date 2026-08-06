@@ -1,0 +1,6 @@
+{
+  "kontrola": "inwentarz",
+  "regula": "plik-bez-mutantow",
+  "// wada": "Plik z inwentarza zniknął z raportu i nie ma na to wyjątku. Znika razem ze swoimi przeżywającymi mutantami, więc wynik ROŚNIE.",
+  "usunPliki": ["libs/udawana/beta.ts"]
+}

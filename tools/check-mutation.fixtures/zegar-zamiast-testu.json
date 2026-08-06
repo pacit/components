@@ -1,0 +1,29 @@
+{
+  "kontrola": "zwezenie",
+  "regula": "zegar-zamiast-testu",
+  "// wada": "Udział timeoutów wśród zabitych przekroczył granicę z polityki. Timeout znaczy „mutant zapętlił kod\", a nie „test to zauważył\" — długi ogon timeoutów to wynik kupiony czasem przebiegu.",
+  "podmienStatusy": {
+    "libs/udawana/beta.ts": [
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Timeout",
+      "Timeout",
+      "Survived",
+      "Survived",
+      "NoCoverage"
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "kontrola": "testy",
+  "regula": "spec-spoza-repo",
+  "// wada": "Przebieg uruchomił plik testowy, którego nie ma w indeksie gita. Zabija mutanty, a bramka nie ma jak zapytać, czy zabija je u wszystkich.",
+  "testFiles": [
+    "libs/udawana/alfa.spec.ts",
+    "libs/udawana/beta.spec.ts",
+    "libs/udawana/gamma.spec.ts"
+  ]
+}

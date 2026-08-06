@@ -1,0 +1,6 @@
+{
+  "kontrola": "wynik",
+  "regula": "brak-snapshotu",
+  "// wada": "Snapshotu nie ma. Punkt 6 pilnuje wtedy wyłącznie podłogi łącznej, czyli milczy o pliku, który spadł o dwadzieścia punktów, dopóki reszta go wyrównuje.",
+  "brakSnapshotu": true
+}

@@ -15,9 +15,10 @@ import {
   ValidationError,
 } from '@angular/forms/signals';
 import { providePctTexts } from '@pacit/components/core';
+import { PctField } from '@pacit/components/field';
 import { part } from '../../testing/src/dom';
 import { PctSelect } from './select';
-import { PctSelectOption } from './select.types';
+import { PctSelectOption, PctSelectPanelWidth } from './select.types';
 
 const OPTIONS: readonly PctSelectOption[] = [
   { value: 'pl', label: 'Polska' },
@@ -179,6 +180,73 @@ class NgModelHost {
   country = 'de';
 }
 
+/** Kontrolka w obudowie — kliknięcie w ramkę idzie do niej przez `activate()`. */
+@Component({
+  imports: [PctField, PctSelect],
+  template: `<pct-field label="Kraj">
+    <pct-select [options]="options" [(value)]="value" />
+  </pct-field>`,
+})
+class InFieldHost {
+  options = OPTIONS;
+  value = signal<string | null>('');
+}
+
+/** Motyw stoi na przodku hosta — panel żyje poza tym drzewem. */
+@Component({
+  imports: [PctSelect],
+  template: `<div data-theme="dark">
+    <pct-select [options]="options" [(value)]="value" />
+  </div>`,
+})
+class ThemedHost {
+  options = OPTIONS;
+  value = signal<string | null>('');
+}
+
+@Component({
+  imports: [PctSelect],
+  template: `<pct-select
+    [options]="options"
+    [panelWidth]="panelWidth()"
+    [(value)]="value"
+  />`,
+})
+class PanelWidthHost {
+  options = OPTIONS;
+  panelWidth = signal<PctSelectPanelWidth>('field');
+  value = signal<string | null>('');
+}
+
+/** Wartość wskazuje opcję WYŁĄCZONĄ — aktywna nie jest wtedy na liście dostępnych. */
+@Component({
+  imports: [PctSelect],
+  template: `<pct-select [options]="options" [(value)]="value" />`,
+})
+class DisabledSelectionHost {
+  options = OPTIONS;
+  value = signal<string | null>('cz');
+}
+
+/** Kontrolka BEZ ani jednego wiązania — mierzy wartości domyślne wejść. */
+@Component({
+  imports: [PctSelect],
+  template: `<pct-select />`,
+})
+class BareHost {}
+
+/** Lista, na której KAŻDA opcja jest wyłączona. */
+@Component({
+  imports: [PctSelect],
+  template: `<pct-select [options]="options" />`,
+})
+class AllDisabledHost {
+  readonly options: readonly PctSelectOption[] = [
+    { value: 'a', label: 'Alfa', disabled: true },
+    { value: 'b', label: 'Beta', disabled: true },
+  ];
+}
+
 describe('PctSelect', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -195,6 +263,64 @@ describe('PctSelect', () => {
     expect(trigger.getAttribute('aria-expanded')).toBe('false');
     expect(trigger.getAttribute('aria-controls')).toBeNull();
     expect(panel()).toBeNull();
+  });
+
+  it('bez ani jednego wiązania jest pustą, sprawną kontrolką', async () => {
+    // Wartości domyślne wejść są kontraktem tak samo jak same wejścia, a każdy
+    // test podający je jawnie mierzy własne wiązanie, nie domyślną.
+    const fixture = await render(BareHost);
+    const trigger = triggerOf(fixture);
+
+    expect(trigger.disabled).toBe(false);
+    expect(trigger.getAttribute('aria-readonly')).toBeNull();
+    expect(trigger.getAttribute('aria-invalid')).toBeNull();
+    expect(trigger.getAttribute('aria-required')).toBeNull();
+    expect(trigger.getAttribute('aria-describedby')).toBeNull();
+    expect(trigger.getAttribute('aria-labelledby')).toBeNull();
+    expect(trigger.getAttribute('name')).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('[data-pct-part="label"]'),
+    ).toBeNull();
+
+    // Lista domyślnie pusta — panel mówi o tym wprost, a nie otwiera się pusty.
+    trigger.click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(optionsInPanel()).toHaveLength(0);
+    expect(part(document, 'empty').textContent?.trim()).toBe('No options');
+  });
+
+  it('podpowiedź opisuje trigger, a jej brak nie zostawia pustego odwołania', async () => {
+    const fixture = await render(Host);
+    const trigger = triggerOf(fixture);
+    expect(trigger.getAttribute('aria-describedby')).toBeNull();
+
+    fixture.componentInstance.hint.set('Wybierz kraj wysyłki');
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const opis = trigger.getAttribute('aria-describedby');
+    expect(opis).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector(`#${opis}`)?.textContent?.trim(),
+    ).toBe('Wybierz kraj wysyłki');
+  });
+
+  it('wartość null to brak wyboru, a nie opcja o wartości null', async () => {
+    const fixture = await render(Host);
+    fixture.componentInstance.value.set(null);
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    triggerOf(fixture).click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    expect(
+      optionsInPanel().some((o) => o.getAttribute('aria-selected') === 'true'),
+    ).toBe(false);
+    // Bez wyboru aktywna jest pierwsza DOSTĘPNA, a nie „opcja numer −1".
+    expect(optionsInPanel()[0].hasAttribute('data-pct-active')).toBe(true);
   });
 
   it('pokazuje tekst zastępczy, dopóki nic nie wybrano', async () => {
@@ -323,6 +449,141 @@ describe('PctSelect', () => {
       await fixture.whenStable();
 
       await press(fixture, 'ArrowDown');
+      expect(optionsInPanel()[3].hasAttribute('data-pct-active')).toBe(true);
+    });
+
+    // Klawisze otwierające są cztery i do 2026-08-06 mierzony był jeden:
+    // alternatywa `||` zwiera się na pierwszym trafieniu, więc trzy pozostałe
+    // gałęzie nie były wykonywane ani razu (`lekcja-57`).
+    it.each(['ArrowUp', 'Enter', ' '])(
+      'panel otwiera także %j',
+      async (klawisz) => {
+        const fixture = await render(Host);
+        await press(fixture, klawisz);
+
+        expect(panel()).not.toBeNull();
+        expect(triggerOf(fixture).getAttribute('aria-expanded')).toBe('true');
+      },
+    );
+
+    it('klawisz spoza obsługiwanych nie otwiera panelu', async () => {
+      const fixture = await render(Host);
+      await press(fixture, 'PageDown');
+
+      expect(panel()).toBeNull();
+    });
+
+    it('Tab zamyka listę, bo ma pozwolić wyjść z kontrolki', async () => {
+      const fixture = await render(Host);
+      await press(fixture, 'ArrowDown');
+      expect(panel()).not.toBeNull();
+
+      const event = new KeyboardEvent('keydown', {
+        key: 'Tab',
+        bubbles: true,
+        cancelable: true,
+      });
+      triggerOf(fixture).dispatchEvent(event);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(panel()).toBeNull();
+      // Tab jako jedyny z obsługiwanych klawiszy NIE jest zjadany: gdyby był,
+      // fokus zostałby w kontrolce, z której miał właśnie wyjść.
+      expect(event.defaultPrevented).toBe(false);
+    });
+
+    it('bufor typeaheadu gaśnie po przerwie w pisaniu', async () => {
+      vi.useFakeTimers();
+      try {
+        const fixture = await render(Host);
+        await press(fixture, 'ArrowDown');
+        await press(fixture, 'c'); // Czechy — wyłączone, więc szuka dalej
+        await press(fixture, 'z'); // „cz" nie pasuje do niczego dostępnego
+
+        vi.advanceTimersByTime(500);
+
+        // Po przerwie „c" zaczyna nowe słowo, a nie dokłada się do starego.
+        await press(fixture, 'p'); // Polska
+        expect(optionsInPanel()[0].hasAttribute('data-pct-active')).toBe(true);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('Home i End na liście bez dostępnych opcji nie aktywują niczego', async () => {
+      // Lista ma DWIE opcje, obie wyłączone: przy jednej „brak aktywnej"
+      // i „aktywna poza listą" wyglądają tak samo, więc test przechodziłby
+      // także dla kontrolki aktywującej opcję o indeksie 1.
+      const fixture = await render(AllDisabledHost);
+      await press(fixture, 'ArrowDown');
+      const aktywna = () =>
+        optionsInPanel().findIndex((o) => o.hasAttribute('data-pct-active'));
+
+      expect(aktywna()).toBe(-1);
+      await press(fixture, 'End');
+      expect(aktywna()).toBe(-1);
+      await press(fixture, 'Home');
+      expect(aktywna()).toBe(-1);
+      expect(
+        triggerOf(fixture).getAttribute('aria-activedescendant'),
+      ).toBeNull();
+    });
+
+    it('Escape zjada klawisz, żeby nie zamknąć czegoś piętro wyżej', async () => {
+      const fixture = await render(Host);
+      await press(fixture, 'ArrowDown');
+
+      const event = new KeyboardEvent('keydown', {
+        key: 'Escape',
+        bubbles: true,
+        cancelable: true,
+      });
+      triggerOf(fixture).dispatchEvent(event);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(panel()).toBeNull();
+      expect(event.defaultPrevented).toBe(true);
+    });
+
+    it('spacja wybiera aktywną opcję tak samo jak Enter', async () => {
+      const fixture = await render(Host);
+      await press(fixture, 'ArrowDown');
+      await press(fixture, 'ArrowDown');
+
+      await press(fixture, ' ');
+      expect(fixture.componentInstance.value()).toBe('de');
+      expect(panel()).toBeNull();
+    });
+
+    it('typeahead trafiający w PIERWSZĄ opcję też przestawia aktywną', async () => {
+      const fixture = await render(Host);
+      await press(fixture, 'ArrowDown');
+      await press(fixture, 'ArrowDown'); // aktywna: Niemcy (1)
+
+      // Indeks 0 jest jedyną wartością, przy której `>= 0` i `> 0` dają różny
+      // wynik — bez niego granica warunku nie jest mierzona.
+      await press(fixture, 'p'); // Polska (0)
+      expect(optionsInPanel()[0].hasAttribute('data-pct-active')).toBe(true);
+    });
+
+    it('strzałka z aktywnej opcji wyłączonej wskakuje na skraj listy dostępnych', async () => {
+      const fixture = await render(DisabledSelectionHost);
+      // Wartość wskazuje `cz`, czyli opcję wyłączoną: aktywna jest wtedy poza
+      // listą dostępnych i przesunięcie nie ma od czego liczyć kroku.
+      await press(fixture, 'ArrowDown');
+      expect(optionsInPanel()[2].hasAttribute('data-pct-active')).toBe(true);
+
+      await press(fixture, 'ArrowDown');
+      expect(optionsInPanel()[0].hasAttribute('data-pct-active')).toBe(true);
+    });
+
+    it('strzałka w górę z aktywnej wyłączonej idzie na koniec listy', async () => {
+      const fixture = await render(DisabledSelectionHost);
+      await press(fixture, 'ArrowDown');
+
+      await press(fixture, 'ArrowUp');
       expect(optionsInPanel()[3].hasAttribute('data-pct-active')).toBe(true);
     });
   });
@@ -621,6 +882,77 @@ describe('PctSelect', () => {
       select.reset();
       await fixture.whenStable();
       expect(fixture.componentInstance.value()).toBe(-1);
+    });
+
+    it('focus() jest tym, po co sięgają signal forms', async () => {
+      const fixture = await render(NumberHost);
+      const select = fixture.debugElement.children[0]
+        .componentInstance as PctSelect<number>;
+
+      select.focus();
+      expect(document.activeElement).toBe(triggerOf(fixture));
+    });
+  });
+
+  describe('panel poza drzewem hosta', () => {
+    it('kliknięcie w ramkę obudowy otwiera listę', async () => {
+      const fixture = await render(InFieldHost);
+      const row = fixture.nativeElement.querySelector(
+        '[data-pct-part="field-row"]',
+      ) as HTMLElement;
+
+      // Obudowa nie zna selecta — woła `activate()` z kontraktu PCT_FIELD.
+      // Bez tej drogi kliknięcie w ramkę poza samym triggerem nic nie robi,
+      // a wygląda na klikalne (`wym-a11y-dotyk`).
+      row.click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(panel()).not.toBeNull();
+    });
+
+    it('panel przejmuje motyw najbliższego przodka kontrolki', async () => {
+      const fixture = await render(ThemedHost);
+      await press(fixture, 'ArrowDown');
+
+      // Nakładka CDK jest dzieckiem `body`, więc kaskada `data-theme` do niej
+      // nie dociera — motyw trzeba przenieść ręcznie (`lekcja-35`).
+      expect(panel()?.closest('[data-theme]')?.getAttribute('data-theme')).toBe(
+        'dark',
+      );
+    });
+
+    it('bez motywu na przodku panel nie dostaje atrybutu', async () => {
+      const fixture = await render(Host);
+      await press(fixture, 'ArrowDown');
+
+      expect(panel()?.closest('[data-theme]')).toBeNull();
+    });
+
+    it('panelWidth="auto" oddaje szerokość treści, a kontrolka zostaje dolną granicą', async () => {
+      const fixture = await render(PanelWidthHost);
+      fixture.componentInstance.panelWidth.set('auto');
+      fixture.detectChanges();
+      await fixture.whenStable();
+      await press(fixture, 'ArrowDown');
+
+      const nakladka = panel()?.closest('.cdk-overlay-pane') as HTMLElement;
+      // „Nie ustawiaj szerokości" znaczy pusty napis: nakładka ma wtedy
+      // wyłącznie `min-width`. Wartość wprost zamieniłaby `auto` w `field`.
+      expect(nakladka.style.width).toBe('');
+      expect(nakladka.style.minWidth).not.toBe('');
+    });
+
+    it('panelWidth wprost trafia na nakładkę bez przeliczania', async () => {
+      const fixture = await render(PanelWidthHost);
+      fixture.componentInstance.panelWidth.set('320px');
+      fixture.detectChanges();
+      await fixture.whenStable();
+      await press(fixture, 'ArrowDown');
+
+      const nakladka = panel()?.closest('.cdk-overlay-pane') as HTMLElement;
+      expect(nakladka.style.width).toBe('320px');
+      expect(nakladka.style.minWidth).toBe('');
     });
   });
 });

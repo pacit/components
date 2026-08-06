@@ -11,7 +11,17 @@ export default [
       '@nx/dependency-checks': [
         'error',
         {
-          ignoredFiles: ['{projectRoot}/eslint.config.{js,cjs,mjs,ts,cts,mts}'],
+          // Konfiguracja Vitesta dla przebiegu mutacyjnego i jej plik startowy
+          // nie jadą do pakietu: nie stoją w `tsconfig.lib.json`, więc ng-packagr
+          // ich nie widzi, a `check-package` pilnuje, co naprawdę w nim jest.
+          // Specyfikacje wypadają z tej reguły same (wzorzec `production`), a te
+          // dwa pliki nie są specyfikacjami — bez tego wpisu kazałyby konsumentowi
+          // biblioteki ciągnąć Vite'a i wtyczkę Analoga jako peery.
+          ignoredFiles: [
+            '{projectRoot}/eslint.config.{js,cjs,mjs,ts,cts,mts}',
+            '{projectRoot}/mutacja.vitest.config.mts',
+            '{projectRoot}/mutacja.setup.ts',
+          ],
           // Schematics (`ng add`) sięgają po `@angular-devkit/schematics`
           // WYŁĄCZNIE po typy — skompilowany `schematics/ng-add/index.js` nie ma
           // ani jednego odwołania do tej paczki, bo `import type` znika przy

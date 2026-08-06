@@ -1,0 +1,121 @@
+{
+  "// po co": "Wejście wzorcowe kontroli odniesienia bramki `check-mutation`. Każdy przypadek obok składa się NA JEGO KOPII, więc plik przypadku zawiera wyłącznie swoją wadę. To wejście musi przechodzić — gdyby samo było wadliwe, każdy przypadek zapalałby z jego powodu i wszystkie „zapaliło\" byłyby fałszywe.",
+  "// udawana biblioteka": "Pliki nazywają się `alfa`, `beta` i `pusty`, a nie tak jak prawdziwe: przypadki mają nie wymagać utrzymania przy każdej zmianie w `core`, `number` czy `select`. Statusy mutantów są wypisane wprost, bo bramka liczy wynik z ich rozkładu, a nie z treści kodu.",
+  "// liczby": "alfa 9/10 = 90,00%, beta 17/20 = 85,00%, razem 26/30 = 86,67% przy podłodze 80%. Zapas jest celowy: przypadek zbijający jeden plik ma zapalać na SWOJEJ regule, a nie na podłodze łącznej, która stoi wyżej w kolejności kontroli.",
+  "wejscie": {
+    "plikiSkrot": {
+      "libs/udawana/alfa.ts": {
+        "source": "export const alfa = (n: number) => (n > 0 ? n : 0);\n",
+        "statusy": [
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Survived",
+          {
+            "status": "Ignored",
+            "powod": "Angular signal based input, model and output functions configuration object cannot be mutated as that causes issues with the Angular compiler."
+          }
+        ]
+      },
+      "libs/udawana/beta.ts": {
+        "source": "export const beta = (s: string) => s.trim();\n",
+        "statusy": [
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Survived",
+          "Survived",
+          "NoCoverage"
+        ]
+      }
+    },
+    "zrodla": {
+      "libs/udawana/alfa.ts": "export const alfa = (n: number) => (n > 0 ? n : 0);\n",
+      "libs/udawana/beta.ts": "export const beta = (s: string) => s.trim();\n",
+      "libs/udawana/pusty.ts": "export type Pusty = string;\n"
+    },
+    "wRepo": [
+      "libs/udawana/alfa.ts",
+      "libs/udawana/beta.ts",
+      "libs/udawana/pusty.ts",
+      "libs/udawana/alfa.spec.ts",
+      "libs/udawana/beta.spec.ts"
+    ],
+    "specyfikacje": ["libs/udawana/alfa.spec.ts", "libs/udawana/beta.spec.ts"],
+    "polityka": {
+      "wzorce": ["libs/udawana/*.ts", "!libs/udawana/*.spec.ts"],
+      "pliki": [
+        "libs/udawana/alfa.ts",
+        "libs/udawana/beta.ts",
+        "libs/udawana/pusty.ts"
+      ],
+      "bezMutantow": [
+        {
+          "plik": "libs/udawana/pusty.ts",
+          "powod": "Plik niesie wyłącznie alias typu, który znika przy kompilacji — nie ma tu ani warunku, ani literału, ani wywołania, więc zero mutantów jest poprawnym wynikiem pomiaru."
+        }
+      ],
+      "prog": 80,
+      "tolerancja": 2,
+      "ignorery": {
+        "angular": {
+          "powodMutanta": "Angular signal based input, model and output functions configuration object cannot be mutated as that causes issues with the Angular compiler.",
+          "powod": "Obiekt konfiguracyjny wejścia jest czytany statycznie przez kompilator Angulara — zmutowany przestaje być literałem i komponent nie kompiluje się w ogóle."
+        }
+      },
+      "zegar": {
+        "minimumMS": 5000,
+        "minimumWspolczynnik": 1.5,
+        "udzialZegara": 5
+      }
+    },
+    "konfigPrzebiegu": {
+      "mutate": ["libs/udawana/*.ts", "!libs/udawana/*.spec.ts"],
+      "thresholds": { "high": 90, "low": 80, "break": 80 },
+      "ignorers": ["angular"],
+      "ignoreStatic": false,
+      "mutator": { "excludedMutations": [] },
+      "timeoutMS": 5000,
+      "timeoutFactor": 1.5,
+      "coverageAnalysis": "perTest"
+    },
+    "konfig": { "thresholds": { "high": 90, "low": 80, "break": 80 } },
+    "targety": {
+      "mutacja": {
+        "polecenie": "stryker run libs/udawana/stryker.config.json"
+      },
+      "check": { "polecenie": "node tools/check-mutation.mjs" }
+    },
+    "ci": {
+      "targety": [
+        "npx",
+        "nx",
+        "affected",
+        "-t",
+        "test",
+        "mutacja",
+        "check-mutation"
+      ]
+    }
+  }
+}

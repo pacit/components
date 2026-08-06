@@ -1,0 +1,8 @@
+{
+  "kontrola": "wynik",
+  "regula": "polityka-bez-tolerancji",
+  "// wada": "Polityka nie deklaruje tolerancji. Bez niej porównanie ze snapshotem nie ma szerokości i każdy przebieg wyglądałby na rozjazd.",
+  "polityka": {
+    "tolerancja": null
+  }
+}

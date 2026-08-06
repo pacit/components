@@ -1,0 +1,9 @@
+{
+  "// po co": "Czwarty, rozłączny program biblioteki: konfiguracja Vitesta dla przebiegu mutacyjnego i jej plik startowy. Nie należą ani do pakietu (tsconfig.lib.json), ani do specyfikacji (tsconfig.spec.json) — a bez własnego programu nie oglądałby ich żaden kompilator, co `check-typecheck` (punkt 4) melduje od razu. Osobno, a nie doklejone do `tsconfig.spec.json`, żeby typy Node'a (`__dirname`) nie weszły do programu specyfikacji: te biegną w jsdom i mają się psuć na sięgnięciu po API serwera.",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../dist/out-tsc",
+    "types": ["node", "vite/client", "vitest"]
+  },
+  "include": ["mutacja.vitest.config.mts", "mutacja.setup.ts"]
+}

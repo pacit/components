@@ -160,4 +160,18 @@ jobs:
       # potwierdza sondą w żywej przeglądarce, żeby powód wyłączenia nie przeżył faktu,
       # na którym stoi: dziś webkit melduje `forced-colors: active` i nie podmienia
       # kolorów autora, a to jest zdanie o WERSJI paczki, nie o tym repozytorium.
-      - run: npx nx affected -t lint test vite:test build typecheck check-package check-coverage check-zoneless check-typecheck check-styles check-texts check-tokens check-parts check-bundle check-consumer check-browsers check-docs e2e
+      # `mutacja` i `check-mutation` odpowiadają na pytanie, którego liczba zielonych
+      # testów nie zadaje: czy te testy cokolwiek łapią. Pokrycie mierzy, ile linii
+      # WYKONANO — a linia wykonana bez ani jednej asercji liczy się tam tak samo jak
+      # sprawdzona. Przy 96,62% pokrycia rdzeń miał wynik mutacyjny 63,54%: co trzeci
+      # mutant przechodził CI na zielono. Sam przebieg nie wystarcza jako bramka, bo
+      # `thresholds.break` jest u Strykera DOMYŚLNIE `null` — raport do oglądania — a po
+      # ustawieniu progu podnosi się go pięcioma ruchami, z których żaden nie dokłada
+      # testu: plik wykreślony z `mutate`, poszerzone `ignorers` albo `// Stryker disable`
+      # w źródle, wykluczona rodzina mutatorów, `ignoreStatic: true` i skrócony
+      # `timeoutMS` (mutant zabity ZEGAREM liczy się do wyniku jak zabity asercją).
+      # `check-mutation` czyta więc konfigurację SKUTECZNĄ z raportu przebiegu, nie
+      # z pliku, i osobno pilnuje mianownika testów: przebieg mutacyjny idzie własną
+      # konfiguracją Vitesta, więc specyfikacja niewidziana przez tę drugą drogę byłaby
+      # testem, którego mutanty nie ma kto zabić.
+      - run: npx nx affected -t lint test vite:test build typecheck check-package check-coverage check-zoneless check-typecheck check-styles check-texts check-tokens check-parts check-bundle check-consumer check-browsers mutacja check-mutation check-docs e2e

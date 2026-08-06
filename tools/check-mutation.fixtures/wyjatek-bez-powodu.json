@@ -1,0 +1,13 @@
+{
+  "kontrola": "inwentarz",
+  "regula": "wyjatek-bez-powodu",
+  "// wada": "Wyjątek bez zdania. „Zero mutantów\" znaczy albo „nie ma czego mutować\", albo „plik wypadł z pomiaru\" — rozstrzyga to wyłącznie powód, który ktoś napisał.",
+  "polityka": {
+    "bezMutantow": [
+      {
+        "plik": "libs/udawana/pusty.ts",
+        "powod": "bo tak"
+      }
+    ]
+  }
+}

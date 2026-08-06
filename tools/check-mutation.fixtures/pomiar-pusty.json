@@ -1,0 +1,9 @@
+{
+  "kontrola": "pomiar",
+  "regula": "pomiar-pusty",
+  "// wada": "Raport jest, i nie ma w nim ani jednego mutanta. Stryker kończy się wtedy zerem i melduje 100%, bo dzieli przez mianownik, którego nie ma.",
+  "podmienStatusy": {
+    "libs/udawana/alfa.ts": [],
+    "libs/udawana/beta.ts": []
+  }
+}

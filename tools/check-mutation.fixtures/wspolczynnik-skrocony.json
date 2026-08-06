@@ -1,0 +1,8 @@
+{
+  "kontrola": "zwezenie",
+  "regula": "wspolczynnik-skrocony",
+  "// wada": "`timeoutFactor` obniżony poniżej minimum. Ta sama dźwignia co `timeoutMS`, tylko liczona względem czasu normalnego przebiegu.",
+  "konfigPrzebiegu": {
+    "timeoutFactor": 1
+  }
+}

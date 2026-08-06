@@ -1,0 +1,8 @@
+{
+  "kontrola": "inwentarz",
+  "regula": "wzorce-zmienione",
+  "// wada": "Wzorzec `mutate` zawężony w konfiguracji Strykera bez zmiany w polityce. Plik wykreślony z pomiaru zabiera ze sobą swoje przeżywające mutanty i wynik rośnie sam.",
+  "polityka": {
+    "wzorce": ["libs/udawana/alfa.ts"]
+  }
+}

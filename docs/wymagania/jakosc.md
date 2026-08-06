@@ -100,17 +100,47 @@ dopisane do polecenia — punkt 3
 
 ### <a id="wym-jakosc-jednostkowe"></a>`wym-jakosc-jednostkowe` — Testy jednostkowe na Vitest
 
-**Obietnica.** Testy jednostkowe biblioteki i aplikacji biegną na Vitest, pod zoneless.
+**Obietnica.** Testy jednostkowe biblioteki i aplikacji biegną na Vitest, pod zoneless,
+i **coś łapią**: rdzeń (`core`, `[pctNumber]`, `PctSelect`) ma zmierzony wynik mutacyjny
+z egzekwowaną podłogą.
 
-**Bramka:** `.github/workflows/ci.yml` — `test` i `vite:test` w liście `nx affected -t`
-**Kontrola:** brak — luka: **testowanie mutacyjne** rdzenia (Stryker na `core`, `number`,
-`select`). To jedyna metoda odpowiadająca na pytanie „czy te testy w ogóle coś łapią" —
-czyli dokładnie to pytanie, które projekt zadaje sobie przy każdej bramce. 136 zielonych
-testów nie jest jeszcze dowodem
-**Wiąże przy:** natychmiast dla `core` — im więcej komponentów na nim stoi, tym droższa
-każda niewykryta luka
+**Bramka:** trzyczęściowa, bo „testy biegną", „ile ich przechodzi" i „ile wad zauważają"
+psują się osobno. `.github/workflows/ci.yml` — `test` i `vite:test` w liście
+`nx affected -t` (przebieg). `libs/components/project.json` — target `mutacja` uruchamia
+Strykera z `thresholds.break` = 80, czyli **faila poniżej podłogi**.
+`tools/check-mutation.mjs` (target `check-mutation`, `dependsOn: mutacja`, w CI) pilnuje
+mianownika: siedem punktów i 37 reguł na to, że pomiar jest aktualny, obejmuje
+zadeklarowany inwentarz plików, uruchamia **te same specyfikacje co target `test`**,
+ma próg wiążący i nie zwężany (ignorery, wykluczone mutatory, `ignoreStatic`, komentarze
+`// Stryker disable`, skrócony `timeoutMS`) oraz mieści się w snapshocie
+`libs/components/mutacja.snapshot.md` z tolerancją **dwustronną** per plik
+**Kontrola:** `tools/check-mutation.fixtures/` — 37 spreparowanych wejść na udawanej
+bibliotece, każde odrzucane na swojej **regule**; plus przebiegi na prawdziwym
+repozytorium (usunięcie asercji z `select.spec.ts` zbija wynik pliku i zapala
+`wynik/wynik-spadl`, dopisanie testu ponad tolerancję zapala `wynik/snapshot-odstaje`,
+`thresholds.break: null` — `prog/prog-nieustawiony`, plik wykreślony z `mutate` —
+`inwentarz/wzorce-zmienione`). Do tego kontrola tej kontroli: rozbrojenie każdej z 37
+reguł po kolei — 25 daje „PRZESZŁO", 12 przestawia przypadek na regułę sąsiednią
 **Lekcje:** [`lekcja-3`](../lekcje.md#lekcja-3), [`lekcja-19`](../lekcje.md#lekcja-19),
-[`lekcja-28`](../lekcje.md#lekcja-28)
+[`lekcja-28`](../lekcje.md#lekcja-28), [`lekcja-57`](../lekcje.md#lekcja-57),
+[`lekcja-58`](../lekcje.md#lekcja-58)
+
+> **Pokrycie i wynik mutacyjny mierzą dwie różne rzeczy i różnica jest duża.** Przy
+> 96,62% pokrycia linii rdzeń miał wynik mutacyjny **63,54%**: co trzeci mutant
+> przechodził CI na zielono. Pokrycie mówi, ile linii WYKONANO — a linia wykonana bez
+> ani jednej asercji liczy się tam tak samo jak sprawdzona. Domknięcie tej różnicy do
+> 81,77% wymagało 38 nowych testów i nowej specyfikacji `core/src/core.spec.ts`:
+> funkcje z `@pacit/components/core` były publicznym API bez ani jednego testu pod
+> własnym nazwiskiem ([`lekcja-57`](../lekcje.md#lekcja-57)).
+
+> Dlaczego sam Stryker nie wystarcza jako bramka. `thresholds.break` jest u niego
+> **domyślnie `null`** — przebieg kończy się zerem przy wyniku 4% tak samo jak przy 94%,
+> czyli jest raportem do oglądania. A gdy próg już stoi, podnosi się go pięcioma ruchami,
+> z których żaden nie dokłada ani jednego testu: plik wykreślony z `mutate`, poszerzone
+> `ignorers`, wykluczona rodzina mutatorów, `ignoreStatic: true` i skrócony `timeoutMS`
+> (mutant zabity ZEGAREM liczy się do wyniku jak zabity asercją). `check-mutation` czyta
+> więc konfigurację **skuteczną z raportu przebiegu**, a nie z pliku — flaga w poleceniu
+> targetu nie zostawia w nim śladu.
 
 ---
 

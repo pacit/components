@@ -528,3 +528,36 @@ Skutek jest gorszy niż czerwony przebieg. Z sześciu testów `forced-colors.spe
 Trafiło to przy okazji w wadę specyficzności, której dwa pozostałe silniki **nie potrafią pokazać**: `:host([disabled]:not([data-pct-loading]))` w regule bazowej ma (0,3,0), a `:host([disabled])` w bloku forced-colors — (0,2,0). Media query nie dokłada specyficzności, więc `color: GrayText` przegrywa z tokenem. W chromium i firefoksie nie widać tego nigdy, bo przeglądarka i tak zamaluje wynik paletą; widać dopiero tam, gdzie nie zamaluje. Deklaracja w bibliotece jest więc martwa — dziś bez objawu, a z objawem od dnia, w którym padnie pod `forced-color-adjust: none`.
 
 Reguła praktyczna, w rodzinie [`lekcja-48`](#lekcja-48): **zapytanie o warunek i zdolność do jego spełnienia to dwa różne pytania, a emulacja odpowiada tylko na pierwsze.** Zanim test oprze się na trybie przeglądarki, trzeba zmierzyć, czy TA przeglądarka ten tryb realizuje — na sondzie bez własnego kodu, bo własny kod potrafi odpowiedzieć zamiast silnika. I zmierzyć to **przy każdym przebiegu**, a nie raz: jest to zdanie o wersji paczki, nie o repozytorium, więc przestanie obowiązywać przy zmianie, która nie rusza tu ani jednego pliku (stąd punkt 6 `check-browsers`).
+
+### <a id="lekcja-57"></a>`lekcja-57` — Pokrycie mierzy wykonanie, nie sprawdzenie: 96,62% linii to 63,54% mutantów
+
+**Rdzeń biblioteki miał 96,62% pokrycia linii i 183 zielone testy. Przy pierwszym przebiegu mutacyjnym zauważyły one 63,54% wprowadzonych wad.** Innymi słowy: co trzecia zmiana zachowania w `core`, `[pctNumber]` i `PctSelect` przechodziła CI na zielono. Różnica nie jest pomyłką pomiaru — to dwie różne wielkości. Pokrycie odpowiada na pytanie „czy ta linia się wykonała", a linia wykonana **bez ani jednej asercji na jej skutek** liczy się tam dokładnie tak samo jak sprawdzona.
+
+Rozkład przeżywających mutantów mówi, gdzie to siedzi, i żadna z tych rzeczy nie jest egzotyczna:
+
+- **44 mutanty bez ani jednego pokrywającego testu** — przy 96,62% pokrycia. Kod wykonany „przy okazji" (konstruktor, efekt, gałąź `default`) jest pokryty i niemierzony;
+- **granice warunków**: `match >= 0` przestawione na `> 0` przeżywa każdy test, w którym trafienie nie wypada na indeksie zero. Test „typeahead aktywuje pasującą opcję" istniał i sprawdzał opcję numer 1;
+- **wartości domyślne wejść**: każdy test podający `[readonly]="readonly()"` mierzy własne wiązanie, a nie domyślną. Kontrolka bez ani jednego wiązania nie była renderowana ani razu — a to jest pierwsza rzecz, jaką pisze konsument;
+- **testy, które nie robią tego, co obiecuje ich nazwa**: `PageUp/PageDown skacze dziesięciokrotnie` naciskał wyłącznie PageUp. Cała gałąź PageDown była niepokryta i nikt tego nie widział, bo nazwa testu brzmi jak pokrycie.
+
+Najciekawsze jest to, że **publiczne API bez własnej specyfikacji wygląda na przetestowane**. Funkcje `pctFieldMessages` i `pctDescribedBy` z `@pacit/components/core` nie miały ani jednego testu pod własnym nazwiskiem — mierzyły je specyfikacje kontrolek, i to na jednej ścieżce każda. Pokrycie linii pokazywało je jako pokryte w 100%, bo każda linia wykonywała się przy renderowaniu selecta. Osobna `core.spec.ts` z piętnastoma testami podniosła wynik tego entrypointu z 76,79% do 98,21%.
+
+Reguła praktyczna: **próg pokrycia jest bramką na to, czy testy dotykają kodu; wynik mutacyjny — na to, czy cokolwiek sprawdzają.** Pierwszy bez drugiego jest tym, przed czym ostrzega [`lekcja-33`](#lekcja-33): liczbą, która rośnie od pisania testów, a nie od pisania asercji. Domknięcie różnicy z 63,54% do 81,77% kosztowało 38 nowych testów — i każdy z nich powstał, bo mutant wskazał palcem konkretną linię, a nie dlatego, że komuś przyszła do głowy.
+
+### <a id="lekcja-58"></a>`lekcja-58` — Bramka, która potrafi zapalić, i bramka, która zapali, to dwa różne stany — Stryker startuje w drugim
+
+**`thresholds.break` jest w Strykerze domyślnie `null` i to znaczy „nie przerywaj nigdy".** Przebieg z wynikiem 4% kończy się kodem 0 dokładnie tak samo jak przebieg z 94%; jedyną różnicą jest kolor liczby w raporcie. Narzędzie mierzące wady jest więc po instalacji **raportem do oglądania**, a nie bramką — i wygląda w CI identycznie jak bramka, bo krok jest zielony.
+
+To jest ta sama rodzina co [`lekcja-39`](#lekcja-39) (próg wizualny skalujący się z wielkością karty) i [`lekcja-53`](#lekcja-53) (drugi, niezmierzony próg `toHaveScreenshot`), ale o stopień ostrzejsza: tam wartość domyślna była za luźna, tu **wyłącza egzekwowanie w całości**. Wniosek uogólnia się na każde narzędzie jakości wpinane do pipeline'u: pierwsze pytanie brzmi nie „co ono mierzy", tylko **„co robi z wynikiem, którego nikt nie ustawił"**.
+
+Drugie pytanie jest ciekawsze, bo dotyczy dnia po. Gdy próg już stoi, podnosi się go pięcioma ruchami, z których żaden nie dokłada ani jednego testu i każdy wygląda w review jak sprzątanie:
+
+- plik wykreślony z `mutate` — zabiera ze sobą swoje przeżywające mutanty, więc **procent rośnie**;
+- `ignorers` poszerzone albo `// Stryker disable` dopisane do źródła — mutanty znikają z mianownika, a w konfiguracji nie ma po tym śladu;
+- `mutator.excludedMutations` z całą rodziną mutacji;
+- `ignoreStatic: true` — wypadają inicjalizatory pól i zasięg modułu, czyli w bibliotece komponentów jej publiczny kontrakt;
+- skrócony `timeoutMS` — **mutant zabity zegarem liczy się do wyniku tak samo jak zabity asercją**, więc krótszy limit kupuje procent za czas przebiegu.
+
+Stąd kształt `check-mutation`: bramka nie czyta `stryker.config.json`, tylko pole `config` z **raportu przebiegu**, czyli konfigurację skuteczną — flaga dopisana do polecenia targetu nie zostawia w pliku ani jednej linii. To ten sam ruch co „nie czytaj `include`, uruchom kompilator" z [`lekcja-47`](#lekcja-47), przeniesiony z kompilatora na narzędzie pomiarowe.
+
+Osobno, i to jest wniosek dla każdego pomiaru z progiem: **sam próg łączny milczy o pliku, który spadł o dwadzieścia punktów, dopóki reszta go wyrównuje.** Dlatego obok twardej podłogi stoi snapshot per plik z tolerancją **dwustronną** — w dół, bo tak wygląda usunięta asercja, w górę, bo podłoga stojąca dziesięć punktów pod pomiarem przestaje mierzyć. Cena jest zapisana wprost: każda poprawa testów wymaga przepisania snapshotu, czyli linii w diffie, którą widać w review. To jest ta cena, którą się płaci, żeby liczba coś znaczyła.

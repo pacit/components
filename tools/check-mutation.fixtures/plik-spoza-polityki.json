@@ -1,0 +1,22 @@
+{
+  "kontrola": "inwentarz",
+  "regula": "plik-spoza-polityki",
+  "// wada": "Nowy plik wszedł do pomiaru wzorcem, a nikt nie dopisał go do inwentarza. Punkt 6 by go mierzył, ale jego podłoga nie miałaby gdzie stać.",
+  "dopiszPliki": {
+    "libs/udawana/gamma.ts": {
+      "source": "export const gamma = 1;\n",
+      "statusy": [
+        "Killed",
+        "Killed",
+        "Killed",
+        "Killed",
+        "Killed",
+        "Killed",
+        "Killed",
+        "Killed",
+        "Killed",
+        "Survived"
+      ]
+    }
+  }
+}

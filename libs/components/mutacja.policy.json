@@ -1,0 +1,53 @@
+{
+  "// po co": "Rejestr przebiegu mutacyjnego (wym-jakosc-jednostkowe). Trzyma to, czego nie da się wyczytać z raportu Strykera: KTÓRE pliki mają być mierzone, JAKI wynik jest podłogą i JAKIE zwężenia mianownika są świadome. Bramka `tools/check-mutation.mjs` porównuje ten plik z raportem, czyli z tym, co przebieg NAPRAWDĘ zrobił — nie z konfiguracją, która to deklaruje.",
+
+  "// wzorce": "Kopia `mutate` ze `stryker.config.json`, przepisana tutaj po to, żeby jej zmiana była porównaniem, a nie zaufaniem. Zawężenie wzorca jest najtańszym sposobem podniesienia wyniku: plik wykreślony z pomiaru zabiera ze sobą swoje przeżywające mutanty i procent rośnie, choć testów nie przybyło. To ta sama wada co `coverageInclude` z `lekcja-45`, tylko o piętro wyżej.",
+  "wzorce": [
+    "libs/components/core/src/*.ts",
+    "libs/components/field/src/number.ts",
+    "libs/components/select/src/select.ts",
+    "!libs/components/**/index.ts",
+    "!libs/components/**/*.types.ts",
+    "!libs/components/**/*.spec.ts"
+  ],
+
+  "// pliki": "Inwentarz wprost: co ma być mierzone. Wzorce wyżej pilnują, że nikt nie zawęził pomiaru; ta lista pilnuje, że plik objęty wzorcem naprawdę wszedł do raportu. Jedno bez drugiego nie wystarcza — wzorzec może zostać nietknięty, a plik zniknąć (przemianowanie, przeniesienie), i wynik znowu urośnie sam.",
+  "pliki": [
+    "libs/components/core/src/config.ts",
+    "libs/components/core/src/field.ts",
+    "libs/components/core/src/id.ts",
+    "libs/components/core/src/texts.ts",
+    "libs/components/core/src/value.ts",
+    "libs/components/field/src/number.ts",
+    "libs/components/select/src/select.ts"
+  ],
+
+  "// bezMutantow": "Plik objęty pomiarem, z którego Stryker nie potrafi zrobić ani jednego mutanta, NIE pojawia się w raporcie. Bez tej listy byłby nieodróżnialny od pliku wypadniętego z pomiaru — a to są dwie różne rzeczy i tylko jedna z nich jest w porządku. Wpis wymaga powodu i przestaje być prawdziwy w dniu, w którym plik dostanie pierwszy mutant: bramka wtedy zapala.",
+  "bezMutantow": [
+    {
+      "plik": "libs/components/core/src/value.ts",
+      "powod": "Plik niesie typ `PctCompareWith` i jedno przypisanie `export const pctSameValue = Object.is`. Typ znika przy kompilacji, a przypisanie referencji do wbudowanej funkcji nie ma czego mutować: nie ma tu ani warunku, ani literału, ani wywołania z argumentem. Zero mutantów jest tu poprawnym wynikiem pomiaru, a nie jego brakiem."
+    }
+  ],
+
+  "// prog": "Twarda podłoga wyniku dla całości, w procentach. Ta sama liczba stoi w `thresholds.break` w `stryker.config.json` i bramka pilnuje, że obie są zgodne — bo to tamta faila przebieg, a ta jest jej jedynym uzasadnieniem. `break` jest z definicji Strykera `null`, czyli DOMYŚLNIE przebieg mutacyjny kończy się zerem niezależnie od wyniku i jest raportem do oglądania.",
+  "prog": 80,
+
+  "// tolerancja": "O ile punktów procentowych wynik pliku może odjechać od snapshotu, zanim to jest zmiana wymagająca decyzji. Sprawdzane W OBIE STRONY: w dół, bo tak wygląda usunięta asercja; w górę, bo podłoga stojąca dziesięć punktów pod pomiarem przestaje cokolwiek mierzyć — można wtedy skasować co piątą asercję i zostać zielonym. Cena jest zapisana wprost: poprawa testów wymaga przepisania snapshotu (`--write`), czyli linii w diffie, którą widać w review.",
+  "tolerancja": 2,
+
+  "// ignorery": "Wtyczki Strykera, które WYKREŚLAJĄ mutanty z mianownika (status `Ignored`). Każda musi tu stać razem z powodem, bo każda podnosi wynik, nie dokładając ani jednego testu. Bramka porównuje tę listę z tym, co raport melduje jako użyte, a osobno sprawdza, że ŻADEN zignorowany mutant nie ma powodu spoza tej listy — tak wchodzą do repozytorium komentarze `// Stryker disable`, których w konfiguracji nie widać.",
+  "ignorery": {
+    "angular": {
+      "powodMutanta": "Angular signal based input, model and output functions configuration object cannot be mutated as that causes issues with the Angular compiler.",
+      "powod": "Obiekt konfiguracyjny `input()`, `model()`, `output()` i zapytań widoku jest czytany STATYCZNIE przez kompilator Angulara. Zmutowany przestaje być literałem, więc ngtsc nie kompiluje komponentu w ogóle — cały plik wraca do JIT-a i wywraca dry run na `Component 'PctSelect' is not resolved`. To nie jest mutant, którego test nie zabił, tylko mutant, którego nie da się uruchomić."
+    }
+  },
+
+  "// zegar": "Mutant zabity przez UPŁYW CZASU liczy się do wyniku tak samo jak zabity asercją. Skrócenie limitów jest więc sposobem na podniesienie procentu bez pisania testów, a długi ogon timeoutów znaczy, że wynik kupuje zegar. `minimumMS` i `minimumWspolczynnik` to dolne granice ustawień Strykera, `udzialZegara` — górna granica udziału timeoutów wśród zabitych, w procentach.",
+  "zegar": {
+    "minimumMS": 5000,
+    "minimumWspolczynnik": 1.5,
+    "udzialZegara": 5
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "kontrola": "testy",
+  "regula": "spec-poza-pomiarem",
+  "// wada": "Specyfikacja biblioteki nie weszła do przebiegu mutacyjnego. Biegnie w `test` i nie biegnie tutaj, więc mutant, którego zabija, liczy się jako przeżywający — dwie drogi do tych samych plików rozjechały się.",
+  "testFiles": ["libs/udawana/alfa.spec.ts"]
+}

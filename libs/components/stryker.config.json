@@ -1,0 +1,31 @@
+{
+  "$schema": "../../node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "packageManager": "npm",
+  "testRunner": "vitest",
+  "vitest": {
+    "configFile": "libs/components/mutacja.vitest.config.mts"
+  },
+  "coverageAnalysis": "perTest",
+  "ignorers": ["angular"],
+  "mutate": [
+    "libs/components/core/src/*.ts",
+    "libs/components/field/src/number.ts",
+    "libs/components/select/src/select.ts",
+    "!libs/components/**/index.ts",
+    "!libs/components/**/*.types.ts",
+    "!libs/components/**/*.spec.ts"
+  ],
+  "tempDirName": "tmp/stryker",
+  "reporters": ["progress", "clear-text", "json"],
+  "jsonReporter": {
+    "fileName": "tmp/mutacja/mutation.json"
+  },
+  "htmlReporter": {
+    "fileName": "tmp/mutacja/mutation.html"
+  },
+  "thresholds": {
+    "high": 90,
+    "low": 80,
+    "break": 80
+  }
+}

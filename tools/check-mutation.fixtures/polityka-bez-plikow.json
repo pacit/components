@@ -1,0 +1,8 @@
+{
+  "kontrola": "inwentarz",
+  "regula": "polityka-bez-plikow",
+  "// wada": "Inwentarz pusty. Punkty 2 i 6 chodzą po tej liście, więc przeszłyby w komplecie, nie zaglądając do niczego.",
+  "polityka": {
+    "pliki": []
+  }
+}

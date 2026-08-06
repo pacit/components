@@ -1,0 +1,6 @@
+{
+  "kontrola": "pomiar",
+  "regula": "pomiar-nieczytelny",
+  "// wada": "Nie ma raportu w ogóle — przebieg mutacyjny nie biegł albo go nie zapisał. Bramka bez raportu nie ma czego porównywać, więc bez tej reguły przeszłaby w komplecie.",
+  "brakRaportu": true
+}

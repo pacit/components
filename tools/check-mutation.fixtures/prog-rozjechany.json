@@ -1,0 +1,19 @@
+{
+  "kontrola": "prog",
+  "regula": "prog-rozjechany",
+  "// wada": "Podłoga obniżona w konfiguracji Strykera, nietknięta w polityce. To ta pierwsza faila przebieg, a ta druga jest jej jedynym uzasadnieniem.",
+  "konfigPrzebiegu": {
+    "thresholds": {
+      "high": 90,
+      "low": 80,
+      "break": 60
+    }
+  },
+  "konfig": {
+    "thresholds": {
+      "high": 90,
+      "low": 80,
+      "break": 60
+    }
+  }
+}

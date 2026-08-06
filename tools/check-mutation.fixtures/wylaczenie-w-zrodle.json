@@ -1,0 +1,8 @@
+{
+  "kontrola": "zwezenie",
+  "regula": "wylaczenie-w-zrodle",
+  "// wada": "Komentarz wyłączający Strykera dopisany do mierzonego pliku. Nie zostawia śladu ani w konfiguracji, ani w poleceniu — widać go wyłącznie w pliku, którego dotyczy.",
+  "podmienZrodlo": {
+    "libs/udawana/alfa.ts": "// Stryker disable next-line all\nexport const alfa = (n: number) => (n > 0 ? n : 0);\n"
+  }
+}

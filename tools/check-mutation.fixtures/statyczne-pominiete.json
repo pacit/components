@@ -1,0 +1,8 @@
+{
+  "kontrola": "zwezenie",
+  "regula": "statyczne-pominiete",
+  "// wada": "`ignoreStatic: true` wyrzuca z mianownika mutanty w inicjalizatorach pól i w zasięgu modułu. W bibliotece komponentów jest tam wejście, wartość domyślna i identyfikator — czyli publiczny kontrakt.",
+  "konfigPrzebiegu": {
+    "ignoreStatic": true
+  }
+}

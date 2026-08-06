@@ -1,0 +1,23 @@
+{
+  "kontrola": "zwezenie",
+  "regula": "mutant-zignorowany-obcym-powodem",
+  "// wada": "Mutant zignorowany z powodem, którego w polityce nie ma — tak wchodzi do repozytorium komentarz `// Stryker disable`, którego w konfiguracji nie widać.",
+  "podmienStatusy": {
+    "libs/udawana/alfa.ts": [
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Survived",
+      {
+        "status": "Ignored",
+        "powod": "nie chce mi się tego testować"
+      }
+    ]
+  }
+}

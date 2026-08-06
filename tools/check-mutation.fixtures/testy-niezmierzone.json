@@ -1,0 +1,6 @@
+{
+  "kontrola": "testy",
+  "regula": "testy-niezmierzone",
+  "// wada": "Raport nie wymienia ani jednego pliku testowego — tak wygląda przebieg bez `coverageAnalysis: \"perTest\"`. Nie ma wtedy jak sprawdzić, czy mierzy te same specyfikacje co target `test`.",
+  "testFiles": []
+}

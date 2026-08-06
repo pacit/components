@@ -1,0 +1,8 @@
+{
+  "kontrola": "prog",
+  "regula": "polityka-bez-progu",
+  "// wada": "Polityka nie deklaruje podłogi. Nie ma wtedy z czym porównać `thresholds.break`, czyli jedynej liczby, która faila przebieg.",
+  "polityka": {
+    "prog": null
+  }
+}

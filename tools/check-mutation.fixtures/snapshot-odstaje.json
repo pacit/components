@@ -1,0 +1,29 @@
+{
+  "kontrola": "wynik",
+  "regula": "snapshot-odstaje",
+  "// wada": "Plik wypadł lepiej niż snapshot o więcej niż tolerancja. To dobra wiadomość i mimo to zapala: podłoga stojąca dziesięć punktów pod pomiarem przestaje mierzyć.",
+  "podmienStatusy": {
+    "libs/udawana/beta.ts": [
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Survived"
+    ]
+  }
+}

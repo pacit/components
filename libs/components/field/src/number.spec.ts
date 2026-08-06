@@ -6,6 +6,7 @@ import {
   Type,
 } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { form, FormField, max, min } from '@angular/forms/signals';
 import { PctField } from './field';
 import { PctNumber } from './number';
@@ -93,6 +94,47 @@ class SignalFormHost {
   });
 }
 
+/** Klasyczne formularze — użycie, przed którym dyrektywa ostrzega. */
+@Component({
+  imports: [PctNumber, ReactiveFormsModule],
+  template: `<input pctNumber [formControl]="ctrl" />`,
+})
+class ClassicFormHost {
+  ctrl = new FormControl<number | null>(null);
+}
+
+/** `type="number"` — drugie takie użycie. */
+@Component({
+  imports: [PctNumber],
+  template: `<input type="number" pctNumber [(value)]="value" />`,
+})
+class NumberTypeHost {
+  value = signal<number | null>(null);
+}
+
+/** Pole BEZ ani jednego wiązania — mierzy wartości domyślne wejść. */
+@Component({
+  imports: [PctNumber],
+  template: `<input pctNumber />`,
+})
+class BareHost {}
+
+/** Stan błędu podany wprost, bez formularza — bramkowanie na `touched`. */
+@Component({
+  imports: [PctNumber],
+  template: `<input
+    pctNumber
+    [invalid]="invalid()"
+    [touched]="touched()"
+    [(value)]="value"
+  />`,
+})
+class InvalidHost {
+  invalid = signal(false);
+  touched = signal(false);
+  value = signal<number | null>(1);
+}
+
 describe('PctNumber', () => {
   describe('formatowanie wg locale', () => {
     it('grupuje tysiące i używa lokalnego separatora dziesiętnego', async () => {
@@ -174,6 +216,22 @@ describe('PctNumber', () => {
 
       await type(fixture, '1,500');
       expect(fixture.componentInstance.value()).toBe(1500);
+    });
+
+    it('obcina białe znaki dookoła — wklejenie z arkusza niesie spacje', async () => {
+      const fixture = await render(Host);
+
+      await type(fixture, '  42  ');
+      expect(fixture.componentInstance.value()).toBe(42);
+    });
+
+    it('same białe znaki to pole puste, nie zero', async () => {
+      const fixture = await render(Host);
+      fixture.componentInstance.value.set(7);
+      await fixture.whenStable();
+
+      await type(fixture, '   ');
+      expect(fixture.componentInstance.value()).toBeNull();
     });
 
     it('czyszczenie pola ustawia null', async () => {
@@ -261,6 +319,28 @@ describe('PctNumber', () => {
       await blur(fixture);
       expect(fixture.componentInstance.value()).toBe(20);
     });
+
+    // Granica podana z jednej strony ma działać z tej jednej strony — wspólny
+    // test dla min i max nie odróżnia tego od „domyka zawsze".
+    it('sama granica dolna nie domyka od góry', async () => {
+      const fixture = await render(Host);
+      fixture.componentInstance.min.set(10);
+      await fixture.whenStable();
+
+      await type(fixture, '1000');
+      await blur(fixture);
+      expect(fixture.componentInstance.value()).toBe(1000);
+    });
+
+    it('sama granica górna nie domyka od dołu', async () => {
+      const fixture = await render(Host);
+      fixture.componentInstance.max.set(20);
+      await fixture.whenStable();
+
+      await type(fixture, '-1000');
+      await blur(fixture);
+      expect(fixture.componentInstance.value()).toBe(-1000);
+    });
   });
 
   describe('klawiatura', () => {
@@ -306,6 +386,57 @@ describe('PctNumber', () => {
 
       await key(fixture, 'PageUp');
       expect(fixture.componentInstance.value()).toBe(150);
+
+      // PageDown był w nazwie tego testu, a nie w jego treści, do 2026-08-06:
+      // przebieg mutacyjny pokazał całą gałąź jako niepokrytą (`lekcja-57`).
+      await key(fixture, 'PageDown');
+      expect(fixture.componentInstance.value()).toBe(100);
+    });
+
+    it('klawisz spoza obsługiwanych nie rusza wartości ani zdarzenia', async () => {
+      const fixture = await render(Host);
+      fixture.componentInstance.value.set(7);
+      await fixture.whenStable();
+
+      const event = new KeyboardEvent('keydown', {
+        key: 'a',
+        cancelable: true,
+      });
+      inputOf(fixture).dispatchEvent(event);
+      await fixture.whenStable();
+
+      expect(fixture.componentInstance.value()).toBe(7);
+      // Gałąź `default` ma oddać klawisz przeglądarce — inaczej pole przestaje
+      // przyjmować cyfry, bo `preventDefault` zjada każde naciśnięcie.
+      expect(event.defaultPrevented).toBe(false);
+    });
+
+    // Pole puste: krok musi mieć od czego wyjść, a kolejność odniesień
+    // (min, potem max, potem zero) jest tu obietnicą — pierwsza strzałka ma
+    // wejść W zakres, a nie zacząć od zera i zostać do niego domkniętą.
+    it('krok bez wartości wychodzi od min', async () => {
+      const fixture = await render(Host);
+      fixture.componentInstance.min.set(10);
+      await fixture.whenStable();
+
+      await key(fixture, 'ArrowUp');
+      expect(fixture.componentInstance.value()).toBe(11);
+    });
+
+    it('krok bez wartości i bez min wychodzi od max', async () => {
+      const fixture = await render(Host);
+      fixture.componentInstance.max.set(50);
+      await fixture.whenStable();
+
+      await key(fixture, 'ArrowDown');
+      expect(fixture.componentInstance.value()).toBe(49);
+    });
+
+    it('krok bez wartości i bez granic wychodzi od zera', async () => {
+      const fixture = await render(Host);
+
+      await key(fixture, 'ArrowUp');
+      expect(fixture.componentInstance.value()).toBe(1);
     });
 
     it('Home i End skaczą do granic', async () => {
@@ -319,6 +450,32 @@ describe('PctNumber', () => {
 
       await key(fixture, 'Home');
       expect(fixture.componentInstance.value()).toBe(1);
+    });
+
+    it('Home i End bez granic nie robią nic', async () => {
+      const fixture = await render(Host);
+      fixture.componentInstance.value.set(5);
+      await fixture.whenStable();
+
+      // Bez `min`/`max` nie ma dokąd skoczyć — klawisz ma zostać oddany
+      // przeglądarce (w polu tekstowym przesuwa karetkę), a nie zjedzony.
+      const home = new KeyboardEvent('keydown', {
+        key: 'Home',
+        cancelable: true,
+      });
+      inputOf(fixture).dispatchEvent(home);
+      await fixture.whenStable();
+      expect(fixture.componentInstance.value()).toBe(5);
+      expect(home.defaultPrevented).toBe(false);
+
+      const end = new KeyboardEvent('keydown', {
+        key: 'End',
+        cancelable: true,
+      });
+      inputOf(fixture).dispatchEvent(end);
+      await fixture.whenStable();
+      expect(fixture.componentInstance.value()).toBe(5);
+      expect(end.defaultPrevented).toBe(false);
     });
 
     it('krok wychodzi od tego, co użytkownik wpisał, a nie od zatwierdzonej wartości', async () => {
@@ -362,6 +519,39 @@ describe('PctNumber', () => {
       expect(el.getAttribute('aria-valuetext')).toBe('1\u00a0234,5');
       expect(el.getAttribute('aria-valuemin')).toBe('0');
       expect(el.getAttribute('aria-valuemax')).toBe('1000');
+    });
+
+    it('bez ani jednego wiązania jest pustym, sprawnym polem', async () => {
+      // Wartości domyślne wejść są kontraktem tak samo jak same wejścia,
+      // a każdy test podający je jawnie mierzy własne wiązanie, nie domyślną.
+      const fixture = await render(BareHost);
+      const el = inputOf(fixture);
+
+      expect(el.disabled).toBe(false);
+      expect(el.readOnly).toBe(false);
+      expect(el.value).toBe('');
+      expect(el.getAttribute('aria-invalid')).toBeNull();
+      expect(el.getAttribute('aria-required')).toBeNull();
+      expect(el.getAttribute('name')).toBeNull();
+      expect(el.getAttribute('aria-valuemin')).toBeNull();
+      expect(el.getAttribute('aria-valuemax')).toBeNull();
+
+      // Domyślny krok to jeden, domyślnie bez ułamków.
+      await key(fixture, 'ArrowUp');
+      expect(el.value).toBe('1');
+    });
+
+    it('stan błędu zapala się dopiero po dotknięciu', async () => {
+      const fixture = await render(InvalidHost);
+      const el = inputOf(fixture);
+
+      fixture.componentInstance.invalid.set(true);
+      await fixture.whenStable();
+      expect(el.getAttribute('aria-invalid')).toBeNull();
+
+      fixture.componentInstance.touched.set(true);
+      await fixture.whenStable();
+      expect(el.getAttribute('aria-invalid')).toBe('true');
     });
 
     it('puste pole nie ma aria-valuenow', async () => {
@@ -428,6 +618,72 @@ describe('PctNumber', () => {
       await type(fixture, '9999');
       await blur(fixture);
       expect(fixture.componentInstance.model().seats).toBe(500);
+    });
+
+    it('focus() i reset() są tym, po co sięgają signal forms', async () => {
+      const fixture = await render(SignalFormHost);
+      const dyrektywa = fixture.debugElement
+        .query((d) => d.nativeElement.tagName === 'INPUT')
+        .injector.get(PctNumber);
+
+      dyrektywa.focus();
+      expect(document.activeElement).toBe(inputOf(fixture));
+
+      dyrektywa.reset();
+      await fixture.whenStable();
+      expect(fixture.componentInstance.model().seats).toBe(null);
+      expect(inputOf(fixture).value).toBe('');
+    });
+  });
+
+  describe('ostrzeżenia deweloperskie', () => {
+    it('klasyczne formularze przejmują zapis do DOM — dyrektywa mówi o tym głośno', async () => {
+      const warn = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => undefined);
+      try {
+        await render(ClassicFormHost);
+        expect(warn).toHaveBeenCalledTimes(1);
+        // Komunikat ma nazwać wadę ORAZ wskazać wyjście — samo „nie rób tak"
+        // zostawia czytelnika w tym samym miejscu, w którym go zastało.
+        expect(String(warn.mock.calls[0][0])).toContain(
+          'Classic forms ([formControl], [(ngModel)]) take over writing ' +
+            'the value and break locale formatting. Use signal forms ' +
+            '([formField]) or [(value)] instead.',
+        );
+      } finally {
+        warn.mockRestore();
+      }
+    });
+
+    it('type="number" gubi lokalny separator — dyrektywa mówi o tym głośno', async () => {
+      const warn = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => undefined);
+      try {
+        await render(NumberTypeHost);
+        expect(warn).toHaveBeenCalledTimes(1);
+        // Komunikat ma NAZWAĆ zastany typ, bo inaczej nie odróżnia
+        // `type="number"` od `type="email"` i nie mówi, co poprawić.
+        expect(String(warn.mock.calls[0][0])).toBe(
+          '[pctNumber] Expected type="text" (the control parses numbers per ' +
+            'locale itself), but got type="number".',
+        );
+      } finally {
+        warn.mockRestore();
+      }
+    });
+
+    it('poprawne użycie milczy', async () => {
+      const warn = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => undefined);
+      try {
+        await render(SignalFormHost);
+        expect(warn).not.toHaveBeenCalled();
+      } finally {
+        warn.mockRestore();
+      }
     });
   });
 });

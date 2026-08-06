@@ -51,11 +51,11 @@ Migawka z **2026-08-06**, `node tools/check-docs.mjs`:
 | miara                                 | wartość |
 | ------------------------------------- | ------: |
 | wymagań                               |      81 |
-| ✅ egzekwowane                        |      53 |
+| ✅ egzekwowane                        |      54 |
 | 🟡 częściowo (świadomie bez kontroli) |      16 |
-| ⛔ luka                               |      12 |
+| ⛔ luka                               |      11 |
 
-Wszystkie 12 luk mają niżej swojego właściciela (A, B, D, F, G). Jeśli po dopisaniu
+Wszystkie 11 luk mają niżej swojego właściciela (B, D, F, G). Jeśli po dopisaniu
 wymagania liczba luk rośnie, a żadne zadanie się nie zmienia — ta lista przestała być
 kompletna i to jest błąd tej listy, nie rejestru.
 
@@ -71,16 +71,16 @@ F  powierzchnia zaufania       docs, ACR, benchmarki, most Figma
 G  luki bez terminu            czekają na wyzwalacz zapisany w polu „Wiąże przy"
 ```
 
-Została jedna pozycja fazy A: **A13** (przebieg mutacyjny).
-F1 jest odblokowane — A3 i A4 dały mu oba inwentarze do wyrenderowania.
+**Faza A jest zamknięta.** Kolejność zaczyna się od B (gotowość do wydania) — B1 i B2 to
+minuty, a bez nich nie da się wydać niczego. Równolegle: F1 jest odblokowane (A3 i A4
+dały mu oba inwentarze do wyrenderowania), a C jest wypełniaczem.
 
 ---
 
 ## A. Faza 0 — bramki „natychmiast"
 
-Zostało jedno zadanie i domyka **1 z 12 luk**. Wymaga zbudowania czegoś nowego poza samą
-bramką — przebiegu mutacyjnego — bo wszystkie bramki dające się napisać na miejscu są już
-za nami.
+**Zamknięta 2026-08-06.** Trzynaście zadań, dwadzieścia domkniętych luk, trzynaście bramek
+z kontrolą odniesienia. Nic tu już nie czeka.
 
 - [x] **A1 — kontrola odniesienia dla `check-package`** _(2026-08-04)_
   - domknęło: `wym-jakosc-pakiet`, `wym-projekt-pakiet`, `wym-projekt-entrypointy`,
@@ -594,13 +594,60 @@ za nami.
     reguły `token-spoza-skorki` dało `TypeError` — **ta sama wada co w A3, A4, A7 i A8,
     piąty raz**
 
-- [ ] **A13 — testowanie mutacyjne rdzenia**
-  - domyka: `wym-jakosc-jednostkowe`
-  - co: Stryker na `core`, `number`, `select`. Jedyna metoda odpowiadająca na pytanie
-    „czy te testy w ogóle coś łapią" — czyli dokładnie to pytanie, które projekt zadaje
-    sobie przy każdej bramce. Komplet zielonych testów sam z siebie nie jest dowodem
-  - kontrola: próg przeżywalności mutantów wpięty w CI, nie raport do oglądania
-  - koszt: 1–2 dni · _notatki:_ —
+- [x] **A13 — testowanie mutacyjne rdzenia** _(2026-08-06)_
+  - domknęło: `wym-jakosc-jednostkowe` — ostatnią lukę fazy A
+  - zrobione: target `mutacja` (Stryker 9.6 na `core`, `field/number.ts`,
+    `select/select.ts`, `thresholds.break` = 80, ~6 min) plus
+    `tools/check-mutation.mjs` (target `check-mutation`, `dependsOn: mutacja`, w CI) —
+    siedem punktów, 37 reguł — oraz `libs/components/mutacja.policy.json`
+    i generowany `mutacja.snapshot.md`
+  - **pierwszy pomiar był całym uzasadnieniem tego zadania: przy 96,62% pokrycia linii
+    wynik mutacyjny wynosił 63,54%.** Co trzeci mutant przechodził CI na zielono, 44
+    mutanty nie miały ani jednego pokrywającego testu, a jeden test naciskał wyłącznie
+    PageUp przy nazwie `PageUp/PageDown skacze dziesięciokrotnie`. Domknięcie do 81,77%
+    kosztowało **38 nowych testów** i nową specyfikację `core/src/core.spec.ts`:
+    `pctFieldMessages` i `pctDescribedBy` są publicznym API entrypointu `./core`
+    i nie miały ani jednego testu pod własnym nazwiskiem, a pokrycie linii pokazywało
+    je jako 100% ([`lekcja-57`](lekcje.md#lekcja-57))
+  - plan mówił „próg przeżywalności wpięty w CI, nie raport do oglądania" i trafił
+    w sedno, tylko **za wąsko**: sam próg jest w Strykerze wyłączony domyślnie
+    (`thresholds.break: null`), a po ustawieniu podnosi się go pięcioma ruchami, z których
+    żaden nie dokłada testu — plik wykreślony z `mutate`, poszerzone `ignorers` albo
+    `// Stryker disable` w źródle, wykluczona rodzina mutatorów, `ignoreStatic: true`
+    i skrócony `timeoutMS` (mutant zabity ZEGAREM liczy się jak zabity asercją).
+    Stąd bramka czyta konfigurację **skuteczną z raportu**, nie z pliku
+    ([`lekcja-58`](lekcje.md#lekcja-58))
+  - punkt 3 jest tym, którego plan nie przewidywał, i wynika z konstrukcji: Stryker
+    potrzebuje **pliku** konfiguracji Vitesta, a target `test` idzie przez builder
+    `@angular/build`, który składa ją w pamięci. Są więc dwie drogi do tych samych
+    specyfikacji i potrafią się rozjechać — bramka porównuje `testFiles` z raportu
+    z listą `*.spec.ts` z indeksu gita. Rozjazd zmierzony od razu: pod konfiguracją
+    mutacyjną dwa testy `field.spec.ts` padały, bo wtyczka Analoga domyślnie kompiluje
+    w testach **JIT-em**, a wtedy `styleUrl` nie dociera do komponentu w ogóle
+  - **`ignorers: ["angular"]` nie jest wygodą, tylko warunkiem uruchomienia.** Bez niego
+    dry run wywraca się na `Component 'PctSelect' is not resolved`: obiekt konfiguracyjny
+    `input()`/`model()`/`output()` jest czytany statycznie przez ngtsc, a zmutowany
+    przestaje być literałem — cały plik wraca wtedy do JIT-a. To zwęża mianownik o 16
+    mutantów, więc stoi w polityce razem z powodem, a punkt 5 pilnuje, że żaden inny
+    powód zignorowania się nie pojawi
+  - podłoga jest dwuwarstwowa i to jest odpowiedź na `lekcja-45` w wersji dla mutacji:
+    `thresholds.break` = 80 łącznie (egzekwuje Stryker) plus snapshot **per plik**
+    z tolerancją **dwustronną** ±2 p.p. Sam próg łączny milczy o pliku, który spadł
+    o dwadzieścia punktów, dopóki reszta go wyrównuje; tolerancja w górę wymusza
+    przepisanie snapshotu przy poprawie, czyli linię w diffie
+  - kontrola: `tools/check-mutation.fixtures/` — 37 wejść na **udawanej** bibliotece
+    (`alfa`, `beta`, `pusty`), każde odrzucane na swojej **regule**; plus cztery
+    przebiegi na prawdziwym repozytorium (`thresholds.break: null` → `prog-nieustawiony`;
+    `select.ts` wykreślony z `mutate` → `wzorce-zmienione`; usunięte asercje
+    z `select.spec.ts` → `wynik-spadl`; nowy test ponad tolerancję → `snapshot-odstaje`)
+  - kontrola tej kontroli: rozbrojone po kolei **wszystkie 37 reguł** — 25 daje
+    „PRZESZŁO", 12 przestawia przypadek na regułę sąsiednią i widać to **tylko dzięki
+    polu `regula`** (piąte potwierdzenie wniosku z A12)
+  - koszt: ~1,5 dnia (plan zakładał 1–2) · _notatki:_ rozbrojenie reguły
+    `pomiar-nieczytelny` dało `TypeError` zamiast komunikatu — **ta sama wada co w A3,
+    A4, A7, A8, A9, A11 i A12, ósmy raz**; tym razem znaleziona przez kontrolę tej
+    kontroli, zanim bramka trafiła do CI. Osobno zmierzone: przebieg trwa ~6 min na
+    ośmiu rdzeniach i jest w całości zdominowany przez 554 uruchomienia zestawu testów
 
 ---
 
@@ -836,6 +883,81 @@ Czekają na wyzwalacz zapisany w polu **Wiąże przy**. Nie są zapomniane — s
 ## Dziennik
 
 Wpis per sesja: co ruszyło, czym się skończyło, co jest następne. Najnowsze na górze.
+
+### 2026-08-06 — A13: 96,62% pokrycia to 63,54% zauważonych wad. Faza A zamknięta
+
+Zrobione **A13**. Luki: 12 → 11, egzekwowane: 53 → 54. **Faza A ma za sobą komplet
+trzynastu zadań.**
+
+Zadanie było zakresowo dokładnie tym, co zapisał plan — Stryker na `core`, `number`
+i `select`, próg wpięty w CI zamiast raportu do oglądania — i pomyliło się w jednym:
+w założeniu, że najtrudniejszą częścią będzie bramka. Najtrudniejszą częścią był
+**pierwszy pomiar**.
+
+- **Przy 96,62% pokrycia linii testy zauważały 63,54% wprowadzonych wad.** To nie jest
+  błąd pomiaru, tylko dwie różne wielkości: pokrycie mówi, ile linii się WYKONAŁO,
+  a linia wykonana bez ani jednej asercji na jej skutek liczy się tam tak samo jak
+  sprawdzona. 44 mutanty nie miały ani jednego pokrywającego testu — przy 96,62%.
+  Rozkład reszty jest pouczający i nieegzotyczny: granice warunków (`match >= 0`
+  przestawione na `> 0` przeżywa każdy test, w którym trafienie nie wypada na indeksie
+  zero), wartości domyślne wejść (każdy test podający `[readonly]="readonly()"` mierzy
+  własne wiązanie, nie domyślną — kontrolka bez ani jednego wiązania nie była renderowana
+  ani razu) i testy, które nie robią tego, co obiecuje ich nazwa: `PageUp/PageDown skacze
+dziesięciokrotnie` naciskał wyłącznie PageUp ([`lekcja-57`](lekcje.md#lekcja-57)).
+- **Publiczne API bez własnej specyfikacji wygląda na przetestowane.** `pctFieldMessages`
+  i `pctDescribedBy` z `@pacit/components/core` nie miały ani jednego testu pod własnym
+  nazwiskiem — mierzyły je specyfikacje kontrolek, każda na jednej ścieżce. Pokrycie linii
+  pokazywało je jako 100%, bo każda linia wykonuje się przy renderowaniu selecta. Osobna
+  `core.spec.ts` podniosła wynik tego entrypointu z 76,79% na 98,21%. Łącznie: 38 nowych
+  testów, wynik 63,54% → **81,77%**, a pokrycie linii przy okazji 96,62% → 98,61%.
+- **Narzędzie mierzące wady jest po instalacji raportem, nie bramką.** `thresholds.break`
+  jest w Strykerze domyślnie `null`, czyli przebieg z wynikiem 4% kończy się zerem tak
+  samo jak z 94%. A gdy próg już stoi, podnosi się go pięcioma ruchami, z których żaden
+  nie dokłada testu i każdy wygląda w review jak sprzątanie: plik wykreślony z `mutate`
+  (zabiera swoje przeżywające mutanty, więc procent rośnie), poszerzone `ignorers` albo
+  `// Stryker disable` w źródle, wykluczona rodzina mutatorów, `ignoreStatic: true`
+  i skrócony `timeoutMS` — mutant zabity ZEGAREM liczy się do wyniku jak zabity asercją.
+  Stąd `check-mutation` czyta konfigurację **skuteczną z raportu przebiegu**, a nie
+  z pliku: flaga dopisana do polecenia targetu nie zostawia w nim ani jednej linii
+  ([`lekcja-58`](lekcje.md#lekcja-58)).
+- **Dwie drogi do tych samych specyfikacji rozjechały się przy pierwszym uruchomieniu.**
+  Stryker potrzebuje PLIKU konfiguracji Vitesta, a target `test` idzie przez builder
+  `@angular/build`, który składa ją w pamięci — więc przebieg mutacyjny ma własną
+  (`mutacja.vitest.config.mts`). Pod nią dwa testy `field.spec.ts` padały od razu: wtyczka
+  Analoga domyślnie kompiluje w testach **JIT-em**, a wtedy `styleUrl` nie dociera do
+  komponentu w ogóle i `getComputedStyle` zwraca pustkę. Stąd `jit: false` i stąd punkt 3
+  bramki, który porównuje `testFiles` z raportu z listą `*.spec.ts` z indeksu gita:
+  specyfikacja niewidziana przez tę drugą drogę byłaby testem, którego mutanty nie ma kto
+  zabić, a wynik spadłby bez śladu przyczyny.
+- **Podłoga jest dwuwarstwowa, bo próg łączny milczy o pojedynczym pliku.** `break` = 80
+  egzekwuje Stryker; snapshot `mutacja.snapshot.md` pilnuje każdego pliku z osobna
+  i pilnuje go **w obie strony** (±2 p.p.): w dół, bo tak wygląda usunięta asercja,
+  w górę, bo podłoga stojąca dziesięć punktów pod pomiarem przestaje mierzyć. Cena jest
+  zapisana wprost — poprawa testów wymaga `--write`, czyli linii w diffie.
+
+Sprawdzone przebiegiem, nie rozumowaniem: bramka zapala na czterech sposobach zepsucia
+repozytorium (`thresholds.break: null`, `select.ts` wykreślony z `mutate`, usunięte
+asercje w `select.spec.ts`, snapshot sprzed dopisania testów) — za każdym razem na innej
+regule — i na rozbrojeniu **wszystkich 37 reguł**, z czego 12 przestawia przypadek na
+regułę sąsiednią i widać to **tylko dzięki polu `regula`**. To piąte potwierdzenie
+wniosku z A12.
+
+Osobne znalezisko, zmierzone przy pierwszym uruchomieniu: **`ignorers: ["angular"]` nie
+jest wygodą, tylko warunkiem uruchomienia.** Bez niego dry run wywraca się na
+`Component 'PctSelect' is not resolved` — obiekt konfiguracyjny `input()`/`model()`/
+`output()` jest czytany statycznie przez ngtsc, a zmutowany przestaje być literałem, więc
+cały plik wraca do JIT-a. Zwęża to mianownik o 16 mutantów, więc stoi w polityce razem
+z powodem, a punkt 5 pilnuje, żeby żaden inny powód zignorowania się nie pojawił.
+
+Wpadka własna jedna i znajoma: rozbrojenie reguły `pomiar-nieczytelny` dało `TypeError`
+zamiast komunikatu — **ósmy raz ta sama wada** (A3, A4, A7, A8, A9, A11, A12). Tym razem
+z jedną różnicą, którą warto zapisać: znalazła ją kontrola tej kontroli, uruchomiona
+**przed** wpięciem bramki do CI, a nie po. Osiem powtórzeń wystarczyło, żeby przestać
+liczyć na pamięć i zacząć na przebieg rozbrajający.
+
+Następne: faza A jest zamknięta, więc kolejność zaczyna się od **B** — B1 (`LICENSE`)
+i B2 (zdalne repozytorium + `repository`) to minuty, a bez nich nie da się wydać niczego.
+Równolegle **F1** (`apps/docs`) jest odblokowane od A3/A4, a **C** zostaje wypełniaczem.
 
 ### 2026-08-06 — A10: media query zapaliło się w silniku, który tego nie umie
 

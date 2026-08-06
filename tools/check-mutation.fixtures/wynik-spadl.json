@@ -1,0 +1,29 @@
+{
+  "kontrola": "wynik",
+  "regula": "wynik-spadl",
+  "// wada": "Plik stracił na wyniku więcej niż tolerancja, a podłoga łączna tego nie widzi. Tak wygląda usunięta asercja: testy dalej są zielone, a mutantów zauważają mniej.",
+  "podmienStatusy": {
+    "libs/udawana/beta.ts": [
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Survived",
+      "Survived",
+      "Survived",
+      "Survived"
+    ]
+  }
+}

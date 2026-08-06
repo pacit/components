@@ -9,9 +9,9 @@ Nie ma stanu „zrealizowane, tylko niesprawdzone" — patrz
 
 | stan           | znaczenie                                          | liczba |
 | -------------- | -------------------------------------------------- | -----: |
-| ✅ egzekwowane | bramka i kontrola istnieją, są wpięte w CI         |     53 |
+| ✅ egzekwowane | bramka i kontrola istnieją, są wpięte w CI         |     54 |
 | 🟡 częściowo   | bramka jest, kontroli odniesienia brak (świadomie) |     16 |
-| ⛔ luka        | brak bramki albo kontroli, z zapisanym terminem    |     12 |
+| ⛔ luka        | brak bramki albo kontroli, z zapisanym terminem    |     11 |
 | **razem**      |                                                    | **81** |
 
 ## Luki wg pilności
@@ -20,7 +20,6 @@ Kolejność bierze się z pola **Wiąże przy**, nie z numeru wymagania.
 
 | wymaganie                                                               | czego brakuje                                                                       | wiąże przy                                                   |
 | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| [`wym-jakosc-jednostkowe`](wymagania/jakosc.md#wym-jakosc-jednostkowe)  | **testowanie mutacyjne** rdzenia (Stryker na `core`, `number`, `selec… _(kontrola)_ | natychmiast dla `core` — im więcej komponentów na nim stoi,… |
 | [`wym-api-animacje`](wymagania/api.md#wym-api-animacje)                 | zakaz jest dotrzymany, ale **nic go nie pilnuje** — jedyne, co obowią…              | pierwszym komponencie z wejściem/wyjściem (panel, dialog, t… |
 | [`wym-api-ikony`](wymagania/api.md#wym-api-ikony)                       | dziś każda ikona jest **wpisana w szablon** jako SVG w `currentColor`…              | drugim komponencie potrzebującym podmienialnej ikony         |
 | [`wym-api-liczba`](wymagania/api.md#wym-api-liczba)                     | testy własnościowe parsera (`parse(format(n)) === n` dla dowolnego `n… _(kontrola)_ | pierwszym locale spoza `pl`/`en` zgłoszonym przez konsumenta |
@@ -85,7 +84,7 @@ Kolejność bierze się z pola **Wiąże przy**, nie z numeru wymagania.
 | [`wym-jakosc-kontrola`](wymagania/jakosc.md#wym-jakosc-kontrola)         | ✅ egzekwowane | `tools/check-docs.mjs` — pole **Kontrola** jest wymagane przy każdym … | `tools/check-docs.fixtures/` — wymaganie z bramką, ale bez kontroli, … |
 | [`wym-jakosc-rejestr`](wymagania/jakosc.md#wym-jakosc-rejestr)           | ✅ egzekwowane | `tools/check-docs.mjs` (target `check-docs`, w CI) — sześć kontroli o… | `tools/check-docs.fixtures/` — zestaw celowo wadliwych wymagań (bez b… |
 | [`wym-jakosc-typecheck`](wymagania/jakosc.md#wym-jakosc-typecheck)       | ✅ egzekwowane | `tools/check-typecheck.mjs` (target `check-typecheck`, w CI) — cztery… | `tools/check-typecheck.fixtures/` — jedenaście spreparowanych wejść, … |
-| [`wym-jakosc-jednostkowe`](wymagania/jakosc.md#wym-jakosc-jednostkowe)   | ⛔ luka        | `.github/workflows/ci.yml` — `test` i `vite:test` w liście `nx affect… | brak — luka: **testowanie mutacyjne** rdzenia (Stryker na `core`, `nu… |
+| [`wym-jakosc-jednostkowe`](wymagania/jakosc.md#wym-jakosc-jednostkowe)   | ✅ egzekwowane | trzyczęściowa, bo „testy biegną", „ile ich przechodzi" i „ile wad zau… | `tools/check-mutation.fixtures/` — 37 spreparowanych wejść na udawane… |
 | [`wym-jakosc-pokrycie`](wymagania/jakosc.md#wym-jakosc-pokrycie)         | ✅ egzekwowane | dwuczęściowa, bo procent i jego mianownik psują się osobno. `libs/com… | `tools/check-coverage.fixtures/` — siedem spreparowanych wejść, po je… |
 | [`wym-jakosc-e2e`](wymagania/jakosc.md#wym-jakosc-e2e)                   | ✅ egzekwowane | `apps/sandbox-e2e/src/visual.spec.ts` i pozostałe specyfikacje e2e     | progi są **dwa** i oba wynikają z pomiaru. Liczba pikseli jest bezwzg… |
 | [`wym-jakosc-hydracja`](wymagania/jakosc.md#wym-jakosc-hydracja)         | ✅ egzekwowane | `apps/sandbox-e2e/src/hydration.spec.ts` + pomocnik `visit()` w `apps… | `hydration.spec.ts › „bramka faktycznie wykrywa błąd hydracji (kontro… |
@@ -211,3 +210,5 @@ Która lekcja karmi które wymaganie. Generowane z pól **Lekcje**.
 | [`lekcja-54`](lekcje.md#lekcja-54) | `wym-api-teksty`                                                                                                                                             |
 | [`lekcja-55`](lekcje.md#lekcja-55) | `wym-jakosc-pakiet`, `wym-jakosc-konsument`, `wym-wydanie-ng-add`                                                                                            |
 | [`lekcja-56`](lekcje.md#lekcja-56) | `wym-jakosc-przegladarki`                                                                                                                                    |
+| [`lekcja-57`](lekcje.md#lekcja-57) | `wym-jakosc-jednostkowe`                                                                                                                                     |
+| [`lekcja-58`](lekcje.md#lekcja-58) | `wym-jakosc-jednostkowe`                                                                                                                                     |

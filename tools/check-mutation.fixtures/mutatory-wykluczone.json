@@ -1,0 +1,10 @@
+{
+  "kontrola": "zwezenie",
+  "regula": "mutatory-wykluczone",
+  "// wada": "Cała rodzina mutacji wykluczona. Znika z mianownika bez śladu w wyniku, a każda z nich odpowiada realnej pomyłce.",
+  "konfigPrzebiegu": {
+    "mutator": {
+      "excludedMutations": ["StringLiteral"]
+    }
+  }
+}
