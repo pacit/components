@@ -282,6 +282,47 @@ const kontrole = (ROOT, { release }, ostrzezenia) => {
     );
   }
 
+  // Plik LICENSE w artefakcie. Pole `license` i plik rozjeżdżają się po cichu, bo
+  // zmiana jednego nie wymusza zmiany drugiego, a `"license": "MIT"` bez pliku jest
+  // formalnie licencją niepełną. Trzy różne awarie, trzy reguły: pliku nie ma, plik
+  // jest zajawką z generatora, plik mówi o innej licencji niż manifest. Twardy błąd
+  // zawsze — inaczej niż `repository`, którego nie dało się spełnić bez zdalnego repo.
+  let licencja = '';
+  try {
+    licencja = readFileSync(join(ROOT, 'LICENSE'), 'utf8');
+  } catch {
+    fail(
+      'licencja',
+      `pakiet nie zawiera pliku LICENSE, a manifest deklaruje "${pkg.license}".\n` +
+        `  Dla dzialu prawnego konsumenta to licencja niepelna. Plik jedzie z libs/components/LICENSE.`,
+    );
+  }
+  if (licencja.trim().length < 100)
+    fail(
+      'licencja',
+      `plik LICENSE ma ${licencja.trim().length} znakow — to zajawka, nie tresc licencji`,
+    );
+
+  // Dopasowanie po granicy slowa, nie `includes`: zmierzone, nie zalozone — tekst MIT
+  // i tekst Apache-2.0 zawieraja slowo LIMITED, w ktorym „MIT" siedzi jako podciag,
+  // wiec plik Apache przy manifescie MIT przeszedlby prostszy warunek.
+  const spdx = (pkg.license ?? '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  if (
+    spdx &&
+    !new RegExp(`(?<![A-Za-z0-9])${spdx}(?![A-Za-z0-9])`).test(licencja)
+  )
+    fail(
+      'licencja',
+      `manifest deklaruje "${pkg.license}", a plik LICENSE tej nazwy nie zawiera — ` +
+        `jedna ze stron zostala zmieniona bez drugiej`,
+    );
+  if (!/Copyright \(c\) \d{4} \S/.test(licencja))
+    fail(
+      'licencja',
+      'plik LICENSE nie ma linii `Copyright (c) <rok> <podmiot>` — bez wskazanego ' +
+        'wlasciciela nota nie chroni niczego',
+    );
+
   return (
     `${THEME} obecny i wyeksportowany, ` +
     `${used.size} uzytych tokenow ma pokrycie w ${defined.size} deklaracjach, ` +

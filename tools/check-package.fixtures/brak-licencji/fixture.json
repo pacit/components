@@ -1,0 +1,6 @@
+{
+  "punkt": 6,
+  "kontrola": "licencja",
+  "opis": "Pakiet z `\"license\": \"MIT\"` w manifeście i bez pliku LICENSE. Formalnie licencja niepełna — a to pierwsza rzecz, którą sprawdza dział prawny konsumenta korporacyjnego. Punkt 6 pilnował dotąd wyłącznie pól manifestu, więc ta wada przechodziła przy zielonym przebiegu.",
+  "usun": ["LICENSE"]
+}

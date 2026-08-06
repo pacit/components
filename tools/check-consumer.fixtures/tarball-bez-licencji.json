@@ -1,0 +1,7 @@
+{
+  "punkt": 1,
+  "kontrola": "tarball",
+  "regula": "brak-licencji",
+  "opis": "Plik LICENSE jest w `dist`, ale wypadł z archiwum — tak działa pole `files` albo `.npmignore`. `check-package` czyta katalog i widzi komplet; konsument dostaje pakiet bez licencji, czyli dokładnie to, czego dział prawny szuka najpierw.",
+  "usunPlik": "LICENSE"
+}

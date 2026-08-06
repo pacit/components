@@ -677,10 +677,37 @@ część, której **nie da się wydać po polsku**: tekst wchodzący do pakietu.
 repozytorium przechodzi na angielski w [sekcji H](#h-jeden-język-repozytorium) — nie
 blokuje publikacji i jest o rząd wielkości większa.
 
-- [ ] **B1 — `LICENSE` w repo**
-  - `"license": "MIT"` w manifeście bez pliku to formalnie niepełna licencja, a to
-    pierwsza rzecz, którą sprawdza dział prawny konsumenta korporacyjnego
-  - koszt: minuty · _notatki:_ —
+- [x] **B1 — `LICENSE` w repo** _(2026-08-06)_
+  - wzmocniło: `req-release-metadata` — stan bez zmian (✅), ale pomiar dogonił obietnicę
+  - zrobione: `LICENSE` (MIT, `Copyright (c) 2026 PacIT - Marek Pac`) w korzeniu
+    i w `libs/components/`, pole `author` w manifeście, oraz
+    [decyzja 0015](decisions/0015-license-and-model.md): **MIT wszędzie, bez CLA
+    i bez dual-licensingu**
+  - **plan mówił „minuty" i to była połowa prawdy.** Wymaganie **już obiecywało plik**
+    („Manifest niesie `repository`, a repozytorium — plik `LICENSE`"), a punkt 6 mierzył
+    wyłącznie pola manifestu. Obietnica podwójna, pomiar pojedynczy, wymaganie w rejestrze
+    jako ✅ — czyli ta sama klasa co znaleziska fazy A, tylko w zadaniu opisanym jako
+    najprostsze w planie
+  - bramka: kontrola `licencja` w punkcie 6 `check-package` — plik jest, jest niepusty,
+    nazwa licencji zgadza się z polem `license`, jest linia `Copyright (c) <rok> <podmiot>`.
+    **Błąd zawsze**, w odróżnieniu od `repository`: tamtego nie dało się spełnić bez
+    zdalnego repozytorium, tego dało się od początku
+  - **dopasowanie nazwy idzie po granicy słowa, nie przez `includes` — zmierzone, nie
+    założone:** teksty MIT i Apache-2.0 zawierają słowo `LIMITED`, w którym `MIT` siedzi
+    jako podciąg, więc plik Apache przy manifeście `MIT` przeszedłby prostszy warunek.
+    Fixture `licencja-niezgodna` bada obie rzeczy naraz — rozjazd i sposób jego wykrywania
+  - drugi pomiar po drugiej stronie `npm pack`: reguła `brak-licencji` w punkcie 1
+    `check-consumer`. Plik może być w `dist` i wypaść z archiwum przez `files`, a
+    `check-package` czyta katalog — nie zobaczy tego z konstrukcji (ten sam podział co A9)
+  - kontrola: `brak-licencji/` i `licencja-niezgodna/` w `check-package.fixtures/` oraz
+    `tarball-bez-licencji.json` w `check-consumer.fixtures/`; do tego trzy przebiegi na
+    prawdziwym pakiecie (plik usunięty, manifest przestawiony na `Apache-2.0`, plik
+    skrócony do jednej linii) — każdy z osobnym komunikatem
+  - kontrola tej kontroli: rozbrojona kontrola `licencja` → oba nowe fixture'y meldują
+    „PRZESZEDŁ, a miał nie przejść"
+  - koszt: ~0,5 dnia (plan zakładał minuty) · _notatki:_ ng-packagr kopiuje `LICENSE` do
+    pakietu sam, bez wpisu w `assets` — sprawdzone przebiegiem, bo `README.md` trafia tam
+    tą samą drogą
 
 - [ ] **B2 — zdalne repozytorium + `repository` w manifeście**
   - dotyczy: `req-release-metadata` — bramka i jej kontrola są (A1), więc w rejestrze
@@ -1162,6 +1189,47 @@ faktycznie wykrywa błąd hydracji"`), więc przemianowanie bez poprawienia cyto
 ## Dziennik
 
 Wpis per sesja: co ruszyło, czym się skończyło, co jest następne. Najnowsze na górze.
+
+### 2026-08-06 — B1: najprostsze zadanie w planie miało w sobie niezmierzoną obietnicę
+
+Zrobione **B1**. Liczby bez zmian (83 wymagania, 13 luk) — `req-release-metadata` stało
+i stoi na ✅. Zmieniło się to, że **mierzy teraz to, co obiecuje**.
+
+Plan wyceniał to zadanie na minuty i mylił się nie w zakresie pliku, tylko w tym, co przy
+nim wyjdzie.
+
+- **Wymaganie obiecywało dwie rzeczy, a bramka mierzyła jedną.** Zdanie „Manifest niesie
+  `repository`, a repozytorium — plik `LICENSE`" stoi tam od początku; punkt 6 sprawdzał
+  wyłącznie pola manifestu, a pliku LICENSE nie było **nigdzie** — ani w repo, ani
+  w pakiecie. Przy wymaganiu oznaczonym ✅. To ta sama klasa co wszystko, co znalazła
+  faza A, tylko schowana w pozycji opisanej jako najtańsza.
+- **`includes` nie nadaje się do porównania nazwy licencji, i to jest pomiar, nie
+  przeczucie.** Tekst MIT zawiera „INCLUDING BUT NOT LIMITED TO", a w słowie `LIMITED`
+  siedzi podciąg `MIT` — więc plik Apache-2.0 przy manifeście `MIT` przechodziłby warunek
+  oparty na zawieraniu. Dopasowanie idzie po granicy słowa, a fixture
+  `licencja-niezgodna` bada zarazem rozjazd i sposób jego wykrywania.
+- **Plik trzeba mierzyć po obu stronach `npm pack`.** `check-package` czyta katalog `dist`,
+  a między nim a rejestrem stoi pole `files` — plik obecny w katalogu i nieobecny
+  w archiwum jest dla tamtej bramki niewidzialny. Stąd druga reguła, w `check-consumer`,
+  dokładnie tym samym podziałem co przy A9.
+- **CLA odrzucone po sprawdzeniu, co kupuje** ([0015](decisions/0015-license-and-model.md)).
+  Kod na MIT wolno włożyć do zamkniętego, płatnego pakietu — również cudze kontrybucje —
+  więc otwarcie płatnego poziomu nie wymaga niczyjej zgody. CLA daje wyłącznie prawo
+  sprzedaży licencji komercyjnej na ten sam kod bez zobowiązań MIT, a zobowiązaniem MIT
+  jest jedna linijka noty. Cena — tarcie przy każdym PR — byłaby płacona za nic.
+
+Zapisane wprost w decyzji, żeby nie wracać do tego jako do odkrycia: **MIT na rdzeń jest
+nieodwracalne** (ostatnia wydana wersja zostaje wolna na zawsze), **każdy może ten kod
+sprzedawać**, a jedyną ochroną jest znak towarowy i bycie upstreamem — nie licencja.
+
+Sprawdzone przebiegiem: trzy sposoby zepsucia prawdziwego pakietu (plik usunięty, manifest
+przestawiony na `Apache-2.0`, plik skrócony do jednej linii) zapalają na kontroli
+`licencja`, każdy z własnym komunikatem; rozbrojenie tej kontroli daje „PRZESZEDŁ, a miał
+nie przejść" na obu nowych fixture'ach. `check-package` widzi teraz 9 przypadków zamiast 7,
+`check-consumer` — 29 zamiast 28.
+
+Następne: **H3** (`README.md`, 251 linii) → **H4** (`docs/`) → **B2** (zwinięcie historii
+i pierwszy push).
 
 ### 2026-08-06 — H1: nazwa pliku, która sama zaczęła wyglądać na cytowanie
 

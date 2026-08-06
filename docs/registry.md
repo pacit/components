@@ -125,7 +125,7 @@ Kolejność bierze się z pola **Wiąże przy**, nie z numeru wymagania.
 | ---------------------------------------------------------------------- | -------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | [`req-release-semver`](requirements/release.md#req-release-semver)     | ✅ egzekwowane | `libs/components/check-package.mjs` (punkt 4: `PCT_VERSION` == `versi… | `stamp-version` **nie jest** zależnością `build` — gdyby był, artefak… |
 | [`req-release-ng-add`](requirements/release.md#req-release-ng-add)     | ✅ egzekwowane | `libs/components/check-package.mjs` (punkt 5) — kolekcje są w pakieci… | `tools/check-package.fixtures/brak-schematica/` — pakiet, w którym ko… |
-| [`req-release-metadata`](requirements/release.md#req-release-metadata) | ✅ egzekwowane | `libs/components/check-package.mjs` (punkt 6) — ostrzeżenie w zwykłym… | `tools/check-package.fixtures/brak-repository/` — manifest bez `repos… |
+| [`req-release-metadata`](requirements/release.md#req-release-metadata) | ✅ egzekwowane | `libs/components/check-package.mjs` (punkt 6) — dwie różne surowości,… | `tools/check-package.fixtures/brak-repository/` — manifest bez `repos… |
 | [`req-release-support`](requirements/release.md#req-release-support)   | ⛔ luka        | brak — luka: dokumentu nie ma. Kolekcja migracji istnieje (`req-relea… | brak — luka: commit `feat!:` bez wpisu w kolekcji migracji musi zapal… |
 
 ## tokeny

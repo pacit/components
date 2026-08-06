@@ -68,18 +68,30 @@ granicą CommonJS
 rzecz, którą sprawdza dział prawny konsumenta korporacyjnego. Bez `repository` npm odmawia
 provenance.
 
-**Bramka:** `libs/components/check-package.mjs` (punkt 6) — ostrzeżenie w zwykłym
-przebiegu, **błąd przy `--release`**
+**Bramka:** `libs/components/check-package.mjs` (punkt 6) — dwie różne surowości, bo to dwa
+różne warunki. Pola manifestu: ostrzeżenie w zwykłym przebiegu, **błąd przy `--release`**,
+dopóki `repository` nie ma na co wskazywać. Kontrola `licencja`: **błąd zawsze** — plik
+LICENSE w artefakcie, niepusty, z nazwą licencji zgodną z polem `license` i z linią
+`Copyright (c) <rok> <podmiot>`. Do tego `tools/check-consumer.mjs` (punkt 1, reguła
+`brak-licencji`) — plik obecny w `dist` może wypaść z `npm pack`, a tego `check-package`
+nie zobaczy z konstrukcji
 **Kontrola:** `tools/check-package.fixtures/brak-repository/` — manifest bez `repository`
 musi zapalić przy `--release` i **tylko ostrzec** w zwykłym przebiegu. Badane są oba
 kierunki: asercja wyłącznie na „blokuje" przepuściłaby regresję, po której punkt 6 blokuje
-zawsze, a wtedy repozytorium bez zdalnego nie zbudowałoby się w ogóle
-**Wiąże przy:** pierwszej publikacji — bramka i jej kontrola już są, ale samego pola nadal
-nie ma, bo nie ma zdalnego repozytorium, na które mogłoby wskazywać
+zawsze, a wtedy repozytorium bez zdalnego nie zbudowałoby się w ogóle. Do tego
+`tools/check-package.fixtures/brak-licencji/` (pakiet bez pliku) oraz
+`tools/check-package.fixtures/licencja-niezgodna/` — plik nazywający Apache-2.0 przy
+manifeście `MIT`. Ten drugi bada zarazem **sposób dopasowania**: tekst licencji zawiera
+słowo `LIMITED`, w którym `MIT` siedzi jako podciąg, więc porównanie przez `includes`
+uznałoby go za zgodny. Archiwum pilnuje
+`tools/check-consumer.fixtures/tarball-bez-licencji.json`
+**Decyzja:** [0015 — MIT wszędzie, prawa na podmiot, bez CLA](../decisions/0015-license-and-model.md)
+**Wiąże przy:** pierwszej publikacji — plik LICENSE i jego bramka są od 2026-08-06,
+brakuje już tylko `repository`, bo nie ma zdalnego repozytorium, na które mogłoby wskazywać
 
-> Kontrola dowodzi, że **bramka** potrafi zapalić — nie że obietnica jest spełniona. Dziś
-> nie jest: przebieg jest zielony z ostrzeżeniem, na które nikt nie patrzy, i tak ma
-> zostać do czasu, aż repozytorium dostanie zdalne.
+> Obietnica była **podwójna, a mierzona pojedynczo**: pola manifestu miały bramkę od A1,
+> plik LICENSE nie miał żadnej i nie istniał, przy wymaganiu stojącym w rejestrze jako ✅.
+> Domknięte w B1 — z pomiarem po obu stronach `npm pack`, bo to dwa różne filtry.
 
 ---
 

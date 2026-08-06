@@ -15,7 +15,7 @@ dokumentacji. Kolejność zdejmowania polszczyzny warstwa po warstwie trzyma
 ```
 00-axis.md      POZIOM 0   jedno wymaganie, z którego wynika kolejność wszystkich innych
 requirements/   POZIOM 1   obietnice: co ma być prawdą                (83 pozycje)
-decisions/      POZIOM 2   dlaczego akurat tak i co przez to tracimy  (14 ADR-ów)
+decisions/      POZIOM 2   dlaczego akurat tak i co przez to tracimy  (15 ADR-ów)
 components/     POZIOM 3   czy ten konkretny komponent to spełnia     (wypełniony DoD)
 lessons.md                 baza dowodowa: co się naprawdę stało       (59 wpisów)
 registry.md                GENEROWANY: obietnica → bramka → kontrola → stan

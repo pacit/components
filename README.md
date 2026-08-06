@@ -244,6 +244,16 @@ Kolejność jest istotna i dlatego wydanie prowadzi skrypt, a nie samo `nx relea
 
 Publikacja wymaga w `libs/components/package.json` pola `repository` — bez niego npm odmawia wystawienia provenance. Pilnuje tego `check-package.mjs --release`; na co dzień ten warunek tylko ostrzega.
 
+## Licencja
+
+[MIT](LICENSE) — Copyright (c) 2026 PacIT - Marek Pac. Bez CLA: kontrybucje przychodzą na
+licencji repozytorium, a uzasadnienie tego wyboru wraz z tym, co przez niego tracimy, stoi
+w [decyzji 0015](docs/decisions/0015-license-and-model.md).
+
+Plik LICENSE jedzie w pakiecie i pilnują go dwie bramki: `check-package` czyta katalog
+`dist`, `check-consumer` — archiwum po `npm pack`, bo między jednym a drugim stoi pole
+`files`.
+
 ## Dokumentacja
 
 Pełne wymagania i decyzje architektoniczne (identyfikatory `req-*`): [docs/](docs/README.md) —

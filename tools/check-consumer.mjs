@@ -157,6 +157,16 @@ const sprawdzKonsumenta = (we) => {
         `nie deklaruje (lesson-36), a \`check-package\` tego nie zobaczy: on czyta katalog`,
     );
 
+  if (!pliki.has('LICENSE'))
+    fail(
+      'tarball',
+      'brak-licencji',
+      `archiwum nie zawiera pliku \`LICENSE\`, choć jest w \`${DIST}\` — odfiltrował go ` +
+        `\`npm pack\`.\n` +
+        `    \`"license"\` w manifeście bez pliku to licencja formalnie niepełna, ` +
+        `a \`check-package\` tego nie zobaczy: on czyta katalog, nie archiwum`,
+    );
+
   const manifest = tarball.manifest ?? {};
   const zExports = Object.values(manifest.exports ?? {})
     .map((cel) => (typeof cel === 'object' ? cel?.default : cel))

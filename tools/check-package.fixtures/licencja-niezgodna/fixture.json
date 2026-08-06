@@ -1,0 +1,5 @@
+{
+  "punkt": 6,
+  "kontrola": "licencja",
+  "opis": "Manifest deklaruje `MIT`, a plik LICENSE nazywa Apache-2.0 — czyli jedna ze stron została zmieniona bez drugiej. Przypadek jest zarazem kontrolą samego dopasowania: tekst zawiera słowo LIMITED, w którym `MIT` siedzi jako podciąg, więc bramka oparta na `includes` przepuściłaby go jako zgodny."
+}

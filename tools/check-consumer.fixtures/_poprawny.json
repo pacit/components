@@ -3,6 +3,7 @@
     "wersja": "0.0.1",
     "integrity": "sha512-Wsmh+0pfky7+ljGtU1yxVFQz1eQcEM0FbZ/CUfPYjhD/aM9Vj67mK3CBVziNYv3NfOxCdgbsmLbMHsvqNKlsNQ==",
     "pliki": [
+      "LICENSE",
       "README.md",
       "fesm2022/pacit-components-button.mjs",
       "fesm2022/pacit-components-button.mjs.map",
@@ -105,14 +106,18 @@
         "tslib": "^2.3.0"
       }
     },
-    "fabryki": ["schematics/ng-add/index.js"]
+    "fabryki": [
+      "schematics/ng-add/index.js"
+    ]
   },
   "rejestr": {
     "url": "http://localhost:4873",
     "opublikowany": true,
     "wyjscie": "(wyjście npm publish)",
     "metadane": {
-      "wersje": ["0.0.1"],
+      "wersje": [
+        "0.0.1"
+      ],
       "integrity": "sha512-Wsmh+0pfky7+ljGtU1yxVFQz1eQcEM0FbZ/CUfPYjhD/aM9Vj67mK3CBVziNYv3NfOxCdgbsmLbMHsvqNKlsNQ==",
       "tarball": "http://localhost:4873/@pacit/components/-/components-0.0.1.tgz"
     }
@@ -158,7 +163,9 @@
   "ssr": {
     "status": 200,
     "kontekst": "ssr",
-    "czesci": ["label"],
+    "czesci": [
+      "label"
+    ],
     "markery": {
       "data-pct-part": true,
       "pct-button": true
@@ -170,7 +177,9 @@
     "token": "#2563eb",
     "tlo": "rgb(37, 99, 235)",
     "tloTokenu": "rgb(37, 99, 235)",
-    "czesci": ["label"],
+    "czesci": [
+      "label"
+    ],
     "bledy": []
   }
 }

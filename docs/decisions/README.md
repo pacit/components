@@ -61,3 +61,4 @@ trzeba było przejść przez uzasadnienie.
 | [0012](0012-theme-closure.md)            | Domknięcie przechodnie w bloku motywu         | `req-token-closure`                                       |
 | [0013](0013-no-headless-split.md)        | Bez podziału na rdzeń bezgłowy i skórkę       | `req-project-core`, `req-api-parts`, `req-api-attributes` |
 | [0014](0014-texts-as-signal.md)          | Teksty jako sygnał, czytane przy renderowaniu | `req-api-texts`                                           |
+| [0015](0015-license-and-model.md)        | MIT wszędzie, prawa na podmiot, bez CLA       | `req-release-metadata`                                    |
