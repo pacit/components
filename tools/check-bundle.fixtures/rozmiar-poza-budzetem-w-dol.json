@@ -1,5 +1,5 @@
 {
-  "// wada": "Entrypoint schudł dwudziestokrotnie. Tolerancja jest dwustronna nie z uprzejmości dla optymalizacji: pomiar, który cichnie, wygląda dokładnie tak samo jak kod, który schudł (lekcja-45, lekcja-48).",
+  "// wada": "Entrypoint schudł dwudziestokrotnie. Tolerancja jest dwustronna nie z uprzejmości dla optymalizacji: pomiar, który cichnie, wygląda dokładnie tak samo jak kod, który schudł (lesson-45, lesson-48).",
   "punkt": 8,
   "kontrola": "rozmiar",
   "rozmiar": { "ep": "./beta", "bajty": 1500 }

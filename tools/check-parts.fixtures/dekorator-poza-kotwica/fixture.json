@@ -1,5 +1,5 @@
 {
   "punkt": 1,
   "kontrola": "mianownik",
-  "$powod": "Dekorator wcięty o dwie spacje. Parser kotwiczy się w kolumnie zero, licznik NIE — bez tej niezależności obie strony porównania gasłyby naraz i komponent wypadałby z inwentarza po cichu (lekcja-48)."
+  "$powod": "Dekorator wcięty o dwie spacje. Parser kotwiczy się w kolumnie zero, licznik NIE — bez tej niezależności obie strony porównania gasłyby naraz i komponent wypadałby z inwentarza po cichu (lesson-48)."
 }

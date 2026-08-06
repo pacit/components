@@ -3,7 +3,7 @@
 > **Ten plik jest pisany ręcznie.** Jest jedynym miejscem, w którym wolno trzymać stan
 > „zrobione / w toku / do zrobienia" i notatki przenoszone między sesjami.
 >
-> Nie duplikuje [rejestru](rejestr.md): rejestr (generowany) mówi, **które obietnice nie
+> Nie duplikuje [rejestru](registry.md): rejestr (generowany) mówi, **które obietnice nie
 > mają bramki**, a ten plik — **w jakiej kolejności je domykamy i co już poszło**. Gdy
 > jedno przeczy drugiemu, rację ma rejestr: jest wyprowadzony z dokumentacji, a to jest
 > lista zadań pisana ręką.
@@ -24,13 +24,13 @@ przechodzi na `[x]` dopiero wtedy, gdy spełnia definicję ukończenia.
 
 ### Definicja ukończenia zadania
 
-Wprost z [`wym-os`](00-os.md): obietnica bez bramki jest niedokończona, a bramka bez
+Wprost z [`req-axis`](00-axis.md): obietnica bez bramki jest niedokończona, a bramka bez
 dowodu zapalenia — niedokończona piętro wyżej. Zadanie jest `[x]`, gdy:
 
 1. bramka istnieje i **biegnie w CI** (`nx affected -t …` w `.github/workflows/ci.yml`),
 2. ma **kontrolę odniesienia** — test albo zapisany przebieg dowodzący, że potrafi
    **nie** przejść,
-3. wymaganie w [`wymagania/`](wymagania/) ma zaktualizowane pola **Bramka** i **Kontrola**,
+3. wymaganie w [`requirements/`](requirements/) ma zaktualizowane pola **Bramka** i **Kontrola**,
 4. `node tools/check-docs.mjs --write` przepisał rejestr, a pozycja zniknęła z listy luk.
 
 Punkt 4 jest jedynym twardym dowodem — pierwsze trzy bez niego są deklaracją.
@@ -50,12 +50,12 @@ Migawka z **2026-08-06**, `node tools/check-docs.mjs`:
 
 | miara                                 | wartość |
 | ------------------------------------- | ------: |
-| wymagań                               |      81 |
+| wymagań                               |      83 |
 | ✅ egzekwowane                        |      54 |
 | 🟡 częściowo (świadomie bez kontroli) |      16 |
-| ⛔ luka                               |      11 |
+| ⛔ luka                               |      13 |
 
-Wszystkie 11 luk mają niżej swojego właściciela (B, D, F, G). Jeśli po dopisaniu
+Wszystkie 13 luk mają niżej swojego właściciela (B, D, F, G, H). Jeśli po dopisaniu
 wymagania liczba luk rośnie, a żadne zadanie się nie zmienia — ta lista przestała być
 kompletna i to jest błąd tej listy, nie rejestru.
 
@@ -69,11 +69,24 @@ D  warstwa zachowań w core     dopiero po A; blokuje E
 E  komponenty                  dialog → tooltip/popover → menu → select → pola → tabela
 F  powierzchnia zaufania       docs, ACR, benchmarki, most Figma
 G  luki bez terminu            czekają na wyzwalacz zapisany w polu „Wiąże przy"
+H  jeden język, bez wody      angielski + kompresja; część publiczna siedzi w B
 ```
 
-**Faza A jest zamknięta.** Kolejność zaczyna się od B (gotowość do wydania) — B1 i B2 to
-minuty, a bez nich nie da się wydać niczego. Równolegle: F1 jest odblokowane (A3 i A4
-dały mu oba inwentarze do wyrenderowania), a C jest wypełniaczem.
+**Faza A jest zamknięta**, a najbliższym kamieniem milowym nie jest wydanie, tylko
+**pierwszy push do publicznego repozytorium** (B2). Przed nim zostało: **B1** (`LICENSE`,
+minuty), **H3** (`README.md`) i **H4** (`docs/`) — bo push jest premierą, a nie kopią
+zapasową. **H1 jest zrobione** (2026-08-06), więc wszystko, co od teraz powstaje, powstaje
+od razu w docelowej przestrzeni nazw. Reszta B (B3, B4, B8) wiąże dopiero przy publikacji
+na npm.
+Równolegle: F1 jest odblokowane (A3 i A4 dały mu oba inwentarze do wyrenderowania),
+a C jest wypełniaczem.
+
+H nie jest osobną fazą, ale ma **wcześniejszy termin niż wydanie**: repozytorium stoi
+publicznie, więc `README.md`, `docs/` i Actions wiążą już przy B2. To, co jedzie w pakiecie
+(B3, B4, B8), wiąże dopiero przy publikacji na npm. Dwa twarde warunki kolejności są
+w środku — **H1 (identyfikatory) przed wszystkim**, bo każdy tekst napisany wcześniej
+przepisuje się dwa razy, i **H2 (kryterium) przed H3–H8**, bo tłumaczenie prozy, którą
+zaraz się skraca, płaci się dwa razy.
 
 ---
 
@@ -83,10 +96,10 @@ dały mu oba inwentarze do wyrenderowania), a C jest wypełniaczem.
 z kontrolą odniesienia. Nic tu już nie czeka.
 
 - [x] **A1 — kontrola odniesienia dla `check-package`** _(2026-08-04)_
-  - domknęło: `wym-jakosc-pakiet`, `wym-projekt-pakiet`, `wym-projekt-entrypointy`,
-    `wym-projekt-lib-tokenow`, `wym-token-css`, `wym-token-dystrybucja` — **6 luk**,
-    a przy okazji `wym-wydanie-ng-add` (czyli **B5**) i kontrolę dla
-    `wym-wydanie-metadane`: to te same punkty tej samej bramki, więc fixtures dla nich
+  - domknęło: `req-quality-package`, `req-project-package`, `req-project-entrypoints`,
+    `req-project-tokens-lib`, `req-token-css`, `req-token-distribution` — **6 luk**,
+    a przy okazji `req-release-ng-add` (czyli **B5**) i kontrolę dla
+    `req-release-metadata`: to te same punkty tej samej bramki, więc fixtures dla nich
     powstały tym samym ruchem
   - zrobione: `tools/check-package.fixtures/` — pakiet wzorcowy `_poprawny/` plus siedem
     przypadków składanych **na jego kopii**, więc katalog przypadku zawiera wyłącznie
@@ -100,10 +113,10 @@ z kontrolą odniesienia. Nic tu już nie czeka.
     zapalający na cudzym punkcie, wadliwy pakiet wzorcowy
   - koszt: ~1 dzień · _notatki:_ udawany `package.json` w repo okazał się dla Nx
     projektem, a `.nxignore` naprawiał to kosztem unieważniania cache — patrz
-    [`lekcja-44`](lekcje.md#lekcja-44)
+    [`lesson-44`](lessons.md#lesson-44)
 
 - [x] **A2 — pokrycie z egzekwowanym progiem** _(2026-08-04)_
-  - domknęło: `wym-jakosc-pokrycie` — najstarszy dług w projekcie
+  - domknęło: `req-quality-coverage` — najstarszy dług w projekcie
   - zrobione: `coverage` + `coverageInclude` + próg 80% w targecie `test`, do tego **druga
     bramka** `tools/check-coverage.mjs` (target `check-coverage`, w CI) i
     `libs/components/src/public-api.spec.ts`. Plan mówił „`coverageInclude` + próg" i to
@@ -112,7 +125,7 @@ z kontrolą odniesienia. Nic tu już nie czeka.
     96,94%, bo nietestowany plik wypadł z raportu razem ze swoim testem. `coverageInclude`
     domyka to w połowie — dokłada pliki bez testu osobną ścieżką, która parsuje źródło
     rolldownem i wywraca się na `import type`, wypisując „Excluding it from coverage"
-    i kończąc przebieg zielono ([`lekcja-45`](lekcje.md#lekcja-45))
+    i kończąc przebieg zielono ([`lesson-45`](lessons.md#lesson-45))
   - kontrola: `tools/check-coverage.fixtures/` — siedem wejść, po jednym na sposób
     rozbrojenia bramki, każde odrzucane na swoim punkcie; plus dwa przebiegi na repo:
     usunięcie `public-api.spec.ts` zostawia `test` zielony (96,55%), a `check-coverage`
@@ -125,12 +138,12 @@ z kontrolą odniesienia. Nic tu już nie czeka.
     i musi przyjść z własną bramką
 
 - [x] **A3 — inwentarz `data-pct-part` + bramka** _(2026-08-05)_
-  - domknęło: `wym-api-czesci`
+  - domknęło: `req-api-parts`
   - zrobione: `tools/check-parts.mjs` (target `check-parts` w projekcie roota,
     `dependsOn: components:build`, w CI) — pięć punktów plus generowany
     `libs/components/czesci.snapshot.md` (41 części, 10 klas, 5 entrypointów). Reguły są
     trzy (punkt 3: nazwa części nie może być wiązana wyrażeniem; punkt 4: rubryki
-    **Części** w `docs/komponenty/` zgadzają się z tym, co wystawia entrypoint; punkt 5:
+    **Części** w `docs/components/` zgadzają się z tym, co wystawia entrypoint; punkt 5:
     snapshot zgadza się z bieżącym inwentarzem), a **dwa pozostałe pilnują mianownika**
   - plan mówił „skan szablonów + snapshot" i skan szablonów sam z siebie jest ślepy na
     to, co ta biblioteka naprawdę robi: **cztery części obudowy nie stoją w żadnym
@@ -151,7 +164,7 @@ z kontrolą odniesienia. Nic tu już nie czeka.
     jak literał i literałem nie jest
   - świadomie **nie** normalizowane: `options` w `PctRadioGroup` stoi obok `group-label`,
     `group-hint` i `group-error`, czyli jako jedyna część kontenera bez przedrostka.
-    Z niczym dziś nie koliduje, a `wym-api-czesci` nie obiecuje zgadywalności (to
+    Z niczym dziś nie koliduje, a `req-api-parts` nie obiecuje zgadywalności (to
     obietnica tokenów, nie części) — więc snapshot ją zamraża i przemianowanie staje się
     od dziś widoczną zmianą API. Przeniesione do **C7**
   - kontrola: `tools/check-parts.fixtures/` — dwadzieścia jeden wejść, każde odrzucane na
@@ -167,11 +180,11 @@ z kontrolą odniesienia. Nic tu już nie czeka.
     i wyjaśnił to fałszywie** — filtr wierszy snapshotu nie przechodził przez ukośnik
     w `./select`, więc komunikat brzmiał „lista części jest ta sama". Kontrola odniesienia
     nie miała jak tego zobaczyć, bo porównuje identyfikator punktu, a nie zdanie
-    ([`lekcja-50`](lekcje.md#lekcja-50)). Rozbrojenie gałęzi „brak snapshotu" dało przy
+    ([`lesson-50`](lessons.md#lesson-50)). Rozbrojenie gałęzi „brak snapshotu" dało przy
     okazji `TypeError` — **ta sama wada co w A4 i A7, trzeci raz**
 
 - [x] **A4 — snapshot nazw tokenów** _(2026-08-05)_
-  - domknęło: `wym-token-nazwy`
+  - domknęło: `req-token-names`
   - zrobione: `tools/check-tokens.mjs` (target `check-tokens` w projekcie roota,
     `dependsOn: tokens:build`, w CI) — pięć punktów. Reguły są dwie (punkt 3: nazwa
     parsuje się wobec słownika `libs/tokens/src/nazwy.policy.json`, a komponent w nazwie
@@ -184,7 +197,7 @@ z kontrolą odniesienia. Nic tu już nie czeka.
     (`--pct-checkbox-checked-bg` sześć linii pod `--pct-checkbox-border-hover`), więc
     snapshot dołożony przed normalizacją zapisałby ten rozjazd jako stan zaakceptowany,
     a każde późniejsze przemianowanie byłoby już zmianą łamiącą
-    ([`lekcja-49`](lekcje.md#lekcja-49)). Stąd punkt 3 **przed** punktem 5 i stąd
+    ([`lesson-49`](lessons.md#lesson-49)). Stąd punkt 3 **przed** punktem 5 i stąd
     normalizacja tym samym ruchem: 34 tokeny w 5 plikach DTCG, policy kontrastu,
     8 arkuszach i jednym e2e — 108 podmian
   - punkt 1 jest tym samym ruchem co punkt 2 w A5 („nie ufaj jednemu odczytowi"):
@@ -215,7 +228,7 @@ z kontrolą odniesienia. Nic tu już nie czeka.
 
 - [x] **A5 — bramka stylów: właściwości logiczne + zakaz `opacity` na tekście**
       _(2026-08-05)_
-  - domknęło: `wym-token-logiczne`, `wym-token-bez-opacity` — **2 luki**
+  - domknęło: `req-token-logical`, `req-token-no-opacity` — **2 luki**
   - zrobione: `tools/check-styles.mjs` (target `check-styles` w `components`, w CI) —
     sześć punktów. Reguły są dwie (punkt 5: właściwości i wartości fizyczne osi inline;
     punkt 6: `opacity` inna niż `0`/`1`), a **cztery pozostałe pilnują mianownika**:
@@ -239,7 +252,7 @@ z kontrolą odniesienia. Nic tu już nie czeka.
   - **oś `dir` od razu znalazła wadę**: panel selecta żyje w nakładce CDK, czyli jako
     dziecko `body`, więc nie dziedziczy kierunku po kontrolce — zmierzone `direction: rtl`
     na triggerze wobec `ltr` na panelu, przy arkuszu bez ani jednej właściwości fizycznej.
-    Trzecia właściwość z [`lekcja-35`](lekcje.md#lekcja-35) po motywie i piśmie; naprawione
+    Trzecia właściwość z [`lesson-35`](lessons.md#lesson-35) po motywie i piśmie; naprawione
     tym samym wzorcem (odczyt z triggera przy otwarciu), z testem, który bez poprawki pada
   - kontrola: `tools/check-styles.fixtures/` — dwanaście wejść, każde odrzucane na swoim
     punkcie; plus sześć przebiegów na prawdziwym repo (`padding-left` w `field.scss`,
@@ -250,11 +263,11 @@ z kontrolą odniesienia. Nic tu już nie czeka.
     przestający być wadliwym → to samo; wadliwe wejście wzorcowe → bramka zapala na nim
     osobno, a przypadki nieprzykrywające zepsutego arkusza przechodzą na cudze punkty
   - koszt: ~1,5 dnia (zgodnie z planem) · _notatki:_ bramka **przeszła na zielono, nie
-    zmierzywszy ani jednego komponentu** — patrz [`lekcja-48`](lekcje.md#lekcja-48).
+    zmierzywszy ani jednego komponentu** — patrz [`lesson-48`](lessons.md#lesson-48).
     Ta sama wada siedziała w `check-zoneless.mjs` (A6) i została naprawiona przy okazji
 
 - [x] **A6 — bramka zoneless + OnPush** _(2026-08-04)_
-  - domknęło: `wym-projekt-angular`, `wym-api-fundament` — **2 luki**
+  - domknęło: `req-project-angular`, `req-api-foundation` — **2 luki**
   - zrobione: `tools/check-zoneless.mjs` (target `check-zoneless`, `dependsOn: build`
     - `schematics`, w CI) — sześć punktów w jednym przebiegu, tak jak zakładał plan.
       Zoneless: manifesty z indeksu gita, drzewo `package-lock.json` (także instalacje
@@ -266,7 +279,7 @@ z kontrolą odniesienia. Nic tu już nie czeka.
     `NgZone`, `__zone_symbol__`, globalny `Zone` — żeby komunikat mówił, czego szukać
   - odczyt `ɵcmp` idzie z `dist` przez JIT, nie ze źródeł: deklaracja częściowa
     **pomija** `changeDetection`, gdy jest domyślne, więc wartość powstaje dopiero przy
-    linkowaniu ([`lekcja-46`](lekcje.md#lekcja-46)). Efektem ubocznym jest to, o co
+    linkowaniu ([`lesson-46`](lessons.md#lesson-46)). Efektem ubocznym jest to, o co
     chodziło: podbicie Angulara zmieniające domyślne zapala tę bramkę
   - kontrola: `tools/check-zoneless.fixtures/` — dwanaście wejść, każde odrzucane na
     swoim punkcie; plus cztery przebiegi na prawdziwym repo: `npm i -D zone.js` zapala
@@ -283,7 +296,7 @@ z kontrolą odniesienia. Nic tu już nie czeka.
     a nie funkcja diagnostyczna, która może zniknąć
 
 - [x] **A7 — bramka pokrycia targetem `typecheck`** _(2026-08-05)_
-  - domknęło: `wym-jakosc-typecheck`
+  - domknęło: `req-quality-typecheck`
   - zrobione: `tools/check-typecheck.mjs` (target `check-typecheck` w projekcie roota,
     w CI) — cztery punkty. Do tego **brakujące targety**: `components` (trzy rozłączne
     programy: pakiet, specyfikacje z `testing/`, schematics), projekt roota
@@ -292,7 +305,7 @@ z kontrolą odniesienia. Nic tu już nie czeka.
   - plan mówił „projekt bez targetu `typecheck` zapala" i to było za mało: `sandbox`
     target **miał**, przechodził i nie oglądał czterech swoich plików, bo inferowany
     przez `@nx/vite/plugin` obejmuje wyłącznie `tsconfig.app.json`, a ten wyklucza
-    `**/*.spec.ts` ([`lekcja-47`](lekcje.md#lekcja-47)). Stąd punkt 4: bramka nie czyta
+    `**/*.spec.ts` ([`lesson-47`](lessons.md#lesson-47)). Stąd punkt 4: bramka nie czyta
     `include`, tylko **uruchamia polecenie z targetu** rozszerzone o `--listFilesOnly`
     i porównuje program kompilatora z indeksem gita
   - plan pomylił się też w diagnozie: „dziś ma go **tylko** `sandbox-e2e`". Miał go też
@@ -317,7 +330,7 @@ z kontrolą odniesienia. Nic tu już nie czeka.
     projekt wymykałby się tej, która powstała właśnie po to
 
 - [x] **A8 — tree-shaking + budżet rozmiaru entrypointu** _(2026-08-05)_
-  - domknęło: `wym-projekt-tree-shaking`
+  - domknęło: `req-project-tree-shaking`
   - zrobione: `tools/check-bundle.mjs` (target `check-bundle` w `components`,
     `dependsOn: build`, w CI) — dziesięć punktów plus generowany
     `libs/components/rozmiar.snapshot.md` (7 entrypointów, 114 766 B razem). Sedno to
@@ -347,7 +360,7 @@ z kontrolą odniesienia. Nic tu już nie czeka.
   - **punkt 2 badał co innego, niż napisałem w jego uzasadnieniu**: usunięcie
     `sideEffects` ze źródłowego manifestu nie zapala, bo ng-packagr dopisuje `false` sam
     — sprawdzone z `--skip-nx-cache`, bo pierwszym podejrzanym był cache i to był fałszywy
-    trop ([`lekcja-51`](lekcje.md#lekcja-51)). Punkt zapala na jawnym `true` i na dniu,
+    trop ([`lesson-51`](lessons.md#lesson-51)). Punkt zapala na jawnym `true` i na dniu,
     w którym ng-packagr przestanie dopisywać domyślną
   - kontrola: `tools/check-bundle.fixtures/` — dwadzieścia dwa wejścia, każde odrzucane
     na swoim punkcie, na **udawanej** bibliotece (`alfa`, `beta`, `rdzen`), żeby nie
@@ -366,8 +379,8 @@ z kontrolą odniesienia. Nic tu już nie czeka.
     z czego trzy czwarte to trzy prawdziwe buildy Angulara
 
 - [x] **A9 — test konsumenta na Verdaccio** _(2026-08-06)_
-  - domknęło: `wym-jakosc-konsument`, a przy okazji dołożyło drugą bramkę do
-    `wym-wydanie-ng-add` — bo to jego punkt zapalił jako pierwszy
+  - domknęło: `req-quality-consumer`, a przy okazji dołożyło drugą bramkę do
+    `req-release-ng-add` — bo to jego punkt zapalił jako pierwszy
   - zrobione: `tools/check-consumer.mjs` (target `check-consumer` w `components`,
     `dependsOn: build + schematics`, w CI) — siedem punktów, 28 reguł, ~26 s. Droga
     konsumenta w całości: `npm pack` → publikacja do Verdaccio → `npm install` **po
@@ -379,7 +392,7 @@ z kontrolą odniesienia. Nic tu już nie czeka.
     `"type": "module"` (dopisuje ng-packagr), a schematics są CommonJS-em — więc Node
     czytał je jako ESM. `check-package` widział wtedy **komplet**: kolekcja wskazuje
     fabrykę, plik fabryki jest w pakiecie. Był i nie dawał się wczytać
-    ([`lekcja-55`](lekcje.md#lekcja-55)). Naprawione tak, jak robi to `@angular/cdk`:
+    ([`lesson-55`](lessons.md#lesson-55)). Naprawione tak, jak robi to `@angular/cdk`:
     własna granica modułów w `schematics/package.json`
   - punkt 1 bada **archiwum**, nie katalog, i to jest jedyna rzecz w tej bramce, której
     `check-package` nie może zobaczyć z konstrukcji: między `dist` a `node_modules`
@@ -417,7 +430,7 @@ z kontrolą odniesienia. Nic tu już nie czeka.
     tylko wywraca **build** — builder ładuje bundle serwera, żeby wyprowadzić trasy
 
 - [x] **A10 — macierz przeglądarek** _(2026-08-06)_
-  - domknęło: `wym-jakosc-przegladarki`
+  - domknęło: `req-quality-browsers`
   - zrobione: trzy projekty w `apps/sandbox-e2e/playwright.config.mts` (chromium,
     firefox, webkit) — **458 testów w przebiegu, 5,5 min** — plus
     `tools/check-browsers.mjs` (target `check-browsers` w projekcie roota, w CI) —
@@ -439,7 +452,7 @@ z kontrolą odniesienia. Nic tu już nie czeka.
     autora**. Sonda `<div style="background: rgb(1, 2, 3)">` wychodzi z niego
     niezmieniona, a `forced-color-adjust` nie jest w nim nawet znaną właściwością.
     Cztery z sześciu testów `forced-colors.spec.ts` przechodzą tam, mierząc kolory
-    z tokenów ([`lekcja-56`](lekcje.md#lekcja-56))
+    z tokenów ([`lesson-56`](lessons.md#lesson-56))
   - przy okazji, i tylko dlatego, że webkit nie zamalowuje wyniku: `:host([disabled])`
     w bloku forced-colors ma (0,2,0), a reguła bazowa
     `:host([disabled]:not([data-pct-loading]))` — (0,3,0). Media query nie dokłada
@@ -477,8 +490,8 @@ z kontrolą odniesienia. Nic tu już nie czeka.
     `sudo npx playwright install-deps webkit`
 
 - [x] **A11 — bramka tekstów** _(2026-08-06)_
-  - domknęło: `wym-api-teksty`, a razem z tym **C5** — reaktywność `PCT_TEXTS` jest od
-    dziś decyzją ([0014](decyzje/0014-teksty-jako-sygnal.md)), nie przeoczeniem
+  - domknęło: `req-api-texts`, a razem z tym **C5** — reaktywność `PCT_TEXTS` jest od
+    dziś decyzją ([0014](decisions/0014-texts-as-signal.md)), nie przeoczeniem
   - zrobione: `tools/check-texts.mjs` (target `check-texts` w `components`,
     `dependsOn: build`, w CI) — sześć punktów, 30 reguł. Reguły są w trzech punktach
     (3: napis w węźle tekstowym, w atrybucie mówiącym albo w literale wyrażenia;
@@ -499,7 +512,7 @@ z kontrolą odniesienia. Nic tu już nie czeka.
     przełączająca język bez przeładowania zostawała z napisem sprzed zmiany, od commita
     wprowadzającego `PCT_TEXTS` (2026-07-27), przy zielonym CI: jedyny test tego kanału
     renderował komponent **raz**, a przy jednym renderowaniu obie wersje dają to samo
-    ([`lekcja-54`](lekcje.md#lekcja-54))
+    ([`lesson-54`](lessons.md#lesson-54))
   - odczyt tekstu jest **jeden**, nie dwa — i to jest zmierzona granica, nie
     niedopatrzenie: po zlinkowaniu literał węzła tekstowego trafia do treści zagnieżdżonej
     funkcji szablonu, do której `ɵcmp.template` nie prowadzi. Dlatego mianownik tego
@@ -540,13 +553,13 @@ z kontrolą odniesienia. Nic tu już nie czeka.
     praca nie jest w indeksie
 
 - [x] **A12 — kompletność par tekst/tło + poziomy tokenów** _(2026-08-05)_
-  - domknęło: `wym-token-pary-tekstu`, `wym-token-poziomy` — **2 luki**
+  - domknęło: `req-token-text-pairs`, `req-token-tiers` — **2 luki**
   - zrobione: punkty **6 i 7** w `tools/check-tokens.mjs` (ten sam target, ta sama
     kontrola odniesienia — bo obie obietnice stoją na tym samym mianowniku co nazwy:
     liście tokenów). Punkt 6 to graf referencji „tylko w dół" z polityką
     `libs/tokens/src/poziomy.policy.json`; punkt 7 to „każdy malowany kolor ma parę
     w policy kontrastu" plus reguła `on-*`. Do tego `regula` w `fixture.json` —
-    odpowiedź na [`lekcja-50`](lekcje.md#lekcja-50), bo punkt to nie jedno zdanie
+    odpowiedź na [`lesson-50`](lessons.md#lesson-50), bo punkt to nie jedno zdanie
   - plan mówił „porównanie listy powierzchni z listą par" i **pomylił się w mianowniku**:
     lista powierzchni wzięta z nazw tokenów (`*-bg`) nie widzi tego, co ta biblioteka
     naprawdę robi. Wariant outline przycisku maluje tło `var(--pct-surface-100)` pod
@@ -558,7 +571,7 @@ z kontrolą odniesienia. Nic tu już nie czeka.
     Przyczyna: rampa ciemna była kopią jasnej, a `on-primary` jest w niej **ciemny**,
     więc przyciemnienie tła zbija kontrast zamiast go podnosić. Poprawione: w ciemnym
     `primary` idzie w górę (`blue-400` → `blue-300` → `blue-200`)
-    ([`lekcja-52`](lekcje.md#lekcja-52))
+    ([`lesson-52`](lessons.md#lesson-52))
   - plan mówił też „zakaz odwołań komponentowy → prymitywny" i **w brzmieniu dosłownym
     reguła była złamana 35 razy**: nad osiami wymiaru nie ma warstwy semantycznej. Kolor
     jest za to czysty w 100% i tam wyjątku nie ma. Wyjątek dla wymiaru stoi w polityce,
@@ -571,7 +584,7 @@ z kontrolą odniesienia. Nic tu już nie czeka.
     jednego wzorca wizualnego. `toHaveScreenshot` ma **dwa** progi, a zmierzony był jeden:
     domyślny `threshold: 0.2` jest dwunastokrotnie większy niż krok rampy (0,0163), więc
     przemalowanie całego przycisku dawało zero różniących się pikseli. Ustawione na 0.005
-    z pomiaru, zrzuty ciemne odtworzone ([`lekcja-53`](lekcje.md#lekcja-53))
+    z pomiaru, zrzuty ciemne odtworzone ([`lesson-53`](lessons.md#lesson-53))
   - kontrola: `tools/check-tokens.fixtures/` — piętnaście nowych wejść (osiem na punkt 6,
     siedem na punkt 7), każde odrzucane na swoim punkcie **i swojej regule**; plus osiem
     przebiegów na prawdziwym repozytorium (kolor na prymitywie, kolor z palca, tło
@@ -588,14 +601,14 @@ z kontrolą odniesienia. Nic tu już nie czeka.
     rozbrojenie sąsiedniej dało komunikat, a nie `TypeError`
   - koszt: ~1,5 dnia (plan zakładał 0,5) · _notatki:_ punkt 7 **przeszedł na zielono,
     nie zmierzywszy ani jednego koloru** — wypisał „0 kolorów malowanych w 7 arkuszach",
-    bo wzorzec deklaracji wymagał wiodącego myślnika. To jest [`lekcja-48`](lekcje.md#lekcja-48)
+    bo wzorzec deklaracji wymagał wiodącego myślnika. To jest [`lesson-48`](lessons.md#lesson-48)
     w punkcie pisanym po to, żeby jej nie powtórzyć, i ta sama pomyłka co w A5: kontrola
     niepustości stała po stronie **wejścia**, a pusty był **pomiar**. Osobno: rozbrojenie
     reguły `token-spoza-skorki` dało `TypeError` — **ta sama wada co w A3, A4, A7 i A8,
     piąty raz**
 
 - [x] **A13 — testowanie mutacyjne rdzenia** _(2026-08-06)_
-  - domknęło: `wym-jakosc-jednostkowe` — ostatnią lukę fazy A
+  - domknęło: `req-quality-unit` — ostatnią lukę fazy A
   - zrobione: target `mutacja` (Stryker 9.6 na `core`, `field/number.ts`,
     `select/select.ts`, `thresholds.break` = 80, ~6 min) plus
     `tools/check-mutation.mjs` (target `check-mutation`, `dependsOn: mutacja`, w CI) —
@@ -608,7 +621,7 @@ z kontrolą odniesienia. Nic tu już nie czeka.
     kosztowało **38 nowych testów** i nową specyfikację `core/src/core.spec.ts`:
     `pctFieldMessages` i `pctDescribedBy` są publicznym API entrypointu `./core`
     i nie miały ani jednego testu pod własnym nazwiskiem, a pokrycie linii pokazywało
-    je jako 100% ([`lekcja-57`](lekcje.md#lekcja-57))
+    je jako 100% ([`lesson-57`](lessons.md#lesson-57))
   - plan mówił „próg przeżywalności wpięty w CI, nie raport do oglądania" i trafił
     w sedno, tylko **za wąsko**: sam próg jest w Strykerze wyłączony domyślnie
     (`thresholds.break: null`), a po ustawieniu podnosi się go pięcioma ruchami, z których
@@ -616,7 +629,7 @@ z kontrolą odniesienia. Nic tu już nie czeka.
     `// Stryker disable` w źródle, wykluczona rodzina mutatorów, `ignoreStatic: true`
     i skrócony `timeoutMS` (mutant zabity ZEGAREM liczy się jak zabity asercją).
     Stąd bramka czyta konfigurację **skuteczną z raportu**, nie z pliku
-    ([`lekcja-58`](lekcje.md#lekcja-58))
+    ([`lesson-58`](lessons.md#lesson-58))
   - punkt 3 jest tym, którego plan nie przewidywał, i wynika z konstrukcji: Stryker
     potrzebuje **pliku** konfiguracji Vitesta, a target `test` idzie przez builder
     `@angular/build`, który składa ją w pamięci. Są więc dwie drogi do tych samych
@@ -630,7 +643,7 @@ z kontrolą odniesienia. Nic tu już nie czeka.
     przestaje być literałem — cały plik wraca wtedy do JIT-a. To zwęża mianownik o 16
     mutantów, więc stoi w polityce razem z powodem, a punkt 5 pilnuje, że żaden inny
     powód zignorowania się nie pojawi
-  - podłoga jest dwuwarstwowa i to jest odpowiedź na `lekcja-45` w wersji dla mutacji:
+  - podłoga jest dwuwarstwowa i to jest odpowiedź na `lesson-45` w wersji dla mutacji:
     `thresholds.break` = 80 łącznie (egzekwuje Stryker) plus snapshot **per plik**
     z tolerancją **dwustronną** ±2 p.p. Sam próg łączny milczy o pliku, który spadł
     o dwadzieścia punktów, dopóki reszta go wyrównuje; tolerancja w górę wymusza
@@ -650,7 +663,7 @@ z kontrolą odniesienia. Nic tu już nie czeka.
     ośmiu rdzeniach i jest w całości zdominowany przez 554 uruchomienia zestawu testów.
     Osobno, znalezione po wpięciu do CI: target był **flaky pod zrównolegleniem** —
     Stryker kopiuje drzewo projektu do piaskownicy i wywracał się na tymczasowym
-    tsconfigu, który kasował mu równolegle biegnący `build` ([`lekcja-59`](lekcje.md#lekcja-59)).
+    tsconfigu, który kasował mu równolegle biegnący `build` ([`lesson-59`](lessons.md#lesson-59)).
     Lek: `ignorePatterns` w `stryker.config.json` — 707 kopiowanych plików zamiast 3907
 
 ---
@@ -659,39 +672,73 @@ z kontrolą odniesienia. Nic tu już nie czeka.
 
 Można prowadzić równolegle z A. Wiąże przy pierwszej publikacji — a wtedy wszystko naraz.
 
+Trzy z ośmiu zadań (**B3**, **B4**, **B8**) dotyczą języka. Stoi tu wyłącznie ta jego
+część, której **nie da się wydać po polsku**: tekst wchodzący do pakietu. Reszta
+repozytorium przechodzi na angielski w [sekcji H](#h-jeden-język-repozytorium) — nie
+blokuje publikacji i jest o rząd wielkości większa.
+
 - [ ] **B1 — `LICENSE` w repo**
   - `"license": "MIT"` w manifeście bez pliku to formalnie niepełna licencja, a to
     pierwsza rzecz, którą sprawdza dział prawny konsumenta korporacyjnego
   - koszt: minuty · _notatki:_ —
 
 - [ ] **B2 — zdalne repozytorium + `repository` w manifeście**
-  - dotyczy: `wym-wydanie-metadane` — bramka i jej kontrola są (A1), więc w rejestrze
+  - dotyczy: `req-release-metadata` — bramka i jej kontrola są (A1), więc w rejestrze
     stoi ✅; brakuje **samego pola**, a bramka na co dzień tylko ostrzega i nikt jej nie
     słucha, bo przebieg jest zielony
   - `git remote -v` jest **puste** — dopóki repo nie ma zdalnego, `repository` nie ma czego
     wskazywać, npm odmawia provenance, a `check-package.mjs --release` blokuje wydanie
-  - koszt: minuty (po decyzji, gdzie repo ma stać) · _notatki:_ —
+  - **samo zadanie jest na minuty, ale przestało być pierwsze.** Repozytorium jest publiczne
+    **od pierwszego pushu** (decyzja 2026-08-06 — bez etapu prywatnego), a historia zostaje
+    przed nim zwinięta. Pierwszy push jest więc premierą, nie zapisem stanu: `README.md`
+    (251 linii po polsku), `docs/` (6 593) i nazwy kroków w Actions są od tej sekundy
+    **produktem**
+  - stąd warunek kolejności: **H1 → H3 → H4 → B2**. H1 przed dokumentacją, żeby nie pisać
+    jej dwa razy; H3 i H4, bo to jest to, co zobaczy pierwszy odwiedzający. Cena tej
+    kolejności jest zapisana wprost: do pierwszego pushu nie ma zdalnego CI, prowenancji
+    ani kopii poza tą maszyną
+  - koszt: minuty samego zadania, ~5 dni tego, co je poprzedza · _notatki:_ —
 
 - [ ] **B3 — README pakietu i `description` po angielsku**
+  - dotyczy: [`req-project-language`](requirements/project.md#req-project-language) — warstwa, która
+    nie ma prawa stać w rejestrze wyjątków
   - `libs/components/README.md` to wciąż stub z generatora Nx („This library was generated
-    with Nx") i **jedzie do `dist`** — czyli jest stroną pakietu na npm. `description`
-    w manifeście jest po polsku
+    with Nx", siedem linii) i **jedzie do `dist`** — czyli jest stroną pakietu na npm.
+    `description` w manifeście jest po polsku, a to jedno zdanie widać w wynikach
+    wyszukiwania npm, zanim ktokolwiek otworzy README
+  - zmierzony zakres to trzy pliki, nie dwa: do manifestu i README dochodzą nagłówki
+    generowanych artefaktów skórki — `themes/pct.css` („AUTOGENEROWANE z … nie edytuj
+    ręcznie") i `themes/_tokens.scss`. Oba jadą w pakiecie, oba pisze `libs/tokens/build.mjs`,
+    więc poprawka jest **w generatorze**, a nie w wyjściu
+  - README pakietu pisze się od zera, nie tłumaczy: stub Nx nie ma czego przenieść, a to
+    pierwsza strona, którą ktokolwiek zobaczy
   - koszt: ~0,5 dnia · _notatki:_ —
 
 - [ ] **B4 — JSDoc publicznego API po angielsku**
-  - ten tekst wyświetla się w podpowiedzi edytora **u konsumenta**, nie w tym repo.
-    Podział jest już zapisany w [`docs/README.md`](README.md): dokumentacja robocza po
-    polsku, powierzchnia publiczna po angielsku — brakuje wykonania
-  - koszt: 1–2 dni (mechaniczne) · _notatki:_ —
+  - dotyczy: [`req-project-language`](requirements/project.md#req-project-language)
+  - ten tekst wyświetla się w podpowiedzi edytora **u konsumenta**, nie w tym repo
+  - zmierzony zakres: **24 pliki zbudowanego pakietu** niosą polski tekst — komplet ośmiu
+    `types/*.d.ts`, siedem `fesm2022/*.mjs` (komentarze przeżywają build), mapy źródeł
+    i manifest. W źródłach to **15 plików** `libs/**/*.ts` poza specyfikacjami
+  - **druga rzecz w tym samym miejscu, niejęzykowa:** publiczne `.d.ts` cytują **31 razy**
+    `wym-*` i `lekcja-*` gołym identyfikatorem, który u konsumenta nie prowadzi donikąd.
+    Odpowiedzią jest **link, nie usunięcie** — dokumentacja stoi publicznie na GitHubie, więc
+    `@see https://…/docs/requirements/a11y.md#req-a11y-built-in` jest dla konsumenta warte
+    więcej niż akapit powtórzony w podpowiedzi edytora. Robić **po H1**, żeby linki
+    wskazywały docelowe nazwy
+  - kompresja dotyczy tu **prozy, nie przykładów**: `@example` jest w JSDoc najcenniejszy
+    i budżetu nie ma. Skraca się wyjaśnienia dające się zastąpić odnośnikiem —
+    `PctFieldCursor` ma dziś dziesięć linii prozy na trzy warianty typu
+  - koszt: 1–2 dni · _notatki:_ —
 
 - [x] **B5 — kontrola odniesienia dla `ng add`** _(2026-08-04, razem z A1)_
-  - domknęło: `wym-wydanie-ng-add`
+  - domknęło: `req-release-ng-add`
   - zrobione: `tools/check-package.fixtures/brak-schematica/` — kolekcja wskazuje fabrykę,
     której skompilowanego pliku nie ma, i musi zapalić punkt 5. Wyszło tym samym ruchem
     co A1, bo to punkt tej samej bramki; osobne zadanie było zbędne od początku
 
 - [ ] **B6 — dokument polityki wsparcia**
-  - domyka: `wym-wydanie-wsparcie`
+  - domyka: `req-release-support`
   - co: okno wsparcia (ile wersji Angulara wstecz, jak długo), polityka deprecacji (ile
     minorów ostrzeżenia przed usunięciem), wymóg codemodu przy zmianie łamiącej —
     kolekcja migracji istnieje, ale nic nie wiąże `feat!` z wpisem w niej
@@ -699,12 +746,42 @@ Można prowadzić równolegle z A. Wiąże przy pierwszej publikacji — a wtedy
   - koszt: ~1 dzień · _notatki:_ —
 
 - [ ] **B7 — bramka listy zależności**
-  - domyka: `wym-projekt-zaleznosci`
+  - domyka: `req-project-dependencies`
   - co: siódmy punkt w `check-package.mjs` — `dependencies` / `peerDependencies`
     w **spakowanym** manifeście wobec listy dozwolonej. Dziś nic nie odróżnia zależności
     świadomej od dodanej odruchowo
   - kontrola: manifest z dopisaną zależnością spoza listy musi zapalić
   - koszt: ~0,5 dnia · _notatki:_ —
+
+- [ ] **B8 — bramka języka**
+  - domyka: [`req-project-language`](requirements/project.md#req-project-language) — jedyna luka
+    dopisana po zamknięciu fazy A
+  - **bez niej B3 i B4 są jednorazowym sprzątaniem.** Podział językowy stał w
+    [`docs/README.md`](README.md) od początku, nie miał bramki i został złamany po **obu**
+    stronach: powierzchnia publiczna jest po polsku, a dokumentacja robocza cytowana
+    w publicznym JSDoc. To ten sam przebieg, który w A2, A5 i A12 kończył się zieloną
+    bramką mierzącą zero — tylko tutaj bramki nie było w ogóle
+  - co: `tools/check-language.mjs` + `tools/language.policy.json`. **Dwa pomiary o różnym
+    zasięgu**: powierzchnia publiczna na **artefakcie** (tą samą drogą co `check-package` —
+    liczy się to, co wyjdzie z `npm pack`, nie to, co stoi w źródle), reszta repozytorium
+    na plikach z indeksu gita
+  - wykrywanie **dwuczłonowe**, i to jest sedno, a nie szczegół: diakrytyki same wystarczają
+    dla prozy i milkną dokładnie tam, gdzie tekst jest krótki — `Przycisk`, `Rozmiar`,
+    `Wyłączony` bez ogonka, nazwa targetu `mutacja`, katalog `brak-skorki`. Drugi człon to
+    lista polskich słów funkcyjnych, których angielszczyzna nie zawiera (`jest`, `czyli`,
+    `przez`, `oraz`, `albo`, `wtedy`, `przy`, `bez`), plus osobno **nazwy plików
+    i identyfikatory**, gdzie prozy nie ma wcale
+  - rejestr wyjątków w idiomie `przegladarki.policy.json` z A10: wpis niesie powód i zadanie,
+    które go zdejmuje, a **martwy wpis zapala tak samo jak nowa polszczyzna** — inaczej lista
+    tylko rośnie. Powierzchnia publiczna nie ma prawa mieć wpisu w ogóle, więc B3 i B4 są
+    warunkiem wpięcia bramki do CI, a nie jej następstwem
+  - mianownik: niepusta lista skanowanych plików i niepusty pomiar. Skan, który przestał
+    cokolwiek czytać, przepuszcza wszystko — [`lesson-48`](lessons.md#lesson-48), popełniona
+    już dwa razy (A5, A12)
+  - kontrola: polski komentarz w pliku spoza rejestru; wpis rejestru wskazujący plik **już**
+    przetłumaczony; `description` po polsku w manifeście **mimo** wpisu w rejestrze; skan
+    z pustą listą plików
+  - koszt: ~1 dzień · _notatki:_ —
 
 ---
 
@@ -732,10 +809,10 @@ między większymi zadaniami. Pełny kontekst: [`review.md`](review.md) §5.
     · _notatki:_ —
 
 - [ ] **C4 — `_tokens.scss`: generowany, wieziony w pakiecie, używany przez zero linii**
-  - dotyczy: `wym-token-scss` — w arkuszach komponentów nie ma ani jednego `@use`;
+  - dotyczy: `req-token-scss` — w arkuszach komponentów nie ma ani jednego `@use`;
     wszystkie odwołania to surowe `var(--pct-*)`
   - decyzja: albo uczynić go obowiązkową drogą do tokenu (literówka staje się błędem
-    kompilacji — duch [`lekcja-43`](lekcje.md#lekcja-43)), albo wyrzucić z wymagania
+    kompilacji — duch [`lesson-43`](lessons.md#lesson-43)), albo wyrzucić z wymagania
     i z pakietu. Dziś to martwy artefakt w publikowanym pakiecie · _notatki:_ —
 
 - [ ] **C6 — prymitywy w publicznej unii `PctCssVar`: dwie rampy prywatne, trzecia nie**
@@ -745,18 +822,18 @@ między większymi zadaniami. Pełny kontekst: [`review.md`](review.md) §5.
     polityki, czyli **z niewidocznego miejsca w widoczne** — i tam zostawiony
   - do rozstrzygnięcia szerzej niż jedna rampa: czy prymitywy w ogóle należą do
     powierzchni publicznej. Argument za: e2e i kod budujący motyw pytają przeglądarkę
-    o wartości i typ jest jedyną ochroną przed literówką ([`lekcja-43`](lekcje.md#lekcja-43)).
+    o wartości i typ jest jedyną ochroną przed literówką ([`lesson-43`](lessons.md#lesson-43)).
     Argument przeciw: prymityw jest implementacją skórki, a nie jej kontraktem
   - koszt: minuty na zmianę, decyzja jest całym zadaniem · _notatki:_ —
 
 - [ ] **C7 — `options` jako jedyna część kontenera bez przedrostka `group-`**
   - `libs/components/radio/src/radio-group.html` — grupa wystawia `group-label`,
     `group-hint`, `group-error` i `options`. Przedrostek wziął się z realnej kolizji
-    z etykietami opcji ([`lekcja-15`](lekcje.md#lekcja-15)), a ta jedna część została poza
-    regułą, którą [`wym-api-czesci-unikalne`](wymagania/api.md#wym-api-czesci-unikalne)
+    z etykietami opcji ([`lesson-15`](lessons.md#lesson-15)), a ta jedna część została poza
+    regułą, którą [`req-api-parts-unique`](requirements/api.md#req-api-parts-unique)
     zapisuje jako fakt („części kontenera mają własny przedrostek")
   - dziś **z niczym nie koliduje**, więc to nie jest wada a11y ani zmiana wymuszona:
-    `wym-api-czesci` obiecuje stabilność i spisanie, nie zgadywalność. Zostawione przy A3
+    `req-api-parts` obiecuje stabilność i spisanie, nie zgadywalność. Zostawione przy A3
     świadomie, tym samym ruchem co C6 przy A4 — z tą różnicą, że od A3 przemianowanie jest
     już widoczną zmianą publicznego API (snapshot), a nie cichą poprawką
   - koszt: minuty na zmianę (`options` → `group-options`, nikt jej nie używa
@@ -772,7 +849,7 @@ między większymi zadaniami. Pełny kontekst: [`review.md`](review.md) §5.
     `text`)
   - dziś **bez objawu**: chromium i firefox zamalowują wynik paletą użytkownika
     niezależnie od tego, która reguła wygrała, więc pomiar wychodzi poprawny. Widać to
-    wyłącznie na webkicie, który podmiany nie robi ([`lekcja-56`](lekcje.md#lekcja-56)),
+    wyłącznie na webkicie, który podmiany nie robi ([`lesson-56`](lessons.md#lesson-56)),
     i będzie widać wszędzie od dnia, w którym któraś część biblioteki dostanie
     `forced-color-adjust: none`
   - to jest deklaracja bez pokrycia, czyli ta sama rodzina co martwe `--pct-on-danger`
@@ -781,7 +858,7 @@ między większymi zadaniami. Pełny kontekst: [`review.md`](review.md) §5.
     `check-styles` · _notatki:_ —
 
 - [x] **C5 — `PCT_TEXTS` nie przeżyje zmiany języka w runtime** _(2026-08-06, razem z A11)_
-  - rozstrzygnięte jako [0014](decyzje/0014-teksty-jako-sygnal.md): token niesie
+  - rozstrzygnięte jako [0014](decisions/0014-texts-as-signal.md): token niesie
     `Signal<PctTexts>`, a napis czyta się **przy renderowaniu**. `providePctTexts`
     przyjmuje też sygnał, więc przełącznik języka podaje `computed(() => SLOWNIKI[jezyk()])`
   - wybór padł na pierwszą z trzech opcji, a nie na obronną trzecią, bo cena jest do
@@ -795,7 +872,7 @@ między większymi zadaniami. Pełny kontekst: [`review.md`](review.md) §5.
   - test: zmiana języka w runtime dociera do napisów; bez poprawki pada na
     `expected 'Select…' to be 'Wybierz…'`. Regułę pilnuje `check-texts`
     (`napis-przy-konstrukcji`), bo sama wiedza już raz nie wystarczyła —
-    [`lekcja-54`](lekcje.md#lekcja-54)
+    [`lesson-54`](lessons.md#lesson-54)
 
 ---
 
@@ -804,7 +881,7 @@ między większymi zadaniami. Pełny kontekst: [`review.md`](review.md) §5.
 Największe ryzyko architektoniczne. Maszyneria listy (typeahead, `activeIndex`, pomijanie
 wyłączonych) siedzi dziś jako prywatne metody w `PctSelect`, a potrzebują jej
 autocomplete, multiselect, menu, combobox i paleta poleceń. **Wyciągnąć przed drugim
-konsumentem, nie po nim** — inaczej powtórzy się [`lekcja-21`](lekcje.md#lekcja-21) (ta
+konsumentem, nie po nim** — inaczej powtórzy się [`lesson-21`](lessons.md#lesson-21) (ta
 sama logika skopiowana do czterech kontrolek) na dużo większym kawałku.
 
 Zasada przewodnia: **mechanika z CDK, API własne** — typy CDK nigdy nie wyciekają do
@@ -814,18 +891,18 @@ i kontrolki.
 - [ ] **D1 — nawigacja po liście** → wyciągnąć z `PctSelect` do `core` · _notatki:_ —
 - [ ] **D2 — nakładka**: pozycjonowanie, stos zamykania (kolejność Escape przy
       zagnieżdżeniu), klik na zewnątrz, `inert` tła, blokada scrolla, dziedziczenie motywu
-      i pisma — to ostatnie rozwiązane raz w [`lekcja-35`](lekcje.md#lekcja-35), do
+      i pisma — to ostatnie rozwiązane raz w [`lesson-35`](lessons.md#lesson-35), do
       uogólnienia · _notatki:_ —
 - [ ] **D3 — fokus**: trap, powrót, fokus początkowy, roving tabindex jako alternatywa dla
       `aria-activedescendant` · _notatki:_ —
 - [ ] **D4 — live announcer**: jeden kanał `polite`, jeden `assertive`, z deduplikacją —
       nie region per komponent · _notatki:_ —
-- [ ] **D5 — `*pctTemplate` / `TemplateRef`** → domyka `wym-api-szablony`; odblokowuje
+- [ ] **D5 — `*pctTemplate` / `TemplateRef`** → domyka `req-api-templates`; odblokowuje
       ikony · _notatki:_ —
 - [ ] **D6 — ikony**: `pct-icon` na rzutowanym SVG + token `PCT_ICONS` mapujący nazwy
-      semantyczne na szablony, z wbudowanymi domyślnymi → domyka `wym-api-ikony`
+      semantyczne na szablony, z wbudowanymi domyślnymi → domyka `req-api-icons`
       · _notatki:_ —
-- [ ] **D7 — bramka zakazu `@angular/animations`** → domyka `wym-api-animacje`; wiąże przy
+- [ ] **D7 — bramka zakazu `@angular/animations`** → domyka `req-api-animations`; wiąże przy
       pierwszym komponencie z wejściem/wyjściem, czyli przy D2 · _notatki:_ —
 
 ---
@@ -833,7 +910,7 @@ i kontrolki.
 ## E. Faza 2 — komponenty
 
 Kolejność wg długu architektonicznego, nie wg popularności. Każdy nowy komponent wypełnia
-[`komponenty/_szablon.md`](komponenty/_szablon.md) — formularz DoD istnieje i jest
+[`components/_template.md`](components/_template.md) — formularz DoD istnieje i jest
 warunkiem wejścia do wydania.
 
 - [ ] **E1 — dialog** — wymusza focus trap, blokadę scrolla, `inert`, powrót fokusu, stos
@@ -855,7 +932,7 @@ warunkiem wejścia do wydania.
 
 ## F. Faza 3 — powierzchnia zaufania
 
-- [ ] **F1 — `apps/docs`** → domyka `wym-projekt-aplikacje` i `wym-projekt-layout`.
+- [ ] **F1 — `apps/docs`** → domyka `req-project-apps` i `req-project-layout`.
       Renderuje **wygenerowane** inwentarze części i tokenów (z A3 i A4), nie pisane ręcznie
 - [ ] **F2 — ACR / VPAT** z istniejących bramek — dowód maszynowy macie wcześniej niż
       dokument, co jest odwrotnością normy w branży (EAA egzekwowalny od czerwca 2025,
@@ -872,21 +949,356 @@ warunkiem wejścia do wydania.
 
 Czekają na wyzwalacz zapisany w polu **Wiąże przy**. Nie są zapomniane — są odroczone.
 
-- [ ] **G1 — `wym-api-liczba`**: testy własnościowe parsera (`parse(format(n)) === n` dla
+- [ ] **G1 — `req-api-number`**: testy własnościowe parsera (`parse(format(n)) === n` dla
       dowolnego `n` i locale). Wiąże przy pierwszym locale spoza `pl`/`en`
-- [ ] **G2 — `wym-projekt-pliki`**: kontrola układu katalogu entrypointu. Wiąże przy
+- [ ] **G2 — `req-project-files`**: kontrola układu katalogu entrypointu. Wiąże przy
       pierwszym komponencie dopisanym przez kogoś innego niż autor reguły
-- [ ] **G3 — `wym-token-dyrektywa`**: dyrektywa motywu zamiast ręcznego `data-theme`.
+- [ ] **G3 — `req-token-directive`**: dyrektywa motywu zamiast ręcznego `data-theme`.
       Wiąże, gdy ustawianie atrybutu z szablonu zacznie się powtarzać
-- [ ] **G4 — `wym-token-gestosc`**: w źródłach DTCG nie ma **ani jednego** tokenu gęstości.
+- [ ] **G4 — `req-token-density`**: w źródłach DTCG nie ma **ani jednego** tokenu gęstości.
       Wiąże po ustabilizowaniu osi wielkości — uwaga: gęstość zejdzie poniżej progu obszaru
       dotyku, więc musi przyjść razem z bramką, nie przed nią
+
+---
+
+## H. Jeden język repozytorium
+
+Cel: **całe repozytorium po angielsku i bez lania wody** — dokumentacja, kod, komentarze,
+nazwy testów, komunikaty bramek i **identyfikatory**. Bez podziału na „robocze"
+i „publiczne": podział istniał od początku, nie miał bramki i nie został dotrzymany po
+żadnej ze stron. Dwie obietnice, dwie bramki:
+[`req-project-language`](requirements/project.md#req-project-language) → **B8**,
+[`req-project-concise`](requirements/project.md#req-project-concise) → budżet zakładany
+**po** kompresji (H2).
+
+Rozstrzygnięte 2026-08-06, nie do ponownego otwierania:
+
+- **identyfikatory przechodzą razem z resztą** — `wym-` jest skrótem od „wymaganie",
+  a repozytorium po angielsku z polskimi ID to rozjazd, którego ten plik pilnuje wszędzie
+  indziej. [Tabela przemianowań](README.md#planowane-przemianowanie-przestrzeni-id) jest
+  zatwierdzona;
+- **kompresja idzie tym samym ruchem co tłumaczenie**, nie po nim — a jej celem jest
+  `tools/` (~590 linii nagłówków), nie JSDoc i nie dokumentacja. Narzędziem jest **odsyłacz
+  zamiast powtórzenia**, możliwy dopiero dlatego, że dokumentacja stoi publicznie;
+- **repozytorium jest publiczne od pierwszego pushu**, bez etapu prywatnego, a historia
+  zostaje przed nim zwinięta — 49 polskich commitów nie wyjdzie na zewnątrz. Push jest
+  premierą, więc H1, H3 i H4 stoją **przed** B2.
+
+**Repozytorium ma stać publicznie na GitHubie, więc dokumentacja jest produktem, nie
+zapleczem.** To przestawia kolejność w środku H: dwa najczęściej czytane pliki publicznego
+repozytorium — `README.md` i `docs/README.md` — są dziś w całości po polsku, a pierwszy
+z nich **nie był policzony w żadnej warstwie poprzedniej wersji tego planu**. Kolejność
+H3–H6 idzie więc według **ruchu czytelników**, nie kosztu: strona tytułowa → dokumentacja
+→ źródła → narzędzia.
+
+Momenty wiązania są dwa i **wcześniejszy jest szerszy**: pierwszy push (B2) obejmuje
+`README`, `docs/` i Actions, a wydanie pakietu (B3, B4, B8) — tylko to, co jedzie
+w `npm pack`. Poza nimi **H1**, które nie wiąże z niczym zewnętrznym, ale drożeje z każdym
+dopisanym zdaniem.
+
+Zmierzone 2026-08-06 (`git ls-files` + skan diakrytyków):
+
+| warstwa                        | rozmiar                                                  | wiąże przy           |
+| ------------------------------ | -------------------------------------------------------- | -------------------- |
+| powierzchnia publiczna pakietu | 24 pliki w `dist`, w tym komplet 8 `types/*.d.ts`        | wydaniu (B3/B4)      |
+| `README.md` repozytorium       | 251 linii, z polskimi napisami w przykładach kodu        | **pierwszym pushu**  |
+| dokumentacja `docs/`           | 37 plików, 6 593 linie                                   | **pierwszym pushu**  |
+| `AGENTS.md` i workflowy        | 35 linii + nazwa „Wydanie" i kroki widoczne w Actions    | **pierwszym pushu**  |
+| identyfikatory i ich cytowania | 82 + 59 nazw, 2 571 cytowań w 175 plikach                | —                    |
+| źródła `libs`                  | 39 plików, z tego 9 specyfikacji                         | —                    |
+| nazwy testów                   | 161 z 191 `it()`                                         | —                    |
+| narzędzia i bramki             | 13 skryptów, 10 302 linie, ~590 linii samych nagłówków   | —                    |
+| nazwy własne w kontraktach     | 1 target, 7 polityk/snapshotów, 100 katalogów fixture'ów | —                    |
+| historia commitów              | 49 commitów                                              | zwijana przed pushem |
+
+- [x] **H1 — przestrzeń identyfikatorów i nazw dokumentacji** _(2026-08-06)_
+  - zrobione: **83 identyfikatory wymagań** (`wym-` → `req-`, obszary `projekt`/`jakosc`/
+    `wydanie` → `project`/`quality`/`release`, slugi przetłumaczone), **59 lekcji**
+    (`lekcja-N` → `lesson-N`) i **2 571 cytowań w 175 plikach**. Do tego nazwy plików
+    i katalogów: `wymagania/` → `requirements/`, `decyzje/` → `decisions/`,
+    `komponenty/` → `components/`, `00-os.md` → `00-axis.md`, `lekcje.md` → `lessons.md`,
+    `rejestr.md` → `registry.md`, `opis.md` → `overview.md` i 14 nazw decyzji.
+    [Tabela migracji](README.md#migracja-przestrzeni-id-2026-08-06) — pełne odwzorowanie
+  - `check-docs.mjs` przestawiony na nową przestrzeń, a **stara dopisana do odrzucanych**
+    obok numerycznej z 2026-07-27. Wzorzec wymaga litery po myślniku, więc zdanie o samym
+    prefiksie (`wym-*`, `wym-…`) nie jest cytowaniem — inaczej nie dałoby się opisać własnej
+    migracji nigdzie poza plikami zwolnionymi z kontroli
+  - **plan mówił „mechaniczne" i to była połowa prawdy.** Trzy rzeczy, których nie
+    przewidywał, znalazła bramka, a nie przegląd:
+    - `apps/sandbox/src/app/ui/req-ids.ts` **sam zaczął wyglądać na cytowanie wymagania**:
+      po zmianie prefiksu na `req-` wzorzec `req-[a-z…]` łapie własną nazwę pliku. Plik
+      niesie `PctReqId`, `PctLessonId` i `PctDocId`, więc przemianowany na `doc-ids.ts` —
+      nazwa jest przy okazji prawdziwsza niż była;
+    - podmiana ścieżek **przepisała lewą kolumnę tabeli migracji**, czyli dokument, który
+      ma pamiętać stare nazwy. Tabela jest w jedynym pliku zwolnionym z kontroli cytowań
+      i to ją uratowało — rozjazd był widoczny, bo zniknęła strzałka „stare → nowe";
+    - `tools/check-parts.mjs` trzymał `docs/komponenty` **bez ukośnika na końcu**, więc
+      wypadł ze wzorca podmiany — a jego naprawa zapaliła bramkę, bo pięć fixture'ów wozi
+      **własną kopię** tego katalogu. Ścieżka dokumentacji żyje w tylu miejscach, ile
+      przypadków ją odwzorowuje
+  - **zmierzone: migracja jest wewnętrzna.** Unia `PctReqId` idzie do sandboxa, nie do
+    publikowanego pakietu; jedyne cytowania wyciekające na zewnątrz to 31 wystąpień
+    w `.d.ts`, które bierze **B4**
+  - kontrola: trzy przebiegi na prawdziwym repozytorium — stare ID w pliku niezwolnionym
+    z kontroli zapala („stary identyfikator"), cytowanie nowej przestrzeni bez pokrycia
+    zapala, a fixture przestający być wadliwym zapala punkt 6 („kontrola odniesienia
+    PRZESZŁA, a miała nie przejść"). Do tego `nx run-many -t typecheck`, `check-parts`
+    i testy sandboxa — zielone
+  - koszt: ~0,5 dnia (plan zakładał ~1) · _notatki:_ reguła „ID nigdy się nie zmienia"
+    przepisana tak, żeby mówiła prawdę: nie zmienia się **z powodu zmiany sensu**, bo od
+    tego jest nowe wymaganie
+
+- [ ] **H2 — kryterium zwięzłości i budżet** _(decyzja, nie pisanie)_
+  - **przed H3–H8**, inaczej „skompresowane" znaczy tyle, ile ktoś akurat czuje, a drugi
+    przebieg po tych samych plikach zrobi to jeszcze raz inaczej
+  - kryterium jest już obietnicą ([`req-project-concise`](requirements/project.md#req-project-concise)):
+    zostaje to, co odpowiada na „dlaczego nie oczywiście?", znika to, co powtarza kod albo
+    opowiada przebieg dochodzenia
+  - **narzędziem jest odsyłacz, nie skracanie zdań** — i to jest zmiana, którą umożliwia
+    dopiero publiczne repozytorium: dokumentacja stoi pod stabilnym adresem, więc nagłówek
+    bramki może **wskazać** decyzję i lekcję zamiast je streścić. `check-tokens.mjs` ma dziś
+    76 linii nagłówka i po połowie powtarza wpis A4 stąd oraz
+    [`lesson-49`](lessons.md#lesson-49). Nagłówek ma odpowiedzieć „co ta bramka mierzy i jak
+    ją uruchomić"; „dlaczego akurat tak" ma jedno miejsce i to nie jest komentarz w kodzie
+  - **celem jest `tools/`, nie JSDoc.** Tam siedzi objętość: 13 skryptów, ~590 linii samych
+    nagłówków. Budżet ~15 linii na nagłówek (co mierzy + lista punktów + użycie) i ~20 na
+    wpis w dzienniku, dziś odpowiednio 34–76 i 40+
+  - **JSDoc nie dostaje limitu.** Sześć linii nie starczy na `@example` ani na wyjaśnienie
+    czegokolwiek, a przykład jest w publicznym API najcenniejszy — kod i `@example` są poza
+    budżetem w ogóle. Regułą dla JSDoc jest ta sama co wyżej: nie powtarzaj tego, do czego
+    możesz odesłać
+  - budżet w snapshocie zakłada się **po** przejściu warstw, nigdy przed: założony dziś
+    zamraża bloat jako stan zaakceptowany — to ten sam błąd, który A4 złapało przy nazwach
+    tokenów ([`lesson-49`](lessons.md#lesson-49))
+  - koszt: godziny, decyzja jest całym zadaniem · _notatki:_ —
+
+- [ ] **H3 — strona tytułowa repozytorium**
+  - `README.md` (**251 linii**), `AGENTS.md` (35) i nazwy w `.github/workflows/` — workflow
+    nazywa się „Wydanie", a jego kroki („Wydajemy tylko z main", „Tożsamość gita dla commita
+    wydania") są widoczne w zakładce Actions każdego, kto tam zajrzy
+  - to **najczęściej czytany plik w publicznym repozytorium**, czytany częściej niż README
+    pakietu na npm — i jedyna warstwa, której nie policzyła poprzednia wersja tego planu
+  - polszczyzna siedzi też **w przykładach kodu**, czyli w tym, co czytelnik kopiuje:
+    `Zapisz`, `Wyczyść`, `Szukaj`, `Akceptuję regulamin`, `Liczba stanowisk`, identyfikator
+    `poId` i lista `miasta`. Przykład zostaje przykładem tylko wtedy, gdy da się go wkleić
+  - `README.md` i `libs/components/README.md` (**B3**) to **dwa różne dokumenty**: pierwszy
+    odpowiada „czym to jest i jak tu pracować", drugi — „jak tego użyć u siebie". Dziś
+    pierwszy udaje oba, a drugi jest stubem generatora
+  - koszt: ~0,5 dnia · _notatki:_ —
+
+- [ ] **H4 — dokumentacja `docs/`**
+  - 37 plików, 6 593 linie — największa pozycja i jedyna, w której tłumaczenie **może coś
+    stracić**: to jest miejsce, gdzie się myśli, a nie zapis wyniku. Kompresja wg H2 zdejmie
+    z tego część, bo `plan.md` (1 600 linii) i `review.md` w dużej mierze się powtarzają
+  - w publicznym repozytorium to nie jest zaplecze: `README.md` prowadzi tu wprost, a
+    [rejestr](registry.md) jest tym, co odróżnia tę bibliotekę od dowolnej innej — obietnice
+    z przypisanymi bramkami. Po polsku nie mówi tego nikomu
+  - kolejność od najgęstszego użytkowo: `docs/README.md` → `00-axis.md` →
+    [`requirements/`](requirements/) → [`decisions/`](decisions/) → [`components/`](components/) →
+    [`lessons.md`](lessons.md) → ten plik → [`review.md`](review.md) (datowana migawka, może
+    zostać na koniec)
+  - nazwy plików bierze **H1**; tutaj zostaje treść. Migracja jest bezpieczna kosztem
+    `check-docs`: cytowanie wskazujące na nieistniejący plik albo ID jest błędem CI
+  - koszt: 3–5 dni · _notatki:_ —
+
+- [ ] **H5 — źródła `libs` poza publicznym API**
+  - 39 plików `.ts`/`.scss`/`.html` z polskim tekstem; publiczny JSDoc bierze **B4**, tutaj
+    zostaje reszta: komentarze prywatne, arkusze, `testing/`, schematics
+  - jednym ruchem z kompresją wg H2 — czytanie pliku jest głównym kosztem, więc dwa
+    przebiegi są dwa razy droższe od jednego
+  - koszt: ~1 dzień · _notatki:_ —
+
+- [ ] **H6 — nazwy testów**
+  - 161 z 191 `it()` i większość `describe()`. Wygląda mechanicznie i **nie jest**: nazwy
+    testów są cytowane w polu **Kontrola** wymagań (np. `hydration.spec.ts › „bramka
+faktycznie wykrywa błąd hydracji"`), więc przemianowanie bez poprawienia cytowania
+    zostawia wymaganie wskazujące na test, którego nie ma
+  - `check-docs` sprawdza **ścieżki**, nie zdania po `›` — ta część jest dziś niepilnowana
+    i przy okazji warto zmierzyć, czy da się ją domknąć
+  - koszt: ~0,5 dnia · _notatki:_ —
+
+- [ ] **H7 — nagłówki i komunikaty bramek** _(główny cel kompresji)_
+  - 13 skryptów, 10 302 linie, z czego ~590 to same nagłówki (34–76 linii na skrypt). To
+    tutaj siedzi problem, o który chodziło — nie w JSDoc i nie w dokumentacji
+  - lek jest ten sam co w H2: **odsyłacz zamiast powtórzenia**. Nagłówek mówi, co bramka
+    mierzy i jak ją uruchomić, a „dlaczego akurat tak" wskazuje w `docs/` — pod publicznym,
+    stabilnym adresem. Każde takie zdanie i tak stoi już w [`lessons.md`](lessons.md) albo
+    w dzienniku tego pliku, więc dziś jest utrzymywane w dwóch miejscach
+  - komunikaty bramek są ich API dla czytającego CI: po angielsku i tak samo krótkie
+  - uwaga na sprzężenie: część komunikatów jest **cytowana w kontrolach odniesienia**;
+    przemianowanie zdania bez przejrzenia fixture'ów daje bramkę zapalającą na cudzym
+    punkcie — dokładnie to, co pole `regula` miało wyeliminować (A12)
+  - koszt: ~1,5 dnia razem z kompresją · _notatki:_ —
+
+- [ ] **H8 — nazwy własne w kontraktach**
+  - target `mutacja` jest **jedynym polskim z 26** — reszta (`check-*`, `build`, `themes`,
+    `stamp-version`) jest angielska, więc to rozjazd zastany, nie konwencja
+  - pliki: `czesci.snapshot.md`, `rozmiar.snapshot.md`, `mutacja.snapshot.md`,
+    `mutacja.policy.json`, `nazwy.policy.json`, `poziomy.policy.json`,
+    `przegladarki.policy.json` — a `contrast.policy.json` **w tym samym katalogu** jest już
+    po angielsku
+  - do tego 100 katalogów przypadków (`brak-schematica`, `os-wspolna-martwa`,
+    `czesc-wiazana-w-host`), 41 nazw reguł w `fixture.json` i marker `/* pct-wyjatek … */`
+    w arkuszach (4 użycia, ale to konwencja dla każdego następnego arkusza)
+  - cena jest w rozproszeniu, nie w liczbie: każda nazwa pliku polityki żyje też w **kopii
+    wewnątrz fixture'ów** (`tools/check-tokens.fixtures/*/libs/tokens/tokens.snapshot.md`),
+    więc przemianowanie idzie przez skrypt, jego fixture'y i CI naraz. Robić **po** H7,
+    gdy skrypty i tak są otwarte
+  - koszt: ~1 dzień · _notatki:_ —
+
+- [ ] **H9 — konwencja commitów**
+  - tytuły i treść po angielsku, zakresy (`feat(tokens)!:`) bez zmian
+  - **49 polskich commitów nigdy nie trafi na zewnątrz**: historia zostaje zwinięta przed
+    pierwszym pushem do upstreamu (decyzja 2026-08-06). Odpada więc datowana granica
+    i publiczny ślad — pierwszy commit publicznego repozytorium jest po angielsku
+  - konsekwencja dla wydania, drobna i warta sprawdzenia raz: wersja bierze się
+    z konwencjonalnych commitów, więc po zwinięciu historia zaczyna się od jednego wpisu —
+    pierwsze wydanie i tak idzie z `--first-release`, ale CHANGELOG wystartuje od tego
+    właśnie commita
+  - koszt: minuty · _notatki:_ —
 
 ---
 
 ## Dziennik
 
 Wpis per sesja: co ruszyło, czym się skończyło, co jest następne. Najnowsze na górze.
+
+### 2026-08-06 — H1: nazwa pliku, która sama zaczęła wyglądać na cytowanie
+
+Zrobione **H1**. Bez zmiany liczb (83 wymagania, 13 luk) — to była migracja nazw, nie
+obietnic: 83 identyfikatory wymagań, 59 lekcji, **2 571 cytowań w 175 plikach** i 24 nazwy
+plików oraz katalogów. Pełne odwzorowanie stoi
+w [tabeli migracji](README.md#migracja-przestrzeni-id-2026-08-06), obok tej z 2026-07-27.
+
+Zadanie było zakresowo dokładnie tym, co zapisał plan, i pomyliło się w jednym słowie:
+**„mechaniczne".** Podmiana tekstu jest mechaniczna, konsekwencje nie — a znalazła je
+bramka, nie przegląd.
+
+- **Nowy prefiks zaczął łapać własne narzędzie.** Po zmianie `wym-` → `req-` wzorzec
+  cytowania `req-[a-z…]` pasuje do nazwy pliku `apps/sandbox/src/app/ui/req-ids.ts`, więc
+  bramka zgłosiła ją jako wiszące cytowanie — w dwóch miejscach naraz. Przemianowany na
+  `doc-ids.ts`, co jest przy okazji prawdziwsze: niesie `PctReqId`, `PctLessonId` **i**
+  `PctDocId`. Do tego sam wzorzec przestał uznawać **segment ścieżki** za cytowanie, bo
+  drugi taki plik jest kwestią czasu — `req-` to zbyt zwyczajny przedrostek. Wybór prefiksu
+  ma zasięg poza dokumentacją i nie ma jak się o tym dowiedzieć inaczej niż przebiegiem.
+- **Podmiana ścieżek przepisała lewą kolumnę tabeli migracji**, czyli dokument, którego
+  jedynym zadaniem jest pamiętać stare nazwy. Wyszło `requirements/` → `requirements/`.
+  Uratowało to, że tabela mieszka w jedynym pliku zwolnionym z kontroli cytowań — a to
+  zwolnienie istnieje dokładnie po to. Wniosek na przyszłe migracje: **plik opisujący
+  migrację musi być wyjęty spod jej własnej podmiany.**
+- **`tools/check-parts.mjs` trzymał `docs/komponenty` bez ukośnika** i wypadł ze wzorca
+  podmiany — wzorzec z ukośnikiem jest bezpieczny dla katalogów w linkach i ślepy na te
+  w kodzie. Ciekawsza jest druga połowa: **naprawa tej jednej stałej zapaliła bramkę**,
+  bo pięć przypadków w `check-parts.fixtures/` wozi własną kopię katalogu kart. Ścieżka
+  dokumentacji żyje w tylu miejscach, ile przypadków ją odwzorowuje, i policzył je dopiero
+  przebieg.
+- **Stara przestrzeń jest od teraz odrzucana** obok numerycznej z 2026-07-27, ale wzorzec
+  wymaga litery po myślniku. Bez tego zdanie o samym prefiksie (`wym-*`, `wym-…`) byłoby
+  cytowaniem i nie dałoby się opisać własnej migracji nigdzie poza plikami zwolnionymi
+  z kontroli — czyli dokumentacja zmiany byłaby zakazana przez tę zmianę.
+
+Sprawdzone przebiegiem, nie rozumowaniem: stare ID w pliku niezwolnionym z kontroli zapala,
+cytowanie nowej przestrzeni bez pokrycia zapala, a fixture przestający być wadliwym zapala
+punkt 6 („kontrola odniesienia PRZESZŁA, a miała nie przejść"). Do tego zielone
+`nx run-many -t typecheck`, `check-parts`, testy sandboxa i `nx format:check`.
+
+Następne: **B1** (`LICENSE`) → **H3** (`README.md`, 251 linii) → **H4** (`docs/`) →
+**B2** (zwinięcie historii i pierwszy push). Od teraz każde nowe zdanie powstaje w docelowej
+przestrzeni nazw, więc H3 i H4 nie będą pisane dwa razy.
+
+### 2026-08-06 — reguła językowa istniała od początku i była łamana po wszystkich stronach
+
+Sesja planistyczna, nie wykonawcza: **nic nie przeszło na `[x]`**. Wymagań: 81 → 83,
+luki: 11 → 13. Obie nowe luki mają właściciela (**B8**, **H2**), więc niezmiennik z sekcji
+[Stan](#stan) trzyma.
+
+Punktem wyjścia było pytanie o B3 i B4 („README i JSDoc po angielsku") i one same
+w sobie były w porządku. Nie było w porządku to, **czego pilnowały**: nic.
+
+- **Podział „robocze po polsku, publiczne po angielsku" stał w [`docs/README.md`](README.md)
+  jako proza i nie był dotrzymany po żadnej ze stron.** Zmierzone: `description` pakietu
+  jest po polsku, w zbudowanym pakiecie polski tekst niosą **24 pliki**, w tym **komplet
+  ośmiu `types/*.d.ts`**, czyli dokładnie ta powierzchnia, której podział miał bronić.
+  Reguła bez bramki to nie jest słabsza reguła, tylko żadna — [`req-axis`](00-axis.md)
+  w najczystszej postaci. Stąd [`req-project-language`](requirements/project.md#req-project-language)
+  i **B8**, bez którego B3 i B4 są jednorazowym sprzątaniem.
+- **Publiczne `.d.ts` cytują 31 razy `wym-*` i `lekcja-*`** — identyfikatory dokumentacji,
+  której konsument nie ma. To wada **niejęzykowa**: przetłumaczone byłyby równie
+  bezużyteczne. Nie tłumaczy się ich, tylko usuwa (B4).
+- **Migracja identyfikatorów jest tańsza, niż wygląda z reguły „ID nigdy się nie zmienia".**
+  Zmierzone: unia `PctReqId` powstaje do sandboxa, **nie do publikowanego pakietu** —
+  a jedyne cytowania wyciekające dziś na zewnątrz usuwa B4. Po B4 przemianowanie ID nie
+  dotyka konsumenta w ogóle, więc decyzja (**H8**) jest wewnętrzna, nie wydaniowa.
+- **Rozjazd zastany, jeden katalog:** `contrast.policy.json` leży obok `nazwy.policy.json`
+  i `poziomy.policy.json`. Podobnie `mutacja` jest jedynym polskim targetem z 26. To nie
+  jest konwencja, którą trzeba zmienić — to brak konwencji, którego nikt nie zauważył.
+- **Zwięzłość jest osobną osią i wchodzi tym samym ruchem.** Nagłówki bramek mają dziś
+  34–76 linii, razem ~590; po połowie powtarzają [`lessons.md`](lessons.md) i dziennik tego
+  pliku, czyli miejsca, które są dla narracji właściwe. Stąd **H1** przed H2–H4: bez
+  spisanego kryterium „streszczone" znaczy tyle, ile ktoś akurat czuje, a tłumaczenie
+  prozy, którą zaraz się skraca, płaci się dwa razy.
+
+Sekcja B dostała zmierzony zakres w B3 i B4 oraz nowe **B8**; reszta warstw poszła do
+nowej [sekcji H](#h-jeden-język-repozytorium) — nie blokuje wydania i jest o rząd
+wielkości większa (`docs/` to 6 593 linie, `tools/` 10 302).
+
+Dwie rzeczy zostały **rozstrzygnięte, nie odłożone**, i obie poszerzają zakres:
+
+- **identyfikatory idą razem z resztą.** `wym-` to skrót od „wymaganie", więc angielskie
+  repozytorium z polskimi ID byłoby rozjazdem, którego ten plik pilnuje wszędzie indziej.
+  To dawne H8 w wariancie (b) — przemianować wszystkie, z tabelą migracji — i dlatego stoi
+  teraz jako **H1**, przed wszystkim: każdy tekst napisany przed tą zmianą jest napisany
+  w starej przestrzeni i przepisuje się dwa razy. Zakres: 2 571 cytowań w 175 plikach;
+- **kompresja jest obietnicą, nie stylem.** [`req-project-concise`](requirements/project.md#req-project-concise)
+  — z bramką na **objętość** i granicą zapisaną wprost: maszyna nie odróżni akapitu
+  nośnego od lania wody, więc mierzy przyrost, a ocenę zostawia review. Budżet zakłada się
+  **po** kompresji: snapshot na dzisiejszych 76-liniowych nagłówkach zamroziłby je jako
+  stan zaakceptowany — dokładnie błąd, który A4 złapało przy nazwach tokenów
+  ([`lesson-49`](lessons.md#lesson-49)).
+
+Trzecia rzecz przyszła później i **przestawiła klasyfikację, nie zakres**: repozytorium ma
+stać publicznie na GitHubie, więc dokumentacja jest produktem. Konsekwencje są trzy:
+
+- **`README.md` repozytorium — 251 linii, w tym polskie napisy w przykładach kodu — nie był
+  policzony w żadnej warstwie pierwszej wersji tej sekcji.** Zmierzyłem `docs/` i README
+  pakietu, a plik czytany częściej niż oba wpadł między nie. Jest teraz **H3**, razem
+  z `AGENTS.md` i nazwami kroków widocznymi w zakładce Actions (workflow nazywa się
+  „Wydanie");
+- **momenty wiązania są dwa, a wcześniejszy jest szerszy.** Pierwszy push obejmuje `README`,
+  `docs/` i Actions; wydanie pakietu — tylko to, co jedzie w `npm pack`. `req-project-language`
+  wiąże więc przy tym pierwszym;
+- **kolejność w H3–H8 idzie od tego momentu według ruchu czytelników**, nie kosztu: strona
+  tytułowa → dokumentacja → źródła → narzędzia.
+
+Domknęły to trzy rozstrzygnięcia z końca sesji, z których dwa **przestawiają kolejkę**:
+
+- **repozytorium jest publiczne od pierwszego pushu, bez etapu prywatnego**, a historia
+  zostaje przed nim zwinięta — 49 polskich commitów nie wyjdzie na zewnątrz i odpada
+  potrzeba datowanej granicy językowej w historii. Push przestaje być kopią zapasową
+  i staje się premierą, więc **B2 przesuwa się za H1, H3 i H4**. Cena jest zapisana wprost:
+  do tego czasu nie ma zdalnego CI, prowenancji ani kopii poza tą maszyną;
+- **kompresja celuje w `tools/`, nie w JSDoc.** Limit sześciu linii na blok JSDoc był po
+  prostu zły — nie starcza na `@example` ani na wyjaśnienie czegokolwiek, a przykład
+  w publicznym API jest najcenniejszy. Kod i przykłady wypadają z budżetu w całości; liczby
+  zostają tam, gdzie objętość naprawdę jest chorobą: ~590 linii samych nagłówków bramek;
+- **narzędziem kompresji jest odsyłacz, nie skracanie zdań** — i to jest możliwe dopiero
+  dzięki publicznej dokumentacji. Nagłówek bramki mówi, co mierzy i jak ją uruchomić,
+  a „dlaczego akurat tak" **wskazuje** decyzję albo lekcję. Dziś każde takie zdanie jest
+  utrzymywane w dwóch miejscach naraz. To samo dotyczy 31 cytowań `wym-*` w publicznych
+  `.d.ts`: nie usuwać, tylko zamienić na linki — dla konsumenta warte więcej niż akapit
+  powtórzony w podpowiedzi edytora.
+
+Drobiazg z pierwszej próby, wart zapisania: tabela przemianowań wpisana do tego pliku
+**zapaliła `check-docs`** — wzorzec `wym-<obszar>-*` jest dla punktu 4 cytowaniem, które
+się nie rozwiązuje. Tabela migracji ma swoje miejsce w [`README`](README.md), i to jest
+jedyny plik zwolniony z tej kontroli właśnie dlatego, że wiezie poprzednią. Sama tabela
+jest [zatwierdzona](README.md#planowane-przemianowanie-przestrzeni-id).
+
+Następne, w tej kolejności: **B1** (`LICENSE`, minuty) → **H1** (identyfikatory,
+mechaniczne, drożeje z każdym dopisanym zdaniem) → **H3** (`README.md`) → **H4** (`docs/`)
+→ **B2** (zwinięcie historii i pierwszy push). Dopiero po nich **B3 + B4 + B8 jako jeden
+ruch**: bramka języka wpięta do CI przed sprzątnięciem powierzchni byłaby czerwona od
+pierwszego dnia, a wpięta później nie ma czego pilnować.
 
 ### 2026-08-06 — A13: 96,62% pokrycia to 63,54% zauważonych wad. Faza A zamknięta
 
@@ -907,7 +1319,7 @@ w założeniu, że najtrudniejszą częścią będzie bramka. Najtrudniejszą cz
   zero), wartości domyślne wejść (każdy test podający `[readonly]="readonly()"` mierzy
   własne wiązanie, nie domyślną — kontrolka bez ani jednego wiązania nie była renderowana
   ani razu) i testy, które nie robią tego, co obiecuje ich nazwa: `PageUp/PageDown skacze
-dziesięciokrotnie` naciskał wyłącznie PageUp ([`lekcja-57`](lekcje.md#lekcja-57)).
+dziesięciokrotnie` naciskał wyłącznie PageUp ([`lesson-57`](lessons.md#lesson-57)).
 - **Publiczne API bez własnej specyfikacji wygląda na przetestowane.** `pctFieldMessages`
   i `pctDescribedBy` z `@pacit/components/core` nie miały ani jednego testu pod własnym
   nazwiskiem — mierzyły je specyfikacje kontrolek, każda na jednej ścieżce. Pokrycie linii
@@ -923,7 +1335,7 @@ dziesięciokrotnie` naciskał wyłącznie PageUp ([`lekcja-57`](lekcje.md#lekcja
   i skrócony `timeoutMS` — mutant zabity ZEGAREM liczy się do wyniku jak zabity asercją.
   Stąd `check-mutation` czyta konfigurację **skuteczną z raportu przebiegu**, a nie
   z pliku: flaga dopisana do polecenia targetu nie zostawia w nim ani jednej linii
-  ([`lekcja-58`](lekcje.md#lekcja-58)).
+  ([`lesson-58`](lessons.md#lesson-58)).
 - **Dwie drogi do tych samych specyfikacji rozjechały się przy pierwszym uruchomieniu.**
   Stryker potrzebuje PLIKU konfiguracji Vitesta, a target `test` idzie przez builder
   `@angular/build`, który składa ją w pamięci — więc przebieg mutacyjny ma własną
@@ -958,7 +1370,7 @@ zrównolegleniem**, a pierwszym podejrzanym był limit czasu mutanta — hipotez
 pasująca do objawu i fałszywa. Zapisany przebieg pokazał `ENOENT ... copyfile` na
 tymczasowym tsconfigu ng-packagra: Stryker kopiuje drzewo projektu do piaskownicy,
 chodząc po nim sam, a nie po indeksie gita (3907 plików wobec 707 znanych gitowi), więc
-każdy równoległy pisarz w `tmp/` jest dla niego wyścigiem ([`lekcja-59`](lekcje.md#lekcja-59)).
+każdy równoległy pisarz w `tmp/` jest dla niego wyścigiem ([`lesson-59`](lessons.md#lesson-59)).
 
 Wpadka własna jedna i znajoma: rozbrojenie reguły `pomiar-nieczytelny` dało `TypeError`
 zamiast komunikatu — **ósmy raz ta sama wada** (A3, A4, A7, A8, A9, A11, A12). Tym razem
@@ -996,7 +1408,7 @@ jest **wykonaniem** tej obietnicy. Jest jej deklaracją.
   a `forced-color-adjust` nie jest w nim nawet znaną właściwością. Cztery z sześciu
   testów `forced-colors.spec.ts` przechodzą tam, mierząc kolory z tokenów zamiast
   z palety — czyli plik pytałby o zachowanie, którego ten silnik nie ma, i pytałby po
-  cichu ([`lekcja-56`](lekcje.md#lekcja-56)).
+  cichu ([`lesson-56`](lessons.md#lesson-56)).
 - **Wyłączenie oparte na fakcie o przeglądarce musi ten fakt mierzyć.** Zdanie „webkit
   tego nie umie" jest zdaniem o WERSJI PACZKI, nie o tym repozytorium — przestanie
   obowiązywać przy zmianie, która nie ruszy tu ani jednego pliku. Rejestr wyłączeń ma
@@ -1057,7 +1469,7 @@ do e2e**.
   **`check-package` widział wtedy komplet**: manifest ma pole `schematics`, kolekcja
   wskazuje fabrykę, plik fabryki jest w pakiecie. Wszystkie trzy odpowiedzi prawdziwe;
   pytanie „czy da się go wczytać" nie padło, bo bramka statyczna nie ma jak go zadać
-  ([`lekcja-55`](lekcje.md#lekcja-55)). Naprawa jest tym, co robi `@angular/cdk`: własna
+  ([`lesson-55`](lessons.md#lesson-55)). Naprawa jest tym, co robi `@angular/cdk`: własna
   granica modułów w `schematics/package.json`.
 - **Między `dist` a `node_modules` konsumenta stoją dwa filtry.** `npm pack` (pole `files`,
   `.npmignore`) i rejestr. Bramka chodząca po katalogu jest na nie ślepa z konstrukcji,
@@ -1110,7 +1522,7 @@ Zadanie miało być półdniowym grepem („każdy napis widoczny dla użytkowni
   konstrukcji. Aplikacja przełączająca język bez przeładowania zostawała z napisem sprzed
   zmiany od commita, który `PCT_TEXTS` wprowadził (2026-07-27), przy zielonym CI: jedyny
   test tego kanału renderował komponent RAZ, a przy jednym renderowaniu obie wersje dają
-  ten sam napis ([`lekcja-54`](lekcje.md#lekcja-54)). Wada była przy tym **opisana
+  ten sam napis ([`lesson-54`](lessons.md#lesson-54)). Wada była przy tym **opisana
   w decyzji 0007 jako otwarta** — to nie brak wiedzy ją utrzymał, tylko brak maszyny.
 - **Odczyt szablonu jest jeden i to jest zmierzona granica, nie niedopatrzenie.** Wzorzec
   „dwa niezależne odczyty" (A3, A4, A6) tutaj się nie domyka: po zlinkowaniu literał węzła
@@ -1175,7 +1587,7 @@ tam, gdzie je opisał — tylko w tym, **skąd wziąć listę**, wobec której s
   od miesięcy, wszystkie przy zielonym CI. Przyczyna jest warta zapamiętania osobno:
   rampa ciemna była kopią jasnej, a `on-primary` jest w ciemnym motywie **ciemny**, więc
   przyciemnienie tła na hover zbija kontrast zamiast go podnosić. Kierunek rampy zależy
-  od tego, po której stronie stoi tekst ([`lekcja-52`](lekcje.md#lekcja-52)).
+  od tego, po której stronie stoi tekst ([`lesson-52`](lessons.md#lesson-52)).
 - **Reguła „komponentowy nigdy do prymitywnego" była złamana 35 razy — i to nie jest
   dług.** Nad osiami wymiaru nie ma warstwy semantycznej i nie da się jej dołożyć bez
   wymyślenia ról, których nikt nie potrzebuje; `pct.control.height.md` nie jest surową
@@ -1185,7 +1597,7 @@ tam, gdzie je opisał — tylko w tym, **skąd wziąć listę**, wobec której s
   nie rozbraja reguły, dla której punkt powstał, tylko ją uruchamia.
 - **Punkt bramki to nie jedno zdanie.** Punkt 6 niesie dziewięć reguł, punkt 7 sześć.
   Porównanie samego identyfikatora punktu — tak działa kontrola odniesienia każdej bramki
-  w tym repozytorium ([`lekcja-50`](lekcje.md#lekcja-50)) — przepuszcza przypadek, który
+  w tym repozytorium ([`lesson-50`](lessons.md#lesson-50)) — przepuszcza przypadek, który
   zapalił na sąsiedniej regule. Stąd opcjonalne pole `regula` w `fixture.json`. Zmierzone,
   że to nie jest ozdobnik: rozbrojenie pięciu reguł przestawia ich przypadki na sąsiednie
   reguły tego samego punktu i **bez tego pola wszystkie te przebiegi byłyby zielone**.
@@ -1201,7 +1613,7 @@ tej konstrukcji nieosiągalna, bo generator rzuca na nieznanej referencji przed 
 Dwa wpadki własne, obie tej samej rodziny co poprzednie sesje. Punkt 7 **przeszedł na
 zielono, nie zmierzywszy ani jednego koloru** — „0 kolorów malowanych w 7 arkuszach",
 bo wzorzec deklaracji wymagał wiodącego myślnika i widział wyłącznie custom properties.
-To [`lekcja-48`](lekcje.md#lekcja-48) w punkcie pisanym po to, żeby jej nie powtórzyć,
+To [`lesson-48`](lessons.md#lesson-48) w punkcie pisanym po to, żeby jej nie powtórzyć,
 i ta sama pomyłka co w A5: kontrola niepustości stała po stronie **wejścia**, a pusty
 był **pomiar**. Druga: rozbrojenie reguły `token-spoza-skorki` dało `TypeError` zamiast
 komunikatu — **piąty raz ta sama wada** (A3, A4, A7, A8), naprawiona tak samo, przez
@@ -1211,7 +1623,7 @@ Na koniec znalezisko w **innej** bramce, wywołane tą zmianą: przemalowanie ca
 przycisku w motywie ciemnym nie ruszyło ani jednego wzorca wizualnego. `toHaveScreenshot`
 ma dwa progi, a zmierzony był jeden — domyślne `threshold: 0.2` jest dwunastokrotnie
 większe niż krok rampy (0,0163), więc zmiana koloru dawała **zero** różniących się
-pikseli ([`lekcja-53`](lekcje.md#lekcja-53)). Próg ustawiony na 0,005 z pomiaru, dwa
+pikseli ([`lesson-53`](lessons.md#lesson-53)). Próg ustawiony na 0,005 z pomiaru, dwa
 zrzuty ciemne odtworzone, dwa przebiegi pod rząd bez fałszywych alarmów.
 
 Następne: **A11** (bramka tekstów, pół dnia, przy okazji zmusza do rozstrzygnięcia C5).
@@ -1249,7 +1661,7 @@ stoi tylko w `./select`. Pomylił się w tym, czego dowodzi asercja, którą sam
   kompilator rozkłada go na `[["button","pctButton",""]]`. Marker wzięty z tekstu FESM-a
   byłby więc w punkcie 10 nie do znalezienia i „nie ma tu `PctButton`" wychodziłoby na
   zielono **zawsze**. Selektor przeżywa oba kroki, bo w obu jest daną, a nie nazwą — ta
-  sama maszyneria co w A3 i ten sam powód co w [`lekcja-46`](lekcje.md#lekcja-46).
+  sama maszyneria co w A3 i ten sam powód co w [`lesson-46`](lessons.md#lesson-46).
 - **Punkt o `sideEffects` badał co innego, niż napisałem w jego uzasadnieniu.** Komentarz
   mówił „usunięcie tej flagi nie daje ani jednego czerwonego testu". Przebieg: klucz
   usunięty ze źródłowego manifestu, przebudowa — bramka **zielona**. Pierwszym
@@ -1258,7 +1670,7 @@ stoi tylko w `./select`. Pomylił się w tym, czego dowodzi asercja, którą sam
   Scenariusz, dla którego punkt powstał, jest niewykonalny; punkt zapala na jawnym `true`
   i na dniu, w którym narzędzie przestanie tę wartość dopisywać. Komentarz opisujący
   wadę, której bramka nie łapie, jest gorszy niż brak komentarza — brzmi jak pokrycie
-  ([`lekcja-51`](lekcje.md#lekcja-51)).
+  ([`lesson-51`](lessons.md#lesson-51)).
 
 Sprawdzone przebiegiem, nie rozumowaniem: bramka zapala na siedmiu sposobach zepsucia
 repozytorium (`button` importujący `PctField`, `button` sięgający po `OverlayModule`,
@@ -1297,7 +1709,7 @@ naprawdę robi.
   z założenia: pierwsza — część, która nie dojechała do pakietu; druga — część wniesioną
   składnią, na którą regex jest ślepy (rozwinięcie `...fitHost` w obiekcie `host`).
 - **Inwentarz bez czytelnika jest plikiem dla maszyny.** Rubryki **Części** w kartach
-  `docs/komponenty/` są jedyną powierzchnią, na której konsument dziś te nazwy ogląda —
+  `docs/components/` są jedyną powierzchnią, na której konsument dziś te nazwy ogląda —
   i są pisane ręką. Punkt porównujący je z pakietem zapalił przy pierwszym przebiegu:
   `field.md` wymieniał **11 części z piętnastu**. Ta sama karta miała już ten sam błąd raz
   (7 z jedenastu, do 2026-07-27) i wtedy też zauważyło go dopiero policzenie. Dwa razy to
@@ -1314,7 +1726,7 @@ naprawdę robi.
   więc obie listy wychodziły puste, a puste są sobie równe. Bramka odrzuciła zmianę
   i podała poprawną diagnozę problemu, którego nie było. **Kontrola odniesienia nie miała
   jak tego zobaczyć z konstrukcji** — porównuje identyfikator punktu, nie zdanie, i tak
-  działa każda kontrola w tym repozytorium ([`lekcja-50`](lekcje.md#lekcja-50)). Wyszło
+  działa każda kontrola w tym repozytorium ([`lesson-50`](lessons.md#lesson-50)). Wyszło
   z przeczytania wypisanego zdania, nie z kodu wyjścia.
 
 Sprawdzone przebiegiem, nie rozumowaniem: bramka zapala na sześciu sposobach zepsucia
@@ -1327,7 +1739,7 @@ punktów osobno**. Rozbrojenie gałęzi „brak snapshotu" dało `TypeError` zam
 poprzednich.**
 
 Zostawione świadomie: `options` w `PctRadioGroup` jest jedyną częścią kontenera bez
-przedrostka `group-`. Z niczym nie koliduje, a `wym-api-czesci` obiecuje stabilność
+przedrostka `group-`. Z niczym nie koliduje, a `req-api-parts` obiecuje stabilność
 i spisanie, nie zgadywalność — więc snapshot ją zamraża, a przemianowanie jest od dziś
 widoczną zmianą API zamiast cichej poprawki. Przeniesione do **C7**, tym samym ruchem co
 C6 przy A4.
@@ -1344,14 +1756,14 @@ pierwszym czytaniu wymagania okazało się czymś innym. Plan nie pomylił się 
 mechanizmu — snapshot rzeczywiście jest tym, czego brakuje — tylko w tym, **co on
 mierzy**. Wyszło to nie z rozumowania, tylko z wypisania listy nazw i spojrzenia na nią.
 
-- **Snapshot mierzy ZMIANĘ, a wymaganie obiecuje WŁAŚCIWOŚĆ.** `wym-token-nazwy` mówi,
+- **Snapshot mierzy ZMIANĘ, a wymaganie obiecuje WŁAŚCIWOŚĆ.** `req-token-names` mówi,
   że nazwę da się zgadnąć bez dokumentacji. Repozytorium miało **34 tokeny z segmentami
   w odwrotnej kolejności**: `--pct-checkbox-checked-bg` stało sześć linii pod
   `--pct-checkbox-border-hover`, `--pct-button-disabled-bg` obok `--pct-button-bg-hover`.
   Każda z tych nazw jest z osobna poprawna; nie da się ich zgadnąć dlatego, że są obok
   siebie. Snapshot dołożony przed normalizacją zapisałby ten rozjazd jako **stan
   zaakceptowany**, a każde późniejsze przemianowanie byłoby już zmianą łamiącą dla
-  konsumenta ([`lekcja-49`](lekcje.md#lekcja-49)). Stąd punkt schematu **przed** punktem
+  konsumenta ([`lesson-49`](lessons.md#lesson-49)). Stąd punkt schematu **przed** punktem
   snapshotu i stąd normalizacja tym samym ruchem — 108 podmian w 16 plikach.
 - **Reguła, która domyka się w kółko, potrzebuje węższego pilnowania.** „Nazwa składa się
   ze słów z zamkniętego zbioru" jest prawdziwa zawsze, bo zbiór da się rozszerzyć razem
@@ -1401,7 +1813,7 @@ tresuje od czterech sesji.
   sparsowanych dekoratorów z liczbą wystąpień `@Component(`, obie wyszły zerowe, a zero
   równa się zeru. Ten sam mianownik co w A2, A6 i A7, tylko że tym razem napisałem
   kontrolę niepustości dla listy arkuszy i **nie napisałem jej dla drugiej strony
-  porównania** ([`lekcja-48`](lekcje.md#lekcja-48)).
+  porównania** ([`lesson-48`](lessons.md#lesson-48)).
 - **Kontrola porównująca dwa pomiary jest warta tyle, ile ich niezależność.** Licznik
   dekoratorów miał zauważać, że rzeczywistość odjechała od formatowania, na którym
   kotwiczy się parser — i był zapisany **tą samą kotwicą co parser**. Przesunięcie
@@ -1415,7 +1827,7 @@ tresuje od czterech sesji.
   sandboxa i od razu pokazała, że panel selecta pisze od lewej przy triggerze piszącym od
   prawej — bo nakładka CDK jest dzieckiem `body` i nie dziedziczy niczego. `text-align:
 start` w arkuszu jest poprawne; rozwiązuje się tylko w drugą stronę. To trzecia
-  właściwość z [`lekcja-35`](lekcje.md#lekcja-35) po motywie i piśmie, czyli argument za
+  właściwość z [`lesson-35`](lessons.md#lesson-35) po motywie i piśmie, czyli argument za
   wyciągnięciem tego przenoszenia do warstwy nakładki w **D2**, zamiast dopisywania
   czwartej pozycji do `openPanel()`.
 - **Skaner też ma mianownik.** Właściwość złożona interpolacją (`padding-#{$strona}`)
@@ -1448,9 +1860,9 @@ niż opisany, a jest gorszy.
   Cztery pliki `sandboxa` — dwie specyfikacje, `test-setup.ts` i `vite.config.mts` — nie
   przeszły przez kompilator ani razu, przy zielonym `nx affected -t typecheck`. W
   `project.json` nie było przy tym niczego do zobaczenia, bo target nie jest tam zapisany
-  ([`lekcja-47`](lekcje.md#lekcja-47)).
+  ([`lesson-47`](lessons.md#lesson-47)).
 - **Stąd punkt 4, którego plan nie przewidywał.** Wymóg istnienia targetu mierzy
-  deklarację, a `lekcja-42` mówi wprost, że tsconfig potrafi kłamać o swoim zasięgu.
+  deklarację, a `lesson-42` mówi wprost, że tsconfig potrafi kłamać o swoim zasięgu.
   Bramka nie czyta więc `include`, tylko uruchamia **polecenie z targetu** rozszerzone
   o `--listFilesOnly` i porównuje program kompilatora z indeksem gita. `--showConfig`
   odpadło z tego samego powodu: rozwija wzorce, ale nie widzi plików wciągniętych przez
@@ -1495,7 +1907,7 @@ Różnią się tym, gdzie w ogóle da się je zmierzyć.
   zabrania powtarzania domyślnych), w tekście bundla też nic — deklaracja częściowa
   zapisuje wyłącznie odstępstwa od domyślnych. Wartość powstaje dopiero przy linkowaniu,
   u konsumenta. Jedyny uczciwy odczyt to `ɵcmp.onPush` po `import '@angular/compiler'`,
-  czyli po odtworzeniu tego samego kroku ([`lekcja-46`](lekcje.md#lekcja-46)). Efekt
+  czyli po odtworzeniu tego samego kroku ([`lesson-46`](lessons.md#lesson-46)). Efekt
   uboczny jest tym, o który chodziło: dzień zmiany domyślnych Angulara to dzień, w którym
   ta bramka zapala.
 - **„Każdy komponent" znów potrzebowało mianownika.** Ta sama nauka co w A2, na innym
@@ -1507,7 +1919,7 @@ Różnią się tym, gdzie w ogóle da się je zmierzyć.
   `standalone: true` daje bajt w bajt ten sam pakiet, więc źródła muszą być w `inputs`.
   Porównanie sum kontrolnych to obaliło: rusza `ɵɵngDeclareClassMetadata`, echo dekoratora
   zostawiane dla debugowania. Źródła zostają w `inputs`, ale uzasadnieniem jest „bramka je
-  czyta" — opieranie klucza cache na funkcji diagnostycznej byłaby `lekcja-44`
+  czyta" — opieranie klucza cache na funkcji diagnostycznej byłaby `lesson-44`
   w trzecim przebraniu.
 
 Sprawdzone przebiegiem, nie rozumowaniem: bramka zapala na czterech sposobach zepsucia
@@ -1536,7 +1948,7 @@ pokrycie jest dobre.
   wypisuje „Excluding it from coverage" w środku kilku tysięcy linii logu i kończy
   przebieg **zielono**. Sonda: zwykła funkcja, `@Directive` i `@Component` trafiają do
   raportu z zerem; kopia `number.ts` nie, bo w 18. linii ma `import type`. W bibliotece
-  Angulara to zapis domyślny, nie egzotyczny ([`lekcja-45`](lekcje.md#lekcja-45)).
+  Angulara to zapis domyślny, nie egzotyczny ([`lesson-45`](lessons.md#lesson-45)).
 - **Stąd dwie nogi.** `public-api.spec.ts` wprowadza moduły każdej bramki pakietu do
   przebiegu, a `check-coverage.mjs` pilnuje, że w raporcie nie brakuje ani jednego pliku
   źródłowego. Punkty o progu pilnują liczby; punkt 3 pilnuje mianownika, z którego ta
@@ -1545,7 +1957,7 @@ pokrycie jest dobre.
   zawężenie konfiguracji zabierałoby plik z obu stron porównania naraz i punkt 3
   przestałby cokolwiek widzieć. Tak samo `inputs` targetu wymieniają źródła wprost:
   plik, którego v8 nie doliczy, nie zmienia raportu ani o bajt, więc sam
-  `dependentTasksOutputFiles` dałby trafienie w cache ([`lekcja-44`](lekcje.md#lekcja-44)
+  `dependentTasksOutputFiles` dałby trafienie w cache ([`lesson-44`](lessons.md#lesson-44)
   w innym przebraniu).
 
 Sprawdzone przebiegiem, nie rozumowaniem: usunięcie `public-api.spec.ts` zostawia `test`
@@ -1561,7 +1973,7 @@ po pół dnia, bez zależności.
 
 Zrobione **A1**, a razem z nim **B5** — okazało się tym samym zadaniem, bo `ng add` to
 piąty punkt tej samej bramki. Luki: 33 → 26, egzekwowane: 31 → 39 (osiem, nie siedem:
-`wym-wydanie-metadane` przeszło z 🟡 na ✅, bo jego „brak kontroli — świadomie" przestał
+`req-release-metadata` przeszło z 🟡 na ✅, bo jego „brak kontroli — świadomie" przestał
 być prawdą).
 
 Trzy rzeczy warte zapamiętania poza samym kodem:
@@ -1576,7 +1988,7 @@ Trzy rzeczy warte zapamiętania poza samym kodem:
   a nie ze swojego, i cała kontrola staje się tym, przed czym stoi.
 - **Udawany `package.json` w repozytorium jest dla Nx projektem**, a `.nxignore` naprawia
   to kosztem unieważniania cache — czyli zamienia widoczny bałagan na cichą wadę
-  ([`lekcja-44`](lekcje.md#lekcja-44)).
+  ([`lesson-44`](lessons.md#lesson-44)).
 
 Sprawdzone przebiegiem, nie rozumowaniem: bramka zapala na czterech niezależnych
 sposobach zepsucia (rozbrojony punkt 3, fixture przestający być wadliwym, fixture
@@ -1589,7 +2001,7 @@ Następne: **A2** (pokrycie z egzekwowanym progiem — najstarszy dług).
 Przegląd stanu: 81 wymagań, 31 egzekwowanych, 17 świadomie częściowych, 33 luki.
 Zweryfikowane w kodzie przy okazji:
 
-- formularz DoD komponentu (`komponenty/_szablon.md`) **już istnieje** — pozycja
+- formularz DoD komponentu (`components/_template.md`) **już istnieje** — pozycja
   z roadmapy review jest zrobiona,
 - znaleziska review §5.1–5.5 są nadal otwarte (→ C1–C5),
 - `dist/libs/components/README.md` to stub z generatora Nx (→ B3),

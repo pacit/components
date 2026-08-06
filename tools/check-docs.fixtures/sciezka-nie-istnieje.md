@@ -1,6 +1,6 @@
 # Fixture — bramka wskazuje na nieistniejący plik
 
-### <a id="wym-fixture-sciezka"></a>`wym-fixture-sciezka` — Bramka bez pliku
+### <a id="req-fixture-sciezka"></a>`req-fixture-sciezka` — Bramka bez pliku
 
 **Obietnica.** Coś ma być prawdą i rzekomo jest sprawdzane.
 

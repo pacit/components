@@ -8,7 +8,7 @@
   #podstawy
   heading="Etykieta, podpowiedź i błąd"
   summary="Pod polem jest tylko jedna linia: podpowiedź, a po opuszczeniu pola z błędem — komunikat błędu w jej miejsce. Etykieta wskazuje kontrolkę przez granicę projekcji, a aria-describedby wskazuje tę linię, która akurat świeci."
-  [reqs]="['wym-api-obudowa', 'wym-a11y-wbudowana']"
+  [reqs]="['req-api-wrapper', 'req-a11y-built-in']"
   data-testid="demo-basics"
 >
   <div class="stack">
@@ -32,7 +32,7 @@
   #dodatki
   heading="Dodatek etykiety i licznik znaków"
   summary="Sloty poza ramką niosą treść poboczną: [pctLabelAux] przy etykiecie (np. ikona „i”) i [pctMessageAux] w linii komunikatu (np. licznik znaków). Licznik trwa niezależnie od tego, czy pod polem świeci podpowiedź, czy błąd."
-  [reqs]="['wym-api-obudowa']"
+  [reqs]="['req-api-wrapper']"
   data-testid="demo-aux"
 >
   <div class="stack">
@@ -70,7 +70,7 @@
   #dekoracje
   heading="Dekoracje wewnątrz ramki"
   summary="Prefix i suffix leżą w ramce, więc focus ring obejmuje cały rząd — także gdy fokus trafi na przycisk w slocie. Dopasowanie slotu wybiera autor: „inset” leży na powierzchni pola (dziedziczy jej kursor, klik fokusuje kontrolkę), „fill” bierze cały slot i jest własną powierzchnią (własne tło, własny kursor, sam przyjmuje kliknięcie)."
-  [reqs]="['wym-api-obudowa', 'lekcja-27', 'lekcja-34']"
+  [reqs]="['req-api-wrapper', 'lesson-27', 'lesson-34']"
   data-testid="demo-affix"
 >
   <div class="stack">
@@ -144,7 +144,7 @@
   #powierzchnia
   heading="Cała powierzchnia ramki ma właściciela"
   summary="Kursor zapowiada skutek kliknięcia na całej ramce: tekst, wskaźnik, a przy wyłączeniu — brak akcji."
-  [reqs]="['lekcja-27', 'wym-api-ramka']"
+  [reqs]="['lesson-27', 'req-api-frame']"
   data-testid="demo-surface"
 >
   <div class="stack">
@@ -178,7 +178,7 @@
 <sbx-demo
   heading="Kontrolki bez ramki (bare)"
   summary="Wokół checkboxa i grupy radiów ramka wygląda obco — obudowa daje wtedy wyłącznie etykietę, podpowiedź i komunikat."
-  [reqs]="['wym-api-ramka']"
+  [reqs]="['req-api-frame']"
   data-testid="demo-bare"
 >
   <div class="stack">

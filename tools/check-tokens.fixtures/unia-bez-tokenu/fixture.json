@@ -1,5 +1,5 @@
 {
   "punkt": 2,
   "kontrola": "powierzchnia",
-  "opis": "`dist/tokens.ts` bez `--pct-przycisk-fg` w unii `PctCssVar`, ale ZE wpisem w stałej `pctTokens`. Token jest w skórce i w SCSS-ie, więc nic go nie zgłasza — traci tylko typowanie, czyli jedyną rzecz stojącą między testem a literówką w `getPropertyValue` (lekcja-43). Dwa spisy w jednym pliku muszą się zgadzać z listą, a nie ze sobą."
+  "opis": "`dist/tokens.ts` bez `--pct-przycisk-fg` w unii `PctCssVar`, ale ZE wpisem w stałej `pctTokens`. Token jest w skórce i w SCSS-ie, więc nic go nie zgłasza — traci tylko typowanie, czyli jedyną rzecz stojącą między testem a literówką w `getPropertyValue` (lesson-43). Dwa spisy w jednym pliku muszą się zgadzać z listą, a nie ze sobą."
 }

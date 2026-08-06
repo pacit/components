@@ -61,7 +61,7 @@
   #wylaczone
   heading="Wyłączone"
   summary="Kursor zapowiada brak akcji na całej powierzchni ramki, a kolory pochodzą z tokenów disabled-*."
-  [reqs]="['wym-token-bez-opacity', 'lekcja-27']"
+  [reqs]="['req-token-no-opacity', 'lesson-27']"
   [controls]="['scheme', 'skin', 'size']"
   data-testid="states-disabled"
 >
@@ -117,7 +117,7 @@
   #odczyt
   heading="Tylko do odczytu"
   summary="Wartości nie da się zmienić, ale kontrolka zostaje fokusowalna — inaczej znikałaby z kolejności Taba i czytnik ekranu by jej nie odczytał."
-  [reqs]="['wym-api-sygnaly']"
+  [reqs]="['req-api-signals']"
   [controls]="['scheme', 'skin', 'size']"
   data-testid="states-readonly"
 >
@@ -167,7 +167,7 @@
   #blad
   heading="Błąd walidacji"
   summary="Komunikat rysuje obudowa i wiąże go z kontrolką przez aria-describedby; ramka sygnalizuje błąd kolorem z tokenu."
-  [reqs]="['wym-api-obudowa', 'wym-a11y-wbudowana']"
+  [reqs]="['req-api-wrapper', 'req-a11y-built-in']"
   [controls]="['scheme', 'skin', 'size']"
   data-testid="states-invalid"
 >
@@ -235,7 +235,7 @@
   #wymagane
   heading="Wymagane"
   summary="Znacznik wymagalności należy do obudowy — kontrolka zgłasza jej tylko, że jest wymagana."
-  [reqs]="['wym-api-obudowa']"
+  [reqs]="['req-api-wrapper']"
   [controls]="['scheme', 'skin', 'size']"
   data-testid="states-required"
 >
@@ -272,7 +272,7 @@
   #ladowanie
   heading="Ładowanie"
   summary="Stan wyłącznie przycisku: blokuje kliknięcie i zapowiada je przez aria-busy."
-  [reqs]="['wym-api-sygnaly']"
+  [reqs]="['req-api-signals']"
   [controls]="['scheme', 'skin', 'size']"
   data-testid="states-loading"
 >

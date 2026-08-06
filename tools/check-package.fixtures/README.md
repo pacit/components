@@ -7,10 +7,10 @@ z innego powodu, niż wpisano w `fixture.json`, jest błędem tak samo, bo dowod
 innego, niż deklaruje.
 
 Powód istnienia jest ten sam co przy każdej innej bramce w tym repozytorium
-([`wym-jakosc-kontrola`](../../docs/wymagania/jakosc.md#wym-jakosc-kontrola)): **nowa
+([`req-quality-negative-control`](../../docs/requirements/quality.md#req-quality-negative-control)): **nowa
 bramka nie jest gotowa, gdy przechodzi — jest gotowa, gdy pokazano, że potrafi nie
 przejść.** Przebieg, z którego wzięła się bramka pakietu, opisuje
-[`lekcja-36`](../../docs/lekcje.md#lekcja-36): usunięcie `libs/tokens/dist` → build
+[`lesson-36`](../../docs/lessons.md#lesson-36): usunięcie `libs/tokens/dist` → build
 **przechodzi**, a pakiet nie wozi ani jednej definicji tokenu. Tamten przebieg był
 **ręczny**, czyli między sesjami nie istnieje — to jest jego maszynowa postać.
 
@@ -34,7 +34,7 @@ o korzeniu w fixtures, i to w trzech egzemplarzach o tej samej nazwie. Naturalne
 `inputs` targetu `check-package` przestają go widzieć, a osłabienie fixture'a **nie
 unieważnia cache**. Bramka świeciłaby wtedy na zielono z cache'a, nie sprawdziwszy
 niczego — czyli sama kontrola odniesienia stałaby się cichą wadą
-([`wym-os`](../../docs/00-os.md)).
+([`req-axis`](../../docs/00-axis.md)).
 
 **Pakiet wzorcowy musi przejść**, i to w trybie `--release`. To nie jest kontrola na
 zapas: gdyby baza sama była wadliwa, każdy przypadek zapalałby z jej powodu, a nie
@@ -74,5 +74,5 @@ okazji: oba katalogi są tym samym rodzajem rzeczy.
 
 Nowa kontrola w `check-package.mjs` przychodzi **razem z przypadkiem**, który ją zapala,
 i z identyfikatorem, po którym da się poznać, że zapaliła właśnie ona. Kontrola bez
-przypadku jest dokładnie tym, czego zakazuje [`wym-os`](../../docs/00-os.md): obietnicą
+przypadku jest dokładnie tym, czego zakazuje [`req-axis`](../../docs/00-axis.md): obietnicą
 bez maszyny potrafiącej na niej zapalić, tylko piętro wyżej.

@@ -5,10 +5,10 @@ kontrole i **wymaga, żeby każde zostało odrzucone**. Fixture, który przechod
 błędem — znaczy, że bramka przestała cokolwiek badać.
 
 Powód istnienia jest ten sam co przy każdej innej bramce w tym repozytorium
-(`wym-jakosc-kontrola`): **nowa bramka nie jest gotowa, gdy przechodzi — jest gotowa, gdy
+(`req-quality-negative-control`): **nowa bramka nie jest gotowa, gdy przechodzi — jest gotowa, gdy
 pokazano, że potrafi nie przejść.** Dwa udokumentowane przebiegi, z których wzięła się ta
-reguła, to `lekcja-38` (emulacja po cichu nie działała, a test przechodził na wartościach
-domyślnych) i `lekcja-39` (test wizualny mógł urodzić się martwy na dwa niezależne
+reguła, to `lesson-38` (emulacja po cichu nie działała, a test przechodził na wartościach
+domyślnych) i `lesson-39` (test wizualny mógł urodzić się martwy na dwa niezależne
 sposoby, oba wyglądające jak działający test).
 
 Ten katalog **nie podlega** kontroli cytowań — identyfikatory w nim są fikcyjne z założenia.
@@ -23,5 +23,5 @@ Ten katalog **nie podlega** kontroli cytowań — identyfikatory w nim są fikcy
 ## Dodanie nowej kontroli do bramki
 
 Nowa kontrola w `check-docs.mjs` przychodzi **razem z fixturem**, który ją zapala.
-Kontrola bez fixture'a jest dokładnie tym, czego zakazuje `wym-os`: obietnicą bez maszyny
+Kontrola bez fixture'a jest dokładnie tym, czego zakazuje `req-axis`: obietnicą bez maszyny
 potrafiącej na niej zapalić, tylko piętro wyżej.

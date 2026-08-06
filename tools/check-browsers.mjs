@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Bramka macierzy przeglądarek: sprawdza, czy obietnica `wym-jakosc-przegladarki` —
+ * Bramka macierzy przeglądarek: sprawdza, czy obietnica `req-quality-browsers` —
  * „testy funkcjonalne biegną na chromium, firefox i webkicie" — ma za sobą pomiar,
  * a nie trzy wpisy w `playwright.config.mts`, których nikt więcej nie czyta.
  *
@@ -40,7 +40,7 @@
  * Do tego przebieg, który nie bada repozytorium, tylko TĘ BRAMKĘ: kontrola odniesienia
  * z `tools/check-browsers.fixtures/`. Spreparowane wejścia, z których każde łamie
  * dokładnie jedną regułę i musi zostać odrzucone przez tę właśnie regułę
- * (`wym-jakosc-kontrola`).
+ * (`req-quality-negative-control`).
  *
  * Użycie:
  *   node tools/check-browsers.mjs
@@ -106,7 +106,7 @@ const SONDY = {
 
 /**
  * Naruszenie jednej z kontroli. Niesie parę `kontrola` + `regula`, a nie sam
- * identyfikator punktu: punkt bramki to nie jedno zdanie (`lekcja-50`), a kontrola
+ * identyfikator punktu: punkt bramki to nie jedno zdanie (`lesson-50`), a kontrola
  * odniesienia porównująca sam punkt przepuszcza przypadek, który zapalił na sąsiedniej
  * regule tego samego punktu.
  */
@@ -186,7 +186,7 @@ export const sprawdzPrzegladarki = ({
         `    Projekt usunięty z \`projects\` w \`playwright.config.mts\` (albo zawężony ` +
         `\`testIgnore\` do zera plików) nie daje czerwonego przebiegu — daje przebieg ` +
         `krótszy o silnik. Lek: przywrócić projekt albo wykreślić silnik z ${POLITYKA} ` +
-        `i uzasadnić to w \`wym-jakosc-przegladarki\`.`,
+        `i uzasadnić to w \`req-quality-browsers\`.`,
     );
   const nadmiarowe = zebraneSilniki.filter((s) => !silniki.includes(s));
   if (nadmiarowe.length)
@@ -692,7 +692,7 @@ try {
 if (!existsSync(FIXTURES))
   problems.push(
     `tools/check-browsers.fixtures: katalog nie istnieje — bramka bez dowodu, ` +
-      `że potrafi nie przejść, jest kolejną cichą wadą (wym-jakosc-kontrola)`,
+      `że potrafi nie przejść, jest kolejną cichą wadą (req-quality-negative-control)`,
   );
 
 const przypadki = existsSync(FIXTURES)
@@ -704,7 +704,7 @@ const przypadki = existsSync(FIXTURES)
 if (existsSync(FIXTURES) && !przypadki.length)
   problems.push(
     `tools/check-browsers.fixtures: brak spreparowanych wejść — bramka bez dowodu, ` +
-      `że potrafi nie przejść, jest kolejną cichą wadą (wym-jakosc-kontrola)`,
+      `że potrafi nie przejść, jest kolejną cichą wadą (req-quality-negative-control)`,
   );
 
 // Wejście wzorcowe MUSI przejść. Gdyby samo było wadliwe, każdy przypadek zapalałby

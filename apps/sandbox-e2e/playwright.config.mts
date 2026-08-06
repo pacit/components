@@ -91,7 +91,7 @@ export default defineConfig({
     cwd: workspaceRoot,
   },
   /*
-   * Macierz przeglądarek (wym-jakosc-przegladarki).
+   * Macierz przeglądarek (req-quality-browsers).
    *
    * Trzy silniki, nie trzy marki: blink, gecko, webkit. `Desktop Edge`
    * i `Google Chrome` to ten sam blink w innym opakowaniu — czwarty projekt

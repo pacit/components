@@ -22,7 +22,7 @@ export default [
           // Warstwy workspace'u, od najniższej: tokens -> lib -> app -> e2e.
           // Każdy projekt ma dokładnie jeden tag `type:*` (patrz project.json).
           depConstraints: [
-            // Tokeny są fundamentem systemu (wym-token-dtcg) i muszą pozostać
+            // Tokeny są fundamentem systemu (req-token-dtcg) i muszą pozostać
             // liściem — zależność od komponentów zrobiłaby z tego cykl warstw.
             {
               sourceTag: 'type:tokens',

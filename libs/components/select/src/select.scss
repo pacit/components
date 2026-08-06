@@ -38,7 +38,7 @@
 }
 
 /* W obudowie ramkę, tło i padding rysuje `pct-field` — trigger je oddaje,
-   inaczej powstałaby podwójna ramka (wym-api-obudowa). */
+   inaczej powstałaby podwójna ramka (req-api-wrapper). */
 :host([data-pct-in-field]) {
   display: contents;
 }
@@ -110,7 +110,7 @@
   transform: rotate(180deg);
 }
 
-/* Rozmiary sterowane atrybutem stanu (wym-api-atrybuty). W obudowie własny rozmiar
+/* Rozmiary sterowane atrybutem stanu (req-api-attributes). W obudowie własny rozmiar
    triggera nie obowiązuje — tam wielkość ustawia `pct-field` i to ona rozstrzyga
    (inaczej dwa `size` w jednym polu dawałyby sprzeczny wynik). */
 :host([data-pct-size='sm']:not([data-pct-in-field])) .pct-select__trigger {

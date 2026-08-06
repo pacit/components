@@ -1,5 +1,5 @@
 {
-  "$comment": "Słownik nazw tokenów — zamknięty zbiór słów, z których wolno złożyć nazwę. Nazwa daje się zgadnąć nie dlatego, że schemat jest zapisany w dokumentacji, tylko dlatego, że stan nazywa się `hover` WSZĘDZIE, a nie raz `hover`, raz `over`, raz `on-hover` (wym-token-nazwy). Bramka `check-tokens` parsuje każdą nazwę wobec tego pliku i wymaga, żeby każde słowo stąd było użyte — dopisanie słowa jest więc linią w diffie, którą widać w review, a nie cichym rozszerzeniem zbioru dopuszczalnych nazw. Maszyna nie oceni, czy nowe słowo jest dobre; pilnuje tylko, żeby było co oceniać.",
+  "$comment": "Słownik nazw tokenów — zamknięty zbiór słów, z których wolno złożyć nazwę. Nazwa daje się zgadnąć nie dlatego, że schemat jest zapisany w dokumentacji, tylko dlatego, że stan nazywa się `hover` WSZĘDZIE, a nie raz `hover`, raz `over`, raz `on-hover` (req-token-names). Bramka `check-tokens` parsuje każdą nazwę wobec tego pliku i wymaga, żeby każde słowo stąd było użyte — dopisanie słowa jest więc linią w diffie, którą widać w review, a nie cichym rozszerzeniem zbioru dopuszczalnych nazw. Maszyna nie oceni, czy nowe słowo jest dobre; pilnuje tylko, żeby było co oceniać.",
 
   "prywatne": {
     "$comment": "Prefiksy DTCG wyłączone z publicznej unii `PctCssVar` w `dist/tokens.ts`. Czyta stąd i build (filtr generatora), i bramka (punkt 2) — jedna deklaracja zamiast wyrażenia zaszytego w generatorze, o którym bramka musiałaby zgadywać. UWAGA: `pct.red.` świadomie NIE jest tu wymienione, więc surowa rampa czerwieni jest publiczna, a niebieska i szara nie. To rozjazd zastany, nie decyzja tej bramki — do rozstrzygnięcia osobno, wraz z pytaniem, czy prymitywy w ogóle należą do powierzchni publicznej.",
@@ -22,7 +22,7 @@
   },
 
   "semantyczne": {
-    "$comment": "Warstwa semantyczna: `[on-]{rola}[-{wariant}]`. Przedrostek `on-` nie jest osobną rolą, tylko regułą pary tekst/tło (wym-token-pary-tekstu) — dzięki temu `--pct-on-danger` jest zgadywalne z samego istnienia `--pct-danger`, a nie z listy.",
+    "$comment": "Warstwa semantyczna: `[on-]{rola}[-{wariant}]`. Przedrostek `on-` nie jest osobną rolą, tylko regułą pary tekst/tło (req-token-text-pairs) — dzięki temu `--pct-on-danger` jest zgadywalne z samego istnienia `--pct-danger`, a nie z listy.",
     "role": [
       "primary",
       "surface",
@@ -74,7 +74,7 @@
       "selected"
     ],
     "wielkosci": {
-      "$comment": "Wielkość jest wariantem jak stan i stoi w tym samym miejscu — na końcu. `md` nie występuje w nazwie, bo jest wartością bazową: `--pct-button-height` JEST wysokością `md` (wym-api-wielkosc).",
+      "$comment": "Wielkość jest wariantem jak stan i stoi w tym samym miejscu — na końcu. `md` nie występuje w nazwie, bo jest wartością bazową: `--pct-button-height` JEST wysokością `md` (req-api-size).",
       "lista": ["sm", "lg"]
     }
   }

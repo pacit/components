@@ -10,7 +10,7 @@ describe('App (powłoka sandboxa)', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
-      // Testy biegną zoneless, tak jak aplikacja (wym-projekt-angular).
+      // Testy biegną zoneless, tak jak aplikacja (req-project-angular).
       providers: [provideZonelessChangeDetection(), provideRouter(appRoutes)],
     }).compileComponents();
   });
@@ -39,7 +39,7 @@ describe('App (powłoka sandboxa)', () => {
 
   /**
    * Motyw siedzi na hoście powłoki, nie na `:root` — cała strona jest scoped
-   * theme (wym-token-scoped), a `:root` zostaje punktem odniesienia dla testów.
+   * theme (req-token-scoped), a `:root` zostaje punktem odniesienia dla testów.
    */
   it('odbija globalny motyw na hoście', async () => {
     const fixture = await render();

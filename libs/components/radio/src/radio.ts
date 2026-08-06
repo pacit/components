@@ -12,7 +12,7 @@ import { PctRadioGroup } from './radio-group';
 
 /**
  * Pojedyncza opcja w `pct-radio-group`. **Nie jest samodzielną kontrolką
- * formularza** — stan trzyma grupa (wym-api-signal-forms). Opiera się na natywnym
+ * formularza** — stan trzyma grupa (req-api-signal-forms). Opiera się na natywnym
  * `<input type="radio">` ze wspólnym `name`, więc nawigacja strzałkami
  * i zachowanie Taba pochodzą od przeglądarki, a nie z własnej implementacji
  * roving tabindex.

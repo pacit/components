@@ -12,10 +12,10 @@ import { Directive, input } from '@angular/core';
  *
  * Wybiera to autor pola, nie arkusz obudowy: wcześniej decydowała tu obecność
  * elementu interaktywnego w slocie, więc przycisk **nie mógł** być mniejszy od
- * swojego slotu, a dekoracja bierna nie mogła być większa (`lekcja-34`).
+ * swojego slotu, a dekoracja bierna nie mogła być większa (`lesson-34`).
  *
  * Przycisk `inset` bierz o stopień mniejszy od pola: wysokości obu są w tej
- * samej wielkości równe (`wym-api-wielkosc`), więc przycisk tej samej wielkości nie
+ * samej wielkości równe (`req-api-size`), więc przycisk tej samej wielkości nie
  * zmieści się w ramce i rozepchnie wiersz o jej grubość.
  */
 export type PctAffixFit = 'inset' | 'fill';
@@ -28,7 +28,7 @@ function affixFit(value: PctAffixFit | ''): PctAffixFit {
 /**
  * Dekoracja `fill` bierze wysokość ze slotu, nie z siebie. Bez tego przycisk
  * w slocie wnosiłby własną wysokość minimalną (`--pct-button-height`), a że
- * jest ona równa wysokości pola tej samej wielkości (`wym-api-wielkosc`), rząd rósłby
+ * jest ona równa wysokości pola tej samej wielkości (`req-api-size`), rząd rósłby
  * o grubość swojej ramki — pole z wspawanym przyciskiem byłoby o 2 px wyższe
  * od pola bez niego. Wysokość i tak daje `align-items: stretch` na slocie.
  *

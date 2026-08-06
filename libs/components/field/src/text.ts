@@ -25,10 +25,10 @@ import {
  * Pole tekstowe: dyrektywa na **natywnym** `<input>`. Nie owijamy inputu we
  * własny komponent, więc zachowujemy `type`, autouzupełnianie przeglądarki,
  * tryby klawiatury mobilnej i całą semantykę bez własnej abstrakcji
- * (`wym-api-platforma`).
+ * (`req-api-platform`).
  *
  * Kontraktem formularza jest ta dyrektywa (`FormValueControl<string>`), a
- * etykietę, podpowiedź i błąd rysuje `pct-field` (`wym-api-obudowa`).
+ * etykietę, podpowiedź i błąd rysuje `pct-field` (`req-api-wrapper`).
  *
  * @example
  * <pct-field label="E-mail">
@@ -90,14 +90,14 @@ export class PctText implements FormValueControl<string>, PctFieldControl {
    * Klasyczne formularze (`[formControl]`, `formControlName`, `[(ngModel)]`) na
    * natywnym `<input>` są obsługiwane przez wbudowany `DefaultValueAccessor`
    * Angulara — to on pisze do DOM. Gdybyśmy pisali równolegle, powstałby
-   * konflikt dwóch autorów wartości (`lekcja-20`). Wykrywamy więc, czy
+   * konflikt dwóch autorów wartości (`lesson-20`). Wykrywamy więc, czy
    * klasyczna dyrektywa formularza jest na tym samym elemencie, i wtedy
    * oddajemy jej własność wartości, pozostając przy obudowie i stanie.
    *
    * Sama obecność `NgControl` nie wystarcza: dyrektywa `FormField` **też** go
    * dostarcza (interop dla starych `ControlValueAccessor`ów), a signal forms
    * przy własnej kontrolce ustawiają wyłącznie `value` i do DOM nie piszą —
-   * oddanie im własności zostawiało pole puste (`lekcja-26`).
+   * oddanie im własności zostawiało pole puste (`lesson-26`).
    */
   private readonly classicForms = inject(NgControl, {
     optional: true,

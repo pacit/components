@@ -2,13 +2,13 @@ import { expect, Page, test } from '@playwright/test';
 import { setRtl, visit } from './support/dom';
 
 /**
- * Testy wizualne (wym-jakosc-e2e).
+ * Testy wizualne (req-quality-e2e).
  *
  * Cała metodyka tego projektu opiera się na pomiarze w przeglądarce, a nie na
  * lekturze arkusza — zrzut ekranu jest jej naturalnym przedłużeniem. Testy
  * geometrii sprawdzają to, o co ktoś wcześniej zapytał („czy kolumna kafelkuje
  * ramkę szczelnie"); zrzut łapie także to, o co nikt nie zapytał, bo porównuje
- * CAŁY obraz. Regresje z lekcja-27 i lekcja-34 były dokładnie tego rodzaju.
+ * CAŁY obraz. Regresje z lesson-27 i lesson-34 były dokładnie tego rodzaju.
  *
  * Wzorce trzymamy w `src/__screenshots__/{platform}/`.
  * Po świadomej zmianie wyglądu:
@@ -113,7 +113,7 @@ test.describe('Wygląd — porównanie ze wzorcem', () => {
 });
 
 /**
- * Ten sam zestaw w `dir="rtl"` (wym-token-logiczne).
+ * Ten sam zestaw w `dir="rtl"` (req-token-logical).
  *
  * Bramka `check-styles` czyta arkusze i zapala na właściwości fizycznej. To
  * warunek konieczny i niewystarczający: arkusz może być bez zarzutu logiczny,
@@ -154,7 +154,7 @@ test.describe('Wygląd w RTL — porównanie ze wzorcem', () => {
 
   /**
    * Panel w RTL ma osobny wzorzec, bo to jedyne miejsce, w którym kierunek nie
-   * bierze się z kaskady, tylko jest przenoszony ręcznie z triggera (`lekcja-35`).
+   * bierze się z kaskady, tylko jest przenoszony ręcznie z triggera (`lesson-35`).
    * Regresję łapie już `rtl.spec.ts` pomiarem `direction`; ten zrzut pokazuje
    * dodatkowo, po której stronie panel się zaczepia i jak układa się treść opcji.
    */

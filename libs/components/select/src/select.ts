@@ -42,9 +42,9 @@ import {
  * panel `role="listbox"`, a fokus **nie opuszcza triggera** — aktywna opcja jest
  * wskazywana przez `aria-activedescendant`.
  *
- * Pozycjonowanie panelu opiera się na CDK Overlay (`wym-projekt-zaleznosci`) — to jedyna
+ * Pozycjonowanie panelu opiera się na CDK Overlay (`req-project-dependencies`) — to jedyna
  * dopuszczona zależność runtime. Obsługa klawiatury jest własna, bo dla
- * customowego listboxa nie ma natywnego odpowiednika (`wym-api-platforma`).
+ * customowego listboxa nie ma natywnego odpowiednika (`req-api-platform`).
  *
  * Wartość jest dowolnego typu `T` (domyślnie napis) — patrz `PctSelectOption`.
  * Brak wyboru reprezentuje `emptyValue`, domyślnie `null`.
@@ -115,7 +115,7 @@ export class PctSelect<T = string>
    * Tekst zastępczy. Bez wartości bierze się z `PCT_TEXTS` — i bierze się
    * **przy renderowaniu**, nie przy konstrukcji: wartość domyślna wejścia
    * powstaje raz, więc aplikacja przełączająca język w runtime zostałaby
-   * z napisem sprzed zmiany ([0014](../../../../docs/decyzje/0014-teksty-jako-sygnal.md)).
+   * z napisem sprzed zmiany ([0014](../../../../docs/decisions/0014-texts-as-signal.md)).
    * `placeholder=""` zostaje pustym tekstem zastępczym, a nie powrotem do
    * domyślnego — brak wartości i wartość pusta znaczą co innego.
    */
@@ -162,7 +162,7 @@ export class PctSelect<T = string>
   protected readonly hintId = `${this.uid}-hint`;
   protected readonly errorId = `${this.uid}-error`;
 
-  // --- współpraca z obudową (wym-api-obudowa) ---
+  // --- współpraca z obudową (req-api-wrapper) ---
 
   private readonly fieldApi = inject(PCT_FIELD, { optional: true });
 
@@ -193,7 +193,7 @@ export class PctSelect<T = string>
 
   /**
    * Panel renderuje się w nakładce CDK, poza drzewem hosta, więc kaskada
-   * scoped theme (`wym-token-scoped`) do niego nie dociera. Przenosimy więc motyw
+   * scoped theme (`req-token-scoped`) do niego nie dociera. Przenosimy więc motyw
    * z najbliższego przodka hosta na sam panel.
    */
   protected readonly panelTheme = signal<string | null>(null);
@@ -213,7 +213,7 @@ export class PctSelect<T = string>
 
   /**
    * Trzecia właściwość zerwana w nakładce, z tego samego powodu co motyw i pismo
-   * (`lekcja-35`): kierunek pisma. Panel jest dzieckiem `body`, więc dziedziczy
+   * (`lesson-35`): kierunek pisma. Panel jest dzieckiem `body`, więc dziedziczy
    * kierunek po nim, a nie po kontrolce — w `dir="rtl"` trigger pisał od prawej,
    * a lista pod nim od lewej (zmierzone: `direction: rtl` na triggerze wobec
    * `ltr` na panelu). Widać to dopiero po otwarciu panelu, więc żaden zrzut stanu

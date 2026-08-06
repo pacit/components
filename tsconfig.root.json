@@ -1,5 +1,5 @@
 {
-  "// po co": "Konfiguracja dla plików TypeScriptu leżących w korzeniu repozytorium — dziś `vitest.config.ts` i `vitest.workspace.ts`. Nie należą do żadnej biblioteki ani aplikacji, więc do wczoraj nie widział ich ŻADEN kompilator: `wym-jakosc-typecheck` obiecuje, że takiego kodu w workspace nie ma (lekcja-42). Nazwa jest `tsconfig.root.json`, a nie `tsconfig.json`, bo plik o tej drugiej nazwie w korzeniu przejmuje kontrolę nad całym repozytorium w edytorze i w narzędziach, które szukają go w górę drzewa.",
+  "// po co": "Konfiguracja dla plików TypeScriptu leżących w korzeniu repozytorium — dziś `vitest.config.ts` i `vitest.workspace.ts`. Nie należą do żadnej biblioteki ani aplikacji, więc do wczoraj nie widział ich ŻADEN kompilator: `req-quality-typecheck` obiecuje, że takiego kodu w workspace nie ma (lesson-42). Nazwa jest `tsconfig.root.json`, a nie `tsconfig.json`, bo plik o tej drugiej nazwie w korzeniu przejmuje kontrolę nad całym repozytorium w edytorze i w narzędziach, które szukają go w górę drzewa.",
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "noEmit": true,

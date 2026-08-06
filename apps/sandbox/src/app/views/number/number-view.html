@@ -9,7 +9,7 @@
   #kwota
   heading="Kwota z groszami"
   summary="Formatowanie wg locale aplikacji (pl-PL): przecinek dziesiętny, wąska spacja jako separator tysięcy. Tekst nie jest przepisywany w trakcie pisania."
-  [reqs]="['wym-api-liczba']"
+  [reqs]="['req-api-number']"
   data-testid="demo-price"
 >
   <div class="stack">
@@ -48,7 +48,7 @@
   #stanowiska
   heading="Pole całkowite z granicami ze schematu"
   summary="Granic nie ma w szablonie — dyrektywa FormField bierze je z walidatorów min()/max(), więc walidacja, ARIA i domykanie wartości mają jedno źródło."
-  [reqs]="['wym-api-liczba', 'wym-api-signal-forms']"
+  [reqs]="['req-api-number', 'req-api-signal-forms']"
   data-testid="demo-seats"
 >
   <div class="stack">

@@ -1,6 +1,6 @@
 {
   "punkt": 6,
   "kontrola": "jawnosc",
-  "// wada": "Dekorator powtarza wartości domyślne. Pomiar z punktu 5 jest wtedy ZIELONY — `onPush` i `standalone` mają właściwe wartości — więc bez tego punktu zapis zabroniony przez przewodnik Angulara (lekcja-11) nie miałby żadnej maszyny za sobą.",
+  "// wada": "Dekorator powtarza wartości domyślne. Pomiar z punktu 5 jest wtedy ZIELONY — `onPush` i `standalone` mają właściwe wartości — więc bez tego punktu zapis zabroniony przez przewodnik Angulara (lesson-11) nie miałby żadnej maszyny za sobą.",
   "jawne": { "PctButton": ["changeDetection", "standalone"] }
 }

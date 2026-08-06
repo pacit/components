@@ -4,17 +4,17 @@
  * zbudowany komponent jest OnPush — czyli czy dwie obietnice, które dziś opierają się
  * na tym, że nikt ich nie cofnie, mają za sobą pomiar.
  *
- * Powód istnienia. `lekcja-8` kończy się zdaniem „powrót do trybu zone-based jest
+ * Powód istnienia. `lesson-8` kończy się zdaniem „powrót do trybu zone-based jest
  * niemożliwy przez przypadek", a stoi za nim jednorazowy przebieg z lipca: ktoś raz
  * odinstalował pakiet i raz sprawdził, że w runtime nie ma `window.Zone`. Ręczny przebieg
- * nie istnieje między sesjami (`lekcja-36`) — `npm i zone.js` przy okazji innego zadania
+ * nie istnieje między sesjami (`lesson-36`) — `npm i zone.js` przy okazji innego zadania
  * cofa go bez jednego czerwonego testu, bo `zone.js` jest OPCJONALNYM peerem
  * `@angular/core`, a runner testów przy nieudanym `resolve('zone.js')` po cichu
  * przechodzi w tryb bez zone. Instalacja niczego nie psuje — tylko cicho przywraca
  * to, czego projekt się wyrzekł.
  *
- * Symetrycznie `wym-api-fundament`: OnPush jest w Angularze v22+ DOMYŚLNE i oficjalny
- * przewodnik zabrania ustawiania go jawnie (`lekcja-11`). Obietnica „każdy komponent jest
+ * Symetrycznie `req-api-foundation`: OnPush jest w Angularze v22+ DOMYŚLNE i oficjalny
+ * przewodnik zabrania ustawiania go jawnie (`lesson-11`). Obietnica „każdy komponent jest
  * OnPush" opiera się więc na cudzej wartości domyślnej — a wartości domyślne się zmieniają.
  * Jedyna uczciwa forma tej obietnicy to pomiar `ɵcmp.onPush` na zbudowanym pakiecie,
  * powtarzany przy każdym przebiegu.
@@ -37,13 +37,13 @@
  * `changeDetection`, gdy jest domyślne — wartość powstaje dopiero przy linkowaniu,
  * z domyślnych zainstalowanego Angulara. Odczyt przez JIT (`import '@angular/compiler'`)
  * odtwarza dokładnie ten krok, więc podbicie Angulara zmieniające domyślne zapala tę
- * bramkę — a o to w `wym-api-fundament` chodzi. Odczyt ze źródeł mierzyłby nasz zapis,
- * nie to, co dostanie konsument (`lekcja-36`).
+ * bramkę — a o to w `req-api-foundation` chodzi. Odczyt ze źródeł mierzyłby nasz zapis,
+ * nie to, co dostanie konsument (`lesson-36`).
  *
  * Do tego siódmy przebieg, który nie bada projektu, tylko TĘ BRAMKĘ: kontrola odniesienia
  * z `tools/check-zoneless.fixtures/`. Spreparowane wejścia, z których każde łamie dokładnie
  * jeden z sześciu punktów i musi zostać odrzucone przez ten właśnie punkt
- * (`wym-jakosc-kontrola`).
+ * (`req-quality-negative-control`).
  *
  * Użycie:
  *   node tools/check-zoneless.mjs
@@ -97,7 +97,7 @@ const SLADY = [
  * niczego: powtarzał kotwicę parsera co do znaku, więc przesunięcie dekoratora
  * o jedną spację gasiło obie strony porównania naraz. Zmierzone na tym repozytorium
  * — `PctCheckbox` wcięty o spację dawał „7 komponentów" zamiast ośmiu i przebieg
- * zielony, czyli komponent wypadał z pomiaru OnPush bez śladu (`lekcja-48`).
+ * zielony, czyli komponent wypadał z pomiaru OnPush bez śladu (`lesson-48`).
  * Kontrola porównująca dwa pomiary musi mieć dwa NIEZALEŻNE pomiary; wystąpienia
  * w komentarzu odsiewa `[ \t]*`, bo linia JSDoc zaczyna się od gwiazdki.
  */
@@ -152,9 +152,9 @@ const sprawdzZoneless = ({
       'manifesty',
       `\`zone.js\` wrócił do manifestu:\n` +
         zadeklarowany.map((z) => `      ${z}`).join('\n') +
-        `\n    \`wym-projekt-angular\` żąda USUNIĘCIA pakietu, nie wyłączenia go — ` +
+        `\n    \`req-project-angular\` żąda USUNIĘCIA pakietu, nie wyłączenia go — ` +
         `sama obecność w zależnościach przywraca tryb zone-based przy pierwszym ` +
-        `\`import 'zone.js'\`, a Angular nie powie ani słowa (lekcja-8).`,
+        `\`import 'zone.js'\`, a Angular nie powie ani słowa (lesson-8).`,
     );
 
   // 2. Drzewo zależności. Manifest to deklaracja, lock to stan faktyczny: `zone.js`
@@ -202,7 +202,7 @@ const sprawdzZoneless = ({
       `zbudowany pakiet zawiera ślad runtime zone:\n` +
         trafienia.map((t) => `      ${t}`).join('\n') +
         `\n    Konsument dostaje wtedy bibliotekę, która wymaga stref, mimo że ` +
-        `pakiet obiecuje zoneless (wym-api-fundament).`,
+        `pakiet obiecuje zoneless (req-api-foundation).`,
     );
 
   // 4. MIANOWNIK. Bez tego punktu „każdy komponent" z punktu 5 znaczy „każdy, który
@@ -226,7 +226,7 @@ const sprawdzZoneless = ({
         `detekcji zmian. Lek: eksport z \`index.ts\` swojej bramki.`,
     );
 
-  // 5. Pomiar. `standalone` idzie razem z `onPush`, bo `wym-api-fundament` obiecuje oba
+  // 5. Pomiar. `standalone` idzie razem z `onPush`, bo `req-api-foundation` obiecuje oba
   // i oba są w Angularze v22+ wartościami domyślnymi — czyli obietnicami tej samej klasy.
   const wadliwe = komponenty.filter(
     (k) => k.onPush !== true || k.standalone !== true,
@@ -246,7 +246,7 @@ const sprawdzZoneless = ({
     );
 
   // 6. Jawność. Odwrotna strona tej samej reguły: skoro pomiar pilnuje WARTOŚCI,
-  // to źródło ma nie powtarzać domyślnych (`lekcja-11`). Bez tego punktu jedynym
+  // to źródło ma nie powtarzać domyślnych (`lesson-11`). Bez tego punktu jedynym
   // strażnikiem zapisu byłby przegląd kodu.
   const jawne = zrodla.filter((z) => z.jawne?.length);
   if (jawne.length)
@@ -257,7 +257,7 @@ const sprawdzZoneless = ({
           .map((z) => `      ${z.klasa} (${z.plik}): ${z.jawne.join(', ')}`)
           .join('\n') +
         `\n    Przewodnik Angulara zabrania ich powtarzania w v22+ ` +
-        `(wym-api-fundament). Usuń wpis z dekoratora — wartość i tak jest ta sama.`,
+        `(req-api-foundation). Usuń wpis z dekoratora — wartość i tak jest ta sama.`,
     );
 
   return (
@@ -467,7 +467,7 @@ const przypadki = readdirSync(FIXTURES)
 if (przypadki.length === 0)
   problems.push(
     `tools/check-zoneless.fixtures: brak spreparowanych wejść — bramka bez dowodu, ` +
-      `że potrafi nie przejść, jest kolejną cichą wadą (wym-jakosc-kontrola)`,
+      `że potrafi nie przejść, jest kolejną cichą wadą (req-quality-negative-control)`,
   );
 
 // Wejście wzorcowe MUSI przejść. Gdyby samo było wadliwe, każdy przypadek zapalałby

@@ -37,7 +37,7 @@ jobs:
       # Przeglądarki Playwrighta ważą kilkaset MB i nie zmieniają się między
       # commitami — klucz to jego wersja, więc cache unieważnia się dokładnie
       # przy podbiciu paczki, a nie przy każdej zmianie package-lock.json.
-      # Silniki są trzy (wym-jakosc-przegladarki) i muszą być wymienione w OBU
+      # Silniki są trzy (req-quality-browsers) i muszą być wymienione w OBU
       # krokach niżej: ten przy trafieniu w cache dociąga same biblioteki
       # systemowe, więc silnik wpisany wyłącznie przy pudle znika z runnera
       # przy pierwszym trafieniu — i to bez ani jednego czerwonego kroku, bo
@@ -72,25 +72,25 @@ jobs:
       # `check-docs` czyta docs/ i sprawdza, że każda obietnica wskazuje maszynę,
       # która potrafi na niej zapalić — i że ta maszyna istnieje oraz biegnie tutaj.
       # Bez tego dokumentacja jest jedynym miejscem w repo, gdzie obietnica nie ma
-      # bramki, czyli dokładnie tym, czego zakazuje `wym-os`.
+      # bramki, czyli dokładnie tym, czego zakazuje `req-axis`.
       # `check-coverage` bada nie procent, tylko mianownik, z którego powstał: raport
       # v8 obejmuje wyłącznie moduły, które weszły do przebiegu, więc plik bez testu
-      # potrafi z niego WYPAŚĆ i podnieść wynik (`lekcja-45`). Sam próg w targecie
+      # potrafi z niego WYPAŚĆ i podnieść wynik (`lesson-45`). Sam próg w targecie
       # `test` pilnowałby wtedy liczby liczonej na coraz mniejszej próbce.
       # `check-zoneless` mierzy dwie obietnice, które dotąd opierały się wyłącznie na
       # tym, że nikt ich nie cofnie: brak `zone.js` w drzewie i w bundlu oraz
       # `ɵcmp.onPush` każdego komponentu. Instalacja stref niczego nie psuje — jest
-      # opcjonalnym peerem Angulara (`lekcja-8`) — a OnPush jest wartością DOMYŚLNĄ,
-      # czyli cudzą (`lekcja-11`). Jedno i drugie cofa się bez czerwonego testu.
+      # opcjonalnym peerem Angulara (`lesson-8`) — a OnPush jest wartością DOMYŚLNĄ,
+      # czyli cudzą (`lesson-11`). Jedno i drugie cofa się bez czerwonego testu.
       # `check-typecheck` pilnuje samego `typecheck` z tej listy: `nx affected` uruchamia
       # target tam, gdzie istnieje, i MILCZY tam, gdzie go nie ma, więc nowy projekt
-      # rodzi się nietypecheckowany przy zielonym przebiegu (`lekcja-42`). Bramka mierzy
+      # rodzi się nietypecheckowany przy zielonym przebiegu (`lesson-42`). Bramka mierzy
       # nie istnienie targetu, tylko jego zasięg: porównuje pliki każdego projektu
       # z programem, który jego kompilator naprawdę wypisuje.
       # `check-styles` pilnuje dwóch obietnic o arkuszach, których złamanie nie daje
       # czerwonego testu: `padding-left` wygląda dobrze w każdym zrzucie LTR — czyli
       # w każdym, jaki tu robimy — a `opacity` na warstwie tekstowej wygląda dobrze
-      # zawsze i cofa bramkę kontrastu do stanu sprzed `lekcja-6`, bo matematyka na
+      # zawsze i cofa bramkę kontrastu do stanu sprzed `lesson-6`, bo matematyka na
       # wartościach z palety nie widzi kompozycji z tłem. Bramka czyta źródła ORAZ
       # to, co z nich wypisuje sass: właściwość złożona interpolacją dociera do
       # przeglądarki, a w tekście arkusza nie stoi nigdzie.
@@ -109,7 +109,7 @@ jobs:
       # zbudowanego pakietu przez `ɵcmp` — bo część wniesiona składnią, której skaner
       # nie rozumie, weszłaby do wydania bez linii w diffie, a część, która wypadła
       # z pakietu, zostałaby w inwentarzu jako obietnica bez pokrycia. Czwarty punkt
-      # porównuje rubryki **Części** w `docs/komponenty/` z pakietem: pisane ręką,
+      # porównuje rubryki **Części** w `docs/components/` z pakietem: pisane ręką,
       # więc kłamią — `field.md` wymieniał 11 części z piętnastu.
       # `check-bundle` pilnuje obietnicy SPRZEDAŻOWEJ — tej, dla której ktoś tę
       # bibliotekę wybiera: „komponenty importuje się przez secondary entrypoints, co
@@ -145,7 +145,7 @@ jobs:
       # wywracała się na `exports is not defined in ES module scope`, bo manifest niesie
       # `"type": "module"`, a schematics są CommonJS-em; bramka statyczna widziała wtedy
       # komplet, bo plik fabryki BYŁ na miejscu. Ostatni punkt mierzy w przeglądarce to, co
-      # `lekcja-36` opisuje jako wadę cichą do końca: przycisk z kompletem klas i części,
+      # `lesson-36` opisuje jako wadę cichą do końca: przycisk z kompletem klas i części,
       # i bez ani jednego piksela wyglądu, bo nierozwiązany `var()` nie jest błędem, tylko
       # powrotem do wartości początkowej.
       # `check-browsers` pilnuje MACIERZY, na której biegnie `e2e` z tej samej listy.

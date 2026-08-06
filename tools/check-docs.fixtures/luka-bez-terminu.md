@@ -1,6 +1,6 @@
 # Fixture — luka bez terminu
 
-### <a id="wym-fixture-luka-bez-terminu"></a>`wym-fixture-luka-bez-terminu` — Luka bez „Wiąże przy"
+### <a id="req-fixture-luka-bez-terminu"></a>`req-fixture-luka-bez-terminu` — Luka bez „Wiąże przy"
 
 **Obietnica.** Coś ma być prawdą.
 

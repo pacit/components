@@ -29,7 +29,7 @@ test.describe('PctButton', () => {
     page,
   }) => {
     // Stany mają własne tokeny koloru — opacity zmieniałoby kontrast
-    // w sposób niewidoczny dla bramki (wym-token-bez-opacity).
+    // w sposób niewidoczny dla bramki (req-token-no-opacity).
     await expect(page.getByTestId('btn-disabled')).toHaveCSS('opacity', '1');
   });
 });

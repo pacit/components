@@ -2,7 +2,7 @@
 
 Biblioteka komponentów Angular — budowana jako nowoczesna, dostępna alternatywa dla rozwiązań typu PrimeNG. Monorepo NX.
 
-> **Status:** wczesny etap, API wciąż się zmienia. Kontrolki formularza budowane są jako obudowa `pct-field` + kontrolka w środku. Pełne ustalenia i wymagania: [docs/](docs/README.md) — w tym [rejestr bramek](docs/rejestr.md), który wylicza, czego jeszcze nie ma i co to blokuje.
+> **Status:** wczesny etap, API wciąż się zmienia. Kontrolki formularza budowane są jako obudowa `pct-field` + kontrolka w środku. Pełne ustalenia i wymagania: [docs/](docs/README.md) — w tym [rejestr bramek](docs/registry.md), który wylicza, czego jeszcze nie ma i co to blokuje.
 
 ## Stack
 
@@ -240,12 +240,12 @@ Wydania idą ręcznym workflow **Wydanie** (`.github/workflows/release.yml`), do
 node tools/release.mjs --dry-run --first-release
 ```
 
-Kolejność jest istotna i dlatego wydanie prowadzi skrypt, a nie samo `nx release`: wersja → stempel stałej `PCT_VERSION` → build → bramka pakietu → CHANGELOG, tag, GitHub Release → publikacja. Build **musi** stać po podbiciu wersji, inaczej artefakt niesie starą stałą (`lekcja-41`). Wersja bierze się z konwencjonalnych commitów; przed 1.0 zmiana łamiąca podbija minor.
+Kolejność jest istotna i dlatego wydanie prowadzi skrypt, a nie samo `nx release`: wersja → stempel stałej `PCT_VERSION` → build → bramka pakietu → CHANGELOG, tag, GitHub Release → publikacja. Build **musi** stać po podbiciu wersji, inaczej artefakt niesie starą stałą (`lesson-41`). Wersja bierze się z konwencjonalnych commitów; przed 1.0 zmiana łamiąca podbija minor.
 
 Publikacja wymaga w `libs/components/package.json` pola `repository` — bez niego npm odmawia wystawienia provenance. Pilnuje tego `check-package.mjs --release`; na co dzień ten warunek tylko ostrzega.
 
 ## Dokumentacja
 
-Pełne wymagania i decyzje architektoniczne (identyfikatory `wym-*`): [docs/](docs/README.md) —
-[oś projektu](docs/00-os.md), [wymagania](docs/wymagania/), [decyzje](docs/decyzje/),
-[lekcje](docs/lekcje.md) i generowany [rejestr](docs/rejestr.md).
+Pełne wymagania i decyzje architektoniczne (identyfikatory `req-*`): [docs/](docs/README.md) —
+[oś projektu](docs/00-axis.md), [wymagania](docs/requirements/), [decyzje](docs/decisions/),
+[lekcje](docs/lessons.md) i generowany [rejestr](docs/registry.md).

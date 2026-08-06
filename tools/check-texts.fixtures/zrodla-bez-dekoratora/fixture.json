@@ -3,5 +3,5 @@
   "kontrola": "mianownik",
   "regula": "pusta-lista",
   "usun": ["libs/components/widget"],
-  "opis": "Wejście bez ani jednego dekoratora — zostaje sam `texts.ts`. Przypadek nie bada komponentu, tylko POMIAR: przy pustym zbiorze klas wszystkie dalsze punkty przechodzą, nie orzekając o niczym. Tak wygląda pathspec, który przestał cokolwiek zwracać (lekcja-48) — i tak wyglądałaby ta bramka na repozytorium, w którym nikt nie zauważył, że lista plików jest pusta."
+  "opis": "Wejście bez ani jednego dekoratora — zostaje sam `texts.ts`. Przypadek nie bada komponentu, tylko POMIAR: przy pustym zbiorze klas wszystkie dalsze punkty przechodzą, nie orzekając o niczym. Tak wygląda pathspec, który przestał cokolwiek zwracać (lesson-48) — i tak wyglądałaby ta bramka na repozytorium, w którym nikt nie zauważył, że lista plików jest pusta."
 }

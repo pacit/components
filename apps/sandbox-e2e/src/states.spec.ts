@@ -31,7 +31,7 @@ test.describe('Stany — przekrój przez wszystkie kontrolki', () => {
   /**
    * Bramka kontrastu liczy na hexach z palety, więc każde **przyciemnienie**
    * `opacity` jest dla niej niewidoczne — stan musi mieć własne tokeny koloru
-   * (wym-token-bez-opacity). Szukamy więc wartości pomiędzy 0 a 1: pełne `0` to inna
+   * (req-token-no-opacity). Szukamy więc wartości pomiędzy 0 a 1: pełne `0` to inna
    * technika (natywna kontrolka checkboxa jest niewidoczna, ale wciąż jest
    * obszarem trafienia nad narysowanym pudełkiem), a nie ściemniony tekst.
    */

@@ -11,7 +11,7 @@ import { SbxDemo } from '../../ui/demo';
 
 /**
  * Pole liczbowe: `<input type="text">` z `role="spinbutton"` i własnym
- * parsowaniem opartym o `Intl.NumberFormat` (wym-api-liczba).
+ * parsowaniem opartym o `Intl.NumberFormat` (req-api-number).
  */
 @Component({
   selector: 'sbx-number-view',

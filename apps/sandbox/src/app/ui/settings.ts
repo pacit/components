@@ -6,7 +6,7 @@ export type SbxScheme = 'light' | 'dark';
 
 /**
  * Skórka: zestaw nadpisań semantycznych, niezależny od schematu light/dark
- * (wym-token-skorka). Na razie istnieje jedna — build tokenów nie emituje jeszcze
+ * (req-token-skin). Na razie istnieje jedna — build tokenów nie emituje jeszcze
  * bloków `[data-skin="..."]`. Oś jest tu obecna od początku, żeby karta miała
  * gdzie ją wystawić, gdy skórki powstaną.
  */
@@ -19,13 +19,13 @@ export const SBX_SKINS: readonly SbxSkin[] = [{ id: 'base', label: 'Bazowa' }];
 
 /**
  * Kierunek pisma. Oś przekrojowa jak motyw i wielkość, a nie ustawienie strony:
- * `wym-token-logiczne` obiecuje, że układ **odbija się** w `dir="rtl"`, a bramka
+ * `req-token-logical` obiecuje, że układ **odbija się** w `dir="rtl"`, a bramka
  * `check-styles` sprawdza wyłącznie arkusze. Arkusz może być bez zarzutu logiczny
  * i mimo to dawać zły układ — przez zaszytą strzałkę, przez kotwicę nakładki albo
  * przez znak `scrollLeft`. Tego nie widać w arkuszu; widać na obrazku.
  *
  * Świadomie wyłączone jest **pełne bidi** (pionowe tryby pisma), nie RTL —
- * patrz nie-cele w `docs/00-os.md`.
+ * patrz nie-cele w `docs/00-axis.md`.
  */
 export type SbxDir = 'ltr' | 'rtl';
 

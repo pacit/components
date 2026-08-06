@@ -5,7 +5,7 @@ import { SBX_ROUTES } from './support/views';
 /**
  * Powłoka sandboxa i karta demonstracyjna (`sbx-demo`). Sprawdzane w
  * przeglądarce, bo cała rzecz stoi na kaskadzie CSS custom properties —
- * jsdom nie odpowie, jaką wartość ma token w danym poddrzewie (lekcja-13).
+ * jsdom nie odpowie, jaką wartość ma token w danym poddrzewie (lesson-13).
  */
 test.describe('Powłoka sandboxa i karta demonstracyjna', () => {
   const stage = (testid: string) =>
@@ -103,7 +103,7 @@ test.describe('Powłoka sandboxa i karta demonstracyjna', () => {
     expect(await surfaceOf('demo-light')).toBe('#ffffff');
 
     // Token KOMPONENTOWY też musi się cofnąć, nie tylko semantyczny
-    // (domknięcie przechodnie nadpisań, wym-token-domkniecie).
+    // (domknięcie przechodnie nadpisań, req-token-closure).
     const buttonBg = await page
       .locator(`${stage('demo-light')} button[pctButton]`)
       .first()

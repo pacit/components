@@ -4,7 +4,7 @@ import { setRtl, visit } from './support/dom';
 import { SBX_ROUTES } from './support/views';
 
 /**
- * Automatyczny audyt dostępności (wym-a11y-wcag). Uzupełnia bramkę kontrastu
+ * Automatyczny audyt dostępności (req-a11y-wcag). Uzupełnia bramkę kontrastu
  * tokenów: tam badane są wartości w palecie, tutaj realnie wyrenderowany DOM
  * (role, powiązania ARIA, kontrast po złożeniu warstw).
  */
@@ -50,7 +50,7 @@ test.describe('Dostępność (axe-core, WCAG 2.2 AA)', () => {
   }
 
   /**
-   * Ten sam audyt w `dir="rtl"` (wym-token-logiczne).
+   * Ten sam audyt w `dir="rtl"` (req-token-logical).
    *
    * Kierunek nie jest wyłącznie sprawą wyglądu: axe liczy kontrast po złożeniu
    * warstw i sprawdza powiązania ARIA na wyrenderowanym drzewie, a odbicie

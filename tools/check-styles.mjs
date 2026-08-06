@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 /**
  * Bramka stylów: pilnuje dwóch obietnic o arkuszach biblioteki —
- * `wym-token-logiczne` (układ opisany właściwościami logicznymi, więc odbija się
- * w `dir="rtl"`) i `wym-token-bez-opacity` (żadnej `opacity` kompozytującej).
+ * `req-token-logical` (układ opisany właściwościami logicznymi, więc odbija się
+ * w `dir="rtl"`) i `req-token-no-opacity` (żadnej `opacity` kompozytującej).
  *
  * Powód istnienia jest wspólny dla obu: to obietnice, których złamanie NIE daje
  * czerwonego testu. Arkusz z `padding-left` wygląda dobrze w `dir="ltr"`, czyli
  * w każdym zrzucie, jaki dziś robimy; `opacity: 0.6` na warstwie tekstowej wygląda
- * dobrze zawsze i cofa `wym-token-kontrast` do stanu sprzed `lekcja-6` — bramka
+ * dobrze zawsze i cofa `req-token-contrast` do stanu sprzed `lesson-6` — bramka
  * kontrastu liczy na hexach z palety, a przeglądarka pokazuje wynik kompozycji
  * z tłem, którego ta matematyka nie widzi. Obie wady są dziś dotrzymane wyłącznie
  * pamięcią autora, a koszt retrofitu rośnie z każdym komponentem nieliniowo.
@@ -32,7 +32,7 @@
  * Do tego siódmy przebieg, który nie bada arkuszy, tylko TĘ BRAMKĘ: kontrola
  * odniesienia z `tools/check-styles.fixtures/`. Spreparowane wejścia, z których
  * każde łamie dokładnie jeden z sześciu punktów i musi zostać odrzucone przez ten
- * właśnie punkt (`wym-jakosc-kontrola`).
+ * właśnie punkt (`req-quality-negative-control`).
  *
  * Użycie:
  *   node tools/check-styles.mjs
@@ -77,7 +77,7 @@ const MIN_UZASADNIENIE = 40;
  * Właściwości fizyczne osi inline i ich logiczne odpowiedniki. Oś BLOCK
  * (`top`/`bottom`, `margin-top`, …) świadomie NIE jest na liście: `dir="rtl"`
  * odbija wyłącznie oś inline, a pełne bidi — czyli pionowe tryby pisma — jest
- * jawnym nie-celem (`docs/00-os.md`). Zakaz `top` byłby więc szumem, na który
+ * jawnym nie-celem (`docs/00-axis.md`). Zakaz `top` byłby więc szumem, na który
  * odpowiedzią stałaby się pieczątka wyjątku przy co drugiej regule.
  */
 const FIZYCZNE = new Map([
@@ -271,14 +271,14 @@ const kluczIstotny = (d) => {
  * `opacity` wolno WYŁĄCZNIE jako przełącznik widoczności: `0` (element nie
  * uczestniczy w obrazie, więc nie ma o czym obiecywać kontrastu) i `1` (wartość
  * neutralna, zwykle cofnięcie stanu). Wszystko pomiędzy KOMPONUJE z tłem, czyli
- * przesuwa kontrast realny poza wynik bramki kontrastu (`lekcja-6`).
+ * przesuwa kontrast realny poza wynik bramki kontrastu (`lesson-6`).
  *
  * Wartość niedosłowna (`var(...)`, `calc(...)`) nie jest binarna z definicji:
  * bramka nie wie, co przyjdzie w runtime, a zgadywanie na korzyść autora byłoby
  * dokładnie tą ciszą, przed którą ta reguła stoi.
  *
  * Świadomie przepuszczone: `transition: opacity …` i przejście 0 → 1. Stan
- * przelotny nie jest tym, o czym mówi `wym-token-kontrast`, a zakaz obejmujący
+ * przelotny nie jest tym, o czym mówi `req-token-contrast`, a zakaz obejmujący
  * animacje odebrałby jedyny standardowy sposób wprowadzania nakładek.
  */
 const przezroczystoscBinarna = (wartosc) => {
@@ -360,7 +360,7 @@ const sprawdzStyle = ({ arkusze, komponenty, deklaracji }) => {
   //    ślepe na zero: gdy obie strony są puste, są równe, i punkt przechodzi
   //    orzekając o niczym. Pierwsza wersja tej bramki dokładnie tak przeszła —
   //    pathspec gita zwracał zero źródeł, a wynik brzmiał „0 komponentów"
-  //    (`lekcja-48`).
+  //    (`lesson-48`).
   if (!komponenty.length)
     throw new BladStylu(
       'zrodlo-stylow',
@@ -446,9 +446,9 @@ const sprawdzStyle = ({ arkusze, komponenty, deklaracji }) => {
         `\n    Zapis: /* pct-wyjatek <właściwość>: <powód, dlaczego akurat tu jest bezpieczna> */`,
     );
 
-  // 5. Właściwości logiczne (`wym-token-logiczne`).
+  // 5. Właściwości logiczne (`req-token-logical`).
   const fizyczne = [];
-  // 6. Bez `opacity` kompozytującej (`wym-token-bez-opacity`).
+  // 6. Bez `opacity` kompozytującej (`req-token-no-opacity`).
   const przezroczyste = [];
 
   for (const arkusz of arkusze)
@@ -483,7 +483,7 @@ const sprawdzStyle = ({ arkusze, komponenty, deklaracji }) => {
   if (fizyczne.length)
     throw new BladStylu(
       'logiczne',
-      `${fizyczne.length} właściwości fizycznych osi inline (wym-token-logiczne):\n` +
+      `${fizyczne.length} właściwości fizycznych osi inline (req-token-logical):\n` +
         lista(fizyczne) +
         `\n    Układ opisany fizycznie NIE odbija się w \`dir="rtl"\` i nie widać tego ` +
         `na żadnym zrzucie LTR. Jeśli akurat ta jest bezpieczna, powiedz dlaczego: ` +
@@ -493,10 +493,10 @@ const sprawdzStyle = ({ arkusze, komponenty, deklaracji }) => {
   if (przezroczyste.length)
     throw new BladStylu(
       'opacity',
-      `${przezroczyste.length} deklaracji \`opacity\` kompozytujących z tłem (wym-token-bez-opacity):\n` +
+      `${przezroczyste.length} deklaracji \`opacity\` kompozytujących z tłem (req-token-no-opacity):\n` +
         lista(przezroczyste) +
         `\n    Bramka kontrastu liczy na wartościach z palety, więc kompozycji nie widzi — ` +
-        `to jest droga powrotna do stanu sprzed lekcja-6. Stan wyraź własnym tokenem koloru. ` +
+        `to jest droga powrotna do stanu sprzed lesson-6. Stan wyraź własnym tokenem koloru. ` +
         `Dozwolone są wyłącznie \`0\` i \`1\` (przełącznik widoczności).`,
     );
 
@@ -519,7 +519,7 @@ const sprawdzStyle = ({ arkusze, komponenty, deklaracji }) => {
  * Pierwsza wersja miała `/^@Component\(/gm` w obu miejscach: przesunięcie
  * dekoratora o jedną spację gasiło parser i licznik naraz, obie strony zgadzały
  * się na siódemce i bramka kończyła zielono, przestawszy mierzyć cały komponent
- * (`lekcja-48`). Wcięcie jest tu zatem dozwolone, a odsiewa się wyłącznie
+ * (`lesson-48`). Wcięcie jest tu zatem dozwolone, a odsiewa się wyłącznie
  * wystąpienia w komentarzu — `core/src/texts.ts` ma `@Component(` w przykładzie
  * JSDoc, czyli linię zaczynającą się od gwiazdki.
  */
@@ -583,7 +583,7 @@ const zbierzWejscie = (root, arkuszeSciezki, zrodlaSciezki) => ({
  * przechodzi przez `/`, więc `libs/components/*​/src/**​/*.ts` żąda o jeden
  * katalog za dużo i nie dopasowuje `button/src/button.ts`. Zwraca wtedy ZERO
  * plików, a nie błąd. Pierwsza wersja tej bramki przeszła z takim wzorcem
- * na zielono, mierząc zero komponentów (`lekcja-48`).
+ * na zielono, mierząc zero komponentów (`lesson-48`).
  */
 const plikiProjektu = () =>
   execFileSync('git', ['ls-files', '-z', PROJEKT], {
@@ -669,7 +669,7 @@ const przypadki = readdirSync(FIXTURES, { withFileTypes: true })
 if (przypadki.length === 0)
   problems.push(
     `tools/check-styles.fixtures: brak spreparowanych wejść — bramka bez dowodu, ` +
-      `że potrafi nie przejść, jest kolejną cichą wadą (wym-jakosc-kontrola)`,
+      `że potrafi nie przejść, jest kolejną cichą wadą (req-quality-negative-control)`,
   );
 
 // Wejście wzorcowe MUSI przejść. Gdyby baza sama była wadliwa, każdy przypadek

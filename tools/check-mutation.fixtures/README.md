@@ -7,12 +7,12 @@ indziej, niż wpisano w jego pliku, jest błędem tak samo, bo dowodzi czegoś i
 deklaruje.
 
 Każdy przypadek niesie parę `kontrola` + `regula`, a nie sam numer punktu — wprost
-z A12 i [`lekcja-50`](../../docs/lekcje.md#lekcja-50). Zmierzone na tej bramce:
+z A12 i [`lesson-50`](../../docs/lessons.md#lesson-50). Zmierzone na tej bramce:
 rozbrojenie **dwunastu z trzydziestu siedmiu** reguł przestawia ich przypadki na regułę
 sąsiednią, a bez tego pola wszystkie dwanaście przebiegów byłoby zielonych.
 
 Powód istnienia jest ten sam co przy każdej innej bramce
-([`wym-jakosc-kontrola`](../../docs/wymagania/jakosc.md#wym-jakosc-kontrola)): **nowa
+([`req-quality-negative-control`](../../docs/requirements/quality.md#req-quality-negative-control)): **nowa
 bramka nie jest gotowa, gdy przechodzi — jest gotowa, gdy pokazano, że potrafi nie
 przejść.** Tutaj jest z tym o tyle ciekawie, że maszyna zapalająca już istnieje: sam
 Stryker faila przebieg poniżej `thresholds.break`. Tyle że `break` jest u niego

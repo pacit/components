@@ -245,7 +245,7 @@ describe('PctRadioGroup / PctRadio', () => {
 
     // Stan „tylko do odczytu" ogłasza GRUPA: rola `radio` nie wspiera
     // `aria-readonly`, więc na opcji byłby to atrybut niedozwolony dla roli
-    // (naruszenie krytyczne w axe, `lekcja-33`).
+    // (naruszenie krytyczne w axe, `lesson-33`).
     const group = fixture.nativeElement.querySelector('pct-radio-group');
     expect(group.getAttribute('aria-readonly')).toBe('true');
     expect(free.hasAttribute('aria-readonly')).toBe(false);

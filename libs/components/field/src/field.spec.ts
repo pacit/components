@@ -363,7 +363,7 @@ describe('PctField + PctText', () => {
 
       it('dekoracja `fill` bierze wysokość ze slotu, nie z siebie', async () => {
         // Bez tego przycisk w slocie wnosi własną wysokość minimalną i rozpycha
-        // wiersz ponad wysokość pola tej samej wielkości (wym-api-wielkosc).
+        // wiersz ponad wysokość pola tej samej wielkości (req-api-size).
         const fill = await render(FillAffixHost);
         const inset = await render(AffixHost);
 
@@ -395,7 +395,7 @@ describe('PctField + PctText', () => {
       // Regresja: dyrektywa FormField dostarcza NgControl (interop dla CVA),
       // więc heurystyka „NgControl => ktoś inny pisze do DOM" wykluczała także
       // signal forms — a te przy własnej kontrolce ustawiają tylko `value`
-      // i do DOM nie piszą. Pole startowało puste (lekcja-26).
+      // i do DOM nie piszą. Pole startowało puste (lesson-26).
       expect(inputOf(fixture).value).toBe('start@example.com');
     });
 
@@ -469,7 +469,7 @@ describe('PctField + PctText', () => {
       expect(fieldOf(fixture).getAttribute('data-pct-size')).toBe('md');
     });
 
-    it('respektuje domyślny rozmiar z providePctConfig (wym-api-konfiguracja)', async () => {
+    it('respektuje domyślny rozmiar z providePctConfig (req-api-config)', async () => {
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
         providers: [

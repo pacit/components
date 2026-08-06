@@ -39,7 +39,7 @@
       "min": { "$type": "dimension", "$value": "24px" }
     },
     "control": {
-      "$comment": "Wysokość kontrolki w danej wielkości — wspólna oś przycisku i wiersza pola. Wysokość jest tu wartością wprost, a nie wynikiem paddingu i wysokości linii: tylko wtedy pole i przycisk tej samej wielkości są równe z definicji (wym-api-wielkosc).",
+      "$comment": "Wysokość kontrolki w danej wielkości — wspólna oś przycisku i wiersza pola. Wysokość jest tu wartością wprost, a nie wynikiem paddingu i wysokości linii: tylko wtedy pole i przycisk tej samej wielkości są równe z definicji (req-api-size).",
       "height": {
         "sm": { "$type": "dimension", "$value": "28px" },
         "md": { "$type": "dimension", "$value": "36px" },
@@ -47,7 +47,7 @@
       }
     },
     "motion": {
-      "$comment": "Ruch jest osią tokenów, nie wyjątkiem w arkuszu komponentu: dopiero to sprawia, że `prefers-reduced-motion` obowiązuje w całej bibliotece z jednej reguły (wym-a11y-ruch). Podział nie idzie po prędkości, tylko po RODZAJU ruchu, bo redukcja robi z nimi dwie różne rzeczy: przejście stanu ma zniknąć, a wskaźnik ciągły (spinner) tylko zwolnić — zatrzymany przestałby informować, że przycisk pracuje.",
+      "$comment": "Ruch jest osią tokenów, nie wyjątkiem w arkuszu komponentu: dopiero to sprawia, że `prefers-reduced-motion` obowiązuje w całej bibliotece z jednej reguły (req-a11y-motion). Podział nie idzie po prędkości, tylko po RODZAJU ruchu, bo redukcja robi z nimi dwie różne rzeczy: przejście stanu ma zniknąć, a wskaźnik ciągły (spinner) tylko zwolnić — zatrzymany przestałby informować, że przycisk pracuje.",
       "transition": {
         "duration": { "$type": "duration", "$value": "150ms" },
         "easing": { "$type": "cubicBezier", "$value": "ease" }

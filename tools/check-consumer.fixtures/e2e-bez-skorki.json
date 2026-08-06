@@ -2,6 +2,6 @@
   "punkt": 7,
   "kontrola": "e2e",
   "regula": "bez-skorki",
-  "opis": "Token tła policzony na przycisku jest pusty: skórka nie doszła do przeglądarki. Przycisk jest w DOM-ie, ma klasy i części, i nie ma wyglądu — docelowa postać lekcja-36.",
+  "opis": "Token tła policzony na przycisku jest pusty: skórka nie doszła do przeglądarki. Przycisk jest w DOM-ie, ma klasy i części, i nie ma wyglądu — docelowa postać lesson-36.",
   "token": ""
 }

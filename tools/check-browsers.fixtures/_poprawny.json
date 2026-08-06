@@ -2,7 +2,7 @@
   "$opis": "Wejście wzorcowe: dokładny obraz repozytorium w dniu powstania bramki. MUSI przechodzić — każdy przypadek obok składa się na jego kopii, więc wadliwe wzorcowe zamieniłoby wszystkie tamte „zapaliło\" w fałszywe.",
   "wejscie": {
     "polityka": {
-      "$opis": "Macierz przeglądarek (wym-jakosc-przegladarki). Drugi odczyt tego, co deklaruje playwright.config.mts: tamten plik konfiguruje, ten opisuje UMOWĘ, a tools/check-browsers.mjs pyta Playwrighta, co naprawdę zebrał, i wymaga, żeby wszystkie trzy się zgadzały. Wykreślenie silnika albo poszerzenie wyłączenia wymaga wtedy dwóch edycji naraz — czyli zostawia w diffie zdanie do przeczytania.",
+      "$opis": "Macierz przeglądarek (req-quality-browsers). Drugi odczyt tego, co deklaruje playwright.config.mts: tamten plik konfiguruje, ten opisuje UMOWĘ, a tools/check-browsers.mjs pyta Playwrighta, co naprawdę zebrał, i wymaga, żeby wszystkie trzy się zgadzały. Wykreślenie silnika albo poszerzenie wyłączenia wymaga wtedy dwóch edycji naraz — czyli zostawia w diffie zdanie do przeczytania.",
       "$silniki": "Trzy silniki, nie trzy marki. `Desktop Edge` i `Google Chrome` to ten sam blink, więc czwarty projekt kosztowałby czas CI i nie odpowiadał na nowe pytanie. `wzorcowy` wskazuje silnik, który biegnie BEZ wyłączeń — bramka wymaga dokładnie jednego takiego i pilnuje, że nikt go nie zaczyna ograniczać.",
       "silniki": {
         "chromium": {
@@ -22,7 +22,7 @@
           "plik": "visual.spec.ts",
           "silniki": ["firefox", "webkit"],
           "rodzaj": "zapis",
-          "powod": "Wzorce w `src/__screenshots__/linux/` powstały rasteryzacją chromium i każdy inny silnik rozjeżdża je z powodu maszyny, a nie kodu — zmierzone: 26 z 26 wzorców różni się na firefoksie i tyle samo na webkicie. Osobny zestaw wzorców per silnik to trzykrotny koszt uwagi przy każdej świadomej zmianie wyglądu i zero nowych pytań: co robi układ na innym silniku, mierzą testy geometrii, które biegną tam w komplecie. Sama obietnica `wym-jakosc-przegladarki` mówi o testach FUNKCJONALNYCH i zostawia zrzuty na jednej platformie."
+          "powod": "Wzorce w `src/__screenshots__/linux/` powstały rasteryzacją chromium i każdy inny silnik rozjeżdża je z powodu maszyny, a nie kodu — zmierzone: 26 z 26 wzorców różni się na firefoksie i tyle samo na webkicie. Osobny zestaw wzorców per silnik to trzykrotny koszt uwagi przy każdej świadomej zmianie wyglądu i zero nowych pytań: co robi układ na innym silniku, mierzą testy geometrii, które biegną tam w komplecie. Sama obietnica `req-quality-browsers` mówi o testach FUNKCJONALNYCH i zostawia zrzuty na jednej platformie."
         },
         {
           "plik": "forced-colors.spec.ts",

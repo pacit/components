@@ -1,7 +1,7 @@
 # Review kierunkowy — `@pacit/components`
 
 **Data:** 2026-07-27 · **Stan:** 28 commitów, 7 komponentów, wszystkie bramki zielone
-**Zakres:** `docs/opis.md`, `libs/components`, `libs/tokens`, `apps/sandbox`, `apps/sandbox-e2e`, CI, wydanie
+**Zakres:** `docs/overview.md`, `libs/components`, `libs/tokens`, `apps/sandbox`, `apps/sandbox-e2e`, CI, wydanie
 **Metoda:** lektura całości źródeł + przebieg `nx run-many -t lint test build check-package --skip-nx-cache` (zielony; dwa ostrzeżenia budżetu SCSS: `select.scss` +337 B, `field.scss` +8 B)
 
 Ten dokument odpowiada na trzy pytania: **czy kierunek jest dobry**, **co zmienić**, **co robić dalej** — plus osobno decyzję o RTL. Jest dokumentem roboczym, nie powierzchnią publiczną, więc zostaje po polsku (patrz ryzyko E, które dotyczy czego innego).
@@ -20,7 +20,7 @@ Contrast gate blokuje build. `check-package` bada spakowany artefakt, nie źród
 
 Żadna z wymienionych bibliotek tego nie ma. Material ma dokumentację a11y; nikt nie faila builda na współczynniku kontrastu. PrimeNG ma silnik motywów w JS z problemami SSR/FOUC — wasze CSS-first zero-runtime jest po prostu lepszym rozwiązaniem tego samego problemu.
 
-**Do zrobienia:** zapisać to jako `wym-proj-0` w `opis.md`. Z tej tezy wynika cała reszta priorytetów, a nienazwana teza nie potrafi rozstrzygać sporów o kolejność.
+**Do zrobienia:** zapisać to jako `wym-proj-0` w `overview.md`. Z tej tezy wynika cała reszta priorytetów, a nienazwana teza nie potrafi rozstrzygać sporów o kolejność.
 
 ---
 
@@ -84,7 +84,7 @@ Ten tekst wyświetla się **w podpowiedzi edytora u każdego konsumenta bibliote
 
 Podział, który nic nie kosztuje:
 
-- `opis.md`, `review.md`, log `wym-real-*` — **zostają po polsku.** Tam się myśli, a myśli się we własnym języku. To nie jest powierzchnia publiczna.
+- `overview.md`, `review.md`, log `wym-real-*` — **zostają po polsku.** Tam się myśli, a myśli się we własnym języku. To nie jest powierzchnia publiczna.
 - README, docs app, **JSDoc na publicznym API**, CHANGELOG, komunikaty ostrzeżeń deweloperskich, szablony issue, komunikaty bramek widoczne dla konsumenta — **angielski.**
 
 Ostrzeżenia w `[pctNumber]` już są angielskie i uzasadnienie w `wym-api-21` jest właściwe („czyta je programista, nie użytkownik"). JSDoc podlega tej samej zasadzie, tylko o krok dalej.
@@ -221,7 +221,7 @@ To, co czyni Fazę 2 szybką.
 
 `apps/docs` renderujący **wygenerowane** inwentarze części i tokenów (nie pisane ręcznie), przewodniki migracji, macierz kompatybilności, opublikowane benchmarki, raport zgodności a11y i log testów z czytnikami ekranu.
 
-Uwaga do kolejności: `opis.md` umieszcza `apps/docs` przy „pierwszym zewnętrznym użytkowniku". To za późno w jednym konkretnym aspekcie — **spis części i tokenów musi być generowany i bramkowany od Fazy 0**. Ładna strona, która to renderuje, może przyjść w Fazie 3. Te dwie rzeczy trzeba rozdzielić.
+Uwaga do kolejności: `overview.md` umieszcza `apps/docs` przy „pierwszym zewnętrznym użytkowniku". To za późno w jednym konkretnym aspekcie — **spis części i tokenów musi być generowany i bramkowany od Fazy 0**. Ładna strona, która to renderuje, może przyjść w Fazie 3. Te dwie rzeczy trzeba rozdzielić.
 
 ---
 
@@ -346,7 +346,7 @@ Pierwsza wersja tej sekcji brzmiała: _„nazwać oś, na której wygrywacie, i 
 
 Oś to wymiar konkurencyjny, na którym wygrywacie. Konkurencja ma swoje: PrimeNG — liczba komponentów, Material — wierność specyfikacji i marka Google, Telerik — kontrakt wsparcia i głębia tabeli, Spartan — headless i własność kodu przez copy-paste.
 
-Waszej nie da się zgadnąć z README, ale **da się ją wyczytać z `wym-real-*`**. Ten log wygląda na zbiór niezależnych lekcji, a jest dziewięcioma wystąpieniami jednej — patrz tabela w `wym-proj-0` (`opis.md`). Każda z nich mówi „po cichu", „nikt tego nie widział", „urodził się martwy", „przetrwała".
+Waszej nie da się zgadnąć z README, ale **da się ją wyczytać z `wym-real-*`**. Ten log wygląda na zbiór niezależnych lekcji, a jest dziewięcioma wystąpieniami jednej — patrz tabela w `wym-proj-0` (`overview.md`). Każda z nich mówi „po cichu", „nikt tego nie widział", „urodził się martwy", „przetrwała".
 
 Stąd nazwa osi:
 
@@ -377,7 +377,7 @@ Wspólny mianownik: **domyślne zachowanie warstwy to „nic się nie stało"**.
 
 ### 9.3 Bramka dla samej osi
 
-Bramka dla osi nie dotyczy części ani tokenów. Dotyczy **`opis.md`**.
+Bramka dla osi nie dotyczy części ani tokenów. Dotyczy **`overview.md`**.
 
 Rozjazd dokumentu z rzeczywistością już wystąpił i już go raz łatano. Nagłówek „Jak czytać ten dokument" istnieje dokładnie dlatego, że wymagania dawały się czytać jako opis stanu kodu — a odpowiedzią było **ręczne dopisanie 18 adnotacji** (`495483d`). To ten sam wzorzec co ręczny `node libs/tokens/build.mjs` w CI sprzed `wym-real-36`: obejście maskujące brak struktury zamiast go ujawnić.
 
@@ -390,7 +390,7 @@ Bramką jest **rejestr, w którym każde wymaganie wskazuje swoją bramkę i jej
 | `kontrola` | test dowodzący, że ta bramka potrafi **nie** przejść                   |
 | `stan`     | **wyprowadzony**, nie wpisany: `egzekwowane` / `brak (świadomie, bo…)` |
 
-Skrypt czyta `opis.md` i sprawdza trzy rzeczy: (1) wymaganie ma wpis, (2) wskazany target/plik **istnieje i jest wpięty w CI**, (3) kontrola odniesienia istnieje. Punkt (2) to dokładnie ta sama kontrola, co punkt 5 w `check-package.mjs`, gdzie sprawdzacie, że fabryka schematica wskazuje na skompilowany plik, a nie na TS sprzed builda.
+Skrypt czyta `overview.md` i sprawdza trzy rzeczy: (1) wymaganie ma wpis, (2) wskazany target/plik **istnieje i jest wpięty w CI**, (3) kontrola odniesienia istnieje. Punkt (2) to dokładnie ta sama kontrola, co punkt 5 w `check-package.mjs`, gdzie sprawdzacie, że fabryka schematica wskazuje na skompilowany plik, a nie na TS sprzed builda.
 
 Świadomy brak bramki jest dozwolony — musi być wpisany **wraz z powodem**. Wtedy `_(niezrealizowane)_` przestaje być adnotacją, którą ktoś pamiętał dopisać, a staje się wyprowadzoną konsekwencją stanu rejestru: dokument przestaje kłamać z definicji, a nie z dyscypliny.
 

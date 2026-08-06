@@ -14,7 +14,7 @@ import { SBX_VIEW_GROUPS, viewsOf } from './views';
  * przekrojowych (motyw, skórka, wielkość).
  *
  * Motyw siedzi na hoście powłoki, a nie na `:root` — cała strona jest więc
- * takim samym scoped theme jak każda karta (wym-token-scoped), a `:root` zostaje
+ * takim samym scoped theme jak każda karta (req-token-scoped), a `:root` zostaje
  * czystym punktem odniesienia dla testów.
  */
 @Component({
@@ -29,7 +29,7 @@ import { SBX_VIEW_GROUPS, viewsOf } from './views';
     // dokładnie jak motyw, więc odbija się cała strona razem z nawigacją, a `:root`
     // zostaje czystym punktem odniesienia. Uwaga — to NIE dosięga nakładek CDK,
     // które żyją jako dzieci `body`: tam kierunek trzeba przenieść jawnie, tak samo
-    // jak motyw i pismo (lekcja-35).
+    // jak motyw i pismo (lesson-35).
     '[attr.dir]': 'settings.dir()',
   },
 })
@@ -49,7 +49,7 @@ export class App {
     // nie słucha, a hydracja i tak nadpisze wartość stanem z modelu. Odkąd
     // widoki ładują się leniwie, okno między „element widoczny" a „element
     // podłączony" trwa tyle, co pobranie chunka — dość, by test zdążył wejść
-    // w środek (lekcja-30).
+    // w środek (lesson-30).
     afterNextRender(async () => {
       await appRef.whenStable();
       document.documentElement.setAttribute('data-sbx-ready', '');

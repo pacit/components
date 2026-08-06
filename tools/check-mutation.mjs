@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Bramka przebiegu mutacyjnego: sprawdza, czy obietnica `wym-jakosc-jednostkowe` —
+ * Bramka przebiegu mutacyjnego: sprawdza, czy obietnica `req-quality-unit` —
  * „testy jednostkowe biblioteki biegną na Vitest" — ma za sobą odpowiedź na pytanie,
  * którego liczba zielonych testów nie zadaje: **czy te testy w ogóle coś łapią**.
  *
@@ -41,7 +41,7 @@
  * Do tego przebieg, który nie bada repozytorium, tylko TĘ BRAMKĘ: kontrola odniesienia
  * z `tools/check-mutation.fixtures/`. Spreparowane wejścia, z których każde łamie
  * dokładnie jedną regułę i musi zostać odrzucone przez tę właśnie regułę
- * (`wym-jakosc-kontrola`).
+ * (`req-quality-negative-control`).
  *
  * Użycie:
  *   node tools/check-mutation.mjs
@@ -101,7 +101,7 @@ const WYLACZENIE_W_ZRODLE = /\/[/*]\s*Stryker\s+(disable|restore)\b/;
 
 /**
  * Naruszenie jednej z kontroli. Niesie parę `kontrola` + `regula`, a nie sam
- * identyfikator punktu: punkt bramki to nie jedno zdanie (`lekcja-50`), a kontrola
+ * identyfikator punktu: punkt bramki to nie jedno zdanie (`lesson-50`), a kontrola
  * odniesienia porównująca sam punkt przepuszcza przypadek, który zapalił na sąsiedniej
  * regule tego samego punktu.
  */
@@ -132,7 +132,7 @@ const NAGLOWEK = `# Snapshot przebiegu mutacyjnego
 
 Komplet zielonych testów nie jest dowodem, że testy cokolwiek łapią — to jedyne
 pytanie, na które odpowiada przebieg mutacyjny
-([\`wym-jakosc-jednostkowe\`](../../docs/wymagania/jakosc.md#wym-jakosc-jednostkowe)).
+([\`req-quality-unit\`](../../docs/requirements/quality.md#req-quality-unit)).
 Stryker psuje kod na tysiąc drobnych sposobów i pyta, ile z nich zauważy zestaw
 testów. Mutant **przeżywający** to zmiana zachowania, po której CI dalej świeci
 na zielono.
@@ -695,7 +695,7 @@ const targetyZGrafu = async () => {
 /**
  * Które targety uruchamia workflow. Komentarze obcinane PRZED szukaniem — ten
  * workflow tłumaczy każdy swój krok akapitem prozy, więc zdanie o targecie
- * wygląda dla wzorca dokładnie jak jego wywołanie (`lekcja-56` w `check-browsers`).
+ * wygląda dla wzorca dokładnie jak jego wywołanie (`lesson-56` w `check-browsers`).
  */
 const targetyCi = () => {
   const linie = (czytaj(CI) ?? '')
@@ -859,7 +859,7 @@ if (WRITE) {
 if (!existsSync(FIXTURES))
   problems.push(
     `tools/check-mutation.fixtures: katalog nie istnieje — bramka bez dowodu, ` +
-      `że potrafi nie przejść, jest kolejną cichą wadą (wym-jakosc-kontrola)`,
+      `że potrafi nie przejść, jest kolejną cichą wadą (req-quality-negative-control)`,
   );
 
 const przypadki = existsSync(FIXTURES)
@@ -871,7 +871,7 @@ const przypadki = existsSync(FIXTURES)
 if (existsSync(FIXTURES) && !przypadki.length)
   problems.push(
     `tools/check-mutation.fixtures: brak spreparowanych wejść — bramka bez dowodu, ` +
-      `że potrafi nie przejść, jest kolejną cichą wadą (wym-jakosc-kontrola)`,
+      `że potrafi nie przejść, jest kolejną cichą wadą (req-quality-negative-control)`,
   );
 
 // Wejście wzorcowe MUSI przejść. Gdyby samo było wadliwe, każdy przypadek zapalałby

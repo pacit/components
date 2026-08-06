@@ -2,6 +2,6 @@
   "punkt": 4,
   "kontrola": "ng-add",
   "regula": "brak-skorki-w-stylach",
-  "opis": "Lista styles urosła, ale nie o skórkę tego pakietu. Aplikacja zbuduje się i wyrenderuje komponenty bez wyglądu (lekcja-36).",
+  "opis": "Lista styles urosła, ale nie o skórkę tego pakietu. Aplikacja zbuduje się i wyrenderuje komponenty bez wyglądu (lesson-36).",
   "stylePo": ["@angular/cdk/overlay-prebuilt.css"]
 }

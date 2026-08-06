@@ -1,6 +1,6 @@
 {
   "punkt": 4,
   "kontrola": "mianownik",
-  "// wada": "Komponent jest w źródłach, ale wypadł ze zbudowanego pakietu — np. przez brak eksportu z `index.ts` bramki. Sam pomiar z punktu 5 dalej byłby zielony, tyle że o jeden komponent mniej: to ta sama kurcząca się próbka, którą złapało `check-coverage` (lekcja-45).",
+  "// wada": "Komponent jest w źródłach, ale wypadł ze zbudowanego pakietu — np. przez brak eksportu z `index.ts` bramki. Sam pomiar z punktu 5 dalej byłby zielony, tyle że o jeden komponent mniej: to ta sama kurcząca się próbka, którą złapało `check-coverage` (lesson-45).",
   "usunZPakietu": ["PctButton"]
 }

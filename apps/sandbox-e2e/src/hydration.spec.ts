@@ -3,7 +3,7 @@ import { hydrationErrors, uncaughtErrors, visit } from './support/dom';
 import { SBX_ROUTES } from './support/views';
 
 /**
- * SSR z hydracją jest wymaganiem twardym (wym-projekt-ssr), ale jego złamanie nie
+ * SSR z hydracją jest wymaganiem twardym (req-project-ssr), ale jego złamanie nie
  * przewraca strony: Angular loguje NG0500 i po cichu odbudowuje poddrzewo od
  * nowa. Aplikacja wygląda więc poprawnie, a płaci za to podwójnym renderem,
  * utratą stanu DOM i migotaniem — i żaden dotychczasowy test tego nie widział.
@@ -27,7 +27,7 @@ test.describe('Hydracja SSR', () => {
   /**
    * Nawigacja klientem nie hydruje niczego, ale leniwy widok dochodzi do
    * strony po tym, jak hydracja się skończyła — a to jest ten moment, w którym
-   * rozjechał się licznik identyfikatorów z lekcja-31.
+   * rozjechał się licznik identyfikatorów z lesson-31.
    */
   test('przejścia między widokami też nie sypią błędami', async ({ page }) => {
     await visit(page, '/');

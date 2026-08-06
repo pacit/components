@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 /**
  * Bramka pokrycia: sprawdza, czy raport pokrycia mierzy CAŁĄ bibliotekę i czy próg
- * z `wym-jakosc-pokrycie` jest naprawdę egzekwowany.
+ * z `req-quality-coverage` jest naprawdę egzekwowany.
  *
- * Powód istnienia (lekcja-45): sam próg w targecie `test` nie wystarcza, bo v8 liczy
+ * Powód istnienia (lesson-45): sam próg w targecie `test` nie wystarcza, bo v8 liczy
  * procent na próbce dobranej przez samego mierzonego — do raportu wchodzą tylko moduły,
  * które weszły do przebiegu. Plik bez testu potrafi z raportu WYPAŚĆ, a nie pokazać się
  * z zerem: usunięcie `number.spec.ts` podniosło wtedy pokrycie z 96,55% na 96,94%, bo
  * razem z testem zniknął ze statystyki cały nietestowany `number.ts`. Próg pilnujący
- * takiej liczby jest bramką urodzoną martwą (lekcja-39).
+ * takiej liczby jest bramką urodzoną martwą (lesson-39).
  *
  * `coverageInclude` w `project.json` domyka to tylko częściowo: pliki bez testu dokłada
  * przez osobną ścieżkę, która parsuje ŹRÓDŁO, i wywraca się na `import type` /
@@ -30,7 +30,7 @@
  * Do tego szósty przebieg, który nie bada pokrycia, tylko TĘ BRAMKĘ: kontrola
  * odniesienia z `tools/check-coverage.fixtures/`. Spreparowane wejścia, z których każde
  * łamie dokładnie jeden z pięciu punktów i musi zostać odrzucone przez ten właśnie punkt
- * (`wym-jakosc-kontrola`).
+ * (`req-quality-negative-control`).
  *
  * Użycie:
  *   node tools/check-coverage.mjs
@@ -45,7 +45,7 @@ const RAPORT = 'coverage/components/coverage-summary.json';
 const FIXTURES = join(ROOT, 'tools/check-coverage.fixtures');
 const BAZA = '_poprawny.json';
 
-/** Próg z `wym-jakosc-pokrycie` — minimum SonarQube. Target może żądać więcej, nie mniej. */
+/** Próg z `req-quality-coverage` — minimum SonarQube. Target może żądać więcej, nie mniej. */
 const MINIMUM = 80;
 
 /**
@@ -77,7 +77,7 @@ const POMIJANE = [
 /**
  * Szablony (`.html`) NIE są wymagane w raporcie: do statystyki wchodzą dopiero wtedy,
  * gdy jakiś test wyrenderuje ich komponent, więc żądanie ich obecności byłoby żądaniem
- * testu renderującego dla każdego komponentu — inną obietnicą niż `wym-jakosc-pokrycie`.
+ * testu renderującego dla każdego komponentu — inną obietnicą niż `req-quality-coverage`.
  * Gdy już się pojawią, liczą się normalnie do progu.
  */
 const zrodlaBiblioteki = () =>
@@ -134,7 +134,7 @@ const sprawdzPokrycie = ({ raport, zrodla, target }) => {
         `procent policzył się BEZ nich, więc nie mówi nic o ich pokryciu:\n` +
         brakujace.map((p) => `      ${p}`).join('\n') +
         `\n    Najczęstsza przyczyna: plik nie wchodzi do żadnego przebiegu, ` +
-        `a v8 nie potrafi go doliczyć ze źródła (lekcja-45). Lek: import bramki ` +
+        `a v8 nie potrafi go doliczyć ze źródła (lesson-45). Lek: import bramki ` +
         `w libs/components/src/public-api.spec.ts albo własny test.`,
     );
 
@@ -150,7 +150,7 @@ const sprawdzPokrycie = ({ raport, zrodla, target }) => {
     throw new BladPokrycia(
       'prog',
       `target \`test\` deklaruje próg linii \`${zadeklarowany ?? 'brak'}\`, ` +
-        `a \`wym-jakosc-pokrycie\` żąda co najmniej ${MINIMUM}% — bez tego raport jest ` +
+        `a \`req-quality-coverage\` żąda co najmniej ${MINIMUM}% — bez tego raport jest ` +
         `liczbą do oglądania, nie bramką`,
     );
 
@@ -232,7 +232,7 @@ const przypadki = readdirSync(FIXTURES)
 if (przypadki.length === 0)
   problems.push(
     `tools/check-coverage.fixtures: brak spreparowanych wejść — bramka bez dowodu, ` +
-      `że potrafi nie przejść, jest kolejną cichą wadą (wym-jakosc-kontrola)`,
+      `że potrafi nie przejść, jest kolejną cichą wadą (req-quality-negative-control)`,
   );
 
 // Wejście wzorcowe MUSI przejść. Gdyby samo było wadliwe, każdy przypadek zapalałby

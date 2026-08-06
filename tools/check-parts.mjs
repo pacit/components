@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Bramka inwentarza części: pilnuje obietnicy `wym-api-czesci` — że atrybuty
+ * Bramka inwentarza części: pilnuje obietnicy `req-api-parts` — że atrybuty
  * `data-pct-part` są SPISANE i WERSJONOWANE, więc konsument może celować w nie
  * selektorem, który przeżyje aktualizację biblioteki.
  *
@@ -9,7 +9,7 @@
  * zmiana nie daje ani jednego czerwonego testu. Przemianowanie części zmienia
  * szablon i arkusz naraz, więc wszystko w repozytorium dalej się zgadza; psuje
  * się wyłącznie u kogoś, kto tę nazwę wpisał u siebie. Dziś atrybuty są
- * wystawiane, ale nikt ich nie liczy: `docs/komponenty/field.md` do 2026-07-27
+ * wystawiane, ale nikt ich nie liczy: `docs/components/field.md` do 2026-07-27
  * wymieniał 7 części z jedenastu i nikt tego nie zauważył, bo nie było czym.
  *
  * Sprawdzane jest pięć rzeczy:
@@ -19,7 +19,7 @@
  *  2. ZBIÓR: części odczytane ze źródeł zgadzają się z odczytanymi ze
  *     ZBUDOWANEGO pakietu — i żadna strona nie jest pusta,
  *  3. STATYCZNOŚĆ: nazwa części nigdzie nie jest wiązana wyrażeniem,
- *  4. POWIERZCHNIA: rubryki **Części** w `docs/komponenty/` niosą dokładnie te
+ *  4. POWIERZCHNIA: rubryki **Części** w `docs/components/` niosą dokładnie te
  *     nazwy, które wystawia entrypoint,
  *  5. SNAPSHOT: wersjonowany inwentarz zgadza się z bieżącym.
  *
@@ -42,7 +42,7 @@
  * i „czytaj `ɵcmp` z `dist`, nie ze źródła" (A6).
  *
  * Do tego szósty przebieg, który nie bada biblioteki, tylko TĘ BRAMKĘ: kontrola
- * odniesienia z `tools/check-parts.fixtures/` (`wym-jakosc-kontrola`).
+ * odniesienia z `tools/check-parts.fixtures/` (`req-quality-negative-control`).
  *
  * Użycie:
  *   node tools/check-parts.mjs                    sprawdza
@@ -68,7 +68,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PROJEKT = 'libs/components';
 const DIST = 'dist/libs/components';
-const DOKUMENTY = 'docs/komponenty';
+const DOKUMENTY = 'docs/components';
 const SNAPSHOT = `${PROJEKT}/czesci.snapshot.md`;
 const FIXTURES = join(ROOT, 'tools/check-parts.fixtures');
 const BAZA = '_poprawny';
@@ -98,7 +98,7 @@ const posortuj = (zbior) => [...zbior].sort();
  * właśnie dlatego liczba dopasowań jest osobno porównywana z licznikiem, który
  * tej kotwicy NIE powtarza. Licznik dopuszcza wcięcie, bo powtórzenie kotwicy
  * gasiłoby obie strony porównania naraz i punkt 1 przechodziłby, przestawszy
- * mierzyć cały komponent (`lekcja-48`). Wystąpienia w komentarzu odsiewa
+ * mierzyć cały komponent (`lesson-48`). Wystąpienia w komentarzu odsiewa
  * `[ \t]*` — linia JSDoc zaczyna się od gwiazdki.
  *
  * `@Directive` jest tu razem z `@Component`, bo cztery części obudowy
@@ -235,7 +235,7 @@ class BladCzesci extends Error {
  *   `szablony`   — `[{ plik, tresc }]` wszystkich szablonów projektu,
  *   `pakiet`     — `[{ wejscie, klasa, czesci, dynamiczne }]` ze zbudowanego
  *                  pakietu (odczyt B),
- *   `dokumenty`  — `[{ plik, entrypoint, czesci }]` z `docs/komponenty/`,
+ *   `dokumenty`  — `[{ plik, entrypoint, czesci }]` z `docs/components/`,
  *   `entrypointy`— klucze mapy `exports` spakowanego manifestu,
  *   `snapshot`   — treść pliku albo `null`.
  * Rzuca `BladCzesci` przy pierwszym naruszeniu i zwraca `{ opis, snapshot }` —
@@ -254,7 +254,7 @@ const sprawdzCzesci = (we) => {
       'mianownik',
       `nie znalazłem ani jednego dekoratora \`@Component\`/\`@Directive\` w źródłach ` +
         `(${PROJEKT}) — porównanie z licznikiem przeszłoby wtedy zawsze, bo zero równa ` +
-        `się zeru (lekcja-48).\n    Najczęstsza przyczyna: lista plików źródłowych ` +
+        `się zeru (lesson-48).\n    Najczęstsza przyczyna: lista plików źródłowych ` +
         `przestała cokolwiek zwracać.`,
     );
 
@@ -443,7 +443,7 @@ const sprawdzCzesci = (we) => {
     );
 
   // 4. POWIERZCHNIA. Inwentarz istnieje po to, żeby ktoś go PRZECZYTAŁ, a
-  //    czytelną powierzchnią są dziś karty w `docs/komponenty/`. Rubryka
+  //    czytelną powierzchnią są dziś karty w `docs/components/`. Rubryka
   //    **Części** jest pisana ręką i dokładnie dlatego kłamie: `field.md`
   //    wymieniał 7 części z jedenastu. Porównanie idzie per ENTRYPOINT, bo tak
   //    biblioteka jest importowana, a jedna karta bywa o dwóch klasach
@@ -590,7 +590,7 @@ const renderujSnapshot = (wiersze) =>
     '> `node tools/check-parts.mjs --write`. Bramka `check-parts` odrzuca rozjazd.',
     '',
     'Atrybut `data-pct-part` jest publicznym API stylowania — jedyną drogą, jaką ta',
-    'biblioteka zostawia do wnętrza komponentu ([decyzja 0013](../../docs/decyzje/0013-bez-podzialu-na-rdzen-i-skorke.md)).',
+    'biblioteka zostawia do wnętrza komponentu ([decyzja 0013](../../docs/decisions/0013-no-headless-split.md)).',
     'Jego zmiana nie daje ani jednego czerwonego testu, bo szablon i arkusz zmieniają się',
     'razem; psuje się wyłącznie u kogoś, kto tę nazwę wpisał u siebie.',
     '',
@@ -629,7 +629,7 @@ const czytaj = (root, sciezka) => readFileSync(join(root, sciezka), 'utf8');
 
 /**
  * Karta komponentu: entrypoint z nagłówka i nazwy części z rubryki **Części**.
- * `_szablon.md` i `README.md` odpadają — pierwszy jest formularzem do skopiowania
+ * `_template.md` i `README.md` odpadają — pierwszy jest formularzem do skopiowania
  * (jego rubryka opisuje, co wpisać), drugi spisem treści.
  */
 const NAGLOWEK_ENTRYPOINT =
@@ -741,7 +741,7 @@ const jestSzablonem = (p) => p.startsWith(`${PROJEKT}/`) && p.endsWith('.html');
 const jestKarta = (p) =>
   p.startsWith(`${DOKUMENTY}/`) &&
   p.endsWith('.md') &&
-  !['_szablon.md', 'README.md'].includes(basename(p));
+  !['_template.md', 'README.md'].includes(basename(p));
 
 /** Wejście złożone z listy plików — ta sama postać dla repo i dla fixture'a. */
 const zbierzWejscie = async (root, pliki, pakietZDysku) => {
@@ -768,7 +768,7 @@ const zbierzWejscie = async (root, pliki, pakietZDysku) => {
  *
  * Pathspec jest KATALOGIEM, a filtrowanie siedzi w JS-ie: pathspec gita nie jest
  * globem powłoki i bez `:(glob)` gwiazdka przechodzi przez `/`, więc wzorzec
- * z gwiazdką potrafi zwrócić ZERO plików zamiast błędu (`lekcja-48`).
+ * z gwiazdką potrafi zwrócić ZERO plików zamiast błędu (`lesson-48`).
  */
 const plikiRepozytorium = () =>
   execFileSync('git', ['ls-files', '-z', PROJEKT, DOKUMENTY], {
@@ -881,7 +881,7 @@ const przypadki = readdirSync(FIXTURES, { withFileTypes: true })
 if (przypadki.length === 0)
   problems.push(
     `tools/check-parts.fixtures: brak spreparowanych wejść — bramka bez dowodu, ` +
-      `że potrafi nie przejść, jest kolejną cichą wadą (wym-jakosc-kontrola)`,
+      `że potrafi nie przejść, jest kolejną cichą wadą (req-quality-negative-control)`,
   );
 
 // Wejście wzorcowe MUSI przejść: gdyby baza sama była wadliwa, każdy przypadek

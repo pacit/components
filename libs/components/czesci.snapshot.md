@@ -4,7 +4,7 @@
 > `node tools/check-parts.mjs --write`. Bramka `check-parts` odrzuca rozjazd.
 
 Atrybut `data-pct-part` jest publicznym API stylowania — jedyną drogą, jaką ta
-biblioteka zostawia do wnętrza komponentu ([decyzja 0013](../../docs/decyzje/0013-bez-podzialu-na-rdzen-i-skorke.md)).
+biblioteka zostawia do wnętrza komponentu ([decyzja 0013](../../docs/decisions/0013-no-headless-split.md)).
 Jego zmiana nie daje ani jednego czerwonego testu, bo szablon i arkusz zmieniają się
 razem; psuje się wyłącznie u kogoś, kto tę nazwę wpisał u siebie.
 

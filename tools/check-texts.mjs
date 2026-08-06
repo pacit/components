@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Bramka kanału tekstów: pilnuje obietnicy `wym-api-teksty` — że napis, który
+ * Bramka kanału tekstów: pilnuje obietnicy `req-api-texts` — że napis, który
  * biblioteka wypisuje SAMA, idzie przez token `PCT_TEXTS`, a nie stoi wpisany
  * w szablon albo w wartość domyślną wejścia.
  *
@@ -45,7 +45,7 @@
  * brak nieznanego rodzaju węzła, brak szablonu w dekoratorze i niezerowy pomiar.
  *
  * Do tego siódmy przebieg, który nie bada biblioteki, tylko TĘ BRAMKĘ: kontrola
- * odniesienia z `tools/check-texts.fixtures/` (`wym-jakosc-kontrola`).
+ * odniesienia z `tools/check-texts.fixtures/` (`req-quality-negative-control`).
  *
  * Użycie:
  *   node tools/check-texts.mjs
@@ -142,7 +142,7 @@ const ile = (tekst, wzorzec) => (tekst.match(wzorzec) ?? []).length;
  * Ta sama kotwica co w `check-parts` i z tego samego powodu: formatowanie
  * wymuszone przez `nx format:check` stawia `@Component({` i `})` w kolumnie
  * zero. Licznik kotwicy NIE powtarza, bo powtórzona gasiłaby obie strony
- * porównania naraz (`lekcja-48`).
+ * porównania naraz (`lesson-48`).
  */
 const DEKORATOR =
   /^@(Component|Directive)\(\{\r?\n([\s\S]*?)^\}\)\r?\n(?:export\s+)?(?:abstract\s+)?class\s+([A-Za-z_$][\w$]*)/gm;
@@ -341,7 +341,7 @@ class LiteralyWyrazenia extends RecursiveAstVisitor {
  * teksty węzłów, wartości atrybutów mówiących i literały z wyrażeń, które
  * do takiego miejsca trafiają. Liczy przy okazji odwiedzone węzły — punkt 1
  * porównuje tę liczbę z zerem, bo przebieg, który nie odwiedził niczego,
- * orzeka o wszystkim (`lekcja-48`).
+ * orzeka o wszystkim (`lesson-48`).
  */
 class SkanerSzablonu extends TmplAstRecursiveVisitor {
   constructor(plik) {
@@ -633,7 +633,7 @@ const KONSOLA = /\bconsole\.(log|warn|error|info|debug)\s*\(/g;
  * Naruszenie — z identyfikatorem punktu ORAZ reguły. Sam punkt nie wystarczy:
  * punkt 3 niesie cztery reguły, punkt 5 sześć, a kontrola odniesienia
  * porównująca wyłącznie punkt przepuściłaby przypadek, który zapalił na regule
- * sąsiedniej (`lekcja-50`, wniosek z A12).
+ * sąsiedniej (`lesson-50`, wniosek z A12).
  */
 class BladTekstu extends Error {
   constructor(kontrola, regula, opis) {
@@ -653,7 +653,7 @@ const sprawdzTeksty = (we) => {
       'pusta-lista',
       `nie znalazłem ani jednego dekoratora \`@Component\`/\`@Directive\` ` +
         `w źródłach (${PROJEKT}; plików: ${zrodla.length}) — wszystkie dalsze punkty ` +
-        `przeszłyby wtedy, nie orzekając o niczym (lekcja-48).\n    Najczęstsza ` +
+        `przeszłyby wtedy, nie orzekając o niczym (lesson-48).\n    Najczęstsza ` +
         `przyczyna: lista plików źródłowych przestała cokolwiek zwracać.`,
     );
 
@@ -745,7 +745,7 @@ const sprawdzTeksty = (we) => {
       'pusty-pomiar',
       `${szablony.length} szablonów, 0 odwiedzonych węzłów — pomiar nie ruszył.\n` +
         `    Kontrola niepustości stoi po stronie WYNIKU, nie wejścia: liczba plików ` +
-        `bywa poprawna wtedy, gdy pusty jest sam odczyt (lekcja-48, ta sama pomyłka co ` +
+        `bywa poprawna wtedy, gdy pusty jest sam odczyt (lesson-48, ta sama pomyłka co ` +
         `w A5 i A12).`,
     );
 
@@ -856,7 +856,7 @@ const sprawdzTeksty = (we) => {
         lista(skroc(naruszeniaTekstu)) +
         `\n    Napis, który biblioteka wypisuje sama, idzie przez \`PCT_TEXTS\`: pole ` +
         `w \`PctTexts\`, wartość domyślna w \`PCT_DEFAULT_TEXTS\`, odczyt \`texts().klucz\` ` +
-        `w szablonie (wym-api-teksty). Znak bez litery (\`*\`, \`×\`) tekstem nie jest ` +
+        `w szablonie (req-api-texts). Znak bez litery (\`*\`, \`×\`) tekstem nie jest ` +
         `i tu nie zapala — nie ma w nim czego przetłumaczyć.`,
     );
 
@@ -1145,7 +1145,7 @@ const parujAtrybuty = (attrs) => {
 /**
  * Definicje ze ZBUDOWANEGO pakietu. `@angular/compiler` jest wczytany pierwszy,
  * bo pakiet jest skompilowany częściowo i `ɵcmp` powstaje dopiero przy dostępie
- * — ten sam krok, który u konsumenta wykonuje linker (`lekcja-46`).
+ * — ten sam krok, który u konsumenta wykonuje linker (`lesson-46`).
  */
 const komponentyPakietu = async (root) => {
   const dist = join(root, DIST);
@@ -1295,7 +1295,7 @@ const zbierzWejscie = async (root, pliki, pakietZDysku) => {
  * bramkach: indeks jest niezależnym spisem tego, co repozytorium naprawdę
  * wiezie. Pathspec jest KATALOGIEM, a filtrowanie siedzi w JS-ie, bo pathspec
  * gita nie jest globem powłoki i wzorzec z gwiazdką potrafi zwrócić ZERO plików
- * zamiast błędu (`lekcja-48`).
+ * zamiast błędu (`lesson-48`).
  */
 const plikiRepozytorium = () =>
   execFileSync('git', ['ls-files', '-z', PROJEKT], {
@@ -1373,7 +1373,7 @@ const przypadki = readdirSync(FIXTURES, { withFileTypes: true })
 if (przypadki.length === 0)
   problems.push(
     `tools/check-texts.fixtures: brak spreparowanych wejść — bramka bez dowodu, ` +
-      `że potrafi nie przejść, jest kolejną cichą wadą (wym-jakosc-kontrola)`,
+      `że potrafi nie przejść, jest kolejną cichą wadą (req-quality-negative-control)`,
   );
 
 // Wejście wzorcowe MUSI przejść: gdyby baza sama była wadliwa, każdy przypadek

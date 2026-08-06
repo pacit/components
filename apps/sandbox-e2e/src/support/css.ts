@@ -28,7 +28,7 @@ export function styleOf(locator: Locator, property: string): Promise<string> {
  * dowolnym łańcuchem, bo `getPropertyValue` na nieistniejącej właściwości
  * zwraca **pusty łańcuch, nie błąd**. Test porównujący dwa takie odczyty
  * przechodzi wtedy na `'' === ''` i milczy o tym, że nie zmierzył niczego —
- * ta sama klasa cichej wady co `lekcja-38`, tylko wywołana literówką.
+ * ta sama klasa cichej wady co `lesson-38`, tylko wywołana literówką.
  */
 export function tokenOf(locator: Locator, token: PctCssVar): Promise<string> {
   return styleOf(locator, token);

@@ -26,7 +26,7 @@ import {
 
 /**
  * Pole wyboru. Natywna kontrolka signal forms — implementuje `FormCheckboxControl`
- * (wym-api-signal-forms). W tym kontrakcie wymagane jest `checked`, a komponent **nie może**
+ * (req-api-signal-forms). W tym kontrakcie wymagane jest `checked`, a komponent **nie może**
  * definiować własności `value` (zarezerwowana dla `FormValueControl`).
  *
  * @example
@@ -74,14 +74,14 @@ export class PctCheckbox implements FormCheckboxControl, PctFieldControl {
   private readonly control =
     viewChild.required<ElementRef<HTMLInputElement>>('control');
 
-  // --- a11y: stabilne id do powiązań ARIA (wym-a11y-wbudowana) ---
+  // --- a11y: stabilne id do powiązań ARIA (req-a11y-built-in) ---
 
   private readonly uid = nextPctId('pct-checkbox');
   readonly controlId = `${this.uid}-control`;
   protected readonly hintId = `${this.uid}-hint`;
   protected readonly errorId = `${this.uid}-error`;
 
-  // --- współpraca z obudową (wym-api-bez-obudowy): checkbox działa samodzielnie
+  // --- współpraca z obudową (req-api-no-wrapper): checkbox działa samodzielnie
   // (własna etykieta obok kontrolki) albo oddaje obudowę `pct-field`.
 
   private readonly fieldApi = inject(PCT_FIELD, { optional: true });

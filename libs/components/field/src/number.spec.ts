@@ -388,7 +388,7 @@ describe('PctNumber', () => {
       expect(fixture.componentInstance.value()).toBe(150);
 
       // PageDown był w nazwie tego testu, a nie w jego treści, do 2026-08-06:
-      // przebieg mutacyjny pokazał całą gałąź jako niepokrytą (`lekcja-57`).
+      // przebieg mutacyjny pokazał całą gałąź jako niepokrytą (`lesson-57`).
       await key(fixture, 'PageDown');
       expect(fixture.componentInstance.value()).toBe(100);
     });
@@ -602,7 +602,7 @@ describe('PctNumber', () => {
       // Regresja: `FormField` dostarcza NgControl (interop dla CVA), więc
       // heurystyka „NgControl => ktoś inny pisze do DOM" wykluczała też signal
       // forms, choć te przy własnej kontrolce ustawiają tylko `value`
-      // (lekcja-26).
+      // (lesson-26).
       expect(inputOf(fixture).value).toBe('12\u00a0345');
     });
 

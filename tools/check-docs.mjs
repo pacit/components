@@ -3,11 +3,11 @@
  * Bramka dokumentacji: sprawdza, czy każda obietnica z `docs/` wskazuje maszynę,
  * która potrafi na niej zapalić — i czy ta maszyna istnieje.
  *
- * Powód istnienia (`wym-jakosc-rejestr`): rozjazd między dokumentacją a rzeczywistością
+ * Powód istnienia (`req-quality-registry`): rozjazd między dokumentacją a rzeczywistością
  * już wystąpił i już go raz łatano ręcznie. Nagłówek „Jak czytać ten dokument" istniał
  * dokładnie dlatego, że wymagania dawały się czytać jako opis stanu kodu, a odpowiedzią
  * było dopisanie 18 adnotacji `_(niezrealizowane)_` jednym commitem po fakcie. To ten sam
- * wzorzec co ręczny `node libs/tokens/build.mjs` w CI przed `lekcja-36`: obejście, które
+ * wzorzec co ręczny `node libs/tokens/build.mjs` w CI przed `lesson-36`: obejście, które
  * MASKUJE brak struktury zamiast go ujawnić — i rozjeżdża się przy pierwszym commicie
  * robiącym coś innego, niż mówi.
  *
@@ -17,15 +17,15 @@
  *  2. istnienie — każda ścieżka cytowana w `Bramka`/`Kontrola` istnieje na dysku,
  *  3. wpięcie w CI — target wynikający z cytowanej ścieżki faktycznie biegnie
  *     w `nx affected -t …`; to ta sama kontrola co punkt 5 w `check-package.mjs`,
- *  4. brak wiszących cytowań — każde `wym-*` / `lekcja-*` w repo się rozwiązuje,
- *     a stare ID numeryczne są odrzucane,
- *  5. świeżość — `docs/rejestr.md` i wygenerowana unia ID zgadzają się ze źródłem,
+ *  4. brak wiszących cytowań — każde `req-*` / `lesson-*` w repo się rozwiązuje,
+ *     a obie martwe przestrzenie (numeryczna i polska) są odrzucane,
+ *  5. świeżość — `docs/registry.md` i wygenerowana unia ID zgadzają się ze źródłem,
  *  6. kontrola odniesienia — celowo wadliwe wymagania z `tools/check-docs.fixtures/`
  *     MUSZĄ zostać odrzucone.
  *
  * Punkt 6 nie jest ozdobnikiem: rejestr sam jest bramką, więc podlega
- * `wym-jakosc-kontrola` tak samo jak każda inna. Bez niego byłby dokładnie tym, co
- * opisuje `lekcja-39` — bramką urodzoną martwą.
+ * `req-quality-negative-control` tak samo jak każda inna. Bez niego byłby dokładnie tym, co
+ * opisuje `lesson-39` — bramką urodzoną martwą.
  *
  * Użycie:
  *   node tools/check-docs.mjs           weryfikuje (CI)
@@ -38,8 +38,8 @@ import { execSync } from 'node:child_process';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const WRITE = process.argv.includes('--write');
-const REJESTR = 'docs/rejestr.md';
-const REQ_IDS = 'apps/sandbox/src/app/ui/req-ids.ts';
+const REJESTR = 'docs/registry.md';
+const REQ_IDS = 'apps/sandbox/src/app/ui/doc-ids.ts';
 
 const problems = [];
 const fail = (where, msg) => problems.push(`${where}: ${msg}`);
@@ -49,8 +49,8 @@ const fail = (where, msg) => problems.push(`${where}: ${msg}`);
 const read = (rel) => readFileSync(join(ROOT, rel), 'utf8');
 
 const REQ_FILES = [
-  'docs/00-os.md',
-  ...globSync('docs/wymagania/*.md', { cwd: ROOT }).sort(),
+  'docs/00-axis.md',
+  ...globSync('docs/requirements/*.md', { cwd: ROOT }).sort(),
 ];
 
 const trackedFiles = execSync('git ls-files', { cwd: ROOT, encoding: 'utf8' })
@@ -59,12 +59,12 @@ const trackedFiles = execSync('git ls-files', { cwd: ROOT, encoding: 'utf8' })
 
 /**
  * Pliki, w których stare identyfikatory są treścią, a nie cytowaniem:
- * `docs/README.md` wiezie tabelę migracji, `docs/opis.md` jest drogowskazem po
+ * `docs/README.md` wiezie tabelę migracji, `docs/overview.md` jest drogowskazem po
  * rozbiciu, `docs/review.md` to datowana migawka zostawiona w swojej postaci.
  */
 const CITATION_EXEMPT = new Set([
   'docs/README.md',
-  'docs/opis.md',
+  'docs/overview.md',
   'docs/review.md',
   REJESTR,
 ]);
@@ -81,7 +81,7 @@ for (const f of trackedFiles) {
 
 const FIELD =
   /^\*\*(Obietnica|Bramka|Kontrola|Decyzja|Lekcje|Wiąże przy|Nie-cele|Wyjątki)[.:]\*\*/;
-const HEADING = /^#{2,3} <a id="(wym-[a-z0-9-]+)"><\/a>`\1` — (.+)$/;
+const HEADING = /^#{2,3} <a id="(req-[a-z0-9-]+)"><\/a>`\1` — (.+)$/;
 
 /**
  * Zwraca listę wymagań. Pole kończy się dopiero na następnym polu ZE ZNANEJ LISTY —
@@ -135,7 +135,7 @@ for (const d of new Set(dupes))
 // ── lekcje ────────────────────────────────────────────────────────────────────
 
 const lessonIds = new Set(
-  [...read('docs/lekcje.md').matchAll(/<a id="(lekcja-\d+)"><\/a>/g)].map(
+  [...read('docs/lessons.md').matchAll(/<a id="(lesson-\d+)"><\/a>/g)].map(
     (m) => m[1],
   ),
 );
@@ -298,9 +298,21 @@ for (const req of requirements) {
 
 // ── 4. wiszące cytowania w całym repo ─────────────────────────────────────────
 
+/**
+ * Dwie martwe przestrzenie nazw, obie odrzucane. Numeryczna jest z migracji
+ * 2026-07-27, polska (`wym-…`, `lekcja-N`) — z 2026-08-06; obie rozwiązuje tabela
+ * w `docs/README.md`. Wzorzec polski wymaga litery po myślniku, więc zdanie
+ * o samym prefiksie (`wym-*`, `wym-…`) nie jest cytowaniem i nie zapala.
+ */
 const LEGACY =
-  /wym-(proj|tech|ws|sbx|api|a11y|styl|theme|token|ikon|test|wer|real)-\d+/g;
-const REF = /\b(wym-[a-z][a-z0-9-]*[a-z0-9]|lekcja-\d+)\b/g;
+  /wym-(proj|tech|ws|sbx|api|a11y|styl|theme|token|ikon|test|wer|real)-\d+|\bwym-[a-z][a-z0-9-]*[a-z0-9]\b|\blekcja-\d+\b/g;
+/**
+ * Cytowanie nie jest **segmentem ścieżki**: `req-` jest przedrostkiem tak zwyczajnym, że
+ * trafia się w nazwach plików (`req-ids.ts` zapalało tę bramkę jako wiszące cytowanie).
+ * Stąd wykluczenie ukośnika przed i rozszerzenia po.
+ */
+const REF =
+  /(?<![\w/-])(req-[a-z][a-z0-9-]*[a-z0-9]|lesson-\d+)(?![\w-]|\.[a-z])/g;
 
 for (const rel of trackedFiles) {
   if (CITATION_EXEMPT.has(rel)) continue;
@@ -312,16 +324,22 @@ for (const rel of trackedFiles) {
   } catch {
     continue;
   }
-  if (!text.includes('wym-') && !text.includes('lekcja-')) continue;
+  if (
+    !text.includes('req-') &&
+    !text.includes('lesson-') &&
+    !text.includes('wym-') &&
+    !text.includes('lekcja-')
+  )
+    continue;
 
   for (const [old] of text.matchAll(LEGACY))
     fail(
       rel,
-      `stary identyfikator \`${old}\` — patrz tabela migracji w docs/README.md`,
+      `stary identyfikator \`${old}\` — patrz tabele migracji w docs/README.md`,
     );
 
   for (const [, ref] of text.matchAll(REF)) {
-    if (ref.startsWith('lekcja-')) {
+    if (ref.startsWith('lesson-')) {
       if (!lessonIds.has(ref))
         fail(rel, `cytowanie \`${ref}\` nie rozwiązuje się`);
     } else if (!ids.has(ref)) {
@@ -334,13 +352,13 @@ for (const rel of trackedFiles) {
 
 const AREA = (id) => id.split('-')[1];
 const AREA_LABEL = {
-  os: 'oś',
-  projekt: 'projekt',
+  axis: 'oś',
+  project: 'projekt',
   api: 'API',
   a11y: 'dostępność',
   token: 'tokeny',
-  jakosc: 'jakość',
-  wydanie: 'wydanie',
+  quality: 'jakość',
+  release: 'wydanie',
 };
 
 const STAN_ICON = {
@@ -352,7 +370,7 @@ const STAN_ICON = {
 
 /**
  * Skrót do komórki tabeli. Linki markdown są spłaszczane do samego tekstu: ścieżki
- * względne pochodzą z `docs/wymagania/*.md`, więc w `docs/rejestr.md` wskazywałyby
+ * względne pochodzą z `docs/requirements/*.md`, więc w `docs/registry.md` wskazywałyby
  * o katalog za wysoko — a obcięcie potrafiłoby dodatkowo urwać je w połowie.
  */
 const short = (v, n = 90) => {
@@ -469,7 +487,7 @@ const buildRejestr = () => {
   for (const l of revRows) {
     const who = rev.get(l);
     L.push(
-      `| [\`${l}\`](lekcje.md#${l}) | ${who ? who.map((i) => `\`${i}\``).join(', ') : '— _(nie cytowana)_'} |`,
+      `| [\`${l}\`](lessons.md#${l}) | ${who ? who.map((i) => `\`${i}\``).join(', ') : '— _(nie cytowana)_'} |`,
     );
   }
   L.push('');
@@ -488,19 +506,19 @@ const buildReqIds = () => {
   );
   return [
     '// PLIK GENEROWANY — nie edytuj.',
-    '// Źródło: docs/00-os.md + docs/wymagania/*.md + docs/lekcje.md',
+    '// Źródło: docs/00-axis.md + docs/requirements/*.md + docs/lessons.md',
     '// Generator: node tools/check-docs.mjs --write',
     '//',
     '// Po co: karta sandboxa deklaruje, czego dotyczy przykład. Dopóki było to `string[]`,',
-    '// literówka dawała chip prowadzący donikąd — czyli cichą wadę (`wym-os`). Ten sam ruch',
-    '// co `PctCssVar` w `lekcja-43`, tylko na drugiej klasie nazw.',
+    '// literówka dawała chip prowadzący donikąd — czyli cichą wadę (`req-axis`). Ten sam ruch',
+    '// co `PctCssVar` w `lesson-43`, tylko na drugiej klasie nazw.',
     '',
-    '/** Identyfikator wymagania z `docs/wymagania/` albo osi z `docs/00-os.md`. */',
+    '/** Identyfikator wymagania z `docs/requirements/` albo osi z `docs/00-axis.md`. */',
     'export type PctReqId =',
     ...reqs.map((id) => `  | '${id}'`),
     '  ;',
     '',
-    '/** Identyfikator lekcji z `docs/lekcje.md`. Karta może wskazywać dowód, nie tylko obietnicę. */',
+    '/** Identyfikator lekcji z `docs/lessons.md`. Karta może wskazywać dowód, nie tylko obietnicę. */',
     'export type PctLessonId =',
     ...lessons.map((id) => `  | '${id}'`),
     '  ;',
@@ -560,7 +578,7 @@ if (!WRITE) {
     fail(
       FIXTURES,
       'brak kontroli odniesienia — bramka bez dowodu, że potrafi nie przejść, ' +
-        'jest kolejną cichą wadą (wym-jakosc-kontrola)',
+        'jest kolejną cichą wadą (req-quality-negative-control)',
     );
   }
   for (const fx of fixtures) {

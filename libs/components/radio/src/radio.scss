@@ -19,7 +19,7 @@
     var(--pct-motion-transition-easing);
 }
 
-/* Obszar dotyku >= 24x24 px, niezależny od rozmiaru wizualnego (wym-a11y-dotyk). */
+/* Obszar dotyku >= 24x24 px, niezależny od rozmiaru wizualnego (req-a11y-touch). */
 .pct-radio__control {
   position: absolute;
   top: 50%;
@@ -65,7 +65,7 @@
   border-color: var(--pct-radio-border-invalid);
 }
 
-/* Disabled bez opacity (wym-token-bez-opacity). */
+/* Disabled bez opacity (req-token-no-opacity). */
 :host([data-pct-disabled]) .pct-radio__circle {
   background: var(--pct-radio-bg-disabled);
   border-color: var(--pct-radio-border-disabled);

@@ -1,5 +1,5 @@
 {
   "punkt": 6,
   "kontrola": "opacity",
-  "opis": "Klasyczny stan „wyłączone przez przygaszenie\". Bramka kontrastu liczy na wartościach z palety i orzeka o nich zielono, a przeglądarka pokazuje wynik kompozycji z tłem — czyli dokładnie ten rozjazd, który opisuje lekcja-6: guard przepuścił `disabled` o realnym kontraście ~1,6:1. Ułamek jest tu jedyną informacją, że stan wraca do stanu sprzed tamtej poprawki."
+  "opis": "Klasyczny stan „wyłączone przez przygaszenie\". Bramka kontrastu liczy na wartościach z palety i orzeka o nich zielono, a przeglądarka pokazuje wynik kompozycji z tłem — czyli dokładnie ten rozjazd, który opisuje lesson-6: guard przepuścił `disabled` o realnym kontraście ~1,6:1. Ułamek jest tu jedyną informacją, że stan wraca do stanu sprzed tamtej poprawki."
 }

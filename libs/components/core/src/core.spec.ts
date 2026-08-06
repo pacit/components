@@ -19,7 +19,7 @@ import { PCT_TEXTS } from './texts';
  * specyfikacje kontrolek, i to na jednej ścieżce. Przebieg mutacyjny pokazał
  * to jako pierwszy: warunek `ids.length > 0` dawało się przestawić na `>= 0`,
  * a `errors()?.[0]?.message` rozbroić z opcjonalności — bez ani jednego
- * czerwonego testu (`lekcja-57`).
+ * czerwonego testu (`lesson-57`).
  */
 describe('@pacit/components/core', () => {
   beforeEach(() => {
@@ -131,7 +131,7 @@ describe('@pacit/components/core', () => {
     it('licznik żyje w injectorze aplikacji, więc każda liczy od zera', () => {
       // Licznik modułowy rósłby przez wszystkie żądania SSR w jednym procesie,
       // a klient zaczynałby od zera — po hydracji powiązania ARIA wskazywałyby
-      // w próżnię (wym-projekt-ssr).
+      // w próżnię (req-project-ssr).
       expect(TestBed.inject(PctIdCounter).next()).toBe(1);
       expect(TestBed.inject(PctIdCounter).next()).toBe(2);
 

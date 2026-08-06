@@ -55,7 +55,7 @@ async function stateHost(inputs: Record<string, unknown> = {}) {
 }
 
 describe('PctButton', () => {
-  // Komponenty muszą być zoneless-safe (wym-api-fundament) — testy biegną bez zone.js.
+  // Komponenty muszą być zoneless-safe (req-api-foundation) — testy biegną bez zone.js.
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Bramka konsumenta: sprawdza, czy pakiet da się WZIĄĆ Z REJESTRU i użyć
- * (`wym-jakosc-konsument`).
+ * (`req-quality-consumer`).
  *
  * Powód istnienia: `check-package` bada `dist/libs/components` STATYCZNIE — czyta pliki
  * i pyta, czy są. To za mało z dwóch powodów naraz. Po pierwsze `dist` nie jest tym, co
@@ -16,7 +16,7 @@
  * Bramka odtwarza więc drogę konsumenta w całości: `npm pack` → publikacja do lokalnego
  * rejestru (Verdaccio) → `npm install @pacit/components` PO NAZWIE → `ng add` →
  * build aplikacji z SSR → serwer → jeden przebieg w przeglądarce. To maszynowa postać
- * [`lekcja-36`](../docs/lekcje.md#lekcja-36): „zielony build nie jest dowodem, że artefakt
+ * [`lesson-36`](../docs/lessons.md#lesson-36): „zielony build nie jest dowodem, że artefakt
  * da się użyć".
  *
  * Sprawdzane jest siedem rzeczy:
@@ -39,13 +39,13 @@
  * bo nie ma czego zauważyć — a wygląda przy tym na dowód (ta sama wada co w A8).
  *
  * Do tego ósmy przebieg, który nie bada pakietu, tylko TĘ BRAMKĘ: kontrola odniesienia
- * z `tools/check-consumer.fixtures/` (`wym-jakosc-kontrola`).
+ * z `tools/check-consumer.fixtures/` (`req-quality-negative-control`).
  *
  * Czego bramka świadomie NIE robi: nie instaluje `peerDependencies` z rejestru. Aplikacja
  * bierze `@angular/*` z `node_modules` repozytorium przez wyszukiwanie w górę drzewa —
  * tak samo jak sonda buildera w `check-bundle` i z tego samego powodu: mierzymy TEN pakiet,
  * a nie to, czy npmjs dziś odpowiada. Cena jest zapisana wprost: rozjazd zakresu wersji
- * w `peerDependencies` przejdzie tę bramkę. Pilnuje go `wym-projekt-zaleznosci` (B7).
+ * w `peerDependencies` przejdzie tę bramkę. Pilnuje go `req-project-dependencies` (B7).
  *
  * Użycie:
  *   node tools/check-consumer.mjs
@@ -88,7 +88,7 @@ const SKORKA = 'themes/pct.css';
  * `pctButton` 2 → **1**, `pct-button` 33 → 0, `data-pct-part` 2 → 0. Marker wzięty
  * z selektora byłby więc niezerowy dokładnie wtedy, gdy biblioteki w bundlu nie ma
  * w ogóle. Musi pochodzić z KODU BIBLIOTEKI: `pct-button` jest klasą z bloku `host`,
- * a `data-pct-part` — publicznym API stylowania (`wym-api-czesci`). Żadnego z nich
+ * a `data-pct-part` — publicznym API stylowania (`req-api-parts`). Żadnego z nich
  * aplikacja nie pisze.
  */
 const MARKERY = ['data-pct-part', 'pct-button'];
@@ -103,7 +103,7 @@ const TLO_POCZATKOWE = 'rgba(0, 0, 0, 0)';
  * Naruszenie jednej z siedmiu kontroli. Niesie identyfikator kontroli ORAZ reguły:
  * punkt to nie jedno zdanie, a kontrola odniesienia porównująca sam punkt przepuszcza
  * przypadek, który zapalił na sąsiedniej regule tego samego punktu — zmierzone w A12
- * i potwierdzone w A11 ([`lekcja-50`](../docs/lekcje.md#lekcja-50)).
+ * i potwierdzone w A11 ([`lesson-50`](../docs/lessons.md#lesson-50)).
  */
 class BladKonsumenta extends Error {
   constructor(kontrola, regula, opis) {
@@ -154,7 +154,7 @@ const sprawdzKonsumenta = (we) => {
       `archiwum nie zawiera \`${SKORKA}\`, choć plik jest w \`${DIST}\` — czyli ` +
         `odfiltrował go \`npm pack\` (pole \`files\` albo \`.npmignore\`).\n` +
         `    Konsument dostanie komponenty odwołujące się do tokenów, których nikt ` +
-        `nie deklaruje (lekcja-36), a \`check-package\` tego nie zobaczy: on czyta katalog`,
+        `nie deklaruje (lesson-36), a \`check-package\` tego nie zobaczy: on czyta katalog`,
     );
 
   const manifest = tarball.manifest ?? {};
@@ -315,7 +315,7 @@ const sprawdzKonsumenta = (we) => {
       `po \`ng add\` w \`styles\` nie ma ani jednego wpisu z \`${PAKIET}\`: ` +
         `${lista(po)}.\n` +
         `    Bez skórki komponenty renderują się bez wyglądu i nikt tego nie zauważy ` +
-        `(lekcja-36)`,
+        `(lesson-36)`,
     );
 
   // ── 5. build ────────────────────────────────────────────────────────────────
@@ -352,7 +352,7 @@ const sprawdzKonsumenta = (we) => {
       'skorka-nieobecna',
       `arkusz aplikacji nie ma ani jednej deklaracji \`--pct-*\` ` +
         `(policzone: ${build.tokenyWCss}).\n` +
-        `    Skórka nie dojechała do builda — dokładnie stan z lekcja-36, tylko ` +
+        `    Skórka nie dojechała do builda — dokładnie stan z lesson-36, tylko ` +
         `u konsumenta`,
     );
 
@@ -388,7 +388,7 @@ const sprawdzKonsumenta = (we) => {
       'ssr',
       'bez-czesci',
       `w HTML-u z serwera nie ma ani jednego \`data-pct-part\` — publiczne API ` +
-        `stylowania (wym-api-czesci) nie dojechało do konsumenta`,
+        `stylowania (req-api-parts) nie dojechało do konsumenta`,
     );
 
   // ── 7. e2e ──────────────────────────────────────────────────────────────────
@@ -407,7 +407,7 @@ const sprawdzKonsumenta = (we) => {
       'bez-skorki',
       `\`${TOKEN_TLA}\` policzone na przycisku jest puste — skórka nie doszła do ` +
         `przeglądarki. Przycisk jest wtedy w DOM-ie, ma wszystkie klasy i części, ` +
-        `i nie ma wyglądu: cicha wada z lekcja-36 w swojej docelowej postaci`,
+        `i nie ma wyglądu: cicha wada z lesson-36 w swojej docelowej postaci`,
     );
 
   if (e2e.tlo === TLO_POCZATKOWE)
@@ -1133,7 +1133,7 @@ const przypadki = readdirSync(FIXTURES)
 if (przypadki.length === 0)
   problems.push(
     `tools/check-consumer.fixtures: brak spreparowanych wejść — bramka bez dowodu, ` +
-      `że potrafi nie przejść, jest kolejną cichą wadą (wym-jakosc-kontrola)`,
+      `że potrafi nie przejść, jest kolejną cichą wadą (req-quality-negative-control)`,
   );
 
 // Wejście wzorcowe MUSI przejść: gdyby samo było wadliwe, każdy przypadek zapalałby

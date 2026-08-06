@@ -7,7 +7,7 @@ powodu, niż wpisano w jego `fixture.json`, jest błędem tak samo, bo dowodzi c
 innego, niż deklaruje.
 
 Od A12 `fixture.json` może dopisać jeszcze `regula` — i wtedy musi się zgadzać także ona.
-Powód jest wprost z [`lekcja-50`](../../docs/lekcje.md#lekcja-50): **punkt bramki to nie
+Powód jest wprost z [`lesson-50`](../../docs/lessons.md#lesson-50): **punkt bramki to nie
 jedno zdanie.** Punkt 6 niesie dziewięć reguł, punkt 7 sześć; porównanie
 samego identyfikatora punktu przepuszcza przypadek, który zapalił na sąsiedniej regule
 tego samego punktu — czyli dowodzi czegoś innego, niż deklaruje, i wygląda przy tym na
@@ -16,7 +16,7 @@ dowód. Zmierzone: rozbrojenie reguły `kolor-pod-semantyka` przestawia jej przy
 oba przebiegi byłyby zielone.
 
 Powód istnienia jest ten sam co przy każdej innej bramce w tym repozytorium
-([`wym-jakosc-kontrola`](../../docs/wymagania/jakosc.md#wym-jakosc-kontrola)): **nowa
+([`req-quality-negative-control`](../../docs/requirements/quality.md#req-quality-negative-control)): **nowa
 bramka nie jest gotowa, gdy przechodzi — jest gotowa, gdy pokazano, że potrafi nie
 przejść.** Tutaj chodzi o obietnicę, która łamie się szczególnie cicho: nazwa tokenu
 jest publicznym API motywu, a jej zmiana nie daje ani jednego czerwonego testu, bo

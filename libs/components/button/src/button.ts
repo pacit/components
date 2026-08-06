@@ -10,7 +10,7 @@ import { PctButtonSize, PctButtonVariant } from './button.types';
 
 /**
  * Przycisk. Selektor atrybutowy na natywnym `<button>` — dzięki temu semantyka,
- * obsługa klawiatury i fokus działają natywnie (wym-a11y-wbudowana).
+ * obsługa klawiatury i fokus działają natywnie (req-a11y-built-in).
  *
  * @example
  * <button pctButton variant="outline" size="lg">Zapisz</button>
@@ -37,7 +37,7 @@ export class PctButton {
   /** Wariant wizualny. */
   readonly variant = input<PctButtonVariant>('solid');
 
-  /** Rozmiar; domyślnie z globalnej konfiguracji (wym-api-konfiguracja). */
+  /** Rozmiar; domyślnie z globalnej konfiguracji (req-api-config). */
   readonly size = input<PctButtonSize>(this.config.defaultSize);
 
   /** Wyłączony. */

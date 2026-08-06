@@ -36,7 +36,7 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
  * Token niesie **sygnał**, a nie gotowy obiekt, bo zmiana języka bez
  * przeładowania strony jest wzorcem, nie egzotyką — a wartość wstrzyknięta raz
  * przy konstrukcji komponentu jest z definicji tą sprzed zmiany
- * ([0014](../../../../docs/decyzje/0014-teksty-jako-sygnal.md)).
+ * ([0014](../../../../docs/decisions/0014-texts-as-signal.md)).
  *
  * Konsekwencja dla komponentu: napis czyta się **przy renderowaniu**
  * (`texts().selectEmpty`), a nie przy konstrukcji. Wartość domyślna wejścia to
@@ -48,7 +48,7 @@ export const PCT_TEXTS = new InjectionToken<Signal<PctTexts>>('PCT_TEXTS', {
 });
 
 /**
- * Rejestruje teksty biblioteki (wzorzec provideX, wym-api-konfiguracja). Podane pola
+ * Rejestruje teksty biblioteki (wzorzec provideX, req-api-config). Podane pola
  * nadpisują domyślne, pozostałe zostają — dzięki temu nowy tekst dodany
  * w bibliotece nie wywraca aplikacji, która tłumaczy tylko część.
  *

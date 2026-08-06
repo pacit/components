@@ -7,13 +7,13 @@ niż wpisano w jego `fixture.json`, jest błędem tak samo, bo dowodzi czegoś i
 deklaruje.
 
 `fixture.json` niesie tu **zawsze** parę `kontrola` + `regula`, a nie sam punkt. To wprost
-wniosek z A12 i [`lekcja-50`](../../docs/lekcje.md#lekcja-50): punkt bramki to nie jedno
+wniosek z A12 i [`lesson-50`](../../docs/lessons.md#lesson-50): punkt bramki to nie jedno
 zdanie. Zmierzone na tej bramce — rozbrojenie dziewięciu z dwudziestu dziewięciu reguł
 przestawia ich przypadki na regułę **sąsiednią, w tym samym punkcie**, i bez tego pola
 wszystkie dziewięć przebiegów byłoby zielonych.
 
 Powód istnienia jest ten sam co przy każdej innej bramce
-([`wym-jakosc-kontrola`](../../docs/wymagania/jakosc.md#wym-jakosc-kontrola)): **nowa
+([`req-quality-negative-control`](../../docs/requirements/quality.md#req-quality-negative-control)): **nowa
 bramka nie jest gotowa, gdy przechodzi — jest gotowa, gdy pokazano, że potrafi nie
 przejść.** Tutaj chodzi o obietnicę, która łamie się wyjątkowo cicho: napis dopisany do
 szablonu kompiluje się, przechodzi testy, przechodzi audyt axe i wygląda poprawnie na

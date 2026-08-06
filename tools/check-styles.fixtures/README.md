@@ -7,13 +7,13 @@ powodu, niż wpisano w jego `fixture.json`, jest błędem tak samo, bo dowodzi c
 innego, niż deklaruje.
 
 Powód istnienia jest ten sam co przy każdej innej bramce w tym repozytorium
-([`wym-jakosc-kontrola`](../../docs/wymagania/jakosc.md#wym-jakosc-kontrola)): **nowa
+([`req-quality-negative-control`](../../docs/requirements/quality.md#req-quality-negative-control)): **nowa
 bramka nie jest gotowa, gdy przechodzi — jest gotowa, gdy pokazano, że potrafi nie
 przejść.** Tutaj jest to szczególnie dosłowne, bo obie pilnowane obietnice łamią się
 w ciszy: arkusz z `padding-left` wygląda bez zarzutu w każdym zrzucie LTR, czyli
 w każdym, jaki repozytorium robi, a `opacity: 0.6` na warstwie tekstowej wygląda bez
-zarzutu zawsze i cofa [`wym-token-kontrast`](../../docs/wymagania/tokeny.md#wym-token-kontrast)
-do stanu sprzed [`lekcja-6`](../../docs/lekcje.md#lekcja-6).
+zarzutu zawsze i cofa [`req-token-contrast`](../../docs/requirements/tokens.md#req-token-contrast)
+do stanu sprzed [`lesson-6`](../../docs/lessons.md#lesson-6).
 
 ## Jak to jest złożone
 
@@ -72,12 +72,12 @@ Dwa z tych przypadków nie są hipotezami. `bez-komponentow` istnieje, bo bramka
 a porównanie „rozpoznano N z M" jest na zero ślepe. `dekorator-poza-parserem` istnieje,
 bo licznik dekoratorów powtarzał kotwicę parsera co do znaku — przesunięcie o jedną
 spację gasiło obie strony porównania naraz. Oba opisuje
-[`lekcja-48`](../../docs/lekcje.md#lekcja-48); ten drugi siedział też w `check-zoneless`
+[`lesson-48`](../../docs/lessons.md#lesson-48); ten drugi siedział też w `check-zoneless`
 i został naprawiony razem z tym.
 
 ## Dodanie nowej kontroli do bramki
 
 Nowa kontrola w `check-styles.mjs` przychodzi **razem z przypadkiem**, który ją zapala,
 i z identyfikatorem, po którym da się poznać, że zapaliła właśnie ona. Kontrola bez
-przypadku jest dokładnie tym, czego zakazuje [`wym-os`](../../docs/00-os.md): obietnicą
+przypadku jest dokładnie tym, czego zakazuje [`req-axis`](../../docs/00-axis.md): obietnicą
 bez maszyny potrafiącej na niej zapalić, tylko piętro wyżej.

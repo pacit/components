@@ -2,12 +2,12 @@ import { expect, test } from '@playwright/test';
 import { boxOf, visit } from './support/dom';
 
 /**
- * Wielkość kontrolki jest jedną osią dla całej biblioteki (wym-api-wielkosc): wiersz
+ * Wielkość kontrolki jest jedną osią dla całej biblioteki (req-api-size): wiersz
  * pola i przycisk tej samej wielkości mają **tę samą** wysokość, bo obie biorą
  * ją z tokenu `--pct-control-height-*`, a nie z sumy paddingu i wysokości linii.
  *
  * Test mierzy realny layout w przeglądarce — jedyny wiarygodny dowód dla styli
- * (lekcja-13); w jsdom nie ma czego mierzyć.
+ * (lesson-13); w jsdom nie ma czego mierzyć.
  */
 const SIZES = [
   { size: 'sm', height: 28, fontSize: '13px' },
@@ -69,7 +69,7 @@ test.describe('Wielkości — wspólna oś pola i przycisku', () => {
   /**
    * Wariant `bare` (checkbox, grupa radiów) celowo NIE wchodzi na wspólną oś:
    * bez ramki nie ma czego zgrywać z przyciskiem, a wymuszona wysokość
-   * dokładałaby tym kontrolkom pustego miejsca (wym-api-wielkosc).
+   * dokładałaby tym kontrolkom pustego miejsca (req-api-size).
    */
   test('wariant bare nie skaluje wysokości, ale trzyma próg dotyku', async ({
     page,
@@ -116,7 +116,7 @@ test.describe('Wielkości — wspólna oś pola i przycisku', () => {
     page,
   }) => {
     // Najmniejsza wielkość jest tu progiem: 28 px ramki to 26 px kolumny
-    // kontrolki, wciąż powyżej 24 px (wym-a11y-dotyk).
+    // kontrolki, wciąż powyżej 24 px (req-a11y-touch).
     for (const { size } of SIZES) {
       const control = page
         .getByTestId(`size-field-${size}`)

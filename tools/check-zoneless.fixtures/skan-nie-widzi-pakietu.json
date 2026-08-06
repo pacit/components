@@ -1,6 +1,6 @@
 {
   "punkt": 3,
   "kontrola": "bundle",
-  "// wada": "Skan katalogu nie zwrócił ani jednego pliku, choć mapa `exports` wskazuje na wejście. Tak wygląda zmiana układu wyjścia ng-packagr albo innego rozszerzenia bundla: reszta punktu 3 przeszłaby po pustym zbiorze, czyli po niczym — wzorzec z `lekcja-39`.",
+  "// wada": "Skan katalogu nie zwrócił ani jednego pliku, choć mapa `exports` wskazuje na wejście. Tak wygląda zmiana układu wyjścia ng-packagr albo innego rozszerzenia bundla: reszta punktu 3 przeszłaby po pustym zbiorze, czyli po niczym — wzorzec z `lesson-39`.",
   "wyczyscBundle": true
 }

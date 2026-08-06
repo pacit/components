@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /**
  * Bramka typechecku: sprawdza, czy w workspace nie ma kodu TypeScriptu, którego
- * kompilator nie widzi — czyli czy obietnica `wym-jakosc-typecheck` ma za sobą pomiar,
+ * kompilator nie widzi — czyli czy obietnica `req-quality-typecheck` ma za sobą pomiar,
  * a nie samą listę targetów w CI.
  *
- * Powód istnienia. `lekcja-42`: `sandbox-e2e` miał `lint` i `e2e`, ale ŻADNEGO targetu
+ * Powód istnienia. `lesson-42`: `sandbox-e2e` miał `lint` i `e2e`, ale ŻADNEGO targetu
  * typecheck, więc kilkanaście plików nie przeszło przez kompilator ani razu. Dodanie
  * targetu ujawniło w pierwszym przebiegu trzy błędy — i nie w testach, tylko w tsconfigu,
  * który opisywał projekt nieprawdziwie. Lint tego nie łapie: ESLint parsuje i sprawdza
@@ -21,7 +21,7 @@
  *  4. POKRYCIE: każdy plik projektu jest w programie jego kompilatora.
  *
  * Punkt 4 jest tym, dla którego ta bramka w ogóle powstała w tej formie. Sam punkt 2
- * mierzy ISTNIENIE targetu, a nie jego zasięg — a `lekcja-42` mówi wprost, że tsconfig
+ * mierzy ISTNIENIE targetu, a nie jego zasięg — a `lesson-42` mówi wprost, że tsconfig
  * potrafi kłamać o tym, co obejmuje. Target wskazujący konfigurację z `"include": []`
  * przechodziłby punkt 2 w komplecie i nie sprawdzał niczego. Tak samo nowy entrypoint
  * biblioteki: `libs/components/tsconfig.lib.json` wylicza katalogi po nazwie, więc
@@ -30,7 +30,7 @@
  *
  * Skąd bierze się „program kompilatora". Z uruchomienia POLECENIA Z TARGETU, rozszerzonego
  * o `--listFilesOnly`, a nie z odczytania `include`/`exclude` z tsconfiga. To rozróżnienie
- * jest treścią `lekcja-42`: deklaracja i rzeczywistość rozjechały się tam po cichu i dopiero
+ * jest treścią `lesson-42`: deklaracja i rzeczywistość rozjechały się tam po cichu i dopiero
  * kompilator pokazał różnicę. Bramka czytająca `include` mierzyłaby drugi raz to samo
  * zdanie, które okazało się nieprawdziwe. `--showConfig` odpada z tego samego powodu:
  * rozwija `include` do listy plików, ale nie widzi plików wciągniętych przez import.
@@ -45,7 +45,7 @@
  * Do tego przebieg, który nie bada workspace'u, tylko TĘ BRAMKĘ: kontrola odniesienia
  * z `tools/check-typecheck.fixtures/`. Spreparowane wejścia, z których każde łamie
  * dokładnie jeden z czterech punktów i musi zostać odrzucone przez ten właśnie punkt
- * (`wym-jakosc-kontrola`).
+ * (`req-quality-negative-control`).
  *
  * Użycie:
  *   node tools/check-typecheck.mjs
@@ -195,7 +195,7 @@ const sprawdzTypecheck = ({ projekty, pliki, widziane }) => {
         sieroty.map((s) => `      ${s}`).join('\n') +
         `\n    Punkty 2–4 chodzą po projektach, więc taki plik jest dla nich niewidzialny — ` +
         `a to znaczy, że nie sprawdza go nikt. Lek: projekt obejmujący ten katalog albo ` +
-        `przeniesienie pliku do istniejącego (wym-jakosc-typecheck).`,
+        `przeniesienie pliku do istniejącego (req-quality-typecheck).`,
     );
 
   // Projekty bez ani jednego pliku TypeScriptu są poza resztą bramki świadomie:
@@ -203,7 +203,7 @@ const sprawdzTypecheck = ({ projekty, pliki, widziane }) => {
   // targetu `typecheck` byłoby żądaniem sprawdzenia pustego zbioru.
   const zKodem = projekty.filter((p) => wlasnosc.get(p.nazwa).length);
 
-  // 2. Istnienie targetu. To punkt z `lekcja-42` wprost.
+  // 2. Istnienie targetu. To punkt z `lesson-42` wprost.
   const bezTargetu = zKodem.filter((p) => !p.typecheck);
   if (bezTargetu.length)
     throw new BladTypecheck(
@@ -216,7 +216,7 @@ const sprawdzTypecheck = ({ projekty, pliki, widziane }) => {
           )
           .join('\n') +
         `\n    \`nx affected -t typecheck\` milczy tam, gdzie targetu nie ma, więc ` +
-        `przebieg jest zielony, a kompilator nie widział tych plików ani razu (lekcja-42).`,
+        `przebieg jest zielony, a kompilator nie widział tych plików ani razu (lesson-42).`,
     );
 
   // 3. Mierzalność polecenia. Bez tego punktu rozbrojony target i target sprawdzany
@@ -244,7 +244,7 @@ const sprawdzTypecheck = ({ projekty, pliki, widziane }) => {
     );
 
   // 4. POKRYCIE. Punkt 2 mierzy istnienie targetu, ten mierzy jego zasięg — a między
-  // jednym a drugim mieści się cała `lekcja-42`.
+  // jednym a drugim mieści się cała `lesson-42`.
   const nieobjete = zKodem.flatMap((p) => {
     const program = new Set(widziane[p.nazwa] ?? []);
     return wlasnosc
@@ -433,7 +433,7 @@ const przypadki = readdirSync(FIXTURES)
 if (przypadki.length === 0)
   problems.push(
     `tools/check-typecheck.fixtures: brak spreparowanych wejść — bramka bez dowodu, ` +
-      `że potrafi nie przejść, jest kolejną cichą wadą (wym-jakosc-kontrola)`,
+      `że potrafi nie przejść, jest kolejną cichą wadą (req-quality-negative-control)`,
   );
 
 // Wejście wzorcowe MUSI przejść. Gdyby samo było wadliwe, każdy przypadek zapalałby

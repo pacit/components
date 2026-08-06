@@ -7,10 +7,10 @@ powodu, niż wpisano w jego pliku, jest błędem tak samo, bo dowodzi czegoś in
 deklaruje.
 
 Powód istnienia jest ten sam co przy każdej innej bramce w tym repozytorium
-([`wym-jakosc-kontrola`](../../docs/wymagania/jakosc.md#wym-jakosc-kontrola)): **nowa
+([`req-quality-negative-control`](../../docs/requirements/quality.md#req-quality-negative-control)): **nowa
 bramka nie jest gotowa, gdy przechodzi — jest gotowa, gdy pokazano, że potrafi nie
 przejść.** Przebieg, z którego wzięła się ta bramka, opisuje
-[`lekcja-45`](../../docs/lekcje.md#lekcja-45): usunięcie testu **podniosło** pokrycie
+[`lesson-45`](../../docs/lessons.md#lesson-45): usunięcie testu **podniosło** pokrycie
 z 96,55% na 96,94%, bo razem z testem wypadł z raportu cały nietestowany plik. Próg
 pilnujący takiej liczby przechodzi zawsze i tym głośniej, im mniej się testuje.
 
@@ -42,7 +42,7 @@ przestały działać, punkt 2 albo 3 zapala na prawdziwym przebiegu, głośno i 
 | [`plik-poza-raportem.json`](plik-poza-raportem.json) | plik źródłowy poza raportem, przy rosnącym procencie | 3     |
 | [`pokrycie-wylaczone.json`](pokrycie-wylaczone.json) | target ma próg, ale nie zbiera pokrycia              | 4     |
 | [`bez-progu.json`](bez-progu.json)                   | target zbiera pokrycie, ale bez progu                | 4     |
-| [`prog-zanizony.json`](prog-zanizony.json)           | próg niższy niż minimum z `wym-jakosc-pokrycie`      | 4     |
+| [`prog-zanizony.json`](prog-zanizony.json)           | próg niższy niż minimum z `req-quality-coverage`      | 4     |
 | [`ponizej-progu.json`](ponizej-progu.json)           | pokrycie poniżej zadeklarowanego progu               | 5     |
 
 Punkt 4 ma trzy przypadki, bo to trzy różne sposoby rozbrojenia tej samej egzekucji:
@@ -56,5 +56,5 @@ pilnuje **mianownika**, z którego ta liczba powstała — a to on cicho się ku
 
 Nowa kontrola w `check-coverage.mjs` przychodzi **razem z przypadkiem**, który ją zapala,
 i z identyfikatorem, po którym da się poznać, że zapaliła właśnie ona. Kontrola bez
-przypadku jest dokładnie tym, czego zakazuje [`wym-os`](../../docs/00-os.md): obietnicą
+przypadku jest dokładnie tym, czego zakazuje [`req-axis`](../../docs/00-axis.md): obietnicą
 bez maszyny potrafiącej na niej zapalić, tylko piętro wyżej.

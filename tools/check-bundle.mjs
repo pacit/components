@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Bramka tree-shakingu i budżetu rozmiaru: sprawdza, ile konsument naprawdę płaci
- * za import jednego entrypointu (`wym-projekt-tree-shaking`).
+ * za import jednego entrypointu (`req-project-tree-shaking`).
  *
  * Powód istnienia: „komponenty importuje się przez secondary entrypoints, co wymusza
  * tree-shaking" jest obietnicą SPRZEDAŻOWĄ — tą, dla której ktoś tę bibliotekę wybiera —
@@ -32,7 +32,7 @@
  * bibliotekę, nie zawiera też `PctField`.
  *
  * Do tego jedenasty przebieg, który nie bada bundla, tylko TĘ BRAMKĘ: kontrola
- * odniesienia z `tools/check-bundle.fixtures/` (`wym-jakosc-kontrola`).
+ * odniesienia z `tools/check-bundle.fixtures/` (`req-quality-negative-control`).
  *
  * Użycie:
  *   node tools/check-bundle.mjs
@@ -66,7 +66,7 @@ const WRITE = process.argv.includes('--write');
  * Tolerancja jest DWUSTRONNA i to nie z uprzejmości dla optymalizacji. Wzrost trzeba
  * przyjąć w widocznej linii diffa — po to jest budżet. Ale SPADEK jest w tym
  * repozytorium podejrzany co najmniej tak samo: bramka, której pomiar cichnie, wygląda
- * dokładnie jak bramka, której pilnowany kod schudł (`lekcja-45`, `lekcja-48`). Jedyna
+ * dokładnie jak bramka, której pilnowany kod schudł (`lesson-45`, `lesson-48`). Jedyna
  * różnica jest w tym, czy ktoś na to spojrzał — więc niech spojrzy.
  */
 const TOLERANCJA = 0.05;
@@ -75,7 +75,7 @@ const TOLERANCJA_MIN = 256;
 /**
  * Klasy CSS nakładki CDK. Jedyny napis w tej bramce wpisany ręką i jedyny, który
  * dotyczy cudzego pakietu — bo `@angular/cdk/overlay` jest najdroższą zależnością
- * opcjonalną biblioteki i to ona stoi w treści `wym-projekt-tree-shaking`. Napis nie
+ * opcjonalną biblioteki i to ona stoi w treści `req-project-tree-shaking`. Napis nie
  * jest tu założeniem: sonda buildera z KOMPLETEM entrypointów musi go znaleźć, inaczej
  * punkt 10 zapala na samym sobie.
  */
@@ -119,7 +119,7 @@ const lista = (zbior) => [...zbior].sort().join(', ') || '(pusto)';
  * Zależność między punktami jest normalna; zapisanie jej tak, że rozbrojenie
  * poprzedniego zamienia bramkę w `TypeError`, nie jest — bo wtedy kontrola odniesienia
  * przestaje umieć zbadać punkt, który miała zbadać. Ta sama wada wyszła w A4, A7 i A3,
- * trzy razy z rzędu ([`lekcja-50`](../docs/lekcje.md#lekcja-50)).
+ * trzy razy z rzędu ([`lesson-50`](../docs/lessons.md#lesson-50)).
  */
 const sprawdzBundle = (we) => {
   const zrodla = we.zrodla ?? [];
@@ -226,7 +226,7 @@ const sprawdzBundle = (we) => {
       );
     // `s?.` mimo gałęzi wyżej, która „już to sprawdziła": rozbrojenie tamtej nie
     // może zamienić tej w `TypeError`. Ta sama wada wyszła w A7, A4 i A3 — trzy razy
-    // MIĘDZY punktami, tutaj czwarty raz i wewnątrz jednego ([`lekcja-50`]).
+    // MIĘDZY punktami, tutaj czwarty raz i wewnątrz jednego ([`lesson-50`]).
     if (!(s?.wniesione ?? []).includes(e))
       throw new BladBundla(
         'obecnosc',
@@ -490,7 +490,7 @@ const renderujSnapshot = (zrodla, sondy) =>
     '> `node tools/check-bundle.mjs --write`. Bramka `check-bundle` odrzuca rozjazd.',
     '',
     '„Komponenty importuje się przez secondary entrypoints, co wymusza tree-shaking"',
-    'jest obietnicą sprzedażową ([`wym-projekt-tree-shaking`](../../docs/wymagania/projekt.md#wym-projekt-tree-shaking))',
+    'jest obietnicą sprzedażową ([`req-project-tree-shaking`](../../docs/requirements/project.md#req-project-tree-shaking))',
     '— tą, dla której ktoś tę bibliotekę wybiera. Jej złamanie nie daje ani jednego',
     'czerwonego testu: import z sąsiedniego entrypointu kompiluje się, przechodzi testy',
     'i dokłada konsumentowi kilkadziesiąt kilobajtów, o których dowie się z własnego',
@@ -530,7 +530,7 @@ const renderujSnapshot = (zrodla, sondy) =>
  * przepuszcza ukośnik w `./select` świadomie: w `check-parts` dokładnie ten znak
  * wypadł z klasy znaków, obie listy wyszły puste, puste okazały się sobie równe
  * i bramka odrzuciła zmianę, podając poprawną diagnozę problemu, którego nie było
- * ([`lekcja-50`](../docs/lekcje.md#lekcja-50)).
+ * ([`lesson-50`](../docs/lessons.md#lesson-50)).
  */
 const wierszeSnapshotu = (tresc) => {
   const out = new Map();
@@ -558,7 +558,7 @@ const czytajJson = (sciezka) =>
  *
  * Pathspec jest KATALOGIEM, a filtrowanie siedzi w JS-ie: pathspec gita nie jest globem
  * powłoki i bez `:(glob)` gwiazdka przechodzi przez `/`, więc wzorzec z gwiazdką potrafi
- * zwrócić ZERO plików zamiast błędu ([`lekcja-48`](../docs/lekcje.md#lekcja-48)).
+ * zwrócić ZERO plików zamiast błędu ([`lesson-48`](../docs/lessons.md#lesson-48)).
  */
 const entrypointyZeZrodel = () =>
   execFileSync('git', ['ls-files', '-z', PROJEKT], {
@@ -991,7 +991,7 @@ const przypadki = readdirSync(FIXTURES)
 if (przypadki.length === 0)
   problems.push(
     `tools/check-bundle.fixtures: brak spreparowanych wejść — bramka bez dowodu, ` +
-      `że potrafi nie przejść, jest kolejną cichą wadą (wym-jakosc-kontrola)`,
+      `że potrafi nie przejść, jest kolejną cichą wadą (req-quality-negative-control)`,
   );
 
 // Wejście wzorcowe MUSI przejść: gdyby samo było wadliwe, każdy przypadek zapalałby

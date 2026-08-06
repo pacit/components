@@ -13,7 +13,7 @@ import * as primary from './index';
  * Bez niego pomiar liczy się na próbce dobranej przez samego mierzonego: v8 widzi
  * wyłącznie moduły, które faktycznie weszły do przebiegu, a `coverageInclude`
  * dokłada resztę tylko wtedy, gdy potrafi je sparsować — a nie potrafi, gdy plik
- * używa `import type` / `export type` (lekcja-45). Efekt jest odwrotny do
+ * używa `import type` / `export type` (lesson-45). Efekt jest odwrotny do
  * intuicji: usunięcie testu potrafiło PODNIEŚĆ pokrycie, bo razem z testem
  * z raportu znikał cały nietestowany plik.
  *

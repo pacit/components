@@ -2,7 +2,7 @@ import { expect, Page, test } from '@playwright/test';
 import { boxOf, setRtl, visit } from './support/dom';
 
 /**
- * Kierunek pisma (`wym-token-logiczne`).
+ * Kierunek pisma (`req-token-logical`).
  *
  * Bramka `check-styles` czyta arkusze i pilnuje, żeby nie było w nich
  * właściwości fizycznych osi inline. To warunek konieczny i **niewystarczający**:
@@ -13,7 +13,7 @@ import { boxOf, setRtl, visit } from './support/dom';
  * Dokładnie tak wyszła regresja panelu selecta: `text-align: start` w arkuszu jest
  * poprawne, a panel i tak pisał od lewej przy triggerze piszącym od prawej, bo
  * nakładka CDK żyje jako dziecko `body` i nie dziedziczy niczego po kontrolce
- * (`lekcja-35` — motyw, pismo, a teraz kierunek).
+ * (`lesson-35` — motyw, pismo, a teraz kierunek).
  */
 
 /** Kierunek policzony przez przeglądarkę, nie odczytany z atrybutu. */
@@ -64,7 +64,7 @@ test.describe('Kierunek pisma — układ odbija się w dir="rtl"', () => {
   });
 
   /**
-   * Regresja wprost z `lekcja-35`, tym razem na trzeciej właściwości dziedziczonej.
+   * Regresja wprost z `lesson-35`, tym razem na trzeciej właściwości dziedziczonej.
    * Panel jest w nakładce CDK, czyli poza `app-root`, więc `dir` z powłoki go NIE
    * dosięga — kierunek trzeba przenieść jawnie, tak jak motyw i pismo. Zmierzone
    * przed poprawką: `direction: rtl` na triggerze wobec `ltr` na panelu, przy

@@ -1,4 +1,4 @@
-// Primary entrypoint (@pacit/components) — celowo minimalny (wym-projekt-tree-shaking).
+// Primary entrypoint (@pacit/components) — celowo minimalny (req-project-tree-shaking).
 // Komponenty importuje się przez secondary entrypoints, np. @pacit/components/button.
 export {
   providePctConfig,

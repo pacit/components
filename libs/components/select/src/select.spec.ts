@@ -454,7 +454,7 @@ describe('PctSelect', () => {
 
     // Klawisze otwierające są cztery i do 2026-08-06 mierzony był jeden:
     // alternatywa `||` zwiera się na pierwszym trafieniu, więc trzy pozostałe
-    // gałęzie nie były wykonywane ani razu (`lekcja-57`).
+    // gałęzie nie były wykonywane ani razu (`lesson-57`).
     it.each(['ArrowUp', 'Enter', ' '])(
       'panel otwiera także %j',
       async (klawisz) => {
@@ -903,7 +903,7 @@ describe('PctSelect', () => {
 
       // Obudowa nie zna selecta — woła `activate()` z kontraktu PCT_FIELD.
       // Bez tej drogi kliknięcie w ramkę poza samym triggerem nic nie robi,
-      // a wygląda na klikalne (`wym-a11y-dotyk`).
+      // a wygląda na klikalne (`req-a11y-touch`).
       row.click();
       fixture.detectChanges();
       await fixture.whenStable();
@@ -916,7 +916,7 @@ describe('PctSelect', () => {
       await press(fixture, 'ArrowDown');
 
       // Nakładka CDK jest dzieckiem `body`, więc kaskada `data-theme` do niej
-      // nie dociera — motyw trzeba przenieść ręcznie (`lekcja-35`).
+      // nie dociera — motyw trzeba przenieść ręcznie (`lesson-35`).
       expect(panel()?.closest('[data-theme]')?.getAttribute('data-theme')).toBe(
         'dark',
       );

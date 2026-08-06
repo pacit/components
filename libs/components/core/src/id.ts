@@ -12,7 +12,7 @@ import { inject, Injectable } from '@angular/core';
  *
  * Instancja `providedIn: 'root'` żyje tyle, co injector aplikacji — czyli
  * jedno żądanie po stronie serwera i jedno wczytanie strony po stronie
- * klienta. Obie strony liczą więc od zera i renderują te same id (wym-projekt-ssr).
+ * klienta. Obie strony liczą więc od zera i renderują te same id (req-project-ssr).
  */
 @Injectable({ providedIn: 'root' })
 export class PctIdCounter {
@@ -24,7 +24,7 @@ export class PctIdCounter {
 }
 
 /**
- * Generator stabilnych, unikalnych id do powiązań ARIA (wym-a11y-wbudowana).
+ * Generator stabilnych, unikalnych id do powiązań ARIA (req-a11y-built-in).
  * Wymaga kontekstu wstrzykiwania — wołaj w inicjalizatorze pola komponentu.
  */
 export function nextPctId(prefix = 'pct'): string {

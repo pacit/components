@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Bramka tokenów: nazwy, poziomy, pary. Trzy obietnice o jednym grafie —
- * `wym-token-nazwy`, `wym-token-poziomy`, `wym-token-pary-tekstu` — pilnowane
+ * `req-token-names`, `req-token-tiers`, `req-token-text-pairs` — pilnowane
  * w jednym przebiegu, bo wszystkie trzy stoją na TYM SAMYM mianowniku: liście
  * tokenów. Token, którego bramka nie zobaczy, jest niezgadywalny, poza warstwami
  * i niezmierzony naraz, a każda z trzech reguł osobno wyglądałaby przy nim
@@ -21,7 +21,7 @@
  *    przez którą miał sterować, a kolor, którego nie ma w policy kontrastu, nie
  *    jest przez tę policy mierzony — i to drugie jest gorsze, bo bramka kontrastu
  *    wygląda wtedy dokładnie tak samo jak wtedy, gdy naprawdę wszystko przechodzi
- *    (lekcja-33).
+ *    (lesson-33).
  *
  * Sprawdzane jest siedem rzeczy:
  *  1. ZBIÓR: nazwy odczytane z `dist/pct.css` zgadzają się z niezależnym obejściem
@@ -45,7 +45,7 @@
  * samym co plik poza raportem pokrycia — i to on wejdzie do pakietu bez śladu.
  * Punkt 7 ma przy tym własny mianownik i własną kontrolę niepustości: mierzy
  * ARKUSZE, a lista arkuszy, która przestała cokolwiek zwracać, przepuszcza
- * wszystko (lekcja-48).
+ * wszystko (lesson-48).
  *
  * Kolejność punktów nie jest przypadkowa. Punkt 5 stoi przed 6 i 7, bo snapshot
  * zapala na każdej zmianie nazwy, także na tej, którą punkt 3 potrafi nazwać po
@@ -62,7 +62,7 @@
  * jest niczyją obietnicą.
  *
  * Do tego ósmy przebieg, który nie bada tokenów, tylko TĘ BRAMKĘ: kontrola
- * odniesienia z `tools/check-tokens.fixtures/` (`wym-jakosc-kontrola`).
+ * odniesienia z `tools/check-tokens.fixtures/` (`req-quality-negative-control`).
  *
  * Użycie:
  *   node tools/check-tokens.mjs                    sprawdza
@@ -174,7 +174,7 @@ const parsujSemantyczny = (reszta, polityka) => {
  * punkcie: wejście wywalające się z innego powodu, niż deklaruje, dowodzi czegoś
  * innego, niż deklaruje.
  *
- * Trzeci parametr — `regula` — jest odpowiedzią na `lekcja-50`. Punkt bramki to
+ * Trzeci parametr — `regula` — jest odpowiedzią na `lesson-50`. Punkt bramki to
  * nie jest jedno zdanie: punkt 6 niesie dziewięć reguł, punkt 7 sześć.
  * Porównanie samego identyfikatora punktu przepuszcza przypadek, który zapalił
  * na SĄSIEDNIEJ regule tego samego punktu — czyli dowodzi czegoś innego, niż
@@ -432,7 +432,7 @@ const sprawdzTokeny = (we) => {
   if (zle.length)
     throw new BladTokenu(
       'schemat',
-      `${zle.length} nazw poza schematem (wym-token-nazwy):\n` +
+      `${zle.length} nazw poza schematem (req-token-names):\n` +
         lista(skroc(zle, 12)) +
         `\n    Nazwa spoza słownika nie psuje niczego dziś — psuje obietnicę, że siostrzaną ` +
         `nazwę da się zgadnąć bez zaglądania do dokumentacji. Jeśli słowo jest naprawdę nowe, ` +
@@ -548,7 +548,7 @@ const sprawdzTokeny = (we) => {
     );
   }
 
-  // 6. POZIOMY — graf referencji idzie w dół (wym-token-poziomy).
+  // 6. POZIOMY — graf referencji idzie w dół (req-token-tiers).
   //
   //    Obietnicą nie jest porządek dla porządku, tylko DŹWIGNIA autora motywu:
   //    warstwa semantyczna jest jedyną, którą musi znać, więc token komponentowy
@@ -673,7 +673,7 @@ const sprawdzTokeny = (we) => {
           opis:
             `${gdzie}: wskazuje na CUDZY token komponentowy \`${cel}\` — ` +
             `nadpisanie jednego komponentu zmieniałoby wtedy drugi ` +
-            `(wym-token-nadpisanie obiecuje coś dokładnie odwrotnego)`,
+            `(req-token-override obiecuje coś dokładnie odwrotnego)`,
         });
         continue;
       }
@@ -698,7 +698,7 @@ const sprawdzTokeny = (we) => {
   if (zleP.length)
     throw new BladTokenu(
       'poziomy',
-      `${zleP.length} odwołań poza modelem warstwowym (wym-token-poziomy):\n` +
+      `${zleP.length} odwołań poza modelem warstwowym (req-token-tiers):\n` +
         lista(
           skroc(
             zleP.map((z) => `[${z.regula}] ${z.opis}`),
@@ -715,14 +715,14 @@ const sprawdzTokeny = (we) => {
     );
 
   // 7. PARY — każdy kolor, który biblioteka MALUJE, jest zmierzony
-  //    (wym-token-pary-tekstu).
+  //    (req-token-text-pairs).
   //
   //    Mianownikiem nie jest lista nazw kończących się na `-bg` i `-fg`, tylko to,
   //    co arkusze naprawdę malują. Różnica jest mierzalna, nie teoretyczna: przycisk
   //    w wariancie outline maluje tło `var(--pct-surface-100)` i etykietę
   //    `var(--pct-primary)`, czyli dwoma tokenami SEMANTYCZNYMI, których żadna
   //    reguła oparta na nazwie tokenu komponentowego nie zobaczy. Do A12 obie stały
-  //    poza policy — i to jest dokładnie kształt `lekcja-33`: bramka kontrastu bada
+  //    poza policy — i to jest dokładnie kształt `lesson-33`: bramka kontrastu bada
   //    wyłącznie to, co ktoś wcześniej do niej wpisał.
   //
   //    Odwrotnie działa reguła `on-*`: ta czyta NAZWY, bo para zadeklarowana
@@ -734,7 +734,7 @@ const sprawdzTokeny = (we) => {
   // pytała wyłącznie o liczbę arkuszy — i przeszła na zielono, wypisawszy
   // „0 kolorów malowanych w 7 arkuszach": wzorzec deklaracji wymagał wiodącego
   // myślnika, więc widział wyłącznie custom properties, a `background:` nie.
-  // To jest `lekcja-48` w punkcie napisanym po to, żeby jej nie powtórzyć, i ta
+  // To jest `lesson-48` w punkcie napisanym po to, żeby jej nie powtórzyć, i ta
   // sama pomyłka co w A5: kontrola niepustości stała po stronie WEJŚCIA, a pusty
   // był POMIAR. Zero par do sprawdzenia to zawsze zero naruszeń.
   if (!arkusze.length || !malowane.size || !kontrast.checks?.length)
@@ -745,7 +745,7 @@ const sprawdzTokeny = (we) => {
         `wpisy w policy: ${kontrast.checks?.length ?? 0}) — ` +
         `bez każdego z tych trzech ten punkt przechodzi, nie orzekając o niczym.\n` +
         `    Najczęstsze przyczyny: lista arkuszy, która przestała cokolwiek zwracać ` +
-        `(lekcja-48 — pathspec gita nie jest globem powłoki), albo skaner deklaracji, ` +
+        `(lesson-48 — pathspec gita nie jest globem powłoki), albo skaner deklaracji, ` +
         `który przestał je rozpoznawać.`,
       'mianownik',
     );
@@ -795,7 +795,7 @@ const sprawdzTokeny = (we) => {
         ) +
         `\n    Para bez wpisu nie jest liczona, więc kolor spoza policy jest kolorem, ` +
         `o którym bramka kontrastu NIE MA ZDANIA — i wygląda to dokładnie tak samo jak ` +
-        `zielony przebieg (lekcja-33). Dobór partnera zostaje decyzją człowieka: maszyna ` +
+        `zielony przebieg (lesson-33). Dobór partnera zostaje decyzją człowieka: maszyna ` +
         `widzi, że kolor jest niezmierzony, nie widzi, na czym leży.` +
         (przypisania
           ? `\n    Uwaga: arkusz może wnieść token także przypisaniem do innej custom ` +
@@ -945,7 +945,7 @@ const porownajPowierzchnie = (gdzie, ma, powinna, czym) => {
         : '') +
       `    Konsument widzi tokeny przez te artefakty, nie przez źródła DTCG. Token bez ` +
       `wpisu w \`tokens.ts\` nie jest chroniony przed literówką w \`getPropertyValue\` ` +
-      `(lekcja-43), a token nadmiarowy obiecuje deklarację, której w skórce nie ma.`,
+      `(lesson-43), a token nadmiarowy obiecuje deklarację, której w skórce nie ma.`,
   );
 };
 
@@ -1120,7 +1120,7 @@ const zbierzWejscie = (root, pliki) => {
  *
  * Pathspec jest KATALOGIEM, a filtrowanie siedzi w JS-ie: pathspec gita nie jest
  * globem powłoki i bez `:(glob)` gwiazdka przechodzi przez `/`, więc wzorzec
- * z gwiazdką potrafi zwrócić ZERO plików zamiast błędu (lekcja-48).
+ * z gwiazdką potrafi zwrócić ZERO plików zamiast błędu (lesson-48).
  */
 const plikiRepozytorium = () =>
   execFileSync('git', ['ls-files', '-z', TOKENY, KOMPONENTY], {
@@ -1237,7 +1237,7 @@ const przypadki = readdirSync(FIXTURES, { withFileTypes: true })
 if (przypadki.length === 0)
   problems.push(
     `tools/check-tokens.fixtures: brak spreparowanych wejść — bramka bez dowodu, ` +
-      `że potrafi nie przejść, jest kolejną cichą wadą (wym-jakosc-kontrola)`,
+      `że potrafi nie przejść, jest kolejną cichą wadą (req-quality-negative-control)`,
   );
 
 // Wejście wzorcowe MUSI przejść: gdyby baza sama była wadliwa, każdy przypadek
@@ -1276,7 +1276,7 @@ for (const nazwa of przypadki) {
         `${nazwa}: zapaliła kontrola \`${blad.kontrola}\`, a miał punkt ${fx.punkt} ` +
           `(\`${fx.kontrola}\`) — fixture dowodzi czegoś innego, niż deklaruje`,
       );
-    // Punkt to nie jedno zdanie (lekcja-50). Przypadek, który deklaruje regułę,
+    // Punkt to nie jedno zdanie (lesson-50). Przypadek, który deklaruje regułę,
     // musi zapalić na NIEJ, a nie na sąsiedniej regule tego samego punktu —
     // inaczej identyfikator punktu potwierdza wyłącznie sam siebie.
     else if (fx.regula && blad.regula !== fx.regula)

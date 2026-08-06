@@ -4,7 +4,7 @@
 > `node tools/check-bundle.mjs --write`. Bramka `check-bundle` odrzuca rozjazd.
 
 „Komponenty importuje się przez secondary entrypoints, co wymusza tree-shaking"
-jest obietnicą sprzedażową ([`wym-projekt-tree-shaking`](../../docs/wymagania/projekt.md#wym-projekt-tree-shaking))
+jest obietnicą sprzedażową ([`req-project-tree-shaking`](../../docs/requirements/project.md#req-project-tree-shaking))
 — tą, dla której ktoś tę bibliotekę wybiera. Jej złamanie nie daje ani jednego
 czerwonego testu: import z sąsiedniego entrypointu kompiluje się, przechodzi testy
 i dokłada konsumentowi kilkadziesiąt kilobajtów, o których dowie się z własnego

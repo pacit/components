@@ -3,7 +3,7 @@
  * Bramka pakietu: sprawdza, czy `dist/libs/components` da się zainstalować
  * i użyć — czyli czy wozi skórkę, a nie tylko kod.
  *
- * Powód istnienia (lekcja-17 w wersji dla dystrybucji): build biblioteki
+ * Powód istnienia (lesson-17 w wersji dla dystrybucji): build biblioteki
  * kończy się SUKCESEM także wtedy, gdy w pakiecie nie ma ani jednej definicji
  * tokenu. Komponenty odwołują się wtedy do `var(--pct-*)`, których nikt nie
  * deklaruje — przeglądarka po cichu bierze wartość początkową (`background`
@@ -29,8 +29,8 @@
  * odniesienia z `tools/check-package.fixtures/`. Spreparowane pakiety, z których
  * każdy łamie dokładnie jeden z sześciu punktów i musi zostać odrzucony przez
  * ten właśnie punkt. Bez niej bramka pilnująca sześciu obietnic sama nie miałaby
- * dowodu, że potrafi zapalić (`wym-jakosc-kontrola`) — czyli byłaby dokładnie
- * tym, co opisuje `lekcja-39`: bramką urodzoną martwą. Przebieg z `lekcja-36`
+ * dowodu, że potrafi zapalić (`req-quality-negative-control`) — czyli byłaby dokładnie
+ * tym, co opisuje `lesson-39`: bramką urodzoną martwą. Przebieg z `lesson-36`
  * (usunięcie `libs/tokens/dist` → build przechodzi, pakiet jest bez tokenów)
  * był ręczny, a ręczny przebieg nie istnieje między sesjami.
  *
@@ -324,7 +324,7 @@ const sprawdzPakiet = (root, { release = false } = {}) => {
  * gorszego: katalog znika z mapy plików, więc `inputs` targetu przestają go
  * widzieć i osłabienie fixture'a NIE unieważnia cache. Bramka świeciłaby wtedy
  * na zielono z cache'a, nie sprawdziwszy niczego — czyli sama kontrola
- * odniesienia stałaby się cichą wadą (`wym-os`).
+ * odniesienia stałaby się cichą wadą (`req-axis`).
  */
 const zlozFixture = (nazwa, fx) => {
   const cel = mkdtempSync(join(tmpdir(), 'pct-check-package-'));
@@ -358,7 +358,7 @@ const przypadki = readdirSync(FIXTURES, { withFileTypes: true })
 if (przypadki.length === 0)
   problems.push(
     `tools/check-package.fixtures: brak spreparowanych pakietow — bramka bez dowodu, ` +
-      `ze potrafi nie przejsc, jest kolejna cicha wada (wym-jakosc-kontrola)`,
+      `ze potrafi nie przejsc, jest kolejna cicha wada (req-quality-negative-control)`,
   );
 
 // Pakiet wzorcowy MUSI przejsc, i to w trybie `--release`. Bez tego cała kontrola

@@ -44,10 +44,10 @@ import { PctSelect, PctSelectOption } from '@pacit/components/select';
   styleUrl: './kitchen-sink.scss',
 })
 export class KitchenSink {
-  /** Motyw drugiego panelu — demonstracja scoped theme (wym-token-scoped). */
+  /** Motyw drugiego panelu — demonstracja scoped theme (req-token-scoped). */
   protected readonly panelDark = signal(true);
 
-  /** Model formularza — signal forms (wym-api-signal-forms). */
+  /** Model formularza — signal forms (req-api-signal-forms). */
   protected readonly countries: readonly PctSelectOption[] = [
     { value: 'pl', label: 'Polska' },
     { value: 'de', label: 'Niemcy' },
@@ -87,7 +87,7 @@ export class KitchenSink {
   /** Select w panelu ciemnym — sprawdza propagację motywu do nakładki. */
   protected readonly scopedCountry = signal<string | null>('');
 
-  /** Wielkości do zestawienia „pole obok przycisku" (wym-api-wielkosc). */
+  /** Wielkości do zestawienia „pole obok przycisku" (req-api-size). */
   protected readonly sizes = ['sm', 'md', 'lg'] as const;
 
   /** Select w zestawieniu wielkości — wielkość bierze z obudowy. */

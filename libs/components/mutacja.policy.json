@@ -1,7 +1,7 @@
 {
-  "// po co": "Rejestr przebiegu mutacyjnego (wym-jakosc-jednostkowe). Trzyma to, czego nie da się wyczytać z raportu Strykera: KTÓRE pliki mają być mierzone, JAKI wynik jest podłogą i JAKIE zwężenia mianownika są świadome. Bramka `tools/check-mutation.mjs` porównuje ten plik z raportem, czyli z tym, co przebieg NAPRAWDĘ zrobił — nie z konfiguracją, która to deklaruje.",
+  "// po co": "Rejestr przebiegu mutacyjnego (req-quality-unit). Trzyma to, czego nie da się wyczytać z raportu Strykera: KTÓRE pliki mają być mierzone, JAKI wynik jest podłogą i JAKIE zwężenia mianownika są świadome. Bramka `tools/check-mutation.mjs` porównuje ten plik z raportem, czyli z tym, co przebieg NAPRAWDĘ zrobił — nie z konfiguracją, która to deklaruje.",
 
-  "// wzorce": "Kopia `mutate` ze `stryker.config.json`, przepisana tutaj po to, żeby jej zmiana była porównaniem, a nie zaufaniem. Zawężenie wzorca jest najtańszym sposobem podniesienia wyniku: plik wykreślony z pomiaru zabiera ze sobą swoje przeżywające mutanty i procent rośnie, choć testów nie przybyło. To ta sama wada co `coverageInclude` z `lekcja-45`, tylko o piętro wyżej.",
+  "// wzorce": "Kopia `mutate` ze `stryker.config.json`, przepisana tutaj po to, żeby jej zmiana była porównaniem, a nie zaufaniem. Zawężenie wzorca jest najtańszym sposobem podniesienia wyniku: plik wykreślony z pomiaru zabiera ze sobą swoje przeżywające mutanty i procent rośnie, choć testów nie przybyło. To ta sama wada co `coverageInclude` z `lesson-45`, tylko o piętro wyżej.",
   "wzorce": [
     "libs/components/core/src/*.ts",
     "libs/components/field/src/number.ts",

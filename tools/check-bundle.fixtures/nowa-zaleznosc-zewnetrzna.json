@@ -1,5 +1,5 @@
 {
-  "// wada": "Entrypoint sięgnął po nakładkę CDK, choć jej nie miał. To jest wariant, który `wym-projekt-tree-shaking` nazywa wprost: konsument, który nie użył selecta, nie ma prawa dostać Overlaya.",
+  "// wada": "Entrypoint sięgnął po nakładkę CDK, choć jej nie miał. To jest wariant, który `req-project-tree-shaking` nazywa wprost: konsument, który nie użył selecta, nie ma prawa dostać Overlaya.",
   "punkt": 7,
   "kontrola": "zewnetrzne",
   "dodajZewnetrzny": { "ep": "./alfa", "co": "@angular/cdk/overlay" }

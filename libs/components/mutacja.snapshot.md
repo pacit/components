@@ -5,7 +5,7 @@
 
 Komplet zielonych testów nie jest dowodem, że testy cokolwiek łapią — to jedyne
 pytanie, na które odpowiada przebieg mutacyjny
-([`wym-jakosc-jednostkowe`](../../docs/wymagania/jakosc.md#wym-jakosc-jednostkowe)).
+([`req-quality-unit`](../../docs/requirements/quality.md#req-quality-unit)).
 Stryker psuje kod na tysiąc drobnych sposobów i pyta, ile z nich zauważy zestaw
 testów. Mutant **przeżywający** to zmiana zachowania, po której CI dalej świeci
 na zielono.

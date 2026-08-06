@@ -1,0 +1,417 @@
+# Wymagania — API komponentów
+
+Kontrakt, który widzi konsument: nazwy, wejścia, wyjścia, sloty, części i konfiguracja.
+Obszar wchłonął dawną sekcję ikon oraz kontrakt `data-pct-part`, który leżał wśród
+tokenów, choć jest API stylowania, a nie tokenem. Mapowanie starych identyfikatorów jest
+w [tabeli migracji](../README.md#migracja-identyfikatorów-2026-07-27).
+
+> Kształt wpisu i znaczenie pól **Bramka** / **Kontrola** opisuje
+> [README](../README.md#kształt-wymagania).
+
+---
+
+## Fundament
+
+### <a id="req-api-names"></a>`req-api-names` — Nazewnictwo wg nowego style guide
+
+**Obietnica.** Klasa `PctButton` (bez sufiksu `Component`), plik `button.ts` (bez
+`.component.`), selektor elementu kebab-case (`pct-field`), selektor atrybutowy
+camelCase (`[pctButton]`).
+
+**Bramka:** `libs/components/eslint.config.mjs` — `@angular-eslint/component-selector`,
+`directive-selector`, `component-class-suffix`
+**Kontrola:** brak — świadomie: reguła ESLint nie ma trybu cichego przejścia
+
+---
+
+### <a id="req-api-foundation"></a>`req-api-foundation` — Standalone, OnPush, zoneless-safe
+
+**Obietnica.** Każdy komponent jest standalone, OnPush i zoneless-safe (stan wyłącznie
+przez signals, zero polegania na `zone.js`). Zamiast `ngOnChanges` → `computed`/`effect`.
+**Ani `standalone: true`, ani `changeDetection` nie są ustawiane jawnie** — w Angularze
+v22+ oba są domyślne, a oficjalny przewodnik zabrania ich powtarzania.
+
+**Bramka:** `tools/check-zoneless.mjs` (target `check-zoneless`, w CI) — pomiar
+`ɵcmp.onPush === true` i `ɵcmp.standalone === true` dla **każdego** komponentu ze
+zbudowanego pakietu, do tego mianownik (każdy `@Component` ze źródeł musi być w pakiecie
+— inaczej „każdy" liczy się na próbce, która cicho się kurczy) i zakaz powtarzania obu
+wartości domyślnych w dekoratorze. Odczyt idzie z `dist`, nie ze źródeł, i to nie jest
+wygoda: deklaracja częściowa **pomija** `changeDetection`, gdy jest domyślne, więc
+wartość powstaje dopiero przy linkowaniu i tylko tam da się ją zmierzyć
+([`lesson-46`](../lessons.md#lesson-46)). Poza tym testy jednostkowe biblioteki
+konfigurują zoneless w `TestBed` (`libs/components/*/src/*.spec.ts`), więc komponent
+polegający na `zone.js` przewraca własny test
+**Kontrola:** `tools/check-zoneless.fixtures/` — spreparowane wejścia, po jednym na sposób
+rozbrojenia pomiaru (pusty zbiór komponentów źródłowych, komponent poza pakietem,
+`onPush: false`, `standalone: false`, dekorator powtarzający domyślne). Każde musi zostać
+odrzucone **przez ten punkt, który deklaruje**, a wejście wzorcowe — przejść. Do tego
+przebieg na prawdziwym repozytorium: `ChangeDetectionStrategy.Default` dopisane do
+`PctButton` zapala punkt 6 od razu (skan źródeł), a po przebudowie pakietu punkt 5 —
+pomiar `ɵcmp` na `dist`; osobno przebieg dowodzący, że parser dekoratorów zgłasza własny
+rozjazd (7 rozpoznanych z 8) zamiast po cichu pomniejszać mianownik
+**Lekcje:** [`lesson-7`](../lessons.md#lesson-7), [`lesson-11`](../lessons.md#lesson-11),
+[`lesson-46`](../lessons.md#lesson-46)
+
+---
+
+### <a id="req-api-signals"></a>`req-api-signals` — Wejścia i wyjścia przez signals
+
+**Obietnica.** `input()` / `input.required()` / `output()`, dwukierunkowe przez
+`model()`. Boolean przez `booleanAttribute`, liczby przez `numberAttribute`. Nazwy
+zgodne z natywnym HTML tam, gdzie to możliwe (`disabled`, `readonly`, `size`, `variant`,
+`loading`, `invalid`) — bez prefiksu `pct`.
+
+**Bramka:** `libs/components/button/src/button.spec.ts`,
+`libs/components/checkbox/src/checkbox.spec.ts` — wiązanie atrybutem i właściwością
+**Kontrola:** brak — świadomie: błędna transformacja objawia się złym typem w szablonie,
+czyli błędem kompilacji — nie należy do klasy [`req-axis`](../00-axis.md)
+**Lekcje:** [`lesson-12`](../lessons.md#lesson-12)
+
+---
+
+### <a id="req-api-attributes"></a>`req-api-attributes` — Stan jako `data-pct-*`, nie klasy CSS
+
+**Obietnica.** Stan reflektowany na hoście jako atrybuty `data-pct-*` (np.
+`data-pct-size`, `data-pct-disabled`), nie jako klasy CSS.
+
+**Bramka:** `apps/sandbox-e2e/src/states.spec.ts` — widok przekrojowy stanów odpytuje po
+atrybutach
+**Kontrola:** brak — świadomie: selektor trafiający w nic daje pusty locator, czyli
+**czerwony** test, nie zielony
+**Decyzja:** [0013 — bez podziału na rdzeń bezgłowy i skórkę](../decisions/0013-no-headless-split.md)
+
+---
+
+### <a id="req-api-config"></a>`req-api-config` — Konfiguracja globalna `providePctConfig`
+
+**Obietnica.** Konfiguracja globalna wzorcem `providePctConfig({…})` z tokenem DI,
+nadpisywalna per komponent przez inputy.
+
+**Bramka:** `libs/components/button/src/button.spec.ts` — domyślny `size` z konfiguracji
+i jego nadpisanie inputem
+**Kontrola:** brak — świadomie: test porównuje dwie **różne** wartości, więc nie może
+przejść na wartościach domyślnych
+**Wiąże przy:** rozstrzygnięciu, **czy domyślne per komponent idą przez konfigurację**
+(`providePctConfig({ button: { variant: 'outline' } })`), **czy przez tokeny** — Material
+i PrimeNG oba skończyły na dostawcach domyślnych. Decyzja przed piętnastym komponentem,
+bo później to zmiana łamiąca w każdym z nich
+**Decyzja:** [0007 — konfiguracja osobno od tekstów](../decisions/0007-config-and-texts.md)
+
+> Dziś `PctConfig` ma **jedno pole** (`defaultSize`). Mechanizm działa; kształt jest
+> otwarty.
+
+---
+
+## Formularze
+
+### <a id="req-api-signal-forms"></a>`req-api-signal-forms` — Kontrolki to natywne kontrolki signal forms
+
+**Obietnica.** Kontrolki implementują `FormValueControl` (lub `FormCheckboxControl`)
+z `@angular/forms/signals`. **`ControlValueAccessor` NIE jest implementowany** — mimo to
+`[formControl]`, `formControlName` i `[(ngModel)]` działają bez warstwy kompatybilności.
+
+**Bramka:** `libs/components/field/src/field-controls.spec.ts`,
+`apps/sandbox-e2e/src/forms.spec.ts` — wszystkie trzy API formularzy na tej samej
+kontrolce
+**Kontrola:** testy startują z **niepustą** wartością początkową — z pustym modelem
+regresja z [`lesson-26`](../lessons.md#lesson-26) była niewidoczna
+**Decyzja:** [0005 — signal forms bez CVA](../decisions/0005-signal-forms-without-cva.md)
+**Lekcje:** [`lesson-9`](../lessons.md#lesson-9), [`lesson-20`](../lessons.md#lesson-20),
+[`lesson-26`](../lessons.md#lesson-26)
+
+---
+
+### <a id="req-api-container"></a>`req-api-container` — W komponencie złożonym kontrolką jest kontener
+
+**Obietnica.** W grupie (`pct-radio-group` + `pct-radio`) kontrakt `FormValueControl`
+implementuje wyłącznie kontener — z punktu widzenia formularza edytowana jest jedna
+wartość. Elementy składowe komunikują się z kontenerem przez DI i nie mają własnego
+stanu formularza.
+
+**Bramka:** `libs/components/radio/src/radio.spec.ts`
+**Kontrola:** brak — świadomie: naruszeniem byłby drugi `FormValueControl` w drzewie,
+co Angular zgłasza sam
+**Lekcje:** [`lesson-16`](../lessons.md#lesson-16)
+
+---
+
+### <a id="req-api-wrapper"></a>`req-api-wrapper` — Kontrolki formularza to obudowa + kontrolka
+
+**Obietnica.** `pct-field` dostarcza etykietę, podpowiedź, komunikat błędu, znacznik
+wymagalności i sloty `[pctPrefix]` / `[pctSuffix]`. Kontraktu formularza **nie
+implementuje obudowa**, lecz kontrolka w środku — dzięki czemu typowanie zostaje przy
+rodzaju pola. Kontrolka rejestruje się przez token `PCT_FIELD`; obudowa oddaje jej
+identyfikatory opisów do `aria-describedby`.
+
+**Bramka:** `libs/components/field/src/field.spec.ts`,
+`apps/sandbox-e2e/src/field.spec.ts`, `apps/sandbox-e2e/src/field-hitarea.spec.ts`
+**Kontrola:** `field-hitarea.spec.ts` — mapa kursora po siatce punktów
+(`elementFromPoint` × `getComputedStyle().cursor`); test mierzy **całą** powierzchnię
+ramki, więc nie może przejść przy niepokrytym pasie
+**Decyzja:** [0003 — obudowa i kontrolka](../decisions/0003-wrapper-and-control.md)
+**Lekcje:** [`lesson-21`](../lessons.md#lesson-21),
+[`lesson-22`](../lessons.md#lesson-22), [`lesson-24`](../lessons.md#lesson-24),
+[`lesson-27`](../lessons.md#lesson-27), [`lesson-28`](../lessons.md#lesson-28),
+[`lesson-34`](../lessons.md#lesson-34)
+
+---
+
+### <a id="req-api-no-wrapper"></a>`req-api-no-wrapper` — Obudowa jest opcjonalna
+
+**Obietnica.** Kontrolki działają też bez `pct-field` (wtedy bez etykiety i
+komunikatów) — np. w komórce tabeli. Kontrolki z własnym układem etykiety (checkbox,
+radiogroup) rysują ją samodzielnie, a wewnątrz `pct-field` oddają obudowie.
+
+**Bramka:** `libs/components/field/src/field-controls.spec.ts` — każda kontrolka
+testowana w obu trybach
+**Kontrola:** brak — świadomie: tryb samodzielny jest **domyślny**, więc jego awaria
+wywraca komplet testów kontrolki
+
+---
+
+### <a id="req-api-frame"></a>`req-api-frame` — Kontrolka zgłasza obudowie, czy chce ramkę
+
+**Obietnica.** `fieldAppearance`: `boxed` dla pól tekstowych, selecta i daty; `bare` dla
+checkboxa i grupy radiów. Obudowa gwarantuje **minimalny obszar dotyku** kolumny
+kontrolki (`--pct-target-min`) niezależnie od wariantu.
+
+**Bramka:** `apps/sandbox-e2e/src/field.spec.ts`,
+[`req-a11y-touch`](a11y.md#req-a11y-touch)
+**Kontrola:** test progu dotyku wychwycił regresję opisaną w
+[`lesson-25`](../lessons.md#lesson-25) (select w obudowie: 19,6 px) — bramka ma
+udokumentowany przebieg, w którym zapaliła
+**Lekcje:** [`lesson-25`](../lessons.md#lesson-25)
+
+---
+
+### <a id="req-api-native-input"></a>`req-api-native-input` — Pole tekstowe stoi na natywnym `<input>`
+
+**Obietnica.** `input[pctText]` to komponent na natywnym `<input>`, nie własny element —
+zachowujemy `type`, autouzupełnianie przeglądarki i tryby klawiatury mobilnej.
+Komponent, a nie dyrektywa, bo dyrektywy nie mogą mieć styli.
+
+**Bramka:** `libs/components/field/src/field-controls.spec.ts`
+**Kontrola:** brak — świadomie: podmiana `<input>` na własny element wywraca komplet
+testów autouzupełniania i typu
+
+---
+
+### <a id="req-api-platform"></a>`req-api-platform` — Nie implementujemy tego, co daje platforma
+
+**Obietnica.** Zachowania klawiatury nie piszemy sami, jeśli daje je przeglądarka. Grupa
+radiów stoi na natywnych `<input type="radio">` ze wspólnym `name`, więc nawigacja
+strzałkami, zawijanie i „jedno miejsce w kolejności Taba" pochodzą od platformy.
+Własną obsługę dodajemy tylko tam, gdzie nie ma natywnego odpowiednika.
+
+**Bramka:** `apps/sandbox-e2e/src/radio.spec.ts` — nawigacja klawiaturą
+**Kontrola:** brak — świadomie: test nawigacji nie ma trybu, w którym przechodzi bez
+działającej klawiatury
+**Wyjątki:** [`req-api-number`](#req-api-number) (natywne `type="number"` nie zna
+lokalnego separatora), `PctSelect` (natywny `<select>` nie daje panelu)
+
+---
+
+### <a id="req-api-number"></a>`req-api-number` — Pole liczbowe nie stoi na `<input type="number">`
+
+**Obietnica.** `[pctNumber]` stoi na `<input type="text">` z `role="spinbutton"`,
+`aria-valuenow` / `aria-valuetext` i własnym parsowaniem opartym o `Intl.NumberFormat`.
+Wartość to `number | null` (puste to `null`, nigdy `0` ani `NaN`). Granice `min`/`max`
+biorą się z walidatorów schematu, nie z powtórzenia w szablonie.
+
+**Bramka:** `libs/components/field/src/number.spec.ts`,
+`apps/sandbox-e2e/src/number.spec.ts`
+**Kontrola:** brak — luka: testy własnościowe parsera (`parse(format(n)) === n` dla
+dowolnego `n` i dowolnego locale). Parsowanie jest **szersze** niż formatowanie, więc
+przypadków jest więcej, niż da się wymyślić ręcznie
+**Wiąże przy:** pierwszym locale spoza `pl`/`en` zgłoszonym przez konsumenta
+**Decyzja:** [0009 — pole liczbowe na `type="text"`](../decisions/0009-number-field.md)
+**Lekcje:** [`lesson-32`](../lessons.md#lesson-32)
+
+---
+
+### <a id="req-api-generic"></a>`req-api-generic` — Wartość kontrolki wyboru jest typu `T`, nie napisem
+
+**Obietnica.** `PctSelect<T>`, `PctSelectOption<T>` i `PctRadioGroup<T>` są generyczne
+(`T = string` domyślnie). Równość zgłasza aplikacja (`compareWith`), brak wyboru jest
+osobnym stanem (`T | null`, z `emptyValue` dla modeli nienullowalnych), a atrybut `value`
+natywnego radia opisuje opcję, ale **nie bierze udziału w wyborze**.
+
+**Bramka:** `libs/components/select/src/select.spec.ts`, target `typecheck` projektu
+`sandbox-e2e`
+**Kontrola:** sonda z [`lesson-37`](../lessons.md#lesson-37) — pięć celowo sprzecznych
+wiązań, z których cztery **muszą** wywalić build. Bez `NoInfer<T>` kompilator przepuszczał
+wszystkie pięć
+**Decyzja:** [0010 — generyczna wartość i `NoInfer`](../decisions/0010-generic-noinfer.md)
+**Lekcje:** [`lesson-37`](../lessons.md#lesson-37)
+
+> Piąty przypadek sondy zostaje otwarty i jest **ograniczeniem Angulara**:
+> `PctRadioGroup` nie ma inputu z opcjami, więc jedynym źródłem `T` jest `value` —
+> i `$event` z `(valueChange)` nadal nie jest tam sprawdzane.
+
+---
+
+## Rozszerzalność
+
+### <a id="req-api-parts"></a>`req-api-parts` — Kontrakt `data-pct-part` jest publicznym API stylowania
+
+**Obietnica.** Elementy wewnętrzne komponentów mają stabilne, **spisane i wersjonowane**
+atrybuty `data-pct-part="…"`, pozwalające celować w nie selektorem odpornym na
+aktualizacje.
+
+**Bramka:** `tools/check-parts.mjs` (target `check-parts` w projekcie roota, w CI) —
+pięć punktów. Punkt 3 zakazuje wiązania nazwy części wyrażeniem (nazwa powstająca
+w runtime nie daje się spisać), punkt 4 porównuje rubryki **Części** w
+[`components/`](../components/) z tym, co wystawia entrypoint, a punkt 5 —
+`libs/components/czesci.snapshot.md` z bieżącym inwentarzem. Punkty 1 i 2 pilnują
+mianownika: każdy dekorator i każde wystąpienie atrybutu w szablonie musi być
+rozpoznane, a lista części powstaje **dwa razy** — ze źródeł i ze zbudowanego pakietu
+(`ɵcmp.consts`, `ɵdir.hostAttrs` po zlinkowaniu)
+**Kontrola:** `tools/check-parts.fixtures/` — dwadzieścia jeden wejść, każde odrzucane
+na swoim punkcie; plus przebiegi na repozytorium: przemianowanie części zapala punkt 2
+przy nieaktualnym `dist`, punkt 4 po przebudowie i punkt 5 po uzgodnieniu karty;
+`[attr.data-pct-part]` w szablonie — punkt 3 z obu odczytów naraz; część usunięta
+z karty — punkt 4; dyrektywa z częścią bez eksportu z entrypointu — punkt 2
+**Decyzja:** [0013 — bez podziału na rdzeń bezgłowy i skórkę](../decisions/0013-no-headless-split.md)
+
+> Inwentarz jest **niezależny od `apps/docs`**. Ładna strona, która go renderuje, może
+> przyjść później — samo generowanie i bramkowanie nie może
+> ([`req-project-apps`](project.md#req-project-apps)).
+
+---
+
+### <a id="req-api-parts-unique"></a>`req-api-parts-unique` — Nazwy części są jednoznaczne w zagnieżdżeniu
+
+**Obietnica.** W komponentach złożonych części kontenera mają własny przedrostek
+(`group-label`, `group-hint`, `group-error`); obudowa nazywa swoje `field-*`
+(`field-header`, `field-label`, `field-label-aux`, `field-row`, `field-prefix`,
+`field-control`, `field-suffix`, `field-footer`, `field-hint`, `field-error`,
+`field-message-aux`). Selektor konsumenta nie może przypadkiem trafić w części elementów
+składowych.
+
+**Bramka:** `apps/sandbox-e2e/src/radio.spec.ts`, `apps/sandbox-e2e/src/field.spec.ts` —
+asercje na **liczebność** kolekcji, nie na pierwszy element
+**Kontrola:** kolizja z [`lesson-15`](../lessons.md#lesson-15) i
+[`lesson-24`](../lessons.md#lesson-24) jest udokumentowanym przebiegiem, w którym ta
+bramka zapaliła — testy jednostkowe jej **nie** widziały, bo odpytywały konkretny element
+**Lekcje:** [`lesson-15`](../lessons.md#lesson-15), [`lesson-24`](../lessons.md#lesson-24)
+
+---
+
+### <a id="req-api-templates"></a>`req-api-templates` — Customizacja przez projekcję i szablony
+
+**Obietnica.** Projekcja treści `<ng-content select="…">` oraz przekazywanie szablonów
+jako `TemplateRef` / dyrektywa `*pctTemplate` dla elementów typu szablon itemu.
+
+**Bramka:** brak — luka: projekcja działa (sloty obudowy), ale **`TemplateRef` nie pada
+nigdzie w bibliotece** — opcji selecta nie da się dziś ostylować własnym szablonem
+**Kontrola:** brak — luka: szablon opcji podany przez konsumenta, który nie zostaje użyty, musi zapalić
+**Wiąże przy:** pierwszym realnym użyciu selecta (szablon opcji) oraz przy
+[`req-api-icons`](#req-api-icons) — szablon jest najprostszym mechanizmem podmiany ikony
+
+---
+
+### <a id="req-api-icons"></a>`req-api-icons` — Łatwe użycie cudzych ikon
+
+**Obietnica.** Biblioteka umożliwia użycie ikon z popularnych zestawów (FontAwesome,
+PrimeIcons, Material) oraz dostarczenie własnych (SVG / fonty ikon).
+
+**Bramka:** brak — luka: dziś każda ikona jest **wpisana w szablon** jako SVG
+w `currentColor`. Działa i nie wnosi zależności, ale nie jest mechanizmem — konsument nie
+ma jak podmienić strzałki selecta
+**Kontrola:** brak — luka: podmiana ikony przez `PCT_ICONS`, która nie dociera do komponentu, musi zapalić
+**Wiąże przy:** drugim komponencie potrzebującym podmienialnej ikony
+**Decyzja:** [0011 — ikony przez szablon i `PCT_ICONS`](../decisions/0011-icons.md)
+
+---
+
+### <a id="req-api-icons-custom"></a>`req-api-icons-custom` — Biblioteka nie dostarcza własnego zestawu ikon
+
+**Obietnica.** Nie-cel. Zestaw ikon to osobny produkt o osobnym cyklu życia; biblioteka
+dostarcza **mechanizm podmiany**, nie ikony.
+
+**Bramka:** `libs/components/check-package.mjs` — brak plików ikon w spakowanym
+artefakcie byłby wykrywalny na liście zawartości
+**Kontrola:** brak — świadomie: naruszeniem jest **dodanie** czegoś, a nie ciche
+zniknięcie; nie należy do klasy [`req-axis`](../00-axis.md)
+
+---
+
+### <a id="req-api-texts"></a>`req-api-texts` — Napisy biblioteki są wystawione do tłumaczenia
+
+**Obietnica.** Teksty, które komponent wypisuje sam, idą przez token `PCT_TEXTS`
+i `providePctTexts({…})`; podane pola nadpisują domyślne, reszta zostaje. Domyślne są
+**angielskie**. Ostrzeżenia deweloperskie (`console.warn`) do tego kanału **nie
+należą** — są po angielsku na stałe i gasną poza `isDevMode()`.
+
+Napis czyta się **przy renderowaniu**: token niesie `Signal<PctTexts>`, więc aplikacja
+przełączająca język bez przeładowania widzi zmianę. Wartość domyślna wejścia jest
+odczytem przy konstrukcji i dlatego napisem biblioteki być nie może.
+
+**Bramka:** `tools/check-texts.mjs` (target `check-texts`) — sześć punktów: napis wpisany
+w węzeł tekstowy, w atrybut mówiący albo w literał wyrażenia; proza w wartości domyślnej
+sygnału i odczyt `PCT_TEXTS` przy konstrukcji; kompletność kanału (pole ⟷ wartość
+domyślna ⟷ odczyt); ostrzeżenia deweloperskie poza kanałem i pod `isDevMode()`. Szablon
+czyta `parseTemplate` z `@angular/compiler`, a lista klas i atrybutów statycznych
+powstaje **dwa razy** — ze źródeł i ze zbudowanego pakietu. Do tego
+`libs/components/select/src/select.spec.ts` — nadpisanie częściowe zostawia resztę
+domyślną i zmiana języka w runtime dociera do napisów
+**Kontrola:** `tools/check-texts.fixtures/` — 29 spreparowanych wejść, każde odrzucane na
+swojej **regule** (nie tylko punkcie); plus dziewięć przebiegów na repozytorium (literał
+w szablonie, `aria-label` z napisem przed przebudową i po niej, odczyt tekstów w wartości
+domyślnej wejścia, `console.warn` bez `isDevMode()`, pole bez wartości domyślnej, pole
+martwe, literał w interpolacji, statyczny `aria-label` w bloku `host`)
+**Decyzja:** [0007 — konfiguracja osobno od tekstów](../decisions/0007-config-and-texts.md),
+[0014 — teksty jako sygnał](../decisions/0014-texts-as-signal.md)
+**Lekcje:** [`lesson-54`](../lessons.md#lesson-54)
+
+---
+
+## Nakładki i ruch
+
+### <a id="req-api-overlay"></a>`req-api-overlay` — Nakładka wychodzi z widocznej krawędzi kontrolki
+
+**Obietnica.** Obudowa udostępnia kontrolkom swój wiersz jako powierzchnię odniesienia
+(`PctFieldApi.surface`); bez obudowy kotwicą jest sam trigger. Szerokość panelu jest osią
+API (`panelWidth="field" | "auto" | <długość CSS>`), krawędź przylegania — `panelAlign`.
+**Panel nie dziedziczy niczego po hoście**: motyw, krój i wielkość pisma są odczytywane
+z triggera przy otwarciu i przenoszone jawnie.
+
+**Bramka:** `apps/sandbox-e2e/src/select.spec.ts` — pomiar szerokości i przesunięcia
+panelu wobec pola, oraz kroju i wielkości pisma w panelu
+**Kontrola:** pomiar z [`lesson-35`](../lessons.md#lesson-35) (pole 301 px ⇒ panel
+275 px, przesunięcie 13 px; `Times New Roman` w panelu wobec `system-ui` w kontrolce) —
+test porównuje **konkretne wartości**, więc nie przechodzi na „mniej więcej pasuje"
+**Decyzja:** [0006 — kotwica i dziedziczenie w nakładce](../decisions/0006-overlay.md)
+**Lekcje:** [`lesson-18`](../lessons.md#lesson-18), [`lesson-35`](../lessons.md#lesson-35)
+
+---
+
+### <a id="req-api-size"></a>`req-api-size` — Wielkość jest jedną osią dla całej biblioteki
+
+**Obietnica.** Każdy komponent przyjmujący `size` (`sm`/`md`/`lg`) bierze wysokość
+z tokenu `--pct-control-height-{rozmiar}`. Wysokość jest wartością **wprost**
+(`min-height`), nie wynikiem paddingu i wysokości linii. Wariant rozmiaru **podmienia
+tokeny bazowe**, zamiast powtarzać reguły wyglądu. W obudowie wielkość należy do obudowy.
+
+**Bramka:** `apps/sandbox-e2e/src/size.spec.ts` — pomiar w przeglądarce
+**Kontrola:** test sprawdza równość wysokości **i jej konkretną wartość** — przy samej
+równości oba komponenty mogłyby spaść do wysokości linii tekstu i nadal „przechodzić"
+**Decyzja:** [0004 — wysokość wprost, nie z paddingu](../decisions/0004-explicit-height.md)
+**Lekcje:** [`lesson-29`](../lessons.md#lesson-29), [`lesson-34`](../lessons.md#lesson-34)
+
+---
+
+### <a id="req-api-animations"></a>`req-api-animations` — Animacje bez `@angular/animations`
+
+**Obietnica.** Animacje realizowane na CSS + Web Animations API. `@angular/animations`
+nie jest zależnością.
+
+**Bramka:** brak — luka: zakaz jest dotrzymany, ale **nic go nie pilnuje** — jedyne, co
+obowiązuje, to nieobecność pakietu w `package.json`. Naturalne miejsce to bramka
+zależności z [`req-project-dependencies`](project.md#req-project-dependencies)
+**Kontrola:** brak — luka: import `@angular/animations` dodany do pakietu musi zapalić
+**Wiąże przy:** pierwszym komponencie z wejściem/wyjściem (panel, dialog, toast) — wtedy
+trzeba też sprawdzić, że ruch bierze czas z tokenu ([`req-a11y-motion`](a11y.md#req-a11y-motion)),
+a nie z arkusza
+
+> Z WAAPI nie korzysta dziś nic; jedyne przejścia to `transition` w arkuszach.
