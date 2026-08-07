@@ -1,405 +1,576 @@
-# Review kierunkowy — `@pacit/components`
+# Directional review — `@pacit/components`
 
-**Data:** 2026-07-27 · **Stan:** 28 commitów, 7 komponentów, wszystkie bramki zielone
-**Zakres:** `docs/overview.md`, `libs/components`, `libs/tokens`, `apps/sandbox`, `apps/sandbox-e2e`, CI, wydanie
-**Metoda:** lektura całości źródeł + przebieg `nx run-many -t lint test build check-package --skip-nx-cache` (zielony; dwa ostrzeżenia budżetu SCSS: `select.scss` +337 B, `field.scss` +8 B)
+**Date:** 2026-07-27 · **State:** 28 commits, 7 components, every gate green
+**Scope:** `docs/overview.md`, `libs/components`, `libs/tokens`, `apps/sandbox`, `apps/sandbox-e2e`, CI, release
+**Method:** a full read of the sources plus a run of `nx run-many -t lint test build check-package --skip-nx-cache` (green; two SCSS budget warnings: `select.scss` +337 B, `field.scss` +8 B)
 
-Ten dokument odpowiada na trzy pytania: **czy kierunek jest dobry**, **co zmienić**, **co robić dalej** — plus osobno decyzję o RTL. Jest dokumentem roboczym, nie powierzchnią publiczną, więc zostaje po polsku (patrz ryzyko E, które dotyczy czego innego).
+This document answers three questions: **is the direction right**, **what to change**, **what to do next** — plus the RTL decision separately.
 
----
+> **A dated snapshot.** Translated into English on 2026-08-07 (task H4) and otherwise left as it
+> was written; the identifiers below (`wym-*`) belong to the namespace that H1 replaced, and the
+> [migration table](README.md#id-space-migration-2026-08-06) maps them onto today's. Its own
+> recommendation to keep the working documentation in Polish (risk E) was reversed on 2026-08-06:
+> the whole repository moves to English, because a rule with no gate is no rule.
 
-## 1. Werdykt
+## 1. Verdict
 
-Kierunek jest dobry — lepszy niż u konkurencji na osi, którą wybraliście. Ale **ta oś nigdzie nie jest nazwana wprost**, a bez tego „lepsza niż PrimeNG" jest celem nieosiągalnym z definicji: PrimeNG ma ~90 komponentów i dekadę przewagi. Na liczbę komponentów nie wygracie nigdy i nie ma sensu próbować.
+The direction is right — better than the competition on the axis you have chosen. But **that axis
+is nowhere named out loud**, and without it „better than PrimeNG" is a goal unreachable by
+definition: PrimeNG has ~90 components and a decade of lead. On the number of components you will
+never win, and there is no point trying.
 
-Wygrać można na czymś innym — i już to robicie, tylko bez zapisu:
+You can win on something else — and you already are, only without writing it down:
 
-> **To jest biblioteka, która każdą swoją obietnicę egzekwuje bramką potrafiącą nie przejść.**
+> **This is a library that enforces every promise it makes with a gate that can fail.**
 
-Contrast gate blokuje build. `check-package` bada spakowany artefakt, nie źródła. Bramka hydracji siedzi w `visit()`, więc obejmuje każdy widok naraz zamiast czekać na dopisanie do kolejnych speców. `wym-real-39` mówi wprost: _„nowa bramka nie jest gotowa, gdy przechodzi — jest gotowa, gdy pokazano, że potrafi nie przejść"_.
+The contrast gate blocks the build. `check-package` examines the packed artefact, not the sources.
+The hydration gate sits in `visit()`, so it covers every view at once instead of waiting to be
+added to the next spec. `wym-real-39` says it plainly: _„a new gate is not ready when it passes —
+it is ready when it has been shown that it can fail"_.
 
-Żadna z wymienionych bibliotek tego nie ma. Material ma dokumentację a11y; nikt nie faila builda na współczynniku kontrastu. PrimeNG ma silnik motywów w JS z problemami SSR/FOUC — wasze CSS-first zero-runtime jest po prostu lepszym rozwiązaniem tego samego problemu.
+None of the libraries named above has this. Material has a11y documentation; nobody fails a build
+on a contrast ratio. PrimeNG has a JS theme engine with SSR/FOUC problems — your CSS-first
+zero-runtime approach is simply a better solution to the same problem.
 
-**Do zrobienia:** zapisać to jako `wym-proj-0` w `overview.md`. Z tej tezy wynika cała reszta priorytetów, a nienazwana teza nie potrafi rozstrzygać sporów o kolejność.
+**To do:** write it down as `wym-proj-0` in `overview.md`. Every other priority follows from that
+thesis, and an unnamed thesis cannot settle arguments about order.
 
----
+## 2. What is already world class — and must not be traded away
 
-## 2. Co już jest światowej klasy — i czego nie wolno rozmienić
+| Thing                                                      | Why it is an advantage                                                                                                                    |
+| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `wym-token-13` — transitive closure of overrides           | A real defect PrimeNG had for years. Solved properly, with a regression test comparing a component token in `:root` and in a scope.       |
+| The contrast gate as a skin policy (`wym-token-11`)        | Nobody does this. `wym-token-12` (no `opacity`) closes the hole through which hex arithmetic lies about composition with the background.  |
+| Signal forms without `ControlValueAccessor` (`wym-real-9`) | A bet on Angular's future, verified by experiment rather than assumption. You will be ~2 years ahead of Material.                         |
+| `check-package` examining the artefact (`wym-real-36`)     | „A green build is no proof that the artefact can be used" — a sentence worth a whole textbook chapter.                                    |
+| Negative controls for gates (`wym-a11y-4`, `-38`, `-39`)   | A methodology above that of commercial libraries. A gate that always passes is more dangerous than no gate.                               |
+| Cursor map × `elementFromPoint` (`wym-real-27`)            | It caught a class of defect („it looks clickable") that no automated audit sees.                                                          |
+| The motion axis in tokens (`wym-a11y-5`)                   | Motion reduction holds from one rule, and a new component inherits it by using the token — instead of starting from its absence.          |
+| The `wym-real-*` log                                       | **The jewel of the project.** An ADR with empirical evidence beside every decision. For onboarding people it is worth more than the code. |
 
-| Rzecz                                                    | Dlaczego to przewaga                                                                                                                    |
-| -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| `wym-token-13` — domknięcie przechodnie nadpisań         | Realny błąd, który PrimeNG miał latami. Rozwiązany poprawnie, z testem regresyjnym porównującym token komponentowy w `:root` i w scope. |
-| Bramka kontrastu jako policy skórki (`wym-token-11`)     | Nikt tego nie robi. `wym-token-12` (zakaz `opacity`) domyka lukę, przez którą matematyka na hexach kłamie o kompozycji z tłem.          |
-| Signal forms bez `ControlValueAccessor` (`wym-real-9`)   | Zakład na przyszłość Angulara, zweryfikowany eksperymentem, nie założeniem. Będziecie ~2 lata przed Material.                           |
-| `check-package` badający artefakt (`wym-real-36`)        | „Zielony build nie jest dowodem, że artefakt da się użyć" — zdanie warte całego rozdziału podręcznika.                                  |
-| Kontrole odniesienia bramek (`wym-a11y-4`, `-38`, `-39`) | Metodyka wyższa niż w bibliotekach komercyjnych. Bramka, która zawsze przechodzi, jest groźniejsza niż jej brak.                        |
-| Mapa kursora × `elementFromPoint` (`wym-real-27`)        | Wykryła klasę wad („widać, że da się kliknąć"), której nie widzi żaden audyt automatyczny.                                              |
-| Oś ruchu w tokenach (`wym-a11y-5`)                       | Redukcja ruchu obowiązuje z jednej reguły, a nowy komponent dziedziczy ją przez samo użycie tokenu — zamiast startować od jej braku.    |
-| Log `wym-real-*`                                         | **Klejnot projektu.** ADR z empirycznym dowodem przy każdej decyzji. Przy onboardingu ludzi wart więcej niż kod.                        |
+These are **structural** advantages — the competition cannot catch up with a feature, only by
+rewriting a foundation. Any decision to go faster at the cost of one of them is a bad trade.
 
-Te rzeczy są przewagą **strukturalną** — konkurencja nie dogoni ich funkcją, tylko przepisaniem fundamentu. Każda decyzja o przyspieszeniu kosztem którejś z nich jest złym interesem.
+## 3. Where the direction is at risk
 
----
+### A. No behaviour layer — the largest architectural risk
 
-## 3. Gdzie kierunek jest zagrożony
+Today every component is built by hand and `core` is 5 small files. The components ahead (dialog,
+menu, tooltip, popover, tabs, drawer, autocomplete, date picker, tree) all need **the same set**:
+focus trap, focus restore, roving tabindex / `aria-activedescendant`, the closing stack (Escape
+order with nested overlays!), scroll lock, `inert` background, live announcer, positioning.
 
-### A. Brak warstwy zachowań — największe ryzyko architektoniczne
+`wym-api-6` says CDK a11y „binds only at the dialog". That is one component too late. The decision
+to take **now**: do overlay and focus semantics belong to CDK, or to you?
 
-Dziś każdy komponent jest budowany ręcznie, a `core` to 5 małych plików. Kolejne komponenty (dialog, menu, tooltip, popover, tabs, drawer, autocomplete, date picker, tree) potrzebują **tego samego zestawu**: focus trap, powrót fokusu, roving tabindex / `aria-activedescendant`, stos zamykania (kolejność Escape przy zagnieżdżonych nakładkach!), blokada scrolla, `inert` tła, live announcer, pozycjonowanie.
+**Recommendation: mechanics from CDK, our own API.** Wrap `Overlay`, `FocusTrap`, `LiveAnnouncer`
+and `Directionality` in a `@pacit/components/core` layer so that CDK types **never** leak into the
+public API. Then CDK stays one replaceable dependency instead of growing into the contract.
 
-`wym-api-6` mówi, że CDK a11y „wiąże dopiero przy dialogu". To za późno o jeden komponent. Decyzja do podjęcia **teraz**: czy semantyka nakładek i fokusu należy do CDK, czy do was?
+The pattern is ready — `PCT_FIELD` is exactly that: a contract through which the field chrome and
+the control talk, knowing nothing about each other beyond the interface. Repeat it for overlays.
 
-**Rekomendacja: mechanika z CDK, API własne.** Owinąć `Overlay`, `FocusTrap`, `LiveAnnouncer`, `Directionality` w warstwę `@pacit/components/core` tak, by typy CDK **nigdy** nie wyciekły do publicznego API. Wtedy CDK zostaje jedną wymienną zależnością, a nie wrasta w kontrakt.
+### B. Select is a closed component
 
-Wzorzec macie gotowy — `PCT_FIELD` jest dokładnie tym: kontraktem, przez który obudowa i kontrolka rozmawiają, nie wiedząc o sobie nic ponad interfejs. Powtórzcie go dla nakładek.
+`options: PctSelectOption<T>[]` is the PrimeNG model and that is its ceiling. Missing: projected
+`pct-option`, an option template, groups, multiple selection, filtering, clearing, loading/async
+state, virtualisation.
 
-### B. Select jest komponentem zamkniętym
+Something else matters more, though: **the list machinery** (typeahead, `enabledIndexes`,
+`moveActive`, `activeIndex`) sits as private methods in `PctSelect`. Autocomplete, multiselect,
+menu, combobox and a command palette all need the same.
 
-`options: PctSelectOption<T>[]` to model PrimeNG i to jest jego sufit. Brakuje: rzutowanych `pct-option`, szablonu opcji, grup, wielokrotnego wyboru, filtrowania, czyszczenia, stanu ładowania/async, wirtualizacji.
+**Extract it into `core` before the second consumer, not after** — otherwise `wym-real-21` (the
+same logic copied into four controls) repeats on a much bigger piece and with a much dearer fix.
 
-Ważniejsze jest jednak co innego: **maszyneria listy** (typeahead, `enabledIndexes`, `moveActive`, `activeIndex`) siedzi jako prywatne metody w `PctSelect`. Tego samego potrzebują autocomplete, multiselect, menu, combobox i paleta poleceń.
+### C. Nothing proves the library scales
 
-**Wyciągnąć do `core` przed drugim konsumentem, nie po nim** — inaczej powtórzy się `wym-real-21` (ta sama logika skopiowana do czterech kontrolek), tylko na dużo większym kawałku i przy dużo droższej poprawce.
+There is no performance budget, no benchmark and no test on large data. `@for` over all options,
+no virtualisation. A library meant to beat Telerik has to answer „what happens at 10 000 rows /
+5 000 options". That is a legitimate choice for v0 — but it must be a **written** choice, because
+it changes the inside of the select and determines the architecture of the table.
 
-### C. Nic nie dowodzi, że biblioteka skaluje
+### D. The public API is not machine-controlled
 
-Brak budżetu wydajności, benchmarku i testu na dużych danych. `@for` po wszystkich opcjach, zero wirtualizacji. Biblioteka mająca bić Telerika musi odpowiedzieć na „co się dzieje przy 10 000 wierszy / 5 000 opcji". To legalny wybór dla v0 — ale musi być **wyborem zapisanym**, bo zmienia wnętrze selecta i determinuje architekturę tabeli.
+`wym-token-7` promises a versioned `data-pct-part` contract. Today: no inventory of parts, no
+snapshot of public exports, no test firing when somebody renames an input.
 
-### D. Publiczne API nie jest kontrolowane maszynowo
+For a library whose selling point is „you can safely style the inside", that is **a promise
+without a gate** — exactly the pattern you criticise yourselves in `wym-real-36`. It is the only
+place where the project behaves like an ordinary library.
 
-`wym-token-7` obiecuje wersjonowany kontrakt `data-pct-part`. Dziś: nie ma spisu części, nie ma snapshotu publicznych eksportów, nie ma testu zapalającego, gdy ktoś zmieni nazwę inputu.
+### E. The documentation is in Polish — including the JSDoc
 
-Dla biblioteki, której argumentem sprzedażowym jest „możesz bezpiecznie stylować wnętrze", to jest **obietnica bez bramki** — czyli dokładnie ten wzorzec, który sami krytykujecie w `wym-real-36`. To jedyne miejsce, w którym projekt zachowuje się jak zwykła biblioteka.
-
-### E. Dokumentacja jest po polsku — łącznie z JSDoc
-
-Najpoważniejsze pojedyncze znalezisko wobec celu „najlepsza znana biblioteka Angulara".
+The single most serious finding against the goal „the best known Angular library".
 
 ```ts
 /** Wybrana wartość — wymagane pole kontraktu `FormValueControl`. */
 readonly value = model<NoInfer<T> | null>(null);
 ```
 
-Ten tekst wyświetla się **w podpowiedzi edytora u każdego konsumenta biblioteki** — nie w waszym repo, tylko u nich, przy każdym najechaniu na input.
+That text shows up **in the editor tooltip of every consumer of the library** — not in your repo
+but in theirs, on every hover over an input.
 
-Podział, który nic nie kosztuje:
+A split that costs nothing:
 
-- `overview.md`, `review.md`, log `wym-real-*` — **zostają po polsku.** Tam się myśli, a myśli się we własnym języku. To nie jest powierzchnia publiczna.
-- README, docs app, **JSDoc na publicznym API**, CHANGELOG, komunikaty ostrzeżeń deweloperskich, szablony issue, komunikaty bramek widoczne dla konsumenta — **angielski.**
+- `overview.md`, `review.md`, the `wym-real-*` log — **stay in Polish.** That is where thinking
+  happens, and thinking happens in one's own language. It is not a public surface.
+- README, the docs app, **JSDoc on the public API**, CHANGELOG, developer warnings, issue
+  templates, gate messages visible to a consumer — **English.**
 
-Ostrzeżenia w `[pctNumber]` już są angielskie i uzasadnienie w `wym-api-21` jest właściwe („czyta je programista, nie użytkownik"). JSDoc podlega tej samej zasadzie, tylko o krok dalej.
+The warnings in `[pctNumber]` are already in English and the justification in `wym-api-21` is the
+right one („a programmer reads them, not a user"). JSDoc falls under the same rule, one step
+further.
 
-### F. Jedna przeglądarka, jedna platforma
+### F. One browser, one platform
 
-`playwright.config.mts`: wyłącznie chromium, reszta zakomentowana. Dla biblioteki chwalącej się a11y to za mało — Safari ma najwięcej wad CSS (`:has()`, `inert`, `dialog`, `field-sizing`), a `forced-colors` testujecie wyłącznie emulacją.
+`playwright.config.mts`: chromium only, the rest commented out. For a library that advertises a11y
+that is not enough — Safari has the most CSS defects (`:has()`, `inert`, `dialog`,
+`field-sizing`), and you test `forced-colors` by emulation alone.
 
-Minimum: **webkit + firefox w macierzy funkcjonalnej.** Zrzuty wizualne zostają na linux/chromium — rasteryzacja i tak by je rozjechała, co sami zapisaliście w `snapshotPathTemplate`.
+Minimum: **webkit + firefox in the functional matrix.** Visual screenshots stay on linux/chromium
+— rasterisation would break them anyway, which you wrote down yourselves in `snapshotPathTemplate`.
 
-### G. Brak testu konsumenta
+### G. No consumer test
 
-`.verdaccio/config.yml` i target `local-registry` w root `project.json` **istnieją i nie są przez nic używane**. Skoro własna lekcja brzmi „zielony build nie jest dowodem, że artefakt da się użyć", to logicznym następnym krokiem po `check-package` jest: `npm pack` → instalacja do świeżej aplikacji → build z SSR → jeden e2e. `check-package` bada artefakt statycznie; to sprawdziłoby go w użyciu.
+`.verdaccio/config.yml` and the `local-registry` target in the root `project.json` **exist and are
+used by nothing**. If your own lesson says „a green build is no proof that the artefact can be
+used", then the logical next step after `check-package` is: `npm pack` → install into a fresh
+application → an SSR build → one e2e. `check-package` examines the artefact statically; this would
+examine it in use.
 
----
+## 4. RTL — the decision
 
-## 4. RTL — decyzja
+**Do not drop it. But do not „support" RTL either — make it a constraint, not a feature.**
 
-**Nie rezygnować. Ale też nie „wspierać" RTL — uczynić go ograniczeniem, nie funkcją.**
+The reasoning, because the question was asked honestly and deserves numbers rather than an opinion.
 
-Uzasadnienie, bo pytanie było postawione uczciwie i zasługuje na liczby, nie na opinię.
+**The simplification you were after does not exist.** `padding-inline-start` is neither harder nor
+longer than `padding-left`. There is no dividend to collect at the CSS layer — the stylesheets
+already use logical properties consistently, so dropping RTL would save not one line, it would
+only remove the guarantee that they stay that way.
 
-**Uproszczenie, o które chodziło, nie istnieje.** `padding-inline-start` nie jest trudniejsze ani dłuższe od `padding-left`. Nie ma dywidendy do zainkasowania na warstwie CSS — arkusze i tak już konsekwentnie używają właściwości logicznych, więc rezygnacja nie oszczędziłaby ani jednej linii, tylko odebrała gwarancję, że tak zostanie.
+**The real cost of RTL is elsewhere** and it is bounded: Left/Right arrows have to swap in
+horizontal layouts (radiogroup, tabs, slider, carousel), overlays have to mirror (CDK
+`Directionality` does that), `scrollLeft` has a different sign. That is work on **future**
+components, not on the current ones.
 
-**Realny koszt RTL leży gdzie indziej** i jest ograniczony: strzałki Lewo/Prawo muszą się zamieniać w układach poziomych (radiogroup, tabs, slider, carousel), nakładki muszą się odbijać (CDK `Directionality` to robi), `scrollLeft` ma inny znak. To praca przy **przyszłych** komponentach, nie przy obecnych.
+**The retrofit cost is non-linear.** Today: a lint rule + an axis in the sandbox + a handful of
+screenshots ≈ 1–2 days. After 40 components: weeks, plus hunting down every arrow and animation
+with a baked-in direction.
 
-**Koszt retrofitu jest nieliniowy.** Dziś: reguła lintu + oś w sandboxie + garść zrzutów ≈ 1–2 dni. Po 40 komponentach: tygodnie, plus polowanie na każdą strzałkę i animację o zaszytym kierunku.
+**Commercially it is a tender gate, not a preference.** Material, PrimeNG, Telerik and Ant all
+have RTL. A library without RTL drops out of procurement in the Gulf, in Israel and in some public
+organisations **by a checkbox, before anyone looks at quality** — the exact opposite of the
+strategy „we win on quality".
 
-**Rynkowo to bramka przetargowa, nie preferencja.** Material, PrimeNG, Telerik i Ant mają RTL. Biblioteka bez RTL wypada z postępowań w Zatoce, Izraelu i u części organizacji publicznych **odhaczeniem checkboxa, zanim ktokolwiek spojrzy na jakość** — czyli dokładna odwrotność strategii „wygrywamy jakością".
+### What to do
 
-### Co zrobić
+1. Write it down as a requirement (`wym-styl-3`): _library stylesheets use logical properties only_.
+2. **Gate:** a lint rule (stylelint or a script of your own in the spirit of `check-package.mjs`)
+   forbidding `left`/`right`, `margin-left`, `padding-right`, `text-align: left|right`,
+   `border-*-left` in `libs/components/**/*.scss`. Exceptions only with a comment giving the
+   reason — you already have two good ones (the spinner's `border-right-color`, the symmetric
+   `left: 50%` in hit areas).
+3. **A `dir` axis in the sandbox shell** — of the same shape as the existing theme, skin and size
+   axes. Then every view becomes an RTL test in passing, with no separate examples to write. The
+   same trick you already used in `wym-sbx-2` for the theme.
+4. One RTL visual screenshot per component + an axe audit in RTL.
+5. **Draw the boundary explicitly:** _„the layout mirrors; full bidi (mixed directions inside one
+   run of text, isolation when truncating labels) is not solved in v1"_.
 
-1. Zapisać jako wymaganie (`wym-styl-3`): _arkusze biblioteki używają wyłącznie właściwości logicznych_.
-2. **Bramka:** reguła lintu (stylelint albo własny skrypt w duchu `check-package.mjs`) zakazująca `left`/`right`, `margin-left`, `padding-right`, `text-align: left|right`, `border-*-left` w `libs/components/**/*.scss`. Wyjątki wyłącznie z komentarzem uzasadniającym — macie już dwa dobre (`border-right-color` spinnera, symetryczne `left: 50%` w strefach trafienia).
-3. **Oś `dir` w powłoce sandboxa** — tej samej postaci co istniejące osie motywu, skórki i wielkości. Wtedy każdy widok staje się przy okazji testem RTL, bez pisania osobnych przykładów. To ta sama sztuczka, którą już zastosowaliście w `wym-sbx-2` dla motywu.
-4. Jeden zrzut wizualny RTL per komponent + audyt axe w RTL.
-5. **Wytyczyć granicę wprost:** _„układ się odbija; pełnego bidi (mieszane kierunki w jednym ciągu tekstu, izolacja przy skracaniu etykiet) nie rozwiązujemy w v1"_.
+What should be deliberately excluded is **full bidi**, not RTL. That is the honest omission the
+question was reaching for.
 
-Świadomie wyłączyć należy **pełne bidi**, nie RTL. To jest ta uczciwa rezygnacja, o którą pytanie chodziło.
+## 5. Findings in the code
 
----
+### 5.1 No `aria-label` on controls whose role is inside — a real a11y gap
 
-## 5. Znaleziska w kodzie
+`<pct-select aria-label="Kraj">` lands on the `<pct-select>` host, which has no role.
+`role="combobox"` is on the inner `<button>`. A standalone select with no `label` and no field
+chrome is **an unnamed combobox**, and a consumer has no way to fix it.
 
-### 5.1 Brak `aria-label` na kontrolkach z rolą wewnątrz — realna luka a11y
+Needed: explicit `ariaLabel` / `ariaLabelledby` inputs forwarded to the element that has the role.
+For a library of this class that is a mandatory escape hatch — it concerns `pct-select` and every
+future component whose role does not sit on the host.
 
-`<pct-select aria-label="Kraj">` ląduje na hoście `<pct-select>`, który nie ma roli. `role="combobox"` jest na wewnętrznym `<button>`. Samodzielny select bez `label` i bez obudowy jest **nienazwanym comboboxem**, a konsument nie ma jak tego naprawić.
+### 5.2 `PCT_TEXTS` will not survive a language change at runtime
 
-Potrzebne: jawne inputy `ariaLabel` / `ariaLabelledby` przenoszone na element z rolą. Dla biblioteki tej klasy to obowiązkowa furtka — dotyczy `pct-select` i każdego przyszłego komponentu, w którym rola nie siedzi na hoście.
-
-### 5.2 `PCT_TEXTS` nie przeżyje zmiany języka w runtime
-
-`providePctTexts` zwraca `{ provide, useValue }` — statyczny obiekt. `PctSelect` czyta go raz:
+`providePctTexts` returns `{ provide, useValue }` — a static object. `PctSelect` reads it once:
 
 ```ts
 protected readonly texts = inject(PCT_TEXTS);
-readonly placeholder = input<string>(this.texts.selectPlaceholder); // odczyt przy konstrukcji
+readonly placeholder = input<string>(this.texts.selectPlaceholder); // read at construction
 ```
 
-Aplikacja przełączająca język bez przeładowania strony (bardzo częsty wzorzec) **nie zobaczy nowych napisów** — nawet gdyby podmieniła zawartość tokenu, `placeholder` ma już wartość domyślną z chwili konstrukcji.
+An application switching language without a page reload (a very common pattern) **will not see the
+new strings** — even if it swapped the token's content, `placeholder` already holds a default value
+from the moment of construction.
 
-Do rozstrzygnięcia zanim `PCT_TEXTS` urośnie: albo token niesie `Signal<PctTexts>`, albo `providePctTexts` przyjmuje fabrykę, albo zapisujemy wprost, że zmiana języka wymaga przeładowania. Trzecia opcja jest obronna, ale musi być decyzją, nie przeoczeniem — dziś nie jest nigdzie zapisana.
+To be settled before `PCT_TEXTS` grows: either the token carries `Signal<PctTexts>`, or
+`providePctTexts` takes a factory, or we write down plainly that a language change requires a
+reload. The third option is defensive, but it has to be a decision rather than an oversight — and
+today it is written down nowhere.
 
-### 5.3 `_tokens.scss` jest generowany, wieziony w pakiecie i używany przez zero linii kodu
+### 5.3 `_tokens.scss` is generated, shipped in the package and used by zero lines of code
 
-Komponenty piszą `var(--pct-*)` surowymi łańcuchami (159 unikalnych, zero `@use` w arkuszach komponentów). `wym-token-2` wymaga map SCSS „do użytku wewnętrznego" — użytku nie ma.
+Components write `var(--pct-*)` as raw strings (159 unique ones, zero `@use` in component
+stylesheets). `wym-token-2` requires SCSS maps „for internal use" — there is no use.
 
-Albo usunąć z wymagania i z pakietu, albo uczynić obowiązkową drogą odwołania do tokenu. Za drugim przemawia `wym-real-43` (literówka ma być błędem kompilacji), choć akurat tu `check-package` łapie literówkę post factum — więc to nie żywa wada, tylko martwy artefakt w publikowanym pakiecie.
+Either drop it from the requirement and from the package, or make it the mandatory road to a token.
+For the second speaks `wym-real-43` (a typo should be a compile error), although here
+`check-package` catches the typo after the fact — so this is not a live defect, only a dead
+artefact in a published package.
 
-### 5.4 `track option.value` w `select.html`
+### 5.4 `track option.value` in `select.html`
 
-Dla `T` nieprymitywnego to śledzenie po referencji, a dwie opcje o tej samej wartości dają NG0955 w dev mode. Przy generycznym `T` nic tego nie broni. Albo `track $index`, albo udokumentowany wymóg unikalności z ostrzeżeniem pod `isDevMode()`.
+For a non-primitive `T` this tracks by reference, and two options with the same value give NG0955
+in dev mode. With a generic `T` nothing prevents it. Either `track $index`, or a documented
+uniqueness requirement with a warning under `isDevMode()`.
 
-### 5.5 `PctField.attach()` — ostatni wygrywa po cichu
+### 5.5 `PctField.attach()` — the last one wins silently
 
-`private readonly control = signal<PctFieldControl | null>(null)`; `attach` po prostu nadpisuje. Dwie kontrolki w jednej obudowie to cicha wada z gatunku tych, które projekt zwykle łapie. Tani `console.warn` pod `isDevMode()`.
+`private readonly control = signal<PctFieldControl | null>(null)`; `attach` simply overwrites. Two
+controls in one field chrome is a silent defect of the kind this project usually catches. A cheap
+`console.warn` under `isDevMode()`.
 
-### 5.6 Brak `LICENSE` w repo i `repository` w manifeście
+### 5.6 No `LICENSE` in the repository and no `repository` in the manifest
 
-Wiecie o tym (`check-package` ostrzega, tabela „Czego jeszcze nie ma" to wymienia), ale `"license": "MIT"` w manifeście bez pliku LICENSE to formalnie niepełna licencja — a to pierwsza rzecz, którą sprawdza dział prawny konsumenta korporacyjnego.
+You know about it (`check-package` warns, the „What is still missing" table lists it), but
+`"license": "MIT"` in the manifest without a LICENSE file is formally an incomplete licence — and
+that is the first thing a corporate consumer's legal department checks.
 
-### 5.7 Próg 80% pokrycia jest zadeklarowany i nieegzekwowany
+### 5.7 The 80% coverage threshold is declared and not enforced
 
-`wym-proj-4` / `wym-real-5`. To jedyne miejsce, gdzie projekt łamie własną naczelną zasadę: obietnica bez bramki. Zarazem najstarszy dług — im dłużej, tym więcej do nadrobienia.
+`wym-proj-4` / `wym-real-5`. This is the one place where the project breaks its own first
+principle: a promise without a gate. It is also the oldest debt — the longer it stands, the more
+there is to make up.
 
----
+## 6. Roadmap
 
-## 6. Mapa drogowa
+The logic of the order: **first build the machine that makes components correct by construction,
+then produce components fast.** The reverse order is why PrimeNG has 90 components and a11y
+problems in half of them.
 
-Logika kolejności: **najpierw zbuduj maszynę, która czyni komponenty poprawnymi z konstrukcji, potem produkuj komponenty szybko.** Odwrotna kolejność to powód, dla którego PrimeNG ma 90 komponentów i problemy a11y w połowie z nich.
+### Phase 0 — close the promises already made
 
-### Faza 0 — domknąć obietnice już złożone
+Everything here gets dearer with every additional component.
 
-Wszystko tutaj drożeje z każdym kolejnym komponentem.
+| Task                                                                        | Closes                     |
+| --------------------------------------------------------------------------- | -------------------------- |
+| `coverageInclude` + an enforced coverage threshold                          | `wym-proj-4`, `wym-real-5` |
+| A snapshot of the public TS API (`api-extractor` → `.api.md` in the repo)   | risk D                     |
+| A generated `data-pct-part` inventory + a gate on unaccepted change         | `wym-token-7`, risk D      |
+| A snapshot of token names (you already generate `tokens.ts` — add a gate)   | `wym-token-2`              |
+| JSDoc of the public API + README into English                               | risk E                     |
+| RTL: requirement + lint + a `dir` axis in the sandbox + screenshots         | section 4                  |
+| Closing the shape of `PctConfig` **with a per-component defaults strategy** | `wym-api-8`                |
+| Browser matrix: + webkit, + firefox (functionally)                          | risk F                     |
+| `LICENSE`, `repository`                                                     | release readiness          |
+| A consumer test on Verdaccio (`pack` → install → SSR build → e2e)           | risk G                     |
+| Fixes 5.1–5.5                                                               | —                          |
 
-| Zadanie                                                                        | Zamyka                     |
-| ------------------------------------------------------------------------------ | -------------------------- |
-| `coverageInclude` + egzekwowany próg pokrycia                                  | `wym-proj-4`, `wym-real-5` |
-| Snapshot publicznego API TS (`api-extractor` → `.api.md` w repo)               | ryzyko D                   |
-| Generowany inwentarz `data-pct-part` + bramka na niezaakceptowaną zmianę       | `wym-token-7`, ryzyko D    |
-| Snapshot nazw tokenów (już generujecie `tokens.ts` — dołożyć bramkę)           | `wym-token-2`              |
-| JSDoc publicznego API + README na angielski                                    | ryzyko E                   |
-| RTL: wymaganie + lint + oś `dir` w sandboxie + zrzuty                          | sekcja 4                   |
-| Domknięcie kształtu `PctConfig` **wraz ze strategią domyślnych per komponent** | `wym-api-8`                |
-| Macierz przeglądarek: + webkit, + firefox (funkcjonalnie)                      | ryzyko F                   |
-| `LICENSE`, `repository`                                                        | gotowość do publikacji     |
-| Test konsumenta na Verdaccio (`pack` → install → build SSR → e2e)              | ryzyko G                   |
-| Naprawy 5.1–5.5                                                                | —                          |
+A note on `PctConfig`: the question is not „which fields to add" but **„do per-component defaults
+go through configuration (`providePctConfig({ button: { variant: 'outline' } })`) or through
+tokens"**. Material and PrimeNG both ended up with default providers. Decide before the fifteenth
+component, because later it is a breaking change in every one of them.
 
-Uwaga do `PctConfig`: pytanie nie brzmi „jakie pola dołożyć", tylko **„czy domyślne per komponent idą przez konfigurację (`providePctConfig({ button: { variant: 'outline' } })`), czy przez tokeny"**. Material i PrimeNG oba skończyły na dostawcach domyślnych. Zdecydować przed piętnastym komponentem, bo później to zmiana łamiąca w każdym z nich.
+### Phase 1 — the behaviour layer in `core`
 
-### Faza 1 — warstwa zachowań w `core`
+The thing that makes Phase 2 fast.
 
-To, co czyni Fazę 2 szybką.
+- **List navigation**: `activeIndex`, typeahead, skipping disabled — extract from `PctSelect`.
+- **Overlay**: positioning, the closing stack (Escape order when nested), outside click, `inert`
+  background, scroll lock, inheritance of theme and writing direction. The last one is **solved
+  once in `wym-real-35` — generalise it**, because the lesson was „every inherited property is
+  silently broken in an overlay", which is a rule, not a peculiarity of the select.
+- **Focus**: trap, restore, initial focus, roving tabindex as an alternative to
+  `aria-activedescendant`.
+- **Live announcer**: one `polite` channel, one `assertive`, with deduplication — not a region per
+  component.
+- **`*pctTemplate` / `TemplateRef`** (`wym-api-7`) — it also unblocks icons.
+- **Icons** (`wym-ikon-2`): `pct-icon` taking a projected SVG **plus** a `PCT_ICONS` token mapping
+  semantic names (`chevron-down`, `check`, `close`, `calendar`) onto templates, with built-in
+  defaults. It satisfies „zero dependencies" and „swap in your own set" at once, without forcing
+  anybody into either.
 
-- **Nawigacja po liście**: `activeIndex`, typeahead, pomijanie wyłączonych — wyciągnąć z `PctSelect`.
-- **Nakładka**: pozycjonowanie, stos zamykania (kolejność Escape przy zagnieżdżeniu), klik na zewnątrz, `inert` tła, blokada scrolla, dziedziczenie motywu i pisma. To ostatnie jest **rozwiązane raz w `wym-real-35` — uogólnić**, bo lekcja brzmiała „każda właściwość dziedziczona jest po cichu zerwana w nakładce", a więc to reguła, nie osobliwość selecta.
-- **Fokus**: trap, powrót, fokus początkowy, roving tabindex jako alternatywa dla `aria-activedescendant`.
-- **Live announcer**: jeden kanał `polite`, jeden `assertive`, z deduplikacją — nie region per komponent.
-- **`*pctTemplate` / `TemplateRef`** (`wym-api-7`) — odblokowuje też ikony.
-- **Ikony** (`wym-ikon-2`): `pct-icon` przyjmujący rzutowany SVG **plus** token `PCT_ICONS` mapujący nazwy semantyczne (`chevron-down`, `check`, `close`, `calendar`) na szablony, z wbudowanymi wpisanymi domyślnymi. Spełnia naraz „zero zależności" i „podmień na swój zestaw", bez zmuszania nikogo do jednego i drugiego.
+### Phase 2 — components in order of architectural debt
 
-### Faza 2 — komponenty w kolejności długu architektonicznego
+1. **Dialog** — forces a focus trap, scroll lock, `inert`, focus restore, the Escape stack, SSR
+   safety. The highest architectural gain per component.
+2. **Tooltip + Popover** — forces the „describes vs names" distinction, hover/focus/touch parity
+   (the tooltip is the most frequently broken component in _every_ library) and motion reduction on
+   a real enter/leave, which `wym-api-9` is waiting for.
+3. **Menu** — roving focus, submenus, reuse of the typeahead from Phase 1.
+4. **Closing out the select family** — projected `pct-option`, an option template, groups, multiple
+   selection, filtering, clearing, async/loading, virtualisation. Deliberately **after** the
+   behaviour layer, otherwise you build it twice.
+5. **Switch, Textarea (autosize), Slider, Date picker** — the date picker is the most wanted and
+   the hardest; it forces deep i18n (calendars, first day of the week, locale formats), which
+   `[pctNumber]` has already started.
+6. **Table / DataGrid** — the true differentiator against everybody. It has to stand on a
+   **headless core** (column model, sorting, filtering, grouping, selection — all as signals)
+   separated from rendering. Otherwise it becomes the component everybody forks.
+7. Toast, Tabs, Accordion, Drawer, Pagination, Progress, Skeleton, Chips, Avatar, Badge,
+   Breadcrumb, Stepper, Tree.
 
-1. **Dialog** — wymusza focus trap, blokadę scrolla, `inert`, powrót fokusu, stos Escape, bezpieczeństwo SSR. Najwyższy zysk architektoniczny na komponent.
-2. **Tooltip + Popover** — wymusza rozróżnienie „opisuje vs nazywa", parytet hover/focus/touch (tooltip to najczęściej zepsuty komponent w _każdej_ bibliotece) i redukcję ruchu na realnym wejściu/wyjściu, na co `wym-api-9` czeka.
-3. **Menu** — roving focus, podmenu, ponowne użycie typeaheadu z Fazy 1.
-4. **Domknięcie rodziny select** — rzutowane `pct-option`, szablon opcji, grupy, wielokrotny wybór, filtrowanie, czyszczenie, async/ładowanie, wirtualizacja. Świadomie **po** warstwie zachowań, inaczej budujecie to dwa razy.
-5. **Switch, Textarea (autosize), Slider, Date picker** — date picker jest najbardziej pożądany i najtrudniejszy; wymusza głębokie i18n (kalendarze, pierwszy dzień tygodnia, formaty locale), co `[pctNumber]` już zaczęło.
-6. **Table / DataGrid** — prawdziwy różnicownik wobec wszystkich. Musi stać na **headless rdzeniu** (model kolumn, sortowanie, filtrowanie, grupowanie, zaznaczenie — wszystko jako sygnały) oddzielonym od renderowania. Inaczej stanie się tym komponentem, który wszyscy forkują.
-7. Toast, Tabs, Accordion, Drawer, Pagination, Progress, Skeleton, Chips, Avatar, Badge, Breadcrumb, Stepper, Tree.
+### Phase 3 — the trust surface
 
-### Faza 3 — powierzchnia zaufania
+`apps/docs` rendering the **generated** inventories of parts and tokens (not hand-written ones),
+migration guides, a compatibility matrix, published benchmarks, an a11y conformance report and a
+log of screen-reader testing.
 
-`apps/docs` renderujący **wygenerowane** inwentarze części i tokenów (nie pisane ręcznie), przewodniki migracji, macierz kompatybilności, opublikowane benchmarki, raport zgodności a11y i log testów z czytnikami ekranu.
+A note on the order: `overview.md` places `apps/docs` at „the first external user". That is too
+late in one specific respect — **the inventory of parts and tokens has to be generated and gated
+from Phase 0**. The pretty page that renders it can come in Phase 3. Those two things have to be
+separated.
 
-Uwaga do kolejności: `overview.md` umieszcza `apps/docs` przy „pierwszym zewnętrznym użytkowniku". To za późno w jednym konkretnym aspekcie — **spis części i tokenów musi być generowany i bramkowany od Fazy 0**. Ładna strona, która to renderuje, może przyjść w Fazie 3. Te dwie rzeczy trzeba rozdzielić.
+## 7. What separates „very good" from „the best in the world"
 
----
+Phases 0–3 give a library technically better than the competition. The things below decide whether
+anybody notices and whether adoption can be built on it. All of them are feasible only after Phase
+1, but they have to be planned now, because some of them shape the API.
 
-## 7. Co odróżnia „bardzo dobrą" od „najlepszej na świecie"
+### 7.1 A component „Definition of Done" — the single most important artefact to write
 
-Fazy 0–3 dają bibliotekę lepszą technicznie od konkurencji. Poniższe rzeczy decydują o tym, czy ktokolwiek to zauważy i czy da się na tym zbudować adopcję. Wszystkie są wykonalne dopiero po Fazie 1, ale planować trzeba je teraz, bo część wpływa na kształt API.
+Today the quality of every component comes from the same person having built it in the same mode of
+attention. That scales neither to a second person nor to a twentieth component. What is needed is a
+list a component has to pass to enter a release — **machine-checked** as far as possible, not by a
+human eye:
 
-### 7.1 „Definition of Done" komponentu — najważniejszy pojedynczy artefakt do napisania
+| Criterion                                                          | How it is checked                     |
+| ------------------------------------------------------------------ | ------------------------------------- |
+| The ARIA APG pattern named explicitly in the class JSDoc           | review                                |
+| A keyboard map written down and tested key by key                  | e2e                                   |
+| `forced-colors: active` — state not carried by colour alone        | e2e (you already have the pattern)    |
+| `prefers-reduced-motion` — duration from a token, not a stylesheet | e2e + a grep for `@media` in the file |
+| RTL — no physical properties, a screenshot in `dir="rtl"`          | lint + screenshot                     |
+| SSR + hydration with no `NG05xx`                                   | the gate in `visit()` (you have it)   |
+| Forms: signal forms **and** `[formControl]` **and** `[(ngModel)]`  | unit tests                            |
+| Size axis `sm`/`md`/`lg` aligned to `--pct-control-height-*`       | a measuring e2e (you have it)         |
+| Density axis                                                       | after `wym-token-8`                   |
+| Touch target ≥ 24×24 px directly, not through a spacing exception  | e2e (you have it)                     |
+| `data-pct-part` parts registered in the inventory                  | the gate from Phase 0                 |
+| Tokens registered + an entry in `contrast.policy.json`             | the token build                       |
+| A visual screenshot + an axe audit on its own sandbox view         | e2e (you have it)                     |
+| A screen-reader test log                                           | manual, see 7.2                       |
+| A docs page with live examples                                     | Phase 3                               |
+| An entrypoint size budget                                          | see 7.2                               |
 
-Dziś jakość każdego komponentu bierze się z tego, że budowała go ta sama osoba w tym samym trybie uwagi. To nie skaluje się ani na drugą osobę, ani na dwudziesty komponent. Potrzebna jest lista, którą komponent musi przejść, żeby wejść do wydania — w maksymalnym stopniu **sprawdzana maszynowo**, nie ludzkim okiem:
+Half of this already exists as scattered practice. The value is in writing it down and enforcing it
+— otherwise the twentieth component gets only the checks somebody happened to remember.
 
-| Kryterium                                                          | Jak sprawdzane                   |
-| ------------------------------------------------------------------ | -------------------------------- |
-| Wzorzec z ARIA APG wskazany wprost w JSDoc klasy                   | review                           |
-| Mapa klawiatury spisana i przetestowana klawisz po klawiszu        | e2e                              |
-| `forced-colors: active` — stan nie niesiony samą barwą             | e2e (macie już wzorzec)          |
-| `prefers-reduced-motion` — czas z tokenu, nie z arkusza            | e2e + grep na `@media` w arkuszu |
-| RTL — brak właściwości fizycznych, zrzut w `dir="rtl"`             | lint + zrzut                     |
-| SSR + hydracja bez `NG05xx`                                        | bramka w `visit()` (macie)       |
-| Formularze: signal forms **i** `[formControl]` **i** `[(ngModel)]` | testy jednostkowe                |
-| Oś wielkości `sm`/`md`/`lg` wyrównana do `--pct-control-height-*`  | e2e pomiarowy (macie)            |
-| Oś gęstości                                                        | po `wym-token-8`                 |
-| Obszar dotyku ≥ 24×24 px wprost, nie przez wyjątek odstępu         | e2e (macie)                      |
-| Części `data-pct-part` zarejestrowane w inwentarzu                 | bramka z Fazy 0                  |
-| Tokeny zarejestrowane + wpis w `contrast.policy.json`              | build tokenów                    |
-| Zrzut wizualny + audyt axe na własnym widoku sandboxa              | e2e (macie)                      |
-| Log testu z czytnikiem ekranu                                      | ręcznie, patrz 7.2               |
-| Strona docs z żywymi przykładami                                   | Faza 3                           |
-| Budżet rozmiaru entrypointu                                        | patrz 7.2                        |
+### 7.2 The gates that do not exist yet
 
-Połowa tego już istnieje jako rozproszone praktyki. Wartość polega na spisaniu i wymuszeniu — inaczej dwudziesty komponent dostanie tylko te kontrole, o których ktoś akurat pamiętał.
+Consistently with the `wym-proj-0` thesis — every promise below needs a machine that can fire on it:
 
-### 7.2 Bramki, których jeszcze nie ma
+- **A size budget per entrypoint.** Today `field` is 62 kB and `select` 43 kB in FESM. Without a
+  budget nobody notices when it doubles. Track it over time, fail on a jump.
+- **Verification of tree-shaking.** `wym-ws-5` promises that the primary entrypoint is minimal and
+  that you import through the secondary ones. Nothing checks it: a test should build an application
+  importing **only** `@pacit/components/button` and check that the bundle contains neither
+  `PctField` nor CDK Overlay.
+- **Mutation testing of the core** (Stryker on `core`, `number`, `select`). It is the only method
+  that answers „do these tests catch anything at all" — exactly the question the project asks
+  itself at every gate. 136 green tests are not yet proof.
+- **Property tests for the number parser.** `[pctNumber]` parses more broadly than it formats, over
+  many locales, with clamping to bounds. A perfect candidate for fuzzing: „for any `n` and any
+  locale, `parse(format(n)) === n`". That one property covers cases nobody invents by hand.
+- **Memory-leak detection.** You caught the timer leak in `PctSelect` by reading the code. With
+  twenty components carrying overlays you need a test that mounts and destroys a component N times
+  and checks the number of detached nodes.
+- **A zoneless gate.** `wym-real-8` removed `zone.js` and boasts that „coming back by accident is
+  impossible". Nothing guards it: a test should fail when `zone.js` appears in the dependency tree
+  or `window.Zone` in the bundle.
+- **Automated screen-reader tests.** Tools exist that drive NVDA and VoiceOver from tests
+  (guidepup). Even a few scenarios — „what the reader announces when the select opens", „what after
+  a value change" — give you something **no** Angular library has. Axe examines structure; it does
+  not hear.
 
-Konsekwentnie z tezą `wym-proj-0` — każda z poniższych obietnic potrzebuje maszyny, która potrafi na niej zapalić:
+### 7.3 Formal conformance — the shortest road to corporate adoption
 
-- **Budżet rozmiaru per entrypoint.** Dziś `field` to 62 kB, `select` 43 kB w FESM. Bez budżetu nikt nie zauważy, kiedy się podwoi. Śledzić w czasie, failować na skoku.
-- **Weryfikacja tree-shakingu.** `wym-ws-5` obiecuje, że primary entrypoint jest minimalny i że importuje się przez secondary. Nic tego nie sprawdza: test powinien zbudować aplikację importującą **wyłącznie** `@pacit/components/button` i sprawdzić, że w bundlu nie ma ani `PctField`, ani CDK Overlay.
-- **Testowanie mutacyjne rdzenia** (Stryker na `core`, `number`, `select`). To jedyna metoda, która odpowiada na pytanie „czy te testy w ogóle coś łapią" — czyli dokładnie pytanie, które projekt zadaje sobie przy każdej bramce. 136 zielonych testów nie jest jeszcze dowodem.
-- **Testy własnościowe parsera liczb.** `[pctNumber]` ma parsowanie szersze od formatowania, wiele locale i domykanie do granic. To idealny kandydat na fuzz: „dla dowolnego `n` i dowolnego locale, `parse(format(n)) === n`". Ta jedna własność pokryje przypadki, których nikt nie wymyśli ręcznie.
-- **Wykrywanie wycieków pamięci.** Wyciek timera w `PctSelect` złapaliście czytaniem kodu. Przy dwudziestu komponentach z nakładkami potrzebny jest test montujący i niszczący komponent N razy i sprawdzający liczbę detached nodes.
-- **Bramka zoneless.** `wym-real-8` usunęło `zone.js` i chwali się, że „powrót jest niemożliwy przez przypadek". Nic tego nie pilnuje: test powinien failować, gdy `zone.js` pojawi się w drzewie zależności albo `window.Zone` w bundlu.
-- **Zautomatyzowane testy z czytnikiem ekranu.** Istnieją narzędzia sterujące NVDA i VoiceOver z poziomu testów (guidepup). Nawet kilka scenariuszy — „co czytnik ogłasza po otwarciu selecta", „co po zmianie wartości" — daje wam coś, czego nie ma **żadna** biblioteka Angulara. Axe bada strukturę; on nie słyszy.
+In 2026 this is not decoration, it is an entry condition:
 
-### 7.3 Zgodność formalna — najkrótsza droga do adopcji korporacyjnej
+- **The European Accessibility Act** has been enforceable since June 2025. Digital products sold to
+  consumers in the EU have to be accessible. Companies are frantically looking for components they
+  can prove it with.
+- **EN 301 549** — the standard cited in every European public tender.
+- **VPAT / ACR** — the document a purchasing department demands before anybody sees the code.
 
-W 2026 to nie jest ozdobnik, tylko warunek wejścia:
+Nobody in the Angular ecosystem ships a library with a ready ACR and **machine proof** behind every
+point. You have the proof earlier than the document — the reverse of the industry norm and the
+strongest possible sales material. Generating the ACR from the existing gates is largely editorial
+work.
 
-- **European Accessibility Act** jest egzekwowalny od czerwca 2025. Produkty cyfrowe sprzedawane konsumentom w UE muszą być dostępne. Firmy panicznie szukają komponentów, którymi da się to udowodnić.
-- **EN 301 549** — norma przywoływana w każdym europejskim przetargu publicznym.
-- **VPAT / ACR** — dokument, którego dział zakupów wymaga zanim ktokolwiek zobaczy kod.
+On top of that: a CSP guide (Angular emits inline styles — a consumer with a strict `style-src` has
+to know what to do), an SBOM at release, a written security policy. Provenance you already have.
 
-Nikt w ekosystemie Angulara nie dostarcza biblioteki z gotowym ACR-em i z **maszynowym dowodem** stojącym za każdym punktem. Wy macie ten dowód wcześniej niż dokument — to odwrotność normy w branży i najmocniejszy możliwy materiał sprzedażowy. Wygenerowanie ACR-a z istniejących bramek jest w dużej mierze pracą redakcyjną.
+### 7.4 A bridge to design tools
 
-Do tego: przewodnik CSP (Angular emituje style inline — konsument z restrykcyjnym `style-src` musi wiedzieć, co zrobić), SBOM przy wydaniu, opisana polityka bezpieczeństwa. Provenance już macie.
+The source of truth is DTCG (`wym-token-1`) and that is **an unused advantage**. The format is read
+and written by Figma / Tokens Studio. Two-way synchronisation — a designer changes a token in
+Figma, the PR trips the contrast gate, the build ships a skin — is a workflow no Angular library
+has, and one that sells itself to every team with a designer.
 
-### 7.4 Most do narzędzi projektowych
+It ties into `wym-theme-5` (the path for an outsider to build a skin). Done together they give a
+complete story: _„your designer defines the theme in Figma, and our gate will not let them ship a
+theme with too little contrast"_. That is a sentence that wins presentations.
 
-Źródłem prawdy jest DTCG (`wym-token-1`) i to jest **niewykorzystany atut**. Format jest czytany i zapisywany przez Figmę / Tokens Studio. Dwukierunkowa synchronizacja — projektant zmienia token w Figmie, PR podnosi bramkę kontrastu, build wypuszcza skórkę — to workflow, którego nie ma żadna biblioteka Angulara, a który sprzedaje się sam każdemu zespołowi z designerem.
+### 7.5 A surface for AI agents
 
-Wiąże się to z `wym-theme-5` (ścieżka budowania skórki przez osobę z zewnątrz). Zrobione razem, dają kompletną historię: _„twój projektant definiuje motyw w Figmie, nasza bramka nie pozwoli mu wypuścić motywu o za niskim kontraście"_. To jest zdanie, które wygrywa prezentacje.
+In 2026 a large share of code is written with assistants. A library an agent uses correctly the
+first time beats a technically better library the agent keeps using wrongly. Concretely:
 
-### 7.5 Powierzchnia dla agentów AI
+- `llms.txt` in the package and on the docs site — a concise catalogue of components, inputs and
+  usage patterns.
+- A machine-readable catalogue (JSON) generated from the same source as the docs — components,
+  inputs, types, parts, tokens.
+- A dozen or so canonical examples per component, marked as reference.
+- Possibly an MCP server for the library — you already have the Angular CLI MCP in `.mcp.json`, so
+  the pattern is familiar.
 
-W 2026 znaczna część kodu powstaje z udziałem asystentów. Biblioteka, której agent używa poprawnie za pierwszym razem, wygrywa z biblioteką lepszą technicznie, którą agent stale używa źle. Konkretnie:
+The cost is low, because you generate all this data for the docs and the Phase 0 gates anyway. It is
+mostly a matter of a second output format.
 
-- `llms.txt` w pakiecie i na stronie docs — zwięzły katalog komponentów, inputów i wzorców użycia.
-- Maszynowo czytelny katalog (JSON) generowany z tego samego źródła co docs — komponenty, inputy, typy, części, tokeny.
-- Kilkanaście kanonicznych przykładów per komponent, oznaczonych jako referencyjne.
-- Ewentualnie serwer MCP dla biblioteki — macie już MCP Angular CLI w `.mcp.json`, więc wzorzec jest wam znajomy.
+### 7.6 i18n taken seriously
 
-Koszt jest niski, bo wszystkie te dane i tak generujecie na potrzeby docsów i bramek z Fazy 0. To głównie kwestia drugiego formatu wyjścia.
+`PCT_TEXTS` is a good start and a good decision (a separate token, partial overrides). To close:
 
-### 7.6 i18n na poważnie
+- reactivity on a runtime language change (finding 5.2),
+- plurals / ICU wherever a string contains a number („3 of 17 selected"),
+- compatibility with `$localize` for applications using Angular's native i18n,
+- date, number and currency formats per locale (`[pctNumber]` started, the date picker will close
+  it),
+- **first day of the week, non-Gregorian calendars** — exactly the work that, together with RTL,
+  opens the Middle Eastern markets.
 
-`PCT_TEXTS` to dobry początek i dobra decyzja (osobny token, nadpisywanie częściowe). Do domknięcia:
+### 7.7 Performance as a published number
 
-- reaktywność przy zmianie języka w runtime (znalezisko 5.2),
-- liczba mnoga / ICU tam, gdzie napis zawiera liczbę („wybrano 3 z 17"),
-- zgodność z `$localize` dla aplikacji używających natywnego i18n Angulara,
-- formaty dat, liczb i walut per locale (`[pctNumber]` zaczęło, date picker to domknie),
-- **pierwszy dzień tygodnia, kalendarze niegregoriańskie** — to jest dokładnie ta praca, która razem z RTL otwiera rynki Bliskiego Wschodu.
+If you are faster than PrimeNG and Material — prove it publicly, with a repeatable harness in the
+repository: first render time, update time at 1 000 rows, bundle size for a typical form, hydration
+cost. A benchmark the competition can run on their own machines is credible; a chart in a README is
+not.
 
-### 7.7 Wydajność jako opublikowana liczba
+It is also a gate: a performance regression should fail CI rather than be noticed by a consumer.
 
-Jeśli jesteście szybsi od PrimeNG i Material — udowodnijcie to publicznie, powtarzalnym harnessem w repo: czas pierwszego renderu, czas aktualizacji przy 1 000 wierszy, rozmiar bundla dla typowego formularza, koszt hydracji. Benchmark, który konkurencja może u siebie uruchomić, jest wiarygodny; wykres w README nie jest.
+### 7.8 Project governance as a trust signal
 
-To jest też bramka: regresja wydajności ma failować CI, a nie być zauważona przez konsumenta.
+A company does not buy a library on the strength of its code, but on its predictability:
 
-### 7.8 Zarządzanie projektem jako sygnał zaufania
+- a versioning policy and a **support window** (how many Angular versions back, for how long),
+- a deprecation policy (how many minors of warning before removal),
+- a migration collection **with real migrations** — today it is empty, and rightly ships in the
+  package from the first release (`wym-wer-2`), but the first breaking change has to arrive with a
+  codemod, not with a paragraph in the CHANGELOG,
+- a public roadmap and an RFC process for API changes,
+- CONTRIBUTING with the „Definition of Done" from 7.1,
+- `beta`/`rc` channels with `dist-tag` (`wym-wer-1` leaves this to be pinned down).
 
-Firma nie kupuje biblioteki na podstawie kodu, tylko na podstawie przewidywalności:
-
-- polityka wersjonowania i **okno wsparcia** (ile wersji Angulara wstecz, jak długo),
-- polityka deprecacji (ile minorów ostrzeżenia przed usunięciem),
-- kolekcja migracji **z realnymi migracjami** — dziś jest pusta, i słusznie jest w pakiecie od pierwszego wydania (`wym-wer-2`), ale pierwsza zmiana łamiąca musi przyjechać z codemodem, nie z akapitem w CHANGELOG-u,
-- publiczna mapa drogowa i proces RFC dla zmian API,
-- CONTRIBUTING z „Definition of Done" z 7.1,
-- kanały `beta`/`rc` z `dist-tag` (`wym-wer-1` zostawia to do doprecyzowania).
-
----
-
-## 8. Kolejność scalona
+## 8. The merged order
 
 ```
-Faza 0  ──  bramki i obietnice          (2–3 tyg.)   blokuje wszystko
-Faza 1  ──  warstwa zachowań w core     (3–4 tyg.)   blokuje Fazę 2
-Faza 2  ──  dialog → tooltip → menu → select → pola → tabela
-             └─ równolegle: 7.1 DoD, 7.2 bramki (każda przy pierwszym komponencie, który jej potrzebuje)
-Faza 3  ──  apps/docs, ACR, benchmarki, most Figma, powierzchnia AI
+Phase 0  ──  gates and promises          (2–3 weeks)  blocks everything
+Phase 1  ──  behaviour layer in core     (3–4 weeks)  blocks Phase 2
+Phase 2  ──  dialog → tooltip → menu → select → fields → table
+              └─ in parallel: 7.1 DoD, 7.2 gates (each at the first component that needs it)
+Phase 3  ──  apps/docs, ACR, benchmarks, the Figma bridge, the AI surface
 ```
 
-Jedyna kolejność, której nie wolno odwrócić: **7.1 („Definition of Done") musi powstać przed pierwszym komponentem Fazy 2**, bo inaczej dialog zostanie zbudowany bez części kontroli i stanie się wzorcem dla następnych.
+The one order that must not be reversed: **7.1 („Definition of Done") has to exist before the first
+component of Phase 2**, otherwise the dialog will be built without some of the checks and become
+the pattern for the ones after it.
 
----
+## 9. The axis and its gate
 
-## 9. Oś i jej bramka
+The first version of this section said: _„name the axis you win on, and write a gate for it"_ — and
+glued together two different things, suggesting that the gate for the axis is the gate on
+`data-pct-part`. Not so; they are two matters of different orders of magnitude. Separated below.
 
-Pierwsza wersja tej sekcji brzmiała: _„nazwać oś, na której wygrywacie, i napisać dla niej bramkę"_ — i skleiła dwie różne rzeczy, sugerując, że bramką dla osi jest bramka na `data-pct-part`. Nieprawda; to dwie sprawy o różnym rzędzie wielkości. Poniżej rozdzielone.
+### 9.1 What the axis is
 
-### 9.1 Czym jest oś
+An axis is the competitive dimension you win on. The competition has theirs: PrimeNG — the number
+of components, Material — fidelity to the specification and the Google brand, Telerik — the support
+contract and the depth of the table, Spartan — headless and code ownership through copy-paste.
 
-Oś to wymiar konkurencyjny, na którym wygrywacie. Konkurencja ma swoje: PrimeNG — liczba komponentów, Material — wierność specyfikacji i marka Google, Telerik — kontrakt wsparcia i głębia tabeli, Spartan — headless i własność kodu przez copy-paste.
+Yours cannot be guessed from the README, but **it can be read out of `wym-real-*`**. That log looks
+like a collection of independent lessons and is nine occurrences of one — see the table in
+`wym-proj-0` (`overview.md`). Every one of them says „silently", „nobody saw it", „born dead",
+„it survived".
 
-Waszej nie da się zgadnąć z README, ale **da się ją wyczytać z `wym-real-*`**. Ten log wygląda na zbiór niezależnych lekcji, a jest dziewięcioma wystąpieniami jednej — patrz tabela w `wym-proj-0` (`overview.md`). Każda z nich mówi „po cichu", „nikt tego nie widział", „urodził się martwy", „przetrwała".
+Hence the name of the axis:
 
-Stąd nazwa osi:
+> **`wym-proj-0` — in this library nothing breaks silently.**
 
-> **`wym-proj-0` — W tej bibliotece nic nie psuje się po cichu.**
+Three reasons to name it by the **silent defect** rather than by „verifiability" or „quality":
 
-Trzy powody, żeby nazwać ją przez **cichą wadę**, a nie przez „weryfikowalność" czy „jakość":
+1. It is derived from your own evidence, not from a marketing ambition.
+2. It explains **why** every gate needs a negative control — a gate without one is another silent
+   defect, one floor up.
+3. It is a sentence a person holds in their head **while writing code**. „Verifiability of
+   promises" is not.
 
-1. Jest wyprowadzona z waszych własnych dowodów, nie z ambicji marketingowej.
-2. Wyjaśnia, **dlaczego** każda bramka potrzebuje kontroli odniesienia — bramka bez niej jest kolejną cichą wadą, tylko piętro wyżej.
-3. Jest zdaniem, które człowiek trzyma w głowie **pisząc kod**. „Weryfikowalność obietnic" nie jest.
+### 9.2 What the axis is about
 
-### 9.2 Czego oś dotyczy
+Not a11y, not tokens, not tests. It is about **a class of failure that runs through every layer** —
+the one where the platform answers an error with silence:
 
-Nie a11y, nie tokenów, nie testów. Dotyczy **klasy awarii przechodzącej przez wszystkie warstwy** — tej, w której platforma na błąd odpowiada milczeniem:
+| layer       | what the platform does instead of erroring               | where in your code             |
+| ----------- | -------------------------------------------------------- | ------------------------------ |
+| CSS         | missing `var()` → the initial value                      | `wym-real-36`, `check-package` |
+| DOM reads   | a non-existent token → `''`                              | `wym-real-43`                  |
+| test infra  | no screenshot baseline → record the current one as good  | `wym-real-39`                  |
+| test infra  | emulation does not arrive → a test on default values     | `wym-real-38`                  |
+| build graph | a missing edge → the build succeeds, the output is wrong | `wym-real-36`                  |
+| SSR         | id drift → a silent re-render, ARIA into the void        | `wym-real-31`                  |
+| a11y        | state by colour alone → gone in `forced-colors`          | `wym-real-40`                  |
+| types       | `T` too wide → contradictory bindings compile            | `wym-real-37`                  |
 
-| warstwa       | co robi platforma zamiast błędu                       | gdzie u was                    |
-| ------------- | ----------------------------------------------------- | ------------------------------ |
-| CSS           | brak `var()` → wartość początkowa                     | `wym-real-36`, `check-package` |
-| odczyt DOM    | nieistniejący token → `''`                            | `wym-real-43`                  |
-| infra testowa | brak wzorca zrzutu → zapisz bieżący jako poprawny     | `wym-real-39`                  |
-| infra testowa | emulacja nie dociera → test na wartościach domyślnych | `wym-real-38`                  |
-| graf builda   | brak krawędzi → build się udaje, wyjście złe          | `wym-real-36`                  |
-| SSR           | rozjazd id → cichy re-render, ARIA w próżnię          | `wym-real-31`                  |
-| a11y          | stan samą barwą → znika w `forced-colors`             | `wym-real-40`                  |
-| typy          | `T` za szerokie → sprzeczne wiązania kompilują się    | `wym-real-37`                  |
+The common denominator: **the default behaviour of a layer is „nothing happened"**. That is why a
+missing gate never shows up as an absence — it shows up as green.
 
-Wspólny mianownik: **domyślne zachowanie warstwy to „nic się nie stało"**. Dlatego brak bramki nigdy nie objawia się jako brak — objawia się jako zieleń.
+### 9.3 The gate for the axis itself
 
-### 9.3 Bramka dla samej osi
+The gate for the axis is not about parts or tokens. It is about **`overview.md`**.
 
-Bramka dla osi nie dotyczy części ani tokenów. Dotyczy **`overview.md`**.
+The drift between the document and reality has already happened and has already been patched once.
+The heading „How to read this document" exists precisely because the requirements could be read as
+a description of the state of the code — and the answer was **adding 18 annotations by hand**
+(`495483d`). That is the same pattern as the manual `node libs/tokens/build.mjs` in CI before
+`wym-real-36`: a workaround masking a missing structure instead of exposing it.
 
-Rozjazd dokumentu z rzeczywistością już wystąpił i już go raz łatano. Nagłówek „Jak czytać ten dokument" istnieje dokładnie dlatego, że wymagania dawały się czytać jako opis stanu kodu — a odpowiedzią było **ręczne dopisanie 18 adnotacji** (`495483d`). To ten sam wzorzec co ręczny `node libs/tokens/build.mjs` w CI sprzed `wym-real-36`: obejście maskujące brak struktury zamiast go ujawnić.
+The gate is **a registry in which every requirement names its gate and that gate's negative
+control** (`wym-proj-6`):
 
-Bramką jest **rejestr, w którym każde wymaganie wskazuje swoją bramkę i jej kontrolę odniesienia** (`wym-proj-6`):
+| column    | meaning                                                                  |
+| --------- | ------------------------------------------------------------------------ |
+| `wym-*`   | the promise                                                              |
+| `gate`    | the path to the target / test / script that fires on it                  |
+| `control` | the test proving that gate can **fail**                                  |
+| `state`   | **derived**, not typed in: `enforced` / `none (deliberately, because …)` |
 
-| kolumna    | znaczenie                                                              |
-| ---------- | ---------------------------------------------------------------------- |
-| `wym-*`    | obietnica                                                              |
-| `bramka`   | ścieżka do targetu / testu / skryptu, który na niej zapala             |
-| `kontrola` | test dowodzący, że ta bramka potrafi **nie** przejść                   |
-| `stan`     | **wyprowadzony**, nie wpisany: `egzekwowane` / `brak (świadomie, bo…)` |
+The script reads `overview.md` and checks three things: (1) the requirement has an entry, (2) the
+named target/file **exists and is wired into CI**, (3) the negative control exists. Point (2) is
+exactly the same check as point 5 in `check-package.mjs`, where you verify that the schematic
+factory points at a compiled file rather than at TS from before the build.
 
-Skrypt czyta `overview.md` i sprawdza trzy rzeczy: (1) wymaganie ma wpis, (2) wskazany target/plik **istnieje i jest wpięty w CI**, (3) kontrola odniesienia istnieje. Punkt (2) to dokładnie ta sama kontrola, co punkt 5 w `check-package.mjs`, gdzie sprawdzacie, że fabryka schematica wskazuje na skompilowany plik, a nie na TS sprzed builda.
+A deliberately missing gate is allowed — it has to be written down **together with the reason**.
+Then `_(not implemented)_` stops being an annotation somebody remembered to add and becomes a
+derived consequence of the registry's state: the document stops lying by construction rather than
+by discipline.
 
-Świadomy brak bramki jest dozwolony — musi być wpisany **wraz z powodem**. Wtedy `_(niezrealizowane)_` przestaje być adnotacją, którą ktoś pamiętał dopisać, a staje się wyprowadzoną konsekwencją stanu rejestru: dokument przestaje kłamać z definicji, a nie z dyscypliny.
+A side effect, in fact the main benefit: **adding a requirement without a gate stops being possible
+silently.** The axis begins to enforce itself.
 
-Efekt uboczny, właściwie główna korzyść: **dopisanie wymagania bez bramki przestaje być możliwe po cichu.** Oś zaczyna egzekwować samą siebie.
+### 9.4 The order — the reverse of what the first version suggested
 
-### 9.4 Kolejność — odwrotna, niż sugerowała pierwsza wersja
+`data-pct-part` is not the gate for the axis. It is **the first item the registry will show red** —
+along with the 80% coverage threshold, tree-shaking of the primary entrypoint (`wym-ws-5`), the
+irreversibility of zoneless (`wym-real-8`), the RTL intention and a few others.
 
-`data-pct-part` to nie jest bramka dla osi. To **pierwsza pozycja, którą rejestr zapali na czerwono** — razem z progiem pokrycia 80%, tree-shakingiem primary entrypointu (`wym-ws-5`), nieodwracalnością zoneless (`wym-real-8`), intencją RTL i kilkoma innymi.
+So: **first the registry, then whatever the registry points at.** Because the registry will tell
+you how many gaps you cannot see yet — today I estimate 6–10, but that is guessing, and the guessing
+is the problem. Only a machine will count them.
 
-Czyli: **najpierw rejestr, potem to, co rejestr wskaże.** Bo rejestr powie wam, ilu braków jeszcze nie widzicie — dziś szacuję 6–10, ale to zgadywanie i na tym polega problem. Policzy je dopiero maszyna.
-
-To jest jedyne miejsce w repozytorium, w którym projekt zachowuje się jak zwykła biblioteka: obietnica w dokumentacji, bez maszyny potrafiącej na niej zapalić. Wszystko inne tutaj jest lepsze od tego standardu — i to jest właśnie powód, żeby ten jeden wyjątek zamknąć jako pierwszy.
+This is the one place in the repository where the project behaves like an ordinary library: a
+promise in the documentation, with no machine able to fire on it. Everything else here is better
+than that standard — and that is exactly the reason to close this one exception first.
