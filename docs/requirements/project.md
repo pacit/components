@@ -246,14 +246,18 @@ Budżet obejmuje **prozę**, nie kod: `@example` i przykłady są poza nim w ca�
 w publicznym API są najcenniejsze. Objętość jest problemem `tools/` (~590 linii samych
 nagłówków bramek), nie JSDoc.
 
+**Decyzja:** [0017 — jedno miejsce na fakt: kryterium i budżet](../decisions/0017-one-home-per-fact.md)
 **Bramka:** brak — luka: budżet objętości prozy per plik, snapshot z tolerancją
-**dwustronną**, w idiomie `libs/components/rozmiar.snapshot.md`. Granica jest zapisana
-wprost, a nie przemilczana: maszyna mierzy **objętość, nie nośność** — wzrost staje się
-linią w diffie, a ocena, czy akapit jest nośny, zostaje po stronie review
+**dwustronną**, w idiomie `libs/components/rozmiar.snapshot.md`. Wartości są rozstrzygnięte
+w [0017](../decisions/0017-one-home-per-fact.md) (nagłówek bramki 12 linii + 1 na punkt, wpis
+dziennika 25, pozycja zadania 12 domknięta / 20 otwarta), a mianownik już liczy
+`tools/measure-prose.mjs` — pomiar bez targetu, z którego ta bramka wyrośnie. Granica jest
+zapisana wprost, a nie przemilczana: maszyna mierzy **objętość, nie nośność** — wzrost staje
+się linią w diffie, a ocena, czy akapit jest nośny, zostaje po stronie review
 **Kontrola:** brak — luka: plik z dopisanym akapitem ponad tolerancję musi zapalić; plik
 skrócony bez przepisania snapshotu — również
 **Wiąże przy:** zamknięciu kompresji ([sekcja H](../plan.md#h-jeden-język-repozytorium)) —
-**nie wcześniej**. Snapshot założony na dzisiejszych 76-liniowych nagłówkach zamroziłby je
+**nie wcześniej**. Snapshot założony na dzisiejszych 74-liniowych nagłówkach zamroziłby je
 jako stan zaakceptowany, dokładnie tak jak snapshot nazw tokenów założony przed
 normalizacją ([`lesson-49`](../lessons.md#lesson-49))
 

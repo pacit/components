@@ -73,11 +73,11 @@ H  jeden język, bez wody      angielski + kompresja; część publiczna siedzi 
 ```
 
 **Faza A jest zamknięta**, a najbliższym kamieniem milowym nie jest wydanie, tylko
-**pierwszy push do publicznego repozytorium** (B2). Przed nim zostało: **B1** (`LICENSE`,
-minuty), **H3** (`README.md`) i **H4** (`docs/`) — bo push jest premierą, a nie kopią
-zapasową. **H1 jest zrobione** (2026-08-06), więc wszystko, co od teraz powstaje, powstaje
-od razu w docelowej przestrzeni nazw. Reszta B (B3, B4, B8) wiąże dopiero przy publikacji
-na npm.
+**pierwszy push do publicznego repozytorium** (B2). Przed nim zostało: **H2** (kryterium
+zwięzłości, godziny), **H3** (`README.md`) i **H4** (`docs/`) — bo push jest premierą,
+a nie kopią zapasową. **B1 i H1 są zrobione** (2026-08-06), więc `LICENSE` ma bramkę po obu
+stronach `npm pack`, a wszystko, co od teraz powstaje, powstaje od razu w docelowej
+przestrzeni nazw. Reszta B (B3, B4, B8) wiąże dopiero przy publikacji na npm.
 Równolegle: F1 jest odblokowane (A3 i A4 dały mu oba inwentarze do wyrenderowania),
 a C jest wypełniaczem.
 
@@ -1035,13 +1035,14 @@ Momenty wiązania są dwa i **wcześniejszy jest szerszy**: pierwszy push (B2) o
 w `npm pack`. Poza nimi **H1**, które nie wiąże z niczym zewnętrznym, ale drożeje z każdym
 dopisanym zdaniem.
 
-Zmierzone 2026-08-06 (`git ls-files` + skan diakrytyków):
+Zmierzone 2026-08-06 (`git ls-files` + skan diakrytyków), wiersz `docs/` odświeżony
+2026-08-07:
 
 | warstwa                        | rozmiar                                                  | wiąże przy           |
 | ------------------------------ | -------------------------------------------------------- | -------------------- |
 | powierzchnia publiczna pakietu | 24 pliki w `dist`, w tym komplet 8 `types/*.d.ts`        | wydaniu (B3/B4)      |
 | `README.md` repozytorium       | 251 linii, z polskimi napisami w przykładach kodu        | **pierwszym pushu**  |
-| dokumentacja `docs/`           | 37 plików, 6 593 linie                                   | **pierwszym pushu**  |
+| dokumentacja `docs/`           | 40 plików, 7 590 linii                                   | **pierwszym pushu**  |
 | `AGENTS.md` i workflowy        | 35 linii + nazwa „Wydanie" i kroki widoczne w Actions    | **pierwszym pushu**  |
 | identyfikatory i ich cytowania | 82 + 59 nazw, 2 571 cytowań w 175 plikach                | —                    |
 | źródła `libs`                  | 39 plików, z tego 9 specyfikacji                         | —                    |
@@ -1087,29 +1088,18 @@ Zmierzone 2026-08-06 (`git ls-files` + skan diakrytyków):
     przepisana tak, żeby mówiła prawdę: nie zmienia się **z powodu zmiany sensu**, bo od
     tego jest nowe wymaganie
 
-- [ ] **H2 — kryterium zwięzłości i budżet** _(decyzja, nie pisanie)_
-  - **przed H3–H8**, inaczej „skompresowane" znaczy tyle, ile ktoś akurat czuje, a drugi
-    przebieg po tych samych plikach zrobi to jeszcze raz inaczej
-  - kryterium jest już obietnicą ([`req-project-concise`](requirements/project.md#req-project-concise)):
-    zostaje to, co odpowiada na „dlaczego nie oczywiście?", znika to, co powtarza kod albo
-    opowiada przebieg dochodzenia
-  - **narzędziem jest odsyłacz, nie skracanie zdań** — i to jest zmiana, którą umożliwia
-    dopiero publiczne repozytorium: dokumentacja stoi pod stabilnym adresem, więc nagłówek
-    bramki może **wskazać** decyzję i lekcję zamiast je streścić. `check-tokens.mjs` ma dziś
-    76 linii nagłówka i po połowie powtarza wpis A4 stąd oraz
-    [`lesson-49`](lessons.md#lesson-49). Nagłówek ma odpowiedzieć „co ta bramka mierzy i jak
-    ją uruchomić"; „dlaczego akurat tak" ma jedno miejsce i to nie jest komentarz w kodzie
-  - **celem jest `tools/`, nie JSDoc.** Tam siedzi objętość: 13 skryptów, ~590 linii samych
-    nagłówków. Budżet ~15 linii na nagłówek (co mierzy + lista punktów + użycie) i ~20 na
-    wpis w dzienniku, dziś odpowiednio 34–76 i 40+
-  - **JSDoc nie dostaje limitu.** Sześć linii nie starczy na `@example` ani na wyjaśnienie
-    czegokolwiek, a przykład jest w publicznym API najcenniejszy — kod i `@example` są poza
-    budżetem w ogóle. Regułą dla JSDoc jest ta sama co wyżej: nie powtarzaj tego, do czego
-    możesz odesłać
-  - budżet w snapshocie zakłada się **po** przejściu warstw, nigdy przed: założony dziś
-    zamraża bloat jako stan zaakceptowany — to ten sam błąd, który A4 złapało przy nazwach
-    tokenów ([`lesson-49`](lessons.md#lesson-49))
-  - koszt: godziny, decyzja jest całym zadaniem · _notatki:_ —
+- [x] **H2 — kryterium zwięzłości i budżet** _(2026-08-07)_
+  - rozstrzygnięte: [0017](decisions/0017-one-home-per-fact.md) — jedno miejsce na fakt,
+    budżet per warstwa: nagłówek bramki 12 linii + 1 na punkt, wpis dziennika 25, pozycja
+    zadania 12 domknięta / 20 otwarta, JSDoc bez limitu (`@example` poza budżetem w ogóle)
+  - pomiar wjechał do repozytorium: `tools/measure-prose.mjs`, bez targetu — bramka
+    (`req-project-concise`) powstaje po kompresji i na jej wyniku, nie na dzisiejszym stanie
+  - plan dawał dwie liczby, pomiar wymusił trzecią: pozycje zadań to 969 linii, a domknięta
+    pozycja powtarza ze swojego wpisu dziennika do 26,6% ciągów sześciu słów (A10)
+  - znalezione przy okazji: indeks odwrotny rejestru pokazywał **59 lekcji z 59** jako
+    niecytowane — generator pytał o stary prefiks (`lekcja-…`) po H1; po poprawce jest sześć
+  - koszt: ~0,5 dnia (plan zakładał godziny) · _notatki:_ decyzja od razu po angielsku —
+    `docs/` wiąże przy pierwszym pushu, więc polska wersja żyłaby trzy dni
 
 - [ ] **H3 — strona tytułowa repozytorium**
   - `README.md` (**251 linii**), `AGENTS.md` (35) i nazwy w `.github/workflows/` — workflow
@@ -1126,9 +1116,11 @@ Zmierzone 2026-08-06 (`git ls-files` + skan diakrytyków):
   - koszt: ~0,5 dnia · _notatki:_ —
 
 - [ ] **H4 — dokumentacja `docs/`**
-  - 37 plików, 6 593 linie — największa pozycja i jedyna, w której tłumaczenie **może coś
-    stracić**: to jest miejsce, gdzie się myśli, a nie zapis wyniku. Kompresja wg H2 zdejmie
-    z tego część, bo `plan.md` (1 600 linii) i `review.md` w dużej mierze się powtarzają
+  - 40 plików, 7 590 linii — największa pozycja i jedyna, w której tłumaczenie **może coś
+    stracić**: to jest miejsce, gdzie się myśli, a nie zapis wyniku. Kompresja wg
+    [0017](decisions/0017-one-home-per-fact.md) zdejmie z tego część: sam `plan.md` ma
+    2 108 linii, z czego 896 to dziennik przy budżecie 450, a `review.md` (405) w dużej
+    mierze go powtarza
   - w publicznym repozytorium to nie jest zaplecze: `README.md` prowadzi tu wprost, a
     [rejestr](registry.md) jest tym, co odróżnia tę bibliotekę od dowolnej innej — obietnice
     z przypisanymi bramkami. Po polsku nie mówi tego nikomu
@@ -1157,8 +1149,10 @@ faktycznie wykrywa błąd hydracji"`), więc przemianowanie bez poprawienia cyto
   - koszt: ~0,5 dnia · _notatki:_ —
 
 - [ ] **H7 — nagłówki i komunikaty bramek** _(główny cel kompresji)_
-  - 13 skryptów, 10 302 linie, z czego ~590 to same nagłówki (34–76 linii na skrypt). To
+  - 13 skryptów, 10 343 linie, z czego 595 to same nagłówki (28–74 linii na skrypt). To
     tutaj siedzi problem, o który chodziło — nie w JSDoc i nie w dokumentacji
+  - budżet z [0017](decisions/0017-one-home-per-fact.md) daje 251 linii, czyli **359 do
+    ścięcia**, z celem osobnym dla każdego pliku — `node tools/measure-prose.mjs --over`
   - lek jest ten sam co w H2: **odsyłacz zamiast powtórzenia**. Nagłówek mówi, co bramka
     mierzy i jak ją uruchomić, a „dlaczego akurat tak" wskazuje w `docs/` — pod publicznym,
     stabilnym adresem. Każde takie zdanie i tak stoi już w [`lessons.md`](lessons.md) albo
@@ -1201,6 +1195,57 @@ faktycznie wykrywa błąd hydracji"`), więc przemianowanie bez poprawienia cyto
 ## Dziennik
 
 Wpis per sesja: co ruszyło, czym się skończyło, co jest następne. Najnowsze na górze.
+
+### 2026-08-07 — H2: budżet dla trzech warstw, bo pomiar znalazł trzecią
+
+Domknięte **H2** — [0017](decisions/0017-one-home-per-fact.md). Liczby rejestru bez zmian
+(83 wymagania, 13 luk): `req-project-concise` zostaje ⛔ do bramki, która wg tej samej decyzji
+ma powstać **po** kompresji i na jej wyniku.
+
+- **Plan dawał dwie liczby, pomiar wymusił trzecią.** Nagłówki `tools/` (595 linii w 13
+  skryptach) i wpisy dziennika (896 w 18) były policzone; pozycje zadań w tym pliku nie były,
+  a to 969 linii, z czego 650 w siedemnastu domkniętych. Stąd trzeci budżet i podział na
+  pozycję otwartą (spec roboczy) i domkniętą (zapis), z osobną liczbą dla każdej.
+- **Powtórzenie jest zmierzone, nie wyczute:** domknięta pozycja powtarza ze swojego wpisu
+  dziennika do 26,6% ciągów sześciu słów (A10; A12 19,6%, A13 18,5%, razem 12,2% z 15 par),
+  a to samo znalezisko bywa opowiedziane trzeci raz w nagłówku bramki, która z niego wyszła.
+- **Pomiar wjechał do repozytorium** (`tools/measure-prose.mjs`) i świadomie **bez targetu**:
+  bramka założona przed kompresją paliłaby się na każdym pliku przez tydzień i zostałaby
+  wyłączona. Ten skrypt jest tym, z czego ma wyrosnąć.
+- **Indeks odwrotny rejestru kłamał od H1.** Generator pytał o stary prefiks lekcji, więc
+  tabela „lekcja → wymagania" pokazywała **59 z 59** jako niecytowane, mając w wymaganiach 51
+  wypełnionych pól `Lekcje` — zielono, bo plik zgadzał się z tym, co generator produkuje. Po
+  jednosłownej poprawce niecytowanych jest sześć i dopiero teraz ta kolumna jest siatką
+  bezpieczeństwa dla kompresji, która mogłaby osierocić lekcję.
+- decyzja napisana od razu po angielsku: `docs/` wiąże przy pierwszym pushu, a H4 przechodzi
+  po tym katalogu w tym tygodniu — polska wersja żyłaby trzy dni.
+
+Następne: **H3** (`README.md`, 251 linii) → **H4** (`docs/`, 40 plików) → **B2**.
+
+### 2026-08-07 — licencja rozstrzygnęła „czym", więc pytaniem zostało „kiedy"
+
+Sesja bez pozycji z listy: ogon B1. Liczby bez zmian (83 wymagania, 13 luk).
+
+- **Pole `repository` jest** (`git+https://github.com/pacit/components.git`), a warunek nie:
+  provenance żąda zgodności z repozytorium, z którego leci publikacja, a tego repozytorium
+  jeszcze nie ma. `req-release-metadata` ma to w polu „Wiąże przy"; domyka **B2**.
+- **[0016](decisions/0016-mit-irreversibility.md): MIT działa w jedną stronę, więc kolejność
+  budowy jest decyzją, nie preferencją.** Zbiór wydany pod MIT może rosnąć i nie może maleć,
+  więc komponent o nieprzesądzonych warunkach dystrybucji nie wchodzi do wydania. Dowodu
+  w repozytorium nie ma i mieć nie może — decyzja stoi na precedensie zewnętrznym
+  (Terraform, Redis, Elasticsearch) i to jest w niej zapisane wprost.
+- **`CONTRIBUTING.md` od razu po angielsku** — inbound equals outbound, bez CLA. Pierwszy
+  plik napisany wg sekcji H, zanim H ruszyła: powstawał po H1, więc polska wersja byłaby
+  pracą do przepisania w tym samym tygodniu.
+- **`docs/private/` jest nieśledzony.** `docs/` to powierzchnia publiczna od pierwszego
+  pushu, więc rozważania handlowe stoją obok niej, a nie w niej. Cena zapisana w `.gitignore`:
+  git tego katalogu nie odtworzy po `clean -xdf`.
+
+Poprawione przy okazji, bo pomyliło mi następny krok: [Kolejność](#kolejność) wymieniała
+**B1** jako pozostałe (jest `[x]` od 2026-08-06) i pomijała **H2**, choć dwa akapity niżej
+ten sam plik czyni je twardym warunkiem dla H3–H8. Wpis niżej kończy się tym samym skrótem.
+
+Następne: **H2** → **H3** → **H4** → **B2**.
 
 ### 2026-08-06 — B1: najprostsze zadanie w planie miało w sobie niezmierzoną obietnicę
 

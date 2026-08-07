@@ -63,3 +63,4 @@ trzeba było przejść przez uzasadnienie.
 | [0014](0014-texts-as-signal.md)          | Teksty jako sygnał, czytane przy renderowaniu | `req-api-texts`                                           |
 | [0015](0015-license-and-model.md)        | MIT wszędzie, prawa na podmiot, bez CLA       | `req-release-metadata`                                    |
 | [0016](0016-mit-irreversibility.md)      | Wydanie na MIT jest nieodwracalne             | `req-project-package`                                     |
+| [0017](0017-one-home-per-fact.md)        | Jedno miejsce na fakt: kryterium i budżet     | `req-project-concise`                                     |
