@@ -1,131 +1,127 @@
-# Dokumentacja `@pacit/components`
+# `@pacit/components` documentation
 
-Dokumentacja robocza projektu. **Docelowo w całości po angielsku** —
-[`req-project-language`](requirements/project.md#req-project-language); dziś jeszcze po polsku
-i to jest stan przejściowy, a nie reguła.
+The whole repository is in English — [`req-project-language`](requirements/project.md#req-project-language).
+The order in which the remaining layers shed Polish is kept by
+[section H of the plan](plan.md#h-one-language-for-the-repository).
 
-Wcześniejszy podział („robocze po polsku, powierzchnia publiczna po angielsku") obowiązywał
-jako proza bez bramki i nie był dotrzymany po żadnej ze stron: `description` pakietu jest
-po polsku, publiczny JSDoc też, a przy okazji cytuje wewnętrzne identyfikatory
-dokumentacji. Kolejność zdejmowania polszczyzny warstwa po warstwie trzyma
-[sekcja H planu](plan.md#h-jeden-język-repozytorium).
-
-## Mapa
+## Map
 
 ```
-00-axis.md      POZIOM 0   jedno wymaganie, z którego wynika kolejność wszystkich innych
-requirements/   POZIOM 1   obietnice: co ma być prawdą                (83 pozycje)
-decisions/      POZIOM 2   dlaczego akurat tak i co przez to tracimy  (15 ADR-ów)
-components/     POZIOM 3   czy ten konkretny komponent to spełnia     (wypełniony DoD)
-lessons.md                 baza dowodowa: co się naprawdę stało       (59 wpisów)
-registry.md                GENEROWANY: obietnica → bramka → kontrola → stan
-review.md                  datowana migawka zewnętrznego przeglądu
-plan.md                    lista zadań i dziennik prac — jedyne miejsce ze stanem „zrobione"
+00-axis.md      LEVEL 0   the one requirement every other one is ordered by
+requirements/   LEVEL 1   promises: what has to be true                (83 entries)
+decisions/      LEVEL 2   why this way, and what it costs us           (17 ADRs)
+components/     LEVEL 3   whether this component keeps them            (filled-in DoD)
+lessons.md                the evidence base: what actually happened    (59 entries)
+registry.md               GENERATED: promise → gate → control → state
+review.md                 dated snapshot of an outside review
+plan.md                   task list and work journal — the only place holding „done"
 ```
 
-Kierunek czytania jest odwrotny do kierunku pisania: **wymagania powstają z lekcji.**
+Reading order is the reverse of writing order: **requirements come out of lessons.**
 
-| chcę…                                            | zacznij od                                                   |
-| ------------------------------------------------ | ------------------------------------------------------------ |
-| zrozumieć, na czym ta biblioteka wygrywa         | [`00-axis.md`](00-axis.md)                                   |
-| dopisać komponent                                | [`components/_template.md`](components/_template.md)         |
-| zrozumieć, dlaczego coś jest zrobione akurat tak | [`decisions/`](decisions/)                                   |
-| sprawdzić, czego jeszcze nie ma                  | [`registry.md`](registry.md) — **nie** czytaj tego z wymagań |
-| wiedzieć, co robić dalej i co już zrobiono       | [`plan.md`](plan.md)                                         |
-| dowiedzieć się, co poszło nie tak w przeszłości  | [`lessons.md`](lessons.md)                                   |
+| I want to…                                    | start at                                                                  |
+| --------------------------------------------- | ------------------------------------------------------------------------- |
+| understand what this library wins on          | [`00-axis.md`](00-axis.md)                                                |
+| add a component                               | [`components/_template.md`](components/_template.md)                      |
+| understand why something is built this way    | [`decisions/`](decisions/)                                                |
+| check what is still missing                   | [`registry.md`](registry.md) — do **not** read this from the requirements |
+| know what to do next and what is already done | [`plan.md`](plan.md)                                                      |
+| find out what went wrong in the past          | [`lessons.md`](lessons.md)                                                |
 
-### Poziom 1 — wymagania
+### Level 1 — requirements
 
-| plik                                                 | obszar          | co obejmuje                                 |
-| ---------------------------------------------------- | --------------- | ------------------------------------------- |
-| [`requirements/project.md`](requirements/project.md) | `req-project-*` | monorepo, zależności, stack, layout, pakiet |
-| [`requirements/api.md`](requirements/api.md)         | `req-api-*`     | kontrakt widziany przez konsumenta          |
-| [`requirements/a11y.md`](requirements/a11y.md)       | `req-a11y-*`    | dostępność                                  |
-| [`requirements/tokens.md`](requirements/tokens.md)   | `req-token-*`   | tokeny, stylowanie, motywy                  |
-| [`requirements/quality.md`](requirements/quality.md) | `req-quality-*` | testy, sandbox, bramki, rejestr             |
-| [`requirements/release.md`](requirements/release.md) | `req-release-*` | wersjonowanie, publikacja, wsparcie         |
+| file                                                 | area            | covers                                         |
+| ---------------------------------------------------- | --------------- | ---------------------------------------------- |
+| [`requirements/project.md`](requirements/project.md) | `req-project-*` | monorepo, dependencies, stack, layout, package |
+| [`requirements/api.md`](requirements/api.md)         | `req-api-*`     | the contract as the consumer sees it           |
+| [`requirements/a11y.md`](requirements/a11y.md)       | `req-a11y-*`    | accessibility                                  |
+| [`requirements/tokens.md`](requirements/tokens.md)   | `req-token-*`   | tokens, styling, themes                        |
+| [`requirements/quality.md`](requirements/quality.md) | `req-quality-*` | tests, sandbox, gates, registry                |
+| [`requirements/release.md`](requirements/release.md) | `req-release-*` | versioning, publishing, support                |
 
 ---
 
-## Kształt wymagania
+## Requirement shape
 
-Każde wymaganie ma **stały, parsowalny** kształt. Normatywna jest wyłącznie **Obietnica** —
-reszta to komentarz i metadane.
+Every requirement has a **fixed, parsable** shape. Only the **Promise** is normative — the
+rest is commentary and metadata.
 
 ```markdown
-### <a id="req-api-wrapper"></a>`req-api-wrapper` — Kontrolki formularza to obudowa + kontrolka
+### <a id="req-api-wrapper"></a>`req-api-wrapper` — Form controls are a wrapper plus a control
 
-**Obietnica.** Jedno–dwa zdania. Sprawdzalne.
+**Promise.** One or two sentences. Checkable.
 
-**Bramka:** `ścieżka/do/testu.ts`, `inna/ścieżka.mjs`
-**Kontrola:** `plik.spec.ts › „nazwa testu"` albo opis przebiegu
-**Decyzja:** [0003 — …](decisions/0003-wrapper-and-control.md)
-**Lekcje:** [`lesson-21`](lessons.md#lesson-21)
+**Gate:** `path/to/test.ts`, `other/path.mjs`
+**Control:** `file.spec.ts › „test name"` or a description of the run
+**Decision:** [0003 — …](decisions/0003-wrapper-and-control.md)
+**Lessons:** [`lesson-21`](lessons.md#lesson-21)
 ```
 
-### Pola `Bramka` i `Kontrola`
+### Fields `Gate` and `Control`
 
-Oba są **obowiązkowe**. Każde przyjmuje albo listę ścieżek, albo jedną z dwóch jawnych form
-braku:
+Both are **mandatory**. Each takes either a list of paths or one of two explicit forms of
+absence:
 
-| zapis                             | znaczenie                                                 | stan w rejestrze         |
-| --------------------------------- | --------------------------------------------------------- | ------------------------ |
-| `` `ścieżka/…` ``                 | maszyna, która na tej obietnicy zapala                    | **egzekwowane**          |
-| `brak — świadomie: <powód>`       | bramki **nigdy nie będzie**, i to jest w porządku         | **świadomie bez bramki** |
-| `brak — luka: <co trzeba>`        | bramki **jeszcze** nie ma; wymagany też `**Wiąże przy:**` | **luka**                 |
-| cokolwiek innego (albo brak pola) | —                                                         | **BŁĄD CI**              |
+| written as                         | means                                                        | state in the registry    |
+| ---------------------------------- | ------------------------------------------------------------ | ------------------------ |
+| `` `path/…` ``                     | a machine that fires on this promise                         | **enforced**             |
+| `none — deliberately: <why>`       | there will **never** be a gate, and that is fine             | **deliberately ungated** |
+| `none — gap: <what it takes>`      | there is **not yet** a gate; `**Binds at:**` is required too | **gap**                  |
+| anything else (or a missing field) | —                                                            | **CI FAILURE**           |
 
-**Nie ma stanu „zrealizowane, tylko niesprawdzone".** To jest najostrzejsza konsekwencja
-[`req-axis`](00-axis.md): jeśli nic nie potwierdza obietnicy, to nie ma znaczenia, czy jest
-niezbudowana, czy zbudowana i niezmierzona — w obu przypadkach **nie wiemy**. Dlatego jedna
-kategoria (`luka`) pokrywa oba.
+**There is no „built, just unverified" state.** This is the sharpest consequence of
+[`req-axis`](00-axis.md): if nothing confirms a promise, it makes no difference whether it
+is unbuilt or built and unmeasured — either way **we do not know**. So one category
+(`gap`) covers both.
 
-Wcześniej rozróżniały je ręczne adnotacje `_(niezrealizowane)_` i `_(częściowo)_`. Było ich
-18, dopisano je jednym commitem po fakcie i utrzymywała je wyłącznie czyjaś pamięć.
+They used to be told apart by hand-written `_(unimplemented)_` and `_(partial)_`
+annotations. There were 18 of them, they were added in a single commit after the fact, and
+the only thing maintaining them was somebody's memory.
 
 ---
 
-## Identyfikatory
+## Identifiers
 
-### Dlaczego slugi, a nie numery
+### Why slugs, not numbers
 
-Reguła jest jedna:
+There is one rule:
 
-> **Numer jest dobrym identyfikatorem tam, gdzie kolejność coś znaczy.**
+> **A number is a good identifier where the order means something.**
 
-- W [logu lekcji](lessons.md) **znaczy** — log jest chronologiczny i append-only, wstawek
-  nie ma. Numery zostają.
-- W wymaganiach **nie znaczyła nic** — i dlatego się rozjechała. Kolejność `req-api-*`
-  w pliku wyglądała pod koniec tak: `1,2,3,4,5,` **`13,14,15,`** `10,11,12,16,17,18,19,`
+- In the [lesson log](lessons.md) it **does** — the log is chronological and append-only,
+  nothing gets inserted. The numbers stay.
+- In requirements it **meant nothing** — which is why it drifted. Towards the end the order
+  of `req-api-*` in the file read: `1,2,3,4,5,` **`13,14,15,`** `10,11,12,16,17,18,19,`
   **`6,7,8,`** `20,21,` **`9`**.
 
-Numer, który nie mówi nic o pozycji, **jest nazwą** — tylko nieinformującą. Do tego
-`wym-api-31` (przestawione cyfry) wygląda wiarygodnie, a przy 161 cytowaniach w kodzie nic
-takiej literówki nie łapało.
+A number that says nothing about position **is a name** — just an uninformative one. On top
+of that `wym-api-31` (transposed digits) looks plausible, and with 161 citations in the code
+nothing was catching a typo like that.
 
-Uzasadnienie nie jest zapożyczone: [`req-token-names`](requirements/tokens.md#req-token-names)
-żąda, żeby **token dało się zgadnąć bez dokumentacji**. Identyfikator wymagania podlega tej
-samej regule.
+The reasoning is not borrowed: [`req-token-names`](requirements/tokens.md#req-token-names)
+demands that **a token be guessable without documentation**. A requirement identifier falls
+under the same rule.
 
-### Zasady
+### Rules
 
-- **ID nie zmienia się z powodu zmiany sensu.** Gdy sens się zmienia, powstaje **nowe**
-  wymaganie, a stare dostaje `zastąpione przez`. Slug jest nazwą, nie streszczeniem.
-- Kształt: `req-<obszar>-<slug>`, slug 1–2 słowa, ASCII bez znaków diakrytycznych.
-- Lekcje: `lesson-<numer>`, numer kolejny wolny.
-- Decyzje: `<NNNN>` chronologicznie.
+- **An ID does not change because its meaning changed.** When the meaning changes, a **new**
+  requirement is written and the old one gets `superseded by`. A slug is a name, not a summary.
+- Shape: `req-<area>-<slug>`, slug 1–2 words, ASCII, no diacritics.
+- Lessons: `lesson-<number>`, next free number.
+- Decisions: `<NNNN>` chronologically.
 
-### Migracja przestrzeni ID (2026-08-06)
+### ID space migration (2026-08-06)
 
-Cała przestrzeń przeszła na angielską razem z resztą repozytorium
-([`req-project-language`](requirements/project.md#req-project-language), zadanie
-[H1](plan.md#h-jeden-język-repozytorium)). Reguła wyżej mówi o **sensie**, nie o pisowni,
-więc tego wyjątku nie obejmuje — i jest to wyjątek jeden, datowany i ostatni. Stare
-identyfikatory są od tej daty **odrzucane przez bramkę** tak samo jak numeryczne z 2026-07-27.
+The whole space moved to English along with the rest of the repository
+([`req-project-language`](requirements/project.md#req-project-language), task
+[H1](plan.md#h-one-language-for-the-repository)). The rule above is about **meaning**, not
+spelling, so it does not cover this exception — and this is the one exception, dated and
+final. From that date the old identifiers are **rejected by the gate**, exactly like the
+numeric ones from 2026-07-27.
 
-Prefiksy, katalogi i pliki:
+Prefixes, directories and files:
 
-| stare         | nowe          | stare         | nowe            |
+| old           | new           | old           | new             |
 | ------------- | ------------- | ------------- | --------------- |
 | `wym-`        | `req-`        | `wymagania/`  | `requirements/` |
 | `lekcja-`     | `lesson-`     | `decyzje/`    | `decisions/`    |
@@ -137,15 +133,15 @@ Prefiksy, katalogi i pliki:
 | `wym-a11y`    | `req-a11y`    | `tokeny.md`   | `tokens.md`     |
 | `wym-os`      | `req-axis`    | `_szablon.md` | `_template.md`  |
 
-Pliki wymagań: `projekt.md` → `project.md`, `jakosc.md` → `quality.md`,
-`tokeny.md` → `tokens.md`, `wydanie.md` → `release.md`. Nazwy decyzji przeszły razem
-z plikami (`0014-teksty-jako-sygnal.md` → `0014-texts-as-signal.md`), a generowana unia
-ID mieszka teraz w `apps/sandbox/src/app/ui/doc-ids.ts` — dawne `req-ids.ts` samo wyglądało
-dla bramki jak cytowanie wymagania.
+Requirement files: `projekt.md` → `project.md`, `jakosc.md` → `quality.md`,
+`tokeny.md` → `tokens.md`, `wydanie.md` → `release.md`. Decision names moved with their
+files (`0014-teksty-jako-sygnal.md` → `0014-texts-as-signal.md`), and the generated ID
+union now lives in `apps/sandbox/src/app/ui/doc-ids.ts` — the former `req-ids.ts` had
+started to look to the gate like a requirement citation.
 
-Pełne odwzorowanie identyfikatorów:
+Full identifier mapping:
 
-| stare                       | nowe                           |     | stare                      | nowe                       |
+| old                         | new                            |     | old                        | new                        |
 | --------------------------- | ------------------------------ | --- | -------------------------- | -------------------------- |
 | `wym-a11y-axe`              | `req-a11y-axe`                 |     | `wym-jakosc-widoki`        | `req-quality-views`        |
 | `wym-a11y-dotyk`            | `req-a11y-touch`               |     | `wym-os`                   | `req-axis`                 |
@@ -190,67 +186,51 @@ Pełne odwzorowanie identyfikatorów:
 | `wym-jakosc-scena`          | `req-quality-stage`            |     | `wym-wydanie-wsparcie`     | `req-release-support`      |
 | `wym-jakosc-typecheck`      | `req-quality-typecheck`        |     |                            |                            |
 
---------------- | --------------- | ------------- | --------------- |
-| `wym-` | `req-` | `requirements/` | `requirements/` |
-| `lekcja-` | `lesson-` | `decisions/` | `decisions/` |
-| `req-project-*` | `req-project-*` | `components/` | `components/` |
-| `req-quality-*` | `req-quality-*` | `lessons.md` | `lessons.md` |
-| `req-release-*` | `req-release-*` | `registry.md` | `registry.md` |
-| `req-token-*` | `req-token-*` | `00-axis.md` | `00-axis.md` |
-| `req-api-*` | `req-api-*` | `overview.md` | `overview.md` |
-| `req-a11y-*` | `req-a11y-*` | `tokeny.md` | `tokens.md` |
-| `req-axis` | `req-axis` | `_template.md` | `_template.md` |
+### Typing on the code side
 
-Slugi poszczególnych wymagań tłumaczą się wprost (`req-token-text-pairs` →
-`req-token-text-pairs`); nazwy decyzji idą razem z plikami
-(`0014-texts-as-signal.md` → `0014-texts-as-signal.md`).
+Identifiers are **generated into a TypeScript union** (`PctReqId`), and the sandbox card
+takes `[reqs]="PctReqId[]"` instead of `string[]`. A typo in a citation is a **compile
+error**, not a chip leading nowhere.
 
-### Typowanie po stronie kodu
-
-Identyfikatory są **generowane do unii TypeScriptu** (`PctReqId`), a karta sandboxa
-przyjmuje `[reqs]="PctReqId[]"` zamiast `string[]`. Literówka w cytowaniu jest **błędem
-kompilacji**, a nie chipem prowadzącym donikąd.
-
-To ten sam ruch co `PctCssVar` w [`lesson-43`](lessons.md#lesson-43), zastosowany do drugiej
-klasy nazw.
+Same move as `PctCssVar` in [`lesson-43`](lessons.md#lesson-43), applied to a second class
+of names.
 
 ---
 
-## Bramka dokumentacji
+## The docs gate
 
-`tools/check-docs.mjs`, target `check-docs`, w CI. Idiom jak `check-package.mjs`:
-numerowane kontrole, nagłówek wyjaśniający **po co skrypt istnieje**, `exit 1` przy
-naruszeniu.
+`tools/check-docs.mjs`, target `check-docs`, in CI. Same idiom as `check-package.mjs`:
+numbered checks, a header explaining **why the script exists**, `exit 1` on a violation.
 
-Sprawdza sześć rzeczy:
+It checks six things:
 
-1. **Kompletność.** Każde wymaganie ma `Obietnica`, `Bramka` i `Kontrola`; każde `brak —
-luka` ma też `Wiąże przy`.
-2. **Istnienie.** Każda ścieżka cytowana w `Bramka` / `Kontrola` istnieje na dysku
-   (wzorce glob muszą mieć co najmniej jedno trafienie).
-3. **Wpięcie w CI.** Wskazany target faktycznie biegnie w `nx affected -t …`
-   z `ci.yml` — albo jest jego zależnością. To ta sama kontrola co punkt 5
-   w `check-package.mjs`, gdzie sprawdzamy, że fabryka schematica wskazuje na skompilowany
-   plik, a nie na TS sprzed builda.
-4. **Brak wiszących cytowań.** Każde `wym-*` / `lekcja-*` użyte **gdziekolwiek w repo**
-   rozwiązuje się do istniejącej pozycji, a stare ID numeryczne są odrzucane.
-5. **Świeżość rejestru.** `registry.md` na dysku jest równy świeżo wygenerowanemu.
-6. **Kontrola odniesienia.** Zestaw celowo wadliwych wymagań w `tools/check-docs.fixtures/`
-   — **każde** musi zostać odrzucone.
+1. **Completeness.** Every requirement has `Promise`, `Gate` and `Control`; every
+   `none — gap` also has `Binds at`.
+2. **Existence.** Every path cited in `Gate` / `Control` exists on disk (a glob must have
+   at least one hit).
+3. **Wired into CI.** The target implied by the cited path really does run in
+   `nx affected -t …` from `ci.yml` — or is a dependency of one that does. Same check as
+   point 5 in `check-package.mjs`, where we verify that the schematic factory points at the
+   compiled file and not at the TS from before the build.
+4. **No dangling citations.** Every `req-*` / `lesson-*` used **anywhere in the repo**
+   resolves to an existing entry, and the dead spaces (numeric and Polish) are rejected.
+5. **Registry freshness.** `registry.md` on disk equals a freshly generated one.
+6. **Negative control.** A set of deliberately broken requirements in
+   `tools/check-docs.fixtures/` — **every one** of them has to be rejected.
 
-Punkt 6 nie jest ozdobnikiem. Rejestr jest bramką, więc podlega
-[`req-quality-negative-control`](requirements/quality.md#req-quality-negative-control) tak samo jak każda inna.
-Bez niego byłby dokładnie tym, co opisuje [`lesson-39`](lessons.md#lesson-39): bramką
-urodzoną martwą.
+Point 6 is not decoration. The registry is itself a gate, so it falls under
+[`req-quality-negative-control`](requirements/quality.md#req-quality-negative-control) like
+any other. Without it, it would be exactly what [`lesson-39`](lessons.md#lesson-39)
+describes: a gate born dead.
 
 ---
 
-## Migracja identyfikatorów (2026-07-27)
+## Identifier migration (2026-07-27)
 
-Historyczna. Stare ID żyją w commitach, PR-ach i w [`review.md`](review.md) — ta tabela
-pozwala je rozwiązać. **Nowego kodu nie wolno nimi cytować**; bramka je odrzuca.
+Historical. The old IDs live on in commits, PRs and in [`review.md`](review.md) — this table
+resolves them. **New code must not cite them**; the gate rejects them.
 
-| stare          | nowe                                       |     | stare         | nowe                           |
+| old            | new                                        |     | old           | new                            |
 | -------------- | ------------------------------------------ | --- | ------------- | ------------------------------ |
 | `wym-proj-0`   | `req-axis`                                 |     | `wym-api-9`   | `req-api-animations`           |
 | `wym-proj-1`   | `req-project-monorepo`                     |     | `wym-api-10`  | `req-api-container`            |
@@ -295,22 +275,23 @@ pozwala je rozwiązać. **Nowego kodu nie wolno nimi cytować**; bramka je odrzu
 | `wym-token-12` | `req-token-no-opacity`                     |     |               |                                |
 | `wym-token-13` | `req-token-closure`                        |     |               |                                |
 
-### Co się zmieniło poza numeracją
+### What changed beyond the numbering
 
-- **`wym-real-*` przestały być wymaganiami.** 43 lekcje to baza dowodowa, nie obietnice —
-  nie mają bramek i nie da się ich „zrealizować". Wspólny prefiks był jedynym powodem, dla
-  którego mieszały się z listą wymagań.
-- **Trzy pary zdublowanych wymagań scalono:** `wym-styl-1` ≈ `wym-theme-1`,
-  `wym-theme-2` ≈ `wym-token-3`, `wym-theme-4` ≈ `wym-token-9` (część o scoped theme).
-- **`wym-token-9` rozdzielono** na mechanizm (`req-token-scoped`) i dyrektywę-cukier
-  (`req-token-directive`) — bo pierwsze działa, a drugiego nie ma.
-- **`wym-token-7` przeniesiono do obszaru `api`** jako `req-api-parts`: kontrakt
-  `data-pct-part` jest publicznym API stylowania, nie tokenem.
-- **Dopisano 9 wymagań**, których wcześniej nie było, mimo że obietnice już obowiązywały:
-  `req-quality-package`, `req-quality-typecheck`, `req-quality-consumer`,
+- **`wym-real-*` stopped being requirements.** 43 lessons are an evidence base, not
+  promises — they have no gates and cannot be „implemented". A shared prefix was the only
+  reason they were mixed in with the requirement list.
+- **Three duplicated pairs were merged:** `wym-styl-1` ≈ `wym-theme-1`,
+  `wym-theme-2` ≈ `wym-token-3`, `wym-theme-4` ≈ `wym-token-9` (the scoped-theme part).
+- **`wym-token-9` was split** into the mechanism (`req-token-scoped`) and the sugar
+  directive (`req-token-directive`) — because the first works and the second does not exist.
+- **`wym-token-7` moved to the `api` area** as `req-api-parts`: the `data-pct-part` contract
+  is public styling API, not a token.
+- **9 requirements were added** that had not existed even though the promises were already
+  binding: `req-quality-package`, `req-quality-typecheck`, `req-quality-consumer`,
   `req-quality-browsers`, `req-token-logical`, `req-release-metadata`,
   `req-release-support`, `req-token-directive`, `req-api-icons-custom`.
-- **Usunięto sekcję „Czego jeszcze nie ma"** — była ręczną kopią informacji obecnej wyżej.
-  Zastępuje ją [`registry.md`](registry.md), generowany.
-- **Usunięto sekcję „Jak czytać ten dokument"** — istniała, bo wymagania dawały się czytać
-  jako opis stanu kodu. Po rozdzieleniu obietnicy od stanu nie ma czego wyjaśniać.
+- **The „What is still missing" section was removed** — it was a hand-made copy of
+  information already present above. [`registry.md`](registry.md) replaces it, generated.
+- **The „How to read this document" section was removed** — it existed because the
+  requirements could be read as a description of the state of the code. Once the promise was
+  separated from the state, there was nothing left to explain.

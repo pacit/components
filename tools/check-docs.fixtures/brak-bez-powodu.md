@@ -1,8 +1,8 @@
-# Fixture — „brak" bez powodu
+# Fixture — „none" without a reason
 
-### <a id="req-fixture-brak-bez-powodu"></a>`req-fixture-brak-bez-powodu` — Brak bez uzasadnienia
+### <a id="req-fixture-brak-bez-powodu"></a>`req-fixture-brak-bez-powodu` — Absence without justification
 
-**Obietnica.** Coś ma być prawdą.
+**Promise.** Something is meant to be true.
 
-**Bramka:** brak
-**Kontrola:** brak — świadomie: właściwy błąd siedzi w polu **Bramka**
+**Gate:** none
+**Control:** none — deliberately: the actual error sits in the **Gate** field

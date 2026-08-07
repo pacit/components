@@ -80,7 +80,7 @@ for (const f of trackedFiles) {
 // ── parser wymagań ────────────────────────────────────────────────────────────
 
 const FIELD =
-  /^\*\*(Obietnica|Bramka|Kontrola|Decyzja|Lekcje|Wiąże przy|Nie-cele|Wyjątki)[.:]\*\*/;
+  /^\*\*(Promise|Gate|Control|Decision|Lessons|Binds at|Non-goals|Exceptions)[.:]\*\*/;
 const HEADING = /^#{2,3} <a id="(req-[a-z0-9-]+)"><\/a>`\1` — (.+)$/;
 
 /**
@@ -142,7 +142,7 @@ const lessonIds = new Set(
 
 // ── 1. kompletność + klasyfikacja stanu ───────────────────────────────────────
 
-const BRAK = /^brak\s*[—-]\s*(świadomie|luka)\s*:\s*(.+)$/s;
+const BRAK = /^none\s*[—-]\s*(deliberately|gap)\s*:\s*(.+)$/s;
 
 /** `egzekwowane` | `świadomie` | `luka` | null (błąd) */
 const classify = (value, req, fieldName) => {
@@ -151,14 +151,14 @@ const classify = (value, req, fieldName) => {
     fail(req.id, `pole **${fieldName}** jest puste`);
     return null;
   }
-  if (/^nie dotyczy\b/i.test(v)) return 'świadomie';
-  if (/^brak\b/.test(v)) {
+  if (/^not applicable\b/i.test(v)) return 'świadomie';
+  if (/^none\b/.test(v)) {
     const m = v.match(BRAK);
     if (!m) {
       fail(
         req.id,
-        `pole **${fieldName}** mówi „brak", ale bez formy \`brak — świadomie: <powód>\` ` +
-          `albo \`brak — luka: <co trzeba>\``,
+        `pole **${fieldName}** mówi „none", ale bez formy \`none — deliberately: <powód>\` ` +
+          `albo \`none — gap: <co trzeba>\``,
       );
       return null;
     }
@@ -167,18 +167,18 @@ const classify = (value, req, fieldName) => {
         req.id,
         `pole **${fieldName}**: powód braku jest pusty albo zbyt ogólny`,
       );
-    return m[1] === 'luka' ? 'luka' : 'świadomie';
+    return m[1] === 'gap' ? 'luka' : 'świadomie';
   }
   return 'egzekwowane';
 };
 
 for (const req of requirements) {
-  if (!req.fields.Obietnica?.trim()) fail(req.id, 'brak pola **Obietnica**');
-  if (req.fields.Bramka === undefined) fail(req.id, 'brak pola **Bramka**');
-  if (req.fields.Kontrola === undefined) fail(req.id, 'brak pola **Kontrola**');
+  if (!req.fields.Promise?.trim()) fail(req.id, 'brak pola **Promise**');
+  if (req.fields.Gate === undefined) fail(req.id, 'brak pola **Gate**');
+  if (req.fields.Control === undefined) fail(req.id, 'brak pola **Control**');
 
-  req.stanBramki = classify(req.fields.Bramka, req, 'Bramka');
-  req.stanKontroli = classify(req.fields.Kontrola, req, 'Kontrola');
+  req.stanBramki = classify(req.fields.Gate, req, 'Gate');
+  req.stanKontroli = classify(req.fields.Control, req, 'Control');
 
   req.stan =
     req.stanBramki === 'egzekwowane' && req.stanKontroli === 'egzekwowane'
@@ -189,10 +189,10 @@ for (const req of requirements) {
           ? 'BŁĄD'
           : 'częściowo';
 
-  if (req.stan === 'luka' && !req.fields['Wiąże przy']?.trim())
+  if (req.stan === 'luka' && !req.fields['Binds at']?.trim())
     fail(
       req.id,
-      'stan `luka`, ale brak pola **Wiąże przy** — luka bez terminu jest życzeniem',
+      'stan `luka`, ale brak pola **Binds at** — luka bez terminu jest życzeniem',
     );
 }
 
@@ -227,9 +227,9 @@ const resolveCitation = (raw) => {
 const citedPaths = new Map(); // ścieżka -> Set(id wymagań)
 
 for (const req of requirements) {
-  for (const fieldName of ['Bramka', 'Kontrola']) {
+  for (const fieldName of ['Gate', 'Control']) {
     const value = req.fields[fieldName] ?? '';
-    if (/^\s*(brak|nie dotyczy)\b/.test(value)) continue;
+    if (/^\s*(none|not applicable)\b/.test(value)) continue;
     for (const [, raw] of value.matchAll(PATHISH)) {
       const hits = resolveCitation(raw);
       if (hits === null) continue; // nie wygląda na ścieżkę (nazwa targetu, token, …)
@@ -279,12 +279,12 @@ for (const [path, reqIds] of citedPaths) {
 }
 
 // Jawne wzmianki „target `X`" — tylko w polach, które faktycznie deklarują bramkę.
-// W treści `brak — luka: …` nazwa targetu bywa opisem stanu („target `local-registry`
+// W treści `none — gap: …` nazwa targetu bywa opisem stanu („target `local-registry`
 // istnieje i nie jest przez nic używany"), a nie deklaracją, że coś biegnie w CI.
 for (const req of requirements) {
-  const declared = ['Bramka', 'Kontrola']
+  const declared = ['Gate', 'Control']
     .map((f) => req.fields[f] ?? '')
-    .filter((v) => !/^\s*(brak|nie dotyczy)\b/.test(v));
+    .filter((v) => !/^\s*(none|not applicable)\b/.test(v));
   const text = declared.join(' ');
   for (const [, name] of text.matchAll(/target `([a-z0-9:\-]+)`/g)) {
     if (name.includes(':')) continue; // np. `tokens:build` — biegnie przez `^build`
@@ -352,20 +352,20 @@ for (const rel of trackedFiles) {
 
 const AREA = (id) => id.split('-')[1];
 const AREA_LABEL = {
-  axis: 'oś',
-  project: 'projekt',
+  axis: 'axis',
+  project: 'project',
   api: 'API',
-  a11y: 'dostępność',
-  token: 'tokeny',
-  quality: 'jakość',
-  release: 'wydanie',
+  a11y: 'accessibility',
+  token: 'tokens',
+  quality: 'quality',
+  release: 'release',
 };
 
 const STAN_ICON = {
-  egzekwowane: '✅ egzekwowane',
-  częściowo: '🟡 częściowo',
-  luka: '⛔ luka',
-  BŁĄD: '❌ BŁĄD',
+  egzekwowane: '✅ enforced',
+  częściowo: '🟡 partial',
+  luka: '⛔ gap',
+  BŁĄD: '❌ ERROR',
 };
 
 /**
@@ -394,59 +394,61 @@ const buildRejestr = () => {
   for (const r of requirements) counts[r.stan]++;
 
   const L = [];
-  L.push('# Rejestr — obietnica → bramka → kontrola');
+  L.push('# Registry — promise → gate → control');
   L.push('');
-  L.push('> **Ten plik jest generowany.** Nie edytuj go ręcznie —');
+  L.push('> **This file is generated.** Do not edit it by hand —');
   L.push(
-    '> `node tools/check-docs.mjs --write`. Bramka `check-docs` odrzuca rozjazd.',
+    '> `node tools/check-docs.mjs --write`. The `check-docs` gate rejects drift.',
   );
   L.push('');
   L.push(
-    'Stan jest **wyprowadzony** z zawartości pól `Bramka` i `Kontrola`, nie wpisany.',
+    'The state is **derived** from the contents of the `Gate` and `Control` fields, not typed in.',
   );
-  L.push('Nie ma stanu „zrealizowane, tylko niesprawdzone" — patrz');
-  L.push('[README](README.md#pola-bramka-i-kontrola).');
+  L.push('There is no „built, just unverified" state — see');
+  L.push('[README](README.md#fields-gate-and-control).');
   L.push('');
-  L.push('| stan | znaczenie | liczba |');
+  L.push('| state | means | count |');
   L.push('| --- | --- | ---: |');
   L.push(
-    `| ✅ egzekwowane | bramka i kontrola istnieją, są wpięte w CI | ${counts.egzekwowane} |`,
+    `| ✅ enforced | gate and control exist and run in CI | ${counts.egzekwowane} |`,
   );
   L.push(
-    `| 🟡 częściowo | bramka jest, kontroli odniesienia brak (świadomie) | ${counts.częściowo} |`,
+    `| 🟡 partial | the gate is there, the negative control is not (deliberately) | ${counts.częściowo} |`,
   );
   L.push(
-    `| ⛔ luka | brak bramki albo kontroli, z zapisanym terminem | ${counts.luka} |`,
+    `| ⛔ gap | gate or control missing, with a recorded deadline | ${counts.luka} |`,
   );
-  L.push(`| **razem** | | **${requirements.length}** |`);
+  L.push(`| **total** | | **${requirements.length}** |`);
   L.push('');
 
-  L.push('## Luki wg pilności');
+  L.push('## Gaps by urgency');
   L.push('');
-  L.push('Kolejność bierze się z pola **Wiąże przy**, nie z numeru wymagania.');
+  L.push(
+    'The order comes from the **Binds at** field, not from a requirement number.',
+  );
   L.push('');
-  L.push('| wymaganie | czego brakuje | wiąże przy |');
+  L.push('| requirement | what is missing | binds at |');
   L.push('| --- | --- | --- |');
   const luki = requirements
     .filter((r) => r.stan === 'luka')
     .sort((a, b) => {
-      const na = /natychmiast/i.test(a.fields['Wiąże przy'] ?? '') ? 0 : 1;
-      const nb = /natychmiast/i.test(b.fields['Wiąże przy'] ?? '') ? 0 : 1;
+      const na = /immediately/i.test(a.fields['Binds at'] ?? '') ? 0 : 1;
+      const nb = /immediately/i.test(b.fields['Binds at'] ?? '') ? 0 : 1;
       return na - nb || a.id.localeCompare(b.id);
     });
   for (const r of luki) {
     const brak =
       r.stanBramki === 'luka'
         ? short(
-            (r.fields.Bramka ?? '').replace(/^brak\s*[—-]\s*luka\s*:\s*/, ''),
+            (r.fields.Gate ?? '').replace(/^none\s*[—-]\s*gap\s*:\s*/, ''),
             70,
           )
         : short(
-            (r.fields.Kontrola ?? '').replace(/^brak\s*[—-]\s*luka\s*:\s*/, ''),
+            (r.fields.Control ?? '').replace(/^none\s*[—-]\s*gap\s*:\s*/, ''),
             70,
-          ) + ' _(kontrola)_';
+          ) + ' _(control)_';
     L.push(
-      `| [\`${r.id}\`](${link(r)}) | ${brak} | ${short(r.fields['Wiąże przy'], 60)} |`,
+      `| [\`${r.id}\`](${link(r)}) | ${brak} | ${short(r.fields['Binds at'], 60)} |`,
     );
   }
   L.push('');
@@ -454,25 +456,27 @@ const buildRejestr = () => {
   for (const [area, reqs] of byArea) {
     L.push(`## ${AREA_LABEL[area] ?? area}`);
     L.push('');
-    L.push('| wymaganie | stan | bramka | kontrola |');
+    L.push('| requirement | state | gate | control |');
     L.push('| --- | --- | --- | --- |');
     for (const r of reqs)
       L.push(
-        `| [\`${r.id}\`](${link(r)}) | ${STAN_ICON[r.stan]} | ${short(r.fields.Bramka, 70)} | ${short(r.fields.Kontrola, 70)} |`,
+        `| [\`${r.id}\`](${link(r)}) | ${STAN_ICON[r.stan]} | ${short(r.fields.Gate, 70)} | ${short(r.fields.Control, 70)} |`,
       );
     L.push('');
   }
 
-  L.push('## Indeks odwrotny — lekcja → wymagania');
+  L.push('## Reverse index — lesson → requirements');
   L.push('');
-  L.push('Która lekcja karmi które wymaganie. Generowane z pól **Lekcje**.');
+  L.push(
+    'Which lesson feeds which requirement. Generated from the **Lessons** fields.',
+  );
   L.push('');
-  // Pole `Lekcje` niesie linki markdown, więc ten sam identyfikator pada w nim dwa razy
+  // Pole `Lessons` niesie linki markdown, więc ten sam identyfikator pada w nim dwa razy
   // (etykieta i kotwica) — stąd Set na wymaganie, nie lista.
   const rev = new Map();
   for (const r of requirements) {
     const cited = new Set(
-      [...(r.fields.Lekcje ?? '').matchAll(/lesson-\d+/g)].map((m) => m[0]),
+      [...(r.fields.Lessons ?? '').matchAll(/lesson-\d+/g)].map((m) => m[0]),
     );
     for (const l of cited) {
       if (!rev.has(l)) rev.set(l, []);
@@ -482,12 +486,12 @@ const buildRejestr = () => {
   const revRows = [...lessonIds].sort(
     (a, b) => Number(a.split('-')[1]) - Number(b.split('-')[1]),
   );
-  L.push('| lekcja | wymagania |');
+  L.push('| lesson | requirements |');
   L.push('| --- | --- |');
   for (const l of revRows) {
     const who = rev.get(l);
     L.push(
-      `| [\`${l}\`](lessons.md#${l}) | ${who ? who.map((i) => `\`${i}\``).join(', ') : '— _(nie cytowana)_'} |`,
+      `| [\`${l}\`](lessons.md#${l}) | ${who ? who.map((i) => `\`${i}\``).join(', ') : '— _(not cited)_'} |`,
     );
   }
   L.push('');
@@ -589,15 +593,15 @@ if (!WRITE) {
     }
     const before = problems.length;
     for (const req of reqs) {
-      if (!req.fields.Obietnica?.trim()) fail(fx, 'x');
-      if (req.fields.Bramka === undefined) fail(fx, 'x');
-      if (req.fields.Kontrola === undefined) fail(fx, 'x');
-      const b = classify(req.fields.Bramka, { id: fx }, 'Bramka');
-      const k = classify(req.fields.Kontrola, { id: fx }, 'Kontrola');
-      if (b === 'luka' && !req.fields['Wiąże przy']?.trim()) fail(fx, 'x');
-      for (const fieldName of ['Bramka', 'Kontrola']) {
+      if (!req.fields.Promise?.trim()) fail(fx, 'x');
+      if (req.fields.Gate === undefined) fail(fx, 'x');
+      if (req.fields.Control === undefined) fail(fx, 'x');
+      const b = classify(req.fields.Gate, { id: fx }, 'Gate');
+      const k = classify(req.fields.Control, { id: fx }, 'Control');
+      if (b === 'luka' && !req.fields['Binds at']?.trim()) fail(fx, 'x');
+      for (const fieldName of ['Gate', 'Control']) {
         const value = req.fields[fieldName] ?? '';
-        if (/^\s*(brak|nie dotyczy)\b/.test(value)) continue;
+        if (/^\s*(none|not applicable)\b/.test(value)) continue;
         for (const [, raw] of value.matchAll(PATHISH)) {
           const hits = resolveCitation(raw);
           if (hits !== null && hits.length === 0) fail(fx, 'x');

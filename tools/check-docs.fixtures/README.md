@@ -1,27 +1,27 @@
-# Kontrola odniesienia bramki dokumentacji
+# Negative control for the docs gate
 
-Celowo wadliwe wymagania. `tools/check-docs.mjs` uruchamia na każdym z nich swoje
-kontrole i **wymaga, żeby każde zostało odrzucone**. Fixture, który przechodzi, jest
-błędem — znaczy, że bramka przestała cokolwiek badać.
+Deliberately broken requirements. `tools/check-docs.mjs` runs its checks on each of them and
+**requires every one to be rejected**. A fixture that passes is a bug — it means the gate has
+stopped measuring anything.
 
-Powód istnienia jest ten sam co przy każdej innej bramce w tym repozytorium
-(`req-quality-negative-control`): **nowa bramka nie jest gotowa, gdy przechodzi — jest gotowa, gdy
-pokazano, że potrafi nie przejść.** Dwa udokumentowane przebiegi, z których wzięła się ta
-reguła, to `lesson-38` (emulacja po cichu nie działała, a test przechodził na wartościach
-domyślnych) i `lesson-39` (test wizualny mógł urodzić się martwy na dwa niezależne
-sposoby, oba wyglądające jak działający test).
+The reason it exists is the same as for every other gate in this repository
+(`req-quality-negative-control`): **a new gate is not ready when it passes — it is ready when
+it has been shown to fail.** The two documented runs this rule came from are `lesson-38`
+(emulation silently did nothing and the test passed on default values) and `lesson-39`
+(a visual test could be born dead in two independent ways, both looking like a working test).
 
-Ten katalog **nie podlega** kontroli cytowań — identyfikatory w nim są fikcyjne z założenia.
+This directory is **exempt** from the citation check — the identifiers in it are fictional by
+design.
 
-| plik                                                 | co łamie                                | która kontrola ma zapalić |
-| ---------------------------------------------------- | --------------------------------------- | ------------------------- |
-| [`bez-bramki.md`](bez-bramki.md)                     | obietnica bez pola **Bramka**           | 1 — kompletność           |
-| [`brak-bez-powodu.md`](brak-bez-powodu.md)           | „brak" bez formy `świadomie:` / `luka:` | 1 — kompletność           |
-| [`luka-bez-terminu.md`](luka-bez-terminu.md)         | `luka` bez pola **Wiąże przy**          | 1 — kompletność           |
-| [`sciezka-nie-istnieje.md`](sciezka-nie-istnieje.md) | bramka wskazuje plik, którego nie ma    | 2 — istnienie             |
+| file                                                 | what it breaks                                   | which check must fire |
+| ---------------------------------------------------- | ------------------------------------------------ | --------------------- |
+| [`bez-bramki.md`](bez-bramki.md)                     | a promise with no **Gate** field                 | 1 — completeness      |
+| [`brak-bez-powodu.md`](brak-bez-powodu.md)           | „none" without the `deliberately:` / `gap:` form | 1 — completeness      |
+| [`luka-bez-terminu.md`](luka-bez-terminu.md)         | `gap` with no **Binds at** field                 | 1 — completeness      |
+| [`sciezka-nie-istnieje.md`](sciezka-nie-istnieje.md) | the gate points at a file that does not exist    | 2 — existence         |
 
-## Dodanie nowej kontroli do bramki
+## Adding a new check to the gate
 
-Nowa kontrola w `check-docs.mjs` przychodzi **razem z fixturem**, który ją zapala.
-Kontrola bez fixture'a jest dokładnie tym, czego zakazuje `req-axis`: obietnicą bez maszyny
-potrafiącej na niej zapalić, tylko piętro wyżej.
+A new check in `check-docs.mjs` arrives **together with the fixture** that fires it. A check
+without a fixture is exactly what `req-axis` forbids: a promise with no machine able to fire
+on it, one floor up.

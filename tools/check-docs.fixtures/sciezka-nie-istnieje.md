@@ -1,8 +1,8 @@
-# Fixture — bramka wskazuje na nieistniejący plik
+# Fixture — the gate points at a file that does not exist
 
-### <a id="req-fixture-sciezka"></a>`req-fixture-sciezka` — Bramka bez pliku
+### <a id="req-fixture-sciezka"></a>`req-fixture-sciezka` — A gate with no file
 
-**Obietnica.** Coś ma być prawdą i rzekomo jest sprawdzane.
+**Promise.** Something is meant to be true and is supposedly checked.
 
-**Bramka:** `libs/components/nie-ma-takiego-pliku.spec.ts`
-**Kontrola:** `apps/sandbox-e2e/src/tez-nie-ma.spec.ts`
+**Gate:** `libs/components/nie-ma-takiego-pliku.spec.ts`
+**Control:** `apps/sandbox-e2e/src/tez-nie-ma.spec.ts`

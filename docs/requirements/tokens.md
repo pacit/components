@@ -1,431 +1,435 @@
-# Wymagania — tokeny, stylowanie i motywy
+# Requirements — tokens, styling and themes
 
-Obszar scala trzy dawne sekcje, które opisywały **jedną warstwę** — a część punktów była
-w nich zdublowana: dwie pary wymagań mówiły to samo innymi słowami. Mapowanie starych
-identyfikatorów jest w
-[tabeli migracji](../README.md#migracja-identyfikatorów-2026-07-27).
+This area merges three former sections that described **one layer** — and some of their points
+were duplicated: two pairs of requirements said the same thing in different words. Old
+identifiers are mapped in the
+[migration table](../README.md#identifier-migration-2026-07-27).
 
-**Zasada nadrzędna: CSS-first, zero-runtime.** Motyw w runtime to wyłącznie kaskadowy
-CSS — bez silnika JS generującego style. Stąd bierze się SSR-safety (brak FOUC
-i rozjazdów hydracji), zerowy koszt w runtime i możliwość nadpisania zwykłym CSS-em.
+**The governing principle: CSS-first, zero-runtime.** A theme at runtime is nothing but
+cascading CSS — no JS engine generating styles. That is where the SSR safety comes from (no
+FOUC, no hydration mismatches), along with zero runtime cost and the ability to override with
+plain CSS.
 
-> Kształt wpisu i znaczenie pól **Bramka** / **Kontrola** opisuje
-> [README](../README.md#kształt-wymagania).
-
----
-
-## Warstwa źródłowa
-
-### <a id="req-token-dtcg"></a>`req-token-dtcg` — Źródłem prawdy jest format DTCG
-
-**Obietnica.** Tokeny są zapisane w formacie W3C Design Tokens Community Group (JSON
-z `$type` / `$value` i referencjami `{…}`). Format jest przenośny — czytany i zapisywany
-przez narzędzia projektowe (Figma / Tokens Studio).
-
-**Bramka:** `libs/tokens/build.mjs` — build nie ruszy przy niepoprawnym kształcie źródła
-**Kontrola:** brak — świadomie: błąd parsowania jest natychmiastowy i głośny
-**Lekcje:** [`lesson-4`](../lessons.md#lesson-4)
+> The shape of an entry and the meaning of the **Gate** / **Control** fields are described
+> in the [README](../README.md#requirement-shape).
 
 ---
 
-### <a id="req-token-artifacts"></a>`req-token-artifacts` — Build generuje artefakty ze źródła
+## The source layer
 
-**Obietnica.** Ze źródła DTCG powstają: CSS z custom properties (dystrybuowane motywy),
-mapy/funkcje SCSS do użytku wewnętrznego oraz typy/stałe TS z nazwami tokenów. TS jest
-**generowany**, nie pisany ręcznie. `tokens.ts` emituje dwa kształty tej samej wiedzy:
-`PctTokenName` (ścieżka DTCG) i `PctCssVar` (nazwa custom property).
+### <a id="req-token-dtcg"></a>`req-token-dtcg` — The source of truth is the DTCG format
 
-**Bramka:** target `typecheck` projektu `sandbox-e2e` — pomocniki `tokenOf` / `rootToken`
-przyjmują `PctCssVar`, więc literówka w nazwie tokenu jest **błędem kompilacji**, a nie
-zielonym testem porównującym dwa puste łańcuchy
-**Kontrola:** podmiana jednej nazwy na błędną daje 6 błędów typu — przebieg
-udokumentowany w [`lesson-43`](../lessons.md#lesson-43)
-**Lekcje:** [`lesson-42`](../lessons.md#lesson-42), [`lesson-43`](../lessons.md#lesson-43)
+**Promise.** Tokens are written in the W3C Design Tokens Community Group format (JSON with
+`$type` / `$value` and `{…}` references). The format is portable — read and written by design
+tools (Figma / Tokens Studio).
 
-> **Otwarte — martwy artefakt.** `_tokens.scss` jest generowany, wieziony w pakiecie
-> i używany przez **zero linii kodu**: komponenty piszą `var(--pct-*)` surowymi
-> łańcuchami (159 unikalnych, zero `@use` w arkuszach). Albo usunąć z wymagania
-> i z pakietu, albo uczynić obowiązkową drogą odwołania do tokenu. Za drugim przemawia
-> [`lesson-43`](../lessons.md#lesson-43) (literówka ma być błędem kompilacji), choć tu
-> akurat `check-package` łapie literówkę post factum — więc to nie żywa wada, tylko
-> martwy artefakt w publikowanym pakiecie.
+**Gate:** `libs/tokens/build.mjs` — the build will not start on a malformed source
+**Control:** none — deliberately: a parse error is immediate and loud
+**Lessons:** [`lesson-4`](../lessons.md#lesson-4)
 
-> **Otwarte — brak konsumenta zewnętrznego.** Typowanych nazw nie ma dziś kto użyć
-> **po stronie konsumenta**, bo `@pacit/tokens` jest `private`. Wiąże z
+---
+
+### <a id="req-token-artifacts"></a>`req-token-artifacts` — The build generates artifacts from the source
+
+**Promise.** Out of the DTCG source come: CSS with custom properties (the distributed
+themes), SCSS maps/functions for internal use, and TS types/constants with the token names.
+The TS is **generated**, not hand-written. `tokens.ts` emits two shapes of the same knowledge:
+`PctTokenName` (the DTCG path) and `PctCssVar` (the custom property name).
+
+**Gate:** the `typecheck` target of the `sandbox-e2e` project — the `tokenOf` / `rootToken`
+helpers take a `PctCssVar`, so a typo in a token name is a **compile error** rather than
+a green test comparing two empty strings
+**Control:** swapping one name for a wrong one produces 6 type errors — a run documented in
+[`lesson-43`](../lessons.md#lesson-43)
+**Lessons:** [`lesson-42`](../lessons.md#lesson-42), [`lesson-43`](../lessons.md#lesson-43)
+
+> **Open — a dead artifact.** `_tokens.scss` is generated, shipped in the package and used by
+> **zero lines of code**: the components write `var(--pct-*)` as raw strings (159 unique ones,
+> zero `@use` in the stylesheets). Either drop it from the requirement and from the package,
+> or make it the mandatory way to reference a token. The second is argued for by
+> [`lesson-43`](../lessons.md#lesson-43) (a typo should be a compile error), though here
+> `check-package` does catch the typo after the fact — so this is not a live defect, only
+> a dead artifact in a published package.
+
+> **Open — no external consumer.** There is nobody to use the typed names **on the consumer
+> side** today, because `@pacit/tokens` is `private`. Ties into
 > [`req-token-skin`](#req-token-skin).
 
 ---
 
-### <a id="req-token-tiers"></a>`req-token-tiers` — Trzy poziomy tokenów
+### <a id="req-token-tiers"></a>`req-token-tiers` — Three tiers of tokens
 
-**Obietnica.**
+**Promise.**
 
-- **prymitywne** — surowe wartości bez znaczenia (`--pct-blue-500`, `--pct-space-4`),
-  rampy kolorów 50–950,
-- **semantyczne** — intencja i stany (`--pct-primary`, `--pct-surface-100`,
-  `--pct-text-muted`, `--pct-focus-ring`); **jedyna warstwa, którą musi znać autor
-  motywu**,
-- **komponentowe** — per komponent (`--pct-button-bg`); referują wyłącznie do
-  semantycznych, **nigdy** do prymitywnych.
+- **primitive** — raw values with no meaning (`--pct-blue-500`, `--pct-space-4`), colour ramps
+  50–950,
+- **semantic** — intent and states (`--pct-primary`, `--pct-surface-100`, `--pct-text-muted`,
+  `--pct-focus-ring`); **the only layer a theme author has to know**,
+- **component** — per component (`--pct-button-bg`); they reference semantic tokens only,
+  **never** primitives.
 
-Graf referencji idzie więc **tylko w dół**: komponentowy → semantyczny → prymitywny →
-literał. Odwołanie w bok (token komponentowy jednego komponentu na token drugiego) łamie
-przy okazji [`req-token-override`](#req-token-override), a odwołanie w górę
-(semantyczny na komponentowy) odwraca cały model.
+The reference graph therefore runs **downwards only**: component → semantic → primitive →
+literal. A sideways reference (one component's token pointing at another's) also breaks
+[`req-token-override`](#req-token-override), and an upward one (semantic pointing at
+component) inverts the whole model.
 
-**Bramka:** `tools/check-tokens.mjs` (target `check-tokens` w projekcie roota, w CI) —
-punkt 6. Dla **koloru** reguła nie ma ani jednego wyjątku: nad kolorem warstwa
-semantyczna istnieje i jest kompletna, więc kolor komponentowy wskazujący na prymityw
-albo wpisany wprost jako literał zapala. Dla **wymiaru** wyjątkiem są osie zadeklarowane
-w `libs/tokens/src/poziomy.policy.json` (dziś `control`, `font`, `radius`, `space`,
-`target`), a sama lista jest pilnowana z dwóch stron: oś nieużywana zapala, oś niosąca
-token `$type: color` zapala już na deklaracji. Do tego `libs/tokens/build.mjs` —
-auto-odkrywanie `component.*.json`, więc dodanie komponentu nie wymaga zmian w buildzie
-**Kontrola:** `tools/check-tokens.fixtures/` — po jednym wejściu na regułę:
-`kolor-pod-semantyka`, `literal-koloru`, `odwolanie-w-bok`, `odwolanie-w-gore`,
-`prymityw-z-referencja`, `os-wspolna-martwa`, `os-wspolna-kolorowa`,
-`os-niezadeklarowana`; plus przebiegi na
-repozytorium: `--pct-button-bg` przestawiony na `{pct.blue.600}`, kolor pola wpisany
-z palca, `--pct-select-bg` wskazujący na `{pct.field.bg}`, oś `space` usunięta z polityki
-(15 naruszeń), oś `motion` dopisana bez użycia
+**Gate:** `tools/check-tokens.mjs` (target `check-tokens` in the root project, in CI) —
+point 6. For **colour** the rule has not one exception: above colour the semantic layer exists
+and is complete, so a component colour pointing at a primitive or written in as a literal
+fires. For **dimension** the exceptions are the axes declared in
+`libs/tokens/src/poziomy.policy.json` (today `control`, `font`, `radius`, `space`, `target`),
+and that list is watched from both sides: an unused axis fires, and an axis carrying
+a `$type: color` token fires on the declaration itself. Plus `libs/tokens/build.mjs` —
+auto-discovery of `component.*.json`, so adding a component needs no build changes
+**Control:** `tools/check-tokens.fixtures/` — one input per rule: `kolor-pod-semantyka`,
+`literal-koloru`, `odwolanie-w-bok`, `odwolanie-w-gore`, `prymityw-z-referencja`,
+`os-wspolna-martwa`, `os-wspolna-kolorowa`, `os-niezadeklarowana`; plus runs against the
+repository: `--pct-button-bg` repointed at `{pct.blue.600}`, a field colour written in by
+hand, `--pct-select-bg` pointing at `{pct.field.bg}`, the `space` axis removed from the policy
+(15 violations), the `motion` axis added without being used
 
-> **Wyjątek dla osi wymiaru jest zapisany, a nie milczący.** Reguła w brzmieniu
-> dosłownym była w tym repozytorium złamana **35 razy** — każdy token wymiaru
-> komponentowego wskazuje wprost na prymityw, bo nad wymiarem nie ma warstwy
-> semantycznej i nie da się jej dołożyć bez wymyślenia ról, których nikt nie potrzebuje.
-> `pct.control.height.md` nie jest przy tym „surową wartością bez znaczenia": jest
-> wspólną osią przycisku i wiersza pola ([`req-api-size`](api.md#req-api-size)),
-> czyli tym samym leverem, którym miałaby być semantyka. Bramka pisana bez tego zapisu
-> musiałaby albo zapalać na całym repozytorium, albo cicho nie badać wymiaru.
+> **The exception for dimension axes is written down, not silent.** Read literally, the rule
+> was broken **35 times** in this repository — every component dimension token points straight
+> at a primitive, because above dimension there is no semantic layer and one cannot be added
+> without inventing roles nobody needs. `pct.control.height.md` is not a „raw value with no
+> meaning" either: it is the shared axis of the button and the field row
+> ([`req-api-size`](api.md#req-api-size)), i.e. the very lever the semantic layer would be.
+> A gate written without this note would have to either fire on the entire repository or
+> quietly not measure dimension at all.
 
 ---
 
-### <a id="req-token-references"></a>`req-token-references` — Referencje zostają jako `var()`
+### <a id="req-token-references"></a>`req-token-references` — References stay as `var()`
 
-**Obietnica.** Referencje token → token są zachowywane w wygenerowanym CSS jako `var()`,
-a nie rozwijane do wartości. Każdy poziom emituje `var()` do poziomu niżej — dzięki czemu
-nadpisanie jednej zmiennej w dowolnym scope kaskaduje samo.
+**Promise.** Token → token references are preserved in the generated CSS as `var()` rather
+than expanded to values. Every tier emits a `var()` to the tier below — which is what makes
+overriding one variable in any scope cascade by itself.
 
-**Bramka:** `apps/sandbox-e2e/src/theme.spec.ts` — nadpisanie tokenu semantycznego
-zmienia komponentowy
-**Kontrola:** test porównuje token komponentowy w `:root` **i** w scope — sam token
-semantyczny przechodził mimo zepsutej warstwy komponentowej
+**Gate:** `apps/sandbox-e2e/src/theme.spec.ts` — overriding a semantic token changes the
+component one
+**Control:** the test compares the component token in `:root` **and** in a scope — the
+semantic token alone passed despite a broken component layer
 ([`lesson-17`](../lessons.md#lesson-17))
-**Lekcje:** [`lesson-17`](../lessons.md#lesson-17)
+**Lessons:** [`lesson-17`](../lessons.md#lesson-17)
 
 ---
 
-### <a id="req-token-closure"></a>`req-token-closure` — Blok motywu zawiera domknięcie przechodnie
+### <a id="req-token-closure"></a>`req-token-closure` — A theme block contains the transitive closure
 
-**Obietnica.** Build emituje w bloku motywu (np. `[data-theme="dark"]`) nie tylko
-nadpisane tokeny semantyczne, ale **wszystkie tokeny, które od nich zależą** —
-bezpośrednio lub przez łańcuch referencji.
+**Promise.** In a theme block (e.g. `[data-theme="dark"]`) the build emits not only the
+overridden semantic tokens but **every token that depends on them** — directly or through
+a chain of references.
 
-**Bramka:** `apps/sandbox-e2e/src/theme.spec.ts` — token **komponentowy** porównywany
-w `:root` i w scope
-**Kontrola:** przebieg z [`lesson-17`](../lessons.md#lesson-17): przed poprawką
-`--pct-surface` był poprawnie ciemny, a `--pct-button-bg` i `--pct-select-panel-bg`
-zwracały wartości jasne — bramka na samym tokenie semantycznym **przechodziła**
-**Decyzja:** [0012 — domknięcie przechodnie w bloku motywu](../decisions/0012-theme-closure.md)
-**Lekcje:** [`lesson-17`](../lessons.md#lesson-17)
+**Gate:** `apps/sandbox-e2e/src/theme.spec.ts` — a **component** token compared in `:root` and
+in a scope
+**Control:** the run from [`lesson-17`](../lessons.md#lesson-17): before the fix
+`--pct-surface` was correctly dark while `--pct-button-bg` and `--pct-select-panel-bg`
+returned light values — a gate on the semantic token alone **passed**
+**Decision:** [0012 — the transitive closure in a theme block](../decisions/0012-theme-closure.md)
+**Lessons:** [`lesson-17`](../lessons.md#lesson-17)
 
-> Powód jest w mechanice CSS: custom properties są podstawiane **w miejscu deklaracji**,
-> nie użycia. Token `--a: var(--b)` zadeklarowany w `:root` dziedziczy już rozwiniętą
-> wartość, więc nadpisanie `--b` w zagnieżdżonym scope go nie zmieni.
-
----
-
-### <a id="req-token-names"></a>`req-token-names` — Nazwa tokenu daje się zgadnąć
-
-**Obietnica.** Schemat `--pct-{komponent}-{część}-{właściwość}-{wariant}` (np.
-`--pct-button-bg-hover`), tak by token dało się zgadnąć **bez dokumentacji**. Wariant —
-stan (`hover`, `disabled`) albo wielkość (`sm`, `lg`) — stoi **zawsze na końcu**;
-`md` nie występuje, bo jest wartością bazową ([`req-api-size`](api.md#req-api-size)).
-Warstwa semantyczna ma własny, płaski kształt `[on-]{rola}[-{wariant}]`, a prymitywna
-jest ścieżką DTCG jeden do jednego.
-
-**Bramka:** `tools/check-tokens.mjs` (target `check-tokens` w projekcie roota, w CI) —
-pięć punktów. Punkt 3 parsuje każdą nazwę wobec słownika w
-`libs/tokens/src/nazwy.policy.json` i wymaga, żeby komponent w nazwie był prawdziwym
-entrypointem pakietu; punkt 5 porównuje `libs/tokens/tokens.snapshot.md` z bieżącą listą.
-Punkty 1, 2 i 4 pilnują mianownika: dwa niezależne odczyty listy (`dist/pct.css` wobec
-źródeł DTCG), zgodność `tokens.ts` i `_tokens.scss` z tą listą oraz zakaz martwych słów
-w słowniku
-**Kontrola:** `tools/check-tokens.fixtures/` — jedenaście wejść, każde odrzucane na swoim
-punkcie; plus przebiegi na repozytorium: przemianowanie na inną poprawną nazwę zapala
-punkt 5, `disabled-bg` zamiast `bg-disabled` — punkt 3, `component.dialog.json` bez
-entrypointu — punkt 3, nieaktualne `dist` — punkt 1, słowo dopisane do słownika bez
-użycia — punkt 4
-
-> Ta sama reguła obowiązuje **identyfikatory wymagań** — i to z niej wzięło się
-> odejście od numerów. Patrz [README](../README.md#dlaczego-slugi-a-nie-numery).
-
-> **Sam snapshot tego nie domyka — zamraża.** Bramka powstała 2026-08-05 i zastała
-> 34 tokeny z segmentami w odwrotnej kolejności (`--pct-checkbox-checked-bg` obok
-> `--pct-checkbox-border-hover` w tym samym pliku), więc znając jedną nazwę nie dało
-> się zgadnąć siostrzanej. Snapshot dołożony przed normalizacją zapisałby ten rozjazd
-> jako stan zaakceptowany. Stąd punkt 3 **przed** punktem 5 — i stąd normalizacja
-> wykonana tym samym ruchem co bramka.
+> The reason is in the mechanics of CSS: custom properties are substituted **at the point of
+> declaration**, not of use. A token `--a: var(--b)` declared in `:root` inherits an
+> already-expanded value, so overriding `--b` in a nested scope will not change it.
 
 ---
 
-## Kontrast i stany
+### <a id="req-token-names"></a>`req-token-names` — A token name can be guessed
 
-### <a id="req-token-text-pairs"></a>`req-token-text-pairs` — Powierzchnia ma odpowiadający token tekstu
+**Promise.** The scheme is `--pct-{component}-{part}-{property}-{variant}` (e.g.
+`--pct-button-bg-hover`), so that a token can be guessed **without documentation**. The
+variant — a state (`hover`, `disabled`) or a size (`sm`, `lg`) — always comes **last**; `md`
+never appears, because it is the base value ([`req-api-size`](api.md#req-api-size)). The
+semantic layer has its own flat shape, `[on-]{role}[-{variant}]`, and the primitive layer is
+the DTCG path one to one.
 
-**Obietnica.** Każdy kolor, który biblioteka **maluje** — tłem, tekstem albo obrysem —
-ma w `libs/tokens/src/contrast.policy.json` parę, wobec której jest mierzony. Tam, gdzie
-powierzchnia jest odwrócona względem strony, tekst dla niej nazywa się `--pct-on-*`
-(`--pct-on-primary`), a taka para musi mieć obie strony: istniejącą rolę i realne użycie.
+**Gate:** `tools/check-tokens.mjs` (target `check-tokens` in the root project, in CI) — five
+points. Point 3 parses every name against the dictionary in
+`libs/tokens/src/nazwy.policy.json` and requires the component in a name to be a real package
+entrypoint; point 5 compares `libs/tokens/tokens.snapshot.md` with the current list. Points 1,
+2 and 4 guard the denominator: two independent readings of the list (`dist/pct.css` against
+the DTCG sources), agreement of `tokens.ts` and `_tokens.scss` with that list, and a ban on
+dead words in the dictionary
+**Control:** `tools/check-tokens.fixtures/` — eleven inputs, each rejected on its own point;
+plus runs against the repository: renaming to another valid name fires point 5, `disabled-bg`
+instead of `bg-disabled` fires point 3, `component.dialog.json` with no entrypoint fires
+point 3, a stale `dist` fires point 1, a word added to the dictionary without being used fires
+point 4
 
-**Bramka:** `tools/check-tokens.mjs` (target `check-tokens` w projekcie roota, w CI) —
-punkt 7. Mianownikiem nie jest lista nazw kończących się na `-bg` i `-fg`, tylko wyjście
-**sassa** dla arkuszy `libs/components`: token wniesiony mixinem albo przypisany do innej
-custom property też maluje. Reguła `on-*` czyta za to nazwy, bo para zadeklarowana
-i nigdy nienamalowana nie zostawia w arkuszu śladu. Progi liczy dalej
-`libs/tokens/build.mjs` ([`req-token-contrast`](#req-token-contrast)) — ten punkt pilnuje
-wyłącznie tego, żeby miał co liczyć
-**Kontrola:** `tools/check-tokens.fixtures/` — `kolor-niezmierzony` (arkusz maluje tłem
-token spoza policy), `para-usunieta-z-policy` (ta sama reguła od drugiej strony),
-`on-para-martwa`, `on-bez-powierzchni`, `wymiar-malowany-kolorem`, `token-spoza-skorki`
-oraz `arkusz-usuniety` na mianownik; plus przebiegi na repozytorium: nowa deklaracja
-`background: var(--pct-surface-disabled)` w `button.scss` zapala, usunięcie pary
-`button/solid — etykieta` z policy zapala, przywrócenie martwego `--pct-on-danger` zapala
-po przyjęciu snapshotu
+> The same rule governs **requirement identifiers** — and it is where the move away from
+> numbers came from. See [README](../README.md#why-slugs-not-numbers).
 
-> **Do 2026-08-05 policy milczała o 27 kolorach.** Bramka kontrastu liczyła 38 par
-> i była zielona; poza jej zasięgiem stały wszystkie stany hover i disabled przycisku,
-> komunikaty błędu checkboxa, radia i selecta oraz siedem obramowań — a także dwa
-> tokeny **semantyczne** malowane wprost przez wariant outline (`--pct-surface-100` pod
-> etykietą `--pct-primary`), których żadna reguła oparta na nazwie tokenu komponentowego
-> nie potrafiłaby zobaczyć. To jest ta sama klasa co [`lesson-33`](../lessons.md#lesson-33):
-> bramka bada wyłącznie to, co ktoś wcześniej wpisał.
+> **A snapshot alone does not close this — it freezes it.** The gate was written on 2026-08-05
+> and found 34 tokens with their segments in reverse order (`--pct-checkbox-checked-bg` next
+> to `--pct-checkbox-border-hover` in the same file), so knowing one name did not let you guess
+> its sibling. A snapshot laid before normalisation would have recorded that drift as the
+> accepted state. Hence point 3 **before** point 5 — and hence the normalisation done in the
+> same move as the gate.
+
+---
+
+## Contrast and states
+
+### <a id="req-token-text-pairs"></a>`req-token-text-pairs` — A surface has a matching text token
+
+**Promise.** Every colour the library **paints** — as a background, as text or as an outline —
+has a pair in `libs/tokens/src/contrast.policy.json` that it is measured against. Where
+a surface is inverted relative to the page, its text token is named `--pct-on-*`
+(`--pct-on-primary`), and such a pair must have both sides: an existing role and real use.
+
+**Gate:** `tools/check-tokens.mjs` (target `check-tokens` in the root project, in CI) —
+point 7. The denominator is not the list of names ending in `-bg` and `-fg` but the **sass**
+output for the `libs/components` stylesheets: a token brought in by a mixin or assigned to
+another custom property paints too. The `on-*` rule does read names, because a pair that is
+declared and never painted leaves no trace in a stylesheet. The thresholds are still computed
+by `libs/tokens/build.mjs` ([`req-token-contrast`](#req-token-contrast)) — this point only
+makes sure it has something to compute
+**Control:** `tools/check-tokens.fixtures/` — `kolor-niezmierzony` (a stylesheet painting
+a background with a token outside the policy), `para-usunieta-z-policy` (the same rule from
+the other side), `on-para-martwa`, `on-bez-powierzchni`, `wymiar-malowany-kolorem`,
+`token-spoza-skorki` and `arkusz-usuniety` for the denominator; plus runs against the
+repository: a new `background: var(--pct-surface-disabled)` declaration in `button.scss`
+fires, removing the `button/solid — etykieta` pair from the policy fires, restoring the dead
+`--pct-on-danger` fires once the snapshot is accepted
+
+> **Until 2026-08-05 the policy was silent about 27 colours.** The contrast gate counted 38
+> pairs and was green; outside its reach stood every hover and disabled state of the button,
+> the error messages of the checkbox, the radio and the select, and seven borders — plus two
+> **semantic** tokens painted directly by the outline variant (`--pct-surface-100` beneath the
+> `--pct-primary` label), which no rule based on component token names could have seen. This is
+> the same class as [`lesson-33`](../lessons.md#lesson-33): a gate examines only what somebody
+> typed into it first.
 >
-> Dopisanie brakujących par **od razu wywróciło build**: trzy z nich nie przechodziły AA
-> w motywie ciemnym (etykieta przycisku na hover 3,45:1, na active 2,66:1, etykieta
-> wariantu outline na hover 3,98:1) — patrz [`lesson-52`](../lessons.md#lesson-52).
+> Adding the missing pairs **immediately knocked the build over**: three of them failed AA in
+> the dark theme (the button label on hover 3.45:1, on active 2.66:1, the outline variant's
+> label on hover 3.98:1) — see [`lesson-52`](../lessons.md#lesson-52).
 
 ---
 
-### <a id="req-token-contrast"></a>`req-token-contrast` — Bramka kontrastu jako policy skórki
+### <a id="req-token-contrast"></a>`req-token-contrast` — The contrast gate as a skin policy
 
-**Obietnica.** Definicja skórki zawiera policy — listę par `fg`/`bg` (rola × stan)
-z poziomem WCAG i `severity`. Podczas budowania skórki, dla każdego motywu, bramka liczy
-kontrast wobec progów WCAG 2.2 (tekst normalny AA 4.5:1, duży AA 3:1, elementy UI
-SC 1.4.11 3:1), blokuje build przy `severity: error`, ostrzega przy `warn` i zwraca
-komunikat, **który wariant rozmiaru przechodzi, a który nie**.
+**Promise.** A skin definition contains a policy — a list of `fg`/`bg` pairs (role × state)
+with a WCAG level and a `severity`. While the skin is built, for every theme, the gate
+computes contrast against the WCAG 2.2 thresholds (normal text AA 4.5:1, large AA 3:1, UI
+components SC 1.4.11 3:1), blocks the build at `severity: error`, warns at `warn` and reports
+**which size variant passes and which does not**.
 
-**Bramka:** `libs/tokens/build.mjs` (target `tokens:build`, w CI przez `^build`);
-kompletność samej policy pilnuje `tools/check-tokens.mjs` punktem 7
-([`req-token-text-pairs`](#req-token-text-pairs)) — bez niego ta bramka mierzy
-wyłącznie to, co ktoś do niej wpisał
-**Kontrola:** przebieg z [`lesson-6`](../lessons.md#lesson-6): pierwotny guard przepuścił
-`disabled` o realnym kontraście ~1,6:1 — bramka ma udokumentowany przypadek, w którym
-**nie zapaliła**, i poprawkę, która to zmieniła
-**Lekcje:** [`lesson-6`](../lessons.md#lesson-6), [`lesson-10`](../lessons.md#lesson-10)
-
----
-
-### <a id="req-token-no-opacity"></a>`req-token-no-opacity` — Stany nie używają `opacity`
-
-**Obietnica.** Każdy stan (hover, active, disabled, …) ma własne, konkretne tokeny
-koloru. `opacity` jest **zakazana dla warstw tekstowych**, bo zmienia kontrast w runtime
-w sposób niewidoczny dla bramki (kompozycja z tłem).
-
-**Bramka:** `tools/check-styles.mjs` (target `check-styles`, w CI) — punkt 6: `opacity`
-w arkuszach biblioteki wolno wyłącznie jako przełącznik widoczności (`0` albo `1`).
-Każda wartość pomiędzy **komponuje z tłem**, czyli przesuwa kontrast realny poza wynik
-bramki kontrastu; wartość niedosłowna (`var(...)`, `calc(...)`) jest nierozstrzygalna
-statycznie, więc też zapala. Rodzina obejmuje warianty SVG (`fill-opacity`,
-`stroke-opacity`), bo kompozycja jest ta sama, tylko nazwa inna
-**Kontrola:** `tools/check-styles.fixtures/opacity-czesciowa/` (stan wyrażony przez
-`opacity: 0.6`) i `opacity-ze-zmiennej/` (wartość z tokenu). Do tego przebieg na
-repozytorium: `opacity: 0` w `checkbox.scss` zmienione na `0.45` zapala punkt 6
-**Wiąże przy:** natychmiast — to obietnica, której złamanie **cofa**
-[`req-token-contrast`](#req-token-contrast) do stanu sprzed
-[`lesson-6`](../lessons.md#lesson-6), i to po cichu
-
-> Świadomie przepuszczone jest `transition: opacity` i przejście 0 → 1. Stan przelotny
-> nie jest tym, o czym mówi [`req-token-contrast`](#req-token-contrast), a zakaz
-> obejmujący animacje odebrałby jedyny standardowy sposób wprowadzania nakładek.
-
-**Lekcje:** [`lesson-6`](../lessons.md#lesson-6)
+**Gate:** `libs/tokens/build.mjs` (target `tokens:build`, in CI through `^build`); the
+completeness of the policy itself is guarded by `tools/check-tokens.mjs` point 7
+([`req-token-text-pairs`](#req-token-text-pairs)) — without it this gate measures only what
+somebody typed into it
+**Control:** the run from [`lesson-6`](../lessons.md#lesson-6): the original guard let
+`disabled` through at a real contrast of ~1.6:1 — the gate has a documented case in which it
+**did not fire**, and the fix that changed that
+**Lessons:** [`lesson-6`](../lessons.md#lesson-6), [`lesson-10`](../lessons.md#lesson-10)
 
 ---
 
-## Motywy
+### <a id="req-token-no-opacity"></a>`req-token-no-opacity` — States do not use `opacity`
 
-### <a id="req-token-css"></a>`req-token-css` — Tokeny kompilują się do natywnych custom properties
+**Promise.** Every state (hover, active, disabled, …) has its own concrete colour tokens.
+`opacity` is **forbidden for text layers**, because it changes contrast at runtime in a way
+the gate cannot see (composition with the background).
 
-**Obietnica.** Stylowanie i theming opierają się o design tokens tłumaczone na natywne
-CSS custom properties. Zmiana motywu **nie wymaga rekompilacji SCSS** ani silnika JS.
+**Gate:** `tools/check-styles.mjs` (target `check-styles`, in CI) — point 6: `opacity` in the
+library's stylesheets is allowed only as a visibility switch (`0` or `1`). Any value in
+between **composes with the background**, i.e. moves the real contrast outside the contrast
+gate's result; a non-literal value (`var(...)`, `calc(...)`) is statically undecidable and so
+fires as well. The family covers the SVG variants (`fill-opacity`, `stroke-opacity`), because
+the composition is the same and only the name differs
+**Control:** `tools/check-styles.fixtures/opacity-czesciowa/` (a state expressed through
+`opacity: 0.6`) and `opacity-ze-zmiennej/` (a value from a token). Plus a run against the
+repository: `opacity: 0` in `checkbox.scss` changed to `0.45` fires point 6
+**Binds at:** immediately — this is a promise whose breach **rolls back**
+[`req-token-contrast`](#req-token-contrast) to its state before
+[`lesson-6`](../lessons.md#lesson-6), and does so quietly
 
-**Bramka:** `apps/sandbox-e2e/src/theme.spec.ts`,
-`libs/components/check-package.mjs` (punkt 3: domknięcie tokenów w artefakcie)
-**Kontrola:** `tools/check-package.fixtures/token-bez-deklaracji/` — pakiet, w którym użyty
-`var(--pct-*)` nie ma nigdzie deklaracji, musi zapalić punkt 3. Przeglądarka podstawiłaby
-za niego wartość początkową, więc bez tej kontroli awaria jest niewidoczna
-**Lekcje:** [`lesson-18`](../lessons.md#lesson-18), [`lesson-36`](../lessons.md#lesson-36)
+> `transition: opacity` and a 0 → 1 transition are deliberately let through. A transient state
+> is not what [`req-token-contrast`](#req-token-contrast) is about, and a ban covering
+> animation would take away the one standard way of bringing overlays in.
 
----
-
-### <a id="req-token-scss"></a>`req-token-scss` — Wewnętrznie używamy SCSS
-
-**Obietnica.** Style biblioteki i aplikacji w workspace korzystają z SCSS.
-
-**Bramka:** brak — świadomie: rozszerzenie pliku jest widoczne w review, a arkusz
-w innym języku nie zbudowałby się
-**Kontrola:** nie dotyczy
-
----
-
-### <a id="req-token-override"></a>`req-token-override` — Tokeny można nadpisać dla wybranych komponentów
-
-**Obietnica.** Nadpisanie tokenu semantycznego przethemowuje wszystko poniżej; nadpisanie
-komponentowego (`--pct-button-bg`) zmienia tylko dany komponent.
-
-**Bramka:** `apps/sandbox-e2e/src/theme.spec.ts`
-**Kontrola:** jak w [`req-token-closure`](#req-token-closure) — porównanie tokenu
-komponentowego, nie semantycznego
-**Lekcje:** [`lesson-17`](../lessons.md#lesson-17)
+**Lessons:** [`lesson-6`](../lessons.md#lesson-6)
 
 ---
 
-### <a id="req-token-scoped"></a>`req-token-scoped` — Motyw dla części aplikacji
+## Themes
 
-**Obietnica.** Inny motyw dla poddrzewa (scoped theme) realizowany kaskadą custom
-properties na wybranym elemencie (`[data-theme="dark"]`, `.pct-theme-x`), bez
-rekompilacji i bez silnika JS. Nakładki renderowane poza drzewem hosta dostają motyw
-**przeniesiony jawnie**.
+### <a id="req-token-css"></a>`req-token-css` — Tokens compile to native custom properties
 
-**Bramka:** `apps/sandbox-e2e/src/theme.spec.ts`, `apps/sandbox-e2e/src/a11y.spec.ts`
-(„panel ze scoped theme (ciemny) jest bez naruszeń"). Każda karta sandboxa ustawia motyw
-na **własnej scenie**, więc każdy przykład jest przy okazji testem scoped theme
-**Kontrola:** patrz [`req-token-closure`](#req-token-closure)
-**Lekcje:** [`lesson-17`](../lessons.md#lesson-17), [`lesson-18`](../lessons.md#lesson-18)
+**Promise.** Styling and theming rest on design tokens translated into native CSS custom
+properties. Changing the theme **requires no SCSS recompilation** and no JS engine.
 
----
-
-### <a id="req-token-directive"></a>`req-token-directive` — Dyrektywa-cukier `[pctTheme]`
-
-**Obietnica.** Ustawianie motywu z szablonu przez dyrektywę `[pctTheme]`. Mechanizmem
-bazowym pozostaje sama kaskada — dyrektywa jest wygodą, nie warunkiem.
-
-**Bramka:** brak — luka: dyrektywy nie ma, motyw ustawia się ręcznym `data-theme`
-**Kontrola:** brak — luka: motyw ustawiony dyrektywą i motyw ustawiony atrybutem muszą dać ten sam wynik
-**Wiąże przy:** gdy ustawianie `data-theme` z szablonu zacznie się powtarzać
+**Gate:** `apps/sandbox-e2e/src/theme.spec.ts`,
+`libs/components/check-package.mjs` (point 3: token closure in the artifact)
+**Control:** `tools/check-package.fixtures/token-bez-deklaracji/` — a package in which a used
+`var(--pct-*)` has no declaration anywhere must fire point 3. The browser would substitute the
+initial value for it, so without this control the failure is invisible
+**Lessons:** [`lesson-18`](../lessons.md#lesson-18), [`lesson-36`](../lessons.md#lesson-36)
 
 ---
 
-### <a id="req-token-system"></a>`req-token-system` — Motyw idzie za systemem, dopóki nikt nie powie inaczej
+### <a id="req-token-scss"></a>`req-token-scss` — Internally we use SCSS
 
-**Obietnica.** Build emituje
-`@media (prefers-color-scheme: dark) { :root:not([data-theme]) { … } }` — strona bez
-jawnej deklaracji dostaje ciemny motyw z pudełka. Selektor `:not([data-theme])` czyni
-z preferencji systemu **wartość domyślną, nie rozkaz**.
+**Promise.** The library's and the apps' styles in the workspace use SCSS.
 
-**Bramka:** `apps/sandbox-e2e/src/preferences.spec.ts`
-**Kontrola:** `preferences.spec.ts › „bez preferencji ciemnej :root zostaje jasny
-(odniesienie)"` — kontrola odniesienia jest **osobnym testem**, nie asercją wewnątrz
-testu właściwego
-**Lekcje:** [`lesson-38`](../lessons.md#lesson-38)
-
-> Mechanizm składa się z zagnieżdżeniem tylko dlatego, że `light` jest tu **czynnym
-> motywem**, a nie brakiem atrybutu: blok `[data-theme="light"]` niesie pełne
-> przeciwnadpisania, więc jasna karta na ciemnym systemie ma czym cofnąć wartości
-> odziedziczone z `:root`.
+**Gate:** none — deliberately: the file extension is visible in review, and a stylesheet in
+another language would not build
+**Control:** not applicable
 
 ---
 
-### <a id="req-token-skin"></a>`req-token-skin` — Skórka jest w pełni parametryzowana
+### <a id="req-token-override"></a>`req-token-override` — Tokens can be overridden for chosen components
 
-**Obietnica.** Autor motywu definiuje wszystkie kolory wszystkich stanów. Komponenty nie
-mają wbudowanych kolorów i nie przyciemniają stanów przez `opacity`. Budowanie skórki
-uruchamia [bramkę kontrastu](#req-token-contrast), która daje autorowi konkretny raport.
+**Promise.** Overriding a semantic token re-themes everything below it; overriding a component
+one (`--pct-button-bg`) changes only that component.
 
-**Bramka:** `libs/tokens/build.mjs` — ale **wyłącznie dla skórki wbudowanej**
-**Kontrola:** patrz [`req-token-contrast`](#req-token-contrast)
-**Wiąże przy:** gdy ktoś zechce własny motyw — **nie ma dziś ścieżki**, którą osoba
-z zewnątrz zbudowałaby skórkę: `build.mjs` czyta sztywny zestaw plików z `libs/tokens/src`,
-a pakiet `@pacit/tokens` jest `private`. Sandbox ma już oś skórki z jedną pozycją
-(`base`) czekającą na tę ścieżkę
+**Gate:** `apps/sandbox-e2e/src/theme.spec.ts`
+**Control:** as in [`req-token-closure`](#req-token-closure) — comparing the component token,
+not the semantic one
+**Lessons:** [`lesson-17`](../lessons.md#lesson-17)
 
 ---
 
-### <a id="req-token-distribution"></a>`req-token-distribution` — Motywy jako zwykłe pliki CSS
+### <a id="req-token-scoped"></a>`req-token-scoped` — A theme for part of an app
 
-**Obietnica.** Motywy dystrybuowane jako pliki CSS (`@pacit/components/themes/…`),
-importowane bez konfiguracji JS.
+**Promise.** A different theme for a subtree (a scoped theme) is done by cascading custom
+properties on a chosen element (`[data-theme="dark"]`, `.pct-theme-x`), with no recompilation
+and no JS engine. Overlays rendered outside the host tree get the theme **carried over
+explicitly**.
 
-**Bramka:** `libs/components/check-package.mjs` — punkty 1 i 2: skórka jest w pakiecie
-i **osiągalna importem** (mapa `exports` jest zamknięta; plik bez wpisu jest dla
-konsumenta niewidoczny)
-**Kontrola:** `tools/check-package.fixtures/brak-skorki/` — pakiet bez skórki musi zapalić
-punkt 1, a `tools/check-package.fixtures/skorka-poza-exports/` — skórka poza mapą `exports`
-punkt 2. Przebieg z [`lesson-36`](../lessons.md#lesson-36) był ręczny
-**Lekcje:** [`lesson-36`](../lessons.md#lesson-36)
-
----
-
-## Osie
-
-### <a id="req-token-density"></a>`req-token-density` — Oś gęstości
-
-**Obietnica.** Osobny wymiar tokenów (`comfortable` / `compact`) przełączany
-atrybutem/scope, niezależny od motywu kolorystycznego.
-
-**Bramka:** brak — luka: w źródłach DTCG nie ma **ani jednego** tokenu gęstości
-**Kontrola:** brak — luka: układ z tokenem gęstości `compact` musi przejść próg obszaru dotyku, inaczej bramka ma zapalić
-**Wiąże przy:** po ustabilizowaniu osi wielkości. Uwaga: gęstość zejdzie poniżej progu
-obszaru dotyku **szybciej** niż wielkość `sm`, więc razem z nią trzeba przetestować
-`--pct-target-min` ([`req-a11y-touch`](a11y.md#req-a11y-touch))
-
-> Oś wielkości ([`req-api-size`](api.md#req-api-size)) jest gotowym wzorcem do
-> powtórzenia.
+**Gate:** `apps/sandbox-e2e/src/theme.spec.ts`, `apps/sandbox-e2e/src/a11y.spec.ts`
+(„panel ze scoped theme (ciemny) jest bez naruszeń"). Every sandbox card sets the theme on
+**its own stage**, so every example doubles as a scoped-theme test
+**Control:** see [`req-token-closure`](#req-token-closure)
+**Lessons:** [`lesson-17`](../lessons.md#lesson-17), [`lesson-18`](../lessons.md#lesson-18)
 
 ---
 
-### <a id="req-token-logical"></a>`req-token-logical` — Arkusze używają wyłącznie właściwości logicznych
+### <a id="req-token-directive"></a>`req-token-directive` — The `[pctTheme]` sugar directive
 
-**Obietnica.** Arkusze biblioteki używają wyłącznie właściwości logicznych
-(`padding-inline-start`, nie `padding-left`). Układ **odbija się** w `dir="rtl"`.
-Wyjątki wyłącznie z komentarzem uzasadniającym.
+**Promise.** Setting the theme from a template through a `[pctTheme]` directive. The
+underlying mechanism remains the cascade itself — the directive is a convenience, not
+a condition.
 
-**Bramka:** `tools/check-styles.mjs` (target `check-styles`, w CI) — punkt 5: zakaz
-właściwości fizycznych osi inline (`left`/`right`, `margin-*`, `padding-*`, `border-*`,
-promienie narożników, `direction`, wielowartościowy `inset`) oraz fizycznych WARTOŚCI
-(`text-align`, `float`, `clear`). Oś block (`top`/`bottom`) świadomie poza listą: `rtl`
-odbija wyłącznie oś inline, a pełne bidi jest [nie-celem](../00-axis.md#jawne-nie-cele).
-Wyjątek wymaga znacznika `/* pct-wyjatek <właściwość>: <powód> */` przylegającego do
-deklaracji — punkt 4 zapala na znaczniku bez uzasadnienia i na takim, który nie trafia
-w żadną deklarację
-**Kontrola:** `tools/check-styles.fixtures/padding-fizyczny/` (nazwa właściwości)
-i `text-align-fizyczny/` (wartość); dla wyjątków `wyjatek-bez-uzasadnienia/`
-i `wyjatek-bez-uzycia/`. Do tego przebiegi na repozytorium: `padding-inline-start`
-zamienione na `padding-left` w `field.scss` zapala, usunięcie znacznika wyjątku nad
-`left: 50%` w `radio.scss` zapala, a `margin-right` schowany w mixinie z interpolacją
-zapala punkt 2 — porównanie tekstu źródła z tym, co z niego wypisuje sass
-**Lekcje:** [`lesson-48`](../lessons.md#lesson-48)
+**Gate:** none — gap: the directive does not exist, the theme is set with a hand-written
+`data-theme`
+**Control:** none — gap: a theme set by the directive and a theme set by the attribute must
+produce the same result
+**Binds at:** when setting `data-theme` from a template starts to repeat
 
-> **Bramka arkuszy to warunek konieczny, nie wystarczający.** Arkusz może być bez zarzutu
-> logiczny, a układ i tak się nie odbić — bo kierunek nie dociera tam, gdzie powinien.
-> Zmierzone przy tej okazji: panel selecta żyje w nakładce CDK, czyli jako dziecko `body`,
-> więc w `dir="rtl"` trigger pisał od prawej, a lista pod nim od lewej, przy `text-align:
-start` w arkuszu ([`lesson-35`](../lessons.md#lesson-35) — trzecia właściwość dziedziczona
-> po motywie i piśmie). Dlatego obietnicy pilnują trzy rzeczy naraz: bramka arkuszy,
-> zrzuty w `dir="rtl"` (`apps/sandbox-e2e/src/visual.spec.ts`) i pomiary układu
-> (`rtl.spec.ts`, `a11y.spec.ts` — audyt axe na każdym widoku w RTL).
+---
+
+### <a id="req-token-system"></a>`req-token-system` — The theme follows the system until somebody says otherwise
+
+**Promise.** The build emits
+`@media (prefers-color-scheme: dark) { :root:not([data-theme]) { … } }` — a page with no
+explicit declaration gets the dark theme out of the box. The `:not([data-theme])` selector
+makes the system preference **a default, not an order**.
+
+**Gate:** `apps/sandbox-e2e/src/preferences.spec.ts`
+**Control:** `preferences.spec.ts › „bez preferencji ciemnej :root zostaje jasny
+(odniesienie)"` — the negative control is **a separate test**, not an assertion inside the
+test proper
+**Lessons:** [`lesson-38`](../lessons.md#lesson-38)
+
+> The mechanism is built with nesting only because `light` is an **active theme** here rather
+> than the absence of an attribute: the `[data-theme="light"]` block carries the full
+> counter-overrides, so a light card on a dark system has something to undo the values
+> inherited from `:root` with.
+
+---
+
+### <a id="req-token-skin"></a>`req-token-skin` — The skin is fully parameterised
+
+**Promise.** A theme author defines every colour of every state. Components have no built-in
+colours and do not dim states with `opacity`. Building a skin runs the
+[contrast gate](#req-token-contrast), which gives the author a concrete report.
+
+**Gate:** `libs/tokens/build.mjs` — but **only for the built-in skin**
+**Control:** see [`req-token-contrast`](#req-token-contrast)
+**Binds at:** when somebody wants a theme of their own — **there is no path today** by which
+an outsider would build a skin: `build.mjs` reads a fixed set of files from `libs/tokens/src`,
+and the `@pacit/tokens` package is `private`. The sandbox already has a skin axis with one
+entry (`base`) waiting for that path
+
+---
+
+### <a id="req-token-distribution"></a>`req-token-distribution` — Themes as ordinary CSS files
+
+**Promise.** Themes are distributed as CSS files (`@pacit/components/themes/…`), imported with
+no JS configuration.
+
+**Gate:** `libs/components/check-package.mjs` — points 1 and 2: the skin is in the package and
+**reachable by import** (the `exports` map is closed; a file with no entry is invisible to the
+consumer)
+**Control:** `tools/check-package.fixtures/brak-skorki/` — a package with no skin must fire
+point 1, and `tools/check-package.fixtures/skorka-poza-exports/` — a skin outside the
+`exports` map must fire point 2. The run from [`lesson-36`](../lessons.md#lesson-36) was
+manual
+**Lessons:** [`lesson-36`](../lessons.md#lesson-36)
+
+---
+
+## Axes
+
+### <a id="req-token-density"></a>`req-token-density` — The density axis
+
+**Promise.** A separate token dimension (`comfortable` / `compact`) switched by
+attribute/scope, independent of the colour theme.
+
+**Gate:** none — gap: the DTCG sources contain **not one** density token
+**Control:** none — gap: a layout with the `compact` density token must pass the touch-target
+threshold, or the gate has to fire
+**Binds at:** once the size axis has settled. Note: density will drop below the touch-target
+threshold **sooner** than the `sm` size, so `--pct-target-min` has to be tested alongside it
+([`req-a11y-touch`](a11y.md#req-a11y-touch))
+
+> The size axis ([`req-api-size`](api.md#req-api-size)) is a ready pattern to repeat.
+
+---
+
+### <a id="req-token-logical"></a>`req-token-logical` — Stylesheets use logical properties only
+
+**Promise.** The library's stylesheets use logical properties only (`padding-inline-start`,
+not `padding-left`). The layout **mirrors** under `dir="rtl"`. Exceptions only with a comment
+justifying them.
+
+**Gate:** `tools/check-styles.mjs` (target `check-styles`, in CI) — point 5: a ban on physical
+properties of the inline axis (`left`/`right`, `margin-*`, `padding-*`, `border-*`, corner
+radii, `direction`, a multi-value `inset`) and on physical VALUES (`text-align`, `float`,
+`clear`). The block axis (`top`/`bottom`) is deliberately off the list: `rtl` mirrors the
+inline axis only, and full bidi is a [non-goal](../00-axis.md#explicit-non-goals). An
+exception requires a `/* pct-wyjatek <property>: <reason> */` marker adjacent to the
+declaration — point 4 fires on a marker with no justification and on one that lands on no
+declaration
+**Control:** `tools/check-styles.fixtures/padding-fizyczny/` (a property name) and
+`text-align-fizyczny/` (a value); for exceptions, `wyjatek-bez-uzasadnienia/` and
+`wyjatek-bez-uzycia/`. Plus runs against the repository: `padding-inline-start` swapped for
+`padding-left` in `field.scss` fires, removing the exception marker above `left: 50%` in
+`radio.scss` fires, and a `margin-right` hidden inside a mixin with interpolation fires
+point 2 — the comparison of the source text with what sass emits from it
+**Lessons:** [`lesson-48`](../lessons.md#lesson-48)
+
+> **The stylesheet gate is a necessary condition, not a sufficient one.** A stylesheet can be
+> impeccably logical and the layout still fail to mirror — because the direction does not
+> reach where it should. Measured on this occasion: the select's panel lives in a CDK overlay,
+> i.e. as a child of `body`, so under `dir="rtl"` the trigger wrote from the right and the list
+> below it from the left, with `text-align: start` in the stylesheet
+> ([`lesson-35`](../lessons.md#lesson-35) — the third property inherited after theme and
+> typeface). So three things guard the promise at once: the stylesheet gate, screenshots in
+> `dir="rtl"` (`apps/sandbox-e2e/src/visual.spec.ts`) and layout measurements (`rtl.spec.ts`,
+> `a11y.spec.ts` — an axe audit of every view in RTL).
 >
-> Oś `dir` jest osią przekrojową sandboxa jak motyw i wielkość: przestawia się ją
-> w pasku globalnym albo na pojedynczej karcie.
+> The `dir` axis is a cross-cutting sandbox axis like theme and size: it is switched in the
+> global bar or on a single card.
 >
-> **Nie ma tu dywidendy do zainkasowania z rezygnacji**: `padding-inline-start` nie jest
-> dłuższe od `padding-left`, więc rezygnacja nie oszczędziłaby ani jednej linii —
-> odebrałaby tylko gwarancję.
+> **There is no dividend to collect from giving this up**: `padding-inline-start` is no longer
+> than `padding-left`, so dropping it would not save a single line — it would only take away
+> the guarantee.
 >
-> Realny koszt RTL leży przy **przyszłych** komponentach: strzałki Lewo/Prawo muszą się
-> zamieniać w układach poziomych (tabs, slider, carousel), nakładki muszą się odbijać
-> (CDK `Directionality`), `scrollLeft` ma inny znak.
+> The real cost of RTL lies with the **future** components: Left/Right arrows have to swap in
+> horizontal layouts (tabs, slider, carousel), overlays have to mirror (CDK `Directionality`),
+> `scrollLeft` has a different sign.
 >
-> Świadomie wyłączone jest **pełne bidi**, nie RTL — patrz
-> [nie-cele](../00-axis.md#jawne-nie-cele).
+> What is deliberately excluded is **full bidi**, not RTL — see
+> [non-goals](../00-axis.md#explicit-non-goals).

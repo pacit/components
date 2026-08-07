@@ -1,7 +1,7 @@
-# Fixture — obietnica bez bramki
+# Fixture — a promise with no gate
 
-### <a id="req-fixture-bez-bramki"></a>`req-fixture-bez-bramki` — Obietnica bez maszyny
+### <a id="req-fixture-bez-bramki"></a>`req-fixture-bez-bramki` — A promise with no machine
 
-**Obietnica.** Coś ma być prawdą, ale nic tego nie sprawdza i nikt nie zapisał dlaczego.
+**Promise.** Something is meant to be true, but nothing checks it and nobody wrote down why.
 
-**Kontrola:** brak — świadomie: fixture, celowo bez pola **Bramka**
+**Control:** none — deliberately: a fixture, deliberately missing the **Gate** field

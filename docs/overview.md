@@ -1,20 +1,20 @@
-# Ten dokument został rozbity
+# This document was split up
 
-`overview.md` był jednym plikiem trzymającym cztery różne gatunki treści: tezę, obietnice
-normatywne, decyzje z uzasadnieniem i log lekcji. Rosły w czterech różnych rytmach,
-a numeracja wymagań przestała odpowiadać kolejności czytania.
+`overview.md` used to be a single file holding four different genres of content: the thesis,
+normative promises, decisions with their reasoning, and the lesson log. They grew at four
+different rates, and the requirement numbering stopped matching the reading order.
 
-**Zacznij od [`README.md`](README.md)** — mapa całości, kształt wpisu i tabela migracji
-starych identyfikatorów.
+**Start at [`README.md`](README.md)** — the map of the whole, the shape of an entry and the
+migration table of old identifiers.
 
-| szukasz                                          | idź do                                                |
-| ------------------------------------------------ | ----------------------------------------------------- |
-| tezy „nic nie psuje się po cichu" (`wym-proj-0`) | [`00-axis.md`](00-axis.md)                            |
-| wymagań `req-*`                                  | [`requirements/`](requirements/)                      |
-| uzasadnień, które wcześniej rozdymały wymagania  | [`decisions/`](decisions/)                            |
-| logu `wym-real-*`                                | [`lessons.md`](lessons.md) — dziś `lesson-*`          |
-| sekcji „Czego jeszcze nie ma"                    | [`registry.md`](registry.md) — generowany, nie pisany |
-| stanu konkretnego komponentu                     | [`components/`](components/)                          |
+| looking for                                         | go to                                                 |
+| --------------------------------------------------- | ----------------------------------------------------- |
+| the „nothing breaks silently" thesis (`wym-proj-0`) | [`00-axis.md`](00-axis.md)                            |
+| the `req-*` requirements                            | [`requirements/`](requirements/)                      |
+| the reasoning that used to bloat the requirements   | [`decisions/`](decisions/)                            |
+| the `wym-real-*` log                                | [`lessons.md`](lessons.md) — `lesson-*` today         |
+| the „What is still missing" section                 | [`registry.md`](registry.md) — generated, not written |
+| the state of one component                          | [`components/`](components/)                          |
 
-Treść nie zniknęła — została rozdzielona wg poziomu i przepisana na nowe identyfikatory.
-Poprzednia postać jest w historii gita (do commitu `52d8fe1`).
+Nothing was lost — it was split by level and rewritten onto the new identifiers. The
+previous form is in the git history (up to commit `52d8fe1`).

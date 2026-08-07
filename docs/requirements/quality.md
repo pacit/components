@@ -1,406 +1,407 @@
-# Wymagania — jakość i bramki
+# Requirements — quality and gates
 
-Ten obszar jest **realizacją [`req-axis`](../00-axis.md)**: opisuje maszyny, które potrafią
-zapalić. Scala dawne sekcje testów i sandboxa oraz cztery wymagania rozrzucone wcześniej
-po obszarach projektu i dostępności. Mapowanie starych identyfikatorów jest w
-[tabeli migracji](../README.md#migracja-identyfikatorów-2026-07-27).
+This area is **the implementation of [`req-axis`](../00-axis.md)**: it describes the machines
+that can fire. It merges the former test and sandbox sections plus four requirements that
+used to be scattered across the project and accessibility areas. Old identifiers are mapped
+in the [migration table](../README.md#identifier-migration-2026-07-27).
 
-Sandbox stoi tutaj, a nie w osobnej sekcji, celowo: [`lesson-33`](../lessons.md#lesson-33)
-pokazała, że macierz „każdy komponent × każdy stan" nie jest ozdobnikiem, tylko
-**wejściem dla bramki a11y**. Audyt bada wyłącznie to, co ktoś wcześniej wyrenderował —
-luka w prezentacji jest luką w pokryciu, niewidoczną w raporcie, bo raport jest zielony.
+The sandbox sits here rather than in a section of its own, deliberately:
+[`lesson-33`](../lessons.md#lesson-33) showed that the „every component × every state"
+matrix is not decoration but **the input for the a11y gate**. The audit only examines what
+somebody rendered first — a gap in what is shown is a gap in coverage, invisible in the
+report because the report is green.
 
-> Kształt wpisu i znaczenie pól **Bramka** / **Kontrola** opisuje
-> [README](../README.md#kształt-wymagania).
+> The shape of an entry and the meaning of the **Gate** / **Control** fields are described
+> in the [README](../README.md#requirement-shape).
 
 ---
 
-## Meta — bramki dla bramek
+## Meta — gates for gates
 
-### <a id="req-quality-negative-control"></a>`req-quality-negative-control` — Każda bramka ma kontrolę odniesienia
+### <a id="req-quality-negative-control"></a>`req-quality-negative-control` — Every gate has a negative control
 
-**Obietnica.** Nowa bramka nie jest gotowa, gdy przechodzi — jest gotowa, gdy **pokazano,
-że potrafi nie przejść**. Każda bramka ma test albo udokumentowany przebieg dowodzący, że
-po wprowadzeniu celowej regresji zapala. Bramka, która zawsze przechodzi, jest
-groźniejsza niż jej brak.
+**Promise.** A new gate is not ready when it passes — it is ready when it has been **shown
+to fail**. Every gate has a test or a documented run proving that it fires after a deliberate
+regression. A gate that always passes is more dangerous than no gate.
 
-**Bramka:** `tools/check-docs.mjs` — pole **Kontrola** jest wymagane przy każdym
-wymaganiu, tak samo jak pole **Bramka**
-**Kontrola:** `tools/check-docs.fixtures/` — wymaganie z bramką, ale bez kontroli, musi
-zostać odrzucone
-**Lekcje:** [`lesson-38`](../lessons.md#lesson-38), [`lesson-39`](../lessons.md#lesson-39),
+**Gate:** `tools/check-docs.mjs` — the **Control** field is required on every requirement,
+exactly like the **Gate** field
+**Control:** `tools/check-docs.fixtures/` — a requirement with a gate but no control must be
+rejected
+**Lessons:** [`lesson-38`](../lessons.md#lesson-38), [`lesson-39`](../lessons.md#lesson-39),
 [`lesson-41`](../lessons.md#lesson-41)
 
-> Dwa przebiegi, z których wzięła się ta reguła, warto trzymać blisko:
-> [`lesson-38`](../lessons.md#lesson-38) — idiomatyczny zapis emulacji **po cichu nie
-> działał**, a test przechodził na wartościach domyślnych; wykryła to dopiero kontrola
-> odniesienia, nie test właściwy. [`lesson-39`](../lessons.md#lesson-39) — test wizualny
-> mógł urodzić się martwy na dwa niezależne sposoby, oba wyglądające jak działający test.
+> The two runs this rule came from are worth keeping close:
+> [`lesson-38`](../lessons.md#lesson-38) — the idiomatic way of writing the emulation
+> **silently did nothing**, and the test passed on default values; only the negative control
+> found it, not the test itself. [`lesson-39`](../lessons.md#lesson-39) — a visual test could
+> be born dead in two independent ways, both looking like a working test.
 
 ---
 
-### <a id="req-quality-registry"></a>`req-quality-registry` — Rejestr obietnica → bramka → kontrola
+### <a id="req-quality-registry"></a>`req-quality-registry` — The promise → gate → control registry
 
-**Obietnica.** Każde wymaganie wskazuje **maszynowo**, co je egzekwuje i co dowodzi, że
-ta bramka potrafi nie przejść. Stan wymagania jest **wyprowadzany** z zawartości rejestru,
-nigdy wpisywany ręcznie. Świadomy brak bramki jest dozwolony — musi być wpisany **wraz
-z powodem**.
+**Promise.** Every requirement points **machine-readably** at what enforces it and at what
+proves that gate can fail. A requirement's state is **derived** from the contents of the
+registry, never typed in by hand. A deliberate absence of a gate is allowed — it has to be
+written down **together with the reason**.
 
-**Bramka:** `tools/check-docs.mjs` (target `check-docs`, w CI) — sześć kontroli opisanych
-w [README](../README.md#bramka-dokumentacji)
-**Kontrola:** `tools/check-docs.fixtures/` — zestaw celowo wadliwych wymagań (bez bramki,
-z bramką wskazującą na nieistniejący plik, z targetem spoza CI, bez kontroli), z których
-**każde** musi zostać odrzucone
-**Lekcje:** [`lesson-36`](../lessons.md#lesson-36), [`lesson-39`](../lessons.md#lesson-39)
+**Gate:** `tools/check-docs.mjs` (target `check-docs`, in CI) — the six checks described in
+the [README](../README.md#the-docs-gate)
+**Control:** `tools/check-docs.fixtures/` — a set of deliberately broken requirements (with
+no gate, with a gate pointing at a file that does not exist, with a target outside CI, with
+no control), **every one** of which must be rejected
+**Lessons:** [`lesson-36`](../lessons.md#lesson-36), [`lesson-39`](../lessons.md#lesson-39)
 
-> **Dlaczego to musi być kod, a nie dyscyplina.** Rozjazd między dokumentacją
-> a rzeczywistością już wystąpił i już go raz łatano ręcznie: nagłówek „Jak czytać ten
-> dokument" istniał dokładnie dlatego, że wymagania dawały się czytać jako opis stanu
-> kodu, a odpowiedzią było **ręczne dopisanie 18 adnotacji**. To ten sam wzorzec co
-> ręczny `node libs/tokens/build.mjs` w CI przed [`lesson-36`](../lessons.md#lesson-36):
-> obejście, które **maskuje brak struktury zamiast go ujawnić**.
+> **Why this has to be code and not discipline.** Drift between the documentation and reality
+> has already happened and has already been patched by hand once: the „How to read this
+> document" heading existed precisely because the requirements could be read as a description
+> of the state of the code, and the answer was **18 annotations added by hand**. That is the
+> same pattern as the manual `node libs/tokens/build.mjs` in CI before
+> [`lesson-36`](../lessons.md#lesson-36): a workaround that **masks the missing structure
+> instead of exposing it**.
 >
-> Efekt uboczny jest właściwie główną korzyścią: **dopisanie wymagania bez bramki
-> przestaje być możliwe po cichu.** Oś zaczyna egzekwować samą siebie.
+> The side effect is really the main benefit: **adding a requirement without a gate stops
+> being possible quietly.** The axis starts enforcing itself.
 >
-> To wymaganie jest przy tym **własnym pierwszym przypadkiem testowym**: dopóki rejestru
-> nie ma, [`req-axis`](../00-axis.md) jest obietnicą bez bramki — dokładnie tym, czego
-> zakazuje.
+> This requirement is also **its own first test case**: until the registry exists,
+> [`req-axis`](../00-axis.md) is a promise without a gate — exactly what it forbids.
 
 ---
 
-### <a id="req-quality-typecheck"></a>`req-quality-typecheck` — Każdy projekt ma target `typecheck`
+### <a id="req-quality-typecheck"></a>`req-quality-typecheck` — Every project has a `typecheck` target
 
-**Obietnica.** Nie ma w workspace kodu TypeScript, którego kompilator nie widzi. **Lint
-nie zastępuje typechecku**: ESLint parsuje i sprawdza reguły, ale nie zgłasza błędów typów
-ani niespójności konfiguracji modułów.
+**Promise.** There is no TypeScript in the workspace that the compiler does not see. **Lint
+is not a substitute for typecheck**: ESLint parses and checks rules, but it reports neither
+type errors nor module configuration inconsistencies.
 
-**Bramka:** `tools/check-typecheck.mjs` (target `check-typecheck`, w CI) — cztery kontrole:
-(1) każdy plik TypeScriptu z indeksu gita należy do jakiegoś projektu, (2) każdy projekt
-z plikami TypeScriptu ma target `typecheck`, (3) polecenie tego targetu daje się zmierzyć
-i nie jest rozbrojone (operator powłoki, `--noCheck`, brak `-p`), (4) każdy plik projektu
-wchodzi do programu jego kompilatora
-**Kontrola:** `tools/check-typecheck.fixtures/` — jedenaście spreparowanych wejść, każde
-odrzucane na swoim punkcie; plus przebiegi na repozytorium: `sandbox` cofnięty do targetu
-inferowanego przez `@nx/vite` zapala punkt 4 na czterech plikach, nowy entrypoint
-biblioteki spoza `include` — też punkt 4, nowy projekt bez targetu — punkt 2, `|| true`
-dopisane do polecenia — punkt 3
-**Lekcje:** [`lesson-42`](../lessons.md#lesson-42), [`lesson-47`](../lessons.md#lesson-47)
+**Gate:** `tools/check-typecheck.mjs` (target `check-typecheck`, in CI) — four checks:
+(1) every TypeScript file in the git index belongs to some project, (2) every project with
+TypeScript files has a `typecheck` target, (3) that target's command can be measured and is
+not disarmed (a shell operator, `--noCheck`, a missing `-p`), (4) every file of a project
+enters its compiler program
+**Control:** `tools/check-typecheck.fixtures/` — eleven doctored inputs, each rejected on its
+own point; plus runs against the repository: `sandbox` reverted to the target inferred by
+`@nx/vite` fires point 4 on four files, a new library entrypoint outside `include` fires
+point 4 as well, a new project with no target fires point 2, `|| true` appended to the
+command fires point 3
+**Lessons:** [`lesson-42`](../lessons.md#lesson-42), [`lesson-47`](../lessons.md#lesson-47)
 
-> **Punkt 4 jest tym, po co ta bramka powstała.** Sam wymóg istnienia targetu mierzy
-> deklarację, a `lesson-42` mówi wprost, że tsconfig potrafi kłamać o swoim zasięgu.
-> `sandbox` miał target `typecheck` **inferowany** przez `@nx/vite/plugin` i przechodził
-> na zielono, sprawdzając wyłącznie `tsconfig.app.json` — a ten wyklucza `**/*.spec.ts`.
-> Dlatego bramka nie czyta `include`, tylko uruchamia **polecenie z targetu** rozszerzone
-> o `--listFilesOnly` i porównuje wynik z indeksem gita.
+> **Point 4 is what this gate was built for.** Requiring the target to exist measures
+> a declaration, and `lesson-42` says outright that a tsconfig can lie about its reach.
+> `sandbox` had a `typecheck` target **inferred** by `@nx/vite/plugin` and passed green while
+> checking `tsconfig.app.json` only — and that one excludes `**/*.spec.ts`. So the gate does
+> not read `include`; it runs the **command from the target** extended with `--listFilesOnly`
+> and compares the result with the git index.
 
 ---
 
-## Testy
+## Tests
 
-### <a id="req-quality-unit"></a>`req-quality-unit` — Testy jednostkowe na Vitest
+### <a id="req-quality-unit"></a>`req-quality-unit` — Unit tests on Vitest
 
-**Obietnica.** Testy jednostkowe biblioteki i aplikacji biegną na Vitest, pod zoneless,
-i **coś łapią**: rdzeń (`core`, `[pctNumber]`, `PctSelect`) ma zmierzony wynik mutacyjny
-z egzekwowaną podłogą.
+**Promise.** The library's and the app's unit tests run on Vitest, zoneless, and they **catch
+something**: the core (`core`, `[pctNumber]`, `PctSelect`) has a measured mutation score with
+an enforced floor.
 
-**Bramka:** trzyczęściowa, bo „testy biegną", „ile ich przechodzi" i „ile wad zauważają"
-psują się osobno. `.github/workflows/ci.yml` — `test` i `vite:test` w liście
-`nx affected -t` (przebieg). `libs/components/project.json` — target `mutacja` uruchamia
-Strykera z `thresholds.break` = 80, czyli **faila poniżej podłogi**.
-`tools/check-mutation.mjs` (target `check-mutation`, `dependsOn: mutacja`, w CI) pilnuje
-mianownika: siedem punktów i 37 reguł na to, że pomiar jest aktualny, obejmuje
-zadeklarowany inwentarz plików, uruchamia **te same specyfikacje co target `test`**,
-ma próg wiążący i nie zwężany (ignorery, wykluczone mutatory, `ignoreStatic`, komentarze
-`// Stryker disable`, skrócony `timeoutMS`) oraz mieści się w snapshocie
-`libs/components/mutacja.snapshot.md` z tolerancją **dwustronną** per plik
-**Kontrola:** `tools/check-mutation.fixtures/` — 37 spreparowanych wejść na udawanej
-bibliotece, każde odrzucane na swojej **regule**; plus przebiegi na prawdziwym
-repozytorium (usunięcie asercji z `select.spec.ts` zbija wynik pliku i zapala
-`wynik/wynik-spadl`, dopisanie testu ponad tolerancję zapala `wynik/snapshot-odstaje`,
-`thresholds.break: null` — `prog/prog-nieustawiony`, plik wykreślony z `mutate` —
-`inwentarz/wzorce-zmienione`). Do tego kontrola tej kontroli: rozbrojenie każdej z 37
-reguł po kolei — 25 daje „PRZESZŁO", 12 przestawia przypadek na regułę sąsiednią
-**Lekcje:** [`lesson-3`](../lessons.md#lesson-3), [`lesson-19`](../lessons.md#lesson-19),
+**Gate:** in three parts, because „the tests run", „how many pass" and „how many defects they
+notice" break separately. `.github/workflows/ci.yml` — `test` and `vite:test` in the
+`nx affected -t` list (the run). `libs/components/project.json` — the `mutacja` target runs
+Stryker with `thresholds.break` = 80, i.e. **fails below the floor**.
+`tools/check-mutation.mjs` (target `check-mutation`, `dependsOn: mutacja`, in CI) guards the
+denominator: seven points and 37 rules for the measurement being current, covering the
+declared file inventory, running **the same specs as the `test` target**, having a binding
+and unnarrowed threshold (ignorers, excluded mutators, `ignoreStatic`, `// Stryker disable`
+comments, a shortened `timeoutMS`), and fitting inside the `libs/components/mutacja.snapshot.md`
+snapshot with a **two-sided** per-file tolerance
+**Control:** `tools/check-mutation.fixtures/` — 37 doctored inputs on a fake library, each
+rejected on its own **rule**; plus runs against the real repository (removing an assertion
+from `select.spec.ts` drops that file's score and fires `wynik/wynik-spadl`, adding a test
+beyond the tolerance fires `wynik/snapshot-odstaje`, `thresholds.break: null` fires
+`prog/prog-nieustawiony`, a file struck from `mutate` fires `inwentarz/wzorce-zmienione`).
+Plus a control of that control: disarming each of the 37 rules in turn — 25 give „PRZESZŁO",
+12 move the case onto a neighbouring rule
+**Lessons:** [`lesson-3`](../lessons.md#lesson-3), [`lesson-19`](../lessons.md#lesson-19),
 [`lesson-28`](../lessons.md#lesson-28), [`lesson-57`](../lessons.md#lesson-57),
 [`lesson-58`](../lessons.md#lesson-58)
 
-> **Pokrycie i wynik mutacyjny mierzą dwie różne rzeczy i różnica jest duża.** Przy
-> 96,62% pokrycia linii rdzeń miał wynik mutacyjny **63,54%**: co trzeci mutant
-> przechodził CI na zielono. Pokrycie mówi, ile linii WYKONANO — a linia wykonana bez
-> ani jednej asercji liczy się tam tak samo jak sprawdzona. Domknięcie tej różnicy do
-> 81,77% wymagało 38 nowych testów i nowej specyfikacji `core/src/core.spec.ts`:
-> funkcje z `@pacit/components/core` były publicznym API bez ani jednego testu pod
-> własnym nazwiskiem ([`lesson-57`](../lessons.md#lesson-57)).
+> **Coverage and mutation score measure two different things, and the difference is large.**
+> At 96.62% line coverage the core scored **63.54%** on mutation: every third mutant passed
+> CI green. Coverage says how many lines were EXECUTED — and a line executed without a single
+> assertion counts there the same as a checked one. Closing that difference to 81.77% took 38
+> new tests and a new `core/src/core.spec.ts` spec: the functions in
+> `@pacit/components/core` were public API without a single test under their own name
+> ([`lesson-57`](../lessons.md#lesson-57)).
 
-> Dlaczego sam Stryker nie wystarcza jako bramka. `thresholds.break` jest u niego
-> **domyślnie `null`** — przebieg kończy się zerem przy wyniku 4% tak samo jak przy 94%,
-> czyli jest raportem do oglądania. A gdy próg już stoi, podnosi się go pięcioma ruchami,
-> z których żaden nie dokłada ani jednego testu: plik wykreślony z `mutate`, poszerzone
-> `ignorers`, wykluczona rodzina mutatorów, `ignoreStatic: true` i skrócony `timeoutMS`
-> (mutant zabity ZEGAREM liczy się do wyniku jak zabity asercją). `check-mutation` czyta
-> więc konfigurację **skuteczną z raportu przebiegu**, a nie z pliku — flaga w poleceniu
-> targetu nie zostawia w nim śladu.
-
----
-
-### <a id="req-quality-coverage"></a>`req-quality-coverage` — Pokrycie ≥ 80% linii
-
-**Obietnica.** Kod biblioteki jest możliwie pełnie pokryty testami; minimum SonarQube,
-czyli ≥ 80% pokrycia linii.
-
-**Bramka:** dwuczęściowa, bo procent i jego mianownik psują się osobno.
-`libs/components/project.json` — target `test` zbiera pokrycie (`coverage`,
-`coverageInclude`) i **faila** poniżej `coverageThresholds.lines` = 80.
-`tools/check-coverage.mjs` (target `check-coverage`, w CI) pilnuje mianownika: **każdy
-plik źródłowy biblioteki musi być w raporcie**, a próg musi być zadeklarowany i nie
-niższy niż 80. Dodatkowo `libs/components/src/public-api.spec.ts` wprowadza moduły każdej
-bramki pakietu do przebiegu — bez tego plik bez testu nie pokazuje się z zerem, tylko
-**wypada ze statystyki** ([`lesson-45`](../lessons.md#lesson-45))
-**Kontrola:** `tools/check-coverage.fixtures/` — siedem spreparowanych wejść, po jednym na
-sposób rozbrojenia bramki (brak raportu, pusta lista źródeł, plik poza raportem, pomiar
-wyłączony, próg usunięty, próg zaniżony, pokrycie poniżej progu). Każde musi zostać
-odrzucone **przez ten punkt, który deklaruje**, a wejście wzorcowe — przejść. Do tego dwa
-przebiegi na prawdziwym repozytorium: usunięcie `libs/components/src/public-api.spec.ts`
-zostawia target `test` **zielony** (96,55%), a `check-coverage` zapala na
-`libs/components/src/index.ts`; usunięcie `select.spec.ts` i `number.spec.ts` zbija
-pokrycie do 64,96% i zapala oba progi naraz
-**Lekcje:** [`lesson-5`](../lessons.md#lesson-5), [`lesson-45`](../lessons.md#lesson-45)
-
-> Dlaczego dwie bramki na jedną liczbę. Sam próg pilnuje **licznika przez mianownik**,
-> a v8 liczy oba wyłącznie na modułach, które weszły do przebiegu. Usunięcie
-> `number.spec.ts` **podniosło** kiedyś pokrycie z 96,55% na 96,94%, bo razem z testem
-> zniknął z raportu cały nietestowany plik. Punkt 3 bramki pilnuje więc czegoś, czego
-> procent nie widzi: że mianownik obejmuje całą bibliotekę.
-
-> Próg jest **podłogą, nie zapadką**. Przy 96,58% usunięcie jednej specyfikacji nie zbija
-> go poniżej 80 (`select.spec.ts` → 81,55%, `number.spec.ts` → 80,00%) i to jest zgodne
-> z obietnicą: 80% to minimum, nie „nigdy mniej niż wczoraj". Zapadka byłaby inną
-> obietnicą i musiałaby przyjść z własną bramką.
+> Why Stryker alone is not enough as a gate. Its `thresholds.break` is **`null` by default** —
+> the run exits zero at a score of 4% exactly as it does at 94%, which makes it a report to
+> look at. And once a threshold is in place, it is raised by five moves, none of which adds a
+> single test: a file struck from `mutate`, widened `ignorers`, an excluded mutator family,
+> `ignoreStatic: true` and a shortened `timeoutMS` (a mutant killed by the CLOCK counts
+> towards the score like one killed by an assertion). So `check-mutation` reads the
+> **effective configuration from the run report**, not from the file — a flag in the target's
+> command leaves no trace in it.
 
 ---
 
-### <a id="req-quality-e2e"></a>`req-quality-e2e` — Testy e2e na Playwright, w tym wizualne
+### <a id="req-quality-coverage"></a>`req-quality-coverage` — Coverage ≥ 80% of lines
 
-**Obietnica.** Testy e2e na Playwright, w tym **testy wizualne** (screenshot diff).
-Porównywane są **karty sandboxa** (`toHaveScreenshot` na elemencie), nie całe strony —
-więc zmiana w powłoce nie unieważnia wzorców wszystkich komponentów naraz. Wzorce leżą
-w `apps/sandbox-e2e/src/__screenshots__/{platform}/` i **są w repozytorium**.
+**Promise.** The library's code is covered by tests as fully as possible; the SonarQube
+minimum, i.e. ≥ 80% line coverage.
 
-**Bramka:** `apps/sandbox-e2e/src/visual.spec.ts` i pozostałe specyfikacje e2e
-**Kontrola:** progi są **dwa** i oba wynikają z pomiaru. Liczba pikseli jest bezwzględna
-(`maxDiffPixels: 20`): powtórzony przebieg tego samego kodu daje **0** różniących się
-pikseli, a zmiana `border-radius` 8 px → 1 px — **74**; pierwsza wersja z progiem
-ułamkowym (`maxDiffPixelRatio: 0.01`) tę regresję **przepuszczała**
-([`lesson-39`](../lessons.md#lesson-39)). Podobieństwo koloru jest osobnym progiem
-(`threshold: 0.005`), bo domyślne `0.2` decyduje, które piksele w ogóle **trafią** do
-tamtego budżetu: krok rampy `blue-500` → `blue-400` to 0,0163 w metryce pixelmatcha, więc
-przemalowanie całego przycisku dawało **zero** różniących się pikseli
+**Gate:** in two parts, because the percentage and its denominator break separately.
+`libs/components/project.json` — the `test` target collects coverage (`coverage`,
+`coverageInclude`) and **fails** below `coverageThresholds.lines` = 80.
+`tools/check-coverage.mjs` (target `check-coverage`, in CI) guards the denominator: **every
+source file of the library must be in the report**, and the threshold must be declared and no
+lower than 80. On top of that, `libs/components/src/public-api.spec.ts` brings the modules of
+every package gate into the run — without it a file with no test does not show up as zero, it
+**drops out of the statistic** ([`lesson-45`](../lessons.md#lesson-45))
+**Control:** `tools/check-coverage.fixtures/` — seven doctored inputs, one per way of
+disarming the gate (no report, an empty source list, a file outside the report, measurement
+switched off, threshold removed, threshold lowered, coverage below the threshold). Each must
+be rejected **by the point it declares**, and the reference input must pass. Plus two runs
+against the real repository: removing `libs/components/src/public-api.spec.ts` leaves the
+`test` target **green** (96.55%) while `check-coverage` fires on
+`libs/components/src/index.ts`; removing `select.spec.ts` and `number.spec.ts` drops coverage
+to 64.96% and fires both thresholds at once
+**Lessons:** [`lesson-5`](../lessons.md#lesson-5), [`lesson-45`](../lessons.md#lesson-45)
+
+> Why two gates for one number. The threshold alone guards **the numerator over the
+> denominator**, and v8 computes both only over the modules that entered the run. Removing
+> `number.spec.ts` once **raised** coverage from 96.55% to 96.94%, because an entirely
+> untested file disappeared from the report along with its test. Point 3 of the gate
+> therefore guards something the percentage cannot see: that the denominator covers the whole
+> library.
+
+> The threshold is **a floor, not a ratchet**. At 96.58%, removing one spec does not take it
+> below 80 (`select.spec.ts` → 81.55%, `number.spec.ts` → 80.00%), and that is in line with
+> the promise: 80% is a minimum, not „never less than yesterday". A ratchet would be
+> a different promise and would have to arrive with a gate of its own.
+
+---
+
+### <a id="req-quality-e2e"></a>`req-quality-e2e` — e2e tests on Playwright, visual ones included
+
+**Promise.** e2e tests on Playwright, including **visual tests** (screenshot diff). What gets
+compared are **sandbox cards** (`toHaveScreenshot` on an element), not whole pages — so
+a change in the shell does not invalidate every component's references at once. The
+references live in `apps/sandbox-e2e/src/__screenshots__/{platform}/` and **are in the
+repository**.
+
+**Gate:** `apps/sandbox-e2e/src/visual.spec.ts` and the remaining e2e specs
+**Control:** there are **two** thresholds and both come from measurement. The pixel count is
+absolute (`maxDiffPixels: 20`): a repeated run of the same code gives **0** differing pixels,
+while changing `border-radius` from 8 px to 1 px gives **74**; the first version, with
+a fractional threshold (`maxDiffPixelRatio: 0.01`), **let that regression through**
+([`lesson-39`](../lessons.md#lesson-39)). Colour similarity is a separate threshold
+(`threshold: 0.005`), because the default `0.2` decides which pixels **reach** that budget at
+all: one step of the ramp `blue-500` → `blue-400` is 0.0163 in pixelmatch's metric, so
+repainting the entire button produced **zero** differing pixels
 ([`lesson-53`](../lessons.md#lesson-53))
-**Lekcje:** [`lesson-13`](../lessons.md#lesson-13), [`lesson-23`](../lessons.md#lesson-23),
+**Lessons:** [`lesson-13`](../lessons.md#lesson-13), [`lesson-23`](../lessons.md#lesson-23),
 [`lesson-30`](../lessons.md#lesson-30), [`lesson-39`](../lessons.md#lesson-39)
 
-> Dwie rzeczy decydują o tym, czy taki test mierzy kod, czy maszynę. **Krój pisma** jest
-> przypinany na czas zrzutu (`Liberation Sans`), bo `system-ui` rozwiązuje się inaczej na
-> każdym systemie. **Próg jest bezwzględny**, nie ułamkowy — ułamek daje tym większą
-> pobłażliwość, im większa karta.
+> Two things decide whether such a test measures the code or the machine. **The typeface** is
+> pinned for the duration of the screenshot (`Liberation Sans`), because `system-ui` resolves
+> differently on every system. **The threshold is absolute**, not fractional — a fraction
+> grows more forgiving the bigger the card.
 >
-> Testy geometrii sprawdzają to, o co ktoś wcześniej zapytał; zrzut łapie także to, o co
-> nikt nie zapytał, bo porównuje cały obraz.
+> Geometry tests check what somebody thought to ask about; a screenshot also catches what
+> nobody asked about, because it compares the whole image.
 
 ---
 
-### <a id="req-quality-hydration"></a>`req-quality-hydration` — Bramka hydracji w e2e
+### <a id="req-quality-hydration"></a>`req-quality-hydration` — A hydration gate in e2e
 
-**Obietnica.** Niezgodność drzewa serwerowego z klienckim zapala bramkę. Sprawdzenie
-siedzi w pomocniku `visit()`, przez który wchodzi **każdy** test e2e — obejmuje więc
-wszystkie widoki naraz, zamiast czekać na dopisanie do kolejnych specyfikacji.
+**Promise.** A mismatch between the server and client trees fires the gate. The check sits in
+the `visit()` helper that **every** e2e test goes through — so it covers all views at once
+instead of waiting to be added to one spec after another.
 
-**Bramka:** `apps/sandbox-e2e/src/hydration.spec.ts` + pomocnik `visit()`
-w `apps/sandbox-e2e/src/support/`
-**Kontrola:** `hydration.spec.ts › „bramka faktycznie wykrywa błąd hydracji (kontrola
+**Gate:** `apps/sandbox-e2e/src/hydration.spec.ts` + the `visit()` helper in
+`apps/sandbox-e2e/src/support/`
+**Control:** `hydration.spec.ts › „bramka faktycznie wykrywa błąd hydracji (kontrola
 bramki)"`
-**Lekcje:** [`lesson-30`](../lessons.md#lesson-30), [`lesson-31`](../lessons.md#lesson-31)
+**Lessons:** [`lesson-30`](../lessons.md#lesson-30), [`lesson-31`](../lessons.md#lesson-31)
 
-> Rozjazd hydracji **nie przewraca strony**: Angular loguje `NG05xx` i po cichu odtwarza
-> poddrzewo od nowa. Aplikacja wygląda poprawnie, a płaci podwójnym renderem i utratą
-> stanu DOM — modelowy przypadek [`req-axis`](../00-axis.md).
-
----
-
-### <a id="req-quality-package"></a>`req-quality-package` — Bramka bada spakowany artefakt
-
-**Obietnica.** **Zielony build nie jest dowodem, że artefakt da się użyć.** Osobna bramka
-bada `dist/libs/components` — nie źródła: obecność i osiągalność skórki, **domknięcie
-tokenów** (każdy `var(--pct-*)` użyty w pakiecie ma w nim deklarację), zgodność
-`PCT_VERSION` z manifestem, osiągalność kolekcji `ng add` / `ng update` oraz metadane
-wymagane przez npm.
-
-**Bramka:** `libs/components/check-package.mjs` (target `check-package`, w CI)
-**Kontrola:** `tools/check-package.fixtures/` — siedem spreparowanych pakietów, po jednym
-na każdy punkt bramki (punkt 4 ma dwa: zła wartość i zniknięcie stałej). Każdy musi zostać
-odrzucony **przez ten punkt, który deklaruje**, a pakiet wzorcowy — przejść. Przebieg
-z [`lesson-36`](../lessons.md#lesson-36) (usunięcie `libs/tokens/dist` → build
-**przechodzi**, a pakiet nie wozi ani jednej definicji tokenu) był ręczny; to jest jego
-maszynowa postać
-**Lekcje:** [`lesson-36`](../lessons.md#lesson-36), [`lesson-41`](../lessons.md#lesson-41)
-
-> Bramka sprawdza **domknięcie**, a nie obecność pliku — obecność spełniłby też pusty
-> plik albo skórka, z której ktoś usunął warstwę komponentową.
-
-> Bada jednak **katalog `dist`**, i to jest granica zapisana, nie przeoczona: między nim
-> a `node_modules` konsumenta stoją `npm pack` i rejestr, a „plik jest" nie znaczy „plik
-> da się wczytać". Drugą stronę mierzy
-> [`req-quality-consumer`](#req-quality-consumer) ([`lesson-55`](../lessons.md#lesson-55)).
-
-> Kontrola sprawdza nie tylko to, **że** spreparowany pakiet zapalił, ale i **który** punkt
-> go odrzucił. Bez tego fixture wywalający się z przypadkowego powodu — zepsuty manifest,
-> literówka w ścieżce — liczyłby się jako dowód, że badany punkt działa. Byłaby to ta sama
-> cicha wada piętro wyżej.
+> A hydration mismatch **does not knock the page over**: Angular logs `NG05xx` and quietly
+> rebuilds the subtree from scratch. The app looks right and pays with a double render and
+> lost DOM state — a textbook [`req-axis`](../00-axis.md) case.
 
 ---
 
-### <a id="req-quality-consumer"></a>`req-quality-consumer` — Test konsumenta na lokalnym rejestrze
+### <a id="req-quality-package"></a>`req-quality-package` — A gate that examines the packed artifact
 
-**Obietnica.** Logicznym następnym krokiem po [`req-quality-package`](#req-quality-package)
-jest sprawdzenie artefaktu **w użyciu**: `npm pack` → publikacja do lokalnego rejestru →
-instalacja **po nazwie** do świeżej aplikacji → `ng add` → build z SSR → jeden e2e.
+**Promise.** **A green build is not proof that the artifact can be used.** A separate gate
+examines `dist/libs/components` — not the sources: presence and reachability of the skin,
+**token closure** (every `var(--pct-*)` used in the package has a declaration in it),
+agreement between `PCT_VERSION` and the manifest, reachability of the `ng add` / `ng update`
+collections, and the metadata npm requires.
 
-Między `dist` a `node_modules` konsumenta stoją dwa filtry, których bramka statyczna nie
-widzi z założenia: `npm pack` (pole `files`, `.npmignore`) i rejestr. Do tego **„plik
-istnieje" nie znaczy „plik działa"**.
+**Gate:** `libs/components/check-package.mjs` (target `check-package`, in CI)
+**Control:** `tools/check-package.fixtures/` — seven doctored packages, one per point of the
+gate (point 4 has two: a wrong value and a vanished constant). Each must be rejected **by the
+point it declares**, and the reference package must pass. The run from
+[`lesson-36`](../lessons.md#lesson-36) (deleting `libs/tokens/dist` → the build **passes**
+while the package carries not one token definition) was manual; this is its machine form
+**Lessons:** [`lesson-36`](../lessons.md#lesson-36), [`lesson-41`](../lessons.md#lesson-41)
 
-**Bramka:** `tools/check-consumer.mjs` (target `check-consumer`, w CI) — siedem punktów:
-zawartość archiwum wobec mapy `exports` i kolekcji schematiców; publikacja i to, czy
-rejestr serwuje **tę samą sumę** z **lokalnego** adresu, a nie z uplinku npmjs; instalacja
-po nazwie i rozwiązanie modułu do własnego `node_modules` aplikacji; `ng add` uruchomiony
-z **zainstalowanego** pakietu prawdziwym Angular CLI; build z SSR razem ze śladem
-biblioteki w bundlu i deklaracjami tokenów w arkuszu; renderowanie **po stronie serwera**
-(`ng-server-context="ssr"`, nie prerender); jeden przebieg w przeglądarce mierzący, że
-tło przycisku jest wartością `--pct-button-bg`, przy zerowej liczbie błędów w konsoli
-**Kontrola:** `tools/check-consumer.fixtures/` — 28 spreparowanych wejść, każde odrzucane
-na swojej **regule**; plus siedem przebiegów na prawdziwym repozytorium (pusta skórka
-w pakiecie → build konsumenta bez ani jednej deklaracji tokenu; skórka usunięta z pakietu;
-`files` w manifeście odcinające schematics; zdjęta granica CommonJS; `exports` wskazujące
-na nieistniejący plik; `document` przy konstrukcji komponentu; przycisk malowany kolorem
-z palca) — każdy na innej regule
-**Lekcje:** [`lesson-36`](../lessons.md#lesson-36), [`lesson-55`](../lessons.md#lesson-55)
+> The gate checks **closure**, not the presence of a file — presence would also be satisfied
+> by an empty file, or by a skin somebody stripped the component layer out of.
 
-> Bramka **nie** instaluje `peerDependencies` z rejestru — aplikacja bierze `@angular/*`
-> z `node_modules` repozytorium, tak samo jak sonda buildera w
-> [`req-project-tree-shaking`](project.md#req-project-tree-shaking). Rozjazd zakresu wersji
-> w `peerDependencies` przez tę bramkę przejdzie; pilnuje go
+> It does examine the **`dist` directory**, though, and that limit is recorded rather than
+> overlooked: between it and the consumer's `node_modules` stand `npm pack` and the registry,
+> and „the file is there" does not mean „the file can be loaded". The other side is measured
+> by [`req-quality-consumer`](#req-quality-consumer)
+> ([`lesson-55`](../lessons.md#lesson-55)).
+
+> The control checks not only **that** a doctored package fired, but **which** point rejected
+> it. Without that, a fixture blowing up for an incidental reason — a broken manifest, a typo
+> in a path — would count as proof that the point under test works. That would be the same
+> silent defect one floor up.
+
+---
+
+### <a id="req-quality-consumer"></a>`req-quality-consumer` — A consumer test on a local registry
+
+**Promise.** The logical next step after
+[`req-quality-package`](#req-quality-package) is checking the artifact **in use**:
+`npm pack` → publish to a local registry → install **by name** into a fresh app → `ng add` →
+build with SSR → one e2e.
+
+Between `dist` and the consumer's `node_modules` stand two filters a static gate cannot see
+by design: `npm pack` (the `files` field, `.npmignore`) and the registry. And **„the file
+exists" does not mean „the file works"**.
+
+**Gate:** `tools/check-consumer.mjs` (target `check-consumer`, in CI) — seven points: the
+archive contents against the `exports` map and the schematic collections; the publish, and
+whether the registry serves **the same checksum** from the **local** address rather than from
+the npmjs uplink; installation by name and module resolution into the app's own
+`node_modules`; `ng add` run from the **installed** package by a real Angular CLI; a build
+with SSR together with a trace of the library in the bundle and token declarations in the
+stylesheet; rendering **on the server** (`ng-server-context="ssr"`, not a prerender); one run
+in a browser measuring that the button's background is the value of `--pct-button-bg`, with
+zero errors in the console
+**Control:** `tools/check-consumer.fixtures/` — 28 doctored inputs, each rejected on its own
+**rule**; plus seven runs against the real repository (an empty skin in the package → the
+consumer's build with not one token declaration; the skin removed from the package; a `files`
+field cutting off the schematics; the CommonJS boundary removed; `exports` pointing at
+a non-existent file; `document` touched while constructing a component; a button painted with
+a hand-written colour) — each on a different rule
+**Lessons:** [`lesson-36`](../lessons.md#lesson-36), [`lesson-55`](../lessons.md#lesson-55)
+
+> The gate does **not** install `peerDependencies` from the registry — the app takes
+> `@angular/*` from the repository's `node_modules`, the same way the builder probe in
+> [`req-project-tree-shaking`](project.md#req-project-tree-shaking) does. A drift in the
+> `peerDependencies` version range passes this gate; the one that watches it is
 > [`req-project-dependencies`](project.md#req-project-dependencies).
 
 ---
 
-### <a id="req-quality-browsers"></a>`req-quality-browsers` — Macierz przeglądarek
+### <a id="req-quality-browsers"></a>`req-quality-browsers` — The browser matrix
 
-**Obietnica.** Testy funkcjonalne biegną na chromium, **webkit i firefox**. Zrzuty
-wizualne zostają na jednej platformie (linux/chromium) — rasteryzacja i tak by je
-rozjechała.
+**Promise.** Functional tests run on chromium, **webkit and firefox**. Visual screenshots
+stay on one platform (linux/chromium) — rasterisation would scatter them anyway.
 
-**Bramka:** `apps/sandbox-e2e/playwright.config.mts` — trzy projekty (chromium, firefox,
-webkit), 458 testów w przebiegu; oraz `tools/check-browsers.mjs` (target `check-browsers`
-w projekcie roota, w CI) — sześć punktów, 26 reguł. Sam przebieg e2e jest na własną
-macierz ślepy: Playwright kończy się zerem po trzech projektach dokładnie tak samo jak
-po jednym i tak samo po **zerze** zebranych testów. Bramka pyta więc `playwright test
---list --reporter=json`, co silniki NAPRAWDĘ zbierają, i porównuje to z polityką
-`apps/sandbox-e2e/przegladarki.policy.json`: każdy plik biegnie na każdym silniku, chyba
-że ma tam wpis z powodem. Punkt 5 czyta polecenie targetu `e2e` z grafu Nx i kroki
-instalacji z `.github/workflows/ci.yml` — `--project=chromium` w poleceniu jest jedynym
-zawężeniem niewidocznym w konfiguracji Playwrighta
-**Kontrola:** `tools/check-browsers.fixtures/` — 25 spreparowanych wejść, każde odrzucane
-na swojej **regule**; plus dziewięć przebiegów na prawdziwym repozytorium (webkit
-wykreślony z `projects`; plik dopisany do `testIgnore` firefoksa; wyłączenie poszerzone
-na silnik, który sondę przechodzi; silnik zdjęty z kroku instalacji w CI;
-`--project=chromium` w targecie; wyłączenie usunięte z polityki przy zostawionym
-`testIgnore`; `testIgnore` zdjęty przy zostawionym wpisie; nowy spec wyłączony wszystkim
-naraz; niedomknięty nawias w konfiguracji) — każdy na innej regule
-**Lekcje:** [`lesson-56`](../lessons.md#lesson-56)
+**Gate:** `apps/sandbox-e2e/playwright.config.mts` — three projects (chromium, firefox,
+webkit), 458 tests per run; plus `tools/check-browsers.mjs` (target `check-browsers` in the
+root project, in CI) — six points, 26 rules. The e2e run is blind to its own matrix:
+Playwright exits zero after three projects exactly as it does after one, and exactly as it
+does after **zero** collected tests. So the gate asks `playwright test --list --reporter=json`
+what the engines REALLY collect and compares that with the
+`apps/sandbox-e2e/przegladarki.policy.json` policy: every file runs on every engine unless it
+has an entry there with a reason. Point 5 reads the `e2e` target's command from the Nx graph
+and the install steps from `.github/workflows/ci.yml` — `--project=chromium` in the command is
+the one narrowing that is invisible in the Playwright configuration
+**Control:** `tools/check-browsers.fixtures/` — 25 doctored inputs, each rejected on its own
+**rule**; plus nine runs against the real repository (webkit struck from `projects`; a file
+added to firefox's `testIgnore`; an exclusion widened onto an engine that passes the probe; an
+engine removed from the install step in CI; `--project=chromium` in the target; an exclusion
+removed from the policy with `testIgnore` left in place; `testIgnore` removed with the entry
+left in place; a new spec excluded on every engine at once; an unclosed bracket in the
+configuration) — each on a different rule
+**Lessons:** [`lesson-56`](../lessons.md#lesson-56)
 
-> Wyłączenia są dwa i są **różnego rodzaju**. `visual.spec.ts` poza chromium to `zapis`
-> — decyzja spisana raz: wzorce z `__screenshots__/linux/` powstały rasteryzacją chromium,
-> więc na każdym innym silniku różni się 26 z 26 (zmierzone). `forced-colors.spec.ts`
-> poza webkitem to `pomiar`: ten silnik melduje `forced-colors: active` i **nie podmienia
-> kolorów autora**, więc cztery z sześciu testów przechodzą tam, mierząc kolory z tokenów
-> ([`lesson-56`](../lessons.md#lesson-56)). Punkt 6 powtarza tę sondę przy każdym przebiegu
-> — dzień, w którym webkit to zaimplementuje, jest dniem, w którym bramka **każe
-> wyłączenie zdjąć**, zamiast dnia, w którym nikt nie zauważa, że plik nie biegnie tam
-> już bez powodu.
+> There are two exclusions and they are **of different kinds**. `visual.spec.ts` outside
+> chromium is a `zapis` — a decision recorded once: the references in `__screenshots__/linux/`
+> were rasterised by chromium, so on every other engine 26 out of 26 differ (measured).
+> `forced-colors.spec.ts` outside webkit is a `pomiar`: that engine reports
+> `forced-colors: active` and **does not replace the author's colours**, so four of the six
+> tests pass there while measuring colours from the tokens
+> ([`lesson-56`](../lessons.md#lesson-56)). Point 6 repeats that probe on every run — the day
+> webkit implements it is the day the gate **demands the exclusion be lifted**, instead of the
+> day nobody notices the file is no longer running there for no reason.
 
-> Reguła `fakt-bez-odniesienia` jest mianownikiem punktu 6: fakt, który nie zachodzi
-> u **żadnego** silnika, nie jest wadą silników, tylko zepsutą sondą — a sonda zwracająca
-> fałsz zawsze uzasadniałaby każde oparte na sobie wyłączenie w nieskończoność.
-
----
-
-## Sandbox — wejście dla bramek
-
-### <a id="req-quality-views"></a>`req-quality-views` — Sandbox jest rozbity na widoki
-
-**Obietnica.** Widok per komponent pokazuje jego warianty, wielkości i stany; widoki
-przekrojowe (wielkość, motyw, gęstość, stany, formularze, tokeny/części, a11y) zestawiają
-**wszystkie** komponenty na jednej osi. Rejestr widoków (`views.ts`) jest jednym źródłem
-dla routingu, nawigacji i strony wejściowej. **Test komponentu wchodzi na widok tego
-komponentu.**
-
-**Bramka:** `apps/sandbox-e2e/src/a11y.spec.ts`, `hydration.spec.ts` — obie iterują po
-rejestrze widoków, więc nowy widok jest audytowany **bez dopisywania testu**
-**Kontrola:** `apps/sandbox/src/app/app.spec.ts` — rejestr widoków wobec tras
-**Lekcje:** [`lesson-29`](../lessons.md#lesson-29), [`lesson-33`](../lessons.md#lesson-33)
-
-> Widoki przekrojowe zestawiają komponenty w **macierz**, nie w listę przykładów: `/size`
-> to wszystkie kontrolki × `sm`/`md`/`lg` wyrównane dolną krawędzią, `/states` to
-> wszystkie kontrolki × każdy stan. Stany są wymuszane **inputami**, a nie wyprowadzane
-> z formularza — inaczej nie da się pokazać przypadków, do których trudno doprowadzić
-> klikaniem, a to właśnie one nie mają pokrycia.
+> The `fakt-bez-odniesienia` rule is point 6's denominator: a fact that holds on **no** engine
+> is not a defect of the engines but a broken probe — and a probe returning false would
+> justify every exclusion built on it, forever.
 
 ---
 
-### <a id="req-quality-card"></a>`req-quality-card` — Wspólna karta `sbx-demo`
+## The sandbox — input for the gates
 
-**Obietnica.** Karta obudowuje każdy przykład i niesie osie przekrojowe: schemat kolorów,
-skórkę i wielkość — globalnie w powłoce, lokalnie per karta. Motyw ustawia na **własnej
-scenie**, nigdy na `:root`, więc każdy przykład jest przy okazji testem scoped theme.
-Pasek przełączników stoi **poza sceną**. Karta deklaruje też, których wymagań dotyczy
+### <a id="req-quality-views"></a>`req-quality-views` — The sandbox is split into views
+
+**Promise.** A view per component shows its variants, sizes and states; cross-cutting views
+(size, theme, density, states, forms, tokens/parts, a11y) line **all** components up along
+one axis. The view registry (`views.ts`) is the single source for routing, navigation and the
+landing page. **A component's test enters that component's view.**
+
+**Gate:** `apps/sandbox-e2e/src/a11y.spec.ts`, `hydration.spec.ts` — both iterate over the
+view registry, so a new view is audited **without adding a test**
+**Control:** `apps/sandbox/src/app/app.spec.ts` — the view registry against the routes
+**Lessons:** [`lesson-29`](../lessons.md#lesson-29), [`lesson-33`](../lessons.md#lesson-33)
+
+> The cross-cutting views line components up in a **matrix**, not in a list of examples:
+> `/size` is every control × `sm`/`md`/`lg` aligned on their bottom edge, `/states` is every
+> control × every state. States are forced through **inputs**, not derived from a form —
+> otherwise there is no way to show the cases that are hard to reach by clicking, and those
+> are exactly the ones with no coverage.
+
+---
+
+### <a id="req-quality-card"></a>`req-quality-card` — The shared `sbx-demo` card
+
+**Promise.** The card wraps every example and carries the cross-cutting axes: colour scheme,
+skin and size — globally in the shell, locally per card. It sets the theme on **its own
+stage**, never on `:root`, so every example doubles as a scoped-theme test. The switch bar
+stands **outside the stage**. The card also declares which requirements it is about
 (`[reqs]`).
 
-**Bramka:** `apps/sandbox/src/app/ui/demo.spec.ts`; `tools/check-docs.mjs` — każde
-`req-*` w `[reqs]` musi rozwiązywać się do istniejącego wymagania
-**Kontrola:** `tools/check-docs.fixtures/` — karta z nieistniejącym identyfikatorem musi
-zostać odrzucona
-**Lekcje:** [`lesson-13`](../lessons.md#lesson-13)
+**Gate:** `apps/sandbox/src/app/ui/demo.spec.ts`; `tools/check-docs.mjs` — every `req-*` in
+`[reqs]` must resolve to an existing requirement
+**Control:** `tools/check-docs.fixtures/` — a card with a non-existent identifier must be
+rejected
+**Lessons:** [`lesson-13`](../lessons.md#lesson-13)
 
-> Wejście `reqs` jest typowane jako `PctReqId[]` — unia generowana z dokumentacji. To ten
-> sam ruch co `PctCssVar` w [`lesson-43`](../lessons.md#lesson-43): literówka
-> w identyfikatorze przestaje być cichym chipem prowadzącym donikąd i staje się **błędem
-> kompilacji**.
-
----
-
-### <a id="req-quality-stage"></a>`req-quality-stage` — Motyw strony też jest scoped theme
-
-**Obietnica.** Powłoka trzyma `data-theme` na swoim hoście, a nie na `:root`. Dzięki temu
-`:root` zostaje **niezmiennym punktem odniesienia** dla testów, a strona przechodzi tę
-samą ścieżkę kodu co dowolne poddrzewo.
-
-**Bramka:** `apps/sandbox-e2e/src/theme.spec.ts`, `apps/sandbox-e2e/src/shell.spec.ts`
-**Kontrola:** `preferences.spec.ts › „bez preferencji ciemnej :root zostaje jasny
-(odniesienie)"` — to `:root` jest tu kontrolą odniesienia dla wszystkich pomiarów motywu
-**Lekcje:** [`lesson-17`](../lessons.md#lesson-17)
-
-> Wymusiło to emisję bloku `[data-theme="light"]` w buildzie tokenów: dopóki jasny motyw
-> był tylko brakiem atrybutu, jasna karta wewnątrz ciemnej strony nie miała czym cofnąć
-> dziedziczonych wartości.
+> The `reqs` input is typed as `PctReqId[]` — a union generated from the documentation. Same
+> move as `PctCssVar` in [`lesson-43`](../lessons.md#lesson-43): a typo in an identifier stops
+> being a silent chip leading nowhere and becomes a **compile error**.
 
 ---
 
-### <a id="req-quality-prefix"></a>`req-quality-prefix` — Infrastruktura sandboxa ma prefiks `sbx`
+### <a id="req-quality-stage"></a>`req-quality-stage` — The page theme is a scoped theme too
 
-**Obietnica.** Prefiks `sbx` oddzielony od `app` (powłoka) i `pct` (biblioteka) — po
-selektorze widać, czy element jest rusztowaniem, demonstracją, czy komponentem
-publikowanym.
+**Promise.** The shell keeps `data-theme` on its own host, not on `:root`. That leaves
+`:root` as an **invariant reference point** for tests, and the page goes through the same code
+path as any subtree.
 
-**Bramka:** `apps/sandbox/eslint.config.mjs` — reguły selektorów z prefiksami
-**Kontrola:** brak — świadomie: reguła ESLint nie ma trybu cichego przejścia
+**Gate:** `apps/sandbox-e2e/src/theme.spec.ts`, `apps/sandbox-e2e/src/shell.spec.ts`
+**Control:** `preferences.spec.ts › „bez preferencji ciemnej :root zostaje jasny
+(odniesienie)"` — here `:root` is the negative control for every theme measurement
+**Lessons:** [`lesson-17`](../lessons.md#lesson-17)
+
+> This forced the token build to emit a `[data-theme="light"]` block: as long as the light
+> theme was merely the absence of an attribute, a light card inside a dark page had nothing to
+> undo the inherited values with.
+
+---
+
+### <a id="req-quality-prefix"></a>`req-quality-prefix` — Sandbox infrastructure uses the `sbx` prefix
+
+**Promise.** The `sbx` prefix is kept apart from `app` (the shell) and `pct` (the library) —
+the selector tells you whether an element is scaffolding, a demonstration, or a published
+component.
+
+**Gate:** `apps/sandbox/eslint.config.mjs` — selector rules with the prefixes
+**Control:** none — deliberately: an ESLint rule has no quiet-pass mode

@@ -1,315 +1,319 @@
-# Wymagania — projekt
+# Requirements — project
 
-Jak zbudowany jest projekt, z czego i co z niego wychodzi. Obszar scala trzy dawne
-sekcje, które leżały osobno, choć odpowiadały na jedno pytanie. Mapowanie starych
-identyfikatorów jest w
-[tabeli migracji](../README.md#migracja-identyfikatorów-2026-07-27).
+How the project is built, out of what, and what comes out of it. This area merges three
+former sections that sat apart while answering one question. Old identifiers are mapped in
+the [migration table](../README.md#identifier-migration-2026-07-27).
 
-> Kształt wpisu i znaczenie pól **Bramka** / **Kontrola** opisuje
-> [README](../README.md#kształt-wymagania).
-
----
-
-### <a id="req-project-monorepo"></a>`req-project-monorepo` — Workspace jest monorepem NX
-
-**Obietnica.** Całość powstaje jako jeden workspace NX; każdy target uruchamiany jest
-przez `nx`, nigdy przez narzędzie pod spodem.
-
-**Bramka:** `.github/workflows/ci.yml` — cały przebieg idzie przez `nx affected`
-**Kontrola:** brak — świadomie: awaria jest natychmiastowa i całkowita (CI nie ma czym
-uruchomić żadnego targetu), a więc nie należy do klasy [`req-axis`](../00-axis.md)
+> The shape of an entry and the meaning of the **Gate** / **Control** fields are described
+> in the [README](../README.md#requirement-shape).
 
 ---
 
-### <a id="req-project-latest"></a>`req-project-latest` — Przed 1.0 używamy najnowszych wersji
+### <a id="req-project-monorepo"></a>`req-project-monorepo` — The workspace is an NX monorepo
 
-**Obietnica.** Do pierwszego publicznego wydania biblioteka stoi na najnowszych
-dostępnych wersjach bibliotek i frameworków. Macierz kompatybilności (które wersje
-Angulara są wspierane) zaczyna obowiązywać dopiero po tym wydaniu.
+**Promise.** The whole thing is built as one NX workspace; every target is run through `nx`,
+never through the tool underneath.
 
-**Bramka:** brak — świadomie: to reguła procesu, nie właściwość artefaktu; nie ma czego
-zmierzyć na wyjściu
-**Kontrola:** nie dotyczy
-**Wiąże przy:** pierwszym wydaniu publicznym — wtedy to wymaganie **zastępuje**
-macierz kompatybilności i wraz z nią bramka
+**Gate:** `.github/workflows/ci.yml` — the entire run goes through `nx affected`
+**Control:** none — deliberately: the failure is immediate and total (CI has nothing to run
+any target with), so it does not belong to the [`req-axis`](../00-axis.md) class
 
 ---
 
-### <a id="req-project-dependencies"></a>`req-project-dependencies` — Minimum zależności runtime
+### <a id="req-project-latest"></a>`req-project-latest` — Before 1.0 we use the newest versions
 
-**Obietnica.** Biblioteka ma możliwie najmniej zależności runtime od innych bibliotek
-TS/JS. Dopuszczone: `@angular/*` oraz `@angular/cdk` (deklarowany jako `peerDependency`;
-konsument dołącza `@angular/cdk/overlay-prebuilt.css`).
+**Promise.** Until the first public release the library stands on the newest available
+versions of its libraries and frameworks. The compatibility matrix (which Angular versions
+are supported) only starts to apply after that release.
 
-**Bramka:** brak — luka: kontrola listy `dependencies` / `peerDependencies` w spakowanym
-manifeście wobec listy dozwolonych. Naturalne miejsce to siódmy punkt
+**Gate:** none — deliberately: this is a process rule, not a property of the artifact; there
+is nothing to measure on the output
+**Control:** not applicable
+**Binds at:** the first public release — at that point this requirement is **superseded by**
+the compatibility matrix, and the gate comes with it
+
+---
+
+### <a id="req-project-dependencies"></a>`req-project-dependencies` — Minimum runtime dependencies
+
+**Promise.** The library has as few runtime dependencies on other TS/JS libraries as
+possible. Allowed: `@angular/*` and `@angular/cdk` (declared as a `peerDependency`; the
+consumer includes `@angular/cdk/overlay-prebuilt.css`).
+
+**Gate:** none — gap: a check of the `dependencies` / `peerDependencies` lists in the packed
+manifest against the allowed list. Its natural home is a seventh point in
 `libs/components/check-package.mjs`
-**Kontrola:** brak — luka: manifest z dopisaną zależnością spoza listy musi bramkę zapalić
-**Wiąże przy:** pierwszej zależności dodanej odruchowo — dziś nic nie odróżnia
-`@angular/cdk` od czegokolwiek innego, co ktoś zainstaluje
+**Control:** none — gap: a manifest with a dependency from outside the list added has to
+fire the gate
+**Binds at:** the first dependency added out of reflex — today nothing tells `@angular/cdk`
+apart from anything else somebody installs
 
-**Nie-cele:** [`@angular/animations`](api.md#req-api-animations),
-[`zone.js`](#req-project-angular) — patrz [00-axis.md](../00-axis.md#jawne-nie-cele)
-
----
-
-### <a id="req-project-apps"></a>`req-project-apps` — Co powstaje w workspace
-
-**Obietnica.** W workspace żyją: biblioteka komponentów, aplikacja dokumentacji
-(publikowalna jako strona biblioteki), aplikacja „sandbox" (playground i baza dla e2e)
-oraz testy e2e oparte o sandbox.
-
-**Bramka:** brak — luka: `apps/docs` nie istnieje, więc bramka opisywałaby stan, który
-nie zachodzi. Po powstaniu: obecność projektu w grafie + jego target `build` w CI
-**Kontrola:** brak — luka: patrz wyżej
-**Wiąże przy:** pierwszym zewnętrznym użytkowniku — bez dokumentacji nie ma adopcji
-
-> Rozstrzygnięcie z review: **spis części i tokenów musi być generowany i bramkowany
-> niezależnie od `apps/docs`.** Ładna strona, która go renderuje, może przyjść później —
-> te dwie rzeczy zostały rozdzielone ([`req-api-parts`](api.md#req-api-parts)).
+**Non-goals:** [`@angular/animations`](api.md#req-api-animations),
+[`zone.js`](#req-project-angular) — see [00-axis.md](../00-axis.md#explicit-non-goals)
 
 ---
 
-### <a id="req-project-package"></a>`req-project-package` — Jeden pakiet npm
+### <a id="req-project-apps"></a>`req-project-apps` — What lives in the workspace
 
-**Obietnica.** Biblioteka publikowana jest jako jeden pakiet npm `@pacit/components`
-z secondary entrypoints per komponent.
+**Promise.** The workspace holds: the component library, a documentation app (publishable as
+the library's site), a „sandbox" app (playground and the base for e2e) and e2e tests built
+on the sandbox.
 
-**Bramka:** `libs/components/check-package.mjs` (target `check-package`, w CI) — bada
-**spakowany artefakt**, nie źródła: mapa `exports`, osiągalność skórki, domknięcie tokenów
-**Kontrola:** `tools/check-package.fixtures/` — spreparowany pakiet na każdy punkt bramki;
-każdy musi zapalić na swoim. Przebieg opisany w [`lesson-36`](../lessons.md#lesson-36)
-(usunięcie `libs/tokens/dist` → bramka zapala) był ręczny — tutaj jest zautomatyzowany
-**Lekcje:** [`lesson-36`](../lessons.md#lesson-36)
+**Gate:** none — gap: `apps/docs` does not exist, so a gate would describe a state that does
+not hold. Once it exists: presence of the project in the graph plus its `build` target in CI
+**Control:** none — gap: the same as for the gate above
+**Binds at:** the first external user — without documentation there is no adoption
 
----
-
-### <a id="req-project-entrypoints"></a>`req-project-entrypoints` — Secondary entrypoints kanonicznie przez ng-packagr
-
-**Obietnica.** Każdy entrypoint to folder z własnym `ng-package.json` i `index.ts`
-(generator `@nx/angular:library-secondary-entry-point`). Wszystko trafia do jednego
-pakietu npm, a entrypointy mogą od siebie zależeć.
-
-**Bramka:** `libs/components/check-package.mjs` — mapa `exports` w spakowanym manifeście
-**Kontrola:** `tools/check-package.fixtures/skorka-poza-exports/` — plik obecny w pakiecie,
-ale bez wpisu w mapie `exports`, musi zapalić punkt 2. To jest ta wada, której punkt 1 nie
-widzi: plik przecież jest, tylko konsument nie ma jak go zaimportować
+> Settled in review: **the inventory of parts and tokens must be generated and gated
+> independently of `apps/docs`.** A pretty page rendering it can come later — the two were
+> separated ([`req-api-parts`](api.md#req-api-parts)).
 
 ---
 
-### <a id="req-project-core"></a>`req-project-core` — Kod współdzielony w `core`
+### <a id="req-project-package"></a>`req-project-package` — One npm package
 
-**Obietnica.** Kod współdzielony między komponentami trafia do wewnętrznego entrypointu
-`@pacit/components/core` (klasy bazowe, helpery a11y, generowanie id,
-`providePctConfig`), dystrybuowanego w tym samym pakiecie.
+**Promise.** The library is published as one npm package, `@pacit/components`, with
+secondary entrypoints per component.
 
-**Bramka:** `libs/components/field/src/field-controls.spec.ts` — wspólna logika
-komunikatów jest testowana raz, nie w każdej kontrolce
-**Kontrola:** brak — świadomie: naruszeniem jest **duplikacja**, a nie awaria; łapie ją
-review, nie test. Bramką maszynową byłaby dopiero analiza podobieństwa
-**Decyzja:** [0013 — bez podziału na rdzeń bezgłowy i skórkę](../decisions/0013-no-headless-split.md)
-**Lekcje:** [`lesson-21`](../lessons.md#lesson-21)
-
----
-
-### <a id="req-project-tokens-lib"></a>`req-project-tokens-lib` — Tokeny są osobną biblioteką
-
-**Obietnica.** Tokeny mieszkają w lib `tokens` z targetem build (DTCG → CSS/SCSS/TS).
-Wygenerowane motywy CSS trafiają do assetów pakietu, tak by działało
-`@pacit/components/themes/…`.
-
-**Bramka:** `libs/components/project.json` → `implicitDependencies: ["tokens"]` +
-`check-package` (punkt 3: domknięcie tokenów w artefakcie)
-**Kontrola:** `tools/check-package.fixtures/brak-skorki/` — pakiet bez `themes/pct.css`
-(czyli to, co zostawia zielony build z pustym `libs/tokens/dist`) musi zapalić punkt 1;
-`tools/check-package.fixtures/token-bez-deklaracji/` — użyty token bez deklaracji w pakiecie
-musi zapalić punkt 3
-**Decyzja:** [0002 — skórka jedzie w pakiecie](../decisions/0002-skin-in-package.md)
-**Lekcje:** [`lesson-36`](../lessons.md#lesson-36)
+**Gate:** `libs/components/check-package.mjs` (target `check-package`, in CI) — it examines
+the **packed artifact**, not the sources: the `exports` map, reachability of the skin,
+closure of the tokens
+**Control:** `tools/check-package.fixtures/` — a doctored package for every point of the
+gate; each must fire on its own point. The run described in
+[`lesson-36`](../lessons.md#lesson-36) (deleting `libs/tokens/dist` → the gate fires) was
+manual; here it is automated
+**Lessons:** [`lesson-36`](../lessons.md#lesson-36)
 
 ---
 
-### <a id="req-project-tree-shaking"></a>`req-project-tree-shaking` — Primary entrypoint jest minimalny
+### <a id="req-project-entrypoints"></a>`req-project-entrypoints` — Secondary entrypoints canonically through ng-packagr
 
-**Obietnica.** `@pacit/components` eksportuje wyłącznie `providePctConfig`, wspólne typy
-i wersję. Komponenty importuje się przez secondary entrypoints — co wymusza
-tree-shaking i jawne importy.
+**Promise.** Every entrypoint is a folder with its own `ng-package.json` and `index.ts`
+(generator `@nx/angular:library-secondary-entry-point`). It all goes into one npm package,
+and entrypoints may depend on each other.
 
-**Bramka:** `tools/check-bundle.mjs` (target `check-bundle` w `components`, w CI) —
-dziesięć punktów. Sondy bundlują **artefakt** przez `node_modules` i mapę `exports`,
-czyli tą samą drogą co konsument: punkt 5 pilnuje, jakie entrypointy wciąga import
-jednego z nich, punkt 7 — jakie dochodzą przy tym zależności zewnętrzne (CDK Overlay
-ma prawo być wyłącznie w `./select`), punkt 8 — budżetu rozmiaru per entrypoint
-(`libs/components/rozmiar.snapshot.md`, tolerancja dwustronna ±5%). Punkt 4 pilnuje,
-że entrypoint główny nie wnosi ani jednego komponentu. Reszta to mianownik: dwa odczyty
-listy entrypointów, obecność mierzonego entrypointu w sondzie, drugi odczyt izolacji po
-tekście bundla, kontrola różnicowa i powtórzenie pomiaru **prawdziwym**
+**Gate:** `libs/components/check-package.mjs` — the `exports` map in the packed manifest
+**Control:** `tools/check-package.fixtures/skorka-poza-exports/` — a file present in the
+package but absent from the `exports` map must fire point 2. That is the defect point 1
+cannot see: the file is right there, the consumer simply has no way to import it
+
+---
+
+### <a id="req-project-core"></a>`req-project-core` — Shared code in `core`
+
+**Promise.** Code shared between components goes into the internal entrypoint
+`@pacit/components/core` (base classes, a11y helpers, id generation, `providePctConfig`),
+distributed in the same package.
+
+**Gate:** `libs/components/field/src/field-controls.spec.ts` — the shared message logic is
+tested once, not in every control
+**Control:** none — deliberately: the violation here is **duplication**, not a failure;
+review catches it, not a test. A machine gate would have to be similarity analysis
+**Decision:** [0013 — no headless core / skin split](../decisions/0013-no-headless-split.md)
+**Lessons:** [`lesson-21`](../lessons.md#lesson-21)
+
+---
+
+### <a id="req-project-tokens-lib"></a>`req-project-tokens-lib` — Tokens are a separate library
+
+**Promise.** Tokens live in the `tokens` lib with a build target (DTCG → CSS/SCSS/TS). The
+generated CSS themes land in the package assets, so that `@pacit/components/themes/…` works.
+
+**Gate:** `libs/components/project.json` → `implicitDependencies: ["tokens"]` +
+`check-package` (point 3: token closure in the artifact)
+**Control:** `tools/check-package.fixtures/brak-skorki/` — a package without
+`themes/pct.css` (which is what a green build with an empty `libs/tokens/dist` leaves
+behind) must fire point 1; `tools/check-package.fixtures/token-bez-deklaracji/` — a token
+used but not declared in the package must fire point 3
+**Decision:** [0002 — the skin ships in the package](../decisions/0002-skin-in-package.md)
+**Lessons:** [`lesson-36`](../lessons.md#lesson-36)
+
+---
+
+### <a id="req-project-tree-shaking"></a>`req-project-tree-shaking` — The primary entrypoint is minimal
+
+**Promise.** `@pacit/components` exports only `providePctConfig`, the shared types and the
+version. Components are imported through secondary entrypoints — which forces tree-shaking
+and explicit imports.
+
+**Gate:** `tools/check-bundle.mjs` (target `check-bundle` in `components`, in CI) — ten
+points. The probes bundle the **artifact** through `node_modules` and the `exports` map, the
+same way a consumer does: point 5 watches which entrypoints an import of one of them pulls
+in, point 7 which external dependencies come along (CDK Overlay is allowed in `./select`
+only), point 8 the size budget per entrypoint (`libs/components/rozmiar.snapshot.md`,
+two-sided tolerance ±5%). Point 4 watches that the primary entrypoint brings in no component
+at all. The rest is the denominator: two readings of the entrypoint list, presence of the
+measured entrypoint in the probe, a second reading of isolation from the bundle text, a
+differential check, and a repeat of the measurement with the **real**
 `@angular/build:application`
-**Kontrola:** `tools/check-bundle.fixtures/` — 22 spreparowane wejścia, każde odrzucane
-na swoim punkcie; wśród nich `entrypoint-wciaga-sasiada/` (import `./alfa` wciąga
-`./beta`), `nowa-zaleznosc-zewnetrzna/` (entrypoint sięga po nakładkę CDK),
-`sonda-bez-swojego-entrypointu/` (pomiar przestał cokolwiek wciągać) i
-`para-nie-wieksza-od-pojedynczej/` — czyli wprost „aplikacja importująca dwa entrypointy
-musi dać bundle zauważalnie większy"
-**Lekcje:** [`lesson-51`](../lessons.md#lesson-51)
+**Control:** `tools/check-bundle.fixtures/` — 22 doctored inputs, each rejected on its own
+point; among them `entrypoint-wciaga-sasiada/` (importing `./alfa` pulls in `./beta`),
+`nowa-zaleznosc-zewnetrzna/` (an entrypoint reaches for the CDK overlay),
+`sonda-bez-swojego-entrypointu/` (the measurement stopped pulling anything in) and
+`para-nie-wieksza-od-pojedynczej/` — literally „an app importing two entrypoints must
+produce a noticeably bigger bundle"
+**Lessons:** [`lesson-51`](../lessons.md#lesson-51)
 
 ---
 
-### <a id="req-project-files"></a>`req-project-files` — Stała struktura plików komponentu
+### <a id="req-project-files"></a>`req-project-files` — A fixed component file structure
 
-**Obietnica.** Per komponent: `button.ts`, `button.html`, `button.scss`,
-`button.spec.ts`, `button.types.ts`, `index.ts`, `ng-package.json`. Szablon i style
-**zawsze** w osobnych plikach.
+**Promise.** Per component: `button.ts`, `button.html`, `button.scss`, `button.spec.ts`,
+`button.types.ts`, `index.ts`, `ng-package.json`. Template and styles **always** in separate
+files.
 
-**Bramka:** brak — luka: kontrola układu katalogu entrypointu (skrypt w duchu
-`check-package.mjs`, czytający `libs/components/*/src`)
-**Kontrola:** brak — luka: entrypoint z szablonem inline musi bramkę zapalić
-**Wiąże przy:** pierwszym komponencie dopisanym przez kogoś innego niż autor tej reguły
-**Decyzja:** [0001 — szablony i style w osobnych plikach](../decisions/0001-separate-files.md)
+**Gate:** none — gap: a check of the entrypoint directory layout (a script in the spirit of
+`check-package.mjs`, reading `libs/components/*/src`)
+**Control:** none — gap: an entrypoint with an inline template has to fire the gate
+**Binds at:** the first component added by somebody other than the author of this rule
+**Decision:** [0001 — templates and styles in separate files](../decisions/0001-separate-files.md)
 
-> To **świadome odstępstwo** od oficjalnej wskazówki Angulara „prefer inline templates
-> for smaller components" — podyktowane spójnością w bibliotece o dziesiątkach
-> komponentów.
-
----
-
-### <a id="req-project-prefix"></a>`req-project-prefix` — Prefiks `pct`
-
-**Obietnica.** Prefiks selektorów i klas biblioteki: `pct`. Infrastruktura sandboxa
-używa `sbx`, powłoka aplikacji — `app`.
-
-**Bramka:** `libs/components/eslint.config.mjs` — reguły
-`@angular-eslint/component-selector` i `directive-selector` z `prefix: "pct"`
-**Kontrola:** brak — świadomie: reguła ESLint zapala przy pierwszym naruszeniu i nie ma
-trybu, w którym „przechodzi po cichu" — nie należy do klasy [`req-axis`](../00-axis.md)
+> This is a **deliberate departure** from Angular's official guidance to „prefer inline
+> templates for smaller components" — dictated by consistency across a library of dozens of
+> components.
 
 ---
 
-### <a id="req-project-language"></a>`req-project-language` — Repozytorium mówi jednym językiem: angielskim
+### <a id="req-project-prefix"></a>`req-project-prefix` — The `pct` prefix
 
-**Obietnica.** Każdy tekst pisany ręką jest po angielsku: komentarz, JSDoc, nazwa testu,
-komunikat bramki, nazwa pliku, targetu i reguły, dokumentacja, tytuł commita. Polszczyzna
-istnieje wyłącznie jako **datowany wpis** w rejestrze wyjątków, każdy z powodem i zadaniem,
-które go zdejmuje. Powierzchnia publiczna nie ma prawa mieć tam **ani jednego** wpisu, a są
-nią **dwie rzeczy, nie jedna**: pakiet (`types/*.d.ts`, README, `description`, artefakty
-w `themes/`) i **samo repozytorium**, które stoi publicznie na GitHubie — `README.md`,
-`docs/` i nazwy widoczne w zakładce Actions.
+**Promise.** The library's selector and class prefix is `pct`. Sandbox infrastructure uses
+`sbx`, the app shell `app`.
 
-**Bramka:** brak — luka: `tools/check-language.mjs` — dwa pomiary o różnym zasięgu.
-Powierzchnia publiczna mierzona na **spakowanym artefakcie** (tam trafia to, co naprawdę
-zobaczy konsument, a nie to, co stoi w źródle), reszta repozytorium — na plikach z indeksu
-gita. Wykrywanie dwuczłonowe, bo diakrytyki same nie wystarczą (`Przycisk`, `Rozmiar`,
-`domyslnie` nie mają ani jednego): znaki diakrytyczne **plus** lista polskich słów
-funkcyjnych, których angielszczyzna nie zawiera (`jest`, `czyli`, `przez`, `oraz`, `albo`,
-`wtedy`, `przy`, `bez`). Do tego własny mianownik — niepusty zbiór skanowanych plików
-i niepusty pomiar, bo skan, który przestał cokolwiek czytać, przepuszcza wszystko
-([`lesson-48`](../lessons.md#lesson-48))
-**Kontrola:** brak — luka: polski komentarz w pliku spoza rejestru musi zapalić; wpis
-rejestru wskazujący plik **już** przetłumaczony musi zapalić jako martwy; `description` po
-polsku w spakowanym manifeście musi zapalić na punkcie powierzchni publicznej **mimo**
-wpisu w rejestrze; skan z pustą listą plików musi zapalić na mianowniku
-**Wiąże przy:** **pierwszym pushu do upstreamu** — repozytorium jest publiczne od tej
-sekundy, bez etapu prywatnego, więc `README.md` (251 linii po polsku) i `docs/` (6 593) są
-pierwszym, co ktokolwiek zobaczy. Wydanie pakietu wiąże drugą część: 24 pliki w zbudowanym
-artefakcie, w tym komplet ośmiu `types/*.d.ts`
-
-> Rejestr wyjątków jest tu tym, czym `przegladarki.policy.json` dla
-> [`req-quality-browsers`](quality.md#req-quality-browsers): migracja przez kurczącą
-> się listę, a nie przez jeden przebieg. Bez niego bramka byłaby czerwona przez wszystkie
-> tygodnie tłumaczenia, czyli wyłączona pierwszego dnia.
-
-> Reguła obowiązywała wcześniej **w połowie i tylko jako proza**: `docs/README.md` zapisywał
-> podział „dokumentacja robocza po polsku, powierzchnia publiczna po angielsku". Podział nie
-> miał bramki i nie był dotrzymany — `description` pakietu jest po polsku, a publiczny JSDoc
-> cytuje **31 razy** wewnętrzne `wym-*` / `lekcja-*`, czyli identyfikatory dokumentacji,
-> której konsument nie ma. To jest dokładnie klasa [`req-axis`](../00-axis.md): obietnica bez
-> bramki nie jest obietnicą.
-
-> Obietnica obejmuje też **identyfikatory**: `wym-` jest skrótem od „wymaganie", `lekcja-`
-> mówi samo za siebie, a nazwy plików i katalogów (`requirements/`, `decisions/`, `tokens.md`)
-> są cytowane w tych samych miejscach co treść. Przemianowanie prowadzi
-> [H1](../plan.md#h-jeden-język-repozytorium) i to ono jest wyjątkiem od reguły „ID nigdy
-> się nie zmienia" — jedynym, świadomym i datowanym.
+**Gate:** `libs/components/eslint.config.mjs` — the
+`@angular-eslint/component-selector` and `directive-selector` rules with `prefix: "pct"`
+**Control:** none — deliberately: an ESLint rule fires on the first violation and has no
+mode in which it „passes quietly" — it does not belong to the [`req-axis`](../00-axis.md)
+class
 
 ---
 
-### <a id="req-project-concise"></a>`req-project-concise` — Tekst w repozytorium jest nośny
+### <a id="req-project-language"></a>`req-project-language` — The repository speaks one language: English
 
-**Obietnica.** Komentarz, JSDoc i akapit dokumentacji odpowiadają na pytanie „dlaczego nie
-oczywiście?" — niosą pomiar, cenę wybranej drogi albo pułapkę, która już raz kosztowała.
-To, co da się **wskazać odsyłaczem**, jest wskazywane, a nie streszczane: dokumentacja stoi
-publicznie pod stabilnym adresem, więc nagłówek bramki linkuje decyzję i lekcję, zamiast
-powtarzać je własnymi słowami. Narracja ma jedno miejsce: [`lessons.md`](../lessons.md)
-i dziennik [planu](../plan.md).
+**Promise.** Every hand-written text is in English: comment, JSDoc, test name, gate message,
+name of a file, a target and a rule, documentation, commit title. Polish exists only as
+a **dated entry** in a register of exceptions, each with a reason and the task that removes
+it. The public surface may not have **a single** entry there, and it is **two things, not
+one**: the package (`types/*.d.ts`, README, `description`, the artifacts in `themes/`) and
+**the repository itself**, which stands publicly on GitHub — `README.md`, `docs/` and the
+names visible in the Actions tab.
 
-Budżet obejmuje **prozę**, nie kod: `@example` i przykłady są poza nim w całości, bo
-w publicznym API są najcenniejsze. Objętość jest problemem `tools/` (~590 linii samych
-nagłówków bramek), nie JSDoc.
+**Gate:** none — gap: `tools/check-language.mjs` — two measurements with different reach.
+The public surface is measured on the **packed artifact** (that is where what the consumer
+really sees ends up, not what stands in the source), the rest of the repository on the files
+in the git index. Detection has two limbs, because diacritics alone are not enough
+(`Przycisk`, `Rozmiar`, `domyslnie` carry none): diacritical marks **plus** a list of Polish
+function words that English does not contain (`jest`, `czyli`, `przez`, `oraz`, `albo`,
+`wtedy`, `przy`, `bez`). Plus a denominator of its own — a non-empty set of scanned files
+and a non-empty measurement, because a scan that stopped reading anything lets everything
+through ([`lesson-48`](../lessons.md#lesson-48))
+**Control:** none — gap: a Polish comment in a file outside the register has to fire; an
+entry pointing at a file that is **already** translated has to fire as dead; a Polish
+`description` in the packed manifest has to fire on the public-surface point **despite** an
+entry in the register; a scan with an empty file list has to fire on the denominator
+**Binds at:** **the first push to upstream** — the repository is public from that second,
+with no private stage, so `README.md` and `docs/` are the first thing anybody sees. The
+package release binds the second part: 24 files in the built artifact, including all eight
+`types/*.d.ts`. The layer-by-layer state is tracked by
+[section H of the plan](../plan.md#h-one-language-for-the-repository)
 
-**Decyzja:** [0017 — jedno miejsce na fakt: kryterium i budżet](../decisions/0017-one-home-per-fact.md)
-**Bramka:** brak — luka: budżet objętości prozy per plik, snapshot z tolerancją
-**dwustronną**, w idiomie `libs/components/rozmiar.snapshot.md`. Wartości są rozstrzygnięte
-w [0017](../decisions/0017-one-home-per-fact.md) (nagłówek bramki 12 linii + 1 na punkt, wpis
-dziennika 25, pozycja zadania 12 domknięta / 20 otwarta), a mianownik już liczy
-`tools/measure-prose.mjs` — pomiar bez targetu, z którego ta bramka wyrośnie. Granica jest
-zapisana wprost, a nie przemilczana: maszyna mierzy **objętość, nie nośność** — wzrost staje
-się linią w diffie, a ocena, czy akapit jest nośny, zostaje po stronie review
-**Kontrola:** brak — luka: plik z dopisanym akapitem ponad tolerancję musi zapalić; plik
-skrócony bez przepisania snapshotu — również
-**Wiąże przy:** zamknięciu kompresji ([sekcja H](../plan.md#h-jeden-język-repozytorium)) —
-**nie wcześniej**. Snapshot założony na dzisiejszych 74-liniowych nagłówkach zamroziłby je
-jako stan zaakceptowany, dokładnie tak jak snapshot nazw tokenów założony przed
-normalizacją ([`lesson-49`](../lessons.md#lesson-49))
+> The register of exceptions plays the part here that `przegladarki.policy.json` plays for
+> [`req-quality-browsers`](quality.md#req-quality-browsers): migration through a shrinking
+> list rather than in one run. Without it the gate would be red for all the weeks of
+> translation — that is, switched off on day one.
+
+> The rule used to apply **by halves and only as prose**: `docs/README.md` recorded a split
+> of „working documentation in Polish, public surface in English". The split had no gate and
+> was not kept — the package `description` is in Polish, and the public JSDoc cites internal
+> `wym-*` / `lekcja-*` **31 times**, i.e. identifiers of documentation the consumer does not
+> have. That is exactly the [`req-axis`](../00-axis.md) class: a promise without a gate is
+> not a promise.
+
+> The promise covers **identifiers** as well: `wym-` is short for „wymaganie", `lekcja-`
+> speaks for itself, and file and directory names (`requirements/`, `decisions/`,
+> `tokens.md`) are cited in the same places as the content. The renaming is run by
+> [H1](../plan.md#h-one-language-for-the-repository), and it is the exception to the „an ID
+> never changes" rule — the only one, deliberate and dated.
 
 ---
 
-### <a id="req-project-angular"></a>`req-project-angular` — Najnowsze mechanizmy Angulara
+### <a id="req-project-concise"></a>`req-project-concise` — Text in the repository carries weight
 
-**Obietnica.** Standalone components, signals, signal forms, OnPush (domyślne w v22+,
-nieustawiane jawnie), zoneless, SSR. `zone.js` jest **usunięty z zależności**, nie tylko
-wyłączony.
+**Promise.** A comment, a JSDoc block and a paragraph of documentation answer the question
+„why isn't this obvious?" — they carry a measurement, the price of the chosen road, or a trap
+that has already cost something once. Whatever can be **pointed at with a link** is pointed
+at, not summarised: the documentation stands publicly at a stable address, so a gate header
+links the decision and the lesson instead of retelling them in its own words. Narration has
+one home: [`lessons.md`](../lessons.md) and the journal in the [plan](../plan.md).
 
-**Bramka:** `tools/check-zoneless.mjs` (target `check-zoneless`, w CI) — trzy punkty na
-jedną obietnicę, bo `zone.js` wraca trzema niezależnymi drogami: deklaracją
-w którymkolwiek manifeście repozytorium (czytanym z indeksu gita, więc nowy projekt jest
-objęty od pierwszego commita), instalacją w drzewie `package-lock.json` — także
-zagnieżdżoną pod cudzym pakietem — oraz śladem runtime w zbudowanym pakiecie
-(`import 'zone.js'`, `NgZone`, `__zone_symbol__`, globalny `Zone`). Punkty 1 i 2 pilnują
-wejścia, punkt 3 wyjścia. Poza tym `apps/sandbox/src/app/app.config.ts` →
-`provideZonelessChangeDetection()`; testy jednostkowe konfigurują zoneless w `TestBed`
-**Kontrola:** `tools/check-zoneless.fixtures/` — spreparowane wejścia, po jednym na sposób
-powrotu stref (manifest roota, manifest publikowanego pakietu, instalacja w locku,
-instalacja zagnieżdżona, `NgZone` w bundlu, `__zone_symbol__` w bundlu, skan
-niewidzący pakietu). Każde musi zostać odrzucone **przez ten punkt, który deklaruje**,
-a wejście wzorcowe — przejść. Do tego dwa przebiegi na prawdziwym repozytorium:
-`npm i -D zone.js` zapala punkt 1, a cofnięcie tego wpisu **w manifeście, ale nie
-w locku** — punkt 2, czyli dokładnie ten wariant, którego nie widać w code review
-**Lekcje:** [`lesson-7`](../lessons.md#lesson-7), [`lesson-8`](../lessons.md#lesson-8),
+The budget covers **prose**, not code: `@example` and examples are outside it entirely,
+because in a public API they are the most valuable text there is. The volume problem is in
+`tools/` (~590 lines of gate headers alone), not in JSDoc.
+
+**Decision:** [0017 — one home per fact: the criterion and its budget](../decisions/0017-one-home-per-fact.md)
+**Gate:** none — gap: a prose volume budget per file, a snapshot with **two-sided**
+tolerance, in the idiom of `libs/components/rozmiar.snapshot.md`. The values are settled in
+[0017](../decisions/0017-one-home-per-fact.md) (gate header 12 lines + 1 per point, journal
+entry 25, task position 12 closed / 20 open), and the denominator is already counted by
+`tools/measure-prose.mjs` — a measurement with no target, which this gate will grow out of.
+The limit is written down rather than passed over: the machine measures **volume, not
+weight** — growth becomes a line in the diff, while the judgment of whether a paragraph
+carries anything stays with review
+**Control:** none — gap: a file with a paragraph added beyond the tolerance has to fire; so
+does a file shortened without rewriting the snapshot
+**Binds at:** the close of the compression pass ([section H](../plan.md#h-one-language-for-the-repository))
+— **not earlier**. A snapshot laid on today's 74-line headers would freeze them as the
+accepted state, exactly like the token-name snapshot laid before normalisation
+([`lesson-49`](../lessons.md#lesson-49))
+
+---
+
+### <a id="req-project-angular"></a>`req-project-angular` — The newest Angular mechanisms
+
+**Promise.** Standalone components, signals, signal forms, OnPush (the default in v22+, never
+set explicitly), zoneless, SSR. `zone.js` is **removed from the dependencies**, not merely
+switched off.
+
+**Gate:** `tools/check-zoneless.mjs` (target `check-zoneless`, in CI) — three points for one
+promise, because `zone.js` comes back by three independent roads: a declaration in any
+manifest in the repository (read from the git index, so a new project is covered from its
+first commit), an installation in the `package-lock.json` tree — including one nested under
+somebody else's package — and a runtime trace in the built package (`import 'zone.js'`,
+`NgZone`, `__zone_symbol__`, a global `Zone`). Points 1 and 2 watch the input, point 3 the
+output. Besides that, `apps/sandbox/src/app/app.config.ts` →
+`provideZonelessChangeDetection()`; unit tests configure zoneless in `TestBed`
+**Control:** `tools/check-zoneless.fixtures/` — doctored inputs, one per way for zones to
+come back (root manifest, published package manifest, an installation in the lock, a nested
+installation, `NgZone` in the bundle, `__zone_symbol__` in the bundle, a scan that cannot see
+the package). Each must be rejected **by the point it declares**, and the reference input must
+pass. Plus two runs against the real repository: `npm i -D zone.js` fires point 1, and
+reverting that entry **in the manifest but not in the lock** fires point 2 — precisely the
+variant that is invisible in code review
+**Lessons:** [`lesson-7`](../lessons.md#lesson-7), [`lesson-8`](../lessons.md#lesson-8),
 [`lesson-11`](../lessons.md#lesson-11)
 
 ---
 
-### <a id="req-project-ssr"></a>`req-project-ssr` — Komponenty działają pod SSR
+### <a id="req-project-ssr"></a>`req-project-ssr` — Components work under SSR
 
-**Obietnica.** Każdy komponent renderuje się poprawnie po stronie serwera i hydruje bez
-rozjazdu. Żaden stan modułowy nie przecieka między renderami — liczniki, cache i
-rejestry idą przez DI albo są bezstanowe.
+**Promise.** Every component renders correctly on the server and hydrates without a
+mismatch. No module state leaks between renders — counters, caches and registries go through
+DI or are stateless.
 
-**Bramka:** `apps/sandbox-e2e/src/hydration.spec.ts` — sprawdzenie siedzi w pomocniku
-`visit()`, więc obejmuje **każdy** widok naraz
-**Kontrola:** `hydration.spec.ts › „bramka faktycznie wykrywa błąd hydracji (kontrola
+**Gate:** `apps/sandbox-e2e/src/hydration.spec.ts` — the check sits in the `visit()` helper,
+so it covers **every** view at once
+**Control:** `hydration.spec.ts › „bramka faktycznie wykrywa błąd hydracji (kontrola
 bramki)"`
-**Lekcje:** [`lesson-30`](../lessons.md#lesson-30), [`lesson-31`](../lessons.md#lesson-31)
+**Lessons:** [`lesson-30`](../lessons.md#lesson-30), [`lesson-31`](../lessons.md#lesson-31)
 
 ---
 
-### <a id="req-project-layout"></a>`req-project-layout` — Layout katalogów
+### <a id="req-project-layout"></a>`req-project-layout` — Directory layout
 
-**Obietnica.** `apps/` — `docs`, `sandbox`, `sandbox-e2e`. `libs/` — `components`
-(publikowalny), `tokens` (źródło DTCG + build).
+**Promise.** `apps/` — `docs`, `sandbox`, `sandbox-e2e`. `libs/` — `components`
+(publishable), `tokens` (DTCG source + build).
 
-**Bramka:** brak — luka: wynika z [`req-project-apps`](#req-project-apps);
-domknie się razem z nim
-**Kontrola:** brak — luka: patrz wyżej
-**Wiąże przy:** powstaniu `apps/docs`
-**Lekcje:** [`lesson-1`](../lessons.md#lesson-1), [`lesson-2`](../lessons.md#lesson-2)
+**Gate:** none — gap: follows from [`req-project-apps`](#req-project-apps); it will close
+together with it
+**Control:** none — gap: the same as for the gate above
+**Binds at:** the creation of `apps/docs`
+**Lessons:** [`lesson-1`](../lessons.md#lesson-1), [`lesson-2`](../lessons.md#lesson-2)

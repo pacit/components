@@ -1,135 +1,132 @@
-# Oś — na czym wygrywamy
+# The axis — what we win on
 
-Ten plik zawiera **jedno** wymaganie. Jest osobno, bo z niego wynika kolejność
-wszystkich pozostałych, a teza wmieszana w listę siedemdziesięciu punktów nie
-potrafi rozstrzygać sporów o priorytet.
-
----
-
-## <a id="req-axis"></a>`req-axis` — Nic nie psuje się po cichu
-
-**Obietnica.** Każdy stan, w którym błędne zachowanie nie daje sygnału, jest wadą
-**samą w sobie** — niezależnie od tego, czy ktoś już na niego trafił. Każda obietnica
-z tej dokumentacji ma bramkę, która potrafi na niej zapalić, a każda bramka ma
-kontrolę odniesienia dowodzącą, że potrafi **nie** przejść.
-
-**Bramka:** [`req-quality-registry`](requirements/quality.md#req-quality-registry) — rejestr
-obietnica → bramka → kontrola, czytany przez `tools/check-docs.mjs`
-**Kontrola:** [`req-quality-negative-control`](requirements/quality.md#req-quality-negative-control) —
-reguła, że bramka bez dowodu zapalenia jest niedokończona
-
-### Dlaczego to nie jest hasło
-
-Log [lekcji](lessons.md) wygląda na zbiór niezależnych obserwacji, a jest dziewięcioma
-wystąpieniami **jednej**:
-
-| lekcja                              | zdanie kluczowe                                                       |
-| ----------------------------------- | --------------------------------------------------------------------- |
-| [`lesson-36`](lessons.md#lesson-36) | „Awaria była **cicha w obie strony**"                                 |
-| [`lesson-43`](lessons.md#lesson-43) | „nie jest błędem, tylko **pustym łańcuchem**"                         |
-| [`lesson-38`](lessons.md#lesson-38) | „**po cichu nie działa** i test przechodzi"                           |
-| [`lesson-39`](lessons.md#lesson-39) | „może **urodzić się martwy** na dwa niezależne sposoby"               |
-| [`lesson-17`](lessons.md#lesson-17) | „był zepsuty i **nikt tego nie widział**"                             |
-| [`lesson-31`](lessons.md#lesson-31) | „był niebezpieczny przy SSR i **nikt tego nie widział**"              |
-| [`lesson-42`](lessons.md#lesson-42) | „nigdy nie był typecheckowany i **nikt tego nie zauważył**"           |
-| [`lesson-40`](lessons.md#lesson-40) | „ani bramka kontrastu, ani axe **tego nie widzą**"                    |
-| [`lesson-26`](lessons.md#lesson-26) | „wada **przetrwała**, bo wszystkie testy startowały z pustym modelem" |
-
-Wspólnym mianownikiem jest to, że **domyślnym zachowaniem warstwy jest „nic się nie
-stało"**:
-
-| warstwa       | co robi platforma zamiast błędu                       | gdzie u nas                                          |
-| ------------- | ----------------------------------------------------- | ---------------------------------------------------- |
-| CSS           | brak `var()` → wartość początkowa                     | [`lesson-36`](lessons.md#lesson-36), `check-package` |
-| odczyt DOM    | nieistniejący token → `''`                            | [`lesson-43`](lessons.md#lesson-43)                  |
-| infra testowa | brak wzorca zrzutu → zapisz bieżący jako poprawny     | [`lesson-39`](lessons.md#lesson-39)                  |
-| infra testowa | emulacja nie dociera → test na wartościach domyślnych | [`lesson-38`](lessons.md#lesson-38)                  |
-| graf builda   | brak krawędzi → build się udaje, wyjście złe          | [`lesson-36`](lessons.md#lesson-36)                  |
-| SSR           | rozjazd id → cichy re-render, ARIA w próżnię          | [`lesson-31`](lessons.md#lesson-31)                  |
-| a11y          | stan samą barwą → znika w `forced-colors`             | [`lesson-40`](lessons.md#lesson-40)                  |
-| typy          | `T` za szerokie → sprzeczne wiązania kompilują się    | [`lesson-37`](lessons.md#lesson-37)                  |
-
-Dlatego **brak bramki nigdy nie objawia się jako brak — objawia się jako zieleń**.
-
-### Dlaczego nazwana przez cichą wadę, a nie przez „jakość"
-
-Trzy powody:
-
-1. Jest wyprowadzona z własnych dowodów, nie z ambicji marketingowej.
-2. Wyjaśnia, **dlaczego** każda bramka potrzebuje kontroli odniesienia — bramka bez
-   niej jest kolejną cichą wadą, tylko piętro wyżej.
-3. Jest zdaniem, które człowiek trzyma w głowie **pisząc kod**. „Weryfikowalność
-   obietnic" nie jest.
-
-### Konsekwencja dla kolejności prac
-
-Wymaganie bez bramki jest **niedokończone**, a nie „zrealizowane, tylko niesprawdzone".
-Nie chodzi o to, żeby każda bramka istniała od pierwszego dnia — chodzi o to, żeby jej
-brak był **policzalny, a nie niewidoczny**.
+This file holds **one** requirement. It stands apart because the order of all the others
+follows from it, and a thesis mixed into a list of seventy points cannot settle arguments
+about priority.
 
 ---
 
-## Czym oś nie jest
+## <a id="req-axis"></a>`req-axis` — Nothing breaks silently
 
-Nie jest to teza o a11y, o tokenach ani o testach. Dotyczy **klasy awarii przechodzącej
-przez wszystkie warstwy** — tej, w której platforma na błąd odpowiada milczeniem. Bramka
-kontrastu, `check-package`, bramka hydracji i kontrola odniesienia audytu axe to cztery
-wystąpienia tego samego wzorca w czterech różnych warstwach, nie cztery niezależne
-pomysły.
+**Promise.** Any state in which wrong behaviour produces no signal is a defect **in
+itself** — whether or not anyone has hit it yet. Every promise in this documentation has
+a gate that can fire on it, and every gate has a negative control proving it can **fail**.
+
+**Gate:** [`req-quality-registry`](requirements/quality.md#req-quality-registry) — the
+promise → gate → control registry, read by `tools/check-docs.mjs`
+**Control:** [`req-quality-negative-control`](requirements/quality.md#req-quality-negative-control) —
+the rule that a gate without proof of firing is unfinished
+
+### Why this is not a slogan
+
+The [lesson](lessons.md) log looks like a set of independent observations; it is nine
+occurrences of **one**:
+
+| lesson                              | key sentence                                                             |
+| ----------------------------------- | ------------------------------------------------------------------------ |
+| [`lesson-36`](lessons.md#lesson-36) | „the failure was **silent in both directions**"                          |
+| [`lesson-43`](lessons.md#lesson-43) | „is not an error, it is an **empty string**"                             |
+| [`lesson-38`](lessons.md#lesson-38) | „**silently does nothing** and the test passes"                          |
+| [`lesson-39`](lessons.md#lesson-39) | „can be **born dead** in two independent ways"                           |
+| [`lesson-17`](lessons.md#lesson-17) | „was broken and **nobody saw it**"                                       |
+| [`lesson-31`](lessons.md#lesson-31) | „was unsafe under SSR and **nobody saw it**"                             |
+| [`lesson-42`](lessons.md#lesson-42) | „was never typechecked and **nobody noticed**"                           |
+| [`lesson-40`](lessons.md#lesson-40) | „neither the contrast gate nor axe **can see it**"                       |
+| [`lesson-26`](lessons.md#lesson-26) | „the defect **survived** because every test started with an empty model" |
+
+The common denominator: **the default behaviour of the layer is „nothing happened"**.
+
+| layer       | what the platform does instead of failing              | where it hit us                                      |
+| ----------- | ------------------------------------------------------ | ---------------------------------------------------- |
+| CSS         | missing `var()` → initial value                        | [`lesson-36`](lessons.md#lesson-36), `check-package` |
+| DOM read    | non-existent token → `''`                              | [`lesson-43`](lessons.md#lesson-43)                  |
+| test infra  | no reference screenshot → save the current one as good | [`lesson-39`](lessons.md#lesson-39)                  |
+| test infra  | emulation does not arrive → test runs on defaults      | [`lesson-38`](lessons.md#lesson-38)                  |
+| build graph | missing edge → build succeeds, output is wrong         | [`lesson-36`](lessons.md#lesson-36)                  |
+| SSR         | id mismatch → silent re-render, ARIA into the void     | [`lesson-31`](lessons.md#lesson-31)                  |
+| a11y        | state by colour alone → gone in `forced-colors`        | [`lesson-40`](lessons.md#lesson-40)                  |
+| types       | `T` too wide → contradictory bindings compile          | [`lesson-37`](lessons.md#lesson-37)                  |
+
+Which is why **a missing gate never shows up as missing — it shows up as green**.
+
+### Why named after the silent defect and not after „quality"
+
+Three reasons:
+
+1. It is derived from our own evidence, not from a marketing ambition.
+2. It explains **why** every gate needs a negative control — a gate without one is another
+   silent defect, one floor up.
+3. It is a sentence a person keeps in their head **while writing code**. „Verifiability of
+   promises" is not.
+
+### Consequence for the order of work
+
+A requirement without a gate is **unfinished**, not „implemented, just unverified". The
+point is not that every gate exists from day one — the point is that its absence be
+**countable rather than invisible**.
 
 ---
 
-## Kryteria sukcesu
+## What the axis is not
 
-Oś działa wtedy, gdy prawdziwe są trzy zdania — każde sprawdzalne maszynowo, nie
-w dyskusji:
-
-1. **Rejestr nie ma pozycji w stanie `zadeklarowane`.** Każda obietnica ma bramkę albo
-   jawnie zapisany powód jej braku wraz z tym, co wymusi domknięcie.
-2. **Każda bramka ma kontrolę odniesienia.** Dla każdej istnieje test albo zapisany
-   przebieg dowodzący, że po wprowadzeniu celowej regresji bramka **zapala**.
-3. **Dokumentacja nie potrafi skłamać.** Stan wymagania jest wyprowadzany z zawartości
-   rejestru, nie wpisywany ręcznie — a dopisanie wymagania bez bramki jest błędem CI,
-   nie przeoczeniem.
-
-Punkt 3 jest tym, którego brak sprawił, że ta dokumentacja wymagała rozdziału „jak ją
-czytać" (patrz [`req-quality-registry`](requirements/quality.md#req-quality-registry)).
+It is not a thesis about a11y, or tokens, or tests. It is about **a class of failure that
+runs through every layer** — the one where the platform answers an error with silence. The
+contrast gate, `check-package`, the hydration gate and the negative control of the axe audit
+are four occurrences of the same pattern in four different layers, not four independent
+ideas.
 
 ---
 
-## Jawne NIE-cele
+## Success criteria
 
-Rzeczy, których świadomie **nie** robimy. Zapisane, żeby nie wracały jako „brakujące
-wymaganie" — nie-cel jest obietnicą tak samo jak cel i tak samo podlega bramce.
+The axis works when three sentences are true — each machine-checkable, not arguable:
 
-| nie-cel                            | wymaganie                                                            | dlaczego                                                                                                                                                              |
-| ---------------------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Własny zestaw ikon                 | [`req-api-icons-custom`](requirements/api.md#req-api-icons-custom)   | zestaw ikon to osobny produkt o osobnym cyklu życia; my dajemy mechanizm podmiany                                                                                     |
-| Przewaga liczbą komponentów        | —                                                                    | PrimeNG ma ~90 i dekadę przewagi; tej osi nie da się dogonić i nie ma sensu próbować                                                                                  |
-| Pełne bidi                         | [`req-token-logical`](requirements/tokens.md#req-token-logical)      | układ się odbija; mieszane kierunki w jednym ciągu tekstu i izolacja przy skracaniu — nie w v1                                                                        |
-| Silnik motywów w JS                | [`req-token-css`](requirements/tokens.md#req-token-css)              | runtime JS dla motywu kupuje FOUC i rozjazdy hydracji; kaskada CSS robi to samo za darmo                                                                              |
-| `ControlValueAccessor`             | [`req-api-signal-forms`](requirements/api.md#req-api-signal-forms)   | zweryfikowano eksperymentem, że jest zbędne ([`lesson-9`](lessons.md#lesson-9))                                                                                       |
-| `@angular/animations`              | [`req-api-animations`](requirements/api.md#req-api-animations)       | zależność runtime wbrew [`req-project-dependencies`](requirements/project.md#req-project-dependencies)                                                                |
-| `zone.js`                          | [`req-project-angular`](requirements/project.md#req-project-angular) | usunięty całkowicie, nie tylko wyłączony ([`lesson-8`](lessons.md#lesson-8))                                                                                          |
-| Podział na rdzeń bezgłowy i skórkę | —                                                                    | kontrast, tryb wymuszonych kolorów i obszar dotyku mieszkają w szablonie i arkuszu — oddając je, oddajemy połowę dowodu ([0013](decisions/0013-no-headless-split.md)) |
+1. **The registry has no entry in a `declared` state.** Every promise has a gate, or an
+   explicitly written reason for its absence together with whatever will force it closed.
+2. **Every gate has a negative control.** For each one there is a test or a recorded run
+   proving that after a deliberate regression the gate **fires**.
+3. **The documentation cannot lie.** A requirement's state is derived from the content of
+   the registry, not typed in by hand — and adding a requirement without a gate is a CI
+   failure, not an oversight.
+
+Point 3 is the one whose absence made this documentation need a „how to read it" chapter
+(see [`req-quality-registry`](requirements/quality.md#req-quality-registry)).
 
 ---
 
-## Jak z osi wyrasta reszta
+## Explicit non-goals
+
+Things we deliberately do **not** do. Written down so they do not come back as a „missing
+requirement" — a non-goal is a promise just like a goal, and is gated just the same.
+
+| non-goal                     | requirement                                                          | why                                                                                                                                                                               |
+| ---------------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Our own icon set             | [`req-api-icons-custom`](requirements/api.md#req-api-icons-custom)   | an icon set is a separate product with its own life cycle; we ship the swap mechanism                                                                                             |
+| Winning on component count   | —                                                                    | PrimeNG has ~90 and a decade of head start; that axis cannot be caught up and it is not worth trying                                                                              |
+| Full bidi                    | [`req-token-logical`](requirements/tokens.md#req-token-logical)      | the layout mirrors; mixed directions inside one run of text and isolation on truncation — not in v1                                                                               |
+| A theme engine in JS         | [`req-token-css`](requirements/tokens.md#req-token-css)              | JS at runtime for theming buys FOUC and hydration mismatches; the CSS cascade does the same for free                                                                              |
+| `ControlValueAccessor`       | [`req-api-signal-forms`](requirements/api.md#req-api-signal-forms)   | verified by experiment to be unnecessary ([`lesson-9`](lessons.md#lesson-9))                                                                                                      |
+| `@angular/animations`        | [`req-api-animations`](requirements/api.md#req-api-animations)       | a runtime dependency, against [`req-project-dependencies`](requirements/project.md#req-project-dependencies)                                                                      |
+| `zone.js`                    | [`req-project-angular`](requirements/project.md#req-project-angular) | removed entirely, not merely switched off ([`lesson-8`](lessons.md#lesson-8))                                                                                                     |
+| A headless core / skin split | —                                                                    | contrast, forced colours and touch target live in the template and the stylesheet — handing those over hands over half the evidence ([0013](decisions/0013-no-headless-split.md)) |
+
+---
+
+## How the rest grows out of the axis
 
 ```
-POZIOM 0   req-axis                       ← ten plik
-              │
-              ├─ POZIOM 1  requirements/   obietnice: co ma być prawdą
-              │              │
-              │              ├─ POZIOM 2  decisions/     dlaczego akurat tak
-              │              │
-              │              └─ POZIOM 3  components/  czy ten komponent to spełnia
-              │
-              ├─ lessons.md              dowody, z których wzięły się poziomy 0–2
-              └─ registry.md             GENEROWANY: czy każda obietnica ma bramkę
+LEVEL 0   req-axis                       ← this file
+             │
+             ├─ LEVEL 1  requirements/   promises: what has to be true
+             │              │
+             │              ├─ LEVEL 2  decisions/     why this way
+             │              │
+             │              └─ LEVEL 3  components/  whether this component keeps them
+             │
+             ├─ lessons.md              the evidence levels 0–2 came from
+             └─ registry.md             GENERATED: does every promise have a gate
 ```
 
-Kierunek czytania jest odwrotny do kierunku pisania: **wymagania powstają z lekcji**,
-a nie odwrotnie. Log lekcji jest bazą dowodową, nie dodatkiem — to jedyne miejsce, gdzie
-zapisano, **co się naprawdę stało**, zanim ktoś sformułował z tego regułę.
+Reading order is the reverse of writing order: **requirements come out of lessons**, not
+the other way round. The lesson log is the evidence base, not an appendix — it is the only
+place that records **what actually happened**, before anyone turned it into a rule.

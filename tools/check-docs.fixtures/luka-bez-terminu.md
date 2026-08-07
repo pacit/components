@@ -1,8 +1,8 @@
-# Fixture — luka bez terminu
+# Fixture — a gap with no deadline
 
-### <a id="req-fixture-luka-bez-terminu"></a>`req-fixture-luka-bez-terminu` — Luka bez „Wiąże przy"
+### <a id="req-fixture-luka-bez-terminu"></a>`req-fixture-luka-bez-terminu` — A gap with no „Binds at"
 
-**Obietnica.** Coś ma być prawdą.
+**Promise.** Something is meant to be true.
 
-**Bramka:** brak — luka: bramki jeszcze nie ma, ale nikt nie zapisał, co wymusi jej powstanie
-**Kontrola:** brak — świadomie: właściwy błąd to nieobecne pole **Wiąże przy**
+**Gate:** none — gap: there is no gate yet, but nobody wrote down what will force one
+**Control:** none — deliberately: the actual error is the missing **Binds at** field

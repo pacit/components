@@ -1,162 +1,162 @@
-# Rejestr — obietnica → bramka → kontrola
+# Registry — promise → gate → control
 
-> **Ten plik jest generowany.** Nie edytuj go ręcznie —
-> `node tools/check-docs.mjs --write`. Bramka `check-docs` odrzuca rozjazd.
+> **This file is generated.** Do not edit it by hand —
+> `node tools/check-docs.mjs --write`. The `check-docs` gate rejects drift.
 
-Stan jest **wyprowadzony** z zawartości pól `Bramka` i `Kontrola`, nie wpisany.
-Nie ma stanu „zrealizowane, tylko niesprawdzone" — patrz
-[README](README.md#pola-bramka-i-kontrola).
+The state is **derived** from the contents of the `Gate` and `Control` fields, not typed in.
+There is no „built, just unverified" state — see
+[README](README.md#fields-gate-and-control).
 
-| stan           | znaczenie                                          | liczba |
-| -------------- | -------------------------------------------------- | -----: |
-| ✅ egzekwowane | bramka i kontrola istnieją, są wpięte w CI         |     54 |
-| 🟡 częściowo   | bramka jest, kontroli odniesienia brak (świadomie) |     16 |
-| ⛔ luka        | brak bramki albo kontroli, z zapisanym terminem    |     13 |
-| **razem**      |                                                    | **83** |
+| state       | means                                                         |  count |
+| ----------- | ------------------------------------------------------------- | -----: |
+| ✅ enforced | gate and control exist and run in CI                          |     54 |
+| 🟡 partial  | the gate is there, the negative control is not (deliberately) |     16 |
+| ⛔ gap      | gate or control missing, with a recorded deadline             |     13 |
+| **total**   |                                                               | **83** |
 
-## Luki wg pilności
+## Gaps by urgency
 
-Kolejność bierze się z pola **Wiąże przy**, nie z numeru wymagania.
+The order comes from the **Binds at** field, not from a requirement number.
 
-| wymaganie                                                                      | czego brakuje                                                                       | wiąże przy                                                   |
-| ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| [`req-api-animations`](requirements/api.md#req-api-animations)                 | zakaz jest dotrzymany, ale **nic go nie pilnuje** — jedyne, co obowią…              | pierwszym komponencie z wejściem/wyjściem (panel, dialog, t… |
-| [`req-api-icons`](requirements/api.md#req-api-icons)                           | dziś każda ikona jest **wpisana w szablon** jako SVG w `currentColor`…              | drugim komponencie potrzebującym podmienialnej ikony         |
-| [`req-api-number`](requirements/api.md#req-api-number)                         | testy własnościowe parsera (`parse(format(n)) === n` dla dowolnego `n… _(kontrola)_ | pierwszym locale spoza `pl`/`en` zgłoszonym przez konsumenta |
-| [`req-api-templates`](requirements/api.md#req-api-templates)                   | projekcja działa (sloty obudowy), ale **`TemplateRef` nie pada nigdzi…              | pierwszym realnym użyciu selecta (szablon opcji) oraz przy … |
-| [`req-project-apps`](requirements/project.md#req-project-apps)                 | `apps/docs` nie istnieje, więc bramka opisywałaby stan, który nie zac…              | pierwszym zewnętrznym użytkowniku — bez dokumentacji nie ma… |
-| [`req-project-concise`](requirements/project.md#req-project-concise)           | budżet objętości prozy per plik, snapshot z tolerancją **dwustronną**…              | zamknięciu kompresji (sekcja H) — **nie wcześniej**. Snapsh… |
-| [`req-project-dependencies`](requirements/project.md#req-project-dependencies) | kontrola listy `dependencies` / `peerDependencies` w spakowanym manif…              | pierwszej zależności dodanej odruchowo — dziś nic nie odróż… |
-| [`req-project-files`](requirements/project.md#req-project-files)               | kontrola układu katalogu entrypointu (skrypt w duchu `check-package.m…              | pierwszym komponencie dopisanym przez kogoś innego niż auto… |
-| [`req-project-language`](requirements/project.md#req-project-language)         | `tools/check-language.mjs` — dwa pomiary o różnym zasięgu. Powierzchn…              | **pierwszym pushu do upstreamu** — repozytorium jest public… |
-| [`req-project-layout`](requirements/project.md#req-project-layout)             | wynika z `req-project-apps`; domknie się razem z nim                                | powstaniu `apps/docs`                                        |
-| [`req-release-support`](requirements/release.md#req-release-support)           | dokumentu nie ma. Kolekcja migracji istnieje (`req-release-ng-add`), …              | pierwszym zewnętrznym konsumencie — firma nie kupuje biblio… |
-| [`req-token-density`](requirements/tokens.md#req-token-density)                | w źródłach DTCG nie ma **ani jednego** tokenu gęstości                              | po ustabilizowaniu osi wielkości. Uwaga: gęstość zejdzie po… |
-| [`req-token-directive`](requirements/tokens.md#req-token-directive)            | dyrektywy nie ma, motyw ustawia się ręcznym `data-theme`                            | gdy ustawianie `data-theme` z szablonu zacznie się powtarza… |
+| requirement                                                                    | what is missing                                                                    | binds at                                                     |
+| ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| [`req-api-animations`](requirements/api.md#req-api-animations)                 | the ban is kept, but **nothing watches it** — the only thing in force…             | the first component with an enter/leave transition (panel, … |
+| [`req-api-icons`](requirements/api.md#req-api-icons)                           | today every icon is **written into the template** as SVG in `currentC…             | the second component that needs a swappable icon             |
+| [`req-api-number`](requirements/api.md#req-api-number)                         | property tests for the parser (`parse(format(n)) === n` for any `n` a… _(control)_ | the first locale outside `pl`/`en` reported by a consumer    |
+| [`req-api-templates`](requirements/api.md#req-api-templates)                   | projection works (the wrapper's slots), but **`TemplateRef` appears n…             | the first real use of the select (the option template) and … |
+| [`req-project-apps`](requirements/project.md#req-project-apps)                 | `apps/docs` does not exist, so a gate would describe a state that doe…             | the first external user — without documentation there is no… |
+| [`req-project-concise`](requirements/project.md#req-project-concise)           | a prose volume budget per file, a snapshot with **two-sided** toleran…             | the close of the compression pass (section H) — **not earli… |
+| [`req-project-dependencies`](requirements/project.md#req-project-dependencies) | a check of the `dependencies` / `peerDependencies` lists in the packe…             | the first dependency added out of reflex — today nothing te… |
+| [`req-project-files`](requirements/project.md#req-project-files)               | a check of the entrypoint directory layout (a script in the spirit of…             | the first component added by somebody other than the author… |
+| [`req-project-language`](requirements/project.md#req-project-language)         | `tools/check-language.mjs` — two measurements with different reach. T…             | **the first push to upstream** — the repository is public f… |
+| [`req-project-layout`](requirements/project.md#req-project-layout)             | follows from `req-project-apps`; it will close together with it                    | the creation of `apps/docs`                                  |
+| [`req-release-support`](requirements/release.md#req-release-support)           | the document does not exist. The migration collection does (`req-rele…             | the first external consumer — a company does not buy a libr… |
+| [`req-token-density`](requirements/tokens.md#req-token-density)                | the DTCG sources contain **not one** density token                                 | once the size axis has settled. Note: density will drop bel… |
+| [`req-token-directive`](requirements/tokens.md#req-token-directive)            | the directive does not exist, the theme is set with a hand-written `d…             | when setting `data-theme` from a template starts to repeat … |
 
-## oś
+## axis
 
-| wymaganie                         | stan           | bramka                                                                 | kontrola                                                               |
-| --------------------------------- | -------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| [`req-axis`](00-axis.md#req-axis) | ✅ egzekwowane | `req-quality-registry` — rejestr obietnica → bramka → kontrola, czyta… | `req-quality-negative-control` — reguła, że bramka bez dowodu zapalen… |
+| requirement                       | state       | gate                                                                   | control                                                                |
+| --------------------------------- | ----------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| [`req-axis`](00-axis.md#req-axis) | ✅ enforced | `req-quality-registry` — the promise → gate → control registry, read … | `req-quality-negative-control` — the rule that a gate without proof o… |
 
-## dostępność
+## accessibility
 
-| wymaganie                                                               | stan           | bramka                                                                 | kontrola                                                               |
-| ----------------------------------------------------------------------- | -------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| [`req-a11y-wcag`](requirements/a11y.md#req-a11y-wcag)                   | ✅ egzekwowane | `req-a11y-axe` (wyrenderowany DOM) + `req-token-contrast` (wartości w… | patrz obie bramki wyżej > **Zgodność formalna nie znaczy dobra jakość… |
-| [`req-a11y-built-in`](requirements/a11y.md#req-a11y-built-in)           | ✅ egzekwowane | `libs/components/*/src/*.spec.ts` — powiązania ARIA sprawdzane per ko… | `a11y.spec.ts › „bramka a11y faktycznie wykrywa naruszenia (kontrola … |
-| [`req-a11y-touch`](requirements/a11y.md#req-a11y-touch)                 | ✅ egzekwowane | `apps/sandbox-e2e/src/field-hitarea.spec.ts`, `apps/sandbox-e2e/src/c… | bramka ma dwa udokumentowane przebiegi, w których zapaliła: `lesson-2… |
-| [`req-a11y-axe`](requirements/a11y.md#req-a11y-axe)                     | ✅ egzekwowane | `apps/sandbox-e2e/src/a11y.spec.ts`                                    | `a11y.spec.ts › „bramka a11y faktycznie wykrywa naruszenia (kontrola … |
-| [`req-a11y-motion`](requirements/a11y.md#req-a11y-motion)               | ✅ egzekwowane | `apps/sandbox-e2e/src/preferences.spec.ts`                             | `preferences.spec.ts › „bez preferencji oś ruchu stoi na wartościach … |
-| [`req-a11y-forced-colors`](requirements/a11y.md#req-a11y-forced-colors) | ✅ egzekwowane | `apps/sandbox-e2e/src/forced-colors.spec.ts`                           | emulacja idzie przez `page.emulateMedia()` w pomocniku `visit()`, a t… |
+| requirement                                                             | state       | gate                                                                   | control                                                                |
+| ----------------------------------------------------------------------- | ----------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| [`req-a11y-wcag`](requirements/a11y.md#req-a11y-wcag)                   | ✅ enforced | `req-a11y-axe` (the rendered DOM) + `req-token-contrast` (the values … | see both gates above > **Formal conformance does not mean good qualit… |
+| [`req-a11y-built-in`](requirements/a11y.md#req-a11y-built-in)           | ✅ enforced | `libs/components/*/src/*.spec.ts` — ARIA relations checked per compon… | `a11y.spec.ts › „bramka a11y faktycznie wykrywa naruszenia (kontrola … |
+| [`req-a11y-touch`](requirements/a11y.md#req-a11y-touch)                 | ✅ enforced | `apps/sandbox-e2e/src/field-hitarea.spec.ts`, `apps/sandbox-e2e/src/c… | the gate has two documented runs in which it fired: `lesson-25` (a wr… |
+| [`req-a11y-axe`](requirements/a11y.md#req-a11y-axe)                     | ✅ enforced | `apps/sandbox-e2e/src/a11y.spec.ts`                                    | `a11y.spec.ts › „bramka a11y faktycznie wykrywa naruszenia (kontrola … |
+| [`req-a11y-motion`](requirements/a11y.md#req-a11y-motion)               | ✅ enforced | `apps/sandbox-e2e/src/preferences.spec.ts`                             | `preferences.spec.ts › „bez preferencji oś ruchu stoi na wartościach … |
+| [`req-a11y-forced-colors`](requirements/a11y.md#req-a11y-forced-colors) | ✅ enforced | `apps/sandbox-e2e/src/forced-colors.spec.ts`                           | emulation goes through `page.emulateMedia()` in the `visit()` helper,… |
 
 ## API
 
-| wymaganie                                                          | stan           | bramka                                                                 | kontrola                                                               |
-| ------------------------------------------------------------------ | -------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| [`req-api-names`](requirements/api.md#req-api-names)               | 🟡 częściowo   | `libs/components/eslint.config.mjs` — `@angular-eslint/component-sele… | brak — świadomie: reguła ESLint nie ma trybu cichego przejścia ---     |
-| [`req-api-foundation`](requirements/api.md#req-api-foundation)     | ✅ egzekwowane | `tools/check-zoneless.mjs` (target `check-zoneless`, w CI) — pomiar `… | `tools/check-zoneless.fixtures/` — spreparowane wejścia, po jednym na… |
-| [`req-api-signals`](requirements/api.md#req-api-signals)           | 🟡 częściowo   | `libs/components/button/src/button.spec.ts`, `libs/components/checkbo… | brak — świadomie: błędna transformacja objawia się złym typem w szabl… |
-| [`req-api-attributes`](requirements/api.md#req-api-attributes)     | 🟡 częściowo   | `apps/sandbox-e2e/src/states.spec.ts` — widok przekrojowy stanów odpy… | brak — świadomie: selektor trafiający w nic daje pusty locator, czyli… |
-| [`req-api-config`](requirements/api.md#req-api-config)             | 🟡 częściowo   | `libs/components/button/src/button.spec.ts` — domyślny `size` z konfi… | brak — świadomie: test porównuje dwie **różne** wartości, więc nie mo… |
-| [`req-api-signal-forms`](requirements/api.md#req-api-signal-forms) | ✅ egzekwowane | `libs/components/field/src/field-controls.spec.ts`, `apps/sandbox-e2e… | testy startują z **niepustą** wartością początkową — z pustym modelem… |
-| [`req-api-container`](requirements/api.md#req-api-container)       | 🟡 częściowo   | `libs/components/radio/src/radio.spec.ts`                              | brak — świadomie: naruszeniem byłby drugi `FormValueControl` w drzewi… |
-| [`req-api-wrapper`](requirements/api.md#req-api-wrapper)           | ✅ egzekwowane | `libs/components/field/src/field.spec.ts`, `apps/sandbox-e2e/src/fiel… | `field-hitarea.spec.ts` — mapa kursora po siatce punktów (`elementFro… |
-| [`req-api-no-wrapper`](requirements/api.md#req-api-no-wrapper)     | 🟡 częściowo   | `libs/components/field/src/field-controls.spec.ts` — każda kontrolka … | brak — świadomie: tryb samodzielny jest **domyślny**, więc jego awari… |
-| [`req-api-frame`](requirements/api.md#req-api-frame)               | ✅ egzekwowane | `apps/sandbox-e2e/src/field.spec.ts`, `req-a11y-touch`                 | test progu dotyku wychwycił regresję opisaną w `lesson-25` (select w … |
-| [`req-api-native-input`](requirements/api.md#req-api-native-input) | 🟡 częściowo   | `libs/components/field/src/field-controls.spec.ts`                     | brak — świadomie: podmiana `<input>` na własny element wywraca komple… |
-| [`req-api-platform`](requirements/api.md#req-api-platform)         | 🟡 częściowo   | `apps/sandbox-e2e/src/radio.spec.ts` — nawigacja klawiaturą            | brak — świadomie: test nawigacji nie ma trybu, w którym przechodzi be… |
-| [`req-api-number`](requirements/api.md#req-api-number)             | ⛔ luka        | `libs/components/field/src/number.spec.ts`, `apps/sandbox-e2e/src/num… | brak — luka: testy własnościowe parsera (`parse(format(n)) === n` dla… |
-| [`req-api-generic`](requirements/api.md#req-api-generic)           | ✅ egzekwowane | `libs/components/select/src/select.spec.ts`, target `typecheck` proje… | sonda z `lesson-37` — pięć celowo sprzecznych wiązań, z których czter… |
-| [`req-api-parts`](requirements/api.md#req-api-parts)               | ✅ egzekwowane | `tools/check-parts.mjs` (target `check-parts` w projekcie roota, w CI… | `tools/check-parts.fixtures/` — dwadzieścia jeden wejść, każde odrzuc… |
-| [`req-api-parts-unique`](requirements/api.md#req-api-parts-unique) | ✅ egzekwowane | `apps/sandbox-e2e/src/radio.spec.ts`, `apps/sandbox-e2e/src/field.spe… | kolizja z `lesson-15` i `lesson-24` jest udokumentowanym przebiegiem,… |
-| [`req-api-templates`](requirements/api.md#req-api-templates)       | ⛔ luka        | brak — luka: projekcja działa (sloty obudowy), ale **`TemplateRef` ni… | brak — luka: szablon opcji podany przez konsumenta, który nie zostaje… |
-| [`req-api-icons`](requirements/api.md#req-api-icons)               | ⛔ luka        | brak — luka: dziś każda ikona jest **wpisana w szablon** jako SVG w `… | brak — luka: podmiana ikony przez `PCT_ICONS`, która nie dociera do k… |
-| [`req-api-icons-custom`](requirements/api.md#req-api-icons-custom) | 🟡 częściowo   | `libs/components/check-package.mjs` — brak plików ikon w spakowanym a… | brak — świadomie: naruszeniem jest **dodanie** czegoś, a nie ciche zn… |
-| [`req-api-texts`](requirements/api.md#req-api-texts)               | ✅ egzekwowane | `tools/check-texts.mjs` (target `check-texts`) — sześć punktów: napis… | `tools/check-texts.fixtures/` — 29 spreparowanych wejść, każde odrzuc… |
-| [`req-api-overlay`](requirements/api.md#req-api-overlay)           | ✅ egzekwowane | `apps/sandbox-e2e/src/select.spec.ts` — pomiar szerokości i przesunię… | pomiar z `lesson-35` (pole 301 px ⇒ panel 275 px, przesunięcie 13 px;… |
-| [`req-api-size`](requirements/api.md#req-api-size)                 | ✅ egzekwowane | `apps/sandbox-e2e/src/size.spec.ts` — pomiar w przeglądarce            | test sprawdza równość wysokości **i jej konkretną wartość** — przy sa… |
-| [`req-api-animations`](requirements/api.md#req-api-animations)     | ⛔ luka        | brak — luka: zakaz jest dotrzymany, ale **nic go nie pilnuje** — jedy… | brak — luka: import `@angular/animations` dodany do pakietu musi zapa… |
+| requirement                                                        | state       | gate                                                                   | control                                                                |
+| ------------------------------------------------------------------ | ----------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| [`req-api-names`](requirements/api.md#req-api-names)               | 🟡 partial  | `libs/components/eslint.config.mjs` — `@angular-eslint/component-sele… | none — deliberately: an ESLint rule has no quiet-pass mode ---         |
+| [`req-api-foundation`](requirements/api.md#req-api-foundation)     | ✅ enforced | `tools/check-zoneless.mjs` (target `check-zoneless`, in CI) — measuri… | `tools/check-zoneless.fixtures/` — doctored inputs, one per way of di… |
+| [`req-api-signals`](requirements/api.md#req-api-signals)           | 🟡 partial  | `libs/components/button/src/button.spec.ts`, `libs/components/checkbo… | none — deliberately: a wrong transform shows up as a wrong type in th… |
+| [`req-api-attributes`](requirements/api.md#req-api-attributes)     | 🟡 partial  | `apps/sandbox-e2e/src/states.spec.ts` — the cross-cutting states view… | none — deliberately: a selector matching nothing yields an empty loca… |
+| [`req-api-config`](requirements/api.md#req-api-config)             | 🟡 partial  | `libs/components/button/src/button.spec.ts` — the default `size` from… | none — deliberately: the test compares two **different** values, so i… |
+| [`req-api-signal-forms`](requirements/api.md#req-api-signal-forms) | ✅ enforced | `libs/components/field/src/field-controls.spec.ts`, `apps/sandbox-e2e… | the tests start from a **non-empty** initial value — with an empty mo… |
+| [`req-api-container`](requirements/api.md#req-api-container)       | 🟡 partial  | `libs/components/radio/src/radio.spec.ts`                              | none — deliberately: the violation would be a second `FormValueContro… |
+| [`req-api-wrapper`](requirements/api.md#req-api-wrapper)           | ✅ enforced | `libs/components/field/src/field.spec.ts`, `apps/sandbox-e2e/src/fiel… | `field-hitarea.spec.ts` — a cursor map over a grid of points (`elemen… |
+| [`req-api-no-wrapper`](requirements/api.md#req-api-no-wrapper)     | 🟡 partial  | `libs/components/field/src/field-controls.spec.ts` — every control is… | none — deliberately: the standalone mode is **the default**, so its f… |
+| [`req-api-frame`](requirements/api.md#req-api-frame)               | ✅ enforced | `apps/sandbox-e2e/src/field.spec.ts`, `req-a11y-touch`                 | the touch-target test caught the regression described in `lesson-25` … |
+| [`req-api-native-input`](requirements/api.md#req-api-native-input) | 🟡 partial  | `libs/components/field/src/field-controls.spec.ts`                     | none — deliberately: swapping `<input>` for an element of our own kno… |
+| [`req-api-platform`](requirements/api.md#req-api-platform)         | 🟡 partial  | `apps/sandbox-e2e/src/radio.spec.ts` — keyboard navigation             | none — deliberately: a navigation test has no mode in which it passes… |
+| [`req-api-number`](requirements/api.md#req-api-number)             | ⛔ gap      | `libs/components/field/src/number.spec.ts`, `apps/sandbox-e2e/src/num… | none — gap: property tests for the parser (`parse(format(n)) === n` f… |
+| [`req-api-generic`](requirements/api.md#req-api-generic)           | ✅ enforced | `libs/components/select/src/select.spec.ts`, the `typecheck` target o… | the probe from `lesson-37` — five deliberately contradictory bindings… |
+| [`req-api-parts`](requirements/api.md#req-api-parts)               | ✅ enforced | `tools/check-parts.mjs` (target `check-parts` in the root project, in… | `tools/check-parts.fixtures/` — twenty-one inputs, each rejected on i… |
+| [`req-api-parts-unique`](requirements/api.md#req-api-parts-unique) | ✅ enforced | `apps/sandbox-e2e/src/radio.spec.ts`, `apps/sandbox-e2e/src/field.spe… | the collision in `lesson-15` and `lesson-24` is a documented run in w… |
+| [`req-api-templates`](requirements/api.md#req-api-templates)       | ⛔ gap      | none — gap: projection works (the wrapper's slots), but **`TemplateRe… | none — gap: an option template supplied by the consumer and never use… |
+| [`req-api-icons`](requirements/api.md#req-api-icons)               | ⛔ gap      | none — gap: today every icon is **written into the template** as SVG … | none — gap: an icon override through `PCT_ICONS` that does not reach … |
+| [`req-api-icons-custom`](requirements/api.md#req-api-icons-custom) | 🟡 partial  | `libs/components/check-package.mjs` — the absence of icon files in th… | none — deliberately: the violation here is **adding** something, not … |
+| [`req-api-texts`](requirements/api.md#req-api-texts)               | ✅ enforced | `tools/check-texts.mjs` (target `check-texts`) — six points: a string… | `tools/check-texts.fixtures/` — 29 doctored inputs, each rejected on … |
+| [`req-api-overlay`](requirements/api.md#req-api-overlay)           | ✅ enforced | `apps/sandbox-e2e/src/select.spec.ts` — measuring the panel's width a… | the measurement from `lesson-35` (a 301 px field ⇒ a 275 px panel, of… |
+| [`req-api-size`](requirements/api.md#req-api-size)                 | ✅ enforced | `apps/sandbox-e2e/src/size.spec.ts` — measured in the browser          | the test checks that the heights are equal *_and what that height is_… |
+| [`req-api-animations`](requirements/api.md#req-api-animations)     | ⛔ gap      | none — gap: the ban is kept, but **nothing watches it** — the only th… | none — gap: an `@angular/animations` import added to the package has … |
 
-## projekt
+## project
 
-| wymaganie                                                                      | stan           | bramka                                                                 | kontrola                                                               |
-| ------------------------------------------------------------------------------ | -------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| [`req-project-monorepo`](requirements/project.md#req-project-monorepo)         | 🟡 częściowo   | `.github/workflows/ci.yml` — cały przebieg idzie przez `nx affected`   | brak — świadomie: awaria jest natychmiastowa i całkowita (CI nie ma c… |
-| [`req-project-latest`](requirements/project.md#req-project-latest)             | 🟡 częściowo   | brak — świadomie: to reguła procesu, nie właściwość artefaktu; nie ma… | nie dotyczy                                                            |
-| [`req-project-dependencies`](requirements/project.md#req-project-dependencies) | ⛔ luka        | brak — luka: kontrola listy `dependencies` / `peerDependencies` w spa… | brak — luka: manifest z dopisaną zależnością spoza listy musi bramkę … |
-| [`req-project-apps`](requirements/project.md#req-project-apps)                 | ⛔ luka        | brak — luka: `apps/docs` nie istnieje, więc bramka opisywałaby stan, … | brak — luka: patrz wyżej                                               |
-| [`req-project-package`](requirements/project.md#req-project-package)           | ✅ egzekwowane | `libs/components/check-package.mjs` (target `check-package`, w CI) — … | `tools/check-package.fixtures/` — spreparowany pakiet na każdy punkt … |
-| [`req-project-entrypoints`](requirements/project.md#req-project-entrypoints)   | ✅ egzekwowane | `libs/components/check-package.mjs` — mapa `exports` w spakowanym man… | `tools/check-package.fixtures/skorka-poza-exports/` — plik obecny w p… |
-| [`req-project-core`](requirements/project.md#req-project-core)                 | 🟡 częściowo   | `libs/components/field/src/field-controls.spec.ts` — wspólna logika k… | brak — świadomie: naruszeniem jest **duplikacja**, a nie awaria; łapi… |
-| [`req-project-tokens-lib`](requirements/project.md#req-project-tokens-lib)     | ✅ egzekwowane | `libs/components/project.json` → `implicitDependencies: ["tokens"]` +… | `tools/check-package.fixtures/brak-skorki/` — pakiet bez `themes/pct.… |
-| [`req-project-tree-shaking`](requirements/project.md#req-project-tree-shaking) | ✅ egzekwowane | `tools/check-bundle.mjs` (target `check-bundle` w `components`, w CI)… | `tools/check-bundle.fixtures/` — 22 spreparowane wejścia, każde odrzu… |
-| [`req-project-files`](requirements/project.md#req-project-files)               | ⛔ luka        | brak — luka: kontrola układu katalogu entrypointu (skrypt w duchu `ch… | brak — luka: entrypoint z szablonem inline musi bramkę zapalić         |
-| [`req-project-prefix`](requirements/project.md#req-project-prefix)             | 🟡 częściowo   | `libs/components/eslint.config.mjs` — reguły `@angular-eslint/compone… | brak — świadomie: reguła ESLint zapala przy pierwszym naruszeniu i ni… |
-| [`req-project-language`](requirements/project.md#req-project-language)         | ⛔ luka        | brak — luka: `tools/check-language.mjs` — dwa pomiary o różnym zasięg… | brak — luka: polski komentarz w pliku spoza rejestru musi zapalić; wp… |
-| [`req-project-concise`](requirements/project.md#req-project-concise)           | ⛔ luka        | brak — luka: budżet objętości prozy per plik, snapshot z tolerancją *… | brak — luka: plik z dopisanym akapitem ponad tolerancję musi zapalić;… |
-| [`req-project-angular`](requirements/project.md#req-project-angular)           | ✅ egzekwowane | `tools/check-zoneless.mjs` (target `check-zoneless`, w CI) — trzy pun… | `tools/check-zoneless.fixtures/` — spreparowane wejścia, po jednym na… |
-| [`req-project-ssr`](requirements/project.md#req-project-ssr)                   | ✅ egzekwowane | `apps/sandbox-e2e/src/hydration.spec.ts` — sprawdzenie siedzi w pomoc… | `hydration.spec.ts › „bramka faktycznie wykrywa błąd hydracji (kontro… |
-| [`req-project-layout`](requirements/project.md#req-project-layout)             | ⛔ luka        | brak — luka: wynika z `req-project-apps`; domknie się razem z nim      | brak — luka: patrz wyżej                                               |
+| requirement                                                                    | state       | gate                                                                   | control                                                                |
+| ------------------------------------------------------------------------------ | ----------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| [`req-project-monorepo`](requirements/project.md#req-project-monorepo)         | 🟡 partial  | `.github/workflows/ci.yml` — the entire run goes through `nx affected` | none — deliberately: the failure is immediate and total (CI has nothi… |
+| [`req-project-latest`](requirements/project.md#req-project-latest)             | 🟡 partial  | none — deliberately: this is a process rule, not a property of the ar… | not applicable                                                         |
+| [`req-project-dependencies`](requirements/project.md#req-project-dependencies) | ⛔ gap      | none — gap: a check of the `dependencies` / `peerDependencies` lists … | none — gap: a manifest with a dependency from outside the list added … |
+| [`req-project-apps`](requirements/project.md#req-project-apps)                 | ⛔ gap      | none — gap: `apps/docs` does not exist, so a gate would describe a st… | none — gap: the same as for the gate above                             |
+| [`req-project-package`](requirements/project.md#req-project-package)           | ✅ enforced | `libs/components/check-package.mjs` (target `check-package`, in CI) —… | `tools/check-package.fixtures/` — a doctored package for every point … |
+| [`req-project-entrypoints`](requirements/project.md#req-project-entrypoints)   | ✅ enforced | `libs/components/check-package.mjs` — the `exports` map in the packed… | `tools/check-package.fixtures/skorka-poza-exports/` — a file present … |
+| [`req-project-core`](requirements/project.md#req-project-core)                 | 🟡 partial  | `libs/components/field/src/field-controls.spec.ts` — the shared messa… | none — deliberately: the violation here is **duplication**, not a fai… |
+| [`req-project-tokens-lib`](requirements/project.md#req-project-tokens-lib)     | ✅ enforced | `libs/components/project.json` → `implicitDependencies: ["tokens"]` +… | `tools/check-package.fixtures/brak-skorki/` — a package without `them… |
+| [`req-project-tree-shaking`](requirements/project.md#req-project-tree-shaking) | ✅ enforced | `tools/check-bundle.mjs` (target `check-bundle` in `components`, in C… | `tools/check-bundle.fixtures/` — 22 doctored inputs, each rejected on… |
+| [`req-project-files`](requirements/project.md#req-project-files)               | ⛔ gap      | none — gap: a check of the entrypoint directory layout (a script in t… | none — gap: an entrypoint with an inline template has to fire the gate |
+| [`req-project-prefix`](requirements/project.md#req-project-prefix)             | 🟡 partial  | `libs/components/eslint.config.mjs` — the `@angular-eslint/component-… | none — deliberately: an ESLint rule fires on the first violation and … |
+| [`req-project-language`](requirements/project.md#req-project-language)         | ⛔ gap      | none — gap: `tools/check-language.mjs` — two measurements with differ… | none — gap: a Polish comment in a file outside the register has to fi… |
+| [`req-project-concise`](requirements/project.md#req-project-concise)           | ⛔ gap      | none — gap: a prose volume budget per file, a snapshot with **two-sid… | none — gap: a file with a paragraph added beyond the tolerance has to… |
+| [`req-project-angular`](requirements/project.md#req-project-angular)           | ✅ enforced | `tools/check-zoneless.mjs` (target `check-zoneless`, in CI) — three p… | `tools/check-zoneless.fixtures/` — doctored inputs, one per way for z… |
+| [`req-project-ssr`](requirements/project.md#req-project-ssr)                   | ✅ enforced | `apps/sandbox-e2e/src/hydration.spec.ts` — the check sits in the `vis… | `hydration.spec.ts › „bramka faktycznie wykrywa błąd hydracji (kontro… |
+| [`req-project-layout`](requirements/project.md#req-project-layout)             | ⛔ gap      | none — gap: follows from `req-project-apps`; it will close together w… | none — gap: the same as for the gate above                             |
 
-## jakość
+## quality
 
-| wymaganie                                                                              | stan           | bramka                                                                 | kontrola                                                               |
-| -------------------------------------------------------------------------------------- | -------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| [`req-quality-negative-control`](requirements/quality.md#req-quality-negative-control) | ✅ egzekwowane | `tools/check-docs.mjs` — pole **Kontrola** jest wymagane przy każdym … | `tools/check-docs.fixtures/` — wymaganie z bramką, ale bez kontroli, … |
-| [`req-quality-registry`](requirements/quality.md#req-quality-registry)                 | ✅ egzekwowane | `tools/check-docs.mjs` (target `check-docs`, w CI) — sześć kontroli o… | `tools/check-docs.fixtures/` — zestaw celowo wadliwych wymagań (bez b… |
-| [`req-quality-typecheck`](requirements/quality.md#req-quality-typecheck)               | ✅ egzekwowane | `tools/check-typecheck.mjs` (target `check-typecheck`, w CI) — cztery… | `tools/check-typecheck.fixtures/` — jedenaście spreparowanych wejść, … |
-| [`req-quality-unit`](requirements/quality.md#req-quality-unit)                         | ✅ egzekwowane | trzyczęściowa, bo „testy biegną", „ile ich przechodzi" i „ile wad zau… | `tools/check-mutation.fixtures/` — 37 spreparowanych wejść na udawane… |
-| [`req-quality-coverage`](requirements/quality.md#req-quality-coverage)                 | ✅ egzekwowane | dwuczęściowa, bo procent i jego mianownik psują się osobno. `libs/com… | `tools/check-coverage.fixtures/` — siedem spreparowanych wejść, po je… |
-| [`req-quality-e2e`](requirements/quality.md#req-quality-e2e)                           | ✅ egzekwowane | `apps/sandbox-e2e/src/visual.spec.ts` i pozostałe specyfikacje e2e     | progi są **dwa** i oba wynikają z pomiaru. Liczba pikseli jest bezwzg… |
-| [`req-quality-hydration`](requirements/quality.md#req-quality-hydration)               | ✅ egzekwowane | `apps/sandbox-e2e/src/hydration.spec.ts` + pomocnik `visit()` w `apps… | `hydration.spec.ts › „bramka faktycznie wykrywa błąd hydracji (kontro… |
-| [`req-quality-package`](requirements/quality.md#req-quality-package)                   | ✅ egzekwowane | `libs/components/check-package.mjs` (target `check-package`, w CI)     | `tools/check-package.fixtures/` — siedem spreparowanych pakietów, po … |
-| [`req-quality-consumer`](requirements/quality.md#req-quality-consumer)                 | ✅ egzekwowane | `tools/check-consumer.mjs` (target `check-consumer`, w CI) — siedem p… | `tools/check-consumer.fixtures/` — 28 spreparowanych wejść, każde odr… |
-| [`req-quality-browsers`](requirements/quality.md#req-quality-browsers)                 | ✅ egzekwowane | `apps/sandbox-e2e/playwright.config.mts` — trzy projekty (chromium, f… | `tools/check-browsers.fixtures/` — 25 spreparowanych wejść, każde odr… |
-| [`req-quality-views`](requirements/quality.md#req-quality-views)                       | ✅ egzekwowane | `apps/sandbox-e2e/src/a11y.spec.ts`, `hydration.spec.ts` — obie iteru… | `apps/sandbox/src/app/app.spec.ts` — rejestr widoków wobec tras        |
-| [`req-quality-card`](requirements/quality.md#req-quality-card)                         | ✅ egzekwowane | `apps/sandbox/src/app/ui/demo.spec.ts`; `tools/check-docs.mjs` — każd… | `tools/check-docs.fixtures/` — karta z nieistniejącym identyfikatorem… |
-| [`req-quality-stage`](requirements/quality.md#req-quality-stage)                       | ✅ egzekwowane | `apps/sandbox-e2e/src/theme.spec.ts`, `apps/sandbox-e2e/src/shell.spe… | `preferences.spec.ts › „bez preferencji ciemnej :root zostaje jasny (… |
-| [`req-quality-prefix`](requirements/quality.md#req-quality-prefix)                     | 🟡 częściowo   | `apps/sandbox/eslint.config.mjs` — reguły selektorów z prefiksami      | brak — świadomie: reguła ESLint nie ma trybu cichego przejścia         |
+| requirement                                                                            | state       | gate                                                                   | control                                                                |
+| -------------------------------------------------------------------------------------- | ----------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| [`req-quality-negative-control`](requirements/quality.md#req-quality-negative-control) | ✅ enforced | `tools/check-docs.mjs` — the **Control** field is required on every r… | `tools/check-docs.fixtures/` — a requirement with a gate but no contr… |
+| [`req-quality-registry`](requirements/quality.md#req-quality-registry)                 | ✅ enforced | `tools/check-docs.mjs` (target `check-docs`, in CI) — the six checks … | `tools/check-docs.fixtures/` — a set of deliberately broken requireme… |
+| [`req-quality-typecheck`](requirements/quality.md#req-quality-typecheck)               | ✅ enforced | `tools/check-typecheck.mjs` (target `check-typecheck`, in CI) — four … | `tools/check-typecheck.fixtures/` — eleven doctored inputs, each reje… |
+| [`req-quality-unit`](requirements/quality.md#req-quality-unit)                         | ✅ enforced | in three parts, because „the tests run", „how many pass" and „how man… | `tools/check-mutation.fixtures/` — 37 doctored inputs on a fake libra… |
+| [`req-quality-coverage`](requirements/quality.md#req-quality-coverage)                 | ✅ enforced | in two parts, because the percentage and its denominator break separa… | `tools/check-coverage.fixtures/` — seven doctored inputs, one per way… |
+| [`req-quality-e2e`](requirements/quality.md#req-quality-e2e)                           | ✅ enforced | `apps/sandbox-e2e/src/visual.spec.ts` and the remaining e2e specs      | there are **two** thresholds and both come from measurement. The pixe… |
+| [`req-quality-hydration`](requirements/quality.md#req-quality-hydration)               | ✅ enforced | `apps/sandbox-e2e/src/hydration.spec.ts` + the `visit()` helper in `a… | `hydration.spec.ts › „bramka faktycznie wykrywa błąd hydracji (kontro… |
+| [`req-quality-package`](requirements/quality.md#req-quality-package)                   | ✅ enforced | `libs/components/check-package.mjs` (target `check-package`, in CI)    | `tools/check-package.fixtures/` — seven doctored packages, one per po… |
+| [`req-quality-consumer`](requirements/quality.md#req-quality-consumer)                 | ✅ enforced | `tools/check-consumer.mjs` (target `check-consumer`, in CI) — seven p… | `tools/check-consumer.fixtures/` — 28 doctored inputs, each rejected … |
+| [`req-quality-browsers`](requirements/quality.md#req-quality-browsers)                 | ✅ enforced | `apps/sandbox-e2e/playwright.config.mts` — three projects (chromium, … | `tools/check-browsers.fixtures/` — 25 doctored inputs, each rejected … |
+| [`req-quality-views`](requirements/quality.md#req-quality-views)                       | ✅ enforced | `apps/sandbox-e2e/src/a11y.spec.ts`, `hydration.spec.ts` — both itera… | `apps/sandbox/src/app/app.spec.ts` — the view registry against the ro… |
+| [`req-quality-card`](requirements/quality.md#req-quality-card)                         | ✅ enforced | `apps/sandbox/src/app/ui/demo.spec.ts`; `tools/check-docs.mjs` — ever… | `tools/check-docs.fixtures/` — a card with a non-existent identifier … |
+| [`req-quality-stage`](requirements/quality.md#req-quality-stage)                       | ✅ enforced | `apps/sandbox-e2e/src/theme.spec.ts`, `apps/sandbox-e2e/src/shell.spe… | `preferences.spec.ts › „bez preferencji ciemnej :root zostaje jasny (… |
+| [`req-quality-prefix`](requirements/quality.md#req-quality-prefix)                     | 🟡 partial  | `apps/sandbox/eslint.config.mjs` — selector rules with the prefixes    | none — deliberately: an ESLint rule has no quiet-pass mode             |
 
-## wydanie
+## release
 
-| wymaganie                                                              | stan           | bramka                                                                 | kontrola                                                               |
-| ---------------------------------------------------------------------- | -------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| [`req-release-semver`](requirements/release.md#req-release-semver)     | ✅ egzekwowane | `libs/components/check-package.mjs` (punkt 4: `PCT_VERSION` == `versi… | `stamp-version` **nie jest** zależnością `build` — gdyby był, artefak… |
-| [`req-release-ng-add`](requirements/release.md#req-release-ng-add)     | ✅ egzekwowane | `libs/components/check-package.mjs` (punkt 5) — kolekcje są w pakieci… | `tools/check-package.fixtures/brak-schematica/` — pakiet, w którym ko… |
-| [`req-release-metadata`](requirements/release.md#req-release-metadata) | ✅ egzekwowane | `libs/components/check-package.mjs` (punkt 6) — dwie różne surowości,… | `tools/check-package.fixtures/brak-repository/` — manifest bez `repos… |
-| [`req-release-support`](requirements/release.md#req-release-support)   | ⛔ luka        | brak — luka: dokumentu nie ma. Kolekcja migracji istnieje (`req-relea… | brak — luka: commit `feat!:` bez wpisu w kolekcji migracji musi zapal… |
+| requirement                                                            | state       | gate                                                                   | control                                                                |
+| ---------------------------------------------------------------------- | ----------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| [`req-release-semver`](requirements/release.md#req-release-semver)     | ✅ enforced | `libs/components/check-package.mjs` (point 4: `PCT_VERSION` == `versi… | `stamp-version` is **not** a dependency of `build` — if it were, the … |
+| [`req-release-ng-add`](requirements/release.md#req-release-ng-add)     | ✅ enforced | `libs/components/check-package.mjs` (point 5) — the collections are i… | `tools/check-package.fixtures/brak-schematica/` — a package whose col… |
+| [`req-release-metadata`](requirements/release.md#req-release-metadata) | ✅ enforced | `libs/components/check-package.mjs` (point 6) — two different severit… | `tools/check-package.fixtures/brak-repository/` — a manifest without … |
+| [`req-release-support`](requirements/release.md#req-release-support)   | ⛔ gap      | none — gap: the document does not exist. The migration collection doe… | none — gap: a `feat!:` commit with no entry in the migration collecti… |
 
-## tokeny
+## tokens
 
-| wymaganie                                                                 | stan           | bramka                                                                 | kontrola                                                               |
-| ------------------------------------------------------------------------- | -------------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| [`req-token-dtcg`](requirements/tokens.md#req-token-dtcg)                 | 🟡 częściowo   | `libs/tokens/build.mjs` — build nie ruszy przy niepoprawnym kształcie… | brak — świadomie: błąd parsowania jest natychmiastowy i głośny         |
-| [`req-token-artifacts`](requirements/tokens.md#req-token-artifacts)       | ✅ egzekwowane | target `typecheck` projektu `sandbox-e2e` — pomocniki `tokenOf` / `ro… | podmiana jednej nazwy na błędną daje 6 błędów typu — przebieg udokume… |
-| [`req-token-tiers`](requirements/tokens.md#req-token-tiers)               | ✅ egzekwowane | `tools/check-tokens.mjs` (target `check-tokens` w projekcie roota, w … | `tools/check-tokens.fixtures/` — po jednym wejściu na regułę: `kolor-… |
-| [`req-token-references`](requirements/tokens.md#req-token-references)     | ✅ egzekwowane | `apps/sandbox-e2e/src/theme.spec.ts` — nadpisanie tokenu semantyczneg… | test porównuje token komponentowy w `:root` **i** w scope — sam token… |
-| [`req-token-closure`](requirements/tokens.md#req-token-closure)           | ✅ egzekwowane | `apps/sandbox-e2e/src/theme.spec.ts` — token **komponentowy** porówny… | przebieg z `lesson-17`: przed poprawką `--pct-surface` był poprawnie … |
-| [`req-token-names`](requirements/tokens.md#req-token-names)               | ✅ egzekwowane | `tools/check-tokens.mjs` (target `check-tokens` w projekcie roota, w … | `tools/check-tokens.fixtures/` — jedenaście wejść, każde odrzucane na… |
-| [`req-token-text-pairs`](requirements/tokens.md#req-token-text-pairs)     | ✅ egzekwowane | `tools/check-tokens.mjs` (target `check-tokens` w projekcie roota, w … | `tools/check-tokens.fixtures/` — `kolor-niezmierzony` (arkusz maluje … |
-| [`req-token-contrast`](requirements/tokens.md#req-token-contrast)         | ✅ egzekwowane | `libs/tokens/build.mjs` (target `tokens:build`, w CI przez `^build`);… | przebieg z `lesson-6`: pierwotny guard przepuścił `disabled` o realny… |
-| [`req-token-no-opacity`](requirements/tokens.md#req-token-no-opacity)     | ✅ egzekwowane | `tools/check-styles.mjs` (target `check-styles`, w CI) — punkt 6: `op… | `tools/check-styles.fixtures/opacity-czesciowa/` (stan wyrażony przez… |
-| [`req-token-css`](requirements/tokens.md#req-token-css)                   | ✅ egzekwowane | `apps/sandbox-e2e/src/theme.spec.ts`, `libs/components/check-package.… | `tools/check-package.fixtures/token-bez-deklaracji/` — pakiet, w któr… |
-| [`req-token-scss`](requirements/tokens.md#req-token-scss)                 | 🟡 częściowo   | brak — świadomie: rozszerzenie pliku jest widoczne w review, a arkusz… | nie dotyczy ---                                                        |
-| [`req-token-override`](requirements/tokens.md#req-token-override)         | ✅ egzekwowane | `apps/sandbox-e2e/src/theme.spec.ts`                                   | jak w `req-token-closure` — porównanie tokenu komponentowego, nie sem… |
-| [`req-token-scoped`](requirements/tokens.md#req-token-scoped)             | ✅ egzekwowane | `apps/sandbox-e2e/src/theme.spec.ts`, `apps/sandbox-e2e/src/a11y.spec… | patrz `req-token-closure`                                              |
-| [`req-token-directive`](requirements/tokens.md#req-token-directive)       | ⛔ luka        | brak — luka: dyrektywy nie ma, motyw ustawia się ręcznym `data-theme`  | brak — luka: motyw ustawiony dyrektywą i motyw ustawiony atrybutem mu… |
-| [`req-token-system`](requirements/tokens.md#req-token-system)             | ✅ egzekwowane | `apps/sandbox-e2e/src/preferences.spec.ts`                             | `preferences.spec.ts › „bez preferencji ciemnej :root zostaje jasny (… |
-| [`req-token-skin`](requirements/tokens.md#req-token-skin)                 | ✅ egzekwowane | `libs/tokens/build.mjs` — ale **wyłącznie dla skórki wbudowanej**      | patrz `req-token-contrast`                                             |
-| [`req-token-distribution`](requirements/tokens.md#req-token-distribution) | ✅ egzekwowane | `libs/components/check-package.mjs` — punkty 1 i 2: skórka jest w pak… | `tools/check-package.fixtures/brak-skorki/` — pakiet bez skórki musi … |
-| [`req-token-density`](requirements/tokens.md#req-token-density)           | ⛔ luka        | brak — luka: w źródłach DTCG nie ma **ani jednego** tokenu gęstości    | brak — luka: układ z tokenem gęstości `compact` musi przejść próg obs… |
-| [`req-token-logical`](requirements/tokens.md#req-token-logical)           | ✅ egzekwowane | `tools/check-styles.mjs` (target `check-styles`, w CI) — punkt 5: zak… | `tools/check-styles.fixtures/padding-fizyczny/` (nazwa właściwości) i… |
+| requirement                                                               | state       | gate                                                                   | control                                                                |
+| ------------------------------------------------------------------------- | ----------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| [`req-token-dtcg`](requirements/tokens.md#req-token-dtcg)                 | 🟡 partial  | `libs/tokens/build.mjs` — the build will not start on a malformed sou… | none — deliberately: a parse error is immediate and loud               |
+| [`req-token-artifacts`](requirements/tokens.md#req-token-artifacts)       | ✅ enforced | the `typecheck` target of the `sandbox-e2e` project — the `tokenOf` /… | swapping one name for a wrong one produces 6 type errors — a run docu… |
+| [`req-token-tiers`](requirements/tokens.md#req-token-tiers)               | ✅ enforced | `tools/check-tokens.mjs` (target `check-tokens` in the root project, … | `tools/check-tokens.fixtures/` — one input per rule: `kolor-pod-seman… |
+| [`req-token-references`](requirements/tokens.md#req-token-references)     | ✅ enforced | `apps/sandbox-e2e/src/theme.spec.ts` — overriding a semantic token ch… | the test compares the component token in `:root` **and** in a scope —… |
+| [`req-token-closure`](requirements/tokens.md#req-token-closure)           | ✅ enforced | `apps/sandbox-e2e/src/theme.spec.ts` — a **component** token compared… | the run from `lesson-17`: before the fix `--pct-surface` was correctl… |
+| [`req-token-names`](requirements/tokens.md#req-token-names)               | ✅ enforced | `tools/check-tokens.mjs` (target `check-tokens` in the root project, … | `tools/check-tokens.fixtures/` — eleven inputs, each rejected on its … |
+| [`req-token-text-pairs`](requirements/tokens.md#req-token-text-pairs)     | ✅ enforced | `tools/check-tokens.mjs` (target `check-tokens` in the root project, … | `tools/check-tokens.fixtures/` — `kolor-niezmierzony` (a stylesheet p… |
+| [`req-token-contrast`](requirements/tokens.md#req-token-contrast)         | ✅ enforced | `libs/tokens/build.mjs` (target `tokens:build`, in CI through `^build… | the run from `lesson-6`: the original guard let `disabled` through at… |
+| [`req-token-no-opacity`](requirements/tokens.md#req-token-no-opacity)     | ✅ enforced | `tools/check-styles.mjs` (target `check-styles`, in CI) — point 6: `o… | `tools/check-styles.fixtures/opacity-czesciowa/` (a state expressed t… |
+| [`req-token-css`](requirements/tokens.md#req-token-css)                   | ✅ enforced | `apps/sandbox-e2e/src/theme.spec.ts`, `libs/components/check-package.… | `tools/check-package.fixtures/token-bez-deklaracji/` — a package in w… |
+| [`req-token-scss`](requirements/tokens.md#req-token-scss)                 | 🟡 partial  | none — deliberately: the file extension is visible in review, and a s… | not applicable ---                                                     |
+| [`req-token-override`](requirements/tokens.md#req-token-override)         | ✅ enforced | `apps/sandbox-e2e/src/theme.spec.ts`                                   | as in `req-token-closure` — comparing the component token, not the se… |
+| [`req-token-scoped`](requirements/tokens.md#req-token-scoped)             | ✅ enforced | `apps/sandbox-e2e/src/theme.spec.ts`, `apps/sandbox-e2e/src/a11y.spec… | see `req-token-closure`                                                |
+| [`req-token-directive`](requirements/tokens.md#req-token-directive)       | ⛔ gap      | none — gap: the directive does not exist, the theme is set with a han… | none — gap: a theme set by the directive and a theme set by the attri… |
+| [`req-token-system`](requirements/tokens.md#req-token-system)             | ✅ enforced | `apps/sandbox-e2e/src/preferences.spec.ts`                             | `preferences.spec.ts › „bez preferencji ciemnej :root zostaje jasny (… |
+| [`req-token-skin`](requirements/tokens.md#req-token-skin)                 | ✅ enforced | `libs/tokens/build.mjs` — but **only for the built-in skin**           | see `req-token-contrast`                                               |
+| [`req-token-distribution`](requirements/tokens.md#req-token-distribution) | ✅ enforced | `libs/components/check-package.mjs` — points 1 and 2: the skin is in … | `tools/check-package.fixtures/brak-skorki/` — a package with no skin … |
+| [`req-token-density`](requirements/tokens.md#req-token-density)           | ⛔ gap      | none — gap: the DTCG sources contain **not one** density token         | none — gap: a layout with the `compact` density token must pass the t… |
+| [`req-token-logical`](requirements/tokens.md#req-token-logical)           | ✅ enforced | `tools/check-styles.mjs` (target `check-styles`, in CI) — point 5: a … | `tools/check-styles.fixtures/padding-fizyczny/` (a property name) and… |
 
-## Indeks odwrotny — lekcja → wymagania
+## Reverse index — lesson → requirements
 
-Która lekcja karmi które wymaganie. Generowane z pól **Lekcje**.
+Which lesson feeds which requirement. Generated from the **Lessons** fields.
 
-| lekcja                              | wymagania                                                                                                                                                         |
+| lesson                              | requirements                                                                                                                                                      |
 | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`lesson-1`](lessons.md#lesson-1)   | `req-project-layout`                                                                                                                                              |
 | [`lesson-2`](lessons.md#lesson-2)   | `req-project-layout`                                                                                                                                              |
@@ -201,19 +201,19 @@ Która lekcja karmi które wymaganie. Generowane z pól **Lekcje**.
 | [`lesson-41`](lessons.md#lesson-41) | `req-quality-negative-control`, `req-quality-package`, `req-release-semver`                                                                                       |
 | [`lesson-42`](lessons.md#lesson-42) | `req-quality-typecheck`, `req-token-artifacts`                                                                                                                    |
 | [`lesson-43`](lessons.md#lesson-43) | `req-quality-card`, `req-token-artifacts`                                                                                                                         |
-| [`lesson-44`](lessons.md#lesson-44) | — _(nie cytowana)_                                                                                                                                                |
+| [`lesson-44`](lessons.md#lesson-44) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-45`](lessons.md#lesson-45) | `req-quality-coverage`                                                                                                                                            |
 | [`lesson-46`](lessons.md#lesson-46) | `req-api-foundation`                                                                                                                                              |
 | [`lesson-47`](lessons.md#lesson-47) | `req-quality-typecheck`                                                                                                                                           |
 | [`lesson-48`](lessons.md#lesson-48) | `req-token-logical`                                                                                                                                               |
-| [`lesson-49`](lessons.md#lesson-49) | — _(nie cytowana)_                                                                                                                                                |
-| [`lesson-50`](lessons.md#lesson-50) | — _(nie cytowana)_                                                                                                                                                |
+| [`lesson-49`](lessons.md#lesson-49) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-50`](lessons.md#lesson-50) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-51`](lessons.md#lesson-51) | `req-project-tree-shaking`                                                                                                                                        |
-| [`lesson-52`](lessons.md#lesson-52) | — _(nie cytowana)_                                                                                                                                                |
-| [`lesson-53`](lessons.md#lesson-53) | — _(nie cytowana)_                                                                                                                                                |
+| [`lesson-52`](lessons.md#lesson-52) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-53`](lessons.md#lesson-53) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-54`](lessons.md#lesson-54) | `req-api-texts`                                                                                                                                                   |
 | [`lesson-55`](lessons.md#lesson-55) | `req-quality-package`, `req-quality-consumer`, `req-release-ng-add`                                                                                               |
 | [`lesson-56`](lessons.md#lesson-56) | `req-quality-browsers`                                                                                                                                            |
 | [`lesson-57`](lessons.md#lesson-57) | `req-quality-unit`                                                                                                                                                |
 | [`lesson-58`](lessons.md#lesson-58) | `req-quality-unit`                                                                                                                                                |
-| [`lesson-59`](lessons.md#lesson-59) | — _(nie cytowana)_                                                                                                                                                |
+| [`lesson-59`](lessons.md#lesson-59) | — _(not cited)_                                                                                                                                                   |
