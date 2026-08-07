@@ -46,7 +46,7 @@ Punkt 4 jest jedynym twardym dowodem — pierwsze trzy bez niego są deklaracją
 
 ## Stan
 
-Migawka z **2026-08-06**, `node tools/check-docs.mjs`:
+Migawka z **2026-08-07**, `node tools/check-docs.mjs`:
 
 | miara                                 | wartość |
 | ------------------------------------- | ------: |
@@ -73,11 +73,12 @@ H  jeden język, bez wody      angielski + kompresja; część publiczna siedzi 
 ```
 
 **Faza A jest zamknięta**, a najbliższym kamieniem milowym nie jest wydanie, tylko
-**pierwszy push do publicznego repozytorium** (B2). Przed nim została **H4** (`docs/`) — bo
-push jest premierą, a nie kopią zapasową. **B1, H1, H2 i H3 są zrobione**: `LICENSE` ma bramkę
-po obu stronach `npm pack`, identyfikatory i strona tytułowa są w docelowym języku, a budżet
-kompresji jest rozstrzygnięty ([0017](decisions/0017-one-home-per-fact.md)), więc H4 idzie
-tłumaczeniem i skracaniem naraz. Reszta B (B3, B4, B8) wiąże dopiero przy publikacji na npm.
+**pierwszy push do publicznego repozytorium** (B2). Przed nim została **końcówka H4** —
+dwa pliki z czterdziestu (`plan.md` i `review.md`), bo push jest premierą, a nie kopią
+zapasową. **B1, H1, H2 i H3 są zrobione**: `LICENSE` ma bramkę po obu stronach `npm pack`,
+identyfikatory i strona tytułowa są w docelowym języku, a budżet kompresji jest rozstrzygnięty
+([0017](decisions/0017-one-home-per-fact.md)), więc H4 idzie tłumaczeniem i skracaniem naraz.
+Reszta B (B3, B4, B8) wiąże dopiero przy publikacji na npm.
 Równolegle: F1 jest odblokowane (A3 i A4 dały mu oba inwentarze do wyrenderowania),
 a C jest wypełniaczem.
 
@@ -674,7 +675,7 @@ Można prowadzić równolegle z A. Wiąże przy pierwszej publikacji — a wtedy
 
 Trzy z ośmiu zadań (**B3**, **B4**, **B8**) dotyczą języka. Stoi tu wyłącznie ta jego
 część, której **nie da się wydać po polsku**: tekst wchodzący do pakietu. Reszta
-repozytorium przechodzi na angielski w [sekcji H](#h-jeden-język-repozytorium) — nie
+repozytorium przechodzi na angielski w [sekcji H](#h-one-language-for-the-repository) — nie
 blokuje publikacji i jest o rząd wielkości większa.
 
 - [x] **B1 — `LICENSE` w repo** _(2026-08-06)_
@@ -1000,7 +1001,7 @@ Czekają na wyzwalacz zapisany w polu **Wiąże przy**. Nie są zapomniane — s
 
 ---
 
-## H. Jeden język repozytorium
+## H. One language for the repository
 
 Cel: **całe repozytorium po angielsku i bez lania wody** — dokumentacja, kod, komentarze,
 nazwy testów, komunikaty bramek i **identyfikatory**. Bez podziału na „robocze"
@@ -1014,7 +1015,7 @@ Rozstrzygnięte 2026-08-06, nie do ponownego otwierania:
 
 - **identyfikatory przechodzą razem z resztą** — `wym-` jest skrótem od „wymaganie",
   a repozytorium po angielsku z polskimi ID to rozjazd, którego ten plik pilnuje wszędzie
-  indziej. [Tabela przemianowań](README.md#planowane-przemianowanie-przestrzeni-id) jest
+  indziej. [Tabela przemianowań](README.md#id-space-migration-2026-08-06) jest
   zatwierdzona;
 - **kompresja idzie tym samym ruchem co tłumaczenie**, nie po nim — a jej celem jest
   `tools/` (~590 linii nagłówków), nie JSDoc i nie dokumentacja. Narzędziem jest **odsyłacz
@@ -1042,7 +1043,7 @@ Zmierzone 2026-08-06 (`git ls-files` + skan diakrytyków), wiersz `docs/` odświ
 | ------------------------------ | -------------------------------------------------------- | -------------------- |
 | powierzchnia publiczna pakietu | 24 pliki w `dist`, w tym komplet 8 `types/*.d.ts`        | wydaniu (B3/B4)      |
 | `README.md` repozytorium       | 251 linii, z polskimi napisami w przykładach kodu        | **pierwszym pushu**  |
-| dokumentacja `docs/`           | 40 plików, 7 590 linii                                   | **pierwszym pushu**  |
+| dokumentacja `docs/`           | 2 pliki z 40 po polsku (`plan.md`, `review.md`)          | **pierwszym pushu**  |
 | `AGENTS.md` i workflowy        | 35 linii + nazwa „Wydanie" i kroki widoczne w Actions    | **pierwszym pushu**  |
 | identyfikatory i ich cytowania | 82 + 59 nazw, 2 571 cytowań w 175 plikach                | —                    |
 | źródła `libs`                  | 39 plików, z tego 9 specyfikacji                         | —                    |
@@ -1058,7 +1059,7 @@ Zmierzone 2026-08-06 (`git ls-files` + skan diakrytyków), wiersz `docs/` odświ
     i katalogów: `wymagania/` → `requirements/`, `decyzje/` → `decisions/`,
     `komponenty/` → `components/`, `00-os.md` → `00-axis.md`, `lekcje.md` → `lessons.md`,
     `rejestr.md` → `registry.md`, `opis.md` → `overview.md` i 14 nazw decyzji.
-    [Tabela migracji](README.md#migracja-przestrzeni-id-2026-08-06) — pełne odwzorowanie
+    [Tabela migracji](README.md#id-space-migration-2026-08-06) — pełne odwzorowanie
   - `check-docs.mjs` przestawiony na nową przestrzeń, a **stara dopisana do odrzucanych**
     obok numerycznej z 2026-07-27. Wzorzec wymaga litery po myślniku, więc zdanie o samym
     prefiksie (`wym-*`, `wym-…`) nie jest cytowaniem — inaczej nie dałoby się opisać własnej
@@ -1114,22 +1115,27 @@ Zmierzone 2026-08-06 (`git ls-files` + skan diakrytyków), wiersz `docs/` odświ
   - kontrola: zielone `check-docs`, `check-browsers` (czyta `ci.yml`) i `check-typecheck`
     (czyta `tsconfig.root.json`); skan diakrytyków w korzeniu pusty. Koszt: ~0,5 dnia
 
-- [ ] **H4 — dokumentacja `docs/`**
-  - 40 plików, 7 590 linii — największa pozycja i jedyna, w której tłumaczenie **może coś
-    stracić**: to jest miejsce, gdzie się myśli, a nie zapis wyniku. Kompresja wg
-    [0017](decisions/0017-one-home-per-fact.md) zdejmie z tego część: sam `plan.md` ma
-    2 108 linii, z czego 896 to dziennik przy budżecie 450, a `review.md` (405) w dużej
-    mierze go powtarza
-  - w publicznym repozytorium to nie jest zaplecze: `README.md` prowadzi tu wprost, a
-    [rejestr](registry.md) jest tym, co odróżnia tę bibliotekę od dowolnej innej — obietnice
-    z przypisanymi bramkami. Po polsku nie mówi tego nikomu
-  - kolejność od najgęstszego użytkowo: `docs/README.md` → `00-axis.md` →
-    [`requirements/`](requirements/) → [`decisions/`](decisions/) → [`components/`](components/) →
-    [`lessons.md`](lessons.md) → ten plik → [`review.md`](review.md) (datowana migawka, może
-    zostać na koniec)
-  - nazwy plików bierze **H1**; tutaj zostaje treść. Migracja jest bezpieczna kosztem
-    `check-docs`: cytowanie wskazujące na nieistniejący plik albo ID jest błędem CI
-  - koszt: 3–5 dni · _notatki:_ —
+- [~] **H4 — dokumentacja `docs/`** — **38 plików z 40 po angielsku** _(2026-08-07)_
+  - zrobione w kolejności z tej pozycji: `README.md`, `00-axis.md`, `overview.md`, komplet
+    [`requirements/`](requirements/) (6), [`decisions/`](decisions/) (17 + README),
+    [`components/`](components/) (7 + README + `_template.md`), [`lessons.md`](lessons.md)
+    i generowany [rejestr](registry.md). **Zostały dwa pliki: ten (2 162 linie, z kompresją
+    wg [0017](decisions/0017-one-home-per-fact.md)) i [`review.md`](review.md) (405)**
+  - **słownictwo wymagania jest kontraktem, nie prozą** i przeszło razem z treścią:
+    `Obietnica/Bramka/Kontrola/Wiąże przy` → `Promise/Gate/Control/Binds at`,
+    `brak — świadomie|luka` → `none — deliberately|gap`. Ruszyło to parser i generator
+    w `check-docs.mjs`, jego cztery fixture'y oraz rubrykę `Części` → `Parts`, którą czyta
+    `check-parts` — a tę wiezie we własnej kopii pięć jego przypadków
+  - **cytowania nazw testów zostają po polsku** (`hydration.spec.ts › „bramka faktycznie
+wykrywa…"`): to nie jest proza, tylko wskazanie istniejącego `it()`. Przemianowanie
+    obu stron naraz bierze **H6** — dziś tych cytowań jest siedem w czterech plikach
+  - kotwice nagłówków nie mają bramki (`check-docs` pilnuje ID i ścieżek), a przy migracji
+    tej wielkości rozjeżdżają się po cichu. Skrypt doraźny znalazł cztery, w tym jedną
+    **sprzed tej sesji** (`#planowane-przemianowanie-przestrzeni-id`, dwa cytowania, z H1).
+    Kandydat na punkt w `check-docs`, gdyby wróciło
+  - koszt: ~1 dzień na 38 plików (plan zakładał 3–5 na 40) · _notatki:_ `docs/README.md`
+    wiózł **uszkodzoną tabelę** — resztkę po podmianie ścieżek z H1, z wierszami `stare =
+nowe`. Bramka jej nie widziała, bo ten plik jest zwolniony z kontroli cytowań
 
 - [ ] **H5 — źródła `libs` poza publicznym API**
   - 39 plików `.ts`/`.scss`/`.html` z polskim tekstem; publiczny JSDoc bierze **B4**, tutaj
@@ -1194,6 +1200,37 @@ faktycznie wykrywa błąd hydracji"`), więc przemianowanie bez poprawienia cyto
 ## Dziennik
 
 Wpis per sesja: co ruszyło, czym się skończyło, co jest następne. Najnowsze na górze.
+
+### 2026-08-07 — H4: słownictwo wymagania okazało się kontraktem, nie prozą
+
+**38 plików `docs/` z 40** po angielsku; zostały `plan.md` (ten plik) i `review.md`. Liczby
+rejestru bez zmian — 54/16/13, bo to było tłumaczenie, nie pomiar, i **to jest jego kontrola**:
+gdyby parser rozminął się z treścią, klasyfikacja by się posypała.
+
+- **Pola wymagania czyta maszyna**, więc `Obietnica/Bramka/Kontrola/Wiąże przy` nie dało się
+  przetłumaczyć w oderwaniu od `check-docs.mjs`. Jednym ruchem poszły: parser, klasyfikator
+  stanu, generator rejestru i cztery fixture'y — inaczej wadliwy przypadek zapalałby na
+  „brak pola", czyli na cudzym punkcie ([`lesson-50`](lessons.md#lesson-50)).
+- **To samo w drugiej bramce, i tam drożej:** rubryka `Części` w kartach komponentów jest
+  wejściem `check-parts`, a **pięć jego przypadków wiezie własną kopię `docs/components/`**.
+  Zapowiedź „cena jest w rozproszeniu, nie w liczbie" z **H8** sprawdziła się na jednej
+  nazwie. Przebieg po zmianie: 21 przypadków, każdy na swoim punkcie.
+- **Kotwic nagłówków nie pilnuje nic** — `check-docs` rozwiązuje `req-*`/`lesson-*`
+  i ścieżki, ale nie zdanie po `#`. Skrypt doraźny znalazł cztery, z czego jedna
+  **stała od H1**: `README.md#planowane-przemianowanie-przestrzeni-id` wskazywało na
+  nagłówek, który sam H1 przemianował. Cytowanie kotwicy jest tanie do sprawdzenia i drogie
+  do zauważenia okiem — kandydat na punkt 7.
+- **`docs/README.md` wiózł uszkodzoną tabelę migracji ID**: separator bez nagłówka i wiersze
+  `req-project-*` → `req-project-*`. To ta sama podmiana ścieżek z H1, która przepisała lewą
+  kolumnę — tamten wpis mówi, że tabelę „uratowało zwolnienie z kontroli cytowań", a w
+  rzeczywistości uratował ją tylko fragment. Reszta stała tam trzy dni.
+- **Cytowania nazw testów zostawione po polsku świadomie** (siedem w czterech plikach):
+  wskazują `it()`, które istnieje. Przemianowanie jednej strony bez drugiej zostawiłoby
+  wymaganie wskazujące na test, którego nie ma — to jest dokładnie sprzężenie opisane w H6.
+
+Następne: **końcówka H4** — `plan.md` (2 162 linie, z kompresją wg
+[0017](decisions/0017-one-home-per-fact.md): dziennik 946 → 500, pozycje domknięte 650 → ~200)
+i `review.md` (405) → **B2**.
 
 ### 2026-08-07 — H3: strona tytułowa miała trzy razy więcej powierzchni, niż plan liczył
 
@@ -1318,7 +1355,7 @@ i pierwszy push).
 Zrobione **H1**. Bez zmiany liczb (83 wymagania, 13 luk) — to była migracja nazw, nie
 obietnic: 83 identyfikatory wymagań, 59 lekcji, **2 571 cytowań w 175 plikach** i 24 nazwy
 plików oraz katalogów. Pełne odwzorowanie stoi
-w [tabeli migracji](README.md#migracja-przestrzeni-id-2026-08-06), obok tej z 2026-07-27.
+w [tabeli migracji](README.md#id-space-migration-2026-08-06), obok tej z 2026-07-27.
 
 Zadanie było zakresowo dokładnie tym, co zapisał plan, i pomyliło się w jednym słowie:
 **„mechaniczne".** Podmiana tekstu jest mechaniczna, konsekwencje nie — a znalazła je
@@ -1389,7 +1426,7 @@ w sobie były w porządku. Nie było w porządku to, **czego pilnowały**: nic.
   prozy, którą zaraz się skraca, płaci się dwa razy.
 
 Sekcja B dostała zmierzony zakres w B3 i B4 oraz nowe **B8**; reszta warstw poszła do
-nowej [sekcji H](#h-jeden-język-repozytorium) — nie blokuje wydania i jest o rząd
+nowej [sekcji H](#h-one-language-for-the-repository) — nie blokuje wydania i jest o rząd
 wielkości większa (`docs/` to 6 593 linie, `tools/` 10 302).
 
 Dwie rzeczy zostały **rozstrzygnięte, nie odłożone**, i obie poszerzają zakres:
@@ -1442,7 +1479,7 @@ Drobiazg z pierwszej próby, wart zapisania: tabela przemianowań wpisana do teg
 **zapaliła `check-docs`** — wzorzec `wym-<obszar>-*` jest dla punktu 4 cytowaniem, które
 się nie rozwiązuje. Tabela migracji ma swoje miejsce w [`README`](README.md), i to jest
 jedyny plik zwolniony z tej kontroli właśnie dlatego, że wiezie poprzednią. Sama tabela
-jest [zatwierdzona](README.md#planowane-przemianowanie-przestrzeni-id).
+jest [zatwierdzona](README.md#id-space-migration-2026-08-06).
 
 Następne, w tej kolejności: **B1** (`LICENSE`, minuty) → **H1** (identyfikatory,
 mechaniczne, drożeje z każdym dopisanym zdaniem) → **H3** (`README.md`) → **H4** (`docs/`)

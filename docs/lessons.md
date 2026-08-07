@@ -1,571 +1,1225 @@
-# Lekcje — log dowodów
+# Lessons — the evidence log
 
-Wnioski wyciągnięte po drodze, z dowodem empirycznym przy każdym. To jest **baza
-dowodowa** dla [osi](00-axis.md), [wymagań](README.md#poziom-1--wymagania) i
-[decyzji](decisions/) — jedyne miejsce, gdzie zapisano, **co się naprawdę stało**, zanim
-ktoś sformułował z tego regułę.
+Conclusions drawn along the way, each with empirical evidence. This is the **evidence base**
+for the [axis](00-axis.md), the [requirements](README.md#level-1--requirements) and the
+[decisions](decisions/) — the only place recording **what actually happened**, before anybody
+turned it into a rule.
 
-Kierunek zależności jest jednokierunkowy: wymaganie może powoływać się na lekcję,
-lekcja na wymaganie nie musi. Indeks odwrotny (która lekcja karmi które wymaganie)
-jest **generowany** do [rejestru](registry.md), nie utrzymywany tutaj ręcznie.
+The dependency runs one way: a requirement may cite a lesson, a lesson need not cite
+a requirement. The reverse index (which lesson feeds which requirement) is **generated** into
+the [registry](registry.md), not maintained here by hand.
 
-## Dlaczego numery, skoro wymagania mają nazwy
+## Why numbers, when requirements have names
 
-Bo tutaj **kolejność coś znaczy**. Log jest chronologiczny i append-only — wstawek nie
-ma, więc numer jest zarazem adresem i informacją („to było przed rozbiciem sandboxa na
-widoki"). W wymaganiach kolejność nie znaczyła nic i dlatego numeracja się tam
-rozjechała; szerzej w [README](README.md#dlaczego-slugi-a-nie-numery).
+Because **order means something here**. The log is chronological and append-only — nothing is
+inserted, so a number is both an address and information („that was before the sandbox was
+split into views"). In the requirements the order meant nothing, which is why the numbering
+drifted there; more in the [README](README.md#why-slugs-not-numbers).
 
-Zmienił się wyłącznie prefiks: numer został ten sam, a wspólny przedrostek wymagań
-ustąpił miejsca własnemu (`lesson-N`). Lekcja **nie jest wymaganiem** — nie ma bramki,
-nie podlega rejestrowi i nie da się jej „zrealizować".
-Wspólny prefiks wymagań był jedynym powodem, dla którego 43 obserwacje mieszały się
-z listą obietnic.
+Only the prefix changed: the number stayed the same, and the requirements' shared prefix gave
+way to one of its own (`lesson-N`). A lesson **is not a requirement** — it has no gate, is not
+subject to the registry and cannot be „implemented". A shared prefix was the only reason 43
+observations were mixed in with a list of promises.
 
-## Jak dopisać lekcję
+## How to add a lesson
 
-Kolejny wolny numer, na koniec pliku. Lekcja zasługuje na wpis, gdy spełnia dwa warunki:
-**coś się naprawdę wydarzyło** (pomiar, celowa regresja, awaria — nie rozumowanie)
-oraz **wniosek jest szerszy niż jedna poprawka**. Jeśli wniosek jest normatywny, jego
-miejscem jest wymaganie albo decyzja, a lekcja zostaje dowodem, na który się powołują.
+Next free number, at the end of the file. A lesson deserves an entry when it meets two
+conditions: **something actually happened** (a measurement, a deliberate regression, a failure —
+not reasoning) and **the conclusion is wider than one fix**. If the conclusion is normative, its
+home is a requirement or a decision, and the lesson stays as the evidence they cite.
 
-## Dziewięć wystąpień jednej lekcji
+## Nine occurrences of one lesson
 
-Log wygląda na zbiór niezależnych obserwacji, a przekrój przez niego dał
-[`req-axis`](00-axis.md). Zdania kluczowe zebrane są w [tabeli osi](00-axis.md#dlaczego-to-nie-jest-hasło);
-tutaj ważny jest wniosek: **domyślnym zachowaniem warstwy jest „nic się nie stało"**,
-więc brak bramki nigdy nie objawia się jako brak — objawia się jako zieleń.
-
----
-
-### <a id="lesson-1"></a>`lesson-1` — Angular nie wspiera NX „TS-solution"
-
-**Angular nie wspiera nowego NX „TS-solution" (project references).** Workspace musi używać klasycznego layoutu (tsconfig `paths`), nie composite/references.
+The log looks like a set of independent observations, and a cross-section through it produced
+[`req-axis`](00-axis.md). The key sentences are collected in the
+[axis table](00-axis.md#why-this-is-not-a-slogan); what matters here is the conclusion: **the
+default behaviour of a layer is „nothing happened"**, so a missing gate never shows up as
+missing — it shows up as green.
 
 ---
 
-### <a id="lesson-2"></a>`lesson-2` — Discovery testów globuje z `projectSourceRoot`
+### <a id="lesson-1"></a>`lesson-1` — Angular does not support the NX „TS-solution" layout
 
-**Discovery testów Angulara (`@angular/build:unit-test`) globuje z `projectSourceRoot`.** Aby testy w secondary entrypointach (siblingi `src/`) były wykrywane, `sourceRoot` biblioteki ustawiono na root pakietu (`libs/components`).
-
----
-
-### <a id="lesson-3"></a>`lesson-3` — Target testów: `vite:test` dla aplikacji, `test` dla biblioteki
-
-Target testów aplikacji to `vite:test` (plugin `@nx/vitest`), a biblioteki `test` (`@nx/angular:unit-test`).
+**Angular does not support the new NX „TS-solution" layout (project references).** The
+workspace has to use the classic layout (tsconfig `paths`), not composite/references.
 
 ---
 
-### <a id="lesson-4"></a>`lesson-4` — Build tokenów to własny transform, nie Style Dictionary
+### <a id="lesson-2"></a>`lesson-2` — Test discovery globs from `projectSourceRoot`
 
-Build tokenów jest na razie lekkim własnym transformem (kontrakt DTCG bez zmian); podmiana na Style Dictionary pozostaje opcją bez wpływu na źródła (`req-token-artifacts`).
-
----
-
-### <a id="lesson-5"></a>`lesson-5` — Próg pokrycia wymaga `coverageInclude`
-
-Raport pokrycia wymaga konfiguracji `coverageInclude` w targecie testowym, by egzekwować próg z `req-quality-coverage` — bez tego v8 mierzy wyłącznie to, co samo weszło do przebiegu. Postawione dopiero razem z bramką pokrycia; wtedy okazało się, że sam `coverageInclude` domyka to tylko w połowie (`lesson-45`).
+**Angular's test discovery (`@angular/build:unit-test`) globs from `projectSourceRoot`.** For
+tests in secondary entrypoints (siblings of `src/`) to be found, the library's `sourceRoot` was
+set to the package root (`libs/components`).
 
 ---
 
-### <a id="lesson-6"></a>`lesson-6` — Guard kontrastu przepuścił `disabled` robiony przez `opacity`
+### <a id="lesson-3"></a>`lesson-3` — Test target: `vite:test` for apps, `test` for the library
 
-Pierwotny guard (token-level) przepuścił disabled o realnym kontraście ~1.6:1, bo stan był robiony przez `opacity` (kompozycja z tłem w runtime, niewidoczna dla matematyki na hexach). Stąd `req-token-contrast` (policy per motyw/rozmiar, severity) i `req-token-no-opacity` (zakaz `opacity` dla warstw tekstowych). Wdrożone: `libs/tokens/src/contrast.policy.json` + silnik w `build.mjs`; `PctButton` używa tokenów `disabled-*` zamiast `opacity`.
-
----
-
-### <a id="lesson-7"></a>`lesson-7` — Zoneless jest deklarowany jawnie
-
-**Zoneless jest deklarowany jawnie** przez `provideZonelessChangeDetection()` w `app.config.ts`, mimo że generator nie dodaje polyfilla `zone.js` (bundle i tak go nie zawiera). Jawna deklaracja zamyka `req-project-angular` i chroni przed przypadkowym powrotem do trybu zone-based. Testy jednostkowe biblioteki i aplikacji również konfigurują zoneless w `TestBed`, dzięki czemu `req-api-foundation` (komponenty zoneless-safe) jest **weryfikowane**, a nie tylko deklarowane. (Uwaga: `setupTestBed()` z `@analogjs/vitest-angular` domyślnie już ustawia `zoneless: true` — jawna konfiguracja w spec-ach jest zabezpieczeniem na wypadek zmiany domyślnych.)
+An app's test target is `vite:test` (the `@nx/vitest` plugin), the library's is `test`
+(`@nx/angular:unit-test`).
 
 ---
 
-### <a id="lesson-8"></a>`lesson-8` — `zone.js` usunięty z zależności całkowicie
+### <a id="lesson-4"></a>`lesson-4` — The token build is a transform of our own, not Style Dictionary
 
-**Pakiet `zone.js` został całkowicie usunięty z zależności.** Jest opcjonalnym peer-dependency (`peerDependenciesMeta.zone.js.optional: true`) zarówno w `@angular/core`, jak i `@analogjs/vitest-angular`, a runner testów Angulara przy nieudanym `resolve('zone.js')` przechodzi w tryb bez zone (`catch → 'none'`). Zweryfikowane empirycznie po odinstalowaniu: testy 6/6 i 2/2, e2e 4/4, build biblioteki i aplikacji (SSR + prerender) — wszystko zielone; w runtime brak `window.Zone`, `__zone_symbol__` i niepatchowany `Promise`. Dzięki temu powrót do trybu zone-based jest niemożliwy przez przypadek.
-
----
-
-### <a id="lesson-9"></a>`lesson-9` — `ControlValueAccessor` okazało się zbędne
-
-**CVA okazało się zbędne.** Zakładaliśmy, że kompatybilność z reactive/template-driven forms wymaga `ControlValueAccessor` (i rozważaliśmy osobną dyrektywę-adapter). Eksperyment na `PctInput` (kontrolka implementująca wyłącznie `FormValueControl`) wykazał, że `[formControl]` i `[(ngModel)]` synchronizują wartość w obie strony bez żadnego kodu kompatybilności — zgodnie z dokumentacją Angulara. Rdzeń biblioteki nie importuje klasycznego API formularzy. Zachowanie jest zabezpieczone testami regresyjnymi w `input.spec.ts`.
+The token build is for now a lightweight transform of our own (the DTCG contract unchanged);
+swapping in Style Dictionary remains an option with no effect on the sources
+(`req-token-artifacts`).
 
 ---
 
-### <a id="lesson-10"></a>`lesson-10` — Bramka kontrastu objęła pary nietekstowe (SC 1.4.11)
+### <a id="lesson-5"></a>`lesson-5` — A coverage threshold needs `coverageInclude`
 
-Bramka kontrastu obejmuje teraz także **pary nietekstowe wg SC 1.4.11** (`level: "UI"`, próg 3:1) — obramowanie inputu, obramowanie focus/błędu, focus ring. To wychwytuje typową wadę bibliotek UI: zbyt jasne obramowania pól. Tokeny komponentowe są auto-odkrywane (`component.*.json`), więc dodanie komponentu nie wymaga zmian w `build.mjs`.
-
----
-
-### <a id="lesson-11"></a>`lesson-11` — MCP Angular CLI daje wskazówki dopasowane do wersji
-
-**MCP Angular CLI (`.mcp.json`) dostarcza wskazówki dopasowane do wersji.** Ogólny plik `best-practices.md` pobrany ze strony nie zawierał reguły „nie ustawiaj jawnie `OnPush` — jest domyślne w v22+", którą zwraca `get_best_practices` przez MCP. Stąd korekta `req-api-foundation`. Uwaga: `list_projects` zwraca pustą listę, bo czyta `angular.json`, a workspace jest oparty na Nx (`project.json`) — narzędzia wymagające kontekstu workspace nie działają, ale `search_documentation` i `get_best_practices` tak.
+The coverage report needs `coverageInclude` configured in the test target to enforce the
+`req-quality-coverage` threshold — without it v8 measures only what entered the run by itself.
+Set up only alongside the coverage gate; that is when it turned out `coverageInclude` closes
+this only halfway (`lesson-45`).
 
 ---
 
-### <a id="lesson-12"></a>`lesson-12` — `FormCheckboxControl` wymaga `checked`, nie `value`
+### <a id="lesson-6"></a>`lesson-6` — The contrast guard let through a `disabled` state made with `opacity`
 
-**Kontrolki kontraktu `FormCheckboxControl` wymagają `checked`, nie `value`** (definiowanie `value` jest zabronione). Ponieważ `model()` nie przyjmuje transformacji `booleanAttribute`, `checked` trzeba wiązać nawiasami (`[checked]="true"`), a nie gołym atrybutem — inaczej szablon nie kompiluje się (`Type 'string' is not assignable to type 'boolean'`). Kontrakt przewiduje też opcjonalne metody `focus()` i `reset()`; zaimplementowane w `PctCheckbox` i `PctInput`.
-
----
-
-### <a id="lesson-13"></a>`lesson-13` — `getComputedStyle` z panelu podglądu bywa nieaktualne
-
-Odczyty `getComputedStyle` z panelu podglądu potrafią być **nieaktualne**, gdy panel nie jest wyświetlany („the page is not compositing frames") — prowadzi to do fałszywych diagnoz błędów CSS. Wiarygodną weryfikacją stylów są testy e2e (Playwright), które działają w normalnie renderującej przeglądarce.
-
----
-
-### <a id="lesson-14"></a>`lesson-14` — Zgodność formalna nie znaczy dobra jakość
-
-**Zgodność formalna nie znaczy dobra jakość.** Pierwszy audyt axe nie wykazał naruszeń, a reguła `target-size` **przeszła** przy obszarze klikalnym checkboxa 18×18 px — bo SC 2.5.8 dopuszcza wyjątek odstępu, a wokół kontrolki było dużo wolnego miejsca. Wystarczyłoby zagęścić układ w aplikacji konsumenta, żeby to samo przestało być zgodne. Stąd `req-a11y-touch`: obszar dotyku spełniamy wprost, niezależnie od otoczenia.
+The original (token-level) guard let through a disabled state at a real contrast of ~1.6:1,
+because the state was made with `opacity` (composition with the background at runtime,
+invisible to arithmetic on hex values). Hence `req-token-contrast` (a policy per theme/size,
+with severity) and `req-token-no-opacity` (no `opacity` for text layers). Implemented:
+`libs/tokens/src/contrast.policy.json` plus the engine in `build.mjs`; `PctButton` uses
+`disabled-*` tokens instead of `opacity`.
 
 ---
 
-### <a id="lesson-15"></a>`lesson-15` — Kolizja nazw części wyszła dopiero w e2e
+### <a id="lesson-7"></a>`lesson-7` — Zoneless is declared explicitly
 
-Kolizja nazw części wyszła dopiero w teście e2e: selektor `[data-pct-part="label"]` w obrębie `pct-radio-group` pasował do 4 elementów (etykieta grupy + etykiety opcji). Stąd `req-api-parts-unique`. Testy jednostkowe tego nie wychwyciły, bo odpytywały konkretny element, a nie kolekcję.
-
----
-
-### <a id="lesson-16"></a>`lesson-16` — Opcje w grupie są treścią rzutowaną, nie `viewChildren`
-
-W grupie opcje są **treścią rzutowaną**, więc kontener nie widzi ich zapytaniem `viewChildren`; `contentChildren(PctRadio)` tworzyłoby cykliczny import kontener↔element. `focus()` grupy odpytuje więc DOM hosta (`input[type="radio"]`).
-
----
-
-### <a id="lesson-17"></a>`lesson-17` — Scoped theme był zepsuty na warstwie komponentowej
-
-**Scoped theme był zepsuty na warstwie komponentowej i nikt tego nie widział.** Sonda w przeglądarce wykazała, że w panelu `[data-theme="dark"]` token semantyczny `--pct-surface` miał poprawną wartość ciemną, ale `--pct-button-bg` i `--pct-select-panel-bg` nadal zwracały wartości jasne. Przyczyna w `req-token-closure`. Wada przetrwała tak długo, bo wcześniejszy test scoped theme sprawdzał **tylko token semantyczny**, a różnica między `blue-600` i `blue-500` jest wizualnie subtelna. Poprawione w buildzie; dodany test regresyjny porównujący token komponentowy w `:root` i w scope.
+**Zoneless is declared explicitly** through `provideZonelessChangeDetection()` in
+`app.config.ts`, even though the generator does not add the `zone.js` polyfill (the bundle does
+not contain it anyway). The explicit declaration closes `req-project-angular` and guards
+against an accidental return to zone-based mode. The library's and the app's unit tests also
+configure zoneless in `TestBed`, which makes `req-api-foundation` (zoneless-safe components)
+**verified** rather than merely declared. (Note: `setupTestBed()` from
+`@analogjs/vitest-angular` already sets `zoneless: true` by default — the explicit
+configuration in the specs is insurance against that default changing.)
 
 ---
 
-### <a id="lesson-18"></a>`lesson-18` — Panel nakładki renderuje się poza drzewem hosta
+### <a id="lesson-8"></a>`lesson-8` — `zone.js` removed from the dependencies entirely
 
-Panel nakładki CDK renderuje się **poza drzewem hosta**, co ma dwie konsekwencje: (1) selektory `:host(...)` nie obejmują jego treści — stany opcji trzeba oznaczać atrybutami na samych opcjach; (2) kaskada scoped theme do niego nie dociera — motyw z najbliższego przodka hosta jest przenoszony jawnie na panel (`data-theme`). Tokeny działają, bo są zdefiniowane na `:root` — zaleta podejścia CSS-first (`req-token-dtcg`).
-
----
-
-### <a id="lesson-19"></a>`lesson-19` — `CSS.escape` nie istnieje w jsdom
-
-`CSS.escape` nie istnieje w jsdom, więc budowanie selektorów po id wywala testy jednostkowe. Aktywną opcję znajdujemy indeksem w kolekcji, co dodatkowo wprost odpowiada semantyce `activeIndex`.
-
----
-
-### <a id="lesson-20"></a>`lesson-20` — Na natywnym elemencie prowadzi `DefaultValueAccessor`
-
-**Na natywnym elemencie klasyczne formularze prowadzą przez wbudowany `DefaultValueAccessor`.** `[formControl]` na `<input pctText>` jest obsługiwany przez akcesor Angulara, który sam pisze do DOM. Nasze równoległe wiązanie wartości powodowało konflikt dwóch autorów (input startował pusty zamiast z wartością kontrolki). Kontrolka wykrywa więc `NgControl` na tym samym elemencie i wtedy oddaje własność wartości, pozostając przy obudowie i stanie.
+**The `zone.js` package was removed from the dependencies entirely.** It is an optional peer
+dependency (`peerDependenciesMeta.zone.js.optional: true`) in both `@angular/core` and
+`@analogjs/vitest-angular`, and Angular's test runner falls back to zoneless mode on a failed
+`resolve('zone.js')` (`catch → 'none'`). Verified empirically after uninstalling: tests 6/6 and
+2/2, e2e 4/4, the library and app builds (SSR + prerender) — all green; at runtime no
+`window.Zone`, no `__zone_symbol__` and an unpatched `Promise`. A return to zone-based mode is
+therefore impossible by accident.
 
 ---
 
-### <a id="lesson-21"></a>`lesson-21` — Ta sama logika komunikatów w czterech kontrolkach
+### <a id="lesson-9"></a>`lesson-9` — `ControlValueAccessor` turned out to be unnecessary
 
-Ta sama logika komunikatów (`errorText`, `showInvalid`, `showError`, `describedBy`, `hintId`, `errorId`, `touch`) była **skopiowana do 4 kontrolek**. Poprawka wymagała czterech identycznych zmian — stąd wydzielenie do `core` (`req-api-wrapper`).
-
----
-
-### <a id="lesson-22"></a>`lesson-22` — Padding ramki tworzył martwą strefę
-
-**Padding ramki obudowy tworzył „martwą strefę"** — kursor był wewnątrz pola, ale kliknięcie nie ustawiało fokusu. Najbardziej widoczne, gdy wyższy element w slocie (przycisk) podnosił wysokość rzędu, a wyśrodkowana kontrolka zostawiała pustą przestrzeń nad i pod sobą. Rozwiązanie dwuczęściowe: kontrolka rozciąga się na wysokość rzędu (`align-self: stretch`), a obudowa przekazuje kontrolce `mousedown` z obszaru, który nie jest elementem interaktywnym (kontrakt zyskał opcjonalne `focus()`). Ramka pokazuje kursor tekstowy, gdy zawiera kontrolkę tekstową. **Poprawka była tylko połowiczna** — patrz `lesson-27`.
-
----
-
-### <a id="lesson-23"></a>`lesson-23` — `page.mouse.click()` nie przewija strony
-
-Przy weryfikacji tej poprawki **błąd był w teście, nie w kodzie**: `page.mouse.click()` w Playwright używa współrzędnych widoku i nie przewija strony, więc klik w element poniżej ekranu trafiał w `<html>`. Locator-owe `click()` przewija samo. Przy klikaniu we współrzędne trzeba najpierw `scrollIntoViewIfNeeded()`.
+**CVA turned out to be unnecessary.** We assumed that compatibility with reactive and
+template-driven forms required `ControlValueAccessor` (and we were considering a separate
+adapter directive). An experiment on `PctInput` (a control implementing only
+`FormValueControl`) showed that `[formControl]` and `[(ngModel)]` synchronise the value both
+ways with no compatibility code — exactly as Angular's documentation says. The library's core
+does not import the classic forms API. The behaviour is protected by regression tests in
+`input.spec.ts`.
 
 ---
 
-### <a id="lesson-24"></a>`lesson-24` — Kolizja nazw części powtórzyła się przy obudowie
+### <a id="lesson-10"></a>`lesson-10` — The contrast gate took in non-text pairs (SC 1.4.11)
 
-**Kolizja nazw części powtórzyła się przy obudowie.** Gdy `pct-field` opakował grupę radiów, jego część `label` pasowała do 4 elementów (etykieta obudowy + etykiety opcji), a po opakowaniu checkboxa część `control` kolidowała z natywnym inputem checkboxa. To ta sama klasa błędu co `lesson-15` — reguła `req-api-parts-unique` obowiązuje więc także dla obudowy, nie tylko dla grup.
-
----
-
-### <a id="lesson-25"></a>`lesson-25` — Select w obudowie miał obszar dotyku 19,6 px
-
-**Select w obudowie miał obszar dotyku 19,6 px.** Po oddaniu ramki obudowie trigger stracił własny padding, więc jego wysokość spadła do wysokości linii tekstu — poniżej progu SC 2.5.8. Obudowa gwarantuje teraz `min-height: var(--pct-target-min)` na kolumnie kontrolki, co naprawia to dla wszystkich kontrolek naraz. Wychwycił to istniejący test progu dotyku — dowód, że warto było go napisać przy checkboxie.
+The contrast gate now also covers **non-text pairs per SC 1.4.11** (`level: "UI"`, a 3:1
+threshold) — the input border, the focus/error border, the focus ring. This catches a typical
+UI library defect: field borders that are too light. Component tokens are auto-discovered
+(`component.*.json`), so adding a component needs no changes to `build.mjs`.
 
 ---
 
-### <a id="lesson-26"></a>`lesson-26` — `FormField` sam dostarcza `NgControl`
+### <a id="lesson-11"></a>`lesson-11` — The Angular CLI MCP gives version-matched guidance
 
-**`FormField` sam dostarcza `NgControl`, więc heurystyka z `lesson-20` była za szeroka.** Dyrektywa signal forms rejestruje interop-owy `NgControl` dla zgodności ze starymi `ControlValueAccessor`ami. Warunek „jest `NgControl` ⇒ ktoś inny pisze do DOM" obejmował więc także signal forms — a te przy **własnej kontrolce** (`FormValueControl`) ustawiają wyłącznie jej `value` i do DOM nie piszą (robią to tylko dla elementów bez własnej kontrolki). Efekt: `<input pctText [formField]="f.email">` z niepustą wartością początkową renderował **puste pole**. Wada przetrwała, bo wszystkie testy i sandbox startowały z pustym modelem. Warunek rozróżnia teraz oba przypadki (`NgControl` bez `FormField`), a regresję pilnują testy startujące z niepustą wartością — w `PctText` i `PctNumber`.
-
----
-
-### <a id="lesson-27"></a>`lesson-27` — Łatanie skutku zostawiło martwą strefę widoczną w kursorze
-
-**Łatanie skutku zamiast przyczyny zostawiło martwą strefę widoczną w kursorze.** `lesson-22` naprawiło _kliknięcie_ w padding ramki (przekazanie `mousedown` kontrolce), ale nie _przynależność_ tego obszaru: padding i `gap` zostały na rzędzie, a kolumny były w nim wyśrodkowane, więc **ok. 60% powierzchni ramki nie należało do żadnego elementu wewnętrznego** (kolumna kontrolki 354×24 w rzędzie 380×42). Skutki widać było dopiero na mapie kursora zdjętej z przeglądarki (`elementFromPoint` × `getComputedStyle().cursor` po siatce punktów): pole z listą miało kursor `pointer` wyłącznie nad triggerem, pole wyłączone zapraszało kursorem tekstowym do pisania po całym paddingu, a pas wokół przycisku w slocie wyglądał na jego część, choć klik w niego trafiał w pole. Naprawa strukturalna: padding schodzi z rzędu do kolumn, kolumny kafelkują wnętrze ramki szczelnie (pusty slot dekoracji **nie znika**, tylko zwija się do paddingu krawędzi), interaktywna dekoracja dostaje całą wysokość swojego slotu (poprawione w `lesson-34` — o wypełnieniu slotu decyduje odtąd autor, nie obecność przycisku), a rodzaj kursora zgłasza kontrolka przez `fieldCursor` — bez tego `field.scss` musiałby znać klasy wszystkich kontrolek (`:has(input.pct-text)`) i każda nowa startowałaby z tym samym błędem. Doszło też `activate()` w kontrakcie: kursor `pointer` nad całą ramką selecta obiecuje otwarcie listy, więc klik w padding musi ją otwierać, a nie tylko przenosić fokus.
-
-Lekcja metodyczna: **„czy da się kliknąć" i „czy widać, że da się kliknąć" to dwa różne wymagania** — pierwsze testowała para testów e2e i przechodziły, drugie wyszło dopiero z pomiaru całej powierzchni. Wzorzec „mapa kursora po siatce punktów" wychwytuje tę klasę wad tanio i warto go powtarzać przy każdym komponencie o złożonej powierzchni.
+**The Angular CLI MCP (`.mcp.json`) supplies version-matched guidance.** The generic
+`best-practices.md` downloaded from the website did not contain the rule „do not set `OnPush`
+explicitly — it is the default in v22+" that `get_best_practices` returns over MCP. Hence the
+correction to `req-api-foundation`. Note: `list_projects` returns an empty list because it
+reads `angular.json` while the workspace is Nx-based (`project.json`) — the tools needing
+workspace context do not work, but `search_documentation` and `get_best_practices` do.
 
 ---
 
-### <a id="lesson-28"></a>`lesson-28` — jsdom nie parsuje `:has()` z kombinatorem względnym
+### <a id="lesson-12"></a>`lesson-12` — `FormCheckboxControl` requires `checked`, not `value`
 
-**jsdom (nwsapi) nie parsuje `:has()` z kombinatorem względnym** — `:has(+ .selektor)` wywala `SyntaxError: not a valid selector` przy **dowolnym** późniejszym `querySelectorAll` w teście, więc awaria pojawia się w miejscu niezwiązanym z przyczyną. Wersja z prostym `:has(button, a, [tabindex])` działa. Niezależnie od narzędzia lepszym rozwiązaniem okazał się układ bez patrzenia „w przód": odstęp niesie slot dekoracji (padding krawędzi na zewnątrz, `gap` od strony kontrolki), a pusty slot zwija się do samego paddingu krawędzi — dzięki temu kolumny kafelkują ramkę bez żadnej reguły warunkowej.
-
----
-
-### <a id="lesson-29"></a>`lesson-29` — Wysokość liczona z paddingu nie daje się zgrać
-
-**Wysokość liczona z paddingu nie daje się zgrać między komponentami.** Przycisk i pole miały ten sam token odstępu (`space.3`) i mimo to różniły się o 7 px: przycisk mierzył `padding-y` + wysokość linii etykiety (≈34,8 px), a pole `padding-y` + gwarantowany obszar dotyku kolumny kontrolki (42 px). Wyrównanie przez dobranie paddingów byłoby fałszywe — zależałoby od `line-height`, kroju pisma i zawartości slotów, a każdy nowy komponent zaczynałby od zgadywania. Stąd `req-api-size`: wysokość jest osobnym tokenem (`--pct-control-height-*`), wspólnym dla obu, a padding pionowy przestaje sterować pionem. Skala `28 / 36 / 44 px` została dobrana tak, by najmniejsza wielkość nadal mieściła próg dotyku SC 2.5.8 z zapasem.
-
-Dowodem jest pomiar w przeglądarce (`apps/sandbox-e2e/src/size.spec.ts`), a nie sam fakt, że oba komponenty czytają ten sam token: test sprawdza równość wysokości **i** jej konkretną wartość — przy samej równości oba mogłyby spaść do wysokości linii tekstu i nadal „przechodzić".
+**Controls under the `FormCheckboxControl` contract require `checked`, not `value`** (defining
+`value` is forbidden). Since `model()` does not accept the `booleanAttribute` transform,
+`checked` has to be bound in brackets (`[checked]="true"`) rather than as a bare attribute —
+otherwise the template does not compile (`Type 'string' is not assignable to type 'boolean'`).
+The contract also allows optional `focus()` and `reset()` methods; implemented in `PctCheckbox`
+and `PctInput`.
 
 ---
 
-### <a id="lesson-30"></a>`lesson-30` — Test może kliknąć w HTML z serwera przed hydracją
+### <a id="lesson-13"></a>`lesson-13` — `getComputedStyle` from a preview panel can be stale
 
-**Test może kliknąć w HTML z serwera, zanim hydracja go przejmie.** Po rozbiciu sandboxa na leniwie ładowane widoki testy e2e zaczęły migotać: `fill()` wpisywał wartość, po czym pole wracało do stanu początkowego — objaw wyglądał jak wada `PctNumber`, a był wyścigiem. `goto()` kończy się na zdarzeniu `load`, a między „element jest w DOM" a „element jest podłączony" mieści się pobranie chunka trasy. Powłoka wystawia więc znacznik `data-sbx-ready` po `ApplicationRef.whenStable()`, a testy wchodzą przez pomocnik `visit()`, który na niego czeka. Bariera jest po stronie testu, nie aplikacji — aplikacja niczego nie opóźnia.
-
----
-
-### <a id="lesson-31"></a>`lesson-31` — Generator id był niebezpieczny przy SSR
-
-**Generator id był niebezpieczny przy SSR i nikt tego nie widział.** `nextPctId` liczył w zmiennej modułowej, a serwer renderuje wiele żądań w jednym procesie: licznik rósł z każdym renderem, klient zawsze startował od zera. Pierwsze żądanie po starcie serwera trafiało w zgodność (stąd zielone testy), każde kolejne dawało HTML z innymi id niż policzy klient — po hydracji część atrybutów zostawała z wartościami serwera, część dostawała wartości klienta i **powiązania ARIA wskazywały w próżnię** (`aria-labelledby="pct-field-4071-label"` przy etykiecie `pct-field-12-label`). Wada ujawniła się dopiero, gdy sandbox dostał drugą trasę i ruch na serwerze dev wzrósł. Licznik mieszka teraz w usłudze `providedIn: 'root'` — injector aplikacji żyje tyle, co jedno żądanie na serwerze i jedno wczytanie strony u klienta, więc obie strony liczą od zera.
-
-Lekcja: **stan modułowy jest wspólny dla wszystkich renderów SSR.** Każdy licznik, cache czy rejestr w bibliotece z `req-project-ssr` musi trafić do DI albo być bezstanowy — inaczej wada pojawia się dopiero „u kogoś na produkcji", po drugim żądaniu.
+`getComputedStyle` reads from a preview panel can be **stale** when the panel is not being
+displayed („the page is not compositing frames") — which leads to false diagnoses of CSS bugs.
+The reliable way to verify styles is e2e tests (Playwright), which run in a normally rendering
+browser.
 
 ---
 
-### <a id="lesson-32"></a>`lesson-32` — Krok pola liczbowego liczony z DOM gubił naciśnięcia
+### <a id="lesson-14"></a>`lesson-14` — Formal conformance does not mean good quality
 
-**Krok pola liczbowego liczony z tekstu w DOM gubił naciśnięcia.** `stepBy` brał punkt wyjścia z `input.value`, a tekst zapisuje **efekt**, czyli asynchronicznie: dwa naciśnięcia strzałki w jednym przebiegu detekcji widziały tę samą wartość wyjściową i drugie nie miało skutku. Objawiało się jako migotanie testu e2e (raz na kilka przebiegów), bo zależało od tego, czy między zdarzeniami zmieścił się flush — człowiek trzymający strzałkę trafia w to samo okno. Punktem wyjścia jest teraz **sygnał**, a tekst tylko wtedy, gdy użytkownik faktycznie pisze (`typing()`); wpisana, niezatwierdzona wartość nadal jest respektowana.
-
-Lekcja: **DOM nie jest źródłem prawdy w komponencie sterowanym sygnałami** — odczyt z niego zawsze może być o jeden przebieg do tyłu. Test regresyjny celowo nie stabilizuje fixture między zdarzeniami; z `await` po każdym z nich wada jest niewidoczna, co tłumaczy, dlaczego istniejący test klawiatury ją przepuszczał.
-
----
-
-### <a id="lesson-33"></a>`lesson-33` — Widok stanów wykrył niedozwolony atrybut ARIA
-
-**Widok przekrojowy stanów wykrył niedozwolony atrybut ARIA w pierwszym uruchomieniu.** `PctRadio` wystawiał `aria-readonly` na natywnym `<input type="radio">`, a rola `radio` tego atrybutu **nie wspiera** — wspiera go dopiero `radiogroup`. Axe klasyfikuje to jako naruszenie **krytyczne** (`aria-allowed-attr`), a mimo to wada przeżyła kilka rund audytów: żaden dotychczasowy przykład nie renderował grupy radiów w stanie „tylko do odczytu". Atrybut przeniesiony na kontener, testy jednostkowe sprawdzają teraz oba miejsca (jest na grupie, nie ma na opcji).
-
-Lekcja: **macierz „każdy komponent × każdy stan" nie jest ozdobnikiem sandboxa, tylko wejściem dla bramki a11y.** Audyt bada wyłącznie to, co ktoś wcześniej wyrenderował — luka w prezentacji jest luką w pokryciu, niewidoczną w raporcie, bo raport jest zielony.
+**Formal conformance does not mean good quality.** The first axe audit found no violations, and
+the `target-size` rule **passed** on an 18×18 px checkbox hit area — because SC 2.5.8 allows
+a spacing exception and there was plenty of free space around the control. Tightening the
+layout in a consumer's app would be enough for the same thing to stop conforming. Hence
+`req-a11y-touch`: we meet the touch target outright, independently of the surroundings.
 
 ---
 
-### <a id="lesson-34"></a>`lesson-34` — Arkusz zgadywał intencję z zawartości slotu
+### <a id="lesson-15"></a>`lesson-15` — A part-name collision only surfaced in e2e
 
-**Arkusz zgadywał intencję z zawartości slotu i wiązał dwie niezależne rzeczy.** `lesson-27` dało dekoracji całą wysokość slotu regułą `:has(button, a, [tabindex])` — czyli „interaktywna" znaczyło „wypełnia slot". Konsekwencje wyszły dopiero przy próbie zbudowania czterech naturalnych dekoracji naraz: przycisk czyszczenia **nie mógł** być mniejszy od swojego slotu (a mały przycisk z widoczną ramką w odstępie pola to zwykły wzorzec), a kafelek z tłem — jednostka wspawana w ramkę — **nie mógł** być większy, bo nie jest interaktywny. Dwie osie zostały rozdzielone: o wypełnieniu slotu decyduje autor (`pctPrefix="fill"`), a o obsłudze kliknięcia nadal sam element. Dekoracja `fill` jest przy tym **własną powierzchnią**, więc obudowa przestaje przechwytywać klik w nią — inaczej kafelek pokazywałby kursor `default` i mimo to fokusował kontrolkę, czyli dokładnie ten rozjazd kursora i skutku, który `lesson-27` naprawiało.
-
-Dwa szczegóły wyszły dopiero z pomiaru w przeglądarce, nie z rozumowania. Po pierwsze, wspawany przycisk wnosił własną wysokość minimalną, równą z założenia wysokości pola tej samej wielkości (`req-api-size`), więc wiersz rósł o grubość swojej ramki — pole z przyciskiem było o 2 px wyższe od pola bez niego. Dekoracja `fill` dostaje więc `min-height: 0`: wysokość ma brać ze slotu, bo to slot ją wypełnia. Po drugie, po oddaniu slotu dekoracji odstęp między nią a kontrolką musiał przejść na kolumnę kontrolki — bez tego byłby pasem bez właściciela, czyli powrotem do wady `lesson-27` w mikroskali.
-
-Symetryczne ograniczenie zostaje po stronie autora i jest nieusuwalne: przycisk `inset` musi być o stopień mniejszy od pola, bo wysokości obu w tej samej wielkości są z założenia równe. W najmniejszej wielkości nie ma już stopnia niżej, więc przycisk wypełnia tam wysokość i rozpycha wiersz o grubość ramki — to nie wada dopasowania, tylko wniosek z `req-api-size`.
-
----
-
-### <a id="lesson-35"></a>`lesson-35` — Kontrolka oddała obudowie ramkę, ale nie oddała panelu
-
-**Kontrolka oddała obudowie ramkę, ale nie oddała jej panelu.** Po `req-api-wrapper` trigger selecta w polu przestał być własną ramką — a nakładka nadal kotwiczyła się w nim, więc panel wychodził z krawędzi kolumny kontrolki, nie pola: przy zmierzonym polu 301 px panel miał 275 px i był przesunięty o 13 px w prawo. Samodzielny select wyglądał przy tym bez zarzutu, bo tam trigger **jest** widoczną krawędzią — czyli objaw pojawiał się dokładnie w konfiguracji, w której obudowa przejmuje wygląd. Stąd `req-api-overlay`: obudowa udostępnia swój wiersz jako powierzchnię odniesienia, a kotwica jest częścią kontraktu, nie domysłem kontrolki.
-
-Przy tej samej okazji wyszło, że **pismo panelu też nie miało właściciela**. Panel żyje w nakładce CDK, czyli jako dziecko `body`, więc dziedziczy krój po nim, a nie po aplikacji: sandbox ustawia `font-family` na hoście powłoki, w efekcie lista pisała domyślną szeryfową czcionką przeglądarki (pomiar: `Times New Roman` w panelu wobec `system-ui` w kontrolce). Rozmiar miał wadę bliźniaczą, ale w drugą stronę — brał się z tokenu `--pct-select-font-size`, więc w polu `lg` opcje zostawały przy 14 px, gdy trigger pisał 16 px. Oba rozwiązane tak samo: pismo odczytujemy z triggera przy otwarciu (jak motyw w `lesson-18`), zamiast liczyć na dziedziczenie albo na token.
-
-Lekcja: **każda właściwość dziedziczona jest po cichu zerwana w nakładce.** Motyw był już przenoszony jawnie, ale traktowano to jako osobliwość motywu, nie jako regułę — a reguła brzmi: co ma wyglądać jak przedłużenie kontrolki, musi być z niej odczytane, bo drzewo DOM tego nie zrobi.
-
-**Dopisek z 2026-08-05: trzecia właściwość.** Przy wprowadzaniu osi `dir` do sandboxa (`req-token-logical`) wyszło, że kierunek pisma jest dokładnie tym samym przypadkiem — zmierzone `direction: rtl` na triggerze wobec `ltr` na panelu. Arkusz był przy tym bez zarzutu logiczny: `text-align: start` po prostu rozwiązuje się w drugą stronę, gdy kierunek nie dociera. Reguła powtórzyła się więc po raz trzeci, co jest argumentem za wyciągnięciem tego przenoszenia do warstwy nakładki w `core` (**D2**) zamiast dopisywania czwartej właściwości do `openPanel()`. Zapasowy wniosek: bramka czytająca arkusze jest warunkiem koniecznym obietnicy RTL, nigdy wystarczającym — reszta mieszka na wyrenderowanej stronie.
-
-Lekcja: **reguła CSS wnioskująca o zamiarze z zawartości slotu jest ukrytym API** — tanim, dopóki przykład jest jeden. Gdy autor chce wariantu, którego heurystyka nie przewiduje, nie ma go jak wyrazić i zostaje walka z arkuszem. Wariant, który biblioteka dopuszcza, ma być nazwany w API.
+A part-name collision only surfaced in an e2e test: the selector `[data-pct-part="label"]`
+inside a `pct-radio-group` matched 4 elements (the group's label plus the options' labels).
+Hence `req-api-parts-unique`. The unit tests did not catch it, because they queried a specific
+element rather than a collection.
 
 ---
 
-### <a id="lesson-36"></a>`lesson-36` — Pakiet nie woził skórki, a pipeline świecił na zielono
+### <a id="lesson-16"></a>`lesson-16` — Options in a group are projected content, not `viewChildren`
 
-**Pakiet nie woził skórki, a cały pipeline świecił na zielono.** `dist/libs/components` zawierał FESM-y, typy i mapę `exports` — i **zero plików CSS**: bundle odwoływał się do `var(--pct-field-bg)`, którego definicji nie było nigdzie w pakiecie. Przyczyną było to, że `tokens` **nie istniało w grafie NX** (`tokens -> []`, i nic nie wskazywało na `tokens`), a `libs/tokens/dist` jest gitignorowane. Krawędzi nie było, bo zależność jest nietypowa: ani jednego importu TS, sam artefakt CSS — a graf Nx wnioskuje z importów.
-
-Awaria była **cicha w obie strony**. Po usunięciu `libs/tokens/dist` `nx build sandbox` kończył się **sukcesem** bez ostrzeżenia, a wynikowy CSS aplikacji nie zawierał żadnej definicji tokenu; `nx serve sandbox` (komenda startowa z README) też nie miał tej zależności. CI przechodziło wyłącznie dzięki **ręcznemu krokowi** `node libs/tokens/build.mjs` przed `run-many` — czyli obejściu, które maskowało brak krawędzi zamiast go ujawnić.
-
-Naprawa jest trójdzielna, bo trzy różne rzeczy mogły zawieść niezależnie: (1) `implicitDependencies: ["tokens"]` w `components` i `sandbox` plus jawne `dependsOn` na `serve` — graf zna krawędź, ręczny krok w CI znika; (2) skórka jest kopiowana do `libs/components/themes` i stamtąd brana przez `assets` w `ng-package.json` — ng-packagr **nie czyta assetów spoza katalogu projektu**, więc staging jest wymuszony, nie kosmetyczny; do tego wpis `./themes/*` w `exports` źródłowego `package.json` (ng-packagr scala go z generowanymi wejściami), bo mapa `exports` jest zamknięta i plik bez wpisu jest dla konsumenta niewidoczny; (3) bramka `nx check-package components`.
-
-Lekcja: **zielony build nie jest dowodem, że artefakt da się użyć** — jeśli nic nie sprawdza spakowanego wyjścia, biblioteka może przez cały pipeline nieść wadę, którą zobaczy dopiero pierwszy konsument po `npm i`. Bramka sprawdza domknięcie tokenów (każdy `var(--pct-*)` użyty w pakiecie ma w nim deklarację), a nie samą obecność pliku — obecność spełniłby też pusty plik albo skórka, z której ktoś usunął warstwę komponentową. To ta sama klasa wady co `lesson-17`, przeniesiona z runtime na dystrybucję: brakująca definicja custom property nie jest błędem, tylko cichym powrotem do wartości początkowej.
+In a group the options are **projected content**, so the container cannot see them with
+a `viewChildren` query; `contentChildren(PctRadio)` would create a circular container↔element
+import. So the group's `focus()` queries the host's DOM (`input[type="radio"]`).
 
 ---
 
-### <a id="lesson-37"></a>`lesson-37` — Generyk w komponencie nie znaczy, że szablon go sprawdza
+### <a id="lesson-17"></a>`lesson-17` — The scoped theme was broken at the component tier
 
-**Generyk w komponencie nie oznacza, że szablon go sprawdza.** Po uogólnieniu `PctSelect` do `PctSelect<T>` (`req-api-generic`) sonda w sandboxie pokazała, że kompilator przepuszcza wiązania jawnie sprzeczne: lista opcji `PctSelectOption<number>[]` z wartością `'napis'`, `emptyValue` innego typu niż opcje, a nawet `$event` z `(valueChange)` podany metodzie o niepasującym parametrze. Sprawdzanie szablonów **działało** (`NG8002` na wymyślonym inpucie łapane od razu) — problem był węższy: `T` ma kilka miejsc wnioskowania (`options`, `value`, `emptyValue`), więc TypeScript wybierał unię kandydatów (`string | number`), do której pasowały obie strony konfliktu.
-
-Naprawą jest odebranie prawa do **ustalania** `T` tym wiązaniom, które mają być wobec niego tylko sprawdzane: `value` i `emptyValue` są zadeklarowane jako `NoInfer<T>`, więc typ bierze się wyłącznie z listy opcji. To domknęło cztery z pięciu przypadków sondy — łącznie z typowaniem `$event`, które wcześniej milczało.
-
-Piąty przypadek został i jest ograniczeniem Angulara, nie API: `PctRadioGroup` nie ma inputu z opcjami (są treścią rzutowaną), więc jedynym źródłem `T` jest samo `value` — i tam `$event` z `(valueChange)` nadal nie jest sprawdzane. Generyk daje tej grupie bezpieczeństwo po stronie TypeScriptu (`isSelected`, `select`, odczyt `value()`), ale nie po stronie szablonu.
-
-Lekcja: **przy generycznym komponencie trzeba osobno sprawdzić, czy szablon faktycznie egzekwuje typ** — sam fakt, że build przechodzi na poprawnym użyciu, nie odróżnia „typ się zgadza" od „typ jest ignorowany". Rozstrzyga dopiero kontrola negatywna: celowo błędne wiązanie, które **ma** wywalić build.
-
----
-
-### <a id="lesson-38"></a>`lesson-38` — Idiomatyczna emulacja w Playwrighcie po cichu nie działa
-
-**Idiomatyczny zapis emulacji w Playwrighcie po cichu nie działa i test przechodzi na wartościach domyślnych.** `test.use({ reducedMotion: 'reduce' })` i `test.use({ forcedColors: 'active' })` w wersji 1.61.1 **nie docierają do kontekstu przeglądarki**: w stronie `matchMedia('(prefers-reduced-motion: reduce)').matches` zwraca `false`, choć konfiguracja wygląda poprawnie i nic nie ostrzega. Ten sam kod przez `browser.newContext({ reducedMotion })` i przez `page.emulateMedia({ … })` działa bez zarzutu, a `test.use({ colorScheme })` — jedna z trzech osi — działa również. Czyli: sposób zapisu decyduje o tym, czy test cokolwiek bada, a rozbieżność jest niewidoczna z lektury.
-
-Wykryła to **kontrola odniesienia**, nie test właściwy. Gdyby istniał sam test redukcji z asercją „czas przejścia jest mały", przeszedłby na wartości bazowej `150ms` interpretowanej jako „dość mało" i nikt nie zauważyłby, że media query nigdy się nie zapaliło. Zapaliło się dopiero porównanie pary: bez preferencji **dokładnie** `150ms`, z preferencją **dokładnie** `0.01ms`.
-
-Stąd dwie reguły dla wszystkich testów preferencji systemowych: emulacja idzie przez `page.emulateMedia()` w pomocniku `visit()`, a każdy taki test **najpierw sprawdza `matchMedia`**, czyli pyta przeglądarkę, czy w ogóle jest w mierzonym trybie. To ta sama zasada co `req-quality-negative-control`: bramka musi umieć powiedzieć, że działa.
+**The scoped theme was broken at the component tier and nobody saw it.** A probe in the browser
+showed that in a `[data-theme="dark"]` panel the semantic token `--pct-surface` had the correct
+dark value while `--pct-button-bg` and `--pct-select-panel-bg` still returned light ones. The
+cause is in `req-token-closure`. The defect survived that long because the earlier scoped-theme
+test checked **only the semantic token**, and the difference between `blue-600` and `blue-500`
+is visually subtle. Fixed in the build; a regression test was added comparing a component token
+in `:root` and in a scope.
 
 ---
 
-### <a id="lesson-39"></a>`lesson-39` — Test wizualny może urodzić się martwy na dwa sposoby
+### <a id="lesson-18"></a>`lesson-18` — An overlay panel renders outside the host tree
 
-**Test wizualny może urodzić się martwy na dwa niezależne sposoby — oba wyglądają jak działający test.** Pierwszy: `__screenshots__/` było w `.gitignore`, więc wzorce nigdy nie trafiłyby do repozytorium, a Playwright przy braku wzorca **zapisuje bieżący zrzut jako poprawny i przechodzi** — na CI test świeciłby na zielono zawsze, porównując każdy przebieg z samym sobą. Drugi: pierwsza wersja progu miała `maxDiffPixelRatio: 0.01` i **przepuszczała** zmianę `border-radius` przycisku z 8 px na 1 px.
-
-Drugi przypadek jest pouczający liczbowo. Próg jako **ułamek** obrazu daje tym większą pobłażliwość, im większa karta — a różnica realnej regresji nie skaluje się z rozmiarem zrzutu, bo dotyczy kilku krawędzi. Pomiar: ten sam kod w powtórzonym przebiegu daje **0** różniących się pikseli, a zmiana promienia — **74**. Próg jest więc bezwzględny (`maxDiffPixels: 20`) i wynika z tych dwóch liczb, a nie z wyczucia.
-
-Obie wady wyszły dopiero po **celowym wprowadzeniu regresji** i sprawdzeniu, że bramka zapala. Lekcja: nowa bramka nie jest gotowa, gdy przechodzi — jest gotowa, gdy pokazano, że potrafi nie przejść.
-
----
-
-### <a id="lesson-40"></a>`lesson-40` — Stan niesiony samym tłem znika w wysokim kontraście
-
-**Stan niesiony samym tłem znika w trybie wysokiego kontrastu.** Kropka zaznaczonego radiobuttona to zwykły `<div>` z `background`, a w `forced-colors: active` przeglądarka wymusza na tle paletę systemu — kropka i okrąg dostawały ten sam `rgb(255,255,255)` i **zaznaczona opcja wyglądała identycznie jak pusta**. Ani bramka kontrastu tokenów, ani audyt axe tego nie widzą: obie badają tryb normalny, w którym kolory są poprawne.
-
-Naprawa jest jednozdaniowa, ale reguła z niej wynikająca jest szersza i weszła do `req-a11y-forced-colors`: **stan ma nieść obecność kształtu, nie barwa**. Ptaszek checkboxa był odporny od początku, bo przełącza się `visibility` — kropka radia była wyjątkiem, nie regułą. Tam, gdzie kształtu nie ma (opcja listy to prostokąt), rozdzielamy stany na dwa niezależne kanały: tło dla wyboru, obrys dla kursora klawiatury.
+A CDK overlay panel renders **outside the host tree**, which has two consequences: (1)
+`:host(...)` selectors do not reach its content — option states have to be marked with
+attributes on the options themselves; (2) the scoped-theme cascade does not reach it — the
+theme from the host's nearest ancestor is carried over to the panel explicitly (`data-theme`).
+Tokens work, because they are defined on `:root` — an advantage of the CSS-first approach
+(`req-token-dtcg`).
 
 ---
 
-### <a id="lesson-41"></a>`lesson-41` — Narzędzie miało hak „przed", a potrzebny był „po"
+### <a id="lesson-19"></a>`lesson-19` — `CSS.escape` does not exist in jsdom
 
-**Narzędzie miało hak tylko „przed", a potrzebny był „po".** `nx release` udostępnia `preVersionCommand`, czyli komendę uruchamianą **przed** podbiciem wersji. Pakiet zbudowany w tym momencie niesie starą stałą `PCT_VERSION`, więc pierwsze wydanie wypuściłoby artefakt kłamiący o własnej wersji. Podpowiedź z dokumentacji — `manifestRootsToUpdate: ["dist/{projectRoot}"]` — jest półśrodkiem: poprawia `package.json` w `dist`, czyli **jeden plik**, a wartość wkompilowana w bundle zostaje stara. Pakiet zgadza się wtedy sam ze sobą w manifeście i kłamie w kodzie.
-
-Naprawa polega na odwróceniu kolejności, a nie na łataniu skutku: wydanie prowadzi `tools/release.mjs` na programistycznym API (`releaseVersion` → stempel → build → bramka → `releaseChangelog` → `releasePublish`). Build stoi po podbiciu wersji, więc dist niesie właściwą wartość z samego kompilatora i `manifestRootsToUpdate` przestaje być potrzebne. Bramka pakietu stoi **przed** commitem, tagiem i publikacją — czyli przed wszystkim, co trzeba by potem odkręcać.
-
-Osobna decyzja: `stamp-version` **nie jest** zależnością `build`. Gdyby był, artefakt zawsze zgadzałby się sam ze sobą, a kontrola wersji w `check-package` przestałaby cokolwiek badać — dokładnie tak, jak bramka, która nie umie nie przejść (`lesson-39`).
+`CSS.escape` does not exist in jsdom, so building selectors from ids blows the unit tests up.
+We find the active option by index in the collection, which additionally matches the semantics
+of `activeIndex` directly.
 
 ---
 
-### <a id="lesson-42"></a>`lesson-42` — Projekt e2e nigdy nie był typecheckowany
+### <a id="lesson-20"></a>`lesson-20` — On a native element `DefaultValueAccessor` leads
 
-**Projekt e2e nigdy nie był typecheckowany i nikt tego nie zauważył.** `sandbox-e2e` miał `lint` i `e2e`, ale **żadnego** targetu typecheck — czyli kilkanaście plików TypeScriptu, których kompilator nie widział ani razu. Wyszło to przy okazji `req-token-artifacts`: dodanie targetu ujawniło w pierwszym uruchomieniu 3 błędy w `playwright.config.mts`. Nie były to wady testów — `tsconfig.json` opisywał projekt nieprawdziwie (`module: commonjs` przy pliku `.mts`, który jest ESM, i brak `types: ["node"]` przy użyciu `process`). Kod działał, bo Playwright i Nx ładują `.mts` własnymi loaderami, więc deklaracja z tsconfiga nigdy nie była konfrontowana z rzeczywistością.
-
-Lekcja: **lint nie zastępuje typechecku.** ESLint parsuje i sprawdza reguły, ale nie zgłasza błędów typów ani niespójności konfiguracji modułów. Projekt bez targetu `typecheck` to kod, o którym wiadomo tylko tyle, że da się go sparsować.
-
----
-
-### <a id="lesson-43"></a>`lesson-43` — Odczyt nieistniejącego tokenu to pusty łańcuch
-
-**Odczyt nieistniejącego tokenu nie jest błędem, tylko pustym łańcuchem.** `getComputedStyle(el).getPropertyValue('--pct-surfce')` zwraca `''` — więc test porównujący dwa takie odczyty przechodzi na `'' === ''` i milczy o tym, że nie zmierzył niczego. To ta sama klasa cichej wady co `lesson-38`, tylko wywołana literówką zamiast zapisu emulacji. Stąd realny użytek z generowanego `tokens.ts` (`req-token-artifacts`): pomocniki `tokenOf`/`rootToken` przyjmują `PctCssVar` — unię **nazw custom properties**, nie ścieżek DTCG — więc literówka jest błędem kompilacji, a nie zielonym testem. Bramkę zweryfikowano kontrolą negatywną: podmiana jednej nazwy na błędną daje 6 błędów typu.
-
-Przy okazji trzy razy z rzędu ta sama pułapka narzędziowa: „komentarz" w JSON-ie (`"// klucz"`) da się wstawić tylko tam, gdzie schemat dopuszcza dowolne klucze. W `targets` (project.json), `namedInputs` (nx.json) i `paths` (tsconfig) wartość musi mieć konkretny typ, więc łańcuch znaków wywala odpowiednio graf Nx (`Cannot use 'in' operator`), jego wczytywanie (`Given napi value is not an array`) i `tsc` (`TS5025`).
+**On a native element the classic forms go through the built-in `DefaultValueAccessor`.**
+`[formControl]` on `<input pctText>` is handled by Angular's accessor, which writes to the DOM
+itself. Our parallel value binding caused a conflict of two authors (the input started empty
+instead of with the control's value). So the control detects an `NgControl` on the same element
+and then gives up ownership of the value, keeping the wrapper and the state.
 
 ---
 
-### <a id="lesson-44"></a>`lesson-44` — `.nxignore` nie wyłącza projektu, tylko wyłącza plik z liczenia
+### <a id="lesson-21"></a>`lesson-21` — The same message logic in four controls
 
-**Kontrola odniesienia bramki pakietu potrzebuje udawanych pakietów, a udawany pakiet ma `package.json` — i to wystarczyło, żeby Nx zrobił z niego projekt.** `nx show projects` pokazał widmowy `@pacit/components` o korzeniu w `tools/check-package.fixtures/_poprawny`, z własnym targetem `lint`; trzy katalogi fixtures deklarowały tę samą nazwę, więc graf wybierał jeden z nich po cichu. Naturalne obejście — wpis w `.nxignore` — widmo usunęło i **zepsuło coś gorszego**: katalog zniknął z mapy plików, więc `inputs` targetu `check-package` przestały go widzieć. Pomiar: po edycji fixture'a `Cache: 5/5 hit (100%)`, czyli bramka **nie pobiegła**; po naprawie ta sama edycja daje `4/5`.
-
-Skutek jest dokładnie tej klasy, przed którą stoi cały ten projekt: ktoś osłabia fixture, CI świeci na zielono z cache'a, a bramka nie wykonała się ani razu. Naprawą nie jest ignorowanie, tylko nieużywanie nazwy, którą narzędzie traktuje jako strukturę: manifest leży w repozytorium jako `manifest.json` i `package.json` staje się dopiero w kopii składanej do przebiegu.
-
-Reguła jest szersza niż ten jeden katalog: **„ignoruj" w narzędziach budowania prawie nigdy nie znaczy „nie jest projektem" — znaczy „nie istnieje"**, a nieistnienie propaguje się do hashowania, czyli do tego, co decyduje o ponownym uruchomieniu zadania. Zanim wyciszy się narzędzie, trzeba sprawdzić, co jeszcze przestanie widzieć — i to pomiarem trafień w cache, bo w wyniku przebiegu ta różnica nie jest widoczna: zielone jest zielone.
+The same message logic (`errorText`, `showInvalid`, `showError`, `describedBy`, `hintId`,
+`errorId`, `touch`) had been **copied into 4 controls**. A fix required four identical
+changes — hence extracting it into `core` (`req-api-wrapper`).
 
 ---
 
-### <a id="lesson-45"></a>`lesson-45` — Usunięcie testu podniosło pokrycie
+### <a id="lesson-22"></a>`lesson-22` — The frame's padding created a dead zone
 
-**Usunięcie `number.spec.ts` podniosło pokrycie linii z 96,55% na 96,94%.** Nie jest to paradoks pomiaru, tylko jego definicja: v8 zna wyłącznie moduły, które faktycznie weszły do przebiegu, więc razem z testem z raportu wypadł cały nietestowany `number.ts` — 114 linii zniknęło z **mianownika**, nie doszło do licznika. Próg pilnujący takiej liczby jest bramką urodzoną martwą (`lesson-39`) i to w najgorszym możliwym wariancie: świeci tym jaśniej, im mniej się testuje.
-
-`coverageInclude` domyka to **tylko w połowie**. Pliki bez testu dokłada osobna ścieżka (`getCoverageMapForUncoveredFiles`), która parsuje ŹRÓDŁO rolldownem — a ten przewraca się na `import type` / `export type`, wypisując `Failed to parse … Excluding it from coverage.` w środku kilku tysięcy linii logu i kończąc przebieg **zielono, z kodem wyjścia 0**. Sonda rozstrzygnęła, gdzie leży granica: zwykła funkcja, `@Directive` i `@Component` z `templateUrl` trafiły do raportu z zerem; kopia `number.ts` — nie, bo w 18. linii ma `import type`. W bibliotece Angulara pod `isolatedModules` to nie jest rzadki zapis, tylko domyślny.
-
-Stąd pokrycie stoi na dwóch nogach. `libs/components/src/public-api.spec.ts` importuje każdą bramkę pakietu, więc jej moduły wchodzą do przebiegu normalną drogą i plik bez testu pokazuje się z pokryciem bliskim zeru, zamiast wypaść ze statystyki. `tools/check-coverage.mjs` pilnuje, że w raporcie **nie brakuje ani jednego pliku źródłowego** — bo to mianownik cicho się kurczy, a procent zawsze wygląda zdrowo. Punkt 3 tej bramki jest jedynym, który łapie tę regresję; punkty o progu pilnują liczby, która z niej powstała.
-
-Przy okazji dwie rzeczy zmierzone, nie założone. `coverageInclude` przyjmuje wzorce względem **korzenia repozytorium**, nie katalogu projektu, mimo tego, co mówi schemat executora: zapis `**/src/**` wciągnął do raportu biblioteki cały `apps/sandbox` (pokrycie 96,55% → 70,72%). A próg 80% jest **podłogą, nie zapadką**: przy 96,58% usunięcie samego `select.spec.ts` daje 81,55%, samego `number.spec.ts` — równo 80,00%, i oba przechodzą; dopiero obie naraz dają 64,96% i zapalają. Kto chce zapadki, musi ją napisać osobno — ta bramka jej nie obiecuje.
-
----
-
-### <a id="lesson-46"></a>`lesson-46` — Deklaracja częściowa nie zapisuje wartości domyślnych, więc OnPush da się zmierzyć tylko po linkowaniu
-
-**W zbudowanym pakiecie nie ma ani jednego `changeDetection:`, a mimo to każdy komponent linkuje się jako OnPush.** Kompilacja częściowa (`ɵɵngDeclareComponent`) zapisuje wyłącznie to, co odbiega od domyślnych — wartość powstaje dopiero u konsumenta, przy linkowaniu, z domyślnych **jego** Angulara. Wniosek jest niewygodny: obietnica „każdy komponent jest OnPush" nie da się sprawdzić ani w źródle (nic tam nie stoi — przewodnik v22+ wprost zabrania powtarzania domyślnych), ani w tekście bundla (tam też nic nie stoi). Jedyny odczyt, który cokolwiek znaczy, to `ɵcmp.onPush` **po** linkowaniu, a w Node odtwarza to `import '@angular/compiler'` przed wczytaniem pakietu — ten sam krok, który wykonuje konsument.
-
-Stąd kształt bramki `check-zoneless`: mierzy `dist`, nie źródła. Efekt uboczny jest tym, o który chodziło — dzień, w którym Angular zmieni swoją wartość domyślną, jest dniem, w którym ta bramka zapala, bez czytania changelogu.
-
-Przy okazji zmierzone, nie założone: dopisanie jawnego `standalone: true` do dekoratora **nie zmienia** `ɵɵngDeclareComponent` (deklaracja i tak niesie `isStandalone: true`) i rusza wyłącznie `ɵɵngDeclareClassMetadata` — echo dekoratora zostawiane dla debugowania. Cache Nx unieważnia się więc dziś także bez wpisania źródeł do `inputs`, ale za sprawą funkcji diagnostycznej, która nie jest niczyją obietnicą. Klucz cache ma wymieniać to, co bramka **czyta**, a nie to, co zwykle się przy okazji zmienia — inaczej powtórzy się `lesson-44` w trzecim przebraniu.
-
-I jeszcze jedno, tańsze: `git ls-files "*package.json"` wciąga także `ng-package.json`. Pathspec dopasowuje przyrostek, nie nazwę pliku. Fałszywego trafienia to nie dało — konfiguracja ng-packagr nie ma pól zależności — ale rozdęło mianownik w komunikacie bramki z 3 manifestów do 10, czyli sprawiło, że bramka kłamała o własnym zasięgu.
+**The wrapper frame's padding created a „dead zone"** — the cursor was inside the field, but
+a click did not set focus. It was most visible when a taller element in a slot (a button)
+raised the row's height and the centred control left empty space above and below itself. The
+solution had two parts: the control stretches to the row's height (`align-self: stretch`), and
+the wrapper forwards to the control any `mousedown` coming from an area that is not an
+interactive element (the contract gained an optional `focus()`). The frame shows a text cursor
+when it contains a text control. **The fix was only half of one** — see `lesson-27`.
 
 ---
 
-### <a id="lesson-47"></a>`lesson-47` — Target inferowany jest cudzą decyzją o zasięgu i wygląda dokładnie jak własna
+### <a id="lesson-23"></a>`lesson-23` — `page.mouse.click()` does not scroll the page
 
-**`sandbox` miał target `typecheck`, przechodził na zielono i nie oglądał czterech swoich plików.** Target dokładał `@nx/vite/plugin` (`typecheckTargetName: "typecheck"`), a jego polecenie brzmi `tsc --noEmit -p tsconfig.app.json` — czyli obejmuje konfigurację, która **wyklucza** `**/*.spec.ts`. Specyfikacje szły przez vitest, który transpiluje bez sprawdzania typów, więc `app.spec.ts`, `demo.spec.ts`, `test-setup.ts` i `vite.config.mts` nie przeszły przez kompilator ani razu. W `project.json` nie było przy tym **niczego** do zobaczenia: target nie jest tam zapisany.
-
-To `lesson-42` o piętro wyżej. Tam brakowało targetu i lista `nx affected -t typecheck` milczała; tutaj target jest, biegnie i sprawdza część projektu, a ta różnica nie objawia się nigdzie poza `--listFilesOnly`. Reguła: **target inferowany to decyzja wtyczki o tym, co jest projektem — nie moja.** Można ją przyjąć, ale trzeba ją najpierw zobaczyć, a `nx show project … --json` jest jedynym miejscem, gdzie widać.
-
-Stąd kształt bramki `check-typecheck`: nie czyta `include` z tsconfiga, tylko **uruchamia polecenie z targetu** rozszerzone o `--listFilesOnly` i porównuje wynik z indeksem gita. Czytanie `include` mierzyłoby drugi raz tę samą deklarację, która w `lesson-42` okazała się nieprawdziwa; `--showConfig` odpada z tego samego powodu, bo rozwija wzorce, ale nie widzi plików wciągniętych przez import.
-
-Trzy rzeczy zmierzone przy okazji, nie założone:
-
-- **Szczelina jest też MIĘDZY projektami.** `vitest.config.ts` i `vitest.workspace.ts` leżą w korzeniu i nie należą do żadnej biblioteki ani aplikacji, więc bramka chodząca po projektach byłaby na nie ślepa i orzekła „nie ma takiego kodu" dokładnie dlatego, że nie potrafi go zobaczyć. Punkt 1 przypisuje każdy plik do najgłębszego projektu-przedrostka i zapala na tych, którym żaden nie odpowiada.
-- **Projekt roota jest affected przy każdej zmianie.** Sprawdzone `nx show projects --affected --files=…`: zarówno `libs/components/src/index.ts`, jak i `docs/plan.md`, jak i `project.json` nowego projektu dają w wyniku `@org/source`. Bramki workspace'owe (`check-docs`, `check-typecheck`) biegną więc w każdym przebiegu — inaczej nowy projekt bez targetu wymykałby się tej, która powstała właśnie po to.
-- **Rozbrojenie punktu bywa wyjątkiem zamiast komunikatu.** Punkt 3 czytał `p.typecheck.polecenia` wprost, bo po punkcie 2 target „na pewno" istnieje. Wyłączenie punktu 2 w ramach kontroli tej kontroli zamieniło bramkę w `TypeError`, czyli kontrola odniesienia przestała umieć zbadać punkt, który miała zbadać. Zależność między punktami jest normalna; jej zapisanie tak, że jej naruszenie daje stack trace zamiast zdania — nie.
-
-I jeszcze jedno, w rodzinie `lesson-44`: **target sprawdzający specyfikacje nie może brać `inputs: ["production"]`**, bo ten namedInput odejmuje `**/*.spec.ts` — czyli dokładnie pliki, dla których go dołożono. Pomiar: dopisanie linii do `src/public-api.spec.ts` daje przy `default` `Cache: 0/1 hit`, a przy `production` `1/1 hit`. Przebieg jest w obu przypadkach zielony i w obu wygląda tak samo; różni się tym, czy kompilator w ogóle wystartował.
+While verifying that fix, **the bug was in the test, not in the code**: Playwright's
+`page.mouse.click()` uses viewport coordinates and does not scroll the page, so a click on an
+element below the fold hit `<html>`. The locator's `click()` scrolls by itself. When clicking
+coordinates you have to call `scrollIntoViewIfNeeded()` first.
 
 ---
 
-### <a id="lesson-48"></a>`lesson-48` — Dwa pomiary pilnujące się nawzajem muszą być NIEZALEŻNE, inaczej gasną razem
+### <a id="lesson-24"></a>`lesson-24` — The part-name collision repeated itself with the wrapper
 
-**Bramka stylów przeszła na zielono, wypisawszy „7 arkuszy, 0 komponentów".** Lista źródeł
-brała się z `git ls-files 'libs/components/*/src/**/*.ts'`, a **pathspec gita nie jest
-globem powłoki**: bez magii `:(glob)` gwiazdka przechodzi przez `/`, więc ten wzorzec żąda
-o jeden katalog za dużo i nie dopasowuje `button/src/button.ts`. Zwraca zero plików — nie
-błąd, nie ostrzeżenie, pustą listę.
-
-Zero komponentów przeszło przez kontrolę mianownika, bo ta porównywała **liczbę
-sparsowanych dekoratorów z liczbą wystąpień `@Component(`**. Obie strony wyszły zerowe,
-zero równa się zeru, punkt orzekł „komplet". Lek jest ten sam, którego bramka pokrycia
-używa na listę plików: zanim porówna się dwa zbiory, trzeba sprawdzić, że **któryś z nich
-w ogóle coś zawiera**. Porównanie liczb jest na zero ślepe zawsze.
-
-Gorszy wariant tej samej wady siedział w kontroli, która miała ją wykluczyć. Licznik był
-zapisany jako `/^@Component\(/gm` — **co do znaku tą samą kotwicą co parser**. Sens
-licznika polegał na tym, że mierzy niezależnie: parser kotwiczy się na formatowaniu
-prettiera, a licznik ma zauważyć, gdy rzeczywistość od tego formatowania odjedzie.
-Przy identycznej kotwicy przesunięcie dekoratora o **jedną spację** gasi jedno i drugie
-naraz, obie strony zgadzają się o jeden niżej i bramka kończy zielono.
-
-Zmierzone, nie wyrozumowane: `PctCheckbox` wcięty o spację dawał „7 komponentów" zamiast
-ośmiu, przy przebiegu bez ani jednego naruszenia.
-
-To samo zdanie stało w komentarzu przy tym kodzie — „bez tego zmiana formatowania nie
-wywaliłaby parsera, tylko po cichu ZMNIEJSZYŁA mianownik" — i było nieprawdziwe od
-początku. Komentarz opisywał zamiar, implementacja go nie realizowała, a **nic tego nie
-sprawdzało, bo kontrola odniesienia tej bramki podaje dane, nie tekst źródła**: regex nie
-biegnie na żadnym fixturze, wyłącznie na prawdziwym repozytorium. Dziura wyszła dopiero
-z ręcznego przebiegu na zepsutym repo.
-
-Ta sama wada była w `check-zoneless.mjs` ([`lesson-46`](#lesson-46)) i została naprawiona
-razem z tą — tam kosztowała cichy brak pomiaru `OnPush` dla całego komponentu.
-
-Reguła: **kontrola porównująca dwa pomiary jest warta tyle, ile ich niezależność.**
-Skopiowanie wyrażenia z jednej strony na drugą zamienia ją w kontrolę tego, że pewna
-stała równa się samej sobie — konstrukcja, która nigdy nie zapala i wygląda przy tym
-dokładnie jak działająca. Do tego dochodzi wniosek o zasięgu kontroli odniesienia:
-fixture podający **dane** nie bada kodu, który te dane wydobywa, więc ta warstwa musi
-mieć własny dowód — przebieg na zepsutym repozytorium.
+**The part-name collision repeated itself with the wrapper.** When `pct-field` wrapped a radio
+group, its `label` part matched 4 elements (the wrapper's label plus the options' labels), and
+after wrapping a checkbox the `control` part collided with the checkbox's native input. That is
+the same class of bug as `lesson-15` — so the `req-api-parts-unique` rule applies to the
+wrapper too, not only to groups.
 
 ---
 
-### <a id="lesson-49"></a>`lesson-49` — Snapshot nie domyka obietnicy o nazwie, tylko ją zamraża
+### <a id="lesson-25"></a>`lesson-25` — A wrapped select had a 19.6 px touch target
 
-**Plan mówił: „`tokens.ts` już jest generowany — dołożyć wersjonowany snapshot i porównanie". Snapshot dołożony wtedy zapisałby jako stan zaakceptowany 34 tokeny, których nazwy łamały schemat opisany w tym samym wymaganiu.** `--pct-checkbox-checked-bg` stało w `component.checkbox.json` sześć linii pod `--pct-checkbox-border-hover`: raz stan przed właściwością, raz po. Obie nazwy są poprawne z osobna i żadna niczego nie psuje — psuje je dopiero to, że są obok siebie, bo wtedy znając jedną nie da się zgadnąć drugiej. Dokładnie ta zgadywalność jest treścią [`req-token-names`](requirements/tokens.md#req-token-names).
-
-Rozróżnienie, którego plan nie zrobił: **snapshot mierzy ZMIANĘ, nie WŁAŚCIWOŚĆ.** To dwie różne obietnice i tylko pierwsza z nich daje się zamknąć porównaniem z plikiem. Bramka złożona z samego snapshotu odpowiada na pytanie „czy ktoś przemianował token po cichu" i milczy na „czy tę nazwę da się zgadnąć" — a przy pierwszym uruchomieniu robi coś gorszego niż milczenie: **przypieczętowuje stan zastany.** Im dłużej stoi, tym droższa jest naprawa, bo każde kolejne przemianowanie jest już zmianą łamiącą dla konsumenta.
-
-Stąd kolejność punktów w `check-tokens.mjs`: schemat **przed** snapshotem. Odwrotna dawałaby na złą nazwę komunikat „snapshot się rozjechał" — poprawną diagnozę problemu, którego nie ma, i podpowiedź (`--write`), która zabetonowałaby wadę. Zmierzone: przy rozbrojonym punkcie schematu wszystkie cztery spreparowane wejścia dla schematu zapalają na snapshocie, czyli wyglądają na obsłużone.
-
-Drugie zdanie tej samej lekcji dotyczy słownika. Reguła „nazwa składa się ze słów z zamkniętego zbioru" domyka się w kółko, bo zbiór da się rozszerzyć razem z nazwą. Maszyna tego nie rozstrzygnie i bramka nie udaje, że rozstrzyga — pilnuje węższej rzeczy: **każde zadeklarowane słowo musi być użyte**. Dzięki temu dopisanie słowa jest linią w diffie, którą widać w review, a nie cichym rozszerzeniem zbioru dopuszczalnych nazw. To ta sama konstrukcja co próg długości uzasadnienia w `check-styles`: bramka nie ocenia, czy powód jest dobry, tylko pilnuje, żeby było co oceniać.
-
-Trzecia obserwacja, w rodzinie [`lesson-44`](#lesson-44): **fixture, którego nie ma w repozytorium, nie jest kontrolą odniesienia.** Dwa przypadki tej bramki wiozą celowo wadliwe `dist/` — bo tylko tak da się pokazać rozjazd między artefaktem a źródłem — a reguła `dist` w `.gitignore` dopasowuje katalog o tej nazwie na **każdej głębokości**, więc oba wypadły z indeksu bez słowa. Świeży checkout dostawał przypadki bez ich wady. Zmierzone przez odsunięcie obu katalogów: bramka melduje wtedy „spreparowane wejście PRZESZŁO" dla punktów 1 i 2. Awaria jest więc **głośna**, i to jedyny powód, dla którego ta pomyłka nie jest droga — konstrukcja „przypadek musi zapalić na swoim punkcie" zamienia brakujący plik w czerwone CI zamiast w cichą utratę dwóch kontroli. Plik i tak trzeba było odzyskać (`!tools/check-tokens.fixtures/*/libs/tokens/dist/`) i wyłączyć z prettiera, bo fixture ma wyglądać jak prawdziwe wyjście generatora, a nie jak sformatowany kod.
-
-Czwarta obserwacja, tym razem o narzędziu, nie o bramce: **skrypt zmiany nazw musi być idempotentny albo jednorazowy pod nadzorem.** Mapa `dot` → `dot-bg` zastosowana drugi raz na już przemianowanym pliku dała `--pct-radio-dot-bg-bg` i `--pct-radio-dot-bg-bg-size`, bo podmiana tekstu nie ma granic słowa. Zauważył to dopiero grep — `check-tokens` czyta **deklaracje** tokenów, nie ich użycia w arkuszach, więc zepsutego `var()` nie widzi z założenia. Tę stronę pilnuje osobno `check-package` (każdy użyty token ma w pakiecie deklarację) i to jest właściwy podział, ale trzeba wiedzieć, że przebieg tej jednej bramki takiej wady nie wyklucza.
+**A wrapped select had a 19.6 px touch target.** After handing the frame over to the wrapper
+the trigger lost its own padding, so its height dropped to the text line height — below the SC
+2.5.8 threshold. The wrapper now guarantees `min-height: var(--pct-target-min)` on the control
+column, which fixes it for every control at once. The existing touch-target test caught it —
+proof that it was worth writing back at the checkbox.
 
 ---
 
-### <a id="lesson-50"></a>`lesson-50` — Kontrola odniesienia dowodzi, że bramka ZAPALA, a nie że mówi prawdę
+### <a id="lesson-26"></a>`lesson-26` — `FormField` supplies an `NgControl` itself
 
-**Punkt snapshotu w `check-parts` zapalił poprawnie i wyjaśnił to fałszywie.** Przemianowanie części `trigger` na `activator` — zmiana publicznego API stylowania — dało komunikat „lista części jest ta sama, rozjechał się nagłówek albo kolejność wierszy". Porównanie treści pliku było w porządku i zadziałało; zawiódł kod, który miał **nazwać różnicę**: filtr wierszy danych brzmiał `/^\.[a-z-]*\s/` i nie przechodził przez ukośnik w `./select`, więc obie listy wychodziły puste, a puste są sobie równe. Bramka odrzuciła zmianę i podała przy tym poprawną diagnozę problemu, którego nie było.
+**`FormField` supplies an `NgControl` itself, so the heuristic from `lesson-20` was too wide.**
+The signal-forms directive registers an interop `NgControl` for compatibility with old
+`ControlValueAccessor`s. The condition „there is an `NgControl` ⇒ somebody else writes to the
+DOM" therefore covered signal forms too — and those, with **our own control**
+(`FormValueControl`), set only its `value` and do not write to the DOM (they do that only for
+elements with no control of their own). The effect:
+`<input pctText [formField]="f.email">` with a non-empty initial value rendered an **empty
+field**. The defect survived because every test and the sandbox started from an empty model.
+The condition now tells the two cases apart (an `NgControl` without a `FormField`), and the
+regression is watched by tests starting from a non-empty value — in `PctText` and `PctNumber`.
 
-Istotne jest nie samo przeoczenie, tylko to, że **kontrola odniesienia nie miała jak go zobaczyć — z konstrukcji.** Przypadek `snapshot-nieaktualny` zapalił na swoim punkcie i został zaliczony, bo `fixture.json` deklaruje `kontrola`, a przebieg porównuje identyfikatory. Tak działa kontrola odniesienia **każdej** bramki w tym repozytorium: sprawdza, KTÓRY punkt odrzucił wejście, i milczy o tym, CO ten punkt powiedział. Cała warstwa komunikatów — czyli jedyna warstwa, na którą reaguje człowiek — leży poza jej zasięgiem.
+---
 
-Wyszło z przebiegu na prawdziwym repozytorium, i to nie z jego kodu wyjścia, tylko z przeczytania wypisanego zdania. To jest reguła praktyczna: **przebieg na zepsutym repozytorium trzeba CZYTAĆ, nie liczyć.** Kod wyjścia jest tą częścią, którą fixtures już pokrywają; komunikat nie jest pokryty niczym poza spojrzeniem.
+### <a id="lesson-27"></a>`lesson-27` — Patching the symptom left a dead zone visible in the cursor
 
-Osobno, w rodzinie [`lesson-47`](#lesson-47) i [`lesson-49`](#lesson-49): rozbrojenie gałęzi „brak snapshotu" zamieniło bramkę w `TypeError`, bo gałąź licząca różnicę czytała `null.split`. **Trzeci raz ta sama wada, znaleziona trzeci raz tą samą kontrolą — tym razem w bramce pisanej ze świadomością dwóch poprzednich.** Powtarza się, bo naturalny sposób napisania drugiej gałęzi to założyć, że pierwsza już zadziałała. Zależność między gałęziami jednego punktu jest normalna; zapisanie jej tak, że jej naruszenie nie daje zdania, nie jest — i najwyraźniej nie wystarczy o tym wiedzieć, trzeba to za każdym razem zmierzyć.
+**Patching the symptom instead of the cause left a dead zone visible in the cursor.**
+`lesson-22` fixed the _click_ on the frame's padding (forwarding `mousedown` to the control) but
+not the _ownership_ of that area: the padding and `gap` stayed on the row and the columns were
+centred within it, so **about 60% of the frame's surface belonged to no inner element** (a
+354×24 control column in a 380×42 row). The consequences only showed on a cursor map taken from
+the browser (`elementFromPoint` × `getComputedStyle().cursor` over a grid of points): a select
+field had a `pointer` cursor only over the trigger, a disabled field invited you to type with
+a text cursor across all of its padding, and the strip around a button in a slot looked like
+part of it while a click there hit the field. The structural fix: padding moves from the row
+down to the columns, the columns tile the inside of the frame with no gaps (an empty decoration
+slot **does not disappear**, it collapses to the edge padding), an interactive decoration gets
+the full height of its slot (revised in `lesson-34` — from then on the author decides whether
+a slot is filled, not the presence of a button), and the kind of cursor is declared by the
+control through `fieldCursor` — without that, `field.scss` would have to know the classes of
+every control (`:has(input.pct-text)`) and every new one would start with the same bug.
+`activate()` joined the contract too: a `pointer` cursor over the whole frame of a select
+promises the list will open, so a click on the padding has to open it, not merely move focus.
 
-### <a id="lesson-51"></a>`lesson-51` — Wartości domyślnej dopisywanej przez narzędzie nie da się usunąć, więc bramka na jej brak nie ma jak zapalić
+The methodological lesson: **„can it be clicked" and „can you see that it can be clicked" are
+two different requirements** — the first was tested by a pair of e2e tests and they passed, the
+second only came out of measuring the whole surface. The „cursor map over a grid of points"
+pattern catches this class of defect cheaply and is worth repeating for every component with
+a complex surface.
 
-**`check-bundle` dostał punkt pilnujący `sideEffects: false` w spakowanym manifeście, z uzasadnieniem „usunięcie tej flagi nie daje ani jednego czerwonego testu, a u konsumenta wyłącza tree-shaking". Uzasadnienie było prawdziwe, a punkt badał coś innego, niż napisałem.** Przebieg na prawdziwym repozytorium: klucz usunięty ze źródłowego `libs/components/package.json`, przebudowa, bramka **zielona**. Pierwsze podejrzenie padło na cache — `nx build` zameldował `Cache: 3/3 hit`, co wyglądało na wystarczające wyjaśnienie i było fałszywym tropem. Powtórka z `--skip-nx-cache` dała ten sam wynik: **ng-packagr dopisuje `"sideEffects": false` sam**, gdy źródło milczy.
+---
 
-Scenariusz, dla którego punkt powstał — „ktoś skasował flagę" — jest więc niewykonalny, a punkt tak napisany byłby [bramką urodzoną martwą](#lesson-39) w tym jednym wariancie i nikt by tego nie zauważył, bo bramka przechodzi. Zapala na jawnym `true` i na dniu, w którym ng-packagr przestanie wartość domyślną dopisywać — i to jest jej prawdziwy zakres, tylko trzeba go było zmierzyć, a nie wypisać z intencji.
+### <a id="lesson-28"></a>`lesson-28` — jsdom does not parse `:has()` with a relative combinator
 
-Reguła ogólniejsza, w rodzinie [`lesson-11`](#lesson-11) i [`lesson-46`](#lesson-46): **narzędzie w łańcuchu budowania ma własne wartości domyślne i wpisuje je do artefaktu, więc pytanie „czy ktoś to usunął" nie ma po stronie artefaktu odpowiedzi.** Bramka czytająca artefakt bada wtedy, co narzędzie postanowiło, a nie co postanowił człowiek. Odpowiedź nie brzmi „czytaj źródło" — konsument dostaje artefakt — tylko: **zmierz, na co ten punkt naprawdę potrafi zapalić, i zapisz to w nim samym.** Inaczej komentarz przy bramce opisuje wadę, której ta bramka nie łapie, a to jest gorsze niż brak komentarza: brzmi jak pokrycie.
+**jsdom (nwsapi) does not parse `:has()` with a relative combinator** — `:has(+ .selector)`
+blows up with `SyntaxError: not a valid selector` on **any** later `querySelectorAll` in the
+test, so the failure appears somewhere unrelated to the cause. The version with a plain
+`:has(button, a, [tabindex])` works. Tooling aside, a better solution turned out to be a layout
+that does not look „ahead": the spacing is carried by the decoration slot (edge padding on the
+outside, `gap` on the control's side), and an empty slot collapses to the edge padding alone —
+which lets the columns tile the frame with no conditional rule at all.
 
-Osobno, w rodzinie [`lesson-47`](#lesson-47), [`lesson-49`](#lesson-49) i [`lesson-50`](#lesson-50): rozbrojenie punktu `obecnosc` zamieniło bramkę w `TypeError`, bo druga gałąź tego samego punktu czytała `s.wniesione`, ufając pierwszej. **Czwarty raz ta sama wada — i pierwszy raz WEWNĄTRZ jednego punktu, nie między punktami.** Wcześniejsze trzy dały regułę „nie ufaj poprzedniemu punktowi"; ta dokłada, że granica punktu nie jest granicą tego zaufania.
+---
 
-### <a id="lesson-52"></a>`lesson-52` — Para, której nikt nie wpisał do policy, jest parą, o której bramka nie ma zdania
+### <a id="lesson-29"></a>`lesson-29` — A height computed from padding cannot be lined up
 
-**Bramka kontrastu tej biblioteki liczyła 38 par i była zielona. Kolorów, które biblioteka naprawdę maluje, jest 74.** Poza jej zasięgiem stały wszystkie stany hover i active przycisku, wszystkie stany disabled, komunikaty błędu checkboxa, radia i selecta oraz siedem obramowań. Policy nie kłamała — nikt jej nie okłamał — po prostu **mierzy dokładnie to, co ktoś wcześniej do niej wpisał**, a to wygląda w przebiegu identycznie jak pomiar kompletny ([`lesson-33`](#lesson-33) w wersji dla tokenów).
+**A height computed from padding cannot be lined up between components.** The button and the
+field used the same spacing token (`space.3`) and still differed by 7 px: the button measured
+`padding-y` plus the label's line height (≈34.8 px), the field `padding-y` plus the guaranteed
+touch target of the control column (42 px). Aligning by tuning the paddings would be false —
+it would depend on `line-height`, the typeface and the slots' content, and every new component
+would start by guessing. Hence `req-api-size`: the height is a separate token
+(`--pct-control-height-*`) shared by both, and vertical padding stops driving the vertical. The
+`28 / 36 / 44 px` scale was chosen so the smallest size still clears the SC 2.5.8 touch
+threshold with room to spare.
 
-Dwie z tych 27 luk były niewidoczne także dla reguły opartej na NAZWACH tokenów: wariant outline przycisku maluje tło `var(--pct-surface-100)` i etykietę `var(--pct-primary)`, czyli dwoma tokenami **semantycznymi**. Bramka pytająca „czy każdy token komponentowy `*-bg` ma parę" orzekłaby o kompletności, nie widząc ich z konstrukcji. Stąd mianownik czyta wyjście **sassa** dla arkuszy, a nie listę nazw — ten sam ruch co „nie czytaj `include`, uruchom kompilator" z [`lesson-47`](#lesson-47).
+The evidence is a measurement in the browser (`apps/sandbox-e2e/src/size.spec.ts`), not the
+mere fact that both components read the same token: the test checks that the heights are equal
+**and** what that height is — on equality alone both could collapse to the text line height and
+still „pass".
 
-Najważniejsze jest to, co się stało po dopisaniu brakujących par: **build padł na trzech z nich.** W motywie ciemnym etykieta przycisku na hover dawała 3,45:1, na active 2,66:1, a etykieta wariantu outline na hover 3,98:1 — wszystkie poniżej AA, wszystkie obecne w bibliotece od miesięcy, wszystkie przy zielonym CI. Przyczyna jest pouczająca sama w sobie: **kierunek rampy zależy od tego, po której stronie stoi tekst.** W motywie jasnym `on-primary` jest biały, więc hover przyciemniający tło podnosi kontrast; w ciemnym `on-primary` jest ciemny, więc ta sama operacja go **zbija**. Rampa skopiowana z jasnego motywu do ciemnego wygląda na symetryczną i nie jest. Poprawka: w ciemnym `primary` idzie w górę (`blue-400` → `blue-300` → `blue-200`), a nie w dół.
+---
 
-Reguła praktyczna: **bramka, która bada listę wpisaną ręką, potrzebuje drugiej bramki na kompletność tej listy** — i dopiero razem są pomiarem. Sama pierwsza jest kwestionariuszem, który ocenia własne pytania.
+### <a id="lesson-30"></a>`lesson-30` — A test can click server HTML before hydration
 
-### <a id="lesson-53"></a>`lesson-53` — Bramka wizualna ma dwa budżety, a zmierzony był jeden
+**A test can click the server's HTML before hydration takes it over.** After the sandbox was
+split into lazily loaded views the e2e tests began to flake: `fill()` typed a value and then
+the field returned to its initial state — the symptom looked like a `PctNumber` defect and was
+a race. `goto()` resolves on the `load` event, and between „the element is in the DOM" and „the
+element is wired up" sits the fetch of the route's chunk. So the shell exposes
+a `data-sbx-ready` marker after `ApplicationRef.whenStable()`, and the tests enter through the
+`visit()` helper, which waits for it. The barrier is on the test's side, not the app's — the
+app delays nothing.
 
-**Zmiana `--pct-primary` w motywie ciemnym o jeden krok rampy przemalowała cały przycisk na wszystkich zrzutach ciemnych — i nie ruszyła ani jednego wzorca.** `npx playwright test --update-snapshots` nie przepisał żadnego pliku, bo dla Playwrighta obraz był **identyczny**. Zmierzone, bo w to nie sposób uwierzyć: histogram wzorca ma 2145 pikseli `#3b82f6`, histogram świeżego renderu 2155 pikseli `#60a5fa`, a porównanie melduje zero różnic.
+---
 
-Powód: `toHaveScreenshot` ma **dwa** progi. `maxDiffPixels` mówi, ile pikseli wolno się różnić, a `threshold` (domyślnie **0.2**) decyduje, który piksel w ogóle **liczy się jako różny** — to odległość koloru w metryce YIQ pixelmatcha. Zmierzone kroki rampy: `blue-500` → `blue-400` to 0,0163, `blue-500` → `blue-600` to 0,0101, `slate-900` → `slate-800` to 0,0042. Wszystkie mieszczą się w domyślnej tolerancji **dwunastokrotnie**, więc bramka wizualna nie widziała przesunięcia palety — czyli akurat tej klasy regresji, dla której design system trzyma zrzuty.
+### <a id="lesson-31"></a>`lesson-31` — The id generator was unsafe under SSR
 
-To jest [`lesson-39`](#lesson-39) na drugiej osi. Tam próg ułamkowy skalował się z wielkością karty i przepuszczał regresję geometrii; tu próg koloru przepuszcza regresję malowania. W obu przypadkach **konfiguracja miała jedną wartość zmierzoną i jedną domyślną, a bramka jest tak mocna jak ta druga.**
+**The id generator was unsafe under SSR and nobody saw it.** `nextPctId` counted in a module
+variable, and the server renders many requests in one process: the counter grew with every
+render while the client always started from zero. The first request after the server started
+happened to agree (hence the green tests); every later one produced HTML with different ids
+than the client would compute — after hydration some attributes kept the server's values and
+some got the client's, and **ARIA relations pointed into the void**
+(`aria-labelledby="pct-field-4071-label"` against a `pct-field-12-label` label). The defect only
+surfaced once the sandbox got a second route and traffic on the dev server grew. The counter now
+lives in a `providedIn: 'root'` service — the app injector lives exactly as long as one request
+on the server and one page load on the client, so both sides count from zero.
 
-Reguła praktyczna: **wypisz wszystkie progi bramki i zmierz każdy z osobna, także ten, którego nie ustawiałeś.** Wartość domyślna nie jest brakiem decyzji — jest decyzją kogoś, kto nie znał tego projektu. Nowy próg (`threshold: 0.005`) łapie każdy krok rampy poza sąsiednimi szarościami tła i nie wnosi szumu: 26 zrzutów, dwa przebiegi pod rząd, zero fałszywych alarmów.
+The lesson: **module state is shared across all SSR renders.** Every counter, cache or registry
+in a library with `req-project-ssr` has to go into DI or be stateless — otherwise the defect
+appears only „on somebody's production", after the second request.
 
-### <a id="lesson-54"></a>`lesson-54` — Wartość domyślna wejścia jest odczytem przy konstrukcji, choć wejście jest sygnałem
+---
 
-**`readonly placeholder = input<string>(this.texts.selectPlaceholder)` wygląda na odczyt reaktywny i nim nie jest.** Reaktywne jest samo wejście — zmiana wiązania z zewnątrz przerysuje widok. Wartość **domyślna** powstaje raz, w konstruktorze, więc podmiana tekstów po starcie aplikacji nie dociera do komponentu, który już istnieje.
+### <a id="lesson-32"></a>`lesson-32` — A number field step computed from the DOM dropped keypresses
 
-Zmierzone celową regresją: test przełączający `providePctTexts(computed(() => …))` z angielskiego na polski dostaje `expected 'Select…' to be 'Wybierz…'` przy odczycie z konstrukcji i przechodzi przy odczycie przez `computed()`. Przy zielonym CI przez cały czas, bo **jedyny test tego kanału renderował komponent raz** — a przy jednym renderowaniu obie wersje dają ten sam napis.
+**A number field step computed from the DOM's text dropped keypresses.** `stepBy` took its
+starting point from `input.value`, and the text is written by an **effect**, i.e.
+asynchronously: two arrow presses in one detection pass saw the same starting value and the
+second had no effect. It showed up as a flaky e2e test (once every few runs), because it
+depended on whether a flush fitted between the events — a person holding the arrow down hits
+the same window. The starting point is now **the signal**, and the text only when the user is
+actually typing (`typing()`); a typed but uncommitted value is still respected.
 
-Rzecz jest szersza niż teksty. Sygnał w API mówi o tym, **kiedy wartość jest czytana**, a nie o tym, że każde jej użycie jest czytaniem: `input(x)`, `signal(x)`, `model(x)` przyjmują **wartość**, więc wszystko, co w tym miejscu stoi, zostaje policzone natychmiast i zamrożone. To ten sam kształt co [`lesson-11`](#lesson-11) i [`lesson-46`](#lesson-46): wartość domyślna jest cudzą decyzją podjętą wcześniej, niż się wydaje.
+The lesson: **the DOM is not the source of truth in a signal-driven component** — a read from
+it can always be one pass behind. The regression test deliberately does not stabilise the
+fixture between events; with an `await` after each of them the defect is invisible, which
+explains why the existing keyboard test let it through.
 
-Reguła praktyczna: **napis, wartość zależna od DI i wszystko, co konsument może podmienić po starcie, mają być czytane w `computed()`, nie w wartości domyślnej.** Zapisane jako punkt bramki (`check-texts`, reguła `napis-przy-konstrukcji`), bo samo wiedzieć nie wystarczy: poprzedni zapis stał od `a4794a4` (2026-07-27) — czyli od commita, który `PCT_TEXTS` wprowadził — i przez ten czas nie dał ani jednego czerwonego testu. Wada była przy tym **opisana w decyzji 0007 jako otwarta**; to nie brak wiedzy ją utrzymał, tylko brak maszyny.
+---
 
-### <a id="lesson-55"></a>`lesson-55` — Plik, który jest w pakiecie, i plik, który da się wczytać, to dwa różne pomiary
+### <a id="lesson-33"></a>`lesson-33` — The states view found a disallowed ARIA attribute
 
-**`ng add @pacit/components` — pierwsza komenda, jaką wpisuje konsument — wywracała się na `exports is not defined in ES module scope`.** Przyczyna: manifest pakietu niesie `"type": "module"` (dopisuje je ng-packagr), a schematics są kompilowane osobno do CommonJS-a i lądują w pakiecie jako `.js`. Node czyta je więc jako ESM i przewraca się na `exports.ngAdd = …` w drugiej linii pliku.
+**The cross-cutting states view found a disallowed ARIA attribute on its first run.**
+`PctRadio` exposed `aria-readonly` on a native `<input type="radio">`, and the `radio` role
+**does not support** that attribute — only `radiogroup` does. Axe classifies this as a
+**critical** violation (`aria-allowed-attr`), and the defect had still survived several rounds
+of audits: no example so far had rendered a radio group in a read-only state. The attribute
+moved to the container, and the unit tests now check both places (present on the group, absent
+on the option).
 
-Wada stała w wydawanym artefakcie i **żadna bramka jej nie widziała, choć jedna pytała dokładnie o ten plik.** `check-package` sprawdza punkt po punkcie: manifest ma pole `schematics`, kolekcja wskazuje fabrykę `./ng-add/index`, plik `schematics/ng-add/index.js` jest w pakiecie. Wszystkie trzy odpowiedzi były prawdziwe. Pytanie „czy da się go wczytać" nie padło, bo bramka statyczna nie ma jak go zadać — `require()` tego pliku wymaga pakietu **zainstalowanego**, z jego własną granicą modułów, a nie katalogu `dist` czytanego z boku.
+The lesson: **the „every component × every state" matrix is not sandbox decoration but the
+input for the a11y gate.** The audit examines only what somebody rendered first — a gap in what
+is shown is a gap in coverage, invisible in the report because the report is green.
 
-Zmierzone: usunięcie `schematics/package.json` (`{ "type": "commonjs" }`) z pakietu zapala `check-consumer` na regule `ng-add/schematic-padl` i nie rusza `check-package`. Tak samo rozwiązuje to `@angular/cdk`: `"type": "module"` w korzeniu, własna granica w podkatalogu.
+---
 
-Reguła praktyczna: **przy artefakcie do dystrybucji istnienie pliku i jego użyteczność to dwa różne pomiary i potrzebują dwóch różnych bramek.** Statyczna czyta katalog i odpowiada tanio na „czego brakuje"; ta w użyciu instaluje pakiet po nazwie i odpowiada drogo na „co się psuje". Pierwsza bez drugiej wygląda na komplet — i to jest jej najgorsza cecha, bo `req-quality-package` deklarowała pokrycie punktu, w którym miała wyłącznie obecność. To [`lesson-36`](#lesson-36) o jedno piętro wyżej: tam zielony build nie dowodził, że artefakt da się użyć, tutaj zielona bramka artefaktu nie dowodzi, że da się użyć tego, co w nim jest.
+### <a id="lesson-34"></a>`lesson-34` — The stylesheet guessed intent from a slot's content
 
-### <a id="lesson-56"></a>`lesson-56` — Media query zapala się także w silniku, który nie umie tego, o co pyta
+**The stylesheet guessed intent from a slot's content and coupled two independent things.**
+`lesson-27` gave a decoration the full height of its slot through the rule
+`:has(button, a, [tabindex])` — that is, „interactive" meant „fills the slot". The consequences
+only appeared on an attempt to build four natural decorations at once: a clear button **could
+not** be smaller than its slot (and a small button with a visible border inside a field's
+spacing is an ordinary pattern), and a tile with a background — a unit welded into the frame —
+**could not** be bigger, because it is not interactive. The two axes were separated: the author
+decides whether the slot is filled (`pctPrefix="fill"`), and the element itself still decides
+about handling the click. A `fill` decoration is also **a surface of its own**, so the wrapper
+stops intercepting clicks on it — otherwise the tile would show a `default` cursor and still
+focus the control, precisely the cursor/effect mismatch `lesson-27` was fixing.
 
-**Playwrightowy webkit melduje `matchMedia('(forced-colors: active)').matches === true` i nie podmienia ani jednego koloru autora.** Zmierzone sondą na elemencie bez żadnych reguł biblioteki: `<div style="background: rgb(1, 2, 3)">` wychodzi z chromium i firefoksa jako biel z palety użytkownika, a z webkita jako `rgb(1, 2, 3)`. `forced-color-adjust` nie jest w nim nawet znaną właściwością — `getComputedStyle` zwraca dla niej `undefined`, podczas gdy dwa pozostałe silniki dają `auto`.
+Two details only came out of measurement in the browser, not of reasoning. First, a welded-in
+button contributed a minimum height of its own, equal by design to the height of a field of the
+same size (`req-api-size`), so the row grew by the thickness of its border — a field with
+a button was 2 px taller than one without. So a `fill` decoration gets `min-height: 0`: it is to
+take its height from the slot, because it is the slot it fills. Second, once the slot was handed
+over to the decoration, the spacing between it and the control had to move onto the control's
+column — without that it would be a strip with no owner, i.e. a return to the `lesson-27` defect
+in miniature.
 
-Skutek jest gorszy niż czerwony przebieg. Z sześciu testów `forced-colors.spec.ts` na webkicie **cztery przechodzą** — te, które porównują wartość zmierzoną w komponencie z `Highlight` albo `Field` odczytanym z tej samej przeglądarki. Słowa kluczowe palety systemowej webkit rozwiązuje poprawnie i reguły spod `@media (forced-colors: active)` stosuje, więc jawnie zadeklarowany `outline-color: Highlight` trafia tam, gdzie ma trafić. Nie działa **automatyczna podmiana**, czyli dokładnie ta połowa kontraktu, której nie widać w arkuszu. Testy pytające o nią mierzą kolory z tokenów i meldują sukces.
+A symmetric constraint stays on the author's side and is unremovable: an `inset` button has to
+be one step smaller than the field, because the heights of both at the same size are equal by
+design. At the smallest size there is no step below, so the button fills the height there and
+pushes the row out by the thickness of its border — that is not a fitting defect but a corollary
+of `req-api-size`.
 
-Trafiło to przy okazji w wadę specyficzności, której dwa pozostałe silniki **nie potrafią pokazać**: `:host([disabled]:not([data-pct-loading]))` w regule bazowej ma (0,3,0), a `:host([disabled])` w bloku forced-colors — (0,2,0). Media query nie dokłada specyficzności, więc `color: GrayText` przegrywa z tokenem. W chromium i firefoksie nie widać tego nigdy, bo przeglądarka i tak zamaluje wynik paletą; widać dopiero tam, gdzie nie zamaluje. Deklaracja w bibliotece jest więc martwa — dziś bez objawu, a z objawem od dnia, w którym padnie pod `forced-color-adjust: none`.
+---
 
-Reguła praktyczna, w rodzinie [`lesson-48`](#lesson-48): **zapytanie o warunek i zdolność do jego spełnienia to dwa różne pytania, a emulacja odpowiada tylko na pierwsze.** Zanim test oprze się na trybie przeglądarki, trzeba zmierzyć, czy TA przeglądarka ten tryb realizuje — na sondzie bez własnego kodu, bo własny kod potrafi odpowiedzieć zamiast silnika. I zmierzyć to **przy każdym przebiegu**, a nie raz: jest to zdanie o wersji paczki, nie o repozytorium, więc przestanie obowiązywać przy zmianie, która nie rusza tu ani jednego pliku (stąd punkt 6 `check-browsers`).
+### <a id="lesson-35"></a>`lesson-35` — The control handed the wrapper its frame but not its panel
 
-### <a id="lesson-57"></a>`lesson-57` — Pokrycie mierzy wykonanie, nie sprawdzenie: 96,62% linii to 63,54% mutantów
+**The control handed the wrapper its frame but did not hand it the panel.** After
+`req-api-wrapper` the select's trigger inside a field stopped being its own frame — and the
+overlay still anchored to it, so the panel came out of the control column's edge rather than
+the field's: with a measured 301 px field the panel was 275 px and offset 13 px to the right.
+A standalone select looked impeccable all the while, because there the trigger **is** the
+visible edge — so the symptom appeared in exactly the configuration where the wrapper takes over
+the appearance. Hence `req-api-overlay`: the wrapper offers its row as the reference surface,
+and the anchor is part of the contract, not a guess made by the control.
 
-**Rdzeń biblioteki miał 96,62% pokrycia linii i 183 zielone testy. Przy pierwszym przebiegu mutacyjnym zauważyły one 63,54% wprowadzonych wad.** Innymi słowy: co trzecia zmiana zachowania w `core`, `[pctNumber]` i `PctSelect` przechodziła CI na zielono. Różnica nie jest pomyłką pomiaru — to dwie różne wielkości. Pokrycie odpowiada na pytanie „czy ta linia się wykonała", a linia wykonana **bez ani jednej asercji na jej skutek** liczy się tam dokładnie tak samo jak sprawdzona.
+On the same occasion it turned out that **the panel's typeface had no owner either**. The panel
+lives in a CDK overlay, i.e. as a child of `body`, so it inherits its typeface from there rather
+than from the app: the sandbox sets `font-family` on the shell's host, and as a result the list
+wrote in the browser's default serif (measured: `Times New Roman` in the panel against
+`system-ui` in the control). The size had a twin defect, but in the other direction — it came
+from the `--pct-select-font-size` token, so in an `lg` field the options stayed at 14 px while
+the trigger wrote at 16 px. Both solved the same way: the typeface is read from the trigger when
+the panel opens (like the theme in `lesson-18`), instead of relying on inheritance or on
+a token.
 
-Rozkład przeżywających mutantów mówi, gdzie to siedzi, i żadna z tych rzeczy nie jest egzotyczna:
+The lesson: **every inherited property is silently severed in an overlay.** The theme was
+already being carried over explicitly, but that was treated as a peculiarity of theming rather
+than as a rule — and the rule reads: whatever is supposed to look like an extension of the
+control has to be read from it, because the DOM tree will not do it.
 
-- **44 mutanty bez ani jednego pokrywającego testu** — przy 96,62% pokrycia. Kod wykonany „przy okazji" (konstruktor, efekt, gałąź `default`) jest pokryty i niemierzony;
-- **granice warunków**: `match >= 0` przestawione na `> 0` przeżywa każdy test, w którym trafienie nie wypada na indeksie zero. Test „typeahead aktywuje pasującą opcję" istniał i sprawdzał opcję numer 1;
-- **wartości domyślne wejść**: każdy test podający `[readonly]="readonly()"` mierzy własne wiązanie, a nie domyślną. Kontrolka bez ani jednego wiązania nie była renderowana ani razu — a to jest pierwsza rzecz, jaką pisze konsument;
-- **testy, które nie robią tego, co obiecuje ich nazwa**: `PageUp/PageDown skacze dziesięciokrotnie` naciskał wyłącznie PageUp. Cała gałąź PageDown była niepokryta i nikt tego nie widział, bo nazwa testu brzmi jak pokrycie.
+**Addendum from 2026-08-05: the third property.** While introducing the `dir` axis into the
+sandbox (`req-token-logical`) it turned out that writing direction is exactly the same case —
+measured `direction: rtl` on the trigger against `ltr` on the panel. The stylesheet was
+impeccably logical all the while: `text-align: start` simply resolves the other way when the
+direction does not arrive. So the rule repeated for a third time, which is an argument for
+extracting this carrying-over into the overlay layer in `core` (**D2**) instead of appending
+a fourth property to `openPanel()`. A secondary conclusion: a gate reading stylesheets is
+a necessary condition for the RTL promise, never a sufficient one — the rest lives on the
+rendered page.
 
-Najciekawsze jest to, że **publiczne API bez własnej specyfikacji wygląda na przetestowane**. Funkcje `pctFieldMessages` i `pctDescribedBy` z `@pacit/components/core` nie miały ani jednego testu pod własnym nazwiskiem — mierzyły je specyfikacje kontrolek, i to na jednej ścieżce każda. Pokrycie linii pokazywało je jako pokryte w 100%, bo każda linia wykonywała się przy renderowaniu selecta. Osobna `core.spec.ts` z piętnastoma testami podniosła wynik tego entrypointu z 76,79% do 98,21%.
+The lesson: **a CSS rule inferring intent from a slot's content is hidden API** — cheap only
+while there is one example. When an author wants a variant the heuristic does not anticipate,
+there is no way to express it and what is left is a fight with the stylesheet. A variant the
+library allows is to be named in the API.
 
-Reguła praktyczna: **próg pokrycia jest bramką na to, czy testy dotykają kodu; wynik mutacyjny — na to, czy cokolwiek sprawdzają.** Pierwszy bez drugiego jest tym, przed czym ostrzega [`lesson-33`](#lesson-33): liczbą, która rośnie od pisania testów, a nie od pisania asercji. Domknięcie różnicy z 63,54% do 81,77% kosztowało 38 nowych testów — i każdy z nich powstał, bo mutant wskazał palcem konkretną linię, a nie dlatego, że komuś przyszła do głowy.
+---
 
-### <a id="lesson-58"></a>`lesson-58` — Bramka, która potrafi zapalić, i bramka, która zapali, to dwa różne stany — Stryker startuje w drugim
+### <a id="lesson-36"></a>`lesson-36` — The package carried no skin while the pipeline shone green
 
-**`thresholds.break` jest w Strykerze domyślnie `null` i to znaczy „nie przerywaj nigdy".** Przebieg z wynikiem 4% kończy się kodem 0 dokładnie tak samo jak przebieg z 94%; jedyną różnicą jest kolor liczby w raporcie. Narzędzie mierzące wady jest więc po instalacji **raportem do oglądania**, a nie bramką — i wygląda w CI identycznie jak bramka, bo krok jest zielony.
+**The package carried no skin and the whole pipeline shone green.** `dist/libs/components`
+contained FESMs, types and an `exports` map — and **zero CSS files**: the bundle referred to
+`var(--pct-field-bg)`, whose definition was nowhere in the package. The cause was that `tokens`
+**did not exist in the NX graph** (`tokens -> []`, and nothing pointed at `tokens`), while
+`libs/tokens/dist` is gitignored. There was no edge because the dependency is unusual: not one
+TS import, only a CSS artifact — and the Nx graph infers from imports.
 
-To jest ta sama rodzina co [`lesson-39`](#lesson-39) (próg wizualny skalujący się z wielkością karty) i [`lesson-53`](#lesson-53) (drugi, niezmierzony próg `toHaveScreenshot`), ale o stopień ostrzejsza: tam wartość domyślna była za luźna, tu **wyłącza egzekwowanie w całości**. Wniosek uogólnia się na każde narzędzie jakości wpinane do pipeline'u: pierwsze pytanie brzmi nie „co ono mierzy", tylko **„co robi z wynikiem, którego nikt nie ustawił"**.
+The failure was **silent in both directions**. With `libs/tokens/dist` deleted,
+`nx build sandbox` ended in **success** without a warning, and the app's resulting CSS contained
+no token definition at all; `nx serve sandbox` (the start command from the README) did not have
+that dependency either. CI passed only thanks to a **manual step**, `node libs/tokens/build.mjs`
+before `run-many` — a workaround that masked the missing edge instead of exposing it.
 
-Drugie pytanie jest ciekawsze, bo dotyczy dnia po. Gdy próg już stoi, podnosi się go pięcioma ruchami, z których żaden nie dokłada ani jednego testu i każdy wygląda w review jak sprzątanie:
+The fix has three parts, because three different things could fail independently: (1)
+`implicitDependencies: ["tokens"]` in `components` and `sandbox` plus an explicit `dependsOn` on
+`serve` — the graph knows the edge, the manual CI step disappears; (2) the skin is copied into
+`libs/components/themes` and taken from there by `assets` in `ng-package.json` — ng-packagr
+**does not read assets from outside the project directory**, so the staging is forced, not
+cosmetic; plus a `./themes/*` entry in the source `package.json`'s `exports` (ng-packagr merges
+it with the generated entries), because the `exports` map is closed and a file with no entry is
+invisible to the consumer; (3) the `nx check-package components` gate.
 
-- plik wykreślony z `mutate` — zabiera ze sobą swoje przeżywające mutanty, więc **procent rośnie**;
-- `ignorers` poszerzone albo `// Stryker disable` dopisane do źródła — mutanty znikają z mianownika, a w konfiguracji nie ma po tym śladu;
-- `mutator.excludedMutations` z całą rodziną mutacji;
-- `ignoreStatic: true` — wypadają inicjalizatory pól i zasięg modułu, czyli w bibliotece komponentów jej publiczny kontrakt;
-- skrócony `timeoutMS` — **mutant zabity zegarem liczy się do wyniku tak samo jak zabity asercją**, więc krótszy limit kupuje procent za czas przebiegu.
+The lesson: **a green build is not proof that the artifact can be used** — if nothing checks the
+packed output, a library can carry a defect through the entire pipeline that only the first
+consumer sees after `npm i`. The gate checks token closure (every `var(--pct-*)` used in the
+package has a declaration in it), not the mere presence of a file — presence would also be
+satisfied by an empty file, or by a skin somebody stripped the component layer out of. That is
+the same class of defect as `lesson-17`, moved from runtime to distribution: a missing custom
+property definition is not an error but a silent fall back to the initial value.
 
-Stąd kształt `check-mutation`: bramka nie czyta `stryker.config.json`, tylko pole `config` z **raportu przebiegu**, czyli konfigurację skuteczną — flaga dopisana do polecenia targetu nie zostawia w pliku ani jednej linii. To ten sam ruch co „nie czytaj `include`, uruchom kompilator" z [`lesson-47`](#lesson-47), przeniesiony z kompilatora na narzędzie pomiarowe.
+---
 
-Osobno, i to jest wniosek dla każdego pomiaru z progiem: **sam próg łączny milczy o pliku, który spadł o dwadzieścia punktów, dopóki reszta go wyrównuje.** Dlatego obok twardej podłogi stoi snapshot per plik z tolerancją **dwustronną** — w dół, bo tak wygląda usunięta asercja, w górę, bo podłoga stojąca dziesięć punktów pod pomiarem przestaje mierzyć. Cena jest zapisana wprost: każda poprawa testów wymaga przepisania snapshotu, czyli linii w diffie, którą widać w review. To jest ta cena, którą się płaci, żeby liczba coś znaczyła.
+### <a id="lesson-37"></a>`lesson-37` — A generic in a component does not mean the template checks it
 
-### <a id="lesson-59"></a>`lesson-59` — Zadanie flaky pod `nx affected` wskazuje na współdzielony katalog, a nie na limit czasu
+**A generic in a component does not mean the template checks it.** After generalising
+`PctSelect` into `PctSelect<T>` (`req-api-generic`) a probe in the sandbox showed that the
+compiler lets explicitly contradictory bindings through: a `PctSelectOption<number>[]` option
+list with the value `'a string'`, an `emptyValue` of a different type than the options, and even
+`$event` from `(valueChange)` passed to a method with a mismatched parameter. Template checking
+**worked** (`NG8002` on a made-up input was caught immediately) — the problem was narrower: `T`
+has several inference sites (`options`, `value`, `emptyValue`), so TypeScript chose the union of
+the candidates (`string | number`), which both sides of the conflict fitted.
 
-**Target `mutacja` przechodził w pojedynkę za każdym razem i wywracał się uruchomiony obok pozostałych.** Pierwszym podejrzanym był limit czasu mutanta: Stryker liczy go względem czasu przebiegu suchego, więc pod obciążeniem żywy mutant potrafi zostać timeoutem. Hipoteza była wygodna, pasowała do objawu i **była fałszywa**.
+The fix is to take away the right to **determine** `T` from the bindings that are only meant to
+be checked against it: `value` and `emptyValue` are declared as `NoInfer<T>`, so the type comes
+from the option list alone. That closed four of the probe's five cases — including the typing of
+`$event`, which had previously been silent.
 
-Prawdziwy powód pokazał dopiero zapisany przebieg: `ENOENT: no such file or directory, copyfile 'tmp/libs/components/build/tsconfig.generated.<uuid>.json'`. Stryker kopiuje repozytorium do piaskownicy i chodzi po nim **sam**, a nie po indeksie gita — widział 3907 plików tam, gdzie git zna 707. Nadmiar to katalogi generowane (`tmp`, `dist`, `.nx`, `.angular`, `coverage`), a te mają **równoległych pisarzy**: `nx affected` uruchamia `build` obok, ng-packagr zakłada i kasuje swój tymczasowy tsconfig, i plik znika między wylistowaniem a skopiowaniem. Wyścig, nie wydajność.
+The fifth case stayed and is a limitation of Angular, not of the API: `PctRadioGroup` has no
+options input (they are projected content), so the only source of `T` is `value` itself — and
+there `$event` from `(valueChange)` is still unchecked. The generic gives that group safety on
+the TypeScript side (`isSelected`, `select`, reading `value()`) but not on the template side.
 
-Reguła praktyczna, w rodzinie [`lesson-51`](#lesson-51) („pierwszym podejrzanym był cache i to był fałszywy trop"): **przy zadaniu flaky pod zrównolegleniem pytaj najpierw, jaki KATALOG to zadanie czyta lub kopiuje, a nie jak długo trwa.** Narzędzie, które robi kopię drzewa projektu, jest wrażliwe na każdego, kto w tym drzewie pisze — i lekiem jest zawężenie tego, co kopiuje (`ignorePatterns`), a nie podniesienie limitów. Objaw „przechodzi solo, pada w zestawie" jest wspólny dla obu przyczyn i sam z siebie nie rozstrzyga; rozstrzyga zapisany komunikat.
+The lesson: **with a generic component you have to check separately whether the template really
+enforces the type** — the mere fact that the build passes on correct usage does not tell „the
+type matches" from „the type is ignored". Only a negative control settles it: a deliberately
+wrong binding that **must** break the build.
+
+---
+
+### <a id="lesson-38"></a>`lesson-38` — Playwright's idiomatic emulation silently does nothing
+
+**Playwright's idiomatic way of writing emulation silently does nothing and the test passes on
+default values.** `test.use({ reducedMotion: 'reduce' })` and
+`test.use({ forcedColors: 'active' })` in version 1.61.1 **do not reach the browser context**:
+in the page `matchMedia('(prefers-reduced-motion: reduce)').matches` returns `false`, even
+though the configuration looks right and nothing warns. The same code through
+`browser.newContext({ reducedMotion })` and through `page.emulateMedia({ … })` works
+impeccably, and `test.use({ colorScheme })` — one of the three axes — works too. In other words:
+how you write it decides whether the test examines anything, and the discrepancy is invisible on
+reading.
+
+It was found by the **negative control**, not by the test proper. Had there been only
+a reduction test asserting „the transition duration is small", it would have passed on the base
+value of `150ms` read as „small enough" and nobody would have noticed that the media query never
+fired. What fired was the comparison of a pair: without the preference **exactly** `150ms`, with
+it **exactly** `0.01ms`.
+
+Hence two rules for every system-preference test: emulation goes through `page.emulateMedia()`
+in the `visit()` helper, and every such test **checks `matchMedia` first**, i.e. asks the
+browser whether it is in the mode being measured at all. That is the same principle as
+`req-quality-negative-control`: a gate has to be able to say that it works.
+
+---
+
+### <a id="lesson-39"></a>`lesson-39` — A visual test can be born dead in two ways
+
+**A visual test can be born dead in two independent ways — both of which look like a working
+test.** First: `__screenshots__/` was in `.gitignore`, so the references would never reach the
+repository, and with no reference Playwright **saves the current screenshot as correct and
+passes** — on CI the test would shine green forever, comparing every run with itself. Second:
+the first version of the threshold had `maxDiffPixelRatio: 0.01` and **let through** a change of
+the button's `border-radius` from 8 px to 1 px.
+
+The second case is instructive numerically. A threshold as a **fraction** of the image grows
+more forgiving the bigger the card — while the difference of a real regression does not scale
+with the screenshot's size, because it concerns a few edges. Measured: the same code in
+a repeated run gives **0** differing pixels, and the radius change gives **74**. So the
+threshold is absolute (`maxDiffPixels: 20`) and follows from those two numbers rather than from
+a feeling.
+
+Both defects only surfaced after **deliberately introducing a regression** and checking that the
+gate fires. The lesson: a new gate is not ready when it passes — it is ready when it has been
+shown to fail.
+
+---
+
+### <a id="lesson-40"></a>`lesson-40` — A state carried by background alone disappears in high contrast
+
+**A state carried by the background alone disappears in high contrast mode.** The dot of
+a selected radio button is a plain `<div>` with a `background`, and under `forced-colors: active`
+the browser forces the system palette onto backgrounds — the dot and the circle both got
+`rgb(255,255,255)` and **a selected option looked identical to an empty one**. Neither the token
+contrast gate nor the axe audit sees this: both examine normal mode, in which the colours are
+correct.
+
+The fix is one sentence long, but the rule that follows from it is wider and went into
+`req-a11y-forced-colors`: **a state is to be carried by the presence of a shape, not by
+colour**. The checkbox's tick was immune from the start, because it toggles `visibility` — the
+radio's dot was the exception, not the rule. Where there is no shape (a list option is
+a rectangle), we split the states into two independent channels: background for selection,
+outline for the keyboard cursor.
+
+---
+
+### <a id="lesson-41"></a>`lesson-41` — The tool had a „before" hook where a „after" one was needed
+
+**The tool had only a „before" hook where an „after" one was needed.** `nx release` offers
+`preVersionCommand`, a command run **before** the version is bumped. A package built at that
+moment carries the old `PCT_VERSION` constant, so the first release would ship an artifact lying
+about its own version. The documentation's hint — `manifestRootsToUpdate: ["dist/{projectRoot}"]`
+— is a half-measure: it fixes the `package.json` in `dist`, i.e. **one file**, while the value
+compiled into the bundle stays old. The package then agrees with itself in the manifest and lies
+in the code.
+
+The fix is to reverse the order rather than patch the symptom: the release is driven by
+`tools/release.mjs` on the programmatic API (`releaseVersion` → stamp → build → gate →
+`releaseChangelog` → `releasePublish`). The build stands after the version bump, so `dist`
+carries the right value straight from the compiler and `manifestRootsToUpdate` stops being
+needed. The package gate stands **before** the commit, the tag and the publish — that is, before
+everything that would otherwise have to be undone.
+
+A separate decision: `stamp-version` is **not** a dependency of `build`. If it were, the
+artifact would always agree with itself and the version check in `check-package` would stop
+measuring anything — exactly like a gate that cannot fail (`lesson-39`).
+
+---
+
+### <a id="lesson-42"></a>`lesson-42` — The e2e project had never been typechecked
+
+**The e2e project had never been typechecked and nobody noticed.** `sandbox-e2e` had `lint` and
+`e2e` but **no** typecheck target — a dozen or so TypeScript files the compiler had never seen.
+It came out alongside `req-token-artifacts`: adding the target revealed 3 errors in
+`playwright.config.mts` on the first run. They were not test defects — the `tsconfig.json`
+described the project untruthfully (`module: commonjs` for a `.mts` file, which is ESM, and no
+`types: ["node"]` while `process` was used). The code worked because Playwright and Nx load
+`.mts` with loaders of their own, so the tsconfig's declaration was never confronted with
+reality.
+
+The lesson: **lint is not a substitute for typecheck.** ESLint parses and checks rules, but it
+reports neither type errors nor module configuration inconsistencies. A project with no
+`typecheck` target is code about which the only known fact is that it parses.
+
+---
+
+### <a id="lesson-43"></a>`lesson-43` — Reading a non-existent token gives an empty string
+
+**Reading a non-existent token is not an error, it is an empty string.**
+`getComputedStyle(el).getPropertyValue('--pct-surfce')` returns `''` — so a test comparing two
+such reads passes on `'' === ''` and says nothing about having measured nothing. That is the
+same class of silent defect as `lesson-38`, only triggered by a typo rather than by how the
+emulation was written. Hence the real use of the generated `tokens.ts` (`req-token-artifacts`):
+the `tokenOf`/`rootToken` helpers take a `PctCssVar` — a union of **custom property names**, not
+of DTCG paths — so a typo is a compile error rather than a green test. The gate was verified by
+a negative control: swapping one name for a wrong one produces 6 type errors.
+
+Along the way, the same tooling trap three times in a row: a „comment" in JSON (`"// key"`) can
+only be inserted where the schema allows arbitrary keys. In `targets` (project.json),
+`namedInputs` (nx.json) and `paths` (tsconfig) the value must have a specific type, so a string
+respectively blows up the Nx graph (`Cannot use 'in' operator`), its loading (`Given napi value
+is not an array`) and `tsc` (`TS5025`).
+
+---
+
+### <a id="lesson-44"></a>`lesson-44` — `.nxignore` does not disable a project, it removes a file from counting
+
+**The package gate's negative control needs fake packages, and a fake package has
+a `package.json` — which was enough for Nx to make a project out of it.** `nx show projects`
+showed a phantom `@pacit/components` rooted in `tools/check-package.fixtures/_poprawny`, with
+a `lint` target of its own; three fixture directories declared the same name, so the graph
+picked one of them quietly. The natural workaround — an entry in `.nxignore` — removed the
+phantom and **broke something worse**: the directory disappeared from the file map, so the
+`check-package` target's `inputs` stopped seeing it. Measured: after editing a fixture,
+`Cache: 5/5 hit (100%)`, i.e. the gate **did not run**; after the fix the same edit gives `4/5`.
+
+The consequence is exactly the class this whole project stands against: somebody weakens
+a fixture, CI shines green from the cache, and the gate has not run once. The fix is not
+ignoring but not using a name the tool treats as structure: the manifest sits in the repository
+as `manifest.json` and only becomes `package.json` in the copy assembled for a run.
+
+The rule is wider than this one directory: **„ignore" in build tools almost never means „not
+a project" — it means „does not exist"**, and non-existence propagates into hashing, i.e. into
+what decides whether a task runs again. Before silencing a tool, you have to check what else
+will stop seeing it — and check it by measuring cache hits, because in a run's result the
+difference is invisible: green is green.
+
+---
+
+### <a id="lesson-45"></a>`lesson-45` — Removing a test raised coverage
+
+**Removing `number.spec.ts` raised line coverage from 96.55% to 96.94%.** That is not a paradox
+of the measurement but its definition: v8 knows only the modules that actually entered the run,
+so the entirely untested `number.ts` dropped out of the report along with its test — 114 lines
+vanished from the **denominator** rather than being added to the numerator. A threshold guarding
+such a number is a gate born dead (`lesson-39`), and in the worst possible variant: it shines the
+brighter the less you test.
+
+`coverageInclude` closes this **only halfway**. Files with no test are added by a separate path
+(`getCoverageMapForUncoveredFiles`) that parses the SOURCE with rolldown — and that one falls
+over on `import type` / `export type`, printing `Failed to parse … Excluding it from coverage.`
+in the middle of a few thousand lines of log and ending the run **green, with exit code 0**.
+A probe settled where the boundary lies: a plain function, a `@Directive` and a `@Component`
+with a `templateUrl` all reached the report with a zero; a copy of `number.ts` did not, because
+line 18 has an `import type`. In an Angular library under `isolatedModules` that is not a rare
+notation but the default.
+
+Hence coverage stands on two legs. `libs/components/src/public-api.spec.ts` imports every gate
+of the package, so its modules enter the run by the normal path and a file with no test shows up
+with coverage near zero instead of dropping out of the statistic. `tools/check-coverage.mjs`
+watches that **not one source file is missing** from the report — because it is the denominator
+that quietly shrinks while the percentage always looks healthy. Point 3 of that gate is the only
+one that catches this regression; the points about the threshold guard a number that came out of
+it.
+
+Two things measured along the way rather than assumed. `coverageInclude` takes patterns relative
+to the **repository root**, not the project directory, whatever the executor's schema says: the
+notation `**/src/**` pulled all of `apps/sandbox` into the library's report (coverage 96.55% →
+70.72%). And the 80% threshold is **a floor, not a ratchet**: at 96.58%, removing `select.spec.ts`
+alone gives 81.55%, `number.spec.ts` alone gives exactly 80.00%, and both pass; only both
+together give 64.96% and fire. Whoever wants a ratchet has to write it separately — this gate
+does not promise one.
+
+---
+
+### <a id="lesson-46"></a>`lesson-46` — A partial declaration omits defaults, so OnPush can only be measured after linking
+
+**The built package contains not one `changeDetection:`, and yet every component links as
+OnPush.** Partial compilation (`ɵɵngDeclareComponent`) records only what departs from the
+defaults — the value comes into being at the consumer, at link time, out of **their** Angular's
+defaults. The conclusion is inconvenient: the promise „every component is OnPush" cannot be
+checked in the source (nothing stands there — the v22+ guide explicitly forbids repeating the
+defaults) nor in the bundle's text (nothing stands there either). The only reading that means
+anything is `ɵcmp.onPush` **after** linking, and in Node that is reproduced by
+`import '@angular/compiler'` before loading the package — the same step the consumer performs.
+
+Hence the shape of the `check-zoneless` gate: it measures `dist`, not the sources. The side
+effect is the one that was wanted — the day Angular changes its default is the day this gate
+fires, with no changelog reading.
+
+Measured along the way rather than assumed: adding an explicit `standalone: true` to the
+decorator **does not change** `ɵɵngDeclareComponent` (the declaration carries
+`isStandalone: true` anyway) and moves only `ɵɵngDeclareClassMetadata` — the echo of the
+decorator left for debugging. So the Nx cache is invalidated today even without putting the
+sources into `inputs`, but thanks to a diagnostic feature that is nobody's promise. A cache key
+has to name what the gate **reads**, not what usually changes alongside — otherwise `lesson-44`
+repeats itself in a third disguise.
+
+And one more, cheaper: `git ls-files "*package.json"` also pulls in `ng-package.json`.
+A pathspec matches a suffix, not a file name. It produced no false hit — the ng-packagr
+configuration has no dependency fields — but it inflated the denominator in the gate's message
+from 3 manifests to 10, i.e. it made the gate lie about its own reach.
+
+---
+
+### <a id="lesson-47"></a>`lesson-47` — An inferred target is somebody else's decision about scope and looks exactly like your own
+
+**`sandbox` had a `typecheck` target, passed green and did not look at four of its own files.**
+The target was contributed by `@nx/vite/plugin` (`typecheckTargetName: "typecheck"`), and its
+command reads `tsc --noEmit -p tsconfig.app.json` — a configuration that **excludes**
+`**/*.spec.ts`. The specs went through vitest, which transpiles without type checking, so
+`app.spec.ts`, `demo.spec.ts`, `test-setup.ts` and `vite.config.mts` never passed through the
+compiler once. And there was **nothing** to see in `project.json`: the target is not written
+there.
+
+This is `lesson-42` one floor up. There the target was missing and the `nx affected -t typecheck`
+list said nothing; here the target exists, runs and checks part of the project, and that
+difference shows up nowhere except in `--listFilesOnly`. The rule: **an inferred target is the
+plugin's decision about what the project is — not mine.** You may accept it, but you have to see
+it first, and `nx show project … --json` is the only place where it is visible.
+
+Hence the shape of the `check-typecheck` gate: it does not read `include` from the tsconfig but
+**runs the command from the target** extended with `--listFilesOnly` and compares the result
+with the git index. Reading `include` would measure a second time the same declaration that
+turned out to be untrue in `lesson-42`; `--showConfig` is out for the same reason, because it
+expands patterns but does not see files pulled in by imports.
+
+Three things measured along the way, not assumed:
+
+- **The gap is BETWEEN projects too.** `vitest.config.ts` and `vitest.workspace.ts` sit in the
+  root and belong to no library or app, so a gate walking over projects would be blind to them
+  and would rule „there is no such code" precisely because it cannot see it. Point 1 assigns
+  every file to the deepest prefix project and fires on those matched by none.
+- **The root project is affected by every change.** Checked with
+  `nx show projects --affected --files=…`: `libs/components/src/index.ts`, `docs/plan.md` and
+  a new project's `project.json` all yield `@org/source`. So the workspace gates
+  (`check-docs`, `check-typecheck`) run in every pass — otherwise a new project with no target
+  would slip past the very gate built for it.
+- **Disarming a point sometimes yields an exception instead of a message.** Point 3 read
+  `p.typecheck.polecenia` directly, because after point 2 the target „certainly" exists.
+  Disabling point 2 as part of the control of that control turned the gate into a `TypeError`,
+  i.e. the negative control lost the ability to examine the point it was meant to examine.
+  A dependency between points is normal; writing it down so that its violation gives a stack
+  trace instead of a sentence is not.
+
+And one more, in the `lesson-44` family: **a target checking specs must not take
+`inputs: ["production"]`**, because that namedInput subtracts `**/*.spec.ts` — exactly the files
+it was added for. Measured: adding a line to `src/public-api.spec.ts` gives `Cache: 0/1 hit`
+under `default` and `1/1 hit` under `production`. The run is green in both cases and looks the
+same in both; what differs is whether the compiler started at all.
+
+---
+
+### <a id="lesson-48"></a>`lesson-48` — Two measurements guarding each other have to be INDEPENDENT, or they go dark together
+
+**The styles gate passed green having printed „7 stylesheets, 0 components".** The source list
+came from `git ls-files 'libs/components/*/src/**/*.ts'`, and **a git pathspec is not a shell
+glob**: without the `:(glob)` magic the asterisk crosses `/`, so that pattern demands one
+directory too many and does not match `button/src/button.ts`. It returns zero files — not an
+error, not a warning, an empty list.
+
+Zero components passed the denominator check, because that one compared **the number of parsed
+decorators with the number of `@Component(` occurrences**. Both sides came out zero, zero equals
+zero, the point ruled „complete". The remedy is the same one the coverage gate uses on its file
+list: before comparing two sets, check that **at least one of them contains anything at all**.
+A comparison of numbers is always blind to zero.
+
+A worse variant of the same defect sat in the check that was meant to rule it out. The counter
+was written as `/^@Component\(/gm` — **character for character the same anchor as the parser's**.
+The point of the counter was that it measures independently: the parser anchors on prettier's
+formatting, and the counter is meant to notice when reality departs from that formatting. With
+an identical anchor, shifting a decorator by **one space** puts out both at once, the two sides
+agree one lower, and the gate ends green.
+
+Measured, not reasoned: `PctCheckbox` indented by a space gave „7 components" instead of eight,
+on a run with not one violation.
+
+The same sentence stood in the comment next to that code — „without this a formatting change
+would not blow the parser up but quietly SHRINK the denominator" — and it had been untrue from
+the start. The comment described the intent, the implementation did not deliver it, and **nothing
+checked that, because this gate's negative control supplies data, not source text**: the regex
+runs on no fixture, only on the real repository. The hole only surfaced from a manual run against
+a broken repo.
+
+The same defect was in `check-zoneless.mjs` ([`lesson-46`](#lesson-46)) and was fixed together
+with this one — there it cost a silent absence of the `OnPush` measurement for a whole component.
+
+The rule: **a check comparing two measurements is worth exactly as much as their independence.**
+Copying the expression from one side to the other turns it into a check that a certain constant
+equals itself — a construction that never fires and looks exactly like a working one. On top of
+that comes a conclusion about the reach of a negative control: a fixture supplying **data** does
+not exercise the code that extracts that data, so that layer needs evidence of its own — a run
+against a broken repository.
+
+---
+
+### <a id="lesson-49"></a>`lesson-49` — A snapshot does not close a promise about names, it freezes it
+
+**The plan said: „`tokens.ts` is generated already — add a versioned snapshot and a comparison".
+A snapshot added then would have recorded as the accepted state 34 tokens whose names broke the
+scheme described in the same requirement.** `--pct-checkbox-checked-bg` stood in
+`component.checkbox.json` six lines below `--pct-checkbox-border-hover`: once state before
+property, once after. Both names are valid on their own and neither breaks anything — what
+breaks them is standing next to each other, because then knowing one gives no way to guess the
+other. That guessability is exactly the content of
+[`req-token-names`](requirements/tokens.md#req-token-names).
+
+The distinction the plan did not make: **a snapshot measures CHANGE, not a PROPERTY.** These are
+two different promises and only the first can be closed by comparing with a file. A gate made of
+a snapshot alone answers „did somebody rename a token quietly" and says nothing about „can this
+name be guessed" — and on its first run it does something worse than saying nothing: **it seals
+the state it found.** The longer it stands, the more expensive the fix, because every further
+rename is by then a breaking change for the consumer.
+
+Hence the order of the points in `check-tokens.mjs`: the scheme **before** the snapshot. The
+reverse would answer a bad name with „the snapshot has drifted" — a correct diagnosis of
+a problem that does not exist, plus a hint (`--write`) that would set the defect in concrete.
+Measured: with the scheme point disarmed, all four doctored inputs for the scheme fire on the
+snapshot, i.e. they look handled.
+
+The second sentence of the same lesson concerns the dictionary. The rule „a name is made of
+words from a closed set" closes in a circle, because the set can be extended along with the
+name. A machine cannot settle that and the gate does not pretend to — it guards a narrower
+thing: **every declared word has to be used**. That makes adding a word a line in the diff,
+visible in review, rather than a quiet widening of the set of acceptable names. That is the same
+construction as the justification length threshold in `check-styles`: the gate does not judge
+whether the reason is good, it makes sure there is something to judge.
+
+A third observation, in the [`lesson-44`](#lesson-44) family: **a fixture that is not in the
+repository is not a negative control.** Two of this gate's cases carry a deliberately broken
+`dist/` — because that is the only way to show a mismatch between artifact and source — and the
+`dist` rule in `.gitignore` matches a directory of that name at **any** depth, so both dropped
+out of the index without a word. A fresh checkout got the cases without their defect. Measured by
+moving both directories aside: the gate then reports „doctored input PASSED" for points 1 and 2.
+So the failure is **loud**, and that is the only reason this slip was not expensive — the „a case
+must fire on its own point" construction turns a missing file into red CI rather than into
+a silent loss of two checks. The file had to be recovered anyway
+(`!tools/check-tokens.fixtures/*/libs/tokens/dist/`) and excluded from prettier, because
+a fixture is meant to look like real generator output, not like formatted code.
+
+A fourth observation, this time about tooling rather than a gate: **a renaming script has to be
+idempotent, or one-shot under supervision.** The map `dot` → `dot-bg` applied a second time to an
+already renamed file gave `--pct-radio-dot-bg-bg` and `--pct-radio-dot-bg-bg-size`, because text
+substitution has no word boundaries. Only a grep noticed — `check-tokens` reads token
+**declarations**, not their uses in stylesheets, so a broken `var()` is invisible to it by
+design. That side is watched separately by `check-package` (every token used has a declaration in
+the package) and that is the right division, but you have to know that a run of this one gate
+does not rule such a defect out.
+
+---
+
+### <a id="lesson-50"></a>`lesson-50` — A negative control proves a gate FIRES, not that it tells the truth
+
+**The snapshot point in `check-parts` fired correctly and explained it falsely.** Renaming the
+`trigger` part to `activator` — a change to public styling API — produced the message „the list
+of parts is the same, the header or the row order has drifted". The file content comparison was
+fine and worked; what failed was the code meant to **name the difference**: the data-row filter
+read `/^\.[a-z-]*\s/` and did not get past the slash in `./select`, so both lists came out empty,
+and empty lists are equal. The gate rejected the change and, while doing so, gave a correct
+diagnosis of a problem that did not exist.
+
+What matters is not the oversight itself but that **the negative control had no way of seeing
+it — by construction.** The `snapshot-nieaktualny` case fired on its own point and was counted,
+because `fixture.json` declares a `kontrola` and the run compares identifiers. That is how the
+negative control of **every** gate in this repository works: it checks WHICH point rejected an
+input, and says nothing about WHAT that point said. The whole message layer — the only layer
+a human reacts to — lies outside its reach.
+
+It came out of a run against the real repository, and not from its exit code but from reading
+the sentence it printed. Which is a practical rule: **a run against a broken repository has to be
+READ, not counted.** The exit code is the part fixtures already cover; the message is covered by
+nothing but a look.
+
+Separately, in the [`lesson-47`](#lesson-47) and [`lesson-49`](#lesson-49) family: disarming the
+„no snapshot" branch turned the gate into a `TypeError`, because the branch computing the
+difference read `null.split`. **The third time for the same defect, found the third time by the
+same control — this time in a gate written in awareness of the previous two.** It repeats because
+the natural way to write the second branch is to assume the first has already worked.
+A dependency between the branches of one point is normal; writing it down so that its violation
+gives no sentence is not — and apparently knowing about it is not enough, it has to be measured
+every time.
+
+### <a id="lesson-51"></a>`lesson-51` — A default a tool writes in cannot be removed, so a gate on its absence has no way to fire
+
+**`check-bundle` got a point guarding `sideEffects: false` in the packed manifest, justified by
+„removing this flag produces not one red test and disables tree-shaking at the consumer". The
+justification was true, and the point examined something other than what I wrote.** A run against
+the real repository: the key removed from the source `libs/components/package.json`, a rebuild,
+the gate **green**. The first suspect was the cache — `nx build` reported `Cache: 3/3 hit`, which
+looked like a sufficient explanation and was a false trail. A repeat with `--skip-nx-cache` gave
+the same result: **ng-packagr writes `"sideEffects": false` in itself** when the source says
+nothing.
+
+So the scenario the point was built for — „somebody deleted the flag" — is unreachable, and
+a point written that way would be a [gate born dead](#lesson-39) in that one variant and nobody
+would notice, because the gate passes. It fires on an explicit `true` and on the day ng-packagr
+stops writing the default in — and that is its real scope; it just had to be measured rather than
+written out of intent.
+
+A more general rule, in the [`lesson-11`](#lesson-11) and [`lesson-46`](#lesson-46) family: **a
+tool in the build chain has defaults of its own and writes them into the artifact, so the
+question „did somebody remove this" has no answer on the artifact's side.** A gate reading the
+artifact then examines what the tool decided, not what a person decided. The answer is not „read
+the source" — the consumer gets the artifact — but: **measure what this point can really fire on,
+and write that into the point itself.** Otherwise the comment next to a gate describes a defect
+that gate does not catch, which is worse than no comment: it reads like coverage.
+
+Separately, in the [`lesson-47`](#lesson-47), [`lesson-49`](#lesson-49) and
+[`lesson-50`](#lesson-50) family: disarming the `obecnosc` point turned the gate into
+a `TypeError`, because the second branch of the same point read `s.wniesione`, trusting the
+first. **The fourth time for the same defect — and the first time INSIDE one point rather than
+between points.** The previous three gave the rule „do not trust the previous point"; this one
+adds that a point's boundary is not the boundary of that trust.
+
+### <a id="lesson-52"></a>`lesson-52` — A pair nobody put in the policy is a pair the gate has no opinion about
+
+**This library's contrast gate counted 38 pairs and was green. The colours the library actually
+paints number 74.** Outside its reach stood every hover and active state of the button, every
+disabled state, the error messages of the checkbox, the radio and the select, and seven borders.
+The policy did not lie — nobody lied to it — it simply **measures exactly what somebody typed
+into it first**, and in a run that looks identical to a complete measurement
+([`lesson-33`](#lesson-33) in a token-flavoured version).
+
+Two of those 27 gaps were also invisible to a rule based on token NAMES: the button's outline
+variant paints the background `var(--pct-surface-100)` and the label `var(--pct-primary)`, i.e.
+with two **semantic** tokens. A gate asking „does every `*-bg` component token have a pair" would
+rule on completeness without seeing them at all. Hence the denominator reads the **sass** output
+for the stylesheets rather than a list of names — the same move as „do not read `include`, run
+the compiler" from [`lesson-47`](#lesson-47).
+
+The most important part is what happened after the missing pairs were added: **the build failed
+on three of them.** In the dark theme the button's label on hover gave 3.45:1, on active 2.66:1,
+and the outline variant's label on hover 3.98:1 — all below AA, all present in the library for
+months, all with CI green. The cause is instructive in itself: **the direction of the ramp
+depends on which side the text is on.** In the light theme `on-primary` is white, so a hover that
+darkens the background raises contrast; in the dark one `on-primary` is dark, so the same
+operation **lowers** it. A ramp copied from the light theme into the dark one looks symmetric and
+is not. The fix: in the dark theme `primary` goes up (`blue-400` → `blue-300` → `blue-200`)
+rather than down.
+
+A practical rule: **a gate examining a hand-written list needs a second gate on that list's
+completeness** — and only together are they a measurement. The first alone is a questionnaire
+that grades its own questions.
+
+### <a id="lesson-53"></a>`lesson-53` — The visual gate has two budgets and only one was measured
+
+**Changing `--pct-primary` in the dark theme by one step of the ramp repainted the whole button
+on every dark screenshot — and did not move a single reference.**
+`npx playwright test --update-snapshots` rewrote no file, because to Playwright the image was
+**identical**. Measured, because it is hard to believe: the reference's histogram has 2145 pixels
+of `#3b82f6`, a fresh render's has 2155 of `#60a5fa`, and the comparison reports zero
+differences.
+
+The reason: `toHaveScreenshot` has **two** thresholds. `maxDiffPixels` says how many pixels may
+differ, and `threshold` (default **0.2**) decides which pixel **counts as different** at all —
+that is the colour distance in pixelmatch's YIQ metric. Measured ramp steps: `blue-500` →
+`blue-400` is 0.0163, `blue-500` → `blue-600` is 0.0101, `slate-900` → `slate-800` is 0.0042. All
+of them fit inside the default tolerance **twelve times over**, so the visual gate could not see
+a palette shift — precisely the class of regression a design system keeps screenshots for.
+
+This is [`lesson-39`](#lesson-39) on a second axis. There a fractional threshold scaled with the
+card's size and let a geometry regression through; here a colour threshold lets a painting
+regression through. In both cases **the configuration had one measured value and one default, and
+a gate is only as strong as the latter.**
+
+A practical rule: **list all of a gate's thresholds and measure each one separately, including
+the one you did not set.** A default is not an absence of a decision — it is the decision of
+somebody who did not know this project. The new threshold (`threshold: 0.005`) catches every step
+of the ramp except adjacent background greys and adds no noise: 26 screenshots, two consecutive
+runs, zero false alarms.
+
+### <a id="lesson-54"></a>`lesson-54` — An input's default value is a read at construction, even though the input is a signal
+
+**`readonly placeholder = input<string>(this.texts.selectPlaceholder)` looks like a reactive read
+and is not one.** What is reactive is the input itself — a change of the binding from outside
+will redraw the view. The **default** value comes into being once, in the constructor, so
+swapping the texts after the app starts does not reach a component that already exists.
+
+Measured by a deliberate regression: a test switching `providePctTexts(computed(() => …))` from
+English to Polish gets `expected 'Select…' to be 'Wybierz…'` with the read at construction, and
+passes with the read through `computed()`. With CI green the whole time, because **the only test
+of that channel rendered the component once** — and with a single render both versions give the
+same string.
+
+The matter is wider than texts. A signal in an API says **when a value is read**, not that every
+use of it is a read: `input(x)`, `signal(x)`, `model(x)` take **a value**, so whatever stands in
+that place is computed immediately and frozen. That is the same shape as [`lesson-11`](#lesson-11)
+and [`lesson-46`](#lesson-46): a default is somebody else's decision, taken earlier than it
+seems.
+
+A practical rule: **a string, a value depending on DI and anything a consumer can swap after
+startup are to be read in a `computed()`, not in a default value.** Written down as a point of
+a gate (`check-texts`, the rule `napis-przy-konstrukcji`), because knowing is not enough: the
+previous notation stood from `a4794a4` (2026-07-27) — the very commit that introduced
+`PCT_TEXTS` — and in all that time produced not one red test. The defect was moreover **described
+in decision 0007 as open**; what kept it alive was not a lack of knowledge but a lack of
+machinery.
+
+### <a id="lesson-55"></a>`lesson-55` — A file that is in the package and a file that can be loaded are two different measurements
+
+**`ng add @pacit/components` — the first command a consumer types — blew up with `exports is not
+defined in ES module scope`.** The cause: the package manifest carries `"type": "module"`
+(ng-packagr adds it), while the schematics are compiled separately to CommonJS and land in the
+package as `.js`. So Node reads them as ESM and falls over on `exports.ngAdd = …` on the file's
+second line.
+
+The defect stood in the released artifact and **no gate saw it, even though one asked about that
+very file.** `check-package` checks point by point: the manifest has a `schematics` field, the
+collection points at the `./ng-add/index` factory, the file `schematics/ng-add/index.js` is in
+the package. All three answers were true. The question „can it be loaded" was never asked,
+because a static gate has no way to ask it — `require()` of that file needs the package
+**installed**, with its own module boundary, not a `dist` directory read from the side.
+
+Measured: removing `schematics/package.json` (`{ "type": "commonjs" }`) from the package fires
+`check-consumer` on the rule `ng-add/schematic-padl` and does not move `check-package`.
+`@angular/cdk` solves it the same way: `"type": "module"` at the root, a boundary of its own in
+a subdirectory.
+
+A practical rule: **for an artifact meant for distribution, a file's existence and its usability
+are two different measurements and need two different gates.** The static one reads a directory
+and answers „what is missing" cheaply; the one in use installs the package by name and answers
+„what breaks" expensively. The first without the second looks like a complete set — and that is
+its worst property, because `req-quality-package` declared coverage of a point where it had only
+presence. This is [`lesson-36`](#lesson-36) one floor up: there a green build did not prove the
+artifact could be used, here a green artifact gate does not prove that what is in it can be used.
+
+### <a id="lesson-56"></a>`lesson-56` — A media query fires even in an engine that cannot do what it asks about
+
+**Playwright's webkit reports `matchMedia('(forced-colors: active)').matches === true` and does
+not replace a single author colour.** Measured with a probe on an element carrying none of the
+library's rules: `<div style="background: rgb(1, 2, 3)">` comes out of chromium and firefox as
+white from the user's palette, and out of webkit as `rgb(1, 2, 3)`. `forced-color-adjust` is not
+even a known property there — `getComputedStyle` returns `undefined` for it, while the other two
+engines give `auto`.
+
+The consequence is worse than a red run. Of the six tests in `forced-colors.spec.ts`, **four
+pass** on webkit — the ones comparing a value measured in the component with `Highlight` or
+`Field` read from the same browser. Webkit resolves the system palette keywords correctly and
+applies rules from inside `@media (forced-colors: active)`, so an explicitly declared
+`outline-color: Highlight` lands where it should. What does not work is the **automatic
+replacement**, i.e. exactly the half of the contract that is invisible in a stylesheet. The tests
+asking about it measure colours from the tokens and report success.
+
+This incidentally hit a specificity defect the other two engines **cannot show**:
+`:host([disabled]:not([data-pct-loading]))` in the base rule has (0,3,0), while
+`:host([disabled])` inside the forced-colors block has (0,2,0). A media query adds no
+specificity, so `color: GrayText` loses to the token. In chromium and firefox this is never
+visible, because the browser paints over the result anyway; it becomes visible exactly where it
+does not. So the declaration in the library is dead — today with no symptom, and with one from
+the day it falls under `forced-color-adjust: none`.
+
+A practical rule, in the [`lesson-48`](#lesson-48) family: **asking about a condition and being
+able to satisfy it are two different questions, and emulation answers only the first.** Before
+a test rests on a browser mode, measure whether THAT browser implements the mode — on a probe
+with no code of your own, because your own code can answer instead of the engine. And measure it
+**on every run**, not once: it is a statement about a package version, not about the repository,
+so it will stop holding after a change that touches not one file here (hence point 6 of
+`check-browsers`).
+
+### <a id="lesson-57"></a>`lesson-57` — Coverage measures execution, not checking: 96.62% of lines is 63.54% of mutants
+
+**The library's core had 96.62% line coverage and 183 green tests. On the first mutation run they
+noticed 63.54% of the introduced defects.** In other words: every third change of behaviour in
+`core`, `[pctNumber]` and `PctSelect` passed CI green. The difference is not a measurement error —
+these are two different quantities. Coverage answers „did this line execute", and a line executed
+**without a single assertion on its effect** counts there exactly like a checked one.
+
+The distribution of surviving mutants says where it sits, and none of these things is exotic:
+
+- **44 mutants with no covering test at all** — at 96.62% coverage. Code executed „in passing"
+  (a constructor, an effect, a `default` branch) is covered and unmeasured;
+- **condition boundaries**: `match >= 0` changed to `> 0` survives every test in which the hit
+  does not fall on index zero. The test „typeahead activates the matching option" existed and
+  checked option number 1;
+- **inputs' default values**: every test passing `[readonly]="readonly()"` measures its own
+  binding, not the default. A control with not one binding was never rendered — and that is the
+  first thing a consumer writes;
+- **tests that do not do what their name promises**: `PageUp/PageDown jumps tenfold` pressed only
+  PageUp. The entire PageDown branch was uncovered and nobody saw it, because the test's name
+  reads like coverage.
+
+The most interesting part is that **public API with no spec of its own looks tested.** The
+`pctFieldMessages` and `pctDescribedBy` functions from `@pacit/components/core` had not one test
+under their own name — they were measured by the controls' specs, and on one path each. Line
+coverage showed them as 100% covered, because every line executed while rendering the select.
+A separate `core.spec.ts` with fifteen tests raised that entrypoint's score from 76.79% to
+98.21%.
+
+A practical rule: **a coverage threshold is a gate on whether the tests touch the code; a mutation
+score is a gate on whether they check anything.** The first without the second is what
+[`lesson-33`](#lesson-33) warns against: a number that grows from writing tests rather than from
+writing assertions. Closing the difference from 63.54% to 81.77% cost 38 new tests — and each of
+them came into being because a mutant pointed at a specific line, not because somebody thought of
+it.
+
+### <a id="lesson-58"></a>`lesson-58` — A gate that can fire and a gate that will fire are two different states — Stryker starts in the second
+
+**`thresholds.break` is `null` by default in Stryker, and that means „never break".** A run
+scoring 4% ends with exit code 0 exactly like a run scoring 94%; the only difference is the
+colour of the number in the report. So a tool that measures defects is, out of the box, **a report
+to look at** rather than a gate — and it looks identical to a gate in CI, because the step is
+green.
+
+This is the same family as [`lesson-39`](#lesson-39) (a visual threshold scaling with the card's
+size) and [`lesson-53`](#lesson-53) (the second, unmeasured `toHaveScreenshot` threshold), but one
+degree sharper: there the default was too loose, here it **switches enforcement off entirely**.
+The conclusion generalises to every quality tool wired into a pipeline: the first question is not
+„what does it measure" but **„what does it do with a result nobody configured"**.
+
+The second question is more interesting, because it concerns the day after. Once the threshold is
+in place, it is raised by five moves, none of which adds a single test and each of which looks
+like tidying up in review:
+
+- a file struck from `mutate` — it takes its surviving mutants with it, so **the percentage
+  rises**;
+- `ignorers` widened or `// Stryker disable` added to the source — the mutants vanish from the
+  denominator, and the configuration keeps no trace of it;
+- `mutator.excludedMutations` with a whole family of mutations;
+- `ignoreStatic: true` — field initialisers and module scope drop out, i.e. in a component
+  library its public contract;
+- a shortened `timeoutMS` — **a mutant killed by the clock counts towards the score like one
+  killed by an assertion**, so a shorter limit buys percentage with run time.
+
+Hence the shape of `check-mutation`: the gate does not read `stryker.config.json` but the `config`
+field from the **run's report**, i.e. the effective configuration — a flag added to the target's
+command leaves not one line in the file. That is the same move as „do not read `include`, run the
+compiler" from [`lesson-47`](#lesson-47), carried from a compiler to a measuring tool.
+
+Separately, and this is a conclusion for every measurement with a threshold: **an aggregate
+threshold alone says nothing about a file that dropped twenty points, as long as the rest makes
+up for it.** So next to the hard floor stands a per-file snapshot with a **two-sided** tolerance —
+downwards, because that is what a removed assertion looks like, upwards, because a floor standing
+ten points below the measurement stops measuring. The price is written down outright: every
+improvement in the tests requires rewriting the snapshot, i.e. a line in the diff that is visible
+in review. That is the price you pay for the number to mean something.
+
+### <a id="lesson-59"></a>`lesson-59` — A task flaky under `nx affected` points at a shared directory, not at a time limit
+
+**The `mutacja` target passed every time on its own and fell over when run alongside the rest.**
+The first suspect was the mutant time limit: Stryker computes it relative to the dry-run time, so
+under load a live mutant can become a timeout. The hypothesis was convenient, it fitted the
+symptom and **it was false**.
+
+The real reason showed only in a recorded run: `ENOENT: no such file or directory, copyfile
+'tmp/libs/components/build/tsconfig.generated.<uuid>.json'`. Stryker copies the repository into
+a sandbox and walks it **itself** rather than walking the git index — it saw 3907 files where git
+knows 707. The excess is generated directories (`tmp`, `dist`, `.nx`, `.angular`, `coverage`), and
+those have **concurrent writers**: `nx affected` runs `build` alongside, ng-packagr creates and
+deletes its temporary tsconfig, and the file disappears between being listed and being copied.
+A race, not performance.
+
+A practical rule, in the [`lesson-51`](#lesson-51) family („the first suspect was the cache and it
+was a false trail"): **with a task flaky under parallelism, ask first which DIRECTORY the task
+reads or copies, not how long it takes.** A tool that makes a copy of the project tree is
+sensitive to everybody writing in that tree — and the remedy is narrowing what it copies
+(`ignorePatterns`), not raising limits. The symptom „passes solo, fails in a batch" is common to
+both causes and does not settle anything by itself; what settles it is the recorded message.

@@ -11,7 +11,7 @@ The promise is already written: prose answers „why isn't this obvious?", and w
 pointed at is pointed at instead of summarised. What was missing is **how much** — and
 a criterion without a number is settled again by whoever happens to be editing.
 
-Section H of the [plan](../plan.md#h-jeden-język-repozytorium) is about to rewrite every prose
+Section H of the [plan](../plan.md#h-one-language-for-the-repository) is about to rewrite every prose
 layer of this repository. Deciding „concise enough" file by file, mid-pass, means the second
 pass answers it differently from the first, and the difference is invisible in review.
 
