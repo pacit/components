@@ -73,11 +73,11 @@ H  jeden język, bez wody      angielski + kompresja; część publiczna siedzi 
 ```
 
 **Faza A jest zamknięta**, a najbliższym kamieniem milowym nie jest wydanie, tylko
-**pierwszy push do publicznego repozytorium** (B2). Przed nim zostało: **H2** (kryterium
-zwięzłości, godziny), **H3** (`README.md`) i **H4** (`docs/`) — bo push jest premierą,
-a nie kopią zapasową. **B1 i H1 są zrobione** (2026-08-06), więc `LICENSE` ma bramkę po obu
-stronach `npm pack`, a wszystko, co od teraz powstaje, powstaje od razu w docelowej
-przestrzeni nazw. Reszta B (B3, B4, B8) wiąże dopiero przy publikacji na npm.
+**pierwszy push do publicznego repozytorium** (B2). Przed nim została **H4** (`docs/`) — bo
+push jest premierą, a nie kopią zapasową. **B1, H1, H2 i H3 są zrobione**: `LICENSE` ma bramkę
+po obu stronach `npm pack`, identyfikatory i strona tytułowa są w docelowym języku, a budżet
+kompresji jest rozstrzygnięty ([0017](decisions/0017-one-home-per-fact.md)), więc H4 idzie
+tłumaczeniem i skracaniem naraz. Reszta B (B3, B4, B8) wiąże dopiero przy publikacji na npm.
 Równolegle: F1 jest odblokowane (A3 i A4 dały mu oba inwentarze do wyrenderowania),
 a C jest wypełniaczem.
 
@@ -1101,19 +1101,18 @@ Zmierzone 2026-08-06 (`git ls-files` + skan diakrytyków), wiersz `docs/` odświ
   - koszt: ~0,5 dnia (plan zakładał godziny) · _notatki:_ decyzja od razu po angielsku —
     `docs/` wiąże przy pierwszym pushu, więc polska wersja żyłaby trzy dni
 
-- [ ] **H3 — strona tytułowa repozytorium**
-  - `README.md` (**251 linii**), `AGENTS.md` (35) i nazwy w `.github/workflows/` — workflow
-    nazywa się „Wydanie", a jego kroki („Wydajemy tylko z main", „Tożsamość gita dla commita
-    wydania") są widoczne w zakładce Actions każdego, kto tam zajrzy
-  - to **najczęściej czytany plik w publicznym repozytorium**, czytany częściej niż README
-    pakietu na npm — i jedyna warstwa, której nie policzyła poprzednia wersja tego planu
-  - polszczyzna siedzi też **w przykładach kodu**, czyli w tym, co czytelnik kopiuje:
-    `Zapisz`, `Wyczyść`, `Szukaj`, `Akceptuję regulamin`, `Liczba stanowisk`, identyfikator
-    `poId` i lista `miasta`. Przykład zostaje przykładem tylko wtedy, gdy da się go wkleić
-  - `README.md` i `libs/components/README.md` (**B3**) to **dwa różne dokumenty**: pierwszy
-    odpowiada „czym to jest i jak tu pracować", drugi — „jak tego użyć u siebie". Dziś
-    pierwszy udaje oba, a drugi jest stubem generatora
-  - koszt: ~0,5 dnia · _notatki:_ —
+- [x] **H3 — strona tytułowa repozytorium** _(2026-08-07)_
+  - zrobione: `README.md` po angielsku (przykłady zostają — mają być do wklejenia), `AGENTS.md`
+    - `CLAUDE.md`, oba workflowy (nazwa **Release**, kroki, opisy wejść) i sześć plików
+      konfiguracyjnych korzenia
+  - **zakres wyszedł trzykrotnie większy niż w planie**: plan liczył „nazwy w Actions", a `ci.yml`
+    miał 121 polskich linii ze 177 — w tym jeden komentarz na 120 linii streszczający trzynaście
+    bramek. Do tego 41 linii w sześciu plikach konfiguracyjnych i tytuły sekcji CHANGELOG-a,
+    czyli miejsca, których nie brało żadne inne zadanie H
+  - pomiar: 5 903 → 4 884 słowa w 11 plikach (−17%), sam `ci.yml` 1 639 → 384 (−77%). README stoi
+    w miejscu (1 665 → 1 694): angielski jest dłuższy o tyle, ile zdjęło pięć akapitów z odsyłaczem
+  - kontrola: zielone `check-docs`, `check-browsers` (czyta `ci.yml`) i `check-typecheck`
+    (czyta `tsconfig.root.json`); skan diakrytyków w korzeniu pusty. Koszt: ~0,5 dnia
 
 - [ ] **H4 — dokumentacja `docs/`**
   - 40 plików, 7 590 linii — największa pozycja i jedyna, w której tłumaczenie **może coś
@@ -1195,6 +1194,32 @@ faktycznie wykrywa błąd hydracji"`), więc przemianowanie bez poprawienia cyto
 ## Dziennik
 
 Wpis per sesja: co ruszyło, czym się skończyło, co jest następne. Najnowsze na górze.
+
+### 2026-08-07 — H3: strona tytułowa miała trzy razy więcej powierzchni, niż plan liczył
+
+Domknięte **H3**. Liczby rejestru bez zmian — `req-project-language` czeka na bramkę (**B8**),
+a to było tłumaczenie, nie pomiar.
+
+- **Plan liczył „nazwy w Actions" i pomylił się o rząd wielkości.** `ci.yml` miał 121 polskich
+  linii ze 177, z czego jeden komentarz zajmował 120 i streszczał trzynaście bramek naraz —
+  każdą tak, jak opisuje ją jej własny nagłówek, jej wymaganie i jej lekcja. Po zastosowaniu
+  [0017](decisions/0017-one-home-per-fact.md) zostało z tego siedem linii z odsyłaczem do
+  rejestru: 1 639 → 384 słowa, −77%.
+- **Skan pokazał trzecią warstwę, której nie brało żadne zadanie H**: 41 linii polskich
+  komentarzy w `.gitignore`, `.prettierignore`, `nx.json`, `project.json`, `tsconfig.root.json`
+  i `eslint.config.mjs`. Wzięte tym samym ruchem — inaczej wpadłyby do rejestru wyjątków B8
+  jako dług, a nie jako praca.
+- **Tytuły sekcji CHANGELOG-a były po polsku i nikt ich nie pilnował.** To jedyna rzecz w tej
+  partii, która jedzie do konsumenta: `Nowe możliwości`, `Poprawki`, `Wydajność`. Komentarz
+  obok uzasadniał je „językiem historii commitów" — czyli zdaniem, które H9 właśnie odwraca.
+- **README nie schudł i to jest uczciwy wynik**: 1 665 → 1 694 słowa. Angielski jest dłuższy
+  od polskiego przy tej samej treści, a pięć akapitów uzasadnień (pole liczbowe, panel selecta,
+  mapa klawiatury, skórka, kolejność wydania) zeszło do odsyłaczy — jedno wyrównało drugie.
+- przykłady kodu zostają przykładami: `Save`, `Search`, `I accept the terms`, `byId`, `cities`.
+  Jedyny polski napis, jaki został w repozytorium świadomie, to `providePctTexts({ … })`
+  w sekcji o tłumaczeniach — tam polszczyzna jest **wartością**, nie prozą.
+
+Następne: **H4** (`docs/`, 40 plików, 7 590 linii) → **B2**.
 
 ### 2026-08-07 — H2: budżet dla trzech warstw, bo pomiar znalazł trzecią
 

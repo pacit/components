@@ -1,6 +1,6 @@
 {
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
-  "// sharedGlobals": "Pliki spoza któregokolwiek projektu, których zmiana musi unieważnić wszystko. Puste `sharedGlobals` przy `nx affected` znaczyłoby, że podbicie wersji Angulara w package.json albo zmiana ścieżek w tsconfig.base.json nie uruchamia ANI JEDNEGO zadania — pipeline świeciłby na zielono, nie sprawdziwszy niczego. Uwaga: wartości w `namedInputs` muszą być tablicami, więc komentarz nie może stać w środku.",
+  "// sharedGlobals": "Files outside every project whose change has to invalidate everything. An empty `sharedGlobals` would mean that bumping Angular in package.json, or changing paths in tsconfig.base.json, starts NOT ONE task — a pipeline green without having checked anything. Note: values in `namedInputs` must be arrays, so the comment cannot sit inside one.",
   "namedInputs": {
     "default": [
       "{projectRoot}/**/*",
@@ -66,21 +66,23 @@
       "inputs": ["default", "^production"]
     }
   },
-  "// release": "Wydanie prowadzi tools/release.mjs, a nie `nx release` wprost. Powód: build MUSI iść PO podbiciu wersji. `preVersionCommand` uruchamia się przed nim, więc artefakt niósłby starą stałą PCT_VERSION, a `manifestRootsToUpdate` załatałoby tylko manifest w dist — pakiet zgadzałby się sam ze sobą w jednym pliku i kłamał w bundlu.",
+  "// release": "The release is driven by tools/release.mjs rather than `nx release` directly, because the build MUST come after the version bump. `preVersionCommand` runs before it, so the artifact would carry the old PCT_VERSION constant, and `manifestRootsToUpdate` would patch the manifest in dist alone — the package would agree with itself in one file and lie in the bundle.",
   "release": {
     "projects": ["components"],
     "projectsRelationship": "independent",
     "releaseTag": {
       "pattern": "{projectName}@{version}"
     },
-    "// conventionalCommits": "Tytuły sekcji po polsku, bo taki jest język historii commitów i dokumentacji. Ukryte typy nie znikają z historii — tylko z CHANGELOG-a, który czyta konsument biblioteki, a nie osoba pracująca nad repozytorium.",
+    "// conventionalCommits": "Section titles are English like the rest of the repository, and this file is read by consumers of the package. Hidden types do not disappear from history — only from the CHANGELOG.",
     "conventionalCommits": {
       "types": {
-        "feat": { "changelog": { "title": "Nowe możliwości" } },
-        "fix": { "changelog": { "title": "Poprawki" } },
-        "perf": { "changelog": { "title": "Wydajność" } },
-        "refactor": { "changelog": { "title": "Przebudowa", "hidden": false } },
-        "docs": { "changelog": { "title": "Dokumentacja", "hidden": false } },
+        "feat": { "changelog": { "title": "Features" } },
+        "fix": { "changelog": { "title": "Fixes" } },
+        "perf": { "changelog": { "title": "Performance" } },
+        "refactor": {
+          "changelog": { "title": "Refactoring", "hidden": false }
+        },
+        "docs": { "changelog": { "title": "Documentation", "hidden": false } },
         "build": { "changelog": { "hidden": true } },
         "chore": { "changelog": { "hidden": true } },
         "ci": { "changelog": { "hidden": true } },
@@ -89,13 +91,13 @@
     },
     "version": {
       "conventionalCommits": true,
-      "// adjustSemverBumpsForZeroMajorVersion": "Przed 1.0 zmiana łamiąca podbija minor, a nie major. Inaczej pierwsze `feat(api)!` wyrzuciłoby bibliotekę prosto do 1.0.0 i odebrało jej prawo do niestabilnego API, które `req-project-latest` wprost zakłada.",
+      "// adjustSemverBumpsForZeroMajorVersion": "Before 1.0 a breaking change bumps the minor, not the major. Otherwise the first `feat(api)!` would throw the library straight to 1.0.0 and take away the unstable API that `req-project-latest` assumes outright.",
       "adjustSemverBumpsForZeroMajorVersion": true
     },
     "changelog": {
-      "// automaticFromRef": "Pierwsze wydanie nie ma poprzedniego tagu, od którego liczyć zakres — bez tego `nx release` nie miałby skąd wziąć historii.",
+      "// automaticFromRef": "The first release has no previous tag to count the range from — without this `nx release` would have nowhere to take the history from.",
       "automaticFromRef": true,
-      "// workspaceChangelog": "Publikowalny projekt jest jeden, więc changelog workspace'u byłby drugą kopią tej samej treści.",
+      "// workspaceChangelog": "There is exactly one publishable project, so a workspace changelog would be a second copy of the same content.",
       "workspaceChangelog": false,
       "projectChangelogs": {
         "createRelease": "github"

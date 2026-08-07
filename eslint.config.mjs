@@ -19,11 +19,11 @@ export default [
         {
           enforceBuildableLibDependency: true,
           allow: ['^.*/eslint(\\.base)?\\.config\\.[cm]?[jt]s$'],
-          // Warstwy workspace'u, od najniższej: tokens -> lib -> app -> e2e.
-          // Każdy projekt ma dokładnie jeden tag `type:*` (patrz project.json).
+          // Workspace layers, lowest first: tokens -> lib -> app -> e2e.
+          // Every project carries exactly one `type:*` tag (see project.json).
           depConstraints: [
-            // Tokeny są fundamentem systemu (req-token-dtcg) i muszą pozostać
-            // liściem — zależność od komponentów zrobiłaby z tego cykl warstw.
+            // Tokens are the foundation of the system (req-token-dtcg) and have to stay
+            // a leaf — depending on components would turn the layers into a cycle.
             {
               sourceTag: 'type:tokens',
               onlyDependOnLibsWithTags: ['type:tokens'],

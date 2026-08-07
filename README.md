@@ -1,113 +1,115 @@
 # @pacit/components
 
-Biblioteka komponentów Angular — budowana jako nowoczesna, dostępna alternatywa dla rozwiązań typu PrimeNG. Monorepo NX.
+Angular component library — built as a modern, accessible alternative to suites like PrimeNG.
+Nx monorepo.
 
-> **Status:** wczesny etap, API wciąż się zmienia. Kontrolki formularza budowane są jako obudowa `pct-field` + kontrolka w środku. Pełne ustalenia i wymagania: [docs/](docs/README.md) — w tym [rejestr bramek](docs/registry.md), który wylicza, czego jeszcze nie ma i co to blokuje.
+> **Status:** early, and the API still moves. Form controls are built as a `pct-field` wrapper
+> with a control inside it. What is already decided, and what is still missing, is in
+> [docs/](docs/README.md) — starting with the [gate registry](docs/registry.md), which lists
+> every promise next to the machine that proves it.
 
 ## Stack
 
-Angular 22 · TypeScript 6 · NX 23 · Vitest · Playwright · SSR (Angular Universal)
+Angular 22 · TypeScript 6 · Nx 23 · Vitest · Playwright · SSR
 
-## Zasady
+## Principles
 
-- Minimalne zależności runtime: jedynie `@angular/cdk` (CDK Overlay w `PctSelect`).
-- Standalone, OnPush, signals, zoneless (`zone.js` nie jest zależnością projektu), SSR.
-- Dostępność: minimum WCAG 2.2 AA, weryfikowane automatycznie audytem axe-core w testach e2e (plus obszar dotyku ≥ 24×24 px).
-- Theming przez design tokens (DTCG) → CSS custom properties, z zachowaniem referencji `var()` (kaskada, scoped theme).
-- Preferencje systemowe obsłużone z pudełka: tryb ciemny (`prefers-color-scheme`), redukcja ruchu (`prefers-reduced-motion`) i tryb wysokiego kontrastu (`forced-colors`).
+- Minimal runtime dependencies: `@angular/cdk` alone (CDK Overlay in `PctSelect`).
+- Standalone, OnPush, signals, zoneless (`zone.js` is not a dependency of this project), SSR.
+- Accessibility: WCAG 2.2 AA at minimum, verified by an axe-core audit of every view in e2e,
+  plus a touch target of at least 24×24 px.
+- Theming through design tokens (DTCG) → CSS custom properties, with `var()` references kept
+  intact, so an override cascades without a rebuild.
+- System preferences out of the box: dark mode (`prefers-color-scheme`), reduced motion
+  (`prefers-reduced-motion`) and high contrast (`forced-colors`).
 
-## Struktura
+Each of those is a promise with a gate behind it. Which gate, and what its reference control
+is, is in the [registry](docs/registry.md) — generated from the requirements, so it cannot
+quietly disagree with them.
+
+## Layout
 
 ```
 apps/
-  sandbox/       aplikacja demo / playground
-  sandbox-e2e/   testy e2e (Playwright)
+  sandbox/       demo application / playground
+  sandbox-e2e/   e2e tests (Playwright)
 libs/
-  components/    pakiet @pacit/components (entrypoints: ./core, ./field, ./button, ./checkbox, ./radio, ./select)
-  tokens/        źródło DTCG + build -> CSS/SCSS/TS + bramka kontrastu
-docs/            wymagania, decyzje, lekcje i rejestr bramek (start: docs/README.md)
+  components/    the @pacit/components package (entrypoints: ./core, ./field, ./button, ./checkbox, ./radio, ./select)
+  tokens/        DTCG source + build -> CSS/SCSS/TS + contrast gate
+docs/            requirements, decisions, lessons and the generated registry (start: docs/README.md)
+tools/           the gates (check-*) and the release script
 ```
 
-## Wymagania wstępne
+## Getting started
 
-Node 24 (repo używa nvm). W nieinteraktywnej powłoce najpierw:
+Node 24 (the repo uses nvm). In a non-interactive shell, first:
 
 ```bash
 export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"
 ```
 
-## Start
-
 ```bash
 npm ci
-npx nx serve sandbox --port 4200   # uruchom demo na http://localhost:4200
+npx nx serve sandbox --port 4200   # demo on http://localhost:4200
 ```
 
-## Instalacja w aplikacji
+Tokens build themselves: `tokens` is a graph dependency of `components` and `sandbox`, so
+`nx serve` and `nx build` generate them before their consumers. On their own: `npx nx build tokens`.
+
+## Tests and gates
 
 ```bash
-ng add @pacit/components
+npx nx test components           # unit tests of the library (Vitest)
+npx nx vite:test sandbox         # unit tests of the demo app (a different target than `test`)
+npx nx e2e sandbox-e2e           # e2e on three engines + axe-core audit
+npx nx check-package components  # one gate; the registry lists the rest
 ```
 
-Schematic dopina do konfiguracji builda dwa arkusze: skórkę (`@pacit/components/themes/pct.css`) i style nakładki CDK (`@angular/cdk/overlay-prebuilt.css`). Bez pierwszego komponenty odwołują się do nieistniejących custom properties i renderują się bez wyglądu — cicho, bo brak definicji `var()` nie jest błędem, tylko powrotem do wartości początkowej. Bez drugiego panel `PctSelect` pojawia się w losowym miejscu strony.
+Thirteen `check-*` gates run in CI next to lint, unit tests, build, typecheck and a mutation run.
+Each answers for one named promise and each has a **reference control** — prepared inputs it must
+reject — because a gate that quietly stopped measuring anything is the failure this repository
+keeps meeting ([`docs/lessons.md`](docs/lessons.md)).
 
-Skórka trafia na **początek** listy, żeby nadpisanie tokenu w arkuszach aplikacji wygrywało z wartością domyślną. W workspace bez `angular.json` (np. Nx) schematic niczego nie zgaduje — wypisuje oba wpisy do dodania ręcznie.
-
-## Rozwój biblioteki
-
-Tokeny (`libs/tokens/dist`) budują się same — `tokens` jest zależnością `components`
-i `sandbox` w grafie NX, więc `nx serve`/`nx build` generuje je przed konsumentami.
-Osobno uruchamia je `npx nx build tokens`.
-
-## Testy
-
-```bash
-npx nx test components           # testy jednostkowe biblioteki (Vitest)
-npx nx vite:test sandbox         # testy jednostkowe aplikacji (uwaga: inny target niż `test`)
-npx nx e2e sandbox-e2e           # e2e + audyt a11y axe-core (wymaga: npx playwright install chromium)
-npx nx build tokens              # bramka kontrastu (policy WCAG) — błędy blokują, ostrzeżenia informują
-npx nx check-package components  # bramka pakietu — czy dist wozi skórkę i domyka użyte tokeny
-npx nx check-consumer components # bramka konsumenta — pakiet z rejestru w prawdziwej aplikacji
-```
-
-`check-consumer` jest tym samym pytaniem co `check-package`, zadanym po drugiej stronie
-`npm publish`: pakuje `dist`, publikuje do lokalnego rejestru (Verdaccio), instaluje
-**po nazwie** do świeżej aplikacji, uruchamia `ng add`, buduje ją z SSR i sprawdza
-w przeglądarce, że przycisk jest pomalowany swoim tokenem. Bramka statyczna pyta, czy plik
-**jest**; ta — czy **działa**. Różnica nie jest teoretyczna: `ng add @pacit/components`
-wywracało się u konsumenta na `exports is not defined in ES module scope` przy zielonym
-`check-package`.
-
-E2E obejmuje audyt axe-core każdego widoku, bramkę błędów hydracji SSR, preferencje systemowe
-(tryb ciemny / redukcja ruchu / wysoki kontrast) oraz **testy wizualne**. Wzorce zrzutów leżą
-w `apps/sandbox-e2e/src/__screenshots__/<platforma>/` i są wersjonowane razem z kodem — bez tego
-Playwright zapisałby przy pierwszym przebiegu bieżący zrzut jako poprawny i bramka nigdy by nie
-zapaliła. Po świadomej zmianie wyglądu trzeba je odświeżyć i przejrzeć różnice w commicie:
+E2E covers an axe-core audit of every view, an SSR hydration-error gate, system preferences
+(dark mode / reduced motion / forced colors) and **visual tests**, whose baselines live in
+`apps/sandbox-e2e/src/__screenshots__/<platform>/` and are versioned with the code. After
+a deliberate visual change, refresh them and read the diff in the commit:
 
 ```bash
 npx nx e2e sandbox-e2e -- --update-snapshots=changed visual.spec.ts
 ```
 
+## Installing in an application
+
+```bash
+ng add @pacit/components
+```
+
+The schematic adds two stylesheets to the build configuration: the skin
+(`@pacit/components/themes/pct.css`) and the CDK overlay styles
+(`@angular/cdk/overlay-prebuilt.css`). Without the first, components render with no appearance at
+all, and silently — an unresolved `var()` is not an error ([`lesson-36`](docs/lessons.md#lesson-36)).
+Without the second, the `PctSelect` panel appears somewhere random on the page.
+
+The skin goes **first** in the list, so an application's own override beats the default. In
+a workspace without `angular.json` (Nx, for instance) the schematic guesses nothing — it prints
+both entries to add by hand.
+
 ## Design tokens
 
-Źródło: `libs/tokens/src/*.json` (format DTCG). Build (`libs/tokens/build.mjs`) generuje:
+Source: `libs/tokens/src/*.json` (DTCG). `libs/tokens/build.mjs` generates `dist/pct.css` (custom
+properties: light theme on `:root`, `[data-theme="light"]` and `[data-theme="dark"]`, plus
+`@media` blocks for system preferences), `dist/_tokens.scss` for internal use and typed
+`dist/tokens.ts`.
 
-- `dist/pct.css` — CSS custom properties: motyw jasny na `:root`, `[data-theme="light"]`,
-  `[data-theme="dark"]` oraz bloki warunkowe `@media` dla preferencji systemowych,
-- `dist/_tokens.scss` — zmienne SCSS do użytku wewnętrznego,
-- `dist/tokens.ts` — typowane nazwy tokenów.
+Three tiers — **primitive → semantic → component** — with references kept as `var()`, so
+overriding one variable in any scope cascades without recompiling. Dark mode binds to
+`:root:not([data-theme])`, which makes the system preference a default rather than an order;
+`<html data-theme="light">` is the switch, and nested `data-theme` keeps working. Reduced motion
+swaps the motion axis, so a component that takes its duration from a token gets that preference
+for free.
 
-Preferencje systemu są w tym samym pliku i tym samym mechanizmem co motywy:
-
-- **tryb ciemny** — `@media (prefers-color-scheme: dark)` obowiązuje tylko `:root:not([data-theme])`,
-  więc preferencja systemu jest wartością domyślną, a nie rozkazem. Wyłącznik to
-  `<html data-theme="light">`; zagnieżdżone `data-theme` działają jak wcześniej.
-- **redukcja ruchu** — `@media (prefers-reduced-motion: reduce)` podmienia oś ruchu
-  (`--pct-motion-transition-duration`, `--pct-motion-loop-duration`). Komponent, który bierze czas
-  z tokenu, dostaje obsługę tej preferencji za darmo.
-
-Skórka jedzie w pakiecie i **musi zostać dołączona** — bez niej komponenty odwołują się do
-nieistniejących custom properties i renderują się bez wyglądu:
+Including the skin by hand, where `ng add` did not do it:
 
 ```jsonc
 // angular.json / project.json — styles
@@ -115,114 +117,137 @@ nieistniejących custom properties i renderują się bez wyglądu:
 ```
 
 ```scss
-// albo z poziomu arkusza
+// or from a stylesheet
 @use '@pacit/components/themes/pct.css';
 ```
 
-Pilnuje tego bramka `nx check-package components`: sprawdza, czy `dist` zawiera `themes/pct.css`,
-czy plik jest osiągalny przez `exports`, i czy **każdy** `var(--pct-*)` użyty w pakiecie ma w nim
-swoją deklarację. Ta sama komenda uruchamia kontrolę odniesienia samej bramki — siedem
-spreparowanych pakietów z `tools/check-package.fixtures/`, z których każdy musi zostać odrzucony
-przez ten punkt, który łamie.
+The contrast policy (`libs/tokens/src/contrast.policy.json`) validates text/background pairs
+against WCAG thresholds per theme — `error` fails the build, `warn` informs. Token names, tiers
+and pairs have gates of their own; the promises they answer for are in
+[docs/requirements/tokens.md](docs/requirements/tokens.md).
 
-Trzy poziomy: **prymitywne → semantyczne → komponentowe**; referencje zachowane jako `var()`, więc nadpisanie jednej zmiennej w dowolnym scope kaskaduje bez rekompilacji. Polityka kontrastu (`src/contrast.policy.json`) waliduje pary tekst/tło wobec progów WCAG, per motyw — `error` blokuje build, `warn` informuje (np. `disabled`, zwolniony z SC 1.4.3).
+## Components
 
-## Komponenty
+The contract, keyboard map and known limits of each are in
+[docs/components/](docs/components/README.md).
 
-`PctButton` (`@pacit/components/button`) — selektor atrybutowy na natywnym `<button>`, warianty `solid|outline`, rozmiary `sm|md|lg`, stany `disabled`/`loading`. Stan wystawiany jako `data-pct-*`, elementy wewnętrzne jako `data-pct-part`.
+`PctButton` (`@pacit/components/button`) — an attribute selector on a native `<button>`, variants
+`solid|outline`, sizes `sm|md|lg`, states `disabled`/`loading`. State is exposed as `data-pct-*`,
+inner elements as `data-pct-part`.
 
 ```html
-<button pctButton variant="outline" size="lg">Zapisz</button>
+<button pctButton variant="outline" size="lg">Save</button>
 ```
 
-`PctField` (`@pacit/components/field`) — **obudowa pola**: etykieta, podpowiedź, komunikat błędu, znacznik wymagalności i sloty `[pctPrefix]` / `[pctSuffix]` wewnątrz ramki. Kontraktu formularza nie implementuje obudowa, lecz kontrolka w środku, więc typowanie zostaje przy rodzaju pola. W środku może stać dowolna kontrolka — pole tekstowe, select, checkbox, grupa radiów.
+`PctField` (`@pacit/components/field`) — the **field wrapper**: label, hint, error message,
+required marker and `[pctPrefix]` / `[pctSuffix]` slots inside the frame. The form contract is
+implemented by the control inside, not by the wrapper, so typing stays with the kind of field.
+Any control can sit in there — a text input, a select, a checkbox, a radio group.
 
 ```html
-<!-- pole tekstowe: komponent na natywnym <input> -->
-<pct-field label="E-mail" hint="Adres służbowy">
+<!-- text input: a component on a native <input> -->
+<pct-field label="E-mail" hint="Work address">
   <input pctText type="email" [formField]="userForm.email" />
 </pct-field>
 
-<!-- ta sama obudowa, inna kontrolka -->
-<pct-field label="Kraj">
+<!-- same wrapper, different control -->
+<pct-field label="Country">
   <pct-select [options]="countries" [formField]="userForm.country" />
 </pct-field>
 
-<!-- dekoracje wewnątrz ramki; `inset` (domyślnie) leży na powierzchni pola,
-     `fill` bierze cały slot i jest własną powierzchnią -->
-<pct-field label="Cena">
-  <span pctPrefix aria-hidden="true">PLN</span>
+<!-- decorations inside the frame; `inset` (the default) sits on the field surface,
+     `fill` takes the whole slot and is a surface of its own -->
+<pct-field label="Price">
+  <span pctPrefix aria-hidden="true">$</span>
   <input pctText inputmode="numeric" [(value)]="price" />
-  <button pctSuffix pctButton size="sm" aria-label="Wyczyść">×</button>
+  <button pctSuffix pctButton size="sm" aria-label="Clear">×</button>
 </pct-field>
 
-<pct-field label="Szukaj">
+<pct-field label="Search">
   <input pctText [(value)]="query" />
-  <button pctSuffix="fill" pctButton>Szukaj</button>
+  <button pctSuffix="fill" pctButton>Search</button>
 </pct-field>
 ```
 
-Kontrolki działają też **bez obudowy** (wtedy bez etykiety i komunikatów), a checkbox i grupa radiów rysują wówczas własną etykietę.
+Controls also work **without the wrapper** (with no label and no messages then); a checkbox and
+a radio group draw their own label in that case.
 
-`PctNumber` (`@pacit/components/field`) — pole liczbowe (`input[pctNumber]`) o wartości `number | null`. Świadomie **nie** opiera się na `<input type="number">`: to pole nie zna lokalnego separatora dziesiętnego, nie grupuje tysięcy i przy błędnej treści zwraca puste `value`. Zamiast tego `<input type="text">` z `role="spinbutton"` i formatowaniem przez `Intl.NumberFormat` wg `LOCALE_ID`.
+`PctNumber` (`@pacit/components/field`) — a numeric field (`input[pctNumber]`) whose value is
+`number | null`. Built on `<input type="text">` with `role="spinbutton"` and formatting through
+`Intl.NumberFormat` per `LOCALE_ID`, deliberately **not** on `<input type="number">` — what that
+input costs is in [decision 0009](docs/decisions/0009-number-field.md).
 
 ```html
-<!-- domyślnie pole całkowite; granice biorą się z walidatorów min()/max() schematu -->
-<pct-field label="Liczba stanowisk">
+<!-- integer by default; bounds come from the schema's min()/max() validators -->
+<pct-field label="Seats">
   <input pctNumber [formField]="form.seats" />
 </pct-field>
 
-<!-- kwota: dwa miejsca po przecinku, krok pół złotego -->
-<pct-field label="Cena">
-  <span pctPrefix aria-hidden="true">PLN</span>
+<!-- an amount: two decimals, half-unit step -->
+<pct-field label="Price">
+  <span pctPrefix aria-hidden="true">$</span>
   <input pctNumber [minFractionDigits]="2" [maxFractionDigits]="2" [step]="0.5" [(value)]="price" />
 </pct-field>
 ```
 
-Puste pole to `null`, nie `0`. Wpisując, można używać przecinka i kropki niezależnie od locale. Zaokrąglenie i domknięcie do `min`/`max` następuje przy opuszczeniu pola, nie w trakcie pisania. Strzałki góra/dół zmieniają wartość o `step`, PageUp/PageDown dziesięciokrotnie, Home/End skaczą do granic.
+An empty field is `null`, not `0`; a comma and a dot are both accepted while typing whatever the
+locale; rounding and clamping to `min`/`max` happen on blur, not mid-keystroke. The keyboard map
+is in [docs/components/number.md](docs/components/number.md).
 
-`PctCheckbox` (`@pacit/components/checkbox`) — natywna kontrolka **signal forms** (`FormCheckboxControl`). Wymaganym polem jest `checked` (nie `value`), więc wiąże się je nawiasami.
+`PctCheckbox` (`@pacit/components/checkbox`) — a native **signal forms** control
+(`FormCheckboxControl`). The required field is `checked`, not `value`, so it binds with brackets.
 
 ```html
-<pct-checkbox label="Akceptuję regulamin" [formField]="userForm.terms" />
-<!-- w obudowie: etykietę renderuje pct-field, checkbox jej nie powtarza -->
-<pct-checkbox label="Zapamiętaj mnie" [(checked)]="remember" />
-<pct-checkbox label="Częściowy wybór" [indeterminate]="true" />
+<pct-checkbox label="I accept the terms" [formField]="userForm.terms" />
+<!-- inside the wrapper: pct-field renders the label, the checkbox does not repeat it -->
+<pct-checkbox label="Remember me" [(checked)]="remember" />
+<pct-checkbox label="Partially selected" [indeterminate]="true" />
 ```
 
-`PctRadioGroup` + `PctRadio` (`@pacit/components/radio`) — komponent złożony: kontrolką formularza jest **grupa**, nie poszczególne opcje. Nawigacja strzałkami pochodzi od przeglądarki (natywne radia ze wspólnym `name`), bez własnego roving tabindex.
+`PctRadioGroup` + `PctRadio` (`@pacit/components/radio`) — a composite: the form control is the
+**group**, not the individual options. Arrow-key navigation comes from the browser (native radios
+sharing a `name`), with no roving tabindex of our own.
 
 ```html
 <pct-radio-group label="Plan" [formField]="userForm.plan">
-  <pct-radio value="free">Darmowy</pct-radio>
+  <pct-radio value="free">Free</pct-radio>
   <pct-radio value="pro">Pro</pct-radio>
 </pct-radio-group>
 ```
 
-Wartość jest dowolnego typu (`PctRadioGroup<T>`, domyślnie `string`) — opcją może być wariant unii albo encja. Równość zgłasza aplikacja przez `compareWith`, a brak wyboru to `null`.
+The value is of any type (`PctRadioGroup<T>`, `string` by default) — an option can be a union
+member or an entity. Equality is the application's call through `compareWith`, and no selection
+is `null`.
 
-`PctSelect` (`@pacit/components/select`) — lista wyboru z własnym panelem (nie natywny `<select>`), wzorzec ARIA „select-only combobox": fokus zostaje na triggerze, aktywna opcja wskazywana przez `aria-activedescendant`. Obsługa klawiatury: strzałki, Home/End, Enter, Escape, typeahead.
+`PctSelect` (`@pacit/components/select`) — a listbox with its own panel (not a native `<select>`),
+following the ARIA "select-only combobox" pattern: focus stays on the trigger, the active option
+is pointed at by `aria-activedescendant`. Panel placement and the keyboard map are in
+[docs/components/select.md](docs/components/select.md).
 
 ```html
-<pct-field label="Kraj">
+<pct-field label="Country">
   <pct-select [options]="countries" [formField]="userForm.country" />
 </pct-field>
 ```
 
-Wartość jest dowolnego typu (`PctSelect<T>` / `PctSelectOption<T>`, domyślnie `string`), a typ bierze się z listy opcji. Encje porównuje się po kluczu — instancja z serwera nie jest tą samą referencją co opcja na liście:
+The value is of any type (`PctSelect<T>` / `PctSelectOption<T>`, `string` by default) and follows
+from the option list. Entities are compared by key — an instance from the server is not the same
+reference as the option in the list:
 
 ```html
-<!-- protected poId = (a: Miasto, b: Miasto) => a.id === b.id; -->
-<pct-select [options]="miasta" [compareWith]="poId" [(value)]="miasto" />
+<!-- protected byId = (a: City, b: City) => a.id === b.id; -->
+<pct-select [options]="cities" [compareWith]="byId" [(value)]="city" />
 ```
 
-Brak wyboru to `null`. Aplikacja z polem nienullowalnym podaje własną wartość pustą (`[emptyValue]="''"`), żeby reset formularza nie wpisywał `null` wbrew typowi modelu.
+No selection is `null`. An application with a non-nullable field supplies its own empty value
+(`[emptyValue]="''"`), so resetting the form does not write `null` against the model's type.
 
-> Wymaga dołączenia stylów nakładki CDK: `node_modules/@angular/cdk/overlay-prebuilt.css`.
+> Requires the CDK overlay styles: `node_modules/@angular/cdk/overlay-prebuilt.css`.
 
-## Teksty i tłumaczenia
+## Texts and translations
 
-Napisy, które komponent wypisuje sam (tekst zastępczy listy, komunikat pustej listy), są **angielskie** i idą przez token DI. Podane pola nadpisują domyślne, reszta zostaje:
+Strings a component prints on its own (the select placeholder, the empty-list message) are
+**English** and travel through a DI token. Fields you pass override the defaults, the rest stay:
 
 ```ts
 bootstrapApplication(App, {
@@ -230,36 +255,46 @@ bootstrapApplication(App, {
 });
 ```
 
-`providePctTexts` działa też w zasięgu lokalnym (`providers` komponentu) — sekcja aplikacji może mieć inny język niż reszta. Ostrzeżenia deweloperskie w konsoli nie należą do tego kanału: są po angielsku i gasną poza trybem deweloperskim.
+`providePctTexts` also works locally (a component's own `providers`), so one section of an
+application can speak a different language than the rest. Development warnings are not part of
+that channel: they are English and silent outside development mode.
 
-## Wydanie
+## Release
 
-Wydania idą ręcznym workflow **Wydanie** (`.github/workflows/release.yml`), domyślnie jako próba. Lokalnie to samo robi:
+Releases go through the manual **Release** workflow (`.github/workflows/release.yml`), a dry run
+by default. The same thing locally:
 
 ```bash
 node tools/release.mjs --dry-run --first-release
 ```
 
-Kolejność jest istotna i dlatego wydanie prowadzi skrypt, a nie samo `nx release`: wersja → stempel stałej `PCT_VERSION` → build → bramka pakietu → CHANGELOG, tag, GitHub Release → publikacja. Build **musi** stać po podbiciu wersji, inaczej artefakt niesie starą stałą (`lesson-41`). Wersja bierze się z konwencjonalnych commitów; przed 1.0 zmiana łamiąca podbija minor.
+A script drives the release rather than `nx release` alone, because the order matters: version →
+stamp the `PCT_VERSION` constant → build → package gate → CHANGELOG, tag, GitHub Release →
+publish. A build before the bump ships the old constant
+([`lesson-41`](docs/lessons.md#lesson-41)). The version follows from conventional commits; before
+1.0 a breaking change bumps the minor.
 
-Publikacja wymaga w `libs/components/package.json` pola `repository` — bez niego npm odmawia wystawienia provenance. Pilnuje tego `check-package.mjs --release`; na co dzień ten warunek tylko ostrzega.
+Publishing needs the `repository` field in `libs/components/package.json` — without it npm
+refuses to attach provenance. `check-package.mjs --release` blocks on that; day to day it only warns.
 
-## Licencja
+## License
 
-[MIT](LICENSE) — Copyright (c) 2026 PacIT - Marek Pac. Bez CLA: kontrybucje przychodzą na
-licencji repozytorium ([CONTRIBUTING.md](CONTRIBUTING.md)), a uzasadnienie tego wyboru wraz
-z tym, co przez niego tracimy, stoi w [decyzji 0015](docs/decisions/0015-license-and-model.md).
+[MIT](LICENSE) — Copyright (c) 2026 PacIT - Marek Pac. No CLA: contributions arrive under the
+repository's license ([CONTRIBUTING.md](CONTRIBUTING.md)), and what that choice costs us is in
+[decision 0015](docs/decisions/0015-license-and-model.md).
 
-Licencja obejmuje kod, nie nazwę: `pacit`, zakres npm `@pacit` i domena `pacit.pl` należą do
-podmiotu z linii `Copyright`. Wydanie pod MIT jest nieodwracalne, więc o tym, co i kiedy pod
-nią wychodzi, rozstrzyga [decyzja 0016](docs/decisions/0016-mit-irreversibility.md).
+The license covers the code, not the name: `pacit`, the npm scope `@pacit` and the domain
+`pacit.pl` belong to the entity in the `Copyright` line. Releasing under MIT cannot be undone,
+so what goes out under it, and when, is settled by
+[decision 0016](docs/decisions/0016-mit-irreversibility.md).
 
-Plik LICENSE jedzie w pakiecie i pilnują go dwie bramki: `check-package` czyta katalog
-`dist`, `check-consumer` — archiwum po `npm pack`, bo między jednym a drugim stoi pole
-`files`.
+The LICENSE file ships in the package and two gates watch it: `check-package` reads the `dist`
+directory, `check-consumer` the archive after `npm pack` — because the `files` field stands
+between the two.
 
-## Dokumentacja
+## Documentation
 
-Pełne wymagania i decyzje architektoniczne (identyfikatory `req-*`): [docs/](docs/README.md) —
-[oś projektu](docs/00-axis.md), [wymagania](docs/requirements/), [decyzje](docs/decisions/),
-[lekcje](docs/lessons.md) i generowany [rejestr](docs/registry.md).
+Requirements and architectural decisions (`req-*` identifiers): [docs/](docs/README.md) —
+the [project axis](docs/00-axis.md), [requirements](docs/requirements/),
+[decisions](docs/decisions/), [lessons](docs/lessons.md) and the generated
+[registry](docs/registry.md).

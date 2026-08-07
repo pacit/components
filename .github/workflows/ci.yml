@@ -17,8 +17,8 @@ jobs:
       - uses: actions/checkout@v5
         with:
           filter: tree:0
-          # Pełna historia jest potrzebna `nx affected` do wyznaczenia bazy
-          # porównania — bez niej nie ma jak ustalić, co się zmieniło.
+          # `nx affected` derives its comparison base from history; a shallow clone
+          # leaves it nothing to compare against.
           fetch-depth: 0
 
       - uses: actions/setup-node@v5
@@ -28,22 +28,18 @@ jobs:
 
       - run: npm ci
 
-      # Ustawia NX_BASE i NX_HEAD: na PR-ze to punkt rozejścia z gałęzią bazową,
-      # na main — ostatni commit z zielonym przebiegiem tego workflow. Dzięki
-      # temu po nieudanym przebiegu następny bierze pod uwagę także zmiany,
-      # których tamten nie zdążył sprawdzić.
+      # Sets NX_BASE and NX_HEAD: the merge base on a pull request, the last commit
+      # with a green run of this workflow on main — so a failed run does not hand the
+      # next one a narrower diff than it should check.
       - uses: nrwl/nx-set-shas@v4
 
-      # Przeglądarki Playwrighta ważą kilkaset MB i nie zmieniają się między
-      # commitami — klucz to jego wersja, więc cache unieważnia się dokładnie
-      # przy podbiciu paczki, a nie przy każdej zmianie package-lock.json.
-      # Silniki są trzy (req-quality-browsers) i muszą być wymienione w OBU
-      # krokach niżej: ten przy trafieniu w cache dociąga same biblioteki
-      # systemowe, więc silnik wpisany wyłącznie przy pudle znika z runnera
-      # przy pierwszym trafieniu — i to bez ani jednego czerwonego kroku, bo
-      # `playwright install-deps chromium` kończy się zerem także wtedy, gdy
-      # webkita nikt nie zainstalował. Pilnuje tego `check-browsers` (punkt 5).
-      - name: Ustal wersję Playwrighta
+      # The cache key is the Playwright version, so it is invalidated when the package
+      # moves rather than on every package-lock.json change. All three engines
+      # (`req-quality-browsers`) must be listed in BOTH install steps below: the
+      # cache-hit one installs system libraries only, so an engine named in the miss
+      # branch alone silently disappears on the first hit. `check-browsers` (point 5)
+      # is what notices.
+      - name: Resolve the Playwright version
         id: playwright
         run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
 
@@ -53,9 +49,8 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
 
-      # Zależności systemowe (apt) instalujemy zawsze — nie leżą w katalogu
-      # przeglądarki, więc cache ich nie obejmuje. Samą przeglądarkę tylko
-      # przy pudle.
+      # System libraries are installed on every run: they live outside the browser
+      # directory, so the cache never covers them. The browsers themselves only on a miss.
       - if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps chromium firefox webkit
 
@@ -64,114 +59,11 @@ jobs:
 
       - run: npx nx format:check
 
-      # Tokeny (CSS/SCSS/TS + bramka kontrastu) buduje graf: `tokens` jest
-      # zależnością `components` i `sandbox`, więc powstają same, przed
-      # konsumentami. Ręczny krok przed uruchomieniem maskowałby brak tej krawędzi.
-      # `check-package` weryfikuje spakowany artefakt — że wozi skórkę, że każdy
-      # użyty token ma w pakiecie deklarację i że `ng add` jest osiągalne.
-      # `check-docs` czyta docs/ i sprawdza, że każda obietnica wskazuje maszynę,
-      # która potrafi na niej zapalić — i że ta maszyna istnieje oraz biegnie tutaj.
-      # Bez tego dokumentacja jest jedynym miejscem w repo, gdzie obietnica nie ma
-      # bramki, czyli dokładnie tym, czego zakazuje `req-axis`.
-      # `check-coverage` bada nie procent, tylko mianownik, z którego powstał: raport
-      # v8 obejmuje wyłącznie moduły, które weszły do przebiegu, więc plik bez testu
-      # potrafi z niego WYPAŚĆ i podnieść wynik (`lesson-45`). Sam próg w targecie
-      # `test` pilnowałby wtedy liczby liczonej na coraz mniejszej próbce.
-      # `check-zoneless` mierzy dwie obietnice, które dotąd opierały się wyłącznie na
-      # tym, że nikt ich nie cofnie: brak `zone.js` w drzewie i w bundlu oraz
-      # `ɵcmp.onPush` każdego komponentu. Instalacja stref niczego nie psuje — jest
-      # opcjonalnym peerem Angulara (`lesson-8`) — a OnPush jest wartością DOMYŚLNĄ,
-      # czyli cudzą (`lesson-11`). Jedno i drugie cofa się bez czerwonego testu.
-      # `check-typecheck` pilnuje samego `typecheck` z tej listy: `nx affected` uruchamia
-      # target tam, gdzie istnieje, i MILCZY tam, gdzie go nie ma, więc nowy projekt
-      # rodzi się nietypecheckowany przy zielonym przebiegu (`lesson-42`). Bramka mierzy
-      # nie istnienie targetu, tylko jego zasięg: porównuje pliki każdego projektu
-      # z programem, który jego kompilator naprawdę wypisuje.
-      # `check-styles` pilnuje dwóch obietnic o arkuszach, których złamanie nie daje
-      # czerwonego testu: `padding-left` wygląda dobrze w każdym zrzucie LTR — czyli
-      # w każdym, jaki tu robimy — a `opacity` na warstwie tekstowej wygląda dobrze
-      # zawsze i cofa bramkę kontrastu do stanu sprzed `lesson-6`, bo matematyka na
-      # wartościach z palety nie widzi kompozycji z tłem. Bramka czyta źródła ORAZ
-      # to, co z nich wypisuje sass: właściwość złożona interpolacją dociera do
-      # przeglądarki, a w tekście arkusza nie stoi nigdzie.
-      # `check-tokens` pilnuje nazw tokenów, czyli publicznego API motywu. Zmiana
-      # nazwy nie daje ani jednego czerwonego testu, bo biblioteka przemianowuje obie
-      # strony naraz — token i arkusz — a konsumentowi zostaje nadpisanie wskazujące
-      # donikąd. Drugą połową jest schemat: nazwa złożona ze słów spoza słownika albo
-      # z segmentami w innej kolejności (`disabled-bg` wobec `bg-disabled`) nie psuje
-      # niczego dziś i cofa obietnicę „zgadniesz bez dokumentacji" jutro. Sam snapshot
-      # tego nie łapie — zamroziłby rozjazd, bo mierzy zmianę, a nie zgadywalność.
-      # `check-parts` pilnuje inwentarza `data-pct-part`, czyli jedynej drogi, jaką ta
-      # biblioteka zostawia do stylowania wnętrza komponentu (decyzja 0013). Zmiana
-      # nazwy części nie daje ani jednego czerwonego testu, bo szablon i arkusz
-      # zmieniają się razem — psuje się wyłącznie u kogoś, kto tę nazwę wpisał u siebie.
-      # Sam snapshot to za mało: bramka czyta listę DWA razy — ze źródeł i ze
-      # zbudowanego pakietu przez `ɵcmp` — bo część wniesiona składnią, której skaner
-      # nie rozumie, weszłaby do wydania bez linii w diffie, a część, która wypadła
-      # z pakietu, zostałaby w inwentarzu jako obietnica bez pokrycia. Czwarty punkt
-      # porównuje rubryki **Części** w `docs/components/` z pakietem: pisane ręką,
-      # więc kłamią — `field.md` wymieniał 11 części z piętnastu.
-      # `check-bundle` pilnuje obietnicy SPRZEDAŻOWEJ — tej, dla której ktoś tę
-      # bibliotekę wybiera: „komponenty importuje się przez secondary entrypoints, co
-      # wymusza tree-shaking". Jej złamanie nie daje ani jednego czerwonego testu:
-      # import z sąsiedniego entrypointu kompiluje się, przechodzi testy, przechodzi
-      # `check-package` i dokłada konsumentowi kilkadziesiąt kilobajtów, o których
-      # dowie się z własnego raportu bundla, jeśli go ma. Bramka BUNDLUJE artefakt
-      # przez `node_modules` i mapę `exports`, czyli tą samą drogą co konsument, i mierzy
-      # trzy rzeczy naraz: jakie entrypointy wciąga import jednego z nich, jakie
-      # zależności zewnętrzne przy tym dochodzą (`@angular/cdk/overlay` ma prawo być
-      # wyłącznie w `./select`) i ile to waży. Sondy idą własnym esbuildem, bo są tanie,
-      # ale to jest MOJE ustawienie bundlera, nie konsumenta — więc trzy z nich są
-      # powtórzone prawdziwym `@angular/build:application`, a trzecia z nich niesie
-      # komplet entrypointów i dowodzi, że tamten odczyt w ogóle potrafi cokolwiek
-      # znaleźć. Bez niej „nie ma tu PctField" byłoby prawdą pustą.
-      # `check-texts` pilnuje kanału napisów. Dotąd sprawdzone było wyłącznie nadpisanie
-      # CZĘŚCIOWE — czyli że mechanizm działa dla napisów, które już w nim są. Nic nie
-      # sprawdzało, że nowy napis do niego trafia: literał dopisany do szablonu kompiluje
-      # się, przechodzi testy, przechodzi audyt axe i wygląda poprawnie w każdym zrzucie;
-      # psuje się dopiero u konsumenta, który tłumaczy aplikację i dostaje w środku jedno
-      # zdanie po angielsku, a w review widać poprawny szablon. Szablon czyta `parseTemplate`
-      # z `@angular/compiler`, czyli TEN parser, którym czyta go kompilator — regex byłby
-      # ślepy na to samo, na co ślepy był w `check-parts`. Druga połowa kanału jest w TS:
-      # wartość domyślna wejścia to odczyt PRZY KONSTRUKCJI, więc napis wzięty z `PCT_TEXTS`
-      # w tym miejscu jest napisem sprzed zmiany języka (decyzja 0014) — a to jest wada,
-      # której nie widzi żaden test renderujący komponent raz.
-      # `check-consumer` bada pakiet W UŻYCIU, a nie statycznie: `npm pack`, publikacja do
-      # lokalnego rejestru, `npm install` PO NAZWIE do świeżej aplikacji, `ng add`, build
-      # z SSR i jeden przebieg w przeglądarce. `check-package` czyta katalog `dist`, a między
-      # nim a `node_modules` konsumenta stoją dwa filtry, których tamta bramka nie widzi
-      # z założenia: `npm pack` (pole `files`, `.npmignore`) i rejestr. Do tego „plik istnieje"
-      # nie znaczy „plik działa" — `ng add @pacit/components`, pierwsza komenda konsumenta,
-      # wywracała się na `exports is not defined in ES module scope`, bo manifest niesie
-      # `"type": "module"`, a schematics są CommonJS-em; bramka statyczna widziała wtedy
-      # komplet, bo plik fabryki BYŁ na miejscu. Ostatni punkt mierzy w przeglądarce to, co
-      # `lesson-36` opisuje jako wadę cichą do końca: przycisk z kompletem klas i części,
-      # i bez ani jednego piksela wyglądu, bo nierozwiązany `var()` nie jest błędem, tylko
-      # powrotem do wartości początkowej.
-      # `check-browsers` pilnuje MACIERZY, na której biegnie `e2e` z tej samej listy.
-      # Sam `e2e` jest tu ślepy na to, ilu silników dotyczy: Playwright kończy się zerem
-      # tak samo po trzech projektach, jak po jednym — i tak samo po zerze zebranych
-      # testów. Cofnięcie macierzy nie ma więc żadnego objawu: projekt wykreślony
-      # z `projects`, plik dopisany do `testIgnore` „bo miga", `--project=chromium`
-      # w poleceniu targetu albo silnik zdjęty z kroku instalacji wyżej — każda z tych
-      # czterech rzeczy skraca przebieg i zostawia go zielonym. Bramka pyta więc
-      # Playwrighta, co NAPRAWDĘ zebrał, i porównuje to z polityką
-      # (`apps/sandbox-e2e/przegladarki.policy.json`) — a wyłączenia rodzaju `pomiar`
-      # potwierdza sondą w żywej przeglądarce, żeby powód wyłączenia nie przeżył faktu,
-      # na którym stoi: dziś webkit melduje `forced-colors: active` i nie podmienia
-      # kolorów autora, a to jest zdanie o WERSJI paczki, nie o tym repozytorium.
-      # `mutacja` i `check-mutation` odpowiadają na pytanie, którego liczba zielonych
-      # testów nie zadaje: czy te testy cokolwiek łapią. Pokrycie mierzy, ile linii
-      # WYKONANO — a linia wykonana bez ani jednej asercji liczy się tam tak samo jak
-      # sprawdzona. Przy 96,62% pokrycia rdzeń miał wynik mutacyjny 63,54%: co trzeci
-      # mutant przechodził CI na zielono. Sam przebieg nie wystarcza jako bramka, bo
-      # `thresholds.break` jest u Strykera DOMYŚLNIE `null` — raport do oglądania — a po
-      # ustawieniu progu podnosi się go pięcioma ruchami, z których żaden nie dokłada
-      # testu: plik wykreślony z `mutate`, poszerzone `ignorers` albo `// Stryker disable`
-      # w źródle, wykluczona rodzina mutatorów, `ignoreStatic: true` i skrócony
-      # `timeoutMS` (mutant zabity ZEGAREM liczy się do wyniku jak zabity asercją).
-      # `check-mutation` czyta więc konfigurację SKUTECZNĄ z raportu przebiegu, nie
-      # z pliku, i osobno pilnuje mianownika testów: przebieg mutacyjny idzie własną
-      # konfiguracją Vitesta, więc specyfikacja niewidziana przez tę drugą drogę byłaby
-      # testem, którego mutanty nie ma kto zabić.
+      # One line runs every gate. Which promise each of them proves — and which
+      # reference control keeps it honest — is in docs/registry.md, generated from
+      # the requirements, so the mapping cannot drift from them quietly. A gate
+      # explains what it measures in its own header under tools/; why it exists at
+      # all belongs to the requirement it implements and the lesson it came from.
+      # Tokens are not built by a step of their own: `tokens` is a graph dependency
+      # of its consumers, and a manual build here would only mask a missing edge.
       - run: npx nx affected -t lint test vite:test build typecheck check-package check-coverage check-zoneless check-typecheck check-styles check-texts check-tokens check-parts check-bundle check-consumer check-browsers mutacja check-mutation check-docs e2e

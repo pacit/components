@@ -4,15 +4,15 @@
 dist
 tmp
 out-tsc
-# Wyjątek: kontrola odniesienia bramki `check-tokens` wiezie CELOWO wadliwe artefakty
-# (`dist/pct.css` niezgodne ze źródłami, `dist/tokens.ts` z dziurą w unii) — to jest
-# cała wada tych dwóch przypadków, bez niej przychodzą do CI zdrowe. Reguła `dist`
-# wyżej dopasowuje katalog o tej nazwie na każdej głębokości, więc bez tej linii
-# fixtures przechodzą, a bramka melduje „spreparowane wejście PRZESZŁO" — czyli
-# zapala na czymś, czego w repozytorium nie widać.
+# Exception: the reference control of `check-tokens` carries DELIBERATELY broken
+# artifacts (`dist/pct.css` disagreeing with the sources, `dist/tokens.ts` with a hole
+# in the union) — that is the entire defect of those two cases, and without it they
+# reach CI healthy. The `dist` rule above matches a directory of that name at any
+# depth, so without this line the fixtures pass and the gate reports "a prepared input
+# PASSED" — firing on something invisible in the repository.
 !tools/check-tokens.fixtures/*/libs/tokens/dist/
-# skórka kopiowana z libs/tokens/dist, żeby ng-packagr mógł ją wziąć jako asset
-# (assety muszą leżeć w katalogu projektu) — źródłem prawdy jest libs/tokens/src
+# the skin copied from libs/tokens/dist so that ng-packagr can take it as an asset
+# (assets have to sit inside the project directory) — the source of truth is libs/tokens/src
 /libs/components/themes
 
 # dependencies
@@ -65,16 +65,16 @@ vitest.config.*.timestamp*
 .nx/self-healing
 .nx/migrate-runs
 
-# Wzorce testów wizualnych (apps/sandbox-e2e/src/__screenshots__) SĄ w repozytorium
-# i muszą w nim zostać: bez nich Playwright generuje wzorzec przy pierwszym
-# przebiegu i zapisuje go jako poprawny, więc bramka nigdy nie może zapalić.
-# Ignorowany jest tylko wynik nieudanego porównania (obraz otrzymany i różnica),
-# który powstaje w katalogu wyjściowym przebiegu.
+# Visual test baselines (apps/sandbox-e2e/src/__screenshots__) ARE in the repository
+# and have to stay: without them Playwright records a baseline on the first run and
+# stores it as correct, so the gate can never fire. Only the output of a failed
+# comparison is ignored (the actual image and the diff), which is written to the
+# run's output directory.
 *-actual.png
 *-diff.png
 
-# Notatki, które mają nie trafić do publicznego repozytorium. `docs/` jest powierzchnią
-# publiczną od pierwszego pushu, więc rozważania handlowe stoją obok niej, a nie w niej —
-# decyzje 0015 i 0016 niosą tylko to, co wolno przeczytać na zewnątrz. Katalog jest
-# NIEŚLEDZONY: git go nie kopiuje i nie odtworzy po `clean -xdf`.
+# Notes that must not reach the public repository. `docs/` is a public surface from the
+# first push on, so commercial reasoning sits next to it rather than inside it — decisions
+# 0015 and 0016 carry only what may be read from outside. The directory is UNTRACKED:
+# git neither copies it nor restores it after `clean -xdf`.
 /docs/private/

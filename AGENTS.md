@@ -22,14 +22,13 @@
 
 <!-- nx configuration end-->
 
-## Ten plik a CLAUDE.md
+## This file and CLAUDE.md
 
-Ten plik jest **źródłem prawdy**. `CLAUDE.md` to trzy zdania i import `@AGENTS.md`,
-który Claude Code rozwija przy wczytywaniu. Wcześniej były to dwa niezależne pliki
-bajt w bajt identyczne, czyli rozjazd czekający na pierwszą edycję jednego z nich.
-Zmiany wpisuj tutaj.
+This file is the **source of truth**. `CLAUDE.md` is three sentences and an `@AGENTS.md`
+import that Claude Code expands on load. The two used to be independent files, identical
+byte for byte — a drift waiting for the first edit of either. Write changes here.
 
-Dowiązanie symboliczne byłoby czystsze, ale **łamie `nx format:check`**: prettier
-odrzuca dowiązania przekazane wprost jako ścieżki (`Explicitly specified pattern
-is a symbolic link`), a Nx przekazuje mu zmienione pliki właśnie w ten sposób.
-`.prettierignore` tego nie ratuje — odmowa następuje przed filtrowaniem.
+A symlink would be cleaner but **breaks `nx format:check`**: prettier rejects a symlink
+handed to it as an explicit path (`Explicitly specified pattern is a symbolic link`), and
+that is exactly how Nx passes it the changed files. `.prettierignore` does not save it —
+the refusal happens before filtering.
