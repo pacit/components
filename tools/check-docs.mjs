@@ -472,7 +472,7 @@ const buildRejestr = () => {
   const rev = new Map();
   for (const r of requirements) {
     const cited = new Set(
-      [...(r.fields.Lekcje ?? '').matchAll(/lekcja-\d+/g)].map((m) => m[0]),
+      [...(r.fields.Lekcje ?? '').matchAll(/lesson-\d+/g)].map((m) => m[0]),
     );
     for (const l of cited) {
       if (!rev.has(l)) rev.set(l, []);

@@ -156,64 +156,64 @@ Kolejność bierze się z pola **Wiąże przy**, nie z numeru wymagania.
 
 Która lekcja karmi które wymaganie. Generowane z pól **Lekcje**.
 
-| lekcja                              | wymagania          |
-| ----------------------------------- | ------------------ |
-| [`lesson-1`](lessons.md#lesson-1)   | — _(nie cytowana)_ |
-| [`lesson-2`](lessons.md#lesson-2)   | — _(nie cytowana)_ |
-| [`lesson-3`](lessons.md#lesson-3)   | — _(nie cytowana)_ |
-| [`lesson-4`](lessons.md#lesson-4)   | — _(nie cytowana)_ |
-| [`lesson-5`](lessons.md#lesson-5)   | — _(nie cytowana)_ |
-| [`lesson-6`](lessons.md#lesson-6)   | — _(nie cytowana)_ |
-| [`lesson-7`](lessons.md#lesson-7)   | — _(nie cytowana)_ |
-| [`lesson-8`](lessons.md#lesson-8)   | — _(nie cytowana)_ |
-| [`lesson-9`](lessons.md#lesson-9)   | — _(nie cytowana)_ |
-| [`lesson-10`](lessons.md#lesson-10) | — _(nie cytowana)_ |
-| [`lesson-11`](lessons.md#lesson-11) | — _(nie cytowana)_ |
-| [`lesson-12`](lessons.md#lesson-12) | — _(nie cytowana)_ |
-| [`lesson-13`](lessons.md#lesson-13) | — _(nie cytowana)_ |
-| [`lesson-14`](lessons.md#lesson-14) | — _(nie cytowana)_ |
-| [`lesson-15`](lessons.md#lesson-15) | — _(nie cytowana)_ |
-| [`lesson-16`](lessons.md#lesson-16) | — _(nie cytowana)_ |
-| [`lesson-17`](lessons.md#lesson-17) | — _(nie cytowana)_ |
-| [`lesson-18`](lessons.md#lesson-18) | — _(nie cytowana)_ |
-| [`lesson-19`](lessons.md#lesson-19) | — _(nie cytowana)_ |
-| [`lesson-20`](lessons.md#lesson-20) | — _(nie cytowana)_ |
-| [`lesson-21`](lessons.md#lesson-21) | — _(nie cytowana)_ |
-| [`lesson-22`](lessons.md#lesson-22) | — _(nie cytowana)_ |
-| [`lesson-23`](lessons.md#lesson-23) | — _(nie cytowana)_ |
-| [`lesson-24`](lessons.md#lesson-24) | — _(nie cytowana)_ |
-| [`lesson-25`](lessons.md#lesson-25) | — _(nie cytowana)_ |
-| [`lesson-26`](lessons.md#lesson-26) | — _(nie cytowana)_ |
-| [`lesson-27`](lessons.md#lesson-27) | — _(nie cytowana)_ |
-| [`lesson-28`](lessons.md#lesson-28) | — _(nie cytowana)_ |
-| [`lesson-29`](lessons.md#lesson-29) | — _(nie cytowana)_ |
-| [`lesson-30`](lessons.md#lesson-30) | — _(nie cytowana)_ |
-| [`lesson-31`](lessons.md#lesson-31) | — _(nie cytowana)_ |
-| [`lesson-32`](lessons.md#lesson-32) | — _(nie cytowana)_ |
-| [`lesson-33`](lessons.md#lesson-33) | — _(nie cytowana)_ |
-| [`lesson-34`](lessons.md#lesson-34) | — _(nie cytowana)_ |
-| [`lesson-35`](lessons.md#lesson-35) | — _(nie cytowana)_ |
-| [`lesson-36`](lessons.md#lesson-36) | — _(nie cytowana)_ |
-| [`lesson-37`](lessons.md#lesson-37) | — _(nie cytowana)_ |
-| [`lesson-38`](lessons.md#lesson-38) | — _(nie cytowana)_ |
-| [`lesson-39`](lessons.md#lesson-39) | — _(nie cytowana)_ |
-| [`lesson-40`](lessons.md#lesson-40) | — _(nie cytowana)_ |
-| [`lesson-41`](lessons.md#lesson-41) | — _(nie cytowana)_ |
-| [`lesson-42`](lessons.md#lesson-42) | — _(nie cytowana)_ |
-| [`lesson-43`](lessons.md#lesson-43) | — _(nie cytowana)_ |
-| [`lesson-44`](lessons.md#lesson-44) | — _(nie cytowana)_ |
-| [`lesson-45`](lessons.md#lesson-45) | — _(nie cytowana)_ |
-| [`lesson-46`](lessons.md#lesson-46) | — _(nie cytowana)_ |
-| [`lesson-47`](lessons.md#lesson-47) | — _(nie cytowana)_ |
-| [`lesson-48`](lessons.md#lesson-48) | — _(nie cytowana)_ |
-| [`lesson-49`](lessons.md#lesson-49) | — _(nie cytowana)_ |
-| [`lesson-50`](lessons.md#lesson-50) | — _(nie cytowana)_ |
-| [`lesson-51`](lessons.md#lesson-51) | — _(nie cytowana)_ |
-| [`lesson-52`](lessons.md#lesson-52) | — _(nie cytowana)_ |
-| [`lesson-53`](lessons.md#lesson-53) | — _(nie cytowana)_ |
-| [`lesson-54`](lessons.md#lesson-54) | — _(nie cytowana)_ |
-| [`lesson-55`](lessons.md#lesson-55) | — _(nie cytowana)_ |
-| [`lesson-56`](lessons.md#lesson-56) | — _(nie cytowana)_ |
-| [`lesson-57`](lessons.md#lesson-57) | — _(nie cytowana)_ |
-| [`lesson-58`](lessons.md#lesson-58) | — _(nie cytowana)_ |
-| [`lesson-59`](lessons.md#lesson-59) | — _(nie cytowana)_ |
+| lekcja                              | wymagania                                                                                                                                                         |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`lesson-1`](lessons.md#lesson-1)   | `req-project-layout`                                                                                                                                              |
+| [`lesson-2`](lessons.md#lesson-2)   | `req-project-layout`                                                                                                                                              |
+| [`lesson-3`](lessons.md#lesson-3)   | `req-quality-unit`                                                                                                                                                |
+| [`lesson-4`](lessons.md#lesson-4)   | `req-token-dtcg`                                                                                                                                                  |
+| [`lesson-5`](lessons.md#lesson-5)   | `req-quality-coverage`                                                                                                                                            |
+| [`lesson-6`](lessons.md#lesson-6)   | `req-token-contrast`, `req-token-no-opacity`                                                                                                                      |
+| [`lesson-7`](lessons.md#lesson-7)   | `req-api-foundation`, `req-project-angular`                                                                                                                       |
+| [`lesson-8`](lessons.md#lesson-8)   | `req-project-angular`                                                                                                                                             |
+| [`lesson-9`](lessons.md#lesson-9)   | `req-api-signal-forms`                                                                                                                                            |
+| [`lesson-10`](lessons.md#lesson-10) | `req-token-contrast`                                                                                                                                              |
+| [`lesson-11`](lessons.md#lesson-11) | `req-api-foundation`, `req-project-angular`                                                                                                                       |
+| [`lesson-12`](lessons.md#lesson-12) | `req-api-signals`                                                                                                                                                 |
+| [`lesson-13`](lessons.md#lesson-13) | `req-quality-e2e`, `req-quality-card`                                                                                                                             |
+| [`lesson-14`](lessons.md#lesson-14) | `req-a11y-touch`, `req-a11y-axe`                                                                                                                                  |
+| [`lesson-15`](lessons.md#lesson-15) | `req-api-parts-unique`                                                                                                                                            |
+| [`lesson-16`](lessons.md#lesson-16) | `req-api-container`                                                                                                                                               |
+| [`lesson-17`](lessons.md#lesson-17) | `req-quality-stage`, `req-token-references`, `req-token-closure`, `req-token-override`, `req-token-scoped`                                                        |
+| [`lesson-18`](lessons.md#lesson-18) | `req-api-overlay`, `req-token-css`, `req-token-scoped`                                                                                                            |
+| [`lesson-19`](lessons.md#lesson-19) | `req-quality-unit`                                                                                                                                                |
+| [`lesson-20`](lessons.md#lesson-20) | `req-api-signal-forms`                                                                                                                                            |
+| [`lesson-21`](lessons.md#lesson-21) | `req-api-wrapper`, `req-project-core`                                                                                                                             |
+| [`lesson-22`](lessons.md#lesson-22) | `req-api-wrapper`                                                                                                                                                 |
+| [`lesson-23`](lessons.md#lesson-23) | `req-quality-e2e`                                                                                                                                                 |
+| [`lesson-24`](lessons.md#lesson-24) | `req-api-wrapper`, `req-api-parts-unique`                                                                                                                         |
+| [`lesson-25`](lessons.md#lesson-25) | `req-a11y-touch`, `req-api-frame`                                                                                                                                 |
+| [`lesson-26`](lessons.md#lesson-26) | `req-api-signal-forms`                                                                                                                                            |
+| [`lesson-27`](lessons.md#lesson-27) | `req-api-wrapper`                                                                                                                                                 |
+| [`lesson-28`](lessons.md#lesson-28) | `req-api-wrapper`, `req-quality-unit`                                                                                                                             |
+| [`lesson-29`](lessons.md#lesson-29) | `req-api-size`, `req-quality-views`                                                                                                                               |
+| [`lesson-30`](lessons.md#lesson-30) | `req-project-ssr`, `req-quality-e2e`, `req-quality-hydration`                                                                                                     |
+| [`lesson-31`](lessons.md#lesson-31) | `req-a11y-built-in`, `req-project-ssr`, `req-quality-hydration`                                                                                                   |
+| [`lesson-32`](lessons.md#lesson-32) | `req-api-number`                                                                                                                                                  |
+| [`lesson-33`](lessons.md#lesson-33) | `req-a11y-built-in`, `req-a11y-axe`, `req-quality-views`                                                                                                          |
+| [`lesson-34`](lessons.md#lesson-34) | `req-api-wrapper`, `req-api-size`                                                                                                                                 |
+| [`lesson-35`](lessons.md#lesson-35) | `req-api-overlay`, `req-token-logical`                                                                                                                            |
+| [`lesson-36`](lessons.md#lesson-36) | `req-project-package`, `req-project-tokens-lib`, `req-quality-registry`, `req-quality-package`, `req-quality-consumer`, `req-token-css`, `req-token-distribution` |
+| [`lesson-37`](lessons.md#lesson-37) | `req-api-generic`                                                                                                                                                 |
+| [`lesson-38`](lessons.md#lesson-38) | `req-a11y-motion`, `req-a11y-forced-colors`, `req-quality-negative-control`, `req-token-system`                                                                   |
+| [`lesson-39`](lessons.md#lesson-39) | `req-quality-negative-control`, `req-quality-registry`, `req-quality-e2e`                                                                                         |
+| [`lesson-40`](lessons.md#lesson-40) | `req-a11y-forced-colors`                                                                                                                                          |
+| [`lesson-41`](lessons.md#lesson-41) | `req-quality-negative-control`, `req-quality-package`, `req-release-semver`                                                                                       |
+| [`lesson-42`](lessons.md#lesson-42) | `req-quality-typecheck`, `req-token-artifacts`                                                                                                                    |
+| [`lesson-43`](lessons.md#lesson-43) | `req-quality-card`, `req-token-artifacts`                                                                                                                         |
+| [`lesson-44`](lessons.md#lesson-44) | — _(nie cytowana)_                                                                                                                                                |
+| [`lesson-45`](lessons.md#lesson-45) | `req-quality-coverage`                                                                                                                                            |
+| [`lesson-46`](lessons.md#lesson-46) | `req-api-foundation`                                                                                                                                              |
+| [`lesson-47`](lessons.md#lesson-47) | `req-quality-typecheck`                                                                                                                                           |
+| [`lesson-48`](lessons.md#lesson-48) | `req-token-logical`                                                                                                                                               |
+| [`lesson-49`](lessons.md#lesson-49) | — _(nie cytowana)_                                                                                                                                                |
+| [`lesson-50`](lessons.md#lesson-50) | — _(nie cytowana)_                                                                                                                                                |
+| [`lesson-51`](lessons.md#lesson-51) | `req-project-tree-shaking`                                                                                                                                        |
+| [`lesson-52`](lessons.md#lesson-52) | — _(nie cytowana)_                                                                                                                                                |
+| [`lesson-53`](lessons.md#lesson-53) | — _(nie cytowana)_                                                                                                                                                |
+| [`lesson-54`](lessons.md#lesson-54) | `req-api-texts`                                                                                                                                                   |
+| [`lesson-55`](lessons.md#lesson-55) | `req-quality-package`, `req-quality-consumer`, `req-release-ng-add`                                                                                               |
+| [`lesson-56`](lessons.md#lesson-56) | `req-quality-browsers`                                                                                                                                            |
+| [`lesson-57`](lessons.md#lesson-57) | `req-quality-unit`                                                                                                                                                |
+| [`lesson-58`](lessons.md#lesson-58) | `req-quality-unit`                                                                                                                                                |
+| [`lesson-59`](lessons.md#lesson-59) | — _(nie cytowana)_                                                                                                                                                |
