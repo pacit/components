@@ -250,6 +250,10 @@ Publikacja wymaga w `libs/components/package.json` pola `repository` — bez nie
 licencji repozytorium, a uzasadnienie tego wyboru wraz z tym, co przez niego tracimy, stoi
 w [decyzji 0015](docs/decisions/0015-license-and-model.md).
 
+Licencja obejmuje kod, nie nazwę: `pacit`, zakres npm `@pacit` i domena `pacit.pl` należą do
+podmiotu z linii `Copyright`. Wydanie pod MIT jest nieodwracalne, więc o tym, co i kiedy pod
+nią wychodzi, rozstrzyga [decyzja 0016](docs/decisions/0016-mit-irreversibility.md).
+
 Plik LICENSE jedzie w pakiecie i pilnują go dwie bramki: `check-package` czyta katalog
 `dist`, `check-consumer` — archiwum po `npm pack`, bo między jednym a drugim stoi pole
 `files`.

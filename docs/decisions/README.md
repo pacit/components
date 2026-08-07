@@ -62,3 +62,4 @@ trzeba było przejść przez uzasadnienie.
 | [0013](0013-no-headless-split.md)        | Bez podziału na rdzeń bezgłowy i skórkę       | `req-project-core`, `req-api-parts`, `req-api-attributes` |
 | [0014](0014-texts-as-signal.md)          | Teksty jako sygnał, czytane przy renderowaniu | `req-api-texts`                                           |
 | [0015](0015-license-and-model.md)        | MIT wszędzie, prawa na podmiot, bez CLA       | `req-release-metadata`                                    |
+| [0016](0016-mit-irreversibility.md)      | Wydanie na MIT jest nieodwracalne             | `req-project-package`                                     |

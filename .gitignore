@@ -72,3 +72,9 @@ vitest.config.*.timestamp*
 # który powstaje w katalogu wyjściowym przebiegu.
 *-actual.png
 *-diff.png
+
+# Notatki, które mają nie trafić do publicznego repozytorium. `docs/` jest powierzchnią
+# publiczną od pierwszego pushu, więc rozważania handlowe stoją obok niej, a nie w niej —
+# decyzje 0015 i 0016 niosą tylko to, co wolno przeczytać na zewnątrz. Katalog jest
+# NIEŚLEDZONY: git go nie kopiuje i nie odtworzy po `clean -xdf`.
+/docs/private/

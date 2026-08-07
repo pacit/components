@@ -66,7 +66,7 @@ A  bramki „natychmiast"        blokuje wszystko — każda pozycja drożeje z 
 B  gotowość do wydania         można równolegle z A; wiąże przy pierwszej publikacji
 C  otwarte znaleziska review   drobne, dobre na wypełniacz między A
 D  warstwa zachowań w core     dopiero po A; blokuje E
-E  komponenty                  dialog → tooltip/popover → menu → select → pola → tabela
+E  komponenty                  dialog → tooltip/popover → menu → select → pola → reszta → tabela
 F  powierzchnia zaufania       docs, ACR, benchmarki, most Figma
 G  luki bez terminu            czekają na wyzwalacz zapisany w polu „Wiąże przy"
 H  jeden język, bez wody      angielski + kompresja; część publiczna siedzi w B
@@ -936,9 +936,13 @@ i kontrolki.
 
 ## E. Faza 2 — komponenty
 
-Kolejność wg długu architektonicznego, nie wg popularności. Każdy nowy komponent wypełnia
-[`components/_template.md`](components/_template.md) — formularz DoD istnieje i jest
-warunkiem wejścia do wydania.
+Kolejność wg długu architektonicznego, nie wg popularności — z jednym zastrzeżeniem
+z [decyzji 0016](decisions/0016-mit-irreversibility.md): pozycja o najwyższym koszcie
+budowy idzie **na koniec**, bo wydanie pod MIT jest nieodwracalne i lepiej rozstrzygać
+o niej, mając użytkowników. Numery są stabilne, kolejność listy nie.
+
+Każdy nowy komponent wypełnia [`components/_template.md`](components/_template.md) —
+formularz DoD istnieje i jest warunkiem wejścia do wydania.
 
 - [ ] **E1 — dialog** — wymusza focus trap, blokadę scrolla, `inert`, powrót fokusu, stos
       Escape, bezpieczeństwo SSR. Najwyższy zysk architektoniczny na komponent
@@ -950,10 +954,13 @@ warunkiem wejścia do wydania.
       warstwie zachowań
 - [ ] **E5 — switch, textarea (autosize), slider, date picker** — date picker wymusza
       głębokie i18n, co `[pctNumber]` już zaczęło
-- [ ] **E6 — table / datagrid** na headless rdzeniu (model kolumn, sortowanie, filtrowanie,
-      grupowanie, zaznaczenie jako sygnały) oddzielonym od renderowania
 - [ ] **E7 — reszta**: toast, tabs, accordion, drawer, pagination, progress, skeleton,
       chips, avatar, badge, breadcrumb, stepper, tree
+- [ ] **E6 — table / datagrid** na headless rdzeniu (model kolumn, sortowanie, filtrowanie,
+      grupowanie, zaznaczenie jako sygnały) oddzielonym od renderowania. **Ostatnia pozycja
+      fazy** — jedyna liczona w miesiącach, a nie w dniach; póki nie zapadnie decyzja
+      z [0016](decisions/0016-mit-irreversibility.md), nie powstaje także jako commit,
+      bo `LICENSE` w korzeniu obejmuje całe repozytorium
 
 ---
 
@@ -1213,14 +1220,14 @@ nim wyjdzie.
   w archiwum jest dla tamtej bramki niewidzialny. Stąd druga reguła, w `check-consumer`,
   dokładnie tym samym podziałem co przy A9.
 - **CLA odrzucone po sprawdzeniu, co kupuje** ([0015](decisions/0015-license-and-model.md)).
-  Kod na MIT wolno włożyć do zamkniętego, płatnego pakietu — również cudze kontrybucje —
-  więc otwarcie płatnego poziomu nie wymaga niczyjej zgody. CLA daje wyłącznie prawo
-  sprzedaży licencji komercyjnej na ten sam kod bez zobowiązań MIT, a zobowiązaniem MIT
-  jest jedna linijka noty. Cena — tarcie przy każdym PR — byłaby płacona za nic.
+  Kod na MIT wolno wydać ponownie na innych warunkach — również cudze kontrybucje — więc
+  zmiana warunków dystrybucji nie wymaga niczyjej zgody. CLA daje wyłącznie prawo wydania
+  tego samego kodu bez zobowiązań MIT, a zobowiązaniem MIT jest jedna linijka noty.
+  Cena — tarcie przy każdym PR — byłaby płacona za nic.
 
 Zapisane wprost w decyzji, żeby nie wracać do tego jako do odkrycia: **MIT na rdzeń jest
-nieodwracalne** (ostatnia wydana wersja zostaje wolna na zawsze), **każdy może ten kod
-sprzedawać**, a jedyną ochroną jest znak towarowy i bycie upstreamem — nie licencja.
+nieodwracalne** (ostatnia wydana wersja zostaje wolna na zawsze), **każdy może ten kod wydać
+pod swoją nazwą**, a jedyną ochroną jest nazwa i bycie upstreamem — nie licencja.
 
 Sprawdzone przebiegiem: trzy sposoby zepsucia prawdziwego pakietu (plik usunięty, manifest
 przestawiony na `Apache-2.0`, plik skrócony do jednej linii) zapalają na kontroli
