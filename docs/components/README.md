@@ -1,48 +1,48 @@
-# Komponenty
+# Components
 
-Poziom 3 dokumentacji. Jeden plik na komponent, **wypełniony wg
-[`_template.md`](_template.md)** — nie proza.
+Level 3 of the documentation. One file per component, **filled in per
+[`_template.md`](_template.md)** — not prose.
 
-Powód, dla którego to jest formularz, a nie opis: jakość każdego dotychczasowego
-komponentu bierze się z tego, że budowała go ta sama osoba w tym samym trybie uwagi. To
-nie skaluje się ani na drugą osobę, ani na dwudziesty komponent. Formularz z pustą rubryką
-jest brakiem widocznym maszynowo; proza z pominiętym akapitem nie jest.
+The reason this is a form and not a description: the quality of every component so far comes
+from the same person having built it in the same mode of attention. That scales neither to
+a second person nor to a twentieth component. A form with an empty row is a gap visible to
+a machine; prose with a missing paragraph is not.
 
-| komponent                    | entrypoint                   | rola                                |
+| component                    | entrypoint                   | role                                |
 | ---------------------------- | ---------------------------- | ----------------------------------- |
-| [`PctButton`](button.md)     | `@pacit/components/button`   | przycisk                            |
-| [`PctField`](field.md)       | `@pacit/components/field`    | obudowa kontrolki formularza        |
-| [`PctText`](text.md)         | `@pacit/components/field`    | pole tekstowe na natywnym `<input>` |
-| [`PctNumber`](number.md)     | `@pacit/components/field`    | pole liczbowe                       |
-| [`PctCheckbox`](checkbox.md) | `@pacit/components/checkbox` | pole wyboru                         |
-| [`PctRadioGroup`](radio.md)  | `@pacit/components/radio`    | grupa opcji wykluczających          |
-| [`PctSelect`](select.md)     | `@pacit/components/select`   | lista wyboru z własnym panelem      |
+| [`PctButton`](button.md)     | `@pacit/components/button`   | button                              |
+| [`PctField`](field.md)       | `@pacit/components/field`    | form control wrapper                |
+| [`PctText`](text.md)         | `@pacit/components/field`    | text field on a native `<input>`    |
+| [`PctNumber`](number.md)     | `@pacit/components/field`    | number field                        |
+| [`PctCheckbox`](checkbox.md) | `@pacit/components/checkbox` | checkbox                            |
+| [`PctRadioGroup`](radio.md)  | `@pacit/components/radio`    | group of mutually exclusive options |
+| [`PctSelect`](select.md)     | `@pacit/components/select`   | choice list with a panel of its own |
 
-## Kolejność kolejnych komponentów
+## The order of the components to come
 
-Logika: **najpierw zbuduj maszynę, która czyni komponenty poprawnymi z konstrukcji, potem
-produkuj komponenty szybko.** Odwrotna kolejność to powód, dla którego duże biblioteki
-mają 90 komponentów i problemy a11y w połowie z nich.
+The logic: **first build the machine that makes components correct by construction, then
+produce components fast.** The reverse order is why large libraries have 90 components and
+a11y problems in half of them.
 
-Kolejność wynika z **długu architektonicznego**, nie z popularności:
+The order follows **architectural debt**, not popularity:
 
-1. **Dialog** — wymusza focus trap, blokadę scrolla, `inert`, powrót fokusu, stos Escape,
-   bezpieczeństwo SSR. Najwyższy zysk architektoniczny na komponent.
-2. **Tooltip + Popover** — wymusza rozróżnienie „opisuje vs nazywa", parytet
-   hover/focus/touch i redukcję ruchu na realnym wejściu/wyjściu.
-3. **Menu** — roving focus, podmenu, ponowne użycie typeaheadu.
-4. **Domknięcie rodziny select** — rzutowane `pct-option`, szablon opcji, grupy,
-   wielokrotny wybór, filtrowanie, czyszczenie, async, wirtualizacja. Świadomie **po**
-   warstwie zachowań, inaczej budujemy to dwa razy.
+1. **Dialog** — forces a focus trap, scroll locking, `inert`, focus return, an Escape stack,
+   SSR safety. The highest architectural return per component.
+2. **Tooltip + Popover** — forces the „describes vs names" distinction, hover/focus/touch
+   parity and reduced motion on a real enter/leave.
+3. **Menu** — roving focus, submenus, reuse of the typeahead.
+4. **Completing the select family** — projected `pct-option`, an option template, groups,
+   multiple selection, filtering, clearing, async, virtualisation. Deliberately **after** the
+   behaviour layer, or we build it twice.
 5. **Switch, Textarea, Slider, Date picker.**
-6. **Table / DataGrid** — musi stać na **headless rdzeniu** oddzielonym od renderowania.
+6. **Table / DataGrid** — has to stand on a **headless core** separated from rendering.
 
-Przed punktem 1 musi powstać **warstwa zachowań w `core`**: nawigacja po liście
-(dziś prywatne metody w `PctSelect`), nakładka, fokus, live announcer, szablony
-([`req-api-templates`](../requirements/api.md#req-api-templates)) i ikony
+Before item 1 the **behaviour layer in `core`** has to exist: list navigation (private methods
+in `PctSelect` today), the overlay, focus, the live announcer, templates
+([`req-api-templates`](../requirements/api.md#req-api-templates)) and icons
 ([`req-api-icons`](../requirements/api.md#req-api-icons)).
 
-Maszyneria listy (typeahead, `enabledIndexes`, `moveActive`, `activeIndex`) siedzi dziś
-jako prywatne metody w `PctSelect`. Tego samego potrzebują autocomplete, multiselect, menu,
-combobox i paleta poleceń — **wyciągnąć do `core` przed drugim konsumentem, nie po nim**,
-inaczej powtórzy się [`lesson-21`](../lessons.md#lesson-21) na dużo większym kawałku.
+The list machinery (typeahead, `enabledIndexes`, `moveActive`, `activeIndex`) sits today as
+private methods in `PctSelect`. Autocomplete, multiselect, menu, combobox and a command
+palette all need the same — **extract it into `core` before the second consumer, not after**,
+or [`lesson-21`](../lessons.md#lesson-21) repeats itself on a much bigger piece.

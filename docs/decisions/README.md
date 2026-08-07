@@ -1,66 +1,67 @@
-# Decyzje architektoniczne
+# Architectural decisions
 
-Poziom 2 dokumentacji. [Wymaganie](../README.md#poziom-1--wymagania) mówi **co ma być
-prawdą**; decyzja mówi **dlaczego akurat tak, a nie inaczej** — i co przez to tracimy.
+Level 2 of the documentation. A [requirement](../README.md#level-1--requirements) says **what
+has to be true**; a decision says **why this way and not another** — and what it costs us.
 
-Do końca 2026-07 ta proza siedziała wewnątrz wymagań. Efekt: dzisiejsze
-[`req-api-wrapper`](../requirements/api.md#req-api-wrapper) miało osiem akapitów, a
-[`req-project-package`](../requirements/project.md#req-project-package) jedno zdanie, choć oba
-były pozycjami tej samej listy. Wymaganie przestało dać się przeczytać w całości, bo
-trzeba było przejść przez uzasadnienie.
+Until the end of 2026-07 that prose sat inside the requirements. The effect: today's
+[`req-api-wrapper`](../requirements/api.md#req-api-wrapper) had eight paragraphs while
+[`req-project-package`](../requirements/project.md#req-project-package) had one sentence,
+although both were entries on the same list. A requirement could no longer be read whole,
+because you had to walk through the reasoning.
 
-## Zasady
+## Rules
 
-- **Decyzja jest niezmienna po przyjęciu.** Zmiana zdania nie jest edycją — jest nową
-  decyzją, która **zastępuje** starą. Stara zostaje w repozytorium ze statusem
-  `zastąpiona przez NNNN`, bo powód, dla którego kiedyś wybrano inaczej, jest częścią
-  wiedzy o projekcie.
-- **Numer jest chronologiczny i nie zmienia się** — tak samo jak w
-  [logu lekcji](../lessons.md#dlaczego-numery-skoro-wymagania-mają-nazwy) i z tego samego
-  powodu: kolejność tu coś znaczy.
-- **Decyzja bez dowodu jest opinią.** Sekcja „Dowód" wskazuje lekcję, pomiar albo
-  eksperyment. Gdy dowodu nie ma, wpisujemy to wprost — to informacja, nie wstyd.
-- **Konsekwencje obejmują koszty.** Decyzja bez sekcji „Co przez to tracimy" jest
-  niedokończona.
+- **A decision is immutable once accepted.** Changing your mind is not an edit — it is a new
+  decision that **supersedes** the old one. The old one stays in the repository with the status
+  `superseded by NNNN`, because the reason something was once chosen differently is part of the
+  knowledge about the project.
+- **The number is chronological and does not change** — same as in the
+  [lesson log](../lessons.md#why-numbers-when-requirements-have-names) and for the same reason:
+  order means something here.
+- **A decision without evidence is an opinion.** The „Evidence" section points at a lesson,
+  a measurement or an experiment. When there is none, we write that down outright — it is
+  information, not a disgrace.
+- **Consequences include costs.** A decision with no „What this costs us" section is
+  unfinished.
 
-## Kształt pliku
+## File shape
 
 ```markdown
-# NNNN — Tytuł
+# NNNN — Title
 
-**Status:** przyjęta | zastąpiona przez NNNN
-**Realizuje:** `req-…`, `req-…`
-**Dowód:** `lesson-…`
+**Status:** accepted | superseded by NNNN
+**Implements:** `req-…`, `req-…`
+**Evidence:** `lesson-…`
 
-## Kontekst
+## Context
 
-## Decyzja
+## Decision
 
-## Konsekwencje
+## Consequences
 
-## Co przez to tracimy
+## What this costs us
 
-## Rozważane alternatywy
+## Alternatives considered
 ```
 
-## Spis
+## Index
 
-| nr                                       | decyzja                                       | realizuje                                                 |
-| ---------------------------------------- | --------------------------------------------- | --------------------------------------------------------- |
-| [0001](0001-separate-files.md)           | Szablon i style w osobnych plikach            | `req-project-files`                                       |
-| [0002](0002-skin-in-package.md)          | Skórka jedzie w pakiecie                      | `req-project-tokens-lib`, `req-token-distribution`        |
-| [0003](0003-wrapper-and-control.md)      | Obudowa i kontrolka                           | `req-api-wrapper`, `req-api-frame`, `req-api-no-wrapper`  |
-| [0004](0004-explicit-height.md)          | Wysokość wprost, nie z paddingu               | `req-api-size`                                            |
-| [0005](0005-signal-forms-without-cva.md) | Signal forms bez `ControlValueAccessor`       | `req-api-signal-forms`                                    |
-| [0006](0006-overlay.md)                  | Kotwica i dziedziczenie w nakładce            | `req-api-overlay`                                         |
-| [0007](0007-config-and-texts.md)         | Konfiguracja osobno od tekstów                | `req-api-config`, `req-api-texts`                         |
-| [0008](0008-motion-axis.md)              | Oś ruchu w tokenach                           | `req-a11y-motion`                                         |
-| [0009](0009-number-field.md)             | Pole liczbowe na `type="text"`                | `req-api-number`                                          |
-| [0010](0010-generic-noinfer.md)          | Generyczna wartość i `NoInfer`                | `req-api-generic`                                         |
-| [0011](0011-icons.md)                    | Ikony przez szablon i `PCT_ICONS`             | `req-api-icons`                                           |
-| [0012](0012-theme-closure.md)            | Domknięcie przechodnie w bloku motywu         | `req-token-closure`                                       |
-| [0013](0013-no-headless-split.md)        | Bez podziału na rdzeń bezgłowy i skórkę       | `req-project-core`, `req-api-parts`, `req-api-attributes` |
-| [0014](0014-texts-as-signal.md)          | Teksty jako sygnał, czytane przy renderowaniu | `req-api-texts`                                           |
-| [0015](0015-license-and-model.md)        | MIT wszędzie, prawa na podmiot, bez CLA       | `req-release-metadata`                                    |
-| [0016](0016-mit-irreversibility.md)      | Wydanie na MIT jest nieodwracalne             | `req-project-package`                                     |
-| [0017](0017-one-home-per-fact.md)        | Jedno miejsce na fakt: kryterium i budżet     | `req-project-concise`                                     |
+| no                                       | decision                                        | implements                                                |
+| ---------------------------------------- | ----------------------------------------------- | --------------------------------------------------------- |
+| [0001](0001-separate-files.md)           | Template and styles in separate files           | `req-project-files`                                       |
+| [0002](0002-skin-in-package.md)          | The skin ships in the package                   | `req-project-tokens-lib`, `req-token-distribution`        |
+| [0003](0003-wrapper-and-control.md)      | Wrapper and control                             | `req-api-wrapper`, `req-api-frame`, `req-api-no-wrapper`  |
+| [0004](0004-explicit-height.md)          | Height stated outright, not from padding        | `req-api-size`                                            |
+| [0005](0005-signal-forms-without-cva.md) | Signal forms without `ControlValueAccessor`     | `req-api-signal-forms`                                    |
+| [0006](0006-overlay.md)                  | The anchor and inheritance in an overlay        | `req-api-overlay`                                         |
+| [0007](0007-config-and-texts.md)         | Configuration apart from texts                  | `req-api-config`, `req-api-texts`                         |
+| [0008](0008-motion-axis.md)              | The motion axis in tokens                       | `req-a11y-motion`                                         |
+| [0009](0009-number-field.md)             | The number field on `type="text"`               | `req-api-number`                                          |
+| [0010](0010-generic-noinfer.md)          | A generic value and `NoInfer`                   | `req-api-generic`                                         |
+| [0011](0011-icons.md)                    | Icons through a template and `PCT_ICONS`        | `req-api-icons`                                           |
+| [0012](0012-theme-closure.md)            | The transitive closure in a theme block         | `req-token-closure`                                       |
+| [0013](0013-no-headless-split.md)        | No headless core / skin split                   | `req-project-core`, `req-api-parts`, `req-api-attributes` |
+| [0014](0014-texts-as-signal.md)          | Texts as a signal, read at render time          | `req-api-texts`                                           |
+| [0015](0015-license-and-model.md)        | MIT everywhere, rights to the entity, no CLA    | `req-release-metadata`                                    |
+| [0016](0016-mit-irreversibility.md)      | Releasing under MIT is irreversible             | `req-project-package`                                     |
+| [0017](0017-one-home-per-fact.md)        | One home per fact: the criterion and its budget | `req-project-concise`                                     |

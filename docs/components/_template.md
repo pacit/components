@@ -1,83 +1,83 @@
-# Szablon — Definition of Done komponentu
+# Template — a component's Definition of Done
 
-Skopiuj ten plik jako `docs/components/<nazwa>.md` i wypełnij. **Pusta rubryka jest
-brakiem widocznym maszynowo** — `tools/check-docs.mjs` sprawdza, że każdy wiersz ma albo
-ścieżkę do dowodu, albo jawny `brak — <świadomie|luka>: <powód>`.
+Copy this file as `docs/components/<name>.md` and fill it in. **An empty row is a gap visible
+to a machine** — `tools/check-docs.mjs` checks that every row carries either a path to
+evidence or an explicit `none — <deliberately|gap>: <reason>`.
 
-## Po co to istnieje
+## Why this exists
 
-Dziś jakość każdego komponentu bierze się z tego, że budowała go ta sama osoba w tym samym
-trybie uwagi. **To nie skaluje się ani na drugą osobę, ani na dwudziesty komponent.**
+Today the quality of every component comes from the same person having built it in the same
+mode of attention. **That scales neither to a second person nor to a twentieth component.**
 
-Ten formularz jest odpowiedzią: lista, którą komponent musi przejść, żeby wejść do wydania
-— w maksymalnym stopniu sprawdzana maszynowo, nie ludzkim okiem. Bez niego dwudziesty
-komponent dostanie tylko te kontrole, o których ktoś akurat pamiętał.
+This form is the answer: the list a component has to pass to enter a release — machine-checked
+to the greatest extent possible, not eyeballed. Without it the twentieth component will get
+only the checks somebody happened to remember.
 
-Kolejność jest istotna: **ten formularz musi istnieć przed pierwszym komponentem
-z warstwy zachowań** (dialog), bo inaczej dialog powstanie bez części kontroli i stanie
-się wzorcem dla następnych.
+The order matters: **this form has to exist before the first component from the behaviour
+layer** (the dialog), or the dialog will be built without some of the checks and become the
+pattern for the ones after it.
 
 ---
 
-# `PctNazwa` — <jednozdaniowy opis>
+# `PctName` — <one-sentence description>
 
-**Entrypoint:** `@pacit/components/<nazwa>`
-**Selektor:** `pct-nazwa` / `[pctNazwa]`
-**Status:** szkic | w wydaniu
-**Wzorzec ARIA APG:** [nazwa wzorca](https://www.w3.org/WAI/ARIA/apg/patterns/…) — wskazany
-także w JSDoc klasy
+**Entrypoint:** `@pacit/components/<name>`
+**Selector:** `pct-name` / `[pctName]`
+**Status:** draft | released
+**ARIA APG pattern:** [pattern name](https://www.w3.org/WAI/ARIA/apg/patterns/…) — named in
+the class JSDoc as well
 
-## Kontrakt
+## Contract
 
-|                              |                                                                                                  |
-| ---------------------------- | ------------------------------------------------------------------------------------------------ |
-| **Wartość**                  | typ, wartość pusta, `compareWith`                                                                |
-| **Wejścia**                  | lista z typami                                                                                   |
-| **Wyjścia**                  | lista                                                                                            |
-| **Sloty**                    | `<ng-content select="…">`                                                                        |
-| **Części** (`data-pct-part`) | lista — musi zgadzać się z inwentarzem ([`req-api-parts`](../requirements/api.md#req-api-parts)) |
-| **Tokeny**                   | prefiks `--pct-<nazwa>-*` + wpis w `contrast.policy.json`                                        |
+|                             |                                                                                           |
+| --------------------------- | ----------------------------------------------------------------------------------------- |
+| **Value**                   | type, empty value, `compareWith`                                                          |
+| **Inputs**                  | list with types                                                                           |
+| **Outputs**                 | list                                                                                      |
+| **Slots**                   | `<ng-content select="…">`                                                                 |
+| **Parts** (`data-pct-part`) | list — must match the inventory ([`req-api-parts`](../requirements/api.md#req-api-parts)) |
+| **Tokens**                  | the `--pct-<name>-*` prefix plus an entry in `contrast.policy.json`                       |
 
-## Mapa klawiatury
+## Keyboard map
 
-| klawisz | skutek | test |
-| ------- | ------ | ---- |
-|         |        |      |
+| key | effect | test |
+| --- | ------ | ---- |
+|     |        |      |
 
-Pusta tabela jest dozwolona **tylko** wtedy, gdy komponent nie ma własnej obsługi
-klawiatury — i wtedy musi wskazywać, skąd bierze ją platforma
+An empty table is allowed **only** when the component has no keyboard handling of its own —
+and then it has to say where the platform provides it
 ([`req-api-platform`](../requirements/api.md#req-api-platform)).
 
-## Kontrole
+## Checks
 
-Każdy wiersz: ścieżka do dowodu albo `brak — <świadomie|luka>: <powód>`.
+Every row: a path to evidence, or `none — <deliberately|gap>: <reason>`.
 
-| kryterium                                                          | wymaganie                                                                         | dowód |
-| ------------------------------------------------------------------ | --------------------------------------------------------------------------------- | ----- |
-| Wzorzec ARIA APG wskazany w JSDoc klasy                            | [`req-a11y-built-in`](../requirements/a11y.md#req-a11y-built-in)                  |       |
-| Mapa klawiatury przetestowana klawisz po klawiszu                  | [`req-api-platform`](../requirements/api.md#req-api-platform)                     |       |
-| Audyt axe na własnym widoku sandboxa                               | [`req-a11y-axe`](../requirements/a11y.md#req-a11y-axe)                            |       |
-| Zrzut wizualny                                                     | [`req-quality-e2e`](../requirements/quality.md#req-quality-e2e)                   |       |
-| `forced-colors: active` — stan nie niesiony samą barwą             | [`req-a11y-forced-colors`](../requirements/a11y.md#req-a11y-forced-colors)        |       |
-| `prefers-reduced-motion` — czas z tokenu, nie z arkusza            | [`req-a11y-motion`](../requirements/a11y.md#req-a11y-motion)                      |       |
-| Obszar dotyku ≥ 24×24 px wprost                                    | [`req-a11y-touch`](../requirements/a11y.md#req-a11y-touch)                        |       |
-| Oś wielkości wyrównana do `--pct-control-height-*`                 | [`req-api-size`](../requirements/api.md#req-api-size)                             |       |
-| Oś gęstości                                                        | [`req-token-density`](../requirements/tokens.md#req-token-density)                |       |
-| RTL — brak właściwości fizycznych + zrzut `dir="rtl"`              | [`req-token-logical`](../requirements/tokens.md#req-token-logical)                |       |
-| SSR + hydracja bez `NG05xx`                                        | [`req-quality-hydration`](../requirements/quality.md#req-quality-hydration)       |       |
-| Formularze: signal forms **i** `[formControl]` **i** `[(ngModel)]` | [`req-api-signal-forms`](../requirements/api.md#req-api-signal-forms)             |       |
-| Części zarejestrowane w inwentarzu                                 | [`req-api-parts`](../requirements/api.md#req-api-parts)                           |       |
-| Tokeny zarejestrowane + wpis w `contrast.policy.json`              | [`req-token-contrast`](../requirements/tokens.md#req-token-contrast)              |       |
-| Napisy przez `PCT_TEXTS`                                           | [`req-api-texts`](../requirements/api.md#req-api-texts)                           |       |
-| Budżet rozmiaru entrypointu                                        | [`req-project-tree-shaking`](../requirements/project.md#req-project-tree-shaking) |       |
-| Log testu z czytnikiem ekranu                                      | [`req-a11y-wcag`](../requirements/a11y.md#req-a11y-wcag)                          |       |
-| Strona docs z żywymi przykładami                                   | [`req-project-apps`](../requirements/project.md#req-project-apps)                 |       |
+| criterion                                                          | requirement                                                                       | evidence |
+| ------------------------------------------------------------------ | --------------------------------------------------------------------------------- | -------- |
+| ARIA APG pattern named in the class JSDoc                          | [`req-a11y-built-in`](../requirements/a11y.md#req-a11y-built-in)                  |          |
+| Keyboard map tested key by key                                     | [`req-api-platform`](../requirements/api.md#req-api-platform)                     |          |
+| axe audit on the component's own sandbox view                      | [`req-a11y-axe`](../requirements/a11y.md#req-a11y-axe)                            |          |
+| Visual screenshot                                                  | [`req-quality-e2e`](../requirements/quality.md#req-quality-e2e)                   |          |
+| `forced-colors: active` — no state carried by colour alone         | [`req-a11y-forced-colors`](../requirements/a11y.md#req-a11y-forced-colors)        |          |
+| `prefers-reduced-motion` — duration from a token, not a stylesheet | [`req-a11y-motion`](../requirements/a11y.md#req-a11y-motion)                      |          |
+| Touch target ≥ 24×24 px outright                                   | [`req-a11y-touch`](../requirements/a11y.md#req-a11y-touch)                        |          |
+| Size axis aligned to `--pct-control-height-*`                      | [`req-api-size`](../requirements/api.md#req-api-size)                             |          |
+| Density axis                                                       | [`req-token-density`](../requirements/tokens.md#req-token-density)                |          |
+| RTL — no physical properties + a `dir="rtl"` screenshot            | [`req-token-logical`](../requirements/tokens.md#req-token-logical)                |          |
+| SSR + hydration with no `NG05xx`                                   | [`req-quality-hydration`](../requirements/quality.md#req-quality-hydration)       |          |
+| Forms: signal forms **and** `[formControl]` **and** `[(ngModel)]`  | [`req-api-signal-forms`](../requirements/api.md#req-api-signal-forms)             |          |
+| Parts registered in the inventory                                  | [`req-api-parts`](../requirements/api.md#req-api-parts)                           |          |
+| Tokens registered + an entry in `contrast.policy.json`             | [`req-token-contrast`](../requirements/tokens.md#req-token-contrast)              |          |
+| Strings through `PCT_TEXTS`                                        | [`req-api-texts`](../requirements/api.md#req-api-texts)                           |          |
+| Entrypoint size budget                                             | [`req-project-tree-shaking`](../requirements/project.md#req-project-tree-shaking) |          |
+| A screen-reader test log                                           | [`req-a11y-wcag`](../requirements/a11y.md#req-a11y-wcag)                          |          |
+| A docs page with live examples                                     | [`req-project-apps`](../requirements/project.md#req-project-apps)                 |          |
 
-## Decyzje, które ten komponent realizuje
+## Decisions this component implements
 
-Lista `NNNN` z [`docs/decisions/`](../decisions/).
+A list of `NNNN` from [`docs/decisions/`](../decisions/).
 
-## Znane ograniczenia
+## Known limitations
 
-Rzeczy, których komponent świadomie nie robi — z powodem. Ograniczenie bez powodu to
-błąd, o którym nikt jeszcze nie napisał zgłoszenia.
+Things the component deliberately does not do — with the reason. A limitation with no reason
+is a bug nobody has filed yet.

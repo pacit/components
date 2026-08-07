@@ -1,61 +1,59 @@
-# 0012 — Domknięcie przechodnie w bloku motywu
+# 0012 — The transitive closure in a theme block
 
-**Status:** przyjęta
-**Realizuje:** [`req-token-closure`](../requirements/tokens.md#req-token-closure),
+**Status:** accepted
+**Implements:** [`req-token-closure`](../requirements/tokens.md#req-token-closure),
 [`req-token-scoped`](../requirements/tokens.md#req-token-scoped)
-**Dowód:** [`lesson-17`](../lessons.md#lesson-17)
+**Evidence:** [`lesson-17`](../lessons.md#lesson-17)
 
-## Kontekst
+## Context
 
-Model warstwowy tokenów ([`req-token-tiers`](../requirements/tokens.md#req-token-tiers))
-zakłada, że nadpisanie tokenu semantycznego przethemowuje wszystko poniżej. Blok motywu
-emitował więc tylko nadpisane tokeny semantyczne — co wygląda na oszczędne i poprawne.
+The tiered token model ([`req-token-tiers`](../requirements/tokens.md#req-token-tiers))
+assumes that overriding a semantic token re-themes everything below it. So a theme block
+emitted only the overridden semantic tokens — which looks frugal and correct.
 
-Sonda w przeglądarce wykazała, że **jest niepoprawne**: w panelu `[data-theme="dark"]`
-token semantyczny `--pct-surface` miał poprawną wartość ciemną, ale `--pct-button-bg`
-i `--pct-select-panel-bg` nadal zwracały wartości jasne
+A probe in the browser showed that **it is incorrect**: in a `[data-theme="dark"]` panel the
+semantic token `--pct-surface` had the correct dark value, while `--pct-button-bg` and
+`--pct-select-panel-bg` still returned light ones
 ([`lesson-17`](../lessons.md#lesson-17)).
 
-Przyczyna jest w mechanice CSS, nie w buildzie: **custom properties są podstawiane
-w miejscu deklaracji, nie użycia.** Token `--a: var(--b)` zadeklarowany w `:root`
-dziedziczy **już rozwiniętą** wartość, więc nadpisanie `--b` w zagnieżdżonym scope go nie
-zmieni.
+The cause is in the mechanics of CSS, not in the build: **custom properties are substituted at
+the point of declaration, not of use.** A token `--a: var(--b)` declared in `:root` inherits an
+**already-expanded** value, so overriding `--b` in a nested scope will not change it.
 
-## Decyzja
+## Decision
 
-**Build emituje w bloku motywu nie tylko nadpisane tokeny semantyczne, ale wszystkie
-tokeny, które od nich zależą** — bezpośrednio lub przez łańcuch referencji.
+**In a theme block the build emits not only the overridden semantic tokens but every token
+that depends on them** — directly or through a chain of references.
 
-Wymaga to przejścia po grafie referencji i policzenia domknięcia przechodniego zbioru
-nadpisań.
+That requires walking the reference graph and computing the transitive closure of the set of
+overrides.
 
-## Konsekwencje
+## Consequences
 
-- **Scoped theme działa na wszystkich warstwach**, nie tylko na semantycznej.
-- Bramka musi porównywać **token komponentowy** w `:root` i w scope. Test na samym tokenie
-  semantycznym przechodził mimo zepsutej warstwy komponentowej — i przechodził **długo**,
-  bo różnica między `blue-600` a `blue-500` jest wizualnie subtelna.
-- Ta sama mechanika wymusiła emisję bloku `[data-theme="light"]`: dopóki jasny motyw był
-  tylko brakiem atrybutu, jasna karta wewnątrz ciemnej strony nie miała czym cofnąć
-  dziedziczonych wartości
+- **A scoped theme works on every tier**, not just the semantic one.
+- The gate has to compare a **component token** in `:root` and in a scope. A test on the
+  semantic token alone passed despite a broken component layer — and passed **for a long
+  time**, because the difference between `blue-600` and `blue-500` is visually subtle.
+- The same mechanics forced a `[data-theme="light"]` block to be emitted: as long as the light
+  theme was merely the absence of an attribute, a light card inside a dark page had nothing to
+  undo the inherited values with
   ([`req-quality-stage`](../requirements/quality.md#req-quality-stage)).
-- To samo dotyczy automatycznego trybu ciemnego
-  ([`req-token-system`](../requirements/tokens.md#req-token-system)) — blok
-  `prefers-color-scheme` jest zwykłym blokiem motywu i podlega tej samej regule.
+- The same holds for automatic dark mode
+  ([`req-token-system`](../requirements/tokens.md#req-token-system)) — the
+  `prefers-color-scheme` block is an ordinary theme block and obeys the same rule.
 
-## Co przez to tracimy
+## What this costs us
 
-- **Blok motywu jest znacznie większy** niż lista faktycznych nadpisań — niesie cały
-  ogon zależnych tokenów. Koszt jest w rozmiarze CSS, płacony przy każdym motywie
-  i każdym scope.
-- Oszczędność „emitujemy tylko to, co zmienione" jest **nieosiągalna** przy zachowaniu
-  referencji jako `var()` ([`req-token-references`](../requirements/tokens.md#req-token-references)).
-  To cena kaskadowości, którą świadomie płacimy.
+- **A theme block is much bigger** than the list of actual overrides — it carries the whole
+  tail of dependent tokens. The cost is in CSS size, paid for every theme and every scope.
+- The „emit only what changed" saving is **unreachable** while references are kept as `var()`
+  ([`req-token-references`](../requirements/tokens.md#req-token-references)). That is the price
+  of cascading, and we pay it deliberately.
 
-## Rozważane alternatywy
+## Alternatives considered
 
-| alternatywa                                     | dlaczego odrzucona                                                                         |
-| ----------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| Emisja samych nadpisanych tokenów semantycznych | zmierzone: warstwa komponentowa zostaje zamrożona ([`lesson-17`](../lessons.md#lesson-17)) |
-| Rozwijanie referencji do wartości w buildzie    | odbiera możliwość nadpisania pojedynczej zmiennej w dowolnym scope — czyli cały mechanizm  |
-| Silnik JS przeliczający tokeny w runtime        | łamie zasadę CSS-first, zero-runtime: FOUC i rozjazdy hydracji                             |
+| alternative                                  | why rejected                                                                                 |
+| -------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Emitting the overridden semantic tokens only | measured: the component layer stays frozen ([`lesson-17`](../lessons.md#lesson-17))          |
+| Expanding references to values at build time | takes away the ability to override a single variable in any scope — i.e. the whole mechanism |
+| A JS engine recomputing tokens at runtime    | breaks CSS-first, zero-runtime: FOUC and hydration mismatches                                |

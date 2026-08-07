@@ -1,60 +1,60 @@
-# 0002 — Skórka jedzie w pakiecie
+# 0002 — The skin ships in the package
 
-**Status:** przyjęta
-**Realizuje:** [`req-project-tokens-lib`](../requirements/project.md#req-project-tokens-lib),
+**Status:** accepted
+**Implements:** [`req-project-tokens-lib`](../requirements/project.md#req-project-tokens-lib),
 [`req-token-distribution`](../requirements/tokens.md#req-token-distribution),
 [`req-quality-package`](../requirements/quality.md#req-quality-package)
-**Dowód:** [`lesson-36`](../lessons.md#lesson-36)
+**Evidence:** [`lesson-36`](../lessons.md#lesson-36)
 
-## Kontekst
+## Context
 
-Tokeny mieszkają w osobnej bibliotece (`libs/tokens`) i są kompilowane z DTCG do CSS.
-Pakiet `@pacit/components` odwołuje się do nich wyłącznie przez `var(--pct-*)` w arkuszach
-— **ani jednego importu TypeScript**.
+Tokens live in a separate library (`libs/tokens`) and are compiled from DTCG to CSS. The
+`@pacit/components` package refers to them only through `var(--pct-*)` in stylesheets — **not
+one TypeScript import**.
 
-To wystarczyło, żeby `dist/libs/components` zawierał FESM-y, typy i mapę `exports`,
-i **zero plików CSS**. Bundle odwoływał się do `var(--pct-field-bg)`, którego definicji
-nie było nigdzie w pakiecie.
+That was enough for `dist/libs/components` to contain FESMs, types and an `exports` map, and
+**zero CSS files**. The bundle referred to `var(--pct-field-bg)`, whose definition was nowhere
+in the package.
 
-Awaria była **cicha w obie strony**: po usunięciu `libs/tokens/dist` `nx build sandbox`
-kończył się **sukcesem** bez ostrzeżenia, a CI przechodziło wyłącznie dzięki ręcznemu
-krokowi `node libs/tokens/build.mjs` przed `run-many` — czyli obejściu maskującemu brak
-krawędzi w grafie zamiast go ujawnić.
+The failure was **silent in both directions**: with `libs/tokens/dist` deleted,
+`nx build sandbox` ended in **success** without a warning, and CI passed only thanks to
+a manual `node libs/tokens/build.mjs` step before `run-many` — a workaround masking a missing
+edge in the graph instead of exposing it.
 
-## Decyzja
+## Decision
 
-Naprawa jest **trójdzielna**, bo trzy różne rzeczy mogły zawieść niezależnie.
+The fix has **three parts**, because three different things could fail independently.
 
-1. **Graf zna krawędź.** `implicitDependencies: ["tokens"]` w `components` i `sandbox`
-   plus jawne `dependsOn` na `serve`. Graf Nx wnioskuje z importów, a ta zależność jest
-   nietypowa — sam artefakt CSS, zero TS.
-2. **Skórka jest wejściem pakietu, nie assetem z zewnątrz.** Kopiowana do
-   `libs/components/themes` i stamtąd brana przez `assets` w `ng-package.json` —
-   ng-packagr **nie czyta assetów spoza katalogu projektu**, więc staging jest wymuszony,
-   nie kosmetyczny. Do tego wpis `./themes/*` w `exports`, bo mapa `exports` jest zamknięta
-   i plik bez wpisu jest dla konsumenta niewidoczny.
-3. **Bramka bada artefakt**, nie źródła (`nx check-package components`).
+1. **The graph knows the edge.** `implicitDependencies: ["tokens"]` in `components` and
+   `sandbox` plus an explicit `dependsOn` on `serve`. The Nx graph infers from imports, and
+   this dependency is unusual — a CSS artifact and nothing else, zero TS.
+2. **The skin is an input of the package, not an asset from outside.** It is copied into
+   `libs/components/themes` and taken from there by `assets` in `ng-package.json` — ng-packagr
+   **does not read assets from outside the project directory**, so the staging is forced, not
+   cosmetic. Plus a `./themes/*` entry in `exports`, because the `exports` map is closed and
+   a file with no entry is invisible to the consumer.
+3. **The gate examines the artifact**, not the sources (`nx check-package components`).
 
-## Konsekwencje
+## Consequences
 
-- `libs/components/themes` jest **generowane i gitignorowane** — jedynym źródłem prawdy
-  pozostają pliki DTCG w `libs/tokens/src`.
-- Bramka sprawdza **domknięcie tokenów** (każdy użyty `var(--pct-*)` ma w pakiecie
-  deklarację), a nie samą obecność pliku. Obecność spełniłby też pusty plik albo skórka,
-  z której ktoś usunął warstwę komponentową.
-- Ręczny krok w CI zniknął.
+- `libs/components/themes` is **generated and gitignored** — the only source of truth remains
+  the DTCG files in `libs/tokens/src`.
+- The gate checks **token closure** (every `var(--pct-*)` used has a declaration in the
+  package), not the presence of a file. Presence would also be satisfied by an empty file, or
+  by a skin somebody stripped the component layer out of.
+- The manual CI step is gone.
 
-## Co przez to tracimy
+## What this costs us
 
-- Katalog generowany wewnątrz projektu publikowanego — trzeba pamiętać, że `themes/`
-  nie jest źródłem, mimo że leży w `libs/components`.
-- Krawędź w grafie jest **zadeklarowana ręcznie**, więc nowy projekt zależny od tokenów
-  w ten sam nietypowy sposób znów jej nie dostanie automatycznie.
+- A generated directory inside a published project — one has to remember that `themes/` is
+  not a source even though it sits in `libs/components`.
+- The graph edge is **declared by hand**, so a new project depending on tokens in the same
+  unusual way will again not get it automatically.
 
-## Rozważane alternatywy
+## Alternatives considered
 
-| alternatywa                                     | dlaczego odrzucona                                                                |
-| ----------------------------------------------- | --------------------------------------------------------------------------------- |
-| `assets` wskazujące wprost na `libs/tokens`     | ng-packagr nie czyta assetów spoza katalogu projektu — nie jest to wybór          |
-| Import TS tokenów, żeby graf zobaczył zależność | wnosiłby runtime JS do pakietu wbrew zasadzie CSS-first, zero-runtime             |
-| Poleganie na ręcznym kroku w CI                 | to było **stanem sprzed** tej decyzji; maskowało brak krawędzi zamiast go ujawnić |
+| alternative                                     | why rejected                                                                                   |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `assets` pointing straight at `libs/tokens`     | ng-packagr does not read assets from outside the project directory — not a choice              |
+| A TS import of the tokens, so the graph sees it | it would bring runtime JS into the package, against CSS-first, zero-runtime                    |
+| Relying on the manual CI step                   | that was **the state before** this decision; it masked the missing edge instead of exposing it |

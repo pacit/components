@@ -1,79 +1,81 @@
-# 0010 — Generyczna wartość i `NoInfer`
+# 0010 — A generic value and `NoInfer`
 
-**Status:** przyjęta
-**Realizuje:** [`req-api-generic`](../requirements/api.md#req-api-generic)
-**Dowód:** [`lesson-37`](../lessons.md#lesson-37)
+**Status:** accepted
+**Implements:** [`req-api-generic`](../requirements/api.md#req-api-generic)
+**Evidence:** [`lesson-37`](../lessons.md#lesson-37)
 
-## Kontekst
+## Context
 
-Pierwsza wersja `PctSelect` przyjmowała `PctSelectOption[]` z wartością typu `string`.
-Realne formularze wiążą identyfikatory liczbowe, warianty unii i całe encje — zawężenie do
-napisu przerzucało na każdą aplikację **ręczne mapowanie tam i z powrotem**, czyli dokładnie
-tę pracę, którą biblioteka ma zdejmować.
+The first version of `PctSelect` took a `PctSelectOption[]` whose value was a `string`. Real
+forms bind numeric ids, union members and whole entities — narrowing to a string pushed
+**manual mapping back and forth** onto every application, which is precisely the work the
+library is supposed to take away.
 
-## Decyzja
+## Decision
 
-`PctSelect<T>`, `PctSelectOption<T>` i `PctRadioGroup<T>` są generyczne, z `T = string`
-domyślnie — listy napisowe pisze się bez zmian.
+`PctSelect<T>`, `PctSelectOption<T>` and `PctRadioGroup<T>` are generic, with `T = string` by
+default — string lists are written exactly as before.
 
-Trzy rzeczy wynikają z tego wprost:
+Three things follow directly:
 
-- **Równość zgłasza aplikacja** (`compareWith`, domyślnie tożsamość). Encja wczytana
-  z serwera nie jest tą samą referencją co opcja na liście, więc bez tego wybrana pozycja
-  nie podświetlałaby się po otwarciu formularza.
-- **Brak wyboru jest osobnym stanem.** Wartość ma typ `T | null`, bo „nic nie wybrano" jest
-  osiągalne dla każdego `T`. Aplikacja z polem nienullowalnym zgłasza własną wartość pustą
-  (`emptyValue`), żeby reset nie wpisywał do modelu `null` wbrew jego typowi.
-- **Atrybut `value` natywnego radia opisuje opcję, ale nie bierze udziału w wyborze**
-  i dla wartości nieprymitywnych po prostu znika — `[object Object]` w DOM wyglądałby jak
-  wartość, a niczego nie identyfikuje.
+- **Equality is declared by the application** (`compareWith`, identity by default). An entity
+  loaded from a server is not the same reference as the option in the list, so without this the
+  selected item would not highlight when the form opens.
+- **„Nothing selected" is a separate state.** The value is typed `T | null`, because „nothing
+  selected" is reachable for every `T`. An application with a non-nullable field declares an
+  empty value of its own (`emptyValue`), so a reset does not write `null` into the model against
+  its type.
+- **The native radio's `value` attribute describes the option but takes no part in the
+  choice**, and for non-primitive values it simply disappears — `[object Object]` in the DOM
+  would look like a value while identifying nothing.
 
-### `NoInfer` na wiązaniach, które mają być tylko sprawdzane
+### `NoInfer` on bindings that are only meant to be checked
 
-To jest właściwa treść tej decyzji i wzięła się z sondy.
+This is the real substance of the decision, and it came out of a probe.
 
-Po uogólnieniu okazało się, że kompilator **przepuszcza wiązania jawnie sprzeczne**: lista
-opcji `PctSelectOption<number>[]` z wartością `'napis'`, `emptyValue` innego typu niż
-opcje, a nawet `$event` z `(valueChange)` podany metodzie o niepasującym parametrze.
+After generalising, it turned out the compiler **lets explicitly contradictory bindings
+through**: a `PctSelectOption<number>[]` option list with the value `'a string'`, an
+`emptyValue` of a different type than the options, and even `$event` from `(valueChange)`
+passed to a method with a mismatched parameter.
 
-Sprawdzanie szablonów **działało** — `NG8002` na wymyślonym inpucie było łapane od razu.
-Problem był węższy: `T` ma kilka miejsc wnioskowania (`options`, `value`, `emptyValue`),
-więc TypeScript wybierał **unię kandydatów** (`string | number`), do której pasowały obie
-strony konfliktu.
+Template checking **worked** — an `NG8002` on a made-up input was caught immediately. The
+problem was narrower: `T` has several inference sites (`options`, `value`, `emptyValue`), so
+TypeScript chose the **union of the candidates** (`string | number`), which both sides of the
+conflict fitted.
 
-Naprawa polega na **odebraniu prawa do ustalania `T`** tym wiązaniom, które mają być
-wobec niego tylko sprawdzane: `value` i `emptyValue` są zadeklarowane jako `NoInfer<T>`,
-więc typ bierze się wyłącznie z listy opcji.
+The fix is to **take away the right to determine `T`** from the bindings that are only meant to
+be checked against it: `value` and `emptyValue` are declared as `NoInfer<T>`, so the type comes
+from the option list alone.
 
-## Konsekwencje
+## Consequences
 
-- Sonda z pięciu przypadków: **cztery domknięte**, łącznie z typowaniem `$event`, które
-  wcześniej milczało.
-- **Piąty przypadek zostaje i jest ograniczeniem Angulara, nie API:** `PctRadioGroup` nie
-  ma inputu z opcjami (są treścią rzutowaną), więc jedynym źródłem `T` jest samo `value` —
-  i tam `$event` z `(valueChange)` nadal nie jest sprawdzane. Generyk daje tej grupie
-  bezpieczeństwo po stronie TypeScriptu (`isSelected`, `select`, odczyt `value()`), ale nie
-  po stronie szablonu.
-- **Reguła metodyczna:** przy generycznym komponencie trzeba **osobno sprawdzić, czy
-  szablon faktycznie egzekwuje typ**. Sam fakt, że build przechodzi na poprawnym użyciu,
-  nie odróżnia „typ się zgadza" od „typ jest ignorowany". Rozstrzyga dopiero kontrola
-  negatywna: celowo błędne wiązanie, które **ma** wywalić build.
+- The five-case probe: **four closed**, including the typing of `$event`, which had previously
+  been silent.
+- **The fifth case stays and is a limitation of Angular, not of the API:** `PctRadioGroup` has
+  no options input (they are projected content), so the only source of `T` is `value` itself —
+  and there `$event` from `(valueChange)` is still unchecked. The generic gives that group
+  safety on the TypeScript side (`isSelected`, `select`, reading `value()`) but not on the
+  template side.
+- **A methodological rule:** with a generic component one has to **check separately whether the
+  template really enforces the type**. The mere fact that the build passes on correct usage does
+  not tell „the type matches" from „the type is ignored". Only a negative control settles it:
+  a deliberately wrong binding that **must** break the build.
 
-## Co przez to tracimy
+## What this costs us
 
-- **Sygnatury są trudniejsze do czytania.** `NoInfer<T>` wymaga wyjaśnienia każdemu, kto
-  otworzy plik pierwszy raz — stąd ten wpis.
-- **Nierówność między komponentami:** select ma pełne sprawdzanie szablonu, grupa radiów
-  częściowe. To jest różnica, której nie da się dziś zniwelować bez dodania grupie inputu
-  z opcjami — czyli bez odebrania jej rzutowanej treści.
-- Kontrola negatywna dla typów **nie jest testem automatycznym** — to sonda, którą trzeba
-  uruchomić świadomie. Zapisana jako kontrola przy
+- **The signatures are harder to read.** `NoInfer<T>` needs explaining to anybody opening the
+  file for the first time — hence this entry.
+- **An inequality between components:** the select has full template checking, the radio group
+  partial. That difference cannot be removed today without giving the group an options input —
+  that is, without taking away its projected content.
+- The negative control for types **is not an automated test** — it is a probe that has to be
+  run deliberately. Recorded as the control on
   [`req-api-generic`](../requirements/api.md#req-api-generic).
 
-## Rozważane alternatywy
+## Alternatives considered
 
-| alternatywa                            | dlaczego odrzucona                                                                   |
-| -------------------------------------- | ------------------------------------------------------------------------------------ |
-| `value: string`, mapowanie w aplikacji | przerzuca na każdą aplikację pracę, którą biblioteka ma zdejmować                    |
-| `T` bez `NoInfer`                      | zmierzone: kompilator przepuszcza 5/5 sprzecznych wiązań, bo wybiera unię kandydatów |
-| `unknown` + rzutowanie w aplikacji     | odbiera sprawdzanie w miejscu, gdzie jest najbardziej potrzebne — w szablonie        |
+| alternative                                 | why rejected                                                                                             |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `value: string`, mapping in the application | pushes onto every application the work the library is supposed to take away                              |
+| `T` without `NoInfer`                       | measured: the compiler lets 5/5 contradictory bindings through, because it picks the union of candidates |
+| `unknown` plus casting in the application   | removes checking exactly where it is needed most — in the template                                       |

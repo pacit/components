@@ -1,85 +1,86 @@
-# 0006 — Kotwica i dziedziczenie w nakładce
+# 0006 — The anchor and inheritance in an overlay
 
-**Status:** przyjęta
-**Realizuje:** [`req-api-overlay`](../requirements/api.md#req-api-overlay)
-**Dowód:** [`lesson-18`](../lessons.md#lesson-18), [`lesson-35`](../lessons.md#lesson-35)
+**Status:** accepted
+**Implements:** [`req-api-overlay`](../requirements/api.md#req-api-overlay)
+**Evidence:** [`lesson-18`](../lessons.md#lesson-18), [`lesson-35`](../lessons.md#lesson-35)
 
-## Kontekst
+## Context
 
-Panel selecta żyje w nakładce CDK, czyli **jako dziecko `body`**, poza drzewem hosta. Ma
-przy tym wyglądać jak przedłużenie kontrolki. Te dwie rzeczy są ze sobą sprzeczne i każda
-właściwość, która „po prostu działała", przestaje działać po cichu.
+The select's panel lives in a CDK overlay, i.e. **as a child of `body`**, outside the host
+tree. It is also supposed to look like an extension of the control. Those two things
+contradict each other, and every property that „just worked" stops working quietly.
 
-Objawy zmierzone w przeglądarce:
+Symptoms measured in the browser:
 
-- Po [0003](0003-wrapper-and-control.md) trigger przestał być własną ramką, a nakładka
-  nadal kotwiczyła się w nim: przy polu **301 px** panel miał **275 px** i był przesunięty
-  o **13 px** w prawo.
-- Panel dziedziczył krój pisma po `body`, nie po aplikacji: **`Times New Roman`** w panelu
-  wobec `system-ui` w kontrolce.
-- Wielkość pisma brała się z tokenu `--pct-select-font-size`, więc w polu `lg` opcje
-  zostawały przy 14 px, gdy trigger pisał 16 px.
-- Kaskada scoped theme do panelu nie dociera w ogóle
+- After [0003](0003-wrapper-and-control.md) the trigger stopped being its own frame while the
+  overlay still anchored to it: with a **301 px** field the panel was **275 px** and offset by
+  **13 px** to the right.
+- The panel inherited its typeface from `body`, not from the app: **`Times New Roman`** in the
+  panel against `system-ui` in the control.
+- Font size came from the `--pct-select-font-size` token, so in an `lg` field the options
+  stayed at 14 px while the trigger wrote at 16 px.
+- The scoped-theme cascade does not reach the panel at all
   ([`lesson-18`](../lessons.md#lesson-18)).
 
-Samodzielny select wyglądał przy tym **bez zarzutu** — bo tam trigger _jest_ widoczną
-krawędzią. Objaw pojawiał się dokładnie w konfiguracji, w której obudowa przejmuje wygląd.
+A standalone select looked **impeccable** all the while — because there the trigger _is_ the
+visible edge. The symptom appeared in exactly the configuration where the wrapper takes over
+the appearance.
 
-## Decyzja
+## Decision
 
-**Nakładka wychodzi z widocznej krawędzi kontrolki, nie z elementu, który ją otwiera.**
+**The overlay comes out of the control's visible edge, not out of the element that opens it.**
 
-- Obudowa udostępnia swój wiersz jako **powierzchnię odniesienia** (`PctFieldApi.surface`);
-  kontrolka kotwiczy w nim panel. Bez obudowy kotwicą jest sam trigger.
-- **Kotwica jest częścią kontraktu, nie domysłem kontrolki.**
+- The wrapper offers its row as the **reference surface** (`PctFieldApi.surface`); the control
+  anchors the panel to it. With no wrapper the anchor is the trigger itself.
+- **The anchor is part of the contract, not a guess made by the control.**
 
-**Panel nie dziedziczy niczego po hoście — wszystko, co ma wyglądać jak przedłużenie
-kontrolki, jest z niej odczytywane przy otwarciu i przenoszone jawnie:** motyw
-(`data-theme`), krój pisma i wielkość pisma.
+**The panel inherits nothing from the host — everything that is supposed to look like an
+extension of the control is read from it when the panel opens and carried over explicitly:**
+theme (`data-theme`), typeface and font size.
 
-Szerokość panelu jest **osią API**, a nie stałą:
+The panel width is **an axis of the API**, not a constant:
 
-| `panelWidth` | zachowanie                                                |
-| ------------ | --------------------------------------------------------- |
-| `"field"`    | domyślne — panel równy kontrolce                          |
-| `"auto"`     | dopasowany do najdłuższej opcji, nie węższy niż kontrolka |
-| długość CSS  | ustawiona wprost                                          |
+| `panelWidth` | behaviour                                                     |
+| ------------ | ------------------------------------------------------------- |
+| `"field"`    | the default — the panel matches the control                   |
+| `"auto"`     | fitted to the longest option, never narrower than the control |
+| a CSS length | set outright                                                  |
 
-Gdy panel nie ma szerokości kontrolki, o krawędź przylegania pyta `panelAlign`
-(`start` / `center` / `end`); panel wychodzący poza okno jest wsuwany z powrotem (`push`),
-bo przycięte opcje są nie do odczytania.
+When the panel does not match the control's width, `panelAlign` decides which edge they abut
+(`start` / `center` / `end`); a panel running off the viewport is pushed back in (`push`),
+because clipped options cannot be read.
 
-## Konsekwencje
+## Consequences
 
-**Reguła ogólna, ważniejsza od samego selecta:** _każda właściwość dziedziczona jest po
-cichu zerwana w nakładce._ Motyw był przenoszony jawnie już wcześniej, ale traktowano to
-jako osobliwość motywu — a to reguła. Co ma wyglądać jak przedłużenie kontrolki, musi być
-z niej **odczytane**, bo drzewo DOM tego nie zrobi.
+**A general rule, more important than the select itself:** _every inherited property is
+silently severed in an overlay._ The theme was already being carried over explicitly, but that
+was treated as a peculiarity of theming — and it is a rule. Whatever is supposed to look like
+an extension of the control has to be **read from it**, because the DOM tree will not do it.
 
-Konsekwencje techniczne:
+Technical consequences:
 
-- Selektory `:host(...)` nie obejmują treści panelu — stany opcji trzeba oznaczać
-  atrybutami na samych opcjach.
-- Tokeny działają mimo wszystko, bo są zdefiniowane na `:root` — to zaleta podejścia
-  CSS-first.
-- Bramka musi porównywać **konkretne wartości** (szerokość, przesunięcie, krój, rozmiar),
-  nie „mniej więcej pasuje".
-- Ta lista jest **do uogólnienia w warstwie zachowań `core`** przy pierwszym dialogu.
-  Dziś rozwiązana raz, w jednym komponencie.
+- `:host(...)` selectors do not reach the panel's content — option states have to be marked
+  with attributes on the options themselves.
+- Tokens work regardless, because they are defined on `:root` — an advantage of the CSS-first
+  approach.
+- The gate has to compare **specific values** (width, offset, typeface, size), not „roughly
+  right".
+- This list is **to be generalised into the `core` behaviour layer** at the first dialog. Today
+  it is solved once, in one component.
 
-## Co przez to tracimy
+## What this costs us
 
-- **Odczyt ze stylu obliczonego przy każdym otwarciu** — koszt jest mały, ale to praca
-  w runtime tam, gdzie normalnie wystarczyłaby kaskada.
-- Lista właściwości do przeniesienia jest **otwarta**: dziś motyw, krój i rozmiar. Każda
-  kolejna dziedziczona właściwość, na której komuś zależy, będzie kolejnym wpisem — i do
-  jej odkrycia znów potrzeba pomiaru, bo brak dziedziczenia nie daje sygnału.
+- **A read of the computed style on every open** — the cost is small, but it is work at runtime
+  where the cascade would normally suffice.
+- The list of properties to carry over is **open**: today theme, typeface and size. Every
+  further inherited property somebody cares about will be one more entry — and discovering it
+  will again take a measurement, because the absence of inheritance gives no signal.
 
-## Rozważane alternatywy
+## Alternatives considered
 
-| alternatywa                                      | dlaczego odrzucona                                                                                 |
-| ------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
-| Kotwiczenie w triggerze                          | zmierzone: panel 275 px przy polu 301 px, przesunięty o 13 px                                      |
-| Wielkość pisma z tokenu `--pct-select-font-size` | token nie zna kontekstu obudowy: w polu `lg` opcje zostawały przy 14 px                            |
-| Renderowanie panelu w drzewie hosta              | `overflow` i `z-index` przodków przycinają panel — to jest powód, dla którego CDK Overlay istnieje |
-| `forced-color-adjust` / dziedziczenie przez CSS  | kaskada nie przechodzi przez granicę nakładki; nie ma czego naprawić po stronie arkusza            |
+| alternative                                       | why rejected                                                                                    |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| Anchoring to the trigger                          | measured: a 275 px panel on a 301 px field, offset by 13 px                                     |
+| Font size from the `--pct-select-font-size` token | the token does not know the wrapper's context: in an `lg` field the options stayed at 14 px     |
+| Rendering the panel inside the host tree          | ancestors' `overflow` and `z-index` clip the panel — that is why CDK Overlay exists             |
+| `forced-color-adjust` / inheritance through CSS   | the cascade does not cross the overlay boundary; there is nothing to fix on the stylesheet side |

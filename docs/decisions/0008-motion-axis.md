@@ -1,66 +1,66 @@
-# 0008 — Oś ruchu w tokenach
+# 0008 — The motion axis in tokens
 
-**Status:** przyjęta
-**Realizuje:** [`req-a11y-motion`](../requirements/a11y.md#req-a11y-motion)
-**Dowód:** [`lesson-38`](../lessons.md#lesson-38)
+**Status:** accepted
+**Implements:** [`req-a11y-motion`](../requirements/a11y.md#req-a11y-motion)
+**Evidence:** [`lesson-38`](../lessons.md#lesson-38)
 
-## Kontekst
+## Context
 
-Standardowe podejście do `prefers-reduced-motion` to reguła `@media` w arkuszu każdego
-komponentu. Ma dwie wady, obie z rodziny [`req-axis`](../00-axis.md): nowy komponent **startuje
-od braku** tej reguły, a jej brak nie daje żadnego sygnału.
+The standard approach to `prefers-reduced-motion` is an `@media` rule in every component's
+stylesheet. It has two flaws, both from the [`req-axis`](../00-axis.md) family: a new component
+**starts without** that rule, and its absence gives no signal.
 
-## Decyzja
+## Decision
 
-**Czas trwania ruchu jest tokenem, a redukcja — osobnym zestawem wartości tych tokenów.**
+**Motion duration is a token, and reduction is a separate set of values for those tokens.**
 
-`motion.reduced.json` jest dla osi ruchu tym, czym `semantic.dark.json` dla motywu: build
-emituje go w bloku `@media (prefers-reduced-motion: reduce)`.
+`motion.reduced.json` is to the motion axis what `semantic.dark.json` is to the theme: the
+build emits it inside a `@media (prefers-reduced-motion: reduce)` block.
 
-Preferencja obowiązuje **wszystkie** komponenty z jednej reguły, a nowy komponent
-dziedziczy ją **przez samo użycie tokenu**, zamiast startować od jej braku.
+The preference governs **all** components from one rule, and a new component inherits it
+**just by using the token** instead of starting without it.
 
-### Podział idzie po rodzaju ruchu, nie po prędkości
+### The split follows the kind of motion, not its speed
 
-Bo redukcja robi z nimi dwie różne rzeczy:
+Because reduction does two different things to them:
 
-| token                              | bez preferencji | z preferencją | dlaczego                         |
-| ---------------------------------- | --------------- | ------------- | -------------------------------- |
-| `--pct-motion-transition-duration` | 150 ms          | **0.01 ms**   | przejście stanu ma zniknąć       |
-| `--pct-motion-loop-duration`       | 600 ms          | **1500 ms**   | wskaźnik ciągły ma tylko zwolnić |
+| token                              | no preference | with preference | why                                     |
+| ---------------------------------- | ------------- | --------------- | --------------------------------------- |
+| `--pct-motion-transition-duration` | 150 ms        | **0.01 ms**     | a state transition should disappear     |
+| `--pct-motion-loop-duration`       | 600 ms        | **1500 ms**     | a continuous indicator should only slow |
 
-Dwa szczegóły z powodem:
+Two details, each with a reason:
 
-- **`0.01ms`, nie `0s`** — żeby nie zgubić zdarzenia `transitionend`.
-- **Spinner zwalnia, nie staje.** Zatrzymany spinner przestałby informować, że przycisk
-  pracuje. **„Mniej ruchu" nie może znaczyć „mniej informacji".**
+- **`0.01ms`, not `0s`** — so the `transitionend` event is not lost.
+- **The spinner slows, it does not stop.** A stopped spinner would stop saying that the button
+  is working. **„Less motion" must not mean „less information".**
 
-## Konsekwencje
+## Consequences
 
-- Komponent, który chce respektować redukcję ruchu, nie musi o niej wiedzieć.
-- Komponent, który **nie** bierze czasu z tokenu, jest wykrywalny gerpem po `@media`
-  w arkuszu — to jedna z rubryk [DoD komponentu](../components/_template.md).
-- Bramka musi porównywać **parę** wartości. Sam test redukcji z asercją „czas przejścia
-  jest mały" przeszedłby na wartości bazowej `150ms` interpretowanej jako „dość mało"
-  i nikt nie zauważyłby, że media query nigdy się nie zapaliło
+- A component that wants to respect reduced motion does not have to know about it.
+- A component that does **not** take its duration from the token is findable by grepping for
+  `@media` in a stylesheet — one of the rows in the
+  [component DoD](../components/_template.md).
+- The gate has to compare a **pair** of values. A reduction test alone, asserting „the
+  transition duration is small", would pass on the base value of `150ms` read as „small
+  enough", and nobody would notice that the media query never fired
   ([`lesson-38`](../lessons.md#lesson-38)).
-- Emulacja idzie przez `page.emulateMedia()` w pomocniku `visit()`, a nie przez
-  `test.use({ reducedMotion })` — ten drugi zapis **po cichu nie działa** w Playwrighcie
-  1.61.1.
+- Emulation goes through `page.emulateMedia()` in the `visit()` helper rather than through
+  `test.use({ reducedMotion })` — the latter **silently does nothing** in Playwright 1.61.1.
 
-## Co przez to tracimy
+## What this costs us
 
-- **Redukcja jest globalna, nie per komponent.** Komponent, który potrzebowałby innej
-  reguły niż „przejścia znikają, pętle zwalniają", musi wyjść z osi — i to jest wtedy
-  odstępstwo do uzasadnienia.
-- Dwa tokeny to **modelowanie ruchu w dwóch kategoriach**. Trzeci rodzaj (np. ruch
-  transportujący uwagę, jak wjazd dialogu) będzie wymagał trzeciej osi, a nie zmieści się
-  w istniejących.
+- **Reduction is global, not per component.** A component needing a rule other than
+  „transitions vanish, loops slow down" has to step off the axis — and that is then
+  a departure to be justified.
+- Two tokens **model motion in two categories**. A third kind (say, motion that transports
+  attention, like a dialog entering) will need a third axis; it will not fit into the existing
+  ones.
 
-## Rozważane alternatywy
+## Alternatives considered
 
-| alternatywa                           | dlaczego odrzucona                                                                          |
-| ------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `@media` w arkuszu każdego komponentu | nowy komponent startuje od braku reguły, a brak nie daje sygnału                            |
-| Jeden token czasu dla całego ruchu    | redukcja robi z przejściem i z pętlą **dwie różne rzeczy**; jeden token zatrzymałby spinner |
-| `0s` zamiast `0.01ms`                 | gubi `transitionend`, co psuje kod czekający na koniec przejścia                            |
+| alternative                              | why rejected                                                                                            |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `@media` in every component's stylesheet | a new component starts without the rule, and the absence gives no signal                                |
+| One duration token for all motion        | reduction does **two different things** to a transition and to a loop; one token would stop the spinner |
+| `0s` instead of `0.01ms`                 | loses `transitionend`, which breaks code waiting for the transition to end                              |

@@ -1,65 +1,66 @@
-# `PctNumber` — pole liczbowe
+# `PctNumber` — number field
 
 **Entrypoint:** `@pacit/components/field`
-**Selektor:** `input[pctNumber]` — na `<input type="text">`, **świadomy wyjątek** od
+**Selector:** `input[pctNumber]` — on an `<input type="text">`, a **deliberate exception** to
 [`req-api-platform`](../requirements/api.md#req-api-platform) ([0009](../decisions/0009-number-field.md))
-**Status:** w wydaniu
-**Wzorzec ARIA APG:** [Spinbutton](https://www.w3.org/WAI/ARIA/apg/patterns/spinbutton/) —
+**Status:** released
+**ARIA APG pattern:** [Spinbutton](https://www.w3.org/WAI/ARIA/apg/patterns/spinbutton/) —
 `role="spinbutton"`, `aria-valuenow`, `aria-valuetext`
 
-## Kontrakt
+## Contract
 
-|                 |                                                                                                                                                               |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Wartość**     | `number \| null` — puste to `null`, **nigdy `0` ani `NaN`**                                                                                                   |
-| **Wejścia**     | `FormValueControl` + `FormUiControl`, plus `min`, `max`, `step`, `minFractionDigits`, `maxFractionDigits`, `useGrouping`, `locale`                            |
-| **Granice**     | `min`/`max` należą do `FormUiControl` — przy `[formField]` wypełnia je dyrektywa z walidatorów `min()`/`max()` schematu. **Nie powtarza się ich w szablonie** |
-| **Kontrakt DI** | `PCT_FIELD`; `fieldAppearance: 'boxed'`, `fieldCursor: 'text'`                                                                                                |
+|                 |                                                                                                                                                                             |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Value**       | `number \| null` — empty is `null`, **never `0` or `NaN`**                                                                                                                  |
+| **Inputs**      | `FormValueControl` + `FormUiControl`, plus `min`, `max`, `step`, `minFractionDigits`, `maxFractionDigits`, `useGrouping`, `locale`                                          |
+| **Bounds**      | `min`/`max` belong to `FormUiControl` — with `[formField]` the directive fills them from the schema's `min()`/`max()` validators. **They are not repeated in the template** |
+| **DI contract** | `PCT_FIELD`; `fieldAppearance: 'boxed'`, `fieldCursor: 'text'`                                                                                                              |
 
-## Mapa klawiatury
+## Keyboard map
 
-| klawisz               | skutek                                                            | test                                       |
-| --------------------- | ----------------------------------------------------------------- | ------------------------------------------ |
-| `↑` / `↓`             | krok o `step`                                                     | `apps/sandbox-e2e/src/number.spec.ts`      |
-| `PageUp` / `PageDown` | krok większy                                                      | `apps/sandbox-e2e/src/number.spec.ts`      |
-| pisanie               | tekst **nie jest przepisywany**, żeby kursor nie skakał na koniec | `libs/components/field/src/number.spec.ts` |
-| `Enter` / `blur`      | zatwierdzenie: zaokrąglenie i domknięcie do granic                | `libs/components/field/src/number.spec.ts` |
+| key                   | effect                                                               | test                                       |
+| --------------------- | -------------------------------------------------------------------- | ------------------------------------------ |
+| `↑` / `↓`             | step by `step`                                                       | `apps/sandbox-e2e/src/number.spec.ts`      |
+| `PageUp` / `PageDown` | a larger step                                                        | `apps/sandbox-e2e/src/number.spec.ts`      |
+| typing                | the text **is not rewritten**, so the caret does not jump to the end | `libs/components/field/src/number.spec.ts` |
+| `Enter` / `blur`      | commit: rounding and clamping to the bounds                          | `libs/components/field/src/number.spec.ts` |
 
-## Kontrole
+## Checks
 
-| kryterium                       | dowód                                                                                                                                                                                         |
-| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Wzorzec ARIA APG w JSDoc        | brak — luka                                                                                                                                                                                   |
-| Mapa klawiatury przetestowana   | `apps/sandbox-e2e/src/number.spec.ts`, `libs/components/field/src/number.spec.ts`                                                                                                             |
-| Audyt axe                       | `apps/sandbox-e2e/src/a11y.spec.ts` (widok `/number`)                                                                                                                                         |
-| Zrzut wizualny                  | `apps/sandbox-e2e/src/visual.spec.ts`                                                                                                                                                         |
-| `forced-colors: active`         | `apps/sandbox-e2e/src/forced-colors.spec.ts`                                                                                                                                                  |
-| `prefers-reduced-motion`        | `apps/sandbox-e2e/src/preferences.spec.ts`                                                                                                                                                    |
-| Obszar dotyku                   | `apps/sandbox-e2e/src/field-hitarea.spec.ts`                                                                                                                                                  |
-| Oś wielkości                    | `apps/sandbox-e2e/src/size.spec.ts`                                                                                                                                                           |
-| Oś gęstości                     | brak — luka                                                                                                                                                                                   |
-| RTL                             | brak — luka. **Uwaga wyższego ryzyka niż w innych kontrolkach:** liczby mają własny kierunek wewnątrz tekstu RTL                                                                              |
-| SSR + hydracja                  | `apps/sandbox-e2e/src/hydration.spec.ts`                                                                                                                                                      |
-| Formularze                      | `libs/components/field/src/field-controls.spec.ts`, `apps/sandbox-e2e/src/forms.spec.ts`                                                                                                      |
-| Części w inwentarzu             | `libs/components/czesci.snapshot.md`, `tools/check-parts.mjs` (target `check-parts`) — dyrektywa nie wystawia własnych części; inwentarz entrypointu `field` obejmuje ją tym samym wierszem   |
-| Tokeny + `contrast.policy.json` | wspólne z `field`                                                                                                                                                                             |
-| Napisy przez `PCT_TEXTS`        | `tools/check-texts.mjs` — ostrzeżenia deweloperskie są **po angielsku na stałe** i gasną poza `isDevMode()`, co bramka mierzy osobnym punktem ([0007](../decisions/0007-config-and-texts.md)) |
-| Budżet rozmiaru                 | brak — luka                                                                                                                                                                                   |
-| Log z czytnikiem ekranu         | brak — luka. **Najbardziej potrzebny ze wszystkich kontrolek** — `aria-valuetext` jest jedyną rzeczą, którą czytnik ogłasza zamiast surowej liczby                                            |
-| Strona docs                     | brak — luka                                                                                                                                                                                   |
+| criterion                       | evidence                                                                                                                                                                                                        |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ARIA APG pattern in the JSDoc   | none — gap                                                                                                                                                                                                      |
+| Keyboard map tested             | `apps/sandbox-e2e/src/number.spec.ts`, `libs/components/field/src/number.spec.ts`                                                                                                                               |
+| axe audit                       | `apps/sandbox-e2e/src/a11y.spec.ts` (the `/number` view)                                                                                                                                                        |
+| Visual screenshot               | `apps/sandbox-e2e/src/visual.spec.ts`                                                                                                                                                                           |
+| `forced-colors: active`         | `apps/sandbox-e2e/src/forced-colors.spec.ts`                                                                                                                                                                    |
+| `prefers-reduced-motion`        | `apps/sandbox-e2e/src/preferences.spec.ts`                                                                                                                                                                      |
+| Touch target                    | `apps/sandbox-e2e/src/field-hitarea.spec.ts`                                                                                                                                                                    |
+| Size axis                       | `apps/sandbox-e2e/src/size.spec.ts`                                                                                                                                                                             |
+| Density axis                    | none — gap                                                                                                                                                                                                      |
+| RTL                             | none — gap. **A higher risk than in the other controls:** numbers have a direction of their own inside RTL text                                                                                                 |
+| SSR + hydration                 | `apps/sandbox-e2e/src/hydration.spec.ts`                                                                                                                                                                        |
+| Forms                           | `libs/components/field/src/field-controls.spec.ts`, `apps/sandbox-e2e/src/forms.spec.ts`                                                                                                                        |
+| Parts in the inventory          | `libs/components/czesci.snapshot.md`, `tools/check-parts.mjs` (target `check-parts`) — the directive exposes no parts of its own; the `field` entrypoint's inventory covers it in the same row                  |
+| Tokens + `contrast.policy.json` | shared with `field`                                                                                                                                                                                             |
+| Strings through `PCT_TEXTS`     | `tools/check-texts.mjs` — the developer warnings are **permanently English** and go dark outside `isDevMode()`, which the gate measures with a point of its own ([0007](../decisions/0007-config-and-texts.md)) |
+| Size budget                     | none — gap                                                                                                                                                                                                      |
+| Screen-reader log               | none — gap. **The most needed of all the controls** — `aria-valuetext` is the one thing a reader announces instead of the raw number                                                                            |
+| docs page                       | none — gap                                                                                                                                                                                                      |
 
-## Decyzje
+## Decisions
 
-[0009](../decisions/0009-number-field.md) (główna),
+[0009](../decisions/0009-number-field.md) (the main one),
 [0003](../decisions/0003-wrapper-and-control.md), [0005](../decisions/0005-signal-forms-without-cva.md)
 
-## Znane ograniczenia
+## Known limitations
 
-- **Brak testów własnościowych parsera.** Parsowanie jest **szersze** niż formatowanie
-  (separator grupujący usuwany warunkowo, kropka i przecinek jako dziesiętne), więc
-  przestrzeń wejść jest większa, niż da się pokryć ręcznie. Kandydat wzorcowy:
-  `parse(format(n)) === n` dla dowolnego `n` i dowolnego locale.
-- **Punktem wyjścia kroku jest sygnał, nie DOM** — i to jest wymóg, nie optymalizacja.
-  Odczyt z DOM zawsze może być o jeden przebieg do tyłu
+- **No property tests for the parser.** Parsing is **wider** than formatting (the grouping
+  separator is removed conditionally, dot and comma both act as decimal), so the input space is
+  larger than can be covered by hand. The model candidate: `parse(format(n)) === n` for any `n`
+  and any locale.
+- **The starting point of a step is the signal, not the DOM** — and that is a requirement, not
+  an optimisation. A read from the DOM can always be one pass behind
   ([`lesson-32`](../lessons.md#lesson-32)).
-- **Mobilna klawiatura numeryczna** nie wynika z typu pola i musi być zamówiona osobno.
+- **The mobile numeric keypad** does not follow from the field's type and has to be requested
+  separately.

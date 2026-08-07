@@ -1,61 +1,62 @@
-# 0011 — Ikony przez szablon i `PCT_ICONS`
+# 0011 — Icons through a template and `PCT_ICONS`
 
-**Status:** przyjęta (mechanizm nie jest zbudowany)
-**Realizuje:** [`req-api-icons`](../requirements/api.md#req-api-icons),
+**Status:** accepted (the mechanism is not built)
+**Implements:** [`req-api-icons`](../requirements/api.md#req-api-icons),
 [`req-api-icons-custom`](../requirements/api.md#req-api-icons-custom)
-**Dowód:** brak — decyzja kierunkowa, podjęta przed budową
+**Evidence:** none — a directional decision, taken before building
 
-## Kontekst
+## Context
 
-Dwie obietnice, które łatwo uznać za sprzeczne:
+Two promises that are easy to take for contradictory:
 
 - [`req-project-dependencies`](../requirements/project.md#req-project-dependencies) — zero
-  zależności runtime, więc **nie wciągamy cudzego zestawu ikon**.
-- [`req-api-icons`](../requirements/api.md#req-api-icons) — konsument ma móc **podmienić
-  ikonę na swoją**.
+  runtime dependencies, so **we do not pull in somebody else's icon set**.
+- [`req-api-icons`](../requirements/api.md#req-api-icons) — the consumer must be able to
+  **swap an icon for their own**.
 
-Dziś każda ikona jest **wpisana w szablon** jako SVG w `currentColor` (znacznik checkboxa,
-strzałka selecta). Działa i nie wnosi zależności, ale nie jest mechanizmem: konsument nie
-ma jak podmienić strzałki selecta, a każdy nowy komponent dokłada kolejny wpisany SVG.
+Today every icon is **written into the template** as SVG in `currentColor` (the checkbox tick,
+the select's arrow). It works and adds no dependency, but it is not a mechanism: a consumer
+has no way to swap the select's arrow, and every new component adds another inline SVG.
 
-## Decyzja
+## Decision
 
-**Dwa poziomy, spełniające obie obietnice naraz:**
+**Two levels, satisfying both promises at once:**
 
-1. **`pct-icon` przyjmujący rzutowany SVG** — najniższy poziom, bez żadnej wiedzy o nazwach.
-2. **Token `PCT_ICONS` mapujący nazwy semantyczne na szablony** — `chevron-down`, `check`,
-   `close`, `calendar`, z **wbudowanymi wpisanymi domyślnymi**.
+1. **`pct-icon` taking a projected SVG** — the lowest level, with no knowledge of names.
+2. **A `PCT_ICONS` token mapping semantic names to templates** — `chevron-down`, `check`,
+   `close`, `calendar`, with **built-in inline defaults**.
 
-Konsument, który nic nie zrobi, dostaje działające ikony. Konsument, który poda własny
-zestaw, podmienia je **globalnie jedną deklaracją**, a nie komponent po komponencie.
+A consumer who does nothing gets working icons. A consumer who supplies their own set swaps
+them **globally with one declaration**, not component by component.
 
-Nazwy są **semantyczne, nie wizualne** (`chevron-down`, nie `arrow-down-16`), bo mapowane
-są na role w komponentach, a nie na wygląd.
+The names are **semantic, not visual** (`chevron-down`, not `arrow-down-16`), because they map
+onto roles in components, not onto appearance.
 
-## Konsekwencje
+## Consequences
 
-- **Wiąże z [`req-api-templates`](../requirements/api.md#req-api-templates)** — najprostszym
-  mechanizmem podmiany jest szablon, którego jeszcze nie ma. Ikony nie ruszą przed nim.
-- Zestaw domyślny zostaje wpisany w bibliotekę, więc `req-api-icons-custom` (nie
-  dostarczamy zestawu) obowiązuje w sensie „nie publikujemy zestawu jako produktu", a nie
-  „nie ma w pakiecie ani jednego SVG".
-- Rozmiar ikony bierze się z kontekstu (`currentColor`, `1em`), więc oś wielkości
-  ([0004](0004-explicit-height.md)) obejmuje ikony bez osobnej konfiguracji.
+- **It ties into [`req-api-templates`](../requirements/api.md#req-api-templates)** — the
+  simplest swap mechanism is a template, which does not exist yet. Icons will not move before
+  it.
+- The default set stays written into the library, so `req-api-icons-custom` (we ship no set)
+  holds in the sense of „we do not publish a set as a product", not „there is not a single SVG
+  in the package".
+- Icon size comes from context (`currentColor`, `1em`), so the size axis
+  ([0004](0004-explicit-height.md)) covers icons with no separate configuration.
 
-## Co przez to tracimy
+## What this costs us
 
-- **Lista nazw semantycznych jest publicznym API** i podlega tym samym rygorom co
-  [`req-api-parts`](../requirements/api.md#req-api-parts): raz opublikowanej nazwy nie
-  można zmienić bez migracji.
-- Konsument podmieniający **jedną** ikonę musi znać nazwę — czyli potrzebuje spisu, który
-  jest kolejnym generowanym inwentarzem.
-- Dwa poziomy to dwie powierzchnie do udokumentowania.
+- **The list of semantic names is public API** and falls under the same rigour as
+  [`req-api-parts`](../requirements/api.md#req-api-parts): once published, a name cannot be
+  changed without a migration.
+- A consumer swapping **one** icon has to know its name — which means they need an inventory,
+  which is one more generated artifact.
+- Two levels are two surfaces to document.
 
-## Rozważane alternatywy
+## Alternatives considered
 
-| alternatywa                          | dlaczego odrzucona                                                                      |
-| ------------------------------------ | --------------------------------------------------------------------------------------- |
-| Zależność od zestawu ikon            | łamie [`req-project-dependencies`](../requirements/project.md#req-project-dependencies) |
-| Tylko rzutowany SVG, bez `PCT_ICONS` | zmusza konsumenta do podania ikony przy **każdym** użyciu każdego komponentu            |
-| Tylko `PCT_ICONS`, bez `pct-icon`    | odbiera możliwość wstawienia jednorazowej ikony bez rejestrowania jej pod nazwą         |
-| Font ikon                            | wnosi zależność, gorzej skaluje i psuje się przy blokowaniu zewnętrznych fontów         |
+| alternative                             | why rejected                                                                             |
+| --------------------------------------- | ---------------------------------------------------------------------------------------- |
+| A dependency on an icon set             | breaks [`req-project-dependencies`](../requirements/project.md#req-project-dependencies) |
+| Projected SVG only, without `PCT_ICONS` | forces the consumer to supply an icon at **every** use of every component                |
+| `PCT_ICONS` only, without `pct-icon`    | takes away the option of dropping in a one-off icon without registering it under a name  |
+| An icon font                            | brings a dependency, scales worse and breaks when external fonts are blocked             |

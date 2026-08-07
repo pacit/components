@@ -19,7 +19,7 @@
  *  2. ZBIÓR: części odczytane ze źródeł zgadzają się z odczytanymi ze
  *     ZBUDOWANEGO pakietu — i żadna strona nie jest pusta,
  *  3. STATYCZNOŚĆ: nazwa części nigdzie nie jest wiązana wyrażeniem,
- *  4. POWIERZCHNIA: rubryki **Części** w `docs/components/` niosą dokładnie te
+ *  4. POWIERZCHNIA: rubryki **Parts** w `docs/components/` niosą dokładnie te
  *     nazwy, które wystawia entrypoint,
  *  5. SNAPSHOT: wersjonowany inwentarz zgadza się z bieżącym.
  *
@@ -444,7 +444,7 @@ const sprawdzCzesci = (we) => {
 
   // 4. POWIERZCHNIA. Inwentarz istnieje po to, żeby ktoś go PRZECZYTAŁ, a
   //    czytelną powierzchnią są dziś karty w `docs/components/`. Rubryka
-  //    **Części** jest pisana ręką i dokładnie dlatego kłamie: `field.md`
+  //    **Parts** jest pisana ręką i dokładnie dlatego kłamie: `field.md`
   //    wymieniał 7 części z jedenastu. Porównanie idzie per ENTRYPOINT, bo tak
   //    biblioteka jest importowana, a jedna karta bywa o dwóch klasach
   //    (`radio.md`) i jeden entrypoint o trzech kartach (`field`, `number`,
@@ -467,7 +467,7 @@ const sprawdzCzesci = (we) => {
       'dokumentacja',
       `${nieznaneEntrypointy.length} kart wskazuje entrypoint, którego nie ma w pakiecie:\n` +
         lista(nieznaneEntrypointy) +
-        `\n    Bramka przypisuje rubrykę **Części** do entrypointu właśnie tym nagłówkiem; ` +
+        `\n    Bramka przypisuje rubrykę **Parts** do entrypointu właśnie tym nagłówkiem; ` +
         `karta bez niego zostaje poza porównaniem, czyli poza inwentarzem.`,
     );
 
@@ -511,11 +511,11 @@ const sprawdzCzesci = (we) => {
   if (problemyDokumentacji.length)
     throw new BladCzesci(
       'dokumentacja',
-      `rubryki **Części** rozjechały się z pakietem (${problemyDokumentacji.length}):\n` +
+      `rubryki **Parts** rozjechały się z pakietem (${problemyDokumentacji.length}):\n` +
         lista(skroc(problemyDokumentacji, 12)) +
         `\n    Karta wymieniająca część, której nie ma, wysyła konsumenta pod selektor ` +
         `trafiający w nic; karta milcząca o istniejącej cofa obietnicę „spisane" do zera. ` +
-        `Zapis rubryki: \`| **Części** | \\\`nazwa\\\`, \\\`nazwa\\\` |\`.`,
+        `Zapis rubryki: \`| **Parts** | \\\`nazwa\\\`, \\\`nazwa\\\` |\`.`,
     );
 
   // 5. SNAPSHOT — wersjonowany inwentarz, wobec którego mierzy się zmianę.
@@ -628,13 +628,13 @@ const wierszeSnapshotu = (tresc) =>
 const czytaj = (root, sciezka) => readFileSync(join(root, sciezka), 'utf8');
 
 /**
- * Karta komponentu: entrypoint z nagłówka i nazwy części z rubryki **Części**.
+ * Karta komponentu: entrypoint z nagłówka i nazwy części z rubryki **Parts**.
  * `_template.md` i `README.md` odpadają — pierwszy jest formularzem do skopiowania
  * (jego rubryka opisuje, co wpisać), drugi spisem treści.
  */
 const NAGLOWEK_ENTRYPOINT =
   /^\*\*Entrypoint:\*\*\s*`@pacit\/components(\/[a-z-]+)?`/m;
-const RUBRYKA_CZESCI = /^\|\s*\*\*Części\*\*.*$/m;
+const RUBRYKA_CZESCI = /^\|\s*\*\*Parts\*\*.*$/m;
 
 const czytajKarte = (plik, tresc) => {
   const naglowek = NAGLOWEK_ENTRYPOINT.exec(tresc);

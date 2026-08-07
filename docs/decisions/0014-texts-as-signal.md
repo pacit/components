@@ -1,31 +1,31 @@
-# 0014 — Teksty jako sygnał, czytane przy renderowaniu
+# 0014 — Texts as a signal, read at render time
 
-**Status:** przyjęta
-**Realizuje:** [`req-api-texts`](../requirements/api.md#req-api-texts)
-**Dowód:** [`lesson-54`](../lessons.md#lesson-54) — celowa regresja: przy odczycie
-z konstrukcji przełączenie języka daje `expected 'Select…' to be 'Wybierz…'`
+**Status:** accepted
+**Implements:** [`req-api-texts`](../requirements/api.md#req-api-texts)
+**Evidence:** [`lesson-54`](../lessons.md#lesson-54) — a deliberate regression: with the read
+done at construction, switching language gives `expected 'Select…' to be 'Wybierz…'`
 
-## Kontekst
+## Context
 
-[Decyzja 0007](0007-config-and-texts.md) zostawiła jedno pytanie otwarte i sama
-zapisała, że musi ono zostać **rozstrzygnięte, zanim `PCT_TEXTS` urośnie**:
+[Decision 0007](0007-config-and-texts.md) left one question open and recorded itself that it
+had to be **settled before `PCT_TEXTS` grew**:
 
 ```ts
-export const PCT_TEXTS = new InjectionToken<PctTexts>(…); // wartość, nie sygnał
-readonly placeholder = input<string>(this.texts.selectPlaceholder); // odczyt RAZ
+export const PCT_TEXTS = new InjectionToken<PctTexts>(…); // a value, not a signal
+readonly placeholder = input<string>(this.texts.selectPlaceholder); // read ONCE
 ```
 
-`providePctTexts` zwracał `{ provide, useValue }`, czyli statyczny obiekt, a komponent
-czytał go przy konstrukcji. Aplikacja przełączająca język bez przeładowania strony —
-bardzo częsty wzorzec — **nie zobaczyłaby nowych napisów**.
+`providePctTexts` returned `{ provide, useValue }`, i.e. a static object, and the component
+read it at construction. An app switching language without reloading the page — a very common
+pattern — **would not see the new strings**.
 
-Wada jest trudniejsza, niż wygląda, bo `input()` **jest** sygnałem: wiązanie z zewnątrz
-przerysowuje widok normalnie. Zamrożona jest wyłącznie wartość **domyślna**, a tej nikt
-nie ogląda w diffie jako „odczytu" ([`lesson-54`](../lessons.md#lesson-54)).
+The defect is harder than it looks, because `input()` **is** a signal: a binding from outside
+redraws the view normally. What is frozen is only the **default** value, and nobody reads that
+in a diff as „a read" ([`lesson-54`](../lessons.md#lesson-54)).
 
-## Decyzja
+## Decision
 
-**`PCT_TEXTS` niesie `Signal<PctTexts>`, a komponent czyta napis przy renderowaniu.**
+**`PCT_TEXTS` carries `Signal<PctTexts>`, and a component reads a string at render time.**
 
 ```ts
 export const PCT_TEXTS = new InjectionToken<Signal<PctTexts>>('PCT_TEXTS', {
@@ -35,52 +35,52 @@ export const PCT_TEXTS = new InjectionToken<Signal<PctTexts>>('PCT_TEXTS', {
 export function providePctTexts(texts: Partial<PctTexts> | Signal<Partial<PctTexts>>): Provider;
 ```
 
-Trzy reguły uzupełniające:
+Three supplementary rules:
 
-- **Odczyt idzie przez `computed()`**, nigdy przez wartość domyślną wejścia. Wejście,
-  które ma napis biblioteki jako zapasowy, deklaruje się bez wartości
-  (`input<string>()`), a zapas dokłada `computed(() => this.placeholder() ?? this.texts().selectPlaceholder)`.
-- **Brak wartości i wartość pusta znaczą co innego.** `placeholder=""` zostaje pustym
-  tekstem zastępczym; dopiero brak wiązania oddaje napis bibliotece. Odwrotna
-  konwencja („pusty znaczy domyślny") odbierałaby autorowi widoku decyzję, której nie
-  da się wyrazić inaczej.
-- **Scalanie zawsze wobec `PCT_DEFAULT_TEXTS`**, a nie wobec tekstów z injektora
-  nadrzędnego: poddrzewo deklaruje język, a nie różnicę wobec sąsiada — inaczej ten sam
-  `providePctTexts` znaczyłby co innego zależnie od miejsca w drzewie.
+- **The read goes through `computed()`**, never through an input's default value. An input that
+  has a library string as its fallback is declared with no value (`input<string>()`), and the
+  fallback is added by
+  `computed(() => this.placeholder() ?? this.texts().selectPlaceholder)`.
+- **No value and an empty value mean different things.** `placeholder=""` stays an empty
+  placeholder; only the absence of a binding hands the string back to the library. The opposite
+  convention („empty means default") would take away a decision the view's author cannot
+  express any other way.
+- **Merging is always against `PCT_DEFAULT_TEXTS`**, never against the texts from a parent
+  injector: a subtree declares a language, not a difference from its neighbour — otherwise the
+  same `providePctTexts` would mean different things depending on where it sits in the tree.
 
-Fabryka jako argument (druga rozważana opcja) nie wystarcza: DI rozwiązuje dostawcę
-raz, więc `useFactory` daje dokładnie ten sam zamrożony obiekt, tylko liczony leniwie.
+A factory as the argument (the second option considered) is not enough: DI resolves a provider
+once, so `useFactory` gives exactly the same frozen object, only computed lazily.
 
-## Konsekwencje
+## Consequences
 
-- Aplikacja przełączająca język podaje sygnał:
-  `providePctTexts(computed(() => SLOWNIKI[jezyk()]))` — i napisy biblioteki jadą
-  razem z resztą interfejsu, bez przeładowania.
-- Podanie zwykłego obiektu działa dalej i jest dalej najkrótszą drogą — sygnał jest
-  rozszerzeniem sygnatury, nie zastąpieniem.
-- Odczyt w szablonie ma nawiasy (`texts().selectEmpty`). To jest **cena widoczna**:
-  zapis mówi wprost, że napis jest czytany za każdym razem.
-- Bramka [`check-texts`](../../tools/check-texts.mjs) pilnuje tego regułą
-  `napis-przy-konstrukcji` — wartość domyślna `input`/`model`/`signal` nie może czytać
-  `PCT_TEXTS`. Bez niej ten sam zapis wróciłby przy pierwszym komponencie pisanym
-  z rozpędu, znowu bez czerwonego testu.
+- An app switching language passes a signal:
+  `providePctTexts(computed(() => DICTIONARIES[language()]))` — and the library's strings move
+  with the rest of the interface, without a reload.
+- Passing a plain object still works and is still the shortest road — the signal is an
+  extension of the signature, not a replacement.
+- A read in a template has parentheses (`texts().selectEmpty`). That is **a visible price**: the
+  notation says outright that the string is read every time.
+- The [`check-texts`](../../tools/check-texts.mjs) gate watches this with the
+  `napis-przy-konstrukcji` rule — the default value of an `input`/`model`/`signal` may not read
+  `PCT_TEXTS`. Without it the same notation would come back with the first component written on
+  autopilot, again with no red test.
 
-## Co przez to tracimy
+## What this costs us
 
-- **Zmiana łamiąca w publicznym typie.** `inject(PCT_TEXTS)` zwraca teraz sygnał, więc
-  kod konsumenta czytający token wprost przestaje się kompilować. Cena jest zapłacona
-  teraz, bo biblioteka nie ma jeszcze pierwszego wydania — po nim ta sama zmiana
-  wymagałaby codemodu i majora.
-- **Jeden pośrednik więcej w każdym odczycie.** `texts().selectEmpty` zamiast
-  `texts.selectEmpty` — koszt liczony w niczym, ale widoczny w każdym szablonie.
-- **Reguła „nie w wartości domyślnej" jest łatwa do złamania z rozpędu** i nie widać
-  jej w review. Dlatego jest punktem bramki, a nie zdaniem w przewodniku.
+- **A breaking change in a public type.** `inject(PCT_TEXTS)` now returns a signal, so consumer
+  code reading the token directly stops compiling. The price is paid now, because the library
+  has no first release yet — after one, the same change would need a codemod and a major.
+- **One more indirection in every read.** `texts().selectEmpty` instead of `texts.selectEmpty` —
+  a cost measured in nothing, but visible in every template.
+- **The „not in a default value" rule is easy to break on autopilot** and invisible in review.
+  That is why it is a point of a gate rather than a sentence in a guide.
 
-## Rozważane alternatywy
+## Alternatives considered
 
-| alternatywa                                   | dlaczego odrzucona                                                                                                     |
-| --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| Zapisać „zmiana języka wymaga przeładowania"  | obronne i tanie, ale przenosi koszt na każdą aplikację z przełącznikiem języka — a to wzorzec, nie egzotyka            |
-| `providePctTexts` przyjmuje fabrykę           | DI rozwiązuje dostawcę raz, więc wynik jest tak samo zamrożony — zmienia się moment obliczenia, nie jego jednorazowość |
-| `Subject`/`Observable` jak `MatPaginatorIntl` | druga oś reaktywności w bibliotece, która nie ma ani jednego `Observable` w publicznym API                             |
-| Pusty napis (`''`) znaczy „weź domyślny"      | odbiera autorowi widoku możliwość wyłączenia tekstu zastępczego, której nie da się wyrazić inaczej                     |
+| alternative                                      | why rejected                                                                                                                 |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| Write down „changing language requires a reload" | defensive and cheap, but it moves the cost onto every app with a language switch — and that is a pattern, not an exotic case |
+| `providePctTexts` takes a factory                | DI resolves a provider once, so the result is just as frozen — what changes is when it is computed, not that it happens once |
+| `Subject`/`Observable` like `MatPaginatorIntl`   | a second axis of reactivity in a library that has not one `Observable` in its public API                                     |
+| An empty string (`''`) means „take the default"  | takes away the view author's ability to switch the placeholder off, which cannot be expressed any other way                  |

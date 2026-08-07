@@ -1,90 +1,88 @@
-# 0016 — Wydanie na MIT jest nieodwracalne, więc kolejność jest decyzją
+# 0016 — Releasing under MIT is irreversible, so the order is a decision
 
-**Status:** przyjęta
-**Realizuje:** [`req-project-package`](../requirements/project.md#req-project-package)
-**Dowód:** brak pomiaru w repozytorium — decyzja stoi na precedensie zewnętrznym
-(Terraform → OpenTofu, Redis → Valkey, Elasticsearch → OpenSearch). Bramki nie ma i mieć
-nie może, patrz „Konsekwencje"
+**Status:** accepted
+**Implements:** [`req-project-package`](../requirements/project.md#req-project-package)
+**Evidence:** no measurement in the repository — the decision stands on outside precedent
+(Terraform → OpenTofu, Redis → Valkey, Elasticsearch → OpenSearch). There is no gate and there
+cannot be one, see „Consequences"
 
-## Kontekst
+## Context
 
-[0015](0015-license-and-model.md) rozstrzygnęło **czym** jest licencja: MIT wszędzie, prawa
-na podmiot, bez CLA. Nie rozstrzygnęło **kiedy** dany komponent na tę licencję wychodzi —
-a to jest osobne pytanie, bo MIT działa w jedną stronę.
+[0015](0015-license-and-model.md) settled **what** the licence is: MIT everywhere, rights to
+the entity, no CLA. It did not settle **when** a given component goes out under that licence —
+and that is a separate question, because MIT works in one direction.
 
-Wydanej wersji nie da się cofnąć. Ostatnia opublikowana pod MIT zostaje wolna na zawsze
-i każdy może ją forkować oraz utrzymywać. Zmiana warunków dla kodu, który jeszcze nie
-wyszedł, nie kosztuje nic; ta sama zmiana dla kodu wydanego kosztuje fork — tym pewniej,
-im więcej ludzi go używa.
+A released version cannot be taken back. The last one published under MIT stays free forever
+and anybody may fork and maintain it. Changing the terms for code that has not gone out yet
+costs nothing; the same change for released code costs a fork — the more certainly, the more
+people use it.
 
-Plan fazy E porządkował komponenty „wg długu architektonicznego, nie wg popularności".
-To jest dobre kryterium na dług i puste na tę oś: nie mówi nic o tym, czego lepiej
-**jeszcze** nie wydawać.
+The phase E plan ordered components „by architectural debt, not by popularity". That is a good
+criterion for debt and an empty one for this axis: it says nothing about what is better **not
+yet** released.
 
-## Decyzja
+## Decision
 
-**Zbiór wydany pod MIT może rosnąć i nie może maleć. Komponent, którego warunki
-dystrybucji nie są przesądzone, nie wchodzi do wydania — powstaje po tym, jak biblioteka
-ma użytkowników.**
+**The set released under MIT may grow and may not shrink. A component whose distribution terms
+are not settled does not enter a release — it is built after the library has users.**
 
-Wynikają z tego trzy reguły operacyjne:
+Three operational rules follow:
 
-1. **Domyślną odpowiedzią przy wątpliwości jest „jeszcze nie".** Komponent niewydany nie
-   kosztuje nic i można go wydać w dowolnej chwili; komponent wydany pod MIT jest wydany
-   na zawsze. Koszt pomyłki jest jednostronny, więc domyślna odpowiedź też.
-2. **Granica przesuwa się tylko na zewnątrz.** Wolno przenieść rzecz nierozstrzygniętą do
-   MIT. W drugą stronę nie wolno — i nie chodzi o dyscyplinę, tylko o to, że to fizycznie
-   nie działa.
-3. **Kolejność budowy jest częścią tej decyzji, nie preferencją.** Komponenty o najwyższym
-   koszcie budowy i największej mocy różnicującej powstają **na końcu**, gdy jest już kto
-   ich używa. Wcześniej rozstrzygnięcie o ich dystrybucji zapadałoby bez jedynej danej,
-   która cokolwiek by o nim mówiła.
+1. **The default answer under doubt is „not yet".** An unreleased component costs nothing and
+   can be released at any moment; a component released under MIT is released forever. The cost
+   of the mistake is one-sided, so the default answer is too.
+2. **The boundary moves outward only.** An unsettled thing may be moved into MIT. The other way
+   is not allowed — and that is not about discipline, it is about it physically not working.
+3. **The build order is part of this decision, not a preference.** The components with the
+   highest build cost and the greatest differentiating power are built **last**, once there is
+   somebody using them. Earlier, the resolution about their distribution would be taken without
+   the one piece of data that would say anything about it.
 
-Model dystrybucji dla takiego komponentu **nie jest tą decyzją podjęty**. Podjęte jest
-tylko to, że da się go podjąć później — a to wymaga wyłącznie tego, żeby ten kod nie
-wyszedł wcześniej pod MIT.
+The distribution model for such a component **is not settled by this decision**. What is
+settled is only that it can be settled later — and that requires only that this code not have
+gone out under MIT beforehand.
 
-## Konsekwencje
+## Consequences
 
-- Faza E kończy się na **E6 (table/datagrid)** zamiast mieć go w środku listy. To jedyna
-  pozycja planu, której koszt budowy liczy się w miesiącach, a nie w dniach.
-- **„Zbudować, ale nie publikować" nie jest obejściem.** Plik `LICENSE` w korzeniu obejmuje
-  całe repozytorium, nie tylko `dist` — kod wepchnięty do publicznego repozytorium jest
-  wydany pod MIT niezależnie od tego, czy pojechał do npm. Odłożony komponent jest odłożony
-  także jako commit.
-- Ochroną nie jest kod, tylko **nazwa i bycie upstreamem**: zakres npm `@pacit`,
-  organizacja `github.com/pacit` i domena `pacit.pl` — wszystkie w rękach podmiotu z linii
-  `Copyright` (zakres sprawdzony 2026-08-07, nie założony). Formalne zgłoszenie znaku
-  towarowego jest świadomie odłożone — nazwa jest nazwą firmy, a rejestracja przed
-  pierwszym użytkownikiem to koszt bez zastosowania.
-- Drugą połową „bycia upstreamem" jest **provenance**, a npm wystawia je wyłącznie przy
-  polu `repository` zgodnym z repozytorium, z którego leci publikacja. To czyni
-  `repository` warunkiem tej decyzji, nie tylko metadaną wydania —
+- Phase E ends at **E6 (table/datagrid)** instead of having it in the middle of the list. It is
+  the one item on the plan whose build cost is counted in months rather than days.
+- **„Build it but do not publish" is not a workaround.** The `LICENSE` file in the root covers
+  the whole repository, not only `dist` — code pushed to a public repository is released under
+  MIT whether or not it went to npm. A deferred component is deferred as a commit too.
+- The protection is not the code but **the name and being upstream**: the npm scope `@pacit`,
+  the `github.com/pacit` organisation and the `pacit.pl` domain — all held by the entity from
+  the `Copyright` line (the scope checked on 2026-08-07, not assumed). A formal trademark
+  filing is deliberately deferred — the name is the company's name, and registering before the
+  first user is a cost with no use.
+- The second half of „being upstream" is **provenance**, and npm issues it only with
+  a `repository` field matching the repository the publish runs from. That makes `repository`
+  a condition of this decision, not merely release metadata —
   [`req-release-metadata`](../requirements/release.md#req-release-metadata).
-- **Bramki na to nie ma i nie będzie.** Nie da się maszynowo sprawdzić, czy komponent
-  „powinien był" wyjść. Wymaganie z bramką pozorną jest dokładnie tym, co opisuje
-  [`lesson-39`](../lessons.md#lesson-39) — bramką urodzoną martwą — więc ta decyzja
-  **nie zostaje wymaganiem**. Egzekwuje ją przegląd listy w [planie](../plan.md), nie CI.
-- 0015 zostaje w mocy w całości. Ta decyzja niczego w niej nie odwraca; dokłada oś, której
-  tam nie było.
+- **There is no gate for this and there will not be.** No machine can check whether a component
+  „should have" gone out. A requirement with a sham gate is exactly what
+  [`lesson-39`](../lessons.md#lesson-39) describes — a gate born dead — so this decision
+  **does not become a requirement**. It is enforced by reviewing the list in the
+  [plan](../plan.md), not by CI.
+- 0015 stays in force in full. This decision reverses nothing in it; it adds an axis that was
+  not there.
 
-## Co przez to tracimy
+## What this costs us
 
-- **Wolniejsze dojście do kompletu.** Biblioteka bez tabeli jest w oczach części odbiorców
-  niekompletna, a to jest dokładnie ten komponent, po którym część zespołów wybiera.
-  Płacimy adopcją za zachowanie opcji.
-- **Ryzyko, że opcja nigdy się nie przyda.** Jeśli adopcja nie przyjdzie, kolejność nie
-  ochroniła niczego, a opóźniła najbardziej pożądany komponent. Ten koszt jest realny
-  i akceptujemy go, bo pomyłka w drugą stronę jest nieodwracalna, a ta nie.
-- **Decyzję trzeba będzie podjąć jeszcze raz**, przy danych, których dziś nie ma. Ta
-  decyzja nie jest odpowiedzią — jest zachowaniem prawa do odpowiedzi.
+- **A slower road to completeness.** In some buyers' eyes a library without a table is
+  incomplete, and that is exactly the component some teams choose on. We pay in adoption for
+  keeping an option.
+- **The risk that the option is never used.** If adoption does not come, the ordering protected
+  nothing and delayed the most wanted component. That cost is real and we accept it, because
+  the mistake in the other direction is irreversible and this one is not.
+- **The decision will have to be taken again**, with data that does not exist today. This
+  decision is not an answer — it is the preservation of the right to answer.
 
-## Rozważane alternatywy
+## Alternatives considered
 
-| alternatywa                                       | dlaczego odrzucona                                                                                                                                                                |
-| ------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Wydać wszystko pod MIT od razu                    | maksymalna adopcja, ale zamyka każdą inną opcję bezwarunkowo i na zawsze — cena płacona z góry za korzyść, która może nie przyjść                                                 |
-| Rozstrzygnąć model dystrybucji teraz              | rozstrzygnięcie zapadłoby przy zerowej bazie użytkowników, czyli bez jedynej danej, która cokolwiek by o nim mówiła                                                               |
-| Zapisać to jako wymaganie z bramką                | nie istnieje maszyna, która to zmierzy; wymaganie z bramką pozorną jest gorsze niż jego brak ([`lesson-39`](../lessons.md#lesson-39))                                             |
-| Trzymać nierozstrzygnięte komponenty w tym repo   | `LICENSE` w korzeniu obejmuje całe repozytorium — commit do publicznego repo **jest** wydaniem pod MIT, więc obejście nie istnieje                                                |
-| Odwrócić 0015 i wybrać licencję pozwalającą cofać | (A)GPL i source-available oblewają przegląd prawny konsumenta korporacyjnego, czyli kasują adopcję — a bez adopcji nie ma czego chronić (patrz [0015](0015-license-and-model.md)) |
+| alternative                                            | why rejected                                                                                                                                                                               |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Release everything under MIT at once                   | maximum adoption, but it closes every other option unconditionally and forever — a price paid up front for a benefit that may not come                                                     |
+| Settle the distribution model now                      | the resolution would be taken at a zero user base, i.e. without the one piece of data that would say anything about it                                                                     |
+| Write it down as a requirement with a gate             | no machine exists that would measure it; a requirement with a sham gate is worse than no requirement ([`lesson-39`](../lessons.md#lesson-39))                                              |
+| Keep unsettled components in this repository           | the root `LICENSE` covers the whole repository — a commit to a public repo **is** a release under MIT, so the workaround does not exist                                                    |
+| Reverse 0015 and pick a licence that allows going back | (A)GPL and source-available fail a corporate consumer's legal review, i.e. they cancel adoption — and with no adoption there is nothing to protect (see [0015](0015-license-and-model.md)) |

@@ -1,84 +1,82 @@
-# `PctSelect` — lista wyboru z własnym panelem
+# `PctSelect` — choice list with a panel of its own
 
 **Entrypoint:** `@pacit/components/select`
-**Selektor:** `pct-select`
-**Status:** w wydaniu (rodzina niedomknięta — patrz Znane ograniczenia)
-**Wzorzec ARIA APG:** [Select-Only Combobox](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/)
-— `role="combobox"` na triggerze + `role="listbox"` w panelu, **fokus zostaje na triggerze**,
-aktywna opcja przez `aria-activedescendant`
+**Selector:** `pct-select`
+**Status:** released (the family is incomplete — see Known limitations)
+**ARIA APG pattern:** [Select-Only Combobox](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/)
+— `role="combobox"` on the trigger plus `role="listbox"` in the panel, **focus stays on the
+trigger**, the active option through `aria-activedescendant`
 
-Nie natywny `<select>`, bo natywny nie daje panelu, którego wygląd i zawartość da się
-kontrolować — to świadomy wyjątek od
+Not a native `<select>`, because the native one gives no panel whose look and content can be
+controlled — a deliberate exception to
 [`req-api-platform`](../requirements/api.md#req-api-platform).
 
-## Kontrakt
+## Contract
 
-|                 |                                                                                                                                                       |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Wartość**     | `T \| null`, generyczna; `value` i `emptyValue` jako `NoInfer<T>` — typ bierze się **wyłącznie z listy opcji**                                        |
-| **Wejścia**     | `options`, `value` (`model`), `label`, `hint`, `placeholder`, `size`, `compareWith`, `emptyValue`, `panelWidth`, `panelAlign`, plus `FormUiControl`   |
-| **Panel**       | `panelWidth`: `"field"` (domyślne) \| `"auto"` \| długość CSS; `panelAlign`: `start` \| `center` \| `end`; wychodzący poza okno jest wsuwany (`push`) |
-| **Części**      | `trigger`, `value`, `placeholder`, `arrow`, `panel`, `option`, `empty`, `label`, `hint`, `error`                                                      |
-| **Kontrakt DI** | `PCT_FIELD`; `fieldAppearance: 'boxed'`, `fieldCursor: 'pointer'`, `activate()` otwiera panel                                                         |
-| **Napisy**      | `placeholder` (gdy bez wiązania) i komunikat pustej listy przez `PCT_TEXTS`, czytane przy renderowaniu ([0014](../decisions/0014-texts-as-signal.md)) |
+|                 |                                                                                                                                                                        |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Value**       | `T \| null`, generic; `value` and `emptyValue` as `NoInfer<T>` — the type comes **from the option list alone**                                                         |
+| **Inputs**      | `options`, `value` (`model`), `label`, `hint`, `placeholder`, `size`, `compareWith`, `emptyValue`, `panelWidth`, `panelAlign`, plus `FormUiControl`                    |
+| **Panel**       | `panelWidth`: `"field"` (the default) \| `"auto"` \| a CSS length; `panelAlign`: `start` \| `center` \| `end`; one running off the viewport is pushed back in (`push`) |
+| **Parts**       | `trigger`, `value`, `placeholder`, `arrow`, `panel`, `option`, `empty`, `label`, `hint`, `error`                                                                       |
+| **DI contract** | `PCT_FIELD`; `fieldAppearance: 'boxed'`, `fieldCursor: 'pointer'`, `activate()` opens the panel                                                                        |
+| **Strings**     | `placeholder` (when unbound) and the empty-list message through `PCT_TEXTS`, read at render time ([0014](../decisions/0014-texts-as-signal.md))                        |
 
-**Pierwsze użycie CDK Overlay w bibliotece.**
+**The library's first use of CDK Overlay.**
 
-## Mapa klawiatury
+## Keyboard map
 
-| klawisz        | skutek                                  | test                                        |
-| -------------- | --------------------------------------- | ------------------------------------------- |
-| `↑` / `↓`      | otwarcie panelu / zmiana aktywnej opcji | `apps/sandbox-e2e/src/select.spec.ts`       |
-| `Home` / `End` | pierwsza / ostatnia opcja               | `apps/sandbox-e2e/src/select.spec.ts`       |
-| `Enter`        | wybór aktywnej opcji, zamknięcie        | `apps/sandbox-e2e/src/select.spec.ts`       |
-| `Escape`       | zamknięcie bez zmiany                   | `apps/sandbox-e2e/src/select.spec.ts`       |
-| znaki          | typeahead z pomijaniem wyłączonych      | `libs/components/select/src/select.spec.ts` |
+| key            | effect                                    | test                                        |
+| -------------- | ----------------------------------------- | ------------------------------------------- |
+| `↑` / `↓`      | open the panel / change the active option | `apps/sandbox-e2e/src/select.spec.ts`       |
+| `Home` / `End` | first / last option                       | `apps/sandbox-e2e/src/select.spec.ts`       |
+| `Enter`        | pick the active option, close             | `apps/sandbox-e2e/src/select.spec.ts`       |
+| `Escape`       | close with no change                      | `apps/sandbox-e2e/src/select.spec.ts`       |
+| characters     | typeahead, skipping disabled options      | `libs/components/select/src/select.spec.ts` |
 
-## Kontrole
+## Checks
 
-| kryterium                       | dowód                                                                                                                                                                                |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Wzorzec ARIA APG w JSDoc        | brak — luka                                                                                                                                                                          |
-| Mapa klawiatury przetestowana   | `apps/sandbox-e2e/src/select.spec.ts`, `libs/components/select/src/select.spec.ts`                                                                                                   |
-| Audyt axe                       | `apps/sandbox-e2e/src/a11y.spec.ts` — w tym **panel ze scoped theme**                                                                                                                |
-| Zrzut wizualny                  | `apps/sandbox-e2e/src/visual.spec.ts` — osobny zrzut `select-panel-otwarty`                                                                                                          |
-| `forced-colors: active`         | `apps/sandbox-e2e/src/forced-colors.spec.ts` — wybór niesie tło (`SelectedItem`), a kursor klawiatury obrys (`Highlight`), więc opcja wybrana **i** aktywna pokazuje oba stany naraz |
-| `prefers-reduced-motion`        | `apps/sandbox-e2e/src/preferences.spec.ts`                                                                                                                                           |
-| Obszar dotyku ≥ 24×24 px        | `apps/sandbox-e2e/src/field-hitarea.spec.ts` — tu wyszła regresja 19,6 px ([`lesson-25`](../lessons.md#lesson-25))                                                                   |
-| Oś wielkości                    | `apps/sandbox-e2e/src/size.spec.ts` — w obudowie wielkość oddaje polu; panel bierze rozmiar pisma z triggera                                                                         |
-| Oś gęstości                     | brak — luka                                                                                                                                                                          |
-| RTL                             | brak — luka. **Najwyższe ryzyko w bibliotece:** nakładka musi się odbijać (CDK `Directionality`), a `panelAlign` ma kierunkową semantykę                                             |
-| SSR + hydracja                  | `apps/sandbox-e2e/src/hydration.spec.ts`                                                                                                                                             |
-| Formularze                      | `libs/components/select/src/select.spec.ts`, `apps/sandbox-e2e/src/forms.spec.ts`                                                                                                    |
-| Części w inwentarzu             | `libs/components/czesci.snapshot.md`, `tools/check-parts.mjs` (target `check-parts`)                                                                                                 |
-| Tokeny + `contrast.policy.json` | `libs/tokens/src/contrast.policy.json`                                                                                                                                               |
-| Napisy przez `PCT_TEXTS`        | `tools/check-texts.mjs` + `select.spec.ts` — nadpisanie częściowe zostawia resztę domyślną, a zmiana języka w runtime dociera do napisów                                             |
-| Budżet rozmiaru                 | brak — luka. Zmierzone dziś: **~43 kB** w FESM                                                                                                                                       |
-| Log z czytnikiem ekranu         | brak — luka. **Najbardziej potrzebny**: „co czytnik ogłasza po otwarciu" i „co po zmianie wartości" to pytania, na które axe nie odpowiada — axe bada strukturę, nie słyszy          |
-| Strona docs                     | brak — luka                                                                                                                                                                          |
+| criterion                       | evidence                                                                                                                                                                                                                                 |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ARIA APG pattern in the JSDoc   | none — gap                                                                                                                                                                                                                               |
+| Keyboard map tested             | `apps/sandbox-e2e/src/select.spec.ts`, `libs/components/select/src/select.spec.ts`                                                                                                                                                       |
+| axe audit                       | `apps/sandbox-e2e/src/a11y.spec.ts` — including **the panel with a scoped theme**                                                                                                                                                        |
+| Visual screenshot               | `apps/sandbox-e2e/src/visual.spec.ts` — a separate `select-panel-otwarty` shot                                                                                                                                                           |
+| `forced-colors: active`         | `apps/sandbox-e2e/src/forced-colors.spec.ts` — selection is carried by the background (`SelectedItem`) and the keyboard cursor by the outline (`Highlight`), so an option that is both selected **and** active shows both states at once |
+| `prefers-reduced-motion`        | `apps/sandbox-e2e/src/preferences.spec.ts`                                                                                                                                                                                               |
+| Touch target ≥ 24×24 px         | `apps/sandbox-e2e/src/field-hitarea.spec.ts` — this is where the 19.6 px regression surfaced ([`lesson-25`](../lessons.md#lesson-25))                                                                                                    |
+| Size axis                       | `apps/sandbox-e2e/src/size.spec.ts` — inside a wrapper the size is handed to the field; the panel takes its font size from the trigger                                                                                                   |
+| Density axis                    | none — gap                                                                                                                                                                                                                               |
+| RTL                             | none — gap. **The highest risk in the library:** the overlay has to mirror (CDK `Directionality`), and `panelAlign` has directional semantics                                                                                            |
+| SSR + hydration                 | `apps/sandbox-e2e/src/hydration.spec.ts`                                                                                                                                                                                                 |
+| Forms                           | `libs/components/select/src/select.spec.ts`, `apps/sandbox-e2e/src/forms.spec.ts`                                                                                                                                                        |
+| Parts in the inventory          | `libs/components/czesci.snapshot.md`, `tools/check-parts.mjs` (target `check-parts`)                                                                                                                                                     |
+| Tokens + `contrast.policy.json` | `libs/tokens/src/contrast.policy.json`                                                                                                                                                                                                   |
+| Strings through `PCT_TEXTS`     | `tools/check-texts.mjs` + `select.spec.ts` — a partial override leaves the rest at the defaults, and a runtime language change reaches the strings                                                                                       |
+| Size budget                     | none — gap. Measured today: **~43 kB** in the FESM                                                                                                                                                                                       |
+| Screen-reader log               | none — gap. **The most needed one**: „what a reader announces on open" and „what it announces on a value change" are questions axe does not answer — axe examines structure, it does not listen                                          |
+| docs page                       | none — gap                                                                                                                                                                                                                               |
 
-## Decyzje
+## Decisions
 
-[0006](../decisions/0006-overlay.md) (główna), [0010](../decisions/0010-generic-noinfer.md),
+[0006](../decisions/0006-overlay.md) (the main one), [0010](../decisions/0010-generic-noinfer.md),
 [0003](../decisions/0003-wrapper-and-control.md), [0007](../decisions/0007-config-and-texts.md)
 
-## Znane ograniczenia
+## Known limitations
 
-- **`options: PctSelectOption<T>[]` to komponent zamknięty.** Brakuje rzutowanych
-  `pct-option`, szablonu opcji, grup, wielokrotnego wyboru, filtrowania, czyszczenia, stanu
-  ładowania/async i wirtualizacji. Świadomie **po** warstwie zachowań w `core` — inaczej
-  budujemy to dwa razy.
-- **Maszyneria listy jest prywatna.** Typeahead, `enabledIndexes`, `moveActive`,
-  `activeIndex` siedzą jako prywatne metody. Tego samego potrzebują autocomplete,
-  multiselect, menu i paleta poleceń — **wyciągnąć do `core` przed drugim konsumentem**,
-  inaczej powtórzy się [`lesson-21`](../lessons.md#lesson-21) na dużo większym kawałku.
-- **`track option.value` w szablonie.** Dla `T` nieprymitywnego to śledzenie po
-  referencji, a dwie opcje o tej samej wartości dają `NG0955` w trybie deweloperskim. Do
-  rozstrzygnięcia: `track $index` albo udokumentowany wymóg unikalności z ostrzeżeniem pod
-  `isDevMode()`.
-- **Brak `ariaLabel` / `ariaLabelledby`.** `<pct-select aria-label="Kraj">` ląduje na
-  hoście, który nie ma roli — rola siedzi na wewnętrznym `<button>`. Samodzielny select bez
-  etykiety i bez obudowy jest **nienazwanym comboboxem**, a konsument nie ma jak tego
-  naprawić.
-- **Brak wirtualizacji.** `@for` po wszystkich opcjach. Legalne dla v0, ale
-  **niezmierzone** — nic nie odpowiada na pytanie „co przy 5 000 opcji".
+- **`options: PctSelectOption<T>[]` is a closed component.** Missing: projected `pct-option`,
+  an option template, groups, multiple selection, filtering, clearing, a loading/async state
+  and virtualisation. Deliberately **after** the behaviour layer in `core` — otherwise we build
+  it twice.
+- **The list machinery is private.** Typeahead, `enabledIndexes`, `moveActive`, `activeIndex`
+  sit as private methods. Autocomplete, multiselect, menu and a command palette all need the
+  same — **extract it into `core` before the second consumer**, or
+  [`lesson-21`](../lessons.md#lesson-21) repeats itself on a much bigger piece.
+- **`track option.value` in the template.** For non-primitive `T` that tracks by reference, and
+  two options with the same value give `NG0955` in dev mode. To be settled: `track $index`, or
+  a documented uniqueness requirement with a warning under `isDevMode()`.
+- **No `ariaLabel` / `ariaLabelledby`.** `<pct-select aria-label="Country">` lands on a host
+  that has no role — the role sits on the inner `<button>`. A standalone select with no label
+  and no wrapper is an **unnamed combobox**, and the consumer has no way to fix it.
+- **No virtualisation.** `@for` over every option. Legitimate for v0 but **unmeasured** —
+  nothing answers „what happens at 5,000 options".

@@ -1,101 +1,103 @@
-# 0003 — Obudowa i kontrolka
+# 0003 — Wrapper and control
 
-**Status:** przyjęta
-**Realizuje:** [`req-api-wrapper`](../requirements/api.md#req-api-wrapper),
+**Status:** accepted
+**Implements:** [`req-api-wrapper`](../requirements/api.md#req-api-wrapper),
 [`req-api-frame`](../requirements/api.md#req-api-frame),
 [`req-api-no-wrapper`](../requirements/api.md#req-api-no-wrapper),
 [`req-api-parts-unique`](../requirements/api.md#req-api-parts-unique)
-**Dowód:** [`lesson-21`](../lessons.md#lesson-21), [`lesson-22`](../lessons.md#lesson-22),
+**Evidence:** [`lesson-21`](../lessons.md#lesson-21), [`lesson-22`](../lessons.md#lesson-22),
 [`lesson-24`](../lessons.md#lesson-24), [`lesson-25`](../lessons.md#lesson-25),
 [`lesson-27`](../lessons.md#lesson-27), [`lesson-28`](../lessons.md#lesson-28),
 [`lesson-34`](../lessons.md#lesson-34)
 
-## Kontekst
+## Context
 
-Pole formularza to co najmniej sześć rzeczy naraz: etykieta, kontrolka, podpowiedź,
-komunikat błędu, znacznik wymagalności i dekoracje po bokach. Pytanie brzmi, **kto jest
-właścicielem czego** — bo od tego zależy, gdzie mieszka typowanie wartości, kto rysuje
-ramkę i kto odbiera kliknięcie.
+A form field is at least six things at once: a label, a control, a hint, an error message,
+a required marker and decorations on either side. The question is **who owns what** — because
+that decides where the value's typing lives, who draws the frame and who receives the click.
 
-Pierwsza wersja (`PctInput`) trzymała wszystko w jednym komponencie. Rozpadła się na
-dwóch rzeczach: wspólna logika komunikatów została **skopiowana do czterech kontrolek**
-([`lesson-21`](../lessons.md#lesson-21)), a checkbox i grupa radiów nie mieściły się
-w modelu „kontrolka z ramką".
+The first version (`PctInput`) kept everything in one component. It fell apart on two things:
+the shared message logic was **copied into four controls**
+([`lesson-21`](../lessons.md#lesson-21)), and the checkbox and the radio group did not fit
+a „control with a frame" model.
 
-## Decyzja
+## Decision
 
-**Obudowa (`pct-field`) i kontrolka są osobnymi komponentami, rozmawiającymi przez token
-`PCT_FIELD`.**
+**The wrapper (`pct-field`) and the control are separate components, talking through the
+`PCT_FIELD` token.**
 
-- **Kontraktu formularza nie implementuje obudowa, lecz kontrolka.** Dzięki temu
-  typowanie zostaje przy rodzaju pola (`string`, `number`, `Date`, `string[]`) zamiast
-  wyciekać do obudowy jako `unknown`.
-- **Ramkę rysuje obudowa**, nie kontrolka — inaczej dekoracje `prefix`/`suffix`
-  znalazłyby się poza polem. Kontrolka w środku jest przezroczysta i bez obramowania,
-  a focus ring obejmuje cały rząd (`:has(:focus-visible)`), także gdy fokus trafi na
-  przycisk w slocie.
-- **Kontrolka zgłasza, czy chce ramkę** (`fieldAppearance`: `boxed` / `bare`) i **jaki
-  kursor** ma pokazywać ramka (`PctFieldControl.fieldCursor`).
-- **Wspólna logika komunikatów mieszka w `core`** — tekst błędu, bramkowanie na
-  `touched`, składanie `aria-describedby`.
+- **The form contract is implemented not by the wrapper but by the control.** That keeps the
+  typing with the kind of field (`string`, `number`, `Date`, `string[]`) instead of leaking
+  into the wrapper as `unknown`.
+- **The wrapper draws the frame**, not the control — otherwise the `prefix`/`suffix`
+  decorations would end up outside the field. The control inside is transparent and
+  borderless, and the focus ring covers the whole row (`:has(:focus-visible)`), including when
+  focus lands on a button in a slot.
+- **The control declares whether it wants a frame** (`fieldAppearance`: `boxed` / `bare`) and
+  **which cursor** the frame should show (`PctFieldControl.fieldCursor`).
+- **The shared message logic lives in `core`** — the error text, gating on `touched`,
+  assembling `aria-describedby`.
 
-### Cała powierzchnia ramki ma właściciela
+### Every part of the frame's surface has an owner
 
-To jest najdroższa część tej decyzji i wzięła się z dwóch nieudanych podejść.
+This is the most expensive part of the decision, and it came out of two failed attempts.
 
-Rząd **nie ma własnego `padding` ani `gap`** — odstępy niosą trzy kolumny w środku
-(`field-prefix`, `field-control`, `field-suffix`), rozciągnięte na jego pełną wysokość.
-Pusty slot dekoracji nie znika, tylko zwija się do samego paddingu krawędzi. Klik w tło
-rzędu jest przekazywany kontrolce: `focus()` na `mousedown` i `activate()` na `click`.
+The row **has no `padding` and no `gap` of its own** — the spacing is carried by the three
+columns inside it (`field-prefix`, `field-control`, `field-suffix`), stretched to its full
+height. An empty decoration slot does not disappear, it collapses to the edge padding alone.
+A click on the row's background is forwarded to the control: `focus()` on `mousedown` and
+`activate()` on `click`.
 
-Powód jest w [`lesson-27`](../lessons.md#lesson-27): po pierwszej poprawce padding i `gap`
-zostały na rzędzie, a kolumny były w nim wyśrodkowane — **ok. 60% powierzchni ramki nie
-należało do żadnego elementu wewnętrznego**. Kliknięcie działało (załatała to
-[`lesson-22`](../lessons.md#lesson-22)), ale kursor kłamał: pole wyłączone zapraszało
-kursorem tekstowym do pisania po całym paddingu.
+The reason is in [`lesson-27`](../lessons.md#lesson-27): after the first fix the padding and
+`gap` stayed on the row and the columns were centred within it — **about 60% of the frame's
+surface belonged to no inner element**. Clicking worked (patched by
+[`lesson-22`](../lessons.md#lesson-22)), but the cursor lied: a disabled field invited you to
+type with a text cursor across all of its padding.
 
-### Dopasowanie dekoracji zgłasza autor, nie arkusz
+### The author declares how a decoration fits, not the stylesheet
 
-`pctPrefix` / `pctSuffix` przyjmują `inset` (domyślne) albo `fill`.
+`pctPrefix` / `pctSuffix` take `inset` (the default) or `fill`.
 
-- `inset` leży **na powierzchni pola**: jest wpisane w padding ramki, dziedziczy jej
-  kursor, a klik w nie fokusuje kontrolkę.
-- `fill` bierze **cały** slot i jest **własną powierzchnią**: ma własne tło, własny
-  kursor i sam przyjmuje kliknięcie, więc obudowa do niego nie sięga.
+- `inset` lies **on the field's surface**: it is written into the frame's padding, inherits its
+  cursor, and clicking it focuses the control.
+- `fill` takes **the whole** slot and is **a surface of its own**: it has its own background,
+  its own cursor and receives clicks itself, so the wrapper does not reach into it.
 
-Poprzednia wersja wnioskowała o intencji z zawartości slotu (`:has(button, a, [tabindex])`
-⇒ „wypełnia slot"). [`lesson-34`](../lessons.md#lesson-34) pokazała, że to wiąże dwie
-niezależne rzeczy: przycisk czyszczenia **nie mógł** być mniejszy od slotu, a kafelek
-z tłem **nie mógł** być większy, bo nie jest interaktywny.
+The previous version inferred the intent from the slot's content (`:has(button, a, [tabindex])`
+⇒ „fills the slot"). [`lesson-34`](../lessons.md#lesson-34) showed that this couples two
+independent things: a clear button **could not** be smaller than the slot, and a tile with
+a background **could not** be bigger, because it is not interactive.
 
-## Konsekwencje
+## Consequences
 
-- Nowa kontrolka dostaje etykietę, komunikaty i `aria-describedby` **przez samo
-  zaimplementowanie kontraktu** — nie przez skopiowanie kodu.
-- Poprawka w logice komunikatów jest jedną zmianą, nie czterema.
-- Wielkość należy do obudowy: kontrolka z własnym `size` oddaje ją polu, tak jak oddaje
-  ramkę. Inaczej dwa `size` w jednym polu dawałyby ramkę jednej wielkości i tekst innej.
-- Nazwy części kontenera muszą mieć przedrostek (`field-label`, `field-row`, …), bo
-  inaczej kolidują z częściami kontrolki w środku ([`lesson-24`](../lessons.md#lesson-24)).
-- Obudowa gwarantuje minimalny obszar dotyku kolumny kontrolki — po oddaniu jej ramki
-  trigger selecta stracił własny padding i spadł do 19,6 px
+- A new control gets the label, the messages and `aria-describedby` **just by implementing the
+  contract** — not by copying code.
+- A fix in the message logic is one change, not four.
+- Size belongs to the wrapper: a control with a `size` of its own hands it over to the field,
+  just as it hands over the frame. Otherwise two `size` values in one field would give a frame
+  of one size and text of another.
+- Container part names must carry a prefix (`field-label`, `field-row`, …), or they collide
+  with the parts of the control inside ([`lesson-24`](../lessons.md#lesson-24)).
+- The wrapper guarantees the minimum touch target of the control column — after handing over
+  its frame, the select's trigger lost its own padding and dropped to 19.6 px
   ([`lesson-25`](../lessons.md#lesson-25)).
 
-## Co przez to tracimy
+## What this costs us
 
-- **Dwa komponenty zamiast jednego** w każdym pełnym polu — więcej DOM-u i jeden token DI
-  więcej do zrozumienia przy pierwszym kontakcie z biblioteką.
-- **Kontrolka musi działać w dwóch trybach** (w obudowie i bez niej), co podwaja liczbę
-  przypadków testowych każdej kontrolki.
-- **Symetryczne ograniczenie po stronie autora, nieusuwalne:** przycisk `inset` musi być
-  o stopień mniejszy od pola, bo wysokości obu w tej samej wielkości są z założenia równe
-  ([0004](0004-explicit-height.md)). W najmniejszej wielkości nie ma już stopnia niżej.
+- **Two components instead of one** in every complete field — more DOM and one more DI token
+  to understand on first contact with the library.
+- **The control has to work in two modes** (wrapped and not), which doubles the number of test
+  cases for every control.
+- **A symmetric constraint on the author's side, and an unremovable one:** an `inset` button
+  has to be one step smaller than the field, because the heights of the two at the same size
+  are equal by design ([0004](0004-explicit-height.md)). At the smallest size there is no step
+  below.
 
-## Rozważane alternatywy
+## Alternatives considered
 
-| alternatywa                                    | dlaczego odrzucona                                                                                                                               |
-| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Jeden komponent na pole (`PctInput`)           | wymusza kopiowanie logiki komunikatów do każdej kontrolki ([`lesson-21`](../lessons.md#lesson-21))                                               |
-| Obudowa implementuje `FormValueControl`        | typowanie wartości wycieka do obudowy jako `unknown`; pole traci związek z rodzajem danych                                                       |
-| Ramkę rysuje kontrolka, obudowa tylko etykietę | dekoracje `prefix`/`suffix` lądują poza ramką, a focus ring nie obejmuje przycisku w slocie                                                      |
-| Arkusz wnioskuje o wypełnieniu slotu           | reguła CSS wnioskująca o zamiarze z zawartości jest **ukrytym API** — tanim, dopóki przykład jest jeden ([`lesson-34`](../lessons.md#lesson-34)) |
+| alternative                                          | why rejected                                                                                                                                |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| One component per field (`PctInput`)                 | forces the message logic to be copied into every control ([`lesson-21`](../lessons.md#lesson-21))                                           |
+| The wrapper implements `FormValueControl`            | the value's typing leaks into the wrapper as `unknown`; the field loses its connection to the kind of data                                  |
+| The control draws the frame, the wrapper only labels | the `prefix`/`suffix` decorations land outside the frame, and the focus ring does not cover a button in a slot                              |
+| The stylesheet infers whether a slot is filled       | a CSS rule inferring intent from content is **hidden API** — cheap only while there is one example ([`lesson-34`](../lessons.md#lesson-34)) |

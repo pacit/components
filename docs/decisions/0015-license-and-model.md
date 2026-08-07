@@ -1,80 +1,82 @@
-# 0015 — MIT wszędzie, prawa na podmiot, bez CLA
+# 0015 — MIT everywhere, rights to the entity, no CLA
 
-**Status:** przyjęta
-**Zmieniona:** 2026-08-07 — uzasadnienie przeredagowane przy
-[0016](0016-mit-irreversibility.md); rozstrzygnięcie bez zmian
-**Realizuje:** [`req-release-metadata`](../requirements/release.md#req-release-metadata)
-**Dowód:** `check-package` (punkt 6, kontrola `licencja`) i `check-consumer` (punkt 1,
-reguła `brak-licencji`) — plik LICENSE mierzony w katalogu **i** w archiwum
+**Status:** accepted
+**Amended:** 2026-08-07 — the reasoning was rewritten alongside
+[0016](0016-mit-irreversibility.md); the resolution is unchanged
+**Implements:** [`req-release-metadata`](../requirements/release.md#req-release-metadata)
+**Evidence:** `check-package` (point 6, the `licencja` check) and `check-consumer` (point 1,
+the `brak-licencji` rule) — the LICENSE file measured in the directory **and** in the archive
 
-## Kontekst
+## Context
 
-Manifest deklarował `"license": "MIT"` od początku, ale pliku LICENSE nie było nigdzie —
-ani w repozytorium, ani w zbudowanym pakiecie. To formalnie licencja niepełna, a
-repozytorium ma stać publicznie od pierwszego pushu, więc pytanie „czym to właściwie jest
-prawnie" pada wcześniej niż pierwsze `npm install`.
+The manifest declared `"license": "MIT"` from the start, but there was no LICENSE file
+anywhere — neither in the repository nor in the built package. That is formally an incomplete
+licence, and the repository is to stand publicly from the first push, so the question „what is
+this legally, exactly" arrives before the first `npm install`.
 
-Przy okazji trzeba było rozstrzygnąć, czy licencja rdzenia zamyka jakiekolwiek późniejsze
-wybory — i czy ich zachowanie wymaga maszynerii kontrybutorskiej.
+At the same time it had to be settled whether the core's licence closes off any later choices —
+and whether keeping them open requires contributor machinery.
 
-## Decyzja
+## Decision
 
-**Wszystko na MIT. Prawa autorskie na podmiot (`PacIT - Marek Pac`). Bez CLA, bez DCO,
-bez dual-licensingu.**
+**Everything under MIT. Copyright to the entity (`PacIT - Marek Pac`). No CLA, no DCO, no
+dual-licensing.**
 
-Wybór MIT nie jest domyślny z rozpędu, tylko wynika z tego, na czym ta biblioteka wygrywa.
-Jej wyróżnikiem jest **dowód** — bramki, [rejestr](../registry.md), a docelowo ACR/VPAT
-generowany z CI. Dowód działa dopiero przy adopcji, a odbiorcą jest korporacja, w której
-pierwszą bramką jest dział prawny: MIT przechodzi tam bez przeglądu, licencja spoza listy
-OSI nie przechodzi wcale. Ekosystem trzyma ten sam standard — Angular, CDK, Material
-i PrimeNG są na MIT.
+MIT is not the default chosen on autopilot; it follows from what this library wins on. Its
+differentiator is **evidence** — the gates, the [registry](../registry.md), and eventually an
+ACR/VPAT generated from CI. Evidence only works with adoption, and the recipient is
+a corporation whose first gate is the legal department: MIT passes there without review, and
+a licence outside the OSI list does not pass at all. The ecosystem holds the same standard —
+Angular, CDK, Material and PrimeNG are all MIT.
 
-**Brak CLA jest rozstrzygnięciem, nie przeoczeniem.** Pierwotna rekomendacja była
-odwrotna i została cofnięta po sprawdzeniu, co CLA faktycznie kupuje:
+**The absence of a CLA is a resolution, not an oversight.** The original recommendation was the
+opposite and was withdrawn after checking what a CLA actually buys:
 
-- kod na MIT wolno wydać ponownie na innych warunkach, i dotyczy to również cudzych
-  kontrybucji — warunkiem jest zachowanie noty. Zmiana warunków dystrybucji nie wymaga
-  więc niczyjej zgody;
-- kontrybucje przychodzą na licencji repozytorium z automatu (regulamin GitHuba), więc
-  „rdzeń zostaje MIT" nie potrzebuje niczyjego podpisu;
-- CLA kupuje dokładnie jedno: prawo wydania **tego samego kodu bez zobowiązań MIT**.
-  Zobowiązaniem MIT jest jedna linijka noty — zwolnienie z niej nie jest niczym, o co
-  ktokolwiek by zabiegał. Dual-licensing ma sens przy (A)GPL, gdzie zobowiązanie jest realne.
+- MIT code may be re-released under other terms, and that includes other people's
+  contributions — the condition is that the notice is preserved. Changing the distribution terms
+  therefore needs nobody's consent;
+- contributions arrive under the repository's licence automatically (GitHub's terms), so „the
+  core stays MIT" needs nobody's signature;
+- a CLA buys exactly one thing: the right to release **the same code without MIT's
+  obligations**. MIT's obligation is one line of notice — being released from it is not
+  something anybody would campaign for. Dual-licensing makes sense with (A)GPL, where the
+  obligation is real.
 
-Cena CLA — tarcie przy każdym zewnętrznym PR — byłaby więc płacona za nic.
+The price of a CLA — friction on every external PR — would therefore be paid for nothing.
 
-## Konsekwencje
+## Consequences
 
-- `LICENSE` stoi w korzeniu i w `libs/components/`, skąd ng-packagr kopiuje go do pakietu
-  bez wpisu w `assets` (sprawdzone przebiegiem, nie założone).
-- Pole `author` w manifeście wskazuje ten sam podmiot co linia `Copyright`.
-- Rozjazd pola `license` z treścią pliku jest od teraz **błędem bramki**, a nie
-  ostrzeżeniem: obie strony da się zmienić osobno i nic ich dotąd nie wiązało.
-- Wybór innych warunków dla nowego kodu nie wymaga w przyszłości zmiany tej decyzji ani
-  niczyjej zgody — wymaga tylko, żeby ten kod **nie został wcześniej wydany pod MIT**.
-  Rozwija to [0016](0016-mit-irreversibility.md).
+- `LICENSE` sits in the root and in `libs/components/`, from where ng-packagr copies it into the
+  package with no `assets` entry (verified by a run, not assumed).
+- The manifest's `author` field names the same entity as the `Copyright` line.
+- A mismatch between the `license` field and the file's contents is from now on **a gate
+  error**, not a warning: both sides can be changed separately and nothing had tied them
+  together.
+- Choosing other terms for new code will not require changing this decision or anybody's
+  consent in the future — it only requires that the code **not have been released under MIT
+  earlier**. [0016](0016-mit-irreversibility.md) develops this.
 
-## Co przez to tracimy
+## What this costs us
 
-- **Rdzeń jest nieodwracalnie forkowalny.** Nawet trzymając komplet praw, ostatnia wydana
-  wersja MIT zostaje wolna na zawsze. Przy próbie zmiany licencji fork powstaje w tygodnie —
-  Terraform → OpenTofu, Redis → Valkey, Elasticsearch → OpenSearch. MIT na rdzeń traktujemy
-  jako stan trwały, nie etap.
-- **Każdy może wziąć ten kod i wydać go pod swoją nazwą**, i jest to zgodne z licencją.
-  Jedyną ochroną pod MIT jest **nazwa i bycie upstreamem** — `pacit` oraz zakres `@pacit`,
-  nie kod. Stan nazwy i odłożone zgłoszenie znaku stoją
-  w [0016](0016-mit-irreversibility.md).
-- **Prawdziwy dual-licensing przestaje być dostępny.** Gdyby kiedyś okazał się potrzebny,
-  wymagałby zgody każdego kontrybutora z osobna.
-- **Ta decyzja nie rozstrzyga niczego poza licencją.** MIT jest warunkiem adopcji i tylko
-  nim; cokolwiek miałoby kiedyś stanąć **obok** rdzenia, wymaga osobnej decyzji podjętej
-  wtedy, gdy będzie z czego wybierać.
+- **The core is irreversibly forkable.** Even holding all the rights, the last released MIT
+  version stays free forever. On an attempt to change the licence a fork appears within weeks —
+  Terraform → OpenTofu, Redis → Valkey, Elasticsearch → OpenSearch. We treat MIT for the core as
+  a permanent state, not a stage.
+- **Anybody may take this code and release it under their own name**, and that complies with
+  the licence. The only protection under MIT is **the name and being upstream** — `pacit` and
+  the `@pacit` scope, not the code. The state of the name and the deferred trademark filing are
+  in [0016](0016-mit-irreversibility.md).
+- **Real dual-licensing stops being available.** Were it ever needed, it would require the
+  consent of every contributor individually.
+- **This decision settles nothing beyond the licence.** MIT is a condition of adoption and only
+  that; whatever might one day stand **beside** the core needs a separate decision taken when
+  there is something to choose between.
 
-## Rozważane alternatywy
+## Alternatives considered
 
-| alternatywa                    | dlaczego odrzucona                                                                                                                                     |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Apache-2.0                     | jawna licencja patentowa i zastrzeżenie znaku, ale przy bibliotece komponentów ryzyko patentowe jest bliskie zeru — zostaje rozjazd z ekosystemem      |
-| (A)GPL, SSPL, BSL, FSL         | kod ląduje w bundlu klienta, więc copyleft odstrasza korporacje, a licencje source-available oblewają wymóg „OSI-approved" w przetargach               |
-| MIT + dual-licensing od razu   | maszyneria (CLA, dwie ścieżki licencyjne) za dźwignię, która pod MIT nic nie waży — zobowiązaniem, z którego można by zwolnić, jest jedna linijka noty |
-| MIT + CLA „na wszelki wypadek" | tarcie przy każdym PR za opcję, której realizacja i tak nie wymaga CLA                                                                                 |
+| alternative                     | why rejected                                                                                                                                                    |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Apache-2.0                      | an explicit patent grant and trademark reservation, but for a component library the patent risk is close to zero — leaving only the mismatch with the ecosystem |
+| (A)GPL, SSPL, BSL, FSL          | the code lands in the client's bundle, so copyleft scares corporations off, and source-available licences fail the „OSI-approved" requirement in tenders        |
+| MIT plus dual-licensing at once | machinery (a CLA, two licensing paths) for a lever that weighs nothing under MIT — the obligation one could be released from is a single line of notice         |
+| MIT plus a CLA „just in case"   | friction on every PR for an option whose exercise does not need a CLA anyway                                                                                    |

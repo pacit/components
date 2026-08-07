@@ -1,64 +1,64 @@
-# 0007 — Konfiguracja osobno od tekstów
+# 0007 — Configuration apart from texts
 
-**Status:** przyjęta
-**Realizuje:** [`req-api-config`](../requirements/api.md#req-api-config),
+**Status:** accepted
+**Implements:** [`req-api-config`](../requirements/api.md#req-api-config),
 [`req-api-texts`](../requirements/api.md#req-api-texts)
-**Dowód:** brak pomiaru — decyzja z różnicy rytmu i zasięgu podmiany
+**Evidence:** no measurement — a decision from the difference in rhythm and reach of an
+override
 
-## Kontekst
+## Context
 
-Biblioteka potrzebuje dwóch rzeczy ustawianych globalnie: **konfiguracji** (domyślny
-`size`, locale, ripple) i **napisów** (tekst zastępczy listy, komunikat pustej listy).
-Naturalnym odruchem jest jeden token DI z polem `texts`.
+The library needs two things set globally: **configuration** (default `size`, locale, ripple)
+and **strings** (the list's placeholder, the empty-list message). The natural reflex is one DI
+token with a `texts` field.
 
-## Decyzja
+## Decision
 
-**Dwa osobne tokeny: `PctConfig` (przez `providePctConfig`) i `PCT_TEXTS` (przez
+**Two separate tokens: `PctConfig` (through `providePctConfig`) and `PCT_TEXTS` (through
 `providePctTexts`).**
 
-Powód jest w **rytmie i zasięgu podmiany**:
+The reason is in the **rhythm and reach of an override**:
 
-|                     | `PctConfig`                 | `PCT_TEXTS`                                |
-| ------------------- | --------------------------- | ------------------------------------------ |
-| kiedy się ustawia   | raz, przy starcie aplikacji | także w poddrzewie                         |
-| po co się podmienia | zmiana domyślnych           | sekcja w innym języku, podgląd tłumaczenia |
+|                        | `PctConfig`           | `PCT_TEXTS`                                          |
+| ---------------------- | --------------------- | ---------------------------------------------------- |
+| when it is set         | once, at app start    | in a subtree as well                                 |
+| what it is swapped for | changing the defaults | a section in another language, a translation preview |
 
-Osobny token pozwala nadpisać **same napisy** w poddrzewie, nie powtarzając reszty
-konfiguracji.
+A separate token makes it possible to override **the strings alone** in a subtree without
+repeating the rest of the configuration.
 
-Dwie reguły uzupełniające:
+Two supplementary rules:
 
-- **Nadpisanie jest częściowe.** Podane pola nadpisują domyślne, reszta zostaje — nowy
-  napis w bibliotece nie wywraca aplikacji tłumaczącej tylko część.
-- **Domyślne są angielskie**, a ostrzeżenia deweloperskie (`console.warn`) do tego kanału
-  **nie należą**: są po angielsku na stałe, bo czyta je programista, nie użytkownik,
-  i gasną poza `isDevMode()`.
+- **An override is partial.** The fields supplied override the defaults, the rest stay — a new
+  string in the library does not knock over an app that translates only part of them.
+- **The defaults are English**, and developer warnings (`console.warn`) **do not belong** in
+  that channel: they are permanently English, because a programmer reads them and not a user,
+  and they go dark outside `isDevMode()`.
 
-## Konsekwencje
+## Consequences
 
-- Aplikacja może mieć jeden `providePctConfig` i kilka `providePctTexts` w różnych
-  poddrzewach.
-- Dodanie napisu do biblioteki jest zmianą niełamiącą.
+- An app may have one `providePctConfig` and several `providePctTexts` in different subtrees.
+- Adding a string to the library is a non-breaking change.
 
-## Co przez to tracimy
+## What this costs us
 
-- **Dwa miejsca do skonfigurowania zamiast jednego** — konsument musi wiedzieć, że są dwa.
-- **~~`PCT_TEXTS` nie przeżyje zmiany języka w runtime.~~** Zamknięte przez
-  [0014](0014-texts-as-signal.md): token niesie `Signal<PctTexts>`, a napis czyta się
-  przy renderowaniu. Pozycja zostaje tutaj, bo to ta decyzja ją stworzyła: statyczny
-  `useValue` był jej ceną i stał w bibliotece od `a4794a4` (2026-07-27) do 2026-08-06,
-  przy zielonym CI ([`lesson-54`](../lessons.md#lesson-54)).
+- **Two places to configure instead of one** — the consumer has to know there are two.
+- **~~`PCT_TEXTS` will not survive a runtime language change.~~** Closed by
+  [0014](0014-texts-as-signal.md): the token carries `Signal<PctTexts>` and a string is read at
+  render time. The entry stays here because this decision created it: the static `useValue` was
+  its price and stood in the library from `a4794a4` (2026-07-27) until 2026-08-06, with CI
+  green ([`lesson-54`](../lessons.md#lesson-54)).
 
-- **Kształt `PctConfig` jest niedokończony.** Ma jedno pole (`defaultSize`). Otwarte
-  pytanie nie brzmi „jakie pola dołożyć", tylko **czy domyślne per komponent idą przez
-  konfigurację (`providePctConfig({ button: { variant: 'outline' } })`), czy przez
-  tokeny**. Material i PrimeNG oba skończyły na dostawcach domyślnych. Rozstrzygnąć przed
-  piętnastym komponentem — później to zmiana łamiąca w każdym z nich.
+- **The shape of `PctConfig` is unfinished.** It has one field (`defaultSize`). The open
+  question is not „which fields to add" but **whether per-component defaults go through the
+  configuration (`providePctConfig({ button: { variant: 'outline' } })`) or through tokens**.
+  Material and PrimeNG both ended up with default providers. To be settled before the
+  fifteenth component — after that it is a breaking change in every one of them.
 
-## Rozważane alternatywy
+## Alternatives considered
 
-| alternatywa                             | dlaczego odrzucona                                                             |
-| --------------------------------------- | ------------------------------------------------------------------------------ |
-| Jeden token z polem `texts`             | wymusza powtórzenie całej konfiguracji, żeby nadpisać jeden napis w poddrzewie |
-| Napisy przez `$localize`                | wiąże bibliotekę z natywnym i18n Angulara; do rozważenia **obok**, nie zamiast |
-| Ostrzeżenia deweloperskie w `PCT_TEXTS` | czyta je programista, nie użytkownik — tłumaczenie ich nikomu nie pomaga       |
+| alternative                       | why rejected                                                                            |
+| --------------------------------- | --------------------------------------------------------------------------------------- |
+| One token with a `texts` field    | forces the whole configuration to be repeated to override one string in a subtree       |
+| Strings through `$localize`       | ties the library to Angular's native i18n; worth considering **alongside**, not instead |
+| Developer warnings in `PCT_TEXTS` | a programmer reads them, not a user — translating them helps nobody                     |
