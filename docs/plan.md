@@ -713,8 +713,13 @@ blokuje publikacji i jest o rząd wielkości większa.
   - dotyczy: `req-release-metadata` — bramka i jej kontrola są (A1), więc w rejestrze
     stoi ✅; brakuje **samego pola**, a bramka na co dzień tylko ostrzega i nikt jej nie
     słucha, bo przebieg jest zielony
-  - `git remote -v` jest **puste** — dopóki repo nie ma zdalnego, `repository` nie ma czego
-    wskazywać, npm odmawia provenance, a `check-package.mjs --release` blokuje wydanie
+  - **pole jest od 2026-08-07** i wskazuje `github.com/pacit/components`. Organizacja
+    `pacit` istnieje na GitHubie i na npm (zakres `@pacit`, właściciel `markovy`),
+    ale samego repozytorium jeszcze nie ma
+  - `git remote -v` jest nadal **puste** i celowo: pierwszy push jest premierą, a przed nim
+    historia idzie do zwinięcia — zdalny dodany wcześniej to zaproszenie do przypadkowego
+    `git push`. Do tego czasu npm odmawia provenance, a `check-package.mjs --release`
+    blokuje wydanie
   - **samo zadanie jest na minuty, ale przestało być pierwsze.** Repozytorium jest publiczne
     **od pierwszego pushu** (decyzja 2026-08-06 — bez etapu prywatnego), a historia zostaje
     przed nim zwinięta. Pierwszy push jest więc premierą, nie zapisem stanu: `README.md`

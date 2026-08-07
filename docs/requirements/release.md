@@ -86,8 +86,10 @@ słowo `LIMITED`, w którym `MIT` siedzi jako podciąg, więc porównanie przez 
 uznałoby go za zgodny. Archiwum pilnuje
 `tools/check-consumer.fixtures/tarball-bez-licencji.json`
 **Decyzja:** [0015 — MIT wszędzie, prawa na podmiot, bez CLA](../decisions/0015-license-and-model.md)
-**Wiąże przy:** pierwszej publikacji — plik LICENSE i jego bramka są od 2026-08-06,
-brakuje już tylko `repository`, bo nie ma zdalnego repozytorium, na które mogłoby wskazywać
+**Wiąże przy:** pierwszej publikacji — plik LICENSE i jego bramka są od 2026-08-06, pole
+`repository` od 2026-08-07. Wskazuje ono `github.com/pacit/components`, którego jeszcze nie
+ma; provenance żąda zgodności z repozytorium, z którego leci publikacja, więc warunek domyka
+się dopiero przy utworzeniu zdalnego (B2)
 
 > Obietnica była **podwójna, a mierzona pojedynczo**: pola manifestu miały bramkę od A1,
 > plik LICENSE nie miał żadnej i nie istniał, przy wymaganiu stojącym w rejestrze jako ✅.

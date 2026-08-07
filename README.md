@@ -247,8 +247,8 @@ Publikacja wymaga w `libs/components/package.json` pola `repository` — bez nie
 ## Licencja
 
 [MIT](LICENSE) — Copyright (c) 2026 PacIT - Marek Pac. Bez CLA: kontrybucje przychodzą na
-licencji repozytorium, a uzasadnienie tego wyboru wraz z tym, co przez niego tracimy, stoi
-w [decyzji 0015](docs/decisions/0015-license-and-model.md).
+licencji repozytorium ([CONTRIBUTING.md](CONTRIBUTING.md)), a uzasadnienie tego wyboru wraz
+z tym, co przez niego tracimy, stoi w [decyzji 0015](docs/decisions/0015-license-and-model.md).
 
 Licencja obejmuje kod, nie nazwę: `pacit`, zakres npm `@pacit` i domena `pacit.pl` należą do
 podmiotu z linii `Copyright`. Wydanie pod MIT jest nieodwracalne, więc o tym, co i kiedy pod

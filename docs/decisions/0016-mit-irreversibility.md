@@ -52,10 +52,15 @@ wyszedł wcześniej pod MIT.
   całe repozytorium, nie tylko `dist` — kod wepchnięty do publicznego repozytorium jest
   wydany pod MIT niezależnie od tego, czy pojechał do npm. Odłożony komponent jest odłożony
   także jako commit.
-- Ochroną nie jest kod, tylko **nazwa i bycie upstreamem**: `pacit`, zakres npm `@pacit`,
-  domena `pacit.pl`. Wszystkie trzy są w rękach podmiotu z linii `Copyright`. Formalne
-  zgłoszenie znaku towarowego jest świadomie odłożone — nazwa jest nazwą firmy, a
-  rejestracja przed pierwszym użytkownikiem to koszt bez zastosowania.
+- Ochroną nie jest kod, tylko **nazwa i bycie upstreamem**: zakres npm `@pacit`,
+  organizacja `github.com/pacit` i domena `pacit.pl` — wszystkie w rękach podmiotu z linii
+  `Copyright` (zakres sprawdzony 2026-08-07, nie założony). Formalne zgłoszenie znaku
+  towarowego jest świadomie odłożone — nazwa jest nazwą firmy, a rejestracja przed
+  pierwszym użytkownikiem to koszt bez zastosowania.
+- Drugą połową „bycia upstreamem" jest **provenance**, a npm wystawia je wyłącznie przy
+  polu `repository` zgodnym z repozytorium, z którego leci publikacja. To czyni
+  `repository` warunkiem tej decyzji, nie tylko metadaną wydania —
+  [`req-release-metadata`](../requirements/release.md#req-release-metadata).
 - **Bramki na to nie ma i nie będzie.** Nie da się maszynowo sprawdzić, czy komponent
   „powinien był" wyjść. Wymaganie z bramką pozorną jest dokładnie tym, co opisuje
   [`lesson-39`](../lessons.md#lesson-39) — bramką urodzoną martwą — więc ta decyzja
