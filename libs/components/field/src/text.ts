@@ -22,13 +22,12 @@ import {
 } from '@pacit/components/core';
 
 /**
- * Pole tekstowe: dyrektywa na **natywnym** `<input>`. Nie owijamy inputu we
- * własny komponent, więc zachowujemy `type`, autouzupełnianie przeglądarki,
- * tryby klawiatury mobilnej i całą semantykę bez własnej abstrakcji
- * (`req-api-platform`).
+ * Text field: a directive on a **native** `<input>`. The input is not wrapped in a component
+ * of ours, so `type`, browser autofill, mobile keyboard modes and the whole semantics are kept
+ * without an abstraction in between (`req-api-platform`).
  *
- * Kontraktem formularza jest ta dyrektywa (`FormValueControl<string>`), a
- * etykietę, podpowiedź i błąd rysuje `pct-field` (`req-api-wrapper`).
+ * This directive is the form contract (`FormValueControl<string>`), while the label, the hint
+ * and the error are drawn by `pct-field` (`req-api-wrapper`).
  *
  * @example
  * <pct-field label="E-mail">
@@ -37,8 +36,8 @@ import {
  */
 @Component({
   selector: 'input[pctText], textarea[pctText]',
-  // Komponent (nie dyrektywa) na natywnym elemencie — jak `button[pctButton]`.
-  // Dyrektywa nie może mieć styli, a nie chcemy opierać API na `::ng-deep`.
+  // A component (not a directive) on a native element — as with `button[pctButton]`.
+  // A directive cannot carry styles, and the API is not to stand on `::ng-deep`.
   template: '',
   styleUrl: './text.scss',
   host: {
@@ -58,10 +57,10 @@ export class PctText implements FormValueControl<string>, PctFieldControl {
   private readonly el = inject<ElementRef<HTMLInputElement>>(ElementRef);
   private readonly field = inject(PCT_FIELD, { optional: true });
 
-  /** Wartość — wymagane pole kontraktu `FormValueControl`. */
+  /** The value — a required field of the `FormValueControl` contract. */
   readonly value = model<string>('');
 
-  // --- FormUiControl (synchronizowane przez dyrektywę FormField) ---
+  // --- FormUiControl (kept in sync by the FormField directive) ---
 
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly readonly = input(false, { transform: booleanAttribute });
@@ -73,13 +72,13 @@ export class PctText implements FormValueControl<string>, PctFieldControl {
 
   readonly touch = output<void>();
 
-  // --- kontrakt PctFieldControl ---
+  // --- the PctFieldControl contract ---
 
   readonly controlId = nextPctId('pct-text');
   readonly labelStrategy: PctLabelStrategy = 'for';
   readonly fieldCursor: PctFieldCursor = 'text';
 
-  /** Ustawiane przez obudowę; wystawiane na natywnym elemencie. */
+  /** Set by the chrome; exposed on the native element. */
   protected readonly describedBy = signal<string | null>(null);
 
   protected readonly showInvalid = computed(
@@ -87,17 +86,17 @@ export class PctText implements FormValueControl<string>, PctFieldControl {
   );
 
   /**
-   * Klasyczne formularze (`[formControl]`, `formControlName`, `[(ngModel)]`) na
-   * natywnym `<input>` są obsługiwane przez wbudowany `DefaultValueAccessor`
-   * Angulara — to on pisze do DOM. Gdybyśmy pisali równolegle, powstałby
-   * konflikt dwóch autorów wartości (`lesson-20`). Wykrywamy więc, czy
-   * klasyczna dyrektywa formularza jest na tym samym elemencie, i wtedy
-   * oddajemy jej własność wartości, pozostając przy obudowie i stanie.
+   * Classic forms (`[formControl]`, `formControlName`, `[(ngModel)]`) on a native `<input>` are
+   * handled by Angular's built-in `DefaultValueAccessor` — it is what writes to the DOM.
+   * Writing in parallel would create a conflict between two authors of the value
+   * (`lesson-20`). So the presence of a classic form directive on the same element is detected,
+   * and ownership of the value is then handed over to it, while the chrome and the state stay
+   * here.
    *
-   * Sama obecność `NgControl` nie wystarcza: dyrektywa `FormField` **też** go
-   * dostarcza (interop dla starych `ControlValueAccessor`ów), a signal forms
-   * przy własnej kontrolce ustawiają wyłącznie `value` i do DOM nie piszą —
-   * oddanie im własności zostawiało pole puste (`lesson-26`).
+   * The presence of `NgControl` alone is not enough: the `FormField` directive provides it
+   * **too** (interop for legacy `ControlValueAccessor`s), and with a control of its own signal
+   * forms set `value` only and never write to the DOM — handing them ownership left the field
+   * empty (`lesson-26`).
    */
   private readonly classicForms = inject(NgControl, {
     optional: true,
@@ -111,11 +110,11 @@ export class PctText implements FormValueControl<string>, PctFieldControl {
     this.classicForms !== null && this.signalForms === null;
 
   constructor() {
-    // Obecność obudowy jest opcjonalna: bez niej kontrolka działa samodzielnie
-    // (bez etykiety i komunikatów), co jest przydatne np. w komórce tabeli.
+    // The chrome is optional: without it the control works standalone (no label, no
+    // messages), which is useful in a table cell, for instance.
     this.field?.attach(this);
 
-    // Sygnał -> DOM tylko wtedy, gdy nie prowadzą klasyczne formularze.
+    // Signal -> DOM only while classic forms are not in charge.
     effect(() => {
       const next = this.value();
       if (this.domOwnedElsewhere) return;
@@ -136,7 +135,7 @@ export class PctText implements FormValueControl<string>, PctFieldControl {
     this.touch.emit();
   }
 
-  /** Wywoływane przez signal forms (np. `focusBoundControl()`). */
+  /** Called by signal forms (`focusBoundControl()`, for instance). */
   focus(options?: FocusOptions): void {
     this.el.nativeElement.focus(options);
   }

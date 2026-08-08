@@ -1,40 +1,40 @@
 import { Directive, input } from '@angular/core';
 
 /**
- * Jak dekoracja siedzi w swoim slocie:
+ * How a decoration sits in its slot:
  *
- * - `inset` (domyślnie) — leży **na powierzchni pola**: jest wpisana w padding
- *   ramki, dziedziczy jej kursor, a klik w nią fokusuje kontrolkę. Tak zachowuje
- *   się jednostka („PLN") czy ikona rodzaju pola;
- * - `fill` — jest **własną powierzchnią**: bierze cały slot, od krawędzi ramki po
- *   odstęp kontrolki i na pełną wysokość, ma własny kursor i sama przyjmuje
- *   kliknięcie. Tak zachowuje się kafelek z tłem czy przycisk wspawany w róg pola.
+ * - `inset` (the default) — it lies **on the field surface**: inscribed in the border's
+ *   padding, inheriting its cursor, and a click on it focuses the control. That is how a unit
+ *   („PLN") or a field-kind icon behaves;
+ * - `fill` — it is **a surface of its own**: it takes the whole slot, from the border edge to
+ *   the control's gap and at full height, has its own cursor and takes the click itself. That
+ *   is how a tile with a background, or a button welded into the field's corner, behaves.
  *
- * Wybiera to autor pola, nie arkusz obudowy: wcześniej decydowała tu obecność
- * elementu interaktywnego w slocie, więc przycisk **nie mógł** być mniejszy od
- * swojego slotu, a dekoracja bierna nie mogła być większa (`lesson-34`).
+ * The field's author chooses, not the chrome stylesheet: what used to decide was the presence
+ * of an interactive element in the slot, so a button **could not** be smaller than its slot
+ * and a passive decoration could not be larger (`lesson-34`).
  *
- * Przycisk `inset` bierz o stopień mniejszy od pola: wysokości obu są w tej
- * samej wielkości równe (`req-api-size`), więc przycisk tej samej wielkości nie
- * zmieści się w ramce i rozepchnie wiersz o jej grubość.
+ * Take an `inset` button one step smaller than the field: at the same size their heights are
+ * equal (`req-api-size`), so a button of the same size will not fit inside the border and
+ * pushes the row apart by its thickness.
  */
 export type PctAffixFit = 'inset' | 'fill';
 
-/** Sam atrybut, bez wartości (`pctPrefix`), daje `''` — czytamy je jako `inset`. */
+/** The bare attribute with no value (`pctPrefix`) gives `''` — read here as `inset`. */
 function affixFit(value: PctAffixFit | ''): PctAffixFit {
   return value || 'inset';
 }
 
 /**
- * Dekoracja `fill` bierze wysokość ze slotu, nie z siebie. Bez tego przycisk
- * w slocie wnosiłby własną wysokość minimalną (`--pct-button-height`), a że
- * jest ona równa wysokości pola tej samej wielkości (`req-api-size`), rząd rósłby
- * o grubość swojej ramki — pole z wspawanym przyciskiem byłoby o 2 px wyższe
- * od pola bez niego. Wysokość i tak daje `align-items: stretch` na slocie.
+ * A `fill` decoration takes its height from the slot, not from itself. Without this a button
+ * in the slot would bring its own minimum height (`--pct-button-height`), and since that
+ * equals the height of a field of the same size (`req-api-size`), the row would grow by the
+ * thickness of its border — a field with a welded-in button would be 2 px taller than one
+ * without. The height comes from `align-items: stretch` on the slot anyway.
  *
- * To musi być wiązanie hosta, nie reguła w `field.scss`: dekoracja jest treścią
- * rzutowaną, więc arkusz obudowy do niej nie sięga, a dyrektywa nie może mieć
- * własnego arkusza.
+ * This has to be a host binding rather than a rule in `field.scss`: a decoration is projected
+ * content, so the chrome stylesheet does not reach it, and a directive cannot have a
+ * stylesheet of its own.
  */
 const fitHost = {
   '[attr.data-pct-fit]': 'fit()',
@@ -42,9 +42,9 @@ const fitHost = {
 };
 
 /**
- * Dekoracja przed kontrolką, wewnątrz ramki pola (np. jednostka waluty, ikona).
- * Treść dekoracyjna powinna być ukryta przed czytnikiem (`aria-hidden`) albo
- * mieć własną nazwę dostępną, jeśli jest interaktywna.
+ * A decoration before the control, inside the field border (a currency unit, an icon).
+ * Decorative content should be hidden from the screen reader (`aria-hidden`), or have an
+ * accessible name of its own if it is interactive.
  *
  * @example
  * <span pctPrefix aria-hidden="true">PLN</span>
@@ -66,11 +66,11 @@ export class PctPrefix {
 }
 
 /**
- * Dekoracja po kontrolce, wewnątrz ramki pola (np. przycisk czyszczenia).
+ * A decoration after the control, inside the field border (a clear button, say).
  *
  * @example
- * <button pctSuffix pctButton size="sm" aria-label="Wyczyść">×</button>
- * <button pctSuffix="fill" pctButton>Szukaj</button>
+ * <button pctSuffix pctButton size="sm" aria-label="Clear">×</button>
+ * <button pctSuffix="fill" pctButton>Search</button>
  */
 @Directive({
   selector: '[pctSuffix]',

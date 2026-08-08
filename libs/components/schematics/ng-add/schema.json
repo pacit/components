@@ -1,12 +1,12 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema",
   "$id": "PacitComponentsNgAdd",
-  "title": "Dodanie @pacit/components do aplikacji",
+  "title": "Add @pacit/components to an application",
   "type": "object",
   "properties": {
     "project": {
       "type": "string",
-      "description": "Projekt, do którego dopiąć style. Domyślnie projekt domyślny workspace'u.",
+      "description": "The project to wire the styles into. The workspace's default project by default.",
       "$default": {
         "$source": "projectName"
       }

@@ -1,18 +1,18 @@
 import { inject, Injectable } from '@angular/core';
 
 /**
- * Licznik id trzymany w DI, a nie w module.
+ * An id counter held in DI rather than in the module.
  *
- * Licznik modułowy nie jest bezpieczny przy SSR: serwer renderuje wiele żądań
- * w jednym procesie, więc numeracja rośnie z każdym renderem, a klient zaczyna
- * od zera. Drugie i każde kolejne żądanie dostaje HTML z innymi id niż te,
- * które policzy klient — po hydracji część atrybutów zostaje z wartościami
- * serwera, a część dostaje wartości klienta i powiązania ARIA
- * (`aria-labelledby`, `aria-describedby`, `<label for>`) wskazują w próżnię.
+ * A module-level counter is not SSR-safe: the server renders many requests in one process,
+ * so the numbering grows with every render while the client starts from zero. The second
+ * request and every one after it gets HTML with different ids from the ones the client will
+ * count — after hydration some attributes keep the server's values and some get the client's,
+ * and the ARIA relations (`aria-labelledby`, `aria-describedby`, `<label for>`) point into
+ * the void.
  *
- * Instancja `providedIn: 'root'` żyje tyle, co injector aplikacji — czyli
- * jedno żądanie po stronie serwera i jedno wczytanie strony po stronie
- * klienta. Obie strony liczą więc od zera i renderują te same id (req-project-ssr).
+ * A `providedIn: 'root'` instance lives as long as the application injector — that is, one
+ * request on the server side and one page load on the client side. Both sides therefore
+ * count from zero and render the same ids (req-project-ssr).
  */
 @Injectable({ providedIn: 'root' })
 export class PctIdCounter {
@@ -24,8 +24,8 @@ export class PctIdCounter {
 }
 
 /**
- * Generator stabilnych, unikalnych id do powiązań ARIA (req-a11y-built-in).
- * Wymaga kontekstu wstrzykiwania — wołaj w inicjalizatorze pola komponentu.
+ * Generates stable, unique ids for ARIA relations (req-a11y-built-in). Needs an injection
+ * context — call it in a component field initialiser.
  */
 export function nextPctId(prefix = 'pct'): string {
   return `${prefix}-${inject(PctIdCounter).next()}`;

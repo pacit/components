@@ -1,7 +1,7 @@
 {
   "pct": {
     "blue": {
-      "$comment": "Kroki 200–400 istnieją dla motywu ciemnego, nie dla jasnego: tam rampa `primary` musi iść W GÓRĘ przy hover/active, bo tło jaśnieje pod ciemnym tekstem `on-primary`. Kierunek w dół (jak w jasnym) zbijał kontrast etykiety przycisku do 3,45:1 i 2,66:1 — zmierzone przy A12, gdy policy zaczęła te pary w ogóle liczyć.",
+      "$comment": "Steps 200–400 exist for the dark theme, not the light one: there the `primary` ramp has to go UP on hover/active, because the background lightens under the dark `on-primary` text. Going down (as in light) drove the button label's contrast to 3.45:1 and 2.66:1 — measured at A12, when the policy started counting those pairs at all.",
       "50": { "$type": "color", "$value": "#eff6ff" },
       "200": { "$type": "color", "$value": "#bfdbfe" },
       "300": { "$type": "color", "$value": "#93c5fd" },
@@ -35,11 +35,11 @@
       "md": { "$type": "dimension", "$value": "8px" }
     },
     "target": {
-      "$comment": "Minimalny obszar dotyku wg WCAG 2.2 SC 2.5.8 (24x24 px).",
+      "$comment": "Minimum touch area per WCAG 2.2 SC 2.5.8 (24x24 px).",
       "min": { "$type": "dimension", "$value": "24px" }
     },
     "control": {
-      "$comment": "Wysokość kontrolki w danej wielkości — wspólna oś przycisku i wiersza pola. Wysokość jest tu wartością wprost, a nie wynikiem paddingu i wysokości linii: tylko wtedy pole i przycisk tej samej wielkości są równe z definicji (req-api-size).",
+      "$comment": "Control height at a given size — the axis shared by the button and the field row. The height is a value outright here, not the outcome of padding and line height: only then are a field and a button of the same size equal by definition (req-api-size).",
       "height": {
         "sm": { "$type": "dimension", "$value": "28px" },
         "md": { "$type": "dimension", "$value": "36px" },
@@ -47,7 +47,7 @@
       }
     },
     "motion": {
-      "$comment": "Ruch jest osią tokenów, nie wyjątkiem w arkuszu komponentu: dopiero to sprawia, że `prefers-reduced-motion` obowiązuje w całej bibliotece z jednej reguły (req-a11y-motion). Podział nie idzie po prędkości, tylko po RODZAJU ruchu, bo redukcja robi z nimi dwie różne rzeczy: przejście stanu ma zniknąć, a wskaźnik ciągły (spinner) tylko zwolnić — zatrzymany przestałby informować, że przycisk pracuje.",
+      "$comment": "Motion is a token axis, not an exception in a component stylesheet: only that makes `prefers-reduced-motion` apply across the whole library from one rule (req-a11y-motion). The split is not by speed but by KIND of motion, because reduction does two different things to them: a state transition is to disappear, a continuous indicator (a spinner) only to slow down — stopped, it would no longer report that the button is working.",
       "transition": {
         "duration": { "$type": "duration", "$value": "150ms" },
         "easing": { "$type": "cubicBezier", "$value": "ease" }

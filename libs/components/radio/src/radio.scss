@@ -19,14 +19,14 @@
     var(--pct-motion-transition-easing);
 }
 
-/* Obszar dotyku >= 24x24 px, niezależny od rozmiaru wizualnego (req-a11y-touch). */
+/* Touch area >= 24x24 px, independent of the visual size (req-a11y-touch). */
 .pct-radio__control {
   position: absolute;
   top: 50%;
-  /* pct-wyjatek left: para `left: 50%` + `translate(-50%)` wyśrodkowuje symetrycznie,
-     więc w RTL wypada w tym samym miejscu. `inset-inline-start` dałoby tu WADĘ, nie
-     poprawę: w RTL znaczy `right: 50%`, a przesunięcie o -50% szerokości idzie dalej
-     w lewo, czyli strefa trafienia zjeżdża obok przycisku. */
+  /* pct-wyjatek left: the pair `left: 50%` + `translate(-50%)` centres symmetrically, so in
+     RTL it lands in the same place. `inset-inline-start` would be a DEFECT here, not an
+     improvement: in RTL it means `right: 50%`, and a shift of -50% of the width goes further
+     left, so the hit zone slides off beside the button. */
   left: 50%;
   transform: translate(-50%, -50%);
   margin: 0;
@@ -65,7 +65,7 @@
   border-color: var(--pct-radio-border-invalid);
 }
 
-/* Disabled bez opacity (req-token-no-opacity). */
+/* Disabled without opacity (req-token-no-opacity). */
 :host([data-pct-disabled]) .pct-radio__circle {
   background: var(--pct-radio-bg-disabled);
   border-color: var(--pct-radio-border-disabled);
@@ -90,11 +90,11 @@
   cursor: pointer;
 }
 
-/* Tryb wymuszonych kolorów — reguła opisana w `field.scss`.
-   Kropka jest tu przypadkiem granicznym: to zwykły `<div>` z samym tłem, więc
-   wymuszenie zrównuje ją z tłem okręgu i zaznaczony radiobutton wygląda jak
-   pusty. Odbieramy jej tło i dajemy kolor tekstu pola — stan znów niesie
-   obecność kropki, a nie jej barwa. */
+/* Forced-colors mode — the mapping is written down in `field.scss`.
+   The dot is the edge case here: it is a plain `<div>` with nothing but a background, so the
+   substitution levels it with the circle's background and a selected radio button looks empty.
+   Its background is taken away and it is given the field's text colour — the state is once
+   again carried by the dot's presence rather than its hue. */
 @media (forced-colors: active) {
   .pct-radio__circle {
     background: Field;

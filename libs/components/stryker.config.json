@@ -16,7 +16,7 @@
     "!libs/components/**/*.spec.ts"
   ],
   "tempDirName": "tmp/stryker",
-  "// ignorePatterns": "Stryker kopiuje repozytorium do piaskownicy i chodzi po nim SAM, nie po indeksie gita: bez tej listy widział 3907 plików tam, gdzie git zna 708. Nadmiar to katalogi generowane, a te mają równoległych pisarzy — `nx affected` uruchamia `build` obok `mutacja`, ng-packagr zakłada i kasuje `tmp/libs/components/build/tsconfig.generated.<uuid>.json`, a Stryker wywraca się na `ENOENT ... copyfile` w połowie kopiowania. Objaw jest przy tym mylący: zadanie jest flaky i przechodzi w pojedynkę, więc pierwszym podejrzanym był limit czasu mutanta. Przy okazji piaskownica przestaje kopiować własne poprzednie piaskownice z `tmp/stryker`.",
+  "// ignorePatterns": "Stryker copies the repository into a sandbox and walks it ITSELF, not the git index: without this list it saw 3907 files where git knows 708. The excess is generated directories, and those have concurrent writers — `nx affected` runs `build` beside `mutacja`, ng-packagr creates and deletes `tmp/libs/components/build/tsconfig.generated.<uuid>.json`, and Stryker falls over on `ENOENT ... copyfile` halfway through copying. The symptom is misleading at that: the task is flaky and passes on its own, so the first suspect was the mutant timeout. In passing, the sandbox stops copying its own previous sandboxes from `tmp/stryker`.",
   "ignorePatterns": [
     "tmp",
     "dist",

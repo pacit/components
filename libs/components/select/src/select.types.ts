@@ -1,11 +1,10 @@
 /**
- * Opcja listy wyboru. Wartość jest dowolnego typu `T` — formularze biznesowe
- * wiążą identyfikatory liczbowe, warianty unii i całe encje, a zawężenie do
- * napisu zmuszało każdą aplikację do ręcznego mapowania tam i z powrotem.
- * `T` domyślnie jest napisem, więc listy napisowe pisze się jak dotąd.
+ * An option of a select. The value is of any type `T` — business forms bind numeric ids, union
+ * members and whole entities, and narrowing it to a string forced every application into
+ * mapping by hand in both directions. `T` is a string by default, so string lists are written
+ * exactly as before.
  *
- * Etykieta zostaje napisem: to ona jest tekstem widocznym na ekranie i po niej
- * działa wyszukiwanie po pierwszych literach.
+ * The label stays a string: it is the text visible on screen, and typeahead runs on it.
  */
 export interface PctSelectOption<T = string> {
   readonly value: T;
@@ -14,22 +13,22 @@ export interface PctSelectOption<T = string> {
 }
 
 /**
- * Szerokość rozwijanego panelu:
- * - `'field'` (domyślnie) — dokładnie tyle, co widoczna kontrolka: ramka pola
- *   w obudowie, sam trigger poza nią. Panel jest wtedy przedłużeniem pola,
- *   a nie osobnym obiektem,
- * - `'auto'` — do najdłuższej opcji, ale nie węziej niż kontrolka. Dla list,
- *   w których pełna treść opcji jest ważniejsza niż równa krawędź,
- * - długość CSS (`'320px'`, `'24rem'`) — szerokość wprost.
+ * Width of the dropdown panel:
+ * - `'field'` (the default) — exactly that of the visible control: the field border inside the
+ *   chrome, the trigger alone outside it. The panel is then an extension of the field rather
+ *   than a separate object,
+ * - `'auto'` — as wide as the longest option, but never narrower than the control. For lists
+ *   where an option's full text matters more than a flush edge,
+ * - a CSS length (`'320px'`, `'24rem'`) — the width outright.
  *
- * `& {}` zachowuje podpowiedzi edytora dla wariantów nazwanych; bez tego unia
- * z `string` zwija się do samego `string`.
+ * `& {}` keeps editor completion for the named variants; without it the union with `string`
+ * collapses to `string` alone.
  */
 export type PctSelectPanelWidth = 'field' | 'auto' | (string & {});
 
 /**
- * Wyrównanie panelu do kontrolki, gdy panel nie ma jej szerokości (`'auto'`
- * albo szerokość wprost). Przy `panelWidth="field"` wszystkie warianty dają
- * ten sam wynik.
+ * Alignment of the panel to the control when the panel does not have the control's width
+ * (`'auto'` or an explicit width). With `panelWidth="field"` every variant gives the same
+ * result.
  */
 export type PctSelectPanelAlign = 'start' | 'center' | 'end';

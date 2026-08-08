@@ -40,7 +40,7 @@
       "$type": "color",
       "$value": "{pct.slate.500}"
     },
-    "$comment-danger": "`danger` nie ma pary `on-danger`, bo w tej bibliotece nie jest POWIERZCHNIĄ: maluje wyłącznie tekst komunikatu i obramowanie stanu błędu. Para wisiała tu do A12 zadeklarowana i nieużywana przez żaden token ani arkusz — czyli wyglądała na pokrycie, którego nie było. Wróci razem z pierwszym komponentem malującym tło błędem (toast, badge), i wtedy będzie to widać w diffie.",
+    "$comment-danger": "`danger` has no `on-danger` pair, because in this library it is not a SURFACE: it paints the message text and the error state's border, nothing else. Until A12 the pair hung here declared and used by no token and no stylesheet — that is, it looked like coverage that did not exist. It will return with the first component painting a background with the error colour (toast, badge), and then it will show in the diff.",
     "danger": {
       "$type": "color",
       "$value": "{pct.red.600}"

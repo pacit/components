@@ -25,8 +25,8 @@ import {
 } from '@pacit/components/core';
 
 /**
- * Granice bywają niepodane („bez ograniczenia"), a kontrakt `FormUiControl`
- * wymaga dla nich `undefined` — `numberAttribute` (dające `NaN`) nie wystarcza.
+ * Bounds are sometimes absent („no limit"), and the `FormUiControl` contract requires
+ * `undefined` for them — `numberAttribute` (which gives `NaN`) is not enough.
  */
 function optionalNumber(value: unknown): number | undefined {
   if (value === null || value === undefined || value === '') return undefined;
@@ -39,36 +39,35 @@ function escapeRegExp(value: string): string {
 }
 
 /**
- * Pole liczbowe: komponent na natywnym `<input type="text">` z rolą
- * `spinbutton`, wartością typu `number | null` i formatowaniem wg locale.
+ * Number field: a component on a native `<input type="text">` with the `spinbutton` role, a
+ * value of type `number | null` and locale-aware formatting.
  *
- * **Dlaczego nie `<input type="number">`** — mimo że mamy zasadę „nie pisz
- * tego, co daje platforma" (`req-api-platform`), natywne pole liczbowe nie nadaje
- * się do formularzy biznesowych: nie zna lokalnego separatora dziesiętnego
- * (w polskim przecinka), nie umie grupować tysięcy, a przy niepoprawnej
- * treści zwraca puste `value`, więc nie da się odróżnić „puste" od „śmieci"
- * ani pokazać użytkownikowi tego, co wpisał. Dodatkowo kółko myszy
- * przypadkowo zmienia wartość. Stąd tekstowe pole z własnym parsowaniem
- * i rolą `spinbutton` (`req-api-number`).
+ * **Why not `<input type="number">`** — despite the rule „do not write what the platform gives
+ * you" (`req-api-platform`), the native number field does not do for business forms: it does
+ * not know the local decimal separator (a comma in Polish), cannot group thousands, and on
+ * invalid content returns an empty `value`, so „empty" cannot be told from „junk" and the user
+ * cannot be shown what they typed. On top of that the mouse wheel changes the value by
+ * accident. Hence a text field with parsing of its own and the `spinbutton` role
+ * (`req-api-number`).
  *
- * Domyślnie pole jest **całkowite** — ułamki włącza `maxFractionDigits`.
- * Wartość pustą reprezentuje `null`, nie `0` ani `NaN`.
+ * The field is **integer** by default — `maxFractionDigits` turns fractions on. The empty
+ * value is `null`, not `0` and not `NaN`.
  *
  * @example
- * // Granice biorą się z walidatorów min()/max() ze schematu formularza.
- * <pct-field label="Liczba stanowisk">
+ * // The bounds come from the min()/max() validators of the form schema.
+ * <pct-field label="Number of seats">
  *   <input pctNumber [formField]="f.seats" />
  * </pct-field>
  *
  * @example
- * <pct-field label="Cena">
+ * <pct-field label="Price">
  *   <span pctPrefix>PLN</span>
  *   <input pctNumber [minFractionDigits]="2" [maxFractionDigits]="2" [(value)]="price" />
  * </pct-field>
  */
 @Component({
   selector: 'input[pctNumber]',
-  // Komponent (nie dyrektywa) na natywnym elemencie — jak `input[pctText]`.
+  // A component (not a directive) on a native element — as with `input[pctText]`.
   template: '',
   styleUrl: './text.scss',
   host: {
@@ -99,10 +98,10 @@ export class PctNumber
   private readonly el = inject<ElementRef<HTMLInputElement>>(ElementRef);
   private readonly field = inject(PCT_FIELD, { optional: true });
 
-  /** Wartość — `null` oznacza pole puste. */
+  /** The value — `null` means the field is empty. */
   readonly value = model<number | null>(null);
 
-  // --- FormUiControl (synchronizowane przez dyrektywę FormField) ---
+  // --- FormUiControl (kept in sync by the FormField directive) ---
 
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly readonly = input(false, { transform: booleanAttribute });
@@ -114,30 +113,29 @@ export class PctNumber
 
   readonly touch = output<void>();
 
-  // --- API komponentu ---
+  // --- component API ---
 
   /**
-   * Granice wartości. Należą do kontraktu `FormUiControl`, więc przy użyciu
-   * `[formField]` **wypełnia je sama dyrektywa** na podstawie walidatorów
-   * `min()` / `max()` ze schematu — nie trzeba ich powtarzać w szablonie.
-   * Wartość jest do nich domykana przy zatwierdzeniu.
+   * Value bounds. They belong to the `FormUiControl` contract, so with `[formField]` **the
+   * directive fills them itself** from the schema's `min()` / `max()` validators — there is no
+   * need to repeat them in the template. The value is clamped to them on commit.
    */
   readonly min = input(undefined, { transform: optionalNumber });
   readonly max = input(undefined, { transform: optionalNumber });
 
-  /** Skok strzałek góra/dół; PageUp/PageDown skacze dziesięciokrotnie. */
+  /** The up/down arrow step; PageUp/PageDown jumps ten times as far. */
   readonly step = input(1, { transform: numberAttribute });
 
-  /** Minimalna liczba miejsc dziesiętnych w zapisie (np. `2` dla kwot: „12,50"). */
+  /** Minimum number of decimal places written (`2` for amounts, say: „12.50"). */
   readonly minFractionDigits = input(0, { transform: numberAttribute });
 
-  /** Maksymalna liczba miejsc dziesiętnych; `0` (domyślnie) = liczba całkowita. */
+  /** Maximum number of decimal places; `0` (the default) = an integer. */
   readonly maxFractionDigits = input(0, { transform: numberAttribute });
 
-  /** Grupowanie tysięcy wg locale („1 234 567"). */
+  /** Locale-aware thousands grouping („1 234 567"). */
   readonly useGrouping = input(true, { transform: booleanAttribute });
 
-  /** Nadpisuje `LOCALE_ID` aplikacji dla tego pola. */
+  /** Overrides the application's `LOCALE_ID` for this field. */
   readonly locale = input<string>('');
 
   private readonly appLocale = inject(LOCALE_ID);
@@ -145,7 +143,7 @@ export class PctNumber
     () => this.locale() || this.appLocale,
   );
 
-  // --- kontrakt PctFieldControl ---
+  // --- the PctFieldControl contract ---
 
   readonly controlId = nextPctId('pct-number');
   readonly labelStrategy: PctLabelStrategy = 'for';
@@ -157,12 +155,12 @@ export class PctNumber
     () => this.invalid() && this.touched(),
   );
 
-  /** Bez ułamków klawiatura mobilna może być czysto cyfrowa. */
+  /** With no fractions the mobile keyboard can be purely numeric. */
   protected readonly inputMode = computed(() =>
     this.maxFractionDigits() > 0 ? 'decimal' : 'numeric',
   );
 
-  // --- formatowanie i parsowanie ---
+  // --- formatting and parsing ---
 
   private readonly fractionDigits = computed(() => {
     const min = Math.max(0, this.minFractionDigits());
@@ -178,7 +176,7 @@ export class PctNumber
     });
   });
 
-  /** Separatory bieżącego locale — odczytane z `Intl`, nie zgadywane. */
+  /** The separators of the current locale — read from `Intl`, not guessed. */
   private readonly separators = computed(() => {
     const parts = new Intl.NumberFormat(this.activeLocale(), {
       useGrouping: true,
@@ -190,23 +188,22 @@ export class PctNumber
     };
   });
 
-  /** Tekst czytany przez czytnik ekranu — sformatowany, nie surowa liczba. */
+  /** The text a screen reader announces — formatted, not the raw number. */
   protected readonly valueText = computed(() => {
     const v = this.value();
     return v === null ? null : this.formatter().format(v);
   });
 
   /**
-   * Dopóki użytkownik pisze, nie przepisujemy zawartości pola — inaczej
-   * kursor skakałby na koniec przy każdym znaku. Zapis do DOM następuje
-   * dopiero po zatwierdzeniu (blur, strzałki, zmiana wartości z zewnątrz).
+   * While the user is typing the field's content is not rewritten — otherwise the caret would
+   * jump to the end on every character. The write to the DOM happens only on commit (blur,
+   * arrows, a value change from outside).
    */
   private readonly typing = signal(false);
 
   /**
-   * `FormField` również dostarcza `NgControl` (interop dla starych
-   * `ControlValueAccessor`ów), więc sama jego obecność nie oznacza jeszcze
-   * klasycznych formularzy (`lesson-26`).
+   * `FormField` provides `NgControl` as well (interop for legacy `ControlValueAccessor`s), so
+   * its presence alone does not yet mean classic forms (`lesson-26`).
    */
   private readonly classicForms = inject(NgControl, {
     optional: true,
@@ -236,17 +233,17 @@ export class PctNumber
   }
 
   /**
-   * Parsuje tekst wg locale. Akceptuje szerzej niż formatuje: separator
-   * grupujący usuwamy tylko tam, gdzie faktycznie rozdziela tysiące, a jako
-   * separator dziesiętny przyjmujemy zarówno lokalny, jak i kropkę oraz
-   * przecinek — klawiatura numeryczna daje kropkę niezależnie od regionu.
+   * Parses text per locale. It accepts more widely than it formats: the grouping separator is
+   * removed only where it actually separates thousands, and the decimal separator accepted is
+   * the local one plus both the dot and the comma — a numeric keypad gives a dot whatever the
+   * region.
    */
   private parse(text: string): number | null {
     const raw = text.trim();
     if (raw === '') return null;
 
     const { decimal, group } = this.separators();
-    // Locale grupują spacją nierozdzielającą (pl-PL: U+00A0) — `\s` jej nie łapie.
+    // Locales group with a non-breaking space (pl-PL: U+00A0) — `\s` does not catch it.
     let s = raw.replace(/[\s\u00a0\u202f]/g, '');
 
     if (group.trim() !== '') {
@@ -254,7 +251,7 @@ export class PctNumber
       s = s.replace(new RegExp(`${g}(?=\\d{3}(\\D|$))`, 'g'), '');
     }
     s = s.split(decimal).join('.').replace(/,/g, '.');
-    // Minus typograficzny pojawia się w wartościach sformatowanych przez Intl.
+    // The typographic minus appears in values formatted by Intl.
     s = s.replace(/[\u2212\u2013]/g, '-');
 
     if (!/^-?\d*\.?\d*$/.test(s) || !/\d/.test(s)) return null;
@@ -262,7 +259,7 @@ export class PctNumber
     return Number.isFinite(n) ? n : null;
   }
 
-  /** Zaokrągla do dozwolonej liczby miejsc i domyka do `min`/`max`. */
+  /** Rounds to the allowed number of places and clamps to `min`/`max`. */
   private normalize(n: number): number {
     const { max } = this.fractionDigits();
     let v = Number(n.toFixed(Math.min(max, 20)));
@@ -273,7 +270,7 @@ export class PctNumber
     return v;
   }
 
-  /** Zatwierdza wartość i pozwala efektowi przepisać sformatowany tekst. */
+  /** Commits the value and lets the effect rewrite the formatted text. */
   private commit(n: number | null): void {
     this.typing.set(false);
     this.value.set(n === null ? null : this.normalize(n));
@@ -287,13 +284,13 @@ export class PctNumber
       return;
     }
     const parsed = this.parse(text);
-    // Stan przejściowy („-", „12,") nie kasuje wartości — tekst zostaje,
-    // a rozstrzygnięcie następuje przy zatwierdzeniu.
+    // A transitional state („-", „12,") does not clear the value — the text stays and the
+    // matter is settled on commit.
     if (parsed !== null) this.value.set(parsed);
   }
 
   protected onBlur(): void {
-    // Zatwierdzenie czyta tekst, nie sygnał: odrzuca śmieci, zaokrągla i domyka.
+    // The commit reads the text, not the signal: it rejects junk, rounds and clamps.
     this.commit(this.parse(this.el.nativeElement.value));
     this.touch.emit();
   }
@@ -329,13 +326,12 @@ export class PctNumber
 
   private stepBy(delta: number, event: KeyboardEvent): void {
     event.preventDefault();
-    // Punkt wyjścia zależy od tego, kto ostatnio pisał do pola:
-    //   - użytkownik pisze -> tekst, bo wpisana wartość nie jest zatwierdzona,
-    //   - poza tym -> sygnał, bo tekst w DOM bywa o jeden przebieg detekcji do
-    //     tyłu: zapisuje go efekt, a ten biegnie asynchronicznie. Czytanie
-    //     wtedy tekstu gubi krok przy szybkim powtarzaniu strzałki — dwa
-    //     naciśnięcia przed odświeżeniem widziały tę samą wartość wyjściową
-    //     i drugie było bez efektu (`lesson-32`).
+    // The starting point depends on who wrote to the field last:
+    //   - the user is typing -> the text, because what was typed is not committed,
+    //   - otherwise -> the signal, because the text in the DOM can be one detection pass
+    //     behind: an effect writes it, and that runs asynchronously. Reading the text then
+    //     loses a step when an arrow repeats quickly — two presses before a refresh saw the
+    //     same starting value, and the second had no effect (`lesson-32`).
     const current =
       (this.typing()
         ? this.parse(this.el.nativeElement.value)
@@ -346,7 +342,7 @@ export class PctNumber
     this.commit(current + delta);
   }
 
-  /** Wywoływane przez signal forms (np. `focusBoundControl()`). */
+  /** Called by signal forms (`focusBoundControl()`, for instance). */
   focus(options?: FocusOptions): void {
     this.el.nativeElement.focus(options);
   }
@@ -356,10 +352,10 @@ export class PctNumber
   }
 
   /**
-   * Dwa sposoby użycia wyglądają poprawnie, a cicho psują formatowanie:
-   * klasyczne formularze (ich `DefaultValueAccessor` przejmuje zapis do DOM
-   * i pisze surowe napisy — `lesson-20`) oraz `type="number"`, przy którym
-   * przeglądarka sama filtruje treść i gubi lokalny separator.
+   * Two ways of using this look correct and quietly break the formatting: classic forms (their
+   * `DefaultValueAccessor` takes over writing to the DOM and writes raw strings —
+   * `lesson-20`), and `type="number"`, where the browser filters the content itself and loses
+   * the local separator.
    */
   private warnOnUnsupportedUsage(): void {
     if (this.classicForms && !this.signalForms) {

@@ -11,8 +11,8 @@
   gap: var(--pct-checkbox-gap);
 }
 
-/* Pudełko trzyma natywny input (przezroczysty, na wierzchu) i rysowany znacznik.
-   Input zachowuje pełną semantykę i obsługę klawiatury (req-a11y-built-in). */
+/* The box holds the native input (transparent, on top) and the drawn mark. The input keeps
+   full semantics and keyboard handling (req-a11y-built-in). */
 .pct-checkbox__box {
   position: relative;
   display: inline-flex;
@@ -31,16 +31,16 @@
       var(--pct-motion-transition-easing);
 }
 
-/* Obszar klikalny jest niezależny od rozmiaru wizualnego pudełka: natywny input
-   jest wyśrodkowany i ma co najmniej 24x24 px (WCAG 2.2 SC 2.5.8). Dzięki temu
-   spełniamy wymóg wprost, a nie przez wyjątek odstępu — bez zmiany wyglądu. */
+/* The clickable area is independent of the box's visual size: the native input is centred and
+   at least 24x24 px (WCAG 2.2 SC 2.5.8). The requirement is thereby met outright rather than
+   through the spacing exception — and with no change in appearance. */
 .pct-checkbox__control {
   position: absolute;
   top: 50%;
-  /* pct-wyjatek left: para `left: 50%` + `translate(-50%)` wyśrodkowuje symetrycznie,
-     więc w RTL wypada w tym samym miejscu. `inset-inline-start` dałoby tu WADĘ, nie
-     poprawę: w RTL znaczy `right: 50%`, a przesunięcie o -50% szerokości idzie dalej
-     w lewo, czyli strefa trafienia zjeżdża obok pudełka. */
+  /* pct-wyjatek left: the pair `left: 50%` + `translate(-50%)` centres symmetrically, so in
+     RTL it lands in the same place. `inset-inline-start` would be a DEFECT here, not an
+     improvement: in RTL it means `right: 50%`, and a shift of -50% of the width goes further
+     left, so the hit zone slides off beside the box. */
   left: 50%;
   transform: translate(-50%, -50%);
   margin: 0;
@@ -58,7 +58,7 @@
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
-  /* Widoczny dopiero w stanie zaznaczonym/nieokreślonym. */
+  /* Visible only in the checked/indeterminate state. */
   visibility: hidden;
 }
 
@@ -77,7 +77,7 @@
   border-color: var(--pct-checkbox-border-hover);
 }
 
-/* Fokus rysowany na pudełku, bo natywny input jest przezroczysty. */
+/* Focus drawn on the box, because the native input is transparent. */
 .pct-checkbox__control:focus-visible + .pct-checkbox__mark,
 .pct-checkbox__box:has(.pct-checkbox__control:focus-visible) {
   outline: 2px solid var(--pct-focus-ring);
@@ -88,7 +88,7 @@
   border-color: var(--pct-checkbox-border-invalid);
 }
 
-/* Disabled bez opacity (req-token-no-opacity) — konkretne tokeny koloru. */
+/* Disabled without opacity (req-token-no-opacity) — explicit colour tokens. */
 :host([data-pct-disabled]) .pct-checkbox__box {
   background: var(--pct-checkbox-bg-disabled);
   border-color: var(--pct-checkbox-border-disabled);
@@ -128,9 +128,9 @@
   font-size: var(--pct-font-size-sm);
 }
 
-/* Tryb wymuszonych kolorów — reguła opisana w `field.scss`. Zaznaczenie niesie
-   tu SAMA OBECNOŚĆ ptaszka (`visibility`), więc przetrwa dowolną paletę i nie
-   trzeba go przemalowywać — wystarczy, że pudełko nie zamaluje go tłem. */
+/* Forced-colors mode — the mapping is written down in `field.scss`. Here the checked state is
+   carried by the tick's PRESENCE ALONE (`visibility`), so it survives any palette and needs no
+   repainting — it is enough that the box does not paint over it with a background. */
 @media (forced-colors: active) {
   .pct-checkbox__box,
   :host([data-pct-checked]) .pct-checkbox__box,

@@ -37,8 +37,8 @@
     var(--pct-motion-transition-easing);
 }
 
-/* W obudowie ramkę, tło i padding rysuje `pct-field` — trigger je oddaje,
-   inaczej powstałaby podwójna ramka (req-api-wrapper). */
+/* Inside the chrome `pct-field` draws the border, the background and the padding — the trigger
+   hands them over, otherwise there would be a double border (req-api-wrapper). */
 :host([data-pct-in-field]) {
   display: contents;
 }
@@ -50,14 +50,14 @@
   padding: 0;
   width: 100%;
   align-self: stretch;
-  /* Wielkość w obudowie należy do niej (`pct-field[size]`) — trigger bierze
-     rozmiar tekstu z wiersza, zamiast trzymać się własnego tokenu. Inaczej pole
-     `lg` miałoby wysokość `lg`, a tekst w środku `md`. */
+  /* Inside the chrome the size belongs to it (`pct-field[size]`) — the trigger takes the text
+     size from the row instead of keeping to a token of its own. Otherwise an `lg` field would
+     have `lg` height and `md` text inside. */
   font-size: inherit;
 }
 
 :host([data-pct-in-field]) .pct-select__trigger:focus-visible {
-  /* Focus ring rysuje obudowa na całym rzędzie. */
+  /* The chrome draws the focus ring around the whole row. */
   outline: none;
 }
 
@@ -110,9 +110,9 @@
   transform: rotate(180deg);
 }
 
-/* Rozmiary sterowane atrybutem stanu (req-api-attributes). W obudowie własny rozmiar
-   triggera nie obowiązuje — tam wielkość ustawia `pct-field` i to ona rozstrzyga
-   (inaczej dwa `size` w jednym polu dawałyby sprzeczny wynik). */
+/* Sizes driven by a state attribute (req-api-attributes). Inside the chrome the trigger's own
+   size does not apply — there `pct-field` sets the size and it decides (otherwise two `size`
+   values in one field would give a contradictory result). */
 :host([data-pct-size='sm']:not([data-pct-in-field])) .pct-select__trigger {
   font-size: var(--pct-font-size-sm);
   padding: var(--pct-space-2) var(--pct-space-3);
@@ -123,17 +123,16 @@
   padding: var(--pct-space-4) var(--pct-space-5);
 }
 
-/* Panel żyje w nakładce CDK, czyli POZA drzewem hosta. Nie można więc używać
-   selektorów `:host(...)` — stany opcji są oznaczone atrybutami na nich samych.
-   Tokeny działają, bo są zdefiniowane na `:root` (zaleta podejścia CSS-first). */
+/* The panel lives in a CDK overlay, that is OUTSIDE the host tree. `:host(...)` selectors
+   cannot be used, so option states are marked by attributes on the options themselves. Tokens
+   work, because they are defined on `:root` (an advantage of the CSS-first approach). */
 .pct-select__panel {
   box-sizing: border-box;
-  /* CDK ustawia szerokość na kontenerze nakładki — panel musi ją wypełnić. */
+  /* CDK sets the width on the overlay container — the panel has to fill it. */
   width: 100%;
-  /* Pismo panelu ustawia kontrolka przy otwarciu (krój aplikacji i wielkość
-     kontekstu — patrz `panelFont`). Token jest wartością zapasową na wypadek,
-     gdyby panel wyrenderował się przed odczytem. Opcje dziedziczą je z panelu,
-     żeby całą listę opisywała jedna reguła. */
+  /* The control sets the panel's type on opening (the application's family and the context's
+     size — see `panelFont`). The token is a fallback in case the panel renders before that
+     read. The options inherit it from the panel, so one rule describes the whole list. */
   font-size: var(--pct-select-font-size);
   max-height: var(--pct-select-panel-max-height);
   overflow-y: auto;
@@ -153,7 +152,7 @@
   user-select: none;
 }
 
-/* Aktywna klawiaturą (aria-activedescendant) — wyróżnienie tłem. */
+/* Active by keyboard (aria-activedescendant) — marked out by background. */
 .pct-select__option[data-pct-active] {
   background: var(--pct-select-option-bg-active);
   color: var(--pct-select-option-fg-active);
@@ -184,13 +183,13 @@
   font-size: var(--pct-font-size-sm);
 }
 
-/* Tryb wymuszonych kolorów — reguła opisana w `field.scss`.
-   To tutaj wymuszenie boli najbardziej: aktywna, wybrana i zwykła opcja różnią
-   się w tej liście WYŁĄCZNIE tłem, więc po podmianie palety wszystkie trzy są
-   tym samym prostokątem. Rozdzielamy je na dwa niezależne kanały — wybór niesie
-   tło (`SelectedItem`, jedyna para przeznaczona w palecie właśnie do zaznaczeń
-   na listach), a kursor klawiatury obrys. Dzięki temu opcja jednocześnie
-   wybrana i aktywna pokazuje oba stany naraz, czego jeden kanał nie potrafi. */
+/* Forced-colors mode — the mapping is written down in `field.scss`.
+   This is where the substitution hurts most: in this list the active, the selected and the
+   ordinary option differ by background ALONE, so once the palette is swapped all three are the
+   same rectangle. They are split into two independent channels — the selection carries the
+   background (`SelectedItem`, the one pair the palette intends for list selections) and the
+   keyboard cursor carries an outline. An option both selected and active therefore shows both
+   states at once, which one channel cannot do. */
 @media (forced-colors: active) {
   .pct-select__trigger {
     background: Field;
@@ -198,7 +197,7 @@
   }
 
   :host([data-pct-in-field]) .pct-select__trigger {
-    /* Tło i ramkę rysuje obudowa — trigger wnosi tylko kolor pisma. */
+    /* The chrome draws the background and the border — the trigger brings the text colour. */
     background: none;
   }
 
@@ -212,7 +211,7 @@
     border-color: GrayText;
   }
 
-  /* Strzałka idzie za stanem triggera zamiast mieć własny wymuszony kolor. */
+  /* The arrow follows the trigger's state instead of having a forced colour of its own. */
   .pct-select__arrow {
     stroke: currentColor;
   }
@@ -222,8 +221,8 @@
     color: GrayText;
   }
 
-  /* Panel jest powierzchnią strony, nie kontrolki — `box-shadow` w tym trybie
-     jest usuwany, więc od tła oddziela go wyłącznie ramka. */
+  /* The panel is a page surface, not a control one — `box-shadow` is removed in this mode, so
+     the border alone separates it from the background. */
   .pct-select__panel {
     background: Canvas;
     color: CanvasText;
@@ -239,8 +238,8 @@
     color: SelectedItemText;
   }
 
-  /* Obrys do środka, żeby kursor nie rozpychał wiersza ani nie wychodził poza
-     zaokrąglony róg panelu. */
+  /* The outline goes inwards, so the cursor neither pushes the row apart nor runs past the
+     panel's rounded corner. */
   .pct-select__option[data-pct-active] {
     outline: 2px solid Highlight;
     outline-offset: -2px;

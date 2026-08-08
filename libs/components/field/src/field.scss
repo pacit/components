@@ -5,12 +5,12 @@
   font-family: inherit;
 }
 
-/* Wielkość sterowana atrybutem stanu (req-api-attributes), tak samo jak w przycisku:
-   wariant podmienia tokeny bazowe na swoje odpowiedniki. Podmiana siedzi na
-   hoście, a nie na samym wierszu, bo z tych tokenów korzystają też elementy
-   w środku (kontrolka bierze `--pct-field-font-size`) — inaczej rozmiar ramki
-   i rozmiar tekstu w niej rozjeżdżałyby się. Wielkość `md` nie nadpisuje
-   niczego, więc nadpisanie tokenu bazowego w motywie nadal działa. */
+/* Size driven by a state attribute (req-api-attributes), as in the button: a variant swaps the
+   base tokens for its own counterparts. The swap sits on the host rather than on the row
+   itself, because the elements inside use those tokens too (the control takes
+   `--pct-field-font-size`) — otherwise the border size and the text size inside it would
+   drift apart. Size `md` overrides nothing, so overriding a base token in a theme still
+   works. */
 :host([data-pct-size='sm']) {
   --pct-field-height: var(--pct-field-height-sm);
   --pct-field-font-size: var(--pct-field-font-size-sm);
@@ -23,9 +23,9 @@
   --pct-field-padding-x: var(--pct-field-padding-x-lg);
 }
 
-/* Wiersz etykiety: nazwa po lewej, dodatek (`[pctLabelAux]`) po prawej. Dodatek
-   trzyma się prawej krawędzi także wtedy, gdy etykiety nie ma — inaczej
-   pojedynczy dodatek lądowałby po lewej. */
+/* Label row: the name at the start, the add-on (`[pctLabelAux]`) at the end. The add-on keeps
+   to the end edge even when there is no label — otherwise a lone add-on would land at the
+   start. */
 .pct-field__header {
   display: flex;
   align-items: center;
@@ -52,24 +52,24 @@
   font-size: var(--pct-font-size-sm);
 }
 
-/* Wariant `bare`: checkbox i grupa radiów nie dostają ramki — obudowa daje im
-   tylko etykietę, podpowiedź i komunikat błędu (req-api-frame). Nie ma tu też czego
-   wyrównywać do wysokości przycisku: te kontrolki wnoszą własny układ, a
-   wymuszona wysokość wiersza dokładałaby im samego pustego miejsca. Obszar
-   dotyku pilnuje kolumna kontrolki, nie wiersz. */
+/* The `bare` variant: checkbox and radio group get no border — the chrome gives them the
+   label, the hint and the error message only (req-api-frame). There is nothing here to line up
+   with a button's height either: these controls bring a layout of their own, and a forced row
+   height would add nothing but empty space. The touch area is guarded by the control column,
+   not by the row. */
 :host([data-pct-appearance='bare']) .pct-field__row {
   background: none;
   border: none;
   min-height: 0;
-  /* Bez ramki nie ma do czego docinać zaokrąglonych rogów — a `border-radius`
-     z `overflow: clip` (potrzebne tylko przy widocznej ramce) obcinałyby róg
-     kontrolki stojącej w rogu wiersza (checkbox) i jej pierścień fokusu
-     (`outline-offset`). Dlatego w wariancie `bare` róg i przycinanie znikają. */
+  /* With no border there is nothing to clip rounded corners against — and `border-radius`
+     with `overflow: clip` (needed only when the border is visible) would cut the corner of a
+     control standing in the row's corner (checkbox) and its focus ring (`outline-offset`).
+     Hence in the `bare` variant the corner and the clipping go away. */
   border-radius: 0;
   overflow: visible;
 }
 
-/* Bez ramki nie ma czego wyściełać — padding kolumn odpada razem z nią. */
+/* With no border there is nothing to pad — the column padding goes with it. */
 :host([data-pct-appearance='bare']) .pct-field__prefix,
 :host([data-pct-appearance='bare']) .pct-field__control,
 :host([data-pct-appearance='bare']) .pct-field__suffix {
@@ -80,18 +80,18 @@
   outline: none;
 }
 
-/* Ramkę rysuje obudowa, nie kontrolka — inaczej dekoracje prefix/suffix
-   znalazłyby się poza polem. Kontrolka w środku jest przezroczysta.
+/* The chrome draws the border, not the control — otherwise the prefix/suffix decorations would
+   end up outside the field. The control inside is transparent.
 
-   Rząd **nie ma własnego paddingu ani `gap`**: odstępy niosą kolumny w środku
-   (`prefix`, `control`, `suffix`), a kolumny rozciągają się na całą wysokość.
-   Inaczej większość powierzchni ramki nie należy do żadnej z nich i nie da się
-   jej nadać ani kursora, ani stanu `:hover` zgodnego z tym, co zrobi klik.
+   The row has **no padding and no `gap` of its own**: the spacing is carried by the columns
+   inside (`prefix`, `control`, `suffix`), and the columns stretch to the full height.
+   Otherwise most of the border's surface belongs to none of them, and it can be given neither
+   a cursor nor a `:hover` state matching what a click will do.
 
-   Wysokość wiersza jest wartością wprost (`--pct-field-height`), a nie sumą
-   paddingu i wysokości linii — dopiero to pozwala zgrać ją co do piksela
-   z przyciskiem tej samej wielkości (req-api-size). `min-height`, a nie `height`,
-   bo wyższa zawartość (textarea, przycisk w slocie) ma wiersz rozpychać. */
+   The row height is a value outright (`--pct-field-height`), not the sum of padding and line
+   height — only that allows lining it up to the pixel with a button of the same size
+   (req-api-size). `min-height`, not `height`, because taller content (a textarea, a button in
+   a slot) is meant to push the row apart. */
 .pct-field__row {
   display: flex;
   align-items: stretch;
@@ -111,8 +111,8 @@
   border-color: var(--pct-field-border-hover);
 }
 
-/* Fokus dowolnego elementu w środku podświetla całe pole — także gdy fokus
-   trafi na przycisk w slocie suffix. */
+/* Focus on any element inside highlights the whole field — including when focus lands on a
+   button in the suffix slot. */
 .pct-field__row:has(:focus-visible) {
   outline: 2px solid var(--pct-focus-ring);
   outline-offset: 1px;
@@ -129,18 +129,17 @@
   color: var(--pct-field-fg-disabled);
 }
 
-/* Pion kolumn niesie teraz wysokość wiersza (`align-items: stretch`), a nie ich
-   własny padding — inaczej wysokość pola byłaby sumą, której nie da się zgrać
-   z przyciskiem. Kolumny nadal kafelkują wnętrze ramki szczelnie. */
+/* The vertical run of the columns now carries the row height (`align-items: stretch`) rather
+   than their own padding — otherwise the field height would be a sum that cannot be lined up
+   with a button. The columns still tile the inside of the border tightly. */
 .pct-field__control {
   display: flex;
   align-items: stretch;
   flex: 1 1 auto;
-  min-width: 0; /* pozwala kontrolce się skracać zamiast rozpychać pole */
-  /* Obudowa gwarantuje minimalny obszar dotyku (req-a11y-touch) niezależnie od tego,
-     jaka kontrolka jest w środku — sama wysokość linii tekstu to ~20 px, czyli
-     poniżej progu SC 2.5.8. Wysokość wielkości `sm` jest wyższa, więc warunek
-     wiąże dopiero przy motywie zagęszczającym pola poniżej progu. */
+  min-width: 0; /* lets the control shrink instead of pushing the field apart */
+  /* The chrome guarantees a minimum touch area (req-a11y-touch) whatever control is inside —
+     a text line alone is ~20 px, that is below the SC 2.5.8 threshold. The `sm` size height is
+     taller, so the condition binds only under a theme packing fields below the threshold. */
   min-height: var(--pct-target-min);
 }
 
@@ -152,11 +151,11 @@
   color: var(--pct-field-affix-fg);
 }
 
-/* Cały odstęp poziomy niosą sloty dekoracji: od krawędzi ramki na zewnątrz,
-   `gap` od strony kontrolki. Pusty slot **nie znika** — zwija się do samego
-   paddingu krawędzi i tym samym jest lewym/prawym marginesem wnętrza ramki.
-   Dzięki temu każdy piksel rzędu należy do którejś z trzech kolumn, niezależnie
-   od tego, czy dekoracje są. */
+/* The whole horizontal spacing is carried by the decoration slots: the border-edge padding on
+   the outside, the `gap` on the control's side. An empty slot **does not vanish** — it
+   collapses to the edge padding alone and thereby is the start/end margin inside the border.
+   Every pixel of the row therefore belongs to one of the three columns, whether there are
+   decorations or not. */
 .pct-field__prefix {
   padding-inline-start: var(--pct-field-padding-x);
   padding-inline-end: var(--pct-field-gap);
@@ -175,33 +174,34 @@
   padding-inline-start: 0;
 }
 
-/* Dopasowanie dekoracji do slotu zgłasza autor pola (`pctPrefix="fill"`), a nie
-   arkusz po zawartości slotu. Domyślne `inset` zostawia dekorację wyśrodkowaną
-   i wpisaną w padding ramki: należy do powierzchni pola, klik w nią fokusuje
-   kontrolkę, więc dziedziczy też jej kursor.
+/* How a decoration fits its slot is reported by the field's author (`pctPrefix="fill"`), not
+   by the stylesheet reading the slot's content. The default `inset` leaves the decoration
+   centred and inscribed in the border padding: it belongs to the field surface, a click on it
+   focuses the control, so it inherits the control's cursor too.
 
-   `fill` oddaje dekoracji **cały** slot — od krawędzi ramki po odstęp kontrolki,
-   na pełną wysokość — bo to ona jest tam powierzchnią: ma własne tło, własny
-   kursor i sama przyjmuje kliknięcie. Wcześniej decydowała tu obecność elementu
-   interaktywnego (`:has(button, a, [tabindex])`), co wiązało dwie niezależne
-   rzeczy: przycisk **nie mógł** być mniejszy od slotu, a kafelek z tłem większy
-   (`lesson-34`). */
+   `fill` gives the decoration the **whole** slot — from the border edge to the control's gap,
+   at full height — because there the decoration is the surface: it has its own background, its
+   own cursor, and takes the click itself. What used to decide here was the presence of an
+   interactive element (`:has(button, a, [tabindex])`), which tied two independent things
+   together: a button **could not** be smaller than its slot, nor a tile with a background
+   larger (`lesson-34`). */
 .pct-field__prefix:has([data-pct-fit='fill']),
 .pct-field__suffix:has([data-pct-fit='fill']) {
   align-items: stretch;
   padding: 0;
-  /* Powierzchnia dekoracji nie zapowiada pisania w polu. Przycisk w slocie ma
-     własny `pointer` — kursor bierze się z elementu, nie z dziedziczenia. */
+  /* A decoration's surface does not announce typing in the field. A button in the slot has
+     its own `pointer` — the cursor comes from the element, not from inheritance. */
   cursor: default;
-  /* Dekoracja jest wspawana w ramkę, więc róg docina jej ramka (`overflow: clip`).
-     Własny róg przycisku zostawiłby przy rogu pola prześwit tła. */
+  /* The decoration is welded into the border, so the border clips its corner
+     (`overflow: clip`). A corner of the button's own would leave a sliver of background at the
+     field's corner. */
   --pct-button-radius: 0;
 }
 
-/* Odstęp między dekoracją `fill` a kontrolką przechodzi na kolumnę kontrolki:
-   slot oddał całą swoją powierzchnię dekoracji, a tekst nie może dotykać jej
-   tła. Pas nadal ma właściciela — kontrolkę, którą klik w niego fokusuje, więc
-   kursor nad nim mówi to samo co klik. */
+/* The gap between a `fill` decoration and the control moves to the control's column: the slot
+   gave its whole surface to the decoration, and the text must not touch its background. The
+   strip still has an owner — the control, which a click on it focuses, so the cursor over it
+   says the same thing as the click. */
 .pct-field__row:has(.pct-field__prefix [data-pct-fit='fill'])
   .pct-field__control {
   padding-inline-start: var(--pct-field-gap);
@@ -212,9 +212,9 @@
   padding-inline-end: var(--pct-field-gap);
 }
 
-/* Kursor zapowiada skutek kliknięcia na całej powierzchni ramki. Rodzaj zgłasza
-   kontrolka przez `PctFieldControl.fieldCursor` — arkusz obudowy nie zna klas
-   poszczególnych kontrolek. */
+/* The cursor announces what a click does across the whole border surface. Which kind is
+   reported by the control through `PctFieldControl.fieldCursor` — the chrome stylesheet does
+   not know the classes of individual controls. */
 :host([data-pct-cursor='text']) .pct-field__row {
   cursor: text;
 }
@@ -223,18 +223,18 @@
   cursor: pointer;
 }
 
-/* Po regułach kursora, żeby je przykryć: nad polem, w którym nic nie zrobisz,
-   kursor nie może zapraszać do pisania ani do klikania. Sloty wymieniamy osobno,
-   bo dekoracja `fill` deklaruje własny kursor i nie dziedziczy go po rzędzie. */
+/* After the cursor rules, so as to override them: over a field where nothing can be done the
+   cursor must invite neither typing nor clicking. The slots are listed separately, because a
+   `fill` decoration declares a cursor of its own and does not inherit the row's. */
 :host([data-pct-disabled]) .pct-field__row,
 :host([data-pct-disabled]) .pct-field__prefix,
 :host([data-pct-disabled]) .pct-field__suffix {
   cursor: not-allowed;
 }
 
-/* Wiersz komunikatu: pojedyncza linia (podpowiedź albo błąd) po lewej, dodatek
-   (`[pctMessageAux]`, np. licznik) po prawej. Komunikat może się zawijać, więc
-   dodatek wyrównujemy do jego pierwszej linii, a nie do środka. */
+/* Message row: a single line (hint or error) at the start, the add-on (`[pctMessageAux]`, a
+   counter say) at the end. The message can wrap, so the add-on is aligned to its first line
+   rather than to the middle. */
 .pct-field__footer {
   display: flex;
   align-items: flex-start;
@@ -243,7 +243,7 @@
 
 .pct-field__message {
   flex: 1 1 auto;
-  min-width: 0; /* pozwala długiemu komunikatowi się zawijać, nie rozpychać wiersza */
+  min-width: 0; /* lets a long message wrap instead of pushing the row apart */
 }
 
 .pct-field__message-aux {
@@ -263,38 +263,38 @@
   font-size: var(--pct-font-size-sm);
 }
 
-/* --- Tryb wymuszonych kolorów (Windows High Contrast) ---------------------
-   W tym trybie przeglądarka podmienia KAŻDY kolor autora na kolor z palety
-   użytkownika. Tokeny przestają więc cokolwiek znaczyć, a każdy stan wyrażony
-   wyłącznie kolorem znika — dwa różne tła stają się tym samym `Canvas`.
-   Odpowiedzią nie jest `forced-color-adjust: none` (to zabrania użytkownikowi
-   jego własnej palety), tylko przepisanie tych stanów na słowa kluczowe palety
-   systemowej. Reguła obowiązuje w całej bibliotece (req-a11y-forced-colors):
+/* --- Forced-colors mode (Windows High Contrast) ---------------------------
+   In this mode the browser replaces EVERY author colour with one from the user's palette.
+   Tokens therefore stop meaning anything, and every state expressed by colour alone
+   disappears — two different backgrounds become the same `Canvas`. The answer is not
+   `forced-color-adjust: none` (that denies the user their own palette) but rewriting those
+   states onto system-palette keywords. This is the library-wide mapping
+   (req-a11y-forced-colors), and the other stylesheets point here:
 
-     powierzchnia kontrolki   -> Field / FieldText
-     powierzchnia panelu      -> Canvas / CanvasText
-     fokus                    -> Highlight
-     wybrana pozycja listy    -> SelectedItem / SelectedItemText
-     wyłączone                -> GrayText
-     znaczniki (ptaszek, kropka) -> kolor tekstu; stan niesie ICH OBECNOŚĆ,
-       nie barwa — to jedyny zapis odporny na dowolną paletę
+     control surface          -> Field / FieldText
+     panel surface            -> Canvas / CanvasText
+     focus                    -> Highlight
+     selected list item       -> SelectedItem / SelectedItemText
+     disabled                 -> GrayText
+     marks (tick, dot)        -> the text colour; the state is carried by THEIR PRESENCE,
+       not by hue — the only form robust against any palette
 
-   Obramowań nie wymieniamy: przeglądarka sama wymusza na nich `ButtonBorder`,
-   który z definicji odcina się od tła. */
+   Borders are not replaced: the browser forces `ButtonBorder` on them itself, and that by
+   definition stands out from the background. */
 @media (forced-colors: active) {
   .pct-field__row {
     background: Field;
     color: FieldText;
   }
 
-  /* Bez tego pierścień fokusu dostaje wymuszony kolor obramowania i zlewa się
-     z ramką pola — czyli znika dokładnie tam, gdzie jest najbardziej potrzebny. */
+  /* Without this the focus ring gets the forced border colour and merges with the field
+     border — that is, it vanishes exactly where it is needed most. */
   .pct-field__row:has(:focus-visible) {
     outline-color: Highlight;
   }
 
-  /* `color` na wierszu, żeby stan dziedziczyły też kontrolka i dekoracje
-     w środku — inaczej wygaszone pole zostaje z tekstem w kolorze aktywnego. */
+  /* `color` on the row, so that the control and the decorations inside inherit the state too
+     — otherwise a dimmed field is left with text in the active colour. */
   :host([data-pct-disabled]) .pct-field__row {
     background: Field;
     color: GrayText;

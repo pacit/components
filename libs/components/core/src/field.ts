@@ -1,106 +1,103 @@
 import { computed, InjectionToken, Signal } from '@angular/core';
 
-/** Minimalny, strukturalny kształt błędu walidacji — bez wiązania `core` z API formularzy. */
+/** Minimal structural shape of a validation error — keeps `core` free of any forms API. */
 export interface PctValidationError {
   readonly message?: string;
 }
 
 /**
- * Sposób powiązania etykiety z kontrolką:
- * - `for` — etykieta wskazuje pojedynczy element (`<label for>`): pole tekstowe, select, data,
- * - `labelledby` — etykieta nazywa kontener (`aria-labelledby`): grupa radiów, zestaw pól.
+ * How the label is bound to the control:
+ * - `for` — the label points at a single element (`<label for>`): text field, select, date,
+ * - `labelledby` — the label names a container (`aria-labelledby`): radio group, field set.
  */
 export type PctLabelStrategy = 'for' | 'labelledby';
 
 /**
- * Czy obudowa ma narysować wokół kontrolki ramkę pola.
- * - `boxed` — pole tekstowe, select, data: ramka jest właściwa,
- * - `bare` — checkbox, grupa radiów: ramka wokół nich wygląda obco, obudowa
- *   dostarcza wyłącznie etykietę, podpowiedź i komunikat błędu.
+ * Whether the chrome draws a field border around the control.
+ * - `boxed` — text field, select, date: a border belongs there,
+ * - `bare` — checkbox, radio group: a border around those looks foreign, so the chrome
+ *   supplies the label, the hint and the error message only.
  */
 export type PctFieldAppearance = 'boxed' | 'bare';
 
 /**
- * Kursor nad powierzchnią pola. Ramka jest jednym obszarem klikalnym, więc
- * kursor musi zapowiadać to, co kliknięcie zrobi — na **całej** jej powierzchni,
- * nie tylko nad samą kontrolką:
- * - `text` — klik ustawia karetkę (pole tekstowe, liczbowe),
- * - `pointer` — klik otwiera lub przełącza (select, data),
- * - `default` — kontrolka bez ramki (`bare`) albo neutralna.
+ * Cursor over the field surface. The border is one clickable area, so the cursor has to
+ * announce what a click will do over **all** of it, not just over the control itself:
+ * - `text` — a click places the caret (text, number),
+ * - `pointer` — a click opens or toggles (select, date),
+ * - `default` — a control with no border (`bare`), or a neutral one.
  *
- * Zgłasza to kontrolka, a nie arkusz obudowy: inaczej `field.scss` musiałby
- * znać klasy każdej kontrolki z osobna i każda nowa zaczynałaby od tego błędu.
+ * The control reports it, not the chrome stylesheet: otherwise `field.scss` would have to
+ * know the classes of every control one by one, and each new one would start from that bug.
  */
 export type PctFieldCursor = 'text' | 'pointer' | 'default';
 
 /**
- * Kontrakt, którym kontrolka przedstawia się obudowie `pct-field`.
- * Obudowa jest prezentacyjna: czyta stan kontrolki i oddaje jej z powrotem
- * identyfikatory opisów (`aria-describedby`).
+ * The contract by which a control presents itself to the `pct-field` chrome. The chrome is
+ * presentational: it reads the control's state and hands back the ids of its descriptions
+ * (`aria-describedby`).
  */
 export interface PctFieldControl {
-  /** Id elementu, który ma być celem etykiety / nazwany przez nią. */
+  /** Id of the element the label is to target / be named by. */
   readonly controlId: string;
   readonly labelStrategy: PctLabelStrategy;
-  /** Domyślnie `boxed`, jeśli kontrolka nie zgłosi inaczej. */
+  /** `boxed` unless the control says otherwise. */
   readonly fieldAppearance?: PctFieldAppearance;
-  /** Domyślnie `default`, jeśli kontrolka nie zgłosi inaczej. */
+  /** `default` unless the control says otherwise. */
   readonly fieldCursor?: PctFieldCursor;
   readonly invalid: Signal<boolean>;
   readonly touched: Signal<boolean>;
   readonly required: Signal<boolean>;
   readonly disabled: Signal<boolean>;
   readonly errors: Signal<readonly PctValidationError[]>;
-  /** Obudowa przekazuje id podpowiedzi i błędu; kontrolka wystawia je na sobie. */
+  /** The chrome passes the hint and error ids; the control exposes them on itself. */
   setDescribedBy(ids: string | null): void;
   /**
-   * Fokusuje kontrolkę. Obudowa wywołuje to, gdy użytkownik kliknie w obszar
-   * pola poza samą kontrolką (padding ramki, odstęp między dekoracjami) —
-   * inaczej powstaje „martwa strefa", w której kliknięcie nic nie robi.
+   * Focuses the control. The chrome calls this when the user clicks the field area outside
+   * the control itself (border padding, the gap between decorations) — otherwise a „dead
+   * zone" appears, where a click does nothing.
    */
   focus?(options?: FocusOptions): void;
   /**
-   * Uruchamia kontrolkę tak, jak zrobiłoby to kliknięcie w nią samą. Obudowa
-   * woła to po kliknięciu w ramkę poza kontrolką — inaczej `cursor: pointer`
-   * nad całą ramką selecta obiecywałby otwarcie listy, a klik w padding tylko
-   * przenosiłby fokus. Kontrolki tekstowe tego nie implementują: dla nich
-   * sam `focus()` jest pełną odpowiedzią na kliknięcie.
+   * Activates the control the way a click on it would. The chrome calls this after a click
+   * on the border outside the control — otherwise `cursor: pointer` over a select's whole
+   * border would promise the list opening while a click in the padding only moved focus.
+   * Text controls do not implement it: for them `focus()` is the whole answer to a click.
    */
   activate?(): void;
   /**
-   * Dla `labelStrategy: 'labelledby'` obudowa przekazuje id swojej etykiety —
-   * kontrolka-kontener (np. grupa radiów) wystawia je jako `aria-labelledby`,
-   * bo `<label for>` nie nazywa grupy elementów.
+   * For `labelStrategy: 'labelledby'` the chrome passes the id of its label — a container
+   * control (a radio group, say) exposes it as `aria-labelledby`, because `<label for>` does
+   * not name a group of elements.
    */
   setLabelledBy?(id: string | null): void;
 }
 
-/** API obudowy widoczne dla kontrolek wewnętrznych. */
+/** The chrome API visible to inner controls. */
 export interface PctFieldApi {
-  /** Kontrolka rejestruje się w obudowie (wywoływane w jej konstruktorze). */
+  /** A control registers itself with the chrome (called from its constructor). */
   attach(control: PctFieldControl): void;
   /**
-   * Element ramki pola — powierzchnia, do której kontrolka z własną nakładką
-   * (select, a w przyszłości data) wyrównuje panel. Kontrolka w obudowie stoi
-   * w kolumnie odsuniętej od ramki o padding i dekoracje, więc panel oparty
-   * o nią sam byłby węższy od pola i przesunięty. Krawędź, którą widzi
-   * użytkownik, jest ramką obudowy i to ona wyznacza szerokość panelu.
+   * The field border element — the surface a control with an overlay of its own (select,
+   * and date in the future) aligns its panel to. Inside the chrome a control stands in a
+   * column inset from the border by padding and decorations, so a panel anchored to the
+   * control would be narrower than the field and offset. The edge the user sees is the
+   * chrome's border, and it is what sets the panel width.
    */
   readonly surface: Signal<HTMLElement | null>;
 }
 
 /**
- * Token dostarczany przez `pct-field`. Kontrolki wstrzykują go **opcjonalnie**:
- * jego obecność oznacza „jestem w obudowie, oddaję etykietę i komunikaty".
- * Dzięki temu kontrolki z własnym układem (checkbox, radiogroup) działają
- * zarówno samodzielnie, jak i wewnątrz `pct-field`.
+ * Token provided by `pct-field`. Controls inject it **optionally**: its presence means „I am
+ * inside the chrome, I hand over the label and the messages". That way controls with a layout
+ * of their own (checkbox, radiogroup) work both standalone and inside `pct-field`.
  */
 export const PCT_FIELD = new InjectionToken<PctFieldApi>('PCT_FIELD');
 
 /**
- * Wspólna logika komunikatów: tekst pierwszego błędu i bramkowanie widoczności
- * na `touched`. Wydzielona, bo była kopiowana do każdej kontrolki osobno —
- * poprawka musiała być powtarzana N razy (req-api-wrapper).
+ * Shared message logic: the text of the first error, and gating visibility on `touched`.
+ * Extracted because it was being copied into every control separately — a fix then had to be
+ * repeated N times (req-api-wrapper).
  */
 export function pctFieldMessages(src: {
   invalid: Signal<boolean>;
@@ -108,13 +105,13 @@ export function pctFieldMessages(src: {
   errors: Signal<readonly PctValidationError[]>;
 }) {
   const errorText = computed(() => src.errors()?.[0]?.message ?? '');
-  /** Błąd sygnalizujemy dopiero po dotknięciu — pusty formularz nie świeci na czerwono. */
+  /** An error is signalled only once touched — an empty form does not glow red. */
   const showInvalid = computed(() => src.invalid() && src.touched());
   const showError = computed(() => showInvalid() && errorText() !== '');
   return { errorText, showInvalid, showError };
 }
 
-/** Składa `aria-describedby` z identyfikatorów, pomijając nieaktywne. */
+/** Builds `aria-describedby` out of ids, skipping the inactive ones. */
 export function pctDescribedBy(
   parts: readonly (readonly [id: string, active: boolean])[],
 ): string | null {

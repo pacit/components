@@ -73,12 +73,14 @@ G  gaps with no deadline    waiting for the trigger written in their „Binds at
 H  one language, no filler  English + compression; the public part sits in B
 ```
 
-**Phase A is closed and so is H4**, so the next milestone is not a release but the **first
+**Phase A is closed and so are H1–H5**, so the next milestone is not a release but the **first
 push to the public repository** (B2): everything a first visitor reads is now in one language,
-and the push is a premiere rather than a backup. What H said had to come first — H1 (identifiers), H2
-(the concision criterion, [0017](decisions/0017-one-home-per-fact.md)), H3 (the title page)
-and H4 (`docs/`) — is done, and `LICENSE` has a gate on both sides of `npm pack` (B1). The
-rest of B (B3, B4, B8) binds only at publication to npm.
+and the push is a premiere rather than a backup. H1 (identifiers), H2 (the concision criterion,
+[0017](decisions/0017-one-home-per-fact.md)), H3 (the title page), H4 (`docs/`) and H5 (`libs`)
+are done, and `LICENSE` has a gate on both sides of `npm pack` (B1). **The built package now
+carries no Polish at all**, so of B only the package README (B3) and the gate (B8) stand between
+here and npm; B4 shrank to one job that needs the public repository to exist.
+Still in H: H6 (test names), H7 (gate headers), H8 (proper names), H10 (`apps/`), H9 (commits).
 In parallel: F1 is unblocked (A3 and A4 gave it both inventories to render), and C is filler.
 
 H is not a separate phase, but it has an **earlier deadline than the release**: the repository
@@ -301,37 +303,30 @@ block publication and is an order of magnitude larger.
     the first push there is no remote CI, no provenance and no copy off this machine
   - cost: minutes for the task itself · _notes:_ —
 
-- [ ] **B3 — package README and `description` in English**
+- [ ] **B3 — package README in English**
   - concerns: [`req-project-language`](requirements/project.md#req-project-language) — the layer
     that has no right to stand in a register of exceptions
-  - `libs/components/README.md` is still the Nx generator stub („This library was generated
-    with Nx", seven lines) and **travels to `dist`** — it is the package page on npm. The
-    manifest `description` is in Polish, and that one sentence shows up in npm search results
-    before anyone opens the README
-  - the measured scope is three files, not two: the manifest, the README and the headers of
-    the generated theme artefacts — `themes/pct.css` and `themes/_tokens.scss`. Both travel in
-    the package, both are written by `libs/tokens/build.mjs`, so the fix belongs **in the
-    generator**, not in its output
-  - the package README is written from scratch rather than translated: the Nx stub has nothing
-    to carry over, and it is the first page anybody sees
+  - **two of the three files closed at H5**: the manifest `description` (the sentence npm shows
+    in search results) and the headers of the generated theme artefacts, fixed in
+    `libs/tokens/build.mjs` rather than in its output, as this position said they should be
+  - what is left is `libs/components/README.md` — still the Nx generator stub („This library
+    was generated with Nx", seven lines) and it **travels to `dist`**, so it is the package
+    page on npm. Written from scratch rather than translated: the stub has nothing to carry
+    over, and it is the first page anybody sees
   - cost: ~0.5 day · _notes:_ —
 
-- [ ] **B4 — JSDoc of the public API in English**
+- [ ] **B4 — citations in the public API as links**
   - concerns: [`req-project-language`](requirements/project.md#req-project-language)
-  - this text shows up in the editor tooltip **at the consumer's**, not in this repository
-  - measured scope: **24 files of the built package** carry Polish — all eight `types/*.d.ts`,
-    seven `fesm2022/*.mjs` (comments survive the build), source maps and the manifest. In the
-    sources that is **15 files** of `libs/**/*.ts` outside the specs
-  - **a second thing in the same place, not about language:** the public `.d.ts` cite `req-*`
-    and `lesson-*` **31 times** as bare identifiers that lead nowhere for a consumer. The
-    answer is **a link, not a deletion** — the documentation stands publicly on GitHub, so
-    `@see https://…/docs/requirements/a11y.md#req-a11y-built-in` is worth more than a
-    paragraph repeated in a tooltip
-  - compression here is about **prose, not examples**: `@example` is the most valuable text in
-    JSDoc and has no budget ([0017](decisions/0017-one-home-per-fact.md)). What shrinks are
-    explanations a link can replace — `PctFieldCursor` spends ten lines of prose on three
-    variants of a type
-  - cost: 1–2 days · _notes:_ —
+  - **the language half is done** _(2026-08-08, with H5)_: the 24 files of the built package
+    that carried Polish — all eight `types/*.d.ts`, seven `fesm2022/*.mjs`, the source maps and
+    the manifest — measure **zero** today. Translating the JSDoc apart from the file it stands
+    in would have meant opening all 15 sources twice, so it travelled with H5
+  - what is left is the second thing in the same place, and it is not about language: the
+    public `.d.ts` cite `req-*` and `lesson-*` **31 times** as bare identifiers that lead
+    nowhere for a consumer. The answer is **a link, not a deletion** — so this waits on **B2**,
+    because the address `@see https://…/docs/requirements/a11y.md#req-a11y-built-in` has to
+    resolve before it is worth more than the paragraph it replaces
+  - cost: ~0.5 day · _notes:_ —
 
 - [x] **B5 — negative control for `ng add`** _(2026-08-04, with A1)_
   - closed: `req-release-ng-add`
@@ -571,19 +566,20 @@ There are two binding moments and **the earlier one is wider**: the first push (
 `npm pack`. Outside both stands **H1**, which binds to nothing external but gets pricier with
 every sentence written.
 
-Measured 2026-08-06 (`git ls-files` + a diacritics scan), refreshed 2026-08-07:
+Measured 2026-08-06 (`git ls-files` + a diacritics scan), refreshed 2026-08-08:
 
-| layer                               | volume                                                      | binds at                 |
-| ----------------------------------- | ----------------------------------------------------------- | ------------------------ |
-| package public surface              | 24 files in `dist`, all eight `types/*.d.ts` among them     | release (B3/B4)          |
-| `README.md`, `AGENTS.md`, workflows | done — **H3** (11 files, 5 903 → 4 884 words)               | first push               |
-| `docs/` documentation               | done — **H4** (40 files)                                    | first push               |
-| identifiers and their citations     | done — **H1** (82 + 59 names, 2 571 citations in 175 files) | —                        |
-| `libs` sources                      | 39 files, 9 of them specs                                   | —                        |
-| test names                          | 161 of 191 `it()`                                           | —                        |
-| tools and gates                     | 13 scripts, 595 header lines, 359 of them over budget       | —                        |
-| proper names in contracts           | 1 target, 7 policies/snapshots, 100 fixture directories     | —                        |
-| commit history                      | 49 commits                                                  | squashed before the push |
+| layer                               | volume                                                                 | binds at                 |
+| ----------------------------------- | ---------------------------------------------------------------------- | ------------------------ |
+| package public surface              | done — **H5** (24 files in `dist` → **0**; the README is B3)           | release (B3)             |
+| `README.md`, `AGENTS.md`, workflows | done — **H3** (11 files, 5 903 → 4 884 words)                          | first push               |
+| `docs/` documentation               | done — **H4** (40 files)                                               | first push               |
+| identifiers and their citations     | done — **H1** (82 + 59 names, 2 571 citations in 175 files)            | —                        |
+| `libs` sources                      | done — **H5** (30 files, plus 14 config and token files)               | —                        |
+| test names                          | 154 of 186 `it()` in `libs`, 99 of 127 `test()` in e2e                 | —                        |
+| `apps/` sandbox and e2e             | 68 files + 26 screenshot names — **H10**, counted by nothing until now | first push               |
+| tools and gates                     | 15 scripts (2 of them outside `tools/`), 609 header lines              | —                        |
+| proper names in contracts           | 1 target, 7 policies/snapshots, 100 fixture directories                | —                        |
+| commit history                      | 49 commits                                                             | squashed before the push |
 
 - [x] **H1 — the identifier and documentation-name space** _(2026-08-06)_
   - done: **83 requirement identifiers**, **59 lessons** (`lekcja-N` → `lesson-N`) and **2 571
@@ -637,25 +633,37 @@ Measured 2026-08-06 (`git ls-files` + a diacritics scan), refreshed 2026-08-07:
     Heading anchors have no gate and drift silently — four found, one older than this session
   - cost: ~2 days for 40 files (plan: 3–5) · journal 2026-08-07 (two entries)
 
-- [ ] **H5 — `libs` sources outside the public API**
-  - 39 `.ts`/`.scss`/`.html` files with Polish text; the public JSDoc belongs to **B4**, what is
-    left here is the rest: private comments, stylesheets, `testing/`, schematics
-  - one move together with the compression from H2 — reading the file is the main cost, so two
-    passes cost twice as much as one
-  - cost: ~1 day · _notes:_ —
+- [x] **H5 — `libs` sources outside the public API** _(2026-08-08)_
+  - done: 30 non-spec `.ts`/`.scss`/`.html` files with the public JSDoc standing in them, plus
+    the layer the scope line hid — `project.json`, nine DTCG token files, `eslint.config.mjs`,
+    `mutacja.vitest.config.mts` and two tsconfigs (44 files, ~2 800 words of prose)
+  - closes **B4's language half**: the built package went from 24 files carrying Polish to
+    **zero**. Two of them were generated, so those fixes went into `libs/tokens/build.mjs` and
+    `stamp-version.mjs`, never into their output
+  - control: `typecheck`, `lint`, `test`, `format:check` and ten gates green; mutation score
+    unchanged at 81.77%, bundle 114 766 → 114 610 B, inside the tolerance
+  - left for **H6**: the nine spec files, whose comments and `it()` names are one read
+  - cost: ~1 day · journal 2026-08-08 · found **H10**
 
 - [ ] **H6 — test names**
-  - 161 of 191 `it()` and most `describe()`. It looks mechanical and **is not**: test names are
-    cited in the **Control** field of requirements (e.g. `hydration.spec.ts › „bramka
-faktycznie wykrywa błąd hydracji"`), so renaming without fixing the citation leaves a
-    requirement pointing at a test that does not exist
+  - **154 of 186 `it()` in `libs` and 99 of 127 `test()` in `apps/sandbox-e2e`** — the e2e half
+    was outside the previous count, which said „161 of 191 `it()`" and saw only Vitest
+  - the nine `libs` spec files still carrying Polish are H5's remainder, left here on purpose:
+    their comments and their `it()` names are one read, so splitting them costs the file twice
+  - it looks mechanical and **is not**: test names are cited in the **Control** field of
+    requirements (e.g. `hydration.spec.ts › „bramka faktycznie wykrywa błąd hydracji"`), so
+    renaming without fixing the citation leaves a requirement pointing at a test that does not
+    exist — seven such citations in four files, left in Polish at H4 for exactly this reason
   - `check-docs` checks **paths**, not the sentence after `›` — that part is unguarded today,
     and it is worth measuring whether it can be closed while we are here
-  - cost: ~0.5 day · _notes:_ —
+  - cost: ~1 day · _notes:_ —
 
 - [ ] **H7 — gate headers and messages** _(the main target of the compression)_
   - 13 scripts, 10 343 lines, of which 595 are headers alone (28–74 lines per script). This is
     where the problem sits — not in JSDoc and not in the documentation
+  - **plus two scripts `measure-prose.mjs` never saw**, because it reads `tools/*.mjs` alone:
+    `libs/components/check-package.mjs` (91 Polish lines) and `libs/tokens/build.mjs` (47).
+    Both are gates or generators like the rest; only their address differs
   - the budget from [0017](decisions/0017-one-home-per-fact.md) allows 251 lines, so **359 to
     cut**, with a target per file — `node tools/measure-prose.mjs --over`
   - the remedy is the one from H2: **a link instead of a repetition**. A header says what the
@@ -696,9 +704,49 @@ faktycznie wykrywa błąd hydracji"`), so renaming without fixing the citation l
     commit
   - cost: minutes · _notes:_ —
 
+- [ ] **H10 — the `apps/` sandbox and its e2e harness**
+  - **68 files with Polish, and no layer of the table above counted them until 2026-08-08.**
+    The sandbox is the demo a visitor opens; the e2e harness is the proof the gates cite. Both
+    stand in the repository from the first push, so this binds where H3 and H4 bound
+  - split: `apps/sandbox` — 40 files (views, `demo.ts`, `settings.ts`, `views.ts`, stylesheets);
+    `apps/sandbox-e2e` — 28 files, `playwright.config.mts` the largest at 59 Polish lines
+  - the test names inside it belong to **H6**, which now counts them; what stays here is the
+    rest — comments, view copy, the support helpers in `src/support/`
+  - **26 visual baselines carry Polish file names** (`przycisk-warianty.png`,
+    `pole-sloty-poboczne-rtl.png`). Renaming them is `git mv` plus the `toHaveScreenshot()`
+    call, in one move — the baselines stay byte-identical, so nothing needs regenerating.
+    That part is H8's family and is cheapest done here, while the specs are open
+  - cost: ~1.5 days · _notes:_ —
+
 ## Journal
 
 One entry per session: what moved, what it ended with, what comes next. Newest on top.
+
+### 2026-08-08 — H5: the package stopped speaking Polish, and the count was short by two layers
+
+**H5 is done** and with it B4's language half. Registry numbers unchanged (54/16/13) — a
+translation, not a measurement.
+
+- **The result that matters sits on the far side of `npm pack`.** Splitting a file's JSDoc from
+  the comment three lines below it would have meant opening all 15 sources twice, so both went
+  in one pass — and B4's measured scope closed with it.
+- **Two of those files were generated**, so the fixes went into `libs/tokens/build.mjs` and
+  `stamp-version.mjs`. B3 had predicted the first; the second announced itself, because
+  `--check` compares the whole file and the next release run would have reverted a hand edit.
+- **The scope line said `.ts`/`.scss`/`.html`, and that is what hid the second layer.** Nx target
+  comments and DTCG `$comment` fields are prose by any measure, and no file-type filter was
+  going to see them — H3's third layer again, one directory down.
+- **`apps/` was in no layer at all**, and that is the more expensive miss: 68 files, uncounted
+  since the table was written. It is the demo a visitor opens and the harness the gates cite,
+  so it binds at the first push, exactly where H3 and H4 bound. Now **H10**.
+- **A slow read finds what a scan cannot.** `// typecheck` said „three programs" while the
+  target has run four since A13 — and no gate reads a comment.
+- Control: `typecheck`, `lint`, `test`, `format:check` and ten gates green; mutation score
+  unchanged at 81.77%. The bundle moved 114 766 → 114 610 B — comments do reach `fesm2022`, and
+  the two-sided tolerance absorbed it, so the snapshot stays as it is.
+
+Next: **B2** — squash and push; then **B3 + B8**. **H6** (test names, now counting the e2e half)
+is the next language step; **C** is filler.
 
 ### 2026-08-07 — H4 closed: the plan is a list again, and 962 lines shorter
 

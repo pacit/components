@@ -9,11 +9,11 @@ import { PCT_CONFIG } from '@pacit/components/core';
 import { PctButtonSize, PctButtonVariant } from './button.types';
 
 /**
- * Przycisk. Selektor atrybutowy na natywnym `<button>` — dzięki temu semantyka,
- * obsługa klawiatury i fokus działają natywnie (req-a11y-built-in).
+ * Button. An attribute selector on a native `<button>`, so semantics, keyboard handling and
+ * focus work natively (req-a11y-built-in).
  *
  * @example
- * <button pctButton variant="outline" size="lg">Zapisz</button>
+ * <button pctButton variant="outline" size="lg">Save</button>
  */
 @Component({
   selector: 'button[pctButton]',
@@ -25,25 +25,25 @@ import { PctButtonSize, PctButtonVariant } from './button.types';
     '[attr.data-pct-size]': 'size()',
     '[attr.data-pct-loading]': 'loading() ? "" : null',
     '[disabled]': 'isDisabled()',
-    // Tylko gdy przycisk faktycznie pracuje. `aria-busy="false"` jest wartością
-    // domyślną, więc wypisany wprost niczego nie wnosi, a stoi w drzewie
-    // dostępności na każdym przycisku strony.
+    // Only while the button actually works. `aria-busy="false"` is the default value, so
+    // writing it out adds nothing and stands in the accessibility tree of every button on
+    // the page.
     '[attr.aria-busy]': 'loading() ? "true" : null',
   },
 })
 export class PctButton {
   private readonly config = inject(PCT_CONFIG);
 
-  /** Wariant wizualny. */
+  /** Visual variant. */
   readonly variant = input<PctButtonVariant>('solid');
 
-  /** Rozmiar; domyślnie z globalnej konfiguracji (req-api-config). */
+  /** Size; taken from the global configuration by default (req-api-config). */
   readonly size = input<PctButtonSize>(this.config.defaultSize);
 
-  /** Wyłączony. */
+  /** Disabled. */
   readonly disabled = input(false, { transform: booleanAttribute });
 
-  /** Stan ładowania — blokuje przycisk i pokazuje spinner. */
+  /** Loading state — blocks the button and shows a spinner. */
   readonly loading = input(false, { transform: booleanAttribute });
 
   protected readonly isDisabled = computed(

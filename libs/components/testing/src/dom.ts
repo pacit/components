@@ -1,17 +1,17 @@
 import type { ComponentFixture } from '@angular/core/testing';
 
 /**
- * Pomocniki DOM dla testów jednostkowych. Wyłącznie na potrzeby testów —
- * katalog `testing/` nie jest wymieniony w `tsconfig.lib.json` ani nie ma
- * własnego `ng-package.json`, więc nie trafia do publikowanego pakietu.
+ * DOM helpers for unit tests. Test-only — the `testing/` directory is listed in neither
+ * `tsconfig.lib.json` nor an `ng-package.json` of its own, so it never reaches the published
+ * package.
  *
- * Zwracają element nie-nullowalny i rzucają z opisem, gdy go brak. Dzięki temu
- * testy nie potrzebują `!` (reguła `@typescript-eslint/no-non-null-assertion`),
- * a nieudane zapytanie mówi, czego szukano i co było dostępne — zamiast
- * „Cannot read properties of null".
+ * They return a non-nullable element and throw with a description when there is none. Tests
+ * then need no `!` (the `@typescript-eslint/no-non-null-assertion` rule), and a failed query
+ * says what was looked for and what was available — instead of „Cannot read properties of
+ * null".
  */
 
-/** Fixture albo dowolny węzeł — panel CDK renderuje się poza drzewem hosta. */
+/** A fixture or any node — a CDK panel renders outside the host tree. */
 type Root = ComponentFixture<unknown> | ParentNode;
 
 const nodeOf = (root: Root): ParentNode =>
@@ -20,35 +20,35 @@ const nodeOf = (root: Root): ParentNode =>
 const partsIn = (node: ParentNode): string =>
   Array.from(node.querySelectorAll('[data-pct-part]'))
     .map((el) => el.getAttribute('data-pct-part'))
-    .join(', ') || '(żadne)';
+    .join(', ') || '(none)';
 
-/** Element części `data-pct-part`; rzuca, gdy go nie ma. */
+/** The element of a `data-pct-part`; throws when it is absent. */
 export function part(root: Root, name: string): HTMLElement {
   const node = nodeOf(root);
   const el = node.querySelector<HTMLElement>(`[data-pct-part="${name}"]`);
   if (!el) {
     throw new Error(
-      `Brak części [data-pct-part="${name}"]. Dostępne części: ${partsIn(node)}.`,
+      `No part [data-pct-part="${name}"]. Parts available: ${partsIn(node)}.`,
     );
   }
   return el;
 }
 
-/** Wszystkie elementy danej części — pusta kolekcja jest poprawnym wynikiem. */
+/** Every element of a given part — an empty collection is a valid result. */
 export function allParts(root: Root, name: string): HTMLElement[] {
   return Array.from(
     nodeOf(root).querySelectorAll<HTMLElement>(`[data-pct-part="${name}"]`),
   );
 }
 
-/** Pierwszy element pasujący do selektora; rzuca, gdy go nie ma. */
+/** The first element matching a selector; throws when there is none. */
 export function query<E extends Element = HTMLElement>(
   root: Root,
   selector: string,
 ): E {
   const el = nodeOf(root).querySelector<E>(selector);
   if (!el) {
-    throw new Error(`Brak elementu pasującego do selektora "${selector}".`);
+    throw new Error(`No element matching the selector "${selector}".`);
   }
   return el;
 }

@@ -52,10 +52,10 @@
 </button>
 
 <!--
-  Panel: szerokość i wyrównanie liczone względem kotwicy (ramka pola w obudowie,
-  trigger poza nią). `push` wsuwa do okna panel, który się w nim nie mieści —
-  szerszy od kontrolki (`panelWidth="auto"` albo szerokość wprost) potrafi wyjść
-  poza krawędź, a przycięte opcje są nie do odczytania.
+  Panel: width and alignment computed against the anchor (the field border inside the chrome,
+  the trigger outside it). `push` slides a panel that does not fit back into the window — one
+  wider than the control (`panelWidth="auto"` or an explicit width) can run past the edge, and
+  clipped options cannot be read.
 -->
 <ng-template
   cdkConnectedOverlay
@@ -83,10 +83,10 @@
   >
     @for (option of options(); track option.value; let i = $index) {
     <!--
-      Wzorzec ARIA listbox: fokus zostaje na triggerze, a aktywną opcję wskazuje
-      `aria-activedescendant` (lesson-18). Opcje z założenia nie są fokusowalne
-      i nie mają własnej obsługi klawiatury — ta siedzi na triggerze
-      (`(keydown)="onKeydown($event)"`). Obie reguły są tu fałszywie dodatnie.
+      The ARIA listbox pattern: focus stays on the trigger, and the active option is pointed at
+      by `aria-activedescendant` (lesson-18). Options are by design not focusable and have no
+      keyboard handling of their own — that sits on the trigger
+      (`(keydown)="onKeydown($event)"`). Both rules are false positives here.
     -->
     <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
     <div

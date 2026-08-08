@@ -11,14 +11,13 @@ import { nextPctId } from '@pacit/components/core';
 import { PctRadioGroup } from './radio-group';
 
 /**
- * Pojedyncza opcja w `pct-radio-group`. **Nie jest samodzielną kontrolką
- * formularza** — stan trzyma grupa (req-api-signal-forms). Opiera się na natywnym
- * `<input type="radio">` ze wspólnym `name`, więc nawigacja strzałkami
- * i zachowanie Taba pochodzą od przeglądarki, a nie z własnej implementacji
- * roving tabindex.
+ * A single option inside `pct-radio-group`. **Not a form control of its own** — the group
+ * holds the state (req-api-signal-forms). It stands on a native `<input type="radio">` with a
+ * shared `name`, so arrow navigation and Tab behaviour come from the browser rather than from
+ * a roving-tabindex implementation of ours.
  *
  * @example
- * <pct-radio value="pro">Plan Pro</pct-radio>
+ * <pct-radio value="pro">Pro plan</pct-radio>
  */
 @Component({
   selector: 'pct-radio',
@@ -34,10 +33,10 @@ import { PctRadioGroup } from './radio-group';
 export class PctRadio<T = string> {
   protected readonly group = inject<PctRadioGroup<T>>(PctRadioGroup);
 
-  /** Wartość reprezentowana przez tę opcję. */
+  /** The value this option stands for. */
   readonly value = input.required<T>();
 
-  /** Wyłączenie pojedynczej opcji; grupa może wyłączyć wszystkie. */
+  /** Disables a single option; the group can disable them all. */
   readonly disabled = input(false, { transform: booleanAttribute });
 
   private readonly control =
@@ -51,11 +50,11 @@ export class PctRadio<T = string> {
   );
 
   /**
-   * Natywny atrybut `value` opisuje opcję, ale **nie bierze udziału w wyborze**:
-   * zaznaczenie ustawia `checked`, a zmianę zgłasza `onChange()`, przekazując
-   * grupie wartość z inputu. Skoro wartością może być teraz obiekt, wystawiamy
-   * atrybut tylko dla prymitywów — `String({})` dałoby `[object Object]`,
-   * czyli napis, który niczego nie identyfikuje i mylnie wygląda na wartość.
+   * The native `value` attribute describes the option but **takes no part in the choice**:
+   * selecting sets `checked`, and `onChange()` reports the change by handing the group the
+   * value from the input. Since a value can now be an object, the attribute is only exposed
+   * for primitives — `String({})` would give `[object Object]`, a string that identifies
+   * nothing and misleadingly looks like a value.
    */
   protected readonly valueAttr = computed(() => {
     const value = this.value();
@@ -70,7 +69,7 @@ export class PctRadio<T = string> {
   );
   protected readonly name = computed(() => this.group.groupName());
 
-  /** Readonly nie istnieje natywnie dla radia — blokujemy zmianę stanu. */
+  /** Readonly does not exist natively for a radio — the state change is blocked here. */
   protected onClick(event: Event): void {
     if (this.group.readonly()) {
       event.preventDefault();

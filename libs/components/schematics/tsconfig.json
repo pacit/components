@@ -1,5 +1,5 @@
 {
-  "// ": "Schematics żyją poza pakietem Angulara: uruchamia je Angular CLI w Node, nie przeglądarka, więc kompilują się osobno do CommonJS. ng-packagr ich nie widzi (nie są w grafie entrypointów), stąd własny build wpinany do dist po nim.",
+  "// ": "The schematics live outside the Angular package: the Angular CLI runs them in Node, not the browser, so they compile separately to CommonJS. ng-packagr does not see them (they are not in the entrypoint graph), hence a build of their own wired into dist after it.",
   "compilerOptions": {
     "module": "commonjs",
     "target": "es2022",

@@ -1,6 +1,6 @@
 {
   "pct": {
-    "$comment": "Rampa `primary` idzie tu W GÓRĘ (jaśniej przy hover/active), odwrotnie niż w motywie jasnym. Powód jest mierzalny, nie estetyczny: `on-primary` jest w ciemnym motywie CIEMNY, więc przyciemnienie tła zbija kontrast etykiety zamiast go podnosić — do A12 dawało to 3,45:1 na hover i 2,66:1 na active, poniżej AA, przy zielonym buildzie. Ten sam token jest przy tym tekstem na ciemnej powierzchni (etykieta wariantu outline), a to wymaga kroku jasnego: blue.500 na `surface-100` dawało 3,98:1.",
+    "$comment": "Here the `primary` ramp goes UP (lighter on hover/active), the opposite of the light theme. The reason is measurable, not aesthetic: in the dark theme `on-primary` is DARK, so darkening the background drives the label's contrast down instead of up — until A12 that gave 3.45:1 on hover and 2.66:1 on active, below AA, with a green build. The same token is also text on a dark surface (the outline variant's label), and that needs a light step: blue.500 on `surface-100` gave 3.98:1.",
     "primary": {
       "$type": "color",
       "$value": "{pct.blue.400}"

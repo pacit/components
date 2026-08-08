@@ -1,21 +1,21 @@
 /**
- * Porównanie dwóch wartości kontrolki wyboru. Kontrolki nie mogą użyć wprost
- * `===`, bo ich wartość nie musi być prymitywem: aplikacja wiąże obiekt encji,
- * a ten po przejściu przez HTTP jest **inną instancją** o tej samej tożsamości.
- * Wtedy porównuje się klucz (`(a, b) => a.id === b.id`), nie referencję.
+ * Comparison of two values of a choice control. Controls cannot use `===` outright, because
+ * their value need not be a primitive: an application binds an entity object, and that object
+ * after a round trip through HTTP is **another instance** with the same identity. The key is
+ * then what gets compared (`(a, b) => a.id === b.id`), not the reference.
  *
  * @example
- * <pct-select [options]="miasta" [compareWith]="poId" [(value)]="miasto" />
- * // protected poId = (a: Miasto, b: Miasto) => a.id === b.id;
+ * <pct-select [options]="cities" [compareWith]="byId" [(value)]="city" />
+ * // protected byId = (a: City, b: City) => a.id === b.id;
  */
 export type PctCompareWith<T> = (a: T, b: T) => boolean;
 
 /**
- * Domyślne porównanie: tożsamość. Dla prymitywów zachowuje się jak `===`,
- * a dodatkowo uznaje `NaN` za równe samemu sobie — inaczej opcja o wartości
- * `NaN` nigdy nie byłaby zaznaczona.
+ * The default comparison: identity. For primitives it behaves like `===`, and on top of that
+ * it treats `NaN` as equal to itself — otherwise an option valued `NaN` would never be marked
+ * as selected.
  *
- * Sygnatura na `unknown` jest celowa: dzięki kontrawariancji parametrów ta sama
- * funkcja pasuje jako domyślna do `PctCompareWith<T>` dla dowolnego `T`.
+ * The `unknown` signature is deliberate: thanks to parameter contravariance the same function
+ * fits as the default for `PctCompareWith<T>` for any `T`.
  */
 export const pctSameValue: PctCompareWith<unknown> = Object.is;

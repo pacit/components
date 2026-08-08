@@ -2,7 +2,7 @@
   "$schema": "../../../node_modules/@angular-devkit/schematics/collection-schema.json",
   "schematics": {
     "ng-add": {
-      "description": "Podpina @pacit/components do aplikacji: skórka i style nakładki CDK w konfiguracji builda.",
+      "description": "Wires @pacit/components into an application: the skin and the CDK overlay styles in the build configuration.",
       "factory": "./ng-add/index#ngAdd",
       "schema": "./ng-add/schema.json"
     }

@@ -1,5 +1,5 @@
 {
-  "// po co": "Czwarty, rozłączny program biblioteki: konfiguracja Vitesta dla przebiegu mutacyjnego i jej plik startowy. Nie należą ani do pakietu (tsconfig.lib.json), ani do specyfikacji (tsconfig.spec.json) — a bez własnego programu nie oglądałby ich żaden kompilator, co `check-typecheck` (punkt 4) melduje od razu. Osobno, a nie doklejone do `tsconfig.spec.json`, żeby typy Node'a (`__dirname`) nie weszły do programu specyfikacji: te biegną w jsdom i mają się psuć na sięgnięciu po API serwera.",
+  "// why": "The library's fourth, disjoint program: the Vitest configuration for the mutation run and its setup file. They belong neither to the package (tsconfig.lib.json) nor to the specs (tsconfig.spec.json) — and without a program of their own no compiler would look at them, which `check-typecheck` (point 4) reports at once. Separate rather than glued onto `tsconfig.spec.json`, so that Node's types (`__dirname`) do not enter the spec program: those run in jsdom and are meant to break on reaching for a server API.",
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "../../dist/out-tsc",

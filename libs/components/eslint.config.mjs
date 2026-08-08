@@ -11,24 +11,23 @@ export default [
       '@nx/dependency-checks': [
         'error',
         {
-          // Konfiguracja Vitesta dla przebiegu mutacyjnego i jej plik startowy
-          // nie jadą do pakietu: nie stoją w `tsconfig.lib.json`, więc ng-packagr
-          // ich nie widzi, a `check-package` pilnuje, co naprawdę w nim jest.
-          // Specyfikacje wypadają z tej reguły same (wzorzec `production`), a te
-          // dwa pliki nie są specyfikacjami — bez tego wpisu kazałyby konsumentowi
-          // biblioteki ciągnąć Vite'a i wtyczkę Analoga jako peery.
+          // The Vitest configuration for the mutation run and its setup file do not travel to
+          // the package: they stand in no `tsconfig.lib.json`, so ng-packagr does not see
+          // them, and `check-package` watches what really is in it. Specs fall out of this
+          // rule by themselves (the `production` pattern), and these two files are not specs
+          // — without this entry they would make a consumer of the library pull in Vite and
+          // the Analog plugin as peers.
           ignoredFiles: [
             '{projectRoot}/eslint.config.{js,cjs,mjs,ts,cts,mts}',
             '{projectRoot}/mutacja.vitest.config.mts',
             '{projectRoot}/mutacja.setup.ts',
           ],
-          // Schematics (`ng add`) sięgają po `@angular-devkit/schematics`
-          // WYŁĄCZNIE po typy — skompilowany `schematics/ng-add/index.js` nie ma
-          // ani jednego odwołania do tej paczki, bo `import type` znika przy
-          // kompilacji. Runtime dostarcza Angular CLI, które te schematics
-          // uruchamia. Wpisanie tego w `peerDependencies` kazałoby każdemu
-          // konsumentowi biblioteki ciągnąć narzędzia budowania, a `req-project-dependencies`
-          // dopuszcza jedną zależność runtime i jest nią CDK.
+          // The schematics (`ng add`) reach for `@angular-devkit/schematics` FOR TYPES ONLY —
+          // the compiled `schematics/ng-add/index.js` has not a single reference to that
+          // package, because `import type` disappears at compile time. The runtime is supplied
+          // by the Angular CLI that runs the schematics. Putting it in `peerDependencies`
+          // would make every consumer of the library pull in build tooling, and
+          // `req-project-dependencies` allows one runtime dependency, which is CDK.
           ignoredDependencies: ['@angular-devkit/schematics'],
         },
       ],
@@ -48,9 +47,9 @@ export default [
           style: 'camelCase',
         },
       ],
-      // Komponenty występują w dwóch postaciach: własny element (`pct-field`)
-      // oraz komponent na natywnym elemencie (`input[pctText]`, `button[pctButton]`
-      // — req-api-native-input). Każdy typ selektora ma własny styl zapisu.
+      // Components come in two forms: an element of their own (`pct-field`) and a component
+      // on a native element (`input[pctText]`, `button[pctButton]` — req-api-native-input).
+      // Each selector type has its own spelling style.
       '@angular-eslint/component-selector': [
         'error',
         [

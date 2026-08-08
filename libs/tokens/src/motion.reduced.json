@@ -1,13 +1,13 @@
 {
-  "$comment": "Nadpisania dla `prefers-reduced-motion: reduce`. Ten plik jest do ruchu tym, czym `semantic.dark.json` jest do motywu: osobnym zestawem wartości, który build emituje w bloku warunkowym. Dzięki temu redukcja ruchu jest deklaracją w źródle tokenów, a nie regułą dopisywaną osobno w każdym arkuszu.",
+  "$comment": "Overrides for `prefers-reduced-motion: reduce`. This file is to motion what `semantic.dark.json` is to the theme: a separate set of values the build emits in a conditional block. Motion reduction is therefore a declaration in the token source rather than a rule written out again in every stylesheet.",
   "pct": {
     "motion": {
       "transition": {
-        "$comment": "Nie `0s`: zerowy czas w części przeglądarek nie emituje `transitionend`, więc kod czekający na koniec przejścia przestaje dostawać zdarzenie. `0.01ms` jest wizualnie natychmiastowy i zachowuje zdarzenie.",
+        "$comment": "Not `0s`: in some browsers a zero duration emits no `transitionend`, so code waiting for a transition to end stops receiving the event. `0.01ms` is visually instant and keeps the event.",
         "duration": { "$type": "duration", "$value": "0.01ms" }
       },
       "loop": {
-        "$comment": "Wskaźnik ciągły zwalnia zamiast znikać — użytkownik nadal widzi, że trwa praca, ale obrót przestaje być bodźcem przedsionkowym.",
+        "$comment": "A continuous indicator slows down instead of disappearing — the user still sees that work is under way, but the spin stops being a vestibular trigger.",
         "duration": { "$type": "duration", "$value": "1500ms" }
       }
     }

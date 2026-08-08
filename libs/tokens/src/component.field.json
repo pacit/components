@@ -1,7 +1,7 @@
 {
   "pct": {
     "field": {
-      "$comment": "Obudowa rysuje ramkę pola, bo sloty prefix/suffix muszą znaleźć się w jej środku. Kontrolka wewnątrz jest przezroczysta i bez obramowania. Wysokość wiersza bierze się z tokenu wspólnego z przyciskiem ({pct.control.height}), nie z paddingu pionowego — wiersz pola i przycisk tej samej wielkości są przez to równe z definicji (req-api-size).",
+      "$comment": "The chrome draws the field border, because the prefix/suffix slots have to sit inside it. The control within is transparent and unbordered. The row height comes from the token shared with the button ({pct.control.height}), not from vertical padding — a field row and a button of the same size are thereby equal by definition (req-api-size).",
       "bg": { "$type": "color", "$value": "{pct.surface}" },
       "fg": { "$type": "color", "$value": "{pct.text}" },
       "placeholder-fg": { "$type": "color", "$value": "{pct.text-muted}" },

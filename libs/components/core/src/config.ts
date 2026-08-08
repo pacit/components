@@ -1,11 +1,11 @@
 import { InjectionToken, Provider } from '@angular/core';
 
-/** Rozmiary współdzielone przez komponenty (req-api-signals). */
+/** Sizes shared across components (req-api-signals). */
 export type PctSize = 'sm' | 'md' | 'lg';
 
-/** Globalna konfiguracja biblioteki, nadpisywalna per-komponent inputami (req-api-config). */
+/** Global library configuration, overridable per component by inputs (req-api-config). */
 export interface PctConfig {
-  /** Domyślny rozmiar komponentów. */
+  /** Default component size. */
   defaultSize: PctSize;
 }
 
@@ -18,7 +18,7 @@ export const PCT_CONFIG = new InjectionToken<PctConfig>('PCT_CONFIG', {
 });
 
 /**
- * Rejestruje globalną konfigurację biblioteki (wzorzec provideX, req-api-config).
+ * Registers the global library configuration (the provideX pattern, req-api-config).
  *
  * @example
  * bootstrapApplication(App, {

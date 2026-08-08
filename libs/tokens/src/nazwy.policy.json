@@ -1,13 +1,13 @@
 {
-  "$comment": "Słownik nazw tokenów — zamknięty zbiór słów, z których wolno złożyć nazwę. Nazwa daje się zgadnąć nie dlatego, że schemat jest zapisany w dokumentacji, tylko dlatego, że stan nazywa się `hover` WSZĘDZIE, a nie raz `hover`, raz `over`, raz `on-hover` (req-token-names). Bramka `check-tokens` parsuje każdą nazwę wobec tego pliku i wymaga, żeby każde słowo stąd było użyte — dopisanie słowa jest więc linią w diffie, którą widać w review, a nie cichym rozszerzeniem zbioru dopuszczalnych nazw. Maszyna nie oceni, czy nowe słowo jest dobre; pilnuje tylko, żeby było co oceniać.",
+  "$comment": "The token name dictionary — a closed set of words a name may be composed from. A name can be guessed not because the scheme is written down in the documentation, but because a state is called `hover` EVERYWHERE rather than `hover` here, `over` there and `on-hover` elsewhere (req-token-names). The `check-tokens` gate parses every name against this file and requires every word here to be used — adding a word is therefore a line in a diff that shows up in review, not a quiet widening of the set of acceptable names. The machine will not judge whether a new word is a good one; it only makes sure there is something to judge.",
 
   "prywatne": {
-    "$comment": "Prefiksy DTCG wyłączone z publicznej unii `PctCssVar` w `dist/tokens.ts`. Czyta stąd i build (filtr generatora), i bramka (punkt 2) — jedna deklaracja zamiast wyrażenia zaszytego w generatorze, o którym bramka musiałaby zgadywać. UWAGA: `pct.red.` świadomie NIE jest tu wymienione, więc surowa rampa czerwieni jest publiczna, a niebieska i szara nie. To rozjazd zastany, nie decyzja tej bramki — do rozstrzygnięcia osobno, wraz z pytaniem, czy prymitywy w ogóle należą do powierzchni publicznej.",
+    "$comment": "DTCG prefixes excluded from the public `PctCssVar` union in `dist/tokens.ts`. Both the build (the generator's filter) and the gate (point 2) read from here — one declaration instead of an expression buried in the generator that the gate would have to guess at. NOTE: `pct.red.` is deliberately NOT listed, so the raw red ramp is public while blue and slate are not. That is an inherited drift, not a decision of this gate — to be settled separately, together with the question of whether primitives belong to the public surface at all.",
     "prefiksy": ["pct.blue.", "pct.slate."]
   },
 
   "prymitywne": {
-    "$comment": "Warstwa prymitywna: nazwa jest ścieżką DTCG jeden do jednego (`pct.control.height.sm` → `--pct-control-height-sm`), więc zgadywalność sprowadza się do znajomości OSI. Osie są wymienione, kroki nie: `500`, `md`, `medium` należą do swojej osi i wymienianie ich tutaj byłoby drugą kopią pliku źródłowego.",
+    "$comment": "The primitive tier: a name is the DTCG path one to one (`pct.control.height.sm` → `--pct-control-height-sm`), so guessability comes down to knowing the AXES. The axes are listed, the steps are not: `500`, `md`, `medium` belong to their axis, and listing them here would be a second copy of the source file.",
     "osie": [
       "blue",
       "slate",
@@ -22,7 +22,7 @@
   },
 
   "semantyczne": {
-    "$comment": "Warstwa semantyczna: `[on-]{rola}[-{wariant}]`. Przedrostek `on-` nie jest osobną rolą, tylko regułą pary tekst/tło (req-token-text-pairs) — dzięki temu `--pct-on-danger` jest zgadywalne z samego istnienia `--pct-danger`, a nie z listy.",
+    "$comment": "The semantic tier: `[on-]{role}[-{variant}]`. The `on-` prefix is not a role of its own but the text/background pair rule (req-token-text-pairs) — thanks to which `--pct-on-danger` is guessable from the mere existence of `--pct-danger` rather than from a list.",
     "role": [
       "primary",
       "surface",
@@ -36,7 +36,7 @@
   },
 
   "komponentowe": {
-    "$comment": "Warstwa komponentowa: `--pct-{komponent}[-{część}]-{właściwość}[-{wariant}]`. Komponent nie jest wymieniony, bo nie jest słownikiem — musi być prawdziwym entrypointem pakietu (`libs/components/<nazwa>/ng-package.json`), i tego pilnuje punkt 3. Wariant stoi ZAWSZE na końcu: `--pct-button-bg-hover`, nigdy `--pct-button-hover-bg`. Ten porządek jest jedynym powodem, dla którego znając jedną nazwę zgadniesz siostrzaną.",
+    "$comment": "The component tier: `--pct-{component}[-{part}]-{property}[-{variant}]`. The component is not listed, because it is not a dictionary — it has to be a real package entrypoint (`libs/components/<name>/ng-package.json`), and point 3 watches that. The variant stands ALWAYS at the end: `--pct-button-bg-hover`, never `--pct-button-hover-bg`. That order is the only reason why knowing one name lets you guess its sibling.",
     "czesci": [
       "affix",
       "arrow",
@@ -74,7 +74,7 @@
       "selected"
     ],
     "wielkosci": {
-      "$comment": "Wielkość jest wariantem jak stan i stoi w tym samym miejscu — na końcu. `md` nie występuje w nazwie, bo jest wartością bazową: `--pct-button-height` JEST wysokością `md` (req-api-size).",
+      "$comment": "Size is a variant like a state and stands in the same place — at the end. `md` does not appear in a name, because it is the base value: `--pct-button-height` IS the `md` height (req-api-size).",
       "lista": ["sm", "lg"]
     }
   }

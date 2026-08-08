@@ -1,14 +1,14 @@
 import { Directive } from '@angular/core';
 
 /**
- * Dodatek etykiety — treść w wierszu etykiety, wyrównana do prawej (np. ikona
- * „i" z podpowiedzią o polu, odnośnik pomocy). Leży **poza** ramką pola, więc
- * nie miesza się do obszaru dotyku kontrolki. Jeśli jest interaktywny (przycisk,
- * link), musi mieć własną nazwę dostępną.
+ * A label add-on — content in the label row, aligned to the end (an „i" icon with a hint about
+ * the field, a help link). It lies **outside** the field border, so it does not interfere with
+ * the control's touch area. If it is interactive (a button, a link) it needs an accessible
+ * name of its own.
  *
  * @example
  * <pct-field label="Login">
- *   <button pctLabelAux type="button" aria-label="Co to jest login?">ⓘ</button>
+ *   <button pctLabelAux type="button" aria-label="What is a login?">ⓘ</button>
  *   <input pctText [(value)]="login" />
  * </pct-field>
  */
@@ -19,13 +19,12 @@ import { Directive } from '@angular/core';
 export class PctLabelAux {}
 
 /**
- * Dodatek linii komunikatu — treść w wierszu pod polem, wyrównana do prawej
- * (np. licznik znaków). Dzieli wiersz z podpowiedzią albo błędem: obudowa
- * pokazuje pod polem tylko jeden z komunikatów, a ten slot stoi obok niego
- * niezależnie od tego, który akurat świeci.
+ * A message-line add-on — content in the row below the field, aligned to the end (a character
+ * counter, say). It shares the row with the hint or the error: the chrome shows only one of
+ * those messages below the field, and this slot stands beside it whichever one is lit.
  *
  * @example
- * <pct-field label="Opis" hint="Krótko o sobie">
+ * <pct-field label="About" hint="A few words about yourself">
  *   <textarea pctText [(value)]="bio"></textarea>
  *   <span pctMessageAux aria-hidden="true">{{ bio().length }}/120</span>
  * </pct-field>

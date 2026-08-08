@@ -1,5 +1,5 @@
 {
   "$schema": "../../../node_modules/@angular-devkit/schematics/collection-schema.json",
-  "//": "Kolekcja migracji `ng update`. Jest pusta, bo biblioteka nie ma jeszcze wydanej wersji, z której można by migrować — ale istnieje od początku celowo. Wpis `ng-update` w manifeście musi wskazywać na plik obecny w pakiecie już w pierwszym wydaniu: dopisanie go dopiero przy pierwszej zmianie łamiącej nie pomoże konsumentom, którzy zainstalowali wcześniejszą wersję, bo `ng update` czyta kolekcję z wersji ZAINSTALOWANEJ.",
+  "//": "The `ng update` migration collection. It is empty, because the library has no released version to migrate from yet — but it exists from the start deliberately. The `ng-update` entry in the manifest has to point at a file present in the package from the first release: adding it only at the first breaking change will not help consumers who installed an earlier version, because `ng update` reads the collection from the INSTALLED version.",
   "schematics": {}
 }

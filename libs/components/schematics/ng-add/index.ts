@@ -1,23 +1,22 @@
-// Import wyłącznie typowy: runtime schematics dostarcza Angular CLI, które je
-// uruchamia. Gdyby `@angular-devkit/schematics` trafiło do zależności pakietu,
-// każdy konsument biblioteki komponentów ciągnąłby narzędzia budowania —
-// a `req-project-dependencies` dopuszcza jedną zależność runtime i jest nią CDK.
+// A type-only import: the schematics runtime is supplied by the Angular CLI that runs them.
+// Were `@angular-devkit/schematics` to land in the package dependencies, every consumer of a
+// component library would drag in build tooling — and `req-project-dependencies` allows one
+// runtime dependency, which is CDK.
 import type { Rule, SchematicContext, Tree } from '@angular-devkit/schematics';
 
 /**
  * `ng add @pacit/components`.
  *
- * Robi jedną rzecz, której konsument nie zgadnie z dokumentacji, a bez której
- * biblioteka wygląda na zepsutą: dopina dwa arkusze do konfiguracji builda.
- * Bez skórki komponenty odwołują się do nieistniejących custom properties
- * i renderują się bez wyglądu — cicho, bo brak definicji `var()` nie jest
- * błędem, tylko powrotem do wartości początkowej (ta sama klasa wady co
- * `lesson-36`). Bez `overlay-prebuilt.css` panel selecta pojawia się
- * w losowym miejscu strony.
+ * It does the one thing a consumer will not guess from the documentation and without which the
+ * library looks broken: it wires two stylesheets into the build configuration. Without the skin
+ * the components reference custom properties that do not exist and render with no appearance —
+ * quietly, because a missing `var()` definition is not an error but a return to the initial
+ * value (the same class of defect as `lesson-36`). Without `overlay-prebuilt.css` the select
+ * panel appears at a random place on the page.
  *
- * Czego świadomie NIE robi: nie dopisuje providerów, nie modyfikuje kodu
- * aplikacji i nie instaluje zależności. `@angular/cdk` jest peer dependency,
- * więc menedżer pakietów zgłosi jego brak sam i zrobi to dokładniej.
+ * What it deliberately does NOT do: it adds no providers, modifies no application code and
+ * installs no dependencies. `@angular/cdk` is a peer dependency, so the package manager will
+ * report its absence itself and do it more precisely.
  */
 const STYLES = [
   '@pacit/components/themes/pct.css',
@@ -36,11 +35,11 @@ interface WorkspaceConfig {
   projects?: Record<string, WorkspaceProject>;
 }
 
-/** Ręczna instrukcja na wypadek, gdy konfiguracji nie da się bezpiecznie ruszyć. */
+/** Manual instructions for when the configuration cannot be touched safely. */
 const explainManually = (context: SchematicContext, reason: string): void => {
   context.logger.warn(
     `\n@pacit/components: ${reason}\n` +
-      `Dopisz te arkusze do "styles" swojego builda ręcznie:\n` +
+      `Add these stylesheets to your build's "styles" by hand:\n` +
       STYLES.map((s) => `  - ${s}`).join('\n') +
       `\n`,
   );
@@ -50,12 +49,12 @@ export function ngAdd(options: { project?: string } = {}): Rule {
   return (tree: Tree, context: SchematicContext) => {
     const path = WORKSPACE_FILES.find((p) => tree.exists(p));
     if (!path) {
-      // Workspace Nx trzyma konfigurację w project.json per projekt, a nie
-      // w jednym angular.json. Zgadywanie, który plik i który target, kończy
-      // się cichą zmianą nie tam, gdzie trzeba — lepiej powiedzieć wprost.
+      // An Nx workspace keeps its configuration in a per-project project.json rather than in
+      // one angular.json. Guessing which file and which target ends in a quiet change in the
+      // wrong place — better to say so outright.
       explainManually(
         context,
-        'nie znalazłem angular.json (workspace Nx albo nietypowy układ).',
+        'no angular.json found (an Nx workspace, or an unusual layout).',
       );
       return tree;
     }
@@ -65,7 +64,7 @@ export function ngAdd(options: { project?: string } = {}): Rule {
     try {
       workspace = JSON.parse(raw) as WorkspaceConfig;
     } catch {
-      explainManually(context, `nie udało się odczytać ${path}.`);
+      explainManually(context, `could not read ${path}.`);
       return tree;
     }
 
@@ -75,13 +74,13 @@ export function ngAdd(options: { project?: string } = {}): Rule {
     const project = name ? projects[name] : undefined;
 
     if (!project) {
-      explainManually(context, `nie znalazłem projektu ${name ?? '(brak)'}.`);
+      explainManually(context, `no project ${name ?? '(none)'} found.`);
       return tree;
     }
 
     const build = (project.architect ?? project.targets ?? {})['build'];
     if (!build) {
-      explainManually(context, `projekt ${name} nie ma targetu build.`);
+      explainManually(context, `project ${name} has no build target.`);
       return tree;
     }
 
@@ -90,10 +89,10 @@ export function ngAdd(options: { project?: string } = {}): Rule {
       ? [...(build.options.styles as unknown[])]
       : [];
 
-    // Kolejność ma znaczenie: skórka musi stać PRZED arkuszami aplikacji,
-    // żeby nadpisanie tokenu u konsumenta wygrywało z wartością domyślną.
-    // Wstawiamy więc na początek, ale tylko to, czego jeszcze nie ma —
-    // ponowne `ng add` nie może zdublować wpisów.
+    // Order matters: the skin has to stand BEFORE the application's stylesheets, so that a
+    // token override at the consumer's beats the default value. Hence the insertion at the
+    // front — but only of what is not there yet, because a repeated `ng add` must not duplicate
+    // entries.
     const missing = STYLES.filter(
       (style) =>
         !styles.some((existing) =>
@@ -105,7 +104,7 @@ export function ngAdd(options: { project?: string } = {}): Rule {
 
     if (!missing.length) {
       context.logger.info(
-        `@pacit/components: style są już podpięte w projekcie ${name} — bez zmian.`,
+        `@pacit/components: the styles are already wired into project ${name} — no change.`,
       );
       return tree;
     }
@@ -114,7 +113,7 @@ export function ngAdd(options: { project?: string } = {}): Rule {
     tree.overwrite(path, JSON.stringify(workspace, null, 2) + '\n');
 
     context.logger.info(
-      `@pacit/components: dopisano do styles projektu ${name}:\n` +
+      `@pacit/components: added to the styles of project ${name}:\n` +
         missing.map((s) => `  + ${s}`).join('\n'),
     );
 

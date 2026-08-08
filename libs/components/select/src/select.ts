@@ -36,30 +36,30 @@ import {
 } from './select.types';
 
 /**
- * Lista wyboru jednokrotnego z własnym panelem (nie natywny `<select>`).
+ * A single-choice select with a panel of its own (not a native `<select>`).
  *
- * Realizuje wzorzec ARIA „select-only combobox": trigger ma `role="combobox"`,
- * panel `role="listbox"`, a fokus **nie opuszcza triggera** — aktywna opcja jest
- * wskazywana przez `aria-activedescendant`.
+ * It implements the ARIA „select-only combobox" pattern: the trigger has `role="combobox"`, the
+ * panel `role="listbox"`, and focus **never leaves the trigger** — the active option is pointed
+ * at by `aria-activedescendant`.
  *
- * Pozycjonowanie panelu opiera się na CDK Overlay (`req-project-dependencies`) — to jedyna
- * dopuszczona zależność runtime. Obsługa klawiatury jest własna, bo dla
- * customowego listboxa nie ma natywnego odpowiednika (`req-api-platform`).
+ * Panel positioning stands on CDK Overlay (`req-project-dependencies`) — the only runtime
+ * dependency allowed. The keyboard handling is ours, because a custom listbox has no native
+ * counterpart (`req-api-platform`).
  *
- * Wartość jest dowolnego typu `T` (domyślnie napis) — patrz `PctSelectOption`.
- * Brak wyboru reprezentuje `emptyValue`, domyślnie `null`.
- *
- * @example
- * <pct-select label="Kraj" [options]="kraje" [formField]="form.country" />
+ * The value is of any type `T` (a string by default) — see `PctSelectOption`. The absence of a
+ * choice is `emptyValue`, `null` by default.
  *
  * @example
- * // Wartości nienapisowe: `T` bierze się z listy opcji.
- * <pct-select [options]="priorytety" [(value)]="priorytet" />
- * // protected priorytety: PctSelectOption<number>[] = [{ value: 1, label: 'Niski' }];
+ * <pct-select label="Country" [options]="countries" [formField]="form.country" />
  *
  * @example
- * // Encje: równość liczona po kluczu, bo po HTTP przychodzi inna instancja.
- * <pct-select [options]="miasta" [compareWith]="poId" [(value)]="miasto" />
+ * // Non-string values: `T` comes from the option list.
+ * <pct-select [options]="priorities" [(value)]="priority" />
+ * // protected priorities: PctSelectOption<number>[] = [{ value: 1, label: 'Low' }];
+ *
+ * @example
+ * // Entities: equality by key, because HTTP brings back another instance.
+ * <pct-select [options]="cities" [compareWith]="byId" [(value)]="city" />
  */
 @Component({
   selector: 'pct-select',
@@ -72,7 +72,8 @@ import {
     '[attr.data-pct-open]': 'open() ? "" : null',
     '[attr.data-pct-invalid]': 'showInvalid() ? "" : null',
     '[attr.data-pct-disabled]': 'disabled() ? "" : null',
-    // W obudowie ramkę i etykietę rysuje `pct-field` — kontrolka je oddaje.
+    // Inside the chrome `pct-field` draws the border and the label — the control hands
+    // them over.
     '[attr.data-pct-in-field]': 'inField ? "" : null',
   },
 })
@@ -83,18 +84,18 @@ export class PctSelect<T = string>
   protected readonly texts = inject(PCT_TEXTS);
 
   /**
-   * Wybrana wartość — wymagane pole kontraktu `FormValueControl`. Typ jest
-   * `T | null`, bo „nic nie wybrano" jest stanem osiągalnym dla każdego `T`:
-   * lista startuje pusta i można z niej wyjść resetem formularza.
+   * The selected value — a required field of the `FormValueControl` contract. The type is
+   * `T | null`, because „nothing selected" is a state reachable for every `T`: the select
+   * starts empty and a form reset returns to it.
    *
-   * `NoInfer` odbiera temu wiązaniu prawo **ustalania** `T` — typ bierze się
-   * wyłącznie z listy opcji, a wartość jest wobec niego sprawdzana. Bez tego
-   * `T` rozszerzał się do unii kandydatów (`string | number`) i lista liczb
-   * z wartością napisową przechodziła kompilację, bo obie pasowały do unii.
+   * `NoInfer` takes from this binding the right to **decide** `T` — the type comes from the
+   * option list alone, and the value is checked against it. Without it `T` widened to a union
+   * of candidates (`string | number`), and a list of numbers with a string value compiled,
+   * because both fitted the union.
    */
   readonly value = model<NoInfer<T> | null>(null);
 
-  // --- FormUiControl (synchronizowane przez dyrektywę FormField) ---
+  // --- FormUiControl (kept in sync by the FormField directive) ---
 
   readonly disabled = input(false, { transform: booleanAttribute });
   readonly readonly = input(false, { transform: booleanAttribute });
@@ -106,47 +107,46 @@ export class PctSelect<T = string>
 
   readonly touch = output<void>();
 
-  // --- API komponentu ---
+  // --- component API ---
 
   readonly options = input<readonly PctSelectOption<T>[]>([]);
   readonly label = input<string>('');
   readonly hint = input<string>('');
   /**
-   * Tekst zastępczy. Bez wartości bierze się z `PCT_TEXTS` — i bierze się
-   * **przy renderowaniu**, nie przy konstrukcji: wartość domyślna wejścia
-   * powstaje raz, więc aplikacja przełączająca język w runtime zostałaby
-   * z napisem sprzed zmiany ([0014](../../../../docs/decisions/0014-texts-as-signal.md)).
-   * `placeholder=""` zostaje pustym tekstem zastępczym, a nie powrotem do
-   * domyślnego — brak wartości i wartość pusta znaczą co innego.
+   * The placeholder. With no value it comes from `PCT_TEXTS` — and it comes **at render time**,
+   * not at construction: an input's default value is produced once, so an application
+   * switching language at runtime would be left with the string from before the change
+   * ([0014](../../../../docs/decisions/0014-texts-as-signal.md)). `placeholder=""` stays an
+   * empty placeholder rather than a return to the default — absent and empty mean different
+   * things.
    */
   readonly placeholder = input<string>();
   readonly size = input<PctSize>(this.config.defaultSize);
 
   /**
-   * Równość wartości. Domyślnie tożsamość, co dla napisów i liczb jest tym
-   * samym co `===`. Encje wymagają porównania po kluczu — instancja z serwera
-   * nie jest tą samą referencją co opcja na liście, więc bez tego wybrana
-   * pozycja nie podświetlałaby się po wczytaniu formularza.
+   * Value equality. Identity by default, which for strings and numbers is the same as `===`.
+   * Entities need comparison by key — an instance from the server is not the same reference as
+   * an option on the list, so without this the selected item would not highlight after the
+   * form loads.
    */
   readonly compareWith = input<PctCompareWith<T>>(pctSameValue);
 
   /**
-   * Wartość oznaczająca brak wyboru — ustawiana przy resecie formularza.
-   * Domyślnie `null`, ale aplikacja z polem nienullowalnym (`plan: string`)
-   * podaje własną (`emptyValue=""`), żeby reset nie wpisywał do modelu `null`
-   * wbrew jego typowi.
+   * The value standing for no choice — set when the form is reset. `null` by default, but an
+   * application with a non-nullable field (`plan: string`) supplies its own (`emptyValue=""`),
+   * so that a reset does not write `null` into the model against its type.
    */
   readonly emptyValue = input<NoInfer<T> | null>(null);
 
   /**
-   * Szerokość rozwijanego panelu — domyślnie równa kontrolce (`'field'`).
-   * Panel wychodzi wtedy dokładnie z jej krawędzi, więc lista czyta się jak
-   * przedłużenie pola. `'auto'` dopasowuje szerokość do najdłuższej opcji
-   * (nie zwężając panelu poniżej kontrolki), a długość CSS ustawia ją wprost.
+   * Width of the dropdown panel — equal to the control by default (`'field'`). The panel then
+   * comes out exactly from its edge, so the list reads as an extension of the field. `'auto'`
+   * fits the width to the longest option (without narrowing the panel below the control), and
+   * a CSS length sets it outright.
    */
   readonly panelWidth = input<PctSelectPanelWidth>('field');
 
-  /** Wyrównanie panelu do kontrolki, gdy jest od niej szerszy lub węższy. */
+  /** Alignment of the panel to the control when it is wider or narrower than it. */
   readonly panelAlign = input<PctSelectPanelAlign>('start');
 
   private readonly trigger =
@@ -162,25 +162,25 @@ export class PctSelect<T = string>
   protected readonly hintId = `${this.uid}-hint`;
   protected readonly errorId = `${this.uid}-error`;
 
-  // --- współpraca z obudową (req-api-wrapper) ---
+  // --- working with the chrome (req-api-wrapper) ---
 
   private readonly fieldApi = inject(PCT_FIELD, { optional: true });
 
-  /** Czy kontrolka jest w obudowie — wtedy oddaje jej etykietę i komunikaty. */
+  /** Whether the control is inside the chrome — it then hands over label and messages. */
   protected readonly inField = this.fieldApi !== null;
 
-  /** `<button>` jest elementem etykietowalnym, więc `<label for>` działa. */
+  /** A `<button>` is a labelable element, so `<label for>` works. */
   readonly controlId = this.triggerId;
   readonly labelStrategy: PctLabelStrategy = 'for';
   readonly fieldAppearance: PctFieldAppearance = 'boxed';
   readonly fieldCursor: PctFieldCursor = 'pointer';
 
-  /** Klik w ramkę poza triggerem otwiera listę — tak jak klik w sam trigger. */
+  /** A click on the border outside the trigger opens the list — as a click on the trigger. */
   activate(): void {
     this.toggle();
   }
 
-  /** Ustawiane przez obudowę, gdy jest obecna. */
+  /** Set by the chrome when one is present. */
   private readonly fieldDescribedBy = signal<string | null>(null);
 
   setDescribedBy(ids: string | null): void {
@@ -192,19 +192,19 @@ export class PctSelect<T = string>
   protected readonly open = signal(false);
 
   /**
-   * Panel renderuje się w nakładce CDK, poza drzewem hosta, więc kaskada
-   * scoped theme (`req-token-scoped`) do niego nie dociera. Przenosimy więc motyw
-   * z najbliższego przodka hosta na sam panel.
+   * The panel renders in a CDK overlay, outside the host tree, so the scoped-theme cascade
+   * (`req-token-scoped`) does not reach it. The theme is therefore carried from the host's
+   * nearest ancestor onto the panel itself.
    */
   protected readonly panelTheme = signal<string | null>(null);
 
   /**
-   * Z tego samego powodu panel nie dziedziczy pisma — poza drzewem hosta bierze
-   * je z `body`, czyli domyślną szeryfową czcionkę przeglądarki zamiast
-   * czcionki aplikacji. Krój należy do aplikacji (nie ma dla niego tokenu),
-   * a wielkość do kontekstu kontrolki: w obudowie ustawia ją `pct-field[size]`,
-   * samodzielnej — własny `size`. Dlatego jedno i drugie odczytujemy z triggera
-   * przy otwarciu: panel pisze dokładnie tym, czym pisze widoczna kontrolka.
+   * For the same reason the panel does not inherit its type — outside the host tree it takes
+   * it from `body`, that is the browser's default serif font instead of the application's. The
+   * family belongs to the application (there is no token for it) and the size to the control's
+   * context: inside the chrome `pct-field[size]` sets it, standalone its own `size` does. So
+   * both are read from the trigger on opening: the panel is set in exactly what the visible
+   * control is set in.
    */
   protected readonly panelFont = signal<{
     family: string;
@@ -212,33 +212,33 @@ export class PctSelect<T = string>
   } | null>(null);
 
   /**
-   * Trzecia właściwość zerwana w nakładce, z tego samego powodu co motyw i pismo
-   * (`lesson-35`): kierunek pisma. Panel jest dzieckiem `body`, więc dziedziczy
-   * kierunek po nim, a nie po kontrolce — w `dir="rtl"` trigger pisał od prawej,
-   * a lista pod nim od lewej (zmierzone: `direction: rtl` na triggerze wobec
-   * `ltr` na panelu). Widać to dopiero po otwarciu panelu, więc żaden zrzut stanu
-   * spoczynkowego by tego nie złapał, a arkusz jest przy tym bez zarzutu logiczny
-   * — `text-align: start` po prostu rozwiązuje się w drugą stronę.
+   * The third property broken in an overlay, for the same reason as the theme and the type
+   * (`lesson-35`): writing direction. The panel is a child of `body`, so it inherits the
+   * direction from it rather than from the control — in `dir="rtl"` the trigger was set from
+   * the right and the list below it from the left (measured: `direction: rtl` on the trigger
+   * against `ltr` on the panel). It shows only once the panel is open, so no screenshot of the
+   * resting state would have caught it, and the stylesheet is impeccably logical throughout —
+   * `text-align: start` simply resolves the other way.
    *
-   * Odczyt idzie z triggera, nie z `document.dir`: kierunek bywa zakresowy tak
-   * samo jak motyw, a panel ma być przedłużeniem TEJ kontrolki, nie strony.
+   * The read goes from the trigger, not from `document.dir`: direction can be scoped just as
+   * the theme can, and the panel is to be an extension of THIS control, not of the page.
    */
   protected readonly panelDir = signal<string | null>(null);
 
   /**
-   * Szerokość panelu i punkt zaczepienia: w obudowie ramkę rysuje `pct-field`,
-   * więc panel równa się z **nią**, a nie z triggerem stojącym w kolumnie
-   * odsuniętej o padding i dekoracje. Samodzielna kontrolka jest własną ramką.
+   * The panel's width and anchor point: inside the chrome `pct-field` draws the border, so the
+   * panel lines up with **it** rather than with the trigger, which stands in a column inset by
+   * padding and decorations. A standalone control is its own border.
    */
   protected readonly anchor = computed(() => this.fieldApi?.surface() ?? null);
 
-  /** Zmierzona przy otwarciu szerokość kotwicy — odniesienie dla panelu. */
+  /** The anchor width measured on opening — the reference for the panel. */
   private readonly anchorWidth = signal(0);
 
   /**
-   * Szerokość przekazywana nakładce. Pusty napis znaczy „nie ustawiaj" —
-   * wtedy o szerokości decyduje treść, a `overlayMinWidth` pilnuje dolnej
-   * granicy, żeby panel nie był węższy od kontrolki.
+   * The width handed to the overlay. An empty string means „do not set it" — the content then
+   * decides the width, and `overlayMinWidth` guards the lower bound so that the panel is never
+   * narrower than the control.
    */
   protected readonly overlayWidth = computed(() => {
     const width = this.panelWidth();
@@ -251,9 +251,9 @@ export class PctSelect<T = string>
   );
 
   /**
-   * Panel schodzi pod kontrolkę, a przy braku miejsca na dole wskakuje nad nią
-   * (druga pozycja). W poziomie trzyma się zadeklarowanego wyrównania —
-   * o mieszczenie się w oknie dba `push` strategii CDK.
+   * The panel drops below the control, and with no room at the bottom jumps above it (the
+   * second position). Horizontally it keeps the declared alignment — fitting inside the window
+   * is the job of the CDK strategy's `push`.
    */
   protected readonly panelPositions = computed<ConnectedPosition[]>(() => {
     const x = this.panelAlign();
@@ -263,17 +263,17 @@ export class PctSelect<T = string>
     ];
   });
 
-  /** Indeks opcji aktywnej klawiaturą (nie to samo co wybrana). */
+  /** Index of the option active by keyboard (not the same as the selected one). */
   protected readonly activeIndex = signal(-1);
 
   /**
-   * Indeks wybranej opcji (`-1`, gdy żadna). Liczymy **indeks**, a nie samą
-   * opcję, bo szablon i tak porównuje po pozycji — inaczej każdy wiersz listy
-   * wołałby porównanie przy każdym przebiegu detekcji.
+   * Index of the selected option (`-1` when there is none). What is computed is the **index**
+   * rather than the option itself, because the template compares by position anyway —
+   * otherwise every row of the list would call the comparison on every detection pass.
    *
-   * `null`/`undefined` odsiewamy przed porównaniem: własny komparator dostaje
-   * wtedy tylko wartości, które sam zadeklarował (`(a, b) => a.id === b.id`
-   * na `null` by wybuchł).
+   * `null`/`undefined` is filtered out before the comparison: a custom comparator then only
+   * receives the values it declared itself (`(a, b) => a.id === b.id` would blow up on
+   * `null`).
    */
   protected readonly selectedIndex = computed(() => {
     const current = this.value();
@@ -290,12 +290,12 @@ export class PctSelect<T = string>
     () => this.selectedOption()?.label ?? '',
   );
 
-  /** Napis biblioteki czytany przy renderowaniu — patrz `placeholder`. */
+  /** A library string read at render time — see `placeholder`. */
   protected readonly placeholderText = computed(
     () => this.placeholder() ?? this.texts().selectPlaceholder,
   );
 
-  // Wspólna logika komunikatów z `core` — bez duplikowania w każdej kontrolce.
+  // The shared message logic from `core` — not duplicated in every control.
   private readonly messages = pctFieldMessages({
     invalid: this.invalid,
     touched: this.touched,
@@ -304,7 +304,7 @@ export class PctSelect<T = string>
   protected readonly errorText = this.messages.errorText;
   readonly showInvalid = this.messages.showInvalid;
 
-  /** W obudowie komunikat renderuje ona, nie kontrolka. */
+  /** Inside the chrome the chrome renders the message, not the control. */
   protected readonly showError = computed(
     () => !this.inField && this.messages.showError(),
   );
@@ -318,7 +318,7 @@ export class PctSelect<T = string>
         ]),
   );
 
-  /** Id aktywnej opcji dla `aria-activedescendant`. */
+  /** Id of the active option, for `aria-activedescendant`. */
   protected readonly activeOptionId = computed(() => {
     const i = this.activeIndex();
     return this.open() && i >= 0 ? this.optionId(i) : null;
@@ -331,12 +331,12 @@ export class PctSelect<T = string>
   constructor() {
     this.fieldApi?.attach(this);
 
-    // Aktywna opcja musi być widoczna na liście przewijanej.
+    // The active option has to be visible in a scrolling list.
     effect(() => {
       const i = this.activeIndex();
       if (!this.open() || i < 0) return;
-      // Indeksujemy listę zamiast budować selektor po id — nie wymaga
-      // `CSS.escape` (brak w jsdom) i wprost odpowiada semantyce activeIndex.
+      // The list is indexed instead of building a selector from the id — that needs no
+      // `CSS.escape` (absent in jsdom) and matches the semantics of activeIndex directly.
       const el = this.panel()?.nativeElement.querySelectorAll<HTMLElement>(
         '[data-pct-part="option"]',
       )[i];
@@ -344,7 +344,7 @@ export class PctSelect<T = string>
     });
   }
 
-  // --- interakcja ---
+  // --- interaction ---
 
   private get interactive(): boolean {
     return !this.disabled() && !this.readonly();
@@ -372,7 +372,7 @@ export class PctSelect<T = string>
     this.panelDir.set(style.direction);
     this.anchorWidth.set((this.anchor() ?? trigger).offsetWidth);
     this.open.set(true);
-    // Aktywna staje się wybrana opcja, a bez wyboru pierwsza dostępna.
+    // The selected option becomes active, or the first available one when there is no choice.
     const selected = this.selectedIndex();
     this.activeIndex.set(selected >= 0 ? selected : this.firstEnabled());
   }
@@ -400,7 +400,7 @@ export class PctSelect<T = string>
     const key = event.key;
 
     if (!this.open()) {
-      // Otwarcie: strzałki, Enter, spacja lub Alt+strzałka w dół.
+      // Opening: the arrows, Enter, space or Alt+ArrowDown.
       if (
         key === 'ArrowDown' ||
         key === 'ArrowUp' ||
@@ -440,7 +440,7 @@ export class PctSelect<T = string>
         this.close();
         break;
       case 'Tab':
-        // Tab zamyka listę i pozwala wyjść z kontrolki.
+        // Tab closes the list and lets focus leave the control.
         this.close();
         break;
       default:
@@ -448,7 +448,7 @@ export class PctSelect<T = string>
     }
   }
 
-  // --- nawigacja ---
+  // --- navigation ---
 
   private enabledIndexes(): number[] {
     return this.options()
@@ -466,7 +466,7 @@ export class PctSelect<T = string>
     return list.length > 0 ? list[list.length - 1] : -1;
   }
 
-  /** Przesuwa aktywną opcję, pomijając wyłączone; bez zawijania (jak natywny select). */
+  /** Moves the active option, skipping disabled ones; no wrapping (as a native select). */
   private moveActive(delta: number): void {
     const list = this.enabledIndexes();
     if (list.length === 0) return;
@@ -483,15 +483,15 @@ export class PctSelect<T = string>
   private typeaheadTimer: ReturnType<typeof setTimeout> | undefined;
 
   /**
-   * Zegar czyszczący bufor przeżyłby komponent: zamknięcie panelu klawiszem
-   * zaraz po pisaniu zostawia zaplanowane wywołanie, które po zniszczeniu
-   * kontrolki trzyma ją w pamięci, a w testach dorzuca robotę do następnego.
+   * The timer clearing the buffer would outlive the component: closing the panel with a key
+   * right after typing leaves a scheduled call which, once the control is destroyed, keeps it
+   * in memory — and in tests hands work over to the next one.
    */
   private readonly typeaheadCleanup = inject(DestroyRef).onDestroy(() =>
     clearTimeout(this.typeaheadTimer),
   );
 
-  /** Wyszukiwanie po pierwszych literach — parytet z natywnym `<select>`. */
+  /** Typeahead on the first letters — parity with a native `<select>`. */
   private typeahead(char: string): void {
     this.typeaheadBuffer += char.toLowerCase();
     clearTimeout(this.typeaheadTimer);
@@ -504,12 +504,12 @@ export class PctSelect<T = string>
     if (match >= 0) this.activeIndex.set(match);
   }
 
-  /** Wywoływane przez signal forms (np. `focusBoundControl()`). */
+  /** Called by signal forms (`focusBoundControl()`, for instance). */
   focus(options?: FocusOptions): void {
     this.trigger().nativeElement.focus(options);
   }
 
-  /** Wywoływane przez signal forms przy resecie formularza. */
+  /** Called by signal forms when the form is reset. */
   reset(): void {
     this.value.set(this.emptyValue());
     this.close();

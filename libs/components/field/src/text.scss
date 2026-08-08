@@ -1,9 +1,9 @@
-/* Pole tekstowe jest przezroczyste: ramkę, tło i padding rysuje pct-field. */
+/* The text field is transparent: pct-field draws the border, the background and the padding. */
 :host {
   flex: 1 1 auto;
   min-width: 0;
-  /* Wypełnia wysokość rzędu, żeby klikalny obszar pokrywał całą kolumnę
-     kontrolki — bez tego nad i pod tekstem powstaje martwa strefa. */
+  /* Fills the row height, so that the clickable area covers the whole control column —
+     without this a dead zone appears above and below the text. */
   align-self: stretch;
   background: transparent;
   border: none;
@@ -16,7 +16,7 @@
 }
 
 :host:focus {
-  /* Fokus rysuje obudowa na całym rzędzie (:has(:focus-visible)). */
+  /* The chrome draws focus around the whole row (:has(:focus-visible)). */
   outline: none;
 }
 
@@ -29,9 +29,9 @@
   cursor: not-allowed;
 }
 
-/* Tryb wymuszonych kolorów — reguła opisana w `field.scss`. Pole jest
-   przezroczyste i dziedziczy kolor po wierszu obudowy; wymieniamy tylko to,
-   co ma własny kolor. */
+/* Forced-colors mode — the mapping is written down in `field.scss`. The field is transparent
+   and inherits its colour from the chrome's row; only what has a colour of its own is
+   replaced. */
 @media (forced-colors: active) {
   :host::placeholder {
     color: GrayText;

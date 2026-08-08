@@ -1,7 +1,7 @@
 {
   "name": "@pacit/components",
   "version": "0.0.1",
-  "description": "Dostępna biblioteka komponentów Angular: standalone, zoneless, signal forms, SSR i theming na design tokenach.",
+  "description": "Accessible Angular component library: standalone, zoneless, signal forms, SSR and design-token theming.",
   "license": "MIT",
   "author": "PacIT - Marek Pac",
   "repository": {

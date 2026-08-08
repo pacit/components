@@ -280,7 +280,7 @@ function run() {
   // CSS
   const css =
     [
-      '/* AUTOGENEROWANE z libs/tokens/src/*.json — nie edytuj ręcznie. */',
+      '/* GENERATED from libs/tokens/src/*.json — do not edit by hand. */',
       emitCssBlock(':root', base, base),
       emitCssBlock('[data-theme="light"]', lightOverrides, lightTree),
       emitCssBlock('[data-theme="dark"]', darkOverrides, darkTree),
@@ -305,7 +305,7 @@ function run() {
 
   // SCSS (zmienne wskazujące na CSS custom properties — do użytku wewnętrznego)
   const scss =
-    '// AUTOGENEROWANE — zmienne SCSS wskazujące na CSS custom properties.\n' +
+    '// GENERATED — SCSS variables pointing at CSS custom properties.\n' +
     Object.keys(base)
       .map((path) => `$${path.replace(/\./g, '-')}: var(${cssVar(path)});`)
       .join('\n') +
@@ -327,10 +327,10 @@ function run() {
   // łańcuch, a test porównujący dwa puste łańcuchy przechodzi.
   const cssVarUnion = publicPaths.map((p) => `  | '${cssVar(p)}'`).join('\n');
   const ts =
-    '// AUTOGENEROWANE z libs/tokens/src/*.json — nie edytuj ręcznie.\n' +
+    '// GENERATED from libs/tokens/src/*.json — do not edit by hand.\n' +
     `export const pctTokens = {\n${tsEntries}\n} as const;\n\n` +
     'export type PctTokenName = keyof typeof pctTokens;\n\n' +
-    '/** Nazwa custom property tokenu — tak, jak pyta o nią przeglądarka. */\n' +
+    "/** A token's custom-property name — the way the browser is asked for it. */\n" +
     `export type PctCssVar =\n${cssVarUnion};\n`;
   writeFileSync(join(DIST, 'tokens.ts'), ts);
 

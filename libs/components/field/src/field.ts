@@ -23,23 +23,22 @@ import { PctLabelAux, PctMessageAux } from './aux';
 import { PctFieldSize } from './field.types';
 
 /**
- * Obudowa pola formularza: etykieta, podpowiedź, komunikat błędu, znacznik
- * wymagalności oraz sloty `[pctPrefix]` / `[pctSuffix]` wewnątrz pola.
+ * The chrome of a form field: label, hint, error message, the required marker and the
+ * `[pctPrefix]` / `[pctSuffix]` slots inside the field.
  *
- * Pod polem jest **jedna linia**: podpowiedź albo błąd (błąd ma pierwszeństwo).
- * Dwa dodatkowe sloty wyrównane do prawej niosą treść poboczną: `[pctLabelAux]`
- * w wierszu etykiety (np. ikona „i") i `[pctMessageAux]` w wierszu komunikatu
- * (np. licznik znaków).
+ * Below the field there is **one line**: the hint or the error (the error wins). Two further
+ * slots aligned to the end carry side content: `[pctLabelAux]` in the label row (an „i" icon,
+ * say) and `[pctMessageAux]` in the message row (a character counter).
  *
- * Obudowa jest **prezentacyjna** — kontraktu formularza nie implementuje ona,
- * lecz kontrolka w środku (`req-api-wrapper`). Dzięki temu typowanie wartości
- * zostaje przy rodzaju pola (`string`, `number`, `Date`, `string[]`).
+ * The chrome is **presentational** — the form contract is implemented not by it but by the
+ * control inside (`req-api-wrapper`). Value typing therefore stays with the kind of field
+ * (`string`, `number`, `Date`, `string[]`).
  *
- * Kontrolka rejestruje się przez token `PCT_FIELD`; obudowa czyta jej stan
- * i oddaje jej identyfikatory opisów do `aria-describedby`.
+ * A control registers itself through the `PCT_FIELD` token; the chrome reads its state and
+ * hands it the ids of the descriptions for `aria-describedby`.
  *
  * @example
- * <pct-field label="E-mail" hint="Adres służbowy">
+ * <pct-field label="E-mail" hint="Your work address">
  *   <input pctText type="email" [formField]="f.email" />
  * </pct-field>
  */
@@ -64,20 +63,20 @@ export class PctField implements PctFieldApi {
   readonly hint = input<string>('');
 
   /**
-   * Wielkość pola; domyślnie z globalnej konfiguracji (req-api-config). Dotyczy
-   * **wiersza pola** — wysokość jest tu ta sama co przycisku tej samej
-   * wielkości, bo obie biorą ją z tokenu `--pct-control-height-*` (req-api-size).
+   * The field size; taken from the global configuration by default (req-api-config). It
+   * concerns the **field row** — the height here equals that of a button of the same size,
+   * because both take it from the `--pct-control-height-*` token (req-api-size).
    */
   readonly size = input<PctFieldSize>(this.config.defaultSize);
 
-  /** Wymagalność można podać wprost, gdy kontrolka jej nie zgłasza. */
+  /** Requiredness can be given outright when the control does not report it. */
   readonly required = input(false, { transform: booleanAttribute });
 
   private readonly control = signal<PctFieldControl | null>(null);
 
-  // Obecność slotów pobocznych decyduje o tym, czy w ogóle rysować ich wiersz —
-  // pusty wiersz etykiety/komunikatu dokładałby tylko odstęp. Zapytania celują
-  // w dyrektywy, więc consument musi je zaimportować (jak `pctPrefix`).
+  // Whether the side slots are present decides whether their row is drawn at all — an empty
+  // label/message row would only add a gap. The queries target the directives, so a consumer
+  // has to import them (as with `pctPrefix`).
   protected readonly labelAux = contentChild(PctLabelAux);
   protected readonly messageAux = contentChild(PctMessageAux);
 
@@ -86,7 +85,7 @@ export class PctField implements PctFieldApi {
   protected readonly hintId = `${this.uid}-hint`;
   protected readonly errorId = `${this.uid}-error`;
 
-  // Stan pochodzi z zarejestrowanej kontrolki; bez niej obudowa jest neutralna.
+  // The state comes from the registered control; without one the chrome is neutral.
   private readonly invalid = computed(() => this.control()?.invalid() ?? false);
   private readonly touched = computed(() => this.control()?.touched() ?? false);
   protected readonly disabled = computed(
@@ -103,23 +102,23 @@ export class PctField implements PctFieldApi {
   protected readonly showInvalid = this.messages.showInvalid;
   protected readonly showError = this.messages.showError;
 
-  /** Wymagalność: własne wejście albo zgłoszona przez kontrolkę. */
+  /** Requiredness: this input, or the one the control reports. */
   protected readonly isRequired = computed(
     () => this.required() || (this.control()?.required() ?? false),
   );
 
-  /** Etykieta wskazuje kontrolkę (`for`) albo ją nazywa (`aria-labelledby`). */
+  /** The label points at the control (`for`) or names it (`aria-labelledby`). */
   protected readonly labelFor = computed(() => {
     const c = this.control();
     return c && c.labelStrategy === 'for' ? c.controlId : null;
   });
 
-  /** Ramkę rysujemy tylko dla kontrolek, którym ona przystaje (`req-api-frame`). */
+  /** The border is drawn only for controls it suits (`req-api-frame`). */
   protected readonly appearance = computed(
     () => this.control()?.fieldAppearance ?? 'boxed',
   );
 
-  /** Kursor nad ramką zgłasza kontrolka; wyłączenie przykrywa go w CSS. */
+  /** The control reports the cursor over the border; being disabled overrides it in CSS. */
   protected readonly cursor = computed(
     () => this.control()?.fieldCursor ?? 'default',
   );
@@ -131,15 +130,15 @@ export class PctField implements PctFieldApi {
   private readonly row = viewChild<ElementRef<HTMLElement>>('row');
 
   /**
-   * Ramka pola jako powierzchnia odniesienia dla nakładek kontrolki (req-api-wrapper).
-   * `null` tylko zanim widok się zbuduje — kontrolka pyta o nią przy otwieraniu
-   * panelu, więc wtedy wiersz już stoi.
+   * The field border as the reference surface for a control's overlays (req-api-wrapper).
+   * `null` only before the view is built — a control asks for it when opening its panel, and
+   * by then the row stands.
    */
   readonly surface = computed(() => this.row()?.nativeElement ?? null);
 
   /**
-   * Czy zdarzenie trafiło w element, do którego obudowa nie sięga — wtedy nie
-   * miesza się do kliknięcia.
+   * Whether the event hit an element the chrome does not reach into — it then keeps out of
+   * the click.
    */
   private handledByTarget(event: MouseEvent): boolean {
     const target = event.target as HTMLElement | null;
@@ -147,29 +146,28 @@ export class PctField implements PctFieldApi {
   }
 
   /**
-   * Sama kontrolka i elementy interaktywne obsłużą kliknięcie same. Dekoracja
-   * `fill` niczego nie obsługuje, ale jest własną powierzchnią: skoro pokazuje
-   * własny kursor, klik w nią nie może po cichu robić czegoś innego.
+   * The control itself and interactive elements handle the click on their own. A `fill`
+   * decoration handles nothing, but it is a surface of its own: since it shows its own cursor,
+   * a click on it must not quietly do something else.
    */
   private static readonly ownSurface =
     'button, a, input, textarea, select, [tabindex], [data-pct-fit="fill"]';
 
   /**
-   * Klik w obszar pola, który nie jest kontrolką (padding ramki, odstęp między
-   * dekoracjami), przekazujemy kontrolce. Bez tego powstaje „martwa strefa":
-   * kursor jest wewnątrz ramki, ale kliknięcie nie ustawia fokusu.
+   * A click on the field area that is not the control (border padding, the gap between
+   * decorations) is passed to the control. Without this a „dead zone" appears: the cursor is
+   * inside the border, but a click sets no focus.
    */
   protected onRowPointerDown(event: MouseEvent): void {
     if (this.handledByTarget(event)) return;
-    // Zapobiega utracie fokusu przy kliknięciu w tło rzędu.
+    // Prevents focus loss on a click into the row's background.
     event.preventDefault();
     this.control()?.focus?.();
   }
 
   /**
-   * Uruchomienie kontrolki idzie po `click`, nie po `mousedown`: nakładka CDK
-   * otwarta na `mousedown` zamknęłaby się od razu, biorąc dopełniający `click`
-   * za kliknięcie poza panelem.
+   * Activation goes on `click`, not on `mousedown`: a CDK overlay opened on `mousedown` would
+   * close at once, taking the completing `click` for a click outside the panel.
    */
   protected onRowClick(event: MouseEvent): void {
     if (this.handledByTarget(event)) return;
@@ -177,12 +175,12 @@ export class PctField implements PctFieldApi {
   }
 
   constructor() {
-    // Identyfikatory opisów należą do obudowy, ale wystawić je musi kontrolka
-    // (to na niej ma być `aria-describedby`). To zapis do kontrolki, nie wartość
-    // pochodna — więc effect, nie computed.
-    // Pod polem świeci tylko jeden komunikat, więc `aria-describedby` wskazuje
-    // dokładnie ten, który jest w DOM: błąd, a gdy go nie ma — podpowiedź.
-    // Wskazanie na ukryty element byłoby wiszącą referencją dla czytnika.
+    // The description ids belong to the chrome, but the control has to expose them (it is the
+    // one carrying `aria-describedby`). This is a write into the control, not a derived value
+    // — hence effect, not computed.
+    // Only one message is lit below the field, so `aria-describedby` points at exactly the one
+    // that is in the DOM: the error, or the hint when there is none. Pointing at a hidden
+    // element would be a dangling reference for the screen reader.
     effect(() => {
       this.control()?.setDescribedBy(
         pctDescribedBy([
@@ -192,8 +190,8 @@ export class PctField implements PctFieldApi {
       );
     });
 
-    // Grupy (labelStrategy: 'labelledby') nazywa się przez aria-labelledby,
-    // bo `<label for>` nie nazywa zbioru elementów.
+    // Groups (labelStrategy: 'labelledby') are named through aria-labelledby, because
+    // `<label for>` does not name a set of elements.
     effect(() => {
       const c = this.control();
       if (!c || c.labelStrategy !== 'labelledby') return;

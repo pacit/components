@@ -1,6 +1,6 @@
-<!-- Wiersz etykiety: nazwa pola po lewej, opcjonalny dodatek (np. ikona „i",
-     licznik) po prawej. Renderujemy go, gdy jest etykieta albo dodatek —
-     inaczej pusty wiersz dokładałby sam odstęp. -->
+<!-- Label row: the field name at the start, an optional add-on (an „i" icon, a counter) at
+     the end. Rendered when there is a label or an add-on — otherwise an empty row would add
+     nothing but a gap. -->
 @if (label() || labelAux()) {
 <div class="pct-field__header" data-pct-part="field-header">
   @if (label()) {
@@ -21,13 +21,13 @@
 </div>
 }
 
-<!-- Rząd pola: dekoracje po bokach i kontrolka w środku. Sloty są opcjonalne;
-     kolejność w DOM odpowiada kolejności wizualnej, więc fokus idzie naturalnie. -->
+<!-- Field row: decorations on the sides and the control in the middle. The slots are
+     optional; DOM order matches visual order, so focus moves naturally. -->
 
 <!--
-  Rząd nie jest własnym celem interakcji — tylko przekazuje kliknięcie w swoje
-  tło kontrolce, która leży w środku i ma pełną obsługę klawiatury. Duplikat
-  obsługi klawiszy tutaj tworzyłby drugi cel Taba. Reguła jest fałszywie dodatnia.
+  The row is not an interaction target of its own — it only passes a click on its background
+  to the control, which sits inside and has full keyboard handling. Duplicating key handling
+  here would create a second Tab target. The rule is a false positive.
 -->
 <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
 <div
@@ -51,11 +51,10 @@
 </div>
 
 <!--
-  Pod polem tylko jedna linia. Błąd ma pierwszeństwo nad podpowiedzią: gdy
-  świeci, podpowiedź znika — inaczej pole rosłoby o wiersz przy każdym błędzie,
-  a `aria-describedby` mógłby wskazywać element, którego użytkownik nie widzi.
-  Po prawej stronie tej samej linii stoi opcjonalny dodatek (np. licznik znaków),
-  niezależny od tego, który komunikat akurat świeci.
+  One line only below the field. The error wins over the hint: while it is lit the hint goes
+  away — otherwise the field would grow by a row on every error, and `aria-describedby` could
+  point at an element the user cannot see. At the end of that same line stands an optional
+  add-on (a character counter, say), independent of which message is lit.
 -->
 @if (showError() || hint() || messageAux()) {
 <div class="pct-field__footer" data-pct-part="field-footer">

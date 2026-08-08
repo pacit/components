@@ -4,26 +4,25 @@ import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import { defineConfig } from 'vite';
 
 /**
- * Konfiguracja Vitest UŻYWANA WYŁĄCZNIE PRZEZ PRZEBIEG MUTACYJNY (`nx run components:mutacja`).
+ * Vitest configuration USED BY THE MUTATION RUN ALONE (`nx run components:mutacja`).
  *
- * Dlaczego osobny plik, skoro biblioteka ma już target `test`. Bo tamten idzie przez
- * `@nx/angular:unit-test`, czyli przez builder `@angular/build`, który kompiluje
- * specyfikacje esbuildem do plików wirtualnych i dopiero wynik podaje Vitestowi. Stryker
- * potrzebuje czegoś innego: PLIKU KONFIGURACYJNEGO, który sam poda swojemu runnerowi
- * (`@stryker-mutator/vitest-runner`) — a builder Angulara takiego pliku nie ma i mieć
- * nie może, bo składa konfigurację w pamięci.
+ * Why a separate file when the library already has a `test` target: that one goes through
+ * `@nx/angular:unit-test`, that is the `@angular/build` builder, which compiles the specs with
+ * esbuild into virtual files and hands Vitest the result. Stryker needs something else — a
+ * CONFIGURATION FILE it can pass to its own runner (`@stryker-mutator/vitest-runner`) — and the
+ * Angular builder has no such file and cannot have one, because it assembles the configuration
+ * in memory.
  *
- * Nazwa nie jest `vitest.config.mts` celowo: `@nx/vite/plugin` i `@nx/vitest` inferują
- * targety z DOKŁADNIE tych nazw (`vite.config.*`, `vitest.config.*`), więc plik o nazwie
- * kanonicznej dołożyłby bibliotece drugi target testowy, biegnący w CI obok `test`
- * i mierzący to samo dwa razy.
+ * The name is deliberately not `vitest.config.mts`: `@nx/vite/plugin` and `@nx/vitest` infer
+ * targets from EXACTLY those names (`vite.config.*`, `vitest.config.*`), so a canonically named
+ * file would give the library a second test target, running in CI beside `test` and measuring
+ * the same thing twice.
  *
- * Cena tego rozwiązania jest jedna i zapisana wprost: to DRUGI sposób uruchomienia tych
- * samych specyfikacji, więc potrafi się z pierwszym rozjechać. Pilnuje tego bramka
- * `check-mutation.mjs` (punkt 2): zbiór plików, które przebieg mutacyjny NAPRAWDĘ
- * uruchomił, musi się zgadzać ze zbiorem specyfikacji biblioteki z indeksu gita — czyli
- * z tym samym mianownikiem, po którym chodzi target `test`. Plik dopisany do biblioteki
- * i niewidziany tutaj byłby inaczej testem, którego mutanty nie mają kto zabić.
+ * The price is one and written down plainly: this is a SECOND way of running the same specs, so
+ * it can drift from the first. The `check-mutation.mjs` gate watches that (point 2): the set of
+ * files the mutation run REALLY ran has to match the set of the library's specs from the git
+ * index — the same denominator the `test` target walks. Otherwise a file added to the library
+ * and unseen here would be a test whose mutants nobody kills.
  */
 export default defineConfig(() => ({
   root: __dirname,
