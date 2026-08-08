@@ -3,21 +3,21 @@ import { hydrationErrors, uncaughtErrors, visit } from './support/dom';
 import { SBX_ROUTES } from './support/views';
 
 /**
- * SSR z hydracją jest wymaganiem twardym (req-project-ssr), ale jego złamanie nie
- * przewraca strony: Angular loguje NG0500 i po cichu odbudowuje poddrzewo od
- * nowa. Aplikacja wygląda więc poprawnie, a płaci za to podwójnym renderem,
- * utratą stanu DOM i migotaniem — i żaden dotychczasowy test tego nie widział.
+ * SSR with hydration is a hard requirement (req-project-ssr), but breaking it does
+ * not knock the page over: Angular logs NG0500 and quietly rebuilds the subtree
+ * from scratch. The application therefore looks correct and pays for it with a
+ * double render, a lost DOM state and flicker — and no test so far saw any of it.
  *
- * Samo sprawdzenie siedzi w `visit()`, więc obejmuje KAŻDY test e2e w tym
- * projekcie. Ten plik dokłada dwie rzeczy, których side effect nie daje:
- * jawne przejście po wszystkich widokach (także tych bez własnego speca)
- * i test kontrolny samej bramki.
+ * The check itself sits in `visit()`, so it covers EVERY e2e test in this project.
+ * This file adds the two things that side effect cannot give: an explicit walk
+ * through every view (those without a spec of their own included) and a control
+ * test of the gate itself.
  */
-test.describe('Hydracja SSR', () => {
+test.describe('SSR hydration', () => {
   for (const path of SBX_ROUTES) {
-    test(`widok ${path} hydruje się bez rozjazdu`, async ({ page }) => {
-      // `visit` rzuca sam, gdy zobaczy NG05xx — asercja poniżej jest po to,
-      // żeby test miał widoczne ustalenie, a nie tylko brak wyjątku.
+    test(`the ${path} view hydrates with no mismatch`, async ({ page }) => {
+      // `visit` throws on its own once it sees NG05xx — the assertion below is there
+      // so the test states something visible, not just the absence of an exception.
       await visit(page, path);
       expect(hydrationErrors(page)).toEqual([]);
       expect(uncaughtErrors(page)).toEqual([]);
@@ -25,11 +25,11 @@ test.describe('Hydracja SSR', () => {
   }
 
   /**
-   * Nawigacja klientem nie hydruje niczego, ale leniwy widok dochodzi do
-   * strony po tym, jak hydracja się skończyła — a to jest ten moment, w którym
-   * rozjechał się licznik identyfikatorów z lesson-31.
+   * Client-side navigation hydrates nothing, but a lazy view reaches the page after
+   * hydration has finished — and that is the moment when the id counter from
+   * lesson-31 drifted apart.
    */
-  test('przejścia między widokami też nie sypią błędami', async ({ page }) => {
+  test('moving between views throws no errors either', async ({ page }) => {
     await visit(page, '/');
     for (const path of ['/field', '/select', '/states', '/all']) {
       await page
@@ -43,12 +43,12 @@ test.describe('Hydracja SSR', () => {
   });
 
   /**
-   * Test samej bramki, nie aplikacji — w duchu kontroli z `a11y.spec.ts`.
-   * Bramka, która nigdy nie potrafi zapalić (bo np. nasłuch podpina się po
-   * `goto()` albo wzorzec kodu jest błędny), daje fałszywe poczucie
-   * bezpieczeństwa i przechodzi tak samo jak bramka działająca.
+   * A test of the gate itself, not of the application — in the spirit of the control
+   * in `a11y.spec.ts`. A gate that can never fire (because, say, the listener is
+   * attached after `goto()`, or the pattern is wrong) gives false confidence and
+   * passes exactly like a working one.
    */
-  test('bramka faktycznie wykrywa błąd hydracji (kontrola bramki)', async ({
+  test('the gate really does detect a hydration error (a control of the gate)', async ({
     page,
   }) => {
     await visit(page, '/');
@@ -61,12 +61,12 @@ test.describe('Hydracja SSR', () => {
     );
     await expect
       .poll(() => hydrationErrors(page).length, {
-        message: 'nasłuch konsoli nie zobaczył błędu hydracji',
+        message: 'the console listener saw no hydration error',
       })
       .toBe(1);
 
-    // I że `visit()` na tym realnie pada — bez tego bramka zbiera błędy,
-    // których nikt nie zamienia na czerwony test.
-    await expect(visit(page, '/button')).rejects.toThrow(/Błąd hydracji/);
+    // And that `visit()` really does fail on it — without that the gate collects
+    // errors nobody turns into a red test.
+    await expect(visit(page, '/button')).rejects.toThrow(/Hydration error/);
   });
 });

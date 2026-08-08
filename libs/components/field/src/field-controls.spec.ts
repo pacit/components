@@ -20,13 +20,13 @@ async function render<T>(type: Type<T>) {
 }
 
 const OPTIONS: readonly PctSelectOption[] = [
-  { value: 'pl', label: 'Polska' },
-  { value: 'de', label: 'Niemcy' },
+  { value: 'pl', label: 'Poland' },
+  { value: 'de', label: 'Germany' },
 ];
 
 @Component({
   imports: [PctField, PctSelect],
-  template: `<pct-field label="Kraj" [hint]="hint()">
+  template: `<pct-field label="Country" [hint]="hint()">
     <pct-select
       [options]="options"
       [invalid]="invalid()"
@@ -57,9 +57,9 @@ class CheckboxInFieldHost {
 
 @Component({
   imports: [PctField, PctRadioGroup, PctRadio],
-  template: `<pct-field label="Plan" hint="Do wyboru">
+  template: `<pct-field label="Plan" hint="Pick one">
     <pct-radio-group [(value)]="value">
-      <pct-radio value="free">Darmowy</pct-radio>
+      <pct-radio value="free">Free</pct-radio>
       <pct-radio value="pro">Pro</pct-radio>
     </pct-radio-group>
   </pct-field>`,
@@ -68,14 +68,14 @@ class RadioInFieldHost {
   value = signal('');
 }
 
-/** Ta sama kontrolka poza obudową — musi rysować własną etykietę. */
+/** The same control outside the wrapper — it has to draw its own label. */
 @Component({
   imports: [PctCheckbox],
-  template: `<pct-checkbox label="Samodzielny" hint="Własna podpowiedź" />`,
+  template: `<pct-checkbox label="Standalone" hint="Its own hint" />`,
 })
 class CheckboxStandaloneHost {}
 
-describe('Kontrolki w obudowie pct-field', () => {
+describe('Controls inside the pct-field wrapper', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
@@ -83,33 +83,33 @@ describe('Kontrolki w obudowie pct-field', () => {
   });
 
   describe('PctSelect', () => {
-    it('oddaje etykietę obudowie i nie renderuje własnej', async () => {
+    it('hands the label over to the wrapper and renders none of its own', async () => {
       const fixture = await render(SelectInFieldHost);
       const labels = allParts(fixture, 'field-label');
       const trigger = part(fixture, 'trigger');
 
-      // Dokładnie jedna etykieta — należy do obudowy i wskazuje trigger.
+      // Exactly one label — it belongs to the wrapper and points at the trigger.
       expect(labels).toHaveLength(1);
       expect(labels[0].closest('pct-field')).toBeTruthy();
       expect(labels[0].getAttribute('for')).toBe(trigger.id);
     });
 
-    it('obudowa rysuje ramkę, a trigger ją oddaje', async () => {
+    it('the wrapper draws the border and the trigger gives it up', async () => {
       const fixture = await render(SelectInFieldHost);
       const host = fixture.nativeElement.querySelector('pct-select');
       const field = fixture.nativeElement.querySelector('pct-field');
 
       expect(host.hasAttribute('data-pct-in-field')).toBe(true);
-      // Ramka jest wariantu `boxed` — select jej potrzebuje.
+      // The border is the `boxed` appearance — the select needs it.
       expect(field.getAttribute('data-pct-appearance')).toBe('boxed');
     });
 
-    it('podpowiedź i błąd renderuje obudowa, nie kontrolka (jedna linia)', async () => {
+    it('the wrapper renders the hint and the error, not the control (one line)', async () => {
       const fixture = await render(SelectInFieldHost);
       const trigger = part(fixture, 'trigger');
 
-      // Sama podpowiedź: rysuje ją obudowa i wiąże z triggerem.
-      fixture.componentInstance.hint.set('Wybierz z listy');
+      // The hint alone: the wrapper draws it and binds it to the trigger.
+      fixture.componentInstance.hint.set('Pick from the list');
       fixture.detectChanges();
       await fixture.whenStable();
 
@@ -118,11 +118,11 @@ describe('Kontrolki w obudowie pct-field', () => {
         part(fixture, 'field-hint').id,
       );
 
-      // Błąd przejmuje jedyną linię pod polem — podpowiedź ustępuje.
+      // The error takes over the only line below the field — the hint gives way.
       fixture.componentInstance.invalid.set(true);
       fixture.componentInstance.touched.set(true);
       fixture.componentInstance.errors.set([
-        requiredError({ message: 'Kraj jest wymagany' }),
+        requiredError({ message: 'Country is required' }),
       ]);
       fixture.detectChanges();
       await fixture.whenStable();
@@ -137,14 +137,14 @@ describe('Kontrolki w obudowie pct-field', () => {
   });
 
   describe('PctCheckbox', () => {
-    it('obudowa nie rysuje ramki wokół checkboxa (wariant bare)', async () => {
+    it('the wrapper draws no border around a checkbox (the bare appearance)', async () => {
       const fixture = await render(CheckboxInFieldHost);
       const field = fixture.nativeElement.querySelector('pct-field');
 
       expect(field.getAttribute('data-pct-appearance')).toBe('bare');
     });
 
-    it('oddaje etykietę obudowie, ale zachowuje powiązanie z natywnym inputem', async () => {
+    it('hands the label to the wrapper but keeps it bound to the native input', async () => {
       const fixture = await render(CheckboxInFieldHost);
       const labels = allParts(fixture, 'field-label');
       const input = fixture.nativeElement.querySelector(
@@ -155,17 +155,17 @@ describe('Kontrolki w obudowie pct-field', () => {
       expect(labels[0].getAttribute('for')).toBe(input.id);
     });
 
-    it('poza obudową rysuje własną etykietę i podpowiedź', async () => {
+    it('outside the wrapper it draws its own label and hint', async () => {
       const fixture = await render(CheckboxStandaloneHost);
 
-      expect(part(fixture, 'label').textContent).toContain('Samodzielny');
-      expect(part(fixture, 'hint').textContent).toContain('Własna podpowiedź');
+      expect(part(fixture, 'label').textContent).toContain('Standalone');
+      expect(part(fixture, 'hint').textContent).toContain('Its own hint');
       expect(fixture.nativeElement.querySelector('pct-field')).toBeNull();
     });
   });
 
   describe('PctRadioGroup', () => {
-    it('nazywa grupę przez aria-labelledby wskazujące etykietę obudowy', async () => {
+    it('names the group through aria-labelledby pointing at the wrapper label', async () => {
       const fixture = await render(RadioInFieldHost);
       const group = fixture.nativeElement.querySelector('pct-radio-group');
       const label = part(fixture, 'field-label');
@@ -175,19 +175,19 @@ describe('Kontrolki w obudowie pct-field', () => {
       expect(label.closest('pct-field')).toBeTruthy();
     });
 
-    it('nie renderuje własnej etykiety grupy w obudowie', async () => {
+    it('renders no group label of its own inside the wrapper', async () => {
       const fixture = await render(RadioInFieldHost);
       expect(allParts(fixture, 'group-label')).toHaveLength(0);
       expect(allParts(fixture, 'group-hint')).toHaveLength(0);
     });
 
-    it('obudowa nie rysuje ramki wokół grupy (wariant bare)', async () => {
+    it('the wrapper draws no border around a group (the bare appearance)', async () => {
       const fixture = await render(RadioInFieldHost);
       const field = fixture.nativeElement.querySelector('pct-field');
       expect(field.getAttribute('data-pct-appearance')).toBe('bare');
     });
 
-    it('wybór opcji nadal działa w obudowie', async () => {
+    it('picking an option still works inside the wrapper', async () => {
       const fixture = await render(RadioInFieldHost);
       const radios = Array.from(
         fixture.nativeElement.querySelectorAll('input[type="radio"]'),

@@ -1,10 +1,10 @@
 /**
- * Trasy sandboxa w kolejności z rejestru (`apps/sandbox/src/app/views.ts`).
+ * The sandbox routes in the order of the registry (`apps/sandbox/src/app/views.ts`).
  *
- * Projekt e2e nie kompiluje kodu aplikacji, więc lista jest tu powtórzona.
- * Żeby powtórzenie nie zaczęło cicho odstawać, `shell.spec.ts` porównuje ją
- * z nawigacją wyrenderowaną przez powłokę — dodanie widoku bez dopisania go
- * tutaj zapala test, zamiast po cichu wyłączyć jego audyt a11y.
+ * The e2e project does not compile the application code, so the list is repeated
+ * here. To keep the repetition from quietly drifting, `shell.spec.ts` compares it
+ * with the navigation the shell renders — adding a view without listing it here
+ * fires a test instead of silently switching off its a11y audit.
  */
 export const SBX_ROUTES = [
   '/',

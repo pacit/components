@@ -2,16 +2,16 @@ import { expect, test } from '@playwright/test';
 import { visit } from './support/dom';
 
 /**
- * Scoped theme na dowolnym poddrzewie (`data-theme` na sekcji), niezależnie od
- * kart sandboxa — te sprawdza `shell.spec.ts`. Tutaj chodzi o sam mechanizm
- * kaskady: warstwa semantyczna i komponentowa muszą przełączyć się razem.
+ * A scoped theme on any subtree (`data-theme` on a section), independent of the
+ * sandbox cards — those are checked by `shell.spec.ts`. What matters here is the
+ * cascade itself: the semantic and the component layer have to switch together.
  */
-test.describe('Scoped theme — kaskada CSS custom properties', () => {
+test.describe('A scoped theme — the cascade of CSS custom properties', () => {
   test.beforeEach(async ({ page }) => {
     await visit(page, '/all');
   });
 
-  test('panel dark ma inną powierzchnię niż :root, a toggle ją przełącza', async ({
+  test('a dark panel has a different surface than :root, and the toggle switches it', async ({
     page,
   }) => {
     const rootSurface = await page.evaluate(() =>
@@ -29,20 +29,20 @@ test.describe('Scoped theme — kaskada CSS custom properties', () => {
         getComputedStyle(el).getPropertyValue('--pct-surface').trim(),
       );
 
-    expect(await surfaceOf()).toBe('#0f172a'); // dark scope nadpisuje kaskadą
+    expect(await surfaceOf()).toBe('#0f172a'); // the dark scope overrides down the cascade
 
     await page.getByTestId('toggle').click();
     await expect(panel).not.toHaveAttribute('data-theme', 'dark');
-    expect(await surfaceOf()).toBe('#ffffff'); // wraca do motywu strony
+    expect(await surfaceOf()).toBe('#ffffff'); // back to the page theme
   });
 
   /**
-   * Regresja: scoped theme musi przethemowywać także tokeny KOMPONENTOWE, nie
-   * tylko semantyczne. Custom properties są podstawiane w miejscu deklaracji,
-   * więc token komponentowy zadeklarowany w `:root` zamraża jasną wartość —
-   * dlatego build emituje w bloku motywu domknięcie przechodnie (lesson-17).
+   * A regression: a scoped theme has to re-theme the COMPONENT tokens as well, not
+   * only the semantic ones. Custom properties are substituted where they are
+   * declared, so a component token declared in `:root` freezes the light value —
+   * which is why the build emits a transitive closure in the theme block (lesson-17).
    */
-  test('scoped theme przethemowuje również tokeny komponentowe', async ({
+  test('a scoped theme re-themes the component tokens too', async ({
     page,
   }) => {
     const rootButtonBg = await page.evaluate(() =>
@@ -56,10 +56,10 @@ test.describe('Scoped theme — kaskada CSS custom properties', () => {
         getComputedStyle(el).getPropertyValue('--pct-button-bg').trim(),
       );
 
-    // :root -> primary = blue-600, dark scope -> primary = blue-400. Rampa
-    // ciemna siedzi WYŻEJ niż jasna (blue-400, nie blue-500) od A12: `on-primary`
-    // jest w niej ciemny, więc hover przyciemniający tło zbijał kontrast etykiety
-    // poniżej AA, a ten sam token bywa też tekstem na ciemnej powierzchni.
+    // :root -> primary = blue-600, dark scope -> primary = blue-400. The dark ramp
+    // sits HIGHER than the light one (blue-400, not blue-500) since A12: `on-primary`
+    // is dark in it, so a hover that darkened the background dropped the label
+    // contrast below AA, and the same token is sometimes text on a dark surface too.
     expect(rootButtonBg).toBe('#2563eb');
     expect(scopedButtonBg).toBe('#60a5fa');
     expect(scopedButtonBg).not.toBe(rootButtonBg);

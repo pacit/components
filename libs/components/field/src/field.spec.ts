@@ -53,34 +53,34 @@ class Host {
 
 @Component({
   imports: [PctField, PctText, PctPrefix, PctSuffix],
-  template: `<pct-field label="Cena">
+  template: `<pct-field label="Price">
     <span pctPrefix aria-hidden="true">PLN</span>
     <input pctText [(value)]="value" />
-    <button pctSuffix type="button" aria-label="Wyczyść">×</button>
+    <button pctSuffix type="button" aria-label="Clear">×</button>
   </pct-field>`,
 })
 class AffixHost {
   value = signal('100');
 }
 
-/** To samo pole, ale obie dekoracje wypełniają swoje sloty (`fill`). */
+/** The same field, but both affixes fill their slots (`fill`). */
 @Component({
   imports: [PctField, PctText, PctPrefix, PctSuffix],
-  template: `<pct-field label="Cena">
+  template: `<pct-field label="Price">
     <span pctPrefix="fill" aria-hidden="true">PLN</span>
     <input pctText [(value)]="value" />
-    <button pctSuffix="fill" type="button" aria-label="Szukaj">→</button>
+    <button pctSuffix="fill" type="button" aria-label="Search">→</button>
   </pct-field>`,
 })
 class FillAffixHost {
   value = signal('100');
 }
 
-/** Pole z podpowiedzią i dwoma slotami pobocznymi (dodatek etykiety + komunikatu). */
+/** A field with a hint and two aux slots (the label aux and the message aux). */
 @Component({
   imports: [PctField, PctText, PctLabelAux, PctMessageAux],
-  template: `<pct-field label="Opis" [hint]="hint()">
-    <button pctLabelAux type="button" aria-label="Pomoc">ⓘ</button>
+  template: `<pct-field label="Description" [hint]="hint()">
+    <button pctLabelAux type="button" aria-label="Help">ⓘ</button>
     <input
       pctText
       [invalid]="invalid()"
@@ -92,7 +92,7 @@ class FillAffixHost {
   </pct-field>`,
 })
 class AuxHost {
-  hint = signal('Krótko o sobie');
+  hint = signal('A few words about you');
   invalid = signal(false);
   touched = signal(false);
   errors = signal<readonly { kind: string; message?: string }[]>([]);
@@ -101,15 +101,15 @@ class AuxHost {
 
 @Component({
   imports: [PctField, PctText, FormField],
-  template: `<pct-field label="E-mail" hint="Adres służbowy">
+  template: `<pct-field label="E-mail" hint="Work address">
     <input pctText type="email" [formField]="f.email" />
   </pct-field>`,
 })
 class SignalFormHost {
   model = signal({ email: 'start@example.com' });
   f = form(this.model, (p) => {
-    required(p.email, { message: 'Adres jest wymagany' });
-    email(p.email, { message: 'Niepoprawny adres' });
+    required(p.email, { message: 'The address is required' });
+    email(p.email, { message: 'Invalid address' });
   });
 }
 
@@ -133,13 +133,13 @@ class NgModelHost {
   text = 'start';
 }
 
-/** Kontrolka bez obudowy — musi działać, tylko bez etykiety i komunikatów. */
+/** The control with no wrapper — it has to work, only without a label or messages. */
 @Component({
   imports: [PctText],
   template: `<input pctText [(value)]="value" />`,
 })
 class BareHost {
-  value = signal('bez obudowy');
+  value = signal('no wrapper');
 }
 
 @Component({
@@ -152,7 +152,7 @@ class SizeHost {
   size = signal<PctFieldSize>('lg');
 }
 
-/** Obudowa bez jawnej wielkości — bierze ją z globalnej konfiguracji. */
+/** A wrapper with no explicit size — it takes one from the global config. */
 @Component({
   imports: [PctField, PctText],
   template: `<pct-field label="E-mail"><input pctText /></pct-field>`,
@@ -166,7 +166,7 @@ describe('PctField + PctText', () => {
     });
   });
 
-  it('renderuje natywny input i wiąże etykietę obudowy przez for/id', async () => {
+  it('renders a native input and binds the wrapper label through for/id', async () => {
     const fixture = await render(Host);
     const input = inputOf(fixture);
     const label = part(fixture, 'field-label') as HTMLLabelElement;
@@ -177,7 +177,7 @@ describe('PctField + PctText', () => {
     expect(input.id).toBeTruthy();
   });
 
-  it('wpisanie tekstu aktualizuje dwukierunkowo wiązaną wartość', async () => {
+  it('typing updates the two-way bound value', async () => {
     const fixture = await render(Host);
     const input = inputOf(fixture);
 
@@ -188,7 +188,7 @@ describe('PctField + PctText', () => {
     expect(fixture.componentInstance.value()).toBe('ala@example.com');
   });
 
-  it('zmiana wartości z zewnątrz trafia do natywnego inputu', async () => {
+  it('a value changed from outside reaches the native input', async () => {
     const fixture = await render(Host);
     fixture.componentInstance.value.set('z-modelu@example.com');
     fixture.detectChanges();
@@ -197,9 +197,9 @@ describe('PctField + PctText', () => {
     expect(inputOf(fixture).value).toBe('z-modelu@example.com');
   });
 
-  it('obudowa przekazuje kontrolce aria-describedby dla podpowiedzi', async () => {
+  it('the wrapper hands the control an aria-describedby for the hint', async () => {
     const fixture = await render(Host);
-    fixture.componentInstance.hint.set('Adres służbowy');
+    fixture.componentInstance.hint.set('Work address');
     fixture.detectChanges();
     await fixture.whenStable();
 
@@ -207,7 +207,7 @@ describe('PctField + PctText', () => {
     expect(inputOf(fixture).getAttribute('aria-describedby')).toBe(hint.id);
   });
 
-  it('wymagalność zgłoszona przez kontrolkę pokazuje znacznik w obudowie', async () => {
+  it('a required flag raised by the control shows the marker on the wrapper', async () => {
     const fixture = await render(Host);
     fixture.componentInstance.req.set(true);
     fixture.detectChanges();
@@ -217,16 +217,16 @@ describe('PctField + PctText', () => {
     expect(part(fixture, 'field-label').textContent).toContain('*');
   });
 
-  it('błąd pojawia się dopiero po dotknięciu i jest wiązany z kontrolką', async () => {
+  it('the error appears only after a touch and is bound to the control', async () => {
     const fixture = await render(Host);
     fixture.componentInstance.invalid.set(true);
     fixture.componentInstance.errors.set([
-      { kind: 'required', message: 'Adres jest wymagany' },
+      { kind: 'required', message: 'The address is required' },
     ]);
     fixture.detectChanges();
     await fixture.whenStable();
 
-    // nietknięte -> brak błędu
+    // untouched -> no error
     expect(allParts(fixture, 'field-error')).toHaveLength(0);
     expect(inputOf(fixture).getAttribute('aria-invalid')).toBeNull();
 
@@ -236,14 +236,14 @@ describe('PctField + PctText', () => {
 
     const error = part(fixture, 'field-error');
     expect(error.getAttribute('role')).toBe('alert');
-    expect(error.textContent?.trim()).toBe('Adres jest wymagany');
+    expect(error.textContent?.trim()).toBe('The address is required');
     expect(inputOf(fixture).getAttribute('aria-invalid')).toBe('true');
     expect(inputOf(fixture).getAttribute('aria-describedby')).toContain(
       error.id,
     );
   });
 
-  it('wyłączenie kontrolki oznacza obudowę jako wyłączoną', async () => {
+  it('disabling the control marks the wrapper as disabled', async () => {
     const fixture = await render(Host);
     fixture.componentInstance.disabled.set(true);
     fixture.detectChanges();
@@ -254,12 +254,12 @@ describe('PctField + PctText', () => {
     expect(host.hasAttribute('data-pct-disabled')).toBe(true);
   });
 
-  describe('brak martwej strefy w ramce pola', () => {
-    it('kliknięcie w padding ramki ustawia fokus na kontrolce', async () => {
+  describe('no dead zone inside the field border', () => {
+    it('a click on the border padding focuses the control', async () => {
       const fixture = await render(Host);
       const row = part(fixture, 'field-row');
 
-      // Cel zdarzenia to sam rząd, czyli obszar paddingu — nie kontrolka.
+      // The event target is the row itself, that is the padding area — not the control.
       row.dispatchEvent(
         new MouseEvent('mousedown', { bubbles: true, cancelable: true }),
       );
@@ -268,7 +268,7 @@ describe('PctField + PctText', () => {
       expect(document.activeElement).toBe(inputOf(fixture));
     });
 
-    it('kliknięcie w dekorację prefix też fokusuje kontrolkę', async () => {
+    it('a click on the prefix affix focuses the control as well', async () => {
       const fixture = await render(AffixHost);
       const prefix = part(fixture, 'field-prefix');
 
@@ -280,7 +280,7 @@ describe('PctField + PctText', () => {
       expect(document.activeElement).toBe(inputOf(fixture));
     });
 
-    it('kliknięcie w przycisk slotu NIE przechwytuje fokusu na kontrolkę', async () => {
+    it('a click on a slot button does NOT hijack focus to the control', async () => {
       const fixture = await render(AffixHost);
       const btn = part(fixture, 'field-suffix').querySelector(
         'button',
@@ -291,33 +291,33 @@ describe('PctField + PctText', () => {
       );
       await fixture.whenStable();
 
-      // Fokus nie został przeniesiony na input — przycisk obsługuje się sam.
+      // Focus was not moved to the input — the button serves itself.
       expect(document.activeElement).not.toBe(inputOf(fixture));
     });
 
-    it('odstępy niesie wnętrze rzędu, nie sam rząd (brak strefy niczyjej)', async () => {
+    it("the row inside carries the spacing, not the row itself (no no-man's land)", async () => {
       const fixture = await render(AffixHost);
       const row = part(fixture, 'field-row');
 
-      // W jsdom brak realnego layoutu, więc sprawdzamy zadeklarowany mechanizm:
-      // rząd nie ma własnego paddingu ani `gap`, a kolumny rozciągają się na
-      // jego wysokość — inaczej większość powierzchni ramki nie należy do
-      // żadnej z nich i nie da się jej nadać kursora zgodnego z kliknięciem.
+      // jsdom has no real layout, so we check the declared mechanism: the row has
+      // no padding and no `gap` of its own, and the columns stretch to its height —
+      // otherwise most of the border area belongs to none of them and cannot be
+      // given a cursor that matches what a click there does.
       const rowStyle = getComputedStyle(row);
       expect(rowStyle.alignItems).toBe('stretch');
       expect(rowStyle.padding).toBe('');
       expect(rowStyle.gap).toBe('');
 
-      // Że kolumny naprawdę kafelkują wnętrze ramki, sprawdza test e2e —
-      // tu jest tylko ich obecność, bo jsdom nie liczy layoutu.
+      // That the columns really tile the inside of the border is checked by an e2e
+      // test — here only their presence is, because jsdom computes no layout.
       for (const name of ['field-prefix', 'field-control', 'field-suffix']) {
         expect(row.contains(part(fixture, name))).toBe(true);
       }
     });
   });
 
-  describe('sloty prefix/suffix', () => {
-    it('renderują się wewnątrz rzędu pola, w kolejności prefix → pole → suffix', async () => {
+  describe('the prefix/suffix slots', () => {
+    it('they render inside the field row, in the order prefix → field → suffix', async () => {
       const fixture = await render(AffixHost);
       const row = part(fixture, 'field-row');
       const order = Array.from(row.children).map((c) =>
@@ -331,19 +331,19 @@ describe('PctField + PctText', () => {
       ).toBeTruthy();
     });
 
-    it('przycisk w slocie suffix jest osiągalny i ma nazwę dostępną', async () => {
+    it('a button in the suffix slot is reachable and has an accessible name', async () => {
       const fixture = await render(AffixHost);
       const btn = part(fixture, 'field-suffix').querySelector(
         'button',
       ) as HTMLButtonElement;
 
-      expect(btn.getAttribute('aria-label')).toBe('Wyczyść');
+      expect(btn.getAttribute('aria-label')).toBe('Clear');
       btn.focus();
       expect(document.activeElement).toBe(btn);
     });
 
-    describe('dopasowanie do slotu (fit)', () => {
-      it('sam atrybut, bez wartości, znaczy `inset`', async () => {
+    describe('fitting the slot (fit)', () => {
+      it('the bare attribute, with no value, means `inset`', async () => {
         const fixture = await render(AffixHost);
 
         for (const name of ['field-prefix-item', 'field-suffix-item']) {
@@ -353,7 +353,7 @@ describe('PctField + PctText', () => {
         }
       });
 
-      it('`fill` zgłasza się atrybutem stanu, także na dekoracji biernej', async () => {
+      it('`fill` announces itself with a state attribute, on a passive affix too', async () => {
         const fixture = await render(FillAffixHost);
 
         for (const name of ['field-prefix-item', 'field-suffix-item']) {
@@ -361,9 +361,9 @@ describe('PctField + PctText', () => {
         }
       });
 
-      it('dekoracja `fill` bierze wysokość ze slotu, nie z siebie', async () => {
-        // Bez tego przycisk w slocie wnosi własną wysokość minimalną i rozpycha
-        // wiersz ponad wysokość pola tej samej wielkości (req-api-size).
+      it('a `fill` affix takes its height from the slot, not from itself', async () => {
+        // Without it a button in the slot brings its own min-height and pushes the
+        // row past the height of a field of the same size (req-api-size).
         const fill = await render(FillAffixHost);
         const inset = await render(AffixHost);
 
@@ -371,10 +371,10 @@ describe('PctField + PctText', () => {
         expect(part(inset, 'field-suffix-item').style.minHeight).toBe('');
       });
 
-      it('klik w dekorację `fill` NIE przenosi fokusu na kontrolkę', async () => {
-        // Dekoracja `fill` jest własną powierzchnią: pokazuje własny kursor,
-        // więc klik w nią nie może po cichu robić czegoś innego. Dotyczy to
-        // także dekoracji biernej — tu kafelka „PLN", nie przycisku.
+      it('a click on a `fill` affix does NOT move focus to the control', async () => {
+        // A `fill` affix is a surface of its own: it shows its own cursor, so a
+        // click on it cannot quietly do something else. That holds for a passive
+        // affix too — here the „PLN" tile, not the button.
         const fixture = await render(FillAffixHost);
         const unit = part(fixture, 'field-prefix-item');
 
@@ -389,37 +389,37 @@ describe('PctField + PctText', () => {
   });
 
   describe('signal forms', () => {
-    it('pokazuje wartość początkową modelu', async () => {
+    it('shows the initial value of the model', async () => {
       const fixture = await render(SignalFormHost);
 
-      // Regresja: dyrektywa FormField dostarcza NgControl (interop dla CVA),
-      // więc heurystyka „NgControl => ktoś inny pisze do DOM" wykluczała także
-      // signal forms — a te przy własnej kontrolce ustawiają tylko `value`
-      // i do DOM nie piszą. Pole startowało puste (lesson-26).
+      // A regression: the FormField directive supplies NgControl (CVA interop), so
+      // the heuristic „NgControl => somebody else writes to the DOM" ruled out signal
+      // forms as well — and those, with a control of their own, only set `value` and
+      // write nothing to the DOM. The field started empty (lesson-26).
       expect(inputOf(fixture).value).toBe('start@example.com');
     });
 
-    it('synchronizuje wartość i pokazuje błąd walidacji po dotknięciu', async () => {
+    it('syncs the value and shows the validation error after a touch', async () => {
       const fixture = await render(SignalFormHost);
       const host = fixture.componentInstance;
       const input = inputOf(fixture);
 
-      input.value = 'to-nie-email';
+      input.value = 'not-an-email';
       input.dispatchEvent(new Event('input'));
       input.dispatchEvent(new Event('blur'));
       fixture.detectChanges();
       await fixture.whenStable();
 
-      expect(host.model().email).toBe('to-nie-email');
+      expect(host.model().email).toBe('not-an-email');
       expect(host.f.email().valid()).toBe(false);
       expect(part(fixture, 'field-error')?.textContent?.trim()).toBe(
-        'Niepoprawny adres',
+        'Invalid address',
       );
     });
   });
 
-  describe('kompatybilność z klasycznymi formularzami (bez CVA)', () => {
-    it('reactive forms: [formControl] synchronizuje w obie strony', async () => {
+  describe('compatibility with classic forms (no CVA)', () => {
+    it('reactive forms: [formControl] syncs both ways', async () => {
       const fixture = await render(ReactiveHost);
       const input = inputOf(fixture);
       const ctrl = fixture.componentInstance.ctrl;
@@ -437,7 +437,7 @@ describe('PctField + PctText', () => {
       expect(input.value).toBe('z-kontrolki');
     });
 
-    it('template-driven: [(ngModel)] synchronizuje w obie strony', async () => {
+    it('template-driven: [(ngModel)] syncs both ways', async () => {
       const fixture = await render(NgModelHost);
       await fixture.whenStable();
       const input = inputOf(fixture);
@@ -450,11 +450,11 @@ describe('PctField + PctText', () => {
     });
   });
 
-  describe('wielkość pola', () => {
+  describe('the size of the field', () => {
     const fieldOf = (f: ComponentFixture<unknown>) =>
       query(f, 'pct-field') as HTMLElement;
 
-    it('odzwierciedla wielkość jako atrybut stanu, tak jak przycisk', async () => {
+    it('reflects the size as a state attribute, the same as the button', async () => {
       const fixture = await render(SizeHost);
       expect(fieldOf(fixture).getAttribute('data-pct-size')).toBe('lg');
 
@@ -464,12 +464,12 @@ describe('PctField + PctText', () => {
       expect(fieldOf(fixture).getAttribute('data-pct-size')).toBe('sm');
     });
 
-    it('bez jawnej wielkości bierze domyślną z konfiguracji', async () => {
+    it('with no explicit size it takes the default from the config', async () => {
       const fixture = await render(DefaultSizeHost);
       expect(fieldOf(fixture).getAttribute('data-pct-size')).toBe('md');
     });
 
-    it('respektuje domyślny rozmiar z providePctConfig (req-api-config)', async () => {
+    it('respects the default size from providePctConfig (req-api-config)', async () => {
       TestBed.resetTestingModule();
       TestBed.configureTestingModule({
         providers: [
@@ -481,11 +481,11 @@ describe('PctField + PctText', () => {
       expect(fieldOf(fixture).getAttribute('data-pct-size')).toBe('sm');
     });
 
-    it('wysokość wiersza bierze się z tokenu wielkości, nie z paddingu', async () => {
-      // jsdom nie liczy layoutu, więc sprawdzamy zadeklarowany mechanizm:
-      // pion niesie `min-height` rzędu, a kolumny nie mają już paddingu
-      // pionowego. Że wychodzi z tego dokładnie wysokość przycisku tej samej
-      // wielkości, sprawdza test e2e (size.spec.ts).
+    it('the row height comes from the size token, not from padding', async () => {
+      // jsdom computes no layout, so we check the declared mechanism: the vertical
+      // axis carries the row `min-height` and the columns no longer have vertical
+      // padding. That this comes out exactly the height of a button of the same size
+      // is checked by an e2e test (size.spec.ts).
       const fixture = await render(SizeHost);
       const row = part(fixture, 'field-row');
       expect(getComputedStyle(row).minHeight).toBe('var(--pct-field-height)');
@@ -496,54 +496,54 @@ describe('PctField + PctText', () => {
     });
   });
 
-  describe('jedna linia pod polem: podpowiedź albo błąd', () => {
-    it('błąd zastępuje podpowiedź, nie dokłada się do niej', async () => {
+  describe('one line below the field: the hint or the error', () => {
+    it('the error replaces the hint, it does not join it', async () => {
       const fixture = await render(AuxHost);
       const host = fixture.componentInstance;
 
-      // Bez błędu widać podpowiedź.
+      // With no error the hint is visible.
       expect(part(fixture, 'field-hint').textContent?.trim()).toBe(
-        'Krótko o sobie',
+        'A few words about you',
       );
       expect(allParts(fixture, 'field-error')).toHaveLength(0);
 
       host.invalid.set(true);
       host.touched.set(true);
-      host.errors.set([{ kind: 'custom', message: 'Za krótki opis' }]);
+      host.errors.set([{ kind: 'custom', message: 'Description too short' }]);
       fixture.detectChanges();
       await fixture.whenStable();
 
-      // Świeci wyłącznie błąd — podpowiedź znika (jedna linia).
+      // The error alone is lit — the hint disappears (one line).
       expect(part(fixture, 'field-error').textContent?.trim()).toBe(
-        'Za krótki opis',
+        'Description too short',
       );
       expect(allParts(fixture, 'field-hint')).toHaveLength(0);
     });
 
-    it('aria-describedby wskazuje tylko widoczny komunikat', async () => {
+    it('aria-describedby points only at the visible message', async () => {
       const fixture = await render(AuxHost);
       const host = fixture.componentInstance;
       const input = inputOf(fixture);
 
-      // Sama podpowiedź -> describedby to jej id.
+      // The hint alone -> describedby is its id.
       expect(input.getAttribute('aria-describedby')).toBe(
         part(fixture, 'field-hint').id,
       );
 
       host.invalid.set(true);
       host.touched.set(true);
-      host.errors.set([{ kind: 'custom', message: 'Za krótki opis' }]);
+      host.errors.set([{ kind: 'custom', message: 'Description too short' }]);
       fixture.detectChanges();
       await fixture.whenStable();
 
-      // Błąd przejmuje linię -> describedby to id błędu, bez wiszącego id podpowiedzi.
+      // The error takes the line -> describedby is the error id, with no dangling hint id.
       const errorId = part(fixture, 'field-error').id;
       expect(input.getAttribute('aria-describedby')).toBe(errorId);
     });
   });
 
-  describe('sloty poboczne: dodatek etykiety i komunikatu', () => {
-    it('dodatek etykiety renderuje się w wierszu etykiety', async () => {
+  describe('the aux slots: the label aux and the message aux', () => {
+    it('the label aux renders in the label row', async () => {
       const fixture = await render(AuxHost);
       const header = part(fixture, 'field-header');
       const aux = part(fixture, 'field-label-aux');
@@ -551,11 +551,11 @@ describe('PctField + PctText', () => {
       expect(header.contains(aux)).toBe(true);
       expect(header.contains(part(fixture, 'field-label'))).toBe(true);
       expect(aux.querySelector('button')?.getAttribute('aria-label')).toBe(
-        'Pomoc',
+        'Help',
       );
     });
 
-    it('dodatek komunikatu dzieli wiersz z podpowiedzią, a potem z błędem', async () => {
+    it('the message aux shares the row with the hint, and then with the error', async () => {
       const fixture = await render(AuxHost);
       const host = fixture.componentInstance;
 
@@ -569,10 +569,10 @@ describe('PctField + PctText', () => {
       expect(footer.contains(part(fixture, 'field-hint'))).toBe(true);
       expect(aux.textContent?.trim()).toBe('3/120');
 
-      // Gdy podpowiedź ustąpi błędowi, dodatek zostaje w tym samym wierszu.
+      // When the hint gives way to the error, the aux stays in the same row.
       host.invalid.set(true);
       host.touched.set(true);
-      host.errors.set([{ kind: 'custom', message: 'Za krótki opis' }]);
+      host.errors.set([{ kind: 'custom', message: 'Description too short' }]);
       fixture.detectChanges();
       await fixture.whenStable();
 
@@ -581,11 +581,11 @@ describe('PctField + PctText', () => {
     });
   });
 
-  it('kontrolka działa bez obudowy (obudowa jest opcjonalna)', async () => {
+  it('the control works with no wrapper (the wrapper is optional)', async () => {
     const fixture = await render(BareHost);
     const input = inputOf(fixture);
 
-    expect(input.value).toBe('bez obudowy');
+    expect(input.value).toBe('no wrapper');
     input.value = 'zmienione';
     input.dispatchEvent(new Event('input'));
     await fixture.whenStable();

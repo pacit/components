@@ -220,8 +220,8 @@ instead of waiting to be added to one spec after another.
 
 **Gate:** `apps/sandbox-e2e/src/hydration.spec.ts` + the `visit()` helper in
 `apps/sandbox-e2e/src/support/`
-**Control:** `hydration.spec.ts › „bramka faktycznie wykrywa błąd hydracji (kontrola
-bramki)"`
+**Control:** `hydration.spec.ts › „the gate really does detect a hydration error (a
+control of the gate)"`
 **Lessons:** [`lesson-30`](../lessons.md#lesson-30), [`lesson-31`](../lessons.md#lesson-31)
 
 > A hydration mismatch **does not knock the page over**: Angular logs `NG05xx` and quietly

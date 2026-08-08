@@ -18,7 +18,7 @@ import { PctButtonSize, PctButtonVariant } from './button.types';
     [loading]="loading()"
     [disabled]="disabled()"
   >
-    Zapisz
+    Save
   </button>`,
 })
 class StateHost {
@@ -28,10 +28,10 @@ class StateHost {
   disabled = input(false);
 }
 
-// Host bez wiązań — komponent używa własnych wartości domyślnych (m.in. z konfiguracji).
+// A host with no bindings — the component falls back on its own defaults (the config among them).
 @Component({
   imports: [PctButton],
-  template: `<button pctButton>Zapisz</button>`,
+  template: `<button pctButton>Save</button>`,
 })
 class BareHost {}
 
@@ -55,14 +55,14 @@ async function stateHost(inputs: Record<string, unknown> = {}) {
 }
 
 describe('PctButton', () => {
-  // Komponenty muszą być zoneless-safe (req-api-foundation) — testy biegną bez zone.js.
+  // Components have to be zoneless-safe (req-api-foundation) — the tests run without zone.js.
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [provideZonelessChangeDetection()],
     });
   });
 
-  it('renderuje natywny <button> z domyślnymi atrybutami stanu', async () => {
+  it('renders a native <button> with the default state attributes', async () => {
     const btn = await stableBare();
     expect(btn.tagName).toBe('BUTTON');
     expect(btn.getAttribute('data-pct-size')).toBe('md');
@@ -70,13 +70,13 @@ describe('PctButton', () => {
     expect(btn.disabled).toBe(false);
   });
 
-  it('rzutuje treść do elementu part=label', async () => {
+  it('projects content into the part=label element', async () => {
     const btn = await stableBare();
     const label = btn.querySelector('[data-pct-part="label"]');
-    expect(label?.textContent?.trim()).toBe('Zapisz');
+    expect(label?.textContent?.trim()).toBe('Save');
   });
 
-  it('stan loading blokuje przycisk, ustawia aria-busy i pokazuje spinner', async () => {
+  it('the loading state blocks the button, sets aria-busy and shows a spinner', async () => {
     const { btn } = await stateHost({ loading: true });
     expect(btn.hasAttribute('data-pct-loading')).toBe(true);
     expect(btn.getAttribute('aria-busy')).toBe('true');
@@ -84,24 +84,24 @@ describe('PctButton', () => {
     expect(btn.querySelector('[data-pct-part="spinner"]')).toBeTruthy();
   });
 
-  it('poza stanem loading nie wypisuje aria-busy', async () => {
+  it('outside the loading state it writes no aria-busy', async () => {
     const btn = await stableBare();
     expect(btn.hasAttribute('aria-busy')).toBe(false);
   });
 
-  it('disabled blokuje przycisk bez spinnera', async () => {
+  it('disabled blocks the button with no spinner', async () => {
     const { btn } = await stateHost({ disabled: true });
     expect(btn.disabled).toBe(true);
     expect(btn.querySelector('[data-pct-part="spinner"]')).toBeNull();
   });
 
-  it('odzwierciedla wariant i rozmiar jako atrybuty stanu', async () => {
+  it('reflects variant and size as state attributes', async () => {
     const { btn } = await stateHost({ variant: 'outline', size: 'lg' });
     expect(btn.getAttribute('data-pct-variant')).toBe('outline');
     expect(btn.getAttribute('data-pct-size')).toBe('lg');
   });
 
-  it('respektuje domyślny rozmiar z providePctConfig', async () => {
+  it('respects the default size from providePctConfig', async () => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [

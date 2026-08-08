@@ -48,7 +48,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-a11y-built-in`](requirements/a11y.md#req-a11y-built-in)           | ✅ enforced | `libs/components/*/src/*.spec.ts` — ARIA relations checked per compon… | `a11y.spec.ts › „bramka a11y faktycznie wykrywa naruszenia (kontrola … |
 | [`req-a11y-touch`](requirements/a11y.md#req-a11y-touch)                 | ✅ enforced | `apps/sandbox-e2e/src/field-hitarea.spec.ts`, `apps/sandbox-e2e/src/c… | the gate has two documented runs in which it fired: `lesson-25` (a wr… |
 | [`req-a11y-axe`](requirements/a11y.md#req-a11y-axe)                     | ✅ enforced | `apps/sandbox-e2e/src/a11y.spec.ts`                                    | `a11y.spec.ts › „bramka a11y faktycznie wykrywa naruszenia (kontrola … |
-| [`req-a11y-motion`](requirements/a11y.md#req-a11y-motion)               | ✅ enforced | `apps/sandbox-e2e/src/preferences.spec.ts`                             | `preferences.spec.ts › „bez preferencji oś ruchu stoi na wartościach … |
+| [`req-a11y-motion`](requirements/a11y.md#req-a11y-motion)               | ✅ enforced | `apps/sandbox-e2e/src/preferences.spec.ts`                             | `preferences.spec.ts › „with no preference the motion axis stands at … |
 | [`req-a11y-forced-colors`](requirements/a11y.md#req-a11y-forced-colors) | ✅ enforced | `apps/sandbox-e2e/src/forced-colors.spec.ts`                           | emulation goes through `page.emulateMedia()` in the `visit()` helper,… |
 
 ## API
@@ -97,7 +97,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-project-language`](requirements/project.md#req-project-language)         | ⛔ gap      | none — gap: `tools/check-language.mjs` — two measurements with differ… | none — gap: a Polish comment in a file outside the register has to fi… |
 | [`req-project-concise`](requirements/project.md#req-project-concise)           | ⛔ gap      | none — gap: a prose volume budget per file, a snapshot with **two-sid… | none — gap: a file with a paragraph added beyond the tolerance has to… |
 | [`req-project-angular`](requirements/project.md#req-project-angular)           | ✅ enforced | `tools/check-zoneless.mjs` (target `check-zoneless`, in CI) — three p… | `tools/check-zoneless.fixtures/` — doctored inputs, one per way for z… |
-| [`req-project-ssr`](requirements/project.md#req-project-ssr)                   | ✅ enforced | `apps/sandbox-e2e/src/hydration.spec.ts` — the check sits in the `vis… | `hydration.spec.ts › „bramka faktycznie wykrywa błąd hydracji (kontro… |
+| [`req-project-ssr`](requirements/project.md#req-project-ssr)                   | ✅ enforced | `apps/sandbox-e2e/src/hydration.spec.ts` — the check sits in the `vis… | `hydration.spec.ts › „the gate really does detect a hydration error (… |
 | [`req-project-layout`](requirements/project.md#req-project-layout)             | ⛔ gap      | none — gap: follows from `req-project-apps`; it will close together w… | none — gap: the same as for the gate above                             |
 
 ## quality
@@ -110,7 +110,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-quality-unit`](requirements/quality.md#req-quality-unit)                         | ✅ enforced | in three parts, because „the tests run", „how many pass" and „how man… | `tools/check-mutation.fixtures/` — 37 doctored inputs on a fake libra… |
 | [`req-quality-coverage`](requirements/quality.md#req-quality-coverage)                 | ✅ enforced | in two parts, because the percentage and its denominator break separa… | `tools/check-coverage.fixtures/` — seven doctored inputs, one per way… |
 | [`req-quality-e2e`](requirements/quality.md#req-quality-e2e)                           | ✅ enforced | `apps/sandbox-e2e/src/visual.spec.ts` and the remaining e2e specs      | there are **two** thresholds and both come from measurement. The pixe… |
-| [`req-quality-hydration`](requirements/quality.md#req-quality-hydration)               | ✅ enforced | `apps/sandbox-e2e/src/hydration.spec.ts` + the `visit()` helper in `a… | `hydration.spec.ts › „bramka faktycznie wykrywa błąd hydracji (kontro… |
+| [`req-quality-hydration`](requirements/quality.md#req-quality-hydration)               | ✅ enforced | `apps/sandbox-e2e/src/hydration.spec.ts` + the `visit()` helper in `a… | `hydration.spec.ts › „the gate really does detect a hydration error (… |
 | [`req-quality-package`](requirements/quality.md#req-quality-package)                   | ✅ enforced | `libs/components/check-package.mjs` (target `check-package`, in CI)    | `tools/check-package.fixtures/` — seven doctored packages, one per po… |
 | [`req-quality-consumer`](requirements/quality.md#req-quality-consumer)                 | ✅ enforced | `tools/check-consumer.mjs` (target `check-consumer`, in CI) — seven p… | `tools/check-consumer.fixtures/` — 28 doctored inputs, each rejected … |
 | [`req-quality-browsers`](requirements/quality.md#req-quality-browsers)                 | ✅ enforced | `apps/sandbox-e2e/playwright.config.mts` — three projects (chromium, … | `tools/check-browsers.fixtures/` — 25 doctored inputs, each rejected … |
@@ -146,7 +146,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-token-override`](requirements/tokens.md#req-token-override)         | ✅ enforced | `apps/sandbox-e2e/src/theme.spec.ts`                                   | as in `req-token-closure` — comparing the component token, not the se… |
 | [`req-token-scoped`](requirements/tokens.md#req-token-scoped)             | ✅ enforced | `apps/sandbox-e2e/src/theme.spec.ts`, `apps/sandbox-e2e/src/a11y.spec… | see `req-token-closure`                                                |
 | [`req-token-directive`](requirements/tokens.md#req-token-directive)       | ⛔ gap      | none — gap: the directive does not exist, the theme is set with a han… | none — gap: a theme set by the directive and a theme set by the attri… |
-| [`req-token-system`](requirements/tokens.md#req-token-system)             | ✅ enforced | `apps/sandbox-e2e/src/preferences.spec.ts`                             | `preferences.spec.ts › „bez preferencji ciemnej :root zostaje jasny (… |
+| [`req-token-system`](requirements/tokens.md#req-token-system)             | ✅ enforced | `apps/sandbox-e2e/src/preferences.spec.ts`                             | `preferences.spec.ts › „with no dark preference :root stays light (th… |
 | [`req-token-skin`](requirements/tokens.md#req-token-skin)                 | ✅ enforced | `libs/tokens/build.mjs` — but **only for the built-in skin**           | see `req-token-contrast`                                               |
 | [`req-token-distribution`](requirements/tokens.md#req-token-distribution) | ✅ enforced | `libs/components/check-package.mjs` — points 1 and 2: the skin is in … | `tools/check-package.fixtures/brak-skorki/` — a package with no skin … |
 | [`req-token-density`](requirements/tokens.md#req-token-density)           | ⛔ gap      | none — gap: the DTCG sources contain **not one** density token         | none — gap: a layout with the `compact` density token must pass the t… |

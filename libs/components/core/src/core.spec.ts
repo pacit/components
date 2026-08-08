@@ -11,15 +11,15 @@ import { nextPctId, PctIdCounter } from './id';
 import { PCT_TEXTS } from './texts';
 
 /**
- * Wnętrze `@pacit/components/core` sprawdzane WPROST, a nie przez komponenty,
- * które go używają.
+ * The inside of `@pacit/components/core` checked DIRECTLY, not through the
+ * components that use it.
  *
- * Powód: te funkcje są publicznym API entrypointu `./core` i do 2026-08-06
- * nie miały ani jednego testu pod własnym nazwiskiem — mierzyły je wyłącznie
- * specyfikacje kontrolek, i to na jednej ścieżce. Przebieg mutacyjny pokazał
- * to jako pierwszy: warunek `ids.length > 0` dawało się przestawić na `>= 0`,
- * a `errors()?.[0]?.message` rozbroić z opcjonalności — bez ani jednego
- * czerwonego testu (`lesson-57`).
+ * The reason: these functions are the public API of the `./core` entrypoint and
+ * until 2026-08-06 had not one test under their own name — only the control
+ * specs measured them, and along a single path at that. The mutation run was
+ * the first to show it: the condition `ids.length > 0` could be moved to
+ * `>= 0` and `errors()?.[0]?.message` stripped of its optionality — without a
+ * single red test (`lesson-57`).
  */
 describe('@pacit/components/core', () => {
   beforeEach(() => {
@@ -29,42 +29,44 @@ describe('@pacit/components/core', () => {
   });
 
   describe('pctFieldMessages', () => {
-    const zrodlo = (opcje?: {
+    const source = (opts?: {
       invalid?: boolean;
       touched?: boolean;
       errors?: readonly { message?: string }[];
     }) => ({
-      invalid: signal(opcje?.invalid ?? false),
-      touched: signal(opcje?.touched ?? false),
-      errors: signal(opcje?.errors ?? []),
+      invalid: signal(opts?.invalid ?? false),
+      touched: signal(opts?.touched ?? false),
+      errors: signal(opts?.errors ?? []),
     });
 
-    it('tekstem błędu jest komunikat PIERWSZEGO błędu', () => {
+    it('the error text is the message of the FIRST error', () => {
       const { errorText } = pctFieldMessages(
-        zrodlo({ errors: [{ message: 'Za mało' }, { message: 'I jeszcze' }] }),
+        source({
+          errors: [{ message: 'Too short' }, { message: 'And one more' }],
+        }),
       );
 
-      expect(errorText()).toBe('Za mało');
+      expect(errorText()).toBe('Too short');
     });
 
-    it('brak błędów to pusty tekst, a nie undefined', () => {
-      const { errorText } = pctFieldMessages(zrodlo());
+    it('no errors is empty text, not undefined', () => {
+      const { errorText } = pctFieldMessages(source());
 
-      // Pusty napis, bo wartość jedzie do szablonu: `undefined` wypisałoby się
-      // jako słowo „undefined" w miejscu komunikatu.
+      // An empty string, because the value goes into the template: `undefined`
+      // would print as the word „undefined" where the message belongs.
       expect(errorText()).toBe('');
     });
 
-    it('błąd bez komunikatu też daje pusty tekst', () => {
-      const { errorText } = pctFieldMessages(zrodlo({ errors: [{}] }));
+    it('an error with no message also gives empty text', () => {
+      const { errorText } = pctFieldMessages(source({ errors: [{}] }));
 
-      // Walidator ma prawo nie nieść zdania — schemat opisuje wtedy sam fakt
-      // naruszenia, a napis dokłada aplikacja.
+      // A validator may carry no sentence — the schema then describes the fact of
+      // the violation, and the application supplies the wording.
       expect(errorText()).toBe('');
     });
 
-    it('stan błędu zapala się dopiero po dotknięciu', () => {
-      const src = zrodlo({ invalid: true, errors: [{ message: 'Wymagane' }] });
+    it('the error state lights up only after a touch', () => {
+      const src = source({ invalid: true, errors: [{ message: 'Required' }] });
       const { showInvalid, showError } = pctFieldMessages(src);
 
       expect(showInvalid()).toBe(false);
@@ -75,21 +77,21 @@ describe('@pacit/components/core', () => {
       expect(showError()).toBe(true);
     });
 
-    it('błąd bez zdania maluje kontrolkę, ale nie wypisuje pustego komunikatu', () => {
+    it('an error with no sentence paints the control but writes no empty message', () => {
       const { showInvalid, showError } = pctFieldMessages(
-        zrodlo({ invalid: true, touched: true, errors: [{}] }),
+        source({ invalid: true, touched: true, errors: [{}] }),
       );
 
-      // Dwa różne pytania: „czy jest źle" (ramka, aria-invalid) i „czy jest co
-      // pokazać" (obszar komunikatu). Zlanie ich w jedno daje albo pusty
-      // czerwony wiersz, albo kontrolkę wyglądającą na poprawną.
+      // Two different questions: „is something wrong" (the border, aria-invalid)
+      // and „is there anything to show" (the message area). Merging them gives
+      // either an empty red line or a control that looks valid.
       expect(showInvalid()).toBe(true);
       expect(showError()).toBe(false);
     });
   });
 
   describe('pctDescribedBy', () => {
-    it('składa identyfikatory aktywnych części, w podanej kolejności', () => {
+    it('joins the ids of the active parts, in the given order', () => {
       expect(
         pctDescribedBy([
           ['hint-1', true],
@@ -99,16 +101,16 @@ describe('@pacit/components/core', () => {
       ).toBe('hint-1 aux-1');
     });
 
-    it('brak aktywnych części daje null, a nie pusty napis', () => {
-      // To jest cała różnica między BRAKIEM atrybutu a atrybutem pustym:
-      // `aria-describedby=""` jest w drzewie dostępności odwołaniem donikąd.
+    it('no active parts gives null, not an empty string', () => {
+      // This is the whole difference between NO attribute and an empty one:
+      // `aria-describedby=""` is a reference to nowhere in the accessibility tree.
       expect(pctDescribedBy([['hint-1', false]])).toBeNull();
       expect(pctDescribedBy([])).toBeNull();
     });
   });
 
   describe('nextPctId', () => {
-    it('numeruje kolejno w obrębie jednego injectora', () => {
+    it('numbers in sequence within one injector', () => {
       const injector = TestBed.inject(Injector);
       const [a, b] = runInInjectionContext(injector, () => [
         nextPctId('pct-text'),
@@ -119,19 +121,18 @@ describe('@pacit/components/core', () => {
       expect(b).toBe('pct-text-2');
     });
 
-    it('bez przedrostka numeruje pod nazwą biblioteki', () => {
+    it('with no prefix it numbers under the library name', () => {
       const injector = TestBed.inject(Injector);
 
-      // Wartość domyślna jest częścią publicznej sygnatury — w bibliotece nie
-      // korzysta z niej dziś ani jedno wywołanie, więc bez tego testu nikt jej
-      // nie mierzy.
+      // The default is part of the public signature — not one call in the library
+      // uses it today, so without this test nobody measures it.
       expect(runInInjectionContext(injector, () => nextPctId())).toBe('pct-1');
     });
 
-    it('licznik żyje w injectorze aplikacji, więc każda liczy od zera', () => {
-      // Licznik modułowy rósłby przez wszystkie żądania SSR w jednym procesie,
-      // a klient zaczynałby od zera — po hydracji powiązania ARIA wskazywałyby
-      // w próżnię (req-project-ssr).
+    it('the counter lives in the application injector, so each one counts from zero', () => {
+      // A module-level counter would grow across every SSR request in one process
+      // while the client started from zero — after hydration the ARIA bindings would
+      // point into the void (req-project-ssr).
       expect(TestBed.inject(PctIdCounter).next()).toBe(1);
       expect(TestBed.inject(PctIdCounter).next()).toBe(2);
 
@@ -143,25 +144,25 @@ describe('@pacit/components/core', () => {
     });
   });
 
-  describe('tokeny nazywają się w komunikacie o braku dostawcy', () => {
+  describe('tokens name themselves in the missing-provider message', () => {
     it.each([
       ['PCT_FIELD', PCT_FIELD],
       ['PCT_CONFIG', PCT_CONFIG],
       ['PCT_TEXTS', PCT_TEXTS],
-    ])('%s', (nazwa, token) => {
-      // Opis tokenu jest jedyną rzeczą, jaką konsument dostaje w NG0201 —
-      // token bez opisu daje komunikat o „InjectionToken" bez wskazania,
-      // KTÓREGO brakuje.
-      expect(String(token)).toContain(nazwa);
+    ])('%s', (name, token) => {
+      // A token's description is the only thing the consumer gets in NG0201 — a
+      // token without one gives a message about „InjectionToken" with no hint as to
+      // WHICH one is missing.
+      expect(String(token)).toContain(name);
     });
   });
 
-  describe('PCT_CONFIG i PCT_TEXTS mają wartość domyślną', () => {
-    it('konfiguracja bez dostawcy daje rozmiar md', () => {
+  describe('PCT_CONFIG and PCT_TEXTS have a default', () => {
+    it('the config with no provider gives size md', () => {
       expect(TestBed.inject(PCT_CONFIG).defaultSize).toBe('md');
     });
 
-    it('teksty bez dostawcy są angielskie', () => {
+    it('the texts with no provider are English', () => {
       expect(TestBed.inject(PCT_TEXTS)().selectPlaceholder).toBe('Select…');
     });
   });

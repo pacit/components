@@ -73,14 +73,15 @@ G  gaps with no deadline    waiting for the trigger written in their „Binds at
 H  one language, no filler  English + compression; the public part sits in B
 ```
 
-**Phase A is closed and so are H1–H5**, so the next milestone is not a release but the **first
+**Phase A is closed and so are H1–H6**, so the next milestone is not a release but the **first
 push to the public repository** (B2): everything a first visitor reads is now in one language,
 and the push is a premiere rather than a backup. H1 (identifiers), H2 (the concision criterion,
-[0017](decisions/0017-one-home-per-fact.md)), H3 (the title page), H4 (`docs/`) and H5 (`libs`)
-are done, and `LICENSE` has a gate on both sides of `npm pack` (B1). **The built package now
+[0017](decisions/0017-one-home-per-fact.md)), H3 (the title page), H4 (`docs/`), H5 (`libs`)
+and H6 (test names) are done, and `LICENSE` has a gate on both sides of `npm pack` (B1). **The built package now
 carries no Polish at all**, so of B only the package README (B3) and the gate (B8) stand between
 here and npm; B4 shrank to one job that needs the public repository to exist.
-Still in H: H6 (test names), H7 (gate headers), H8 (proper names), H10 (`apps/`), H9 (commits).
+Still in H: H7 (gate headers), H8 (proper names), H10 (`apps/` — a decision, not a
+translation), H9 (commits).
 In parallel: F1 is unblocked (A3 and A4 gave it both inventories to render), and C is filler.
 
 H is not a separate phase, but it has an **earlier deadline than the release**: the repository
@@ -568,18 +569,18 @@ every sentence written.
 
 Measured 2026-08-06 (`git ls-files` + a diacritics scan), refreshed 2026-08-08:
 
-| layer                               | volume                                                                 | binds at                 |
-| ----------------------------------- | ---------------------------------------------------------------------- | ------------------------ |
-| package public surface              | done — **H5** (24 files in `dist` → **0**; the README is B3)           | release (B3)             |
-| `README.md`, `AGENTS.md`, workflows | done — **H3** (11 files, 5 903 → 4 884 words)                          | first push               |
-| `docs/` documentation               | done — **H4** (40 files)                                               | first push               |
-| identifiers and their citations     | done — **H1** (82 + 59 names, 2 571 citations in 175 files)            | —                        |
-| `libs` sources                      | done — **H5** (30 files, plus 14 config and token files)               | —                        |
-| test names                          | 154 of 186 `it()` in `libs`, 99 of 127 `test()` in e2e                 | —                        |
-| `apps/` sandbox and e2e             | 68 files + 26 screenshot names — **H10**, counted by nothing until now | first push               |
-| tools and gates                     | 15 scripts (2 of them outside `tools/`), 609 header lines              | —                        |
-| proper names in contracts           | 1 target, 7 policies/snapshots, 100 fixture directories                | —                        |
-| commit history                      | 49 commits                                                             | squashed before the push |
+| layer                               | volume                                                       | binds at                 |
+| ----------------------------------- | ------------------------------------------------------------ | ------------------------ |
+| package public surface              | done — **H5** (24 files in `dist` → **0**; the README is B3) | release (B3)             |
+| `README.md`, `AGENTS.md`, workflows | done — **H3** (11 files, 5 903 → 4 884 words)                | first push               |
+| `docs/` documentation               | done — **H4** (40 files)                                     | first push               |
+| identifiers and their citations     | done — **H1** (82 + 59 names, 2 571 citations in 175 files)  | —                        |
+| `libs` sources                      | done — **H5** (30 files, plus 14 config and token files)     | —                        |
+| test names                          | done — **H6** (27 spec files, 26 baselines renamed)          | —                        |
+| `apps/` sandbox demo                | 45 files — **H10**, and a decision before a translation      | first push               |
+| tools and gates                     | 15 scripts (2 of them outside `tools/`), 609 header lines    | —                        |
+| proper names in contracts           | 1 target, 7 policies/snapshots, 100 fixture directories      | —                        |
+| commit history                      | 49 commits                                                   | squashed before the push |
 
 - [x] **H1 — the identifier and documentation-name space** _(2026-08-06)_
   - done: **83 requirement identifiers**, **59 lessons** (`lekcja-N` → `lesson-N`) and **2 571
@@ -645,18 +646,17 @@ Measured 2026-08-06 (`git ls-files` + a diacritics scan), refreshed 2026-08-08:
   - left for **H6**: the nine spec files, whose comments and `it()` names are one read
   - cost: ~1 day · journal 2026-08-08 · found **H10**
 
-- [ ] **H6 — test names**
-  - **154 of 186 `it()` in `libs` and 99 of 127 `test()` in `apps/sandbox-e2e`** — the e2e half
-    was outside the previous count, which said „161 of 191 `it()`" and saw only Vitest
-  - the nine `libs` spec files still carrying Polish are H5's remainder, left here on purpose:
-    their comments and their `it()` names are one read, so splitting them costs the file twice
-  - it looks mechanical and **is not**: test names are cited in the **Control** field of
-    requirements (e.g. `hydration.spec.ts › „bramka faktycznie wykrywa błąd hydracji"`), so
-    renaming without fixing the citation leaves a requirement pointing at a test that does not
-    exist — seven such citations in four files, left in Polish at H4 for exactly this reason
-  - `check-docs` checks **paths**, not the sentence after `›` — that part is unguarded today,
-    and it is worth measuring whether it can be closed while we are here
-  - cost: ~1 day · _notes:_ —
+- [x] **H6 — test names** _(2026-08-08)_
+  - done: 196 `it()` in nine `libs` specs and every `test()` in eighteen e2e specs, with their
+    comments, their fixture data and the three `src/support/` helpers the specs quote
+  - **the 26 visual baselines belonged here, not to H10**: `przycisk-warianty` is a test name
+    first and a `.png` second, so the rename was `git mv` plus the table, bytes untouched
+  - couplings: the seven **Control** citations (`check-docs` reads the path, never the sentence
+    after `›`), `hydration.spec.ts` asserting on what `visit()` throws, and fixture values with
+    a length — `dwanaście!!!` is twelve characters and the counter asserts `12/120`
+  - control: 196 unit tests and every non-visual e2e test green on three engines, eleven gates
+    green, bundle unchanged; the 26 chromium screenshot diffs are **older than this change**
+  - cost: ~1 day · journal 2026-08-08 · left `apps/` a decision, not a translation (H10)
 
 - [ ] **H7 — gate headers and messages** _(the main target of the compression)_
   - 13 scripts, 10 343 lines, of which 595 are headers alone (28–74 lines per script). This is
@@ -704,23 +704,48 @@ Measured 2026-08-06 (`git ls-files` + a diacritics scan), refreshed 2026-08-08:
     commit
   - cost: minutes · _notes:_ —
 
-- [ ] **H10 — the `apps/` sandbox and its e2e harness**
-  - **68 files with Polish, and no layer of the table above counted them until 2026-08-08.**
-    The sandbox is the demo a visitor opens; the e2e harness is the proof the gates cite. Both
-    stand in the repository from the first push, so this binds where H3 and H4 bound
-  - split: `apps/sandbox` — 40 files (views, `demo.ts`, `settings.ts`, `views.ts`, stylesheets);
-    `apps/sandbox-e2e` — 28 files, `playwright.config.mts` the largest at 59 Polish lines
-  - the test names inside it belong to **H6**, which now counts them; what stays here is the
-    rest — comments, view copy, the support helpers in `src/support/`
-  - **26 visual baselines carry Polish file names** (`przycisk-warianty.png`,
-    `pole-sloty-poboczne-rtl.png`). Renaming them is `git mv` plus the `toHaveScreenshot()`
-    call, in one move — the baselines stay byte-identical, so nothing needs regenerating.
-    That part is H8's family and is cheapest done here, while the specs are open
-  - cost: ~1.5 days · _notes:_ —
+- [ ] **H10 — the `apps/` sandbox demo** _(H6 took the e2e half)_
+  - what is left: **45 files of `apps/sandbox`**, plus `playwright.config.mts` (59 lines) and
+    the e2e `project.json`. The specs, the `src/support/` helpers and the 26 baselines went
+    with H6, which is where the test names were
+  - **and it is a decision before it is a translation.** `app.config.ts` says the sandbox is in
+    Polish on purpose: it is the only live use of `providePctTexts` and of a non-English
+    `LOCALE_ID`, and `select.spec.ts` follows that chain through SSR and hydration. An English
+    demo would leave [`req-api-texts`](requirements/api.md#req-api-texts) with no working proof
+  - so: keep the demo Polish and translate only its comments, or translate it and give the
+    texts channel a smaller, deliberate demonstration elsewhere. The e2e specs cite the Polish
+    UI strings (`hasText: 'Polska'`), so whichever way it goes, the two move together
+  - cost: ~0.5 day for the comments alone · ~1 day if the demo changes language · _notes:_ —
 
 ## Journal
 
 One entry per session: what moved, what it ended with, what comes next. Newest on top.
+
+### 2026-08-08 — H6: the tests speak English, and `apps/` turns out to be a decision
+
+**H6 is done.** 196 `it()` in `libs`, every `test()` in the e2e project, their comments, their
+fixture data and the three helpers in `src/support/` that the specs quote by message.
+
+- **The screenshot names were test names.** The plan filed the 26 Polish baselines under H10,
+  beside the sandbox. But `visual.spec.ts` names every test after its own file, so
+  `przycisk-warianty` was a test name that happened to end in `.png` — the rename belonged
+  here and cost one `git mv` loop, with the bytes untouched.
+- **What a test quotes, it binds to.** Three couplings, one uncounted: the seven requirement
+  **Control** citations (`check-docs` reads the path, never the sentence after `›`);
+  `hydration.spec.ts`, which asserts on the message `visit()` throws, so `support/dom.ts` moved
+  with it; and fixture values carrying a length — `dwanaście!!!` is twelve characters.
+- **`apps/` is not a translation.** `app.config.ts` states that the sandbox is Polish on
+  purpose: it is the only live use of `providePctTexts` and of a non-English `LOCALE_ID`, and
+  `select.spec.ts` follows that chain through SSR and hydration. Translating the demo would
+  leave `req-api-texts` without a working proof, so **H10 now carries a choice, not a task**.
+- **The visual gate fails, and failed before this.** 26 chromium comparisons differ by ~0.01 of
+  pixels — the same tests, the same 351 and 331 px, on the stashed tree. Not refreshed on
+  purpose: a baseline is rewritten after a deliberate change of appearance, and there was none.
+
+Control: 196 unit tests, every non-visual e2e test on three engines, eleven gates and
+`format:check` — green; the bundle unchanged at 114 610 B.
+
+Next: **H7** (gate headers, the compression's main target) or **B2**. H10 wants an answer first.
 
 ### 2026-08-08 — H5: the package stopped speaking Polish, and the count was short by two layers
 

@@ -42,7 +42,7 @@ async function render<T>(type: Type<T>) {
   />`,
 })
 class Host {
-  label = signal('Akceptuję regulamin');
+  label = signal('I accept the terms');
   hint = signal('');
   req = signal(false);
   invalid = signal(false);
@@ -62,7 +62,7 @@ class Host {
 class SignalFormHost {
   model = signal({ terms: false });
   f = form(this.model, (p) => {
-    required(p.terms, { message: 'Zgoda jest wymagana' });
+    required(p.terms, { message: 'Consent is required' });
   });
 }
 
@@ -89,7 +89,7 @@ describe('PctCheckbox', () => {
     });
   });
 
-  it('renderuje natywny checkbox z etykietą powiązaną przez for/id', async () => {
+  it('renders a native checkbox with a label bound through for/id', async () => {
     const fixture = await render(Host);
     const box = boxOf(fixture);
     const label = fixture.nativeElement.querySelector(
@@ -98,10 +98,10 @@ describe('PctCheckbox', () => {
 
     expect(box.type).toBe('checkbox');
     expect(label.getAttribute('for')).toBe(box.id);
-    expect(label.textContent?.trim()).toContain('Akceptuję regulamin');
+    expect(label.textContent?.trim()).toContain('I accept the terms');
   });
 
-  it('kliknięcie przełącza dwukierunkowo związany stan', async () => {
+  it('a click toggles the two-way bound state', async () => {
     const fixture = await render(Host);
     const box = boxOf(fixture);
 
@@ -114,7 +114,7 @@ describe('PctCheckbox', () => {
     expect(fixture.componentInstance.checked()).toBe(false);
   });
 
-  it('stan nieokreślony ustawia aria-checked="mixed" i natywną właściwość', async () => {
+  it('the indeterminate state sets aria-checked="mixed" and the native property', async () => {
     const fixture = await render(Host);
     fixture.componentInstance.indeterminate.set(true);
     fixture.detectChanges();
@@ -125,7 +125,7 @@ describe('PctCheckbox', () => {
     expect(box.getAttribute('aria-checked')).toBe('mixed');
   });
 
-  it('readonly blokuje zmianę stanu, ale pole pozostaje fokusowalne', async () => {
+  it('readonly blocks the state change but the field stays focusable', async () => {
     const fixture = await render(Host);
     fixture.componentInstance.ro.set(true);
     fixture.detectChanges();
@@ -136,15 +136,15 @@ describe('PctCheckbox', () => {
     await fixture.whenStable();
 
     expect(fixture.componentInstance.checked()).toBe(false);
-    expect(box.disabled).toBe(false); // w odróżnieniu od disabled
+    expect(box.disabled).toBe(false); // unlike disabled
     expect(box.getAttribute('aria-readonly')).toBe('true');
   });
 
-  it('nie pokazuje błędu, dopóki pole nie zostało dotknięte', async () => {
+  it('shows no error until the field has been touched', async () => {
     const fixture = await render(Host);
     fixture.componentInstance.invalid.set(true);
     fixture.componentInstance.errors.set([
-      requiredError({ message: 'Zgoda wymagana' }),
+      requiredError({ message: 'Consent required' }),
     ]);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -155,12 +155,12 @@ describe('PctCheckbox', () => {
     expect(boxOf(fixture).getAttribute('aria-invalid')).toBeNull();
   });
 
-  it('po dotknięciu pokazuje błąd z rolą alert i wiąże go przez aria-describedby', async () => {
+  it('once touched it shows the error with role alert and binds it through aria-describedby', async () => {
     const fixture = await render(Host);
     fixture.componentInstance.invalid.set(true);
     fixture.componentInstance.touched.set(true);
     fixture.componentInstance.errors.set([
-      requiredError({ message: 'Zgoda wymagana' }),
+      requiredError({ message: 'Consent required' }),
     ]);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -174,14 +174,14 @@ describe('PctCheckbox', () => {
     expect(box.getAttribute('aria-describedby')).toContain(error.id);
   });
 
-  it('blur emituje touch', async () => {
+  it('blur emits touch', async () => {
     const fixture = await render(Host);
     boxOf(fixture).dispatchEvent(new Event('blur'));
     await fixture.whenStable();
     expect(fixture.componentInstance.touchCount).toBe(1);
   });
 
-  it('disabled blokuje natywny checkbox', async () => {
+  it('disabled blocks the native checkbox', async () => {
     const fixture = await render(Host);
     fixture.componentInstance.disabled.set(true);
     fixture.detectChanges();
@@ -189,7 +189,7 @@ describe('PctCheckbox', () => {
     expect(boxOf(fixture).disabled).toBe(true);
   });
 
-  it('udostępnia metody focus() i reset() z kontraktu', async () => {
+  it('exposes the focus() and reset() methods from the contract', async () => {
     const fixture = await render(Host);
     const instance = fixture.debugElement.children[0]
       .componentInstance as PctCheckbox;
@@ -207,7 +207,7 @@ describe('PctCheckbox', () => {
   });
 
   describe('signal forms', () => {
-    it('synchronizuje stan z modelem i propaguje walidację', async () => {
+    it('syncs the state with the model and propagates validation', async () => {
       const fixture = await render(SignalFormHost);
       const host = fixture.componentInstance;
       const box = boxOf(fixture);
@@ -221,8 +221,8 @@ describe('PctCheckbox', () => {
     });
   });
 
-  describe('kompatybilność z klasycznymi formularzami (bez CVA)', () => {
-    it('reactive forms: [formControl] synchronizuje w obie strony', async () => {
+  describe('compatibility with classic forms (no CVA)', () => {
+    it('reactive forms: [formControl] syncs both ways', async () => {
       const fixture = await render(ReactiveHost);
       const box = boxOf(fixture);
       const ctrl = fixture.componentInstance.ctrl;
@@ -239,7 +239,7 @@ describe('PctCheckbox', () => {
       expect(box.checked).toBe(true);
     });
 
-    it('template-driven: [(ngModel)] synchronizuje w obie strony', async () => {
+    it('template-driven: [(ngModel)] syncs both ways', async () => {
       const fixture = await render(NgModelHost);
       const box = boxOf(fixture);
       await fixture.whenStable();

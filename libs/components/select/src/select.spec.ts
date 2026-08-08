@@ -21,10 +21,10 @@ import { PctSelect } from './select';
 import { PctSelectOption, PctSelectPanelWidth } from './select.types';
 
 const OPTIONS: readonly PctSelectOption[] = [
-  { value: 'pl', label: 'Polska' },
-  { value: 'de', label: 'Niemcy' },
-  { value: 'cz', label: 'Czechy', disabled: true },
-  { value: 'sk', label: 'Słowacja' },
+  { value: 'pl', label: 'Poland' },
+  { value: 'de', label: 'Germany' },
+  { value: 'cz', label: 'Czechia', disabled: true },
+  { value: 'sk', label: 'Slovakia' },
 ];
 
 const triggerOf = (f: ComponentFixture<unknown>) =>
@@ -32,7 +32,7 @@ const triggerOf = (f: ComponentFixture<unknown>) =>
     '[data-pct-part="trigger"]',
   ) as HTMLButtonElement;
 
-/** Panel renderuje się w nakładce CDK — poza drzewem komponentu. */
+/** The panel renders in a CDK overlay — outside the component tree. */
 const panel = () =>
   document.querySelector('[data-pct-part="panel"]') as HTMLElement | null;
 
@@ -77,9 +77,9 @@ async function press(
   />`,
 })
 class Host {
-  label = signal('Kraj');
+  label = signal('Country');
   hint = signal('');
-  /** `undefined` znaczy „bez wartości" — napis bierze wtedy `PCT_TEXTS`. */
+  /** `undefined` means „no value" — the text then comes from `PCT_TEXTS`. */
   placeholder = signal<string | undefined>(undefined);
   options = signal<readonly PctSelectOption[]>(OPTIONS);
   req = signal(false);
@@ -104,45 +104,45 @@ class SignalFormHost {
   options = OPTIONS;
   model = signal({ country: '' });
   f = form(this.model, (p) => {
-    required(p.country, { message: 'Wybierz kraj' });
+    required(p.country, { message: 'Pick a country' });
   });
 }
 
-/** Encja: po HTTP przychodzi inna instancja o tej samej tożsamości. */
-interface Miasto {
+/** An entity: over HTTP a different instance of the same identity arrives. */
+interface City {
   readonly id: number;
-  readonly nazwa: string;
+  readonly name: string;
 }
 
 @Component({
   imports: [PctSelect],
   template: `<pct-select
     [options]="options"
-    [compareWith]="poId"
+    [compareWith]="byId"
     [(value)]="value"
   />`,
 })
 class EntityHost {
-  readonly options: readonly PctSelectOption<Miasto>[] = [
-    { value: { id: 1, nazwa: 'Gdańsk' }, label: 'Gdańsk' },
-    { value: { id: 2, nazwa: 'Kraków' }, label: 'Kraków' },
+  readonly options: readonly PctSelectOption<City>[] = [
+    { value: { id: 1, name: 'London' }, label: 'London' },
+    { value: { id: 2, name: 'Paris' }, label: 'Paris' },
   ];
-  /** Celowo NIE ta sama referencja co opcja na liście. */
-  value = signal<Miasto | null>({ id: 2, nazwa: 'Kraków' });
-  poId = (a: Miasto, b: Miasto) => a.id === b.id;
+  /** Deliberately NOT the same reference as the option on the list. */
+  value = signal<City | null>({ id: 2, name: 'Paris' });
+  byId = (a: City, b: City) => a.id === b.id;
 }
 
-/** Ten sam układ bez `compareWith` — kontrola, że to on robi robotę. */
+/** The same setup without `compareWith` — the control that it does the work. */
 @Component({
   imports: [PctSelect],
   template: `<pct-select [options]="options" [(value)]="value" />`,
 })
 class EntityWithoutCompareHost {
-  readonly options: readonly PctSelectOption<Miasto>[] = [
-    { value: { id: 1, nazwa: 'Gdańsk' }, label: 'Gdańsk' },
-    { value: { id: 2, nazwa: 'Kraków' }, label: 'Kraków' },
+  readonly options: readonly PctSelectOption<City>[] = [
+    { value: { id: 1, name: 'London' }, label: 'London' },
+    { value: { id: 2, name: 'Paris' }, label: 'Paris' },
   ];
-  value = signal<Miasto | null>({ id: 2, nazwa: 'Kraków' });
+  value = signal<City | null>({ id: 2, name: 'Paris' });
 }
 
 @Component({
@@ -155,8 +155,8 @@ class EntityWithoutCompareHost {
 })
 class NumberHost {
   readonly options: readonly PctSelectOption<number>[] = [
-    { value: 10, label: 'Dziesięć' },
-    { value: 20, label: 'Dwadzieścia' },
+    { value: 10, label: 'Ten' },
+    { value: 20, label: 'Twenty' },
   ];
   emptyValue: number | null = null;
   value = signal<number | null>(null);
@@ -180,7 +180,7 @@ class NgModelHost {
   country = 'de';
 }
 
-/** Kontrolka w obudowie — kliknięcie w ramkę idzie do niej przez `activate()`. */
+/** The control inside the wrapper — a click on the border reaches it through `activate()`. */
 @Component({
   imports: [PctField, PctSelect],
   template: `<pct-field label="Kraj">
@@ -192,7 +192,7 @@ class InFieldHost {
   value = signal<string | null>('');
 }
 
-/** Motyw stoi na przodku hosta — panel żyje poza tym drzewem. */
+/** The theme sits on an ancestor of the host — the panel lives outside that tree. */
 @Component({
   imports: [PctSelect],
   template: `<div data-theme="dark">
@@ -218,7 +218,7 @@ class PanelWidthHost {
   value = signal<string | null>('');
 }
 
-/** Wartość wskazuje opcję WYŁĄCZONĄ — aktywna nie jest wtedy na liście dostępnych. */
+/** The value points at a DISABLED option — the active one is then off the available list. */
 @Component({
   imports: [PctSelect],
   template: `<pct-select [options]="options" [(value)]="value" />`,
@@ -228,14 +228,14 @@ class DisabledSelectionHost {
   value = signal<string | null>('cz');
 }
 
-/** Kontrolka BEZ ani jednego wiązania — mierzy wartości domyślne wejść. */
+/** A control with NOT ONE binding — it measures the input defaults. */
 @Component({
   imports: [PctSelect],
   template: `<pct-select />`,
 })
 class BareHost {}
 
-/** Lista, na której KAŻDA opcja jest wyłączona. */
+/** A list on which EVERY option is disabled. */
 @Component({
   imports: [PctSelect],
   template: `<pct-select [options]="options" />`,
@@ -254,7 +254,7 @@ describe('PctSelect', () => {
     });
   });
 
-  it('trigger realizuje wzorzec combobox i jest zamknięty na start', async () => {
+  it('the trigger implements the combobox pattern and starts closed', async () => {
     const fixture = await render(Host);
     const trigger = triggerOf(fixture);
 
@@ -265,9 +265,9 @@ describe('PctSelect', () => {
     expect(panel()).toBeNull();
   });
 
-  it('bez ani jednego wiązania jest pustą, sprawną kontrolką', async () => {
-    // Wartości domyślne wejść są kontraktem tak samo jak same wejścia, a każdy
-    // test podający je jawnie mierzy własne wiązanie, nie domyślną.
+  it('with not one binding it is an empty, working control', async () => {
+    // The input defaults are a contract just as much as the inputs are, and every
+    // test that passes them explicitly measures its own binding, not the default.
     const fixture = await render(BareHost);
     const trigger = triggerOf(fixture);
 
@@ -282,7 +282,7 @@ describe('PctSelect', () => {
       fixture.nativeElement.querySelector('[data-pct-part="label"]'),
     ).toBeNull();
 
-    // Lista domyślnie pusta — panel mówi o tym wprost, a nie otwiera się pusty.
+    // The list is empty by default — the panel says so outright instead of opening blank.
     trigger.click();
     fixture.detectChanges();
     await fixture.whenStable();
@@ -290,12 +290,12 @@ describe('PctSelect', () => {
     expect(part(document, 'empty').textContent?.trim()).toBe('No options');
   });
 
-  it('podpowiedź opisuje trigger, a jej brak nie zostawia pustego odwołania', async () => {
+  it('the hint describes the trigger, and its absence leaves no dangling reference', async () => {
     const fixture = await render(Host);
     const trigger = triggerOf(fixture);
     expect(trigger.getAttribute('aria-describedby')).toBeNull();
 
-    fixture.componentInstance.hint.set('Wybierz kraj wysyłki');
+    fixture.componentInstance.hint.set('Pick a shipping country');
     fixture.detectChanges();
     await fixture.whenStable();
 
@@ -303,10 +303,10 @@ describe('PctSelect', () => {
     expect(opis).not.toBeNull();
     expect(
       fixture.nativeElement.querySelector(`#${opis}`)?.textContent?.trim(),
-    ).toBe('Wybierz kraj wysyłki');
+    ).toBe('Pick a shipping country');
   });
 
-  it('wartość null to brak wyboru, a nie opcja o wartości null', async () => {
+  it('a null value is no choice, not an option whose value is null', async () => {
     const fixture = await render(Host);
     fixture.componentInstance.value.set(null);
     fixture.detectChanges();
@@ -319,11 +319,11 @@ describe('PctSelect', () => {
     expect(
       optionsInPanel().some((o) => o.getAttribute('aria-selected') === 'true'),
     ).toBe(false);
-    // Bez wyboru aktywna jest pierwsza DOSTĘPNA, a nie „opcja numer −1".
+    // With no choice the first AVAILABLE one is active, not „option number −1".
     expect(optionsInPanel()[0].hasAttribute('data-pct-active')).toBe(true);
   });
 
-  it('pokazuje tekst zastępczy, dopóki nic nie wybrano', async () => {
+  it('shows the placeholder text until something is picked', async () => {
     const fixture = await render(Host);
     expect(
       fixture.nativeElement.querySelector('[data-pct-part="placeholder"]'),
@@ -333,7 +333,7 @@ describe('PctSelect', () => {
     ).toBeNull();
   });
 
-  it('kliknięcie otwiera panel z rolą listbox i opcjami', async () => {
+  it('a click opens the panel with role listbox and the options', async () => {
     const fixture = await render(Host);
     triggerOf(fixture).click();
     fixture.detectChanges();
@@ -347,7 +347,7 @@ describe('PctSelect', () => {
     );
   });
 
-  it('wybór opcji ustawia wartość, zamyka panel i pokazuje etykietę', async () => {
+  it('picking an option sets the value, closes the panel and shows the label', async () => {
     const fixture = await render(Host);
     triggerOf(fixture).click();
     fixture.detectChanges();
@@ -362,10 +362,10 @@ describe('PctSelect', () => {
     expect(
       fixture.nativeElement.querySelector('[data-pct-part="value"]')
         ?.textContent,
-    ).toContain('Niemcy');
+    ).toContain('Germany');
   });
 
-  it('kliknięcie wyłączonej opcji nie zmienia wartości', async () => {
+  it('a click on a disabled option does not change the value', async () => {
     const fixture = await render(Host);
     triggerOf(fixture).click();
     fixture.detectChanges();
@@ -379,8 +379,8 @@ describe('PctSelect', () => {
     expect(panel()).not.toBeNull(); // panel zostaje otwarty
   });
 
-  describe('klawiatura (własna implementacja — brak natywnego odpowiednika)', () => {
-    it('strzałka w dół otwiera panel i aktywuje pierwszą opcję', async () => {
+  describe('the keyboard (an implementation of our own — there is no native counterpart)', () => {
+    it('the down arrow opens the panel and activates the first option', async () => {
       const fixture = await render(Host);
       await press(fixture, 'ArrowDown');
 
@@ -391,21 +391,21 @@ describe('PctSelect', () => {
       );
     });
 
-    it('strzałki przesuwają aktywną opcję, pomijając wyłączone', async () => {
+    it('the arrows move the active option, skipping the disabled ones', async () => {
       const fixture = await render(Host);
-      await press(fixture, 'ArrowDown'); // otwarcie, aktywne: Polska
-      await press(fixture, 'ArrowDown'); // Niemcy
+      await press(fixture, 'ArrowDown'); // opening, active: Poland
+      await press(fixture, 'ArrowDown'); // Germany
       expect(optionsInPanel()[1].hasAttribute('data-pct-active')).toBe(true);
 
-      await press(fixture, 'ArrowDown'); // pomija Czechy -> Słowacja
+      await press(fixture, 'ArrowDown'); // skips Czechia -> Slovakia
       expect(optionsInPanel()[2].hasAttribute('data-pct-active')).toBe(false);
       expect(optionsInPanel()[3].hasAttribute('data-pct-active')).toBe(true);
 
-      await press(fixture, 'ArrowUp'); // wraca do Niemiec
+      await press(fixture, 'ArrowUp'); // back to Germany
       expect(optionsInPanel()[1].hasAttribute('data-pct-active')).toBe(true);
     });
 
-    it('Home i End skaczą na pierwszą i ostatnią dostępną opcję', async () => {
+    it('Home and End jump to the first and the last available option', async () => {
       const fixture = await render(Host);
       await press(fixture, 'ArrowDown');
       await press(fixture, 'End');
@@ -415,7 +415,7 @@ describe('PctSelect', () => {
       expect(optionsInPanel()[0].hasAttribute('data-pct-active')).toBe(true);
     });
 
-    it('Enter wybiera aktywną opcję', async () => {
+    it('Enter picks the active option', async () => {
       const fixture = await render(Host);
       await press(fixture, 'ArrowDown');
       await press(fixture, 'ArrowDown');
@@ -425,7 +425,7 @@ describe('PctSelect', () => {
       expect(panel()).toBeNull();
     });
 
-    it('Escape zamyka panel bez zmiany wartości', async () => {
+    it('Escape closes the panel without changing the value', async () => {
       const fixture = await render(Host);
       await press(fixture, 'ArrowDown');
       await press(fixture, 'Escape');
@@ -434,15 +434,15 @@ describe('PctSelect', () => {
       expect(fixture.componentInstance.value()).toBe('');
     });
 
-    it('pisanie liter aktywuje pasującą opcję (typeahead)', async () => {
+    it('typing letters activates the matching option (typeahead)', async () => {
       const fixture = await render(Host);
       await press(fixture, 'ArrowDown');
-      await press(fixture, 'n'); // Niemcy
+      await press(fixture, 'g'); // Germany
 
       expect(optionsInPanel()[1].hasAttribute('data-pct-active')).toBe(true);
     });
 
-    it('otwarcie aktywuje już wybraną opcję', async () => {
+    it('opening activates the already picked option', async () => {
       const fixture = await render(Host);
       fixture.componentInstance.value.set('sk');
       fixture.detectChanges();
@@ -452,11 +452,11 @@ describe('PctSelect', () => {
       expect(optionsInPanel()[3].hasAttribute('data-pct-active')).toBe(true);
     });
 
-    // Klawisze otwierające są cztery i do 2026-08-06 mierzony był jeden:
-    // alternatywa `||` zwiera się na pierwszym trafieniu, więc trzy pozostałe
-    // gałęzie nie były wykonywane ani razu (`lesson-57`).
+    // There are four opening keys and until 2026-08-06 one was measured: the `||`
+    // alternative short-circuits on the first hit, so the other three branches were
+    // never executed even once (`lesson-57`).
     it.each(['ArrowUp', 'Enter', ' '])(
-      'panel otwiera także %j',
+      'the panel is opened by %j as well',
       async (klawisz) => {
         const fixture = await render(Host);
         await press(fixture, klawisz);
@@ -466,14 +466,14 @@ describe('PctSelect', () => {
       },
     );
 
-    it('klawisz spoza obsługiwanych nie otwiera panelu', async () => {
+    it('a key outside the handled ones does not open the panel', async () => {
       const fixture = await render(Host);
       await press(fixture, 'PageDown');
 
       expect(panel()).toBeNull();
     });
 
-    it('Tab zamyka listę, bo ma pozwolić wyjść z kontrolki', async () => {
+    it('Tab closes the list, because it has to let you leave the control', async () => {
       const fixture = await render(Host);
       await press(fixture, 'ArrowDown');
       expect(panel()).not.toBeNull();
@@ -488,49 +488,50 @@ describe('PctSelect', () => {
       await fixture.whenStable();
 
       expect(panel()).toBeNull();
-      // Tab jako jedyny z obsługiwanych klawiszy NIE jest zjadany: gdyby był,
-      // fokus zostałby w kontrolce, z której miał właśnie wyjść.
+      // Tab is the only handled key that is NOT eaten: were it eaten, focus would
+      // stay in the control it was just about to leave.
       expect(event.defaultPrevented).toBe(false);
     });
 
-    it('bufor typeaheadu gaśnie po przerwie w pisaniu', async () => {
+    it('the typeahead buffer dies out after a pause in typing', async () => {
       vi.useFakeTimers();
       try {
         const fixture = await render(Host);
         await press(fixture, 'ArrowDown');
-        await press(fixture, 'c'); // Czechy — wyłączone, więc szuka dalej
-        await press(fixture, 'z'); // „cz" nie pasuje do niczego dostępnego
+        await press(fixture, 'c'); // Czechia — disabled, so it looks further
+        await press(fixture, 'z'); // „cz" matches nothing available
 
         vi.advanceTimersByTime(500);
 
-        // Po przerwie „c" zaczyna nowe słowo, a nie dokłada się do starego.
-        await press(fixture, 'p'); // Polska
+        // After the pause the next letter starts a new word instead of joining the
+        // old one.
+        await press(fixture, 'p'); // Poland
         expect(optionsInPanel()[0].hasAttribute('data-pct-active')).toBe(true);
       } finally {
         vi.useRealTimers();
       }
     });
 
-    it('Home i End na liście bez dostępnych opcji nie aktywują niczego', async () => {
-      // Lista ma DWIE opcje, obie wyłączone: przy jednej „brak aktywnej"
-      // i „aktywna poza listą" wyglądają tak samo, więc test przechodziłby
-      // także dla kontrolki aktywującej opcję o indeksie 1.
+    it('Home and End on a list with no available options activate nothing', async () => {
+      // The list has TWO options, both disabled: with one, „no active option" and
+      // „active outside the list" look the same, so the test would pass for a control
+      // that activates the option at index 1 as well.
       const fixture = await render(AllDisabledHost);
       await press(fixture, 'ArrowDown');
-      const aktywna = () =>
+      const active = () =>
         optionsInPanel().findIndex((o) => o.hasAttribute('data-pct-active'));
 
-      expect(aktywna()).toBe(-1);
+      expect(active()).toBe(-1);
       await press(fixture, 'End');
-      expect(aktywna()).toBe(-1);
+      expect(active()).toBe(-1);
       await press(fixture, 'Home');
-      expect(aktywna()).toBe(-1);
+      expect(active()).toBe(-1);
       expect(
         triggerOf(fixture).getAttribute('aria-activedescendant'),
       ).toBeNull();
     });
 
-    it('Escape zjada klawisz, żeby nie zamknąć czegoś piętro wyżej', async () => {
+    it('Escape eats the key so as not to close something one floor up', async () => {
       const fixture = await render(Host);
       await press(fixture, 'ArrowDown');
 
@@ -547,7 +548,7 @@ describe('PctSelect', () => {
       expect(event.defaultPrevented).toBe(true);
     });
 
-    it('spacja wybiera aktywną opcję tak samo jak Enter', async () => {
+    it('space picks the active option the same as Enter', async () => {
       const fixture = await render(Host);
       await press(fixture, 'ArrowDown');
       await press(fixture, 'ArrowDown');
@@ -557,21 +558,21 @@ describe('PctSelect', () => {
       expect(panel()).toBeNull();
     });
 
-    it('typeahead trafiający w PIERWSZĄ opcję też przestawia aktywną', async () => {
+    it('a typeahead that hits the FIRST option moves the active one too', async () => {
       const fixture = await render(Host);
       await press(fixture, 'ArrowDown');
-      await press(fixture, 'ArrowDown'); // aktywna: Niemcy (1)
+      await press(fixture, 'ArrowDown'); // active: Germany (1)
 
-      // Indeks 0 jest jedyną wartością, przy której `>= 0` i `> 0` dają różny
-      // wynik — bez niego granica warunku nie jest mierzona.
-      await press(fixture, 'p'); // Polska (0)
+      // Index 0 is the only value where `>= 0` and `> 0` give a different result —
+      // without it the boundary of the condition is not measured.
+      await press(fixture, 'p'); // Poland (0)
       expect(optionsInPanel()[0].hasAttribute('data-pct-active')).toBe(true);
     });
 
-    it('strzałka z aktywnej opcji wyłączonej wskakuje na skraj listy dostępnych', async () => {
+    it('an arrow from a disabled active option jumps to the edge of the available list', async () => {
       const fixture = await render(DisabledSelectionHost);
-      // Wartość wskazuje `cz`, czyli opcję wyłączoną: aktywna jest wtedy poza
-      // listą dostępnych i przesunięcie nie ma od czego liczyć kroku.
+      // The value points at `cz`, a disabled option: the active one is then off the
+      // available list and a move has nothing to count its step from.
       await press(fixture, 'ArrowDown');
       expect(optionsInPanel()[2].hasAttribute('data-pct-active')).toBe(true);
 
@@ -579,7 +580,7 @@ describe('PctSelect', () => {
       expect(optionsInPanel()[0].hasAttribute('data-pct-active')).toBe(true);
     });
 
-    it('strzałka w górę z aktywnej wyłączonej idzie na koniec listy', async () => {
+    it('the up arrow from a disabled active option goes to the end of the list', async () => {
       const fixture = await render(DisabledSelectionHost);
       await press(fixture, 'ArrowDown');
 
@@ -588,7 +589,7 @@ describe('PctSelect', () => {
     });
   });
 
-  it('disabled blokuje otwarcie', async () => {
+  it('disabled blocks opening', async () => {
     const fixture = await render(Host);
     fixture.componentInstance.disabled.set(true);
     fixture.detectChanges();
@@ -599,7 +600,7 @@ describe('PctSelect', () => {
     expect(panel()).toBeNull();
   });
 
-  it('readonly pozwala otworzyć fokus, ale nie zmienić wartości', async () => {
+  it('readonly allows opening and focus, but not changing the value', async () => {
     const fixture = await render(Host);
     fixture.componentInstance.ro.set(true);
     fixture.detectChanges();
@@ -616,11 +617,11 @@ describe('PctSelect', () => {
     expect(fixture.componentInstance.value()).toBe('');
   });
 
-  it('nie pokazuje błędu, dopóki kontrolka nie została dotknięta', async () => {
+  it('shows no error until the control has been touched', async () => {
     const fixture = await render(Host);
     fixture.componentInstance.invalid.set(true);
     fixture.componentInstance.errors.set([
-      requiredError({ message: 'Wybierz kraj' }),
+      requiredError({ message: 'Pick a country' }),
     ]);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -631,12 +632,12 @@ describe('PctSelect', () => {
     expect(triggerOf(fixture).getAttribute('aria-invalid')).toBeNull();
   });
 
-  it('po dotknięciu wiąże błąd przez aria-describedby', async () => {
+  it('once touched it binds the error through aria-describedby', async () => {
     const fixture = await render(Host);
     fixture.componentInstance.invalid.set(true);
     fixture.componentInstance.touched.set(true);
     fixture.componentInstance.errors.set([
-      requiredError({ message: 'Wybierz kraj' }),
+      requiredError({ message: 'Pick a country' }),
     ]);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -650,14 +651,14 @@ describe('PctSelect', () => {
     expect(trigger.getAttribute('aria-describedby')).toContain(error.id);
   });
 
-  it('blur emituje touch', async () => {
+  it('blur emits touch', async () => {
     const fixture = await render(Host);
     triggerOf(fixture).dispatchEvent(new Event('blur'));
     await fixture.whenStable();
     expect(fixture.componentInstance.touchCount).toBe(1);
   });
 
-  it('pusta lista opcji pokazuje komunikat zastępczy', async () => {
+  it('an empty option list shows the fallback message', async () => {
     const fixture = await render(Host);
     fixture.componentInstance.options.set([]);
     fixture.detectChanges();
@@ -671,7 +672,7 @@ describe('PctSelect', () => {
   });
 
   describe('signal forms', () => {
-    it('synchronizuje wybór z modelem i propaguje walidację', async () => {
+    it('syncs the choice with the model and propagates validation', async () => {
       const fixture = await render(SignalFormHost);
       const host = fixture.componentInstance;
 
@@ -689,15 +690,15 @@ describe('PctSelect', () => {
     });
   });
 
-  describe('kompatybilność z klasycznymi formularzami (bez CVA)', () => {
-    it('reactive forms: [formControl] synchronizuje w obie strony', async () => {
+  describe('compatibility with classic forms (no CVA)', () => {
+    it('reactive forms: [formControl] syncs both ways', async () => {
       const fixture = await render(ReactiveHost);
       const ctrl = fixture.componentInstance.ctrl;
 
       expect(
         fixture.nativeElement.querySelector('[data-pct-part="value"]')
           ?.textContent,
-      ).toContain('Niemcy');
+      ).toContain('Germany');
 
       triggerOf(fixture).click();
       fixture.detectChanges();
@@ -713,17 +714,17 @@ describe('PctSelect', () => {
       expect(
         fixture.nativeElement.querySelector('[data-pct-part="value"]')
           ?.textContent,
-      ).toContain('Słowacja');
+      ).toContain('Slovakia');
     });
 
-    it('template-driven: [(ngModel)] synchronizuje w obie strony', async () => {
+    it('template-driven: [(ngModel)] syncs both ways', async () => {
       const fixture = await render(NgModelHost);
       await fixture.whenStable();
 
       expect(
         fixture.nativeElement.querySelector('[data-pct-part="value"]')
           ?.textContent,
-      ).toContain('Niemcy');
+      ).toContain('Germany');
 
       triggerOf(fixture).click();
       fixture.detectChanges();
@@ -736,8 +737,8 @@ describe('PctSelect', () => {
     });
   });
 
-  describe('teksty', () => {
-    it('domyślne napisy są angielskie — biblioteka nie narzuca języka', async () => {
+  describe('the texts', () => {
+    it('the default texts are English — the library imposes no language', async () => {
       const fixture = await render(Host);
       fixture.componentInstance.options.set([]);
       fixture.detectChanges();
@@ -758,7 +759,7 @@ describe('PctSelect', () => {
       ).toBe('No options');
     });
 
-    it('providePctTexts podmienia napisy, a niepodane zostają domyślne', async () => {
+    it('providePctTexts swaps the texts, and the ones left out stay default', async () => {
       TestBed.configureTestingModule({
         providers: [providePctTexts({ selectEmpty: 'Brak opcji' })],
       });
@@ -775,7 +776,7 @@ describe('PctSelect', () => {
       expect(
         document.querySelector('[data-pct-part="empty"]')?.textContent?.trim(),
       ).toBe('Brak opcji');
-      // Nieprzetłumaczony napis nie znika — zostaje przy wartości domyślnej.
+      // An untranslated text does not disappear — it stays at its default.
       expect(
         fixture.nativeElement
           .querySelector('[data-pct-part="placeholder"]')
@@ -783,15 +784,15 @@ describe('PctSelect', () => {
       ).toBe('Select…');
     });
 
-    // Wcześniej napis brał się z wartości domyślnej wejścia, czyli z odczytu
-    // przy KONSTRUKCJI — ten test padał na `Select…` (decyzja 0014).
-    it('zmiana języka w runtime dociera do napisów bez przeładowania', async () => {
-      const jezyk = signal<'en' | 'pl'>('en');
+    // The text used to come from the input default, that is from a read at
+    // CONSTRUCTION — this test failed on `Select…` (decision 0014).
+    it('a language change at runtime reaches the texts with no reload', async () => {
+      const language = signal<'en' | 'pl'>('en');
       TestBed.configureTestingModule({
         providers: [
           providePctTexts(
             computed(() =>
-              jezyk() === 'pl'
+              language() === 'pl'
                 ? { selectPlaceholder: 'Wybierz…', selectEmpty: 'Brak opcji' }
                 : {},
             ),
@@ -811,16 +812,16 @@ describe('PctSelect', () => {
 
       expect(placeholder()).toBe('Select…');
 
-      jezyk.set('pl');
+      language.set('pl');
       fixture.detectChanges();
       await fixture.whenStable();
 
       expect(placeholder()).toBe('Wybierz…');
     });
 
-    // Brak wartości i wartość pusta znaczą co innego: pierwsze oddaje napis
-    // bibliotece, drugie jest świadomą decyzją autora widoku.
-    it('placeholder="" zostaje pusty, a nie wraca do domyślnego', async () => {
+    // No value and an empty value mean different things: the first hands the text
+    // over to the library, the second is a deliberate decision of the view author.
+    it('placeholder="" stays empty instead of falling back to the default', async () => {
       const fixture = await render(Host);
       fixture.componentInstance.placeholder.set('');
       fixture.detectChanges();
@@ -834,8 +835,8 @@ describe('PctSelect', () => {
     });
   });
 
-  describe('wartości nienapisowe', () => {
-    it('wybór ustawia liczbę, a nie jej zapis tekstowy', async () => {
+  describe('non-string values', () => {
+    it('a choice sets the number, not its text form', async () => {
       const fixture = await render(NumberHost);
       triggerOf(fixture).click();
       fixture.detectChanges();
@@ -848,13 +849,13 @@ describe('PctSelect', () => {
       expect(fixture.componentInstance.value()).toBe(20);
     });
 
-    it('compareWith dopasowuje encję po kluczu, nie po referencji', async () => {
+    it('compareWith matches an entity by key, not by reference', async () => {
       const fixture = await render(EntityHost);
 
       expect(
         fixture.nativeElement.querySelector('[data-pct-part="value"]')
           ?.textContent,
-      ).toContain('Kraków');
+      ).toContain('Paris');
 
       triggerOf(fixture).click();
       fixture.detectChanges();
@@ -862,14 +863,14 @@ describe('PctSelect', () => {
       expect(optionsInPanel()[1].getAttribute('aria-selected')).toBe('true');
     });
 
-    it('bez compareWith inna instancja tej samej encji nie jest wybrana', async () => {
+    it('without compareWith another instance of the same entity is not selected', async () => {
       const fixture = await render(EntityWithoutCompareHost);
       expect(
         fixture.nativeElement.querySelector('[data-pct-part="value"]'),
       ).toBeNull();
     });
 
-    it('reset() wraca do emptyValue zgłoszonego przez aplikację', async () => {
+    it('reset() returns to the emptyValue the application declared', async () => {
       const fixture = await render(NumberHost);
       const select = fixture.debugElement.children[0]
         .componentInstance as PctSelect<number>;
@@ -884,7 +885,7 @@ describe('PctSelect', () => {
       expect(fixture.componentInstance.value()).toBe(-1);
     });
 
-    it('focus() jest tym, po co sięgają signal forms', async () => {
+    it('focus() is what signal forms reach for', async () => {
       const fixture = await render(NumberHost);
       const select = fixture.debugElement.children[0]
         .componentInstance as PctSelect<number>;
@@ -894,16 +895,16 @@ describe('PctSelect', () => {
     });
   });
 
-  describe('panel poza drzewem hosta', () => {
-    it('kliknięcie w ramkę obudowy otwiera listę', async () => {
+  describe('the panel outside the host tree', () => {
+    it('a click on the wrapper border opens the list', async () => {
       const fixture = await render(InFieldHost);
       const row = fixture.nativeElement.querySelector(
         '[data-pct-part="field-row"]',
       ) as HTMLElement;
 
-      // Obudowa nie zna selecta — woła `activate()` z kontraktu PCT_FIELD.
-      // Bez tej drogi kliknięcie w ramkę poza samym triggerem nic nie robi,
-      // a wygląda na klikalne (`req-a11y-touch`).
+      // The wrapper does not know the select — it calls `activate()` from the
+      // PCT_FIELD contract. Without that path a click on the border outside the
+      // trigger itself does nothing while looking clickable (`req-a11y-touch`).
       row.click();
       fixture.detectChanges();
       await fixture.whenStable();
@@ -911,25 +912,25 @@ describe('PctSelect', () => {
       expect(panel()).not.toBeNull();
     });
 
-    it('panel przejmuje motyw najbliższego przodka kontrolki', async () => {
+    it('the panel takes over the theme of the nearest ancestor of the control', async () => {
       const fixture = await render(ThemedHost);
       await press(fixture, 'ArrowDown');
 
-      // Nakładka CDK jest dzieckiem `body`, więc kaskada `data-theme` do niej
-      // nie dociera — motyw trzeba przenieść ręcznie (`lesson-35`).
+      // The CDK overlay is a child of `body`, so the `data-theme` cascade does not
+      // reach it — the theme has to be carried over by hand (`lesson-35`).
       expect(panel()?.closest('[data-theme]')?.getAttribute('data-theme')).toBe(
         'dark',
       );
     });
 
-    it('bez motywu na przodku panel nie dostaje atrybutu', async () => {
+    it('with no theme on an ancestor the panel gets no attribute', async () => {
       const fixture = await render(Host);
       await press(fixture, 'ArrowDown');
 
       expect(panel()?.closest('[data-theme]')).toBeNull();
     });
 
-    it('panelWidth="auto" oddaje szerokość treści, a kontrolka zostaje dolną granicą', async () => {
+    it('panelWidth="auto" gives the width to the content, and the control stays the lower bound', async () => {
       const fixture = await render(PanelWidthHost);
       fixture.componentInstance.panelWidth.set('auto');
       fixture.detectChanges();
@@ -937,13 +938,13 @@ describe('PctSelect', () => {
       await press(fixture, 'ArrowDown');
 
       const nakladka = panel()?.closest('.cdk-overlay-pane') as HTMLElement;
-      // „Nie ustawiaj szerokości" znaczy pusty napis: nakładka ma wtedy
-      // wyłącznie `min-width`. Wartość wprost zamieniłaby `auto` w `field`.
+      // „Do not set the width" means an empty string: the overlay then carries only
+      // `min-width`. A literal value would turn `auto` into `field`.
       expect(nakladka.style.width).toBe('');
       expect(nakladka.style.minWidth).not.toBe('');
     });
 
-    it('panelWidth wprost trafia na nakładkę bez przeliczania', async () => {
+    it('a literal panelWidth reaches the overlay with no recomputation', async () => {
       const fixture = await render(PanelWidthHost);
       fixture.componentInstance.panelWidth.set('320px');
       fixture.detectChanges();

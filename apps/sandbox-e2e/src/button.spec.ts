@@ -6,12 +6,14 @@ test.describe('PctButton', () => {
     await visit(page, '/button');
   });
 
-  test('renderuje stronę biblioteki i przyciski', async ({ page }) => {
+  test('renders the library page and the buttons', async ({ page }) => {
     await expect(page.locator('h1')).toContainText('@pacit/components');
     await expect(page.locator('button[pctButton]').first()).toBeVisible();
   });
 
-  test('solid button ma tło z tokenu (--pct-button-bg)', async ({ page }) => {
+  test('a solid button takes its background from a token (--pct-button-bg)', async ({
+    page,
+  }) => {
     const bg = await page
       .getByTestId('btn-solid')
       .evaluate((el) => getComputedStyle(el).backgroundColor);
@@ -19,17 +21,15 @@ test.describe('PctButton', () => {
     expect(bg).toBe('rgb(37, 99, 235)');
   });
 
-  test('loading pokazuje part=spinner i blokuje przycisk', async ({ page }) => {
+  test('loading shows part=spinner and blocks the button', async ({ page }) => {
     const loading = page.getByTestId('btn-loading');
     await expect(loading).toBeDisabled();
     await expect(loading.locator('[data-pct-part="spinner"]')).toBeVisible();
   });
 
-  test('wyłączony przycisk nie jest przyciemniany opacity', async ({
-    page,
-  }) => {
-    // Stany mają własne tokeny koloru — opacity zmieniałoby kontrast
-    // w sposób niewidoczny dla bramki (req-token-no-opacity).
+  test('a disabled button is not dimmed with opacity', async ({ page }) => {
+    // The states have colour tokens of their own — opacity would change the
+    // contrast in a way the gate cannot see (req-token-no-opacity).
     await expect(page.getByTestId('btn-disabled')).toHaveCSS('opacity', '1');
   });
 });

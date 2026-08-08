@@ -27,7 +27,7 @@ async function render<T>(type: Type<T>, locale = 'pl-PL') {
 const inputOf = (f: ComponentFixture<unknown>) =>
   f.nativeElement.querySelector('input') as HTMLInputElement;
 
-/** Wpisanie tekstu przez użytkownika: DOM najpierw, potem zdarzenie. */
+/** Typing text the way a user does: the DOM first, then the event. */
 async function type(f: ComponentFixture<unknown>, text: string) {
   const el = inputOf(f);
   el.value = text;
@@ -94,7 +94,7 @@ class SignalFormHost {
   });
 }
 
-/** Klasyczne formularze — użycie, przed którym dyrektywa ostrzega. */
+/** Classic forms — the use the directive warns about. */
 @Component({
   imports: [PctNumber, ReactiveFormsModule],
   template: `<input pctNumber [formControl]="ctrl" />`,
@@ -103,7 +103,7 @@ class ClassicFormHost {
   ctrl = new FormControl<number | null>(null);
 }
 
-/** `type="number"` — drugie takie użycie. */
+/** `type="number"` — the second such use. */
 @Component({
   imports: [PctNumber],
   template: `<input type="number" pctNumber [(value)]="value" />`,
@@ -112,14 +112,14 @@ class NumberTypeHost {
   value = signal<number | null>(null);
 }
 
-/** Pole BEZ ani jednego wiązania — mierzy wartości domyślne wejść. */
+/** A field with NOT ONE binding — it measures the input defaults. */
 @Component({
   imports: [PctNumber],
   template: `<input pctNumber />`,
 })
 class BareHost {}
 
-/** Stan błędu podany wprost, bez formularza — bramkowanie na `touched`. */
+/** The error state given directly, with no form — the gating on `touched`. */
 @Component({
   imports: [PctNumber],
   template: `<input
@@ -136,18 +136,18 @@ class InvalidHost {
 }
 
 describe('PctNumber', () => {
-  describe('formatowanie wg locale', () => {
-    it('grupuje tysiące i używa lokalnego separatora dziesiętnego', async () => {
+  describe('formatting by locale', () => {
+    it('groups thousands and uses the local decimal separator', async () => {
       const fixture = await render(Host);
       fixture.componentInstance.maxFrac.set(2);
       fixture.componentInstance.value.set(1234567.5);
       await fixture.whenStable();
 
-      // pl-PL: spacja nierozdzielająca jako separator grup, przecinek dziesiętny.
+      // pl-PL: a non-breaking space as the group separator, a comma for the decimals.
       expect(inputOf(fixture).value).toBe('1\u00a0234\u00a0567,5');
     });
 
-    it('dopełnia miejsca dziesiętne do minFractionDigits', async () => {
+    it('pads the decimal places up to minFractionDigits', async () => {
       const fixture = await render(Host);
       fixture.componentInstance.minFrac.set(2);
       fixture.componentInstance.maxFrac.set(2);
@@ -157,13 +157,13 @@ describe('PctNumber', () => {
       expect(inputOf(fixture).value).toBe('12,50');
     });
 
-    it('puste pole to null, nie zero', async () => {
+    it('an empty field is null, not zero', async () => {
       const fixture = await render(Host);
       expect(inputOf(fixture).value).toBe('');
       expect(fixture.componentInstance.value()).toBeNull();
     });
 
-    it('respektuje inne locale', async () => {
+    it('respects a different locale', async () => {
       const fixture = await render(Host, 'en-US');
       fixture.componentInstance.maxFrac.set(2);
       fixture.componentInstance.value.set(1234.5);
@@ -172,7 +172,7 @@ describe('PctNumber', () => {
       expect(inputOf(fixture).value).toBe('1,234.5');
     });
 
-    it('grupowanie można wyłączyć', async () => {
+    it('grouping can be turned off', async () => {
       const fixture = await render(Host);
       fixture.componentInstance.grouping.set(false);
       fixture.componentInstance.value.set(1234567);
@@ -182,8 +182,8 @@ describe('PctNumber', () => {
     });
   });
 
-  describe('parsowanie', () => {
-    it('przyjmuje lokalny separator dziesiętny', async () => {
+  describe('parsing', () => {
+    it('accepts the local decimal separator', async () => {
       const fixture = await render(Host);
       fixture.componentInstance.maxFrac.set(2);
       await type(fixture, '12,34');
@@ -191,7 +191,7 @@ describe('PctNumber', () => {
       expect(fixture.componentInstance.value()).toBe(12.34);
     });
 
-    it('przyjmuje kropkę, bo daje ją klawiatura numeryczna', async () => {
+    it('accepts a dot, because that is what the numeric keypad gives', async () => {
       const fixture = await render(Host);
       fixture.componentInstance.maxFrac.set(2);
       await type(fixture, '12.34');
@@ -199,18 +199,18 @@ describe('PctNumber', () => {
       expect(fixture.componentInstance.value()).toBe(12.34);
     });
 
-    it('usuwa separatory grup, także spację nierozdzielającą', async () => {
+    it('strips group separators, the non-breaking space among them', async () => {
       const fixture = await render(Host);
       await type(fixture, '1\u00a0234\u00a0567');
 
       expect(fixture.componentInstance.value()).toBe(1234567);
     });
 
-    it('nie myli separatora grup z dziesiętnym w en-US', async () => {
+    it('does not confuse the group separator with the decimal one in en-US', async () => {
       const fixture = await render(Host, 'en-US');
       fixture.componentInstance.maxFrac.set(2);
 
-      // Przecinek nie rozdziela tysięcy (brak trzech cyfr), więc to ułamek.
+      // The comma separates no thousands here (no three digits), so it is a fraction.
       await type(fixture, '1,5');
       expect(fixture.componentInstance.value()).toBe(1.5);
 
@@ -218,14 +218,14 @@ describe('PctNumber', () => {
       expect(fixture.componentInstance.value()).toBe(1500);
     });
 
-    it('obcina białe znaki dookoła — wklejenie z arkusza niesie spacje', async () => {
+    it('trims the surrounding whitespace — a paste from a spreadsheet carries spaces', async () => {
       const fixture = await render(Host);
 
       await type(fixture, '  42  ');
       expect(fixture.componentInstance.value()).toBe(42);
     });
 
-    it('same białe znaki to pole puste, nie zero', async () => {
+    it('whitespace alone is an empty field, not zero', async () => {
       const fixture = await render(Host);
       fixture.componentInstance.value.set(7);
       await fixture.whenStable();
@@ -234,7 +234,7 @@ describe('PctNumber', () => {
       expect(fixture.componentInstance.value()).toBeNull();
     });
 
-    it('czyszczenie pola ustawia null', async () => {
+    it('clearing the field sets null', async () => {
       const fixture = await render(Host);
       fixture.componentInstance.value.set(42);
       await fixture.whenStable();
@@ -243,26 +243,26 @@ describe('PctNumber', () => {
       expect(fixture.componentInstance.value()).toBeNull();
     });
 
-    it('stan przejściowy nie kasuje wartości', async () => {
+    it('an intermediate state does not wipe the value', async () => {
       const fixture = await render(Host);
       fixture.componentInstance.value.set(5);
       await fixture.whenStable();
 
-      // Sam minus to jeszcze nie liczba — wartość zostaje do zatwierdzenia.
+      // A lone minus is not a number yet — the value waits for the commit.
       await type(fixture, '-');
       expect(fixture.componentInstance.value()).toBe(5);
     });
 
-    it('nie przepisuje tekstu w trakcie pisania', async () => {
+    it('does not rewrite the text while it is being typed', async () => {
       const fixture = await render(Host);
       await type(fixture, '1234');
 
-      // Gdyby efekt przepisał wartość, kursor skoczyłby na koniec „1 234".
+      // Had the effect rewritten the value, the caret would jump to the end of „1 234".
       expect(inputOf(fixture).value).toBe('1234');
       expect(fixture.componentInstance.value()).toBe(1234);
     });
 
-    it('zatwierdzenie formatuje tekst', async () => {
+    it('a commit formats the text', async () => {
       const fixture = await render(Host);
       await type(fixture, '1234');
       await blur(fixture);
@@ -270,7 +270,7 @@ describe('PctNumber', () => {
       expect(inputOf(fixture).value).toBe('1\u00a0234');
     });
 
-    it('zatwierdzenie odrzuca treść, której nie da się sparsować', async () => {
+    it('a commit rejects content that cannot be parsed', async () => {
       const fixture = await render(Host);
       fixture.componentInstance.value.set(7);
       await fixture.whenStable();
@@ -283,8 +283,8 @@ describe('PctNumber', () => {
     });
   });
 
-  describe('zaokrąglanie i granice', () => {
-    it('domyślnie pole jest całkowite', async () => {
+  describe('rounding and bounds', () => {
+    it('the field is integer by default', async () => {
       const fixture = await render(Host);
       await type(fixture, '3,7');
       await blur(fixture);
@@ -292,7 +292,7 @@ describe('PctNumber', () => {
       expect(fixture.componentInstance.value()).toBe(4);
     });
 
-    it('zaokrągla do maxFractionDigits przy zatwierdzeniu', async () => {
+    it('rounds to maxFractionDigits on commit', async () => {
       const fixture = await render(Host);
       fixture.componentInstance.maxFrac.set(2);
       await type(fixture, '3,456');
@@ -301,14 +301,14 @@ describe('PctNumber', () => {
       expect(fixture.componentInstance.value()).toBe(3.46);
     });
 
-    it('domyka wartość do min i max dopiero przy zatwierdzeniu', async () => {
+    it('clamps the value to min and max only on commit', async () => {
       const fixture = await render(Host);
       fixture.componentInstance.min.set(10);
       fixture.componentInstance.max.set(20);
       await fixture.whenStable();
 
-      // W trakcie pisania nie domykamy — inaczej nie da się wpisać „15”
-      // przechodząc przez „1”.
+      // We do not clamp while typing — otherwise „15" cannot be reached at all,
+      // because it goes through „1".
       await type(fixture, '1');
       expect(fixture.componentInstance.value()).toBe(1);
 
@@ -320,9 +320,9 @@ describe('PctNumber', () => {
       expect(fixture.componentInstance.value()).toBe(20);
     });
 
-    // Granica podana z jednej strony ma działać z tej jednej strony — wspólny
-    // test dla min i max nie odróżnia tego od „domyka zawsze".
-    it('sama granica dolna nie domyka od góry', async () => {
+    // A bound given on one side has to work from that one side — a shared test for
+    // min and max does not tell that apart from „clamps always".
+    it('a lower bound alone does not clamp from above', async () => {
       const fixture = await render(Host);
       fixture.componentInstance.min.set(10);
       await fixture.whenStable();
@@ -332,7 +332,7 @@ describe('PctNumber', () => {
       expect(fixture.componentInstance.value()).toBe(1000);
     });
 
-    it('sama granica górna nie domyka od dołu', async () => {
+    it('an upper bound alone does not clamp from below', async () => {
       const fixture = await render(Host);
       fixture.componentInstance.max.set(20);
       await fixture.whenStable();
@@ -343,8 +343,8 @@ describe('PctNumber', () => {
     });
   });
 
-  describe('klawiatura', () => {
-    it('strzałki zmieniają wartość o step', async () => {
+  describe('the keyboard', () => {
+    it('the arrows change the value by step', async () => {
       const fixture = await render(Host);
       fixture.componentInstance.value.set(5);
       await fixture.whenStable();
@@ -358,12 +358,12 @@ describe('PctNumber', () => {
     });
 
     /**
-     * Regresja: krok liczony z tekstu w DOM gubił naciśnięcia. Tekst zapisuje
-     * efekt, czyli asynchronicznie — dwa zdarzenia w jednym przebiegu widziały
-     * tę samą wartość wyjściową. Test celowo NIE stabilizuje między
-     * naciśnięciami; z `await` po każdym z nich wada jest niewidoczna.
+     * A regression: a step counted from the text in the DOM lost keypresses. The
+     * text is written by an effect, that is asynchronously — two events in one run
+     * saw the same starting value. The test deliberately does NOT stabilise between
+     * the presses; with an `await` after each of them the defect is invisible.
      */
-    it('szybkie powtórzenie strzałki nie gubi kroku', async () => {
+    it('a fast repeat of an arrow loses no step', async () => {
       const fixture = await render(Host);
       fixture.componentInstance.value.set(5);
       await fixture.whenStable();
@@ -378,7 +378,7 @@ describe('PctNumber', () => {
       expect(el.value).toBe('2');
     });
 
-    it('PageUp/PageDown skacze dziesięciokrotnie', async () => {
+    it('PageUp/PageDown jumps tenfold', async () => {
       const fixture = await render(Host);
       fixture.componentInstance.value.set(100);
       fixture.componentInstance.step.set(5);
@@ -387,13 +387,13 @@ describe('PctNumber', () => {
       await key(fixture, 'PageUp');
       expect(fixture.componentInstance.value()).toBe(150);
 
-      // PageDown był w nazwie tego testu, a nie w jego treści, do 2026-08-06:
-      // przebieg mutacyjny pokazał całą gałąź jako niepokrytą (`lesson-57`).
+      // PageDown was in this test's name and not in its body until 2026-08-06: the
+      // mutation run showed the whole branch as uncovered (`lesson-57`).
       await key(fixture, 'PageDown');
       expect(fixture.componentInstance.value()).toBe(100);
     });
 
-    it('klawisz spoza obsługiwanych nie rusza wartości ani zdarzenia', async () => {
+    it('a key outside the handled ones moves neither the value nor the event', async () => {
       const fixture = await render(Host);
       fixture.componentInstance.value.set(7);
       await fixture.whenStable();
@@ -406,15 +406,15 @@ describe('PctNumber', () => {
       await fixture.whenStable();
 
       expect(fixture.componentInstance.value()).toBe(7);
-      // Gałąź `default` ma oddać klawisz przeglądarce — inaczej pole przestaje
-      // przyjmować cyfry, bo `preventDefault` zjada każde naciśnięcie.
+      // The `default` branch has to hand the key back to the browser — otherwise the
+      // field stops taking digits, because `preventDefault` eats every press.
       expect(event.defaultPrevented).toBe(false);
     });
 
-    // Pole puste: krok musi mieć od czego wyjść, a kolejność odniesień
-    // (min, potem max, potem zero) jest tu obietnicą — pierwsza strzałka ma
-    // wejść W zakres, a nie zacząć od zera i zostać do niego domkniętą.
-    it('krok bez wartości wychodzi od min', async () => {
+    // An empty field: the step needs something to start from, and the order of the
+    // references (min, then max, then zero) is a promise here — the first arrow is to
+    // land IN the range, not start at zero and be clamped back to it.
+    it('a step with no value starts from min', async () => {
       const fixture = await render(Host);
       fixture.componentInstance.min.set(10);
       await fixture.whenStable();
@@ -423,7 +423,7 @@ describe('PctNumber', () => {
       expect(fixture.componentInstance.value()).toBe(11);
     });
 
-    it('krok bez wartości i bez min wychodzi od max', async () => {
+    it('a step with no value and no min starts from max', async () => {
       const fixture = await render(Host);
       fixture.componentInstance.max.set(50);
       await fixture.whenStable();
@@ -432,14 +432,14 @@ describe('PctNumber', () => {
       expect(fixture.componentInstance.value()).toBe(49);
     });
 
-    it('krok bez wartości i bez granic wychodzi od zera', async () => {
+    it('a step with no value and no bounds starts from zero', async () => {
       const fixture = await render(Host);
 
       await key(fixture, 'ArrowUp');
       expect(fixture.componentInstance.value()).toBe(1);
     });
 
-    it('Home i End skaczą do granic', async () => {
+    it('Home and End jump to the bounds', async () => {
       const fixture = await render(Host);
       fixture.componentInstance.min.set(1);
       fixture.componentInstance.max.set(99);
@@ -452,13 +452,13 @@ describe('PctNumber', () => {
       expect(fixture.componentInstance.value()).toBe(1);
     });
 
-    it('Home i End bez granic nie robią nic', async () => {
+    it('Home and End with no bounds do nothing', async () => {
       const fixture = await render(Host);
       fixture.componentInstance.value.set(5);
       await fixture.whenStable();
 
-      // Bez `min`/`max` nie ma dokąd skoczyć — klawisz ma zostać oddany
-      // przeglądarce (w polu tekstowym przesuwa karetkę), a nie zjedzony.
+      // With no `min`/`max` there is nowhere to jump — the key is to be handed back
+      // to the browser (in a text field it moves the caret), not eaten.
       const home = new KeyboardEvent('keydown', {
         key: 'Home',
         cancelable: true,
@@ -478,7 +478,7 @@ describe('PctNumber', () => {
       expect(end.defaultPrevented).toBe(false);
     });
 
-    it('krok wychodzi od tego, co użytkownik wpisał, a nie od zatwierdzonej wartości', async () => {
+    it('a step starts from what the user typed, not from the committed value', async () => {
       const fixture = await render(Host);
       fixture.componentInstance.value.set(1);
       await fixture.whenStable();
@@ -490,7 +490,7 @@ describe('PctNumber', () => {
       expect(inputOf(fixture).value).toBe('51');
     });
 
-    it('readonly blokuje krokowanie', async () => {
+    it('readonly blocks stepping', async () => {
       const fixture = await render(Host);
       fixture.componentInstance.value.set(5);
       await fixture.whenStable();
@@ -503,8 +503,8 @@ describe('PctNumber', () => {
     });
   });
 
-  describe('dostępność', () => {
-    it('jest spinbuttonem z opisem wartości', async () => {
+  describe('accessibility', () => {
+    it('is a spinbutton with a described value', async () => {
       const fixture = await render(Host);
       fixture.componentInstance.maxFrac.set(2);
       fixture.componentInstance.min.set(0);
@@ -514,16 +514,16 @@ describe('PctNumber', () => {
 
       const el = inputOf(fixture);
       expect(el.getAttribute('role')).toBe('spinbutton');
-      // Wartość surowa dla technologii, sformatowana dla czytnika.
+      // The raw value for the technology, the formatted one for the reader.
       expect(el.getAttribute('aria-valuenow')).toBe('1234.5');
       expect(el.getAttribute('aria-valuetext')).toBe('1\u00a0234,5');
       expect(el.getAttribute('aria-valuemin')).toBe('0');
       expect(el.getAttribute('aria-valuemax')).toBe('1000');
     });
 
-    it('bez ani jednego wiązania jest pustym, sprawnym polem', async () => {
-      // Wartości domyślne wejść są kontraktem tak samo jak same wejścia,
-      // a każdy test podający je jawnie mierzy własne wiązanie, nie domyślną.
+    it('with not one binding it is an empty, working field', async () => {
+      // The input defaults are a contract just as much as the inputs are, and every
+      // test that passes them explicitly measures its own binding, not the default.
       const fixture = await render(BareHost);
       const el = inputOf(fixture);
 
@@ -536,12 +536,12 @@ describe('PctNumber', () => {
       expect(el.getAttribute('aria-valuemin')).toBeNull();
       expect(el.getAttribute('aria-valuemax')).toBeNull();
 
-      // Domyślny krok to jeden, domyślnie bez ułamków.
+      // The default step is one, with no fractions by default.
       await key(fixture, 'ArrowUp');
       expect(el.value).toBe('1');
     });
 
-    it('stan błędu zapala się dopiero po dotknięciu', async () => {
+    it('the error state lights up only after a touch', async () => {
       const fixture = await render(InvalidHost);
       const el = inputOf(fixture);
 
@@ -554,7 +554,7 @@ describe('PctNumber', () => {
       expect(el.getAttribute('aria-invalid')).toBe('true');
     });
 
-    it('puste pole nie ma aria-valuenow', async () => {
+    it('an empty field has no aria-valuenow', async () => {
       const fixture = await render(Host);
       const el = inputOf(fixture);
 
@@ -562,7 +562,7 @@ describe('PctNumber', () => {
       expect(el.hasAttribute('aria-valuetext')).toBe(false);
     });
 
-    it('tryb klawiatury zależy od dopuszczonych ułamków', async () => {
+    it('the keyboard mode follows the fractions allowed', async () => {
       const fixture = await render(Host);
       expect(inputOf(fixture).getAttribute('inputmode')).toBe('numeric');
 
@@ -572,8 +572,8 @@ describe('PctNumber', () => {
     });
   });
 
-  describe('w obudowie pct-field', () => {
-    it('etykieta obudowy wskazuje pole, a podpowiedź je opisuje', async () => {
+  describe('inside the pct-field wrapper', () => {
+    it('the wrapper label points at the field and the hint describes it', async () => {
       const fixture = await render(NumberInFieldHost);
       const el = inputOf(fixture);
       const label = fixture.nativeElement.querySelector(
@@ -587,7 +587,7 @@ describe('PctNumber', () => {
       expect(el.getAttribute('aria-describedby')).toContain(hint.id);
     });
 
-    it('dostaje ramkę pola (wariant boxed)', async () => {
+    it('gets the field border (the boxed appearance)', async () => {
       const fixture = await render(NumberInFieldHost);
       const field = fixture.nativeElement.querySelector('pct-field');
 
@@ -596,22 +596,22 @@ describe('PctNumber', () => {
   });
 
   describe('signal forms', () => {
-    it('pokazuje sformatowaną wartość początkową modelu', async () => {
+    it('shows the formatted initial value of the model', async () => {
       const fixture = await render(SignalFormHost);
 
-      // Regresja: `FormField` dostarcza NgControl (interop dla CVA), więc
-      // heurystyka „NgControl => ktoś inny pisze do DOM" wykluczała też signal
-      // forms, choć te przy własnej kontrolce ustawiają tylko `value`
+      // A regression: `FormField` supplies NgControl (CVA interop), so the heuristic
+      // „NgControl => somebody else writes to the DOM" ruled out signal forms as well,
+      // though those, with a control of their own, only set `value`
       // (lesson-26).
       expect(inputOf(fixture).value).toBe('12\u00a0345');
     });
 
-    it('granice bierze z walidatorów schematu, nie z szablonu', async () => {
+    it('takes the bounds from the schema validators, not from the template', async () => {
       const fixture = await render(SignalFormHost);
       const el = inputOf(fixture);
 
-      // W szablonie nie ma [min]/[max] — należą do kontraktu FormUiControl,
-      // więc wypełnia je dyrektywa na podstawie min()/max() ze schematu.
+      // There is no [min]/[max] in the template — they belong to the FormUiControl
+      // contract, so the directive fills them from min()/max() in the schema.
       expect(el.getAttribute('aria-valuemin')).toBe('1');
       expect(el.getAttribute('aria-valuemax')).toBe('500');
 
@@ -620,7 +620,7 @@ describe('PctNumber', () => {
       expect(fixture.componentInstance.model().seats).toBe(500);
     });
 
-    it('focus() i reset() są tym, po co sięgają signal forms', async () => {
+    it('focus() and reset() are what signal forms reach for', async () => {
       const fixture = await render(SignalFormHost);
       const dyrektywa = fixture.debugElement
         .query((d) => d.nativeElement.tagName === 'INPUT')
@@ -636,16 +636,16 @@ describe('PctNumber', () => {
     });
   });
 
-  describe('ostrzeżenia deweloperskie', () => {
-    it('klasyczne formularze przejmują zapis do DOM — dyrektywa mówi o tym głośno', async () => {
+  describe('developer warnings', () => {
+    it('classic forms take over writing to the DOM — the directive says so out loud', async () => {
       const warn = vi
         .spyOn(console, 'warn')
         .mockImplementation(() => undefined);
       try {
         await render(ClassicFormHost);
         expect(warn).toHaveBeenCalledTimes(1);
-        // Komunikat ma nazwać wadę ORAZ wskazać wyjście — samo „nie rób tak"
-        // zostawia czytelnika w tym samym miejscu, w którym go zastało.
+        // The message has to name the defect AND point at the way out — a bare „do
+        // not do this" leaves the reader where it found them.
         expect(String(warn.mock.calls[0][0])).toContain(
           'Classic forms ([formControl], [(ngModel)]) take over writing ' +
             'the value and break locale formatting. Use signal forms ' +
@@ -656,15 +656,15 @@ describe('PctNumber', () => {
       }
     });
 
-    it('type="number" gubi lokalny separator — dyrektywa mówi o tym głośno', async () => {
+    it('type="number" loses the local separator — the directive says so out loud', async () => {
       const warn = vi
         .spyOn(console, 'warn')
         .mockImplementation(() => undefined);
       try {
         await render(NumberTypeHost);
         expect(warn).toHaveBeenCalledTimes(1);
-        // Komunikat ma NAZWAĆ zastany typ, bo inaczej nie odróżnia
-        // `type="number"` od `type="email"` i nie mówi, co poprawić.
+        // The message has to NAME the type it found, because otherwise it does not
+        // tell `type="number"` from `type="email"` and does not say what to fix.
         expect(String(warn.mock.calls[0][0])).toBe(
           '[pctNumber] Expected type="text" (the control parses numbers per ' +
             'locale itself), but got type="number".',
@@ -674,7 +674,7 @@ describe('PctNumber', () => {
       }
     });
 
-    it('poprawne użycie milczy', async () => {
+    it('correct use stays silent', async () => {
       const warn = vi
         .spyOn(console, 'warn')
         .mockImplementation(() => undefined);

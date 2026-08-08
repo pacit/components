@@ -301,8 +301,8 @@ DI or are stateless.
 
 **Gate:** `apps/sandbox-e2e/src/hydration.spec.ts` — the check sits in the `visit()` helper,
 so it covers **every** view at once
-**Control:** `hydration.spec.ts › „bramka faktycznie wykrywa błąd hydracji (kontrola
-bramki)"`
+**Control:** `hydration.spec.ts › „the gate really does detect a hydration error (a
+control of the gate)"`
 **Lessons:** [`lesson-30`](../lessons.md#lesson-30), [`lesson-31`](../lessons.md#lesson-31)
 
 ---

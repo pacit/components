@@ -2,12 +2,12 @@ import { expect, test } from '@playwright/test';
 import { boxOf, visit } from './support/dom';
 
 /**
- * Wielkość kontrolki jest jedną osią dla całej biblioteki (req-api-size): wiersz
- * pola i przycisk tej samej wielkości mają **tę samą** wysokość, bo obie biorą
- * ją z tokenu `--pct-control-height-*`, a nie z sumy paddingu i wysokości linii.
+ * The size of a control is one axis for the whole library (req-api-size): a field
+ * row and a button of the same size have **the same** height, because both take it
+ * from the `--pct-control-height-*` token, not from padding plus line height.
  *
- * Test mierzy realny layout w przeglądarce — jedyny wiarygodny dowód dla styli
- * (lesson-13); w jsdom nie ma czego mierzyć.
+ * The test measures real layout in a browser — the only credible proof for styles
+ * (lesson-13); in jsdom there is nothing to measure.
  */
 const SIZES = [
   { size: 'sm', height: 28, fontSize: '13px' },
@@ -15,13 +15,13 @@ const SIZES = [
   { size: 'lg', height: 44, fontSize: '16px' },
 ] as const;
 
-test.describe('Wielkości — wspólna oś pola i przycisku', () => {
+test.describe('Sizes — one axis for the field and the button', () => {
   test.beforeEach(async ({ page }) => {
     await visit(page, '/size');
   });
 
   for (const { size, height, fontSize } of SIZES) {
-    test(`pole i przycisk w wielkości ${size} mają tę samą wysokość`, async ({
+    test(`the field and the button at size ${size} have the same height`, async ({
       page,
     }) => {
       const row = page
@@ -33,16 +33,16 @@ test.describe('Wielkości — wspólna oś pola i przycisku', () => {
       const buttonBox = await boxOf(button);
 
       expect(rowBox.height).toBeCloseTo(buttonBox.height, 1);
-      // Wartość wprost, nie tylko równość: gdyby oba spadły do wysokości linii
-      // tekstu, równość nadal by zachodziła, a kontrolki byłyby za niskie.
+      // The value outright, not equality alone: had both dropped to the text line
+      // height, equality would still hold and the controls would be too short.
       expect(rowBox.height).toBe(height);
     });
 
-    test(`pole z listą w wielkości ${size} trzyma tę samą wysokość i rozmiar tekstu`, async ({
+    test(`a field with a list at size ${size} keeps the same height and text size`, async ({
       page,
     }) => {
-      // Select w obudowie oddaje jej wielkość — inaczej dwa `size` w jednym polu
-      // dawałyby ramkę jednej wielkości i tekst innej.
+      // A select inside the wrapper gives its size up to it — otherwise two `size`
+      // values in one field would give a border of one size and text of another.
       const field = page.getByTestId(`size-select-${size}`);
       const row = field.locator('[data-pct-part="field-row"]');
       const trigger = field.locator('[data-pct-part="trigger"]');
@@ -53,12 +53,12 @@ test.describe('Wielkości — wspólna oś pola i przycisku', () => {
   }
 
   for (const { size, height } of SIZES) {
-    test(`pole z dekoracją w wielkości ${size} nie rozpycha wiersza`, async ({
+    test(`a field with an affix at size ${size} does not stretch the row`, async ({
       page,
     }) => {
-      // Dekoracja (jednostka w slocie suffix) leży w środku ramki, więc nie ma
-      // prawa zmienić jej wysokości — inaczej pole z jednostką odstawałoby
-      // od pola bez niej i od przycisku.
+      // The affix (a unit in the suffix slot) lies inside the border, so it has no
+      // right to change its height — otherwise a field with a unit would stand out
+      // from one without it and from the button.
       const row = page
         .getByTestId(`size-number-${size}`)
         .locator('[data-pct-part="field-row"]');
@@ -67,11 +67,11 @@ test.describe('Wielkości — wspólna oś pola i przycisku', () => {
   }
 
   /**
-   * Wariant `bare` (checkbox, grupa radiów) celowo NIE wchodzi na wspólną oś:
-   * bez ramki nie ma czego zgrywać z przyciskiem, a wymuszona wysokość
-   * dokładałaby tym kontrolkom pustego miejsca (req-api-size).
+   * The `bare` appearance (a checkbox, a radio group) deliberately does NOT join
+   * the shared axis: with no border there is nothing to line up with the button, and
+   * a forced height would add empty space to those controls (req-api-size).
    */
-  test('wariant bare nie skaluje wysokości, ale trzyma próg dotyku', async ({
+  test('the bare appearance does not scale the height but keeps the touch threshold', async ({
     page,
   }) => {
     for (const { size, height } of SIZES) {
@@ -81,13 +81,13 @@ test.describe('Wielkości — wspólna oś pola i przycisku', () => {
         bare.locator('[data-pct-part="field-control"]'),
       );
 
-      // Ta sama wysokość niezależnie od wielkości — to `--pct-target-min`,
-      // a nie `--pct-control-height-*`.
+      // The same height whatever the size — that is `--pct-target-min`,
+      // not `--pct-control-height-*`.
       expect(row.height).toBe(24);
       expect(control.height).toBeGreaterThanOrEqual(24);
 
-      // Każda wielkość z osi jest wyższa niż próg dotyku (28/36/44 > 24), więc
-      // różnica musi być widoczna zawsze — bez warunku w teście.
+      // Every size on the axis is taller than the touch threshold (28/36/44 > 24),
+      // so the difference has to show always — with no condition in the test.
       const boxed = await boxOf(
         page
           .getByTestId(`size-field-${size}`)
@@ -98,7 +98,7 @@ test.describe('Wielkości — wspólna oś pola i przycisku', () => {
     }
   });
 
-  test('wielkość skaluje też tekst pola razem z przyciskiem', async ({
+  test('the size scales the field text along with the button', async ({
     page,
   }) => {
     for (const { size, fontSize } of SIZES) {
@@ -112,11 +112,11 @@ test.describe('Wielkości — wspólna oś pola i przycisku', () => {
     }
   });
 
-  test('każda wielkość spełnia próg obszaru dotyku (SC 2.5.8)', async ({
+  test('every size meets the touch-area threshold (SC 2.5.8)', async ({
     page,
   }) => {
-    // Najmniejsza wielkość jest tu progiem: 28 px ramki to 26 px kolumny
-    // kontrolki, wciąż powyżej 24 px (req-a11y-touch).
+    // The smallest size is the threshold here: a 28 px border is a 26 px control
+    // column, still above 24 px (req-a11y-touch).
     for (const { size } of SIZES) {
       const control = page
         .getByTestId(`size-field-${size}`)

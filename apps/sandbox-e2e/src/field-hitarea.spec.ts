@@ -2,33 +2,37 @@ import { expect, test } from '@playwright/test';
 import { boxOf, visit } from './support/dom';
 
 /**
- * Regresja: padding ramki i wyśrodkowanie w pionie tworzyły „martwą strefę" —
- * kursor był wewnątrz pola, ale kliknięcie nie ustawiało fokusu. Testy klikają
- * w konkretne punkty tej strefy, liczone z realnego layoutu.
+ * A regression: the border padding and the vertical centring made a „dead zone" —
+ * the cursor was inside the field, but a click set no focus. The tests click on
+ * specific points of that zone, computed from the real layout.
  */
-test.describe('PctField — obszar klikalny bez martwej strefy', () => {
+test.describe('PctField — a clickable area with no dead zone', () => {
   test.beforeEach(async ({ page }) => {
     await visit(page, '/field');
   });
 
-  test('kliknięcie w lewy padding ramki fokusuje pole', async ({ page }) => {
-    // Pole z dekoracją `inset`: padding krawędzi należy do slotu dekoracji, ale
-    // ta leży na powierzchni pola, więc klik w niego trafia w kontrolkę.
+  test('a click on the left border padding focuses the field', async ({
+    page,
+  }) => {
+    // A field with an `inset` affix: the edge padding belongs to the affix slot, but
+    // the affix lies on the field surface, so a click on it reaches the control.
     const field = page.getByTestId('field-search');
     const row = field.locator('[data-pct-part="field-row"]');
     const input = field.locator('input');
 
-    // mouse.click() używa współrzędnych widoku i sam nie przewija — inaczej
-    // klik trafia poza ekran, w <html>.
+    // mouse.click() uses viewport coordinates and does not scroll on its own —
+    // otherwise the click lands off screen, on <html>.
     await row.scrollIntoViewIfNeeded();
     const box = await boxOf(row);
-    // 3 px od lewej krawędzi — obszar paddingu, przed dekoracją prefix.
+    // 3 px from the left edge — the padding area, before the prefix affix.
     await page.mouse.click(box.x + 3, box.y + box.height / 2);
 
     await expect(input).toBeFocused();
   });
 
-  test('kliknięcie u góry i u dołu ramki fokusuje pole', async ({ page }) => {
+  test('a click at the top and at the bottom of the border focuses the field', async ({
+    page,
+  }) => {
     const field = page.getByTestId('field-price');
     const row = field.locator('[data-pct-part="field-row"]');
     const input = field.locator('input');
@@ -45,7 +49,7 @@ test.describe('PctField — obszar klikalny bez martwej strefy', () => {
     await expect(input).toBeFocused();
   });
 
-  test('kliknięcie w dekorację inset fokusuje pole', async ({ page }) => {
+  test('a click on an inset affix focuses the field', async ({ page }) => {
     const field = page.getByTestId('field-search');
     const input = field.locator('input');
 
@@ -53,9 +57,11 @@ test.describe('PctField — obszar klikalny bez martwej strefy', () => {
     await expect(input).toBeFocused();
   });
 
-  test('kolumny szczelnie kafelkują wnętrze ramki', async ({ page }) => {
-    // Sedno poprawki: rząd nie ma własnego paddingu, więc nie ma w nim pasa,
-    // który nie należy do żadnej kolumny. Wcześniej było to ~60% powierzchni.
+  test('the columns tile the inside of the border with no gaps', async ({
+    page,
+  }) => {
+    // The heart of the fix: the row has no padding of its own, so there is no strip
+    // in it belonging to no column. It used to be ~60% of the area.
     const field = page.getByTestId('field-price');
     const row = await boxOf(field.locator('[data-pct-part="field-row"]'));
     const border = 1;
@@ -70,7 +76,7 @@ test.describe('PctField — obszar klikalny bez martwej strefy', () => {
       expect(column.y).toBeCloseTo(row.y + border, 0);
     }
 
-    // Kolumny stykają się bez luk i sięgają obu krawędzi wnętrza rzędu.
+    // The columns meet with no gaps and reach both edges of the row inside.
     expect(columns[0].x).toBeCloseTo(row.x + border, 0);
     expect(columns[1].x).toBeCloseTo(columns[0].x + columns[0].width, 0);
     expect(columns[2].x).toBeCloseTo(columns[1].x + columns[1].width, 0);
@@ -80,7 +86,7 @@ test.describe('PctField — obszar klikalny bez martwej strefy', () => {
     );
   });
 
-  test('kliknięcie w przycisk slotu nie przenosi fokusu na pole', async ({
+  test('a click on a slot button does not move focus to the field', async ({
     page,
   }) => {
     const field = page.getByTestId('field-price');
@@ -90,13 +96,13 @@ test.describe('PctField — obszar klikalny bez martwej strefy', () => {
     await expect(field.locator('input')).not.toBeFocused();
   });
 
-  test('cała ramka pokazuje kursor tekstowy', async ({ page }) => {
+  test('the whole border shows the text cursor', async ({ page }) => {
     await expect(
       page.getByTestId('field-price').locator('[data-pct-part="field-row"]'),
     ).toHaveCSS('cursor', 'text');
   });
 
-  test('pole z listą pokazuje kursor wskaźnika na całej ramce', async ({
+  test('a field with a list shows the pointer cursor over the whole border', async ({
     page,
   }) => {
     await expect(
@@ -104,15 +110,17 @@ test.describe('PctField — obszar klikalny bez martwej strefy', () => {
     ).toHaveCSS('cursor', 'pointer');
   });
 
-  test('pole wyłączone nie zaprasza do pisania', async ({ page }) => {
+  test('a disabled field does not invite typing', async ({ page }) => {
     await expect(
       page.getByTestId('field-disabled').locator('[data-pct-part="field-row"]'),
     ).toHaveCSS('cursor', 'not-allowed');
   });
 
-  test('kliknięcie w padding pola z listą otwiera panel', async ({ page }) => {
-    // Kursor `pointer` nad całą ramką obiecuje otwarcie listy — obietnica musi
-    // obowiązywać też w paddingu, nie tylko nad samym triggerem.
+  test('a click on the padding of a field with a list opens the panel', async ({
+    page,
+  }) => {
+    // The `pointer` cursor over the whole border promises the list will open — and
+    // the promise has to hold in the padding too, not over the trigger alone.
     const field = page.getByTestId('field-country');
     const row = field.locator('[data-pct-part="field-row"]');
     const trigger = field.locator('[data-pct-part="trigger"]');
@@ -125,11 +133,9 @@ test.describe('PctField — obszar klikalny bez martwej strefy', () => {
     await expect(page.locator('[data-pct-part="panel"]')).toBeVisible();
   });
 
-  test('dekoracja `fill` wypełnia swój slot co do piksela', async ({
-    page,
-  }) => {
-    // Pas wokół dekoracji, która sama jest powierzchnią, wyglądałby na jej
-    // część, a klik w niego trafiałby w pole — slot nie zostawia takiego pasa.
+  test('a `fill` affix fills its slot to the pixel', async ({ page }) => {
+    // A strip around an affix that is a surface itself would look like part of it
+    // while a click on it reached the field — the slot leaves no such strip.
     const field = page.getByTestId('field-search');
     const slot = await boxOf(field.locator('[data-pct-part="field-suffix"]'));
     const button = await boxOf(field.getByTestId('field-search-submit'));
@@ -139,7 +145,7 @@ test.describe('PctField — obszar klikalny bez martwej strefy', () => {
     expect(button.x).toBeCloseTo(slot.x, 0);
   });
 
-  test('dekoracja `inset` jest mniejsza od slotu, a pas wokół niej należy do pola', async ({
+  test('an `inset` affix is smaller than its slot, and the strip around it belongs to the field', async ({
     page,
   }) => {
     const field = page.getByTestId('field-price');
@@ -149,15 +155,15 @@ test.describe('PctField — obszar klikalny bez martwej strefy', () => {
 
     expect(button.height).toBeLessThan((await boxOf(slot)).height);
     await expect(clear).toHaveCSS('cursor', 'pointer');
-    // Pas wokół przycisku obiecuje to, co robi klik w niego: fokus kontrolki.
+    // The strip around the button promises what a click on it does: control focus.
     await expect(slot).toHaveCSS('cursor', 'text');
   });
 
-  test('dekoracja `fill` nie rozpycha wiersza ponad wysokość pola', async ({
+  test('a `fill` affix does not stretch the row past the field height', async ({
     page,
   }) => {
-    // Przycisk wspawany w slot wnosiłby własną wysokość minimalną, równą
-    // wysokości pola tej samej wielkości — wiersz urósłby o grubość ramki.
+    // A button welded into the slot would bring its own min-height, equal to the
+    // height of a field of the same size — the row would grow by the border width.
     const plain = await boxOf(
       page.getByTestId('field-email').locator('[data-pct-part="field-row"]'),
     );
@@ -168,11 +174,11 @@ test.describe('PctField — obszar klikalny bez martwej strefy', () => {
     expect(withFill.height).toBeCloseTo(plain.height, 0);
   });
 
-  test('dekoracja `inset` dziedziczy kursor pola i przekazuje mu klik', async ({
+  test('an `inset` affix inherits the field cursor and hands it the click', async ({
     page,
   }) => {
-    // Ikona lupy nie jest celem kliknięcia — klik w nią fokusuje kontrolkę,
-    // więc kursor ma mówić to samo co reszta ramki.
+    // The magnifier icon is no click target — a click on it focuses the control, so
+    // the cursor has to say the same thing as the rest of the border.
     const field = page.getByTestId('field-search');
 
     await expect(field.locator('[data-pct-part="field-prefix"]')).toHaveCSS(
@@ -184,11 +190,11 @@ test.describe('PctField — obszar klikalny bez martwej strefy', () => {
     await expect(field.locator('input')).toBeFocused();
   });
 
-  test('dekoracja `fill` ma własny kursor i nie oddaje kliknięcia polu', async ({
+  test('a `fill` affix has a cursor of its own and hands the field no click', async ({
     page,
   }) => {
-    // Kafelek „PLN" jest własną powierzchnią: nic nie robi, więc nie zaprasza
-    // kursorem do pisania i nie przenosi fokusu na kontrolkę.
+    // The „PLN" tile is a surface of its own: it does nothing, so its cursor invites
+    // no typing and it moves no focus to the control.
     const field = page.getByTestId('field-price');
     const unit = field.getByTestId('field-price-unit');
 
@@ -198,7 +204,9 @@ test.describe('PctField — obszar klikalny bez martwej strefy', () => {
     await expect(field.locator('input')).not.toBeFocused();
   });
 
-  test('dekoracja `fill` sięga krawędzi wnętrza ramki', async ({ page }) => {
+  test('a `fill` affix reaches the edge of the border inside', async ({
+    page,
+  }) => {
     const field = page.getByTestId('field-price');
     const row = await boxOf(field.locator('[data-pct-part="field-row"]'));
     const unit = await boxOf(field.getByTestId('field-price-unit'));

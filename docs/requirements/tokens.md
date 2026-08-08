@@ -327,8 +327,8 @@ explicit declaration gets the dark theme out of the box. The `:not([data-theme])
 makes the system preference **a default, not an order**.
 
 **Gate:** `apps/sandbox-e2e/src/preferences.spec.ts`
-**Control:** `preferences.spec.ts › „bez preferencji ciemnej :root zostaje jasny
-(odniesienie)"` — the negative control is **a separate test**, not an assertion inside the
+**Control:** `preferences.spec.ts › „with no dark preference :root stays light (the
+reference)"` — the negative control is **a separate test**, not an assertion inside the
 test proper
 **Lessons:** [`lesson-38`](../lessons.md#lesson-38)
 

@@ -2,16 +2,16 @@ import { expect, test } from '@playwright/test';
 import { visit } from './support/dom';
 
 /**
- * Integracja kontrolek z signal forms — kilka różnych kontrolek pod jednym
- * schematem. Test siedzi na widoku „wszystko naraz", bo sprawdza to, czego nie
- * widać w widoku pojedynczego komponentu: stan całego formularza.
+ * Controls integrated with signal forms — several different controls under one
+ * schema. The test sits on the „everything at once" view, because it checks what a
+ * single-component view cannot show: the state of the whole form.
  */
-test.describe('Formularz — kontrolki pod jednym schematem', () => {
+test.describe('A form — controls under one schema', () => {
   test.beforeEach(async ({ page }) => {
     await visit(page, '/all');
   });
 
-  test('formularz staje się poprawny dopiero po wypełnieniu wszystkich wymaganych pól', async ({
+  test('the form turns valid only once every required field is filled', async ({
     page,
   }) => {
     const submit = page.getByTestId('submit');
@@ -21,14 +21,14 @@ test.describe('Formularz — kontrolki pod jednym schematem', () => {
       .getByTestId('field-email')
       .locator('input')
       .fill('marek@pacit.pl');
-    await expect(submit).toBeDisabled(); // brak planu i zgody
+    await expect(submit).toBeDisabled(); // no plan and no consent
 
     await page
       .getByTestId('radio-plan')
       .locator('pct-radio', { hasText: 'Pro' })
       .locator('input')
       .check();
-    await expect(submit).toBeDisabled(); // brak kraju i zgody
+    await expect(submit).toBeDisabled(); // no country and no consent
 
     await page
       .getByTestId('select-country')
@@ -37,7 +37,7 @@ test.describe('Formularz — kontrolki pod jednym schematem', () => {
     await page
       .locator('[data-pct-part="option"]', { hasText: 'Polska' })
       .click();
-    await expect(submit).toBeDisabled(); // brak zgody
+    await expect(submit).toBeDisabled(); // no consent
 
     await page.getByTestId('checkbox-terms').locator('input').check();
     await expect(submit).toBeEnabled();

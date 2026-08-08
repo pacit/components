@@ -3,15 +3,17 @@ import { visit } from './support/dom';
 import { SBX_ROUTES } from './support/views';
 
 /**
- * Powłoka sandboxa i karta demonstracyjna (`sbx-demo`). Sprawdzane w
- * przeglądarce, bo cała rzecz stoi na kaskadzie CSS custom properties —
- * jsdom nie odpowie, jaką wartość ma token w danym poddrzewie (lesson-13).
+ * The sandbox shell and the demo card (`sbx-demo`). Checked in a browser, because
+ * the whole thing stands on the cascade of CSS custom properties — jsdom will not
+ * say what value a token has in a given subtree (lesson-13).
  */
-test.describe('Powłoka sandboxa i karta demonstracyjna', () => {
+test.describe('The sandbox shell and the demo card', () => {
   const stage = (testid: string) =>
     `[data-testid="${testid}"] [data-testid="demo-stage"]`;
 
-  test('nawigacja przełącza widok i tytuł dokumentu', async ({ page }) => {
+  test('the navigation switches the view and the document title', async ({
+    page,
+  }) => {
     await visit(page);
     await expect(page.getByTestId('index-button')).toBeVisible();
 
@@ -22,11 +24,11 @@ test.describe('Powłoka sandboxa i karta demonstracyjna', () => {
   });
 
   /**
-   * Lista tras w `support/views.ts` jest kopią rejestru widoków aplikacji —
-   * ten test pilnuje, żeby kopia nie odstawała. Bez niego widok dodany
-   * w aplikacji, a pominięty w liście, po cichu traciłby audyt a11y.
+   * The route list in `support/views.ts` is a copy of the application's view
+   * registry — this test keeps the copy from drifting. Without it a view added in
+   * the application but left out of the list would quietly lose its a11y audit.
    */
-  test('nawigacja odpowiada dokładnie liście tras używanej przez testy', async ({
+  test('the navigation matches exactly the route list the tests use', async ({
     page,
   }) => {
     await visit(page);
@@ -38,15 +40,13 @@ test.describe('Powłoka sandboxa i karta demonstracyjna', () => {
     expect(hrefs.sort()).toEqual([...SBX_ROUTES].sort());
   });
 
-  test('strona wejściowa linkuje do każdego widoku poza sobą', async ({
-    page,
-  }) => {
+  test('the index page links to every view but itself', async ({ page }) => {
     await visit(page);
     const cards = page.locator('.index__card');
     await expect(cards).toHaveCount(SBX_ROUTES.length - 1);
   });
 
-  test('globalny przełącznik motywu przethemowuje powłokę, nie :root', async ({
+  test('the global theme switch re-themes the shell, not :root', async ({
     page,
   }) => {
     await visit(page, '/button');
@@ -78,11 +78,11 @@ test.describe('Powłoka sandboxa i karta demonstracyjna', () => {
   });
 
   /**
-   * Regresja na blok `[data-theme="light"]`: dopóki build emitował tylko dark,
-   * „jasny" był wyłącznie brakiem atrybutu, więc jasna karta wewnątrz ciemnej
-   * strony dziedziczyła ciemne wartości i nie miała czym ich cofnąć.
+   * A regression on the `[data-theme="light"]` block: as long as the build emitted
+   * dark alone, „light" was nothing but the absence of the attribute, so a light card
+   * inside a dark page inherited the dark values with nothing to undo them.
    */
-  test('jasna karta wewnątrz ciemnej strony wraca do wartości jasnych', async ({
+  test('a light card inside a dark page returns to the light values', async ({
     page,
   }) => {
     await visit(page, '/button');
@@ -102,8 +102,8 @@ test.describe('Powłoka sandboxa i karta demonstracyjna', () => {
     expect(await surfaceOf('demo-dark')).toBe('#0f172a');
     expect(await surfaceOf('demo-light')).toBe('#ffffff');
 
-    // Token KOMPONENTOWY też musi się cofnąć, nie tylko semantyczny
-    // (domknięcie przechodnie nadpisań, req-token-closure).
+    // The COMPONENT token has to be undone too, not the semantic one alone
+    // (the transitive closure of the overrides, req-token-closure).
     const buttonBg = await page
       .locator(`${stage('demo-light')} button[pctButton]`)
       .first()
@@ -111,7 +111,7 @@ test.describe('Powłoka sandboxa i karta demonstracyjna', () => {
     expect(buttonBg).toBe('rgb(37, 99, 235)'); // blue-600 = motyw jasny
   });
 
-  test('karta idzie za osią globalną, dopóki nie ma własnego ustawienia', async ({
+  test('a card follows the global axis until it has a setting of its own', async ({
     page,
   }) => {
     await visit(page, '/button');
@@ -134,7 +134,7 @@ test.describe('Powłoka sandboxa i karta demonstracyjna', () => {
       .check();
     await expect(solid).toHaveAttribute('data-pct-size', 'sm');
 
-    // Karta z własną osią wielkości w treści nie daje jej przestawiać.
+    // A card with a size axis of its own in its content will not let it be changed.
     await expect(
       page.getByTestId('demo-sizes').getByTestId('control-size'),
     ).toHaveCount(0);

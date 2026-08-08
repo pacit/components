@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { attrOf, boxOf, visit } from './support/dom';
 
-test.describe('PctSelect — combobox z panelem', () => {
+test.describe('PctSelect — a combobox with a panel', () => {
   test.beforeEach(async ({ page }) => {
     await visit(page, '/select');
   });
@@ -15,7 +15,7 @@ test.describe('PctSelect — combobox z panelem', () => {
   const options = (page: import('@playwright/test').Page) =>
     page.locator('[data-pct-part="option"]');
 
-  test('trigger realizuje wzorzec combobox', async ({ page }) => {
+  test('the trigger implements the combobox pattern', async ({ page }) => {
     const t = trigger(page);
     await expect(t).toHaveRole('combobox');
     await expect(t).toHaveAttribute('aria-haspopup', 'listbox');
@@ -24,12 +24,12 @@ test.describe('PctSelect — combobox z panelem', () => {
   });
 
   /**
-   * Napisy biblioteki są angielskie, a sandbox tłumaczy je przez
-   * `providePctTexts` (req-api-texts). Ten test pilnuje całego łańcucha —
-   * token DI, render serwerowy i hydracja — bo widoczny tu tekst zastępczy
-   * nie pada nigdzie w kodzie aplikacji poza konfiguracją providerów.
+   * The library texts are English and the sandbox translates them through
+   * `providePctTexts` (req-api-texts). This test watches the whole chain — the DI
+   * token, the server render and hydration — because the placeholder visible here
+   * appears nowhere in the application code outside the provider configuration.
    */
-  test('tekst zastępczy pochodzi z tłumaczenia aplikacji, nie z biblioteki', async ({
+  test('the placeholder comes from the application translation, not from the library', async ({
     page,
   }) => {
     await expect(
@@ -39,7 +39,7 @@ test.describe('PctSelect — combobox z panelem', () => {
     ).toHaveText('Wybierz…');
   });
 
-  test('kliknięcie otwiera panel, wybór zamyka i pokazuje etykietę', async ({
+  test('a click opens the panel; picking closes it and shows the label', async ({
     page,
   }) => {
     await trigger(page).click();
@@ -55,11 +55,11 @@ test.describe('PctSelect — combobox z panelem', () => {
   });
 
   /**
-   * W obudowie widoczną krawędzią jest ramka pola, a trigger stoi w kolumnie
-   * odsuniętej o padding — panel oparty o trigger byłby od pola węższy
-   * i przesunięty (lesson-35).
+   * Inside the wrapper the visible edge is the field border, and the trigger stands
+   * in a column set in by the padding — a panel anchored to the trigger would be
+   * narrower than the field and offset (lesson-35).
    */
-  test('w obudowie panel pokrywa się z ramką pola, nie z triggerem', async ({
+  test('inside the wrapper the panel lines up with the field border, not the trigger', async ({
     page,
   }) => {
     const row = page
@@ -67,7 +67,8 @@ test.describe('PctSelect — combobox z panelem', () => {
       .locator('[data-pct-part="field-row"]');
     const rowBox = await boxOf(row);
     const triggerBox = await boxOf(trigger(page));
-    // Założenie testu: trigger jest węższy od pola — inaczej test nic nie mierzy.
+    // The test assumes the trigger is narrower than the field — otherwise it
+    // measures nothing.
     expect(rowBox.width).toBeGreaterThan(triggerBox.width);
 
     await trigger(page).click();
@@ -77,7 +78,7 @@ test.describe('PctSelect — combobox z panelem', () => {
     expect(Math.abs(panelBox.x - rowBox.x)).toBeLessThanOrEqual(1);
   });
 
-  test('bez obudowy panel ma szerokość triggera — on jest tam ramką', async ({
+  test('with no wrapper the panel takes the trigger width — there the trigger is the border', async ({
     page,
   }) => {
     const t = trigger(page, 'select-bare');
@@ -89,7 +90,7 @@ test.describe('PctSelect — combobox z panelem', () => {
     expect(Math.abs(panelBox.x - triggerBox.x)).toBeLessThanOrEqual(1);
   });
 
-  test('panelWidth="auto" rozszerza panel do najdłuższej opcji', async ({
+  test('panelWidth="auto" widens the panel to the longest option', async ({
     page,
   }) => {
     const rowBox = await boxOf(
@@ -101,12 +102,12 @@ test.describe('PctSelect — combobox z panelem', () => {
     const panelBox = await boxOf(panel(page));
 
     expect(panelBox.width).toBeGreaterThan(rowBox.width);
-    // Opcje mieszczą się w jednej linii — po to jest to dopasowanie.
+    // The options fit on one line — that is what this fitting is for.
     const optionBox = await boxOf(options(page).nth(2));
     expect(optionBox.height).toBeLessThan(2 * rowBox.height);
   });
 
-  test('panelWidth wprost i panelAlign="end" przyklejają panel do prawej krawędzi pola', async ({
+  test('a literal panelWidth and panelAlign="end" pin the panel to the right edge of the field', async ({
     page,
   }) => {
     const rowBox = await boxOf(
@@ -124,10 +125,11 @@ test.describe('PctSelect — combobox z panelem', () => {
   });
 
   /**
-   * Panel jest dzieckiem `body`, więc dziedziczy pismo po nim, a nie po
-   * aplikacji — krój i wielkość musi dostać wprost z kontrolki (lesson-35).
+   * The panel is a child of `body`, so it inherits its type from there and not from
+   * the application — the family and the size have to come straight from the control
+   * (lesson-35).
    */
-  test('opcje piszą tym samym krojem i wielkością co trigger', async ({
+  test('the options are set in the same family and size as the trigger', async ({
     page,
   }) => {
     const t = trigger(page);
@@ -142,10 +144,10 @@ test.describe('PctSelect — combobox z panelem', () => {
   });
 
   /**
-   * Dla customowego listboxa nie ma natywnego odpowiednika, więc obsługa
-   * klawiatury jest nasza — te testy pilnują zgodności z wzorcem ARIA APG.
+   * A custom listbox has no native counterpart, so the keyboard handling is ours —
+   * these tests keep it in line with the ARIA APG pattern.
    */
-  test('klawiatura: strzałki, Home/End, Enter i aria-activedescendant', async ({
+  test('the keyboard: the arrows, Home/End, Enter and aria-activedescendant', async ({
     page,
   }) => {
     const t = trigger(page);
@@ -176,11 +178,11 @@ test.describe('PctSelect — combobox z panelem', () => {
     await expect(t).toBeFocused();
   });
 
-  test('klawiatura: strzałki pomijają wyłączoną opcję', async ({ page }) => {
+  test('the keyboard: the arrows skip a disabled option', async ({ page }) => {
     await trigger(page).focus();
     await page.keyboard.press('ArrowDown'); // Polska
     await page.keyboard.press('ArrowDown'); // Niemcy
-    await page.keyboard.press('ArrowDown'); // pomija Czechy -> Słowacja
+    await page.keyboard.press('ArrowDown'); // skips Czechy -> Słowacja
 
     await expect(
       options(page).filter({ hasText: 'Czechy' }),
@@ -191,7 +193,9 @@ test.describe('PctSelect — combobox z panelem', () => {
     );
   });
 
-  test('Escape zamyka panel, klik poza panelem też', async ({ page }) => {
+  test('Escape closes the panel, and so does a click outside it', async ({
+    page,
+  }) => {
     await trigger(page).focus();
     await page.keyboard.press('ArrowDown');
     await expect(panel(page)).toBeVisible();
@@ -204,10 +208,12 @@ test.describe('PctSelect — combobox z panelem', () => {
     await expect(panel(page)).toHaveCount(0);
   });
 
-  test('typeahead aktywuje opcję po pierwszych literach', async ({ page }) => {
+  test('the typeahead activates an option from its first letters', async ({
+    page,
+  }) => {
     await trigger(page).focus();
     await page.keyboard.press('ArrowDown');
-    await page.keyboard.press('s'); // Słowacja
+    await page.keyboard.press('s'); // Słowacja (the option label in the sandbox)
 
     await expect(options(page).filter({ hasText: 'Słowacja' })).toHaveAttribute(
       'data-pct-active',
@@ -216,11 +222,11 @@ test.describe('PctSelect — combobox z panelem', () => {
   });
 
   /**
-   * Panel renderuje się w nakładce CDK, czyli poza drzewem panelu ciemnego —
-   * motyw musi być przeniesiony jawnie, inaczej scoped theme (req-token-scoped)
-   * przestaje działać dla list rozwijanych.
+   * The panel renders in a CDK overlay, that is outside the tree of the dark panel —
+   * the theme has to be carried over explicitly, or a scoped theme
+   * (req-token-scoped) stops working for drop-down lists.
    */
-  test('panel dziedziczy scoped theme z otoczenia triggera', async ({
+  test('the panel inherits the scoped theme from around the trigger', async ({
     page,
   }) => {
     await trigger(page, 'select-scoped').click();
@@ -228,11 +234,11 @@ test.describe('PctSelect — combobox z panelem', () => {
     await expect(p).toBeVisible();
     await expect(p).toHaveAttribute('data-theme', 'dark');
 
-    // Tło panelu musi odpowiadać powierzchni motywu ciemnego, nie jasnego.
+    // The panel background has to match the dark theme surface, not the light one.
     await expect(p).toHaveCSS('background-color', 'rgb(15, 23, 42)');
   });
 
-  test('obszar klikalny triggera ma minimum 24 px wysokości', async ({
+  test('the clickable area of the trigger is at least 24 px tall', async ({
     page,
   }) => {
     const box = await boxOf(trigger(page));

@@ -2,18 +2,18 @@ import type { Locator, Page } from '@playwright/test';
 import type { PctCssVar } from '@pacit/tokens';
 
 /**
- * Odczyt wartości WYLICZONYCH przez przeglądarkę.
+ * Reading the values COMPUTED by the browser.
  *
- * Testy preferencji systemowych (`prefers-reduced-motion`, `prefers-color-scheme`,
- * `forced-colors`) nie mogą sprawdzać tego, co stoi w arkuszu — arkusz zawsze
- * zawiera obie gałęzie. Znaczenie ma dopiero to, którą z nich przeglądarka
- * faktycznie zastosowała, więc każde ustalenie w tych plikach jest pomiarem
- * `getComputedStyle`, nie lekturą źródła.
+ * The tests of the system preferences (`prefers-reduced-motion`, `prefers-color-scheme`,
+ * `forced-colors`) cannot check what stands in the stylesheet — the stylesheet
+ * always holds both branches. What matters is which of them the browser actually
+ * applied, so every finding in these files is a `getComputedStyle` measurement, not
+ * a reading of the source.
  *
- * Plik celowo nie ma w nazwie `.spec.`, więc Playwright go nie zbiera.
+ * The file deliberately has no `.spec.` in its name, so Playwright does not collect it.
  */
 
-/** Wartość wyliczona danej właściwości CSS. */
+/** The computed value of a given CSS property. */
 export function styleOf(locator: Locator, property: string): Promise<string> {
   return locator.evaluate(
     (el, prop) => getComputedStyle(el).getPropertyValue(prop).trim(),
@@ -22,19 +22,19 @@ export function styleOf(locator: Locator, property: string): Promise<string> {
 }
 
 /**
- * Wartość custom property odziedziczona w miejscu danego elementu.
+ * The value of a custom property as inherited at a given element.
  *
  * Nazwa tokenu jest typowana (`PctCssVar` z generowanego `tokens.ts`), a nie
- * dowolnym łańcuchem, bo `getPropertyValue` na nieistniejącej właściwości
- * zwraca **pusty łańcuch, nie błąd**. Test porównujący dwa takie odczyty
- * przechodzi wtedy na `'' === ''` i milczy o tym, że nie zmierzył niczego —
- * ta sama klasa cichej wady co `lesson-38`, tylko wywołana literówką.
+ * any string at all, because `getPropertyValue` on a property that does not exist
+ * returns **an empty string, not an error**. A test comparing two such readings then
+ * passes on `'' === ''` and says nothing about having measured nothing — the same
+ * class of silent defect as `lesson-38`, only brought on by a typo.
  */
 export function tokenOf(locator: Locator, token: PctCssVar): Promise<string> {
   return styleOf(locator, token);
 }
 
-/** Wartość custom property na `:root` — punkt odniesienia dla motywu strony. */
+/** The value of a custom property on `:root` — the reference point for the page theme. */
 export function rootToken(page: Page, token: PctCssVar): Promise<string> {
   return page.evaluate(
     (t) =>
@@ -44,19 +44,19 @@ export function rootToken(page: Page, token: PctCssVar): Promise<string> {
 }
 
 /**
- * Czas CSS w milisekundach. Przeglądarka normalizuje `150ms` do `0.15s`,
- * a `0.01ms` do `0.00001s`, więc porównywanie łańcuchów jest kruche —
+ * A CSS time in milliseconds. The browser normalises `150ms` to `0.15s` and
+ * `0.01ms` to `0.00001s`, so comparing strings is brittle —
  * interesuje nas liczba.
  */
 export function msOf(cssTime: string): number {
   const value = parseFloat(cssTime);
   if (Number.isNaN(value)) {
-    throw new Error(`Nie umiem odczytać czasu CSS z "${cssTime}".`);
+    throw new Error(`Cannot read a CSS time from "${cssTime}".`);
   }
   return cssTime.trim().endsWith('ms') ? value : value * 1000;
 }
 
-/** Czas pierwszej wartości z listy (np. `transition-duration` dla kilku właściwości). */
+/** The time of the first value on a list (`transition-duration` for several properties, say). */
 export async function firstDurationMs(
   locator: Locator,
   property: 'transition-duration' | 'animation-duration',
@@ -65,7 +65,7 @@ export async function firstDurationMs(
   return msOf(raw.split(',')[0]);
 }
 
-/** Nazwy kolorów systemowych używane przez bibliotekę w trybie forced-colors. */
+/** The system colour names the library uses in forced-colors mode. */
 export const SYSTEM_COLORS = [
   'Canvas',
   'CanvasText',
@@ -80,11 +80,11 @@ export const SYSTEM_COLORS = [
 export type SystemColor = (typeof SYSTEM_COLORS)[number];
 
 /**
- * Rozwiązuje słowa kluczowe palety systemowej do konkretnych `rgb(...)`.
+ * Resolves the system palette keywords to concrete `rgb(...)` values.
  *
- * Paleta zależy od motywu wysokiego kontrastu wybranego przez użytkownika, więc
- * test nie może zakładać żadnej wartości — musi ją odczytać z tej samej
- * przeglądarki, w której mierzy komponenty.
+ * The palette depends on the high-contrast theme the user picked, so a test cannot
+ * assume any value — it has to read it from the same browser in which it measures
+ * the components.
  */
 export async function systemColors(
   page: Page,

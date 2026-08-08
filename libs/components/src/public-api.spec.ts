@@ -7,29 +7,29 @@ import * as select from '@pacit/components/select';
 import * as primary from './index';
 
 /**
- * Ten plik istnieje po to, żeby raport pokrycia obejmował CAŁĄ bibliotekę, a nie
- * tylko tę jej część, którą ktoś już przetestował.
+ * This file exists so that the coverage report covers the WHOLE library, not
+ * only the part of it somebody has already tested.
  *
- * Bez niego pomiar liczy się na próbce dobranej przez samego mierzonego: v8 widzi
- * wyłącznie moduły, które faktycznie weszły do przebiegu, a `coverageInclude`
- * dokłada resztę tylko wtedy, gdy potrafi je sparsować — a nie potrafi, gdy plik
- * używa `import type` / `export type` (lesson-45). Efekt jest odwrotny do
- * intuicji: usunięcie testu potrafiło PODNIEŚĆ pokrycie, bo razem z testem
- * z raportu znikał cały nietestowany plik.
+ * Without it the measurement runs on a sample picked by the measured party: v8
+ * sees only the modules that actually entered the run, and `coverageInclude`
+ * adds the rest only when it can parse them — which it cannot when a file uses
+ * `import type` / `export type` (lesson-45). The effect is the opposite of the
+ * intuitive one: deleting a test could RAISE coverage, because the whole
+ * untested file left the report together with the test.
  *
- * Import każdej bramki wprowadza jej moduły do przebiegu, więc plik bez testu
- * trafia do raportu z pokryciem bliskim zeru zamiast wypaść z mianownika.
- * Dodanie entrypointu bez dopisania go tutaj zapala `check-coverage` (punkt 2),
- * więc nie jest to reguła, którą trzeba pamiętać.
+ * Importing every entrypoint brings its modules into the run, so a file with no
+ * test lands in the report near zero instead of dropping out of the denominator.
+ * Adding an entrypoint without listing it here fires `check-coverage` (point 2),
+ * so this is not a rule anybody has to remember.
  *
- * Przy okazji jest to test dymny publicznej powierzchni: każda bramka musi dać
- * się załadować i coś eksportować.
+ * In passing it is a smoke test of the public surface: every entrypoint has to
+ * load and export something.
  */
-describe('publiczna powierzchnia pakietu', () => {
-  const bramki = { primary, core, button, checkbox, field, radio, select };
+describe('the public surface of the package', () => {
+  const entrypoints = { primary, core, button, checkbox, field, radio, select };
 
-  for (const [nazwa, modul] of Object.entries(bramki))
-    it(`entrypoint ${nazwa} ładuje się i coś eksportuje`, () => {
-      expect(Object.keys(modul).length).toBeGreaterThan(0);
+  for (const [name, mod] of Object.entries(entrypoints))
+    it(`entrypoint ${name} loads and exports something`, () => {
+      expect(Object.keys(mod).length).toBeGreaterThan(0);
     });
 });

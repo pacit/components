@@ -6,14 +6,14 @@ test.describe('PctRadioGroup — signal forms', () => {
     await visit(page, '/radio');
   });
 
-  test('grupa ma rolę radiogroup i jest nazwana etykietą obudowy', async ({
+  test('the group has role radiogroup and is named by the wrapper label', async ({
     page,
   }) => {
     const group = page.getByTestId('radio-plan');
     await expect(group).toHaveRole('radiogroup');
 
-    // W obudowie etykietę renderuje pct-field; grupa wskazuje ją przez
-    // aria-labelledby, bo `<label for>` nie nazywa zbioru elementów.
+    // Inside the wrapper it is pct-field that renders the label; the group points
+    // at it through aria-labelledby, because `<label for>` names no set of elements.
     const labelId = await attrOf(
       page.getByTestId('field-plan').locator('[data-pct-part="field-label"]'),
       'id',
@@ -22,7 +22,7 @@ test.describe('PctRadioGroup — signal forms', () => {
     await expect(group.locator('[data-pct-part="group-label"]')).toHaveCount(0);
   });
 
-  test('kliknięcie w etykietę opcji wybiera ją i zaznacza kropkę', async ({
+  test('a click on an option label picks it and fills the dot', async ({
     page,
   }) => {
     const group = page.getByTestId('radio-plan');
@@ -41,11 +41,11 @@ test.describe('PctRadioGroup — signal forms', () => {
   });
 
   /**
-   * Kluczowy test: nawigacja strzałkami pochodzi od przeglądarki, bo opcje to
-   * natywne <input type="radio"> ze wspólnym `name`. Nie implementujemy
-   * własnego roving tabindex — ten test pilnuje, że tak zostaje.
+   * The key test: arrow navigation comes from the browser, because the options are
+   * native <input type="radio"> with a shared `name`. We implement no roving
+   * tabindex of our own — this test keeps it that way.
    */
-  test('strzałki przełączają opcje bez własnej implementacji (natywna grupa)', async ({
+  test('the arrows switch options with no implementation of ours (a native group)', async ({
     page,
   }) => {
     const group = page.getByTestId('radio-plan');
@@ -68,7 +68,7 @@ test.describe('PctRadioGroup — signal forms', () => {
     await expect(free).toBeFocused();
   });
 
-  test('strzałki pomijają wyłączoną opcję', async ({ page }) => {
+  test('the arrows skip a disabled option', async ({ page }) => {
     const group = page.getByTestId('radio-plan');
     const pro = group.locator('pct-radio', { hasText: 'Pro' }).locator('input');
     const enterprise = group
@@ -81,13 +81,11 @@ test.describe('PctRadioGroup — signal forms', () => {
     await page.keyboard.press('Space');
     await page.keyboard.press('ArrowDown');
 
-    // Enterprise jest wyłączone, więc nie może zostać wybrane.
+    // Enterprise is disabled, so it cannot be picked.
     await expect(enterprise).not.toBeChecked();
   });
 
-  test('cała grupa zajmuje jedno miejsce w kolejności Taba', async ({
-    page,
-  }) => {
+  test('the whole group takes one place in the tab order', async ({ page }) => {
     const group = page.getByTestId('radio-plan');
     const free = group
       .locator('pct-radio', { hasText: 'Darmowy' })
@@ -98,13 +96,15 @@ test.describe('PctRadioGroup — signal forms', () => {
     await page.keyboard.press('Space');
     await expect(free).toBeChecked();
 
-    // Tab wychodzi z grupy, nie przechodzi między opcjami.
+    // Tab leaves the group instead of moving between the options.
     await page.keyboard.press('Tab');
     await expect(free).not.toBeFocused();
     await expect(pro).not.toBeFocused();
   });
 
-  test('obszar klikalny opcji ma minimum 24x24 px', async ({ page }) => {
+  test('the clickable area of an option is at least 24x24 px', async ({
+    page,
+  }) => {
     const control = page
       .getByTestId('radio-plan')
       .locator('pct-radio')
@@ -116,7 +116,7 @@ test.describe('PctRadioGroup — signal forms', () => {
     expect(hit.height).toBeGreaterThanOrEqual(24);
   });
 
-  test('układ poziomy ustawia aria-orientation', async ({ page }) => {
+  test('a horizontal layout sets aria-orientation', async ({ page }) => {
     await expect(page.getByTestId('radio-horizontal')).toHaveAttribute(
       'aria-orientation',
       'horizontal',

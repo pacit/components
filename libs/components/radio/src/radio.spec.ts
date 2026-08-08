@@ -70,7 +70,7 @@ class Host {
 class SignalFormHost {
   model = signal({ plan: '' });
   f = form(this.model, (p) => {
-    required(p.plan, { message: 'Wybierz plan' });
+    required(p.plan, { message: 'Pick a plan' });
   });
 }
 
@@ -96,35 +96,35 @@ class NgModelHost {
   plan = 'pro';
 }
 
-interface Miasto {
+interface City {
   readonly id: number;
-  readonly nazwa: string;
+  readonly name: string;
 }
 
-const GDANSK: Miasto = { id: 1, nazwa: 'Gdańsk' };
-const KRAKOW: Miasto = { id: 2, nazwa: 'Kraków' };
+const LONDON: City = { id: 1, name: 'London' };
+const PARIS: City = { id: 2, name: 'Paris' };
 
 @Component({
   imports: [PctRadioGroup, PctRadio],
   template: `<pct-radio-group
-    [compareWith]="poId"
+    [compareWith]="byId"
     [emptyValue]="emptyValue"
     [(value)]="value"
   >
-    <pct-radio [value]="gdansk">Gdańsk</pct-radio>
-    <pct-radio [value]="krakow">Kraków</pct-radio>
+    <pct-radio [value]="london">London</pct-radio>
+    <pct-radio [value]="paris">Paris</pct-radio>
   </pct-radio-group>`,
 })
 class EntityHost {
-  readonly gdansk = GDANSK;
-  readonly krakow = KRAKOW;
-  emptyValue: Miasto | null = null;
-  /** Inna instancja niż opcja na liście — tożsamość ta sama. */
-  value = signal<Miasto | null>({ id: 2, nazwa: 'Kraków' });
-  poId = (a: Miasto, b: Miasto) => a.id === b.id;
+  readonly london = LONDON;
+  readonly paris = PARIS;
+  emptyValue: City | null = null;
+  /** A different instance than the option on the list — the same identity. */
+  value = signal<City | null>({ id: 2, name: 'Paris' });
+  byId = (a: City, b: City) => a.id === b.id;
 }
 
-// Dwie niezależne grupy — sprawdza, że nazwy nie kolidują.
+// Two independent groups — checks that the names do not collide.
 @Component({
   imports: [PctRadioGroup, PctRadio],
   template: `
@@ -150,7 +150,7 @@ describe('PctRadioGroup / PctRadio', () => {
     });
   });
 
-  it('host grupy ma rolę radiogroup i etykietę powiązaną przez aria-labelledby', async () => {
+  it('the group host has role radiogroup and a label bound through aria-labelledby', async () => {
     const fixture = await render(Host);
     const group = fixture.nativeElement.querySelector('pct-radio-group');
     const label = group.querySelector('[data-pct-part="group-label"]');
@@ -160,7 +160,7 @@ describe('PctRadioGroup / PctRadio', () => {
     expect(label.textContent?.trim()).toContain('Plan');
   });
 
-  it('wszystkie opcje dzielą wspólny atrybut name (natywna grupa)', async () => {
+  it('every option shares one name attribute (a native group)', async () => {
     const fixture = await render(Host);
     const names = new Set(radiosOf(fixture).map((r) => r.name));
 
@@ -168,7 +168,7 @@ describe('PctRadioGroup / PctRadio', () => {
     expect([...names][0]).toBeTruthy();
   });
 
-  it('dwie grupy na stronie mają różne nazwy i niezależny stan', async () => {
+  it('two groups on a page have different names and independent state', async () => {
     const fixture = await render(TwoGroupsHost);
     const [a1, a2, b1] = radiosOf(fixture);
 
@@ -185,7 +185,7 @@ describe('PctRadioGroup / PctRadio', () => {
     expect(fixture.componentInstance.b()).toBe('1');
   });
 
-  it('wybór opcji aktualizuje wartość grupy i odznacza pozostałe', async () => {
+  it('picking an option updates the group value and unchecks the rest', async () => {
     const fixture = await render(Host);
     const [free, pro] = radiosOf(fixture);
 
@@ -201,7 +201,7 @@ describe('PctRadioGroup / PctRadio', () => {
     expect(free.checked).toBe(false);
   });
 
-  it('wartość ustawiona z zewnątrz zaznacza właściwą opcję', async () => {
+  it('a value set from outside checks the right option', async () => {
     const fixture = await render(Host);
     fixture.componentInstance.value.set('pro');
     fixture.detectChanges();
@@ -212,7 +212,7 @@ describe('PctRadioGroup / PctRadio', () => {
     expect(free.checked).toBe(false);
   });
 
-  it('pojedyncza opcja może być wyłączona niezależnie od grupy', async () => {
+  it('a single option can be disabled independently of the group', async () => {
     const fixture = await render(Host);
     const [free, pro, enterprise] = radiosOf(fixture);
 
@@ -221,7 +221,7 @@ describe('PctRadioGroup / PctRadio', () => {
     expect(enterprise.disabled).toBe(true);
   });
 
-  it('wyłączenie grupy wyłącza wszystkie opcje', async () => {
+  it('disabling the group disables every option', async () => {
     const fixture = await render(Host);
     fixture.componentInstance.disabled.set(true);
     fixture.detectChanges();
@@ -230,7 +230,7 @@ describe('PctRadioGroup / PctRadio', () => {
     expect(radiosOf(fixture).every((r) => r.disabled)).toBe(true);
   });
 
-  it('readonly blokuje zmianę wyboru, ale opcje zostają fokusowalne', async () => {
+  it('readonly blocks changing the choice but the options stay focusable', async () => {
     const fixture = await render(Host);
     fixture.componentInstance.ro.set(true);
     fixture.detectChanges();
@@ -243,15 +243,15 @@ describe('PctRadioGroup / PctRadio', () => {
     expect(fixture.componentInstance.value()).toBe('');
     expect(free.disabled).toBe(false);
 
-    // Stan „tylko do odczytu" ogłasza GRUPA: rola `radio` nie wspiera
-    // `aria-readonly`, więc na opcji byłby to atrybut niedozwolony dla roli
-    // (naruszenie krytyczne w axe, `lesson-33`).
+    // The GROUP announces the „read only" state: the `radio` role does not support
+    // `aria-readonly`, so on an option it would be an attribute the role disallows
+    // (a critical violation in axe, `lesson-33`).
     const group = fixture.nativeElement.querySelector('pct-radio-group');
     expect(group.getAttribute('aria-readonly')).toBe('true');
     expect(free.hasAttribute('aria-readonly')).toBe(false);
   });
 
-  it('blur na dowolnej opcji oznacza grupę jako dotkniętą', async () => {
+  it('blur on any option marks the group as touched', async () => {
     const fixture = await render(Host);
     radiosOf(fixture)[1].dispatchEvent(new Event('blur'));
     await fixture.whenStable();
@@ -259,11 +259,11 @@ describe('PctRadioGroup / PctRadio', () => {
     expect(fixture.componentInstance.touchCount).toBe(1);
   });
 
-  it('nie pokazuje błędu, dopóki grupa nie została dotknięta', async () => {
+  it('shows no error until the group has been touched', async () => {
     const fixture = await render(Host);
     fixture.componentInstance.invalid.set(true);
     fixture.componentInstance.errors.set([
-      requiredError({ message: 'Wybierz plan' }),
+      requiredError({ message: 'Pick a plan' }),
     ]);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -275,12 +275,12 @@ describe('PctRadioGroup / PctRadio', () => {
     expect(group.getAttribute('aria-invalid')).toBeNull();
   });
 
-  it('po dotknięciu wiąże błąd z grupą przez aria-describedby', async () => {
+  it('once touched it binds the error to the group through aria-describedby', async () => {
     const fixture = await render(Host);
     fixture.componentInstance.invalid.set(true);
     fixture.componentInstance.touched.set(true);
     fixture.componentInstance.errors.set([
-      requiredError({ message: 'Wybierz plan' }),
+      requiredError({ message: 'Pick a plan' }),
     ]);
     fixture.detectChanges();
     await fixture.whenStable();
@@ -294,7 +294,7 @@ describe('PctRadioGroup / PctRadio', () => {
     expect(group.getAttribute('aria-describedby')).toContain(error.id);
   });
 
-  it('focus() grupy trafia w wybraną opcję, a bez wyboru w pierwszą', async () => {
+  it('focus() on the group lands on the checked option, or on the first with none', async () => {
     const fixture = await render(Host);
     const groupInstance = fixture.debugElement.children[0]
       .componentInstance as PctRadioGroup;
@@ -312,7 +312,7 @@ describe('PctRadioGroup / PctRadio', () => {
   });
 
   describe('signal forms', () => {
-    it('synchronizuje wybór z modelem i propaguje walidację', async () => {
+    it('syncs the choice with the model and propagates validation', async () => {
       const fixture = await render(SignalFormHost);
       const host = fixture.componentInstance;
 
@@ -326,8 +326,8 @@ describe('PctRadioGroup / PctRadio', () => {
     });
   });
 
-  describe('kompatybilność z klasycznymi formularzami (bez CVA)', () => {
-    it('reactive forms: [formControl] synchronizuje w obie strony', async () => {
+  describe('compatibility with classic forms (no CVA)', () => {
+    it('reactive forms: [formControl] syncs both ways', async () => {
       const fixture = await render(ReactiveHost);
       const [free, pro] = radiosOf(fixture);
       const ctrl = fixture.componentInstance.ctrl;
@@ -344,7 +344,7 @@ describe('PctRadioGroup / PctRadio', () => {
       expect(pro.checked).toBe(true);
     });
 
-    it('template-driven: [(ngModel)] synchronizuje w obie strony', async () => {
+    it('template-driven: [(ngModel)] syncs both ways', async () => {
       const fixture = await render(NgModelHost);
       await fixture.whenStable();
       const [free, pro] = radiosOf(fixture);
@@ -357,51 +357,51 @@ describe('PctRadioGroup / PctRadio', () => {
     });
   });
 
-  describe('wartości nienapisowe', () => {
-    it('compareWith dopasowuje encję po kluczu, nie po referencji', async () => {
+  describe('non-string values', () => {
+    it('compareWith matches an entity by key, not by reference', async () => {
       const fixture = await render(EntityHost);
-      const [gdansk, krakow] = radiosOf(fixture);
+      const [london, paris] = radiosOf(fixture);
 
-      expect(krakow.checked).toBe(true);
-      expect(gdansk.checked).toBe(false);
+      expect(paris.checked).toBe(true);
+      expect(london.checked).toBe(false);
     });
 
-    it('wybór oddaje grupie obiekt opcji, nie jego zapis tekstowy', async () => {
+    it('a choice hands the group the option object, not its text form', async () => {
       const fixture = await render(EntityHost);
       radiosOf(fixture)[0].click();
       await fixture.whenStable();
 
-      expect(fixture.componentInstance.value()).toBe(GDANSK);
+      expect(fixture.componentInstance.value()).toBe(LONDON);
     });
 
-    it('atrybut value zostaje pusty dla wartości nieprymitywnych', async () => {
+    it('the value attribute stays empty for non-primitive values', async () => {
       const fixture = await render(EntityHost);
-      // `[object Object]` w DOM wyglądałby jak wartość, a niczego nie identyfikuje.
+      // `[object Object]` in the DOM would look like a value and identifies nothing.
       expect(radiosOf(fixture)[0].hasAttribute('value')).toBe(false);
     });
 
-    it('atrybut value nadal opisuje opcje prymitywne', async () => {
+    it('the value attribute still describes primitive options', async () => {
       const fixture = await render(Host);
       expect(radiosOf(fixture)[0].getAttribute('value')).toBe('free');
     });
 
-    it('reset() wraca do emptyValue zgłoszonego przez aplikację', async () => {
+    it('reset() returns to the emptyValue the application declared', async () => {
       const fixture = await render(EntityHost);
       const group = fixture.debugElement.children[0]
-        .componentInstance as PctRadioGroup<Miasto>;
+        .componentInstance as PctRadioGroup<City>;
 
       group.reset();
       await fixture.whenStable();
       expect(fixture.componentInstance.value()).toBeNull();
 
-      fixture.componentInstance.emptyValue = GDANSK;
-      fixture.componentInstance.value.set(KRAKOW);
+      fixture.componentInstance.emptyValue = LONDON;
+      fixture.componentInstance.value.set(PARIS);
       fixture.detectChanges();
       await fixture.whenStable();
 
       group.reset();
       await fixture.whenStable();
-      expect(fixture.componentInstance.value()).toBe(GDANSK);
+      expect(fixture.componentInstance.value()).toBe(LONDON);
     });
   });
 });

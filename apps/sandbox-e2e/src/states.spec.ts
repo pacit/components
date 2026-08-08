@@ -2,19 +2,19 @@ import { expect, Locator, test } from '@playwright/test';
 import { visit } from './support/dom';
 
 /**
- * Stany przekrojowo: to samo pytanie zadane każdej kontrolce naraz.
+ * The states across the board: the same question put to every control at once.
  *
- * Testy per komponent sprawdzają, czy dany stan działa. Tutaj chodzi o to, czy
- * wszystkie kontrolki rozumieją go **tak samo** — bo rozjazd zaczyna się od
- * jednej, która robi po swojemu.
+ * The per-component tests check whether a given state works. What matters here is
+ * whether every control understands it **the same way** — because the drift starts
+ * with the one that does it its own way.
  */
 const CONTROLS = ['text', 'number', 'select', 'checkbox', 'radio'] as const;
 
 /**
- * Element, który realnie przyjmuje fokus i stan wyłączenia. Nie da się go
- * wskazać jednym selektorem: `[pctText]` i `[pctNumber]` **są** natywnym
- * inputem (testid siedzi na nim), select ma trigger, a checkbox i grupa radiów
- * trzymają natywne inputy w środku.
+ * The element that really takes focus and the disabled state. No single selector
+ * points at it: `[pctText]` and `[pctNumber]` **are** the native input (the testid
+ * sits on it), the select has a trigger, and the checkbox and the radio group keep
+ * their native inputs inside.
  */
 function focusTarget(card: Locator, state: string, control: string): Locator {
   const host = card.getByTestId(`${state}-${control}`);
@@ -23,21 +23,19 @@ function focusTarget(card: Locator, state: string, control: string): Locator {
   return host.locator('input').first();
 }
 
-test.describe('Stany — przekrój przez wszystkie kontrolki', () => {
+test.describe('States — a cross-section through every control', () => {
   test.beforeEach(async ({ page }) => {
     await visit(page, '/states');
   });
 
   /**
-   * Bramka kontrastu liczy na hexach z palety, więc każde **przyciemnienie**
-   * `opacity` jest dla niej niewidoczne — stan musi mieć własne tokeny koloru
-   * (req-token-no-opacity). Szukamy więc wartości pomiędzy 0 a 1: pełne `0` to inna
-   * technika (natywna kontrolka checkboxa jest niewidoczna, ale wciąż jest
-   * obszarem trafienia nad narysowanym pudełkiem), a nie ściemniony tekst.
+   * The contrast gate computes on hex values from the palette, so any **dimming**
+   * with `opacity` is invisible to it — a state has to have colour tokens of its own
+   * (req-token-no-opacity). So we look for values between 0 and 1: a full `0` is a
+   * different technique (the native checkbox control is invisible but still the hit
+   * area over the drawn box), not dimmed text.
    */
-  test('żaden stan nie jest przyciemniany przezroczystością', async ({
-    page,
-  }) => {
+  test('no state is dimmed with transparency', async ({ page }) => {
     for (const state of ['disabled', 'readonly', 'invalid']) {
       const przyciemnione = await page
         .getByTestId(`states-${state}`)
@@ -58,9 +56,7 @@ test.describe('Stany — przekrój przez wszystkie kontrolki', () => {
     }
   });
 
-  test('każda wyłączona kontrolka jest naprawdę wyłączona', async ({
-    page,
-  }) => {
+  test('every disabled control is really disabled', async ({ page }) => {
     const card = page.getByTestId('states-disabled');
 
     for (const control of CONTROLS) {
@@ -74,10 +70,10 @@ test.describe('Stany — przekrój przez wszystkie kontrolki', () => {
   });
 
   /**
-   * Tylko do odczytu to nie to samo co wyłączenie: wartości nie da się zmienić,
-   * ale kontrolka zostaje w kolejności Taba, więc czytnik ekranu ją odczyta.
+   * Read-only is not the same as disabled: the value cannot be changed, but the
+   * control stays in the tab order, so a screen reader will read it out.
    */
-  test('kontrolka tylko do odczytu zostaje fokusowalna', async ({ page }) => {
+  test('a read-only control stays focusable', async ({ page }) => {
     const card = page.getByTestId('states-readonly');
 
     for (const control of CONTROLS) {
@@ -87,19 +83,20 @@ test.describe('Stany — przekrój przez wszystkie kontrolki', () => {
     }
   });
 
-  test('błąd jest widoczny, ogłaszany i związany z kontrolką', async ({
+  test('the error is visible, announced and bound to the control', async ({
     page,
   }) => {
     const card = page.getByTestId('states-invalid');
     const errors = card.locator('[data-pct-part="field-error"]');
 
-    // Każda kontrolka w karcie dostaje komunikat od obudowy.
+    // Every control on the card gets its message from the wrapper.
     await expect(errors).toHaveCount(CONTROLS.length);
     for (let i = 0; i < CONTROLS.length; i++) {
       await expect(errors.nth(i)).toHaveAttribute('role', 'alert');
     }
 
-    // Ramka pola sygnalizuje błąd kolorem z tokenu — w każdym polu z ramką.
+    // The field border signals the error with a colour from a token — in every
+    // field that has a border.
     const rows = card.locator('[data-pct-part="field-row"]');
     const kolory = await rows.evaluateAll((els) =>
       els
@@ -110,7 +107,7 @@ test.describe('Stany — przekrój przez wszystkie kontrolki', () => {
     expect(new Set(kolory)).toEqual(new Set(['rgb(220, 38, 38)']));
   });
 
-  test('znacznik wymagalności należy do obudowy, nie do kontrolki', async ({
+  test('the required marker belongs to the wrapper, not to the control', async ({
     page,
   }) => {
     const card = page.getByTestId('states-required');
@@ -122,7 +119,7 @@ test.describe('Stany — przekrój przez wszystkie kontrolki', () => {
     }
   });
 
-  test('przycisk w stanie ładowania blokuje się i zapowiada to przez ARIA', async ({
+  test('a button in the loading state blocks itself and announces it through ARIA', async ({
     page,
   }) => {
     const loading = page.getByTestId('loading-button');

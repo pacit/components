@@ -2,53 +2,51 @@ import { expect, test } from '@playwright/test';
 import { boxOf, visit } from './support/dom';
 
 /**
- * Pole liczbowe w prawdziwej przeglądarce: formatowanie wg locale aplikacji
- * (sandbox ustawia `pl-PL`), krokowanie klawiaturą i granice pochodzące
- * z walidatorów signal forms.
+ * The number field in a real browser: formatting by the application locale (the
+ * sandbox sets `pl-PL`), stepping from the keyboard, and bounds that come from the
+ * signal forms validators.
  */
 test.describe('PctNumber', () => {
   test.beforeEach(async ({ page }) => {
     await visit(page, '/number');
   });
 
-  test('formatuje wartość wg locale aplikacji', async ({ page }) => {
+  test('formats the value by the application locale', async ({ page }) => {
     const price = page.getByTestId('number-price');
 
-    // pl-PL: przecinek dziesiętny, dwa miejsca wymuszone minFractionDigits.
+    // pl-PL: a decimal comma, two places forced by minFractionDigits.
     await expect(price).toHaveValue('1\u00a0499,90');
   });
 
-  test('wpisana liczba zostaje sformatowana po opuszczeniu pola', async ({
+  test('a typed number gets formatted once the field is left', async ({
     page,
   }) => {
     const price = page.getByTestId('number-price');
 
     await price.click();
     await price.fill('1234567.5');
-    // W trakcie pisania tekst nie jest przepisywany — kursor by skakał.
+    // While typing the text is not rewritten — the caret would jump.
     await expect(price).toHaveValue('1234567.5');
 
     await price.blur();
-    // Separator tysięcy to spacja nierozdzielająca (U+00A0), nie zwykła.
+    // The thousands separator is a non-breaking space (U+00A0), not an ordinary one.
     await expect(price).toHaveValue('1\u00a0234\u00a0567,50');
   });
 
-  test('przecinek i kropka są równoważne przy wpisywaniu', async ({ page }) => {
+  test('a comma and a dot are equivalent while typing', async ({ page }) => {
     const price = page.getByTestId('number-price');
 
     await price.fill('12,34');
     await price.blur();
     await expect(price).toHaveValue('12,34');
 
-    // Klawiatura numeryczna daje kropkę niezależnie od ustawień regionalnych.
+    // The numeric keypad gives a dot whatever the regional settings.
     await price.fill('12.34');
     await price.blur();
     await expect(price).toHaveValue('12,34');
   });
 
-  test('treść, której nie da się sparsować, jest odrzucana', async ({
-    page,
-  }) => {
+  test('content that cannot be parsed is rejected', async ({ page }) => {
     const price = page.getByTestId('number-price');
 
     await price.fill('abc');
@@ -56,7 +54,7 @@ test.describe('PctNumber', () => {
     await expect(price).toHaveValue('');
   });
 
-  test('strzałki zmieniają wartość o step', async ({ page }) => {
+  test('the arrows change the value by step', async ({ page }) => {
     const price = page.getByTestId('number-price');
 
     await price.click();
@@ -69,7 +67,7 @@ test.describe('PctNumber', () => {
     await expect(price).toHaveValue('1\u00a0499,40');
   });
 
-  test('pole całkowite zaokrągla i nie przyjmuje ułamków', async ({ page }) => {
+  test('an integer field rounds and takes no fractions', async ({ page }) => {
     const seats = page.getByTestId('number-seats');
 
     await expect(seats).toHaveAttribute('inputmode', 'numeric');
@@ -79,7 +77,7 @@ test.describe('PctNumber', () => {
     await expect(seats).toHaveValue('4');
   });
 
-  test('granice pochodzą z walidatorów schematu, nie z szablonu', async ({
+  test('the bounds come from the schema validators, not from the template', async ({
     page,
   }) => {
     const seats = page.getByTestId('number-seats');
@@ -98,7 +96,7 @@ test.describe('PctNumber', () => {
     await expect(seats).toHaveValue('1');
   });
 
-  test('jest spinbuttonem z wartością czytaną w postaci sformatowanej', async ({
+  test('it is a spinbutton whose value is read out in its formatted form', async ({
     page,
   }) => {
     const price = page.getByTestId('number-price');
@@ -108,7 +106,7 @@ test.describe('PctNumber', () => {
     await expect(price).toHaveAttribute('aria-valuetext', '1\u00a0499,90');
   });
 
-  test('etykieta obudowy fokusuje pole, a puste pole nie ma wartości', async ({
+  test('the wrapper label focuses the field, and an empty field has no value', async ({
     page,
   }) => {
     const field = page.getByTestId('field-price');
@@ -119,11 +117,11 @@ test.describe('PctNumber', () => {
 
     await page.getByTestId('field-price-clear').click();
     await expect(price).toHaveValue('');
-    // Puste pole to brak wartości, nie zero.
+    // An empty field is no value, not zero.
     await expect(price).not.toHaveAttribute('aria-valuenow');
   });
 
-  test('obszar dotyku pola liczbowego spełnia próg SC 2.5.8', async ({
+  test('the touch area of the number field meets the SC 2.5.8 threshold', async ({
     page,
   }) => {
     const box = await boxOf(page.getByTestId('number-seats'));

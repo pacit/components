@@ -1,22 +1,22 @@
 import type { Locator, Page } from '@playwright/test';
 
 /**
- * Pomocniki do zapytań DOM w testach e2e.
+ * Helpers for DOM queries in the e2e tests.
  *
- * Playwright zwraca `null` z `boundingBox()` (element niewidoczny) i
- * `getAttribute()` (brak atrybutu). Oba przypadki w teście oznaczają błąd, więc
- * zamiast `!` rzucamy z opisem — inaczej dostajemy „Cannot read properties of
- * null (reading 'width')" bez wskazania, o który element chodzi.
+ * Playwright returns `null` from `boundingBox()` (an invisible element) and from
+ * `getAttribute()` (no attribute). In a test both cases mean a defect, so instead
+ * of `!` we throw with a description — otherwise we get „Cannot read properties of
+ * null (reading 'width')" with no hint as to which element it was.
  *
- * Plik celowo nie ma w nazwie `.spec.`, więc Playwright go nie zbiera
- * (`testMatch` domyślnie dopasowuje tylko `*.spec.*` / `*.test.*`).
+ * The file deliberately has no `.spec.` in its name, so Playwright does not collect
+ * it (`testMatch` matches only `*.spec.*` / `*.test.*` by default).
  */
 
 /**
- * Kody rodziny „hydration" z katalogu błędów Angulara (NG0500–NG05xx):
- * niezgodność drzewa serwerowego z klienckim, brakujące węzły, nieobsługiwana
- * projekcja treści. Wzorzec obejmuje całą rodzinę celowo — nowy kod z tej puli
- * ma zapalać bramkę od razu, bez dopisywania go tutaj.
+ * The „hydration" family of codes from Angular's error catalogue (NG0500–NG05xx):
+ * a server tree that does not match the client one, missing nodes, unsupported
+ * content projection. The pattern covers the whole family on purpose — a new code
+ * from that pool is to fire the gate at once, with nothing added here.
  */
 const HYDRATION_ERROR = /NG05\d\d/;
 
@@ -28,10 +28,10 @@ interface PageProblems {
 const WATCHED = new WeakMap<Page, PageProblems>();
 
 /**
- * Podpina nasłuch konsoli i nieprzechwyconych wyjątków — raz na stronę.
+ * Attaches a listener for the console and for uncaught exceptions — once per page.
  *
- * Nasłuch musi ruszyć PRZED `goto()`, bo błąd hydracji pada w trakcie pierwszej
- * hydracji i nikt go potem nie powtórzy.
+ * The listener has to start BEFORE `goto()`, because a hydration error is thrown
+ * during the first hydration and nobody repeats it afterwards.
  */
 function watch(page: Page): PageProblems {
   const known = WATCHED.get(page);
@@ -55,46 +55,47 @@ function watch(page: Page): PageProblems {
   return problems;
 }
 
-/** Błędy hydracji zebrane na tej stronie (do testu kontrolnego bramki). */
+/** The hydration errors collected on this page (for the control test of the gate). */
 export function hydrationErrors(page: Page): readonly string[] {
   return watch(page).hydration;
 }
 
-/** Nieprzechwycone wyjątki, które nie są błędami hydracji. */
+/** Uncaught exceptions that are not hydration errors. */
 export function uncaughtErrors(page: Page): readonly string[] {
   return watch(page).uncaught;
 }
 
 /**
- * Wejście na stronę sandboxa — czeka na hydrację, nie tylko na `load`.
+ * Entering a sandbox page — it waits for hydration, not for `load` alone.
  *
- * Sam `goto()` kończy się, gdy w DOM stoi HTML z serwera. Kliknięcie czy `fill`
- * w tym oknie trafia w martwy DOM, a hydracja nadpisuje wynik stanem z modelu —
- * objaw wygląda jak wada komponentu („wpisana wartość wróciła do początkowej"),
- * choć jest wyścigiem w teście. Powłoka wystawia znacznik po `whenStable()`.
+ * `goto()` on its own finishes once the HTML from the server stands in the DOM. A
+ * click or a `fill` in that window hits a dead DOM, and hydration overwrites the
+ * result with the state from the model — the symptom looks like a defect in a
+ * component („the value I typed went back to the initial one") while it is a race
+ * in the test. The shell exposes a marker after `whenStable()`.
  *
- * Przy okazji jest to BRAMKA HYDRACJI (req-quality-hydration / req-project-ssr): niezgodność
- * drzewa serwerowego z klienckim nie przewraca strony — Angular loguje NG0500
- * i po cichu odtwarza poddrzewo od nowa. Cały dotychczasowy zestaw e2e
- * przechodził więc na zielono także wtedy, gdy SSR realnie się rozjeżdżał
- * (dokładnie ta klasa wady co w lesson-31). Skoro każdy test i tak wchodzi na
- * stronę przez `visit()`, sprawdzenie siedzi tutaj i obejmuje wszystkie widoki
- * naraz, zamiast czekać na dopisanie do każdego speca z osobna.
+ * In passing this is the HYDRATION GATE (req-quality-hydration / req-project-ssr):
+ * a server tree that does not match the client one does not knock the page over —
+ * Angular logs NG0500 and quietly recreates the subtree. So the whole e2e suite so
+ * far went green even when SSR really did drift apart (exactly the class of defect
+ * from lesson-31). Since every test enters the page through `visit()` anyway, the
+ * check sits here and covers every view at once, instead of waiting to be added to
+ * each spec separately.
  */
 export interface VisitOptions {
   /**
-   * Emulacja preferencji systemowych, ustawiana PRZED wejściem na stronę —
-   * inaczej pierwszy render idzie na wartościach domyślnych.
+   * Emulation of the system preferences, set BEFORE entering the page — otherwise
+   * the first render goes on the default values.
    *
-   * Uwaga: to musi być `page.emulateMedia()`, a NIE `test.use({ reducedMotion })`
-   * ani `test.use({ forcedColors })`. W Playwright 1.61.1 te dwie opcje podane
-   * przez `test.use` nie docierają do kontekstu — `matchMedia(...)` w stronie
-   * zwraca wtedy `false`, a test przechodzi, bo mierzy wartości bazowe zamiast
-   * tych spod media query. Bramka, która niczego nie sprawdza, jest gorsza niż
-   * jej brak, więc emulację ustawiamy jawnie i sprawdzamy w teście, że
-   * faktycznie się włączyła (`matchMedia`).
-   * `colorScheme` przez `test.use` działa, ale trzymamy tu wszystkie trzy osie
-   * razem, żeby nie trzeba było pamiętać, która jest którą.
+   * Mind you: this has to be `page.emulateMedia()` and NOT `test.use({ reducedMotion })`
+   * or `test.use({ forcedColors })`. In Playwright 1.61.1 those two options given
+   * through `test.use` do not reach the context — `matchMedia(...)` in the page then
+   * returns `false` and the test passes, because it measures the base values instead
+   * of the ones under the media query. A gate that checks nothing is worse than no
+   * gate, so we set the emulation explicitly and check in the test that it really
+   * did take (`matchMedia`).
+   * `colorScheme` through `test.use` works, but we keep all three axes together here
+   * so nobody has to remember which is which.
    */
   media?: Parameters<Page['emulateMedia']>[0];
 }
@@ -111,20 +112,21 @@ export async function visit(
 
   if (problems.hydration.length) {
     throw new Error(
-      `Błąd hydracji na ${path} (SSR rozjechał się z klientem):\n  - ` +
+      `Hydration error on ${path} (SSR drifted apart from the client):\n  - ` +
         problems.hydration.join('\n  - '),
     );
   }
 }
 
 /**
- * Przestawia sandbox na pismo od prawej — przez pasek ustawień, czyli tak, jak
- * zrobiłby to człowiek, a nie przez wstrzyknięcie atrybutu. Różnica jest istotna:
- * `dir` ustawiony z zewnątrz sprawdzałby wyłącznie CSS, a tędy sprawdza się też,
- * że oś w ogóle jest podłączona i że przechodzi na scenę karty.
+ * Switches the sandbox to right-to-left writing — through the settings bar, that is
+ * the way a person would do it, not by injecting an attribute. The difference
+ * matters: a `dir` set from outside would check the CSS alone, while this way it is
+ * also checked that the axis is wired up at all and that it reaches the card stage.
  *
- * Czeka na `app-root[dir="rtl"]`, bo klik wraca przed przeliczeniem układu, a
- * pomiar geometrii zrobiony w tym oknie mierzy stan sprzed odbicia.
+ * It waits for `app-root[dir="rtl"]`, because the click returns before the layout is
+ * recomputed, and a geometry measurement taken in that window measures the state
+ * from before the mirroring.
  */
 export async function setRtl(page: Page): Promise<void> {
   await page
@@ -135,25 +137,25 @@ export async function setRtl(page: Page): Promise<void> {
   await page.locator('app-root[dir="rtl"]').waitFor();
 }
 
-/** Prostokąt elementu; `boundingBox()` nie ma publicznie eksportowanego typu. */
+/** The rectangle of an element; `boundingBox()` has no publicly exported type. */
 type Box = NonNullable<Awaited<ReturnType<Locator['boundingBox']>>>;
 
-/** Prostokąt elementu; rzuca, gdy element nie jest widoczny. */
+/** The rectangle of an element; throws when the element is not visible. */
 export async function boxOf(locator: Locator): Promise<Box> {
   const box = await locator.boundingBox();
   if (!box) {
     throw new Error(
-      `Brak prostokąta dla ${locator} — element nie jest widoczny.`,
+      `No rectangle for ${locator} — the element is not visible.`,
     );
   }
   return box;
 }
 
-/** Wartość atrybutu; rzuca, gdy atrybutu nie ma. */
+/** The value of an attribute; throws when there is none. */
 export async function attrOf(locator: Locator, name: string): Promise<string> {
   const value = await locator.getAttribute(name);
   if (value === null) {
-    throw new Error(`Element ${locator} nie ma atrybutu "${name}".`);
+    throw new Error(`Element ${locator} has no "${name}" attribute.`);
   }
   return value;
 }
