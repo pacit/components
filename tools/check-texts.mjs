@@ -1,54 +1,21 @@
 #!/usr/bin/env node
 /**
- * Bramka kanału tekstów: pilnuje obietnicy `req-api-texts` — że napis, który
- * biblioteka wypisuje SAMA, idzie przez token `PCT_TEXTS`, a nie stoi wpisany
- * w szablon albo w wartość domyślną wejścia.
+ * Texts channel gate: `req-api-texts` — a string the library prints ITSELF goes through the
+ * `PCT_TEXTS` token, not into a template or an input's default. A literal added to a template
+ * compiles, passes the tests and looks right in every screenshot; it breaks at a consumer.
  *
- * Powód istnienia. Dotąd sprawdzone było wyłącznie nadpisanie CZĘŚCIOWE
- * (`select.spec.ts`) — czyli że mechanizm działa dla napisów, które już w nim
- * są. Nic nie sprawdzało, że nowy napis do niego trafia: literał dopisany do
- * szablonu kompiluje się, przechodzi testy, przechodzi audyt axe i wygląda
- * poprawnie w każdym zrzucie — psuje się dopiero u konsumenta, który tłumaczy
- * aplikację i dostaje w środku jedno zdanie po angielsku. Tego nie widać
- * w review, bo diff pokazuje poprawny szablon.
+ *  1. DENOMINATOR: every decorator parsed, every template owned, no unknown AST node,
+ *  2. ARTIFACT: the classes and static attributes from the sources match the BUILT package,
+ *  3. TEMPLATE: no text node and no SPEAKING attribute carries a literal with a letter,
+ *  4. TYPESCRIPT: a signal's default is not prose and does not read `PCT_TEXTS`,
+ *  5. CHANNEL: the `PctTexts` keys, their defaults and their reads are one set,
+ *  6. WARNINGS: `console.*` draws nothing from `PCT_TEXTS` and is quiet outside `isDevMode()`.
  *
- * Sprawdzane jest sześć rzeczy:
- *  1. MIANOWNIK: parser widzi każdy dekorator, każdy szablon ma właściciela,
- *     żaden szablon nie siedzi w dekoratorze, a odczyt AST nie napotkał węzła,
- *     którego nie rozumie,
- *  2. ARTEFAKT: klasy i statyczne atrybuty odczytane ze źródeł zgadzają się
- *     z tymi w ZBUDOWANYM pakiecie,
- *  3. SZABLON: żaden węzeł tekstowy ani atrybut MÓWIĄCY nie niesie literału
- *     z literą — ani wprost, ani przez literał w wyrażeniu,
- *  4. TYPESCRIPT: wartość domyślna sygnału nie jest prozą i nie czyta
- *     `PCT_TEXTS` (odczyt przy konstrukcji to napis sprzed zmiany języka),
- *  5. KANAŁ: klucze `PctTexts`, ich wartości domyślne i ich odczyty są jednym
- *     zbiorem — bez kluczy martwych i bez odczytów donikąd,
- *  6. OSTRZEŻENIA: `console.*` nie czerpie z `PCT_TEXTS` i gaśnie poza
- *     `isDevMode()` — dokładnie tak, jak zastrzega to wymaganie.
+ * The template is read by `parseTemplate` from `@angular/compiler` and walked by
+ * `TmplAstRecursiveVisitor`: it cannot lose syntax quietly, and point 1's four rules watch
+ * that it sees EVERYTHING.
  *
- * Punkty 3, 4 i 6 to reguły; punkty 1, 2 i 5 pilnują MIANOWNIKA, z którego te
- * reguły powstają. Ten sam mianownik kurczył się w A2 jako próbka plików
- * w raporcie pokrycia, w A5 jako zbiór deklaracji widzianych przez skaner,
- * w A6 jako zbiór mierzonych komponentów, a w A3 jako zbiór części. Tutaj
- * kurczy się zbiór POWIERZCHNI, na których w ogóle może stanąć napis.
- *
- * Skąd bierze się odczyt szablonu. Nie z regexa — z `parseTemplate`
- * `@angular/compiler`, czyli z tego samego parsera, którym kompilator czyta
- * szablon naprawdę, i przez `TmplAstRecursiveVisitor`, czyli obejście drzewa
- * utrzymywane przez Angulara, a nie przeze mnie. Ma to jedną cenę i jedną
- * korzyść. Cena: tekst jest czytany RAZ, bo po zlinkowaniu nie da się go
- * z pakietu wydobyć — literał węzła tekstowego trafia do treści zagnieżdżonej
- * funkcji szablonu, do której `ɵcmp.template` nie prowadzi (zmierzone).
- * Korzyść: ten odczyt nie potrafi po cichu zgubić składni, bo nie zgaduje —
- * a to, że widzi WSZYSTKO, pilnują cztery reguły punktu 1: brak błędów parsera,
- * brak nieznanego rodzaju węzła, brak szablonu w dekoratorze i niezerowy pomiar.
- *
- * Do tego siódmy przebieg, który nie bada biblioteki, tylko TĘ BRAMKĘ: kontrola
- * odniesienia z `tools/check-texts.fixtures/` (`req-quality-negative-control`).
- *
- * Użycie:
- *   node tools/check-texts.mjs
+ * Usage: node tools/check-texts.mjs
  */
 import {
   parseTemplate,
@@ -78,16 +45,16 @@ const FIXTURES = join(ROOT, 'tools/check-texts.fixtures');
 const BAZA = '_poprawny';
 
 /**
- * Atrybuty, których wartość użytkownik WIDZI albo SŁYSZY. Lista jest zamknięta
- * i to jest jej wada znana z góry: nie ma sposobu, żeby maszyna wywiodła ją
- * sama. Jest za to widoczna — dopisanie pozycji to linia w diffie, tak samo jak
- * słownik nazw w `check-tokens` (A4).
+ * The attributes whose value a user SEES or HEARS. The list is closed, and that is its
+ * defect, known in advance: there is no way for a machine to derive it. It is visible,
+ * though — adding an entry is a line in the diff, exactly like the name dictionary in
+ * `check-tokens` (A4).
  *
- * Pierwsza grupa to właściwości ARIA o wartości NAPISOWEJ (a nie idref, enum
- * czy liczbie) — tylko one niosą tekst dla czytnika ekranu. Druga to atrybuty
- * HTML, których wartość ląduje na ekranie. `role`, `type` czy `aria-haspopup`
- * do żadnej nie należą: ich wartości są słowami kluczowymi specyfikacji, nie
- * tekstem — i dlatego `role="combobox"` nie jest tu naruszeniem.
+ * The first group holds the ARIA properties with a STRING value (not an idref, an enum or
+ * a number) — only they carry text for a screen reader. The second holds the HTML
+ * attributes whose value lands on screen. `role`, `type` and `aria-haspopup` belong to
+ * neither: their values are keywords of a specification, not text — which is why
+ * `role="combobox"` is no violation here.
  */
 const ATRYBUTY_MOWIACE = new Set([
   'aria-label',
@@ -106,24 +73,22 @@ const ATRYBUTY_MOWIACE = new Set([
   'download',
 ]);
 
-/** `<input type="submit">` wypisuje `value` jako etykietę przycisku. */
+/** `<input type="submit">` prints `value` as the button's label. */
 const PRZYCISKI = new Set(['submit', 'button', 'reset']);
 
 const LITERA = /\p{L}/u;
 
 /**
- * Proza w TypeScripcie. W szablonie o tym, czy literał jest tekstem, decyduje
- * POZYCJA (węzeł tekstowy jest tekstem z definicji); w TS pozycji nie ma, więc
- * decyduje kształt. Wielka litera na początku albo spacja w środku odróżnia
- * zdanie od wartości osi (`md`, `solid`, `inset`, `pctPrefix`) — zmierzone na
- * całej bibliotece: przy tej regule dziś nie zapala nic, a `Select…` i
- * `No options` zapalają obie.
+ * Prose in TypeScript. In a template it is POSITION that decides whether a literal is text
+ * (a text node is text by definition); in TS there is no position, so shape decides. A
+ * capital letter at the start or a space in the middle tells a sentence from an axis value
+ * (`md`, `solid`, `inset`, `pctPrefix`) — measured across the whole library: nothing fires
+ * on this rule today, and `Select…` and `No options` both do.
  *
- * Znana granica: jednowyrazowy napis pisany z małej litery (`close`) jest dla
- * tej reguły nie do odróżnienia od wartości osi. Domyka to druga reguła punktu
- * — wejście zadeklarowane jako `input<string>` jest z definicji tekstem
- * dowolnym, więc literał w jego wartości domyślnej zapala niezależnie od
- * kształtu.
+ * A known limit: a one-word lowercase string (`close`) is indistinguishable from an axis
+ * value to this rule. The point's second rule closes that — an input declared as
+ * `input<string>` is arbitrary text by definition, so a literal in its default fires
+ * whatever its shape.
  */
 const jestProza = (v) => LITERA.test(v) && (/^\p{Lu}/u.test(v) || /\s/.test(v));
 
@@ -136,13 +101,13 @@ const skroc = (wpisy, ile = 8) =>
 
 const ile = (tekst, wzorzec) => (tekst.match(wzorzec) ?? []).length;
 
-// ── skanery źródła ────────────────────────────────────────────────────────────
+// ── source scanners ────────────────────────────────────────────────────────────
 
 /**
  * Ta sama kotwica co w `check-parts` i z tego samego powodu: formatowanie
- * wymuszone przez `nx format:check` stawia `@Component({` i `})` w kolumnie
- * zero. Licznik kotwicy NIE powtarza, bo powtórzona gasiłaby obie strony
- * porównania naraz (`lesson-48`).
+ * enforced by `nx format:check` puts `@Component({` and `})` in column zero. The counter
+ * does NOT repeat that anchor — a repeated one would put out both sides of the comparison
+ * at once (`lesson-48`).
  */
 const DEKORATOR =
   /^@(Component|Directive)\(\{\r?\n([\s\S]*?)^\}\)\r?\n(?:export\s+)?(?:abstract\s+)?class\s+([A-Za-z_$][\w$]*)/gm;
@@ -151,28 +116,26 @@ const DEKORATOR_LICZNIK = /^[ \t]*@(?:Component|Directive)\(/gm;
 const TEMPLATE_URL = /templateUrl\s*:\s*(['"])([^'"]*)\1/;
 const TEMPLATE_INLINE = /^\s{2}template\s*:\s*([\s\S]*?),?\s*$/m;
 
-/** Literał napisowy w wyrażeniu (wiązanie w bloku `host` jest napisem). */
+/** A string literal in an expression (a binding in a `host` block is a string). */
 const LITERAL_W_WYRAZENIU = /'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"/g;
 
 /**
- * Klucz wpisu w bloku `host` — cudzysłów jest opcjonalny, bo prettier go nie
- * dokłada: `role: 'spinbutton'` i `'[attr.aria-label]': 'x()'` stoją obok siebie
- * w tym samym bloku (`field/src/number.ts`). Wzorzec wymagający cudzysłowu
- * przepuściłby pierwszy z nich MILCZĄCO — a to jest dokładnie ta połowa, w której
- * siedzą atrybuty statyczne.
+ * The key of a `host` block entry — the quotes are optional, because prettier does not add
+ * them: `role: 'spinbutton'` and `'[attr.aria-label]': 'x()'` stand side by side in the same
+ * block (`field/src/number.ts`). A pattern demanding quotes would let the first through
+ * SILENTLY — and that is exactly the half the static attributes sit in.
  */
 const HOST_KLUCZ = /(?:'([^']*)'|"([^"]*)"|([A-Za-z_$][\w$]*))\s*:/g;
 
 /**
- * Wpisy bloku `host` jako pary klucz/wartość — z wartościami czytanymi ze
- * świadomością znaku ucieczki, bo wiązania niosą w środku drugi rodzaj
- * cudzysłowu (`'open() ? "" : null'`).
+ * The `host` block's entries as key/value pairs — with the values read with escapes in
+ * mind, because bindings carry the other kind of quote inside (`'open() ? "" : null'`).
  *
- * Wpis, którego ten skaner nie rozumie (rozwinięcie `...fitHost`, wartość
- * złożona wyrażeniem), jest pomijany BEZ komunikatu — świadomie: jego
- * mianownikiem jest punkt 2, czyli porównanie ze zbudowanym pakietem. Atrybut
- * statyczny wniesiony taką składnią pojawi się po stronie artefaktu i zniknie
- * po stronie źródeł, więc zapali z nazwą w komunikacie.
+ * An entry this scanner does not understand (a `...fitHost` spread, a value composed by an
+ * expression) is skipped WITHOUT a message — deliberately: its denominator is point 2, the
+ * comparison against the built package. A static attribute brought in by such syntax will
+ * appear on the artifact's side and be missing on the sources' side, so it fires with its
+ * name in the message.
  */
 const czytajHost = (blok) => {
   const wpisy = [];
@@ -196,8 +159,8 @@ const czytajHost = (blok) => {
 };
 
 /**
- * Blok `host` z ciała dekoratora — z klamrami dopasowanymi, a nie regexem do
- * pierwszego `}`: wartości potrafią zawierać klamry (`'open() ? "" : null'`).
+ * The `host` block from a decorator's body — with braces matched rather than a regex up to
+ * the first `}`: values can contain braces (`'open() ? "" : null'`).
  */
 const blokHost = (cialo) => {
   const i = cialo.search(/(^|\s)host\s*:\s*\{/m);
@@ -221,15 +184,15 @@ const nazwaZKlucza = (klucz) => {
 };
 
 /**
- * Klasy z dekoratorami. `atrybuty` to statyczne atrybuty bloku `host`
- * (para nazwa/wartość), `literaly` — literały napisowe z wyrażeń wiązań
- * atrybutów mówiących.
+ * Decorated classes. `atrybuty` are the `host` block's static attributes (name/value
+ * pairs), `literaly` the string literals from the expressions of speaking-attribute
+ * bindings.
  *
- * Blok `host` bywa składany rozwinięciem cudzego obiektu (`...fitHost`
- * w `field/src/affix.ts`) i ten skaner tego nie widzi — świadomie, tak samo jak
- * w `check-parts`. Atrybut wniesiony rozwinięciem pojawi się w odczycie
- * z pakietu i zniknie z odczytu ze źródeł, czyli zapali punkt 2. To jest
- * dokładnie ta praca, którą ma wykonywać drugi odczyt.
+ * A `host` block is sometimes composed by spreading somebody else's object (`...fitHost` in
+ * `field/src/affix.ts`) and this scanner does not see that — deliberately, exactly as in
+ * `check-parts`. An attribute brought in by a spread appears in the package read and is
+ * missing from the source read, so it fires point 2. Exactly the work the second read is
+ * there to do.
  */
 const czytajZrodla = (root, pliki) => {
   const klasy = [];
@@ -266,10 +229,10 @@ const czytajZrodla = (root, pliki) => {
               .split('\\')
               .join('/')
           : null,
-        // Pusty szablon (`template: ''` w `number.ts` i `text.ts`) nie ma czym
-        // wypisać napisu. Każdy inny zapis wpisany w dekorator jest dziurą:
-        // ten skaner czyta pliki `.html`, więc tekst z dekoratora byłby dla
-        // niego niewidzialny, a do przeglądarki jedzie tak samo.
+        // An empty template (`template: ''` in `number.ts` and `text.ts`) has nothing to
+        // print a string with. Any other notation written into the decorator is a hole:
+        // this scanner reads `.html` files, so text from a decorator would be invisible to
+        // it and travels to the browser all the same.
         inline: inline !== null && !/^(''|"")$/.test(inline[1].trim()),
         atrybuty,
         literaly,
@@ -281,11 +244,10 @@ const czytajZrodla = (root, pliki) => {
 };
 
 /**
- * Rodzaje węzłów, które to obejście rozumie. Lista jest po to, żeby dzień,
- * w którym Angular doda nowy rodzaj węzła niosącego tekst (dziś na horyzoncie
- * `TmplAstComponent` i `TmplAstDirective` ze składni selectorless), był dniem,
- * w którym ta bramka o tym MÓWI — a nie dniem, w którym cicho przestaje mierzyć
- * jego zawartość.
+ * The node kinds this walk understands. The list exists so that the day Angular adds a new
+ * kind of node carrying text (on the horizon today: `TmplAstComponent` and
+ * `TmplAstDirective` from the selectorless syntax) is the day this gate SAYS so — rather
+ * than the day it quietly stops measuring that node's contents.
  */
 const ZNANE_WEZLY = new Set([
   'Text',
@@ -314,7 +276,7 @@ const ZNANE_WEZLY = new Set([
   'UnknownBlock',
 ]);
 
-/** Literały napisowe z wyrażenia — bez argumentów pipe'a (patrz `visitPipe`). */
+/** String literals from an expression — pipe arguments excluded (see `visitPipe`). */
 class LiteralyWyrazenia extends RecursiveAstVisitor {
   constructor(zbierz) {
     super();
@@ -327,9 +289,9 @@ class LiteralyWyrazenia extends RecursiveAstVisitor {
     this.zbierz(node.text);
   }
   /**
-   * Argument pipe'a nie dociera do DOM — jest znacznikiem formatu
-   * (`date: 'short'`), a nie tekstem. Reguła mówi o prozie lądującej na
-   * ekranie, więc obejmowanie go byłoby niezgodne z nią samą.
+   * A pipe's argument never reaches the DOM — it is a format marker (`date: 'short'`),
+   * not text. The rule speaks of prose landing on screen, so covering it would contradict
+   * the rule itself.
    */
   visitPipe(node, ctx) {
     node.exp.visit(this, ctx);
@@ -337,10 +299,10 @@ class LiteralyWyrazenia extends RecursiveAstVisitor {
 }
 
 /**
- * Jedno przejście po drzewie szablonu. Zbiera to, co widzi użytkownik:
- * teksty węzłów, wartości atrybutów mówiących i literały z wyrażeń, które
- * do takiego miejsca trafiają. Liczy przy okazji odwiedzone węzły — punkt 1
- * porównuje tę liczbę z zerem, bo przebieg, który nie odwiedził niczego,
+ * One walk over a template's tree. It collects what the user sees: node texts, the values
+ * of speaking attributes and the literals from expressions that land in such a place. It
+ * counts visited nodes along the way — point 1 compares that count against zero, because a
+ * pass that visited nothing
  * orzeka o wszystkim (`lesson-48`).
  */
 class SkanerSzablonu extends TmplAstRecursiveVisitor {
@@ -416,7 +378,7 @@ class SkanerSzablonu extends TmplAstRecursiveVisitor {
     node.value.visit(
       new LiteralyWyrazenia((v) =>
         this.wyrazenia.push({
-          gdzie: `wiązanie \`${node.name}\``,
+          gdzie: `binding \`${node.name}\``,
           wartosc: v,
           linia: linia(node),
         }),
@@ -425,11 +387,11 @@ class SkanerSzablonu extends TmplAstRecursiveVisitor {
   }
 
   /**
-   * ICU niesie warianty tekstu w osobnym drzewie i18n, do którego to obejście
-   * nie sięga — a `PCT_TEXTS` nie ma czym takiego napisu obsłużyć, bo jest mapą
-   * napisów, nie gramatyką. Zamiast czytać go po połowie, punkt 3 go zakazuje:
-   * to ten sam ruch co zakaz wiązania nazwy części w `check-parts` — rzecz,
-   * której pomiar nie potrafi zobaczyć, ma być głośna, a nie niewidzialna.
+   * ICU keeps its text variants in a separate i18n tree this walk does not reach — and
+   * `PCT_TEXTS` has nothing to handle such a string with, being a map of strings rather
+   * than a grammar. Instead of reading it by halves, point 3 forbids it: the same move as
+   * forbidding a bound part name in `check-parts` — a thing the measurement cannot see is
+   * to be loud rather than invisible.
    */
   visitIcu(node) {
     this.odwiedz(node);
@@ -505,9 +467,9 @@ class SkanerSzablonu extends TmplAstRecursiveVisitor {
 const linia = (node) => node?.sourceSpan?.start?.line + 1 || '?';
 
 /**
- * `preserveWhitespaces: false` — tak kompiluje się szablon naprawdę, więc tak
- * wygląda zbiór węzłów, które dojadą do przeglądarki. Przy `true` każde wcięcie
- * byłoby osobnym węzłem tekstowym i punkt 3 orzekałby o białych znakach.
+ * `preserveWhitespaces: false` — that is how a template really compiles, so that is the set
+ * of nodes reaching the browser. Under `true` every indent would be a text node of its own
+ * and point 3 would be pronouncing on whitespace.
  */
 const czytajSzablon = (plik, tresc) => {
   const wynik = parseTemplate(tresc, plik, { preserveWhitespaces: false });
@@ -519,19 +481,17 @@ const czytajSzablon = (plik, tresc) => {
 // ── skaner TypeScriptu ────────────────────────────────────────────────────────
 
 /**
- * Wywołania fabryk sygnałów wraz z ich pierwszym argumentem. Nie parsuję
- * generyka regexem: `input<readonly PctSelectOption<T>[]>([])` ma `>` w środku,
- * więc wzorzec `<[^>]*>` przepuściłby go MILCZĄCO — a wejście, którego skaner
- * nie zobaczył, jest dokładnie tym, czego ten punkt szuka. Nawiasy kątowe są
- * więc liczone tak samo jak okrągłe.
+ * Signal factory calls together with their first argument. The generic is not parsed with a
+ * regex: `input<readonly PctSelectOption<T>[]>([])` has a `>` inside, so a `<[^>]*>` pattern
+ * would let it through SILENTLY — and an input the scanner did not see is exactly what this
+ * point is looking for. Angle brackets are therefore counted like round ones.
  */
 const FABRYKI = ['input', 'model', 'signal', 'computed'];
 /**
- * Niezależny licznik nie może liczyć wywołań — skaner znajduje ich WIĘCEJ niż
- * przypisań (fabryka wywołana w ciele funkcji, w argumencie, w wyrażeniu
- * warunkowym), więc porównanie sum przechodziłoby także wtedy, gdyby jedno
- * przypisanie zniknęło. Liczone są więc PRZYPISANIA, a warunkiem jest, żeby
- * każde z nich skaner rozwiązał do wywołania.
+ * The independent counter cannot count calls — the scanner finds MORE of them than
+ * assignments (a factory called in a function body, in an argument, in a conditional), so
+ * comparing the sums would pass even with one assignment gone. ASSIGNMENTS are counted
+ * instead, and the condition is that the scanner resolves each of them to a call.
  */
 const PRZYPISANIE = /=\s*$/;
 
@@ -555,11 +515,11 @@ const czytajFabryki = (plik, tresc) => {
       if (przypisanie)
         nierozpoznane.push(
           `${plik}:${tresc.slice(0, m.index).split('\n').length}: ` +
-            `= ${m[1]} bez rozpoznanego wywołania`,
+            `= ${m[1]} with no recognised call`,
         );
     };
     let k = m.index + m[1].length;
-    // `.required` i generyk są opcjonalne i mogą wystąpić w tej kolejności.
+    // `.required` and the generic are optional and may appear in that order.
     for (;;) {
       while (/\s/.test(tresc[k])) k++;
       if (tresc.startsWith('.required', k)) {
@@ -584,8 +544,8 @@ const czytajFabryki = (plik, tresc) => {
       continue;
     }
 
-    // Sam pierwszy argument: `input('x', { alias: 'Nazwa' })` niesie w drugim
-    // nazwę atrybutu, a nie napis. Przecinek liczony poza zagnieżdżeniem.
+    // The first argument alone: `input('x', { alias: 'Name' })` carries an attribute name
+    // in the second, not a string. The comma is counted outside any nesting.
     const cale = tresc.slice(k + 1, koniec);
     let g = 0;
     let przecinek = cale.length;
@@ -603,8 +563,8 @@ const czytajFabryki = (plik, tresc) => {
       plik,
       fabryka: m[1],
       linia: tresc.slice(0, m.index).split('\n').length,
-      // Deklarowany typ pierwszego parametru — `input<string>` znaczy „tekst
-      // dowolny", czyli miejsce, w którym literał jest prozą z definicji.
+      // The declared type of the first parameter — `input<string>` means „arbitrary
+      // text", that is, a place where a literal is prose by definition.
       napisowe: /^\s*<\s*string\s*[,>]/.test(
         tresc.slice(m.index + m[1].length),
       ),
@@ -622,7 +582,7 @@ const DOMYSLNA_PARA =
   /^\s*([A-Za-z_$][\w$]*)\s*:\s*(['"])((?:[^'\\]|\\.)*)\2/gm;
 /** `texts().klucz` — jedyna droga odczytu po decyzji 0014. */
 const ODCZYT = /\btexts\(\)\.([A-Za-z_$][\w$]*)/g;
-/** `inject(PCT_TEXTS)` musi wylądować pod nazwą `texts` — inaczej odczyt znika. */
+/** `inject(PCT_TEXTS)` has to land under the name `texts` — else the read disappears. */
 const WSTRZYKNIECIE = /(?:(\w+)\s*=\s*)?inject\(\s*PCT_TEXTS\s*\)/g;
 
 const KONSOLA = /\bconsole\.(log|warn|error|info|debug)\s*\(/g;
@@ -630,10 +590,10 @@ const KONSOLA = /\bconsole\.(log|warn|error|info|debug)\s*\(/g;
 // ── kontrole ──────────────────────────────────────────────────────────────────
 
 /**
- * Naruszenie — z identyfikatorem punktu ORAZ reguły. Sam punkt nie wystarczy:
- * punkt 3 niesie cztery reguły, punkt 5 sześć, a kontrola odniesienia
- * porównująca wyłącznie punkt przepuściłaby przypadek, który zapalił na regule
- * sąsiedniej (`lesson-50`, wniosek z A12).
+ * A violation — with the identifier of the point AND of the rule. The point alone is not
+ * enough: point 3 carries four rules, point 5 six, and a negative control comparing only
+ * the point would let through a case that fired on a neighbouring rule (`lesson-50`, the
+ * conclusion of A12).
  */
 class BladTekstu extends Error {
   constructor(kontrola, regula, opis) {
@@ -651,20 +611,20 @@ const sprawdzTeksty = (we) => {
     throw new BladTekstu(
       'mianownik',
       'pusta-lista',
-      `nie znalazłem ani jednego dekoratora \`@Component\`/\`@Directive\` ` +
-        `w źródłach (${PROJEKT}; plików: ${zrodla.length}) — wszystkie dalsze punkty ` +
-        `przeszłyby wtedy, nie orzekając o niczym (lesson-48).\n    Najczęstsza ` +
-        `przyczyna: lista plików źródłowych przestała cokolwiek zwracać.`,
+      `no \`@Component\`/\`@Directive\` decorator found in the sources ` +
+        `(${PROJEKT}; files: ${zrodla.length}) — every later point would then pass ` +
+        `without pronouncing on anything (lesson-48).\n    Usual cause: the list of ` +
+        `source files stopped returning anything.`,
     );
 
   if (klasy.length !== deklaracji)
     throw new BladTekstu(
       'mianownik',
       'parser-dekoratorow',
-      `parser rozpoznał ${klasy.length} z ${deklaracji} dekoratorów — reszta wypadłaby ` +
-        `z pomiaru bez śladu, razem ze swoim blokiem \`host\`. Najczęstsza przyczyna: ` +
-        `dekorator zapisany inaczej, niż formatuje prettier (\`@Component({\` i \`})\` ` +
-        `w kolumnie zero).`,
+      `the parser recognised ${klasy.length} of ${deklaracji} decorators — the rest ` +
+        `would drop out of the measurement without a trace, together with their \`host\` ` +
+        `block. Usual cause: a decorator written otherwise than prettier formats it ` +
+        `(\`@Component({\` and \`})\` in column zero).`,
     );
 
   const wInline = klasy.filter((k) => k.inline);
@@ -674,8 +634,9 @@ const sprawdzTeksty = (we) => {
       'szablon-w-dekoratorze',
       `${wInline.length} klas bierze szablon z dekoratora, a nie z pliku:\n` +
         lista(wInline.map((k) => `${k.plik}: ${k.klasa}`)) +
-        `\n    Ten skaner czyta pliki \`.html\`, więc napis wpisany w dekorator byłby dla ` +
-        `niego niewidzialny — a do przeglądarki jedzie tak samo. Wynieś szablon do ` +
+        `\n    This scanner reads \`.html\` files, so a string written into a decorator ` +
+        `would be invisible to it — and travels to the browser all the same. Move the ` +
+        `template out to ` +
         `\`templateUrl\`.`,
     );
 
@@ -690,11 +651,11 @@ const sprawdzTeksty = (we) => {
     throw new BladTekstu(
       'mianownik',
       'szablon-bez-pliku',
-      `${brakujace.length} szablonów wskazanych przez \`templateUrl\` nie ma na liście ` +
-        `plików bramki:\n` +
+      `${brakujace.length} templates named by \`templateUrl\` are not on the gate's ` +
+        `file list:\n` +
         lista(brakujace) +
-        `\n    Ich teksty nie wejdą do pomiaru. Najczęstsza przyczyna: plik poza indeksem ` +
-        `gita albo pathspec, który przestał go obejmować.`,
+        `\n    Their texts will not enter the measurement. Usual cause: a file outside ` +
+        `the git index, or a pathspec that stopped covering it.`,
     );
 
   const osierocone = szablony.filter((s) => !uzywane.has(s.plik));
@@ -702,10 +663,10 @@ const sprawdzTeksty = (we) => {
     throw new BladTekstu(
       'mianownik',
       'szablon-bez-wlasciciela',
-      `${osierocone.length} szablonów nie należy do żadnego dekoratora:\n` +
+      `${osierocone.length} templates belong to no decorator:\n` +
         lista(osierocone.map((s) => s.plik)) +
-        `\n    Szablon, do którego nikt nie wskazuje, jest dla pomiaru sierotą — a do ` +
-        `przeglądarki jedzie tak samo jak każdy inny.`,
+        `\n    A template nobody points at is an orphan to the measurement — and travels ` +
+        `to the browser like every other one.`,
     );
 
   const skany = szablony.map((s) => czytajSzablon(s.plik, s.tresc));
@@ -715,12 +676,12 @@ const sprawdzTeksty = (we) => {
     throw new BladTekstu(
       'mianownik',
       'parser-szablonu',
-      `parser Angulara odrzucił ${zBledem.length} szablonów:\n` +
+      `Angular's parser rejected ${zBledem.length} templates:\n` +
         lista(
           zBledem.map((s) => `${s.plik}: ${s.bledy[0].msg.split('\n')[0]}`),
         ) +
-        `\n    Drzewo, którego nie ma, nie ma też ani jednego węzła tekstowego — punkt 3 ` +
-        `przeszedłby na nim bez zastrzeżeń.`,
+        `\n    A tree that does not exist has no text node either — point 3 would pass ` +
+        `over it without objection.`,
     );
 
   const nieznane = skany.filter((s) => s.skaner.nieznane.size);
@@ -728,14 +689,14 @@ const sprawdzTeksty = (we) => {
     throw new BladTekstu(
       'mianownik',
       'nieznany-wezel',
-      `${nieznane.length} szablonów niesie rodzaj węzła, którego to obejście nie zna:\n` +
+      `${nieznane.length} templates carry a node kind this walk does not know:\n` +
         lista(
           nieznane.map(
             (s) => `${s.plik}: ${[...s.skaner.nieznane].join(', ')}`,
           ),
         ) +
-        `\n    Nowy rodzaj węzła może nieść tekst, a domyślne obejście przeszłoby przez ` +
-        `niego bez słowa. Dopisz go do \`ZNANE_WEZLY\` razem z decyzją, czy niesie napis.`,
+        `\n    A new node kind may carry text, and the default walk would pass through ` +
+        `it without a word. Add it to \`ZNANE_WEZLY\` with a decision on whether it does.`,
     );
 
   const wezlow = skany.reduce((n, s) => n + s.skaner.wezlow, 0);
@@ -743,24 +704,25 @@ const sprawdzTeksty = (we) => {
     throw new BladTekstu(
       'mianownik',
       'pusty-pomiar',
-      `${szablony.length} szablonów, 0 odwiedzonych węzłów — pomiar nie ruszył.\n` +
-        `    Kontrola niepustości stoi po stronie WYNIKU, nie wejścia: liczba plików ` +
-        `bywa poprawna wtedy, gdy pusty jest sam odczyt (lesson-48, ta sama pomyłka co ` +
+      `${szablony.length} templates, 0 visited nodes — the measurement never started.\n` +
+        `    The non-emptiness check stands on the RESULT's side, not the input's: the ` +
+        `file count is sometimes right while the read itself is empty (lesson-48, the ` +
+        `same mistake as ` +
         `w A5 i A12).`,
     );
 
   // ── 2. ARTEFAKT ─────────────────────────────────────────────────────────────
   //
-  //    Odczyt ze źródeł czyta tekst dekoratora, więc jest ślepy na blok `host`
-  //    składany rozwinięciem cudzego obiektu (`...fitHost`). Odczyt z pakietu
+  //    The source read reads a decorator's text, so it is blind to a `host` block
+  //    composed by spreading somebody else's object (`...fitHost`). The package read
   //    czyta `ɵdir.hostAttrs` i `ɵcmp.consts` po zlinkowaniu, czyli wynik
   //    PRAWDZIWEGO kompilatora. Ten sam ruch co w A3 i A6.
   if (!pakiet.length)
     throw new BladTekstu(
       'artefakt',
       'pakiet-pusty',
-      `zbudowany pakiet nie dał ani jednej klasy z definicją Angulara — porównanie ` +
-        `przeszłoby, nie mając czego porównać.\n    Najczęstsza przyczyna: nieaktualne ` +
+      `the built package gave not one class with an Angular definition — the comparison ` +
+        `would pass with nothing to compare.\n    Usual cause: a stale ` +
         `albo puste \`${DIST}\` (bramka wymaga \`dependsOn: build\`).`,
     );
 
@@ -772,10 +734,10 @@ const sprawdzTeksty = (we) => {
     throw new BladTekstu(
       'artefakt',
       'klasa-bez-pakietu',
-      `${bezPakietu.length} klas ze źródeł nie ma w zbudowanym pakiecie:\n` +
+      `${bezPakietu.length} classes from the sources are not in the built package:\n` +
         lista(bezPakietu.map((k) => `${k} (${zeZrodel.get(k).plik})`)) +
-        `\n    Pomiar liczyłby wtedy napisy komponentu, którego konsument nie dostaje — ` +
-        `albo, częściej, czytałby nieaktualne \`${DIST}\`.`,
+        `\n    The measurement would then count the strings of a component the consumer ` +
+        `never gets — or, more often, would be reading a stale \`${DIST}\`.`,
     );
 
   const bezZrodel = [...zPakietu.keys()].filter((k) => !zeZrodel.has(k));
@@ -783,17 +745,17 @@ const sprawdzTeksty = (we) => {
     throw new BladTekstu(
       'artefakt',
       'klasa-bez-zrodel',
-      `${bezZrodel.length} klas z pakietu nie widzi skaner źródeł:\n` +
+      `${bezZrodel.length} classes from the package are invisible to the source scanner:\n` +
         lista(bezZrodel.map((k) => `${k} (${zPakietu.get(k).wejscie})`)) +
-        `\n    Klasa, której skaner nie zobaczył, wnosi do wydania napisy, o których ta ` +
-        `bramka nie orzeka.`,
+        `\n    A class the scanner did not see brings strings into a release that this ` +
+        `gate says nothing about.`,
     );
 
-  // Właściciel szablonu ma SWÓJ warunek wstępny, mimo że gwarantuje go punkt 1.
-  // Bez niego rozbrojenie reguły `szablon-bez-wlasciciela` zamieniało tę pętlę
-  // w `TypeError` — czyli kontrola odniesienia przestawała umieć zbadać regułę,
-  // którą miała zbadać. Ta sama wada co w A3, A4, A7, A8 i A12; zapis „nie ufaj
-  // poprzedniemu punktowi" najwyraźniej trzeba powtarzać w każdej bramce.
+  // A template's owner has a precondition of ITS OWN, even though point 1 guarantees it.
+  // Without that, disarming the `szablon-bez-wlasciciela` rule turned this loop into a
+  // `TypeError` — the negative control lost the ability to examine the rule it was meant to
+  // examine. The same defect as in A3, A4, A7, A8 and A12; „do not trust the previous
+  // point" apparently has to be written out in every gate.
   const wlascicielem = (plik) => uzywane.get(plik)?.[0]?.klasa ?? plik;
 
   const mowiaceZrodel = new Set();
@@ -819,12 +781,12 @@ const sprawdzTeksty = (we) => {
     throw new BladTekstu(
       'artefakt',
       'atrybut-tylko-w-pakiecie',
-      `${tylkoWPakiecie.length} atrybutów mówiących jest w pakiecie, a nie w odczycie ` +
-        `ze źródeł:\n` +
+      `${tylkoWPakiecie.length} speaking attributes are in the package and not in the ` +
+        `source read:\n` +
         lista(skroc(tylkoWPakiecie)) +
-        `\n    Tak wygląda atrybut wniesiony składnią, której skaner nie rozumie — ` +
-        `rozwinięciem obiektu w bloku \`host\`, mixinem, dziedziczeniem. Punkt 3 nie ` +
-        `oglądałby go w ogóle.`,
+        `\n    This is what an attribute brought in by syntax the scanner cannot read ` +
+        `looks like — an object spread in a \`host\` block, a mixin, inheritance. Point 3 ` +
+        `would never look at it.`,
     );
 
   const tylkoWZrodlach = [...mowiaceZrodel].filter(
@@ -834,10 +796,10 @@ const sprawdzTeksty = (we) => {
     throw new BladTekstu(
       'artefakt',
       'atrybut-tylko-w-zrodlach',
-      `${tylkoWZrodlach.length} atrybutów mówiących jest w źródłach, a nie w pakiecie:\n` +
+      `${tylkoWZrodlach.length} speaking attributes are in the sources and not in the package:\n` +
         lista(skroc(tylkoWZrodlach)) +
-        `\n    Najczęstsza przyczyna: nieaktualne \`${DIST}\`. Punkt 3 orzekałby wtedy ` +
-        `o tekście, którego konsument nie dostaje.`,
+        `\n    Usual cause: a stale \`${DIST}\`. Point 3 would then be pronouncing on ` +
+        `text the consumer never gets.`,
     );
 
   // ── 3. SZABLON ──────────────────────────────────────────────────────────────
@@ -852,12 +814,12 @@ const sprawdzTeksty = (we) => {
     throw new BladTekstu(
       'szablon',
       'tekst-literalny',
-      `${naruszeniaTekstu.length} węzłów tekstowych niesie napis wpisany w szablon:\n` +
+      `${naruszeniaTekstu.length} text nodes carry a string written into the template:\n` +
         lista(skroc(naruszeniaTekstu)) +
-        `\n    Napis, który biblioteka wypisuje sama, idzie przez \`PCT_TEXTS\`: pole ` +
-        `w \`PctTexts\`, wartość domyślna w \`PCT_DEFAULT_TEXTS\`, odczyt \`texts().klucz\` ` +
-        `w szablonie (req-api-texts). Znak bez litery (\`*\`, \`×\`) tekstem nie jest ` +
-        `i tu nie zapala — nie ma w nim czego przetłumaczyć.`,
+        `\n    A string the library prints itself goes through \`PCT_TEXTS\`: a field in ` +
+        `\`PctTexts\`, a default in \`PCT_DEFAULT_TEXTS\`, a \`texts().key\` read ` +
+        `in the template (req-api-texts). A character with no letter (\`*\`, \`×\`) is not ` +
+        `text and does not fire here — there is nothing in it to translate.`,
     );
 
   const naruszeniaAtrybutu = [];
@@ -875,10 +837,11 @@ const sprawdzTeksty = (we) => {
     throw new BladTekstu(
       'szablon',
       'atrybut-mowiacy',
-      `${naruszeniaAtrybutu.length} atrybutów mówiących niesie napis wpisany wprost:\n` +
+      `${naruszeniaAtrybutu.length} speaking attributes carry a string written inline:\n` +
         lista(skroc(naruszeniaAtrybutu)) +
-        `\n    Wartość \`aria-label\`, \`title\` czy \`placeholder\` czyta użytkownik — to ` +
-        `tekst, nie słowo kluczowe specyfikacji (jak \`role="combobox"\`). Idzie przez ` +
+        `\n    The value of \`aria-label\`, \`title\` or \`placeholder\` is read by the ` +
+        `user — that is text, not a keyword of a specification (like \`role="combobox"\`). ` +
+        `It goes through ` +
         `\`PCT_TEXTS\`.`,
     );
 
@@ -899,11 +862,11 @@ const sprawdzTeksty = (we) => {
     throw new BladTekstu(
       'szablon',
       'literal-w-wyrazeniu',
-      `${naruszeniaWyrazenia.length} literałów napisowych trafia do DOM z wyrażenia:\n` +
+      `${naruszeniaWyrazenia.length} string literals reach the DOM from an expression:\n` +
         lista(skroc(naruszeniaWyrazenia)) +
-        `\n    \`{{ open() ? 'Zamknij' : 'Otwórz' }}\` omija kanał tak samo jak napis ` +
-        `wpisany w tekst węzła — z tą różnicą, że wygląda na kod. Argument pipe'a się ` +
-        `nie liczy: to znacznik formatu, a nie tekst.`,
+        `\n    \`{{ open() ? 'Close' : 'Open' }}\` bypasses the channel exactly like a ` +
+        `string written into a node's text — only it looks like code. A pipe's argument ` +
+        `does not count: that is a format marker, not text.`,
     );
 
   const zIcu = skany.filter((s) => s.skaner.icu);
@@ -911,12 +874,12 @@ const sprawdzTeksty = (we) => {
     throw new BladTekstu(
       'szablon',
       'icu',
-      `${zIcu.length} szablonów używa wyrażenia ICU:\n` +
-        lista(zIcu.map((s) => `${s.plik}: ${s.skaner.icu} wystąpień`)) +
-        `\n    ICU trzyma warianty tekstu w drzewie i18n, do którego ten odczyt nie ` +
-        `sięga — a \`PCT_TEXTS\` jest mapą napisów, nie gramatyką, więc nie ma czym ich ` +
-        `obsłużyć. Liczba mnoga w bibliotece jest decyzją do zapisania (ADR), a nie ` +
-        `składnią do wpisania.`,
+      `${zIcu.length} templates use an ICU expression:\n` +
+        lista(zIcu.map((s) => `${s.plik}: ${s.skaner.icu} occurrences`)) +
+        `\n    ICU keeps its text variants in an i18n tree this read does not reach — and ` +
+        `\`PCT_TEXTS\` is a map of strings, not a grammar, so it has nothing to handle ` +
+        `them with. Plurals in a library are a decision to record (an ADR), not a syntax ` +
+        `to write.`,
     );
 
   // ── 4. TYPESCRIPT ───────────────────────────────────────────────────────────
@@ -925,14 +888,13 @@ const sprawdzTeksty = (we) => {
     throw new BladTekstu(
       'typescript',
       'pusty-pomiar',
-      `skaner rozpoznał ${fabryki.length} wywołań fabryk sygnałów, a ` +
-        `${we.fabryki.nierozpoznane.length} przypisań zostawił nierozwiązanych:\n` +
+      `the scanner recognised ${fabryki.length} signal factory calls and left ` +
+        `${we.fabryki.nierozpoznane.length} assignments unresolved:\n` +
         lista(skroc(we.fabryki.nierozpoznane)) +
-        `\n    Wejście, którego skaner nie rozwiązał do wywołania, wnosi wartość ` +
-        `domyślną, o której ten punkt nie orzeka. Licznik liczy PRZYPISANIA, a nie ` +
-        `wywołania: wywołań skaner znajduje więcej (fabryka w ciele funkcji, ` +
-        `w argumencie), więc porównanie sum przechodziłoby także wtedy, gdyby jedno ` +
-        `przypisanie zniknęło.`,
+        `\n    An input the scanner did not resolve to a call brings a default value this ` +
+        `point says nothing about. The counter counts ASSIGNMENTS, not calls: the scanner ` +
+        `finds more calls (a factory in a function body, in an argument), so comparing the ` +
+        `sums would pass even with one assignment gone.`,
     );
 
   const proza = fabryki.flatMap((f) =>
@@ -947,11 +909,11 @@ const sprawdzTeksty = (we) => {
     throw new BladTekstu(
       'typescript',
       'proza-w-fabryce',
-      `${proza.length} wartości domyślnych sygnału jest prozą:\n` +
+      `${proza.length} signal defaults are prose:\n` +
         lista(skroc(proza)) +
-        `\n    Napis biblioteki idzie przez \`PCT_TEXTS\`. Wartość osi (\`md\`, \`solid\`, ` +
-        `\`inset\`) prozą nie jest i tu nie zapala — rozróżnia je kształt: wielka litera ` +
-        `na początku albo spacja w środku.`,
+        `\n    A library string goes through \`PCT_TEXTS\`. An axis value (\`md\`, ` +
+        `\`solid\`, \`inset\`) is not prose and does not fire here — shape tells them ` +
+        `apart: a capital at the start or a space in the middle.`,
     );
 
   const tekstDomyslny = fabryki
@@ -967,12 +929,12 @@ const sprawdzTeksty = (we) => {
     throw new BladTekstu(
       'typescript',
       'tekst-jako-domyslna',
-      `${tekstDomyslny.length} wejść zadeklarowanych jako \`<string>\` ma literał ` +
-        `w wartości domyślnej:\n` +
+      `${tekstDomyslny.length} inputs declared as \`<string>\` carry a literal as their ` +
+        `default:\n` +
         lista(skroc(tekstDomyslny)) +
-        `\n    \`<string>\` znaczy „tekst dowolny", więc literał w tym miejscu jest ` +
-        `napisem biblioteki niezależnie od tego, jak wygląda. Pusty (\`''\`) znaczy „brak ` +
-        `wartości" i jest dozwolony.`,
+        `\n    \`<string>\` means „arbitrary text", so a literal in that place is a ` +
+        `library string whatever it looks like. An empty one (\`''\`) means „no value" ` +
+        `and is allowed.`,
     );
 
   const przyKonstrukcji = fabryki
@@ -984,24 +946,23 @@ const sprawdzTeksty = (we) => {
     throw new BladTekstu(
       'typescript',
       'napis-przy-konstrukcji',
-      `${przyKonstrukcji.length} wartości domyślnych czyta \`PCT_TEXTS\` przy ` +
-        `KONSTRUKCJI:\n` +
+      `${przyKonstrukcji.length} defaults read \`PCT_TEXTS\` at CONSTRUCTION:\n` +
         lista(skroc(przyKonstrukcji)) +
-        `\n    Wartość domyślna wejścia powstaje raz, więc aplikacja przełączająca język ` +
-        `bez przeładowania zostaje z napisem sprzed zmiany — dokładnie ta wada, którą ` +
-        `zamknęła decyzja 0014. Czytaj przez \`computed()\`, czyli przy renderowaniu.`,
+        `\n    An input's default is created once, so an application switching language ` +
+        `without a reload keeps the string from before the change — exactly the defect ` +
+        `decision 0014 closed. Read through \`computed()\`, that is, at render time.`,
     );
 
-  // ── 5. KANAŁ ────────────────────────────────────────────────────────────────
+  // ── 5. CHANNEL ────────────────────────────────────────────────────────────────
   const { klucze, domyslne, odczyty, wstrzykniecia } = we.kanal;
 
   if (!klucze.length)
     throw new BladTekstu(
       'kanal',
       'pusty-pomiar',
-      `nie znalazłem ani jednego pola w \`export interface PctTexts\` — cały punkt 5 ` +
-        `przeszedłby wtedy, nie mając czego porównać.\n    Najczęstsza przyczyna: ` +
-        `interfejs przeniesiony do innego pliku albo zapisany inaczej.`,
+      `no field found in \`export interface PctTexts\` — the whole of point 5 would then ` +
+        `pass with nothing to compare.\n    Usual cause: the interface moved to another ` +
+        `file, or written differently.`,
     );
 
   const zleWstrzykniecia = wstrzykniecia
@@ -1011,12 +972,12 @@ const sprawdzTeksty = (we) => {
     throw new BladTekstu(
       'kanal',
       'inject-pod-inna-nazwa',
-      `${zleWstrzykniecia.length} wstrzyknięć \`PCT_TEXTS\` ląduje pod nazwą inną niż ` +
+      `${zleWstrzykniecia.length} \`PCT_TEXTS\` injections land under a name other than ` +
         `\`texts\`:\n` +
         lista(zleWstrzykniecia) +
-        `\n    Odczyty liczy się wzorcem \`texts().klucz\`, więc inna nazwa czyni je ` +
-        `niewidzialnymi — a wtedy reguła „klucz musi być używany" orzeka o kluczach, ` +
-        `których po prostu nie widzi.`,
+        `\n    Reads are counted by the \`texts().key\` pattern, so another name makes ` +
+        `them invisible — and then the „a key has to be used" rule pronounces on keys it ` +
+        `simply cannot see.`,
     );
 
   const bezDomyslnej = klucze.filter((k) => !(k in domyslne));
@@ -1024,10 +985,10 @@ const sprawdzTeksty = (we) => {
     throw new BladTekstu(
       'kanal',
       'klucz-bez-domyslnej',
-      `${bezDomyslnej.length} pól \`PctTexts\` nie ma wartości domyślnej:\n` +
+      `${bezDomyslnej.length} \`PctTexts\` fields have no default value:\n` +
         lista(bezDomyslnej) +
-        `\n    Nadpisanie jest częściowe (decyzja 0007), więc pole bez domyślnej dociera ` +
-        `do DOM jako \`undefined\` u każdego, kto go nie przetłumaczył.`,
+        `\n    Overriding is partial (decision 0007), so a field with no default reaches ` +
+        `the DOM as \`undefined\` for everybody who did not translate it.`,
     );
 
   const bezKlucza = Object.keys(domyslne).filter((k) => !klucze.includes(k));
@@ -1035,10 +996,10 @@ const sprawdzTeksty = (we) => {
     throw new BladTekstu(
       'kanal',
       'domyslna-bez-klucza',
-      `${bezKlucza.length} wartości domyślnych nie ma pola w \`PctTexts\`:\n` +
+      `${bezKlucza.length} default values have no field in \`PctTexts\`:\n` +
         lista(bezKlucza) +
-        `\n    Napis, którego nie ma w typie, jest napisem, którego konsument nie ma jak ` +
-        `nadpisać — \`providePctTexts\` przyjmuje \`Partial<PctTexts>\`.`,
+        `\n    A string missing from the type is a string the consumer has no way of ` +
+        `overriding — \`providePctTexts\` takes \`Partial<PctTexts>\`.`,
     );
 
   const puste = klucze.filter(
@@ -1048,10 +1009,10 @@ const sprawdzTeksty = (we) => {
     throw new BladTekstu(
       'kanal',
       'domyslna-pusta',
-      `${puste.length} wartości domyślnych jest pustych:\n` +
+      `${puste.length} default values are empty:\n` +
         lista(puste) +
-        `\n    Pusta domyślna zamienia „biblioteka wypisuje to sama" w „biblioteka nie ` +
-        `wypisuje nic" u każdego, kto nie przetłumaczył tego pola.`,
+        `\n    An empty default turns „the library prints this itself" into „the library ` +
+        `prints nothing" for everybody who did not translate that field.`,
     );
 
   const uzyte = new Set(odczyty.map((o) => o.klucz));
@@ -1060,11 +1021,12 @@ const sprawdzTeksty = (we) => {
     throw new BladTekstu(
       'kanal',
       'klucz-martwy',
-      `${martwe.length} pól \`PctTexts\` nie czyta żaden komponent:\n` +
+      `${martwe.length} \`PctTexts\` fields are read by no component:\n` +
         lista(martwe) +
-        `\n    To pokrycie, którego nie ma: pole stoi w publicznym typie, konsument je ` +
-        `tłumaczy, a nie widać go nigdzie. Ten sam ruch co usunięcie martwego ` +
-        `\`--pct-on-danger\` w A12 — pole wraca z komponentem, który je wypisze.`,
+        `\n    That is coverage which does not exist: the field stands in a public type, ` +
+        `the consumer translates it, and it appears nowhere. The same move as removing the ` +
+        `dead \`--pct-on-danger\` in A12 — the field comes back with a component that ` +
+        `prints it.`,
     );
 
   const donikad = odczyty
@@ -1074,13 +1036,13 @@ const sprawdzTeksty = (we) => {
     throw new BladTekstu(
       'kanal',
       'odczyt-donikad',
-      `${donikad.length} odczytów wskazuje pole, którego nie ma w \`PctTexts\`:\n` +
+      `${donikad.length} reads name a field that is not in \`PctTexts\`:\n` +
         lista(skroc(donikad)) +
-        `\n    W szablonie taki odczyt nie jest błędem kompilacji — jest pustym miejscem ` +
+        `\n    In a template such a read is no compilation error — it is an empty space ` +
         `na ekranie.`,
     );
 
-  // ── 6. OSTRZEŻENIA ──────────────────────────────────────────────────────────
+  // ── 6. WARNINGS ──────────────────────────────────────────────────────────
   const zKanalu = we.ostrzezenia
     .filter((o) => /\btexts\s*\(\s*\)/.test(o.argument))
     .map((o) => `${o.plik}:${o.linia}`);
@@ -1088,10 +1050,10 @@ const sprawdzTeksty = (we) => {
     throw new BladTekstu(
       'ostrzezenia',
       'ostrzezenie-z-kanalu',
-      `${zKanalu.length} ostrzeżeń deweloperskich czerpie z \`PCT_TEXTS\`:\n` +
+      `${zKanalu.length} developer warnings draw on \`PCT_TEXTS\`:\n` +
         lista(zKanalu) +
-        `\n    Ostrzeżenie czyta programista, nie użytkownik — tłumaczenie go nikomu nie ` +
-        `pomaga i zabiera miejsce w typie, który konsument musi wypełnić (decyzja 0007).`,
+        `\n    A warning is read by a developer, not a user — translating it helps nobody ` +
+        `and takes up room in a type the consumer has to fill in (decision 0007).`,
     );
 
   const bezDevMode = we.ostrzezenia
@@ -1101,20 +1063,20 @@ const sprawdzTeksty = (we) => {
     throw new BladTekstu(
       'ostrzezenia',
       'ostrzezenie-bez-devmode',
-      `${bezDevMode.length} wywołań \`console.*\` nie gaśnie poza \`isDevMode()\`:\n` +
+      `${bezDevMode.length} \`console.*\` calls do not go quiet outside \`isDevMode()\`:\n` +
         lista(bezDevMode) +
-        `\n    Wymaganie zastrzega ten kanał dla trybu deweloperskiego. Strażnik może ` +
-        `stać w tej samej funkcji albo przy KAŻDYM jej wywołaniu — bramka uznaje oba ` +
-        `zapisy, bo \`if (isDevMode()) this.ostrzez()\` jest lepszy, a nie gorszy.`,
+        `\n    The requirement reserves this channel for development mode. The guard may ` +
+        `stand in the same function or at EVERY call of it — the gate accepts both, ` +
+        `because \`if (isDevMode()) this.warn()\` is better rather than worse.`,
     );
 
   const tekstow = skany.reduce((n, s) => n + s.skaner.teksty.length, 0);
   return {
     opis:
-      `${szablony.length} szablonów (${wezlow} węzłów, ${tekstow} tekstów), ` +
-      `${klasy.length} klas, ${fabryki.length} sygnałów, ` +
-      `${klucze.length} pól PctTexts w ${odczyty.length} odczytach, ` +
-      `${we.ostrzezenia.length} ostrzeżeń deweloperskich`,
+      `${szablony.length} templates (${wezlow} nodes, ${tekstow} texts), ` +
+      `${klasy.length} classes, ${fabryki.length} signals, ` +
+      `${klucze.length} PctTexts fields in ${odczyty.length} reads, ` +
+      `${we.ostrzezenia.length} developer warnings`,
   };
 };
 
@@ -1127,10 +1089,10 @@ const jestZrodlem = (p) =>
 const jestSzablonem = (p) => p.startsWith(`${PROJEKT}/`) && p.endsWith('.html');
 
 /**
- * Statyczne atrybuty z płaskiej tablicy Angulara (`consts`, `hostAttrs`).
- * Liczba otwiera sekcję o innym znaczeniu (klasy, style, wiązania), więc
- * czytamy wyłącznie prefiks przed pierwszą liczbą — dalej stoją nazwy bez
- * wartości. Ten sam parser co w `check-parts`.
+ * Static attributes from Angular's flat array (`consts`, `hostAttrs`). A number opens a
+ * section with a different meaning (classes, styles, bindings), so we read only the prefix
+ * before the first number — beyond it stand names without values. The same parser as in
+ * `check-parts`.
  */
 const parujAtrybuty = (attrs) => {
   const out = [];
@@ -1144,8 +1106,8 @@ const parujAtrybuty = (attrs) => {
 
 /**
  * Definicje ze ZBUDOWANEGO pakietu. `@angular/compiler` jest wczytany pierwszy,
- * bo pakiet jest skompilowany częściowo i `ɵcmp` powstaje dopiero przy dostępie
- * — ten sam krok, który u konsumenta wykonuje linker (`lesson-46`).
+ * because the package is partially compiled and `ɵcmp` appears only on access — the same
+ * step the linker performs at the consumer's (`lesson-46`).
  */
 const komponentyPakietu = async (root) => {
   const dist = join(root, DIST);
@@ -1153,8 +1115,8 @@ const komponentyPakietu = async (root) => {
     throw new BladTekstu(
       'artefakt',
       'pakiet-pusty',
-      `brak zbudowanego pakietu w ${DIST} — bramka czyta artefakt, nie same źródła.\n` +
-        `    Target musi mieć \`dependsOn\` na build biblioteki.`,
+      `no built package in ${DIST} — this gate reads the artifact, not the sources ` +
+        `alone.\n    The target needs a \`dependsOn\` on the library's build.`,
     );
 
   await import('@angular/compiler');
@@ -1190,11 +1152,10 @@ const komponentyPakietu = async (root) => {
 };
 
 /**
- * Ostrzeżenia deweloperskie z jednego pliku. Strażnik `isDevMode()` uznawany
- * jest w dwóch miejscach: w tej samej funkcji, w której stoi `console.*`, albo
- * przy każdym jej wywołaniu. Drugi zapis jest w bibliotece lepszy — nie wchodzi
- * w funkcję, której i tak nie ma po co wykonywać — więc bramka nie może go
- * karać.
+ * The developer warnings of one file. An `isDevMode()` guard is accepted in two places: in
+ * the same function the `console.*` stands in, or at every call of it. The second form is
+ * better in a library — it does not enter a function there is no point running — so the
+ * gate must not penalise it.
  */
 const czytajOstrzezenia = (plik, tresc) => {
   const out = [];
@@ -1205,7 +1166,7 @@ const czytajOstrzezenia = (plik, tresc) => {
     const przed = tresc.slice(0, m.index);
     const linia = przed.split('\n').length;
 
-    // Funkcja otaczająca: ostatnia deklaracja metody przed wywołaniem.
+    // The enclosing function: the last method declaration before the call.
     const metody = [
       ...przed.matchAll(
         /^ {2}(?:private |protected )?([A-Za-z_$][\w$]*)\s*\(/gm,
@@ -1240,7 +1201,7 @@ const czytajOstrzezenia = (plik, tresc) => {
   return out;
 };
 
-/** Wejście złożone z listy plików — ta sama postać dla repo i dla fixture'a. */
+/** An input built from a file list — the same shape for the repo and for a fixture. */
 const zbierzWejscie = async (root, pliki, pakietZDysku) => {
   const zrodla = pliki.filter(jestZrodlem);
   const tresci = new Map(zrodla.map((p) => [p, czytaj(root, p)]));
@@ -1291,11 +1252,11 @@ const zbierzWejscie = async (root, pliki, pakietZDysku) => {
 };
 
 /**
- * Pliki z INDEKSU GITA, nie z globa po dysku — ten sam powód co w pozostałych
- * bramkach: indeks jest niezależnym spisem tego, co repozytorium naprawdę
- * wiezie. Pathspec jest KATALOGIEM, a filtrowanie siedzi w JS-ie, bo pathspec
- * gita nie jest globem powłoki i wzorzec z gwiazdką potrafi zwrócić ZERO plików
- * zamiast błędu (`lesson-48`).
+ * Files from the GIT INDEX, not from a glob over the disk — the same reason as in the other
+ * gates: the index is an independent record of what the repository really
+ * carries. The pathspec is a DIRECTORY and the filtering sits in JS, because a git
+ * pathspec is not a shell glob and a pattern with a star can return ZERO files rather than
+ * an error (`lesson-48`).
  */
 const plikiRepozytorium = () =>
   execFileSync('git', ['ls-files', '-z', PROJEKT], {
@@ -1310,22 +1271,20 @@ const plikiRepozytorium = () =>
 // ── negative control ──────────────────────────────────────────────────────────
 
 /**
- * Składa spreparowane wejście: kopia bazy, na nią pliki przypadku, potem
- * usunięcia z `fixture.json`. Katalog przypadku zawiera więc WYŁĄCZNIE swoją
- * wadę, a nie kolejny egzemplarz poprawnego wejścia, w którym trzeba jej
- * szukać.
+ * Builds a prepared input: a copy of the base, the case's files on top, then the deletions
+ * from `fixture.json`. The case directory then holds NOTHING BUT its own defect, rather
+ * than one more copy of a correct input to hunt through.
  *
- * Odczyt z pakietu przychodzi jako DANE (`pakiet.json`), a nie z prawdziwego
- * builda — ten sam wybór co w `check-parts` i `check-zoneless` i z tego samego
- * powodu: zbudowanie pakietu Angulara na każdy z kilkunastu przypadków
- * kosztowałoby minuty na przebieg. Cenę widać wprost: fixtures NIE ćwiczą kodu
- * czytającego `ɵcmp` — ćwiczą wszystkie pozostałe parsery i cały układ kontroli.
- * Sam odczyt z pakietu jest ćwiczony przy każdym przebiegu na repozytorium.
+ * The package read arrives as DATA (`pakiet.json`) rather than from a real build — the same
+ * choice as in `check-parts` and `check-zoneless` and for the same reason: building an
+ * Angular package for each of a dozen-odd cases would cost minutes per run. The price is
+ * plain: the fixtures do NOT exercise the code that reads `ɵcmp` — they exercise every
+ * other parser and the whole arrangement of checks. The package read itself is exercised on
+ * every run against the repository.
  *
- * Źródła leżą w repozytorium jako `*.ts.txt` i dopiero tutaj stają się `*.ts` —
- * plik `.ts` w `tools/` nie należy do żadnego programu kompilatora, więc
- * zapaliłby `check-typecheck`. Fixture jednej bramki nie może być wadą dla
- * drugiej.
+ * The sources sit in the repository as `*.ts.txt` and become `*.ts` only here — a `.ts` file
+ * in `tools/` belongs to no compiler program, so it would fire `check-typecheck`. One
+ * gate's fixture must not be another's defect.
  */
 const zlozFixture = (nazwa, fx) => {
   const cel = mkdtempSync(join(tmpdir(), 'pct-check-texts-'));
@@ -1376,9 +1335,9 @@ if (przypadki.length === 0)
       `fail is one more silent defect (req-quality-negative-control)`,
   );
 
-// Wejście wzorcowe MUSI przejść: gdyby baza sama była wadliwa, każdy przypadek
-// zapalałby z jej powodu, a nie ze swojego, i wszystkie „odrzucone" byłyby
-// fałszywe — czyli ta kontrola stałaby się tym, przed czym stoi.
+// The reference input MUST pass: were the base defective itself, every case would fire
+// because of it rather than its own defect, and every „rejected" would be false — this
+// control would become the very thing it stands against.
 {
   const katalog = zlozFixture(BAZA, {});
   try {
@@ -1428,5 +1387,5 @@ if (problems.length) {
 
 console.log(
   `✓ Texts: ${opis}. Negative control: the reference input passes, ` +
-    `${przypadki.length} spreparowanych odrzuconych na swoich regułach.`,
+    `${przypadki.length} prepared ones rejected on their own rules.`,
 );
