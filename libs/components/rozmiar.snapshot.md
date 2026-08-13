@@ -1,24 +1,24 @@
-# Snapshot rozmiaru i izolacji entrypointów
+# Entrypoint size and isolation snapshot
 
-> **Ten plik jest generowany.** Nie edytuj go ręcznie —
-> `node tools/check-bundle.mjs --write`. Bramka `check-bundle` odrzuca rozjazd.
+> **This file is generated.** Do not edit it by hand —
+> `node tools/check-bundle.mjs --write`. The `check-bundle` gate rejects a drift.
 
-„Komponenty importuje się przez secondary entrypoints, co wymusza tree-shaking"
-jest obietnicą sprzedażową ([`req-project-tree-shaking`](../../docs/requirements/project.md#req-project-tree-shaking))
-— tą, dla której ktoś tę bibliotekę wybiera. Jej złamanie nie daje ani jednego
-czerwonego testu: import z sąsiedniego entrypointu kompiluje się, przechodzi testy
-i dokłada konsumentowi kilkadziesiąt kilobajtów, o których dowie się z własnego
-raportu bundla, jeśli go ma.
+„Components are imported through secondary entrypoints, which forces tree-shaking"
+is a sales promise ([`req-project-tree-shaking`](../../docs/requirements/project.md#req-project-tree-shaking))
+— the one somebody picks this library for. Breaking it gives not one red test: an
+import from a neighbouring entrypoint compiles, passes the tests and adds tens of
+kilobytes for the consumer, who will learn about them from their own bundle report,
+if they have one.
 
-Ten plik jest listą, wobec której mierzy się zmianę. Rozjazd nie znaczy „błąd" —
-znaczy „konsument zaczął płacić za coś innego niż wczoraj, i ma to być widoczne
-w review".
+This file is the list a change is measured against. A drift does not mean „an error" —
+it means „the consumer started paying for something other than yesterday, and that is
+to be visible in review".
 
-Kolumny: entrypoint · rozmiar w bajtach · wniesione inne entrypointy · zależności
-zewnętrzne. Rozmiar jest surowym rozmiarem zminifikowanego bundla aplikacji, która
-importuje **wyłącznie** ten jeden entrypoint, z Angularem jako zależnością
-zewnętrzną — mierzy więc wkład **tej biblioteki**, a nie wagę cudzego frameworka.
-Budżet: ±5% albo ±256 B, co większe.
+Columns: entrypoint · size in bytes · other entrypoints brought in · external
+dependencies. The size is the raw size of the minified bundle of an application that
+imports **only** this one entrypoint, with Angular as an external dependency — so it
+measures the contribution of **this library**, not the weight of somebody else's
+framework. Budget: ±5% or ±256 B, whichever is larger.
 
 ```
 . 1183 ./core @angular/core

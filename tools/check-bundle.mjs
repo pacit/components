@@ -1,42 +1,25 @@
 #!/usr/bin/env node
 /**
- * Bramka tree-shakingu i budżetu rozmiaru: sprawdza, ile konsument naprawdę płaci
- * za import jednego entrypointu (`req-project-tree-shaking`).
+ * Tree-shaking and size budget gate: what does a consumer really pay for importing one
+ * entrypoint? „Secondary entrypoints force tree-shaking" is the SALES promise
+ * (`req-project-tree-shaking`), and breaking it gives no red test.
  *
- * Powód istnienia: „komponenty importuje się przez secondary entrypoints, co wymusza
- * tree-shaking" jest obietnicą SPRZEDAŻOWĄ — tą, dla której ktoś tę bibliotekę wybiera —
- * i do 2026-08-05 nie była sprawdzana w ogóle. Jej złamanie nie daje ani jednego
- * czerwonego testu: dopisanie w `button/src/button.ts` importu z `@pacit/components/field`
- * kompiluje się, przechodzi testy, przechodzi `check-package` i dokłada konsumentowi
- * kilkadziesiąt kilobajtów, o których dowie się z własnego raportu bundla, jeśli go ma.
+ *   1. `entrypointy`  — TWO reads of the entrypoint list agree and are not empty,
+ *   2. `side-effects` — the packed manifest declares `sideEffects: false`,
+ *   3. `snapshot`     — a snapshot exists, with a row for every entrypoint,
+ *   4. `obecnosc`     — DENOMINATOR: a probe brings its own entrypoint in, primary none,
+ *   5. `izolacja`     — the entrypoints a probe pulls in match the snapshot,
+ *   6. `markery`      — a second read of the same, over the bundle's text, BOTH ways,
+ *   7. `zewnetrzne`   — a probe's external dependencies match the snapshot,
+ *   8. `rozmiar`      — a size budget per entrypoint, tolerance TWO-SIDED,
+ *   9. `roznicowa`    — a two-entrypoint probe is noticeably larger than either single one,
+ *  10. `builder`      — the same measured by Angular's REAL builder.
  *
- * Sprawdzane jest dziesięć rzeczy:
- *   1. `entrypointy`  — lista entrypointów z DWÓCH odczytów (źródła i artefakt) jest ta
- *                       sama i niepusta,
- *   2. `side-effects` — spakowany manifest deklaruje `sideEffects: false`,
- *   3. `snapshot`     — snapshot istnieje i ma wiersz dokładnie dla każdego entrypointu,
- *   4. `obecnosc`     — MIANOWNIK: sonda wnosi swój entrypoint, primary nie wnosi ani
- *                       jednego komponentu, a każdy entrypoint ma czym się wyróżnić,
- *   5. `izolacja`     — zbiór entrypointów wniesionych przez sondę zgadza się ze snapshotem,
- *   6. `markery`      — drugi odczyt tego samego, po tekście bundla, w OBIE strony,
- *   7. `zewnetrzne`   — zbiór zależności zewnętrznych sondy zgadza się ze snapshotem
- *                       (tu mieszka „w bundlu z `button` nie ma CDK Overlay"),
- *   8. `rozmiar`      — budżet rozmiaru per entrypoint, tolerancja DWUSTRONNA,
- *   9. `roznicowa`    — sonda dwóch entrypointów jest zauważalnie większa niż każda
- *                       z pojedynczych,
- *  10. `builder`      — to samo zmierzone PRAWDZIWYM builderem Angulara.
+ * Points 5 and 7 are the promise itself (7 is where „no CDK Overlay with `button`" lives);
+ * 4, 6, 9 and 10 watch the DENOMINATOR — without them „the `button` bundle holds no
+ * `PctField`" is vacuously true exactly when the measurement stopped measuring.
  *
- * Punkty 5 i 7 są samym sednem obietnicy. Punkty 4, 6, 9 i 10 pilnują MIANOWNIKA —
- * bez nich „w bundlu z `button` nie ma `PctField`" jest prawdą pustą dokładnie wtedy,
- * gdy pomiar przestał cokolwiek mierzyć: sonda, z której esbuild wyrzucił całą
- * bibliotekę, nie zawiera też `PctField`.
- *
- * Do tego jedenasty przebieg, który nie bada bundla, tylko TĘ BRAMKĘ: kontrola
- * odniesienia z `tools/check-bundle.fixtures/` (`req-quality-negative-control`).
- *
- * Użycie:
- *   node tools/check-bundle.mjs
- *   node tools/check-bundle.mjs --write   przepisuje snapshot rozmiarów
+ * Usage: node tools/check-bundle.mjs [--write]  (--write: rewrite the size snapshot)
  */
 import { execFileSync } from 'node:child_process';
 import {
@@ -62,30 +45,30 @@ const BAZA = '_poprawny.json';
 const WRITE = process.argv.includes('--write');
 
 /**
- * Budżet: o ile rozmiar sondy może odjechać od snapshotu, zanim to jest „skok".
- * Tolerancja jest DWUSTRONNA i to nie z uprzejmości dla optymalizacji. Wzrost trzeba
- * przyjąć w widocznej linii diffa — po to jest budżet. Ale SPADEK jest w tym
- * repozytorium podejrzany co najmniej tak samo: bramka, której pomiar cichnie, wygląda
- * dokładnie jak bramka, której pilnowany kod schudł (`lesson-45`, `lesson-48`). Jedyna
- * różnica jest w tym, czy ktoś na to spojrzał — więc niech spojrzy.
+ * The budget: how far a probe's size may drift from the snapshot before it counts as a
+ * jump. The tolerance is TWO-SIDED, and not out of courtesy to optimisation. A growth has
+ * to be accepted in a visible line of the diff — that is what a budget is for. But a DROP
+ * is at least as suspect in this repository: a gate whose measurement goes quiet looks
+ * exactly like a gate whose guarded code got smaller (`lesson-45`, `lesson-48`). The only
+ * difference is whether anybody looked — so let them look.
  */
 const TOLERANCJA = 0.05;
 const TOLERANCJA_MIN = 256;
 
 /**
- * Klasy CSS nakładki CDK. Jedyny napis w tej bramce wpisany ręką i jedyny, który
- * dotyczy cudzego pakietu — bo `@angular/cdk/overlay` jest najdroższą zależnością
- * opcjonalną biblioteki i to ona stoi w treści `req-project-tree-shaking`. Napis nie
- * jest tu założeniem: sonda buildera z KOMPLETEM entrypointów musi go znaleźć, inaczej
+ * The CDK overlay's CSS classes. The only string in this gate written by hand and the only
+ * one about somebody else's package — because `@angular/cdk/overlay` is the library's most
+ * expensive optional dependency and it is the one named in `req-project-tree-shaking`. The
+ * string is no assumption here: the builder probe with ALL the entrypoints has to find it,
  * punkt 10 zapala na samym sobie.
  */
 const MARKER_OVERLAY = 'cdk-overlay';
 
-/** Nazwa entrypointu głównego w mapie `exports` — pakiet, nie podścieżka. */
+/** The primary entrypoint's name in the `exports` map — the package, not a subpath. */
 const PRIMARY = '.';
 
 /**
- * Naruszenie jednej z dziesięciu kontroli. It carries the check's identifier, not just the
+ * A violation of one of the ten checks. It carries the check's identifier, not just the
  * message: the negative control has to verify that a prepared input fired ON ITS OWN
  * point — a fixture failing for a reason other than the one written into it proves
  * something other than what it declares.
@@ -102,24 +85,24 @@ const lista = (zbior) => [...zbior].sort().join(', ') || '(pusto)';
 // ── kontrole ──────────────────────────────────────────────────────────────────
 
 /**
- * Komplet kontroli na gotowym wejściu:
- *   `zrodla`    — entrypointy z `ng-package.json` w indeksie gita,
+ * The full set of checks over a ready input:
+ *   `zrodla`    — the entrypoints from `ng-package.json` in the git index,
  *   `manifest`  — spakowany `package.json` (mapa `exports`, `sideEffects`),
- *   `snapshot`  — treść pliku albo `null`,
+ *   `snapshot`  — the file's contents, or `null`,
  *   `markery`   — `{ entrypoint: [selektory] }` ze zbudowanego pakietu,
  *   `sondy`     — `{ entrypoint: { bajty, wniesione, zewnetrzne, wTekscie } }`,
  *   `para`      — `{ entrypointy: [a, b], bajty }`,
  *   `builder`   — `[{ entrypointy, znalezione, overlay }]` z prawdziwego builda.
  *
- * Rzuca `BladBundla` przy pierwszym naruszeniu; zwraca `{ opis, snapshot }`, bo
- * wyrenderowany snapshot wraca także z przebiegu sprawdzającego — `--write` ma go
- * skąd wziąć bez powtarzania całego pomiaru.
+ * Throws `BladBundla` on the first violation; returns `{ opis, snapshot }`, because the
+ * rendered snapshot comes back from a checking run too — `--write` then has somewhere to
+ * take it from without repeating the whole measurement.
  *
- * Każdy punkt czyta wejście DEFENSYWNIE, mimo że poprzedni „już to sprawdził".
- * Zależność między punktami jest normalna; zapisanie jej tak, że rozbrojenie
- * poprzedniego zamienia bramkę w `TypeError`, nie jest — bo wtedy kontrola odniesienia
- * przestaje umieć zbadać punkt, który miała zbadać. Ta sama wada wyszła w A4, A7 i A3,
- * trzy razy z rzędu ([`lesson-50`](../docs/lessons.md#lesson-50)).
+ * Every point reads the input DEFENSIVELY, even though the previous one „already checked
+ * that". A dependency between points is normal; writing it so that disarming the previous
+ * one turns the gate into a `TypeError` is not — the negative control then loses the
+ * ability to examine the point it was meant to examine. The same defect came out in A4, A7
+ * and A3, three times running ([`lesson-50`](../docs/lessons.md#lesson-50)).
  */
 const sprawdzBundle = (we) => {
   const zrodla = we.zrodla ?? [];
@@ -128,70 +111,72 @@ const sprawdzBundle = (we) => {
   );
 
   /**
-   * Błąd punktu, na który `--write` jest właściwą odpowiedzią, niesie ze sobą gotowy
-   * snapshot. Bez tego pierwsze uruchomienie bramki w repozytorium bez snapshotu nie
-   * miałoby jak go wygenerować — a `--write` istniałby jako polecenie, którego jedyny
-   * przypadek użycia nie działa.
+   * An error of a point that `--write` is the right answer to carries a ready snapshot
+   * with it. Without that, the first run of the gate in a repository with no snapshot
+   * would have no way of generating one — and `--write` would exist as a command whose
+   * only use case does not work.
    */
   const doZapisu = (kontrola, opis) =>
     Object.assign(new BladBundla(kontrola, opis), {
       snapshot: renderujSnapshot(zrodla, we.sondy ?? {}),
     });
 
-  // 1. Lista entrypointów z dwóch odczytów. Ten sam ruch co punkt 1 w `check-tokens`
-  //    i punkt 2 w `check-parts`: jeden odczyt nie ma jak zauważyć, że sam się skurczył.
-  //    Źródła łapią entrypoint, który nie dojechał do pakietu (i nieaktualne `dist`),
-  //    artefakt — katalog, któremu ktoś zabrał `ng-package.json`, zostawiając kod.
+  // 1. The entrypoint list from two reads. The same move as point 1 in `check-tokens` and
+  //    point 2 in `check-parts`: one read has no way of noticing that it shrank. The
+  //    sources catch an entrypoint that never reached the package (and a stale `dist`);
+  //    the artifact catches a directory somebody took `ng-package.json` from, leaving the
+  //    code.
   if (zrodla.length === 0)
     throw new BladBundla(
       'entrypointy',
-      `nie znalazłem ani jednego entrypointu w \`${PROJEKT}/*/ng-package.json\` — ` +
-        `wszystkie dalsze punkty przeszłyby wtedy zawsze, bo nie mają czego mierzyć`,
+      `no entrypoint found in \`${PROJEKT}/*/ng-package.json\` — every later point ` +
+        `would then always pass, having nothing to measure`,
     );
   const brakWArtefakcie = zrodla.filter((e) => !zArtefaktu.includes(e));
   const brakWZrodlach = zArtefaktu.filter((e) => !zrodla.includes(e));
   if (brakWArtefakcie.length || brakWZrodlach.length)
     throw new BladBundla(
       'entrypointy',
-      `dwa odczyty listy entrypointów się rozjechały:\n` +
+      `the two reads of the entrypoint list have drifted apart:\n` +
         (brakWArtefakcie.length
-          ? `      w źródłach, a nie w \`${DIST}/package.json\`: ${lista(brakWArtefakcie)}\n`
+          ? `      in the sources, not in \`${DIST}/package.json\`: ${lista(brakWArtefakcie)}\n`
           : '') +
         (brakWZrodlach.length
-          ? `      w artefakcie, a nie w źródłach: ${lista(brakWZrodlach)}\n`
+          ? `      in the artifact, not in the sources: ${lista(brakWZrodlach)}\n`
           : '') +
-        `    Najczęstsza przyczyna: nieaktualne \`dist\` (target musi mieć ` +
+        `    Usual cause: a stale \`dist\` (the target needs a ` +
         `\`dependsOn\` na build biblioteki) albo entrypoint bez \`ng-package.json\``,
     );
 
-  // 2. `sideEffects: false`. Flaga, na której stoi CAŁA reszta: bez niej bundler musi
-  //    założyć, że każdy moduł pakietu coś robi przy wczytaniu, i przestaje wyrzucać
-  //    nieużywane. Sondy tej bramki tego NIE zauważą — importują cały namespace, więc
-  //    i tak wszystko zostaje — dlatego flaga potrzebuje osobnego punktu.
+  // 2. `sideEffects: false`. The flag EVERYTHING else rests on: without it a bundler has
+  //    to assume every module of the package does something on load, and stops dropping
+  //    the unused ones. This gate's probes will NOT notice that — they import a whole
+  //    namespace, so everything stays anyway — which is why the flag needs a point of its
+  //    own.
   //
-  //    Zmierzone, nie założone: USUNIĘCIE klucza ze źródłowego manifestu tego punktu
-  //    nie zapala, bo ng-packagr dopisuje wtedy `false` sam — sprawdzone przebiegiem
-  //    z `--skip-nx-cache`, żeby nie wziąć trafienia w cache za wynik. Punkt zapala
-  //    na jawnym `true` i na dniu, w którym ng-packagr przestanie tę wartość dopisywać.
-  //    Czyta artefakt, a nie źródło, właśnie dlatego: konsument dostaje ten plik,
-  //    a nie ten, który leży w repozytorium.
+  //    Measured, not assumed: REMOVING the key from the source manifest does not fire this
+  //    point, because ng-packagr then writes `false` itself — checked with a
+  //    `--skip-nx-cache` run, so as not to take a cache hit for a result. The point fires
+  //    on an explicit `true`, and on the day ng-packagr stops writing the value. It reads
+  //    the artifact rather than the source for exactly that reason: the consumer gets that
+  //    file, not the one lying in the repository.
   if (we.manifest?.sideEffects !== false)
     throw new BladBundla(
       'side-effects',
       `\`${DIST}/package.json\` deklaruje \`sideEffects: ${JSON.stringify(
         we.manifest?.sideEffects,
-      )}\`, a tree-shaking stoi na \`false\` — bez tego bundler musi zachować każdy ` +
-        `moduł pakietu „na wszelki wypadek", a ta bramka tego nie zobaczy: jej sondy ` +
-        `importują cały namespace`,
+      )}\`, and tree-shaking rests on \`false\` — without it a bundler has to keep every ` +
+        `module of the package „just in case", and this gate will not see that: its ` +
+        `probes import a whole namespace`,
     );
 
-  // 3. Snapshot: istnieje i pokrywa dokładnie listę entrypointów.
+  // 3. The snapshot: it exists and covers exactly the entrypoint list.
   if (we.snapshot === null || we.snapshot === undefined)
     throw doZapisu(
       'snapshot',
-      `brak \`${SNAPSHOT}\` — uruchom \`node tools/check-bundle.mjs --write\`.\n` +
-        `    Bez snapshotu punkty 5, 7 i 8 nie mają się z czym porównać, więc bramka ` +
-        `pilnowałaby wyłącznie tego, że pomiar się wykonał`,
+      `no \`${SNAPSHOT}\` — run \`node tools/check-bundle.mjs --write\`.\n` +
+        `    Without a snapshot, points 5, 7 and 8 have nothing to compare against, so the ` +
+        `gate would only be watching that the measurement ran`,
     );
   const wiersze = wierszeSnapshotu(we.snapshot);
   const brakWiersza = zrodla.filter((e) => !wiersze.has(e));
@@ -199,64 +184,64 @@ const sprawdzBundle = (we) => {
   if (brakWiersza.length || zbedny.length)
     throw doZapisu(
       'snapshot',
-      `snapshot nie pokrywa listy entrypointów:\n` +
+      `the snapshot does not cover the entrypoint list:\n` +
         (brakWiersza.length
           ? `      bez wiersza w snapshocie: ${lista(brakWiersza)}\n`
           : '') +
         (zbedny.length
           ? `      wiersz bez entrypointu: ${lista(zbedny)}\n`
           : '') +
-        `    Nowy entrypoint bez wiersza nie ma budżetu ani zapisanej izolacji, ` +
-        `czyli rodzi się poza tą bramką — \`node tools/check-bundle.mjs --write\``,
+        `    A new entrypoint with no row has neither a budget nor a recorded isolation, ` +
+        `so it is born outside this gate — \`node tools/check-bundle.mjs --write\``,
     );
 
-  // 4. MIANOWNIK. Cztery rzeczy, bez których wszystko niżej jest prawdą pustą.
+  // 4. DENOMINATOR. Four things without which everything below is vacuously true.
   const sondy = we.sondy ?? {};
   const markery = we.markery ?? {};
 
-  //    a) sonda wnosi swój entrypoint. Sonda, z której bundler wyrzucił bibliotekę
-  //       w całości, przechodzi każdy punkt o izolacji — bo nie ma w niej NICZEGO.
+  //    a) a probe brings its own entrypoint in. A probe the bundler threw the whole
+  //       library out of passes every point about isolation — it holds NOTHING.
   for (const e of zrodla) {
     const s = sondy[e];
     if (!s)
       throw new BladBundla(
         'obecnosc',
-        `nie ma pomiaru dla entrypointu \`${e}\` — sonda się nie zbudowała albo ` +
-          `wypadła z listy`,
+        `no measurement for entrypoint \`${e}\` — the probe did not build, or dropped ` +
+          `off the list`,
       );
-    // `s?.` mimo gałęzi wyżej, która „już to sprawdziła": rozbrojenie tamtej nie
-    // może zamienić tej w `TypeError`. Ta sama wada wyszła w A7, A4 i A3 — trzy razy
-    // MIĘDZY punktami, tutaj czwarty raz i wewnątrz jednego ([`lesson-50`]).
+    // `s?.` despite the branch above that „already checked that": disarming that one
+    // must not turn this into a `TypeError`. The same defect came out in A7, A4 and A3 —
+    // three times BETWEEN points, here a fourth time and inside one ([`lesson-50`]).
     if (!(s?.wniesione ?? []).includes(e))
       throw new BladBundla(
         'obecnosc',
-        `sonda importująca \`${e}\` nie wniosła do bundla ani jednego bajtu z tego ` +
-          `entrypointu — „nie ma w niej \`PctField\`" jest wtedy prawdą pustą.\n` +
-          `    Wniesione: ${lista(s?.wniesione ?? [])}`,
+        `the probe importing \`${e}\` brought not one byte of that entrypoint into the ` +
+          `bundle — „it holds no \`PctField\`" is then vacuously true.\n` +
+          `    Brought in: ${lista(s?.wniesione ?? [])}`,
       );
   }
 
-  //    b) primary nie wnosi ani jednego komponentu. To jest DOSŁOWNIE treść obietnicy
-  //       („`@pacit/components` eksportuje wyłącznie `providePctConfig`, wspólne typy
-  //       i wersję") i zarazem jedyny powód, dla którego primary wolno nie mieć markera
-  //       w punkcie (c): nie ma własnej treści, którą dałoby się rozpoznać po tekście.
-  //       Ta asercja jest od markera mocniejsza, więc zwolnienie nie jest wyjątkiem
-  //       do wyklikania, tylko innym, ostrzejszym pomiarem tej samej rzeczy.
+  //    b) primary brings in no component. This is LITERALLY the text of the promise
+  //       („`@pacit/components` exports only `providePctConfig`, the shared types and the
+  //       version") and at the same time the only reason primary may lack a marker in
+  //       point (c): it has no content of its own to be recognised by. This assertion is
+  //       stronger than a marker, so the exemption is no waiver to be clicked through but
+  //       a different, sharper measurement of the same thing.
   const zKomponentami = (e) => (markery[e] ?? []).length > 0;
   const wPrimary = (sondy[PRIMARY]?.wniesione ?? []).filter(zKomponentami);
   if (wPrimary.length)
     throw new BladBundla(
       'obecnosc',
-      `entrypoint główny \`@pacit/components\` wnosi komponenty: ${lista(wPrimary)}.\n` +
-        `    Obietnica brzmi „primary eksportuje wyłącznie \`providePctConfig\`, ` +
-        `wspólne typy i wersję" — każdy konsument płaci wtedy za komponent, ` +
-        `którego nie zaimportował`,
+      `the primary entrypoint \`@pacit/components\` brings in components: ${lista(wPrimary)}.\n` +
+        `    The promise reads „primary exports only \`providePctConfig\`, the shared ` +
+        `types and the version" — every consumer then pays for a component they never ` +
+        `imported`,
     );
 
-  //    c) każdy entrypoint, którego jakaś sonda musi dowieść NIEOBECNYM, ma po czym go
-  //       poznać. Entrypoint bez markera przechodziłby punkt 6 zawsze — bo nie ma czego
-  //       szukać. Primary jest wyłączony na mocy (b), a entrypoint wnoszony przez
-  //       wszystkie sondy (dziś `./core`) nie jest nigdzie dowodzony nieobecnym.
+  //    c) every entrypoint some probe has to prove ABSENT can be recognised. An
+  //       entrypoint with no marker would always pass point 6 — there is nothing to look
+  //       for. Primary is exempt by (b), and an entrypoint every probe brings in (today
+  //       `./core`) is nowhere proved absent.
   const nieobecnyGdzies = zrodla.filter(
     (e) =>
       e !== PRIMARY &&
@@ -266,16 +251,16 @@ const sprawdzBundle = (we) => {
   if (bezMarkera.length)
     throw new BladBundla(
       'obecnosc',
-      `entrypointy bez ani jednego markera: ${lista(bezMarkera)} — punkt 6 nie ma ` +
-        `dla nich czego szukać w tekście bundla, więc orzeka o ich nieobecności, ` +
-        `nie umiejąc zobaczyć obecności.\n` +
-        `    Marker to selektor komponentu albo dyrektywy ze ZBUDOWANEGO pakietu ` +
-        `(\`ɵcmp.selectors\`) — entrypoint, który nie wystawia ani jednego, wymaga ` +
-        `innego odczytu niż tekstowy`,
+      `entrypoints with no marker at all: ${lista(bezMarkera)} — point 6 has nothing to ` +
+        `look for in the bundle's text, so it pronounces them absent without being able ` +
+        `to see presence.\n` +
+        `    A marker is a component's or directive's selector from the BUILT package ` +
+        `(\`ɵcmp.selectors\`) — an entrypoint exposing none needs a read other than a ` +
+        `textual one`,
     );
 
-  //    d) marker jednego entrypointu nie może być podciągiem markera drugiego —
-  //       wyszukiwanie po tekście dawałoby wtedy trafienie na cudzej treści.
+  //    d) one entrypoint's marker must not be a substring of another's — a search over
+  //       the text would then hit on somebody else's content.
   const wszystkieMarkery = Object.entries(markery).flatMap(([e, m]) =>
     m.map((marker) => ({ e, marker })),
   );
@@ -284,15 +269,15 @@ const sprawdzBundle = (we) => {
       if (a.e !== b.e && b.marker.includes(a.marker))
         throw new BladBundla(
           'obecnosc',
-          `marker \`${a.marker}\` (${a.e}) jest podciągiem markera \`${b.marker}\` ` +
-            `(${b.e}) — odczyt tekstowy meldowałby \`${a.e}\` wszędzie tam, gdzie ` +
-            `naprawdę jest \`${b.e}\``,
+          `marker \`${a.marker}\` (${a.e}) is a substring of marker \`${b.marker}\` ` +
+            `(${b.e}) — a textual read would report \`${a.e}\` everywhere \`${b.e}\` ` +
+            `really is`,
         );
 
-  // 5. IZOLACJA: co sonda naprawdę wciągnęła. Odczyt z metafile bundlera, czyli
-  //    z tego, komu przypisał bajty w wyjściu — nie z listy importów w źródle.
-  //    Rozjazd nie znaczy „błąd": znaczy „konsument zaczął płacić za coś innego niż
-  //    wczoraj i ma to być widoczne w review".
+  // 5. ISOLATION: what a probe really pulled in. Read from the bundler's metafile, that
+  //    is, from whom it assigned the output's bytes to — not from a list of imports in the
+  //    source. A drift does not mean „an error": it means „the consumer started paying for
+  //    something other than yesterday, and that is to be visible in review".
   for (const e of zrodla) {
     const zmierzone = new Set(
       (sondy[e]?.wniesione ?? []).filter((x) => x !== e),
@@ -301,20 +286,20 @@ const sprawdzBundle = (we) => {
     if (!rowne(zmierzone, zapisane))
       throw doZapisu(
         'izolacja',
-        `import \`@pacit/components${e === PRIMARY ? '' : e.slice(1)}\` wciąga inny ` +
-          `zestaw entrypointów niż zapisany:\n` +
+        `importing \`@pacit/components${e === PRIMARY ? '' : e.slice(1)}\` pulls in a ` +
+          `different set of entrypoints than recorded:\n` +
           `      snapshot: ${lista(zapisane)}\n` +
-          `      pomiar:   ${lista(zmierzone)}\n` +
-          `    Jeśli to zamierzone — \`node tools/check-bundle.mjs --write\`. Jeśli nie, ` +
-          `szukaj importu z innego entrypointu w \`${PROJEKT}${e === PRIMARY ? '/src' : e.slice(1)}\``,
+          `      measured: ${lista(zmierzone)}\n` +
+          `    If this is intended — \`node tools/check-bundle.mjs --write\`. If not, look ` +
+          `for an import from another entrypoint in \`${PROJEKT}${e === PRIMARY ? '/src' : e.slice(1)}\``,
       );
   }
 
-  // 6. Ten sam pomiar, drugi odczyt: po TEKŚCIE zbudowanego bundla. Metafile mówi,
-  //    komu bundler przypisał bajty; tekst mówi, co w tych bajtach naprawdę stoi.
-  //    Porównanie idzie w OBIE strony, bo każda łapie co innego: marker bez wpisu
-  //    w metafile to treść, która weszła drogą, o której bundler nie raportuje;
-  //    wpis bez markera to entrypoint policzony, choć nic z niego nie zostało.
+  // 6. The same measurement, a second read: over the built bundle's TEXT. The metafile
+  //    says whom the bundler assigned bytes to; the text says what really stands in those
+  //    bytes. The comparison goes BOTH ways, because each catches something else: a marker
+  //    with no metafile entry is content that arrived by a route the bundler does not
+  //    report; an entry with no marker is an entrypoint counted though nothing of it left.
   for (const e of zrodla) {
     const wTekscie = new Set(sondy[e]?.wTekscie ?? []);
     const oczekiwane = new Set(
@@ -323,38 +308,39 @@ const sprawdzBundle = (we) => {
     if (!rowne(wTekscie, oczekiwane))
       throw new BladBundla(
         'markery',
-        `dwa odczyty zawartości sondy \`${e}\` się rozjechały:\n` +
-          `      metafile bundlera: ${lista(oczekiwane)}\n` +
-          `      markery w tekście: ${lista(wTekscie)}\n` +
-          `    Marker w tekście bez wpisu w metafile znaczy treść wniesioną drogą, ` +
-          `której bundler nie przypisał do modułu. Wpis bez markera — entrypoint ` +
-          `policzony, choć nic z niego nie przetrwało`,
+        `the two reads of probe \`${e}\`'s contents have drifted apart:\n` +
+          `      bundler metafile:  ${lista(oczekiwane)}\n` +
+          `      markers in text:   ${lista(wTekscie)}\n` +
+          `    A marker in the text with no metafile entry means content brought in by a ` +
+          `route the bundler did not assign to a module. An entry with no marker — an ` +
+          `entrypoint counted though nothing of it survived`,
       );
   }
 
-  // 7. Zależności zewnętrzne per entrypoint. Tu mieszka literalne „w bundlu z `button`
-  //    nie ma CDK Overlay": snapshot zapisuje `@angular/cdk/overlay` przy `./select`
-  //    i nigdzie indziej, więc drugi entrypoint, który po nią sięgnie, jest linią
-  //    w diffie. Ten sam mechanizm obejmie każdą przyszłą zależność, także taką,
-  //    o której dziś nikt nie pomyślał — dlatego punkt porównuje ZBIÓR, a nie szuka
-  //    wpisanej z góry nazwy.
+  // 7. External dependencies per entrypoint. This is where the literal „the `button`
+  //    bundle has no CDK Overlay" lives: the snapshot records `@angular/cdk/overlay` at
+  //    `./select` and nowhere else, so a second entrypoint reaching for it is a line in the
+  //    diff. The same mechanism will cover every future dependency, including one nobody
+  //    has thought of — which is why the point compares a SET rather than looking for a
+  //    name written in advance.
   for (const e of zrodla) {
     const zmierzone = new Set(sondy[e]?.zewnetrzne ?? []);
     const zapisane = new Set(wiersze.get(e)?.zewnetrzne ?? []);
     if (!rowne(zmierzone, zapisane))
       throw doZapisu(
         'zewnetrzne',
-        `import \`@pacit/components${e === PRIMARY ? '' : e.slice(1)}\` ciągnie inny ` +
-          `zestaw zależności zewnętrznych niż zapisany:\n` +
+        `importing \`@pacit/components${e === PRIMARY ? '' : e.slice(1)}\` drags in a ` +
+          `different set of external dependencies than recorded:\n` +
           `      snapshot: ${lista(zapisane)}\n` +
           `      pomiar:   ${lista(zmierzone)}`,
       );
   }
 
-  // 8. Budżet rozmiaru. Liczba jest surowym rozmiarem zminifikowanego bundla sondy,
-  //    z Angularem jako zależnością zewnętrzną — czyli mierzy WKŁAD BIBLIOTEKI, a nie
-  //    wagę cudzego frameworka. Gdyby Angular wchodził do pomiaru, każdy jego patch
-  //    przepisywałby cały snapshot i budżet przestałby mówić cokolwiek o tej bibliotece.
+  // 8. The size budget. The number is the raw size of the probe's minified bundle, with
+  //    Angular as an external dependency — so it measures THE LIBRARY'S CONTRIBUTION, not
+  //    the weight of somebody else's framework. Were Angular part of the measurement,
+  //    every patch of it would rewrite the whole snapshot and the budget would stop saying
+  //    anything about this library.
   for (const e of zrodla) {
     const zmierzony = sondy[e]?.bajty;
     const zapisany = wiersze.get(e)?.bajty;
@@ -368,31 +354,31 @@ const sprawdzBundle = (we) => {
     if (Math.abs(zmierzony - zapisany) > luz)
       throw doZapisu(
         'rozmiar',
-        `rozmiar sondy \`${e}\` wyszedł poza budżet: ${zmierzony} B wobec ` +
+        `probe \`${e}\` fell outside its budget: ${zmierzony} B against ` +
           `${zapisany} B ± ${luz} B (${(((zmierzony - zapisany) / zapisany) * 100).toFixed(1)}%).\n` +
           `    ${
             zmierzony > zapisany
-              ? 'Wzrost jest do przyjęcia, ale w widocznej linii diffa'
-              : 'Spadek też wymaga spojrzenia: pomiar, który cichnie, wygląda tak samo jak kod, który schudł'
+              ? 'A growth is acceptable, but in a visible line of the diff'
+              : 'A drop needs a look too: a measurement going quiet looks exactly like code that got smaller'
           } — \`node tools/check-bundle.mjs --write\``,
       );
   }
 
-  // 9. KONTROLA RÓŻNICOWA. Sonda dwóch entrypointów musi być zauważalnie większa niż
-  //    każda z pojedynczych — inaczej pomiar nic nie mierzy. Ten punkt zapala dokładnie
-  //    w scenariuszu, w którym wszystkie pozostałe wyglądają zdrowo: bundler przestał
-  //    wciągać bibliotekę (zły alias, za szeroka lista `external`), więc każda sonda
-  //    waży tyle samo i różnica znika.
+  // 9. DIFFERENTIAL CONTROL. A two-entrypoint probe has to be noticeably larger than
+  //    either single one — otherwise the measurement measures nothing. This point fires in
+  //    exactly the scenario where every other one looks healthy: the bundler stopped
+  //    pulling the library in (a wrong alias, too wide an `external` list), so every probe
+  //    weighs the same and the difference disappears.
   //
-  //    Próg nie jest wzięty z sufitu: bundle sumy zawiera obie biblioteki, a policzony
-  //    dwa razy jest tylko ich wspólny rdzeń. Stąd `a + b - wspólne`, z tolerancją na
-  //    glue kodu wejściowego.
+  //    The threshold is not plucked from the air: the combined bundle holds both
+  //    libraries, and only their shared core is counted twice. Hence `a + b - shared`,
+  //    with a tolerance for the entry file's glue.
   const [pierwszy, drugi] = we.para?.entrypointy ?? [];
   const bajtyPary = we.para?.bajty;
   if (!pierwszy || !drugi || typeof bajtyPary !== 'number')
     throw new BladBundla(
       'roznicowa',
-      `brak sondy dwóch entrypointów — kontrola różnicowa nie ma czego porównać`,
+      `no two-entrypoint probe — the differential control has nothing to compare`,
     );
   const wspolne = new Set(
     (sondy[pierwszy]?.wniesione ?? []).filter(
@@ -408,28 +394,28 @@ const sprawdzBundle = (we) => {
   if (bajtyPary < oczekiwane * (1 - TOLERANCJA))
     throw new BladBundla(
       'roznicowa',
-      `sonda \`${pierwszy}\` + \`${drugi}\` waży ${bajtyPary} B, a suma pojedynczych ` +
-        `bez wspólnego rdzenia to ${oczekiwane} B ` +
+      `the \`${pierwszy}\` + \`${drugi}\` probe weighs ${bajtyPary} B, and the sum of the ` +
+        `single ones without the shared core is ${oczekiwane} B ` +
         `(${sondy[pierwszy]?.bajty} + ${sondy[drugi]?.bajty} − ${bajtyWspolnych}).\n` +
-        `    Dwa entrypointy dają bundle nie większy niż jeden — to nie jest dobra ` +
-        `wiadomość o tree-shakingu, tylko znak, że pomiar przestał wciągać bibliotekę`,
+        `    Two entrypoints give a bundle no larger than one — that is not good news ` +
+        `about tree-shaking but a sign the measurement stopped pulling the library in`,
     );
 
-  // 10. Drugi odczyt CAŁEJ bramki: to samo zmierzone prawdziwym `@angular/build:
-  //     application`, czyli tym, co u konsumenta naprawdę składa aplikację. Sondy wyżej
-  //     idą własnym esbuildem — szybkim, ale będącym MOIM ustawieniem bundlera, nie
+  // 10. A second read of the WHOLE gate: the same thing measured by the real
+  //     `@angular/build: application`, that is, by what really assembles an application at
+  //     the consumer's. The probes above go through their own esbuild — fast, but MY
   //     jego. Ten sam ruch co „nie czytaj `include`, uruchom kompilator" z A7 i „nie
   //     czytaj tekstu arkusza, uruchom sass" z A5.
   //
-  //     Trzecia sonda (komplet entrypointów) jest mianownikiem dwóch pierwszych:
-  //     dowodzi, że ten odczyt w ogóle POTRAFI zobaczyć to, czego w nich nie znajduje.
+  //     The third probe (all the entrypoints) is the denominator of the first two: it
+  //     proves this read CAN see what it fails to find in them.
   const przebiegi = we.builder ?? [];
   if (przebiegi.length < 3)
     throw new BladBundla(
       'builder',
-      `prawdziwym builderem Angulara poszło ${przebiegi.length} sond, a potrzeba ` +
-        `trzech: dwie mierzone i jedna z kompletem entrypointów, która dowodzi, ` +
-        `że pozostałe potrafią cokolwiek znaleźć`,
+      `${przebiegi.length} probes went through Angular's real builder, and three are ` +
+        `needed: two measured and one with all the entrypoints, proving the others can ` +
+        `find anything at all`,
     );
   for (const p of przebiegi) {
     const oczekiwane = new Set(
@@ -441,12 +427,12 @@ const sprawdzBundle = (we) => {
     if (!rowne(znalezione, oczekiwane))
       throw new BladBundla(
         'builder',
-        `prawdziwy build aplikacji importującej ${lista(p.entrypointy ?? [])} ` +
-          `zawiera inny zestaw entrypointów, niż wynika z sond esbuilda:\n` +
-          `      z sond esbuilda: ${lista(oczekiwane)}\n` +
-          `      w prawdziwym bundlu: ${lista(znalezione)}\n` +
-          `    Rozjazd znaczy, że szybki pomiar tej bramki przestał odpowiadać temu, ` +
-          `co dostaje konsument — i to pomiar jest do naprawy, nie prawdziwy build`,
+        `a real build of an application importing ${lista(p.entrypointy ?? [])} holds a ` +
+          `different set of entrypoints than the esbuild probes imply:\n` +
+          `      from the esbuild probes: ${lista(oczekiwane)}\n` +
+          `      in the real bundle:      ${lista(znalezione)}\n` +
+          `    A drift means this gate's fast measurement stopped matching what the ` +
+          `consumer gets — and it is the measurement to fix, not the real build`,
       );
     const oczekiwanyOverlay = [...oczekiwane].some((e) =>
       (sondy[e]?.zewnetrzne ?? []).some((z) => z.includes('cdk/overlay')),
@@ -454,20 +440,20 @@ const sprawdzBundle = (we) => {
     if ((p.overlay ?? false) !== oczekiwanyOverlay)
       throw new BladBundla(
         'builder',
-        `prawdziwy build aplikacji importującej ${lista(p.entrypointy ?? [])} ` +
-          `${p.overlay ? 'ZAWIERA' : 'NIE zawiera'} nakładki CDK (\`${MARKER_OVERLAY}\`), ` +
-          `a wg sond esbuilda ${oczekiwanyOverlay ? 'powinien' : 'nie powinien'}.\n` +
-          `    CDK Overlay jest najdroższą zależnością opcjonalną tej biblioteki — ` +
-          `konsument, który nie użył \`pct-select\`, nie ma prawa jej dostać`,
+        `a real build of an application importing ${lista(p.entrypointy ?? [])} ` +
+          `${p.overlay ? 'HOLDS' : 'does NOT hold'} the CDK overlay (\`${MARKER_OVERLAY}\`), ` +
+          `and by the esbuild probes it ${oczekiwanyOverlay ? 'should' : 'should not'}.\n` +
+          `    CDK Overlay is this library's most expensive optional dependency — a ` +
+          `consumer who never used \`pct-select\` has no business receiving it`,
       );
   }
 
   const suma = zrodla.reduce((n, e) => n + (sondy[e]?.bajty ?? 0), 0);
   return {
     opis:
-      `${zrodla.length} entrypointów, ${suma} B razem, największy ` +
+      `${zrodla.length} entrypoints, ${suma} B in total, largest ` +
       `${zrodla.reduce((a, b) => ((sondy[a]?.bajty ?? 0) >= (sondy[b]?.bajty ?? 0) ? a : b))}; ` +
-      `prawdziwym builderem ${przebiegi.length} sondy`,
+      `${przebiegi.length} probes through the real builder`,
     snapshot: renderujSnapshot(zrodla, sondy),
   };
 };
@@ -477,34 +463,34 @@ const rowne = (a, b) => a.size === b.size && [...a].every((x) => b.has(x));
 // ── snapshot ──────────────────────────────────────────────────────────────────
 
 /**
- * Ten sam wybór formatu co w `libs/components/czesci.snapshot.md` i `libs/tokens/
- * tokens.snapshot.md`, i z tego samego powodu: tabela markdowna po przejściu prettiera
- * wyrównuje kolumny do najdłuższej komórki, więc jedna długa nazwa przepisuje CAŁY plik,
- * a diff przestaje pokazywać, co się naprawdę zmieniło.
+ * The same choice of format as in `libs/components/czesci.snapshot.md` and
+ * `libs/tokens/tokens.snapshot.md`, and for the same reason: a markdown table run through
+ * prettier pads its columns to the longest cell, so one long name rewrites the WHOLE file
+ * and the diff stops showing what really changed.
  */
 const renderujSnapshot = (zrodla, sondy) =>
   [
-    '# Snapshot rozmiaru i izolacji entrypointów',
+    '# Entrypoint size and isolation snapshot',
     '',
-    '> **Ten plik jest generowany.** Nie edytuj go ręcznie —',
-    '> `node tools/check-bundle.mjs --write`. Bramka `check-bundle` odrzuca rozjazd.',
+    '> **This file is generated.** Do not edit it by hand —',
+    '> `node tools/check-bundle.mjs --write`. The `check-bundle` gate rejects a drift.',
     '',
-    '„Komponenty importuje się przez secondary entrypoints, co wymusza tree-shaking"',
-    'jest obietnicą sprzedażową ([`req-project-tree-shaking`](../../docs/requirements/project.md#req-project-tree-shaking))',
-    '— tą, dla której ktoś tę bibliotekę wybiera. Jej złamanie nie daje ani jednego',
-    'czerwonego testu: import z sąsiedniego entrypointu kompiluje się, przechodzi testy',
-    'i dokłada konsumentowi kilkadziesiąt kilobajtów, o których dowie się z własnego',
-    'raportu bundla, jeśli go ma.',
+    '„Components are imported through secondary entrypoints, which forces tree-shaking"',
+    'is a sales promise ([`req-project-tree-shaking`](../../docs/requirements/project.md#req-project-tree-shaking))',
+    '— the one somebody picks this library for. Breaking it gives not one red test: an',
+    'import from a neighbouring entrypoint compiles, passes the tests and adds tens of',
+    'kilobytes for the consumer, who will learn about them from their own bundle report,',
+    'if they have one.',
     '',
-    'Ten plik jest listą, wobec której mierzy się zmianę. Rozjazd nie znaczy „błąd" —',
-    'znaczy „konsument zaczął płacić za coś innego niż wczoraj, i ma to być widoczne',
-    'w review".',
+    'This file is the list a change is measured against. A drift does not mean „an error" —',
+    'it means „the consumer started paying for something other than yesterday, and that is',
+    'to be visible in review".',
     '',
-    'Kolumny: entrypoint · rozmiar w bajtach · wniesione inne entrypointy · zależności',
-    'zewnętrzne. Rozmiar jest surowym rozmiarem zminifikowanego bundla aplikacji, która',
-    'importuje **wyłącznie** ten jeden entrypoint, z Angularem jako zależnością',
-    'zewnętrzną — mierzy więc wkład **tej biblioteki**, a nie wagę cudzego frameworka.',
-    `Budżet: ±${(TOLERANCJA * 100).toFixed(0)}% albo ±${TOLERANCJA_MIN} B, co większe.`,
+    'Columns: entrypoint · size in bytes · other entrypoints brought in · external',
+    'dependencies. The size is the raw size of the minified bundle of an application that',
+    'imports **only** this one entrypoint, with Angular as an external dependency — so it',
+    "measures the contribution of **this library**, not the weight of somebody else's",
+    `framework. Budget: ±${(TOLERANCJA * 100).toFixed(0)}% or ±${TOLERANCJA_MIN} B, whichever is larger.`,
     '',
     '```',
     ...zrodla.map((e) =>
@@ -525,11 +511,12 @@ const renderujSnapshot = (zrodla, sondy) =>
 /**
  * Wiersze danych jako mapa `entrypoint → { bajty, wniesione, zewnetrzne }`.
  *
- * Brak pliku (`null`) jest tu pustą mapą, a nie awarią, choć punkt 3 łapie ten
- * przypadek osobno i wcześniej — patrz komentarz przy `sprawdzBundle`. Filtr wierszy
- * przepuszcza ukośnik w `./select` świadomie: w `check-parts` dokładnie ten znak
- * wypadł z klasy znaków, obie listy wyszły puste, puste okazały się sobie równe
- * i bramka odrzuciła zmianę, podając poprawną diagnozę problemu, którego nie było
+ * A missing file (`null`) is an empty map here, not a failure, even though point 3 catches
+ * that case separately and earlier — see the comment at `sprawdzBundle`. The row filter
+ * lets the slash in `./select` through deliberately: in `check-parts` exactly that
+ * character fell out of the character class, both lists came out empty, the empties proved
+ * equal and the gate rejected a change with a correct diagnosis of a problem that was not
+ * there
  * ([`lesson-50`](../docs/lessons.md#lesson-50)).
  */
 const wierszeSnapshotu = (tresc) => {
@@ -552,13 +539,13 @@ const czytajJson = (sciezka) =>
   existsSync(sciezka) ? JSON.parse(readFileSync(sciezka, 'utf8')) : null;
 
 /**
- * Entrypointy ze ŹRÓDEŁ, z indeksu gita — ten sam powód co w `check-styles`,
- * `check-tokens`, `check-parts` i `check-typecheck`: indeks jest niezależnym spisem
- * tego, co repozytorium naprawdę wiezie, a nie tego, co akurat leży na dysku.
+ * Entrypoints from the SOURCES, from the git index — the same reason as in `check-styles`,
+ * `check-tokens`, `check-parts` and `check-typecheck`: the index is an independent record
+ * of what the repository really carries, not of what happens to lie on disk.
  *
- * Pathspec jest KATALOGIEM, a filtrowanie siedzi w JS-ie: pathspec gita nie jest globem
- * powłoki i bez `:(glob)` gwiazdka przechodzi przez `/`, więc wzorzec z gwiazdką potrafi
- * zwrócić ZERO plików zamiast błędu ([`lesson-48`](../docs/lessons.md#lesson-48)).
+ * The pathspec is a DIRECTORY and the filtering sits in JS: a git pathspec is not a shell
+ * glob, and without `:(glob)` a star crosses `/`, so a pattern with a star can return ZERO
+ * files rather than an error ([`lesson-48`](../docs/lessons.md#lesson-48)).
  */
 const entrypointyZeZrodel = () =>
   execFileSync('git', ['ls-files', '-z', PROJEKT], {
@@ -576,9 +563,9 @@ const entrypointyZeZrodel = () =>
     .sort();
 
 /**
- * Plik FESM każdego entrypointu, z mapy `exports` artefaktu — czyli tą samą drogą,
- * którą pójdzie konsument. Wpis, którego w mapie nie ma, jest dla niego nieosiągalny,
- * choćby plik leżał w pakiecie.
+ * Every entrypoint's FESM file, from the artifact's `exports` map — by the same route the
+ * consumer will take. An entry missing from the map is unreachable for them, however
+ * surely the file lies in the package.
  */
 const plikiEntrypointow = (manifest) => {
   const out = new Map();
@@ -591,20 +578,20 @@ const plikiEntrypointow = (manifest) => {
 };
 
 /**
- * Markery: selektory komponentów i dyrektyw ze ZBUDOWANEGO pakietu, odczytane po
+ * Markers: the selectors of components and directives from the BUILT package, read after
  * zlinkowaniu (`ɵcmp.selectors`) — ta sama maszyneria co w `check-parts` i z tego
- * samego powodu: pakiet jest skompilowany częściowo, więc definicja powstaje dopiero
- * przy dostępie, tak jak u konsumenta.
+ * same reason: the package is partially compiled, so a definition appears only on access,
+ * exactly as at the consumer's.
  *
- * Dlaczego selektor, a nie dowolny napis unikalny dla entrypointu: napisy z FESM-a
- * przeżywają minifikację, ale NIE przeżywają linkowania — zmierzone, nie założone.
- * `button[pctButton]` stoi w FESM-ie jako jeden napis, a w prawdziwym bundlu jako
- * `[["button","pctButton",""]]`, więc marker wzięty z tekstu FESM-a byłby w punkcie 10
- * nie do znalezienia i „nie ma tu `PctButton`" wychodziłoby na zielono zawsze.
- * Selektor przeżywa oba kroki, bo w obu jest DANĄ, a nie nazwą.
+ * Why a selector and not any string unique to the entrypoint: strings from the FESM survive
+ * minification but do NOT survive linking — measured, not assumed. `button[pctButton]`
+ * stands in the FESM as one string and in a real bundle as `[["button","pctButton",""]]`,
+ * so a marker taken from the FESM's text would be unfindable in point 10 and „there is no
+ * `PctButton` here" would come out green always. A selector survives both steps, because
+ * in both it is DATA rather than a name.
  *
- * Z tokenów selektora zostają wyłącznie te z prefiksem `pct` — `button` w
- * `button[pctButton]` jest nazwą znacznika HTML i pasowałby do wszystkiego.
+ * Of a selector's tokens only those with the `pct` prefix are kept — `button` in
+ * `button[pctButton]` is an HTML tag name and would match anything.
  */
 const zbierzMarkery = async (dist, pliki) => {
   await import('@angular/compiler');
@@ -627,10 +614,10 @@ const zbierzMarkery = async (dist, pliki) => {
 };
 
 /**
- * Katalog, w którym sondy widzą pakiet POD JEGO WŁASNĄ NAZWĄ, przez `node_modules`.
- * Nie przez `alias` bundlera i nie przez `paths` tsconfiga — jedno i drugie omija mapę
- * `exports`, czyli tę część manifestu, która u konsumenta decyduje, co jest w ogóle
- * osiągalne. Sonda z aliasem byłaby zielona także wtedy, gdyby `exports` nie istniało.
+ * The directory in which the probes see the package UNDER ITS OWN NAME, through
+ * `node_modules`. Not through a bundler `alias` and not through tsconfig `paths` — both of
+ * those bypass the `exports` map, the part of the manifest that decides at the consumer's
+ * what is reachable at all. A probe with an alias would be green even with no `exports`.
  */
 const przygotujKatalogSond = (dist) => {
   const katalog = mkdtempSync(join(tmpdir(), 'pct-check-bundle-'));
@@ -643,22 +630,23 @@ const specyfikator = (e) =>
   e === PRIMARY ? '@pacit/components' : `@pacit/components${e.slice(1)}`;
 
 /**
- * Jedna sonda: aplikacja importująca podane entrypointy i NIC więcej.
+ * One probe: an application importing the given entrypoints and NOTHING else.
  *
- * `globalThis` na końcu jest tu po coś: bez użycia zaimportowanego namespace'u bundler
- * ma prawo wyrzucić wszystko i sonda byłaby pusta — a pusta sonda przechodzi każdy
- * punkt o izolacji, bo nie ma w niej niczego. Import namespace'u zatrzymuje więc
- * MAKSIMUM tego, co entrypoint wystawia, i mierzony rozmiar jest jego górnym
- * ograniczeniem, a izolacja — badana w najgorszym przypadku.
+ * The `globalThis` at the end is there for a reason: with the imported namespace unused, a
+ * bundler is free to throw everything out and the probe would be empty — and an empty probe
+ * passes every point about isolation, holding nothing. Importing the namespace therefore
+ * keeps the MAXIMUM of what the entrypoint exposes: the measured size is its upper bound,
+ * and isolation is examined in the worst case.
  *
- * Angular jest zależnością ZEWNĘTRZNĄ: mierzymy wkład tej biblioteki, a nie wagę
- * frameworka. `@pacit/components/*` zewnętrzne być nie może — wtedy nie dałoby się
- * zobaczyć, że `button` wciągnął `field`, czyli zniknęłaby cała mierzona rzecz.
+ * Angular is an EXTERNAL dependency: we measure this library's contribution, not the
+ * framework's weight. `@pacit/components/*` cannot be external — there would then be no
+ * way to see that `button` pulled `field` in, and the whole measured thing would vanish.
  */
 const sonda = async (esbuild, katalog, markery, poPliku, entrypointy) => {
-  // Nazwa pliku wejściowego jest STAŁA, bo rozmiar bundla jest tu mierzoną wielkością:
-  // nazwa z licznikiem albo znacznikiem czasu potrafi wejść do wyjścia i budżet
-  // zaczyna mierzyć długość ścieżki. Sondy idą po kolei i plik znika po każdej.
+  // The input file's name is FIXED, because the bundle's size is the measured quantity
+  // here: a name with a counter or a timestamp can end up in the output and the budget
+  // starts measuring the length of a path. The probes run in turn and the file is removed
+  // after each.
   const wejscie = join(katalog, 'sonda.mjs');
   writeFileSync(
     wejscie,
@@ -700,13 +688,13 @@ const sonda = async (esbuild, katalog, markery, poPliku, entrypointy) => {
 };
 
 /**
- * Prawdziwy build aplikacji Angulara. Workspace powstaje w `tmp/` repozytorium,
- * a nie w katalogu tymczasowym systemu, i to nie z wygody: rozwiązywanie modułów
- * ma iść w górę drzewa do `node_modules` repozytorium, więc `@angular/*` znajduje się
- * samo, a lokalne `node_modules/@pacit/components` dokłada wyłącznie mierzony pakiet.
- * `tmp/` jest w `.gitignore`, więc pliki sondy nie stają się wadą dla `check-typecheck`
- * (punkt 1: plik TypeScriptu poza jakimkolwiek projektem) — fixture jednej bramki nie
- * może być wadą dla drugiej.
+ * A real Angular application build. The workspace is created in the repository's `tmp/`
+ * rather than in the system's temporary directory, and not out of convenience: module
+ * resolution is to walk up the tree to the repository's `node_modules`, so `@angular/*` is
+ * found by itself and a local `node_modules/@pacit/components` adds only the package under
+ * measurement. `tmp/` is in `.gitignore`, so the probe's files do not become a defect for
+ * `check-typecheck` (point 1: a TypeScript file outside any project) — one gate's fixture
+ * must not be another's defect.
  */
 const sondaBuildera = (dist, markery, entrypointy) => {
   const katalog = join(ROOT, 'tmp/check-bundle');
@@ -754,10 +742,10 @@ const sondaBuildera = (dist, markery, entrypointy) => {
       files: ['src/main.ts'],
     }),
   );
-  // Namespace, nie nazwane klasy: lista eksportów każdego entrypointu jest inna,
-  // a `imports:` komponentu przyjmuje wyłącznie dyrektywy. `Reflect.set` zatrzymuje
-  // całość tak samo jak `globalThis` w sondzie esbuilda i z tego samego powodu —
-  // wywołanie jest efektem ubocznym, więc nie ma go jak wyrzucić.
+  // A namespace, not named classes: every entrypoint's export list is different, and a
+  // component's `imports:` takes directives alone. `Reflect.set` keeps the whole thing
+  // exactly as `globalThis` does in the esbuild probe and for the same reason — the call
+  // is a side effect, so there is no way to drop it.
   writeFileSync(
     join(katalog, 'src/main.ts'),
     [
@@ -797,10 +785,10 @@ const sondaBuildera = (dist, markery, entrypointy) => {
 };
 
 /**
- * Pełny pomiar repozytorium. Para do kontroli różnicowej i sondy buildera są WYBIERANE
- * z pomiaru, nie wpisane: najlżejszy i najcięższy entrypoint komponentowy. Lista wpisana
- * na sztywno rozjechałaby się przy pierwszym nowym komponencie — i to bramka przestałaby
- * wtedy widzieć, a nie CI zapaliło.
+ * The full measurement of the repository. The pair for the differential control and the
+ * builder probes are CHOSEN from the measurement rather than written down: the lightest and
+ * the heaviest component entrypoint. A hard-coded list would drift at the first new
+ * component — and it is the gate that would stop seeing, not CI that would fire.
  */
 const zmierzRepozytorium = async () => {
   const dist = join(ROOT, DIST);
@@ -808,13 +796,13 @@ const zmierzRepozytorium = async () => {
   if (!manifest)
     throw new BladBundla(
       'entrypointy',
-      `brak zbudowanego pakietu w ${DIST} — bramka mierzy artefakt, nie źródła.\n` +
-        `    Target musi mieć \`dependsOn\` na build biblioteki`,
+      `no built package in ${DIST} — this gate measures the artifact, not the sources.\n` +
+        `    The target needs a \`dependsOn\` on the library's build`,
     );
 
   const pliki = plikiEntrypointow(manifest);
-  // Nazwa pliku FESM → entrypoint. Metafile bundlera mówi o plikach; wszystko powyżej
-  // mówi o entrypointach, bo to one są publicznym kontraktem.
+  // FESM file name → entrypoint. The bundler's metafile speaks of files; everything above
+  // speaks of entrypoints, because they are the public contract.
   const poPliku = new Map(
     [...pliki].map(([e, plik]) => [plik.split('/').pop(), e]),
   );
@@ -870,16 +858,16 @@ const wczytajFixture = (nazwa) =>
  * Builds a case's input ON A COPY of the reference one, so the case file holds nothing
  * but its own defect — you cannot break something in passing and not notice.
  *
- * Pomiar przychodzi jako DANE, a nie z prawdziwego bundlowania: zbudowanie kilkunastu
- * sond na każdy przypadek kosztowałoby minuty na przebieg, a prawdziwy build Angulara
- * — kwadranse. Ten sam wybór co w `check-zoneless` i `check-parts` i z tego samego
- * powodu. Cenę widać wprost: fixtures NIE ćwiczą kodu bundlującego — ćwiczą cały układ
- * kontroli. Bundlowanie jest za to ćwiczone przy każdym przebiegu na prawdziwym
- * repozytorium.
+ * The measurement arrives as DATA rather than from real bundling: building a dozen-odd
+ * probes for each case would cost minutes per run, and a real Angular build — quarter
+ * hours. The same choice as in `check-zoneless` and `check-parts` and for the same reason.
+ * The price is plain: the fixtures do NOT exercise the bundling code — they exercise the
+ * whole arrangement of checks. Bundling is exercised instead on every run against the real
+ * repository.
  *
- * Snapshot wejścia wzorcowego jest RENDEROWANY z jego własnego pomiaru, a nie wpisany
- * obok niego: wpisany rozjeżdżałby się z rendererem przy pierwszej zmianie formatu
- * pliku i wejście wzorcowe przestawałoby przechodzić z powodu, którego nikt nie badał.
+ * The reference input's snapshot is RENDERED from its own measurement rather than written
+ * beside it: a written one would drift from the renderer at the first change to the file's
+ * format, and the reference input would stop passing for a reason nobody was examining.
  */
 const zlozFixture = (fx) => {
   const baza = structuredClone(wczytajFixture(BAZA));
@@ -937,9 +925,9 @@ const zlozFixture = (fx) => {
     we.builder[fx.builderOverlay.i].overlay = fx.builderOverlay.overlay;
   if (fx.usunBuilder) we.builder = we.builder.slice(0, -1);
 
-  // Snapshot renderowany z pomiaru WZORCOWEGO, potem psuty osobno — dzięki temu
-  // przypadki celujące w punkty 5, 7 i 8 psują POMIAR, a nie zapis, czyli dokładnie
-  // tę stronę porównania, o którą chodzi.
+  // The snapshot is rendered from the REFERENCE measurement and broken separately
+  // afterwards — so the cases aiming at points 5, 7 and 8 break the MEASUREMENT rather
+  // than the record, that is, exactly the side of the comparison at issue.
   let snapshot = renderujSnapshot(baza.zrodla, baza.sondy);
   if (fx.usunSnapshot) snapshot = null;
   else if (fx.snapshotBezWiersza)
@@ -966,9 +954,9 @@ try {
   opis = wynik.opis;
 } catch (blad) {
   if (!(blad instanceof BladBundla)) throw blad;
-  // `--write` istnieje po to, żeby rozjazd snapshotu dało się zaakceptować jednym
-  // poleceniem. Pozostałe punkty zostają błędem także z nim: przepisanie snapshotu
-  // nie jest odpowiedzią na entrypoint, który zaczął wciągać sąsiada.
+  // `--write` exists so that a snapshot drift can be accepted with one command. The other
+  // points stay errors under it too: rewriting the snapshot is no answer to an entrypoint
+  // that started pulling its neighbour in.
   if (
     WRITE &&
     ['snapshot', 'izolacja', 'zewnetrzne', 'rozmiar'].includes(blad.kontrola) &&
@@ -994,9 +982,9 @@ if (przypadki.length === 0)
       `fail is one more silent defect (req-quality-negative-control)`,
   );
 
-// Wejście wzorcowe MUSI przejść: gdyby samo było wadliwe, każdy przypadek zapalałby
-// z jego powodu, a nie ze swojego, i wszystkie „odrzucone" byłyby fałszywe — czyli ta
-// kontrola stałaby się tym, przed czym stoi.
+// The reference input MUST pass: were it defective itself, every case would fire because
+// of it rather than its own defect, and every „rejected" would be false — this control
+// would become the very thing it stands against.
 try {
   sprawdzBundle(zlozFixture({}));
 } catch (blad) {
