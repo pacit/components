@@ -1,49 +1,22 @@
 #!/usr/bin/env node
 /**
- * Bramka macierzy przeglądarek: sprawdza, czy obietnica `req-quality-browsers` —
- * „testy funkcjonalne biegną na chromium, firefox i webkicie" — ma za sobą pomiar,
- * a nie trzy wpisy w `playwright.config.mts`, których nikt więcej nie czyta.
+ * Browser matrix gate: does `req-quality-browsers` — „the functional tests run on chromium,
+ * firefox and webkit" — have a measurement behind it, or three entries in
+ * `playwright.config.mts` that nobody reads again? Undoing the matrix gives NO RED TEST.
  *
- * Powód istnienia. Sama macierz jest tania do dopisania i tania do cofnięcia, a jej
- * cofnięcie NIE DAJE ANI JEDNEGO CZERWONEGO TESTU. Wystarczy jedna z czterech rzeczy,
- * z których każda wygląda w review jak sprzątanie:
- *   - projekt usunięty z `projects` (przebieg zielony, mierzy jeden silnik),
- *   - `--project=chromium` dopisane do polecenia targetu (to samo, tylko z drugiej strony),
- *   - plik dopisany do `testIgnore` „bo miga" (pokrycie kurczy się o jeden plik na raz),
- *   - krok instalacji w CI zawężony do chromium (tu akurat głośno — ale dopiero wtedy,
- *     gdy pozostałe trzy jeszcze nie zdążyły uciszyć przebiegu).
+ *  1. DENOMINATOR: the measurement can be taken and is not empty,
+ *  2. the collected projects are exactly the policy's engines, each with tests,
+ *  3. COVERAGE: every spec file runs on every engine — or carries an entry,
+ *  4. the register of exclusions is alive and justified,
+ *  5. CI installs every engine and does not narrow the run,
+ *  6. FACT: a `pomiar` exclusion's justification is measured, not remembered.
  *
- * Sprawdzane jest sześć rzeczy:
- *  1. MIANOWNIK: pomiar da się wykonać i nie jest pusty,
- *  2. zebrane projekty to dokładnie silniki z polityki, każdy z niezerową liczbą testów,
- *  3. POKRYCIE: każdy plik specyfikacji biegnie na każdym silniku — albo ma wpis,
- *  4. rejestr wyłączeń jest żywy i uzasadniony,
- *  5. CI instaluje wszystkie silniki i nie zawęża przebiegu,
- *  6. FAKT: uzasadnienie wyłączenia rodzaju `pomiar` jest mierzone, a nie pamiętane.
+ * What „really runs" comes from `playwright test --list`, not from the configuration —
+ * the same move as „run the compiler" in `check-typecheck`. Point 6 repeats its probe on
+ * every run, because a fact about an engine stops holding quietly, at a package bump
+ * rather than at a change here. Control: `check-browsers.fixtures/`.
  *
- * Skąd bierze się „co naprawdę biegnie". Z `playwright test --list --reporter=json`,
- * czyli z uruchomienia SAMEGO PLAYWRIGHTA, a nie z odczytania `projects` i `testIgnore`
- * z pliku konfiguracyjnego. To ten sam ruch co „nie czytaj `include`, uruchom kompilator"
- * z `check-typecheck` i z tego samego powodu: wzorzec `testIgnore`, który w nic nie
- * trafia, nie jest dla Playwrighta błędem — jest projektem zbierającym komplet. Bramka
- * czytająca konfigurację orzekałaby o deklaracji, a deklaracja jest tym, co się psuje.
- *
- * Punkt 6 jest tym, którego nie da się zastąpić zdaniem w komentarzu. Wyłączenie
- * `forced-colors.spec.ts` z webkita stoi na FAKCIE o tym silniku (melduje media query,
- * a kolorów autora nie podmienia), a fakty o przeglądarkach mają to do siebie, że
- * przestają obowiązywać po cichu — przy podbiciu paczki, nie przy zmianie w tym repo.
- * Bramka powtarza więc sondę przy każdym przebiegu i wymaga, żeby fakt nie zachodził
- * DOKŁADNIE tam, gdzie stoi wyłączenie. Dzień, w którym webkit to zaimplementuje, jest
- * dniem, w którym bramka każe wyłączenie zdjąć — zamiast dnia, w którym nikt nie zauważa,
- * że plik nie biegnie tam już bez powodu.
- *
- * Do tego przebieg, który nie bada repozytorium, tylko TĘ BRAMKĘ: kontrola odniesienia
- * z `tools/check-browsers.fixtures/`. Spreparowane wejścia, z których każde łamie
- * dokładnie jedną regułę i musi zostać odrzucone przez tę właśnie regułę
- * (`req-quality-negative-control`).
- *
- * Użycie:
- *   node tools/check-browsers.mjs
+ * Usage: node tools/check-browsers.mjs
  */
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -60,22 +33,22 @@ const POLITYKA = `${E2E}/przegladarki.policy.json`;
 const CI = '.github/workflows/ci.yml';
 
 /**
- * Co Playwright uzna za plik testowy. Powtórzenie jego domyślnego `testMatch`
- * (`**\/*.@(spec|test).?(c|m)[jt]s?(x)`) — mianownik punktu 3 musi obejmować dokładnie
- * te pliki, które tamten zbiera, inaczej porównanie dwóch list mierzy różnicę definicji,
- * a nie różnicę pokrycia.
+ * What Playwright takes for a test file. A repetition of its default `testMatch`
+ * (`**\/*.@(spec|test).?(c|m)[jt]s?(x)`) — point 3's denominator has to cover exactly the
+ * files it collects, or the comparison of two lists measures a difference of definitions
+ * rather than a difference of coverage.
  */
 const SPEC = /\.(?:spec|test)\.(?:c|m)?[jt]sx?$/;
 
-/** Rodzaje uzasadnień wyłączenia. Inny rodzaj to wpis, którego bramka nie rozumie. */
+/** Kinds of exclusion justification. Any other kind is an entry the gate cannot read. */
 const RODZAJE = ['zapis', 'pomiar'];
 
 /**
- * Flagi zawężające przebieg. `--project` i `--grep` zamieniają macierz w jeden silnik
- * albo w podzbiór testów, nie zmieniając ani konfiguracji, ani listy plików — czyli
- * punkty 1–3 wyglądałyby wtedy tak samo jak dziś, a biegłoby co innego. `--shard`
- * świadomie NIE jest tu wymieniony: dzieli ten sam zbiór na maszyny, więc suma
- * przebiegów zostaje pełna.
+ * Flags that narrow the run. `--project` and `--grep` turn the matrix into one engine or
+ * into a subset of the tests, changing neither the configuration nor the file list — so
+ * points 1–3 would look exactly as they do today while something else ran. `--shard` is
+ * deliberately NOT listed: it splits the same set across machines, so the sum of the runs
+ * stays whole.
  */
 const ZAWEZAJACE = [
   ['--project', /(?:^|\s)--project(?:=|\s)/],
@@ -83,14 +56,14 @@ const ZAWEZAJACE = [
 ];
 
 /**
- * Sondy faktów o silnikach. Klucz jest tym, co wpisuje się w pole `fakt` wyłączenia
- * rodzaju `pomiar`; wartość odpowiada na pytanie „czy ten silnik to potrafi".
+ * Probes of facts about the engines. The key is what goes into the `fakt` field of a
+ * `pomiar` exclusion; the value answers „can this engine do it".
  *
- * `podmiana-kolorow-autora` — czy pod `forced-colors: active` przeglądarka zastępuje
- * kolory autora paletą użytkownika. Sonda mierzy to na elemencie BEZ żadnych reguł
- * biblioteki, bo pyta o zachowanie przeglądarki, a nie o arkusz: tło `rgb(1, 2, 3)`
- * jest wartością, której nie ma w żadnej palecie, więc każda odpowiedź inna niż ona
- * sama znaczy „podmieniono".
+ * `podmiana-kolorow-autora` — whether under `forced-colors: active` the browser replaces
+ * the author's colours with the user's palette. The probe measures that on an element with
+ * NO rules of the library, because it asks about the browser's behaviour and not about a
+ * stylesheet: the background `rgb(1, 2, 3)` is a value in no palette, so any answer other
+ * than itself means „replaced".
  */
 const SONDY = {
   'podmiana-kolorow-autora': async (page) => {
@@ -105,10 +78,10 @@ const SONDY = {
 };
 
 /**
- * Naruszenie jednej z kontroli. Niesie parę `kontrola` + `regula`, a nie sam
- * identyfikator punktu: punkt bramki to nie jedno zdanie (`lesson-50`), a kontrola
- * odniesienia porównująca sam punkt przepuszcza przypadek, który zapalił na sąsiedniej
- * regule tego samego punktu.
+ * A violation of one of the checks. It carries the pair `kontrola` + `regula`, not the
+ * point's identifier alone: a gate's point is not one sentence (`lesson-50`), and a
+ * negative control comparing only the point lets through a case that fired on a
+ * neighbouring rule of that same point.
  */
 class BladPrzegladarek extends Error {
   constructor(kontrola, regula, opis) {
@@ -120,18 +93,18 @@ class BladPrzegladarek extends Error {
 
 const lista = (items) => items.map((i) => `      ${i}`).join('\n');
 
-// ── kontrole ──────────────────────────────────────────────────────────────────
+// ── the checks ──────────────────────────────────────────────────────────────────
 
 /**
- * Komplet kontroli na gotowym wejściu:
- *   `polityka` — treść `przegladarki.policy.json`,
- *   `zebrane`  — `{ [silnik]: [pliki] }`, zmierzone przez `playwright test --list`,
- *   `pliki`    — pliki specyfikacji z indeksu gita, względem `testDir`,
- *   `e2e`      — `{ polecenie }` z targetu `sandbox-e2e:e2e` w grafie Nx,
- *   `ci`       — `{ instalacje: [[silnik]], uruchamiaE2E }` z workflow,
- *   `fakty`    — `{ [fakt]: { [silnik]: boolean } }`, wynik sond.
- * Rzuca `BladPrzegladarek` przy pierwszym naruszeniu — kontrole idą od mianownika,
- * więc dalsze i tak nie miałyby czego badać.
+ * The full set of checks over a ready input:
+ *   `polityka` — the contents of `przegladarki.policy.json`,
+ *   `zebrane`  — `{ [silnik]: [pliki] }`, measured by `playwright test --list`,
+ *   `pliki`    — spec files from the git index, relative to `testDir`,
+ *   `e2e`      — `{ polecenie }` from the `sandbox-e2e:e2e` target in the Nx graph,
+ *   `ci`       — `{ instalacje: [[silnik]], uruchamiaE2E }` from the workflow,
+ *   `fakty`    — `{ [fakt]: { [silnik]: boolean } }`, the probes' results.
+ * Throws `BladPrzegladarek` on the first violation — the checks start from the
+ * denominator, so the later ones would have nothing to examine anyway.
  */
 export const sprawdzPrzegladarki = ({
   polityka,
@@ -144,21 +117,21 @@ export const sprawdzPrzegladarki = ({
   const silniki = Object.keys(polityka?.silniki ?? {});
   const wylaczenia = polityka?.wylaczenia ?? [];
 
-  // 1. MIANOWNIK. Każda z trzech list z osobna potrafi być pusta z innego powodu
-  // i każda pusta daje bramkę, która przechodzi zawsze, bo nie ma czego porównywać.
+  // 1. DENOMINATOR. Each of the three lists can be empty for a different reason, and any
+  // one of them empty gives a gate that always passes, having nothing to compare.
   if (!silniki.length)
     throw new BladPrzegladarek(
       'mianownik',
       'polityka-bez-silnikow',
-      `${POLITYKA} nie deklaruje ani jednego silnika — punkty 2–6 chodzą po tej liście, ` +
-        `więc przeszłyby wtedy w komplecie, nie zaglądając do niczego`,
+      `${POLITYKA} declares no engine at all — points 2–6 walk exactly this list, so all ` +
+        `of them would pass without looking at anything`,
     );
   if (!pliki.length)
     throw new BladPrzegladarek(
       'mianownik',
       'brak-plikow',
-      `nie znalazłem ani jednego pliku specyfikacji w \`${TESTDIR}\` (indeks gita) — ` +
-        `punkt 3 porównywałby zebrane testy z pustym zbiorem, czyli z niczym`,
+      `no spec file found in \`${TESTDIR}\` (git index) — point 3 would compare the ` +
+        `collected tests against an empty set, that is, against nothing`,
     );
   const razem = Object.values(zebrane ?? {}).reduce(
     (n, p) => n + (p?.length ?? 0),
@@ -168,34 +141,34 @@ export const sprawdzPrzegladarki = ({
     throw new BladPrzegladarek(
       'mianownik',
       'pomiar-pusty',
-      `\`playwright test --list\` nie zebrał ani jednego pliku na żadnym silniku. ` +
-        `Playwright kończy się wtedy zerem i przebieg e2e jest zielony — ` +
-        `to jest dokładnie ten stan, w którym macierz nie mierzy niczego`,
+      `\`playwright test --list\` collected no file on any engine. Playwright then exits ` +
+        `zero and the e2e run is green — exactly the state in which the matrix measures ` +
+        `nothing`,
     );
 
-  // 2. Silniki. Zbiór zebranych projektów wobec zbioru z polityki, w obie strony:
-  // pierwsza łapie silnik wykreślony z konfiguracji, druga — projekt dopisany do niej
-  // bez zdania w polityce, czyli bez miejsca, w którym ktoś by go uzasadnił.
+  // 2. The engines. The set of collected projects against the policy's set, both ways:
+  // the first catches an engine struck from the configuration, the second a project added
+  // to it with no line in the policy — that is, with no place anyone could justify it.
   const zebraneSilniki = Object.keys(zebrane ?? {});
   const nieobecne = silniki.filter((s) => !(zebrane?.[s]?.length ?? 0));
   if (nieobecne.length)
     throw new BladPrzegladarek(
       'silniki',
       'silnik-nieobecny',
-      `${nieobecne.length} silników z polityki nie zbiera ani jednego testu: ${nieobecne.join(', ')}.\n` +
-        `    Projekt usunięty z \`projects\` w \`playwright.config.mts\` (albo zawężony ` +
-        `\`testIgnore\` do zera plików) nie daje czerwonego przebiegu — daje przebieg ` +
-        `krótszy o silnik. Lek: przywrócić projekt albo wykreślić silnik z ${POLITYKA} ` +
-        `i uzasadnić to w \`req-quality-browsers\`.`,
+      `${nieobecne.length} engines from the policy collect no test at all: ${nieobecne.join(', ')}.\n` +
+        `    A project removed from \`projects\` in \`playwright.config.mts\` (or a ` +
+        `\`testIgnore\` narrowed down to zero files) gives no red run — it gives a run one ` +
+        `engine shorter. Remedy: restore the project, or strike the engine from ` +
+        `${POLITYKA} and justify that in \`req-quality-browsers\`.`,
     );
   const nadmiarowe = zebraneSilniki.filter((s) => !silniki.includes(s));
   if (nadmiarowe.length)
     throw new BladPrzegladarek(
       'silniki',
       'silnik-nadmiarowy',
-      `${nadmiarowe.length} projektów Playwrighta nie ma wpisu w polityce: ${nadmiarowe.join(', ')}.\n` +
-        `    Punkty 3 i 6 chodzą po silnikach Z POLITYKI, więc projekt spoza niej ` +
-        `biegnie w CI, kosztuje czas i nie jest przez tę bramkę oglądany ani razu.`,
+      `${nadmiarowe.length} Playwright projects have no entry in the policy: ${nadmiarowe.join(', ')}.\n` +
+        `    Points 3 and 6 walk the engines FROM THE POLICY, so a project outside it runs ` +
+        `in CI, costs time and is never once looked at by this gate.`,
     );
 
   const wzorcowe = silniki.filter((s) => polityka.silniki[s]?.wzorcowy);
@@ -203,11 +176,11 @@ export const sprawdzPrzegladarki = ({
     throw new BladPrzegladarek(
       'silniki',
       'wzorcowy-niejednoznaczny',
-      `polityka wskazuje ${wzorcowe.length} silników wzorcowych (${wzorcowe.join(', ') || 'żadnego'}), ` +
-        `a ma wskazywać dokładnie jeden.\n` +
-        `    Silnik wzorcowy jest odniesieniem punktu 6: fakt, który nie zachodzi u NIKOGO, ` +
-        `nie jest wadą silnika, tylko zepsutą sondą. Bez jednoznacznego odniesienia ` +
-        `nie ma jak tego odróżnić.`,
+      `the policy names ${wzorcowe.length} reference engines (${wzorcowe.join(', ') || 'none'}), ` +
+        `and is to name exactly one.\n` +
+        `    The reference engine is point 6's baseline: a fact that holds for NOBODY is no ` +
+        `defect of an engine but a broken probe. With no unambiguous baseline there is no ` +
+        `way to tell the two apart.`,
     );
   const [wzorcowy] = wzorcowe;
   const wzorcoweWylaczenia = wylaczenia.filter((w) =>
@@ -217,15 +190,15 @@ export const sprawdzPrzegladarki = ({
     throw new BladPrzegladarek(
       'silniki',
       'wzorcowy-z-wylaczeniem',
-      `silnik wzorcowy \`${wzorcowy}\` stoi w ${wzorcoweWylaczenia.length} wyłączeniach ` +
+      `the reference engine \`${wzorcowy}\` stands in ${wzorcoweWylaczenia.length} exclusions ` +
         `(${wzorcoweWylaczenia.map((w) => w.plik).join(', ')}).\n` +
-        `    Wzorcowy jest tym, który biegnie BEZ wyłączeń — to on jest miarą dla ` +
-        `pozostałych. Silnik z dziurą przestaje nią być, a punkt 3 przestaje mieć ` +
-        `z czym porównywać pokrycie.`,
+        `    The reference is the one that runs WITH NO exclusions — it is the measure ` +
+        `for the rest. An engine with a hole stops being one, and point 3 loses what it ` +
+        `compares coverage against.`,
     );
 
-  // 3. POKRYCIE. Najpierw obie strony mianownika: plik z repo, którego nie zebrał
-  // nikt, i plik zebrany, którego nie ma w repo. Dopiero potem luka na silniku.
+  // 3. COVERAGE. Both sides of the denominator first: a file from the repo nobody
+  // collected, and a collected file that is not in the repo. Only then a gap on an engine.
   const wszystkieZebrane = new Set(
     Object.values(zebrane ?? {}).flatMap((p) => p ?? []),
   );
@@ -234,22 +207,22 @@ export const sprawdzPrzegladarki = ({
     throw new BladPrzegladarek(
       'pokrycie',
       'plik-poza-pomiarem',
-      `${niezebrane.length} plików specyfikacji nie zebrał ŻADEN silnik:\n` +
+      `${niezebrane.length} spec files were collected by NO engine:\n` +
         lista(niezebrane) +
-        `\n    Plik leży w \`${TESTDIR}\`, jest w indeksie gita i nie biegnie nigdzie — ` +
+        `\n    The file sits in \`${TESTDIR}\`, is in the git index and runs nowhere — ` +
         `zwykle przez wzorzec \`testMatch\`, \`testDir\` albo \`testIgnore\` dopisany ` +
         `wszystkim projektom naraz. Przebieg jest zielony, bo Playwright nie ma czego ` +
-        `uruchomić.`,
+        `to run.`,
     );
   const spozaRepo = [...wszystkieZebrane].filter((p) => !pliki.includes(p));
   if (spozaRepo.length)
     throw new BladPrzegladarek(
       'pokrycie',
       'plik-spoza-repo',
-      `${spozaRepo.length} plików zebranych przez Playwrighta nie ma w indeksie gita:\n` +
+      `${spozaRepo.length} files collected by Playwright are not in the git index:\n` +
         lista(spozaRepo) +
-        `\n    Mianownik punktu 3 bierze się z gita, więc taki plik jest dla niego ` +
-        `niewidzialny: biegnie, a bramka nie ma jak zapytać, czy biegnie wszędzie.`,
+        `\n    Point 3's denominator comes from git, so such a file is invisible to it: it ` +
+        `runs, and the gate has no way of asking whether it runs everywhere.`,
     );
 
   const wpisFor = (plik, silnik) =>
@@ -270,22 +243,22 @@ export const sprawdzPrzegladarki = ({
       'luka-bez-wpisu',
       `${luki.length} par plik × silnik nie biegnie i nie ma na to wpisu w polityce:\n` +
         lista(luki) +
-        `\n    Tak wygląda \`testIgnore\` poszerzony „bo miga": pokrycie kurczy się o jeden plik, ` +
-        `przebieg zostaje zielony i skraca się o kilka sekund. Lek: naprawić test albo ` +
-        `dopisać wyłączenie z powodem do ${POLITYKA}.`,
+        `\n    This is what a \`testIgnore\` widened „because it flickers" looks like: ` +
+        `coverage shrinks by one file, the run stays green and gets a few seconds shorter. ` +
+        `Remedy: fix the test, or add an exclusion with a reason to ${POLITYKA}.`,
     );
 
-  // 4. Rejestr wyłączeń. Wpis martwy jest tu tą samą wadą co martwe słowo w słowniku
-  // nazw tokenów: zostaje po problemie, który zniknął, i uczy czytać go jako aktualny.
+  // 4. The register of exclusions. A dead entry is the same defect here as a dead word in
+  // the token name dictionary: it outlives the problem and teaches you to read it as current.
   for (const wpis of wylaczenia) {
-    const gdzie = `wyłączenie \`${wpis?.plik ?? '(bez pliku)'}\``;
+    const gdzie = `exclusion \`${wpis?.plik ?? '(no file)'}\``;
     if (!wpis?.plik || !pliki.includes(wpis.plik))
       throw new BladPrzegladarek(
         'rejestr',
         'wpis-bez-pliku',
-        `${gdzie} wskazuje plik, którego nie ma w \`${TESTDIR}\` (indeks gita).\n` +
-          `    Wpis bez pliku nie zapala niczego i nie chroni niczego — czyta się go ` +
-          `jako opis stanu, a opisuje stan sprzed usunięcia albo przemianowania.`,
+        `${gdzie} names a file that is not in \`${TESTDIR}\` (git index).\n` +
+          `    An entry with no file fires nothing and protects nothing — it reads as a ` +
+          `description of the state, and describes the one before a delete or a rename.`,
       );
     const silnikiWpisu = wpis.silniki ?? [];
     const nieznane = silnikiWpisu.filter((s) => !silniki.includes(s));
@@ -293,9 +266,9 @@ export const sprawdzPrzegladarki = ({
       throw new BladPrzegladarek(
         'rejestr',
         'wpis-bez-silnika',
-        `${gdzie} wymienia ${silnikiWpisu.length ? `nieznane silniki: ${nieznane.join(', ')}` : 'pustą listę silników'}.\n` +
-          `    Punkt 3 szuka wpisu po parze plik × silnik, więc taki wpis nie zwalnia ` +
-          `z niczego i jednocześnie wygląda w rejestrze na uzasadnienie.`,
+        `${gdzie} names ${silnikiWpisu.length ? `unknown engines: ${nieznane.join(', ')}` : 'an empty list of engines'}.\n` +
+          `    Point 3 looks an entry up by the file × engine pair, so such an entry ` +
+          `excuses nothing while looking in the register like a justification.`,
       );
     if (!RODZAJE.includes(wpis.rodzaj))
       throw new BladPrzegladarek(
@@ -303,25 +276,27 @@ export const sprawdzPrzegladarki = ({
         'wpis-nieznanego-rodzaju',
         `${gdzie} ma \`rodzaj: ${JSON.stringify(wpis.rodzaj)}\`, a rozumiem ` +
           `${RODZAJE.map((r) => `\`${r}\``).join(' i ')}.\n` +
-          `    Rodzaj rozstrzyga, czy punkt 6 ma ten wpis SPRAWDZIĆ sondą, czy przyjąć ` +
-          `jako spisaną decyzję. Wpis nierozpoznanego rodzaju wypadłby z tego pytania.`,
+          `    The kind decides whether point 6 is to VERIFY the entry with a probe or ` +
+          `take it as a recorded decision. An entry of an unknown kind would fall out of ` +
+          `that question.`,
       );
     if (typeof wpis.powod !== 'string' || wpis.powod.trim().length < 40)
       throw new BladPrzegladarek(
         'rejestr',
         'wpis-bez-powodu',
-        `${gdzie} nie niesie powodu (albo niesie jedno zdanie bez treści).\n` +
-          `    Rejestr wyłączeń jest jedynym miejscem, w którym ktoś tłumaczy, dlaczego ` +
-          `plik NIE biegnie — bez tego jest listą, która rośnie.`,
+        `${gdzie} carries no reason (or one contentless sentence).\n` +
+          `    The register of exclusions is the only place where anybody explains why a ` +
+          `file does NOT run — without that it is a list that grows.`,
       );
     if (wpis.rodzaj === 'pomiar' && !SONDY[wpis.fakt])
       throw new BladPrzegladarek(
         'rejestr',
         'wpis-bez-sondy',
         `${gdzie} jest rodzaju \`pomiar\`, a \`fakt: ${JSON.stringify(wpis.fakt)}\` ` +
-          `nie ma sondy w \`check-browsers.mjs\`.\n` +
-          `    Rodzaj \`pomiar\` obiecuje, że uzasadnienie jest sprawdzane przy każdym ` +
-          `przebiegu. Bez sondy jest to \`zapis\` udający pomiar — czyli gorzej niż zapis.`,
+          `has no probe in \`check-browsers.mjs\`.\n` +
+          `    The \`pomiar\` kind promises the justification is verified on every run. ` +
+          `With no probe it is a \`zapis\` pretending to be a measurement — worse than a ` +
+          `plain record.`,
       );
     const martwe = silnikiWpisu.filter((s) =>
       (zebrane[s] ?? []).includes(wpis.plik),
@@ -330,14 +305,14 @@ export const sprawdzPrzegladarki = ({
       throw new BladPrzegladarek(
         'rejestr',
         'wpis-martwy',
-        `${gdzie} wyłącza silniki, na których ten plik i tak biegnie: ${martwe.join(', ')}.\n` +
-          `    Wyłączenie bez skutku zostaje po problemie, którego już nie ma, ` +
-          `a czyta się je jako opis dzisiejszego stanu.`,
+        `${gdzie} excludes engines on which the file runs anyway: ${martwe.join(', ')}.\n` +
+          `    An exclusion with no effect outlives a problem that is gone, and reads as a ` +
+          `description of today's state.`,
       );
   }
 
-  // 5. CI. Bramka mierzy `--list`, czyli konfigurację — a biegnie POLECENIE. Między
-  // jednym a drugim mieści się `--project=chromium`, którego punkty 1–3 nie widzą.
+  // 5. CI. The gate measures `--list`, that is, the configuration — but what runs is a
+  // COMMAND. Between the two sits `--project=chromium`, which points 1–3 cannot see.
   const wadaPolecenia = ZAWEZAJACE.filter(([, wzorzec]) =>
     wzorzec.test(e2e?.polecenie ?? ''),
   ).map(([nazwa]) => nazwa);
@@ -345,26 +320,26 @@ export const sprawdzPrzegladarki = ({
     throw new BladPrzegladarek(
       'ci',
       'e2e-bez-polecenia',
-      `target \`sandbox-e2e:e2e\` nie ma polecenia, które dałoby się przeczytać — ` +
-        `bramka nie ma jak sprawdzić, czy przebieg nie jest zawężony`,
+      `the \`sandbox-e2e:e2e\` target has no command that can be read — the gate cannot ` +
+        `check whether the run is narrowed`,
     );
   if (wadaPolecenia.length)
     throw new BladPrzegladarek(
       'ci',
       'e2e-zawezony',
-      `polecenie targetu \`sandbox-e2e:e2e\` zawęża przebieg (${wadaPolecenia.join(', ')}):\n` +
+      `the \`sandbox-e2e:e2e\` command narrows the run (${wadaPolecenia.join(', ')}):\n` +
         `      ${e2e.polecenie}\n` +
-        `    Konfiguracja deklaruje wtedy trzy silniki, \`--list\` pokazuje trzy silniki, ` +
-        `a biegnie jeden. To jedyne zawężenie, którego nie widać w \`playwright.config.mts\`.`,
+        `    The configuration then declares three engines, \`--list\` shows three, and ` +
+        `one runs. The only narrowing invisible in \`playwright.config.mts\`.`,
     );
 
   if (!ci?.instalacje?.length)
     throw new BladPrzegladarek(
       'ci',
       'ci-bez-instalacji',
-      `w \`${CI}\` nie ma ani jednego kroku \`playwright install\` — przeglądarki nie ` +
-        `biorą się z niczego, więc albo przebieg pada, albo (gorzej) ktoś to naprawił, ` +
-        `zawężając macierz`,
+      `\`${CI}\` has no \`playwright install\` step at all — browsers do not come from ` +
+        `nowhere, so either the run fails or (worse) somebody fixed it by narrowing the ` +
+        `matrix`,
     );
   const brakiCi = ci.instalacje.flatMap((krok, i) =>
     silniki
@@ -375,23 +350,23 @@ export const sprawdzPrzegladarki = ({
     throw new BladPrzegladarek(
       'ci',
       'ci-bez-silnika',
-      `${brakiCi.length} kroków instalacji przeglądarek w \`${CI}\` nie wymienia silnika z polityki:\n` +
+      `${brakiCi.length} browser install steps in \`${CI}\` do not name an engine from the policy:\n` +
         lista(brakiCi) +
-        `\n    Kroki są dwa (pudło i trafienie w cache) i muszą wymieniać to samo: ` +
-        `silnik zainstalowany tylko przy pudle znika przy pierwszym trafieniu.`,
+        `\n    There are two steps (a cache miss and a cache hit) and they have to name the ` +
+        `same set: an engine installed only on a miss disappears at the first hit.`,
     );
   if (!ci.uruchamiaE2E)
     throw new BladPrzegladarek(
       'ci',
       'ci-bez-e2e',
-      `w \`${CI}\` nie widzę uruchomienia targetu \`e2e\`.\n` +
-        `    To jest mianownik całej tej bramki: macierz opisuje przebieg, którego ` +
-        `nie ma, a wszystkie punkty wyżej przechodzą, bo konfiguracja jest w porządku.`,
+      `\`${CI}\` does not run the \`e2e\` target anywhere.\n` +
+        `    That is this whole gate's denominator: the matrix describes a run that does ` +
+        `not happen, and every point above passes because the configuration is fine.`,
     );
 
-  // 6. FAKT. Sonda w każdym silniku, dla każdego faktu, na który powołuje się
-  // wyłączenie rodzaju `pomiar`. Trzy reguły, bo są trzy różne sposoby, na jakie
-  // to uzasadnienie potrafi przestać obowiązywać, i tylko jeden z nich jest głośny.
+  // 6. FACT. A probe in every engine, for every fact a `pomiar` exclusion appeals to.
+  // Three rules, because there are three different ways such a justification can stop
+  // holding, and only one of them is loud.
   const zPomiaru = wylaczenia.filter((w) => w.rodzaj === 'pomiar');
   for (const fakt of [...new Set(zPomiaru.map((w) => w.fakt))]) {
     const wynik = fakty?.[fakt] ?? {};
@@ -400,9 +375,9 @@ export const sprawdzPrzegladarki = ({
       throw new BladPrzegladarek(
         'fakt',
         'sonda-nieudana',
-        `sonda \`${fakt}\` nie dała wyniku dla: ${bezWyniku.join(', ')}.\n` +
-          `    Bez wyniku nie ma jak orzec, czy wyłączenie nadal ma powód — ` +
-          `a brak orzeczenia domyślnie oznacza „zostaje", czyli najgorszą z odpowiedzi.`,
+        `probe \`${fakt}\` gave no result for: ${bezWyniku.join(', ')}.\n` +
+          `    With no result there is no way to say whether the exclusion still has a ` +
+          `reason — and no verdict defaults to „it stays", the worst of the answers.`,
       );
 
     const wylaczoneTu = new Set(
@@ -412,11 +387,11 @@ export const sprawdzPrzegladarki = ({
       throw new BladPrzegladarek(
         'fakt',
         'fakt-bez-odniesienia',
-        `sonda \`${fakt}\` nie zachodzi u ŻADNEGO silnika, w tym u wzorcowego ` +
-          `\`${wzorcowy}\`.\n` +
-          `    To nie jest wada silników, tylko sondy: gdyby zaczęła zwracać fałsz ` +
-          `zawsze, każde wyłączenie oparte na niej wyglądałoby na uzasadnione ` +
-          `w nieskończoność. Mianownik pomiaru, nie ostrożność.`,
+        `probe \`${fakt}\` holds for NO engine, the reference \`${wzorcowy}\` ` +
+          `included.\n` +
+          `    That is no defect of the engines but of the probe: were it ` +
+          `to start returning false always, every exclusion resting on it would look ` +
+          `justified forever. A measurement's denominator, not caution.`,
       );
 
     const przezyly = [...wylaczoneTu].filter((s) => wynik[s]);
@@ -424,11 +399,11 @@ export const sprawdzPrzegladarki = ({
       throw new BladPrzegladarek(
         'fakt',
         'fakt-nieaktualny',
-        `\`${fakt}\` zachodzi już u silników, które są z tego powodu wyłączone: ${przezyly.join(', ')}.\n` +
-          `    Powód wyłączenia zniknął — najpewniej przy podbiciu Playwrighta, ` +
-          `czyli przy zmianie, która w tym repozytorium nie rusza ani jednego pliku. ` +
-          `Lek: zdjąć wpis z ${POLITYKA} i z \`testIgnore\`, a potem zobaczyć, ` +
-          `co ten plik ma tam do powiedzenia.`,
+        `\`${fakt}\` now holds for engines excluded on account of it: ${przezyly.join(', ')}.\n` +
+          `    The reason for the exclusion is gone — most likely at a Playwright bump, a ` +
+          `change that touches not one file in this repository. Remedy: take the entry out ` +
+          `of ${POLITYKA} and out of \`testIgnore\`, then see what that file has to say ` +
+          `there.`,
       );
 
     const bezPokrycia = silniki.filter((s) => !wynik[s] && !wylaczoneTu.has(s));
@@ -436,18 +411,18 @@ export const sprawdzPrzegladarki = ({
       throw new BladPrzegladarek(
         'fakt',
         'fakt-nieodwzorowany',
-        `\`${fakt}\` nie zachodzi u silników, na których pliki i tak biegną: ${bezPokrycia.join(', ')}.\n` +
-          `    Testy pytają tam o zachowanie, którego ten silnik nie ma — przejdą albo ` +
-          `nie przejdą, ale w obu przypadkach zmierzą co innego, niż mówi ich nazwa.`,
+        `\`${fakt}\` does not hold for engines whose files run anyway: ${bezPokrycia.join(', ')}.\n` +
+          `    The tests ask there about behaviour the engine does not have — they will ` +
+          `pass or fail, and either way measure something other than their name says.`,
       );
   }
 
   const wyl = wylaczenia.length;
   return (
-    `${pliki.length} plików specyfikacji na ${silniki.length} silnikach ` +
+    `${pliki.length} spec files on ${silniki.length} engines ` +
     `(${silniki.map((s) => `${s}: ${zebrane[s].length}`).join(', ')}), ` +
-    `${wyl} ${wyl === 1 ? 'wyłączenie' : 'wyłączeń'} — ` +
-    `${zPomiaru.length} z nich potwierdzone sondą`
+    `${wyl} ${wyl === 1 ? 'exclusion' : 'exclusions'} — ` +
+    `${zPomiaru.length} of them confirmed by a probe`
   );
 };
 
@@ -458,9 +433,9 @@ const czytaj = (sciezka) => readFileSync(join(ROOT, sciezka), 'utf8');
 const politykaZDysku = () => JSON.parse(czytaj(POLITYKA));
 
 /**
- * Co Playwright NAPRAWDĘ zbiera, projekt po projekcie. `--list` nie uruchamia
- * `webServer` ani przeglądarek, więc pomiar kosztuje sekundy, a nie minuty — i mimo to
- * przechodzi przez ten sam kod konfiguracji, co prawdziwy przebieg.
+ * What Playwright REALLY collects, project by project. `--list` starts neither the
+ * `webServer` nor the browsers, so the measurement costs seconds rather than minutes — and
+ * still goes through the same configuration code as a real run.
  */
 const zebranePrzezPlaywrighta = () => {
   let surowe;
@@ -479,7 +454,7 @@ const zebranePrzezPlaywrighta = () => {
     throw new BladPrzegladarek(
       'mianownik',
       'pomiar-nieczytelny',
-      `\`playwright test --list\` nie dał się uruchomić:\n    ` +
+      `\`playwright test --list\` could not be run:\n    ` +
         String(blad.stderr || blad.stdout || blad.message)
           .trim()
           .split('\n')
@@ -495,15 +470,15 @@ const zebranePrzezPlaywrighta = () => {
     throw new BladPrzegladarek(
       'mianownik',
       'pomiar-nieczytelny',
-      `wyjście \`playwright test --list --reporter=json\` nie jest JSON-em ` +
-        `(${surowe.length} znaków) — bramka nie ma z czego wyprowadzić macierzy`,
+      `the output of \`playwright test --list --reporter=json\` is not JSON ` +
+        `(${surowe.length} characters) — the gate has nothing to derive the matrix from`,
     );
   }
   if (raport.errors?.length)
     throw new BladPrzegladarek(
       'mianownik',
       'pomiar-nieczytelny',
-      `Playwright zgłosił ${raport.errors.length} błędów przy zbieraniu testów:\n    ` +
+      `Playwright reported ${raport.errors.length} errors while collecting tests:\n    ` +
         raport.errors
           .map((e) => (e.message ?? String(e)).split('\n')[0])
           .join('\n    '),
@@ -519,8 +494,8 @@ const zebranePrzezPlaywrighta = () => {
   };
   for (const suite of raport.suites ?? []) obejdz(suite);
 
-  // Projekt bez ani jednego testu nie pojawia się w drzewie wyników, a punkt 2 ma
-  // o nim mówić po nazwie — stąd pusta lista zamiast braku klucza.
+  // A project with no test at all does not appear in the result tree, and point 2 is to
+  // name it — hence an empty list rather than a missing key.
   for (const projekt of raport.config?.projects ?? [])
     zebrane[projekt.name] ??= new Set();
 
@@ -530,8 +505,8 @@ const zebranePrzezPlaywrighta = () => {
 };
 
 /**
- * Pliki specyfikacji z INDEKSU GITA, nie ze skanu katalogu: plik niezacommitowany
- * jeszcze nikogo nie obowiązuje, a artefakt w `dist/` nie jest niczyim testem.
+ * Spec files from the GIT INDEX, not from a directory scan: an uncommitted file binds
+ * nobody yet, and an artifact in `dist/` is nobody's test.
  */
 const plikiSpec = () =>
   execFileSync('git', ['ls-files', TESTDIR], { cwd: ROOT, encoding: 'utf8' })
@@ -542,8 +517,8 @@ const plikiSpec = () =>
     .sort();
 
 /**
- * Polecenie targetu `e2e` Z GRAFU NX, a nie z `project.json`: ten target jest
- * INFEROWANY przez `@nx/playwright/plugin`, więc w pliku projektu nie ma go wcale.
+ * The `e2e` target's command FROM THE NX GRAPH, not from `project.json`: that target is
+ * INFERRED by `@nx/playwright/plugin`, so the project file does not carry it at all.
  */
 const targetE2E = async () => {
   const { createProjectGraphAsync } = await import('@nx/devkit');
@@ -559,14 +534,15 @@ const targetE2E = async () => {
 };
 
 /**
- * Co robi workflow. Czytane z tekstu, bo pytanie jest o tekst: które silniki wymienia
- * krok instalacji i czy target `e2e` w ogóle stoi na liście uruchamianych.
+ * What the workflow does. Read from the text, because the question is about text: which
+ * engines the install step names, and whether the `e2e` target is on the list of things
+ * that run at all.
  *
- * Komentarze są obcinane PRZED szukaniem i nie jest to ostrożność na wyrost: ten
- * workflow tłumaczy każdy swój krok akapitem prozy, więc zdanie o `playwright install`
- * wygląda dla wzorca dokładnie jak wywołanie `playwright install`. Bramka zameldowała
- * to sobie sama przy pierwszym przebiegu po dopisaniu własnego komentarza — czyli
- * policzyła cztery kroki instalacji tam, gdzie są dwa, i dwa z nich zapaliła.
+ * Comments are stripped BEFORE the search, and that is not excess caution: this workflow
+ * explains every step of its own in a paragraph of prose, so a sentence about `playwright
+ * install` looks to a pattern exactly like a call to `playwright install`. The gate
+ * reported this to itself on the first run after its own comment was added — it counted
+ * four install steps where there are two, and fired on two of them.
  */
 const krokiCi = (silniki) => {
   const linie = czytaj(CI)
@@ -582,9 +558,9 @@ const krokiCi = (silniki) => {
 };
 
 /**
- * Sondy w prawdziwych przeglądarkach — po jednej stronie na silnik, bez serwera
- * i bez aplikacji. Mierzy się tu zachowanie SILNIKA, więc im mniej jest wokół,
- * tym mniej rzeczy może odpowiedzieć zamiast niego.
+ * Probes in real browsers — one page per engine, with no server and no application. What
+ * is measured here is the ENGINE's behaviour, so the less there is around it, the fewer
+ * things can answer in its place.
  */
 const zmierzFakty = async (polityka) => {
   const potrzebne = [
@@ -612,8 +588,8 @@ const zmierzFakty = async (polityka) => {
       for (const fakt of potrzebne)
         fakty[fakt][silnik] = await SONDY[fakt](page);
     } catch {
-      // Brak wyniku jest tu treścią, nie awarią: punkt 6 ma o tym POWIEDZIEĆ
-      // (reguła `sonda-nieudana`), a nie przewrócić bramkę stosem wywołań.
+      // No result is content here, not a failure: point 6 is to SAY so (the
+      // `sonda-nieudana` rule) rather than bring the gate down with a stack trace.
     } finally {
       await przegladarka?.close();
     }
@@ -691,8 +667,8 @@ try {
 
 if (!existsSync(FIXTURES))
   problems.push(
-    `tools/check-browsers.fixtures: katalog nie istnieje — bramka bez dowodu, ` +
-      `że potrafi nie przejść, jest kolejną cichą wadą (req-quality-negative-control)`,
+    `tools/check-browsers.fixtures: the directory does not exist — a gate with no proof ` +
+      `that it can fail is one more silent defect (req-quality-negative-control)`,
   );
 
 const przypadki = existsSync(FIXTURES)
@@ -750,5 +726,5 @@ if (problems.length) {
 
 console.log(
   `✓ Browser matrix: ${opis}. Negative control: the reference input passes, ` +
-    `${przypadki.length} spreparowanych odrzuconych na swoich regułach.`,
+    `${przypadki.length} prepared ones rejected on their own rules.`,
 );
