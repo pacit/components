@@ -976,8 +976,8 @@ try {
   ) {
     writeFileSync(join(ROOT, SNAPSHOT), blad.snapshot);
     console.log(
-      `✓ Przepisano ${SNAPSHOT}. Uruchom bramkę jeszcze raz — kontrola odniesienia ` +
-        `nie biegła w tym przebiegu.`,
+      `✓ Rewrote ${SNAPSHOT}. Run the gate once more — the negative control did not run ` +
+        `in this pass.`,
     );
     process.exit(0);
   }

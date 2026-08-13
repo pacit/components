@@ -849,7 +849,7 @@ if (WRITE) {
       join(ROOT, SNAPSHOT),
       renderujSnapshot(raport, polityka.tolerancja),
     );
-    console.log(`✓ Przepisano ${SNAPSHOT}`);
+    console.log(`✓ Rewrote ${SNAPSHOT}`);
     process.exit(0);
   }
   console.error(`X Nie ma z czego przepisać snapshotu — brak ${RAPORT}.`);

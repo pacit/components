@@ -1,19 +1,19 @@
-# Snapshot inwentarza części
+# Part inventory snapshot
 
-> **Ten plik jest generowany.** Nie edytuj go ręcznie —
-> `node tools/check-parts.mjs --write`. Bramka `check-parts` odrzuca rozjazd.
+> **This file is generated.** Do not edit it by hand —
+> `node tools/check-parts.mjs --write`. The `check-parts` gate rejects a drift.
 
-Atrybut `data-pct-part` jest publicznym API stylowania — jedyną drogą, jaką ta
-biblioteka zostawia do wnętrza komponentu ([decyzja 0013](../../docs/decisions/0013-no-headless-split.md)).
-Jego zmiana nie daje ani jednego czerwonego testu, bo szablon i arkusz zmieniają się
-razem; psuje się wyłącznie u kogoś, kto tę nazwę wpisał u siebie.
+The `data-pct-part` attribute is the public styling API — the one route this library
+leaves into a component ([decision 0013](../../docs/decisions/0013-no-headless-split.md)).
+Changing it gives not one red test, because the template and the sheet change together;
+it breaks only for somebody who wrote that name down on their side.
 
-Ten plik jest listą, wobec której mierzy się zmianę. Rozjazd nie znaczy „błąd" —
-znaczy „zmiana publicznego API, która ma być widoczna w review".
+This file is the list a change is measured against. A drift does not mean „an error" —
+it means „a change of public API that is to be visible in review".
 
-Kolumny: entrypoint · klasa wystawiająca część · nazwa części. Lista powstaje
+Columns: entrypoint · the class exposing the part · the part name. The list comes
 z **zbudowanego pakietu** (`ɵcmp.consts` i `ɵdir.hostAttrs` po zlinkowaniu), czyli
-z tego, co naprawdę dostaje przeglądarka.
+from what the browser really gets.
 
 ```
 ./button PctButton label

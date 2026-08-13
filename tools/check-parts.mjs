@@ -1,53 +1,20 @@
 #!/usr/bin/env node
 /**
- * Bramka inwentarza części: pilnuje obietnicy `req-api-parts` — że atrybuty
- * `data-pct-part` są SPISANE i WERSJONOWANE, więc konsument może celować w nie
- * selektorem, który przeżyje aktualizację biblioteki.
+ * Part inventory gate: `req-api-parts` — the `data-pct-part` attributes are RECORDED and
+ * VERSIONED, so a consumer's selector survives an update. They are the one route into a
+ * component this library leaves (decision 0013) and the one public API whose change gives
+ * no red test: a rename moves the template and the sheet together.
  *
- * Powód istnienia. `data-pct-part` jest jedyną drogą zaawansowanego stylowania,
- * jaką ta biblioteka zostawia (decyzja 0013) — i jedynym publicznym API, którego
- * zmiana nie daje ani jednego czerwonego testu. Przemianowanie części zmienia
- * szablon i arkusz naraz, więc wszystko w repozytorium dalej się zgadza; psuje
- * się wyłącznie u kogoś, kto tę nazwę wpisał u siebie. Dziś atrybuty są
- * wystawiane, ale nikt ich nie liczy: `docs/components/field.md` do 2026-07-27
- * wymieniał 7 części z jedenastu i nikt tego nie zauważył, bo nie było czym.
+ *  1. DENOMINATOR: every decorator parsed, every template owned, every occurrence read,
+ *  2. SET: the parts read from the sources match those read from the BUILT package,
+ *  3. STATICNESS: a part's name is nowhere bound by an expression,
+ *  4. SURFACE: the **Parts** rows in `docs/components/` carry exactly the exposed names,
+ *  5. SNAPSHOT: the versioned inventory matches the current one.
  *
- * Sprawdzane jest pięć rzeczy:
- *  1. MIANOWNIK: parser widzi każdy dekorator, każdy szablon należy do
- *     komponentu i każde wystąpienie `data-pct-part` w szablonie zostało
- *     rozpoznane,
- *  2. ZBIÓR: części odczytane ze źródeł zgadzają się z odczytanymi ze
- *     ZBUDOWANEGO pakietu — i żadna strona nie jest pusta,
- *  3. STATYCZNOŚĆ: nazwa części nigdzie nie jest wiązana wyrażeniem,
- *  4. POWIERZCHNIA: rubryki **Parts** w `docs/components/` niosą dokładnie te
- *     nazwy, które wystawia entrypoint,
- *  5. SNAPSHOT: wersjonowany inwentarz zgadza się z bieżącym.
+ * Two independent reads are the point: the source read catches a part that never reached
+ * the package, the package read (JIT over `dist/`) one our scanner cannot see.
  *
- * Punkty 3 i 5 to same reguły; punkty 1, 2 i 4 pilnują MIANOWNIKA, z którego te
- * reguły powstają — tego samego, który w A2 kurczył się jako próbka plików
- * w raporcie pokrycia, w A5 jako zbiór deklaracji widzianych przez skaner, a w A6
- * jako zbiór mierzonych komponentów. Tutaj kurczy się zbiór CZĘŚCI: część,
- * której bramka nie zobaczy, wejdzie do pakietu bez wpisu w inwentarzu, a punkt 5
- * potwierdzi, że „nic się nie zmieniło".
- *
- * Skąd biorą się dwa odczyty. Odczyt ze źródeł czyta szablony i bloki `host`
- * z indeksu gita. Odczyt z pakietu wczytuje `dist/` przez JIT (`import
- * '@angular/compiler'`, ten sam krok co w `check-zoneless`) i pyta o `ɵcmp.consts`
- * oraz `ɵdir.hostAttrs`, czyli o wynik PRAWDZIWEGO parsera szablonów Angulara.
- * Niezależność jest tu całą wartością: pierwszy łapie część, która jest
- * w szablonie, a nie dojechała do pakietu (komponent bez eksportu, nieaktualne
- * `dist`); drugi — część, której nasz skaner nie rozumie, bo powstała z szablonu
- * wpisanego w dekorator, z mixinu obiektu `host` albo ze składni, na którą regex
- * jest ślepy. To ten sam ruch co „nie czytaj `include`, uruchom kompilator" (A7)
- * i „czytaj `ɵcmp` z `dist`, nie ze źródła" (A6).
- *
- * Do tego szósty przebieg, który nie bada biblioteki, tylko TĘ BRAMKĘ: kontrola
- * odniesienia z `tools/check-parts.fixtures/` (`req-quality-negative-control`).
- *
- * Użycie:
- *   node tools/check-parts.mjs                    sprawdza
- *   node tools/check-parts.mjs --write            przepisuje snapshot repozytorium
- *   node tools/check-parts.mjs --write <fixture>  przepisuje snapshot fixture'a
+ * Usage: node tools/check-parts.mjs [--write [<fixture>]]  (--write: rewrite the snapshot)
  */
 import { execFileSync } from 'node:child_process';
 import {
@@ -90,29 +57,29 @@ const skroc = (wpisy, ile = 8) =>
 
 const posortuj = (zbior) => [...zbior].sort();
 
-// ── skanery źródła ────────────────────────────────────────────────────────────
+// ── source scanners ────────────────────────────────────────────────────────────
 
 /**
- * Dekorator komponentu albo dyrektywy w źródle. Kotwiczy się na formatowaniu,
- * które wymusza `nx format:check` (`@Component({` i `})` w kolumnie zero) — i
- * właśnie dlatego liczba dopasowań jest osobno porównywana z licznikiem, który
- * tej kotwicy NIE powtarza. Licznik dopuszcza wcięcie, bo powtórzenie kotwicy
- * gasiłoby obie strony porównania naraz i punkt 1 przechodziłby, przestawszy
- * mierzyć cały komponent (`lesson-48`). Wystąpienia w komentarzu odsiewa
- * `[ \t]*` — linia JSDoc zaczyna się od gwiazdki.
+ * A component or directive decorator in a source file. It anchors on the formatting
+ * `nx format:check` enforces (`@Component({` and `})` in column zero) — and that is why
+ * the number of matches is compared separately against a counter that does NOT repeat that
+ * anchor. The counter allows indentation, because repeating the anchor would put out both
+ * sides of the comparison at once and point 1 would pass having stopped measuring a whole
+ * component (`lesson-48`). `[ \t]*` filters out occurrences in comments — a JSDoc line
+ * starts with an asterisk.
  *
- * `@Directive` jest tu razem z `@Component`, bo cztery części obudowy
+ * `@Directive` stands here beside `@Component`, because four wrapper parts
  * (`field-prefix-item`, `field-suffix-item`, `field-label-aux-item`,
- * `field-message-aux-item`) siedzą wyłącznie w blokach `host` dyrektyw. Bramka
- * czytająca same komponenty orzekałaby o inwentarzu bez nich.
+ * `field-message-aux-item`) live only in the `host` blocks of directives. A gate reading
+ * components alone would pronounce on an inventory without them.
  */
 const DEKORATOR =
   /^@(Component|Directive)\(\{\r?\n([\s\S]*?)^\}\)\r?\n(?:export\s+)?(?:abstract\s+)?class\s+([A-Za-z_$][\w$]*)/gm;
 const DEKORATOR_LICZNIK = /^[ \t]*@(?:Component|Directive)\(/gm;
 
-/** `templateUrl: './x.html'` — jedno wystąpienie na dekorator. */
+/** `templateUrl: './x.html'` — one occurrence per decorator. */
 const TEMPLATE_URL = /templateUrl\s*:\s*(['"])([^'"]*)\1/;
-/** `template:` w dekoratorze — wartość dosłowna, żeby odróżnić pusty od reszty. */
+/** `template:` in a decorator — the literal value, to tell an empty one from the rest. */
 const TEMPLATE_INLINE = /^\s{2}template\s*:\s*([\s\S]*?),?\s*$/m;
 
 /** `'data-pct-part': 'nazwa'` w bloku `host`. */
@@ -120,7 +87,7 @@ const HOST_STATYCZNY = new RegExp(
   `(['"])${ATRYBUT}\\1\\s*:\\s*(['"])([^'"]*)\\2`,
   'g',
 );
-/** `'[attr.data-pct-part]': 'wyrażenie()'` — nazwa części z wyrażenia. */
+/** `'[attr.data-pct-part]': 'expression()'` — a part name from an expression. */
 const HOST_DYNAMICZNY = new RegExp(
   `(['"])\\[attr\\.${ATRYBUT}\\]\\1\\s*:`,
   'g',
@@ -131,18 +98,18 @@ const SZABLON_STATYCZNY = new RegExp(
   `${ATRYBUT}\\s*=\\s*(['"])([^'"]*)\\1`,
   'g',
 );
-/** `[attr.data-pct-part]="wyrażenie"` w szablonie. */
+/** `[attr.data-pct-part]="expression"` in a template. */
 const SZABLON_DYNAMICZNY = new RegExp(`\\[attr\\.${ATRYBUT}\\]\\s*=`, 'g');
-/** Niezależny licznik: KAŻDE wystąpienie nazwy atrybutu w tekście szablonu. */
+/** An independent counter: EVERY occurrence of the attribute name in a template. */
 const SZABLON_LICZNIK = new RegExp(ATRYBUT, 'g');
 
 const ile = (tekst, wzorzec) => (tekst.match(wzorzec) ?? []).length;
 
 /**
- * Entrypoint z układu katalogów: `libs/components/select/src/select.ts` →
- * `./select`, a `libs/components/src/index.ts` → `.`. Ta sama postać, w jakiej
- * klucze stoją w mapie `exports` spakowanego manifestu, więc punkt 2 porównuje
- * przynależność bez tłumaczenia jednej konwencji na drugą.
+ * The entrypoint from the directory layout: `libs/components/select/src/select.ts` →
+ * `./select`, and `libs/components/src/index.ts` → `.`. The same shape the keys have in
+ * the packed manifest's `exports` map, so point 2 compares membership without translating
+ * one convention into another.
  */
 const entrypointZeSciezki = (plik) => {
   const segment = plik.slice(`${PROJEKT}/`.length).split('/')[0];
@@ -150,16 +117,16 @@ const entrypointZeSciezki = (plik) => {
 };
 
 /**
- * Klasy z dekoratorami — `[{ plik, klasa, entrypoint, szablon, inline, czesci,
- * dynamiczne }]`. `czesci` biorą się tu wyłącznie z bloku `host`; części
- * z szablonu dokleja punkt 1, bo szablon jest osobnym plikiem i osobnym
- * mianownikiem — jego skan musi się najpierw obronić.
+ * Decorated classes — `[{ plik, klasa, entrypoint, szablon, inline, czesci, dynamiczne }]`.
+ * `czesci` come here from the `host` block alone; the template's parts are added by point
+ * 1, because a template is a separate file and a separate denominator — its scan has to
+ * hold up first.
  *
- * Blok `host` bywa składany rozwinięciem cudzego obiektu (`...fitHost`
- * w `field/src/affix.ts`) i ten skaner tego nie widzi — świadomie. Część wniesiona
- * takim rozwinięciem pojawi się w odczycie z pakietu i zniknie z odczytu ze
- * źródeł, czyli zapali punkt 2 z nazwą części w komunikacie. To jest dokładnie
- * ta praca, którą ma wykonywać drugi odczyt.
+ * A `host` block is sometimes composed by spreading somebody else's object (`...fitHost`
+ * in `field/src/affix.ts`) and this scanner does not see that — deliberately. A part
+ * brought in that way appears in the package read and is missing from the source read,
+ * that is, it fires point 2 with the part's name in the message. Exactly the work the
+ * second read is there to do.
  */
 const czytajZrodla = (root, pliki) => {
   const klasy = [];
@@ -182,9 +149,9 @@ const czytajZrodla = (root, pliki) => {
               .split('\\')
               .join('/')
           : null,
-        // Pusty szablon (`template: ''` w `number.ts` i `text.ts`) nie może
-        // wnieść części, więc nie jest dziurą w mianowniku. Każdy inny zapis
-        // wpisany w dekorator już nią jest.
+        // An empty template (`template: ''` in `number.ts` and `text.ts`) can bring no
+        // part, so it is no hole in the denominator. Any other notation written into the
+        // decorator is one.
         inline: inline !== null && !/^(''|"")$/.test(inline[1].trim()),
         czesci: new Set([...cialo.matchAll(HOST_STATYCZNY)].map((m) => m[3])),
         dynamiczne: ile(cialo, HOST_DYNAMICZNY),
@@ -196,13 +163,13 @@ const czytajZrodla = (root, pliki) => {
 };
 
 /**
- * Szablon: części statyczne, liczba wiązań i licznik wszystkich wystąpień.
+ * A template: the static parts, the number of bindings and a count of all occurrences.
  *
- * Wartość z interpolacją (`data-pct-part="{{nazwa()}}"`) jest wiązaniem, mimo że
- * wygląda jak literał — zmierzone: Angular emituje ją do `consts` jako
- * `[3, 'data-pct-part']`, czyli po markerze wiązań, i wypisuje nazwę atrybutu do
- * treści funkcji szablonu. Bez tego rozróżnienia skaner wpisałby do inwentarza
- * część o nazwie `{{nazwa()}}`, a punkt 3 nigdy by jej nie zobaczył.
+ * A value with interpolation (`data-pct-part="{{name()}}"`) is a binding even though it
+ * looks like a literal — measured, not assumed: Angular emits it into `consts` as
+ * `[3, 'data-pct-part']`, that is, after the bindings marker, and writes the attribute
+ * name into the body of the template function. Without that distinction the scanner would
+ * enter a part named `{{name()}}` into the inventory, and point 3 would never see it.
  */
 const czytajSzablon = (tresc) => {
   const trafienia = [...tresc.matchAll(SZABLON_STATYCZNY)].map((m) => m[2]);
@@ -217,10 +184,10 @@ const czytajSzablon = (tresc) => {
 // ── kontrole ──────────────────────────────────────────────────────────────────
 
 /**
- * Naruszenie jednej z pięciu kontroli — z identyfikatorem, nie tylko
- * komunikatem. Kontrola odniesienia musi sprawdzić, że spreparowane wejście
- * zapaliło NA SWOIM punkcie: wejście wywalające się z innego powodu, niż
- * deklaruje, dowodzi czegoś innego, niż deklaruje.
+ * A violation of one of the five checks — with an identifier, not just a message. The
+ * negative control has to verify that a prepared input fired ON ITS OWN point: an input
+ * failing for a reason other than the one it declares proves something other than what it
+ * declares.
  */
 class BladCzesci extends Error {
   constructor(kontrola, opis) {
@@ -230,40 +197,41 @@ class BladCzesci extends Error {
 }
 
 /**
- * Komplet kontroli na gotowym wejściu:
- *   `klasy`, `deklaracji` — z dekoratorów w źródłach (odczyt A),
- *   `szablony`   — `[{ plik, tresc }]` wszystkich szablonów projektu,
+ * The full set of checks over a ready input:
+ *   `klasy`, `deklaracji` — from the decorators in the sources (read A),
+ *   `szablony`   — `[{ plik, tresc }]` of all the project's templates,
  *   `pakiet`     — `[{ wejscie, klasa, czesci, dynamiczne }]` ze zbudowanego
  *                  pakietu (odczyt B),
  *   `dokumenty`  — `[{ plik, entrypoint, czesci }]` z `docs/components/`,
  *   `entrypointy`— klucze mapy `exports` spakowanego manifestu,
- *   `snapshot`   — treść pliku albo `null`.
- * Rzuca `BladCzesci` przy pierwszym naruszeniu i zwraca `{ opis, snapshot }` —
- * wyrenderowany snapshot wraca także z przebiegu sprawdzającego, bo `--write` ma
- * zapisać dokładnie to, co bramka przed chwilą policzyła, a nie policzyć drugi
- * raz osobną ścieżką.
+ *   `snapshot`   — the file's contents, or `null`.
+ * Throws `BladCzesci` on the first violation and returns `{ opis, snapshot }` — the
+ * rendered snapshot comes back from a checking run too, because `--write` is to write
+ * exactly what the gate has just counted rather than count a second time down another
+ * path.
  */
 const sprawdzCzesci = (we) => {
   const { klasy, deklaracji, szablony, pakiet, dokumenty, entrypointy } = we;
 
-  // 1. MIANOWNIK. Zanim cokolwiek porównamy, odczyt ze źródeł musi umieć
-  //    powiedzieć, że widział wszystko, co miał zobaczyć. Bez tego punkt 2
-  //    porównywałby dwie listy, z których jedna po cichu się skurczyła.
+  // 1. DENOMINATOR. Before anything is compared, the source read has to be able to say
+  //    it saw everything it was meant to see. Without that, point 2 would be comparing
+  //    two lists, one of which had quietly shrunk.
   if (!klasy.length)
     throw new BladCzesci(
       'mianownik',
-      `nie znalazłem ani jednego dekoratora \`@Component\`/\`@Directive\` w źródłach ` +
-        `(${PROJEKT}) — porównanie z licznikiem przeszłoby wtedy zawsze, bo zero równa ` +
-        `się zeru (lesson-48).\n    Najczęstsza przyczyna: lista plików źródłowych ` +
-        `przestała cokolwiek zwracać.`,
+      `no \`@Component\`/\`@Directive\` decorator found in the sources (${PROJEKT}) — ` +
+        `the comparison against the counter would then always pass, because zero equals ` +
+        `zero (lesson-48).\n    Usual cause: the list of source files stopped returning ` +
+        `anything.`,
     );
 
   if (klasy.length !== deklaracji)
     throw new BladCzesci(
       'mianownik',
-      `parser rozpoznał ${klasy.length} z ${deklaracji} dekoratorów — reszta wypadłaby ` +
-        `z inwentarza bez śladu. Najczęstsza przyczyna: dekorator zapisany inaczej, niż ` +
-        `formatuje prettier (\`@Component({\` i \`})\` w kolumnie zero).`,
+      `the parser recognised ${klasy.length} of ${deklaracji} decorators — the rest ` +
+        `would drop out of the inventory without a trace. Usual cause: a decorator ` +
+        `written otherwise than prettier formats it (\`@Component({\` and \`})\` in ` +
+        `column zero).`,
     );
 
   const inline = klasy.filter((k) => k.inline);
@@ -272,9 +240,9 @@ const sprawdzCzesci = (we) => {
       'mianownik',
       `${inline.length} klas bierze szablon z dekoratora, a nie z pliku:\n` +
         lista(inline.map((k) => `${k.plik}: ${k.klasa}`)) +
-        `\n    Skaner źródeł czyta szablony, nie dekoratory, więc części zapisane tam ` +
-        `zobaczy dopiero odczyt z pakietu — czyli jako rozjazd dwóch list, a nie jako ` +
-        `to, czym są. Wynieś szablon do \`templateUrl\`.`,
+        `\n    The source scanner reads templates, not decorators, so parts written ` +
+        `there are seen only by the package read — as a drift between two lists rather ` +
+        `than as what they are. Move the template out to \`templateUrl\`.`,
     );
 
   const uzywane = new Map(); // szablon -> [klasy]
@@ -287,22 +255,22 @@ const sprawdzCzesci = (we) => {
   if (brakujace.length)
     throw new BladCzesci(
       'mianownik',
-      `${brakujace.length} szablonów wskazanych przez \`templateUrl\` nie ma na liście ` +
-        `plików bramki:\n` +
+      `${brakujace.length} templates named by \`templateUrl\` are not on the gate's ` +
+        `file list:\n` +
         lista(brakujace) +
-        `\n    Ich części nie wejdą do inwentarza. Najczęstsza przyczyna: plik poza ` +
-        `indeksem gita albo pathspec, który przestał go obejmować.`,
+        `\n    Their parts will not enter the inventory. Usual cause: a file outside ` +
+        `the git index, or a pathspec that stopped covering it.`,
     );
 
   const osierocone = szablony.filter((s) => !uzywane.has(s.plik));
   if (osierocone.length)
     throw new BladCzesci(
       'mianownik',
-      `${osierocone.length} szablonów nie należy do żadnego dekoratora:\n` +
+      `${osierocone.length} templates belong to no decorator:\n` +
         lista(osierocone.map((s) => s.plik)) +
-        `\n    Skaner przypisuje części do klasy przez \`templateUrl\`; szablon, do którego ` +
-        `nikt nie wskazuje, jest dla inwentarza niewidzialny — a do przeglądarki jedzie ` +
-        `tak samo jak każdy inny.`,
+        `\n    The scanner assigns parts to a class through \`templateUrl\`; a template ` +
+        `nobody points at is invisible to the inventory — and travels to the browser like ` +
+        `every other one.`,
     );
 
   const skany = new Map(szablony.map((s) => [s.plik, czytajSzablon(s.tresc)]));
@@ -312,20 +280,21 @@ const sprawdzCzesci = (we) => {
   if (nierozpoznane.length)
     throw new BladCzesci(
       'mianownik',
-      `${nierozpoznane.length} szablonów ma wystąpienia \`${ATRYBUT}\`, których skaner ` +
-        `nie rozpoznał:\n` +
+      `${nierozpoznane.length} templates hold \`${ATRYBUT}\` occurrences the scanner did ` +
+        `not recognise:\n` +
         lista(
           nierozpoznane.map(
             (s) =>
-              `${s.plik}: rozpoznane ${s.czesci.length} statycznych + ` +
-              `${s.dynamiczne} wiązanych, a nazwa atrybutu pada ${s.wystapien} razy`,
+              `${s.plik}: recognised ${s.czesci.length} static + ` +
+              `${s.dynamiczne} bound, and the attribute name appears ${s.wystapien} times`,
           ),
         ) +
-        `\n    Licznik jest niezależny od skanera właśnie po to: część zapisana składnią, ` +
-        `na którą regex jest ślepy, ma wypaść z inwentarza GŁOŚNO, a nie po cichu.`,
+        `\n    The counter is independent of the scanner precisely for this: a part ` +
+        `written in syntax the regex is blind to is to drop out of the inventory LOUDLY, ` +
+        `not quietly.`,
     );
 
-  // Części ze źródeł: blok `host` plus szablon wskazany przez `templateUrl`.
+  // Parts from the sources: the `host` block plus the template named by `templateUrl`.
   const zeZrodel = new Map(); // klasa -> { entrypoint, plik, czesci, dynamiczne }
   for (const k of klasy) {
     const zeSzablonu = k.szablon ? skany.get(k.szablon) : null;
@@ -339,15 +308,15 @@ const sprawdzCzesci = (we) => {
     });
   }
 
-  // 2. ZBIÓR — dwa niezależne odczyty tej samej listy.
+  // 2. SET — two independent reads of the same list.
   //
-  //    Odczyt A (wyżej) czyta ŹRÓDŁA: tekst szablonu i tekst dekoratora.
-  //    Odczyt B czyta ZBUDOWANY PAKIET przez JIT, czyli wynik prawdziwego
-  //    parsera szablonów Angulara. Gdyby lista brała się tylko ze źródeł,
-  //    komponent, który wypadł z pakietu, dalej miałby swoje części
-  //    w inwentarzu — a konsument nie miałby ich w ogóle. Gdyby tylko
-  //    z pakietu — część wniesiona składnią, której nasz skaner nie rozumie,
-  //    weszłaby do inwentarza jako fakt dokonany, bez linii w diffie.
+  //    Read A (above) reads the SOURCES: the text of a template and of a decorator.
+  //    Read B reads the BUILT PACKAGE through JIT, that is, the output of Angular's real
+  //    template parser. Were the list to come from the sources alone, a component that
+  //    dropped out of the package would still have its parts in the inventory — and the
+  //    consumer would not have them at all. From the package alone — a part brought in by
+  //    syntax our scanner cannot read would enter the inventory as a fait accompli, with
+  //    no line in the diff.
   const zPakietu = new Map(
     pakiet
       .filter((p) => p.czesci.length || p.dynamiczne)
@@ -364,10 +333,10 @@ const sprawdzCzesci = (we) => {
   if (!zeZrodel.size || !zPakietu.size)
     throw new BladCzesci(
       'zbior',
-      `pusty zbiór części (źródła: ${zeZrodel.size} klas, pakiet: ${zPakietu.size}) — ` +
-        `wszystkie dalsze punkty przeszłyby wtedy, nie orzekając o niczym.\n` +
-        `    Najczęstsza przyczyna: nieaktualne albo puste \`${DIST}\` (bramka wymaga ` +
-        `\`dependsOn: build\`) albo lista plików, która przestała cokolwiek zwracać.`,
+      `an empty set of parts (sources: ${zeZrodel.size} classes, package: ${zPakietu.size}) — ` +
+        `every later point would then pass without pronouncing on anything.\n` +
+        `    Usual cause: a stale or empty \`${DIST}\` (the gate needs \`dependsOn: ` +
+        `build\`), or a file list that stopped returning anything.`,
     );
 
   const rozjazdy = [];
@@ -379,52 +348,54 @@ const sprawdzCzesci = (we) => {
     const b = zPakietu.get(klasa);
     if (!b) {
       rozjazdy.push(
-        `${klasa} (${a.plik}): części w źródłach, a klasy nie ma w pakiecie — ` +
+        `${klasa} (${a.plik}): parts in the sources, and no such class in the package — ` +
           `${posortuj(a.czesci).join(', ')}`,
       );
       continue;
     }
     if (!a) {
       rozjazdy.push(
-        `${klasa} (${b.entrypoint}): części w pakiecie, a klasy nie widzi skaner źródeł — ` +
+        `${klasa} (${b.entrypoint}): parts in the package, and the source scanner does not see the class — ` +
           `${posortuj(b.czesci).join(', ')}`,
       );
       continue;
     }
     if (a.entrypoint !== b.entrypoint)
       rozjazdy.push(
-        `${klasa}: leży w \`${a.entrypoint}\`, a pakiet eksportuje ją z \`${b.entrypoint}\``,
+        `${klasa}: sits in \`${a.entrypoint}\`, and the package exports it from \`${b.entrypoint}\``,
       );
     const brakWPakiecie = posortuj(a.czesci).filter((c) => !b.czesci.has(c));
     const brakWZrodlach = posortuj(b.czesci).filter((c) => !a.czesci.has(c));
     if (brakWPakiecie.length)
       rozjazdy.push(
-        `${klasa}: w źródłach, a nie w pakiecie — ${brakWPakiecie.join(', ')}`,
+        `${klasa}: in the sources and not in the package — ${brakWPakiecie.join(', ')}`,
       );
     if (brakWZrodlach.length)
       rozjazdy.push(
-        `${klasa}: w pakiecie, a nie w źródłach — ${brakWZrodlach.join(', ')}`,
+        `${klasa}: in the package and not in the sources — ${brakWZrodlach.join(', ')}`,
       );
   }
   if (rozjazdy.length)
     throw new BladCzesci(
       'zbior',
-      `dwa odczyty inwentarza się nie zgadzają (${rozjazdy.length}):\n` +
+      `the two reads of the inventory disagree (${rozjazdy.length}):\n` +
         lista(skroc(rozjazdy, 12)) +
-        `\n    Pierwsze to część, która nie dojechała do konsumenta (komponent bez ` +
-        `eksportu albo nieaktualne \`dist\`); drugie — część, której nie widzi skaner ` +
-        `źródeł, więc weszłaby do pakietu bez linii w diffie.`,
+        `\n    The first kind is a part that never reached the consumer (a component ` +
+        `with no export, or a stale \`dist\`); the second is a part the source scanner ` +
+        `cannot see, which would enter the package with no line in the diff.`,
     );
 
-  // 3. STATYCZNOŚĆ. Nazwa złożona w runtime nie daje się spisać ani zamrozić:
-  //    inwentarz i snapshot byłyby wtedy zielone dokładnie dlatego, że nie mają
-  //    czego zobaczyć. Mierzone po obu stronach — w źródłach jako `[attr.…]`,
-  //    w pakiecie jako wystąpienie nazwy atrybutu w treści skompilowanej funkcji
-  //    szablonu (atrybut wiązany nie trafia do `consts`, tylko do instrukcji).
+  // 3. STATICNESS. A name composed at runtime can be neither recorded nor frozen: the
+  //    inventory and the snapshot would then be green exactly because they have nothing
+  //    to see. Measured on both sides — in the sources as `[attr.…]`, in the package as an
+  //    occurrence of the attribute name inside the compiled template function (a bound
+  //    attribute does not reach `consts`, only the instruction).
   const wiazane = [
     ...[...zeZrodel]
       .filter(([, w]) => w.dynamiczne)
-      .map(([klasa, w]) => `${klasa} (${w.plik}): ${w.dynamiczne} w źródłach`),
+      .map(
+        ([klasa, w]) => `${klasa} (${w.plik}): ${w.dynamiczne} in the sources`,
+      ),
     ...[...zPakietu]
       .filter(([, w]) => w.dynamiczne)
       .map(
@@ -435,18 +406,18 @@ const sprawdzCzesci = (we) => {
   if (wiazane.length)
     throw new BladCzesci(
       'statycznosc',
-      `${wiazane.length} miejsc wiąże nazwę części wyrażeniem:\n` +
+      `${wiazane.length} places bind a part's name with an expression:\n` +
         lista(wiazane) +
-        `\n    Część, której nazwa powstaje w runtime, nie jest publicznym API — jest ` +
-        `nazwą, której nikt nie zapisał i której snapshot nie potrafi zamrozić. ` +
-        `\`${ATRYBUT}\` ma być literałem w szablonie albo w bloku \`host\`.`,
+        `\n    A part whose name appears at runtime is no public API — it is a name ` +
+        `nobody wrote down and no snapshot can freeze. \`${ATRYBUT}\` is to be a literal ` +
+        `in the template or in the \`host\` block.`,
     );
 
-  // 4. POWIERZCHNIA. Inwentarz istnieje po to, żeby ktoś go PRZECZYTAŁ, a
-  //    czytelną powierzchnią są dziś karty w `docs/components/`. Rubryka
-  //    **Parts** jest pisana ręką i dokładnie dlatego kłamie: `field.md`
-  //    wymieniał 7 części z jedenastu. Porównanie idzie per ENTRYPOINT, bo tak
-  //    biblioteka jest importowana, a jedna karta bywa o dwóch klasach
+  // 4. SURFACE. The inventory exists to be READ, and today's readable surface is the
+  //    cards in `docs/components/`. The **Parts** row is written by hand and lies for
+  //    exactly that reason: `field.md` used to list 7 parts out of eleven. The comparison
+  //    goes per ENTRYPOINT, because that is how the library is imported, and one card is
+  //    sometimes about two classes
   //    (`radio.md`) i jeden entrypoint o trzech kartach (`field`, `number`,
   //    `text`).
   const wgEntrypointu = new Map();
@@ -460,15 +431,15 @@ const sprawdzCzesci = (we) => {
     .filter((d) => d.entrypoint === null || !entrypointy.has(d.entrypoint))
     .map(
       (d) =>
-        `${d.plik}: ${d.entrypoint === null ? 'brak nagłówka **Entrypoint:**' : `\`${d.entrypoint}\` nie jest entrypointem pakietu`}`,
+        `${d.plik}: ${d.entrypoint === null ? 'no **Entrypoint:** heading' : `\`${d.entrypoint}\` is not an entrypoint of the package`}`,
     );
   if (nieznaneEntrypointy.length)
     throw new BladCzesci(
       'dokumentacja',
-      `${nieznaneEntrypointy.length} kart wskazuje entrypoint, którego nie ma w pakiecie:\n` +
+      `${nieznaneEntrypointy.length} cards name an entrypoint that is not in the package:\n` +
         lista(nieznaneEntrypointy) +
-        `\n    Bramka przypisuje rubrykę **Parts** do entrypointu właśnie tym nagłówkiem; ` +
-        `karta bez niego zostaje poza porównaniem, czyli poza inwentarzem.`,
+        `\n    The gate assigns a **Parts** row to an entrypoint by exactly that heading; ` +
+        `a card without one stays outside the comparison, that is, outside the inventory.`,
     );
 
   const problemyDokumentacji = [];
@@ -476,13 +447,13 @@ const sprawdzCzesci = (we) => {
     const karty = dokumenty.filter((d) => d.entrypoint === entrypoint);
     if (!karty.length) {
       problemyDokumentacji.push(
-        `\`${entrypoint}\` wystawia ${czesci.size} części i nie ma ani jednej karty ` +
+        `\`${entrypoint}\` exposes ${czesci.size} parts and has no card at all ` +
           `w \`${DOKUMENTY}/\``,
       );
       continue;
     }
 
-    const skad = new Map(); // część -> [karty]
+    const skad = new Map(); // part -> [cards]
     for (const karta of karty)
       for (const c of karta.czesci)
         skad.set(c, [...(skad.get(c) ?? []), karta.plik]);
@@ -492,37 +463,37 @@ const sprawdzCzesci = (we) => {
       .map(([c, gdzie]) => `\`${c}\` w ${gdzie.join(' i ')}`);
     if (dwaRazy.length)
       problemyDokumentacji.push(
-        `\`${entrypoint}\`: ta sama część w dwóch kartach — ${dwaRazy.join('; ')}`,
+        `\`${entrypoint}\`: the same part in two cards — ${dwaRazy.join('; ')}`,
       );
 
     const brakujeWKartach = posortuj(czesci).filter((c) => !skad.has(c));
     const nadmiarowe = [...skad.keys()].filter((c) => !czesci.has(c)).sort();
     if (brakujeWKartach.length)
       problemyDokumentacji.push(
-        `\`${entrypoint}\`: pakiet wystawia, a karty nie wymieniają — ` +
+        `\`${entrypoint}\`: the package exposes what the cards do not list — ` +
           brakujeWKartach.map((c) => `\`${c}\``).join(', '),
       );
     if (nadmiarowe.length)
       problemyDokumentacji.push(
-        `\`${entrypoint}\`: karty wymieniają, a pakiet nie wystawia — ` +
+        `\`${entrypoint}\`: the cards list what the package does not expose — ` +
           nadmiarowe.map((c) => `\`${c}\``).join(', '),
       );
   }
   if (problemyDokumentacji.length)
     throw new BladCzesci(
       'dokumentacja',
-      `rubryki **Parts** rozjechały się z pakietem (${problemyDokumentacji.length}):\n` +
+      `the **Parts** rows have drifted from the package (${problemyDokumentacji.length}):\n` +
         lista(skroc(problemyDokumentacji, 12)) +
-        `\n    Karta wymieniająca część, której nie ma, wysyła konsumenta pod selektor ` +
-        `trafiający w nic; karta milcząca o istniejącej cofa obietnicę „spisane" do zera. ` +
+        `\n    A card listing a part that does not exist sends the consumer to a selector ` +
+        `matching nothing; a card silent about an existing one undoes the „recorded" ` +
+        `promise entirely. ` +
         `Zapis rubryki: \`| **Parts** | \\\`nazwa\\\`, \\\`nazwa\\\` |\`.`,
     );
 
-  // 5. SNAPSHOT — wersjonowany inwentarz, wobec którego mierzy się zmianę.
-  // Stoi OSTATNI, bo zapala na każdej zmianie nazwy, także na tej, którą
-  // wcześniejsze punkty potrafią nazwać po imieniu. Odwrotna kolejność dawałaby
-  // na część wniesioną wiązaniem komunikat „snapshot się rozjechał", czyli
-  // poprawną diagnozę problemu, którego nie ma.
+  // 5. SNAPSHOT — the versioned inventory a change is measured against. It stands LAST,
+  // because it fires on every change of a name, including the ones the earlier points can
+  // name precisely. The reverse order would answer a part brought in by a binding with
+  // „the snapshot has drifted" — a correct diagnosis of a problem that is not there.
   const wiersze = [...zPakietu]
     .flatMap(([klasa, w]) =>
       posortuj(w.czesci).map((c) => [w.entrypoint, klasa, c]),
@@ -534,10 +505,10 @@ const sprawdzCzesci = (we) => {
 
   if (we.snapshot === null)
     throw rozjazd(
-      `brak \`${SNAPSHOT}\` — uruchom \`node tools/check-parts.mjs --write\`.\n` +
-        `    Bez snapshotu ta bramka pilnuje spójności trzech odczytów, ale nie mierzy ` +
-        `ZMIANY: przemianowanie części razem z kartą w docs przechodzi wtedy bez śladu, ` +
-        `a u konsumenta psuje selektor.`,
+      `no \`${SNAPSHOT}\` — run \`node tools/check-parts.mjs --write\`.\n` +
+        `    Without a snapshot this gate watches that three reads agree, but does not ` +
+        `measure CHANGE: renaming a part together with its card in docs then passes ` +
+        `without a trace, and breaks a selector at the consumer's.`,
     );
   if (we.snapshot !== tresc) {
     const stare = wierszeSnapshotu(we.snapshot);
@@ -545,31 +516,31 @@ const sprawdzCzesci = (we) => {
     const usuniete = [...stare].filter((w) => !nowe.has(w));
     const dodane = [...nowe].filter((w) => !stare.has(w));
     throw rozjazd(
-      `snapshot inwentarza rozjechał się z bieżącym:\n` +
+      `the inventory snapshot has drifted from the current one:\n` +
         (usuniete.length
-          ? `    zniknęło z API (${usuniete.length}):\n` +
+          ? `    gone from the API (${usuniete.length}):\n` +
             lista(skroc(usuniete)) +
             '\n'
           : '') +
         (dodane.length
-          ? `    doszło do API (${dodane.length}):\n` +
+          ? `    added to the API (${dodane.length}):\n` +
             lista(skroc(dodane)) +
             '\n'
           : '') +
         (!usuniete.length && !dodane.length
-          ? `    lista części jest ta sama — rozjechał się nagłówek albo kolejność wierszy.\n`
+          ? `    the list of parts is the same — the heading or the row order drifted.\n`
           : '') +
-        `    \`${ATRYBUT}\` jest publicznym API stylowania (decyzja 0013): część, która ` +
-        `zniknęła, zabiera konsumentowi selektor i nie daje przy tym ani jednego czerwonego ` +
-        `testu, bo szablon i arkusz zmieniają się razem. Jeśli zmiana jest świadoma — ` +
+        `    \`${ATRYBUT}\` is the public styling API (decision 0013): a part that has ` +
+        `gone takes a consumer's selector with it and gives not one red test, because the ` +
+        `template and the sheet change together. If the change is deliberate — ` +
         `\`node tools/check-parts.mjs --write\`.`,
     );
   }
 
   return {
     opis:
-      `${wiersze.length} części w ${zPakietu.size} klasach ` +
-      `(${wgEntrypointu.size} entrypointów), ${dokumenty.length} kart w docs`,
+      `${wiersze.length} parts in ${zPakietu.size} classes ` +
+      `(${wgEntrypointu.size} entrypoints), ${dokumenty.length} cards in docs`,
     snapshot: tresc,
   };
 };
@@ -577,29 +548,28 @@ const sprawdzCzesci = (we) => {
 // ── snapshot ──────────────────────────────────────────────────────────────────
 
 /**
- * Ten sam wybór formatu co w `libs/tokens/tokens.snapshot.md` i z tego samego
- * powodu: tabela markdowna po przejściu prettiera wyrównuje kolumny do
- * najdłuższej komórki, więc jedna długa nazwa przepisuje CAŁY plik, a diff
- * przestaje pokazywać, co się naprawdę zmieniło.
+ * The same choice of format as in `libs/tokens/tokens.snapshot.md` and for the same
+ * reason: a markdown table run through prettier pads its columns to the longest cell, so
+ * one long name rewrites the WHOLE file and the diff stops showing what really changed.
  */
 const renderujSnapshot = (wiersze) =>
   [
-    '# Snapshot inwentarza części',
+    '# Part inventory snapshot',
     '',
-    '> **Ten plik jest generowany.** Nie edytuj go ręcznie —',
-    '> `node tools/check-parts.mjs --write`. Bramka `check-parts` odrzuca rozjazd.',
+    '> **This file is generated.** Do not edit it by hand —',
+    '> `node tools/check-parts.mjs --write`. The `check-parts` gate rejects a drift.',
     '',
-    'Atrybut `data-pct-part` jest publicznym API stylowania — jedyną drogą, jaką ta',
-    'biblioteka zostawia do wnętrza komponentu ([decyzja 0013](../../docs/decisions/0013-no-headless-split.md)).',
-    'Jego zmiana nie daje ani jednego czerwonego testu, bo szablon i arkusz zmieniają się',
-    'razem; psuje się wyłącznie u kogoś, kto tę nazwę wpisał u siebie.',
+    'The `data-pct-part` attribute is the public styling API — the one route this library',
+    'leaves into a component ([decision 0013](../../docs/decisions/0013-no-headless-split.md)).',
+    'Changing it gives not one red test, because the template and the sheet change together;',
+    'it breaks only for somebody who wrote that name down on their side.',
     '',
-    'Ten plik jest listą, wobec której mierzy się zmianę. Rozjazd nie znaczy „błąd" —',
-    'znaczy „zmiana publicznego API, która ma być widoczna w review".',
+    'This file is the list a change is measured against. A drift does not mean „an error" —',
+    'it means „a change of public API that is to be visible in review".',
     '',
-    'Kolumny: entrypoint · klasa wystawiająca część · nazwa części. Lista powstaje',
+    'Columns: entrypoint · the class exposing the part · the part name. The list comes',
     'z **zbudowanego pakietu** (`ɵcmp.consts` i `ɵdir.hostAttrs` po zlinkowaniu), czyli',
-    'z tego, co naprawdę dostaje przeglądarka.',
+    'from what the browser really gets.',
     '',
     '```',
     ...wiersze.map((w) => w.join(' ')),
@@ -608,15 +578,15 @@ const renderujSnapshot = (wiersze) =>
   ].join('\n');
 
 /**
- * Same wiersze danych — do policzenia różnicy, bez nagłówka.
+ * The data rows alone — for computing the difference, with no heading.
  *
- * Brak pliku (`null`) jest tu pustą listą, a nie awarią, choć gałąź wyżej łapie
- * ten przypadek osobno i wcześniej. Zależność między gałęziami jednego punktu
- * jest normalna; zapisanie jej tak, że jej naruszenie nie daje zdania, nie jest:
- * pierwsza wersja czytała `null.split` i rozbrojenie gałęzi „brak snapshotu"
- * w ramach kontroli odniesienia zamieniało bramkę w `TypeError` — czyli kontrola
- * przestawała umieć zbadać punkt, który miała zbadać. Ta sama wada co w A4 i A7,
- * znaleziona tą samą kontrolą.
+ * A missing file (`null`) is an empty list here, not a failure, even though the branch
+ * above catches that case separately and earlier. A dependency between the branches of one
+ * point is normal; writing it so that breaking it produces no sentence is not: the first
+ * version read `null.split`, and disarming the „no snapshot" branch as part of the negative
+ * control turned the gate into a `TypeError` — the control lost the ability to examine the
+ * point it was meant to examine. The same defect as in A4 and A7, found by the same
+ * control.
  */
 const wierszeSnapshotu = (tresc) =>
   new Set(
@@ -628,9 +598,9 @@ const wierszeSnapshotu = (tresc) =>
 const czytaj = (root, sciezka) => readFileSync(join(root, sciezka), 'utf8');
 
 /**
- * Karta komponentu: entrypoint z nagłówka i nazwy części z rubryki **Parts**.
- * `_template.md` i `README.md` odpadają — pierwszy jest formularzem do skopiowania
- * (jego rubryka opisuje, co wpisać), drugi spisem treści.
+ * A component card: the entrypoint from the heading and the part names from the **Parts**
+ * row. `_template.md` and `README.md` are left out — the first is a form to copy (its row
+ * describes what to write), the second a table of contents.
  */
 const NAGLOWEK_ENTRYPOINT =
   /^\*\*Entrypoint:\*\*\s*`@pacit\/components(\/[a-z-]+)?`/m;
@@ -653,20 +623,18 @@ const czytajKarte = (plik, tresc) => {
 };
 
 /**
- * Definicje ze ZBUDOWANEGO pakietu. `@angular/compiler` jest wczytany pierwszy,
- * bo pakiet jest skompilowany częściowo i `ɵcmp` powstaje dopiero przy dostępie
- * — to ten sam krok, który u konsumenta wykonuje linker, i ten sam co
- * w `check-zoneless`.
+ * Definitions from the BUILT package. `@angular/compiler` is loaded first,
+ * because the package is partially compiled and `ɵcmp` appears only on access — the same
+ * step the linker performs at the consumer's, and the same as in `check-zoneless`.
  *
- * `consts` niesie atrybuty STATYCZNE każdego elementu, w postaci płaskiej
- * tablicy, w której liczba otwiera sekcję o innym znaczeniu (klasy, style,
- * wiązania). Czytamy więc wyłącznie prefiks przed pierwszą liczbą — dalej stoją
- * już nazwy bez wartości.
+ * `consts` carries every element's STATIC attributes, as a flat array in which a number
+ * opens a section with a different meaning (classes, styles, bindings). So we read only
+ * the prefix before the first number — beyond it stand names without values.
  *
- * Nazwa atrybutu WIĄZANEGO nie trafia do `consts` w ogóle, tylko do treści
- * skompilowanej funkcji (`ɵɵattribute('data-pct-part', ctx.x)`) — zmierzone, nie
- * założone. Stąd drugi odczyt po tekście funkcji: bez niego punkt 3 miałby
- * w pakiecie ślepą stronę.
+ * The name of a BOUND attribute does not reach `consts` at all, only the body of the
+ * compiled function (`ɵɵattribute('data-pct-part', ctx.x)`) — measured, not assumed.
+ * Hence the second read over the function's text: without it point 3 would have a blind
+ * side in the package.
  */
 const parujAtrybuty = (attrs) => {
   const out = [];
@@ -683,8 +651,8 @@ const komponentyPakietu = async (root) => {
   if (!existsSync(join(dist, 'package.json')))
     throw new BladCzesci(
       'zbior',
-      `brak zbudowanego pakietu w ${DIST} — bramka czyta artefakt, nie same źródła.\n` +
-        `    Target musi mieć \`dependsOn\` na build biblioteki.`,
+      `no built package in ${DIST} — this gate reads the artifact, not the sources ` +
+        `alone.\n    The target needs a \`dependsOn\` on the library's build.`,
     );
 
   await import('@angular/compiler');
@@ -731,9 +699,9 @@ const komponentyPakietu = async (root) => {
 };
 
 /**
- * Źródła, w których szuka się dekoratorów. Specyfikacje odpadają świadomie:
- * definiują komponenty-gospodarzy z szablonem wpisanym w dekorator, a te nigdzie
- * nie jadą — punkt 1 zapalałby na każdym teście renderującym.
+ * The sources searched for decorators. Specs are left out on purpose: they define host
+ * components with the template written into the decorator, and those travel nowhere —
+ * point 1 would fire on every rendering test.
  */
 const jestZrodlem = (p) =>
   p.startsWith(`${PROJEKT}/`) && p.endsWith('.ts') && !p.endsWith('.spec.ts');
@@ -743,7 +711,7 @@ const jestKarta = (p) =>
   p.endsWith('.md') &&
   !['_template.md', 'README.md'].includes(basename(p));
 
-/** Wejście złożone z listy plików — ta sama postać dla repo i dla fixture'a. */
+/** An input built from a file list — the same shape for the repo and for a fixture. */
 const zbierzWejscie = async (root, pliki, pakietZDysku) => {
   const { pakiet, entrypointy } =
     pakietZDysku ?? (await komponentyPakietu(root));
@@ -762,13 +730,13 @@ const zbierzWejscie = async (root, pliki, pakietZDysku) => {
 };
 
 /**
- * Pliki z INDEKSU GITA, nie z globa po dysku — ten sam powód co w `check-styles`,
- * `check-tokens`, `check-zoneless` i `check-typecheck`: indeks jest niezależnym
- * spisem tego, co repozytorium naprawdę wiezie.
+ * Files from the GIT INDEX, not from a glob over the disk — the same reason as in
+ * `check-styles`, `check-tokens`, `check-zoneless` and `check-typecheck`: the index is an
+ * independent record of what the repository really carries.
  *
- * Pathspec jest KATALOGIEM, a filtrowanie siedzi w JS-ie: pathspec gita nie jest
- * globem powłoki i bez `:(glob)` gwiazdka przechodzi przez `/`, więc wzorzec
- * z gwiazdką potrafi zwrócić ZERO plików zamiast błędu (`lesson-48`).
+ * The pathspec is a DIRECTORY and the filtering sits in JS: a git pathspec is not a shell
+ * glob, and without `:(glob)` a star crosses `/`, so a pattern with a star can return ZERO
+ * files rather than an error (`lesson-48`).
  */
 const plikiRepozytorium = () =>
   execFileSync('git', ['ls-files', '-z', PROJEKT, DOKUMENTY], {
@@ -783,23 +751,21 @@ const plikiRepozytorium = () =>
 // ── negative control ──────────────────────────────────────────────────────────
 
 /**
- * Składa spreparowane wejście: kopia bazy, na nią pliki przypadku, potem
- * usunięcia z `fixture.json`. Katalog przypadku zawiera więc WYŁĄCZNIE swoją
- * wadę, a nie kolejny egzemplarz poprawnego wejścia, w którym trzeba jej szukać.
+ * Builds a prepared input: a copy of the base, the case's files on top, then the deletions
+ * from `fixture.json`. The case directory then holds NOTHING BUT its own defect, rather
+ * than one more copy of a correct input to hunt through.
  *
- * Odczyt z pakietu przychodzi jako DANE (`pakiet.json`), a nie z prawdziwego
- * builda: zbudowanie Angularowego pakietu na każdy z kilkunastu przypadków
- * kosztowałoby minuty na przebieg, a bramka ma biec przy każdym commicie. Ten
- * sam wybór co w `check-zoneless` i z tego samego powodu. Cenę widać wprost:
- * fixtures NIE ćwiczą kodu czytającego `ɵcmp` — ćwiczą wszystkie pozostałe
- * parsery i cały układ kontroli. Odczyt z pakietu jest za to ćwiczony przy
- * każdym przebiegu na prawdziwym repozytorium.
+ * The package read arrives as DATA (`pakiet.json`) rather than from a real build: building
+ * an Angular package for each of a dozen-odd cases would cost minutes per run, and this
+ * gate is to run on every commit. The same choice as in `check-zoneless` and for the same
+ * reason. The price is plain: the fixtures do NOT exercise the code that reads `ɵcmp` —
+ * they exercise every other parser and the whole arrangement of checks. The package read
+ * is exercised instead on every run against the real repository.
  *
- * Źródła leżą w repozytorium jako `*.ts.txt` i dopiero tutaj stają się `*.ts` —
- * ten sam ruch co w `check-styles` i `check-tokens`: plik `.ts` w `tools/` nie
- * należy do żadnego programu kompilatora, więc zapaliłby `check-typecheck`
- * (punkt 1 — plik bez projektu). Fixture jednej bramki nie może być wadą dla
- * drugiej.
+ * The sources sit in the repository as `*.ts.txt` and become `*.ts` only here — the same
+ * move as in `check-styles` and `check-tokens`: a `.ts` file in `tools/` belongs to no
+ * compiler program, so it would fire `check-typecheck` (point 1 — a file with no project).
+ * One gate's fixture must not be another's defect.
  */
 const zlozFixture = (nazwa, fx) => {
   const cel = mkdtempSync(join(tmpdir(), 'pct-check-parts-'));
@@ -832,20 +798,20 @@ const wejscieFixture = (katalog) => {
 const problems = [];
 let opis = null;
 
-// Ścieżka utrzymaniowa: przepisz snapshot fixture'a i wyjdź. Fixture ma własny
-// snapshot i musi go dostać z tego samego renderera co repozytorium — inaczej
-// wejście wzorcowe przestaje przechodzić przy pierwszej zmianie formatu pliku.
+// The maintenance path: rewrite a fixture's snapshot and exit. A fixture has a snapshot of
+// its own and has to get it from the same renderer as the repository — otherwise the
+// reference input stops passing at the first change to the file's format.
 if (WRITE_FIXTURE) {
   const katalog = zlozFixture(WRITE_FIXTURE, {});
   const cel = join(FIXTURES, WRITE_FIXTURE, SNAPSHOT);
   try {
     sprawdzCzesci(await wejscieFixture(katalog));
-    console.log(`✓ ${WRITE_FIXTURE}: snapshot był już aktualny.`);
+    console.log(`✓ ${WRITE_FIXTURE}: the snapshot was already current.`);
   } catch (blad) {
     if (!(blad instanceof BladCzesci) || blad.kontrola !== 'snapshot')
       throw blad;
     writeFileSync(cel, blad.snapshot);
-    console.log(`✓ Przepisano ${WRITE_FIXTURE}/${SNAPSHOT}.`);
+    console.log(`✓ Rewrote ${WRITE_FIXTURE}/${SNAPSHOT}.`);
   } finally {
     rmSync(katalog, { recursive: true, force: true });
   }
@@ -859,14 +825,14 @@ try {
   opis = wynik.opis;
 } catch (blad) {
   if (!(blad instanceof BladCzesci)) throw blad;
-  // `--write` istnieje po to, żeby rozjazd snapshotu dało się zaakceptować
-  // jednym poleceniem. Wszystkie pozostałe punkty zostają błędem także z nim:
-  // przepisanie snapshotu nie jest odpowiedzią na część wniesioną wiązaniem.
+  // `--write` exists so that a snapshot drift can be accepted with one command. Every
+  // other point stays an error under it too: rewriting the snapshot is no answer to a part
+  // brought in by a binding.
   if (WRITE && blad.kontrola === 'snapshot') {
     writeFileSync(join(ROOT, SNAPSHOT), blad.snapshot);
     console.log(
-      `✓ Przepisano ${SNAPSHOT}. Uruchom bramkę jeszcze raz — kontrola odniesienia ` +
-        `nie biegła w tym przebiegu.`,
+      `✓ Rewrote ${SNAPSHOT}. Run the gate once more — the negative control did not run ` +
+        `in this pass.`,
     );
     process.exit(0);
   }
@@ -884,9 +850,9 @@ if (przypadki.length === 0)
       `fail is one more silent defect (req-quality-negative-control)`,
   );
 
-// Wejście wzorcowe MUSI przejść: gdyby baza sama była wadliwa, każdy przypadek
-// zapalałby z jej powodu, a nie ze swojego, i wszystkie „odrzucone" byłyby
-// fałszywe — czyli ta kontrola stałaby się tym, przed czym stoi.
+// The reference input MUST pass: were the base defective itself, every case would fire
+// because of it rather than its own defect, and every „rejected" would be false — this
+// control would become the very thing it stands against.
 {
   const katalog = zlozFixture(BAZA, {});
   try {

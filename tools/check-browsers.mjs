@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * Browser matrix gate: does `req-quality-browsers` — „the functional tests run on chromium,
- * firefox and webkit" — have a measurement behind it, or three entries in
- * `playwright.config.mts` that nobody reads again? Undoing the matrix gives NO RED TEST.
+ * Browser matrix gate: does `req-quality-browsers` — „the tests run on chromium, firefox
+ * and webkit" — have a measurement behind it, or three entries in `playwright.config.mts`
+ * that nobody reads again? Undoing the matrix gives NO RED TEST.
  *
  *  1. DENOMINATOR: the measurement can be taken and is not empty,
  *  2. the collected projects are exactly the policy's engines, each with tests,
@@ -12,9 +12,8 @@
  *  6. FACT: a `pomiar` exclusion's justification is measured, not remembered.
  *
  * What „really runs" comes from `playwright test --list`, not from the configuration —
- * the same move as „run the compiler" in `check-typecheck`. Point 6 repeats its probe on
- * every run, because a fact about an engine stops holding quietly, at a package bump
- * rather than at a change here. Control: `check-browsers.fixtures/`.
+ * the same move as „run the compiler" in `check-typecheck`. Point 6 re-probes on every
+ * run: a fact about an engine stops holding at a package bump, not at a change here.
  *
  * Usage: node tools/check-browsers.mjs
  */

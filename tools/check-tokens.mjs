@@ -1203,7 +1203,7 @@ if (WRITE_FIXTURE) {
     if (!(blad instanceof BladTokenu) || blad.kontrola !== 'snapshot')
       throw blad;
     writeFileSync(cel, blad.snapshot);
-    console.log(`✓ Przepisano ${WRITE_FIXTURE}/${SNAPSHOT}.`);
+    console.log(`✓ Rewrote ${WRITE_FIXTURE}/${SNAPSHOT}.`);
   } finally {
     rmSync(katalog, { recursive: true, force: true });
   }
@@ -1221,8 +1221,8 @@ try {
   if (WRITE && blad.kontrola === 'snapshot') {
     writeFileSync(join(ROOT, SNAPSHOT), blad.snapshot);
     console.log(
-      `✓ Przepisano ${SNAPSHOT}. Uruchom bramkę jeszcze raz — kontrola odniesienia ` +
-        `nie biegła w tym przebiegu.`,
+      `✓ Rewrote ${SNAPSHOT}. Run the gate once more — the negative control did not run ` +
+        `in this pass.`,
     );
     process.exit(0);
   }
