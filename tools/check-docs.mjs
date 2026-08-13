@@ -545,7 +545,7 @@ if (WRITE) {
     [REQ_IDS, reqIds],
   ]) {
     if (!existsSync(join(ROOT, rel)))
-      fail(rel, 'plik nie istnieje — uruchom `--write`');
+      fail(rel, 'the file does not exist — run `--write`');
     else if (read(rel) !== want)
       fail(
         rel,

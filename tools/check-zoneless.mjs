@@ -1,9 +1,8 @@
 #!/usr/bin/env node
 /**
  * Foundation gate: has `zone.js` really left the project, and is every built component
- * OnPush? `zone.js` is an OPTIONAL peer of `@angular/core` and OnPush an Angular v22+
- * default — both promises rest on nobody undoing them ([`lesson-8`](../docs/lessons.md#lesson-8),
- * [`lesson-11`](../docs/lessons.md#lesson-11)).
+ * OnPush? An OPTIONAL peer of `@angular/core` and somebody else's default: both promises
+ * rest on nobody undoing them ([`lesson-8`](../docs/lessons.md#lesson-8), [`lesson-11`](../docs/lessons.md#lesson-11)).
  *
  *  1. no manifest in the repository declares `zone.js`,
  *  2. `package-lock.json` has none in the tree, not even nested under someone's package,
@@ -51,7 +50,7 @@ const SLADY = [
   ['injected `NgZone`', /\bNgZone\b/],
   ['`__zone_symbol__`', /__zone_symbol__/],
   [
-    'globalny `Zone`',
+    'global `Zone`',
     /\bZone\s*\.\s*(?:current|root|__load_patch|assertZonePatched)\b/,
   ],
 ];
@@ -94,7 +93,7 @@ class BladZoneless extends Error {
 /**
  * The full set of checks over a ready input:
  *   `manifesty`  — `[{ plik, dependencies, … }]`,
- *   `pakietyLocka` — klucze `packages` z `package-lock.json`,
+ *   `pakietyLocka` — the `packages` keys of `package-lock.json`,
  *   `bundle`     — `[{ plik, tekst }]` from the built package,
  *   `wejscia`    — the files the `exports` map points at (the denominator for `bundle`),
  *   `zrodla`     — `[{ plik, klasa, jawne }]` from `@Component` in the sources,
@@ -283,7 +282,7 @@ const bundlePakietu = () => {
   } catch {
     throw new BladZoneless(
       'bundle',
-      `brak zbudowanego pakietu w ${DIST} — uruchom najpierw \`nx build components\``,
+      `no built package in ${DIST} — run \`nx build components\` first`,
     );
   }
   return sciezki.map((s) => ({
@@ -460,7 +459,7 @@ for (const nazwa of przypadki) {
     sprawdzZoneless(zlozFixture(fx));
     problems.push(
       `${nazwa}: the prepared input PASSED and was meant not to — ` +
-        `punkt ${fx.punkt} (\`${fx.kontrola}\`) stopped examining anything`,
+        `point ${fx.punkt} (\`${fx.kontrola}\`) stopped examining anything`,
     );
   } catch (blad) {
     if (!(blad instanceof BladZoneless)) throw blad;

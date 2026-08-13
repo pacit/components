@@ -1403,7 +1403,7 @@ for (const nazwa of przypadki) {
     sprawdzTeksty(await wejscieFixture(katalog));
     problems.push(
       `${nazwa}: the prepared input PASSED and was meant not to — ` +
-        `punkt ${fx.punkt} (\`${fx.kontrola}/${fx.regula}\`) stopped examining anything`,
+        `point ${fx.punkt} (\`${fx.kontrola}/${fx.regula}\`) stopped examining anything`,
     );
   } catch (blad) {
     if (!(blad instanceof BladTekstu)) throw blad;

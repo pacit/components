@@ -1267,7 +1267,7 @@ for (const nazwa of przypadki) {
     sprawdzTokeny(wejscieFixture(katalog));
     problems.push(
       `${nazwa}: the prepared input PASSED and was meant not to — ` +
-        `punkt ${fx.punkt} (\`${fx.kontrola}\`) stopped examining anything`,
+        `point ${fx.punkt} (\`${fx.kontrola}\`) stopped examining anything`,
     );
   } catch (blad) {
     if (!(blad instanceof BladTokenu)) throw blad;

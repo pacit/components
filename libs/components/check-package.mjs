@@ -1,42 +1,24 @@
 #!/usr/bin/env node
 /**
- * Bramka pakietu: sprawdza, czy `dist/libs/components` da się zainstalować
- * i użyć — czyli czy wozi skórkę, a nie tylko kod.
+ * Package gate: can `dist/libs/components` be installed and used — does it carry the skin
+ * or only the code? A library build SUCCEEDS with not one token definition in the package;
+ * the components then reference `var(--pct-*)` nobody declares, the browser quietly takes
+ * the initial value and the consumer gets controls with no appearance. No unit or e2e test
+ * sees it — they run on the sources and on the sandbox, not on the packed artifact
+ * ([`lesson-17`](../../docs/lessons.md#lesson-17)).
  *
- * Powód istnienia (lesson-17 w wersji dla dystrybucji): build biblioteki
- * kończy się SUKCESEM także wtedy, gdy w pakiecie nie ma ani jednej definicji
- * tokenu. Komponenty odwołują się wtedy do `var(--pct-*)`, których nikt nie
- * deklaruje — przeglądarka po cichu bierze wartość początkową (`background`
- * przezroczyste, `border-color` = currentColor) i konsument dostaje kontrolki
- * bez wyglądu. Żaden test jednostkowy ani e2e tego nie widzi, bo one działają
- * na źródłach i na sandboxie, nie na spakowanym artefakcie.
+ *  1. the skin is in the package (`themes/pct.css`, non-empty),
+ *  2. it is reachable by import (`exports` in package.json),
+ *  3. token closure: every `var(--pct-*)` used in the package is declared in it,
+ *  4. `PCT_VERSION` in the code matches `version` from the manifest,
+ *  5. the `ng add` / `ng update` collections are there and their factories point at
+ *     compiled files,
+ *  6. the manifest has the metadata publishing needs (a warning; `--release` blocks).
  *
- * Sprawdzane jest sześć rzeczy:
- *  1. skórka jest w pakiecie (`themes/pct.css`, niepusta),
- *  2. jest osiągalna importem (`exports` w package.json),
- *  3. domknięcie tokenów: każdy `var(--pct-*)` użyty gdziekolwiek w pakiecie
- *     ma w tym pakiecie swoją deklarację,
- *  4. `PCT_VERSION` w kodzie zgadza się z `version` z manifestu,
- *  5. kolekcje `ng add` / `ng update` są w pakiecie, a ich fabryki wskazują na
- *     skompilowane pliki,
- *  6. manifest ma metadane wymagane do publikacji (tylko ostrzeżenie; przy
- *     `--release` blokuje).
+ * Point 3 is the one that catches the regression — an empty file passes 1 and 2 as well.
+ * Negative control: `tools/check-package.fixtures/` (`req-quality-negative-control`).
  *
- * Punkt 3 jest tym, który faktycznie łapie regresję — warunki 1 i 2 spełni
- * też pusty plik albo skórka, z której ktoś usunął warstwę komponentową.
- *
- * Do tego siódmy przebieg, który nie bada pakietu, tylko TĘ BRAMKĘ: kontrola
- * odniesienia z `tools/check-package.fixtures/`. Spreparowane pakiety, z których
- * każdy łamie dokładnie jeden z sześciu punktów i musi zostać odrzucony przez
- * ten właśnie punkt. Bez niej bramka pilnująca sześciu obietnic sama nie miałaby
- * dowodu, że potrafi zapalić (`req-quality-negative-control`) — czyli byłaby dokładnie
- * tym, co opisuje `lesson-39`: bramką urodzoną martwą. Przebieg z `lesson-36`
- * (usunięcie `libs/tokens/dist` → build przechodzi, pakiet jest bez tokenów)
- * był ręczny, a ręczny przebieg nie istnieje między sesjami.
- *
- * Użycie:
- *   node libs/components/check-package.mjs             weryfikuje (CI)
- *   node libs/components/check-package.mjs --release   punkt 6 blokuje zamiast ostrzegać
+ * Usage: node libs/components/check-package.mjs [--release]  (--release: point 6 blocks)
  */
 import {
   cpSync,
@@ -57,8 +39,8 @@ const FIXTURES = join(HERE, '../../tools/check-package.fixtures');
 const BAZA = '_poprawny';
 const THEME = 'themes/pct.css';
 
-// Skanujemy tekstowe wyjścia pakietu. Style komponentów są w bundlach jako
-// łańcuchy znaków, więc definicje z .scss trafiają tu razem z kodem.
+// We scan the package's textual outputs. Component styles sit in the bundles as strings,
+// so the definitions from .scss arrive here together with the code.
 const TEXT = new Set(['.css', '.scss', '.js', '.mjs', '.ts', '.json']);
 
 const walk = (dir, out = []) => {
@@ -71,11 +53,11 @@ const walk = (dir, out = []) => {
 };
 
 /**
- * Naruszenie jednej z sześciu kontroli. Niesie identyfikator kontroli, a nie
- * tylko komunikat, bo kontrola odniesienia musi sprawdzić, że spreparowany
- * pakiet zapalił NA SWOIM punkcie: fixture wywalający się z innego powodu niż
- * wpisany w `fixture.json` dowodzi czegoś innego, niż deklaruje — a to ta sama
- * cicha wada, przed którą stoi cała ta bramka.
+ * A violation of one of the six checks. It carries the check's identifier and not just
+ * the message, because the negative control has to verify that a prepared package fired
+ * ON ITS OWN point: a fixture failing for a reason other than the one in `fixture.json`
+ * proves something other than what it declares — the same silent defect this whole gate
+ * stands against.
  */
 class BladPakietu extends Error {
   constructor(kontrola, opis) {
@@ -85,9 +67,9 @@ class BladPakietu extends Error {
 }
 
 /**
- * Komplet kontroli na katalogu `ROOT`. Rzuca `BladPakietu` przy pierwszym
- * naruszeniu — kontrole idą od najbardziej podstawowej, więc dalsze i tak
- * nie miałyby czego badać. Zwraca zdanie podsumowujące.
+ * The full set of checks over the `ROOT` directory. Throws `BladPakietu` on the first
+ * violation — the checks run from the most basic one, so the later ones would have
+ * nothing to examine anyway. Returns a summary sentence.
  */
 const kontrole = (ROOT, { release }, ostrzezenia) => {
   const fail = (kontrola, msg) => {
@@ -100,11 +82,11 @@ const kontrole = (ROOT, { release }, ostrzezenia) => {
   } catch {
     fail(
       'pakiet',
-      `brak zbudowanego pakietu w ${ROOT} — uruchom najpierw \`nx build components\``,
+      `no built package in ${ROOT} — run \`nx build components\` first`,
     );
   }
 
-  // 1. skórka jest w pakiecie
+  // 1. the skin is in the package
   const themePath = join(ROOT, THEME);
   let theme = '';
   try {
@@ -112,21 +94,24 @@ const kontrole = (ROOT, { release }, ostrzezenia) => {
   } catch {
     fail(
       'skorka',
-      `pakiet nie zawiera ${THEME} — konsument dostanie komponenty bez ani jednego tokenu.\n` +
-        `  Sprawdz \`assets\` w libs/components/ng-package.json oraz to, czy tokens:build wykonal sie przed build.`,
+      `the package has no ${THEME} — the consumer gets components without one token.\n` +
+        `  Check \`assets\` in libs/components/ng-package.json, and that tokens:build ran before build.`,
     );
   }
   if (!theme.includes('--pct-'))
-    fail('skorka', `${THEME} nie zawiera zadnej definicji tokenu`);
+    fail('skorka', `${THEME} holds no token definition at all`);
 
-  // 2. skórka jest osiągalna importem. Mapa `exports` jest zamknięta: plik obecny
-  // w pakiecie, ale bez wpisu, jest dla konsumenta niewidoczny
-  // (ERR_PACKAGE_PATH_NOT_EXPORTED). Wpis może być dosłowny albo z gwiazdką.
+  // 2. the skin is reachable by import. The `exports` map is closed: a file present in
+  // the package but with no entry is invisible to the consumer
+  // (ERR_PACKAGE_PATH_NOT_EXPORTED). An entry may be literal or carry a star.
   let pkg;
   try {
     pkg = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'));
   } catch {
-    fail('pakiet', `pakiet nie ma czytelnego manifestu (${ROOT}/package.json)`);
+    fail(
+      'pakiet',
+      `the package has no readable manifest (${ROOT}/package.json)`,
+    );
   }
   const exposed = Object.keys(pkg.exports ?? {});
   const themeKey = './' + THEME;
@@ -141,16 +126,16 @@ const kontrole = (ROOT, { release }, ostrzezenia) => {
   if (!exposed.some(covers)) {
     fail(
       'exports',
-      `${THEME} jest w pakiecie, ale nie w mapie \`exports\` — \`import '@pacit/components/${THEME}'\`\n` +
-        `  poleci ERR_PACKAGE_PATH_NOT_EXPORTED. Widoczne wejscia: ${exposed.join(', ')}`,
+      `${THEME} is in the package but not in the \`exports\` map — \`import '@pacit/components/${THEME}'\`\n` +
+        `  will throw ERR_PACKAGE_PATH_NOT_EXPORTED. Visible entrypoints: ${exposed.join(', ')}`,
     );
   }
 
-  // 3. domknięcie tokenów: użycie ⊆ deklaracje
+  // 3. token closure: usage ⊆ declarations
   const USED = /var\(\s*(--pct-[a-z0-9-]+)/gi;
   const DEFINED = /(--pct-[a-z0-9-]+)\s*:/g;
 
-  const used = new Map(); // token -> pliki, w których go użyto
+  const used = new Map(); // token -> the files that use it
   const defined = new Set();
 
   for (const path of files) {
@@ -167,23 +152,23 @@ const kontrole = (ROOT, { release }, ostrzezenia) => {
   if (missing.length) {
     fail(
       'tokeny',
-      `${missing.length} tokenow jest uzywanych, ale nigdzie w pakiecie niezadeklarowanych.\n` +
-        `  Przegladarka podstawi za nie wartosc poczatkowa — komponent wyrenderuje sie bez wygladu.\n` +
+      `${missing.length} tokens are used but declared nowhere in the package.\n` +
+        `  The browser substitutes the initial value — the component renders with no appearance.\n` +
         missing
           .map(
-            (t) => `  - ${t}  (uzyty w: ${[...used.get(t)].sort().join(', ')})`,
+            (t) => `  - ${t}  (used in: ${[...used.get(t)].sort().join(', ')})`,
           )
           .join('\n'),
     );
   }
 
-  // 4. wersja w kodzie == wersja w manifeście. `PCT_VERSION` jest generowane
-  // przez `stamp-version.mjs`, ale generator **nie jest** zależnością builda —
-  // inaczej artefakt zawsze by się zgadzał i ta kontrola nic by nie badała.
-  // `nx release version` podbija sam manifest, więc bez niej pierwsze wydanie
-  // wypuściłoby pakiet, który kłamie o własnej wersji. Brak stałej jest błędem
-  // tak samo jak zła wartość: znaczy, że zmienił się kształt wyjścia i kontrola
-  // przestała cokolwiek sprawdzać.
+  // 4. the version in the code == the version in the manifest. `PCT_VERSION` is generated
+  // by `stamp-version.mjs`, but the generator is **not** a dependency of the build —
+  // otherwise the artifact would always agree with itself and this check would examine
+  // nothing. `nx release version` bumps the manifest alone, so without it the first
+  // release would ship a package lying about its own version. A missing constant is as
+  // much an error as a wrong value: it means the shape of the output changed and the
+  // check stopped verifying anything.
   const VERSION_CONST = /PCT_VERSION\s*=\s*['"]([^'"]+)['"]/;
   const stamped = files
     .map((path) => readFileSync(path, 'utf8').match(VERSION_CONST)?.[1])
@@ -192,25 +177,25 @@ const kontrole = (ROOT, { release }, ostrzezenia) => {
   if (stamped.length === 0) {
     fail(
       'wersja',
-      `nie znaleziono stalej PCT_VERSION w zbudowanym pakiecie — kontrola wersji przestala dzialac.\n` +
-        `  Sprawdz, czy stala nadal jest eksportowana z libs/components/src/index.ts.`,
+      `no PCT_VERSION constant found in the built package — the version check stopped working.\n` +
+        `  Check that the constant is still exported from libs/components/src/index.ts.`,
     );
   }
   const wrong = [...new Set(stamped)].filter((v) => v !== pkg.version);
   if (wrong.length) {
     fail(
       'wersja',
-      `PCT_VERSION (${wrong.join(', ')}) nie zgadza sie z wersja pakietu (${pkg.version}).\n` +
-        `  Uruchom: npx nx stamp-version components  (a potem przebuduj pakiet)`,
+      `PCT_VERSION (${wrong.join(', ')}) does not match the package version (${pkg.version}).\n` +
+        `  Run: npx nx stamp-version components  (then rebuild the package)`,
     );
   }
 
-  // 5. `ng add` i `ng update` są osiągalne. Manifest wskazuje na kolekcje
-  // plikami, a te powstają w osobnym kroku (`nx schematics components`) już PO
-  // ng-packagr — czyli w miejscu, które łatwo pominąć. Sam wpis w manifeście
-  // niczego nie gwarantuje: gdy pliku nie ma, `ng add @pacit/components`
-  // wywala się u konsumenta na „Collection not found", a biblioteka wygląda
-  // na zepsutą przy pierwszej komendzie, jaką ktoś wpisze.
+  // 5. `ng add` and `ng update` are reachable. The manifest points at the collections by
+  // file, and those appear in a separate step (`nx schematics components`) AFTER
+  // ng-packagr — a place that is easy to skip. The manifest entry alone guarantees
+  // nothing: with the file missing, `ng add @pacit/components` fails at the consumer's
+  // with „Collection not found", and the library looks broken at the first command
+  // anybody types.
   for (const [field, pointer] of [
     ['schematics', pkg.schematics],
     ['ng-update.migrations', pkg['ng-update']?.migrations],
@@ -218,7 +203,7 @@ const kontrole = (ROOT, { release }, ostrzezenia) => {
     if (!pointer) {
       fail(
         'schematics',
-        `manifest nie ma pola \`${field}\` — \`ng add\`/\`ng update\` nie zadzialaja.`,
+        `the manifest has no \`${field}\` field — \`ng add\`/\`ng update\` will not work.`,
       );
     }
     let collection;
@@ -227,12 +212,12 @@ const kontrole = (ROOT, { release }, ostrzezenia) => {
     } catch {
       fail(
         'schematics',
-        `\`${field}\` wskazuje na ${pointer}, ktorego w pakiecie nie ma.\n` +
-          `  Uruchom: npx nx schematics components`,
+        `\`${field}\` points at ${pointer}, which is not in the package.\n` +
+          `  Run: npx nx schematics components`,
       );
     }
-    // Fabryka musi istnieć jako skompilowany plik — wpis w kolekcji wskazuje
-    // ścieżkę TS-a sprzed builda tak samo chętnie jak istniejący JS.
+    // The factory has to exist as a compiled file — a collection entry names a
+    // pre-build TS path just as readily as an existing JS one.
     for (const [name, def] of Object.entries(collection.schematics ?? {})) {
       const factory = String(def.factory ?? '').split('#')[0];
       const resolved = join(ROOT, dirname(pointer), `${factory}.js`);
@@ -241,26 +226,24 @@ const kontrole = (ROOT, { release }, ostrzezenia) => {
       } catch {
         fail(
           'schematics',
-          `schematic \`${name}\` z \`${field}\` wskazuje na ${factory}, ` +
-            `ale ${relative(ROOT, resolved)} nie istnieje w pakiecie.`,
+          `schematic \`${name}\` from \`${field}\` points at ${factory}, ` +
+            `but ${relative(ROOT, resolved)} does not exist in the package.`,
         );
       }
     }
   }
 
-  // 6. metadane wymagane do publikacji. Osobna surowość, bo to jedyny warunek,
-  // którego nie da się spełnić kodem: `repository` musi wskazywać realne
-  // repozytorium, a npm **odmawia** wystawienia provenance, gdy go brakuje albo
-  // gdy nie zgadza się z repozytorium, z którego leci publikacja. Dopóki projekt
-  // nie ma zdalnego repozytorium, brak tego pola nie jest błędem budowania —
-  // jest brakiem gotowości do wydania, więc na co dzień tylko ostrzega,
-  // a blokuje dopiero przy `--release`.
+  // 6. the metadata publishing requires. A severity of its own, because this is the one
+  // condition code cannot satisfy: `repository` has to point at a real repository, and npm
+  // **refuses** to issue provenance when it is missing or disagrees with the repository
+  // the publish runs from. As long as the project has no remote, a missing field is not a
+  // build error — it is a lack of release readiness, so day to day it only warns and
+  // blocks under `--release`.
   const REQUIRED_META = {
-    description:
-      'npm pokazuje ten opis na stronie pakietu i w wynikach wyszukiwania',
-    license: 'bez niego npm oznacza pakiet jako UNLICENSED',
+    description: 'npm shows this on the package page and in search results',
+    license: 'without it npm marks the package UNLICENSED',
     repository:
-      'wymagane przez `npm publish --provenance`; musi wskazywać repozytorium, z ktorego leci publikacja',
+      'required by `npm publish --provenance`; must point at the repository the publish runs from',
   };
 
   const missingMeta = Object.entries(REQUIRED_META).filter(
@@ -273,39 +256,40 @@ const kontrole = (ROOT, { release }, ostrzezenia) => {
     if (release) {
       fail(
         'metadane',
-        `manifest pakietu nie ma pol wymaganych do publikacji:\n${list}\n` +
-          `  Uzupelnij libs/components/package.json.`,
+        `the package manifest lacks fields required for publishing:\n${list}\n` +
+          `  Fill them in in libs/components/package.json.`,
       );
     }
     ostrzezenia.push(
-      `Pakiet zbuduje sie i zadziala, ale NIE jest gotowy do publikacji — brakuje:\n${list}`,
+      `The package builds and works, but is NOT ready to publish — missing:\n${list}`,
     );
   }
 
-  // Plik LICENSE w artefakcie. Pole `license` i plik rozjeżdżają się po cichu, bo
-  // zmiana jednego nie wymusza zmiany drugiego, a `"license": "MIT"` bez pliku jest
-  // formalnie licencją niepełną. Trzy różne awarie, trzy reguły: pliku nie ma, plik
-  // jest zajawką z generatora, plik mówi o innej licencji niż manifest. Twardy błąd
-  // zawsze — inaczej niż `repository`, którego nie dało się spełnić bez zdalnego repo.
+  // The LICENSE file in the artifact. The `license` field and the file drift apart
+  // quietly, because changing one does not force changing the other, and `"license":
+  // "MIT"` with no file is formally an incomplete licence. Three different failures, three
+  // rules: no file, a generator's stub of a file, a file naming a different licence than
+  // the manifest. A hard error every time — unlike `repository`, which could not be
+  // satisfied without a remote.
   let licencja = '';
   try {
     licencja = readFileSync(join(ROOT, 'LICENSE'), 'utf8');
   } catch {
     fail(
       'licencja',
-      `pakiet nie zawiera pliku LICENSE, a manifest deklaruje "${pkg.license}".\n` +
-        `  Dla dzialu prawnego konsumenta to licencja niepelna. Plik jedzie z libs/components/LICENSE.`,
+      `the package has no LICENSE file, and the manifest declares "${pkg.license}".\n` +
+        `  To a consumer's legal team that is an incomplete licence. The file travels from libs/components/LICENSE.`,
     );
   }
   if (licencja.trim().length < 100)
     fail(
       'licencja',
-      `plik LICENSE ma ${licencja.trim().length} znakow — to zajawka, nie tresc licencji`,
+      `the LICENSE file has ${licencja.trim().length} characters — a stub, not a licence text`,
     );
 
-  // Dopasowanie po granicy slowa, nie `includes`: zmierzone, nie zalozone — tekst MIT
-  // i tekst Apache-2.0 zawieraja slowo LIMITED, w ktorym „MIT" siedzi jako podciag,
-  // wiec plik Apache przy manifescie MIT przeszedlby prostszy warunek.
+  // Matched on a word boundary, not with `includes`: measured, not assumed — both the MIT
+  // and the Apache-2.0 text contain the word LIMITED, with „MIT" sitting inside it as a
+  // substring, so an Apache file under an MIT manifest would pass the simpler condition.
   const spdx = (pkg.license ?? '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   if (
     spdx &&
@@ -313,29 +297,29 @@ const kontrole = (ROOT, { release }, ostrzezenia) => {
   )
     fail(
       'licencja',
-      `manifest deklaruje "${pkg.license}", a plik LICENSE tej nazwy nie zawiera — ` +
-        `jedna ze stron zostala zmieniona bez drugiej`,
+      `the manifest declares "${pkg.license}" and the LICENSE file does not carry that ` +
+        `name — one side was changed without the other`,
     );
   if (!/Copyright \(c\) \d{4} \S/.test(licencja))
     fail(
       'licencja',
-      'plik LICENSE nie ma linii `Copyright (c) <rok> <podmiot>` — bez wskazanego ' +
-        'wlasciciela nota nie chroni niczego',
+      'the LICENSE file has no `Copyright (c) <year> <holder>` line — with no owner ' +
+        'named, the notice protects nothing',
     );
 
   return (
-    `${THEME} obecny i wyeksportowany, ` +
-    `${used.size} uzytych tokenow ma pokrycie w ${defined.size} deklaracjach, ` +
+    `${THEME} present and exported, ` +
+    `${used.size} used tokens covered by ${defined.size} declarations, ` +
     `PCT_VERSION = ${pkg.version}`
   );
 };
 
 /**
- * Kontrole na katalogu `root` bez kończenia procesu — dzięki temu ten sam kod
- * biegnie dwa razy: raz na prawdziwym `dist`, raz na każdym spreparowanym
- * pakiecie z kontroli odniesienia. Bramka, która sama kończy proces, dałaby
- * się sprawdzić tylko przez podproces i wyjście po numerze — czyli tak, żeby
- * fixture zapalający z niewłaściwego powodu wyglądał na dowód.
+ * The checks over a `root` directory without ending the process — so the same code runs
+ * twice: once on the real `dist`, once on every prepared package of the negative control.
+ * A gate that ends the process itself could only be examined through a subprocess and an
+ * exit code — that is, in a way that makes a fixture firing for the wrong reason look
+ * like proof.
  */
 const sprawdzPakiet = (root, { release = false } = {}) => {
   const ostrzezenia = [];
@@ -352,20 +336,19 @@ const sprawdzPakiet = (root, { release = false } = {}) => {
 };
 
 /**
- * Składa spreparowany pakiet: kopia bazy, na nią pliki przypadku, na końcu
- * usunięcia z `fixture.json`. Dzięki temu katalog przypadku zawiera WYŁĄCZNIE
- * wadę, a nie kolejny egzemplarz poprawnego pakietu, w którym trzeba jej
- * szukać — i nie rozjeżdża się z bazą, gdy kształt pakietu się zmieni.
+ * Builds a prepared package: a copy of the base, the case's files on top, the deletions
+ * from `fixture.json` last. The case directory then holds NOTHING BUT the defect, rather
+ * than one more copy of a correct package to hunt through — and it does not drift from the
+ * base when the shape of the package changes.
  *
- * Manifest leży w repozytorium jako `manifest.json` i dopiero tutaj staje się
- * `package.json`. Powód jest twardy: prawdziwy `package.json` w drzewie
- * repozytorium **jest dla Nx projektem** — graf dostawał widmowy projekt
- * `@pacit/components` o korzeniu w fixtures, w dodatku w trzech egzemplarzach
- * o tej samej nazwie. Naturalne obejście (`.nxignore`) naprawia to i psuje coś
- * gorszego: katalog znika z mapy plików, więc `inputs` targetu przestają go
- * widzieć i osłabienie fixture'a NIE unieważnia cache. Bramka świeciłaby wtedy
- * na zielono z cache'a, nie sprawdziwszy niczego — czyli sama kontrola
- * odniesienia stałaby się cichą wadą (`req-axis`).
+ * The manifest sits in the repository as `manifest.json` and becomes `package.json` only
+ * here. The reason is hard: a real `package.json` in the repository tree **is a project to
+ * Nx** — the graph was getting a phantom `@pacit/components` project rooted in the
+ * fixtures, in three copies under the same name at that. The natural workaround
+ * (`.nxignore`) fixes that and breaks something worse: the directory disappears from the
+ * file map, so the target's `inputs` stop seeing it and weakening a fixture does NOT
+ * invalidate the cache. The gate would then shine green from the cache having checked
+ * nothing — the negative control itself would become a silent defect (`req-axis`).
  */
 const zlozFixture = (nazwa, fx) => {
   const cel = mkdtempSync(join(tmpdir(), 'pct-check-package-'));
@@ -380,7 +363,7 @@ const zlozFixture = (nazwa, fx) => {
   return cel;
 };
 
-// ── pakiet ────────────────────────────────────────────────────────────────────
+// ── the package ────────────────────────────────────────────────────────────────────
 
 const RELEASE_MODE = process.argv.includes('--release');
 const problems = [];
@@ -398,29 +381,29 @@ const przypadki = readdirSync(FIXTURES, { withFileTypes: true })
 
 if (przypadki.length === 0)
   problems.push(
-    `tools/check-package.fixtures: brak spreparowanych pakietow — bramka bez dowodu, ` +
-      `ze potrafi nie przejsc, jest kolejna cicha wada (req-quality-negative-control)`,
+    `tools/check-package.fixtures: no prepared packages — a gate with no proof that it ` +
+      `can fail is one more silent defect (req-quality-negative-control)`,
   );
 
-// Pakiet wzorcowy MUSI przejsc, i to w trybie `--release`. Bez tego cała kontrola
-// jest bezwartościowa: gdyby baza sama była wadliwa, każdy przypadek padałby z jej
-// powodu, a nie z powodu swojej wady — i wszystkie „zapaliło" byłyby fałszywe.
-// Baza idzie przez ten sam składacz co przypadki, więc jest badana dokładnie
-// w tej postaci, w której się z niej wyrasta.
+// The reference package MUST pass, and in `--release` mode at that. Without it the whole
+// control is worthless: were the base defective itself, every case would fail because of
+// it and not because of its own defect — every „it fired" would be false. The base goes
+// through the same composer as the cases, so it is examined in exactly the shape the
+// cases grow out of.
 {
   const katalog = zlozFixture(BAZA, {});
   const baza = sprawdzPakiet(katalog, { release: true });
   rmSync(katalog, { recursive: true, force: true });
   if (baza.blad)
     problems.push(
-      `${BAZA}: pakiet wzorcowy NIE przechodzi (${baza.blad.kontrola}) — ` +
-        `kazdy spreparowany pakiet zapala teraz z jego powodu, nie z powodu swojej wady.\n` +
+      `${BAZA}: the reference package does NOT pass (${baza.blad.kontrola}) — ` +
+        `every prepared package now fires because of it, not because of its own defect.\n` +
         `  ${baza.blad.message}`,
     );
   else if (baza.ostrzezenia.length)
     problems.push(
-      `${BAZA}: pakiet wzorcowy przechodzi, ale z ostrzezeniem — ` +
-        `baza ma byc kompletna, inaczej punkt 6 nie ma czym odroznic braku od kompletu.`,
+      `${BAZA}: the reference package passes, but with a warning — the base is to be ` +
+        `complete, or point 6 has nothing to tell an absence from a full set.`,
     );
 }
 
@@ -433,30 +416,31 @@ for (const nazwa of przypadki) {
     const wynikFx = sprawdzPakiet(katalog, { release: true });
     if (!wynikFx.blad)
       problems.push(
-        `${nazwa}: spreparowany pakiet PRZESZEDL, a mial nie przejsc — ` +
-          `punkt ${fx.punkt} (\`${fx.kontrola}\`) przestal cokolwiek badac`,
+        `${nazwa}: the prepared package PASSED and was meant not to — ` +
+          `point ${fx.punkt} (\`${fx.kontrola}\`) stopped examining anything`,
       );
     else if (wynikFx.blad.kontrola !== fx.kontrola)
       problems.push(
-        `${nazwa}: zapalila kontrola \`${wynikFx.blad.kontrola}\`, a miala punkt ${fx.punkt} ` +
-          `(\`${fx.kontrola}\`) — fixture dowodzi czegos innego, niz deklaruje`,
+        `${nazwa}: check \`${wynikFx.blad.kontrola}\` fired, and point ${fx.punkt} ` +
+          `(\`${fx.kontrola}\`) was meant to — the fixture proves something other than ` +
+          `what it declares`,
       );
 
-    // Punkt 6 jako jedyny ma dwa tryby, więc jego fixture bada oba: przy
-    // `--release` blokuje, na co dzień tylko ostrzega. Sama asercja „blokuje"
-    // przepuściłaby regresję, w której punkt 6 zaczyna blokować zawsze —
-    // a wtedy repozytorium bez zdalnego nie zbudowałoby się w ogóle.
+    // Point 6 is the only one with two modes, so its fixture examines both: under
+    // `--release` it blocks, day to day it only warns. The „it blocks" assertion alone
+    // would let through a regression in which point 6 starts blocking always — and then a
+    // repository with no remote would not build at all.
     if (fx.tylkoPrzyRelease) {
       const zwykly = sprawdzPakiet(katalog, { release: false });
       if (zwykly.blad)
         problems.push(
-          `${nazwa}: w zwyklym przebiegu bramka BLOKUJE (${zwykly.blad.kontrola}), ` +
-            `a miala tylko ostrzec — blokada nalezy do \`--release\``,
+          `${nazwa}: in an ordinary run the gate BLOCKS (${zwykly.blad.kontrola}) ` +
+            `and was meant only to warn — blocking belongs to \`--release\``,
         );
       else if (zwykly.ostrzezenia.length === 0)
         problems.push(
-          `${nazwa}: w zwyklym przebiegu ani bledu, ani ostrzezenia — ` +
-            `brak metadanych przechodzi bez sladu`,
+          `${nazwa}: in an ordinary run neither an error nor a warning — ` +
+            `missing metadata passes without a trace`,
         );
     }
   } finally {
@@ -474,7 +458,7 @@ if (problems.length) {
 }
 
 console.log(
-  `✓ Pakiet kompletny: ${wynik.opis}. ` +
-    `Kontrola odniesienia: pakiet wzorcowy przechodzi, ` +
+  `✓ Package complete: ${wynik.opis}. ` +
+    `Negative control: the reference package passes, ` +
     `${przypadki.length} prepared ones rejected on their own points.`,
 );

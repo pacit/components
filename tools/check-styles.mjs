@@ -1,41 +1,21 @@
 #!/usr/bin/env node
 /**
- * Bramka stylów: pilnuje dwóch obietnic o arkuszach biblioteki —
- * `req-token-logical` (układ opisany właściwościami logicznymi, więc odbija się
- * w `dir="rtl"`) i `req-token-no-opacity` (żadnej `opacity` kompozytującej).
+ * Style gate: `req-token-logical` (layout in logical properties, so it mirrors under
+ * `dir="rtl"`) and `req-token-no-opacity` (no compositing `opacity`). Breaking either
+ * gives no red test — an LTR screenshot looks right, and so does `opacity: 0.6`, which
+ * quietly undoes `req-token-contrast` ([`lesson-6`](../docs/lessons.md#lesson-6)).
  *
- * Powód istnienia jest wspólny dla obu: to obietnice, których złamanie NIE daje
- * czerwonego testu. Arkusz z `padding-left` wygląda dobrze w `dir="ltr"`, czyli
- * w każdym zrzucie, jaki dziś robimy; `opacity: 0.6` na warstwie tekstowej wygląda
- * dobrze zawsze i cofa `req-token-contrast` do stanu sprzed `lesson-6` — bramka
- * kontrastu liczy na hexach z palety, a przeglądarka pokazuje wynik kompozycji
- * z tłem, którego ta matematyka nie widzi. Obie wady są dziś dotrzymane wyłącznie
- * pamięcią autora, a koszt retrofitu rośnie z każdym komponentem nieliniowo.
+ *  1. the list of stylesheets is not empty (else points 5 and 6 pass over nothing),
+ *  2. COMPILER: everything sass EMITS is visible to the source scanner as well,
+ *  3. STYLE SOURCE: every `@Component` takes its styles from a sheet this gate reads,
+ *  4. exceptions are named, justified and USED,
+ *  5. no physical property of the inline axis,
+ *  6. no compositing `opacity`.
  *
- * Sprawdzane jest sześć rzeczy:
- *  1. lista arkuszy nie jest pusta (inaczej punkty 5 i 6 przechodzą, bo nie mają
- *     czego badać),
- *  2. KOMPILATOR: wszystko, co sass EMITUJE, widzi też skaner źródła — arkusz
- *     potrafiący ukryć deklarację przed skanerem jest arkuszem niemierzonym,
- *  3. ŹRÓDŁO STYLÓW: każdy `@Component` biblioteki bierze style z arkusza, który
- *     ta bramka czyta — `styles: [...]` w dekoratorze jest dla niej niewidzialne,
- *  4. wyjątki są nazwane, uzasadnione i UŻYTE,
- *  5. żadnej właściwości fizycznej osi inline,
- *  6. żadnej `opacity` kompozytującej.
+ * Points 5 and 6 are the rules; 1–3 watch the DENOMINATOR they run over — an unread sheet
+ * is to them what a missing file is to coverage ([`lesson-48`](../docs/lessons.md#lesson-48)).
  *
- * Punkty 5 i 6 to same reguły; punkty 1–3 pilnują MIANOWNIKA, z którego te reguły
- * powstają — czyli tego, co w A2 kurczyło się jako próbka plików w raporcie, w A6
- * jako zbiór mierzonych komponentów, a w A7 jako zbiór projektów. Tutaj kurczy się
- * zbiór DEKLARACJI: arkusz, którego skaner nie rozumie, i komponent stylujący się
- * poza arkuszem są dla reguł tym samym co plik poza raportem pokrycia.
- *
- * Do tego siódmy przebieg, który nie bada arkuszy, tylko TĘ BRAMKĘ: kontrola
- * odniesienia z `tools/check-styles.fixtures/`. Spreparowane wejścia, z których
- * każde łamie dokładnie jeden z sześciu punktów i musi zostać odrzucone przez ten
- * właśnie punkt (`req-quality-negative-control`).
- *
- * Użycie:
- *   node tools/check-styles.mjs
+ * Usage: node tools/check-styles.mjs
  */
 import { execFileSync } from 'node:child_process';
 import {
@@ -58,27 +38,27 @@ const FIXTURES = join(ROOT, 'tools/check-styles.fixtures');
 const BAZA = '_poprawny';
 
 /**
- * Znacznik wyjątku. Nazywa WŁAŚCIWOŚĆ, a nie „tę linię": komentarz napisany dla
- * `left` nie może po cichu przykryć `opacity` dopisanej obok pół roku później.
+ * The exception marker. It names a PROPERTY, not „this line": a comment written for
+ * `left` must not quietly cover an `opacity` added beside it half a year later.
  *
  *   /* pct-wyjatek left: <uzasadnienie> *\/
  */
 const WYJATEK = /pct-wyjatek\s+([-a-zA-Z]+)\s*:\s*([\s\S]*)$/;
 
 /**
- * Próg długości uzasadnienia. To jest podłoga przeciwko pustej pieczątce
- * (`/* pct-wyjatek left: bo tak *\/`), a nie sędzia jakości — maszyna nie oceni,
- * czy powód jest prawdziwy. Tego pilnuje review i wyłącznie review; bramka
- * pilnuje, żeby było co recenzować i żeby wyjątek dało się policzyć.
+ * The minimum length of a justification. A floor against an empty rubber stamp
+ * (`/* pct-wyjatek left: because *\/`), not a judge of quality — a machine cannot tell
+ * whether a reason is true. Review watches that, and only review; the gate watches that
+ * there is something to review and that exceptions can be counted.
  */
 const MIN_UZASADNIENIE = 40;
 
 /**
- * Właściwości fizyczne osi inline i ich logiczne odpowiedniki. Oś BLOCK
- * (`top`/`bottom`, `margin-top`, …) świadomie NIE jest na liście: `dir="rtl"`
- * odbija wyłącznie oś inline, a pełne bidi — czyli pionowe tryby pisma — jest
- * jawnym nie-celem (`docs/00-axis.md`). Zakaz `top` byłby więc szumem, na który
- * odpowiedzią stałaby się pieczątka wyjątku przy co drugiej regule.
+ * Physical properties of the inline axis and their logical counterparts. The BLOCK axis
+ * (`top`/`bottom`, `margin-top`, …) is deliberately NOT on the list: `dir="rtl"` mirrors
+ * the inline axis alone, and full bidi — that is, vertical writing modes — is an explicit
+ * non-goal (`docs/00-axis.md`). A ban on `top` would be noise, and the answer to noise is
+ * a rubber-stamp exception on every other rule.
  */
 const FIZYCZNE = new Map([
   ['left', 'inset-inline-start'],
@@ -103,15 +83,15 @@ const FIZYCZNE = new Map([
   ['border-top-right-radius', 'border-start-end-radius'],
   ['border-bottom-left-radius', 'border-end-start-radius'],
   ['border-bottom-right-radius', 'border-end-end-radius'],
-  // `direction` w arkuszu komponentu zabija całą obietnicę: nie ma znaczenia,
-  // jak logiczne są pozostałe reguły, skoro ta jedna przypina kierunek na sztywno.
+  // `direction` in a component sheet kills the whole promise: however logical the other
+  // rules are, this one pins the direction down.
   [
     'direction',
     'kierunek dziedziczony z dokumentu — nie ustawiaj go w komponencie',
   ],
 ]);
 
-/** Właściwości, w których fizyczna jest WARTOŚĆ, a nie nazwa. */
+/** Properties where it is the VALUE that is physical, not the name. */
 const FIZYCZNA_WARTOSC = new Map([
   ['text-align', { zle: new Set(['left', 'right']), zamiast: 'start / end' }],
   [
@@ -125,9 +105,9 @@ const FIZYCZNA_WARTOSC = new Map([
 ]);
 
 /**
- * Rodzina `opacity`. Wariantów SVG jest tu z tego samego powodu co `opacity`:
- * `fill-opacity` na znaczniku checkboxa kompozytuje dokładnie tak samo, tylko
- * nie nazywa się tak, jak stoi w wymaganiu.
+ * The `opacity` family. The SVG variants are here for the same reason as `opacity`:
+ * `fill-opacity` on a checkbox tick composites in exactly the same way, it just does not
+ * carry the name the requirement uses.
  */
 const OPACITY = new Set([
   'opacity',
@@ -139,19 +119,19 @@ const OPACITY = new Set([
 // ── skaner arkusza ────────────────────────────────────────────────────────────
 
 /**
- * Skaner: z tekstu arkusza robi listę deklaracji i komentarzy, każde z numerem
- * linii. Nie jest to parser CSS i nie musi nim być — bramka pyta wyłącznie
- * o pary `właściwość: wartość` i o komentarze, w których stoją wyjątki.
+ * The scanner: turns a stylesheet's text into a list of declarations and comments, each
+ * with a line number. It is not a CSS parser and need not be — the gate asks only about
+ * `property: value` pairs and about the comments that carry exceptions.
  *
- * Świadomie NIE stoi tu postcss, choć jest w zależnościach: jego domyślny parser
- * wywraca się na składni SCSS (`//`, `$zmienna` poza regułą), a `postcss-scss`
- * byłby nową zależnością wprowadzoną po to, żeby czytać siedem plików o składni
- * czystego CSS-a. Ważniejsze jest jednak co innego: własny skaner ma taką awarię,
- * jaką mu się zaprojektuje, a jego niedowidzenie łapie punkt 2 — porównanie z tym,
- * co z tego samego arkusza wypisuje sass, czyli parser prawdziwy.
+ * postcss is deliberately NOT used here, though it is among the dependencies: its default
+ * parser falls over on SCSS syntax (`//`, a `$variable` outside a rule), and `postcss-scss`
+ * would be a new dependency taken on to read seven files written in plain CSS. Something
+ * else matters more, though: a scanner of one's own fails the way it was designed to fail,
+ * and what it cannot see is caught by point 2 — the comparison against what sass, a real
+ * parser, prints from the same sheet.
  *
- * Nawiasy liczą się osobno, żeby `;` wewnątrz `url(data:…;base64,…)` nie rozciął
- * deklaracji na pół.
+ * Brackets are counted separately, so that a `;` inside `url(data:…;base64,…)` does not
+ * cut a declaration in half.
  */
 const skanuj = (tresc) => {
   const deklaracje = [];
@@ -167,7 +147,7 @@ const skanuj = (tresc) => {
     bufor += znak;
   };
 
-  /** Domyka bufor: jeśli wygląda jak deklaracja, ląduje na liście. */
+  /** Closes the buffer: if it looks like a declaration, it lands on the list. */
   const domknij = () => {
     const m = /^\s*(-{0,2}[A-Za-z_][-\w]*)\s*:\s*([\s\S]*)$/.exec(bufor);
     if (m)
@@ -194,8 +174,8 @@ const skanuj = (tresc) => {
       continue;
     }
 
-    // Komentarz liniowy SCSS. Nie niesie wyjątków (sass go nie emituje, więc
-    // punkt 2 nie miałby jak porównać), ale musi zniknąć ze strumienia.
+    // An SCSS line comment. It carries no exceptions (sass does not emit it, so point 2
+    // would have nothing to compare), but it has to leave the stream.
     if (znak === '/' && nastepny === '/') {
       const koniec = tresc.indexOf('\n', i);
       i = koniec === -1 ? tresc.length : koniec;
@@ -225,13 +205,13 @@ const skanuj = (tresc) => {
     if (znak === ')') nawiasy = Math.max(0, nawiasy - 1);
 
     if (nawiasy === 0) {
-      // Preludium reguły (selektor, prelude at-reguły) nie jest deklaracją.
+      // A rule prelude (a selector, an at-rule prelude) is not a declaration.
       if (znak === '{') {
         bufor = '';
         i++;
         continue;
       }
-      // `}` domyka też deklarację bez średnika na końcu bloku.
+      // `}` also closes a declaration with no semicolon at the end of a block.
       if (znak === '}' || znak === ';') {
         domknij();
         i++;
@@ -247,9 +227,9 @@ const skanuj = (tresc) => {
 };
 
 /**
- * Klucz deklaracji ISTOTNEJ dla którejkolwiek z dwóch obietnic — albo `null`.
- * Ten sam klucz liczy się dla źródła i dla wyjścia sassa, więc punkt 2 porównuje
- * te dwa widoki bez oglądania się na resztę arkusza.
+ * The key of a declaration RELEVANT to either promise — or `null`. The same key is
+ * computed for the source and for sass's output, so point 2 compares those two views
+ * without looking at the rest of the sheet.
  */
 const kluczIstotny = (d) => {
   const wartosc = d.wartosc.toLowerCase();
@@ -259,27 +239,26 @@ const kluczIstotny = (d) => {
     return `${d.wlasciwosc}:${wartosc}`;
   if (OPACITY.has(d.wlasciwosc) && !przezroczystoscBinarna(wartosc))
     return `${d.wlasciwosc}:${wartosc}`;
-  // `inset` jest fizyczny dopiero przy wielu wartościach: `inset: 0` jest
-  // symetryczne i w RTL zachowuje się identycznie, a zakaz obejmujący także je
-  // produkowałby wyjątki bez treści.
+  // `inset` is physical only with several values: `inset: 0` is symmetric and behaves
+  // identically in RTL, and a ban covering it too would produce contentless exceptions.
   if (d.wlasciwosc === 'inset' && wartosc.split(/\s+/).length > 1)
     return `${d.wlasciwosc}:${wartosc}`;
   return null;
 };
 
 /**
- * `opacity` wolno WYŁĄCZNIE jako przełącznik widoczności: `0` (element nie
- * uczestniczy w obrazie, więc nie ma o czym obiecywać kontrastu) i `1` (wartość
- * neutralna, zwykle cofnięcie stanu). Wszystko pomiędzy KOMPONUJE z tłem, czyli
- * przesuwa kontrast realny poza wynik bramki kontrastu (`lesson-6`).
+ * `opacity` is allowed ONLY as a visibility switch: `0` (the element takes no part in the
+ * image, so there is no contrast to promise) and `1` (the neutral value, usually undoing a
+ * state). Everything in between COMPOSITES with the background, moving the real contrast
+ * outside the contrast gate's result (`lesson-6`).
  *
- * Wartość niedosłowna (`var(...)`, `calc(...)`) nie jest binarna z definicji:
- * bramka nie wie, co przyjdzie w runtime, a zgadywanie na korzyść autora byłoby
- * dokładnie tą ciszą, przed którą ta reguła stoi.
+ * A non-literal value (`var(...)`, `calc(...)`) is not binary by definition: the gate does
+ * not know what will arrive at runtime, and guessing in the author's favour would be
+ * exactly the silence this rule stands against.
  *
- * Świadomie przepuszczone: `transition: opacity …` i przejście 0 → 1. Stan
- * przelotny nie jest tym, o czym mówi `req-token-contrast`, a zakaz obejmujący
- * animacje odebrałby jedyny standardowy sposób wprowadzania nakładek.
+ * Deliberately allowed: `transition: opacity …` and a 0 → 1 transition. A transient state
+ * is not what `req-token-contrast` speaks about, and a ban covering animations would take
+ * away the one standard way of bringing an overlay in.
  */
 const przezroczystoscBinarna = (wartosc) => {
   const m = /^(\d*\.?\d+)(%?)$/.exec(wartosc.trim());
@@ -291,10 +270,10 @@ const przezroczystoscBinarna = (wartosc) => {
 // ── kontrole ──────────────────────────────────────────────────────────────────
 
 /**
- * Naruszenie jednej z sześciu kontroli. Niesie identyfikator kontroli, a nie
- * tylko komunikat: kontrola odniesienia musi sprawdzić, że spreparowane wejście
- * zapaliło NA SWOIM punkcie — arkusz wywalający się z innego powodu niż wpisany
- * w nim samym dowodzi czegoś innego, niż deklaruje.
+ * A violation of one of the six checks. It carries the check's identifier, not just the
+ * message: the negative control has to verify that a prepared input fired ON ITS OWN
+ * point — a sheet failing for a reason other than the one written into it proves
+ * something other than what it declares.
  */
 class BladStylu extends Error {
   constructor(kontrola, opis) {
@@ -306,28 +285,29 @@ class BladStylu extends Error {
 const lista = (wpisy) => wpisy.map((w) => `      ${w}`).join('\n');
 
 /**
- * Komplet kontroli na gotowym wejściu:
- *   `arkusze`     — `[{ plik, tresc, css }]`, gdzie `css` to wyjście sassa,
- *   `komponenty`  — `[{ plik, klasa, arkusze, inline }]` z dekoratorów,
- *   `deklaracji`  — liczba wystąpień `@Component(` w źródłach (mianownik parsera).
- * Rzuca `BladStylu` przy pierwszym naruszeniu: kontrole idą od mianownika do
- * reguł, więc reguła po zawalonym mianowniku i tak nie miałaby czego badać.
+ * The full set of checks over a ready input:
+ *   `arkusze`     — `[{ plik, tresc, css }]`, where `css` is sass's output,
+ *   `komponenty`  — `[{ plik, klasa, arkusze, inline }]` from the decorators,
+ *   `deklaracji`  — the number of `@Component(` occurrences in the sources (the parser's
+ *                   denominator).
+ * Throws `BladStylu` on the first violation: the checks run from the denominator to the
+ * rules, so a rule after a collapsed denominator would have nothing to examine anyway.
  */
 const sprawdzStyle = ({ arkusze, komponenty, deklaracji }) => {
-  // 1. Lista arkuszy nie jest pusta.
+  // 1. The list of stylesheets is not empty.
   if (!arkusze.length)
     throw new BladStylu(
       'arkusze',
-      `nie znalazłem ani jednego arkusza (${PROJEKT}/**/*.scss) — ` +
-        `punkty 5 i 6 przeszłyby wtedy zawsze, bo nie mają czego czytać`,
+      `no stylesheet found (${PROJEKT}/**/*.scss) — points 5 and 6 would then always ` +
+        `pass, having nothing to read`,
     );
 
   const skany = new Map(arkusze.map((a) => [a.plik, skanuj(a.tresc)]));
 
-  // 2. Kompilator: sass nie emituje niczego istotnego, czego skaner nie widzi
-  //    w źródle. To jest mianownik samego skanera — deklaracja powstała przez
-  //    mixin, interpolację albo zagnieżdżoną właściwość dociera do przeglądarki,
-  //    a w tekście źródła nie stoi, więc reguły przeszłyby po niej bez śladu.
+  // 2. The compiler: sass emits nothing relevant that the scanner cannot see in the
+  //    source. This is the scanner's own denominator — a declaration produced by a mixin,
+  //    an interpolation or a nested property reaches the browser without standing in the
+  //    source text, so the rules would pass over it without a trace.
   for (const arkusz of arkusze) {
     const wZrodle = new Set(
       skany
@@ -345,66 +325,66 @@ const sprawdzStyle = ({ arkusze, komponenty, deklaracji }) => {
     if (ukryte.length)
       throw new BladStylu(
         'kompilator',
-        `${arkusz.plik}: sass emituje deklaracje, których nie ma w tekście źródła:\n` +
+        `${arkusz.plik}: sass emits declarations absent from the source text:\n` +
           lista(ukryte) +
-          `\n    Docierają do przeglądarki, a reguły z punktów 5 i 6 przechodzą po ` +
-          `nich bez śladu. Najczęstsza przyczyna: mixin, interpolacja (\`padding-#{$x}\`) ` +
-          `albo właściwość zagnieżdżona. Zapisz je wprost — albo naucz skaner ich czytać.`,
+          `\n    They reach the browser, and the rules of points 5 and 6 pass over them ` +
+          `without a trace. Usual cause: a mixin, an interpolation (\`padding-#{$x}\`) or ` +
+          `a nested property. Write them out — or teach the scanner to read them.`,
       );
   }
 
-  // 3. Źródło stylów: każdy `@Component` styluje się arkuszem, który bramka czyta.
+  // 3. Style source: every `@Component` is styled by a sheet this gate reads.
   //
-  //    Najpierw zbiór niepusty — z tego samego powodu co punkt 1, tylko po
-  //    drugiej stronie porównania. Porównanie liczb (`rozpoznano N z M`) jest
-  //    ślepe na zero: gdy obie strony są puste, są równe, i punkt przechodzi
-  //    orzekając o niczym. Pierwsza wersja tej bramki dokładnie tak przeszła —
-  //    pathspec gita zwracał zero źródeł, a wynik brzmiał „0 komponentów"
-  //    (`lesson-48`).
+  //    A non-empty set first — for the same reason as point 1, only on the other side of
+  //    the comparison. Comparing numbers (`recognised N of M`) is blind to zero: with both
+  //    sides empty they are equal, and the point passes having said nothing. The first
+  //    version of this gate passed exactly that way — the git pathspec returned zero
+  //    sources and the result read „0 components" (`lesson-48`).
   if (!komponenty.length)
     throw new BladStylu(
       'zrodlo-stylow',
-      `nie znalazłem ani jednego \`@Component\` w źródłach (${PROJEKT}) — ` +
-        `porównanie z liczbą dekoratorów przeszłoby wtedy zawsze, bo zero równa się zeru.\n` +
-        `    Najczęstsza przyczyna: lista plików źródłowych przestała cokolwiek zwracać.`,
+      `no \`@Component\` found in the sources (${PROJEKT}) — the comparison against the ` +
+        `decorator count would then always pass, because zero equals zero.\n` +
+        `    Usual cause: the list of source files stopped returning anything.`,
     );
 
   if (komponenty.length !== deklaracji)
     throw new BladStylu(
       'zrodlo-stylow',
-      `parser rozpoznał ${komponenty.length} z ${deklaracji} dekoratorów \`@Component\` — ` +
-        `reszta wypadłaby z pomiaru bez śladu. Najczęstsza przyczyna: dekorator ` +
-        `zapisany inaczej, niż formatuje prettier (\`@Component({\` i \`})\` w kolumnie zero).`,
+      `the parser recognised ${komponenty.length} of ${deklaracji} \`@Component\` ` +
+        `decorators — the rest would drop out of the measurement without a trace. Usual ` +
+        `cause: a decorator written otherwise than prettier formats it (\`@Component({\` ` +
+        `and \`})\` in column zero).`,
     );
 
   const znane = new Set(arkusze.map((a) => a.plik));
   const bezArkusza = komponenty.flatMap((k) => {
     if (k.inline)
       return [
-        `${k.plik}: ${k.klasa} ma \`styles: […]\` w dekoratorze — bramka czyta arkusze, nie dekoratory`,
+        `${k.plik}: ${k.klasa} has \`styles: […]\` in its decorator — this gate reads sheets, not decorators`,
       ];
     return k.arkusze
       .filter((a) => !znane.has(a))
       .map(
         (a) =>
-          `${k.plik}: ${k.klasa} styluje się z \`${a}\`, czyli spoza listy arkuszy`,
+          `${k.plik}: ${k.klasa} takes its styles from \`${a}\`, outside the sheet list`,
       );
   });
   if (bezArkusza.length)
     throw new BladStylu(
       'zrodlo-stylow',
-      `${bezArkusza.length} komponentów bierze style stamtąd, gdzie ta bramka nie sięga:\n` +
+      `${bezArkusza.length} components take their styles from beyond this gate's reach:\n` +
         lista(bezArkusza) +
-        `\n    Style tych komponentów jadą do konsumenta tak samo jak wszystkie inne, ` +
-        `a punkty 5 i 6 orzekają o nich „bez naruszeń" wyłącznie dlatego, że ich nie widzą.`,
+        `\n    Those styles travel to the consumer like every other, and points 5 and 6 ` +
+        `pronounce them „clean" only because they cannot see them.`,
     );
 
-  // 4. Wyjątki: nazwane, uzasadnione, użyte.
+  // 4. Exceptions: named, justified, used.
   //
-  //    Wyjątek obowiązuje WYŁĄCZNIE dla deklaracji przylegającej — w tej samej
-  //    linii albo w linii bezpośrednio pod komentarzem. Bez tego powód opisujący
-  //    jedną regułę rozpełzałby się na cały blok, a przesunięcie kodu zostawiałoby
-  //    ważny wyjątek nad czymś zupełnie innym.
+  //    An exception holds ONLY for an adjacent declaration — on the same line, or on the
+  //    line directly below the comment. Without that, a reason describing one rule would
+  //    spread over a whole block, and moving code would leave a valid exception standing
+  //    above something else entirely.
   const usprawiedliwione = new Set();
   const problemyWyjatkow = [];
   for (const arkusz of arkusze) {
@@ -416,8 +396,9 @@ const sprawdzStyle = ({ arkusze, komponenty, deklaracji }) => {
       const uzasadnienie = uzasadnienieSurowe.replace(/\*+\s*$/, '').trim();
       if (uzasadnienie.length < MIN_UZASADNIENIE) {
         problemyWyjatkow.push(
-          `${arkusz.plik}:${komentarz.linia}: wyjątek dla \`${wlasciwosc}\` bez uzasadnienia ` +
-            `(${uzasadnienie.length} z ${MIN_UZASADNIENIE} znaków) — pieczątka, nie powód`,
+          `${arkusz.plik}:${komentarz.linia}: an exception for \`${wlasciwosc}\` with no ` +
+            `justification (${uzasadnienie.length} of ${MIN_UZASADNIENIE} characters) — ` +
+            `a rubber stamp, not a reason`,
         );
         continue;
       }
@@ -428,9 +409,9 @@ const sprawdzStyle = ({ arkusze, komponenty, deklaracji }) => {
       );
       if (!trafione.length) {
         problemyWyjatkow.push(
-          `${arkusz.plik}:${komentarz.linia}: wyjątek dla \`${wlasciwosc}\` nie przylega do ` +
-            `żadnej deklaracji tej właściwości — albo kod się przesunął i wyjątek został sam, ` +
-            `albo nazwana właściwość jest inna niż ta poniżej`,
+          `${arkusz.plik}:${komentarz.linia}: an exception for \`${wlasciwosc}\` is ` +
+            `adjacent to no declaration of that property — either the code moved and the ` +
+            `exception was left behind, or the property named is not the one below`,
         );
         continue;
       }
@@ -441,14 +422,14 @@ const sprawdzStyle = ({ arkusze, komponenty, deklaracji }) => {
   if (problemyWyjatkow.length)
     throw new BladStylu(
       'wyjatek',
-      `${problemyWyjatkow.length} wyjątków nie jest wyjątkami:\n` +
+      `${problemyWyjatkow.length} exceptions are not exceptions:\n` +
         lista(problemyWyjatkow) +
-        `\n    Zapis: /* pct-wyjatek <właściwość>: <powód, dlaczego akurat tu jest bezpieczna> */`,
+        `\n    Notation: /* pct-wyjatek <property>: <why it is safe exactly here> */`,
     );
 
-  // 5. Właściwości logiczne (`req-token-logical`).
+  // 5. Logical properties (`req-token-logical`).
   const fizyczne = [];
-  // 6. Bez `opacity` kompozytującej (`req-token-no-opacity`).
+  // 6. No compositing `opacity` (`req-token-no-opacity`).
   const przezroczyste = [];
 
   for (const arkusz of arkusze)
@@ -458,21 +439,21 @@ const sprawdzStyle = ({ arkusze, komponenty, deklaracji }) => {
 
       const logiczna = FIZYCZNE.get(d.wlasciwosc);
       if (logiczna) {
-        fizyczne.push(`${gdzie}: \`${d.wlasciwosc}\` — użyj \`${logiczna}\``);
+        fizyczne.push(`${gdzie}: \`${d.wlasciwosc}\` — use \`${logiczna}\``);
         continue;
       }
       const wartosciowa = FIZYCZNA_WARTOSC.get(d.wlasciwosc);
       const pierwsza = d.wartosc.toLowerCase().split(/\s+/)[0];
       if (wartosciowa?.zle.has(pierwsza)) {
         fizyczne.push(
-          `${gdzie}: \`${d.wlasciwosc}: ${pierwsza}\` — użyj \`${wartosciowa.zamiast}\``,
+          `${gdzie}: \`${d.wlasciwosc}: ${pierwsza}\` — use \`${wartosciowa.zamiast}\``,
         );
         continue;
       }
       if (d.wlasciwosc === 'inset' && d.wartosc.split(/\s+/).length > 1) {
         fizyczne.push(
-          `${gdzie}: \`inset: ${d.wartosc}\` — wiele wartości ustawia oś inline fizycznie; ` +
-            `użyj \`inset-block-*\` / \`inset-inline-*\``,
+          `${gdzie}: \`inset: ${d.wartosc}\` — several values set the inline axis ` +
+            `physically; use \`inset-block-*\` / \`inset-inline-*\``,
         );
         continue;
       }
@@ -483,45 +464,45 @@ const sprawdzStyle = ({ arkusze, komponenty, deklaracji }) => {
   if (fizyczne.length)
     throw new BladStylu(
       'logiczne',
-      `${fizyczne.length} właściwości fizycznych osi inline (req-token-logical):\n` +
+      `${fizyczne.length} physical properties of the inline axis (req-token-logical):\n` +
         lista(fizyczne) +
-        `\n    Układ opisany fizycznie NIE odbija się w \`dir="rtl"\` i nie widać tego ` +
-        `na żadnym zrzucie LTR. Jeśli akurat ta jest bezpieczna, powiedz dlaczego: ` +
-        `/* pct-wyjatek <właściwość>: <powód> */`,
+        `\n    A physically described layout does NOT mirror under \`dir="rtl"\`, and no ` +
+        `LTR screenshot shows it. If this one is safe, say why: ` +
+        `/* pct-wyjatek <property>: <reason> */`,
     );
 
   if (przezroczyste.length)
     throw new BladStylu(
       'opacity',
-      `${przezroczyste.length} deklaracji \`opacity\` kompozytujących z tłem (req-token-no-opacity):\n` +
+      `${przezroczyste.length} \`opacity\` declarations compositing with the background (req-token-no-opacity):\n` +
         lista(przezroczyste) +
-        `\n    Bramka kontrastu liczy na wartościach z palety, więc kompozycji nie widzi — ` +
-        `to jest droga powrotna do stanu sprzed lesson-6. Stan wyraź własnym tokenem koloru. ` +
-        `Dozwolone są wyłącznie \`0\` i \`1\` (przełącznik widoczności).`,
+        `\n    The contrast gate computes on the palette's values, so it cannot see the ` +
+        `compositing — this is the way back to before lesson-6. Express the state with a ` +
+        `colour token of its own. Only \`0\` and \`1\` are allowed (a visibility switch).`,
     );
 
   const wyjatkow = usprawiedliwione.size;
   return (
-    `${arkusze.length} arkuszy, ${komponenty.length} komponentów, ` +
-    `${wyjatkow} ${wyjatkow === 1 ? 'wyjątek uzasadniony' : 'wyjątków uzasadnionych'}`
+    `${arkusze.length} stylesheets, ${komponenty.length} components, ` +
+    `${wyjatkow} justified ${wyjatkow === 1 ? 'exception' : 'exceptions'}`
   );
 };
 
 // ── input from disk ───────────────────────────────────────────────────────────
 
 /**
- * Dekorator komponentu. Parser kotwiczy się w kolumnie zero, bo takie
- * formatowanie wymusza `nx format:check`, a licznik pilnuje, żeby rozjazd z tym
- * założeniem był widoczny — komponent, którego parser nie rozpozna, ma wypaść
- * z pomiaru GŁOŚNO, a nie po cichu.
+ * The component decorator. The parser anchors in column zero, because that is the
+ * formatting `nx format:check` enforces, and the counter watches that a drift from that
+ * assumption stays visible — a component the parser does not recognise is to drop out of
+ * the measurement LOUDLY, not quietly.
  *
- * Licznik NIE może więc powtarzać kotwicy parsera, i to jest tu cała rzecz.
- * Pierwsza wersja miała `/^@Component\(/gm` w obu miejscach: przesunięcie
- * dekoratora o jedną spację gasiło parser i licznik naraz, obie strony zgadzały
- * się na siódemce i bramka kończyła zielono, przestawszy mierzyć cały komponent
- * (`lesson-48`). Wcięcie jest tu zatem dozwolone, a odsiewa się wyłącznie
- * wystąpienia w komentarzu — `core/src/texts.ts` ma `@Component(` w przykładzie
- * JSDoc, czyli linię zaczynającą się od gwiazdki.
+ * So the counter must NOT repeat the parser's anchor, and that is the whole point here.
+ * The first version had `/^@Component\(/gm` in both places: moving a decorator by one
+ * space put out the parser and the counter at once, both sides agreed on seven and the
+ * gate ended green, having stopped measuring a whole component (`lesson-48`). Indentation
+ * is therefore allowed here, and only occurrences in comments are filtered out —
+ * `core/src/texts.ts` has `@Component(` in a JSDoc example, that is, on a line starting
+ * with an asterisk.
  */
 const KOMPONENT =
   /^@Component\(\{\r?\n([\s\S]*?)^\}\)\r?\n(?:export\s+)?(?:abstract\s+)?class\s+([A-Za-z_$][\w$]*)/gm;
@@ -558,32 +539,31 @@ const czytajKomponenty = (root, pliki) => {
   return { komponenty, deklaracji };
 };
 
-/** Wejście złożone z listy plików — ta sama postać dla repo i dla fixture'a. */
+/** An input built from a file list — the same shape for the repo and for a fixture. */
 const zbierzWejscie = (root, arkuszeSciezki, zrodlaSciezki) => ({
   arkusze: arkuszeSciezki.map((plik) => ({
     plik,
     tresc: readFileSync(join(root, plik), 'utf8'),
-    // Wyjście sassa, czyli to, co naprawdę dostaje przeglądarka. Styl `expanded`
-    // zachowuje komentarze `/* */`, więc porównanie z punktu 2 patrzy na ten sam
-    // materiał po obu stronach.
+    // Sass's output, that is, what the browser really gets. The `expanded` style keeps
+    // `/* */` comments, so point 2's comparison looks at the same material on both sides.
     css: sass.compile(join(root, plik), { style: 'expanded' }).css,
   })),
   ...czytajKomponenty(root, zrodlaSciezki),
 });
 
 /**
- * Wszystkie pliki projektu z INDEKSU GITA, nie z globa po dysku. Powód jest ten
- * sam co w `check-zoneless` i `check-typecheck`: indeks jest niezależnym spisem
- * tego, co repozytorium naprawdę wiezie, a przy okazji sam z siebie odcina rzeczy
- * generowane — `libs/components/themes/_tokens.scss` powstaje z tokenów przy
- * każdym buildzie i jest gitignorowany, więc nie ma go tu czym wykluczać.
+ * All the project's files from the GIT INDEX, not from a glob over the disk. The reason is
+ * the same as in `check-zoneless` and `check-typecheck`: the index is an independent
+ * record of what the repository really carries, and it cuts out generated things by itself
+ * — `libs/components/themes/_tokens.scss` is produced from the tokens on every build and
+ * is gitignored, so there is nothing here to exclude it with.
  *
- * Pathspec jest KATALOGIEM, a filtrowanie siedzi w JS-ie. To nie jest kwestia
- * gustu: pathspec gita nie jest globem powłoki — bez `:(glob)` gwiazdka
- * przechodzi przez `/`, więc `libs/components/*​/src/**​/*.ts` żąda o jeden
- * katalog za dużo i nie dopasowuje `button/src/button.ts`. Zwraca wtedy ZERO
- * plików, a nie błąd. Pierwsza wersja tej bramki przeszła z takim wzorcem
- * na zielono, mierząc zero komponentów (`lesson-48`).
+ * The pathspec is a DIRECTORY and the filtering sits in JS. Not a matter of taste: a git
+ * pathspec is not a shell glob — without `:(glob)` a star crosses `/`, so
+ * `libs/components/*​/src/**​/*.ts` asks for one directory too many and does not match
+ * `button/src/button.ts`. It then returns ZERO files rather than an error. The first
+ * version of this gate passed green with such a pattern, measuring zero components
+ * (`lesson-48`).
  */
 const plikiProjektu = () =>
   execFileSync('git', ['ls-files', '-z', PROJEKT], {
@@ -596,25 +576,25 @@ const plikiProjektu = () =>
     .sort();
 
 /**
- * Źródła, w których szuka się `@Component`. Specyfikacje odpadają świadomie:
- * definiują komponenty-gospodarzy z szablonem i stylami wpisanymi w dekorator,
- * a te nigdzie nie jadą — punkt 3 zapalałby na każdym teście renderującym.
+ * The sources searched for `@Component`. Specs are left out on purpose: they define host
+ * components with a template and styles written into the decorator, and those travel
+ * nowhere — point 3 would fire on every rendering test.
  */
 const jestZrodlem = (p) => p.endsWith('.ts') && !p.endsWith('.spec.ts');
 
 // ── negative control ──────────────────────────────────────────────────────────
 
 /**
- * Składa spreparowane wejście: kopia bazy, na nią pliki przypadku, na końcu
- * usunięcia z `fixture.json`. Katalog przypadku zawiera więc WYŁĄCZNIE wadę,
- * a nie kolejny egzemplarz poprawnego wejścia, w którym trzeba jej szukać.
+ * Builds a prepared input: a copy of the base, the case's files on top, the deletions
+ * from `fixture.json` last. The case directory then holds NOTHING BUT the defect, rather
+ * than one more copy of a correct input to hunt through.
  *
- * Źródła komponentów leżą w repozytorium jako `*.ts.txt` i dopiero tutaj stają
- * się `*.ts`. Powód jest twardy i już raz zapisany w `tsconfig.root.json`: plik
- * `.ts` w `tools/` nie należy do żadnego programu kompilatora, więc zapaliłby
- * `check-typecheck` (punkt 1 — plik bez projektu). Fixture jednej bramki nie może
- * być wadą dla drugiej. Składanie idzie do katalogu tymczasowego POZA repozytorium,
- * więc żadna bramka nie ogląda materiału pośredniego.
+ * Component sources sit in the repository as `*.ts.txt` and become `*.ts` only here. The
+ * reason is hard and already written down in `tsconfig.root.json`: a `.ts` file in `tools/`
+ * belongs to no compiler program, so it would fire `check-typecheck` (point 1 — a file
+ * with no project). One gate's fixture must not be another's defect. The composition goes
+ * to a temporary directory OUTSIDE the repository, so no gate ever sees the intermediate
+ * material.
  */
 const zlozFixture = (nazwa, fx) => {
   const cel = mkdtempSync(join(tmpdir(), 'pct-check-styles-'));
@@ -699,7 +679,7 @@ for (const nazwa of przypadki) {
     sprawdzStyle(wejscieFixture(katalog));
     problems.push(
       `${nazwa}: the prepared input PASSED and was meant not to — ` +
-        `punkt ${fx.punkt} (\`${fx.kontrola}\`) stopped examining anything`,
+        `point ${fx.punkt} (\`${fx.kontrola}\`) stopped examining anything`,
     );
   } catch (blad) {
     if (!(blad instanceof BladStylu)) throw blad;

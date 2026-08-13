@@ -223,13 +223,13 @@ function run() {
   );
 
   const lightTree = merge(primitive, semanticLight, ...components); // :root
-  const darkTree = merge(primitive, semanticLight, ...components, semanticDark); // dark nakladany na base
-  // Custom properties sa podstawiane w MIEJSCU DEKLARACJI, nie uzycia: token
+  const darkTree = merge(primitive, semanticLight, ...components, semanticDark); // dark over base
+  // Custom properties are substituted AT THE POINT OF DECLARATION, not of use: a token
   // `--a: var(--b)` declared in :root inherits an already resolved value, so overriding
   // `--b` in a narrower scope will not change it. The theme block has to receive the
-  // transitive closure: the overrides plus everything that uses them
-  // (bezposrednio lub przez lancuch). Inaczej scoped theme dziala tylko na
-  // warstwie semantycznej (req-token-scoped, lesson-17).
+  // transitive closure: the overrides plus everything that uses them (directly or through
+  // a chain). Otherwise a scoped theme works on the semantic layer alone
+  // (req-token-scoped, lesson-17).
   const darkOverrides = withDependents(flatten(semanticDark), darkTree);
   // The same set of tokens as in dark, with the light values: `light` has to be an active
   // theme rather than the absence of an attribute — otherwise a light card inside a dark
