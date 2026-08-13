@@ -85,10 +85,10 @@ const MARKER_OVERLAY = 'cdk-overlay';
 const PRIMARY = '.';
 
 /**
- * Naruszenie jednej z dziesięciu kontroli. Niesie identyfikator kontroli, a nie tylko
- * komunikat: kontrola odniesienia musi sprawdzić, że spreparowane wejście zapaliło
- * NA SWOIM punkcie — fixture wywalający się z innego powodu niż wpisany w nim samym
- * dowodzi czegoś innego, niż deklaruje.
+ * Naruszenie jednej z dziesięciu kontroli. It carries the check's identifier, not just the
+ * message: the negative control has to verify that a prepared input fired ON ITS OWN
+ * point — a fixture failing for a reason other than the one written into it proves
+ * something other than what it declares.
  */
 class BladBundla extends Error {
   constructor(kontrola, opis) {
@@ -861,14 +861,14 @@ const zmierzRepozytorium = async () => {
   }
 };
 
-// ── kontrola odniesienia ──────────────────────────────────────────────────────
+// ── negative control ──────────────────────────────────────────────────────────
 
 const wczytajFixture = (nazwa) =>
   JSON.parse(readFileSync(join(FIXTURES, nazwa), 'utf8'));
 
 /**
- * Składa wejście przypadku NA KOPII wzorcowego, więc plik przypadku zawiera wyłącznie
- * swoją wadę — nie da się zepsuć czegoś przy okazji i nie zauważyć.
+ * Builds a case's input ON A COPY of the reference one, so the case file holds nothing
+ * but its own defect — you cannot break something in passing and not notice.
  *
  * Pomiar przychodzi jako DANE, a nie z prawdziwego bundlowania: zbudowanie kilkunastu
  * sond na każdy przypadek kosztowałoby minuty na przebieg, a prawdziwy build Angulara
@@ -956,7 +956,7 @@ const zlozFixture = (fx) => {
   return we;
 };
 
-// ── przebieg ──────────────────────────────────────────────────────────────────
+// ── the run ───────────────────────────────────────────────────────────────────
 
 const problems = [];
 let opis = null;
@@ -990,8 +990,8 @@ const przypadki = readdirSync(FIXTURES)
 
 if (przypadki.length === 0)
   problems.push(
-    `tools/check-bundle.fixtures: brak spreparowanych wejść — bramka bez dowodu, ` +
-      `że potrafi nie przejść, jest kolejną cichą wadą (req-quality-negative-control)`,
+    `tools/check-bundle.fixtures: no prepared inputs — a gate with no proof that it can ` +
+      `fail is one more silent defect (req-quality-negative-control)`,
   );
 
 // Wejście wzorcowe MUSI przejść: gdyby samo było wadliwe, każdy przypadek zapalałby
@@ -1002,8 +1002,8 @@ try {
 } catch (blad) {
   if (!(blad instanceof BladBundla)) throw blad;
   problems.push(
-    `${BAZA}: wejście wzorcowe NIE przechodzi (${blad.kontrola}) — ` +
-      `każdy spreparowany przypadek zapala teraz z jego powodu.\n    ${blad.message}`,
+    `${BAZA}: the reference input does NOT pass (${blad.kontrola}) — ` +
+      `every prepared case now fires because of it.\n    ${blad.message}`,
   );
 }
 
@@ -1012,29 +1012,29 @@ for (const nazwa of przypadki) {
   try {
     sprawdzBundle(zlozFixture(fx));
     problems.push(
-      `${nazwa}: spreparowane wejście PRZESZŁO, a miało nie przejść — ` +
-        `punkt ${fx.punkt} (\`${fx.kontrola}\`) przestał cokolwiek badać`,
+      `${nazwa}: the prepared input PASSED and was meant not to — ` +
+        `punkt ${fx.punkt} (\`${fx.kontrola}\`) stopped examining anything`,
     );
   } catch (blad) {
     if (!(blad instanceof BladBundla)) throw blad;
     if (blad.kontrola !== fx.kontrola)
       problems.push(
-        `${nazwa}: zapaliła kontrola \`${blad.kontrola}\`, a miał punkt ${fx.punkt} ` +
-          `(\`${fx.kontrola}\`) — fixture dowodzi czegoś innego, niż deklaruje`,
+        `${nazwa}: check \`${blad.kontrola}\` fired, and point ${fx.punkt} ` +
+          `(\`${fx.kontrola}\`) was meant to — the fixture proves something other than what it declares`,
       );
   }
 }
 
-// ── wynik ─────────────────────────────────────────────────────────────────────
+// ── result ────────────────────────────────────────────────────────────────────
 
 if (problems.length) {
-  console.error(`X Bramka tree-shakingu — ${problems.length} naruszeń:\n`);
+  console.error(`X Tree-shaking gate — ${problems.length} violations:\n`);
   for (const p of problems) console.error(`  - ${p}`);
   console.error('');
   process.exit(1);
 }
 
 console.log(
-  `✓ Bundle: ${opis}. Kontrola odniesienia: wejście wzorcowe przechodzi, ` +
-    `${przypadki.length} spreparowanych odrzuconych na swoich punktach.`,
+  `✓ Bundle: ${opis}. Negative control: the reference input passes, ` +
+    `${przypadki.length} prepared ones rejected on their own points.`,
 );

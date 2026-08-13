@@ -1,39 +1,20 @@
 #!/usr/bin/env node
 /**
- * Bramka pokrycia: sprawdza, czy raport pokrycia mierzy CAŁĄ bibliotekę i czy próg
- * z `req-quality-coverage` jest naprawdę egzekwowany.
+ * Coverage gate: does the report measure the WHOLE library, and is the threshold from
+ * `req-quality-coverage` really enforced? A file with no test drops OUT of the report
+ * rather than showing up with a zero, so a threshold over that number is a gate born dead
+ * ([`lesson-45`](../docs/lessons.md#lesson-45)) — hence the check on the denominator.
  *
- * Powód istnienia (lesson-45): sam próg w targecie `test` nie wystarcza, bo v8 liczy
- * procent na próbce dobranej przez samego mierzonego — do raportu wchodzą tylko moduły,
- * które weszły do przebiegu. Plik bez testu potrafi z raportu WYPAŚĆ, a nie pokazać się
- * z zerem: usunięcie `number.spec.ts` podniosło wtedy pokrycie z 96,55% na 96,94%, bo
- * razem z testem zniknął ze statystyki cały nietestowany `number.ts`. Próg pilnujący
- * takiej liczby jest bramką urodzoną martwą (lesson-39).
+ *  1. the report exists at all and has a line total,
+ *  2. the list of source files is not empty (else point 3 has nothing to examine),
+ *  3. COMPLETE: every source file of the library is in the report,
+ *  4. the `test` target declares a threshold, and not below MINIMUM,
+ *  5. the report meets the declared threshold.
  *
- * `coverageInclude` w `project.json` domyka to tylko częściowo: pliki bez testu dokłada
- * przez osobną ścieżkę, która parsuje ŹRÓDŁO, i wywraca się na `import type` /
- * `export type` — wypisując „Excluding it from coverage" w środku kilku tysięcy linii
- * logu i kończąc przebieg zielono. Dlatego pokrycie stoi na dwóch nogach:
- * `public-api.spec.ts` wprowadza moduły każdej bramki do przebiegu, a ta bramka
- * sprawdza, że w raporcie nie brakuje ani jednego pliku źródłowego.
+ * Point 3 catches the regression; 4 and 5 guard the number it produced. A sixth run
+ * examines the gate itself (`req-quality-negative-control`): `check-coverage.fixtures/`.
  *
- * Sprawdzane jest pięć rzeczy:
- *  1. raport w ogóle jest i ma sumę linii,
- *  2. lista plików źródłowych nie jest pusta (inaczej punkt 3 nie ma czego badać),
- *  3. KOMPLET: każdy plik źródłowy biblioteki jest w raporcie,
- *  4. próg jest zadeklarowany w targecie `test` i nie niższy niż MINIMUM,
- *  5. raport spełnia zadeklarowany próg.
- *
- * Punkt 3 jest tym, który faktycznie łapie regresję — punkty 4 i 5 pilnują liczby,
- * a punkt 3 pilnuje mianownika, z którego ta liczba powstała.
- *
- * Do tego szósty przebieg, który nie bada pokrycia, tylko TĘ BRAMKĘ: kontrola
- * odniesienia z `tools/check-coverage.fixtures/`. Spreparowane wejścia, z których każde
- * łamie dokładnie jeden z pięciu punktów i musi zostać odrzucone przez ten właśnie punkt
- * (`req-quality-negative-control`).
- *
- * Użycie:
- *   node tools/check-coverage.mjs
+ * Usage: node tools/check-coverage.mjs
  */
 import { existsSync, globSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
@@ -45,40 +26,40 @@ const RAPORT = 'coverage/components/coverage-summary.json';
 const FIXTURES = join(ROOT, 'tools/check-coverage.fixtures');
 const BAZA = '_poprawny.json';
 
-/** Próg z `req-quality-coverage` — minimum SonarQube. Target może żądać więcej, nie mniej. */
+/** Threshold from `req-quality-coverage` — the SonarQube floor. A target may ask for more. */
 const MINIMUM = 80;
 
 /**
- * Co jest „kodem biblioteki". Świadomie NIE czytamy `coverageInclude` z `project.json`:
- * gdyby ta lista pochodziła z konfiguracji, zawężenie konfiguracji zabierałoby plik
- * z obu stron porównania naraz i punkt 3 przestałby cokolwiek widzieć. Tutaj jest
- * niezależna definicja, więc zawężenie `coverageInclude` objawia się jako brak pliku
- * w raporcie — czyli zapala.
+ * What counts as „library code". We deliberately do NOT read `coverageInclude` from
+ * `project.json`: were this list to come from the configuration, narrowing that
+ * configuration would remove a file from both sides of the comparison at once and point 3
+ * would stop seeing anything. An independent definition makes a narrowed
+ * `coverageInclude` show up as a file missing from the report — that is, as a failure.
  */
 const ZRODLA = [`${PROJEKT}/src/**/*.ts`, `${PROJEKT}/*/src/**/*.ts`];
 
 /**
- * Wyjątki. Każdy musi mieć powód, bo cicha lista wyjątków jest dokładnie tą wadą,
- * przed którą stoi ta bramka.
+ * Exceptions. Every one needs a reason, because a silent list of exceptions is exactly the
+ * defect this gate stands against.
  */
 const POMIJANE = [
-  // Same testy.
+  // The tests themselves.
   (p) => p.endsWith('.spec.ts'),
-  // Czysty typ — znika w kompilacji, nie ma ani jednej linii wykonywalnej.
+  // Pure types — they vanish in compilation, not one executable line.
   (p) => p.endsWith('.types.ts'),
-  // Narzędzia testowe. Nie mają `ng-package.json`, więc nie jadą w pakiecie,
-  // a ich awaria objawia się padniętym testem, nie cichą wadą u konsumenta.
+  // Testing utilities. They have no `ng-package.json`, so they do not travel in the
+  // package, and a failure shows up as a broken test, not as a silent defect downstream.
   (p) => p.startsWith(`${PROJEKT}/testing/`),
-  // Stempel wersji generowany przez `stamp-version` — jedna stała, a jej zgodności
-  // z manifestem pilnuje `check-package` (punkt 4), nie test jednostkowy.
+  // The version stamp generated by `stamp-version` — a single constant, and its agreement
+  // with the manifest is watched by `check-package` (point 4), not by a unit test.
   (p) => p === `${PROJEKT}/src/version.ts`,
 ];
 
 /**
- * Szablony (`.html`) NIE są wymagane w raporcie: do statystyki wchodzą dopiero wtedy,
- * gdy jakiś test wyrenderuje ich komponent, więc żądanie ich obecności byłoby żądaniem
- * testu renderującego dla każdego komponentu — inną obietnicą niż `req-quality-coverage`.
- * Gdy już się pojawią, liczą się normalnie do progu.
+ * Templates (`.html`) are NOT required in the report: they enter the statistic only once
+ * some test renders their component, so demanding their presence would demand a rendering
+ * test for every component — a different promise than `req-quality-coverage`. Once they do
+ * show up, they count towards the threshold like everything else.
  */
 const zrodlaBiblioteki = () =>
   ZRODLA.flatMap((wzorzec) => globSync(wzorzec, { cwd: ROOT }))
@@ -87,10 +68,10 @@ const zrodlaBiblioteki = () =>
     .sort();
 
 /**
- * Naruszenie jednej z pięciu kontroli. Niesie identyfikator kontroli, a nie tylko
- * komunikat: kontrola odniesienia musi sprawdzić, że spreparowane wejście zapaliło
- * NA SWOIM punkcie — fixture wywalający się z innego powodu niż wpisany w nim samym
- * dowodzi czegoś innego, niż deklaruje.
+ * A violation of one of the five checks. It carries the check's identifier, not just the
+ * message: the negative control has to verify that a prepared input fired ON ITS OWN
+ * point — a fixture failing for a reason other than the one written into it proves
+ * something other than what it declares.
  */
 class BladPokrycia extends Error {
   constructor(kontrola, opis) {
@@ -100,75 +81,76 @@ class BladPokrycia extends Error {
 }
 
 /**
- * Komplet kontroli na gotowym wejściu:
- *   `raport` — `{ total, pliki }` ze ścieżkami względem korzenia repozytorium (albo null),
- *   `zrodla` — lista plików, które MUSZĄ być w raporcie,
- *   `target` — opcje targetu `test` z `project.json`.
- * Rzuca `BladPokrycia` przy pierwszym naruszeniu — kontrole idą od najbardziej
- * podstawowej, więc dalsze i tak nie miałyby czego badać.
+ * The full set of checks over a ready input:
+ *   `raport` — `{ total, pliki }` with paths relative to the repository root (or null),
+ *   `zrodla` — the files that MUST be in the report,
+ *   `target` — the options of the `test` target from `project.json`.
+ * Throws `BladPokrycia` on the first violation — the checks run from the most basic one,
+ * so the later ones would have nothing to examine anyway.
  */
 const sprawdzPokrycie = ({ raport, zrodla, target }) => {
-  // 1. Raport istnieje i ma sumę linii.
+  // 1. The report exists and has a line total.
   const pct = raport?.total?.lines?.pct;
   if (typeof pct !== 'number')
     throw new BladPokrycia(
       'raport',
-      `brak raportu pokrycia albo raport bez sumy linii (${RAPORT}) — ` +
-        `przebieg testów nie zebrał pokrycia, a bramka nie ma czego badać`,
+      `no coverage report, or a report with no line total (${RAPORT}) — ` +
+        `the test run collected no coverage and the gate has nothing to examine`,
     );
 
-  // 2. Lista plików źródłowych nie jest pusta.
+  // 2. The list of source files is not empty.
   if (!zrodla?.length)
     throw new BladPokrycia(
       'zrodla',
-      `nie znalazłem ani jednego pliku źródłowego (${ZRODLA.join(', ')}) — ` +
-        `punkt 3 przeszedłby wtedy zawsze, bo nie miałby czego szukać w raporcie`,
+      `not a single source file found (${ZRODLA.join(', ')}) — ` +
+        `point 3 would then always pass, having nothing to look for in the report`,
     );
 
-  // 3. Komplet: każdy plik źródłowy jest w raporcie.
+  // 3. Complete: every source file is in the report.
   const brakujace = zrodla.filter((p) => !(p in raport.pliki));
   if (brakujace.length)
     throw new BladPokrycia(
       'komplet',
-      `${brakujace.length} plików źródłowych nie ma w raporcie pokrycia — ` +
-        `procent policzył się BEZ nich, więc nie mówi nic o ich pokryciu:\n` +
+      `${brakujace.length} source files are missing from the coverage report — ` +
+        `the percentage was computed WITHOUT them, so it says nothing about them:\n` +
         brakujace.map((p) => `      ${p}`).join('\n') +
-        `\n    Najczęstsza przyczyna: plik nie wchodzi do żadnego przebiegu, ` +
-        `a v8 nie potrafi go doliczyć ze źródła (lesson-45). Lek: import bramki ` +
-        `w libs/components/src/public-api.spec.ts albo własny test.`,
+        `\n    Usual cause: the file enters no run and v8 cannot count it from the ` +
+        `source (lesson-45). Remedy: import the entrypoint in ` +
+        `libs/components/src/public-api.spec.ts, or give the file its own test.`,
     );
 
-  // 4. Próg jest zadeklarowany w targecie i nie niższy niż minimum.
+  // 4. The threshold is declared in the target and not below the minimum.
   if (target?.coverage !== true)
     throw new BladPokrycia(
       'prog',
-      `target \`test\` nie ma \`coverage: true\` — przebieg nie zbiera pokrycia, ` +
-        `więc żaden próg nie ma czego pilnować`,
+      `the \`test\` target has no \`coverage: true\` — the run collects no coverage, ` +
+        `so no threshold has anything to guard`,
     );
   const zadeklarowany = target?.coverageThresholds?.lines;
   if (typeof zadeklarowany !== 'number' || zadeklarowany < MINIMUM)
     throw new BladPokrycia(
       'prog',
-      `target \`test\` deklaruje próg linii \`${zadeklarowany ?? 'brak'}\`, ` +
-        `a \`req-quality-coverage\` żąda co najmniej ${MINIMUM}% — bez tego raport jest ` +
-        `liczbą do oglądania, nie bramką`,
+      `the \`test\` target declares a line threshold of \`${zadeklarowany ?? 'none'}\`, ` +
+        `and \`req-quality-coverage\` asks for at least ${MINIMUM}% — without it the ` +
+        `report is a number to look at, not a gate`,
     );
 
-  // 5. Raport spełnia zadeklarowany próg. Punkt zdublowany z egzekucją w samym
-  // targecie i to jest celowe: tamta zależy od jednej opcji builda, którą łatwo
-  // rozbroić jednym znakiem, a ta stoi w osobnym procesie i w CI jako osobny target.
+  // 5. The report meets the declared threshold. This point duplicates the enforcement in
+  // the target itself, and deliberately: that one hangs on a single build option, easy to
+  // disarm with one character, while this one runs in a separate process and in CI as a
+  // separate target.
   if (pct < zadeklarowany)
     throw new BladPokrycia(
       'wynik',
-      `pokrycie linii ${pct}% poniżej progu ${zadeklarowany}%`,
+      `line coverage ${pct}% below the ${zadeklarowany}% threshold`,
     );
 
-  return `${zrodla.length} plików źródłowych w raporcie, pokrycie linii ${pct}% (próg ${zadeklarowany}%)`;
+  return `${zrodla.length} source files in the report, line coverage ${pct}% (threshold ${zadeklarowany}%)`;
 };
 
-// ── wejście z dysku ───────────────────────────────────────────────────────────
+// ── input from disk ───────────────────────────────────────────────────────────
 
-/** Raport w postaci, której oczekuje `sprawdzPokrycie`: ścieżki względem korzenia repo. */
+/** The report in the shape `sprawdzPokrycie` expects: paths relative to the repo root. */
 const wczytajRaport = () => {
   const sciezka = join(ROOT, RAPORT);
   if (!existsSync(sciezka)) return null;
@@ -185,14 +167,14 @@ const opcjeTargetu = () =>
   JSON.parse(readFileSync(join(ROOT, PROJEKT, 'project.json'), 'utf8')).targets
     ?.test?.options;
 
-// ── kontrola odniesienia ──────────────────────────────────────────────────────
+// ── negative control ──────────────────────────────────────────────────────────
 
 const wczytajFixture = (nazwa) =>
   JSON.parse(readFileSync(join(FIXTURES, nazwa), 'utf8'));
 
 /**
- * Składa wejście przypadku NA KOPII wzorcowego, więc plik przypadku zawiera wyłącznie
- * swoją wadę — nie da się zepsuć czegoś przy okazji i nie zauważyć.
+ * Builds a case's input ON A COPY of the reference one, so the case file holds nothing but
+ * its own defect — you cannot break something in passing and not notice.
  */
 const zlozFixture = (fx) => {
   const baza = wczytajFixture(BAZA);
@@ -209,7 +191,7 @@ const zlozFixture = (fx) => {
   return wejscie;
 };
 
-// ── przebieg ──────────────────────────────────────────────────────────────────
+// ── the run ───────────────────────────────────────────────────────────────────
 
 const problems = [];
 let opis = null;
@@ -231,19 +213,19 @@ const przypadki = readdirSync(FIXTURES)
 
 if (przypadki.length === 0)
   problems.push(
-    `tools/check-coverage.fixtures: brak spreparowanych wejść — bramka bez dowodu, ` +
-      `że potrafi nie przejść, jest kolejną cichą wadą (req-quality-negative-control)`,
+    `tools/check-coverage.fixtures: no prepared inputs — a gate with no proof that it ` +
+      `can fail is one more silent defect (req-quality-negative-control)`,
   );
 
-// Wejście wzorcowe MUSI przejść. Gdyby samo było wadliwe, każdy przypadek zapalałby
-// z jego powodu, a nie z powodu swojej wady — i wszystkie „zapaliło" byłyby fałszywe.
+// The reference input MUST pass. Were it defective itself, every case would fire because
+// of it rather than because of its own defect — and every „it fired" would be false.
 try {
   sprawdzPokrycie(zlozFixture({}));
 } catch (blad) {
   if (!(blad instanceof BladPokrycia)) throw blad;
   problems.push(
-    `${BAZA}: wejście wzorcowe NIE przechodzi (${blad.kontrola}) — ` +
-      `każdy spreparowany przypadek zapala teraz z jego powodu.\n    ${blad.message}`,
+    `${BAZA}: the reference input does NOT pass (${blad.kontrola}) — ` +
+      `every prepared case now fires because of it.\n    ${blad.message}`,
   );
 }
 
@@ -252,29 +234,30 @@ for (const nazwa of przypadki) {
   try {
     sprawdzPokrycie(zlozFixture(fx));
     problems.push(
-      `${nazwa}: spreparowane wejście PRZESZŁO, a miało nie przejść — ` +
-        `punkt ${fx.punkt} (\`${fx.kontrola}\`) przestał cokolwiek badać`,
+      `${nazwa}: the prepared input PASSED and was meant not to — ` +
+        `point ${fx.punkt} (\`${fx.kontrola}\`) stopped examining anything`,
     );
   } catch (blad) {
     if (!(blad instanceof BladPokrycia)) throw blad;
     if (blad.kontrola !== fx.kontrola)
       problems.push(
-        `${nazwa}: zapaliła kontrola \`${blad.kontrola}\`, a miał punkt ${fx.punkt} ` +
-          `(\`${fx.kontrola}\`) — fixture dowodzi czegoś innego, niż deklaruje`,
+        `${nazwa}: check \`${blad.kontrola}\` fired, and point ${fx.punkt} ` +
+          `(\`${fx.kontrola}\`) was meant to — the fixture proves something other than ` +
+          `what it declares`,
       );
   }
 }
 
-// ── wynik ─────────────────────────────────────────────────────────────────────
+// ── result ────────────────────────────────────────────────────────────────────
 
 if (problems.length) {
-  console.error(`X Bramka pokrycia — ${problems.length} naruszeń:\n`);
+  console.error(`X Coverage gate — ${problems.length} violations:\n`);
   for (const p of problems) console.error(`  - ${p}`);
   console.error('');
   process.exit(1);
 }
 
 console.log(
-  `✓ Pokrycie: ${opis}. Kontrola odniesienia: wejście wzorcowe przechodzi, ` +
-    `${przypadki.length} spreparowanych odrzuconych na swoich punktach.`,
+  `✓ Coverage: ${opis}. Negative control: the reference input passes, ` +
+    `${przypadki.length} prepared ones rejected on their own points.`,
 );

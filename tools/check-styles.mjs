@@ -507,7 +507,7 @@ const sprawdzStyle = ({ arkusze, komponenty, deklaracji }) => {
   );
 };
 
-// ── wejście z dysku ───────────────────────────────────────────────────────────
+// ── input from disk ───────────────────────────────────────────────────────────
 
 /**
  * Dekorator komponentu. Parser kotwiczy się w kolumnie zero, bo takie
@@ -602,7 +602,7 @@ const plikiProjektu = () =>
  */
 const jestZrodlem = (p) => p.endsWith('.ts') && !p.endsWith('.spec.ts');
 
-// ── kontrola odniesienia ──────────────────────────────────────────────────────
+// ── negative control ──────────────────────────────────────────────────────────
 
 /**
  * Składa spreparowane wejście: kopia bazy, na nią pliki przypadku, na końcu
@@ -642,7 +642,7 @@ const wejscieFixture = (katalog) =>
     pliki(katalog, '**/*.ts').filter(jestZrodlem),
   );
 
-// ── przebieg ──────────────────────────────────────────────────────────────────
+// ── the run ───────────────────────────────────────────────────────────────────
 
 const problems = [];
 let opis = null;
@@ -668,13 +668,13 @@ const przypadki = readdirSync(FIXTURES, { withFileTypes: true })
 
 if (przypadki.length === 0)
   problems.push(
-    `tools/check-styles.fixtures: brak spreparowanych wejść — bramka bez dowodu, ` +
-      `że potrafi nie przejść, jest kolejną cichą wadą (req-quality-negative-control)`,
+    `tools/check-styles.fixtures: no prepared inputs — a gate with no proof that it can ` +
+      `fail is one more silent defect (req-quality-negative-control)`,
   );
 
-// Wejście wzorcowe MUSI przejść. Gdyby baza sama była wadliwa, każdy przypadek
-// zapalałby z jej powodu, a nie z powodu swojej wady — i wszystkie „odrzucone"
-// byłyby fałszywe, czyli cała ta kontrola stałaby się tym, przed czym stoi.
+// The reference input MUST pass. Were the base defective itself, every case would
+// fire because of it and not because of its own defect — every „rejected" would be
+// false, and this control would become the very thing it stands against.
 {
   const katalog = zlozFixture(BAZA, {});
   try {
@@ -682,8 +682,8 @@ if (przypadki.length === 0)
   } catch (blad) {
     if (!(blad instanceof BladStylu)) throw blad;
     problems.push(
-      `${BAZA}: wejście wzorcowe NIE przechodzi (${blad.kontrola}) — ` +
-        `każdy spreparowany przypadek zapala teraz z jego powodu.\n    ${blad.message}`,
+      `${BAZA}: the reference input does NOT pass (${blad.kontrola}) — ` +
+        `every prepared case now fires because of it.\n    ${blad.message}`,
     );
   } finally {
     rmSync(katalog, { recursive: true, force: true });
@@ -698,31 +698,31 @@ for (const nazwa of przypadki) {
   try {
     sprawdzStyle(wejscieFixture(katalog));
     problems.push(
-      `${nazwa}: spreparowane wejście PRZESZŁO, a miało nie przejść — ` +
-        `punkt ${fx.punkt} (\`${fx.kontrola}\`) przestał cokolwiek badać`,
+      `${nazwa}: the prepared input PASSED and was meant not to — ` +
+        `punkt ${fx.punkt} (\`${fx.kontrola}\`) stopped examining anything`,
     );
   } catch (blad) {
     if (!(blad instanceof BladStylu)) throw blad;
     if (blad.kontrola !== fx.kontrola)
       problems.push(
-        `${nazwa}: zapaliła kontrola \`${blad.kontrola}\`, a miał punkt ${fx.punkt} ` +
-          `(\`${fx.kontrola}\`) — fixture dowodzi czegoś innego, niż deklaruje`,
+        `${nazwa}: check \`${blad.kontrola}\` fired, and point ${fx.punkt} ` +
+          `(\`${fx.kontrola}\`) was meant to — the fixture proves something other than what it declares`,
       );
   } finally {
     rmSync(katalog, { recursive: true, force: true });
   }
 }
 
-// ── wynik ─────────────────────────────────────────────────────────────────────
+// ── result ────────────────────────────────────────────────────────────────────
 
 if (problems.length) {
-  console.error(`X Bramka stylów — ${problems.length} naruszeń:\n`);
+  console.error(`X Style gate — ${problems.length} violations:\n`);
   for (const p of problems) console.error(`  - ${p}`);
   console.error('');
   process.exit(1);
 }
 
 console.log(
-  `✓ Style: ${opis}. Kontrola odniesienia: wejście wzorcowe przechodzi, ` +
-    `${przypadki.length} spreparowanych odrzuconych na swoich punktach.`,
+  `✓ Styles: ${opis}. Negative control: the reference input passes, ` +
+    `${przypadki.length} prepared ones rejected on their own points.`,
 );

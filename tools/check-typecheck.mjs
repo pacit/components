@@ -1,54 +1,19 @@
 #!/usr/bin/env node
 /**
- * Bramka typechecku: sprawdza, czy w workspace nie ma kodu TypeScriptu, którego
- * kompilator nie widzi — czyli czy obietnica `req-quality-typecheck` ma za sobą pomiar,
- * a nie samą listę targetów w CI.
+ * Typecheck gate: is there TypeScript the compiler never sees? `sandbox-e2e` had `lint`
+ * and `e2e` and no typecheck target at all, so a dozen of its files never reached the
+ * compiler ([`lesson-42`](../docs/lessons.md#lesson-42)) — `req-quality-typecheck`.
  *
- * Powód istnienia. `lesson-42`: `sandbox-e2e` miał `lint` i `e2e`, ale ŻADNEGO targetu
- * typecheck, więc kilkanaście plików nie przeszło przez kompilator ani razu. Dodanie
- * targetu ujawniło w pierwszym przebiegu trzy błędy — i nie w testach, tylko w tsconfigu,
- * który opisywał projekt nieprawdziwie. Lint tego nie łapie: ESLint parsuje i sprawdza
- * reguły, ale nie zgłasza błędów typów ani niespójności konfiguracji modułów.
+ *  1. DENOMINATOR: every TypeScript file in the git index belongs to some project,
+ *  2. every project with TypeScript files has a `typecheck` target,
+ *  3. that target's command can be measured and is not disarmed,
+ *  4. COVERAGE: every file of a project is in its compiler's program.
  *
- * Wada była cicha, bo nic nie pytało „a czy ten projekt w ogóle ma czym się sprawdzić".
- * `nx affected -t typecheck` uruchamia target tam, gdzie istnieje, i milczy tam, gdzie
- * go nie ma — więc nowy projekt rodzi się nietypecheckowany, a przebieg jest zielony.
+ * Point 2 measures the target's existence, point 4 its reach — and a tsconfig can lie
+ * about what it covers, so the program comes from running THE COMMAND with
+ * `--listFilesOnly`, not from `include`. Negative control: `check-typecheck.fixtures/`.
  *
- * Sprawdzane są cztery rzeczy:
- *  1. MIANOWNIK: każdy plik TypeScriptu z indeksu gita należy do jakiegoś projektu,
- *  2. każdy projekt z plikami TypeScriptu ma target `typecheck`,
- *  3. polecenie tego targetu daje się zmierzyć i nie jest rozbrojone,
- *  4. POKRYCIE: każdy plik projektu jest w programie jego kompilatora.
- *
- * Punkt 4 jest tym, dla którego ta bramka w ogóle powstała w tej formie. Sam punkt 2
- * mierzy ISTNIENIE targetu, a nie jego zasięg — a `lesson-42` mówi wprost, że tsconfig
- * potrafi kłamać o tym, co obejmuje. Target wskazujący konfigurację z `"include": []`
- * przechodziłby punkt 2 w komplecie i nie sprawdzał niczego. Tak samo nowy entrypoint
- * biblioteki: `libs/components/tsconfig.lib.json` wylicza katalogi po nazwie, więc
- * `dialog/` dopisany bez ruszania tego pliku wypadłby z kompilacji bez jednego czerwonego
- * przebiegu.
- *
- * Skąd bierze się „program kompilatora". Z uruchomienia POLECENIA Z TARGETU, rozszerzonego
- * o `--listFilesOnly`, a nie z odczytania `include`/`exclude` z tsconfiga. To rozróżnienie
- * jest treścią `lesson-42`: deklaracja i rzeczywistość rozjechały się tam po cichu i dopiero
- * kompilator pokazał różnicę. Bramka czytająca `include` mierzyłaby drugi raz to samo
- * zdanie, które okazało się nieprawdziwe. `--showConfig` odpada z tego samego powodu:
- * rozwija `include` do listy plików, ale nie widzi plików wciągniętych przez import.
- *
- * Punkt 1 jest mianownikiem obu pozostałych i nie jest teoretyczny: `vitest.config.ts`
- * i `vitest.workspace.ts` leżą w korzeniu, nie należą do żadnej biblioteki ani aplikacji
- * i do 2026-08-05 nie widział ich żaden kompilator. Punkty 2–4 chodzą po projektach, więc
- * plik spoza któregokolwiek projektu byłby dla nich niewidzialny — czyli obietnica
- * „nie ma takiego kodu" byłaby prawdziwa dokładnie o tyle, o ile bramka nie potrafi go
- * zobaczyć.
- *
- * Do tego przebieg, który nie bada workspace'u, tylko TĘ BRAMKĘ: kontrola odniesienia
- * z `tools/check-typecheck.fixtures/`. Spreparowane wejścia, z których każde łamie
- * dokładnie jeden z czterech punktów i musi zostać odrzucone przez ten właśnie punkt
- * (`req-quality-negative-control`).
- *
- * Użycie:
- *   node tools/check-typecheck.mjs
+ * Usage: node tools/check-typecheck.mjs
  */
 import { readFileSync, readdirSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
@@ -59,45 +24,44 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const FIXTURES = join(ROOT, 'tools/check-typecheck.fixtures');
 const BAZA = '_poprawny.json';
 
-/** Rozszerzenia, które kompilator TypeScriptu ma widzieć. */
+/** Extensions the TypeScript compiler is meant to see. */
 const TYPESCRIPT = /\.(?:m|c)?tsx?$/;
 
 /**
- * Czym bramka zamienia polecenie targetu w listę plików. `--listFilesOnly` wypisuje
- * program i zatrzymuje przetwarzanie przed sprawdzaniem typów, więc pomiar jest tani
- * i nie powiela pracy samego targetu. `--noEmit` jest tu na wszelki wypadek: część
- * konfiguracji ma `outDir` (schematics kompilują się do `dist/`), a bramka nie ma prawa
- * niczego zapisać po drodze.
+ * How the gate turns a target's command into a list of files. `--listFilesOnly` prints the
+ * program and stops before type checking, so the measurement is cheap and does not repeat
+ * the target's own work. `--noEmit` is there just in case: some configurations have an
+ * `outDir` (schematics compile to `dist/`), and the gate has no business writing anything
+ * along the way.
  */
 const POMIAR = '--listFilesOnly --noEmit';
 
-/** Polecenie jest wywołaniem `tsc` — inaczej `--listFilesOnly` nic nie znaczy. */
+/** The command is a `tsc` call — otherwise `--listFilesOnly` means nothing. */
 const TSC = /(?:^|[/\\])tsc(?:\s|$)/;
 
 /**
- * Konfiguracja wskazana WPROST. Nie jest to czystoformalny wymóg: bez `-p` tsc szuka
- * `tsconfig.json` w górę od katalogu roboczego, więc zasięg targetu zależy od `cwd`
- * ustawionego gdzie indziej w `project.json` — i nie widać go w miejscu wywołania.
- * Wyklucza to też `tsc --build`, który dla listy plików jest nieprzezroczysty: buduje
- * referencje po kolei i `--listFilesOnly` nie ma jak go opisać. Jedna konfiguracja
- * na polecenie, tyle poleceń, ile programów.
+ * The configuration named EXPLICITLY. Not a formality: without `-p`, tsc looks for
+ * `tsconfig.json` upwards from the working directory, so the target's reach depends on a
+ * `cwd` set elsewhere in `project.json` — invisible at the point of the call. It also
+ * rules out `tsc --build`, which is opaque to a file listing: it builds references one by
+ * one and `--listFilesOnly` has no way to describe it. One configuration per command, as
+ * many commands as there are programs.
  */
 const PROJEKT = /(?:^|\s)(?:-p|--project)\s+\S/;
 
 /**
- * Operatory powłoki. `nx:run-commands` puszcza polecenie przez shell, więc
- * `tsc --noEmit -p x || true` jest targetem, który przechodzi ZAWSZE i wygląda
- * w `project.json` dokładnie jak bramka. Kosztuje jeden znak, a rozbraja typecheck
- * całego projektu.
+ * Shell operators. `nx:run-commands` sends the command through a shell, so
+ * `tsc --noEmit -p x || true` is a target that ALWAYS passes and looks in `project.json`
+ * exactly like a gate. It costs one character and disarms a whole project's typecheck.
  */
 const OPERATORY = /[;|&]/;
 
 /**
- * Flagi wyłączające sprawdzanie. `--noCheck` (TS 5.6+) zostawia tylko błędy parsowania
- * i emisji, `--listFilesOnly` zatrzymuje tsc przed sprawdzaniem typów — czyli obie
- * zamieniają target w kosztowny no-op. Bramka używa drugiej z nich do POMIARU, więc
- * musi wprost zabronić jej w mierzonym poleceniu: inaczej rozbrojony target i pomiar
- * wyglądałyby identycznie.
+ * Flags that switch checking off. `--noCheck` (TS 5.6+) leaves only parse and emit errors,
+ * `--listFilesOnly` stops tsc before type checking — both turn the target into an
+ * expensive no-op. The gate uses the second of them to MEASURE, so it has to forbid it in
+ * the measured command outright: otherwise a disarmed target and a measurement would look
+ * identical.
  */
 const BEZ_SPRAWDZANIA = [
   ['--noCheck', /(?:^|\s)--noCheck(?:\s|=|$)/],
@@ -105,10 +69,10 @@ const BEZ_SPRAWDZANIA = [
 ];
 
 /**
- * Naruszenie jednej z czterech kontroli. Niesie identyfikator kontroli, a nie tylko
- * komunikat: kontrola odniesienia musi sprawdzić, że spreparowane wejście zapaliło
- * NA SWOIM punkcie — fixture wywalający się z innego powodu niż wpisany w nim samym
- * dowodzi czegoś innego, niż deklaruje.
+ * A violation of one of the four checks. It carries the check's identifier, not just the
+ * message: the negative control has to verify that a prepared input fired ON ITS OWN
+ * point — a fixture failing for a reason other than the one written into it proves
+ * something other than what it declares.
  */
 class BladTypecheck extends Error {
   constructor(kontrola, opis) {
@@ -118,39 +82,39 @@ class BladTypecheck extends Error {
 }
 
 /**
- * Wada polecenia albo `null`. Jedno miejsce dla dwóch wywołań: punktu 3 i warstwy
- * wejścia, która musi odrzucić polecenie z operatorem powłoki ZANIM je uruchomi.
+ * A command's defect, or `null`. One place for two callers: point 3 and the input layer,
+ * which has to reject a command carrying a shell operator BEFORE running it.
  */
 const wadaPolecenia = (polecenie) => {
   if (typeof polecenie !== 'string')
     return (
-      `nie jest łańcuchem znaków (${JSON.stringify(polecenie)}) — ` +
-      `\`commands\` przyjmuje też obiekty, a taki wpis bez pola \`command\` wypadłby z pomiaru`
+      `is not a string (${JSON.stringify(polecenie)}) — ` +
+      `\`commands\` also takes objects, and one with no \`command\` field would drop out of the measurement`
     );
   if (OPERATORY.test(polecenie))
-    return `zawiera operator powłoki — polecenie w rodzaju \`tsc … || true\` przechodzi zawsze`;
+    return `contains a shell operator — a command like \`tsc … || true\` always passes`;
   if (!TSC.test(polecenie))
-    return `nie jest wywołaniem \`tsc\` — bramka nie ma jak zmierzyć, jakie pliki widzi`;
+    return `is not a \`tsc\` call — the gate cannot measure which files it sees`;
   if (!PROJEKT.test(polecenie))
     return (
-      `nie wskazuje konfiguracji przez \`-p\` — zasięg zależy wtedy od \`cwd\`, ` +
-      `a \`tsc --build\` dodatkowo nie daje się opisać listą plików`
+      `does not name a configuration with \`-p\` — the reach then depends on \`cwd\`, ` +
+      `and \`tsc --build\` cannot be described by a file listing either`
     );
   const wylaczone = BEZ_SPRAWDZANIA.filter(([, wzorzec]) =>
     wzorzec.test(polecenie),
   ).map(([nazwa]) => nazwa);
   if (wylaczone.length)
     return (
-      `ma flagę wyłączającą sprawdzanie typów (${wylaczone.join(', ')}) — ` +
-      `target biegnie, kosztuje czas CI i nie sprawdza niczego`
+      `carries a flag that switches type checking off (${wylaczone.join(', ')}) — ` +
+      `the target runs, costs CI time and checks nothing`
     );
   return null;
 };
 
 /**
- * Projekt, do którego należy plik: najgłębszy korzeń będący jego przedrostkiem.
- * Projekt roota (`.`) jest przedrostkiem wszystkiego, więc przegrywa z każdym innym
- * i zbiera wyłącznie to, czego nie wziął nikt.
+ * The project a file belongs to: the deepest root that is its prefix. The root project
+ * (`.`) is a prefix of everything, so it loses to every other one and collects only what
+ * nobody else took.
  */
 const wlasciciel = (plik, projekty) =>
   projekty
@@ -158,27 +122,27 @@ const wlasciciel = (plik, projekty) =>
     .sort((a, b) => b.korzen.length - a.korzen.length)[0] ?? null;
 
 /**
- * Komplet kontroli na gotowym wejściu:
+ * The full set of checks over a ready input:
  *   `projekty` — `[{ nazwa, korzen, typecheck: { cwd, polecenia } | null }]`,
- *   `pliki`    — ścieżki plików TypeScriptu z indeksu gita, względem korzenia repo,
- *   `widziane` — `{ [projekt]: [pliki] }`, program kompilatora zmierzony `--listFilesOnly`.
- * Rzuca `BladTypecheck` przy pierwszym naruszeniu — kontrole idą od mianownika, więc
- * dalsze i tak nie miałyby czego badać.
+ *   `pliki`    — TypeScript file paths from the git index, relative to the repo root,
+ *   `widziane` — `{ [project]: [files] }`, the compiler program measured with `--listFilesOnly`.
+ * Throws `BladTypecheck` on the first violation — the checks start from the denominator,
+ * so the later ones would have nothing to examine anyway.
  */
 const sprawdzTypecheck = ({ projekty, pliki, widziane }) => {
-  // 1. MIANOWNIK. Najpierw obie listy muszą w ogóle istnieć: pusta którakolwiek daje
-  // bramkę, która przechodzi zawsze, bo nie ma czego porównywać.
+  // 1. DENOMINATOR. First, both lists have to exist at all: either one empty gives a gate
+  // that always passes, because it has nothing to compare.
   if (!projekty.length)
     throw new BladTypecheck(
       'mianownik',
-      `graf Nx nie zwrócił ani jednego projektu — punkty 2–4 przeszłyby wtedy zawsze, ` +
-        `bo chodzą po tej właśnie liście`,
+      `the Nx graph returned no projects at all — points 2–4 would then always pass, ` +
+        `since they walk exactly this list`,
     );
   if (!pliki.length)
     throw new BladTypecheck(
       'mianownik',
-      `nie znalazłem ani jednego pliku TypeScriptu w indeksie gita — ` +
-        `bramka porównywałaby program kompilatora z pustym zbiorem, czyli z niczym`,
+      `no TypeScript file found in the git index — the gate would be comparing the ` +
+        `compiler program against an empty set, that is, against nothing`,
     );
 
   const wlasnosc = new Map(projekty.map((p) => [p.nazwa, []]));
@@ -191,44 +155,44 @@ const sprawdzTypecheck = ({ projekty, pliki, widziane }) => {
   if (sieroty.length)
     throw new BladTypecheck(
       'mianownik',
-      `${sieroty.length} plików TypeScriptu nie należy do żadnego projektu:\n` +
+      `${sieroty.length} TypeScript files belong to no project:\n` +
         sieroty.map((s) => `      ${s}`).join('\n') +
-        `\n    Punkty 2–4 chodzą po projektach, więc taki plik jest dla nich niewidzialny — ` +
-        `a to znaczy, że nie sprawdza go nikt. Lek: projekt obejmujący ten katalog albo ` +
-        `przeniesienie pliku do istniejącego (req-quality-typecheck).`,
+        `\n    Points 2–4 walk projects, so such a file is invisible to them — which ` +
+        `means nobody checks it. Remedy: a project covering that directory, or move the ` +
+        `file into an existing one (req-quality-typecheck).`,
     );
 
-  // Projekty bez ani jednego pliku TypeScriptu są poza resztą bramki świadomie:
-  // `tokens` generuje CSS/SCSS/TS z JSON-ów skryptem `.mjs` i wymaganie od niego
-  // targetu `typecheck` byłoby żądaniem sprawdzenia pustego zbioru.
+  // Projects without a single TypeScript file stand outside the rest of the gate on
+  // purpose: `tokens` generates CSS/SCSS/TS from JSON with an `.mjs` script, and asking it
+  // for a `typecheck` target would be asking it to check an empty set.
   const zKodem = projekty.filter((p) => wlasnosc.get(p.nazwa).length);
 
-  // 2. Istnienie targetu. To punkt z `lesson-42` wprost.
+  // 2. The target exists. This is `lesson-42` verbatim.
   const bezTargetu = zKodem.filter((p) => !p.typecheck);
   if (bezTargetu.length)
     throw new BladTypecheck(
       'target',
-      `${bezTargetu.length} projektów ma pliki TypeScriptu i żadnego targetu \`typecheck\`:\n` +
+      `${bezTargetu.length} projects have TypeScript files and no \`typecheck\` target:\n` +
         bezTargetu
           .map(
             (p) =>
-              `      ${p.nazwa} (${p.korzen}): ${wlasnosc.get(p.nazwa).length} plików`,
+              `      ${p.nazwa} (${p.korzen}): ${wlasnosc.get(p.nazwa).length} files`,
           )
           .join('\n') +
-        `\n    \`nx affected -t typecheck\` milczy tam, gdzie targetu nie ma, więc ` +
-        `przebieg jest zielony, a kompilator nie widział tych plików ani razu (lesson-42).`,
+        `\n    \`nx affected -t typecheck\` stays silent where the target is missing, so ` +
+        `the run is green and the compiler never saw these files (lesson-42).`,
     );
 
-  // 3. Mierzalność polecenia. Bez tego punktu rozbrojony target i target sprawdzany
-  // wyglądałyby dla punktu 4 tak samo — pomiar zwróciłby pustkę albo śmieci.
-  // `?.` nie jest tu ostrożnością na wyrost: po przejściu punktu 2 `typecheck` na pewno
-  // istnieje, ale to znaczy dokładnie tyle, że ten punkt polega na poprzednim. Bez tego
-  // zapisu ROZBROJENIE punktu 2 zamienia bramkę w wyjątek zamiast w komunikat — czyli
-  // kontrola odniesienia przestaje umieć zbadać punkt, który miała zbadać.
+  // 3. The command can be measured. Without this point a disarmed target and a checked
+  // one would look the same to point 4 — the measurement would return emptiness or junk.
+  // `?.` is not excess caution: past point 2 `typecheck` certainly exists, but that means
+  // precisely that this point leans on the previous one. Without the optional read,
+  // DISARMING point 2 turns the gate into an exception instead of a message — and the
+  // negative control loses the ability to examine the point it was meant to examine.
   const wadliwe = zKodem.flatMap((p) => {
     const polecenia = p.typecheck?.polecenia ?? [];
     if (!polecenia.length)
-      return [`${p.nazwa}: target \`typecheck\` nie ma ani jednego polecenia`];
+      return [`${p.nazwa}: the \`typecheck\` target has no command at all`];
     return polecenia.flatMap((polecenie) => {
       const wada = wadaPolecenia(polecenie);
       return wada ? [`${p.nazwa}: \`${polecenie}\` — ${wada}`] : [];
@@ -237,14 +201,14 @@ const sprawdzTypecheck = ({ projekty, pliki, widziane }) => {
   if (wadliwe.length)
     throw new BladTypecheck(
       'polecenie',
-      `${wadliwe.length} poleceń targetu \`typecheck\` nie da się zmierzyć albo jest rozbrojonych:\n` +
+      `${wadliwe.length} \`typecheck\` commands cannot be measured or are disarmed:\n` +
         wadliwe.map((w) => `      ${w}`).join('\n') +
-        `\n    Punkt 4 porównuje pliki projektu z programem TEGO polecenia, więc ` +
-        `polecenie, którego nie da się odczytać, zabiera mu mianownik.`,
+        `\n    Point 4 compares a project's files against THAT command's program, so a ` +
+        `command that cannot be read takes its denominator away.`,
     );
 
-  // 4. POKRYCIE. Punkt 2 mierzy istnienie targetu, ten mierzy jego zasięg — a między
-  // jednym a drugim mieści się cała `lesson-42`.
+  // 4. COVERAGE. Point 2 measures that the target exists, this one measures its reach —
+  // and the whole of `lesson-42` sits between the two.
   const nieobjete = zKodem.flatMap((p) => {
     const program = new Set(widziane[p.nazwa] ?? []);
     return wlasnosc
@@ -255,27 +219,27 @@ const sprawdzTypecheck = ({ projekty, pliki, widziane }) => {
   if (nieobjete.length)
     throw new BladTypecheck(
       'pokrycie',
-      `${nieobjete.length} plików nie wchodzi do programu kompilatora swojego projektu:\n` +
+      `${nieobjete.length} files do not enter their project's compiler program:\n` +
         nieobjete.map((n) => `      ${n}`).join('\n') +
-        `\n    Target \`typecheck\` istnieje i przechodzi, ale tych plików nie ogląda: ` +
-        `najczęściej dlatego, że tsconfig wylicza katalogi po nazwie, a doszedł nowy. ` +
-        `Lek: rozszerzyć \`include\` albo dołożyć polecenie z drugą konfiguracją.`,
+        `\n    The \`typecheck\` target exists and passes, but never looks at these ` +
+        `files: usually because the tsconfig lists directories by name and a new one ` +
+        `arrived. Remedy: widen \`include\`, or add a command with a second configuration.`,
     );
 
   return (
-    `${pliki.length} plików TypeScriptu w ${zKodem.length} projektach ` +
-    `(${projekty.length - zKodem.length} bez kodu TS), ` +
-    `każdy w programie swojego kompilatora`
+    `${pliki.length} TypeScript files in ${zKodem.length} projects ` +
+    `(${projekty.length - zKodem.length} with no TS code), ` +
+    `each one in its own compiler's program`
   );
 };
 
-// ── wejście z dysku ───────────────────────────────────────────────────────────
+// ── input from disk ───────────────────────────────────────────────────────────
 
 /**
- * Projekty z grafu Nx, a nie z listy `project.json` na dysku: targety bywają
- * INFEROWANE przez wtyczki (`@nx/vite/plugin` dokłada `typecheck`), więc lista czytana
- * z plików pokazywałaby braki tam, gdzie ich nie ma, i odwrotnie — nie pokazywałaby
- * projektu, który wtyczka dopiero utworzyła.
+ * Projects from the Nx graph, not from the `project.json` files on disk: targets are
+ * sometimes INFERRED by plugins (`@nx/vite/plugin` adds `typecheck`), so a list read from
+ * the files would show gaps where there are none — and, the other way round, would miss a
+ * project the plugin has only just created.
  */
 const projektyGrafu = async () => {
   const { createProjectGraphAsync } = await import('@nx/devkit');
@@ -292,8 +256,8 @@ const projektyGrafu = async () => {
       korzen: wezel.data.root,
       typecheck: {
         cwd: cwd ?? '.',
-        // Obiekty zostają obiektami: `wadaPolecenia` powie, czego nie umie odczytać.
-        // Milczące odsianie ich tutaj zmniejszałoby liczbę mierzonych programów.
+        // Objects stay objects: `wadaPolecenia` will say what it cannot read. Filtering
+        // them out silently here would shrink the number of measured programs.
         polecenia: lista.map((c) =>
           typeof c === 'string' ? c : (c?.command ?? c),
         ),
@@ -303,9 +267,9 @@ const projektyGrafu = async () => {
 };
 
 /**
- * Pliki z indeksu gita, a nie ze skanu katalogów: artefakty generowane
- * (`libs/tokens/dist/tokens.ts`) są gitignorowane i nie są niczyim kodem źródłowym —
- * powstają przy każdym buildzie i nikt ich nie utrzymuje.
+ * Files from the git index, not from a directory scan: generated artifacts
+ * (`libs/tokens/dist/tokens.ts`) are gitignored and are nobody's source code — they appear
+ * on every build and nobody maintains them.
  */
 const plikiRepo = () =>
   execSync('git ls-files', { cwd: ROOT, encoding: 'utf8' })
@@ -314,9 +278,9 @@ const plikiRepo = () =>
     .sort();
 
 /**
- * Program kompilatora każdego projektu: polecenie z targetu rozszerzone o `--listFilesOnly`.
- * Suma po wszystkich poleceniach, bo projekt bywa kilkoma rozłącznymi programami naraz
- * (biblioteka: pakiet, specyfikacje, schematics) i dopiero razem pokrywają jego pliki.
+ * Every project's compiler program: the target's command extended with `--listFilesOnly`.
+ * A union over all the commands, because a project is sometimes several disjoint programs
+ * at once (a library: package, specs, schematics) and only together do they cover its files.
  */
 const widzianePrzezKompilator = (projekty) => {
   const widziane = {};
@@ -326,9 +290,9 @@ const widzianePrzezKompilator = (projekty) => {
     const program = new Set();
 
     for (const polecenie of projekt.typecheck.polecenia) {
-      // Sprawdzenie PRZED uruchomieniem: polecenie z operatorem powłoki trafiłoby
-      // stąd wprost do shella, a bramka nie ma prawa uruchomić czegoś, czego nie
-      // rozpoznaje. Punkt 3 zgłosi to samo, tylko z pełną listą.
+      // Checked BEFORE running: a command with a shell operator would go straight from
+      // here into a shell, and the gate has no business running something it does not
+      // recognise. Point 3 reports the same thing, only with the full list.
       if (wadaPolecenia(polecenie)) continue;
 
       let wynik;
@@ -337,9 +301,9 @@ const widzianePrzezKompilator = (projekty) => {
           cwd: join(ROOT, projekt.typecheck.cwd),
           encoding: 'utf8',
           stdio: ['ignore', 'pipe', 'pipe'],
-          // Programy Angulara wciągają kilka tysięcy plików `.d.ts` — domyślny
-          // megabajt bufora nie starcza, a przepełnienie objawiłoby się jako
-          // pusty program, czyli jako fałszywe trafienie punktu 4.
+          // Angular programs pull in a few thousand `.d.ts` files — the default megabyte
+          // of buffer is not enough, and an overflow would show up as an empty program,
+          // that is, as a false hit on point 4.
           maxBuffer: 64 * 1024 * 1024,
           env: {
             ...process.env,
@@ -349,7 +313,7 @@ const widzianePrzezKompilator = (projekty) => {
       } catch (blad) {
         throw new BladTypecheck(
           'polecenie',
-          `nie udało się zmierzyć programu dla \`${projekt.nazwa}\`:\n` +
+          `could not measure the program for \`${projekt.nazwa}\`:\n` +
             `      ${polecenie} ${POMIAR}\n` +
             `    ${String(blad.stderr || blad.stdout || blad.message)
               .trim()
@@ -375,14 +339,14 @@ const widzianePrzezKompilator = (projekty) => {
   return widziane;
 };
 
-// ── kontrola odniesienia ──────────────────────────────────────────────────────
+// ── negative control ──────────────────────────────────────────────────────────
 
 const wczytajFixture = (nazwa) =>
   JSON.parse(readFileSync(join(FIXTURES, nazwa), 'utf8'));
 
 /**
- * Składa wejście przypadku NA KOPII wzorcowego, więc plik przypadku zawiera wyłącznie
- * swoją wadę — nie da się zepsuć czegoś przy okazji i nie zauważyć.
+ * Builds a case's input ON A COPY of the reference one, so the case file holds nothing
+ * but its own defect — you cannot break something in passing and not notice.
  */
 const zlozFixture = (fx) => {
   const baza = wczytajFixture(BAZA);
@@ -409,7 +373,7 @@ const zlozFixture = (fx) => {
   return wejscie;
 };
 
-// ── przebieg ──────────────────────────────────────────────────────────────────
+// ── the run ───────────────────────────────────────────────────────────────────
 
 const problems = [];
 let opis = null;
@@ -432,19 +396,19 @@ const przypadki = readdirSync(FIXTURES)
 
 if (przypadki.length === 0)
   problems.push(
-    `tools/check-typecheck.fixtures: brak spreparowanych wejść — bramka bez dowodu, ` +
-      `że potrafi nie przejść, jest kolejną cichą wadą (req-quality-negative-control)`,
+    `tools/check-typecheck.fixtures: no prepared inputs — a gate with no proof that it can ` +
+      `fail is one more silent defect (req-quality-negative-control)`,
   );
 
-// Wejście wzorcowe MUSI przejść. Gdyby samo było wadliwe, każdy przypadek zapalałby
-// z jego powodu, a nie z powodu swojej wady — i wszystkie „zapaliło" byłyby fałszywe.
+// The reference input MUST pass. Were it defective itself, every case would fire
+// because of it and not because of its own defect — every „it fired" would be false.
 try {
   sprawdzTypecheck(zlozFixture({}));
 } catch (blad) {
   if (!(blad instanceof BladTypecheck)) throw blad;
   problems.push(
-    `${BAZA}: wejście wzorcowe NIE przechodzi (${blad.kontrola}) — ` +
-      `każdy spreparowany przypadek zapala teraz z jego powodu.\n    ${blad.message}`,
+    `${BAZA}: the reference input does NOT pass (${blad.kontrola}) — ` +
+      `every prepared case now fires because of it.\n    ${blad.message}`,
   );
 }
 
@@ -453,29 +417,29 @@ for (const nazwa of przypadki) {
   try {
     sprawdzTypecheck(zlozFixture(fx));
     problems.push(
-      `${nazwa}: spreparowane wejście PRZESZŁO, a miało nie przejść — ` +
-        `punkt ${fx.punkt} (\`${fx.kontrola}\`) przestał cokolwiek badać`,
+      `${nazwa}: the prepared input PASSED and was meant not to — ` +
+        `punkt ${fx.punkt} (\`${fx.kontrola}\`) stopped examining anything`,
     );
   } catch (blad) {
     if (!(blad instanceof BladTypecheck)) throw blad;
     if (blad.kontrola !== fx.kontrola)
       problems.push(
-        `${nazwa}: zapaliła kontrola \`${blad.kontrola}\`, a miał punkt ${fx.punkt} ` +
-          `(\`${fx.kontrola}\`) — fixture dowodzi czegoś innego, niż deklaruje`,
+        `${nazwa}: check \`${blad.kontrola}\` fired, and point ${fx.punkt} ` +
+          `(\`${fx.kontrola}\`) was meant to — the fixture proves something other than what it declares`,
       );
   }
 }
 
-// ── wynik ─────────────────────────────────────────────────────────────────────
+// ── result ────────────────────────────────────────────────────────────────────
 
 if (problems.length) {
-  console.error(`X Bramka typechecku — ${problems.length} naruszeń:\n`);
+  console.error(`X Typecheck gate — ${problems.length} violations:\n`);
   for (const p of problems) console.error(`  - ${p}`);
   console.error('');
   process.exit(1);
 }
 
 console.log(
-  `✓ Typecheck: ${opis}. Kontrola odniesienia: wejście wzorcowe przechodzi, ` +
-    `${przypadki.length} spreparowanych odrzuconych na swoich punktach.`,
+  `✓ Typecheck: ${opis}. Negative control: the reference input passes, ` +
+    `${przypadki.length} prepared ones rejected on their own points.`,
 );

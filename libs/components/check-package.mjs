@@ -389,7 +389,7 @@ const wynik = sprawdzPakiet(DIST, { release: RELEASE_MODE });
 if (wynik.blad) problems.push(`${wynik.blad.kontrola}: ${wynik.blad.message}`);
 for (const o of wynik.ostrzezenia) console.warn(`! ${o}`);
 
-// ── kontrola odniesienia ──────────────────────────────────────────────────────
+// ── negative control ──────────────────────────────────────────────────────────
 
 const przypadki = readdirSync(FIXTURES, { withFileTypes: true })
   .filter((d) => d.isDirectory() && d.name !== BAZA)
@@ -464,10 +464,10 @@ for (const nazwa of przypadki) {
   }
 }
 
-// ── wynik ─────────────────────────────────────────────────────────────────────
+// ── result ────────────────────────────────────────────────────────────────────
 
 if (problems.length) {
-  console.error(`X Bramka pakietu — ${problems.length} naruszen:\n`);
+  console.error(`X Package gate — ${problems.length} violations:\n`);
   for (const p of problems) console.error(`  - ${p}`);
   console.error('');
   process.exit(1);
@@ -476,5 +476,5 @@ if (problems.length) {
 console.log(
   `✓ Pakiet kompletny: ${wynik.opis}. ` +
     `Kontrola odniesienia: pakiet wzorcowy przechodzi, ` +
-    `${przypadki.length} spreparowanych odrzuconych na swoich punktach.`,
+    `${przypadki.length} prepared ones rejected on their own points.`,
 );

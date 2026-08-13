@@ -1,31 +1,20 @@
 #!/usr/bin/env node
 /**
- * Wydanie `@pacit/components`.
+ * Releases `@pacit/components`. A script rather than plain `nx release`, which can only
+ * build **before** the version bump and would ship an artifact lying about its own
+ * `PCT_VERSION` ([`lesson-41`](../docs/lessons.md#lesson-41)). The programmatic API lets
+ * us step in between:
+ *   1. `releaseVersion` — bumps libs/components/package.json (no commit, no tag),
+ *   2. `stamp-version` — writes that version into the constant in the code,
+ *   3. `build` + `check-package` — the artifact comes from already-bumped sources, and
+ *      the gate stops an incomplete package before the commit, the tag and the publish,
+ *   4. `releaseChangelog` — CHANGELOG, commit, tag, GitHub Release entry,
+ *   5. `releasePublish` — the publish itself.
  *
- * Dlaczego skrypt, a nie samo `nx release`: pakiet trzeba zbudować **po**
- * podbiciu wersji, a `nx release` na to nie pozwala. Ma tylko `preVersionCommand`,
- * czyli hak przed podbiciem — zbudowany wtedy artefakt niesie starą stałą
- * `PCT_VERSION`. Obejście z `manifestRootsToUpdate` poprawia w dist wyłącznie
- * `package.json`, więc pakiet zgadza się sam ze sobą w manifeście i kłamie
- * w bundlu. Programistyczne API (`nx/release`) pozwala wejść między kroki.
- *
- * Kolejność jest więc taka:
- *   1. `releaseVersion` — podbija libs/components/package.json (bez commita i taga),
- *   2. `stamp-version`  — przepisuje nową wersję do stałej w kodzie,
- *   3. `build` + `check-package` — artefakt powstaje z już podbitych źródeł,
- *      a bramka potwierdza, że wozi skórkę i że wersje się zgadzają,
- *   4. `releaseChangelog` — CHANGELOG, commit, tag, wpis GitHub Release,
- *   5. `releasePublish` — publikacja (provenance włącza NPM_CONFIG_PROVENANCE
- *      ustawione w workflow, npm dokłada je wtedy samo).
- *
- * Krok 3 jest tu bramką, nie formalnością: gdy pakiet wyjdzie niekompletny,
- * proces staje PRZED commitem, tagiem i publikacją — czyli przed wszystkim,
- * co trzeba by potem odkręcać.
- *
- * Użycie:
- *   node tools/release.mjs --dry-run                 # nic nie zapisuje, nic nie publikuje
+ * Usage:
+ *   node tools/release.mjs --dry-run          # writes nothing, publishes nothing
  *   node tools/release.mjs --specifier=minor
- *   node tools/release.mjs --first-release           # pierwsze wydanie (brak poprzedniego taga)
+ *   node tools/release.mjs --first-release    # no previous tag
  */
 import { execFileSync } from 'node:child_process';
 import { releaseChangelog, releasePublish, releaseVersion } from 'nx/release';
@@ -48,12 +37,12 @@ const run = (args) => {
 
 if (dryRun) {
   console.log(
-    '\n=== PRÓBA (--dry-run): nic nie zostanie zapisane, otagowane ani opublikowane ===',
+    '\n=== DRY RUN (--dry-run): nothing will be written, tagged or published ===',
   );
 }
 
-// 1. Wersja. Commit i tag świadomie odłożone — mają objąć także CHANGELOG
-//    i przepisaną stałą, a te powstają dopiero w krokach 2 i 4.
+// 1. Version. Commit and tag deliberately deferred — they are to cover the CHANGELOG
+//    and the rewritten constant too, and those appear only in steps 2 and 4.
 const { workspaceVersion, projectsVersionData } = await releaseVersion({
   specifier,
   dryRun,
@@ -64,38 +53,38 @@ const { workspaceVersion, projectsVersionData } = await releaseVersion({
   stageChanges: false,
 });
 
-// 2. Stała w kodzie idzie za manifestem. W próbie manifest nie został ruszony,
-//    więc stempel jest tu operacją pustą i artefakt pozostaje spójny.
+// 2. The constant in the code follows the manifest. In a dry run the manifest was left
+//    alone, so the stamp is a no-op here and the artifact stays consistent.
 run(['nx', 'stamp-version', 'components']);
 
-// 3. Dopiero teraz build — źródła mają już nową wersję. Wołamy `schematics`,
-//    bo ten target zależy od `build` i dokłada do dist jeszcze `ng add`
-//    oraz kolekcję migracji. Bramka idzie tu wprost,
-//    a nie przez target nx, bo `--release` zaostrza ją o metadane wymagane przez
-//    npm (m.in. `repository`, bez którego nie ma provenance). Na co dzień ten
-//    warunek tylko ostrzega: brak zdalnego repozytorium nie jest błędem kodu.
+// 3. Only now the build — the sources already carry the new version. We call
+//    `schematics`, because that target depends on `build` and adds `ng add` plus the
+//    migration collection to dist. The gate runs directly rather than through an nx
+//    target, because `--release` sharpens it with the metadata npm requires (among them
+//    `repository`, without which there is no provenance). Day to day that condition only
+//    warns: a missing remote repository is not a defect in the code.
 run(['nx', 'schematics', 'components']);
 console.log('\n> node libs/components/check-package.mjs --release');
 execFileSync('node', ['libs/components/check-package.mjs', '--release'], {
   stdio: 'inherit',
 });
 
-// 4. CHANGELOG z konwencjonalnych commitów + commit + tag + GitHub Release.
+// 4. CHANGELOG from conventional commits + commit + tag + GitHub Release.
 await releaseChangelog({
   versionData: projectsVersionData,
   version: workspaceVersion,
   dryRun,
   verbose,
   firstRelease,
-  // Tag musi być na zdalnym repozytorium, zanim powstanie GitHub Release —
-  // ten drugi jest tworzony przez API i wskazuje na istniejący tag.
+  // The tag has to be on the remote before the GitHub Release exists — the latter is
+  // created through the API and points at an existing tag.
   gitPush: true,
 });
 
-// 5. Publikacja. `nx-release-publish` wskazuje na dist/libs/components,
-//    a nie na katalog źródłowy.
+// 5. Publish. `nx-release-publish` points at dist/libs/components, not at the source
+//    directory.
 const result = await releasePublish({ dryRun, verbose, firstRelease });
 
-// Kod wyjścia jest sumą wyników per projekt — bez tego nieudana publikacja
-// kończyłaby workflow na zielono.
+// The exit code is the sum of the per-project results — without it a failed publish
+// would end the workflow green.
 process.exit(Object.values(result).every((r) => r.code === 0) ? 0 : 1);

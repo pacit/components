@@ -1118,7 +1118,7 @@ const sprawdzTeksty = (we) => {
   };
 };
 
-// ── wejście z dysku ───────────────────────────────────────────────────────────
+// ── input from disk ───────────────────────────────────────────────────────────
 
 const czytaj = (root, sciezka) => readFileSync(join(root, sciezka), 'utf8');
 
@@ -1307,7 +1307,7 @@ const plikiRepozytorium = () =>
     .map((p) => p.split('\\').join('/'))
     .sort();
 
-// ── kontrola odniesienia ──────────────────────────────────────────────────────
+// ── negative control ──────────────────────────────────────────────────────────
 
 /**
  * Składa spreparowane wejście: kopia bazy, na nią pliki przypadku, potem
@@ -1351,7 +1351,7 @@ const wejscieFixture = (katalog) =>
     JSON.parse(readFileSync(join(katalog, 'pakiet.json'), 'utf8')).klasy,
   );
 
-// ── przebieg ──────────────────────────────────────────────────────────────────
+// ── the run ───────────────────────────────────────────────────────────────────
 
 const problems = [];
 let opis = null;
@@ -1372,8 +1372,8 @@ const przypadki = readdirSync(FIXTURES, { withFileTypes: true })
 
 if (przypadki.length === 0)
   problems.push(
-    `tools/check-texts.fixtures: brak spreparowanych wejść — bramka bez dowodu, ` +
-      `że potrafi nie przejść, jest kolejną cichą wadą (req-quality-negative-control)`,
+    `tools/check-texts.fixtures: no prepared inputs — a gate with no proof that it can ` +
+      `fail is one more silent defect (req-quality-negative-control)`,
   );
 
 // Wejście wzorcowe MUSI przejść: gdyby baza sama była wadliwa, każdy przypadek
@@ -1386,8 +1386,8 @@ if (przypadki.length === 0)
   } catch (blad) {
     if (!(blad instanceof BladTekstu)) throw blad;
     problems.push(
-      `${BAZA}: wejście wzorcowe NIE przechodzi (${blad.kontrola}/${blad.regula}) — ` +
-        `każdy spreparowany przypadek zapala teraz z jego powodu.\n    ${blad.message}`,
+      `${BAZA}: the reference input does NOT pass (${blad.kontrola}/${blad.regula}) — ` +
+        `every prepared case now fires because of it.\n    ${blad.message}`,
     );
   } finally {
     rmSync(katalog, { recursive: true, force: true });
@@ -1402,31 +1402,31 @@ for (const nazwa of przypadki) {
   try {
     sprawdzTeksty(await wejscieFixture(katalog));
     problems.push(
-      `${nazwa}: spreparowane wejście PRZESZŁO, a miało nie przejść — ` +
-        `punkt ${fx.punkt} (\`${fx.kontrola}/${fx.regula}\`) przestał cokolwiek badać`,
+      `${nazwa}: the prepared input PASSED and was meant not to — ` +
+        `punkt ${fx.punkt} (\`${fx.kontrola}/${fx.regula}\`) stopped examining anything`,
     );
   } catch (blad) {
     if (!(blad instanceof BladTekstu)) throw blad;
     if (blad.kontrola !== fx.kontrola || blad.regula !== fx.regula)
       problems.push(
-        `${nazwa}: zapaliła \`${blad.kontrola}/${blad.regula}\`, a miał punkt ${fx.punkt} ` +
-          `(\`${fx.kontrola}/${fx.regula}\`) — fixture dowodzi czegoś innego, niż deklaruje`,
+        `${nazwa}: \`${blad.kontrola}/${blad.regula}\` fired, and point ${fx.punkt} ` +
+          `(\`${fx.kontrola}/${fx.regula}\`) was meant to — the fixture proves something other than what it declares`,
       );
   } finally {
     rmSync(katalog, { recursive: true, force: true });
   }
 }
 
-// ── wynik ─────────────────────────────────────────────────────────────────────
+// ── result ────────────────────────────────────────────────────────────────────
 
 if (problems.length) {
-  console.error(`X Bramka kanału tekstów — ${problems.length} naruszeń:\n`);
+  console.error(`X Texts channel gate — ${problems.length} violations:\n`);
   for (const p of problems) console.error(`  - ${p}`);
   console.error('');
   process.exit(1);
 }
 
 console.log(
-  `✓ Teksty: ${opis}. Kontrola odniesienia: wejście wzorcowe przechodzi, ` +
+  `✓ Texts: ${opis}. Negative control: the reference input passes, ` +
     `${przypadki.length} spreparowanych odrzuconych na swoich regułach.`,
 );

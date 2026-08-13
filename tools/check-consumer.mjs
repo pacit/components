@@ -1018,14 +1018,14 @@ const zmierzRepozytorium = async () => {
   }
 };
 
-// ── kontrola odniesienia ──────────────────────────────────────────────────────
+// ── negative control ──────────────────────────────────────────────────────────
 
 const wczytajFixture = (nazwa) =>
   JSON.parse(readFileSync(join(FIXTURES, nazwa), 'utf8'));
 
 /**
- * Składa wejście przypadku NA KOPII wzorcowego, więc plik przypadku zawiera wyłącznie
- * swoją wadę — nie da się zepsuć czegoś przy okazji i nie zauważyć.
+ * Builds a case's input ON A COPY of the reference one, so the case file holds nothing
+ * but its own defect — you cannot break something in passing and not notice.
  *
  * Pomiar przychodzi jako DANE, a nie z prawdziwego przebiegu: uruchomienie rejestru,
  * instalacji, builda i przeglądarki na każdy z dwudziestu kilku przypadków kosztowałoby
@@ -1082,7 +1082,7 @@ const zlozFixture = (fx) => {
   return we;
 };
 
-// ── przebieg ──────────────────────────────────────────────────────────────────
+// ── the run ───────────────────────────────────────────────────────────────────
 
 const problems = [];
 let opis = null;
@@ -1142,8 +1142,8 @@ const przypadki = readdirSync(FIXTURES)
 
 if (przypadki.length === 0)
   problems.push(
-    `tools/check-consumer.fixtures: brak spreparowanych wejść — bramka bez dowodu, ` +
-      `że potrafi nie przejść, jest kolejną cichą wadą (req-quality-negative-control)`,
+    `tools/check-consumer.fixtures: no prepared inputs — a gate with no proof that it can ` +
+      `fail is one more silent defect (req-quality-negative-control)`,
   );
 
 // Wejście wzorcowe MUSI przejść: gdyby samo było wadliwe, każdy przypadek zapalałby
@@ -1154,8 +1154,8 @@ try {
 } catch (blad) {
   if (!(blad instanceof BladKonsumenta)) throw blad;
   problems.push(
-    `${BAZA}: wejście wzorcowe NIE przechodzi (${blad.kontrola}/${blad.regula}) — ` +
-      `każdy spreparowany przypadek zapala teraz z jego powodu.\n    ${blad.message}`,
+    `${BAZA}: the reference input does NOT pass (${blad.kontrola}/${blad.regula}) — ` +
+      `every prepared case now fires because of it.\n    ${blad.message}`,
   );
 }
 
@@ -1164,7 +1164,7 @@ for (const nazwa of przypadki) {
   try {
     sprawdzKonsumenta(zlozFixture(fx));
     problems.push(
-      `${nazwa}: spreparowane wejście PRZESZŁO, a miało nie przejść — punkt ` +
+      `${nazwa}: the prepared input PASSED and was meant not to — punkt ` +
         `${fx.punkt} (\`${fx.kontrola}\`), reguła \`${fx.regula}\` przestała ` +
         `cokolwiek badać`,
     );
@@ -1172,23 +1172,23 @@ for (const nazwa of przypadki) {
     if (!(blad instanceof BladKonsumenta)) throw blad;
     if (blad.kontrola !== fx.kontrola || blad.regula !== fx.regula)
       problems.push(
-        `${nazwa}: zapaliła reguła \`${blad.kontrola}/${blad.regula}\`, a miała ` +
+        `${nazwa}: rule \`${blad.kontrola}/${blad.regula}\`, a miała ` +
           `\`${fx.kontrola}/${fx.regula}\` (punkt ${fx.punkt}) — fixture dowodzi ` +
           `czegoś innego, niż deklaruje`,
       );
   }
 }
 
-// ── wynik ─────────────────────────────────────────────────────────────────────
+// ── result ────────────────────────────────────────────────────────────────────
 
 if (problems.length) {
-  console.error(`X Bramka konsumenta — ${problems.length} naruszeń:\n`);
+  console.error(`X Consumer gate — ${problems.length} violations:\n`);
   for (const p of problems) console.error(`  - ${p}`);
   console.error('');
   process.exit(1);
 }
 
 console.log(
-  `✓ Konsument: ${opis}. Kontrola odniesienia: wejście wzorcowe przechodzi, ` +
+  `✓ Consumer: ${opis}. Negative control: the reference input passes, ` +
     `${przypadki.length} spreparowanych odrzuconych na swoich regułach.`,
 );

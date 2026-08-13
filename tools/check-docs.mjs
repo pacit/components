@@ -614,15 +614,15 @@ if (!WRITE) {
     if (!rejected)
       fail(
         fx,
-        'kontrola odniesienia PRZESZŁA, a miała nie przejść — bramka przestała cokolwiek badać',
+        'kontrola odniesienia PRZESZŁA, a miała nie przejść — bramka stopped examining anything',
       );
   }
 }
 
-// ── wynik ─────────────────────────────────────────────────────────────────────
+// ── result ────────────────────────────────────────────────────────────────────
 
 if (problems.length) {
-  console.error(`X Bramka dokumentacji — ${problems.length} naruszeń:\n`);
+  console.error(`X Documentation gate — ${problems.length} violations:\n`);
   for (const p of problems) console.error(`  - ${p}`);
   console.error('');
   process.exit(1);

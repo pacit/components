@@ -1047,7 +1047,7 @@ const renderujSnapshot = (nazwy, prywatny) =>
 const wierszeSnapshotu = (tresc) =>
   new Set(tresc.split('\n').filter((w) => w.startsWith('--pct-')));
 
-// ── wejście z dysku ───────────────────────────────────────────────────────────
+// ── input from disk ───────────────────────────────────────────────────────────
 
 const czytaj = (root, sciezka) => readFileSync(join(root, sciezka), 'utf8');
 
@@ -1132,7 +1132,7 @@ const plikiRepozytorium = () =>
     .map((p) => p.split('\\').join('/'))
     .sort();
 
-// ── kontrola odniesienia ──────────────────────────────────────────────────────
+// ── negative control ──────────────────────────────────────────────────────────
 
 /**
  * Składa spreparowane wejście: kopia bazy, na nią pliki przypadku, usunięcia
@@ -1185,7 +1185,7 @@ const wejscieFixture = (katalog) =>
       .sort(),
   );
 
-// ── przebieg ──────────────────────────────────────────────────────────────────
+// ── the run ───────────────────────────────────────────────────────────────────
 
 const problems = [];
 let opis = null;
@@ -1236,8 +1236,8 @@ const przypadki = readdirSync(FIXTURES, { withFileTypes: true })
 
 if (przypadki.length === 0)
   problems.push(
-    `tools/check-tokens.fixtures: brak spreparowanych wejść — bramka bez dowodu, ` +
-      `że potrafi nie przejść, jest kolejną cichą wadą (req-quality-negative-control)`,
+    `tools/check-tokens.fixtures: no prepared inputs — a gate with no proof that it can ` +
+      `fail is one more silent defect (req-quality-negative-control)`,
   );
 
 // Wejście wzorcowe MUSI przejść: gdyby baza sama była wadliwa, każdy przypadek
@@ -1250,8 +1250,8 @@ if (przypadki.length === 0)
   } catch (blad) {
     if (!(blad instanceof BladTokenu)) throw blad;
     problems.push(
-      `${BAZA}: wejście wzorcowe NIE przechodzi (${blad.kontrola}) — ` +
-        `każdy spreparowany przypadek zapala teraz z jego powodu.\n    ${blad.message}`,
+      `${BAZA}: the reference input does NOT pass (${blad.kontrola}) — ` +
+        `every prepared case now fires because of it.\n    ${blad.message}`,
     );
   } finally {
     rmSync(katalog, { recursive: true, force: true });
@@ -1266,39 +1266,38 @@ for (const nazwa of przypadki) {
   try {
     sprawdzTokeny(wejscieFixture(katalog));
     problems.push(
-      `${nazwa}: spreparowane wejście PRZESZŁO, a miało nie przejść — ` +
-        `punkt ${fx.punkt} (\`${fx.kontrola}\`) przestał cokolwiek badać`,
+      `${nazwa}: the prepared input PASSED and was meant not to — ` +
+        `punkt ${fx.punkt} (\`${fx.kontrola}\`) stopped examining anything`,
     );
   } catch (blad) {
     if (!(blad instanceof BladTokenu)) throw blad;
     if (blad.kontrola !== fx.kontrola)
       problems.push(
-        `${nazwa}: zapaliła kontrola \`${blad.kontrola}\`, a miał punkt ${fx.punkt} ` +
-          `(\`${fx.kontrola}\`) — fixture dowodzi czegoś innego, niż deklaruje`,
+        `${nazwa}: check \`${blad.kontrola}\` fired, and point ${fx.punkt} ` +
+          `(\`${fx.kontrola}\`) was meant to — the fixture proves something other than what it declares`,
       );
     // Punkt to nie jedno zdanie (lesson-50). Przypadek, który deklaruje regułę,
     // musi zapalić na NIEJ, a nie na sąsiedniej regule tego samego punktu —
     // inaczej identyfikator punktu potwierdza wyłącznie sam siebie.
     else if (fx.regula && blad.regula !== fx.regula)
       problems.push(
-        `${nazwa}: w punkcie ${fx.punkt} zapaliła reguła \`${blad.regula}\`, ` +
-          `a miała \`${fx.regula}\` — ten sam punkt, inne zdanie`,
+        `${nazwa}: w punkcie ${fx.punkt} rule \`${blad.regula}\` fired, and \`${fx.regula}\` — ten sam punkt, inne zdanie`,
       );
   } finally {
     rmSync(katalog, { recursive: true, force: true });
   }
 }
 
-// ── wynik ─────────────────────────────────────────────────────────────────────
+// ── result ────────────────────────────────────────────────────────────────────
 
 if (problems.length) {
-  console.error(`X Bramka tokenów — ${problems.length} naruszeń:\n`);
+  console.error(`X Token gate — ${problems.length} violations:\n`);
   for (const p of problems) console.error(`  - ${p}`);
   console.error('');
   process.exit(1);
 }
 
 console.log(
-  `✓ Tokeny: ${opis}. Kontrola odniesienia: wejście wzorcowe przechodzi, ` +
-    `${przypadki.length} spreparowanych odrzuconych na swoich punktach.`,
+  `✓ Tokens: ${opis}. Negative control: the reference input passes, ` +
+    `${przypadki.length} prepared ones rejected on their own points.`,
 );

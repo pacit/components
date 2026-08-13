@@ -451,7 +451,7 @@ export const sprawdzPrzegladarki = ({
   );
 };
 
-// ── wejście z dysku ───────────────────────────────────────────────────────────
+// ── input from disk ───────────────────────────────────────────────────────────
 
 const czytaj = (sciezka) => readFileSync(join(ROOT, sciezka), 'utf8');
 
@@ -621,14 +621,14 @@ const zmierzFakty = async (polityka) => {
   return fakty;
 };
 
-// ── kontrola odniesienia ──────────────────────────────────────────────────────
+// ── negative control ──────────────────────────────────────────────────────────
 
 const wczytajFixture = (nazwa) =>
   JSON.parse(readFileSync(join(FIXTURES, nazwa), 'utf8'));
 
 /**
- * Składa wejście przypadku NA KOPII wzorcowego, więc plik przypadku zawiera wyłącznie
- * swoją wadę — nie da się zepsuć czegoś przy okazji i nie zauważyć.
+ * Builds a case's input ON A COPY of the reference one, so the case file holds nothing
+ * but its own defect — you cannot break something in passing and not notice.
  */
 const zlozFixture = (fx) => {
   const baza = wczytajFixture(BAZA);
@@ -669,7 +669,7 @@ const zlozFixture = (fx) => {
   return w;
 };
 
-// ── przebieg ──────────────────────────────────────────────────────────────────
+// ── the run ───────────────────────────────────────────────────────────────────
 
 const problems = [];
 let opis = null;
@@ -703,20 +703,20 @@ const przypadki = existsSync(FIXTURES)
 
 if (existsSync(FIXTURES) && !przypadki.length)
   problems.push(
-    `tools/check-browsers.fixtures: brak spreparowanych wejść — bramka bez dowodu, ` +
-      `że potrafi nie przejść, jest kolejną cichą wadą (req-quality-negative-control)`,
+    `tools/check-browsers.fixtures: no prepared inputs — a gate with no proof that it can ` +
+      `fail is one more silent defect (req-quality-negative-control)`,
   );
 
-// Wejście wzorcowe MUSI przejść. Gdyby samo było wadliwe, każdy przypadek zapalałby
-// z jego powodu, a nie z powodu swojej wady — i wszystkie „zapaliło" byłyby fałszywe.
+// The reference input MUST pass. Were it defective itself, every case would fire
+// because of it and not because of its own defect — every „it fired" would be false.
 if (przypadki.length) {
   try {
     sprawdzPrzegladarki(zlozFixture({}));
   } catch (blad) {
     if (!(blad instanceof BladPrzegladarek)) throw blad;
     problems.push(
-      `${BAZA}: wejście wzorcowe NIE przechodzi (${blad.kontrola}/${blad.regula}) — ` +
-        `każdy spreparowany przypadek zapala teraz z jego powodu.\n    ${blad.message}`,
+      `${BAZA}: the reference input does NOT pass (${blad.kontrola}/${blad.regula}) — ` +
+        `every prepared case now fires because of it.\n    ${blad.message}`,
     );
   }
 }
@@ -726,32 +726,29 @@ for (const nazwa of przypadki) {
   try {
     sprawdzPrzegladarki(zlozFixture(fx));
     problems.push(
-      `${nazwa}: spreparowane wejście PRZESZŁO, a miało nie przejść — ` +
-        `reguła \`${fx.kontrola}/${fx.regula}\` przestała cokolwiek badać`,
+      `${nazwa}: the prepared input PASSED and was meant not to — ` +
+        `rule \`${fx.kontrola}/${fx.regula}\` stopped examining anything`,
     );
   } catch (blad) {
     if (!(blad instanceof BladPrzegladarek)) throw blad;
     if (blad.kontrola !== fx.kontrola || blad.regula !== fx.regula)
       problems.push(
-        `${nazwa}: zapaliła reguła \`${blad.kontrola}/${blad.regula}\`, ` +
-          `a miała \`${fx.kontrola}/${fx.regula}\` — ` +
-          `fixture dowodzi czegoś innego, niż deklaruje`,
+        `${nazwa}: rule \`${blad.kontrola}/${blad.regula}\` fired, and \`${fx.kontrola}/${fx.regula}\` ` +
+          `was meant to — the fixture proves something other than what it declares`,
       );
   }
 }
 
-// ── wynik ─────────────────────────────────────────────────────────────────────
+// ── result ────────────────────────────────────────────────────────────────────
 
 if (problems.length) {
-  console.error(
-    `X Bramka macierzy przeglądarek — ${problems.length} naruszeń:\n`,
-  );
+  console.error(`X Browser matrix gate — ${problems.length} violations:\n`);
   for (const p of problems) console.error(`  - ${p}`);
   console.error('');
   process.exit(1);
 }
 
 console.log(
-  `✓ Macierz przeglądarek: ${opis}. Kontrola odniesienia: wejście wzorcowe przechodzi, ` +
+  `✓ Browser matrix: ${opis}. Negative control: the reference input passes, ` +
     `${przypadki.length} spreparowanych odrzuconych na swoich regułach.`,
 );
