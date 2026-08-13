@@ -1,56 +1,22 @@
 #!/usr/bin/env node
 /**
- * Bramka konsumenta: sprawdza, czy pakiet da się WZIĄĆ Z REJESTRU i użyć
- * (`req-quality-consumer`).
+ * Consumer gate: can the package be TAKEN FROM A REGISTRY and used (`req-quality-consumer`)?
+ * „The file exists" does not mean „it works": `ng add` once fell over with `check-package`
+ * green. Hence the route — pack → publish → install BY NAME → `ng add` → SSR → browser.
  *
- * Powód istnienia: `check-package` bada `dist/libs/components` STATYCZNIE — czyta pliki
- * i pyta, czy są. To za mało z dwóch powodów naraz. Po pierwsze `dist` nie jest tym, co
- * dostaje konsument: między katalogiem a jego `node_modules` stoi `npm pack` (pole `files`,
- * `.npmignore`) i rejestr, więc plik obecny w `dist` potrafi nie dojechać. Po drugie
- * „plik istnieje" nie znaczy „plik działa" — i to nie jest teoretyczne: `ng add
- * @pacit/components`, pierwsza komenda, jaką konsument wpisuje, wywracała się na
- * `exports is not defined in ES module scope`, bo manifest pakietu niesie
- * `"type": "module"`, a schematics są CommonJS-em. `check-package` widział wtedy komplet:
- * kolekcja wskazuje fabrykę, plik fabryki jest w pakiecie. Był i nie dawał się wczytać.
+ *   1. `tarball`     — the archive holds the skin, every `exports` file, every factory,
+ *   2. `rejestr`     — the publish worked and the registry serves THAT archive, locally,
+ *   3. `instalacja`  — installing BY NAME pulls our version into the app's `node_modules`,
+ *   4. `ng-add`      — the schematic from the INSTALLED package runs and adds the skin,
+ *   5. `build`       — the app builds with SSR, its bundles hold the library and the tokens,
+ *   6. `ssr`         — the built server renders the component ON THE SERVER,
+ *   7. `e2e`         — the browser sees a button painted with a token from the skin.
  *
- * Bramka odtwarza więc drogę konsumenta w całości: `npm pack` → publikacja do lokalnego
- * rejestru (Verdaccio) → `npm install @pacit/components` PO NAZWIE → `ng add` →
- * build aplikacji z SSR → serwer → jeden przebieg w przeglądarce. To maszynowa postać
- * [`lesson-36`](../docs/lessons.md#lesson-36): „zielony build nie jest dowodem, że artefakt
- * da się użyć".
+ * Points 6 and 7 are the promise, 1–5 mostly the DENOMINATOR ([`lesson-36`](../docs/lessons.md#lesson-36)).
+ * `peerDependencies` are NOT installed from a registry, so a version-range drift passes
+ * here — `req-project-dependencies` (B7) watches that.
  *
- * Sprawdzane jest siedem rzeczy:
- *   1. `tarball`     — `npm pack` daje archiwum, a w nim jest skórka, każdy plik z mapy
- *                      `exports` i każda fabryka schematica,
- *   2. `rejestr`     — publikacja się udała, a rejestr serwuje DOKŁADNIE to archiwum
- *                      (ta sama suma) i robi to Z LOKALNEGO adresu, nie z uplinku npmjs,
- *   3. `instalacja`  — instalacja PO NAZWIE wciąga naszą wersję, a aplikacja rozwiązuje
- *                      `@pacit/components` do WŁASNEGO `node_modules`,
- *   4. `ng-add`      — schematic z ZAINSTALOWANEGO pakietu daje się uruchomić i dopina
- *                      skórkę do konfiguracji builda,
- *   5. `build`       — aplikacja buduje się z SSR, a w jej bundlach jest biblioteka
- *                      i są deklaracje tokenów,
- *   6. `ssr`         — zbudowany serwer renderuje komponent PO STRONIE SERWERA,
- *   7. `e2e`         — przeglądarka widzi przycisk pomalowany tokenem ze skórki,
- *                      bez ani jednego błędu w konsoli.
- *
- * Punkty 6 i 7 są sednem obietnicy. Punkty 1–5 są w większości MIANOWNIKIEM: pomiar,
- * w którym aplikacja nie wciągnęła biblioteki, przechodzi każdą asercję o jej zachowaniu,
- * bo nie ma czego zauważyć — a wygląda przy tym na dowód (ta sama wada co w A8).
- *
- * Do tego ósmy przebieg, który nie bada pakietu, tylko TĘ BRAMKĘ: kontrola odniesienia
- * z `tools/check-consumer.fixtures/` (`req-quality-negative-control`).
- *
- * Czego bramka świadomie NIE robi: nie instaluje `peerDependencies` z rejestru. Aplikacja
- * bierze `@angular/*` z `node_modules` repozytorium przez wyszukiwanie w górę drzewa —
- * tak samo jak sonda buildera w `check-bundle` i z tego samego powodu: mierzymy TEN pakiet,
- * a nie to, czy npmjs dziś odpowiada. Cena jest zapisana wprost: rozjazd zakresu wersji
- * w `peerDependencies` przejdzie tę bramkę. Pilnuje go `req-project-dependencies` (B7).
- *
- * Użycie:
- *   node tools/check-consumer.mjs
- *   node tools/check-consumer.mjs --zostaw           nie kasuje katalogu roboczego
- *   node tools/check-consumer.mjs --zapisz-wzorzec   przepisuje `_poprawny.json` pomiarem
+ * Usage: node tools/check-consumer.mjs [--zostaw] [--zapisz-wzorzec]
  */
 import { execFileSync, spawn } from 'node:child_process';
 import {
@@ -75,35 +41,35 @@ const PRACA = join(ROOT, 'tmp/check-consumer');
 const ZOSTAW = process.argv.includes('--zostaw');
 const WZORZEC = process.argv.includes('--zapisz-wzorzec');
 
-/** Skórka. Ta sama stała co w `check-package`, bo to ten sam plik po drugiej stronie. */
+/** The skin. The same constant as in `check-package` — the same file, other side. */
 const SKORKA = 'themes/pct.css';
 
 /**
- * Ślady biblioteki w bundlu aplikacji i w wyrenderowanym HTML-u.
+ * Traces of the library in the application's bundle and in the rendered HTML.
  *
- * Zmierzone, nie założone: selektor, który aplikacja wpisuje sama (`pctButton`
- * w `<button pctButton>`), markerem być NIE MOŻE. Dyrektywa atrybutowa, która przestała
- * pasować, nie jest w Angularze błędem — atrybut zostaje statycznym atrybutem elementu.
- * Policzone w bundlu tej samej aplikacji, raz z `imports: [PctButton]` i raz bez niego:
- * `pctButton` 2 → **1**, `pct-button` 33 → 0, `data-pct-part` 2 → 0. Marker wzięty
- * z selektora byłby więc niezerowy dokładnie wtedy, gdy biblioteki w bundlu nie ma
- * w ogóle. Musi pochodzić z KODU BIBLIOTEKI: `pct-button` jest klasą z bloku `host`,
- * a `data-pct-part` — publicznym API stylowania (`req-api-parts`). Żadnego z nich
- * aplikacja nie pisze.
+ * Measured, not assumed: a selector the application writes itself (`pctButton` in
+ * `<button pctButton>`) CANNOT be a marker. An attribute directive that stopped matching
+ * is no error in Angular — the attribute stays a static attribute of the element. Counted
+ * in the bundle of the same application, once with `imports: [PctButton]` and once
+ * without: `pctButton` 2 → **1**, `pct-button` 33 → 0, `data-pct-part` 2 → 0. A marker
+ * taken from the selector would therefore be non-zero exactly when the library is not in
+ * the bundle at all. It has to come from THE LIBRARY'S CODE: `pct-button` is a class from
+ * the `host` block, and `data-pct-part` is the public styling API (`req-api-parts`). The
+ * application writes neither.
  */
 const MARKERY = ['data-pct-part', 'pct-button'];
 
-/** Token, którym biblioteka maluje tło przycisku. Jedna liczba mierzona po obu stronach. */
+/** The token the library paints the button's background with, measured on both sides. */
 const TOKEN_TLA = '--pct-button-bg';
 
-/** Wartość początkowa `background-color` — to, co zostaje po nierozwiązanym `var()`. */
+/** The initial `background-color` — what is left after an unresolved `var()`. */
 const TLO_POCZATKOWE = 'rgba(0, 0, 0, 0)';
 
 /**
- * Naruszenie jednej z siedmiu kontroli. Niesie identyfikator kontroli ORAZ reguły:
- * punkt to nie jedno zdanie, a kontrola odniesienia porównująca sam punkt przepuszcza
- * przypadek, który zapalił na sąsiedniej regule tego samego punktu — zmierzone w A12
- * i potwierdzone w A11 ([`lesson-50`](../docs/lessons.md#lesson-50)).
+ * A violation of one of the seven checks. It carries the identifier of the check AND of
+ * the rule: a point is not one sentence, and a negative control comparing the point alone
+ * lets through a case that fired on a neighbouring rule of that same point — measured in
+ * A12 and confirmed in A11 ([`lesson-50`](../docs/lessons.md#lesson-50)).
  */
 class BladKonsumenta extends Error {
   constructor(kontrola, regula, opis) {
@@ -118,14 +84,14 @@ const lista = (xs) => [...xs].sort().join(', ') || '(pusto)';
 // ── kontrole ──────────────────────────────────────────────────────────────────
 
 /**
- * Komplet kontroli na gotowym pomiarze. Rzuca `BladKonsumenta` przy pierwszym naruszeniu;
- * zwraca zdanie podsumowujące.
+ * The full set of checks over a finished measurement. Throws `BladKonsumenta` on the first
+ * violation; returns a summary sentence.
  *
- * Każda reguła czyta pomiar DEFENSYWNIE, mimo że poprzednia „już to sprawdziła".
- * Zależność między regułami jest normalna; zapisanie jej tak, że rozbrojenie poprzedniej
- * zamienia bramkę w `TypeError`, nie jest — bo wtedy kontrola odniesienia przestaje umieć
- * zbadać regułę, którą miała zbadać. Ta sama wada wyszła w A3, A4, A7, A8, A11 i A12,
- * sześć razy z rzędu.
+ * Every rule reads the measurement DEFENSIVELY, even though the previous one „already
+ * checked that". A dependency between rules is normal; writing it so that disarming the
+ * previous one turns the gate into a `TypeError` is not — the negative control then loses
+ * the ability to examine the rule it was meant to examine. The same defect came out in A3,
+ * A4, A7, A8, A11 and A12, six times running.
  */
 const sprawdzKonsumenta = (we) => {
   const fail = (kontrola, regula, opis) => {
@@ -133,8 +99,8 @@ const sprawdzKonsumenta = (we) => {
   };
 
   // ── 1. tarball ──────────────────────────────────────────────────────────────
-  // To, co `npm pack` naprawdę zapakował. `check-package` chodzi po katalogu `dist`,
-  // a między nim a `node_modules` konsumenta stoi filtr (`files`, `.npmignore`) —
+  // What `npm pack` really packed. `check-package` walks the `dist` directory, and between
+  // it and a consumer's `node_modules` stands a filter (`files`, `.npmignore`) —
   // plik obecny w `dist` i nieobecny w archiwum jest dla tamtej bramki niewidzialny,
   // a dla konsumenta fatalny.
   const tarball = we.tarball ?? {};
@@ -143,28 +109,28 @@ const sprawdzKonsumenta = (we) => {
     fail(
       'tarball',
       'pusty',
-      `\`npm pack ${DIST}\` nie wypisał ani jednego pliku — wszystkie dalsze punkty ` +
-        `przeszłyby wtedy zawsze, bo nie mają czego szukać`,
+      `\`npm pack ${DIST}\` listed no file at all — every later point would then always ` +
+        `pass, having nothing to look for`,
     );
 
   if (!pliki.has(SKORKA))
     fail(
       'tarball',
       'brak-skorki',
-      `archiwum nie zawiera \`${SKORKA}\`, choć plik jest w \`${DIST}\` — czyli ` +
-        `odfiltrował go \`npm pack\` (pole \`files\` albo \`.npmignore\`).\n` +
-        `    Konsument dostanie komponenty odwołujące się do tokenów, których nikt ` +
-        `nie deklaruje (lesson-36), a \`check-package\` tego nie zobaczy: on czyta katalog`,
+      `the archive holds no \`${SKORKA}\`, though the file is in \`${DIST}\` — so ` +
+        `\`npm pack\` filtered it out (the \`files\` field or \`.npmignore\`).\n` +
+        `    The consumer gets components referring to tokens nobody ` +
+        `declares (lesson-36), and \`check-package\` will not see it: it reads a directory`,
     );
 
   if (!pliki.has('LICENSE'))
     fail(
       'tarball',
       'brak-licencji',
-      `archiwum nie zawiera pliku \`LICENSE\`, choć jest w \`${DIST}\` — odfiltrował go ` +
-        `\`npm pack\`.\n` +
-        `    \`"license"\` w manifeście bez pliku to licencja formalnie niepełna, ` +
-        `a \`check-package\` tego nie zobaczy: on czyta katalog, nie archiwum`,
+      `the archive holds no \`LICENSE\` file, though it is in \`${DIST}\` — \`npm pack\` ` +
+        `filtered it out.\n` +
+        `    A \`"license"\` in the manifest with no file is formally an incomplete ` +
+        `licence, and \`check-package\` will not see it: it reads a directory, not an archive`,
     );
 
   const manifest = tarball.manifest ?? {};
@@ -177,9 +143,9 @@ const sprawdzKonsumenta = (we) => {
     fail(
       'tarball',
       'brak-entrypointu',
-      `mapa \`exports\` obiecuje pliki, których w archiwum nie ma: ` +
+      `the \`exports\` map promises files the archive does not hold: ` +
         `${lista(brakZExports)}.\n` +
-        `    Import takiego wejścia kończy się u konsumenta ERR_MODULE_NOT_FOUND`,
+        `    Importing such an entrypoint ends at the consumer's with ERR_MODULE_NOT_FOUND`,
     );
 
   const wskazaneKolekcje = [
@@ -194,27 +160,28 @@ const sprawdzKonsumenta = (we) => {
     fail(
       'tarball',
       'brak-schematica',
-      `archiwum nie zawiera plików, na które wskazuje manifest:\n` +
+      `the archive does not hold the files the manifest points at:\n` +
         (brakKolekcji.length
-          ? `      kolekcje: ${lista(brakKolekcji)}\n`
+          ? `      collections: ${lista(brakKolekcji)}\n`
           : '') +
-        (brakFabryk.length ? `      fabryki: ${lista(brakFabryk)}\n` : '') +
-        `    \`ng add\`/\`ng update\` wywalą się u konsumenta na „Collection not found"`,
+        (brakFabryk.length ? `      factories: ${lista(brakFabryk)}\n` : '') +
+        `    \`ng add\`/\`ng update\` will fail at the consumer's with „Collection not found"`,
     );
 
   // ── 2. rejestr ──────────────────────────────────────────────────────────────
-  // Publikacja i to, co rejestr potem serwuje. Punkt istnieje przez UPLINK: konfiguracja
-  // Verdaccio proxuje npmjs, więc nieudana publikacja NIE kończy się błędem instalacji —
-  // kończy się zaciągnięciem cudzego pakietu o tej nazwie. Dziś `@pacit/components`
-  // na npmjs nie ma; od pierwszego wydania (B2) będzie i wtedy bramka bez tego punktu
-  // badałaby artefakt sprzed wydania, wyglądając na zieloną.
+  // The publish and what the registry then serves. This point exists because of the
+  // UPLINK: the Verdaccio configuration proxies npmjs, so a failed publish does NOT end in
+  // an install error — it ends in somebody else's package of that name being fetched.
+  // Today there is no `@pacit/components` on npmjs; from the first release (B2) there will
+  // be, and a gate without this point would then examine a pre-release artifact and look
+  // green.
   const rejestr = we.rejestr ?? {};
   if (!rejestr.opublikowany)
     fail(
       'rejestr',
       'publikacja',
-      `\`npm publish\` do lokalnego rejestru się nie udał.\n` +
-        `    ${rejestr.wyjscie ?? '(bez wyjścia)'}`,
+      `\`npm publish\` to the local registry failed.\n` +
+        `    ${rejestr.wyjscie ?? '(no output)'}`,
     );
 
   const metadane = rejestr.metadane;
@@ -230,18 +197,18 @@ const sprawdzKonsumenta = (we) => {
     fail(
       'rejestr',
       'integralnosc',
-      `rejestr serwuje INNE archiwum, niż spakowaliśmy:\n` +
-        `      spakowane: ${tarball.integrity}\n` +
-        `      z rejestru: ${metadane.integrity}\n` +
-        `    Najczęstsza przyczyna: odpowiedź przyszła z uplinku npmjs, a nie z publikacji`,
+      `the registry serves a DIFFERENT archive from the one we packed:\n` +
+        `      packed:        ${tarball.integrity}\n` +
+        `      from registry: ${metadane.integrity}\n` +
+        `    Usual cause: the answer came from the npmjs uplink, not from the publish`,
     );
 
   if (!String(metadane?.tarball ?? '').startsWith(rejestr.url ?? '\0'))
     fail(
       'rejestr',
       'nie-lokalny',
-      `adres archiwum (\`${metadane?.tarball}\`) nie zaczyna się od lokalnego rejestru ` +
-        `(\`${rejestr.url}\`) — mierzylibyśmy cudzy pakiet`,
+      `the archive's address (\`${metadane?.tarball}\`) does not start with the local ` +
+        `registry (\`${rejestr.url}\`) — we would be measuring somebody else's package`,
     );
 
   // ── 3. instalacja ───────────────────────────────────────────────────────────
@@ -251,20 +218,21 @@ const sprawdzKonsumenta = (we) => {
     fail(
       'instalacja',
       'brak-wpisu',
-      `po \`npm install ${PAKIET}\` nie ma wpisu \`node_modules/${PAKIET}\` w pliku ` +
-        `blokady aplikacji — instalacja nie doszła do skutku`,
+      `after \`npm install ${PAKIET}\` there is no \`node_modules/${PAKIET}\` entry in ` +
+        `the application's lock file — the install never happened`,
     );
 
-  // `wpis?.` mimo że reguła wyżej „już sprawdziła", że wpis istnieje. Rozbrojenie tamtej
-  // dawało tu `TypeError` zamiast komunikatu — SIÓDMY raz ta sama wada w tym repozytorium
-  // (A3, A4, A7, A8, A11, A12), tym razem w bramce pisanej ze świadomością sześciu
-  // poprzednich i z akapitem o niej w nagłówku. Zależność między regułami jest normalna;
-  // zapisanie jej tak, że rozbrojenie poprzedniej gasi komunikat następnej, nie jest.
+  // `wpis?.` even though the rule above „already checked" that the entry exists. Disarming
+  // that one gave a `TypeError` here instead of a message — the SEVENTH time for this
+  // defect in this repository (A3, A4, A7, A8, A11, A12), this time in a gate written in
+  // full awareness of the previous six and with a paragraph about it in the header. A
+  // dependency between rules is normal; writing it so that disarming the previous one puts
+  // out the next one's message is not.
   if (!String(wpis?.resolved ?? '').startsWith(rejestr.url ?? '\0'))
     fail(
       'instalacja',
       'spoza-rejestru',
-      `zainstalowany pakiet przyszedł spoza lokalnego rejestru:\n` +
+      `the installed package came from outside the local registry:\n` +
         `      resolved: ${wpis?.resolved}\n` +
         `      rejestr: ${rejestr.url}`,
     );
@@ -273,38 +241,38 @@ const sprawdzKonsumenta = (we) => {
     fail(
       'instalacja',
       'inna-integralnosc',
-      `zainstalowane archiwum nie jest tym, które spakowaliśmy:\n` +
-        `      spakowane: ${tarball.integrity}\n` +
+      `the installed archive is not the one we packed:\n` +
+        `      packed:    ${tarball.integrity}\n` +
         `      zainstalowane: ${wpis?.integrity}`,
     );
 
-  // MIANOWNIK rozwiązywania modułów. Aplikacja stoi w `tmp/` repozytorium, żeby
-  // `@angular/*` znalazło się przez wyszukiwanie w górę drzewa — a to samo wyszukiwanie
-  // znalazłoby tam kiedyś `@pacit/components`, gdyby ktoś je zainstalował w korzeniu.
-  // Cała bramka mierzyłaby wtedy pakiet, którego nie opublikowała.
+  // The DENOMINATOR of module resolution. The application sits in the repository's `tmp/`
+  // so that `@angular/*` is found by walking up the tree — and that same walk would one day
+  // find `@pacit/components` there, had anyone installed it at the root. The whole gate
+  // would then be measuring a package it did not publish.
   const rozwiazanie = instalacja.rozwiazanie;
   const wAplikacji = `${instalacja.katalog ?? '\0'}/node_modules/`;
   if (!rozwiazanie || !String(rozwiazanie).startsWith(wAplikacji))
     fail(
       'instalacja',
       'spoza-aplikacji',
-      `aplikacja rozwiązuje \`${PAKIET}/button\` do \`${rozwiazanie}\`, a to jest poza ` +
-        `jej własnym \`node_modules\` (\`${wAplikacji}\`) — mierzylibyśmy inny pakiet ` +
-        `niż zainstalowany`,
+      `the application resolves \`${PAKIET}/button\` to \`${rozwiazanie}\`, outside its ` +
+        `own \`node_modules\` (\`${wAplikacji}\`) — we would be measuring a package other ` +
+        `than the installed one`,
     );
 
   // ── 4. ng add ───────────────────────────────────────────────────────────────
-  // Schematic z ZAINSTALOWANEGO pakietu, uruchomiony przez prawdziwe Angular CLI.
-  // `check-package` pyta, czy plik fabryki istnieje; ten punkt pyta, czy da się go
-  // wczytać i czy coś robi. Różnica między tymi pytaniami kosztowała tę bibliotekę
-  // wywrotkę przy pierwszej komendzie konsumenta.
+  // The schematic from the INSTALLED package, run by the real Angular CLI.
+  // `check-package` asks whether the factory file exists; this point asks whether it can
+  // be loaded and does anything. The difference between those questions cost this library
+  // a crash on the consumer's first command.
   const ngAdd = we.ngAdd ?? {};
   if (ngAdd.kod !== 0)
     fail(
       'ng-add',
       'schematic-padl',
-      `schematic \`${PAKIET}:ng-add\` zakończył się kodem ${ngAdd.kod}.\n` +
-        `    ${(ngAdd.wyjscie ?? '(bez wyjścia)').split('\n').slice(0, 6).join('\n    ')}`,
+      `the \`${PAKIET}:ng-add\` schematic exited with code ${ngAdd.kod}.\n` +
+        `    ${(ngAdd.wyjscie ?? '(no output)').split('\n').slice(0, 6).join('\n    ')}`,
     );
 
   const przed = ngAdd.stylePrzed ?? [];
@@ -313,9 +281,9 @@ const sprawdzKonsumenta = (we) => {
     fail(
       'ng-add',
       'bez-zmiany',
-      `schematic przeszedł, ale lista \`styles\` się nie zmieniła (${przed.length} → ` +
-        `${po.length}) — \`ng add\` skończyło się instrukcją do wykonania ręcznie ` +
-        `albo cichym brakiem zmiany`,
+      `the schematic passed, but the \`styles\` list did not change (${przed.length} → ` +
+        `${po.length}) — \`ng add\` ended with an instruction to be carried out by hand ` +
+        `or with a silent no-op`,
     );
 
   if (!po.some((s) => String(s).includes(PAKIET)))
@@ -324,7 +292,7 @@ const sprawdzKonsumenta = (we) => {
       'brak-skorki-w-stylach',
       `po \`ng add\` w \`styles\` nie ma ani jednego wpisu z \`${PAKIET}\`: ` +
         `${lista(po)}.\n` +
-        `    Bez skórki komponenty renderują się bez wyglądu i nikt tego nie zauważy ` +
+        `    With no skin the components render with no appearance and nobody notices ` +
         `(lesson-36)`,
     );
 
@@ -334,16 +302,16 @@ const sprawdzKonsumenta = (we) => {
     fail(
       'build',
       'build-padl',
-      `build aplikacji konsumenta zakończył się kodem ${build.kod}.\n` +
-        `    ${(build.wyjscie ?? '(bez wyjścia)').split('\n').slice(-8).join('\n    ')}`,
+      `the consumer application's build exited with code ${build.kod}.\n` +
+        `    ${(build.wyjscie ?? '(no output)').split('\n').slice(-8).join('\n    ')}`,
     );
 
   if (!build.serwer)
     fail(
       'build',
       'brak-serwera',
-      `w wyjściu builda nie ma bundla serwera — aplikacja zbudowała się BEZ SSR, ` +
-        `a obietnica mówi o buildzie z SSR`,
+      `the build's output holds no server bundle — the application built WITHOUT SSR, ` +
+        `and the promise speaks of a build with SSR`,
     );
 
   const brakMarkerow = MARKERY.filter((m) => !(build.markery ?? {})[m]);
@@ -351,9 +319,9 @@ const sprawdzKonsumenta = (we) => {
     fail(
       'build',
       'biblioteka-nieobecna',
-      `w bundlu przeglądarki nie ma śladów biblioteki: ${lista(brakMarkerow)}.\n` +
-        `    To jest MIANOWNIK: aplikacja, która nie wciągnęła biblioteki, przechodzi ` +
-        `każdą asercję o jej zachowaniu, bo nie ma czego zauważyć`,
+      `the browser bundle holds no trace of the library: ${lista(brakMarkerow)}.\n` +
+        `    This is the DENOMINATOR: an application that never pulled the library in ` +
+        `passes every assertion about its behaviour, having nothing to notice`,
     );
 
   if (!(build.tokenyWCss > 0))
@@ -362,7 +330,7 @@ const sprawdzKonsumenta = (we) => {
       'skorka-nieobecna',
       `arkusz aplikacji nie ma ani jednej deklaracji \`--pct-*\` ` +
         `(policzone: ${build.tokenyWCss}).\n` +
-        `    Skórka nie dojechała do builda — dokładnie stan z lesson-36, tylko ` +
+        `    The skin never reached the build — exactly the state of lesson-36, only ` +
         `u konsumenta`,
     );
 
@@ -372,7 +340,7 @@ const sprawdzKonsumenta = (we) => {
     fail(
       'ssr',
       'status',
-      `serwer aplikacji odpowiedział ${ssr.status ?? '(brak odpowiedzi)'} zamiast 200.\n` +
+      `the application's server answered ${ssr.status ?? '(no answer)'} instead of 200.\n` +
         `    ${(ssr.tresc ?? '').slice(0, 300)}`,
     );
 
@@ -380,25 +348,25 @@ const sprawdzKonsumenta = (we) => {
     fail(
       'ssr',
       'bez-renderu',
-      `odpowiedź ma \`ng-server-context="${ssr.kontekst}"\`, a nie \`"ssr"\` — treść ` +
-        `przyszła z pliku statycznego, więc bundle serwera nie renderował niczego ` +
-        `i punkt niżej badałby wynik prerenderu`,
+      `the answer carries \`ng-server-context="${ssr.kontekst}"\` and not \`"ssr"\` — the ` +
+        `content came from a static file, so the server bundle rendered nothing and the ` +
+        `point below would be examining the result of a prerender`,
     );
 
   if (!(ssr.markery ?? {})['pct-button'])
     fail(
       'ssr',
       'bez-komponentu',
-      `w HTML-u z serwera nie ma klasy \`pct-button\` — komponent nie wyrenderował się ` +
-        `po stronie serwera (biblioteka sięgnęła po \`document\`? nie dopasowała się?)`,
+      `the server's HTML holds no \`pct-button\` class — the component did not render on ` +
+        `the server (did the library reach for \`document\`? did it fail to match?)`,
     );
 
   if ((ssr.czesci ?? []).length === 0)
     fail(
       'ssr',
       'bez-czesci',
-      `w HTML-u z serwera nie ma ani jednego \`data-pct-part\` — publiczne API ` +
-        `stylowania (req-api-parts) nie dojechało do konsumenta`,
+      `the server's HTML holds not one \`data-pct-part\` — the public styling API ` +
+        `(req-api-parts) never reached the consumer`,
     );
 
   // ── 7. e2e ──────────────────────────────────────────────────────────────────
@@ -407,52 +375,52 @@ const sprawdzKonsumenta = (we) => {
     fail(
       'e2e',
       'brak-elementu',
-      `przeglądarka nie znalazła przycisku w drzewie — wszystko niżej byłoby prawdą ` +
-        `pustą, bo nie ma czego mierzyć`,
+      `the browser found no button in the tree — everything below would be vacuously ` +
+        `true, with nothing to measure`,
     );
 
   if (!String(e2e.token ?? '').trim())
     fail(
       'e2e',
       'bez-skorki',
-      `\`${TOKEN_TLA}\` policzone na przycisku jest puste — skórka nie doszła do ` +
-        `przeglądarki. Przycisk jest wtedy w DOM-ie, ma wszystkie klasy i części, ` +
-        `i nie ma wyglądu: cicha wada z lesson-36 w swojej docelowej postaci`,
+      `\`${TOKEN_TLA}\` computed on the button is empty — the skin never reached the ` +
+        `browser. The button is then in the DOM with all its classes and parts and no ` +
+        `appearance: the silent defect of lesson-36 in its final form`,
     );
 
   if (e2e.tlo === TLO_POCZATKOWE)
     fail(
       'e2e',
       'tlo-poczatkowe',
-      `tło przycisku ma wartość POCZĄTKOWĄ (\`${TLO_POCZATKOWE}\`) — deklaracja ` +
-        `\`background: var(${TOKEN_TLA})\` nie rozwiązała się i przeglądarka po cichu ` +
-        `wróciła do przezroczystego`,
+      `the button's background has the INITIAL value (\`${TLO_POCZATKOWE}\`) — the ` +
+        `\`background: var(${TOKEN_TLA})\` declaration did not resolve and the browser ` +
+        `quietly fell back to transparent`,
     );
 
   if (e2e.tlo !== e2e.tloTokenu)
     fail(
       'e2e',
       'tlo-nie-z-tokenu',
-      `tło przycisku (\`${e2e.tlo}\`) nie jest wartością \`${TOKEN_TLA}\` ` +
-        `(\`${e2e.tloTokenu}\`) — skórka jest wczytana, a komponent maluje się czymś ` +
-        `innym, więc nadpisanie tokenu u konsumenta niczego nie zmieni`,
+      `the button's background (\`${e2e.tlo}\`) is not the value of \`${TOKEN_TLA}\` ` +
+        `(\`${e2e.tloTokenu}\`) — the skin is loaded and the component paints itself with ` +
+        `something else, so overriding the token at the consumer's changes nothing`,
     );
 
   if ((e2e.bledy ?? []).length)
     fail(
       'e2e',
       'blad-konsoli',
-      `przeglądarka zgłosiła ${e2e.bledy.length} błędów na stronie konsumenta:\n` +
+      `the browser reported ${e2e.bledy.length} errors on the consumer's page:\n` +
         e2e.bledy.map((b) => `      ${String(b).slice(0, 200)}`).join('\n') +
-        `\n    Tu lądują rozjazdy hydracji (NG05xx): strona wygląda poprawnie, ` +
-        `a płaci podwójnym renderem`,
+        `\n    Hydration mismatches (NG05xx) land here: the page looks right and pays ` +
+        `with a double render`,
     );
 
   return (
-    `archiwum ${pliki.size} plików (${tarball.wersja}) → rejestr → aplikacja SSR: ` +
-    `${build.tokenyWCss} deklaracji tokenów w arkuszu, ` +
-    `${(ssr.czesci ?? []).length} części w HTML-u z serwera, ` +
-    `tło ${e2e.tlo} z \`${TOKEN_TLA}\``
+    `an archive of ${pliki.size} files (${tarball.wersja}) → registry → SSR app: ` +
+    `${build.tokenyWCss} token declarations in the stylesheet, ` +
+    `${(ssr.czesci ?? []).length} parts in the server's HTML, ` +
+    `background ${e2e.tlo} from \`${TOKEN_TLA}\``
   );
 };
 
@@ -466,7 +434,7 @@ const czytajJson = (sciezka) => {
   }
 };
 
-/** Wolny port. Bramka biegnie w CI obok innych rzeczy, a 4873 bywa zajęte przez człowieka. */
+/** A free port. This gate runs in CI beside other things, and 4873 is often taken. */
 const wolnyPort = () =>
   new Promise((res, rej) => {
     const s = createServer();
@@ -479,14 +447,14 @@ const wolnyPort = () =>
 
 const czekaj = (ms) => new Promise((res) => setTimeout(res, ms));
 
-/** Czeka, aż adres zacznie odpowiadać. Zwraca `false` zamiast rzucać — punkt to oceni. */
+/** Waits until an address answers. Returns `false` rather than throwing — a point judges. */
 const czekajNaHttp = async (url, sekundy = 60) => {
   for (let i = 0; i < sekundy * 4; i++) {
     try {
       const r = await fetch(url, { signal: AbortSignal.timeout(2000) });
       if (r.status < 500) return true;
     } catch {
-      /* jeszcze nie wstał */
+      /* not up yet */
     }
     await czekaj(250);
   }
@@ -494,10 +462,10 @@ const czekajNaHttp = async (url, sekundy = 60) => {
 };
 
 /**
- * Uruchomienie polecenia z przechwyceniem WSZYSTKIEGO — kodu wyjścia i obu strumieni.
- * Niezerowy kod jest tu DANĄ, nie wyjątkiem: punkt 4 i 5 mają o nim orzec i wypisać
- * wyjście, a `execFileSync` rzucający wyjątkiem zamieniłby bramkę w stack trace
- * dokładnie w miejscu, w którym miała powiedzieć, co się stało.
+ * Runs a command capturing EVERYTHING — the exit code and both streams. A non-zero code is
+ * DATA here, not an exception: points 4 and 5 are to pronounce on it and print the output,
+ * and an `execFileSync` that throws would turn the gate into a stack trace at exactly the
+ * place where it was to say what happened.
  */
 const uruchom = (plik, args, opcje = {}) => {
   try {
@@ -515,7 +483,7 @@ const uruchom = (plik, args, opcje = {}) => {
   }
 };
 
-/** Pliki fabryk z kolekcji schematica — ścieżki takie, jak leżą w archiwum. */
+/** The factory files from a schematic collection — paths as they lie in the archive. */
 const fabrykiSchematicow = (manifest) => {
   const out = [];
   for (const wskaznik of [
@@ -534,11 +502,12 @@ const fabrykiSchematicow = (manifest) => {
 };
 
 /**
- * Katalog roboczy: aplikacja konsumenta i magazyn rejestru. Leży w `tmp/` repozytorium,
- * a nie w katalogu tymczasowym systemu, i to nie z wygody — rozwiązywanie modułów ma iść
- * w górę drzewa do `node_modules` repozytorium, żeby `@angular/*` znalazło się samo,
- * a z rejestru przyszedł WYŁĄCZNIE mierzony pakiet. Ten sam wybór co w `check-bundle`.
- * `tmp/` jest w `.gitignore`, więc pliki sondy nie stają się wadą dla `check-typecheck`.
+ * The working directory: the consumer application and the registry's storage. It sits in
+ * the repository's `tmp/` rather than in the system's temporary directory, and not out of
+ * convenience — module resolution is to walk up the tree to the repository's
+ * `node_modules`, so `@angular/*` is found by itself and ONLY the measured package comes
+ * from the registry. The same choice as in `check-bundle`. `tmp/` is in `.gitignore`, so
+ * the probe's files do not become a defect for `check-typecheck`.
  */
 const przygotujKatalog = () => {
   rmSync(PRACA, { recursive: true, force: true });
@@ -548,19 +517,21 @@ const przygotujKatalog = () => {
 };
 
 /**
- * Aplikacja konsumenta. Pisana tutaj, a nie trzymana w repozytorium jako projekt, bo
- * projekt w repozytorium byłby budowany przez `nx affected` i typechecked, czyli
- * mierzyłby ŹRÓDŁA — a cała rzecz polega na tym, że tu widać wyłącznie zainstalowany
- * pakiet.
+ * The consumer application. Written here rather than kept in the repository as a project,
+ * because a project in the repository would be built by `nx affected` and typechecked —
+ * that is, it would measure the SOURCES, while the whole point is that only the installed
+ * package is visible here.
  *
- * Trasa idzie przez router z `RenderMode.Server`, a nie przez domyślny prerender:
+ * The route goes through a router with `RenderMode.Server` rather than the default
+ * prerender:
  * bez tego builder wypisuje gotowy `index.html`, serwer serwuje plik statyczny
  * (`ng-server-context="ssg"`) i bundle serwera nie renderuje ani razu. Zmierzone —
- * dopiero z routerem odpowiedź ma `ng-server-context="ssr"`.
+ * only with the router does the answer carry `ng-server-context="ssr"`.
  *
  * `security.allowedHosts` jest wymogiem Angulara 22 (ochrona przed SSRF): bez niego
- * serwer odpowiada 400 na własny `Host: localhost:<port>`. To konfiguracja aplikacji,
- * nie biblioteki — ale bez niej punkt 6 mierzyłby błąd frameworka zamiast pakietu.
+ * the server answers 400 to its own `Host: localhost:<port>`. That is the application's
+ * configuration, not the library's — but without it point 6 would be measuring a
+ * framework error instead of the package.
  */
 const napiszAplikacje = (app) => {
   writeFileSync(
@@ -596,7 +567,7 @@ const napiszAplikacje = (app) => {
                   optimization: true,
                   outputHashing: 'none',
                   security: { allowedHosts: ['localhost'] },
-                  // Pusto CELOWO: listę wypełnia `ng add` i punkt 4 mierzy różnicę.
+                  // Empty ON PURPOSE: `ng add` fills the list and point 4 measures the difference.
                   styles: [],
                 },
               },
@@ -738,7 +709,7 @@ const napiszAplikacje = (app) => {
   ]);
 };
 
-/** Uruchomiony Verdaccio z magazynem świeżym na każdy przebieg. */
+/** A running Verdaccio with storage that is fresh for every run. */
 const wstanRejestr = async (registry, port) => {
   const proc = spawn(
     process.execPath,
@@ -751,10 +722,10 @@ const wstanRejestr = async (registry, port) => {
     ],
     {
       cwd: ROOT,
-      // Magazyn jest per przebieg, nie ten z konfiguracji: publikacja tej samej wersji
-      // do magazynu trwałego kończy się drugi raz konfliktem, więc bramka zapalałaby
-      // na SOBIE. Konfiguracja zostaje ta prawdziwa — zmienna nadpisuje z niej jedną
-      // ścieżkę, zamiast forkować plik, którego bramka miała pilnować.
+      // The storage is per run, not the one from the configuration: publishing the same
+      // version into persistent storage ends in a conflict the second time, so the gate
+      // would fire on ITSELF. The configuration stays the real one — the variable
+      // overrides a single path in it rather than forking the file it was to watch.
       env: { ...process.env, VERDACCIO_STORAGE_PATH: registry },
       stdio: ['ignore', 'pipe', 'pipe'],
     },
@@ -766,7 +737,7 @@ const wstanRejestr = async (registry, port) => {
   return { proc, wstal, log: () => log };
 };
 
-/** Pomiar w przeglądarce. Jeden przebieg, tak jak mówi obietnica. */
+/** The measurement in a browser. One pass, exactly as the promise says. */
 const wPrzegladarce = async (url) => {
   const { chromium } = await import('@playwright/test');
   const browser = await chromium.launch();
@@ -781,9 +752,9 @@ const wPrzegladarce = async (url) => {
         ([tokenTla]) => {
           const el = document.querySelector('#sonda');
           if (!el) return { element: false };
-          // Wartość tokenu mierzona przez PRZEGLĄDARKĘ, nie parsowana w Node: token
-          // bywa łańcuchem `var()`, a porównanie ma być między dwiema wartościami
-          // policzonymi tym samym silnikiem. Sonda stoi wewnątrz przycisku, więc
+          // The token's value is measured by the BROWSER, not parsed in Node: a token is
+          // sometimes a chain of `var()`, and the comparison is to be between two values
+          // computed by the same engine. The probe sits inside the button, so it
           // dziedziczy jego scope custom properties.
           const sonda = document.createElement('span');
           sonda.style.backgroundColor = `var(${tokenTla})`;
@@ -809,7 +780,7 @@ const wPrzegladarce = async (url) => {
   }
 };
 
-/** Pełny przebieg drogi konsumenta. */
+/** The consumer's route, run end to end. */
 const zmierzRepozytorium = async () => {
   const dist = join(ROOT, DIST);
   const manifest = czytajJson(join(dist, 'package.json'));
@@ -817,8 +788,8 @@ const zmierzRepozytorium = async () => {
     throw new BladKonsumenta(
       'tarball',
       'pusty',
-      `brak zbudowanego pakietu w ${DIST} — bramka mierzy artefakt, nie źródła.\n` +
-        `    Target musi mieć \`dependsOn\` na build biblioteki`,
+      `no built package in ${DIST} — this gate measures the artifact, not the sources.\n` +
+        `    The target needs a \`dependsOn\` on the library's build`,
     );
 
   const { app, registry } = przygotujKatalog();
@@ -826,9 +797,10 @@ const zmierzRepozytorium = async () => {
   const portApp = await wolnyPort();
   const url = `http://localhost:${port}`;
 
-  // Konfiguracja npm per przebieg. Rejestr wymaga tokenu nawet przy `publish: $all`
-  // (npm bez niego kończy na ENEEDAUTH), a wpisanie go do `~/.npmrc` byłoby zmianą
-  // ustawień maszyny — tak robi executor `@nx/js:verdaccio` i dlatego bramka go nie używa.
+  // An npm configuration per run. The registry demands a token even under `publish: $all`
+  // (without one npm ends in ENEEDAUTH), and writing it into `~/.npmrc` would change the
+  // machine's settings — that is what the `@nx/js:verdaccio` executor does, and why this
+  // gate does not use it.
   const npmrc = join(PRACA, 'npmrc');
   writeFileSync(
     npmrc,
@@ -844,10 +816,10 @@ const zmierzRepozytorium = async () => {
       throw new BladKonsumenta(
         'rejestr',
         'publikacja',
-        `lokalny rejestr nie wstał na ${url}:\n    ${rejestr.log().slice(0, 500)}`,
+        `the local registry did not come up at ${url}:\n    ${rejestr.log().slice(0, 500)}`,
       );
 
-    // 1. `npm pack` — to, co naprawdę pojedzie do rejestru.
+    // 1. `npm pack` — what will really travel to the registry.
     const spakowane = uruchom(
       'npm',
       ['pack', dist, '--json', '--pack-destination', PRACA],
@@ -876,7 +848,7 @@ const zmierzRepozytorium = async () => {
           cwd: PRACA,
           env: npmEnv,
         })
-      : { kod: 1, wyjscie: `archiwum ${archiwum} nie powstało` };
+      : { kod: 1, wyjscie: `the archive ${archiwum} was not created` };
 
     const metadane = await (async () => {
       try {
@@ -893,7 +865,7 @@ const zmierzRepozytorium = async () => {
       }
     })();
 
-    // 3. instalacja PO NAZWIE do świeżej aplikacji.
+    // 3. installing BY NAME into a fresh application.
     napiszAplikacje(app);
     const instalka = uruchom(
       'npm',
@@ -920,9 +892,9 @@ const zmierzRepozytorium = async () => {
     })();
 
     // 4. `ng add` — schematic z zainstalowanego pakietu, prawdziwym CLI.
-    //    Wołany jako `generate`, a nie `add`: `ng add` to instalacja PLUS ten schematic,
-    //    a instalację mierzy punkt 3 — złączone w jedno polecenie dałyby jeden komunikat
-    //    na dwie różne awarie.
+    //    Called as `generate`, not `add`: `ng add` is an install PLUS this schematic, and
+    //    the install is what point 3 measures — joined into one command they would give
+    //    one message for two different failures.
     const cli = join(ROOT, 'node_modules/@angular/cli/bin/ng.js');
     const stylePrzed = czytajJson(join(app, 'angular.json'))?.projects
       ?.konsument?.architect?.build?.options?.styles;
@@ -973,7 +945,7 @@ const zmierzRepozytorium = async () => {
       }
     }
 
-    // 7. jeden przebieg w przeglądarce.
+    // 7. one pass in a browser.
     const e2e =
       ssr.status === 200
         ? await wPrzegladarce(`http://localhost:${portApp}/`)
@@ -1027,11 +999,11 @@ const wczytajFixture = (nazwa) =>
  * Builds a case's input ON A COPY of the reference one, so the case file holds nothing
  * but its own defect — you cannot break something in passing and not notice.
  *
- * Pomiar przychodzi jako DANE, a nie z prawdziwego przebiegu: uruchomienie rejestru,
- * instalacji, builda i przeglądarki na każdy z dwudziestu kilku przypadków kosztowałoby
- * kwadranse. Ten sam wybór co w `check-bundle` i `check-parts`, i ta sama cena, zapisana
- * wprost: fixtures NIE ćwiczą kodu mierzącego — ćwiczą układ kontroli. Kod mierzący jest
- * ćwiczony przy każdym przebiegu na prawdziwym repozytorium.
+ * The measurement arrives as DATA rather than from a real run: starting a registry, an
+ * install, a build and a browser for each of twenty-odd cases would cost quarter hours. The
+ * same choice as in `check-bundle` and `check-parts`, and the same price, written down: the
+ * fixtures do NOT exercise the measuring code — they exercise the arrangement of checks.
+ * The measuring code is exercised on every run against the real repository.
  */
 const zlozFixture = (fx) => {
   const we = structuredClone(wczytajFixture(BAZA));
@@ -1088,31 +1060,34 @@ const problems = [];
 let opis = null;
 
 /**
- * `--zapisz-wzorzec` istnieje, żeby wejście wzorcowe było ODCISKIEM prawdziwego pomiaru,
- * a nie zdaniem wpisanym ręką obok niego: wpisane rozjeżdża się z kształtem pomiaru przy
- * pierwszej zmianie i wejście przestaje przechodzić z powodu, którego nikt nie badał.
- * Długie wyjścia poleceń są przycinane — w fixtures są cytowane wyłącznie w komunikatach
- * błędów, a kilkadziesiąt kilobajtów logu builda w pliku wersjonowanym byłoby szumem.
+ * `--zapisz-wzorzec` exists so that the reference input is an IMPRINT of a real
+ * measurement rather than a sentence written by hand beside one: a written one drifts from
+ * the measurement's shape at the first change, and the input stops passing for a reason
+ * nobody was examining. Long command outputs are trimmed — in the fixtures they are quoted
+ * only in error messages, and tens of kilobytes of build log in a versioned file would be
+ * noise.
  */
 if (WZORZEC) {
   const pomiar = await zmierzRepozytorium();
-  pomiar.rejestr.wyjscie = '(wyjście npm publish)';
-  pomiar.instalacja.wyjscie = '(wyjście npm install)';
-  pomiar.ngAdd.wyjscie = '(wyjście ng generate)';
-  pomiar.build.wyjscie = '(wyjście ng build)';
-  pomiar.ssr.tresc = '(początek HTML-a)';
-  // Port rejestru i ścieżka repozytorium są inne w każdym przebiegu i na każdej maszynie.
-  // Kontrole porównują je WEWNĄTRZ pomiaru (adres archiwum zaczyna się od adresu
-  // rejestru, rozwiązanie leży w katalogu aplikacji), więc podmiana na wartości stałe
-  // niczego nie osłabia, a zdejmuje z wersjonowanego pliku szum i cudzą ścieżkę domową.
+  pomiar.rejestr.wyjscie = '(npm publish output)';
+  pomiar.instalacja.wyjscie = '(npm install output)';
+  pomiar.ngAdd.wyjscie = '(ng generate output)';
+  pomiar.build.wyjscie = '(ng build output)';
+  pomiar.ssr.tresc = '(start of the HTML)';
+  // The registry's port and the repository's path differ on every run and every machine.
+  // The checks compare them WITHIN the measurement (the archive's address starts with the
+  // registry's, the resolution lies inside the application's directory), so substituting
+  // fixed values weakens nothing and takes noise and somebody's home path out of a
+  // versioned file.
   const stale = JSON.stringify(pomiar)
     .split(pomiar.rejestr.url)
     .join('http://localhost:4873')
     .split(pomiar.instalacja.katalog)
     .join('/repozytorium/tmp/check-consumer/app');
-  // Wyjście idzie przez prettiera, bo `nx format:check` obejmuje `tools/`. Bez tego dwie
-  // bramki chciałyby innego kształtu tego samego pliku i każde odświeżenie wzorca
-  // zostawiałoby repozytorium z czerwonym formatowaniem. Ten sam ruch co w `check-docs`.
+  // The output goes through prettier, because `nx format:check` covers `tools/`. Without
+  // that two gates would want different shapes of the same file, and every refresh of the
+  // reference would leave the repository with red formatting. The same move as in
+  // `check-docs`.
   const prettier = await import('prettier');
   const sciezka = join(FIXTURES, BAZA);
   writeFileSync(
@@ -1123,8 +1098,8 @@ if (WZORZEC) {
     }),
   );
   console.log(
-    `✓ Zapisano ${BAZA} z pomiaru. Uruchom bramkę jeszcze raz — kontrola odniesienia ` +
-      `nie biegła w tym przebiegu.`,
+    `✓ Wrote ${BAZA} from the measurement. Run the gate once more — the negative ` +
+      `control did not run in this pass.`,
   );
   process.exit(0);
 }
@@ -1146,9 +1121,9 @@ if (przypadki.length === 0)
       `fail is one more silent defect (req-quality-negative-control)`,
   );
 
-// Wejście wzorcowe MUSI przejść: gdyby samo było wadliwe, każdy przypadek zapalałby
-// z jego powodu, a nie ze swojego, i wszystkie „odrzucone" byłyby fałszywe — czyli ta
-// kontrola stałaby się tym, przed czym stoi.
+// The reference input MUST pass: were it defective itself, every case would fire because
+// of it rather than its own defect, and every „rejected" would be false — this control
+// would become the very thing it stands against.
 try {
   sprawdzKonsumenta(zlozFixture({}));
 } catch (blad) {
@@ -1164,17 +1139,17 @@ for (const nazwa of przypadki) {
   try {
     sprawdzKonsumenta(zlozFixture(fx));
     problems.push(
-      `${nazwa}: the prepared input PASSED and was meant not to — punkt ` +
-        `${fx.punkt} (\`${fx.kontrola}\`), reguła \`${fx.regula}\` przestała ` +
-        `cokolwiek badać`,
+      `${nazwa}: the prepared input PASSED and was meant not to — point ` +
+        `${fx.punkt} (\`${fx.kontrola}\`), rule \`${fx.regula}\` stopped examining ` +
+        `anything`,
     );
   } catch (blad) {
     if (!(blad instanceof BladKonsumenta)) throw blad;
     if (blad.kontrola !== fx.kontrola || blad.regula !== fx.regula)
       problems.push(
-        `${nazwa}: rule \`${blad.kontrola}/${blad.regula}\`, a miała ` +
-          `\`${fx.kontrola}/${fx.regula}\` (punkt ${fx.punkt}) — fixture dowodzi ` +
-          `czegoś innego, niż deklaruje`,
+        `${nazwa}: rule \`${blad.kontrola}/${blad.regula}\` fired, and ` +
+          `\`${fx.kontrola}/${fx.regula}\` (point ${fx.punkt}) was meant to — the ` +
+          `fixture proves something other than what it declares`,
       );
   }
 }
@@ -1190,5 +1165,5 @@ if (problems.length) {
 
 console.log(
   `✓ Consumer: ${opis}. Negative control: the reference input passes, ` +
-    `${przypadki.length} spreparowanych odrzuconych na swoich regułach.`,
+    `${przypadki.length} prepared ones rejected on their own rules.`,
 );
