@@ -1,35 +1,20 @@
 #!/usr/bin/env node
 /**
- * Bramka dokumentacji: sprawdza, czy każda obietnica z `docs/` wskazuje maszynę,
- * która potrafi na niej zapalić — i czy ta maszyna istnieje.
+ * Documentation gate: does every promise in `docs/` name a machine that can fail on it,
+ * and does that machine exist (`req-quality-registry`)? The drift between documentation
+ * and reality has happened once already and was patched by hand — 18 „not implemented"
+ * annotations in a single commit after the fact.
  *
- * Powód istnienia (`req-quality-registry`): rozjazd między dokumentacją a rzeczywistością
- * już wystąpił i już go raz łatano ręcznie. Nagłówek „Jak czytać ten dokument" istniał
- * dokładnie dlatego, że wymagania dawały się czytać jako opis stanu kodu, a odpowiedzią
- * było dopisanie 18 adnotacji `_(niezrealizowane)_` jednym commitem po fakcie. To ten sam
- * wzorzec co ręczny `node libs/tokens/build.mjs` w CI przed `lesson-36`: obejście, które
- * MASKUJE brak struktury zamiast go ujawnić — i rozjeżdża się przy pierwszym commicie
- * robiącym coś innego, niż mówi.
+ *  1. completeness — every requirement has `Promise`, `Gate`, `Control`, a gap `Binds at`,
+ *  2. existence — every path cited in `Gate`/`Control` exists on disk,
+ *  3. wired into CI — the target implied by a cited path runs in `nx affected -t …`,
+ *  4. no dangling citations — every `req-*` / `lesson-*` in the repo resolves,
+ *  5. freshness — `docs/registry.md` and the generated ID union agree with the source,
+ *  6. negative control — the broken requirements in `check-docs.fixtures/` are rejected.
  *
- * Sprawdzane jest sześć rzeczy:
- *  1. kompletność — każde wymaganie ma `Obietnica`, `Bramka` i `Kontrola`; każda `luka`
- *     ma też `Wiąże przy`,
- *  2. istnienie — każda ścieżka cytowana w `Bramka`/`Kontrola` istnieje na dysku,
- *  3. wpięcie w CI — target wynikający z cytowanej ścieżki faktycznie biegnie
- *     w `nx affected -t …`; to ta sama kontrola co punkt 5 w `check-package.mjs`,
- *  4. brak wiszących cytowań — każde `req-*` / `lesson-*` w repo się rozwiązuje,
- *     a obie martwe przestrzenie (numeryczna i polska) są odrzucane,
- *  5. świeżość — `docs/registry.md` i wygenerowana unia ID zgadzają się ze źródłem,
- *  6. kontrola odniesienia — celowo wadliwe wymagania z `tools/check-docs.fixtures/`
- *     MUSZĄ zostać odrzucone.
- *
- * Punkt 6 nie jest ozdobnikiem: rejestr sam jest bramką, więc podlega
- * `req-quality-negative-control` tak samo jak każda inna. Bez niego byłby dokładnie tym, co
- * opisuje `lesson-39` — bramką urodzoną martwą.
- *
- * Użycie:
- *   node tools/check-docs.mjs           weryfikuje (CI)
- *   node tools/check-docs.mjs --write   regeneruje rejestr i unię ID
+ * Usage:
+ *   node tools/check-docs.mjs           verifies (CI)
+ *   node tools/check-docs.mjs --write   regenerates the registry and the ID union
  */
 import { readFileSync, writeFileSync, existsSync, globSync } from 'node:fs';
 import { dirname, join, basename } from 'node:path';
@@ -44,7 +29,7 @@ const REQ_IDS = 'apps/sandbox/src/app/ui/doc-ids.ts';
 const problems = [];
 const fail = (where, msg) => problems.push(`${where}: ${msg}`);
 
-// ── źródła ────────────────────────────────────────────────────────────────────
+// ── sources ────────────────────────────────────────────────────────────────────
 
 const read = (rel) => readFileSync(join(ROOT, rel), 'utf8');
 
@@ -58,9 +43,9 @@ const trackedFiles = execSync('git ls-files', { cwd: ROOT, encoding: 'utf8' })
   .filter(Boolean);
 
 /**
- * Pliki, w których stare identyfikatory są treścią, a nie cytowaniem:
- * `docs/README.md` wiezie tabelę migracji, `docs/overview.md` jest drogowskazem po
- * rozbiciu, `docs/review.md` to datowana migawka zostawiona w swojej postaci.
+ * Files where the old identifiers are the content rather than a citation: `docs/README.md`
+ * carries the migration table, `docs/overview.md` is the signpost left after the split,
+ * `docs/review.md` is a dated snapshot kept in its own shape.
  */
 const CITATION_EXEMPT = new Set([
   'docs/README.md',
@@ -69,7 +54,7 @@ const CITATION_EXEMPT = new Set([
   REJESTR,
 ]);
 
-/** Indeks nazw plików — pozwala zweryfikować cytowanie `number.spec.ts` bez katalogu. */
+/** An index of file names — lets `number.spec.ts` be verified without a directory. */
 const byBasename = new Map();
 for (const f of trackedFiles) {
   const b = basename(f);
@@ -77,16 +62,16 @@ for (const f of trackedFiles) {
   byBasename.get(b).push(f);
 }
 
-// ── parser wymagań ────────────────────────────────────────────────────────────
+// ── requirement parser ────────────────────────────────────────────────────────────
 
 const FIELD =
   /^\*\*(Promise|Gate|Control|Decision|Lessons|Binds at|Non-goals|Exceptions)[.:]\*\*/;
 const HEADING = /^#{2,3} <a id="(req-[a-z0-9-]+)"><\/a>`\1` — (.+)$/;
 
 /**
- * Zwraca listę wymagań. Pole kończy się dopiero na następnym polu ZE ZNANEJ LISTY —
- * nie na dowolnej linii zaczynającej się od `**`, bo zawinięty tekst potrafi zacząć
- * się od pogrubienia (np. „— bada\n**spakowany artefakt**, nie źródła").
+ * Returns the list of requirements. A field ends only at the next field FROM THE KNOWN
+ * LIST — not at any line starting with `**`, because wrapped text can begin with bold
+ * („— examines\n**the packed artifact**, not the sources").
  */
 const parseRequirements = (text, file) => {
   const out = [];
@@ -122,8 +107,7 @@ const parseRequirements = (text, file) => {
 
 const requirements = REQ_FILES.flatMap((f) => parseRequirements(read(f), f));
 
-if (requirements.length === 0)
-  fail('docs', 'nie znalazłem ani jednego wymagania');
+if (requirements.length === 0) fail('docs', 'no requirement found at all');
 
 const ids = new Set(requirements.map((r) => r.id));
 const dupes = requirements
@@ -140,11 +124,11 @@ const lessonIds = new Set(
   ),
 );
 
-// ── 1. kompletność + klasyfikacja stanu ───────────────────────────────────────
+// ── 1. completeness + state classification ───────────────────────────────────────
 
 const BRAK = /^none\s*[—-]\s*(deliberately|gap)\s*:\s*(.+)$/s;
 
-/** `egzekwowane` | `świadomie` | `luka` | null (błąd) */
+/** `egzekwowane` | `świadomie` | `luka` | null (an error) */
 const classify = (value, req, fieldName) => {
   const v = (value ?? '').trim();
   if (!v) {
@@ -157,15 +141,15 @@ const classify = (value, req, fieldName) => {
     if (!m) {
       fail(
         req.id,
-        `pole **${fieldName}** mówi „none", ale bez formy \`none — deliberately: <powód>\` ` +
-          `albo \`none — gap: <co trzeba>\``,
+        `field **${fieldName}** says „none", but not as \`none — deliberately: <why>\` ` +
+          `or \`none — gap: <what is needed>\``,
       );
       return null;
     }
     if (m[2].trim().length < 10)
       fail(
         req.id,
-        `pole **${fieldName}**: powód braku jest pusty albo zbyt ogólny`,
+        `field **${fieldName}**: the reason for the absence is empty or too general`,
       );
     return m[1] === 'gap' ? 'luka' : 'świadomie';
   }
@@ -192,18 +176,18 @@ for (const req of requirements) {
   if (req.stan === 'luka' && !req.fields['Binds at']?.trim())
     fail(
       req.id,
-      'stan `luka`, ale brak pola **Binds at** — luka bez terminu jest życzeniem',
+      'state `luka` with no **Binds at** field — a gap without a date is a wish',
     );
 }
 
-// ── 2. istnienie cytowanych ścieżek ───────────────────────────────────────────
+// ── 2. cited paths exist ───────────────────────────────────────────
 
 const PATHISH = /`([^`\n]+)`/g;
 const ROOTS = /^(libs|apps|tools|\.github|\.verdaccio)\//;
 
-/** Rozwiązuje cytowanie na listę realnych plików albo zwraca null, gdy to nie ścieżka. */
+/** Resolves a citation to real files, or returns null when it is not a path at all. */
 const resolveCitation = (raw) => {
-  // „plik.spec.ts › nazwa testu" — ścieżką jest część przed strzałką
+  // „file.spec.ts › test name" — the path is the part before the arrow
   const path = raw
     .split('›')[0]
     .trim()
@@ -215,16 +199,16 @@ const resolveCitation = (raw) => {
     }
     return existsSync(join(ROOT, path)) ? [path] : [];
   }
-  // Goła nazwa pliku — tylko dla kształtów, które w tej dokumentacji ZNACZĄ ścieżkę
-  // (`number.spec.ts`, `playwright.config.mts`). Celowo wąsko: `zone.js` i `pct.css`
-  // padają w tekście jako nazwy rzeczy, nie jako cytowania plików, a szeroka reguła
-  // zgłaszałaby je jako brakujące pliki.
+  // A bare file name — only for the shapes that MEAN a path in this documentation
+  // (`number.spec.ts`, `playwright.config.mts`). Deliberately narrow: `zone.js` and
+  // `pct.css` appear in the text as names of things, not as file citations, and a wide
+  // rule would report them as missing files.
   if (/\.(spec|config)\.(ts|mts)$/.test(path))
     return byBasename.get(path) ?? [];
   return null;
 };
 
-const citedPaths = new Map(); // ścieżka -> Set(id wymagań)
+const citedPaths = new Map(); // path -> Set(requirement ids)
 
 for (const req of requirements) {
   for (const fieldName of ['Gate', 'Control']) {
@@ -232,11 +216,11 @@ for (const req of requirements) {
     if (/^\s*(none|not applicable)\b/.test(value)) continue;
     for (const [, raw] of value.matchAll(PATHISH)) {
       const hits = resolveCitation(raw);
-      if (hits === null) continue; // nie wygląda na ścieżkę (nazwa targetu, token, …)
+      if (hits === null) continue; // does not look like a path (a target name, a token, …)
       if (hits.length === 0) {
         fail(
           req.id,
-          `pole **${fieldName}** wskazuje na nieistniejącą ścieżkę \`${raw}\``,
+          `field **${fieldName}** points at a path that does not exist: \`${raw}\``,
         );
         continue;
       }
@@ -248,7 +232,7 @@ for (const req of requirements) {
   }
 }
 
-// ── 3. wpięcie w CI ───────────────────────────────────────────────────────────
+// ── 3. wired into CI ───────────────────────────────────────────────────────────
 
 const ci = read('.github/workflows/ci.yml');
 const ciTargets = new Set(
@@ -257,7 +241,7 @@ const ciTargets = new Set(
     .filter(Boolean),
 );
 
-/** Z jakiego targetu biegnie plik. `null` = nie da się wywnioskować i to jest w porządku. */
+/** Which target runs this file. `null` = cannot be inferred, and that is fine. */
 const impliedTarget = (path) => {
   if (path.startsWith('apps/sandbox-e2e/')) return 'e2e';
   if (path.startsWith('apps/sandbox/') && path.endsWith('.spec.ts'))
@@ -273,14 +257,14 @@ for (const [path, reqIds] of citedPaths) {
   if (target && !ciTargets.has(target))
     fail(
       [...reqIds][0],
-      `\`${path}\` jest bramką, ale target \`${target}\` nie biegnie w CI ` +
-        `(\`nx affected -t\` w ci.yml) — bramka poza CI nie jest bramką`,
+      `\`${path}\` is a gate, but the \`${target}\` target does not run in CI ` +
+        `(\`nx affected -t\` in ci.yml) — a gate outside CI is not a gate`,
     );
 }
 
-// Jawne wzmianki „target `X`" — tylko w polach, które faktycznie deklarują bramkę.
-// W treści `none — gap: …` nazwa targetu bywa opisem stanu („target `local-registry`
-// istnieje i nie jest przez nic używany"), a nie deklaracją, że coś biegnie w CI.
+// Explicit „target `X`" mentions — only in fields that actually declare a gate. Inside
+// `none — gap: …` a target name is sometimes a description of the state („the
+// `local-registry` target exists and nothing uses it"), not a claim that something runs.
 for (const req of requirements) {
   const declared = ['Gate', 'Control']
     .map((f) => req.fields[f] ?? '')
@@ -296,20 +280,20 @@ for (const req of requirements) {
   }
 }
 
-// ── 4. wiszące cytowania w całym repo ─────────────────────────────────────────
+// ── 4. dangling citations across the repo ─────────────────────────────────────────
 
 /**
- * Dwie martwe przestrzenie nazw, obie odrzucane. Numeryczna jest z migracji
- * 2026-07-27, polska (`wym-…`, `lekcja-N`) — z 2026-08-06; obie rozwiązuje tabela
- * w `docs/README.md`. Wzorzec polski wymaga litery po myślniku, więc zdanie
- * o samym prefiksie (`wym-*`, `wym-…`) nie jest cytowaniem i nie zapala.
+ * Two dead namespaces, both rejected. The numeric one comes from the 2026-07-27 migration,
+ * the Polish one (`wym-…`, `lekcja-N`) from 2026-08-06; the table in `docs/README.md`
+ * resolves both. The Polish pattern requires a letter after the dash, so a sentence about
+ * the prefix alone (`wym-*`, `wym-…`) is not a citation and does not fire.
  */
 const LEGACY =
   /wym-(proj|tech|ws|sbx|api|a11y|styl|theme|token|ikon|test|wer|real)-\d+|\bwym-[a-z][a-z0-9-]*[a-z0-9]\b|\blekcja-\d+\b/g;
 /**
- * Cytowanie nie jest **segmentem ścieżki**: `req-` jest przedrostkiem tak zwyczajnym, że
- * trafia się w nazwach plików (`req-ids.ts` zapalało tę bramkę jako wiszące cytowanie).
- * Stąd wykluczenie ukośnika przed i rozszerzenia po.
+ * A citation is not a **path segment**: `req-` is a prefix common enough to turn up in file
+ * names (`req-ids.ts` used to fire this gate as a dangling citation). Hence the slash
+ * before and the extension after are excluded.
  */
 const REF =
   /(?<![\w/-])(req-[a-z][a-z0-9-]*[a-z0-9]|lesson-\d+)(?![\w-]|\.[a-z])/g;
@@ -341,9 +325,9 @@ for (const rel of trackedFiles) {
   for (const [, ref] of text.matchAll(REF)) {
     if (ref.startsWith('lesson-')) {
       if (!lessonIds.has(ref))
-        fail(rel, `cytowanie \`${ref}\` nie rozwiązuje się`);
+        fail(rel, `citation \`${ref}\` does not resolve`);
     } else if (!ids.has(ref)) {
-      fail(rel, `cytowanie \`${ref}\` nie rozwiązuje się do żadnego wymagania`);
+      fail(rel, `citation \`${ref}\` resolves to no requirement`);
     }
   }
 }
@@ -369,9 +353,9 @@ const STAN_ICON = {
 };
 
 /**
- * Skrót do komórki tabeli. Linki markdown są spłaszczane do samego tekstu: ścieżki
- * względne pochodzą z `docs/requirements/*.md`, więc w `docs/registry.md` wskazywałyby
- * o katalog za wysoko — a obcięcie potrafiłoby dodatkowo urwać je w połowie.
+ * Shortened for a table cell. Markdown links are flattened to their text: the relative
+ * paths come from `docs/requirements/*.md`, so in `docs/registry.md` they would point one
+ * directory too high — and truncation could cut them in half on top of that.
  */
 const short = (v, n = 90) => {
   const t = (v ?? '')
@@ -471,8 +455,8 @@ const buildRejestr = () => {
     'Which lesson feeds which requirement. Generated from the **Lessons** fields.',
   );
   L.push('');
-  // Pole `Lessons` niesie linki markdown, więc ten sam identyfikator pada w nim dwa razy
-  // (etykieta i kotwica) — stąd Set na wymaganie, nie lista.
+  // The `Lessons` field carries markdown links, so the same identifier appears in it
+  // twice (label and anchor) — hence a Set per requirement, not a list.
   const rev = new Map();
   for (const r of requirements) {
     const cited = new Set(
@@ -509,36 +493,36 @@ const buildReqIds = () => {
     (a, b) => Number(a.split('-')[1]) - Number(b.split('-')[1]),
   );
   return [
-    '// PLIK GENEROWANY — nie edytuj.',
-    '// Źródło: docs/00-axis.md + docs/requirements/*.md + docs/lessons.md',
+    '// GENERATED FILE — do not edit.',
+    '// Source: docs/00-axis.md + docs/requirements/*.md + docs/lessons.md',
     '// Generator: node tools/check-docs.mjs --write',
     '//',
-    '// Po co: karta sandboxa deklaruje, czego dotyczy przykład. Dopóki było to `string[]`,',
-    '// literówka dawała chip prowadzący donikąd — czyli cichą wadę (`req-axis`). Ten sam ruch',
-    '// co `PctCssVar` w `lesson-43`, tylko na drugiej klasie nazw.',
+    '// Why: a sandbox card declares what its example is about. While that was `string[]`,',
+    '// a typo gave a chip leading nowhere — a silent defect (`req-axis`). The same move as',
+    '// `PctCssVar` in `lesson-43`, on the second class of names.',
     '',
     '/** Identyfikator wymagania z `docs/requirements/` albo osi z `docs/00-axis.md`. */',
     'export type PctReqId =',
     ...reqs.map((id) => `  | '${id}'`),
     '  ;',
     '',
-    '/** Identyfikator lekcji z `docs/lessons.md`. Karta może wskazywać dowód, nie tylko obietnicę. */',
+    '/** A lesson identifier from `docs/lessons.md`. A card may cite proof, not just a promise. */',
     'export type PctLessonId =',
     ...lessons.map((id) => `  | '${id}'`),
     '  ;',
     '',
-    '/** Cokolwiek, na co karta sandboxa może się powołać. */',
+    '/** Anything a sandbox card may refer to. */',
     'export type PctDocId = PctReqId | PctLessonId;',
     '',
   ].join('\n');
 };
 
 /**
- * Wyjście generatora przechodzi przez prettiera, bo `nx format:check` obejmuje `docs/`
- * i `apps/`. Bez tego dwie bramki chciałyby innego kształtu tego samego pliku: formatter
- * przepisywałby go po każdym `--write`, a kontrola świeżości (5) natychmiast zgłaszała
- * rozjazd. Wpisanie plików do `.prettierignore` byłoby obejściem — ukryłoby konflikt,
- * zamiast go usunąć.
+ * The generator's output goes through prettier, because `nx format:check` covers `docs/`
+ * and `apps/`. Without it two gates would want different shapes of the same file: the
+ * formatter would rewrite it after every `--write`, and the freshness check (5) would
+ * report the drift at once. Listing the files in `.prettierignore` would be a workaround —
+ * it would hide the conflict instead of removing it.
  */
 const prettier = await import('prettier');
 const format = async (text, filepath) =>
@@ -553,9 +537,9 @@ const reqIds = await format(buildReqIds(), REQ_IDS);
 if (WRITE) {
   writeFileSync(join(ROOT, REJESTR), rejestr);
   writeFileSync(join(ROOT, REQ_IDS), reqIds);
-  console.log(`v Zapisano ${REJESTR} i ${REQ_IDS}`);
+  console.log(`v Wrote ${REJESTR} and ${REQ_IDS}`);
 } else {
-  // ── 5. świeżość ─────────────────────────────────────────────────────────────
+  // ── 5. freshness ─────────────────────────────────────────────────────────────
   for (const [rel, want] of [
     [REJESTR, rejestr],
     [REQ_IDS, reqIds],
@@ -565,7 +549,7 @@ if (WRITE) {
     else if (read(rel) !== want)
       fail(
         rel,
-        'rozjazd ze źródłem — uruchom `node tools/check-docs.mjs --write`',
+        'drift from the source — run `node tools/check-docs.mjs --write`',
       );
   }
 }
@@ -581,14 +565,14 @@ if (!WRITE) {
   if (fixtures.length === 0) {
     fail(
       FIXTURES,
-      'brak kontroli odniesienia — bramka bez dowodu, że potrafi nie przejść, ' +
-        'jest kolejną cichą wadą (req-quality-negative-control)',
+      'no negative control — a gate with no proof that it can fail is one more ' +
+        'silent defect (req-quality-negative-control)',
     );
   }
   for (const fx of fixtures) {
     const reqs = parseRequirements(read(fx), fx);
     if (reqs.length === 0) {
-      fail(fx, 'fixture nie zawiera wymagania — nie ma czego odrzucić');
+      fail(fx, 'the fixture holds no requirement — there is nothing to reject');
       continue;
     }
     const before = problems.length;
@@ -610,11 +594,11 @@ if (!WRITE) {
       void k;
     }
     const rejected = problems.length > before;
-    problems.length = before; // błędy fixture'a są OCZEKIWANE — nie liczą się do wyniku
+    problems.length = before; // a fixture's errors are EXPECTED — they do not count
     if (!rejected)
       fail(
         fx,
-        'kontrola odniesienia PRZESZŁA, a miała nie przejść — bramka stopped examining anything',
+        'the negative control PASSED and was meant not to — the gate stopped examining anything',
       );
   }
 }
@@ -633,6 +617,6 @@ const counts = requirements.reduce(
   {},
 );
 console.log(
-  `v Bramka dokumentacji: ${requirements.length} wymagań, ${lessonIds.size} lekcji — ` +
-    `egzekwowane ${counts.egzekwowane ?? 0}, częściowo ${counts.częściowo ?? 0}, luka ${counts.luka ?? 0}`,
+  `v Documentation gate: ${requirements.length} requirements, ${lessonIds.size} lessons — ` +
+    `enforced ${counts.egzekwowane ?? 0}, partial ${counts.częściowo ?? 0}, gap ${counts.luka ?? 0}`,
 );

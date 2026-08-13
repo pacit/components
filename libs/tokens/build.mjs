@@ -1,22 +1,21 @@
 #!/usr/bin/env node
 /**
- * Lekki build tokenów DTCG -> CSS / SCSS / TS.
+ * A light DTCG token build -> CSS / SCSS / TS (docs/requirements/tokens.md).
  *
- * Zasady (zgodne z docs/requirements/tokens.md):
- *  - źródłem prawdy są pliki DTCG ($type/$value, referencje {a.b.c}),
- *  - referencje token -> token są ZACHOWYWANE jako var() w CSS (req-token-references),
- *    dzięki czemu nadpisanie jednej zmiennej w scope kaskaduje samo,
- *  - light -> :root, dark -> [data-theme="dark"] (nadpisania semantyczne),
- *  - light jest emitowany DRUGI RAZ jako [data-theme="light"], żeby motyw dał
- *    się przełączyć w obie strony w zagnieżdżeniu (jasna karta w ciemnej
- *    stronie); bez tego "light" jest tylko brakiem atrybutu (req-token-scoped),
- *  - preferencje systemowe (`prefers-color-scheme`, `prefers-reduced-motion`)
- *    to takie same zestawy nadpisań, tylko w bloku @media zamiast pod
- *    selektorem atrybutu (req-a11y-motion, req-token-skin),
- *  - bramka a11y: walidacja kontrastu par tekst/tło wg WCAG 2.2 AA (req-token-text-pairs).
+ *  - the DTCG files are the source of truth ($type/$value, {a.b.c} references),
+ *  - token -> token references are KEPT as var() in the CSS (req-token-references), so
+ *    overriding one variable in a scope cascades by itself,
+ *  - light -> :root, dark -> [data-theme="dark"] (semantic overrides),
+ *  - light is emitted A SECOND TIME as [data-theme="light"], so a theme can be switched
+ *    both ways when nested (a light card inside a dark page); without it „light" is only
+ *    the absence of an attribute (req-token-scoped),
+ *  - system preferences (`prefers-color-scheme`, `prefers-reduced-motion`) are the same
+ *    sets of overrides, only in an @media block instead of under an attribute selector
+ *    (req-a11y-motion, req-token-skin),
+ *  - the a11y gate: text/background contrast against WCAG 2.2 AA (req-token-text-pairs).
  *
- * W docelowym projekcie ten transform można zastąpić Style Dictionary —
- * kontrakt (pliki DTCG) pozostaje ten sam.
+ * Style Dictionary could replace this transform later — the contract (the DTCG files)
+ * stays the same.
  */
 import { readFileSync, writeFileSync, mkdirSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -26,17 +25,17 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const SRC = join(__dirname, 'src');
 const DIST = join(__dirname, 'dist');
 
-// Progi kontrastu WCAG 2.2 (domyślne). Tekst "duży" = >=18pt (24px) lub >=14pt
-// bold (~18.66px); SC 1.4.3. UI/non-text (SC 1.4.11) = 3.0 niezależnie od rozmiaru.
+// WCAG 2.2 contrast thresholds (defaults). „Large" text = >=18pt (24px) or >=14pt bold
+// (~18.66px); SC 1.4.3. UI/non-text (SC 1.4.11) = 3.0 regardless of size.
 const WCAG = {
   AA: { normal: 4.5, large: 3.0 },
   AAA: { normal: 7.0, large: 4.5 },
-  // SC 1.4.11 — elementy nietekstowe (obramowania, focus ring): 3:1, bez
-  // rozróżnienia na rozmiar, stąd oba progi równe.
+  // SC 1.4.11 — non-text elements (borders, focus ring): 3:1 with no distinction by
+  // size, hence both thresholds equal.
   UI: { normal: 3.0, large: 3.0, nonText: true },
 };
 
-// --- ładowanie / scalanie DTCG ------------------------------------------------
+// --- loading / merging DTCG ---------------------------------------------------
 const load = (f) => JSON.parse(readFileSync(join(SRC, f), 'utf8'));
 const isToken = (v) => v && typeof v === 'object' && '$value' in v;
 
@@ -59,7 +58,7 @@ const merge = (...trees) => {
 const cssVar = (dotPath) => '--' + dotPath.replace(/\./g, '-');
 const REF = /^\{([^}]+)\}$/;
 
-// zamiana wartości tokenu na zapis CSS: referencja -> var(), literał -> jak jest
+// a token value as CSS: a reference -> var(), a literal -> as it stands
 function toCss(value, all) {
   if (typeof value === 'string') {
     const m = value.match(REF);
@@ -73,7 +72,7 @@ function toCss(value, all) {
   return String(value);
 }
 
-// rozwiązanie referencji do literału (do walidacji kontrastu)
+// resolves a reference down to a literal (for the contrast validation)
 function resolve(dotPath, all, seen = new Set()) {
   if (!(dotPath in all)) throw new Error(`Brak tokenu: ${dotPath}`);
   if (seen.has(dotPath)) throw new Error(`Cykl referencji: ${dotPath}`);
@@ -109,7 +108,7 @@ function contrast(fgHex, bgHex) {
   return (hi + 0.05) / (lo + 0.05);
 }
 
-// Ocena jednej pary z policy wobec progów WCAG danego poziomu.
+// One pair from the policy against the WCAG thresholds of its level.
 function evaluateCheck(check, tree) {
   const ratio = contrast(resolve(check.fg, tree), resolve(check.bg, tree));
   const th = WCAG[check.level] ?? WCAG.AA;
@@ -121,11 +120,11 @@ function evaluateCheck(check, tree) {
   };
 }
 
-// Waliduje jeden motyw wobec całej policy; zwraca błędy i ostrzeżenia + drukuje raport.
+// Validates one theme against the whole policy; returns errors and warnings, prints a report.
 function checkTheme(themeName, tree, policy) {
   const errors = [];
   const warnings = [];
-  console.log(`\nMotyw: ${themeName}`);
+  console.log(`\nTheme: ${themeName}`);
   for (const check of policy.checks) {
     const { ratio, th, passNormal, passLarge } = evaluateCheck(check, tree);
     const flag = passNormal
@@ -139,14 +138,14 @@ function checkTheme(themeName, tree, policy) {
             `UI SC1.4.11(>=${th.normal}) ${passNormal ? 'PASS' : 'FAIL'}`
         : `  [${flag}] ${check.name}: ${ratio.toFixed(2)}:1  ` +
             `normal(${check.level}>=${th.normal}) ${passNormal ? 'PASS' : 'FAIL'} | ` +
-            `duzy(>=${th.large}) ${passLarge ? 'PASS' : 'FAIL'}`,
+            `large(>=${th.large}) ${passLarge ? 'PASS' : 'FAIL'}`,
     );
     if (!passNormal) {
       const note = th.nonText
-        ? 'element nietekstowy ponizej progu SC 1.4.11'
+        ? 'a non-text element below the SC 1.4.11 threshold'
         : passLarge
-          ? 'czytelny dla duzego tekstu, ale nie dla normalnego'
-          : 'niewystarczajacy takze dla duzego tekstu';
+          ? 'readable for large text, but not for normal text'
+          : 'not enough for large text either';
       const msg = `${themeName} / ${check.name}: ${ratio.toFixed(2)}:1 < ${th.normal} — ${note}`;
       if (check.severity === 'error') errors.push(msg);
       else warnings.push(msg);
@@ -156,9 +155,9 @@ function checkTheme(themeName, tree, policy) {
 }
 
 /**
- * Rozszerza zbior nadpisan o wszystkie tokeny, ktore od nich zaleza (domkniecie
- * przechodnie po referencjach). Zachowuje kolejnosc z drzewa bazowego, by
- * referencje w wygenerowanym CSS byly deklarowane przed uzyciem.
+ * Extends a set of overrides with every token that depends on them (the transitive closure
+ * over references). Keeps the base tree's order, so references in the generated CSS are
+ * declared before they are used.
  */
 function withDependents(overrides, tree) {
   const affected = new Set(Object.keys(overrides));
@@ -174,8 +173,8 @@ function withDependents(overrides, tree) {
       }
     }
   }
-  // Wynik w kolejnosci drzewa: nadpisania biora wartosc z motywu, pozostale
-  // zachowuja swoja referencje (ktora teraz wskaze na przethemowany token).
+  // The result in tree order: the overrides take the theme's value, the rest keep their
+  // reference (which now points at a re-themed token).
   const out = {};
   for (const [path, tok] of Object.entries(tree)) {
     if (affected.has(path)) out[path] = overrides[path] ?? tok;
@@ -183,7 +182,7 @@ function withDependents(overrides, tree) {
   return out;
 }
 
-// --- generowanie --------------------------------------------------------------
+// --- generating ---------------------------------------------------------------
 function emitCssBlock(selector, entries, all) {
   const lines = Object.entries(entries).map(
     ([path, tok]) => `  ${cssVar(path)}: ${toCss(tok.value, all)};`,
@@ -191,7 +190,7 @@ function emitCssBlock(selector, entries, all) {
   return `${selector} {\n${lines.join('\n')}\n}`;
 }
 
-/** Blok warunkowy — ten sam zestaw nadpisań, tylko pod media query. */
+/** A conditional block — the same set of overrides, only under a media query. */
 function emitMedia(condition, block, comment) {
   const body = block
     .split('\n')
@@ -206,8 +205,8 @@ function run() {
   const semanticLight = load('semantic.light.json');
   const semanticDark = load('semantic.dark.json');
   const motionReduced = load('motion.reduced.json');
-  // Tokeny komponentowe: auto-odkrywanie `component.*.json` — dodanie nowego
-  // komponentu nie wymaga zmian w tym pliku.
+  // Component tokens: `component.*.json` is auto-discovered — a new component needs no
+  // change in this file.
   const componentFiles = readdirSync(SRC)
     .filter((f) => f.startsWith('component.') && f.endsWith('.json'))
     .sort();
@@ -216,9 +215,9 @@ function run() {
   const policy = JSON.parse(
     readFileSync(join(SRC, 'contrast.policy.json'), 'utf8'),
   );
-  // Słownik nazw. Buildowi potrzebna jest z niego jedna rzecz — lista prefiksów
-  // wyłączonych z publicznej unii TS — ale stoi ona TAM, a nie tutaj, żeby
-  // `check-tokens` mogła ją przeczytać zamiast zgadywać, co ten filtr znaczy.
+  // The name dictionary. The build needs one thing from it — the list of prefixes kept
+  // out of the public TS union — but that list lives THERE and not here, so `check-tokens`
+  // can read it instead of guessing what this filter means.
   const nazwy = JSON.parse(
     readFileSync(join(SRC, 'nazwy.policy.json'), 'utf8'),
   );
@@ -226,24 +225,24 @@ function run() {
   const lightTree = merge(primitive, semanticLight, ...components); // :root
   const darkTree = merge(primitive, semanticLight, ...components, semanticDark); // dark nakladany na base
   // Custom properties sa podstawiane w MIEJSCU DEKLARACJI, nie uzycia: token
-  // `--a: var(--b)` zadeklarowany w :root dziedziczy juz rozwinieta wartosc,
-  // wiec nadpisanie `--b` w zageszczonym scope go nie zmieni. Do bloku motywu
-  // musi trafic domkniecie przechodnie: nadpisania + wszystko, co je uzywa
+  // `--a: var(--b)` declared in :root inherits an already resolved value, so overriding
+  // `--b` in a narrower scope will not change it. The theme block has to receive the
+  // transitive closure: the overrides plus everything that uses them
   // (bezposrednio lub przez lancuch). Inaczej scoped theme dziala tylko na
   // warstwie semantycznej (req-token-scoped, lesson-17).
   const darkOverrides = withDependents(flatten(semanticDark), darkTree);
-  // Ten sam zbiór tokenów co w dark, ale z wartościami jasnymi: `light` musi
-  // być czynnym motywem, a nie samym brakiem atrybutu — inaczej jasna karta
-  // wewnątrz ciemnej strony dziedziczy ciemne wartości i nie ma czym ich cofnąć.
+  // The same set of tokens as in dark, with the light values: `light` has to be an active
+  // theme rather than the absence of an attribute — otherwise a light card inside a dark
+  // page inherits the dark values with nothing to undo them.
   const lightOverrides = Object.fromEntries(
     Object.keys(darkOverrides).map((path) => [path, lightTree[path]]),
   );
 
-  // Redukcja ruchu jest ortogonalna do motywu — nadpisuje tylko oś `motion`,
-  // więc nie wchodzi w konflikt z blokami `[data-theme]`. Domknięcie
-  // przechodnie liczymy tą samą funkcją co dla motywu: dziś oś nie ma
-  // zależnych, ale gdy komponent dorobi własny token czasu (`--pct-x-duration:
-  // var(--pct-motion-transition-duration)`), zadziała bez zmian w buildzie.
+  // Reduced motion is orthogonal to the theme — it overrides only the `motion` axis, so
+  // it does not collide with the `[data-theme]` blocks. The transitive closure is computed
+  // by the same function as for a theme: today the axis has no dependents, but once a
+  // component grows its own duration token (`--pct-x-duration:
+  // var(--pct-motion-transition-duration)`), it will work with no change to the build.
   const reducedTree = merge(
     primitive,
     semanticLight,
@@ -252,8 +251,8 @@ function run() {
   );
   const reducedOverrides = withDependents(flatten(motionReduced), reducedTree);
 
-  // Bramka a11y wg policy skorki (progi WCAG 2.2), per motyw.
-  console.log('Walidacja kontrastu skorki (policy, progi WCAG 2.2):');
+  // The a11y gate follows the skin policy (WCAG 2.2 thresholds), per theme.
+  console.log('Skin contrast validation (policy, WCAG 2.2 thresholds):');
   const results = [
     checkTheme('light', lightTree, policy),
     checkTheme('dark', darkTree, policy),
@@ -262,20 +261,20 @@ function run() {
   const errors = results.flatMap((r) => r.errors);
   if (warnings.length) {
     console.warn(
-      `\n! Ostrzezenia kontrastu (${warnings.length}):\n  - ` +
+      `\n! Contrast warnings (${warnings.length}):\n  - ` +
         warnings.join('\n  - '),
     );
   }
   if (errors.length) {
     console.error(
-      `\nX Bramka a11y — BLAD (${errors.length} par ponizej wymogu):\n  - ` +
+      `\nX A11y gate — FAILED (${errors.length} pairs below the requirement):\n  - ` +
         errors.join('\n  - '),
     );
     process.exit(1);
   }
 
   mkdirSync(DIST, { recursive: true });
-  const base = lightTree; // dalsze generowanie CSS/SCSS/TS jak dotychczas
+  const base = lightTree; // the CSS/SCSS/TS generation below is unchanged
 
   // CSS
   const css =
@@ -284,18 +283,17 @@ function run() {
       emitCssBlock(':root', base, base),
       emitCssBlock('[data-theme="light"]', lightOverrides, lightTree),
       emitCssBlock('[data-theme="dark"]', darkOverrides, darkTree),
-      // Automatyczny tryb ciemny (req-token-skin). `:not([data-theme])` sprawia,
-      // że preferencja systemu jest tylko WARTOŚCIĄ DOMYŚLNĄ: strona, która
-      // deklaruje motyw wprost, wygrywa w obie strony (`data-theme="light"` na
-      // <html> jest wyłącznikiem). Zagnieżdżone motywy działają dalej, bo blok
-      // `[data-theme="light"]` niesie pełne przeciwnadpisania — to ten sam
-      // powód, dla którego "light" jest tu czynnym motywem, a nie brakiem
-      // atrybutu.
+      // Automatic dark mode (req-token-skin). `:not([data-theme])` makes the system
+      // preference a DEFAULT only: a page that declares a theme explicitly wins both
+      // ways (`data-theme="light"` on <html> is the off switch). Nested themes keep
+      // working, because the `[data-theme="light"]` block carries the full
+      // counter-overrides — the same reason „light" is an active theme here rather than
+      // a missing attribute.
       emitMedia(
         '(prefers-color-scheme: dark)',
         emitCssBlock(':root:not([data-theme])', darkOverrides, darkTree),
       ),
-      // Redukcja ruchu (req-a11y-motion) — jedna reguła dla całej biblioteki.
+      // Reduced motion (req-a11y-motion) — one rule for the whole library.
       emitMedia(
         '(prefers-reduced-motion: reduce)',
         emitCssBlock(':root', reducedOverrides, reducedTree),
@@ -303,7 +301,7 @@ function run() {
     ].join('\n\n') + '\n';
   writeFileSync(join(DIST, 'pct.css'), css);
 
-  // SCSS (zmienne wskazujące na CSS custom properties — do użytku wewnętrznego)
+  // SCSS (variables pointing at CSS custom properties — for internal use)
   const scss =
     '// GENERATED — SCSS variables pointing at CSS custom properties.\n' +
     Object.keys(base)
@@ -312,19 +310,19 @@ function run() {
     '\n';
   writeFileSync(join(DIST, '_tokens.scss'), scss);
 
-  // TS (typowane nazwy tokenów semantycznych i komponentowych)
+  // TS (typed names of the semantic and component tokens)
   const publicPaths = Object.keys(base).filter(
     (p) => !nazwy.prywatne.prefiksy.some((prefiks) => p.startsWith(prefiks)),
   );
   const tsEntries = publicPaths
     .map((p) => `  '${p}': 'var(${cssVar(p)})',`)
     .join('\n');
-  // Dwa różne kształty tej samej wiedzy, bo używa się jej na dwa sposoby.
-  // `PctTokenName` to ścieżka DTCG (`pct.surface`) — nią adresuje się token
-  // w źródłach. `PctCssVar` to nazwa custom property (`--pct-surface`) — nią
-  // odpytuje się przeglądarkę w testach i w kodzie budującym motyw. Bez tego
-  // drugiego typu literówka w `getPropertyValue('--pct-surfce')` zwraca pusty
-  // łańcuch, a test porównujący dwa puste łańcuchy przechodzi.
+  // Two shapes of the same knowledge, because it is used in two ways. `PctTokenName` is
+  // the DTCG path (`pct.surface`) — that is how a token is addressed in the sources.
+  // `PctCssVar` is the custom-property name (`--pct-surface`) — that is how the browser is
+  // asked in tests and in theming code. Without the second type, a typo in
+  // `getPropertyValue('--pct-surfce')` returns an empty string, and a test comparing two
+  // empty strings passes.
   const cssVarUnion = publicPaths.map((p) => `  | '${cssVar(p)}'`).join('\n');
   const ts =
     '// GENERATED from libs/tokens/src/*.json — do not edit by hand.\n' +
@@ -335,7 +333,7 @@ function run() {
   writeFileSync(join(DIST, 'tokens.ts'), ts);
 
   console.log(
-    `\n✓ Zbudowano ${Object.keys(base).length} tokenów ` +
+    `\n✓ Built ${Object.keys(base).length} tokens ` +
       `(+${Object.keys(darkOverrides).length} dark, ` +
       `+${Object.keys(reducedOverrides).length} reduced-motion) ` +
       `-> dist/{pct.css,_tokens.scss,tokens.ts}`,

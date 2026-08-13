@@ -5,70 +5,70 @@
   "$comment-disabled": "The `disabled` states have severity `warn`, not `error`: SC 1.4.11 explicitly exempts parts of inactive controls, and SC 1.4.3 exempts inactive text. The entry stays, because being exempt from a requirement is no reason to STOP MEASURING — the report is to show how far the disabled state goes down, rather than have no opinion about it.",
   "checks": [
     {
-      "name": "tekst podstawowy",
+      "name": "body text",
       "fg": "pct.text",
       "bg": "pct.surface",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "tekst przygaszony",
+      "name": "muted text",
       "fg": "pct.text-muted",
       "bg": "pct.surface",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "button/solid — etykieta",
+      "name": "button/solid — label",
       "fg": "pct.button.fg",
       "bg": "pct.button.bg",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "button/hover — etykieta",
+      "name": "button/hover — label",
       "fg": "pct.button.fg",
       "bg": "pct.button.bg-hover",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "button/active — etykieta",
+      "name": "button/active — label",
       "fg": "pct.button.fg",
       "bg": "pct.button.bg-active",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "button/disabled — etykieta",
+      "name": "button/disabled — label",
       "fg": "pct.button.fg-disabled",
       "bg": "pct.button.bg-disabled",
       "level": "AA",
       "severity": "warn"
     },
     {
-      "name": "button/outline — etykieta",
+      "name": "button/outline — label",
       "fg": "pct.primary",
       "bg": "pct.surface",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "button/outline hover — etykieta",
+      "name": "button/outline hover — label",
       "fg": "pct.primary",
       "bg": "pct.surface-100",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "UI: obramowanie przycisku",
+      "name": "UI: button border",
       "fg": "pct.button.border",
       "bg": "pct.surface",
       "level": "UI",
       "severity": "error"
     },
     {
-      "name": "UI: obramowanie przycisku (disabled)",
+      "name": "UI: button border (disabled)",
       "fg": "pct.button.border-disabled",
       "bg": "pct.surface",
       "level": "UI",
@@ -82,378 +82,378 @@
       "severity": "error"
     },
     {
-      "name": "checkbox — etykieta",
+      "name": "checkbox — label",
       "fg": "pct.checkbox.label-fg",
       "bg": "pct.surface",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "checkbox — podpowiedź",
+      "name": "checkbox — hint",
       "fg": "pct.checkbox.hint-fg",
       "bg": "pct.surface",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "UI: obramowanie checkboxa",
+      "name": "UI: checkbox border",
       "fg": "pct.checkbox.border",
       "bg": "pct.checkbox.bg",
       "level": "UI",
       "severity": "error"
     },
     {
-      "name": "UI: checkbox zaznaczony na tle strony",
+      "name": "UI: checked checkbox against the page",
       "fg": "pct.checkbox.bg-checked",
       "bg": "pct.surface",
       "level": "UI",
       "severity": "error"
     },
     {
-      "name": "UI: znacznik na zaznaczonym checkboxie",
+      "name": "UI: tick on a checked checkbox",
       "fg": "pct.checkbox.fg-checked",
       "bg": "pct.checkbox.bg-checked",
       "level": "UI",
       "severity": "error"
     },
     {
-      "name": "UI: obramowanie checkboxa (błąd)",
+      "name": "UI: checkbox border (error)",
       "fg": "pct.checkbox.border-invalid",
       "bg": "pct.checkbox.bg",
       "level": "UI",
       "severity": "error"
     },
     {
-      "name": "UI: obramowanie checkboxa (hover)",
+      "name": "UI: checkbox border (hover)",
       "fg": "pct.checkbox.border-hover",
       "bg": "pct.checkbox.bg",
       "level": "UI",
       "severity": "error"
     },
     {
-      "name": "UI: obramowanie checkboxa (zaznaczony)",
+      "name": "UI: checkbox border (checked)",
       "fg": "pct.checkbox.border-checked",
       "bg": "pct.surface",
       "level": "UI",
       "severity": "error"
     },
     {
-      "name": "checkbox — komunikat błędu",
+      "name": "checkbox — error message",
       "fg": "pct.checkbox.fg-invalid",
       "bg": "pct.surface",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "checkbox/disabled — etykieta",
+      "name": "checkbox/disabled — label",
       "fg": "pct.checkbox.fg-disabled",
       "bg": "pct.surface",
       "level": "AA",
       "severity": "warn"
     },
     {
-      "name": "checkbox/disabled — znacznik",
+      "name": "checkbox/disabled — tick",
       "fg": "pct.checkbox.fg-disabled",
       "bg": "pct.checkbox.bg-disabled",
       "level": "UI",
       "severity": "warn"
     },
     {
-      "name": "UI: obramowanie checkboxa (disabled)",
+      "name": "UI: checkbox border (disabled)",
       "fg": "pct.checkbox.border-disabled",
       "bg": "pct.checkbox.bg-disabled",
       "level": "UI",
       "severity": "warn"
     },
     {
-      "name": "radio — etykieta opcji",
+      "name": "radio — option label",
       "fg": "pct.radio.label-fg",
       "bg": "pct.surface",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "radio — etykieta grupy",
+      "name": "radio — group label",
       "fg": "pct.radio.group-label-fg",
       "bg": "pct.surface",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "radio — podpowiedź",
+      "name": "radio — hint",
       "fg": "pct.radio.hint-fg",
       "bg": "pct.surface",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "UI: obramowanie radia",
+      "name": "UI: radio border",
       "fg": "pct.radio.border",
       "bg": "pct.radio.bg",
       "level": "UI",
       "severity": "error"
     },
     {
-      "name": "UI: kropka wybranego radia",
+      "name": "UI: dot of a selected radio",
       "fg": "pct.radio.dot-bg",
       "bg": "pct.radio.bg",
       "level": "UI",
       "severity": "error"
     },
     {
-      "name": "UI: obramowanie radia (wybrane)",
+      "name": "UI: radio border (selected)",
       "fg": "pct.radio.border-checked",
       "bg": "pct.radio.bg",
       "level": "UI",
       "severity": "error"
     },
     {
-      "name": "UI: obramowanie radia (błąd)",
+      "name": "UI: radio border (error)",
       "fg": "pct.radio.border-invalid",
       "bg": "pct.radio.bg",
       "level": "UI",
       "severity": "error"
     },
     {
-      "name": "UI: obramowanie radia (hover)",
+      "name": "UI: radio border (hover)",
       "fg": "pct.radio.border-hover",
       "bg": "pct.radio.bg",
       "level": "UI",
       "severity": "error"
     },
     {
-      "name": "radio — komunikat błędu",
+      "name": "radio — error message",
       "fg": "pct.radio.fg-invalid",
       "bg": "pct.surface",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "radio/disabled — etykieta",
+      "name": "radio/disabled — label",
       "fg": "pct.radio.fg-disabled",
       "bg": "pct.surface",
       "level": "AA",
       "severity": "warn"
     },
     {
-      "name": "radio/disabled — kropka",
+      "name": "radio/disabled — dot",
       "fg": "pct.radio.fg-disabled",
       "bg": "pct.radio.bg-disabled",
       "level": "UI",
       "severity": "warn"
     },
     {
-      "name": "UI: obramowanie radia (disabled)",
+      "name": "UI: radio border (disabled)",
       "fg": "pct.radio.border-disabled",
       "bg": "pct.radio.bg-disabled",
       "level": "UI",
       "severity": "warn"
     },
     {
-      "name": "select — tekst wybranej wartości",
+      "name": "select — selected value text",
       "fg": "pct.select.fg",
       "bg": "pct.select.bg",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "select — tekst zastępczy",
+      "name": "select — placeholder text",
       "fg": "pct.select.placeholder-fg",
       "bg": "pct.select.bg",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "select — etykieta",
+      "name": "select — label",
       "fg": "pct.select.label-fg",
       "bg": "pct.surface",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "select — podpowiedź",
+      "name": "select — hint",
       "fg": "pct.select.hint-fg",
       "bg": "pct.surface",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "select — opcja na liście",
+      "name": "select — option in the list",
       "fg": "pct.select.option-fg",
       "bg": "pct.select.option-bg",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "select — opcja aktywna (klawiatura)",
+      "name": "select — active option (keyboard)",
       "fg": "pct.select.option-fg-active",
       "bg": "pct.select.option-bg-active",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "select — opcja wybrana",
+      "name": "select — selected option",
       "fg": "pct.select.option-fg-selected",
       "bg": "pct.select.option-bg-selected",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "UI: obramowanie selecta",
+      "name": "UI: select border",
       "fg": "pct.select.border",
       "bg": "pct.select.bg",
       "level": "UI",
       "severity": "error"
     },
     {
-      "name": "UI: strzałka selecta",
+      "name": "UI: select arrow",
       "fg": "pct.select.arrow-fg",
       "bg": "pct.select.bg",
       "level": "UI",
       "severity": "error"
     },
     {
-      "name": "UI: obramowanie panelu selecta",
+      "name": "UI: select panel border",
       "fg": "pct.select.panel-border",
       "bg": "pct.surface",
       "level": "UI",
       "severity": "error"
     },
     {
-      "name": "select — opcja na tle panelu",
+      "name": "select — option against the panel",
       "fg": "pct.select.option-fg",
       "bg": "pct.select.panel-bg",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "select — opcja wyłączona",
+      "name": "select — disabled option",
       "fg": "pct.select.option-fg-disabled",
       "bg": "pct.select.option-bg",
       "level": "AA",
       "severity": "warn"
     },
     {
-      "name": "select — komunikat błędu",
+      "name": "select — error message",
       "fg": "pct.select.fg-invalid",
       "bg": "pct.surface",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "select/disabled — tekst",
+      "name": "select/disabled — text",
       "fg": "pct.select.fg-disabled",
       "bg": "pct.select.bg-disabled",
       "level": "AA",
       "severity": "warn"
     },
     {
-      "name": "UI: obramowanie selecta (hover)",
+      "name": "UI: select border (hover)",
       "fg": "pct.select.border-hover",
       "bg": "pct.select.bg",
       "level": "UI",
       "severity": "error"
     },
     {
-      "name": "UI: obramowanie selecta (focus)",
+      "name": "UI: select border (focus)",
       "fg": "pct.select.border-focus",
       "bg": "pct.select.bg",
       "level": "UI",
       "severity": "error"
     },
     {
-      "name": "UI: obramowanie selecta (błąd)",
+      "name": "UI: select border (error)",
       "fg": "pct.select.border-invalid",
       "bg": "pct.select.bg",
       "level": "UI",
       "severity": "error"
     },
     {
-      "name": "UI: obramowanie selecta (disabled)",
+      "name": "UI: select border (disabled)",
       "fg": "pct.select.border-disabled",
       "bg": "pct.select.bg-disabled",
       "level": "UI",
       "severity": "warn"
     },
     {
-      "name": "field — tekst",
+      "name": "field — text",
       "fg": "pct.field.fg",
       "bg": "pct.field.bg",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "field — tekst zastępczy",
+      "name": "field — placeholder text",
       "fg": "pct.field.placeholder-fg",
       "bg": "pct.field.bg",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "field — etykieta",
+      "name": "field — label",
       "fg": "pct.field.label-fg",
       "bg": "pct.surface",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "field — podpowiedź",
+      "name": "field — hint",
       "fg": "pct.field.hint-fg",
       "bg": "pct.surface",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "field — komunikat błędu",
+      "name": "field — error message",
       "fg": "pct.field.fg-invalid",
       "bg": "pct.surface",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "field — dekoracja prefix/suffix",
+      "name": "field — prefix/suffix decoration",
       "fg": "pct.field.affix-fg",
       "bg": "pct.field.bg",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "field/disabled — tekst",
+      "name": "field/disabled — text",
       "fg": "pct.field.fg-disabled",
       "bg": "pct.field.bg-disabled",
       "level": "AA",
       "severity": "warn"
     },
     {
-      "name": "UI: obramowanie pola",
+      "name": "UI: field border",
       "fg": "pct.field.border",
       "bg": "pct.field.bg",
       "level": "UI",
       "severity": "error"
     },
     {
-      "name": "UI: obramowanie pola (focus)",
+      "name": "UI: field border (focus)",
       "fg": "pct.field.border-focus",
       "bg": "pct.field.bg",
       "level": "UI",
       "severity": "error"
     },
     {
-      "name": "UI: obramowanie pola (błąd)",
+      "name": "UI: field border (error)",
       "fg": "pct.field.border-invalid",
       "bg": "pct.field.bg",
       "level": "UI",
       "severity": "error"
     },
     {
-      "name": "UI: obramowanie pola (hover)",
+      "name": "UI: field border (hover)",
       "fg": "pct.field.border-hover",
       "bg": "pct.field.bg",
       "level": "UI",
       "severity": "error"
     },
     {
-      "name": "UI: obramowanie pola (disabled)",
+      "name": "UI: field border (disabled)",
       "fg": "pct.field.border-disabled",
       "bg": "pct.field.bg-disabled",
       "level": "UI",

@@ -1,10 +1,10 @@
-// PLIK GENEROWANY — nie edytuj.
-// Źródło: docs/00-axis.md + docs/requirements/*.md + docs/lessons.md
+// GENERATED FILE — do not edit.
+// Source: docs/00-axis.md + docs/requirements/*.md + docs/lessons.md
 // Generator: node tools/check-docs.mjs --write
 //
-// Po co: karta sandboxa deklaruje, czego dotyczy przykład. Dopóki było to `string[]`,
-// literówka dawała chip prowadzący donikąd — czyli cichą wadę (`req-axis`). Ten sam ruch
-// co `PctCssVar` w `lesson-43`, tylko na drugiej klasie nazw.
+// Why: a sandbox card declares what its example is about. While that was `string[]`,
+// a typo gave a chip leading nowhere — a silent defect (`req-axis`). The same move as
+// `PctCssVar` in `lesson-43`, on the second class of names.
 
 /** Identyfikator wymagania z `docs/requirements/` albo osi z `docs/00-axis.md`. */
 export type PctReqId =
@@ -92,7 +92,7 @@ export type PctReqId =
   | 'req-token-text-pairs'
   | 'req-token-tiers';
 
-/** Identyfikator lekcji z `docs/lessons.md`. Karta może wskazywać dowód, nie tylko obietnicę. */
+/** A lesson identifier from `docs/lessons.md`. A card may cite proof, not just a promise. */
 export type PctLessonId =
   | 'lesson-1'
   | 'lesson-2'
@@ -154,5 +154,5 @@ export type PctLessonId =
   | 'lesson-58'
   | 'lesson-59';
 
-/** Cokolwiek, na co karta sandboxa może się powołać. */
+/** Anything a sandbox card may refer to. */
 export type PctDocId = PctReqId | PctLessonId;
