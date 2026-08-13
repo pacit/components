@@ -1,23 +1,23 @@
 # Snapshot przebiegu mutacyjnego
 
-> **Ten plik jest generowany.** Nie edytuj go ręcznie —
-> `node tools/check-mutation.mjs --write`. Bramka `check-mutation` odrzuca rozjazd.
+> **This file is generated.** Do not edit it by hand —
+> `node tools/check-mutation.mjs --write`. The `check-mutation` gate rejects a drift.
 
-Komplet zielonych testów nie jest dowodem, że testy cokolwiek łapią — to jedyne
-pytanie, na które odpowiada przebieg mutacyjny
+A full set of green tests is no proof that the tests catch anything — that is the only
+question a mutation run answers
 ([`req-quality-unit`](../../docs/requirements/quality.md#req-quality-unit)).
-Stryker psuje kod na tysiąc drobnych sposobów i pyta, ile z nich zauważy zestaw
-testów. Mutant **przeżywający** to zmiana zachowania, po której CI dalej świeci
-na zielono.
+Stryker breaks the code in a thousand small ways and asks how many of them the test
+suite notices. A **surviving** mutant is a change of behaviour after which CI still
+shines green.
 
-Ten plik jest listą, wobec której mierzy się zmianę. Sam `thresholds.break`
-w `stryker.config.json` jest PODŁOGĄ i nic nie mówi o pliku, który spadł
-o dwadzieścia punktów, dopóki reszta go wyrównuje. Snapshot pilnuje każdego pliku
-z osobna i pilnuje go **w obie strony**: w dół, bo tak wygląda usunięta asercja,
-w górę, bo podłoga stojąca dziesięć punktów pod pomiarem przestaje mierzyć.
+This file is the list a change is measured against. `thresholds.break` in
+`stryker.config.json` is a FLOOR on its own and says nothing about a file that fell
+twenty points while the rest make up for it. The snapshot watches every file separately
+and watches it **both ways**: downwards, because that is what a deleted assertion looks
+like, upwards, because a floor ten points below the measurement stops measuring.
 
-Kolumny: plik · wynik · zabite (w tym zegarem) · przeżywające · bez pokrycia ·
-zignorowane. Tolerancja: ±2 punktu procentowego.
+Columns: file · score · killed (of that, by the clock) · surviving · not covered ·
+ignored. Tolerance: ±2 of a percentage point.
 
 ```
 libs/components/core/src/config.ts 100.00 8(0) 0 0 0

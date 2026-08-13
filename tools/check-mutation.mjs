@@ -1,51 +1,22 @@
 #!/usr/bin/env node
 /**
- * Bramka przebiegu mutacyjnego: sprawdza, czy obietnica `req-quality-unit` —
- * „testy jednostkowe biblioteki biegną na Vitest" — ma za sobą odpowiedź na pytanie,
- * którego liczba zielonych testów nie zadaje: **czy te testy w ogóle coś łapią**.
+ * Mutation run gate: do the unit tests catch anything (`req-quality-unit`)? Stryker answers
+ * that and can fail on it, but by DEFAULT does neither: `thresholds.break` is `null`, so a
+ * run ends zero at 4% as at 94%.
  *
- * Powód istnienia. Sam Stryker odpowiada na to pytanie i potrafi na niej zapalić —
- * ale DOMYŚLNIE tego nie robi i nie musi tego nikt cofać: `thresholds.break` jest
- * z definicji `null`, więc przebieg kończy się zerem przy wyniku 4% tak samo jak
- * przy 94%. To jest ta sama wada co raport pokrycia bez progu: liczba do oglądania.
- * A gdy próg już stoi, podnosi się go pięcioma ruchami, z których żaden nie dokłada
- * ani jednego testu i każdy wygląda w review jak sprzątanie:
- *   - plik wykreślony z `mutate` (zabiera swoje przeżywające mutanty),
- *   - `ignorers` poszerzone albo `// Stryker disable` dopisane do źródła,
- *   - `mutator.excludedMutations` z całą rodziną mutacji,
- *   - `ignoreStatic: true` („bo wolno chodzi"),
- *   - skrócony `timeoutMS` — mutant zabity ZEGAREM liczy się jak zabity asercją.
+ *  1. DENOMINATOR: the measurement exists, is not empty and is CURRENT with the sources,
+ *  2. the inventory of mutated files matches the policy — both ways,
+ *  3. TEST DENOMINATOR: the run executed exactly the specs the `test` target does,
+ *  4. the threshold is declared, binding, and cannot be disarmed from the command,
+ *  5. the denominator is not narrowed: ignorers, excluded mutators, static mutants,
+ *  6. the result: a hard floor and a snapshot with a TWO-SIDED tolerance, per file and total,
+ *  7. both targets (`mutacja`, `check-mutation`) run in CI.
  *
- * Sprawdzane jest siedem rzeczy:
- *  1. MIANOWNIK: pomiar istnieje, jest niepusty i jest AKTUALNY wobec źródeł,
- *  2. inwentarz mutowanych plików zgadza się z polityką — w obie strony,
- *  3. MIANOWNIK TESTÓW: przebieg uruchomił dokładnie te specyfikacje, co `test`,
- *  4. próg jest zadeklarowany, wiążący i nie da się go rozbroić poleceniem,
- *  5. mianownik nie jest zwężany: ignorery, wykluczone mutatory, mutanty statyczne,
- *  6. wynik: podłoga twarda i snapshot z tolerancją DWUSTRONNĄ, per plik i łącznie,
- *  7. oba targety (`mutacja`, `check-mutation`) biegną w CI.
+ * „What the run really did" comes from the report's `config` field, which carries the
+ * EFFECTIVE configuration: the file plus whatever the command line added. Point 3 stands
+ * apart because the run has a Vitest configuration of its own.
  *
- * Skąd bierze się „co przebieg naprawdę zrobił". Z `tmp/mutacja/mutation.json`, czyli
- * z RAPORTU Strykera — a w nim z pola `config`, które niesie konfigurację SKUTECZNĄ:
- * plik plus wszystko, co dołożyła linia poleceń. Bramka czytająca `stryker.config.json`
- * orzekałaby o deklaracji, a `--ignoreStatic` w poleceniu targetu nie zostawia w niej
- * śladu. To ten sam ruch co „nie czytaj `include`, uruchom kompilator" z `check-typecheck`.
- *
- * Punkt 3 jest tym, którego nie widać z konstrukcji Strykera. Przebieg mutacyjny idzie
- * WŁASNĄ konfiguracją Vitesta (`libs/components/mutacja.vitest.config.mts`), bo target
- * `test` kompiluje specyfikacje builderem `@angular/build`, który pliku konfiguracyjnego
- * nie ma. To są więc dwie drogi do tych samych plików i potrafią się rozjechać: nowa
- * specyfikacja niewidziana przez tę drugą jest testem, którego mutanty nie mają kto zabić,
- * a wynik spada bez śladu przyczyny.
- *
- * Do tego przebieg, który nie bada repozytorium, tylko TĘ BRAMKĘ: kontrola odniesienia
- * z `tools/check-mutation.fixtures/`. Spreparowane wejścia, z których każde łamie
- * dokładnie jedną regułę i musi zostać odrzucone przez tę właśnie regułę
- * (`req-quality-negative-control`).
- *
- * Użycie:
- *   node tools/check-mutation.mjs
- *   node tools/check-mutation.mjs --write   przepisuje snapshot wyników
+ * Usage: node tools/check-mutation.mjs [--write]  (--write: rewrite the result snapshot)
  */
 import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -69,22 +40,22 @@ const WRITE = process.argv.includes('--write');
 const SPEC = /\.spec\.ts$/;
 
 /**
- * Statusy mutanta, które Stryker liczy jako WYKRYTY. `Timeout` jest tu razem
- * z `Killed` nie z uprzejmości, tylko dlatego, że tak liczy wynik — i właśnie
- * dlatego punkt 5 osobno pyta, jak duży jest udział zegara.
+ * The mutant statuses Stryker counts as DETECTED. `Timeout` stands beside `Killed` not out
+ * of courtesy but because that is how the score is computed — and that is exactly why
+ * point 5 asks separately how large the clock's share is.
  */
 const WYKRYTE = ['Killed', 'Timeout'];
-/** Statusy liczone do mianownika. `Ignored` NIE jest jednym z nich — stąd punkt 5. */
+/** The statuses counted into the denominator. `Ignored` is NOT one — hence point 5. */
 const MIANOWNIK = [...WYKRYTE, 'Survived', 'NoCoverage', 'RuntimeError'];
 
 /**
- * Napisy, po których poznaje się rozbrojone polecenie targetu. `--force` każe
- * Strykerowi zignorować wynik przyrostowy, `--dryRunOnly` kończy przebieg PRZED
- * uruchomieniem choćby jednego mutanta (i kończy się zerem), a operator powłoki
- * zjada kod wyjścia — czyli `thresholds.break` przestaje cokolwiek znaczyć.
+ * The strings by which a disarmed target command is recognised. `--force` tells Stryker to
+ * ignore the incremental result, `--dryRunOnly` ends the run BEFORE a single mutant is
+ * executed (and exits zero), and a shell operator eats the exit code — so
+ * `thresholds.break` stops meaning anything.
  */
 const ROZBRAJAJACE = [
-  ['operator powłoki', /\|\||;\s*(?:true|exit\s+0)|&&\s*true\s*$/],
+  ['shell operator', /\|\||;\s*(?:true|exit\s+0)|&&\s*true\s*$/],
   ['--dryRunOnly', /--dry-?[Rr]un[Oo]nly/],
   ['--thresholds', /--thresholds/],
   ['--ignoreStatic', /--ignore-?[Ss]tatic/],
@@ -93,17 +64,17 @@ const ROZBRAJAJACE = [
 ];
 
 /**
- * Komentarze rozbrajające Strykera W ŹRÓDLE. Wchodzą do repozytorium bez linii
- * w konfiguracji i bez linii w poleceniu — widać je wyłącznie w pliku, którego
- * dotyczą, a wyglądają jak komentarz obok kodu.
+ * Comments that disarm Stryker IN THE SOURCE. They enter the repository with no line in
+ * the configuration and no line in the command — visible only in the file they concern,
+ * and looking like a comment beside the code.
  */
 const WYLACZENIE_W_ZRODLE = /\/[/*]\s*Stryker\s+(disable|restore)\b/;
 
 /**
- * Naruszenie jednej z kontroli. Niesie parę `kontrola` + `regula`, a nie sam
- * identyfikator punktu: punkt bramki to nie jedno zdanie (`lesson-50`), a kontrola
- * odniesienia porównująca sam punkt przepuszcza przypadek, który zapalił na sąsiedniej
- * regule tego samego punktu.
+ * A violation of one of the checks. It carries the pair `kontrola` + `regula`, not the
+ * point's identifier alone: a gate's point is not one sentence (`lesson-50`), and a
+ * negative control comparing only the point lets through a case that fired on a
+ * neighbouring rule of that same point.
  */
 class BladMutacji extends Error {
   constructor(kontrola, regula, opis) {
@@ -116,7 +87,7 @@ class BladMutacji extends Error {
 const lista = (items) => items.map((i) => `      ${i}`).join('\n');
 const procent = (n) => `${n.toFixed(2)}%`;
 
-/** Wynik mutacyjny zbioru mutantów, liczony tak samo jak liczy go Stryker. */
+/** The mutation score of a set of mutants, computed exactly as Stryker computes it. */
 const wynikZ = (mutanty) => {
   const w = mutanty.filter((m) => WYKRYTE.includes(m.status)).length;
   const m = mutanty.filter((x) => MIANOWNIK.includes(x.status)).length;
@@ -127,24 +98,24 @@ const wynikZ = (mutanty) => {
 
 const NAGLOWEK = `# Snapshot przebiegu mutacyjnego
 
-> **Ten plik jest generowany.** Nie edytuj go ręcznie —
-> \`node tools/check-mutation.mjs --write\`. Bramka \`check-mutation\` odrzuca rozjazd.
+> **This file is generated.** Do not edit it by hand —
+> \`node tools/check-mutation.mjs --write\`. The \`check-mutation\` gate rejects a drift.
 
-Komplet zielonych testów nie jest dowodem, że testy cokolwiek łapią — to jedyne
-pytanie, na które odpowiada przebieg mutacyjny
+A full set of green tests is no proof that the tests catch anything — that is the only
+question a mutation run answers
 ([\`req-quality-unit\`](../../docs/requirements/quality.md#req-quality-unit)).
-Stryker psuje kod na tysiąc drobnych sposobów i pyta, ile z nich zauważy zestaw
-testów. Mutant **przeżywający** to zmiana zachowania, po której CI dalej świeci
-na zielono.
+Stryker breaks the code in a thousand small ways and asks how many of them the test
+suite notices. A **surviving** mutant is a change of behaviour after which CI still
+shines green.
 
-Ten plik jest listą, wobec której mierzy się zmianę. Sam \`thresholds.break\`
-w \`stryker.config.json\` jest PODŁOGĄ i nic nie mówi o pliku, który spadł
-o dwadzieścia punktów, dopóki reszta go wyrównuje. Snapshot pilnuje każdego pliku
-z osobna i pilnuje go **w obie strony**: w dół, bo tak wygląda usunięta asercja,
-w górę, bo podłoga stojąca dziesięć punktów pod pomiarem przestaje mierzyć.
+This file is the list a change is measured against. \`thresholds.break\` in
+\`stryker.config.json\` is a FLOOR on its own and says nothing about a file that fell
+twenty points while the rest make up for it. The snapshot watches every file separately
+and watches it **both ways**: downwards, because that is what a deleted assertion looks
+like, upwards, because a floor ten points below the measurement stops measuring.
 
-Kolumny: plik · wynik · zabite (w tym zegarem) · przeżywające · bez pokrycia ·
-zignorowane. Tolerancja: ±%TOLERANCJA% punktu procentowego.
+Columns: file · score · killed (of that, by the clock) · surviving · not covered ·
+ignored. Tolerance: ±%TOLERANCJA% of a percentage point.
 `;
 
 const renderujSnapshot = (raport, tolerancja) => {
@@ -172,7 +143,7 @@ const renderujSnapshot = (raport, tolerancja) => {
   );
 };
 
-/** Wiersze z bloku kodu snapshotu — reszta pliku jest prozą dla człowieka. */
+/** The rows from the snapshot's code block — the rest of the file is prose. */
 const wierszeSnapshotu = (tekst) =>
   (tekst ?? '')
     .split('\n')
@@ -182,38 +153,38 @@ const wierszeSnapshotu = (tekst) =>
 // ── kontrole ──────────────────────────────────────────────────────────────────
 
 /**
- * Komplet kontroli na gotowym wejściu:
- *   `polityka`  — treść `mutacja.policy.json`,
- *   `raport`    — treść `tmp/mutacja/mutation.json` (razem z polem `config`),
- *   `zrodla`    — `{ [plik]: treść }` z dysku, dla plików z raportu i z polityki,
- *   `specyfikacje` — pliki `*.spec.ts` biblioteki z indeksu gita,
- *   `snapshot`  — treść `mutacja.snapshot.md` albo `null`,
- *   `konfig`    — treść `stryker.config.json`,
- *   `targety`   — `{ mutacja: { polecenie }, check: { polecenie } }` z grafu Nx,
- *   `ci`        — `{ targety: [...] }` z workflow.
- * Rzuca `BladMutacji` przy pierwszym naruszeniu — kontrole idą od mianownika,
- * więc dalsze i tak nie miałyby czego badać. Zwraca `{ opis, snapshot }`.
+ * The full set of checks over a ready input:
+ *   `polityka`  — the contents of `mutacja.policy.json`,
+ *   `raport`    — the contents of `tmp/mutacja/mutation.json` (with its `config` field),
+ *   `zrodla`    — `{ [plik]: tresc }` from disk, for the report's and the policy's files,
+ *   `specyfikacje` — the library's `*.spec.ts` files from the git index,
+ *   `snapshot`  — the contents of `mutacja.snapshot.md`, or `null`,
+ *   `konfig`    — the contents of `stryker.config.json`,
+ *   `targety`   — `{ mutacja: { polecenie }, check: { polecenie } }` from the Nx graph,
+ *   `ci`        — `{ targety: [...] }` from the workflow.
+ * Throws `BladMutacji` on the first violation — the checks start from the denominator, so
+ * the later ones would have nothing to examine anyway. Returns `{ opis, snapshot }`.
  */
 export const sprawdzMutacje = (we) => {
   const polityka = we?.polityka ?? {};
   const tolerancja = polityka.tolerancja;
   const raport = we?.raport;
 
-  // 1. MIANOWNIK. Raport, którego nie ma albo który jest pusty, daje bramkę
-  // przechodzącą zawsze — nie ma czego porównywać, więc wszystko się zgadza.
+  // 1. DENOMINATOR. A report that is missing or empty gives a gate that always passes —
+  // with nothing to compare, everything agrees.
   if (!raport || typeof raport !== 'object' || !raport.files)
     throw new BladMutacji(
       'pomiar',
       'pomiar-nieczytelny',
-      `brak czytelnego \`${RAPORT}\` — przebieg mutacyjny albo nie biegł, albo nie ` +
-        `zapisał raportu. Bramka nie ma wtedy nic do zmierzenia i milczy o wszystkim.`,
+      `no readable \`${RAPORT}\` — the mutation run either did not happen or wrote no ` +
+        `report. The gate then has nothing to measure and stays silent about everything.`,
     );
 
-  // Każdy odczyt niżej jest defensywny, mimo że punkt wyżej już odrzucił raport
-  // pusty i nieczytelny. Powód jest zmierzony, nie ostrożnościowy: kontrola
-  // odniesienia rozbraja reguły PO KOLEI, więc punkt ufający poprzedniemu daje
-  // wtedy `TypeError` zamiast komunikatu — i to jest jedyny stan, w którym bramka
-  // nie mówi, co jest nie tak. Ta sama wada wracała w tym repozytorium siedem razy.
+  // Every read below is defensive, even though the point above has already rejected an
+  // empty or unreadable report. The reason is measured, not precautionary: the negative
+  // control disarms the rules ONE BY ONE, so a point trusting the previous one then gives
+  // a `TypeError` instead of a message — the one state in which the gate does not say what
+  // is wrong. The same defect came back seven times in this repository.
   const pliki = Object.keys(raport?.files ?? {});
   const wszystkieMutanty = Object.values(raport?.files ?? {}).flatMap(
     (d) => d?.mutants ?? [],
@@ -222,27 +193,27 @@ export const sprawdzMutacje = (we) => {
     throw new BladMutacji(
       'pomiar',
       'pomiar-pusty',
-      `raport nie zawiera ani jednego mutanta. Stryker kończy się wtedy ZEREM ` +
-        `i melduje wynik 100% — bo dzieli przez mianownik, którego nie ma.`,
+      `the report holds no mutant at all. Stryker then exits ZERO and reports a score of ` +
+        `100% — because it divides by a denominator that is not there.`,
     );
 
-  // Raport starszy od źródeł mierzy kod, którego już nie ma. Nx pilnuje tego
-  // cache'em, ale przebieg z ręki (albo cache trafiony po cofnięciu zmiany)
-  // pokazywałby wynik sprzed edycji jako dzisiejszy.
+  // A report older than the sources measures code that is gone. Nx watches this with its
+  // cache, but a run by hand (or a cache hit after a change was reverted) would show a
+  // pre-edit result as today's.
   for (const [plik, dane] of Object.entries(raport?.files ?? {})) {
     const naDysku = we.zrodla?.[plik];
     if (naDysku !== undefined && naDysku !== dane.source)
       throw new BladMutacji(
         'pomiar',
         'pomiar-nieaktualny',
-        `\`${plik}\` różni się od treści, na której liczono wynik.\n` +
-          `    Raport opisuje kod sprzed edycji: przeżywające mutanty dotyczą linii, ` +
-          `których już nie ma, a nowe nie zostały zmierzone ani razu.`,
+        `\`${plik}\` differs from the text the score was computed on.\n` +
+          `    The report describes pre-edit code: the surviving mutants concern lines ` +
+          `that are gone, and the new ones were never measured.`,
       );
   }
 
-  // 2. INWENTARZ. Trzy pytania, bo są trzy różne sposoby, na jakie plik potrafi
-  // wypaść z pomiaru, i tylko jeden z nich rusza konfigurację.
+  // 2. INVENTORY. Three questions, because there are three different ways a file can drop
+  // out of the measurement, and only one of them touches the configuration.
   const konfigRaportu = raport?.config ?? {};
   const wzorce = polityka.wzorce ?? [];
   const wzorceRaportu = konfigRaportu.mutate ?? [];
@@ -250,11 +221,11 @@ export const sprawdzMutacje = (we) => {
     throw new BladMutacji(
       'inwentarz',
       'wzorce-zmienione',
-      `wzorce \`mutate\` z przebiegu nie zgadzają się z ${POLITYKA}:\n` +
-        `      przebieg:  ${JSON.stringify(wzorceRaportu)}\n` +
-        `      polityka:  ${JSON.stringify(wzorce)}\n` +
-        `    Zawężenie wzorca jest najtańszym sposobem podniesienia wyniku: plik ` +
-        `wykreślony z pomiaru zabiera ze sobą swoje przeżywające mutanty.`,
+      `the run's \`mutate\` patterns do not match ${POLITYKA}:\n` +
+        `      run:     ${JSON.stringify(wzorceRaportu)}\n` +
+        `      policy:  ${JSON.stringify(wzorce)}\n` +
+        `    Narrowing a pattern is the cheapest way to raise the score: a file struck ` +
+        `from the measurement takes its surviving mutants with it.`,
     );
 
   const zPolityki = polityka.pliki ?? [];
@@ -262,8 +233,8 @@ export const sprawdzMutacje = (we) => {
     throw new BladMutacji(
       'inwentarz',
       'polityka-bez-plikow',
-      `${POLITYKA} nie wymienia ani jednego pliku — punkty 2 i 6 chodzą po tej ` +
-        `liście, więc przeszłyby w komplecie, nie zaglądając do niczego`,
+      `${POLITYKA} lists no file at all — points 2 and 6 walk exactly this list, so both ` +
+        `would pass without looking at anything`,
     );
   const spozaRepo = zPolityki.filter((p) => !(we.wRepo ?? []).includes(p));
   if (spozaRepo.length)
@@ -272,8 +243,8 @@ export const sprawdzMutacje = (we) => {
       'wpis-bez-pliku',
       `${spozaRepo.length} pozycji inwentarza nie ma w indeksie gita:\n` +
         lista(spozaRepo) +
-        `\n    Wpis bez pliku niczego nie pilnuje, a czyta się go jako opis ` +
-        `dzisiejszego zasięgu pomiaru.`,
+        `\n    An entry with no file watches nothing, and reads as a description of ` +
+        `today's measurement reach.`,
     );
 
   const bezMutantow = polityka.bezMutantow ?? [];
@@ -283,18 +254,18 @@ export const sprawdzMutacje = (we) => {
       throw new BladMutacji(
         'inwentarz',
         'wyjatek-spoza-inwentarza',
-        `wyjątek \`bezMutantow\` wskazuje \`${wpis?.plik ?? '(bez pliku)'}\`, ` +
-          `którego nie ma w inwentarzu.\n` +
-          `    Wyjątek od pomiaru pliku, który nie jest mierzony, nie zwalnia ` +
-          `z niczego — a wygląda w rejestrze na uzasadnienie.`,
+        `the \`bezMutantow\` exception names \`${wpis?.plik ?? '(no file)'}\`, which is ` +
+          `not in the inventory.\n` +
+          `    An exception from measuring a file that is not measured excuses nothing — ` +
+          `and looks in the register like a justification.`,
       );
     if (typeof wpis.powod !== 'string' || wpis.powod.trim().length < 40)
       throw new BladMutacji(
         'inwentarz',
         'wyjatek-bez-powodu',
-        `wyjątek \`bezMutantow\` dla \`${wpis.plik}\` nie niesie powodu.\n` +
-          `    „Zero mutantów" znaczy albo „nie ma czego mutować", albo „plik ` +
-          `wypadł z pomiaru". Rozstrzyga to wyłącznie zdanie, które ktoś napisał.`,
+        `the \`bezMutantow\` exception for \`${wpis.plik}\` carries no reason.\n` +
+          `    „Zero mutants" means either „there is nothing to mutate" or „the file ` +
+          `dropped out of the measurement". Only a sentence somebody wrote can tell.`,
       );
   }
 
@@ -305,11 +276,11 @@ export const sprawdzMutacje = (we) => {
     throw new BladMutacji(
       'inwentarz',
       'plik-bez-mutantow',
-      `${beznadziejne.length} plików inwentarza nie ma w raporcie:\n` +
+      `${beznadziejne.length} files of the inventory are not in the report:\n` +
         lista(beznadziejne) +
-        `\n    Plik bez ani jednego mutanta znika z raportu razem ze swoimi ` +
-        `przeżywającymi — i wynik ROŚNIE. Lek: przywrócić plik do pomiaru albo ` +
-        `dopisać go do \`bezMutantow\` z powodem.`,
+        `\n    A file with no mutant at all disappears from the report together with its ` +
+        `survivors — and the score GOES UP. Remedy: bring the file back into the ` +
+        `measurement, or add it to \`bezMutantow\` with a reason.`,
     );
 
   const martweWyjatki = bezMutantow.filter((w) => pliki.includes(w.plik));
@@ -317,10 +288,10 @@ export const sprawdzMutacje = (we) => {
     throw new BladMutacji(
       'inwentarz',
       'wyjatek-martwy',
-      `${martweWyjatki.length} wyjątków \`bezMutantow\` dotyczy plików, które ` +
-        `mutanty jednak mają: ${martweWyjatki.map((w) => w.plik).join(', ')}.\n` +
-        `    Powód wyjątku zniknął, a wpis został — i od dziś ukrywa plik, ` +
-        `który wypadnie z pomiaru naprawdę.`,
+      `${martweWyjatki.length} \`bezMutantow\` exceptions concern files that do have ` +
+        `mutants: ${martweWyjatki.map((w) => w.plik).join(', ')}.\n` +
+        `    The reason is gone and the entry stayed — from now on it hides a file that ` +
+        `really does drop out of the measurement.`,
     );
 
   const nieznane = pliki.filter((p) => !zPolityki.includes(p));
@@ -328,21 +299,21 @@ export const sprawdzMutacje = (we) => {
     throw new BladMutacji(
       'inwentarz',
       'plik-spoza-polityki',
-      `${nieznane.length} plików w raporcie nie ma w inwentarzu:\n` +
+      `${nieznane.length} files in the report are not in the inventory:\n` +
         lista(nieznane) +
-        `\n    Punkt 6 chodzi po plikach Z RAPORTU, więc ten byłby mierzony, ale ` +
-        `jego podłoga nie miałaby gdzie stać. Lek: dopisać do ${POLITYKA}.`,
+        `\n    Point 6 walks the files FROM THE REPORT, so this one would be measured ` +
+        `with nowhere for its floor to stand. Remedy: add it to ${POLITYKA}.`,
     );
 
-  // 3. MIANOWNIK TESTÓW. Przebieg mutacyjny idzie własną konfiguracją Vitesta,
-  // więc zbiór uruchomionych specyfikacji jest osobnym pomiarem — i osobno psuje się.
+  // 3. TEST DENOMINATOR. The mutation run uses a Vitest configuration of its own, so the
+  // set of executed specs is a separate measurement — and breaks separately.
   const uruchomione = Object.keys(raport?.testFiles ?? {});
   if (!uruchomione.length)
     throw new BladMutacji(
       'testy',
       'testy-niezmierzone',
-      `raport nie wymienia ani jednego pliku testowego. Bez \`coverageAnalysis: ` +
-        `"perTest"\` nie ma jak sprawdzić, CZY przebieg mutacyjny widzi te same ` +
+      `the report lists no test file at all. Without \`coverageAnalysis: ` +
+        `"perTest"\` there is no way to check WHETHER the mutation run sees the same ` +
         `specyfikacje co target \`test\` — a to on odpowiada za mianownik wyniku.`,
     );
   const specyfikacje = we.specyfikacje ?? [];
@@ -351,62 +322,62 @@ export const sprawdzMutacje = (we) => {
     throw new BladMutacji(
       'testy',
       'spec-poza-pomiarem',
-      `${nieuruchomione.length} specyfikacji biblioteki nie weszło do przebiegu ` +
-        `mutacyjnego:\n` +
+      `${nieuruchomione.length} of the library's specs did not enter the mutation ` +
+        `run:\n` +
         lista(nieuruchomione) +
-        `\n    Te pliki biegną w targecie \`test\` i nie biegną tutaj — czyli mutant, ` +
-        `którego zabijają, liczy się jako przeżywający. Dwie drogi do tych samych ` +
-        `specyfikacji rozjechały się (\`mutacja.vitest.config.mts\` wobec \`test\`).`,
+        `\n    They run in the \`test\` target and do not run here — so a mutant they ` +
+        `kill counts as surviving. Two paths to the same specs have drifted ` +
+        `(\`mutacja.vitest.config.mts\` against \`test\`).`,
     );
   const specSpozaRepo = uruchomione.filter((s) => !specyfikacje.includes(s));
   if (specSpozaRepo.length)
     throw new BladMutacji(
       'testy',
       'spec-spoza-repo',
-      `${specSpozaRepo.length} plików testowych z przebiegu nie ma w indeksie gita:\n` +
+      `${specSpozaRepo.length} test files from the run are not in the git index:\n` +
         lista(specSpozaRepo) +
-        `\n    Mianownik punktu 3 bierze się z gita, więc taki plik zabija mutanty, ` +
-        `a bramka nie ma jak zapytać, czy zabija je u wszystkich.`,
+        `\n    Point 3's denominator comes from git, so such a file kills mutants and ` +
+        `the gate has no way of asking whether it kills them everywhere.`,
     );
 
-  // 4. PRÓG. Domyślny `break` Strykera to `null` — przebieg kończy się wtedy zerem
-  // niezależnie od wyniku i cała ta bramka mierzyłaby raport do oglądania.
+  // 4. THRESHOLD. Stryker's default `break` is `null` — the run then exits zero whatever
+  // the score, and this whole gate would be measuring a report to look at.
   const prog = polityka.prog;
   if (typeof prog !== 'number')
     throw new BladMutacji(
       'prog',
       'polityka-bez-progu',
-      `${POLITYKA} nie deklaruje pola \`prog\` — nie ma z czym porównać ` +
-        `\`thresholds.break\`, więc punkt 4 nie ma o co pytać`,
+      `${POLITYKA} declares no \`prog\` field — there is nothing to compare ` +
+        `\`thresholds.break\` against, so point 4 has nothing to ask`,
     );
   const przerwanie = konfigRaportu.thresholds?.break;
   if (typeof przerwanie !== 'number')
     throw new BladMutacji(
       'prog',
       'prog-nieustawiony',
-      `przebieg biegł z \`thresholds.break = ${JSON.stringify(przerwanie)}\`.\n` +
-        `    To jest DOMYŚLNA wartość Strykera i znaczy „nie przerywaj nigdy": ` +
-        `przebieg kończy się zerem przy wyniku 4% tak samo jak przy 94%, ` +
-        `a raport jest liczbą do oglądania.`,
+      `the run went with \`thresholds.break = ${JSON.stringify(przerwanie)}\`.\n` +
+        `    That is Stryker's DEFAULT and means „never break": the run exits zero at 4% ` +
+        `exactly as at 94%, and the report is a number to look at.`,
     );
   if (przerwanie !== prog)
     throw new BladMutacji(
       'prog',
       'prog-rozjechany',
-      `\`thresholds.break\` z przebiegu (${przerwanie}) nie zgadza się z \`prog\` ` +
-        `z polityki (${prog}).\n` +
-        `    To ta liczba faila przebieg, a ta druga jest jej jedynym uzasadnieniem. ` +
-        `Rozjazd znaczy, że obniżono jedną z nich, nie ruszając drugiej.`,
+      `the run's \`thresholds.break\` (${przerwanie}) does not match the policy's ` +
+        `\`prog\` (${prog}).\n` +
+        `    The first number fails the run, the second is its only justification. A drift ` +
+        `means one of them was lowered without the other.`,
     );
   const wKonfiguracji = we.konfig?.thresholds?.break;
   if (wKonfiguracji !== przerwanie)
     throw new BladMutacji(
       'prog',
       'prog-z-polecenia',
-      `\`thresholds.break\` w ${KONFIG} (${JSON.stringify(wKonfiguracji)}) różni się ` +
-        `od tego, z którym przebieg NAPRAWDĘ biegł (${przerwanie}).\n` +
-        `    Konfigurację nadpisuje linia poleceń, a raport niesie wartość skuteczną. ` +
-        `Plik mówi wtedy co innego niż przebieg — i to plik czyta review.`,
+      `\`thresholds.break\` in ${KONFIG} (${JSON.stringify(wKonfiguracji)}) differs from ` +
+        `the one the run REALLY used (${przerwanie}).\n` +
+        `    The command line overrides the configuration, and the report carries the ` +
+        `effective value. The file then says something other than the run — and it is the ` +
+        `file that review reads.`,
     );
 
   const polecenie = we.targety?.mutacja?.polecenie;
@@ -414,8 +385,8 @@ export const sprawdzMutacje = (we) => {
     throw new BladMutacji(
       'prog',
       'target-bez-polecenia',
-      `target \`components:mutacja\` nie ma polecenia, które dałoby się przeczytać — ` +
-        `bramka nie ma jak sprawdzić, czy przebieg nie jest rozbrojony`,
+      `the \`components:mutacja\` target has no command that can be read — the gate ` +
+        `cannot check whether the run is disarmed`,
     );
   const wady = ROZBRAJAJACE.filter(([, w]) => w.test(polecenie)).map(
     ([n]) => n,
@@ -426,12 +397,12 @@ export const sprawdzMutacje = (we) => {
       'polecenie-rozbrojone',
       `polecenie targetu \`components:mutacja\` rozbraja przebieg (${wady.join(', ')}):\n` +
         `      ${polecenie}\n` +
-        `    Konfiguracja wygląda wtedy tak samo jak dziś, raport wygląda tak samo ` +
-        `jak dziś, a kod wyjścia jest zawsze zerem.`,
+        `    The configuration then looks exactly as it does today, the report looks ` +
+        `exactly as it does today, and the exit code is always zero.`,
     );
 
-  // 5. ZWĘŻENIE MIANOWNIKA. Mutant `Ignored` nie liczy się ani do licznika, ani do
-  // mianownika — każde zignorowanie podnosi wynik, nie dokładając żadnego testu.
+  // 5. NARROWING THE DENOMINATOR. An `Ignored` mutant counts towards neither the
+  // numerator nor the denominator — every ignore raises the score, adding no test.
   const ignorery = polityka.ignorery ?? {};
   const uzyte = konfigRaportu.ignorers ?? [];
   const nieuzasadnione = uzyte.filter((i) => !ignorery[i]);
@@ -439,9 +410,9 @@ export const sprawdzMutacje = (we) => {
     throw new BladMutacji(
       'zwezenie',
       'ignorer-nieuzasadniony',
-      `przebieg użył ignorerów spoza polityki: ${nieuzasadnione.join(', ')}.\n` +
-        `    Ignorer wykreśla mutanty z mianownika. Bez wpisu w ${POLITYKA} nie ma ` +
-        `miejsca, w którym ktoś tłumaczy, dlaczego akurat tych nie trzeba zabijać.`,
+      `the run used ignorers from outside the policy: ${nieuzasadnione.join(', ')}.\n` +
+        `    An ignorer strikes mutants from the denominator. With no entry in ${POLITYKA} ` +
+        `there is no place where anybody explains why those need not be killed.`,
     );
   const martweIgnorery = Object.keys(ignorery).filter(
     (i) => !uzyte.includes(i),
@@ -450,9 +421,9 @@ export const sprawdzMutacje = (we) => {
     throw new BladMutacji(
       'zwezenie',
       'ignorer-martwy',
-      `polityka uzasadnia ignorery, których przebieg nie użył: ${martweIgnorery.join(', ')}.\n` +
-        `    Wpis bez skutku zostaje po problemie, którego już nie ma, a czyta się go ` +
-        `jako opis dzisiejszego pomiaru.`,
+      `the policy justifies ignorers the run did not use: ${martweIgnorery.join(', ')}.\n` +
+        `    An entry with no effect outlives a problem that is gone, and reads ` +
+        `as a description of today's measurement.`,
     );
 
   const dozwolonePowody = new Set(
@@ -465,12 +436,12 @@ export const sprawdzMutacje = (we) => {
     throw new BladMutacji(
       'zwezenie',
       'mutant-zignorowany-obcym-powodem',
-      `${obce.length} mutantów zignorowano z powodem spoza polityki, np.:\n` +
+      `${obce.length} mutants were ignored for a reason outside the policy, e.g.:\n` +
         lista(
           [...new Set(obce.map((m) => `„${m.statusReason}"`))].slice(0, 3),
         ) +
-        `\n    Tak wchodzi do repozytorium komentarz \`// Stryker disable\`: ` +
-        `w konfiguracji nie zostawia śladu, a mutanty znikają z mianownika.`,
+        `\n    This is how a \`// Stryker disable\` comment enters the repository: it ` +
+        `leaves no trace in the configuration, and the mutants leave the denominator.`,
     );
 
   const wZrodle = Object.entries(we.zrodla ?? {})
@@ -480,32 +451,32 @@ export const sprawdzMutacje = (we) => {
     throw new BladMutacji(
       'zwezenie',
       'wylaczenie-w-zrodle',
-      `${wZrodle.length} mierzonych plików niesie komentarz wyłączający Strykera:\n` +
+      `${wZrodle.length} measured files carry a comment that switches Stryker off:\n` +
         lista(wZrodle) +
-        `\n    Biblioteka nie ma dziś ani jednego kandydata na taki wyjątek, więc ` +
-        `mechanizmu nie ma — furtka bez użytkownika jest martwym artefaktem. ` +
+        `\n    The library has not one candidate for such an exception today, so the ` +
+        `mechanism does not exist — a door with no user is a dead artifact. ` +
         `Mutant nie do zabicia jest zdaniem do napisania w ${POLITYKA}, nie ` +
-        `komentarzem w kodzie, którego nikt więcej nie czyta.`,
+        `a comment in code that nobody else reads.`,
     );
 
   if (konfigRaportu.ignoreStatic)
     throw new BladMutacji(
       'zwezenie',
       'statyczne-pominiete',
-      `przebieg biegł z \`ignoreStatic: true\`.\n` +
-        `    Mutanty statyczne — te w inicjalizatorach pól i w zasięgu modułu — ` +
-        `wypadają wtedy z mianownika w całości. W bibliotece komponentów jest tam ` +
-        `wejście, wartość domyślna i identyfikator, czyli jej publiczny kontrakt.`,
+      `the run went with \`ignoreStatic: true\`.\n` +
+        `    Static mutants — those in field initialisers and at module scope — then leave ` +
+        `the denominator entirely. In a component library that is where an input, a ` +
+        `default value and an identifier sit: its public contract.`,
     );
   const wykluczone = konfigRaportu.mutator?.excludedMutations ?? [];
   if (wykluczone.length)
     throw new BladMutacji(
       'zwezenie',
       'mutatory-wykluczone',
-      `przebieg wyklucza całe rodziny mutacji: ${wykluczone.join(', ')}.\n` +
-        `    Rodzina wykluczona znika z mianownika bez śladu w wyniku — a każda ` +
-        `z nich odpowiada realnej pomyłce (odwrócony warunek, przestawiona granica, ` +
-        `podmieniony napis).`,
+      `the run excludes whole families of mutations: ${wykluczone.join(', ')}.\n` +
+        `    An excluded family leaves the denominator with no trace in the score — and ` +
+        `each of them stands for a real mistake (an inverted condition, a moved boundary, ` +
+        `a swapped string).`,
     );
 
   const zegar = polityka.zegar ?? {};
@@ -513,19 +484,20 @@ export const sprawdzMutacje = (we) => {
     throw new BladMutacji(
       'zwezenie',
       'zegar-skrocony',
-      `\`timeoutMS\` przebiegu (${konfigRaportu.timeoutMS}) jest niższy niż ` +
-        `\`zegar.minimumMS\` z polityki (${zegar.minimumMS}).\n` +
-        `    Mutant zabity przez upływ czasu liczy się do wyniku tak samo jak zabity ` +
-        `asercją, więc skrócenie limitu podnosi procent, nie dokładając testów.`,
+      `the run's \`timeoutMS\` (${konfigRaportu.timeoutMS}) is lower than the policy's ` +
+        `\`zegar.minimumMS\` (${zegar.minimumMS}).\n` +
+        `    A mutant killed by elapsed time counts towards the score exactly like one ` +
+        `killed by an assertion, so shortening the limit raises the percentage without ` +
+        `adding tests.`,
     );
   if ((konfigRaportu.timeoutFactor ?? 0) < (zegar.minimumWspolczynnik ?? 0))
     throw new BladMutacji(
       'zwezenie',
       'wspolczynnik-skrocony',
-      `\`timeoutFactor\` przebiegu (${konfigRaportu.timeoutFactor}) jest niższy niż ` +
-        `\`zegar.minimumWspolczynnik\` z polityki (${zegar.minimumWspolczynnik}).\n` +
-        `    To ta sama dźwignia co \`timeoutMS\`, tylko liczona względem czasu ` +
-        `normalnego przebiegu.`,
+      `the run's \`timeoutFactor\` (${konfigRaportu.timeoutFactor}) is lower than the ` +
+        `policy's \`zegar.minimumWspolczynnik\` (${zegar.minimumWspolczynnik}).\n` +
+        `    The same lever as \`timeoutMS\`, only measured against the time of ` +
+        `a normal run.`,
     );
   const razem = wynikZ(wszystkieMutanty);
   const zZegara = wszystkieMutanty.filter((m) => m.status === 'Timeout').length;
@@ -534,19 +506,19 @@ export const sprawdzMutacje = (we) => {
     throw new BladMutacji(
       'zwezenie',
       'zegar-zamiast-testu',
-      `${zZegara} z ${razem.wykryte} zabitych mutantów zabił ZEGAR (${procent(udzial)}, ` +
-        `dopuszczone ${zegar.udzialZegara}%).\n` +
-        `    Timeout znaczy „mutant zapętlił kod", a nie „test to zauważył". Długi ogon ` +
-        `timeoutów to wynik kupiony czasem przebiegu.`,
+      `${zZegara} of ${razem.wykryte} killed mutants were killed by the CLOCK ` +
+        `(${procent(udzial)}, ${zegar.udzialZegara}% allowed).\n` +
+        `    A timeout means „the mutant looped the code", not „a test noticed". A long ` +
+        `tail of timeouts is a score bought with run time.`,
     );
 
-  // 6. WYNIK. Podłoga twarda (ta sama, którą egzekwuje Stryker) i snapshot per plik.
+  // 6. RESULT. A hard floor (the one Stryker enforces) and a per-file snapshot.
   if (typeof tolerancja !== 'number')
     throw new BladMutacji(
       'wynik',
       'polityka-bez-tolerancji',
-      `${POLITYKA} nie deklaruje pola \`tolerancja\` — bez niej porównanie ze ` +
-        `snapshotem nie ma szerokości i każdy przebieg wyglądałby na rozjazd`,
+      `${POLITYKA} declares no \`tolerancja\` field — without it the comparison against ` +
+        `the snapshot has no width and every run would look like a drift`,
     );
 
   const swiezy = renderujSnapshot(raport, tolerancja);
@@ -554,19 +526,19 @@ export const sprawdzMutacje = (we) => {
     throw new BladMutacji(
       'wynik',
       'brak-snapshotu',
-      `brak \`${SNAPSHOT}\` — uruchom \`node tools/check-mutation.mjs --write\`.\n` +
-        `    Bez snapshotu punkt 6 pilnuje wyłącznie podłogi łącznej, czyli milczy ` +
-        `o pliku, który spadł o dwadzieścia punktów, dopóki reszta go wyrównuje.`,
+      `no \`${SNAPSHOT}\` — run \`node tools/check-mutation.mjs --write\`.\n` +
+        `    Without a snapshot point 6 watches the total floor alone, staying silent ` +
+        `about a file that fell twenty points while the rest make up for it.`,
     );
 
   if (razem.wynik < prog)
     throw new BladMutacji(
       'wynik',
       'podloga-przebita',
-      `wynik łączny ${procent(razem.wynik)} jest poniżej podłogi ${prog}% ` +
-        `(${razem.wykryte} z ${razem.mianownik} mutantów wykrytych).\n` +
-        `    Tyle mutantów przeżyło zestaw testów, czyli tyle zmian zachowania ` +
-        `przechodzi dziś CI na zielono.`,
+      `the total score ${procent(razem.wynik)} is below the ${prog}% floor ` +
+        `(${razem.wykryte} of ${razem.mianownik} mutants detected).\n` +
+        `    That many mutants survived the test suite — that many changes of behaviour ` +
+        `pass CI green today.`,
     );
 
   const zeSnapshotu = new Map(
@@ -582,19 +554,19 @@ export const sprawdzMutacje = (we) => {
     throw new BladMutacji(
       'wynik',
       'snapshot-niepelny',
-      `${brakujace.length} mierzonych plików nie ma wiersza w snapshocie:\n` +
+      `${brakujace.length} measured files have no row in the snapshot:\n` +
         lista(brakujace) +
-        `\n    Plik bez wiersza jest mierzony wyłącznie podłogą łączną. ` +
-        `Lek: \`node tools/check-mutation.mjs --write\`.`,
+        `\n    A file with no row is measured by the total floor alone. ` +
+        `Remedy: \`node tools/check-mutation.mjs --write\`.`,
     );
   const nadmiarowe = [...zeSnapshotu.keys()].filter((p) => !pliki.includes(p));
   if (nadmiarowe.length)
     throw new BladMutacji(
       'wynik',
       'snapshot-przeterminowany',
-      `${nadmiarowe.length} wierszy snapshotu dotyczy plików spoza pomiaru:\n` +
+      `${nadmiarowe.length} snapshot rows concern files outside the measurement:\n` +
         lista(nadmiarowe) +
-        `\n    Wiersz bez pliku czyta się jako dowód, że coś jest mierzone — a nie jest.`,
+        `\n    A row with no file reads as proof that something is measured — and it is not.`,
     );
 
   const spadki = [];
@@ -611,40 +583,40 @@ export const sprawdzMutacje = (we) => {
     throw new BladMutacji(
       'wynik',
       'wynik-spadl',
-      `${spadki.length} plików straciło na wyniku więcej niż ${tolerancja} p.p.:\n` +
+      `${spadki.length} files lost more than ${tolerancja} points of score:\n` +
         lista(spadki) +
-        `\n    Tak wygląda usunięta asercja: testy dalej są zielone, a mutantów ` +
-        `zauważają mniej. Lek: dopisać test albo — jeśli to świadome — przepisać ` +
-        `snapshot i pokazać ten spadek w review.`,
+        `\n    This is what a deleted assertion looks like: the tests are still green and ` +
+        `notice fewer mutants. Remedy: add a test — or, if this is deliberate, rewrite the ` +
+        `snapshot and show the drop in review.`,
     );
   if (skoki.length)
     throw new BladMutacji(
       'wynik',
       'snapshot-odstaje',
-      `${skoki.length} plików wypadło lepiej niż snapshot o więcej niż ${tolerancja} p.p.:\n` +
+      `${skoki.length} files did better than the snapshot by more than ${tolerancja} points:\n` +
         lista(skoki) +
-        `\n    To jest dobra wiadomość i mimo to zapala: podłoga stojąca dziesięć ` +
-        `punktów pod pomiarem przestaje mierzyć — można wtedy skasować co piątą ` +
-        `asercję i zostać zielonym. Lek: \`node tools/check-mutation.mjs --write\`.`,
+        `\n    That is good news and fires all the same: a floor ten points below the ` +
+        `measurement stops measuring — every fifth assertion could then be deleted and the ` +
+        `run stays green. Remedy: \`node tools/check-mutation.mjs --write\`.`,
     );
 
-  // 7. CI. Bramka i sam przebieg to dwa różne targety i każdy da się zdjąć osobno.
+  // 7. CI. The gate and the run itself are two targets, each removable on its own.
   for (const target of ['mutacja', 'check-mutation'])
     if (!(we.ci?.targety ?? []).includes(target))
       throw new BladMutacji(
         'ci',
         'ci-bez-targetu',
-        `w \`${CI}\` nie widzę targetu \`${target}\` na liście uruchamianych.\n` +
-          `    To jest mianownik całej tej bramki: wszystko wyżej opisuje przebieg, ` +
-          `którego nikt nie odpala, a lokalnie każdy z nich przechodzi.`,
+        `\`${CI}\` does not have the \`${target}\` target among the ones it runs.\n` +
+          `    That is this whole gate's denominator: everything above describes a run ` +
+          `nobody starts, and locally each of them passes.`,
       );
 
   return {
     opis:
-      `${pliki.length} plików, ${razem.mianownik} mutantów — wynik ` +
-      `${procent(razem.wynik)} przy podłodze ${prog}% ` +
-      `(${razem.mianownik - razem.wykryte} przeżywających, ` +
-      `${wszystkieMutanty.filter((m) => m.status === 'Ignored').length} zignorowanych)`,
+      `${pliki.length} files, ${razem.mianownik} mutants — score ` +
+      `${procent(razem.wynik)} against a ${prog}% floor ` +
+      `(${razem.mianownik - razem.wykryte} surviving, ` +
+      `${wszystkieMutanty.filter((m) => m.status === 'Ignored').length} ignored)`,
     snapshot: swiezy,
   };
 };
@@ -673,8 +645,8 @@ const wIndeksie = (sciezka) =>
     .filter(Boolean);
 
 /**
- * Polecenia obu targetów Z GRAFU NX, a nie z `project.json`: to graf jest tym,
- * co Nx naprawdę uruchomi, i to on scala konfiguracje oraz wartości domyślne.
+ * Both targets' commands FROM THE NX GRAPH, not from `project.json`: the graph is what Nx
+ * will really run, and it is the graph that merges configurations and defaults.
  */
 const targetyZGrafu = async () => {
   const { createProjectGraphAsync } = await import('@nx/devkit');
@@ -693,9 +665,9 @@ const targetyZGrafu = async () => {
 };
 
 /**
- * Które targety uruchamia workflow. Komentarze obcinane PRZED szukaniem — ten
- * workflow tłumaczy każdy swój krok akapitem prozy, więc zdanie o targecie
- * wygląda dla wzorca dokładnie jak jego wywołanie (`lesson-56` w `check-browsers`).
+ * Which targets the workflow runs. Comments are stripped BEFORE the search — this
+ * workflow explains every step of its own in a paragraph of prose, so a sentence about a
+ * target looks to a pattern exactly like a call to it (`lesson-56` in `check-browsers`).
  */
 const targetyCi = () => {
   const linie = (czytaj(CI) ?? '')
@@ -735,9 +707,9 @@ const wczytajFixture = (nazwa) =>
   JSON.parse(readFileSync(join(FIXTURES, nazwa), 'utf8'));
 
 /**
- * Wejście wzorcowe trzyma pliki skrótowo (nazwa → mutanty jako lista statusów),
- * żeby przypadek dało się przeczytać jednym spojrzeniem. Rozwijamy je tu do
- * kształtu, jaki ma raport Strykera.
+ * The reference input keeps its files in shorthand (name → mutants as a list of statuses),
+ * so a case can be read at a glance. Here they are expanded into the shape of a Stryker
+ * report.
  */
 const rozwinPliki = (skrot) =>
   Object.fromEntries(
@@ -767,10 +739,11 @@ const zlozRaport = (w) => ({
  * Builds a case's input ON A COPY of the reference one, so the case file holds nothing
  * but its own defect — you cannot break something in passing and not notice.
  *
- * Snapshot wzorcowy renderuje się z raportu SPRZED zmian przypadku i tym samym
- * rendererem co produkcyjny. Jedno i drugie jest konieczne: wyrenderowany po
- * zmianach zawsze zgadzałby się z pomiarem (czyli punkt 6 nie miałby czego badać),
- * a wpisany w plik ręcznie zapalałby na różnicy formatu, a nie na wadzie przypadku.
+ * The reference snapshot is rendered from the report BEFORE the case's changes, and by the
+ * same renderer as the production one. Both are necessary: rendered after the changes it
+ * would always agree with the measurement (so point 6 would have nothing to examine), and
+ * written into the file by hand it would fire on a difference of format rather than on the
+ * case's defect.
  */
 const zlozFixture = (fx) => {
   const w = structuredClone(wczytajFixture(BAZA).wejscie);
@@ -781,8 +754,8 @@ const zlozFixture = (fx) => {
     w.plikiSkrot[plik] = dane;
   for (const [plik, statusy] of Object.entries(fx.podmienStatusy ?? {}))
     w.plikiSkrot[plik].statusy = statusy;
-  // Treść pliku stoi w dwóch miejscach — na dysku i w raporcie — i to, czy zmiana
-  // dotyczy obu, jest całą różnicą między „inny kod" a „nieaktualny pomiar".
+  // A file's text stands in two places — on disk and in the report — and whether a change
+  // touches both is the whole difference between „other code" and „a stale measurement".
   for (const [plik, tresc] of Object.entries(fx.podmienZrodlo ?? {})) {
     w.zrodla[plik] = tresc;
     w.plikiSkrot[plik].source = tresc;
@@ -836,11 +809,11 @@ try {
   problems.push(`${blad.kontrola}/${blad.regula}: ${blad.message}`);
 }
 
-// `--write` jest właściwą odpowiedzią na trzy reguły punktu 6 (`brak-snapshotu`,
-// `snapshot-niepelny`, `snapshot-odstaje`), więc snapshot musi dać się przepisać
-// TAKŻE wtedy, gdy bramka na nich zapaliła — inaczej jedyne polecenie naprawiające
-// te reguły byłoby dostępne dokładnie poza stanem, w którym jest potrzebne.
-// Renderuje z dysku, nie z wyniku wyżej: przy zapalonej regule tamtego wyniku nie ma.
+// `--write` is the right answer to three rules of point 6 (`brak-snapshotu`,
+// `snapshot-niepelny`, `snapshot-odstaje`), so the snapshot has to be rewritable EVEN when
+// the gate fired on them — otherwise the one command that fixes those rules would be
+// available exactly outside the state in which it is needed. It renders from disk, not
+// from the result above: with a rule fired there is no such result.
 if (WRITE) {
   const raport = json(RAPORT);
   const polityka = json(POLITYKA) ?? {};
@@ -852,14 +825,14 @@ if (WRITE) {
     console.log(`✓ Rewrote ${SNAPSHOT}`);
     process.exit(0);
   }
-  console.error(`X Nie ma z czego przepisać snapshotu — brak ${RAPORT}.`);
+  console.error(`X Nothing to rewrite the snapshot from — no ${RAPORT}.`);
   process.exit(1);
 }
 
 if (!existsSync(FIXTURES))
   problems.push(
-    `tools/check-mutation.fixtures: katalog nie istnieje — bramka bez dowodu, ` +
-      `że potrafi nie przejść, jest kolejną cichą wadą (req-quality-negative-control)`,
+    `tools/check-mutation.fixtures: the directory does not exist — a gate with no proof ` +
+      `that it can fail is one more silent defect (req-quality-negative-control)`,
   );
 
 const przypadki = existsSync(FIXTURES)
@@ -917,5 +890,5 @@ if (problems.length) {
 
 console.log(
   `✓ Mutation run: ${opis}. Negative control: the reference input passes, ` +
-    `${przypadki.length} spreparowanych odrzuconych na swoich regułach.`,
+    `${przypadki.length} prepared ones rejected on their own rules.`,
 );
