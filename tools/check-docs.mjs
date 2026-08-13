@@ -113,10 +113,9 @@ const ids = new Set(requirements.map((r) => r.id));
 const dupes = requirements
   .map((r) => r.id)
   .filter((id, i, a) => a.indexOf(id) !== i);
-for (const d of new Set(dupes))
-  fail('docs', `zduplikowany identyfikator \`${d}\``);
+for (const d of new Set(dupes)) fail('docs', `duplicate identifier \`${d}\``);
 
-// ── lekcje ────────────────────────────────────────────────────────────────────
+// ── lessons ───────────────────────────────────────────────────────────────────
 
 const lessonIds = new Set(
   [...read('docs/lessons.md').matchAll(/<a id="(lesson-\d+)"><\/a>/g)].map(
@@ -132,7 +131,7 @@ const BRAK = /^none\s*[—-]\s*(deliberately|gap)\s*:\s*(.+)$/s;
 const classify = (value, req, fieldName) => {
   const v = (value ?? '').trim();
   if (!v) {
-    fail(req.id, `pole **${fieldName}** jest puste`);
+    fail(req.id, `field **${fieldName}** is empty`);
     return null;
   }
   if (/^not applicable\b/i.test(v)) return 'świadomie';
@@ -157,9 +156,9 @@ const classify = (value, req, fieldName) => {
 };
 
 for (const req of requirements) {
-  if (!req.fields.Promise?.trim()) fail(req.id, 'brak pola **Promise**');
-  if (req.fields.Gate === undefined) fail(req.id, 'brak pola **Gate**');
-  if (req.fields.Control === undefined) fail(req.id, 'brak pola **Control**');
+  if (!req.fields.Promise?.trim()) fail(req.id, 'no **Promise** field');
+  if (req.fields.Gate === undefined) fail(req.id, 'no **Gate** field');
+  if (req.fields.Control === undefined) fail(req.id, 'no **Control** field');
 
   req.stanBramki = classify(req.fields.Gate, req, 'Gate');
   req.stanKontroli = classify(req.fields.Control, req, 'Control');
@@ -554,7 +553,7 @@ if (WRITE) {
   }
 }
 
-// ── 6. kontrola odniesienia ───────────────────────────────────────────────────
+// ── 6. negative control ───────────────────────────────────────────────────────
 
 const FIXTURES = 'tools/check-docs.fixtures';
 

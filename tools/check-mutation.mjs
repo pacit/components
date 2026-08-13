@@ -138,7 +138,7 @@ const renderujSnapshot = (raport, tolerancja) => {
     NAGLOWEK.replace('%TOLERANCJA%', String(tolerancja)) +
     '\n```\n' +
     wiersze.join('\n') +
-    `\nRAZEM ${razem.wynik.toFixed(2)} ${razem.wykryte}/${razem.mianownik}\n` +
+    `\nTOTAL ${razem.wynik.toFixed(2)} ${razem.wykryte}/${razem.mianownik}\n` +
     '```\n'
   );
 };
@@ -454,9 +454,9 @@ export const sprawdzMutacje = (we) => {
       `${wZrodle.length} measured files carry a comment that switches Stryker off:\n` +
         lista(wZrodle) +
         `\n    The library has not one candidate for such an exception today, so the ` +
-        `mechanism does not exist — a door with no user is a dead artifact. ` +
-        `Mutant nie do zabicia jest zdaniem do napisania w ${POLITYKA}, nie ` +
-        `a comment in code that nobody else reads.`,
+        `mechanism does not exist — a door with no user is a dead artifact. An ` +
+        `unkillable mutant is a sentence to write in ${POLITYKA}, not a comment in code ` +
+        `that nobody else reads.`,
     );
 
   if (konfigRaportu.ignoreStatic)
@@ -783,7 +783,7 @@ const zlozFixture = (fx) => {
       .filter((l) => !l.startsWith(`${plik} `))
       .join('\n');
   for (const wiersz of fx.dopiszWierszSnapshotu ?? [])
-    snapshot = snapshot.replace('RAZEM', `${wiersz}\nRAZEM`);
+    snapshot = snapshot.replace('TOTAL', `${wiersz}\nTOTAL`);
 
   return {
     polityka: w.polityka,

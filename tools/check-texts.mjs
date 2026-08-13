@@ -711,19 +711,19 @@ const sprawdzTeksty = (we) => {
         `w A5 i A12).`,
     );
 
-  // ── 2. ARTEFAKT ─────────────────────────────────────────────────────────────
+  // ── 2. ARTIFACT ─────────────────────────────────────────────────────────────
   //
   //    The source read reads a decorator's text, so it is blind to a `host` block
   //    composed by spreading somebody else's object (`...fitHost`). The package read
-  //    czyta `ɵdir.hostAttrs` i `ɵcmp.consts` po zlinkowaniu, czyli wynik
-  //    PRAWDZIWEGO kompilatora. Ten sam ruch co w A3 i A6.
+  //    reads `ɵdir.hostAttrs` and `ɵcmp.consts` after linking — the output of the REAL
+  //    compiler. The same move as in A3 and A6.
   if (!pakiet.length)
     throw new BladTekstu(
       'artefakt',
       'pakiet-pusty',
       `the built package gave not one class with an Angular definition — the comparison ` +
-        `would pass with nothing to compare.\n    Usual cause: a stale ` +
-        `albo puste \`${DIST}\` (bramka wymaga \`dependsOn: build\`).`,
+        `would pass with nothing to compare.\n    Usual cause: a stale or empty ` +
+        `\`${DIST}\` (the gate needs \`dependsOn: build\`).`,
     );
 
   const zeZrodel = new Map(klasy.map((k) => [k.klasa, k]));
@@ -1105,7 +1105,7 @@ const parujAtrybuty = (attrs) => {
 };
 
 /**
- * Definicje ze ZBUDOWANEGO pakietu. `@angular/compiler` jest wczytany pierwszy,
+ * Definitions from the BUILT package. `@angular/compiler` is loaded first,
  * because the package is partially compiled and `ɵcmp` appears only on access — the same
  * step the linker performs at the consumer's (`lesson-46`).
  */

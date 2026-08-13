@@ -1,77 +1,22 @@
 #!/usr/bin/env node
 /**
- * Bramka tokenów: nazwy, poziomy, pary. Trzy obietnice o jednym grafie —
- * `req-token-names`, `req-token-tiers`, `req-token-text-pairs` — pilnowane
- * w jednym przebiegu, bo wszystkie trzy stoją na TYM SAMYM mianowniku: liście
- * tokenów. Token, którego bramka nie zobaczy, jest niezgadywalny, poza warstwami
- * i niezmierzony naraz, a każda z trzech reguł osobno wyglądałaby przy nim
- * zielono.
+ * Token gate: names, tiers, pairs — `req-token-names`, `req-token-tiers` and
+ * `req-token-text-pairs` in one pass, because all three rest on THE SAME denominator: the
+ * list of tokens. A token the gate does not see is unguessable, outside the tiers and
+ * unmeasured at once, and each of the three rules alone would look green beside it.
  *
- * Powód istnienia jest potrójny i warto go rozdzielić, bo to trzy różne wady:
+ *  1. SET: the names in `dist/pct.css` match an independent walk of the DTCG sources,
+ *  2. SURFACE: `dist/tokens.ts` and `_tokens.scss` carry exactly the names they should,
+ *  3. SCHEMA: every name parses against the dictionary; a component in it is an entrypoint,
+ *  4. DICTIONARY: every declared word is used,
+ *  5. SNAPSHOT: the versioned list of names matches the current one,
+ *  6. TIERS: references point downwards — component → semantic → primitive → literal,
+ *  7. PAIRS: every colour the library REALLY paints stands in the contrast policy.
  *
- *  - nazwa tokenu jest **publicznym API motywu** dokładnie tak samo jak nazwa
- *    inputu jest publicznym API komponentu. Przemianowanie `--pct-button-bg` psuje
- *    konsumentowi skórkę i nie daje przy tym ani jednego czerwonego testu, bo
- *    biblioteka zmienia obie strony naraz — arkusz i token;
- *  - nazwa NIEZGADYWALNA nie psuje niczego dziś i wszystko jutro. Zbiór, w którym
- *    stan raz nazywa się `hover`, a raz stoi przed właściwością, wymusza
- *    dokumentację przy każdym użyciu, czyli cofa obietnicę do zera przy zerowym
- *    koszcie widocznym w review;
- *  - token komponentowy sięgający po PRYMITYW odbiera autorowi motywu warstwę,
- *    przez którą miał sterować, a kolor, którego nie ma w policy kontrastu, nie
- *    jest przez tę policy mierzony — i to drugie jest gorsze, bo bramka kontrastu
- *    wygląda wtedy dokładnie tak samo jak wtedy, gdy naprawdę wszystko przechodzi
- *    (lesson-33).
+ * Point 5 stands before 6 and 7: a snapshot fires on every change of a name, including one
+ * point 3 can name precisely. Point 7 reads `libs/components` stylesheets through sass.
  *
- * Sprawdzane jest siedem rzeczy:
- *  1. ZBIÓR: nazwy odczytane z `dist/pct.css` zgadzają się z niezależnym obejściem
- *     źródeł DTCG — i żadna strona nie jest pusta,
- *  2. POWIERZCHNIA: `dist/tokens.ts` i `dist/_tokens.scss` niosą dokładnie te
- *     nazwy, które mają nieść (prywatne prefiksy wg polityki, nie wg zgadywania),
- *  3. SCHEMAT: każda nazwa parsuje się wobec słownika, a komponent w nazwie jest
- *     prawdziwym entrypointem pakietu,
- *  4. SŁOWNIK: każde zadeklarowane słowo jest użyte,
- *  5. SNAPSHOT: wersjonowana lista nazw zgadza się z bieżącą,
- *  6. POZIOMY: graf referencji idzie w dół — komponentowy do semantycznego,
- *     semantyczny do prymitywnego, prymitywny do literału,
- *  7. PARY: każdy kolor, który biblioteka NAPRAWDĘ maluje, stoi w policy
- *     kontrastu, a każda para `on-*` jest używana.
- *
- * Punkty 3, 5, 6 i 7 to same reguły; punkty 1, 2 i 4 pilnują MIANOWNIKA, z którego
- * te reguły powstają — tego samego, który w A2 kurczył się jako próbka plików
- * w raporcie pokrycia, w A6 jako zbiór mierzonych komponentów, w A7 jako zbiór
- * projektów, a w A5 jako zbiór deklaracji widzianych przez skaner. Tutaj kurczy
- * się zbiór NAZW: token, którego bramka nie zobaczy, jest dla punktów 3 i 5 tym
- * samym co plik poza raportem pokrycia — i to on wejdzie do pakietu bez śladu.
- * Punkt 7 ma przy tym własny mianownik i własną kontrolę niepustości: mierzy
- * ARKUSZE, a lista arkuszy, która przestała cokolwiek zwracać, przepuszcza
- * wszystko (lesson-48).
- *
- * Kolejność punktów nie jest przypadkowa. Punkt 5 stoi przed 6 i 7, bo snapshot
- * zapala na każdej zmianie nazwy, także na tej, którą punkt 3 potrafi nazwać po
- * imieniu; odwrotna kolejność dawałaby na złą nazwę komunikat „snapshot się
- * rozjechał", czyli poprawną diagnozę problemu, którego nie ma. Punkty 6 i 7 stoją
- * po nim, bo mówią o WARTOŚCIACH i UŻYCIACH, a nie o liście nazw — zmiana, która
- * je zapala, nie rusza snapshotu.
- *
- * Punkt 7 czyta arkusze biblioteki przez sass, a nie przez wzorzec po tekście
- * źródła — ten sam ruch co w `check-styles` (A5) i z tego samego powodu: token
- * wniesiony mixinem albo interpolacją dociera do przeglądarki, nie stojąc
- * w tekście nigdzie. Czyta przy tym WYŁĄCZNIE `libs/components`, bo obietnica
- * dotyczy skórki biblioteki; arkusz sandboxa maluje własne powierzchnie i nie
- * jest niczyją obietnicą.
- *
- * Do tego ósmy przebieg, który nie bada tokenów, tylko TĘ BRAMKĘ: kontrola
- * odniesienia z `tools/check-tokens.fixtures/` (`req-quality-negative-control`).
- *
- * Użycie:
- *   node tools/check-tokens.mjs                    sprawdza
- *   node tools/check-tokens.mjs --write            przepisuje snapshot repozytorium
- *   node tools/check-tokens.mjs --write <fixture>  przepisuje snapshot fixture'a
- *
- * Trzecia postać jest wyłącznie utrzymaniowa: fixture ma własny snapshot i musi go
- * dostać z tego samego renderera co repozytorium, bo inaczej wejście wzorcowe
- * przestaje przechodzić przy pierwszej zmianie formatu pliku.
+ * Usage: node tools/check-tokens.mjs [--write [<fixture>]]
  */
 import { execFileSync } from 'node:child_process';
 import {
@@ -109,20 +54,19 @@ const WRITE_FIXTURE = (() => {
 const cssVar = (sciezka) => '--' + sciezka.replace(/\./g, '-');
 const lista = (wpisy) => wpisy.map((w) => `      ${w}`).join('\n');
 
-/** Pierwsze `ile` pozycji plus informacja, ile zostało — komunikat ma być czytelny. */
+/** The first `ile` entries plus how many are left — a message has to stay readable. */
 const skroc = (wpisy, ile = 8) =>
   wpisy.length <= ile
     ? wpisy
     : [...wpisy.slice(0, ile), `… i ${wpisy.length - ile} dalszych`];
 
-// ── słownik ───────────────────────────────────────────────────────────────────
+// ── the dictionary ───────────────────────────────────────────────────────────────────
 
 /**
- * Dopasowania słowa na POCZĄTKU tekstu, od najdłuższego. Kolejność ma znaczenie
- * przy słowach zagnieżdżonych: `group-label-fg` musi zobaczyć część
- * `group-label`, a nie `label`, bo ta druga nie stoi na początku i tak — ale
- * `font-size-sm` musi zobaczyć właściwość `font-size`, a nie `font`, i tu
- * kolejność już rozstrzyga.
+ * Matches of a word at the START of the text, longest first. The order matters for nested
+ * words: `group-label-fg` has to see the part `group-label` and not `label` — the latter
+ * does not start the text anyway — but `font-size-sm` has to see the property `font-size`
+ * and not `font`, and there the order does decide.
  */
 const przedrostki = (slowa, tekst) =>
   slowa
@@ -130,10 +74,9 @@ const przedrostki = (slowa, tekst) =>
     .sort((a, b) => b.length - a.length);
 
 /**
- * `[{część}-]{właściwość}[-{wariant}]`. Przeszukiwanie z nawrotami, bo dopasowanie
- * zachłanne potrafi zająć słowo potrzebne dalej: nazwa zaczynająca się częścią,
- * która jest też przedrostkiem właściwości, ma dwa odczyty i wolno przyjąć ten,
- * który domyka się w całości.
+ * `[{part}-]{property}[-{variant}]`. A search with backtracking, because a greedy match
+ * can take a word needed later: a name starting with a part that is also a prefix of a
+ * property has two readings, and the one that closes completely is the one to take.
  */
 const parsujKomponentowy = (reszta, polityka) => {
   const { czesci, wlasciwosci, stany, wielkosci } = polityka.komponentowe;
@@ -141,7 +84,7 @@ const parsujKomponentowy = (reszta, polityka) => {
 
   for (const czesc of [null, ...przedrostki(czesci, reszta)]) {
     const poCzesci = czesc === null ? reszta : reszta.slice(czesc.length + 1);
-    if (!poCzesci) continue; // część bez właściwości nie jest nazwą
+    if (!poCzesci) continue; // a part with no property is not a name
     for (const wlasciwosc of przedrostki(wlasciwosci, poCzesci)) {
       const ogon =
         poCzesci === wlasciwosc ? '' : poCzesci.slice(wlasciwosc.length + 1);
@@ -169,21 +112,19 @@ const parsujSemantyczny = (reszta, polityka) => {
 // ── kontrole ──────────────────────────────────────────────────────────────────
 
 /**
- * Naruszenie jednej z siedmiu kontroli — z identyfikatorem, nie tylko komunikatem.
- * Kontrola odniesienia musi sprawdzić, że spreparowane wejście zapaliło NA SWOIM
- * punkcie: wejście wywalające się z innego powodu, niż deklaruje, dowodzi czegoś
- * innego, niż deklaruje.
+ * A violation of one of the seven checks — with an identifier, not just a message. The
+ * negative control has to verify that a prepared input fired ON ITS OWN point: an input
+ * failing for a reason other than the one it declares proves something other than what it
+ * declares.
  *
- * Trzeci parametr — `regula` — jest odpowiedzią na `lesson-50`. Punkt bramki to
- * nie jest jedno zdanie: punkt 6 niesie dziewięć reguł, punkt 7 sześć.
- * Porównanie samego identyfikatora punktu przepuszcza przypadek, który zapalił
- * na SĄSIEDNIEJ regule tego samego punktu — czyli dowodzi czegoś innego, niż
- * deklaruje, i wygląda przy tym na dowód. Zmierzone: rozbrojenie pięciu z tych
- * reguł przestawia ich przypadki na sąsiednie reguły tego samego punktu i bez
- * tego pola wszystkie te przebiegi byłyby zielone. `fixture.json` może więc
- * dopisać `regula` i wtedy musi się zgadzać także ona. Pole jest opcjonalne:
- * przypadki punktów 1–5, których reguł nie rozdzielono, nie mają czego
- * doprecyzowywać.
+ * The third parameter — `regula` — is the answer to `lesson-50`. A gate's point is not one
+ * sentence: point 6 carries nine rules, point 7 six. Comparing the point's identifier alone
+ * lets through a case that fired on a NEIGHBOURING rule of the same point — proving
+ * something other than what it declares while looking like proof. Measured: disarming five
+ * of those rules moves their cases onto neighbouring rules of the same point, and without
+ * this field all those runs would be green. A `fixture.json` may therefore add `regula`,
+ * and then that has to match too. The field is optional: the cases of points 1–5, whose
+ * rules were not split, have nothing to narrow down.
  */
 class BladTokenu extends Error {
   constructor(kontrola, opis, regula = null) {
@@ -194,10 +135,10 @@ class BladTokenu extends Error {
 }
 
 /**
- * Komplet kontroli na gotowym wejściu. Rzuca `BladTokenu` przy pierwszym
- * naruszeniu i zwraca `{ opis, snapshot }` — wyrenderowany snapshot wraca nawet
- * z przebiegu sprawdzającego, bo `--write` musi zapisać dokładnie to, co bramka
- * przed chwilą policzyła, a nie policzyć drugi raz osobną ścieżką.
+ * The full set of checks over a ready input. Throws `BladTokenu` on the first violation and
+ * returns `{ opis, snapshot }` — the rendered snapshot comes back even from a checking run,
+ * because `--write` has to write exactly what the gate has just counted rather than count a
+ * second time down another path.
  */
 const sprawdzTokeny = (we) => {
   const {
@@ -213,17 +154,17 @@ const sprawdzTokeny = (we) => {
     entrypointy,
   } = we;
 
-  // 1. ZBIÓR — dwa niezależne odczyty tej samej listy.
+  // 1. SET — two independent reads of the same list.
   //
-  //    Odczyt A czyta TEKST wygenerowanego CSS-a, czyli to, co naprawdę dostaje
-  //    przeglądarka. Odczyt B obchodzi drzewa DTCG w źródłach. Niezależność jest
-  //    tu całą wartością: gdyby lista brała się tylko ze źródeł, generator
-  //    gubiący token nie zmieniłby jej ani o jotę, a gdyby tylko z CSS-a —
-  //    plik źródłowy, którego build nie wczytuje, byłby niewidzialny.
+  //    Read A reads the TEXT of the generated CSS, that is, what the browser really gets.
+  //    Read B walks the DTCG trees in the sources. The independence is the whole value:
+  //    were the list to come from the sources alone, a generator losing a token would not
+  //    change it by a jot; from the CSS alone, a source file the build does not load would
+  //    be invisible.
   //
-  //    Stąd też reguła „DTCG to plik z korzeniem `pct`", a nie powtórzenie
-  //    wzorca `component.*.json` z generatora: powtórzony wzorzec przestałby
-  //    być drugim zdaniem o tej samej rzeczy.
+  //    Hence also the rule „DTCG is a file with a `pct` root" rather than a repetition of
+  //    the generator's `component.*.json` pattern: a repeated pattern would stop being a
+  //    second sentence about the same thing.
   const zCss = new Set(
     [...css.matchAll(/^\s*(--pct-[a-z0-9-]+)\s*:/gm)].map((m) => m[1]),
   );
@@ -239,11 +180,11 @@ const sprawdzTokeny = (we) => {
       };
       wpis.typy.add(typ);
       wpis.pliki.push(plik);
-      // Wartość zbiera się PER PLIK, a nie jedna na token: `semantic.dark.json`
+      // Values are collected PER FILE, not one per token: `semantic.dark.json`
       // nadpisuje `semantic.light.json`, a `motion.reduced.json` — prymitywy osi
-      // ruchu. Punkt 6 musi obejrzeć każdą z nich osobno, bo motyw ciemny może
-      // wskazywać gdzie indziej niż jasny i to właśnie tam złamanie warstw
-      // byłoby najmniej widoczne.
+      // axis. Point 6 has to look at each of them separately, because a dark theme may
+      // point elsewhere than a light one — and that is precisely where a broken tier would
+      // be least visible.
       wpis.wartosci.push({ plik, wartosc });
       zeZrodel.set(nazwa, wpis);
     }
@@ -251,10 +192,10 @@ const sprawdzTokeny = (we) => {
   if (!zCss.size || !zeZrodel.size)
     throw new BladTokenu(
       'zbior',
-      `pusty zbiór nazw (CSS: ${zCss.size}, źródła DTCG: ${zeZrodel.size}) — ` +
-        `wszystkie dalsze punkty przeszłyby wtedy, nie orzekając o niczym.\n` +
-        `    Najczęstsza przyczyna: nieaktualne albo puste \`${TOKENY}/dist\` ` +
-        `(bramka wymaga \`dependsOn: build\`) albo lista plików, która przestała cokolwiek zwracać.`,
+      `an empty set of names (CSS: ${zCss.size}, DTCG sources: ${zeZrodel.size}) — ` +
+        `every later point would then pass without pronouncing on anything.\n` +
+        `    Usual cause: a stale or empty \`${TOKENY}/dist\` (the gate needs ` +
+        `\`dependsOn: build\`), or a file list that stopped returning anything.`,
     );
 
   const brakWCss = [...zeZrodel.keys()].filter((n) => !zCss.has(n)).sort();
@@ -262,20 +203,20 @@ const sprawdzTokeny = (we) => {
   if (brakWCss.length || brakWZrodlach.length)
     throw new BladTokenu(
       'zbior',
-      `dwa odczyty tej samej listy się nie zgadzają:\n` +
+      `the two reads of the same list disagree:\n` +
         (brakWCss.length
-          ? `    w źródłach DTCG, a nie w \`dist/pct.css\` (${brakWCss.length}):\n` +
+          ? `    in the DTCG sources, not in \`dist/pct.css\` (${brakWCss.length}):\n` +
             lista(skroc(brakWCss)) +
             '\n'
           : '') +
         (brakWZrodlach.length
-          ? `    w \`dist/pct.css\`, a nie w źródłach DTCG (${brakWZrodlach.length}):\n` +
+          ? `    in \`dist/pct.css\`, not in the DTCG sources (${brakWZrodlach.length}):\n` +
             lista(skroc(brakWZrodlach)) +
             '\n'
           : '') +
-        `    Pierwsze to token, którego generator nie emituje, albo nieaktualne \`dist\`; ` +
-        `drugie — plik źródłowy, którego generator nie wczytuje. Jedno i drugie znaczy, ` +
-        `że lista nazw z tej bramki nie jest listą nazw z pakietu.`,
+        `    The first kind is a token the generator does not emit, or a stale \`dist\`; ` +
+        `the second is a source file the generator does not load. Either way, this gate's ` +
+        `list of names is not the package's list of names.`,
     );
 
   const niejednoznaczne = [...zeZrodel]
@@ -287,14 +228,14 @@ const sprawdzTokeny = (we) => {
   if (niejednoznaczne.length)
     throw new BladTokenu(
       'zbior',
-      `${niejednoznaczne.length} tokenów ma w źródłach więcej niż jeden \`$type\`:\n` +
+      `${niejednoznaczne.length} tokens have more than one \`$type\` in the sources:\n` +
         lista(niejednoznaczne) +
-        `\n    Typ jedzie do konsumenta w snapshocie i w \`tokens.ts\`; przy dwóch ` +
-        `wartościach nie ma czego tam zapisać.`,
+        `\n    The type travels to the consumer in the snapshot and in \`tokens.ts\`; ` +
+        `with two values there is nothing to write there.`,
     );
 
-  // Warstwa bierze się z PLIKU ŹRÓDŁOWEGO, nie z kształtu nazwy. Odwrotnie
-  // byłoby wnioskowaniem o warstwie z tego, czego ta bramka ma dopiero pilnować.
+  // A tier comes from the SOURCE FILE, not from the shape of a name. The other way round
+  // would infer the tier from the very thing this gate is meant to watch.
   const nazwy = [...zeZrodel]
     .map(([nazwa, w]) => ({
       nazwa,
@@ -309,18 +250,18 @@ const sprawdzTokeny = (we) => {
   if (bezWarstwy.length)
     throw new BladTokenu(
       'zbior',
-      `${bezWarstwy.length} tokenów nie da się przypisać do warstwy:\n` +
+      `${bezWarstwy.length} tokens cannot be assigned to a tier:\n` +
         lista(skroc(bezWarstwy.map((n) => `${n.nazwa} (${n.powod})`))) +
-        `\n    Warstwa bierze się z nazwy pliku źródłowego (\`primitive\`, \`semantic.*\`, ` +
-        `\`component.<nazwa>\`, \`motion.*\`). Plik nazwany inaczej wiezie tokeny, o których ` +
-        `nie wiadomo, czym są — a punkt 3 pyta o schemat WŁAŚCIWY DLA WARSTWY.`,
+        `\n    A tier comes from the source file's name (\`primitive\`, \`semantic.*\`, ` +
+        `\`component.<name>\`, \`motion.*\`). A file named otherwise carries tokens nobody ` +
+        `knows the kind of — and point 3 asks about the schema PROPER TO A TIER.`,
     );
 
   // 2. POWIERZCHNIA — co z tej listy widzi konsument.
   //
-  //    `_tokens.scss` niesie wszystko, `tokens.ts` wszystko poza prefiksami
-  //    zadeklarowanymi jako prywatne. Prefiksy czyta się z polityki, a nie
-  //    z generatora, bo inaczej bramka potwierdzałaby wyłącznie to, że generator
+  //    `_tokens.scss` carries everything, `tokens.ts` everything outside the prefixes
+  //    declared private. The prefixes are read from the policy and not from the generator,
+  //    or the gate would only be confirming that the generator
   //    robi to, co robi.
   const prywatny = (sciezka) =>
     polityka.prywatne.prefiksy.some((p) => sciezka.startsWith(p));
@@ -331,11 +272,11 @@ const sprawdzTokeny = (we) => {
   if (nieuzytePrefiksy.length)
     throw new BladTokenu(
       'powierzchnia',
-      `${nieuzytePrefiksy.length} prefiksów prywatnych nie obejmuje ani jednego tokenu: ` +
+      `${nieuzytePrefiksy.length} private prefixes cover no token at all: ` +
         nieuzytePrefiksy.map((p) => `\`${p}\``).join(', ') +
-        `\n    Martwy prefiks nie jest nieszkodliwy: wygląda w polityce jak zasięg, ` +
-        `którego nie ma, i przy najbliższym przemianowaniu przestanie chronić to, ` +
-        `co miał chronić — po cichu.`,
+        `\n    A dead prefix is not harmless: in the policy it looks like a reach that ` +
+        `does not exist, and at the next rename it will stop protecting what it was meant ` +
+        `to protect — quietly.`,
     );
 
   porownajPowierzchnie(
@@ -358,23 +299,23 @@ const sprawdzTokeny = (we) => {
       [...ts.matchAll(/^\s*\|\s*'(--pct-[a-z0-9-]+)'/gm)].map((m) => m[1]),
     ),
     publiczne,
-    'tokeny spoza prefiksów prywatnych',
+    'tokens outside the private prefixes',
   );
   porownajPowierzchnie(
-    'dist/tokens.ts (stała pctTokens)',
+    'dist/tokens.ts (the pctTokens constant)',
     new Set(
       [...ts.matchAll(/^\s*'([a-z0-9.-]+)':/gm)].map((m) => cssVar(m[1])),
     ),
     publiczne,
-    'tokeny spoza prefiksów prywatnych',
+    'tokens outside the private prefixes',
   );
 
-  // 3. SCHEMAT — czy nazwę da się zgadnąć.
+  // 3. SCHEMA — can a name be guessed?
   const zle = [];
   for (const n of nazwy) {
     const segmenty = n.sciezka.split('.');
     if (segmenty[0] !== 'pct') {
-      zle.push(`${n.nazwa}: ścieżka nie zaczyna się od \`pct\``);
+      zle.push(`${n.nazwa}: the path does not start with \`pct\``);
       continue;
     }
 
@@ -382,23 +323,25 @@ const sprawdzTokeny = (we) => {
       const [, os, ...krok] = segmenty;
       if (!polityka.prymitywne.osie.includes(os))
         zle.push(
-          `${n.nazwa}: oś \`${os}\` nie jest zadeklarowana ` +
+          `${n.nazwa}: the axis \`${os}\` is not declared ` +
             `(${polityka.prymitywne.osie.join(', ')})`,
         );
       else if (!krok.length)
-        zle.push(`${n.nazwa}: oś bez kroku — sama oś nie jest tokenem`);
+        zle.push(
+          `${n.nazwa}: an axis with no step — an axis alone is not a token`,
+        );
       continue;
     }
 
     if (n.warstwa === 'semantyczny') {
       if (segmenty.length !== 2)
         zle.push(
-          `${n.nazwa}: warstwa semantyczna jest PŁASKA, a ścieżka ma ` +
-            `${segmenty.length} segmenty`,
+          `${n.nazwa}: the semantic tier is FLAT, and this path has ` +
+            `${segmenty.length} segments`,
         );
       else if (!parsujSemantyczny(segmenty[1], polityka))
         zle.push(
-          `${n.nazwa}: nie składa się w \`[on-]{rola}[-{wariant}]\` ze słownika`,
+          `${n.nazwa}: does not compose into \`[on-]{role}[-{variant}]\` from the dictionary`,
         );
       continue;
     }
@@ -406,27 +349,27 @@ const sprawdzTokeny = (we) => {
     // komponentowy
     if (segmenty.length !== 3) {
       zle.push(
-        `${n.nazwa}: token komponentowy ma ścieżkę \`pct.{komponent}.{reszta}\`, ` +
-          `a ta ma ${segmenty.length} segmenty — zagnieżdżenie znika w nazwie ` +
-          `custom property i przestaje być widoczne`,
+        `${n.nazwa}: a component token has the path \`pct.{component}.{rest}\`, and this ` +
+          `one has ${segmenty.length} segments — the nesting disappears in the custom ` +
+          `property's name and stops being visible`,
       );
       continue;
     }
     const [, komponent, reszta] = segmenty;
     if (komponent !== n.komponent)
       zle.push(
-        `${n.nazwa}: leży w \`component.${n.komponent}.json\`, a nazywa się od ` +
-          `\`${komponent}\` — nazwa pliku i przedrostek tokenu muszą być tym samym słowem`,
+        `${n.nazwa}: sits in \`component.${n.komponent}.json\` and is named after ` +
+          `\`${komponent}\` — the file name and the token's prefix have to be one word`,
       );
     else if (!entrypointy.has(komponent))
       zle.push(
-        `${n.nazwa}: \`${komponent}\` nie jest entrypointem pakietu ` +
-          `(\`${KOMPONENTY}/${komponent}/ng-package.json\` nie istnieje)`,
+        `${n.nazwa}: \`${komponent}\` is not an entrypoint of the package ` +
+          `(\`${KOMPONENTY}/${komponent}/ng-package.json\` does not exist)`,
       );
     else if (!parsujKomponentowy(reszta, polityka))
       zle.push(
-        `${n.nazwa}: \`${reszta}\` nie składa się w ` +
-          `\`[{część}-]{właściwość}[-{wariant}]\` ze słownika`,
+        `${n.nazwa}: \`${reszta}\` does not compose into ` +
+          `\`[{part}-]{property}[-{variant}]\` from the dictionary`,
       );
   }
   if (zle.length)
@@ -434,27 +377,27 @@ const sprawdzTokeny = (we) => {
       'schemat',
       `${zle.length} nazw poza schematem (req-token-names):\n` +
         lista(skroc(zle, 12)) +
-        `\n    Nazwa spoza słownika nie psuje niczego dziś — psuje obietnicę, że siostrzaną ` +
-        `nazwę da się zgadnąć bez zaglądania do dokumentacji. Jeśli słowo jest naprawdę nowe, ` +
-        `dopisz je do \`${POLITYKA}\`: ma być linią w diffie, którą widać w review.`,
+        `\n    A name outside the dictionary breaks nothing today — it breaks the promise ` +
+        `that a sibling name can be guessed without opening the documentation. If the word ` +
+        `is genuinely new, add it to \`${POLITYKA}\`: it is to be a line in the diff.`,
     );
 
-  // 4. SŁOWNIK — czy każde zadeklarowane słowo jest użyte.
+  // 4. DICTIONARY — is every declared word used?
   //
-  //    Punkt 3 sam z siebie domyka się w kółko: nazwa spoza schematu przestaje
-  //    nią być, gdy dopisze się jej słowo do słownika. Maszyna tego nie
-  //    rozstrzygnie i ten punkt nie udaje, że rozstrzyga — pilnuje węższej
-  //    rzeczy: słownik ma być spisem słów UŻYWANYCH, a nie wysypiskiem, w którym
-  //    kolejny wpis niczego nie zmienia, bo i tak nikt tam nie zagląda.
-  //    Nazwa, która się NIE parsuje, jest tu pomijana, a nie zakładana za
-  //    niemożliwą. W normalnym przebiegu punkt 3 już ją odrzucił i ta pętla jej
-  //    nie zobaczy — ale kontrola odniesienia rozbraja punkty po jednym, i wtedy
-  //    zobaczy. Pierwsza wersja czytała `p.czesc` wprost, ufając poprzedniemu
-  //    punktowi: wyłączenie punktu 3 zamieniało bramkę w `TypeError`, czyli
-  //    kontrola odniesienia przestawała umieć zbadać punkt, który miała zbadać.
-  //    Dokładnie ta sama wada co w `check-typecheck` (A7) — zależność między
-  //    punktami jest normalna, zapisanie jej tak, że jej naruszenie nie daje
-  //    zdania, nie jest.
+  //    Point 3 closes on itself in a circle: a name outside the schema stops being one as
+  //    soon as its word is added to the dictionary. A machine cannot settle that and this
+  //    point does not pretend to — it watches a narrower thing: the dictionary is to be a
+  //    record of words USED, not a dump where one more entry changes nothing because
+  //    nobody looks there anyway.
+  //
+  //    A name that does NOT parse is skipped here rather than assumed impossible. In a
+  //    normal run point 3 has already rejected it and this loop will not see it — but the
+  //    negative control disarms the points one by one, and then it will. The first version
+  //    read `p.czesc` directly, trusting the previous point: switching point 3 off turned
+  //    the gate into a `TypeError`, and the negative control lost the ability to examine
+  //    the point it was meant to examine. Exactly the defect of `check-typecheck` (A7) — a
+  //    dependency between points is normal, writing it so that breaking it produces no
+  //    sentence is not.
   const uzycia = new Map();
   const zapisz = (kategoria, slowo) => {
     if (slowo === null || slowo === undefined) return;
@@ -500,27 +443,28 @@ const sprawdzTokeny = (we) => {
   if (martwe.length)
     throw new BladTokenu(
       'slownik',
-      `${martwe.length} zadeklarowanych słów nie używa ani jeden token:\n` +
+      `${martwe.length} declared words are used by no token:\n` +
         lista(skroc(martwe, 12)) +
-        `\n    Słowo bez użycia jest albo zapasem na przyszłość — a wtedy przyszłość ` +
-        `dopisze je sama i będzie to widać — albo śladem po tokenie, którego już nie ma. ` +
-        `W obu przypadkach powiększa zbiór nazw, które punkt 3 przepuści, nie powiększając ` +
-        `zbioru nazw, które ktokolwiek widział.`,
+        `\n    An unused word is either a reserve for the future — and then the future ` +
+        `will add it itself, visibly — or the trace of a token that is gone. Either way it ` +
+        `widens the set of names point 3 lets through without widening the set of names ` +
+        `anybody has seen.`,
     );
 
-  // 5. SNAPSHOT — wersjonowana lista, wobec której mierzy się zmianę.
-  // Wyrenderowany snapshot jedzie NA BŁĘDZIE, a nie liczy się drugi raz przy
-  // `--write`. Druga ścieżka licząca to samo jest drugim zdaniem o tej samej
-  // rzeczy — a te dwa zdania rozjeżdżają się dokładnie wtedy, gdy nikt nie patrzy.
+  // 5. SNAPSHOT — the versioned list a change is measured against. The rendered snapshot
+  // travels ON THE ERROR rather than being computed a second time by `--write`. A second
+  // path computing the same thing is a second sentence about it — and two such sentences
+  // drift apart exactly when nobody is looking.
   const tresc = renderujSnapshot(nazwy, prywatny);
   const rozjazd = (opis) =>
     Object.assign(new BladTokenu('snapshot', opis), { snapshot: tresc });
 
   if (snapshot === null)
     throw rozjazd(
-      `brak \`${SNAPSHOT}\` — uruchom \`node tools/check-tokens.mjs --write\`.\n` +
-        `    Bez snapshotu ta bramka mierzy schemat, ale nie mierzy ZMIANY: przemianowanie ` +
-        `tokenu na inną poprawną nazwę przechodzi wtedy bez śladu, a u konsumenta psuje skórkę.`,
+      `no \`${SNAPSHOT}\` — run \`node tools/check-tokens.mjs --write\`.\n` +
+        `    Without a snapshot this gate measures the schema but not CHANGE: renaming a ` +
+        `token to another valid name then passes without a trace and breaks the ` +
+        `consumer's skin.`,
     );
   if (snapshot !== tresc) {
     const stare = wierszeSnapshotu(snapshot);
@@ -528,41 +472,39 @@ const sprawdzTokeny = (we) => {
     const usuniete = [...stare].filter((w) => !nowe.has(w));
     const dodane = [...nowe].filter((w) => !stare.has(w));
     throw rozjazd(
-      `snapshot nazw tokenów rozjechał się z wygenerowanymi:\n` +
+      `the snapshot of token names has drifted from the generated ones:\n` +
         (usuniete.length
-          ? `    zniknęło ze skórki (${usuniete.length}):\n` +
+          ? `    gone from the skin (${usuniete.length}):\n` +
             lista(skroc(usuniete)) +
             '\n'
           : '') +
         (dodane.length
-          ? `    doszło do skórki (${dodane.length}):\n` +
+          ? `    added to the skin (${dodane.length}):\n` +
             lista(skroc(dodane)) +
             '\n'
           : '') +
         (!usuniete.length && !dodane.length
-          ? `    lista nazw jest ta sama — rozjechał się nagłówek albo kolejność wierszy.\n`
+          ? `    the list of names is the same — the heading or the row order drifted.\n`
           : '') +
-        `    Nazwa tokenu jest publicznym API motywu: token, który zniknął, zabiera ` +
-        `konsumentowi jego nadpisanie i nie daje przy tym ani jednego czerwonego testu. ` +
-        `Jeśli zmiana jest świadoma — \`node tools/check-tokens.mjs --write\`.`,
+        `    A token's name is the theme's public API: a token that has gone takes the ` +
+        `consumer's override with it and gives not one red test. If the change is ` +
+        `deliberate — \`node tools/check-tokens.mjs --write\`.`,
     );
   }
 
-  // 6. POZIOMY — graf referencji idzie w dół (req-token-tiers).
+  // 6. TIERS — the reference graph points downwards (req-token-tiers).
   //
-  //    Obietnicą nie jest porządek dla porządku, tylko DŹWIGNIA autora motywu:
-  //    warstwa semantyczna jest jedyną, którą musi znać, więc token komponentowy
-  //    sięgający pod nią zabiera mu sterowanie po cichu — skórka dalej się buduje,
-  //    testy dalej są zielone, a nadpisanie `--pct-primary` po prostu nie działa
-  //    na jednym przycisku.
+  //    The promise is not order for order's sake but the theme author's LEVER: the
+  //    semantic tier is the only one they have to know, so a component token reaching
+  //    below it takes their control away quietly — the skin still builds, the tests are
+  //    still green, and overriding `--pct-primary` simply does not work on one button.
   //
-  //    Kolor nie ma tu ANI JEDNEGO wyjątku: nad nim warstwa semantyczna istnieje
-  //    i jest kompletna. Wyjątek dotyczy osi wymiaru, nad którymi semantyki nie ma,
-  //    i jest zawężony z dwóch stron naraz (patrz `poziomy.policy.json`): oś musi
-  //    być zadeklarowana, musi być używana i nie może nieść tokenu koloru. To
-  //    ostatnie jest tu najważniejsze — bez niego dopisanie `blue` do listy
-  //    rozbrajałoby regułę, dla której cały punkt powstał, i wyglądało w diffie
-  //    jak jedno słowo.
+  //    Colour has NOT ONE exception here: above it the semantic tier exists and is
+  //    complete. The exception concerns the dimension axes, above which there is no
+  //    semantics, and it is narrowed from both sides at once (see `poziomy.policy.json`):
+  //    an axis has to be declared, has to be used and must carry no colour token. The last
+  //    of these matters most — without it, adding `blue` to the list would disarm the very
+  //    rule the point exists for, and look like a single word in the diff.
   const zleP = [];
   const wgSciezki = new Map(nazwy.map((n) => [n.sciezka, n]));
   const osPrymitywu = (sciezka) => sciezka.split('.')[1];
@@ -579,11 +521,11 @@ const sprawdzTokeny = (we) => {
   if (osieKolorowe.length)
     throw new BladTokenu(
       'poziomy',
-      `${osieKolorowe.length} osi zadeklarowanych jako wspólne niesie tokeny koloru: ` +
+      `${osieKolorowe.length} axes declared as shared carry colour tokens: ` +
         osieKolorowe.map((o) => `\`${o}\``).join(', ') +
-        `\n    Wyjątek dla osi wspólnych istnieje dlatego, że nad wymiarem nie ma warstwy ` +
-        `semantycznej. Nad kolorem jest — i jest obowiązkowa. Oś kolorowa na tej liście ` +
-        `nie poszerza wyjątku, tylko kasuje regułę, dla której punkt 6 powstał.`,
+        `\n    The exception for shared axes exists because there is no semantic tier ` +
+        `above a dimension. Above colour there is one, and it is mandatory. A colour axis ` +
+        `on this list does not widen the exception — it deletes the rule point 6 exists for.`,
       'os-kolorowa',
     );
 
@@ -599,13 +541,12 @@ const sprawdzTokeny = (we) => {
   if (osieMartwe.length)
     throw new BladTokenu(
       'poziomy',
-      `${osieMartwe.length} osi zadeklarowanych jako wspólne nie używa ani jeden token ` +
-        `komponentowy: ` +
+      `${osieMartwe.length} axes declared as shared are used by no component token: ` +
         osieMartwe.map((o) => `\`${o}\``).join(', ') +
-        `\n    To ta sama konstrukcja co martwe słowo w słowniku nazw (punkt 4): oś bez ` +
-        `użycia powiększa zbiór odwołań, które punkt 6 przepuści, nie powiększając zbioru ` +
-        `odwołań, które ktokolwiek napisał. Oś, której w ogóle nie ma w źródłach, wygląda ` +
-        `tak samo — i tak samo tu zapala.`,
+        `\n    The same construction as a dead word in the name dictionary (point 4): an ` +
+        `unused axis widens the set of references point 6 lets through without widening the ` +
+        `set of references anybody wrote. An axis absent from the sources altogether looks ` +
+        `the same — and fires here the same way.`,
       'os-martwa',
     );
 
@@ -615,30 +556,29 @@ const sprawdzTokeny = (we) => {
       const cel = odwolanie(wartosc);
 
       if (cel === null) {
-        // Literał. Dla wymiaru jest w porządku — token komponentowy JEST wtedy
-        // dźwignią (`--pct-checkbox-size: 18px` nadpisuje się wprost). Dla koloru
-        // nie: kolor wpisany z palca omija rampę i warstwę semantyczną naraz,
-        // czyli nie da się go przethemować niczym poza nim samym.
+        // A literal. For a dimension that is fine — the component token IS the lever
+        // then (`--pct-checkbox-size: 18px` is overridden directly). For a colour it is
+        // not: a colour typed in bypasses the ramp and the semantic tier at once, so
+        // nothing but the token itself can re-theme it.
         if (n.typ === 'color' && n.warstwa !== 'prymitywny')
           zleP.push({
             regula: 'literal-koloru',
             opis:
-              `${gdzie}: kolor wpisany wprost (${JSON.stringify(wartosc)}) ` +
-              `w warstwie \`${n.warstwa}\` — omija rampę i semantykę naraz`,
+              `${gdzie}: a colour written inline (${JSON.stringify(wartosc)}) ` +
+              `in the \`${n.warstwa}\` tier — it bypasses the ramp and the semantics at once`,
           });
         continue;
       }
 
       const docelowy = wgSciezki.get(cel);
       if (!docelowy) {
-        // Nieosiągalne przy zielonym buildzie (generator rzuca „Nieznana
-        // referencja"), ale czytanie `docelowy.warstwa` wprost dałoby tu
-        // `TypeError` zamiast zdania — a to jest wada, którą to repozytorium
-        // złapało już cztery razy (A3, A4, A7, A8) i za każdym razem w bramce
-        // pisanej ze świadomością poprzedniej.
+        // Unreachable with a green build (the generator throws „Unknown reference"), but
+        // reading `docelowy.warstwa` directly would give a `TypeError` here instead of a
+        // sentence — the defect this repository has caught four times already (A3, A4, A7,
+        // A8), each time in a gate written in awareness of the previous one.
         zleP.push({
           regula: 'referencja-donikad',
-          opis: `${gdzie}: wskazuje na nieistniejący token \`${cel}\``,
+          opis: `${gdzie}: points at a token that does not exist, \`${cel}\``,
         });
         continue;
       }
@@ -647,21 +587,21 @@ const sprawdzTokeny = (we) => {
         zleP.push({
           regula: 'prymityw-nie-literal',
           opis:
-            `${gdzie}: warstwa prymitywna jest DNEM i musi być literałem, ` +
-            `a ten token wskazuje na \`${cel}\` (${docelowy.warstwa})`,
+            `${gdzie}: the primitive tier is the FLOOR and has to be a literal, ` +
+            `and this token points at \`${cel}\` (${docelowy.warstwa})`,
         });
         continue;
       }
 
       if (n.warstwa === 'semantyczny') {
-        // Alias semantyczny (`surface-disabled` -> `surface-100`) jest w porządku:
-        // obie strony należą do warstwy, którą autor motywu i tak zna w całości.
+        // A semantic alias (`surface-disabled` -> `surface-100`) is fine: both sides
+        // belong to the tier a theme author knows in full anyway.
         if (docelowy.warstwa === 'komponentowy')
           zleP.push({
             regula: 'odwolanie-w-gore',
             opis:
-              `${gdzie}: warstwa semantyczna wskazuje W GÓRĘ, na komponentowy \`${cel}\` — ` +
-              `wtedy nadpisanie tokenu jednego komponentu przethemowuje całą skórkę`,
+              `${gdzie}: the semantic tier points UPWARDS, at the component token ` +
+              `\`${cel}\` — overriding one component's token then re-themes the whole skin`,
           });
         continue;
       }
@@ -671,82 +611,79 @@ const sprawdzTokeny = (we) => {
         zleP.push({
           regula: 'odwolanie-w-bok',
           opis:
-            `${gdzie}: wskazuje na CUDZY token komponentowy \`${cel}\` — ` +
-            `nadpisanie jednego komponentu zmieniałoby wtedy drugi ` +
-            `(req-token-override obiecuje coś dokładnie odwrotnego)`,
+            `${gdzie}: points at ANOTHER component's token \`${cel}\` — overriding one ` +
+            `component would then change the other (req-token-override promises exactly ` +
+            `the opposite)`,
         });
         continue;
       }
-      if (docelowy.warstwa !== 'prymitywny') continue; // semantyczny — tak ma być
+      if (docelowy.warstwa !== 'prymitywny') continue; // semantic — as it should be
 
       if (n.typ === 'color')
         zleP.push({
           regula: 'kolor-pod-semantyka',
           opis:
-            `${gdzie}: kolor komponentowy wskazuje wprost na prymityw \`${cel}\` — ` +
-            `warstwa semantyczna nad kolorem istnieje i nie ma od niej wyjątku`,
+            `${gdzie}: a component colour points straight at the primitive \`${cel}\` — ` +
+            `the semantic tier above colour exists and has no exception`,
         });
       else if (!osieWspolne.includes(osPrymitywu(cel)))
         zleP.push({
           regula: 'os-niezadeklarowana',
           opis:
-            `${gdzie}: wskazuje na prymityw z osi \`${osPrymitywu(cel)}\`, ` +
-            `której \`${POZIOMY}\` nie deklaruje jako wspólnej ` +
-            `(dziś: ${osieWspolne.join(', ')})`,
+            `${gdzie}: points at a primitive of the axis \`${osPrymitywu(cel)}\`, which ` +
+            `\`${POZIOMY}\` does not declare as shared (today: ${osieWspolne.join(', ')})`,
         });
     }
   if (zleP.length)
     throw new BladTokenu(
       'poziomy',
-      `${zleP.length} odwołań poza modelem warstwowym (req-token-tiers):\n` +
+      `${zleP.length} references outside the tier model (req-token-tiers):\n` +
         lista(
           skroc(
             zleP.map((z) => `[${z.regula}] ${z.opis}`),
             12,
           ),
         ) +
-        `\n    Model ma trzy piętra i jeden kierunek: komponentowy → semantyczny → ` +
-        `prymitywny → literał. Złamanie go nie psuje niczego w tym repozytorium — psuje ` +
-        `motyw budowany z zewnątrz, i to po cichu, bo skórka dalej się buduje.`,
-      // Regułą błędu jest reguła PIERWSZEGO naruszenia — przy jednej wadzie
-      // (czyli w każdym fixture) jest to jedyne naruszenie, a przy wielu i tak
-      // trzeba zacząć od jednego.
+        `\n    The model has three floors and one direction: component → semantic → ` +
+        `primitive → literal. Breaking it breaks nothing in this repository — it breaks a ` +
+        `theme built from outside, and quietly, because the skin still builds.`,
+      // The error's rule is the rule of the FIRST violation — with one defect (that is,
+      // in every fixture) it is the only violation, and with many one has to start
+      // somewhere anyway.
       zleP[0].regula,
     );
 
-  // 7. PARY — każdy kolor, który biblioteka MALUJE, jest zmierzony
-  //    (req-token-text-pairs).
+  // 7. PAIRS — every colour the library PAINTS is measured (req-token-text-pairs).
   //
-  //    Mianownikiem nie jest lista nazw kończących się na `-bg` i `-fg`, tylko to,
-  //    co arkusze naprawdę malują. Różnica jest mierzalna, nie teoretyczna: przycisk
-  //    w wariancie outline maluje tło `var(--pct-surface-100)` i etykietę
-  //    `var(--pct-primary)`, czyli dwoma tokenami SEMANTYCZNYMI, których żadna
-  //    reguła oparta na nazwie tokenu komponentowego nie zobaczy. Do A12 obie stały
-  //    poza policy — i to jest dokładnie kształt `lesson-33`: bramka kontrastu bada
-  //    wyłącznie to, co ktoś wcześniej do niej wpisał.
+  //    The denominator is not the list of names ending in `-bg` and `-fg` but what the
+  //    stylesheets really paint. The difference is measurable, not theoretical: a button in
+  //    the outline variant paints its background with `var(--pct-surface-100)` and its
+  //    label with `var(--pct-primary)` — two SEMANTIC tokens no rule based on component
+  //    token names would see. Until A12 both stood outside the policy, and that is exactly
+  //    the shape of `lesson-33`: a contrast gate examines only what somebody wrote into it.
   //
-  //    Odwrotnie działa reguła `on-*`: ta czyta NAZWY, bo para zadeklarowana
-  //    i nigdy nie namalowana nie zostawia w arkuszu żadnego śladu. Dwa odczyty,
-  //    dwie różne ślepoty.
+  //    The `on-*` rule works the other way round: it reads NAMES, because a pair declared
+  //    and never painted leaves no trace in a stylesheet. Two reads, two different
+  //    blindnesses.
   const { malowane, przypisania } = malowaneKolory(arkusze);
 
-  // Mianownik punktu 7 mierzy się na WYNIKU, nie na wejściu. Pierwsza wersja
-  // pytała wyłącznie o liczbę arkuszy — i przeszła na zielono, wypisawszy
-  // „0 kolorów malowanych w 7 arkuszach": wzorzec deklaracji wymagał wiodącego
-  // myślnika, więc widział wyłącznie custom properties, a `background:` nie.
-  // To jest `lesson-48` w punkcie napisanym po to, żeby jej nie powtórzyć, i ta
-  // sama pomyłka co w A5: kontrola niepustości stała po stronie WEJŚCIA, a pusty
-  // był POMIAR. Zero par do sprawdzenia to zawsze zero naruszeń.
+  // Point 7's denominator is measured on the RESULT, not on the input. The first version
+  // asked only about the number of stylesheets — and passed green, printing „0 colours
+  // painted in 7 stylesheets": the declaration pattern required a leading dash, so it saw
+  // custom properties alone and not `background:`. That is `lesson-48` inside a point
+  // written so as not to repeat it, and the same mistake as in A5: the non-emptiness check
+  // stood on the INPUT's side while the MEASUREMENT was empty. Zero pairs to check is
+  // always zero violations.
   if (!arkusze.length || !malowane.size || !kontrast.checks?.length)
     throw new BladTokenu(
       'pary',
       `pusty mianownik punktu 7 (arkusze: ${arkusze.length}, ` +
         `kolory malowane: ${malowane.size}, ` +
-        `wpisy w policy: ${kontrast.checks?.length ?? 0}) — ` +
-        `bez każdego z tych trzech ten punkt przechodzi, nie orzekając o niczym.\n` +
-        `    Najczęstsze przyczyny: lista arkuszy, która przestała cokolwiek zwracać ` +
-        `(lesson-48 — pathspec gita nie jest globem powłoki), albo skaner deklaracji, ` +
-        `który przestał je rozpoznawać.`,
+        `policy entries: ${kontrast.checks?.length ?? 0}) — without any of these three ` +
+        `this point passes without pronouncing on anything.\n` +
+        `    Usual causes: a list of stylesheets that stopped returning anything ` +
+        `(lesson-48 — a git pathspec is not a shell glob), or a declaration scanner that ` +
+        `stopped recognising them.`,
       'mianownik',
     );
 
@@ -759,18 +696,18 @@ const sprawdzTokeny = (we) => {
   for (const [token, role] of [...malowane].sort()) {
     const n = wgNazwy.get(token);
     const role_ = [...role].sort().join(', ');
-    // Każda z trzech reguł czyta WŁASNY warunek wstępny (`!n`, `n?.typ`), zamiast
-    // ufać poprzedniej. Zależność między nimi jest naturalna — token spoza skórki
-    // nie ma typu — ale zapisana przez sam `continue` zamieniała rozbrojenie
-    // pierwszej reguły w `TypeError` zamiast w komunikat, czyli kontrola
-    // odniesienia przestawała umieć zbadać dwie pozostałe. Ta sama wada co w A3,
-    // A4, A7 i A8; piąty raz, i drugi raz WEWNĄTRZ jednego punktu.
+    // Each of the three rules reads its OWN precondition (`!n`, `n?.typ`) instead of
+    // trusting the previous one. The dependency between them is natural — a token outside
+    // the skin has no type — but written with a bare `continue` it turned disarming the
+    // first rule into a `TypeError` instead of a message, and the negative control lost
+    // the ability to examine the other two. The same defect as in A3, A4, A7 and A8; the
+    // fifth time, and the second time INSIDE one point.
     if (!n)
       zleU.push({
         regula: 'token-spoza-skorki',
         opis:
-          `${token}: malowany (${role_}), a nie ma go wśród tokenów skórki — ` +
-          `nie ma czego zmierzyć`,
+          `${token}: painted (${role_}) and absent from the skin's tokens — ` +
+          `there is nothing to measure`,
       });
     if (n && n.typ !== 'color')
       zleU.push({
@@ -780,33 +717,34 @@ const sprawdzTokeny = (we) => {
     if (n && n.typ === 'color' && !wPolicy.has(token))
       zleU.push({
         regula: 'niezmierzony',
-        opis: `${token}: malowany (${role_}), a nie stoi w żadnej parze policy`,
+        opis: `${token}: painted (${role_}) and stands in no pair of the policy`,
       });
   }
   if (zleU.length)
     throw new BladTokenu(
       'pary',
-      `${zleU.length} kolorów maluje się bez wpisu w \`${KONTRAST}\`:\n` +
+      `${zleU.length} colours are painted with no entry in \`${KONTRAST}\`:\n` +
         lista(
           skroc(
             zleU.map((z) => `[${z.regula}] ${z.opis}`),
             12,
           ),
         ) +
-        `\n    Para bez wpisu nie jest liczona, więc kolor spoza policy jest kolorem, ` +
-        `o którym bramka kontrastu NIE MA ZDANIA — i wygląda to dokładnie tak samo jak ` +
-        `zielony przebieg (lesson-33). Dobór partnera zostaje decyzją człowieka: maszyna ` +
-        `widzi, że kolor jest niezmierzony, nie widzi, na czym leży.` +
+        `\n    A pair with no entry is not counted, so a colour outside the policy is a ` +
+        `colour the contrast gate HAS NO OPINION about — and that looks exactly like a ` +
+        `green run (lesson-33). Choosing the partner stays a human decision: the machine ` +
+        `sees that a colour is unmeasured, it does not see what it lies on.` +
         (przypisania
-          ? `\n    Uwaga: arkusz może wnieść token także przypisaniem do innej custom ` +
-            `property — te są rozwijane, więc \`--pct-x: var(--pct-y)\` daje \`y\` rolę \`x\`.`
+          ? `\n    Note: a stylesheet can also bring a token in by assigning to another ` +
+            `custom property — those are expanded, so \`--pct-x: var(--pct-y)\` gives ` +
+            `\`y\` the role of \`x\`.`
           : ''),
       zleU[0].regula,
     );
 
-  // Reguła `on-*` czyta NAZWY, a nie arkusze — i to jest jej cała wartość: para
-  // zadeklarowana, a nigdy nienamalowana, nie zostawia w arkuszu żadnego śladu,
-  // więc pomiar z poprzedniej reguły jest na nią ślepy z konstrukcji.
+  // The `on-*` rule reads NAMES rather than stylesheets — and that is its whole value: a
+  // pair declared and never painted leaves no trace in a stylesheet, so the previous
+  // rule's measurement is blind to it by construction.
   const bezPowierzchni = [];
   const martwe_ = [];
   const referowane = new Set(
@@ -818,13 +756,13 @@ const sprawdzTokeny = (we) => {
     const rola = n.sciezka.slice('pct.on-'.length);
     if (!wgSciezki.has(`pct.${rola}`))
       bezPowierzchni.push(
-        `${n.nazwa}: para do nieistniejącego \`--pct-${rola}\` — ` +
-          `przedrostek \`on-\` obiecuje tekst DLA powierzchni, a tej powierzchni nie ma`,
+        `${n.nazwa}: a pair for a \`--pct-${rola}\` that does not exist — the \`on-\` ` +
+          `prefix promises text FOR a surface, and that surface is not there`,
       );
     else if (!referowane.has(n.sciezka) && !malowane.has(n.nazwa))
       martwe_.push(
-        `${n.nazwa}: nie używa go ani jeden token, ani jeden arkusz — ` +
-          `zadeklarowana para bez powierzchni, na której cokolwiek stoi`,
+        `${n.nazwa}: used by no token and no stylesheet — a declared pair with no ` +
+          `surface for anything to stand on`,
       );
   }
   const bladPary = (wpisy, regula, ogon) =>
@@ -832,64 +770,64 @@ const sprawdzTokeny = (we) => {
       'pary',
       `${wpisy.length} par \`on-*\` nie trzyma swojej strony umowy:\n` +
         lista(skroc(wpisy)) +
-        `\n    Przedrostek \`on-\` nie jest ozdobnikiem nazwy: to jedyne miejsce, w którym ` +
-        `skórka deklaruje parę tekst/tło wprost. ${ogon}`,
+        `\n    The \`on-\` prefix is no ornament: it is the only place where the skin ` +
+        `declares a text/background pair outright. ${ogon}`,
       regula,
     );
   if (bezPowierzchni.length)
     throw bladPary(
       bezPowierzchni,
       'on-bez-powierzchni',
-      `Tekst dla powierzchni, której nie ma, jest nazwą obiecującą parę tam, gdzie ` +
-        `nie ma nawet jednej strony.`,
+      `Text for a surface that does not exist is a name promising a pair where not even ` +
+        `one side is there.`,
     );
   if (martwe_.length)
     throw bladPary(
       martwe_,
       'on-martwa',
-      `Para martwa wygląda jak pokrycie i nim nie jest — dokładnie jak martwe słowo ` +
-        `w słowniku (punkt 4).`,
+      `A dead pair looks like coverage and is not — exactly like a dead word in the ` +
+        `dictionary (point 4).`,
     );
 
   const publicznych = publiczne.size;
   return {
     opis:
-      `${nazwy.length} tokenów (${publicznych} publicznych, ` +
-      `${nazwy.length - publicznych} prywatnych), ` +
-      `${entrypointy.size} entrypointów, ` +
-      `${malowane.size} kolorów malowanych w ${arkusze.length} arkuszach, ` +
-      `${kontrast.checks.length} par w policy`,
+      `${nazwy.length} tokens (${publicznych} public, ` +
+      `${nazwy.length - publicznych} private), ` +
+      `${entrypointy.size} entrypoints, ` +
+      `${malowane.size} colours painted across ${arkusze.length} stylesheets, ` +
+      `${kontrast.checks.length} pairs in the policy`,
     snapshot: tresc,
   };
 };
 
 /**
- * Co arkusze NAPRAWDĘ malują którym tokenem — z wyjścia sassa, nie z tekstu
- * źródła (ten sam powód co punkt 2 w `check-styles`: właściwość złożona mixinem
- * albo interpolacją dociera do przeglądarki, nie stojąc w tekście nigdzie).
+ * What the stylesheets REALLY paint with which token — from sass's output, not from the
+ * source text (the same reason as point 2 in `check-styles`: a property composed by a mixin
+ * or an interpolation reaches the browser without standing in the text anywhere).
  *
- * Role są trzy, bo tyle progów ma WCAG: tło i tekst (SC 1.4.3) oraz obrys
- * (SC 1.4.11). Właściwość spoza tej listy nie wnosi koloru do oceny kontrastu —
- * `transition: background-color …` wymienia nazwę właściwości, a nie maluje nią.
+ * There are three roles because WCAG has three thresholds: background and text (SC 1.4.3)
+ * and outline (SC 1.4.11). A property outside that list brings no colour into a contrast
+ * judgement — `transition: background-color …` names a property rather than painting with it.
  *
- * Przypisania do innej custom property (`--pct-button-height: var(--pct-button-height-sm)`
- * — wzorzec osi wielkości) są ROZWIJANE do punktu stałego: token po prawej dziedziczy
- * role tokenu po lewej. Bez tego `--pct-button-bg: var(--pct-surface-100)` w arkuszu
- * ukryłby powierzchnię przed mianownikiem, a wyglądałoby to jak brak problemu.
- * Zmierzone, nie założone: dziś ten wzorzec dotyczy wyłącznie osi wielkości, czyli
- * tokenów wymiaru, więc nie wnosi ani jednej roli koloru.
+ * Assignments to another custom property (`--pct-button-height: var(--pct-button-height-sm)`
+ * — the size axis pattern) are EXPANDED to a fixed point: the token on the right inherits
+ * the roles of the token on the left. Without that, `--pct-button-bg: var(--pct-surface-100)`
+ * in a stylesheet would hide the surface from the denominator, and it would look like no
+ * problem at all. Measured, not assumed: today that pattern concerns the size axes alone,
+ * that is, dimension tokens, so it brings in not one colour role.
  */
 const malowaneKolory = (arkusze) => {
   const ROLE = [
-    [/^background(-color)?$/, 'tło'],
-    [/^(color|fill|stroke|caret-color|-webkit-text-fill-color)$/, 'tekst'],
+    [/^background(-color)?$/, 'background'],
+    [/^(color|fill|stroke|caret-color|-webkit-text-fill-color)$/, 'text'],
     [
       /^border(-(block|inline)(-(start|end))?)?(-color)?$|^outline(-color)?$/,
       'obrys',
     ],
   ];
-  const bezposrednie = new Map(); // token -> Set(rola)
-  const przypisania = new Map(); // token docelowy -> Set(tokenów po prawej)
+  const bezposrednie = new Map(); // token -> Set(role)
+  const przypisania = new Map(); // target token -> Set(tokens on the right)
 
   for (const { css } of arkusze)
     for (const [, wlasciwosc, wartosc] of css.matchAll(
@@ -929,27 +867,28 @@ const malowaneKolory = (arkusze) => {
   return { malowane, przypisania: przypisania.size > 0 };
 };
 
-/** Porównanie jednej powierzchni z listą, którą ma nieść. */
+/** One surface compared against the list it is meant to carry. */
 const porownajPowierzchnie = (gdzie, ma, powinna, czym) => {
   const brakuje = [...powinna].filter((n) => !ma.has(n)).sort();
   const nadmiar = [...ma].filter((n) => !powinna.has(n)).sort();
   if (!brakuje.length && !nadmiar.length) return;
   throw new BladTokenu(
     'powierzchnia',
-    `${gdzie} nie niesie tego, co ma nieść (${czym}):\n` +
+    `${gdzie} does not carry what it should (${czym}):\n` +
       (brakuje.length
         ? `    brakuje (${brakuje.length}):\n` + lista(skroc(brakuje)) + '\n'
         : '') +
       (nadmiar.length
         ? `    nadmiarowe (${nadmiar.length}):\n` + lista(skroc(nadmiar)) + '\n'
         : '') +
-      `    Konsument widzi tokeny przez te artefakty, nie przez źródła DTCG. Token bez ` +
-      `wpisu w \`tokens.ts\` nie jest chroniony przed literówką w \`getPropertyValue\` ` +
-      `(lesson-43), a token nadmiarowy obiecuje deklarację, której w skórce nie ma.`,
+      `    A consumer sees the tokens through these artifacts, not through the DTCG ` +
+      `sources. A token with no entry in \`tokens.ts\` is not protected from a typo in ` +
+      `\`getPropertyValue\` (lesson-43), and a surplus token promises a declaration the ` +
+      `skin does not hold.`,
   );
 };
 
-/** Liście DTCG: `[ścieżka, $type, $value]` dla każdego węzła z `$value`. */
+/** DTCG leaves: `[path, $type, $value]` for every node carrying a `$value`. */
 function* liscie(drzewo, prefiks = []) {
   for (const [klucz, wartosc] of Object.entries(drzewo)) {
     if (klucz.startsWith('$')) continue;
@@ -961,16 +900,16 @@ function* liscie(drzewo, prefiks = []) {
   }
 }
 
-/** Ścieżka DTCG, na którą wskazuje wartość `{a.b.c}` — albo `null` dla literału. */
+/** The DTCG path a `{a.b.c}` value points at — or `null` for a literal. */
 const odwolanie = (wartosc) =>
   typeof wartosc === 'string'
     ? (wartosc.match(/^\{([^}]+)\}$/)?.[1] ?? null)
     : null;
 
 /**
- * Warstwa tokenu z nazw plików, w których stoi. `motion.reduced.json` nadpisuje
- * prymitywy osi ruchu, a `semantic.dark.json` — semantykę, więc token bywa
- * w dwóch plikach; warstwa musi z nich wyjść jedna.
+ * A token's tier from the names of the files it stands in. `motion.reduced.json` overrides
+ * the primitives of the motion axis and `semantic.dark.json` the semantics, so a token is
+ * sometimes in two files; one tier has to come out of them.
  */
 const warstwa = (pliki) => {
   const nazwy = pliki.map((p) =>
@@ -1005,26 +944,25 @@ const warstwa = (pliki) => {
 // ── snapshot ──────────────────────────────────────────────────────────────────
 
 /**
- * Snapshot jest w markdownie, ale jego treść to blok kodu bez wyrównania kolumn.
- * To nie estetyka: tabela markdowna po przejściu prettiera wyrównuje kolumny do
- * najdłuższej komórki, więc jeden długi token przepisuje CAŁY plik i diff
- * przestaje pokazywać, co się naprawdę zmieniło — czyli traci jedyną funkcję,
- * dla której ten plik istnieje.
+ * The snapshot is markdown, but its content is a code block with no column padding. Not
+ * aesthetics: a markdown table run through prettier pads its columns to the longest cell,
+ * so one long token rewrites the WHOLE file and the diff stops showing what really changed
+ * — losing the only function this file exists for.
  */
 const renderujSnapshot = (nazwy, prywatny) =>
   [
-    '# Snapshot nazw tokenów',
+    '# Token name snapshot',
     '',
-    '> **Ten plik jest generowany.** Nie edytuj go ręcznie —',
-    '> `node tools/check-tokens.mjs --write`. Bramka `check-tokens` odrzuca rozjazd.',
+    '> **This file is generated.** Do not edit it by hand —',
+    '> `node tools/check-tokens.mjs --write`. The `check-tokens` gate rejects a drift.',
     '',
-    'Nazwa tokenu jest publicznym API motywu tak samo jak nazwa inputu jest publicznym',
-    'API komponentu — z tą różnicą, że jej zmiana nie daje ani jednego czerwonego testu,',
-    'bo biblioteka przemianowuje obie strony naraz: token i arkusz, który go używa.',
-    'Konsumentowi zostaje nadpisanie wskazujące donikąd.',
+    "A token's name is the theme's public API exactly as an input's name is a component's",
+    'public API — with the difference that changing it gives not one red test, because the',
+    'library renames both sides at once: the token and the stylesheet using it. The consumer',
+    'is left with an override pointing nowhere.',
     '',
-    'Ten plik jest listą, wobec której mierzy się zmianę. Rozjazd nie znaczy „błąd" —',
-    'znaczy „zmiana publicznego API, która ma być widoczna w review".',
+    'This file is the list a change is measured against. A drift does not mean „an error" —',
+    'it means „a change of public API that is to be visible in review".',
     '',
     'Kolumny: nazwa custom property · `$type` z DTCG · warstwa · czy jest w publicznej',
     'unii `PctCssVar` (patrz `prywatne.prefiksy` w',
@@ -1043,7 +981,7 @@ const renderujSnapshot = (nazwy, prywatny) =>
     '',
   ].join('\n');
 
-/** Same wiersze danych — do policzenia różnicy, bez nagłówka. */
+/** The data rows alone — for computing the difference, with no heading. */
 const wierszeSnapshotu = (tresc) =>
   new Set(tresc.split('\n').filter((w) => w.startsWith('--pct-')));
 
@@ -1052,10 +990,9 @@ const wierszeSnapshotu = (tresc) =>
 const czytaj = (root, sciezka) => readFileSync(join(root, sciezka), 'utf8');
 
 /**
- * Wejście złożone z listy plików — ta sama postać dla repozytorium i dla
- * fixture'a. `dist/` czyta się poza tą listą, bo jest gitignorowane: dla
- * repozytorium powstaje z `dependsOn: build`, dla fixture'a — z uruchomienia
- * tego samego `build.mjs`.
+ * An input built from a file list — the same shape for the repository and for a fixture.
+ * `dist/` is read outside that list, because it is gitignored: for the repository it
+ * comes from `dependsOn: build`, for a fixture from a run of that same `build.mjs`.
  */
 const zbierzWejscie = (root, pliki) => {
   const dist = join(root, TOKENY, 'dist');
@@ -1063,24 +1000,24 @@ const zbierzWejscie = (root, pliki) => {
     if (!existsSync(join(dist, plik)))
       throw new BladTokenu(
         'zbior',
-        `brak \`${TOKENY}/dist/${plik}\` — bramka czyta artefakty, nie same źródła.\n` +
-          `    Target musi mieć \`dependsOn\` na build tokenów.`,
+        `no \`${TOKENY}/dist/${plik}\` — this gate reads artifacts, not the sources ` +
+          `alone.\n    The target needs a \`dependsOn\` on the token build.`,
       );
 
   const zrodla = pliki
     .filter((p) => p.startsWith(`${TOKENY}/src/`) && p.endsWith('.json'))
     .map((plik) => ({ plik, drzewo: JSON.parse(czytaj(root, plik)) }))
-    // DTCG rozpoznaje się po KORZENIU `pct`, a nie po wzorcu nazwy pliku
-    // powtórzonym z generatora — patrz komentarz przy punkcie 1.
+    // DTCG is recognised by the `pct` ROOT and not by a file-name pattern repeated from
+    // the generator — see the comment at point 1.
     .filter(
       ({ drzewo }) => drzewo && typeof drzewo === 'object' && 'pct' in drzewo,
     );
 
-  // Arkusze biblioteki — wyłącznie `libs/components`, i wyłącznie te, których
-  // treść jest pisana ręką: `libs/components/themes/` wiezie WYGENEROWANE
-  // artefakty tokenów (`_tokens.scss` to lista `$zmienna: var(--pct-…)`), więc
-  // policzenie ich jako malowania dopisałoby do mianownika każdy token skórki
-  // naraz i punkt 7 żądałby pary dla całej rampy prymitywów.
+  // The library's stylesheets — `libs/components` alone, and only those written by hand:
+  // `libs/components/themes/` carries the GENERATED token artifacts (`_tokens.scss` is a
+  // list of `$variable: var(--pct-…)`), so counting them as painting would add every skin
+  // token to the denominator at once and point 7 would demand a pair for the whole
+  // primitive ramp.
   const arkusze = pliki
     .filter(
       (p) =>
@@ -1114,13 +1051,13 @@ const zbierzWejscie = (root, pliki) => {
 };
 
 /**
- * Pliki z INDEKSU GITA, nie z globa po dysku — ten sam powód co w `check-styles`,
- * `check-zoneless` i `check-typecheck`: indeks jest niezależnym spisem tego, co
- * repozytorium naprawdę wiezie, i sam z siebie odcina to, co generowane.
+ * Files from the GIT INDEX, not from a glob over the disk — the same reason as in
+ * `check-styles`, `check-zoneless` and `check-typecheck`: the index is an independent record
+ * of what the repository really carries, and it cuts out the generated things by itself.
  *
- * Pathspec jest KATALOGIEM, a filtrowanie siedzi w JS-ie: pathspec gita nie jest
- * globem powłoki i bez `:(glob)` gwiazdka przechodzi przez `/`, więc wzorzec
- * z gwiazdką potrafi zwrócić ZERO plików zamiast błędu (lesson-48).
+ * The pathspec is a DIRECTORY and the filtering sits in JS: a git pathspec is not a shell
+ * glob, and without `:(glob)` a star crosses `/`, so a pattern with a star can return ZERO
+ * files rather than an error (lesson-48).
  */
 const plikiRepozytorium = () =>
   execFileSync('git', ['ls-files', '-z', TOKENY, KOMPONENTY], {
@@ -1135,22 +1072,21 @@ const plikiRepozytorium = () =>
 // ── negative control ──────────────────────────────────────────────────────────
 
 /**
- * Składa spreparowane wejście: kopia bazy, na nią pliki przypadku, usunięcia
- * z `fixture.json`, potem PRAWDZIWY `build.mjs` z repozytorium — i na końcu
- * jeszcze raz pliki przypadku, żeby przypadek mógł podmienić także artefakt
- * w `dist/`.
+ * Builds a prepared input: a copy of the base, the case's files on top, the deletions from
+ * `fixture.json`, then the REAL `build.mjs` from the repository — and finally the case's
+ * files once more, so that a case can replace the artifact in `dist/` too.
  *
- * Ta ostatnia warstwa jest jedynym sposobem na kontrolę odniesienia dla punktów
- * 1 i 2: gdyby fixture zawsze dostawał `dist/` wygenerowane ze swoich źródeł,
- * artefakt byłby z nimi zgodny z definicji, a oba punkty nie miałyby jak zapalić.
- * Uruchamiamy przy tym generator z repozytorium, a nie jego kopię w fixtures —
- * inaczej kontrola sprawdzałaby nieaktualne zdanie o tym, co robi build.
+ * That last layer is the only way to have a negative control for points 1 and 2: were a
+ * fixture always given a `dist/` generated from its own sources, the artifact would agree
+ * with them by definition and neither point could fire. The generator we run is the
+ * repository's and not a copy of it in the fixtures — otherwise the control would be
+ * checking a stale sentence about what the build does.
  *
- * Spreparowany `tokens.ts` leży w repozytorium jako `tokens.ts.txt` i staje się
+ * A prepared `tokens.ts` sits in the repository as `tokens.ts.txt` and becomes
  * `.ts` dopiero tutaj — ten sam ruch co w `check-styles` i z tego samego powodu:
- * plik `.ts` w `tools/` nie należy do żadnego programu kompilatora, więc zapaliłby
- * `check-typecheck` (punkt 1 — plik bez projektu). Fixture jednej bramki nie może
- * być wadą dla drugiej. Zmierzone, nie przewidziane: bramka typechecku zapaliła na
+ * a `.ts` file in `tools/` belongs to no compiler program, so it would fire
+ * `check-typecheck` (point 1 — a file with no project). One gate's fixture must not be
+ * another's defect. Measured, not foreseen: the typecheck gate fired on
  * nim przy pierwszym przebiegu po dodaniu pliku do indeksu gita.
  */
 const zlozFixture = (nazwa, fx) => {
@@ -1190,15 +1126,15 @@ const wejscieFixture = (katalog) =>
 const problems = [];
 let opis = null;
 
-// Ścieżka utrzymaniowa: przepisz snapshot fixture'a i wyjdź. Nie miesza się
-// z przebiegiem sprawdzającym, bo to nie jest sprawdzanie — to jest złożenie
-// wejścia wzorcowego z tego samego renderera, którym mierzy się repozytorium.
+// The maintenance path: rewrite a fixture's snapshot and exit. It does not mix with a
+// checking run, because it is not checking — it is composing the reference input from the
+// same renderer the repository is measured with.
 if (WRITE_FIXTURE) {
   const katalog = zlozFixture(WRITE_FIXTURE, {});
   const cel = join(FIXTURES, WRITE_FIXTURE, SNAPSHOT);
   try {
     sprawdzTokeny(wejscieFixture(katalog));
-    console.log(`✓ ${WRITE_FIXTURE}: snapshot był już aktualny.`);
+    console.log(`✓ ${WRITE_FIXTURE}: the snapshot was already current.`);
   } catch (blad) {
     if (!(blad instanceof BladTokenu) || blad.kontrola !== 'snapshot')
       throw blad;
@@ -1215,9 +1151,9 @@ try {
   opis = wynik.opis;
 } catch (blad) {
   if (!(blad instanceof BladTokenu)) throw blad;
-  // `--write` istnieje po to, żeby rozjazd snapshotu dało się zaakceptować
-  // jednym poleceniem. Wszystkie pozostałe punkty zostają błędem także z nim:
-  // przepisanie snapshotu nie jest odpowiedzią na nazwę spoza schematu.
+  // `--write` exists so that a snapshot drift can be accepted with one command. Every
+  // other point stays an error under it too: rewriting the snapshot is no answer to a name
+  // from outside the schema.
   if (WRITE && blad.kontrola === 'snapshot') {
     writeFileSync(join(ROOT, SNAPSHOT), blad.snapshot);
     console.log(
@@ -1240,9 +1176,9 @@ if (przypadki.length === 0)
       `fail is one more silent defect (req-quality-negative-control)`,
   );
 
-// Wejście wzorcowe MUSI przejść: gdyby baza sama była wadliwa, każdy przypadek
-// zapalałby z jej powodu, a nie ze swojego, i wszystkie „odrzucone" byłyby
-// fałszywe — czyli ta kontrola stałaby się tym, przed czym stoi.
+// The reference input MUST pass: were the base defective itself, every case would fire
+// because of it rather than its own defect, and every „rejected" would be false — this
+// control would become the very thing it stands against.
 {
   const katalog = zlozFixture(BAZA, {});
   try {
@@ -1276,9 +1212,9 @@ for (const nazwa of przypadki) {
         `${nazwa}: check \`${blad.kontrola}\` fired, and point ${fx.punkt} ` +
           `(\`${fx.kontrola}\`) was meant to — the fixture proves something other than what it declares`,
       );
-    // Punkt to nie jedno zdanie (lesson-50). Przypadek, który deklaruje regułę,
-    // musi zapalić na NIEJ, a nie na sąsiedniej regule tego samego punktu —
-    // inaczej identyfikator punktu potwierdza wyłącznie sam siebie.
+    // A point is not one sentence (lesson-50). A case declaring a rule has to fire on
+    // THAT rule and not on a neighbouring rule of the same point — otherwise the point's
+    // identifier confirms nothing but itself.
     else if (fx.regula && blad.regula !== fx.regula)
       problems.push(
         `${nazwa}: w punkcie ${fx.punkt} rule \`${blad.regula}\` fired, and \`${fx.regula}\` — ten sam punkt, inne zdanie`,

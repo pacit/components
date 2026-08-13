@@ -60,7 +60,7 @@ const TOLERANCJA_MIN = 256;
  * one about somebody else's package — because `@angular/cdk/overlay` is the library's most
  * expensive optional dependency and it is the one named in `req-project-tree-shaking`. The
  * string is no assumption here: the builder probe with ALL the entrypoints has to find it,
- * punkt 10 zapala na samym sobie.
+ * or point 10 fires on itself.
  */
 const MARKER_OVERLAY = 'cdk-overlay';
 
@@ -347,8 +347,8 @@ const sprawdzBundle = (we) => {
     if (typeof zmierzony !== 'number' || typeof zapisany !== 'number')
       throw doZapisu(
         'rozmiar',
-        `brak rozmiaru dla \`${e}\` (pomiar: ${zmierzony ?? 'brak'}, ` +
-          `snapshot: ${zapisany ?? 'brak'})`,
+        `no size for \`${e}\` (measured: ${zmierzony ?? 'none'}, ` +
+          `snapshot: ${zapisany ?? 'none'})`,
       );
     const luz = Math.max(TOLERANCJA_MIN, Math.round(zapisany * TOLERANCJA));
     if (Math.abs(zmierzony - zapisany) > luz)
@@ -404,8 +404,8 @@ const sprawdzBundle = (we) => {
   // 10. A second read of the WHOLE gate: the same thing measured by the real
   //     `@angular/build: application`, that is, by what really assembles an application at
   //     the consumer's. The probes above go through their own esbuild — fast, but MY
-  //     jego. Ten sam ruch co „nie czytaj `include`, uruchom kompilator" z A7 i „nie
-  //     czytaj tekstu arkusza, uruchom sass" z A5.
+  //     setting of a bundler, not his. The same move as „do not read `include`, run the
+  //     compiler" from A7 and „do not read the sheet's text, run sass" from A5.
   //
   //     The third probe (all the entrypoints) is the denominator of the first two: it
   //     proves this read CAN see what it fails to find in them.
@@ -509,7 +509,7 @@ const renderujSnapshot = (zrodla, sondy) =>
   ].join('\n');
 
 /**
- * Wiersze danych jako mapa `entrypoint → { bajty, wniesione, zewnetrzne }`.
+ * The data rows as a map `entrypoint → { bajty, wniesione, zewnetrzne }`.
  *
  * A missing file (`null`) is an empty map here, not a failure, even though point 3 catches
  * that case separately and earlier — see the comment at `sprawdzBundle`. The row filter

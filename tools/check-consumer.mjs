@@ -100,9 +100,9 @@ const sprawdzKonsumenta = (we) => {
 
   // ── 1. tarball ──────────────────────────────────────────────────────────────
   // What `npm pack` really packed. `check-package` walks the `dist` directory, and between
-  // it and a consumer's `node_modules` stands a filter (`files`, `.npmignore`) —
-  // plik obecny w `dist` i nieobecny w archiwum jest dla tamtej bramki niewidzialny,
-  // a dla konsumenta fatalny.
+  // it and a consumer's `node_modules` stands a filter (`files`, `.npmignore`) — a file
+  // present in `dist` and absent from the archive is invisible to that gate and fatal for
+  // the consumer.
   const tarball = we.tarball ?? {};
   const pliki = new Set(tarball.pliki ?? []);
   if (pliki.size === 0)
@@ -523,12 +523,12 @@ const przygotujKatalog = () => {
  * package is visible here.
  *
  * The route goes through a router with `RenderMode.Server` rather than the default
- * prerender:
- * bez tego builder wypisuje gotowy `index.html`, serwer serwuje plik statyczny
- * (`ng-server-context="ssg"`) i bundle serwera nie renderuje ani razu. Zmierzone —
+ * prerender: without it the builder writes a finished `index.html`, the server serves a
+ * static file (`ng-server-context="ssg"`) and the server bundle never renders. Measured —
  * only with the router does the answer carry `ng-server-context="ssr"`.
  *
- * `security.allowedHosts` jest wymogiem Angulara 22 (ochrona przed SSRF): bez niego
+ * `security.allowedHosts` is an Angular 22 requirement (protection against SSRF): without
+ * it
  * the server answers 400 to its own `Host: localhost:<port>`. That is the application's
  * configuration, not the library's — but without it point 6 would be measuring a
  * framework error instead of the package.

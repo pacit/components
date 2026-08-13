@@ -26,5 +26,5 @@ libs/components/core/src/id.ts 100.00 5(0) 0 0 0
 libs/components/core/src/texts.ts 100.00 15(0) 0 0 0
 libs/components/field/src/number.ts 80.43 185(0) 43 2 11
 libs/components/select/src/select.ts 79.48 213(0) 52 3 5
-RAZEM 81.77 453/554
+TOTAL 81.77 453/554
 ```

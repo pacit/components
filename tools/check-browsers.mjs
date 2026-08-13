@@ -209,8 +209,8 @@ export const sprawdzPrzegladarki = ({
       `${niezebrane.length} spec files were collected by NO engine:\n` +
         lista(niezebrane) +
         `\n    The file sits in \`${TESTDIR}\`, is in the git index and runs nowhere — ` +
-        `zwykle przez wzorzec \`testMatch\`, \`testDir\` albo \`testIgnore\` dopisany ` +
-        `wszystkim projektom naraz. Przebieg jest zielony, bo Playwright nie ma czego ` +
+        `usually through a \`testMatch\`, \`testDir\` or \`testIgnore\` pattern added ` +
+        `to every project at once. The run is green, because Playwright has nothing ` +
         `to run.`,
     );
   const spozaRepo = [...wszystkieZebrane].filter((p) => !pliki.includes(p));
@@ -240,7 +240,7 @@ export const sprawdzPrzegladarki = ({
     throw new BladPrzegladarek(
       'pokrycie',
       'luka-bez-wpisu',
-      `${luki.length} par plik × silnik nie biegnie i nie ma na to wpisu w polityce:\n` +
+      `${luki.length} file × engine pairs do not run and have no entry in the policy:\n` +
         lista(luki) +
         `\n    This is what a \`testIgnore\` widened „because it flickers" looks like: ` +
         `coverage shrinks by one file, the run stays green and gets a few seconds shorter. ` +

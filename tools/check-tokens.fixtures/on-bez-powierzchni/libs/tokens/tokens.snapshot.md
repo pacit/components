@@ -1,15 +1,15 @@
-# Snapshot nazw tokenów
+# Token name snapshot
 
-> **Ten plik jest generowany.** Nie edytuj go ręcznie —
-> `node tools/check-tokens.mjs --write`. Bramka `check-tokens` odrzuca rozjazd.
+> **This file is generated.** Do not edit it by hand —
+> `node tools/check-tokens.mjs --write`. The `check-tokens` gate rejects a drift.
 
-Nazwa tokenu jest publicznym API motywu tak samo jak nazwa inputu jest publicznym
-API komponentu — z tą różnicą, że jej zmiana nie daje ani jednego czerwonego testu,
-bo biblioteka przemianowuje obie strony naraz: token i arkusz, który go używa.
-Konsumentowi zostaje nadpisanie wskazujące donikąd.
+A token's name is the theme's public API exactly as an input's name is a component's
+public API — with the difference that changing it gives not one red test, because the
+library renames both sides at once: the token and the stylesheet using it. The consumer
+is left with an override pointing nowhere.
 
-Ten plik jest listą, wobec której mierzy się zmianę. Rozjazd nie znaczy „błąd" —
-znaczy „zmiana publicznego API, która ma być widoczna w review".
+This file is the list a change is measured against. A drift does not mean „an error" —
+it means „a change of public API that is to be visible in review".
 
 Kolumny: nazwa custom property · `$type` z DTCG · warstwa · czy jest w publicznej
 unii `PctCssVar` (patrz `prywatne.prefiksy` w

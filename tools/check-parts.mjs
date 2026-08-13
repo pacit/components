@@ -200,10 +200,10 @@ class BladCzesci extends Error {
  * The full set of checks over a ready input:
  *   `klasy`, `deklaracji` — from the decorators in the sources (read A),
  *   `szablony`   — `[{ plik, tresc }]` of all the project's templates,
- *   `pakiet`     — `[{ wejscie, klasa, czesci, dynamiczne }]` ze zbudowanego
- *                  pakietu (odczyt B),
- *   `dokumenty`  — `[{ plik, entrypoint, czesci }]` z `docs/components/`,
- *   `entrypointy`— klucze mapy `exports` spakowanego manifestu,
+ *   `pakiet`     — `[{ wejscie, klasa, czesci, dynamiczne }]` from the built package
+ *                  (read B),
+ *   `dokumenty`  — `[{ plik, entrypoint, czesci }]` from `docs/components/`,
+ *   `entrypointy`— the keys of the packed manifest's `exports` map,
  *   `snapshot`   — the file's contents, or `null`.
  * Throws `BladCzesci` on the first violation and returns `{ opis, snapshot }` — the
  * rendered snapshot comes back from a checking run too, because `--write` is to write
