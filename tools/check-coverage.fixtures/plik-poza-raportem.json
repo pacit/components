@@ -1,7 +1,0 @@
-{
-  "punkt": 3,
-  "kontrola": "komplet",
-  "opis": "Plik źródłowy wypadł z raportu, a procent wygląda zdrowo — i jest WYŻSZY niż przed jego zniknięciem, bo razem z plikiem zniknął z mianownika. Dokładnie to zrobiło usunięcie `number.spec.ts` w przebiegu z lesson-45: pokrycie podskoczyło z 96,55% na 96,94%.",
-  "usunZRaportu": ["libs/components/field/src/number.ts"],
-  "pct": 100
-}

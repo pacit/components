@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "complete",
+  "description": "A source file dropped out of the report and the percentage looks healthy — it is HIGHER than before the file vanished, because the file left the denominator with it. That is exactly what removing `number.spec.ts` did in the run behind lesson-45: coverage jumped from 96.55% to 96.94%.",
+  "dropFromReport": ["libs/components/field/src/number.ts"],
+  "pct": 100
+}

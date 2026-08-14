@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "threshold",
+  "description": "The target collects coverage but declares no threshold. This is the state before this task: the report exists and reads nicely, and the number `80%` is a declaration in the documentation, not a gate.",
+  "target": { "coverage": true }
+}

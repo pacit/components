@@ -1,9 +1,0 @@
-{
-  "punkt": 4,
-  "kontrola": "prog",
-  "opis": "Target ma próg, ale nie zbiera pokrycia (`coverage: false`). Raport zostaje z poprzedniego przebiegu i bramka mierzy przeszłość — jeden znak w `project.json` wystarczy, żeby ją rozbroić bez śladu w logu.",
-  "target": {
-    "coverage": false,
-    "coverageThresholds": { "lines": 80 }
-  }
-}

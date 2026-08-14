@@ -1,6 +1,0 @@
-{
-  "punkt": 1,
-  "kontrola": "raport",
-  "opis": "Przebieg testów nie zostawił raportu. Bez tego punktu bramka nie miałaby czego badać i przeszłaby — czyli byłaby najgłośniej zielona dokładnie wtedy, gdy pomiar w ogóle się nie odbył.",
-  "usunRaport": true
-}

@@ -1,0 +1,6 @@
+{
+  "point": 5,
+  "check": "result",
+  "description": "Every file is in the report, the threshold is declared, and the coverage does not meet it. The simplest case — and the only one the `test` target enforces as well.",
+  "pct": 79.9
+}

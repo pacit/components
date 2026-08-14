@@ -1,6 +1,0 @@
-{
-  "punkt": 4,
-  "kontrola": "prog",
-  "opis": "Target zbiera pokrycie, ale nie deklaruje progu. To stan sprzed tego zadania: raport istnieje i ładnie się czyta, a liczba `80%` jest deklaracją w dokumentacji, nie bramką.",
-  "target": { "coverage": true }
-}

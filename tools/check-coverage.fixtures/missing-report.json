@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "report",
+  "description": "The test run left no report. Without this point the gate would have nothing to examine and would pass — that is, it would be at its greenest exactly when no measurement happened at all.",
+  "dropReport": true
+}

@@ -1,16 +1,16 @@
 {
-  "opis": "Wejście wzorcowe. Raport obejmuje komplet plików źródłowych, target deklaruje próg, pokrycie go spełnia. Przypadki powstają na kopii tego pliku, więc każdy z nich zawiera wyłącznie swoją wadę.",
+  "description": "The reference input. The report covers every source file, the target declares a threshold and the coverage meets it. Cases are built on a copy of this file, so each of them holds nothing but its own defect.",
   "target": {
     "coverage": true,
     "coverageThresholds": { "lines": 80 }
   },
-  "zrodla": [
+  "sources": [
     "libs/components/button/src/button.ts",
     "libs/components/field/src/number.ts"
   ],
-  "raport": {
+  "report": {
     "total": { "lines": { "total": 122, "covered": 116, "pct": 95.08 } },
-    "pliki": {
+    "files": {
       "libs/components/button/src/button.ts": {
         "lines": { "total": 8, "covered": 8, "pct": 100 }
       },

@@ -1,0 +1,6 @@
+{
+  "point": 2,
+  "check": "sources",
+  "description": "The list of source files is empty — this is what a typo in the SOURCES pattern or a moved directory looks like. Point 3 would then always pass, having nothing to look for in the report: a completeness check with no denominator is empty.",
+  "clearSources": true
+}

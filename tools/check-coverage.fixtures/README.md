@@ -1,60 +1,62 @@
-# Kontrola odniesienia bramki pokrycia
+# Negative control of the coverage gate
 
-Celowo wadliwe wejścia. `tools/check-coverage.mjs` uruchamia na każdym z nich komplet
-swoich pięciu kontroli i **wymaga, żeby każde zostało odrzucone — i to przez ten punkt,
-który deklaruje**. Wejście, które przechodzi, jest błędem; wejście, które zapala z innego
-powodu, niż wpisano w jego pliku, jest błędem tak samo, bo dowodzi czegoś innego, niż
-deklaruje.
+Deliberately defective inputs. `tools/check-coverage.mjs` runs all five of its checks on
+each of them and **requires every one to be rejected — and rejected by the point it
+declares**. An input that passes is a fault; an input that fires for a reason other than
+the one written in its file is a fault just the same, because it proves something other
+than what it declares.
 
-Powód istnienia jest ten sam co przy każdej innej bramce w tym repozytorium
-([`req-quality-negative-control`](../../docs/requirements/quality.md#req-quality-negative-control)): **nowa
-bramka nie jest gotowa, gdy przechodzi — jest gotowa, gdy pokazano, że potrafi nie
-przejść.** Przebieg, z którego wzięła się ta bramka, opisuje
-[`lesson-45`](../../docs/lessons.md#lesson-45): usunięcie testu **podniosło** pokrycie
-z 96,55% na 96,94%, bo razem z testem wypadł z raportu cały nietestowany plik. Próg
-pilnujący takiej liczby przechodzi zawsze i tym głośniej, im mniej się testuje.
+The reason it exists is the same as for every other gate in this repository
+([`req-quality-negative-control`](../../docs/requirements/quality.md#req-quality-negative-control)):
+**a new gate is not ready when it passes — it is ready when it has been shown to fail.**
+The run this gate came from is described by
+[`lesson-45`](../../docs/lessons.md#lesson-45): removing a test **raised** coverage from
+96.55% to 96.94%, because an untested file left the report along with the test. A
+threshold guarding such a number always passes, and the louder the less is tested.
 
-## Jak to jest złożone
+## How a case is built
 
-Przypadek nie jest ósmą kopią poprawnego wejścia z jedną zepsutą rzeczą. Bramka składa
-go z dwóch warstw:
+A case is not an eighth copy of the correct input with one thing broken. The gate builds
+it from two layers:
 
-1. `_poprawny.json` — wejście wzorcowe: raport, lista plików źródłowych, opcje targetu,
-2. operacje z pliku przypadku, nakładane na jego kopię (`usunRaport`, `wyczyscZrodla`,
-   `usunZRaportu`, `pct`, `target`).
+1. `_reference.json` — the reference input: the report, the list of source files, the
+   target options,
+2. the operations from the case file, applied to a copy of it (`dropReport`,
+   `clearSources`, `dropFromReport`, `pct`, `target`).
 
-Dzięki temu plik przypadku zawiera **wyłącznie wadę** — widać ją bez porównywania plików
-— i nie rozjeżdża się z bazą, gdy kształt raportu się zmieni.
+That way the case file holds **nothing but the defect** — it is visible without comparing
+files — and does not drift from the reference when the shape of the report changes.
 
-**Wejście wzorcowe musi przejść.** To nie jest kontrola na zapas: gdyby baza sama była
-wadliwa, każdy przypadek zapalałby z jej powodu, a nie z powodu swojej wady, i wszystkie
-„odrzucone" byłyby fałszywe — czyli cała ta kontrola odniesienia stałaby się dokładnie
-tym, przed czym stoi.
+**The reference input must pass.** This is not a check for good measure: were the
+reference itself defective, every case would fire because of it rather than because of
+its own defect, and every „rejected" would be false — that is, this whole negative
+control would become exactly what it stands against.
 
-Wejście jest **danymi, nie katalogiem na dysku**: bramka bada decyzję, a nie odczyt
-plików. Plumbing broni się sam — gdyby glob źródeł albo normalizacja ścieżek z raportu
-przestały działać, punkt 2 albo 3 zapala na prawdziwym przebiegu, głośno i od razu.
+The input is **data, not a directory on disk**: the gate examines the decision, not the
+reading of files. The plumbing defends itself — were the source glob or the path
+normalisation from the report to stop working, point 2 or 3 fires on the real run, loudly
+and at once.
 
-| plik                                                 | co łamie                                             | punkt |
-| ---------------------------------------------------- | ---------------------------------------------------- | ----- |
-| [`brak-raportu.json`](brak-raportu.json)             | przebieg nie zostawił raportu pokrycia               | 1     |
-| [`bez-zrodel.json`](bez-zrodel.json)                 | pusta lista plików źródłowych                        | 2     |
-| [`plik-poza-raportem.json`](plik-poza-raportem.json) | plik źródłowy poza raportem, przy rosnącym procencie | 3     |
-| [`pokrycie-wylaczone.json`](pokrycie-wylaczone.json) | target ma próg, ale nie zbiera pokrycia              | 4     |
-| [`bez-progu.json`](bez-progu.json)                   | target zbiera pokrycie, ale bez progu                | 4     |
-| [`prog-zanizony.json`](prog-zanizony.json)           | próg niższy niż minimum z `req-quality-coverage`      | 4     |
-| [`ponizej-progu.json`](ponizej-progu.json)           | pokrycie poniżej zadeklarowanego progu               | 5     |
+| file                                                           | what it breaks                                             | point |
+| -------------------------------------------------------------- | ---------------------------------------------------------- | ----- |
+| [`missing-report.json`](missing-report.json)                   | the run left no coverage report                            | 1     |
+| [`no-sources.json`](no-sources.json)                           | an empty list of source files                              | 2     |
+| [`file-outside-report.json`](file-outside-report.json)         | a source file outside the report, with a rising percentage | 3     |
+| [`coverage-off.json`](coverage-off.json)                       | the target has a threshold but collects no coverage        | 4     |
+| [`no-threshold.json`](no-threshold.json)                       | the target collects coverage but has no threshold          | 4     |
+| [`threshold-below-minimum.json`](threshold-below-minimum.json) | a threshold below the minimum from `req-quality-coverage`  | 4     |
+| [`below-threshold.json`](below-threshold.json)                 | coverage below the declared threshold                      | 5     |
 
-Punkt 4 ma trzy przypadki, bo to trzy różne sposoby rozbrojenia tej samej egzekucji:
-wyłączenie pomiaru, usunięcie progu i obniżenie progu. Każdy zostawia `project.json`
-wyglądający sensownie i każdy kończy przebieg zielono.
+Point 4 has three cases, because there are three different ways of disarming the same
+enforcement: turning the measurement off, removing the threshold and lowering it. Each
+leaves a `project.json` that looks sensible and each ends the run green.
 
-Punkt 3 jest tym, który faktycznie łapie regresję. Punkty 4 i 5 pilnują liczby; punkt 3
-pilnuje **mianownika**, z którego ta liczba powstała — a to on cicho się kurczy.
+Point 3 is the one that actually catches the regression. Points 4 and 5 guard the number;
+point 3 guards the **denominator** it came from — and that is what quietly shrinks.
 
-## Dodanie nowej kontroli do bramki
+## Adding a new check to the gate
 
-Nowa kontrola w `check-coverage.mjs` przychodzi **razem z przypadkiem**, który ją zapala,
-i z identyfikatorem, po którym da się poznać, że zapaliła właśnie ona. Kontrola bez
-przypadku jest dokładnie tym, czego zakazuje [`req-axis`](../../docs/00-axis.md): obietnicą
-bez maszyny potrafiącej na niej zapalić, tylko piętro wyżej.
+A new check in `check-coverage.mjs` comes **together with the case** that fires it, and
+with an identifier that tells you it was this check that fired. A check with no case is
+exactly what [`req-axis`](../../docs/00-axis.md) forbids: a promise with no machine able
+to fire on it, only one floor up.

@@ -1,0 +1,9 @@
+{
+  "point": 4,
+  "check": "threshold",
+  "description": "The threshold slid below the minimum from `req-quality-coverage`. The gate still fires, only lower than the documentation promises — the form of drift a run cannot show, because the run is green.",
+  "target": {
+    "coverage": true,
+    "coverageThresholds": { "lines": 50 }
+  }
+}

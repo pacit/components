@@ -1,0 +1,9 @@
+{
+  "point": 4,
+  "check": "threshold",
+  "description": "The target has a threshold but collects no coverage (`coverage: false`). The report is left over from an earlier run and the gate measures the past — one character in `project.json` is enough to disarm it with no trace in the log.",
+  "target": {
+    "coverage": false,
+    "coverageThresholds": { "lines": 80 }
+  }
+}
