@@ -104,7 +104,7 @@ place where the project behaves like an ordinary library.
 The single most serious finding against the goal „the best known Angular library".
 
 ```ts
-/** Wybrana wartość — wymagane pole kontraktu `FormValueControl`. */
+/** The chosen value — a required field of the `FormValueControl` contract. */
 readonly value = model<NoInfer<T> | null>(null);
 ```
 
@@ -186,7 +186,7 @@ question was reaching for.
 
 ### 5.1 No `aria-label` on controls whose role is inside — a real a11y gap
 
-`<pct-select aria-label="Kraj">` lands on the `<pct-select>` host, which has no role.
+`<pct-select aria-label="Country">` lands on the `<pct-select>` host, which has no role.
 `role="combobox"` is on the inner `<button>`. A standalone select with no `label` and no field
 chrome is **an unnamed combobox**, and a consumer has no way to fix it.
 

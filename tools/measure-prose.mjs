@@ -20,7 +20,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const ONLY_OVER = process.argv.includes('--over');
 const PLAN = readFileSync(join(ROOT, 'docs/plan.md'), 'utf8').split('\n');
-const JOURNAL_AT = PLAN.findIndex((l) => /^## (Dziennik|Journal)\b/.test(l));
+const JOURNAL_AT = PLAN.findIndex((l) => /^## Journal\b/.test(l));
 
 const pad = (n, w = 3) => String(n).padStart(w);
 const words = (s) => s.split(/\s+/).filter(Boolean).length;

@@ -73,20 +73,19 @@ G  gaps with no deadline    waiting for the trigger written in their „Binds at
 H  one language, no filler  English everywhere; blocks B2 whole, not just its public part
 ```
 
-**Phase A is closed and so are H1–H8**, so the next milestone is not a release but the **first
-push to the public repository** (B2) — and the rule for it is settled: **nothing leaves in
-Polish**. Not the sandbox, not a comment, not a fixture value. So B2 waits on the rest of H
-(H9, H10, H11), on the **repository limb of B8** — because „nothing is left" is a measurement,
+**Phase A is closed and so are H1–H8 and H11**, so the next milestone is not a release but the
+**first push to the public repository** (B2) — and the rule for it is settled: **nothing leaves
+in Polish**. Not the sandbox, not a comment, not a fixture value. So B2 waits on the rest of H
+(H9, H10), on the **repository limb of B8** — because „nothing is left" is a measurement,
 not a declaration, this file's own [definition of done](#definition-of-done) — and on **B9**,
 the clear-out of what a public repository should never have carried. H1 (identifiers),
 H2 (the concision criterion, [0017](decisions/0017-one-home-per-fact.md)), H3 (the title page),
-H4 (`docs/`), H5 (`libs`), H6 (test names), H7 (the fifteen gate scripts) and H8 (the contracts
-they read) are done, and `LICENSE` has a gate on both sides of `npm pack` (B1). Of B, the
+H4 (`docs/`), H5 (`libs`), H6 (test names), H7 (the fifteen gate scripts), H8 (the contracts
+they read) and H11 (what a diacritics scan cannot see) are done, and `LICENSE` has a gate on both sides of `npm pack` (B1). Of B, the
 package README (B3) and B4 stand between here and npm.
-**A diacritics scan is empty outside `apps/`, and that is not the same as clean**: a
-function-word probe run 2026-08-14 finds Polish in **32 files** there — including the JSDoc
-example that ships in `types/*.d.ts` — and in **52 of the 117** files under `apps/`. That is
-H11 and H10.
+**Outside `apps/` both limbs are now empty** — H11 closed the 84 files a dictionary scan found
+where a function-word probe had counted 32, the JSDoc example that shipped in `types/*.d.ts`
+among them. Under `apps/` **52 of the 117** files are left, and that is H10.
 In parallel: F1 is unblocked (A3 and A4 gave it both inventories to render), and C is filler.
 
 H is not a separate phase, and it no longer has two deadlines. The old split — `README.md`,
@@ -309,9 +308,9 @@ block publication and is an order of magnitude larger.
   - hence the ordering condition **H1 → H3 → H4 → B2**, satisfied for everything the first
     visitor sees. The price of that order is written down plainly — until the first push there
     is no remote CI, no provenance and no copy off this machine
-  - **and on 2026-08-14 the condition grew**: nothing leaves in Polish, so **H9, H10 and H11**
-    stand before the push and **B8's repository limb is what proves it** — the scan that
-    reported four layers clean sees neither „nie biegnie" nor `'Wybierz…'` (H11)
+  - **and on 2026-08-14 the condition grew**: nothing leaves in Polish, so **H9 and H10** stand
+    before the push and **B8's repository limb is what proves it**. H11 closed its half the same
+    day — the scan that reported four layers clean saw neither „nie biegnie" nor `'Wybierz…'`
   - cost: minutes for the task itself · _notes:_ —
 
 - [ ] **B3 — package README in English**
@@ -371,13 +370,13 @@ block publication and is an order of magnitude larger.
   - **two reaches, one deadline now**: the repository limb runs before the push, being the only
     thing that turns „nothing is left in Polish" into a measurement; the artefact limb still
     binds at the release with B3
-  - detection has **two limbs**: diacritics are enough for prose and fall silent exactly where
-    the text is short — a label, a file name — so the second limb is a list of Polish function
-    words English does not contain. **Its false positives are the design work**: `jest` is a
-    Polish verb and a test runner at once, and hits `nx.json` before it hits any prose
+  - detection has **two limbs** and H11 settled the second: diacritics carry prose, so the other
+    limb is `/usr/share/dict/polish` minus `american-english`, over identifiers split at
+    camelCase. **Its false positives are the design work** and they enumerate — acronyms,
+    `SCREAMING_CASE`, the abbreviations of the trade, `jest` ([`lesson-60`](lessons.md#lesson-60))
   - the register follows the `browsers.policy.json` idiom from A10: an entry carries its reason
     and the task that removes it, and **a dead entry fires just like new Polish**. It starts
-    empty — that is what B3, B4, H10 and H11 are for. Denominator: [`lesson-48`](lessons.md#lesson-48)
+    empty — that is what B3, B4 and H10 are for. Denominator: [`lesson-48`](lessons.md#lesson-48)
   - control: Polish in a file outside the register; an entry pointing at a file **already**
     translated; a Polish `description` **despite** an entry; a scan with an empty file list
   - cost: ~1 day · _notes:_ —
@@ -620,7 +619,7 @@ is the last row, and it is H11, not a new layer:
 | tools and gates                     | done — **H7** (15 scripts; headers 609 → **249**, budget 251)                | —                        |
 | proper names in contracts           | done — **H8** (1 target, 5 policies/snapshots, 252 fixture cases, 9 READMEs) | —                        |
 | commit history                      | 49 commits — **H9**                                                          | squashed before the push |
-| Polish without diacritics           | **32 files** outside `apps/`, inside the rows above — **H11**                | first push               |
+| Polish without diacritics           | done — **H11** (84 files outside `apps/`, measured against a dictionary)     | first push               |
 
 - [x] **H1 — the identifier and documentation-name space** _(2026-08-06)_
   - done: **83 requirement identifiers**, **59 lessons** (`lekcja-N` → `lesson-N`) and **2 571
@@ -747,33 +746,51 @@ is the last row, and it is H11, not a new layer:
     channel keeps a live consumer instead of a smaller, deliberate demonstration elsewhere
   - couplings: the e2e specs cite the UI strings they read (`hasText: 'Polska'` and its kin, 15
     places), so demo and specs move in one commit; the **Control** citations in `quality.md` and
-    `tokens.md` name Polish test names that no longer exist — those belong to H11
+    `tokens.md` named Polish test names that no longer exist — H11 took those
   - cost: ~1 day · _notes:_ the one open sub-choice is the locale; `fr-FR` recommended
 
-- [ ] **H11 — the Polish a diacritics scan cannot see**
-  - **32 files outside `apps/`**, measured 2026-08-14 with Polish function words over files the
-    first limb calls clean. Not a new layer — the second reading of H5, H6, H7 and H8, and the
-    reason „the scan is empty" was never the same sentence as „there is no Polish left"
-  - **the worst of it ships**: the JSDoc of `texts.ts` demonstrates the channel with
-    `providePctTexts({ selectPlaceholder: 'Wybierz…' })`, so it stands in `types/*.d.ts` and on
-    the npm page, and [`README.md`](../README.md) repeats it on the title page (line 254)
-  - in the gates: a printed message and a comment in `check-docs.mjs` („nie biegnie w
-    `nx affected -t`") and its `REJESTR` constant, Polish JSDoc in `check-texts.mjs`, a message
-    in `check-tokens.mjs` built from `wpisy`, the same names in `check-parts.mjs` (`wpisy`,
-    `skroc`), a `BRAK` besides, plus `check-styles`, `check-bundle` and eleven fixture files
-  - **stale citations are the third kind and nothing fires on them**: `quality.md` cites the
-    rule `fakt-bez-odniesienia`, `tokens.md` cites `on-para-martwa` — renamed by H8, live in no
-    script — and both cite Polish test names H6 renamed. `check-docs` compares the path only
-  - one class needs a decision, not a translation: **Polish as quoted history** — the 93 rows of
-    the [migration table](README.md#id-space-migration-2026-08-06), 17 citations in this file,
-    one in `lessons.md`. Recommendation: the table goes at the squash, because it maps a space
-    no public reader can ever observe; the anecdotes keep the identifier they are about
-  - control: B8's second limb over the index, with the register empty
-  - cost: ~1 day · _notes:_ —
+- [x] **H11 — the Polish a diacritics scan cannot see** _(2026-08-14)_
+  - done: **84 files outside `apps/`** — ten gate scripts, 25 fixture files, seven library
+    specs, the tokens generator, the live contrast policy and 26 stale citations
+  - **the plan counted 32 because the instrument was hand-written**: a function-word list finds
+    prose, not `wartosc` or `przygotujKatalogSond` ([`lesson-60`](lessons.md#lesson-60))
+  - **a rename is a contract on both sides, again**: `fabryki` is a fixture key, and the fixture
+    `name` values are messages — H7 did the real contrast policy, not its two copies
+  - quoted history stays put: the [migration table](README.md#id-space-migration-2026-08-06) and
+    `review.md` go at **B9**; the anecdotes keep their identifier
+  - control: twelve gates in one pass, `check-consumer` end to end, 196 unit tests; both scan
+    limbs empty outside `apps/`
+  - cost: ~1 day (plan: ~1) · journal 2026-08-14
 
 ## Journal
 
 One entry per session: what moved, what it ended with, what comes next. Newest on top.
+
+### 2026-08-14 — H11: a scan is as wide as its word list, and mine was a third as wide
+
+**H11 is done — 84 files outside `apps/`**: ten gate scripts, 25 fixture files, seven library
+specs, the tokens generator, the live contrast policy and 26 stale citations. The diacritics
+limb outside `apps/` now reports one file, and it is this one, quoting the Polish it discusses.
+
+**The estimate was 32 and the instrument was the reason.** A hand-written function-word list
+finds prose, because function words stand in sentences; it cannot find `wartosc`, `skroc` or
+`przygotujKatalogSond`, and identifiers were most of what was left. Swapped for
+`/usr/share/dict/polish` folded of diacritics minus `american-english`, over identifiers split
+at camelCase, the same index gave **94 files** ([`lesson-60`](lessons.md#lesson-60)). The false
+positives are what the plan promised — acronyms, `SCREAMING_CASE`, `repo`/`config`/`proc`, the
+words Polish and English share — and a hundred entries settle them. **That register is B8's.**
+
+**Two gates carried Polish in their contracts, not only their locals**: `fabryki` is a key of
+`check-consumer.fixtures/_reference.json`, and the `name` values of the fixture contrast
+policies are messages the a11y gate prints, per theme. H7 translated the real
+`contrast.policy.json` and left its two fixture copies — the miss H8 recorded, one layer down.
+
+**A `perl -pi` run mangled a template literal and the next command caught it**: an interpolated
+step number came out empty, because `${…}` means something to the shell too. The renames moved
+to a node script reading a JSON map after that, with `node --check` after every file.
+
+Next: **H10** (the sandbox, decision made: English with `fr-FR`), then H9, **B9**’s clear-out
+and B8's repository limb. Only then B2.
 
 ### 2026-08-14 — the push carries no Polish, and the scan that said so was half a scan
 

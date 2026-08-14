@@ -217,3 +217,4 @@ Which lesson feeds which requirement. Generated from the **Lessons** fields.
 | [`lesson-57`](lessons.md#lesson-57) | `req-quality-unit`                                                                                                                                                |
 | [`lesson-58`](lessons.md#lesson-58) | `req-quality-unit`                                                                                                                                                |
 | [`lesson-59`](lessons.md#lesson-59) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-60`](lessons.md#lesson-60) | — _(not cited)_                                                                                                                                                   |

@@ -1223,3 +1223,30 @@ reads or copies, not how long it takes.** A tool that makes a copy of the projec
 sensitive to everybody writing in that tree — and the remedy is narrowing what it copies
 (`ignorePatterns`), not raising limits. The symptom „passes solo, fails in a batch" is common to
 both causes and does not settle anything by itself; what settles it is the recorded message.
+
+---
+
+### <a id="lesson-60"></a>`lesson-60` — A scan is only as wide as its word list, and a hand-written list is narrower than its author thinks
+
+**The language scan that reported four layers clean was measuring diacritics; the one that
+replaced it was measuring a list of Polish function words I wrote by hand — and it counted 32
+files where a dictionary counts 94.** Both limbs were honest about what they compared and
+neither was honest about what that left out. A function-word list catches PROSE: `nie`, `jest`,
+`przez` stand in sentences. It cannot catch `wartosc`, `skroc`, `nadmiarowe`,
+`przygotujKatalogSond` — identifiers, which carry no function words by construction, and which
+[H1](plan.md#h) had already ruled move with everything else.
+
+The fix cost nothing: `/usr/share/dict/polish` folded of its diacritics, minus
+`/usr/share/dict/american-english`, over identifiers split at camelCase. **The design work is
+where the plan said it would be — the false positives** — but they are enumerable and boring:
+acronyms shorter than four letters, `SCREAMING_CASE`, the abbreviations of the trade (`repo`,
+`config`, `dom`, `proc`), and the words that are Polish and English at once (`jest`, `test`,
+`role`, `data`, `rate`). A register of about a hundred entries turns a 61 MB dictionary into an
+instrument with no false negatives worth the name.
+
+The rule generalises past language: **when a measurement's denominator is a list somebody typed,
+the measurement's ceiling is that person's recall, not the thing being measured.** Ask what
+generates the list before trusting what it reports — [`lesson-48`](#lesson-48) asks the same
+question about an empty denominator, and this is its other half: a denominator that is non-empty
+and still too small says nothing about it, because a scan that finds Polish in 32 files looks
+exactly like a scan that finds Polish in 32 files.
