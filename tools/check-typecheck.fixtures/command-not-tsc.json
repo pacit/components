@@ -1,0 +1,6 @@
+{
+  "// why": "A target wrapped in a shell script. It may well check types — but the gate has no way of telling, nor of measuring which files it covers, so point 4 would get an empty program for that project. The defect is meant to be loud: a command accepted quietly takes a whole project's coverage away.",
+  "point": 3,
+  "check": "command",
+  "replaceCommands": { "components": ["bash tools/typecheck-components.sh"] }
+}

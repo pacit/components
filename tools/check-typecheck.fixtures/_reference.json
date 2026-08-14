@@ -1,0 +1,39 @@
+{
+  "// why": "The reference input of the negative control: a minimal but CORRECT picture of the workspace, in which every TypeScript file is seen by some compiler. Every case beside it is built on a copy of this one and brings in exactly one defect, so a case file holds the defect alone rather than one more copy of a correct input. Were this reference itself defective, every case would fire because of it — which is why the gate checks it separately.",
+  "// projects": "Three projects cover three different situations at once: a library with TWO disjoint programs (the package and the specs), a project with not one TypeScript file (tokens — deliberately with no target, because demanding one would demand the checking of an empty set) and the root project, whose root `.` is a prefix of everything and which collects only what nobody else took.",
+  "projects": [
+    {
+      "name": "components",
+      "root": "libs/components",
+      "typecheck": {
+        "cwd": ".",
+        "commands": [
+          "tsc --noEmit -p libs/components/tsconfig.lib.json",
+          "tsc --noEmit -p libs/components/tsconfig.spec.json"
+        ]
+      }
+    },
+    { "name": "tokens", "root": "libs/tokens", "typecheck": null },
+    {
+      "name": "@org/source",
+      "root": ".",
+      "typecheck": {
+        "cwd": ".",
+        "commands": ["tsc --noEmit -p tsconfig.root.json"]
+      }
+    }
+  ],
+  "files": [
+    "libs/components/src/index.ts",
+    "libs/components/src/public-api.spec.ts",
+    "vitest.config.ts"
+  ],
+  "// seen": "The compiler program, that is what `tsc --listFilesOnly` prints in a real run. The key is the project name, not the command: a project is sometimes several programs at once and only their UNION is meant to cover its files.",
+  "seen": {
+    "components": [
+      "libs/components/src/index.ts",
+      "libs/components/src/public-api.spec.ts"
+    ],
+    "@org/source": ["vitest.config.ts"]
+  }
+}

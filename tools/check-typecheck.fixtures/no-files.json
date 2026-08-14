@@ -1,0 +1,6 @@
+{
+  "// why": "Zero TypeScript files in the index. The second denominator of the same point: the gate would compare the compiler program against an empty set and always pass. A real trigger: a change to the extension filter, or `git ls-files` run in a directory with no repository.",
+  "point": 1,
+  "check": "denominator",
+  "clearFiles": true
+}

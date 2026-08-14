@@ -1,6 +1,0 @@
-{
-  "// po co": "Projekt z plikami TypeScriptu i bez targetu `typecheck` — `lesson-42` wprost. `nx affected -t typecheck` milczy tam, gdzie targetu nie ma, więc przebieg jest zielony, a kompilator nie widział tych plików ani razu.",
-  "punkt": 2,
-  "kontrola": "target",
-  "usunTypecheck": ["components"]
-}

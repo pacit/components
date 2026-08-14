@@ -1,0 +1,6 @@
+{
+  "// why": "A project with TypeScript files and no `typecheck` target — `lesson-42` outright. `nx affected -t typecheck` says nothing where there is no target, so the run is green and the compiler never once saw those files.",
+  "point": 2,
+  "check": "target",
+  "dropTypecheck": ["components"]
+}

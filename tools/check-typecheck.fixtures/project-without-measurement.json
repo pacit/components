@@ -1,0 +1,6 @@
+{
+  "// why": "An empty program for a whole project — this is what a measurement that failed or missed looks like: a configuration with `\"include\": []`, a changed `--listFilesOnly` output format, an overflowing buffer. Without this point the gate would pass THE MORE READILY the less it measured.",
+  "point": 4,
+  "check": "coverage",
+  "clearSeen": ["components"]
+}

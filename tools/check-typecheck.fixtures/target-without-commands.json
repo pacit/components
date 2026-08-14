@@ -1,0 +1,6 @@
+{
+  "// why": "A `typecheck` target that exists and does nothing. To point 2 it is indistinguishable from a healthy one, and `nx run components:typecheck` ends in success — because an empty list of commands is zero failures.",
+  "point": 3,
+  "check": "command",
+  "replaceCommands": { "components": [] }
+}

@@ -1,0 +1,6 @@
+{
+  "// why": "A graph with not one project. Points 2–4 walk that list, so an empty one means \"everything passed\" having checked nothing. A real trigger: the gate reading the graph from the output of a command whose format changed — emptiness then looks exactly like a healthy repository.",
+  "point": 1,
+  "check": "denominator",
+  "clearProjects": true
+}

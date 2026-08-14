@@ -1,0 +1,6 @@
+{
+  "// why": "`tsc` with no `-p`. The configuration is then chosen by a search for `tsconfig.json` upwards from `cwd`, that is from a value set elsewhere in `project.json` — the target's reach stops being visible at the point of the call. The same check rejects `tsc --build`, which `--listFilesOnly` cannot describe, so the gate would have nothing to measure point 4 with.",
+  "point": 3,
+  "check": "command",
+  "replaceCommands": { "components": ["tsc --noEmit"] }
+}

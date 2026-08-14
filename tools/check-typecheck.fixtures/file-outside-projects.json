@@ -1,0 +1,6 @@
+{
+  "// why": "A file in the repository root after the root project was removed — that is, exactly the state before 2026-08-05, when `vitest.config.ts` and `vitest.workspace.ts` belonged to nothing. Points 2–4 walk the projects, so a file with no owner is invisible to them: without this point, deleting the root `project.json` would NOT fire the gate, it would quietly take two files away from it.",
+  "point": 1,
+  "check": "denominator",
+  "dropProjects": ["@org/source"]
+}

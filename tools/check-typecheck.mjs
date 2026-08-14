@@ -22,7 +22,7 @@ import { execSync } from 'node:child_process';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const FIXTURES = join(ROOT, 'tools/check-typecheck.fixtures');
-const BAZA = '_poprawny.json';
+const REFERENCE = '_reference.json';
 
 /** Extensions the TypeScript compiler is meant to see. */
 const TYPESCRIPT = /\.(?:m|c)?tsx?$/;
@@ -34,7 +34,7 @@ const TYPESCRIPT = /\.(?:m|c)?tsx?$/;
  * `outDir` (schematics compile to `dist/`), and the gate has no business writing anything
  * along the way.
  */
-const POMIAR = '--listFilesOnly --noEmit';
+const MEASURE = '--listFilesOnly --noEmit';
 
 /** The command is a `tsc` call — otherwise `--listFilesOnly` means nothing. */
 const TSC = /(?:^|[/\\])tsc(?:\s|$)/;
@@ -47,14 +47,14 @@ const TSC = /(?:^|[/\\])tsc(?:\s|$)/;
  * one and `--listFilesOnly` has no way to describe it. One configuration per command, as
  * many commands as there are programs.
  */
-const PROJEKT = /(?:^|\s)(?:-p|--project)\s+\S/;
+const CONFIG = /(?:^|\s)(?:-p|--project)\s+\S/;
 
 /**
  * Shell operators. `nx:run-commands` sends the command through a shell, so
  * `tsc --noEmit -p x || true` is a target that ALWAYS passes and looks in `project.json`
  * exactly like a gate. It costs one character and disarms a whole project's typecheck.
  */
-const OPERATORY = /[;|&]/;
+const OPERATORS = /[;|&]/;
 
 /**
  * Flags that switch checking off. `--noCheck` (TS 5.6+) leaves only parse and emit errors,
@@ -63,7 +63,7 @@ const OPERATORY = /[;|&]/;
  * the measured command outright: otherwise a disarmed target and a measurement would look
  * identical.
  */
-const BEZ_SPRAWDZANIA = [
+const WITHOUT_CHECKING = [
   ['--noCheck', /(?:^|\s)--noCheck(?:\s|=|$)/],
   ['--listFilesOnly', /(?:^|\s)--listFilesOnly(?:\s|$)/],
 ];
@@ -74,10 +74,10 @@ const BEZ_SPRAWDZANIA = [
  * point — a fixture failing for a reason other than the one written into it proves
  * something other than what it declares.
  */
-class BladTypecheck extends Error {
-  constructor(kontrola, opis) {
-    super(opis);
-    this.kontrola = kontrola;
+class TypecheckError extends Error {
+  constructor(check, description) {
+    super(description);
+    this.check = check;
   }
 }
 
@@ -85,27 +85,27 @@ class BladTypecheck extends Error {
  * A command's defect, or `null`. One place for two callers: point 3 and the input layer,
  * which has to reject a command carrying a shell operator BEFORE running it.
  */
-const wadaPolecenia = (polecenie) => {
-  if (typeof polecenie !== 'string')
+const commandDefect = (command) => {
+  if (typeof command !== 'string')
     return (
-      `is not a string (${JSON.stringify(polecenie)}) — ` +
+      `is not a string (${JSON.stringify(command)}) — ` +
       `\`commands\` also takes objects, and one with no \`command\` field would drop out of the measurement`
     );
-  if (OPERATORY.test(polecenie))
+  if (OPERATORS.test(command))
     return `contains a shell operator — a command like \`tsc … || true\` always passes`;
-  if (!TSC.test(polecenie))
+  if (!TSC.test(command))
     return `is not a \`tsc\` call — the gate cannot measure which files it sees`;
-  if (!PROJEKT.test(polecenie))
+  if (!CONFIG.test(command))
     return (
       `does not name a configuration with \`-p\` — the reach then depends on \`cwd\`, ` +
       `and \`tsc --build\` cannot be described by a file listing either`
     );
-  const wylaczone = BEZ_SPRAWDZANIA.filter(([, wzorzec]) =>
-    wzorzec.test(polecenie),
-  ).map(([nazwa]) => nazwa);
-  if (wylaczone.length)
+  const switchedOff = WITHOUT_CHECKING.filter(([, pattern]) =>
+    pattern.test(command),
+  ).map(([name]) => name);
+  if (switchedOff.length)
     return (
-      `carries a flag that switches type checking off (${wylaczone.join(', ')}) — ` +
+      `carries a flag that switches type checking off (${switchedOff.join(', ')}) — ` +
       `the target runs, costs CI time and checks nothing`
     );
   return null;
@@ -116,45 +116,45 @@ const wadaPolecenia = (polecenie) => {
  * (`.`) is a prefix of everything, so it loses to every other one and collects only what
  * nobody else took.
  */
-const wlasciciel = (plik, projekty) =>
-  projekty
-    .filter((p) => p.korzen === '.' || plik.startsWith(`${p.korzen}/`))
-    .sort((a, b) => b.korzen.length - a.korzen.length)[0] ?? null;
+const owner = (file, projects) =>
+  projects
+    .filter((p) => p.root === '.' || file.startsWith(`${p.root}/`))
+    .sort((a, b) => b.root.length - a.root.length)[0] ?? null;
 
 /**
  * The full set of checks over a ready input:
- *   `projekty` — `[{ nazwa, korzen, typecheck: { cwd, polecenia } | null }]`,
- *   `pliki`    — TypeScript file paths from the git index, relative to the repo root,
- *   `widziane` — `{ [project]: [files] }`, the compiler program measured with `--listFilesOnly`.
- * Throws `BladTypecheck` on the first violation — the checks start from the denominator,
+ *   `projects` — `[{ name, root, typecheck: { cwd, commands } | null }]`,
+ *   `files`    — TypeScript file paths from the git index, relative to the repo root,
+ *   `seen` — `{ [project]: [files] }`, the compiler program measured with `--listFilesOnly`.
+ * Throws `TypecheckError` on the first violation — the checks start from the denominator,
  * so the later ones would have nothing to examine anyway.
  */
-const sprawdzTypecheck = ({ projekty, pliki, widziane }) => {
+const checkTypecheck = ({ projects, files, seen }) => {
   // 1. DENOMINATOR. First, both lists have to exist at all: either one empty gives a gate
   // that always passes, because it has nothing to compare.
-  if (!projekty.length)
-    throw new BladTypecheck(
-      'mianownik',
+  if (!projects.length)
+    throw new TypecheckError(
+      'denominator',
       `the Nx graph returned no projects at all — points 2–4 would then always pass, ` +
         `since they walk exactly this list`,
     );
-  if (!pliki.length)
-    throw new BladTypecheck(
-      'mianownik',
+  if (!files.length)
+    throw new TypecheckError(
+      'denominator',
       `no TypeScript file found in the git index — the gate would be comparing the ` +
         `compiler program against an empty set, that is, against nothing`,
     );
 
-  const wlasnosc = new Map(projekty.map((p) => [p.nazwa, []]));
+  const ownership = new Map(projects.map((p) => [p.name, []]));
   const sieroty = [];
-  for (const plik of pliki) {
-    const projekt = wlasciciel(plik, projekty);
-    if (projekt) wlasnosc.get(projekt.nazwa).push(plik);
-    else sieroty.push(plik);
+  for (const file of files) {
+    const project = owner(file, projects);
+    if (project) ownership.get(project.name).push(file);
+    else sieroty.push(file);
   }
   if (sieroty.length)
-    throw new BladTypecheck(
-      'mianownik',
+    throw new TypecheckError(
+      'denominator',
       `${sieroty.length} TypeScript files belong to no project:\n` +
         sieroty.map((s) => `      ${s}`).join('\n') +
         `\n    Points 2–4 walk projects, so such a file is invisible to them — which ` +
@@ -165,18 +165,18 @@ const sprawdzTypecheck = ({ projekty, pliki, widziane }) => {
   // Projects without a single TypeScript file stand outside the rest of the gate on
   // purpose: `tokens` generates CSS/SCSS/TS from JSON with an `.mjs` script, and asking it
   // for a `typecheck` target would be asking it to check an empty set.
-  const zKodem = projekty.filter((p) => wlasnosc.get(p.nazwa).length);
+  const withCode = projects.filter((p) => ownership.get(p.name).length);
 
   // 2. The target exists. This is `lesson-42` verbatim.
-  const bezTargetu = zKodem.filter((p) => !p.typecheck);
+  const bezTargetu = withCode.filter((p) => !p.typecheck);
   if (bezTargetu.length)
-    throw new BladTypecheck(
+    throw new TypecheckError(
       'target',
       `${bezTargetu.length} projects have TypeScript files and no \`typecheck\` target:\n` +
         bezTargetu
           .map(
             (p) =>
-              `      ${p.nazwa} (${p.korzen}): ${wlasnosc.get(p.nazwa).length} files`,
+              `      ${p.name} (${p.root}): ${ownership.get(p.name).length} files`,
           )
           .join('\n') +
         `\n    \`nx affected -t typecheck\` stays silent where the target is missing, so ` +
@@ -189,18 +189,18 @@ const sprawdzTypecheck = ({ projekty, pliki, widziane }) => {
   // precisely that this point leans on the previous one. Without the optional read,
   // DISARMING point 2 turns the gate into an exception instead of a message — and the
   // negative control loses the ability to examine the point it was meant to examine.
-  const wadliwe = zKodem.flatMap((p) => {
-    const polecenia = p.typecheck?.polecenia ?? [];
-    if (!polecenia.length)
-      return [`${p.nazwa}: the \`typecheck\` target has no command at all`];
-    return polecenia.flatMap((polecenie) => {
-      const wada = wadaPolecenia(polecenie);
-      return wada ? [`${p.nazwa}: \`${polecenie}\` — ${wada}`] : [];
+  const wadliwe = withCode.flatMap((p) => {
+    const commands = p.typecheck?.commands ?? [];
+    if (!commands.length)
+      return [`${p.name}: the \`typecheck\` target has no command at all`];
+    return commands.flatMap((command) => {
+      const defect = commandDefect(command);
+      return defect ? [`${p.name}: \`${command}\` — ${defect}`] : [];
     });
   });
   if (wadliwe.length)
-    throw new BladTypecheck(
-      'polecenie',
+    throw new TypecheckError(
+      'command',
       `${wadliwe.length} \`typecheck\` commands cannot be measured or are disarmed:\n` +
         wadliwe.map((w) => `      ${w}`).join('\n') +
         `\n    Point 4 compares a project's files against THAT command's program, so a ` +
@@ -209,16 +209,16 @@ const sprawdzTypecheck = ({ projekty, pliki, widziane }) => {
 
   // 4. COVERAGE. Point 2 measures that the target exists, this one measures its reach —
   // and the whole of `lesson-42` sits between the two.
-  const nieobjete = zKodem.flatMap((p) => {
-    const program = new Set(widziane[p.nazwa] ?? []);
-    return wlasnosc
-      .get(p.nazwa)
-      .filter((plik) => !program.has(plik))
-      .map((plik) => `${p.nazwa}: ${plik}`);
+  const nieobjete = withCode.flatMap((p) => {
+    const program = new Set(seen[p.name] ?? []);
+    return ownership
+      .get(p.name)
+      .filter((file) => !program.has(file))
+      .map((file) => `${p.name}: ${file}`);
   });
   if (nieobjete.length)
-    throw new BladTypecheck(
-      'pokrycie',
+    throw new TypecheckError(
+      'coverage',
       `${nieobjete.length} files do not enter their project's compiler program:\n` +
         nieobjete.map((n) => `      ${n}`).join('\n') +
         `\n    The \`typecheck\` target exists and passes, but never looks at these ` +
@@ -227,8 +227,8 @@ const sprawdzTypecheck = ({ projekty, pliki, widziane }) => {
     );
 
   return (
-    `${pliki.length} TypeScript files in ${zKodem.length} projects ` +
-    `(${projekty.length - zKodem.length} with no TS code), ` +
+    `${files.length} TypeScript files in ${withCode.length} projects ` +
+    `(${projects.length - withCode.length} with no TS code), ` +
     `each one in its own compiler's program`
   );
 };
@@ -241,24 +241,24 @@ const sprawdzTypecheck = ({ projekty, pliki, widziane }) => {
  * the files would show gaps where there are none — and, the other way round, would miss a
  * project the plugin has only just created.
  */
-const projektyGrafu = async () => {
+const graphProjects = async () => {
   const { createProjectGraphAsync } = await import('@nx/devkit');
-  const graf = await createProjectGraphAsync({ exitOnError: false });
+  const graph = await createProjectGraphAsync({ exitOnError: false });
 
-  return Object.entries(graf.nodes).map(([nazwa, wezel]) => {
-    const target = wezel.data.targets?.typecheck;
-    if (!target) return { nazwa, korzen: wezel.data.root, typecheck: null };
+  return Object.entries(graph.nodes).map(([name, node]) => {
+    const target = node.data.targets?.typecheck;
+    if (!target) return { name, root: node.data.root, typecheck: null };
 
     const { command, commands, cwd } = target.options ?? {};
-    const lista = commands ?? (command === undefined ? [] : [command]);
+    const list = commands ?? (command === undefined ? [] : [command]);
     return {
-      nazwa,
-      korzen: wezel.data.root,
+      name,
+      root: node.data.root,
       typecheck: {
         cwd: cwd ?? '.',
-        // Objects stay objects: `wadaPolecenia` will say what it cannot read. Filtering
+        // Objects stay objects: `commandDefect` will say what it cannot read. Filtering
         // them out silently here would shrink the number of measured programs.
-        polecenia: lista.map((c) =>
+        commands: list.map((c) =>
           typeof c === 'string' ? c : (c?.command ?? c),
         ),
       },
@@ -271,10 +271,10 @@ const projektyGrafu = async () => {
  * (`libs/tokens/dist/tokens.ts`) are gitignored and are nobody's source code — they appear
  * on every build and nobody maintains them.
  */
-const plikiRepo = () =>
+const repoFiles = () =>
   execSync('git ls-files', { cwd: ROOT, encoding: 'utf8' })
     .split('\n')
-    .filter((plik) => TYPESCRIPT.test(plik))
+    .filter((file) => TYPESCRIPT.test(file))
     .sort();
 
 /**
@@ -282,23 +282,23 @@ const plikiRepo = () =>
  * A union over all the commands, because a project is sometimes several disjoint programs
  * at once (a library: package, specs, schematics) and only together do they cover its files.
  */
-const widzianePrzezKompilator = (projekty) => {
-  const widziane = {};
+const seenByCompiler = (projects) => {
+  const seen = {};
 
-  for (const projekt of projekty) {
-    if (!projekt.typecheck) continue;
+  for (const project of projects) {
+    if (!project.typecheck) continue;
     const program = new Set();
 
-    for (const polecenie of projekt.typecheck.polecenia) {
+    for (const command of project.typecheck.commands) {
       // Checked BEFORE running: a command with a shell operator would go straight from
       // here into a shell, and the gate has no business running something it does not
       // recognise. Point 3 reports the same thing, only with the full list.
-      if (wadaPolecenia(polecenie)) continue;
+      if (commandDefect(command)) continue;
 
-      let wynik;
+      let result;
       try {
-        wynik = execSync(`${polecenie} ${POMIAR}`, {
-          cwd: join(ROOT, projekt.typecheck.cwd),
+        result = execSync(`${command} ${MEASURE}`, {
+          cwd: join(ROOT, project.typecheck.cwd),
           encoding: 'utf8',
           stdio: ['ignore', 'pipe', 'pipe'],
           // Angular programs pull in a few thousand `.d.ts` files — the default megabyte
@@ -310,12 +310,12 @@ const widzianePrzezKompilator = (projekty) => {
             PATH: `${join(ROOT, 'node_modules/.bin')}:${process.env.PATH}`,
           },
         });
-      } catch (blad) {
-        throw new BladTypecheck(
-          'polecenie',
-          `could not measure the program for \`${projekt.nazwa}\`:\n` +
-            `      ${polecenie} ${POMIAR}\n` +
-            `    ${String(blad.stderr || blad.stdout || blad.message)
+      } catch (error) {
+        throw new TypecheckError(
+          'command',
+          `could not measure the program for \`${project.name}\`:\n` +
+            `      ${command} ${MEASURE}\n` +
+            `    ${String(error.stderr || error.stdout || error.message)
               .trim()
               .split('\n')
               .slice(0, 5)
@@ -323,7 +323,7 @@ const widzianePrzezKompilator = (projekty) => {
         );
       }
 
-      for (const linia of wynik.split('\n')) {
+      for (const linia of result.split('\n')) {
         const sciezka = linia.trim();
         if (!sciezka) continue;
         const wzgledna = relative(ROOT, sciezka).split('\\').join('/');
@@ -333,68 +333,68 @@ const widzianePrzezKompilator = (projekty) => {
       }
     }
 
-    widziane[projekt.nazwa] = [...program].sort();
+    seen[project.name] = [...program].sort();
   }
 
-  return widziane;
+  return seen;
 };
 
 // ── negative control ──────────────────────────────────────────────────────────
 
-const wczytajFixture = (nazwa) =>
-  JSON.parse(readFileSync(join(FIXTURES, nazwa), 'utf8'));
+const readFixture = (name) =>
+  JSON.parse(readFileSync(join(FIXTURES, name), 'utf8'));
 
 /**
  * Builds a case's input ON A COPY of the reference one, so the case file holds nothing
  * but its own defect — you cannot break something in passing and not notice.
  */
-const zlozFixture = (fx) => {
-  const baza = wczytajFixture(BAZA);
-  const wejscie = structuredClone({
-    projekty: baza.projekty,
-    pliki: baza.pliki,
-    widziane: baza.widziane,
+const buildFixture = (fx) => {
+  const reference = readFixture(REFERENCE);
+  const input = structuredClone({
+    projects: reference.projects,
+    files: reference.files,
+    seen: reference.seen,
   });
 
-  if (fx.wyczyscProjekty) wejscie.projekty = [];
-  if (fx.wyczyscPliki) wejscie.pliki = [];
-  wejscie.projekty = wejscie.projekty.filter(
-    (p) => !(fx.usunProjekty ?? []).includes(p.nazwa),
+  if (fx.clearProjects) input.projects = [];
+  if (fx.clearFiles) input.files = [];
+  input.projects = input.projects.filter(
+    (p) => !(fx.dropProjects ?? []).includes(p.name),
   );
-  wejscie.pliki.push(...(fx.dopiszPliki ?? []));
-  for (const projekt of wejscie.projekty) {
-    if ((fx.usunTypecheck ?? []).includes(projekt.nazwa))
-      projekt.typecheck = null;
-    if (fx.podmienPolecenia?.[projekt.nazwa])
-      projekt.typecheck.polecenia = fx.podmienPolecenia[projekt.nazwa];
+  input.files.push(...(fx.addFiles ?? []));
+  for (const project of input.projects) {
+    if ((fx.dropTypecheck ?? []).includes(project.name))
+      project.typecheck = null;
+    if (fx.replaceCommands?.[project.name])
+      project.typecheck.commands = fx.replaceCommands[project.name];
   }
-  for (const nazwa of fx.wyczyscWidziane ?? []) wejscie.widziane[nazwa] = [];
+  for (const name of fx.clearSeen ?? []) input.seen[name] = [];
 
-  return wejscie;
+  return input;
 };
 
 // ── the run ───────────────────────────────────────────────────────────────────
 
 const problems = [];
-let opis = null;
+let summary = null;
 
 try {
-  const projekty = await projektyGrafu();
-  opis = sprawdzTypecheck({
-    projekty,
-    pliki: plikiRepo(),
-    widziane: widzianePrzezKompilator(projekty),
+  const projects = await graphProjects();
+  summary = checkTypecheck({
+    projects,
+    files: repoFiles(),
+    seen: seenByCompiler(projects),
   });
-} catch (blad) {
-  if (!(blad instanceof BladTypecheck)) throw blad;
-  problems.push(`${blad.kontrola}: ${blad.message}`);
+} catch (error) {
+  if (!(error instanceof TypecheckError)) throw error;
+  problems.push(`${error.check}: ${error.message}`);
 }
 
-const przypadki = readdirSync(FIXTURES)
-  .filter((n) => n.endsWith('.json') && n !== BAZA)
+const cases = readdirSync(FIXTURES)
+  .filter((n) => n.endsWith('.json') && n !== REFERENCE)
   .sort();
 
-if (przypadki.length === 0)
+if (cases.length === 0)
   problems.push(
     `tools/check-typecheck.fixtures: no prepared inputs — a gate with no proof that it can ` +
       `fail is one more silent defect (req-quality-negative-control)`,
@@ -403,29 +403,29 @@ if (przypadki.length === 0)
 // The reference input MUST pass. Were it defective itself, every case would fire
 // because of it and not because of its own defect — every „it fired" would be false.
 try {
-  sprawdzTypecheck(zlozFixture({}));
-} catch (blad) {
-  if (!(blad instanceof BladTypecheck)) throw blad;
+  checkTypecheck(buildFixture({}));
+} catch (error) {
+  if (!(error instanceof TypecheckError)) throw error;
   problems.push(
-    `${BAZA}: the reference input does NOT pass (${blad.kontrola}) — ` +
-      `every prepared case now fires because of it.\n    ${blad.message}`,
+    `${REFERENCE}: the reference input does NOT pass (${error.check}) — ` +
+      `every prepared case now fires because of it.\n    ${error.message}`,
   );
 }
 
-for (const nazwa of przypadki) {
-  const fx = wczytajFixture(nazwa);
+for (const name of cases) {
+  const fx = readFixture(name);
   try {
-    sprawdzTypecheck(zlozFixture(fx));
+    checkTypecheck(buildFixture(fx));
     problems.push(
-      `${nazwa}: the prepared input PASSED and was meant not to — ` +
-        `point ${fx.punkt} (\`${fx.kontrola}\`) stopped examining anything`,
+      `${name}: the prepared input PASSED and was meant not to — ` +
+        `point ${fx.point} (\`${fx.check}\`) stopped examining anything`,
     );
-  } catch (blad) {
-    if (!(blad instanceof BladTypecheck)) throw blad;
-    if (blad.kontrola !== fx.kontrola)
+  } catch (error) {
+    if (!(error instanceof TypecheckError)) throw error;
+    if (error.check !== fx.check)
       problems.push(
-        `${nazwa}: check \`${blad.kontrola}\` fired, and point ${fx.punkt} ` +
-          `(\`${fx.kontrola}\`) was meant to — the fixture proves something other than what it declares`,
+        `${name}: check \`${error.check}\` fired, and point ${fx.point} ` +
+          `(\`${fx.check}\`) was meant to — the fixture proves something other than what it declares`,
       );
   }
 }
@@ -440,6 +440,6 @@ if (problems.length) {
 }
 
 console.log(
-  `✓ Typecheck: ${opis}. Negative control: the reference input passes, ` +
-    `${przypadki.length} prepared ones rejected on their own points.`,
+  `✓ Typecheck: ${summary}. Negative control: the reference input passes, ` +
+    `${cases.length} prepared ones rejected on their own points.`,
 );

@@ -1,6 +1,0 @@
-{
-  "// po co": "Zero plików TypeScriptu w indeksie. Drugi mianownik tego samego punktu: bramka porównywałaby program kompilatora z pustym zbiorem i przechodziła zawsze. Realny wyzwalacz: zmiana filtra rozszerzeń albo `git ls-files` uruchomione w katalogu bez repozytorium.",
-  "punkt": 1,
-  "kontrola": "mianownik",
-  "wyczyscPliki": true
-}

@@ -1,6 +1,0 @@
-{
-  "// po co": "Graf bez ani jednego projektu. Punkty 2–4 chodzą po tej liście, więc pusta znaczy \"przeszło wszystko\", nie sprawdziwszy niczego. Realny wyzwalacz: bramka czytająca graf z wyniku polecenia, którego format się zmienił — wtedy pustka wygląda dokładnie jak zdrowe repozytorium.",
-  "punkt": 1,
-  "kontrola": "mianownik",
-  "wyczyscProjekty": true
-}

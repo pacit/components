@@ -1,6 +1,0 @@
-{
-  "// po co": "Nowy entrypoint biblioteki. `libs/components/tsconfig.lib.json` wylicza katalogi po nazwie (`button/**/*.ts`, `field/**/*.ts`, …), więc `dialog/` dopisany bez ruszenia tego pliku nie wchodzi do żadnego programu. Target `typecheck` istnieje, przechodzi i nie ogląda nowego komponentu — to ta sama cicha wada co `lesson-42`, tylko o katalog niżej. Bez punktu 4 zauważyłby to dopiero konsument.",
-  "punkt": 4,
-  "kontrola": "pokrycie",
-  "dopiszPliki": ["libs/components/dialog/src/dialog.ts"]
-}

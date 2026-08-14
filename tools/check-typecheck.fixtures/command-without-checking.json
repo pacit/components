@@ -1,0 +1,10 @@
+{
+  "// why": "`--noCheck` (TS 5.6+) leaves parse and emit errors alone. The target runs, costs CI time, enters the cache and checks no types — and in `project.json` it differs from a healthy one by a single flag. Point 4 would not notice: the file program is the same, only what the compiler does with it changes.",
+  "point": 3,
+  "check": "command",
+  "replaceCommands": {
+    "components": [
+      "tsc --noEmit --noCheck -p libs/components/tsconfig.lib.json"
+    ]
+  }
+}

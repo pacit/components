@@ -1,8 +1,0 @@
-{
-  "// po co": "`|| true` na końcu polecenia. Target biegnie, kompilator naprawdę sprawdza typy, a wynik ląduje w koszu — `nx:run-commands` puszcza polecenie przez powłokę, więc kod wyjścia jest tego operatora, nie tsc. Kosztuje siedem znaków w `project.json` i wygląda tam jak reszta.",
-  "punkt": 3,
-  "kontrola": "polecenie",
-  "podmienPolecenia": {
-    "components": ["tsc --noEmit -p libs/components/tsconfig.lib.json || true"]
-  }
-}

@@ -1,6 +1,0 @@
-{
-  "// po co": "`tsc` bez `-p`. Konfigurację wybiera wtedy szukanie `tsconfig.json` w górę od `cwd`, czyli od wartości ustawionej gdzie indziej w `project.json` — zasięg targetu przestaje być widoczny w miejscu wywołania. Ta sama kontrola odrzuca `tsc --build`, którego `--listFilesOnly` nie potrafi opisać, więc bramka nie miałaby czym zmierzyć punktu 4.",
-  "punkt": 3,
-  "kontrola": "polecenie",
-  "podmienPolecenia": { "components": ["tsc --noEmit"] }
-}

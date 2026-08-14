@@ -1,0 +1,6 @@
+{
+  "// why": "A new library entrypoint. `libs/components/tsconfig.lib.json` lists directories by name (`button/**/*.ts`, `field/**/*.ts`, …), so a `dialog/` added without touching that file enters no program at all. The `typecheck` target exists, passes and never looks at the new component — the same silent defect as `lesson-42`, one directory lower. Without point 4 the consumer would be the first to notice.",
+  "point": 4,
+  "check": "coverage",
+  "addFiles": ["libs/components/dialog/src/dialog.ts"]
+}

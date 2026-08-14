@@ -1,6 +1,0 @@
-{
-  "// po co": "Target zawinięty w skrypt powłoki. Może i sprawdza typy — ale bramka nie ma jak tego stwierdzić ani zmierzyć, jakie pliki obejmuje, więc punkt 4 dostałby dla tego projektu pusty program. Wada ma być głośna: cicho przyjęte polecenie zabiera pokrycie całego projektu.",
-  "punkt": 3,
-  "kontrola": "polecenie",
-  "podmienPolecenia": { "components": ["bash tools/typecheck-components.sh"] }
-}
