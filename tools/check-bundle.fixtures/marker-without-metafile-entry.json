@@ -1,0 +1,9 @@
+{
+  "// defect": "The probe's text carries the marker of an entrypoint the bundler's metafile did not attribute to it — that is, content arrived by a route the bundler does not report. A reading from the metafile alone would then be green.",
+  "point": 6,
+  "check": "markers",
+  "addInText": {
+    "ep": "./alpha",
+    "what": "./beta"
+  }
+}

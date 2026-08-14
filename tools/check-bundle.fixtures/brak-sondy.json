@@ -1,6 +1,0 @@
-{
-  "// wada": "Entrypoint jest na liście, ale nie ma dla niego pomiaru — sonda się nie zbudowała albo wypadła z pętli. Bez tego punktu byłby jedynym entrypointem, o którym bramka milczy.",
-  "punkt": 4,
-  "kontrola": "obecnosc",
-  "usunSonde": "./alfa"
-}

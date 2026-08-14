@@ -1,6 +1,0 @@
-{
-  "// wada": "Entrypoint istnieje, ale nie ma wiersza w snapshocie — czyli rodzi się bez budżetu i bez zapisanej izolacji. To jest wariant, w którym nowy komponent wymyka się bramce, która powstała między innymi po to.",
-  "punkt": 3,
-  "kontrola": "snapshot",
-  "snapshotBezWiersza": "./beta"
-}

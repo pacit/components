@@ -4,15 +4,15 @@
  * entrypoint? „Secondary entrypoints force tree-shaking" is the SALES promise
  * (`req-project-tree-shaking`), and breaking it gives no red test.
  *
- *   1. `entrypointy`  — TWO reads of the entrypoint list agree and are not empty,
+ *   1. `entrypoints`  — TWO reads of the entrypoint list agree and are not empty,
  *   2. `side-effects` — the packed manifest declares `sideEffects: false`,
  *   3. `snapshot`     — a snapshot exists, with a row for every entrypoint,
- *   4. `obecnosc`     — DENOMINATOR: a probe brings its own entrypoint in, primary none,
- *   5. `izolacja`     — the entrypoints a probe pulls in match the snapshot,
- *   6. `markery`      — a second read of the same, over the bundle's text, BOTH ways,
- *   7. `zewnetrzne`   — a probe's external dependencies match the snapshot,
- *   8. `rozmiar`      — a size budget per entrypoint, tolerance TWO-SIDED,
- *   9. `roznicowa`    — a two-entrypoint probe is noticeably larger than either single one,
+ *   4. `presence`     — DENOMINATOR: a probe brings its own entrypoint in, primary none,
+ *   5. `isolation`    — the entrypoints a probe pulls in match the snapshot,
+ *   6. `markers`      — a second read of the same, over the bundle's text, BOTH ways,
+ *   7. `external`     — a probe's external dependencies match the snapshot,
+ *   8. `size`         — a size budget per entrypoint, tolerance TWO-SIDED,
+ *   9. `differential` — a two-entrypoint probe is noticeably larger than either single one,
  *  10. `builder`      — the same measured by Angular's REAL builder.
  *
  * Points 5 and 7 are the promise itself (7 is where „no CDK Overlay with `button`" lives);
@@ -41,7 +41,7 @@ const PROJEKT = 'libs/components';
 const DIST = 'dist/libs/components';
 const SNAPSHOT = `${PROJEKT}/size.snapshot.md`;
 const FIXTURES = join(ROOT, 'tools/check-bundle.fixtures');
-const BAZA = '_poprawny.json';
+const REFERENCE = '_reference.json';
 const WRITE = process.argv.includes('--write');
 
 /**
@@ -73,28 +73,28 @@ const PRIMARY = '.';
  * point — a fixture failing for a reason other than the one written into it proves
  * something other than what it declares.
  */
-class BladBundla extends Error {
-  constructor(kontrola, opis) {
-    super(opis);
-    this.kontrola = kontrola;
+class BundleError extends Error {
+  constructor(check, description) {
+    super(description);
+    this.check = check;
   }
 }
 
-const lista = (zbior) => [...zbior].sort().join(', ') || '(pusto)';
+const list = (zbior) => [...zbior].sort().join(', ') || '(pusto)';
 
-// ── kontrole ──────────────────────────────────────────────────────────────────
+// ── checks ──────────────────────────────────────────────────────────────────
 
 /**
  * The full set of checks over a ready input:
- *   `zrodla`    — the entrypoints from `ng-package.json` in the git index,
+ *   `sources`    — the entrypoints from `ng-package.json` in the git index,
  *   `manifest`  — spakowany `package.json` (mapa `exports`, `sideEffects`),
  *   `snapshot`  — the file's contents, or `null`,
- *   `markery`   — `{ entrypoint: [selektory] }` ze zbudowanego pakietu,
- *   `sondy`     — `{ entrypoint: { bajty, wniesione, zewnetrzne, wTekscie } }`,
- *   `para`      — `{ entrypointy: [a, b], bajty }`,
- *   `builder`   — `[{ entrypointy, znalezione, overlay }]` z prawdziwego builda.
+ *   `markers`   — `{ entrypoint: [selektory] }` ze zbudowanego pakietu,
+ *   `probes`     — `{ entrypoint: { bytes, pulled, external, inText } }`,
+ *   `pair`      — `{ entrypoints: [a, b], bytes }`,
+ *   `builder`   — `[{ entrypoints, found, overlay }]` z prawdziwego builda.
  *
- * Throws `BladBundla` on the first violation; returns `{ opis, snapshot }`, because the
+ * Throws `BundleError` on the first violation; returns `{ description, snapshot }`, because the
  * rendered snapshot comes back from a checking run too — `--write` then has somewhere to
  * take it from without repeating the whole measurement.
  *
@@ -104,9 +104,9 @@ const lista = (zbior) => [...zbior].sort().join(', ') || '(pusto)';
  * ability to examine the point it was meant to examine. The same defect came out in A4, A7
  * and A3, three times running ([`lesson-50`](../docs/lessons.md#lesson-50)).
  */
-const sprawdzBundle = (we) => {
-  const zrodla = we.zrodla ?? [];
-  const zArtefaktu = Object.keys(we.manifest?.exports ?? {}).filter(
+const checkBundle = (input) => {
+  const sources = input.sources ?? [];
+  const fromArtifact = Object.keys(input.manifest?.exports ?? {}).filter(
     (k) => k === PRIMARY || /^\.\/[a-z0-9-]+$/.test(k),
   );
 
@@ -116,9 +116,9 @@ const sprawdzBundle = (we) => {
    * would have no way of generating one — and `--write` would exist as a command whose
    * only use case does not work.
    */
-  const doZapisu = (kontrola, opis) =>
-    Object.assign(new BladBundla(kontrola, opis), {
-      snapshot: renderujSnapshot(zrodla, we.sondy ?? {}),
+  const doZapisu = (check, description) =>
+    Object.assign(new BundleError(check, description), {
+      snapshot: renderSnapshot(sources, input.probes ?? {}),
     });
 
   // 1. The entrypoint list from two reads. The same move as point 1 in `check-tokens` and
@@ -126,23 +126,23 @@ const sprawdzBundle = (we) => {
   //    sources catch an entrypoint that never reached the package (and a stale `dist`);
   //    the artifact catches a directory somebody took `ng-package.json` from, leaving the
   //    code.
-  if (zrodla.length === 0)
-    throw new BladBundla(
-      'entrypointy',
+  if (sources.length === 0)
+    throw new BundleError(
+      'entrypoints',
       `no entrypoint found in \`${PROJEKT}/*/ng-package.json\` — every later point ` +
         `would then always pass, having nothing to measure`,
     );
-  const brakWArtefakcie = zrodla.filter((e) => !zArtefaktu.includes(e));
-  const brakWZrodlach = zArtefaktu.filter((e) => !zrodla.includes(e));
+  const brakWArtefakcie = sources.filter((e) => !fromArtifact.includes(e));
+  const brakWZrodlach = fromArtifact.filter((e) => !sources.includes(e));
   if (brakWArtefakcie.length || brakWZrodlach.length)
-    throw new BladBundla(
-      'entrypointy',
+    throw new BundleError(
+      'entrypoints',
       `the two reads of the entrypoint list have drifted apart:\n` +
         (brakWArtefakcie.length
-          ? `      in the sources, not in \`${DIST}/package.json\`: ${lista(brakWArtefakcie)}\n`
+          ? `      in the sources, not in \`${DIST}/package.json\`: ${list(brakWArtefakcie)}\n`
           : '') +
         (brakWZrodlach.length
-          ? `      in the artifact, not in the sources: ${lista(brakWZrodlach)}\n`
+          ? `      in the artifact, not in the sources: ${list(brakWZrodlach)}\n`
           : '') +
         `    Usual cause: a stale \`dist\` (the target needs a ` +
         `\`dependsOn\` na build biblioteki) albo entrypoint bez \`ng-package.json\``,
@@ -160,64 +160,62 @@ const sprawdzBundle = (we) => {
   //    on an explicit `true`, and on the day ng-packagr stops writing the value. It reads
   //    the artifact rather than the source for exactly that reason: the consumer gets that
   //    file, not the one lying in the repository.
-  if (we.manifest?.sideEffects !== false)
-    throw new BladBundla(
+  if (input.manifest?.sideEffects !== false)
+    throw new BundleError(
       'side-effects',
       `\`${DIST}/package.json\` deklaruje \`sideEffects: ${JSON.stringify(
-        we.manifest?.sideEffects,
+        input.manifest?.sideEffects,
       )}\`, and tree-shaking rests on \`false\` — without it a bundler has to keep every ` +
         `module of the package „just in case", and this gate will not see that: its ` +
         `probes import a whole namespace`,
     );
 
   // 3. The snapshot: it exists and covers exactly the entrypoint list.
-  if (we.snapshot === null || we.snapshot === undefined)
+  if (input.snapshot === null || input.snapshot === undefined)
     throw doZapisu(
       'snapshot',
       `no \`${SNAPSHOT}\` — run \`node tools/check-bundle.mjs --write\`.\n` +
         `    Without a snapshot, points 5, 7 and 8 have nothing to compare against, so the ` +
         `gate would only be watching that the measurement ran`,
     );
-  const wiersze = wierszeSnapshotu(we.snapshot);
-  const brakWiersza = zrodla.filter((e) => !wiersze.has(e));
-  const zbedny = [...wiersze.keys()].filter((e) => !zrodla.includes(e));
+  const rows = snapshotRows(input.snapshot);
+  const brakWiersza = sources.filter((e) => !rows.has(e));
+  const zbedny = [...rows.keys()].filter((e) => !sources.includes(e));
   if (brakWiersza.length || zbedny.length)
     throw doZapisu(
       'snapshot',
       `the snapshot does not cover the entrypoint list:\n` +
         (brakWiersza.length
-          ? `      bez wiersza w snapshocie: ${lista(brakWiersza)}\n`
+          ? `      bez row w snapshocie: ${list(brakWiersza)}\n`
           : '') +
-        (zbedny.length
-          ? `      wiersz bez entrypointu: ${lista(zbedny)}\n`
-          : '') +
+        (zbedny.length ? `      row bez entrypointu: ${list(zbedny)}\n` : '') +
         `    A new entrypoint with no row has neither a budget nor a recorded isolation, ` +
         `so it is born outside this gate — \`node tools/check-bundle.mjs --write\``,
     );
 
   // 4. DENOMINATOR. Four things without which everything below is vacuously true.
-  const sondy = we.sondy ?? {};
-  const markery = we.markery ?? {};
+  const probes = input.probes ?? {};
+  const markers = input.markers ?? {};
 
   //    a) a probe brings its own entrypoint in. A probe the bundler threw the whole
   //       library out of passes every point about isolation — it holds NOTHING.
-  for (const e of zrodla) {
-    const s = sondy[e];
+  for (const e of sources) {
+    const s = probes[e];
     if (!s)
-      throw new BladBundla(
-        'obecnosc',
+      throw new BundleError(
+        'presence',
         `no measurement for entrypoint \`${e}\` — the probe did not build, or dropped ` +
           `off the list`,
       );
     // `s?.` despite the branch above that „already checked that": disarming that one
     // must not turn this into a `TypeError`. The same defect came out in A7, A4 and A3 —
     // three times BETWEEN points, here a fourth time and inside one ([`lesson-50`]).
-    if (!(s?.wniesione ?? []).includes(e))
-      throw new BladBundla(
-        'obecnosc',
+    if (!(s?.pulled ?? []).includes(e))
+      throw new BundleError(
+        'presence',
         `the probe importing \`${e}\` brought not one byte of that entrypoint into the ` +
           `bundle — „it holds no \`PctField\`" is then vacuously true.\n` +
-          `    Brought in: ${lista(s?.wniesione ?? [])}`,
+          `    Brought in: ${list(s?.pulled ?? [])}`,
       );
   }
 
@@ -227,12 +225,12 @@ const sprawdzBundle = (we) => {
   //       point (c): it has no content of its own to be recognised by. This assertion is
   //       stronger than a marker, so the exemption is no waiver to be clicked through but
   //       a different, sharper measurement of the same thing.
-  const zKomponentami = (e) => (markery[e] ?? []).length > 0;
-  const wPrimary = (sondy[PRIMARY]?.wniesione ?? []).filter(zKomponentami);
+  const zKomponentami = (e) => (markers[e] ?? []).length > 0;
+  const wPrimary = (probes[PRIMARY]?.pulled ?? []).filter(zKomponentami);
   if (wPrimary.length)
-    throw new BladBundla(
-      'obecnosc',
-      `the primary entrypoint \`@pacit/components\` brings in components: ${lista(wPrimary)}.\n` +
+    throw new BundleError(
+      'presence',
+      `the primary entrypoint \`@pacit/components\` brings in components: ${list(wPrimary)}.\n` +
         `    The promise reads „primary exports only \`providePctConfig\`, the shared ` +
         `types and the version" — every consumer then pays for a component they never ` +
         `imported`,
@@ -242,16 +240,16 @@ const sprawdzBundle = (we) => {
   //       entrypoint with no marker would always pass point 6 — there is nothing to look
   //       for. Primary is exempt by (b), and an entrypoint every probe brings in (today
   //       `./core`) is nowhere proved absent.
-  const nieobecnyGdzies = zrodla.filter(
+  const nieobecnyGdzies = sources.filter(
     (e) =>
       e !== PRIMARY &&
-      zrodla.some((x) => !(sondy[x]?.wniesione ?? []).includes(e)),
+      sources.some((x) => !(probes[x]?.pulled ?? []).includes(e)),
   );
   const bezMarkera = nieobecnyGdzies.filter((e) => !zKomponentami(e));
   if (bezMarkera.length)
-    throw new BladBundla(
-      'obecnosc',
-      `entrypoints with no marker at all: ${lista(bezMarkera)} — point 6 has nothing to ` +
+    throw new BundleError(
+      'presence',
+      `entrypoints with no marker at all: ${list(bezMarkera)} — point 6 has nothing to ` +
         `look for in the bundle's text, so it pronounces them absent without being able ` +
         `to see presence.\n` +
         `    A marker is a component's or directive's selector from the BUILT package ` +
@@ -261,14 +259,14 @@ const sprawdzBundle = (we) => {
 
   //    d) one entrypoint's marker must not be a substring of another's — a search over
   //       the text would then hit on somebody else's content.
-  const wszystkieMarkery = Object.entries(markery).flatMap(([e, m]) =>
+  const wszystkieMarkery = Object.entries(markers).flatMap(([e, m]) =>
     m.map((marker) => ({ e, marker })),
   );
   for (const a of wszystkieMarkery)
     for (const b of wszystkieMarkery)
       if (a.e !== b.e && b.marker.includes(a.marker))
-        throw new BladBundla(
-          'obecnosc',
+        throw new BundleError(
+          'presence',
           `marker \`${a.marker}\` (${a.e}) is a substring of marker \`${b.marker}\` ` +
             `(${b.e}) — a textual read would report \`${a.e}\` everywhere \`${b.e}\` ` +
             `really is`,
@@ -278,18 +276,16 @@ const sprawdzBundle = (we) => {
   //    is, from whom it assigned the output's bytes to — not from a list of imports in the
   //    source. A drift does not mean „an error": it means „the consumer started paying for
   //    something other than yesterday, and that is to be visible in review".
-  for (const e of zrodla) {
-    const zmierzone = new Set(
-      (sondy[e]?.wniesione ?? []).filter((x) => x !== e),
-    );
-    const zapisane = new Set(wiersze.get(e)?.wniesione ?? []);
+  for (const e of sources) {
+    const zmierzone = new Set((probes[e]?.pulled ?? []).filter((x) => x !== e));
+    const zapisane = new Set(rows.get(e)?.pulled ?? []);
     if (!rowne(zmierzone, zapisane))
       throw doZapisu(
-        'izolacja',
+        'isolation',
         `importing \`@pacit/components${e === PRIMARY ? '' : e.slice(1)}\` pulls in a ` +
           `different set of entrypoints than recorded:\n` +
-          `      snapshot: ${lista(zapisane)}\n` +
-          `      measured: ${lista(zmierzone)}\n` +
+          `      snapshot: ${list(zapisane)}\n` +
+          `      measured: ${list(zmierzone)}\n` +
           `    If this is intended — \`node tools/check-bundle.mjs --write\`. If not, look ` +
           `for an import from another entrypoint in \`${PROJEKT}${e === PRIMARY ? '/src' : e.slice(1)}\``,
       );
@@ -300,17 +296,15 @@ const sprawdzBundle = (we) => {
   //    bytes. The comparison goes BOTH ways, because each catches something else: a marker
   //    with no metafile entry is content that arrived by a route the bundler does not
   //    report; an entry with no marker is an entrypoint counted though nothing of it left.
-  for (const e of zrodla) {
-    const wTekscie = new Set(sondy[e]?.wTekscie ?? []);
-    const oczekiwane = new Set(
-      (sondy[e]?.wniesione ?? []).filter(zKomponentami),
-    );
-    if (!rowne(wTekscie, oczekiwane))
-      throw new BladBundla(
-        'markery',
+  for (const e of sources) {
+    const inText = new Set(probes[e]?.inText ?? []);
+    const oczekiwane = new Set((probes[e]?.pulled ?? []).filter(zKomponentami));
+    if (!rowne(inText, oczekiwane))
+      throw new BundleError(
+        'markers',
         `the two reads of probe \`${e}\`'s contents have drifted apart:\n` +
-          `      bundler metafile:  ${lista(oczekiwane)}\n` +
-          `      markers in text:   ${lista(wTekscie)}\n` +
+          `      bundler metafile:  ${list(oczekiwane)}\n` +
+          `      markers in text:   ${list(inText)}\n` +
           `    A marker in the text with no metafile entry means content brought in by a ` +
           `route the bundler did not assign to a module. An entry with no marker — an ` +
           `entrypoint counted though nothing of it survived`,
@@ -323,16 +317,16 @@ const sprawdzBundle = (we) => {
   //    diff. The same mechanism will cover every future dependency, including one nobody
   //    has thought of — which is why the point compares a SET rather than looking for a
   //    name written in advance.
-  for (const e of zrodla) {
-    const zmierzone = new Set(sondy[e]?.zewnetrzne ?? []);
-    const zapisane = new Set(wiersze.get(e)?.zewnetrzne ?? []);
+  for (const e of sources) {
+    const zmierzone = new Set(probes[e]?.external ?? []);
+    const zapisane = new Set(rows.get(e)?.external ?? []);
     if (!rowne(zmierzone, zapisane))
       throw doZapisu(
-        'zewnetrzne',
+        'external',
         `importing \`@pacit/components${e === PRIMARY ? '' : e.slice(1)}\` drags in a ` +
           `different set of external dependencies than recorded:\n` +
-          `      snapshot: ${lista(zapisane)}\n` +
-          `      pomiar:   ${lista(zmierzone)}`,
+          `      snapshot: ${list(zapisane)}\n` +
+          `      pomiar:   ${list(zmierzone)}`,
       );
   }
 
@@ -341,19 +335,19 @@ const sprawdzBundle = (we) => {
   //    the weight of somebody else's framework. Were Angular part of the measurement,
   //    every patch of it would rewrite the whole snapshot and the budget would stop saying
   //    anything about this library.
-  for (const e of zrodla) {
-    const zmierzony = sondy[e]?.bajty;
-    const zapisany = wiersze.get(e)?.bajty;
+  for (const e of sources) {
+    const zmierzony = probes[e]?.bytes;
+    const zapisany = rows.get(e)?.bytes;
     if (typeof zmierzony !== 'number' || typeof zapisany !== 'number')
       throw doZapisu(
-        'rozmiar',
+        'size',
         `no size for \`${e}\` (measured: ${zmierzony ?? 'none'}, ` +
           `snapshot: ${zapisany ?? 'none'})`,
       );
     const luz = Math.max(TOLERANCJA_MIN, Math.round(zapisany * TOLERANCJA));
     if (Math.abs(zmierzony - zapisany) > luz)
       throw doZapisu(
-        'rozmiar',
+        'size',
         `probe \`${e}\` fell outside its budget: ${zmierzony} B against ` +
           `${zapisany} B ± ${luz} B (${(((zmierzony - zapisany) / zapisany) * 100).toFixed(1)}%).\n` +
           `    ${
@@ -373,30 +367,30 @@ const sprawdzBundle = (we) => {
   //    The threshold is not plucked from the air: the combined bundle holds both
   //    libraries, and only their shared core is counted twice. Hence `a + b - shared`,
   //    with a tolerance for the entry file's glue.
-  const [pierwszy, drugi] = we.para?.entrypointy ?? [];
-  const bajtyPary = we.para?.bajty;
-  if (!pierwszy || !drugi || typeof bajtyPary !== 'number')
-    throw new BladBundla(
-      'roznicowa',
+  const [pierwszy, drugi] = input.pair?.entrypoints ?? [];
+  const pairBytes = input.pair?.bytes;
+  if (!pierwszy || !drugi || typeof pairBytes !== 'number')
+    throw new BundleError(
+      'differential',
       `no two-entrypoint probe — the differential control has nothing to compare`,
     );
   const wspolne = new Set(
-    (sondy[pierwszy]?.wniesione ?? []).filter(
-      (x) => x !== pierwszy && (sondy[drugi]?.wniesione ?? []).includes(x),
+    (probes[pierwszy]?.pulled ?? []).filter(
+      (x) => x !== pierwszy && (probes[drugi]?.pulled ?? []).includes(x),
     ),
   );
-  const bajtyWspolnych = [...wspolne].reduce(
-    (n, x) => n + (sondy[x]?.bajty ?? 0),
+  const sharedBytes = [...wspolne].reduce(
+    (n, x) => n + (probes[x]?.bytes ?? 0),
     0,
   );
   const oczekiwane =
-    (sondy[pierwszy]?.bajty ?? 0) + (sondy[drugi]?.bajty ?? 0) - bajtyWspolnych;
-  if (bajtyPary < oczekiwane * (1 - TOLERANCJA))
-    throw new BladBundla(
-      'roznicowa',
-      `the \`${pierwszy}\` + \`${drugi}\` probe weighs ${bajtyPary} B, and the sum of the ` +
+    (probes[pierwszy]?.bytes ?? 0) + (probes[drugi]?.bytes ?? 0) - sharedBytes;
+  if (pairBytes < oczekiwane * (1 - TOLERANCJA))
+    throw new BundleError(
+      'differential',
+      `the \`${pierwszy}\` + \`${drugi}\` probe weighs ${pairBytes} B, and the sum of the ` +
         `single ones without the shared core is ${oczekiwane} B ` +
-        `(${sondy[pierwszy]?.bajty} + ${sondy[drugi]?.bajty} − ${bajtyWspolnych}).\n` +
+        `(${probes[pierwszy]?.bytes} + ${probes[drugi]?.bytes} − ${sharedBytes}).\n` +
         `    Two entrypoints give a bundle no larger than one — that is not good news ` +
         `about tree-shaking but a sign the measurement stopped pulling the library in`,
     );
@@ -409,9 +403,9 @@ const sprawdzBundle = (we) => {
   //
   //     The third probe (all the entrypoints) is the denominator of the first two: it
   //     proves this read CAN see what it fails to find in them.
-  const przebiegi = we.builder ?? [];
+  const przebiegi = input.builder ?? [];
   if (przebiegi.length < 3)
-    throw new BladBundla(
+    throw new BundleError(
       'builder',
       `${przebiegi.length} probes went through Angular's real builder, and three are ` +
         `needed: two measured and one with all the entrypoints, proving the others can ` +
@@ -419,28 +413,28 @@ const sprawdzBundle = (we) => {
     );
   for (const p of przebiegi) {
     const oczekiwane = new Set(
-      (p.entrypointy ?? []).flatMap((e) =>
-        (sondy[e]?.wniesione ?? [e]).filter(zKomponentami),
+      (p.entrypoints ?? []).flatMap((e) =>
+        (probes[e]?.pulled ?? [e]).filter(zKomponentami),
       ),
     );
-    const znalezione = new Set(p.znalezione ?? []);
-    if (!rowne(znalezione, oczekiwane))
-      throw new BladBundla(
+    const found = new Set(p.found ?? []);
+    if (!rowne(found, oczekiwane))
+      throw new BundleError(
         'builder',
-        `a real build of an application importing ${lista(p.entrypointy ?? [])} holds a ` +
+        `a real build of an application importing ${list(p.entrypoints ?? [])} holds a ` +
           `different set of entrypoints than the esbuild probes imply:\n` +
-          `      from the esbuild probes: ${lista(oczekiwane)}\n` +
-          `      in the real bundle:      ${lista(znalezione)}\n` +
+          `      from the esbuild probes: ${list(oczekiwane)}\n` +
+          `      in the real bundle:      ${list(found)}\n` +
           `    A drift means this gate's fast measurement stopped matching what the ` +
           `consumer gets — and it is the measurement to fix, not the real build`,
       );
     const oczekiwanyOverlay = [...oczekiwane].some((e) =>
-      (sondy[e]?.zewnetrzne ?? []).some((z) => z.includes('cdk/overlay')),
+      (probes[e]?.external ?? []).some((z) => z.includes('cdk/overlay')),
     );
     if ((p.overlay ?? false) !== oczekiwanyOverlay)
-      throw new BladBundla(
+      throw new BundleError(
         'builder',
-        `a real build of an application importing ${lista(p.entrypointy ?? [])} ` +
+        `a real build of an application importing ${list(p.entrypoints ?? [])} ` +
           `${p.overlay ? 'HOLDS' : 'does NOT hold'} the CDK overlay (\`${MARKER_OVERLAY}\`), ` +
           `and by the esbuild probes it ${oczekiwanyOverlay ? 'should' : 'should not'}.\n` +
           `    CDK Overlay is this library's most expensive optional dependency — a ` +
@@ -448,13 +442,13 @@ const sprawdzBundle = (we) => {
       );
   }
 
-  const suma = zrodla.reduce((n, e) => n + (sondy[e]?.bajty ?? 0), 0);
+  const suma = sources.reduce((n, e) => n + (probes[e]?.bytes ?? 0), 0);
   return {
-    opis:
-      `${zrodla.length} entrypoints, ${suma} B in total, largest ` +
-      `${zrodla.reduce((a, b) => ((sondy[a]?.bajty ?? 0) >= (sondy[b]?.bajty ?? 0) ? a : b))}; ` +
+    description:
+      `${sources.length} entrypoints, ${suma} B in total, largest ` +
+      `${sources.reduce((a, b) => ((probes[a]?.bytes ?? 0) >= (probes[b]?.bytes ?? 0) ? a : b))}; ` +
       `${przebiegi.length} probes through the real builder`,
-    snapshot: renderujSnapshot(zrodla, sondy),
+    snapshot: renderSnapshot(sources, probes),
   };
 };
 
@@ -468,7 +462,7 @@ const rowne = (a, b) => a.size === b.size && [...a].every((x) => b.has(x));
  * prettier pads its columns to the longest cell, so one long name rewrites the WHOLE file
  * and the diff stops showing what really changed.
  */
-const renderujSnapshot = (zrodla, sondy) =>
+const renderSnapshot = (sources, probes) =>
   [
     '# Entrypoint size and isolation snapshot',
     '',
@@ -493,15 +487,15 @@ const renderujSnapshot = (zrodla, sondy) =>
     `framework. Budget: ±${(TOLERANCJA * 100).toFixed(0)}% or ±${TOLERANCJA_MIN} B, whichever is larger.`,
     '',
     '```',
-    ...zrodla.map((e) =>
+    ...sources.map((e) =>
       [
         e,
-        sondy[e]?.bajty ?? 0,
-        [...(sondy[e]?.wniesione ?? [])]
+        probes[e]?.bytes ?? 0,
+        [...(probes[e]?.pulled ?? [])]
           .filter((x) => x !== e)
           .sort()
           .join(',') || '-',
-        [...(sondy[e]?.zewnetrzne ?? [])].sort().join(',') || '-',
+        [...(probes[e]?.external ?? [])].sort().join(',') || '-',
       ].join(' '),
     ),
     '```',
@@ -509,25 +503,25 @@ const renderujSnapshot = (zrodla, sondy) =>
   ].join('\n');
 
 /**
- * The data rows as a map `entrypoint → { bajty, wniesione, zewnetrzne }`.
+ * The data rows as a map `entrypoint → { bytes, pulled, external }`.
  *
  * A missing file (`null`) is an empty map here, not a failure, even though point 3 catches
- * that case separately and earlier — see the comment at `sprawdzBundle`. The row filter
+ * that case separately and earlier — see the comment at `checkBundle`. The row filter
  * lets the slash in `./select` through deliberately: in `check-parts` exactly that
  * character fell out of the character class, both lists came out empty, the empties proved
  * equal and the gate rejected a change with a correct diagnosis of a problem that was not
  * there
  * ([`lesson-50`](../docs/lessons.md#lesson-50)).
  */
-const wierszeSnapshotu = (tresc) => {
+const snapshotRows = (tresc) => {
   const out = new Map();
   for (const w of (tresc ?? '').split('\n')) {
     if (!/^\.(\/[a-z0-9-]+)?\s/.test(w)) continue;
-    const [e, bajty, wniesione, zewnetrzne] = w.trim().split(/\s+/);
+    const [e, bytes, pulled, external] = w.trim().split(/\s+/);
     out.set(e, {
-      bajty: Number(bajty),
-      wniesione: wniesione === '-' ? [] : (wniesione ?? '').split(','),
-      zewnetrzne: zewnetrzne === '-' ? [] : (zewnetrzne ?? '').split(','),
+      bytes: Number(bytes),
+      pulled: pulled === '-' ? [] : (pulled ?? '').split(','),
+      external: external === '-' ? [] : (external ?? '').split(','),
     });
   }
   return out;
@@ -535,7 +529,7 @@ const wierszeSnapshotu = (tresc) => {
 
 // ── pomiar ────────────────────────────────────────────────────────────────────
 
-const czytajJson = (sciezka) =>
+const readJson = (sciezka) =>
   existsSync(sciezka) ? JSON.parse(readFileSync(sciezka, 'utf8')) : null;
 
 /**
@@ -547,7 +541,7 @@ const czytajJson = (sciezka) =>
  * glob, and without `:(glob)` a star crosses `/`, so a pattern with a star can return ZERO
  * files rather than an error ([`lesson-48`](../docs/lessons.md#lesson-48)).
  */
-const entrypointyZeZrodel = () =>
+const sourceEntrypoints = () =>
   execFileSync('git', ['ls-files', '-z', PROJEKT], {
     cwd: ROOT,
     encoding: 'utf8',
@@ -567,12 +561,11 @@ const entrypointyZeZrodel = () =>
  * consumer will take. An entry missing from the map is unreachable for them, however
  * surely the file lies in the package.
  */
-const plikiEntrypointow = (manifest) => {
+const entrypointFiles = (manifest) => {
   const out = new Map();
-  for (const [wejscie, cel] of Object.entries(manifest?.exports ?? {})) {
-    const plik = typeof cel === 'object' ? cel?.default : cel;
-    if (typeof plik === 'string' && plik.endsWith('.mjs'))
-      out.set(wejscie, plik);
+  for (const [input, cel] of Object.entries(manifest?.exports ?? {})) {
+    const file = typeof cel === 'object' ? cel?.default : cel;
+    if (typeof file === 'string' && file.endsWith('.mjs')) out.set(input, file);
   }
   return out;
 };
@@ -593,22 +586,22 @@ const plikiEntrypointow = (manifest) => {
  * Of a selector's tokens only those with the `pct` prefix are kept — `button` in
  * `button[pctButton]` is an HTML tag name and would match anything.
  */
-const zbierzMarkery = async (dist, pliki) => {
+const zbierzMarkery = async (dist, files) => {
   await import('@angular/compiler');
   const out = {};
-  for (const [wejscie, plik] of pliki) {
+  for (const [input, file] of files) {
     const modul = await import(
-      pathToFileURL(join(dist, plik.replace(/^\.\//, ''))).href
+      pathToFileURL(join(dist, file.replace(/^\.\//, ''))).href
     );
-    const markery = new Set();
+    const markers = new Set();
     for (const wartosc of Object.values(modul)) {
       if (typeof wartosc !== 'function') continue;
       const def = wartosc['ɵcmp'] ?? wartosc['ɵdir'];
       for (const token of (def?.selectors ?? []).flat())
         if (typeof token === 'string' && /^pct[-A-Z]/.test(token))
-          markery.add(token);
+          markers.add(token);
     }
-    out[wejscie] = [...markery].sort();
+    out[input] = [...markers].sort();
   }
   return out;
 };
@@ -642,21 +635,21 @@ const specyfikator = (e) =>
  * framework's weight. `@pacit/components/*` cannot be external — there would then be no
  * way to see that `button` pulled `field` in, and the whole measured thing would vanish.
  */
-const sonda = async (esbuild, katalog, markery, poPliku, entrypointy) => {
+const probe = async (esbuild, katalog, markers, poPliku, entrypoints) => {
   // The input file's name is FIXED, because the bundle's size is the measured quantity
   // here: a name with a counter or a timestamp can end up in the output and the budget
   // starts measuring the length of a path. The probes run in turn and the file is removed
   // after each.
-  const wejscie = join(katalog, 'sonda.mjs');
+  const input = join(katalog, 'probe.mjs');
   writeFileSync(
-    wejscie,
-    entrypointy
+    input,
+    entrypoints
       .map((e, i) => `import * as m${i} from '${specyfikator(e)}';`)
       .join('\n') +
-      `\nglobalThis.__pctSonda = [${entrypointy.map((_, i) => `m${i}`).join(',')}];\n`,
+      `\nglobalThis.__pctSonda = [${entrypoints.map((_, i) => `m${i}`).join(',')}];\n`,
   );
   const wynik = await esbuild.build({
-    entryPoints: [wejscie],
+    entryPoints: [input],
     bundle: true,
     minify: true,
     format: 'esm',
@@ -665,22 +658,22 @@ const sonda = async (esbuild, katalog, markery, poPliku, entrypointy) => {
     metafile: true,
     external: ['@angular/*', 'rxjs', 'rxjs/*', 'tslib'],
   });
-  rmSync(wejscie, { force: true });
+  rmSync(input, { force: true });
 
   const tekst = wynik.outputFiles[0].text;
   const wyjscie = Object.values(wynik.metafile.outputs)[0];
-  const wniesione = Object.entries(wyjscie.inputs)
+  const pulled = Object.entries(wyjscie.inputs)
     .filter(([, v]) => v.bytesInOutput > 0)
     .map(([k]) => poPliku.get(k.split('/').pop()))
     .filter(Boolean);
 
   return {
-    bajty: tekst.length,
-    wniesione: [...new Set(wniesione)].sort(),
-    zewnetrzne: [
+    bytes: tekst.length,
+    pulled: [...new Set(pulled)].sort(),
+    external: [
       ...new Set(wyjscie.imports.filter((i) => i.external).map((i) => i.path)),
     ].sort(),
-    wTekscie: Object.entries(markery)
+    inText: Object.entries(markers)
       .filter(([, m]) => m.length > 0 && m.some((x) => tekst.includes(x)))
       .map(([e]) => e)
       .sort(),
@@ -696,7 +689,7 @@ const sonda = async (esbuild, katalog, markery, poPliku, entrypointy) => {
  * `check-typecheck` (point 1: a TypeScript file outside any project) — one gate's fixture
  * must not be another's defect.
  */
-const sondaBuildera = (dist, markery, entrypointy) => {
+const builderProbe = (dist, markers, entrypoints) => {
   const katalog = join(ROOT, 'tmp/check-bundle');
   rmSync(katalog, { recursive: true, force: true });
   mkdirSync(join(katalog, 'src'), { recursive: true });
@@ -708,7 +701,7 @@ const sondaBuildera = (dist, markery, entrypointy) => {
     JSON.stringify({
       version: 1,
       projects: {
-        sonda: {
+        probe: {
           projectType: 'application',
           root: '',
           sourceRoot: 'src',
@@ -749,13 +742,13 @@ const sondaBuildera = (dist, markery, entrypointy) => {
   writeFileSync(
     join(katalog, 'src/main.ts'),
     [
-      ...entrypointy.map(
+      ...entrypoints.map(
         (e, i) => `import * as m${i} from '${specyfikator(e)}';`,
       ),
       `import { bootstrapApplication } from '@angular/platform-browser';`,
       `import { Component } from '@angular/core';`,
       ``,
-      `Reflect.set(globalThis, '__pctSonda', [${entrypointy
+      `Reflect.set(globalThis, '__pctSonda', [${entrypoints
         .map((_, i) => `m${i}`)
         .join(',')}]);`,
       ``,
@@ -768,15 +761,15 @@ const sondaBuildera = (dist, markery, entrypointy) => {
 
   execFileSync(
     'node',
-    [join(ROOT, 'node_modules/@angular/cli/bin/ng.js'), 'build', 'sonda'],
+    [join(ROOT, 'node_modules/@angular/cli/bin/ng.js'), 'build', 'probe'],
     { cwd: katalog, stdio: 'pipe' },
   );
   const bundle = readFileSync(join(katalog, 'out/browser/main.js'), 'utf8');
   rmSync(katalog, { recursive: true, force: true });
 
   return {
-    entrypointy,
-    znalezione: Object.entries(markery)
+    entrypoints,
+    found: Object.entries(markers)
       .filter(([, m]) => m.length > 0 && m.some((x) => bundle.includes(x)))
       .map(([e]) => e)
       .sort(),
@@ -792,55 +785,55 @@ const sondaBuildera = (dist, markery, entrypointy) => {
  */
 const zmierzRepozytorium = async () => {
   const dist = join(ROOT, DIST);
-  const manifest = czytajJson(join(dist, 'package.json'));
+  const manifest = readJson(join(dist, 'package.json'));
   if (!manifest)
-    throw new BladBundla(
-      'entrypointy',
+    throw new BundleError(
+      'entrypoints',
       `no built package in ${DIST} — this gate measures the artifact, not the sources.\n` +
         `    The target needs a \`dependsOn\` on the library's build`,
     );
 
-  const pliki = plikiEntrypointow(manifest);
+  const files = entrypointFiles(manifest);
   // FESM file name → entrypoint. The bundler's metafile speaks of files; everything above
   // speaks of entrypoints, because they are the public contract.
   const poPliku = new Map(
-    [...pliki].map(([e, plik]) => [plik.split('/').pop(), e]),
+    [...files].map(([e, file]) => [file.split('/').pop(), e]),
   );
 
-  const markery = await zbierzMarkery(dist, pliki);
+  const markers = await zbierzMarkery(dist, files);
   const esbuild = await import('esbuild');
   const katalog = przygotujKatalogSond(dist);
-  const zrodla = entrypointyZeZrodel();
+  const sources = sourceEntrypoints();
 
   try {
-    const sondy = {};
-    for (const e of pliki.keys())
-      sondy[e] = await sonda(esbuild, katalog, markery, poPliku, [e]);
+    const probes = {};
+    for (const e of files.keys())
+      probes[e] = await probe(esbuild, katalog, markers, poPliku, [e]);
 
-    const komponentowe = [...pliki.keys()]
-      .filter((e) => e !== PRIMARY && (markery[e] ?? []).length > 0)
-      .sort((a, b) => sondy[a].bajty - sondy[b].bajty);
-    const para = [komponentowe.at(0), komponentowe.at(-1)].filter(Boolean);
+    const komponentowe = [...files.keys()]
+      .filter((e) => e !== PRIMARY && (markers[e] ?? []).length > 0)
+      .sort((a, b) => probes[a].bytes - probes[b].bytes);
+    const pair = [komponentowe.at(0), komponentowe.at(-1)].filter(Boolean);
     const pomiarPary =
-      para.length === 2
-        ? await sonda(esbuild, katalog, markery, poPliku, para)
+      pair.length === 2
+        ? await probe(esbuild, katalog, markers, poPliku, pair)
         : null;
 
     return {
-      zrodla,
+      sources,
       manifest,
       snapshot: existsSync(join(ROOT, SNAPSHOT))
         ? readFileSync(join(ROOT, SNAPSHOT), 'utf8')
         : null,
-      markery,
-      sondy,
-      para: pomiarPary ? { entrypointy: para, bajty: pomiarPary.bajty } : null,
+      markers,
+      probes,
+      pair: pomiarPary ? { entrypoints: pair, bytes: pomiarPary.bytes } : null,
       builder:
-        para.length === 2
+        pair.length === 2
           ? [
-              sondaBuildera(dist, markery, [para[0]]),
-              sondaBuildera(dist, markery, para),
-              sondaBuildera(dist, markery, komponentowe),
+              builderProbe(dist, markers, [pair[0]]),
+              builderProbe(dist, markers, pair),
+              builderProbe(dist, markers, komponentowe),
             ]
           : [],
     };
@@ -851,8 +844,8 @@ const zmierzRepozytorium = async () => {
 
 // ── negative control ──────────────────────────────────────────────────────────
 
-const wczytajFixture = (nazwa) =>
-  JSON.parse(readFileSync(join(FIXTURES, nazwa), 'utf8'));
+const readFixture = (name) =>
+  JSON.parse(readFileSync(join(FIXTURES, name), 'utf8'));
 
 /**
  * Builds a case's input ON A COPY of the reference one, so the case file holds nothing
@@ -869,114 +862,113 @@ const wczytajFixture = (nazwa) =>
  * beside it: a written one would drift from the renderer at the first change to the file's
  * format, and the reference input would stop passing for a reason nobody was examining.
  */
-const zlozFixture = (fx) => {
-  const baza = structuredClone(wczytajFixture(BAZA));
-  const we = {
-    zrodla: [...baza.zrodla],
-    manifest: structuredClone(baza.manifest),
-    markery: structuredClone(baza.markery),
-    sondy: structuredClone(baza.sondy),
-    para: structuredClone(baza.para),
-    builder: structuredClone(baza.builder),
+const buildFixture = (fx) => {
+  const reference = structuredClone(readFixture(REFERENCE));
+  const input = {
+    sources: [...reference.sources],
+    manifest: structuredClone(reference.manifest),
+    markers: structuredClone(reference.markers),
+    probes: structuredClone(reference.probes),
+    pair: structuredClone(reference.pair),
+    builder: structuredClone(reference.builder),
   };
 
-  if (fx.wyczyscZrodla) we.zrodla = [];
-  if (fx.usunZeZrodel)
-    we.zrodla = we.zrodla.filter((e) => e !== fx.usunZeZrodel);
-  if (fx.usunZExports) delete we.manifest.exports[fx.usunZExports];
-  if (fx.sideEffects !== undefined) we.manifest.sideEffects = fx.sideEffects;
-  if (fx.usunSonde) delete we.sondy[fx.usunSonde];
-  if (fx.sondaBezSwojego)
-    we.sondy[fx.sondaBezSwojego].wniesione = we.sondy[
-      fx.sondaBezSwojego
-    ].wniesione.filter((e) => e !== fx.sondaBezSwojego);
-  if (fx.primaryWnosi)
-    we.sondy[PRIMARY].wniesione = [
-      ...we.sondy[PRIMARY].wniesione,
-      fx.primaryWnosi,
+  if (fx.clearSources) input.sources = [];
+  if (fx.dropFromSources)
+    input.sources = input.sources.filter((e) => e !== fx.dropFromSources);
+  if (fx.dropFromExports) delete input.manifest.exports[fx.dropFromExports];
+  if (fx.sideEffects !== undefined) input.manifest.sideEffects = fx.sideEffects;
+  if (fx.dropProbe) delete input.probes[fx.dropProbe];
+  if (fx.probeWithoutItsOwn)
+    input.probes[fx.probeWithoutItsOwn].pulled = input.probes[
+      fx.probeWithoutItsOwn
+    ].pulled.filter((e) => e !== fx.probeWithoutItsOwn);
+  if (fx.primaryPulls)
+    input.probes[PRIMARY].pulled = [
+      ...input.probes[PRIMARY].pulled,
+      fx.primaryPulls,
     ].sort();
-  if (fx.usunMarkery) we.markery[fx.usunMarkery] = [];
-  if (fx.dodajMarker) we.markery[fx.dodajMarker.ep] = fx.dodajMarker.markery;
-  if (fx.dodajWniesiony)
-    we.sondy[fx.dodajWniesiony.ep].wniesione = [
-      ...we.sondy[fx.dodajWniesiony.ep].wniesione,
-      fx.dodajWniesiony.co,
+  if (fx.dropMarkers) input.markers[fx.dropMarkers] = [];
+  if (fx.addMarker) input.markers[fx.addMarker.ep] = fx.addMarker.markers;
+  if (fx.addPulled)
+    input.probes[fx.addPulled.ep].pulled = [
+      ...input.probes[fx.addPulled.ep].pulled,
+      fx.addPulled.what,
     ].sort();
-  if (fx.dodajWTekscie)
-    we.sondy[fx.dodajWTekscie.ep].wTekscie = [
-      ...we.sondy[fx.dodajWTekscie.ep].wTekscie,
-      fx.dodajWTekscie.co,
+  if (fx.addInText)
+    input.probes[fx.addInText.ep].inText = [
+      ...input.probes[fx.addInText.ep].inText,
+      fx.addInText.what,
     ].sort();
-  if (fx.usunWTekscie)
-    we.sondy[fx.usunWTekscie.ep].wTekscie = we.sondy[
-      fx.usunWTekscie.ep
-    ].wTekscie.filter((e) => e !== fx.usunWTekscie.co);
-  if (fx.dodajZewnetrzny)
-    we.sondy[fx.dodajZewnetrzny.ep].zewnetrzne = [
-      ...we.sondy[fx.dodajZewnetrzny.ep].zewnetrzne,
-      fx.dodajZewnetrzny.co,
+  if (fx.dropFromText)
+    input.probes[fx.dropFromText.ep].inText = input.probes[
+      fx.dropFromText.ep
+    ].inText.filter((e) => e !== fx.dropFromText.what);
+  if (fx.addExternal)
+    input.probes[fx.addExternal.ep].external = [
+      ...input.probes[fx.addExternal.ep].external,
+      fx.addExternal.what,
     ].sort();
-  if (fx.rozmiar) we.sondy[fx.rozmiar.ep].bajty = fx.rozmiar.bajty;
-  if (fx.paraBajty !== undefined) we.para.bajty = fx.paraBajty;
-  if (fx.builderZnalezione)
-    we.builder[fx.builderZnalezione.i].znalezione =
-      fx.builderZnalezione.znalezione;
+  if (fx.size) input.probes[fx.size.ep].bytes = fx.size.bytes;
+  if (fx.pairBytes !== undefined) input.pair.bytes = fx.pairBytes;
+  if (fx.builderFound)
+    input.builder[fx.builderFound.i].found = fx.builderFound.found;
   if (fx.builderOverlay)
-    we.builder[fx.builderOverlay.i].overlay = fx.builderOverlay.overlay;
-  if (fx.usunBuilder) we.builder = we.builder.slice(0, -1);
+    input.builder[fx.builderOverlay.i].overlay = fx.builderOverlay.overlay;
+  if (fx.dropBuilder) input.builder = input.builder.slice(0, -1);
 
   // The snapshot is rendered from the REFERENCE measurement and broken separately
   // afterwards — so the cases aiming at points 5, 7 and 8 break the MEASUREMENT rather
   // than the record, that is, exactly the side of the comparison at issue.
-  let snapshot = renderujSnapshot(baza.zrodla, baza.sondy);
-  if (fx.usunSnapshot) snapshot = null;
-  else if (fx.snapshotBezWiersza)
+  let snapshot = renderSnapshot(reference.sources, reference.probes);
+  if (fx.dropSnapshot) snapshot = null;
+  else if (fx.snapshotWithoutRow)
     snapshot = snapshot
       .split('\n')
-      .filter((w) => !w.startsWith(`${fx.snapshotBezWiersza} `))
+      .filter((w) => !w.startsWith(`${fx.snapshotWithoutRow} `))
       .join('\n');
-  else if (fx.snapshotZObcymWierszem)
+  else if (fx.snapshotWithAlienRow)
     snapshot = snapshot.replace(
       '```\n',
-      `\`\`\`\n${fx.snapshotZObcymWierszem} 100 - @angular/core\n`,
+      `\`\`\`\n${fx.snapshotWithAlienRow} 100 - @angular/core\n`,
     );
-  we.snapshot = snapshot;
-  return we;
+  input.snapshot = snapshot;
+  return input;
 };
 
 // ── the run ───────────────────────────────────────────────────────────────────
 
 const problems = [];
-let opis = null;
+let description = null;
 
 try {
-  const wynik = sprawdzBundle(await zmierzRepozytorium());
-  opis = wynik.opis;
-} catch (blad) {
-  if (!(blad instanceof BladBundla)) throw blad;
+  const wynik = checkBundle(await zmierzRepozytorium());
+  description = wynik.description;
+} catch (error) {
+  if (!(error instanceof BundleError)) throw error;
   // `--write` exists so that a snapshot drift can be accepted with one command. The other
   // points stay errors under it too: rewriting the snapshot is no answer to an entrypoint
   // that started pulling its neighbour in.
   if (
     WRITE &&
-    ['snapshot', 'izolacja', 'zewnetrzne', 'rozmiar'].includes(blad.kontrola) &&
-    blad.snapshot
+    ['snapshot', 'isolation', 'external', 'size'].includes(error.check) &&
+    error.snapshot
   ) {
-    writeFileSync(join(ROOT, SNAPSHOT), blad.snapshot);
+    writeFileSync(join(ROOT, SNAPSHOT), error.snapshot);
     console.log(
       `✓ Rewrote ${SNAPSHOT}. Run the gate once more — the negative control did not run ` +
         `in this pass.`,
     );
     process.exit(0);
   }
-  problems.push(`${blad.kontrola}: ${blad.message}`);
+  problems.push(`${error.check}: ${error.message}`);
 }
 
-const przypadki = readdirSync(FIXTURES)
-  .filter((n) => n.endsWith('.json') && n !== BAZA)
+const cases = readdirSync(FIXTURES)
+  .filter((n) => n.endsWith('.json') && n !== REFERENCE)
   .sort();
 
-if (przypadki.length === 0)
+if (cases.length === 0)
   problems.push(
     `tools/check-bundle.fixtures: no prepared inputs — a gate with no proof that it can ` +
       `fail is one more silent defect (req-quality-negative-control)`,
@@ -986,29 +978,29 @@ if (przypadki.length === 0)
 // of it rather than its own defect, and every „rejected" would be false — this control
 // would become the very thing it stands against.
 try {
-  sprawdzBundle(zlozFixture({}));
-} catch (blad) {
-  if (!(blad instanceof BladBundla)) throw blad;
+  checkBundle(buildFixture({}));
+} catch (error) {
+  if (!(error instanceof BundleError)) throw error;
   problems.push(
-    `${BAZA}: the reference input does NOT pass (${blad.kontrola}) — ` +
-      `every prepared case now fires because of it.\n    ${blad.message}`,
+    `${REFERENCE}: the reference input does NOT pass (${error.check}) — ` +
+      `every prepared case now fires because of it.\n    ${error.message}`,
   );
 }
 
-for (const nazwa of przypadki) {
-  const fx = wczytajFixture(nazwa);
+for (const name of cases) {
+  const fx = readFixture(name);
   try {
-    sprawdzBundle(zlozFixture(fx));
+    checkBundle(buildFixture(fx));
     problems.push(
-      `${nazwa}: the prepared input PASSED and was meant not to — ` +
-        `point ${fx.punkt} (\`${fx.kontrola}\`) stopped examining anything`,
+      `${name}: the prepared input PASSED and was meant not to — ` +
+        `point ${fx.point} (\`${fx.check}\`) stopped examining anything`,
     );
-  } catch (blad) {
-    if (!(blad instanceof BladBundla)) throw blad;
-    if (blad.kontrola !== fx.kontrola)
+  } catch (error) {
+    if (!(error instanceof BundleError)) throw error;
+    if (error.check !== fx.check)
       problems.push(
-        `${nazwa}: check \`${blad.kontrola}\` fired, and point ${fx.punkt} ` +
-          `(\`${fx.kontrola}\`) was meant to — the fixture proves something other than what it declares`,
+        `${name}: check \`${error.check}\` fired, and point ${fx.point} ` +
+          `(\`${fx.check}\`) was meant to — the fixture proves something other than what it declares`,
       );
   }
 }
@@ -1023,6 +1015,6 @@ if (problems.length) {
 }
 
 console.log(
-  `✓ Bundle: ${opis}. Negative control: the reference input passes, ` +
-    `${przypadki.length} prepared ones rejected on their own points.`,
+  `✓ Bundle: ${description}. Negative control: the reference input passes, ` +
+    `${cases.length} prepared ones rejected on their own points.`,
 );

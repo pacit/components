@@ -1,0 +1,6 @@
+{
+  "// defect": "The list of entrypoints from the sources is empty — exactly what a git pathspec without `:(glob)` returns (lesson-48). Every point below walks that list, so all of them would pass having measured nothing.",
+  "point": 1,
+  "check": "entrypoints",
+  "clearSources": true
+}

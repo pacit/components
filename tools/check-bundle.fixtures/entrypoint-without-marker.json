@@ -1,0 +1,6 @@
+{
+  "// defect": "The entrypoint lost all its markers while other probes prove its absence. Point 6 then has nothing to look for in the text, so it rules on absence without being able to see presence.",
+  "point": 4,
+  "check": "presence",
+  "dropMarkers": "./alpha"
+}

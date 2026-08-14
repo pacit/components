@@ -1,6 +1,0 @@
-{
-  "// wada": "Entrypoint główny zaczął wnosić komponent — czyli `@pacit/components` przestał być minimalny i każdy konsument płaci za coś, czego nie zaimportował. To jest dosłownie treść obietnicy `req-project-tree-shaking`.",
-  "punkt": 4,
-  "kontrola": "obecnosc",
-  "primaryWnosi": "./alfa"
-}

@@ -1,6 +1,0 @@
-{
-  "// wada": "Sonda dwóch entrypointów waży tyle, co jedna z nich. Ten punkt zapala dokładnie w scenariuszu, w którym wszystkie pozostałe wyglądają zdrowo: bundler przestał wciągać bibliotekę, więc każda sonda waży tyle samo i różnica znika.",
-  "punkt": 9,
-  "kontrola": "roznicowa",
-  "paraBajty": 30000
-}

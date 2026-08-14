@@ -1,0 +1,6 @@
+{
+  "// defect": "A probe importing `./alpha` pulled not one byte out of it — exactly what is left after too broad an `external` list or an alias pointing nowhere. An empty probe passes EVERY point about isolation, because there is nothing in it.",
+  "point": 4,
+  "check": "presence",
+  "probeWithoutItsOwn": "./alpha"
+}

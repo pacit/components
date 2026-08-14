@@ -1,0 +1,6 @@
+{
+  "// defect": "The entrypoint exists but has no row in the snapshot — that is, it is born with no budget and no recorded isolation. This is the variant in which a new component slips past the gate that was built partly for it.",
+  "point": 3,
+  "check": "snapshot",
+  "snapshotWithoutRow": "./beta"
+}

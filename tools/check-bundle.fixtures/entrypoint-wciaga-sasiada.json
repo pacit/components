@@ -1,6 +1,0 @@
-{
-  "// wada": "Import `./alfa` wciąga `./beta` — sedno obietnicy. W kodzie wygląda to na jeden import w jednym pliku, kompiluje się, przechodzi testy i dokłada konsumentowi całą wagę sąsiada.",
-  "punkt": 5,
-  "kontrola": "izolacja",
-  "dodajWniesiony": { "ep": "./alfa", "co": "./beta" }
-}

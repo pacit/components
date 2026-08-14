@@ -1,0 +1,6 @@
+{
+  "// defect": "The snapshot has a row for an entrypoint that no longer exists. The record outlived the removal and from then on freezes a state nobody measures.",
+  "point": 3,
+  "check": "snapshot",
+  "snapshotWithAlienRow": "./gamma"
+}

@@ -1,0 +1,6 @@
+{
+  "// defect": "The entrypoint is on the list and has no measurement — the probe did not build or fell out of the loop. Without this point it would be the only entrypoint the gate says nothing about.",
+  "point": 4,
+  "check": "presence",
+  "dropProbe": "./alpha"
+}

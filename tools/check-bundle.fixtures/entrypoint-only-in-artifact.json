@@ -1,0 +1,6 @@
+{
+  "// defect": "The entrypoint is in the package's `exports` map and is not in the sources — that is, the directory lost its `ng-package.json` and the built package still exposes it. A reading from the artifact alone would be blind to this.",
+  "point": 1,
+  "check": "entrypoints",
+  "dropFromSources": "./beta"
+}

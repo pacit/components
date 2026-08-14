@@ -1,0 +1,9 @@
+{
+  "// defect": "The entrypoint reached for the CDK overlay although it did not have it. This is the variant `req-project-tree-shaking` names outright: a consumer who did not use the select has no business getting the Overlay.",
+  "point": 7,
+  "check": "external",
+  "addExternal": {
+    "ep": "./alpha",
+    "what": "@angular/cdk/overlay"
+  }
+}

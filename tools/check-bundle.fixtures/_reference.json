@@ -1,0 +1,80 @@
+{
+  "// why": "The reference input of the `check-bundle` negative control. Every case beside it is built ON A COPY OF IT, so a case file holds nothing but its own defect. This input MUST pass: were it defective itself, every case would fire because of it rather than because of its own.",
+  "// why data, not a real measurement": "Building a dozen esbuild probes for each of the seventeen cases would cost minutes per run, and with Angular's real builder — quarters of an hour. The same choice as in `check-zoneless` and `check-parts`. The price is visible: the fixtures do NOT exercise the bundling code, they exercise the whole arrangement of checks. Bundling is exercised on every run against the real repository.",
+  "// why a fake library": "The entrypoints are called `alpha`, `beta`, `kernel` rather than `button`, `select`, `core` — a copy of the real measurement would drift from the repository at every new component, and the fixtures would then need maintenance although they examine nothing that changed. `kernel` is pulled in by EVERY probe (like the real `./core`), and `beta` alone reaches for the CDK overlay (like the real `./select`).",
+  "sources": [".", "./alpha", "./beta", "./kernel"],
+  "manifest": {
+    "sideEffects": false,
+    "exports": {
+      ".": {
+        "default": "./fesm2022/x.mjs"
+      },
+      "./alpha": {
+        "default": "./fesm2022/x-alpha.mjs"
+      },
+      "./beta": {
+        "default": "./fesm2022/x-beta.mjs"
+      },
+      "./kernel": {
+        "default": "./fesm2022/x-kernel.mjs"
+      },
+      "./themes/*": "./themes/*",
+      "./package.json": {
+        "default": "./package.json"
+      }
+    }
+  },
+  "markers": {
+    ".": [],
+    "./alpha": ["pct-alpha"],
+    "./beta": ["pct-beta"],
+    "./kernel": []
+  },
+  "probes": {
+    ".": {
+      "bytes": 1200,
+      "pulled": [".", "./kernel"],
+      "external": ["@angular/core"],
+      "inText": []
+    },
+    "./alpha": {
+      "bytes": 8000,
+      "pulled": ["./alpha", "./kernel"],
+      "external": ["@angular/core"],
+      "inText": ["./alpha"]
+    },
+    "./beta": {
+      "bytes": 30000,
+      "pulled": ["./beta", "./kernel"],
+      "external": ["@angular/cdk/overlay", "@angular/core"],
+      "inText": ["./beta"]
+    },
+    "./kernel": {
+      "bytes": 1700,
+      "pulled": ["./kernel"],
+      "external": ["@angular/core"],
+      "inText": []
+    }
+  },
+  "pair": {
+    "entrypoints": ["./alpha", "./beta"],
+    "bytes": 36500
+  },
+  "builder": [
+    {
+      "entrypoints": ["./alpha"],
+      "found": ["./alpha"],
+      "overlay": false
+    },
+    {
+      "entrypoints": ["./alpha", "./beta"],
+      "found": ["./alpha", "./beta"],
+      "overlay": true
+    },
+    {
+      "entrypoints": ["./alpha", "./beta"],
+      "found": ["./alpha", "./beta"],
+      "overlay": true
+    }
+  ]
+}

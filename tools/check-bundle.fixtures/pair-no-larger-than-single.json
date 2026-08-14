@@ -1,0 +1,6 @@
+{
+  "// defect": "A probe of two entrypoints weighs as much as one of them. This point fires in exactly the scenario in which all the others look healthy: the bundler stopped pulling the library in, so every probe weighs the same and the difference disappears.",
+  "point": 9,
+  "check": "differential",
+  "pairBytes": 30000
+}

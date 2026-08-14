@@ -1,6 +1,0 @@
-{
-  "// wada": "Lista entrypointów ze źródeł jest pusta — dokładnie to, co zwraca pathspec gita bez `:(glob)` (lesson-48). Każdy punkt niżej chodzi po tej liście, więc wszystkie przeszłyby, nie zmierzywszy niczego.",
-  "punkt": 1,
-  "kontrola": "entrypointy",
-  "wyczyscZrodla": true
-}

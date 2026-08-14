@@ -1,0 +1,9 @@
+{
+  "// defect": "A real build of an application importing `./alpha` alone also contains `./beta`, although esbuild's probes cannot see it. The drift means this gate's fast measurement stopped answering to what the consumer gets.",
+  "point": 10,
+  "check": "builder",
+  "builderFound": {
+    "i": 0,
+    "found": ["./alpha", "./beta"]
+  }
+}

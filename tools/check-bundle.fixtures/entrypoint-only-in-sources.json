@@ -1,0 +1,6 @@
+{
+  "// defect": "The entrypoint has an `ng-package.json` but did not reach the `exports` map — that is, it is unreachable for a consumer although in the repository it looks ready. The commonest cause in practice: a stale `dist`.",
+  "point": 1,
+  "check": "entrypoints",
+  "dropFromExports": "./beta"
+}

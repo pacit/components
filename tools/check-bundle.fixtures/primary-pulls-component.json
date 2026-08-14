@@ -1,0 +1,6 @@
+{
+  "// defect": "The primary entrypoint started pulling a component in — that is, `@pacit/components` stopped being minimal and every consumer pays for something they did not import. This is literally the content of the `req-project-tree-shaking` promise.",
+  "point": 4,
+  "check": "presence",
+  "primaryPulls": "./alpha"
+}

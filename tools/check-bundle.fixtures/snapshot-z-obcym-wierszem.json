@@ -1,6 +1,0 @@
-{
-  "// wada": "Snapshot ma wiersz dla entrypointu, którego już nie ma. Zapis przeżył usunięcie i od tej pory zamraża stan, którego nikt nie mierzy.",
-  "punkt": 3,
-  "kontrola": "snapshot",
-  "snapshotZObcymWierszem": "./gamma"
-}

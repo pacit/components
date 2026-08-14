@@ -1,0 +1,6 @@
+{
+  "// defect": "The packed manifest declares `sideEffects: true`, so from that moment a bundler has to keep every module of the package „just in case\". This gate's probes will NOT notice — they import the whole namespace, so their sizes will not move — and at a consumer everything will.",
+  "point": 2,
+  "check": "side-effects",
+  "sideEffects": true
+}

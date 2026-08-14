@@ -1,7 +1,0 @@
-{
-  "// wada": "Spakowany manifest deklaruje `sideEffects: true`, więc bundler musi od tej chwili zachować każdy moduł pakietu „na wszelki wypadek\". Sondy tej bramki tego NIE zauważą — importują cały namespace, więc ich rozmiary nie drgną — a u konsumenta drgną wszystkie.",
-  "// dlaczego true, a nie brak klucza": "Zmierzone przebiegiem z `--skip-nx-cache`: usunięcie klucza ze ŹRÓDŁOWEGO manifestu tej wady nie daje, bo ng-packagr dopisuje wtedy `false` sam. Punkt czyta artefakt i zapala na jawnym `true` oraz na dniu, w którym ng-packagr przestanie wartość domyślną dopisywać.",
-  "punkt": 2,
-  "kontrola": "side-effects",
-  "sideEffects": true
-}

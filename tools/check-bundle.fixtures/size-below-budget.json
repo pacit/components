@@ -1,0 +1,9 @@
+{
+  "// defect": "The entrypoint lost twenty times its weight. The tolerance is two-sided not out of courtesy to optimisation: a measurement that falls silent looks exactly like code that got smaller (lesson-45, lesson-48).",
+  "point": 8,
+  "check": "size",
+  "size": {
+    "ep": "./beta",
+    "bytes": 1500
+  }
+}

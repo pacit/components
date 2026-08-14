@@ -1,0 +1,6 @@
+{
+  "// defect": "There is no snapshot file. Points 5, 7 and 8 have nothing to compare against, so the gate would guard only that the measurement happened.",
+  "point": 3,
+  "check": "snapshot",
+  "dropSnapshot": true
+}
