@@ -1,0 +1,6 @@
+{
+  "point": 5,
+  "check": "snapshot",
+  "$reason": "With no snapshot the gate guards the agreement of three readings but does not measure CHANGE: renaming a part together with its card in docs then passes without a trace.",
+  "drop": ["libs/components/parts.snapshot.md"]
+}

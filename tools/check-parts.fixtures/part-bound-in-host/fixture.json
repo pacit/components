@@ -1,0 +1,5 @@
+{
+  "point": 3,
+  "check": "staticness",
+  "$reason": "The same in a directive's `host` block. The static part stays in place so that point 2 does not fire first — the defect is to be only the declared one."
+}

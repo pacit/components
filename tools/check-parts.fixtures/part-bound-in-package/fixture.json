@@ -1,0 +1,5 @@
+{
+  "point": 3,
+  "check": "staticness",
+  "$reason": "A binding visible only in the package: the attribute's name appears in the body of the compiled template function and does not reach `consts` at all. Without that reading point 3 would have a blind side on the artefact."
+}

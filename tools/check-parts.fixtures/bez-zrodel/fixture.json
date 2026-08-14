@@ -1,9 +1,0 @@
-{
-  "punkt": 1,
-  "kontrola": "mianownik",
-  "$powod": "Lista plików źródłowych nie zwraca niczego — dokładnie to, co dawał pathspec z gwiazdką w pierwszej wersji `check-styles` (lesson-48). Porównanie z licznikiem przeszłoby wtedy, bo zero równa się zeru.",
-  "usun": [
-    "libs/components/widget/src/widget.ts.txt",
-    "libs/components/widget/src/marker.ts.txt"
-  ]
-}

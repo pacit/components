@@ -1,0 +1,5 @@
+{
+  "point": 2,
+  "check": "set",
+  "$reason": "A part added to the template that is not in the package — a component with no export, or a stale `dist`. The inventory would promise the consumer a selector the released package does not have."
+}

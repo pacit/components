@@ -1,0 +1,5 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "$reason": "A template no `templateUrl` points at. Its parts are invisible to the scanner, and they travel to the browser like any others."
+}

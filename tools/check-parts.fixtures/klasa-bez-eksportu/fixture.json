@@ -1,5 +1,0 @@
-{
-  "punkt": 2,
-  "kontrola": "zbior",
-  "$powod": "Klasa z częścią w źródłach, której nie ma w pakiecie — brak eksportu z `index.ts` swojego entrypointu. To ta sama wada, którą w `check-zoneless` łapie punkt mianownika: komponent, który wypadł z pakietu, dalej wygląda na sprawdzony."
-}

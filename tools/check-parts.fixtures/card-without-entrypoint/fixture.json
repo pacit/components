@@ -1,0 +1,5 @@
+{
+  "point": 4,
+  "check": "documentation",
+  "$reason": "A card with no **Entrypoint:** heading. It is what assigns the section to an entrypoint, so a card without it falls out of the comparison — that is, out of the inventory — while still looking filled in."
+}

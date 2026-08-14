@@ -1,0 +1,5 @@
+{
+  "point": 3,
+  "check": "staticness",
+  "$reason": "A value with interpolation looks like a literal and is not one. Measured: Angular emits it into `consts` after the bindings marker, that is, outside the inventory. Without that distinction the scanner would write a part named `{{ slotName() }}` into the snapshot."
+}

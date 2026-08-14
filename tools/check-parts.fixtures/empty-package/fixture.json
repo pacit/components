@@ -1,0 +1,5 @@
+{
+  "point": 2,
+  "check": "set",
+  "$reason": "A package with not one class carrying parts: a stale or empty `dist`. Without the non-emptiness check points 3–5 would pass, ruling on nothing."
+}

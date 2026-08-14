@@ -1,0 +1,26 @@
+{
+  "entrypoints": [
+    ".",
+    "./widget"
+  ],
+  "classes": [
+    {
+      "entrypoint": "./widget",
+      "className": "PctWidget",
+      "parts": [
+        "label",
+        "value",
+        "badge"
+      ],
+      "dynamic": 0
+    },
+    {
+      "entrypoint": "./widget",
+      "className": "PctMarker",
+      "parts": [
+        "widget-marker"
+      ],
+      "dynamic": 0
+    }
+  ]
+}

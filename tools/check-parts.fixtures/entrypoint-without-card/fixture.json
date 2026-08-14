@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "documentation",
+  "$reason": "The entrypoint exposes parts and has not one card about them. The inventory exists so that somebody reads it.",
+  "drop": ["docs/components/widget.md", "docs/components/marker.md"]
+}

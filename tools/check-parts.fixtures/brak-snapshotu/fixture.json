@@ -1,6 +1,0 @@
-{
-  "punkt": 5,
-  "kontrola": "snapshot",
-  "$powod": "Bez snapshotu bramka pilnuje spójności trzech odczytów, ale nie mierzy ZMIANY: przemianowanie części razem z kartą w docs przechodzi wtedy bez śladu.",
-  "usun": ["libs/components/parts.snapshot.md"]
-}

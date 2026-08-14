@@ -1,0 +1,5 @@
+{
+  "point": 2,
+  "check": "set",
+  "$reason": "A part only the reading from the package sees — this is what a part introduced by a syntax the source scanner is blind to looks like (spreading somebody else's `host` object, a template outside `templateUrl`). It would enter the inventory with no line in the diff."
+}

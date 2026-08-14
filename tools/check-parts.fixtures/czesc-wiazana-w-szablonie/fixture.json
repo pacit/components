@@ -1,5 +1,0 @@
-{
-  "punkt": 3,
-  "kontrola": "statycznosc",
-  "$powod": "`[attr.data-pct-part]` w szablonie. Nazwa powstaje w runtime, więc nie da się jej ani spisać, ani zamrozić — a snapshot byłby zielony dokładnie dlatego, że nie ma czego zobaczyć."
-}

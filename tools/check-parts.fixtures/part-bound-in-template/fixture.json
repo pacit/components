@@ -1,0 +1,5 @@
+{
+  "point": 3,
+  "check": "staticness",
+  "$reason": "`[attr.data-pct-part]` in a template. The name is produced at runtime, so it can neither be written down nor frozen — and the snapshot would be green for exactly the reason that there is nothing to see."
+}

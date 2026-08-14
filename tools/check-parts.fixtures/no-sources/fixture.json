@@ -1,0 +1,9 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "$reason": "The list of source files returns nothing — exactly what a pathspec with a bare asterisk gave in the first version of `check-styles` (lesson-48). The comparison against the counter would pass, because zero equals zero.",
+  "drop": [
+    "libs/components/widget/src/widget.ts.txt",
+    "libs/components/widget/src/marker.ts.txt"
+  ]
+}

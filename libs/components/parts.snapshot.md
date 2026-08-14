@@ -12,7 +12,7 @@ This file is the list a change is measured against. A drift does not mean „an 
 it means „a change of public API that is to be visible in review".
 
 Columns: entrypoint · the class exposing the part · the part name. The list comes
-z **zbudowanego pakietu** (`ɵcmp.consts` i `ɵdir.hostAttrs` po zlinkowaniu), czyli
+from the **built package** (`ɵcmp.consts` and `ɵdir.hostAttrs` after linking), that is
 from what the browser really gets.
 
 ```

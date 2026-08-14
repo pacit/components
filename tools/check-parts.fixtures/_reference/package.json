@@ -1,0 +1,26 @@
+{
+  "$comment": "The reading from the BUILT package given as data — see the comment beside `buildFixture` in tools/check-parts.mjs. Building an Angular package for every case would cost minutes per run, and the gate runs on every commit.",
+  "entrypoints": [
+    ".",
+    "./widget"
+  ],
+  "classes": [
+    {
+      "entrypoint": "./widget",
+      "className": "PctWidget",
+      "parts": [
+        "label",
+        "value"
+      ],
+      "dynamic": 0
+    },
+    {
+      "entrypoint": "./widget",
+      "className": "PctMarker",
+      "parts": [
+        "widget-marker"
+      ],
+      "dynamic": 0
+    }
+  ]
+}

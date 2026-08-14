@@ -1,0 +1,5 @@
+{
+  "point": 4,
+  "check": "documentation",
+  "$reason": "The section names a part the package does not expose — the consumer writes a selector that hits nothing and will learn it from no error."
+}

@@ -1,0 +1,5 @@
+{
+  "point": 5,
+  "check": "snapshot",
+  "$reason": "A snapshot with a missing row — this is what a part added to the library without rewriting the inventory looks like. A drift does not mean „an error\", it means „a change of public API that is to be visible in review\"."
+}

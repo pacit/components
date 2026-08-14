@@ -1,0 +1,5 @@
+{
+  "point": 2,
+  "check": "set",
+  "$reason": "A class with a part in the sources that is not in the package — no export from its entrypoint's `index.ts`. The same defect `check-zoneless` catches with its denominator point: a component that dropped out of the package still looks checked."
+}

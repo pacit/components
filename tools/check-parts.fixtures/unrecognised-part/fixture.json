@@ -1,0 +1,5 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "$reason": "The attribute's name appears in the template in a form the scanner recognises neither as a literal nor as a binding. An independent counter turns a silent omission into a message."
+}

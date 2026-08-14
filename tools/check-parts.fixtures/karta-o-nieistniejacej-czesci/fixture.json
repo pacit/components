@@ -1,5 +1,0 @@
-{
-  "punkt": 4,
-  "kontrola": "dokumentacja",
-  "$powod": "Rubryka wymienia część, której pakiet nie wystawia — konsument pisze selektor trafiający w nic i nie dowie się o tym z żadnego błędu."
-}

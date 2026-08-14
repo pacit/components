@@ -1,5 +1,0 @@
-{
-  "punkt": 4,
-  "kontrola": "dokumentacja",
-  "$powod": "Karta bez nagłówka **Entrypoint:**. To on przypisuje rubrykę do entrypointu, więc karta bez niego wypada z porównania — czyli z inwentarza — nie przestając wyglądać na wypełnioną."
-}

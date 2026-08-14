@@ -1,5 +1,0 @@
-{
-  "punkt": 1,
-  "kontrola": "mianownik",
-  "$powod": "Szablon, do którego nie wskazuje żaden `templateUrl`. Jego części są dla skanera niewidzialne, a do przeglądarki jadą tak samo jak każde inne."
-}

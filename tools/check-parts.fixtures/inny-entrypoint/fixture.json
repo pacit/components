@@ -1,5 +1,0 @@
-{
-  "punkt": 2,
-  "kontrola": "zbior",
-  "$powod": "Klasa leży w katalogu jednego entrypointu, a pakiet eksportuje ją z innego. Inwentarz mówiłby konsumentowi, skąd importować, i mówiłby nieprawdę."
-}

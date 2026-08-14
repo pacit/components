@@ -1,0 +1,5 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "$reason": "A decorator indented by two spaces. The parser anchors at column zero, the counter does NOT — without that independence both sides of the comparison would go dark at once and the component would drop out of the inventory quietly (lesson-48)."
+}
