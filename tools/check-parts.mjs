@@ -48,12 +48,12 @@ const WRITE_FIXTURE = (() => {
 
 const ATTRIBUTE = 'data-pct-part';
 
-const list = (wpisy) => wpisy.map((w) => `      ${w}`).join('\n');
+const list = (entries) => entries.map((w) => `      ${w}`).join('\n');
 
-const skroc = (wpisy, countOf = 8) =>
-  wpisy.length <= countOf
-    ? wpisy
-    : [...wpisy.slice(0, countOf), `… i ${wpisy.length - countOf} dalszych`];
+const shorten = (entries, countOf = 8) =>
+  entries.length <= countOf
+    ? entries
+    : [...entries.slice(0, countOf), `… and ${entries.length - countOf} more`];
 
 const sorted = (set) => [...set].sort();
 
@@ -82,7 +82,7 @@ const TEMPLATE_URL = /templateUrl\s*:\s*(['"])([^'"]*)\1/;
 /** `template:` in a decorator — the literal value, to tell an empty one from the rest. */
 const TEMPLATE_INLINE = /^\s{2}template\s*:\s*([\s\S]*?),?\s*$/m;
 
-/** `'data-pct-part': 'name'` w bloku `host`. */
+/** `'data-pct-part': 'name'` in the `host` block. */
 const HOST_STATIC = new RegExp(
   `(['"])${ATTRIBUTE}\\1\\s*:\\s*(['"])([^'"]*)\\2`,
   'g',
@@ -100,7 +100,7 @@ const TEMPLATE_DYNAMIC = new RegExp(`\\[attr\\.${ATTRIBUTE}\\]\\s*=`, 'g');
 /** An independent counter: EVERY occurrence of the attribute name in a template. */
 const TEMPLATE_COUNTER = new RegExp(ATTRIBUTE, 'g');
 
-const countOf = (tekst, wzorzec) => (tekst.match(wzorzec) ?? []).length;
+const countOf = (text, pattern) => (text.match(pattern) ?? []).length;
 
 /**
  * The entrypoint from the directory layout: `libs/components/select/src/select.ts` →
@@ -108,7 +108,7 @@ const countOf = (tekst, wzorzec) => (tekst.match(wzorzec) ?? []).length;
  * the packed manifest's `exports` map, so point 2 compares membership without translating
  * one convention into another.
  */
-const entrypointZeSciezki = (file) => {
+const entrypointFromPath = (file) => {
   const segment = file.slice(`${PROJECT}/`.length).split('/')[0];
   return segment === 'src' ? '.' : `./${segment}`;
 };
@@ -125,7 +125,7 @@ const entrypointZeSciezki = (file) => {
  * that is, it fires point 2 with the part's name in the message. Exactly the work the
  * second read is there to do.
  */
-const czytajZrodla = (root, files) => {
+const readSources = (root, files) => {
   const classes = [];
   let declarations = 0;
 
@@ -133,14 +133,14 @@ const czytajZrodla = (root, files) => {
     const content = readFileSync(join(root, file), 'utf8');
     declarations += countOf(content, DECORATOR_COUNTER);
 
-    for (const [, rodzaj, cialo, className] of content.matchAll(DECORATOR)) {
-      const url = TEMPLATE_URL.exec(cialo);
-      const inline = TEMPLATE_INLINE.exec(cialo);
+    for (const [, kind, body, className] of content.matchAll(DECORATOR)) {
+      const url = TEMPLATE_URL.exec(body);
+      const inline = TEMPLATE_INLINE.exec(body);
       classes.push({
         file,
         className,
-        rodzaj,
-        entrypoint: entrypointZeSciezki(file),
+        kind,
+        entrypoint: entrypointFromPath(file),
         template: url
           ? relative(root, resolve(join(root, dirname(file)), url[2]))
               .split('\\')
@@ -150,8 +150,8 @@ const czytajZrodla = (root, files) => {
         // part, so it is no hole in the denominator. Any other notation written into the
         // decorator is one.
         inline: inline !== null && !/^(''|"")$/.test(inline[1].trim()),
-        parts: new Set([...cialo.matchAll(HOST_STATIC)].map((m) => m[3])),
-        dynamic: countOf(cialo, HOST_DYNAMIC),
+        parts: new Set([...body.matchAll(HOST_STATIC)].map((m) => m[3])),
+        dynamic: countOf(body, HOST_DYNAMIC),
       });
     }
   }
@@ -168,11 +168,11 @@ const czytajZrodla = (root, files) => {
  * name into the body of the template function. Without that distinction the scanner would
  * enter a part named `{{name()}}` into the inventory, and point 3 would never see it.
  */
-const czytajSzablon = (content) => {
-  const trafienia = [...content.matchAll(TEMPLATE_STATIC)].map((m) => m[2]);
-  const interpolated = trafienia.filter((w) => w.includes('{{'));
+const readTemplate = (content) => {
+  const hits = [...content.matchAll(TEMPLATE_STATIC)].map((m) => m[2]);
+  const interpolated = hits.filter((w) => w.includes('{{'));
   return {
-    parts: trafienia.filter((w) => !w.includes('{{')),
+    parts: hits.filter((w) => !w.includes('{{')),
     dynamic: countOf(content, TEMPLATE_DYNAMIC) + interpolated.length,
     occurrences: countOf(content, TEMPLATE_COUNTER),
   };
@@ -243,47 +243,47 @@ const checkParts = (input) => {
         `than as what they are. Move the template out to \`templateUrl\`.`,
     );
 
-  const uzywane = new Map(); // template -> [classes]
+  const used = new Map(); // template -> [classes]
   for (const k of classes)
     if (k.template)
-      uzywane.set(k.template, [...(uzywane.get(k.template) ?? []), k]);
+      used.set(k.template, [...(used.get(k.template) ?? []), k]);
 
-  const znane = new Set(templates.map((s) => s.file));
-  const brakujace = [...uzywane.keys()].filter((s) => !znane.has(s));
-  if (brakujace.length)
+  const known = new Set(templates.map((s) => s.file));
+  const missing = [...used.keys()].filter((s) => !known.has(s));
+  if (missing.length)
     throw new PartsError(
       'denominator',
-      `${brakujace.length} templates named by \`templateUrl\` are not on the gate's ` +
+      `${missing.length} templates named by \`templateUrl\` are not on the gate's ` +
         `file list:\n` +
-        list(brakujace) +
+        list(missing) +
         `\n    Their parts will not enter the inventory. Usual cause: a file outside ` +
         `the git index, or a pathspec that stopped covering it.`,
     );
 
-  const osierocone = templates.filter((s) => !uzywane.has(s.file));
-  if (osierocone.length)
+  const orphaned = templates.filter((s) => !used.has(s.file));
+  if (orphaned.length)
     throw new PartsError(
       'denominator',
-      `${osierocone.length} templates belong to no decorator:\n` +
-        list(osierocone.map((s) => s.file)) +
+      `${orphaned.length} templates belong to no decorator:\n` +
+        list(orphaned.map((s) => s.file)) +
         `\n    The scanner assigns parts to a class through \`templateUrl\`; a template ` +
         `nobody points at is invisible to the inventory — and travels to the browser like ` +
         `every other one.`,
     );
 
-  const skany = new Map(
-    templates.map((s) => [s.file, czytajSzablon(s.content)]),
+  const scans = new Map(
+    templates.map((s) => [s.file, readTemplate(s.content)]),
   );
-  const nierozpoznane = templates
-    .map((s) => ({ file: s.file, ...skany.get(s.file) }))
+  const unrecognised = templates
+    .map((s) => ({ file: s.file, ...scans.get(s.file) }))
     .filter((s) => s.parts.length + s.dynamic !== s.occurrences);
-  if (nierozpoznane.length)
+  if (unrecognised.length)
     throw new PartsError(
       'denominator',
-      `${nierozpoznane.length} templates hold \`${ATTRIBUTE}\` occurrences the scanner did ` +
+      `${unrecognised.length} templates hold \`${ATTRIBUTE}\` occurrences the scanner did ` +
         `not recognise:\n` +
         list(
-          nierozpoznane.map(
+          unrecognised.map(
             (s) =>
               `${s.file}: recognised ${s.parts.length} static + ` +
               `${s.dynamic} bound, and the attribute name appears ${s.occurrences} times`,
@@ -297,14 +297,14 @@ const checkParts = (input) => {
   // Parts from the sources: the `host` block plus the template named by `templateUrl`.
   const fromSources = new Map(); // className -> { entrypoint, file, parts, dynamic }
   for (const k of classes) {
-    const zeSzablonu = k.template ? skany.get(k.template) : null;
-    const parts = new Set([...k.parts, ...(zeSzablonu?.parts ?? [])]);
-    if (!parts.size && !k.dynamic && !zeSzablonu?.dynamic) continue;
+    const fromTemplate = k.template ? scans.get(k.template) : null;
+    const parts = new Set([...k.parts, ...(fromTemplate?.parts ?? [])]);
+    if (!parts.size && !k.dynamic && !fromTemplate?.dynamic) continue;
     fromSources.set(k.className, {
       entrypoint: k.entrypoint,
       file: k.file,
       parts,
-      dynamic: k.dynamic + (zeSzablonu?.dynamic ?? 0),
+      dynamic: k.dynamic + (fromTemplate?.dynamic ?? 0),
     });
   }
 
@@ -339,7 +339,7 @@ const checkParts = (input) => {
         `build\`), or a file list that stopped returning anything.`,
     );
 
-  const rozjazdy = [];
+  const divergences = [];
   for (const className of new Set([
     ...fromSources.keys(),
     ...fromPackage.keys(),
@@ -347,39 +347,39 @@ const checkParts = (input) => {
     const a = fromSources.get(className);
     const b = fromPackage.get(className);
     if (!b) {
-      rozjazdy.push(
+      divergences.push(
         `${className} (${a.file}): parts in the sources, and no such class in the package — ` +
           `${sorted(a.parts).join(', ')}`,
       );
       continue;
     }
     if (!a) {
-      rozjazdy.push(
+      divergences.push(
         `${className} (${b.entrypoint}): parts in the package, and the source scanner does not see the class — ` +
           `${sorted(b.parts).join(', ')}`,
       );
       continue;
     }
     if (a.entrypoint !== b.entrypoint)
-      rozjazdy.push(
+      divergences.push(
         `${className}: sits in \`${a.entrypoint}\`, and the package exports it from \`${b.entrypoint}\``,
       );
     const missingInPackage = sorted(a.parts).filter((c) => !b.parts.has(c));
     const missingInSources = sorted(b.parts).filter((c) => !a.parts.has(c));
     if (missingInPackage.length)
-      rozjazdy.push(
+      divergences.push(
         `${className}: in the sources and not in the package — ${missingInPackage.join(', ')}`,
       );
     if (missingInSources.length)
-      rozjazdy.push(
+      divergences.push(
         `${className}: in the package and not in the sources — ${missingInSources.join(', ')}`,
       );
   }
-  if (rozjazdy.length)
+  if (divergences.length)
     throw new PartsError(
       'set',
-      `the two reads of the inventory disagree (${rozjazdy.length}):\n` +
-        list(skroc(rozjazdy, 12)) +
+      `the two reads of the inventory disagree (${divergences.length}):\n` +
+        list(shorten(divergences, 12)) +
         `\n    The first kind is a part that never reached the consumer (a component ` +
         `with no export, or a stale \`dist\`); the second is a part the source scanner ` +
         `cannot see, which would enter the package with no line in the diff.`,
@@ -401,7 +401,7 @@ const checkParts = (input) => {
       .filter(([, w]) => w.dynamic)
       .map(
         ([className, w]) =>
-          `${className} (${w.entrypoint}): ${w.dynamic} w pakiecie`,
+          `${className} (${w.entrypoint}): ${w.dynamic} in the package`,
       ),
   ];
   if (bound.length)
@@ -445,8 +445,8 @@ const checkParts = (input) => {
 
   const documentationProblems = [];
   for (const [entrypoint, parts] of [...byEntrypoint].sort()) {
-    const karty = documents.filter((d) => d.entrypoint === entrypoint);
-    if (!karty.length) {
+    const cards = documents.filter((d) => d.entrypoint === entrypoint);
+    if (!cards.length) {
       documentationProblems.push(
         `\`${entrypoint}\` exposes ${parts.size} parts and has no card at all ` +
           `w \`${DOCUMENTS}/\``,
@@ -454,41 +454,41 @@ const checkParts = (input) => {
       continue;
     }
 
-    const skad = new Map(); // part -> [cards]
-    for (const card of karty)
+    const whereFrom = new Map(); // part -> [cards]
+    for (const card of cards)
       for (const c of card.parts)
-        skad.set(c, [...(skad.get(c) ?? []), card.file]);
+        whereFrom.set(c, [...(whereFrom.get(c) ?? []), card.file]);
 
-    const dwaRazy = [...skad]
-      .filter(([, gdzie]) => gdzie.length > 1)
-      .map(([c, gdzie]) => `\`${c}\` w ${gdzie.join(' i ')}`);
-    if (dwaRazy.length)
+    const twice = [...whereFrom]
+      .filter(([, where]) => where.length > 1)
+      .map(([c, where]) => `\`${c}\` in ${where.join(' and ')}`);
+    if (twice.length)
       documentationProblems.push(
-        `\`${entrypoint}\`: the same part in two cards — ${dwaRazy.join('; ')}`,
+        `\`${entrypoint}\`: the same part in two cards — ${twice.join('; ')}`,
       );
 
-    const brakujeWKartach = sorted(parts).filter((c) => !skad.has(c));
-    const nadmiarowe = [...skad.keys()].filter((c) => !parts.has(c)).sort();
-    if (brakujeWKartach.length)
+    const missingFromCards = sorted(parts).filter((c) => !whereFrom.has(c));
+    const surplus = [...whereFrom.keys()].filter((c) => !parts.has(c)).sort();
+    if (missingFromCards.length)
       documentationProblems.push(
         `\`${entrypoint}\`: the package exposes what the cards do not list — ` +
-          brakujeWKartach.map((c) => `\`${c}\``).join(', '),
+          missingFromCards.map((c) => `\`${c}\``).join(', '),
       );
-    if (nadmiarowe.length)
+    if (surplus.length)
       documentationProblems.push(
         `\`${entrypoint}\`: the cards list what the package does not expose — ` +
-          nadmiarowe.map((c) => `\`${c}\``).join(', '),
+          surplus.map((c) => `\`${c}\``).join(', '),
       );
   }
   if (documentationProblems.length)
     throw new PartsError(
       'documentation',
       `the **Parts** rows have drifted from the package (${documentationProblems.length}):\n` +
-        list(skroc(documentationProblems, 12)) +
+        list(shorten(documentationProblems, 12)) +
         `\n    A card listing a part that does not exist sends the consumer to a selector ` +
         `matching nothing; a card silent about an existing one undoes the „recorded" ` +
         `promise entirely. ` +
-        `Zapis rubryki: \`| **Parts** | \\\`name\\\`, \\\`name\\\` |\`.`,
+        `The section is written: \`| **Parts** | \\\`name\\\`, \\\`name\\\` |\`.`,
     );
 
   // 5. SNAPSHOT — the versioned inventory a change is measured against. It stands LAST,
@@ -500,37 +500,37 @@ const checkParts = (input) => {
       sorted(w.parts).map((c) => [w.entrypoint, className, c]),
     )
     .sort((a, b) => (a.join(' ') < b.join(' ') ? -1 : 1));
-  const content = renderujSnapshot(rows);
-  const rozjazd = (description) =>
+  const content = renderSnapshot(rows);
+  const divergence = (description) =>
     Object.assign(new PartsError('snapshot', description), {
       snapshot: content,
     });
 
   if (input.snapshot === null)
-    throw rozjazd(
+    throw divergence(
       `no \`${SNAPSHOT}\` — run \`node tools/check-parts.mjs --write\`.\n` +
         `    Without a snapshot this gate watches that three reads agree, but does not ` +
         `measure CHANGE: renaming a part together with its card in docs then passes ` +
         `without a trace, and breaks a selector at the consumer's.`,
     );
   if (input.snapshot !== content) {
-    const stare = wierszeSnapshotu(input.snapshot);
-    const nowe = wierszeSnapshotu(content);
-    const removed = [...stare].filter((w) => !nowe.has(w));
-    const dodane = [...nowe].filter((w) => !stare.has(w));
-    throw rozjazd(
+    const old = snapshotRows(input.snapshot);
+    const fresh = snapshotRows(content);
+    const removed = [...old].filter((w) => !fresh.has(w));
+    const added = [...fresh].filter((w) => !old.has(w));
+    throw divergence(
       `the inventory snapshot has drifted from the current one:\n` +
         (removed.length
           ? `    gone from the API (${removed.length}):\n` +
-            list(skroc(removed)) +
+            list(shorten(removed)) +
             '\n'
           : '') +
-        (dodane.length
-          ? `    added to the API (${dodane.length}):\n` +
-            list(skroc(dodane)) +
+        (added.length
+          ? `    added to the API (${added.length}):\n` +
+            list(shorten(added)) +
             '\n'
           : '') +
-        (!removed.length && !dodane.length
+        (!removed.length && !added.length
           ? `    the list of parts is the same — the heading or the row order drifted.\n`
           : '') +
         `    \`${ATTRIBUTE}\` is the public styling API (decision 0013): a part that has ` +
@@ -555,7 +555,7 @@ const checkParts = (input) => {
  * reason: a markdown table run through prettier pads its columns to the longest cell, so
  * one long name rewrites the WHOLE file and the diff stops showing what really changed.
  */
-const renderujSnapshot = (rows) =>
+const renderSnapshot = (rows) =>
   [
     '# Part inventory snapshot',
     '',
@@ -591,7 +591,7 @@ const renderujSnapshot = (rows) =>
  * point it was meant to examine. The same defect as in A4 and A7, found by the same
  * control.
  */
-const wierszeSnapshotu = (content) =>
+const snapshotRows = (content) =>
   new Set(
     (content ?? '').split('\n').filter((w) => /^\.(\/[a-z0-9-]+)?\s/.test(w)),
   );
@@ -609,15 +609,15 @@ const ENTRYPOINT_HEADING =
   /^\*\*Entrypoint:\*\*\s*`@pacit\/components(\/[a-z-]+)?`/m;
 const PARTS_SECTION = /^\|\s*\*\*Parts\*\*.*$/m;
 
-const czytajKarte = (file, content) => {
-  const naglowek = ENTRYPOINT_HEADING.exec(content);
-  const rubryka = PARTS_SECTION.exec(content);
+const readCard = (file, content) => {
+  const heading = ENTRYPOINT_HEADING.exec(content);
+  const section = PARTS_SECTION.exec(content);
   return {
     file,
-    entrypoint: naglowek ? `.${naglowek[1] ?? ''}` : null,
+    entrypoint: heading ? `.${heading[1] ?? ''}` : null,
     parts: new Set(
-      rubryka
-        ? [...rubryka[0].matchAll(/`([^`]+)`/g)]
+      section
+        ? [...section[0].matchAll(/`([^`]+)`/g)]
             .map((m) => m[1])
             .filter((n) => /^[a-z][a-z0-9-]*$/.test(n))
         : [],
@@ -639,7 +639,7 @@ const czytajKarte = (file, content) => {
  * Hence the second read over the function's text: without it point 3 would have a blind
  * side in the package.
  */
-const parujAtrybuty = (attrs) => {
+const pairAttributes = (attrs) => {
   const out = [];
   for (let i = 0; i < attrs.length; i++) {
     if (typeof attrs[i] === 'number') break;
@@ -649,7 +649,7 @@ const parujAtrybuty = (attrs) => {
   return out;
 };
 
-const komponentyPakietu = async (root) => {
+const packageComponents = async (root) => {
   const dist = join(root, DIST);
   if (!existsSync(join(dist, 'package.json')))
     throw new PartsError(
@@ -679,8 +679,8 @@ const komponentyPakietu = async (root) => {
       const consts =
         typeof def.consts === 'function' ? def.consts() : (def.consts ?? []);
       const parts = [
-        ...consts.filter(Array.isArray).flatMap(parujAtrybuty),
-        ...parujAtrybuty(def.hostAttrs ?? []),
+        ...consts.filter(Array.isArray).flatMap(pairAttributes),
+        ...pairAttributes(def.hostAttrs ?? []),
       ];
       const functions = [def.template, def.hostBindings]
         .filter((f) => typeof f === 'function')
@@ -705,28 +705,28 @@ const komponentyPakietu = async (root) => {
  * components with the template written into the decorator, and those travel nowhere —
  * point 1 would fire on every rendering test.
  */
-const jestZrodlem = (p) =>
+const isSource = (p) =>
   p.startsWith(`${PROJECT}/`) && p.endsWith('.ts') && !p.endsWith('.spec.ts');
-const jestSzablonem = (p) => p.startsWith(`${PROJECT}/`) && p.endsWith('.html');
-const jestKarta = (p) =>
+const isTemplate = (p) => p.startsWith(`${PROJECT}/`) && p.endsWith('.html');
+const isCard = (p) =>
   p.startsWith(`${DOCUMENTS}/`) &&
   p.endsWith('.md') &&
   !['_template.md', 'README.md'].includes(basename(p));
 
 /** An input built from a file list — the same shape for the repo and for a fixture. */
-const zbierzWejscie = async (root, files, packageFromDisk) => {
+const collectInput = async (root, files, packageFromDisk) => {
   const { pkg, entrypoints } =
-    packageFromDisk ?? (await komponentyPakietu(root));
+    packageFromDisk ?? (await packageComponents(root));
   return {
-    ...czytajZrodla(root, files.filter(jestZrodlem)),
+    ...readSources(root, files.filter(isSource)),
     templates: files
-      .filter(jestSzablonem)
+      .filter(isTemplate)
       .map((file) => ({ file, content: read(root, file) })),
     pkg,
     entrypoints,
     documents: files
-      .filter(jestKarta)
-      .map((file) => czytajKarte(file, read(root, file))),
+      .filter(isCard)
+      .map((file) => readCard(file, read(root, file))),
     snapshot: existsSync(join(root, SNAPSHOT)) ? read(root, SNAPSHOT) : null,
   };
 };
@@ -786,7 +786,7 @@ const buildFixture = (name, fx) => {
 
 const fixtureInput = (directory) => {
   const pkg = JSON.parse(readFileSync(join(directory, 'package.json'), 'utf8'));
-  return zbierzWejscie(
+  return collectInput(
     directory,
     globSync('**/*.{ts,html,md}', { cwd: directory })
       .map((p) => p.split('\\').join('/'))
@@ -821,7 +821,7 @@ if (WRITE_FIXTURE) {
 }
 
 try {
-  const result = checkParts(await zbierzWejscie(ROOT, repoFiles(), null));
+  const result = checkParts(await collectInput(ROOT, repoFiles(), null));
   description = result.description;
 } catch (error) {
   if (!(error instanceof PartsError)) throw error;

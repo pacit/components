@@ -87,20 +87,20 @@ const FIZYCZNE = new Map([
   // rules are, this one pins the direction down.
   [
     'direction',
-    'kierunek dziedziczony z dokumentu — nie ustawiaj go w komponencie',
+    'the direction is inherited from the document — do not pin it in a component',
   ],
 ]);
 
 /** Properties where it is the VALUE that is physical, not the name. */
 const FIZYCZNA_WARTOSC = new Map([
-  ['text-align', { zle: new Set(['left', 'right']), zamiast: 'start / end' }],
+  ['text-align', { wrong: new Set(['left', 'right']), instead: 'start / end' }],
   [
     'float',
-    { zle: new Set(['left', 'right']), zamiast: 'inline-start / inline-end' },
+    { wrong: new Set(['left', 'right']), instead: 'inline-start / inline-end' },
   ],
   [
     'clear',
-    { zle: new Set(['left', 'right']), zamiast: 'inline-start / inline-end' },
+    { wrong: new Set(['left', 'right']), instead: 'inline-start / inline-end' },
   ],
 ]);
 
@@ -133,97 +133,97 @@ const OPACITY = new Set([
  * Brackets are counted separately, so that a `;` inside `url(data:…;base64,…)` does not
  * cut a declaration in half.
  */
-const skanuj = (content) => {
+const scan = (content) => {
   const declarations = [];
-  const komentarze = [];
-  let bufor = '';
-  let liniaBufora = 0;
-  let linia = 1;
-  let nawiasy = 0;
+  const comments = [];
+  let buffer = '';
+  let bufferLine = 0;
+  let line = 1;
+  let parens = 0;
   let i = 0;
 
-  const dodaj = (znak) => {
-    if (bufor.trim() === '' && znak.trim() !== '') liniaBufora = linia;
-    bufor += znak;
+  const push = (char) => {
+    if (buffer.trim() === '' && char.trim() !== '') bufferLine = line;
+    buffer += char;
   };
 
   /** Closes the buffer: if it looks like a declaration, it lands on the list. */
-  const domknij = () => {
-    const m = /^\s*(-{0,2}[A-Za-z_][-\w]*)\s*:\s*([\s\S]*)$/.exec(bufor);
+  const close = () => {
+    const m = /^\s*(-{0,2}[A-Za-z_][-\w]*)\s*:\s*([\s\S]*)$/.exec(buffer);
     if (m)
       declarations.push({
         property: m[1].toLowerCase(),
         value: m[2].trim().replace(/\s+/g, ' '),
-        linia: liniaBufora,
+        line: bufferLine,
       });
-    bufor = '';
+    buffer = '';
   };
 
   while (i < content.length) {
-    const znak = content[i];
-    const nastepny = content[i + 1];
+    const char = content[i];
+    const next = content[i + 1];
 
-    if (znak === '/' && nastepny === '*') {
-      const start = linia;
-      const koniec = content.indexOf('*/', i + 2);
-      const kres = koniec === -1 ? content.length : koniec;
-      const tekst = content.slice(i + 2, kres);
-      linia += (tekst.match(/\n/g) ?? []).length;
-      komentarze.push({ tekst, linia: start, koniec: linia });
-      i = kres + 2;
+    if (char === '/' && next === '*') {
+      const start = line;
+      const end = content.indexOf('*/', i + 2);
+      const limit = end === -1 ? content.length : end;
+      const text = content.slice(i + 2, limit);
+      line += (text.match(/\n/g) ?? []).length;
+      comments.push({ text, line: start, end: line });
+      i = limit + 2;
       continue;
     }
 
     // An SCSS line comment. It carries no exceptions (sass does not emit it, so point 2
     // would have nothing to compare), but it has to leave the stream.
-    if (znak === '/' && nastepny === '/') {
-      const koniec = content.indexOf('\n', i);
-      i = koniec === -1 ? content.length : koniec;
+    if (char === '/' && next === '/') {
+      const end = content.indexOf('\n', i);
+      i = end === -1 ? content.length : end;
       continue;
     }
 
-    if (znak === '"' || znak === "'") {
+    if (char === '"' || char === "'") {
       let j = i + 1;
-      while (j < content.length && content[j] !== znak) {
+      while (j < content.length && content[j] !== char) {
         if (content[j] === '\\') j++;
-        if (content[j] === '\n') linia++;
+        if (content[j] === '\n') line++;
         j++;
       }
-      dodaj(content.slice(i, j + 1));
+      push(content.slice(i, j + 1));
       i = j + 1;
       continue;
     }
 
-    if (znak === '\n') {
-      linia++;
-      dodaj(' ');
+    if (char === '\n') {
+      line++;
+      push(' ');
       i++;
       continue;
     }
 
-    if (znak === '(') nawiasy++;
-    if (znak === ')') nawiasy = Math.max(0, nawiasy - 1);
+    if (char === '(') parens++;
+    if (char === ')') parens = Math.max(0, parens - 1);
 
-    if (nawiasy === 0) {
+    if (parens === 0) {
       // A rule prelude (a selector, an at-rule prelude) is not a declaration.
-      if (znak === '{') {
-        bufor = '';
+      if (char === '{') {
+        buffer = '';
         i++;
         continue;
       }
       // `}` also closes a declaration with no semicolon at the end of a block.
-      if (znak === '}' || znak === ';') {
-        domknij();
+      if (char === '}' || char === ';') {
+        close();
         i++;
         continue;
       }
     }
 
-    dodaj(znak);
+    push(char);
     i++;
   }
 
-  return { declarations, komentarze };
+  return { declarations, comments };
 };
 
 /**
@@ -231,13 +231,13 @@ const skanuj = (content) => {
  * computed for the source and for sass's output, so point 2 compares those two views
  * without looking at the rest of the sheet.
  */
-const kluczIstotny = (d) => {
+const significantKey = (d) => {
   const value = d.value.toLowerCase();
   if (FIZYCZNE.has(d.property)) return `${d.property}:${value}`;
   const valueBased = FIZYCZNA_WARTOSC.get(d.property);
-  if (valueBased?.zle.has(value.split(/\s+/)[0]))
+  if (valueBased?.wrong.has(value.split(/\s+/)[0]))
     return `${d.property}:${value}`;
-  if (OPACITY.has(d.property) && !przezroczystoscBinarna(value))
+  if (OPACITY.has(d.property) && !binaryOpacity(value))
     return `${d.property}:${value}`;
   // `inset` is physical only with several values: `inset: 0` is symmetric and behaves
   // identically in RTL, and a ban covering it too would produce contentless exceptions.
@@ -260,7 +260,7 @@ const kluczIstotny = (d) => {
  * is not what `req-token-contrast` speaks about, and a ban covering animations would take
  * away the one standard way of bringing an overlay in.
  */
-const przezroczystoscBinarna = (value) => {
+const binaryOpacity = (value) => {
   const m = /^(\d*\.?\d+)(%?)$/.exec(value.trim());
   if (!m) return false;
   const count = Number(m[1]) / (m[2] === '%' ? 100 : 1);
@@ -282,7 +282,7 @@ class StyleError extends Error {
   }
 }
 
-const list = (wpisy) => wpisy.map((w) => `      ${w}`).join('\n');
+const list = (entries) => entries.map((w) => `      ${w}`).join('\n');
 
 /**
  * The full set of checks over a ready input:
@@ -302,31 +302,31 @@ const checkStyles = ({ sheets, components, declarations }) => {
         `pass, having nothing to read`,
     );
 
-  const skany = new Map(sheets.map((a) => [a.file, skanuj(a.content)]));
+  const scans = new Map(sheets.map((a) => [a.file, scan(a.content)]));
 
   // 2. The compiler: sass emits nothing relevant that the scanner cannot see in the
   //    source. This is the scanner's own denominator — a declaration produced by a mixin,
   //    an interpolation or a nested property reaches the browser without standing in the
   //    source text, so the rules would pass over it without a trace.
   for (const sheet of sheets) {
-    const wZrodle = new Set(
-      skany
+    const inSources = new Set(
+      scans
         .get(sheet.file)
-        .declarations.map(kluczIstotny)
+        .declarations.map(significantKey)
         .filter((k) => k !== null),
     );
-    const ukryte = [
+    const hidden = [
       ...new Set(
-        skanuj(sheet.css)
-          .declarations.map(kluczIstotny)
-          .filter((k) => k !== null && !wZrodle.has(k)),
+        scan(sheet.css)
+          .declarations.map(significantKey)
+          .filter((k) => k !== null && !inSources.has(k)),
       ),
     ];
-    if (ukryte.length)
+    if (hidden.length)
       throw new StyleError(
         'compiler',
         `${sheet.file}: sass emits declarations absent from the source text:\n` +
-          list(ukryte) +
+          list(hidden) +
           `\n    They reach the browser, and the rules of points 5 and 6 pass over them ` +
           `without a trace. Usual cause: a mixin, an interpolation (\`padding-#{$x}\`) or ` +
           `a nested property. Write them out — or teach the scanner to read them.`,
@@ -357,24 +357,24 @@ const checkStyles = ({ sheets, components, declarations }) => {
         `and \`})\` in column zero).`,
     );
 
-  const znane = new Set(sheets.map((a) => a.file));
-  const bezArkusza = components.flatMap((k) => {
+  const known = new Set(sheets.map((a) => a.file));
+  const withoutStylesheet = components.flatMap((k) => {
     if (k.inline)
       return [
         `${k.file}: ${k.className} has \`styles: […]\` in its decorator — this gate reads sheets, not decorators`,
       ];
     return k.sheets
-      .filter((a) => !znane.has(a))
+      .filter((a) => !known.has(a))
       .map(
         (a) =>
           `${k.file}: ${k.className} takes its styles from \`${a}\`, outside the sheet list`,
       );
   });
-  if (bezArkusza.length)
+  if (withoutStylesheet.length)
     throw new StyleError(
       'style-source',
-      `${bezArkusza.length} components take their styles from beyond this gate's reach:\n` +
-        list(bezArkusza) +
+      `${withoutStylesheet.length} components take their styles from beyond this gate's reach:\n` +
+        list(withoutStylesheet) +
         `\n    Those styles travel to the consumer like every other, and points 5 and 6 ` +
         `pronounce them „clean" only because they cannot see them.`,
     );
@@ -385,106 +385,106 @@ const checkStyles = ({ sheets, components, declarations }) => {
   //    line directly below the comment. Without that, a reason describing one rule would
   //    spread over a whole block, and moving code would leave a valid exception standing
   //    above something else entirely.
-  const usprawiedliwione = new Set();
-  const problemyWyjatkow = [];
+  const justified = new Set();
+  const exceptionProblems = [];
   for (const sheet of sheets) {
-    const { declarations, komentarze } = skany.get(sheet.file);
-    for (const komentarz of komentarze) {
-      const m = EXCEPTION.exec(komentarz.tekst);
+    const { declarations, comments } = scans.get(sheet.file);
+    for (const comment of comments) {
+      const m = EXCEPTION.exec(comment.text);
       if (!m) continue;
       const [, property, rawJustification] = m;
       const justification = rawJustification.replace(/\*+\s*$/, '').trim();
       if (justification.length < MIN_UZASADNIENIE) {
-        problemyWyjatkow.push(
-          `${sheet.file}:${komentarz.linia}: an exception for \`${property}\` with no ` +
+        exceptionProblems.push(
+          `${sheet.file}:${comment.line}: an exception for \`${property}\` with no ` +
             `justification (${justification.length} of ${MIN_UZASADNIENIE} characters) — ` +
             `a rubber stamp, not a reason`,
         );
         continue;
       }
-      const trafione = declarations.filter(
+      const matched = declarations.filter(
         (d) =>
           d.property === property.toLowerCase() &&
-          (d.linia === komentarz.linia || d.linia === komentarz.koniec + 1),
+          (d.line === comment.line || d.line === comment.end + 1),
       );
-      if (!trafione.length) {
-        problemyWyjatkow.push(
-          `${sheet.file}:${komentarz.linia}: an exception for \`${property}\` is ` +
+      if (!matched.length) {
+        exceptionProblems.push(
+          `${sheet.file}:${comment.line}: an exception for \`${property}\` is ` +
             `adjacent to no declaration of that property — either the code moved and the ` +
             `exception was left behind, or the property named is not the one below`,
         );
         continue;
       }
-      for (const d of trafione)
-        usprawiedliwione.add(`${sheet.file}:${d.linia}`);
+      for (const d of matched)
+        justified.add(`${sheet.file}:${d.line}`);
     }
   }
-  if (problemyWyjatkow.length)
+  if (exceptionProblems.length)
     throw new StyleError(
       'exception',
-      `${problemyWyjatkow.length} exceptions are not exceptions:\n` +
-        list(problemyWyjatkow) +
+      `${exceptionProblems.length} exceptions are not exceptions:\n` +
+        list(exceptionProblems) +
         `\n    Notation: /* pct-exception <property>: <why it is safe exactly here> */`,
     );
 
   // 5. Logical properties (`req-token-logical`).
-  const fizyczne = [];
+  const physical = [];
   // 6. No compositing `opacity` (`req-token-no-opacity`).
-  const przezroczyste = [];
+  const translucent = [];
 
   for (const sheet of sheets)
-    for (const d of skany.get(sheet.file).declarations) {
-      if (usprawiedliwione.has(`${sheet.file}:${d.linia}`)) continue;
-      const gdzie = `${sheet.file}:${d.linia}`;
+    for (const d of scans.get(sheet.file).declarations) {
+      if (justified.has(`${sheet.file}:${d.line}`)) continue;
+      const where = `${sheet.file}:${d.line}`;
 
       const logical = FIZYCZNE.get(d.property);
       if (logical) {
-        fizyczne.push(`${gdzie}: \`${d.property}\` — use \`${logical}\``);
+        physical.push(`${where}: \`${d.property}\` — use \`${logical}\``);
         continue;
       }
       const valueBased = FIZYCZNA_WARTOSC.get(d.property);
-      const pierwsza = d.value.toLowerCase().split(/\s+/)[0];
-      if (valueBased?.zle.has(pierwsza)) {
-        fizyczne.push(
-          `${gdzie}: \`${d.property}: ${pierwsza}\` — use \`${valueBased.zamiast}\``,
+      const first = d.value.toLowerCase().split(/\s+/)[0];
+      if (valueBased?.wrong.has(first)) {
+        physical.push(
+          `${where}: \`${d.property}: ${first}\` — use \`${valueBased.instead}\``,
         );
         continue;
       }
       if (d.property === 'inset' && d.value.split(/\s+/).length > 1) {
-        fizyczne.push(
-          `${gdzie}: \`inset: ${d.value}\` — several values set the inline axis ` +
+        physical.push(
+          `${where}: \`inset: ${d.value}\` — several values set the inline axis ` +
             `physically; use \`inset-block-*\` / \`inset-inline-*\``,
         );
         continue;
       }
-      if (OPACITY.has(d.property) && !przezroczystoscBinarna(d.value))
-        przezroczyste.push(`${gdzie}: \`${d.property}: ${d.value}\``);
+      if (OPACITY.has(d.property) && !binaryOpacity(d.value))
+        translucent.push(`${where}: \`${d.property}: ${d.value}\``);
     }
 
-  if (fizyczne.length)
+  if (physical.length)
     throw new StyleError(
       'logical',
-      `${fizyczne.length} physical properties of the inline axis (req-token-logical):\n` +
-        list(fizyczne) +
+      `${physical.length} physical properties of the inline axis (req-token-logical):\n` +
+        list(physical) +
         `\n    A physically described layout does NOT mirror under \`dir="rtl"\`, and no ` +
         `LTR screenshot shows it. If this one is safe, say why: ` +
         `/* pct-exception <property>: <reason> */`,
     );
 
-  if (przezroczyste.length)
+  if (translucent.length)
     throw new StyleError(
       'opacity',
-      `${przezroczyste.length} \`opacity\` declarations compositing with the background (req-token-no-opacity):\n` +
-        list(przezroczyste) +
+      `${translucent.length} \`opacity\` declarations compositing with the background (req-token-no-opacity):\n` +
+        list(translucent) +
         `\n    The contrast gate computes on the palette's values, so it cannot see the ` +
         `compositing — this is the way back to before lesson-6. Express the state with a ` +
         `colour token of its own. Only \`0\` and \`1\` are allowed (a visibility switch).`,
     );
 
-  const wyjatkow = usprawiedliwione.size;
+  const exceptions = justified.size;
   return (
     `${sheets.length} stylesheets, ${components.length} components, ` +
-    `${wyjatkow} justified ${wyjatkow === 1 ? 'exception' : 'exceptions'}`
+    `${exceptions} justified ${exceptions === 1 ? 'exception' : 'exceptions'}`
   );
 };
 
@@ -504,30 +504,30 @@ const checkStyles = ({ sheets, components, declarations }) => {
  * `core/src/texts.ts` has `@Component(` in a JSDoc example, that is, on a line starting
  * with an asterisk.
  */
-const KOMPONENT =
+const COMPONENT =
   /^@Component\(\{\r?\n([\s\S]*?)^\}\)\r?\n(?:export\s+)?(?:abstract\s+)?class\s+([A-Za-z_$][\w$]*)/gm;
-const KOMPONENT_LICZNIK = /^[ \t]*@Component\(/gm;
+const COMPONENT_COUNT = /^[ \t]*@Component\(/gm;
 
-const czytajKomponenty = (root, files) => {
+const readComponents = (root, files) => {
   const components = [];
   let declarations = 0;
   for (const file of files) {
     const content = readFileSync(join(root, file), 'utf8');
-    declarations += (content.match(KOMPONENT_LICZNIK) ?? []).length;
-    for (const [, cialo, className] of content.matchAll(KOMPONENT)) {
+    declarations += (content.match(COMPONENT_COUNT) ?? []).length;
+    for (const [, body, className] of content.matchAll(COMPONENT)) {
       const sheets = [
-        ...cialo.matchAll(
+        ...body.matchAll(
           /styleUrls?\s*:\s*(?:\[([^\]]*)\]|(['"])([^'"]*)\2)/g,
         ),
-      ].flatMap(([, tablica, , pojedynczy]) =>
-        pojedynczy !== undefined
-          ? [pojedynczy]
-          : [...tablica.matchAll(/['"]([^'"]*)['"]/g)].map((m) => m[1]),
+      ].flatMap(([, array, , single]) =>
+        single !== undefined
+          ? [single]
+          : [...array.matchAll(/['"]([^'"]*)['"]/g)].map((m) => m[1]),
       );
       components.push({
         file,
         className,
-        inline: /^\s*styles\s*:/m.test(cialo),
+        inline: /^\s*styles\s*:/m.test(body),
         sheets: sheets.map((a) =>
           relative(root, resolve(join(root, dirname(file)), a))
             .split('\\')
@@ -540,7 +540,7 @@ const czytajKomponenty = (root, files) => {
 };
 
 /** An input built from a file list — the same shape for the repo and for a fixture. */
-const zbierzWejscie = (root, sheetPaths, zrodlaSciezki) => ({
+const collectInput = (root, sheetPaths, sourcePaths) => ({
   sheets: sheetPaths.map((file) => ({
     file,
     content: readFileSync(join(root, file), 'utf8'),
@@ -548,7 +548,7 @@ const zbierzWejscie = (root, sheetPaths, zrodlaSciezki) => ({
     // `/* */` comments, so point 2's comparison looks at the same material on both sides.
     css: sass.compile(join(root, file), { style: 'expanded' }).css,
   })),
-  ...czytajKomponenty(root, zrodlaSciezki),
+  ...readComponents(root, sourcePaths),
 });
 
 /**
@@ -580,7 +580,7 @@ const projectFiles = () =>
  * components with a template and styles written into the decorator, and those travel
  * nowhere — point 3 would fire on every rendering test.
  */
-const jestZrodlem = (p) => p.endsWith('.ts') && !p.endsWith('.spec.ts');
+const isSource = (p) => p.endsWith('.ts') && !p.endsWith('.spec.ts');
 
 // ── negative control ──────────────────────────────────────────────────────────
 
@@ -610,16 +610,16 @@ const buildFixture = (name, fx) => {
   return cel;
 };
 
-const files = (directory, wzorzec) =>
-  globSync(wzorzec, { cwd: directory })
+const files = (directory, pattern) =>
+  globSync(pattern, { cwd: directory })
     .map((p) => p.split('\\').join('/'))
     .sort();
 
 const fixtureInput = (directory) =>
-  zbierzWejscie(
+  collectInput(
     directory,
     files(directory, '**/*.scss'),
-    files(directory, '**/*.ts').filter(jestZrodlem),
+    files(directory, '**/*.ts').filter(isSource),
   );
 
 // ── the run ───────────────────────────────────────────────────────────────────
@@ -630,10 +630,10 @@ let description = null;
 try {
   const files = projectFiles();
   description = checkStyles(
-    zbierzWejscie(
+    collectInput(
       ROOT,
       files.filter((p) => p.endsWith('.scss')),
-      files.filter(jestZrodlem),
+      files.filter(isSource),
     ),
   );
 } catch (error) {

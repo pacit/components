@@ -11,8 +11,8 @@
   width: 1em;
   height: 1em;
   border: 2px solid currentColor;
-  /* pct-exception left: centring the hit area is symmetrical, so
-     w obu kierunkach pisma wypada w tym samym miejscu. */
+  /* pct-exception left: centring the hit area is symmetrical, so it falls
+     in the same place in both writing directions. */
   border-right-color: transparent;
   border-radius: 50%;
 }
