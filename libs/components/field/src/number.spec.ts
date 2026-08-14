@@ -82,7 +82,7 @@ class NumberInFieldHost {
 
 @Component({
   imports: [PctField, PctNumber, FormField],
-  template: `<pct-field label="Liczba stanowisk">
+  template: `<pct-field label="Number of seats">
     <input pctNumber [formField]="f.seats" />
   </pct-field>`,
 })

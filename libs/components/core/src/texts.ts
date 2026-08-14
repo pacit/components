@@ -57,7 +57,7 @@ export const PCT_TEXTS = new InjectionToken<Signal<PctTexts>>('PCT_TEXTS', {
  *
  * @example
  * bootstrapApplication(App, {
- *   providers: [providePctTexts({ selectPlaceholder: 'Wybierz…' })],
+ *   providers: [providePctTexts({ selectPlaceholder: 'Sélectionner…' })],
  * });
  *
  * @example

@@ -251,7 +251,7 @@ Strings a component prints on its own (the select placeholder, the empty-list me
 
 ```ts
 bootstrapApplication(App, {
-  providers: [providePctTexts({ selectPlaceholder: 'Wybierz…', selectEmpty: 'Brak opcji' })],
+  providers: [providePctTexts({ selectPlaceholder: 'Sélectionner…', selectEmpty: 'Aucune option' })],
 });
 ```
 

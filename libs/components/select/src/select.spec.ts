@@ -761,7 +761,7 @@ describe('PctSelect', () => {
 
     it('providePctTexts swaps the texts, and the ones left out stay default', async () => {
       TestBed.configureTestingModule({
-        providers: [providePctTexts({ selectEmpty: 'Brak opcji' })],
+        providers: [providePctTexts({ selectEmpty: 'Aucune option' })],
       });
 
       const fixture = await render(Host);
@@ -775,7 +775,7 @@ describe('PctSelect', () => {
 
       expect(
         document.querySelector('[data-pct-part="empty"]')?.textContent?.trim(),
-      ).toBe('Brak opcji');
+      ).toBe('Aucune option');
       // An untranslated text does not disappear — it stays at its default.
       expect(
         fixture.nativeElement
@@ -787,13 +787,13 @@ describe('PctSelect', () => {
     // The text used to come from the input default, that is from a read at
     // CONSTRUCTION — this test failed on `Select…` (decision 0014).
     it('a language change at runtime reaches the texts with no reload', async () => {
-      const language = signal<'en' | 'pl'>('en');
+      const language = signal<'en' | 'fr'>('en');
       TestBed.configureTestingModule({
         providers: [
           providePctTexts(
             computed(() =>
-              language() === 'pl'
-                ? { selectPlaceholder: 'Wybierz…', selectEmpty: 'Brak opcji' }
+              language() === 'fr'
+                ? { selectPlaceholder: 'Sélectionner…', selectEmpty: 'Aucune option' }
                 : {},
             ),
           ),
@@ -812,11 +812,11 @@ describe('PctSelect', () => {
 
       expect(placeholder()).toBe('Select…');
 
-      language.set('pl');
+      language.set('fr');
       fixture.detectChanges();
       await fixture.whenStable();
 
-      expect(placeholder()).toBe('Wybierz…');
+      expect(placeholder()).toBe('Sélectionner…');
     });
 
     // No value and an empty value mean different things: the first hands the text

@@ -928,8 +928,8 @@ and empty lists are equal. The gate rejected the change and, while doing so, gav
 diagnosis of a problem that did not exist.
 
 What matters is not the oversight itself but that **the negative control had no way of seeing
-it — by construction.** The `snapshot-nieaktualny` case fired on its own point and was counted,
-because `fixture.json` declares a `kontrola` and the run compares identifiers. That is how the
+it — by construction.** The `stale-snapshot` case fired on its own point and was counted,
+because `fixture.json` declares a `check` and the run compares identifiers. That is how the
 negative control of **every** gate in this repository works: it checks WHICH point rejected an
 input, and says nothing about WHAT that point said. The whole message layer — the only layer
 a human reacts to — lies outside its reach.
@@ -1045,7 +1045,7 @@ will redraw the view. The **default** value comes into being once, in the constr
 swapping the texts after the app starts does not reach a component that already exists.
 
 Measured by a deliberate regression: a test switching `providePctTexts(computed(() => …))` from
-English to Polish gets `expected 'Select…' to be 'Wybierz…'` with the read at construction, and
+English to French gets `expected 'Select…' to be 'Sélectionner…'` with the read at construction, and
 passes with the read through `computed()`. With CI green the whole time, because **the only test
 of that channel rendered the component once** — and with a single render both versions give the
 same string.

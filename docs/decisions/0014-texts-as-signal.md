@@ -3,7 +3,7 @@
 **Status:** accepted
 **Implements:** [`req-api-texts`](../requirements/api.md#req-api-texts)
 **Evidence:** [`lesson-54`](../lessons.md#lesson-54) — a deliberate regression: with the read
-done at construction, switching language gives `expected 'Select…' to be 'Wybierz…'`
+done at construction, switching language gives `expected 'Select…' to be 'Sélectionner…'`
 
 ## Context
 
