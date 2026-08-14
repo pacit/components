@@ -1,6 +1,0 @@
-{
-  "punkt": 3,
-  "kontrola": "bundle",
-  "// wada": "Ślad polyfilla wniesiony do wyjścia inaczej niż przez zależność — np. przez wklejony kod albo zależność zbundlowaną w cudzym pakiecie. Punkty 1 i 2 tego nie widzą, bo pilnują wejścia.",
-  "dopiszDoBundla": "globalThis.__zone_symbol__setTimeout(odswiez, 0);"
-}

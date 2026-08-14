@@ -1,0 +1,43 @@
+{
+  "// why": "The reference input of the negative control: a minimal but CORRECT picture of a project without zone.js. Every case beside it is built on a copy of this one and brings in exactly one defect, so a case file holds the defect alone rather than one more copy of a correct input. Were this reference itself defective, every case would fire because of it — which is why the gate checks it separately.",
+  "manifests": [
+    {
+      "file": "package.json",
+      "dependencies": { "@angular/core": "22.0.6", "rxjs": "~7.8.0" },
+      "devDependencies": { "vitest": "^3.2.0" }
+    },
+    {
+      "file": "libs/components/package.json",
+      "peerDependencies": { "@angular/core": "^22.0.0" }
+    }
+  ],
+  "lockPackages": [
+    "",
+    "node_modules/@angular/core",
+    "node_modules/rxjs",
+    "node_modules/@analogjs/vitest-angular"
+  ],
+  "bundle": [
+    {
+      "file": "fesm2022/pacit-components-button.mjs",
+      "text": "import * as i0 from '@angular/core';\nclass PctButton {\n  // Heights are computed from tokens, not from pixels.\n}\nexport { PctButton };\n"
+    }
+  ],
+  "// entrypoints": "The same path as in `bundle`, but from the second source — the `exports` map. That agreement is the content of point 3: as long as the two lists overlap, the scan walks what the package really publishes. The comment is also here so that a typo in one of them does not look like a case.",
+  "entrypoints": ["fesm2022/pacit-components-button.mjs"],
+  "sources": [
+    {
+      "file": "libs/components/button/src/button.ts",
+      "className": "PctButton",
+      "explicit": []
+    }
+  ],
+  "components": [
+    {
+      "className": "PctButton",
+      "entrypoint": "./button",
+      "onPush": true,
+      "standalone": true
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "point": 6,
+  "check": "explicitness",
+  "// defect": "The decorator repeats the default values. The measurement from point 5 is then GREEN — `onPush` and `standalone` hold the right values — so without this point the spelling the Angular guide forbids (lesson-11) would have no machine behind it.",
+  "explicit": { "PctButton": ["changeDetection", "standalone"] }
+}

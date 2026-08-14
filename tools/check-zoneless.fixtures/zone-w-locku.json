@@ -1,6 +1,0 @@
-{
-  "punkt": 2,
-  "kontrola": "lock",
-  "// wada": "Pakiet zainstalowany na najwyższym poziomie drzewa, bez wpisu w żadnym manifeście — tak wygląda `npm i zone.js` cofnięte w manifeście, ale nie w locku.",
-  "dopiszDoLocka": ["node_modules/zone.js"]
-}

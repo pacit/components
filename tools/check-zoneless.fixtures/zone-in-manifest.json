@@ -1,0 +1,10 @@
+{
+  "point": 1,
+  "check": "manifests",
+  "// defect": "`zone.js` added to the root devDependencies. Nothing breaks because of it — it is an optional peer of @angular/core — so without this check it would pass without a single red test (lesson-8).",
+  "addDependency": {
+    "file": "package.json",
+    "field": "devDependencies",
+    "version": "~0.15.0"
+  }
+}

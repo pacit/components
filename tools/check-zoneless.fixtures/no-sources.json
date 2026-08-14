@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "denominator",
+  "// defect": "An empty set of components from the sources. Without this check point 5 would always pass — „every component is OnPush\" counted over an empty set is a true and worthless sentence. This is what a parser that stopped recognising anything looks like.",
+  "clearSources": true
+}

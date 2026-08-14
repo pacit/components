@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "bundle",
+  "// defect": "The directory scan returned not one file, although the `exports` map points at an entrypoint. This is what a change to the ng-packagr output layout or to the bundle extension looks like: the rest of point 3 would walk an empty set, that is nothing — the pattern from `lesson-39`.",
+  "clearBundle": true
+}

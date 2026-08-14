@@ -1,8 +1,0 @@
-{
-  "punkt": 2,
-  "kontrola": "lock",
-  "// wada": "Instalacja zagnieżdżona pod cudzym pakietem — wariant, którego kontrola patrząca wyłącznie na `node_modules/zone.js` by nie zobaczyła, a który wystarczy, żeby `import 'zone.js'` się rozwiązał.",
-  "dopiszDoLocka": [
-    "node_modules/@analogjs/vitest-angular/node_modules/zone.js"
-  ]
-}

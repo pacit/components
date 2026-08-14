@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "bundle",
+  "// defect": "A trace of the polyfill carried into the output by something other than a dependency — pasted code, say, or a dependency bundled inside someone else's package. Points 1 and 2 cannot see it, because they guard the input.",
+  "addToBundle": "globalThis.__zone_symbol__setTimeout(refresh, 0);"
+}

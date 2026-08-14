@@ -1,0 +1,10 @@
+{
+  "point": 1,
+  "check": "manifests",
+  "// defect": "`zone.js` as a peerDependency of the PUBLISHED package. A second case on the same point, deliberately: it is the only variant that would force every consumer to install zones, and would change not one run in the repository.",
+  "addDependency": {
+    "file": "libs/components/package.json",
+    "field": "peerDependencies",
+    "version": "^0.15.0"
+  }
+}

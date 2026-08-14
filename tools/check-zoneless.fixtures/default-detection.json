@@ -1,0 +1,6 @@
+{
+  "point": 5,
+  "check": "onpush",
+  "// defect": "`ɵcmp.onPush === false` — this is what both an explicit `ChangeDetectionStrategy.Default` in the decorator and a change to the Angular default look like. The gate does not tell those causes apart on purpose: both undo the same promise.",
+  "onPush": { "PctButton": false }
+}

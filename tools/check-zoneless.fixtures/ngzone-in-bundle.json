@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "bundle",
+  "// defect": "A component injecting `NgZone`. The package builds and passes its tests, because in zoneless mode NgZone is still injectable — it falls over only at a consumer who relied on it.",
+  "addToBundle": "const zone = i0.inject(NgZone);"
+}

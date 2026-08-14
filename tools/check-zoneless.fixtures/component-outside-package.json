@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "denominator",
+  "// defect": "The component is in the sources but dropped out of the built package — through a missing export from the entrypoint's `index.ts`, for instance. The measurement from point 5 would still be green, just one component lighter: the same shrinking sample `check-coverage` caught (lesson-45).",
+  "dropFromPackage": ["PctButton"]
+}

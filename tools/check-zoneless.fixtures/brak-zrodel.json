@@ -1,6 +1,0 @@
-{
-  "punkt": 4,
-  "kontrola": "mianownik",
-  "// wada": "Pusty zbiór komponentów ze źródeł. Bez tej kontroli punkt 5 przechodziłby zawsze — „każdy komponent jest OnPush\" liczone na pustym zbiorze jest zdaniem prawdziwym i bezwartościowym. Tak wygląda parser, który przestał cokolwiek rozpoznawać.",
-  "wyczyscZrodla": true
-}

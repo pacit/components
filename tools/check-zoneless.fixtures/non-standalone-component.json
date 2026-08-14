@@ -1,0 +1,6 @@
+{
+  "point": 5,
+  "check": "onpush",
+  "// defect": "`ɵcmp.standalone === false` — a component requiring an NgModule. A case of its own beside `default-detection`, because this is the second default value of the same promise and a regression in it does not show up in the first.",
+  "standalone": { "PctButton": false }
+}

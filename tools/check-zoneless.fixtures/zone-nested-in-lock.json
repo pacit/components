@@ -1,0 +1,6 @@
+{
+  "point": 2,
+  "check": "lock",
+  "// defect": "An installation nested under someone else's package — the variant a check looking only at `node_modules/zone.js` would not see, and one that is enough for `import 'zone.js'` to resolve.",
+  "addToLock": ["node_modules/@analogjs/vitest-angular/node_modules/zone.js"]
+}

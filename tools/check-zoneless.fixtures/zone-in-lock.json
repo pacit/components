@@ -1,0 +1,6 @@
+{
+  "point": 2,
+  "check": "lock",
+  "// defect": "The package installed at the top level of the tree with no entry in any manifest — this is what `npm i zone.js` reverted in the manifest but not in the lock looks like.",
+  "addToLock": ["node_modules/zone.js"]
+}

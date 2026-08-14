@@ -1,6 +1,0 @@
-{
-  "punkt": 5,
-  "kontrola": "onpush",
-  "// wada": "`ɵcmp.standalone === false` — komponent wymagający NgModule. Osobny przypadek od `detekcja-default`, bo to druga wartość domyślna z tej samej obietnicy i regresja w niej nie objawia się w tej pierwszej.",
-  "standalone": { "PctButton": false }
-}
