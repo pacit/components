@@ -1,5 +1,0 @@
-{
-  "punkt": 5,
-  "kontrola": "logiczne",
-  "opis": "Ta sama obietnica, tylko fizyczna jest WARTOŚĆ, a nie nazwa właściwości. Bramka pilnująca wyłącznie listy nazw przepuściłaby `text-align: left` bez mrugnięcia, choć skutek w RTL jest ten sam co przy `padding-left` — tekst przyklejony do niewłaściwej krawędzi. Stąd druga lista, wartościowa."
-}

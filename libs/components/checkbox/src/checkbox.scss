@@ -37,7 +37,7 @@
 .pct-checkbox__control {
   position: absolute;
   top: 50%;
-  /* pct-wyjatek left: the pair `left: 50%` + `translate(-50%)` centres symmetrically, so in
+  /* pct-exception left: the pair `left: 50%` + `translate(-50%)` centres symmetrically, so in
      RTL it lands in the same place. `inset-inline-start` would be a DEFECT here, not an
      improvement: in RTL it means `right: 50%`, and a shift of -50% of the width goes further
      left, so the hit zone slides off beside the box. */

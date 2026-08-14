@@ -1,0 +1,5 @@
+{
+  "point": 3,
+  "check": "style-source",
+  "description": "A decorator written on one line, that is, other than prettier formats it. The parser anchors on `@Component({` in column zero, so it simply does not see this component — and without a separate `@Component(` counter a change of formatting would not break the gate, it would quietly SHRINK the set of measured components."
+}

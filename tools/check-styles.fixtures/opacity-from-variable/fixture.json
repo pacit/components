@@ -1,0 +1,5 @@
+{
+  "point": 6,
+  "check": "opacity",
+  "description": "A non-literal value: the gate does not know what will arrive at runtime, and a token with such a name is asking to be overridden in a theme. Letting it through „because it might be zero\" would be guessing in the author's favour, that is, the same silence this rule stands against — with the difference that here the silence is documented in the code."
+}

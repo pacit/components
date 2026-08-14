@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "sheets",
+  "description": "Not one sheet to examine. This is not a theoretical case: it is enough for the file list to stop returning anything — a narrowed pattern, a moved directory, a changed extension — and the gate rules „no violations\" over an empty set and ends the run green. Exactly the class of defect the sibling gates were caught by (lesson-48).",
+  "drop": ["button/src/button.scss", "field/src/field.scss"]
+}

@@ -1,5 +1,0 @@
-{
-  "punkt": 6,
-  "kontrola": "opacity",
-  "opis": "Wartość niedosłowna: bramka nie wie, co przyjdzie w runtime, a token o takiej nazwie prosi się o podmianę w skórce. Przepuszczenie jej „bo może będzie zerem\" byłoby zgadywaniem na korzyść autora, czyli tą samą ciszą, przed którą ta reguła stoi — z tą różnicą, że tutaj cisza jest udokumentowana w kodzie bramki."
-}

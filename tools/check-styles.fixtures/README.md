@@ -1,83 +1,85 @@
-# Kontrola odniesienia bramki stylów
+# Negative control of the styles gate
 
-Celowo wadliwe wejścia. `tools/check-styles.mjs` uruchamia na każdym z nich komplet
-swoich sześciu kontroli i **wymaga, żeby każde zostało odrzucone — i to przez ten punkt,
-który deklaruje**. Wejście, które przechodzi, jest błędem; wejście, które zapala z innego
-powodu, niż wpisano w jego `fixture.json`, jest błędem tak samo, bo dowodzi czegoś
-innego, niż deklaruje.
+Deliberately defective inputs. `tools/check-styles.mjs` runs all six of its checks on each
+of them and **requires every one to be rejected — and rejected by the point it declares**.
+An input that passes is a fault; an input that fires for a reason other than the one
+written in its `fixture.json` is a fault just the same, because it proves something other
+than what it declares.
 
-Powód istnienia jest ten sam co przy każdej innej bramce w tym repozytorium
-([`req-quality-negative-control`](../../docs/requirements/quality.md#req-quality-negative-control)): **nowa
-bramka nie jest gotowa, gdy przechodzi — jest gotowa, gdy pokazano, że potrafi nie
-przejść.** Tutaj jest to szczególnie dosłowne, bo obie pilnowane obietnice łamią się
-w ciszy: arkusz z `padding-left` wygląda bez zarzutu w każdym zrzucie LTR, czyli
-w każdym, jaki repozytorium robi, a `opacity: 0.6` na warstwie tekstowej wygląda bez
-zarzutu zawsze i cofa [`req-token-contrast`](../../docs/requirements/tokens.md#req-token-contrast)
-do stanu sprzed [`lesson-6`](../../docs/lessons.md#lesson-6).
+The reason it exists is the same as for every other gate in this repository
+([`req-quality-negative-control`](../../docs/requirements/quality.md#req-quality-negative-control)):
+**a new gate is not ready when it passes — it is ready when it has been shown to fail.**
+Here that is particularly literal, because both guarded promises break in silence: a sheet
+with `padding-left` looks faultless in every LTR screenshot, that is, in every one the
+repository takes, and `opacity: 0.6` on a text layer looks faultless always and takes
+[`req-token-contrast`](../../docs/requirements/tokens.md#req-token-contrast) back to the
+state before [`lesson-6`](../../docs/lessons.md#lesson-6).
 
-## Jak to jest złożone
+## How a case is built
 
-Przypadek nie jest trzynastą kopią poprawnego wejścia z jedną zepsutą rzeczą. Bramka
-składa go z dwóch warstw:
+A case is not a thirteenth copy of the correct input with one thing broken. The gate
+builds it from two layers:
 
-1. `_poprawny/` — wejście wzorcowe: dwa komponenty ze swoimi arkuszami, w tym jeden
-   wyjątek uzasadniony,
-2. pliki katalogu przypadku, kopiowane **na kopię wzorca**, plus usunięcia z `usun`
-   w `fixture.json`.
+1. `_reference/` — the reference input: two components with their sheets, one of them
+   carrying a justified exception,
+2. the case directory's files, copied **onto a copy of the reference**, plus the removals
+   from `drop` in `fixture.json`.
 
-Dzięki temu katalog przypadku zawiera **wyłącznie wadę** — widać ją bez porównywania
-plików — i nie rozjeżdża się z bazą, gdy kształt wejścia się zmieni.
+That way the case directory holds **nothing but the defect** — it is visible without
+comparing files — and does not drift from the reference when the shape of the input
+changes.
 
-**Wejście wzorcowe musi przejść.** To nie jest kontrola na zapas: gdyby baza sama była
-wadliwa, każdy przypadek zapalałby z jej powodu, a nie z powodu swojej wady, i wszystkie
-„odrzucone" byłyby fałszywe. Sprawdzone przebiegiem — `margin-left` dopisany do
-wzorcowego `przycisk.scss` natychmiast przestawił `opacity-czesciowa`
-i `opacity-ze-zmiennej` na cudzy punkt.
+**The reference input must pass.** This is not a check for good measure: were the
+reference itself defective, every case would fire because of it rather than because of its
+own defect, and every „rejected" would be false. Verified by a run — a `margin-left` added
+to the reference `button.scss` moved `partial-opacity` and `opacity-from-variable` onto
+somebody else's point at once.
 
-Źródła komponentów leżą tutaj jako `*.ts.txt` i stają się `*.ts` dopiero przy składaniu,
-w katalogu tymczasowym poza repozytorium. Powód jest twardy i zapisany wcześniej
-w [`tsconfig.root.json`](../../tsconfig.root.json): plik `.ts` w `tools/` nie należy do
-żadnego programu kompilatora, więc zapaliłby `check-typecheck`. Fixture jednej bramki nie
-może być wadą dla drugiej — to ta sama klasa problemu co udawany `package.json`
-w [`check-package.fixtures`](../check-package.fixtures/README.md).
+The component sources sit here as `*.ts.txt` and become `*.ts` only at assembly, in a
+temporary directory outside the repository. The reason is hard and was written down
+earlier in [`tsconfig.root.json`](../../tsconfig.root.json): a `.ts` file in `tools/`
+belongs to no compiler program, so it would fire `check-typecheck`. One gate's fixture may
+not be another's defect — the same class of problem as the fake `package.json` in
+[`check-package.fixtures`](../check-package.fixtures/README.md).
 
-| katalog                                                | co łamie                                                   | punkt |
-| ------------------------------------------------------ | ---------------------------------------------------------- | ----- |
-| [`bez-arkuszy`](bez-arkuszy)                           | ani jednego arkusza do zbadania                            | 1     |
-| [`styl-przez-mixin`](styl-przez-mixin)                 | `padding-left` złożony interpolacją, niewidoczny w tekście | 2     |
-| [`bez-komponentow`](bez-komponentow)                   | ani jednego `@Component` — zero równe zeru                 | 3     |
-| [`dekorator-poza-parserem`](dekorator-poza-parserem)   | dekorator poza kotwicą parsera                             | 3     |
-| [`styl-w-dekoratorze`](styl-w-dekoratorze)             | `styles: [...]` zamiast arkusza                            | 3     |
-| [`arkusz-spoza-projektu`](arkusz-spoza-projektu)       | `styleUrl` na arkusz spoza listy                           | 3     |
-| [`wyjatek-bez-uzasadnienia`](wyjatek-bez-uzasadnienia) | znacznik wyjątku bez powodu                                | 4     |
-| [`wyjatek-bez-uzycia`](wyjatek-bez-uzycia)             | znacznik nazywa inną właściwość niż ta pod nim             | 4     |
-| [`padding-fizyczny`](padding-fizyczny)                 | `padding-left`                                             | 5     |
-| [`text-align-fizyczny`](text-align-fizyczny)           | `text-align: left` — fizyczna WARTOŚĆ, nie nazwa           | 5     |
-| [`opacity-czesciowa`](opacity-czesciowa)               | `opacity: 0.6` na stanie                                   | 6     |
-| [`opacity-ze-zmiennej`](opacity-ze-zmiennej)           | `opacity: var(...)` — wartość nierozstrzygalna             | 6     |
+| directory                                                            | what it breaks                                                  | point |
+| -------------------------------------------------------------------- | --------------------------------------------------------------- | ----- |
+| [`no-sheets`](no-sheets)                                             | not one sheet to examine                                        | 1     |
+| [`style-via-mixin`](style-via-mixin)                                 | `padding-left` composed by interpolation, invisible in the text | 2     |
+| [`no-components`](no-components)                                     | not one `@Component` — zero equal to zero                       | 3     |
+| [`decorator-past-parser`](decorator-past-parser)                     | a decorator past the parser's anchor                            | 3     |
+| [`style-in-decorator`](style-in-decorator)                           | `styles: [...]` instead of a sheet                              | 3     |
+| [`sheet-outside-project`](sheet-outside-project)                     | a `styleUrl` at a sheet outside the list                        | 3     |
+| [`exception-without-justification`](exception-without-justification) | an exception marker with no reason                              | 4     |
+| [`exception-without-use`](exception-without-use)                     | the marker names a property other than the one under it         | 4     |
+| [`physical-padding`](physical-padding)                               | `padding-left`                                                  | 5     |
+| [`physical-text-align`](physical-text-align)                         | `text-align: left` — a physical VALUE, not a name               | 5     |
+| [`partial-opacity`](partial-opacity)                                 | `opacity: 0.6` on a state                                       | 6     |
+| [`opacity-from-variable`](opacity-from-variable)                     | `opacity: var(...)` — an undecidable value                      | 6     |
 
-Punkt 3 ma cztery przypadki, bo to cztery różne drogi, którymi komponent znika
-z pomiaru: nie ma go w liście plików, nie widzi go parser, styluje się poza arkuszem
-albo wskazuje arkusz, którego bramka nie czyta. Każda kończy przebieg zielono i każda
-zostawia repozytorium wyglądające sensownie.
+Point 3 has four cases, because there are four different routes by which a component
+disappears from the measurement: it is not in the file list, the parser does not see it,
+it is styled outside a sheet, or it points at a sheet the gate does not read. Each ends
+the run green and each leaves a repository that looks sensible.
 
-## Punkty 1–3 to mianownik, nie formalność
+## Points 1–3 are the denominator, not a formality
 
-Reguły są w punktach 5 i 6; punkty 1–3 pilnują zbioru, na którym te reguły działają. To
-ten sam mechanizm, który w A2 kurczył próbkę plików w raporcie pokrycia, w A6 zbiór
-mierzonych komponentów, a w A7 zbiór projektów — tutaj kurczy się zbiór deklaracji.
+The rules are in points 5 and 6; points 1–3 guard the set those rules work over. The same
+mechanism that shrank the sample of files in the coverage report in A2, the set of
+measured components in A6 and the set of projects in A7 — here it is the set of
+declarations that shrinks.
 
-Dwa z tych przypadków nie są hipotezami. `bez-komponentow` istnieje, bo bramka na nim
-**przeszła**: pathspec gita nie jest globem powłoki, wzorzec zwracał pustą listę źródeł,
-a porównanie „rozpoznano N z M" jest na zero ślepe. `dekorator-poza-parserem` istnieje,
-bo licznik dekoratorów powtarzał kotwicę parsera co do znaku — przesunięcie o jedną
-spację gasiło obie strony porównania naraz. Oba opisuje
-[`lesson-48`](../../docs/lessons.md#lesson-48); ten drugi siedział też w `check-zoneless`
-i został naprawiony razem z tym.
+Two of those cases are not hypotheses. `no-components` exists because the gate **passed**
+on it: a git pathspec is not a shell glob, the pattern returned an empty source list, and
+the comparison „recognised N of M" is blind to zero. `decorator-past-parser` exists
+because the decorator counter repeated the parser's anchor character for character — a
+shift of one space put out both sides of the comparison at once. Both are described by
+[`lesson-48`](../../docs/lessons.md#lesson-48); the second sat in `check-zoneless` too and
+was fixed together with this one.
 
-## Dodanie nowej kontroli do bramki
+## Adding a new check to the gate
 
-Nowa kontrola w `check-styles.mjs` przychodzi **razem z przypadkiem**, który ją zapala,
-i z identyfikatorem, po którym da się poznać, że zapaliła właśnie ona. Kontrola bez
-przypadku jest dokładnie tym, czego zakazuje [`req-axis`](../../docs/00-axis.md): obietnicą
-bez maszyny potrafiącej na niej zapalić, tylko piętro wyżej.
+A new check in `check-styles.mjs` comes **together with the case** that fires it, and with
+an identifier that tells you it was this check that fired. A check with no case is exactly
+what [`req-axis`](../../docs/00-axis.md) forbids: a promise with no machine able to fire
+on it, only one floor up.

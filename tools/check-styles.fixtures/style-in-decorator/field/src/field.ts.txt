@@ -1,0 +1,8 @@
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'fx-field',
+  template: '<label><ng-content /></label>',
+  styles: [':host { display: block; padding-left: var(--pct-space-2); }'],
+})
+export class FxField {}

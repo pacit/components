@@ -1,0 +1,8 @@
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'fx-field',
+  template: '<label><ng-content /></label>',
+  styleUrls: ['./field.scss', '../../shared/generated.scss'],
+})
+export class FxField {}

@@ -1,5 +1,0 @@
-{
-  "punkt": 3,
-  "kontrola": "zrodlo-stylow",
-  "opis": "Komponent wskazuje arkusz spoza listy, którą bramka czyta. W repozytorium to nie jest literówka tylko na papierze: `libs/components/themes/_tokens.scss` powstaje przy każdym buildzie i jest gitignorowany, więc arkusz istniejący na dysku i niewidoczny dla bramki jest tam na wyciągnięcie ręki."
-}

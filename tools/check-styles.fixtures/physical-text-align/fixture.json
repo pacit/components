@@ -1,0 +1,5 @@
+{
+  "point": 5,
+  "check": "logical",
+  "description": "The same promise, only here the VALUE is physical, not the property's name. A gate guarding the list of names alone would let `text-align: left` through without blinking, although the effect in RTL is the same as with `padding-left` — text stuck to the wrong edge. Hence the second list, of values."
+}

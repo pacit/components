@@ -89,7 +89,7 @@
   width: 1em;
   height: 1em;
   border: 2px solid currentColor;
-  /* pct-wyjatek border-right-color: the gap in the ring has no writing direction — it spins
+  /* pct-exception border-right-color: the gap in the ring has no writing direction — it spins
      round, so its starting edge is unobservable. A logical version would change nothing but
      the animation's initial phase. */
   border-right-color: transparent;
@@ -126,7 +126,7 @@
      disabled spinner the ring greys out too. */
   .pct-button__spinner {
     border-color: currentColor;
-    /* pct-wyjatek border-right-color: the same gap as in the base rule, only restored after
+    /* pct-exception border-right-color: the same gap as in the base rule, only restored after
        the colours are forced — a spinning edge has no writing direction, so a logical version
        would fix nothing here. */
     border-right-color: transparent;

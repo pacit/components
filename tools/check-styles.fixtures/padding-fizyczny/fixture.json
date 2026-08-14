@@ -1,5 +1,0 @@
-{
-  "punkt": 5,
-  "kontrola": "logiczne",
-  "opis": "Kontrola wpisana wprost w `req-token-logical`: arkusz z `padding-left` musi zapalić. Wada jest niewidzialna w każdym zrzucie LTR — czyli w każdym, jaki dziś robimy — a objawia się dopiero u użytkownika pisma od prawej, jako odstęp po niewłaściwej stronie kontrolki."
-}

@@ -1,0 +1,23 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+  padding-inline: var(--pct-space-3);
+  margin-inline-start: var(--pct-space-2);
+  border-inline-start: 1px solid var(--pct-button-border);
+  text-align: start;
+}
+
+.button__spinner {
+  width: 1em;
+  height: 1em;
+  border: 2px solid currentColor;
+  /* pct-exception border-right-color: that is how it is meant to be */
+  border-right-color: transparent;
+  border-radius: 50%;
+}
+
+:host([disabled]) {
+  color: var(--pct-button-disabled-fg);
+  background: var(--pct-button-disabled-bg);
+  opacity: 1;
+}

@@ -1,8 +1,0 @@
-import { Component } from '@angular/core';
-
-@Component({
-  selector: 'fx-przycisk',
-  template: '<button type="button"><ng-content /></button>',
-  styleUrl: './przycisk.scss',
-})
-export class FxPrzycisk {}

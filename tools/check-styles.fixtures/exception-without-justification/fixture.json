@@ -1,0 +1,5 @@
+{
+  "point": 4,
+  "check": "exception",
+  "description": "An exception marker with no reason — an empty rubber stamp. Were it to pass, the exception mechanism would become the way out of every rule at once: adding six characters would cost less than changing a property to a logical one. The length threshold does not judge whether the reason is true — that stays with review; it watches that there is one at all."
+}

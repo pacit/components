@@ -1,5 +1,0 @@
-import { Component } from '@angular/core';
-
-// prettier-ignore
-@Component({ selector: 'fx-przycisk', template: '<button></button>', styleUrl: './przycisk.scss' })
-export class FxPrzycisk {}

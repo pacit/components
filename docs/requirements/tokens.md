@@ -399,7 +399,7 @@ properties of the inline axis (`left`/`right`, `margin-*`, `padding-*`, `border-
 radii, `direction`, a multi-value `inset`) and on physical VALUES (`text-align`, `float`,
 `clear`). The block axis (`top`/`bottom`) is deliberately off the list: `rtl` mirrors the
 inline axis only, and full bidi is a [non-goal](../00-axis.md#explicit-non-goals). An
-exception requires a `/* pct-wyjatek <property>: <reason> */` marker adjacent to the
+exception requires a `/* pct-exception <property>: <reason> */` marker adjacent to the
 declaration — point 4 fires on a marker with no justification and on one that lands on no
 declaration
 **Control:** `tools/check-styles.fixtures/padding-fizyczny/` (a property name) and

@@ -152,7 +152,7 @@ control. Nothing here is waiting any more.
   - closed: `req-token-logical`, `req-token-no-opacity` — **2 gaps**
   - built: `tools/check-styles.mjs` (target `check-styles` in `components`, in CI) — six
     points: two rules (physical properties on the inline axis; `opacity` other than `0`/`1`)
-    and **four guarding the denominator**. An exception needs a `/* pct-wyjatek <property>:
+    and **four guarding the denominator**. An exception needs a `/* pct-exception <property>:
 <reason> */` marker **adjacent** to the declaration; the repo has four. A script beat
     stylelint, which reports on the files it is handed and says nothing about the rest
   - plus, as planned: the **`dir` axis** in `SbxSettings`, 9 RTL visual patterns, an axe audit
@@ -678,7 +678,7 @@ Measured 2026-08-06 (`git ls-files` + a diacritics scan), refreshed 2026-08-08:
     `levels.policy.json`, `browsers.policy.json` — while `contrast.policy.json` **in the
     same directory** is already English
   - plus 100 fixture case directories (`brak-schematica`, `os-wspolna-martwa`), 41 rule names
-    in `fixture.json` and the `/* pct-wyjatek … */` marker in stylesheets (4 uses, but the
+    in `fixture.json` and the `/* pct-exception … */` marker in stylesheets (4 uses, but the
     convention for every stylesheet after them)
   - **found by H7: the fixture prose** — eight `*.fixtures/README.md` (~400 Polish lines) and
     the `opis`/`$powod` of every case, the only place explaining what a negative control

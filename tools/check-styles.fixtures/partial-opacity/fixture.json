@@ -1,0 +1,5 @@
+{
+  "point": 6,
+  "check": "opacity",
+  "description": "The classic „disabled by dimming\" state. The contrast gate computes on the palette's values and rules on them green, and the browser shows the result of compositing with the background — that is, exactly the drift lesson-6 describes: the guard let a `disabled` through at a real contrast of ~1.6:1. The fraction is the only thing that matters here."
+}

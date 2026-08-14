@@ -1,0 +1,5 @@
+import { Component } from '@angular/core';
+
+// prettier-ignore
+@Component({ selector: 'fx-button', template: '<button></button>', styleUrl: './button.scss' })
+export class FxButton {}

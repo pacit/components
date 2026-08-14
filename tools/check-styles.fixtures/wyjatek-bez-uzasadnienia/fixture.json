@@ -1,5 +1,0 @@
-{
-  "punkt": 4,
-  "kontrola": "wyjatek",
-  "opis": "Znacznik wyjątku bez powodu — pusta pieczątka. Gdyby przechodził, mechanizm wyjątków stałby się drogą wyjścia z każdej reguły naraz: dopisanie sześciu znaków kosztowałoby mniej niż zmiana właściwości na logiczną. Próg długości nie ocenia, czy powód jest prawdziwy — to zostaje przy review; pilnuje, żeby było co recenzować."
-}

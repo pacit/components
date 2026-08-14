@@ -1,8 +1,0 @@
-import { Component } from '@angular/core';
-
-@Component({
-  selector: 'fx-pole',
-  template: '<label><ng-content /></label>',
-  styleUrls: ['./pole.scss'],
-})
-export class FxPole {}

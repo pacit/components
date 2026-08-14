@@ -35,19 +35,19 @@ import * as sass from 'sass';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PROJEKT = 'libs/components';
 const FIXTURES = join(ROOT, 'tools/check-styles.fixtures');
-const BAZA = '_poprawny';
+const REFERENCE = '_reference';
 
 /**
  * The exception marker. It names a PROPERTY, not „this line": a comment written for
  * `left` must not quietly cover an `opacity` added beside it half a year later.
  *
- *   /* pct-wyjatek left: <uzasadnienie> *\/
+ *   /* pct-exception left: <justification> *\/
  */
-const WYJATEK = /pct-wyjatek\s+([-a-zA-Z]+)\s*:\s*([\s\S]*)$/;
+const EXCEPTION = /pct-exception\s+([-a-zA-Z]+)\s*:\s*([\s\S]*)$/;
 
 /**
  * The minimum length of a justification. A floor against an empty rubber stamp
- * (`/* pct-wyjatek left: because *\/`), not a judge of quality — a machine cannot tell
+ * (`/* pct-exception left: because *\/`), not a judge of quality — a machine cannot tell
  * whether a reason is true. Review watches that, and only review; the gate watches that
  * there is something to review and that exceptions can be counted.
  */
@@ -116,7 +116,7 @@ const OPACITY = new Set([
   'stop-opacity',
 ]);
 
-// ── skaner arkusza ────────────────────────────────────────────────────────────
+// ── skaner sheet ────────────────────────────────────────────────────────────
 
 /**
  * The scanner: turns a stylesheet's text into a list of declarations and comments, each
@@ -133,8 +133,8 @@ const OPACITY = new Set([
  * Brackets are counted separately, so that a `;` inside `url(data:…;base64,…)` does not
  * cut a declaration in half.
  */
-const skanuj = (tresc) => {
-  const deklaracje = [];
+const skanuj = (content) => {
+  const declarations = [];
   const komentarze = [];
   let bufor = '';
   let liniaBufora = 0;
@@ -151,23 +151,23 @@ const skanuj = (tresc) => {
   const domknij = () => {
     const m = /^\s*(-{0,2}[A-Za-z_][-\w]*)\s*:\s*([\s\S]*)$/.exec(bufor);
     if (m)
-      deklaracje.push({
-        wlasciwosc: m[1].toLowerCase(),
-        wartosc: m[2].trim().replace(/\s+/g, ' '),
+      declarations.push({
+        property: m[1].toLowerCase(),
+        value: m[2].trim().replace(/\s+/g, ' '),
         linia: liniaBufora,
       });
     bufor = '';
   };
 
-  while (i < tresc.length) {
-    const znak = tresc[i];
-    const nastepny = tresc[i + 1];
+  while (i < content.length) {
+    const znak = content[i];
+    const nastepny = content[i + 1];
 
     if (znak === '/' && nastepny === '*') {
       const start = linia;
-      const koniec = tresc.indexOf('*/', i + 2);
-      const kres = koniec === -1 ? tresc.length : koniec;
-      const tekst = tresc.slice(i + 2, kres);
+      const koniec = content.indexOf('*/', i + 2);
+      const kres = koniec === -1 ? content.length : koniec;
+      const tekst = content.slice(i + 2, kres);
       linia += (tekst.match(/\n/g) ?? []).length;
       komentarze.push({ tekst, linia: start, koniec: linia });
       i = kres + 2;
@@ -177,19 +177,19 @@ const skanuj = (tresc) => {
     // An SCSS line comment. It carries no exceptions (sass does not emit it, so point 2
     // would have nothing to compare), but it has to leave the stream.
     if (znak === '/' && nastepny === '/') {
-      const koniec = tresc.indexOf('\n', i);
-      i = koniec === -1 ? tresc.length : koniec;
+      const koniec = content.indexOf('\n', i);
+      i = koniec === -1 ? content.length : koniec;
       continue;
     }
 
     if (znak === '"' || znak === "'") {
       let j = i + 1;
-      while (j < tresc.length && tresc[j] !== znak) {
-        if (tresc[j] === '\\') j++;
-        if (tresc[j] === '\n') linia++;
+      while (j < content.length && content[j] !== znak) {
+        if (content[j] === '\\') j++;
+        if (content[j] === '\n') linia++;
         j++;
       }
-      dodaj(tresc.slice(i, j + 1));
+      dodaj(content.slice(i, j + 1));
       i = j + 1;
       continue;
     }
@@ -223,7 +223,7 @@ const skanuj = (tresc) => {
     i++;
   }
 
-  return { deklaracje, komentarze };
+  return { declarations, komentarze };
 };
 
 /**
@@ -232,17 +232,17 @@ const skanuj = (tresc) => {
  * without looking at the rest of the sheet.
  */
 const kluczIstotny = (d) => {
-  const wartosc = d.wartosc.toLowerCase();
-  if (FIZYCZNE.has(d.wlasciwosc)) return `${d.wlasciwosc}:${wartosc}`;
-  const wartosciowa = FIZYCZNA_WARTOSC.get(d.wlasciwosc);
-  if (wartosciowa?.zle.has(wartosc.split(/\s+/)[0]))
-    return `${d.wlasciwosc}:${wartosc}`;
-  if (OPACITY.has(d.wlasciwosc) && !przezroczystoscBinarna(wartosc))
-    return `${d.wlasciwosc}:${wartosc}`;
+  const value = d.value.toLowerCase();
+  if (FIZYCZNE.has(d.property)) return `${d.property}:${value}`;
+  const valueBased = FIZYCZNA_WARTOSC.get(d.property);
+  if (valueBased?.zle.has(value.split(/\s+/)[0]))
+    return `${d.property}:${value}`;
+  if (OPACITY.has(d.property) && !przezroczystoscBinarna(value))
+    return `${d.property}:${value}`;
   // `inset` is physical only with several values: `inset: 0` is symmetric and behaves
   // identically in RTL, and a ban covering it too would produce contentless exceptions.
-  if (d.wlasciwosc === 'inset' && wartosc.split(/\s+/).length > 1)
-    return `${d.wlasciwosc}:${wartosc}`;
+  if (d.property === 'inset' && value.split(/\s+/).length > 1)
+    return `${d.property}:${value}`;
   return null;
 };
 
@@ -260,8 +260,8 @@ const kluczIstotny = (d) => {
  * is not what `req-token-contrast` speaks about, and a ban covering animations would take
  * away the one standard way of bringing an overlay in.
  */
-const przezroczystoscBinarna = (wartosc) => {
-  const m = /^(\d*\.?\d+)(%?)$/.exec(wartosc.trim());
+const przezroczystoscBinarna = (value) => {
+  const m = /^(\d*\.?\d+)(%?)$/.exec(value.trim());
   if (!m) return false;
   const liczba = Number(m[1]) / (m[2] === '%' ? 100 : 1);
   return liczba === 0 || liczba === 1;
@@ -275,10 +275,10 @@ const przezroczystoscBinarna = (wartosc) => {
  * point — a sheet failing for a reason other than the one written into it proves
  * something other than what it declares.
  */
-class BladStylu extends Error {
-  constructor(kontrola, opis) {
-    super(opis);
-    this.kontrola = kontrola;
+class StyleError extends Error {
+  constructor(check, description) {
+    super(description);
+    this.check = check;
   }
 }
 
@@ -286,46 +286,46 @@ const lista = (wpisy) => wpisy.map((w) => `      ${w}`).join('\n');
 
 /**
  * The full set of checks over a ready input:
- *   `arkusze`     — `[{ plik, tresc, css }]`, where `css` is sass's output,
- *   `komponenty`  — `[{ plik, klasa, arkusze, inline }]` from the decorators,
- *   `deklaracji`  — the number of `@Component(` occurrences in the sources (the parser's
+ *   `sheets`     — `[{ file, content, css }]`, where `css` is sass's output,
+ *   `components`  — `[{ file, klasa, sheets, inline }]` from the decorators,
+ *   `declarations`  — the number of `@Component(` occurrences in the sources (the parser's
  *                   denominator).
- * Throws `BladStylu` on the first violation: the checks run from the denominator to the
+ * Throws `StyleError` on the first violation: the checks run from the denominator to the
  * rules, so a rule after a collapsed denominator would have nothing to examine anyway.
  */
-const sprawdzStyle = ({ arkusze, komponenty, deklaracji }) => {
+const checkStyles = ({ sheets, components, declarations }) => {
   // 1. The list of stylesheets is not empty.
-  if (!arkusze.length)
-    throw new BladStylu(
-      'arkusze',
+  if (!sheets.length)
+    throw new StyleError(
+      'sheets',
       `no stylesheet found (${PROJEKT}/**/*.scss) — points 5 and 6 would then always ` +
         `pass, having nothing to read`,
     );
 
-  const skany = new Map(arkusze.map((a) => [a.plik, skanuj(a.tresc)]));
+  const skany = new Map(sheets.map((a) => [a.file, skanuj(a.content)]));
 
   // 2. The compiler: sass emits nothing relevant that the scanner cannot see in the
   //    source. This is the scanner's own denominator — a declaration produced by a mixin,
   //    an interpolation or a nested property reaches the browser without standing in the
   //    source text, so the rules would pass over it without a trace.
-  for (const arkusz of arkusze) {
+  for (const sheet of sheets) {
     const wZrodle = new Set(
       skany
-        .get(arkusz.plik)
-        .deklaracje.map(kluczIstotny)
+        .get(sheet.file)
+        .declarations.map(kluczIstotny)
         .filter((k) => k !== null),
     );
     const ukryte = [
       ...new Set(
-        skanuj(arkusz.css)
-          .deklaracje.map(kluczIstotny)
+        skanuj(sheet.css)
+          .declarations.map(kluczIstotny)
           .filter((k) => k !== null && !wZrodle.has(k)),
       ),
     ];
     if (ukryte.length)
-      throw new BladStylu(
-        'kompilator',
-        `${arkusz.plik}: sass emits declarations absent from the source text:\n` +
+      throw new StyleError(
+        'compiler',
+        `${sheet.file}: sass emits declarations absent from the source text:\n` +
           lista(ukryte) +
           `\n    They reach the browser, and the rules of points 5 and 6 pass over them ` +
           `without a trace. Usual cause: a mixin, an interpolation (\`padding-#{$x}\`) or ` +
@@ -340,39 +340,39 @@ const sprawdzStyle = ({ arkusze, komponenty, deklaracji }) => {
   //    sides empty they are equal, and the point passes having said nothing. The first
   //    version of this gate passed exactly that way — the git pathspec returned zero
   //    sources and the result read „0 components" (`lesson-48`).
-  if (!komponenty.length)
-    throw new BladStylu(
-      'zrodlo-stylow',
+  if (!components.length)
+    throw new StyleError(
+      'style-source',
       `no \`@Component\` found in the sources (${PROJEKT}) — the comparison against the ` +
         `decorator count would then always pass, because zero equals zero.\n` +
         `    Usual cause: the list of source files stopped returning anything.`,
     );
 
-  if (komponenty.length !== deklaracji)
-    throw new BladStylu(
-      'zrodlo-stylow',
-      `the parser recognised ${komponenty.length} of ${deklaracji} \`@Component\` ` +
+  if (components.length !== declarations)
+    throw new StyleError(
+      'style-source',
+      `the parser recognised ${components.length} of ${declarations} \`@Component\` ` +
         `decorators — the rest would drop out of the measurement without a trace. Usual ` +
         `cause: a decorator written otherwise than prettier formats it (\`@Component({\` ` +
         `and \`})\` in column zero).`,
     );
 
-  const znane = new Set(arkusze.map((a) => a.plik));
-  const bezArkusza = komponenty.flatMap((k) => {
+  const znane = new Set(sheets.map((a) => a.file));
+  const bezArkusza = components.flatMap((k) => {
     if (k.inline)
       return [
-        `${k.plik}: ${k.klasa} has \`styles: […]\` in its decorator — this gate reads sheets, not decorators`,
+        `${k.file}: ${k.klasa} has \`styles: […]\` in its decorator — this gate reads sheets, not decorators`,
       ];
-    return k.arkusze
+    return k.sheets
       .filter((a) => !znane.has(a))
       .map(
         (a) =>
-          `${k.plik}: ${k.klasa} takes its styles from \`${a}\`, outside the sheet list`,
+          `${k.file}: ${k.klasa} takes its styles from \`${a}\`, outside the sheet list`,
       );
   });
   if (bezArkusza.length)
-    throw new BladStylu(
-      'zrodlo-stylow',
+    throw new StyleError(
+      'style-source',
       `${bezArkusza.length} components take their styles from beyond this gate's reach:\n` +
         lista(bezArkusza) +
         `\n    Those styles travel to the consumer like every other, and points 5 and 6 ` +
@@ -387,44 +387,44 @@ const sprawdzStyle = ({ arkusze, komponenty, deklaracji }) => {
   //    above something else entirely.
   const usprawiedliwione = new Set();
   const problemyWyjatkow = [];
-  for (const arkusz of arkusze) {
-    const { deklaracje, komentarze } = skany.get(arkusz.plik);
+  for (const sheet of sheets) {
+    const { declarations, komentarze } = skany.get(sheet.file);
     for (const komentarz of komentarze) {
-      const m = WYJATEK.exec(komentarz.tekst);
+      const m = EXCEPTION.exec(komentarz.tekst);
       if (!m) continue;
-      const [, wlasciwosc, uzasadnienieSurowe] = m;
-      const uzasadnienie = uzasadnienieSurowe.replace(/\*+\s*$/, '').trim();
-      if (uzasadnienie.length < MIN_UZASADNIENIE) {
+      const [, property, rawJustification] = m;
+      const justification = rawJustification.replace(/\*+\s*$/, '').trim();
+      if (justification.length < MIN_UZASADNIENIE) {
         problemyWyjatkow.push(
-          `${arkusz.plik}:${komentarz.linia}: an exception for \`${wlasciwosc}\` with no ` +
-            `justification (${uzasadnienie.length} of ${MIN_UZASADNIENIE} characters) — ` +
+          `${sheet.file}:${komentarz.linia}: an exception for \`${property}\` with no ` +
+            `justification (${justification.length} of ${MIN_UZASADNIENIE} characters) — ` +
             `a rubber stamp, not a reason`,
         );
         continue;
       }
-      const trafione = deklaracje.filter(
+      const trafione = declarations.filter(
         (d) =>
-          d.wlasciwosc === wlasciwosc.toLowerCase() &&
+          d.property === property.toLowerCase() &&
           (d.linia === komentarz.linia || d.linia === komentarz.koniec + 1),
       );
       if (!trafione.length) {
         problemyWyjatkow.push(
-          `${arkusz.plik}:${komentarz.linia}: an exception for \`${wlasciwosc}\` is ` +
+          `${sheet.file}:${komentarz.linia}: an exception for \`${property}\` is ` +
             `adjacent to no declaration of that property — either the code moved and the ` +
             `exception was left behind, or the property named is not the one below`,
         );
         continue;
       }
       for (const d of trafione)
-        usprawiedliwione.add(`${arkusz.plik}:${d.linia}`);
+        usprawiedliwione.add(`${sheet.file}:${d.linia}`);
     }
   }
   if (problemyWyjatkow.length)
-    throw new BladStylu(
-      'wyjatek',
+    throw new StyleError(
+      'exception',
       `${problemyWyjatkow.length} exceptions are not exceptions:\n` +
         lista(problemyWyjatkow) +
-        `\n    Notation: /* pct-wyjatek <property>: <why it is safe exactly here> */`,
+        `\n    Notation: /* pct-exception <property>: <why it is safe exactly here> */`,
     );
 
   // 5. Logical properties (`req-token-logical`).
@@ -432,47 +432,47 @@ const sprawdzStyle = ({ arkusze, komponenty, deklaracji }) => {
   // 6. No compositing `opacity` (`req-token-no-opacity`).
   const przezroczyste = [];
 
-  for (const arkusz of arkusze)
-    for (const d of skany.get(arkusz.plik).deklaracje) {
-      if (usprawiedliwione.has(`${arkusz.plik}:${d.linia}`)) continue;
-      const gdzie = `${arkusz.plik}:${d.linia}`;
+  for (const sheet of sheets)
+    for (const d of skany.get(sheet.file).declarations) {
+      if (usprawiedliwione.has(`${sheet.file}:${d.linia}`)) continue;
+      const gdzie = `${sheet.file}:${d.linia}`;
 
-      const logiczna = FIZYCZNE.get(d.wlasciwosc);
-      if (logiczna) {
-        fizyczne.push(`${gdzie}: \`${d.wlasciwosc}\` — use \`${logiczna}\``);
+      const logical = FIZYCZNE.get(d.property);
+      if (logical) {
+        fizyczne.push(`${gdzie}: \`${d.property}\` — use \`${logical}\``);
         continue;
       }
-      const wartosciowa = FIZYCZNA_WARTOSC.get(d.wlasciwosc);
-      const pierwsza = d.wartosc.toLowerCase().split(/\s+/)[0];
-      if (wartosciowa?.zle.has(pierwsza)) {
+      const valueBased = FIZYCZNA_WARTOSC.get(d.property);
+      const pierwsza = d.value.toLowerCase().split(/\s+/)[0];
+      if (valueBased?.zle.has(pierwsza)) {
         fizyczne.push(
-          `${gdzie}: \`${d.wlasciwosc}: ${pierwsza}\` — use \`${wartosciowa.zamiast}\``,
+          `${gdzie}: \`${d.property}: ${pierwsza}\` — use \`${valueBased.zamiast}\``,
         );
         continue;
       }
-      if (d.wlasciwosc === 'inset' && d.wartosc.split(/\s+/).length > 1) {
+      if (d.property === 'inset' && d.value.split(/\s+/).length > 1) {
         fizyczne.push(
-          `${gdzie}: \`inset: ${d.wartosc}\` — several values set the inline axis ` +
+          `${gdzie}: \`inset: ${d.value}\` — several values set the inline axis ` +
             `physically; use \`inset-block-*\` / \`inset-inline-*\``,
         );
         continue;
       }
-      if (OPACITY.has(d.wlasciwosc) && !przezroczystoscBinarna(d.wartosc))
-        przezroczyste.push(`${gdzie}: \`${d.wlasciwosc}: ${d.wartosc}\``);
+      if (OPACITY.has(d.property) && !przezroczystoscBinarna(d.value))
+        przezroczyste.push(`${gdzie}: \`${d.property}: ${d.value}\``);
     }
 
   if (fizyczne.length)
-    throw new BladStylu(
-      'logiczne',
+    throw new StyleError(
+      'logical',
       `${fizyczne.length} physical properties of the inline axis (req-token-logical):\n` +
         lista(fizyczne) +
         `\n    A physically described layout does NOT mirror under \`dir="rtl"\`, and no ` +
         `LTR screenshot shows it. If this one is safe, say why: ` +
-        `/* pct-wyjatek <property>: <reason> */`,
+        `/* pct-exception <property>: <reason> */`,
     );
 
   if (przezroczyste.length)
-    throw new BladStylu(
+    throw new StyleError(
       'opacity',
       `${przezroczyste.length} \`opacity\` declarations compositing with the background (req-token-no-opacity):\n` +
         lista(przezroczyste) +
@@ -483,7 +483,7 @@ const sprawdzStyle = ({ arkusze, komponenty, deklaracji }) => {
 
   const wyjatkow = usprawiedliwione.size;
   return (
-    `${arkusze.length} stylesheets, ${komponenty.length} components, ` +
+    `${sheets.length} stylesheets, ${components.length} components, ` +
     `${wyjatkow} justified ${wyjatkow === 1 ? 'exception' : 'exceptions'}`
   );
 };
@@ -508,14 +508,14 @@ const KOMPONENT =
   /^@Component\(\{\r?\n([\s\S]*?)^\}\)\r?\n(?:export\s+)?(?:abstract\s+)?class\s+([A-Za-z_$][\w$]*)/gm;
 const KOMPONENT_LICZNIK = /^[ \t]*@Component\(/gm;
 
-const czytajKomponenty = (root, pliki) => {
-  const komponenty = [];
-  let deklaracji = 0;
-  for (const plik of pliki) {
-    const tresc = readFileSync(join(root, plik), 'utf8');
-    deklaracji += (tresc.match(KOMPONENT_LICZNIK) ?? []).length;
-    for (const [, cialo, klasa] of tresc.matchAll(KOMPONENT)) {
-      const arkusze = [
+const czytajKomponenty = (root, files) => {
+  const components = [];
+  let declarations = 0;
+  for (const file of files) {
+    const content = readFileSync(join(root, file), 'utf8');
+    declarations += (content.match(KOMPONENT_LICZNIK) ?? []).length;
+    for (const [, cialo, klasa] of content.matchAll(KOMPONENT)) {
+      const sheets = [
         ...cialo.matchAll(
           /styleUrls?\s*:\s*(?:\[([^\]]*)\]|(['"])([^'"]*)\2)/g,
         ),
@@ -524,29 +524,29 @@ const czytajKomponenty = (root, pliki) => {
           ? [pojedynczy]
           : [...tablica.matchAll(/['"]([^'"]*)['"]/g)].map((m) => m[1]),
       );
-      komponenty.push({
-        plik,
+      components.push({
+        file,
         klasa,
         inline: /^\s*styles\s*:/m.test(cialo),
-        arkusze: arkusze.map((a) =>
-          relative(root, resolve(join(root, dirname(plik)), a))
+        sheets: sheets.map((a) =>
+          relative(root, resolve(join(root, dirname(file)), a))
             .split('\\')
             .join('/'),
         ),
       });
     }
   }
-  return { komponenty, deklaracji };
+  return { components, declarations };
 };
 
 /** An input built from a file list — the same shape for the repo and for a fixture. */
-const zbierzWejscie = (root, arkuszeSciezki, zrodlaSciezki) => ({
-  arkusze: arkuszeSciezki.map((plik) => ({
-    plik,
-    tresc: readFileSync(join(root, plik), 'utf8'),
+const zbierzWejscie = (root, sheetPaths, zrodlaSciezki) => ({
+  sheets: sheetPaths.map((file) => ({
+    file,
+    content: readFileSync(join(root, file), 'utf8'),
     // Sass's output, that is, what the browser really gets. The `expanded` style keeps
     // `/* */` comments, so point 2's comparison looks at the same material on both sides.
-    css: sass.compile(join(root, plik), { style: 'expanded' }).css,
+    css: sass.compile(join(root, file), { style: 'expanded' }).css,
   })),
   ...czytajKomponenty(root, zrodlaSciezki),
 });
@@ -565,7 +565,7 @@ const zbierzWejscie = (root, arkuszeSciezki, zrodlaSciezki) => ({
  * version of this gate passed green with such a pattern, measuring zero components
  * (`lesson-48`).
  */
-const plikiProjektu = () =>
+const projectFiles = () =>
   execFileSync('git', ['ls-files', '-z', PROJEKT], {
     cwd: ROOT,
     encoding: 'utf8',
@@ -596,57 +596,57 @@ const jestZrodlem = (p) => p.endsWith('.ts') && !p.endsWith('.spec.ts');
  * to a temporary directory OUTSIDE the repository, so no gate ever sees the intermediate
  * material.
  */
-const zlozFixture = (nazwa, fx) => {
+const buildFixture = (name, fx) => {
   const cel = mkdtempSync(join(tmpdir(), 'pct-check-styles-'));
-  cpSync(join(FIXTURES, BAZA), cel, { recursive: true });
-  cpSync(join(FIXTURES, nazwa), cel, {
+  cpSync(join(FIXTURES, REFERENCE), cel, { recursive: true });
+  cpSync(join(FIXTURES, name), cel, {
     recursive: true,
     filter: (src) => basename(src) !== 'fixture.json',
   });
-  for (const sciezka of fx.usun ?? [])
+  for (const sciezka of fx.drop ?? [])
     rmSync(join(cel, sciezka), { recursive: true, force: true });
-  for (const plik of globSync('**/*.ts.txt', { cwd: cel }))
-    renameSync(join(cel, plik), join(cel, plik.replace(/\.txt$/, '')));
+  for (const file of globSync('**/*.ts.txt', { cwd: cel }))
+    renameSync(join(cel, file), join(cel, file.replace(/\.txt$/, '')));
   return cel;
 };
 
-const pliki = (katalog, wzorzec) =>
+const files = (katalog, wzorzec) =>
   globSync(wzorzec, { cwd: katalog })
     .map((p) => p.split('\\').join('/'))
     .sort();
 
-const wejscieFixture = (katalog) =>
+const fixtureInput = (katalog) =>
   zbierzWejscie(
     katalog,
-    pliki(katalog, '**/*.scss'),
-    pliki(katalog, '**/*.ts').filter(jestZrodlem),
+    files(katalog, '**/*.scss'),
+    files(katalog, '**/*.ts').filter(jestZrodlem),
   );
 
 // ── the run ───────────────────────────────────────────────────────────────────
 
 const problems = [];
-let opis = null;
+let description = null;
 
 try {
-  const pliki = plikiProjektu();
-  opis = sprawdzStyle(
+  const files = projectFiles();
+  description = checkStyles(
     zbierzWejscie(
       ROOT,
-      pliki.filter((p) => p.endsWith('.scss')),
-      pliki.filter(jestZrodlem),
+      files.filter((p) => p.endsWith('.scss')),
+      files.filter(jestZrodlem),
     ),
   );
-} catch (blad) {
-  if (!(blad instanceof BladStylu)) throw blad;
-  problems.push(`${blad.kontrola}: ${blad.message}`);
+} catch (error) {
+  if (!(error instanceof StyleError)) throw error;
+  problems.push(`${error.check}: ${error.message}`);
 }
 
-const przypadki = readdirSync(FIXTURES, { withFileTypes: true })
-  .filter((d) => d.isDirectory() && d.name !== BAZA)
+const cases = readdirSync(FIXTURES, { withFileTypes: true })
+  .filter((d) => d.isDirectory() && d.name !== REFERENCE)
   .map((d) => d.name)
   .sort();
 
-if (przypadki.length === 0)
+if (cases.length === 0)
   problems.push(
     `tools/check-styles.fixtures: no prepared inputs — a gate with no proof that it can ` +
       `fail is one more silent defect (req-quality-negative-control)`,
@@ -656,37 +656,37 @@ if (przypadki.length === 0)
 // fire because of it and not because of its own defect — every „rejected" would be
 // false, and this control would become the very thing it stands against.
 {
-  const katalog = zlozFixture(BAZA, {});
+  const katalog = buildFixture(REFERENCE, {});
   try {
-    sprawdzStyle(wejscieFixture(katalog));
-  } catch (blad) {
-    if (!(blad instanceof BladStylu)) throw blad;
+    checkStyles(fixtureInput(katalog));
+  } catch (error) {
+    if (!(error instanceof StyleError)) throw error;
     problems.push(
-      `${BAZA}: the reference input does NOT pass (${blad.kontrola}) — ` +
-        `every prepared case now fires because of it.\n    ${blad.message}`,
+      `${REFERENCE}: the reference input does NOT pass (${error.check}) — ` +
+        `every prepared case now fires because of it.\n    ${error.message}`,
     );
   } finally {
     rmSync(katalog, { recursive: true, force: true });
   }
 }
 
-for (const nazwa of przypadki) {
+for (const name of cases) {
   const fx = JSON.parse(
-    readFileSync(join(FIXTURES, nazwa, 'fixture.json'), 'utf8'),
+    readFileSync(join(FIXTURES, name, 'fixture.json'), 'utf8'),
   );
-  const katalog = zlozFixture(nazwa, fx);
+  const katalog = buildFixture(name, fx);
   try {
-    sprawdzStyle(wejscieFixture(katalog));
+    checkStyles(fixtureInput(katalog));
     problems.push(
-      `${nazwa}: the prepared input PASSED and was meant not to — ` +
-        `point ${fx.punkt} (\`${fx.kontrola}\`) stopped examining anything`,
+      `${name}: the prepared input PASSED and was meant not to — ` +
+        `point ${fx.point} (\`${fx.check}\`) stopped examining anything`,
     );
-  } catch (blad) {
-    if (!(blad instanceof BladStylu)) throw blad;
-    if (blad.kontrola !== fx.kontrola)
+  } catch (error) {
+    if (!(error instanceof StyleError)) throw error;
+    if (error.check !== fx.check)
       problems.push(
-        `${nazwa}: check \`${blad.kontrola}\` fired, and point ${fx.punkt} ` +
-          `(\`${fx.kontrola}\`) was meant to — the fixture proves something other than what it declares`,
+        `${name}: check \`${error.check}\` fired, and point ${fx.point} ` +
+          `(\`${fx.check}\`) was meant to — the fixture proves something other than what it declares`,
       );
   } finally {
     rmSync(katalog, { recursive: true, force: true });
@@ -703,6 +703,6 @@ if (problems.length) {
 }
 
 console.log(
-  `✓ Styles: ${opis}. Negative control: the reference input passes, ` +
-    `${przypadki.length} prepared ones rejected on their own points.`,
+  `✓ Styles: ${description}. Negative control: the reference input passes, ` +
+    `${cases.length} prepared ones rejected on their own points.`,
 );

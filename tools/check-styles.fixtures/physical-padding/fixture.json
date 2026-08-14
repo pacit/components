@@ -1,0 +1,5 @@
+{
+  "point": 5,
+  "check": "logical",
+  "description": "A check written straight into `req-token-logical`: a sheet with `padding-left` must fire. The defect is invisible in every LTR screenshot — that is, in every one we take today — and shows itself only to a right-to-left reader, as a gap on the wrong side of the control."
+}

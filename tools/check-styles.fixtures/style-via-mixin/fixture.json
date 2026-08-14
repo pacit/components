@@ -1,0 +1,5 @@
+{
+  "point": 2,
+  "check": "compiler",
+  "description": "The sheet composes the property's name by interpolation in a mixin, so `padding-left` stands nowhere in the source's text — and that is exactly what the browser gets. The gate's scanner sees `padding-#{$side}` and does not recognise a declaration in it; points 5 and 6 pass over the sheet without a trace. Only the comparison against the compiled output fires."
+}

@@ -1,0 +1,28 @@
+@mixin spacing($side) {
+  padding-#{$side}: var(--pct-space-3);
+}
+
+:host {
+  display: inline-flex;
+  align-items: center;
+  @include spacing(left);
+  margin-inline-start: var(--pct-space-2);
+  border-inline-start: 1px solid var(--pct-button-border);
+  text-align: start;
+}
+
+.button__spinner {
+  width: 1em;
+  height: 1em;
+  border: 2px solid currentColor;
+  /* pct-exception border-right-color: the gap in the spinning ring has no writing direction — the rotation
+     goes a full 360°, so in RTL it looks exactly the same. */
+  border-right-color: transparent;
+  border-radius: 50%;
+}
+
+:host([disabled]) {
+  color: var(--pct-button-disabled-fg);
+  background: var(--pct-button-disabled-bg);
+  opacity: 1;
+}
