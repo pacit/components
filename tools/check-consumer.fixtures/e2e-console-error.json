@@ -1,7 +1,7 @@
 {
-  "punkt": 7,
-  "kontrola": "e2e",
-  "regula": "blad-konsoli",
-  "opis": "Przeglądarka zgłosiła błąd na stronie konsumenta. Tu lądują rozjazdy hydracji (NG05xx): strona wygląda poprawnie i płaci podwójnym renderem oraz utratą stanu DOM.",
-  "bledy": ["NG0500: During hydration Angular expected <span> but found <div>"]
+  "point": 7,
+  "check": "e2e",
+  "rule": "console-error",
+  "description": "The browser reported an error on the consumer's page. This is where hydration drifts (NG05xx) land: the page looks right and pays with a double render and the loss of DOM state.",
+  "errors": ["NG0500: During hydration Angular expected <span> but found <div>"]
 }

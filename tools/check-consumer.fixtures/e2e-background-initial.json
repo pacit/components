@@ -1,7 +1,7 @@
 {
-  "punkt": 7,
-  "kontrola": "e2e",
-  "regula": "tlo-poczatkowe",
-  "opis": "Tło ma wartość początkową. Deklaracja background: var(--pct-button-bg) nie rozwiązała się i przeglądarka po cichu wróciła do przezroczystego — brak definicji custom property nie jest błędem.",
-  "tlo": "rgba(0, 0, 0, 0)"
+  "point": 7,
+  "check": "e2e",
+  "rule": "background-initial",
+  "description": "The background holds its initial value. The declaration background: var(--pct-button-bg) did not resolve and the browser quietly fell back to transparent — a missing custom property definition is not an error.",
+  "background": "rgba(0, 0, 0, 0)"
 }

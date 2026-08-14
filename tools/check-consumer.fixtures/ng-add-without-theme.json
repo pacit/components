@@ -1,7 +1,7 @@
 {
-  "punkt": 4,
-  "kontrola": "ng-add",
-  "regula": "brak-skorki-w-stylach",
-  "opis": "Lista styles urosła, ale nie o skórkę tego pakietu. Aplikacja zbuduje się i wyrenderuje komponenty bez wyglądu (lesson-36).",
-  "stylePo": ["@angular/cdk/overlay-prebuilt.css"]
+  "point": 4,
+  "check": "ng-add",
+  "rule": "theme-missing-from-styles",
+  "description": "The styles list grew, but not by this package's theme. The application will build and will render the components with no appearance (lesson-36).",
+  "stylesAfter": ["@angular/cdk/overlay-prebuilt.css"]
 }

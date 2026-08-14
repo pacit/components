@@ -1,7 +1,7 @@
 {
-  "punkt": 7,
-  "kontrola": "e2e",
-  "regula": "brak-elementu",
-  "opis": "Przeglądarka nie znalazła przycisku. Każda asercja o jego wyglądzie byłaby prawdą pustą — a wyglądałaby na dowód.",
-  "bezElementu": true
+  "point": 7,
+  "check": "e2e",
+  "rule": "element-missing",
+  "description": "The browser did not find the button. Every assertion about its appearance would be vacuously true — and would look like proof.",
+  "withoutElement": true
 }

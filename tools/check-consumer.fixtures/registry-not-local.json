@@ -1,7 +1,7 @@
 {
-  "punkt": 2,
-  "kontrola": "rejestr",
-  "regula": "nie-lokalny",
-  "opis": "Adres archiwum wskazuje na npmjs, a nie na lokalny rejestr. Suma może się zgadzać przypadkiem (ta sama wersja), a mierzony byłby pakiet, którego ta bramka nie zbudowała.",
-  "tarballWRejestrze": "https://registry.npmjs.org/@pacit/components/-/components-0.0.1.tgz"
+  "point": 2,
+  "check": "registry",
+  "rule": "not-local",
+  "description": "The archive's address points at npmjs and not at the local registry. The checksum may match by accident (the same version), and we would be measuring a package this gate did not build.",
+  "registryTarball": "https://registry.npmjs.org/@pacit/components/-/components-0.0.1.tgz"
 }

@@ -1,7 +1,7 @@
 {
-  "punkt": 4,
-  "kontrola": "ng-add",
-  "regula": "schematic-padl",
-  "opis": "Schematic z zainstalowanego pakietu zakończył się błędem. To jest punkt, który złapał `exports is not defined in ES module scope` — plik fabryki istniał i nie dawał się wczytać, bo manifest pakietu niesie `\"type\": \"module\"`, a schematics są CommonJS-em.",
-  "kodNgAdd": 1
+  "point": 4,
+  "check": "ng-add",
+  "rule": "schematic-failed",
+  "description": "The schematic from the installed package ended in an error. This is the point that caught `exports is not defined in ES module scope` — the factory file existed and could not be loaded, because the package manifest carries `\"type\": \"module\"` and schematics are CommonJS.",
+  "ngAddCode": 1
 }

@@ -1,7 +1,7 @@
 {
-  "punkt": 1,
-  "kontrola": "tarball",
-  "regula": "brak-skorki",
-  "opis": "Skórka jest w dist i nie ma jej w archiwum — czyli odfiltrował ją npm pack (files, .npmignore). Dokładnie ta różnica, której check-package nie widzi z założenia: on chodzi po katalogu, konsument dostaje archiwum.",
-  "usunPlik": "themes/pct.css"
+  "point": 1,
+  "check": "tarball",
+  "rule": "theme-missing",
+  "description": "The theme is in dist and is not in the archive — that is, npm pack filtered it out (files, .npmignore). Exactly the difference `check-package` cannot see by design: it walks the directory, the consumer gets the archive.",
+  "dropFile": "themes/pct.css"
 }

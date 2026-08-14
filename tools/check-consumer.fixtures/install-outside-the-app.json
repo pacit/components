@@ -1,7 +1,7 @@
 {
-  "punkt": 3,
-  "kontrola": "instalacja",
-  "regula": "spoza-aplikacji",
-  "opis": "Aplikacja rozwiązuje pakiet do node_modules repozytorium, nie do własnych. Wyszukiwanie w górę drzewa daje @angular/* i tą samą drogą podałoby @pacit/components — mierzony byłby wtedy pakiet, którego bramka nie opublikowała.",
-  "rozwiazanie": "/repozytorium/node_modules/@pacit/components/fesm2022/pacit-components-button.mjs"
+  "point": 3,
+  "check": "install",
+  "rule": "outside-the-app",
+  "description": "The application resolves the package to the repository's node_modules, not to its own. Searching up the tree gives @angular/* and would hand over @pacit/components by the same route — we would then be measuring a package this gate did not publish.",
+  "resolution": "/repository/node_modules/@pacit/components/fesm2022/pacit-components-button.mjs"
 }

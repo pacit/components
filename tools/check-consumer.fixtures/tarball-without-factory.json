@@ -1,7 +1,7 @@
 {
-  "punkt": 1,
-  "kontrola": "tarball",
-  "regula": "brak-schematica",
-  "opis": "Kolekcja schematica jest w archiwum, a plik fabryki nie. `ng add` wywala się wtedy u konsumenta na „Collection not found”.",
-  "usunPlik": "schematics/ng-add/index.js"
+  "point": 1,
+  "check": "tarball",
+  "rule": "schematic-missing",
+  "description": "The schematic's collection is in the archive and the factory file is not. `ng add` then falls over at the consumer on „Collection not found\".",
+  "dropFile": "schematics/ng-add/index.js"
 }

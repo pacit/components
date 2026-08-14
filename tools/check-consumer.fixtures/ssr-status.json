@@ -1,7 +1,7 @@
 {
-  "punkt": 6,
-  "kontrola": "ssr",
-  "regula": "status",
-  "opis": "Serwer aplikacji odpowiedział błędem. Tu ląduje wywrotka renderowania po stronie serwera — biblioteka sięgająca po document przy konstrukcji.",
-  "statusSsr": 500
+  "point": 6,
+  "check": "ssr",
+  "rule": "status",
+  "description": "The application server answered with an error. This is where a server-side rendering crash lands — a library reaching for document at construction.",
+  "ssrStatus": 500
 }

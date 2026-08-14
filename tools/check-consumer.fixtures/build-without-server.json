@@ -1,7 +1,7 @@
 {
-  "punkt": 5,
-  "kontrola": "build",
-  "regula": "brak-serwera",
-  "opis": "Build przeszedł, ale nie wypisał bundla serwera. Aplikacja zbudowała się BEZ SSR, a obietnica mówi o buildzie z SSR — punkty 6 i 7 nie miałyby czego uruchomić.",
-  "bezSerwera": true
+  "point": 5,
+  "check": "build",
+  "rule": "server-missing",
+  "description": "The build passed but printed no server bundle. The application built WITHOUT SSR, and the promise speaks of a build with SSR — points 6 and 7 would have nothing to start.",
+  "withoutServer": true
 }

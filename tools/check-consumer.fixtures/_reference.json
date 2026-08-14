@@ -1,8 +1,8 @@
 {
   "tarball": {
-    "wersja": "0.0.1",
-    "integrity": "sha512-Wsmh+0pfky7+ljGtU1yxVFQz1eQcEM0FbZ/CUfPYjhD/aM9Vj67mK3CBVziNYv3NfOxCdgbsmLbMHsvqNKlsNQ==",
-    "pliki": [
+    "version": "0.0.1",
+    "integrity": "sha512-yb0lxa+Z9WBjR51wZmoOrCsvR55N+nAC9UR1xY9D46fxmCIrswIQL4lbIDWWU8yZWEOJ+0rhOJFzxfHYSjN4Ww==",
+    "files": [
       "LICENSE",
       "README.md",
       "fesm2022/pacit-components-button.mjs",
@@ -38,8 +38,13 @@
     "manifest": {
       "name": "@pacit/components",
       "version": "0.0.1",
-      "description": "Dostępna biblioteka komponentów Angular: standalone, zoneless, signal forms, SSR i theming na design tokenach.",
+      "description": "Accessible Angular component library: standalone, zoneless, signal forms, SSR and design-token theming.",
       "license": "MIT",
+      "author": "PacIT - Marek Pac",
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/pacit/components.git"
+      },
       "keywords": [
         "angular",
         "components",
@@ -106,28 +111,24 @@
         "tslib": "^2.3.0"
       }
     },
-    "fabryki": [
-      "schematics/ng-add/index.js"
-    ]
+    "fabryki": ["schematics/ng-add/index.js"]
   },
-  "rejestr": {
+  "registry": {
     "url": "http://localhost:4873",
-    "opublikowany": true,
-    "wyjscie": "(wyjście npm publish)",
-    "metadane": {
-      "wersje": [
-        "0.0.1"
-      ],
-      "integrity": "sha512-Wsmh+0pfky7+ljGtU1yxVFQz1eQcEM0FbZ/CUfPYjhD/aM9Vj67mK3CBVziNYv3NfOxCdgbsmLbMHsvqNKlsNQ==",
+    "published": true,
+    "output": "(npm publish output)",
+    "metadata": {
+      "versions": ["0.0.1"],
+      "integrity": "sha512-yb0lxa+Z9WBjR51wZmoOrCsvR55N+nAC9UR1xY9D46fxmCIrswIQL4lbIDWWU8yZWEOJ+0rhOJFzxfHYSjN4Ww==",
       "tarball": "http://localhost:4873/@pacit/components/-/components-0.0.1.tgz"
     }
   },
-  "instalacja": {
-    "katalog": "/repozytorium/tmp/check-consumer/app",
-    "wpis": {
+  "install": {
+    "directory": "/repository/tmp/check-consumer/app",
+    "entry": {
       "version": "0.0.1",
       "resolved": "http://localhost:4873/@pacit/components/-/components-0.0.1.tgz",
-      "integrity": "sha512-Wsmh+0pfky7+ljGtU1yxVFQz1eQcEM0FbZ/CUfPYjhD/aM9Vj67mK3CBVziNYv3NfOxCdgbsmLbMHsvqNKlsNQ==",
+      "integrity": "sha512-yb0lxa+Z9WBjR51wZmoOrCsvR55N+nAC9UR1xY9D46fxmCIrswIQL4lbIDWWU8yZWEOJ+0rhOJFzxfHYSjN4Ww==",
       "license": "MIT",
       "dependencies": {
         "tslib": "^2.3.0"
@@ -138,48 +139,44 @@
         "@angular/forms": "^22.0.0"
       }
     },
-    "wyjscie": "(wyjście npm install)",
-    "rozwiazanie": "/repozytorium/tmp/check-consumer/app/node_modules/@pacit/components/fesm2022/pacit-components-button.mjs"
+    "output": "(npm install output)",
+    "resolution": "/repository/tmp/check-consumer/app/node_modules/@pacit/components/fesm2022/pacit-components-button.mjs"
   },
   "ngAdd": {
-    "kod": 0,
-    "wyjscie": "(wyjście ng generate)",
-    "stylePrzed": [],
-    "stylePo": [
+    "code": 0,
+    "output": "(ng generate output)",
+    "stylesBefore": [],
+    "stylesAfter": [
       "@pacit/components/themes/pct.css",
       "@angular/cdk/overlay-prebuilt.css"
     ]
   },
   "build": {
-    "kod": 0,
-    "wyjscie": "(wyjście ng build)",
-    "serwer": true,
-    "markery": {
+    "code": 0,
+    "output": "(ng build output)",
+    "server": true,
+    "markers": {
       "data-pct-part": true,
       "pct-button": true
     },
-    "tokenyWCss": 424
+    "tokensInCss": 424
   },
   "ssr": {
     "status": 200,
-    "kontekst": "ssr",
-    "czesci": [
-      "label"
-    ],
-    "markery": {
+    "context": "ssr",
+    "parts": ["label"],
+    "markers": {
       "data-pct-part": true,
       "pct-button": true
     },
-    "tresc": "(początek HTML-a)"
+    "content": "(start of the HTML)"
   },
   "e2e": {
     "element": true,
     "token": "#2563eb",
-    "tlo": "rgb(37, 99, 235)",
-    "tloTokenu": "rgb(37, 99, 235)",
-    "czesci": [
-      "label"
-    ],
-    "bledy": []
+    "background": "rgb(37, 99, 235)",
+    "tokenBackground": "rgb(37, 99, 235)",
+    "parts": ["label"],
+    "errors": []
   }
 }

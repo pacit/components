@@ -1,7 +1,7 @@
 {
-  "punkt": 7,
-  "kontrola": "e2e",
-  "regula": "bez-skorki",
-  "opis": "Token tła policzony na przycisku jest pusty: skórka nie doszła do przeglądarki. Przycisk jest w DOM-ie, ma klasy i części, i nie ma wyglądu — docelowa postać lesson-36.",
+  "point": 7,
+  "check": "e2e",
+  "rule": "no-theme",
+  "description": "The background token computed on the button is empty: the theme did not reach the browser. The button is in the DOM, it has classes and parts, and it has no appearance — the final form of lesson-36.",
   "token": ""
 }

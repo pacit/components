@@ -1,7 +1,7 @@
 {
-  "punkt": 2,
-  "kontrola": "rejestr",
-  "regula": "wersja",
-  "opis": "Rejestr nie zna wersji, którą spakowaliśmy. Publikacja zameldowała sukces, a w rejestrze stoi coś innego.",
-  "wersjeWRejestrze": ["0.0.2"]
+  "point": 2,
+  "check": "registry",
+  "rule": "version",
+  "description": "The registry does not know the version we packed. The publish reported success, and something else stands in the registry.",
+  "registryVersions": ["0.0.2"]
 }

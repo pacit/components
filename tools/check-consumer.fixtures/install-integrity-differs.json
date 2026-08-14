@@ -1,7 +1,7 @@
 {
-  "punkt": 3,
-  "kontrola": "instalacja",
-  "regula": "inna-integralnosc",
-  "opis": "Adres zgadza się z lokalnym rejestrem, a suma zainstalowanego archiwum nie zgadza się ze spakowanym — npm wziął wpis z własnego cache.",
-  "integrityInstalacji": "sha512-000000000000000000000000000000000000000000000000000000000000000000000000000000000000000w=="
+  "point": 3,
+  "check": "install",
+  "rule": "integrity-differs",
+  "description": "The address matches the local registry and the installed archive's checksum does not match the packed one — npm took the entry from its own cache.",
+  "installIntegrity": "sha512-000000000000000000000000000000000000000000000000000000000000000000000000000000000000000w=="
 }

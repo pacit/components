@@ -1,7 +1,7 @@
 {
-  "punkt": 5,
-  "kontrola": "build",
-  "regula": "skorka-nieobecna",
-  "opis": "Arkusz aplikacji nie ma ani jednej deklaracji --pct-*. Stan z lesson-36 przeniesiony o jedno piętro: nie pakiet jest bez skórki, tylko build konsumenta.",
-  "tokenyWCss": 0
+  "point": 5,
+  "check": "build",
+  "rule": "theme-absent",
+  "description": "The application's stylesheet has not one `--pct-*` declaration. The state from lesson-36 moved one floor up: it is not the package that has no theme, it is the consumer's build.",
+  "tokensInCss": 0
 }

@@ -1,7 +1,7 @@
 {
-  "punkt": 1,
-  "kontrola": "tarball",
-  "regula": "brak-licencji",
-  "opis": "Plik LICENSE jest w `dist`, ale wypadł z archiwum — tak działa pole `files` albo `.npmignore`. `check-package` czyta katalog i widzi komplet; konsument dostaje pakiet bez licencji, czyli dokładnie to, czego dział prawny szuka najpierw.",
-  "usunPlik": "LICENSE"
+  "point": 1,
+  "check": "tarball",
+  "rule": "licence-missing",
+  "description": "The LICENSE file is in `dist` but dropped out of the archive — that is how the `files` field or `.npmignore` works. `check-package` reads the directory and sees the full set; the consumer gets a package with no licence, which is exactly what a legal department looks for first.",
+  "dropFile": "LICENSE"
 }

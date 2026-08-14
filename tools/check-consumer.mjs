@@ -5,8 +5,8 @@
  * green. Hence the route — pack → publish → install BY NAME → `ng add` → SSR → browser.
  *
  *   1. `tarball`     — the archive holds the skin, every `exports` file, every factory,
- *   2. `rejestr`     — the publish worked and the registry serves THAT archive, locally,
- *   3. `instalacja`  — installing BY NAME pulls our version into the app's `node_modules`,
+ *   2. `registry`     — the publish worked and the registry serves THAT archive, locally,
+ *   3. `install`  — installing BY NAME pulls our version into the app's `node_modules`,
  *   4. `ng-add`      — the schematic from the INSTALLED package runs and adds the skin,
  *   5. `build`       — the app builds with SSR, its bundles hold the library and the tokens,
  *   6. `ssr`         — the built server renders the component ON THE SERVER,
@@ -16,7 +16,7 @@
  * `peerDependencies` are NOT installed from a registry, so a version-range drift passes
  * here — `req-project-dependencies` (B7) watches that.
  *
- * Usage: node tools/check-consumer.mjs [--zostaw] [--zapisz-wzorzec]
+ * Usage: node tools/check-consumer.mjs [--keep] [--write-reference]
  */
 import { execFileSync, spawn } from 'node:child_process';
 import {
@@ -34,12 +34,12 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = 'dist/libs/components';
-const PAKIET = '@pacit/components';
+const PACKAGE = '@pacit/components';
 const FIXTURES = join(ROOT, 'tools/check-consumer.fixtures');
-const BAZA = '_poprawny.json';
-const PRACA = join(ROOT, 'tmp/check-consumer');
-const ZOSTAW = process.argv.includes('--zostaw');
-const WZORZEC = process.argv.includes('--zapisz-wzorzec');
+const REFERENCE = '_reference.json';
+const WORKDIR = join(ROOT, 'tmp/check-consumer');
+const KEEP = process.argv.includes('--keep');
+const WRITE_REFERENCE = process.argv.includes('--write-reference');
 
 /** The skin. The same constant as in `check-package` — the same file, other side. */
 const SKORKA = 'themes/pct.css';
@@ -57,7 +57,7 @@ const SKORKA = 'themes/pct.css';
  * the `host` block, and `data-pct-part` is the public styling API (`req-api-parts`). The
  * application writes neither.
  */
-const MARKERY = ['data-pct-part', 'pct-button'];
+const MARKERS = ['data-pct-part', 'pct-button'];
 
 /** The token the library paints the button's background with, measured on both sides. */
 const TOKEN_TLA = '--pct-button-bg';
@@ -71,20 +71,20 @@ const TLO_POCZATKOWE = 'rgba(0, 0, 0, 0)';
  * lets through a case that fired on a neighbouring rule of that same point — measured in
  * A12 and confirmed in A11 ([`lesson-50`](../docs/lessons.md#lesson-50)).
  */
-class BladKonsumenta extends Error {
-  constructor(kontrola, regula, opis) {
-    super(opis);
-    this.kontrola = kontrola;
-    this.regula = regula;
+class ConsumerError extends Error {
+  constructor(check, rule, description) {
+    super(description);
+    this.check = check;
+    this.rule = rule;
   }
 }
 
-const lista = (xs) => [...xs].sort().join(', ') || '(pusto)';
+const list = (xs) => [...xs].sort().join(', ') || '(pusto)';
 
 // ── kontrole ──────────────────────────────────────────────────────────────────
 
 /**
- * The full set of checks over a finished measurement. Throws `BladKonsumenta` on the first
+ * The full set of checks over a finished measurement. Throws `ConsumerError` on the first
  * violation; returns a summary sentence.
  *
  * Every rule reads the measurement DEFENSIVELY, even though the previous one „already
@@ -93,9 +93,9 @@ const lista = (xs) => [...xs].sort().join(', ') || '(pusto)';
  * the ability to examine the rule it was meant to examine. The same defect came out in A3,
  * A4, A7, A8, A11 and A12, six times running.
  */
-const sprawdzKonsumenta = (we) => {
-  const fail = (kontrola, regula, opis) => {
-    throw new BladKonsumenta(kontrola, regula, opis);
+const checkConsumer = (input) => {
+  const fail = (check, rule, description) => {
+    throw new ConsumerError(check, rule, description);
   };
 
   // ── 1. tarball ──────────────────────────────────────────────────────────────
@@ -103,30 +103,30 @@ const sprawdzKonsumenta = (we) => {
   // it and a consumer's `node_modules` stands a filter (`files`, `.npmignore`) — a file
   // present in `dist` and absent from the archive is invisible to that gate and fatal for
   // the consumer.
-  const tarball = we.tarball ?? {};
-  const pliki = new Set(tarball.pliki ?? []);
-  if (pliki.size === 0)
+  const tarball = input.tarball ?? {};
+  const files = new Set(tarball.files ?? []);
+  if (files.size === 0)
     fail(
       'tarball',
-      'pusty',
+      'empty',
       `\`npm pack ${DIST}\` listed no file at all — every later point would then always ` +
         `pass, having nothing to look for`,
     );
 
-  if (!pliki.has(SKORKA))
+  if (!files.has(SKORKA))
     fail(
       'tarball',
-      'brak-skorki',
+      'theme-missing',
       `the archive holds no \`${SKORKA}\`, though the file is in \`${DIST}\` — so ` +
         `\`npm pack\` filtered it out (the \`files\` field or \`.npmignore\`).\n` +
         `    The consumer gets components referring to tokens nobody ` +
         `declares (lesson-36), and \`check-package\` will not see it: it reads a directory`,
     );
 
-  if (!pliki.has('LICENSE'))
+  if (!files.has('LICENSE'))
     fail(
       'tarball',
-      'brak-licencji',
+      'licence-missing',
       `the archive holds no \`LICENSE\` file, though it is in \`${DIST}\` — \`npm pack\` ` +
         `filtered it out.\n` +
         `    A \`"license"\` in the manifest with no file is formally an incomplete ` +
@@ -138,13 +138,13 @@ const sprawdzKonsumenta = (we) => {
     .map((cel) => (typeof cel === 'object' ? cel?.default : cel))
     .filter((p) => typeof p === 'string' && !p.includes('*'))
     .map((p) => p.replace(/^\.\//, ''));
-  const brakZExports = zExports.filter((p) => !pliki.has(p));
+  const brakZExports = zExports.filter((p) => !files.has(p));
   if (brakZExports.length)
     fail(
       'tarball',
-      'brak-entrypointu',
+      'entrypoint-missing',
       `the \`exports\` map promises files the archive does not hold: ` +
-        `${lista(brakZExports)}.\n` +
+        `${list(brakZExports)}.\n` +
         `    Importing such an entrypoint ends at the consumer's with ERR_MODULE_NOT_FOUND`,
     );
 
@@ -154,110 +154,110 @@ const sprawdzKonsumenta = (we) => {
   ].filter((p) => typeof p === 'string');
   const brakKolekcji = wskazaneKolekcje
     .map((p) => p.replace(/^\.\//, ''))
-    .filter((p) => !pliki.has(p));
-  const brakFabryk = (tarball.fabryki ?? []).filter((p) => !pliki.has(p));
+    .filter((p) => !files.has(p));
+  const brakFabryk = (tarball.fabryki ?? []).filter((p) => !files.has(p));
   if (brakKolekcji.length || brakFabryk.length)
     fail(
       'tarball',
-      'brak-schematica',
+      'schematic-missing',
       `the archive does not hold the files the manifest points at:\n` +
         (brakKolekcji.length
-          ? `      collections: ${lista(brakKolekcji)}\n`
+          ? `      collections: ${list(brakKolekcji)}\n`
           : '') +
-        (brakFabryk.length ? `      factories: ${lista(brakFabryk)}\n` : '') +
+        (brakFabryk.length ? `      factories: ${list(brakFabryk)}\n` : '') +
         `    \`ng add\`/\`ng update\` will fail at the consumer's with „Collection not found"`,
     );
 
-  // ── 2. rejestr ──────────────────────────────────────────────────────────────
+  // ── 2. registry ──────────────────────────────────────────────────────────────
   // The publish and what the registry then serves. This point exists because of the
   // UPLINK: the Verdaccio configuration proxies npmjs, so a failed publish does NOT end in
   // an install error — it ends in somebody else's package of that name being fetched.
   // Today there is no `@pacit/components` on npmjs; from the first release (B2) there will
   // be, and a gate without this point would then examine a pre-release artifact and look
   // green.
-  const rejestr = we.rejestr ?? {};
-  if (!rejestr.opublikowany)
+  const registry = input.registry ?? {};
+  if (!registry.published)
     fail(
-      'rejestr',
-      'publikacja',
+      'registry',
+      'publish',
       `\`npm publish\` to the local registry failed.\n` +
-        `    ${rejestr.wyjscie ?? '(no output)'}`,
+        `    ${registry.output ?? '(no output)'}`,
     );
 
-  const metadane = rejestr.metadane;
-  if (!metadane || !(metadane.wersje ?? []).includes(tarball.wersja))
+  const metadata = registry.metadata;
+  if (!metadata || !(metadata.versions ?? []).includes(tarball.version))
     fail(
-      'rejestr',
-      'wersja',
-      `rejestr nie serwuje wersji \`${tarball.wersja}\` — zna: ` +
-        `${lista(metadane?.wersje ?? [])}`,
+      'registry',
+      'version',
+      `the registry does not serve version \`${tarball.version}\` — it knows: ` +
+        `${list(metadata?.versions ?? [])}`,
     );
 
-  if (metadane?.integrity !== tarball.integrity)
+  if (metadata?.integrity !== tarball.integrity)
     fail(
-      'rejestr',
-      'integralnosc',
+      'registry',
+      'integrity',
       `the registry serves a DIFFERENT archive from the one we packed:\n` +
         `      packed:        ${tarball.integrity}\n` +
-        `      from registry: ${metadane.integrity}\n` +
+        `      from registry: ${metadata.integrity}\n` +
         `    Usual cause: the answer came from the npmjs uplink, not from the publish`,
     );
 
-  if (!String(metadane?.tarball ?? '').startsWith(rejestr.url ?? '\0'))
+  if (!String(metadata?.tarball ?? '').startsWith(registry.url ?? '\0'))
     fail(
-      'rejestr',
-      'nie-lokalny',
-      `the archive's address (\`${metadane?.tarball}\`) does not start with the local ` +
-        `registry (\`${rejestr.url}\`) — we would be measuring somebody else's package`,
+      'registry',
+      'not-local',
+      `the archive's address (\`${metadata?.tarball}\`) does not start with the local ` +
+        `registry (\`${registry.url}\`) — we would be measuring somebody else's package`,
     );
 
-  // ── 3. instalacja ───────────────────────────────────────────────────────────
-  const instalacja = we.instalacja ?? {};
-  const wpis = instalacja.wpis;
-  if (!wpis)
+  // ── 3. install ───────────────────────────────────────────────────────────
+  const install = input.install ?? {};
+  const entry = install.entry;
+  if (!entry)
     fail(
-      'instalacja',
-      'brak-wpisu',
-      `after \`npm install ${PAKIET}\` there is no \`node_modules/${PAKIET}\` entry in ` +
+      'install',
+      'entry-missing',
+      `after \`npm install ${PACKAGE}\` there is no \`node_modules/${PACKAGE}\` entry in ` +
         `the application's lock file — the install never happened`,
     );
 
-  // `wpis?.` even though the rule above „already checked" that the entry exists. Disarming
+  // `entry?.` even though the rule above „already checked" that the entry exists. Disarming
   // that one gave a `TypeError` here instead of a message — the SEVENTH time for this
   // defect in this repository (A3, A4, A7, A8, A11, A12), this time in a gate written in
   // full awareness of the previous six and with a paragraph about it in the header. A
   // dependency between rules is normal; writing it so that disarming the previous one puts
   // out the next one's message is not.
-  if (!String(wpis?.resolved ?? '').startsWith(rejestr.url ?? '\0'))
+  if (!String(entry?.resolved ?? '').startsWith(registry.url ?? '\0'))
     fail(
-      'instalacja',
-      'spoza-rejestru',
+      'install',
+      'outside-the-registry',
       `the installed package came from outside the local registry:\n` +
-        `      resolved: ${wpis?.resolved}\n` +
-        `      rejestr: ${rejestr.url}`,
+        `      resolved: ${entry?.resolved}\n` +
+        `      registry: ${registry.url}`,
     );
 
-  if (wpis?.integrity !== tarball.integrity)
+  if (entry?.integrity !== tarball.integrity)
     fail(
-      'instalacja',
-      'inna-integralnosc',
+      'install',
+      'integrity-differs',
       `the installed archive is not the one we packed:\n` +
         `      packed:    ${tarball.integrity}\n` +
-        `      zainstalowane: ${wpis?.integrity}`,
+        `      zainstalowane: ${entry?.integrity}`,
     );
 
   // The DENOMINATOR of module resolution. The application sits in the repository's `tmp/`
   // so that `@angular/*` is found by walking up the tree — and that same walk would one day
   // find `@pacit/components` there, had anyone installed it at the root. The whole gate
   // would then be measuring a package it did not publish.
-  const rozwiazanie = instalacja.rozwiazanie;
-  const wAplikacji = `${instalacja.katalog ?? '\0'}/node_modules/`;
-  if (!rozwiazanie || !String(rozwiazanie).startsWith(wAplikacji))
+  const resolution = install.resolution;
+  const inTheApp = `${install.directory ?? '\0'}/node_modules/`;
+  if (!resolution || !String(resolution).startsWith(inTheApp))
     fail(
-      'instalacja',
-      'spoza-aplikacji',
-      `the application resolves \`${PAKIET}/button\` to \`${rozwiazanie}\`, outside its ` +
-        `own \`node_modules\` (\`${wAplikacji}\`) — we would be measuring a package other ` +
+      'install',
+      'outside-the-app',
+      `the application resolves \`${PACKAGE}/button\` to \`${resolution}\`, outside its ` +
+        `own \`node_modules\` (\`${inTheApp}\`) — we would be measuring a package other ` +
         `than the installed one`,
     );
 
@@ -266,115 +266,115 @@ const sprawdzKonsumenta = (we) => {
   // `check-package` asks whether the factory file exists; this point asks whether it can
   // be loaded and does anything. The difference between those questions cost this library
   // a crash on the consumer's first command.
-  const ngAdd = we.ngAdd ?? {};
-  if (ngAdd.kod !== 0)
+  const ngAdd = input.ngAdd ?? {};
+  if (ngAdd.code !== 0)
     fail(
       'ng-add',
-      'schematic-padl',
-      `the \`${PAKIET}:ng-add\` schematic exited with code ${ngAdd.kod}.\n` +
-        `    ${(ngAdd.wyjscie ?? '(no output)').split('\n').slice(0, 6).join('\n    ')}`,
+      'schematic-failed',
+      `the \`${PACKAGE}:ng-add\` schematic exited with code ${ngAdd.code}.\n` +
+        `    ${(ngAdd.output ?? '(no output)').split('\n').slice(0, 6).join('\n    ')}`,
     );
 
-  const przed = ngAdd.stylePrzed ?? [];
-  const po = ngAdd.stylePo ?? [];
+  const przed = ngAdd.stylesBefore ?? [];
+  const po = ngAdd.stylesAfter ?? [];
   if (po.length <= przed.length)
     fail(
       'ng-add',
-      'bez-zmiany',
+      'no-change',
       `the schematic passed, but the \`styles\` list did not change (${przed.length} → ` +
         `${po.length}) — \`ng add\` ended with an instruction to be carried out by hand ` +
         `or with a silent no-op`,
     );
 
-  if (!po.some((s) => String(s).includes(PAKIET)))
+  if (!po.some((s) => String(s).includes(PACKAGE)))
     fail(
       'ng-add',
-      'brak-skorki-w-stylach',
-      `po \`ng add\` w \`styles\` nie ma ani jednego wpisu z \`${PAKIET}\`: ` +
-        `${lista(po)}.\n` +
+      'theme-missing-from-styles',
+      `after \`ng add\` there is no entry from \`${PACKAGE}\` in \`styles\`: ` +
+        `${list(po)}.\n` +
         `    With no skin the components render with no appearance and nobody notices ` +
         `(lesson-36)`,
     );
 
   // ── 5. build ────────────────────────────────────────────────────────────────
-  const build = we.build ?? {};
-  if (build.kod !== 0)
+  const build = input.build ?? {};
+  if (build.code !== 0)
     fail(
       'build',
-      'build-padl',
-      `the consumer application's build exited with code ${build.kod}.\n` +
-        `    ${(build.wyjscie ?? '(no output)').split('\n').slice(-8).join('\n    ')}`,
+      'build-failed',
+      `the consumer application's build exited with code ${build.code}.\n` +
+        `    ${(build.output ?? '(no output)').split('\n').slice(-8).join('\n    ')}`,
     );
 
-  if (!build.serwer)
+  if (!build.server)
     fail(
       'build',
-      'brak-serwera',
+      'server-missing',
       `the build's output holds no server bundle — the application built WITHOUT SSR, ` +
         `and the promise speaks of a build with SSR`,
     );
 
-  const brakMarkerow = MARKERY.filter((m) => !(build.markery ?? {})[m]);
+  const brakMarkerow = MARKERS.filter((m) => !(build.markers ?? {})[m]);
   if (brakMarkerow.length)
     fail(
       'build',
-      'biblioteka-nieobecna',
-      `the browser bundle holds no trace of the library: ${lista(brakMarkerow)}.\n` +
+      'library-absent',
+      `the browser bundle holds no trace of the library: ${list(brakMarkerow)}.\n` +
         `    This is the DENOMINATOR: an application that never pulled the library in ` +
         `passes every assertion about its behaviour, having nothing to notice`,
     );
 
-  if (!(build.tokenyWCss > 0))
+  if (!(build.tokensInCss > 0))
     fail(
       'build',
-      'skorka-nieobecna',
-      `arkusz aplikacji nie ma ani jednej deklaracji \`--pct-*\` ` +
-        `(policzone: ${build.tokenyWCss}).\n` +
+      'theme-absent',
+      `the application's stylesheet has not one \`--pct-*\` declaration ` +
+        `(policzone: ${build.tokensInCss}).\n` +
         `    The skin never reached the build — exactly the state of lesson-36, only ` +
-        `u konsumenta`,
+        `at the consumer`,
     );
 
   // ── 6. ssr ──────────────────────────────────────────────────────────────────
-  const ssr = we.ssr ?? {};
+  const ssr = input.ssr ?? {};
   if (ssr.status !== 200)
     fail(
       'ssr',
       'status',
       `the application's server answered ${ssr.status ?? '(no answer)'} instead of 200.\n` +
-        `    ${(ssr.tresc ?? '').slice(0, 300)}`,
+        `    ${(ssr.content ?? '').slice(0, 300)}`,
     );
 
-  if (ssr.kontekst !== 'ssr')
+  if (ssr.context !== 'ssr')
     fail(
       'ssr',
-      'bez-renderu',
-      `the answer carries \`ng-server-context="${ssr.kontekst}"\` and not \`"ssr"\` — the ` +
+      'no-render',
+      `the answer carries \`ng-server-context="${ssr.context}"\` and not \`"ssr"\` — the ` +
         `content came from a static file, so the server bundle rendered nothing and the ` +
         `point below would be examining the result of a prerender`,
     );
 
-  if (!(ssr.markery ?? {})['pct-button'])
+  if (!(ssr.markers ?? {})['pct-button'])
     fail(
       'ssr',
-      'bez-komponentu',
+      'no-component',
       `the server's HTML holds no \`pct-button\` class — the component did not render on ` +
         `the server (did the library reach for \`document\`? did it fail to match?)`,
     );
 
-  if ((ssr.czesci ?? []).length === 0)
+  if ((ssr.parts ?? []).length === 0)
     fail(
       'ssr',
-      'bez-czesci',
+      'no-parts',
       `the server's HTML holds not one \`data-pct-part\` — the public styling API ` +
         `(req-api-parts) never reached the consumer`,
     );
 
   // ── 7. e2e ──────────────────────────────────────────────────────────────────
-  const e2e = we.e2e ?? {};
+  const e2e = input.e2e ?? {};
   if (!e2e.element)
     fail(
       'e2e',
-      'brak-elementu',
+      'element-missing',
       `the browser found no button in the tree — everything below would be vacuously ` +
         `true, with nothing to measure`,
     );
@@ -382,60 +382,60 @@ const sprawdzKonsumenta = (we) => {
   if (!String(e2e.token ?? '').trim())
     fail(
       'e2e',
-      'bez-skorki',
+      'no-theme',
       `\`${TOKEN_TLA}\` computed on the button is empty — the skin never reached the ` +
         `browser. The button is then in the DOM with all its classes and parts and no ` +
         `appearance: the silent defect of lesson-36 in its final form`,
     );
 
-  if (e2e.tlo === TLO_POCZATKOWE)
+  if (e2e.background === TLO_POCZATKOWE)
     fail(
       'e2e',
-      'tlo-poczatkowe',
+      'background-initial',
       `the button's background has the INITIAL value (\`${TLO_POCZATKOWE}\`) — the ` +
         `\`background: var(${TOKEN_TLA})\` declaration did not resolve and the browser ` +
         `quietly fell back to transparent`,
     );
 
-  if (e2e.tlo !== e2e.tloTokenu)
+  if (e2e.background !== e2e.tokenBackground)
     fail(
       'e2e',
-      'tlo-nie-z-tokenu',
-      `the button's background (\`${e2e.tlo}\`) is not the value of \`${TOKEN_TLA}\` ` +
-        `(\`${e2e.tloTokenu}\`) — the skin is loaded and the component paints itself with ` +
+      'background-not-from-token',
+      `the button's background (\`${e2e.background}\`) is not the value of \`${TOKEN_TLA}\` ` +
+        `(\`${e2e.tokenBackground}\`) — the skin is loaded and the component paints itself with ` +
         `something else, so overriding the token at the consumer's changes nothing`,
     );
 
-  if ((e2e.bledy ?? []).length)
+  if ((e2e.errors ?? []).length)
     fail(
       'e2e',
-      'blad-konsoli',
-      `the browser reported ${e2e.bledy.length} errors on the consumer's page:\n` +
-        e2e.bledy.map((b) => `      ${String(b).slice(0, 200)}`).join('\n') +
+      'console-error',
+      `the browser reported ${e2e.errors.length} errors on the consumer's page:\n` +
+        e2e.errors.map((b) => `      ${String(b).slice(0, 200)}`).join('\n') +
         `\n    Hydration mismatches (NG05xx) land here: the page looks right and pays ` +
         `with a double render`,
     );
 
   return (
-    `an archive of ${pliki.size} files (${tarball.wersja}) → registry → SSR app: ` +
-    `${build.tokenyWCss} token declarations in the stylesheet, ` +
-    `${(ssr.czesci ?? []).length} parts in the server's HTML, ` +
-    `background ${e2e.tlo} from \`${TOKEN_TLA}\``
+    `an archive of ${files.size} files (${tarball.version}) → registry → SSR app: ` +
+    `${build.tokensInCss} token declarations in the stylesheet, ` +
+    `${(ssr.parts ?? []).length} parts in the server's HTML, ` +
+    `background ${e2e.background} from \`${TOKEN_TLA}\``
   );
 };
 
-// ── pomiar ────────────────────────────────────────────────────────────────────
+// ── measurement ────────────────────────────────────────────────────────────────────
 
-const czytajJson = (sciezka) => {
+const readJson = (path) => {
   try {
-    return JSON.parse(readFileSync(sciezka, 'utf8'));
+    return JSON.parse(readFileSync(path, 'utf8'));
   } catch {
     return null;
   }
 };
 
 /** A free port. This gate runs in CI beside other things, and 4873 is often taken. */
-const wolnyPort = () =>
+const freePort = () =>
   new Promise((res, rej) => {
     const s = createServer();
     s.on('error', rej);
@@ -445,18 +445,18 @@ const wolnyPort = () =>
     });
   });
 
-const czekaj = (ms) => new Promise((res) => setTimeout(res, ms));
+const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
 
 /** Waits until an address answers. Returns `false` rather than throwing — a point judges. */
-const czekajNaHttp = async (url, sekundy = 60) => {
-  for (let i = 0; i < sekundy * 4; i++) {
+const waitForHttp = async (url, seconds = 60) => {
+  for (let i = 0; i < seconds * 4; i++) {
     try {
       const r = await fetch(url, { signal: AbortSignal.timeout(2000) });
       if (r.status < 500) return true;
     } catch {
       /* not up yet */
     }
-    await czekaj(250);
+    await sleep(250);
   }
   return false;
 };
@@ -467,18 +467,18 @@ const czekajNaHttp = async (url, sekundy = 60) => {
  * and an `execFileSync` that throws would turn the gate into a stack trace at exactly the
  * place where it was to say what happened.
  */
-const uruchom = (plik, args, opcje = {}) => {
+const run = (file, args, options = {}) => {
   try {
-    const out = execFileSync(plik, args, {
+    const out = execFileSync(file, args, {
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'pipe'],
-      ...opcje,
+      ...options,
     });
-    return { kod: 0, wyjscie: out ?? '' };
+    return { code: 0, output: out ?? '' };
   } catch (e) {
     return {
-      kod: e.status ?? 1,
-      wyjscie: `${e.stdout ?? ''}${e.stderr ?? ''}` || String(e.message ?? e),
+      code: e.status ?? 1,
+      output: `${e.stdout ?? ''}${e.stderr ?? ''}` || String(e.message ?? e),
     };
   }
 };
@@ -486,16 +486,16 @@ const uruchom = (plik, args, opcje = {}) => {
 /** The factory files from a schematic collection — paths as they lie in the archive. */
 const fabrykiSchematicow = (manifest) => {
   const out = [];
-  for (const wskaznik of [
+  for (const pointer of [
     manifest?.schematics,
     manifest?.['ng-update']?.migrations,
   ]) {
-    if (typeof wskaznik !== 'string') continue;
-    const kolekcja = czytajJson(join(ROOT, DIST, wskaznik));
-    for (const def of Object.values(kolekcja?.schematics ?? {})) {
+    if (typeof pointer !== 'string') continue;
+    const collection = readJson(join(ROOT, DIST, pointer));
+    for (const def of Object.values(collection?.schematics ?? {})) {
       const fabryka = String(def.factory ?? '').split('#')[0];
       if (!fabryka) continue;
-      out.push(join(dirname(wskaznik), `${fabryka}.js`).replace(/^\.\//, ''));
+      out.push(join(dirname(pointer), `${fabryka}.js`).replace(/^\.\//, ''));
     }
   }
   return out;
@@ -509,11 +509,11 @@ const fabrykiSchematicow = (manifest) => {
  * from the registry. The same choice as in `check-bundle`. `tmp/` is in `.gitignore`, so
  * the probe's files do not become a defect for `check-typecheck`.
  */
-const przygotujKatalog = () => {
-  rmSync(PRACA, { recursive: true, force: true });
-  mkdirSync(join(PRACA, 'app/src'), { recursive: true });
-  mkdirSync(join(PRACA, 'registry'), { recursive: true });
-  return { app: join(PRACA, 'app'), registry: join(PRACA, 'registry') };
+const prepareDirectory = () => {
+  rmSync(WORKDIR, { recursive: true, force: true });
+  mkdirSync(join(WORKDIR, 'app/src'), { recursive: true });
+  mkdirSync(join(WORKDIR, 'registry'), { recursive: true });
+  return { app: join(WORKDIR, 'app'), registry: join(WORKDIR, 'registry') };
 };
 
 /**
@@ -533,11 +533,11 @@ const przygotujKatalog = () => {
  * configuration, not the library's — but without it point 6 would be measuring a
  * framework error instead of the package.
  */
-const napiszAplikacje = (app) => {
+const writeApp = (app) => {
   writeFileSync(
     join(app, 'package.json'),
     JSON.stringify(
-      { name: 'pct-konsument', version: '0.0.0', private: true },
+      { name: 'pct-consumer', version: '0.0.0', private: true },
       null,
       2,
     ) + '\n',
@@ -549,7 +549,7 @@ const napiszAplikacje = (app) => {
       {
         version: 1,
         projects: {
-          konsument: {
+          consumer: {
             projectType: 'application',
             root: '',
             sourceRoot: 'src',
@@ -599,24 +599,24 @@ const napiszAplikacje = (app) => {
     ) + '\n',
   );
 
-  const plik = (nazwa, tresc) =>
-    writeFileSync(join(app, 'src', nazwa), tresc.join('\n') + '\n');
+  const file = (name, content) =>
+    writeFileSync(join(app, 'src', name), content.join('\n') + '\n');
 
-  plik('index.html', [
+  file('index.html', [
     '<!doctype html>',
     '<html lang="pl">',
-    '  <head><meta charset="utf-8" /><title>konsument</title></head>',
+    '  <head><meta charset="utf-8" /><title>consumer</title></head>',
     '  <body><app-root></app-root></body>',
     '</html>',
   ]);
 
-  plik('app.ts', [
+  file('app.ts', [
     `import { Component } from '@angular/core';`,
     `import { RouterOutlet } from '@angular/router';`,
-    `import { PctButton } from '${PAKIET}/button';`,
+    `import { PctButton } from '${PACKAGE}/button';`,
     ``,
     `@Component({`,
-    `  selector: 'app-sonda',`,
+    `  selector: 'app-probe',`,
     `  imports: [PctButton],`,
     `  template: \`<button pctButton id="sonda">Zapisz</button>\`,`,
     `})`,
@@ -630,7 +630,7 @@ const napiszAplikacje = (app) => {
     `export class App {}`,
   ]);
 
-  plik('main.ts', [
+  file('main.ts', [
     `import { provideZonelessChangeDetection } from '@angular/core';`,
     `import {`,
     `  bootstrapApplication,`,
@@ -648,7 +648,7 @@ const napiszAplikacje = (app) => {
     `}).catch((e) => console.error(e));`,
   ]);
 
-  plik('main.server.ts', [
+  file('main.server.ts', [
     `import { provideZonelessChangeDetection } from '@angular/core';`,
     `import {`,
     `  BootstrapContext,`,
@@ -676,7 +676,7 @@ const napiszAplikacje = (app) => {
     `export default bootstrap;`,
   ]);
 
-  plik('server.ts', [
+  file('server.ts', [
     `import {`,
     `  AngularNodeAppEngine,`,
     `  createNodeRequestHandler,`,
@@ -710,7 +710,7 @@ const napiszAplikacje = (app) => {
 };
 
 /** A running Verdaccio with storage that is fresh for every run. */
-const wstanRejestr = async (registry, port) => {
+const startRegistry = async (storage, port) => {
   const proc = spawn(
     process.execPath,
     [
@@ -726,15 +726,15 @@ const wstanRejestr = async (registry, port) => {
       // version into persistent storage ends in a conflict the second time, so the gate
       // would fire on ITSELF. The configuration stays the real one — the variable
       // overrides a single path in it rather than forking the file it was to watch.
-      env: { ...process.env, VERDACCIO_STORAGE_PATH: registry },
+      env: { ...process.env, VERDACCIO_STORAGE_PATH: storage },
       stdio: ['ignore', 'pipe', 'pipe'],
     },
   );
   let log = '';
   proc.stdout.on('data', (d) => (log += d));
   proc.stderr.on('data', (d) => (log += d));
-  const wstal = await czekajNaHttp(`http://localhost:${port}/-/ping`, 30);
-  return { proc, wstal, log: () => log };
+  const started = await waitForHttp(`http://localhost:${port}/-/ping`, 30);
+  return { proc, started, log: () => log };
 };
 
 /** The measurement in a browser. One pass, exactly as the promise says. */
@@ -743,13 +743,13 @@ const wPrzegladarce = async (url) => {
   const browser = await chromium.launch();
   try {
     const page = await browser.newPage();
-    const bledy = [];
-    page.on('console', (m) => m.type() === 'error' && bledy.push(m.text()));
-    page.on('pageerror', (e) => bledy.push(String(e)));
+    const errors = [];
+    page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
+    page.on('pageerror', (e) => errors.push(String(e)));
     await page.goto(url, { waitUntil: 'networkidle' });
     return {
       ...(await page.evaluate(
-        ([tokenTla]) => {
+        ([backgroundToken]) => {
           const el = document.querySelector('#sonda');
           if (!el) return { element: false };
           // The token's value is measured by the BROWSER, not parsed in Node: a token is
@@ -757,23 +757,25 @@ const wPrzegladarce = async (url) => {
           // computed by the same engine. The probe sits inside the button, so it
           // dziedziczy jego scope custom properties.
           const sonda = document.createElement('span');
-          sonda.style.backgroundColor = `var(${tokenTla})`;
+          sonda.style.backgroundColor = `var(${backgroundToken})`;
           el.appendChild(sonda);
-          const tloTokenu = getComputedStyle(sonda).backgroundColor;
+          const tokenBackground = getComputedStyle(sonda).backgroundColor;
           sonda.remove();
           return {
             element: true,
-            token: getComputedStyle(el).getPropertyValue(tokenTla).trim(),
-            tlo: getComputedStyle(el).backgroundColor,
-            tloTokenu,
-            czesci: [...document.querySelectorAll('[data-pct-part]')].map((e) =>
+            token: getComputedStyle(el)
+              .getPropertyValue(backgroundToken)
+              .trim(),
+            background: getComputedStyle(el).backgroundColor,
+            tokenBackground,
+            parts: [...document.querySelectorAll('[data-pct-part]')].map((e) =>
               e.getAttribute('data-pct-part'),
             ),
           };
         },
         [TOKEN_TLA],
       )),
-      bledy,
+      errors,
     };
   } finally {
     await browser.close();
@@ -783,80 +785,80 @@ const wPrzegladarce = async (url) => {
 /** The consumer's route, run end to end. */
 const zmierzRepozytorium = async () => {
   const dist = join(ROOT, DIST);
-  const manifest = czytajJson(join(dist, 'package.json'));
+  const manifest = readJson(join(dist, 'package.json'));
   if (!manifest)
-    throw new BladKonsumenta(
+    throw new ConsumerError(
       'tarball',
-      'pusty',
+      'empty',
       `no built package in ${DIST} — this gate measures the artifact, not the sources.\n` +
         `    The target needs a \`dependsOn\` on the library's build`,
     );
 
-  const { app, registry } = przygotujKatalog();
-  const port = await wolnyPort();
-  const portApp = await wolnyPort();
+  const { app, registry: registryDir } = prepareDirectory();
+  const port = await freePort();
+  const portApp = await freePort();
   const url = `http://localhost:${port}`;
 
   // An npm configuration per run. The registry demands a token even under `publish: $all`
   // (without one npm ends in ENEEDAUTH), and writing it into `~/.npmrc` would change the
   // machine's settings — that is what the `@nx/js:verdaccio` executor does, and why this
   // gate does not use it.
-  const npmrc = join(PRACA, 'npmrc');
+  const npmrc = join(WORKDIR, 'npmrc');
   writeFileSync(
     npmrc,
     `registry=${url}/\n//localhost:${port}/:_authToken=pct-check-consumer\n`,
   );
   const npmEnv = { ...process.env, npm_config_userconfig: npmrc };
 
-  const rejestr = await wstanRejestr(registry, port);
-  let serwerApp = null;
+  const registryProc = await startRegistry(registryDir, port);
+  let appServer = null;
 
   try {
-    if (!rejestr.wstal)
-      throw new BladKonsumenta(
-        'rejestr',
-        'publikacja',
-        `the local registry did not come up at ${url}:\n    ${rejestr.log().slice(0, 500)}`,
+    if (!registryProc.started)
+      throw new ConsumerError(
+        'registry',
+        'publish',
+        `the local registry did not come up at ${url}:\n    ${registryProc.log().slice(0, 500)}`,
       );
 
     // 1. `npm pack` — what will really travel to the registry.
-    const spakowane = uruchom(
+    const packed = run(
       'npm',
-      ['pack', dist, '--json', '--pack-destination', PRACA],
+      ['pack', dist, '--json', '--pack-destination', WORKDIR],
       { cwd: ROOT },
     );
-    const opisPaczki = (() => {
-      const i = spakowane.wyjscie.indexOf('[');
+    const packDescription = (() => {
+      const i = packed.output.indexOf('[');
       try {
-        return JSON.parse(spakowane.wyjscie.slice(i))[0];
+        return JSON.parse(packed.output.slice(i))[0];
       } catch {
         return null;
       }
     })();
     const tarball = {
-      wersja: opisPaczki?.version ?? manifest.version,
-      integrity: opisPaczki?.integrity ?? null,
-      pliki: (opisPaczki?.files ?? []).map((f) => f.path),
+      version: packDescription?.version ?? manifest.version,
+      integrity: packDescription?.integrity ?? null,
+      files: (packDescription?.files ?? []).map((f) => f.path),
       manifest,
       fabryki: fabrykiSchematicow(manifest),
     };
-    const archiwum = join(PRACA, opisPaczki?.filename ?? 'brak.tgz');
+    const archive = join(WORKDIR, packDescription?.filename ?? 'brak.tgz');
 
-    // 2. publikacja + odczyt metadanych z rejestru.
-    const publikacja = existsSync(archiwum)
-      ? uruchom('npm', ['publish', archiwum, '--registry', url], {
-          cwd: PRACA,
+    // 2. publish + read the metadata from the registry.
+    const publikacja = existsSync(archive)
+      ? run('npm', ['publish', archive, '--registry', url], {
+          cwd: WORKDIR,
           env: npmEnv,
         })
-      : { kod: 1, wyjscie: `the archive ${archiwum} was not created` };
+      : { code: 1, output: `the archive ${archive} was not created` };
 
-    const metadane = await (async () => {
+    const metadata = await (async () => {
       try {
-        const r = await fetch(`${url}/${PAKIET.replace('/', '%2f')}`);
+        const r = await fetch(`${url}/${PACKAGE.replace('/', '%2f')}`);
         const j = await r.json();
-        const w = j?.versions?.[tarball.wersja];
+        const w = j?.versions?.[tarball.version];
         return {
-          wersje: Object.keys(j?.versions ?? {}),
+          versions: Object.keys(j?.versions ?? {}),
           integrity: w?.dist?.integrity ?? null,
           tarball: w?.dist?.tarball ?? null,
         };
@@ -866,12 +868,12 @@ const zmierzRepozytorium = async () => {
     })();
 
     // 3. installing BY NAME into a fresh application.
-    napiszAplikacje(app);
-    const instalka = uruchom(
+    writeApp(app);
+    const installer = run(
       'npm',
       [
         'install',
-        `${PAKIET}@${tarball.wersja}`,
+        `${PACKAGE}@${tarball.version}`,
         '--registry',
         url,
         '--omit=peer',
@@ -880,11 +882,11 @@ const zmierzRepozytorium = async () => {
       ],
       { cwd: app, env: npmEnv },
     );
-    const lock = czytajJson(join(app, 'node_modules/.package-lock.json'));
-    const rozwiazanie = (() => {
+    const lock = readJson(join(app, 'node_modules/.package-lock.json'));
+    const resolution = (() => {
       try {
         return createRequire(join(app, 'src/app.ts')).resolve(
-          `${PAKIET}/button`,
+          `${PACKAGE}/button`,
         );
       } catch {
         return null;
@@ -896,18 +898,18 @@ const zmierzRepozytorium = async () => {
     //    the install is what point 3 measures — joined into one command they would give
     //    one message for two different failures.
     const cli = join(ROOT, 'node_modules/@angular/cli/bin/ng.js');
-    const stylePrzed = czytajJson(join(app, 'angular.json'))?.projects
-      ?.konsument?.architect?.build?.options?.styles;
-    const ngAdd = uruchom(
+    const stylesBefore = readJson(join(app, 'angular.json'))?.projects?.consumer
+      ?.architect?.build?.options?.styles;
+    const ngAdd = run(
       process.execPath,
-      [cli, 'generate', `${PAKIET}:ng-add`, '--defaults'],
+      [cli, 'generate', `${PACKAGE}:ng-add`, '--defaults'],
       { cwd: app },
     );
-    const stylePo = czytajJson(join(app, 'angular.json'))?.projects?.konsument
+    const stylesAfter = readJson(join(app, 'angular.json'))?.projects?.consumer
       ?.architect?.build?.options?.styles;
 
     // 5. build z SSR.
-    const build = uruchom(process.execPath, [cli, 'build', 'konsument'], {
+    const build = run(process.execPath, [cli, 'build', 'consumer'], {
       cwd: app,
       maxBuffer: 32 * 1024 * 1024,
     });
@@ -915,32 +917,32 @@ const zmierzRepozytorium = async () => {
     const bundle = existsSync(join(out, 'browser/main.js'))
       ? readFileSync(join(out, 'browser/main.js'), 'utf8')
       : '';
-    const arkusz = existsSync(join(out, 'browser/styles.css'))
+    const sheet = existsSync(join(out, 'browser/styles.css'))
       ? readFileSync(join(out, 'browser/styles.css'), 'utf8')
       : '';
 
-    // 6. serwer + HTTP.
-    let ssr = { status: null, kontekst: null, czesci: [], markery: {} };
+    // 6. server + HTTP.
+    let ssr = { status: null, context: null, parts: [], markers: {} };
     if (existsSync(join(out, 'server/server.mjs'))) {
-      serwerApp = spawn(process.execPath, [join(out, 'server/server.mjs')], {
+      appServer = spawn(process.execPath, [join(out, 'server/server.mjs')], {
         cwd: out,
         env: { ...process.env, PORT: String(portApp) },
         stdio: ['ignore', 'pipe', 'pipe'],
       });
-      const adres = `http://localhost:${portApp}/`;
-      if (await czekajNaHttp(adres, 60)) {
-        const r = await fetch(adres);
+      const address = `http://localhost:${portApp}/`;
+      if (await waitForHttp(address, 60)) {
+        const r = await fetch(address);
         const html = await r.text();
         ssr = {
           status: r.status,
-          kontekst: html.match(/ng-server-context="([^"]*)"/)?.[1] ?? null,
-          czesci: [...html.matchAll(/data-pct-part="([^"]*)"/g)].map(
+          context: html.match(/ng-server-context="([^"]*)"/)?.[1] ?? null,
+          parts: [...html.matchAll(/data-pct-part="([^"]*)"/g)].map(
             (m) => m[1],
           ),
-          markery: Object.fromEntries(
-            MARKERY.map((m) => [m, html.includes(m)]),
+          markers: Object.fromEntries(
+            MARKERS.map((m) => [m, html.includes(m)]),
           ),
-          tresc: html.slice(0, 400),
+          content: html.slice(0, 400),
         };
       }
     }
@@ -949,51 +951,51 @@ const zmierzRepozytorium = async () => {
     const e2e =
       ssr.status === 200
         ? await wPrzegladarce(`http://localhost:${portApp}/`)
-        : { element: false, bledy: [] };
+        : { element: false, errors: [] };
 
     return {
       tarball,
-      rejestr: {
+      registry: {
         url,
-        opublikowany: publikacja.kod === 0,
-        wyjscie: publikacja.wyjscie,
-        metadane,
+        published: publikacja.code === 0,
+        output: publikacja.output,
+        metadata,
       },
-      instalacja: {
-        katalog: app,
-        wpis: lock?.packages?.[`node_modules/${PAKIET}`] ?? null,
-        wyjscie: instalka.wyjscie,
-        rozwiazanie,
+      install: {
+        directory: app,
+        entry: lock?.packages?.[`node_modules/${PACKAGE}`] ?? null,
+        output: installer.output,
+        resolution,
       },
       ngAdd: {
-        kod: ngAdd.kod,
-        wyjscie: ngAdd.wyjscie,
-        stylePrzed: stylePrzed ?? [],
-        stylePo: stylePo ?? [],
+        code: ngAdd.code,
+        output: ngAdd.output,
+        stylesBefore: stylesBefore ?? [],
+        stylesAfter: stylesAfter ?? [],
       },
       build: {
-        kod: build.kod,
-        wyjscie: build.wyjscie,
-        serwer: existsSync(join(out, 'server/server.mjs')),
-        markery: Object.fromEntries(
-          MARKERY.map((m) => [m, bundle.includes(m)]),
+        code: build.code,
+        output: build.output,
+        server: existsSync(join(out, 'server/server.mjs')),
+        markers: Object.fromEntries(
+          MARKERS.map((m) => [m, bundle.includes(m)]),
         ),
-        tokenyWCss: [...arkusz.matchAll(/--pct-[a-z0-9-]+\s*:/g)].length,
+        tokensInCss: [...sheet.matchAll(/--pct-[a-z0-9-]+\s*:/g)].length,
       },
       ssr,
       e2e,
     };
   } finally {
-    serwerApp?.kill('SIGTERM');
-    rejestr.proc.kill('SIGTERM');
-    if (!ZOSTAW) rmSync(PRACA, { recursive: true, force: true });
+    appServer?.kill('SIGTERM');
+    registryProc.proc.kill('SIGTERM');
+    if (!KEEP) rmSync(WORKDIR, { recursive: true, force: true });
   }
 };
 
 // ── negative control ──────────────────────────────────────────────────────────
 
-const wczytajFixture = (nazwa) =>
-  JSON.parse(readFileSync(join(FIXTURES, nazwa), 'utf8'));
+const readFixture = (name) =>
+  JSON.parse(readFileSync(join(FIXTURES, name), 'utf8'));
 
 /**
  * Builds a case's input ON A COPY of the reference one, so the case file holds nothing
@@ -1005,13 +1007,14 @@ const wczytajFixture = (nazwa) =>
  * fixtures do NOT exercise the measuring code — they exercise the arrangement of checks.
  * The measuring code is exercised on every run against the real repository.
  */
-const zlozFixture = (fx) => {
-  const we = structuredClone(wczytajFixture(BAZA));
+const buildFixture = (fx) => {
+  const we = structuredClone(readFixture(REFERENCE));
 
-  const usunZListy = (lista, co) => lista.filter((x) => x !== co);
+  const dropFromList = (list, co) => list.filter((x) => x !== co);
 
-  if (fx.wyczyscPliki) we.tarball.pliki = [];
-  if (fx.usunPlik) we.tarball.pliki = usunZListy(we.tarball.pliki, fx.usunPlik);
+  if (fx.clearFiles) we.tarball.files = [];
+  if (fx.dropFile)
+    we.tarball.files = dropFromList(we.tarball.files, fx.dropFile);
   if (fx.dodajExport)
     we.tarball.manifest.exports[fx.dodajExport.klucz] = fx.dodajExport.cel;
   if (fx.dodajFabryke)
@@ -1019,37 +1022,36 @@ const zlozFixture = (fx) => {
   if (fx.kolekcjaWManifescie !== undefined)
     we.tarball.manifest.schematics = fx.kolekcjaWManifescie;
 
-  if (fx.opublikowany !== undefined) we.rejestr.opublikowany = fx.opublikowany;
-  if (fx.wersjeWRejestrze) we.rejestr.metadane.wersje = fx.wersjeWRejestrze;
-  if (fx.integrityWRejestrze)
-    we.rejestr.metadane.integrity = fx.integrityWRejestrze;
-  if (fx.tarballWRejestrze) we.rejestr.metadane.tarball = fx.tarballWRejestrze;
+  if (fx.published !== undefined) we.registry.published = fx.published;
+  if (fx.registryVersions) we.registry.metadata.versions = fx.registryVersions;
+  if (fx.registryIntegrity)
+    we.registry.metadata.integrity = fx.registryIntegrity;
+  if (fx.registryTarball) we.registry.metadata.tarball = fx.registryTarball;
 
-  if (fx.bezWpisu) we.instalacja.wpis = null;
-  if (fx.resolvedInstalacji)
-    we.instalacja.wpis.resolved = fx.resolvedInstalacji;
-  if (fx.integrityInstalacji)
-    we.instalacja.wpis.integrity = fx.integrityInstalacji;
-  if (fx.rozwiazanie) we.instalacja.rozwiazanie = fx.rozwiazanie;
+  if (fx.withoutEntry) we.install.entry = null;
+  if (fx.installResolved) we.install.entry.resolved = fx.installResolved;
+  if (fx.installIntegrity) we.install.entry.integrity = fx.installIntegrity;
+  if (fx.resolution) we.install.resolution = fx.resolution;
 
-  if (fx.kodNgAdd !== undefined) we.ngAdd.kod = fx.kodNgAdd;
-  if (fx.stylePo) we.ngAdd.stylePo = fx.stylePo;
+  if (fx.ngAddCode !== undefined) we.ngAdd.code = fx.ngAddCode;
+  if (fx.stylesAfter) we.ngAdd.stylesAfter = fx.stylesAfter;
 
-  if (fx.kodBuilda !== undefined) we.build.kod = fx.kodBuilda;
-  if (fx.bezSerwera) we.build.serwer = false;
-  if (fx.markerBuilda) we.build.markery[fx.markerBuilda] = false;
-  if (fx.tokenyWCss !== undefined) we.build.tokenyWCss = fx.tokenyWCss;
+  if (fx.buildCode !== undefined) we.build.code = fx.buildCode;
+  if (fx.withoutServer) we.build.server = false;
+  if (fx.buildMarker) we.build.markers[fx.buildMarker] = false;
+  if (fx.tokensInCss !== undefined) we.build.tokensInCss = fx.tokensInCss;
 
-  if (fx.statusSsr !== undefined) we.ssr.status = fx.statusSsr;
-  if (fx.kontekstSsr !== undefined) we.ssr.kontekst = fx.kontekstSsr;
-  if (fx.markerSsr) we.ssr.markery[fx.markerSsr] = false;
-  if (fx.bezCzesci) we.ssr.czesci = [];
+  if (fx.ssrStatus !== undefined) we.ssr.status = fx.ssrStatus;
+  if (fx.ssrContext !== undefined) we.ssr.context = fx.ssrContext;
+  if (fx.ssrMarker) we.ssr.markers[fx.ssrMarker] = false;
+  if (fx.withoutParts) we.ssr.parts = [];
 
-  if (fx.bezElementu) we.e2e.element = false;
+  if (fx.withoutElement) we.e2e.element = false;
   if (fx.token !== undefined) we.e2e.token = fx.token;
-  if (fx.tlo !== undefined) we.e2e.tlo = fx.tlo;
-  if (fx.tloTokenu !== undefined) we.e2e.tloTokenu = fx.tloTokenu;
-  if (fx.bledy) we.e2e.bledy = fx.bledy;
+  if (fx.background !== undefined) we.e2e.background = fx.background;
+  if (fx.tokenBackground !== undefined)
+    we.e2e.tokenBackground = fx.tokenBackground;
+  if (fx.errors) we.e2e.errors = fx.errors;
 
   return we;
 };
@@ -1057,65 +1059,65 @@ const zlozFixture = (fx) => {
 // ── the run ───────────────────────────────────────────────────────────────────
 
 const problems = [];
-let opis = null;
+let description = null;
 
 /**
- * `--zapisz-wzorzec` exists so that the reference input is an IMPRINT of a real
+ * `--write-reference` exists so that the reference input is an IMPRINT of a real
  * measurement rather than a sentence written by hand beside one: a written one drifts from
  * the measurement's shape at the first change, and the input stops passing for a reason
  * nobody was examining. Long command outputs are trimmed — in the fixtures they are quoted
  * only in error messages, and tens of kilobytes of build log in a versioned file would be
  * noise.
  */
-if (WZORZEC) {
-  const pomiar = await zmierzRepozytorium();
-  pomiar.rejestr.wyjscie = '(npm publish output)';
-  pomiar.instalacja.wyjscie = '(npm install output)';
-  pomiar.ngAdd.wyjscie = '(ng generate output)';
-  pomiar.build.wyjscie = '(ng build output)';
-  pomiar.ssr.tresc = '(start of the HTML)';
+if (WRITE_REFERENCE) {
+  const measurement = await zmierzRepozytorium();
+  measurement.registry.output = '(npm publish output)';
+  measurement.install.output = '(npm install output)';
+  measurement.ngAdd.output = '(ng generate output)';
+  measurement.build.output = '(ng build output)';
+  measurement.ssr.content = '(start of the HTML)';
   // The registry's port and the repository's path differ on every run and every machine.
   // The checks compare them WITHIN the measurement (the archive's address starts with the
   // registry's, the resolution lies inside the application's directory), so substituting
   // fixed values weakens nothing and takes noise and somebody's home path out of a
   // versioned file.
-  const stale = JSON.stringify(pomiar)
-    .split(pomiar.rejestr.url)
+  const fixed = JSON.stringify(measurement)
+    .split(measurement.registry.url)
     .join('http://localhost:4873')
-    .split(pomiar.instalacja.katalog)
-    .join('/repozytorium/tmp/check-consumer/app');
+    .split(measurement.install.directory)
+    .join('/repository/tmp/check-consumer/app');
   // The output goes through prettier, because `nx format:check` covers `tools/`. Without
   // that two gates would want different shapes of the same file, and every refresh of the
   // reference would leave the repository with red formatting. The same move as in
   // `check-docs`.
   const prettier = await import('prettier');
-  const sciezka = join(FIXTURES, BAZA);
+  const path = join(FIXTURES, REFERENCE);
   writeFileSync(
-    sciezka,
-    await prettier.format(JSON.stringify(JSON.parse(stale), null, 2), {
-      ...(await prettier.resolveConfig(sciezka)),
-      filepath: sciezka,
+    path,
+    await prettier.format(JSON.stringify(JSON.parse(fixed), null, 2), {
+      ...(await prettier.resolveConfig(path)),
+      filepath: path,
     }),
   );
   console.log(
-    `✓ Wrote ${BAZA} from the measurement. Run the gate once more — the negative ` +
+    `✓ Wrote ${REFERENCE} from the measurement. Run the gate once more — the negative ` +
       `control did not run in this pass.`,
   );
   process.exit(0);
 }
 
 try {
-  opis = sprawdzKonsumenta(await zmierzRepozytorium());
-} catch (blad) {
-  if (!(blad instanceof BladKonsumenta)) throw blad;
-  problems.push(`${blad.kontrola}/${blad.regula}: ${blad.message}`);
+  description = checkConsumer(await zmierzRepozytorium());
+} catch (error) {
+  if (!(error instanceof ConsumerError)) throw error;
+  problems.push(`${error.check}/${error.rule}: ${error.message}`);
 }
 
-const przypadki = readdirSync(FIXTURES)
-  .filter((n) => n.endsWith('.json') && n !== BAZA)
+const cases = readdirSync(FIXTURES)
+  .filter((n) => n.endsWith('.json') && n !== REFERENCE)
   .sort();
 
-if (przypadki.length === 0)
+if (cases.length === 0)
   problems.push(
     `tools/check-consumer.fixtures: no prepared inputs — a gate with no proof that it can ` +
       `fail is one more silent defect (req-quality-negative-control)`,
@@ -1125,30 +1127,30 @@ if (przypadki.length === 0)
 // of it rather than its own defect, and every „rejected" would be false — this control
 // would become the very thing it stands against.
 try {
-  sprawdzKonsumenta(zlozFixture({}));
-} catch (blad) {
-  if (!(blad instanceof BladKonsumenta)) throw blad;
+  checkConsumer(buildFixture({}));
+} catch (error) {
+  if (!(error instanceof ConsumerError)) throw error;
   problems.push(
-    `${BAZA}: the reference input does NOT pass (${blad.kontrola}/${blad.regula}) — ` +
-      `every prepared case now fires because of it.\n    ${blad.message}`,
+    `${REFERENCE}: the reference input does NOT pass (${error.check}/${error.rule}) — ` +
+      `every prepared case now fires because of it.\n    ${error.message}`,
   );
 }
 
-for (const nazwa of przypadki) {
-  const fx = wczytajFixture(nazwa);
+for (const name of cases) {
+  const fx = readFixture(name);
   try {
-    sprawdzKonsumenta(zlozFixture(fx));
+    checkConsumer(buildFixture(fx));
     problems.push(
-      `${nazwa}: the prepared input PASSED and was meant not to — point ` +
-        `${fx.punkt} (\`${fx.kontrola}\`), rule \`${fx.regula}\` stopped examining ` +
+      `${name}: the prepared input PASSED and was meant not to — point ` +
+        `${fx.point} (\`${fx.check}\`), rule \`${fx.rule}\` stopped examining ` +
         `anything`,
     );
-  } catch (blad) {
-    if (!(blad instanceof BladKonsumenta)) throw blad;
-    if (blad.kontrola !== fx.kontrola || blad.regula !== fx.regula)
+  } catch (error) {
+    if (!(error instanceof ConsumerError)) throw error;
+    if (error.check !== fx.check || error.rule !== fx.rule)
       problems.push(
-        `${nazwa}: rule \`${blad.kontrola}/${blad.regula}\` fired, and ` +
-          `\`${fx.kontrola}/${fx.regula}\` (point ${fx.punkt}) was meant to — the ` +
+        `${name}: rule \`${error.check}/${error.rule}\` fired, and ` +
+          `\`${fx.check}/${fx.rule}\` (point ${fx.point}) was meant to — the ` +
           `fixture proves something other than what it declares`,
       );
   }
@@ -1164,6 +1166,6 @@ if (problems.length) {
 }
 
 console.log(
-  `✓ Consumer: ${opis}. Negative control: the reference input passes, ` +
-    `${przypadki.length} prepared ones rejected on their own rules.`,
+  `✓ Consumer: ${description}. Negative control: the reference input passes, ` +
+    `${cases.length} prepared ones rejected on their own rules.`,
 );

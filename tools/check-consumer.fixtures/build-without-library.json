@@ -1,7 +1,7 @@
 {
-  "punkt": 5,
-  "kontrola": "build",
-  "regula": "biblioteka-nieobecna",
-  "opis": "W bundlu przeglądarki nie ma śladu biblioteki. To jest MIANOWNIK: aplikacja, z której bundler wyrzucił pakiet w całości, przechodzi każdą asercję o jego zachowaniu.",
-  "markerBuilda": "data-pct-part"
+  "point": 5,
+  "check": "build",
+  "rule": "library-absent",
+  "description": "There is no trace of the library in the browser bundle. This is the DENOMINATOR: an application out of which the bundler threw the package whole passes every assertion about its behaviour.",
+  "buildMarker": "data-pct-part"
 }

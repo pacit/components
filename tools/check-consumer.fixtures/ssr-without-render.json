@@ -1,7 +1,7 @@
 {
-  "punkt": 6,
-  "kontrola": "ssr",
-  "regula": "bez-renderu",
-  "opis": "Odpowiedź ma ng-server-context=\"ssg\", czyli przyszła z pliku wypisanego przy buildzie. Bundle serwera nie renderował ani razu, a punkty niżej badałyby prerender.",
-  "kontekstSsr": "ssg"
+  "point": 6,
+  "check": "ssr",
+  "rule": "no-render",
+  "description": "The response carries ng-server-context=\"ssg\", that is, it came from a file written at build time. The server bundle did not render once, and the points below would be examining a prerender.",
+  "ssrContext": "ssg"
 }

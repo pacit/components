@@ -1,7 +1,7 @@
 {
-  "punkt": 2,
-  "kontrola": "rejestr",
-  "regula": "publikacja",
-  "opis": "npm publish zakończył się błędem. Bez tego punktu instalacja niżej poszłaby po pakiet do uplinku npmjs i bramka zmierzyłaby cudzy artefakt.",
-  "opublikowany": false
+  "point": 2,
+  "check": "registry",
+  "rule": "publish",
+  "description": "npm publish ended in an error. Without this point the install below would go to the npmjs uplink for the package and the gate would measure somebody else's artefact.",
+  "published": false
 }

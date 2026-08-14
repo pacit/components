@@ -1,7 +1,7 @@
 {
-  "punkt": 5,
-  "kontrola": "build",
-  "regula": "build-padl",
-  "opis": "Build aplikacji konsumenta zakończył się błędem — tu ląduje niedostępny typ, zły warunek w mapie exports albo arkusz, którego bundler nie rozwiązał.",
-  "kodBuilda": 1
+  "point": 5,
+  "check": "build",
+  "rule": "build-failed",
+  "description": "The consumer application's build ended in an error — this is where an unreachable type, a wrong condition in the exports map or a stylesheet the bundler did not resolve land.",
+  "buildCode": 1
 }
