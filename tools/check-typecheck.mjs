@@ -146,17 +146,17 @@ const checkTypecheck = ({ projects, files, seen }) => {
     );
 
   const ownership = new Map(projects.map((p) => [p.name, []]));
-  const sieroty = [];
+  const orphans = [];
   for (const file of files) {
     const project = owner(file, projects);
     if (project) ownership.get(project.name).push(file);
-    else sieroty.push(file);
+    else orphans.push(file);
   }
-  if (sieroty.length)
+  if (orphans.length)
     throw new TypecheckError(
       'denominator',
-      `${sieroty.length} TypeScript files belong to no project:\n` +
-        sieroty.map((s) => `      ${s}`).join('\n') +
+      `${orphans.length} TypeScript files belong to no project:\n` +
+        orphans.map((s) => `      ${s}`).join('\n') +
         `\n    Points 2–4 walk projects, so such a file is invisible to them — which ` +
         `means nobody checks it. Remedy: a project covering that directory, or move the ` +
         `file into an existing one (req-quality-typecheck).`,
@@ -168,12 +168,12 @@ const checkTypecheck = ({ projects, files, seen }) => {
   const withCode = projects.filter((p) => ownership.get(p.name).length);
 
   // 2. The target exists. This is `lesson-42` verbatim.
-  const bezTargetu = withCode.filter((p) => !p.typecheck);
-  if (bezTargetu.length)
+  const withoutTarget = withCode.filter((p) => !p.typecheck);
+  if (withoutTarget.length)
     throw new TypecheckError(
       'target',
-      `${bezTargetu.length} projects have TypeScript files and no \`typecheck\` target:\n` +
-        bezTargetu
+      `${withoutTarget.length} projects have TypeScript files and no \`typecheck\` target:\n` +
+        withoutTarget
           .map(
             (p) =>
               `      ${p.name} (${p.root}): ${ownership.get(p.name).length} files`,
@@ -189,7 +189,7 @@ const checkTypecheck = ({ projects, files, seen }) => {
   // precisely that this point leans on the previous one. Without the optional read,
   // DISARMING point 2 turns the gate into an exception instead of a message — and the
   // negative control loses the ability to examine the point it was meant to examine.
-  const wadliwe = withCode.flatMap((p) => {
+  const defective = withCode.flatMap((p) => {
     const commands = p.typecheck?.commands ?? [];
     if (!commands.length)
       return [`${p.name}: the \`typecheck\` target has no command at all`];
@@ -198,29 +198,29 @@ const checkTypecheck = ({ projects, files, seen }) => {
       return defect ? [`${p.name}: \`${command}\` — ${defect}`] : [];
     });
   });
-  if (wadliwe.length)
+  if (defective.length)
     throw new TypecheckError(
       'command',
-      `${wadliwe.length} \`typecheck\` commands cannot be measured or are disarmed:\n` +
-        wadliwe.map((w) => `      ${w}`).join('\n') +
+      `${defective.length} \`typecheck\` commands cannot be measured or are disarmed:\n` +
+        defective.map((w) => `      ${w}`).join('\n') +
         `\n    Point 4 compares a project's files against THAT command's program, so a ` +
         `command that cannot be read takes its denominator away.`,
     );
 
   // 4. COVERAGE. Point 2 measures that the target exists, this one measures its reach —
   // and the whole of `lesson-42` sits between the two.
-  const nieobjete = withCode.flatMap((p) => {
+  const uncovered = withCode.flatMap((p) => {
     const program = new Set(seen[p.name] ?? []);
     return ownership
       .get(p.name)
       .filter((file) => !program.has(file))
       .map((file) => `${p.name}: ${file}`);
   });
-  if (nieobjete.length)
+  if (uncovered.length)
     throw new TypecheckError(
       'coverage',
-      `${nieobjete.length} files do not enter their project's compiler program:\n` +
-        nieobjete.map((n) => `      ${n}`).join('\n') +
+      `${uncovered.length} files do not enter their project's compiler program:\n` +
+        uncovered.map((n) => `      ${n}`).join('\n') +
         `\n    The \`typecheck\` target exists and passes, but never looks at these ` +
         `files: usually because the tsconfig lists directories by name and a new one ` +
         `arrived. Remedy: widen \`include\`, or add a command with a second configuration.`,
@@ -323,13 +323,13 @@ const seenByCompiler = (projects) => {
         );
       }
 
-      for (const linia of result.split('\n')) {
-        const path = linia.trim();
+      for (const line of result.split('\n')) {
+        const path = line.trim();
         if (!path) continue;
-        const wzgledna = relative(ROOT, path).split('\\').join('/');
-        if (wzgledna.startsWith('..') || wzgledna.includes('node_modules/'))
+        const relativePath = relative(ROOT, path).split('\\').join('/');
+        if (relativePath.startsWith('..') || relativePath.includes('node_modules/'))
           continue;
-        program.add(wzgledna);
+        program.add(relativePath);
       }
     }
 

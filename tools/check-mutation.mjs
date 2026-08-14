@@ -250,7 +250,7 @@ export const checkMutation = (input) => {
     );
 
   const noMutants = policy.noMutants ?? [];
-  const uzasadnione = new Set(noMutants.map((w) => w?.file));
+  const justified = new Set(noMutants.map((w) => w?.file));
   for (const entry of noMutants) {
     if (!fromPolicy.includes(entry?.file))
       throw new MutationError(
@@ -272,7 +272,7 @@ export const checkMutation = (input) => {
   }
 
   const hopeless = fromPolicy.filter(
-    (p) => !files.includes(p) && !uzasadnione.has(p),
+    (p) => !files.includes(p) && !justified.has(p),
   );
   if (hopeless.length)
     throw new MutationError(
@@ -666,10 +666,10 @@ const graphTargets = async () => {
  * target looks to a pattern exactly like a call to it (`lesson-56` in `check-browsers`).
  */
 const ciTargets = () => {
-  const linie = (read(CI) ?? '').split('\n').map((l) => l.replace(/#.*$/, ''));
-  const uruchomienie =
-    linie.find((l) => /nx\s+(?:affected|run-many)/.test(l)) ?? '';
-  return { targets: uruchomienie.split(/\s+/).filter(Boolean) };
+  const lines = (read(CI) ?? '').split('\n').map((l) => l.replace(/#.*$/, ''));
+  const invocation =
+    lines.find((l) => /nx\s+(?:affected|run-many)/.test(l)) ?? '';
+  return { targets: invocation.split(/\s+/).filter(Boolean) };
 };
 
 const inputFromDisk = async () => {
@@ -803,7 +803,7 @@ try {
   problems.push(`${error.check}/${error.rule}: ${error.message}`);
 }
 
-// `--write` is the right answer to three rules of point 6 (`brak-snapshotu`,
+// `--write` is the right answer to three rules of point 6 (`no-snapshot`,
 // `incomplete-snapshot`, `snapshot-adrift`), so the snapshot has to be rewritable EVEN when
 // the gate fired on them — otherwise the one command that fixes those rules would be
 // available exactly outside the state in which it is needed. It renders from disk, not

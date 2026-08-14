@@ -23,7 +23,7 @@ import { execSync } from 'node:child_process';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const WRITE = process.argv.includes('--write');
-const REJESTR = 'docs/registry.md';
+const REGISTRY = 'docs/registry.md';
 const REQ_IDS = 'apps/sandbox/src/app/ui/doc-ids.ts';
 
 const problems = [];
@@ -51,7 +51,7 @@ const CITATION_EXEMPT = new Set([
   'docs/README.md',
   'docs/overview.md',
   'docs/review.md',
-  REJESTR,
+  REGISTRY,
 ]);
 
 /** An index of file names — lets `number.spec.ts` be verified without a directory. */
@@ -270,11 +270,11 @@ for (const req of requirements) {
     .filter((v) => !/^\s*(none|not applicable)\b/.test(v));
   const text = declared.join(' ');
   for (const [, name] of text.matchAll(/target `([a-z0-9:\-]+)`/g)) {
-    if (name.includes(':')) continue; // np. `tokens:build` — biegnie przez `^build`
+    if (name.includes(':')) continue; // e.g. `tokens:build` — runs through `^build`
     if (!ciTargets.has(name))
       fail(
         req.id,
-        `wskazany target \`${name}\` nie biegnie w \`nx affected -t\` w CI`,
+        `the named target \`${name}\` does not run in \`nx affected -t\` in CI`,
       );
   }
 }
@@ -318,7 +318,7 @@ for (const rel of trackedFiles) {
   for (const [old] of text.matchAll(LEGACY))
     fail(
       rel,
-      `stary identyfikator \`${old}\` — patrz tabele migracji w docs/README.md`,
+      `old identifier \`${old}\` — see the migration tables in docs/README.md`,
     );
 
   for (const [, ref] of text.matchAll(REF)) {
@@ -365,7 +365,7 @@ const short = (v, n = 90) => {
   return t.length > n ? t.slice(0, n - 1) + '…' : t;
 };
 
-const buildRejestr = () => {
+const buildRegistry = () => {
   const byArea = new Map();
   for (const r of requirements) {
     const a = AREA(r.id);
@@ -412,15 +412,15 @@ const buildRejestr = () => {
   L.push('');
   L.push('| requirement | what is missing | binds at |');
   L.push('| --- | --- | --- |');
-  const luki = requirements
+  const gaps = requirements
     .filter((r) => r.state === 'gap')
     .sort((a, b) => {
       const na = /immediately/i.test(a.fields['Binds at'] ?? '') ? 0 : 1;
       const nb = /immediately/i.test(b.fields['Binds at'] ?? '') ? 0 : 1;
       return na - nb || a.id.localeCompare(b.id);
     });
-  for (const r of luki) {
-    const brak =
+  for (const r of gaps) {
+    const missing =
       r.gateState === 'gap'
         ? short(
             (r.fields.Gate ?? '').replace(/^none\s*[—-]\s*gap\s*:\s*/, ''),
@@ -431,7 +431,7 @@ const buildRejestr = () => {
             70,
           ) + ' _(control)_';
     L.push(
-      `| [\`${r.id}\`](${link(r)}) | ${brak} | ${short(r.fields['Binds at'], 60)} |`,
+      `| [\`${r.id}\`](${link(r)}) | ${missing} | ${short(r.fields['Binds at'], 60)} |`,
     );
   }
   L.push('');
@@ -530,17 +530,17 @@ const format = async (text, filepath) =>
     filepath,
   });
 
-const rejestr = await format(buildRejestr(), REJESTR);
+const registry = await format(buildRegistry(), REGISTRY);
 const reqIds = await format(buildReqIds(), REQ_IDS);
 
 if (WRITE) {
-  writeFileSync(join(ROOT, REJESTR), rejestr);
+  writeFileSync(join(ROOT, REGISTRY), registry);
   writeFileSync(join(ROOT, REQ_IDS), reqIds);
-  console.log(`v Wrote ${REJESTR} and ${REQ_IDS}`);
+  console.log(`v Wrote ${REGISTRY} and ${REQ_IDS}`);
 } else {
   // ── 5. freshness ─────────────────────────────────────────────────────────────
   for (const [rel, want] of [
-    [REJESTR, rejestr],
+    [REGISTRY, registry],
     [REQ_IDS, reqIds],
   ]) {
     if (!existsSync(join(ROOT, rel)))
