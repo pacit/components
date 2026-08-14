@@ -191,28 +191,28 @@ export const checkBrowsers = ({ policy, collected, files, e2e, ci, facts }) => {
 
   // 3. COVERAGE. Both sides of the denominator first: a file from the repo nobody
   // collected, and a collected file that is not in the repo. Only then a gap on an engine.
-  const wszystkieZebrane = new Set(
+  const allCollected = new Set(
     Object.values(collected ?? {}).flatMap((p) => p ?? []),
   );
-  const niezebrane = files.filter((p) => !wszystkieZebrane.has(p));
-  if (niezebrane.length)
+  const uncollected = files.filter((p) => !allCollected.has(p));
+  if (uncollected.length)
     throw new BrowsersError(
       'coverage',
       'file-outside-measurement',
-      `${niezebrane.length} spec files were collected by NO engine:\n` +
-        list(niezebrane) +
+      `${uncollected.length} spec files were collected by NO engine:\n` +
+        list(uncollected) +
         `\n    The file sits in \`${TESTDIR}\`, is in the git index and runs nowhere — ` +
         `usually through a \`testMatch\`, \`testDir\` or \`testIgnore\` pattern added ` +
         `to every project at once. The run is green, because Playwright has nothing ` +
         `to run.`,
     );
-  const spozaRepo = [...wszystkieZebrane].filter((p) => !files.includes(p));
-  if (spozaRepo.length)
+  const outsideRepo = [...allCollected].filter((p) => !files.includes(p));
+  if (outsideRepo.length)
     throw new BrowsersError(
       'coverage',
       'file-outside-repo',
-      `${spozaRepo.length} files collected by Playwright are not in the git index:\n` +
-        list(spozaRepo) +
+      `${outsideRepo.length} files collected by Playwright are not in the git index:\n` +
+        list(outsideRepo) +
         `\n    Point 3's denominator comes from git, so such a file is invisible to it: it ` +
         `runs, and the gate has no way of asking whether it runs everywhere.`,
     );
@@ -221,20 +221,20 @@ export const checkBrowsers = ({ policy, collected, files, e2e, ci, facts }) => {
     exclusions.find(
       (w) => w?.file === file && (w?.engines ?? []).includes(engine),
     );
-  const luki = [];
+  const gaps = [];
   for (const engine of engines) {
-    const maja = new Set(collected[engine] ?? []);
+    const running = new Set(collected[engine] ?? []);
     for (const file of files) {
-      if (maja.has(file)) continue;
-      if (!entryFor(file, engine)) luki.push(`${engine}: ${file}`);
+      if (running.has(file)) continue;
+      if (!entryFor(file, engine)) gaps.push(`${engine}: ${file}`);
     }
   }
-  if (luki.length)
+  if (gaps.length)
     throw new BrowsersError(
       'coverage',
       'gap-without-entry',
-      `${luki.length} file × engine pairs do not run and have no entry in the policy:\n` +
-        list(luki) +
+      `${gaps.length} file × engine pairs do not run and have no entry in the policy:\n` +
+        list(gaps) +
         `\n    This is what a \`testIgnore\` widened „because it flickers" looks like: ` +
         `coverage shrinks by one file, the run stays green and gets a few seconds shorter. ` +
         `Remedy: fix the test, or add an exclusion with a reason to ${POLICY}.`,
@@ -305,8 +305,8 @@ export const checkBrowsers = ({ policy, collected, files, e2e, ci, facts }) => {
 
   // 5. CI. The gate measures `--list`, that is, the configuration — but what runs is a
   // COMMAND. Between the two sits `--project=chromium`, which points 1–3 cannot see.
-  const wadaPolecenia = NARROWING.filter(([, wzorzec]) =>
-    wzorzec.test(e2e?.command ?? ''),
+  const commandDefects = NARROWING.filter(([, pattern]) =>
+    pattern.test(e2e?.command ?? ''),
   ).map(([name]) => name);
   if (!e2e?.command)
     throw new BrowsersError(
@@ -315,11 +315,11 @@ export const checkBrowsers = ({ policy, collected, files, e2e, ci, facts }) => {
       `the \`sandbox-e2e:e2e\` target has no command that can be read — the gate cannot ` +
         `check whether the run is narrowed`,
     );
-  if (wadaPolecenia.length)
+  if (commandDefects.length)
     throw new BrowsersError(
       'ci',
       'e2e-narrowed',
-      `the \`sandbox-e2e:e2e\` command narrows the run (${wadaPolecenia.join(', ')}):\n` +
+      `the \`sandbox-e2e:e2e\` command narrows the run (${commandDefects.join(', ')}):\n` +
         `      ${e2e.command}\n` +
         `    The configuration then declares three engines, \`--list\` shows three, and ` +
         `one runs. The only narrowing invisible in \`playwright.config.mts\`.`,
@@ -333,17 +333,17 @@ export const checkBrowsers = ({ policy, collected, files, e2e, ci, facts }) => {
         `nowhere, so either the run fails or (worse) somebody fixed it by narrowing the ` +
         `matrix`,
     );
-  const brakiCi = ci.installs.flatMap((krok, i) =>
+  const ciGaps = ci.installs.flatMap((step, i) =>
     engines
-      .filter((s) => !krok.includes(s))
-      .map((s) => `krok #${i + 1}: brak \`${s}\``),
+      .filter((s) => !step.includes(s))
+      .map((s) => `step #${i + 1}: no \`${s}\``),
   );
-  if (brakiCi.length)
+  if (ciGaps.length)
     throw new BrowsersError(
       'ci',
       'ci-without-engine',
-      `${brakiCi.length} browser install steps in \`${CI}\` do not name an engine from the policy:\n` +
-        list(brakiCi) +
+      `${ciGaps.length} browser install steps in \`${CI}\` do not name an engine from the policy:\n` +
+        list(ciGaps) +
         `\n    There are two steps (a cache miss and a cache hit) and they have to name the ` +
         `same set: an engine installed only on a miss disappears at the first hit.`,
     );
@@ -362,12 +362,12 @@ export const checkBrowsers = ({ policy, collected, files, e2e, ci, facts }) => {
   const fromMeasurement = exclusions.filter((w) => w.kind === 'measurement');
   for (const fact of [...new Set(fromMeasurement.map((w) => w.fact))]) {
     const result = facts?.[fact] ?? {};
-    const bezWyniku = engines.filter((s) => typeof result[s] !== 'boolean');
-    if (bezWyniku.length)
+    const withoutResult = engines.filter((s) => typeof result[s] !== 'boolean');
+    if (withoutResult.length)
       throw new BrowsersError(
         'fact',
         'probe-failed',
-        `probe \`${fact}\` gave no result for: ${bezWyniku.join(', ')}.\n` +
+        `probe \`${fact}\` gave no result for: ${withoutResult.join(', ')}.\n` +
           `    With no result there is no way to say whether the exclusion still has a ` +
           `reason — and no verdict defaults to „it stays", the worst of the answers.`,
       );
@@ -386,26 +386,26 @@ export const checkBrowsers = ({ policy, collected, files, e2e, ci, facts }) => {
           `justified forever. A measurement's denominator, not caution.`,
       );
 
-    const przezyly = [...excludedHere].filter((s) => result[s]);
-    if (przezyly.length)
+    const survived = [...excludedHere].filter((s) => result[s]);
+    if (survived.length)
       throw new BrowsersError(
         'fact',
         'fact-stale',
-        `\`${fact}\` now holds for engines excluded on account of it: ${przezyly.join(', ')}.\n` +
+        `\`${fact}\` now holds for engines excluded on account of it: ${survived.join(', ')}.\n` +
           `    The reason for the exclusion is gone — most likely at a Playwright bump, a ` +
           `change that touches not one file in this repository. Remedy: take the entry out ` +
           `of ${POLICY} and out of \`testIgnore\`, then see what that file has to say ` +
           `there.`,
       );
 
-    const bezPokrycia = engines.filter(
+    const withoutCoverage = engines.filter(
       (s) => !result[s] && !excludedHere.has(s),
     );
-    if (bezPokrycia.length)
+    if (withoutCoverage.length)
       throw new BrowsersError(
         'fact',
         'fact-unmirrored',
-        `\`${fact}\` does not hold for engines whose files run anyway: ${bezPokrycia.join(', ')}.\n` +
+        `\`${fact}\` does not hold for engines whose files run anyway: ${withoutCoverage.join(', ')}.\n` +
           `    The tests ask there about behaviour the engine does not have — they will ` +
           `pass or fail, and either way measure something other than their name says.`,
       );
@@ -422,19 +422,19 @@ export const checkBrowsers = ({ policy, collected, files, e2e, ci, facts }) => {
 
 // ── input from disk ───────────────────────────────────────────────────────────
 
-const czytaj = (path) => readFileSync(join(ROOT, path), 'utf8');
+const read = (path) => readFileSync(join(ROOT, path), 'utf8');
 
-const policyFromDisk = () => JSON.parse(czytaj(POLICY));
+const policyFromDisk = () => JSON.parse(read(POLICY));
 
 /**
  * What Playwright REALLY collects, project by project. `--list` starts neither the
  * `webServer` nor the browsers, so the measurement costs seconds rather than minutes — and
  * still goes through the same configuration code as a real run.
  */
-const zebranePrzezPlaywrighta = () => {
-  let surowe;
+const collectedByPlaywright = () => {
+  let raw;
   try {
-    surowe = execFileSync(
+    raw = execFileSync(
       join(ROOT, 'node_modules/.bin/playwright'),
       ['test', '--list', '--reporter=json'],
       {
@@ -459,13 +459,13 @@ const zebranePrzezPlaywrighta = () => {
 
   let report;
   try {
-    report = JSON.parse(surowe);
+    report = JSON.parse(raw);
   } catch {
     throw new BrowsersError(
       'denominator',
       'unreadable-measurement',
       `the output of \`playwright test --list --reporter=json\` is not JSON ` +
-        `(${surowe.length} characters) — the gate has nothing to derive the matrix from`,
+        `(${raw.length} characters) — the gate has nothing to derive the matrix from`,
     );
   }
   if (report.errors?.length)
@@ -479,14 +479,14 @@ const zebranePrzezPlaywrighta = () => {
     );
 
   const collected = {};
-  const obejdz = (suite) => {
+  const walk = (suite) => {
     for (const spec of suite.specs ?? [])
       for (const test of spec.tests ?? []) {
         (collected[test.projectName] ??= new Set()).add(spec.file);
       }
-    for (const glebiej of suite.suites ?? []) obejdz(glebiej);
+    for (const deeper of suite.suites ?? []) walk(deeper);
   };
-  for (const suite of report.suites ?? []) obejdz(suite);
+  for (const suite of report.suites ?? []) walk(suite);
 
   // A project with no test at all does not appear in the result tree, and point 2 is to
   // name it — hence an empty list rather than a missing key.
@@ -516,12 +516,12 @@ const specFiles = () =>
  */
 const targetE2E = async () => {
   const { createProjectGraphAsync } = await import('@nx/devkit');
-  const graf = await createProjectGraphAsync({ exitOnError: false });
-  const target = graf.nodes['sandbox-e2e']?.data?.targets?.e2e;
+  const graph = await createProjectGraphAsync({ exitOnError: false });
+  const target = graph.nodes['sandbox-e2e']?.data?.targets?.e2e;
   const { command, commands } = target?.options ?? {};
-  const polecenia = commands ?? (command === undefined ? [] : [command]);
+  const entries = commands ?? (command === undefined ? [] : [command]);
   return {
-    command: polecenia
+    command: entries
       .map((c) => (typeof c === 'string' ? c : (c?.command ?? '')))
       .join(' && '),
   };
@@ -538,14 +538,14 @@ const targetE2E = async () => {
  * reported this to itself on the first run after its own comment was added — it counted
  * four install steps where there are two, and fired on two of them.
  */
-const krokiCi = (engines) => {
-  const linie = czytaj(CI)
+const ciSteps = (engines) => {
+  const lines = read(CI)
     .split('\n')
     .map((l) => l.replace(/#.*$/, ''));
-  const installs = linie
+  const installs = lines
     .filter((l) => /playwright\s+install/.test(l))
     .map((l) => engines.filter((s) => new RegExp(`\\b${s}\\b`).test(l)));
-  const runsE2E = linie.some(
+  const runsE2E = lines.some(
     (l) => /nx\s+(?:affected|run-many)/.test(l) && /\be2e\b/.test(l),
   );
   return { installs, runsE2E };
@@ -556,36 +556,36 @@ const krokiCi = (engines) => {
  * is measured here is the ENGINE's behaviour, so the less there is around it, the fewer
  * things can answer in its place.
  */
-const zmierzFakty = async (policy) => {
-  const potrzebne = [
+const measureFacts = async (policy) => {
+  const needed = [
     ...new Set(
       (policy.exclusions ?? [])
         .filter((w) => w.kind === 'measurement' && PROBES[w.fact])
         .map((w) => w.fact),
     ),
   ];
-  if (!potrzebne.length) return {};
+  if (!needed.length) return {};
 
   const playwright = await import('playwright');
-  const facts = Object.fromEntries(potrzebne.map((f) => [f, {}]));
+  const facts = Object.fromEntries(needed.map((f) => [f, {}]));
 
   for (const engine of Object.keys(policy.engines)) {
     const typ = playwright[engine];
     if (!typ) continue;
-    let przegladarka;
+    let browser;
     try {
-      przegladarka = await typ.launch();
-      const kontekst = await przegladarka.newContext({
+      browser = await typ.launch();
+      const context = await browser.newContext({
         forcedColors: 'active',
       });
-      const page = await kontekst.newPage();
-      for (const fact of potrzebne)
+      const page = await context.newPage();
+      for (const fact of needed)
         facts[fact][engine] = await PROBES[fact](page);
     } catch {
       // No result is content here, not a failure: point 6 is to SAY so (the
-      // `probe-nieudana` rule) rather than bring the gate down with a stack trace.
+      // `probe-failed` rule) rather than bring the gate down with a stack trace.
     } finally {
-      await przegladarka?.close();
+      await browser?.close();
     }
   }
   return facts;
@@ -648,11 +648,11 @@ try {
   const policy = policyFromDisk();
   summary = checkBrowsers({
     policy,
-    collected: zebranePrzezPlaywrighta(),
+    collected: collectedByPlaywright(),
     files: specFiles(),
     e2e: await targetE2E(),
-    ci: krokiCi(Object.keys(policy.engines ?? {})),
-    facts: await zmierzFakty(policy),
+    ci: ciSteps(Object.keys(policy.engines ?? {})),
+    facts: await measureFacts(policy),
   });
 } catch (error) {
   if (!(error instanceof BrowsersError)) throw error;

@@ -79,7 +79,7 @@ class ConsumerError extends Error {
   }
 }
 
-const list = (xs) => [...xs].sort().join(', ') || '(pusto)';
+const list = (xs) => [...xs].sort().join(', ') || '(empty)';
 
 // ── checks ──────────────────────────────────────────────────────────────────
 
@@ -134,37 +134,37 @@ const checkConsumer = (input) => {
     );
 
   const manifest = tarball.manifest ?? {};
-  const zExports = Object.values(manifest.exports ?? {})
-    .map((cel) => (typeof cel === 'object' ? cel?.default : cel))
+  const fromExports = Object.values(manifest.exports ?? {})
+    .map((target) => (typeof target === 'object' ? target?.default : target))
     .filter((p) => typeof p === 'string' && !p.includes('*'))
     .map((p) => p.replace(/^\.\//, ''));
-  const brakZExports = zExports.filter((p) => !files.has(p));
-  if (brakZExports.length)
+  const missingFromExports = fromExports.filter((p) => !files.has(p));
+  if (missingFromExports.length)
     fail(
       'tarball',
       'entrypoint-missing',
       `the \`exports\` map promises files the archive does not hold: ` +
-        `${list(brakZExports)}.\n` +
+        `${list(missingFromExports)}.\n` +
         `    Importing such an entrypoint ends at the consumer's with ERR_MODULE_NOT_FOUND`,
     );
 
-  const wskazaneKolekcje = [
+  const namedCollections = [
     manifest.schematics,
     manifest['ng-update']?.migrations,
   ].filter((p) => typeof p === 'string');
-  const brakKolekcji = wskazaneKolekcje
+  const missingCollections = namedCollections
     .map((p) => p.replace(/^\.\//, ''))
     .filter((p) => !files.has(p));
-  const brakFabryk = (tarball.fabryki ?? []).filter((p) => !files.has(p));
-  if (brakKolekcji.length || brakFabryk.length)
+  const missingFactories = (tarball.factories ?? []).filter((p) => !files.has(p));
+  if (missingCollections.length || missingFactories.length)
     fail(
       'tarball',
       'schematic-missing',
       `the archive does not hold the files the manifest points at:\n` +
-        (brakKolekcji.length
-          ? `      collections: ${list(brakKolekcji)}\n`
+        (missingCollections.length
+          ? `      collections: ${list(missingCollections)}\n`
           : '') +
-        (brakFabryk.length ? `      factories: ${list(brakFabryk)}\n` : '') +
+        (missingFactories.length ? `      factories: ${list(missingFactories)}\n` : '') +
         `    \`ng add\`/\`ng update\` will fail at the consumer's with „Collection not found"`,
     );
 
@@ -243,7 +243,7 @@ const checkConsumer = (input) => {
       'integrity-differs',
       `the installed archive is not the one we packed:\n` +
         `      packed:    ${tarball.integrity}\n` +
-        `      zainstalowane: ${entry?.integrity}`,
+        `      installed:  ${entry?.integrity}`,
     );
 
   // The DENOMINATOR of module resolution. The application sits in the repository's `tmp/`
@@ -275,23 +275,23 @@ const checkConsumer = (input) => {
         `    ${(ngAdd.output ?? '(no output)').split('\n').slice(0, 6).join('\n    ')}`,
     );
 
-  const przed = ngAdd.stylesBefore ?? [];
-  const po = ngAdd.stylesAfter ?? [];
-  if (po.length <= przed.length)
+  const before = ngAdd.stylesBefore ?? [];
+  const after = ngAdd.stylesAfter ?? [];
+  if (after.length <= before.length)
     fail(
       'ng-add',
       'no-change',
-      `the schematic passed, but the \`styles\` list did not change (${przed.length} → ` +
-        `${po.length}) — \`ng add\` ended with an instruction to be carried out by hand ` +
+      `the schematic passed, but the \`styles\` list did not change (${before.length} → ` +
+        `${after.length}) — \`ng add\` ended with an instruction to be carried out by hand ` +
         `or with a silent no-op`,
     );
 
-  if (!po.some((s) => String(s).includes(PACKAGE)))
+  if (!after.some((s) => String(s).includes(PACKAGE)))
     fail(
       'ng-add',
       'theme-missing-from-styles',
       `after \`ng add\` there is no entry from \`${PACKAGE}\` in \`styles\`: ` +
-        `${list(po)}.\n` +
+        `${list(after)}.\n` +
         `    With no skin the components render with no appearance and nobody notices ` +
         `(lesson-36)`,
     );
@@ -314,12 +314,12 @@ const checkConsumer = (input) => {
         `and the promise speaks of a build with SSR`,
     );
 
-  const brakMarkerow = MARKERS.filter((m) => !(build.markers ?? {})[m]);
-  if (brakMarkerow.length)
+  const missingMarkers = MARKERS.filter((m) => !(build.markers ?? {})[m]);
+  if (missingMarkers.length)
     fail(
       'build',
       'library-absent',
-      `the browser bundle holds no trace of the library: ${list(brakMarkerow)}.\n` +
+      `the browser bundle holds no trace of the library: ${list(missingMarkers)}.\n` +
         `    This is the DENOMINATOR: an application that never pulled the library in ` +
         `passes every assertion about its behaviour, having nothing to notice`,
     );
@@ -329,7 +329,7 @@ const checkConsumer = (input) => {
       'build',
       'theme-absent',
       `the application's stylesheet has not one \`--pct-*\` declaration ` +
-        `(policzone: ${build.tokensInCss}).\n` +
+        `(counted: ${build.tokensInCss}).\n` +
         `    The skin never reached the build — exactly the state of lesson-36, only ` +
         `at the consumer`,
     );
@@ -484,7 +484,7 @@ const run = (file, args, options = {}) => {
 };
 
 /** The factory files from a schematic collection — paths as they lie in the archive. */
-const fabrykiSchematicow = (manifest) => {
+const schematicFactories = (manifest) => {
   const out = [];
   for (const pointer of [
     manifest?.schematics,
@@ -493,9 +493,9 @@ const fabrykiSchematicow = (manifest) => {
     if (typeof pointer !== 'string') continue;
     const collection = readJson(join(ROOT, DIST, pointer));
     for (const def of Object.values(collection?.schematics ?? {})) {
-      const fabryka = String(def.factory ?? '').split('#')[0];
-      if (!fabryka) continue;
-      out.push(join(dirname(pointer), `${fabryka}.js`).replace(/^\.\//, ''));
+      const factory = String(def.factory ?? '').split('#')[0];
+      if (!factory) continue;
+      out.push(join(dirname(pointer), `${factory}.js`).replace(/^\.\//, ''));
     }
   }
   return out;
@@ -618,9 +618,9 @@ const writeApp = (app) => {
     `@Component({`,
     `  selector: 'app-probe',`,
     `  imports: [PctButton],`,
-    `  template: \`<button pctButton id="sonda">Zapisz</button>\`,`,
+    `  template: \`<button pctButton id="probe">Save</button>\`,`,
     `})`,
-    `export class Sonda {}`,
+    `export class Probe {}`,
     ``,
     `@Component({`,
     `  selector: 'app-root',`,
@@ -637,13 +637,13 @@ const writeApp = (app) => {
     `  provideClientHydration,`,
     `} from '@angular/platform-browser';`,
     `import { provideRouter } from '@angular/router';`,
-    `import { App, Sonda } from './app';`,
+    `import { App, Probe } from './app';`,
     ``,
     `bootstrapApplication(App, {`,
     `  providers: [`,
     `    provideZonelessChangeDetection(),`,
     `    provideClientHydration(),`,
-    `    provideRouter([{ path: '', component: Sonda }]),`,
+    `    provideRouter([{ path: '', component: Probe }]),`,
     `  ],`,
     `}).catch((e) => console.error(e));`,
   ]);
@@ -656,7 +656,7 @@ const writeApp = (app) => {
     `} from '@angular/platform-browser';`,
     `import { provideRouter } from '@angular/router';`,
     `import { RenderMode, provideServerRendering, withRoutes } from '@angular/ssr';`,
-    `import { App, Sonda } from './app';`,
+    `import { App, Probe } from './app';`,
     ``,
     `const bootstrap = (context: BootstrapContext) =>`,
     `  bootstrapApplication(`,
@@ -664,7 +664,7 @@ const writeApp = (app) => {
     `    {`,
     `      providers: [`,
     `        provideZonelessChangeDetection(),`,
-    `        provideRouter([{ path: '', component: Sonda }]),`,
+    `        provideRouter([{ path: '', component: Probe }]),`,
     `        provideServerRendering(`,
     `          withRoutes([{ path: '**', renderMode: RenderMode.Server }]),`,
     `        ),`,
@@ -738,7 +738,7 @@ const startRegistry = async (storage, port) => {
 };
 
 /** The measurement in a browser. One pass, exactly as the promise says. */
-const wPrzegladarce = async (url) => {
+const inBrowser = async (url) => {
   const { chromium } = await import('@playwright/test');
   const browser = await chromium.launch();
   try {
@@ -750,17 +750,17 @@ const wPrzegladarce = async (url) => {
     return {
       ...(await page.evaluate(
         ([backgroundToken]) => {
-          const el = document.querySelector('#sonda');
+          const el = document.querySelector('#probe');
           if (!el) return { element: false };
           // The token's value is measured by the BROWSER, not parsed in Node: a token is
           // sometimes a chain of `var()`, and the comparison is to be between two values
           // computed by the same engine. The probe sits inside the button, so it
-          // dziedziczy jego scope custom properties.
-          const sonda = document.createElement('span');
-          sonda.style.backgroundColor = `var(${backgroundToken})`;
-          el.appendChild(sonda);
-          const tokenBackground = getComputedStyle(sonda).backgroundColor;
-          sonda.remove();
+          // inherits its scope of custom properties.
+          const probe = document.createElement('span');
+          probe.style.backgroundColor = `var(${backgroundToken})`;
+          el.appendChild(probe);
+          const tokenBackground = getComputedStyle(probe).backgroundColor;
+          probe.remove();
           return {
             element: true,
             token: getComputedStyle(el)
@@ -783,7 +783,7 @@ const wPrzegladarce = async (url) => {
 };
 
 /** The consumer's route, run end to end. */
-const zmierzRepozytorium = async () => {
+const measureRepository = async () => {
   const dist = join(ROOT, DIST);
   const manifest = readJson(join(dist, 'package.json'));
   if (!manifest)
@@ -840,12 +840,12 @@ const zmierzRepozytorium = async () => {
       integrity: packDescription?.integrity ?? null,
       files: (packDescription?.files ?? []).map((f) => f.path),
       manifest,
-      fabryki: fabrykiSchematicow(manifest),
+      factories: schematicFactories(manifest),
     };
-    const archive = join(WORKDIR, packDescription?.filename ?? 'brak.tgz');
+    const archive = join(WORKDIR, packDescription?.filename ?? 'missing.tgz');
 
     // 2. publish + read the metadata from the registry.
-    const publikacja = existsSync(archive)
+    const publication = existsSync(archive)
       ? run('npm', ['publish', archive, '--registry', url], {
           cwd: WORKDIR,
           env: npmEnv,
@@ -893,7 +893,7 @@ const zmierzRepozytorium = async () => {
       }
     })();
 
-    // 4. `ng add` — schematic z zainstalowanego pakietu, prawdziwym CLI.
+    // 4. `ng add` — the schematic from the installed package, through the real CLI.
     //    Called as `generate`, not `add`: `ng add` is an install PLUS this schematic, and
     //    the install is what point 3 measures — joined into one command they would give
     //    one message for two different failures.
@@ -950,15 +950,15 @@ const zmierzRepozytorium = async () => {
     // 7. one pass in a browser.
     const e2e =
       ssr.status === 200
-        ? await wPrzegladarce(`http://localhost:${portApp}/`)
+        ? await inBrowser(`http://localhost:${portApp}/`)
         : { element: false, errors: [] };
 
     return {
       tarball,
       registry: {
         url,
-        published: publikacja.code === 0,
-        output: publikacja.output,
+        published: publication.code === 0,
+        output: publication.output,
         metadata,
       },
       install: {
@@ -1015,10 +1015,10 @@ const buildFixture = (fx) => {
   if (fx.clearFiles) we.tarball.files = [];
   if (fx.dropFile)
     we.tarball.files = dropFromList(we.tarball.files, fx.dropFile);
-  if (fx.dodajExport)
-    we.tarball.manifest.exports[fx.dodajExport.klucz] = fx.dodajExport.cel;
-  if (fx.dodajFabryke)
-    we.tarball.fabryki = [...we.tarball.fabryki, fx.dodajFabryke];
+  if (fx.addExport)
+    we.tarball.manifest.exports[fx.addExport.key] = fx.addExport.target;
+  if (fx.addFactory)
+    we.tarball.factories = [...we.tarball.factories, fx.addFactory];
   if (fx.collectionInManifest !== undefined)
     we.tarball.manifest.schematics = fx.collectionInManifest;
 
@@ -1070,7 +1070,7 @@ let description = null;
  * noise.
  */
 if (WRITE_REFERENCE) {
-  const measurement = await zmierzRepozytorium();
+  const measurement = await measureRepository();
   measurement.registry.output = '(npm publish output)';
   measurement.install.output = '(npm install output)';
   measurement.ngAdd.output = '(ng generate output)';
@@ -1107,7 +1107,7 @@ if (WRITE_REFERENCE) {
 }
 
 try {
-  description = checkConsumer(await zmierzRepozytorium());
+  description = checkConsumer(await measureRepository());
 } catch (error) {
   if (!(error instanceof ConsumerError)) throw error;
   problems.push(`${error.check}/${error.rule}: ${error.message}`);
