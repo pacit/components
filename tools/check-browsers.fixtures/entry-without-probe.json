@@ -1,0 +1,10 @@
+{
+  "check": "register",
+  "rule": "entry-without-probe",
+  "description": "An entry of kind `measurement` invokes a fact for which there is no probe. The `measurement` kind promises verification on every run — with no probe it is a `record` pretending to be a measurement, that is, worse than a record.",
+  "replaceExclusion": {
+    "forced-colors.spec.ts": {
+      "fact": "system-colours"
+    }
+  }
+}

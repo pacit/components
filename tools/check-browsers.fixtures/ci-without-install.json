@@ -1,0 +1,8 @@
+{
+  "check": "ci",
+  "rule": "ci-without-install",
+  "description": "The workflow installs no browser. Either the run falls over, or — worse — somebody has already fixed that by narrowing the matrix down to whatever happens to be in the runner image.",
+  "ci": {
+    "installs": []
+  }
+}

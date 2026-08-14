@@ -1,0 +1,10 @@
+{
+  "check": "fact",
+  "rule": "fact-stale",
+  "description": "Webkit started replacing the author's colours and the exclusion resting on that reason still stands. This is what a reason that vanished at a package bump looks like — that is, at a change touching not one file in this repository.",
+  "facts": {
+    "author-colour-override": {
+      "webkit": true
+    }
+  }
+}

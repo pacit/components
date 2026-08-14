@@ -1,6 +1,0 @@
-{
-  "kontrola": "silniki",
-  "regula": "silnik-nadmiarowy",
-  "opis": "Projekt `Mobile Safari` dopisany do konfiguracji bez wpisu w polityce. Punkty 3 i 6 chodzą po silnikach Z POLITYKI, więc taki projekt biegnie w CI i nie jest przez bramkę oglądany ani razu.",
-  "dopiszZebrane": { "Mobile Safari": ["button.spec.ts"] }
-}

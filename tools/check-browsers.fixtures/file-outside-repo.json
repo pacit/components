@@ -1,0 +1,8 @@
+{
+  "check": "coverage",
+  "rule": "file-outside-repo",
+  "description": "Playwright collects a file that is not in the git index. Point 3's denominator comes from git, so such a file runs and the gate has no way of asking whether it runs everywhere.",
+  "addCollected": {
+    "chromium": ["uncommitted.spec.ts"]
+  }
+}

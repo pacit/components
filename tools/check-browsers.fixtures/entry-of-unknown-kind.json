@@ -1,0 +1,10 @@
+{
+  "check": "register",
+  "rule": "entry-of-unknown-kind",
+  "description": "A kind outside the vocabulary. The kind decides whether point 6 is to VERIFY the entry with a probe or take it as a recorded decision — an entry of an unrecognised kind would fall out of that question quietly.",
+  "replaceExclusion": {
+    "visual.spec.ts": {
+      "kind": "temporarily"
+    }
+  }
+}

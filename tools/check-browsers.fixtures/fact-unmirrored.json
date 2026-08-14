@@ -1,0 +1,10 @@
+{
+  "check": "fact",
+  "rule": "fact-unmirrored",
+  "description": "Firefox stopped replacing the author's colours and the file still runs there. The tests then ask about behaviour the engine does not have: they will pass or they will not, and either way they measure something other than their name says.",
+  "facts": {
+    "author-colour-override": {
+      "firefox": false
+    }
+  }
+}

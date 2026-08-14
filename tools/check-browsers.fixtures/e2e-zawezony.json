@@ -1,6 +1,0 @@
-{
-  "kontrola": "ci",
-  "regula": "e2e-zawezony",
-  "opis": "`--project=chromium` w poleceniu targetu. Konfiguracja deklaruje wtedy trzy silniki, `--list` pokazuje trzy silniki, a biegnie jeden — to jedyne zawężenie niewidoczne w `playwright.config.mts`.",
-  "e2e": { "polecenie": "playwright test --project=chromium" }
-}

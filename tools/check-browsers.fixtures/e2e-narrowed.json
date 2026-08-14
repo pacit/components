@@ -1,0 +1,8 @@
+{
+  "check": "ci",
+  "rule": "e2e-narrowed",
+  "description": "`--project=chromium` in the target's command. The configuration then declares three engines, `--list` shows three engines, and one runs — the only narrowing invisible in `playwright.config.mts`.",
+  "e2e": {
+    "command": "playwright test --project=chromium"
+  }
+}

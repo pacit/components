@@ -1,0 +1,8 @@
+{
+  "check": "register",
+  "rule": "dead-entry",
+  "description": "The file does run on the excluded engine after all. An exclusion with no effect outlives a problem that is gone and teaches people to read the register as a description of today's state.",
+  "addCollected": {
+    "webkit": ["forced-colors.spec.ts"]
+  }
+}

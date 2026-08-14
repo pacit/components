@@ -9,7 +9,7 @@
  *  3. COVERAGE: every spec file runs on every engine — or carries an entry,
  *  4. the register of exclusions is alive and justified,
  *  5. CI installs every engine and does not narrow the run,
- *  6. FACT: a `pomiar` exclusion's justification is measured, not remembered.
+ *  6. FACT: a `measurement` exclusion's justification is measured, not remembered.
  *
  * What „really runs" comes from `playwright test --list`, not from the configuration —
  * the same move as „run the compiler" in `check-typecheck`. Point 6 re-probes on every
@@ -24,11 +24,11 @@ import { execFileSync } from 'node:child_process';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const FIXTURES = join(ROOT, 'tools/check-browsers.fixtures');
-const BAZA = '_poprawny.json';
+const REFERENCE = '_reference.json';
 
 const E2E = 'apps/sandbox-e2e';
 const TESTDIR = `${E2E}/src`;
-const POLITYKA = `${E2E}/browsers.policy.json`;
+const POLICY = `${E2E}/browsers.policy.json`;
 const CI = '.github/workflows/ci.yml';
 
 /**
@@ -40,7 +40,7 @@ const CI = '.github/workflows/ci.yml';
 const SPEC = /\.(?:spec|test)\.(?:c|m)?[jt]sx?$/;
 
 /** Kinds of exclusion justification. Any other kind is an entry the gate cannot read. */
-const RODZAJE = ['zapis', 'pomiar'];
+const KINDS = ['record', 'measurement'];
 
 /**
  * Flags that narrow the run. `--project` and `--grep` turn the matrix into one engine or
@@ -49,97 +49,90 @@ const RODZAJE = ['zapis', 'pomiar'];
  * deliberately NOT listed: it splits the same set across machines, so the sum of the runs
  * stays whole.
  */
-const ZAWEZAJACE = [
+const NARROWING = [
   ['--project', /(?:^|\s)--project(?:=|\s)/],
   ['--grep', /(?:^|\s)--grep(?:-invert)?(?:=|\s)/],
 ];
 
 /**
- * Probes of facts about the engines. The key is what goes into the `fakt` field of a
- * `pomiar` exclusion; the value answers „can this engine do it".
+ * Probes of facts about the engines. The key is what goes into the `fact` field of a
+ * `measurement` exclusion; the value answers „can this engine do it".
  *
- * `podmiana-kolorow-autora` — whether under `forced-colors: active` the browser replaces
+ * `author-colour-override` — whether under `forced-colors: active` the browser replaces
  * the author's colours with the user's palette. The probe measures that on an element with
  * NO rules of the library, because it asks about the browser's behaviour and not about a
  * stylesheet: the background `rgb(1, 2, 3)` is a value in no palette, so any answer other
  * than itself means „replaced".
  */
-const SONDY = {
-  'podmiana-kolorow-autora': async (page) => {
+const PROBES = {
+  'author-colour-override': async (page) => {
     await page.setContent(
       '<div id="s" style="background: rgb(1, 2, 3)"></div>',
     );
-    const tlo = await page.evaluate(
+    const background = await page.evaluate(
       () => getComputedStyle(document.getElementById('s')).backgroundColor,
     );
-    return tlo !== 'rgb(1, 2, 3)';
+    return background !== 'rgb(1, 2, 3)';
   },
 };
 
 /**
- * A violation of one of the checks. It carries the pair `kontrola` + `regula`, not the
+ * A violation of one of the checks. It carries the pair `check` + `rule`, not the
  * point's identifier alone: a gate's point is not one sentence (`lesson-50`), and a
  * negative control comparing only the point lets through a case that fired on a
  * neighbouring rule of that same point.
  */
-class BladPrzegladarek extends Error {
-  constructor(kontrola, regula, opis) {
-    super(opis);
-    this.kontrola = kontrola;
-    this.regula = regula;
+class BrowsersError extends Error {
+  constructor(check, rule, description) {
+    super(description);
+    this.check = check;
+    this.rule = rule;
   }
 }
 
-const lista = (items) => items.map((i) => `      ${i}`).join('\n');
+const list = (items) => items.map((i) => `      ${i}`).join('\n');
 
 // ── the checks ──────────────────────────────────────────────────────────────────
 
 /**
  * The full set of checks over a ready input:
- *   `polityka` — the contents of `browsers.policy.json`,
- *   `zebrane`  — `{ [silnik]: [pliki] }`, measured by `playwright test --list`,
- *   `pliki`    — spec files from the git index, relative to `testDir`,
- *   `e2e`      — `{ polecenie }` from the `sandbox-e2e:e2e` target in the Nx graph,
- *   `ci`       — `{ instalacje: [[silnik]], uruchamiaE2E }` from the workflow,
- *   `fakty`    — `{ [fakt]: { [silnik]: boolean } }`, the probes' results.
- * Throws `BladPrzegladarek` on the first violation — the checks start from the
+ *   `policy` — the contents of `browsers.policy.json`,
+ *   `collected`  — `{ [engine]: [files] }`, measured by `playwright test --list`,
+ *   `files`    — spec files from the git index, relative to `testDir`,
+ *   `e2e`      — `{ command }` from the `sandbox-e2e:e2e` target in the Nx graph,
+ *   `ci`       — `{ installs: [[engine]], runsE2E }` from the workflow,
+ *   `facts`    — `{ [fact]: { [engine]: boolean } }`, the probes' results.
+ * Throws `BrowsersError` on the first violation — the checks start from the
  * denominator, so the later ones would have nothing to examine anyway.
  */
-export const sprawdzPrzegladarki = ({
-  polityka,
-  zebrane,
-  pliki,
-  e2e,
-  ci,
-  fakty,
-}) => {
-  const silniki = Object.keys(polityka?.silniki ?? {});
-  const wylaczenia = polityka?.wylaczenia ?? [];
+export const checkBrowsers = ({ policy, collected, files, e2e, ci, facts }) => {
+  const engines = Object.keys(policy?.engines ?? {});
+  const exclusions = policy?.exclusions ?? [];
 
   // 1. DENOMINATOR. Each of the three lists can be empty for a different reason, and any
   // one of them empty gives a gate that always passes, having nothing to compare.
-  if (!silniki.length)
-    throw new BladPrzegladarek(
-      'mianownik',
-      'polityka-bez-silnikow',
-      `${POLITYKA} declares no engine at all — points 2–6 walk exactly this list, so all ` +
+  if (!engines.length)
+    throw new BrowsersError(
+      'denominator',
+      'policy-without-engines',
+      `${POLICY} declares no engine at all — points 2–6 walk exactly this list, so all ` +
         `of them would pass without looking at anything`,
     );
-  if (!pliki.length)
-    throw new BladPrzegladarek(
-      'mianownik',
-      'brak-plikow',
+  if (!files.length)
+    throw new BrowsersError(
+      'denominator',
+      'no-files',
       `no spec file found in \`${TESTDIR}\` (git index) — point 3 would compare the ` +
         `collected tests against an empty set, that is, against nothing`,
     );
-  const razem = Object.values(zebrane ?? {}).reduce(
+  const total = Object.values(collected ?? {}).reduce(
     (n, p) => n + (p?.length ?? 0),
     0,
   );
-  if (!razem)
-    throw new BladPrzegladarek(
-      'mianownik',
-      'pomiar-pusty',
+  if (!total)
+    throw new BrowsersError(
+      'denominator',
+      'empty-measurement',
       `\`playwright test --list\` collected no file on any engine. Playwright then exits ` +
         `zero and the e2e run is green — exactly the state in which the matrix measures ` +
         `nothing`,
@@ -148,49 +141,49 @@ export const sprawdzPrzegladarki = ({
   // 2. The engines. The set of collected projects against the policy's set, both ways:
   // the first catches an engine struck from the configuration, the second a project added
   // to it with no line in the policy — that is, with no place anyone could justify it.
-  const zebraneSilniki = Object.keys(zebrane ?? {});
-  const nieobecne = silniki.filter((s) => !(zebrane?.[s]?.length ?? 0));
-  if (nieobecne.length)
-    throw new BladPrzegladarek(
-      'silniki',
-      'silnik-nieobecny',
-      `${nieobecne.length} engines from the policy collect no test at all: ${nieobecne.join(', ')}.\n` +
+  const collectedEngines = Object.keys(collected ?? {});
+  const missing = engines.filter((s) => !(collected?.[s]?.length ?? 0));
+  if (missing.length)
+    throw new BrowsersError(
+      'engines',
+      'missing-engine',
+      `${missing.length} engines from the policy collect no test at all: ${missing.join(', ')}.\n` +
         `    A project removed from \`projects\` in \`playwright.config.mts\` (or a ` +
         `\`testIgnore\` narrowed down to zero files) gives no red run — it gives a run one ` +
         `engine shorter. Remedy: restore the project, or strike the engine from ` +
-        `${POLITYKA} and justify that in \`req-quality-browsers\`.`,
+        `${POLICY} and justify that in \`req-quality-browsers\`.`,
     );
-  const nadmiarowe = zebraneSilniki.filter((s) => !silniki.includes(s));
-  if (nadmiarowe.length)
-    throw new BladPrzegladarek(
-      'silniki',
-      'silnik-nadmiarowy',
-      `${nadmiarowe.length} Playwright projects have no entry in the policy: ${nadmiarowe.join(', ')}.\n` +
+  const extra = collectedEngines.filter((s) => !engines.includes(s));
+  if (extra.length)
+    throw new BrowsersError(
+      'engines',
+      'extra-engine',
+      `${extra.length} Playwright projects have no entry in the policy: ${extra.join(', ')}.\n` +
         `    Points 3 and 6 walk the engines FROM THE POLICY, so a project outside it runs ` +
         `in CI, costs time and is never once looked at by this gate.`,
     );
 
-  const wzorcowe = silniki.filter((s) => polityka.silniki[s]?.wzorcowy);
-  if (wzorcowe.length !== 1)
-    throw new BladPrzegladarek(
-      'silniki',
-      'wzorcowy-niejednoznaczny',
-      `the policy names ${wzorcowe.length} reference engines (${wzorcowe.join(', ') || 'none'}), ` +
+  const baselines = engines.filter((s) => policy.engines[s]?.baseline);
+  if (baselines.length !== 1)
+    throw new BrowsersError(
+      'engines',
+      'ambiguous-baseline',
+      `the policy names ${baselines.length} baseline engines (${baselines.join(', ') || 'none'}), ` +
         `and is to name exactly one.\n` +
-        `    The reference engine is point 6's baseline: a fact that holds for NOBODY is no ` +
+        `    The baseline engine is point 6's baseline: a fact that holds for NOBODY is no ` +
         `defect of an engine but a broken probe. With no unambiguous baseline there is no ` +
         `way to tell the two apart.`,
     );
-  const [wzorcowy] = wzorcowe;
-  const wzorcoweWylaczenia = wylaczenia.filter((w) =>
-    (w?.silniki ?? []).includes(wzorcowy),
+  const [baseline] = baselines;
+  const baselineExclusions = exclusions.filter((w) =>
+    (w?.engines ?? []).includes(baseline),
   );
-  if (wzorcoweWylaczenia.length)
-    throw new BladPrzegladarek(
-      'silniki',
-      'wzorcowy-z-wylaczeniem',
-      `the reference engine \`${wzorcowy}\` stands in ${wzorcoweWylaczenia.length} exclusions ` +
-        `(${wzorcoweWylaczenia.map((w) => w.plik).join(', ')}).\n` +
+  if (baselineExclusions.length)
+    throw new BrowsersError(
+      'engines',
+      'baseline-with-exclusion',
+      `the baseline engine \`${baseline}\` stands in ${baselineExclusions.length} exclusions ` +
+        `(${baselineExclusions.map((w) => w.file).join(', ')}).\n` +
         `    The reference is the one that runs WITH NO exclusions — it is the measure ` +
         `for the rest. An engine with a hole stops being one, and point 3 loses what it ` +
         `compares coverage against.`,
@@ -199,112 +192,112 @@ export const sprawdzPrzegladarki = ({
   // 3. COVERAGE. Both sides of the denominator first: a file from the repo nobody
   // collected, and a collected file that is not in the repo. Only then a gap on an engine.
   const wszystkieZebrane = new Set(
-    Object.values(zebrane ?? {}).flatMap((p) => p ?? []),
+    Object.values(collected ?? {}).flatMap((p) => p ?? []),
   );
-  const niezebrane = pliki.filter((p) => !wszystkieZebrane.has(p));
+  const niezebrane = files.filter((p) => !wszystkieZebrane.has(p));
   if (niezebrane.length)
-    throw new BladPrzegladarek(
-      'pokrycie',
-      'plik-poza-pomiarem',
+    throw new BrowsersError(
+      'coverage',
+      'file-outside-measurement',
       `${niezebrane.length} spec files were collected by NO engine:\n` +
-        lista(niezebrane) +
+        list(niezebrane) +
         `\n    The file sits in \`${TESTDIR}\`, is in the git index and runs nowhere — ` +
         `usually through a \`testMatch\`, \`testDir\` or \`testIgnore\` pattern added ` +
         `to every project at once. The run is green, because Playwright has nothing ` +
         `to run.`,
     );
-  const spozaRepo = [...wszystkieZebrane].filter((p) => !pliki.includes(p));
+  const spozaRepo = [...wszystkieZebrane].filter((p) => !files.includes(p));
   if (spozaRepo.length)
-    throw new BladPrzegladarek(
-      'pokrycie',
-      'plik-spoza-repo',
+    throw new BrowsersError(
+      'coverage',
+      'file-outside-repo',
       `${spozaRepo.length} files collected by Playwright are not in the git index:\n` +
-        lista(spozaRepo) +
+        list(spozaRepo) +
         `\n    Point 3's denominator comes from git, so such a file is invisible to it: it ` +
         `runs, and the gate has no way of asking whether it runs everywhere.`,
     );
 
-  const wpisFor = (plik, silnik) =>
-    wylaczenia.find(
-      (w) => w?.plik === plik && (w?.silniki ?? []).includes(silnik),
+  const entryFor = (file, engine) =>
+    exclusions.find(
+      (w) => w?.file === file && (w?.engines ?? []).includes(engine),
     );
   const luki = [];
-  for (const silnik of silniki) {
-    const maja = new Set(zebrane[silnik] ?? []);
-    for (const plik of pliki) {
-      if (maja.has(plik)) continue;
-      if (!wpisFor(plik, silnik)) luki.push(`${silnik}: ${plik}`);
+  for (const engine of engines) {
+    const maja = new Set(collected[engine] ?? []);
+    for (const file of files) {
+      if (maja.has(file)) continue;
+      if (!entryFor(file, engine)) luki.push(`${engine}: ${file}`);
     }
   }
   if (luki.length)
-    throw new BladPrzegladarek(
-      'pokrycie',
-      'luka-bez-wpisu',
+    throw new BrowsersError(
+      'coverage',
+      'gap-without-entry',
       `${luki.length} file × engine pairs do not run and have no entry in the policy:\n` +
-        lista(luki) +
+        list(luki) +
         `\n    This is what a \`testIgnore\` widened „because it flickers" looks like: ` +
         `coverage shrinks by one file, the run stays green and gets a few seconds shorter. ` +
-        `Remedy: fix the test, or add an exclusion with a reason to ${POLITYKA}.`,
+        `Remedy: fix the test, or add an exclusion with a reason to ${POLICY}.`,
     );
 
   // 4. The register of exclusions. A dead entry is the same defect here as a dead word in
   // the token name dictionary: it outlives the problem and teaches you to read it as current.
-  for (const wpis of wylaczenia) {
-    const gdzie = `exclusion \`${wpis?.plik ?? '(no file)'}\``;
-    if (!wpis?.plik || !pliki.includes(wpis.plik))
-      throw new BladPrzegladarek(
-        'rejestr',
-        'wpis-bez-pliku',
-        `${gdzie} names a file that is not in \`${TESTDIR}\` (git index).\n` +
+  for (const entry of exclusions) {
+    const where = `exclusion \`${entry?.file ?? '(no file)'}\``;
+    if (!entry?.file || !files.includes(entry.file))
+      throw new BrowsersError(
+        'register',
+        'entry-without-file',
+        `${where} names a file that is not in \`${TESTDIR}\` (git index).\n` +
           `    An entry with no file fires nothing and protects nothing — it reads as a ` +
           `description of the state, and describes the one before a delete or a rename.`,
       );
-    const silnikiWpisu = wpis.silniki ?? [];
-    const nieznane = silnikiWpisu.filter((s) => !silniki.includes(s));
-    if (!silnikiWpisu.length || nieznane.length)
-      throw new BladPrzegladarek(
-        'rejestr',
-        'wpis-bez-silnika',
-        `${gdzie} names ${silnikiWpisu.length ? `unknown engines: ${nieznane.join(', ')}` : 'an empty list of engines'}.\n` +
+    const entryEngines = entry.engines ?? [];
+    const unknown = entryEngines.filter((s) => !engines.includes(s));
+    if (!entryEngines.length || unknown.length)
+      throw new BrowsersError(
+        'register',
+        'entry-without-engine',
+        `${where} names ${entryEngines.length ? `unknown engines: ${unknown.join(', ')}` : 'an empty list of engines'}.\n` +
           `    Point 3 looks an entry up by the file × engine pair, so such an entry ` +
           `excuses nothing while looking in the register like a justification.`,
       );
-    if (!RODZAJE.includes(wpis.rodzaj))
-      throw new BladPrzegladarek(
-        'rejestr',
-        'wpis-nieznanego-rodzaju',
-        `${gdzie} ma \`rodzaj: ${JSON.stringify(wpis.rodzaj)}\`, a rozumiem ` +
-          `${RODZAJE.map((r) => `\`${r}\``).join(' i ')}.\n` +
+    if (!KINDS.includes(entry.kind))
+      throw new BrowsersError(
+        'register',
+        'entry-of-unknown-kind',
+        `${where} has \`kind: ${JSON.stringify(entry.kind)}\`, and I understand ` +
+          `${KINDS.map((r) => `\`${r}\``).join(' and ')}.\n` +
           `    The kind decides whether point 6 is to VERIFY the entry with a probe or ` +
           `take it as a recorded decision. An entry of an unknown kind would fall out of ` +
           `that question.`,
       );
-    if (typeof wpis.powod !== 'string' || wpis.powod.trim().length < 40)
-      throw new BladPrzegladarek(
-        'rejestr',
-        'wpis-bez-powodu',
-        `${gdzie} carries no reason (or one contentless sentence).\n` +
+    if (typeof entry.reason !== 'string' || entry.reason.trim().length < 40)
+      throw new BrowsersError(
+        'register',
+        'entry-without-reason',
+        `${where} carries no reason (or one contentless sentence).\n` +
           `    The register of exclusions is the only place where anybody explains why a ` +
           `file does NOT run — without that it is a list that grows.`,
       );
-    if (wpis.rodzaj === 'pomiar' && !SONDY[wpis.fakt])
-      throw new BladPrzegladarek(
-        'rejestr',
-        'wpis-bez-sondy',
-        `${gdzie} jest rodzaju \`pomiar\`, a \`fakt: ${JSON.stringify(wpis.fakt)}\` ` +
+    if (entry.kind === 'measurement' && !PROBES[entry.fact])
+      throw new BrowsersError(
+        'register',
+        'entry-without-probe',
+        `${where} is of kind \`measurement\`, and \`fact: ${JSON.stringify(entry.fact)}\` ` +
           `has no probe in \`check-browsers.mjs\`.\n` +
-          `    The \`pomiar\` kind promises the justification is verified on every run. ` +
-          `With no probe it is a \`zapis\` pretending to be a measurement — worse than a ` +
-          `plain record.`,
+          `    The \`measurement\` kind promises the justification is verified on every ` +
+          `run. With no probe it is a \`record\` pretending to be a measurement — worse ` +
+          `than a plain record.`,
       );
-    const martwe = silnikiWpisu.filter((s) =>
-      (zebrane[s] ?? []).includes(wpis.plik),
+    const dead = entryEngines.filter((s) =>
+      (collected[s] ?? []).includes(entry.file),
     );
-    if (martwe.length)
-      throw new BladPrzegladarek(
-        'rejestr',
-        'wpis-martwy',
-        `${gdzie} excludes engines on which the file runs anyway: ${martwe.join(', ')}.\n` +
+    if (dead.length)
+      throw new BrowsersError(
+        'register',
+        'dead-entry',
+        `${where} excludes engines on which the file runs anyway: ${dead.join(', ')}.\n` +
           `    An exclusion with no effect outlives a problem that is gone, and reads as a ` +
           `description of today's state.`,
       );
@@ -312,116 +305,118 @@ export const sprawdzPrzegladarki = ({
 
   // 5. CI. The gate measures `--list`, that is, the configuration — but what runs is a
   // COMMAND. Between the two sits `--project=chromium`, which points 1–3 cannot see.
-  const wadaPolecenia = ZAWEZAJACE.filter(([, wzorzec]) =>
-    wzorzec.test(e2e?.polecenie ?? ''),
-  ).map(([nazwa]) => nazwa);
-  if (!e2e?.polecenie)
-    throw new BladPrzegladarek(
+  const wadaPolecenia = NARROWING.filter(([, wzorzec]) =>
+    wzorzec.test(e2e?.command ?? ''),
+  ).map(([name]) => name);
+  if (!e2e?.command)
+    throw new BrowsersError(
       'ci',
-      'e2e-bez-polecenia',
+      'e2e-without-command',
       `the \`sandbox-e2e:e2e\` target has no command that can be read — the gate cannot ` +
         `check whether the run is narrowed`,
     );
   if (wadaPolecenia.length)
-    throw new BladPrzegladarek(
+    throw new BrowsersError(
       'ci',
-      'e2e-zawezony',
+      'e2e-narrowed',
       `the \`sandbox-e2e:e2e\` command narrows the run (${wadaPolecenia.join(', ')}):\n` +
-        `      ${e2e.polecenie}\n` +
+        `      ${e2e.command}\n` +
         `    The configuration then declares three engines, \`--list\` shows three, and ` +
         `one runs. The only narrowing invisible in \`playwright.config.mts\`.`,
     );
 
-  if (!ci?.instalacje?.length)
-    throw new BladPrzegladarek(
+  if (!ci?.installs?.length)
+    throw new BrowsersError(
       'ci',
-      'ci-bez-instalacji',
+      'ci-without-install',
       `\`${CI}\` has no \`playwright install\` step at all — browsers do not come from ` +
         `nowhere, so either the run fails or (worse) somebody fixed it by narrowing the ` +
         `matrix`,
     );
-  const brakiCi = ci.instalacje.flatMap((krok, i) =>
-    silniki
+  const brakiCi = ci.installs.flatMap((krok, i) =>
+    engines
       .filter((s) => !krok.includes(s))
       .map((s) => `krok #${i + 1}: brak \`${s}\``),
   );
   if (brakiCi.length)
-    throw new BladPrzegladarek(
+    throw new BrowsersError(
       'ci',
-      'ci-bez-silnika',
+      'ci-without-engine',
       `${brakiCi.length} browser install steps in \`${CI}\` do not name an engine from the policy:\n` +
-        lista(brakiCi) +
+        list(brakiCi) +
         `\n    There are two steps (a cache miss and a cache hit) and they have to name the ` +
         `same set: an engine installed only on a miss disappears at the first hit.`,
     );
-  if (!ci.uruchamiaE2E)
-    throw new BladPrzegladarek(
+  if (!ci.runsE2E)
+    throw new BrowsersError(
       'ci',
-      'ci-bez-e2e',
+      'ci-without-e2e',
       `\`${CI}\` does not run the \`e2e\` target anywhere.\n` +
         `    That is this whole gate's denominator: the matrix describes a run that does ` +
         `not happen, and every point above passes because the configuration is fine.`,
     );
 
-  // 6. FACT. A probe in every engine, for every fact a `pomiar` exclusion appeals to.
+  // 6. FACT. A probe in every engine, for every fact a `measurement` exclusion appeals to.
   // Three rules, because there are three different ways such a justification can stop
   // holding, and only one of them is loud.
-  const zPomiaru = wylaczenia.filter((w) => w.rodzaj === 'pomiar');
-  for (const fakt of [...new Set(zPomiaru.map((w) => w.fakt))]) {
-    const wynik = fakty?.[fakt] ?? {};
-    const bezWyniku = silniki.filter((s) => typeof wynik[s] !== 'boolean');
+  const fromMeasurement = exclusions.filter((w) => w.kind === 'measurement');
+  for (const fact of [...new Set(fromMeasurement.map((w) => w.fact))]) {
+    const wynik = facts?.[fact] ?? {};
+    const bezWyniku = engines.filter((s) => typeof wynik[s] !== 'boolean');
     if (bezWyniku.length)
-      throw new BladPrzegladarek(
-        'fakt',
-        'sonda-nieudana',
-        `probe \`${fakt}\` gave no result for: ${bezWyniku.join(', ')}.\n` +
+      throw new BrowsersError(
+        'fact',
+        'probe-failed',
+        `probe \`${fact}\` gave no result for: ${bezWyniku.join(', ')}.\n` +
           `    With no result there is no way to say whether the exclusion still has a ` +
           `reason — and no verdict defaults to „it stays", the worst of the answers.`,
       );
 
-    const wylaczoneTu = new Set(
-      zPomiaru.filter((w) => w.fakt === fakt).flatMap((w) => w.silniki),
+    const excludedHere = new Set(
+      fromMeasurement.filter((w) => w.fact === fact).flatMap((w) => w.engines),
     );
-    if (!silniki.some((s) => wynik[s]))
-      throw new BladPrzegladarek(
-        'fakt',
-        'fakt-bez-odniesienia',
-        `probe \`${fakt}\` holds for NO engine, the reference \`${wzorcowy}\` ` +
+    if (!engines.some((s) => wynik[s]))
+      throw new BrowsersError(
+        'fact',
+        'fact-without-baseline',
+        `probe \`${fact}\` holds for NO engine, the reference \`${baseline}\` ` +
           `included.\n` +
           `    That is no defect of the engines but of the probe: were it ` +
           `to start returning false always, every exclusion resting on it would look ` +
           `justified forever. A measurement's denominator, not caution.`,
       );
 
-    const przezyly = [...wylaczoneTu].filter((s) => wynik[s]);
+    const przezyly = [...excludedHere].filter((s) => wynik[s]);
     if (przezyly.length)
-      throw new BladPrzegladarek(
-        'fakt',
-        'fakt-nieaktualny',
-        `\`${fakt}\` now holds for engines excluded on account of it: ${przezyly.join(', ')}.\n` +
+      throw new BrowsersError(
+        'fact',
+        'fact-stale',
+        `\`${fact}\` now holds for engines excluded on account of it: ${przezyly.join(', ')}.\n` +
           `    The reason for the exclusion is gone — most likely at a Playwright bump, a ` +
           `change that touches not one file in this repository. Remedy: take the entry out ` +
-          `of ${POLITYKA} and out of \`testIgnore\`, then see what that file has to say ` +
+          `of ${POLICY} and out of \`testIgnore\`, then see what that file has to say ` +
           `there.`,
       );
 
-    const bezPokrycia = silniki.filter((s) => !wynik[s] && !wylaczoneTu.has(s));
+    const bezPokrycia = engines.filter(
+      (s) => !wynik[s] && !excludedHere.has(s),
+    );
     if (bezPokrycia.length)
-      throw new BladPrzegladarek(
-        'fakt',
-        'fakt-nieodwzorowany',
-        `\`${fakt}\` does not hold for engines whose files run anyway: ${bezPokrycia.join(', ')}.\n` +
+      throw new BrowsersError(
+        'fact',
+        'fact-unmirrored',
+        `\`${fact}\` does not hold for engines whose files run anyway: ${bezPokrycia.join(', ')}.\n` +
           `    The tests ask there about behaviour the engine does not have — they will ` +
           `pass or fail, and either way measure something other than their name says.`,
       );
   }
 
-  const wyl = wylaczenia.length;
+  const wyl = exclusions.length;
   return (
-    `${pliki.length} spec files on ${silniki.length} engines ` +
-    `(${silniki.map((s) => `${s}: ${zebrane[s].length}`).join(', ')}), ` +
+    `${files.length} spec files on ${engines.length} engines ` +
+    `(${engines.map((s) => `${s}: ${collected[s].length}`).join(', ')}), ` +
     `${wyl} ${wyl === 1 ? 'exclusion' : 'exclusions'} — ` +
-    `${zPomiaru.length} of them confirmed by a probe`
+    `${fromMeasurement.length} of them confirmed by a probe`
   );
 };
 
@@ -429,7 +424,7 @@ export const sprawdzPrzegladarki = ({
 
 const czytaj = (sciezka) => readFileSync(join(ROOT, sciezka), 'utf8');
 
-const politykaZDysku = () => JSON.parse(czytaj(POLITYKA));
+const policyFromDisk = () => JSON.parse(czytaj(POLICY));
 
 /**
  * What Playwright REALLY collects, project by project. `--list` starts neither the
@@ -449,12 +444,12 @@ const zebranePrzezPlaywrighta = () => {
         maxBuffer: 64 * 1024 * 1024,
       },
     );
-  } catch (blad) {
-    throw new BladPrzegladarek(
-      'mianownik',
-      'pomiar-nieczytelny',
+  } catch (error) {
+    throw new BrowsersError(
+      'denominator',
+      'unreadable-measurement',
       `\`playwright test --list\` could not be run:\n    ` +
-        String(blad.stderr || blad.stdout || blad.message)
+        String(error.stderr || error.stdout || error.message)
           .trim()
           .split('\n')
           .slice(0, 8)
@@ -466,28 +461,28 @@ const zebranePrzezPlaywrighta = () => {
   try {
     raport = JSON.parse(surowe);
   } catch {
-    throw new BladPrzegladarek(
-      'mianownik',
-      'pomiar-nieczytelny',
+    throw new BrowsersError(
+      'denominator',
+      'unreadable-measurement',
       `the output of \`playwright test --list --reporter=json\` is not JSON ` +
         `(${surowe.length} characters) — the gate has nothing to derive the matrix from`,
     );
   }
   if (raport.errors?.length)
-    throw new BladPrzegladarek(
-      'mianownik',
-      'pomiar-nieczytelny',
+    throw new BrowsersError(
+      'denominator',
+      'unreadable-measurement',
       `Playwright reported ${raport.errors.length} errors while collecting tests:\n    ` +
         raport.errors
           .map((e) => (e.message ?? String(e)).split('\n')[0])
           .join('\n    '),
     );
 
-  const zebrane = {};
+  const collected = {};
   const obejdz = (suite) => {
     for (const spec of suite.specs ?? [])
       for (const test of spec.tests ?? []) {
-        (zebrane[test.projectName] ??= new Set()).add(spec.file);
+        (collected[test.projectName] ??= new Set()).add(spec.file);
       }
     for (const glebiej of suite.suites ?? []) obejdz(glebiej);
   };
@@ -496,10 +491,10 @@ const zebranePrzezPlaywrighta = () => {
   // A project with no test at all does not appear in the result tree, and point 2 is to
   // name it — hence an empty list rather than a missing key.
   for (const projekt of raport.config?.projects ?? [])
-    zebrane[projekt.name] ??= new Set();
+    collected[projekt.name] ??= new Set();
 
   return Object.fromEntries(
-    Object.entries(zebrane).map(([k, v]) => [k, [...v].sort()]),
+    Object.entries(collected).map(([k, v]) => [k, [...v].sort()]),
   );
 };
 
@@ -507,7 +502,7 @@ const zebranePrzezPlaywrighta = () => {
  * Spec files from the GIT INDEX, not from a directory scan: an uncommitted file binds
  * nobody yet, and an artifact in `dist/` is nobody's test.
  */
-const plikiSpec = () =>
+const specFiles = () =>
   execFileSync('git', ['ls-files', TESTDIR], { cwd: ROOT, encoding: 'utf8' })
     .split('\n')
     .map((p) => p.trim())
@@ -526,7 +521,7 @@ const targetE2E = async () => {
   const { command, commands } = target?.options ?? {};
   const polecenia = commands ?? (command === undefined ? [] : [command]);
   return {
-    polecenie: polecenia
+    command: polecenia
       .map((c) => (typeof c === 'string' ? c : (c?.command ?? '')))
       .join(' && '),
   };
@@ -543,17 +538,17 @@ const targetE2E = async () => {
  * reported this to itself on the first run after its own comment was added — it counted
  * four install steps where there are two, and fired on two of them.
  */
-const krokiCi = (silniki) => {
+const krokiCi = (engines) => {
   const linie = czytaj(CI)
     .split('\n')
     .map((l) => l.replace(/#.*$/, ''));
-  const instalacje = linie
+  const installs = linie
     .filter((l) => /playwright\s+install/.test(l))
-    .map((l) => silniki.filter((s) => new RegExp(`\\b${s}\\b`).test(l)));
-  const uruchamiaE2E = linie.some(
+    .map((l) => engines.filter((s) => new RegExp(`\\b${s}\\b`).test(l)));
+  const runsE2E = linie.some(
     (l) => /nx\s+(?:affected|run-many)/.test(l) && /\be2e\b/.test(l),
   );
-  return { instalacje, uruchamiaE2E };
+  return { installs, runsE2E };
 };
 
 /**
@@ -561,21 +556,21 @@ const krokiCi = (silniki) => {
  * is measured here is the ENGINE's behaviour, so the less there is around it, the fewer
  * things can answer in its place.
  */
-const zmierzFakty = async (polityka) => {
+const zmierzFakty = async (policy) => {
   const potrzebne = [
     ...new Set(
-      (polityka.wylaczenia ?? [])
-        .filter((w) => w.rodzaj === 'pomiar' && SONDY[w.fakt])
-        .map((w) => w.fakt),
+      (policy.exclusions ?? [])
+        .filter((w) => w.kind === 'measurement' && PROBES[w.fact])
+        .map((w) => w.fact),
     ),
   ];
   if (!potrzebne.length) return {};
 
   const playwright = await import('playwright');
-  const fakty = Object.fromEntries(potrzebne.map((f) => [f, {}]));
+  const facts = Object.fromEntries(potrzebne.map((f) => [f, {}]));
 
-  for (const silnik of Object.keys(polityka.silniki)) {
-    const typ = playwright[silnik];
+  for (const engine of Object.keys(policy.engines)) {
+    const typ = playwright[engine];
     if (!typ) continue;
     let przegladarka;
     try {
@@ -584,62 +579,62 @@ const zmierzFakty = async (polityka) => {
         forcedColors: 'active',
       });
       const page = await kontekst.newPage();
-      for (const fakt of potrzebne)
-        fakty[fakt][silnik] = await SONDY[fakt](page);
+      for (const fact of potrzebne)
+        facts[fact][engine] = await PROBES[fact](page);
     } catch {
       // No result is content here, not a failure: point 6 is to SAY so (the
-      // `sonda-nieudana` rule) rather than bring the gate down with a stack trace.
+      // `probe-nieudana` rule) rather than bring the gate down with a stack trace.
     } finally {
       await przegladarka?.close();
     }
   }
-  return fakty;
+  return facts;
 };
 
 // ── negative control ──────────────────────────────────────────────────────────
 
-const wczytajFixture = (nazwa) =>
-  JSON.parse(readFileSync(join(FIXTURES, nazwa), 'utf8'));
+const readFixture = (name) =>
+  JSON.parse(readFileSync(join(FIXTURES, name), 'utf8'));
 
 /**
  * Builds a case's input ON A COPY of the reference one, so the case file holds nothing
  * but its own defect — you cannot break something in passing and not notice.
  */
-const zlozFixture = (fx) => {
-  const baza = wczytajFixture(BAZA);
-  const w = structuredClone(baza.wejscie);
+const buildFixture = (fx) => {
+  const reference = readFixture(REFERENCE);
+  const w = structuredClone(reference.input);
 
-  for (const nazwa of fx.usunSilniki ?? []) delete w.polityka.silniki[nazwa];
-  for (const [nazwa, def] of Object.entries(fx.dopiszSilniki ?? {}))
-    w.polityka.silniki[nazwa] = def;
-  if (fx.wyczyscSilniki) w.polityka.silniki = {};
+  for (const name of fx.dropEngines ?? []) delete w.policy.engines[name];
+  for (const [name, def] of Object.entries(fx.addEngines ?? {}))
+    w.policy.engines[name] = def;
+  if (fx.clearEngines) w.policy.engines = {};
 
-  w.polityka.wylaczenia = w.polityka.wylaczenia.filter(
-    (wy) => !(fx.usunWylaczenia ?? []).includes(wy.plik),
+  w.policy.exclusions = w.policy.exclusions.filter(
+    (x) => !(fx.dropExclusions ?? []).includes(x.file),
   );
-  for (const [plik, pola] of Object.entries(fx.podmienWylaczenie ?? {})) {
-    const wpis = w.polityka.wylaczenia.find((wy) => wy.plik === plik);
-    if (wpis) for (const [k, v] of Object.entries(pola)) wpis[k] = v;
+  for (const [file, fields] of Object.entries(fx.replaceExclusion ?? {})) {
+    const entry = w.policy.exclusions.find((x) => x.file === file);
+    if (entry) for (const [k, v] of Object.entries(fields)) entry[k] = v;
   }
-  w.polityka.wylaczenia.push(...(fx.dopiszWylaczenia ?? []));
+  w.policy.exclusions.push(...(fx.addExclusions ?? []));
 
-  if (fx.wyczyscPliki) w.pliki = [];
-  w.pliki = w.pliki.filter((p) => !(fx.usunPliki ?? []).includes(p));
-  w.pliki.push(...(fx.dopiszPliki ?? []));
-  w.pliki.sort();
+  if (fx.clearFiles) w.files = [];
+  w.files = w.files.filter((p) => !(fx.dropFiles ?? []).includes(p));
+  w.files.push(...(fx.addFiles ?? []));
+  w.files.sort();
 
-  for (const [silnik, pliki] of Object.entries(fx.usunZebrane ?? {}))
-    w.zebrane[silnik] = (w.zebrane[silnik] ?? []).filter(
-      (p) => !pliki.includes(p),
+  for (const [engine, files] of Object.entries(fx.dropCollected ?? {}))
+    w.collected[engine] = (w.collected[engine] ?? []).filter(
+      (p) => !files.includes(p),
     );
-  for (const [silnik, pliki] of Object.entries(fx.dopiszZebrane ?? {}))
-    w.zebrane[silnik] = [...(w.zebrane[silnik] ?? []), ...pliki].sort();
-  for (const silnik of fx.wyczyscZebrane ?? []) w.zebrane[silnik] = [];
+  for (const [engine, files] of Object.entries(fx.addCollected ?? {}))
+    w.collected[engine] = [...(w.collected[engine] ?? []), ...files].sort();
+  for (const engine of fx.clearCollected ?? []) w.collected[engine] = [];
 
   if (fx.e2e) w.e2e = { ...w.e2e, ...fx.e2e };
   if (fx.ci) w.ci = { ...w.ci, ...fx.ci };
-  for (const [fakt, wyniki] of Object.entries(fx.fakty ?? {}))
-    w.fakty[fakt] = { ...w.fakty[fakt], ...wyniki };
+  for (const [fact, results] of Object.entries(fx.facts ?? {}))
+    w.facts[fact] = { ...w.facts[fact], ...results };
 
   return w;
 };
@@ -647,21 +642,21 @@ const zlozFixture = (fx) => {
 // ── the run ───────────────────────────────────────────────────────────────────
 
 const problems = [];
-let opis = null;
+let summary = null;
 
 try {
-  const polityka = politykaZDysku();
-  opis = sprawdzPrzegladarki({
-    polityka,
-    zebrane: zebranePrzezPlaywrighta(),
-    pliki: plikiSpec(),
+  const policy = policyFromDisk();
+  summary = checkBrowsers({
+    policy,
+    collected: zebranePrzezPlaywrighta(),
+    files: specFiles(),
     e2e: await targetE2E(),
-    ci: krokiCi(Object.keys(polityka.silniki ?? {})),
-    fakty: await zmierzFakty(polityka),
+    ci: krokiCi(Object.keys(policy.engines ?? {})),
+    facts: await zmierzFakty(policy),
   });
-} catch (blad) {
-  if (!(blad instanceof BladPrzegladarek)) throw blad;
-  problems.push(`${blad.kontrola}/${blad.regula}: ${blad.message}`);
+} catch (error) {
+  if (!(error instanceof BrowsersError)) throw error;
+  problems.push(`${error.check}/${error.rule}: ${error.message}`);
 }
 
 if (!existsSync(FIXTURES))
@@ -670,13 +665,13 @@ if (!existsSync(FIXTURES))
       `that it can fail is one more silent defect (req-quality-negative-control)`,
   );
 
-const przypadki = existsSync(FIXTURES)
+const cases = existsSync(FIXTURES)
   ? readdirSync(FIXTURES)
-      .filter((n) => n.endsWith('.json') && n !== BAZA)
+      .filter((n) => n.endsWith('.json') && n !== REFERENCE)
       .sort()
   : [];
 
-if (existsSync(FIXTURES) && !przypadki.length)
+if (existsSync(FIXTURES) && !cases.length)
   problems.push(
     `tools/check-browsers.fixtures: no prepared inputs — a gate with no proof that it can ` +
       `fail is one more silent defect (req-quality-negative-control)`,
@@ -684,31 +679,31 @@ if (existsSync(FIXTURES) && !przypadki.length)
 
 // The reference input MUST pass. Were it defective itself, every case would fire
 // because of it and not because of its own defect — every „it fired" would be false.
-if (przypadki.length) {
+if (cases.length) {
   try {
-    sprawdzPrzegladarki(zlozFixture({}));
-  } catch (blad) {
-    if (!(blad instanceof BladPrzegladarek)) throw blad;
+    checkBrowsers(buildFixture({}));
+  } catch (error) {
+    if (!(error instanceof BrowsersError)) throw error;
     problems.push(
-      `${BAZA}: the reference input does NOT pass (${blad.kontrola}/${blad.regula}) — ` +
-        `every prepared case now fires because of it.\n    ${blad.message}`,
+      `${REFERENCE}: the reference input does NOT pass (${error.check}/${error.rule}) — ` +
+        `every prepared case now fires because of it.\n    ${error.message}`,
     );
   }
 }
 
-for (const nazwa of przypadki) {
-  const fx = wczytajFixture(nazwa);
+for (const name of cases) {
+  const fx = readFixture(name);
   try {
-    sprawdzPrzegladarki(zlozFixture(fx));
+    checkBrowsers(buildFixture(fx));
     problems.push(
-      `${nazwa}: the prepared input PASSED and was meant not to — ` +
-        `rule \`${fx.kontrola}/${fx.regula}\` stopped examining anything`,
+      `${name}: the prepared input PASSED and was meant not to — ` +
+        `rule \`${fx.check}/${fx.rule}\` stopped examining anything`,
     );
-  } catch (blad) {
-    if (!(blad instanceof BladPrzegladarek)) throw blad;
-    if (blad.kontrola !== fx.kontrola || blad.regula !== fx.regula)
+  } catch (error) {
+    if (!(error instanceof BrowsersError)) throw error;
+    if (error.check !== fx.check || error.rule !== fx.rule)
       problems.push(
-        `${nazwa}: rule \`${blad.kontrola}/${blad.regula}\` fired, and \`${fx.kontrola}/${fx.regula}\` ` +
+        `${name}: rule \`${error.check}/${error.rule}\` fired, and \`${fx.check}/${fx.rule}\` ` +
           `was meant to — the fixture proves something other than what it declares`,
       );
   }
@@ -724,6 +719,6 @@ if (problems.length) {
 }
 
 console.log(
-  `✓ Browser matrix: ${opis}. Negative control: the reference input passes, ` +
-    `${przypadki.length} prepared ones rejected on their own rules.`,
+  `✓ Browser matrix: ${summary}. Negative control: the reference input passes, ` +
+    `${cases.length} prepared ones rejected on their own rules.`,
 );

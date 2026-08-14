@@ -1,8 +1,0 @@
-{
-  "kontrola": "rejestr",
-  "regula": "wpis-bez-sondy",
-  "opis": "Wpis rodzaju `pomiar` powołuje się na fakt, dla którego nie ma sondy. Rodzaj `pomiar` obiecuje sprawdzanie przy każdym przebiegu — bez sondy jest to `zapis` udający pomiar, czyli gorzej niż zapis.",
-  "podmienWylaczenie": {
-    "forced-colors.spec.ts": { "fakt": "kolory-systemowe" }
-  }
-}

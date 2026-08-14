@@ -1,0 +1,13 @@
+{
+  "check": "register",
+  "rule": "entry-without-file",
+  "description": "The exclusion names a file that does not exist. It fires nothing and protects nothing, and it reads as a description of today's state — the state is from before a removal or a rename.",
+  "addExclusions": [
+    {
+      "file": "combobox.spec.ts",
+      "engines": ["webkit"],
+      "kind": "record",
+      "reason": "A reason prepared for the negative control — long enough to clear the content threshold and not fire a neighbouring rule."
+    }
+  ]
+}

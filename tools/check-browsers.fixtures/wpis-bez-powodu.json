@@ -1,6 +1,0 @@
-{
-  "kontrola": "rejestr",
-  "regula": "wpis-bez-powodu",
-  "opis": "Powód skrócony do trzech słów. Rejestr wyłączeń jest jedynym miejscem, w którym ktoś tłumaczy, dlaczego plik NIE biegnie — bez tego jest listą, która rośnie.",
-  "podmienWylaczenie": { "visual.spec.ts": { "powod": "bo miga" } }
-}

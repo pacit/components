@@ -1,0 +1,8 @@
+{
+  "check": "coverage",
+  "rule": "gap-without-entry",
+  "description": "A file stopped running on firefox and nobody wrote that down — this is what a `testIgnore` widened „because it flickers\" looks like. Coverage shrinks by one file, the run stays green and a few seconds shorter.",
+  "dropCollected": {
+    "firefox": ["checkbox.spec.ts"]
+  }
+}

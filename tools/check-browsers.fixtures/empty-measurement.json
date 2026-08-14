@@ -1,0 +1,6 @@
+{
+  "check": "denominator",
+  "rule": "empty-measurement",
+  "description": "Playwright collected nothing on any engine — this is what a `testDir` pointing elsewhere or a `testMatch` after a typo looks like. A real run then ends at zero, that is, green.",
+  "clearCollected": ["chromium", "firefox", "webkit"]
+}

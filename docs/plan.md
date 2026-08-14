@@ -221,7 +221,7 @@ control. Nothing here is waiting any more.
   - „add webkit and firefox" has no symptom — Playwright exits zero after three projects as after
     one, and after **zero** tests — so the gate asks `--list` what the engines **actually** collect
   - firefox passed 146 functional tests first time, webkit 144: it reports `forced-colors: active`
-    and **does not substitute author colours**. Two exclusion kinds, `zapis` and `pomiar` → **C8**
+    and **does not substitute author colours**. Two exclusion kinds, `record` and `measurement` → **C8**
   - control: 25 inputs, each on its own rule; nine repository runs; **all 26 rules** disarmed in
     turn — the 26th has no symptom when disarmed, which is the whole truth about it
   - cost: ~1 day (plan: 0.5) · journal 2026-08-06 · [`lesson-56`](lessons.md#lesson-56)
@@ -1042,7 +1042,7 @@ adding three projects is not the **execution** of that promise, it is its declar
   and **does not substitute author colours** ([`lesson-56`](lessons.md#lesson-56)).
 - **An exclusion resting on a fact about a browser must measure that fact.** „Webkit cannot do
   this" is a sentence about a **package version**, not about this repository. So the register has
-  two kinds of entry: `zapis` (a decision written once) and `pomiar` (a probe on every run), with
+  two kinds of entry: `record` (a decision written once) and `measurement` (a probe on every run), with
   `fakt-bez-odniesienia` as denominator — a fact holding for **no** engine is a broken probe.
 - **An engine that does not repaint the result shows a defect the other two cannot.**
   `:host([disabled])` in a forced-colors block has specificity (0,2,0) against the base rule's

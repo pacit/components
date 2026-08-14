@@ -1,0 +1,6 @@
+{
+  "check": "denominator",
+  "rule": "policy-without-engines",
+  "description": "A policy with not one engine. Points 2–6 walk that list, so without this rule the gate would pass in full having looked at nothing — the same shape of defect as the empty denominator in `check-typecheck`.",
+  "clearEngines": true
+}

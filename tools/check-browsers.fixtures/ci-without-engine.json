@@ -1,0 +1,8 @@
+{
+  "check": "ci",
+  "rule": "ci-without-engine",
+  "description": "The install step on a cache hit names chromium alone. There are two steps and they have to name the same thing: an engine installed only on a cache miss disappears at the first hit.",
+  "ci": {
+    "installs": [["chromium", "firefox", "webkit"], ["chromium"]]
+  }
+}

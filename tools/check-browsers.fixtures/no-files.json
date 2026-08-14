@@ -1,0 +1,6 @@
+{
+  "check": "denominator",
+  "rule": "no-files",
+  "description": "The git index yields not one spec file. Point 3 would then compare the collected tests against an empty set: every file × engine pair passes, because there are no pairs.",
+  "clearFiles": true
+}

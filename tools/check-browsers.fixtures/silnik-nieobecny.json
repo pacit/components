@@ -1,6 +1,0 @@
-{
-  "kontrola": "silniki",
-  "regula": "silnik-nieobecny",
-  "opis": "Webkit zniknął z `projects` w konfiguracji Playwrighta, a został w polityce. To jest główny sposób, w jaki ta obietnica cofa się bez czerwonego testu: przebieg jest zielony i krótszy o silnik.",
-  "wyczyscZebrane": ["webkit"]
-}

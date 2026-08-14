@@ -1,0 +1,12 @@
+{
+  "check": "fact",
+  "rule": "fact-without-baseline",
+  "description": "The probe holds nowhere, the baseline engine included. This is a defect of the probe, not of the engines — returning false always, it would justify every exclusion resting on it for ever.",
+  "facts": {
+    "author-colour-override": {
+      "chromium": false,
+      "firefox": false,
+      "webkit": false
+    }
+  }
+}

@@ -1,61 +1,59 @@
-# Kontrola odniesienia bramki macierzy przeglądarek
+# Negative control of the browser matrix gate
 
-Celowo wadliwe wejścia. `tools/check-browsers.mjs` uruchamia na każdym z nich komplet
-swoich sześciu punktów i **wymaga, żeby każde zostało odrzucone — i to przez tę regułę,
-którą deklaruje**. Wejście, które przechodzi, jest błędem; wejście, które zapala gdzie
-indziej, niż wpisano w jego pliku, jest błędem tak samo, bo dowodzi czegoś innego, niż
-deklaruje.
+Deliberately defective inputs. `tools/check-browsers.mjs` runs all six of its points on
+each of them and **requires every one to be rejected — and rejected by the rule it
+declares**. An input that passes is a fault; an input that fires somewhere other than
+where its file says is a fault just the same, because it proves something other than
+what it declares.
 
-Każdy przypadek niesie parę `kontrola` + `regula`, a nie sam numer punktu — wprost
-z A12 i [`lesson-50`](../../docs/lessons.md#lesson-50). Zmierzone na tej bramce:
-rozbrojenie **ośmiu z dwudziestu sześciu** reguł przestawia ich przypadki na regułę
-sąsiednią, a bez tego pola wszystkie osiem przebiegów byłoby zielonych.
+Every case carries the pair `check` + `rule`, not the point number alone — straight from
+A12 and [`lesson-50`](../../docs/lessons.md#lesson-50). Measured on this gate: disarming
+**eight of the twenty-six** rules moves their cases onto a neighbouring rule, and without
+that field all eight runs would be green.
 
-Powód istnienia jest ten sam co przy każdej innej bramce
-([`req-quality-negative-control`](../../docs/requirements/quality.md#req-quality-negative-control)): **nowa
-bramka nie jest gotowa, gdy przechodzi — jest gotowa, gdy pokazano, że potrafi nie
-przejść.** Tutaj chodzi o obietnicę, która nie ma żadnego objawu: cofnięcie macierzy
-przeglądarek nie daje ani jednego czerwonego testu, bo Playwright kończy się zerem
-po trzech projektach dokładnie tak samo jak po jednym — i tak samo po zerze zebranych
-testów.
+The reason it exists is the same as for every other gate
+([`req-quality-negative-control`](../../docs/requirements/quality.md#req-quality-negative-control)):
+**a new gate is not ready when it passes — it is ready when it has been shown to fail.**
+Here it guards a promise with no symptom at all: undoing the browser matrix gives not one
+red test, because Playwright exits zero after three projects exactly as it does after
+one — and exactly as it does after zero collected tests.
 
-## Jak to jest złożone
+## How a case is built
 
-Przypadek nie jest kolejną kopią poprawnego wejścia z jedną zepsutą rzeczą. Bramka
-składa go z dwóch warstw:
+A case is not one more copy of the correct input with a single thing broken. The gate
+builds it from two layers:
 
-1. kopia `_poprawny.json` — obraz repozytorium z dnia powstania bramki, który **musi
-   przechodzić**;
-2. zmiany z pliku przypadku (`usunSilniki`, `dopiszWylaczenia`, `usunZebrane`, `ci`,
-   `fakty`, …).
+1. a copy of `_reference.json` — the picture of the repository on the day the gate was
+   written, which **must pass**;
+2. the changes from the case file (`dropEngines`, `addExclusions`, `dropCollected`, `ci`,
+   `facts`, …).
 
-Dzięki temu plik przypadku zawiera **wyłącznie swoją wadę** i w diffie widać dokładnie
-tę jedną rzecz, o którą chodzi. Wejście wzorcowe jest sprawdzane osobno i pierwsze:
-gdyby samo było wadliwe, każdy przypadek zapalałby z jego powodu, a nie ze swojego —
-czyli cała ta kontrola stałaby się tym, przed czym stoi.
+That way the case file holds **nothing but its own defect** and the diff shows exactly
+the one thing at issue. The reference input is checked separately and first: were it
+defective itself, every case would fire because of it rather than because of its own —
+that is, this whole control would become what it stands against.
 
-## Czego te przypadki NIE ćwiczą
+## What these cases do NOT exercise
 
-Trzy odczyty przychodzą tu jako dane, a nie z prawdziwego uruchomienia:
+Three readings arrive here as data rather than from a real run:
 
-- `zebrane` — zamiast wyniku `playwright test --list --reporter=json`,
-- `e2e` — zamiast polecenia z grafu Nx,
-- `fakty` — zamiast sond w żywych przeglądarkach.
+- `collected` — instead of the result of `playwright test --list --reporter=json`,
+- `e2e` — instead of the command from the Nx graph,
+- `facts` — instead of probes in live browsers.
 
-To ten sam wybór co w `check-parts` i `check-zoneless` i z tego samego powodu: trzy
-przeglądarki i graf Nx na każdy z dwudziestu pięciu przypadków kosztowałyby minuty,
-a bramka biegnie przy każdym commicie. Cena jest zapisana wprost — kod czytający raport
-Playwrighta, graf i sondy nie jest tutaj ćwiczony ani razu. Ćwiczy go za to **każdy**
-przebieg na prawdziwym repozytorium.
+This is the same choice as in `check-parts` and `check-zoneless` and for the same reason:
+three browsers and the Nx graph for each of the twenty-five cases would cost minutes, and
+the gate runs on every commit. The price is written down outright — the code reading the
+Playwright report, the graph and the probes is not exercised here once. It is exercised
+instead by **every** run against the real repository.
 
-## Jedna reguła bez przypadku
+## One rule with no case
 
-`mianownik/pomiar-nieczytelny` — zapala, gdy `playwright test --list` nie da się
-uruchomić albo jego wyjście nie jest JSON-em. Nie da się jej osiągnąć wejściem
-w formie danych, bo należy do warstwy odczytu, a nie do kontroli. Rozbrojona **nie
-daje żadnego objawu**: bramka zostaje zielona, bo w zdrowym repozytorium ta ścieżka
-nigdy nie jest wykonywana.
+`denominator/unreadable-measurement` — fires when `playwright test --list` cannot be run
+or its output is not JSON. It cannot be reached by an input in the form of data, because
+it belongs to the reading layer and not to the checks. Disarmed, it **gives no symptom**:
+the gate stays green, because in a healthy repository that path is never taken.
 
-Jest za to sprawdzona przebiegiem na prawdziwym repozytorium: niedomknięty nawias
-w `playwright.config.mts` zapala ją z komunikatem parsera. To jest jedyna droga do
-tej reguły i dlatego jedyny dowód, jaki ma.
+It is verified instead by a run against the real repository: an unclosed bracket in
+`playwright.config.mts` fires it with the parser's message. That is the only route to
+this rule and therefore the only proof it has.

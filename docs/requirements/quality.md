@@ -323,9 +323,9 @@ configuration) — each on a different rule
 **Lessons:** [`lesson-56`](../lessons.md#lesson-56)
 
 > There are two exclusions and they are **of different kinds**. `visual.spec.ts` outside
-> chromium is a `zapis` — a decision recorded once: the references in `__screenshots__/linux/`
+> chromium is a `record` — a decision recorded once: the references in `__screenshots__/linux/`
 > were rasterised by chromium, so on every other engine 26 out of 26 differ (measured).
-> `forced-colors.spec.ts` outside webkit is a `pomiar`: that engine reports
+> `forced-colors.spec.ts` outside webkit is a `measurement`: that engine reports
 > `forced-colors: active` and **does not replace the author's colours**, so four of the six
 > tests pass there while measuring colours from the tokens
 > ([`lesson-56`](../lessons.md#lesson-56)). Point 6 repeats that probe on every run — the day

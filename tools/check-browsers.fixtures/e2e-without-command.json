@@ -1,0 +1,8 @@
+{
+  "check": "ci",
+  "rule": "e2e-without-command",
+  "description": "The `e2e` target has no command that can be read. The gate then has no way of checking whether the run is narrowed — and a silent „I do not know\" would count as „in order\".",
+  "e2e": {
+    "command": ""
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "check": "register",
+  "rule": "entry-without-reason",
+  "description": "The reason cut down to three words. The register of exclusions is the only place where anybody explains why a file does NOT run — without that it is a list that grows.",
+  "replaceExclusion": {
+    "visual.spec.ts": {
+      "reason": "it flickers"
+    }
+  }
+}

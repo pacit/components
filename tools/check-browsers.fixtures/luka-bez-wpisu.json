@@ -1,6 +1,0 @@
-{
-  "kontrola": "pokrycie",
-  "regula": "luka-bez-wpisu",
-  "opis": "Plik przestał biec na firefoksie i nikt tego nie zapisał — tak wygląda `testIgnore` poszerzony „bo miga\". Pokrycie kurczy się o jeden plik, przebieg zostaje zielony i o kilka sekund krótszy.",
-  "usunZebrane": { "firefox": ["checkbox.spec.ts"] }
-}

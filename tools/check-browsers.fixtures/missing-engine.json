@@ -1,0 +1,6 @@
+{
+  "check": "engines",
+  "rule": "missing-engine",
+  "description": "Webkit disappeared from `projects` in the Playwright configuration and stayed in the policy. This is the main way this promise retreats with no red test: the run is green and one engine shorter.",
+  "clearCollected": ["webkit"]
+}

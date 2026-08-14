@@ -1,6 +1,0 @@
-{
-  "kontrola": "mianownik",
-  "regula": "polityka-bez-silnikow",
-  "opis": "Polityka bez ani jednego silnika. Punkty 2–6 chodzą po tej liście, więc bez tej reguły bramka przeszłaby w komplecie, nie zaglądając do niczego — to ten sam kształt wady co pusty mianownik w `check-typecheck`.",
-  "wyczyscSilniki": true
-}

@@ -1,0 +1,11 @@
+{
+  "check": "engines",
+  "rule": "ambiguous-baseline",
+  "description": "Two baseline engines at once. The baseline is point 6's reference — with no unambiguous reference there is no telling a defect of the engine from a broken probe.",
+  "addEngines": {
+    "firefox": {
+      "device": "Desktop Firefox",
+      "baseline": true
+    }
+  }
+}

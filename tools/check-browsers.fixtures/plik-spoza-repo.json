@@ -1,6 +1,0 @@
-{
-  "kontrola": "pokrycie",
-  "regula": "plik-spoza-repo",
-  "opis": "Playwright zbiera plik, którego nie ma w indeksie gita. Mianownik punktu 3 bierze się z gita, więc taki plik biegnie, a bramka nie ma jak zapytać, czy biegnie wszędzie.",
-  "dopiszZebrane": { "chromium": ["niezacommitowany.spec.ts"] }
-}

@@ -1,6 +1,0 @@
-{
-  "kontrola": "fakt",
-  "regula": "fakt-nieaktualny",
-  "opis": "Webkit zaczął podmieniać kolory autora, a wyłączenie z tego powodu stoi dalej. Tak wygląda powód, który zniknął przy podbiciu paczki — czyli przy zmianie nieruszającej w tym repozytorium ani jednego pliku.",
-  "fakty": { "podmiana-kolorow-autora": { "webkit": true } }
-}

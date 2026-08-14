@@ -1,0 +1,8 @@
+{
+  "check": "engines",
+  "rule": "extra-engine",
+  "description": "A `Mobile Safari` project added to the configuration with no entry in the policy. Points 3 and 6 walk the engines FROM THE POLICY, so such a project runs in CI and is never once looked at by the gate.",
+  "addCollected": {
+    "Mobile Safari": ["button.spec.ts"]
+  }
+}

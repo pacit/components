@@ -1,0 +1,6 @@
+{
+  "check": "coverage",
+  "rule": "file-outside-measurement",
+  "description": "A spec file is in the git index and no engine collects it. Playwright does not report that as an error — there is simply nothing to run, so the run comes out green.",
+  "addFiles": ["dialog.spec.ts"]
+}

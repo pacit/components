@@ -1,0 +1,133 @@
+{
+  "$description": "The reference input: an exact picture of the repository on the day the gate was written. It MUST pass — every case beside it is built on a copy of it, so a defective reference would turn all their „it fired\" into falsehoods.",
+  "input": {
+    "policy": {
+      "$description": "The browser matrix (req-quality-browsers). A second reading of what playwright.config.mts declares: that file configures, this one describes the CONTRACT, and tools/check-browsers.mjs asks Playwright what it really collected and requires all three to agree. Striking an engine out or widening an exclusion then takes two edits at once — that is, it leaves a sentence in the diff to read.",
+      "$engines": "Three engines, not three brands. `Desktop Edge` and `Google Chrome` are the same blink, so a fourth project would cost CI time and answer no new question. `baseline` marks the engine that runs WITH NO exclusions — the gate requires exactly one such and watches that nobody starts narrowing it.",
+      "engines": {
+        "chromium": {
+          "device": "Desktop Chrome",
+          "baseline": true
+        },
+        "firefox": {
+          "device": "Desktop Firefox"
+        },
+        "webkit": {
+          "device": "Desktop Safari"
+        }
+      },
+      "$exclusions": "Every spec file runs on EVERY engine unless it stands here. `kind` says what justifies the entry: `record` is a decision somebody took and wrote down, `measurement` is a fact about the engine the gate repeats on every run (point 6) — so that an exclusion does not outlive the reason it was created for.",
+      "exclusions": [
+        {
+          "file": "visual.spec.ts",
+          "engines": ["firefox", "webkit"],
+          "kind": "record",
+          "reason": "The baselines in `src/__screenshots__/linux/` came from a chromium rasterisation and every other engine differs from them because of the machine, not the code — measured: 26 of 26 baselines differ on firefox and just as many on webkit. A separate set of baselines per engine is three times the attention on every deliberate change of appearance and zero new questions: what the layout does on another engine is measured by the geometry tests, which run there in full. The promise of `req-quality-browsers` itself speaks of FUNCTIONAL tests and leaves screenshots on one platform."
+        },
+        {
+          "file": "forced-colors.spec.ts",
+          "engines": ["webkit"],
+          "kind": "measurement",
+          "fact": "author-colour-override",
+          "reason": "Playwright's webkit reports `matchMedia('(forced-colors: active)').matches === true` and does not replace the author's colours: a probe with a `rgb(1, 2, 3)` background comes out of it unchanged, while chromium and firefox return a colour from the user's palette. `forced-color-adjust` is not even a known property there (`getComputedStyle` returns `undefined`). This whole file would ask about behaviour the engine does not have — and would ask QUIETLY: four of its six tests pass there, measuring colours from the tokens instead of from the palette. A real Safari does not enter this mode anyway: `forced-colors` is Windows High Contrast, and the macOS „Increase contrast\" is `prefers-contrast`."
+        }
+      ]
+    },
+    "collected": {
+      "chromium": [
+        "a11y.spec.ts",
+        "button.spec.ts",
+        "checkbox.spec.ts",
+        "field-hitarea.spec.ts",
+        "field.spec.ts",
+        "forced-colors.spec.ts",
+        "forms.spec.ts",
+        "hydration.spec.ts",
+        "number.spec.ts",
+        "preferences.spec.ts",
+        "radio.spec.ts",
+        "rtl.spec.ts",
+        "select.spec.ts",
+        "shell.spec.ts",
+        "size.spec.ts",
+        "states.spec.ts",
+        "theme.spec.ts",
+        "visual.spec.ts"
+      ],
+      "firefox": [
+        "a11y.spec.ts",
+        "button.spec.ts",
+        "checkbox.spec.ts",
+        "field-hitarea.spec.ts",
+        "field.spec.ts",
+        "forced-colors.spec.ts",
+        "forms.spec.ts",
+        "hydration.spec.ts",
+        "number.spec.ts",
+        "preferences.spec.ts",
+        "radio.spec.ts",
+        "rtl.spec.ts",
+        "select.spec.ts",
+        "shell.spec.ts",
+        "size.spec.ts",
+        "states.spec.ts",
+        "theme.spec.ts"
+      ],
+      "webkit": [
+        "a11y.spec.ts",
+        "button.spec.ts",
+        "checkbox.spec.ts",
+        "field-hitarea.spec.ts",
+        "field.spec.ts",
+        "forms.spec.ts",
+        "hydration.spec.ts",
+        "number.spec.ts",
+        "preferences.spec.ts",
+        "radio.spec.ts",
+        "rtl.spec.ts",
+        "select.spec.ts",
+        "shell.spec.ts",
+        "size.spec.ts",
+        "states.spec.ts",
+        "theme.spec.ts"
+      ]
+    },
+    "files": [
+      "a11y.spec.ts",
+      "button.spec.ts",
+      "checkbox.spec.ts",
+      "field-hitarea.spec.ts",
+      "field.spec.ts",
+      "forced-colors.spec.ts",
+      "forms.spec.ts",
+      "hydration.spec.ts",
+      "number.spec.ts",
+      "preferences.spec.ts",
+      "radio.spec.ts",
+      "rtl.spec.ts",
+      "select.spec.ts",
+      "shell.spec.ts",
+      "size.spec.ts",
+      "states.spec.ts",
+      "theme.spec.ts",
+      "visual.spec.ts"
+    ],
+    "e2e": {
+      "command": "playwright test"
+    },
+    "ci": {
+      "installs": [
+        ["chromium", "firefox", "webkit"],
+        ["chromium", "firefox", "webkit"]
+      ],
+      "runsE2E": true
+    },
+    "facts": {
+      "author-colour-override": {
+        "chromium": true,
+        "firefox": true,
+        "webkit": false
+      }
+    }
+  }
+}

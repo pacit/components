@@ -1,0 +1,8 @@
+{
+  "check": "ci",
+  "rule": "ci-without-e2e",
+  "description": "CI does not run the `e2e` target. This is the denominator of the whole gate: the matrix describes a run that does not happen, and every point above passes, because the configuration is in order.",
+  "ci": {
+    "runsE2E": false
+  }
+}

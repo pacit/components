@@ -1,0 +1,13 @@
+{
+  "check": "engines",
+  "rule": "baseline-with-exclusion",
+  "description": "An exclusion reaching the baseline engine. The baseline is the one that runs WITH NO exclusions — an engine with a hole stops being the measure for the others, and point 3 loses what it compares coverage against.",
+  "addExclusions": [
+    {
+      "file": "a11y.spec.ts",
+      "engines": ["chromium"],
+      "kind": "record",
+      "reason": "A reason prepared for the negative control — long enough to clear the content threshold and not fire a neighbouring rule."
+    }
+  ]
+}
