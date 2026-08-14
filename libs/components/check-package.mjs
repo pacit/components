@@ -71,7 +71,7 @@ class PackageError extends Error {
  * violation — the checks run from the most basic one, so the later ones would have
  * nothing to examine anyway. Returns a summary sentence.
  */
-const kontrole = (ROOT, { release }, ostrzezenia) => {
+const checks = (ROOT, { release }, warnings) => {
   const fail = (check, msg) => {
     throw new PackageError(check, msg);
   };
@@ -260,7 +260,7 @@ const kontrole = (ROOT, { release }, ostrzezenia) => {
           `  Fill them in in libs/components/package.json.`,
       );
     }
-    ostrzezenia.push(
+    warnings.push(
       `The package builds and works, but is NOT ready to publish — missing:\n${list}`,
     );
   }
@@ -322,16 +322,16 @@ const kontrole = (ROOT, { release }, ostrzezenia) => {
  * like proof.
  */
 const checkPackage = (root, { release = false } = {}) => {
-  const ostrzezenia = [];
+  const warnings = [];
   try {
     return {
       error: null,
-      ostrzezenia,
-      description: kontrole(root, { release }, ostrzezenia),
+      warnings,
+      description: checks(root, { release }, warnings),
     };
   } catch (e) {
     if (!(e instanceof PackageError)) throw e;
-    return { error: e, ostrzezenia, description: null };
+    return { error: e, warnings, description: null };
   }
 };
 
@@ -358,8 +358,8 @@ const buildFixture = (name, fx) => {
     filter: (src) => basename(src) !== 'fixture.json',
   });
   renameSync(join(cel, 'manifest.json'), join(cel, 'package.json'));
-  for (const sciezka of fx.drop ?? [])
-    rmSync(join(cel, sciezka), { recursive: true, force: true });
+  for (const path of fx.drop ?? [])
+    rmSync(join(cel, path), { recursive: true, force: true });
   return cel;
 };
 
@@ -368,9 +368,10 @@ const buildFixture = (name, fx) => {
 const RELEASE_MODE = process.argv.includes('--release');
 const problems = [];
 
-const wynik = checkPackage(DIST, { release: RELEASE_MODE });
-if (wynik.error) problems.push(`${wynik.error.check}: ${wynik.error.message}`);
-for (const o of wynik.ostrzezenia) console.warn(`! ${o}`);
+const result = checkPackage(DIST, { release: RELEASE_MODE });
+if (result.error)
+  problems.push(`${result.error.check}: ${result.error.message}`);
+for (const o of result.warnings) console.warn(`! ${o}`);
 
 // ── negative control ──────────────────────────────────────────────────────────
 
@@ -400,7 +401,7 @@ if (cases.length === 0)
         `every prepared package now fires because of it, not because of its own defect.\n` +
         `  ${reference.error.message}`,
     );
-  else if (reference.ostrzezenia.length)
+  else if (reference.warnings.length)
     problems.push(
       `${REFERENCE}: the reference package passes, but with a warning — the base is to be ` +
         `complete, or point 6 has nothing to tell an absence from a full set.`,
@@ -437,7 +438,7 @@ for (const name of cases) {
           `${name}: in an ordinary run the gate BLOCKS (${zwykly.error.check}) ` +
             `and was meant only to warn — blocking belongs to \`--release\``,
         );
-      else if (zwykly.ostrzezenia.length === 0)
+      else if (zwykly.warnings.length === 0)
         problems.push(
           `${name}: in an ordinary run neither an error nor a warning — ` +
             `missing metadata passes without a trace`,
@@ -458,7 +459,7 @@ if (problems.length) {
 }
 
 console.log(
-  `✓ Package complete: ${wynik.description}. ` +
+  `✓ Package complete: ${result.description}. ` +
     `Negative control: the reference package passes, ` +
     `${cases.length} prepared ones rejected on their own points.`,
 );

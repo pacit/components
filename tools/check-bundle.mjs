@@ -513,9 +513,9 @@ const renderSnapshot = (sources, probes) =>
  * there
  * ([`lesson-50`](../docs/lessons.md#lesson-50)).
  */
-const snapshotRows = (tresc) => {
+const snapshotRows = (content) => {
   const out = new Map();
-  for (const w of (tresc ?? '').split('\n')) {
+  for (const w of (content ?? '').split('\n')) {
     if (!/^\.(\/[a-z0-9-]+)?\s/.test(w)) continue;
     const [e, bytes, pulled, external] = w.trim().split(/\s+/);
     out.set(e, {
@@ -529,8 +529,8 @@ const snapshotRows = (tresc) => {
 
 // ── pomiar ────────────────────────────────────────────────────────────────────
 
-const readJson = (sciezka) =>
-  existsSync(sciezka) ? JSON.parse(readFileSync(sciezka, 'utf8')) : null;
+const readJson = (path) =>
+  existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : null;
 
 /**
  * Entrypoints from the SOURCES, from the git index — the same reason as in `check-styles`,
@@ -551,8 +551,11 @@ const sourceEntrypoints = () =>
       /^libs\/components\/([a-z0-9-]+\/)?ng-package\.json$/.test(p),
     )
     .map((p) => {
-      const katalog = p.slice(`${PROJEKT}/`.length, -'ng-package.json'.length);
-      return katalog === '' ? PRIMARY : `./${katalog.slice(0, -1)}`;
+      const directory = p.slice(
+        `${PROJEKT}/`.length,
+        -'ng-package.json'.length,
+      );
+      return directory === '' ? PRIMARY : `./${directory.slice(0, -1)}`;
     })
     .sort();
 
@@ -613,10 +616,10 @@ const zbierzMarkery = async (dist, files) => {
  * what is reachable at all. A probe with an alias would be green even with no `exports`.
  */
 const przygotujKatalogSond = (dist) => {
-  const katalog = mkdtempSync(join(tmpdir(), 'pct-check-bundle-'));
-  mkdirSync(join(katalog, 'node_modules/@pacit'), { recursive: true });
-  symlinkSync(dist, join(katalog, 'node_modules/@pacit/components'));
-  return katalog;
+  const directory = mkdtempSync(join(tmpdir(), 'pct-check-bundle-'));
+  mkdirSync(join(directory, 'node_modules/@pacit'), { recursive: true });
+  symlinkSync(dist, join(directory, 'node_modules/@pacit/components'));
+  return directory;
 };
 
 const specyfikator = (e) =>
@@ -635,12 +638,12 @@ const specyfikator = (e) =>
  * framework's weight. `@pacit/components/*` cannot be external — there would then be no
  * way to see that `button` pulled `field` in, and the whole measured thing would vanish.
  */
-const probe = async (esbuild, katalog, markers, poPliku, entrypoints) => {
+const probe = async (esbuild, directory, markers, poPliku, entrypoints) => {
   // The input file's name is FIXED, because the bundle's size is the measured quantity
   // here: a name with a counter or a timestamp can end up in the output and the budget
   // starts measuring the length of a path. The probes run in turn and the file is removed
   // after each.
-  const input = join(katalog, 'probe.mjs');
+  const input = join(directory, 'probe.mjs');
   writeFileSync(
     input,
     entrypoints
@@ -648,7 +651,7 @@ const probe = async (esbuild, katalog, markers, poPliku, entrypoints) => {
       .join('\n') +
       `\nglobalThis.__pctSonda = [${entrypoints.map((_, i) => `m${i}`).join(',')}];\n`,
   );
-  const wynik = await esbuild.build({
+  const result = await esbuild.build({
     entryPoints: [input],
     bundle: true,
     minify: true,
@@ -660,9 +663,9 @@ const probe = async (esbuild, katalog, markers, poPliku, entrypoints) => {
   });
   rmSync(input, { force: true });
 
-  const tekst = wynik.outputFiles[0].text;
-  const wyjscie = Object.values(wynik.metafile.outputs)[0];
-  const pulled = Object.entries(wyjscie.inputs)
+  const tekst = result.outputFiles[0].text;
+  const output = Object.values(result.metafile.outputs)[0];
+  const pulled = Object.entries(output.inputs)
     .filter(([, v]) => v.bytesInOutput > 0)
     .map(([k]) => poPliku.get(k.split('/').pop()))
     .filter(Boolean);
@@ -671,7 +674,7 @@ const probe = async (esbuild, katalog, markers, poPliku, entrypoints) => {
     bytes: tekst.length,
     pulled: [...new Set(pulled)].sort(),
     external: [
-      ...new Set(wyjscie.imports.filter((i) => i.external).map((i) => i.path)),
+      ...new Set(output.imports.filter((i) => i.external).map((i) => i.path)),
     ].sort(),
     inText: Object.entries(markers)
       .filter(([, m]) => m.length > 0 && m.some((x) => tekst.includes(x)))
@@ -690,14 +693,14 @@ const probe = async (esbuild, katalog, markers, poPliku, entrypoints) => {
  * must not be another's defect.
  */
 const builderProbe = (dist, markers, entrypoints) => {
-  const katalog = join(ROOT, 'tmp/check-bundle');
-  rmSync(katalog, { recursive: true, force: true });
-  mkdirSync(join(katalog, 'src'), { recursive: true });
-  mkdirSync(join(katalog, 'node_modules/@pacit'), { recursive: true });
-  symlinkSync(dist, join(katalog, 'node_modules/@pacit/components'));
+  const directory = join(ROOT, 'tmp/check-bundle');
+  rmSync(directory, { recursive: true, force: true });
+  mkdirSync(join(directory, 'src'), { recursive: true });
+  mkdirSync(join(directory, 'node_modules/@pacit'), { recursive: true });
+  symlinkSync(dist, join(directory, 'node_modules/@pacit/components'));
 
   writeFileSync(
-    join(katalog, 'angular.json'),
+    join(directory, 'angular.json'),
     JSON.stringify({
       version: 1,
       projects: {
@@ -723,7 +726,7 @@ const builderProbe = (dist, markers, entrypoints) => {
     }),
   );
   writeFileSync(
-    join(katalog, 'tsconfig.json'),
+    join(directory, 'tsconfig.json'),
     JSON.stringify({
       compilerOptions: {
         target: 'ES2022',
@@ -740,7 +743,7 @@ const builderProbe = (dist, markers, entrypoints) => {
   // exactly as `globalThis` does in the esbuild probe and for the same reason — the call
   // is a side effect, so there is no way to drop it.
   writeFileSync(
-    join(katalog, 'src/main.ts'),
+    join(directory, 'src/main.ts'),
     [
       ...entrypoints.map(
         (e, i) => `import * as m${i} from '${specyfikator(e)}';`,
@@ -762,10 +765,10 @@ const builderProbe = (dist, markers, entrypoints) => {
   execFileSync(
     'node',
     [join(ROOT, 'node_modules/@angular/cli/bin/ng.js'), 'build', 'probe'],
-    { cwd: katalog, stdio: 'pipe' },
+    { cwd: directory, stdio: 'pipe' },
   );
-  const bundle = readFileSync(join(katalog, 'out/browser/main.js'), 'utf8');
-  rmSync(katalog, { recursive: true, force: true });
+  const bundle = readFileSync(join(directory, 'out/browser/main.js'), 'utf8');
+  rmSync(directory, { recursive: true, force: true });
 
   return {
     entrypoints,
@@ -802,13 +805,13 @@ const zmierzRepozytorium = async () => {
 
   const markers = await zbierzMarkery(dist, files);
   const esbuild = await import('esbuild');
-  const katalog = przygotujKatalogSond(dist);
+  const directory = przygotujKatalogSond(dist);
   const sources = sourceEntrypoints();
 
   try {
     const probes = {};
     for (const e of files.keys())
-      probes[e] = await probe(esbuild, katalog, markers, poPliku, [e]);
+      probes[e] = await probe(esbuild, directory, markers, poPliku, [e]);
 
     const komponentowe = [...files.keys()]
       .filter((e) => e !== PRIMARY && (markers[e] ?? []).length > 0)
@@ -816,7 +819,7 @@ const zmierzRepozytorium = async () => {
     const pair = [komponentowe.at(0), komponentowe.at(-1)].filter(Boolean);
     const pomiarPary =
       pair.length === 2
-        ? await probe(esbuild, katalog, markers, poPliku, pair)
+        ? await probe(esbuild, directory, markers, poPliku, pair)
         : null;
 
     return {
@@ -838,7 +841,7 @@ const zmierzRepozytorium = async () => {
           : [],
     };
   } finally {
-    rmSync(katalog, { recursive: true, force: true });
+    rmSync(directory, { recursive: true, force: true });
   }
 };
 
@@ -942,8 +945,8 @@ const problems = [];
 let description = null;
 
 try {
-  const wynik = checkBundle(await zmierzRepozytorium());
-  description = wynik.description;
+  const result = checkBundle(await zmierzRepozytorium());
+  description = result.description;
 } catch (error) {
   if (!(error instanceof BundleError)) throw error;
   // `--write` exists so that a snapshot drift can be accepted with one command. The other

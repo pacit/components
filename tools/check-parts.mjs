@@ -178,7 +178,7 @@ const czytajSzablon = (content) => {
   };
 };
 
-// ── kontrole ──────────────────────────────────────────────────────────────────
+// ── checks ──────────────────────────────────────────────────────────────────
 
 /**
  * A violation of one of the five checks — with an identifier, not just a message. The
@@ -598,7 +598,7 @@ const wierszeSnapshotu = (content) =>
 
 // ── input from disk ───────────────────────────────────────────────────────────
 
-const read = (root, sciezka) => readFileSync(join(root, sciezka), 'utf8');
+const read = (root, path) => readFileSync(join(root, path), 'utf8');
 
 /**
  * A component card: the entrypoint from the heading and the part names from the **Parts**
@@ -777,8 +777,8 @@ const buildFixture = (name, fx) => {
       recursive: true,
       filter: (src) => basename(src) !== 'fixture.json',
     });
-  for (const sciezka of fx.drop ?? [])
-    rmSync(join(target, sciezka), { recursive: true, force: true });
+  for (const path of fx.drop ?? [])
+    rmSync(join(target, path), { recursive: true, force: true });
   for (const file of globSync('**/*.ts.txt', { cwd: target }))
     renameSync(join(target, file), join(target, file.replace(/\.txt$/, '')));
   return target;
@@ -821,8 +821,8 @@ if (WRITE_FIXTURE) {
 }
 
 try {
-  const wynik = checkParts(await zbierzWejscie(ROOT, repoFiles(), null));
-  description = wynik.description;
+  const result = checkParts(await zbierzWejscie(ROOT, repoFiles(), null));
+  description = result.description;
 } catch (error) {
   if (!(error instanceof PartsError)) throw error;
   // `--write` exists so that a snapshot drift can be accepted with one command. Every

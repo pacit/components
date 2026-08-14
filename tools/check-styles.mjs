@@ -263,11 +263,11 @@ const kluczIstotny = (d) => {
 const przezroczystoscBinarna = (value) => {
   const m = /^(\d*\.?\d+)(%?)$/.exec(value.trim());
   if (!m) return false;
-  const liczba = Number(m[1]) / (m[2] === '%' ? 100 : 1);
-  return liczba === 0 || liczba === 1;
+  const count = Number(m[1]) / (m[2] === '%' ? 100 : 1);
+  return count === 0 || count === 1;
 };
 
-// ── kontrole ──────────────────────────────────────────────────────────────────
+// ── checks ──────────────────────────────────────────────────────────────────
 
 /**
  * A violation of one of the six checks. It carries the check's identifier, not just the
@@ -282,12 +282,12 @@ class StyleError extends Error {
   }
 }
 
-const lista = (wpisy) => wpisy.map((w) => `      ${w}`).join('\n');
+const list = (wpisy) => wpisy.map((w) => `      ${w}`).join('\n');
 
 /**
  * The full set of checks over a ready input:
  *   `sheets`     — `[{ file, content, css }]`, where `css` is sass's output,
- *   `components`  — `[{ file, klasa, sheets, inline }]` from the decorators,
+ *   `components`  — `[{ file, className, sheets, inline }]` from the decorators,
  *   `declarations`  — the number of `@Component(` occurrences in the sources (the parser's
  *                   denominator).
  * Throws `StyleError` on the first violation: the checks run from the denominator to the
@@ -326,7 +326,7 @@ const checkStyles = ({ sheets, components, declarations }) => {
       throw new StyleError(
         'compiler',
         `${sheet.file}: sass emits declarations absent from the source text:\n` +
-          lista(ukryte) +
+          list(ukryte) +
           `\n    They reach the browser, and the rules of points 5 and 6 pass over them ` +
           `without a trace. Usual cause: a mixin, an interpolation (\`padding-#{$x}\`) or ` +
           `a nested property. Write them out — or teach the scanner to read them.`,
@@ -361,20 +361,20 @@ const checkStyles = ({ sheets, components, declarations }) => {
   const bezArkusza = components.flatMap((k) => {
     if (k.inline)
       return [
-        `${k.file}: ${k.klasa} has \`styles: […]\` in its decorator — this gate reads sheets, not decorators`,
+        `${k.file}: ${k.className} has \`styles: […]\` in its decorator — this gate reads sheets, not decorators`,
       ];
     return k.sheets
       .filter((a) => !znane.has(a))
       .map(
         (a) =>
-          `${k.file}: ${k.klasa} takes its styles from \`${a}\`, outside the sheet list`,
+          `${k.file}: ${k.className} takes its styles from \`${a}\`, outside the sheet list`,
       );
   });
   if (bezArkusza.length)
     throw new StyleError(
       'style-source',
       `${bezArkusza.length} components take their styles from beyond this gate's reach:\n` +
-        lista(bezArkusza) +
+        list(bezArkusza) +
         `\n    Those styles travel to the consumer like every other, and points 5 and 6 ` +
         `pronounce them „clean" only because they cannot see them.`,
     );
@@ -423,7 +423,7 @@ const checkStyles = ({ sheets, components, declarations }) => {
     throw new StyleError(
       'exception',
       `${problemyWyjatkow.length} exceptions are not exceptions:\n` +
-        lista(problemyWyjatkow) +
+        list(problemyWyjatkow) +
         `\n    Notation: /* pct-exception <property>: <why it is safe exactly here> */`,
     );
 
@@ -465,7 +465,7 @@ const checkStyles = ({ sheets, components, declarations }) => {
     throw new StyleError(
       'logical',
       `${fizyczne.length} physical properties of the inline axis (req-token-logical):\n` +
-        lista(fizyczne) +
+        list(fizyczne) +
         `\n    A physically described layout does NOT mirror under \`dir="rtl"\`, and no ` +
         `LTR screenshot shows it. If this one is safe, say why: ` +
         `/* pct-exception <property>: <reason> */`,
@@ -475,7 +475,7 @@ const checkStyles = ({ sheets, components, declarations }) => {
     throw new StyleError(
       'opacity',
       `${przezroczyste.length} \`opacity\` declarations compositing with the background (req-token-no-opacity):\n` +
-        lista(przezroczyste) +
+        list(przezroczyste) +
         `\n    The contrast gate computes on the palette's values, so it cannot see the ` +
         `compositing — this is the way back to before lesson-6. Express the state with a ` +
         `colour token of its own. Only \`0\` and \`1\` are allowed (a visibility switch).`,
@@ -514,7 +514,7 @@ const czytajKomponenty = (root, files) => {
   for (const file of files) {
     const content = readFileSync(join(root, file), 'utf8');
     declarations += (content.match(KOMPONENT_LICZNIK) ?? []).length;
-    for (const [, cialo, klasa] of content.matchAll(KOMPONENT)) {
+    for (const [, cialo, className] of content.matchAll(KOMPONENT)) {
       const sheets = [
         ...cialo.matchAll(
           /styleUrls?\s*:\s*(?:\[([^\]]*)\]|(['"])([^'"]*)\2)/g,
@@ -526,7 +526,7 @@ const czytajKomponenty = (root, files) => {
       );
       components.push({
         file,
-        klasa,
+        className,
         inline: /^\s*styles\s*:/m.test(cialo),
         sheets: sheets.map((a) =>
           relative(root, resolve(join(root, dirname(file)), a))
@@ -603,23 +603,23 @@ const buildFixture = (name, fx) => {
     recursive: true,
     filter: (src) => basename(src) !== 'fixture.json',
   });
-  for (const sciezka of fx.drop ?? [])
-    rmSync(join(cel, sciezka), { recursive: true, force: true });
+  for (const path of fx.drop ?? [])
+    rmSync(join(cel, path), { recursive: true, force: true });
   for (const file of globSync('**/*.ts.txt', { cwd: cel }))
     renameSync(join(cel, file), join(cel, file.replace(/\.txt$/, '')));
   return cel;
 };
 
-const files = (katalog, wzorzec) =>
-  globSync(wzorzec, { cwd: katalog })
+const files = (directory, wzorzec) =>
+  globSync(wzorzec, { cwd: directory })
     .map((p) => p.split('\\').join('/'))
     .sort();
 
-const fixtureInput = (katalog) =>
+const fixtureInput = (directory) =>
   zbierzWejscie(
-    katalog,
-    files(katalog, '**/*.scss'),
-    files(katalog, '**/*.ts').filter(jestZrodlem),
+    directory,
+    files(directory, '**/*.scss'),
+    files(directory, '**/*.ts').filter(jestZrodlem),
   );
 
 // ── the run ───────────────────────────────────────────────────────────────────
@@ -656,9 +656,9 @@ if (cases.length === 0)
 // fire because of it and not because of its own defect — every „rejected" would be
 // false, and this control would become the very thing it stands against.
 {
-  const katalog = buildFixture(REFERENCE, {});
+  const directory = buildFixture(REFERENCE, {});
   try {
-    checkStyles(fixtureInput(katalog));
+    checkStyles(fixtureInput(directory));
   } catch (error) {
     if (!(error instanceof StyleError)) throw error;
     problems.push(
@@ -666,7 +666,7 @@ if (cases.length === 0)
         `every prepared case now fires because of it.\n    ${error.message}`,
     );
   } finally {
-    rmSync(katalog, { recursive: true, force: true });
+    rmSync(directory, { recursive: true, force: true });
   }
 }
 
@@ -674,9 +674,9 @@ for (const name of cases) {
   const fx = JSON.parse(
     readFileSync(join(FIXTURES, name, 'fixture.json'), 'utf8'),
   );
-  const katalog = buildFixture(name, fx);
+  const directory = buildFixture(name, fx);
   try {
-    checkStyles(fixtureInput(katalog));
+    checkStyles(fixtureInput(directory));
     problems.push(
       `${name}: the prepared input PASSED and was meant not to — ` +
         `point ${fx.point} (\`${fx.check}\`) stopped examining anything`,
@@ -689,7 +689,7 @@ for (const name of cases) {
           `(\`${fx.check}\`) was meant to — the fixture proves something other than what it declares`,
       );
   } finally {
-    rmSync(katalog, { recursive: true, force: true });
+    rmSync(directory, { recursive: true, force: true });
   }
 }
 

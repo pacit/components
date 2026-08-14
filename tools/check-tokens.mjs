@@ -109,7 +109,7 @@ const parseSemantic = (rest, policy) => {
   return null;
 };
 
-// ── kontrole ──────────────────────────────────────────────────────────────────
+// ── checks ──────────────────────────────────────────────────────────────────
 
 /**
  * A violation of one of the seven checks — with an identifier, not just a message. The
@@ -145,7 +145,7 @@ const checkTokens = (we) => {
     policy,
     levels,
     kontrast,
-    zrodla,
+    sources,
     sheets,
     css,
     ts,
@@ -169,7 +169,7 @@ const checkTokens = (we) => {
     [...css.matchAll(/^\s*(--pct-[a-z0-9-]+)\s*:/gm)].map((m) => m[1]),
   );
   const zeZrodel = new Map(); // cssVar -> { path, typy, files, wartosci }
-  for (const { file, drzewo } of zrodla)
+  for (const { file, drzewo } of sources)
     for (const [path, type, wartosc] of liscie(drzewo)) {
       const name = cssVar(path);
       const wpis = zeZrodel.get(name) ?? {
@@ -853,10 +853,10 @@ const malowaneKolory = (sheets) => {
   const malowane = new Map([...bezposrednie].map(([t, r]) => [t, new Set(r)]));
   for (let zmiana = true; zmiana;) {
     zmiana = false;
-    for (const [cel, zrodla] of przypisania) {
+    for (const [cel, sources] of przypisania) {
       const role = malowane.get(cel);
       if (!role) continue;
-      for (const t of zrodla) {
+      for (const t of sources) {
         const dotychczas = malowane.get(t) ?? new Set();
         const przed = dotychczas.size;
         for (const r of role) dotychczas.add(r);
@@ -1002,7 +1002,7 @@ const zbierzWejscie = (root, files) => {
           `alone.\n    The target needs a \`dependsOn\` on the token build.`,
       );
 
-  const zrodla = files
+  const sources = files
     .filter((p) => p.startsWith(`${TOKENY}/src/`) && p.endsWith('.json'))
     .map((file) => ({ file, drzewo: JSON.parse(read(root, file)) }))
     // DTCG is recognised by the `pct` ROOT and not by a file-name pattern repeated from
@@ -1032,7 +1032,7 @@ const zbierzWejscie = (root, files) => {
     policy: JSON.parse(read(root, POLITYKA)),
     levels: JSON.parse(read(root, POZIOMY)),
     kontrast: JSON.parse(read(root, KONTRAST)),
-    zrodla,
+    sources,
     sheets,
     css: read(root, `${TOKENY}/dist/pct.css`),
     ts: read(root, `${TOKENY}/dist/tokens.ts`),
@@ -1111,10 +1111,10 @@ const buildFixture = (name, fx) => {
   return cel;
 };
 
-const fixtureInput = (katalog) =>
+const fixtureInput = (directory) =>
   zbierzWejscie(
-    katalog,
-    globSync('**/*.{json,scss}', { cwd: katalog })
+    directory,
+    globSync('**/*.{json,scss}', { cwd: directory })
       .map((p) => p.split('\\').join('/'))
       .sort(),
   );
@@ -1128,10 +1128,10 @@ let description = null;
 // checking run, because it is not checking — it is composing the reference input from the
 // same renderer the repository is measured with.
 if (WRITE_FIXTURE) {
-  const katalog = buildFixture(WRITE_FIXTURE, {});
+  const directory = buildFixture(WRITE_FIXTURE, {});
   const cel = join(FIXTURES, WRITE_FIXTURE, SNAPSHOT);
   try {
-    checkTokens(fixtureInput(katalog));
+    checkTokens(fixtureInput(directory));
     console.log(`✓ ${WRITE_FIXTURE}: the snapshot was already current.`);
   } catch (error) {
     if (!(error instanceof TokenError) || error.check !== 'snapshot')
@@ -1139,14 +1139,14 @@ if (WRITE_FIXTURE) {
     writeFileSync(cel, error.snapshot);
     console.log(`✓ Rewrote ${WRITE_FIXTURE}/${SNAPSHOT}.`);
   } finally {
-    rmSync(katalog, { recursive: true, force: true });
+    rmSync(directory, { recursive: true, force: true });
   }
   process.exit(0);
 }
 
 try {
-  const wynik = checkTokens(zbierzWejscie(ROOT, repoFiles()));
-  description = wynik.description;
+  const result = checkTokens(zbierzWejscie(ROOT, repoFiles()));
+  description = result.description;
 } catch (error) {
   if (!(error instanceof TokenError)) throw error;
   // `--write` exists so that a snapshot drift can be accepted with one command. Every
@@ -1178,9 +1178,9 @@ if (cases.length === 0)
 // because of it rather than its own defect, and every „rejected" would be false — this
 // control would become the very thing it stands against.
 {
-  const katalog = buildFixture(REFERENCE, {});
+  const directory = buildFixture(REFERENCE, {});
   try {
-    checkTokens(fixtureInput(katalog));
+    checkTokens(fixtureInput(directory));
   } catch (error) {
     if (!(error instanceof TokenError)) throw error;
     problems.push(
@@ -1188,7 +1188,7 @@ if (cases.length === 0)
         `every prepared case now fires because of it.\n    ${error.message}`,
     );
   } finally {
-    rmSync(katalog, { recursive: true, force: true });
+    rmSync(directory, { recursive: true, force: true });
   }
 }
 
@@ -1196,9 +1196,9 @@ for (const name of cases) {
   const fx = JSON.parse(
     readFileSync(join(FIXTURES, name, 'fixture.json'), 'utf8'),
   );
-  const katalog = buildFixture(name, fx);
+  const directory = buildFixture(name, fx);
   try {
-    checkTokens(fixtureInput(katalog));
+    checkTokens(fixtureInput(directory));
     problems.push(
       `${name}: the prepared input PASSED and was meant not to — ` +
         `point ${fx.point} (\`${fx.check}\`) stopped examining anything`,
@@ -1218,7 +1218,7 @@ for (const name of cases) {
         `${name}: w punkcie ${fx.point} rule \`${error.rule}\` fired, and \`${fx.rule}\` — ten sam point, inne zdanie`,
       );
   } finally {
-    rmSync(katalog, { recursive: true, force: true });
+    rmSync(directory, { recursive: true, force: true });
   }
 }
 

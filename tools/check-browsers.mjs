@@ -361,8 +361,8 @@ export const checkBrowsers = ({ policy, collected, files, e2e, ci, facts }) => {
   // holding, and only one of them is loud.
   const fromMeasurement = exclusions.filter((w) => w.kind === 'measurement');
   for (const fact of [...new Set(fromMeasurement.map((w) => w.fact))]) {
-    const wynik = facts?.[fact] ?? {};
-    const bezWyniku = engines.filter((s) => typeof wynik[s] !== 'boolean');
+    const result = facts?.[fact] ?? {};
+    const bezWyniku = engines.filter((s) => typeof result[s] !== 'boolean');
     if (bezWyniku.length)
       throw new BrowsersError(
         'fact',
@@ -375,7 +375,7 @@ export const checkBrowsers = ({ policy, collected, files, e2e, ci, facts }) => {
     const excludedHere = new Set(
       fromMeasurement.filter((w) => w.fact === fact).flatMap((w) => w.engines),
     );
-    if (!engines.some((s) => wynik[s]))
+    if (!engines.some((s) => result[s]))
       throw new BrowsersError(
         'fact',
         'fact-without-baseline',
@@ -386,7 +386,7 @@ export const checkBrowsers = ({ policy, collected, files, e2e, ci, facts }) => {
           `justified forever. A measurement's denominator, not caution.`,
       );
 
-    const przezyly = [...excludedHere].filter((s) => wynik[s]);
+    const przezyly = [...excludedHere].filter((s) => result[s]);
     if (przezyly.length)
       throw new BrowsersError(
         'fact',
@@ -399,7 +399,7 @@ export const checkBrowsers = ({ policy, collected, files, e2e, ci, facts }) => {
       );
 
     const bezPokrycia = engines.filter(
-      (s) => !wynik[s] && !excludedHere.has(s),
+      (s) => !result[s] && !excludedHere.has(s),
     );
     if (bezPokrycia.length)
       throw new BrowsersError(
@@ -422,7 +422,7 @@ export const checkBrowsers = ({ policy, collected, files, e2e, ci, facts }) => {
 
 // ── input from disk ───────────────────────────────────────────────────────────
 
-const czytaj = (sciezka) => readFileSync(join(ROOT, sciezka), 'utf8');
+const czytaj = (path) => readFileSync(join(ROOT, path), 'utf8');
 
 const policyFromDisk = () => JSON.parse(czytaj(POLICY));
 
@@ -457,9 +457,9 @@ const zebranePrzezPlaywrighta = () => {
     );
   }
 
-  let raport;
+  let report;
   try {
-    raport = JSON.parse(surowe);
+    report = JSON.parse(surowe);
   } catch {
     throw new BrowsersError(
       'denominator',
@@ -468,12 +468,12 @@ const zebranePrzezPlaywrighta = () => {
         `(${surowe.length} characters) — the gate has nothing to derive the matrix from`,
     );
   }
-  if (raport.errors?.length)
+  if (report.errors?.length)
     throw new BrowsersError(
       'denominator',
       'unreadable-measurement',
-      `Playwright reported ${raport.errors.length} errors while collecting tests:\n    ` +
-        raport.errors
+      `Playwright reported ${report.errors.length} errors while collecting tests:\n    ` +
+        report.errors
           .map((e) => (e.message ?? String(e)).split('\n')[0])
           .join('\n    '),
     );
@@ -486,11 +486,11 @@ const zebranePrzezPlaywrighta = () => {
       }
     for (const glebiej of suite.suites ?? []) obejdz(glebiej);
   };
-  for (const suite of raport.suites ?? []) obejdz(suite);
+  for (const suite of report.suites ?? []) obejdz(suite);
 
   // A project with no test at all does not appear in the result tree, and point 2 is to
   // name it — hence an empty list rather than a missing key.
-  for (const projekt of raport.config?.projects ?? [])
+  for (const projekt of report.config?.projects ?? [])
     collected[projekt.name] ??= new Set();
 
   return Object.fromEntries(

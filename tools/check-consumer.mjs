@@ -81,7 +81,7 @@ class ConsumerError extends Error {
 
 const list = (xs) => [...xs].sort().join(', ') || '(pusto)';
 
-// ── kontrole ──────────────────────────────────────────────────────────────────
+// ── checks ──────────────────────────────────────────────────────────────────
 
 /**
  * The full set of checks over a finished measurement. Throws `ConsumerError` on the first

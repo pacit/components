@@ -1073,7 +1073,7 @@ const checkTexts = (we) => {
 
 // ── input from disk ───────────────────────────────────────────────────────────
 
-const read = (root, sciezka) => readFileSync(join(root, sciezka), 'utf8');
+const read = (root, path) => readFileSync(join(root, path), 'utf8');
 
 const isSource = (p) =>
   p.startsWith(`${PROJEKT}/`) && p.endsWith('.ts') && !p.endsWith('.spec.ts');
@@ -1284,8 +1284,8 @@ const buildFixture = (name, fx) => {
       recursive: true,
       filter: (src) => basename(src) !== 'fixture.json',
     });
-  for (const sciezka of fx.drop ?? [])
-    rmSync(join(cel, sciezka), { recursive: true, force: true });
+  for (const path of fx.drop ?? [])
+    rmSync(join(cel, path), { recursive: true, force: true });
   for (const file of globSync('**/*.ts.txt', { cwd: cel }))
     renameSync(join(cel, file), join(cel, file.replace(/\.txt$/, '')));
   return cel;

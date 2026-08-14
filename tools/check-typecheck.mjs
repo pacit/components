@@ -324,9 +324,9 @@ const seenByCompiler = (projects) => {
       }
 
       for (const linia of result.split('\n')) {
-        const sciezka = linia.trim();
-        if (!sciezka) continue;
-        const wzgledna = relative(ROOT, sciezka).split('\\').join('/');
+        const path = linia.trim();
+        if (!path) continue;
+        const wzgledna = relative(ROOT, path).split('\\').join('/');
         if (wzgledna.startsWith('..') || wzgledna.includes('node_modules/'))
           continue;
         program.add(wzgledna);
