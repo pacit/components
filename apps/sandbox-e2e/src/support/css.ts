@@ -24,8 +24,8 @@ export function styleOf(locator: Locator, property: string): Promise<string> {
 /**
  * The value of a custom property as inherited at a given element.
  *
- * Nazwa tokenu jest typowana (`PctCssVar` z generowanego `tokens.ts`), a nie
- * any string at all, because `getPropertyValue` on a property that does not exist
+ * The token name is typed (`PctCssVar` from the generated `tokens.ts`), not any
+ * string at all, because `getPropertyValue` on a property that does not exist
  * returns **an empty string, not an error**. A test comparing two such readings then
  * passes on `'' === ''` and says nothing about having measured nothing — the same
  * class of silent defect as `lesson-38`, only brought on by a typo.
@@ -44,9 +44,8 @@ export function rootToken(page: Page, token: PctCssVar): Promise<string> {
 }
 
 /**
- * A CSS time in milliseconds. The browser normalises `150ms` to `0.15s` and
- * `0.01ms` to `0.00001s`, so comparing strings is brittle —
- * interesuje nas liczba.
+ * A CSS time in milliseconds. The browser normalises `150ms` to `0.15s` and `0.01ms`
+ * to `0.00001s`, so comparing strings is brittle — it is the number we are after.
  */
 export function msOf(cssTime: string): number {
   const value = parseFloat(cssTime);

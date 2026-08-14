@@ -5,8 +5,8 @@
   "prefix": "app",
   "sourceRoot": "apps/sandbox/src",
   "tags": ["type:app"],
-  "// typecheck": "Nadpisuje target inferowany przez `@nx/vite/plugin`, bo tamten uruchamia WYŁĄCZNIE `tsconfig.app.json` — a ten wyklucza `**/*.spec.ts`. Specyfikacje szły więc przez vitest, który je transpiluje bez sprawdzania typów, i nie oglądał ich żaden kompilator (`lesson-42` w drugim wydaniu). `inputs` biorą `default`, nie `production`: `production` odejmuje właśnie te pliki, więc ich zmiana nie unieważniałaby cache — ten sam namedInput z `nx.json` i ten sam mechanizm, który zmierzono na `components` (`lesson-47`). Bez `dependsOn` na `tokens:build` — sprawdzone `--listFilesOnly`: do żadnego z dwóch programów nie wchodzi generowany `@pacit/tokens`, sięga po niego wyłącznie `sandbox-e2e`.",
-  "// implicitDependencies": "`styles` sięga po libs/tokens/dist/pct.css — artefakt generowany i gitignorowany. Bez tej krawędzi build wchodzi na pusty katalog i kończy się SUKCESEM, tyle że bez ani jednej definicji tokenu.",
+  "// typecheck": "Overrides the target inferred by `@nx/vite/plugin`, because that one runs `tsconfig.app.json` ONLY — and that config excludes `**/*.spec.ts`. The specs therefore went through vitest, which transpiles them without checking types, and no compiler ever looked at them (`lesson-42`, second edition). `inputs` take `default`, not `production`: `production` subtracts exactly those files, so a change to them would not invalidate the cache — the same namedInput from `nx.json` and the same mechanism measured on `components` (`lesson-47`). No `dependsOn` on `tokens:build` — checked with `--listFilesOnly`: neither of the two programs pulls in the generated `@pacit/tokens`, only `sandbox-e2e` reaches for it.",
+  "// implicitDependencies": "`styles` reaches for libs/tokens/dist/pct.css — a generated, gitignored artefact. Without that edge the build walks into an empty directory and ends in SUCCESS, only with not one token definition.",
   "implicitDependencies": ["tokens"],
   "targets": {
     "build": {

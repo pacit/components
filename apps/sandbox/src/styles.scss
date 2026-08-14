@@ -1,6 +1,6 @@
-/* Wspólny układ demonstracji. Klasy są globalne celowo: każdy widok i każda
-   karta układa przykłady tak samo, a style komponentów Angulara są scoped —
-   trzymanie tego w komponencie oznaczałoby kopię w każdym nowym widoku. */
+/* The shared demo layout. The classes are global deliberately: every view and every
+   card lays its examples out the same way, and Angular component styles are scoped —
+   keeping this in a component would mean a copy in every new view. */
 
 .view__title {
   margin: 0 0 4px;
@@ -46,8 +46,8 @@
   }
 }
 
-/* Zestawienie wielkości: elementy stykają się dolną krawędzią, więc różnica
-   wysokości pola i przycisku byłaby widoczna od razu. */
+/* The size line-up: the elements meet on their bottom edge, so a difference in
+   height between a field and a button would show up at once. */
 .row--bottom {
   align-items: flex-end;
 }
@@ -63,7 +63,7 @@
   }
 }
 
-/* Dwie karty obok siebie — układ na porównanie „to samo w innym motywie". */
+/* Two cards side by side — a layout for comparing "the same in another theme". */
 .grid-2 {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));

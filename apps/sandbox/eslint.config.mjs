@@ -12,9 +12,9 @@ export default [
         'error',
         {
           type: 'attribute',
-          // `app` — powłoka aplikacji (app-root); `sbx` — infrastruktura
-          // sandboxa (karta, pasek osi, widoki). Rozdzielone, żeby na pierwszy
-          // rzut oka było widać, co jest rusztowaniem, a co demonstracją.
+          // `app` — the application shell (app-root); `sbx` — the sandbox
+          // infrastructure (the card, the axis bar, the views). Kept apart so that
+          // scaffolding and demonstration can be told apart at a glance.
           prefix: ['app', 'sbx'],
           style: 'camelCase',
         },
@@ -23,9 +23,9 @@ export default [
         'error',
         {
           type: 'element',
-          // `app` — powłoka aplikacji (app-root); `sbx` — infrastruktura
-          // sandboxa (karta, pasek osi, widoki). Rozdzielone, żeby na pierwszy
-          // rzut oka było widać, co jest rusztowaniem, a co demonstracją.
+          // `app` — the application shell (app-root); `sbx` — the sandbox
+          // infrastructure (the card, the axis bar, the views). Kept apart so that
+          // scaffolding and demonstration can be told apart at a glance.
           prefix: ['app', 'sbx'],
           style: 'kebab-case',
         },

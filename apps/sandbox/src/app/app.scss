@@ -59,8 +59,8 @@
       background: var(--pct-surface-100);
     }
 
-    /* Fokus z tokenu — nawigacja sandboxa trzyma się tych samych reguł
-       widoczności fokusu co komponenty biblioteki. */
+    /* Focus from a token — the sandbox navigation keeps to the same focus
+       visibility rules as the library components. */
     &:focus-visible {
       outline: 2px solid var(--pct-focus-ring);
       outline-offset: 2px;

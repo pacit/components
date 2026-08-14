@@ -30,52 +30,52 @@ export default defineConfig({
     trace: 'on-first-retry',
   },
   /*
-   * Wzorce odniesienia testów wizualnych. `{platform}` w ścieżce jest istotny:
-   * rasteryzacja pisma różni się między systemami, więc jeden zestaw wzorców
-   * nie może obsługiwać naraz Linuksa i macOS-a — bez tego rozdziału zrzuty
-   * z innej maszyny „naprawiałyby" się nawzajem przy każdym `--update-snapshots`.
+   * The reference baselines of the visual tests. `{platform}` in the path matters:
+   * type rasterises differently across systems, so one set of baselines cannot
+   * serve Linux and macOS at once — without that split, screenshots from another
+   * machine would "fix" each other on every `--update-snapshots`.
    */
   snapshotPathTemplate: '{testDir}/__screenshots__/{platform}/{arg}{ext}',
   expect: {
     toHaveScreenshot: {
       /*
-       * Budżet BEZWZGLĘDNY, nie ułamek obrazu — i to celowo.
+       * An ABSOLUTE budget, not a fraction of the image — and that is deliberate.
        *
-       * `maxDiffPixelRatio` skaluje się z wielkością zrzutu, czyli daje tym
-       * większą pobłażliwość, im większa karta. Pierwsza wersja tej konfiguracji
-       * miała `maxDiffPixelRatio: 0.01` i PRZEPUSZCZAŁA zmianę `border-radius`
-       * przycisku z 8px na 1px — bramka wyglądała na działającą, a nie łapała
-       * regresji, którą miała łapać.
+       * `maxDiffPixelRatio` scales with the size of the screenshot, so it is the
+       * more forgiving the larger the card. The first version of this configuration
+       * had `maxDiffPixelRatio: 0.01` and LET THROUGH a change of the button
+       * `border-radius` from 8px to 1px — the gate looked like it worked and did not
+       * catch the regression it was there to catch.
        *
-       * Wartość wynika z pomiaru, nie z wyczucia:
-       *   - ten sam kod, powtórzony przebieg   ->   0 różniących się pikseli,
-       *   - promień przycisku 8px -> 1px       ->  74 różniące się piksele.
-       * 20 leży bezpiecznie nad zerem (pojedyncze piksele wygładzania krawędzi
-       * nie robią szumu w commitach) i blisko czterokrotnie pod najmniejszą
-       * realną regresją, jaką umiałem wywołać.
+       * The value comes from a measurement, not from a feel:
+       *   - the same code, a repeated run     ->   0 differing pixels,
+       *   - button radius 8px -> 1px          ->  74 differing pixels.
+       * 20 stands safely above zero (single anti-aliasing pixels make no noise in
+       * commits) and nearly four times below the smallest real regression I managed
+       * to provoke.
        */
       maxDiffPixels: 20,
       /*
-       * Próg PODOBIEŃSTWA KOLORU na piksel — bez niego budżet wyżej liczy
-       * piksele, których nikt nie policzył.
+       * The per-pixel COLOUR SIMILARITY threshold — without it the budget above
+       * counts pixels nobody counted.
        *
-       * Domyślne `threshold: 0.2` znaczy „różnica koloru poniżej 0,2 w metryce
-       * YIQ pixelmatcha nie jest różnicą". Zmierzone, nie założone:
-       *   - krok rampy blue-500 -> blue-400   ->  0.0163,
-       *   - krok rampy blue-500 -> blue-600   ->  0.0101,
+       * The default `threshold: 0.2` means "a colour difference below 0.2 in
+       * pixelmatch's YIQ metric is not a difference". Measured, not assumed:
+       *   - ramp step blue-500 -> blue-400    ->  0.0163,
+       *   - ramp step blue-500 -> blue-600    ->  0.0101,
        *   - slate-900 -> slate-800            ->  0.0042.
-       * Czyli PRZEMALOWANIE CAŁEGO PRZYCISKU o jeden krok rampy dawało zero
-       * różniących się pikseli i zielony przebieg — znalezione przy A12, gdy
-       * zmiana `--pct-primary` w motywie ciemnym nie ruszyła ani jednego wzorca,
-       * choć zrzut po niej ma 2155 pikseli w nowym kolorze zamiast 2145
-       * w starym. Bramka wyglądała na działającą i nie łapała regresji, którą
-       * miała łapać — ta sama wada co `maxDiffPixelRatio` wyżej, tylko na osi
-       * koloru zamiast na osi liczby pikseli.
+       * So REPAINTING A WHOLE BUTTON by one step of the ramp gave zero differing
+       * pixels and a green run — found at A12, when a change to `--pct-primary` in
+       * the dark theme moved not a single baseline, although the screenshot after it
+       * has 2155 pixels in the new colour instead of 2145 in the old. The gate looked
+       * like it worked and did not catch the regression it was there to catch — the
+       * same defect as `maxDiffPixelRatio` above, on the colour axis instead of the
+       * pixel-count one.
        *
-       * 0.005 leży pod najmniejszym zmierzonym krokiem rampy (0.0042 dla pary
-       * slate to jedyna wartość niżej — dwie sąsiednie szarości tła są
-       * nierozróżnialne i tego ta bramka nie obiecuje) i wysoko nad szumem
-       * wygładzania krawędzi, który i tak absorbuje budżet 20 pikseli.
+       * 0.005 stands below the smallest measured ramp step (0.0042 for the slate pair
+       * is the only value lower — two neighbouring background greys are
+       * indistinguishable and this gate does not promise otherwise) and well above
+       * the anti-aliasing noise, which the budget of 20 pixels absorbs anyway.
        */
       threshold: 0.005,
       animations: 'disabled',
@@ -91,25 +91,25 @@ export default defineConfig({
     cwd: workspaceRoot,
   },
   /*
-   * Macierz przeglądarek (req-quality-browsers).
+   * The browser matrix (req-quality-browsers).
    *
-   * Trzy silniki, nie trzy marki: blink, gecko, webkit. `Desktop Edge`
-   * i `Google Chrome` to ten sam blink w innym opakowaniu — czwarty projekt
-   * kosztowałby czas CI i nie odpowiadał na żadne nowe pytanie.
+   * Three engines, not three brands: blink, gecko, webkit. `Desktop Edge` and
+   * `Google Chrome` are the same blink in another wrapper — a fourth project would
+   * cost CI time and answer no new question.
    *
-   * Ta sama lista stoi drugi raz w `browsers.policy.json` i to jest
-   * celowe powtórzenie, nie niedopatrzenie. `tools/check-browsers.mjs` nie
-   * czyta tego pliku — pyta Playwrighta, co NAPRAWDĘ zebrał — i porównuje
-   * wynik z polityką. Silnik usunięty stąd rozjeżdża się wtedy z polityką
-   * i zapala; żeby to ucichło, trzeba wykreślić go w dwóch miejscach naraz,
-   * czyli zostawić w diffie zdanie, które recenzent widzi.
+   * The same list stands a second time in `browsers.policy.json`, and that is a
+   * deliberate repetition, not an oversight. `tools/check-browsers.mjs` does not read
+   * this file — it asks Playwright what it REALLY collected — and compares the answer
+   * with the policy. An engine dropped from here then diverges from the policy and
+   * the gate fires; to quiet it down you have to strike the engine out in two places
+   * at once, which leaves a sentence in the diff that a reviewer sees.
    *
-   * Wzorce `testIgnore` są tu pisane z gwiazdkami katalogu, choć zmierzone
-   * jest, że sama nazwa pliku działa tak samo — także dla speca w podkatalogu.
-   * Powód formy jest inny: wzorzec, który w nic nie trafia, NIE jest błędem
-   * dla Playwrighta, tylko projektem zbierającym komplet. Literówkę w tej
-   * liście łapie więc dopiero `check-browsers` (punkt 3), porównując zebrane
-   * pliki z polityką — i to jest jedyna rzecz, która ją tu łapie.
+   * The `testIgnore` patterns are written here with directory stars, although it is
+   * measured that the bare file name works the same — for a spec in a subdirectory
+   * too. The reason for the form is a different one: a pattern that matches nothing
+   * is NOT an error for Playwright, just a project collecting the full set. So a typo
+   * in this list is caught only by `check-browsers` (point 3), comparing the
+   * collected files with the policy — and that is the only thing that catches it.
    */
   projects: [
     {
@@ -118,12 +118,13 @@ export default defineConfig({
     },
     {
       /*
-       * Zrzuty wizualne zostają na chromium: wzorce z `__screenshots__/linux/`
-       * powstały jego rasteryzacją i każdy inny silnik rozjeżdża je z powodu
-       * maszyny, a nie kodu (zmierzone: 26 z 26 wzorców różni się na firefoksie).
-       * Trzeci zestaw wzorców per silnik to trzykrotny koszt uwagi przy każdej
-       * świadomej zmianie wyglądu i zero nowych pytań — regresję układu łapią
-       * testy geometrii, które biegną tutaj w komplecie.
+       * The visual screenshots stay on chromium: the baselines in
+       * `__screenshots__/linux/` came from its rasteriser, and every other engine
+       * diverges from them because of the machine, not the code (measured: 26 of 26
+       * baselines differ on firefox). A third set of baselines per engine is three
+       * times the attention on every deliberate change of appearance and no new
+       * questions — a layout regression is caught by the geometry tests, which run
+       * here in full.
        */
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
@@ -131,19 +132,18 @@ export default defineConfig({
     },
     {
       /*
-       * Do wzorców dochodzi `forced-colors.spec.ts` — i to jest wyłączenie
-       * z POMIARU, nie z wygody. Playwrightowy webkit melduje
-       * `matchMedia('(forced-colors: active)').matches === true`, a kolorów
-       * autora nie podmienia: sonda z tłem `rgb(1, 2, 3)` wychodzi z niego
-       * niezmieniona, podczas gdy chromium i firefox oddają biel z palety
-       * użytkownika. `forced-color-adjust` nie jest w nim nawet znaną
-       * właściwością. Cały ten plik pytałby więc o zachowanie, którego ten
-       * silnik nie ma — a cztery z sześciu testów przechodziłyby, mierząc
-       * kolory z tokenów.
+       * `forced-colors.spec.ts` joins the baselines here — and that exclusion comes
+       * from a MEASUREMENT, not from convenience. Playwright's webkit reports
+       * `matchMedia('(forced-colors: active)').matches === true` and substitutes none
+       * of the author's colours: a probe with a `rgb(1, 2, 3)` background comes out
+       * of it unchanged, while chromium and firefox return the white from the user
+       * palette. `forced-color-adjust` is not even a known property in it. The whole
+       * file would therefore ask about behaviour this engine does not have — and four
+       * of its six tests would pass, measuring colours from tokens.
        *
-       * Fakt jest pilnowany, a nie zapisany: punkt 6 `check-browsers`
-       * powtarza tę sondę przy każdym przebiegu, więc dzień, w którym webkit
-       * to zaimplementuje, jest dniem, w którym bramka każe wyłączenie zdjąć.
+       * The fact is policed, not recorded: point 6 of `check-browsers` repeats that
+       * probe on every run, so the day webkit implements it is the day the gate
+       * orders the exclusion taken off.
        */
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
