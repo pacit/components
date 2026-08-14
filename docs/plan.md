@@ -76,8 +76,9 @@ H  one language, no filler  English everywhere; blocks B2 whole, not just its pu
 **Phase A is closed and so are H1–H8**, so the next milestone is not a release but the **first
 push to the public repository** (B2) — and the rule for it is settled: **nothing leaves in
 Polish**. Not the sandbox, not a comment, not a fixture value. So B2 waits on the rest of H
-(H9, H10, H11) and on the **repository limb of B8**, because „nothing is left" is a measurement,
-not a declaration — this file's own [definition of done](#definition-of-done). H1 (identifiers),
+(H9, H10, H11), on the **repository limb of B8** — because „nothing is left" is a measurement,
+not a declaration, this file's own [definition of done](#definition-of-done) — and on **B9**,
+the clear-out of what a public repository should never have carried. H1 (identifiers),
 H2 (the concision criterion, [0017](decisions/0017-one-home-per-fact.md)), H3 (the title page),
 H4 (`docs/`), H5 (`libs`), H6 (test names), H7 (the fifteen gate scripts) and H8 (the contracts
 they read) are done, and `LICENSE` has a gate on both sides of `npm pack` (B1). Of B, the
@@ -271,9 +272,10 @@ control. Nothing here is waiting any more.
 
 ## B. Readiness for the first release
 
-Can run in parallel with A. Binds at the first publication — and then all of it at once.
+Can run in parallel with A. Binds at the first publication — and then all of it at once, with
+**B9** and B8's repository limb one step earlier, at the push.
 
-Three of the eight tasks (**B3**, **B4**, **B8**) are about language. Only the part of it that
+Three of the nine tasks (**B3**, **B4**, **B8**) are about language. Only the part of it that
 **cannot be released in Polish** stands here: text that travels inside the package. The rest of
 the repository moves to English in [section H](#h-one-language-for-the-repository) — it does not
 block publication and is an order of magnitude larger.
@@ -378,6 +380,27 @@ block publication and is an order of magnitude larger.
     empty — that is what B3, B4, H10 and H11 are for. Denominator: [`lesson-48`](lessons.md#lesson-48)
   - control: Polish in a file outside the register; an entry pointing at a file **already**
     translated; a Polish `description` **despite** an entry; a scan with an empty file list
+  - cost: ~1 day · _notes:_ —
+
+- [ ] **B9 — the repository is tidied before it is published** _(binds at B2)_
+  - **what a first visitor must not find**: mappings of an identifier space that never stood in
+    public, review findings closed weeks ago, and files whose deletion was nobody's task
+  - **old identifiers, 157 lines of them**: the two migration tables in
+    [`docs/README.md`](README.md) — [2026-08-06](README.md#id-space-migration-2026-08-06), 93
+    rows of `wym-`/`lekcja-`, and 2026-07-27, the numeric space — are **53% of that file** and
+    map a space no public reader can ever observe, the history being squashed. They go; the
+    `LEGACY` guard in `check-docs.mjs` stays, because it is what stops the space coming back
+  - they are not its only citations: **55 in `review.md`, 2 in `overview.md`**, silent because
+    all three files sit in `CITATION_EXEMPT`. So the cleanup ends when **that set is empty but
+    for the generated registry** — which makes this a gate rather than a tidy-up
+  - **`review.md` (576 lines) is an inbound document, not a plan**: §5.6 closed with B1, §5.7
+    with A2 and A13, §5.2 with C5, and §3.E is the whole of H. What is still open stands in
+    section C here. Keep the verdict and the axis (§9), retire the rest
+  - with the same eye: `.opencode/skills/` and `.github/skills/` are **byte-identical copies**
+    of a vendored Nx guide (18 files each); this file is 1 436 lines, 175 of them a closed phase
+    A and 686 the journal; and section C's „verified 2026-08-03" wants one re-read before it
+  - control: `check-docs` green with `CITATION_EXEMPT` empty, and no tracked file that no other
+    file mentions
   - cost: ~1 day · _notes:_ —
 
 ## C. Open findings from the review
@@ -735,9 +758,9 @@ is the last row, and it is H11, not a new layer:
     `providePctTexts({ selectPlaceholder: 'Wybierz…' })`, so it stands in `types/*.d.ts` and on
     the npm page, and [`README.md`](../README.md) repeats it on the title page (line 254)
   - in the gates: a printed message and a comment in `check-docs.mjs` („nie biegnie w
-    `nx affected -t`"), Polish JSDoc in `check-texts.mjs`, a message in `check-tokens.mjs` built
-    from a Polish identifier (`wpisy`), the same names in `check-parts.mjs` (`wpisy`, `skroc`),
-    plus `check-styles`, `check-bundle` and eleven fixture files
+    `nx affected -t`") and its `REJESTR` constant, Polish JSDoc in `check-texts.mjs`, a message
+    in `check-tokens.mjs` built from `wpisy`, the same names in `check-parts.mjs` (`wpisy`,
+    `skroc`), a `BRAK` besides, plus `check-styles`, `check-bundle` and eleven fixture files
   - **stale citations are the third kind and nothing fires on them**: `quality.md` cites the
     rule `fakt-bez-odniesienia`, `tokens.md` cites `on-para-martwa` — renamed by H8, live in no
     script — and both cite Polish test names H6 renamed. `check-docs` compares the path only
@@ -776,7 +799,7 @@ path, never the name after `›`, the blind spot H6 recorded and nobody has clos
 
 **The sandbox decision is made**: English, with the texts channel demonstrated in `fr-FR` — not
 English, never Polish, and the decimal comma `req-api-texts` leans on survives the swap.
-Next: **H11**, **H10**, then H9 and B8's repository limb. Only then B2.
+Next: **H11**, **H10**, then H9, **B9**'s clear-out and B8's repository limb. Only then B2.
 
 ### 2026-08-14 — H8: a name a gate compares is a contract on both sides
 
