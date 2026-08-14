@@ -237,7 +237,7 @@ between **composes with the background**, i.e. moves the real contrast outside t
 gate's result; a non-literal value (`var(...)`, `calc(...)`) is statically undecidable and so
 fires as well. The family covers the SVG variants (`fill-opacity`, `stroke-opacity`), because
 the composition is the same and only the name differs
-**Control:** `tools/check-styles.fixtures/opacity-czesciowa/` (a state expressed through
+**Control:** `tools/check-styles.fixtures/partial-opacity/` (a state expressed through
 `opacity: 0.6`) and `opacity-ze-zmiennej/` (a value from a token). Plus a run against the
 repository: `opacity: 0` in `checkbox.scss` changed to `0.45` fires point 6
 **Binds at:** immediately — this is a promise whose breach **rolls back**
@@ -402,7 +402,7 @@ inline axis only, and full bidi is a [non-goal](../00-axis.md#explicit-non-goals
 exception requires a `/* pct-exception <property>: <reason> */` marker adjacent to the
 declaration — point 4 fires on a marker with no justification and on one that lands on no
 declaration
-**Control:** `tools/check-styles.fixtures/padding-fizyczny/` (a property name) and
+**Control:** `tools/check-styles.fixtures/physical-padding/` (a property name) and
 `text-align-fizyczny/` (a value); for exceptions, `wyjatek-bez-uzasadnienia/` and
 `wyjatek-bez-uzycia/`. Plus runs against the repository: `padding-inline-start` swapped for
 `padding-left` in `field.scss` fires, removing the exception marker above `left: 50%` in

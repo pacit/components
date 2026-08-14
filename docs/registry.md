@@ -140,7 +140,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-token-names`](requirements/tokens.md#req-token-names)               | ✅ enforced | `tools/check-tokens.mjs` (target `check-tokens` in the root project, … | `tools/check-tokens.fixtures/` — eleven inputs, each rejected on its … |
 | [`req-token-text-pairs`](requirements/tokens.md#req-token-text-pairs)     | ✅ enforced | `tools/check-tokens.mjs` (target `check-tokens` in the root project, … | `tools/check-tokens.fixtures/` — `kolor-niezmierzony` (a stylesheet p… |
 | [`req-token-contrast`](requirements/tokens.md#req-token-contrast)         | ✅ enforced | `libs/tokens/build.mjs` (target `tokens:build`, in CI through `^build… | the run from `lesson-6`: the original guard let `disabled` through at… |
-| [`req-token-no-opacity`](requirements/tokens.md#req-token-no-opacity)     | ✅ enforced | `tools/check-styles.mjs` (target `check-styles`, in CI) — point 6: `o… | `tools/check-styles.fixtures/opacity-czesciowa/` (a state expressed t… |
+| [`req-token-no-opacity`](requirements/tokens.md#req-token-no-opacity)     | ✅ enforced | `tools/check-styles.mjs` (target `check-styles`, in CI) — point 6: `o… | `tools/check-styles.fixtures/partial-opacity/` (a state expressed thr… |
 | [`req-token-css`](requirements/tokens.md#req-token-css)                   | ✅ enforced | `apps/sandbox-e2e/src/theme.spec.ts`, `libs/components/check-package.… | `tools/check-package.fixtures/token-without-declaration/` — a package… |
 | [`req-token-scss`](requirements/tokens.md#req-token-scss)                 | 🟡 partial  | none — deliberately: the file extension is visible in review, and a s… | not applicable ---                                                     |
 | [`req-token-override`](requirements/tokens.md#req-token-override)         | ✅ enforced | `apps/sandbox-e2e/src/theme.spec.ts`                                   | as in `req-token-closure` — comparing the component token, not the se… |
@@ -150,7 +150,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-token-skin`](requirements/tokens.md#req-token-skin)                 | ✅ enforced | `libs/tokens/build.mjs` — but **only for the built-in skin**           | see `req-token-contrast`                                               |
 | [`req-token-distribution`](requirements/tokens.md#req-token-distribution) | ✅ enforced | `libs/components/check-package.mjs` — points 1 and 2: the skin is in … | `tools/check-package.fixtures/theme-missing/` — a package with no ski… |
 | [`req-token-density`](requirements/tokens.md#req-token-density)           | ⛔ gap      | none — gap: the DTCG sources contain **not one** density token         | none — gap: a layout with the `compact` density token must pass the t… |
-| [`req-token-logical`](requirements/tokens.md#req-token-logical)           | ✅ enforced | `tools/check-styles.mjs` (target `check-styles`, in CI) — point 5: a … | `tools/check-styles.fixtures/padding-fizyczny/` (a property name) and… |
+| [`req-token-logical`](requirements/tokens.md#req-token-logical)           | ✅ enforced | `tools/check-styles.mjs` (target `check-styles`, in CI) — point 5: a … | `tools/check-styles.fixtures/physical-padding/` (a property name) and… |
 
 ## Reverse index — lesson → requirements
 
