@@ -1019,8 +1019,8 @@ const buildFixture = (fx) => {
     we.tarball.manifest.exports[fx.dodajExport.klucz] = fx.dodajExport.cel;
   if (fx.dodajFabryke)
     we.tarball.fabryki = [...we.tarball.fabryki, fx.dodajFabryke];
-  if (fx.kolekcjaWManifescie !== undefined)
-    we.tarball.manifest.schematics = fx.kolekcjaWManifescie;
+  if (fx.collectionInManifest !== undefined)
+    we.tarball.manifest.schematics = fx.collectionInManifest;
 
   if (fx.published !== undefined) we.registry.published = fx.published;
   if (fx.registryVersions) we.registry.metadata.versions = fx.registryVersions;

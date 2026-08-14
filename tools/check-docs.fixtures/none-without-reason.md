@@ -1,6 +1,6 @@
 # Fixture — „none" without a reason
 
-### <a id="req-fixture-brak-bez-powodu"></a>`req-fixture-brak-bez-powodu` — Absence without justification
+### <a id="req-fixture-none-without-reason"></a>`req-fixture-none-without-reason` — Absence without justification
 
 **Promise.** Something is meant to be true.
 

@@ -6,7 +6,7 @@
 // a typo gave a chip leading nowhere — a silent defect (`req-axis`). The same move as
 // `PctCssVar` in `lesson-43`, on the second class of names.
 
-/** Identyfikator wymagania z `docs/requirements/` albo osi z `docs/00-axis.md`. */
+/** A requirement identifier from `docs/requirements/`, or an axis one from `docs/00-axis.md`. */
 export type PctReqId =
   | 'req-a11y-axe'
   | 'req-a11y-built-in'

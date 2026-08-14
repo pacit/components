@@ -127,14 +127,14 @@ const lessonIds = new Set(
 
 const BRAK = /^none\s*[—-]\s*(deliberately|gap)\s*:\s*(.+)$/s;
 
-/** `egzekwowane` | `świadomie` | `luka` | null (an error) */
+/** `enforced` | `deliberate` | `gap` | null (an error) */
 const classify = (value, req, fieldName) => {
   const v = (value ?? '').trim();
   if (!v) {
     fail(req.id, `field **${fieldName}** is empty`);
     return null;
   }
-  if (/^not applicable\b/i.test(v)) return 'świadomie';
+  if (/^not applicable\b/i.test(v)) return 'deliberate';
   if (/^none\b/.test(v)) {
     const m = v.match(BRAK);
     if (!m) {
@@ -150,9 +150,9 @@ const classify = (value, req, fieldName) => {
         req.id,
         `field **${fieldName}**: the reason for the absence is empty or too general`,
       );
-    return m[1] === 'gap' ? 'luka' : 'świadomie';
+    return m[1] === 'gap' ? 'gap' : 'deliberate';
   }
-  return 'egzekwowane';
+  return 'enforced';
 };
 
 for (const req of requirements) {
@@ -160,22 +160,22 @@ for (const req of requirements) {
   if (req.fields.Gate === undefined) fail(req.id, 'no **Gate** field');
   if (req.fields.Control === undefined) fail(req.id, 'no **Control** field');
 
-  req.stanBramki = classify(req.fields.Gate, req, 'Gate');
-  req.stanKontroli = classify(req.fields.Control, req, 'Control');
+  req.gateState = classify(req.fields.Gate, req, 'Gate');
+  req.controlState = classify(req.fields.Control, req, 'Control');
 
-  req.stan =
-    req.stanBramki === 'egzekwowane' && req.stanKontroli === 'egzekwowane'
-      ? 'egzekwowane'
-      : req.stanBramki === 'luka' || req.stanKontroli === 'luka'
-        ? 'luka'
-        : req.stanBramki === null || req.stanKontroli === null
-          ? 'BŁĄD'
-          : 'częściowo';
+  req.state =
+    req.gateState === 'enforced' && req.controlState === 'enforced'
+      ? 'enforced'
+      : req.gateState === 'gap' || req.controlState === 'gap'
+        ? 'gap'
+        : req.gateState === null || req.controlState === null
+          ? 'ERROR'
+          : 'partial';
 
-  if (req.stan === 'luka' && !req.fields['Binds at']?.trim())
+  if (req.state === 'gap' && !req.fields['Binds at']?.trim())
     fail(
       req.id,
-      'state `luka` with no **Binds at** field — a gap without a date is a wish',
+      'state `gap` with no **Binds at** field — a gap without a date is a wish',
     );
 }
 
@@ -331,7 +331,7 @@ for (const rel of trackedFiles) {
   }
 }
 
-// ── generowanie rejestru i unii ID ────────────────────────────────────────────
+// ── generating the registry and the ID union ────────────────────────────────────────────
 
 const AREA = (id) => id.split('-')[1];
 const AREA_LABEL = {
@@ -345,10 +345,10 @@ const AREA_LABEL = {
 };
 
 const STAN_ICON = {
-  egzekwowane: '✅ enforced',
-  częściowo: '🟡 partial',
-  luka: '⛔ gap',
-  BŁĄD: '❌ ERROR',
+  enforced: '✅ enforced',
+  partial: '🟡 partial',
+  gap: '⛔ gap',
+  ERROR: '❌ ERROR',
 };
 
 /**
@@ -373,8 +373,8 @@ const buildRejestr = () => {
     byArea.get(a).push(r);
   }
 
-  const counts = { egzekwowane: 0, częściowo: 0, luka: 0, BŁĄD: 0 };
-  for (const r of requirements) counts[r.stan]++;
+  const counts = { enforced: 0, partial: 0, gap: 0, ERROR: 0 };
+  for (const r of requirements) counts[r.state]++;
 
   const L = [];
   L.push('# Registry — promise → gate → control');
@@ -393,13 +393,13 @@ const buildRejestr = () => {
   L.push('| state | means | count |');
   L.push('| --- | --- | ---: |');
   L.push(
-    `| ✅ enforced | gate and control exist and run in CI | ${counts.egzekwowane} |`,
+    `| ✅ enforced | gate and control exist and run in CI | ${counts.enforced} |`,
   );
   L.push(
-    `| 🟡 partial | the gate is there, the negative control is not (deliberately) | ${counts.częściowo} |`,
+    `| 🟡 partial | the gate is there, the negative control is not (deliberately) | ${counts.partial} |`,
   );
   L.push(
-    `| ⛔ gap | gate or control missing, with a recorded deadline | ${counts.luka} |`,
+    `| ⛔ gap | gate or control missing, with a recorded deadline | ${counts.gap} |`,
   );
   L.push(`| **total** | | **${requirements.length}** |`);
   L.push('');
@@ -413,7 +413,7 @@ const buildRejestr = () => {
   L.push('| requirement | what is missing | binds at |');
   L.push('| --- | --- | --- |');
   const luki = requirements
-    .filter((r) => r.stan === 'luka')
+    .filter((r) => r.state === 'gap')
     .sort((a, b) => {
       const na = /immediately/i.test(a.fields['Binds at'] ?? '') ? 0 : 1;
       const nb = /immediately/i.test(b.fields['Binds at'] ?? '') ? 0 : 1;
@@ -421,7 +421,7 @@ const buildRejestr = () => {
     });
   for (const r of luki) {
     const brak =
-      r.stanBramki === 'luka'
+      r.gateState === 'gap'
         ? short(
             (r.fields.Gate ?? '').replace(/^none\s*[—-]\s*gap\s*:\s*/, ''),
             70,
@@ -443,7 +443,7 @@ const buildRejestr = () => {
     L.push('| --- | --- | --- | --- |');
     for (const r of reqs)
       L.push(
-        `| [\`${r.id}\`](${link(r)}) | ${STAN_ICON[r.stan]} | ${short(r.fields.Gate, 70)} | ${short(r.fields.Control, 70)} |`,
+        `| [\`${r.id}\`](${link(r)}) | ${STAN_ICON[r.state]} | ${short(r.fields.Gate, 70)} | ${short(r.fields.Control, 70)} |`,
       );
     L.push('');
   }
@@ -500,7 +500,7 @@ const buildReqIds = () => {
     '// a typo gave a chip leading nowhere — a silent defect (`req-axis`). The same move as',
     '// `PctCssVar` in `lesson-43`, on the second class of names.',
     '',
-    '/** Identyfikator wymagania z `docs/requirements/` albo osi z `docs/00-axis.md`. */',
+    '/** A requirement identifier from `docs/requirements/`, or an axis one from `docs/00-axis.md`. */',
     'export type PctReqId =',
     ...reqs.map((id) => `  | '${id}'`),
     '  ;',
@@ -581,7 +581,7 @@ if (!WRITE) {
       if (req.fields.Control === undefined) fail(fx, 'x');
       const b = classify(req.fields.Gate, { id: fx }, 'Gate');
       const k = classify(req.fields.Control, { id: fx }, 'Control');
-      if (b === 'luka' && !req.fields['Binds at']?.trim()) fail(fx, 'x');
+      if (b === 'gap' && !req.fields['Binds at']?.trim()) fail(fx, 'x');
       for (const fieldName of ['Gate', 'Control']) {
         const value = req.fields[fieldName] ?? '';
         if (/^\s*(none|not applicable)\b/.test(value)) continue;
@@ -612,10 +612,10 @@ if (problems.length) {
 }
 
 const counts = requirements.reduce(
-  (a, r) => ((a[r.stan] = (a[r.stan] ?? 0) + 1), a),
+  (a, r) => ((a[r.state] = (a[r.state] ?? 0) + 1), a),
   {},
 );
 console.log(
   `v Documentation gate: ${requirements.length} requirements, ${lessonIds.size} lessons — ` +
-    `enforced ${counts.egzekwowane ?? 0}, partial ${counts.częściowo ?? 0}, gap ${counts.luka ?? 0}`,
+    `enforced ${counts.enforced ?? 0}, partial ${counts.partial ?? 0}, gap ${counts.gap ?? 0}`,
 );

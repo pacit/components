@@ -15,10 +15,10 @@ design.
 
 | file                                                 | what it breaks                                   | which check must fire |
 | ---------------------------------------------------- | ------------------------------------------------ | --------------------- |
-| [`bez-bramki.md`](bez-bramki.md)                     | a promise with no **Gate** field                 | 1 — completeness      |
-| [`brak-bez-powodu.md`](brak-bez-powodu.md)           | „none" without the `deliberately:` / `gap:` form | 1 — completeness      |
-| [`luka-bez-terminu.md`](luka-bez-terminu.md)         | `gap` with no **Binds at** field                 | 1 — completeness      |
-| [`sciezka-nie-istnieje.md`](sciezka-nie-istnieje.md) | the gate points at a file that does not exist    | 2 — existence         |
+| [`no-gate.md`](no-gate.md)                           | a promise with no **Gate** field                 | 1 — completeness      |
+| [`none-without-reason.md`](none-without-reason.md)   | „none" without the `deliberately:` / `gap:` form | 1 — completeness      |
+| [`gap-without-deadline.md`](gap-without-deadline.md) | `gap` with no **Binds at** field                 | 1 — completeness      |
+| [`path-does-not-exist.md`](path-does-not-exist.md)   | the gate points at a file that does not exist    | 2 — existence         |
 
 ## Adding a new check to the gate
 
