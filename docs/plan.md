@@ -70,26 +70,30 @@ D  behaviour layer in core  only after A; blocks E
 E  components               dialog → tooltip/popover → menu → select → fields → rest → table
 F  trust surface            docs, ACR, benchmarks, Figma bridge
 G  gaps with no deadline    waiting for the trigger written in their „Binds at" field
-H  one language, no filler  English + compression; the public part sits in B
+H  one language, no filler  English everywhere; blocks B2 whole, not just its public part
 ```
 
 **Phase A is closed and so are H1–H8**, so the next milestone is not a release but the **first
-push to the public repository** (B2): everything a first visitor reads is now in one language,
-and the push is a premiere rather than a backup. H1 (identifiers), H2 (the concision criterion,
-[0017](decisions/0017-one-home-per-fact.md)), H3 (the title page), H4 (`docs/`), H5 (`libs`),
-H6 (test names), H7 (the fifteen gate scripts) and H8 (the contracts they read) are done, and
-`LICENSE` has a gate on both sides of `npm pack` (B1). **The built package now
-carries no Polish at all**, so of B only the package README (B3) and the gate (B8) stand between
-here and npm; B4 shrank to one job that needs the public repository to exist.
-Still in H: H10 (`apps/` — a decision, not a translation) and H9 (commits). Outside `apps/`
-and the commit history a diacritics scan over the whole index is now **empty**.
+push to the public repository** (B2) — and the rule for it is settled: **nothing leaves in
+Polish**. Not the sandbox, not a comment, not a fixture value. So B2 waits on the rest of H
+(H9, H10, H11) and on the **repository limb of B8**, because „nothing is left" is a measurement,
+not a declaration — this file's own [definition of done](#definition-of-done). H1 (identifiers),
+H2 (the concision criterion, [0017](decisions/0017-one-home-per-fact.md)), H3 (the title page),
+H4 (`docs/`), H5 (`libs`), H6 (test names), H7 (the fifteen gate scripts) and H8 (the contracts
+they read) are done, and `LICENSE` has a gate on both sides of `npm pack` (B1). Of B, the
+package README (B3) and B4 stand between here and npm.
+**A diacritics scan is empty outside `apps/`, and that is not the same as clean**: a
+function-word probe run 2026-08-14 finds Polish in **32 files** there — including the JSDoc
+example that ships in `types/*.d.ts` — and in **52 of the 117** files under `apps/`. That is
+H11 and H10.
 In parallel: F1 is unblocked (A3 and A4 gave it both inventories to render), and C is filler.
 
-H is not a separate phase, but it has an **earlier deadline than the release**: the repository
-stands in public, so `README.md`, `docs/` and Actions bind at B2 already. What travels inside
-the package (B3, B4, B8) binds at publication to npm. The two hard ordering conditions inside
-it are spent: **H1 before everything**, because any text written earlier is written twice, and
-**H2 before H3–H8**, because translating prose you are about to shorten is paid for twice.
+H is not a separate phase, and it no longer has two deadlines. The old split — `README.md`,
+`docs/` and Actions at B2, the package at npm — held while the rule was „the public surface may
+not be Polish". The rule of 2026-08-14 is wider, so what travels inside the package (B3, B4)
+binds **no later than the push**, and B8 moves in front of it. The two hard ordering conditions
+inside H are spent: **H1 before everything**, because any text written earlier is written twice,
+and **H2 before H3–H8**, because translating prose you are about to shorten is paid for twice.
 
 ## A. Phase 0 — gates „right away"
 
@@ -300,9 +304,12 @@ block publication and is an order of magnitude larger.
   - **the task itself is minutes, but it stopped being first.** The repository is public
     **from the first push** (decision of 2026-08-06 — no private stage), so `README.md`,
     `docs/` and the step names in Actions become **the product** at that second
-  - hence the ordering condition **H1 → H3 → H4 → B2**, now satisfied: everything the first
-    visitor sees is in one language. The price of that order is written down plainly — until
-    the first push there is no remote CI, no provenance and no copy off this machine
+  - hence the ordering condition **H1 → H3 → H4 → B2**, satisfied for everything the first
+    visitor sees. The price of that order is written down plainly — until the first push there
+    is no remote CI, no provenance and no copy off this machine
+  - **and on 2026-08-14 the condition grew**: nothing leaves in Polish, so **H9, H10 and H11**
+    stand before the push and **B8's repository limb is what proves it** — the scan that
+    reported four layers clean sees neither „nie biegnie" nor `'Wybierz…'` (H11)
   - cost: minutes for the task itself · _notes:_ —
 
 - [ ] **B3 — package README in English**
@@ -352,23 +359,23 @@ block publication and is an order of magnitude larger.
   - control: a manifest with a dependency outside the list must fire
   - cost: ~0.5 day · _notes:_ —
 
-- [ ] **B8 — language gate**
+- [ ] **B8 — language gate** — **stands before B2** _(2026-08-14)_
   - closes: [`req-project-language`](requirements/project.md#req-project-language)
-  - **without it B3 and B4 are a one-off tidy-up.** The language split stood in
-    [`docs/README.md`](README.md) from the beginning, had no gate and was broken on **both**
-    sides: the public surface in Polish, the working documentation cited from public JSDoc —
-    the same run that ended in A2, A5 and A12 with a green gate measuring zero
+  - **without it B3, B4 and the whole of H are a one-off tidy-up.** The language split stood in
+    [`docs/README.md`](README.md) with no gate, broken on **both** sides (A2, A5, A12)
   - what: `tools/check-language.mjs` + `tools/language.policy.json`. **Two measurements of
     different reach**: the public surface on the **artefact** (what comes out of `npm pack`,
     not what stands in the source), the rest of the repository on files from the git index
+  - **two reaches, one deadline now**: the repository limb runs before the push, being the only
+    thing that turns „nothing is left in Polish" into a measurement; the artefact limb still
+    binds at the release with B3
   - detection has **two limbs**: diacritics are enough for prose and fall silent exactly where
-    the text is short — a one-word label, a file name — so the second limb is a list of Polish
-    function words English does not contain, plus file names and identifiers separately
-  - the register of exceptions follows the `browsers.policy.json` idiom from A10: an entry
-    carries its reason and the task that removes it, and **a dead entry fires just like new
-    Polish**. The public surface may not have an entry at all, so B3 and B4 are a condition of
-    wiring the gate into CI. Denominator: a non-empty file list and a non-empty measurement —
-    [`lesson-48`](lessons.md#lesson-48), committed twice already (A5, A12)
+    the text is short — a label, a file name — so the second limb is a list of Polish function
+    words English does not contain. **Its false positives are the design work**: `jest` is a
+    Polish verb and a test runner at once, and hits `nx.json` before it hits any prose
+  - the register follows the `browsers.policy.json` idiom from A10: an entry carries its reason
+    and the task that removes it, and **a dead entry fires just like new Polish**. It starts
+    empty — that is what B3, B4, H10 and H11 are for. Denominator: [`lesson-48`](lessons.md#lesson-48)
   - control: Polish in a file outside the register; an entry pointing at a file **already**
     translated; a Polish `description` **despite** an entry; a scan with an empty file list
   - cost: ~1 day · _notes:_ —
@@ -557,6 +564,12 @@ Settled 2026-08-06, not to be reopened:
   squashed before it — 49 Polish commits never leave. The push is a premiere, so H1, H3 and H4
   stand **before** B2.
 
+Settled 2026-08-14, and it widens all three: **the first push carries no Polish at all** — not
+the sandbox, not a comment, not a fixture value, not a stale citation of a renamed rule. There
+is no „this part is only working material" tier left, and the register of exceptions starts its
+public life **empty**. That collapses H's two deadlines into one and hands B8 a job it did not
+have before: proving it, in front of B2 rather than at the release.
+
 **The repository is to stand publicly on GitHub, so the documentation is a product, not a back
 office.** That reordered the middle of H: the two most-read files of a public repository —
 `README.md` and `docs/README.md` — were entirely in Polish, and the first of them **was not
@@ -568,7 +581,9 @@ There are two binding moments and **the earlier one is wider**: the first push (
 `npm pack`. Outside both stands **H1**, which binds to nothing external but gets pricier with
 every sentence written.
 
-Measured 2026-08-06 (`git ls-files` + a diacritics scan), refreshed 2026-08-08:
+Measured 2026-08-06 (`git ls-files` + a diacritics scan), refreshed 2026-08-08. **The rows
+marked done were measured with the diacritics limb only** — what the second limb finds in them
+is the last row, and it is H11, not a new layer:
 
 | layer                               | volume                                                                       | binds at                 |
 | ----------------------------------- | ---------------------------------------------------------------------------- | ------------------------ |
@@ -578,10 +593,11 @@ Measured 2026-08-06 (`git ls-files` + a diacritics scan), refreshed 2026-08-08:
 | identifiers and their citations     | done — **H1** (82 + 59 names, 2 571 citations in 175 files)                  | —                        |
 | `libs` sources                      | done — **H5** (30 files, plus 14 config and token files)                     | —                        |
 | test names                          | done — **H6** (27 spec files, 26 baselines renamed)                          | —                        |
-| `apps/` sandbox demo                | 45 files — **H10**, and a decision before a translation                      | first push               |
+| `apps/` sandbox demo                | **52 of 117 files** — **H10**, decision made: it goes English                | first push               |
 | tools and gates                     | done — **H7** (15 scripts; headers 609 → **249**, budget 251)                | —                        |
 | proper names in contracts           | done — **H8** (1 target, 5 policies/snapshots, 252 fixture cases, 9 READMEs) | —                        |
-| commit history                      | 49 commits                                                                   | squashed before the push |
+| commit history                      | 49 commits — **H9**                                                          | squashed before the push |
+| Polish without diacritics           | **32 files** outside `apps/`, inside the rows above — **H11**                | first push               |
 
 - [x] **H1 — the identifier and documentation-name space** _(2026-08-06)_
   - done: **83 requirement identifiers**, **59 lessons** (`lekcja-N` → `lesson-N`) and **2 571
@@ -695,21 +711,72 @@ Measured 2026-08-06 (`git ls-files` + a diacritics scan), refreshed 2026-08-08:
   - cost: minutes · _notes:_ —
 
 - [ ] **H10 — the `apps/` sandbox demo** _(H6 took the e2e half)_
-  - what is left: **45 files of `apps/sandbox`**, plus `playwright.config.mts` (59 lines) and
-    the e2e `project.json`. The specs, the `src/support/` helpers and the 26 baselines went
-    with H6, which is where the test names were
-  - **and it is a decision before it is a translation.** `app.config.ts` says the sandbox is in
-    Polish on purpose: it is the only live use of `providePctTexts` and of a non-English
-    `LOCALE_ID`, and `select.spec.ts` follows that chain through SSR and hydration. An English
-    demo would leave [`req-api-texts`](requirements/api.md#req-api-texts) with no working proof
-  - so: keep the demo Polish and translate only its comments, or translate it and give the
-    texts channel a smaller, deliberate demonstration elsewhere. The e2e specs cite the Polish
-    UI strings (`hasText: 'Polska'`), so whichever way it goes, the two move together
-  - cost: ~0.5 day for the comments alone · ~1 day if the demo changes language · _notes:_ —
+  - what is left: **52 of the 117 files under `apps/`** — 46 the diacritics scan sees, 6 only
+    the second limb — plus `playwright.config.mts` and the e2e `project.json`. The specs, the
+    `src/support/` helpers and the 26 baselines went with H6; their prose did not all follow
+  - **the decision is made: the demo goes English** _(2026-08-14)_. It was the one place where
+    Polish was load-bearing — `app.config.ts` is the only live use of `providePctTexts` and of
+    a non-English `LOCALE_ID`, and `select.spec.ts` follows that chain through SSR and hydration
+  - **so the proof changes language, not homes**:
+    [`req-api-texts`](requirements/api.md#req-api-texts) needs a locale that is **not English**,
+    and never needed one that is Polish. `fr-FR` keeps every assertion that mattered — the
+    decimal comma the number field formats by `LOCALE_ID` is the same there — and the texts
+    channel keeps a live consumer instead of a smaller, deliberate demonstration elsewhere
+  - couplings: the e2e specs cite the UI strings they read (`hasText: 'Polska'` and its kin, 15
+    places), so demo and specs move in one commit; the **Control** citations in `quality.md` and
+    `tokens.md` name Polish test names that no longer exist — those belong to H11
+  - cost: ~1 day · _notes:_ the one open sub-choice is the locale; `fr-FR` recommended
+
+- [ ] **H11 — the Polish a diacritics scan cannot see**
+  - **32 files outside `apps/`**, measured 2026-08-14 with Polish function words over files the
+    first limb calls clean. Not a new layer — the second reading of H5, H6, H7 and H8, and the
+    reason „the scan is empty" was never the same sentence as „there is no Polish left"
+  - **the worst of it ships**: the JSDoc of `texts.ts` demonstrates the channel with
+    `providePctTexts({ selectPlaceholder: 'Wybierz…' })`, so it stands in `types/*.d.ts` and on
+    the npm page, and [`README.md`](../README.md) repeats it on the title page (line 254)
+  - in the gates: a printed message and a comment in `check-docs.mjs` („nie biegnie w
+    `nx affected -t`"), Polish JSDoc in `check-texts.mjs`, a message in `check-tokens.mjs` built
+    from a Polish identifier (`wpisy`), the same names in `check-parts.mjs` (`wpisy`, `skroc`),
+    plus `check-styles`, `check-bundle` and eleven fixture files
+  - **stale citations are the third kind and nothing fires on them**: `quality.md` cites the
+    rule `fakt-bez-odniesienia`, `tokens.md` cites `on-para-martwa` — renamed by H8, live in no
+    script — and both cite Polish test names H6 renamed. `check-docs` compares the path only
+  - one class needs a decision, not a translation: **Polish as quoted history** — the 93 rows of
+    the [migration table](README.md#id-space-migration-2026-08-06), 17 citations in this file,
+    one in `lessons.md`. Recommendation: the table goes at the squash, because it maps a space
+    no public reader can ever observe; the anecdotes keep the identifier they are about
+  - control: B8's second limb over the index, with the register empty
+  - cost: ~1 day · _notes:_ —
 
 ## Journal
 
 One entry per session: what moved, what it ended with, what comes next. Newest on top.
+
+### 2026-08-14 — the push carries no Polish, and the scan that said so was half a scan
+
+**A rule settled, wider than the plan it landed in**: nothing goes to the first push in Polish
+— not the sandbox, not a comment, not a fixture value. H stops having two deadlines and gets
+one, B8's repository limb moves in front of **B2**, and the register of exceptions starts its
+public life empty.
+
+**Then the rule was measured, which is the whole point of having it.** A function-word probe
+over the index — the second limb B8 has promised since A5 — finds Polish in **32 files outside
+`apps/`**, every one of them inside a layer this file marks done, and in **52 of the 117** files
+under `apps/`, where the diacritics scan had counted 46.
+
+**The most expensive one ships.** The JSDoc of `texts.ts` demonstrates the texts channel with
+`selectPlaceholder: 'Wybierz…'`, so it stands in `types/*.d.ts` and on the npm page; the README
+repeats it at line 254. „The built package carries no Polish at all" was true of diacritics and
+of nothing else — and equally so for H3, H7 and H8.
+
+**Two gates still print Polish and two carry Polish identifiers**: `check-docs` („nie biegnie w
+`nx affected -t`"), `check-tokens` (`wpisy`), `check-parts` (`wpisy`, `skroc`). The requirements
+cite four names H8 renamed away, `fakt-bez-odniesienia` among them — `check-docs` compares the
+path, never the name after `›`, the blind spot H6 recorded and nobody has closed.
+
+**The sandbox decision is made**: English, with the texts channel demonstrated in `fr-FR` — not
+English, never Polish, and the decimal comma `req-api-texts` leans on survives the swap.
+Next: **H11**, **H10**, then H9 and B8's repository limb. Only then B2.
 
 ### 2026-08-14 — H8: a name a gate compares is a contract on both sides
 
