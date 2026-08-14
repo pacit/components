@@ -10,12 +10,12 @@ import { SbxSettings } from './ui/settings';
 import { SBX_VIEW_GROUPS, viewsOf } from './views';
 
 /**
- * Powłoka sandboxa: nawigacja po widokach + globalne ustawienia osi
- * przekrojowych (motyw, skórka, wielkość).
+ * The sandbox shell: navigation across the views plus the global settings of the
+ * cross-cutting axes (theme, skin, size).
  *
- * Motyw siedzi na hoście powłoki, a nie na `:root` — cała strona jest więc
- * takim samym scoped theme jak każda karta (req-token-scoped), a `:root` zostaje
- * czystym punktem odniesienia dla testów.
+ * The theme sits on the shell host, not on `:root` — the whole page is therefore
+ * the same scoped theme as any card (req-token-scoped), and `:root` stays a clean
+ * point of reference for the tests.
  */
 @Component({
   selector: 'app-root',
@@ -25,11 +25,11 @@ import { SBX_VIEW_GROUPS, viewsOf } from './views';
   host: {
     '[attr.data-theme]': 'settings.scheme()',
     '[attr.data-skin]': 'settings.skin()',
-    // `dir` na hoście powłoki, nie na `<html>`: kierunek jest tu osią przekrojową
-    // dokładnie jak motyw, więc odbija się cała strona razem z nawigacją, a `:root`
-    // zostaje czystym punktem odniesienia. Uwaga — to NIE dosięga nakładek CDK,
-    // które żyją jako dzieci `body`: tam kierunek trzeba przenieść jawnie, tak samo
-    // jak motyw i pismo (lesson-35).
+    // `dir` on the shell host, not on `<html>`: direction is a cross-cutting axis
+    // here exactly like the theme, so the whole page mirrors together with the
+    // navigation and `:root` stays a clean point of reference. Note — this does NOT
+    // reach the CDK overlays, which live as children of `body`: there the direction
+    // has to be carried over explicitly, just like the theme and the type (lesson-35).
     '[attr.dir]': 'settings.dir()',
   },
 })
@@ -44,12 +44,12 @@ export class App {
   constructor() {
     const appRef = inject(ApplicationRef);
 
-    // Znacznik „strona jest interaktywna" dla testów e2e. Do czasu hydracji
-    // w DOM stoi HTML z serwera: da się w niego kliknąć i wpisać, ale nic tego
-    // nie słucha, a hydracja i tak nadpisze wartość stanem z modelu. Odkąd
-    // widoki ładują się leniwie, okno między „element widoczny" a „element
-    // podłączony" trwa tyle, co pobranie chunka — dość, by test zdążył wejść
-    // w środek (lesson-30).
+    // The "the page is interactive" marker for the e2e tests. Until hydration the
+    // DOM holds the HTML from the server: it can be clicked and typed into, but
+    // nothing listens to that, and hydration overwrites the value with the state
+    // from the model anyway. Since the views load lazily, the window between
+    // "the element is visible" and "the element is wired up" lasts as long as
+    // fetching a chunk — enough for a test to get in the middle of it (lesson-30).
     afterNextRender(async () => {
       await appRef.whenStable();
       document.documentElement.setAttribute('data-sbx-ready', '');

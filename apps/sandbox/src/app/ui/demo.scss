@@ -53,8 +53,8 @@
   }
 }
 
-/* Scena niesie motyw karty, więc tło i tekst muszą brać się z tokenów —
-   inaczej ciemna karta zostałaby jasnym prostokątem z ciemnymi komponentami. */
+/* The stage carries the card theme, so its background and text have to come from
+   tokens — otherwise a dark card would be a light rectangle with dark components. */
 .demo__stage {
   padding: 20px;
   background: var(--pct-surface);

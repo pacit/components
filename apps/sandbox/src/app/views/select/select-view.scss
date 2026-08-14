@@ -2,9 +2,9 @@
   display: block;
 }
 
-/* Wąska kolumna dla przykładu szerokości panelu: przy szerokim polu warianty
-   `field` i `auto` dałyby ten sam obraz — różnicę widać dopiero, gdy najdłuższa
-   opcja nie mieści się w kontrolce. */
+/* A narrow column for the panel width example: with a wide field the `field` and
+   `auto` variants would give the same picture — the difference shows only once the
+   longest option does not fit in the control. */
 .stack--narrow {
   max-width: 240px;
 }

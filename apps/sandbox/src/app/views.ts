@@ -1,13 +1,13 @@
 import { Type } from '@angular/core';
 
 /**
- * Rejestr widoków sandboxa — jedno źródło dla routingu, nawigacji i strony
- * wejściowej. Dodanie widoku to jeden wpis tutaj.
+ * The registry of sandbox views — one source for the routing, the navigation and
+ * the index page. Adding a view is one entry here.
  */
 export type SbxViewGroup = 'components' | 'cross';
 
 export interface SbxView {
-  /** Ścieżka bez wiodącego ukośnika; `''` to strona wejściowa. */
+  /** The path with no leading slash; `''` is the index page. */
   readonly path: string;
   readonly title: string;
   readonly summary: string;
@@ -19,51 +19,51 @@ export const SBX_VIEW_GROUPS: ReadonlyArray<{
   readonly id: SbxViewGroup;
   readonly label: string;
 }> = [
-  { id: 'components', label: 'Komponenty' },
-  { id: 'cross', label: 'Przekrojowe' },
+  { id: 'components', label: 'Components' },
+  { id: 'cross', label: 'Cross-cutting' },
 ];
 
 export const SBX_VIEWS: readonly SbxView[] = [
   {
     path: '',
     title: 'Start',
-    summary: 'Spis widoków sandboxa.',
+    summary: 'The index of sandbox views.',
     group: 'cross',
     load: () => import('./views/index/index-view').then((m) => m.IndexView),
   },
   {
     path: 'button',
     title: 'Button',
-    summary: 'Warianty, wielkości i stany przycisku.',
+    summary: 'The variants, sizes and states of the button.',
     group: 'components',
     load: () => import('./views/button/button-view').then((m) => m.ButtonView),
   },
   {
     path: 'field',
     title: 'Field',
-    summary: 'Obudowa pola: etykieta, podpowiedź, błąd, dekoracje i ramka.',
+    summary: 'The field wrapper: label, hint, error, decorations and border.',
     group: 'components',
     load: () => import('./views/field/field-view').then((m) => m.FieldView),
   },
   {
     path: 'text',
     title: 'Text',
-    summary:
-      'Pole tekstowe na natywnym <input> i zgodność ze starymi formularzami.',
+    summary: 'A text field on a native <input>, and old-forms compatibility.',
     group: 'components',
     load: () => import('./views/text/text-view').then((m) => m.TextView),
   },
   {
     path: 'number',
     title: 'Number',
-    summary: 'Pole liczbowe: locale, ułamki, krokowanie, granice ze schematu.',
+    summary:
+      'A number field: locale, fractions, stepping, bounds from the schema.',
     group: 'components',
     load: () => import('./views/number/number-view').then((m) => m.NumberView),
   },
   {
     path: 'checkbox',
     title: 'Checkbox',
-    summary: 'Zaznaczenie, stan nieokreślony i obszar dotyku.',
+    summary: 'The checked state, the indeterminate one and the touch area.',
     group: 'components',
     load: () =>
       import('./views/checkbox/checkbox-view').then((m) => m.CheckboxView),
@@ -71,37 +71,37 @@ export const SBX_VIEWS: readonly SbxView[] = [
   {
     path: 'radio',
     title: 'Radio',
-    summary: 'Grupa radiów: kontrolką formularza jest kontener.',
+    summary: 'A radio group: the form control is the container.',
     group: 'components',
     load: () => import('./views/radio/radio-view').then((m) => m.RadioView),
   },
   {
     path: 'select',
     title: 'Select',
-    summary: 'Combobox z własnym panelem w nakładce CDK.',
+    summary: 'A combobox with a panel of its own in a CDK overlay.',
     group: 'components',
     load: () => import('./views/select/select-view').then((m) => m.SelectView),
   },
   {
     path: 'size',
-    title: 'Wielkość',
-    summary: 'Wszystkie komponenty na wspólnej osi sm/md/lg.',
+    title: 'Size',
+    summary: 'Every component on the shared sm/md/lg axis.',
     group: 'cross',
     load: () => import('./views/size/size-view').then((m) => m.SizeView),
   },
   {
     path: 'states',
-    title: 'Stany',
+    title: 'States',
     summary:
-      'Ten sam zestaw stanów dla każdej kontrolki: wyłączenie, odczyt, błąd, wymagalność.',
+      'The same set of states for every control: disabled, read-only, error, required.',
     group: 'cross',
     load: () => import('./views/states/states-view').then((m) => m.StatesView),
   },
   {
     path: 'all',
-    title: 'Wszystko naraz',
+    title: 'Everything at once',
     summary:
-      'Gęsty przekrój wszystkich komponentów — pod audyt axe i testy wizualne.',
+      'A dense cross-section of every component — for the axe audit and the visual tests.',
     group: 'cross',
     load: () =>
       import('./views/kitchen-sink/kitchen-sink').then((m) => m.KitchenSink),

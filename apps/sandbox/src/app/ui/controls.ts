@@ -12,12 +12,13 @@ import {
 } from './settings';
 
 /**
- * Pasek osi przekrojowych: schemat kolorów, skórka, wielkość. Ten sam komponent
- * obsługuje ustawienia globalne (w powłoce) i lokalne (w karcie) — różni je
- * wyłącznie to, do czego jest podpięty.
+ * The bar of cross-cutting axes: colour scheme, skin, size. The same component
+ * serves the global settings (in the shell) and the local ones (in a card) —
+ * the only difference is what it is bound to.
  *
- * Kontrolki to komponenty biblioteki: sandbox używa własnych narzędzi, więc
- * regresja w radiu czy selekcie psuje też sterowanie stroną i widać ją od razu.
+ * The switches are library components: the sandbox uses its own tools, so a
+ * regression in the radio or the select breaks the page controls as well and
+ * shows up at once.
  */
 @Component({
   selector: 'sbx-controls',
@@ -31,7 +32,7 @@ export class SbxControls {
   readonly size = model<PctSize>('md');
   readonly dir = model<SbxDir>('ltr');
 
-  /** Które osie pokazać; pusta lista = pasek się nie renderuje. */
+  /** Which axes to show; an empty list = the bar does not render. */
   readonly show = input<readonly SbxControl[]>(SBX_ALL_CONTROLS);
 
   protected readonly skins: readonly PctSelectOption[] = SBX_SKINS.map((s) => ({
@@ -39,7 +40,7 @@ export class SbxControls {
     label: s.label,
   }));
 
-  /** Wybór skórki ma sens dopiero przy drugiej skórce (req-token-skin). */
+  /** Choosing a skin makes sense only once there is a second one (req-token-skin). */
   protected readonly hasSkins = SBX_SKINS.length > 1;
 
   protected has(control: SbxControl): boolean {
@@ -47,13 +48,13 @@ export class SbxControls {
   }
 
   /**
-   * Kontrolki wyboru są generyczne, więc typ osi idzie przez nie bez zmian —
-   * wcześniej trzeba tu było zawężać napis z powrotem do unii (`value === 'dark'
-   * ? 'dark' : 'light'`), co przechodziło kompilację także dla wartości spoza osi.
+   * The picker controls are generic, so an axis type passes through them unchanged —
+   * this used to narrow a string back to the union (`value === 'dark' ? 'dark' :
+   * 'light'`), which compiled just as well for values outside the axis.
    *
-   * Zostaje tylko domknięcie `null`: kontrolka dopuszcza „nic nie wybrano", a te
-   * osie zawsze mają wybór. Dlatego wartość pusta wraca do pozycji domyślnej
-   * zamiast rozlewać `null` po całym sandboxie.
+   * All that is left is closing `null`: a control admits "nothing selected", and
+   * these axes always have a choice. So an empty value falls back to the default
+   * position instead of spilling `null` across the whole sandbox.
    */
   protected setScheme(value: SbxScheme | null): void {
     this.scheme.set(value ?? 'light');

@@ -20,10 +20,10 @@ import {
 import { PctSelect, PctSelectOption } from '@pacit/components/select';
 
 /**
- * Widok „wszystko naraz" — dotychczasowa strona sandboxa w całości.
+ * The "everything at once" view — the sandbox page as it used to be, in full.
  *
- * Zostaje jako gęsty przekrój pod audyt axe i przyszłe testy screenshotowe;
- * poszczególne panele rozejdą się stąd do widoków per komponent.
+ * It stays as a dense cross-section for the axe audit and the visual tests; the
+ * individual panels move out of here into the per-component views.
  */
 @Component({
   selector: 'sbx-kitchen-sink',
@@ -44,17 +44,17 @@ import { PctSelect, PctSelectOption } from '@pacit/components/select';
   styleUrl: './kitchen-sink.scss',
 })
 export class KitchenSink {
-  /** Motyw drugiego panelu — demonstracja scoped theme (req-token-scoped). */
+  /** The theme of the second panel — a scoped theme demo (req-token-scoped). */
   protected readonly panelDark = signal(true);
 
-  /** Model formularza — signal forms (req-api-signal-forms). */
+  /** The form model — signal forms (req-api-signal-forms). */
   protected readonly countries: readonly PctSelectOption[] = [
-    { value: 'pl', label: 'Polska' },
-    { value: 'de', label: 'Niemcy' },
-    { value: 'cz', label: 'Czechy', disabled: true },
-    { value: 'sk', label: 'Słowacja' },
-    { value: 'ua', label: 'Ukraina' },
-    { value: 'lt', label: 'Litwa' },
+    { value: 'pl', label: 'Poland' },
+    { value: 'de', label: 'Germany' },
+    { value: 'cz', label: 'Czechia', disabled: true },
+    { value: 'sk', label: 'Slovakia' },
+    { value: 'ua', label: 'Ukraine' },
+    { value: 'lt', label: 'Lithuania' },
   ];
 
   protected readonly model = signal<{
@@ -72,38 +72,40 @@ export class KitchenSink {
   });
 
   protected readonly userForm = form(this.model, (p) => {
-    required(p.email, { message: 'Adres e-mail jest wymagany' });
-    email(p.email, { message: 'To nie wygląda na poprawny adres e-mail' });
-    required(p.terms, { message: 'Musisz zaakceptować regulamin' });
-    required(p.plan, { message: 'Wybierz plan' });
-    required(p.country, { message: 'Wybierz kraj' });
-    required(p.seats, { message: 'Podaj liczbę stanowisk' });
-    min(p.seats, 1, { message: 'Minimum jedno stanowisko' });
+    required(p.email, { message: 'The e-mail address is required' });
+    email(p.email, {
+      message: 'That does not look like a valid e-mail address',
+    });
+    required(p.terms, { message: 'You have to accept the terms' });
+    required(p.plan, { message: 'Pick a plan' });
+    required(p.country, { message: 'Pick a country' });
+    required(p.seats, { message: 'Give the number of seats' });
+    min(p.seats, 1, { message: 'At least one seat' });
     max(p.seats, 500, {
-      message: 'Powyżej 500 stanowisk skontaktuj się z nami',
+      message: 'Above 500 seats, get in touch with us',
     });
   });
 
-  /** Select w panelu ciemnym — sprawdza propagację motywu do nakładki. */
+  /** The select in the dark panel — checks the theme propagates to the overlay. */
   protected readonly scopedCountry = signal<string | null>('');
 
-  /** Wielkości do zestawienia „pole obok przycisku" (req-api-size). */
+  /** The sizes for the "a field beside a button" line-up (req-api-size). */
   protected readonly sizes = ['sm', 'md', 'lg'] as const;
 
-  /** Select w zestawieniu wielkości — wielkość bierze z obudowy. */
+  /** The select in the size line-up — it takes its size from the wrapper. */
   protected readonly sizeCountry = signal<string | null>('pl');
 
-  /** Demo obudowy pct-field ze slotami — kwota z dwoma miejscami po przecinku. */
+  /** A pct-field demo with slots — an amount with two decimal places. */
   protected readonly price = signal<number | null>(1499.9);
 
   protected clearPrice(): void {
     this.price.set(null);
   }
 
-  /** Stan nieokreślony — demonstracja aria-checked="mixed". */
+  /** The indeterminate state — a demonstration of aria-checked="mixed". */
   protected readonly partial = signal(true);
 
-  /** Demo układu poziomego radiogroup. */
+  /** The horizontal radiogroup layout demo. */
   protected readonly layoutDemo = signal<string | null>('a');
 
   protected togglePanel(): void {

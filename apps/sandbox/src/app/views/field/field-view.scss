@@ -2,7 +2,7 @@
   display: block;
 }
 
-/* Ikona „i" w slocie [pctLabelAux] — informacyjna, nie wykonuje akcji. */
+/* The "i" icon in the [pctLabelAux] slot — informational, it performs no action. */
 .field-view__info {
   display: inline-flex;
   align-items: center;
@@ -23,9 +23,10 @@
   color: var(--pct-text);
 }
 
-/* Jednostka w slocie `pctPrefix="fill"`. Slot oddaje jej całą swoją powierzchnię,
-   więc tło i odstęp poziomy są jej — obudowa daje tylko wysokość, docięcie rogu
-   do ramki i kursor `default` (klik w nią niczego nie robi). */
+/* The unit in the `pctPrefix="fill"` slot. The slot hands it its whole surface, so
+   the background and the horizontal padding are its own — the wrapper gives only the
+   height, the corner clipped to the border and the `default` cursor (a click on it
+   does nothing). */
 .field-view__unit {
   display: inline-flex;
   align-items: center;

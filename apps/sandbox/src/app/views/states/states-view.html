@@ -1,23 +1,23 @@
-<h2 class="view__title">Stany</h2>
+<h2 class="view__title">States</h2>
 <p class="muted view__intro">
-  Ten sam zestaw stanów dla każdej kontrolki. Żaden stan nie jest robiony przez
-  <code>opacity</code> — każdy ma własne tokeny koloru, bo przezroczystość
-  zmienia kontrast w runtime w sposób niewidoczny dla bramki.
+  The same set of states for every control. No state is made with
+  <code>opacity</code> — each has colour tokens of its own, because transparency
+  changes the contrast at runtime in a way the gate cannot see.
 </p>
 
 <sbx-demo
-  #spoczynek
-  heading="Spoczynek"
-  summary="Punkt odniesienia dla pozostałych kart."
+  #idle
+  heading="Idle"
+  summary="The point of reference for the remaining cards."
   [controls]="['scheme', 'skin', 'size']"
   data-testid="states-idle"
 >
   <div class="states">
-    <pct-field label="Tekst" [size]="spoczynek.activeSize()">
+    <pct-field label="Text" [size]="idle.activeSize()">
       <input pctText [(value)]="text" data-testid="idle-text" />
     </pct-field>
 
-    <pct-field label="Liczba" [size]="spoczynek.activeSize()">
+    <pct-field label="Number" [size]="idle.activeSize()">
       <input
         pctNumber
         [maxFractionDigits]="2"
@@ -26,7 +26,7 @@
       />
     </pct-field>
 
-    <pct-field label="Lista" [size]="spoczynek.activeSize()">
+    <pct-field label="List" [size]="idle.activeSize()">
       <pct-select
         [options]="countries"
         [(value)]="country"
@@ -34,7 +34,7 @@
       />
     </pct-field>
 
-    <pct-field label="Zgoda">
+    <pct-field label="Consent">
       <pct-checkbox [(checked)]="checked" data-testid="idle-checkbox" />
     </pct-field>
 
@@ -46,31 +46,27 @@
     </pct-field>
 
     <div class="states__cell">
-      <button
-        pctButton
-        [size]="spoczynek.activeSize()"
-        data-testid="idle-button"
-      >
-        Przycisk
+      <button pctButton [size]="idle.activeSize()" data-testid="idle-button">
+        Button
       </button>
     </div>
   </div>
 </sbx-demo>
 
 <sbx-demo
-  #wylaczone
-  heading="Wyłączone"
-  summary="Kursor zapowiada brak akcji na całej powierzchni ramki, a kolory pochodzą z tokenów disabled-*."
+  #disabled
+  heading="Disabled"
+  summary="The cursor announces that no action follows across the whole surface of the border, and the colours come from the disabled-* tokens."
   [reqs]="['req-token-no-opacity', 'lesson-27']"
   [controls]="['scheme', 'skin', 'size']"
   data-testid="states-disabled"
 >
   <div class="states">
-    <pct-field label="Tekst" [size]="wylaczone.activeSize()">
+    <pct-field label="Text" [size]="disabled.activeSize()">
       <input pctText [value]="text()" disabled data-testid="disabled-text" />
     </pct-field>
 
-    <pct-field label="Liczba" [size]="wylaczone.activeSize()">
+    <pct-field label="Number" [size]="disabled.activeSize()">
       <input
         pctNumber
         [maxFractionDigits]="2"
@@ -80,7 +76,7 @@
       />
     </pct-field>
 
-    <pct-field label="Lista" [size]="wylaczone.activeSize()">
+    <pct-field label="List" [size]="disabled.activeSize()">
       <pct-select
         [options]="countries"
         [value]="country()"
@@ -89,7 +85,7 @@
       />
     </pct-field>
 
-    <pct-field label="Zgoda">
+    <pct-field label="Consent">
       <pct-checkbox [checked]="true" disabled data-testid="disabled-checkbox" />
     </pct-field>
 
@@ -103,30 +99,30 @@
     <div class="states__cell">
       <button
         pctButton
-        [size]="wylaczone.activeSize()"
+        [size]="disabled.activeSize()"
         disabled
         data-testid="disabled-button"
       >
-        Przycisk
+        Button
       </button>
     </div>
   </div>
 </sbx-demo>
 
 <sbx-demo
-  #odczyt
-  heading="Tylko do odczytu"
-  summary="Wartości nie da się zmienić, ale kontrolka zostaje fokusowalna — inaczej znikałaby z kolejności Taba i czytnik ekranu by jej nie odczytał."
+  #readonly
+  heading="Read-only"
+  summary="The value cannot be changed, but the control stays focusable — otherwise it would drop out of the Tab order and a screen reader would not read it out."
   [reqs]="['req-api-signals']"
   [controls]="['scheme', 'skin', 'size']"
   data-testid="states-readonly"
 >
   <div class="states">
-    <pct-field label="Tekst" [size]="odczyt.activeSize()">
+    <pct-field label="Text" [size]="readonly.activeSize()">
       <input pctText [value]="text()" readonly data-testid="readonly-text" />
     </pct-field>
 
-    <pct-field label="Liczba" [size]="odczyt.activeSize()">
+    <pct-field label="Number" [size]="readonly.activeSize()">
       <input
         pctNumber
         [maxFractionDigits]="2"
@@ -136,7 +132,7 @@
       />
     </pct-field>
 
-    <pct-field label="Lista" [size]="odczyt.activeSize()">
+    <pct-field label="List" [size]="readonly.activeSize()">
       <pct-select
         [options]="countries"
         [value]="country()"
@@ -145,7 +141,7 @@
       />
     </pct-field>
 
-    <pct-field label="Zgoda">
+    <pct-field label="Consent">
       <pct-checkbox [checked]="true" readonly data-testid="readonly-checkbox" />
     </pct-field>
 
@@ -157,22 +153,21 @@
     </pct-field>
 
     <p class="muted states__note">
-      Przycisk nie ma stanu „tylko do odczytu" — jego odpowiednikiem jest
-      wyłączenie.
+      A button has no "read-only" state — its counterpart is being disabled.
     </p>
   </div>
 </sbx-demo>
 
 <sbx-demo
-  #blad
-  heading="Błąd walidacji"
-  summary="Komunikat rysuje obudowa i wiąże go z kontrolką przez aria-describedby; ramka sygnalizuje błąd kolorem z tokenu."
+  #invalid
+  heading="A validation error"
+  summary="The message is drawn by the wrapper, which binds it to the control through aria-describedby; the border signals the error with a colour from a token."
   [reqs]="['req-api-wrapper', 'req-a11y-built-in']"
   [controls]="['scheme', 'skin', 'size']"
   data-testid="states-invalid"
 >
   <div class="states">
-    <pct-field label="Tekst" [size]="blad.activeSize()">
+    <pct-field label="Text" [size]="invalid.activeSize()">
       <input
         pctText
         [value]="text()"
@@ -183,7 +178,7 @@
       />
     </pct-field>
 
-    <pct-field label="Liczba" [size]="blad.activeSize()">
+    <pct-field label="Number" [size]="invalid.activeSize()">
       <input
         pctNumber
         [maxFractionDigits]="2"
@@ -195,7 +190,7 @@
       />
     </pct-field>
 
-    <pct-field label="Lista" [size]="blad.activeSize()">
+    <pct-field label="List" [size]="invalid.activeSize()">
       <pct-select
         [options]="countries"
         [value]="country()"
@@ -206,7 +201,7 @@
       />
     </pct-field>
 
-    <pct-field label="Zgoda">
+    <pct-field label="Consent">
       <pct-checkbox
         [checked]="false"
         [invalid]="true"
@@ -232,15 +227,15 @@
 </sbx-demo>
 
 <sbx-demo
-  #wymagane
-  heading="Wymagane"
-  summary="Znacznik wymagalności należy do obudowy — kontrolka zgłasza jej tylko, że jest wymagana."
+  #required
+  heading="Required"
+  summary="The required marker belongs to the wrapper — the control only declares to it that it is required."
   [reqs]="['req-api-wrapper']"
   [controls]="['scheme', 'skin', 'size']"
   data-testid="states-required"
 >
   <div class="states">
-    <pct-field label="Tekst" [size]="wymagane.activeSize()">
+    <pct-field label="Text" [size]="required.activeSize()">
       <input
         pctText
         [value]="text()"
@@ -249,7 +244,7 @@
       />
     </pct-field>
 
-    <pct-field label="Lista" [size]="wymagane.activeSize()">
+    <pct-field label="List" [size]="required.activeSize()">
       <pct-select
         [options]="countries"
         [value]="country()"
@@ -258,7 +253,7 @@
       />
     </pct-field>
 
-    <pct-field label="Zgoda">
+    <pct-field label="Consent">
       <pct-checkbox
         [checked]="false"
         [required]="true"
@@ -269,9 +264,9 @@
 </sbx-demo>
 
 <sbx-demo
-  #ladowanie
-  heading="Ładowanie"
-  summary="Stan wyłącznie przycisku: blokuje kliknięcie i zapowiada je przez aria-busy."
+  #loading
+  heading="Loading"
+  summary="A state of the button alone: it blocks the click and announces that through aria-busy."
   [reqs]="['req-api-signals']"
   [controls]="['scheme', 'skin', 'size']"
   data-testid="states-loading"
@@ -279,20 +274,20 @@
   <div class="row">
     <button
       pctButton
-      [size]="ladowanie.activeSize()"
+      [size]="loading.activeSize()"
       loading
       data-testid="loading-button"
     >
-      Zapisywanie
+      Saving
     </button>
     <button
       pctButton
       variant="outline"
-      [size]="ladowanie.activeSize()"
+      [size]="loading.activeSize()"
       loading
       data-testid="loading-outline"
     >
-      Zapisywanie
+      Saving
     </button>
   </div>
 </sbx-demo>

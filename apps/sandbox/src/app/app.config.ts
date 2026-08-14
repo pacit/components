@@ -14,23 +14,26 @@ import { providePctConfig, providePctTexts } from '@pacit/components';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    // Zoneless (req-project-angular) — zone.js nie jest ładowany, detekcja zmian opiera się
-    // na signals. Jawna deklaracja zamiast polegania na domyślnych ustawieniach.
+    // Zoneless (req-project-angular) — zone.js is not loaded, change detection rests
+    // on signals. An explicit declaration instead of relying on the defaults.
     provideZonelessChangeDetection(),
     provideClientHydration(withEventReplay()),
     provideBrowserGlobalErrorListeners(),
     provideRouter(appRoutes),
-    // Globalna konfiguracja biblioteki (req-api-config).
+    // The global configuration of the library (req-api-config).
     providePctConfig({ defaultSize: 'md' }),
-    // Napisy biblioteki są angielskie (req-api-texts) — sandbox jest po polsku,
-    // więc tłumaczy je u siebie. To zarazem jedyne miejsce, w którym ten kanał
-    // jest realnie użyty: gdyby przestał działać, widać to na pierwszym ekranie.
+    // The library texts are English (req-api-texts). The sandbox runs under a locale
+    // that is not — see LOCALE_ID below — so it translates them here. This is the one
+    // place where that channel is really used: were it to stop working, the first
+    // screen would show it.
     providePctTexts({
-      selectPlaceholder: 'Wybierz…',
-      selectEmpty: 'Brak opcji',
+      selectPlaceholder: 'Sélectionner…',
+      selectEmpty: 'Aucune option',
     }),
-    // Pole liczbowe formatuje wg LOCALE_ID — tu widać przecinek dziesiętny
-    // i wąską spację jako separator tysięcy.
-    { provide: LOCALE_ID, useValue: 'pl-PL' },
+    // The number field formats by LOCALE_ID — here that gives a decimal comma and a
+    // narrow no-break space as the thousands separator. Deliberately not English:
+    // a locale whose formatting differs from the library default is what
+    // req-api-texts and req-api-number are proved against.
+    { provide: LOCALE_ID, useValue: 'fr-FR' },
   ],
 };

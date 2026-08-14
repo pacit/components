@@ -2,8 +2,8 @@
   display: block;
 }
 
-/* Wiersze wielkości oddzielone wyraźniej niż zwykłe `.row` — każdy z nich jest
-   osobnym pomiarem, a nie ciągiem dalszym poprzedniego. */
+/* The size rows are separated more clearly than a plain `.row` — each of them is a
+   measurement of its own, not the continuation of the previous one. */
 .row + .row {
   margin-top: 20px;
 }

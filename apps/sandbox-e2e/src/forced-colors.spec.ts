@@ -33,22 +33,22 @@ test.describe('forced-colors: active', () => {
     page,
   }) => {
     await visit(page, '/states');
-    const tokenowy = await styleOf(
+    const fromToken = await styleOf(
       page.getByTestId('idle-button'),
       'background-color',
     );
-    expect(tokenowy).toBe('rgb(37, 99, 235)'); // --pct-primary, motyw jasny
+    expect(fromToken).toBe('rgb(37, 99, 235)'); // --pct-primary, the light theme
 
     await visit(page, '/states', { media: FORCED });
     expect(
       await page.evaluate(() => matchMedia('(forced-colors: active)').matches),
     ).toBe(true);
 
-    const wymuszony = await styleOf(
+    const forced = await styleOf(
       page.getByTestId('idle-button'),
       'background-color',
     );
-    expect(wymuszony).not.toBe(tokenowy);
+    expect(forced).not.toBe(fromToken);
   });
 
   test('the focus ring is drawn in Highlight, not in the border colour', async ({
@@ -79,22 +79,22 @@ test.describe('forced-colors: active', () => {
   }) => {
     await visit(page, '/states', { media: FORCED });
 
-    const zaznaczony = page
+    const checked = page
       .getByTestId('idle-radio')
       .locator('pct-radio[data-pct-checked]')
       .first();
-    await expect(zaznaczony).toHaveCount(1);
+    await expect(checked).toHaveCount(1);
 
-    const kropka = await styleOf(
-      zaznaczony.locator('[data-pct-part="dot"]'),
+    const dot = await styleOf(
+      checked.locator('[data-pct-part="dot"]'),
       'background-color',
     );
-    const okrag = await styleOf(
-      zaznaczony.locator('[data-pct-part="circle"]'),
+    const circle = await styleOf(
+      checked.locator('[data-pct-part="circle"]'),
       'background-color',
     );
 
-    expect(kropka).not.toBe(okrag);
+    expect(dot).not.toBe(circle);
   });
 
   test('the checkbox tick stands out against the box', async ({ page }) => {
@@ -139,13 +139,13 @@ test.describe('forced-colors: active', () => {
     // selections.
     await options.nth(1).click();
     await trigger.click();
-    const wybrana = options
+    const selected = options
       .locator('[data-pct-selected]')
       .or(page.locator('[data-pct-part="option"][data-pct-selected]'));
     expect(await bg(page, '[data-pct-part="option"][data-pct-selected]')).toBe(
       sys.SelectedItem,
     );
-    await expect(wybrana.first()).toBeVisible();
+    await expect(selected.first()).toBeVisible();
 
     // An ordinary option stands on the panel surface — so it differs from a selected
     // one.
@@ -157,10 +157,10 @@ test.describe('forced-colors: active', () => {
     // background. Thanks to that an option both selected and active shows both
     // states at once.
     await trigger.press('ArrowDown');
-    const aktywna = page.locator('[data-pct-part="option"][data-pct-active]');
-    await expect(aktywna).toHaveCount(1);
-    expect(await styleOf(aktywna, 'outline-color')).toBe(sys.Highlight);
-    expect(await styleOf(aktywna, 'outline-style')).toBe('solid');
+    const active = page.locator('[data-pct-part="option"][data-pct-active]');
+    await expect(active).toHaveCount(1);
+    expect(await styleOf(active, 'outline-color')).toBe(sys.Highlight);
+    expect(await styleOf(active, 'outline-style')).toBe('solid');
   });
 
   test('the disabled state says GrayText in every control', async ({

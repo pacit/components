@@ -1,56 +1,56 @@
 <h2 class="view__title">Text</h2>
 <p class="muted view__intro">
-  Komponent na natywnym <code>&lt;input&gt;</code>, nie własny element: zostaje
-  <code>type</code>, autouzupełnianie przeglądarki i tryb klawiatury mobilnej.
+  A component on a native <code>&lt;input&gt;</code>, not an element of our own:
+  it keeps <code>type</code>, the browser autofill and the mobile keyboard mode.
 </p>
 
 <sbx-demo
-  #rodzaje
-  heading="Rodzaje pola"
-  summary="type przechodzi do natywnego inputa, więc klawiatura mobilna i walidacja przeglądarki działają same."
+  #types
+  heading="Kinds of field"
+  summary="type passes through to the native input, so the mobile keyboard and the browser validation work on their own."
   [reqs]="['req-api-native-input']"
   data-testid="demo-types"
 >
   <div class="stack">
-    <pct-field label="Imię" [size]="rodzaje.activeSize()">
-      <input pctText placeholder="Jan" data-testid="text-plain" />
+    <pct-field label="First name" [size]="types.activeSize()">
+      <input pctText placeholder="John" data-testid="text-plain" />
     </pct-field>
 
-    <pct-field label="E-mail" [size]="rodzaje.activeSize()">
-      <input pctText type="email" placeholder="jan@example.com" />
+    <pct-field label="E-mail" [size]="types.activeSize()">
+      <input pctText type="email" placeholder="john@example.com" />
     </pct-field>
 
-    <pct-field label="Hasło" [size]="rodzaje.activeSize()">
+    <pct-field label="Password" [size]="types.activeSize()">
       <input pctText type="password" autocomplete="current-password" />
     </pct-field>
 
-    <pct-field label="Wyszukiwanie" [size]="rodzaje.activeSize()">
-      <input pctText type="search" placeholder="Szukaj…" />
+    <pct-field label="Search" [size]="types.activeSize()">
+      <input pctText type="search" placeholder="Search…" />
     </pct-field>
   </div>
 </sbx-demo>
 
 <sbx-demo
-  #stany
-  heading="Stany"
-  summary="Wyłączone pole nie zaprasza do pisania; pole tylko do odczytu zostaje fokusowalne."
+  #states
+  heading="States"
+  summary="A disabled field does not invite typing; a read-only one stays focusable."
   [reqs]="['req-api-signals']"
   data-testid="demo-states"
 >
   <div class="stack">
-    <pct-field label="Wyłączone" [size]="stany.activeSize()">
+    <pct-field label="Disabled" [size]="states.activeSize()">
       <input
         pctText
-        value="nie do edycji"
+        value="not editable"
         disabled
         data-testid="text-disabled"
       />
     </pct-field>
 
-    <pct-field label="Tylko do odczytu" [size]="stany.activeSize()">
+    <pct-field label="Read-only" [size]="states.activeSize()">
       <input
         pctText
-        value="tylko podgląd"
+        value="preview only"
         readonly
         data-testid="text-readonly"
       />
@@ -59,8 +59,8 @@
 </sbx-demo>
 
 <sbx-demo
-  heading="Zgodność ze starym API formularzy"
-  summary="Kontrolka implementuje wyłącznie FormValueControl. [formControl] i [(ngModel)] i tak synchronizują wartość w obie strony — bez ControlValueAccessor."
+  heading="Compatibility with the old forms API"
+  summary="The control implements FormValueControl alone. [formControl] and [(ngModel)] still synchronise the value both ways — with no ControlValueAccessor."
   [reqs]="['req-api-signal-forms', 'lesson-9', 'lesson-26']"
   data-testid="demo-interop"
 >
@@ -72,7 +72,7 @@
       <input pctText [formControl]="reactive" data-testid="text-reactive" />
     </pct-field>
     <p class="muted" data-testid="reactive-state">
-      wartość kontrolki: „{{ reactive.value }}"
+      the control value: "{{ reactive.value }}"
     </p>
 
     <pct-field
@@ -82,7 +82,7 @@
       <input pctText [(ngModel)]="ngModelValue" data-testid="text-ngmodel" />
     </pct-field>
     <p class="muted" data-testid="ngmodel-state">
-      wartość modelu: „{{ ngModelValue() }}"
+      the model value: "{{ ngModelValue() }}"
     </p>
   </div>
 </sbx-demo>

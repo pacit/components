@@ -2,7 +2,7 @@ import { expect, Page, test } from '@playwright/test';
 import { setRtl, visit } from './support/dom';
 
 /**
- * Testy wizualne (req-quality-e2e).
+ * The visual tests (req-quality-e2e).
  *
  * The whole method of this project rests on measuring in a browser rather than on
  * reading a stylesheet — a screenshot is its natural extension. The geometry tests

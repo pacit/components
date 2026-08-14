@@ -3,9 +3,9 @@ import { PctButton } from '@pacit/components/button';
 import { SbxDemo } from '../../ui/demo';
 
 /**
- * Widok komponentu `PctButton` — wzorzec dla pozostałych widoków per komponent:
- * każdy przykład siedzi w karcie `sbx-demo`, a wielkość bierze z jej osi
- * (`d.activeSize()`), zamiast mieć wpisaną na sztywno.
+ * The view of the `PctButton` component — the pattern for the remaining per-component
+ * views: every example sits in an `sbx-demo` card and takes its size from that card's
+ * axis (`d.activeSize()`) instead of having one hard-coded.
  */
 @Component({
   selector: 'sbx-button-view',

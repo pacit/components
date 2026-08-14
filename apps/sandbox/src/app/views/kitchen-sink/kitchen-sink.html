@@ -1,10 +1,9 @@
 <p class="muted view__intro">
-  Kontrolki formularza budowane jako obudowa <code>pct-field</code> z kontrolką
-  w środku.
+  Form controls built as a <code>pct-field</code> wrapper with a control inside.
 </p>
 
 <section class="panel" data-testid="panel-light">
-  <h2>Motyw jasny (:root)</h2>
+  <h2>The light theme (:root)</h2>
 
   <div class="row">
     <button pctButton data-testid="btn-solid">Solid</button>
@@ -23,30 +22,30 @@
 </section>
 
 <section class="panel" data-testid="panel-sizes">
-  <h2>Wielkości — pole i przycisk na jednej osi</h2>
+  <h2>Sizes — a field and a button on one axis</h2>
   <p class="muted">
-    Wiersz pola ma dokładnie tę samą wysokość co przycisk tej samej wielkości
-    (wspólny token <code>--pct-control-height-*</code>).
+    The field row has exactly the same height as a button of the same size (the
+    shared <code>--pct-control-height-*</code> token).
   </p>
 
   @for (size of sizes; track size) {
-  <!-- Wyrównanie do dolnej krawędzi: przy równych wysokościach wiersz pola
-       i przycisk stykają się tą samą linią, więc rozjazd byłoby widać gołym
-       okiem, a nie dopiero w pomiarze. -->
+  <!-- Aligned to the bottom edge: with equal heights the field row and the button
+       meet on the same line, so a mismatch would be visible to the naked eye rather
+       than only in a measurement. -->
   <div class="row row--bottom">
     <pct-field
       [size]="size"
-      [label]="'Pole ' + size"
+      [label]="'Field ' + size"
       [attr.data-testid]="'size-field-' + size"
     >
-      <input pctText [value]="'Tekst ' + size" />
+      <input pctText [value]="'Text ' + size" />
     </pct-field>
     <button pctButton [size]="size" [attr.data-testid]="'size-button-' + size">
-      Przycisk {{ size }}
+      Button {{ size }}
     </button>
     <pct-field
       [size]="size"
-      [label]="'Lista ' + size"
+      [label]="'List ' + size"
       [attr.data-testid]="'size-select-' + size"
     >
       <pct-select [options]="countries" [(value)]="sizeCountry" />
@@ -56,23 +55,23 @@
 </section>
 
 <section class="panel" data-testid="panel-form">
-  <h2>Formularz — obudowa + kontrolka</h2>
+  <h2>A form — the wrapper plus a control</h2>
 
   <div class="stack">
-    <!-- Pole tekstowe: natywny input w obudowie -->
-    <pct-field label="E-mail" hint="Adres służbowy" data-testid="field-email">
+    <!-- A text field: a native input inside the wrapper -->
+    <pct-field label="E-mail" hint="A work address" data-testid="field-email">
       <input
         pctText
         type="email"
-        placeholder="jan@example.com"
+        placeholder="john@example.com"
         [formField]="userForm.email"
       />
     </pct-field>
 
-    <!-- Ta sama obudowa, w środku select z panelem -->
+    <!-- The same wrapper, with a select and its panel inside -->
     <pct-field
-      label="Kraj"
-      hint="Lista z własnym panelem (CDK Overlay)"
+      label="Country"
+      hint="A list with a panel of its own (CDK Overlay)"
       data-testid="field-country"
     >
       <pct-select
@@ -82,37 +81,41 @@
       />
     </pct-field>
 
-    <!-- Grupa radiów: obudowa nazywa ją przez aria-labelledby, bez ramki -->
+    <!-- A radio group: the wrapper names it through aria-labelledby, no border -->
     <pct-field
       label="Plan"
-      hint="Możesz zmienić w każdej chwili"
+      hint="You can change it at any time"
       data-testid="field-plan"
     >
       <pct-radio-group [formField]="userForm.plan" data-testid="radio-plan">
-        <pct-radio value="free">Darmowy</pct-radio>
+        <pct-radio value="free">Free</pct-radio>
         <pct-radio value="pro">Pro</pct-radio>
         <pct-radio value="enterprise" disabled
-          >Enterprise (niedostępny)</pct-radio
+          >Enterprise (unavailable)</pct-radio
         >
       </pct-radio-group>
     </pct-field>
 
-    <!-- Pole liczbowe: całkowite, ze skokiem strzałkami i granicami -->
-    <!-- Granic (1..500) nie ma w szablonie: dyrektywa FormField przekazuje je
-         z walidatorów min()/max() ze schematu formularza. -->
+    <!-- A number field: integer, stepped with the arrows and bounded -->
+    <!-- The bounds (1..500) are not in the template: the FormField directive passes
+         them from the min()/max() validators of the form schema. -->
     <pct-field
-      label="Liczba stanowisk"
-      hint="Strzałki góra/dół zmieniają wartość"
+      label="Number of seats"
+      hint="The up/down arrows change the value"
       data-testid="field-seats"
     >
-      <input pctNumber [formField]="userForm.seats" data-testid="number-seats" />
-      <span pctSuffix aria-hidden="true">szt.</span>
+      <input
+        pctNumber
+        [formField]="userForm.seats"
+        data-testid="number-seats"
+      />
+      <span pctSuffix aria-hidden="true">pcs</span>
     </pct-field>
 
-    <!-- Checkbox w obudowie: etykieta obudowy, bez ramki -->
+    <!-- A checkbox inside the wrapper: the wrapper label, no border -->
     <pct-field
-      label="Zgody"
-      hint="Wymagane do założenia konta"
+      label="Consents"
+      hint="Required to open an account"
       data-testid="field-terms"
     >
       <pct-checkbox [formField]="userForm.terms" data-testid="checkbox-terms" />
@@ -120,27 +123,27 @@
 
     <div class="row">
       <button pctButton [disabled]="userForm().invalid()" data-testid="submit">
-        Zapisz
+        Save
       </button>
       <span class="muted" data-testid="form-state">
-        wartość: „{{ model().email }}" · poprawny: {{ userForm().valid() ? 'tak'
-        : 'nie' }}
+        value: "{{ model().email }}" · valid: {{ userForm().valid() ? 'yes' :
+        'no' }}
       </span>
     </div>
   </div>
 </section>
 
 <section class="panel" data-testid="panel-variants">
-  <h2>Dekoracje, stany i kontrolki samodzielne</h2>
+  <h2>Decorations, states and standalone controls</h2>
 
   <div class="stack">
-    <!-- Sloty wewnątrz ramki pola -->
+    <!-- The slots inside the field border -->
     <pct-field
-      label="Cena"
-      hint="Dekoracje w środku ramki, kwota z groszami"
+      label="Price"
+      hint="Decorations inside the border, an amount with cents"
       data-testid="field-price"
     >
-      <span pctPrefix aria-hidden="true">PLN</span>
+      <span pctPrefix aria-hidden="true">EUR</span>
       <input
         pctNumber
         [minFractionDigits]="2"
@@ -155,7 +158,7 @@
         type="button"
         variant="outline"
         size="sm"
-        aria-label="Wyczyść cenę"
+        aria-label="Clear the price"
         (click)="clearPrice()"
         data-testid="field-price-clear"
       >
@@ -163,32 +166,32 @@
       </button>
     </pct-field>
 
-    <pct-field label="Wyłączone" data-testid="field-disabled">
-      <input pctText value="nie do edycji" disabled />
+    <pct-field label="Disabled" data-testid="field-disabled">
+      <input pctText value="not editable" disabled />
     </pct-field>
 
-    <pct-field label="Tylko do odczytu">
-      <input pctText value="tylko podgląd" readonly />
+    <pct-field label="Read-only">
+      <input pctText value="preview only" readonly />
     </pct-field>
   </div>
 
   <div class="stack">
-    <!-- Te same kontrolki bez obudowy: rysują własną etykietę -->
+    <!-- The same controls with no wrapper: they draw a label of their own -->
     <pct-checkbox
-      label="Stan nieokreślony (bez obudowy)"
+      label="The indeterminate state (with no wrapper)"
       [indeterminate]="partial()"
       data-testid="checkbox-mixed"
     />
-    <pct-checkbox label="Zaznaczone, wyłączone" [checked]="true" disabled />
+    <pct-checkbox label="Checked, disabled" [checked]="true" disabled />
 
     <pct-radio-group
-      label="Układ poziomy (bez obudowy)"
+      label="Horizontal layout (with no wrapper)"
       orientation="horizontal"
       [(value)]="layoutDemo"
       data-testid="radio-horizontal"
     >
-      <pct-radio value="a">Opcja A</pct-radio>
-      <pct-radio value="b">Opcja B</pct-radio>
+      <pct-radio value="a">Option A</pct-radio>
+      <pct-radio value="b">Option B</pct-radio>
     </pct-radio-group>
   </div>
 </section>
@@ -199,7 +202,7 @@
   data-testid="panel-scoped"
 >
   <div class="panel__head">
-    <h2>Scoped theme — te same komponenty, inny motyw</h2>
+    <h2>A scoped theme — the same components, another theme</h2>
     <button
       pctButton
       variant="outline"
@@ -207,7 +210,7 @@
       (click)="togglePanel()"
       data-testid="toggle"
     >
-      Przełącz motyw panelu
+      Switch the panel theme
     </button>
   </div>
 
@@ -218,7 +221,7 @@
   </div>
 
   <div class="stack">
-    <pct-field label="Kraj (w panelu ciemnym)">
+    <pct-field label="Country (in the dark panel)">
       <pct-select
         [options]="countries"
         [(value)]="scopedCountry"

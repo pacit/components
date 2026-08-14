@@ -31,11 +31,11 @@ test.describe('PctRadioGroup — signal forms', () => {
     await pro.locator('[data-pct-part="label"]').click();
 
     await expect(pro.locator('input')).toBeChecked();
-    // Kropka widoczna tylko dla wybranej opcji.
+    // The dot is visible for the selected option alone.
     await expect(pro.locator('[data-pct-part="dot"]')).toBeVisible();
     await expect(
       group
-        .locator('pct-radio', { hasText: 'Darmowy' })
+        .locator('pct-radio', { hasText: 'Free' })
         .locator('[data-pct-part="dot"]'),
     ).toBeHidden();
   });
@@ -50,7 +50,7 @@ test.describe('PctRadioGroup — signal forms', () => {
   }) => {
     const group = page.getByTestId('radio-plan');
     const free = group
-      .locator('pct-radio', { hasText: 'Darmowy' })
+      .locator('pct-radio', { hasText: 'Free' })
       .locator('input');
     const pro = group.locator('pct-radio', { hasText: 'Pro' }).locator('input');
 
@@ -88,7 +88,7 @@ test.describe('PctRadioGroup — signal forms', () => {
   test('the whole group takes one place in the tab order', async ({ page }) => {
     const group = page.getByTestId('radio-plan');
     const free = group
-      .locator('pct-radio', { hasText: 'Darmowy' })
+      .locator('pct-radio', { hasText: 'Free' })
       .locator('input');
     const pro = group.locator('pct-radio', { hasText: 'Pro' }).locator('input');
 

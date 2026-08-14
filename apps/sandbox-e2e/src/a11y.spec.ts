@@ -50,7 +50,7 @@ test.describe('Accessibility (axe-core, WCAG 2.2 AA)', () => {
   }
 
   /**
-   * Ten sam audyt w `dir="rtl"` (req-token-logical).
+   * The same audit under `dir="rtl"` (req-token-logical).
    *
    * The direction is not a matter of looks alone: axe computes contrast once the
    * layers are composed and checks ARIA bindings on the rendered tree, and mirroring
@@ -78,7 +78,7 @@ test.describe('Accessibility (axe-core, WCAG 2.2 AA)', () => {
   test('a form in the error state has no violations', async ({ page }) => {
     // Provoke a visible validation error: an invalid e-mail plus leaving the field.
     const input = page.getByTestId('field-email').locator('input');
-    await input.fill('to-nie-jest-email');
+    await input.fill('this-is-not-an-email');
     await input.press('Tab');
     await expect(
       page.getByTestId('field-email').locator('[data-pct-part="field-error"]'),
@@ -109,14 +109,16 @@ test.describe('Accessibility (axe-core, WCAG 2.2 AA)', () => {
   test('the a11y gate really does detect violations (a control of the gate)', async ({
     page,
   }) => {
-    const przed = await new AxeBuilder({ page }).withTags(WCAG_22_AA).analyze();
-    expect(przed.violations).toHaveLength(0);
+    const before = await new AxeBuilder({ page })
+      .withTags(WCAG_22_AA)
+      .analyze();
+    expect(before.violations).toHaveLength(0);
     // The engine has to run the rules for real instead of filtering them all out.
-    expect(przed.passes.length).toBeGreaterThan(10);
+    expect(before.passes.length).toBeGreaterThan(10);
 
     await page.evaluate(() => {
       const d = document.createElement('div');
-      d.id = 'a11y-kontrola';
+      d.id = 'a11y-control';
       d.innerHTML =
         '<img src="data:image/gif;base64,R0lGODlhAQABAAAAACw=">' +
         '<button></button>' +
@@ -124,10 +126,10 @@ test.describe('Accessibility (axe-core, WCAG 2.2 AA)', () => {
       document.body.appendChild(d);
     });
 
-    const po = await new AxeBuilder({ page }).withTags(WCAG_22_AA).analyze();
-    const wykryte = po.violations.map((v) => v.id);
-    expect(wykryte).toContain('image-alt'); // <img> bez alt
-    expect(wykryte).toContain('button-name'); // przycisk bez nazwy
-    expect(wykryte).toContain('label'); // pole bez etykiety
+    const after = await new AxeBuilder({ page }).withTags(WCAG_22_AA).analyze();
+    const found = after.violations.map((v) => v.id);
+    expect(found).toContain('image-alt'); // an <img> with no alt
+    expect(found).toContain('button-name'); // a button with no name
+    expect(found).toContain('label'); // a field with no label
   });
 });

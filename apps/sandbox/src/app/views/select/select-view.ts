@@ -5,8 +5,8 @@ import { COUNTRIES, LANGUAGES } from '../../ui/data';
 import { SbxDemo } from '../../ui/demo';
 
 /**
- * Lista wyboru z własnym panelem (nie natywny `<select>`): wzorzec ARIA
- * „select-only combobox", panel w nakładce CDK Overlay.
+ * A picker list with a panel of its own (not a native `<select>`): the ARIA
+ * "select-only combobox" pattern, the panel in a CDK Overlay.
  */
 @Component({
   selector: 'sbx-select-view',

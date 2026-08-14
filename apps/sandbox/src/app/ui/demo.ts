@@ -11,20 +11,20 @@ import {
 } from './settings';
 
 /**
- * Karta demonstracyjna — wspólna obudowa każdego przykładu w sandboxie.
+ * Demo card — the shared wrapper around every example in the sandbox.
  *
- * Motyw i skórkę ustawia na **własnym poddrzewie** (`data-theme` / `data-skin`
- * na scenie), nigdy na `:root`. Dzięki temu każdy przykład jest przy okazji
- * testem scoped theme (req-token-scoped) — bez pisania osobnego przykładu na to.
+ * It sets the theme and the skin on **its own subtree** (`data-theme` /
+ * `data-skin` on the stage), never on `:root`. That makes every example a test
+ * of the scoped theme (req-token-scoped) as well — with no example written for it.
  *
- * Karta idzie za ustawieniami globalnymi, dopóki ktoś nie przestawi jej paskiem;
- * `linkedSignal` sprawia, że zmiana globalna znów ją przejmuje.
+ * The card follows the global settings until somebody moves its own bar;
+ * `linkedSignal` lets a global change take it back.
  *
- * Pasek jest **chromem**, więc stoi poza sceną — inaczej przełącznik motywu
- * zmieniałby sam siebie i nie dałoby się porównać dwóch kart obok siebie.
+ * The bar is **chrome**, so it stands outside the stage — otherwise the theme
+ * switch would be changing itself and two cards could not be compared side by side.
  *
  * @example
- * <sbx-demo #d heading="Warianty" [reqs]="['req-api-signals']">
+ * <sbx-demo #d heading="Variants" [reqs]="['req-api-signals']">
  *   <button pctButton [size]="d.activeSize()">Solid</button>
  * </sbx-demo>
  */
@@ -37,32 +37,32 @@ import {
 export class SbxDemo {
   private readonly settings = inject(SbxSettings);
 
-  /** Nagłówek karty. Nie `title` — to atrybut globalny HTML (dymek). */
+  /** The card heading. Not `title` — that is a global HTML attribute (a tooltip). */
   readonly heading = input.required<string>();
 
-  /** Jedno zdanie: co ten przykład pokazuje. */
+  /** One sentence: what this example shows. */
   readonly summary = input<string>('');
 
   /**
-   * Wymagania, których dotyczy przykład (np. `req-api-size`).
+   * The requirements the example is about (for instance `req-api-size`).
    *
-   * Typ jest **unią generowaną z dokumentacji** (`tools/check-docs.mjs --write`),
-   * a nie `string`: dopóki było to `string[]`, literówka dawała chip prowadzący
-   * donikąd, czyli cichą wadę (`req-axis`). Ten sam ruch co `PctCssVar` przy
-   * odczycie tokenów (`lesson-43`).
+   * The type is a **union generated from the documentation**
+   * (`tools/check-docs.mjs --write`), not `string`: while it was `string[]`, a typo
+   * gave a chip leading nowhere, which is a silent defect (`req-axis`). The same
+   * move as `PctCssVar` for reading tokens (`lesson-43`).
    */
   readonly reqs = input<readonly PctDocId[]>([]);
 
-  /** Które osie da się przestawić na tej karcie; `[]` chowa pasek. */
+  /** Which axes this card lets you move; `[]` hides the bar. */
   readonly controls = input<readonly SbxControl[]>(SBX_ALL_CONTROLS);
 
-  /** Wartość początkowa osi; `null` = bierz globalną. */
+  /** The starting value of an axis; `null` = take the global one. */
   readonly scheme = input<SbxScheme | null>(null);
   readonly skin = input<string | null>(null);
   readonly size = input<PctSize | null>(null);
   readonly dir = input<SbxDir | null>(null);
 
-  /** Wartości obowiązujące na scenie — czyta je też treść karty. */
+  /** The values in force on the stage — the card content reads them too. */
   readonly activeScheme = linkedSignal<SbxScheme>(
     () => this.scheme() ?? this.settings.scheme(),
   );

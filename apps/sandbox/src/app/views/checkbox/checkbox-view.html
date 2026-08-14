@@ -1,20 +1,20 @@
 <h2 class="view__title">Checkbox</h2>
 <p class="muted view__intro">
-  Kontrakt <code>FormCheckboxControl</code> wymaga <code>checked</code>, nie
-  <code>value</code>. Znacznik rysowany jest SVG w <code>currentColor</code> —
-  bez zależności od zestawu ikon.
+  The <code>FormCheckboxControl</code> contract wants <code>checked</code>, not
+  <code>value</code>. The mark is drawn in SVG in <code>currentColor</code> —
+  with no dependency on an icon set.
 </p>
 
 <sbx-demo
-  heading="W obudowie"
-  summary="Etykietę rysuje pct-field; ramki nie ma, bo checkbox zgłasza wygląd bare."
+  heading="Inside the wrapper"
+  summary="The label is drawn by pct-field; there is no border, because the checkbox declares the bare appearance."
   [reqs]="['req-api-frame', 'req-api-no-wrapper']"
   data-testid="demo-in-field"
 >
   <div class="stack">
     <pct-field
-      label="Zgody"
-      hint="Wymagane do założenia konta"
+      label="Consents"
+      hint="Required to open an account"
       data-testid="field-terms"
     >
       <pct-checkbox [formField]="userForm.terms" data-testid="checkbox-terms" />
@@ -23,20 +23,20 @@
 </sbx-demo>
 
 <sbx-demo
-  heading="Bez obudowy"
-  summary="Poza pct-field kontrolka rysuje własną etykietę — przydatne np. w komórce tabeli."
+  heading="With no wrapper"
+  summary="Outside pct-field the control draws a label of its own — useful in a table cell, for instance."
   [reqs]="['req-api-no-wrapper', 'req-a11y-touch']"
   data-testid="demo-standalone"
 >
   <div class="stack">
     <pct-checkbox
-      label='Stan nieokreślony (aria-checked="mixed")'
+      label='The indeterminate state (aria-checked="mixed")'
       [indeterminate]="partial()"
       data-testid="checkbox-mixed"
     />
-    <pct-checkbox label="Zaznaczone, wyłączone" [checked]="true" disabled />
+    <pct-checkbox label="Checked, disabled" [checked]="true" disabled />
     <pct-checkbox
-      label="Tylko do odczytu — fokusowalne, ale bez zmiany"
+      label="Read-only — focusable, but not changeable"
       [checked]="true"
       readonly
       data-testid="checkbox-readonly"

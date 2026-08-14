@@ -4,12 +4,12 @@ import { PctField, PctText } from '@pacit/components/field';
 import { SbxDemo } from '../../ui/demo';
 
 /**
- * Pole tekstowe na natywnym `<input>` (req-api-native-input) — zachowuje `type`,
- * autouzupełnianie i tryb klawiatury mobilnej.
+ * A text field on a native `<input>` (req-api-native-input) — it keeps `type`, the
+ * autofill and the mobile keyboard mode.
  *
- * Widok pokazuje też zgodność ze starym API formularzy: kontrolka implementuje
- * wyłącznie `FormValueControl`, a mimo to `[formControl]` i `[(ngModel)]`
- * synchronizują wartość w obie strony — bez `ControlValueAccessor` (lesson-9).
+ * The view also shows compatibility with the old forms API: the control implements
+ * `FormValueControl` alone, and `[formControl]` and `[(ngModel)]` still synchronise
+ * the value both ways — with no `ControlValueAccessor` (lesson-9).
  */
 @Component({
   selector: 'sbx-text-view',
@@ -18,6 +18,6 @@ import { SbxDemo } from '../../ui/demo';
   styleUrl: './text-view.scss',
 })
 export class TextView {
-  protected readonly reactive = new FormControl('Marek');
-  protected readonly ngModelValue = signal('Kowalski');
+  protected readonly reactive = new FormControl('Ada');
+  protected readonly ngModelValue = signal('Lovelace');
 }

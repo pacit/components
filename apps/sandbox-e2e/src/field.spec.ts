@@ -73,7 +73,7 @@ test.describe('PctField — the field wrapper', () => {
     const field = page.getByTestId('field-price');
     const input = field.locator('input');
 
-    await expect(input).toHaveValue('1\u00a0499,90');
+    await expect(input).toHaveValue('1\u202f499,90');
     await field.getByTestId('field-price-clear').click();
     await expect(input).toHaveValue('');
   });
@@ -146,7 +146,7 @@ test.describe('PctField — the field wrapper', () => {
     // The label aux lies in the label row, to the right.
     await expect(
       header.locator('[data-pct-part="field-label-aux"] button'),
-    ).toHaveAttribute('aria-label', /profilu/);
+    ).toHaveAttribute('aria-label', /profile/);
 
     // The counter lies in the message row and counts the characters typed.
     await expect(

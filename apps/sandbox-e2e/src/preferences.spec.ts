@@ -127,7 +127,7 @@ test.describe('prefers-color-scheme', () => {
     await visit(page, '/all', { media: DARK });
     await expectMedia(page, '(prefers-color-scheme: dark)', true);
     // The sandbox `:root` deliberately has no `data-theme` — the theme sits on the shell.
-    // To czyni z niego czysty punkt odniesienia dla samego mechanizmu.
+    // That makes it a clean point of reference for the mechanism itself.
     expect(await rootToken(page, '--pct-surface')).toBe(DARK_SURFACE);
   });
 

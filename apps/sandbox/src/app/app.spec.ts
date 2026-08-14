@@ -6,11 +6,11 @@ import { appRoutes } from './app.routes';
 import { SbxSettings } from './ui/settings';
 import { SBX_VIEWS } from './views';
 
-describe('App (powłoka sandboxa)', () => {
+describe('App (the sandbox shell)', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
-      // Testy biegną zoneless, tak jak aplikacja (req-project-angular).
+      // The tests run zoneless, just like the application (req-project-angular).
       providers: [provideZonelessChangeDetection(), provideRouter(appRoutes)],
     }).compileComponents();
   });
@@ -22,7 +22,7 @@ describe('App (powłoka sandboxa)', () => {
     return fixture;
   }
 
-  it('renderuje nagłówek biblioteki', async () => {
+  it('renders the library heading', async () => {
     const fixture = await render();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('h1')?.textContent).toContain(
@@ -30,7 +30,7 @@ describe('App (powłoka sandboxa)', () => {
     );
   });
 
-  it('wystawia w nawigacji każdy widok z rejestru', async () => {
+  it('exposes every view from the registry in the navigation', async () => {
     const fixture = await render();
     const compiled = fixture.nativeElement as HTMLElement;
     const links = compiled.querySelectorAll('.shell__nav a');
@@ -38,10 +38,10 @@ describe('App (powłoka sandboxa)', () => {
   });
 
   /**
-   * Motyw siedzi na hoście powłoki, nie na `:root` — cała strona jest scoped
-   * theme (req-token-scoped), a `:root` zostaje punktem odniesienia dla testów.
+   * The theme sits on the shell host, not on `:root` — the whole page is a scoped
+   * theme (req-token-scoped) and `:root` stays the point of reference for the tests.
    */
-  it('odbija globalny motyw na hoście', async () => {
+  it('mirrors the global theme on the host', async () => {
     const fixture = await render();
     const host = fixture.nativeElement as HTMLElement;
     expect(host.getAttribute('data-theme')).toBe('light');

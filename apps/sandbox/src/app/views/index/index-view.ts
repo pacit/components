@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { SBX_VIEW_GROUPS, viewsOf } from '../../views';
 
-/** Strona wejściowa — spis widoków prosto z rejestru (`views.ts`). */
+/** The index page — the list of views straight from the registry (`views.ts`). */
 @Component({
   selector: 'sbx-index-view',
   imports: [RouterLink],
@@ -12,7 +12,7 @@ import { SBX_VIEW_GROUPS, viewsOf } from '../../views';
 export class IndexView {
   protected readonly groups = SBX_VIEW_GROUPS.map((group) => ({
     ...group,
-    // Bez samej strony wejściowej — nie linkuje się do siebie.
+    // Without the index page itself — it does not link to itself.
     views: viewsOf(group.id).filter((v) => v.path !== ''),
   }));
 }

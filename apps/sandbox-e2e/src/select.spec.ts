@@ -24,10 +24,11 @@ test.describe('PctSelect — a combobox with a panel', () => {
   });
 
   /**
-   * The library texts are English and the sandbox translates them through
-   * `providePctTexts` (req-api-texts). This test watches the whole chain — the DI
-   * token, the server render and hydration — because the placeholder visible here
-   * appears nowhere in the application code outside the provider configuration.
+   * The library texts are English and the sandbox, which runs under `fr-FR`,
+   * translates them through `providePctTexts` (req-api-texts). This test watches the
+   * whole chain — the DI token, the server render and hydration — because the
+   * placeholder visible here appears nowhere in the application code outside the
+   * provider configuration.
    */
   test('the placeholder comes from the application translation, not from the library', async ({
     page,
@@ -36,7 +37,7 @@ test.describe('PctSelect — a combobox with a panel', () => {
       page
         .getByTestId('select-country')
         .locator('[data-pct-part="placeholder"]'),
-    ).toHaveText('Wybierz…');
+    ).toHaveText('Sélectionner…');
   });
 
   test('a click opens the panel; picking closes it and shows the label', async ({
@@ -46,12 +47,12 @@ test.describe('PctSelect — a combobox with a panel', () => {
     await expect(panel(page)).toBeVisible();
     await expect(trigger(page)).toHaveAttribute('aria-expanded', 'true');
 
-    await options(page).filter({ hasText: 'Niemcy' }).click();
+    await options(page).filter({ hasText: 'Germany' }).click();
 
     await expect(panel(page)).toHaveCount(0);
     await expect(
       page.getByTestId('select-country').locator('[data-pct-part="value"]'),
-    ).toHaveText('Niemcy');
+    ).toHaveText('Germany');
   });
 
   /**
@@ -153,7 +154,7 @@ test.describe('PctSelect — a combobox with a panel', () => {
     const t = trigger(page);
     await t.focus();
 
-    await page.keyboard.press('ArrowDown'); // otwarcie + aktywna pierwsza
+    await page.keyboard.press('ArrowDown'); // opens, with the first one active
     await expect(panel(page)).toBeVisible();
     const first = options(page).first();
     await expect(first).toHaveAttribute('data-pct-active', '');
@@ -168,26 +169,26 @@ test.describe('PctSelect — a combobox with a panel', () => {
     await page.keyboard.press('Home');
     await expect(first).toHaveAttribute('data-pct-active', '');
 
-    await page.keyboard.press('ArrowDown'); // Niemcy
+    await page.keyboard.press('ArrowDown'); // Germany
     await page.keyboard.press('Enter');
     await expect(panel(page)).toHaveCount(0);
     await expect(
       page.getByTestId('select-country').locator('[data-pct-part="value"]'),
-    ).toHaveText('Niemcy');
-    // Po wyborze fokus wraca na trigger.
+    ).toHaveText('Germany');
+    // After the pick the focus returns to the trigger.
     await expect(t).toBeFocused();
   });
 
   test('the keyboard: the arrows skip a disabled option', async ({ page }) => {
     await trigger(page).focus();
-    await page.keyboard.press('ArrowDown'); // Polska
-    await page.keyboard.press('ArrowDown'); // Niemcy
-    await page.keyboard.press('ArrowDown'); // skips Czechy -> Słowacja
+    await page.keyboard.press('ArrowDown'); // Poland
+    await page.keyboard.press('ArrowDown'); // Germany
+    await page.keyboard.press('ArrowDown'); // skips Czechia -> Slovakia
 
     await expect(
-      options(page).filter({ hasText: 'Czechy' }),
+      options(page).filter({ hasText: 'Czechia' }),
     ).not.toHaveAttribute('data-pct-active', '');
-    await expect(options(page).filter({ hasText: 'Słowacja' })).toHaveAttribute(
+    await expect(options(page).filter({ hasText: 'Slovakia' })).toHaveAttribute(
       'data-pct-active',
       '',
     );
@@ -213,9 +214,9 @@ test.describe('PctSelect — a combobox with a panel', () => {
   }) => {
     await trigger(page).focus();
     await page.keyboard.press('ArrowDown');
-    await page.keyboard.press('s'); // Słowacja (the option label in the sandbox)
+    await page.keyboard.press('s'); // Slovakia (the option label in the sandbox)
 
-    await expect(options(page).filter({ hasText: 'Słowacja' })).toHaveAttribute(
+    await expect(options(page).filter({ hasText: 'Slovakia' })).toHaveAttribute(
       'data-pct-active',
       '',
     );

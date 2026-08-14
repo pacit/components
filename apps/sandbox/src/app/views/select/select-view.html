@@ -1,22 +1,22 @@
 <h2 class="view__title">Select</h2>
 <p class="muted view__intro">
-  Fokus zostaje na triggerze, aktywną opcję wskazuje
-  <code>aria-activedescendant</code>. Klawiatura: strzałki, Home/End, Enter,
-  Escape i typeahead.
+  The focus stays on the trigger, the active option is pointed at by
+  <code>aria-activedescendant</code>. The keyboard: the arrows, Home/End, Enter,
+  Escape and typeahead.
 </p>
 
 <sbx-demo
-  #wobudowie
-  heading="W obudowie"
-  summary="Wielkość należy do obudowy — kontrolka oddaje jej swoją, tak jak oddaje ramkę."
+  #inField
+  heading="Inside the wrapper"
+  summary="The size belongs to the wrapper — the control hands its own over, just as it hands over the border."
   [reqs]="['req-api-wrapper', 'req-api-size']"
   data-testid="demo-in-field"
 >
   <div class="stack">
     <pct-field
-      label="Kraj"
-      hint="Lista z własnym panelem (CDK Overlay)"
-      [size]="wobudowie.activeSize()"
+      label="Country"
+      hint="A list with a panel of its own (CDK Overlay)"
+      [size]="inField.activeSize()"
       data-testid="field-country"
     >
       <pct-select
@@ -29,14 +29,14 @@
 </sbx-demo>
 
 <sbx-demo
-  heading="Szerokość panelu"
-  summary="Domyślnie panel ma szerokość widocznej kontrolki — w obudowie liczoną od ramki pola, nie od triggera w środku. Można ją oddać treści (auto) albo podać wprost; wtedy decyduje jeszcze wyrównanie."
+  heading="Panel width"
+  summary="By default the panel is as wide as the visible control — inside a wrapper measured from the field border, not from the trigger within. It can be handed to the content (auto) or given literally; then the alignment decides as well."
   [reqs]="['req-api-wrapper']"
   [controls]="[]"
   data-testid="demo-panel-width"
 >
   <div class="stack stack--narrow">
-    <pct-field label="field (domyślnie)" data-testid="field-width-field">
+    <pct-field label="field (the default)" data-testid="field-width-field">
       <pct-select
         [options]="languages"
         [(value)]="widthField"
@@ -45,7 +45,7 @@
     </pct-field>
 
     <pct-field
-      label="auto — do najdłuższej opcji"
+      label="auto — out to the longest option"
       data-testid="field-width-auto"
     >
       <pct-select
@@ -57,7 +57,7 @@
     </pct-field>
 
     <pct-field
-      label="320px, wyrównanie do końca"
+      label="320px, aligned to the end"
       data-testid="field-width-fixed"
     >
       <pct-select
@@ -72,15 +72,15 @@
 </sbx-demo>
 
 <sbx-demo
-  heading="Panel a scoped theme"
-  summary="Panel renderuje się poza drzewem hosta, więc kaskada motywu do niego nie dociera — motyw z najbliższego przodka jest przenoszony na panel jawnie."
+  heading="The panel and the scoped theme"
+  summary="The panel renders outside the host tree, so the theme cascade does not reach it — the theme of the nearest ancestor is carried onto the panel explicitly."
   [reqs]="['lesson-18', 'req-token-scoped']"
   scheme="dark"
   [controls]="[]"
   data-testid="demo-scoped"
 >
   <div class="stack">
-    <pct-field label="Kraj (w motywie ciemnym)" data-testid="field-scoped">
+    <pct-field label="Country (in the dark theme)" data-testid="field-scoped">
       <pct-select
         [options]="countries"
         [(value)]="scopedCountry"
@@ -91,13 +91,13 @@
 </sbx-demo>
 
 <sbx-demo
-  heading="Bez obudowy"
-  summary="Poza pct-field select rysuje własną etykietę i sam pilnuje obszaru dotyku."
+  heading="With no wrapper"
+  summary="Outside pct-field the select draws a label of its own and polices the touch area itself."
   [reqs]="['req-api-no-wrapper', 'req-a11y-touch']"
   data-testid="demo-standalone"
 >
   <pct-select
-    label="Kraj"
+    label="Country"
     [options]="countries"
     [(value)]="bareCountry"
     data-testid="select-bare"

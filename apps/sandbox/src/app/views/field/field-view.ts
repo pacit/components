@@ -23,8 +23,8 @@ import { COUNTRIES } from '../../ui/data';
 import { SbxDemo } from '../../ui/demo';
 
 /**
- * Obudowa `pct-field`: etykieta, podpowiedź, błąd, dekoracje i ramka.
- * Kontrolki w środku są tu tłem — każda ma własny widok.
+ * The `pct-field` wrapper: label, hint, error, decorations and border. The controls
+ * inside are the backdrop here — each of them has a view of its own.
  */
 @Component({
   selector: 'sbx-field-view',
@@ -53,15 +53,17 @@ export class FieldView {
   protected readonly model = signal({ email: '', country: '' });
 
   protected readonly userForm = form(this.model, (p) => {
-    required(p.email, { message: 'Adres e-mail jest wymagany' });
-    email(p.email, { message: 'To nie wygląda na poprawny adres e-mail' });
+    required(p.email, { message: 'The e-mail address is required' });
+    email(p.email, {
+      message: 'That does not look like a valid e-mail address',
+    });
   });
 
-  /** Pole „opis" pokazuje jednoczesność licznika i wymiany podpowiedzi na błąd. */
+  /** The "description" field shows the counter and the hint-to-error swap at once. */
   protected readonly bioMax = 120;
   protected readonly bioModel = signal({ bio: '' });
   protected readonly bioForm = form(this.bioModel, (p) => {
-    minLength(p.bio, 10, { message: 'Napisz przynajmniej 10 znaków' });
+    minLength(p.bio, 10, { message: 'Write at least 10 characters' });
   });
 
   protected readonly price = signal<number | null>(1499.9);

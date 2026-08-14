@@ -5,8 +5,8 @@ import { PctRadio, PctRadioGroup } from '@pacit/components/radio';
 import { SbxDemo } from '../../ui/demo';
 
 /**
- * Grupa radiów — pierwszy komponent złożony: kontrolką formularza jest
- * kontener, opcje nie mają własnego stanu formularza (req-api-container).
+ * A radio group — the first composite component: the form control is the container,
+ * the options have no form state of their own (req-api-container).
  */
 @Component({
   selector: 'sbx-radio-view',
@@ -18,9 +18,9 @@ export class RadioView {
   protected readonly model = signal({ plan: '' });
 
   protected readonly userForm = form(this.model, (p) => {
-    required(p.plan, { message: 'Wybierz plan' });
+    required(p.plan, { message: 'Pick a plan' });
   });
 
-  /** Demo układu poziomego. */
+  /** The horizontal layout demo. */
   protected readonly layoutDemo = signal<string | null>('a');
 }

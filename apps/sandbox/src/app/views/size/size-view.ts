@@ -14,9 +14,9 @@ import { COUNTRIES } from '../../ui/data';
 import { SbxDemo } from '../../ui/demo';
 
 /**
- * Widok przekrojowy: wielkość jako **jedna oś dla całej biblioteki**
- * (req-api-size). Sedno jest w zestawieniu — pojedynczy komponent zawsze wygląda
- * poprawnie, rozjazd widać dopiero, gdy dwa stoją obok siebie tą samą krawędzią.
+ * A cross-cutting view: size as **one axis for the whole library** (req-api-size).
+ * The point is in the line-up — a single component always looks right, a mismatch
+ * shows only once two of them stand side by side on the same edge.
  */
 @Component({
   selector: 'sbx-size-view',
@@ -39,7 +39,7 @@ export class SizeView {
   protected readonly sizes: readonly PctSize[] = ['sm', 'md', 'lg'];
   protected readonly countries = COUNTRIES;
 
-  protected readonly text = signal('Tekst');
+  protected readonly text = signal('Text');
   protected readonly amount = signal<number | null>(1499.9);
   protected readonly country = signal<string | null>('pl');
   protected readonly consent = signal(true);

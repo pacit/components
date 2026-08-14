@@ -1,13 +1,13 @@
 <h2 class="view__title">Button</h2>
 <p class="muted view__intro">
-  Selektor atrybutowy na natywnym <code>&lt;button&gt;</code> — semantyka,
-  klawiatura i fokus pochodzą od przeglądarki.
+  An attribute selector on a native <code>&lt;button&gt;</code> — the semantics,
+  the keyboard and the focus come from the browser.
 </p>
 
 <sbx-demo
   #variants
-  heading="Warianty"
-  summary="Kolory wszystkich stanów pochodzą z tokenów; komponent nie ma wbudowanych barw."
+  heading="Variants"
+  summary="The colours of every state come from tokens; the component has no colours built in."
   [reqs]="['req-api-signals', 'req-token-skin']"
   data-testid="demo-variants"
 >
@@ -27,8 +27,8 @@
 </sbx-demo>
 
 <sbx-demo
-  heading="Wielkości"
-  summary="Trzy wielkości obok siebie — tu oś wielkości jest treścią przykładu, więc karta jej nie przestawia."
+  heading="Sizes"
+  summary="Three sizes side by side — here the size axis is the content of the example, so the card does not move it."
   [reqs]="['req-api-size']"
   [controls]="['scheme', 'skin']"
   data-testid="demo-sizes"
@@ -42,8 +42,8 @@
 
 <sbx-demo
   #states
-  heading="Stany"
-  summary="Wyłączenie i ładowanie mają własne tokeny koloru — bez przyciemniania przez opacity."
+  heading="States"
+  summary="Disabled and loading have colour tokens of their own — no dimming through opacity."
   [reqs]="['req-token-no-opacity']"
   data-testid="demo-states"
 >
@@ -73,15 +73,15 @@
   </div>
 </sbx-demo>
 
-<h3 class="view__title">Ten sam przykład w dwóch motywach</h3>
+<h3 class="view__title">The same example in two themes</h3>
 <p class="muted view__intro">
-  Karty ze stałym motywem, niezależnym od ustawienia globalnego — porównanie
-  obok siebie wychwytuje różnice, których nie widać przy przełączaniu.
+  Cards with a fixed theme, independent of the global setting — a side-by-side
+  comparison catches differences that switching back and forth does not show.
 </p>
 
 <div class="grid-2">
   <sbx-demo
-    heading="Jasny"
+    heading="Light"
     scheme="light"
     [controls]="[]"
     data-testid="demo-light"
@@ -94,7 +94,7 @@
   </sbx-demo>
 
   <sbx-demo
-    heading="Ciemny"
+    heading="Dark"
     scheme="dark"
     [controls]="[]"
     data-testid="demo-dark"

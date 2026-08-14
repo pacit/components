@@ -3,7 +3,7 @@ import { boxOf, visit } from './support/dom';
 
 /**
  * The number field in a real browser: formatting by the application locale (the
- * sandbox sets `pl-PL`), stepping from the keyboard, and bounds that come from the
+ * sandbox sets `fr-FR`), stepping from the keyboard, and bounds that come from the
  * signal forms validators.
  */
 test.describe('PctNumber', () => {
@@ -14,8 +14,8 @@ test.describe('PctNumber', () => {
   test('formats the value by the application locale', async ({ page }) => {
     const price = page.getByTestId('number-price');
 
-    // pl-PL: a decimal comma, two places forced by minFractionDigits.
-    await expect(price).toHaveValue('1\u00a0499,90');
+    // fr-FR: a decimal comma, two places forced by minFractionDigits.
+    await expect(price).toHaveValue('1\u202f499,90');
   });
 
   test('a typed number gets formatted once the field is left', async ({
@@ -29,8 +29,8 @@ test.describe('PctNumber', () => {
     await expect(price).toHaveValue('1234567.5');
 
     await price.blur();
-    // The thousands separator is a non-breaking space (U+00A0), not an ordinary one.
-    await expect(price).toHaveValue('1\u00a0234\u00a0567,50');
+    // The thousands separator is a narrow no-break space (U+202F), not an ordinary one.
+    await expect(price).toHaveValue('1\u202f234\u202f567,50');
   });
 
   test('a comma and a dot are equivalent while typing', async ({ page }) => {
@@ -60,11 +60,11 @@ test.describe('PctNumber', () => {
     await price.click();
     await price.press('ArrowUp');
     // step = 0.5
-    await expect(price).toHaveValue('1\u00a0500,40');
+    await expect(price).toHaveValue('1\u202f500,40');
 
     await price.press('ArrowDown');
     await price.press('ArrowDown');
-    await expect(price).toHaveValue('1\u00a0499,40');
+    await expect(price).toHaveValue('1\u202f499,40');
   });
 
   test('an integer field rounds and takes no fractions', async ({ page }) => {
@@ -82,8 +82,8 @@ test.describe('PctNumber', () => {
   }) => {
     const seats = page.getByTestId('number-seats');
 
-    // W app.html nie ma [min]/[max] — przekazuje je dyrektywa FormField
-    // na podstawie min()/max() ze schematu formularza.
+    // There is no [min]/[max] in the template — the FormField directive passes them
+    // from the min()/max() validators of the form schema.
     await expect(seats).toHaveAttribute('aria-valuemin', '1');
     await expect(seats).toHaveAttribute('aria-valuemax', '500');
 
@@ -103,7 +103,7 @@ test.describe('PctNumber', () => {
 
     await expect(price).toHaveAttribute('role', 'spinbutton');
     await expect(price).toHaveAttribute('aria-valuenow', '1499.9');
-    await expect(price).toHaveAttribute('aria-valuetext', '1\u00a0499,90');
+    await expect(price).toHaveAttribute('aria-valuetext', '1\u202f499,90');
   });
 
   test('the wrapper label focuses the field, and an empty field has no value', async ({

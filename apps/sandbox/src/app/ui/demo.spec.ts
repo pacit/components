@@ -6,17 +6,17 @@ import { SbxSettings } from './settings';
 @Component({
   imports: [SbxDemo],
   template: `
-    <sbx-demo heading="Domyślna" data-testid="follows">
-      <span class="content">treść</span>
+    <sbx-demo heading="Default" data-testid="follows">
+      <span class="content">content</span>
     </sbx-demo>
-    <sbx-demo heading="Stała" scheme="dark" [controls]="[]" data-testid="fixed">
-      <span class="content">treść</span>
+    <sbx-demo heading="Fixed" scheme="dark" [controls]="[]" data-testid="fixed">
+      <span class="content">content</span>
     </sbx-demo>
   `,
 })
 class Host {}
 
-describe('SbxDemo (karta demonstracyjna)', () => {
+describe('SbxDemo (the demo card)', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [Host],
@@ -34,13 +34,13 @@ describe('SbxDemo (karta demonstracyjna)', () => {
     return { fixture, el, stage };
   }
 
-  it('rzutuje treść na scenę', async () => {
+  it('projects the content onto the stage', async () => {
     const { stage } = await render();
     expect(stage('follows')?.querySelector('.content')).toBeTruthy();
   });
 
-  /** Motyw obowiązuje na scenie, nie na całej karcie — pasek jest chromem strony. */
-  it('idzie za ustawieniem globalnym, dopóki nie ma własnego', async () => {
+  /** The theme is in force on the stage, not on the whole card — the bar is page chrome. */
+  it('follows the global setting until it has one of its own', async () => {
     const { fixture, stage } = await render();
     expect(stage('follows')?.getAttribute('data-theme')).toBe('light');
 
@@ -50,7 +50,7 @@ describe('SbxDemo (karta demonstracyjna)', () => {
     expect(stage('follows')?.getAttribute('data-theme')).toBe('dark');
   });
 
-  it('własny motyw karty wygrywa z globalnym', async () => {
+  it('a theme set on the card wins over the global one', async () => {
     const { fixture, stage } = await render();
     TestBed.inject(SbxSettings).scheme.set('light');
     fixture.detectChanges();
@@ -58,7 +58,7 @@ describe('SbxDemo (karta demonstracyjna)', () => {
     expect(stage('fixed')?.getAttribute('data-theme')).toBe('dark');
   });
 
-  it('pusta lista przełączników chowa pasek', async () => {
+  it('an empty list of switches hides the bar', async () => {
     const { el } = await render();
     const fixed = el.querySelector('[data-testid="fixed"]');
     expect(fixed?.querySelector('sbx-controls')).toBeNull();

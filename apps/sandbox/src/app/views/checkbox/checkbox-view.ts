@@ -5,8 +5,8 @@ import { PctField } from '@pacit/components/field';
 import { SbxDemo } from '../../ui/demo';
 
 /**
- * Checkbox: natywna kontrolka signal forms (`FormCheckboxControl`) ze stanem
- * nieokreślonym i obszarem dotyku niezależnym od rozmiaru wizualnego.
+ * Checkbox: a native signal-forms control (`FormCheckboxControl`) with the
+ * indeterminate state and a touch area independent of the visual size.
  */
 @Component({
   selector: 'sbx-checkbox-view',
@@ -18,9 +18,9 @@ export class CheckboxView {
   protected readonly model = signal({ terms: false });
 
   protected readonly userForm = form(this.model, (p) => {
-    required(p.terms, { message: 'Musisz zaakceptować regulamin' });
+    required(p.terms, { message: 'You have to accept the terms' });
   });
 
-  /** Stan nieokreślony — demonstracja aria-checked="mixed". */
+  /** The indeterminate state — a demonstration of aria-checked="mixed". */
   protected readonly partial = signal(true);
 }

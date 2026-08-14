@@ -69,11 +69,11 @@ test.describe('The sandbox shell and the demo card', () => {
     await page
       .getByTestId('global-controls')
       .getByTestId('control-scheme')
-      .getByRole('radio', { name: 'ciemny' })
+      .getByRole('radio', { name: 'dark' })
       .check();
 
     expect(await shellSurface()).toBe('#0f172a');
-    // `:root` zostaje punktem odniesienia — motyw strony to scoped theme.
+    // `:root` stays the point of reference — the page theme is a scoped theme.
     expect(await rootSurface()).toBe('#ffffff');
   });
 
@@ -89,7 +89,7 @@ test.describe('The sandbox shell and the demo card', () => {
     await page
       .getByTestId('global-controls')
       .getByTestId('control-scheme')
-      .getByRole('radio', { name: 'ciemny' })
+      .getByRole('radio', { name: 'dark' })
       .check();
 
     const surfaceOf = (testid: string) =>
@@ -108,7 +108,7 @@ test.describe('The sandbox shell and the demo card', () => {
       .locator(`${stage('demo-light')} button[pctButton]`)
       .first()
       .evaluate((el) => getComputedStyle(el).backgroundColor);
-    expect(buttonBg).toBe('rgb(37, 99, 235)'); // blue-600 = motyw jasny
+    expect(buttonBg).toBe('rgb(37, 99, 235)'); // blue-600 = the light theme
   });
 
   test('a card follows the global axis until it has a setting of its own', async ({
@@ -126,7 +126,7 @@ test.describe('The sandbox shell and the demo card', () => {
       .check();
     await expect(solid).toHaveAttribute('data-pct-size', 'lg');
 
-    // Pasek karty wygrywa z ustawieniem globalnym.
+    // The card bar wins over the global setting.
     await page
       .getByTestId('demo-variants')
       .getByTestId('control-size')

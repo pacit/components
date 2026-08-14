@@ -1,14 +1,14 @@
-<h2 class="view__title">Wielkość</h2>
+<h2 class="view__title">Size</h2>
 <p class="muted view__intro">
-  Każdy komponent przyjmujący <code>size</code> bierze wysokość z tego samego
-  tokenu <code>--pct-control-height-*</code>. Wysokość jest wartością wprost,
-  nie wynikiem paddingu i wysokości linii — inaczej nie da się jej zgrać między
-  komponentami.
+  Every component taking <code>size</code> gets its height from the same
+  <code>--pct-control-height-*</code> token. The height is a value outright, not
+  the result of padding and line height — otherwise it cannot be matched across
+  components.
 </p>
 
 <sbx-demo
-  heading="Pole i przycisk na jednej osi"
-  summary="Wyrównanie do dolnej krawędzi: przy równych wysokościach elementy stykają się tą samą linią, więc rozjazd widać gołym okiem, a nie dopiero w pomiarze."
+  heading="A field and a button on one axis"
+  summary="Aligned to the bottom edge: with equal heights the elements meet on the same line, so a mismatch is visible to the naked eye rather than only in a measurement."
   [reqs]="['req-api-size', 'lesson-29']"
   [controls]="['scheme', 'skin']"
   data-testid="demo-axis"
@@ -17,19 +17,19 @@
   <div class="row row--bottom">
     <pct-field
       [size]="size"
-      [label]="'Pole ' + size"
+      [label]="'Field ' + size"
       [attr.data-testid]="'size-field-' + size"
     >
-      <input pctText [value]="'Tekst ' + size" />
+      <input pctText [value]="'Text ' + size" />
     </pct-field>
 
     <button pctButton [size]="size" [attr.data-testid]="'size-button-' + size">
-      Przycisk {{ size }}
+      Button {{ size }}
     </button>
 
     <pct-field
       [size]="size"
-      [label]="'Lista ' + size"
+      [label]="'List ' + size"
       [attr.data-testid]="'size-select-' + size"
     >
       <pct-select [options]="countries" [(value)]="country" />
@@ -39,8 +39,8 @@
 </sbx-demo>
 
 <sbx-demo
-  heading="Wszystkie kontrolki w ramce"
-  summary="Pole liczbowe i pole z dekoracją trzymają tę samą oś co zwykły input — dekoracja nie rozpycha wiersza."
+  heading="Every control inside a border"
+  summary="A number field and a decorated field keep the same axis as a plain input — a decoration does not push the row apart."
   [reqs]="['req-api-size']"
   [controls]="['scheme', 'skin']"
   data-testid="demo-boxed"
@@ -49,19 +49,19 @@
   <div class="row row--bottom">
     <pct-field
       [size]="size"
-      [label]="'Liczba ' + size"
+      [label]="'Number ' + size"
       [attr.data-testid]="'size-number-' + size"
     >
       <input pctNumber [maxFractionDigits]="2" [(value)]="amount" />
-      <span pctSuffix aria-hidden="true">zł</span>
+      <span pctSuffix aria-hidden="true">€</span>
     </pct-field>
 
     <pct-field
       [size]="size"
-      [label]="'Wyłączone ' + size"
+      [label]="'Disabled ' + size"
       [attr.data-testid]="'size-disabled-' + size"
     >
-      <input pctText value="nieaktywne" disabled />
+      <input pctText value="inactive" disabled />
     </pct-field>
 
     <button
@@ -77,8 +77,8 @@
 </sbx-demo>
 
 <sbx-demo
-  heading="Wariant bare wysokości nie wyrównuje"
-  summary="Bez ramki nie ma czego zgrywać z przyciskiem, a wymuszona wysokość dokładałaby pustego miejsca. Obszaru dotyku pilnuje kolumna kontrolki."
+  heading="The bare variant does not match heights"
+  summary="With no border there is nothing to match against the button, and a forced height would add empty space. The touch area is policed by the control column."
   [reqs]="['req-api-size', 'req-a11y-touch']"
   [controls]="['scheme', 'skin']"
   data-testid="demo-bare"
@@ -87,7 +87,7 @@
   <div class="row row--bottom">
     <pct-field
       [size]="size"
-      [label]="'Zgoda ' + size"
+      [label]="'Consent ' + size"
       [attr.data-testid]="'size-checkbox-' + size"
     >
       <pct-checkbox [(checked)]="consent" />
@@ -104,7 +104,7 @@
       </pct-radio-group>
     </pct-field>
 
-    <button pctButton [size]="size">Odniesienie {{ size }}</button>
+    <button pctButton [size]="size">Reference {{ size }}</button>
   </div>
   }
 </sbx-demo>

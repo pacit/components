@@ -1,27 +1,27 @@
 <h2 class="view__title">Field</h2>
 <p class="muted view__intro">
-  Obudowa dostarcza etykietę, podpowiedź, komunikat błędu i sloty dekoracji.
-  Kontraktu formularza nie implementuje — robi to kontrolka w środku.
+  The wrapper supplies the label, the hint, the error message and the decoration
+  slots. It does not implement the form contract — the control inside does.
 </p>
 
 <sbx-demo
-  #podstawy
-  heading="Etykieta, podpowiedź i błąd"
-  summary="Pod polem jest tylko jedna linia: podpowiedź, a po opuszczeniu pola z błędem — komunikat błędu w jej miejsce. Etykieta wskazuje kontrolkę przez granicę projekcji, a aria-describedby wskazuje tę linię, która akurat świeci."
+  #basics
+  heading="Label, hint and error"
+  summary="Below the field there is one line only: the hint, and once a field with an error is left — the error message in its place. The label points at the control across the projection boundary, and aria-describedby points at whichever line is lit."
   [reqs]="['req-api-wrapper', 'req-a11y-built-in']"
   data-testid="demo-basics"
 >
   <div class="stack">
     <pct-field
       label="E-mail"
-      hint="Adres służbowy"
-      [size]="podstawy.activeSize()"
+      hint="A work address"
+      [size]="basics.activeSize()"
       data-testid="field-email"
     >
       <input
         pctText
         type="email"
-        placeholder="jan@example.com"
+        placeholder="john@example.com"
         [formField]="userForm.email"
       />
     </pct-field>
@@ -29,32 +29,32 @@
 </sbx-demo>
 
 <sbx-demo
-  #dodatki
-  heading="Dodatek etykiety i licznik znaków"
-  summary="Sloty poza ramką niosą treść poboczną: [pctLabelAux] przy etykiecie (np. ikona „i”) i [pctMessageAux] w linii komunikatu (np. licznik znaków). Licznik trwa niezależnie od tego, czy pod polem świeci podpowiedź, czy błąd."
+  #aux
+  heading="A label aux and a character counter"
+  summary="The slots outside the border carry side content: [pctLabelAux] beside the label (an 'i' icon, say) and [pctMessageAux] in the message row (a character counter, say). The counter stands there whether the line below the field lights up a hint or an error."
   [reqs]="['req-api-wrapper']"
   data-testid="demo-aux"
 >
   <div class="stack">
     <pct-field
-      label="Krótki opis"
-      hint="Zwięźle — napisz przynajmniej 10 znaków"
-      [size]="dodatki.activeSize()"
+      label="A short description"
+      hint="Briefly — write at least 10 characters"
+      [size]="aux.activeSize()"
       data-testid="field-bio"
     >
       <button
         pctLabelAux
         type="button"
         class="field-view__info"
-        aria-label="Opis pojawia się na Twoim profilu"
-        title="Opis pojawia się na Twoim profilu"
+        aria-label="The description appears on your profile"
+        title="The description appears on your profile"
       >
         ⓘ
       </button>
 
       <input
         pctText
-        placeholder="Kilka słów o sobie"
+        placeholder="A few words about yourself"
         [formField]="bioForm.bio"
         data-testid="bio-input"
       />
@@ -67,18 +67,18 @@
 </sbx-demo>
 
 <sbx-demo
-  #dekoracje
-  heading="Dekoracje wewnątrz ramki"
-  summary="Prefix i suffix leżą w ramce, więc focus ring obejmuje cały rząd — także gdy fokus trafi na przycisk w slocie. Dopasowanie slotu wybiera autor: „inset” leży na powierzchni pola (dziedziczy jej kursor, klik fokusuje kontrolkę), „fill” bierze cały slot i jest własną powierzchnią (własne tło, własny kursor, sam przyjmuje kliknięcie)."
+  #affix
+  heading="Decorations inside the border"
+  summary="The prefix and the suffix lie inside the border, so the focus ring takes in the whole row — including when the focus lands on a button in a slot. The fit of a slot is the author's choice: 'inset' lies on the surface of the field (inherits its cursor, a click focuses the control), 'fill' takes the whole slot and is a surface of its own (its own background, its own cursor, it takes the click itself)."
   [reqs]="['req-api-wrapper', 'lesson-27', 'lesson-34']"
   data-testid="demo-affix"
 >
   <div class="stack">
-    <!-- Kafelek „PLN" (fill) + przycisk mniejszy od swojego slotu (inset). -->
+    <!-- The "EUR" tile (fill) + a button smaller than its slot (inset). -->
     <pct-field
-      label="Cena"
-      hint="Kafelek z jednostką jest własną powierzchnią; przycisk czyszczenia siedzi w odstępie ramki"
-      [size]="dekoracje.activeSize()"
+      label="Price"
+      hint="The unit tile is a surface of its own; the clear button sits in the border padding"
+      [size]="affix.activeSize()"
       data-testid="field-price"
     >
       <span
@@ -87,7 +87,7 @@
         aria-hidden="true"
         data-testid="field-price-unit"
       >
-        PLN
+        EUR
       </span>
       <input
         pctNumber
@@ -103,7 +103,7 @@
         type="button"
         variant="outline"
         size="sm"
-        aria-label="Wyczyść cenę"
+        aria-label="Clear the price"
         (click)="clearPrice()"
         data-testid="field-price-clear"
       >
@@ -111,11 +111,11 @@
       </button>
     </pct-field>
 
-    <!-- Ikona bez tła (inset) + przycisk wypełniający swój slot (fill). -->
+    <!-- An icon with no background (inset) + a button filling its slot (fill). -->
     <pct-field
-      label="Szukaj w katalogu"
-      hint="Ikona należy do powierzchni pola; przycisk jest wspawany w róg ramki"
-      [size]="dekoracje.activeSize()"
+      label="Search the catalogue"
+      hint="The icon belongs to the surface of the field; the button is welded into the corner of the border"
+      [size]="affix.activeSize()"
       data-testid="field-search"
     >
       <span pctPrefix aria-hidden="true" data-testid="field-search-icon">
@@ -123,7 +123,7 @@
       </span>
       <input
         pctText
-        placeholder="nazwa albo symbol"
+        placeholder="a name or a symbol"
         [(value)]="query"
         data-testid="text-search"
       />
@@ -131,60 +131,60 @@
         pctSuffix="fill"
         pctButton
         type="button"
-        [size]="dekoracje.activeSize()"
+        [size]="affix.activeSize()"
         data-testid="field-search-submit"
       >
-        Szukaj
+        Search
       </button>
     </pct-field>
   </div>
 </sbx-demo>
 
 <sbx-demo
-  #powierzchnia
-  heading="Cała powierzchnia ramki ma właściciela"
-  summary="Kursor zapowiada skutek kliknięcia na całej ramce: tekst, wskaźnik, a przy wyłączeniu — brak akcji."
+  #surface
+  heading="The whole surface of the border has an owner"
+  summary="The cursor announces what a click will do across the whole border: text, pointer, and under disabled — no action."
   [reqs]="['lesson-27', 'req-api-frame']"
   data-testid="demo-surface"
 >
   <div class="stack">
     <pct-field
-      label="Kraj"
-      hint="Klik w padding otwiera listę"
-      [size]="powierzchnia.activeSize()"
+      label="Country"
+      hint="A click in the padding opens the list"
+      [size]="surface.activeSize()"
       data-testid="field-country"
     >
       <pct-select [options]="countries" [formField]="userForm.country" />
     </pct-field>
 
     <pct-field
-      label="Wyłączone"
-      [size]="powierzchnia.activeSize()"
+      label="Disabled"
+      [size]="surface.activeSize()"
       data-testid="field-disabled"
     >
-      <input pctText value="nie do edycji" disabled />
+      <input pctText value="not editable" disabled />
     </pct-field>
 
     <pct-field
-      label="Tylko do odczytu"
-      [size]="powierzchnia.activeSize()"
+      label="Read-only"
+      [size]="surface.activeSize()"
       data-testid="field-readonly"
     >
-      <input pctText value="tylko podgląd" readonly />
+      <input pctText value="preview only" readonly />
     </pct-field>
   </div>
 </sbx-demo>
 
 <sbx-demo
-  heading="Kontrolki bez ramki (bare)"
-  summary="Wokół checkboxa i grupy radiów ramka wygląda obco — obudowa daje wtedy wyłącznie etykietę, podpowiedź i komunikat."
+  heading="Controls with no border (bare)"
+  summary="Around a checkbox and a radio group a border looks alien — the wrapper then gives the label, the hint and the message alone."
   [reqs]="['req-api-frame']"
   data-testid="demo-bare"
 >
   <div class="stack">
     <pct-field
-      label="Zgody"
-      hint="Wymagane do założenia konta"
+      label="Consents"
+      hint="Required to open an account"
       data-testid="field-bare-checkbox"
     >
       <pct-checkbox [(checked)]="consent" />
@@ -192,7 +192,7 @@
 
     <pct-field label="Plan" data-testid="field-bare-radio">
       <pct-radio-group [(value)]="plan">
-        <pct-radio value="free">Darmowy</pct-radio>
+        <pct-radio value="free">Free</pct-radio>
         <pct-radio value="pro">Pro</pct-radio>
       </pct-radio-group>
     </pct-field>

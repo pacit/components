@@ -2,8 +2,8 @@
   display: block;
 }
 
-/* Siatka zamiast kolumny: stany porównuje się poziomo, komponent do komponentu,
-   a nie przewijając stronę. */
+/* A grid instead of a column: states are compared horizontally, component against
+   component, not by scrolling the page. */
 .states {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));

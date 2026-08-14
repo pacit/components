@@ -37,7 +37,7 @@ test.describe('States — a cross-section through every control', () => {
    */
   test('no state is dimmed with transparency', async ({ page }) => {
     for (const state of ['disabled', 'readonly', 'invalid']) {
-      const przyciemnione = await page
+      const dimmed = await page
         .getByTestId(`states-${state}`)
         .locator('[data-pct-part], input, button')
         .evaluateAll((els) =>
@@ -52,7 +52,7 @@ test.describe('States — a cross-section through every control', () => {
                 `${el.tagName.toLowerCase()}[${el.getAttribute('data-pct-part') ?? '—'}] = ${opacity}`,
             ),
         );
-      expect(przyciemnione, `stan ${state}`).toEqual([]);
+      expect(dimmed, `state ${state}`).toEqual([]);
     }
   });
 
@@ -62,7 +62,7 @@ test.describe('States — a cross-section through every control', () => {
     for (const control of CONTROLS) {
       await expect(
         focusTarget(card, 'disabled', control),
-        `kontrolka ${control}`,
+        `control ${control}`,
       ).toBeDisabled();
     }
 
@@ -79,7 +79,7 @@ test.describe('States — a cross-section through every control', () => {
     for (const control of CONTROLS) {
       const target = focusTarget(card, 'readonly', control);
       await target.focus();
-      await expect(target, `kontrolka ${control}`).toBeFocused();
+      await expect(target, `control ${control}`).toBeFocused();
     }
   });
 
@@ -98,13 +98,13 @@ test.describe('States — a cross-section through every control', () => {
     // The field border signals the error with a colour from a token — in every
     // field that has a border.
     const rows = card.locator('[data-pct-part="field-row"]');
-    const kolory = await rows.evaluateAll((els) =>
+    const colours = await rows.evaluateAll((els) =>
       els
         .filter((el) => getComputedStyle(el).borderTopWidth !== '0px')
         .map((el) => getComputedStyle(el).borderColor),
     );
-    expect(kolory.length).toBeGreaterThan(0);
-    expect(new Set(kolory)).toEqual(new Set(['rgb(220, 38, 38)']));
+    expect(colours.length).toBeGreaterThan(0);
+    expect(new Set(colours)).toEqual(new Set(['rgb(220, 38, 38)']));
   });
 
   test('the required marker belongs to the wrapper, not to the control', async ({

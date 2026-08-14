@@ -10,8 +10,8 @@ import {
 import { SbxDemo } from '../../ui/demo';
 
 /**
- * Pole liczbowe: `<input type="text">` z `role="spinbutton"` i własnym
- * parsowaniem opartym o `Intl.NumberFormat` (req-api-number).
+ * A number field: `<input type="text">` with `role="spinbutton"` and parsing of our
+ * own built on `Intl.NumberFormat` (req-api-number).
  */
 @Component({
   selector: 'sbx-number-view',
@@ -33,10 +33,10 @@ export class NumberView {
   protected readonly model = signal<{ seats: number | null }>({ seats: 1 });
 
   protected readonly userForm = form(this.model, (p) => {
-    required(p.seats, { message: 'Podaj liczbę stanowisk' });
-    min(p.seats, 1, { message: 'Minimum jedno stanowisko' });
+    required(p.seats, { message: 'Give the number of seats' });
+    min(p.seats, 1, { message: 'At least one seat' });
     max(p.seats, 500, {
-      message: 'Powyżej 500 stanowisk skontaktuj się z nami',
+      message: 'Above 500 seats, get in touch with us',
     });
   });
 

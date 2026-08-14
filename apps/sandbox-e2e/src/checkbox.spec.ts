@@ -59,8 +59,8 @@ test.describe('PctCheckbox — signal forms', () => {
     expect(visual.width).toBeLessThan(24);
 
     // The clickable area is centred on the box (a 1 px tolerance).
-    const srodek = (b: { x: number; width: number }) => b.x + b.width / 2;
-    expect(Math.abs(srodek(hit) - srodek(visual))).toBeLessThanOrEqual(1);
+    const centre = (b: { x: number; width: number }) => b.x + b.width / 2;
+    expect(Math.abs(centre(hit) - centre(visual))).toBeLessThanOrEqual(1);
   });
 
   test('the enlarged touch area does not hijack clicks on the label', async ({

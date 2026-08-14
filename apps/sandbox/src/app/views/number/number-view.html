@@ -1,25 +1,26 @@
 <h2 class="view__title">Number</h2>
 <p class="muted view__intro">
-  Świadomy wyjątek od „nie implementuj tego, co daje platforma": natywne
-  <code>&lt;input type="number"&gt;</code> nie zna lokalnego separatora
-  dziesiętnego, nie grupuje tysięcy i gubi treść, której nie umie sparsować.
+  A deliberate exception to "do not implement what the platform gives you": a
+  native
+  <code>&lt;input type="number"&gt;</code> does not know the local decimal
+  separator, does not group thousands and drops content it cannot parse.
 </p>
 
 <sbx-demo
-  #kwota
-  heading="Kwota z groszami"
-  summary="Formatowanie wg locale aplikacji (pl-PL): przecinek dziesiętny, wąska spacja jako separator tysięcy. Tekst nie jest przepisywany w trakcie pisania."
+  #amount
+  heading="An amount with cents"
+  summary="Formatted by the application locale (fr-FR): a decimal comma, a narrow no-break space as the thousands separator. The text is not rewritten while it is being typed."
   [reqs]="['req-api-number']"
   data-testid="demo-price"
 >
   <div class="stack">
     <pct-field
-      label="Cena"
-      hint="Strzałki zmieniają wartość o 0,5"
-      [size]="kwota.activeSize()"
+      label="Price"
+      hint="The arrows change the value by 0.5"
+      [size]="amount.activeSize()"
       data-testid="field-price"
     >
-      <span pctPrefix aria-hidden="true">PLN</span>
+      <span pctPrefix aria-hidden="true">EUR</span>
       <input
         pctNumber
         [minFractionDigits]="2"
@@ -34,7 +35,7 @@
         type="button"
         variant="outline"
         size="sm"
-        aria-label="Wyczyść cenę"
+        aria-label="Clear the price"
         (click)="clearPrice()"
         data-testid="field-price-clear"
       >
@@ -45,17 +46,17 @@
 </sbx-demo>
 
 <sbx-demo
-  #stanowiska
-  heading="Pole całkowite z granicami ze schematu"
-  summary="Granic nie ma w szablonie — dyrektywa FormField bierze je z walidatorów min()/max(), więc walidacja, ARIA i domykanie wartości mają jedno źródło."
+  #seats
+  heading="An integer field with bounds from the schema"
+  summary="The bounds are not in the template — the FormField directive takes them from the min()/max() validators, so validation, ARIA and clamping have one source."
   [reqs]="['req-api-number', 'req-api-signal-forms']"
   data-testid="demo-seats"
 >
   <div class="stack">
     <pct-field
-      label="Liczba stanowisk"
-      hint="Zakres 1–500; ułamek zostaje zaokrąglony przy zatwierdzeniu"
-      [size]="stanowiska.activeSize()"
+      label="Number of seats"
+      hint="The range is 1–500; a fraction is rounded on commit"
+      [size]="seats.activeSize()"
       data-testid="field-seats"
     >
       <input
@@ -63,7 +64,7 @@
         [formField]="userForm.seats"
         data-testid="number-seats"
       />
-      <span pctSuffix aria-hidden="true">szt.</span>
+      <span pctSuffix aria-hidden="true">pcs</span>
     </pct-field>
   </div>
 </sbx-demo>

@@ -1,17 +1,17 @@
 @if (has('scheme')) {
 <pct-radio-group
-  label="Motyw"
+  label="Theme"
   orientation="horizontal"
   [value]="scheme()"
   (valueChange)="setScheme($event)"
   data-testid="control-scheme"
 >
-  <pct-radio value="light">jasny</pct-radio>
-  <pct-radio value="dark">ciemny</pct-radio>
+  <pct-radio value="light">light</pct-radio>
+  <pct-radio value="dark">dark</pct-radio>
 </pct-radio-group>
 } @if (has('size')) {
 <pct-radio-group
-  label="Wielkość"
+  label="Size"
   orientation="horizontal"
   [value]="size()"
   (valueChange)="setSize($event)"
@@ -23,7 +23,7 @@
 </pct-radio-group>
 } @if (has('dir')) {
 <pct-radio-group
-  label="Kierunek"
+  label="Direction"
   orientation="horizontal"
   [value]="dir()"
   (valueChange)="setDir($event)"
@@ -33,7 +33,7 @@
   <pct-radio value="rtl">rtl</pct-radio>
 </pct-radio-group>
 } @if (has('skin') && hasSkins) {
-<pct-field label="Skórka" size="sm" data-testid="control-skin">
+<pct-field label="Skin" size="sm" data-testid="control-skin">
   <pct-select
     [options]="skins"
     [value]="skin()"

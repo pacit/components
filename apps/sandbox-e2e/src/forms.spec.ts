@@ -20,7 +20,7 @@ test.describe('A form — controls under one schema', () => {
     await page
       .getByTestId('field-email')
       .locator('input')
-      .fill('marek@pacit.pl');
+      .fill('ada@example.com');
     await expect(submit).toBeDisabled(); // no plan and no consent
 
     await page
@@ -35,12 +35,12 @@ test.describe('A form — controls under one schema', () => {
       .locator('[data-pct-part="trigger"]')
       .click();
     await page
-      .locator('[data-pct-part="option"]', { hasText: 'Polska' })
+      .locator('[data-pct-part="option"]', { hasText: 'Poland' })
       .click();
     await expect(submit).toBeDisabled(); // no consent
 
     await page.getByTestId('checkbox-terms').locator('input').check();
     await expect(submit).toBeEnabled();
-    await expect(page.getByTestId('form-state')).toContainText('poprawny: tak');
+    await expect(page.getByTestId('form-state')).toContainText('valid: yes');
   });
 });
