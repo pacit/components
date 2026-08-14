@@ -1,0 +1,5 @@
+{
+  "point": 4,
+  "check": "dictionary",
+  "description": "The state `pressed` declared and used by no token. Every name still parses faultlessly, so point 3 passes — and that is the point. Point 3 closes in a circle: a name outside the scheme stops being outside it the moment somebody adds the word."
+}

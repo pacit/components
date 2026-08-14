@@ -1,0 +1,5 @@
+{
+  "point": 3,
+  "check": "schema",
+  "description": "`component.button.json` carrying `pct.knob.*` tokens. The generator merges component files without looking at their names, so such a drift breaks neither the build nor the contrast — it breaks only the fact that a file's name says which component is inside."
+}

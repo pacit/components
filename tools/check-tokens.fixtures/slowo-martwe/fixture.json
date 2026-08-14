@@ -1,5 +1,0 @@
-{
-  "punkt": 4,
-  "kontrola": "slownik",
-  "opis": "Stan `pressed` zadeklarowany i nieużywany przez żaden token. Wszystkie nazwy dalej parsują się bez zarzutu, więc punkt 3 przechodzi — i o to chodzi. Punkt 3 domyka się w kółko: nazwa spoza schematu przestaje nią być, gdy dopisze się jej słowo do słownika. Ten punkt tego nie rozstrzyga i nie udaje, że rozstrzyga; pilnuje węższej rzeczy, żeby słownik był spisem słów używanych, a nie miejscem, w którym kolejny wpis niczego nie kosztuje."
-}

@@ -1,6 +1,0 @@
-{
-  "punkt": 7,
-  "kontrola": "pary",
-  "regula": "on-bez-powierzchni",
-  "opis": "`--pct-on-danger` bez `--pct-danger`. Nazwa parsuje się bez zarzutu (rola `danger` stoi w słowniku, więc punkt 3 przechodzi), słowo jest użyte (więc punkt 4 też) — i to jest sedno: przedrostek `on-` niesie obietnicę, której składnia nie potrafi sprawdzić. Tekst DLA powierzchni, której nie ma, jest deklaracją pary z jedną stroną."
-}

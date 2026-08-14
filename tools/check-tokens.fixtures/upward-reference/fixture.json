@@ -1,0 +1,6 @@
+{
+  "point": 6,
+  "check": "levels",
+  "rule": "upward-reference",
+  "description": "`--pct-text-muted` — a semantic token — points at `{pct.button.bg}`, that is UPWARDS, at the component tier. A model turned upside down is still consistent as a graph and still builds."
+}

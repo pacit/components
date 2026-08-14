@@ -1,0 +1,6 @@
+{
+  "point": 6,
+  "check": "levels",
+  "rule": "colour-literal",
+  "description": "`--pct-button-bg` with a colour typed in by hand (`#1d4ed8`) instead of a reference. A case of its own beside `colour-under-semantics`, because it breaks differently: there the token skips ONE tier and still gives the theme author something to steer; here it gives them nothing."
+}

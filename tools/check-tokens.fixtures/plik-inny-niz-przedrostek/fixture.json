@@ -1,5 +1,0 @@
-{
-  "punkt": 3,
-  "kontrola": "schemat",
-  "opis": "`component.przycisk.json` wiozący tokeny `pct.guzik.*`. Generator scala pliki komponentowe bez oglądania się na ich nazwy, więc taki rozjazd nie psuje ani builda, ani kontrastu — psuje wyłącznie to, że nazwa pliku, przedrostek tokenu i entrypoint pakietu przestają być tym samym słowem. Bez tej trójki nie da się zgadnąć, gdzie szukać tokenu ani skąd on pochodzi."
-}

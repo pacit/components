@@ -1,0 +1,6 @@
+{
+  "point": 6,
+  "check": "levels",
+  "rule": "axis-dead",
+  "description": "The axis `motion` declared as shared and used by no component token. Every reference still goes downwards, so the graph rule passes — and that is the point. An exception nobody uses is scope granted in advance."
+}

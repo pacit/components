@@ -1,6 +1,0 @@
-{
-  "punkt": 6,
-  "kontrola": "poziomy",
-  "regula": "literal-koloru",
-  "opis": "`--pct-przycisk-bg` z kolorem wpisanym z palca (`#1d4ed8`) zamiast referencji. Osobny przypadek od `kolor-pod-semantyka`, bo psuje się inaczej: tam token omija JEDNĄ warstwę i dalej daje się przethemować przez rampę, tutaj nie ma nad sobą żadnej — literał nie należy do skórki, tylko do arkusza przebranego za token. Wymiar wpisany wprost (`--pct-checkbox-size: 18px`) jest przy tym w porządku i przechodzi: tam token komponentowy JEST dźwignią, bo nie ma nad wielkością kontrolki warstwy, którą można by ominąć."
-}

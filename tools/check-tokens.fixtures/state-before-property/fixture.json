@@ -1,0 +1,5 @@
+{
+  "point": 3,
+  "check": "schema",
+  "description": "`--pct-button-disabled-bg` instead of `--pct-button-bg-disabled`. The name is composed of nothing but good words and looks innocent — which is exactly why it is here as a case of its own. It was a REAL defect of this repository."
+}

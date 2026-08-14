@@ -1,130 +1,133 @@
-# Kontrola odniesienia bramki tokenów
+# Negative control of the token gate
 
-Celowo wadliwe wejścia. `tools/check-tokens.mjs` uruchamia na każdym z nich komplet
-swoich siedmiu kontroli i **wymaga, żeby każde zostało odrzucone — i to przez ten punkt,
-który deklaruje**. Wejście, które przechodzi, jest błędem; wejście, które zapala z innego
-powodu, niż wpisano w jego `fixture.json`, jest błędem tak samo, bo dowodzi czegoś
-innego, niż deklaruje.
+Deliberately defective inputs. `tools/check-tokens.mjs` runs all seven of its checks on
+each of them and **requires every one to be rejected — and rejected by the point it
+declares**. An input that passes is a fault; an input that fires for a reason other than
+the one written in its `fixture.json` is a fault just the same, because it proves
+something other than what it declares.
 
-Od A12 `fixture.json` może dopisać jeszcze `regula` — i wtedy musi się zgadzać także ona.
-Powód jest wprost z [`lesson-50`](../../docs/lessons.md#lesson-50): **punkt bramki to nie
-jedno zdanie.** Punkt 6 niesie dziewięć reguł, punkt 7 sześć; porównanie
-samego identyfikatora punktu przepuszcza przypadek, który zapalił na sąsiedniej regule
-tego samego punktu — czyli dowodzi czegoś innego, niż deklaruje, i wygląda przy tym na
-dowód. Zmierzone: rozbrojenie reguły `kolor-pod-semantyka` przestawia jej przypadek na
-`os-niezadeklarowana`, a rozbrojenie `os-kolorowa` — na `os-martwa`. Bez pola `regula`
-oba przebiegi byłyby zielone.
+Since A12 a `fixture.json` may add a `rule` as well — and then that has to match too. The
+reason is straight from [`lesson-50`](../../docs/lessons.md#lesson-50): **a gate's point is
+not one sentence.** Point 6 carries nine rules, point 7 six; comparing the point's
+identifier alone lets through a case that fired on a neighbouring rule of that same point
+— that is, one that proves something other than what it declares while looking like proof.
+Measured: disarming the rule `colour-under-semantics` moves its case onto
+`axis-undeclared`, and disarming `axis-coloured` moves it onto `axis-dead`. Without the
+`rule` field both runs would be green.
 
-Powód istnienia jest ten sam co przy każdej innej bramce w tym repozytorium
-([`req-quality-negative-control`](../../docs/requirements/quality.md#req-quality-negative-control)): **nowa
-bramka nie jest gotowa, gdy przechodzi — jest gotowa, gdy pokazano, że potrafi nie
-przejść.** Tutaj chodzi o obietnicę, która łamie się szczególnie cicho: nazwa tokenu
-jest publicznym API motywu, a jej zmiana nie daje ani jednego czerwonego testu, bo
-biblioteka przemianowuje obie strony naraz — token i arkusz, który go używa. Czerwono
-robi się dopiero u konsumenta, któremu zostaje nadpisanie wskazujące donikąd.
+The reason it exists is the same as for every other gate in this repository
+([`req-quality-negative-control`](../../docs/requirements/quality.md#req-quality-negative-control)):
+**a new gate is not ready when it passes — it is ready when it has been shown to fail.**
+Here it guards a promise that breaks particularly quietly: a token's name is the theme's
+public API, and changing it gives not one red test, because the library renames both sides
+at once — the token and the stylesheet using it. It turns red only at a consumer left with
+an override pointing nowhere.
 
-## Jak to jest złożone
+## How a case is built
 
-Przypadek nie jest dwunastą kopią poprawnego wejścia z jedną zepsutą rzeczą. Bramka
-składa go z czterech warstw:
+A case is not a twelfth copy of the correct input with one thing broken. The gate builds it
+from four layers:
 
-1. `_poprawny/` — wejście wzorcowe: minimalna skórka (`libs/tokens/src/*.json`), jej
-   słownik nazw, polityka warstw, policy kontrastu, jej snapshot oraz jeden entrypoint
-   `libs/components/przycisk/` **razem z arkuszem**,
-2. pliki katalogu przypadku, kopiowane **na kopię wzorca**, plus usunięcia z `usun`
-   w `fixture.json`,
-3. **prawdziwy `libs/tokens/build.mjs` z repozytorium**, uruchomiony na tak złożonych
-   źródłach — nie jego kopia w fixtures, bo kopia byłaby nieaktualnym zdaniem o tym,
-   co robi generator,
-4. jeszcze raz pliki przypadku — po buildzie.
+1. `_reference/` — the reference input: a minimal theme (`libs/tokens/src/*.json`), its
+   name dictionary, the tier policy, the contrast policy, its snapshot and one entrypoint,
+   `libs/components/button/`, **together with its stylesheet**,
+2. the case directory's files, copied **onto a copy of the reference**, plus the removals
+   from `drop` in `fixture.json`,
+3. **the real `libs/tokens/build.mjs` from the repository**, run over the sources so
+   assembled — not a copy of it in the fixtures, because a copy would be a stale sentence
+   about what the generator does,
+4. the case's files once more — after the build.
 
-Warstwa czwarta wygląda na nadmiarową i nie jest. Bez niej `dist/` fixture'a jest
-z definicji zgodne z jego źródłami, więc **punkty 1 i 2 nie miałyby jak zapalić**: obie
-badają właśnie rozjazd między artefaktem a źródłem. Przypadek, który chce ten rozjazd
-pokazać, wiezie własny `libs/tokens/dist/…` i musi przeżyć build.
+The fourth layer looks redundant and is not. Without it a fixture's `dist/` agrees with its
+sources by definition, so **points 1 and 2 would have no way to fire**: both examine
+exactly the drift between the artefact and the source. A case that wants to show that drift
+carries its own `libs/tokens/dist/…` and has to survive the build.
 
-Dzięki temu katalog przypadku zawiera **wyłącznie wadę** — widać ją bez porównywania
-plików — i nie rozjeżdża się z bazą, gdy kształt wejścia się zmieni.
+That way the case directory holds **nothing but the defect** — it is visible without
+comparing files — and does not drift from the reference when the shape of the input
+changes.
 
-Spreparowany `tokens.ts` leży tutaj jako `tokens.ts.txt` i staje się `.ts` dopiero przy
-składaniu, w katalogu tymczasowym poza repozytorium. Powód jest ten sam co w
-[`check-styles.fixtures`](../check-styles.fixtures/README.md): plik `.ts` w `tools/` nie
-należy do żadnego programu kompilatora, więc zapaliłby `check-typecheck`. **Fixture
-jednej bramki nie może być wadą dla drugiej** — i nie jest to obawa teoretyczna, bo
-`check-typecheck` zapalił na tym pliku przy pierwszym przebiegu po dodaniu go do indeksu.
+The prepared `tokens.ts` sits here as `tokens.ts.txt` and becomes `.ts` only at assembly,
+in a temporary directory outside the repository. The reason is the same as in
+[`check-styles.fixtures`](../check-styles.fixtures/README.md): a `.ts` file in `tools/`
+belongs to no compiler program, so it would fire `check-typecheck`. **One gate's fixture
+may not be another's defect** — and that is not a theoretical worry, because
+`check-typecheck` fired on this very file on the first run after it entered the index.
 
-**Wejście wzorcowe musi przejść.** To nie jest kontrola na zapas: gdyby baza sama była
-wadliwa, każdy przypadek zapalałby z jej powodu, a nie ze swojego, i wszystkie
-„odrzucone" byłyby fałszywe. Sprawdzone przebiegiem — `bg-hover` przemianowane
-w bazie na `hover-bg` natychmiast przestawiło `slowo-martwe`, `snapshot-nieaktualny`
-i `snapshot-usuniety` na cudzy punkt.
+**The reference input must pass.** This is not a check for good measure: were the reference
+itself defective, every case would fire because of it rather than because of its own, and
+every „rejected" would be false. Verified by a run — `bg-hover` renamed to `hover-bg` in
+the reference moved `dead-word`, `stale-snapshot` and `snapshot-removed` onto somebody
+else's point at once.
 
-Słownik bazy (`_poprawny/libs/tokens/src/names.policy.json`) wymienia **wyłącznie słowa
-używane** przez któryś token wzorca. To nie jest oszczędność: punkt 4 odrzuca słowo
-martwe, więc rozdmuchany „na zapas" słownik zepsułby bazę. Ta sama reguła obowiązuje
-polityki dołożone przy A12: `levels.policy.json` bazy wymienia jedną oś (`space`), bo oś
-bez użycia zapala punkt 6, a `contrast.policy.json` ma parę dla **każdego** koloru
-malowanego przez `przycisk.scss`, bo inaczej baza zapaliłaby punkt 7 na sobie.
+The reference's dictionary (`_reference/libs/tokens/src/names.policy.json`) lists **only
+words used** by some token of the reference. That is not thrift: point 4 rejects a dead
+word, so a dictionary padded „just in case" would break the reference. The same rule holds
+for the policies added at A12: the reference's `levels.policy.json` lists one axis
+(`space`), because an unused axis fires point 6, and its `contrast.policy.json` has a pair
+for **every** colour painted by `button.scss`, because otherwise the reference would fire
+point 7 on itself.
 
-Arkusz bazy (`_poprawny/libs/components/przycisk/src/przycisk.scss`) istnieje właśnie po
-to: punkt 7 mierzy malowania, a wejście bez ani jednego arkusza przechodziłoby go, nie
-orzekając o niczym. Odwrotny przypadek — `arkusz-usuniety` — pilnuje tego z drugiej
-strony.
+The reference's stylesheet (`_reference/libs/components/button/src/button.scss`) exists for
+exactly that: point 7 measures paintings, and an input with not one stylesheet would pass
+it having ruled on nothing. The opposite case — `sheet-removed` — guards that from the
+other side.
 
-## Snapshot wejścia wzorcowego
+## The reference input's snapshot
 
-`_poprawny/libs/tokens/tokens.snapshot.md` jest generowany tym samym rendererem co
-snapshot repozytorium:
+`_reference/libs/tokens/tokens.snapshot.md` is generated by the same renderer as the
+repository's snapshot:
 
 ```bash
-node tools/check-tokens.mjs --write _poprawny
+node tools/check-tokens.mjs --write _reference
 ```
 
-Ta forma polecenia istnieje wyłącznie do utrzymania fixtures. Bez niej pierwsza zmiana
-formatu snapshotu wywracałaby wejście wzorcowe, a poprawianie go ręcznie byłoby
-przepisywaniem tego samego kodu drugi raz w markdownie.
+That form of the command exists solely to maintain the fixtures. Without it the first
+change of the snapshot's format would overturn the reference input, and fixing it by hand
+would be writing the same code a second time in markdown.
 
-## Przypadki
+## The cases
 
-| katalog                     | punkt | kontrola       | reguła                 | wada                                                  |
-| --------------------------- | ----: | -------------- | ---------------------- | ----------------------------------------------------- |
-| `artefakt-bez-tokenu`       |     1 | `zbior`        | —                      | `dist/pct.css` niesie mniej, niż deklarują źródła     |
-| `token-w-dwoch-warstwach`   |     1 | `zbior`        | —                      | ten sam token w pliku komponentowym i semantycznym    |
-| `unia-bez-tokenu`           |     2 | `powierzchnia` | —                      | token wypadł z unii `PctCssVar`, został w `pctTokens` |
-| `prefiks-bez-pokrycia`      |     2 | `powierzchnia` | —                      | prefiks prywatny, którego nie używa żaden token       |
-| `stan-przed-wlasciwoscia`   |     3 | `schemat`      | —                      | `disabled-bg` zamiast `bg-disabled`                   |
-| `slowo-spoza-slownika`      |     3 | `schemat`      | —                      | `bg-over` — dobra kolejność, złe słowo                |
-| `komponent-bez-entrypointu` |     3 | `schemat`      | —                      | `component.dialog.json` bez entrypointu `dialog`      |
-| `plik-inny-niz-przedrostek` |     3 | `schemat`      | —                      | `component.przycisk.json` wiozący token `pct.guzik.*` |
-| `slowo-martwe`              |     4 | `slownik`      | —                      | stan zadeklarowany i nieużywany                       |
-| `snapshot-nieaktualny`      |     5 | `snapshot`     | —                      | przemianowanie bez aktualizacji snapshotu             |
-| `snapshot-usuniety`         |     5 | `snapshot`     | —                      | brak pliku snapshotu                                  |
-| `kolor-pod-semantyka`       |     6 | `poziomy`      | `kolor-pod-semantyka`  | kolor komponentowy wprost na prymitywie               |
-| `literal-koloru`            |     6 | `poziomy`      | `literal-koloru`       | kolor komponentowy wpisany z palca                    |
-| `odwolanie-w-bok`           |     6 | `poziomy`      | `odwolanie-w-bok`      | token komponentowy na CUDZYM komponentowym            |
-| `prymityw-z-referencja`     |     6 | `poziomy`      | `prymityw-nie-literal` | prymityw przestaje być dnem modelu                    |
-| `os-wspolna-martwa`         |     6 | `poziomy`      | `os-martwa`            | oś wspólna, której nie używa żaden token              |
-| `os-wspolna-kolorowa`       |     6 | `poziomy`      | `os-kolorowa`          | oś koloru dopisana do osi wspólnych                   |
-| `os-niezadeklarowana`       |     6 | `poziomy`      | `os-niezadeklarowana`  | odwołanie do osi spoza polityki                       |
-| `odwolanie-w-gore`          |     6 | `poziomy`      | `odwolanie-w-gore`     | token semantyczny na komponentowym                    |
-| `kolor-niezmierzony`        |     7 | `pary`         | `niezmierzony`         | arkusz maluje tłem token spoza policy                 |
-| `para-usunieta-z-policy`    |     7 | `pary`         | `niezmierzony`         | z policy znika para, malowanie zostaje                |
-| `wymiar-malowany-kolorem`   |     7 | `pary`         | `nie-kolor`            | token wymiaru w slocie koloru                         |
-| `token-spoza-skorki`        |     7 | `pary`         | `token-spoza-skorki`   | arkusz maluje tokenem, którego skórka nie zna         |
-| `on-para-martwa`            |     7 | `pary`         | `on-martwa`            | `--pct-on-surface`, którego nikt nie używa            |
-| `on-bez-powierzchni`        |     7 | `pary`         | `on-bez-powierzchni`   | `--pct-on-danger` bez `--pct-danger`                  |
-| `arkusz-usuniety`           |     7 | `pary`         | `mianownik`            | wejście bez ani jednego arkusza                       |
+| directory                      | point | check        | rule                     | defect                                                      |
+| ------------------------------ | ----: | ------------ | ------------------------ | ----------------------------------------------------------- |
+| `artifact-without-token`       |     1 | `set`        | —                        | `dist/pct.css` carries less than the sources declare        |
+| `token-in-two-layers`          |     1 | `set`        | —                        | the same token in a component and a semantic file           |
+| `union-without-token`          |     2 | `surface`    | —                        | a token left the `PctCssVar` union, stayed in `pctTokens`   |
+| `prefix-without-coverage`      |     2 | `surface`    | —                        | a private prefix no token uses                              |
+| `state-before-property`        |     3 | `schema`     | —                        | `disabled-bg` instead of `bg-disabled`                      |
+| `word-outside-dictionary`      |     3 | `schema`     | —                        | `bg-over` — right order, wrong word                         |
+| `component-without-entrypoint` |     3 | `schema`     | —                        | `component.dialog.json` with no `dialog` entrypoint         |
+| `file-unlike-prefix`           |     3 | `schema`     | —                        | `component.button.json` carrying a `pct.knob.*` token       |
+| `dead-word`                    |     4 | `dictionary` | —                        | a state declared and unused                                 |
+| `stale-snapshot`               |     5 | `snapshot`   | —                        | a rename with no snapshot update                            |
+| `snapshot-removed`             |     5 | `snapshot`   | —                        | no snapshot file                                            |
+| `colour-under-semantics`       |     6 | `levels`     | `colour-under-semantics` | a component colour straight on a primitive                  |
+| `colour-literal`               |     6 | `levels`     | `colour-literal`         | a component colour typed in by hand                         |
+| `sideways-reference`           |     6 | `levels`     | `sideways-reference`     | a component token on SOMEBODY ELSE'S component token        |
+| `primitive-with-reference`     |     6 | `levels`     | `primitive-not-literal`  | a primitive stops being the model's floor                   |
+| `shared-axis-dead`             |     6 | `levels`     | `axis-dead`              | a shared axis no token uses                                 |
+| `shared-axis-coloured`         |     6 | `levels`     | `axis-coloured`          | a colour axis added to the shared axes                      |
+| `undeclared-axis`              |     6 | `levels`     | `axis-undeclared`        | a reference to an axis outside the policy                   |
+| `upward-reference`             |     6 | `levels`     | `upward-reference`       | a semantic token on a component one                         |
+| `unmeasured-colour`            |     7 | `pairs`      | `unmeasured`             | a sheet paints a background with a token outside the policy |
+| `pair-removed-from-policy`     |     7 | `pairs`      | `unmeasured`             | the pair leaves the policy, the painting stays              |
+| `dimension-painted-as-colour`  |     7 | `pairs`      | `not-a-colour`           | a dimension token in a colour slot                          |
+| `token-outside-theme`          |     7 | `pairs`      | `token-outside-theme`    | a sheet paints with a token the theme does not know         |
+| `dead-on-pair`                 |     7 | `pairs`      | `on-dead`                | a `--pct-on-surface` nobody uses                            |
+| `on-without-surface`           |     7 | `pairs`      | `on-without-surface`     | `--pct-on-danger` with no `--pct-danger`                    |
+| `sheet-removed`                |     7 | `pairs`      | `denominator`            | an input with not one stylesheet                            |
 
-Dwa przypadki na punkt 3 dla kolejności i dla słownika są rozdzielone specjalnie:
-to dwie różne połowy tej samej obietnicy i psują się niezależnie. `stan-przed-wlasciwoscia`
-dostaje przy tym własny słownik z `disabled` w stanach, żeby jego jedyną wadą była
-kolejność segmentów — `fg-disabled` stoi obok i parsuje się bez zarzutu. Tak samo
-`kolor-niezmierzony` i `para-usunieta-z-policy` opisują tę samą regułę z dwóch stron:
-raz dochodzi malowanie bez pary, raz znika para przy malowaniu, i są to dwa różne ruchy
-człowieka.
+The two cases on point 3, one for the order and one for the dictionary, are kept apart on
+purpose: they are two different halves of the same promise and they break independently.
+`state-before-property` gets a dictionary of its own with `disabled` among the states, so
+that its only defect is the order of the segments — `fg-disabled` stands beside it and
+parses faultlessly. In the same way `unmeasured-colour` and `pair-removed-from-policy`
+describe the same rule from two sides: once a painting arrives with no pair, once the pair
+disappears from under a painting, and those are two different human moves.
 
-**Jedna reguła punktu 6 nie ma tu przypadku i to jest świadome.** `referencja-donikad`
-(token wskazujący na nieistniejący token) jest nieosiągalna dla tej konstrukcji: fixture
-składa się **przez prawdziwy `build.mjs`**, a generator rzuca wtedy „Nieznana referencja
-tokenu" i przypadek nie powstaje. Reguła zostaje w kodzie, bo jej brak zamieniłby
-rozbrojenie sąsiedniej w `TypeError` zamiast w komunikat — i to jest cały jej zakres.
+**One rule of point 6 has no case here and that is deliberate.** `reference-to-nowhere` (a
+token pointing at a token that does not exist) is unreachable for this construction: a
+fixture is assembled **through the real `build.mjs`**, and the generator then throws
+„Unknown token reference" and the case never comes into being. The rule stays in the code,
+because without it disarming a neighbouring one would turn into a `TypeError` instead of a
+message — and that is its whole scope.

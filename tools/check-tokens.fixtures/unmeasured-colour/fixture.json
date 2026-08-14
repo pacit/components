@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "pairs",
+  "rule": "unmeasured",
+  "description": "The sheet paints the background with `var(--pct-text-muted)` — a SEMANTIC token the policy does not know as a background. This is not an invented case: that is exactly what the outline variant of the real button looked like."
+}

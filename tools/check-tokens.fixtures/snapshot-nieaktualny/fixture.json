@@ -1,5 +1,0 @@
-{
-  "punkt": 5,
-  "kontrola": "snapshot",
-  "opis": "Snapshot mówi `--pct-przycisk-hover-bg`, źródła mówią `--pct-przycisk-bg-hover`. To jest kontrola wprost z planu (A4): przemianowanie tokenu bez aktualizacji snapshotu musi zapalić. Wada jest tu po stronie snapshotu, nie źródeł — ale bramka nie ma jak i nie ma po co rozstrzygać, która strona ruszyła: obie są zapisem tego samego publicznego API i ich rozjazd JEST wadą."
-}

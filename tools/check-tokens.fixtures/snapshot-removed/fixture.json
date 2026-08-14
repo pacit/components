@@ -1,0 +1,6 @@
+{
+  "point": 5,
+  "check": "snapshot",
+  "description": "No snapshot file. Kept apart from a drift, because it is a different route to the same silence: with no snapshot the gate still measures the scheme and passes green, having stopped measuring CHANGE.",
+  "drop": ["libs/tokens/tokens.snapshot.md"]
+}

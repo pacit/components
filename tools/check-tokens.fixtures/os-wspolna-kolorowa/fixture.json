@@ -1,6 +1,0 @@
-{
-  "punkt": 6,
-  "kontrola": "poziomy",
-  "regula": "os-kolorowa",
-  "opis": "Oś `blue` dopisana do osi wspólnych. To jest jedyny ruch, którym da się rozbroić cały punkt 6 jednym słowem: gdyby lista wyjątków przyjmowała kolor, `--pct-button-bg: {pct.blue.600}` przestałoby być naruszeniem i wyglądałoby to w diffie na drobne poszerzenie konfiguracji. Dlatego oś niosąca jakikolwiek token `$type: color` zapala już na samej deklaracji — zanim ktokolwiek się pod nią odwoła."
-}

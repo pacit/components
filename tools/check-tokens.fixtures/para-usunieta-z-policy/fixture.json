@@ -1,6 +1,0 @@
-{
-  "punkt": 7,
-  "kontrola": "pary",
-  "regula": "niezmierzony",
-  "opis": "Ta sama reguła od drugiej strony niż `kolor-niezmierzony`: arkusz zostaje bez zmian, znika wpis w policy. Rozdzielone specjalnie, bo to dwa różne ruchy człowieka — tam ktoś dopisał malowanie i nie dopisał pary, tutaj ktoś skasował parę i nie zauważył, że kolor dalej stoi na ekranie. Drugi jest gorszy, bo bramka kontrastu robi się po nim ZIELEŃSZA: mniej wpisów to mniej ostrzeżeń (lesson-33)."
-}

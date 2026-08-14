@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "pairs",
+  "rule": "on-dead",
+  "description": "`--pct-on-surface` declared and used by no token and no stylesheet. This is the state the real repository was in until A12 with `--pct-on-danger`: the pair looked like coverage of the promise and covered nothing."
+}

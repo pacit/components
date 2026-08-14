@@ -1,0 +1,6 @@
+{
+  "point": 6,
+  "check": "levels",
+  "rule": "axis-undeclared",
+  "description": "The list of shared axes is empty and `--pct-button-padding-x` still points at `{pct.space.4}`. This is the case for the rule without which the whole exception would be one-sided: `axis-dead` guards the list against growing, this one against its being bypassed."
+}

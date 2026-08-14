@@ -1,0 +1,7 @@
+{
+  "point": 7,
+  "check": "pairs",
+  "rule": "denominator",
+  "description": "An input with not one stylesheet. The case does not examine the theme, it examines the MEASUREMENT: point 7 rules on painted colours, so with an empty set it has nothing to rule on and passes.",
+  "drop": ["libs/components/button/src/button.scss"]
+}

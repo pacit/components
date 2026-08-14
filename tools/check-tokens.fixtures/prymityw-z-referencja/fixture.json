@@ -1,6 +1,0 @@
-{
-  "punkt": 6,
-  "kontrola": "poziomy",
-  "regula": "prymityw-nie-literal",
-  "opis": "`pct.blue.600` przestaje być wartością i staje się referencją do `{pct.slate.900}`. Ten przypadek pilnuje DNA modelu, a bez dna reguła „komponentowy → semantyczny\" nie znaczy nic: gdyby prymityw wolno było zawrócić w górę, wystarczyłoby `pct.blue.600: {pct.przycisk.bg}`, żeby zrobić cykl przez wszystkie trzy warstwy, przechodząc każdą regułę z osobna."
-}

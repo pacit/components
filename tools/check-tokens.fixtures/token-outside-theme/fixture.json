@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "pairs",
+  "rule": "token-outside-theme",
+  "description": "The sheet paints a background with `var(--pct-panel-bg)` — a token the theme does not declare. The browser will substitute the initial value for it and say nothing, and without this rule point 7 would quietly SKIP it."
+}

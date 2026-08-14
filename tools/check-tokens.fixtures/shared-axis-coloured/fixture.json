@@ -1,0 +1,6 @@
+{
+  "point": 6,
+  "check": "levels",
+  "rule": "axis-coloured",
+  "description": "The axis `blue` added to the shared axes. This is the one move that could disarm the whole of point 6 with a single word: were the exception list to accept a colour, `--pct-button-bg: {pct.blue.600}` would stop firing."
+}

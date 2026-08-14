@@ -1,0 +1,5 @@
+{
+  "point": 3,
+  "check": "schema",
+  "description": "`component.dialog.json` with no `libs/components/dialog/ng-package.json`. The tokens are composed faultlessly, they just name a component the package does not export. Guessability of a name starts with the prefix being the entrypoint's."
+}

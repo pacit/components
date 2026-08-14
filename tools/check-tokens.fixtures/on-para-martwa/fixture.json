@@ -1,6 +1,0 @@
-{
-  "punkt": 7,
-  "kontrola": "pary",
-  "regula": "on-martwa",
-  "opis": "`--pct-on-surface` zadeklarowany, a nieużywany przez żaden token i żaden arkusz. To jest stan, który prawdziwe repozytorium miało do A12 na `--pct-on-danger`: para wyglądała na pokrycie obietnicy `req-token-text-pairs`, a nie było pod nią ani jednej powierzchni — `danger` maluje w tej bibliotece wyłącznie tekst komunikatu i obramowanie. Reguła malowań tego nie widzi z konstrukcji, bo token nienamalowany nie zostawia w arkuszu śladu; dlatego ta reguła czyta nazwy."
-}

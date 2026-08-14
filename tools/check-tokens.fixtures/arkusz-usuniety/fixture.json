@@ -1,7 +1,0 @@
-{
-  "punkt": 7,
-  "kontrola": "pary",
-  "regula": "mianownik",
-  "usun": ["libs/components/przycisk/src/przycisk.scss"],
-  "opis": "Wejście bez ani jednego arkusza. Przypadek nie bada skórki, tylko POMIAR: punkt 7 orzeka o kolorach malowanych, więc przy pustym zbiorze malowań nie ma czego zganić i przechodzi, nie zmierzywszy niczego. To nie jest obawa teoretyczna — pierwsza wersja tego punktu wypisała „0 kolorów malowanych w 7 arkuszach\" i wyszła na zielono, bo wzorzec deklaracji wymagał wiodącego myślnika i widział wyłącznie custom properties (lesson-48 w punkcie napisanym po to, żeby jej nie powtórzyć). Stąd kontrola niepustości stoi po stronie WYNIKU, nie wejścia — samą liczbę arkuszy tamten błąd zostawiał poprawną."
-}

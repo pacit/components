@@ -1,0 +1,6 @@
+{
+  "point": 6,
+  "check": "levels",
+  "rule": "primitive-not-literal",
+  "description": "`pct.blue.600` stops being a value and becomes a reference to `{pct.slate.900}`. This case guards the model's floor, and without a floor the rule „component → semantic\" means nothing: every reference could end at another reference."
+}

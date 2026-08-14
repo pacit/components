@@ -1,14 +1,12 @@
 {
   "$comment": "The token name dictionary — a closed set of words a name may be composed from. A name can be guessed not because the scheme is written down in the documentation, but because a state is called `hover` EVERYWHERE rather than `hover` here, `over` there and `on-hover` elsewhere (req-token-names). The `check-tokens` gate parses every name against this file and requires every word here to be used — adding a word is therefore a line in a diff that shows up in review, not a quiet widening of the set of acceptable names. The machine will not judge whether a new word is a good one; it only makes sure there is something to judge.",
-
-  "prywatne": {
+  "private": {
     "$comment": "DTCG prefixes excluded from the public `PctCssVar` union in `dist/tokens.ts`. Both the build (the generator's filter) and the gate (point 2) read from here — one declaration instead of an expression buried in the generator that the gate would have to guess at. NOTE: `pct.red.` is deliberately NOT listed, so the raw red ramp is public while blue and slate are not. That is an inherited drift, not a decision of this gate — to be settled separately, together with the question of whether primitives belong to the public surface at all.",
-    "prefiksy": ["pct.blue.", "pct.slate."]
+    "prefixes": ["pct.blue.", "pct.slate."]
   },
-
-  "prymitywne": {
+  "primitive": {
     "$comment": "The primitive tier: a name is the DTCG path one to one (`pct.control.height.sm` → `--pct-control-height-sm`), so guessability comes down to knowing the AXES. The axes are listed, the steps are not: `500`, `md`, `medium` belong to their axis, and listing them here would be a second copy of the source file.",
-    "osie": [
+    "axes": [
       "blue",
       "slate",
       "red",
@@ -20,10 +18,9 @@
       "font"
     ]
   },
-
-  "semantyczne": {
+  "semantic": {
     "$comment": "The semantic tier: `[on-]{role}[-{variant}]`. The `on-` prefix is not a role of its own but the text/background pair rule (req-token-text-pairs) — thanks to which `--pct-on-danger` is guessable from the mere existence of `--pct-danger` rather than from a list.",
-    "role": [
+    "roles": [
       "primary",
       "surface",
       "text",
@@ -32,12 +29,11 @@
       "focus-ring",
       "shadow-panel"
     ],
-    "warianty": ["hover", "active", "disabled", "muted", "strong", "100"]
+    "variants": ["hover", "active", "disabled", "muted", "strong", "100"]
   },
-
-  "komponentowe": {
+  "component": {
     "$comment": "The component tier: `--pct-{component}[-{part}]-{property}[-{variant}]`. The component is not listed, because it is not a dictionary — it has to be a real package entrypoint (`libs/components/<name>/ng-package.json`), and point 3 watches that. The variant stands ALWAYS at the end: `--pct-button-bg-hover`, never `--pct-button-hover-bg`. That order is the only reason why knowing one name lets you guess its sibling.",
-    "czesci": [
+    "parts": [
       "affix",
       "arrow",
       "dot",
@@ -48,7 +44,7 @@
       "panel",
       "placeholder"
     ],
-    "wlasciwosci": [
+    "properties": [
       "bg",
       "border",
       "fg",
@@ -64,7 +60,7 @@
       "size",
       "target-min"
     ],
-    "stany": [
+    "states": [
       "active",
       "checked",
       "disabled",
@@ -73,9 +69,9 @@
       "invalid",
       "selected"
     ],
-    "wielkosci": {
+    "sizes": {
       "$comment": "Size is a variant like a state and stands in the same place — at the end. `md` does not appear in a name, because it is the base value: `--pct-button-height` IS the `md` height (req-api-size).",
-      "lista": ["sm", "lg"]
+      "list": ["sm", "lg"]
     }
   }
 }

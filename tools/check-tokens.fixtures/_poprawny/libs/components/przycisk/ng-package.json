@@ -1,4 +1,0 @@
-{
-  "$comment": "Entrypoint wejścia wzorcowego. Bramka czyta stąd wyłącznie NAZWĘ katalogu — token `--pct-przycisk-*` jest zgadywalny tylko wtedy, gdy `przycisk` jest tym samym słowem, którym konsument importuje komponent.",
-  "lib": { "entryFile": "src/index.ts" }
-}

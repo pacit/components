@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "pairs",
+  "rule": "unmeasured",
+  "description": "The same rule from the other side than `unmeasured-colour`: the sheet stays unchanged and the policy entry disappears. Kept apart on purpose, because these are two different human moves — there somebody added a painting and forgot the policy, here somebody trimmed the policy."
+}

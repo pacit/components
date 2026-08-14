@@ -1,0 +1,5 @@
+{
+  "point": 2,
+  "check": "surface",
+  "description": "`dist/tokens.ts` with no `--pct-button-fg` in the `PctCssVar` union, but WITH an entry in the `pctTokens` constant. The token is in the theme and in the SCSS, so nothing reports it — it loses only its typing, the one thing standing between a consumer and a typo."
+}

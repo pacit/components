@@ -43,7 +43,7 @@ const POLITYKA = `${TOKENY}/src/names.policy.json`;
 const POZIOMY = `${TOKENY}/src/levels.policy.json`;
 const KONTRAST = `${TOKENY}/src/contrast.policy.json`;
 const FIXTURES = join(ROOT, 'tools/check-tokens.fixtures');
-const BAZA = '_poprawny';
+const REFERENCE = '_reference';
 
 const WRITE = process.argv.includes('--write');
 const WRITE_FIXTURE = (() => {
@@ -51,8 +51,8 @@ const WRITE_FIXTURE = (() => {
   return WRITE && kolejny && !kolejny.startsWith('--') ? kolejny : null;
 })();
 
-const cssVar = (sciezka) => '--' + sciezka.replace(/\./g, '-');
-const lista = (wpisy) => wpisy.map((w) => `      ${w}`).join('\n');
+const cssVar = (path) => '--' + path.replace(/\./g, '-');
+const list = (wpisy) => wpisy.map((w) => `      ${w}`).join('\n');
 
 /** The first `ile` entries plus how many are left — a message has to stay readable. */
 const skroc = (wpisy, ile = 8) =>
@@ -68,8 +68,8 @@ const skroc = (wpisy, ile = 8) =>
  * does not start the text anyway — but `font-size-sm` has to see the property `font-size`
  * and not `font`, and there the order does decide.
  */
-const przedrostki = (slowa, tekst) =>
-  slowa
+const prefixesOf = (words, tekst) =>
+  words
     .filter((s) => tekst === s || tekst.startsWith(`${s}-`))
     .sort((a, b) => b.length - a.length);
 
@@ -78,33 +78,33 @@ const przedrostki = (slowa, tekst) =>
  * can take a word needed later: a name starting with a part that is also a prefix of a
  * property has two readings, and the one that closes completely is the one to take.
  */
-const parsujKomponentowy = (reszta, polityka) => {
-  const { czesci, wlasciwosci, stany, wielkosci } = polityka.komponentowe;
-  const warianty = new Set([...stany, ...wielkosci.lista]);
+const parseComponent = (rest, policy) => {
+  const { parts, properties, states, sizes } = policy.component;
+  const variants = new Set([...states, ...sizes.list]);
 
-  for (const czesc of [null, ...przedrostki(czesci, reszta)]) {
-    const poCzesci = czesc === null ? reszta : reszta.slice(czesc.length + 1);
-    if (!poCzesci) continue; // a part with no property is not a name
-    for (const wlasciwosc of przedrostki(wlasciwosci, poCzesci)) {
-      const ogon =
-        poCzesci === wlasciwosc ? '' : poCzesci.slice(wlasciwosc.length + 1);
-      if (ogon === '') return { czesc, wlasciwosc, wariant: null };
-      if (warianty.has(ogon)) return { czesc, wlasciwosc, wariant: ogon };
+  for (const part of [null, ...prefixesOf(parts, rest)]) {
+    const afterPart = part === null ? rest : rest.slice(part.length + 1);
+    if (!afterPart) continue; // a part with no property is not a name
+    for (const property of prefixesOf(properties, afterPart)) {
+      const tail =
+        afterPart === property ? '' : afterPart.slice(property.length + 1);
+      if (tail === '') return { part, property, variant: null };
+      if (variants.has(tail)) return { part, property, variant: tail };
     }
   }
   return null;
 };
 
-/** `[on-]{rola}[-{wariant}]`. */
-const parsujSemantyczny = (reszta, polityka) => {
-  const { role, warianty } = polityka.semantyczne;
-  const para = reszta.startsWith('on-');
-  const bezPary = para ? reszta.slice(3) : reszta;
+/** `[on-]{role}[-{variant}]`. */
+const parseSemantic = (rest, policy) => {
+  const { roles, variants } = policy.semantic;
+  const pair = rest.startsWith('on-');
+  const withoutPair = pair ? rest.slice(3) : rest;
 
-  for (const rola of przedrostki(role, bezPary)) {
-    const ogon = bezPary === rola ? '' : bezPary.slice(rola.length + 1);
-    if (ogon === '') return { rola, wariant: null, para };
-    if (warianty.includes(ogon)) return { rola, wariant: ogon, para };
+  for (const role of prefixesOf(roles, withoutPair)) {
+    const tail = withoutPair === role ? '' : withoutPair.slice(role.length + 1);
+    if (tail === '') return { role, variant: null, pair };
+    if (variants.includes(tail)) return { role, variant: tail, pair };
   }
   return null;
 };
@@ -117,36 +117,36 @@ const parsujSemantyczny = (reszta, polityka) => {
  * failing for a reason other than the one it declares proves something other than what it
  * declares.
  *
- * The third parameter — `regula` — is the answer to `lesson-50`. A gate's point is not one
+ * The third parameter — `rule` — is the answer to `lesson-50`. A gate's point is not one
  * sentence: point 6 carries nine rules, point 7 six. Comparing the point's identifier alone
  * lets through a case that fired on a NEIGHBOURING rule of the same point — proving
  * something other than what it declares while looking like proof. Measured: disarming five
  * of those rules moves their cases onto neighbouring rules of the same point, and without
- * this field all those runs would be green. A `fixture.json` may therefore add `regula`,
+ * this field all those runs would be green. A `fixture.json` may therefore add `rule`,
  * and then that has to match too. The field is optional: the cases of points 1–5, whose
  * rules were not split, have nothing to narrow down.
  */
-class BladTokenu extends Error {
-  constructor(kontrola, opis, regula = null) {
-    super(opis);
-    this.kontrola = kontrola;
-    this.regula = regula;
+class TokenError extends Error {
+  constructor(check, description, rule = null) {
+    super(description);
+    this.check = check;
+    this.rule = rule;
   }
 }
 
 /**
- * The full set of checks over a ready input. Throws `BladTokenu` on the first violation and
- * returns `{ opis, snapshot }` — the rendered snapshot comes back even from a checking run,
+ * The full set of checks over a ready input. Throws `TokenError` on the first violation and
+ * returns `{ description, snapshot }` — the rendered snapshot comes back even from a checking run,
  * because `--write` has to write exactly what the gate has just counted rather than count a
  * second time down another path.
  */
-const sprawdzTokeny = (we) => {
+const checkTokens = (we) => {
   const {
-    polityka,
-    poziomy,
+    policy,
+    levels,
     kontrast,
     zrodla,
-    arkusze,
+    sheets,
     css,
     ts,
     scss,
@@ -168,30 +168,30 @@ const sprawdzTokeny = (we) => {
   const zCss = new Set(
     [...css.matchAll(/^\s*(--pct-[a-z0-9-]+)\s*:/gm)].map((m) => m[1]),
   );
-  const zeZrodel = new Map(); // cssVar -> { sciezka, typy, pliki, wartosci }
-  for (const { plik, drzewo } of zrodla)
-    for (const [sciezka, typ, wartosc] of liscie(drzewo)) {
-      const nazwa = cssVar(sciezka);
-      const wpis = zeZrodel.get(nazwa) ?? {
-        sciezka,
+  const zeZrodel = new Map(); // cssVar -> { path, typy, files, wartosci }
+  for (const { file, drzewo } of zrodla)
+    for (const [path, type, wartosc] of liscie(drzewo)) {
+      const name = cssVar(path);
+      const wpis = zeZrodel.get(name) ?? {
+        path,
         typy: new Set(),
-        pliki: [],
+        files: [],
         wartosci: [],
       };
-      wpis.typy.add(typ);
-      wpis.pliki.push(plik);
+      wpis.typy.add(type);
+      wpis.files.push(file);
       // Values are collected PER FILE, not one per token: `semantic.dark.json`
-      // nadpisuje `semantic.light.json`, a `motion.reduced.json` — prymitywy osi
+      // nadpisuje `semantic.light.json`, a `motion.reduced.json` — primitives osi
       // axis. Point 6 has to look at each of them separately, because a dark theme may
       // point elsewhere than a light one — and that is precisely where a broken tier would
       // be least visible.
-      wpis.wartosci.push({ plik, wartosc });
-      zeZrodel.set(nazwa, wpis);
+      wpis.wartosci.push({ file, wartosc });
+      zeZrodel.set(name, wpis);
     }
 
   if (!zCss.size || !zeZrodel.size)
-    throw new BladTokenu(
-      'zbior',
+    throw new TokenError(
+      'set',
       `an empty set of names (CSS: ${zCss.size}, DTCG sources: ${zeZrodel.size}) — ` +
         `every later point would then pass without pronouncing on anything.\n` +
         `    Usual cause: a stale or empty \`${TOKENY}/dist\` (the gate needs ` +
@@ -201,17 +201,17 @@ const sprawdzTokeny = (we) => {
   const brakWCss = [...zeZrodel.keys()].filter((n) => !zCss.has(n)).sort();
   const brakWZrodlach = [...zCss].filter((n) => !zeZrodel.has(n)).sort();
   if (brakWCss.length || brakWZrodlach.length)
-    throw new BladTokenu(
-      'zbior',
+    throw new TokenError(
+      'set',
       `the two reads of the same list disagree:\n` +
         (brakWCss.length
           ? `    in the DTCG sources, not in \`dist/pct.css\` (${brakWCss.length}):\n` +
-            lista(skroc(brakWCss)) +
+            list(skroc(brakWCss)) +
             '\n'
           : '') +
         (brakWZrodlach.length
           ? `    in \`dist/pct.css\`, not in the DTCG sources (${brakWZrodlach.length}):\n` +
-            lista(skroc(brakWZrodlach)) +
+            list(skroc(brakWZrodlach)) +
             '\n'
           : '') +
         `    The first kind is a token the generator does not emit, or a stale \`dist\`; ` +
@@ -223,35 +223,35 @@ const sprawdzTokeny = (we) => {
     .filter(([, w]) => w.typy.size > 1)
     .map(
       ([n, w]) =>
-        `${n}: ${[...w.typy].sort().join(' vs ')} (${w.pliki.join(', ')})`,
+        `${n}: ${[...w.typy].sort().join(' vs ')} (${w.files.join(', ')})`,
     );
   if (niejednoznaczne.length)
-    throw new BladTokenu(
-      'zbior',
+    throw new TokenError(
+      'set',
       `${niejednoznaczne.length} tokens have more than one \`$type\` in the sources:\n` +
-        lista(niejednoznaczne) +
+        list(niejednoznaczne) +
         `\n    The type travels to the consumer in the snapshot and in \`tokens.ts\`; ` +
         `with two values there is nothing to write there.`,
     );
 
   // A tier comes from the SOURCE FILE, not from the shape of a name. The other way round
   // would infer the tier from the very thing this gate is meant to watch.
-  const nazwy = [...zeZrodel]
-    .map(([nazwa, w]) => ({
-      nazwa,
-      sciezka: w.sciezka,
-      typ: [...w.typy][0],
+  const names = [...zeZrodel]
+    .map(([name, w]) => ({
+      name,
+      path: w.path,
+      type: [...w.typy][0],
       wartosci: w.wartosci,
-      ...warstwa(w.pliki),
+      ...layer(w.files),
     }))
-    .sort((a, b) => (a.nazwa < b.nazwa ? -1 : a.nazwa > b.nazwa ? 1 : 0));
+    .sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
 
-  const bezWarstwy = nazwy.filter((n) => n.warstwa === null);
+  const bezWarstwy = names.filter((n) => n.layer === null);
   if (bezWarstwy.length)
-    throw new BladTokenu(
-      'zbior',
+    throw new TokenError(
+      'set',
       `${bezWarstwy.length} tokens cannot be assigned to a tier:\n` +
-        lista(skroc(bezWarstwy.map((n) => `${n.nazwa} (${n.powod})`))) +
+        list(skroc(bezWarstwy.map((n) => `${n.name} (${n.powod})`))) +
         `\n    A tier comes from the source file's name (\`primitive\`, \`semantic.*\`, ` +
         `\`component.<name>\`, \`motion.*\`). A file named otherwise carries tokens nobody ` +
         `knows the kind of — and point 3 asks about the schema PROPER TO A TIER.`,
@@ -260,20 +260,20 @@ const sprawdzTokeny = (we) => {
   // 2. POWIERZCHNIA — co z tej listy widzi konsument.
   //
   //    `_tokens.scss` carries everything, `tokens.ts` everything outside the prefixes
-  //    declared private. The prefixes are read from the policy and not from the generator,
+  //    declared isPrivate. The prefixes are read from the policy and not from the generator,
   //    or the gate would only be confirming that the generator
   //    robi to, co robi.
-  const prywatny = (sciezka) =>
-    polityka.prywatne.prefiksy.some((p) => sciezka.startsWith(p));
+  const isPrivate = (path) =>
+    policy.private.prefixes.some((p) => path.startsWith(p));
 
-  const nieuzytePrefiksy = polityka.prywatne.prefiksy.filter(
-    (p) => !nazwy.some((n) => n.sciezka.startsWith(p)),
+  const unusedPrefixes = policy.private.prefixes.filter(
+    (p) => !names.some((n) => n.path.startsWith(p)),
   );
-  if (nieuzytePrefiksy.length)
-    throw new BladTokenu(
-      'powierzchnia',
-      `${nieuzytePrefiksy.length} private prefixes cover no token at all: ` +
-        nieuzytePrefiksy.map((p) => `\`${p}\``).join(', ') +
+  if (unusedPrefixes.length)
+    throw new TokenError(
+      'surface',
+      `${unusedPrefixes.length} isPrivate prefixes cover no token at all: ` +
+        unusedPrefixes.map((p) => `\`${p}\``).join(', ') +
         `\n    A dead prefix is not harmless: in the policy it looks like a reach that ` +
         `does not exist, and at the next rename it will stop protecting what it was meant ` +
         `to protect — quietly.`,
@@ -286,20 +286,20 @@ const sprawdzTokeny = (we) => {
         (m) => m[1],
       ),
     ),
-    new Set(nazwy.map((n) => n.nazwa)),
+    new Set(names.map((n) => n.name)),
     'wszystkie tokeny',
   );
 
   const publiczne = new Set(
-    nazwy.filter((n) => !prywatny(n.sciezka)).map((n) => n.nazwa),
+    names.filter((n) => !isPrivate(n.path)).map((n) => n.name),
   );
   porownajPowierzchnie(
-    'dist/tokens.ts (unia PctCssVar)',
+    'dist/tokens.ts (union PctCssVar)',
     new Set(
       [...ts.matchAll(/^\s*\|\s*'(--pct-[a-z0-9-]+)'/gm)].map((m) => m[1]),
     ),
     publiczne,
-    'tokens outside the private prefixes',
+    'tokens outside the isPrivate prefixes',
   );
   porownajPowierzchnie(
     'dist/tokens.ts (the pctTokens constant)',
@@ -307,76 +307,76 @@ const sprawdzTokeny = (we) => {
       [...ts.matchAll(/^\s*'([a-z0-9.-]+)':/gm)].map((m) => cssVar(m[1])),
     ),
     publiczne,
-    'tokens outside the private prefixes',
+    'tokens outside the isPrivate prefixes',
   );
 
   // 3. SCHEMA — can a name be guessed?
   const zle = [];
-  for (const n of nazwy) {
-    const segmenty = n.sciezka.split('.');
+  for (const n of names) {
+    const segmenty = n.path.split('.');
     if (segmenty[0] !== 'pct') {
-      zle.push(`${n.nazwa}: the path does not start with \`pct\``);
+      zle.push(`${n.name}: the path does not start with \`pct\``);
       continue;
     }
 
-    if (n.warstwa === 'prymitywny') {
-      const [, os, ...krok] = segmenty;
-      if (!polityka.prymitywne.osie.includes(os))
+    if (n.layer === 'primitive') {
+      const [, axis, ...krok] = segmenty;
+      if (!policy.primitive.axes.includes(axis))
         zle.push(
-          `${n.nazwa}: the axis \`${os}\` is not declared ` +
-            `(${polityka.prymitywne.osie.join(', ')})`,
+          `${n.name}: the axis \`${axis}\` is not declared ` +
+            `(${policy.primitive.axes.join(', ')})`,
         );
       else if (!krok.length)
         zle.push(
-          `${n.nazwa}: an axis with no step — an axis alone is not a token`,
+          `${n.name}: an axis with no step — an axis alone is not a token`,
         );
       continue;
     }
 
-    if (n.warstwa === 'semantyczny') {
+    if (n.layer === 'semantic') {
       if (segmenty.length !== 2)
         zle.push(
-          `${n.nazwa}: the semantic tier is FLAT, and this path has ` +
+          `${n.name}: the semantic tier is FLAT, and this path has ` +
             `${segmenty.length} segments`,
         );
-      else if (!parsujSemantyczny(segmenty[1], polityka))
+      else if (!parseSemantic(segmenty[1], policy))
         zle.push(
-          `${n.nazwa}: does not compose into \`[on-]{role}[-{variant}]\` from the dictionary`,
+          `${n.name}: does not compose into \`[on-]{role}[-{variant}]\` from the dictionary`,
         );
       continue;
     }
 
-    // komponentowy
+    // component
     if (segmenty.length !== 3) {
       zle.push(
-        `${n.nazwa}: a component token has the path \`pct.{component}.{rest}\`, and this ` +
+        `${n.name}: a component token has the path \`pct.{component}.{rest}\`, and this ` +
           `one has ${segmenty.length} segments — the nesting disappears in the custom ` +
           `property's name and stops being visible`,
       );
       continue;
     }
-    const [, komponent, reszta] = segmenty;
+    const [, komponent, rest] = segmenty;
     if (komponent !== n.komponent)
       zle.push(
-        `${n.nazwa}: sits in \`component.${n.komponent}.json\` and is named after ` +
+        `${n.name}: sits in \`component.${n.komponent}.json\` and is named after ` +
           `\`${komponent}\` — the file name and the token's prefix have to be one word`,
       );
     else if (!entrypointy.has(komponent))
       zle.push(
-        `${n.nazwa}: \`${komponent}\` is not an entrypoint of the package ` +
+        `${n.name}: \`${komponent}\` is not an entrypoint of the package ` +
           `(\`${KOMPONENTY}/${komponent}/ng-package.json\` does not exist)`,
       );
-    else if (!parsujKomponentowy(reszta, polityka))
+    else if (!parseComponent(rest, policy))
       zle.push(
-        `${n.nazwa}: \`${reszta}\` does not compose into ` +
+        `${n.name}: \`${rest}\` does not compose into ` +
           `\`[{part}-]{property}[-{variant}]\` from the dictionary`,
       );
   }
   if (zle.length)
-    throw new BladTokenu(
-      'schemat',
-      `${zle.length} nazw poza schematem (req-token-names):\n` +
-        lista(skroc(zle, 12)) +
+    throw new TokenError(
+      'schema',
+      `${zle.length} nazw poza schema (req-token-names):\n` +
+        list(skroc(zle, 12)) +
         `\n    A name outside the dictionary breaks nothing today — it breaks the promise ` +
         `that a sibling name can be guessed without opening the documentation. If the word ` +
         `is genuinely new, add it to \`${POLITYKA}\`: it is to be a line in the diff.`,
@@ -393,58 +393,57 @@ const sprawdzTokeny = (we) => {
   //    A name that does NOT parse is skipped here rather than assumed impossible. In a
   //    normal run point 3 has already rejected it and this loop will not see it — but the
   //    negative control disarms the points one by one, and then it will. The first version
-  //    read `p.czesc` directly, trusting the previous point: switching point 3 off turned
+  //    read `p.part` directly, trusting the previous point: switching point 3 off turned
   //    the gate into a `TypeError`, and the negative control lost the ability to examine
   //    the point it was meant to examine. Exactly the defect of `check-typecheck` (A7) — a
   //    dependency between points is normal, writing it so that breaking it produces no
   //    sentence is not.
   const uzycia = new Map();
-  const zapisz = (kategoria, slowo) => {
-    if (slowo === null || slowo === undefined) return;
-    uzycia.set(kategoria, (uzycia.get(kategoria) ?? new Set()).add(slowo));
+  const record = (kategoria, word) => {
+    if (word === null || word === undefined) return;
+    uzycia.set(kategoria, (uzycia.get(kategoria) ?? new Set()).add(word));
   };
-  for (const n of nazwy) {
-    const segmenty = n.sciezka.split('.');
-    if (n.warstwa === 'prymitywny') zapisz('prymitywne.osie', segmenty[1]);
-    else if (n.warstwa === 'semantyczny') {
-      const p = parsujSemantyczny(segmenty[1], polityka);
+  for (const n of names) {
+    const segmenty = n.path.split('.');
+    if (n.layer === 'primitive') record('primitives.axes', segmenty[1]);
+    else if (n.layer === 'semantic') {
+      const p = parseSemantic(segmenty[1], policy);
       if (!p) continue;
-      zapisz('semantyczne.role', p.rola);
-      zapisz('semantyczne.warianty', p.wariant);
+      record('semantic.roles', p.role);
+      record('semantic.variants', p.variant);
     } else {
-      const p =
-        segmenty.length === 3 && parsujKomponentowy(segmenty[2], polityka);
+      const p = segmenty.length === 3 && parseComponent(segmenty[2], policy);
       if (!p) continue;
-      zapisz('komponentowe.czesci', p.czesc);
-      zapisz('komponentowe.wlasciwosci', p.wlasciwosc);
-      if (p.wariant !== null)
-        zapisz(
-          polityka.komponentowe.stany.includes(p.wariant)
-            ? 'komponentowe.stany'
-            : 'komponentowe.wielkosci',
-          p.wariant,
+      record('component.parts', p.part);
+      record('component.properties', p.property);
+      if (p.variant !== null)
+        record(
+          policy.component.states.includes(p.variant)
+            ? 'component.states'
+            : 'component.sizes',
+          p.variant,
         );
     }
   }
-  const zadeklarowane = {
-    'prymitywne.osie': polityka.prymitywne.osie,
-    'semantyczne.role': polityka.semantyczne.role,
-    'semantyczne.warianty': polityka.semantyczne.warianty,
-    'komponentowe.czesci': polityka.komponentowe.czesci,
-    'komponentowe.wlasciwosci': polityka.komponentowe.wlasciwosci,
-    'komponentowe.stany': polityka.komponentowe.stany,
-    'komponentowe.wielkosci': polityka.komponentowe.wielkosci.lista,
+  const declared = {
+    'primitives.axes': policy.primitive.axes,
+    'semantic.roles': policy.semantic.roles,
+    'semantic.variants': policy.semantic.variants,
+    'component.parts': policy.component.parts,
+    'component.properties': policy.component.properties,
+    'component.states': policy.component.states,
+    'component.sizes': policy.component.sizes.list,
   };
-  const martwe = Object.entries(zadeklarowane).flatMap(([kategoria, slowa]) =>
-    slowa
+  const dead = Object.entries(declared).flatMap(([kategoria, words]) =>
+    words
       .filter((s) => !(uzycia.get(kategoria)?.has(s) ?? false))
       .map((s) => `${kategoria}: \`${s}\``),
   );
-  if (martwe.length)
-    throw new BladTokenu(
-      'slownik',
-      `${martwe.length} declared words are used by no token:\n` +
-        lista(skroc(martwe, 12)) +
+  if (dead.length)
+    throw new TokenError(
+      'dictionary',
+      `${dead.length} declared words are used by no token:\n` +
+        list(skroc(dead, 12)) +
         `\n    An unused word is either a reserve for the future — and then the future ` +
         `will add it itself, visibly — or the trace of a token that is gone. Either way it ` +
         `widens the set of names point 3 lets through without widening the set of names ` +
@@ -455,9 +454,11 @@ const sprawdzTokeny = (we) => {
   // travels ON THE ERROR rather than being computed a second time by `--write`. A second
   // path computing the same thing is a second sentence about it — and two such sentences
   // drift apart exactly when nobody is looking.
-  const tresc = renderujSnapshot(nazwy, prywatny);
-  const rozjazd = (opis) =>
-    Object.assign(new BladTokenu('snapshot', opis), { snapshot: tresc });
+  const content = renderSnapshot(names, isPrivate);
+  const rozjazd = (description) =>
+    Object.assign(new TokenError('snapshot', description), {
+      snapshot: content,
+    });
 
   if (snapshot === null)
     throw rozjazd(
@@ -466,24 +467,24 @@ const sprawdzTokeny = (we) => {
         `token to another valid name then passes without a trace and breaks the ` +
         `consumer's skin.`,
     );
-  if (snapshot !== tresc) {
+  if (snapshot !== content) {
     const stare = wierszeSnapshotu(snapshot);
-    const nowe = wierszeSnapshotu(tresc);
-    const usuniete = [...stare].filter((w) => !nowe.has(w));
+    const nowe = wierszeSnapshotu(content);
+    const removed = [...stare].filter((w) => !nowe.has(w));
     const dodane = [...nowe].filter((w) => !stare.has(w));
     throw rozjazd(
       `the snapshot of token names has drifted from the generated ones:\n` +
-        (usuniete.length
-          ? `    gone from the skin (${usuniete.length}):\n` +
-            lista(skroc(usuniete)) +
+        (removed.length
+          ? `    gone from the skin (${removed.length}):\n` +
+            list(skroc(removed)) +
             '\n'
           : '') +
         (dodane.length
           ? `    added to the skin (${dodane.length}):\n` +
-            lista(skroc(dodane)) +
+            list(skroc(dodane)) +
             '\n'
           : '') +
-        (!usuniete.length && !dodane.length
+        (!removed.length && !dodane.length
           ? `    the list of names is the same — the heading or the row order drifted.\n`
           : '') +
         `    A token's name is the theme's public API: a token that has gone takes the ` +
@@ -506,53 +507,53 @@ const sprawdzTokeny = (we) => {
   //    of these matters most — without it, adding `blue` to the list would disarm the very
   //    rule the point exists for, and look like a single word in the diff.
   const zleP = [];
-  const wgSciezki = new Map(nazwy.map((n) => [n.sciezka, n]));
-  const osPrymitywu = (sciezka) => sciezka.split('.')[1];
+  const wgSciezki = new Map(names.map((n) => [n.path, n]));
+  const primitiveAxis = (path) => path.split('.')[1];
 
-  const osieWspolne = poziomy['osie-wspolne'].osie;
-  const osieKolorowe = osieWspolne.filter((os) =>
-    nazwy.some(
+  const sharedAxes = levels['shared-axes'].axes;
+  const colouredAxes = sharedAxes.filter((axis) =>
+    names.some(
       (n) =>
-        n.warstwa === 'prymitywny' &&
-        n.typ === 'color' &&
-        osPrymitywu(n.sciezka) === os,
+        n.layer === 'primitive' &&
+        n.type === 'color' &&
+        primitiveAxis(n.path) === axis,
     ),
   );
-  if (osieKolorowe.length)
-    throw new BladTokenu(
-      'poziomy',
-      `${osieKolorowe.length} axes declared as shared carry colour tokens: ` +
-        osieKolorowe.map((o) => `\`${o}\``).join(', ') +
+  if (colouredAxes.length)
+    throw new TokenError(
+      'levels',
+      `${colouredAxes.length} axes declared as shared carry colour tokens: ` +
+        colouredAxes.map((o) => `\`${o}\``).join(', ') +
         `\n    The exception for shared axes exists because there is no semantic tier ` +
         `above a dimension. Above colour there is one, and it is mandatory. A colour axis ` +
         `on this list does not widen the exception — it deletes the rule point 6 exists for.`,
-      'os-kolorowa',
+      'axis-coloured',
     );
 
-  const uzyteOsie = new Set();
-  for (const n of nazwy)
-    if (n.warstwa === 'komponentowy')
+  const usedAxes = new Set();
+  for (const n of names)
+    if (n.layer === 'component')
       for (const { wartosc } of n.wartosci) {
         const cel = odwolanie(wartosc);
-        const docelowy = cel === null ? null : wgSciezki.get(cel);
-        if (docelowy?.warstwa === 'prymitywny') uzyteOsie.add(osPrymitywu(cel));
+        const target = cel === null ? null : wgSciezki.get(cel);
+        if (target?.layer === 'primitive') usedAxes.add(primitiveAxis(cel));
       }
-  const osieMartwe = osieWspolne.filter((os) => !uzyteOsie.has(os));
-  if (osieMartwe.length)
-    throw new BladTokenu(
-      'poziomy',
-      `${osieMartwe.length} axes declared as shared are used by no component token: ` +
-        osieMartwe.map((o) => `\`${o}\``).join(', ') +
+  const deadAxes = sharedAxes.filter((axis) => !usedAxes.has(axis));
+  if (deadAxes.length)
+    throw new TokenError(
+      'levels',
+      `${deadAxes.length} axes declared as shared are used by no component token: ` +
+        deadAxes.map((o) => `\`${o}\``).join(', ') +
         `\n    The same construction as a dead word in the name dictionary (point 4): an ` +
         `unused axis widens the set of references point 6 lets through without widening the ` +
         `set of references anybody wrote. An axis absent from the sources altogether looks ` +
         `the same — and fires here the same way.`,
-      'os-martwa',
+      'axis-dead',
     );
 
-  for (const n of nazwy)
-    for (const { plik, wartosc } of n.wartosci) {
-      const gdzie = `${n.nazwa} (${plik.split('/').pop()})`;
+  for (const n of names)
+    for (const { file, wartosc } of n.wartosci) {
+      const gdzie = `${n.name} (${file.split('/').pop()})`;
       const cel = odwolanie(wartosc);
 
       if (cel === null) {
@@ -560,87 +561,87 @@ const sprawdzTokeny = (we) => {
         // then (`--pct-checkbox-size: 18px` is overridden directly). For a colour it is
         // not: a colour typed in bypasses the ramp and the semantic tier at once, so
         // nothing but the token itself can re-theme it.
-        if (n.typ === 'color' && n.warstwa !== 'prymitywny')
+        if (n.type === 'color' && n.layer !== 'primitive')
           zleP.push({
-            regula: 'literal-koloru',
-            opis:
+            rule: 'colour-literal',
+            description:
               `${gdzie}: a colour written inline (${JSON.stringify(wartosc)}) ` +
-              `in the \`${n.warstwa}\` tier — it bypasses the ramp and the semantics at once`,
+              `in the \`${n.layer}\` tier — it bypasses the ramp and the semantics at once`,
           });
         continue;
       }
 
-      const docelowy = wgSciezki.get(cel);
-      if (!docelowy) {
+      const target = wgSciezki.get(cel);
+      if (!target) {
         // Unreachable with a green build (the generator throws „Unknown reference"), but
-        // reading `docelowy.warstwa` directly would give a `TypeError` here instead of a
+        // reading `target.layer` directly would give a `TypeError` here instead of a
         // sentence — the defect this repository has caught four times already (A3, A4, A7,
         // A8), each time in a gate written in awareness of the previous one.
         zleP.push({
-          regula: 'referencja-donikad',
-          opis: `${gdzie}: points at a token that does not exist, \`${cel}\``,
+          rule: 'reference-to-nowhere',
+          description: `${gdzie}: points at a token that does not exist, \`${cel}\``,
         });
         continue;
       }
 
-      if (n.warstwa === 'prymitywny') {
+      if (n.layer === 'primitive') {
         zleP.push({
-          regula: 'prymityw-nie-literal',
-          opis:
+          rule: 'primitive-not-literal',
+          description:
             `${gdzie}: the primitive tier is the FLOOR and has to be a literal, ` +
-            `and this token points at \`${cel}\` (${docelowy.warstwa})`,
+            `and this token points at \`${cel}\` (${target.layer})`,
         });
         continue;
       }
 
-      if (n.warstwa === 'semantyczny') {
+      if (n.layer === 'semantic') {
         // A semantic alias (`surface-disabled` -> `surface-100`) is fine: both sides
         // belong to the tier a theme author knows in full anyway.
-        if (docelowy.warstwa === 'komponentowy')
+        if (target.layer === 'component')
           zleP.push({
-            regula: 'odwolanie-w-gore',
-            opis:
+            rule: 'upward-reference',
+            description:
               `${gdzie}: the semantic tier points UPWARDS, at the component token ` +
               `\`${cel}\` — overriding one component's token then re-themes the whole skin`,
           });
         continue;
       }
 
-      // komponentowy
-      if (docelowy.warstwa === 'komponentowy') {
+      // component
+      if (target.layer === 'component') {
         zleP.push({
-          regula: 'odwolanie-w-bok',
-          opis:
+          rule: 'sideways-reference',
+          description:
             `${gdzie}: points at ANOTHER component's token \`${cel}\` — overriding one ` +
             `component would then change the other (req-token-override promises exactly ` +
             `the opposite)`,
         });
         continue;
       }
-      if (docelowy.warstwa !== 'prymitywny') continue; // semantic — as it should be
+      if (target.layer !== 'primitive') continue; // semantic — as it should be
 
-      if (n.typ === 'color')
+      if (n.type === 'color')
         zleP.push({
-          regula: 'kolor-pod-semantyka',
-          opis:
+          rule: 'colour-under-semantics',
+          description:
             `${gdzie}: a component colour points straight at the primitive \`${cel}\` — ` +
             `the semantic tier above colour exists and has no exception`,
         });
-      else if (!osieWspolne.includes(osPrymitywu(cel)))
+      else if (!sharedAxes.includes(primitiveAxis(cel)))
         zleP.push({
-          regula: 'os-niezadeklarowana',
-          opis:
-            `${gdzie}: points at a primitive of the axis \`${osPrymitywu(cel)}\`, which ` +
-            `\`${POZIOMY}\` does not declare as shared (today: ${osieWspolne.join(', ')})`,
+          rule: 'axis-undeclared',
+          description:
+            `${gdzie}: points at a primitive of the axis \`${primitiveAxis(cel)}\`, which ` +
+            `\`${POZIOMY}\` does not declare as shared (today: ${sharedAxes.join(', ')})`,
         });
     }
   if (zleP.length)
-    throw new BladTokenu(
-      'poziomy',
+    throw new TokenError(
+      'levels',
       `${zleP.length} references outside the tier model (req-token-tiers):\n` +
-        lista(
+        list(
           skroc(
-            zleP.map((z) => `[${z.regula}] ${z.opis}`),
+            zleP.map((z) => `[${z.rule}] ${z.description}`),
             12,
           ),
         ) +
@@ -650,7 +651,7 @@ const sprawdzTokeny = (we) => {
       // The error's rule is the rule of the FIRST violation — with one defect (that is,
       // in every fixture) it is the only violation, and with many one has to start
       // somewhere anyway.
-      zleP[0].regula,
+      zleP[0].rule,
     );
 
   // 7. PAIRS — every colour the library PAINTS is measured (req-token-text-pairs).
@@ -665,7 +666,7 @@ const sprawdzTokeny = (we) => {
   //    The `on-*` rule works the other way round: it reads NAMES, because a pair declared
   //    and never painted leaves no trace in a stylesheet. Two reads, two different
   //    blindnesses.
-  const { malowane, przypisania } = malowaneKolory(arkusze);
+  const { malowane, przypisania } = malowaneKolory(sheets);
 
   // Point 7's denominator is measured on the RESULT, not on the input. The first version
   // asked only about the number of stylesheets — and passed green, printing „0 colours
@@ -674,29 +675,29 @@ const sprawdzTokeny = (we) => {
   // written so as not to repeat it, and the same mistake as in A5: the non-emptiness check
   // stood on the INPUT's side while the MEASUREMENT was empty. Zero pairs to check is
   // always zero violations.
-  if (!arkusze.length || !malowane.size || !kontrast.checks?.length)
-    throw new BladTokenu(
-      'pary',
-      `pusty mianownik punktu 7 (arkusze: ${arkusze.length}, ` +
-        `kolory malowane: ${malowane.size}, ` +
+  if (!sheets.length || !malowane.size || !kontrast.checks?.length)
+    throw new TokenError(
+      'pairs',
+      `pusty denominator point 7 (sheets: ${sheets.length}, ` +
+        `colours malowane: ${malowane.size}, ` +
         `policy entries: ${kontrast.checks?.length ?? 0}) — without any of these three ` +
         `this point passes without pronouncing on anything.\n` +
         `    Usual causes: a list of stylesheets that stopped returning anything ` +
         `(lesson-48 — a git pathspec is not a shell glob), or a declaration scanner that ` +
         `stopped recognising them.`,
-      'mianownik',
+      'denominator',
     );
 
   const wPolicy = new Set(
     kontrast.checks.flatMap((c) => [cssVar(c.fg), cssVar(c.bg)]),
   );
-  const wgNazwy = new Map(nazwy.map((n) => [n.nazwa, n]));
+  const wgNazwy = new Map(names.map((n) => [n.name, n]));
 
   const zleU = [];
   for (const [token, role] of [...malowane].sort()) {
     const n = wgNazwy.get(token);
     const role_ = [...role].sort().join(', ');
-    // Each of the three rules reads its OWN precondition (`!n`, `n?.typ`) instead of
+    // Each of the three rules reads its OWN precondition (`!n`, `n?.type`) instead of
     // trusting the previous one. The dependency between them is natural — a token outside
     // the skin has no type — but written with a bare `continue` it turned disarming the
     // first rule into a `TypeError` instead of a message, and the negative control lost
@@ -704,29 +705,29 @@ const sprawdzTokeny = (we) => {
     // fifth time, and the second time INSIDE one point.
     if (!n)
       zleU.push({
-        regula: 'token-spoza-skorki',
-        opis:
+        rule: 'token-outside-theme',
+        description:
           `${token}: painted (${role_}) and absent from the skin's tokens — ` +
           `there is nothing to measure`,
       });
-    if (n && n.typ !== 'color')
+    if (n && n.type !== 'color')
       zleU.push({
-        regula: 'nie-kolor',
-        opis: `${token}: malowany jako kolor (${role_}), a w DTCG ma \`$type: ${n.typ}\``,
+        rule: 'not-a-colour',
+        description: `${token}: malowany jako colour (${role_}), a w DTCG ma \`$type: ${n.type}\``,
       });
-    if (n && n.typ === 'color' && !wPolicy.has(token))
+    if (n && n.type === 'color' && !wPolicy.has(token))
       zleU.push({
-        regula: 'niezmierzony',
-        opis: `${token}: painted (${role_}) and stands in no pair of the policy`,
+        rule: 'unmeasured',
+        description: `${token}: painted (${role_}) and stands in no pair of the policy`,
       });
   }
   if (zleU.length)
-    throw new BladTokenu(
-      'pary',
+    throw new TokenError(
+      'pairs',
       `${zleU.length} colours are painted with no entry in \`${KONTRAST}\`:\n` +
-        lista(
+        list(
           skroc(
-            zleU.map((z) => `[${z.regula}] ${z.opis}`),
+            zleU.map((z) => `[${z.rule}] ${z.description}`),
             12,
           ),
         ) +
@@ -739,7 +740,7 @@ const sprawdzTokeny = (we) => {
             `custom property — those are expanded, so \`--pct-x: var(--pct-y)\` gives ` +
             `\`y\` the role of \`x\`.`
           : ''),
-      zleU[0].regula,
+      zleU[0].rule,
     );
 
   // The `on-*` rule reads NAMES rather than stylesheets — and that is its whole value: a
@@ -748,56 +749,56 @@ const sprawdzTokeny = (we) => {
   const bezPowierzchni = [];
   const martwe_ = [];
   const referowane = new Set(
-    nazwy.flatMap((n) => n.wartosci.map(({ wartosc }) => odwolanie(wartosc))),
+    names.flatMap((n) => n.wartosci.map(({ wartosc }) => odwolanie(wartosc))),
   );
-  for (const n of nazwy) {
-    if (n.warstwa !== 'semantyczny') continue;
-    if (!n.sciezka.startsWith('pct.on-')) continue;
-    const rola = n.sciezka.slice('pct.on-'.length);
-    if (!wgSciezki.has(`pct.${rola}`))
+  for (const n of names) {
+    if (n.layer !== 'semantic') continue;
+    if (!n.path.startsWith('pct.on-')) continue;
+    const role = n.path.slice('pct.on-'.length);
+    if (!wgSciezki.has(`pct.${role}`))
       bezPowierzchni.push(
-        `${n.nazwa}: a pair for a \`--pct-${rola}\` that does not exist — the \`on-\` ` +
+        `${n.name}: a pair for a \`--pct-${role}\` that does not exist — the \`on-\` ` +
           `prefix promises text FOR a surface, and that surface is not there`,
       );
-    else if (!referowane.has(n.sciezka) && !malowane.has(n.nazwa))
+    else if (!referowane.has(n.path) && !malowane.has(n.name))
       martwe_.push(
-        `${n.nazwa}: used by no token and no stylesheet — a declared pair with no ` +
+        `${n.name}: used by no token and no stylesheet — a declared pair with no ` +
           `surface for anything to stand on`,
       );
   }
-  const bladPary = (wpisy, regula, ogon) =>
-    new BladTokenu(
-      'pary',
+  const pairError = (wpisy, rule, tail) =>
+    new TokenError(
+      'pairs',
       `${wpisy.length} par \`on-*\` nie trzyma swojej strony umowy:\n` +
-        lista(skroc(wpisy)) +
+        list(skroc(wpisy)) +
         `\n    The \`on-\` prefix is no ornament: it is the only place where the skin ` +
-        `declares a text/background pair outright. ${ogon}`,
-      regula,
+        `declares a text/background pair outright. ${tail}`,
+      rule,
     );
   if (bezPowierzchni.length)
-    throw bladPary(
+    throw pairError(
       bezPowierzchni,
-      'on-bez-powierzchni',
+      'on-without-surface',
       `Text for a surface that does not exist is a name promising a pair where not even ` +
         `one side is there.`,
     );
   if (martwe_.length)
-    throw bladPary(
+    throw pairError(
       martwe_,
-      'on-martwa',
+      'on-dead',
       `A dead pair looks like coverage and is not — exactly like a dead word in the ` +
         `dictionary (point 4).`,
     );
 
-  const publicznych = publiczne.size;
+  const publicCount = publiczne.size;
   return {
-    opis:
-      `${nazwy.length} tokens (${publicznych} public, ` +
-      `${nazwy.length - publicznych} private), ` +
+    description:
+      `${names.length} tokens (${publicCount} public, ` +
+      `${names.length - publicCount} private), ` +
       `${entrypointy.size} entrypoints, ` +
-      `${malowane.size} colours painted across ${arkusze.length} stylesheets, ` +
+      `${malowane.size} colours painted across ${sheets.length} stylesheets, ` +
       `${kontrast.checks.length} pairs in the policy`,
-    snapshot: tresc,
+    snapshot: content,
   };
 };
 
@@ -817,36 +818,36 @@ const sprawdzTokeny = (we) => {
  * problem at all. Measured, not assumed: today that pattern concerns the size axes alone,
  * that is, dimension tokens, so it brings in not one colour role.
  */
-const malowaneKolory = (arkusze) => {
+const malowaneKolory = (sheets) => {
   const ROLE = [
     [/^background(-color)?$/, 'background'],
     [/^(color|fill|stroke|caret-color|-webkit-text-fill-color)$/, 'text'],
     [
       /^border(-(block|inline)(-(start|end))?)?(-color)?$|^outline(-color)?$/,
-      'obrys',
+      'outline',
     ],
   ];
   const bezposrednie = new Map(); // token -> Set(role)
   const przypisania = new Map(); // target token -> Set(tokens on the right)
 
-  for (const { css } of arkusze)
-    for (const [, wlasciwosc, wartosc] of css.matchAll(
+  for (const { css } of sheets)
+    for (const [, property, wartosc] of css.matchAll(
       /^\s*(-{0,2}[a-z][a-z0-9-]*)\s*:\s*([^;{}]+);/gm,
     )) {
-      const uzyte = [...wartosc.matchAll(/var\(\s*(--pct-[a-z0-9-]+)/g)].map(
+      const used = [...wartosc.matchAll(/var\(\s*(--pct-[a-z0-9-]+)/g)].map(
         (m) => m[1],
       );
-      if (!uzyte.length) continue;
-      if (wlasciwosc.startsWith('--')) {
-        const wpis = przypisania.get(wlasciwosc) ?? new Set();
-        for (const t of uzyte) wpis.add(t);
-        przypisania.set(wlasciwosc, wpis);
+      if (!used.length) continue;
+      if (property.startsWith('--')) {
+        const wpis = przypisania.get(property) ?? new Set();
+        for (const t of used) wpis.add(t);
+        przypisania.set(property, wpis);
         continue;
       }
-      const rola = ROLE.find(([wzorzec]) => wzorzec.test(wlasciwosc))?.[1];
-      if (!rola) continue;
-      for (const t of uzyte)
-        bezposrednie.set(t, (bezposrednie.get(t) ?? new Set()).add(rola));
+      const role = ROLE.find(([wzorzec]) => wzorzec.test(property))?.[1];
+      if (!role) continue;
+      for (const t of used)
+        bezposrednie.set(t, (bezposrednie.get(t) ?? new Set()).add(role));
     }
 
   const malowane = new Map([...bezposrednie].map(([t, r]) => [t, new Set(r)]));
@@ -872,14 +873,14 @@ const porownajPowierzchnie = (gdzie, ma, powinna, czym) => {
   const brakuje = [...powinna].filter((n) => !ma.has(n)).sort();
   const nadmiar = [...ma].filter((n) => !powinna.has(n)).sort();
   if (!brakuje.length && !nadmiar.length) return;
-  throw new BladTokenu(
-    'powierzchnia',
+  throw new TokenError(
+    'surface',
     `${gdzie} does not carry what it should (${czym}):\n` +
       (brakuje.length
-        ? `    brakuje (${brakuje.length}):\n` + lista(skroc(brakuje)) + '\n'
+        ? `    brakuje (${brakuje.length}):\n` + list(skroc(brakuje)) + '\n'
         : '') +
       (nadmiar.length
-        ? `    nadmiarowe (${nadmiar.length}):\n` + lista(skroc(nadmiar)) + '\n'
+        ? `    nadmiarowe (${nadmiar.length}):\n` + list(skroc(nadmiar)) + '\n'
         : '') +
       `    A consumer sees the tokens through these artifacts, not through the DTCG ` +
       `sources. A token with no entry in \`tokens.ts\` is not protected from a typo in ` +
@@ -889,14 +890,14 @@ const porownajPowierzchnie = (gdzie, ma, powinna, czym) => {
 };
 
 /** DTCG leaves: `[path, $type, $value]` for every node carrying a `$value`. */
-function* liscie(drzewo, prefiks = []) {
+function* liscie(drzewo, prefix = []) {
   for (const [klucz, wartosc] of Object.entries(drzewo)) {
     if (klucz.startsWith('$')) continue;
     if (!wartosc || typeof wartosc !== 'object') continue;
-    const sciezka = [...prefiks, klucz];
+    const path = [...prefix, klucz];
     if ('$value' in wartosc)
-      yield [sciezka.join('.'), wartosc.$type, wartosc.$value];
-    else yield* liscie(wartosc, sciezka);
+      yield [path.join('.'), wartosc.$type, wartosc.$value];
+    else yield* liscie(wartosc, path);
   }
 }
 
@@ -911,8 +912,8 @@ const odwolanie = (wartosc) =>
  * the primitives of the motion axis and `semantic.dark.json` the semantics, so a token is
  * sometimes in two files; one tier has to come out of them.
  */
-const warstwa = (pliki) => {
-  const nazwy = pliki.map((p) =>
+const layer = (files) => {
+  const names = files.map((p) =>
     p
       .split('/')
       .pop()
@@ -920,25 +921,25 @@ const warstwa = (pliki) => {
   );
   const znalezione = new Set();
   let komponent = null;
-  for (const nazwa of nazwy) {
-    if (nazwa === 'primitive' || nazwa.startsWith('motion.'))
-      znalezione.add('prymitywny');
-    else if (nazwa.startsWith('semantic.')) znalezione.add('semantyczny');
-    else if (nazwa.startsWith('component.')) {
-      znalezione.add('komponentowy');
-      komponent = nazwa.slice('component.'.length);
-    } else znalezione.add(`?${nazwa}`);
+  for (const name of names) {
+    if (name === 'primitive' || name.startsWith('motion.'))
+      znalezione.add('primitive');
+    else if (name.startsWith('semantic.')) znalezione.add('semantic');
+    else if (name.startsWith('component.')) {
+      znalezione.add('component');
+      komponent = name.slice('component.'.length);
+    } else znalezione.add(`?${name}`);
   }
   if (znalezione.size !== 1 || [...znalezione][0].startsWith('?'))
     return {
-      warstwa: null,
+      layer: null,
       komponent: null,
       powod:
         znalezione.size > 1
-          ? `dwie warstwy naraz: ${pliki.join(', ')}`
-          : `nierozpoznany plik: ${pliki.join(', ')}`,
+          ? `dwie layers naraz: ${files.join(', ')}`
+          : `nierozpoznany file: ${files.join(', ')}`,
     };
-  return { warstwa: [...znalezione][0], komponent, powod: null };
+  return { layer: [...znalezione][0], komponent, powod: null };
 };
 
 // ── snapshot ──────────────────────────────────────────────────────────────────
@@ -949,7 +950,7 @@ const warstwa = (pliki) => {
  * so one long token rewrites the WHOLE file and the diff stops showing what really changed
  * — losing the only function this file exists for.
  */
-const renderujSnapshot = (nazwy, prywatny) =>
+const renderSnapshot = (names, isPrivate) =>
   [
     '# Token name snapshot',
     '',
@@ -964,49 +965,46 @@ const renderujSnapshot = (nazwy, prywatny) =>
     'This file is the list a change is measured against. A drift does not mean „an error" —',
     'it means „a change of public API that is to be visible in review".',
     '',
-    'Kolumny: nazwa custom property · `$type` z DTCG · warstwa · czy jest w publicznej',
-    'unii `PctCssVar` (patrz `prywatne.prefiksy` w',
+    'Columns: the custom property name · `$type` from DTCG · the tier · whether it is in',
+    'the public `PctCssVar` union (see `private.prefixes` in',
     '[`src/names.policy.json`](src/names.policy.json)).',
     '',
     '```',
-    ...nazwy.map((n) =>
-      [
-        n.nazwa,
-        n.typ,
-        n.warstwa,
-        prywatny(n.sciezka) ? 'prywatny' : 'publiczny',
-      ].join(' '),
+    ...names.map((n) =>
+      [n.name, n.type, n.layer, isPrivate(n.path) ? 'private' : 'public'].join(
+        ' ',
+      ),
     ),
     '```',
     '',
   ].join('\n');
 
 /** The data rows alone — for computing the difference, with no heading. */
-const wierszeSnapshotu = (tresc) =>
-  new Set(tresc.split('\n').filter((w) => w.startsWith('--pct-')));
+const wierszeSnapshotu = (content) =>
+  new Set(content.split('\n').filter((w) => w.startsWith('--pct-')));
 
 // ── input from disk ───────────────────────────────────────────────────────────
 
-const czytaj = (root, sciezka) => readFileSync(join(root, sciezka), 'utf8');
+const read = (root, path) => readFileSync(join(root, path), 'utf8');
 
 /**
  * An input built from a file list — the same shape for the repository and for a fixture.
  * `dist/` is read outside that list, because it is gitignored: for the repository it
  * comes from `dependsOn: build`, for a fixture from a run of that same `build.mjs`.
  */
-const zbierzWejscie = (root, pliki) => {
+const zbierzWejscie = (root, files) => {
   const dist = join(root, TOKENY, 'dist');
-  for (const plik of ['pct.css', 'tokens.ts', '_tokens.scss'])
-    if (!existsSync(join(dist, plik)))
-      throw new BladTokenu(
-        'zbior',
-        `no \`${TOKENY}/dist/${plik}\` — this gate reads artifacts, not the sources ` +
+  for (const file of ['pct.css', 'tokens.ts', '_tokens.scss'])
+    if (!existsSync(join(dist, file)))
+      throw new TokenError(
+        'set',
+        `no \`${TOKENY}/dist/${file}\` — this gate reads artifacts, not the sources ` +
           `alone.\n    The target needs a \`dependsOn\` on the token build.`,
       );
 
-  const zrodla = pliki
+  const zrodla = files
     .filter((p) => p.startsWith(`${TOKENY}/src/`) && p.endsWith('.json'))
-    .map((plik) => ({ plik, drzewo: JSON.parse(czytaj(root, plik)) }))
+    .map((file) => ({ file, drzewo: JSON.parse(read(root, file)) }))
     // DTCG is recognised by the `pct` ROOT and not by a file-name pattern repeated from
     // the generator — see the comment at point 1.
     .filter(
@@ -1018,30 +1016,30 @@ const zbierzWejscie = (root, pliki) => {
   // list of `$variable: var(--pct-…)`), so counting them as painting would add every skin
   // token to the denominator at once and point 7 would demand a pair for the whole
   // primitive ramp.
-  const arkusze = pliki
+  const sheets = files
     .filter(
       (p) =>
         p.startsWith(`${KOMPONENTY}/`) &&
         p.endsWith('.scss') &&
         !p.startsWith(`${KOMPONENTY}/themes/`),
     )
-    .map((plik) => ({
-      plik,
-      css: sass.compile(join(root, plik), { style: 'expanded' }).css,
+    .map((file) => ({
+      file,
+      css: sass.compile(join(root, file), { style: 'expanded' }).css,
     }));
 
   return {
-    polityka: JSON.parse(czytaj(root, POLITYKA)),
-    poziomy: JSON.parse(czytaj(root, POZIOMY)),
-    kontrast: JSON.parse(czytaj(root, KONTRAST)),
+    policy: JSON.parse(read(root, POLITYKA)),
+    levels: JSON.parse(read(root, POZIOMY)),
+    kontrast: JSON.parse(read(root, KONTRAST)),
     zrodla,
-    arkusze,
-    css: czytaj(root, `${TOKENY}/dist/pct.css`),
-    ts: czytaj(root, `${TOKENY}/dist/tokens.ts`),
-    scss: czytaj(root, `${TOKENY}/dist/_tokens.scss`),
-    snapshot: existsSync(join(root, SNAPSHOT)) ? czytaj(root, SNAPSHOT) : null,
+    sheets,
+    css: read(root, `${TOKENY}/dist/pct.css`),
+    ts: read(root, `${TOKENY}/dist/tokens.ts`),
+    scss: read(root, `${TOKENY}/dist/_tokens.scss`),
+    snapshot: existsSync(join(root, SNAPSHOT)) ? read(root, SNAPSHOT) : null,
     entrypointy: new Set(
-      pliki
+      files
         .filter((p) =>
           new RegExp(`^${KOMPONENTY}/[^/]+/ng-package\\.json$`).test(p),
         )
@@ -1059,7 +1057,7 @@ const zbierzWejscie = (root, pliki) => {
  * glob, and without `:(glob)` a star crosses `/`, so a pattern with a star can return ZERO
  * files rather than an error (lesson-48).
  */
-const plikiRepozytorium = () =>
+const repoFiles = () =>
   execFileSync('git', ['ls-files', '-z', TOKENY, KOMPONENTY], {
     cwd: ROOT,
     encoding: 'utf8',
@@ -1087,33 +1085,33 @@ const plikiRepozytorium = () =>
  * a `.ts` file in `tools/` belongs to no compiler program, so it would fire
  * `check-typecheck` (point 1 — a file with no project). One gate's fixture must not be
  * another's defect. Measured, not foreseen: the typecheck gate fired on
- * nim przy pierwszym przebiegu po dodaniu pliku do indeksu gita.
+ * nim przy pierwszym przebiegu po dodaniu file do indeksu gita.
  */
-const zlozFixture = (nazwa, fx) => {
+const buildFixture = (name, fx) => {
   const cel = mkdtempSync(join(tmpdir(), 'pct-check-tokens-'));
   const overlay = () =>
-    cpSync(join(FIXTURES, nazwa), cel, {
+    cpSync(join(FIXTURES, name), cel, {
       recursive: true,
       filter: (src) => !src.endsWith('fixture.json'),
     });
 
-  cpSync(join(FIXTURES, BAZA), cel, { recursive: true });
-  if (nazwa !== BAZA) overlay();
-  for (const sciezka of fx.usun ?? [])
-    rmSync(join(cel, sciezka), { recursive: true, force: true });
+  cpSync(join(FIXTURES, REFERENCE), cel, { recursive: true });
+  if (name !== REFERENCE) overlay();
+  for (const path of fx.drop ?? [])
+    rmSync(join(cel, path), { recursive: true, force: true });
 
   cpSync(join(ROOT, TOKENY, 'build.mjs'), join(cel, TOKENY, 'build.mjs'));
   execFileSync(process.execPath, ['build.mjs'], {
     cwd: join(cel, TOKENY),
     stdio: 'pipe',
   });
-  if (nazwa !== BAZA) overlay();
-  for (const plik of globSync('**/*.ts.txt', { cwd: cel }))
-    renameSync(join(cel, plik), join(cel, plik.replace(/\.txt$/, '')));
+  if (name !== REFERENCE) overlay();
+  for (const file of globSync('**/*.ts.txt', { cwd: cel }))
+    renameSync(join(cel, file), join(cel, file.replace(/\.txt$/, '')));
   return cel;
 };
 
-const wejscieFixture = (katalog) =>
+const fixtureInput = (katalog) =>
   zbierzWejscie(
     katalog,
     globSync('**/*.{json,scss}', { cwd: katalog })
@@ -1124,21 +1122,21 @@ const wejscieFixture = (katalog) =>
 // ── the run ───────────────────────────────────────────────────────────────────
 
 const problems = [];
-let opis = null;
+let description = null;
 
 // The maintenance path: rewrite a fixture's snapshot and exit. It does not mix with a
 // checking run, because it is not checking — it is composing the reference input from the
 // same renderer the repository is measured with.
 if (WRITE_FIXTURE) {
-  const katalog = zlozFixture(WRITE_FIXTURE, {});
+  const katalog = buildFixture(WRITE_FIXTURE, {});
   const cel = join(FIXTURES, WRITE_FIXTURE, SNAPSHOT);
   try {
-    sprawdzTokeny(wejscieFixture(katalog));
+    checkTokens(fixtureInput(katalog));
     console.log(`✓ ${WRITE_FIXTURE}: the snapshot was already current.`);
-  } catch (blad) {
-    if (!(blad instanceof BladTokenu) || blad.kontrola !== 'snapshot')
-      throw blad;
-    writeFileSync(cel, blad.snapshot);
+  } catch (error) {
+    if (!(error instanceof TokenError) || error.check !== 'snapshot')
+      throw error;
+    writeFileSync(cel, error.snapshot);
     console.log(`✓ Rewrote ${WRITE_FIXTURE}/${SNAPSHOT}.`);
   } finally {
     rmSync(katalog, { recursive: true, force: true });
@@ -1147,30 +1145,30 @@ if (WRITE_FIXTURE) {
 }
 
 try {
-  const wynik = sprawdzTokeny(zbierzWejscie(ROOT, plikiRepozytorium()));
-  opis = wynik.opis;
-} catch (blad) {
-  if (!(blad instanceof BladTokenu)) throw blad;
+  const wynik = checkTokens(zbierzWejscie(ROOT, repoFiles()));
+  description = wynik.description;
+} catch (error) {
+  if (!(error instanceof TokenError)) throw error;
   // `--write` exists so that a snapshot drift can be accepted with one command. Every
   // other point stays an error under it too: rewriting the snapshot is no answer to a name
   // from outside the schema.
-  if (WRITE && blad.kontrola === 'snapshot') {
-    writeFileSync(join(ROOT, SNAPSHOT), blad.snapshot);
+  if (WRITE && error.check === 'snapshot') {
+    writeFileSync(join(ROOT, SNAPSHOT), error.snapshot);
     console.log(
       `✓ Rewrote ${SNAPSHOT}. Run the gate once more — the negative control did not run ` +
         `in this pass.`,
     );
     process.exit(0);
   }
-  problems.push(`${blad.kontrola}: ${blad.message}`);
+  problems.push(`${error.check}: ${error.message}`);
 }
 
-const przypadki = readdirSync(FIXTURES, { withFileTypes: true })
-  .filter((d) => d.isDirectory() && d.name !== BAZA)
+const cases = readdirSync(FIXTURES, { withFileTypes: true })
+  .filter((d) => d.isDirectory() && d.name !== REFERENCE)
   .map((d) => d.name)
   .sort();
 
-if (przypadki.length === 0)
+if (cases.length === 0)
   problems.push(
     `tools/check-tokens.fixtures: no prepared inputs — a gate with no proof that it can ` +
       `fail is one more silent defect (req-quality-negative-control)`,
@@ -1180,44 +1178,44 @@ if (przypadki.length === 0)
 // because of it rather than its own defect, and every „rejected" would be false — this
 // control would become the very thing it stands against.
 {
-  const katalog = zlozFixture(BAZA, {});
+  const katalog = buildFixture(REFERENCE, {});
   try {
-    sprawdzTokeny(wejscieFixture(katalog));
-  } catch (blad) {
-    if (!(blad instanceof BladTokenu)) throw blad;
+    checkTokens(fixtureInput(katalog));
+  } catch (error) {
+    if (!(error instanceof TokenError)) throw error;
     problems.push(
-      `${BAZA}: the reference input does NOT pass (${blad.kontrola}) — ` +
-        `every prepared case now fires because of it.\n    ${blad.message}`,
+      `${REFERENCE}: the reference input does NOT pass (${error.check}) — ` +
+        `every prepared case now fires because of it.\n    ${error.message}`,
     );
   } finally {
     rmSync(katalog, { recursive: true, force: true });
   }
 }
 
-for (const nazwa of przypadki) {
+for (const name of cases) {
   const fx = JSON.parse(
-    readFileSync(join(FIXTURES, nazwa, 'fixture.json'), 'utf8'),
+    readFileSync(join(FIXTURES, name, 'fixture.json'), 'utf8'),
   );
-  const katalog = zlozFixture(nazwa, fx);
+  const katalog = buildFixture(name, fx);
   try {
-    sprawdzTokeny(wejscieFixture(katalog));
+    checkTokens(fixtureInput(katalog));
     problems.push(
-      `${nazwa}: the prepared input PASSED and was meant not to — ` +
-        `point ${fx.punkt} (\`${fx.kontrola}\`) stopped examining anything`,
+      `${name}: the prepared input PASSED and was meant not to — ` +
+        `point ${fx.point} (\`${fx.check}\`) stopped examining anything`,
     );
-  } catch (blad) {
-    if (!(blad instanceof BladTokenu)) throw blad;
-    if (blad.kontrola !== fx.kontrola)
+  } catch (error) {
+    if (!(error instanceof TokenError)) throw error;
+    if (error.check !== fx.check)
       problems.push(
-        `${nazwa}: check \`${blad.kontrola}\` fired, and point ${fx.punkt} ` +
-          `(\`${fx.kontrola}\`) was meant to — the fixture proves something other than what it declares`,
+        `${name}: check \`${error.check}\` fired, and point ${fx.point} ` +
+          `(\`${fx.check}\`) was meant to — the fixture proves something other than what it declares`,
       );
     // A point is not one sentence (lesson-50). A case declaring a rule has to fire on
     // THAT rule and not on a neighbouring rule of the same point — otherwise the point's
     // identifier confirms nothing but itself.
-    else if (fx.regula && blad.regula !== fx.regula)
+    else if (fx.rule && error.rule !== fx.rule)
       problems.push(
-        `${nazwa}: w punkcie ${fx.punkt} rule \`${blad.regula}\` fired, and \`${fx.regula}\` — ten sam punkt, inne zdanie`,
+        `${name}: w punkcie ${fx.point} rule \`${error.rule}\` fired, and \`${fx.rule}\` — ten sam point, inne zdanie`,
       );
   } finally {
     rmSync(katalog, { recursive: true, force: true });
@@ -1234,6 +1232,6 @@ if (problems.length) {
 }
 
 console.log(
-  `✓ Tokens: ${opis}. Negative control: the reference input passes, ` +
-    `${przypadki.length} prepared ones rejected on their own points.`,
+  `✓ Tokens: ${description}. Negative control: the reference input passes, ` +
+    `${cases.length} prepared ones rejected on their own points.`,
 );

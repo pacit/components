@@ -1,6 +1,0 @@
-{
-  "$comment": "Polityka warstw wejścia wzorcowego. Wymienia WYŁĄCZNIE osie naprawdę używane przez token komponentowy — punkt 6 odrzuca oś martwą, więc dopisanie tu czegokolwiek „na zapas\" zepsułoby bazę i każdy przypadek zapalałby z jej powodu.",
-  "osie-wspolne": {
-    "osie": ["space"]
-  }
-}

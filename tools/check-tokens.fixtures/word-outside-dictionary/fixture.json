@@ -1,0 +1,5 @@
+{
+  "point": 3,
+  "check": "schema",
+  "description": "`--pct-button-bg-over` instead of `--pct-button-bg-hover`. The order of the segments is right here — the defect is the word itself. This is the half of the promise „you will guess it without documentation\" the snapshot does not touch at all."
+}

@@ -1,0 +1,5 @@
+{
+  "point": 1,
+  "check": "set",
+  "description": "`pct.button.bg` stands both in `component.button.json` and in `semantic.light.json`. The generator merges both trees, so there is one entry in the CSS and nothing looks broken — and the token's tier stops being defined."
+}

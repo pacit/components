@@ -1,0 +1,5 @@
+{
+  "point": 2,
+  "check": "surface",
+  "description": "The policy declares a private prefix `pct.green.` that not one token uses. A dead prefix looks like scope in the file and is none — and at the next rename of a ramp it will stop protecting what it was written for."
+}

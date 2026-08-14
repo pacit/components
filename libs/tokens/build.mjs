@@ -63,8 +63,7 @@ function toCss(value, all) {
   if (typeof value === 'string') {
     const m = value.match(REF);
     if (m) {
-      if (!(m[1] in all))
-        throw new Error(`Nieznana referencja tokenu: {${m[1]}}`);
+      if (!(m[1] in all)) throw new Error(`Unknown token reference: {${m[1]}}`);
       return `var(${cssVar(m[1])})`;
     }
     return value;
@@ -218,7 +217,7 @@ function run() {
   // The name dictionary. The build needs one thing from it — the list of prefixes kept
   // out of the public TS union — but that list lives THERE and not here, so `check-tokens`
   // can read it instead of guessing what this filter means.
-  const nazwy = JSON.parse(
+  const names = JSON.parse(
     readFileSync(join(SRC, 'names.policy.json'), 'utf8'),
   );
 
@@ -312,7 +311,7 @@ function run() {
 
   // TS (typed names of the semantic and component tokens)
   const publicPaths = Object.keys(base).filter(
-    (p) => !nazwy.prywatne.prefiksy.some((prefiks) => p.startsWith(prefiks)),
+    (p) => !names.private.prefixes.some((prefix) => p.startsWith(prefix)),
   );
   const tsEntries = publicPaths
     .map((p) => `  '${p}': 'var(${cssVar(p)})',`)

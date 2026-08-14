@@ -1,0 +1,6 @@
+{
+  "point": 6,
+  "check": "levels",
+  "rule": "colour-under-semantics",
+  "description": "`--pct-button-bg` points straight at the primitive `{pct.blue.600}` instead of at `{pct.primary}`. The value is the same to the byte — the theme looks identical, the contrast comes out identical — and the theme author has lost the tier they were meant to steer through."
+}

@@ -1,8 +1,7 @@
 {
   "$comment": "The token tier policy (req-token-tiers). The promise: the reference graph goes DOWNWARDS only — component to semantic, semantic to primitive, primitive to a literal. The point is not order for order's sake but the theme author's LEVERAGE: a component token referring straight to a primitive takes away the tier they were meant to steer through, and a component token referring to SOMEBODY ELSE'S component token breaks req-token-override (overriding `--pct-button-bg` is to change the button and nothing else). Point 6 of the `check-tokens` gate watches this.",
-
-  "osie-wspolne": {
+  "shared-axes": {
     "$comment": "The primitive axes a component token MAY refer to directly. The exception is narrowed twice over. First, by definition it does not cover colour: for colour the semantic tier exists, is complete and is compulsory without a single exception (point 6 rejects a component colour pointing at a primitive REGARDLESS of this list, and rejects an axis carrying any `$type: color` token at the declaration itself — adding `blue` here fires the gate rather than disarming the rule it was built for). Second, every axis listed has to be REALLY used by some component token — a dead axis fires just as a dead word in the name dictionary does.\n\nWhy the exception exists at all: there is no semantic tier above the dimension axes today, and one cannot be added without inventing roles nobody needs. `pct.control.height.md` is NOT a raw value without meaning — it is the axis shared by the button and the field row (req-api-size), that is the very lever semantics was meant to be. Without this entry the rule would be either broken 35 times or pretended; this file makes it a rule that is met and narrowed, and makes every widening of it a line in a diff that shows up in review.",
-    "osie": ["control", "font", "radius", "space", "target"]
+    "axes": ["control", "font", "radius", "space", "target"]
   }
 }

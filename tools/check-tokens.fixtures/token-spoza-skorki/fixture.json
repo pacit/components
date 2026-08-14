@@ -1,6 +1,0 @@
-{
-  "punkt": 7,
-  "kontrola": "pary",
-  "regula": "token-spoza-skorki",
-  "opis": "Arkusz maluje tłem `var(--pct-panel-bg)` — token, którego skórka nie deklaruje. Przeglądarka podstawi za niego wartość początkową i nie powie nic, a punkt 7 bez tej reguły po cichu POMINĄŁBY go przy liczeniu par, czyli literówka w nazwie kasowałaby wymóg pokrycia zamiast go zapalać. `check-package` łapie ten sam błąd w spakowanym artefakcie (punkt 3), ale dopiero po zbudowaniu pakietu — a mianownik tej bramki musi być pewny wcześniej."
-}

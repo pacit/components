@@ -1,0 +1,6 @@
+{
+  "point": 6,
+  "check": "levels",
+  "rule": "sideways-reference",
+  "description": "`--pct-button-bg-hover` points at `{pct.button.bg}`, that is, at SOMEBODY ELSE'S token of the same tier. The reference input has one component only, so the defect looks innocent; with two of them it is `req-token-override` broken outright."
+}

@@ -1,5 +1,0 @@
-{
-  "punkt": 1,
-  "kontrola": "zbior",
-  "opis": "`pct.przycisk.bg` stoi i w `component.przycisk.json`, i w `semantic.light.json`. Generator scala oba drzewa, więc w CSS-ie jest jeden wpis i nic nie wygląda na zepsute — a warstwa tokenu przestaje być określona. Warstwa rozstrzyga, WEDŁUG KTÓREGO schematu punkt 3 czyta nazwę, więc token bez warstwy jest tokenem bez reguły."
-}

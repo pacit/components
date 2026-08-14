@@ -1,0 +1,33 @@
+{
+  "$comment": "Policy kontrastu wejścia wzorcowego. Do A12 czytał ją wyłącznie build; od punktu 7 czyta ją także ta bramka i wymaga, żeby każdy kolor malowany przez `button.scss` stał tu w jakiejś parze — inaczej baza sama by nie przeszła. Wpisów jest dokładnie tyle, ile trzeba: nadmiarowy nie zaszkodziłby punktowi 7, ale zaszkodziłby czytelności, bo baza ma pokazywać minimum, a nie skórkę.",
+  "checks": [
+    {
+      "name": "tekst podstawowy",
+      "fg": "pct.text",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button — etykieta",
+      "fg": "pct.button.fg",
+      "bg": "pct.button.bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button/hover — etykieta",
+      "fg": "pct.button.fg",
+      "bg": "pct.button.bg-hover",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button — etykieta obok kontrolki",
+      "fg": "pct.button.label-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    }
+  ]
+}

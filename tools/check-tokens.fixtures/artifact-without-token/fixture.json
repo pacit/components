@@ -1,0 +1,5 @@
+{
+  "point": 1,
+  "check": "set",
+  "description": "`dist/pct.css` with no `--pct-button-fg`, the DTCG sources unchanged. This is what a stale `dist` looks like and what a generator that lost a token looks like: the artefact carries less than the sources declare. A gate reading the sources alone would be blind to it."
+}

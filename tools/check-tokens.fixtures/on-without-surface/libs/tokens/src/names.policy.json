@@ -1,0 +1,21 @@
+{
+  "$comment": "Słownik wejścia wzorcowego. Wymienia WYŁĄCZNIE słowa, których używa któryś token — punkt 4 bramki odrzuca słowo martwe, więc rozdmuchanie tego pliku „na zapas\" zepsułoby bazę i każdy przypadek zapalałby z jej powodu.",
+  "private": {
+    "prefixes": ["pct.blue.", "pct.slate."]
+  },
+  "primitive": {
+    "axes": ["blue", "slate", "space", "motion"]
+  },
+  "semantic": {
+    "roles": ["danger", "primary", "surface", "text"],
+    "variants": ["hover", "muted"]
+  },
+  "component": {
+    "parts": ["label"],
+    "properties": ["bg", "fg", "padding-x"],
+    "states": ["hover"],
+    "sizes": {
+      "list": ["sm"]
+    }
+  }
+}

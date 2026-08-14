@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "pairs",
+  "rule": "on-without-surface",
+  "description": "`--pct-on-danger` with no `--pct-danger`. The name parses faultlessly (the role `danger` stands in the dictionary, so point 3 passes), the word is used (so point 4 passes too) — and that is the heart of it: the pair is the promise, and half a pair is not."
+}

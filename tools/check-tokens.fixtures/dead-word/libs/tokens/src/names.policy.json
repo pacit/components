@@ -1,0 +1,20 @@
+{
+  "private": {
+    "prefixes": ["pct.blue.", "pct.slate."]
+  },
+  "primitive": {
+    "axes": ["blue", "slate", "space", "motion"]
+  },
+  "semantic": {
+    "roles": ["primary", "surface", "text"],
+    "variants": ["hover", "muted"]
+  },
+  "component": {
+    "parts": ["label"],
+    "properties": ["bg", "fg", "padding-x"],
+    "states": ["hover", "pressed"],
+    "sizes": {
+      "list": ["sm"]
+    }
+  }
+}
