@@ -42,7 +42,7 @@ async function render<T>(type: Type<T>) {
     [(value)]="value"
     (touch)="touchCount = touchCount + 1"
   >
-    <pct-radio value="free">Darmowy</pct-radio>
+    <pct-radio value="free">Free</pct-radio>
     <pct-radio value="pro">Pro</pct-radio>
     <pct-radio value="enterprise" disabled>Enterprise</pct-radio>
   </pct-radio-group>`,
@@ -63,7 +63,7 @@ class Host {
 @Component({
   imports: [PctRadioGroup, PctRadio, FormField],
   template: `<pct-radio-group label="Plan" [formField]="f.plan">
-    <pct-radio value="free">Darmowy</pct-radio>
+    <pct-radio value="free">Free</pct-radio>
     <pct-radio value="pro">Pro</pct-radio>
   </pct-radio-group>`,
 })
@@ -77,7 +77,7 @@ class SignalFormHost {
 @Component({
   imports: [PctRadioGroup, PctRadio, ReactiveFormsModule],
   template: `<pct-radio-group [formControl]="ctrl">
-    <pct-radio value="free">Darmowy</pct-radio>
+    <pct-radio value="free">Free</pct-radio>
     <pct-radio value="pro">Pro</pct-radio>
   </pct-radio-group>`,
 })
@@ -88,7 +88,7 @@ class ReactiveHost {
 @Component({
   imports: [PctRadioGroup, PctRadio, FormsModule],
   template: `<pct-radio-group [(ngModel)]="plan">
-    <pct-radio value="free">Darmowy</pct-radio>
+    <pct-radio value="free">Free</pct-radio>
     <pct-radio value="pro">Pro</pct-radio>
   </pct-radio-group>`,
 })

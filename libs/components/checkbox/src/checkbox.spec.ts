@@ -57,7 +57,7 @@ class Host {
 
 @Component({
   imports: [PctCheckbox, FormField],
-  template: `<pct-checkbox label="Regulamin" [formField]="f.terms" />`,
+  template: `<pct-checkbox label="Terms and conditions" [formField]="f.terms" />`,
 })
 class SignalFormHost {
   model = signal({ terms: false });

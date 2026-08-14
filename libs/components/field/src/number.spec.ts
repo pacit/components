@@ -72,7 +72,7 @@ class Host {
 
 @Component({
   imports: [PctField, PctNumber],
-  template: `<pct-field label="Cena" hint="Brutto">
+  template: `<pct-field label="Price" hint="Gross">
     <input pctNumber [maxFractionDigits]="2" [(value)]="value" />
   </pct-field>`,
 })
@@ -622,14 +622,14 @@ describe('PctNumber', () => {
 
     it('focus() and reset() are what signal forms reach for', async () => {
       const fixture = await render(SignalFormHost);
-      const dyrektywa = fixture.debugElement
+      const directive = fixture.debugElement
         .query((d) => d.nativeElement.tagName === 'INPUT')
         .injector.get(PctNumber);
 
-      dyrektywa.focus();
+      directive.focus();
       expect(document.activeElement).toBe(inputOf(fixture));
 
-      dyrektywa.reset();
+      directive.reset();
       await fixture.whenStable();
       expect(fixture.componentInstance.model().seats).toBe(null);
       expect(inputOf(fixture).value).toBe('');

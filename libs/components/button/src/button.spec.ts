@@ -8,7 +8,7 @@ import { providePctConfig } from '@pacit/components/core';
 import { PctButton } from './button';
 import { PctButtonSize, PctButtonVariant } from './button.types';
 
-// Host ze sterowalnym stanem — realny <button pctButton>.
+// A host with a controllable state — a real <button pctButton>.
 @Component({
   imports: [PctButton],
   template: `<button

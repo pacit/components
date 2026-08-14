@@ -190,11 +190,11 @@ describe('PctField + PctText', () => {
 
   it('a value changed from outside reaches the native input', async () => {
     const fixture = await render(Host);
-    fixture.componentInstance.value.set('z-modelu@example.com');
+    fixture.componentInstance.value.set('from-model@example.com');
     fixture.detectChanges();
     await fixture.whenStable();
 
-    expect(inputOf(fixture).value).toBe('z-modelu@example.com');
+    expect(inputOf(fixture).value).toBe('from-model@example.com');
   });
 
   it('the wrapper hands the control an aria-describedby for the hint', async () => {
@@ -426,15 +426,15 @@ describe('PctField + PctText', () => {
 
       expect(input.value).toBe('start');
 
-      input.value = 'z-widoku';
+      input.value = 'from-view';
       input.dispatchEvent(new Event('input'));
       await fixture.whenStable();
-      expect(ctrl.value).toBe('z-widoku');
+      expect(ctrl.value).toBe('from-view');
 
-      ctrl.setValue('z-kontrolki');
+      ctrl.setValue('from-control');
       fixture.detectChanges();
       await fixture.whenStable();
-      expect(input.value).toBe('z-kontrolki');
+      expect(input.value).toBe('from-control');
     });
 
     it('template-driven: [(ngModel)] syncs both ways', async () => {
@@ -443,10 +443,10 @@ describe('PctField + PctText', () => {
       const input = inputOf(fixture);
 
       expect(input.value).toBe('start');
-      input.value = 'z-widoku';
+      input.value = 'from-view';
       input.dispatchEvent(new Event('input'));
       await fixture.whenStable();
-      expect(fixture.componentInstance.text).toBe('z-widoku');
+      expect(fixture.componentInstance.text).toBe('from-view');
     });
   });
 
@@ -586,9 +586,9 @@ describe('PctField + PctText', () => {
     const input = inputOf(fixture);
 
     expect(input.value).toBe('no wrapper');
-    input.value = 'zmienione';
+    input.value = 'changed';
     input.dispatchEvent(new Event('input'));
     await fixture.whenStable();
-    expect(fixture.componentInstance.value()).toBe('zmienione');
+    expect(fixture.componentInstance.value()).toBe('changed');
   });
 });

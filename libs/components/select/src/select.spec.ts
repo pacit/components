@@ -95,7 +95,7 @@ class Host {
 @Component({
   imports: [PctSelect, FormField],
   template: `<pct-select
-    label="Kraj"
+    label="Country"
     [options]="options"
     [formField]="f.country"
   />`,
@@ -183,7 +183,7 @@ class NgModelHost {
 /** The control inside the wrapper — a click on the border reaches it through `activate()`. */
 @Component({
   imports: [PctField, PctSelect],
-  template: `<pct-field label="Kraj">
+  template: `<pct-field label="Country">
     <pct-select [options]="options" [(value)]="value" />
   </pct-field>`,
 })
@@ -242,7 +242,7 @@ class BareHost {}
 })
 class AllDisabledHost {
   readonly options: readonly PctSelectOption[] = [
-    { value: 'a', label: 'Alfa', disabled: true },
+    { value: 'a', label: 'Alpha', disabled: true },
     { value: 'b', label: 'Beta', disabled: true },
   ];
 }
@@ -299,10 +299,10 @@ describe('PctSelect', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    const opis = trigger.getAttribute('aria-describedby');
-    expect(opis).not.toBeNull();
+    const describedBy = trigger.getAttribute('aria-describedby');
+    expect(describedBy).not.toBeNull();
     expect(
-      fixture.nativeElement.querySelector(`#${opis}`)?.textContent?.trim(),
+      fixture.nativeElement.querySelector(`#${describedBy}`)?.textContent?.trim(),
     ).toBe('Pick a shipping country');
   });
 
@@ -371,12 +371,12 @@ describe('PctSelect', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    optionsInPanel()[2].click(); // Czechy (disabled)
+    optionsInPanel()[2].click(); // Czechia (disabled)
     fixture.detectChanges();
     await fixture.whenStable();
 
     expect(fixture.componentInstance.value()).toBe('');
-    expect(panel()).not.toBeNull(); // panel zostaje otwarty
+    expect(panel()).not.toBeNull(); // the panel stays open
   });
 
   describe('the keyboard (an implementation of our own — there is no native counterpart)', () => {
@@ -457,9 +457,9 @@ describe('PctSelect', () => {
     // never executed even once (`lesson-57`).
     it.each(['ArrowUp', 'Enter', ' '])(
       'the panel is opened by %j as well',
-      async (klawisz) => {
+      async (key) => {
         const fixture = await render(Host);
-        await press(fixture, klawisz);
+        await press(fixture, key);
 
         expect(panel()).not.toBeNull();
         expect(triggerOf(fixture).getAttribute('aria-expanded')).toBe('true');
@@ -937,11 +937,11 @@ describe('PctSelect', () => {
       await fixture.whenStable();
       await press(fixture, 'ArrowDown');
 
-      const nakladka = panel()?.closest('.cdk-overlay-pane') as HTMLElement;
+      const overlay = panel()?.closest('.cdk-overlay-pane') as HTMLElement;
       // „Do not set the width" means an empty string: the overlay then carries only
       // `min-width`. A literal value would turn `auto` into `field`.
-      expect(nakladka.style.width).toBe('');
-      expect(nakladka.style.minWidth).not.toBe('');
+      expect(overlay.style.width).toBe('');
+      expect(overlay.style.minWidth).not.toBe('');
     });
 
     it('a literal panelWidth reaches the overlay with no recomputation', async () => {
@@ -951,9 +951,9 @@ describe('PctSelect', () => {
       await fixture.whenStable();
       await press(fixture, 'ArrowDown');
 
-      const nakladka = panel()?.closest('.cdk-overlay-pane') as HTMLElement;
-      expect(nakladka.style.width).toBe('320px');
-      expect(nakladka.style.minWidth).toBe('');
+      const overlay = panel()?.closest('.cdk-overlay-pane') as HTMLElement;
+      expect(overlay.style.width).toBe('320px');
+      expect(overlay.style.minWidth).toBe('');
     });
   });
 });

@@ -47,7 +47,7 @@ class SelectInFieldHost {
 
 @Component({
   imports: [PctField, PctCheckbox],
-  template: `<pct-field label="Zgody" hint="Wymagane">
+  template: `<pct-field label="Consents" hint="Required">
     <pct-checkbox [(checked)]="checked" />
   </pct-field>`,
 })
