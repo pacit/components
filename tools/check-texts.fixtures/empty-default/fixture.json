@@ -1,6 +1,6 @@
 {
-  "punkt": 5,
-  "kontrola": "kanal",
-  "regula": "domyslna-pusta",
-  "opis": "Pusta wartość domyślna. Zamienia „biblioteka wypisuje to sama\" w „biblioteka nie wypisuje nic\" u każdego, kto nie przetłumaczył tego pola — i nie daje przy tym żadnego sygnału, bo pusty napis renderuje się bez błędu."
+  "point": 5,
+  "check": "channel",
+  "rule": "empty-default",
+  "description": "An empty default value. It turns „the library writes this itself\" into „the library writes nothing\" for everybody who has not translated that field — and gives no signal at all, because an empty string renders without an error."
 }

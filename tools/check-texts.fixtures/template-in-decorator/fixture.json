@@ -1,6 +1,6 @@
 {
-  "punkt": 1,
-  "kontrola": "mianownik",
-  "regula": "szablon-w-dekoratorze",
-  "opis": "Komponent bierze szablon z dekoratora zamiast z pliku. Ten skaner czyta pliki `.html`, więc każdy napis wpisany w dekorator byłby dla niego niewidzialny — a do przeglądarki jedzie tak samo. To nie jest przypadek teoretyczny: dwie dyrektywy w bibliotece mają `template: ''` i pusty szablon jest tu jedynym dozwolonym."
+  "point": 1,
+  "check": "denominator",
+  "rule": "template-in-decorator",
+  "description": "The component takes its template from the decorator instead of a file. This scanner reads `.html` files, so any text written into a decorator would be invisible to it — and it travels to the browser just the same. This is not a theoretical case."
 }

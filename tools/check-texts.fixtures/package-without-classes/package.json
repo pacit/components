@@ -1,4 +1,4 @@
 {
-  "$comment": "Odczyt ze ZBUDOWANEGO pakietu podany jako dane — patrz komentarz przy `zlozFixture` w tools/check-texts.mjs. Budowanie pakietu Angulara na każdy przypadek kosztowałoby minuty na przebieg, a bramka biegnie przy każdym commicie. `atrybuty` to statyczne pary nazwa/wartość tak, jak wypisuje je linker w `ɵcmp.consts` i `ɵdir.hostAttrs`.",
-  "klasy": []
+  "$comment": "The reading from the BUILT package given as data — see the comment beside `buildFixture` in tools/check-texts.mjs. Building an Angular package for every case would cost minutes per run, and the gate runs on every commit. `atrybuty` to statyczne pary nazwa/wartość tak, jak wypisuje je linker w `ɵcmp.consts` i `ɵdir.hostAttrs`.",
+  "classes": []
 }

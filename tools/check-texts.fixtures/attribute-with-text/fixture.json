@@ -1,6 +1,6 @@
 {
-  "punkt": 3,
-  "kontrola": "szablon",
-  "regula": "atrybut-mowiacy",
-  "opis": "`title` z napisem wpisanym wprost. Wartość atrybutu mówiącego czyta użytkownik — inaczej niż `role=\"group\"` czy `type=\"button\"`, które są słowami kluczowymi specyfikacji i dlatego nie zapalają. Wpis w `pakiet.json` jest tu po to, żeby przypadek przeszedł punkt 2 i dotarł do tego, który bada."
+  "point": 3,
+  "check": "template",
+  "rule": "speaking-attribute",
+  "description": "A `title` with text written straight in. The value of a speaking attribute is read by the user — unlike `role=\"group\"` or `type=\"button\"`, which are keywords of the specification and therefore do not fire. The entry in `package.json` is here so that the two readings agree."
 }

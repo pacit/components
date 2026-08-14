@@ -1,27 +1,60 @@
 {
-  "$comment": "Odczyt ze ZBUDOWANEGO pakietu podany jako dane — patrz komentarz przy `zlozFixture` w tools/check-texts.mjs. Budowanie pakietu Angulara na każdy przypadek kosztowałoby minuty na przebieg, a bramka biegnie przy każdym commicie. `atrybuty` to statyczne pary nazwa/wartość tak, jak wypisuje je linker w `ɵcmp.consts` i `ɵdir.hostAttrs`.",
-  "klasy": [
+  "$comment": "The reading from the BUILT package given as data — see the comment beside `buildFixture` in tools/check-texts.mjs. Building an Angular package for every case would cost minutes per run, and the gate runs on every commit. `atrybuty` to statyczne pary nazwa/wartość tak, jak wypisuje je linker w `ɵcmp.consts` i `ɵdir.hostAttrs`.",
+  "classes": [
     {
-      "wejscie": "./widget",
-      "klasa": "PctWidget",
-      "atrybuty": [
-        ["data-pct-part", "label"],
-        ["aria-hidden", "true"],
-        ["data-pct-part", "toggle"],
-        ["type", "button"],
-        ["data-pct-part", "list"],
-        ["data-pct-part", "item"],
-        ["data-pct-part", "empty"],
-        ["role", "group"],
-        ["title", "Zwiń listę"]
+      "entrypoint": "./widget",
+      "className": "PctWidget",
+      "attributes": [
+        [
+          "data-pct-part",
+          "label"
+        ],
+        [
+          "aria-hidden",
+          "true"
+        ],
+        [
+          "data-pct-part",
+          "toggle"
+        ],
+        [
+          "type",
+          "button"
+        ],
+        [
+          "data-pct-part",
+          "list"
+        ],
+        [
+          "data-pct-part",
+          "item"
+        ],
+        [
+          "data-pct-part",
+          "empty"
+        ],
+        [
+          "role",
+          "group"
+        ],
+        [
+          "title",
+          "Collapse the list"
+        ]
       ]
     },
     {
-      "wejscie": "./widget",
-      "klasa": "PctMarker",
-      "atrybuty": [
-        ["role", "note"],
-        ["data-pct-part", "widget-marker"]
+      "entrypoint": "./widget",
+      "className": "PctMarker",
+      "attributes": [
+        [
+          "role",
+          "note"
+        ],
+        [
+          "data-pct-part",
+          "widget-marker"
+        ]
       ]
     }
   ]

@@ -1,6 +1,6 @@
 {
-  "punkt": 3,
-  "kontrola": "szablon",
-  "regula": "tekst-literalny",
-  "opis": "Napis wpisany wprost w węzeł tekstowy — cała wada, dla której ta bramka powstała. Kompiluje się, przechodzi testy, przechodzi audyt axe i wygląda poprawnie w każdym zrzucie; psuje się dopiero u konsumenta, który tłumaczy aplikację i dostaje w środku jedno zdanie po angielsku. W review widać poprawny szablon."
+  "point": 3,
+  "check": "template",
+  "rule": "literal-text",
+  "description": "Text written straight into a text node — the whole defect this gate was built for. It compiles, it passes the tests, it passes an axe audit and it looks right in every screenshot; it breaks only at a consumer who translates their application."
 }

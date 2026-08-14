@@ -1,6 +1,6 @@
 {
-  "punkt": 2,
-  "kontrola": "artefakt",
-  "regula": "atrybut-tylko-w-zrodlach",
-  "opis": "Źródła niosą statyczny `aria-label` w bloku `host`, a pakiet o nim nie wie. Najczęstsza przyczyna to nieaktualne `dist` — i to jest przypadek, w którym punkt 3 orzekałby o tekście, którego konsument nie dostaje. Zapala PRZED punktem 3, bo zanim ocenimy napis, musi być pewne, że mierzymy ten sam komponent."
+  "point": 2,
+  "check": "artifact",
+  "rule": "attribute-only-in-sources",
+  "description": "The sources carry a static `aria-label` in a `host` block and the package does not know about it. The commonest cause is a stale `dist` — and this is the case in which point 3 would rule on text the consumer does not get."
 }

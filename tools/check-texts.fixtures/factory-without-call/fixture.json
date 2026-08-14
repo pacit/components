@@ -1,6 +1,6 @@
 {
-  "punkt": 4,
-  "kontrola": "typescript",
-  "regula": "pusty-pomiar",
-  "opis": "`= input` bez wywołania — skaner nie znajduje nawiasu i pomija wpis, a niezależny licznik przypisań go widzi. Bez tej pary wejście zapisane składnią, której skaner nie rozumie (generyk z `>` w środku, zapis w wielu liniach), wypadałoby z pomiaru po cichu razem ze swoją wartością domyślną."
+  "point": 4,
+  "check": "typescript",
+  "rule": "empty-measurement",
+  "description": "`= input` with no call — the scanner finds no bracket and skips the entry, while the independent counter of assignments sees it. Without that pair an input written in a syntax the scanner does not understand (a generic with a `>` inside, a multi-line form) would fall out of the measurement in silence."
 }

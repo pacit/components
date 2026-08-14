@@ -1,6 +1,6 @@
 {
-  "punkt": 2,
-  "kontrola": "artefakt",
-  "regula": "atrybut-tylko-w-pakiecie",
-  "opis": "Pakiet niesie `aria-label` na hoście, a w źródłach nie ma go w żadnym bloku `host` czytelnym dla regexa. Tak wygląda atrybut wniesiony rozwinięciem cudzego obiektu (`...fitHost` w `field/src/affix.ts` — biblioteka naprawdę tak robi), mixinem albo dziedziczeniem. Punkt 3 nie oglądałby go w ogóle, więc napis w nazwie dostępnej pojechałby do wydania bez linii w diffie."
+  "point": 2,
+  "check": "artifact",
+  "rule": "attribute-only-in-package",
+  "description": "The package carries an `aria-label` on the host, and in the sources it is in no `host` block a regex can read. This is what an attribute brought in by spreading somebody else's object looks like (`...fitHost` in `field/src/affix.ts` — the library really does that)."
 }

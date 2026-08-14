@@ -1,6 +1,6 @@
 {
-  "punkt": 5,
-  "kontrola": "kanal",
-  "regula": "domyslna-bez-klucza",
-  "opis": "Wartość domyślna bez pola w `PctTexts`. Napis, którego nie ma w typie, jest napisem, którego konsument nie ma jak nadpisać: `providePctTexts` przyjmuje `Partial<PctTexts>`, więc klucz spoza interfejsu jest błędem kompilacji u niego, a nie tutaj."
+  "point": 5,
+  "check": "channel",
+  "rule": "default-without-key",
+  "description": "A default value with no field in `PctTexts`. A text that is not in the type is a text the consumer has no way of overriding: `providePctTexts` takes a `Partial<PctTexts>`, so a key outside the interface is a compilation error at their end."
 }

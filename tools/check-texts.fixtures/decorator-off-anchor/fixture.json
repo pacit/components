@@ -1,6 +1,6 @@
 {
-  "punkt": 1,
-  "kontrola": "mianownik",
-  "regula": "parser-dekoratorow",
-  "opis": "Dekorator `@Directive({` wcięty o dwie spacje. Prettier tak nie formatuje, ale parser tej bramki kotwiczy się właśnie na kolumnie zero — a niezależny licznik kotwicy NIE powtarza. Bez tej pary komponent wypadałby z pomiaru po cichu i punkt 3 orzekałby o bibliotece bez niego (`lesson-48`, ta sama wada co w A5)."
+  "point": 1,
+  "check": "denominator",
+  "rule": "decorator-parser",
+  "description": "A `@Directive({` decorator indented by two spaces. Prettier does not format that way, but this gate's parser anchors on exactly column zero — and the independent counter does NOT repeat the anchor. Without that pair the component would drop out of the measurement quietly."
 }

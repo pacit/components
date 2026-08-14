@@ -1,6 +1,6 @@
 {
-  "punkt": 5,
-  "kontrola": "kanal",
-  "regula": "pusty-pomiar",
-  "opis": "Interfejs `PctTexts` zapisany tak, że skaner nie widzi w nim pól. Cały punkt 5 porównuje trzy listy (pola, wartości domyślne, odczyty) — a przy pustej pierwszej przechodzi, nie mając czego porównać, i milczy także o kluczach martwych."
+  "point": 5,
+  "check": "channel",
+  "rule": "empty-measurement",
+  "description": "The `PctTexts` interface written so that the scanner sees no fields in it. The whole of point 5 compares three lists (fields, defaults, reads) — and with the first one empty it passes, having nothing to compare, and says nothing about dead keys either."
 }

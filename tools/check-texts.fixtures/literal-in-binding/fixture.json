@@ -1,6 +1,6 @@
 {
-  "punkt": 3,
-  "kontrola": "szablon",
-  "regula": "literal-w-wyrazeniu",
-  "opis": "Napis podany literałem w wyrażeniu wiązania. Omija kanał tak samo jak tekst wpisany w węzeł, z tą różnicą, że wygląda na kod — a `aria-label` jest jedynym miejscem, w którym błąd tej klasy widzi wyłącznie użytkownik czytnika ekranu."
+  "point": 3,
+  "check": "template",
+  "rule": "literal-in-expression",
+  "description": "Text given as a literal inside a binding expression. It bypasses the channel exactly as text written into a node does, with the difference that it looks like code — and `aria-label` is the one place where an error of this class is seen only by a screen-reader user."
 }

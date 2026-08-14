@@ -1,6 +1,6 @@
 {
-  "punkt": 2,
-  "kontrola": "artefakt",
-  "regula": "pakiet-pusty",
-  "opis": "Zbudowany pakiet bez ani jednej klasy z definicją Angulara. Porównanie dwóch odczytów przechodzi wtedy zawsze, bo jedna strona jest pusta — a pusta jest równa wszystkiemu, czego w niej nie ma. Tak wygląda nieaktualne albo wyczyszczone `dist`."
+  "point": 2,
+  "check": "artifact",
+  "rule": "empty-package",
+  "description": "A built package with not one class carrying an Angular definition. The comparison of the two readings then always passes, because one side is empty — and empty equals everything that is not in it. This is what a stale or cleaned `dist` looks like."
 }

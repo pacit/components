@@ -1,9 +1,9 @@
 import { Directive, input } from '@angular/core';
 
 /**
- * Dyrektywa slotowa — istnieje po to, żeby wejście wzorcowe niosło blok `host`
- * z atrybutem statycznym o kluczu BEZ cudzysłowu (`role`) obok wiązania
- * z kluczem w cudzysłowie. Prettier pisze je właśnie tak i skaner musi widzieć
+ * A slot directive — it exists so that the reference input carries a `host` block
+ * with a static attribute whose key has NO quotes (`role`) beside a binding
+ * whose key does. Prettier writes them exactly like that and the scanner must see
  * oba.
  */
   @Directive({

@@ -1,6 +1,6 @@
 {
-  "punkt": 4,
-  "kontrola": "typescript",
-  "regula": "tekst-jako-domyslna",
-  "opis": "Wejście `input<string>` z literałem `'close'` w wartości domyślnej. Kształtem nie różni się od wartości osi i pierwsza reguła punktu go nie widzi — dlatego druga patrzy na TYP: `<string>` znaczy „tekst dowolny\", więc literał w tym miejscu jest napisem biblioteki niezależnie od tego, jak wygląda. Pusty (`''`) znaczy „brak wartości\" i przechodzi."
+  "point": 4,
+  "check": "typescript",
+  "rule": "text-as-default",
+  "description": "An `input<string>` with the literal `'close'` as its default. In shape it does not differ from an axis value and the point's first rule does not see it — which is why the second looks at the TYPE: `<string>` means „arbitrary text\", so a literal there is a text."
 }

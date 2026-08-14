@@ -1,6 +1,6 @@
 {
-  "punkt": 6,
-  "kontrola": "ostrzezenia",
-  "regula": "ostrzezenie-bez-devmode",
-  "opis": "Ostrzeżenie bez strażnika `isDevMode()` — ani w swojej funkcji, ani przy jej wywołaniu. Wymaganie zastrzega ten kanał dla trybu deweloperskiego, bo w produkcji to jest napis w konsoli aplikacji, której autor nie ma jak go wyłączyć."
+  "point": 6,
+  "check": "warnings",
+  "rule": "warning-without-devmode",
+  "description": "A warning with no `isDevMode()` guard — neither in its own function nor at the call site. The requirement reserves this channel for development mode, because in production it is a line in the console of an application whose author cannot switch it off."
 }

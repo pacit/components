@@ -1,6 +1,6 @@
 {
-  "punkt": 4,
-  "kontrola": "typescript",
-  "regula": "proza-w-fabryce",
-  "opis": "Napis w wartości domyślnej sygnału. W szablonie o tym, czy literał jest tekstem, decyduje pozycja; w TS pozycji nie ma, więc decyduje kształt — wielka litera na początku albo spacja w środku. Zmierzone na całej bibliotece: przy tej regule nie zapala dziś ani jedna wartość osi (`md`, `solid`, `inset`, `pctPrefix`)."
+  "point": 4,
+  "check": "typescript",
+  "rule": "prose-in-factory",
+  "description": "Text in a signal's default value. In a template it is position that decides whether a literal is text; in TS there is no position, so shape decides — a capital letter at the start or a space in the middle. Measured over the whole library: that separates the texts from the axis values without an exception."
 }

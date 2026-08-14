@@ -1,6 +1,6 @@
 {
-  "punkt": 2,
-  "kontrola": "artefakt",
-  "regula": "klasa-bez-pakietu",
-  "opis": "Klasa jest w źródłach, a nie ma jej w pakiecie. Bramka mierzyłaby wtedy napisy komponentu, którego konsument nie dostaje — albo, częściej, czytałaby `dist` sprzed ostatniej zmiany i orzekała o poprzedniej wersji biblioteki."
+  "point": 2,
+  "check": "artifact",
+  "rule": "class-without-package",
+  "description": "The class is in the sources and is not in the package. The gate would then measure the texts of a component the consumer does not get — or, more often, would read a `dist` from before the last change and rule on the previous version of the library."
 }

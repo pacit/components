@@ -1,6 +1,6 @@
 {
-  "punkt": 4,
-  "kontrola": "typescript",
-  "regula": "napis-przy-konstrukcji",
-  "opis": "Wartość domyślna wejścia czyta `PCT_TEXTS`. To nie jest przypadek wymyślony: dokładnie tak stał `placeholder` w `PctSelect` do decyzji 0014. Wartość domyślna powstaje raz, przy konstrukcji, więc aplikacja przełączająca język bez przeładowania zostaje z napisem sprzed zmiany — przy zielonym CI, bo test nadpisania częściowego renderuje komponent RAZ."
+  "point": 4,
+  "check": "typescript",
+  "rule": "text-at-construction",
+  "description": "An input's default value reads `PCT_TEXTS`. This is not an invented case: that is exactly how `placeholder` stood in `PctSelect` until decision 0014. A default value is produced once, at construction, so an application switching the texts at runtime keeps the old one."
 }

@@ -9,7 +9,7 @@ import {
 export interface PctTexts {
   /** Widget: gdy lista jest pusta. */
   readonly widgetEmpty: string;
-  /** Widget: nazwa dostępna przycisku zwijania. */
+  /** Widget: the accessible name of the collapse button. */
   readonly widgetCollapse: string;
 }
 

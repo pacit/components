@@ -1,6 +1,6 @@
 {
-  "punkt": 5,
-  "kontrola": "kanal",
-  "regula": "inject-pod-inna-nazwa",
-  "opis": "`inject(PCT_TEXTS)` przypisane do pola o innej nazwie. Odczyty liczy się wzorcem `texts().klucz`, więc inna nazwa czyni je niewidzialnymi — a wtedy reguła „klucz musi być używany\" orzeka o kluczach, których po prostu nie widzi, i wszystkie wychodzą na martwe albo (gorzej) wszystkie na żywe."
+  "point": 5,
+  "check": "channel",
+  "rule": "inject-under-another-name",
+  "description": "`inject(PCT_TEXTS)` assigned to a field under another name. Reads are counted by the pattern `texts().key`, so another name makes them invisible — and then the rule „a key must be used\" rules on keys it simply does not see."
 }

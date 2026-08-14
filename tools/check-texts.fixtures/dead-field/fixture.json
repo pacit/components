@@ -1,6 +1,6 @@
 {
-  "punkt": 5,
-  "kontrola": "kanal",
-  "regula": "klucz-martwy",
-  "opis": "Pole zadeklarowane, z wartością domyślną, i nieczytane przez żaden komponent. To pokrycie, którego nie ma: stoi w publicznym typie, konsument je tłumaczy, a nie widać go nigdzie. Ten sam ruch co usunięcie martwego `--pct-on-danger` w A12 — para zadeklarowana i nigdy niemalowana."
+  "point": 5,
+  "check": "channel",
+  "rule": "dead-key",
+  "description": "A field declared, given a default value, and read by no component. This is coverage that is not there: it stands in a public type, the consumer translates it, and it is nowhere to be seen. The same move as removing the dead `--pct-on-danger`."
 }

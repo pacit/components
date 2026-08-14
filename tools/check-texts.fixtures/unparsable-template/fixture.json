@@ -1,6 +1,6 @@
 {
-  "punkt": 1,
-  "kontrola": "mianownik",
-  "regula": "parser-szablonu",
-  "opis": "Blok `@if` bez klamry zamykającej. Parser Angulara odrzuca taki szablon, a drzewo, którego nie ma, nie ma też ani jednego węzła tekstowego: punkt 3 przeszedłby na nim bez zastrzeżeń. Sam `errors` z `parseTemplate` jest tu jedynym sygnałem — bramka nie kompiluje szablonu drugi raz."
+  "point": 1,
+  "check": "denominator",
+  "rule": "template-parser",
+  "description": "An `@if` block with no closing brace. Angular's parser rejects such a template, and a tree that does not exist has not one text node either: point 3 would pass over it without objection. The `errors` from `parseTemplate` are the only signal here."
 }

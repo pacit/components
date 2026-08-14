@@ -20,7 +20,7 @@
   <li class="pct-widget__item" data-pct-part="item">{{ item }}</li>
   } @empty {
   <li class="pct-widget__empty" data-pct-part="empty">
-    {items().length, plural, =0 {brak} other {wiele}}
+    {items().length, plural, =0 {none} other {many}}
   </li>
   }
 </ul>

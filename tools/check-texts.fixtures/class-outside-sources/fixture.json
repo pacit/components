@@ -1,6 +1,6 @@
 {
-  "punkt": 2,
-  "kontrola": "artefakt",
-  "regula": "klasa-bez-zrodel",
-  "opis": "Klasa jest w pakiecie, a nie widzi jej skaner źródeł. To druga strona tego samego mianownika: komponent, którego skaner nie zobaczył, wnosi do wydania napisy, o których ta bramka milczy — a milczenie wygląda w CI jak zgoda."
+  "point": 2,
+  "check": "artifact",
+  "rule": "class-without-sources",
+  "description": "The class is in the package and the source scanner does not see it. This is the other side of the same denominator: a component the scanner missed carries texts into the release this gate says nothing about — and silence looks like consent in CI."
 }

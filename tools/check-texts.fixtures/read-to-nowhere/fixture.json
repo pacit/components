@@ -1,6 +1,6 @@
 {
-  "punkt": 5,
-  "kontrola": "kanal",
-  "regula": "odczyt-donikad",
-  "opis": "Odczyt `texts().widgetTitle` pola, którego nie ma w `PctTexts`. W szablonie taki odczyt NIE jest błędem kompilacji przy niepełnym trybie ścisłym szablonów — jest pustym miejscem na ekranie."
+  "point": 5,
+  "check": "channel",
+  "rule": "read-to-nowhere",
+  "description": "A read of `texts().widgetTitle`, a field that is not in `PctTexts`. In a template such a read is NOT a compilation error under partial template strictness — it is an empty space on the screen."
 }
