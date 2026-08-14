@@ -1,5 +1,5 @@
 {
-  "$comment": "Słownik z `disabled` w stanach — po to, żeby wadą tego przypadku była WYŁĄCZNIE kolejność segmentów, a nie nieznane słowo. `fg-disabled` obok parsuje się bez zarzutu tym samym słownikiem; różni je tylko to, po której stronie właściwości stoi stan.",
+  "$comment": "A dictionary with `disabled` among the states — so that this case's only defect is the ORDER of the segments and not an unknown word.",
   "private": {
     "prefixes": ["pct.blue.", "pct.slate."]
   },

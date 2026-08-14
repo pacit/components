@@ -12,7 +12,7 @@
   --pct-button-padding-x: var(--pct-button-padding-x-sm);
 }
 
-/* Wada przypadku: token spoza skórki (literówka w nazwie). */
+/* The case's defect: a token outside the theme (a typo in the name). */
 .pct-button__panel {
   background: var(--pct-panel-bg);
 }

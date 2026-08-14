@@ -12,7 +12,7 @@
   --pct-button-padding-x: var(--pct-button-padding-x-sm);
 }
 
-/* Wada przypadku: tło malowane tokenem semantycznym, którego policy nie zna. */
+/* The case's defect: a background painted with a semantic token the policy does not know. */
 :host([data-pct-variant='outline']:hover) {
   background: var(--pct-text-muted);
 }

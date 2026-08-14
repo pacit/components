@@ -1,5 +1,5 @@
 {
-  "$comment": "Policy kontrastu wejścia wzorcowego. Do A12 czytał ją wyłącznie build; od punktu 7 czyta ją także ta bramka i wymaga, żeby każdy kolor malowany przez `button.scss` stał tu w jakiejś parze — inaczej baza sama by nie przeszła. Wpisów jest dokładnie tyle, ile trzeba: nadmiarowy nie zaszkodziłby punktowi 7, ale zaszkodziłby czytelności, bo baza ma pokazywać minimum, a nie skórkę.",
+  "$comment": "The reference input's contrast policy. Until A12 the build alone read it; from point 7 this gate reads it too and requires a pair for every colour the stylesheet paints.",
   "checks": [
     {
       "name": "tekst podstawowy",

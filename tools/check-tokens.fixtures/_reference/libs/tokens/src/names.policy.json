@@ -1,5 +1,5 @@
 {
-  "$comment": "Słownik wejścia wzorcowego. Wymienia WYŁĄCZNIE słowa, których używa któryś token — punkt 4 bramki odrzuca słowo martwe, więc rozdmuchanie tego pliku „na zapas\" zepsułoby bazę i każdy przypadek zapalałby z jej powodu.",
+  "$comment": "The reference input's dictionary. It lists ONLY words some token uses — point 4 of the gate rejects a dead word, so a dictionary padded in advance would break the reference.",
   "private": {
     "prefixes": ["pct.blue.", "pct.slate."]
   },

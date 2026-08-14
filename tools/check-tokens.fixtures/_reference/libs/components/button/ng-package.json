@@ -1,4 +1,6 @@
 {
-  "$comment": "Entrypoint wejścia wzorcowego. Bramka czyta stąd wyłącznie NAZWĘ katalogu — token `--pct-button-*` jest zgadywalny tylko wtedy, gdy `button` jest tym samym słowem, którym konsument importuje komponent.",
-  "lib": { "entryFile": "src/index.ts" }
+  "$comment": "The reference input's entrypoint. The gate reads only the DIRECTORY NAME from here — a `--pct-button-*` token is guessable only when the prefix is the entrypoint's name.",
+  "lib": {
+    "entryFile": "src/index.ts"
+  }
 }

@@ -1,8 +1,9 @@
 /*
- * Arkusz wejścia wzorcowego. Istnieje dla punktu 7: mianownikiem par nie jest
- * lista nazw kończących się na `-bg` i `-fg`, tylko to, co arkusz NAPRAWDĘ maluje.
- * Bez ani jednego arkusza punkt 7 zapala na pustym mianowniku, więc baza musi go
- * mieć — i musi mieć w policy parę dla każdego koloru, który tu stoi.
+ * The reference input's stylesheet. It exists for point 7: the denominator of
+ * the pairs is not the list of names ending in `-bg` and `-fg` but what the
+ * sheet REALLY paints. With not one sheet point 7 fires on an empty denominator,
+ * so the reference must have one — and must have a policy pair for every colour
+ * standing here.
  */
 :host {
   background: var(--pct-button-bg);

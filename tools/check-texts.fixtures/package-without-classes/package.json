@@ -1,4 +1,4 @@
 {
-  "$comment": "The reading from the BUILT package given as data — see the comment beside `buildFixture` in tools/check-texts.mjs. Building an Angular package for every case would cost minutes per run, and the gate runs on every commit. `atrybuty` to statyczne pary nazwa/wartość tak, jak wypisuje je linker w `ɵcmp.consts` i `ɵdir.hostAttrs`.",
+  "$comment": "The reading from the BUILT package given as data — see the comment beside `buildFixture` in tools/check-texts.mjs. Building an Angular package for every case would cost minutes per run, and the gate runs on every commit. `attributes` are the static name/value pairs exactly as the linker writes them into `ɵcmp.consts` and `ɵdir.hostAttrs`.",
   "classes": []
 }

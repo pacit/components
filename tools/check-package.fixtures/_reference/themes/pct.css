@@ -1,7 +1,7 @@
 /*
- * Skórka w miniaturze. Dwa tokeny, dokładnie tyle, ile trzeba, żeby punkt 3
- * (domknięcie) miał co domykać — pakiet wzorcowy ma być czytelny, a nie wierny
- * co do rozmiaru.
+ * The theme in miniature. Two tokens, exactly as many as point 3 (closure)
+ * needs to have something to close — the reference package is to be readable,
+ * not faithful in size.
  */
 :root {
   --pct-color-surface: #ffffff;

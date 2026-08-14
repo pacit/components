@@ -1,8 +1,8 @@
 /*
- * Kod pakietu w miniaturze. Bramka czyta z niego dwie rzeczy: stałą PCT_VERSION
- * (punkt 4) i użycia `var(--pct-*)` w tekście stylu (punkt 3). Styl jest tu
- * łańcuchem znaków nieprzypadkowo — w prawdziwym artefakcie style komponentów
- * siedzą w bundlu dokładnie w tej postaci.
+ * The package's code in miniature. The gate reads two things out of it: the
+ * PCT_VERSION constant (point 4) and the uses of `var(--pct-*)` in the style's
+ * text (point 3). The style is a string here on purpose — in a real artefact
+ * component styles sit in the bundle in exactly that form.
  */
 const PCT_VERSION = '0.0.1';
 

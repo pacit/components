@@ -1,4 +1,4 @@
-// AUTOGENEROWANE z libs/tokens/src/*.json — nie edytuj ręcznie.
+// GENERATED from libs/tokens/src/*.json — do not edit by hand.
 export const pctTokens = {
   'pct.space.3': 'var(--pct-space-3)',
   'pct.space.4': 'var(--pct-space-4)',
@@ -18,7 +18,7 @@ export const pctTokens = {
 
 export type PctTokenName = keyof typeof pctTokens;
 
-/** Nazwa custom property tokenu — tak, jak pyta o nią przeglądarka. */
+/** A token's custom property name — exactly as the browser asks for it. */
 export type PctCssVar =
   | '--pct-space-3'
   | '--pct-space-4'

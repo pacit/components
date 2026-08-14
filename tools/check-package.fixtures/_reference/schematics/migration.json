@@ -1,4 +1,4 @@
 {
-  "//": "Pusta kolekcja migracji — tak samo jak w prawdziwym pakiecie przed pierwszym wydaniem. Punkt 5 sprawdza fabryki wpisów, więc pusta kolekcja przechodzi, a sam brak PLIKU zapala.",
+  "//": "An empty migration collection — the same as in the real package before the first release. Point 5 checks the entries' factories, so an empty collection passes.",
   "schematics": {}
 }

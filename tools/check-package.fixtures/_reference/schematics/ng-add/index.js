@@ -1,7 +1,7 @@
 /*
- * Skompilowana fabryka schematica. Punkt 5 sprawdza wyłącznie to, że plik
- * ISTNIEJE — bo dokładnie tego brakuje, gdy ktoś pominie target `schematics`,
- * który biegnie osobno i już PO ng-packagr.
+ * The schematic's compiled factory. Point 5 checks only that the file EXISTS —
+ * because that is exactly what is missing when somebody skips the `schematics`
+ * target, which runs separately and AFTER ng-packagr.
  */
 export function ngAdd() {
   return (tree) => tree;
