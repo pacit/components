@@ -332,7 +332,7 @@ block publication and is an order of magnitude larger.
 
 - [x] **B5 — negative control for `ng add`** _(2026-08-04, with A1)_
   - closed: `req-release-ng-add`
-  - built: `tools/check-package.fixtures/brak-schematica/` — the collection points at a factory
+  - built: `tools/check-package.fixtures/schematic-missing/` — the collection points at a factory
     whose compiled file is missing, and point 5 must fire. It came with the same move as A1,
     being a point of the same gate; a separate task was unnecessary from the start
 

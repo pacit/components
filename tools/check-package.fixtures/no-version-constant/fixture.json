@@ -1,0 +1,5 @@
+{
+  "point": 4,
+  "check": "version",
+  "description": "The PCT_VERSION constant is not in the package at all. A second case on the same point, because this is a different failure from a wrong value: the shape of the output changed (another bundler, another name, a stripped export) and the version check has nothing left to compare — while passing green."
+}

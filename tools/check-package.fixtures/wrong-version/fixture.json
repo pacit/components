@@ -1,0 +1,5 @@
+{
+  "point": 4,
+  "check": "version",
+  "description": "The manifest says 0.0.1, the constant in the code 0.0.0 — that is, a package after `nx release version` with no `stamp-version`. The artefact lies about its own version, and every bug report from a consumer points at the wrong source."
+}

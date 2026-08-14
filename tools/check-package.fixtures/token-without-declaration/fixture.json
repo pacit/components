@@ -1,0 +1,5 @@
+{
+  "point": 3,
+  "check": "tokens",
+  "description": "The code uses `var(--pct-color-nonexistent)`, which no file in the package declares. This is the defect points 1 and 2 let through: the theme is there, it is reachable, and the component layer still fell out of it — or somebody made a typo in a token's name."
+}

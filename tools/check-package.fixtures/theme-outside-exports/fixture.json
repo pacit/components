@@ -1,0 +1,5 @@
+{
+  "point": 2,
+  "check": "exports",
+  "description": "The theme is in the package and is not in the `exports` map. The map is closed, so a file present with no entry is invisible to a consumer: `import '@pacit/components/themes/pct.css'` ends in ERR_PACKAGE_PATH_NOT_EXPORTED. Point 1 cannot see this — the file is there, after all."
+}

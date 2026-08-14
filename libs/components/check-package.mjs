@@ -36,7 +36,7 @@ import { fileURLToPath } from 'node:url';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const DIST = join(HERE, '../../dist/libs/components');
 const FIXTURES = join(HERE, '../../tools/check-package.fixtures');
-const BAZA = '_poprawny';
+const REFERENCE = '_reference';
 const THEME = 'themes/pct.css';
 
 // We scan the package's textual outputs. Component styles sit in the bundles as strings,
@@ -59,21 +59,21 @@ const walk = (dir, out = []) => {
  * proves something other than what it declares — the same silent defect this whole gate
  * stands against.
  */
-class BladPakietu extends Error {
-  constructor(kontrola, opis) {
-    super(opis);
-    this.kontrola = kontrola;
+class PackageError extends Error {
+  constructor(check, description) {
+    super(description);
+    this.check = check;
   }
 }
 
 /**
- * The full set of checks over the `ROOT` directory. Throws `BladPakietu` on the first
+ * The full set of checks over the `ROOT` directory. Throws `PackageError` on the first
  * violation — the checks run from the most basic one, so the later ones would have
  * nothing to examine anyway. Returns a summary sentence.
  */
 const kontrole = (ROOT, { release }, ostrzezenia) => {
-  const fail = (kontrola, msg) => {
-    throw new BladPakietu(kontrola, msg);
+  const fail = (check, msg) => {
+    throw new PackageError(check, msg);
   };
 
   let files;
@@ -93,13 +93,13 @@ const kontrole = (ROOT, { release }, ostrzezenia) => {
     theme = readFileSync(themePath, 'utf8');
   } catch {
     fail(
-      'skorka',
+      'theme',
       `the package has no ${THEME} — the consumer gets components without one token.\n` +
         `  Check \`assets\` in libs/components/ng-package.json, and that tokens:build ran before build.`,
     );
   }
   if (!theme.includes('--pct-'))
-    fail('skorka', `${THEME} holds no token definition at all`);
+    fail('theme', `${THEME} holds no token definition at all`);
 
   // 2. the skin is reachable by import. The `exports` map is closed: a file present in
   // the package but with no entry is invisible to the consumer
@@ -151,7 +151,7 @@ const kontrole = (ROOT, { release }, ostrzezenia) => {
   const missing = [...used.keys()].filter((t) => !defined.has(t)).sort();
   if (missing.length) {
     fail(
-      'tokeny',
+      'tokens',
       `${missing.length} tokens are used but declared nowhere in the package.\n` +
         `  The browser substitutes the initial value — the component renders with no appearance.\n` +
         missing
@@ -176,7 +176,7 @@ const kontrole = (ROOT, { release }, ostrzezenia) => {
 
   if (stamped.length === 0) {
     fail(
-      'wersja',
+      'version',
       `no PCT_VERSION constant found in the built package — the version check stopped working.\n` +
         `  Check that the constant is still exported from libs/components/src/index.ts.`,
     );
@@ -184,7 +184,7 @@ const kontrole = (ROOT, { release }, ostrzezenia) => {
   const wrong = [...new Set(stamped)].filter((v) => v !== pkg.version);
   if (wrong.length) {
     fail(
-      'wersja',
+      'version',
       `PCT_VERSION (${wrong.join(', ')}) does not match the package version (${pkg.version}).\n` +
         `  Run: npx nx stamp-version components  (then rebuild the package)`,
     );
@@ -255,7 +255,7 @@ const kontrole = (ROOT, { release }, ostrzezenia) => {
       .join('\n');
     if (release) {
       fail(
-        'metadane',
+        'metadata',
         `the package manifest lacks fields required for publishing:\n${list}\n` +
           `  Fill them in in libs/components/package.json.`,
       );
@@ -271,20 +271,20 @@ const kontrole = (ROOT, { release }, ostrzezenia) => {
   // rules: no file, a generator's stub of a file, a file naming a different licence than
   // the manifest. A hard error every time — unlike `repository`, which could not be
   // satisfied without a remote.
-  let licencja = '';
+  let licence = '';
   try {
-    licencja = readFileSync(join(ROOT, 'LICENSE'), 'utf8');
+    licence = readFileSync(join(ROOT, 'LICENSE'), 'utf8');
   } catch {
     fail(
-      'licencja',
+      'licence',
       `the package has no LICENSE file, and the manifest declares "${pkg.license}".\n` +
         `  To a consumer's legal team that is an incomplete licence. The file travels from libs/components/LICENSE.`,
     );
   }
-  if (licencja.trim().length < 100)
+  if (licence.trim().length < 100)
     fail(
-      'licencja',
-      `the LICENSE file has ${licencja.trim().length} characters — a stub, not a licence text`,
+      'licence',
+      `the LICENSE file has ${licence.trim().length} characters — a stub, not a licence text`,
     );
 
   // Matched on a word boundary, not with `includes`: measured, not assumed — both the MIT
@@ -293,16 +293,16 @@ const kontrole = (ROOT, { release }, ostrzezenia) => {
   const spdx = (pkg.license ?? '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   if (
     spdx &&
-    !new RegExp(`(?<![A-Za-z0-9])${spdx}(?![A-Za-z0-9])`).test(licencja)
+    !new RegExp(`(?<![A-Za-z0-9])${spdx}(?![A-Za-z0-9])`).test(licence)
   )
     fail(
-      'licencja',
+      'licence',
       `the manifest declares "${pkg.license}" and the LICENSE file does not carry that ` +
         `name — one side was changed without the other`,
     );
-  if (!/Copyright \(c\) \d{4} \S/.test(licencja))
+  if (!/Copyright \(c\) \d{4} \S/.test(licence))
     fail(
-      'licencja',
+      'licence',
       'the LICENSE file has no `Copyright (c) <year> <holder>` line — with no owner ' +
         'named, the notice protects nothing',
     );
@@ -321,17 +321,17 @@ const kontrole = (ROOT, { release }, ostrzezenia) => {
  * exit code — that is, in a way that makes a fixture firing for the wrong reason look
  * like proof.
  */
-const sprawdzPakiet = (root, { release = false } = {}) => {
+const checkPackage = (root, { release = false } = {}) => {
   const ostrzezenia = [];
   try {
     return {
-      blad: null,
+      error: null,
       ostrzezenia,
-      opis: kontrole(root, { release }, ostrzezenia),
+      description: kontrole(root, { release }, ostrzezenia),
     };
   } catch (e) {
-    if (!(e instanceof BladPakietu)) throw e;
-    return { blad: e, ostrzezenia, opis: null };
+    if (!(e instanceof PackageError)) throw e;
+    return { error: e, ostrzezenia, description: null };
   }
 };
 
@@ -350,15 +350,15 @@ const sprawdzPakiet = (root, { release = false } = {}) => {
  * invalidate the cache. The gate would then shine green from the cache having checked
  * nothing — the negative control itself would become a silent defect (`req-axis`).
  */
-const zlozFixture = (nazwa, fx) => {
+const buildFixture = (name, fx) => {
   const cel = mkdtempSync(join(tmpdir(), 'pct-check-package-'));
-  cpSync(join(FIXTURES, BAZA), cel, { recursive: true });
-  cpSync(join(FIXTURES, nazwa), cel, {
+  cpSync(join(FIXTURES, REFERENCE), cel, { recursive: true });
+  cpSync(join(FIXTURES, name), cel, {
     recursive: true,
     filter: (src) => basename(src) !== 'fixture.json',
   });
   renameSync(join(cel, 'manifest.json'), join(cel, 'package.json'));
-  for (const sciezka of fx.usun ?? [])
+  for (const sciezka of fx.drop ?? [])
     rmSync(join(cel, sciezka), { recursive: true, force: true });
   return cel;
 };
@@ -368,18 +368,18 @@ const zlozFixture = (nazwa, fx) => {
 const RELEASE_MODE = process.argv.includes('--release');
 const problems = [];
 
-const wynik = sprawdzPakiet(DIST, { release: RELEASE_MODE });
-if (wynik.blad) problems.push(`${wynik.blad.kontrola}: ${wynik.blad.message}`);
+const wynik = checkPackage(DIST, { release: RELEASE_MODE });
+if (wynik.error) problems.push(`${wynik.error.check}: ${wynik.error.message}`);
 for (const o of wynik.ostrzezenia) console.warn(`! ${o}`);
 
 // ── negative control ──────────────────────────────────────────────────────────
 
-const przypadki = readdirSync(FIXTURES, { withFileTypes: true })
-  .filter((d) => d.isDirectory() && d.name !== BAZA)
+const cases = readdirSync(FIXTURES, { withFileTypes: true })
+  .filter((d) => d.isDirectory() && d.name !== REFERENCE)
   .map((d) => d.name)
   .sort();
 
-if (przypadki.length === 0)
+if (cases.length === 0)
   problems.push(
     `tools/check-package.fixtures: no prepared packages — a gate with no proof that it ` +
       `can fail is one more silent defect (req-quality-negative-control)`,
@@ -391,38 +391,38 @@ if (przypadki.length === 0)
 // through the same composer as the cases, so it is examined in exactly the shape the
 // cases grow out of.
 {
-  const katalog = zlozFixture(BAZA, {});
-  const baza = sprawdzPakiet(katalog, { release: true });
-  rmSync(katalog, { recursive: true, force: true });
-  if (baza.blad)
+  const directory = buildFixture(REFERENCE, {});
+  const reference = checkPackage(directory, { release: true });
+  rmSync(directory, { recursive: true, force: true });
+  if (reference.error)
     problems.push(
-      `${BAZA}: the reference package does NOT pass (${baza.blad.kontrola}) — ` +
+      `${REFERENCE}: the reference package does NOT pass (${reference.error.check}) — ` +
         `every prepared package now fires because of it, not because of its own defect.\n` +
-        `  ${baza.blad.message}`,
+        `  ${reference.error.message}`,
     );
-  else if (baza.ostrzezenia.length)
+  else if (reference.ostrzezenia.length)
     problems.push(
-      `${BAZA}: the reference package passes, but with a warning — the base is to be ` +
+      `${REFERENCE}: the reference package passes, but with a warning — the base is to be ` +
         `complete, or point 6 has nothing to tell an absence from a full set.`,
     );
 }
 
-for (const nazwa of przypadki) {
+for (const name of cases) {
   const fx = JSON.parse(
-    readFileSync(join(FIXTURES, nazwa, 'fixture.json'), 'utf8'),
+    readFileSync(join(FIXTURES, name, 'fixture.json'), 'utf8'),
   );
-  const katalog = zlozFixture(nazwa, fx);
+  const directory = buildFixture(name, fx);
   try {
-    const wynikFx = sprawdzPakiet(katalog, { release: true });
-    if (!wynikFx.blad)
+    const wynikFx = checkPackage(directory, { release: true });
+    if (!wynikFx.error)
       problems.push(
-        `${nazwa}: the prepared package PASSED and was meant not to — ` +
-          `point ${fx.punkt} (\`${fx.kontrola}\`) stopped examining anything`,
+        `${name}: the prepared package PASSED and was meant not to — ` +
+          `point ${fx.point} (\`${fx.check}\`) stopped examining anything`,
       );
-    else if (wynikFx.blad.kontrola !== fx.kontrola)
+    else if (wynikFx.error.check !== fx.check)
       problems.push(
-        `${nazwa}: check \`${wynikFx.blad.kontrola}\` fired, and point ${fx.punkt} ` +
-          `(\`${fx.kontrola}\`) was meant to — the fixture proves something other than ` +
+        `${name}: check \`${wynikFx.error.check}\` fired, and point ${fx.point} ` +
+          `(\`${fx.check}\`) was meant to — the fixture proves something other than ` +
           `what it declares`,
       );
 
@@ -430,21 +430,21 @@ for (const nazwa of przypadki) {
     // `--release` it blocks, day to day it only warns. The „it blocks" assertion alone
     // would let through a regression in which point 6 starts blocking always — and then a
     // repository with no remote would not build at all.
-    if (fx.tylkoPrzyRelease) {
-      const zwykly = sprawdzPakiet(katalog, { release: false });
-      if (zwykly.blad)
+    if (fx.releaseOnly) {
+      const zwykly = checkPackage(directory, { release: false });
+      if (zwykly.error)
         problems.push(
-          `${nazwa}: in an ordinary run the gate BLOCKS (${zwykly.blad.kontrola}) ` +
+          `${name}: in an ordinary run the gate BLOCKS (${zwykly.error.check}) ` +
             `and was meant only to warn — blocking belongs to \`--release\``,
         );
       else if (zwykly.ostrzezenia.length === 0)
         problems.push(
-          `${nazwa}: in an ordinary run neither an error nor a warning — ` +
+          `${name}: in an ordinary run neither an error nor a warning — ` +
             `missing metadata passes without a trace`,
         );
     }
   } finally {
-    rmSync(katalog, { recursive: true, force: true });
+    rmSync(directory, { recursive: true, force: true });
   }
 }
 
@@ -458,7 +458,7 @@ if (problems.length) {
 }
 
 console.log(
-  `✓ Package complete: ${wynik.opis}. ` +
+  `✓ Package complete: ${wynik.description}. ` +
     `Negative control: the reference package passes, ` +
-    `${przypadki.length} prepared ones rejected on their own points.`,
+    `${cases.length} prepared ones rejected on their own points.`,
 );

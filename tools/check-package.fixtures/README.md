@@ -1,78 +1,82 @@
-# Kontrola odniesienia bramki pakietu
+# Negative control of the package gate
 
-Celowo wadliwe pakiety. `libs/components/check-package.mjs` uruchamia na każdym z nich
-komplet swoich sześciu kontroli i **wymaga, żeby każdy został odrzucony — i to przez ten
-punkt, który deklaruje**. Pakiet, który przechodzi, jest błędem; pakiet, który zapala
-z innego powodu, niż wpisano w `fixture.json`, jest błędem tak samo, bo dowodzi czegoś
-innego, niż deklaruje.
+Deliberately defective packages. `libs/components/check-package.mjs` runs all six of its
+checks on each of them and **requires every one to be rejected — and rejected by the point
+it declares**. A package that passes is a fault; a package that fires for a reason other
+than the one written in its `fixture.json` is a fault just the same, because it proves
+something other than what it declares.
 
-Powód istnienia jest ten sam co przy każdej innej bramce w tym repozytorium
-([`req-quality-negative-control`](../../docs/requirements/quality.md#req-quality-negative-control)): **nowa
-bramka nie jest gotowa, gdy przechodzi — jest gotowa, gdy pokazano, że potrafi nie
-przejść.** Przebieg, z którego wzięła się bramka pakietu, opisuje
-[`lesson-36`](../../docs/lessons.md#lesson-36): usunięcie `libs/tokens/dist` → build
-**przechodzi**, a pakiet nie wozi ani jednej definicji tokenu. Tamten przebieg był
-**ręczny**, czyli między sesjami nie istnieje — to jest jego maszynowa postać.
+The reason it exists is the same as for every other gate in this repository
+([`req-quality-negative-control`](../../docs/requirements/quality.md#req-quality-negative-control)):
+**a new gate is not ready when it passes — it is ready when it has been shown to fail.**
+The run the package gate came from is described by
+[`lesson-36`](../../docs/lessons.md#lesson-36): removing `libs/tokens/dist` → the build
+**passes**, and the package carries not one token definition. That run was **manual**,
+that is, it does not exist between sessions — this is its machine form.
 
-## Jak to jest złożone
+## How a case is built
 
-Przypadek nie jest szóstą kopią poprawnego pakietu z jedną zepsutą rzeczą. Bramka składa
-go z trzech warstw:
+A case is not a sixth copy of the correct package with one thing broken. The gate builds
+it from three layers:
 
-1. `_poprawny/` — pakiet wzorcowy w miniaturze, zawiera dokładnie to, co bramka czyta,
-2. pliki z katalogu przypadku, nadpisujące bazę (`fixture.json` się nie kopiuje),
-3. usunięcia z listy `usun` w `fixture.json`.
+1. `_reference/` — the reference package in miniature, holding exactly what the gate
+   reads,
+2. the files from the case's directory, overwriting the reference (`fixture.json` is not
+   copied),
+3. the removals from the `drop` list in `fixture.json`.
 
-Dzięki temu katalog przypadku zawiera **wyłącznie wadę** — widać ją bez porównywania
-plików — i nie rozjeżdża się z bazą, gdy kształt pakietu się zmieni.
+That way the case directory holds **nothing but the defect** — it is visible without
+comparing files — and does not drift from the reference when the shape of the package
+changes.
 
-Manifest nazywa się w repozytorium `manifest.json` i `package.json` staje się dopiero
-w złożonym pakiecie. To nie jest kosmetyka: **prawdziwy `package.json` w drzewie
-repozytorium jest dla Nx projektem** — graf dostawał widmowy projekt `@pacit/components`
-o korzeniu w fixtures, i to w trzech egzemplarzach o tej samej nazwie. Naturalne obejście
-(`.nxignore`) naprawia to i psuje coś gorszego: katalog znika z mapy plików, więc
-`inputs` targetu `check-package` przestają go widzieć, a osłabienie fixture'a **nie
-unieważnia cache**. Bramka świeciłaby wtedy na zielono z cache'a, nie sprawdziwszy
-niczego — czyli sama kontrola odniesienia stałaby się cichą wadą
-([`req-axis`](../../docs/00-axis.md)).
+The manifest is called `manifest.json` in the repository and becomes `package.json` only
+in the assembled package. This is not cosmetics: **a real `package.json` in the
+repository tree is a project to Nx** — the graph was getting a phantom `@pacit/components`
+project rooted in the fixtures, and in three copies under the same name. The natural
+workaround (`.nxignore`) fixes that and breaks something worse: the directory disappears
+from the file map, so the `check-package` target's `inputs` stop seeing it, and weakening
+a fixture **does not invalidate the cache**. The gate would then shine green from the
+cache having checked nothing — that is, the negative control itself would become a silent
+defect ([`req-axis`](../../docs/00-axis.md)).
 
-**Pakiet wzorcowy musi przejść**, i to w trybie `--release`. To nie jest kontrola na
-zapas: gdyby baza sama była wadliwa, każdy przypadek zapalałby z jej powodu, a nie
-z powodu swojej wady, i wszystkie „odrzucone" byłyby fałszywe — czyli cała ta kontrola
-odniesienia stałaby się dokładnie tym, przed czym stoi.
+**The reference package must pass**, and pass in `--release` mode. This is not a check for
+good measure: were the reference itself defective, every case would fire because of it
+rather than because of its own defect, and every „rejected" would be false — that is,
+this whole negative control would become exactly what it stands against.
 
-| katalog                                         | co łamie                                              | punkt |
-| ----------------------------------------------- | ----------------------------------------------------- | ----- |
-| [`brak-skorki`](brak-skorki/)                   | pakiet bez `themes/pct.css`                           | 1     |
-| [`skorka-poza-exports`](skorka-poza-exports/)   | skórka w pakiecie, ale poza mapą `exports`            | 2     |
-| [`token-bez-deklaracji`](token-bez-deklaracji/) | użyty `var(--pct-*)` bez deklaracji w pakiecie        | 3     |
-| [`zla-wersja`](zla-wersja/)                     | `PCT_VERSION` inna niż `version` z manifestu          | 4     |
-| [`bez-stalej-wersji`](bez-stalej-wersji/)       | `PCT_VERSION` znikła z pakietu w całości              | 4     |
-| [`brak-schematica`](brak-schematica/)           | kolekcja `ng add` wskazuje na nieskompilowaną fabrykę | 5     |
-| [`brak-repository`](brak-repository/)           | manifest bez `repository`                             | 6     |
+| directory                                                 | what it breaks                                           | point |
+| --------------------------------------------------------- | -------------------------------------------------------- | ----- |
+| [`theme-missing`](theme-missing/)                         | a package with no `themes/pct.css`                       | 1     |
+| [`theme-outside-exports`](theme-outside-exports/)         | the theme is in the package but outside `exports`        | 2     |
+| [`token-without-declaration`](token-without-declaration/) | a used `var(--pct-*)` with no declaration in the package | 3     |
+| [`wrong-version`](wrong-version/)                         | `PCT_VERSION` other than `version` from the manifest     | 4     |
+| [`no-version-constant`](no-version-constant/)             | `PCT_VERSION` vanished from the package entirely         | 4     |
+| [`schematic-missing`](schematic-missing/)                 | the `ng add` collection points at an uncompiled factory  | 5     |
+| [`repository-missing`](repository-missing/)               | a manifest with no `repository`                          | 6     |
 
-Punkt 4 ma dwa przypadki, bo to dwie różne awarie: zła wartość i brak stałej. Ten drugi
-znaczy, że zmienił się kształt wyjścia, a kontrola wersji przestała mieć co porównywać —
-przechodząc przy tym na zielono.
+Point 4 has two cases, because there are two different failures: a wrong value and a
+missing constant. The second means the shape of the output changed and the version check
+has nothing left to compare — while passing green.
 
-Punkt 6 jako jedyny ma dwa tryby, więc jego przypadek ma w `fixture.json`
-`"tylkoPrzyRelease": true` i jest badany w obie strony: przy `--release` musi blokować,
-w zwykłym przebiegu musi **ostrzec i przepuścić**. Asercja wyłącznie na „blokuje"
-przepuściłaby regresję, po której punkt 6 blokuje zawsze — a wtedy repozytorium bez
-zdalnego nie zbudowałoby się w ogóle.
+Point 6 is the only one with two modes, so its case carries `"releaseOnly": true` in
+`fixture.json` and is examined both ways: under `--release` it must block, in a normal run
+it must **warn and pass**. An assertion on „it blocks" alone would let through a
+regression after which point 6 always blocks — and then a repository with no remote would
+not build at all.
 
-## Dlaczego ten katalog stoi w `tools/`, a nie obok skryptu
+## Why this directory sits in `tools/` and not beside the script
 
-Skrypt jest w `libs/components/`, bo target `check-package` należy do tego projektu.
-Fixtures tam nie stoją, bo katalog projektu jest wejściem jego własnych zadań: siedem
-udawanych pakietów wchodziłoby do `inputs` builda i lintu biblioteki, a `manifest.json`
-podpadałby pod regułę `@nx/dependency-checks`, która w tym projekcie obejmuje
-`**/*.json`. Sąsiedztwo z [`check-docs.fixtures/`](check-docs.fixtures/) jest przy
-okazji: oba katalogi są tym samym rodzajem rzeczy.
+The script is in `libs/components/`, because the `check-package` target belongs to that
+project. The fixtures do not stand there, because a project's directory is an input to its
+own tasks: seven fake packages would enter the `inputs` of the library's build and lint,
+and `manifest.json` would fall under the `@nx/dependency-checks` rule, which covers
+`**/*.json` in that project. Standing next to
+[`check-docs.fixtures/`](check-docs.fixtures/) is incidental: both directories are the
+same kind of thing.
 
-## Dodanie nowej kontroli do bramki
+## Adding a new check to the gate
 
-Nowa kontrola w `check-package.mjs` przychodzi **razem z przypadkiem**, który ją zapala,
-i z identyfikatorem, po którym da się poznać, że zapaliła właśnie ona. Kontrola bez
-przypadku jest dokładnie tym, czego zakazuje [`req-axis`](../../docs/00-axis.md): obietnicą
-bez maszyny potrafiącej na niej zapalić, tylko piętro wyżej.
+A new check in `check-package.mjs` comes **together with the case** that fires it, and
+with an identifier that tells you it was this check that fired. A check with no case is
+exactly what [`req-axis`](../../docs/00-axis.md) forbids: a promise with no machine able
+to fire on it, only one floor up.

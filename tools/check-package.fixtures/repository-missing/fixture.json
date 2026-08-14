@@ -1,0 +1,6 @@
+{
+  "point": 6,
+  "check": "metadata",
+  "description": "A manifest with no `repository`. The only point with two modes: day to day it warns (as long as the repository has no remote, that is unreadiness to release, not a build error), and under `--release` it blocks, because npm refuses provenance. The fixture examines both directions — an assertion on „it blocks\" alone would let through a regression after which point 6 always blocks.",
+  "releaseOnly": true
+}

@@ -261,7 +261,7 @@ properties. Changing the theme **requires no SCSS recompilation** and no JS engi
 
 **Gate:** `apps/sandbox-e2e/src/theme.spec.ts`,
 `libs/components/check-package.mjs` (point 3: token closure in the artifact)
-**Control:** `tools/check-package.fixtures/token-bez-deklaracji/` — a package in which a used
+**Control:** `tools/check-package.fixtures/token-without-declaration/` — a package in which a used
 `var(--pct-*)` has no declaration anywhere must fire point 3. The browser would substitute the
 initial value for it, so without this control the failure is invisible
 **Lessons:** [`lesson-18`](../lessons.md#lesson-18), [`lesson-36`](../lessons.md#lesson-36)
@@ -362,8 +362,8 @@ no JS configuration.
 **Gate:** `libs/components/check-package.mjs` — points 1 and 2: the skin is in the package and
 **reachable by import** (the `exports` map is closed; a file with no entry is invisible to the
 consumer)
-**Control:** `tools/check-package.fixtures/brak-skorki/` — a package with no skin must fire
-point 1, and `tools/check-package.fixtures/skorka-poza-exports/` — a skin outside the
+**Control:** `tools/check-package.fixtures/theme-missing/` — a package with no skin must fire
+point 1, and `tools/check-package.fixtures/theme-outside-exports/` — a skin outside the
 `exports` map must fire point 2. The run from [`lesson-36`](../lessons.md#lesson-36) was
 manual
 **Lessons:** [`lesson-36`](../lessons.md#lesson-36)

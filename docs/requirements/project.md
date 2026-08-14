@@ -93,7 +93,7 @@ manual; here it is automated
 and entrypoints may depend on each other.
 
 **Gate:** `libs/components/check-package.mjs` — the `exports` map in the packed manifest
-**Control:** `tools/check-package.fixtures/skorka-poza-exports/` — a file present in the
+**Control:** `tools/check-package.fixtures/theme-outside-exports/` — a file present in the
 package but absent from the `exports` map must fire point 2. That is the defect point 1
 cannot see: the file is right there, the consumer simply has no way to import it
 
@@ -121,9 +121,9 @@ generated CSS themes land in the package assets, so that `@pacit/components/them
 
 **Gate:** `libs/components/project.json` → `implicitDependencies: ["tokens"]` +
 `check-package` (point 3: token closure in the artifact)
-**Control:** `tools/check-package.fixtures/brak-skorki/` — a package without
+**Control:** `tools/check-package.fixtures/theme-missing/` — a package without
 `themes/pct.css` (which is what a green build with an empty `libs/tokens/dist` leaves
-behind) must fire point 1; `tools/check-package.fixtures/token-bez-deklaracji/` — a token
+behind) must fire point 1; `tools/check-package.fixtures/token-without-declaration/` — a token
 used but not declared in the package must fire point 3
 **Decision:** [0002 — the skin ships in the package](../decisions/0002-skin-in-package.md)
 **Lessons:** [`lesson-36`](../lessons.md#lesson-36)

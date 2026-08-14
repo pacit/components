@@ -1,5 +1,0 @@
-{
-  "punkt": 3,
-  "kontrola": "tokeny",
-  "opis": "Kod używa `var(--pct-color-nieistniejacy)`, którego żaden plik w pakiecie nie deklaruje. To jest ta wada, którą punkty 1 i 2 przepuszczają: skórka jest, jest osiągalna, a mimo to warstwa komponentowa z niej wypadła — albo ktoś zrobił literówkę w nazwie tokenu."
-}

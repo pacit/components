@@ -685,7 +685,7 @@ is not an array`) and `tsc` (`TS5025`).
 
 **The package gate's negative control needs fake packages, and a fake package has
 a `package.json` — which was enough for Nx to make a project out of it.** `nx show projects`
-showed a phantom `@pacit/components` rooted in `tools/check-package.fixtures/_poprawny`, with
+showed a phantom `@pacit/components` rooted in `tools/check-package.fixtures/_reference`, with
 a `lint` target of its own; three fixture directories declared the same name, so the graph
 picked one of them quietly. The natural workaround — an entry in `.nxignore` — removed the
 phantom and **broke something worse**: the directory disappeared from the file map, so the

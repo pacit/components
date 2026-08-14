@@ -1,0 +1,6 @@
+{
+  "point": 6,
+  "check": "licence",
+  "description": "A package with `\"license\": \"MIT\"` in the manifest and no LICENSE file. Formally an incomplete licence — and the first thing a corporate consumer's legal department checks. Point 6 used to guard the manifest's fields alone, so this defect passed with a green run.",
+  "drop": ["LICENSE"]
+}

@@ -42,11 +42,11 @@ it is.
 and their factories point at **compiled** files, not at the TS from before the build. Plus
 `tools/check-consumer.mjs` (point 4) — the schematic from the **installed** package runs
 under a real Angular CLI and actually wires the skin into the build configuration
-**Control:** `tools/check-package.fixtures/brak-schematica/` — a package whose collection
+**Control:** `tools/check-package.fixtures/schematic-missing/` — a package whose collection
 points at a factory with no compiled file (i.e. built without the schematics compile step)
 must fire point 5. The manifest entry alone guarantees nothing — with the file missing,
 `ng add` blows up at the consumer with „Collection not found". Plus
-`tools/check-consumer.fixtures/ng-add-padl.json` and a run against the repository with the
+`tools/check-consumer.fixtures/ng-add-failed.json` and a run against the repository with the
 CommonJS boundary removed
 **Lessons:** [`lesson-55`](../lessons.md#lesson-55)
 
@@ -75,16 +75,16 @@ these are two different conditions. Manifest fields: a warning in an ordinary ru
 a licence that matches the `license` field, with a `Copyright (c) <year> <entity>` line.
 Plus `tools/check-consumer.mjs` (point 1, rule `brak-licencji`) — a file present in `dist`
 can still fall out of `npm pack`, and `check-package` cannot see that by construction
-**Control:** `tools/check-package.fixtures/brak-repository/` — a manifest without
+**Control:** `tools/check-package.fixtures/repository-missing/` — a manifest without
 `repository` must fire under `--release` and **only warn** in an ordinary run. Both
 directions are tested: asserting only on „blocks" would let through a regression after which
 point 6 blocks always, and then a repository without a remote would not build at all. Plus
-`tools/check-package.fixtures/brak-licencji/` (a package with no file) and
-`tools/check-package.fixtures/licencja-niezgodna/` — a file naming Apache-2.0 against a `MIT`
+`tools/check-package.fixtures/licence-missing/` (a package with no file) and
+`tools/check-package.fixtures/licence-mismatch/` — a file naming Apache-2.0 against a `MIT`
 manifest. The second one also tests **how the match is made**: the licence text contains the
 word `LIMITED`, which has `MIT` inside it as a substring, so a comparison by `includes` would
 call it a match. The archive is guarded by
-`tools/check-consumer.fixtures/tarball-bez-licencji.json`
+`tools/check-consumer.fixtures/tarball-without-licence.json`
 **Decision:** [0015 — MIT everywhere, rights to the entity, no CLA](../decisions/0015-license-and-model.md)
 **Binds at:** the first publish — the LICENSE file and its gate have been there since
 2026-08-06, the `repository` field since 2026-08-07. It points at

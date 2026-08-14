@@ -1,0 +1,5 @@
+{
+  "point": 6,
+  "check": "licence",
+  "description": "The manifest declares `MIT` and the LICENSE file names Apache-2.0 — that is, one side was changed without the other. The case is at the same time a check on the matching itself: the text contains the word LIMITED, in which `MIT` sits as a substring, so a gate based on `includes` would let it through as consistent."
+}

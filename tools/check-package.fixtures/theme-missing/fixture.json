@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "theme",
+  "description": "A package with no `themes/pct.css`. Exactly what a green build with an empty `libs/tokens/dist` leaves behind — the components refer to tokens nobody declares, and the browser quietly substitutes the initial value (lesson-36).",
+  "drop": ["themes/pct.css"]
+}
