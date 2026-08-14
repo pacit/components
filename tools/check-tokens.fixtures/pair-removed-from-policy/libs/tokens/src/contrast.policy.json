@@ -1,21 +1,21 @@
 {
   "checks": [
     {
-      "name": "tekst podstawowy",
+      "name": "body text",
       "fg": "pct.text",
       "bg": "pct.surface",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "button/hover — etykieta",
+      "name": "button/hover — label",
       "fg": "pct.button.fg",
       "bg": "pct.button.bg-hover",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "button — etykieta obok kontrolki",
+      "name": "button — label beside the control",
       "fg": "pct.button.label-fg",
       "bg": "pct.surface",
       "level": "AA",

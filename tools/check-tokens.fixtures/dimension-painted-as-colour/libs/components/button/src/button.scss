@@ -1,6 +1,6 @@
 :host {
   background: var(--pct-button-bg);
-  /* Wada przypadku: w slocie koloru stoi token wymiaru. */
+  /* The case defect: a dimension token stands in a colour slot. */
   color: var(--pct-button-padding-x);
   padding-inline: var(--pct-button-padding-x);
 }

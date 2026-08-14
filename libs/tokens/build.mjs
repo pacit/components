@@ -73,8 +73,8 @@ function toCss(value, all) {
 
 // resolves a reference down to a literal (for the contrast validation)
 function resolve(dotPath, all, seen = new Set()) {
-  if (!(dotPath in all)) throw new Error(`Brak tokenu: ${dotPath}`);
-  if (seen.has(dotPath)) throw new Error(`Cykl referencji: ${dotPath}`);
+  if (!(dotPath in all)) throw new Error(`No such token: ${dotPath}`);
+  if (seen.has(dotPath)) throw new Error(`Reference cycle: ${dotPath}`);
   seen.add(dotPath);
   const v = all[dotPath].value;
   if (typeof v === 'string') {
@@ -84,7 +84,7 @@ function resolve(dotPath, all, seen = new Set()) {
   return v;
 }
 
-// --- kontrast WCAG ------------------------------------------------------------
+// --- WCAG contrast ------------------------------------------------------------
 function luminance(hex) {
   const h = hex.replace('#', '');
   const n =

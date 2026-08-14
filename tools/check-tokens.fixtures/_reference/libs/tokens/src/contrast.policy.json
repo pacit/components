@@ -2,28 +2,28 @@
   "$comment": "The reference input's contrast policy. Until A12 the build alone read it; from point 7 this gate reads it too and requires a pair for every colour the stylesheet paints.",
   "checks": [
     {
-      "name": "tekst podstawowy",
+      "name": "body text",
       "fg": "pct.text",
       "bg": "pct.surface",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "button — etykieta",
+      "name": "button — label",
       "fg": "pct.button.fg",
       "bg": "pct.button.bg",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "button/hover — etykieta",
+      "name": "button/hover — label",
       "fg": "pct.button.fg",
       "bg": "pct.button.bg-hover",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "button — etykieta obok kontrolki",
+      "name": "button — label beside the control",
       "fg": "pct.button.label-fg",
       "bg": "pct.surface",
       "level": "AA",
