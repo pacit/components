@@ -116,10 +116,10 @@ comments, a shortened `timeoutMS`), and fitting inside the `libs/components/muta
 snapshot with a **two-sided** per-file tolerance
 **Control:** `tools/check-mutation.fixtures/` — 37 doctored inputs on a fake library, each
 rejected on its own **rule**; plus runs against the real repository (removing an assertion
-from `select.spec.ts` drops that file's score and fires `wynik/wynik-spadl`, adding a test
-beyond the tolerance fires `wynik/snapshot-odstaje`, `thresholds.break: null` fires
-`prog/prog-nieustawiony`, a file struck from `mutate` fires `inwentarz/wzorce-zmienione`).
-Plus a control of that control: disarming each of the 37 rules in turn — 25 give „PRZESZŁO",
+from `select.spec.ts` drops that file's score and fires `score/score-dropped`, adding a test
+beyond the tolerance fires `score/snapshot-adrift`, `thresholds.break: null` fires
+`threshold/threshold-unset`, a file struck from `mutate` fires `inventory/patterns-changed`).
+Plus a control of that control: disarming each of the 37 rules in turn — 25 give „PASSED",
 12 move the case onto a neighbouring rule
 **Lessons:** [`lesson-3`](../lessons.md#lesson-3), [`lesson-19`](../lessons.md#lesson-19),
 [`lesson-28`](../lessons.md#lesson-28), [`lesson-57`](../lessons.md#lesson-57),
@@ -332,7 +332,7 @@ configuration) — each on a different rule
 > webkit implements it is the day the gate **demands the exclusion be lifted**, instead of the
 > day nobody notices the file is no longer running there for no reason.
 
-> The `fakt-bez-odniesienia` rule is point 6's denominator: a fact that holds on **no** engine
+> The `fact-without-baseline` rule is point 6's denominator: a fact that holds on **no** engine
 > is not a defect of the engines but a broken probe — and a probe returning false would
 > justify every exclusion built on it, forever.
 
@@ -387,8 +387,8 @@ rejected
 path as any subtree.
 
 **Gate:** `apps/sandbox-e2e/src/theme.spec.ts`, `apps/sandbox-e2e/src/shell.spec.ts`
-**Control:** `preferences.spec.ts › „bez preferencji ciemnej :root zostaje jasny
-(odniesienie)"` — here `:root` is the negative control for every theme measurement
+**Control:** `preferences.spec.ts › „with no dark preference :root stays light (the
+reference)"` — here `:root` is the negative control for every theme measurement
 **Lessons:** [`lesson-17`](../lessons.md#lesson-17)
 
 > This forced the token build to emit a `[data-theme="light"]` block: as long as the light

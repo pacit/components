@@ -62,7 +62,7 @@ once, so `useFactory` gives exactly the same frozen object, only computed lazily
 - A read in a template has parentheses (`texts().selectEmpty`). That is **a visible price**: the
   notation says outright that the string is read every time.
 - The [`check-texts`](../../tools/check-texts.mjs) gate watches this with the
-  `napis-przy-konstrukcji` rule — the default value of an `input`/`model`/`signal` may not read
+  `text-at-construction` rule — the default value of an `input`/`model`/`signal` may not read
   `PCT_TEXTS`. Without it the same notation would come back with the first component written on
   autopilot, again with no red test.
 

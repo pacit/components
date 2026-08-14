@@ -4,8 +4,8 @@
 **Amended:** 2026-08-07 — the reasoning was rewritten alongside
 [0016](0016-mit-irreversibility.md); the resolution is unchanged
 **Implements:** [`req-release-metadata`](../requirements/release.md#req-release-metadata)
-**Evidence:** `check-package` (point 6, the `licencja` check) and `check-consumer` (point 1,
-the `brak-licencji` rule) — the LICENSE file measured in the directory **and** in the archive
+**Evidence:** `check-package` (point 6, the `licence` check) and `check-consumer` (point 1,
+the `licence-missing` rule) — the LICENSE file measured in the directory **and** in the archive
 
 ## Context
 

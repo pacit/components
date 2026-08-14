@@ -147,10 +147,10 @@ measured entrypoint in the probe, a second reading of isolation from the bundle 
 differential check, and a repeat of the measurement with the **real**
 `@angular/build:application`
 **Control:** `tools/check-bundle.fixtures/` — 22 doctored inputs, each rejected on its own
-point; among them `entrypoint-wciaga-sasiada/` (importing `./alfa` pulls in `./beta`),
-`nowa-zaleznosc-zewnetrzna/` (an entrypoint reaches for the CDK overlay),
-`sonda-bez-swojego-entrypointu/` (the measurement stopped pulling anything in) and
-`para-nie-wieksza-od-pojedynczej/` — literally „an app importing two entrypoints must
+point; among them `entrypoint-pulls-neighbour/` (importing `./alpha` pulls in `./beta`),
+`new-external-dependency/` (an entrypoint reaches for the CDK overlay),
+`probe-without-its-entrypoint/` (the measurement stopped pulling anything in) and
+`pair-no-larger-than-single/` — literally „an app importing two entrypoints must
 produce a noticeably bigger bundle"
 **Lessons:** [`lesson-51`](../lessons.md#lesson-51)
 

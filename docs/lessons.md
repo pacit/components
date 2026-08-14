@@ -805,7 +805,7 @@ Three things measured along the way, not assumed:
   (`check-docs`, `check-typecheck`) run in every pass — otherwise a new project with no target
   would slip past the very gate built for it.
 - **Disarming a point sometimes yields an exception instead of a message.** Point 3 read
-  `p.typecheck.polecenia` directly, because after point 2 the target „certainly" exists.
+  `p.typecheck.commands` directly, because after point 2 the target „certainly" exists.
   Disabling point 2 as part of the control of that control turned the gate into a `TypeError`,
   i.e. the negative control lost the ability to examine the point it was meant to examine.
   A dependency between points is normal; writing it down so that its violation gives a stack
@@ -974,8 +974,8 @@ and write that into the point itself.** Otherwise the comment next to a gate des
 that gate does not catch, which is worse than no comment: it reads like coverage.
 
 Separately, in the [`lesson-47`](#lesson-47), [`lesson-49`](#lesson-49) and
-[`lesson-50`](#lesson-50) family: disarming the `obecnosc` point turned the gate into
-a `TypeError`, because the second branch of the same point read `s.wniesione`, trusting the
+[`lesson-50`](#lesson-50) family: disarming the `presence` point turned the gate into
+a `TypeError`, because the second branch of the same point read `s.pulled`, trusting the
 first. **The fourth time for the same defect — and the first time INSIDE one point rather than
 between points.** The previous three gave the rule „do not trust the previous point"; this one
 adds that a point's boundary is not the boundary of that trust.
@@ -1058,7 +1058,7 @@ seems.
 
 A practical rule: **a string, a value depending on DI and anything a consumer can swap after
 startup are to be read in a `computed()`, not in a default value.** Written down as a point of
-a gate (`check-texts`, the rule `napis-przy-konstrukcji`), because knowing is not enough: the
+a gate (`check-texts`, the rule `text-at-construction`), because knowing is not enough: the
 previous notation stood from `a4794a4` (2026-07-27) — the very commit that introduced
 `PCT_TEXTS` — and in all that time produced not one red test. The defect was moreover **described
 in decision 0007 as open**; what kept it alive was not a lack of knowledge but a lack of
@@ -1080,7 +1080,7 @@ because a static gate has no way to ask it — `require()` of that file needs th
 **installed**, with its own module boundary, not a `dist` directory read from the side.
 
 Measured: removing `schematics/package.json` (`{ "type": "commonjs" }`) from the package fires
-`check-consumer` on the rule `ng-add/schematic-padl` and does not move `check-package`.
+`check-consumer` on the rule `ng-add/schematic-failed` and does not move `check-package`.
 `@angular/cdk` solves it the same way: `"type": "module"` at the root, a boundary of its own in
 a subdirectory.
 

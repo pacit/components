@@ -81,9 +81,9 @@ fires. For **dimension** the exceptions are the axes declared in
 and that list is watched from both sides: an unused axis fires, and an axis carrying
 a `$type: color` token fires on the declaration itself. Plus `libs/tokens/build.mjs` —
 auto-discovery of `component.*.json`, so adding a component needs no build changes
-**Control:** `tools/check-tokens.fixtures/` — one input per rule: `kolor-pod-semantyka`,
-`literal-koloru`, `odwolanie-w-bok`, `odwolanie-w-gore`, `prymityw-z-referencja`,
-`os-wspolna-martwa`, `os-wspolna-kolorowa`, `os-niezadeklarowana`; plus runs against the
+**Control:** `tools/check-tokens.fixtures/` — one input per rule: `colour-under-semantics`,
+`colour-literal`, `sideways-reference`, `upward-reference`, `primitive-with-reference`,
+`shared-axis-dead`, `shared-axis-coloured`, `undeclared-axis`; plus runs against the
 repository: `--pct-button-bg` repointed at `{pct.blue.600}`, a field colour written in by
 hand, `--pct-select-bg` pointing at `{pct.field.bg}`, the `space` axis removed from the policy
 (15 violations), the `motion` axis added without being used
@@ -184,12 +184,12 @@ another custom property paints too. The `on-*` rule does read names, because a p
 declared and never painted leaves no trace in a stylesheet. The thresholds are still computed
 by `libs/tokens/build.mjs` ([`req-token-contrast`](#req-token-contrast)) — this point only
 makes sure it has something to compute
-**Control:** `tools/check-tokens.fixtures/` — `kolor-niezmierzony` (a stylesheet painting
-a background with a token outside the policy), `para-usunieta-z-policy` (the same rule from
-the other side), `on-para-martwa`, `on-bez-powierzchni`, `wymiar-malowany-kolorem`,
-`token-spoza-skorki` and `arkusz-usuniety` for the denominator; plus runs against the
+**Control:** `tools/check-tokens.fixtures/` — `unmeasured-colour` (a stylesheet painting
+a background with a token outside the policy), `pair-removed-from-policy` (the same rule from
+the other side), `dead-on-pair`, `on-without-surface`, `dimension-painted-as-colour`,
+`token-outside-theme` and `sheet-removed` for the denominator; plus runs against the
 repository: a new `background: var(--pct-surface-disabled)` declaration in `button.scss`
-fires, removing the `button/solid — etykieta` pair from the policy fires, restoring the dead
+fires, removing the `button/solid — label` pair from the policy fires, restoring the dead
 `--pct-on-danger` fires once the snapshot is accepted
 
 > **Until 2026-08-05 the policy was silent about 27 colours.** The contrast gate counted 38
@@ -238,7 +238,7 @@ gate's result; a non-literal value (`var(...)`, `calc(...)`) is statically undec
 fires as well. The family covers the SVG variants (`fill-opacity`, `stroke-opacity`), because
 the composition is the same and only the name differs
 **Control:** `tools/check-styles.fixtures/partial-opacity/` (a state expressed through
-`opacity: 0.6`) and `opacity-ze-zmiennej/` (a value from a token). Plus a run against the
+`opacity: 0.6`) and `opacity-from-variable/` (a value from a token). Plus a run against the
 repository: `opacity: 0` in `checkbox.scss` changed to `0.45` fires point 6
 **Binds at:** immediately — this is a promise whose breach **rolls back**
 [`req-token-contrast`](#req-token-contrast) to its state before
@@ -298,7 +298,7 @@ and no JS engine. Overlays rendered outside the host tree get the theme **carrie
 explicitly**.
 
 **Gate:** `apps/sandbox-e2e/src/theme.spec.ts`, `apps/sandbox-e2e/src/a11y.spec.ts`
-(„panel ze scoped theme (ciemny) jest bez naruszeń"). Every sandbox card sets the theme on
+(„a scoped theme keeps working under automatic dark mode"). Every sandbox card sets the theme on
 **its own stage**, so every example doubles as a scoped-theme test
 **Control:** see [`req-token-closure`](#req-token-closure)
 **Lessons:** [`lesson-17`](../lessons.md#lesson-17), [`lesson-18`](../lessons.md#lesson-18)
@@ -403,8 +403,8 @@ exception requires a `/* pct-exception <property>: <reason> */` marker adjacent 
 declaration — point 4 fires on a marker with no justification and on one that lands on no
 declaration
 **Control:** `tools/check-styles.fixtures/physical-padding/` (a property name) and
-`text-align-fizyczny/` (a value); for exceptions, `wyjatek-bez-uzasadnienia/` and
-`wyjatek-bez-uzycia/`. Plus runs against the repository: `padding-inline-start` swapped for
+`physical-text-align/` (a value); for exceptions, `exception-without-justification/` and
+`exception-without-use/`. Plus runs against the repository: `padding-inline-start` swapped for
 `padding-left` in `field.scss` fires, removing the exception marker above `left: 50%` in
 `radio.scss` fires, and a `margin-right` hidden inside a mixin with interpolation fires
 point 2 — the comparison of the source text with what sass emits from it

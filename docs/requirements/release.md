@@ -71,9 +71,9 @@ refuses provenance.
 **Gate:** `libs/components/check-package.mjs` (point 6) — two different severities, because
 these are two different conditions. Manifest fields: a warning in an ordinary run, an
 **error under `--release`**, for as long as `repository` has nothing to point at. The
-`licencja` check: **always an error** — a LICENSE file in the artifact, non-empty, naming
+`licence` check: **always an error** — a LICENSE file in the artifact, non-empty, naming
 a licence that matches the `license` field, with a `Copyright (c) <year> <entity>` line.
-Plus `tools/check-consumer.mjs` (point 1, rule `brak-licencji`) — a file present in `dist`
+Plus `tools/check-consumer.mjs` (point 1, rule `licence-missing`) — a file present in `dist`
 can still fall out of `npm pack`, and `check-package` cannot see that by construction
 **Control:** `tools/check-package.fixtures/repository-missing/` — a manifest without
 `repository` must fire under `--release` and **only warn** in an ordinary run. Both
