@@ -22,6 +22,15 @@
 
 <!-- nx configuration end-->
 
+## Commits
+
+Conventional commits, **in English** — the title and the body alike, like everything else
+here ([`req-project-language`](docs/requirements/project.md#req-project-language)). The type
+and the scope are read by the release, not only by people: the type decides whether the commit
+reaches the CHANGELOG at all and `!` marks a breaking change (`release.conventionalCommits`
+in `nx.json`), and the scope names the part that moved — `feat(tokens)!:`, `fix(select):`,
+`docs(h9):`.
+
 ## This file and CLAUDE.md
 
 This file is the **source of truth**. `CLAUDE.md` is three sentences and an `@AGENTS.md`
