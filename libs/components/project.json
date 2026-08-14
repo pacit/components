@@ -104,7 +104,7 @@
       "inputs": [
         { "dependentTasksOutputFiles": "**/*", "transitive": false },
         "{projectRoot}/**/ng-package.json",
-        "{projectRoot}/rozmiar.snapshot.md",
+        "{projectRoot}/size.snapshot.md",
         "{workspaceRoot}/tools/check-bundle.mjs",
         "{workspaceRoot}/tools/check-bundle.fixtures/**/*",
         {

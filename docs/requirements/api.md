@@ -260,7 +260,7 @@ updates.
 points. Point 3 forbids binding a part name with an expression (a name that comes into being
 at runtime cannot be inventoried), point 4 compares the **Parts** sections in
 [`components/`](../components/) with what the entrypoint actually exposes, and point 5
-compares `libs/components/czesci.snapshot.md` with the current inventory. Points 1 and 2 guard
+compares `libs/components/parts.snapshot.md` with the current inventory. Points 1 and 2 guard
 the denominator: every decorator and every occurrence of the attribute in a template must be
 recognised, and the list of parts is built **twice** — from the sources and from the built
 package (`ɵcmp.consts`, `ɵdir.hostAttrs` after linking)

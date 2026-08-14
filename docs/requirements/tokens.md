@@ -77,7 +77,7 @@ component) inverts the whole model.
 point 6. For **colour** the rule has not one exception: above colour the semantic layer exists
 and is complete, so a component colour pointing at a primitive or written in as a literal
 fires. For **dimension** the exceptions are the axes declared in
-`libs/tokens/src/poziomy.policy.json` (today `control`, `font`, `radius`, `space`, `target`),
+`libs/tokens/src/levels.policy.json` (today `control`, `font`, `radius`, `space`, `target`),
 and that list is watched from both sides: an unused axis fires, and an axis carrying
 a `$type: color` token fires on the declaration itself. Plus `libs/tokens/build.mjs` —
 auto-discovery of `component.*.json`, so adding a component needs no build changes
@@ -145,7 +145,7 @@ the DTCG path one to one.
 
 **Gate:** `tools/check-tokens.mjs` (target `check-tokens` in the root project, in CI) — five
 points. Point 3 parses every name against the dictionary in
-`libs/tokens/src/nazwy.policy.json` and requires the component in a name to be a real package
+`libs/tokens/src/names.policy.json` and requires the component in a name to be a real package
 entrypoint; point 5 compares `libs/tokens/tokens.snapshot.md` with the current list. Points 1,
 2 and 4 guard the denominator: two independent readings of the list (`dist/pct.css` against
 the DTCG sources), agreement of `tokens.ts` and `_tokens.scss` with that list, and a ban on

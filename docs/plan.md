@@ -126,7 +126,7 @@ control. Nothing here is waiting any more.
   - closed: `req-api-parts`
   - built: `tools/check-parts.mjs` (target `check-parts` in the root project,
     `dependsOn: components:build`, in CI) — five points plus the generated
-    `libs/components/czesci.snapshot.md` (41 parts, 10 classes, 5 entrypoints). Three points
+    `libs/components/parts.snapshot.md` (41 parts, 10 classes, 5 entrypoints). Three points
     are rules, **two guard the denominator**: the list is built **twice**, from the sources and
     from the built package through JIT, because four chrome parts stand in no template at all —
     only in directive `host` blocks. Point 4 (a card's **Parts** table against what the
@@ -139,7 +139,7 @@ control. Nothing here is waiting any more.
   - closed: `req-token-names`
   - built: `tools/check-tokens.mjs` (target `check-tokens` in the root project,
     `dependsOn: tokens:build`, in CI) — five points: two rules (a name parses against
-    `libs/tokens/src/nazwy.policy.json`; the snapshot matches the current list) and **three
+    `libs/tokens/src/names.policy.json`; the snapshot matches the current list) and **three
     guarding the denominator**, among them two independent readings of the name list
   - **a snapshot laid before normalisation would have frozen the drift**: 34 tokens had their
     segments in reverse order, so every later rename would have been a breaking change — hence
@@ -190,7 +190,7 @@ control. Nothing here is waiting any more.
 - [x] **A8 — tree-shaking + entrypoint size budget** _(2026-08-05)_
   - closed: `req-project-tree-shaking`
   - built: `tools/check-bundle.mjs` (target `check-bundle` in `components`, `dependsOn: build`,
-    in CI) — ten points plus the generated `libs/components/rozmiar.snapshot.md` (7 entrypoints,
+    in CI) — ten points plus the generated `libs/components/size.snapshot.md` (7 entrypoints,
     114 766 B). The core is two: which entrypoints an import of one drags in (5) and which
     external dependencies come with them (7) — `@angular/cdk/overlay` only in `./select`
   - the plan's assertion („no `PctField` in a `button` bundle") proves nothing on its own — a
@@ -217,7 +217,7 @@ control. Nothing here is waiting any more.
   - closed: `req-quality-browsers`
   - built: three projects in `playwright.config.mts` (chromium, firefox, webkit) — **458 tests per
     run, 5.5 min** — plus `tools/check-browsers.mjs` (target `check-browsers`, in CI): six points,
-    26 rules, the register `apps/sandbox-e2e/przegladarki.policy.json`, three engines in CI install
+    26 rules, the register `apps/sandbox-e2e/browsers.policy.json`, three engines in CI install
   - „add webkit and firefox" has no symptom — Playwright exits zero after three projects as after
     one, and after **zero** tests — so the gate asks `--list` what the engines **actually** collect
   - firefox passed 146 functional tests first time, webkit 144: it reports `forced-colors: active`
@@ -243,7 +243,7 @@ control. Nothing here is waiting any more.
   - closed: `req-token-text-pairs`, `req-token-tiers` — **2 gaps**
   - built: points **6 and 7** in `tools/check-tokens.mjs` (same target, same negative control,
     because both promises stand on the same denominator as the names): a „downwards only"
-    reference graph with `libs/tokens/src/poziomy.policy.json`, and „every painted colour has a
+    reference graph with `libs/tokens/src/levels.policy.json`, and „every painted colour has a
     pair" plus the `on-*` rule. Plus `regula` in `fixture.json` ([`lesson-50`](lessons.md#lesson-50))
   - the plan's denominator was wrong: names (`*-bg`) cannot see the outline button painting
     `var(--pct-surface-100)` under `var(--pct-primary)`, so point 7 reads the **sass output**.
@@ -364,7 +364,7 @@ block publication and is an order of magnitude larger.
   - detection has **two limbs**: diacritics are enough for prose and fall silent exactly where
     the text is short — a one-word label, a file name — so the second limb is a list of Polish
     function words English does not contain, plus file names and identifiers separately
-  - the register of exceptions follows the `przegladarki.policy.json` idiom from A10: an entry
+  - the register of exceptions follows the `browsers.policy.json` idiom from A10: an entry
     carries its reason and the task that removes it, and **a dead entry fires just like new
     Polish**. The public surface may not have an entry at all, so B3 and B4 are a condition of
     wiring the gate into CI. Denominator: a non-empty file list and a non-empty measurement —
@@ -403,7 +403,7 @@ items. Full context: [`review.md`](review.md) §5.
     package. Today it is a dead artefact in a published package · _notes:_ —
 
 - [ ] **C6 — primitives in the public `PctCssVar` union: two ramps private, the third not**
-  - `libs/tokens/src/nazwy.policy.json` declares `pct.blue.` and `pct.slate.` private and
+  - `libs/tokens/src/names.policy.json` declares `pct.blue.` and `pct.slate.` private and
     `pct.red.` not — so a consumer sees `--pct-red-600` in the type and does not see
     `--pct-blue-600`. An inherited drift, moved at A4 from an expression in `build.mjs` into the
     policy, that is **from an invisible place into a visible one**, and left there
@@ -665,7 +665,7 @@ Measured 2026-08-06 (`git ls-files` + a diacritics scan), refreshed 2026-08-08:
     nothing for the first time; the remedy was H2's, a link instead of a repetition
   - with them the 65 `name` values of `contrast.policy.json` (the a11y gate prints each one,
     per theme, so they are messages) and four generated snapshots plus four fixture copies,
-    which follow their renderer. `rozmiar.snapshot.md` kept its recorded numbers by hand
+    which follow their renderer. `size.snapshot.md` kept its recorded numbers by hand
   - control: twelve gates green, `nx format:check` clean, `check-bundle` with its three real
     `@angular/build` probes and `check-consumer` end to end
   - cost: ~1 day · journal 2026-08-13 · found the fixture prose and left it to H8
@@ -674,8 +674,8 @@ Measured 2026-08-06 (`git ls-files` + a diacritics scan), refreshed 2026-08-08:
   - done: the target `mutacja` → **`mutation`**, the only Polish one out of 26 — the rest
     (`check-*`, `build`, `themes`, `stamp-version`) were English, so this was an inherited
     drift, not a convention. With it its five files and the `tmp/` output directory
-  - left in files: `czesci.snapshot.md`, `rozmiar.snapshot.md`, `nazwy.policy.json`,
-    `poziomy.policy.json`, `przegladarki.policy.json` — while `contrast.policy.json` **in the
+  - left in files: `parts.snapshot.md`, `size.snapshot.md`, `names.policy.json`,
+    `levels.policy.json`, `browsers.policy.json` — while `contrast.policy.json` **in the
     same directory** is already English
   - plus 100 fixture case directories (`brak-schematica`, `os-wspolna-martwa`), 41 rule names
     in `fixture.json` and the `/* pct-wyjatek … */` marker in stylesheets (4 uses, but the

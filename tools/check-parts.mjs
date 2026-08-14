@@ -36,7 +36,7 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PROJEKT = 'libs/components';
 const DIST = 'dist/libs/components';
 const DOKUMENTY = 'docs/components';
-const SNAPSHOT = `${PROJEKT}/czesci.snapshot.md`;
+const SNAPSHOT = `${PROJEKT}/parts.snapshot.md`;
 const FIXTURES = join(ROOT, 'tools/check-parts.fixtures');
 const BAZA = '_poprawny';
 

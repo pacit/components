@@ -59,10 +59,10 @@ wadliwa, każdy przypadek zapalałby z jej powodu, a nie ze swojego, i wszystkie
 w bazie na `hover-bg` natychmiast przestawiło `slowo-martwe`, `snapshot-nieaktualny`
 i `snapshot-usuniety` na cudzy punkt.
 
-Słownik bazy (`_poprawny/libs/tokens/src/nazwy.policy.json`) wymienia **wyłącznie słowa
+Słownik bazy (`_poprawny/libs/tokens/src/names.policy.json`) wymienia **wyłącznie słowa
 używane** przez któryś token wzorca. To nie jest oszczędność: punkt 4 odrzuca słowo
 martwe, więc rozdmuchany „na zapas" słownik zepsułby bazę. Ta sama reguła obowiązuje
-polityki dołożone przy A12: `poziomy.policy.json` bazy wymienia jedną oś (`space`), bo oś
+polityki dołożone przy A12: `levels.policy.json` bazy wymienia jedną oś (`space`), bo oś
 bez użycia zapala punkt 6, a `contrast.policy.json` ma parę dla **każdego** koloru
 malowanego przez `przycisk.scss`, bo inaczej baza zapaliłaby punkt 7 na sobie.
 

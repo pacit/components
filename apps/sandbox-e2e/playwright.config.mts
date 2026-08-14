@@ -97,7 +97,7 @@ export default defineConfig({
    * i `Google Chrome` to ten sam blink w innym opakowaniu — czwarty projekt
    * kosztowałby czas CI i nie odpowiadał na żadne nowe pytanie.
    *
-   * Ta sama lista stoi drugi raz w `przegladarki.policy.json` i to jest
+   * Ta sama lista stoi drugi raz w `browsers.policy.json` i to jest
    * celowe powtórzenie, nie niedopatrzenie. `tools/check-browsers.mjs` nie
    * czyta tego pliku — pyta Playwrighta, co NAPRAWDĘ zebrał — i porównuje
    * wynik z polityką. Silnik usunięty stąd rozjeżdża się wtedy z polityką

@@ -28,7 +28,7 @@ const BAZA = '_poprawny.json';
 
 const E2E = 'apps/sandbox-e2e';
 const TESTDIR = `${E2E}/src`;
-const POLITYKA = `${E2E}/przegladarki.policy.json`;
+const POLITYKA = `${E2E}/browsers.policy.json`;
 const CI = '.github/workflows/ci.yml';
 
 /**
@@ -96,7 +96,7 @@ const lista = (items) => items.map((i) => `      ${i}`).join('\n');
 
 /**
  * The full set of checks over a ready input:
- *   `polityka` — the contents of `przegladarki.policy.json`,
+ *   `polityka` — the contents of `browsers.policy.json`,
  *   `zebrane`  — `{ [silnik]: [pliki] }`, measured by `playwright test --list`,
  *   `pliki`    — spec files from the git index, relative to `testDir`,
  *   `e2e`      — `{ polecenie }` from the `sandbox-e2e:e2e` target in the Nx graph,

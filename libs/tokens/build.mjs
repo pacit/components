@@ -219,7 +219,7 @@ function run() {
   // out of the public TS union — but that list lives THERE and not here, so `check-tokens`
   // can read it instead of guessing what this filter means.
   const nazwy = JSON.parse(
-    readFileSync(join(SRC, 'nazwy.policy.json'), 'utf8'),
+    readFileSync(join(SRC, 'names.policy.json'), 'utf8'),
   );
 
   const lightTree = merge(primitive, semanticLight, ...components); // :root

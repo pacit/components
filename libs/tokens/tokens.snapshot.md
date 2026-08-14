@@ -13,7 +13,7 @@ it means „a change of public API that is to be visible in review".
 
 Kolumny: nazwa custom property · `$type` z DTCG · warstwa · czy jest w publicznej
 unii `PctCssVar` (patrz `prywatne.prefiksy` w
-[`src/nazwy.policy.json`](src/nazwy.policy.json)).
+[`src/names.policy.json`](src/names.policy.json)).
 
 ```
 --pct-blue-200 color prymitywny prywatny

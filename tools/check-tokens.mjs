@@ -39,8 +39,8 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const TOKENY = 'libs/tokens';
 const KOMPONENTY = 'libs/components';
 const SNAPSHOT = `${TOKENY}/tokens.snapshot.md`;
-const POLITYKA = `${TOKENY}/src/nazwy.policy.json`;
-const POZIOMY = `${TOKENY}/src/poziomy.policy.json`;
+const POLITYKA = `${TOKENY}/src/names.policy.json`;
+const POZIOMY = `${TOKENY}/src/levels.policy.json`;
 const KONTRAST = `${TOKENY}/src/contrast.policy.json`;
 const FIXTURES = join(ROOT, 'tools/check-tokens.fixtures');
 const BAZA = '_poprawny';
@@ -501,7 +501,7 @@ const sprawdzTokeny = (we) => {
   //
   //    Colour has NOT ONE exception here: above it the semantic tier exists and is
   //    complete. The exception concerns the dimension axes, above which there is no
-  //    semantics, and it is narrowed from both sides at once (see `poziomy.policy.json`):
+  //    semantics, and it is narrowed from both sides at once (see `levels.policy.json`):
   //    an axis has to be declared, has to be used and must carry no colour token. The last
   //    of these matters most — without it, adding `blue` to the list would disarm the very
   //    rule the point exists for, and look like a single word in the diff.
@@ -966,7 +966,7 @@ const renderujSnapshot = (nazwy, prywatny) =>
     '',
     'Kolumny: nazwa custom property · `$type` z DTCG · warstwa · czy jest w publicznej',
     'unii `PctCssVar` (patrz `prywatne.prefiksy` w',
-    '[`src/nazwy.policy.json`](src/nazwy.policy.json)).',
+    '[`src/names.policy.json`](src/names.policy.json)).',
     '',
     '```',
     ...nazwy.map((n) =>

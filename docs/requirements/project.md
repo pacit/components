@@ -140,7 +140,7 @@ and explicit imports.
 points. The probes bundle the **artifact** through `node_modules` and the `exports` map, the
 same way a consumer does: point 5 watches which entrypoints an import of one of them pulls
 in, point 7 which external dependencies come along (CDK Overlay is allowed in `./select`
-only), point 8 the size budget per entrypoint (`libs/components/rozmiar.snapshot.md`,
+only), point 8 the size budget per entrypoint (`libs/components/size.snapshot.md`,
 two-sided tolerance ±5%). Point 4 watches that the primary entrypoint brings in no component
 at all. The rest is the denominator: two readings of the entrypoint list, presence of the
 measured entrypoint in the probe, a second reading of isolation from the bundle text, a
@@ -216,7 +216,7 @@ package release binds the second part: 24 files in the built artifact, including
 `types/*.d.ts`. The layer-by-layer state is tracked by
 [section H of the plan](../plan.md#h-one-language-for-the-repository)
 
-> The register of exceptions plays the part here that `przegladarki.policy.json` plays for
+> The register of exceptions plays the part here that `browsers.policy.json` plays for
 > [`req-quality-browsers`](quality.md#req-quality-browsers): migration through a shrinking
 > list rather than in one run. Without it the gate would be red for all the weeks of
 > translation — that is, switched off on day one.
@@ -251,7 +251,7 @@ because in a public API they are the most valuable text there is. The volume pro
 
 **Decision:** [0017 — one home per fact: the criterion and its budget](../decisions/0017-one-home-per-fact.md)
 **Gate:** none — gap: a prose volume budget per file, a snapshot with **two-sided**
-tolerance, in the idiom of `libs/components/rozmiar.snapshot.md`. The values are settled in
+tolerance, in the idiom of `libs/components/size.snapshot.md`. The values are settled in
 [0017](../decisions/0017-one-home-per-fact.md) (gate header 12 lines + 1 per point, journal
 entry 25, task position 12 closed / 20 open), and the denominator is already counted by
 `tools/measure-prose.mjs` — a measurement with no target, which this gate will grow out of.

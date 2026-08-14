@@ -24,26 +24,26 @@ None of its own — fully native
 
 ## Checks
 
-| criterion                       | evidence                                                                                                                                                                                       |
-| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ARIA APG pattern in the JSDoc   | none — gap                                                                                                                                                                                     |
-| Keyboard map                    | not applicable — native                                                                                                                                                                        |
-| axe audit                       | `apps/sandbox-e2e/src/a11y.spec.ts` (the `/text` view)                                                                                                                                         |
-| Visual screenshot               | `apps/sandbox-e2e/src/visual.spec.ts`                                                                                                                                                          |
-| `forced-colors: active`         | `apps/sandbox-e2e/src/forced-colors.spec.ts`                                                                                                                                                   |
-| `prefers-reduced-motion`        | `apps/sandbox-e2e/src/preferences.spec.ts`                                                                                                                                                     |
-| Touch target                    | `apps/sandbox-e2e/src/field-hitarea.spec.ts` (guaranteed by the wrapper)                                                                                                                       |
-| Size axis                       | `apps/sandbox-e2e/src/size.spec.ts` — size belongs to the wrapper                                                                                                                              |
-| Density axis                    | none — gap                                                                                                                                                                                     |
-| RTL                             | none — gap                                                                                                                                                                                     |
-| SSR + hydration                 | `apps/sandbox-e2e/src/hydration.spec.ts`                                                                                                                                                       |
-| Forms                           | `libs/components/field/src/field-controls.spec.ts`, `apps/sandbox-e2e/src/forms.spec.ts` — signal forms, `[formControl]` and `[(ngModel)]`, **each starting from a non-empty value**           |
-| Parts in the inventory          | `libs/components/czesci.snapshot.md`, `tools/check-parts.mjs` (target `check-parts`) — the component exposes no parts of its own; the `field` entrypoint's inventory covers it in the same row |
-| Tokens + `contrast.policy.json` | `libs/tokens/src/contrast.policy.json`                                                                                                                                                         |
-| Strings through `PCT_TEXTS`     | `tools/check-texts.mjs` — no strings of its own                                                                                                                                                |
-| Size budget                     | none — gap (shares an entrypoint with `field`)                                                                                                                                                 |
-| Screen-reader log               | none — gap                                                                                                                                                                                     |
-| docs page                       | none — gap                                                                                                                                                                                     |
+| criterion                       | evidence                                                                                                                                                                                      |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ARIA APG pattern in the JSDoc   | none — gap                                                                                                                                                                                    |
+| Keyboard map                    | not applicable — native                                                                                                                                                                       |
+| axe audit                       | `apps/sandbox-e2e/src/a11y.spec.ts` (the `/text` view)                                                                                                                                        |
+| Visual screenshot               | `apps/sandbox-e2e/src/visual.spec.ts`                                                                                                                                                         |
+| `forced-colors: active`         | `apps/sandbox-e2e/src/forced-colors.spec.ts`                                                                                                                                                  |
+| `prefers-reduced-motion`        | `apps/sandbox-e2e/src/preferences.spec.ts`                                                                                                                                                    |
+| Touch target                    | `apps/sandbox-e2e/src/field-hitarea.spec.ts` (guaranteed by the wrapper)                                                                                                                      |
+| Size axis                       | `apps/sandbox-e2e/src/size.spec.ts` — size belongs to the wrapper                                                                                                                             |
+| Density axis                    | none — gap                                                                                                                                                                                    |
+| RTL                             | none — gap                                                                                                                                                                                    |
+| SSR + hydration                 | `apps/sandbox-e2e/src/hydration.spec.ts`                                                                                                                                                      |
+| Forms                           | `libs/components/field/src/field-controls.spec.ts`, `apps/sandbox-e2e/src/forms.spec.ts` — signal forms, `[formControl]` and `[(ngModel)]`, **each starting from a non-empty value**          |
+| Parts in the inventory          | `libs/components/parts.snapshot.md`, `tools/check-parts.mjs` (target `check-parts`) — the component exposes no parts of its own; the `field` entrypoint's inventory covers it in the same row |
+| Tokens + `contrast.policy.json` | `libs/tokens/src/contrast.policy.json`                                                                                                                                                        |
+| Strings through `PCT_TEXTS`     | `tools/check-texts.mjs` — no strings of its own                                                                                                                                               |
+| Size budget                     | none — gap (shares an entrypoint with `field`)                                                                                                                                                |
+| Screen-reader log               | none — gap                                                                                                                                                                                    |
+| docs page                       | none — gap                                                                                                                                                                                    |
 
 ## Decisions
 

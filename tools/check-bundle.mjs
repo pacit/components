@@ -39,7 +39,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PROJEKT = 'libs/components';
 const DIST = 'dist/libs/components';
-const SNAPSHOT = `${PROJEKT}/rozmiar.snapshot.md`;
+const SNAPSHOT = `${PROJEKT}/size.snapshot.md`;
 const FIXTURES = join(ROOT, 'tools/check-bundle.fixtures');
 const BAZA = '_poprawny.json';
 const WRITE = process.argv.includes('--write');
@@ -463,7 +463,7 @@ const rowne = (a, b) => a.size === b.size && [...a].every((x) => b.has(x));
 // ── snapshot ──────────────────────────────────────────────────────────────────
 
 /**
- * The same choice of format as in `libs/components/czesci.snapshot.md` and
+ * The same choice of format as in `libs/components/parts.snapshot.md` and
  * `libs/tokens/tokens.snapshot.md`, and for the same reason: a markdown table run through
  * prettier pads its columns to the longest cell, so one long name rewrites the WHOLE file
  * and the diff stops showing what really changed.

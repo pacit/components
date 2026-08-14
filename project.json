@@ -69,7 +69,7 @@
       "inputs": [
         "{workspaceRoot}/libs/components/**/*.ts",
         "{workspaceRoot}/libs/components/**/*.html",
-        "{workspaceRoot}/libs/components/czesci.snapshot.md",
+        "{workspaceRoot}/libs/components/parts.snapshot.md",
         "{workspaceRoot}/docs/components/*.md",
         "{workspaceRoot}/tools/check-parts.mjs",
         "{workspaceRoot}/tools/check-parts.fixtures/**/*",
@@ -84,7 +84,7 @@
       "cache": true,
       "inputs": [
         "{workspaceRoot}/apps/sandbox-e2e/playwright.config.mts",
-        "{workspaceRoot}/apps/sandbox-e2e/przegladarki.policy.json",
+        "{workspaceRoot}/apps/sandbox-e2e/browsers.policy.json",
         "{workspaceRoot}/apps/sandbox-e2e/src/**/*.ts",
         "{workspaceRoot}/apps/sandbox-e2e/project.json",
         "{workspaceRoot}/.github/workflows/ci.yml",

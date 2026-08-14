@@ -309,7 +309,7 @@ root project, in CI) — six points, 26 rules. The e2e run is blind to its own m
 Playwright exits zero after three projects exactly as it does after one, and exactly as it
 does after **zero** collected tests. So the gate asks `playwright test --list --reporter=json`
 what the engines REALLY collect and compares that with the
-`apps/sandbox-e2e/przegladarki.policy.json` policy: every file runs on every engine unless it
+`apps/sandbox-e2e/browsers.policy.json` policy: every file runs on every engine unless it
 has an entry there with a reason. Point 5 reads the `e2e` target's command from the Nx graph
 and the install steps from `.github/workflows/ci.yml` — `--project=chromium` in the command is
 the one narrowing that is invisible in the Playwright configuration
