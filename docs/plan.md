@@ -73,19 +73,20 @@ G  gaps with no deadline    waiting for the trigger written in their „Binds at
 H  one language, no filler  English everywhere; blocks B2 whole, not just its public part
 ```
 
-**Phase A is closed and so are H1–H8 and H11**, so the next milestone is not a release but the
-**first push to the public repository** (B2) — and the rule for it is settled: **nothing leaves
-in Polish**. Not the sandbox, not a comment, not a fixture value. So B2 waits on the rest of H
-(H9, H10), on the **repository limb of B8** — because „nothing is left" is a measurement,
+**Phase A is closed and so are H1–H8, H10 and H11**, so the next milestone is not a release but
+the **first push to the public repository** (B2) — and the rule for it is settled: **nothing
+leaves in Polish**. Not the sandbox, not a comment, not a fixture value. So B2 waits on the rest
+of H (H9 alone), on the **repository limb of B8** — because „nothing is left" is a measurement,
 not a declaration, this file's own [definition of done](#definition-of-done) — and on **B9**,
 the clear-out of what a public repository should never have carried. H1 (identifiers),
 H2 (the concision criterion, [0017](decisions/0017-one-home-per-fact.md)), H3 (the title page),
 H4 (`docs/`), H5 (`libs`), H6 (test names), H7 (the fifteen gate scripts), H8 (the contracts
-they read) and H11 (what a diacritics scan cannot see) are done, and `LICENSE` has a gate on both sides of `npm pack` (B1). Of B, the
+they read), H10 (the sandbox) and H11 (what a diacritics scan cannot see) are done, and `LICENSE`
+has a gate on both sides of `npm pack` (B1). Of B, the
 package README (B3) and B4 stand between here and npm.
-**Outside `apps/` both limbs are now empty** — H11 closed the 84 files a dictionary scan found
-where a function-word probe had counted 32, the JSDoc example that shipped in `types/*.d.ts`
-among them. Under `apps/` **52 of the 117** files are left, and that is H10.
+**Both scan limbs are now empty across the whole repository** — H11 closed the 84 files a
+dictionary scan found where a function-word probe had counted 32, the JSDoc example that shipped
+in `types/*.d.ts` among them, and H10 closed the last 58 under `apps/`.
 In parallel: F1 is unblocked (A3 and A4 gave it both inventories to render), and C is filler.
 
 H is not a separate phase, and it no longer has two deadlines. The old split — `README.md`,
@@ -308,9 +309,9 @@ block publication and is an order of magnitude larger.
   - hence the ordering condition **H1 → H3 → H4 → B2**, satisfied for everything the first
     visitor sees. The price of that order is written down plainly — until the first push there
     is no remote CI, no provenance and no copy off this machine
-  - **and on 2026-08-14 the condition grew**: nothing leaves in Polish, so **H9 and H10** stand
-    before the push and **B8's repository limb is what proves it**. H11 closed its half the same
-    day — the scan that reported four layers clean saw neither „nie biegnie" nor `'Wybierz…'`
+  - **and on 2026-08-14 the condition grew**: nothing leaves in Polish, so **H9** stands before
+    the push and **B8's repository limb is what proves it**. H11 and H10 closed their halves that
+    day — the scan calling four layers clean saw neither „nie biegnie" nor `'Wybierz…'`
   - cost: minutes for the task itself · _notes:_ —
 
 - [ ] **B3 — package README in English**
@@ -368,15 +369,15 @@ block publication and is an order of magnitude larger.
     different reach**: the public surface on the **artefact** (what comes out of `npm pack`,
     not what stands in the source), the rest of the repository on files from the git index
   - **two reaches, one deadline now**: the repository limb runs before the push, being the only
-    thing that turns „nothing is left in Polish" into a measurement; the artefact limb still
-    binds at the release with B3
+    thing turning „nothing is left in Polish" into a measurement; the artefact limb binds at B3
   - detection has **two limbs** and H11 settled the second: diacritics carry prose, so the other
     limb is `/usr/share/dict/polish` minus `american-english`, over identifiers split at
     camelCase. **Its false positives are the design work** and they enumerate — acronyms,
     `SCREAMING_CASE`, the abbreviations of the trade, `jest` ([`lesson-60`](lessons.md#lesson-60))
   - the register follows the `browsers.policy.json` idiom from A10: an entry carries its reason
     and the task that removes it, and **a dead entry fires just like new Polish**. It starts
-    empty — that is what B3, B4 and H10 are for. Denominator: [`lesson-48`](lessons.md#lesson-48)
+    empty bar one survivor to rule on — the `pl-PL` default of `number.spec.ts`, the case that
+    groups with U+00A0. Denominator: [`lesson-48`](lessons.md#lesson-48)
   - control: Polish in a file outside the register; an entry pointing at a file **already**
     translated; a Polish `description` **despite** an entry; a scan with an empty file list
   - cost: ~1 day · _notes:_ —
@@ -615,7 +616,7 @@ is the last row, and it is H11, not a new layer:
 | identifiers and their citations     | done — **H1** (82 + 59 names, 2 571 citations in 175 files)                  | —                        |
 | `libs` sources                      | done — **H5** (30 files, plus 14 config and token files)                     | —                        |
 | test names                          | done — **H6** (27 spec files, 26 baselines renamed)                          | —                        |
-| `apps/` sandbox demo                | **52 of 117 files** — **H10**, decision made: it goes English                | first push               |
+| `apps/` sandbox demo                | done — **H10** (58 files, locale `pl-PL` → `fr-FR`, 26 baselines redrawn)    | first push               |
 | tools and gates                     | done — **H7** (15 scripts; headers 609 → **249**, budget 251)                | —                        |
 | proper names in contracts           | done — **H8** (1 target, 5 policies/snapshots, 252 fixture cases, 9 READMEs) | —                        |
 | commit history                      | 49 commits — **H9**                                                          | squashed before the push |
@@ -732,22 +733,18 @@ is the last row, and it is H11, not a new layer:
     commit
   - cost: minutes · _notes:_ —
 
-- [ ] **H10 — the `apps/` sandbox demo** _(H6 took the e2e half)_
-  - what is left: **52 of the 117 files under `apps/`** — 46 the diacritics scan sees, 6 only
-    the second limb — plus `playwright.config.mts` and the e2e `project.json`. The specs, the
-    `src/support/` helpers and the 26 baselines went with H6; their prose did not all follow
-  - **the decision is made: the demo goes English** _(2026-08-14)_. It was the one place where
-    Polish was load-bearing — `app.config.ts` is the only live use of `providePctTexts` and of
-    a non-English `LOCALE_ID`, and `select.spec.ts` follows that chain through SSR and hydration
-  - **so the proof changes language, not homes**:
-    [`req-api-texts`](requirements/api.md#req-api-texts) needs a locale that is **not English**,
-    and never needed one that is Polish. `fr-FR` keeps every assertion that mattered — the
-    decimal comma the number field formats by `LOCALE_ID` is the same there — and the texts
-    channel keeps a live consumer instead of a smaller, deliberate demonstration elsewhere
-  - couplings: the e2e specs cite the UI strings they read (`hasText: 'Polska'` and its kin, 15
-    places), so demo and specs move in one commit; the **Control** citations in `quality.md` and
-    `tokens.md` named Polish test names that no longer exist — H11 took those
-  - cost: ~1 day · _notes:_ the one open sub-choice is the locale; `fr-FR` recommended
+- [x] **H10 — the `apps/` sandbox demo** _(2026-08-14)_
+  - done: **58 files** — 46 the diacritics scan saw, 12 only the dictionary limb and all of those
+    e2e specs quoting the UI. Prose, strings, fixtures and `#rodzaje`/`#stany` went together
+  - **the proof changed language, not homes**: `app.config.ts` was the only live use of
+    `providePctTexts` and of the non-English `LOCALE_ID` that
+    [`req-api-texts`](requirements/api.md#req-api-texts) needs and never needed Polish for — now
+    `fr-FR`, French library texts included, with `select.spec.ts` still following that chain
+  - **the swap moved one character and it was measured, not assumed**: `fr-FR` groups thousands
+    with U+202F where `pl-PL` used U+00A0 — six assertions, and all three engines agree. The 26
+    baselines, being pictures of that text, were redrawn; H6 had renamed the same files
+  - control: 458 e2e on three engines, 7 unit tests, twelve gates plus `check-browsers`,
+    `format:check` clean; both scan limbs empty repository-wide · cost: ~1 day · journal 2026-08-14
 
 - [x] **H11 — the Polish a diacritics scan cannot see** _(2026-08-14)_
   - done: **84 files outside `apps/`** — ten gate scripts, 25 fixture files, seven library
@@ -765,6 +762,32 @@ is the last row, and it is H11, not a new layer:
 ## Journal
 
 One entry per session: what moved, what it ended with, what comes next. Newest on top.
+
+### 2026-08-14 — H10: the demo changed language, and one invisible character changed with it
+
+**H10 is done — 58 files under `apps/`**: the sandbox shell, ten views, the demo card and the
+axis bar, two configuration files and thirteen e2e specs. Both scan limbs are empty across the
+whole repository now, so H has one row left and it is H9.
+
+**The demo and its specs moved in one commit, because the specs quote the demo.** `hasText:
+'Polska'`, `'Darmowy'`, `getByRole('radio', { name: 'ciemny' })`, an `aria-label` matched with
+`/profilu/` — fifteen citations of strings that exist only in a template. Split in two, either
+half is red on its own.
+
+**The locale swap needed a measurement and it was one character wide.** The number field formats
+by `LOCALE_ID`; `pl-PL` groups thousands with U+00A0, `fr-FR` with U+202F, and six assertions
+carry that character literally. So the engines were asked before the swap rather than after:
+chromium, firefox and webkit all format `fr-FR` with U+202F and the decimal comma that
+`req-api-number` leans on.
+
+**A baseline is a picture of its text**, so all 26 were redrawn — and then redrawn evidence was
+re-earned: `format:write` rewrapped thirteen templates afterwards, and „HTML collapses
+whitespace" is an argument, not a green run. The second run is the green one.
+
+One `pl-PL` stays on purpose — the default locale of the library's `number.spec.ts`, the case
+that groups with U+00A0. A tag chosen for a technical property, not prose; **B8 rules on it**.
+
+Next: **H9** (minutes), then **B9**'s clear-out and B8's repository limb. Only then B2.
 
 ### 2026-08-14 — H11: a scan is as wide as its word list, and mine was a third as wide
 
