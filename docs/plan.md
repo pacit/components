@@ -73,16 +73,16 @@ G  gaps with no deadline    waiting for the trigger written in their „Binds at
 H  one language, no filler  English everywhere; blocks B2 whole, not just its public part
 ```
 
-**Phase A is closed and so are H1–H8, H10 and H11**, so the next milestone is not a release but
+**Phase A is closed and so is the whole of H**, so the next milestone is not a release but
 the **first push to the public repository** (B2) — and the rule for it is settled: **nothing
-leaves in Polish**. Not the sandbox, not a comment, not a fixture value. So B2 waits on the rest
-of H (H9 alone), on the **repository limb of B8** — because „nothing is left" is a measurement,
-not a declaration, this file's own [definition of done](#definition-of-done) — and on **B9**,
-the clear-out of what a public repository should never have carried. H1 (identifiers),
+leaves in Polish**. Not the sandbox, not a comment, not a fixture value. So B2 now waits on the
+**repository limb of B8** — because „nothing is left" is a measurement, not a declaration, this
+file's own [definition of done](#definition-of-done) — and on **B9**, the clear-out of what a
+public repository should never have carried. H1 (identifiers),
 H2 (the concision criterion, [0017](decisions/0017-one-home-per-fact.md)), H3 (the title page),
 H4 (`docs/`), H5 (`libs`), H6 (test names), H7 (the fifteen gate scripts), H8 (the contracts
-they read), H10 (the sandbox) and H11 (what a diacritics scan cannot see) are done, and `LICENSE`
-has a gate on both sides of `npm pack` (B1). Of B, the
+they read), H9 (the commit convention), H10 (the sandbox) and H11 (what a diacritics scan cannot
+see) are done, and `LICENSE` has a gate on both sides of `npm pack` (B1). Of B, the
 package README (B3) and B4 stand between here and npm.
 **Both scan limbs are now empty across the whole repository** — H11 closed the 84 files a
 dictionary scan found where a function-word probe had counted 32, the JSDoc example that shipped
@@ -309,9 +309,9 @@ block publication and is an order of magnitude larger.
   - hence the ordering condition **H1 → H3 → H4 → B2**, satisfied for everything the first
     visitor sees. The price of that order is written down plainly — until the first push there
     is no remote CI, no provenance and no copy off this machine
-  - **and on 2026-08-14 the condition grew**: nothing leaves in Polish, so **H9** stands before
-    the push and **B8's repository limb is what proves it**. H11 and H10 closed their halves that
-    day — the scan calling four layers clean saw neither „nie biegnie" nor `'Wybierz…'`
+  - **and on 2026-08-14 the condition grew**: nothing leaves in Polish, and H closed that same
+    day — H11, H10 and H9 in turn, the scan that had called four layers clean having seen neither
+    „nie biegnie" nor `'Wybierz…'`. **B8's repository limb is what proves the condition**
   - cost: minutes for the task itself · _notes:_ —
 
 - [ ] **B3 — package README in English**
@@ -324,6 +324,10 @@ block publication and is an order of magnitude larger.
     was generated with Nx", seven lines) and it **travels to `dist`**, so it is the package
     page on npm. Written from scratch rather than translated: the stub has nothing to carry
     over, and it is the first page anybody sees
+  - **the version of that first release does not follow from the history**, and H9 measured why:
+    after the squash `releaseVersion` sees an empty range and keeps the `0.0.1` of the manifest,
+    so the run needs an explicit `--specifier`. At `0.0.1` every bump lands on a patch anyway
+    (`adjustSemverBumpsForZeroMajorVersion`), so the first version is a decision, not a derivation
   - cost: ~0.5 day · _notes:_ —
 
 - [ ] **B4 — citations in the public API as links**
@@ -619,7 +623,7 @@ is the last row, and it is H11, not a new layer:
 | `apps/` sandbox demo                | done — **H10** (58 files, locale `pl-PL` → `fr-FR`, 26 baselines redrawn)    | first push               |
 | tools and gates                     | done — **H7** (15 scripts; headers 609 → **249**, budget 251)                | —                        |
 | proper names in contracts           | done — **H8** (1 target, 5 policies/snapshots, 252 fixture cases, 9 READMEs) | —                        |
-| commit history                      | 49 commits — **H9**                                                          | squashed before the push |
+| commit history                      | done — **H9** (the convention in `AGENTS.md`; 93 of 107 carried Polish)      | squashed before the push |
 | Polish without diacritics           | done — **H11** (84 files outside `apps/`, measured against a dictionary)     | first push               |
 
 - [x] **H1 — the identifier and documentation-name space** _(2026-08-06)_
@@ -722,16 +726,18 @@ is the last row, and it is H11, not a new layer:
     end, `lint` and `format:check` clean; bundle 114 610 B and mutation 81.77% unchanged
   - cost: ~1 day (plan: ~1.5) · journal 2026-08-14
 
-- [ ] **H9 — commit convention**
-  - titles and bodies in English, scopes (`feat(tokens)!:`) unchanged
-  - **49 Polish commits will never go outside**: the history is squashed before the first push
-    to upstream (decision of 2026-08-06). So there is no dated boundary and no public trace —
-    the first commit of the public repository is in English
-  - a small consequence for the release, worth checking once: the version comes from
-    conventional commits, so after the squash the history starts from a single entry — the
-    first release goes with `--first-release` anyway, but the CHANGELOG will start from that
-    commit
-  - cost: minutes · _notes:_ —
+- [x] **H9 — commit convention** _(2026-08-14)_
+  - done: the convention has a home and it is in English — `## Commits` in
+    [`AGENTS.md`](../AGENTS.md), where [`CONTRIBUTING.md`](../CONTRIBUTING.md) has been sending
+    contributors all along without such a rule standing there. Type, scope and `!` untouched
+  - **93 of the 107 commits carry Polish** (49 by diacritics, 44 more by the H11 dictionary) and
+    not one leaves: the squash settled on 2026-08-06 starts the public history at one English commit
+  - **the release consequence was measured in a probe, not assumed**: the CHANGELOG does start
+    from the squash commit (`changelog.automaticFromRef`), the version does not — `releaseVersion`
+    finds no conventional commit in a range whose start is its own only commit, and falls back to
+    the manifest. So the first release needs an explicit `--specifier` (**B3**)
+  - **nothing measures a commit message**: B8 reads the git index and the packed artefact
+  - cost: minutes · journal 2026-08-14
 
 - [x] **H10 — the `apps/` sandbox demo** _(2026-08-14)_
   - done: **58 files** — 46 the diacritics scan saw, 12 only the dictionary limb and all of those
@@ -762,6 +768,32 @@ is the last row, and it is H11, not a new layer:
 ## Journal
 
 One entry per session: what moved, what it ended with, what comes next. Newest on top.
+
+### 2026-08-14 — H9: H is closed, and the first release will not name its own version
+
+**H9 is done, and with it the whole of H.** The convention now stands where
+[`CONTRIBUTING.md`](../CONTRIBUTING.md) had been pointing all along — `AGENTS.md`, which held Nx
+guidance and not a word about commits: conventional commits in English, title and body, the type,
+the scope and `!` untouched because the release reads them.
+
+**The history needed no translation, only a count.** Both limbs over titles and bodies: 49 commits
+carry diacritics, 44 more the Polish only the H11 dictionary sees — mostly translation commits
+quoting the names they removed (`mutacja`, `wpisy`, `fabryki`). 93 of 107, and the squash takes all.
+
+**The one thing the plan asked to check turned out to be two.** The probe: a throwaway worktree
+squashed to one root commit, `node_modules` symlinked, `nx release --dry-run --first-release`.
+
+- The CHANGELOG **does** start from that commit, `Features` heading and all
+  (`changelog.automaticFromRef`) — as the plan predicted.
+- The **version does not**. `releaseVersion` reports „no changes detected" for a `chore:` root and
+  a `feat:` root alike and falls back to `0.0.1` in the manifest: the root commit is the start of
+  its own range, so it stands outside it. A `feat` **on top of** the squash bumps normally.
+
+So the first release is decided by `--specifier`, not by the history — **B3**'s, along with what
+the probe found next to it: at `0.0.1` every bump lands on a patch, breaking ones included
+(`adjustSemverBumpsForZeroMajorVersion`), so „a breaking change bumps the minor" starts at `0.1.0`.
+
+Next: **B8**'s repository limb, **B9**'s clear-out, then **B2** — the squash and the push.
 
 ### 2026-08-14 — H10: the demo changed language, and one invisible character changed with it
 
