@@ -1,0 +1,6 @@
+{
+  "check": "tests",
+  "rule": "spec-outside-measurement",
+  "// defect": "A library spec did not enter the mutation run. It runs in `test` and does not run here, so a mutant it kills counts as surviving — two routes to the same files have drifted apart.",
+  "testFiles": ["libs/fake/alpha.spec.ts"]
+}

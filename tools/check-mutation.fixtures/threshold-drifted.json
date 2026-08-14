@@ -1,0 +1,19 @@
+{
+  "check": "threshold",
+  "rule": "threshold-drifted",
+  "// defect": "The floor lowered in the Stryker configuration, untouched in the policy. The first fails the run and the second is its only justification.",
+  "runConfig": {
+    "thresholds": {
+      "high": 90,
+      "low": 80,
+      "break": 60
+    }
+  },
+  "config": {
+    "thresholds": {
+      "high": 90,
+      "low": 80,
+      "break": 60
+    }
+  }
+}

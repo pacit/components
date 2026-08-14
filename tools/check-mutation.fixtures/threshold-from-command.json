@@ -1,0 +1,12 @@
+{
+  "check": "threshold",
+  "rule": "threshold-from-command",
+  "// defect": "The configuration file says something other than the run — this is what `--thresholds.break` passed in the command looks like. Review reads the file, and the effective value is what runs.",
+  "config": {
+    "thresholds": {
+      "high": 90,
+      "low": 80,
+      "break": 90
+    }
+  }
+}

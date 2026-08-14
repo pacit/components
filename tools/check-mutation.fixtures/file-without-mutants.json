@@ -1,0 +1,6 @@
+{
+  "check": "inventory",
+  "rule": "file-without-mutants",
+  "// defect": "A file from the inventory disappeared from the report and there is no exception for it. It disappears together with its surviving mutants, so the score GOES UP.",
+  "dropFiles": ["libs/fake/beta.ts"]
+}

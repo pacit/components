@@ -1,0 +1,13 @@
+{
+  "check": "inventory",
+  "rule": "exception-without-reason",
+  "// defect": "An exception with no sentence. „Zero mutants\" means either „there is nothing to mutate\" or „the file dropped out of the measurement\" — and only the reason somebody wrote decides which.",
+  "policy": {
+    "noMutants": [
+      {
+        "file": "libs/fake/empty.ts",
+        "reason": "because"
+      }
+    ]
+  }
+}

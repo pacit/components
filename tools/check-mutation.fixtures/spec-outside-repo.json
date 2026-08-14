@@ -1,0 +1,10 @@
+{
+  "check": "tests",
+  "rule": "spec-outside-repo",
+  "// defect": "The run executed a test file that is not in the git index. It kills mutants, and the gate has no way of asking whether it kills them for everybody.",
+  "testFiles": [
+    "libs/fake/alpha.spec.ts",
+    "libs/fake/beta.spec.ts",
+    "libs/fake/gamma.spec.ts"
+  ]
+}

@@ -1,8 +1,0 @@
-{
-  "kontrola": "prog",
-  "regula": "target-bez-polecenia",
-  "// wada": "Target `mutation` nie ma polecenia, które dałoby się przeczytać — bramka nie ma jak sprawdzić, czy przebieg nie jest rozbrojony.",
-  "targety": {
-    "mutation": {}
-  }
-}

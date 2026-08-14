@@ -1,0 +1,17 @@
+{
+  "check": "inventory",
+  "rule": "exception-outside-inventory",
+  "// defect": "A „zero mutants is fine here\" exception for a file the measurement does not cover at all. It excuses nothing, and in the register it looks like a justification.",
+  "policy": {
+    "noMutants": [
+      {
+        "file": "libs/fake/empty.ts",
+        "reason": "The file carries a type alias alone, and that vanishes at compilation — there is no condition here, no literal and no call, so zero mutants is a correct result of the measurement."
+      },
+      {
+        "file": "libs/fake/gamma.ts",
+        "reason": "The file carries a type alias alone, and that vanishes at compilation — there is no condition here, no literal and no call, so zero mutants is a correct result of the measurement."
+      }
+    ]
+  }
+}

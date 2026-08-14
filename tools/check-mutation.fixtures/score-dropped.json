@@ -1,0 +1,29 @@
+{
+  "check": "score",
+  "rule": "score-dropped",
+  "// defect": "The file lost more score than the tolerance, and the total floor cannot see it. This is what a removed assertion looks like: the tests are still green and they notice fewer mutants.",
+  "replaceStatuses": {
+    "libs/fake/beta.ts": [
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Survived",
+      "Survived",
+      "Survived",
+      "Survived"
+    ]
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "check": "narrowing",
+  "rule": "unjustified-ignorer",
+  "// defect": "The run used an ignorer from outside the policy. An ignorer strikes mutants out of the denominator, so it raises the score without adding a single test.",
+  "runConfig": {
+    "ignorers": ["angular", "everything"]
+  }
+}

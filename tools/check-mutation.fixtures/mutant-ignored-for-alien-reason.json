@@ -1,0 +1,23 @@
+{
+  "check": "narrowing",
+  "rule": "mutant-ignored-for-alien-reason",
+  "// defect": "A mutant ignored for a reason the policy does not carry — this is how a `// Stryker disable` comment, invisible in the configuration, enters the repository.",
+  "replaceStatuses": {
+    "libs/fake/alpha.ts": [
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Survived",
+      {
+        "status": "Ignored",
+        "reason": "cannot be bothered to test this"
+      }
+    ]
+  }
+}

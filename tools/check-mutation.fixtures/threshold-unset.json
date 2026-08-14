@@ -1,0 +1,11 @@
+{
+  "check": "threshold",
+  "rule": "threshold-unset",
+  "// defect": "The run went without `thresholds.break` — that is, with Stryker's DEFAULT. It exits zero at a score of 4% exactly as it does at 94%, and the report is a number to look at.",
+  "runConfig": {
+    "thresholds": {
+      "high": 90,
+      "low": 80
+    }
+  }
+}

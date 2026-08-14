@@ -1,4 +1,4 @@
-# Snapshot przebiegu mutacyjnego
+# Mutation run snapshot
 
 > **This file is generated.** Do not edit it by hand —
 > `node tools/check-mutation.mjs --write`. The `check-mutation` gate rejects a drift.

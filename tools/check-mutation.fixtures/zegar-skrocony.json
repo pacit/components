@@ -1,8 +1,0 @@
-{
-  "kontrola": "zwezenie",
-  "regula": "zegar-skrocony",
-  "// wada": "`timeoutMS` skrócony poniżej minimum z polityki. Mutant zabity przez upływ czasu liczy się do wyniku tak samo jak zabity asercją.",
-  "konfigPrzebiegu": {
-    "timeoutMS": 500
-  }
-}

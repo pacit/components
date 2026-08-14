@@ -1,0 +1,6 @@
+{
+  "check": "tests",
+  "rule": "tests-unmeasured",
+  "// defect": "The report lists not one test file — this is what a run without `coverageAnalysis: \"perTest\"` looks like. There is then no way of checking whether it measures the same specs as the `test` target.",
+  "testFiles": []
+}

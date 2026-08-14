@@ -1,0 +1,8 @@
+{
+  "check": "narrowing",
+  "rule": "factor-shortened",
+  "// defect": "`timeoutFactor` lowered below the minimum. The same lever as `timeoutMS`, only counted against the time of a normal run.",
+  "runConfig": {
+    "timeoutFactor": 1
+  }
+}

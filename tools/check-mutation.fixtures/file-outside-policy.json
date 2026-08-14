@@ -1,0 +1,22 @@
+{
+  "check": "inventory",
+  "rule": "file-outside-policy",
+  "// defect": "A new file entered the measurement through a pattern and nobody added it to the inventory. Point 6 would measure it, but its floor would have nowhere to stand.",
+  "addFiles": {
+    "libs/fake/gamma.ts": {
+      "source": "export const gamma = 1;\n",
+      "statuses": [
+        "Killed",
+        "Killed",
+        "Killed",
+        "Killed",
+        "Killed",
+        "Killed",
+        "Killed",
+        "Killed",
+        "Killed",
+        "Survived"
+      ]
+    }
+  }
+}

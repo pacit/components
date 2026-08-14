@@ -1,6 +1,0 @@
-{
-  "kontrola": "wynik",
-  "regula": "snapshot-niepelny",
-  "// wada": "Mierzony plik nie ma wiersza w snapshocie — jest wtedy pilnowany wyłącznie podłogą łączną, która milczy o pojedynczym pliku.",
-  "usunWierszSnapshotu": ["libs/udawana/beta.ts"]
-}

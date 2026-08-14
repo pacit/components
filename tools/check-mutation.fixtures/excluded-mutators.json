@@ -1,0 +1,10 @@
+{
+  "check": "narrowing",
+  "rule": "excluded-mutators",
+  "// defect": "A whole family of mutations excluded. It disappears from the denominator with no trace in the score, and each of them answers to a real mistake.",
+  "runConfig": {
+    "mutator": {
+      "excludedMutations": ["StringLiteral"]
+    }
+  }
+}

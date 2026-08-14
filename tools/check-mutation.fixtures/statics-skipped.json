@@ -1,0 +1,8 @@
+{
+  "check": "narrowing",
+  "rule": "statics-skipped",
+  "// defect": "`ignoreStatic: true` throws mutants in field initialisers and at module scope out of the denominator. In a component library that is where the input, the default value and the identifier live — that is, the public contract.",
+  "runConfig": {
+    "ignoreStatic": true
+  }
+}

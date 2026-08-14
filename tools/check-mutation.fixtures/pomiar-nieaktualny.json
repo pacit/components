@@ -1,8 +1,0 @@
-{
-  "kontrola": "pomiar",
-  "regula": "pomiar-nieaktualny",
-  "// wada": "Plik na dysku różni się od treści, na której liczono wynik. Raport opisuje kod sprzed edycji: przeżywające mutanty dotyczą linii, których już nie ma.",
-  "rozjedzZrodlo": {
-    "libs/udawana/alfa.ts": "export const alfa = (n: number) => Math.max(n, 0);\n"
-  }
-}

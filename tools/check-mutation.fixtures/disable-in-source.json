@@ -1,0 +1,8 @@
+{
+  "check": "narrowing",
+  "rule": "disable-in-source",
+  "// defect": "A Stryker disable comment added to a measured file. It leaves no trace in the configuration or in the command — it is visible only in the file it concerns.",
+  "replaceSource": {
+    "libs/fake/alpha.ts": "// Stryker disable next-line all\nexport const alpha = (n: number) => (n > 0 ? n : 0);\n"
+  }
+}

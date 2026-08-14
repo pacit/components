@@ -1,0 +1,8 @@
+{
+  "check": "narrowing",
+  "rule": "dead-ignorer",
+  "// defect": "The policy justifies an ignorer the run did not use. An entry with no effect outlives a problem that is gone, and reads as a description of today's measurement.",
+  "runConfig": {
+    "ignorers": []
+  }
+}

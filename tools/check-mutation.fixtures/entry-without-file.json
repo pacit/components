@@ -1,0 +1,13 @@
+{
+  "check": "inventory",
+  "rule": "entry-without-file",
+  "// defect": "The inventory names a file that is not in the git index — after a rename or a removal. An entry with no file watches nothing, and reads as a description of today's reach.",
+  "policy": {
+    "files": [
+      "libs/fake/alpha.ts",
+      "libs/fake/beta.ts",
+      "libs/fake/empty.ts",
+      "libs/fake/missing.ts"
+    ]
+  }
+}

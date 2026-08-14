@@ -1,0 +1,29 @@
+{
+  "check": "score",
+  "rule": "snapshot-adrift",
+  "// defect": "The file came out better than the snapshot by more than the tolerance. That is good news and it fires all the same: a floor standing ten points below the measurement stops measuring.",
+  "replaceStatuses": {
+    "libs/fake/beta.ts": [
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Killed",
+      "Survived"
+    ]
+  }
+}

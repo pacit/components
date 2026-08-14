@@ -1,0 +1,8 @@
+{
+  "check": "threshold",
+  "rule": "target-without-command",
+  "// defect": "The `mutation` target has no command that can be read — the gate has no way of checking whether the run is disarmed.",
+  "targets": {
+    "mutation": {}
+  }
+}

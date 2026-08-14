@@ -1,0 +1,17 @@
+{
+  "check": "inventory",
+  "rule": "dead-exception",
+  "// defect": "The exception concerns a file that does have mutants after all. The reason is gone, the entry stayed — and from today it hides a file that will really drop out of the measurement.",
+  "policy": {
+    "noMutants": [
+      {
+        "file": "libs/fake/empty.ts",
+        "reason": "The file carries a type alias alone, and that vanishes at compilation — there is no condition here, no literal and no call, so zero mutants is a correct result of the measurement."
+      },
+      {
+        "file": "libs/fake/alpha.ts",
+        "reason": "The file carries a type alias alone, and that vanishes at compilation — there is no condition here, no literal and no call, so zero mutants is a correct result of the measurement."
+      }
+    ]
+  }
+}

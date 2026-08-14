@@ -1,0 +1,8 @@
+{
+  "check": "score",
+  "rule": "policy-without-tolerance",
+  "// defect": "The policy declares no tolerance. Without it the comparison against the snapshot has no width and every run would look like a drift.",
+  "policy": {
+    "tolerance": null
+  }
+}

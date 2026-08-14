@@ -1,6 +1,0 @@
-{
-  "kontrola": "wynik",
-  "regula": "snapshot-przeterminowany",
-  "// wada": "Snapshot ma wiersz pliku spoza pomiaru. Czyta się go jako dowód, że coś jest mierzone — a nie jest.",
-  "dopiszWierszSnapshotu": ["libs/udawana/gamma.ts 90.00 9(0) 1 0 0"]
-}

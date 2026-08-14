@@ -1,0 +1,10 @@
+{
+  "check": "threshold",
+  "rule": "disarmed-command",
+  "// defect": "A shell operator eats the exit code. The configuration looks as it does today, the report looks as it does today, and the run always ends at zero.",
+  "targets": {
+    "mutation": {
+      "command": "stryker run libs/fake/stryker.config.json || true"
+    }
+  }
+}

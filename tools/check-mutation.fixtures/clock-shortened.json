@@ -1,0 +1,8 @@
+{
+  "check": "narrowing",
+  "rule": "clock-shortened",
+  "// defect": "`timeoutMS` shortened below the policy's minimum. A mutant killed by the clock counts towards the score exactly like one killed by an assertion.",
+  "runConfig": {
+    "timeoutMS": 500
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "check": "ci",
+  "rule": "ci-without-target",
+  "// defect": "The `mutation` target taken off the list CI runs. Everything above then describes a run nobody starts, and locally every one of them passes.",
+  "ci": {
+    "targets": ["npx", "nx", "affected", "-t", "test", "check-mutation"]
+  }
+}

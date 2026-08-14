@@ -1,0 +1,6 @@
+{
+  "check": "score",
+  "rule": "expired-snapshot",
+  "// defect": "The snapshot has a row for a file outside the measurement. It reads as proof that something is measured — and it is not.",
+  "addSnapshotRow": ["libs/fake/gamma.ts 90.00 9(0) 1 0 0"]
+}

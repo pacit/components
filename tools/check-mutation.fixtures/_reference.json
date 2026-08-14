@@ -1,0 +1,135 @@
+{
+  "// why": "The reference input of the `check-mutation` negative control. Every case beside it is built ON A COPY OF IT, so a case file holds nothing but its own defect. This input must pass — were it defective itself, every case would fire because of it and every „it fired\" would be false.",
+  "// fake library": "The files are called `alpha`, `beta` and `empty` rather than after the real ones: the cases are not to need maintenance at every change in `core`, `number` or `select`. Mutant statuses are written out outright, because the gate computes the score from their distribution and not from the code's content.",
+  "// numbers": "alpha 9/10 = 90.00%, beta 17/20 = 85.00%, together 26/30 = 86.67% against an 80% floor. The margin is deliberate: a case knocking one file down is to fire on ITS OWN rule and not on the total floor, which stands higher in the order of checks.",
+  "input": {
+    "fileDigest": {
+      "libs/fake/alpha.ts": {
+        "source": "export const alpha = (n: number) => (n > 0 ? n : 0);\n",
+        "statuses": [
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Survived",
+          {
+            "status": "Ignored",
+            "reason": "Angular signal based input, model and output functions configuration object cannot be mutated as that causes issues with the Angular compiler."
+          }
+        ]
+      },
+      "libs/fake/beta.ts": {
+        "source": "export const beta = (s: string) => s.trim();\n",
+        "statuses": [
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Killed",
+          "Survived",
+          "Survived",
+          "NoCoverage"
+        ]
+      }
+    },
+    "sources": {
+      "libs/fake/alpha.ts": "export const alpha = (n: number) => (n > 0 ? n : 0);\n",
+      "libs/fake/beta.ts": "export const beta = (s: string) => s.trim();\n",
+      "libs/fake/empty.ts": "export type Empty = string;\n"
+    },
+    "inRepo": [
+      "libs/fake/alpha.ts",
+      "libs/fake/beta.ts",
+      "libs/fake/empty.ts",
+      "libs/fake/alpha.spec.ts",
+      "libs/fake/beta.spec.ts"
+    ],
+    "specs": ["libs/fake/alpha.spec.ts", "libs/fake/beta.spec.ts"],
+    "policy": {
+      "patterns": ["libs/fake/*.ts", "!libs/fake/*.spec.ts"],
+      "files": [
+        "libs/fake/alpha.ts",
+        "libs/fake/beta.ts",
+        "libs/fake/empty.ts"
+      ],
+      "noMutants": [
+        {
+          "file": "libs/fake/empty.ts",
+          "reason": "The file carries a type alias alone, and that vanishes at compilation — there is no condition here, no literal and no call, so zero mutants is a correct result of the measurement."
+        }
+      ],
+      "threshold": 80,
+      "tolerance": 2,
+      "ignorers": {
+        "angular": {
+          "mutantReason": "Angular signal based input, model and output functions configuration object cannot be mutated as that causes issues with the Angular compiler.",
+          "reason": "The input's configuration object is read statically by the Angular compiler — mutated, it stops being a literal and the component does not compile at all."
+        }
+      },
+      "clock": {
+        "minimumMS": 5000,
+        "minimumFactor": 1.5,
+        "clockShare": 5
+      }
+    },
+    "runConfig": {
+      "mutate": ["libs/fake/*.ts", "!libs/fake/*.spec.ts"],
+      "thresholds": {
+        "high": 90,
+        "low": 80,
+        "break": 80
+      },
+      "ignorers": ["angular"],
+      "ignoreStatic": false,
+      "mutator": {
+        "excludedMutations": []
+      },
+      "timeoutMS": 5000,
+      "timeoutFactor": 1.5,
+      "coverageAnalysis": "perTest"
+    },
+    "config": {
+      "thresholds": {
+        "high": 90,
+        "low": 80,
+        "break": 80
+      }
+    },
+    "targets": {
+      "mutation": {
+        "command": "stryker run libs/fake/stryker.config.json"
+      },
+      "check": {
+        "command": "node tools/check-mutation.mjs"
+      }
+    },
+    "ci": {
+      "targets": [
+        "npx",
+        "nx",
+        "affected",
+        "-t",
+        "test",
+        "mutation",
+        "check-mutation"
+      ]
+    }
+  }
+}

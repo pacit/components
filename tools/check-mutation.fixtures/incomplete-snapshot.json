@@ -1,0 +1,6 @@
+{
+  "check": "score",
+  "rule": "incomplete-snapshot",
+  "// defect": "A measured file has no row in the snapshot — it is then guarded by the total floor alone, which says nothing about a single file.",
+  "dropSnapshotRow": ["libs/fake/beta.ts"]
+}

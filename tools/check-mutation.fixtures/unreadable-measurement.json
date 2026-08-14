@@ -1,0 +1,6 @@
+{
+  "check": "measurement",
+  "rule": "unreadable-measurement",
+  "// defect": "There is no report at all — the mutation run did not happen or did not write one. With no report the gate has nothing to compare, so without this rule it would pass in full.",
+  "noReport": true
+}

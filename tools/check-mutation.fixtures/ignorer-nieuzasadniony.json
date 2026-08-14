@@ -1,8 +1,0 @@
-{
-  "kontrola": "zwezenie",
-  "regula": "ignorer-nieuzasadniony",
-  "// wada": "Przebieg użył ignorera spoza polityki. Ignorer wykreśla mutanty z mianownika, więc podnosi wynik, nie dokładając ani jednego testu.",
-  "konfigPrzebiegu": {
-    "ignorers": ["angular", "wszystko"]
-  }
-}

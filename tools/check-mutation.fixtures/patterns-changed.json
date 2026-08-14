@@ -1,0 +1,8 @@
+{
+  "check": "inventory",
+  "rule": "patterns-changed",
+  "// defect": "The `mutate` pattern narrowed in the Stryker configuration with no change in the policy. A file struck from the measurement takes its surviving mutants with it and the score rises by itself.",
+  "policy": {
+    "patterns": ["libs/fake/alpha.ts"]
+  }
+}

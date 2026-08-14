@@ -1,0 +1,19 @@
+{
+  "check": "score",
+  "rule": "floor-broken",
+  "// defect": "The total score fell below the hard floor. That many changes of behaviour pass CI green today.",
+  "replaceStatuses": {
+    "libs/fake/alpha.ts": [
+      "Killed",
+      "Killed",
+      "Survived",
+      "Survived",
+      "Survived",
+      "Survived",
+      "Survived",
+      "Survived",
+      "Survived",
+      "Survived"
+    ]
+  }
+}

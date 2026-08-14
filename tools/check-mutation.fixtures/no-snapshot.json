@@ -1,0 +1,6 @@
+{
+  "check": "score",
+  "rule": "no-snapshot",
+  "// defect": "The snapshot is missing. Point 6 then guards the total floor alone, that is, it says nothing about a file that fell twenty points as long as the rest makes up for it.",
+  "noSnapshot": true
+}

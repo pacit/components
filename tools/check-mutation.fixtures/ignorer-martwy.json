@@ -1,8 +1,0 @@
-{
-  "kontrola": "zwezenie",
-  "regula": "ignorer-martwy",
-  "// wada": "Polityka uzasadnia ignorer, którego przebieg nie użył. Wpis bez skutku zostaje po problemie, którego już nie ma, a czyta się go jako opis dzisiejszego pomiaru.",
-  "konfigPrzebiegu": {
-    "ignorers": []
-  }
-}

@@ -1,0 +1,8 @@
+{
+  "check": "inventory",
+  "rule": "policy-without-files",
+  "// defect": "An empty inventory. Points 2 and 6 walk that list, so they would pass in full having looked at nothing.",
+  "policy": {
+    "files": []
+  }
+}

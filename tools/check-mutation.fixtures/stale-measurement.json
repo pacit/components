@@ -1,0 +1,8 @@
+{
+  "check": "measurement",
+  "rule": "stale-measurement",
+  "// defect": "The file on disk differs from the content the score was computed on. The report describes the code from before the edit: the surviving mutants concern lines that no longer exist.",
+  "driftSource": {
+    "libs/fake/alpha.ts": "export const alpha = (n: number) => Math.max(n, 0);\n"
+  }
+}

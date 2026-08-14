@@ -1,0 +1,8 @@
+{
+  "check": "threshold",
+  "rule": "policy-without-threshold",
+  "// defect": "The policy declares no floor. There is then nothing to compare `thresholds.break` against — the one number that fails the run.",
+  "policy": {
+    "threshold": null
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "check": "measurement",
+  "rule": "empty-measurement",
+  "// defect": "There is a report, and not one mutant in it. Stryker then exits zero and reports 100%, because it divides by a denominator that is not there.",
+  "replaceStatuses": {
+    "libs/fake/alpha.ts": [],
+    "libs/fake/beta.ts": []
+  }
+}

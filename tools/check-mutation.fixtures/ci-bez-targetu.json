@@ -1,8 +1,0 @@
-{
-  "kontrola": "ci",
-  "regula": "ci-bez-targetu",
-  "// wada": "Target `mutation` zdjęty z listy uruchamianej w CI. Wszystko wyżej opisuje wtedy przebieg, którego nikt nie odpala, a lokalnie każdy z nich przechodzi.",
-  "ci": {
-    "targety": ["npx", "nx", "affected", "-t", "test", "check-mutation"]
-  }
-}
