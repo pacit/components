@@ -1,7 +1,7 @@
 {
   "name": "@pacit/components",
   "version": "0.0.1",
-  "description": "Pakiet wzorcowy kontroli odniesienia. Nie jest publikowany i nigdy nie ma nim byc.",
+  "description": "The reference control package. It is not published and is never meant to be.",
   "license": "MIT",
   "repository": {
     "type": "git",

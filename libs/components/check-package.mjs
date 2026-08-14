@@ -81,7 +81,7 @@ const checks = (ROOT, { release }, warnings) => {
     files = walk(ROOT);
   } catch {
     fail(
-      'pakiet',
+      'package',
       `no built package in ${ROOT} — run \`nx build components\` first`,
     );
   }
@@ -109,7 +109,7 @@ const checks = (ROOT, { release }, warnings) => {
     pkg = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'));
   } catch {
     fail(
-      'pakiet',
+      'package',
       `the package has no readable manifest (${ROOT}/package.json)`,
     );
   }
@@ -414,15 +414,15 @@ for (const name of cases) {
   );
   const directory = buildFixture(name, fx);
   try {
-    const wynikFx = checkPackage(directory, { release: true });
-    if (!wynikFx.error)
+    const resultFx = checkPackage(directory, { release: true });
+    if (!resultFx.error)
       problems.push(
         `${name}: the prepared package PASSED and was meant not to — ` +
           `point ${fx.point} (\`${fx.check}\`) stopped examining anything`,
       );
-    else if (wynikFx.error.check !== fx.check)
+    else if (resultFx.error.check !== fx.check)
       problems.push(
-        `${name}: check \`${wynikFx.error.check}\` fired, and point ${fx.point} ` +
+        `${name}: check \`${resultFx.error.check}\` fired, and point ${fx.point} ` +
           `(\`${fx.check}\`) was meant to — the fixture proves something other than ` +
           `what it declares`,
       );
@@ -432,13 +432,13 @@ for (const name of cases) {
     // would let through a regression in which point 6 starts blocking always — and then a
     // repository with no remote would not build at all.
     if (fx.releaseOnly) {
-      const zwykly = checkPackage(directory, { release: false });
-      if (zwykly.error)
+      const ordinary = checkPackage(directory, { release: false });
+      if (ordinary.error)
         problems.push(
-          `${name}: in an ordinary run the gate BLOCKS (${zwykly.error.check}) ` +
+          `${name}: in an ordinary run the gate BLOCKS (${ordinary.error.check}) ` +
             `and was meant only to warn — blocking belongs to \`--release\``,
         );
-      else if (zwykly.warnings.length === 0)
+      else if (ordinary.warnings.length === 0)
         problems.push(
           `${name}: in an ordinary run neither an error nor a warning — ` +
             `missing metadata passes without a trace`,
