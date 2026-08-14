@@ -26,7 +26,7 @@ export class PctWidget {
   readonly size = input<PctWidgetSize>('md');
   readonly items = input<readonly string[]>([]);
 
-  /** Napis biblioteki czytany PRZY RENDEROWANIU, nie przy konstrukcji. */
+  /** A library string read AT RENDER TIME, not at construction. */
   protected readonly emptyText = computed(() => this.texts().widgetEmpty);
   protected readonly collapseText = computed(
     () => this.texts().widgetCollapse,

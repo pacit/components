@@ -92,19 +92,19 @@ const LITERA = /\p{L}/u;
  */
 const isProse = (v) => LITERA.test(v) && (/^\p{Lu}/u.test(v) || /\s/.test(v));
 
-const list = (wpisy) => wpisy.map((w) => `      ${w}`).join('\n');
+const list = (entries) => entries.map((w) => `      ${w}`).join('\n');
 
-const skroc = (wpisy, ile = 8) =>
-  wpisy.length <= ile
-    ? wpisy
-    : [...wpisy.slice(0, ile), `… i ${wpisy.length - ile} dalszych`];
+const shorten = (entries, countOf = 8) =>
+  entries.length <= countOf
+    ? entries
+    : [...entries.slice(0, countOf), `… and ${entries.length - countOf} more`];
 
-const ile = (tekst, pattern) => (tekst.match(pattern) ?? []).length;
+const countOf = (tekst, pattern) => (tekst.match(pattern) ?? []).length;
 
 // ── source scanners ────────────────────────────────────────────────────────────
 
 /**
- * Ta sama anchor co w `check-parts` i z tego samego powodu: formatowanie
+ * The same anchor as in `check-parts` and for the same reason: the formatting
  * enforced by `nx format:check` puts `@Component({` and `})` in column zero. The counter
  * does NOT repeat that anchor — a repeated one would put out both sides of the comparison
  * at once (`lesson-48`).
@@ -125,7 +125,7 @@ const LITERAL_W_WYRAZENIU = /'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"/g;
  * block (`field/src/number.ts`). A pattern demanding quotes would let the first through
  * SILENTLY — and that is exactly the half the static attributes sit in.
  */
-const HOST_KLUCZ = /(?:'([^']*)'|"([^"]*)"|([A-Za-z_$][\w$]*))\s*:/g;
+const HOST_KEY = /(?:'([^']*)'|"([^"]*)"|([A-Za-z_$][\w$]*))\s*:/g;
 
 /**
  * The `host` block's entries as key/value pairs — with the values read with escapes in
@@ -137,25 +137,25 @@ const HOST_KLUCZ = /(?:'([^']*)'|"([^"]*)"|([A-Za-z_$][\w$]*))\s*:/g;
  * appear on the artifact's side and be missing on the sources' side, so it fires with its
  * name in the message.
  */
-const readHost = (blok) => {
-  const wpisy = [];
-  for (const m of blok.matchAll(HOST_KLUCZ)) {
+const readHost = (block) => {
+  const entries = [];
+  for (const m of block.matchAll(HOST_KEY)) {
     const key = m[1] ?? m[2] ?? m[3];
     let i = m.index + m[0].length;
-    while (/\s/.test(blok[i])) i++;
-    const quote = blok[i];
+    while (/\s/.test(block[i])) i++;
+    const quote = block[i];
     if (quote !== "'" && quote !== '"') continue;
     let k = i + 1;
     let value = '';
-    while (k < blok.length && blok[k] !== quote) {
-      if (blok[k] === '\\') k++;
-      value += blok[k];
+    while (k < block.length && block[k] !== quote) {
+      if (block[k] === '\\') k++;
+      value += block[k];
       k++;
     }
-    if (k >= blok.length) continue;
-    wpisy.push([key, value]);
+    if (k >= block.length) continue;
+    entries.push([key, value]);
   }
-  return wpisy;
+  return entries;
 };
 
 /**
@@ -174,17 +174,17 @@ const hostBlock = (body) => {
   return null;
 };
 
-/** Nazwa attribute z key bloku `host`: `[attr.aria-label]` → `aria-label`. */
+/** The attribute name from a `host` block key: `[attr.aria-label]` → `aria-label`. */
 const nameFromKey = (key) => {
-  const wiazane = /^\[(?:attr\.)?([^\]]+)\]$/.exec(key);
-  return wiazane
-    ? { name: wiazane[1], wiazane: true }
-    : { name: key, wiazane: false };
+  const bound = /^\[(?:attr\.)?([^\]]+)\]$/.exec(key);
+  return bound
+    ? { name: bound[1], bound: true }
+    : { name: key, bound: false };
 };
 
 /**
  * Decorated classes. `attributes` are the `host` block's static attributes (name/value
- * pairs), `literaly` the string literals from the expressions of speaking-attribute
+ * pairs), `literals` the string literals from the expressions of speaking-attribute
  * bindings.
  *
  * A `host` block is sometimes composed by spreading somebody else's object (`...fitHost` in
@@ -199,24 +199,24 @@ const readSources = (root, files) => {
 
   for (const file of files) {
     const content = readFileSync(join(root, file), 'utf8');
-    declarations += ile(content, DEKORATOR_LICZNIK);
+    declarations += countOf(content, DEKORATOR_LICZNIK);
 
     for (const [, kind, body, className] of content.matchAll(DEKORATOR)) {
       const url = TEMPLATE_URL.exec(body);
       const inline = TEMPLATE_INLINE.exec(body);
       const host = hostBlock(body) ?? '';
       const attributes = [];
-      const literaly = [];
+      const literals = [];
 
       for (const [key, value] of readHost(host)) {
-        const { name, wiazane } = nameFromKey(key);
-        if (!wiazane) {
+        const { name, bound } = nameFromKey(key);
+        if (!bound) {
           attributes.push([name, value]);
           continue;
         }
         if (!SPEAKING_ATTRIBUTES.has(name)) continue;
         for (const l of value.matchAll(LITERAL_W_WYRAZENIU))
-          literaly.push([name, l[1] ?? l[2]]);
+          literals.push([name, l[1] ?? l[2]]);
       }
 
       classes.push({
@@ -234,7 +234,7 @@ const readSources = (root, files) => {
         // it and travels to the browser all the same.
         inline: inline !== null && !/^(''|"")$/.test(inline[1].trim()),
         attributes,
-        literaly,
+        literals,
       });
     }
   }
@@ -277,15 +277,15 @@ const KNOWN_NODES = new Set([
 
 /** String literals from an expression — pipe arguments excluded (see `visitPipe`). */
 class ExpressionLiterals extends RecursiveAstVisitor {
-  constructor(zbierz) {
+  constructor(collect) {
     super();
-    this.zbierz = zbierz;
+    this.collect = collect;
   }
   visitLiteralPrimitive(node) {
-    if (typeof node.value === 'string') this.zbierz(node.value);
+    if (typeof node.value === 'string') this.collect(node.value);
   }
   visitTemplateLiteralElement(node) {
-    this.zbierz(node.text);
+    this.collect(node.text);
   }
   /**
    * A pipe's argument never reaches the DOM — it is a format marker (`date: 'short'`),
@@ -302,7 +302,7 @@ class ExpressionLiterals extends RecursiveAstVisitor {
  * of speaking attributes and the literals from expressions that land in such a place. It
  * counts visited nodes along the way — point 1 compares that count against zero, because a
  * pass that visited nothing
- * orzeka o wszystkim (`lesson-48`).
+ * pronounces on everything (`lesson-48`).
  */
 class TemplateScanner extends TmplAstRecursiveVisitor {
   constructor(file) {
@@ -335,7 +335,7 @@ class TemplateScanner extends TmplAstRecursiveVisitor {
     node.value.visit(
       new ExpressionLiterals((v) =>
         this.expressions.push({
-          gdzie: 'interpolacja',
+          where: 'interpolation',
           value: v,
           line: line(node),
         }),
@@ -377,7 +377,7 @@ class TemplateScanner extends TmplAstRecursiveVisitor {
     node.value.visit(
       new ExpressionLiterals((v) =>
         this.expressions.push({
-          gdzie: `binding \`${node.name}\``,
+          where: `binding \`${node.name}\``,
           value: v,
           line: line(node),
         }),
@@ -492,7 +492,7 @@ const FABRYKI = ['input', 'model', 'signal', 'computed'];
  * comparing the sums would pass even with one assignment gone. ASSIGNMENTS are counted
  * instead, and the condition is that the scanner resolves each of them to a call.
  */
-const PRZYPISANIE = /=\s*$/;
+const ASSIGNMENT = /=\s*$/;
 
 const match = (tekst, i, otw, zam) => {
   let depth = 0;
@@ -504,14 +504,14 @@ const match = (tekst, i, otw, zam) => {
 };
 
 const readFactories = (file, content) => {
-  const wywolania = [];
+  const calls = [];
   const unrecognised = [];
   const pattern = new RegExp(`\\b(${FABRYKI.join('|')})\\b`, 'g');
 
   for (const m of content.matchAll(pattern)) {
-    const przypisanie = PRZYPISANIE.test(content.slice(0, m.index));
-    const zglos = () => {
-      if (przypisanie)
+    const assignment = ASSIGNMENT.test(content.slice(0, m.index));
+    const report = () => {
+      if (assignment)
         unrecognised.push(
           `${file}:${content.slice(0, m.index).split('\n').length}: ` +
             `= ${m[1]} with no recognised call`,
@@ -526,39 +526,39 @@ const readFactories = (file, content) => {
         continue;
       }
       if (content[k] === '<') {
-        const koniec = match(content, k, '<', '>');
-        if (koniec === -1) break;
-        k = koniec + 1;
+        const end = match(content, k, '<', '>');
+        if (end === -1) break;
+        k = end + 1;
         continue;
       }
       break;
     }
     if (content[k] !== '(') {
-      zglos();
+      report();
       continue;
     }
-    const koniec = match(content, k, '(', ')');
-    if (koniec === -1) {
-      zglos();
+    const end = match(content, k, '(', ')');
+    if (end === -1) {
+      report();
       continue;
     }
 
     // The first argument alone: `input('x', { alias: 'Name' })` carries an attribute name
     // in the second, not a string. The comma is counted outside any nesting.
-    const cale = content.slice(k + 1, koniec);
+    const whole = content.slice(k + 1, end);
     let g = 0;
-    let przecinek = cale.length;
-    for (let i = 0; i < cale.length; i++) {
-      const c = cale[i];
+    let comma = whole.length;
+    for (let i = 0; i < whole.length; i++) {
+      const c = whole[i];
       if ('([{'.includes(c)) g++;
       else if (')]}'.includes(c)) g--;
       else if (c === ',' && g === 0) {
-        przecinek = i;
+        comma = i;
         break;
       }
     }
 
-    wywolania.push({
+    calls.push({
       file,
       factory: m[1],
       line: content.slice(0, m.index).split('\n').length,
@@ -567,11 +567,11 @@ const readFactories = (file, content) => {
       textual: /^\s*<\s*string\s*[,>]/.test(
         content.slice(m.index + m[1].length),
       ),
-      argument: cale.slice(0, przecinek),
+      argument: whole.slice(0, comma),
     });
   }
 
-  return { wywolania, unrecognised };
+  return { calls, unrecognised };
 };
 
 const INTERFACE_KEYS = /export interface PctTexts \{([\s\S]*?)^\}/m;
@@ -579,7 +579,7 @@ const DOMYSLNE = /export const PCT_DEFAULT_TEXTS[^=]*=\s*\{([\s\S]*?)^\};/m;
 const POLE = /^\s*(?:readonly\s+)?([A-Za-z_$][\w$]*)\s*:/gm;
 const DOMYSLNA_PARA =
   /^\s*([A-Za-z_$][\w$]*)\s*:\s*(['"])((?:[^'\\]|\\.)*)\2/gm;
-/** `texts().key` — jedyna droga read po decyzji 0014. */
+/** `texts().key` — the only road for a read after decision 0014. */
 const ODCZYT = /\btexts\(\)\.([A-Za-z_$][\w$]*)/g;
 /** `inject(PCT_TEXTS)` has to land under the name `texts` — else the read disappears. */
 const WSTRZYKNIECIE = /(?:(\w+)\s*=\s*)?inject\(\s*PCT_TEXTS\s*\)/g;
@@ -594,7 +594,7 @@ const KONSOLA = /\bconsole\.(log|warn|error|info|debug)\s*\(/g;
  * the point would let through a case that fired on a neighbouring rule (`lesson-50`, the
  * conclusion of A12).
  */
-class BladTekstu extends Error {
+class TextsError extends Error {
   constructor(check, rule, description) {
     super(description);
     this.check = check;
@@ -607,7 +607,7 @@ const checkTexts = (we) => {
 
   // ── 1. MIANOWNIK ────────────────────────────────────────────────────────────
   if (!classes.length || !sources.length)
-    throw new BladTekstu(
+    throw new TextsError(
       'denominator',
       'empty-list',
       `no \`@Component\`/\`@Directive\` decorator found in the sources ` +
@@ -617,7 +617,7 @@ const checkTexts = (we) => {
     );
 
   if (classes.length !== declarations)
-    throw new BladTekstu(
+    throw new TextsError(
       'denominator',
       'decorator-parser',
       `the parser recognised ${classes.length} of ${declarations} decorators — the rest ` +
@@ -626,28 +626,28 @@ const checkTexts = (we) => {
         `(\`@Component({\` and \`})\` in column zero).`,
     );
 
-  const wInline = classes.filter((k) => k.inline);
-  if (wInline.length)
-    throw new BladTekstu(
+  const inInline = classes.filter((k) => k.inline);
+  if (inInline.length)
+    throw new TextsError(
       'denominator',
       'template-in-decorator',
-      `${wInline.length} classes bierze template z decorator, a nie z pliku:\n` +
-        list(wInline.map((k) => `${k.file}: ${k.className}`)) +
+      `${inInline.length} classes take their template from the decorator, not from a file:\n` +
+        list(inInline.map((k) => `${k.file}: ${k.className}`)) +
         `\n    This scanner reads \`.html\` files, so a string written into a decorator ` +
         `would be invisible to it — and travels to the browser all the same. Move the ` +
         `template out to ` +
         `\`templateUrl\`.`,
     );
 
-  const uzywane = new Map();
+  const used = new Map();
   for (const k of classes)
     if (k.template)
-      uzywane.set(k.template, [...(uzywane.get(k.template) ?? []), k]);
+      used.set(k.template, [...(used.get(k.template) ?? []), k]);
 
-  const znane = new Set(templates.map((s) => s.file));
-  const missing = [...uzywane.keys()].filter((s) => !znane.has(s));
+  const known = new Set(templates.map((s) => s.file));
+  const missing = [...used.keys()].filter((s) => !known.has(s));
   if (missing.length)
-    throw new BladTekstu(
+    throw new TextsError(
       'denominator',
       'template-without-file',
       `${missing.length} templates named by \`templateUrl\` are not on the gate's ` +
@@ -657,27 +657,27 @@ const checkTexts = (we) => {
         `the git index, or a pathspec that stopped covering it.`,
     );
 
-  const osierocone = templates.filter((s) => !uzywane.has(s.file));
-  if (osierocone.length)
-    throw new BladTekstu(
+  const orphaned = templates.filter((s) => !used.has(s.file));
+  if (orphaned.length)
+    throw new TextsError(
       'denominator',
       'template-without-owner',
-      `${osierocone.length} templates belong to no decorator:\n` +
-        list(osierocone.map((s) => s.file)) +
+      `${orphaned.length} templates belong to no decorator:\n` +
+        list(orphaned.map((s) => s.file)) +
         `\n    A template nobody points at is an orphan to the measurement — and travels ` +
         `to the browser like every other one.`,
     );
 
   const scans = templates.map((s) => readTemplate(s.file, s.content));
 
-  const zBledem = scans.filter((s) => s.errors.length);
-  if (zBledem.length)
-    throw new BladTekstu(
+  const withError = scans.filter((s) => s.errors.length);
+  if (withError.length)
+    throw new TextsError(
       'denominator',
       'template-parser',
-      `Angular's parser rejected ${zBledem.length} templates:\n` +
+      `Angular's parser rejected ${withError.length} templates:\n` +
         list(
-          zBledem.map((s) => `${s.file}: ${s.errors[0].msg.split('\n')[0]}`),
+          withError.map((s) => `${s.file}: ${s.errors[0].msg.split('\n')[0]}`),
         ) +
         `\n    A tree that does not exist has no text node either — point 3 would pass ` +
         `over it without objection.`,
@@ -685,7 +685,7 @@ const checkTexts = (we) => {
 
   const unknown = scans.filter((s) => s.scanner.unknown.size);
   if (unknown.length)
-    throw new BladTekstu(
+    throw new TextsError(
       'denominator',
       'unknown-node',
       `${unknown.length} templates carry a node kind this walk does not know:\n` +
@@ -698,7 +698,7 @@ const checkTexts = (we) => {
 
   const nodesSeen = scans.reduce((n, s) => n + s.scanner.nodesSeen, 0);
   if (!nodesSeen)
-    throw new BladTekstu(
+    throw new TextsError(
       'denominator',
       'empty-measurement',
       `${templates.length} templates, 0 visited nodes — the measurement never started.\n` +
@@ -715,7 +715,7 @@ const checkTexts = (we) => {
   //    reads `ɵdir.hostAttrs` and `ɵcmp.consts` after linking — the output of the REAL
   //    compiler. The same move as in A3 and A6.
   if (!pkg.length)
-    throw new BladTekstu(
+    throw new TextsError(
       'artifact',
       'empty-package',
       `the built package gave not one class with an Angular definition — the comparison ` +
@@ -723,37 +723,37 @@ const checkTexts = (we) => {
         `\`${DIST}\` (the gate needs \`dependsOn: build\`).`,
     );
 
-  const zeZrodel = new Map(classes.map((k) => [k.className, k]));
-  const zPakietu = new Map(pkg.map((p) => [p.className, p]));
+  const fromSources = new Map(classes.map((k) => [k.className, k]));
+  const fromPackage = new Map(pkg.map((p) => [p.className, p]));
 
-  const withoutPackage = [...zeZrodel.keys()].filter((k) => !zPakietu.has(k));
+  const withoutPackage = [...fromSources.keys()].filter((k) => !fromPackage.has(k));
   if (withoutPackage.length)
-    throw new BladTekstu(
+    throw new TextsError(
       'artifact',
       'class-without-package',
       `${withoutPackage.length} classes from the sources are not in the built package:\n` +
-        list(withoutPackage.map((k) => `${k} (${zeZrodel.get(k).file})`)) +
+        list(withoutPackage.map((k) => `${k} (${fromSources.get(k).file})`)) +
         `\n    The measurement would then count the strings of a component the consumer ` +
         `never gets — or, more often, would be reading a stale \`${DIST}\`.`,
     );
 
-  const withoutSources = [...zPakietu.keys()].filter((k) => !zeZrodel.has(k));
+  const withoutSources = [...fromPackage.keys()].filter((k) => !fromSources.has(k));
   if (withoutSources.length)
-    throw new BladTekstu(
+    throw new TextsError(
       'artifact',
       'class-without-sources',
       `${withoutSources.length} classes from the package are invisible to the source scanner:\n` +
-        list(withoutSources.map((k) => `${k} (${zPakietu.get(k).input})`)) +
+        list(withoutSources.map((k) => `${k} (${fromPackage.get(k).input})`)) +
         `\n    A class the scanner did not see brings strings into a release that this ` +
         `gate says nothing about.`,
     );
 
   // A template's owner has a precondition of ITS OWN, even though point 1 guarantees it.
-  // Without that, disarming the `template-bez-wlasciciela` rule turned this loop into a
+  // Without that, disarming the `orphaned-template` rule turned this loop into a
   // `TypeError` — the negative control lost the ability to examine the rule it was meant to
   // examine. The same defect as in A3, A4, A7, A8 and A12; „do not trust the previous
   // point" apparently has to be written out in every gate.
-  const wlascicielem = (file) => uzywane.get(file)?.[0]?.className ?? file;
+  const ownerOf = (file) => used.get(file)?.[0]?.className ?? file;
 
   const speakingInSources = new Set();
   for (const k of classes)
@@ -763,7 +763,7 @@ const checkTexts = (we) => {
   for (const s of scans)
     for (const a of s.scanner.attributes)
       if (SPEAKING_ATTRIBUTES.has(a.name))
-        speakingInSources.add(`${wlascicielem(s.file)} ${a.name}=${a.value}`);
+        speakingInSources.add(`${ownerOf(s.file)} ${a.name}=${a.value}`);
 
   const speakingInPackage = new Set();
   for (const p of pkg)
@@ -771,30 +771,30 @@ const checkTexts = (we) => {
       if (SPEAKING_ATTRIBUTES.has(name))
         speakingInPackage.add(`${p.className} ${name}=${value}`);
 
-  const tylkoWPakiecie = [...speakingInPackage].filter(
+  const packageOnly = [...speakingInPackage].filter(
     (w) => !speakingInSources.has(w),
   );
-  if (tylkoWPakiecie.length)
-    throw new BladTekstu(
+  if (packageOnly.length)
+    throw new TextsError(
       'artifact',
       'attribute-only-in-package',
-      `${tylkoWPakiecie.length} speaking attributes are in the package and not in the ` +
+      `${packageOnly.length} speaking attributes are in the package and not in the ` +
         `source read:\n` +
-        list(skroc(tylkoWPakiecie)) +
+        list(shorten(packageOnly)) +
         `\n    This is what an attribute brought in by syntax the scanner cannot read ` +
         `looks like — an object spread in a \`host\` block, a mixin, inheritance. Point 3 ` +
         `would never look at it.`,
     );
 
-  const tylkoWZrodlach = [...speakingInSources].filter(
+  const sourcesOnly = [...speakingInSources].filter(
     (w) => !speakingInPackage.has(w),
   );
-  if (tylkoWZrodlach.length)
-    throw new BladTekstu(
+  if (sourcesOnly.length)
+    throw new TextsError(
       'artifact',
       'attribute-only-in-sources',
-      `${tylkoWZrodlach.length} speaking attributes are in the sources and not in the package:\n` +
-        list(skroc(tylkoWZrodlach)) +
+      `${sourcesOnly.length} speaking attributes are in the sources and not in the package:\n` +
+        list(shorten(sourcesOnly)) +
         `\n    Usual cause: a stale \`${DIST}\`. Point 3 would then be pronouncing on ` +
         `text the consumer never gets.`,
     );
@@ -806,11 +806,11 @@ const checkTexts = (we) => {
       if (LITERA.test(t.value))
         textViolations.push(`${s.file}:${t.line}: ${JSON.stringify(t.value)}`);
   if (textViolations.length)
-    throw new BladTekstu(
+    throw new TextsError(
       'template',
       'literal-text',
       `${textViolations.length} text nodes carry a string written into the template:\n` +
-        list(skroc(textViolations)) +
+        list(shorten(textViolations)) +
         `\n    A string the library prints itself goes through \`PCT_TEXTS\`: a field in ` +
         `\`PctTexts\`, a default in \`PCT_DEFAULT_TEXTS\`, a \`texts().key\` read ` +
         `in the template (req-api-texts). A character with no letter (\`*\`, \`×\`) is not ` +
@@ -827,11 +827,11 @@ const checkTexts = (we) => {
       if (SPEAKING_ATTRIBUTES.has(name) && LITERA.test(value))
         attributeViolations.push(`${k.file}: host \`${name}\` = "${value}"`);
   if (attributeViolations.length)
-    throw new BladTekstu(
+    throw new TextsError(
       'template',
       'speaking-attribute',
       `${attributeViolations.length} speaking attributes carry a string written inline:\n` +
-        list(skroc(attributeViolations)) +
+        list(shorten(attributeViolations)) +
         `\n    The value of \`aria-label\`, \`title\` or \`placeholder\` is read by the ` +
         `user — that is text, not a keyword of a specification (like \`role="combobox"\`). ` +
         `It goes through ` +
@@ -843,20 +843,20 @@ const checkTexts = (we) => {
     for (const w of s.scanner.expressions)
       if (LITERA.test(w.value))
         expressionViolations.push(
-          `${s.file}:${w.line}: ${w.gdzie} → ${JSON.stringify(w.value)}`,
+          `${s.file}:${w.line}: ${w.where} → ${JSON.stringify(w.value)}`,
         );
   for (const k of classes)
-    for (const [name, value] of k.literaly)
+    for (const [name, value] of k.literals)
       if (LITERA.test(value))
         expressionViolations.push(
           `${k.file}: host \`${name}\` → ${JSON.stringify(value)}`,
         );
   if (expressionViolations.length)
-    throw new BladTekstu(
+    throw new TextsError(
       'template',
       'literal-in-expression',
       `${expressionViolations.length} string literals reach the DOM from an expression:\n` +
-        list(skroc(expressionViolations)) +
+        list(shorten(expressionViolations)) +
         `\n    \`{{ open() ? 'Close' : 'Open' }}\` bypasses the channel exactly like a ` +
         `string written into a node's text — only it looks like code. A pipe's argument ` +
         `does not count: that is a format marker, not text.`,
@@ -864,7 +864,7 @@ const checkTexts = (we) => {
 
   const withIcu = scans.filter((s) => s.scanner.icu);
   if (withIcu.length)
-    throw new BladTekstu(
+    throw new TextsError(
       'template',
       'icu',
       `${withIcu.length} templates use an ICU expression:\n` +
@@ -876,21 +876,21 @@ const checkTexts = (we) => {
     );
 
   // ── 4. TYPESCRIPT ───────────────────────────────────────────────────────────
-  const factories = we.factories.wywolania;
+  const factories = we.factories.calls;
   if (!factories.length || we.factories.unrecognised.length)
-    throw new BladTekstu(
+    throw new TextsError(
       'typescript',
       'empty-measurement',
       `the scanner recognised ${factories.length} signal factory calls and left ` +
         `${we.factories.unrecognised.length} assignments unresolved:\n` +
-        list(skroc(we.factories.unrecognised)) +
+        list(shorten(we.factories.unrecognised)) +
         `\n    An input the scanner did not resolve to a call brings a default value this ` +
         `point says nothing about. The counter counts ASSIGNMENTS, not calls: the scanner ` +
         `finds more calls (a factory in a function body, in an argument), so comparing the ` +
         `sums would pass even with one assignment gone.`,
     );
 
-  const proza = factories.flatMap((f) =>
+  const prose = factories.flatMap((f) =>
     [...f.argument.matchAll(LITERAL_W_WYRAZENIU)]
       .map((m) => m[1] ?? m[2])
       .filter(isProse)
@@ -898,18 +898,18 @@ const checkTexts = (we) => {
         (v) => `${f.file}:${f.line}: ${f.factory}(…) → ${JSON.stringify(v)}`,
       ),
   );
-  if (proza.length)
-    throw new BladTekstu(
+  if (prose.length)
+    throw new TextsError(
       'typescript',
       'prose-in-factory',
-      `${proza.length} signal defaults are prose:\n` +
-        list(skroc(proza)) +
+      `${prose.length} signal defaults are prose:\n` +
+        list(shorten(prose)) +
         `\n    A library string goes through \`PCT_TEXTS\`. An axis value (\`md\`, ` +
         `\`solid\`, \`inset\`) is not prose and does not fire here — shape tells them ` +
         `apart: a capital at the start or a space in the middle.`,
     );
 
-  const tekstDomyslny = factories
+  const textDefault = factories
     .filter(
       (f) =>
         f.textual &&
@@ -918,39 +918,39 @@ const checkTexts = (we) => {
         ),
     )
     .map((f) => `${f.file}:${f.line}: ${f.factory}<string>(${f.argument})`);
-  if (tekstDomyslny.length)
-    throw new BladTekstu(
+  if (textDefault.length)
+    throw new TextsError(
       'typescript',
       'text-as-default',
-      `${tekstDomyslny.length} inputs declared as \`<string>\` carry a literal as their ` +
+      `${textDefault.length} inputs declared as \`<string>\` carry a literal as their ` +
         `default:\n` +
-        list(skroc(tekstDomyslny)) +
+        list(shorten(textDefault)) +
         `\n    \`<string>\` means „arbitrary text", so a literal in that place is a ` +
         `library string whatever it looks like. An empty one (\`''\`) means „no value" ` +
         `and is allowed.`,
     );
 
-  const przyKonstrukcji = factories
+  const atConstruction = factories
     .filter(
       (f) => f.factory !== 'computed' && /\btexts\s*\(\s*\)/.test(f.argument),
     )
     .map((f) => `${f.file}:${f.line}: ${f.factory}(…${f.argument.trim()}…)`);
-  if (przyKonstrukcji.length)
-    throw new BladTekstu(
+  if (atConstruction.length)
+    throw new TextsError(
       'typescript',
       'text-at-construction',
-      `${przyKonstrukcji.length} defaults read \`PCT_TEXTS\` at CONSTRUCTION:\n` +
-        list(skroc(przyKonstrukcji)) +
+      `${atConstruction.length} defaults read \`PCT_TEXTS\` at CONSTRUCTION:\n` +
+        list(shorten(atConstruction)) +
         `\n    An input's default is created once, so an application switching language ` +
         `without a reload keeps the string from before the change — exactly the defect ` +
         `decision 0014 closed. Read through \`computed()\`, that is, at render time.`,
     );
 
   // ── 5. CHANNEL ────────────────────────────────────────────────────────────────
-  const { keys, defaults, reads, wstrzykniecia } = we.channel;
+  const { keys, defaults, reads, injections } = we.channel;
 
   if (!keys.length)
-    throw new BladTekstu(
+    throw new TextsError(
       'channel',
       'empty-measurement',
       `no field found in \`export interface PctTexts\` — the whole of point 5 would then ` +
@@ -958,16 +958,16 @@ const checkTexts = (we) => {
         `file, or written differently.`,
     );
 
-  const zleWstrzykniecia = wstrzykniecia
+  const wrongInjections = injections
     .filter((w) => w.name !== 'texts')
-    .map((w) => `${w.file}:${w.line}: ${w.name ?? '(bez przypisania)'}`);
-  if (zleWstrzykniecia.length)
-    throw new BladTekstu(
+    .map((w) => `${w.file}:${w.line}: ${w.name ?? '(no assignment)'}`);
+  if (wrongInjections.length)
+    throw new TextsError(
       'channel',
       'inject-under-another-name',
-      `${zleWstrzykniecia.length} \`PCT_TEXTS\` injections land under a name other than ` +
+      `${wrongInjections.length} \`PCT_TEXTS\` injections land under a name other than ` +
         `\`texts\`:\n` +
-        list(zleWstrzykniecia) +
+        list(wrongInjections) +
         `\n    Reads are counted by the \`texts().key\` pattern, so another name makes ` +
         `them invisible — and then the „a key has to be used" rule pronounces on keys it ` +
         `simply cannot see.`,
@@ -975,7 +975,7 @@ const checkTexts = (we) => {
 
   const withoutDefault = keys.filter((k) => !(k in defaults));
   if (withoutDefault.length)
-    throw new BladTekstu(
+    throw new TextsError(
       'channel',
       'key-without-default',
       `${withoutDefault.length} \`PctTexts\` fields have no default value:\n` +
@@ -986,7 +986,7 @@ const checkTexts = (we) => {
 
   const withoutKey = Object.keys(defaults).filter((k) => !keys.includes(k));
   if (withoutKey.length)
-    throw new BladTekstu(
+    throw new TextsError(
       'channel',
       'default-without-key',
       `${withoutKey.length} default values have no field in \`PctTexts\`:\n` +
@@ -995,21 +995,21 @@ const checkTexts = (we) => {
         `overriding — \`providePctTexts\` takes \`Partial<PctTexts>\`.`,
     );
 
-  const puste = keys.filter((k) => k in defaults && defaults[k].trim() === '');
-  if (puste.length)
-    throw new BladTekstu(
+  const empty = keys.filter((k) => k in defaults && defaults[k].trim() === '');
+  if (empty.length)
+    throw new TextsError(
       'channel',
       'empty-default',
-      `${puste.length} default values are empty:\n` +
-        list(puste) +
+      `${empty.length} default values are empty:\n` +
+        list(empty) +
         `\n    An empty default turns „the library prints this itself" into „the library ` +
         `prints nothing" for everybody who did not translate that field.`,
     );
 
-  const uzyte = new Set(reads.map((o) => o.key));
-  const dead = keys.filter((k) => !uzyte.has(k));
+  const readKeys = new Set(reads.map((o) => o.key));
+  const dead = keys.filter((k) => !readKeys.has(k));
   if (dead.length)
-    throw new BladTekstu(
+    throw new TextsError(
       'channel',
       'dead-key',
       `${dead.length} \`PctTexts\` fields are read by no component:\n` +
@@ -1020,38 +1020,38 @@ const checkTexts = (we) => {
         `prints it.`,
     );
 
-  const donikad = reads
+  const toNowhere = reads
     .filter((o) => !keys.includes(o.key))
     .map((o) => `${o.file}: texts().${o.key}`);
-  if (donikad.length)
-    throw new BladTekstu(
+  if (toNowhere.length)
+    throw new TextsError(
       'channel',
       'read-to-nowhere',
-      `${donikad.length} reads name a field that is not in \`PctTexts\`:\n` +
-        list(skroc(donikad)) +
+      `${toNowhere.length} reads name a field that is not in \`PctTexts\`:\n` +
+        list(shorten(toNowhere)) +
         `\n    In a template such a read is no compilation error — it is an empty space ` +
-        `na ekranie.`,
+        `on the screen.`,
     );
 
   // ── 6. WARNINGS ──────────────────────────────────────────────────────────
-  const zKanalu = we.warnings
+  const fromChannel = we.warnings
     .filter((o) => /\btexts\s*\(\s*\)/.test(o.argument))
     .map((o) => `${o.file}:${o.line}`);
-  if (zKanalu.length)
-    throw new BladTekstu(
+  if (fromChannel.length)
+    throw new TextsError(
       'warnings',
       'warning-from-the-channel',
-      `${zKanalu.length} developer warnings draw on \`PCT_TEXTS\`:\n` +
-        list(zKanalu) +
+      `${fromChannel.length} developer warnings draw on \`PCT_TEXTS\`:\n` +
+        list(fromChannel) +
         `\n    A warning is read by a developer, not a user — translating it helps nobody ` +
         `and takes up room in a type the consumer has to fill in (decision 0007).`,
     );
 
   const withoutDevMode = we.warnings
-    .filter((o) => !o.strzezone)
+    .filter((o) => !o.guarded)
     .map((o) => `${o.file}:${o.line}: console.${o.method}(…)`);
   if (withoutDevMode.length)
-    throw new BladTekstu(
+    throw new TextsError(
       'warnings',
       'warning-without-devmode',
       `${withoutDevMode.length} \`console.*\` calls do not go quiet outside \`isDevMode()\`:\n` +
@@ -1085,7 +1085,7 @@ const isTemplate = (p) => p.startsWith(`${PROJEKT}/`) && p.endsWith('.html');
  * before the first number — beyond it stand names without values. The same parser as in
  * `check-parts`.
  */
-const parujAtrybuty = (attrs) => {
+const pairAttributes = (attrs) => {
   const out = [];
   for (let i = 0; i < attrs.length; i++) {
     if (typeof attrs[i] === 'number') break;
@@ -1103,7 +1103,7 @@ const parujAtrybuty = (attrs) => {
 const packageComponents = async (root) => {
   const dist = join(root, DIST);
   if (!existsSync(join(dist, 'package.json')))
-    throw new BladTekstu(
+    throw new TextsError(
       'artifact',
       'empty-package',
       `no built package in ${DIST} — this gate reads the artifact, not the sources ` +
@@ -1132,8 +1132,8 @@ const packageComponents = async (root) => {
         input,
         className,
         attributes: [
-          ...consts.filter(Array.isArray).flatMap(parujAtrybuty),
-          ...parujAtrybuty(def.hostAttrs ?? []),
+          ...consts.filter(Array.isArray).flatMap(pairAttributes),
+          ...pairAttributes(def.hostAttrs ?? []),
         ],
       });
     }
@@ -1153,27 +1153,27 @@ const readWarnings = (file, content) => {
     const otw = m.index + m[0].length - 1;
     const zam = match(content, otw, '(', ')');
     const argument = zam === -1 ? '' : content.slice(otw + 1, zam);
-    const przed = content.slice(0, m.index);
-    const line = przed.split('\n').length;
+    const before = content.slice(0, m.index);
+    const line = before.split('\n').length;
 
     // The enclosing function: the last method declaration before the call.
     const methods = [
-      ...przed.matchAll(
+      ...before.matchAll(
         /^ {2}(?:private |protected )?([A-Za-z_$][\w$]*)\s*\(/gm,
       ),
     ];
     const method = methods.at(-1)?.[1] ?? null;
     const bodyFrom = methods.at(-1)?.index ?? 0;
 
-    const wFunkcji = /\bisDevMode\s*\(\s*\)/.test(
+    const inFunction = /\bisDevMode\s*\(\s*\)/.test(
       content.slice(bodyFrom, m.index),
     );
-    const wywolania = method
+    const calls = method
       ? [...content.matchAll(new RegExp(`\\bthis\\.${method}\\s*\\(`, 'g'))]
       : [];
-    const przyWywolaniach =
-      wywolania.length > 0 &&
-      wywolania.every((w) =>
+    const atCalls =
+      calls.length > 0 &&
+      calls.every((w) =>
         /\bisDevMode\s*\(\s*\)/.test(
           content.slice(content.lastIndexOf('\n', w.index) + 1, w.index),
         ),
@@ -1183,35 +1183,35 @@ const readWarnings = (file, content) => {
       file,
       line,
       method,
-      callMethod: wywolania.length,
+      callMethod: calls.length,
       argument,
-      strzezone: wFunkcji || przyWywolaniach,
+      guarded: inFunction || atCalls,
     });
   }
   return out;
 };
 
 /** An input built from a file list — the same shape for the repo and for a fixture. */
-const gatherInput = async (root, files, pakietZDysku) => {
+const gatherInput = async (root, files, packageFromDisk) => {
   const sources = files.filter(isSource);
-  const tresci = new Map(sources.map((p) => [p, read(root, p)]));
+  const contents = new Map(sources.map((p) => [p, read(root, p)]));
 
-  const factories = { wywolania: [], unrecognised: [] };
+  const factories = { calls: [], unrecognised: [] };
   const reads = [];
-  const wstrzykniecia = [];
+  const injections = [];
   const warnings = [];
   let keys = [];
   const defaults = {};
 
-  for (const [file, content] of tresci) {
+  for (const [file, content] of contents) {
     const f = readFactories(file, content);
-    factories.wywolania.push(...f.wywolania);
+    factories.calls.push(...f.calls);
     factories.unrecognised.push(...f.unrecognised);
     warnings.push(...readWarnings(file, content));
 
     for (const m of content.matchAll(ODCZYT)) reads.push({ file, key: m[1] });
     for (const m of content.matchAll(WSTRZYKNIECIE))
-      wstrzykniecia.push({
+      injections.push({
         file,
         line: content.slice(0, m.index).split('\n').length,
         name: m[1] ?? null,
@@ -1235,9 +1235,9 @@ const gatherInput = async (root, files, pakietZDysku) => {
     sources,
     templates,
     factories,
-    channel: { keys, defaults, reads, wstrzykniecia },
+    channel: { keys, defaults, reads, injections },
     warnings,
-    pkg: pakietZDysku ?? (await packageComponents(root)),
+    pkg: packageFromDisk ?? (await packageComponents(root)),
   };
 };
 
@@ -1310,7 +1310,7 @@ try {
     await gatherInput(ROOT, repoFiles(), null),
   ).description;
 } catch (error) {
-  if (!(error instanceof BladTekstu)) throw error;
+  if (!(error instanceof TextsError)) throw error;
   problems.push(`${error.check}/${error.rule}: ${error.message}`);
 }
 
@@ -1333,7 +1333,7 @@ if (cases.length === 0)
   try {
     checkTexts(await fixtureInput(directory));
   } catch (error) {
-    if (!(error instanceof BladTekstu)) throw error;
+    if (!(error instanceof TextsError)) throw error;
     problems.push(
       `${REFERENCE}: the reference input does NOT pass (${error.check}/${error.rule}) — ` +
         `every prepared case now fires because of it.\n    ${error.message}`,
@@ -1355,7 +1355,7 @@ for (const name of cases) {
         `point ${fx.point} (\`${fx.check}/${fx.rule}\`) stopped examining anything`,
     );
   } catch (error) {
-    if (!(error instanceof BladTekstu)) throw error;
+    if (!(error instanceof TextsError)) throw error;
     if (error.check !== fx.check || error.rule !== fx.rule)
       problems.push(
         `${name}: \`${error.check}/${error.rule}\` fired, and point ${fx.point} ` +

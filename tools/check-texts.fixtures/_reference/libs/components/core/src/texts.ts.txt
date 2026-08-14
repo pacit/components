@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 
 export interface PctTexts {
-  /** Widget: gdy lista jest pusta. */
+  /** Widget: when the list is empty. */
   readonly widgetEmpty: string;
   /** Widget: the accessible name of the collapse button. */
   readonly widgetCollapse: string;
@@ -25,10 +25,10 @@ export const PCT_TEXTS = new InjectionToken<Signal<PctTexts>>('PCT_TEXTS', {
 export function providePctTexts(
   texts: Partial<PctTexts> | Signal<Partial<PctTexts>>,
 ): Provider {
-  const wartosc: Signal<PctTexts> =
+  const value: Signal<PctTexts> =
     typeof texts === 'function'
       ? computed(() => ({ ...PCT_DEFAULT_TEXTS, ...texts() }))
       : signal({ ...PCT_DEFAULT_TEXTS, ...texts }).asReadonly();
 
-  return { provide: PCT_TEXTS, useValue: wartosc };
+  return { provide: PCT_TEXTS, useValue: value };
 }
