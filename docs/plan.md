@@ -73,16 +73,16 @@ G  gaps with no deadline    waiting for the trigger written in their „Binds at
 H  one language, no filler  English + compression; the public part sits in B
 ```
 
-**Phase A is closed and so are H1–H7**, so the next milestone is not a release but the **first
+**Phase A is closed and so are H1–H8**, so the next milestone is not a release but the **first
 push to the public repository** (B2): everything a first visitor reads is now in one language,
 and the push is a premiere rather than a backup. H1 (identifiers), H2 (the concision criterion,
 [0017](decisions/0017-one-home-per-fact.md)), H3 (the title page), H4 (`docs/`), H5 (`libs`),
-H6 (test names) and H7 (the fifteen gate scripts) are done, and `LICENSE` has a gate on both
-sides of `npm pack` (B1). **The built package now
+H6 (test names), H7 (the fifteen gate scripts) and H8 (the contracts they read) are done, and
+`LICENSE` has a gate on both sides of `npm pack` (B1). **The built package now
 carries no Polish at all**, so of B only the package README (B3) and the gate (B8) stand between
 here and npm; B4 shrank to one job that needs the public repository to exist.
-Still in H: H8 (proper names, now with the fixture prose H7 found), H10 (`apps/` — a decision,
-not a translation), H9 (commits).
+Still in H: H10 (`apps/` — a decision, not a translation) and H9 (commits). Outside `apps/`
+and the commit history a diacritics scan over the whole index is now **empty**.
 In parallel: F1 is unblocked (A3 and A4 gave it both inventories to render), and C is filler.
 
 H is not a separate phase, but it has an **earlier deadline than the release**: the repository
@@ -570,18 +570,18 @@ every sentence written.
 
 Measured 2026-08-06 (`git ls-files` + a diacritics scan), refreshed 2026-08-08:
 
-| layer                               | volume                                                                     | binds at                 |
-| ----------------------------------- | -------------------------------------------------------------------------- | ------------------------ |
-| package public surface              | done — **H5** (24 files in `dist` → **0**; the README is B3)               | release (B3)             |
-| `README.md`, `AGENTS.md`, workflows | done — **H3** (11 files, 5 903 → 4 884 words)                              | first push               |
-| `docs/` documentation               | done — **H4** (40 files)                                                   | first push               |
-| identifiers and their citations     | done — **H1** (82 + 59 names, 2 571 citations in 175 files)                | —                        |
-| `libs` sources                      | done — **H5** (30 files, plus 14 config and token files)                   | —                        |
-| test names                          | done — **H6** (27 spec files, 26 baselines renamed)                        | —                        |
-| `apps/` sandbox demo                | 45 files — **H10**, and a decision before a translation                    | first push               |
-| tools and gates                     | done — **H7** (15 scripts; headers 609 → **249**, budget 251)              | —                        |
-| proper names in contracts           | 1 target, 7 policies/snapshots, 100 fixture directories, 8 fixture READMEs | —                        |
-| commit history                      | 49 commits                                                                 | squashed before the push |
+| layer                               | volume                                                                       | binds at                 |
+| ----------------------------------- | ---------------------------------------------------------------------------- | ------------------------ |
+| package public surface              | done — **H5** (24 files in `dist` → **0**; the README is B3)                 | release (B3)             |
+| `README.md`, `AGENTS.md`, workflows | done — **H3** (11 files, 5 903 → 4 884 words)                                | first push               |
+| `docs/` documentation               | done — **H4** (40 files)                                                     | first push               |
+| identifiers and their citations     | done — **H1** (82 + 59 names, 2 571 citations in 175 files)                  | —                        |
+| `libs` sources                      | done — **H5** (30 files, plus 14 config and token files)                     | —                        |
+| test names                          | done — **H6** (27 spec files, 26 baselines renamed)                          | —                        |
+| `apps/` sandbox demo                | 45 files — **H10**, and a decision before a translation                      | first push               |
+| tools and gates                     | done — **H7** (15 scripts; headers 609 → **249**, budget 251)                | —                        |
+| proper names in contracts           | done — **H8** (1 target, 5 policies/snapshots, 252 fixture cases, 9 READMEs) | —                        |
+| commit history                      | 49 commits                                                                   | squashed before the push |
 
 - [x] **H1 — the identifier and documentation-name space** _(2026-08-06)_
   - done: **83 requirement identifiers**, **59 lessons** (`lekcja-N` → `lesson-N`) and **2 571
@@ -670,26 +670,18 @@ Measured 2026-08-06 (`git ls-files` + a diacritics scan), refreshed 2026-08-08:
     `@angular/build` probes and `check-consumer` end to end
   - cost: ~1 day · journal 2026-08-13 · found the fixture prose and left it to H8
 
-- [ ] **H8 — proper names in contracts**
-  - done: the target `mutacja` → **`mutation`**, the only Polish one out of 26 — the rest
-    (`check-*`, `build`, `themes`, `stamp-version`) were English, so this was an inherited
-    drift, not a convention. With it its five files and the `tmp/` output directory
-  - left in files: `parts.snapshot.md`, `size.snapshot.md`, `names.policy.json`,
-    `levels.policy.json`, `browsers.policy.json` — while `contrast.policy.json` **in the
-    same directory** is already English
-  - plus 100 fixture case directories (`brak-schematica`, `os-wspolna-martwa`), 41 rule names
-    in `fixture.json` and the `/* pct-exception … */` marker in stylesheets (4 uses, but the
-    convention for every stylesheet after them)
-  - **found by H7: the fixture prose** — eight `*.fixtures/README.md` (~400 Polish lines) and
-    the `opis`/`$powod` of every case, the only place explaining what a negative control
-    proves. Invisible to `measure-prose.mjs`, which reads `tools/*.mjs` alone
-  - **and the script-local identifiers**: H7 left every name alone, so twelve files read as
-    English prose over `sprawdzTokeny`, `BladStylu`, `blad`. Those crossing into a fixture
-    (`kontrola`, `regula`, `punkt`) are contracts; the rest are file-local
-  - the price is in the dispersion, not in the count: every policy file name also lives in a
-    **copy inside the fixtures**, so a rename goes through the script, its fixtures and CI at
-    once — and H7 measured that price twice (journal 2026-08-13)
-  - cost: ~1.5 days with the fixture prose · _notes:_ —
+- [x] **H8 — proper names in contracts** _(2026-08-14)_
+  - done: the target `mutacja` → **`mutation`**, five snapshots and policies, **252 fixture
+    cases** across thirteen gates with their prose, nine `*.fixtures/README.md`, the
+    vocabulary of four policy files, the `pct-exception` marker and every script-local name
+    in fifteen scripts. Outside `apps/` the diacritics scan is empty
+  - **a rename is a contract on both sides or it is a broken gate**: a case declares
+    `check` + `rule` and the script throws them, so each gate moved in one commit — script,
+    fixtures, snapshots and the **Control** citations `check-docs` found by itself. Four
+    renames the gates caught and review would not have (journal 2026-08-14)
+  - control: twelve gates plus `check-package` green in one pass, `check-consumer` end to
+    end, `lint` and `format:check` clean; bundle 114 610 B and mutation 81.77% unchanged
+  - cost: ~1 day (plan: ~1.5) · journal 2026-08-14
 
 - [ ] **H9 — commit convention**
   - titles and bodies in English, scopes (`feat(tokens)!:`) unchanged
@@ -718,6 +710,32 @@ Measured 2026-08-06 (`git ls-files` + a diacritics scan), refreshed 2026-08-08:
 ## Journal
 
 One entry per session: what moved, what it ended with, what comes next. Newest on top.
+
+### 2026-08-14 — H8: a name a gate compares is a contract on both sides
+
+**H8 is done** — 252 fixture cases across thirteen gates, five snapshots and policies, nine
+fixture READMEs and every script-local name in fifteen scripts. Outside `apps/` and the
+commit history the diacritics scan is now empty.
+
+**The cost was not the count, it was the coupling.** A case declares `check` + `rule` and
+the script throws them; a rename on one side alone leaves a gate that fires on the wrong
+point and says so. So each gate went in one commit — script, fixtures, snapshots and the
+**Control** citations in `docs/` — and `check-docs` found the last four of those itself.
+
+**Four renames the gates caught and review would not have.** `odwiedz` → `visit` collided
+with the `TmplAstRecursiveVisitor` protocol: `visitAll` then calls it for every node
+instead of dispatching, three template points stopped firing and the run stayed green.
+`package` and `private` are reserved words — those at least throw. And `wzorcowy` (the
+baseline engine) wanted the same English word as `_poprawny` (the reference input).
+
+**A generated file is regenerated, not translated.** `check-consumer`'s reference input is
+an imprint of a real measurement, and a hand-written copy lost `tarball.manifest` — two
+point-1 cases then passed. Five snapshot headers went the same way: the Polish lived in the
+renderer, so the fix went there and the files were rewritten, numbers untouched.
+
+Found in passing: five gate messages H7 had left in **diacritic-free Polish** — invisible to
+the scan that closed H7, and why the C-phase language gate needs its second limb. Next:
+**B2** (the first push); H10 is a decision about the sandbox, H9 minutes before it.
 
 ### 2026-08-13 — H7: the gates speak English, and the budget closes at 249 of 251
 
