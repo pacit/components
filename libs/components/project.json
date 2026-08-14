@@ -23,9 +23,9 @@
   "// check-bundle": "The tree-shaking and size-budget gate. It stands in `components` rather than in the root project, because everything it reads lies in the library and in its `dist` — and a new entrypoint is a change in `libs/components`, so it makes this project affected from its first commit. `inputs` list the entrypoint manifests (the list the measurement walks), the snapshot (the other side of the comparison), the script and the fixtures. `dependsOn` on `build` is hard: the gate bundles the ARTEFACT, not the sources, because the artefact is what a consumer gets — the probes reach for the package through `node_modules` and the `exports` map, the same road they take. `externalDependencies` list esbuild (the fast probes) plus `@angular/build` and `@angular/cli` (the probe with the real builder): bumping any of them changes the measured sizes, so it has to invalidate the cache — otherwise the budget would guard a number from before the bump.",
   "// check-consumer": "The consumer gate: it reproduces the whole road from `npm pack` through a local registry to a button painted by a token in the browser. It stands in `components`, because it measures THIS package. `dependsOn` on `build` and `schematics` is hard — it packs the artefact together with the `ng add` collection, and without that point 4 has nothing to run. `inputs` list the output of both targets, the Verdaccio configuration (the gate publishes through it rather than through a copy of its own), the script and the fixtures. `externalDependencies` are long because the road is long: bumping Verdaccio changes the registry, bumping `@angular/cli`/`@angular/build`/`@angular/ssr`/`@angular/router` changes the build and server-side rendering, `express` carries the application server, and `@playwright/test` is the browser — each of them can change the RESULT of the measurement with the package unchanged, so each has to invalidate the cache. The gate does not install `peerDependencies` from the registry: the application takes `@angular/*` from the repository's `node_modules` by searching up the tree, just as the builder probe in `check-bundle` does. The price is written down plainly — a version-range drift in `peerDependencies` passes this gate, and only `req-project-dependencies` watches for it.",
   "// check-texts": "The text-channel gate: it watches that a string the library writes goes through `PCT_TEXTS`. It stands in `components`, because everything it reads lies in the library and in its `dist`. `dependsOn` on `build` is hard: point 2 compares the read from the sources with `ɵcmp.consts` and `ɵdir.hostAttrs` after linking, that is with the output of the real compiler — without that an attribute brought in by an object spread inside a `host` block (`...fitHost` in `field/src/affix.ts`) would have no way of showing up. `inputs` list the templates and the sources OUTRIGHT, beside the build output: the gate reads them directly, and a cache key is to list what it reads rather than what usually changes along with it (`lesson-44`). `externalDependencies` list `@angular/compiler`, because its `parseTemplate` and `TmplAstRecursiveVisitor` are what read the template — an Angular bump may add a node kind the walk does not know, and that is to invalidate the cache rather than pass unnoticed.",
-  "// mutacja": "Stryker's mutation run on the core (`core`, `[pctNumber]`, `PctSelect`) — the only machine that answers whether the unit tests catch anything (`req-quality-unit`). It does not depend on `build`: it mutates the SOURCES and runs them with a Vitest configuration of its own (`mutacja.vitest.config.mts`), because the `test` target goes through the `@angular/build` builder, which has no configuration file and cannot have one — it assembles it in memory. `inputs` list the sources and specs of the WHOLE library, not of the mutated files alone: a `select.ts` mutant is sometimes killed by a test in `field.spec.ts`, so a change to any spec can change the result. `externalDependencies` list Stryker with its runner, Vitest and the Analog plugin: bumping any of them changes the set of mutants or the way they are run, so it has to invalidate the cache — otherwise the threshold would guard a number from before the bump. The target itself fails below `thresholds.break`; WHY that is not enough is explained by `check-mutation`.",
-  "// check-mutation": "The gate over the mutation run. Stryker can fire by itself and by default does NOT — `thresholds.break` is `null` by definition, so the run ends with zero whatever the score. And once a threshold does stand, it is raised by five moves, none of which adds a test: a file struck out of `mutate`, widened `ignorers` or a `// Stryker disable` in the source, an excluded mutator family, `ignoreStatic: true`, a shortened `timeoutMS` (a mutant killed by the CLOCK counts as killed by an assertion). The gate reads the EFFECTIVE configuration from the report, not from the file — `--ignoreStatic` in the target's command leaves no trace in it. `inputs` take the output of `mutacja`, the policy, the snapshot, the Stryker configuration, `project.json` (the target's command) and the workflow (point 7).",
-  "// typecheck": "Four runs, because the library has four disjoint programs: the package (`tsconfig.lib.json`), the specs together with `testing/` (`tsconfig.spec.json`), the mutation run's configuration (`tsconfig.mutacja.json`) and the schematics compiled to CommonJS (`schematics/tsconfig.json`). None of them sees the files of the others, so one invocation would check part of the library and look like the whole — it is `check-typecheck` that compares this sum against the file list from the git index. `inputs` take `default` and NOT `production`: `production` subtracts `**/*.spec.ts`. Measured, not assumed — adding a line to `src/public-api.spec.ts` gives `Cache: 0/1 hit` with `default` and `1/1 hit` with `production`, that is the second run does NOT move exactly when it is needed (`lesson-44` in another disguise). `build` checks types along the way, but for `tsconfig.lib.prod.json` alone — the rest have no compiler other than this target.",
+  "// mutation": "Stryker's mutation run on the core (`core`, `[pctNumber]`, `PctSelect`) — the only machine that answers whether the unit tests catch anything (`req-quality-unit`). It does not depend on `build`: it mutates the SOURCES and runs them with a Vitest configuration of its own (`mutation.vitest.config.mts`), because the `test` target goes through the `@angular/build` builder, which has no configuration file and cannot have one — it assembles it in memory. `inputs` list the sources and specs of the WHOLE library, not of the mutated files alone: a `select.ts` mutant is sometimes killed by a test in `field.spec.ts`, so a change to any spec can change the result. `externalDependencies` list Stryker with its runner, Vitest and the Analog plugin: bumping any of them changes the set of mutants or the way they are run, so it has to invalidate the cache — otherwise the threshold would guard a number from before the bump. The target itself fails below `thresholds.break`; WHY that is not enough is explained by `check-mutation`.",
+  "// check-mutation": "The gate over the mutation run. Stryker can fire by itself and by default does NOT — `thresholds.break` is `null` by definition, so the run ends with zero whatever the score. And once a threshold does stand, it is raised by five moves, none of which adds a test: a file struck out of `mutate`, widened `ignorers` or a `// Stryker disable` in the source, an excluded mutator family, `ignoreStatic: true`, a shortened `timeoutMS` (a mutant killed by the CLOCK counts as killed by an assertion). The gate reads the EFFECTIVE configuration from the report, not from the file — `--ignoreStatic` in the target's command leaves no trace in it. `inputs` take the output of `mutation`, the policy, the snapshot, the Stryker configuration, `project.json` (the target's command) and the workflow (point 7).",
+  "// typecheck": "Four runs, because the library has four disjoint programs: the package (`tsconfig.lib.json`), the specs together with `testing/` (`tsconfig.spec.json`), the mutation run's configuration (`tsconfig.mutation.json`) and the schematics compiled to CommonJS (`schematics/tsconfig.json`). None of them sees the files of the others, so one invocation would check part of the library and look like the whole — it is `check-typecheck` that compares this sum against the file list from the git index. `inputs` take `default` and NOT `production`: `production` subtracts `**/*.spec.ts`. Measured, not assumed — adding a line to `src/public-api.spec.ts` gives `Cache: 0/1 hit` with `default` and `1/1 hit` with `production`, that is the second run does NOT move exactly when it is needed (`lesson-44` in another disguise). `build` checks types along the way, but for `tsconfig.lib.prod.json` alone — the rest have no compiler other than this target.",
   "// stamp-version": "Copies `version` from the manifest into the PCT_VERSION constant. Deliberately NOT a dependency of `build`: were the build to stamp itself, the artefact would always agree and the `check-package` gate would stop examining anything. It is run by the release (after the version bump) and by a person — and the gate watches that nobody forgot.",
   "targets": {
     "themes": {
@@ -174,15 +174,15 @@
         "coverageThresholds": { "lines": 80 }
       }
     },
-    "mutacja": {
+    "mutation": {
       "executor": "nx:run-commands",
       "cache": true,
-      "outputs": ["{workspaceRoot}/tmp/mutacja"],
+      "outputs": ["{workspaceRoot}/tmp/mutation"],
       "inputs": [
         "{projectRoot}/**/*.ts",
         "{projectRoot}/**/*.html",
         "{projectRoot}/stryker.config.json",
-        "{projectRoot}/mutacja.vitest.config.mts",
+        "{projectRoot}/mutation.vitest.config.mts",
         "{workspaceRoot}/tsconfig.base.json",
         {
           "externalDependencies": [
@@ -201,12 +201,12 @@
     "check-mutation": {
       "executor": "nx:run-commands",
       "cache": true,
-      "dependsOn": ["mutacja"],
+      "dependsOn": ["mutation"],
       "inputs": [
         { "dependentTasksOutputFiles": "**/*", "transitive": false },
         "{projectRoot}/**/*.ts",
-        "{projectRoot}/mutacja.policy.json",
-        "{projectRoot}/mutacja.snapshot.md",
+        "{projectRoot}/mutation.policy.json",
+        "{projectRoot}/mutation.snapshot.md",
         "{projectRoot}/stryker.config.json",
         "{projectRoot}/project.json",
         "{workspaceRoot}/.github/workflows/ci.yml",
@@ -245,7 +245,7 @@
         "commands": [
           "tsc --noEmit -p libs/components/tsconfig.lib.json",
           "tsc --noEmit -p libs/components/tsconfig.spec.json",
-          "tsc --noEmit -p libs/components/tsconfig.mutacja.json",
+          "tsc --noEmit -p libs/components/tsconfig.mutation.json",
           "tsc --noEmit -p libs/components/schematics/tsconfig.json"
         ]
       }

@@ -254,10 +254,10 @@ control. Nothing here is waiting any more.
 
 - [x] **A13 — mutation testing of the core** _(2026-08-06)_
   - closed: `req-quality-unit` — the last gap of phase A
-  - built: target `mutacja` (Stryker 9.6 on `core`, `field/number.ts`, `select/select.ts`,
+  - built: target `mutation` (Stryker 9.6 on `core`, `field/number.ts`, `select/select.ts`,
     `thresholds.break` = 80, ~6 min) plus `tools/check-mutation.mjs` (target `check-mutation`,
-    `dependsOn: mutacja`, in CI) — seven points, 37 rules — with `mutacja.policy.json` and the
-    generated `mutacja.snapshot.md`
+    `dependsOn: mutation`, in CI) — seven points, 37 rules — with `mutation.policy.json` and the
+    generated `mutation.snapshot.md`
   - **the first measurement was the whole justification: at 96.62% line coverage the mutation
     score was 63.54%.** Closing it to 81.77% cost **38 new tests**; the gate reads the
     configuration **as it took effect, from the report**, since a threshold has five silent ways up
@@ -362,7 +362,7 @@ block publication and is an order of magnitude larger.
     different reach**: the public surface on the **artefact** (what comes out of `npm pack`,
     not what stands in the source), the rest of the repository on files from the git index
   - detection has **two limbs**: diacritics are enough for prose and fall silent exactly where
-    the text is short (`Przycisk`, the target `mutacja`), so the second limb is a list of Polish
+    the text is short — a one-word label, a file name — so the second limb is a list of Polish
     function words English does not contain, plus file names and identifiers separately
   - the register of exceptions follows the `przegladarki.policy.json` idiom from A10: an entry
     carries its reason and the task that removes it, and **a dead entry fires just like new
@@ -638,7 +638,7 @@ Measured 2026-08-06 (`git ls-files` + a diacritics scan), refreshed 2026-08-08:
 - [x] **H5 — `libs` sources outside the public API** _(2026-08-08)_
   - done: 30 non-spec `.ts`/`.scss`/`.html` files with the public JSDoc standing in them, plus
     the layer the scope line hid — `project.json`, nine DTCG token files, `eslint.config.mjs`,
-    `mutacja.vitest.config.mts` and two tsconfigs (44 files, ~2 800 words of prose)
+    `mutation.vitest.config.mts` and two tsconfigs (44 files, ~2 800 words of prose)
   - closes **B4's language half**: the built package went from 24 files carrying Polish to
     **zero**. Two of them were generated, so those fixes went into `libs/tokens/build.mjs` and
     `stamp-version.mjs`, never into their output
@@ -671,12 +671,12 @@ Measured 2026-08-06 (`git ls-files` + a diacritics scan), refreshed 2026-08-08:
   - cost: ~1 day · journal 2026-08-13 · found the fixture prose and left it to H8
 
 - [ ] **H8 — proper names in contracts**
-  - the target `mutacja` is **the only Polish one out of 26** — the rest (`check-*`, `build`,
-    `themes`, `stamp-version`) are English, so this is an inherited drift, not a convention
-  - files: `czesci.snapshot.md`, `rozmiar.snapshot.md`, `mutacja.snapshot.md`,
-    `mutacja.policy.json`, `nazwy.policy.json`, `poziomy.policy.json`,
-    `przegladarki.policy.json` — while `contrast.policy.json` **in the same directory** is
-    already English
+  - done: the target `mutacja` → **`mutation`**, the only Polish one out of 26 — the rest
+    (`check-*`, `build`, `themes`, `stamp-version`) were English, so this was an inherited
+    drift, not a convention. With it its five files and the `tmp/` output directory
+  - left in files: `czesci.snapshot.md`, `rozmiar.snapshot.md`, `nazwy.policy.json`,
+    `poziomy.policy.json`, `przegladarki.policy.json` — while `contrast.policy.json` **in the
+    same directory** is already English
   - plus 100 fixture case directories (`brak-schematica`, `os-wspolna-martwa`), 41 rule names
     in `fixture.json` and the `/* pct-wyjatek … */` marker in stylesheets (4 uses, but the
     convention for every stylesheet after them)

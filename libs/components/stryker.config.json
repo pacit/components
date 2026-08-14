@@ -3,7 +3,7 @@
   "packageManager": "npm",
   "testRunner": "vitest",
   "vitest": {
-    "configFile": "libs/components/mutacja.vitest.config.mts"
+    "configFile": "libs/components/mutation.vitest.config.mts"
   },
   "coverageAnalysis": "perTest",
   "ignorers": ["angular"],
@@ -16,7 +16,7 @@
     "!libs/components/**/*.spec.ts"
   ],
   "tempDirName": "tmp/stryker",
-  "// ignorePatterns": "Stryker copies the repository into a sandbox and walks it ITSELF, not the git index: without this list it saw 3907 files where git knows 708. The excess is generated directories, and those have concurrent writers — `nx affected` runs `build` beside `mutacja`, ng-packagr creates and deletes `tmp/libs/components/build/tsconfig.generated.<uuid>.json`, and Stryker falls over on `ENOENT ... copyfile` halfway through copying. The symptom is misleading at that: the task is flaky and passes on its own, so the first suspect was the mutant timeout. In passing, the sandbox stops copying its own previous sandboxes from `tmp/stryker`.",
+  "// ignorePatterns": "Stryker copies the repository into a sandbox and walks it ITSELF, not the git index: without this list it saw 3907 files where git knows 708. The excess is generated directories, and those have concurrent writers — `nx affected` runs `build` beside `mutation`, ng-packagr creates and deletes `tmp/libs/components/build/tsconfig.generated.<uuid>.json`, and Stryker falls over on `ENOENT ... copyfile` halfway through copying. The symptom is misleading at that: the task is flaky and passes on its own, so the first suspect was the mutant timeout. In passing, the sandbox stops copying its own previous sandboxes from `tmp/stryker`.",
   "ignorePatterns": [
     "tmp",
     "dist",
@@ -27,10 +27,10 @@
   ],
   "reporters": ["progress", "clear-text", "json"],
   "jsonReporter": {
-    "fileName": "tmp/mutacja/mutation.json"
+    "fileName": "tmp/mutation/mutation.json"
   },
   "htmlReporter": {
-    "fileName": "tmp/mutacja/mutation.html"
+    "fileName": "tmp/mutation/mutation.html"
   },
   "thresholds": {
     "high": 90,

@@ -106,13 +106,13 @@ an enforced floor.
 
 **Gate:** in three parts, because „the tests run", „how many pass" and „how many defects they
 notice" break separately. `.github/workflows/ci.yml` — `test` and `vite:test` in the
-`nx affected -t` list (the run). `libs/components/project.json` — the `mutacja` target runs
+`nx affected -t` list (the run). `libs/components/project.json` — the `mutation` target runs
 Stryker with `thresholds.break` = 80, i.e. **fails below the floor**.
-`tools/check-mutation.mjs` (target `check-mutation`, `dependsOn: mutacja`, in CI) guards the
+`tools/check-mutation.mjs` (target `check-mutation`, `dependsOn: mutation`, in CI) guards the
 denominator: seven points and 37 rules for the measurement being current, covering the
 declared file inventory, running **the same specs as the `test` target**, having a binding
 and unnarrowed threshold (ignorers, excluded mutators, `ignoreStatic`, `// Stryker disable`
-comments, a shortened `timeoutMS`), and fitting inside the `libs/components/mutacja.snapshot.md`
+comments, a shortened `timeoutMS`), and fitting inside the `libs/components/mutation.snapshot.md`
 snapshot with a **two-sided** per-file tolerance
 **Control:** `tools/check-mutation.fixtures/` — 37 doctored inputs on a fake library, each
 rejected on its own **rule**; plus runs against the real repository (removing an assertion

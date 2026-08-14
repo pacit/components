@@ -19,8 +19,8 @@ export default [
           // the Analog plugin as peers.
           ignoredFiles: [
             '{projectRoot}/eslint.config.{js,cjs,mjs,ts,cts,mts}',
-            '{projectRoot}/mutacja.vitest.config.mts',
-            '{projectRoot}/mutacja.setup.ts',
+            '{projectRoot}/mutation.vitest.config.mts',
+            '{projectRoot}/mutation.setup.ts',
           ],
           // The schematics (`ng add`) reach for `@angular-devkit/schematics` FOR TYPES ONLY —
           // the compiled `schematics/ng-add/index.js` has not a single reference to that

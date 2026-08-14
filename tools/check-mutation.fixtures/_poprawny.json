@@ -101,7 +101,7 @@
     },
     "konfig": { "thresholds": { "high": 90, "low": 80, "break": 80 } },
     "targety": {
-      "mutacja": {
+      "mutation": {
         "polecenie": "stryker run libs/udawana/stryker.config.json"
       },
       "check": { "polecenie": "node tools/check-mutation.mjs" }
@@ -113,7 +113,7 @@
         "affected",
         "-t",
         "test",
-        "mutacja",
+        "mutation",
         "check-mutation"
       ]
     }

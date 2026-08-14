@@ -4,7 +4,7 @@ import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import { defineConfig } from 'vite';
 
 /**
- * Vitest configuration USED BY THE MUTATION RUN ALONE (`nx run components:mutacja`).
+ * Vitest configuration USED BY THE MUTATION RUN ALONE (`nx run components:mutation`).
  *
  * Why a separate file when the library already has a `test` target: that one goes through
  * `@nx/angular:unit-test`, that is the `@angular/build` builder, which compiles the specs with
@@ -26,15 +26,15 @@ import { defineConfig } from 'vite';
  */
 export default defineConfig(() => ({
   root: __dirname,
-  cacheDir: '../../node_modules/.vite/libs/components-mutacja',
+  cacheDir: '../../node_modules/.vite/libs/components-mutation',
   plugins: [angular({ jit: false }), nxViteTsPaths()],
   test: {
-    name: 'components-mutacja',
+    name: 'components-mutation',
     watch: false,
     globals: true,
     environment: 'jsdom',
     include: ['**/*.spec.ts'],
-    setupFiles: ['./mutacja.setup.ts'],
+    setupFiles: ['./mutation.setup.ts'],
     reporters: ['default'],
   },
 }));

@@ -27,7 +27,7 @@
       "path": "./tsconfig.spec.json"
     },
     {
-      "path": "./tsconfig.mutacja.json"
+      "path": "./tsconfig.mutation.json"
     }
   ]
 }

@@ -10,7 +10,7 @@
  *  4. the threshold is declared, binding, and cannot be disarmed from the command,
  *  5. the denominator is not narrowed: ignorers, excluded mutators, static mutants,
  *  6. the result: a hard floor and a snapshot with a TWO-SIDED tolerance, per file and total,
- *  7. both targets (`mutacja`, `check-mutation`) run in CI.
+ *  7. both targets (`mutation`, `check-mutation`) run in CI.
  *
  * „What the run really did" comes from the report's `config` field, which carries the
  * EFFECTIVE configuration: the file plus whatever the command line added. Point 3 stands
@@ -28,10 +28,10 @@ const FIXTURES = join(ROOT, 'tools/check-mutation.fixtures');
 const BAZA = '_poprawny.json';
 
 const PROJEKT = 'libs/components';
-const RAPORT = 'tmp/mutacja/mutation.json';
-const POLITYKA = `${PROJEKT}/mutacja.policy.json`;
+const RAPORT = 'tmp/mutation/mutation.json';
+const POLITYKA = `${PROJEKT}/mutation.policy.json`;
 const KONFIG = `${PROJEKT}/stryker.config.json`;
-const SNAPSHOT = `${PROJEKT}/mutacja.snapshot.md`;
+const SNAPSHOT = `${PROJEKT}/mutation.snapshot.md`;
 const CI = '.github/workflows/ci.yml';
 
 const WRITE = process.argv.includes('--write');
@@ -154,13 +154,13 @@ const wierszeSnapshotu = (tekst) =>
 
 /**
  * The full set of checks over a ready input:
- *   `polityka`  — the contents of `mutacja.policy.json`,
- *   `raport`    — the contents of `tmp/mutacja/mutation.json` (with its `config` field),
+ *   `polityka`  — the contents of `mutation.policy.json`,
+ *   `raport`    — the contents of `tmp/mutation/mutation.json` (with its `config` field),
  *   `zrodla`    — `{ [plik]: tresc }` from disk, for the report's and the policy's files,
  *   `specyfikacje` — the library's `*.spec.ts` files from the git index,
- *   `snapshot`  — the contents of `mutacja.snapshot.md`, or `null`,
+ *   `snapshot`  — the contents of `mutation.snapshot.md`, or `null`,
  *   `konfig`    — the contents of `stryker.config.json`,
- *   `targety`   — `{ mutacja: { polecenie }, check: { polecenie } }` from the Nx graph,
+ *   `targety`   — `{ mutation: { polecenie }, check: { polecenie } }` from the Nx graph,
  *   `ci`        — `{ targety: [...] }` from the workflow.
  * Throws `BladMutacji` on the first violation — the checks start from the denominator, so
  * the later ones would have nothing to examine anyway. Returns `{ opis, snapshot }`.
@@ -327,7 +327,7 @@ export const sprawdzMutacje = (we) => {
         lista(nieuruchomione) +
         `\n    They run in the \`test\` target and do not run here — so a mutant they ` +
         `kill counts as surviving. Two paths to the same specs have drifted ` +
-        `(\`mutacja.vitest.config.mts\` against \`test\`).`,
+        `(\`mutation.vitest.config.mts\` against \`test\`).`,
     );
   const specSpozaRepo = uruchomione.filter((s) => !specyfikacje.includes(s));
   if (specSpozaRepo.length)
@@ -380,12 +380,12 @@ export const sprawdzMutacje = (we) => {
         `file that review reads.`,
     );
 
-  const polecenie = we.targety?.mutacja?.polecenie;
+  const polecenie = we.targety?.mutation?.polecenie;
   if (!polecenie)
     throw new BladMutacji(
       'prog',
       'target-bez-polecenia',
-      `the \`components:mutacja\` target has no command that can be read — the gate ` +
+      `the \`components:mutation\` target has no command that can be read — the gate ` +
         `cannot check whether the run is disarmed`,
     );
   const wady = ROZBRAJAJACE.filter(([, w]) => w.test(polecenie)).map(
@@ -395,7 +395,7 @@ export const sprawdzMutacje = (we) => {
     throw new BladMutacji(
       'prog',
       'polecenie-rozbrojone',
-      `polecenie targetu \`components:mutacja\` rozbraja przebieg (${wady.join(', ')}):\n` +
+      `polecenie targetu \`components:mutation\` rozbraja przebieg (${wady.join(', ')}):\n` +
         `      ${polecenie}\n` +
         `    The configuration then looks exactly as it does today, the report looks ` +
         `exactly as it does today, and the exit code is always zero.`,
@@ -601,7 +601,7 @@ export const sprawdzMutacje = (we) => {
     );
 
   // 7. CI. The gate and the run itself are two targets, each removable on its own.
-  for (const target of ['mutacja', 'check-mutation'])
+  for (const target of ['mutation', 'check-mutation'])
     if (!(we.ci?.targety ?? []).includes(target))
       throw new BladMutacji(
         'ci',
@@ -661,7 +661,7 @@ const targetyZGrafu = async () => {
         .join(' && '),
     };
   };
-  return { mutacja: czytaj('mutacja'), check: czytaj('check-mutation') };
+  return { mutation: czytaj('mutation'), check: czytaj('check-mutation') };
 };
 
 /**

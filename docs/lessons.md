@@ -1204,7 +1204,7 @@ in review. That is the price you pay for the number to mean something.
 
 ### <a id="lesson-59"></a>`lesson-59` — A task flaky under `nx affected` points at a shared directory, not at a time limit
 
-**The `mutacja` target passed every time on its own and fell over when run alongside the rest.**
+**The `mutation` target passed every time on its own and fell over when run alongside the rest.**
 The first suspect was the mutant time limit: Stryker computes it relative to the dry-run time, so
 under load a live mutant can become a timeout. The hypothesis was convenient, it fitted the
 symptom and **it was false**.

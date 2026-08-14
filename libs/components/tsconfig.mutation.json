@@ -5,5 +5,5 @@
     "outDir": "../../dist/out-tsc",
     "types": ["node", "vite/client", "vitest"]
   },
-  "include": ["mutacja.vitest.config.mts", "mutacja.setup.ts"]
+  "include": ["mutation.vitest.config.mts", "mutation.setup.ts"]
 }

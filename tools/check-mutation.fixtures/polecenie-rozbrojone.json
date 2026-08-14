@@ -3,7 +3,7 @@
   "regula": "polecenie-rozbrojone",
   "// wada": "Operator powłoki zjada kod wyjścia. Konfiguracja wygląda tak samo jak dziś, raport wygląda tak samo jak dziś, a przebieg kończy się zerem zawsze.",
   "targety": {
-    "mutacja": {
+    "mutation": {
       "polecenie": "stryker run libs/udawana/stryker.config.json || true"
     }
   }
