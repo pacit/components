@@ -2,6 +2,6 @@
   "point": 1,
   "check": "tarball",
   "rule": "schematic-missing",
-  "description": "The schematic's collection is in the archive and the factory file is not. `ng add` then falls over at the consumer on „Collection not found\".",
+  "description": "The schematic's collection is in the archive and the factory file is not. `ng add` then falls over at the consumer on \"Collection not found\".",
   "dropFile": "schematics/ng-add/index.js"
 }

@@ -1,6 +1,6 @@
 {
   "point": 5,
   "check": "schematics",
-  "description": "The `ng add` collection is in the package and points at a factory, and the compiled factory file is not there — that is, a skipped `schematics` target, which runs separately and AFTER ng-packagr. At a consumer `ng add @pacit/components` falls over on „Collection not found\" at the first command they type.",
+  "description": "The `ng add` collection is in the package and points at a factory, and the compiled factory file is not there — that is, a skipped `schematics` target, which runs separately and AFTER ng-packagr. At a consumer `ng add @pacit/components` falls over on \"Collection not found\" at the first command they type.",
   "drop": ["schematics/ng-add/index.js"]
 }

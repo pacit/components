@@ -243,7 +243,7 @@ describe('PctRadioGroup / PctRadio', () => {
     expect(fixture.componentInstance.value()).toBe('');
     expect(free.disabled).toBe(false);
 
-    // The GROUP announces the „read only" state: the `radio` role does not support
+    // The GROUP announces the "read only" state: the `radio` role does not support
     // `aria-readonly`, so on an option it would be an attribute the role disallows
     // (a critical violation in axe, `lesson-33`).
     const group = fixture.nativeElement.querySelector('pct-radio-group');

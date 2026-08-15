@@ -31,7 +31,7 @@ changes.
 
 **The reference input must pass.** This is not a check for good measure: were the
 reference itself defective, every case would fire because of it rather than because of its
-own defect, and every „rejected" would be false. Verified by a run — a `margin-left` added
+own defect, and every "rejected" would be false. Verified by a run — a `margin-left` added
 to the reference `button.scss` moved `partial-opacity` and `opacity-from-variable` onto
 somebody else's point at once.
 
@@ -71,7 +71,7 @@ declarations that shrinks.
 
 Two of those cases are not hypotheses. `no-components` exists because the gate **passed**
 on it: a git pathspec is not a shell glob, the pattern returned an empty source list, and
-the comparison „recognised N of M" is blind to zero. `decorator-past-parser` exists
+the comparison "recognised N of M" is blind to zero. `decorator-past-parser` exists
 because the decorator counter repeated the parser's anchor character for character — a
 shift of one space put out both sides of the comparison at once. Both are described by
 [`lesson-48`](../../docs/lessons.md#lesson-48); the second sat in `check-zoneless` too and

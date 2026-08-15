@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Consumer gate: can the package be TAKEN FROM A REGISTRY and used (`req-quality-consumer`)?
- * „The file exists" does not mean „it works": `ng add` once fell over with `check-package`
+ * "The file exists" does not mean "it works": `ng add` once fell over with `check-package`
  * green. Hence the route — pack → publish → install BY NAME → `ng add` → SSR → browser.
  *
  *   1. `tarball`     — the archive holds the skin, every `exports` file, every factory,
@@ -42,7 +42,7 @@ const KEEP = process.argv.includes('--keep');
 const WRITE_REFERENCE = process.argv.includes('--write-reference');
 
 /** The skin. The same constant as in `check-package` — the same file, other side. */
-const SKORKA = 'themes/pct.css';
+const SKIN = 'themes/pct.css';
 
 /**
  * Traces of the library in the application's bundle and in the rendered HTML.
@@ -60,10 +60,10 @@ const SKORKA = 'themes/pct.css';
 const MARKERS = ['data-pct-part', 'pct-button'];
 
 /** The token the library paints the button's background with, measured on both sides. */
-const TOKEN_TLA = '--pct-button-bg';
+const BACKGROUND_TOKEN = '--pct-button-bg';
 
 /** The initial `background-color` — what is left after an unresolved `var()`. */
-const TLO_POCZATKOWE = 'rgba(0, 0, 0, 0)';
+const INITIAL_BACKGROUND = 'rgba(0, 0, 0, 0)';
 
 /**
  * A violation of one of the seven checks. It carries the identifier of the check AND of
@@ -87,7 +87,7 @@ const list = (xs) => [...xs].sort().join(', ') || '(empty)';
  * The full set of checks over a finished measurement. Throws `ConsumerError` on the first
  * violation; returns a summary sentence.
  *
- * Every rule reads the measurement DEFENSIVELY, even though the previous one „already
+ * Every rule reads the measurement DEFENSIVELY, even though the previous one "already
  * checked that". A dependency between rules is normal; writing it so that disarming the
  * previous one turns the gate into a `TypeError` is not — the negative control then loses
  * the ability to examine the rule it was meant to examine. The same defect came out in A3,
@@ -113,11 +113,11 @@ const checkConsumer = (input) => {
         `pass, having nothing to look for`,
     );
 
-  if (!files.has(SKORKA))
+  if (!files.has(SKIN))
     fail(
       'tarball',
       'theme-missing',
-      `the archive holds no \`${SKORKA}\`, though the file is in \`${DIST}\` — so ` +
+      `the archive holds no \`${SKIN}\`, though the file is in \`${DIST}\` — so ` +
         `\`npm pack\` filtered it out (the \`files\` field or \`.npmignore\`).\n` +
         `    The consumer gets components referring to tokens nobody ` +
         `declares (lesson-36), and \`check-package\` will not see it: it reads a directory`,
@@ -155,7 +155,9 @@ const checkConsumer = (input) => {
   const missingCollections = namedCollections
     .map((p) => p.replace(/^\.\//, ''))
     .filter((p) => !files.has(p));
-  const missingFactories = (tarball.factories ?? []).filter((p) => !files.has(p));
+  const missingFactories = (tarball.factories ?? []).filter(
+    (p) => !files.has(p),
+  );
   if (missingCollections.length || missingFactories.length)
     fail(
       'tarball',
@@ -164,8 +166,10 @@ const checkConsumer = (input) => {
         (missingCollections.length
           ? `      collections: ${list(missingCollections)}\n`
           : '') +
-        (missingFactories.length ? `      factories: ${list(missingFactories)}\n` : '') +
-        `    \`ng add\`/\`ng update\` will fail at the consumer's with „Collection not found"`,
+        (missingFactories.length
+          ? `      factories: ${list(missingFactories)}\n`
+          : '') +
+        `    \`ng add\`/\`ng update\` will fail at the consumer's with "Collection not found"`,
     );
 
   // ── 2. registry ──────────────────────────────────────────────────────────────
@@ -222,7 +226,7 @@ const checkConsumer = (input) => {
         `the application's lock file — the install never happened`,
     );
 
-  // `entry?.` even though the rule above „already checked" that the entry exists. Disarming
+  // `entry?.` even though the rule above "already checked" that the entry exists. Disarming
   // that one gave a `TypeError` here instead of a message — the SEVENTH time for this
   // defect in this repository (A3, A4, A7, A8, A11, A12), this time in a gate written in
   // full awareness of the previous six and with a paragraph about it in the header. A
@@ -383,17 +387,17 @@ const checkConsumer = (input) => {
     fail(
       'e2e',
       'no-theme',
-      `\`${TOKEN_TLA}\` computed on the button is empty — the skin never reached the ` +
+      `\`${BACKGROUND_TOKEN}\` computed on the button is empty — the skin never reached the ` +
         `browser. The button is then in the DOM with all its classes and parts and no ` +
         `appearance: the silent defect of lesson-36 in its final form`,
     );
 
-  if (e2e.background === TLO_POCZATKOWE)
+  if (e2e.background === INITIAL_BACKGROUND)
     fail(
       'e2e',
       'background-initial',
-      `the button's background has the INITIAL value (\`${TLO_POCZATKOWE}\`) — the ` +
-        `\`background: var(${TOKEN_TLA})\` declaration did not resolve and the browser ` +
+      `the button's background has the INITIAL value (\`${INITIAL_BACKGROUND}\`) — the ` +
+        `\`background: var(${BACKGROUND_TOKEN})\` declaration did not resolve and the browser ` +
         `quietly fell back to transparent`,
     );
 
@@ -401,7 +405,7 @@ const checkConsumer = (input) => {
     fail(
       'e2e',
       'background-not-from-token',
-      `the button's background (\`${e2e.background}\`) is not the value of \`${TOKEN_TLA}\` ` +
+      `the button's background (\`${e2e.background}\`) is not the value of \`${BACKGROUND_TOKEN}\` ` +
         `(\`${e2e.tokenBackground}\`) — the skin is loaded and the component paints itself with ` +
         `something else, so overriding the token at the consumer's changes nothing`,
     );
@@ -420,7 +424,7 @@ const checkConsumer = (input) => {
     `an archive of ${files.size} files (${tarball.version}) → registry → SSR app: ` +
     `${build.tokensInCss} token declarations in the stylesheet, ` +
     `${(ssr.parts ?? []).length} parts in the server's HTML, ` +
-    `background ${e2e.background} from \`${TOKEN_TLA}\``
+    `background ${e2e.background} from \`${BACKGROUND_TOKEN}\``
   );
 };
 
@@ -773,7 +777,7 @@ const inBrowser = async (url) => {
             ),
           };
         },
-        [TOKEN_TLA],
+        [BACKGROUND_TOKEN],
       )),
       errors,
     };
@@ -1124,7 +1128,7 @@ if (cases.length === 0)
   );
 
 // The reference input MUST pass: were it defective itself, every case would fire because
-// of it rather than its own defect, and every „rejected" would be false — this control
+// of it rather than its own defect, and every "rejected" would be false — this control
 // would become the very thing it stands against.
 try {
   checkConsumer(buildFixture({}));

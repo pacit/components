@@ -30,7 +30,7 @@ const REFERENCE = '_reference.json';
 const MINIMUM = 80;
 
 /**
- * What counts as „library code". We deliberately do NOT read `coverageInclude` from
+ * What counts as "library code". We deliberately do NOT read `coverageInclude` from
  * `project.json`: were this list to come from the configuration, narrowing that
  * configuration would remove a file from both sides of the comparison at once and point 3
  * would stop seeing anything. An independent definition makes a narrowed
@@ -218,7 +218,7 @@ if (cases.length === 0)
   );
 
 // The reference input MUST pass. Were it defective itself, every case would fire because
-// of it rather than because of its own defect — and every „it fired" would be false.
+// of it rather than because of its own defect — and every "it fired" would be false.
 try {
   checkCoverage(buildFixture({}));
 } catch (error) {

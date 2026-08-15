@@ -1,5 +1,5 @@
 {
   "point": 4,
   "check": "documentation",
-  "$reason": "The **Parts** section loses one of the parts — exactly what `docs/components/field.md` did with four of them until 2026-08-05. The promise „written down\" then drops to zero, and nobody sees it."
+  "$reason": "The **Parts** section loses one of the parts — exactly what `docs/components/field.md` did with four of them until 2026-08-05. The promise \"written down\" then drops to zero, and nobody sees it."
 }

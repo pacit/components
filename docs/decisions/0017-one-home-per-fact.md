@@ -7,12 +7,12 @@ output. That script measures and never fails a build; the gate comes later, see 
 
 ## Context
 
-The promise is already written: prose answers „why isn't this obvious?", and whatever can be
+The promise is already written: prose answers "why isn't this obvious?", and whatever can be
 pointed at is pointed at instead of summarised. What was missing is **how much** — and
 a criterion without a number is settled again by whoever happens to be editing.
 
 Section H of the [plan](../plan.md#h-one-language-for-the-repository) is about to rewrite every prose
-layer of this repository. Deciding „concise enough" file by file, mid-pass, means the second
+layer of this repository. Deciding "concise enough" file by file, mid-pass, means the second
 pass answers it differently from the first, and the difference is invisible in review.
 
 Measured today:
@@ -72,7 +72,7 @@ so halving the count by doubling the width has to show up somewhere.
 ## Consequences
 
 - **H7 turns from a rewrite into arithmetic.** Thirteen headers, 359 lines to cut, a target per
-  file. „Why it is like that" moves to the requirement, the decision or the lesson that already
+  file. "Why it is like that" moves to the requirement, the decision or the lesson that already
   holds it.
 - **H4 gets a rule for the two layers that repeat each other.** A closed position drops to the
   record; the journal keeps the session; whatever is neither becomes a lesson or goes.

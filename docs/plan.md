@@ -1,6 +1,6 @@
 # Work plan — task list
 
-> **This file is written by hand.** It is the only place allowed to hold „done / in progress /
+> **This file is written by hand.** It is the only place allowed to hold "done / in progress /
 > to do" and the notes carried from one session to the next.
 >
 > It does not duplicate the [registry](registry.md): the registry is generated and says **which
@@ -63,20 +63,20 @@ not of the registry.
 ## Order
 
 ```
-A  gates „right away"       blocks everything — each entry gets pricier with every component
+A  gates "right away"       blocks everything — each entry gets pricier with every component
 B  release readiness        can run parallel to A; binds at the first publication
 C  open review findings     small, good filler between the bigger items
 D  behaviour layer in core  only after A; blocks E
 E  components               dialog → tooltip/popover → menu → select → fields → rest → table
 F  trust surface            docs, ACR, benchmarks, Figma bridge
-G  gaps with no deadline    waiting for the trigger written in their „Binds at" field
+G  gaps with no deadline    waiting for the trigger written in their "Binds at" field
 H  one language, no filler  English everywhere; blocks B2 whole, not just its public part
 ```
 
 **Phase A is closed and so is the whole of H**, so the next milestone is not a release but
 the **first push to the public repository** (B2) — and the rule for it is settled: **nothing
 leaves in Polish**. Not the sandbox, not a comment, not a fixture value. So B2 now waits on the
-**repository limb of B8** — because „nothing is left" is a measurement, not a declaration, this
+**repository limb of B8** — because "nothing is left" is a measurement, not a declaration, this
 file's own [definition of done](#definition-of-done) — and on **B9**, the clear-out of what a
 public repository should never have carried. H1 (identifiers),
 H2 (the concision criterion, [0017](decisions/0017-one-home-per-fact.md)), H3 (the title page),
@@ -90,13 +90,13 @@ in `types/*.d.ts` among them, and H10 closed the last 58 under `apps/`.
 In parallel: F1 is unblocked (A3 and A4 gave it both inventories to render), and C is filler.
 
 H is not a separate phase, and it no longer has two deadlines. The old split — `README.md`,
-`docs/` and Actions at B2, the package at npm — held while the rule was „the public surface may
+`docs/` and Actions at B2, the package at npm — held while the rule was "the public surface may
 not be Polish". The rule of 2026-08-14 is wider, so what travels inside the package (B3, B4)
 binds **no later than the push**, and B8 moves in front of it. The two hard ordering conditions
 inside H are spent: **H1 before everything**, because any text written earlier is written twice,
 and **H2 before H3–H8**, because translating prose you are about to shorten is paid for twice.
 
-## A. Phase 0 — gates „right away"
+## A. Phase 0 — gates "right away"
 
 **Closed 2026-08-06.** Thirteen tasks, twenty closed gaps, thirteen gates with a negative
 control. Nothing here is waiting any more.
@@ -118,7 +118,7 @@ control. Nothing here is waiting any more.
   - closed: `req-quality-coverage` — the oldest debt in the project
   - built: `coverage` + `coverageInclude` + an 80% threshold in target `test`, and on top of
     that a **second gate**, `tools/check-coverage.mjs` (target `check-coverage`, in CI), plus
-    `libs/components/src/public-api.spec.ts`. The plan said „`coverageInclude` + threshold"
+    `libs/components/src/public-api.spec.ts`. The plan said "`coverageInclude` + threshold"
     and that was not enough: a threshold watches the number, and what breaks is the
     **denominator** — deleting `number.spec.ts` **raised** coverage from 96.55% to 96.94%
   - control: `tools/check-coverage.fixtures/` — seven inputs, one per way of disarming the
@@ -185,7 +185,7 @@ control. Nothing here is waiting any more.
     four points, plus the **missing targets**: `components` (three disjoint programs), the
     root project (`vitest.config.ts`, `vitest.workspace.ts`) and an overridden `sandbox`.
     `tokens` deliberately without one — it has no TS file
-  - the plan said „a project without a `typecheck` target fires" and that was not enough:
+  - the plan said "a project without a `typecheck` target fires" and that was not enough:
     `sandbox` **had** one, passed, and looked at none of its four spec files. Hence point 4 —
     the gate does not read `include`, it **runs the target's command** with `--listFilesOnly`
     and compares the compiler program against the git index
@@ -198,7 +198,7 @@ control. Nothing here is waiting any more.
     in CI) — ten points plus the generated `libs/components/size.snapshot.md` (7 entrypoints,
     114 766 B). The core is two: which entrypoints an import of one drags in (5) and which
     external dependencies come with them (7) — `@angular/cdk/overlay` only in `./select`
-  - the plan's assertion („no `PctField` in a `button` bundle") proves nothing on its own — a
+  - the plan's assertion ("no `PctField` in a `button` bundle") proves nothing on its own — a
     probe the bundler emptied contains no `PctField` either. Probes reach the package through
     `node_modules` and the `exports` map, never through an `alias` that would be green anyway
   - control: 22 inputs on a **fake** library; seven runs on the real repository; **all ten**
@@ -223,7 +223,7 @@ control. Nothing here is waiting any more.
   - built: three projects in `playwright.config.mts` (chromium, firefox, webkit) — **458 tests per
     run, 5.5 min** — plus `tools/check-browsers.mjs` (target `check-browsers`, in CI): six points,
     26 rules, the register `apps/sandbox-e2e/browsers.policy.json`, three engines in CI install
-  - „add webkit and firefox" has no symptom — Playwright exits zero after three projects as after
+  - "add webkit and firefox" has no symptom — Playwright exits zero after three projects as after
     one, and after **zero** tests — so the gate asks `--list` what the engines **actually** collect
   - firefox passed 146 functional tests first time, webkit 144: it reports `forced-colors: active`
     and **does not substitute author colours**. Two exclusion kinds, `record` and `measurement` → **C8**
@@ -247,8 +247,8 @@ control. Nothing here is waiting any more.
 - [x] **A12 — text/background pair completeness + token tiers** _(2026-08-05)_
   - closed: `req-token-text-pairs`, `req-token-tiers` — **2 gaps**
   - built: points **6 and 7** in `tools/check-tokens.mjs` (same target, same negative control,
-    because both promises stand on the same denominator as the names): a „downwards only"
-    reference graph with `libs/tokens/src/levels.policy.json`, and „every painted colour has a
+    because both promises stand on the same denominator as the names): a "downwards only"
+    reference graph with `libs/tokens/src/levels.policy.json`, and "every painted colour has a
     pair" plus the `on-*` rule. Plus `regula` in `fixture.json` ([`lesson-50`](lessons.md#lesson-50))
   - the plan's denominator was wrong: names (`*-bg`) cannot see the outline button painting
     `var(--pct-surface-100)` under `var(--pct-primary)`, so point 7 reads the **sass output**.
@@ -285,7 +285,7 @@ block publication and is an order of magnitude larger.
   - built: `LICENSE` (MIT, `Copyright (c) 2026 PacIT - Marek Pac`) at the root and in
     `libs/components/`, `author` in the manifest, and [decision
     0015](decisions/0015-license-and-model.md): **MIT everywhere, no CLA, no dual licensing**
-  - **the plan said „minutes" and that was half the truth**: the requirement already promised
+  - **the plan said "minutes" and that was half the truth**: the requirement already promised
     the file while point 6 measured manifest fields only. Two measurements now — the `licencja`
     check in `check-package` (file, non-empty, name matching `license`, a copyright line) and
     the `brak-licencji` rule in `check-consumer`, on the far side of `npm pack`
@@ -311,7 +311,7 @@ block publication and is an order of magnitude larger.
     is no remote CI, no provenance and no copy off this machine
   - **and on 2026-08-14 the condition grew**: nothing leaves in Polish, and H closed that same
     day — H11, H10 and H9 in turn, the scan that had called four layers clean having seen neither
-    „nie biegnie" nor `'Wybierz…'`. **B8's repository limb is what proves the condition**
+    "nie biegnie" nor `'Wybierz…'`. **B8's repository limb is what proves the condition**
   - cost: minutes for the task itself · _notes:_ —
 
 - [ ] **B3 — package README in English**
@@ -320,7 +320,7 @@ block publication and is an order of magnitude larger.
   - **two of the three files closed at H5**: the manifest `description` (the sentence npm shows
     in search results) and the headers of the generated theme artefacts, fixed in
     `libs/tokens/build.mjs` rather than in its output, as this position said they should be
-  - what is left is `libs/components/README.md` — still the Nx generator stub („This library
+  - what is left is `libs/components/README.md` — still the Nx generator stub ("This library
     was generated with Nx", seven lines) and it **travels to `dist`**, so it is the package
     page on npm. Written from scratch rather than translated: the stub has nothing to carry
     over, and it is the first page anybody sees
@@ -373,7 +373,7 @@ block publication and is an order of magnitude larger.
     different reach**: the public surface on the **artefact** (what comes out of `npm pack`,
     not what stands in the source), the rest of the repository on files from the git index
   - **two reaches, one deadline now**: the repository limb runs before the push, being the only
-    thing turning „nothing is left in Polish" into a measurement; the artefact limb binds at B3
+    thing turning "nothing is left in Polish" into a measurement; the artefact limb binds at B3
   - detection has **two limbs** and H11 settled the second: diacritics carry prose, so the other
     limb is `/usr/share/dict/polish` minus `american-english`, over identifiers split at
     camelCase. **Its false positives are the design work** and they enumerate — acronyms,
@@ -402,7 +402,7 @@ block publication and is an order of magnitude larger.
     section C here. Keep the verdict and the axis (§9), retire the rest
   - with the same eye: `.opencode/skills/` and `.github/skills/` are **byte-identical copies**
     of a vendored Nx guide (18 files each); this file is 1 436 lines, 175 of them a closed phase
-    A and 686 the journal; and section C's „verified 2026-08-03" wants one re-read before it
+    A and 686 the journal; and section C's "verified 2026-08-03" wants one re-read before it
   - control: `check-docs` green with `CITATION_EXEMPT` empty, and no tracked file that no other
     file mentions
   - cost: ~1 day · _notes:_ —
@@ -526,7 +526,7 @@ exists and is a condition of entering a release.
 
 - [ ] **E1 — dialog** — forces a focus trap, scroll lock, `inert`, focus restore, the Escape
       stack, SSR safety. The highest architectural gain per component
-- [ ] **E2 — tooltip + popover** — the „describes vs names" distinction, hover/focus/touch
+- [ ] **E2 — tooltip + popover** — the "describes vs names" distinction, hover/focus/touch
       parity, motion reduction on a real enter/leave
 - [ ] **E3 — menu** — roving focus, submenus, reuse of the typeahead from D1
 - [ ] **E4 — closing out the select family** — projected `pct-option`, an option template,
@@ -573,7 +573,7 @@ deferred.
 ## H. One language for the repository
 
 Goal: **the whole repository in English and without filler** — documentation, code, comments,
-test names, gate messages and **identifiers**. No split into „working" and „public": that split
+test names, gate messages and **identifiers**. No split into "working" and "public": that split
 existed from the beginning, had no gate and was kept on neither side. Two promises, two gates:
 [`req-project-language`](requirements/project.md#req-project-language) → **B8**,
 [`req-project-concise`](requirements/project.md#req-project-concise) → a budget laid **after**
@@ -581,7 +581,7 @@ the compression pass (H2).
 
 Settled 2026-08-06, not to be reopened:
 
-- **identifiers move with everything else** — `wym-` was short for „wymaganie", and an English
+- **identifiers move with everything else** — `wym-` was short for "wymaganie", and an English
   repository with Polish IDs is exactly the drift this file polices everywhere else. The
   [rename table](README.md#id-space-migration-2026-08-06) is approved;
 - **compression travels with the translation**, not after it — and its target is `tools/`
@@ -593,7 +593,7 @@ Settled 2026-08-06, not to be reopened:
 
 Settled 2026-08-14, and it widens all three: **the first push carries no Polish at all** — not
 the sandbox, not a comment, not a fixture value, not a stale citation of a renamed rule. There
-is no „this part is only working material" tier left, and the register of exceptions starts its
+is no "this part is only working material" tier left, and the register of exceptions starts its
 public life **empty**. That collapses H's two deadlines into one and hands B8 a job it did not
 have before: proving it, in front of B2 rather than at the release.
 
@@ -631,7 +631,7 @@ is the last row, and it is H11, not a new layer:
     citations in 175 files**, plus 24 file and directory names, mapped in
     [the migration table](README.md#id-space-migration-2026-08-06); `check-docs.mjs` moved to the
     new space and **rejects the old one**, beside the numeric space from 2026-07-27
-  - **the plan said „mechanical" and that was half the truth** — three consequences it did not
+  - **the plan said "mechanical" and that was half the truth** — three consequences it did not
     foresee were found by the gate, not by review: `req-ids.ts` started to look like a citation of
     itself (renamed to `doc-ids.ts`), the substitution **rewrote the left column of the migration
     table**, and fixing `docs/komponenty` in `check-parts.mjs` fired that gate, because five of
@@ -656,7 +656,7 @@ is the last row, and it is H11, not a new layer:
   - done: `README.md` in English (the examples stay — they are meant to be pasted), `AGENTS.md`
     and `CLAUDE.md`, both workflows (the name **Release**, the steps, the inputs) and six root
     configuration files
-  - **the scope came out three times bigger than the plan counted**: it counted „names in
+  - **the scope came out three times bigger than the plan counted**: it counted "names in
     Actions", and `ci.yml` had 121 Polish lines out of 177 — including one 120-line comment
     summarising thirteen gates. Plus the CHANGELOG section titles, which no other H task covered
   - measurement: 5 903 → 4 884 words in 11 files (−17%), `ci.yml` alone 1 639 → 384 (−77%); the
@@ -785,13 +785,13 @@ squashed to one root commit, `node_modules` symlinked, `nx release --dry-run --f
 
 - The CHANGELOG **does** start from that commit, `Features` heading and all
   (`changelog.automaticFromRef`) — as the plan predicted.
-- The **version does not**. `releaseVersion` reports „no changes detected" for a `chore:` root and
+- The **version does not**. `releaseVersion` reports "no changes detected" for a `chore:` root and
   a `feat:` root alike and falls back to `0.0.1` in the manifest: the root commit is the start of
   its own range, so it stands outside it. A `feat` **on top of** the squash bumps normally.
 
 So the first release is decided by `--specifier`, not by the history — **B3**'s, along with what
 the probe found next to it: at `0.0.1` every bump lands on a patch, breaking ones included
-(`adjustSemverBumpsForZeroMajorVersion`), so „a breaking change bumps the minor" starts at `0.1.0`.
+(`adjustSemverBumpsForZeroMajorVersion`), so "a breaking change bumps the minor" starts at `0.1.0`.
 
 Next: **B8**'s repository limb, **B9**'s clear-out, then **B2** — the squash and the push.
 
@@ -813,7 +813,7 @@ chromium, firefox and webkit all format `fr-FR` with U+202F and the decimal comm
 `req-api-number` leans on.
 
 **A baseline is a picture of its text**, so all 26 were redrawn — and then redrawn evidence was
-re-earned: `format:write` rewrapped thirteen templates afterwards, and „HTML collapses
+re-earned: `format:write` rewrapped thirteen templates afterwards, and "HTML collapses
 whitespace" is an argument, not a green run. The second run is the green one.
 
 One `pl-PL` stays on purpose — the default locale of the library's `number.spec.ts`, the case
@@ -861,10 +861,10 @@ under `apps/`, where the diacritics scan had counted 46.
 
 **The most expensive one ships.** The JSDoc of `texts.ts` demonstrates the texts channel with
 `selectPlaceholder: 'Wybierz…'`, so it stands in `types/*.d.ts` and on the npm page; the README
-repeats it at line 254. „The built package carries no Polish at all" was true of diacritics and
+repeats it at line 254. "The built package carries no Polish at all" was true of diacritics and
 of nothing else — and equally so for H3, H7 and H8.
 
-**Two gates still print Polish and two carry Polish identifiers**: `check-docs` („nie biegnie w
+**Two gates still print Polish and two carry Polish identifiers**: `check-docs` ("nie biegnie w
 `nx affected -t`"), `check-tokens` (`wpisy`), `check-parts` (`wpisy`, `skroc`). The requirements
 cite four names H8 renamed away, `fakt-bez-odniesienia` among them — `check-docs` compares the
 path, never the name after `›`, the blind spot H6 recorded and nobody has closed.
@@ -909,15 +909,15 @@ Headers went **609 → 249 lines** against the budget of 251 from
   stands in [`lessons.md`](lessons.md); it now names what the gate measures, lists its points
   and links the lesson. `check-tokens` went 74 → 19 that way and lost no argument.
 - **A diacritics scan finds half the Polish.** `check-package.mjs` was written without them,
-  so „uruchom" and „brak zbudowanego pakietu" survived the first sweep. A second pass, by
+  so "uruchom" and "brak zbudowanego pakietu" survived the first sweep. A second pass, by
   Polish function words over comments and strings, found leftovers in seven files already
   reported clean — including a `punkt ${fx.punkt}` left by the shared boilerplate pass.
 - **Generated files follow their generator; deliberately stale ones must not.** Four
   snapshots were regenerated, but the two stale fixture copies (`check-parts`,
-  `check-tokens`) had to be rebuilt by hand as „the current file minus its defect" —
+  `check-tokens`) had to be rebuilt by hand as "the current file minus its defect" —
   regenerating them would have deleted the defect they exist for.
 - **One rename crossed a contract.** `RAZEM` → `TOTAL` in the mutation snapshot broke the
-  fixture composer, which inserts a row above that word. The gate named it precisely („passed
+  fixture composer, which inserts a row above that word. The gate named it precisely ("passed
   and was meant not to"), which is the `regula` field from A12 doing its job.
 - **The fixture prose is the part nobody counted** — eight READMEs, ~400 lines, invisible to
   `measure-prose.mjs`. Written into H8 now.
@@ -968,7 +968,7 @@ translation, not a measurement.
 - **`apps/` was in no layer at all**, and that is the more expensive miss: 68 files, uncounted
   since the table was written. It is the demo a visitor opens and the harness the gates cite,
   so it binds at the first push, exactly where H3 and H4 bound. Now **H10**.
-- **A slow read finds what a scan cannot.** `// typecheck` said „three programs" while the
+- **A slow read finds what a scan cannot.** `// typecheck` said "three programs" while the
   target has run four since A13 — and no gate reads a comment.
 - Control: `typecheck`, `lint`, `test`, `format:check` and ten gates green; mutation score
   unchanged at 81.77%. The bundle moved 114 766 → 114 610 B — comments do reach `fesm2022`, and
@@ -987,7 +987,7 @@ the journal 976 → 531 lines, the task positions 966 → 474.
   [0017](decisions/0017-one-home-per-fact.md) turned the pass into arithmetic — every closed
   position to 12 lines, every journal entry to 25, with `node tools/measure-prose.mjs --over` as
   the checklist. What left the file was the second telling of a fact, not the fact.
-- **„One home per fact" decided the hard cases by lookup, not by taste.** The 35 dimension-axis
+- **"One home per fact" decided the hard cases by lookup, not by taste.** The 35 dimension-axis
   violations from A12 already stand in `req-token-tiers`, so they left the journal; the `lesson-*`
   citations stayed, because the registry's reverse index counts them (H2). Checked before cutting
   anything: no lesson is cited **only** here, so compression could not orphan one.
@@ -1012,16 +1012,16 @@ control**: had the parser drifted from the content, the classification would hav
 - **A requirement's fields are read by a machine**, so `Obietnica/Bramka/Kontrola/Wiąże przy`
   could not be translated apart from `check-docs.mjs`. One move took the parser, the state
   classifier, the registry generator and four fixtures — otherwise a faulty case would fire on
-  „field missing", that is on somebody else's point ([`lesson-50`](lessons.md#lesson-50)).
+  "field missing", that is on somebody else's point ([`lesson-50`](lessons.md#lesson-50)).
 - **The same in the second gate, and dearer there:** the `Części` table in the component cards
   is input to `check-parts`, and **five of its cases carry their own copy of `docs/components/`**.
-  „The price is in the dispersion, not in the count" from **H8** came true on one name.
+  "The price is in the dispersion, not in the count" from **H8** came true on one name.
 - **Nothing guards heading anchors** — `check-docs` resolves `req-*`/`lesson-*` and paths, but
   not the sentence after `#`. An ad-hoc script found four, one of them **standing since H1**:
   `README.md#planowane-przemianowanie-przestrzeni-id` pointed at a heading H1 itself renamed.
 - **`docs/README.md` carried a corrupted ID migration table**: a separator with no header and
   rows reading `req-project-*` → `req-project-*`. The same path substitution from H1 that
-  rewrote the left column — that entry says the table „was saved by its exemption from citation
+  rewrote the left column — that entry says the table "was saved by its exemption from citation
   control", and in truth only a fragment of it was. The rest stood there for three days.
 - **Test-name citations deliberately left in Polish** (seven in four files): they point at an
   `it()` that exists, and renaming one side without the other is the coupling described in H6.
@@ -1033,7 +1033,7 @@ Next: **the tail of H4** — `plan.md` and `review.md` → **B2**.
 **H3** closed. Registry numbers unchanged — `req-project-language` waits for its gate (**B8**),
 and this was a translation, not a measurement.
 
-- **The plan counted „names in Actions" and was off by an order of magnitude.** `ci.yml` had
+- **The plan counted "names in Actions" and was off by an order of magnitude.** `ci.yml` had
   121 Polish lines out of 177, one comment taking 120 of them and summarising thirteen gates —
   each the way its own header, its own requirement and its own lesson already do. After
   [0017](decisions/0017-one-home-per-fact.md) seven lines with a link to the registry were left.
@@ -1043,7 +1043,7 @@ and this was a translation, not a measurement.
   debt rather than as work.
 - **The CHANGELOG section titles were in Polish and nobody guarded them.** They are the only
   thing in this batch that reaches a consumer, and the comment beside them justified the choice
-  with „the language of the commit history" — the very sentence H9 is about to reverse.
+  with "the language of the commit history" — the very sentence H9 is about to reverse.
 - **The README did not shrink, and that is an honest result**: 1 665 → 1 694 words. English is
   longer than Polish at equal content, and five paragraphs of justification went down to links
   — one cancelled the other.
@@ -1071,20 +1071,20 @@ decision, is to be built **after** the compression and on its result.
   **without a target**: a gate laid before the compression would fail on every file for a week
   and be switched off. That script is what the gate grows from.
 - **The registry's reverse index had been lying since H1.** The generator asked about the old
-  lesson prefix, so the „lesson → requirements" table showed **59 out of 59** as uncited while 51
+  lesson prefix, so the "lesson → requirements" table showed **59 out of 59** as uncited while 51
   `Lessons` fields stood filled in — green, because the file matched what the generator produces.
   After a one-word fix six are uncited, and only now is that column a safety net for a
   compression that could orphan a lesson.
 
 Next: **H3** (`README.md`, 251 lines) → **H4** (`docs/`, 40 files) → **B2**.
 
-### 2026-08-07 — the licence settled „with what", so the question left was „when"
+### 2026-08-07 — the licence settled "with what", so the question left was "when"
 
 A session with no item from the list: the tail of B1. Numbers unchanged (83 requirements, 13 gaps).
 
 - **The `repository` field is there** (`git+https://github.com/pacit/components.git`), the
   condition is not: provenance demands agreement with the repository the publication comes from,
-  and that repository does not exist yet. `req-release-metadata` says so in „Binds at"; **B2**
+  and that repository does not exist yet. `req-release-metadata` says so in "Binds at"; **B2**
   closes it.
 - **[0016](decisions/0016-mit-irreversibility.md): MIT works one way, so the build order is a
   decision rather than a preference.** A set released under MIT can grow and cannot shrink, so a
@@ -1109,12 +1109,12 @@ Next: **H2** → **H3** → **H4** → **B2**.
 What changed is that it now **measures what it promises**. The plan priced this in minutes and
 was wrong not about the file but about what would come out beside it.
 
-- **The requirement promised two things and the gate measured one.** „The manifest carries
+- **The requirement promised two things and the gate measured one.** "The manifest carries
   `repository`, and the repository — a `LICENSE` file" had stood there from the beginning; point
   6 checked manifest fields only, and the file existed **nowhere**, with the requirement marked
   ✅. The same class as everything phase A found, hidden in the item described as the cheapest.
 - **`includes` is unfit for comparing a licence name, and that is a measurement, not a hunch.**
-  The MIT text contains „INCLUDING BUT NOT LIMITED TO", and `LIMITED` contains `MIT` as a
+  The MIT text contains "INCLUDING BUT NOT LIMITED TO", and `LIMITED` contains `MIT` as a
   substring — so an Apache-2.0 file under an `MIT` manifest would pass a containment test.
   Matching goes by word boundary.
 - **The file has to be measured on both sides of `npm pack`.** `check-package` reads the `dist`
@@ -1134,7 +1134,7 @@ Next: **H3** (`README.md`) → **H4** (`docs/`) → **B2** (squash the history a
 **H1** done. No change to the numbers (83 requirements, 13 gaps) — this was a migration of names,
 not of promises: 83 requirement identifiers, 59 lessons, **2 571 citations in 175 files** and 24
 file and directory names ([migration table](README.md#id-space-migration-2026-08-06)). The plan
-called it **„mechanical"** and that was the one word wrong: the substitution is mechanical, the
+called it **"mechanical"** and that was the one word wrong: the substitution is mechanical, the
 consequences are not — and the gate found them, not review.
 
 - **The new prefix started catching its own tool.** After `wym-` → `req-` the citation pattern
@@ -1159,10 +1159,10 @@ namespace, so H3 and H4 will not be written twice.
 
 A planning session, not an executing one: **nothing moved to `[x]`**. Requirements 81 → 83, gaps
 11 → 13; both new gaps have an owner (**B8**, **H2**), so the invariant from [State](#state)
-holds. The starting point was B3 and B4 („README and JSDoc in English"), and what was not fine
+holds. The starting point was B3 and B4 ("README and JSDoc in English"), and what was not fine
 about them was **what enforced them**: nothing.
 
-- **The split „working in Polish, public in English" stood in [`docs/README.md`](README.md) as
+- **The split "working in Polish, public in English" stood in [`docs/README.md`](README.md) as
   prose and was kept on neither side.** Measured: the package `description` is in Polish, and in
   the built package **24 files** carry Polish text, among them **all eight `types/*.d.ts`** —
   precisely the surface the split was meant to defend. A rule without a gate is no rule, hence
@@ -1216,11 +1216,11 @@ adding three projects is not the **execution** of that promise, it is its declar
   after one, and the same after **zero** collected tests. Four moves undo it and each looks like
   tidying in review — a project struck from `projects`, a file in `testIgnore`, `--project=chromium`
   in the target, an engine dropped from CI install. Hence a gate asking `playwright test --list`
-  what the engines **actually** collect: „do not read `include`, run the compiler" from A7.
+  what the engines **actually** collect: "do not read `include`, run the compiler" from A7.
 - **Firefox passed 146 of 146 functional tests first time, webkit 144.** Those two are the whole
   finding: Playwright's webkit reports `matchMedia('(forced-colors: active)').matches === true`
   and **does not substitute author colours** ([`lesson-56`](lessons.md#lesson-56)).
-- **An exclusion resting on a fact about a browser must measure that fact.** „Webkit cannot do
+- **An exclusion resting on a fact about a browser must measure that fact.** "Webkit cannot do
   this" is a sentence about a **package version**, not about this repository. So the register has
   two kinds of entry: `record` (a decision written once) and `measurement` (a probe on every run), with
   `fakt-bez-odniesienia` as denominator — a fact holding for **no** engine is a broken probe.
@@ -1242,7 +1242,7 @@ even got to the e2e**.
   (added by ng-packagr) while the schematics are CommonJS — so Node reads them as ESM and dies on
   `exports.ngAdd = …`. The first command a consumer types, in the released artefact.
   **`check-package` saw a complete collection**: field, collection, factory file — all true, and
-  „can it be loaded" was never asked, because a static gate cannot ask it
+  "can it be loaded" was never asked, because a static gate cannot ask it
   ([`lesson-55`](lessons.md#lesson-55)). The fix is what `@angular/cdk` does: its own boundary
   in `schematics/package.json`.
 - **Two filters stand between `dist` and the consumer's `node_modules`:** `npm pack` (the `files`
@@ -1252,7 +1252,7 @@ even got to the e2e**.
   failed publication does not end in an install error — it ends with the package pulled from the
   uplink. Today that would be a 404; after B2 a gate without point 2 would examine a pre-release
   artefact and look green.
-- **„It built with SSR" is not enough — you have to ask WHO rendered.** An app without a router
+- **"It built with SSR" is not enough — you have to ask WHO rendered.** An app without a router
   is **prerendered**, so the server bundle never renders; point 6 demands `ng-server-context="ssr"`.
   Measured in passing: `document` at library **module scope** breaks the **build**, not a request.
 
@@ -1262,7 +1262,7 @@ Next: **A10** (the browser matrix) or **A13** (the mutation run) — the last tw
 
 **A11** done, and **C5** with it — they turned out to be one task, because a gate guarding the
 text channel must first know what that channel is. Gaps 15 → 14, enforced 50 → 51. This was meant
-to be a half-day grep („every user-visible string goes through `PCT_TEXTS`") and it was wrong not
+to be a half-day grep ("every user-visible string goes through `PCT_TEXTS`") and it was wrong not
 about the diagnosis but about **where that string stands**.
 
 - **Grepping the templates is half the channel, and the easier half.** The other half is in TS:
@@ -1271,7 +1271,7 @@ about the diagnosis but about **where that string stands**.
   without a reload kept the pre-change string since 2026-07-27, with CI green: the only test of
   that channel rendered the component **once** ([`lesson-54`](lessons.md#lesson-54)). It was
   **described in decision 0007 as open** — not knowledge that was missing, a machine.
-- **The template is read once and that is a measured limit, not an oversight.** The „two
+- **The template is read once and that is a measured limit, not an oversight.** The "two
   independent readings" pattern (A3, A4, A6) does not close here: after linking, a text node's
   literal lands in a **nested** template function. So the gate takes Angular's parser with four
   denominator rules, and the package reading stays with attributes assembled by object spread.
@@ -1286,13 +1286,13 @@ built.
 
 ### 2026-08-05 — A12: the contrast gate measured 38 pairs out of 74 and was green
 
-**A12** done. Gaps 17 → 15, enforced 48 → 50. This was meant to be half a day („compare the list
+**A12** done. Gaps 17 → 15, enforced 48 → 50. This was meant to be half a day ("compare the list
 of surfaces with the list of pairs") and was something else in both halves: the plan got the
 mechanism right and was wrong about **where to take the list** you compare against.
 
 - **A surface list taken from token NAMES does not see what this library does.** The outline
   button paints its background with `var(--pct-surface-100)` and its label with
-  `var(--pct-primary)` — two semantic tokens, invisible to a rule asking „does every component
+  `var(--pct-primary)` — two semantic tokens, invisible to a rule asking "does every component
   `*-bg` token have a pair". So the denominator reads the **sass output**.
 - **The policy was silent about 27 colours out of 74, and adding them broke the build on three.**
   In the dark theme the button label gave **3.45:1** on hover, **2.66:1** on active — below AA,
@@ -1315,19 +1315,19 @@ Next: **A11** (the text gate, half a day, and it forces C5 to be settled).
 **was not wrong about the scope** — the promise holds in full today. It was wrong about what the
 assertion it proposed actually proves.
 
-- **„There is no `PctField` in the bundle" is vacuously true exactly when the measurement has
+- **"There is no `PctField` in the bundle" is vacuously true exactly when the measurement has
   stopped measuring.** A probe from which the bundler dropped the library entirely — a bad alias,
   too wide an `external` list, an entrypoint unreachable through `exports` — also contains no
-  `PctField`, and looks like proof. For an assertion about **absence** the denominator is **„can
+  `PctField`, and looks like proof. For an assertion about **absence** the denominator is **"can
   my measurement see anything at all"**.
 - **A probe with an alias would be green even if `exports` did not exist.** The package is seen
   under its own name, through `node_modules` and the `exports` map — the road the consumer takes.
 - **Markers have to be selectors, because a string from FESM does not survive linking.** The
   first version derived them from the minified FESM, which works in an esbuild probe; in a real
-  build `button[pctButton]` becomes `[["button","pctButton",""]]`, so „no `PctButton` here" would
+  build `button[pctButton]` becomes `[["button","pctButton",""]]`, so "no `PctButton` here" would
   come out green **always**.
 - **The `sideEffects` point examined something other than what its justification claimed.** The
-  comment said „removing this flag gives no red test"; the run said otherwise — the first suspect
+  comment said "removing this flag gives no red test"; the run said otherwise — the first suspect
   was the cache and that was a false trail, because **ng-packagr adds `false` itself**. A comment
   describing a defect the gate does not catch is worse than none ([`lesson-51`](lessons.md#lesson-51)).
 - Disarming point 4 gave a `TypeError` — **the same defect as in A7, A4 and A3, the fourth time**,
@@ -1338,7 +1338,7 @@ Next: **A12** or **A11**. A9, A10 and A13 need something new built.
 ### 2026-08-05 — A3: a gate that fired correctly and explained it falsely
 
 **A3** done. Gaps 19 → 18, enforced 46 → 47. The task took the day it was given and the plan got
-the mechanism wrong, not the scope. It was to be „a template scan + a snapshot", and a template
+the mechanism wrong, not the scope. It was to be "a template scan + a snapshot", and a template
 scan is blind to what this library actually does.
 
 - **Four parts stand in no template.** `field-prefix-item`, `field-suffix-item`,
@@ -1354,7 +1354,7 @@ scan is blind to what this library actually does.
   because there is nothing to notice, hence a point forbidding binding. Measured: a bound attribute
   **does not reach `consts` at all**, and an interpolation looks like a literal and is not one.
 - **The snapshot point fired correctly and explained it falsely.** Renaming `trigger` produced
-  „the part list is the same — the header or the row order has drifted", because the data-row
+  "the part list is the same — the header or the row order has drifted", because the data-row
   filter did not survive the slash in `./select` and empty equals empty. **A negative control
   cannot see this by construction** — it compares an identifier, not a sentence
   ([`lesson-50`](lessons.md#lesson-50)).
@@ -1363,7 +1363,7 @@ Next: **A8** or **A12**. F1 is unblocked — A3 and A4 gave it both inventories 
 
 ### 2026-08-05 — A4: a snapshot that would have frozen what it was meant to guard
 
-**A4** done. Gaps 20 → 19, enforced 45 → 46. This was to be half a day („add a versioned snapshot
+**A4** done. Gaps 20 → 19, enforced 45 → 46. This was to be half a day ("add a versioned snapshot
 and a comparison") and at the first reading of the requirement turned out to be something else.
 The plan got the mechanism right — a snapshot really is what was missing — and was wrong about
 **what it measures**. That came from writing the list of names out and looking at it.
@@ -1374,15 +1374,15 @@ The plan got the mechanism right — a snapshot really is what was missing — a
   is standing next to each other. A snapshot added before normalisation would have recorded that
   as the **accepted state** ([`lesson-49`](lessons.md#lesson-49)), so the schema point comes
   **before** the snapshot point.
-- **A rule that closes in a circle needs narrower policing.** „A name is made of words from a
+- **A rule that closes in a circle needs narrower policing.** "A name is made of words from a
   closed set" is always true, because the set can be extended along with the name. So the gate
   enforces the narrower thing — **every declared word is used** — making an addition visible.
 - **The denominator again, this time as a list of names.** Point 1 counts it **twice**: once from
   the text of `dist/pct.css`, once from walking the DTCG trees. The two catch different things —
-  a declaration removed from `pct.css` fires as „in the sources, not in the artefact", an
+  a declaration removed from `pct.css` fires as "in the sources, not in the artefact", an
   uncommitted `component.dialog.json` the other way round.
 - **Disarming a point again gave a stack trace instead of a sentence.** The dictionary point read
-  the parser result directly, because after the schema point the name „certainly" parses. **The
+  the parser result directly, because after the schema point the name "certainly" parses. **The
   same defect as in A7**, in a gate written a day after I wrote the conclusion in this journal.
 
 Next: **A3** (the `data-pct-part` inventory) — together with A4 it unblocks F1.
@@ -1394,14 +1394,14 @@ the first time in this series **the plan got the diagnosis right** — both prom
 where it said, and the two foreseen exceptions turned out to be the only ones in the repository.
 I was the one who got it wrong, in the place these tasks have been drilling for four sessions.
 
-- **The gate passed green having measured no component at all.** It printed „7 stylesheets, 0
+- **The gate passed green having measured no component at all.** It printed "7 stylesheets, 0
   components". A git pathspec is not a shell glob: without `:(glob)` a star crosses `/`, so
   `libs/components/*/src/**/*.ts` demands one directory too many and returns an **empty list** —
   not an error. The denominator check compared parsed decorators against `@Component(`
   occurrences, both came out zero, and zero equals zero ([`lesson-48`](lessons.md#lesson-48)).
 - **A check comparing two measurements is worth what their independence is worth.** The decorator
   counter was meant to notice drift from the formatting the parser anchors on — and was written
-  **with the parser's own anchor**. Measured: `PctCheckbox` indented by one space gave „7
+  **with the parser's own anchor**. Measured: `PctCheckbox` indented by one space gave "7
   components" instead of eight. **The same defect sat in `check-zoneless.mjs`**; fixed together.
 - **A stylesheet can be flawlessly logical and still not mirror in RTL.** The `dir` axis went into
   the sandbox and immediately showed the select panel writing left-to-right under a right-to-left
@@ -1416,7 +1416,7 @@ Next: **A4** or **A3** — together they unblock F1. _(A4 done the same day — 
 ### 2026-08-05 — A7: a target that exists, and a target that looks
 
 **A7** done. Gaps 23 → 22, enforced 42 → 43. The task took the half day the plan gave it, but the
-plan got the diagnosis wrong and the scope with it. It was to be „a walk over the Nx graph — a
+plan got the diagnosis wrong and the scope with it. It was to be "a walk over the Nx graph — a
 project without a `typecheck` target fires", noting that **only** `sandbox-e2e` has one. Checking
 the graph showed otherwise: `sandbox` has one too, inferred by `@nx/vite/plugin` — which looks
 like a better state than the one described, and is a worse one.
@@ -1433,7 +1433,7 @@ like a better state than the one described, and is a worse one.
   measured components; here the **set of projects**: `vitest.config.ts` and `vitest.workspace.ts`
   belong to no project, so a gate walking projects cannot see them and says nothing.
 - **Disarming a point gave a stack trace instead of a sentence.** Point 3 read the target's
-  command directly, because after point 2 the target „certainly" exists. A dependency between
+  command directly, because after point 2 the target "certainly" exists. A dependency between
   points is normal; writing it so that its violation gives no message is not.
 
 Next: **A5** (the style gate), the one item whose retrofit cost grows non-linearly with the number
@@ -1442,7 +1442,7 @@ of components.
 ### 2026-08-04 — A6: OnPush can only be measured after linking
 
 **A6** done. Gaps 25 → 23, enforced 40 → 42. The task took the half day the plan gave it, but not
-where the plan assumed. Both promises — „`zone.js` removed" and „every component is OnPush" — are
+where the plan assumed. Both promises — "`zone.js` removed" and "every component is OnPush" — are
 of the same class: they rest on nobody undoing them, and undoing them yields no red test. They
 differ in where they can be measured at all.
 
@@ -1455,10 +1455,10 @@ differ in where they can be measured at all.
   only departures from defaults, and the value comes into existence at linking. The only honest
   reading is `ɵcmp.onPush` after `import '@angular/compiler'` ([`lesson-46`](lessons.md#lesson-46)),
   and the side effect is the point: the day Angular changes its defaults this gate fires.
-- **„Every component" needed a denominator again.** If the set of examined components came from
+- **"Every component" needed a denominator again.** If the set of examined components came from
   the package alone, a component that fell out of it would silently stop being checked. Hence
   point 4 and a separate denominator check on the parser — breaking the decorator formatting
-  gives „recognised 7 of 8".
+  gives "recognised 7 of 8".
 - **A comment in `project.json` lied before I measured it.** I wrote that an explicit
   `standalone: true` gives a byte-identical package; comparing checksums refuted it —
   `ɵɵngDeclareClassMetadata` moves. The sources stay in `inputs`, but because the gate reads them.
@@ -1467,9 +1467,9 @@ Next: **A7** (the `typecheck` target gate) — half a day, no dependencies.
 
 ### 2026-08-04 — A2: coverage measures the whole library, not its own sample
 
-**A2** done. Gaps 26 → 25, enforced 39 → 40. This was to be half a day („`coverageInclude` +
+**A2** done. Gaps 26 → 25, enforced 39 → 40. This was to be half a day ("`coverageInclude` +
 an 80% threshold") and turned out to be something else on the first run of the control. The
-control the plan named was: „removing a test drops coverage below the threshold and the gate
+control the plan named was: "removing a test drops coverage below the threshold and the gate
 fires". Removing `number.spec.ts` **raised** coverage from 96.55% to 96.94% — v8 knows only the
 modules that entered the run, so the untested `number.ts` left the report together with its test.
 The numerator did not grow; the denominator shrank. That first version of the gate would have
@@ -1477,7 +1477,7 @@ passed, and not because coverage is good.
 
 - **`coverageInclude` closes half of it.** Files without a test are added by a path that parses
   the SOURCE with rolldown — and that one falls over on `import type` / `export type`, prints
-  „Excluding it from coverage" in the middle of a few thousand log lines and finishes the run
+  "Excluding it from coverage" in the middle of a few thousand log lines and finishes the run
   **green**. Probe: a plain function, a `@Directive` and a `@Component` reach the report with a
   zero; a copy of `number.ts` does not, because line 18 has an `import type`. In an Angular library
   that is the default spelling, not an exotic one ([`lesson-45`](lessons.md#lesson-45)).
@@ -1495,7 +1495,7 @@ Next: **A6** or **A7** — half a day each, no dependencies.
 
 **A1** done, and **B5** with it — it turned out to be the same task, because `ng add` is the fifth
 point of the same gate. Gaps 33 → 26, enforced 31 → 39 (eight, not seven: `req-release-metadata`
-moved from 🟡 to ✅, because its „no control — deliberately" stopped being true).
+moved from 🟡 to ✅, because its "no control — deliberately" stopped being true).
 
 Three things worth remembering beyond the code itself:
 

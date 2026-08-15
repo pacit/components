@@ -2,7 +2,7 @@
 /**
  * Documentation gate: does every promise in `docs/` name a machine that can fail on it,
  * and does that machine exist (`req-quality-registry`)? The drift between documentation
- * and reality has happened once already and was patched by hand — 18 „not implemented"
+ * and reality has happened once already and was patched by hand — 18 "not implemented"
  * annotations in a single commit after the fact.
  *
  *  1. completeness — every requirement has `Promise`, `Gate`, `Control`, a gap `Binds at`,
@@ -71,7 +71,7 @@ const HEADING = /^#{2,3} <a id="(req-[a-z0-9-]+)"><\/a>`\1` — (.+)$/;
 /**
  * Returns the list of requirements. A field ends only at the next field FROM THE KNOWN
  * LIST — not at any line starting with `**`, because wrapped text can begin with bold
- * („— examines\n**the packed artifact**, not the sources").
+ * ("— examines\n**the packed artifact**, not the sources").
  */
 const parseRequirements = (text, file) => {
   const out = [];
@@ -125,7 +125,7 @@ const lessonIds = new Set(
 
 // ── 1. completeness + state classification ───────────────────────────────────────
 
-const BRAK = /^none\s*[—-]\s*(deliberately|gap)\s*:\s*(.+)$/s;
+const NONE = /^none\s*[—-]\s*(deliberately|gap)\s*:\s*(.+)$/s;
 
 /** `enforced` | `deliberate` | `gap` | null (an error) */
 const classify = (value, req, fieldName) => {
@@ -136,11 +136,11 @@ const classify = (value, req, fieldName) => {
   }
   if (/^not applicable\b/i.test(v)) return 'deliberate';
   if (/^none\b/.test(v)) {
-    const m = v.match(BRAK);
+    const m = v.match(NONE);
     if (!m) {
       fail(
         req.id,
-        `field **${fieldName}** says „none", but not as \`none — deliberately: <why>\` ` +
+        `field **${fieldName}** says "none", but not as \`none — deliberately: <why>\` ` +
           `or \`none — gap: <what is needed>\``,
       );
       return null;
@@ -186,7 +186,7 @@ const ROOTS = /^(libs|apps|tools|\.github|\.verdaccio)\//;
 
 /** Resolves a citation to real files, or returns null when it is not a path at all. */
 const resolveCitation = (raw) => {
-  // „file.spec.ts › test name" — the path is the part before the arrow
+  // "file.spec.ts › test name" — the path is the part before the arrow
   const path = raw
     .split('›')[0]
     .trim()
@@ -261,8 +261,8 @@ for (const [path, reqIds] of citedPaths) {
     );
 }
 
-// Explicit „target `X`" mentions — only in fields that actually declare a gate. Inside
-// `none — gap: …` a target name is sometimes a description of the state („the
+// Explicit "target `X`" mentions — only in fields that actually declare a gate. Inside
+// `none — gap: …` a target name is sometimes a description of the state ("the
 // `local-registry` target exists and nothing uses it"), not a claim that something runs.
 for (const req of requirements) {
   const declared = ['Gate', 'Control']
@@ -387,7 +387,7 @@ const buildRegistry = () => {
   L.push(
     'The state is **derived** from the contents of the `Gate` and `Control` fields, not typed in.',
   );
-  L.push('There is no „built, just unverified" state — see');
+  L.push('There is no "built, just unverified" state — see');
   L.push('[README](README.md#fields-gate-and-control).');
   L.push('');
   L.push('| state | means | count |');

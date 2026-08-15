@@ -25,7 +25,7 @@ import {
 } from '@pacit/components/core';
 
 /**
- * Bounds are sometimes absent („no limit"), and the `FormUiControl` contract requires
+ * Bounds are sometimes absent ("no limit"), and the `FormUiControl` contract requires
  * `undefined` for them — `numberAttribute` (which gives `NaN`) is not enough.
  */
 function optionalNumber(value: unknown): number | undefined {
@@ -42,10 +42,10 @@ function escapeRegExp(value: string): string {
  * Number field: a component on a native `<input type="text">` with the `spinbutton` role, a
  * value of type `number | null` and locale-aware formatting.
  *
- * **Why not `<input type="number">`** — despite the rule „do not write what the platform gives
+ * **Why not `<input type="number">`** — despite the rule "do not write what the platform gives
  * you" (`req-api-platform`), the native number field does not do for business forms: it does
  * not know the local decimal separator (a comma in Polish), cannot group thousands, and on
- * invalid content returns an empty `value`, so „empty" cannot be told from „junk" and the user
+ * invalid content returns an empty `value`, so "empty" cannot be told from "junk" and the user
  * cannot be shown what they typed. On top of that the mouse wheel changes the value by
  * accident. Hence a text field with parsing of its own and the `spinbutton` role
  * (`req-api-number`).
@@ -126,13 +126,13 @@ export class PctNumber
   /** The up/down arrow step; PageUp/PageDown jumps ten times as far. */
   readonly step = input(1, { transform: numberAttribute });
 
-  /** Minimum number of decimal places written (`2` for amounts, say: „12.50"). */
+  /** Minimum number of decimal places written (`2` for amounts, say: "12.50"). */
   readonly minFractionDigits = input(0, { transform: numberAttribute });
 
   /** Maximum number of decimal places; `0` (the default) = an integer. */
   readonly maxFractionDigits = input(0, { transform: numberAttribute });
 
-  /** Locale-aware thousands grouping („1 234 567"). */
+  /** Locale-aware thousands grouping ("1 234 567"). */
   readonly useGrouping = input(true, { transform: booleanAttribute });
 
   /** Overrides the application's `LOCALE_ID` for this field. */
@@ -284,7 +284,7 @@ export class PctNumber
       return;
     }
     const parsed = this.parse(text);
-    // A transitional state („-", „12,") does not clear the value — the text stays and the
+    // A transitional state ("-", "12,") does not clear the value — the text stays and the
     // matter is settled on commit.
     if (parsed !== null) this.value.set(parsed);
   }

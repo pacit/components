@@ -55,6 +55,6 @@ None of its own — `Enter` and `Space` come from the native `<button>`. That is
 
 - **No icon variant** — an icon-only button would need square geometry and a touch-target
   guarantee of its own. Waiting for [`req-api-icons`](../requirements/api.md#req-api-icons).
-- **`loading` does not block the click** — `disabled` does. Deliberately separated: „working"
-  and „cannot be clicked" are two different states, and a loading button without `disabled` is
+- **`loading` does not block the click** — `disabled` does. Deliberately separated: "working"
+  and "cannot be clicked" are two different states, and a loading button without `disabled` is
   a legitimate pattern (when a click queues something, say).

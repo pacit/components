@@ -6,7 +6,7 @@ import { setRtl, visit } from './support/dom';
  *
  * The whole method of this project rests on measuring in a browser rather than on
  * reading a stylesheet — a screenshot is its natural extension. The geometry tests
- * check what somebody thought to ask about („does the column tile the border with
+ * check what somebody thought to ask about ("does the column tile the border with
  * no gaps"); a screenshot also catches what nobody asked about, because it compares
  * the WHOLE image. The regressions from lesson-27 and lesson-34 were exactly of
  * that kind.

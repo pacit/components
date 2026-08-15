@@ -21,7 +21,7 @@ Three things follow directly:
 - **Equality is declared by the application** (`compareWith`, identity by default). An entity
   loaded from a server is not the same reference as the option in the list, so without this the
   selected item would not highlight when the form opens.
-- **„Nothing selected" is a separate state.** The value is typed `T | null`, because „nothing
+- **"Nothing selected" is a separate state.** The value is typed `T | null`, because "nothing
   selected" is reachable for every `T`. An application with a non-nullable field declares an
   empty value of its own (`emptyValue`), so a reset does not write `null` into the model against
   its type.
@@ -58,7 +58,7 @@ from the option list alone.
   template side.
 - **A methodological rule:** with a generic component one has to **check separately whether the
   template really enforces the type**. The mere fact that the build passes on correct usage does
-  not tell „the type matches" from „the type is ignored". Only a negative control settles it:
+  not tell "the type matches" from "the type is ignored". Only a negative control settles it:
   a deliberately wrong binding that **must** break the build.
 
 ## What this costs us

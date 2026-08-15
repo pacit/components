@@ -119,7 +119,7 @@ export class PctCheckbox implements FormCheckboxControl, PctFieldControl {
         ]),
   );
 
-  /** `aria-checked` has to be „mixed" for the indeterminate state. */
+  /** `aria-checked` has to be "mixed" for the indeterminate state. */
   protected readonly ariaChecked = computed(() =>
     this.indeterminate() ? 'mixed' : this.checked() ? 'true' : 'false',
   );

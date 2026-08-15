@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { boxOf, visit } from './support/dom';
 
 /**
- * A regression: the border padding and the vertical centring made a „dead zone" —
+ * A regression: the border padding and the vertical centring made a "dead zone" —
  * the cursor was inside the field, but a click set no focus. The tests click on
  * specific points of that zone, computed from the real layout.
  */
@@ -193,7 +193,7 @@ test.describe('PctField — a clickable area with no dead zone', () => {
   test('a `fill` affix has a cursor of its own and hands the field no click', async ({
     page,
   }) => {
-    // The „PLN" tile is a surface of its own: it does nothing, so its cursor invites
+    // The "PLN" tile is a surface of its own: it does nothing, so its cursor invites
     // no typing and it moves no focus to the control.
     const field = page.getByTestId('field-price');
     const unit = field.getByTestId('field-price-unit');

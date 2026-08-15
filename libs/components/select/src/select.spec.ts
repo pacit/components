@@ -79,7 +79,7 @@ async function press(
 class Host {
   label = signal('Country');
   hint = signal('');
-  /** `undefined` means „no value" — the text then comes from `PCT_TEXTS`. */
+  /** `undefined` means "no value" — the text then comes from `PCT_TEXTS`. */
   placeholder = signal<string | undefined>(undefined);
   options = signal<readonly PctSelectOption[]>(OPTIONS);
   req = signal(false);
@@ -302,7 +302,9 @@ describe('PctSelect', () => {
     const describedBy = trigger.getAttribute('aria-describedby');
     expect(describedBy).not.toBeNull();
     expect(
-      fixture.nativeElement.querySelector(`#${describedBy}`)?.textContent?.trim(),
+      fixture.nativeElement
+        .querySelector(`#${describedBy}`)
+        ?.textContent?.trim(),
     ).toBe('Pick a shipping country');
   });
 
@@ -319,7 +321,7 @@ describe('PctSelect', () => {
     expect(
       optionsInPanel().some((o) => o.getAttribute('aria-selected') === 'true'),
     ).toBe(false);
-    // With no choice the first AVAILABLE one is active, not „option number −1".
+    // With no choice the first AVAILABLE one is active, not "option number −1".
     expect(optionsInPanel()[0].hasAttribute('data-pct-active')).toBe(true);
   });
 
@@ -499,7 +501,7 @@ describe('PctSelect', () => {
         const fixture = await render(Host);
         await press(fixture, 'ArrowDown');
         await press(fixture, 'c'); // Czechia — disabled, so it looks further
-        await press(fixture, 'z'); // „cz" matches nothing available
+        await press(fixture, 'z'); // "cz" matches nothing available
 
         vi.advanceTimersByTime(500);
 
@@ -513,8 +515,8 @@ describe('PctSelect', () => {
     });
 
     it('Home and End on a list with no available options activate nothing', async () => {
-      // The list has TWO options, both disabled: with one, „no active option" and
-      // „active outside the list" look the same, so the test would pass for a control
+      // The list has TWO options, both disabled: with one, "no active option" and
+      // "active outside the list" look the same, so the test would pass for a control
       // that activates the option at index 1 as well.
       const fixture = await render(AllDisabledHost);
       await press(fixture, 'ArrowDown');
@@ -793,7 +795,10 @@ describe('PctSelect', () => {
           providePctTexts(
             computed(() =>
               language() === 'fr'
-                ? { selectPlaceholder: 'Sélectionner…', selectEmpty: 'Aucune option' }
+                ? {
+                    selectPlaceholder: 'Sélectionner…',
+                    selectEmpty: 'Aucune option',
+                  }
                 : {},
             ),
           ),
@@ -938,7 +943,7 @@ describe('PctSelect', () => {
       await press(fixture, 'ArrowDown');
 
       const overlay = panel()?.closest('.cdk-overlay-pane') as HTMLElement;
-      // „Do not set the width" means an empty string: the overlay then carries only
+      // "Do not set the width" means an empty string: the overlay then carries only
       // `min-width`. A literal value would turn `auto` into `field`.
       expect(overlay.style.width).toBe('');
       expect(overlay.style.minWidth).not.toBe('');

@@ -21,7 +21,7 @@ pattern — **would not see the new strings**.
 
 The defect is harder than it looks, because `input()` **is** a signal: a binding from outside
 redraws the view normally. What is frozen is only the **default** value, and nobody reads that
-in a diff as „a read" ([`lesson-54`](../lessons.md#lesson-54)).
+in a diff as "a read" ([`lesson-54`](../lessons.md#lesson-54)).
 
 ## Decision
 
@@ -43,7 +43,7 @@ Three supplementary rules:
   `computed(() => this.placeholder() ?? this.texts().selectPlaceholder)`.
 - **No value and an empty value mean different things.** `placeholder=""` stays an empty
   placeholder; only the absence of a binding hands the string back to the library. The opposite
-  convention („empty means default") would take away a decision the view's author cannot
+  convention ("empty means default") would take away a decision the view's author cannot
   express any other way.
 - **Merging is always against `PCT_DEFAULT_TEXTS`**, never against the texts from a parent
   injector: a subtree declares a language, not a difference from its neighbour — otherwise the
@@ -73,14 +73,14 @@ once, so `useFactory` gives exactly the same frozen object, only computed lazily
   has no first release yet — after one, the same change would need a codemod and a major.
 - **One more indirection in every read.** `texts().selectEmpty` instead of `texts.selectEmpty` —
   a cost measured in nothing, but visible in every template.
-- **The „not in a default value" rule is easy to break on autopilot** and invisible in review.
+- **The "not in a default value" rule is easy to break on autopilot** and invisible in review.
   That is why it is a point of a gate rather than a sentence in a guide.
 
 ## Alternatives considered
 
 | alternative                                      | why rejected                                                                                                                 |
 | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
-| Write down „changing language requires a reload" | defensive and cheap, but it moves the cost onto every app with a language switch — and that is a pattern, not an exotic case |
+| Write down "changing language requires a reload" | defensive and cheap, but it moves the cost onto every app with a language switch — and that is a pattern, not an exotic case |
 | `providePctTexts` takes a factory                | DI resolves a provider once, so the result is just as frozen — what changes is when it is computed, not that it happens once |
 | `Subject`/`Observable` like `MatPaginatorIntl`   | a second axis of reactivity in a library that has not one `Observable` in its public API                                     |
-| An empty string (`''`) means „take the default"  | takes away the view author's ability to switch the placeholder off, which cannot be expressed any other way                  |
+| An empty string (`''`) means "take the default"  | takes away the view author's ability to switch the placeholder off, which cannot be expressed any other way                  |

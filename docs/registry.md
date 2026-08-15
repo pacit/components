@@ -4,7 +4,7 @@
 > `node tools/check-docs.mjs --write`. The `check-docs` gate rejects drift.
 
 The state is **derived** from the contents of the `Gate` and `Control` fields, not typed in.
-There is no „built, just unverified" state — see
+There is no "built, just unverified" state — see
 [README](README.md#fields-gate-and-control).
 
 | state       | means                                                         |  count |
@@ -45,10 +45,10 @@ The order comes from the **Binds at** field, not from a requirement number.
 | requirement                                                             | state       | gate                                                                   | control                                                                |
 | ----------------------------------------------------------------------- | ----------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | [`req-a11y-wcag`](requirements/a11y.md#req-a11y-wcag)                   | ✅ enforced | `req-a11y-axe` (the rendered DOM) + `req-token-contrast` (the values … | see both gates above > **Formal conformance does not mean good qualit… |
-| [`req-a11y-built-in`](requirements/a11y.md#req-a11y-built-in)           | ✅ enforced | `libs/components/*/src/*.spec.ts` — ARIA relations checked per compon… | `a11y.spec.ts › „the a11y gate really does detect violations (a contr… |
+| [`req-a11y-built-in`](requirements/a11y.md#req-a11y-built-in)           | ✅ enforced | `libs/components/*/src/*.spec.ts` — ARIA relations checked per compon… | `a11y.spec.ts › "the a11y gate really does detect violations (a contr… |
 | [`req-a11y-touch`](requirements/a11y.md#req-a11y-touch)                 | ✅ enforced | `apps/sandbox-e2e/src/field-hitarea.spec.ts`, `apps/sandbox-e2e/src/c… | the gate has two documented runs in which it fired: `lesson-25` (a wr… |
-| [`req-a11y-axe`](requirements/a11y.md#req-a11y-axe)                     | ✅ enforced | `apps/sandbox-e2e/src/a11y.spec.ts`                                    | `a11y.spec.ts › „the a11y gate really does detect violations (a contr… |
-| [`req-a11y-motion`](requirements/a11y.md#req-a11y-motion)               | ✅ enforced | `apps/sandbox-e2e/src/preferences.spec.ts`                             | `preferences.spec.ts › „with no preference the motion axis stands at … |
+| [`req-a11y-axe`](requirements/a11y.md#req-a11y-axe)                     | ✅ enforced | `apps/sandbox-e2e/src/a11y.spec.ts`                                    | `a11y.spec.ts › "the a11y gate really does detect violations (a contr… |
+| [`req-a11y-motion`](requirements/a11y.md#req-a11y-motion)               | ✅ enforced | `apps/sandbox-e2e/src/preferences.spec.ts`                             | `preferences.spec.ts › "with no preference the motion axis stands at … |
 | [`req-a11y-forced-colors`](requirements/a11y.md#req-a11y-forced-colors) | ✅ enforced | `apps/sandbox-e2e/src/forced-colors.spec.ts`                           | emulation goes through `page.emulateMedia()` in the `visit()` helper,… |
 
 ## API
@@ -97,7 +97,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-project-language`](requirements/project.md#req-project-language)         | ⛔ gap      | none — gap: `tools/check-language.mjs` — two measurements with differ… | none — gap: a Polish comment in a file outside the register has to fi… |
 | [`req-project-concise`](requirements/project.md#req-project-concise)           | ⛔ gap      | none — gap: a prose volume budget per file, a snapshot with **two-sid… | none — gap: a file with a paragraph added beyond the tolerance has to… |
 | [`req-project-angular`](requirements/project.md#req-project-angular)           | ✅ enforced | `tools/check-zoneless.mjs` (target `check-zoneless`, in CI) — three p… | `tools/check-zoneless.fixtures/` — doctored inputs, one per way for z… |
-| [`req-project-ssr`](requirements/project.md#req-project-ssr)                   | ✅ enforced | `apps/sandbox-e2e/src/hydration.spec.ts` — the check sits in the `vis… | `hydration.spec.ts › „the gate really does detect a hydration error (… |
+| [`req-project-ssr`](requirements/project.md#req-project-ssr)                   | ✅ enforced | `apps/sandbox-e2e/src/hydration.spec.ts` — the check sits in the `vis… | `hydration.spec.ts › "the gate really does detect a hydration error (… |
 | [`req-project-layout`](requirements/project.md#req-project-layout)             | ⛔ gap      | none — gap: follows from `req-project-apps`; it will close together w… | none — gap: the same as for the gate above                             |
 
 ## quality
@@ -107,16 +107,16 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-quality-negative-control`](requirements/quality.md#req-quality-negative-control) | ✅ enforced | `tools/check-docs.mjs` — the **Control** field is required on every r… | `tools/check-docs.fixtures/` — a requirement with a gate but no contr… |
 | [`req-quality-registry`](requirements/quality.md#req-quality-registry)                 | ✅ enforced | `tools/check-docs.mjs` (target `check-docs`, in CI) — the six checks … | `tools/check-docs.fixtures/` — a set of deliberately broken requireme… |
 | [`req-quality-typecheck`](requirements/quality.md#req-quality-typecheck)               | ✅ enforced | `tools/check-typecheck.mjs` (target `check-typecheck`, in CI) — four … | `tools/check-typecheck.fixtures/` — eleven doctored inputs, each reje… |
-| [`req-quality-unit`](requirements/quality.md#req-quality-unit)                         | ✅ enforced | in three parts, because „the tests run", „how many pass" and „how man… | `tools/check-mutation.fixtures/` — 37 doctored inputs on a fake libra… |
+| [`req-quality-unit`](requirements/quality.md#req-quality-unit)                         | ✅ enforced | in three parts, because "the tests run", "how many pass" and "how man… | `tools/check-mutation.fixtures/` — 37 doctored inputs on a fake libra… |
 | [`req-quality-coverage`](requirements/quality.md#req-quality-coverage)                 | ✅ enforced | in two parts, because the percentage and its denominator break separa… | `tools/check-coverage.fixtures/` — seven doctored inputs, one per way… |
 | [`req-quality-e2e`](requirements/quality.md#req-quality-e2e)                           | ✅ enforced | `apps/sandbox-e2e/src/visual.spec.ts` and the remaining e2e specs      | there are **two** thresholds and both come from measurement. The pixe… |
-| [`req-quality-hydration`](requirements/quality.md#req-quality-hydration)               | ✅ enforced | `apps/sandbox-e2e/src/hydration.spec.ts` + the `visit()` helper in `a… | `hydration.spec.ts › „the gate really does detect a hydration error (… |
+| [`req-quality-hydration`](requirements/quality.md#req-quality-hydration)               | ✅ enforced | `apps/sandbox-e2e/src/hydration.spec.ts` + the `visit()` helper in `a… | `hydration.spec.ts › "the gate really does detect a hydration error (… |
 | [`req-quality-package`](requirements/quality.md#req-quality-package)                   | ✅ enforced | `libs/components/check-package.mjs` (target `check-package`, in CI)    | `tools/check-package.fixtures/` — seven doctored packages, one per po… |
 | [`req-quality-consumer`](requirements/quality.md#req-quality-consumer)                 | ✅ enforced | `tools/check-consumer.mjs` (target `check-consumer`, in CI) — seven p… | `tools/check-consumer.fixtures/` — 28 doctored inputs, each rejected … |
 | [`req-quality-browsers`](requirements/quality.md#req-quality-browsers)                 | ✅ enforced | `apps/sandbox-e2e/playwright.config.mts` — three projects (chromium, … | `tools/check-browsers.fixtures/` — 25 doctored inputs, each rejected … |
 | [`req-quality-views`](requirements/quality.md#req-quality-views)                       | ✅ enforced | `apps/sandbox-e2e/src/a11y.spec.ts`, `hydration.spec.ts` — both itera… | `apps/sandbox/src/app/app.spec.ts` — the view registry against the ro… |
 | [`req-quality-card`](requirements/quality.md#req-quality-card)                         | ✅ enforced | `apps/sandbox/src/app/ui/demo.spec.ts`; `tools/check-docs.mjs` — ever… | `tools/check-docs.fixtures/` — a card with a non-existent identifier … |
-| [`req-quality-stage`](requirements/quality.md#req-quality-stage)                       | ✅ enforced | `apps/sandbox-e2e/src/theme.spec.ts`, `apps/sandbox-e2e/src/shell.spe… | `preferences.spec.ts › „with no dark preference :root stays light (th… |
+| [`req-quality-stage`](requirements/quality.md#req-quality-stage)                       | ✅ enforced | `apps/sandbox-e2e/src/theme.spec.ts`, `apps/sandbox-e2e/src/shell.spe… | `preferences.spec.ts › "with no dark preference :root stays light (th… |
 | [`req-quality-prefix`](requirements/quality.md#req-quality-prefix)                     | 🟡 partial  | `apps/sandbox/eslint.config.mjs` — selector rules with the prefixes    | none — deliberately: an ESLint rule has no quiet-pass mode             |
 
 ## release
@@ -146,7 +146,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-token-override`](requirements/tokens.md#req-token-override)         | ✅ enforced | `apps/sandbox-e2e/src/theme.spec.ts`                                   | as in `req-token-closure` — comparing the component token, not the se… |
 | [`req-token-scoped`](requirements/tokens.md#req-token-scoped)             | ✅ enforced | `apps/sandbox-e2e/src/theme.spec.ts`, `apps/sandbox-e2e/src/a11y.spec… | see `req-token-closure`                                                |
 | [`req-token-directive`](requirements/tokens.md#req-token-directive)       | ⛔ gap      | none — gap: the directive does not exist, the theme is set with a han… | none — gap: a theme set by the directive and a theme set by the attri… |
-| [`req-token-system`](requirements/tokens.md#req-token-system)             | ✅ enforced | `apps/sandbox-e2e/src/preferences.spec.ts`                             | `preferences.spec.ts › „with no dark preference :root stays light (th… |
+| [`req-token-system`](requirements/tokens.md#req-token-system)             | ✅ enforced | `apps/sandbox-e2e/src/preferences.spec.ts`                             | `preferences.spec.ts › "with no dark preference :root stays light (th… |
 | [`req-token-skin`](requirements/tokens.md#req-token-skin)                 | ✅ enforced | `libs/tokens/build.mjs` — but **only for the built-in skin**           | see `req-token-contrast`                                               |
 | [`req-token-distribution`](requirements/tokens.md#req-token-distribution) | ✅ enforced | `libs/components/check-package.mjs` — points 1 and 2: the skin is in … | `tools/check-package.fixtures/theme-missing/` — a package with no ski… |
 | [`req-token-density`](requirements/tokens.md#req-token-density)           | ⛔ gap      | none — gap: the DTCG sources contain **not one** density token         | none — gap: a layout with the `compact` density token must pass the t… |

@@ -24,17 +24,17 @@ occurrences of **one**:
 
 | lesson                              | key sentence                                                             |
 | ----------------------------------- | ------------------------------------------------------------------------ |
-| [`lesson-36`](lessons.md#lesson-36) | „the failure was **silent in both directions**"                          |
-| [`lesson-43`](lessons.md#lesson-43) | „is not an error, it is an **empty string**"                             |
-| [`lesson-38`](lessons.md#lesson-38) | „**silently does nothing** and the test passes"                          |
-| [`lesson-39`](lessons.md#lesson-39) | „can be **born dead** in two independent ways"                           |
-| [`lesson-17`](lessons.md#lesson-17) | „was broken and **nobody saw it**"                                       |
-| [`lesson-31`](lessons.md#lesson-31) | „was unsafe under SSR and **nobody saw it**"                             |
-| [`lesson-42`](lessons.md#lesson-42) | „was never typechecked and **nobody noticed**"                           |
-| [`lesson-40`](lessons.md#lesson-40) | „neither the contrast gate nor axe **can see it**"                       |
-| [`lesson-26`](lessons.md#lesson-26) | „the defect **survived** because every test started with an empty model" |
+| [`lesson-36`](lessons.md#lesson-36) | "the failure was **silent in both directions**"                          |
+| [`lesson-43`](lessons.md#lesson-43) | "is not an error, it is an **empty string**"                             |
+| [`lesson-38`](lessons.md#lesson-38) | "**silently does nothing** and the test passes"                          |
+| [`lesson-39`](lessons.md#lesson-39) | "can be **born dead** in two independent ways"                           |
+| [`lesson-17`](lessons.md#lesson-17) | "was broken and **nobody saw it**"                                       |
+| [`lesson-31`](lessons.md#lesson-31) | "was unsafe under SSR and **nobody saw it**"                             |
+| [`lesson-42`](lessons.md#lesson-42) | "was never typechecked and **nobody noticed**"                           |
+| [`lesson-40`](lessons.md#lesson-40) | "neither the contrast gate nor axe **can see it**"                       |
+| [`lesson-26`](lessons.md#lesson-26) | "the defect **survived** because every test started with an empty model" |
 
-The common denominator: **the default behaviour of the layer is „nothing happened"**.
+The common denominator: **the default behaviour of the layer is "nothing happened"**.
 
 | layer       | what the platform does instead of failing              | where it hit us                                      |
 | ----------- | ------------------------------------------------------ | ---------------------------------------------------- |
@@ -49,19 +49,19 @@ The common denominator: **the default behaviour of the layer is „nothing happe
 
 Which is why **a missing gate never shows up as missing — it shows up as green**.
 
-### Why named after the silent defect and not after „quality"
+### Why named after the silent defect and not after "quality"
 
 Three reasons:
 
 1. It is derived from our own evidence, not from a marketing ambition.
 2. It explains **why** every gate needs a negative control — a gate without one is another
    silent defect, one floor up.
-3. It is a sentence a person keeps in their head **while writing code**. „Verifiability of
+3. It is a sentence a person keeps in their head **while writing code**. "Verifiability of
    promises" is not.
 
 ### Consequence for the order of work
 
-A requirement without a gate is **unfinished**, not „implemented, just unverified". The
+A requirement without a gate is **unfinished**, not "implemented, just unverified". The
 point is not that every gate exists from day one — the point is that its absence be
 **countable rather than invisible**.
 
@@ -89,14 +89,14 @@ The axis works when three sentences are true — each machine-checkable, not arg
    the registry, not typed in by hand — and adding a requirement without a gate is a CI
    failure, not an oversight.
 
-Point 3 is the one whose absence made this documentation need a „how to read it" chapter
+Point 3 is the one whose absence made this documentation need a "how to read it" chapter
 (see [`req-quality-registry`](requirements/quality.md#req-quality-registry)).
 
 ---
 
 ## Explicit non-goals
 
-Things we deliberately do **not** do. Written down so they do not come back as a „missing
+Things we deliberately do **not** do. Written down so they do not come back as a "missing
 requirement" — a non-goal is a promise just like a goal, and is gated just the same.
 
 | non-goal                     | requirement                                                          | why                                                                                                                                                                               |

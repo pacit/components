@@ -21,7 +21,7 @@
       "engines": ["webkit"],
       "kind": "measurement",
       "fact": "author-colour-override",
-      "reason": "Playwright's webkit reports `matchMedia('(forced-colors: active)').matches === true` and does not replace the author's colours: a probe with a `rgb(1, 2, 3)` background comes out of it unchanged, while chromium and firefox return a colour from the user's palette. `forced-color-adjust` is not even a known property there (`getComputedStyle` returns `undefined`). This whole file would ask about behaviour the engine does not have — and would ask QUIETLY: four of its six tests pass there, measuring colours from the tokens instead of from the palette. A real Safari does not enter this mode anyway: `forced-colors` is Windows High Contrast, and the macOS „Increase contrast\" is `prefers-contrast`."
+      "reason": "Playwright's webkit reports `matchMedia('(forced-colors: active)').matches === true` and does not replace the author's colours: a probe with a `rgb(1, 2, 3)` background comes out of it unchanged, while chromium and firefox return a colour from the user's palette. `forced-color-adjust` is not even a known property there (`getComputedStyle` returns `undefined`). This whole file would ask about behaviour the engine does not have — and would ask QUIETLY: four of its six tests pass there, measuring colours from the tokens instead of from the palette. A real Safari does not enter this mode anyway: `forced-colors` is Windows High Contrast, and the macOS \"Increase contrast\" is `prefers-contrast`."
     }
   ]
 }

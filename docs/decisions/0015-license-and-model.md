@@ -11,7 +11,7 @@ the `licence-missing` rule) — the LICENSE file measured in the directory **and
 
 The manifest declared `"license": "MIT"` from the start, but there was no LICENSE file
 anywhere — neither in the repository nor in the built package. That is formally an incomplete
-licence, and the repository is to stand publicly from the first push, so the question „what is
+licence, and the repository is to stand publicly from the first push, so the question "what is
 this legally, exactly" arrives before the first `npm install`.
 
 At the same time it had to be settled whether the core's licence closes off any later choices —
@@ -35,7 +35,7 @@ opposite and was withdrawn after checking what a CLA actually buys:
 - MIT code may be re-released under other terms, and that includes other people's
   contributions — the condition is that the notice is preserved. Changing the distribution terms
   therefore needs nobody's consent;
-- contributions arrive under the repository's licence automatically (GitHub's terms), so „the
+- contributions arrive under the repository's licence automatically (GitHub's terms), so "the
   core stays MIT" needs nobody's signature;
 - a CLA buys exactly one thing: the right to release **the same code without MIT's
   obligations**. MIT's obligation is one line of notice — being released from it is not
@@ -77,6 +77,6 @@ The price of a CLA — friction on every external PR — would therefore be paid
 | alternative                     | why rejected                                                                                                                                                    |
 | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Apache-2.0                      | an explicit patent grant and trademark reservation, but for a component library the patent risk is close to zero — leaving only the mismatch with the ecosystem |
-| (A)GPL, SSPL, BSL, FSL          | the code lands in the client's bundle, so copyleft scares corporations off, and source-available licences fail the „OSI-approved" requirement in tenders        |
+| (A)GPL, SSPL, BSL, FSL          | the code lands in the client's bundle, so copyleft scares corporations off, and source-available licences fail the "OSI-approved" requirement in tenders        |
 | MIT plus dual-licensing at once | machinery (a CLA, two licensing paths) for a lever that weighs nothing under MIT — the obligation one could be released from is a single line of notice         |
-| MIT plus a CLA „just in case"   | friction on every PR for an option whose exercise does not need a CLA anyway                                                                                    |
+| MIT plus a CLA "just in case"   | friction on every PR for an option whose exercise does not need a CLA anyway                                                                                    |

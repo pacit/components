@@ -194,7 +194,7 @@ const checks = (ROOT, { release }, warnings) => {
   // file, and those appear in a separate step (`nx schematics components`) AFTER
   // ng-packagr — a place that is easy to skip. The manifest entry alone guarantees
   // nothing: with the file missing, `ng add @pacit/components` fails at the consumer's
-  // with „Collection not found", and the library looks broken at the first command
+  // with "Collection not found", and the library looks broken at the first command
   // anybody types.
   for (const [field, pointer] of [
     ['schematics', pkg.schematics],
@@ -288,7 +288,7 @@ const checks = (ROOT, { release }, warnings) => {
     );
 
   // Matched on a word boundary, not with `includes`: measured, not assumed — both the MIT
-  // and the Apache-2.0 text contain the word LIMITED, with „MIT" sitting inside it as a
+  // and the Apache-2.0 text contain the word LIMITED, with "MIT" sitting inside it as a
   // substring, so an Apache file under an MIT manifest would pass the simpler condition.
   const spdx = (pkg.license ?? '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   if (
@@ -351,16 +351,16 @@ const checkPackage = (root, { release = false } = {}) => {
  * nothing — the negative control itself would become a silent defect (`req-axis`).
  */
 const buildFixture = (name, fx) => {
-  const cel = mkdtempSync(join(tmpdir(), 'pct-check-package-'));
-  cpSync(join(FIXTURES, REFERENCE), cel, { recursive: true });
-  cpSync(join(FIXTURES, name), cel, {
+  const target = mkdtempSync(join(tmpdir(), 'pct-check-package-'));
+  cpSync(join(FIXTURES, REFERENCE), target, { recursive: true });
+  cpSync(join(FIXTURES, name), target, {
     recursive: true,
     filter: (src) => basename(src) !== 'fixture.json',
   });
-  renameSync(join(cel, 'manifest.json'), join(cel, 'package.json'));
+  renameSync(join(target, 'manifest.json'), join(target, 'package.json'));
   for (const path of fx.drop ?? [])
-    rmSync(join(cel, path), { recursive: true, force: true });
-  return cel;
+    rmSync(join(target, path), { recursive: true, force: true });
+  return target;
 };
 
 // ── the package ────────────────────────────────────────────────────────────────────
@@ -388,7 +388,7 @@ if (cases.length === 0)
 
 // The reference package MUST pass, and in `--release` mode at that. Without it the whole
 // control is worthless: were the base defective itself, every case would fail because of
-// it and not because of its own defect — every „it fired" would be false. The base goes
+// it and not because of its own defect — every "it fired" would be false. The base goes
 // through the same composer as the cases, so it is examined in exactly the shape the
 // cases grow out of.
 {
@@ -428,7 +428,7 @@ for (const name of cases) {
       );
 
     // Point 6 is the only one with two modes, so its fixture examines both: under
-    // `--release` it blocks, day to day it only warns. The „it blocks" assertion alone
+    // `--release` it blocks, day to day it only warns. The "it blocks" assertion alone
     // would let through a regression in which point 6 starts blocking always — and then a
     // repository with no remote would not build at all.
     if (fx.releaseOnly) {

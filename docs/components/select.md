@@ -54,7 +54,7 @@ controlled — a deliberate exception to
 | Tokens + `contrast.policy.json` | `libs/tokens/src/contrast.policy.json`                                                                                                                                                                                                   |
 | Strings through `PCT_TEXTS`     | `tools/check-texts.mjs` + `select.spec.ts` — a partial override leaves the rest at the defaults, and a runtime language change reaches the strings                                                                                       |
 | Size budget                     | none — gap. Measured today: **~43 kB** in the FESM                                                                                                                                                                                       |
-| Screen-reader log               | none — gap. **The most needed one**: „what a reader announces on open" and „what it announces on a value change" are questions axe does not answer — axe examines structure, it does not listen                                          |
+| Screen-reader log               | none — gap. **The most needed one**: "what a reader announces on open" and "what it announces on a value change" are questions axe does not answer — axe examines structure, it does not listen                                          |
 | docs page                       | none — gap                                                                                                                                                                                                                               |
 
 ## Decisions
@@ -79,4 +79,4 @@ controlled — a deliberate exception to
   that has no role — the role sits on the inner `<button>`. A standalone select with no label
   and no wrapper is an **unnamed combobox**, and the consumer has no way to fix it.
 - **No virtualisation.** `@for` over every option. Legitimate for v0 but **unmeasured** —
-  nothing answers „what happens at 5,000 options".
+  nothing answers "what happens at 5,000 options".

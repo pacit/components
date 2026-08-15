@@ -1,7 +1,7 @@
 {
   "check": "narrowing",
   "rule": "clock-instead-of-test",
-  "// defect": "The share of timeouts among the killed passed the policy's bound. A timeout means „the mutant looped the code\", not „a test noticed it\" — a long tail of timeouts is a score bought with run time.",
+  "// defect": "The share of timeouts among the killed passed the policy's bound. A timeout means \"the mutant looped the code\", not \"a test noticed it\" — a long tail of timeouts is a score bought with run time.",
   "replaceStatuses": {
     "libs/fake/beta.ts": [
       "Killed",

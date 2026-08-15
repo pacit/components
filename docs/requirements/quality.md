@@ -6,7 +6,7 @@ used to be scattered across the project and accessibility areas. Old identifiers
 in the [migration table](../README.md#identifier-migration-2026-07-27).
 
 The sandbox sits here rather than in a section of its own, deliberately:
-[`lesson-33`](../lessons.md#lesson-33) showed that the „every component × every state"
+[`lesson-33`](../lessons.md#lesson-33) showed that the "every component × every state"
 matrix is not decoration but **the input for the a11y gate**. The audit only examines what
 somebody rendered first — a gap in what is shown is a gap in coverage, invisible in the
 report because the report is green.
@@ -54,7 +54,7 @@ no control), **every one** of which must be rejected
 **Lessons:** [`lesson-36`](../lessons.md#lesson-36), [`lesson-39`](../lessons.md#lesson-39)
 
 > **Why this has to be code and not discipline.** Drift between the documentation and reality
-> has already happened and has already been patched by hand once: the „How to read this
+> has already happened and has already been patched by hand once: the "How to read this
 > document" heading existed precisely because the requirements could be read as a description
 > of the state of the code, and the answer was **18 annotations added by hand**. That is the
 > same pattern as the manual `node libs/tokens/build.mjs` in CI before
@@ -104,7 +104,7 @@ command fires point 3
 something**: the core (`core`, `[pctNumber]`, `PctSelect`) has a measured mutation score with
 an enforced floor.
 
-**Gate:** in three parts, because „the tests run", „how many pass" and „how many defects they
+**Gate:** in three parts, because "the tests run", "how many pass" and "how many defects they
 notice" break separately. `.github/workflows/ci.yml` — `test` and `vite:test` in the
 `nx affected -t` list (the run). `libs/components/project.json` — the `mutation` target runs
 Stryker with `thresholds.break` = 80, i.e. **fails below the floor**.
@@ -119,7 +119,7 @@ rejected on its own **rule**; plus runs against the real repository (removing an
 from `select.spec.ts` drops that file's score and fires `score/score-dropped`, adding a test
 beyond the tolerance fires `score/snapshot-adrift`, `thresholds.break: null` fires
 `threshold/threshold-unset`, a file struck from `mutate` fires `inventory/patterns-changed`).
-Plus a control of that control: disarming each of the 37 rules in turn — 25 give „PASSED",
+Plus a control of that control: disarming each of the 37 rules in turn — 25 give "PASSED",
 12 move the case onto a neighbouring rule
 **Lessons:** [`lesson-3`](../lessons.md#lesson-3), [`lesson-19`](../lessons.md#lesson-19),
 [`lesson-28`](../lessons.md#lesson-28), [`lesson-57`](../lessons.md#lesson-57),
@@ -176,7 +176,7 @@ to 64.96% and fires both thresholds at once
 
 > The threshold is **a floor, not a ratchet**. At 96.58%, removing one spec does not take it
 > below 80 (`select.spec.ts` → 81.55%, `number.spec.ts` → 80.00%), and that is in line with
-> the promise: 80% is a minimum, not „never less than yesterday". A ratchet would be
+> the promise: 80% is a minimum, not "never less than yesterday". A ratchet would be
 > a different promise and would have to arrive with a gate of its own.
 
 ---
@@ -220,7 +220,7 @@ instead of waiting to be added to one spec after another.
 
 **Gate:** `apps/sandbox-e2e/src/hydration.spec.ts` + the `visit()` helper in
 `apps/sandbox-e2e/src/support/`
-**Control:** `hydration.spec.ts › „the gate really does detect a hydration error (a
+**Control:** `hydration.spec.ts › "the gate really does detect a hydration error (a
 control of the gate)"`
 **Lessons:** [`lesson-30`](../lessons.md#lesson-30), [`lesson-31`](../lessons.md#lesson-31)
 
@@ -251,7 +251,7 @@ while the package carries not one token definition) was manual; this is its mach
 
 > It does examine the **`dist` directory**, though, and that limit is recorded rather than
 > overlooked: between it and the consumer's `node_modules` stand `npm pack` and the registry,
-> and „the file is there" does not mean „the file can be loaded". The other side is measured
+> and "the file is there" does not mean "the file can be loaded". The other side is measured
 > by [`req-quality-consumer`](#req-quality-consumer)
 > ([`lesson-55`](../lessons.md#lesson-55)).
 
@@ -270,8 +270,8 @@ while the package carries not one token definition) was manual; this is its mach
 build with SSR → one e2e.
 
 Between `dist` and the consumer's `node_modules` stand two filters a static gate cannot see
-by design: `npm pack` (the `files` field, `.npmignore`) and the registry. And **„the file
-exists" does not mean „the file works"**.
+by design: `npm pack` (the `files` field, `.npmignore`) and the registry. And **"the file
+exists" does not mean "the file works"**.
 
 **Gate:** `tools/check-consumer.mjs` (target `check-consumer`, in CI) — seven points: the
 archive contents against the `exports` map and the schematic collections; the publish, and
@@ -387,7 +387,7 @@ rejected
 path as any subtree.
 
 **Gate:** `apps/sandbox-e2e/src/theme.spec.ts`, `apps/sandbox-e2e/src/shell.spec.ts`
-**Control:** `preferences.spec.ts › „with no dark preference :root stays light (the
+**Control:** `preferences.spec.ts › "with no dark preference :root stays light (the
 reference)"` — here `:root` is the negative control for every theme measurement
 **Lessons:** [`lesson-17`](../lessons.md#lesson-17)
 

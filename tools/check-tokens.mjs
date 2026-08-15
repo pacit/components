@@ -68,9 +68,9 @@ const shorten = (entries, countOf = 8) =>
  * does not start the text anyway — but `font-size-sm` has to see the property `font-size`
  * and not `font`, and there the order does decide.
  */
-const prefixesOf = (words, tekst) =>
+const prefixesOf = (words, text) =>
   words
-    .filter((s) => tekst === s || tekst.startsWith(`${s}-`))
+    .filter((s) => text === s || text.startsWith(`${s}-`))
     .sort((a, b) => b.length - a.length);
 
 /**
@@ -140,7 +140,7 @@ class TokenError extends Error {
  * because `--write` has to write exactly what the gate has just counted rather than count a
  * second time down another path.
  */
-const checkTokens = (we) => {
+const checkTokens = (input) => {
   const {
     policy,
     levels,
@@ -152,7 +152,7 @@ const checkTokens = (we) => {
     scss,
     snapshot,
     entrypoints,
-  } = we;
+  } = input;
 
   // 1. SET — two independent reads of the same list.
   //
@@ -162,7 +162,7 @@ const checkTokens = (we) => {
   //    change it by a jot; from the CSS alone, a source file the build does not load would
   //    be invisible.
   //
-  //    Hence also the rule „DTCG is a file with a `pct` root" rather than a repetition of
+  //    Hence also the rule "DTCG is a file with a `pct` root" rather than a repetition of
   //    the generator's `component.*.json` pattern: a repeated pattern would stop being a
   //    second sentence about the same thing.
   const zCss = new Set(
@@ -198,8 +198,12 @@ const checkTokens = (we) => {
         `\`dependsOn: build\`), or a file list that stopped returning anything.`,
     );
 
-  const missingFromCss = [...fromSources.keys()].filter((n) => !zCss.has(n)).sort();
-  const missingFromSources = [...zCss].filter((n) => !fromSources.has(n)).sort();
+  const missingFromCss = [...fromSources.keys()]
+    .filter((n) => !zCss.has(n))
+    .sort();
+  const missingFromSources = [...zCss]
+    .filter((n) => !fromSources.has(n))
+    .sort();
   if (missingFromCss.length || missingFromSources.length)
     throw new TokenError(
       'set',
@@ -505,7 +509,7 @@ const checkTokens = (we) => {
   //    an axis has to be declared, has to be used and must carry no colour token. The last
   //    of these matters most — without it, adding `blue` to the list would disarm the very
   //    rule the point exists for, and look like a single word in the diff.
-  const zleP = [];
+  const tierViolations = [];
   const byPath = new Map(names.map((n) => [n.path, n]));
   const primitiveAxis = (path) => path.split('.')[1];
 
@@ -535,7 +539,8 @@ const checkTokens = (we) => {
       for (const { value } of n.values) {
         const pointsAt = referenceOf(value);
         const target = pointsAt === null ? null : byPath.get(pointsAt);
-        if (target?.layer === 'primitive') usedAxes.add(primitiveAxis(pointsAt));
+        if (target?.layer === 'primitive')
+          usedAxes.add(primitiveAxis(pointsAt));
       }
   const deadAxes = sharedAxes.filter((axis) => !usedAxes.has(axis));
   if (deadAxes.length)
@@ -561,7 +566,7 @@ const checkTokens = (we) => {
         // not: a colour typed in bypasses the ramp and the semantic tier at once, so
         // nothing but the token itself can re-theme it.
         if (n.type === 'color' && n.layer !== 'primitive')
-          zleP.push({
+          tierViolations.push({
             rule: 'colour-literal',
             description:
               `${where}: a colour written inline (${JSON.stringify(value)}) ` +
@@ -572,11 +577,11 @@ const checkTokens = (we) => {
 
       const target = byPath.get(pointsAt);
       if (!target) {
-        // Unreachable with a green build (the generator throws „Unknown reference"), but
+        // Unreachable with a green build (the generator throws "Unknown reference"), but
         // reading `target.layer` directly would give a `TypeError` here instead of a
         // sentence — the defect this repository has caught four times already (A3, A4, A7,
         // A8), each time in a gate written in awareness of the previous one.
-        zleP.push({
+        tierViolations.push({
           rule: 'reference-to-nowhere',
           description: `${where}: points at a token that does not exist, \`${pointsAt}\``,
         });
@@ -584,7 +589,7 @@ const checkTokens = (we) => {
       }
 
       if (n.layer === 'primitive') {
-        zleP.push({
+        tierViolations.push({
           rule: 'primitive-not-literal',
           description:
             `${where}: the primitive tier is the FLOOR and has to be a literal, ` +
@@ -597,7 +602,7 @@ const checkTokens = (we) => {
         // A semantic alias (`surface-disabled` -> `surface-100`) is fine: both sides
         // belong to the tier a theme author knows in full anyway.
         if (target.layer === 'component')
-          zleP.push({
+          tierViolations.push({
             rule: 'upward-reference',
             description:
               `${where}: the semantic tier points UPWARDS, at the component token ` +
@@ -608,7 +613,7 @@ const checkTokens = (we) => {
 
       // component
       if (target.layer === 'component') {
-        zleP.push({
+        tierViolations.push({
           rule: 'sideways-reference',
           description:
             `${where}: points at ANOTHER component's token \`${pointsAt}\` — overriding one ` +
@@ -620,27 +625,27 @@ const checkTokens = (we) => {
       if (target.layer !== 'primitive') continue; // semantic — as it should be
 
       if (n.type === 'color')
-        zleP.push({
+        tierViolations.push({
           rule: 'colour-under-semantics',
           description:
             `${where}: a component colour points straight at the primitive \`${pointsAt}\` — ` +
             `the semantic tier above colour exists and has no exception`,
         });
       else if (!sharedAxes.includes(primitiveAxis(pointsAt)))
-        zleP.push({
+        tierViolations.push({
           rule: 'axis-undeclared',
           description:
             `${where}: points at a primitive of the axis \`${primitiveAxis(pointsAt)}\`, which ` +
             `\`${LEVELS_POLICY}\` does not declare as shared (today: ${sharedAxes.join(', ')})`,
         });
     }
-  if (zleP.length)
+  if (tierViolations.length)
     throw new TokenError(
       'levels',
-      `${zleP.length} references outside the tier model (req-token-tiers):\n` +
+      `${tierViolations.length} references outside the tier model (req-token-tiers):\n` +
         list(
           shorten(
-            zleP.map((z) => `[${z.rule}] ${z.description}`),
+            tierViolations.map((z) => `[${z.rule}] ${z.description}`),
             12,
           ),
         ) +
@@ -650,7 +655,7 @@ const checkTokens = (we) => {
       // The error's rule is the rule of the FIRST violation — with one defect (that is,
       // in every fixture) it is the only violation, and with many one has to start
       // somewhere anyway.
-      zleP[0].rule,
+      tierViolations[0].rule,
     );
 
   // 7. PAIRS — every colour the library PAINTS is measured (req-token-text-pairs).
@@ -668,7 +673,7 @@ const checkTokens = (we) => {
   const { painted, assignments } = paintedColours(sheets);
 
   // Point 7's denominator is measured on the RESULT, not on the input. The first version
-  // asked only about the number of stylesheets — and passed green, printing „0 colours
+  // asked only about the number of stylesheets — and passed green, printing "0 colours
   // painted in 7 stylesheets": the declaration pattern required a leading dash, so it saw
   // custom properties alone and not `background:`. That is `lesson-48` inside a point
   // written so as not to repeat it, and the same mistake as in A5: the non-emptiness check
@@ -692,7 +697,7 @@ const checkTokens = (we) => {
   );
   const byName = new Map(names.map((n) => [n.name, n]));
 
-  const zleU = [];
+  const pairViolations = [];
   for (const [token, role] of [...painted].sort()) {
     const n = byName.get(token);
     const role_ = [...role].sort().join(', ');
@@ -703,30 +708,30 @@ const checkTokens = (we) => {
     // the ability to examine the other two. The same defect as in A3, A4, A7 and A8; the
     // fifth time, and the second time INSIDE one point.
     if (!n)
-      zleU.push({
+      pairViolations.push({
         rule: 'token-outside-theme',
         description:
           `${token}: painted (${role_}) and absent from the skin's tokens — ` +
           `there is nothing to measure`,
       });
     if (n && n.type !== 'color')
-      zleU.push({
+      pairViolations.push({
         rule: 'not-a-colour',
         description: `${token}: painted as a colour (${role_}), and in DTCG carries \`$type: ${n.type}\``,
       });
     if (n && n.type === 'color' && !wPolicy.has(token))
-      zleU.push({
+      pairViolations.push({
         rule: 'unmeasured',
         description: `${token}: painted (${role_}) and stands in no pair of the policy`,
       });
   }
-  if (zleU.length)
+  if (pairViolations.length)
     throw new TokenError(
       'pairs',
-      `${zleU.length} colours are painted with no entry in \`${CONTRAST_POLICY}\`:\n` +
+      `${pairViolations.length} colours are painted with no entry in \`${CONTRAST_POLICY}\`:\n` +
         list(
           shorten(
-            zleU.map((z) => `[${z.rule}] ${z.description}`),
+            pairViolations.map((z) => `[${z.rule}] ${z.description}`),
             12,
           ),
         ) +
@@ -739,7 +744,7 @@ const checkTokens = (we) => {
             `custom property — those are expanded, so \`--pct-x: var(--pct-y)\` gives ` +
             `\`y\` the role of \`x\`.`
           : ''),
-      zleU[0].rule,
+      pairViolations[0].rule,
     );
 
   // The `on-*` rule reads NAMES rather than stylesheets — and that is its whole value: a
@@ -894,8 +899,7 @@ function* leaves(tree, prefix = []) {
     if (key.startsWith('$')) continue;
     if (!value || typeof value !== 'object') continue;
     const path = [...prefix, key];
-    if ('$value' in value)
-      yield [path.join('.'), value.$type, value.$value];
+    if ('$value' in value) yield [path.join('.'), value.$type, value.$value];
     else yield* leaves(value, path);
   }
 }
@@ -961,8 +965,8 @@ const renderSnapshot = (names, isPrivate) =>
     'library renames both sides at once: the token and the stylesheet using it. The consumer',
     'is left with an override pointing nowhere.',
     '',
-    'This file is the list a change is measured against. A drift does not mean „an error" —',
-    'it means „a change of public API that is to be visible in review".',
+    'This file is the list a change is measured against. A drift does not mean "an error" —',
+    'it means "a change of public API that is to be visible in review".',
     '',
     'Columns: the custom property name · `$type` from DTCG · the tier · whether it is in',
     'the public `PctCssVar` union (see `private.prefixes` in',
@@ -1006,9 +1010,7 @@ const collectInput = (root, files) => {
     .map((file) => ({ file, tree: JSON.parse(read(root, file)) }))
     // DTCG is recognised by the `pct` ROOT and not by a file-name pattern repeated from
     // the generator — see the comment at point 1.
-    .filter(
-      ({ tree }) => tree && typeof tree === 'object' && 'pct' in tree,
-    );
+    .filter(({ tree }) => tree && typeof tree === 'object' && 'pct' in tree);
 
   // The library's stylesheets — `libs/components` alone, and only those written by hand:
   // `libs/components/themes/` carries the GENERATED token artifacts (`_tokens.scss` is a
@@ -1106,7 +1108,10 @@ const buildFixture = (name, fx) => {
   });
   if (name !== REFERENCE) overlay();
   for (const file of globSync('**/*.ts.txt', { cwd: pointsAt }))
-    renameSync(join(pointsAt, file), join(pointsAt, file.replace(/\.txt$/, '')));
+    renameSync(
+      join(pointsAt, file),
+      join(pointsAt, file.replace(/\.txt$/, '')),
+    );
   return pointsAt;
 };
 
@@ -1174,7 +1179,7 @@ if (cases.length === 0)
   );
 
 // The reference input MUST pass: were the base defective itself, every case would fire
-// because of it rather than its own defect, and every „rejected" would be false — this
+// because of it rather than its own defect, and every "rejected" would be false — this
 // control would become the very thing it stands against.
 {
   const directory = buildFixture(REFERENCE, {});

@@ -257,7 +257,7 @@ describe('PctNumber', () => {
       const fixture = await render(Host);
       await type(fixture, '1234');
 
-      // Had the effect rewritten the value, the caret would jump to the end of „1 234".
+      // Had the effect rewritten the value, the caret would jump to the end of "1 234".
       expect(inputOf(fixture).value).toBe('1234');
       expect(fixture.componentInstance.value()).toBe(1234);
     });
@@ -307,8 +307,8 @@ describe('PctNumber', () => {
       fixture.componentInstance.max.set(20);
       await fixture.whenStable();
 
-      // We do not clamp while typing — otherwise „15" cannot be reached at all,
-      // because it goes through „1".
+      // We do not clamp while typing — otherwise "15" cannot be reached at all,
+      // because it goes through "1".
       await type(fixture, '1');
       expect(fixture.componentInstance.value()).toBe(1);
 
@@ -321,7 +321,7 @@ describe('PctNumber', () => {
     });
 
     // A bound given on one side has to work from that one side — a shared test for
-    // min and max does not tell that apart from „clamps always".
+    // min and max does not tell that apart from "clamps always".
     it('a lower bound alone does not clamp from above', async () => {
       const fixture = await render(Host);
       fixture.componentInstance.min.set(10);
@@ -600,7 +600,7 @@ describe('PctNumber', () => {
       const fixture = await render(SignalFormHost);
 
       // A regression: `FormField` supplies NgControl (CVA interop), so the heuristic
-      // „NgControl => somebody else writes to the DOM" ruled out signal forms as well,
+      // "NgControl => somebody else writes to the DOM" ruled out signal forms as well,
       // though those, with a control of their own, only set `value`
       // (lesson-26).
       expect(inputOf(fixture).value).toBe('12\u00a0345');
@@ -644,7 +644,7 @@ describe('PctNumber', () => {
       try {
         await render(ClassicFormHost);
         expect(warn).toHaveBeenCalledTimes(1);
-        // The message has to name the defect AND point at the way out — a bare „do
+        // The message has to name the defect AND point at the way out — a bare "do
         // not do this" leaves the reader where it found them.
         expect(String(warn.mock.calls[0][0])).toContain(
           'Classic forms ([formControl], [(ngModel)]) take over writing ' +

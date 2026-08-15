@@ -19,7 +19,7 @@ that decides where the value's typing lives, who draws the frame and who receive
 The first version (`PctInput`) kept everything in one component. It fell apart on two things:
 the shared message logic was **copied into four controls**
 ([`lesson-21`](../lessons.md#lesson-21)), and the checkbox and the radio group did not fit
-a „control with a frame" model.
+a "control with a frame" model.
 
 ## Decision
 
@@ -64,7 +64,7 @@ type with a text cursor across all of its padding.
   its own cursor and receives clicks itself, so the wrapper does not reach into it.
 
 The previous version inferred the intent from the slot's content (`:has(button, a, [tabindex])`
-⇒ „fills the slot"). [`lesson-34`](../lessons.md#lesson-34) showed that this couples two
+⇒ "fills the slot"). [`lesson-34`](../lessons.md#lesson-34) showed that this couples two
 independent things: a clear button **could not** be smaller than the slot, and a tile with
 a background **could not** be bigger, because it is not interactive.
 

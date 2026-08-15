@@ -53,7 +53,7 @@ describe('@pacit/components/core', () => {
       const { errorText } = pctFieldMessages(source());
 
       // An empty string, because the value goes into the template: `undefined`
-      // would print as the word „undefined" where the message belongs.
+      // would print as the word "undefined" where the message belongs.
       expect(errorText()).toBe('');
     });
 
@@ -82,8 +82,8 @@ describe('@pacit/components/core', () => {
         source({ invalid: true, touched: true, errors: [{}] }),
       );
 
-      // Two different questions: „is something wrong" (the border, aria-invalid)
-      // and „is there anything to show" (the message area). Merging them gives
+      // Two different questions: "is something wrong" (the border, aria-invalid)
+      // and "is there anything to show" (the message area). Merging them gives
       // either an empty red line or a control that looks valid.
       expect(showInvalid()).toBe(true);
       expect(showError()).toBe(false);
@@ -151,7 +151,7 @@ describe('@pacit/components/core', () => {
       ['PCT_TEXTS', PCT_TEXTS],
     ])('%s', (name, token) => {
       // A token's description is the only thing the consumer gets in NG0201 — a
-      // token without one gives a message about „InjectionToken" with no hint as to
+      // token without one gives a message about "InjectionToken" with no hint as to
       // WHICH one is missing.
       expect(String(token)).toContain(name);
     });

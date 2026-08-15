@@ -1,6 +1,6 @@
 {
   "point": 3,
   "check": "style-source",
-  "description": "Not one source with an `@Component`. This case exists because the gate PASSED on it: a git pathspec is not a shell glob, the pattern `libs/components/*/src/**/*.ts` asked for one directory too many and returned an empty list, and the comparison „recognised N of M\" is blind to zero — zero equals zero. The gate ruled on nothing and said so in green.",
+  "description": "Not one source with an `@Component`. This case exists because the gate PASSED on it: a git pathspec is not a shell glob, the pattern `libs/components/*/src/**/*.ts` asked for one directory too many and returned an empty list, and the comparison \"recognised N of M\" is blind to zero — zero equals zero. The gate ruled on nothing and said so in green.",
   "drop": ["button/src/button.ts.txt", "field/src/field.ts.txt"]
 }

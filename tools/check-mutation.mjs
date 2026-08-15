@@ -12,7 +12,7 @@
  *  6. the result: a hard floor and a snapshot with a TWO-SIDED tolerance, per file and total,
  *  7. both targets (`mutation`, `check-mutation`) run in CI.
  *
- * „What the run really did" comes from the report's `config` field, which carries the
+ * "What the run really did" comes from the report's `config` field, which carries the
  * EFFECTIVE configuration: the file plus whatever the command line added. Point 3 stands
  * apart because the run has a Vitest configuration of its own.
  *
@@ -266,7 +266,7 @@ export const checkMutation = (input) => {
         'inventory',
         'exception-without-reason',
         `the \`noMutants\` exception for \`${entry.file}\` carries no reason.\n` +
-          `    „Zero mutants" means either „there is nothing to mutate" or „the file ` +
+          `    "Zero mutants" means either "there is nothing to mutate" or "the file ` +
           `dropped out of the measurement". Only a sentence somebody wrote can tell.`,
       );
   }
@@ -358,7 +358,7 @@ export const checkMutation = (input) => {
       'threshold',
       'threshold-unset',
       `the run went with \`thresholds.break = ${JSON.stringify(breakAt)}\`.\n` +
-        `    That is Stryker's DEFAULT and means „never break": the run exits zero at 4% ` +
+        `    That is Stryker's DEFAULT and means "never break": the run exits zero at 4% ` +
         `exactly as at 94%, and the report is a number to look at.`,
     );
   if (breakAt !== threshold)
@@ -436,7 +436,7 @@ export const checkMutation = (input) => {
       'mutant-ignored-for-alien-reason',
       `${alien.length} mutants were ignored for a reason outside the policy, e.g.:\n` +
         list(
-          [...new Set(alien.map((m) => `„${m.statusReason}"`))].slice(0, 3),
+          [...new Set(alien.map((m) => `"${m.statusReason}"`))].slice(0, 3),
         ) +
         `\n    This is how a \`// Stryker disable\` comment enters the repository: it ` +
         `leaves no trace in the configuration, and the mutants leave the denominator.`,
@@ -506,7 +506,7 @@ export const checkMutation = (input) => {
       'clock-instead-of-test',
       `${fromClock} of ${total.detected} killed mutants were killed by the CLOCK ` +
         `(${percent(share)}, ${clock.clockShare}% allowed).\n` +
-        `    A timeout means „the mutant looped the code", not „a test noticed". A long ` +
+        `    A timeout means "the mutant looped the code", not "a test noticed". A long ` +
         `tail of timeouts is a score bought with run time.`,
     );
 
@@ -749,7 +749,7 @@ const buildFixture = (fx) => {
   for (const [file, statuses] of Object.entries(fx.replaceStatuses ?? {}))
     w.fileDigest[file].statuses = statuses;
   // A file's text stands in two places — on disk and in the report — and whether a change
-  // touches both is the whole difference between „other code" and „a stale measurement".
+  // touches both is the whole difference between "other code" and "a stale measurement".
   for (const [file, content] of Object.entries(fx.replaceSource ?? {})) {
     w.sources[file] = content;
     w.fileDigest[file].source = content;
@@ -842,7 +842,7 @@ if (existsSync(FIXTURES) && !cases.length)
   );
 
 // The reference input MUST pass. Were it defective itself, every case would fire
-// because of it and not because of its own defect — every „it fired" would be false.
+// because of it and not because of its own defect — every "it fired" would be false.
 if (cases.length) {
   try {
     checkMutation(buildFixture({}));

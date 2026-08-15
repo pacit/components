@@ -327,7 +327,10 @@ const seenByCompiler = (projects) => {
         const path = line.trim();
         if (!path) continue;
         const relativePath = relative(ROOT, path).split('\\').join('/');
-        if (relativePath.startsWith('..') || relativePath.includes('node_modules/'))
+        if (
+          relativePath.startsWith('..') ||
+          relativePath.includes('node_modules/')
+        )
           continue;
         program.add(relativePath);
       }
@@ -401,7 +404,7 @@ if (cases.length === 0)
   );
 
 // The reference input MUST pass. Were it defective itself, every case would fire
-// because of it and not because of its own defect — every „it fired" would be false.
+// because of it and not because of its own defect — every "it fired" would be false.
 try {
   checkTypecheck(buildFixture({}));
 } catch (error) {

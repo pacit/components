@@ -27,7 +27,7 @@ import { PctFieldSize } from './field.types';
  * `[pctPrefix]` / `[pctSuffix]` slots inside the field.
  *
  * Below the field there is **one line**: the hint or the error (the error wins). Two further
- * slots aligned to the end carry side content: `[pctLabelAux]` in the label row (an „i" icon,
+ * slots aligned to the end carry side content: `[pctLabelAux]` in the label row (an "i" icon,
  * say) and `[pctMessageAux]` in the message row (a character counter).
  *
  * The chrome is **presentational** — the form contract is implemented not by it but by the
@@ -155,7 +155,7 @@ export class PctField implements PctFieldApi {
 
   /**
    * A click on the field area that is not the control (border padding, the gap between
-   * decorations) is passed to the control. Without this a „dead zone" appears: the cursor is
+   * decorations) is passed to the control. Without this a "dead zone" appears: the cursor is
    * inside the border, but a click sets no focus.
    */
   protected onRowPointerDown(event: MouseEvent): void {

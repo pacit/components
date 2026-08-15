@@ -2,5 +2,5 @@
   "point": 5,
   "check": "channel",
   "rule": "empty-default",
-  "description": "An empty default value. It turns „the library writes this itself\" into „the library writes nothing\" for everybody who has not translated that field — and gives no signal at all, because an empty string renders without an error."
+  "description": "An empty default value. It turns \"the library writes this itself\" into \"the library writes nothing\" for everybody who has not translated that field — and gives no signal at all, because an empty string renders without an error."
 }

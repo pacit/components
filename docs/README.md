@@ -14,7 +14,7 @@ components/     LEVEL 3   whether this component keeps them            (filled-i
 lessons.md                the evidence base: what actually happened    (59 entries)
 registry.md               GENERATED: promise → gate → control → state
 review.md                 dated snapshot of an outside review
-plan.md                   task list and work journal — the only place holding „done"
+plan.md                   task list and work journal — the only place holding "done"
 ```
 
 Reading order is the reverse of writing order: **requirements come out of lessons.**
@@ -52,7 +52,7 @@ rest is commentary and metadata.
 **Promise.** One or two sentences. Checkable.
 
 **Gate:** `path/to/test.ts`, `other/path.mjs`
-**Control:** `file.spec.ts › „test name"` or a description of the run
+**Control:** `file.spec.ts › "test name"` or a description of the run
 **Decision:** [0003 — …](decisions/0003-wrapper-and-control.md)
 **Lessons:** [`lesson-21`](lessons.md#lesson-21)
 ```
@@ -69,7 +69,7 @@ absence:
 | `none — gap: <what it takes>`      | there is **not yet** a gate; `**Binds at:**` is required too | **gap**                  |
 | anything else (or a missing field) | —                                                            | **CI FAILURE**           |
 
-**There is no „built, just unverified" state.** This is the sharpest consequence of
+**There is no "built, just unverified" state.** This is the sharpest consequence of
 [`req-axis`](00-axis.md): if nothing confirms a promise, it makes no difference whether it
 is unbuilt or built and unmeasured — either way **we do not know**. So one category
 (`gap`) covers both.
@@ -278,7 +278,7 @@ resolves them. **New code must not cite them**; the gate rejects them.
 ### What changed beyond the numbering
 
 - **`wym-real-*` stopped being requirements.** 43 lessons are an evidence base, not
-  promises — they have no gates and cannot be „implemented". A shared prefix was the only
+  promises — they have no gates and cannot be "implemented". A shared prefix was the only
   reason they were mixed in with the requirement list.
 - **Three duplicated pairs were merged:** `wym-styl-1` ≈ `wym-theme-1`,
   `wym-theme-2` ≈ `wym-token-3`, `wym-theme-4` ≈ `wym-token-9` (the scoped-theme part).
@@ -290,8 +290,8 @@ resolves them. **New code must not cite them**; the gate rejects them.
   binding: `req-quality-package`, `req-quality-typecheck`, `req-quality-consumer`,
   `req-quality-browsers`, `req-token-logical`, `req-release-metadata`,
   `req-release-support`, `req-token-directive`, `req-api-icons-custom`.
-- **The „What is still missing" section was removed** — it was a hand-made copy of
+- **The "What is still missing" section was removed** — it was a hand-made copy of
   information already present above. [`registry.md`](registry.md) replaces it, generated.
-- **The „How to read this document" section was removed** — it existed because the
+- **The "How to read this document" section was removed** — it existed because the
   requirements could be read as a description of the state of the code. Once the promise was
   separated from the state, there was nothing left to explain.

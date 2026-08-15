@@ -7,7 +7,7 @@ import type { ComponentFixture } from '@angular/core/testing';
  *
  * They return a non-nullable element and throw with a description when there is none. Tests
  * then need no `!` (the `@typescript-eslint/no-non-null-assertion` rule), and a failed query
- * says what was looked for and what was available — instead of „Cannot read properties of
+ * says what was looked for and what was available — instead of "Cannot read properties of
  * null".
  */
 

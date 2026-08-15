@@ -38,7 +38,7 @@ onto roles in components, not onto appearance.
   simplest swap mechanism is a template, which does not exist yet. Icons will not move before
   it.
 - The default set stays written into the library, so `req-api-icons-custom` (we ship no set)
-  holds in the sense of „we do not publish a set as a product", not „there is not a single SVG
+  holds in the sense of "we do not publish a set as a product", not "there is not a single SVG
   in the package".
 - Icon size comes from context (`currentColor`, `1em`), so the size axis
   ([0004](0004-explicit-height.md)) covers icons with no separate configuration.

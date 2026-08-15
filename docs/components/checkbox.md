@@ -57,5 +57,5 @@ No handling of its own ([`req-api-platform`](../requirements/api.md#req-api-plat
 - **The tick is an inline SVG in `currentColor`** — the consumer has no way to swap it.
   Waiting for [`req-api-icons`](../requirements/api.md#req-api-icons).
 - **No switch variant** — that is a separate component despite the same
-  `FormCheckboxControl` contract, because the semantics differ („turn on now" vs „tick to
+  `FormCheckboxControl` contract, because the semantics differ ("turn on now" vs "tick to
   submit").

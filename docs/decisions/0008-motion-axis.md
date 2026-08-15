@@ -33,7 +33,7 @@ Two details, each with a reason:
 
 - **`0.01ms`, not `0s`** — so the `transitionend` event is not lost.
 - **The spinner slows, it does not stop.** A stopped spinner would stop saying that the button
-  is working. **„Less motion" must not mean „less information".**
+  is working. **"Less motion" must not mean "less information".**
 
 ## Consequences
 
@@ -41,8 +41,8 @@ Two details, each with a reason:
 - A component that does **not** take its duration from the token is findable by grepping for
   `@media` in a stylesheet — one of the rows in the
   [component DoD](../components/_template.md).
-- The gate has to compare a **pair** of values. A reduction test alone, asserting „the
-  transition duration is small", would pass on the base value of `150ms` read as „small
+- The gate has to compare a **pair** of values. A reduction test alone, asserting "the
+  transition duration is small", would pass on the base value of `150ms` read as "small
   enough", and nobody would notice that the media query never fired
   ([`lesson-38`](../lessons.md#lesson-38)).
 - Emulation goes through `page.emulateMedia()` in the `visit()` helper rather than through
@@ -51,7 +51,7 @@ Two details, each with a reason:
 ## What this costs us
 
 - **Reduction is global, not per component.** A component needing a rule other than
-  „transitions vanish, loops slow down" has to step off the axis — and that is then
+  "transitions vanish, loops slow down" has to step off the axis — and that is then
   a departure to be justified.
 - Two tokens **model motion in two categories**. A third kind (say, motion that transports
   attention, like a dialog entering) will need a third axis; it will not fit into the existing

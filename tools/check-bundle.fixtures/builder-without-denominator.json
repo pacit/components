@@ -1,5 +1,5 @@
 {
-  "// defect": "The builder's third probe — the one with every entrypoint — is gone. It is what proves that a reading from a real build CAN see what it does not find in the others; without it „there is no PctField here\" is vacuously true.",
+  "// defect": "The builder's third probe — the one with every entrypoint — is gone. It is what proves that a reading from a real build CAN see what it does not find in the others; without it \"there is no PctField here\" is vacuously true.",
   "point": 10,
   "check": "builder",
   "dropBuilder": true

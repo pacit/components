@@ -34,7 +34,7 @@ default, and the official guide forbids repeating them.
 **Gate:** `tools/check-zoneless.mjs` (target `check-zoneless`, in CI) — measuring
 `ɵcmp.onPush === true` and `ɵcmp.standalone === true` for **every** component of the built
 package, plus the denominator (every `@Component` in the sources must be in the package —
-otherwise „every" is counted over a sample that quietly shrinks) and a ban on repeating either
+otherwise "every" is counted over a sample that quietly shrinks) and a ban on repeating either
 default in the decorator. The reading comes from `dist`, not from the sources, and that is not
 convenience: the partial declaration **omits** `changeDetection` when it is the default, so
 the value only comes into being at link time and can only be measured there
@@ -198,7 +198,7 @@ the whole autofill and type test suite
 
 **Promise.** We do not write keyboard behaviour ourselves if the browser provides it. The
 radio group stands on native `<input type="radio">` elements sharing a `name`, so arrow
-navigation, wrapping and „one stop in the Tab order" come from the platform. We add handling
+navigation, wrapping and "one stop in the Tab order" come from the platform. We add handling
 of our own only where there is no native equivalent.
 
 **Gate:** `apps/sandbox-e2e/src/radio.spec.ts` — keyboard navigation
@@ -230,7 +230,7 @@ thought up by hand
 ### <a id="req-api-generic"></a>`req-api-generic` — A choice control's value is of type `T`, not a string
 
 **Promise.** `PctSelect<T>`, `PctSelectOption<T>` and `PctRadioGroup<T>` are generic
-(`T = string` by default). Equality is declared by the application (`compareWith`), „nothing
+(`T = string` by default). Equality is declared by the application (`compareWith`), "nothing
 selected" is a separate state (`T | null`, with `emptyValue` for non-nullable models), and the
 native radio's `value` attribute describes the option but **takes no part in the choice**.
 
@@ -380,7 +380,7 @@ read from the trigger when it opens and carried over explicitly.
 against the field, and the typeface and font size inside the panel
 **Control:** the measurement from [`lesson-35`](../lessons.md#lesson-35) (a 301 px field ⇒
 a 275 px panel, offset by 13 px; `Times New Roman` in the panel against `system-ui` in the
-control) — the test compares **specific values**, so it does not pass on „roughly right"
+control) — the test compares **specific values**, so it does not pass on "roughly right"
 **Decision:** [0006 — the anchor and inheritance in an overlay](../decisions/0006-overlay.md)
 **Lessons:** [`lesson-18`](../lessons.md#lesson-18), [`lesson-35`](../lessons.md#lesson-35)
 
@@ -395,7 +395,7 @@ of repeating appearance rules. Inside a wrapper, size belongs to the wrapper.
 
 **Gate:** `apps/sandbox-e2e/src/size.spec.ts` — measured in the browser
 **Control:** the test checks that the heights are equal **and what that height is** — on
-equality alone both components could collapse to the text line height and still „pass"
+equality alone both components could collapse to the text line height and still "pass"
 **Decision:** [0004 — height stated outright, not derived from padding](../decisions/0004-explicit-height.md)
 **Lessons:** [`lesson-29`](../lessons.md#lesson-29), [`lesson-34`](../lessons.md#lesson-34)
 

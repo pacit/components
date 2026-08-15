@@ -54,7 +54,7 @@ export interface PctFieldControl {
   setDescribedBy(ids: string | null): void;
   /**
    * Focuses the control. The chrome calls this when the user clicks the field area outside
-   * the control itself (border padding, the gap between decorations) — otherwise a „dead
+   * the control itself (border padding, the gap between decorations) — otherwise a "dead
    * zone" appears, where a click does nothing.
    */
   focus?(options?: FocusOptions): void;
@@ -88,7 +88,7 @@ export interface PctFieldApi {
 }
 
 /**
- * Token provided by `pct-field`. Controls inject it **optionally**: its presence means „I am
+ * Token provided by `pct-field`. Controls inject it **optionally**: its presence means "I am
  * inside the chrome, I hand over the label and the messages". That way controls with a layout
  * of their own (checkbox, radiogroup) work both standalone and inside `pct-field`.
  */

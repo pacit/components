@@ -16,7 +16,7 @@ design.
 | file                                                 | what it breaks                                   | which check must fire |
 | ---------------------------------------------------- | ------------------------------------------------ | --------------------- |
 | [`no-gate.md`](no-gate.md)                           | a promise with no **Gate** field                 | 1 — completeness      |
-| [`none-without-reason.md`](none-without-reason.md)   | „none" without the `deliberately:` / `gap:` form | 1 — completeness      |
+| [`none-without-reason.md`](none-without-reason.md)   | "none" without the `deliberately:` / `gap:` form | 1 — completeness      |
 | [`gap-without-deadline.md`](gap-without-deadline.md) | `gap` with no **Binds at** field                 | 1 — completeness      |
 | [`path-does-not-exist.md`](path-does-not-exist.md)   | the gate points at a file that does not exist    | 2 — existence         |
 

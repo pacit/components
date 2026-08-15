@@ -1,6 +1,6 @@
 # Fixture — a gap with no deadline
 
-### <a id="req-fixture-gap-without-deadline"></a>`req-fixture-gap-without-deadline` — A gap with no „Binds at"
+### <a id="req-fixture-gap-without-deadline"></a>`req-fixture-gap-without-deadline` — A gap with no "Binds at"
 
 **Promise.** Something is meant to be true.
 

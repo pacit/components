@@ -1,7 +1,7 @@
 {
   "check": "fact",
   "rule": "probe-failed",
-  "description": "The probe gave no result for webkit — it did not start, it crashed, or it changed its name in the package. With no result there is no ruling on whether the exclusion still has a reason, and no ruling means „it stays\" by default.",
+  "description": "The probe gave no result for webkit — it did not start, it crashed, or it changed its name in the package. With no result there is no ruling on whether the exclusion still has a reason, and no ruling means \"it stays\" by default.",
   "facts": {
     "author-colour-override": {
       "webkit": null

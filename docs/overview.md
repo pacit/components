@@ -9,11 +9,11 @@ migration table of old identifiers.
 
 | looking for                                         | go to                                                 |
 | --------------------------------------------------- | ----------------------------------------------------- |
-| the „nothing breaks silently" thesis (`wym-proj-0`) | [`00-axis.md`](00-axis.md)                            |
+| the "nothing breaks silently" thesis (`wym-proj-0`) | [`00-axis.md`](00-axis.md)                            |
 | the `req-*` requirements                            | [`requirements/`](requirements/)                      |
 | the reasoning that used to bloat the requirements   | [`decisions/`](decisions/)                            |
 | the `wym-real-*` log                                | [`lessons.md`](lessons.md) — `lesson-*` today         |
-| the „What is still missing" section                 | [`registry.md`](registry.md) — generated, not written |
+| the "What is still missing" section                 | [`registry.md`](registry.md) — generated, not written |
 | the state of one component                          | [`components/`](components/)                          |
 
 Nothing was lost — it was split by level and rewritten onto the new identifiers. The

@@ -3,15 +3,15 @@
 > **This file is generated.** Do not edit it by hand —
 > `node tools/check-bundle.mjs --write`. The `check-bundle` gate rejects a drift.
 
-„Components are imported through secondary entrypoints, which forces tree-shaking"
+"Components are imported through secondary entrypoints, which forces tree-shaking"
 is a sales promise ([`req-project-tree-shaking`](../../docs/requirements/project.md#req-project-tree-shaking))
 — the one somebody picks this library for. Breaking it gives not one red test: an
 import from a neighbouring entrypoint compiles, passes the tests and adds tens of
 kilobytes for the consumer, who will learn about them from their own bundle report,
 if they have one.
 
-This file is the list a change is measured against. A drift does not mean „an error" —
-it means „the consumer started paying for something other than yesterday, and that is
+This file is the list a change is measured against. A drift does not mean "an error" —
+it means "the consumer started paying for something other than yesterday, and that is
 to be visible in review".
 
 Columns: entrypoint · size in bytes · other entrypoints brought in · external

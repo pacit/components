@@ -1,7 +1,7 @@
 import { Directive } from '@angular/core';
 
 /**
- * A label add-on — content in the label row, aligned to the end (an „i" icon with a hint about
+ * A label add-on — content in the label row, aligned to the end (an "i" icon with a hint about
  * the field, a help link). It lies **outside** the field border, so it does not interfere with
  * the control's touch area. If it is interactive (a button, a link) it needs an accessible
  * name of its own.

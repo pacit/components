@@ -33,12 +33,12 @@ import { fileURLToPath } from 'node:url';
 import * as sass from 'sass';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const PROJEKT = 'libs/components';
+const PROJECT = 'libs/components';
 const FIXTURES = join(ROOT, 'tools/check-styles.fixtures');
 const REFERENCE = '_reference';
 
 /**
- * The exception marker. It names a PROPERTY, not „this line": a comment written for
+ * The exception marker. It names a PROPERTY, not "this line": a comment written for
  * `left` must not quietly cover an `opacity` added beside it half a year later.
  *
  *   /* pct-exception left: <justification> *\/
@@ -51,7 +51,7 @@ const EXCEPTION = /pct-exception\s+([-a-zA-Z]+)\s*:\s*([\s\S]*)$/;
  * whether a reason is true. Review watches that, and only review; the gate watches that
  * there is something to review and that exceptions can be counted.
  */
-const MIN_UZASADNIENIE = 40;
+const MIN_JUSTIFICATION = 40;
 
 /**
  * Physical properties of the inline axis and their logical counterparts. The BLOCK axis
@@ -60,7 +60,7 @@ const MIN_UZASADNIENIE = 40;
  * non-goal (`docs/00-axis.md`). A ban on `top` would be noise, and the answer to noise is
  * a rubber-stamp exception on every other rule.
  */
-const FIZYCZNE = new Map([
+const PHYSICAL = new Map([
   ['left', 'inset-inline-start'],
   ['right', 'inset-inline-end'],
   ['margin-left', 'margin-inline-start'],
@@ -92,7 +92,7 @@ const FIZYCZNE = new Map([
 ]);
 
 /** Properties where it is the VALUE that is physical, not the name. */
-const FIZYCZNA_WARTOSC = new Map([
+const PHYSICAL_BY_VALUE = new Map([
   ['text-align', { wrong: new Set(['left', 'right']), instead: 'start / end' }],
   [
     'float',
@@ -116,7 +116,7 @@ const OPACITY = new Set([
   'stop-opacity',
 ]);
 
-// ── skaner sheet ────────────────────────────────────────────────────────────
+// ── sheet scanner ────────────────────────────────────────────────────────────
 
 /**
  * The scanner: turns a stylesheet's text into a list of declarations and comments, each
@@ -233,8 +233,8 @@ const scan = (content) => {
  */
 const significantKey = (d) => {
   const value = d.value.toLowerCase();
-  if (FIZYCZNE.has(d.property)) return `${d.property}:${value}`;
-  const valueBased = FIZYCZNA_WARTOSC.get(d.property);
+  if (PHYSICAL.has(d.property)) return `${d.property}:${value}`;
+  const valueBased = PHYSICAL_BY_VALUE.get(d.property);
   if (valueBased?.wrong.has(value.split(/\s+/)[0]))
     return `${d.property}:${value}`;
   if (OPACITY.has(d.property) && !binaryOpacity(value))
@@ -298,7 +298,7 @@ const checkStyles = ({ sheets, components, declarations }) => {
   if (!sheets.length)
     throw new StyleError(
       'sheets',
-      `no stylesheet found (${PROJEKT}/**/*.scss) — points 5 and 6 would then always ` +
+      `no stylesheet found (${PROJECT}/**/*.scss) — points 5 and 6 would then always ` +
         `pass, having nothing to read`,
     );
 
@@ -339,11 +339,11 @@ const checkStyles = ({ sheets, components, declarations }) => {
   //    the comparison. Comparing numbers (`recognised N of M`) is blind to zero: with both
   //    sides empty they are equal, and the point passes having said nothing. The first
   //    version of this gate passed exactly that way — the git pathspec returned zero
-  //    sources and the result read „0 components" (`lesson-48`).
+  //    sources and the result read "0 components" (`lesson-48`).
   if (!components.length)
     throw new StyleError(
       'style-source',
-      `no \`@Component\` found in the sources (${PROJEKT}) — the comparison against the ` +
+      `no \`@Component\` found in the sources (${PROJECT}) — the comparison against the ` +
         `decorator count would then always pass, because zero equals zero.\n` +
         `    Usual cause: the list of source files stopped returning anything.`,
     );
@@ -376,7 +376,7 @@ const checkStyles = ({ sheets, components, declarations }) => {
       `${withoutStylesheet.length} components take their styles from beyond this gate's reach:\n` +
         list(withoutStylesheet) +
         `\n    Those styles travel to the consumer like every other, and points 5 and 6 ` +
-        `pronounce them „clean" only because they cannot see them.`,
+        `pronounce them "clean" only because they cannot see them.`,
     );
 
   // 4. Exceptions: named, justified, used.
@@ -394,10 +394,10 @@ const checkStyles = ({ sheets, components, declarations }) => {
       if (!m) continue;
       const [, property, rawJustification] = m;
       const justification = rawJustification.replace(/\*+\s*$/, '').trim();
-      if (justification.length < MIN_UZASADNIENIE) {
+      if (justification.length < MIN_JUSTIFICATION) {
         exceptionProblems.push(
           `${sheet.file}:${comment.line}: an exception for \`${property}\` with no ` +
-            `justification (${justification.length} of ${MIN_UZASADNIENIE} characters) — ` +
+            `justification (${justification.length} of ${MIN_JUSTIFICATION} characters) — ` +
             `a rubber stamp, not a reason`,
         );
         continue;
@@ -415,8 +415,7 @@ const checkStyles = ({ sheets, components, declarations }) => {
         );
         continue;
       }
-      for (const d of matched)
-        justified.add(`${sheet.file}:${d.line}`);
+      for (const d of matched) justified.add(`${sheet.file}:${d.line}`);
     }
   }
   if (exceptionProblems.length)
@@ -437,12 +436,12 @@ const checkStyles = ({ sheets, components, declarations }) => {
       if (justified.has(`${sheet.file}:${d.line}`)) continue;
       const where = `${sheet.file}:${d.line}`;
 
-      const logical = FIZYCZNE.get(d.property);
+      const logical = PHYSICAL.get(d.property);
       if (logical) {
         physical.push(`${where}: \`${d.property}\` — use \`${logical}\``);
         continue;
       }
-      const valueBased = FIZYCZNA_WARTOSC.get(d.property);
+      const valueBased = PHYSICAL_BY_VALUE.get(d.property);
       const first = d.value.toLowerCase().split(/\s+/)[0];
       if (valueBased?.wrong.has(first)) {
         physical.push(
@@ -516,9 +515,7 @@ const readComponents = (root, files) => {
     declarations += (content.match(COMPONENT_COUNT) ?? []).length;
     for (const [, body, className] of content.matchAll(COMPONENT)) {
       const sheets = [
-        ...body.matchAll(
-          /styleUrls?\s*:\s*(?:\[([^\]]*)\]|(['"])([^'"]*)\2)/g,
-        ),
+        ...body.matchAll(/styleUrls?\s*:\s*(?:\[([^\]]*)\]|(['"])([^'"]*)\2)/g),
       ].flatMap(([, array, , single]) =>
         single !== undefined
           ? [single]
@@ -566,7 +563,7 @@ const collectInput = (root, sheetPaths, sourcePaths) => ({
  * (`lesson-48`).
  */
 const projectFiles = () =>
-  execFileSync('git', ['ls-files', '-z', PROJEKT], {
+  execFileSync('git', ['ls-files', '-z', PROJECT], {
     cwd: ROOT,
     encoding: 'utf8',
   })
@@ -653,7 +650,7 @@ if (cases.length === 0)
   );
 
 // The reference input MUST pass. Were the base defective itself, every case would
-// fire because of it and not because of its own defect — every „rejected" would be
+// fire because of it and not because of its own defect — every "rejected" would be
 // false, and this control would become the very thing it stands against.
 {
   const directory = buildFixture(REFERENCE, {});

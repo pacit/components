@@ -4,7 +4,7 @@
 **Implements:** [`req-project-core`](../requirements/project.md#req-project-core),
 [`req-api-parts`](../requirements/api.md#req-api-parts),
 [`req-api-attributes`](../requirements/api.md#req-api-attributes)
-**Evidence:** a measurement in the repository (the „Context" section) — not a lesson. This
+**Evidence:** a measurement in the repository (the "Context" section) — not a lesson. This
 decision **precedes** the failure instead of following it, and that is written down outright,
 because evidence from a measurement is weaker than evidence from a run
 
@@ -12,7 +12,7 @@ because evidence from a measurement is weaker than evidence from a run
 
 We considered cutting the library in two: a base one with the logic, ARIA, behaviours and
 states, and a visual one with the templates and the theme. The motivation was double — the next
-skin would be made by „just adding the looks", and `data-pct-part` would stop being needed as
+skin would be made by "just adding the looks", and `data-pct-part` would stop being needed as
 an advanced-styling contract.
 
 The assessment rested on three facts gathered from the code and from the ecosystem.
@@ -71,7 +71,7 @@ resolutions:
    through which behaviour tells the stylesheet what state it is in — and with every
    customisation path it becomes more important, not less.
 
-The „the consumer wants a look that fits 100%" path stays open, but it leads through
+The "the consumer wants a look that fits 100%" path stays open, but it leads through
 **copying schematics** ([`req-release-ng-add`](../requirements/release.md#req-release-ng-add)),
 not through a second package. The order is forced: a file to be copied has to become thin
 first, so point 1 is a precondition for that, not the other way round.
@@ -92,11 +92,11 @@ first, so point 1 is a precondition for that, not the other way round.
   tests. That is the same class of failure as [`lesson-38`](../lessons.md#lesson-38), one floor
   up.
 - **A thicker `core` raises the urgency of mutation testing the core**
-  ([`req-quality-unit`](../requirements/quality.md#req-quality-unit)) — its deadline reads „the
+  ([`req-quality-unit`](../requirements/quality.md#req-quality-unit)) — its deadline reads "the
   more components stand on it", and this decision is precisely what increases what stands on
   it.
 - **The `req-project-core` control got a documented case in which it did not work.** It reads
-  „the violation is duplication, not a failure; review catches it" — and review let the same
+  "the violation is duplication, not a failure; review catches it" — and review let the same
   block through six times. That does not invalidate the decision to have no machine gate, but
   it strips it of the status of an assumption.
 - Generalising the overlay from [`lesson-35`](../lessons.md#lesson-35) waits for a **second**
@@ -106,7 +106,7 @@ first, so point 1 is a precondition for that, not the other way round.
 ## What this costs us
 
 - **There is no path for somebody who dislikes the look and for whom tokens are not enough.**
-  Until the copying schematics exist, the answer is „override through `data-pct-part`" — the
+  Until the copying schematics exist, the answer is "override through `data-pct-part`" — the
   very gymnastics the split was meant to avoid.
 - **We are not using `@angular/aria` today**, even though it covers roles we implement
   ourselves. That is a deliberate deferral, not an oversight — the assessment falls due when the
@@ -124,5 +124,5 @@ first, so point 1 is a precondition for that, not the other way round.
 | Two packages: a headless core plus a skin                    | hands over the rendered output, i.e. the layer where all the evidence for [`req-axis`](../00-axis.md#req-axis) lives; adds a version compatibility matrix |
 | A base class with the logic, the template in a derived class | the template↔class contract is unchecked (`viewChild` without `required` goes dark quietly); `imports` are not inherited                                  |
 | Full component copy-paste (the shadcn model)                 | the consumer gets 489 lines of `select.ts` and owns the keyboard map; our accessibility evidence stops applying to their copy                             |
-| Split deferred, but the API designed „for a future core"     | a variability mechanism built before the second variant hits one case — and fact 3 shows the most likely one does not fit                                 |
+| Split deferred, but the API designed "for a future core"     | a variability mechanism built before the second variant hits one case — and fact 3 shows the most likely one does not fit                                 |
 | Dropping `data-pct-part` without the split                   | takes away the only advanced-styling path and gives nothing in return                                                                                     |

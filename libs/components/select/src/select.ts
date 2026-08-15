@@ -38,7 +38,7 @@ import {
 /**
  * A single-choice select with a panel of its own (not a native `<select>`).
  *
- * It implements the ARIA „select-only combobox" pattern: the trigger has `role="combobox"`, the
+ * It implements the ARIA "select-only combobox" pattern: the trigger has `role="combobox"`, the
  * panel `role="listbox"`, and focus **never leaves the trigger** — the active option is pointed
  * at by `aria-activedescendant`.
  *
@@ -85,7 +85,7 @@ export class PctSelect<T = string>
 
   /**
    * The selected value — a required field of the `FormValueControl` contract. The type is
-   * `T | null`, because „nothing selected" is a state reachable for every `T`: the select
+   * `T | null`, because "nothing selected" is a state reachable for every `T`: the select
    * starts empty and a form reset returns to it.
    *
    * `NoInfer` takes from this binding the right to **decide** `T` — the type comes from the
@@ -236,7 +236,7 @@ export class PctSelect<T = string>
   private readonly anchorWidth = signal(0);
 
   /**
-   * The width handed to the overlay. An empty string means „do not set it" — the content then
+   * The width handed to the overlay. An empty string means "do not set it" — the content then
    * decides the width, and `overlayMinWidth` guards the lower bound so that the panel is never
    * narrower than the control.
    */

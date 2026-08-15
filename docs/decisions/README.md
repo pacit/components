@@ -18,10 +18,10 @@ because you had to walk through the reasoning.
 - **The number is chronological and does not change** — same as in the
   [lesson log](../lessons.md#why-numbers-when-requirements-have-names) and for the same reason:
   order means something here.
-- **A decision without evidence is an opinion.** The „Evidence" section points at a lesson,
+- **A decision without evidence is an opinion.** The "Evidence" section points at a lesson,
   a measurement or an experiment. When there is none, we write that down outright — it is
   information, not a disgrace.
-- **Consequences include costs.** A decision with no „What this costs us" section is
+- **Consequences include costs.** A decision with no "What this costs us" section is
   unfinished.
 
 ## File shape

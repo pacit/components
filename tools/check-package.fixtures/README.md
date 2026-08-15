@@ -41,7 +41,7 @@ defect ([`req-axis`](../../docs/00-axis.md)).
 
 **The reference package must pass**, and pass in `--release` mode. This is not a check for
 good measure: were the reference itself defective, every case would fire because of it
-rather than because of its own defect, and every „rejected" would be false — that is,
+rather than because of its own defect, and every "rejected" would be false — that is,
 this whole negative control would become exactly what it stands against.
 
 | directory                                                 | what it breaks                                           | point |
@@ -60,7 +60,7 @@ has nothing left to compare — while passing green.
 
 Point 6 is the only one with two modes, so its case carries `"releaseOnly": true` in
 `fixture.json` and is examined both ways: under `--release` it must block, in a normal run
-it must **warn and pass**. An assertion on „it blocks" alone would let through a
+it must **warn and pass**. An assertion on "it blocks" alone would let through a
 regression after which point 6 always blocks — and then a repository with no remote would
 not build at all.
 

@@ -1,7 +1,7 @@
 # Requirements — release
 
 This area covers the former versioning section plus the release-readiness points that used
-to hang without an identifier in the „What is still missing" table. Old identifiers are
+to hang without an identifier in the "What is still missing" table. Old identifiers are
 mapped in the [migration table](../README.md#identifier-migration-2026-07-27).
 
 > The shape of an entry and the meaning of the **Gate** / **Control** fields are described
@@ -45,7 +45,7 @@ under a real Angular CLI and actually wires the skin into the build configuratio
 **Control:** `tools/check-package.fixtures/schematic-missing/` — a package whose collection
 points at a factory with no compiled file (i.e. built without the schematics compile step)
 must fire point 5. The manifest entry alone guarantees nothing — with the file missing,
-`ng add` blows up at the consumer with „Collection not found". Plus
+`ng add` blows up at the consumer with "Collection not found". Plus
 `tools/check-consumer.fixtures/ng-add-failed.json` and a run against the repository with the
 CommonJS boundary removed
 **Lessons:** [`lesson-55`](../lessons.md#lesson-55)
@@ -77,7 +77,7 @@ Plus `tools/check-consumer.mjs` (point 1, rule `licence-missing`) — a file pre
 can still fall out of `npm pack`, and `check-package` cannot see that by construction
 **Control:** `tools/check-package.fixtures/repository-missing/` — a manifest without
 `repository` must fire under `--release` and **only warn** in an ordinary run. Both
-directions are tested: asserting only on „blocks" would let through a regression after which
+directions are tested: asserting only on "blocks" would let through a regression after which
 point 6 blocks always, and then a repository without a remote would not build at all. Plus
 `tools/check-package.fixtures/licence-missing/` (a package with no file) and
 `tools/check-package.fixtures/licence-mismatch/` — a file naming Apache-2.0 against a `MIT`

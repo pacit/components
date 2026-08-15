@@ -17,7 +17,7 @@ The per-component structure is fixed: `button.ts`, `button.html`, `button.scss`,
 `button.spec.ts`, `button.types.ts`, `index.ts`, `ng-package.json`.
 
 The reason is quantitative, not aesthetic: in a library of dozens of components **the cost of
-inconsistency grows faster than the cost of one more file**. „Small component" is not
+inconsistency grows faster than the cost of one more file**. "Small component" is not
 a permanent state — `PctSelect` started as a trigger with a list.
 
 ## Consequences
@@ -38,5 +38,5 @@ a permanent state — `PctSelect` started as a trigger with a list.
 
 | alternative                               | why rejected                                                                     |
 | ----------------------------------------- | -------------------------------------------------------------------------------- |
-| Inline for small ones, separate for large | the „small" boundary is fuzzy and moves over time; it forces a decision per file |
+| Inline for small ones, separate for large | the "small" boundary is fuzzy and moves over time; it forces a decision per file |
 | Inline everywhere                         | component stylesheets run to dozens of rules today — inline would be unreadable  |

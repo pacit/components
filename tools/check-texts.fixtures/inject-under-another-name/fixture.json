@@ -2,5 +2,5 @@
   "point": 5,
   "check": "channel",
   "rule": "inject-under-another-name",
-  "description": "`inject(PCT_TEXTS)` assigned to a field under another name. Reads are counted by the pattern `texts().key`, so another name makes them invisible — and then the rule „a key must be used\" rules on keys it simply does not see."
+  "description": "`inject(PCT_TEXTS)` assigned to a field under another name. Reads are counted by the pattern `texts().key`, so another name makes them invisible — and then the rule \"a key must be used\" rules on keys it simply does not see."
 }

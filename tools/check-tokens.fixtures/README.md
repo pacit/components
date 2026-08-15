@@ -56,13 +56,13 @@ may not be another's defect** — and that is not a theoretical worry, because
 
 **The reference input must pass.** This is not a check for good measure: were the reference
 itself defective, every case would fire because of it rather than because of its own, and
-every „rejected" would be false. Verified by a run — `bg-hover` renamed to `hover-bg` in
+every "rejected" would be false. Verified by a run — `bg-hover` renamed to `hover-bg` in
 the reference moved `dead-word`, `stale-snapshot` and `snapshot-removed` onto somebody
 else's point at once.
 
 The reference's dictionary (`_reference/libs/tokens/src/names.policy.json`) lists **only
 words used** by some token of the reference. That is not thrift: point 4 rejects a dead
-word, so a dictionary padded „just in case" would break the reference. The same rule holds
+word, so a dictionary padded "just in case" would break the reference. The same rule holds
 for the policies added at A12: the reference's `levels.policy.json` lists one axis
 (`space`), because an unused axis fires point 6, and its `contrast.policy.json` has a pair
 for **every** colour painted by `button.scss`, because otherwise the reference would fire
@@ -128,6 +128,6 @@ disappears from under a painting, and those are two different human moves.
 **One rule of point 6 has no case here and that is deliberate.** `reference-to-nowhere` (a
 token pointing at a token that does not exist) is unreachable for this construction: a
 fixture is assembled **through the real `build.mjs`**, and the generator then throws
-„Unknown token reference" and the case never comes into being. The rule stays in the code,
+"Unknown token reference" and the case never comes into being. The rule stays in the code,
 because without it disarming a neighbouring one would turn into a `TypeError` instead of a
 message — and that is its whole scope.

@@ -42,7 +42,7 @@ control column ([`req-api-frame`](../requirements/api.md#req-api-frame)).
 ## Consequences
 
 - A new component starts by **reading a token**, not by guessing padding.
-- Alignment is verifiable by measurement in a browser rather than by „looks right".
+- Alignment is verifiable by measurement in a browser rather than by "looks right".
 - The gate has to check **that the heights are equal and what that height is** — on equality
   alone both components could collapse to the text line height and still pass.
 - Inside a wrapper, size belongs to the wrapper ([0003](0003-wrapper-and-control.md)).

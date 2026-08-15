@@ -75,7 +75,7 @@ export class PctRadioGroup<T = string>
 {
   /**
    * The selected value — a required field of the `FormValueControl` contract. `null` means
-   * „no option is selected": the state the group is born in and the one a reset returns to.
+   * "no option is selected": the state the group is born in and the one a reset returns to.
    */
   readonly value = model<T | null>(null);
 
@@ -102,7 +102,7 @@ export class PctRadioGroup<T = string>
   /** Value equality — as in `pct-select`; entities are compared by key. */
   readonly compareWith = input<PctCompareWith<T>>(pctSameValue);
 
-  /** The „no choice" value, set when the form is reset. */
+  /** The "no choice" value, set when the form is reset. */
   readonly emptyValue = input<T | null>(null);
 
   /** The options are content projected from outside, so the host DOM is what gets queried —

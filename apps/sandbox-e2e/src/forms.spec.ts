@@ -3,7 +3,7 @@ import { visit } from './support/dom';
 
 /**
  * Controls integrated with signal forms — several different controls under one
- * schema. The test sits on the „everything at once" view, because it checks what a
+ * schema. The test sits on the "everything at once" view, because it checks what a
  * single-component view cannot show: the state of the whole form.
  */
 test.describe('A form — controls under one schema', () => {

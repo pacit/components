@@ -28,8 +28,8 @@ const DIST = 'dist/libs/components';
 const FIXTURES = join(ROOT, 'tools/check-zoneless.fixtures');
 const REFERENCE = '_reference.json';
 
-/** Manifest fields where `zone.js` means „it is back". */
-const POLA_ZALEZNOSCI = [
+/** Manifest fields where `zone.js` means "it is back". */
+const DEPENDENCY_FIELDS = [
   'dependencies',
   'devDependencies',
   'peerDependencies',
@@ -39,7 +39,7 @@ const POLA_ZALEZNOSCI = [
 /**
  * Traces of the zone runtime in the built code. Deliberately NOT `/zone/i`: a substring
  * that common hits ordinary words as well and would report an empty spot. Every pattern
- * has a name, because „something about zones" does not say what to look for.
+ * has a name, because "something about zones" does not say what to look for.
  *
  * `NgZone` stands here beside the global `Zone`: for a library it is the same defect seen
  * from the other side — a component injecting `NgZone` relies on zones even with no
@@ -65,7 +65,7 @@ const TRACES = [
  * The counter allows INDENTATION, because until 2026-08-05 it did not, and so did nothing:
  * it repeated the parser's anchor character for character, so moving a decorator by one
  * space put out both sides of the comparison at once. Measured on this repository —
- * `PctCheckbox` indented by a space gave „7 components" instead of eight and a green run,
+ * `PctCheckbox` indented by a space gave "7 components" instead of eight and a green run,
  * so the component dropped out of the OnPush measurement without a trace (`lesson-48`).
  * A check comparing two measurements needs two INDEPENDENT ones; `[ \t]*` filters out
  * occurrences in comments, because a JSDoc line starts with an asterisk.
@@ -112,9 +112,9 @@ const checkZoneless = ({
   // 1. No manifest declares `zone.js`. The earliest moment it can be noticed — before
   // anyone runs `npm install`.
   const declared = manifests.flatMap((m) =>
-    POLA_ZALEZNOSCI.filter((field) => m[field]?.['zone.js'] !== undefined).map(
-      (field) => `${m.file} → ${field}: ${m[field]['zone.js']}`,
-    ),
+    DEPENDENCY_FIELDS.filter(
+      (field) => m[field]?.['zone.js'] !== undefined,
+    ).map((field) => `${m.file} → ${field}: ${m[field]['zone.js']}`),
   );
   if (declared.length)
     throw new ZonelessError(
@@ -174,7 +174,7 @@ const checkZoneless = ({
         `promises zoneless (req-api-foundation).`,
     );
 
-  // 4. DENOMINATOR. Without this point, „every component" in point 5 means „every one
+  // 4. DENOMINATOR. Without this point, "every component" in point 5 means "every one
   // that happened to reach the package" — a sentence that is always true.
   if (!sources.length)
     throw new ZonelessError(
@@ -251,7 +251,7 @@ const read = (rel) => readFileSync(join(ROOT, rel), 'utf8');
 const repoManifests = () =>
   execSync('git ls-files', { cwd: ROOT, encoding: 'utf8' })
     .split('\n')
-    // Exactly `package.json`, not „anything ending the same way": the pathspec
+    // Exactly `package.json`, not "anything ending the same way": the pathspec
     // `*package.json` also pulls in `ng-package.json`, ng-packagr's configuration. That
     // one has no dependency fields, so it would give no false hit — but it would inflate
     // the denominator in the message and lie about the gate's reach on first reading.
@@ -448,7 +448,7 @@ if (cases.length === 0)
   );
 
 // The reference input MUST pass. Were it defective itself, every case would fire
-// because of it and not because of its own defect — every „it fired" would be false.
+// because of it and not because of its own defect — every "it fired" would be false.
 try {
   checkZoneless(buildFixture({}));
 } catch (error) {

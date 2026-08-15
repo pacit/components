@@ -2,5 +2,5 @@
   "point": 7,
   "check": "pairs",
   "rule": "not-a-colour",
-  "description": "The sheet paints text with the token `--pct-button-padding-x`, that is, with a dimension. The case does not examine the theme, it examines the agreement of TWO READINGS: the sheet scanner says „this is a colour, because it stands in `color:`\", and DTCG says it is a dimension."
+  "description": "The sheet paints text with the token `--pct-button-padding-x`, that is, with a dimension. The case does not examine the theme, it examines the agreement of TWO READINGS: the sheet scanner says \"this is a colour, because it stands in `color:`\", and DTCG says it is a dimension."
 }

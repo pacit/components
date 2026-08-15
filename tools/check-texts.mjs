@@ -39,7 +39,7 @@ import { basename, dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const PROJEKT = 'libs/components';
+const PROJECT = 'libs/components';
 const DIST = 'dist/libs/components';
 const FIXTURES = join(ROOT, 'tools/check-texts.fixtures');
 const REFERENCE = '_reference';
@@ -76,7 +76,7 @@ const SPEAKING_ATTRIBUTES = new Set([
 /** `<input type="submit">` prints `value` as the button's label. */
 const BUTTONS = new Set(['submit', 'button', 'reset']);
 
-const LITERA = /\p{L}/u;
+const LETTER = /\p{L}/u;
 
 /**
  * Prose in TypeScript. In a template it is POSITION that decides whether a literal is text
@@ -90,7 +90,7 @@ const LITERA = /\p{L}/u;
  * `input<string>` is arbitrary text by definition, so a literal in its default fires
  * whatever its shape.
  */
-const isProse = (v) => LITERA.test(v) && (/^\p{Lu}/u.test(v) || /\s/.test(v));
+const isProse = (v) => LETTER.test(v) && (/^\p{Lu}/u.test(v) || /\s/.test(v));
 
 const list = (entries) => entries.map((w) => `      ${w}`).join('\n');
 
@@ -99,7 +99,7 @@ const shorten = (entries, countOf = 8) =>
     ? entries
     : [...entries.slice(0, countOf), `… and ${entries.length - countOf} more`];
 
-const countOf = (tekst, pattern) => (tekst.match(pattern) ?? []).length;
+const countOf = (text, pattern) => (text.match(pattern) ?? []).length;
 
 // ── source scanners ────────────────────────────────────────────────────────────
 
@@ -109,15 +109,15 @@ const countOf = (tekst, pattern) => (tekst.match(pattern) ?? []).length;
  * does NOT repeat that anchor — a repeated one would put out both sides of the comparison
  * at once (`lesson-48`).
  */
-const DEKORATOR =
+const DECORATOR =
   /^@(Component|Directive)\(\{\r?\n([\s\S]*?)^\}\)\r?\n(?:export\s+)?(?:abstract\s+)?class\s+([A-Za-z_$][\w$]*)/gm;
-const DEKORATOR_LICZNIK = /^[ \t]*@(?:Component|Directive)\(/gm;
+const DECORATOR_COUNT = /^[ \t]*@(?:Component|Directive)\(/gm;
 
 const TEMPLATE_URL = /templateUrl\s*:\s*(['"])([^'"]*)\1/;
 const TEMPLATE_INLINE = /^\s{2}template\s*:\s*([\s\S]*?),?\s*$/m;
 
 /** A string literal in an expression (a binding in a `host` block is a string). */
-const LITERAL_W_WYRAZENIU = /'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"/g;
+const LITERAL_IN_EXPRESSION = /'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"/g;
 
 /**
  * The key of a `host` block entry — the quotes are optional, because prettier does not add
@@ -177,9 +177,7 @@ const hostBlock = (body) => {
 /** The attribute name from a `host` block key: `[attr.aria-label]` → `aria-label`. */
 const nameFromKey = (key) => {
   const bound = /^\[(?:attr\.)?([^\]]+)\]$/.exec(key);
-  return bound
-    ? { name: bound[1], bound: true }
-    : { name: key, bound: false };
+  return bound ? { name: bound[1], bound: true } : { name: key, bound: false };
 };
 
 /**
@@ -199,9 +197,9 @@ const readSources = (root, files) => {
 
   for (const file of files) {
     const content = readFileSync(join(root, file), 'utf8');
-    declarations += countOf(content, DEKORATOR_LICZNIK);
+    declarations += countOf(content, DECORATOR_COUNT);
 
-    for (const [, kind, body, className] of content.matchAll(DEKORATOR)) {
+    for (const [, kind, body, className] of content.matchAll(DECORATOR)) {
       const url = TEMPLATE_URL.exec(body);
       const inline = TEMPLATE_INLINE.exec(body);
       const host = hostBlock(body) ?? '';
@@ -215,7 +213,7 @@ const readSources = (root, files) => {
           continue;
         }
         if (!SPEAKING_ATTRIBUTES.has(name)) continue;
-        for (const l of value.matchAll(LITERAL_W_WYRAZENIU))
+        for (const l of value.matchAll(LITERAL_IN_EXPRESSION))
           literals.push([name, l[1] ?? l[2]]);
       }
 
@@ -485,7 +483,7 @@ const readTemplate = (file, content) => {
  * would let it through SILENTLY — and an input the scanner did not see is exactly what this
  * point is looking for. Angle brackets are therefore counted like round ones.
  */
-const FABRYKI = ['input', 'model', 'signal', 'computed'];
+const FACTORIES = ['input', 'model', 'signal', 'computed'];
 /**
  * The independent counter cannot count calls — the scanner finds MORE of them than
  * assignments (a factory called in a function body, in an argument, in a conditional), so
@@ -494,11 +492,11 @@ const FABRYKI = ['input', 'model', 'signal', 'computed'];
  */
 const ASSIGNMENT = /=\s*$/;
 
-const match = (tekst, i, otw, zam) => {
+const match = (text, i, opening, closing) => {
   let depth = 0;
-  for (let k = i; k < tekst.length; k++) {
-    if (tekst[k] === otw) depth++;
-    else if (tekst[k] === zam && --depth === 0) return k;
+  for (let k = i; k < text.length; k++) {
+    if (text[k] === opening) depth++;
+    else if (text[k] === closing && --depth === 0) return k;
   }
   return -1;
 };
@@ -506,7 +504,7 @@ const match = (tekst, i, otw, zam) => {
 const readFactories = (file, content) => {
   const calls = [];
   const unrecognised = [];
-  const pattern = new RegExp(`\\b(${FABRYKI.join('|')})\\b`, 'g');
+  const pattern = new RegExp(`\\b(${FACTORIES.join('|')})\\b`, 'g');
 
   for (const m of content.matchAll(pattern)) {
     const assignment = ASSIGNMENT.test(content.slice(0, m.index));
@@ -562,7 +560,7 @@ const readFactories = (file, content) => {
       file,
       factory: m[1],
       line: content.slice(0, m.index).split('\n').length,
-      // The declared type of the first parameter — `input<string>` means „arbitrary
+      // The declared type of the first parameter — `input<string>` means "arbitrary
       // text", that is, a place where a literal is prose by definition.
       textual: /^\s*<\s*string\s*[,>]/.test(
         content.slice(m.index + m[1].length),
@@ -575,16 +573,15 @@ const readFactories = (file, content) => {
 };
 
 const INTERFACE_KEYS = /export interface PctTexts \{([\s\S]*?)^\}/m;
-const DOMYSLNE = /export const PCT_DEFAULT_TEXTS[^=]*=\s*\{([\s\S]*?)^\};/m;
+const DEFAULTS = /export const PCT_DEFAULT_TEXTS[^=]*=\s*\{([\s\S]*?)^\};/m;
 const POLE = /^\s*(?:readonly\s+)?([A-Za-z_$][\w$]*)\s*:/gm;
-const DOMYSLNA_PARA =
-  /^\s*([A-Za-z_$][\w$]*)\s*:\s*(['"])((?:[^'\\]|\\.)*)\2/gm;
+const DEFAULT_PAIR = /^\s*([A-Za-z_$][\w$]*)\s*:\s*(['"])((?:[^'\\]|\\.)*)\2/gm;
 /** `texts().key` — the only road for a read after decision 0014. */
-const ODCZYT = /\btexts\(\)\.([A-Za-z_$][\w$]*)/g;
+const TEXTS_READ = /\btexts\(\)\.([A-Za-z_$][\w$]*)/g;
 /** `inject(PCT_TEXTS)` has to land under the name `texts` — else the read disappears. */
-const WSTRZYKNIECIE = /(?:(\w+)\s*=\s*)?inject\(\s*PCT_TEXTS\s*\)/g;
+const INJECTION = /(?:(\w+)\s*=\s*)?inject\(\s*PCT_TEXTS\s*\)/g;
 
-const KONSOLA = /\bconsole\.(log|warn|error|info|debug)\s*\(/g;
+const CONSOLE_CALL = /\bconsole\.(log|warn|error|info|debug)\s*\(/g;
 
 // ── checks ──────────────────────────────────────────────────────────────────
 
@@ -602,16 +599,16 @@ class TextsError extends Error {
   }
 }
 
-const checkTexts = (we) => {
-  const { classes, declarations, templates, pkg, sources } = we;
+const checkTexts = (input) => {
+  const { classes, declarations, templates, pkg, sources } = input;
 
-  // ── 1. MIANOWNIK ────────────────────────────────────────────────────────────
+  // ── 1. DENOMINATOR ────────────────────────────────────────────────────────────
   if (!classes.length || !sources.length)
     throw new TextsError(
       'denominator',
       'empty-list',
       `no \`@Component\`/\`@Directive\` decorator found in the sources ` +
-        `(${PROJEKT}; files: ${sources.length}) — every later point would then pass ` +
+        `(${PROJECT}; files: ${sources.length}) — every later point would then pass ` +
         `without pronouncing on anything (lesson-48).\n    Usual cause: the list of ` +
         `source files stopped returning anything.`,
     );
@@ -641,8 +638,7 @@ const checkTexts = (we) => {
 
   const used = new Map();
   for (const k of classes)
-    if (k.template)
-      used.set(k.template, [...(used.get(k.template) ?? []), k]);
+    if (k.template) used.set(k.template, [...(used.get(k.template) ?? []), k]);
 
   const known = new Set(templates.map((s) => s.file));
   const missing = [...used.keys()].filter((s) => !known.has(s));
@@ -726,7 +722,9 @@ const checkTexts = (we) => {
   const fromSources = new Map(classes.map((k) => [k.className, k]));
   const fromPackage = new Map(pkg.map((p) => [p.className, p]));
 
-  const withoutPackage = [...fromSources.keys()].filter((k) => !fromPackage.has(k));
+  const withoutPackage = [...fromSources.keys()].filter(
+    (k) => !fromPackage.has(k),
+  );
   if (withoutPackage.length)
     throw new TextsError(
       'artifact',
@@ -737,7 +735,9 @@ const checkTexts = (we) => {
         `never gets — or, more often, would be reading a stale \`${DIST}\`.`,
     );
 
-  const withoutSources = [...fromPackage.keys()].filter((k) => !fromSources.has(k));
+  const withoutSources = [...fromPackage.keys()].filter(
+    (k) => !fromSources.has(k),
+  );
   if (withoutSources.length)
     throw new TextsError(
       'artifact',
@@ -751,7 +751,7 @@ const checkTexts = (we) => {
   // A template's owner has a precondition of ITS OWN, even though point 1 guarantees it.
   // Without that, disarming the `orphaned-template` rule turned this loop into a
   // `TypeError` — the negative control lost the ability to examine the rule it was meant to
-  // examine. The same defect as in A3, A4, A7, A8 and A12; „do not trust the previous
+  // examine. The same defect as in A3, A4, A7, A8 and A12; "do not trust the previous
   // point" apparently has to be written out in every gate.
   const ownerOf = (file) => used.get(file)?.[0]?.className ?? file;
 
@@ -799,11 +799,11 @@ const checkTexts = (we) => {
         `text the consumer never gets.`,
     );
 
-  // ── 3. SZABLON ──────────────────────────────────────────────────────────────
+  // ── 3. TEMPLATE ──────────────────────────────────────────────────────────────
   const textViolations = [];
   for (const s of scans)
     for (const t of s.scanner.texts)
-      if (LITERA.test(t.value))
+      if (LETTER.test(t.value))
         textViolations.push(`${s.file}:${t.line}: ${JSON.stringify(t.value)}`);
   if (textViolations.length)
     throw new TextsError(
@@ -820,11 +820,11 @@ const checkTexts = (we) => {
   const attributeViolations = [];
   for (const s of scans)
     for (const a of s.scanner.attributes)
-      if (LITERA.test(a.value))
+      if (LETTER.test(a.value))
         attributeViolations.push(`${s.file}:${a.line}: ${a.name}="${a.value}"`);
   for (const k of classes)
     for (const [name, value] of k.attributes)
-      if (SPEAKING_ATTRIBUTES.has(name) && LITERA.test(value))
+      if (SPEAKING_ATTRIBUTES.has(name) && LETTER.test(value))
         attributeViolations.push(`${k.file}: host \`${name}\` = "${value}"`);
   if (attributeViolations.length)
     throw new TextsError(
@@ -841,13 +841,13 @@ const checkTexts = (we) => {
   const expressionViolations = [];
   for (const s of scans)
     for (const w of s.scanner.expressions)
-      if (LITERA.test(w.value))
+      if (LETTER.test(w.value))
         expressionViolations.push(
           `${s.file}:${w.line}: ${w.where} → ${JSON.stringify(w.value)}`,
         );
   for (const k of classes)
     for (const [name, value] of k.literals)
-      if (LITERA.test(value))
+      if (LETTER.test(value))
         expressionViolations.push(
           `${k.file}: host \`${name}\` → ${JSON.stringify(value)}`,
         );
@@ -876,14 +876,14 @@ const checkTexts = (we) => {
     );
 
   // ── 4. TYPESCRIPT ───────────────────────────────────────────────────────────
-  const factories = we.factories.calls;
-  if (!factories.length || we.factories.unrecognised.length)
+  const factories = input.factories.calls;
+  if (!factories.length || input.factories.unrecognised.length)
     throw new TextsError(
       'typescript',
       'empty-measurement',
       `the scanner recognised ${factories.length} signal factory calls and left ` +
-        `${we.factories.unrecognised.length} assignments unresolved:\n` +
-        list(shorten(we.factories.unrecognised)) +
+        `${input.factories.unrecognised.length} assignments unresolved:\n` +
+        list(shorten(input.factories.unrecognised)) +
         `\n    An input the scanner did not resolve to a call brings a default value this ` +
         `point says nothing about. The counter counts ASSIGNMENTS, not calls: the scanner ` +
         `finds more calls (a factory in a function body, in an argument), so comparing the ` +
@@ -891,7 +891,7 @@ const checkTexts = (we) => {
     );
 
   const prose = factories.flatMap((f) =>
-    [...f.argument.matchAll(LITERAL_W_WYRAZENIU)]
+    [...f.argument.matchAll(LITERAL_IN_EXPRESSION)]
       .map((m) => m[1] ?? m[2])
       .filter(isProse)
       .map(
@@ -913,7 +913,7 @@ const checkTexts = (we) => {
     .filter(
       (f) =>
         f.textual &&
-        [...f.argument.matchAll(LITERAL_W_WYRAZENIU)].some(
+        [...f.argument.matchAll(LITERAL_IN_EXPRESSION)].some(
           (m) => (m[1] ?? m[2]) !== '',
         ),
     )
@@ -925,8 +925,8 @@ const checkTexts = (we) => {
       `${textDefault.length} inputs declared as \`<string>\` carry a literal as their ` +
         `default:\n` +
         list(shorten(textDefault)) +
-        `\n    \`<string>\` means „arbitrary text", so a literal in that place is a ` +
-        `library string whatever it looks like. An empty one (\`''\`) means „no value" ` +
+        `\n    \`<string>\` means "arbitrary text", so a literal in that place is a ` +
+        `library string whatever it looks like. An empty one (\`''\`) means "no value" ` +
         `and is allowed.`,
     );
 
@@ -947,7 +947,7 @@ const checkTexts = (we) => {
     );
 
   // ── 5. CHANNEL ────────────────────────────────────────────────────────────────
-  const { keys, defaults, reads, injections } = we.channel;
+  const { keys, defaults, reads, injections } = input.channel;
 
   if (!keys.length)
     throw new TextsError(
@@ -969,7 +969,7 @@ const checkTexts = (we) => {
         `\`texts\`:\n` +
         list(wrongInjections) +
         `\n    Reads are counted by the \`texts().key\` pattern, so another name makes ` +
-        `them invisible — and then the „a key has to be used" rule pronounces on keys it ` +
+        `them invisible — and then the "a key has to be used" rule pronounces on keys it ` +
         `simply cannot see.`,
     );
 
@@ -1002,7 +1002,7 @@ const checkTexts = (we) => {
       'empty-default',
       `${empty.length} default values are empty:\n` +
         list(empty) +
-        `\n    An empty default turns „the library prints this itself" into „the library ` +
+        `\n    An empty default turns "the library prints this itself" into "the library ` +
         `prints nothing" for everybody who did not translate that field.`,
     );
 
@@ -1034,7 +1034,7 @@ const checkTexts = (we) => {
     );
 
   // ── 6. WARNINGS ──────────────────────────────────────────────────────────
-  const fromChannel = we.warnings
+  const fromChannel = input.warnings
     .filter((o) => /\btexts\s*\(\s*\)/.test(o.argument))
     .map((o) => `${o.file}:${o.line}`);
   if (fromChannel.length)
@@ -1047,7 +1047,7 @@ const checkTexts = (we) => {
         `and takes up room in a type the consumer has to fill in (decision 0007).`,
     );
 
-  const withoutDevMode = we.warnings
+  const withoutDevMode = input.warnings
     .filter((o) => !o.guarded)
     .map((o) => `${o.file}:${o.line}: console.${o.method}(…)`);
   if (withoutDevMode.length)
@@ -1067,7 +1067,7 @@ const checkTexts = (we) => {
       `${templates.length} templates (${nodesSeen} nodes, ${textCount} texts), ` +
       `${classes.length} classes, ${factories.length} signals, ` +
       `${keys.length} PctTexts fields in ${reads.length} reads, ` +
-      `${we.warnings.length} developer warnings`,
+      `${input.warnings.length} developer warnings`,
   };
 };
 
@@ -1076,8 +1076,8 @@ const checkTexts = (we) => {
 const read = (root, path) => readFileSync(join(root, path), 'utf8');
 
 const isSource = (p) =>
-  p.startsWith(`${PROJEKT}/`) && p.endsWith('.ts') && !p.endsWith('.spec.ts');
-const isTemplate = (p) => p.startsWith(`${PROJEKT}/`) && p.endsWith('.html');
+  p.startsWith(`${PROJECT}/`) && p.endsWith('.ts') && !p.endsWith('.spec.ts');
+const isTemplate = (p) => p.startsWith(`${PROJECT}/`) && p.endsWith('.html');
 
 /**
  * Static attributes from Angular's flat array (`consts`, `hostAttrs`). A number opens a
@@ -1149,10 +1149,10 @@ const packageComponents = async (root) => {
  */
 const readWarnings = (file, content) => {
   const out = [];
-  for (const m of content.matchAll(KONSOLA)) {
-    const otw = m.index + m[0].length - 1;
-    const zam = match(content, otw, '(', ')');
-    const argument = zam === -1 ? '' : content.slice(otw + 1, zam);
+  for (const m of content.matchAll(CONSOLE_CALL)) {
+    const opening = m.index + m[0].length - 1;
+    const closing = match(content, opening, '(', ')');
+    const argument = closing === -1 ? '' : content.slice(opening + 1, closing);
     const before = content.slice(0, m.index);
     const line = before.split('\n').length;
 
@@ -1209,8 +1209,9 @@ const gatherInput = async (root, files, packageFromDisk) => {
     factories.unrecognised.push(...f.unrecognised);
     warnings.push(...readWarnings(file, content));
 
-    for (const m of content.matchAll(ODCZYT)) reads.push({ file, key: m[1] });
-    for (const m of content.matchAll(WSTRZYKNIECIE))
+    for (const m of content.matchAll(TEXTS_READ))
+      reads.push({ file, key: m[1] });
+    for (const m of content.matchAll(INJECTION))
       injections.push({
         file,
         line: content.slice(0, m.index).split('\n').length,
@@ -1219,16 +1220,17 @@ const gatherInput = async (root, files, packageFromDisk) => {
 
     const iface = INTERFACE_KEYS.exec(content);
     if (iface) keys = [...iface[1].matchAll(POLE)].map((m) => m[1]);
-    const dom = DOMYSLNE.exec(content);
+    const dom = DEFAULTS.exec(content);
     if (dom)
-      for (const m of dom[1].matchAll(DOMYSLNA_PARA)) defaults[m[1]] = m[3];
+      for (const m of dom[1].matchAll(DEFAULT_PAIR)) defaults[m[1]] = m[3];
   }
 
   const templates = files
     .filter(isTemplate)
     .map((file) => ({ file, content: read(root, file) }));
   for (const { file, content } of templates)
-    for (const m of content.matchAll(ODCZYT)) reads.push({ file, key: m[1] });
+    for (const m of content.matchAll(TEXTS_READ))
+      reads.push({ file, key: m[1] });
 
   return {
     ...readSources(root, sources),
@@ -1249,7 +1251,7 @@ const gatherInput = async (root, files, packageFromDisk) => {
  * an error (`lesson-48`).
  */
 const repoFiles = () =>
-  execFileSync('git', ['ls-files', '-z', PROJEKT], {
+  execFileSync('git', ['ls-files', '-z', PROJECT], {
     cwd: ROOT,
     encoding: 'utf8',
   })
@@ -1326,7 +1328,7 @@ if (cases.length === 0)
   );
 
 // The reference input MUST pass: were the base defective itself, every case would fire
-// because of it rather than its own defect, and every „rejected" would be false — this
+// because of it rather than its own defect, and every "rejected" would be false — this
 // control would become the very thing it stands against.
 {
   const directory = buildFixture(REFERENCE, {});

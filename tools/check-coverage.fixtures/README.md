@@ -29,7 +29,7 @@ files — and does not drift from the reference when the shape of the report cha
 
 **The reference input must pass.** This is not a check for good measure: were the
 reference itself defective, every case would fire because of it rather than because of
-its own defect, and every „rejected" would be false — that is, this whole negative
+its own defect, and every "rejected" would be false — that is, this whole negative
 control would become exactly what it stands against.
 
 The input is **data, not a directory on disk**: the gate examines the decision, not the

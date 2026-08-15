@@ -5,7 +5,7 @@ import { Directive, input } from '@angular/core';
  *
  * - `inset` (the default) — it lies **on the field surface**: inscribed in the border's
  *   padding, inheriting its cursor, and a click on it focuses the control. That is how a unit
- *   („PLN") or a field-kind icon behaves;
+ *   ("PLN") or a field-kind icon behaves;
  * - `fill` — it is **a surface of its own**: it takes the whole slot, from the border edge to
  *   the control's gap and at full height, has its own cursor and takes the click itself. That
  *   is how a tile with a background, or a button welded into the field's corner, behaves.

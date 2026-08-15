@@ -5,7 +5,7 @@ import type { Locator, Page } from '@playwright/test';
  *
  * Playwright returns `null` from `boundingBox()` (an invisible element) and from
  * `getAttribute()` (no attribute). In a test both cases mean a defect, so instead
- * of `!` we throw with a description — otherwise we get „Cannot read properties of
+ * of `!` we throw with a description — otherwise we get "Cannot read properties of
  * null (reading 'width')" with no hint as to which element it was.
  *
  * The file deliberately has no `.spec.` in its name, so Playwright does not collect
@@ -13,7 +13,7 @@ import type { Locator, Page } from '@playwright/test';
  */
 
 /**
- * The „hydration" family of codes from Angular's error catalogue (NG0500–NG05xx):
+ * The "hydration" family of codes from Angular's error catalogue (NG0500–NG05xx):
  * a server tree that does not match the client one, missing nodes, unsupported
  * content projection. The pattern covers the whole family on purpose — a new code
  * from that pool is to fire the gate at once, with nothing added here.
@@ -71,7 +71,7 @@ export function uncaughtErrors(page: Page): readonly string[] {
  * `goto()` on its own finishes once the HTML from the server stands in the DOM. A
  * click or a `fill` in that window hits a dead DOM, and hydration overwrites the
  * result with the state from the model — the symptom looks like a defect in a
- * component („the value I typed went back to the initial one") while it is a race
+ * component ("the value I typed went back to the initial one") while it is a race
  * in the test. The shell exposes a marker after `whenStable()`.
  *
  * In passing this is the HYDRATION GATE (req-quality-hydration / req-project-ssr):

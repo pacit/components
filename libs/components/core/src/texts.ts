@@ -41,7 +41,7 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
  * The consequence for a component: a string is read **at render time**
  * (`texts().selectEmpty`), not at construction. An input's default value is a read at
  * construction, so a library string may never be one — the `check-texts` gate watches that
- * (point „the channel in TS").
+ * (point "the channel in TS").
  */
 export const PCT_TEXTS = new InjectionToken<Signal<PctTexts>>('PCT_TEXTS', {
   factory: () => signal(PCT_DEFAULT_TEXTS).asReadonly(),

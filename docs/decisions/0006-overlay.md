@@ -8,7 +8,7 @@
 
 The select's panel lives in a CDK overlay, i.e. **as a child of `body`**, outside the host
 tree. It is also supposed to look like an extension of the control. Those two things
-contradict each other, and every property that „just worked" stops working quietly.
+contradict each other, and every property that "just worked" stops working quietly.
 
 Symptoms measured in the browser:
 
@@ -63,7 +63,7 @@ Technical consequences:
   with attributes on the options themselves.
 - Tokens work regardless, because they are defined on `:root` — an advantage of the CSS-first
   approach.
-- The gate has to compare **specific values** (width, offset, typeface, size), not „roughly
+- The gate has to compare **specific values** (width, offset, typeface, size), not "roughly
   right".
 - This list is **to be generalised into the `core` behaviour layer** at the first dialog. Today
   it is solved once, in one component.

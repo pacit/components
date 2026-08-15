@@ -2,5 +2,5 @@
   "point": 4,
   "check": "typescript",
   "rule": "text-as-default",
-  "description": "An `input<string>` with the literal `'close'` as its default. In shape it does not differ from an axis value and the point's first rule does not see it — which is why the second looks at the TYPE: `<string>` means „arbitrary text\", so a literal there is a text."
+  "description": "An `input<string>` with the literal `'close'` as its default. In shape it does not differ from an axis value and the point's first rule does not see it — which is why the second looks at the TYPE: `<string>` means \"arbitrary text\", so a literal there is a text."
 }

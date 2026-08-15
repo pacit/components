@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Tree-shaking and size budget gate: what does a consumer really pay for importing one
- * entrypoint? „Secondary entrypoints force tree-shaking" is the SALES promise
+ * entrypoint? "Secondary entrypoints force tree-shaking" is the SALES promise
  * (`req-project-tree-shaking`), and breaking it gives no red test.
  *
  *   1. `entrypoints`  — TWO reads of the entrypoint list agree and are not empty,
@@ -15,8 +15,8 @@
  *   9. `differential` — a two-entrypoint probe is noticeably larger than either single one,
  *  10. `builder`      — the same measured by Angular's REAL builder.
  *
- * Points 5 and 7 are the promise itself (7 is where „no CDK Overlay with `button`" lives);
- * 4, 6, 9 and 10 watch the DENOMINATOR — without them „the `button` bundle holds no
+ * Points 5 and 7 are the promise itself (7 is where "no CDK Overlay with `button`" lives);
+ * 4, 6, 9 and 10 watch the DENOMINATOR — without them "the `button` bundle holds no
  * `PctField`" is vacuously true exactly when the measurement stopped measuring.
  *
  * Usage: node tools/check-bundle.mjs [--write]  (--write: rewrite the size snapshot)
@@ -37,9 +37,9 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
-const PROJEKT = 'libs/components';
+const PROJECT = 'libs/components';
 const DIST = 'dist/libs/components';
-const SNAPSHOT = `${PROJEKT}/size.snapshot.md`;
+const SNAPSHOT = `${PROJECT}/size.snapshot.md`;
 const FIXTURES = join(ROOT, 'tools/check-bundle.fixtures');
 const REFERENCE = '_reference.json';
 const WRITE = process.argv.includes('--write');
@@ -98,7 +98,7 @@ const list = (items) => [...items].sort().join(', ') || '(empty)';
  * rendered snapshot comes back from a checking run too — `--write` then has somewhere to
  * take it from without repeating the whole measurement.
  *
- * Every point reads the input DEFENSIVELY, even though the previous one „already checked
+ * Every point reads the input DEFENSIVELY, even though the previous one "already checked
  * that". A dependency between points is normal; writing it so that disarming the previous
  * one turns the gate into a `TypeError` is not — the negative control then loses the
  * ability to examine the point it was meant to examine. The same defect came out in A4, A7
@@ -129,7 +129,7 @@ const checkBundle = (input) => {
   if (sources.length === 0)
     throw new BundleError(
       'entrypoints',
-      `no entrypoint found in \`${PROJEKT}/*/ng-package.json\` — every later point ` +
+      `no entrypoint found in \`${PROJECT}/*/ng-package.json\` — every later point ` +
         `would then always pass, having nothing to measure`,
     );
   const missingFromArtifact = sources.filter((e) => !fromArtifact.includes(e));
@@ -166,7 +166,7 @@ const checkBundle = (input) => {
       `\`${DIST}/package.json\` declares \`sideEffects: ${JSON.stringify(
         input.manifest?.sideEffects,
       )}\`, and tree-shaking rests on \`false\` — without it a bundler has to keep every ` +
-        `module of the package „just in case", and this gate will not see that: its ` +
+        `module of the package "just in case", and this gate will not see that: its ` +
         `probes import a whole namespace`,
     );
 
@@ -188,7 +188,9 @@ const checkBundle = (input) => {
         (withoutRow.length
           ? `      no row in the snapshot: ${list(withoutRow)}\n`
           : '') +
-        (surplus.length ? `      row with no entrypoint: ${list(surplus)}\n` : '') +
+        (surplus.length
+          ? `      row with no entrypoint: ${list(surplus)}\n`
+          : '') +
         `    A new entrypoint with no row has neither a budget nor a recorded isolation, ` +
         `so it is born outside this gate — \`node tools/check-bundle.mjs --write\``,
     );
@@ -207,20 +209,20 @@ const checkBundle = (input) => {
         `no measurement for entrypoint \`${e}\` — the probe did not build, or dropped ` +
           `off the list`,
       );
-    // `s?.` despite the branch above that „already checked that": disarming that one
+    // `s?.` despite the branch above that "already checked that": disarming that one
     // must not turn this into a `TypeError`. The same defect came out in A7, A4 and A3 —
     // three times BETWEEN points, here a fourth time and inside one ([`lesson-50`]).
     if (!(s?.pulled ?? []).includes(e))
       throw new BundleError(
         'presence',
         `the probe importing \`${e}\` brought not one byte of that entrypoint into the ` +
-          `bundle — „it holds no \`PctField\`" is then vacuously true.\n` +
+          `bundle — "it holds no \`PctField\`" is then vacuously true.\n` +
           `    Brought in: ${list(s?.pulled ?? [])}`,
       );
   }
 
   //    b) primary brings in no component. This is LITERALLY the text of the promise
-  //       („`@pacit/components` exports only `providePctConfig`, the shared types and the
+  //       ("`@pacit/components` exports only `providePctConfig`, the shared types and the
   //       version") and at the same time the only reason primary may lack a marker in
   //       point (c): it has no content of its own to be recognised by. This assertion is
   //       stronger than a marker, so the exemption is no waiver to be clicked through but
@@ -231,7 +233,7 @@ const checkBundle = (input) => {
     throw new BundleError(
       'presence',
       `the primary entrypoint \`@pacit/components\` brings in components: ${list(wPrimary)}.\n` +
-        `    The promise reads „primary exports only \`providePctConfig\`, the shared ` +
+        `    The promise reads "primary exports only \`providePctConfig\`, the shared ` +
         `types and the version" — every consumer then pays for a component they never ` +
         `imported`,
     );
@@ -274,7 +276,7 @@ const checkBundle = (input) => {
 
   // 5. ISOLATION: what a probe really pulled in. Read from the bundler's metafile, that
   //    is, from whom it assigned the output's bytes to — not from a list of imports in the
-  //    source. A drift does not mean „an error": it means „the consumer started paying for
+  //    source. A drift does not mean "an error": it means "the consumer started paying for
   //    something other than yesterday, and that is to be visible in review".
   for (const e of sources) {
     const measured = new Set((probes[e]?.pulled ?? []).filter((x) => x !== e));
@@ -287,7 +289,7 @@ const checkBundle = (input) => {
           `      snapshot: ${list(recorded)}\n` +
           `      measured: ${list(measured)}\n` +
           `    If this is intended — \`node tools/check-bundle.mjs --write\`. If not, look ` +
-          `for an import from another entrypoint in \`${PROJEKT}${e === PRIMARY ? '/src' : e.slice(1)}\``,
+          `for an import from another entrypoint in \`${PROJECT}${e === PRIMARY ? '/src' : e.slice(1)}\``,
       );
   }
 
@@ -311,7 +313,7 @@ const checkBundle = (input) => {
       );
   }
 
-  // 7. External dependencies per entrypoint. This is where the literal „the `button`
+  // 7. External dependencies per entrypoint. This is where the literal "the `button`
   //    bundle has no CDK Overlay" lives: the snapshot records `@angular/cdk/overlay` at
   //    `./select` and nowhere else, so a second entrypoint reaching for it is a line in the
   //    diff. The same mechanism will cover every future dependency, including one nobody
@@ -344,7 +346,10 @@ const checkBundle = (input) => {
         `no size for \`${e}\` (measured: ${measuredBytes ?? 'none'}, ` +
           `snapshot: ${recordedBytes ?? 'none'})`,
       );
-    const slack = Math.max(TOLERANCE_MIN, Math.round(recordedBytes * TOLERANCE));
+    const slack = Math.max(
+      TOLERANCE_MIN,
+      Math.round(recordedBytes * TOLERANCE),
+    );
     if (Math.abs(measuredBytes - recordedBytes) > slack)
       throw writable(
         'size',
@@ -398,8 +403,8 @@ const checkBundle = (input) => {
   // 10. A second read of the WHOLE gate: the same thing measured by the real
   //     `@angular/build: application`, that is, by what really assembles an application at
   //     the consumer's. The probes above go through their own esbuild — fast, but MY
-  //     setting of a bundler, not his. The same move as „do not read `include`, run the
-  //     compiler" from A7 and „do not read the sheet's text, run sass" from A5.
+  //     setting of a bundler, not his. The same move as "do not read `include`, run the
+  //     compiler" from A7 and "do not read the sheet's text, run sass" from A5.
   //
   //     The third probe (all the entrypoints) is the denominator of the first two: it
   //     proves this read CAN see what it fails to find in them.
@@ -469,15 +474,15 @@ const renderSnapshot = (sources, probes) =>
     '> **This file is generated.** Do not edit it by hand —',
     '> `node tools/check-bundle.mjs --write`. The `check-bundle` gate rejects a drift.',
     '',
-    '„Components are imported through secondary entrypoints, which forces tree-shaking"',
+    '"Components are imported through secondary entrypoints, which forces tree-shaking"',
     'is a sales promise ([`req-project-tree-shaking`](../../docs/requirements/project.md#req-project-tree-shaking))',
     '— the one somebody picks this library for. Breaking it gives not one red test: an',
     'import from a neighbouring entrypoint compiles, passes the tests and adds tens of',
     'kilobytes for the consumer, who will learn about them from their own bundle report,',
     'if they have one.',
     '',
-    'This file is the list a change is measured against. A drift does not mean „an error" —',
-    'it means „the consumer started paying for something other than yesterday, and that is',
+    'This file is the list a change is measured against. A drift does not mean "an error" —',
+    'it means "the consumer started paying for something other than yesterday, and that is',
     'to be visible in review".',
     '',
     'Columns: entrypoint · size in bytes · other entrypoints brought in · external',
@@ -542,7 +547,7 @@ const readJson = (path) =>
  * files rather than an error ([`lesson-48`](../docs/lessons.md#lesson-48)).
  */
 const sourceEntrypoints = () =>
-  execFileSync('git', ['ls-files', '-z', PROJEKT], {
+  execFileSync('git', ['ls-files', '-z', PROJECT], {
     cwd: ROOT,
     encoding: 'utf8',
   })
@@ -552,7 +557,7 @@ const sourceEntrypoints = () =>
     )
     .map((p) => {
       const directory = p.slice(
-        `${PROJEKT}/`.length,
+        `${PROJECT}/`.length,
         -'ng-package.json'.length,
       );
       return directory === '' ? PRIMARY : `./${directory.slice(0, -1)}`;
@@ -582,7 +587,7 @@ const entrypointFiles = (manifest) => {
  * Why a selector and not any string unique to the entrypoint: strings from the FESM survive
  * minification but do NOT survive linking — measured, not assumed. `button[pctButton]`
  * stands in the FESM as one string and in a real bundle as `[["button","pctButton",""]]`,
- * so a marker taken from the FESM's text would be unfindable in point 10 and „there is no
+ * so a marker taken from the FESM's text would be unfindable in point 10 and "there is no
  * `PctButton` here" would come out green always. A selector survives both steps, because
  * in both it is DATA rather than a name.
  *
@@ -663,7 +668,7 @@ const probe = async (esbuild, directory, markers, byFile, entrypoints) => {
   });
   rmSync(input, { force: true });
 
-  const tekst = result.outputFiles[0].text;
+  const text = result.outputFiles[0].text;
   const output = Object.values(result.metafile.outputs)[0];
   const pulled = Object.entries(output.inputs)
     .filter(([, v]) => v.bytesInOutput > 0)
@@ -671,13 +676,13 @@ const probe = async (esbuild, directory, markers, byFile, entrypoints) => {
     .filter(Boolean);
 
   return {
-    bytes: tekst.length,
+    bytes: text.length,
     pulled: [...new Set(pulled)].sort(),
     external: [
       ...new Set(output.imports.filter((i) => i.external).map((i) => i.path)),
     ].sort(),
     inText: Object.entries(markers)
-      .filter(([, m]) => m.length > 0 && m.some((x) => tekst.includes(x)))
+      .filter(([, m]) => m.length > 0 && m.some((x) => text.includes(x)))
       .map(([e]) => e)
       .sort(),
   };
@@ -813,10 +818,13 @@ const measureRepository = async () => {
     for (const e of files.keys())
       probes[e] = await probe(esbuild, directory, markers, byFile, [e]);
 
-    const komponentowe = [...files.keys()]
+    const componentEntrypoints = [...files.keys()]
       .filter((e) => e !== PRIMARY && (markers[e] ?? []).length > 0)
       .sort((a, b) => probes[a].bytes - probes[b].bytes);
-    const pair = [komponentowe.at(0), komponentowe.at(-1)].filter(Boolean);
+    const pair = [
+      componentEntrypoints.at(0),
+      componentEntrypoints.at(-1),
+    ].filter(Boolean);
     const pairMeasurement =
       pair.length === 2
         ? await probe(esbuild, directory, markers, byFile, pair)
@@ -830,13 +838,15 @@ const measureRepository = async () => {
         : null,
       markers,
       probes,
-      pair: pairMeasurement ? { entrypoints: pair, bytes: pairMeasurement.bytes } : null,
+      pair: pairMeasurement
+        ? { entrypoints: pair, bytes: pairMeasurement.bytes }
+        : null,
       builder:
         pair.length === 2
           ? [
               builderProbe(dist, markers, [pair[0]]),
               builderProbe(dist, markers, pair),
-              builderProbe(dist, markers, komponentowe),
+              builderProbe(dist, markers, componentEntrypoints),
             ]
           : [],
     };
@@ -978,7 +988,7 @@ if (cases.length === 0)
   );
 
 // The reference input MUST pass: were it defective itself, every case would fire because
-// of it rather than its own defect, and every „rejected" would be false — this control
+// of it rather than its own defect, and every "rejected" would be false — this control
 // would become the very thing it stands against.
 try {
   checkBundle(buildFixture({}));

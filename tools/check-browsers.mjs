@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Browser matrix gate: does `req-quality-browsers` — „the tests run on chromium, firefox
+ * Browser matrix gate: does `req-quality-browsers` — "the tests run on chromium, firefox
  * and webkit" — have a measurement behind it, or three entries in `playwright.config.mts`
  * that nobody reads again? Undoing the matrix gives NO RED TEST.
  *
@@ -11,8 +11,8 @@
  *  5. CI installs every engine and does not narrow the run,
  *  6. FACT: a `measurement` exclusion's justification is measured, not remembered.
  *
- * What „really runs" comes from `playwright test --list`, not from the configuration —
- * the same move as „run the compiler" in `check-typecheck`. Point 6 re-probes on every
+ * What "really runs" comes from `playwright test --list`, not from the configuration —
+ * the same move as "run the compiler" in `check-typecheck`. Point 6 re-probes on every
  * run: a fact about an engine stops holding at a package bump, not at a change here.
  *
  * Usage: node tools/check-browsers.mjs
@@ -56,13 +56,13 @@ const NARROWING = [
 
 /**
  * Probes of facts about the engines. The key is what goes into the `fact` field of a
- * `measurement` exclusion; the value answers „can this engine do it".
+ * `measurement` exclusion; the value answers "can this engine do it".
  *
  * `author-colour-override` — whether under `forced-colors: active` the browser replaces
  * the author's colours with the user's palette. The probe measures that on an element with
  * NO rules of the library, because it asks about the browser's behaviour and not about a
  * stylesheet: the background `rgb(1, 2, 3)` is a value in no palette, so any answer other
- * than itself means „replaced".
+ * than itself means "replaced".
  */
 const PROBES = {
   'author-colour-override': async (page) => {
@@ -235,7 +235,7 @@ export const checkBrowsers = ({ policy, collected, files, e2e, ci, facts }) => {
       'gap-without-entry',
       `${gaps.length} file × engine pairs do not run and have no entry in the policy:\n` +
         list(gaps) +
-        `\n    This is what a \`testIgnore\` widened „because it flickers" looks like: ` +
+        `\n    This is what a \`testIgnore\` widened "because it flickers" looks like: ` +
         `coverage shrinks by one file, the run stays green and gets a few seconds shorter. ` +
         `Remedy: fix the test, or add an exclusion with a reason to ${POLICY}.`,
     );
@@ -369,7 +369,7 @@ export const checkBrowsers = ({ policy, collected, files, e2e, ci, facts }) => {
         'probe-failed',
         `probe \`${fact}\` gave no result for: ${withoutResult.join(', ')}.\n` +
           `    With no result there is no way to say whether the exclusion still has a ` +
-          `reason — and no verdict defaults to „it stays", the worst of the answers.`,
+          `reason — and no verdict defaults to "it stays", the worst of the answers.`,
       );
 
     const excludedHere = new Set(
@@ -411,11 +411,11 @@ export const checkBrowsers = ({ policy, collected, files, e2e, ci, facts }) => {
       );
   }
 
-  const wyl = exclusions.length;
+  const excluded = exclusions.length;
   return (
     `${files.length} spec files on ${engines.length} engines ` +
     `(${engines.map((s) => `${s}: ${collected[s].length}`).join(', ')}), ` +
-    `${wyl} ${wyl === 1 ? 'exclusion' : 'exclusions'} — ` +
+    `${excluded} ${excluded === 1 ? 'exclusion' : 'exclusions'} — ` +
     `${fromMeasurement.length} of them confirmed by a probe`
   );
 };
@@ -490,8 +490,8 @@ const collectedByPlaywright = () => {
 
   // A project with no test at all does not appear in the result tree, and point 2 is to
   // name it — hence an empty list rather than a missing key.
-  for (const projekt of report.config?.projects ?? [])
-    collected[projekt.name] ??= new Set();
+  for (const project of report.config?.projects ?? [])
+    collected[project.name] ??= new Set();
 
   return Object.fromEntries(
     Object.entries(collected).map(([k, v]) => [k, [...v].sort()]),
@@ -570,17 +570,16 @@ const measureFacts = async (policy) => {
   const facts = Object.fromEntries(needed.map((f) => [f, {}]));
 
   for (const engine of Object.keys(policy.engines)) {
-    const typ = playwright[engine];
-    if (!typ) continue;
+    const browserType = playwright[engine];
+    if (!browserType) continue;
     let browser;
     try {
-      browser = await typ.launch();
+      browser = await browserType.launch();
       const context = await browser.newContext({
         forcedColors: 'active',
       });
       const page = await context.newPage();
-      for (const fact of needed)
-        facts[fact][engine] = await PROBES[fact](page);
+      for (const fact of needed) facts[fact][engine] = await PROBES[fact](page);
     } catch {
       // No result is content here, not a failure: point 6 is to SAY so (the
       // `probe-failed` rule) rather than bring the gate down with a stack trace.
@@ -678,7 +677,7 @@ if (existsSync(FIXTURES) && !cases.length)
   );
 
 // The reference input MUST pass. Were it defective itself, every case would fire
-// because of it and not because of its own defect — every „it fired" would be false.
+// because of it and not because of its own defect — every "it fired" would be false.
 if (cases.length) {
   try {
     checkBrowsers(buildFixture({}));

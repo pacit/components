@@ -79,7 +79,7 @@ test.describe('The sandbox shell and the demo card', () => {
 
   /**
    * A regression on the `[data-theme="light"]` block: as long as the build emitted
-   * dark alone, „light" was nothing but the absence of the attribute, so a light card
+   * dark alone, "light" was nothing but the absence of the attribute, so a light card
    * inside a dark page inherited the dark values with nothing to undo them.
    */
   test('a light card inside a dark page returns to the light values', async ({

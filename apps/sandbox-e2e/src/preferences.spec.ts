@@ -13,7 +13,7 @@ import { firstDurationMs, rootToken, tokenOf } from './support/css';
  * Emulated through `visit(page, path, { media })` — the reason is in `support/dom.ts`.
  */
 
-/** The gate checks itself: without it a test measures the base values and „passes". */
+/** The gate checks itself: without it a test measures the base values and "passes". */
 async function expectMedia(page: Page, query: string, active: boolean) {
   expect(
     await page.evaluate((q) => matchMedia(q).matches, query),
@@ -27,7 +27,7 @@ test.describe('prefers-reduced-motion', () => {
   /**
    * The reference: with no preference the motion axis MUST stand at its base values.
    * A reduction test that passes even when the media query never took hold watches
-   * nothing — only a „before/after" pair makes a measurement of it. That pair found a
+   * nothing — only a "before/after" pair makes a measurement of it. That pair found a
    * real problem: in this version of Playwright `test.use({ reducedMotion })` does
    * not reach the context.
    */
@@ -72,8 +72,8 @@ test.describe('prefers-reduced-motion', () => {
     ).toBeLessThan(1);
 
     // The spinner does NOT stop: stopped, it would no longer say the button is at
-    // work. It is to slow down — that is the difference between „less motion" and
-    // „less information".
+    // work. It is to slow down — that is the difference between "less motion" and
+    // "less information".
     const spinner = page
       .getByTestId('btn-loading')
       .locator('[data-pct-part="spinner"]');

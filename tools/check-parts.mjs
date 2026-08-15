@@ -245,8 +245,7 @@ const checkParts = (input) => {
 
   const used = new Map(); // template -> [classes]
   for (const k of classes)
-    if (k.template)
-      used.set(k.template, [...(used.get(k.template) ?? []), k]);
+    if (k.template) used.set(k.template, [...(used.get(k.template) ?? []), k]);
 
   const known = new Set(templates.map((s) => s.file));
   const missing = [...used.keys()].filter((s) => !known.has(s));
@@ -486,7 +485,7 @@ const checkParts = (input) => {
       `the **Parts** rows have drifted from the package (${documentationProblems.length}):\n` +
         list(shorten(documentationProblems, 12)) +
         `\n    A card listing a part that does not exist sends the consumer to a selector ` +
-        `matching nothing; a card silent about an existing one undoes the „recorded" ` +
+        `matching nothing; a card silent about an existing one undoes the "recorded" ` +
         `promise entirely. ` +
         `The section is written: \`| **Parts** | \\\`name\\\`, \\\`name\\\` |\`.`,
     );
@@ -494,7 +493,7 @@ const checkParts = (input) => {
   // 5. SNAPSHOT — the versioned inventory a change is measured against. It stands LAST,
   // because it fires on every change of a name, including the ones the earlier points can
   // name precisely. The reverse order would answer a part brought in by a binding with
-  // „the snapshot has drifted" — a correct diagnosis of a problem that is not there.
+  // "the snapshot has drifted" — a correct diagnosis of a problem that is not there.
   const rows = [...fromPackage]
     .flatMap(([className, w]) =>
       sorted(w.parts).map((c) => [w.entrypoint, className, c]),
@@ -567,8 +566,8 @@ const renderSnapshot = (rows) =>
     'Changing it gives not one red test, because the template and the sheet change together;',
     'it breaks only for somebody who wrote that name down on their side.',
     '',
-    'This file is the list a change is measured against. A drift does not mean „an error" —',
-    'it means „a change of public API that is to be visible in review".',
+    'This file is the list a change is measured against. A drift does not mean "an error" —',
+    'it means "a change of public API that is to be visible in review".',
     '',
     'Columns: entrypoint · the class exposing the part · the part name. The list comes',
     'from the **built package** (`ɵcmp.consts` and `ɵdir.hostAttrs` after linking), that is',
@@ -586,7 +585,7 @@ const renderSnapshot = (rows) =>
  * A missing file (`null`) is an empty list here, not a failure, even though the branch
  * above catches that case separately and earlier. A dependency between the branches of one
  * point is normal; writing it so that breaking it produces no sentence is not: the first
- * version read `null.split`, and disarming the „no snapshot" branch as part of the negative
+ * version read `null.split`, and disarming the "no snapshot" branch as part of the negative
  * control turned the gate into a `TypeError` — the control lost the ability to examine the
  * point it was meant to examine. The same defect as in A4 and A7, found by the same
  * control.
@@ -851,7 +850,7 @@ if (cases.length === 0)
   );
 
 // The reference input MUST pass: were the base defective itself, every case would fire
-// because of it rather than its own defect, and every „rejected" would be false — this
+// because of it rather than its own defect, and every "rejected" would be false — this
 // control would become the very thing it stands against.
 {
   const directory = buildFixture(REFERENCE, {});

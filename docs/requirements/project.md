@@ -56,7 +56,7 @@ apart from anything else somebody installs
 ### <a id="req-project-apps"></a>`req-project-apps` — What lives in the workspace
 
 **Promise.** The workspace holds: the component library, a documentation app (publishable as
-the library's site), a „sandbox" app (playground and the base for e2e) and e2e tests built
+the library's site), a "sandbox" app (playground and the base for e2e) and e2e tests built
 on the sandbox.
 
 **Gate:** none — gap: `apps/docs` does not exist, so a gate would describe a state that does
@@ -150,7 +150,7 @@ differential check, and a repeat of the measurement with the **real**
 point; among them `entrypoint-pulls-neighbour/` (importing `./alpha` pulls in `./beta`),
 `new-external-dependency/` (an entrypoint reaches for the CDK overlay),
 `probe-without-its-entrypoint/` (the measurement stopped pulling anything in) and
-`pair-no-larger-than-single/` — literally „an app importing two entrypoints must
+`pair-no-larger-than-single/` — literally "an app importing two entrypoints must
 produce a noticeably bigger bundle"
 **Lessons:** [`lesson-51`](../lessons.md#lesson-51)
 
@@ -168,7 +168,7 @@ files.
 **Binds at:** the first component added by somebody other than the author of this rule
 **Decision:** [0001 — templates and styles in separate files](../decisions/0001-separate-files.md)
 
-> This is a **deliberate departure** from Angular's official guidance to „prefer inline
+> This is a **deliberate departure** from Angular's official guidance to "prefer inline
 > templates for smaller components" — dictated by consistency across a library of dozens of
 > components.
 
@@ -182,7 +182,7 @@ files.
 **Gate:** `libs/components/eslint.config.mjs` — the
 `@angular-eslint/component-selector` and `directive-selector` rules with `prefix: "pct"`
 **Control:** none — deliberately: an ESLint rule fires on the first violation and has no
-mode in which it „passes quietly" — it does not belong to the [`req-axis`](../00-axis.md)
+mode in which it "passes quietly" — it does not belong to the [`req-axis`](../00-axis.md)
 class
 
 ---
@@ -222,16 +222,16 @@ package release binds the second part: 24 files in the built artifact, including
 > translation — that is, switched off on day one.
 
 > The rule used to apply **by halves and only as prose**: `docs/README.md` recorded a split
-> of „working documentation in Polish, public surface in English". The split had no gate and
+> of "working documentation in Polish, public surface in English". The split had no gate and
 > was not kept — the package `description` is in Polish, and the public JSDoc cites internal
 > `wym-*` / `lekcja-*` **31 times**, i.e. identifiers of documentation the consumer does not
 > have. That is exactly the [`req-axis`](../00-axis.md) class: a promise without a gate is
 > not a promise.
 
-> The promise covers **identifiers** as well: `wym-` is short for „wymaganie", `lekcja-`
+> The promise covers **identifiers** as well: `wym-` is short for "wymaganie", `lekcja-`
 > speaks for itself, and file and directory names (`requirements/`, `decisions/`,
 > `tokens.md`) are cited in the same places as the content. The renaming is run by
-> [H1](../plan.md#h-one-language-for-the-repository), and it is the exception to the „an ID
+> [H1](../plan.md#h-one-language-for-the-repository), and it is the exception to the "an ID
 > never changes" rule — the only one, deliberate and dated.
 
 ---
@@ -239,7 +239,7 @@ package release binds the second part: 24 files in the built artifact, including
 ### <a id="req-project-concise"></a>`req-project-concise` — Text in the repository carries weight
 
 **Promise.** A comment, a JSDoc block and a paragraph of documentation answer the question
-„why isn't this obvious?" — they carry a measurement, the price of the chosen road, or a trap
+"why isn't this obvious?" — they carry a measurement, the price of the chosen road, or a trap
 that has already cost something once. Whatever can be **pointed at with a link** is pointed
 at, not summarised: the documentation stands publicly at a stable address, so a gate header
 links the decision and the lesson instead of retelling them in its own words. Narration has
@@ -301,7 +301,7 @@ DI or are stateless.
 
 **Gate:** `apps/sandbox-e2e/src/hydration.spec.ts` — the check sits in the `visit()` helper,
 so it covers **every** view at once
-**Control:** `hydration.spec.ts › „the gate really does detect a hydration error (a
+**Control:** `hydration.spec.ts › "the gate really does detect a hydration error (a
 control of the gate)"`
 **Lessons:** [`lesson-30`](../lessons.md#lesson-30), [`lesson-31`](../lessons.md#lesson-31)
 

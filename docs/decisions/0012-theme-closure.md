@@ -46,7 +46,7 @@ overrides.
 
 - **A theme block is much bigger** than the list of actual overrides — it carries the whole
   tail of dependent tokens. The cost is in CSS size, paid for every theme and every scope.
-- The „emit only what changed" saving is **unreachable** while references are kept as `var()`
+- The "emit only what changed" saving is **unreachable** while references are kept as `var()`
   ([`req-token-references`](../requirements/tokens.md#req-token-references)). That is the price
   of cascading, and we pay it deliberately.
 

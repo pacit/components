@@ -7,7 +7,7 @@
  *    overriding one variable in a scope cascades by itself,
  *  - light -> :root, dark -> [data-theme="dark"] (semantic overrides),
  *  - light is emitted A SECOND TIME as [data-theme="light"], so a theme can be switched
- *    both ways when nested (a light card inside a dark page); without it „light" is only
+ *    both ways when nested (a light card inside a dark page); without it "light" is only
  *    the absence of an attribute (req-token-scoped),
  *  - system preferences (`prefers-color-scheme`, `prefers-reduced-motion`) are the same
  *    sets of overrides, only in an @media block instead of under an attribute selector
@@ -25,7 +25,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const SRC = join(__dirname, 'src');
 const DIST = join(__dirname, 'dist');
 
-// WCAG 2.2 contrast thresholds (defaults). „Large" text = >=18pt (24px) or >=14pt bold
+// WCAG 2.2 contrast thresholds (defaults). "Large" text = >=18pt (24px) or >=14pt bold
 // (~18.66px); SC 1.4.3. UI/non-text (SC 1.4.11) = 3.0 regardless of size.
 const WCAG = {
   AA: { normal: 4.5, large: 3.0 },
@@ -286,7 +286,7 @@ function run() {
       // preference a DEFAULT only: a page that declares a theme explicitly wins both
       // ways (`data-theme="light"` on <html> is the off switch). Nested themes keep
       // working, because the `[data-theme="light"]` block carries the full
-      // counter-overrides — the same reason „light" is an active theme here rather than
+      // counter-overrides — the same reason "light" is an active theme here rather than
       // a missing attribute.
       emitMedia(
         '(prefers-color-scheme: dark)',

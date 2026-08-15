@@ -8,8 +8,8 @@ public API — with the difference that changing it gives not one red test, beca
 library renames both sides at once: the token and the stylesheet using it. The consumer
 is left with an override pointing nowhere.
 
-This file is the list a change is measured against. A drift does not mean „an error" —
-it means „a change of public API that is to be visible in review".
+This file is the list a change is measured against. A drift does not mean "an error" —
+it means "a change of public API that is to be visible in review".
 
 Columns: the custom property name · `$type` from DTCG · the tier · whether it is in
 the public `PctCssVar` union (see `private.prefixes` in

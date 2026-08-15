@@ -4,7 +4,7 @@
 **Implements:** [`req-project-package`](../requirements/project.md#req-project-package)
 **Evidence:** no measurement in the repository — the decision stands on outside precedent
 (Terraform → OpenTofu, Redis → Valkey, Elasticsearch → OpenSearch). There is no gate and there
-cannot be one, see „Consequences"
+cannot be one, see "Consequences"
 
 ## Context
 
@@ -17,7 +17,7 @@ and anybody may fork and maintain it. Changing the terms for code that has not g
 costs nothing; the same change for released code costs a fork — the more certainly, the more
 people use it.
 
-The phase E plan ordered components „by architectural debt, not by popularity". That is a good
+The phase E plan ordered components "by architectural debt, not by popularity". That is a good
 criterion for debt and an empty one for this axis: it says nothing about what is better **not
 yet** released.
 
@@ -28,7 +28,7 @@ are not settled does not enter a release — it is built after the library has u
 
 Three operational rules follow:
 
-1. **The default answer under doubt is „not yet".** An unreleased component costs nothing and
+1. **The default answer under doubt is "not yet".** An unreleased component costs nothing and
    can be released at any moment; a component released under MIT is released forever. The cost
    of the mistake is one-sided, so the default answer is too.
 2. **The boundary moves outward only.** An unsettled thing may be moved into MIT. The other way
@@ -46,7 +46,7 @@ gone out under MIT beforehand.
 
 - Phase E ends at **E6 (table/datagrid)** instead of having it in the middle of the list. It is
   the one item on the plan whose build cost is counted in months rather than days.
-- **„Build it but do not publish" is not a workaround.** The `LICENSE` file in the root covers
+- **"Build it but do not publish" is not a workaround.** The `LICENSE` file in the root covers
   the whole repository, not only `dist` — code pushed to a public repository is released under
   MIT whether or not it went to npm. A deferred component is deferred as a commit too.
 - The protection is not the code but **the name and being upstream**: the npm scope `@pacit`,
@@ -54,12 +54,12 @@ gone out under MIT beforehand.
   the `Copyright` line (the scope checked on 2026-08-07, not assumed). A formal trademark
   filing is deliberately deferred — the name is the company's name, and registering before the
   first user is a cost with no use.
-- The second half of „being upstream" is **provenance**, and npm issues it only with
+- The second half of "being upstream" is **provenance**, and npm issues it only with
   a `repository` field matching the repository the publish runs from. That makes `repository`
   a condition of this decision, not merely release metadata —
   [`req-release-metadata`](../requirements/release.md#req-release-metadata).
 - **There is no gate for this and there will not be.** No machine can check whether a component
-  „should have" gone out. A requirement with a sham gate is exactly what
+  "should have" gone out. A requirement with a sham gate is exactly what
   [`lesson-39`](../lessons.md#lesson-39) describes — a gate born dead — so this decision
   **does not become a requirement**. It is enforced by reviewing the list in the
   [plan](../plan.md), not by CI.

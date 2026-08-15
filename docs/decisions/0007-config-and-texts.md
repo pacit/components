@@ -50,7 +50,7 @@ Two supplementary rules:
   green ([`lesson-54`](../lessons.md#lesson-54)).
 
 - **The shape of `PctConfig` is unfinished.** It has one field (`defaultSize`). The open
-  question is not „which fields to add" but **whether per-component defaults go through the
+  question is not "which fields to add" but **whether per-component defaults go through the
   configuration (`providePctConfig({ button: { variant: 'outline' } })`) or through tokens**.
   Material and PrimeNG both ended up with default providers. To be settled before the
   fifteenth component — after that it is a breaking change in every one of them.

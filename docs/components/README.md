@@ -28,7 +28,7 @@ The order follows **architectural debt**, not popularity:
 
 1. **Dialog** — forces a focus trap, scroll locking, `inert`, focus return, an Escape stack,
    SSR safety. The highest architectural return per component.
-2. **Tooltip + Popover** — forces the „describes vs names" distinction, hover/focus/touch
+2. **Tooltip + Popover** — forces the "describes vs names" distinction, hover/focus/touch
    parity and reduced motion on a real enter/leave.
 3. **Menu** — roving focus, submenus, reuse of the typeahead.
 4. **Completing the select family** — projected `pct-option`, an option template, groups,

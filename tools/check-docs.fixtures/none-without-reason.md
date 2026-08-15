@@ -1,4 +1,4 @@
-# Fixture — „none" without a reason
+# Fixture — "none" without a reason
 
 ### <a id="req-fixture-none-without-reason"></a>`req-fixture-none-without-reason` — Absence without justification
 

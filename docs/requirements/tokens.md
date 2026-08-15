@@ -91,7 +91,7 @@ hand, `--pct-select-bg` pointing at `{pct.field.bg}`, the `space` axis removed f
 > **The exception for dimension axes is written down, not silent.** Read literally, the rule
 > was broken **35 times** in this repository — every component dimension token points straight
 > at a primitive, because above dimension there is no semantic layer and one cannot be added
-> without inventing roles nobody needs. `pct.control.height.md` is not a „raw value with no
+> without inventing roles nobody needs. `pct.control.height.md` is not a "raw value with no
 > meaning" either: it is the shared axis of the button and the field row
 > ([`req-api-size`](api.md#req-api-size)), i.e. the very lever the semantic layer would be.
 > A gate written without this note would have to either fire on the entire repository or
@@ -298,7 +298,7 @@ and no JS engine. Overlays rendered outside the host tree get the theme **carrie
 explicitly**.
 
 **Gate:** `apps/sandbox-e2e/src/theme.spec.ts`, `apps/sandbox-e2e/src/a11y.spec.ts`
-(„a scoped theme keeps working under automatic dark mode"). Every sandbox card sets the theme on
+("a scoped theme keeps working under automatic dark mode"). Every sandbox card sets the theme on
 **its own stage**, so every example doubles as a scoped-theme test
 **Control:** see [`req-token-closure`](#req-token-closure)
 **Lessons:** [`lesson-17`](../lessons.md#lesson-17), [`lesson-18`](../lessons.md#lesson-18)
@@ -327,7 +327,7 @@ explicit declaration gets the dark theme out of the box. The `:not([data-theme])
 makes the system preference **a default, not an order**.
 
 **Gate:** `apps/sandbox-e2e/src/preferences.spec.ts`
-**Control:** `preferences.spec.ts › „with no dark preference :root stays light (the
+**Control:** `preferences.spec.ts › "with no dark preference :root stays light (the
 reference)"` — the negative control is **a separate test**, not an assertion inside the
 test proper
 **Lessons:** [`lesson-38`](../lessons.md#lesson-38)

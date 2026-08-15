@@ -12,13 +12,13 @@ the [registry](registry.md), not maintained here by hand.
 ## Why numbers, when requirements have names
 
 Because **order means something here**. The log is chronological and append-only — nothing is
-inserted, so a number is both an address and information („that was before the sandbox was
+inserted, so a number is both an address and information ("that was before the sandbox was
 split into views"). In the requirements the order meant nothing, which is why the numbering
 drifted there; more in the [README](README.md#why-slugs-not-numbers).
 
 Only the prefix changed: the number stayed the same, and the requirements' shared prefix gave
 way to one of its own (`lesson-N`). A lesson **is not a requirement** — it has no gate, is not
-subject to the registry and cannot be „implemented". A shared prefix was the only reason 43
+subject to the registry and cannot be "implemented". A shared prefix was the only reason 43
 observations were mixed in with a list of promises.
 
 ## How to add a lesson
@@ -33,14 +33,14 @@ home is a requirement or a decision, and the lesson stays as the evidence they c
 The log looks like a set of independent observations, and a cross-section through it produced
 [`req-axis`](00-axis.md). The key sentences are collected in the
 [axis table](00-axis.md#why-this-is-not-a-slogan); what matters here is the conclusion: **the
-default behaviour of a layer is „nothing happened"**, so a missing gate never shows up as
+default behaviour of a layer is "nothing happened"**, so a missing gate never shows up as
 missing — it shows up as green.
 
 ---
 
-### <a id="lesson-1"></a>`lesson-1` — Angular does not support the NX „TS-solution" layout
+### <a id="lesson-1"></a>`lesson-1` — Angular does not support the NX "TS-solution" layout
 
-**Angular does not support the new NX „TS-solution" layout (project references).** The
+**Angular does not support the new NX "TS-solution" layout (project references).** The
 workspace has to use the classic layout (tsconfig `paths`), not composite/references.
 
 ---
@@ -137,7 +137,7 @@ UI library defect: field borders that are too light. Component tokens are auto-d
 ### <a id="lesson-11"></a>`lesson-11` — The Angular CLI MCP gives version-matched guidance
 
 **The Angular CLI MCP (`.mcp.json`) supplies version-matched guidance.** The generic
-`best-practices.md` downloaded from the website did not contain the rule „do not set `OnPush`
+`best-practices.md` downloaded from the website did not contain the rule "do not set `OnPush`
 explicitly — it is the default in v22+" that `get_best_practices` returns over MCP. Hence the
 correction to `req-api-foundation`. Note: `list_projects` returns an empty list because it
 reads `angular.json` while the workspace is Nx-based (`project.json`) — the tools needing
@@ -159,7 +159,7 @@ and `PctInput`.
 ### <a id="lesson-13"></a>`lesson-13` — `getComputedStyle` from a preview panel can be stale
 
 `getComputedStyle` reads from a preview panel can be **stale** when the panel is not being
-displayed („the page is not compositing frames") — which leads to false diagnoses of CSS bugs.
+displayed ("the page is not compositing frames") — which leads to false diagnoses of CSS bugs.
 The reliable way to verify styles is e2e tests (Playwright), which run in a normally rendering
 browser.
 
@@ -243,7 +243,7 @@ changes — hence extracting it into `core` (`req-api-wrapper`).
 
 ### <a id="lesson-22"></a>`lesson-22` — The frame's padding created a dead zone
 
-**The wrapper frame's padding created a „dead zone"** — the cursor was inside the field, but
+**The wrapper frame's padding created a "dead zone"** — the cursor was inside the field, but
 a click did not set focus. It was most visible when a taller element in a slot (a button)
 raised the row's height and the centred control left empty space above and below itself. The
 solution had two parts: the control stretches to the row's height (`align-self: stretch`), and
@@ -286,7 +286,7 @@ proof that it was worth writing back at the checkbox.
 
 **`FormField` supplies an `NgControl` itself, so the heuristic from `lesson-20` was too wide.**
 The signal-forms directive registers an interop `NgControl` for compatibility with old
-`ControlValueAccessor`s. The condition „there is an `NgControl` ⇒ somebody else writes to the
+`ControlValueAccessor`s. The condition "there is an `NgControl` ⇒ somebody else writes to the
 DOM" therefore covered signal forms too — and those, with **our own control**
 (`FormValueControl`), set only its `value` and do not write to the DOM (they do that only for
 elements with no control of their own). The effect:
@@ -317,9 +317,9 @@ every control (`:has(input.pct-text)`) and every new one would start with the sa
 `activate()` joined the contract too: a `pointer` cursor over the whole frame of a select
 promises the list will open, so a click on the padding has to open it, not merely move focus.
 
-The methodological lesson: **„can it be clicked" and „can you see that it can be clicked" are
+The methodological lesson: **"can it be clicked" and "can you see that it can be clicked" are
 two different requirements** — the first was tested by a pair of e2e tests and they passed, the
-second only came out of measuring the whole surface. The „cursor map over a grid of points"
+second only came out of measuring the whole surface. The "cursor map over a grid of points"
 pattern catches this class of defect cheaply and is worth repeating for every component with
 a complex surface.
 
@@ -331,7 +331,7 @@ a complex surface.
 blows up with `SyntaxError: not a valid selector` on **any** later `querySelectorAll` in the
 test, so the failure appears somewhere unrelated to the cause. The version with a plain
 `:has(button, a, [tabindex])` works. Tooling aside, a better solution turned out to be a layout
-that does not look „ahead": the spacing is carried by the decoration slot (edge padding on the
+that does not look "ahead": the spacing is carried by the decoration slot (edge padding on the
 outside, `gap` on the control's side), and an empty slot collapses to the edge padding alone —
 which lets the columns tile the frame with no conditional rule at all.
 
@@ -352,7 +352,7 @@ threshold with room to spare.
 The evidence is a measurement in the browser (`apps/sandbox-e2e/src/size.spec.ts`), not the
 mere fact that both components read the same token: the test checks that the heights are equal
 **and** what that height is — on equality alone both could collapse to the text line height and
-still „pass".
+still "pass".
 
 ---
 
@@ -361,7 +361,7 @@ still „pass".
 **A test can click the server's HTML before hydration takes it over.** After the sandbox was
 split into lazily loaded views the e2e tests began to flake: `fill()` typed a value and then
 the field returned to its initial state — the symptom looked like a `PctNumber` defect and was
-a race. `goto()` resolves on the `load` event, and between „the element is in the DOM" and „the
+a race. `goto()` resolves on the `load` event, and between "the element is in the DOM" and "the
 element is wired up" sits the fetch of the route's chunk. So the shell exposes
 a `data-sbx-ready` marker after `ApplicationRef.whenStable()`, and the tests enter through the
 `visit()` helper, which waits for it. The barrier is on the test's side, not the app's — the
@@ -384,7 +384,7 @@ on the server and one page load on the client, so both sides count from zero.
 
 The lesson: **module state is shared across all SSR renders.** Every counter, cache or registry
 in a library with `req-project-ssr` has to go into DI or be stateless — otherwise the defect
-appears only „on somebody's production", after the second request.
+appears only "on somebody's production", after the second request.
 
 ---
 
@@ -415,7 +415,7 @@ of audits: no example so far had rendered a radio group in a read-only state. Th
 moved to the container, and the unit tests now check both places (present on the group, absent
 on the option).
 
-The lesson: **the „every component × every state" matrix is not sandbox decoration but the
+The lesson: **the "every component × every state" matrix is not sandbox decoration but the
 input for the a11y gate.** The audit examines only what somebody rendered first — a gap in what
 is shown is a gap in coverage, invisible in the report because the report is green.
 
@@ -425,7 +425,7 @@ is shown is a gap in coverage, invisible in the report because the report is gre
 
 **The stylesheet guessed intent from a slot's content and coupled two independent things.**
 `lesson-27` gave a decoration the full height of its slot through the rule
-`:has(button, a, [tabindex])` — that is, „interactive" meant „fills the slot". The consequences
+`:has(button, a, [tabindex])` — that is, "interactive" meant "fills the slot". The consequences
 only appeared on an attempt to build four natural decorations at once: a clear button **could
 not** be smaller than its slot (and a small button with a visible border inside a field's
 spacing is an ordinary pattern), and a tile with a background — a unit welded into the frame —
@@ -551,8 +551,8 @@ there `$event` from `(valueChange)` is still unchecked. The generic gives that g
 the TypeScript side (`isSelected`, `select`, reading `value()`) but not on the template side.
 
 The lesson: **with a generic component you have to check separately whether the template really
-enforces the type** — the mere fact that the build passes on correct usage does not tell „the
-type matches" from „the type is ignored". Only a negative control settles it: a deliberately
+enforces the type** — the mere fact that the build passes on correct usage does not tell "the
+type matches" from "the type is ignored". Only a negative control settles it: a deliberately
 wrong binding that **must** break the build.
 
 ---
@@ -570,8 +570,8 @@ how you write it decides whether the test examines anything, and the discrepancy
 reading.
 
 It was found by the **negative control**, not by the test proper. Had there been only
-a reduction test asserting „the transition duration is small", it would have passed on the base
-value of `150ms` read as „small enough" and nobody would have noticed that the media query never
+a reduction test asserting "the transition duration is small", it would have passed on the base
+value of `150ms` read as "small enough" and nobody would have noticed that the media query never
 fired. What fired was the comparison of a pair: without the preference **exactly** `150ms`, with
 it **exactly** `0.01ms`.
 
@@ -622,9 +622,9 @@ outline for the keyboard cursor.
 
 ---
 
-### <a id="lesson-41"></a>`lesson-41` — The tool had a „before" hook where a „after" one was needed
+### <a id="lesson-41"></a>`lesson-41` — The tool had a "before" hook where a "after" one was needed
 
-**The tool had only a „before" hook where an „after" one was needed.** `nx release` offers
+**The tool had only a "before" hook where an "after" one was needed.** `nx release` offers
 `preVersionCommand`, a command run **before** the version is bumped. A package built at that
 moment carries the old `PCT_VERSION` constant, so the first release would ship an artifact lying
 about its own version. The documentation's hint — `manifestRootsToUpdate: ["dist/{projectRoot}"]`
@@ -673,7 +673,7 @@ the `tokenOf`/`rootToken` helpers take a `PctCssVar` — a union of **custom pro
 of DTCG paths — so a typo is a compile error rather than a green test. The gate was verified by
 a negative control: swapping one name for a wrong one produces 6 type errors.
 
-Along the way, the same tooling trap three times in a row: a „comment" in JSON (`"// key"`) can
+Along the way, the same tooling trap three times in a row: a "comment" in JSON (`"// key"`) can
 only be inserted where the schema allows arbitrary keys. In `targets` (project.json),
 `namedInputs` (nx.json) and `paths` (tsconfig) the value must have a specific type, so a string
 respectively blows up the Nx graph (`Cannot use 'in' operator`), its loading (`Given napi value
@@ -697,8 +697,8 @@ a fixture, CI shines green from the cache, and the gate has not run once. The fi
 ignoring but not using a name the tool treats as structure: the manifest sits in the repository
 as `manifest.json` and only becomes `package.json` in the copy assembled for a run.
 
-The rule is wider than this one directory: **„ignore" in build tools almost never means „not
-a project" — it means „does not exist"**, and non-existence propagates into hashing, i.e. into
+The rule is wider than this one directory: **"ignore" in build tools almost never means "not
+a project" — it means "does not exist"**, and non-existence propagates into hashing, i.e. into
 what decides whether a task runs again. Before silencing a tool, you have to check what else
 will stop seeing it — and check it by measuring cache hits, because in a run's result the
 difference is invisible: green is green.
@@ -746,7 +746,7 @@ does not promise one.
 **The built package contains not one `changeDetection:`, and yet every component links as
 OnPush.** Partial compilation (`ɵɵngDeclareComponent`) records only what departs from the
 defaults — the value comes into being at the consumer, at link time, out of **their** Angular's
-defaults. The conclusion is inconvenient: the promise „every component is OnPush" cannot be
+defaults. The conclusion is inconvenient: the promise "every component is OnPush" cannot be
 checked in the source (nothing stands there — the v22+ guide explicitly forbids repeating the
 defaults) nor in the bundle's text (nothing stands there either). The only reading that means
 anything is `ɵcmp.onPush` **after** linking, and in Node that is reproduced by
@@ -797,7 +797,7 @@ Three things measured along the way, not assumed:
 
 - **The gap is BETWEEN projects too.** `vitest.config.ts` and `vitest.workspace.ts` sit in the
   root and belong to no library or app, so a gate walking over projects would be blind to them
-  and would rule „there is no such code" precisely because it cannot see it. Point 1 assigns
+  and would rule "there is no such code" precisely because it cannot see it. Point 1 assigns
   every file to the deepest prefix project and fires on those matched by none.
 - **The root project is affected by every change.** Checked with
   `nx show projects --affected --files=…`: `libs/components/src/index.ts`, `docs/plan.md` and
@@ -805,7 +805,7 @@ Three things measured along the way, not assumed:
   (`check-docs`, `check-typecheck`) run in every pass — otherwise a new project with no target
   would slip past the very gate built for it.
 - **Disarming a point sometimes yields an exception instead of a message.** Point 3 read
-  `p.typecheck.commands` directly, because after point 2 the target „certainly" exists.
+  `p.typecheck.commands` directly, because after point 2 the target "certainly" exists.
   Disabling point 2 as part of the control of that control turned the gate into a `TypeError`,
   i.e. the negative control lost the ability to examine the point it was meant to examine.
   A dependency between points is normal; writing it down so that its violation gives a stack
@@ -821,7 +821,7 @@ same in both; what differs is whether the compiler started at all.
 
 ### <a id="lesson-48"></a>`lesson-48` — Two measurements guarding each other have to be INDEPENDENT, or they go dark together
 
-**The styles gate passed green having printed „7 stylesheets, 0 components".** The source list
+**The styles gate passed green having printed "7 stylesheets, 0 components".** The source list
 came from `git ls-files 'libs/components/*/src/**/*.ts'`, and **a git pathspec is not a shell
 glob**: without the `:(glob)` magic the asterisk crosses `/`, so that pattern demands one
 directory too many and does not match `button/src/button.ts`. It returns zero files — not an
@@ -829,7 +829,7 @@ error, not a warning, an empty list.
 
 Zero components passed the denominator check, because that one compared **the number of parsed
 decorators with the number of `@Component(` occurrences**. Both sides came out zero, zero equals
-zero, the point ruled „complete". The remedy is the same one the coverage gate uses on its file
+zero, the point ruled "complete". The remedy is the same one the coverage gate uses on its file
 list: before comparing two sets, check that **at least one of them contains anything at all**.
 A comparison of numbers is always blind to zero.
 
@@ -840,10 +840,10 @@ formatting, and the counter is meant to notice when reality departs from that fo
 an identical anchor, shifting a decorator by **one space** puts out both at once, the two sides
 agree one lower, and the gate ends green.
 
-Measured, not reasoned: `PctCheckbox` indented by a space gave „7 components" instead of eight,
+Measured, not reasoned: `PctCheckbox` indented by a space gave "7 components" instead of eight,
 on a run with not one violation.
 
-The same sentence stood in the comment next to that code — „without this a formatting change
+The same sentence stood in the comment next to that code — "without this a formatting change
 would not blow the parser up but quietly SHRINK the denominator" — and it had been untrue from
 the start. The comment described the intent, the implementation did not deliver it, and **nothing
 checked that, because this gate's negative control supplies data, not source text**: the regex
@@ -864,7 +864,7 @@ against a broken repository.
 
 ### <a id="lesson-49"></a>`lesson-49` — A snapshot does not close a promise about names, it freezes it
 
-**The plan said: „`tokens.ts` is generated already — add a versioned snapshot and a comparison".
+**The plan said: "`tokens.ts` is generated already — add a versioned snapshot and a comparison".
 A snapshot added then would have recorded as the accepted state 34 tokens whose names broke the
 scheme described in the same requirement.** `--pct-checkbox-checked-bg` stood in
 `component.checkbox.json` six lines below `--pct-checkbox-border-hover`: once state before
@@ -875,18 +875,18 @@ other. That guessability is exactly the content of
 
 The distinction the plan did not make: **a snapshot measures CHANGE, not a PROPERTY.** These are
 two different promises and only the first can be closed by comparing with a file. A gate made of
-a snapshot alone answers „did somebody rename a token quietly" and says nothing about „can this
+a snapshot alone answers "did somebody rename a token quietly" and says nothing about "can this
 name be guessed" — and on its first run it does something worse than saying nothing: **it seals
 the state it found.** The longer it stands, the more expensive the fix, because every further
 rename is by then a breaking change for the consumer.
 
 Hence the order of the points in `check-tokens.mjs`: the scheme **before** the snapshot. The
-reverse would answer a bad name with „the snapshot has drifted" — a correct diagnosis of
+reverse would answer a bad name with "the snapshot has drifted" — a correct diagnosis of
 a problem that does not exist, plus a hint (`--write`) that would set the defect in concrete.
 Measured: with the scheme point disarmed, all four doctored inputs for the scheme fire on the
 snapshot, i.e. they look handled.
 
-The second sentence of the same lesson concerns the dictionary. The rule „a name is made of
+The second sentence of the same lesson concerns the dictionary. The rule "a name is made of
 words from a closed set" closes in a circle, because the set can be extended along with the
 name. A machine cannot settle that and the gate does not pretend to — it guards a narrower
 thing: **every declared word has to be used**. That makes adding a word a line in the diff,
@@ -899,8 +899,8 @@ repository is not a negative control.** Two of this gate's cases carry a deliber
 `dist/` — because that is the only way to show a mismatch between artifact and source — and the
 `dist` rule in `.gitignore` matches a directory of that name at **any** depth, so both dropped
 out of the index without a word. A fresh checkout got the cases without their defect. Measured by
-moving both directories aside: the gate then reports „doctored input PASSED" for points 1 and 2.
-So the failure is **loud**, and that is the only reason this slip was not expensive — the „a case
+moving both directories aside: the gate then reports "doctored input PASSED" for points 1 and 2.
+So the failure is **loud**, and that is the only reason this slip was not expensive — the "a case
 must fire on its own point" construction turns a missing file into red CI rather than into
 a silent loss of two checks. The file had to be recovered anyway
 (`!tools/check-tokens.fixtures/*/libs/tokens/dist/`) and excluded from prettier, because
@@ -920,7 +920,7 @@ does not rule such a defect out.
 ### <a id="lesson-50"></a>`lesson-50` — A negative control proves a gate FIRES, not that it tells the truth
 
 **The snapshot point in `check-parts` fired correctly and explained it falsely.** Renaming the
-`trigger` part to `activator` — a change to public styling API — produced the message „the list
+`trigger` part to `activator` — a change to public styling API — produced the message "the list
 of parts is the same, the header or the row order has drifted". The file content comparison was
 fine and worked; what failed was the code meant to **name the difference**: the data-row filter
 read `/^\.[a-z-]*\s/` and did not get past the slash in `./select`, so both lists came out empty,
@@ -940,7 +940,7 @@ READ, not counted.** The exit code is the part fixtures already cover; the messa
 nothing but a look.
 
 Separately, in the [`lesson-47`](#lesson-47) and [`lesson-49`](#lesson-49) family: disarming the
-„no snapshot" branch turned the gate into a `TypeError`, because the branch computing the
+"no snapshot" branch turned the gate into a `TypeError`, because the branch computing the
 difference read `null.split`. **The third time for the same defect, found the third time by the
 same control — this time in a gate written in awareness of the previous two.** It repeats because
 the natural way to write the second branch is to assume the first has already worked.
@@ -951,7 +951,7 @@ every time.
 ### <a id="lesson-51"></a>`lesson-51` — A default a tool writes in cannot be removed, so a gate on its absence has no way to fire
 
 **`check-bundle` got a point guarding `sideEffects: false` in the packed manifest, justified by
-„removing this flag produces not one red test and disables tree-shaking at the consumer". The
+"removing this flag produces not one red test and disables tree-shaking at the consumer". The
 justification was true, and the point examined something other than what I wrote.** A run against
 the real repository: the key removed from the source `libs/components/package.json`, a rebuild,
 the gate **green**. The first suspect was the cache — `nx build` reported `Cache: 3/3 hit`, which
@@ -959,7 +959,7 @@ looked like a sufficient explanation and was a false trail. A repeat with `--ski
 the same result: **ng-packagr writes `"sideEffects": false` in itself** when the source says
 nothing.
 
-So the scenario the point was built for — „somebody deleted the flag" — is unreachable, and
+So the scenario the point was built for — "somebody deleted the flag" — is unreachable, and
 a point written that way would be a [gate born dead](#lesson-39) in that one variant and nobody
 would notice, because the gate passes. It fires on an explicit `true` and on the day ng-packagr
 stops writing the default in — and that is its real scope; it just had to be measured rather than
@@ -967,8 +967,8 @@ written out of intent.
 
 A more general rule, in the [`lesson-11`](#lesson-11) and [`lesson-46`](#lesson-46) family: **a
 tool in the build chain has defaults of its own and writes them into the artifact, so the
-question „did somebody remove this" has no answer on the artifact's side.** A gate reading the
-artifact then examines what the tool decided, not what a person decided. The answer is not „read
+question "did somebody remove this" has no answer on the artifact's side.** A gate reading the
+artifact then examines what the tool decided, not what a person decided. The answer is not "read
 the source" — the consumer gets the artifact — but: **measure what this point can really fire on,
 and write that into the point itself.** Otherwise the comment next to a gate describes a defect
 that gate does not catch, which is worse than no comment: it reads like coverage.
@@ -977,7 +977,7 @@ Separately, in the [`lesson-47`](#lesson-47), [`lesson-49`](#lesson-49) and
 [`lesson-50`](#lesson-50) family: disarming the `presence` point turned the gate into
 a `TypeError`, because the second branch of the same point read `s.pulled`, trusting the
 first. **The fourth time for the same defect — and the first time INSIDE one point rather than
-between points.** The previous three gave the rule „do not trust the previous point"; this one
+between points.** The previous three gave the rule "do not trust the previous point"; this one
 adds that a point's boundary is not the boundary of that trust.
 
 ### <a id="lesson-52"></a>`lesson-52` — A pair nobody put in the policy is a pair the gate has no opinion about
@@ -991,9 +991,9 @@ into it first**, and in a run that looks identical to a complete measurement
 
 Two of those 27 gaps were also invisible to a rule based on token NAMES: the button's outline
 variant paints the background `var(--pct-surface-100)` and the label `var(--pct-primary)`, i.e.
-with two **semantic** tokens. A gate asking „does every `*-bg` component token have a pair" would
+with two **semantic** tokens. A gate asking "does every `*-bg` component token have a pair" would
 rule on completeness without seeing them at all. Hence the denominator reads the **sass** output
-for the stylesheets rather than a list of names — the same move as „do not read `include`, run
+for the stylesheets rather than a list of names — the same move as "do not read `include`, run
 the compiler" from [`lesson-47`](#lesson-47).
 
 The most important part is what happened after the missing pairs were added: **the build failed
@@ -1075,7 +1075,7 @@ second line.
 The defect stood in the released artifact and **no gate saw it, even though one asked about that
 very file.** `check-package` checks point by point: the manifest has a `schematics` field, the
 collection points at the `./ng-add/index` factory, the file `schematics/ng-add/index.js` is in
-the package. All three answers were true. The question „can it be loaded" was never asked,
+the package. All three answers were true. The question "can it be loaded" was never asked,
 because a static gate has no way to ask it — `require()` of that file needs the package
 **installed**, with its own module boundary, not a `dist` directory read from the side.
 
@@ -1086,8 +1086,8 @@ a subdirectory.
 
 A practical rule: **for an artifact meant for distribution, a file's existence and its usability
 are two different measurements and need two different gates.** The static one reads a directory
-and answers „what is missing" cheaply; the one in use installs the package by name and answers
-„what breaks" expensively. The first without the second looks like a complete set — and that is
+and answers "what is missing" cheaply; the one in use installs the package by name and answers
+"what breaks" expensively. The first without the second looks like a complete set — and that is
 its worst property, because `req-quality-package` declared coverage of a point where it had only
 presence. This is [`lesson-36`](#lesson-36) one floor up: there a green build did not prove the
 artifact could be used, here a green artifact gate does not prove that what is in it can be used.
@@ -1130,15 +1130,15 @@ so it will stop holding after a change that touches not one file here (hence poi
 **The library's core had 96.62% line coverage and 183 green tests. On the first mutation run they
 noticed 63.54% of the introduced defects.** In other words: every third change of behaviour in
 `core`, `[pctNumber]` and `PctSelect` passed CI green. The difference is not a measurement error —
-these are two different quantities. Coverage answers „did this line execute", and a line executed
+these are two different quantities. Coverage answers "did this line execute", and a line executed
 **without a single assertion on its effect** counts there exactly like a checked one.
 
 The distribution of surviving mutants says where it sits, and none of these things is exotic:
 
-- **44 mutants with no covering test at all** — at 96.62% coverage. Code executed „in passing"
+- **44 mutants with no covering test at all** — at 96.62% coverage. Code executed "in passing"
   (a constructor, an effect, a `default` branch) is covered and unmeasured;
 - **condition boundaries**: `match >= 0` changed to `> 0` survives every test in which the hit
-  does not fall on index zero. The test „typeahead activates the matching option" existed and
+  does not fall on index zero. The test "typeahead activates the matching option" existed and
   checked option number 1;
 - **inputs' default values**: every test passing `[readonly]="readonly()"` measures its own
   binding, not the default. A control with not one binding was never rendered — and that is the
@@ -1163,7 +1163,7 @@ it.
 
 ### <a id="lesson-58"></a>`lesson-58` — A gate that can fire and a gate that will fire are two different states — Stryker starts in the second
 
-**`thresholds.break` is `null` by default in Stryker, and that means „never break".** A run
+**`thresholds.break` is `null` by default in Stryker, and that means "never break".** A run
 scoring 4% ends with exit code 0 exactly like a run scoring 94%; the only difference is the
 colour of the number in the report. So a tool that measures defects is, out of the box, **a report
 to look at** rather than a gate — and it looks identical to a gate in CI, because the step is
@@ -1173,7 +1173,7 @@ This is the same family as [`lesson-39`](#lesson-39) (a visual threshold scaling
 size) and [`lesson-53`](#lesson-53) (the second, unmeasured `toHaveScreenshot` threshold), but one
 degree sharper: there the default was too loose, here it **switches enforcement off entirely**.
 The conclusion generalises to every quality tool wired into a pipeline: the first question is not
-„what does it measure" but **„what does it do with a result nobody configured"**.
+"what does it measure" but **"what does it do with a result nobody configured"**.
 
 The second question is more interesting, because it concerns the day after. Once the threshold is
 in place, it is raised by five moves, none of which adds a single test and each of which looks
@@ -1191,7 +1191,7 @@ like tidying up in review:
 
 Hence the shape of `check-mutation`: the gate does not read `stryker.config.json` but the `config`
 field from the **run's report**, i.e. the effective configuration — a flag added to the target's
-command leaves not one line in the file. That is the same move as „do not read `include`, run the
+command leaves not one line in the file. That is the same move as "do not read `include`, run the
 compiler" from [`lesson-47`](#lesson-47), carried from a compiler to a measuring tool.
 
 Separately, and this is a conclusion for every measurement with a threshold: **an aggregate
@@ -1217,11 +1217,11 @@ those have **concurrent writers**: `nx affected` runs `build` alongside, ng-pack
 deletes its temporary tsconfig, and the file disappears between being listed and being copied.
 A race, not performance.
 
-A practical rule, in the [`lesson-51`](#lesson-51) family („the first suspect was the cache and it
+A practical rule, in the [`lesson-51`](#lesson-51) family ("the first suspect was the cache and it
 was a false trail"): **with a task flaky under parallelism, ask first which DIRECTORY the task
 reads or copies, not how long it takes.** A tool that makes a copy of the project tree is
 sensitive to everybody writing in that tree — and the remedy is narrowing what it copies
-(`ignorePatterns`), not raising limits. The symptom „passes solo, fails in a batch" is common to
+(`ignorePatterns`), not raising limits. The symptom "passes solo, fails in a batch" is common to
 both causes and does not settle anything by itself; what settles it is the recorded message.
 
 ---

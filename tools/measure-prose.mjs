@@ -123,7 +123,7 @@ const grams = (lines, n = 6) => {
   const w = lines
     .join(' ')
     .toLowerCase()
-    .replace(/[`*_[\]()#|—–,.:;„"”'!?]/g, ' ')
+    .replace(/[`*_[\]()#|—–,.:;"“”'!?]/g, ' ')
     .split(/\s+/)
     .filter(Boolean);
   return new Set(

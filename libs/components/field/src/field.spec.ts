@@ -374,7 +374,7 @@ describe('PctField + PctText', () => {
       it('a click on a `fill` affix does NOT move focus to the control', async () => {
         // A `fill` affix is a surface of its own: it shows its own cursor, so a
         // click on it cannot quietly do something else. That holds for a passive
-        // affix too — here the „PLN" tile, not the button.
+        // affix too — here the "PLN" tile, not the button.
         const fixture = await render(FillAffixHost);
         const unit = part(fixture, 'field-prefix-item');
 
@@ -393,7 +393,7 @@ describe('PctField + PctText', () => {
       const fixture = await render(SignalFormHost);
 
       // A regression: the FormField directive supplies NgControl (CVA interop), so
-      // the heuristic „NgControl => somebody else writes to the DOM" ruled out signal
+      // the heuristic "NgControl => somebody else writes to the DOM" ruled out signal
       // forms as well — and those, with a control of their own, only set `value` and
       // write nothing to the DOM. The field started empty (lesson-26).
       expect(inputOf(fixture).value).toBe('start@example.com');

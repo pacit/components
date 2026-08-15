@@ -8,7 +8,7 @@ import { styleOf, systemColors } from './support/css';
  * In that mode the browser swaps EVERY author colour for one from the user
  * palette. The tokens stop meaning anything and every state expressed by colour
  * alone disappears: two different backgrounds become the same rectangle. So the
- * tests do not check „what the colour is" — they check whether states that are
+ * tests do not check "what the colour is" — they check whether states that are
  * meant to differ still differ, and whether what should come from the palette
  * really does (req-a11y-forced-colors).
  *

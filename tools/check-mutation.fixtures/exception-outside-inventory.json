@@ -1,7 +1,7 @@
 {
   "check": "inventory",
   "rule": "exception-outside-inventory",
-  "// defect": "A „zero mutants is fine here\" exception for a file the measurement does not cover at all. It excuses nothing, and in the register it looks like a justification.",
+  "// defect": "A \"zero mutants is fine here\" exception for a file the measurement does not cover at all. It excuses nothing, and in the register it looks like a justification.",
   "policy": {
     "noMutants": [
       {

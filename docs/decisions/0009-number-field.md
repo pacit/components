@@ -14,8 +14,8 @@ Four reasons, each sufficient on its own:
 
 1. **It does not know the local decimal separator** — a comma, in Polish.
 2. **It does not group thousands.**
-3. **On malformed content it returns an empty `value`** — „empty" cannot be told from
-   „garbage", nor can the user be shown what they typed.
+3. **On malformed content it returns an empty `value`** — "empty" cannot be told from
+   "garbage", nor can the user be shown what they typed.
 4. **The mouse wheel changes the value by accident.**
 
 ## Decision
@@ -27,11 +27,11 @@ The rules, each with a reason:
 
 | rule                                                                              | reason                                                                                                                                                                                     |
 | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| The value is `number \| null`; empty is `null`, never `0` or `NaN`                | „nothing was typed" is a state distinct from „zero was typed"                                                                                                                              |
+| The value is `number \| null`; empty is `null`, never `0` or `NaN`                | "nothing was typed" is a state distinct from "zero was typed"                                                                                                                              |
 | Formatting follows `LOCALE_ID`, overridable by the `locale` input                 | the app's default locale, but one field in a form may be an exception                                                                                                                      |
 | **Parsing is wider than formatting**                                              | the grouping separator is removed only where it really separates thousands; both the local separator and a dot are accepted as decimal — because the numeric keypad gives a dot            |
 | The field is **integer** by default; fractions are enabled by `maxFractionDigits` | the most common case with no configuration                                                                                                                                                 |
-| Rounding and clamping to bounds happen **on commit**, not while typing            | otherwise „15" cannot be typed by passing through „1"                                                                                                                                      |
+| Rounding and clamping to bounds happen **on commit**, not while typing            | otherwise "15" cannot be typed by passing through "1"                                                                                                                                      |
 | The field's text **is not rewritten while typing**                                | so the caret does not jump to the end                                                                                                                                                      |
 | **The bounds are not repeated in the template**                                   | `min`/`max` belong to `FormUiControl`, so with `[formField]` the directive fills them from the schema's `min()`/`max()` validators — one source of truth for validation, ARIA and clamping |
 
