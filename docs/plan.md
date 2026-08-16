@@ -249,7 +249,7 @@ control. Nothing here is waiting any more.
   - built: points **6 and 7** in `tools/check-tokens.mjs` (same target, same negative control,
     because both promises stand on the same denominator as the names): a "downwards only"
     reference graph with `libs/tokens/src/levels.policy.json`, and "every painted colour has a
-    pair" plus the `on-*` rule. Plus `regula` in `fixture.json` ([`lesson-50`](lessons.md#lesson-50))
+    pair" plus the `on-*` rule. Plus the `rule` field in `fixture.json` ([`lesson-50`](lessons.md#lesson-50))
   - the plan's denominator was wrong: names (`*-bg`) cannot see the outline button painting
     `var(--pct-surface-100)` under `var(--pct-primary)`, so point 7 reads the **sass output**.
     **The policy was silent about 27 colours out of 74** — three of them below AA in the dark
@@ -286,11 +286,11 @@ block publication and is an order of magnitude larger.
     `libs/components/`, `author` in the manifest, and [decision
     0015](decisions/0015-license-and-model.md): **MIT everywhere, no CLA, no dual licensing**
   - **the plan said "minutes" and that was half the truth**: the requirement already promised
-    the file while point 6 measured manifest fields only. Two measurements now — the `licencja`
+    the file while point 6 measured manifest fields only. Two measurements now — the `licence`
     check in `check-package` (file, non-empty, name matching `license`, a copyright line) and
-    the `brak-licencji` rule in `check-consumer`, on the far side of `npm pack`
+    the `licence-missing` rule in `check-consumer`, on the far side of `npm pack`
   - control: two fixtures in `check-package.fixtures/`, one in `check-consumer.fixtures/`,
-    three runs on the real package, the `licencja` check disarmed
+    three runs on the real package, the `licence` check disarmed
   - cost: ~0.5 day (plan: minutes) · journal 2026-08-06
 
 - [ ] **B2 — remote repository + `repository` in the manifest**
@@ -311,7 +311,7 @@ block publication and is an order of magnitude larger.
     is no remote CI, no provenance and no copy off this machine
   - **and on 2026-08-14 the condition grew**: nothing leaves in Polish, and H closed that same
     day — H11, H10 and H9 in turn, the scan that had called four layers clean having seen neither
-    "nie biegnie" nor `'Wybierz…'`. **B8's repository limb is what proves the condition**
+    a Polish gate message nor a Polish default text. **B8's repository limb is what proves the condition**
   - cost: minutes for the task itself · _notes:_ —
 
 - [ ] **B3 — package README in English**
@@ -377,7 +377,8 @@ block publication and is an order of magnitude larger.
   - detection has **two limbs** and H11 settled the second: diacritics carry prose, so the other
     limb is `/usr/share/dict/polish` minus `american-english`, over identifiers split at
     camelCase. **Its false positives are the design work** and they enumerate — acronyms,
-    `SCREAMING_CASE`, the abbreviations of the trade, `jest` ([`lesson-60`](lessons.md#lesson-60))
+    the abbreviations of the trade and the words both languages share — never a whole
+    grammatical class ([`lesson-60`](lessons.md#lesson-60))
   - the register follows the `browsers.policy.json` idiom from A10: an entry carries its reason
     and the task that removes it, and **a dead entry fires just like new Polish**. It starts
     empty bar one survivor to rule on — the `pl-PL` default of `number.spec.ts`, the case that
@@ -389,11 +390,10 @@ block publication and is an order of magnitude larger.
 - [ ] **B9 — the repository is tidied before it is published** _(binds at B2)_
   - **what a first visitor must not find**: mappings of an identifier space that never stood in
     public, review findings closed weeks ago, and files whose deletion was nobody's task
-  - **old identifiers, 157 lines of them**: the two migration tables in
-    [`docs/README.md`](README.md) — [2026-08-06](README.md#id-space-migration-2026-08-06), 93
-    rows of `wym-`/`lekcja-`, and 2026-07-27, the numeric space — are **53% of that file** and
-    map a space no public reader can ever observe, the history being squashed. They go; the
-    `LEGACY` guard in `check-docs.mjs` stays, because it is what stops the space coming back
+  - **old identifiers, 157 lines of them: done with H12** — the two migration tables in
+    [`docs/README.md`](README.md) were **53% of that file** and mapped a space no public reader
+    can ever observe, the history being squashed. The `LEGACY` guard in `check-docs.mjs` stays,
+    because it is what stops the space coming back
   - they are not its only citations: **55 in `review.md`, 2 in `overview.md`**, silent because
     all three files sit in `CITATION_EXEMPT`. So the cleanup ends when **that set is empty but
     for the generated registry** — which makes this a gate rather than a tidy-up
@@ -485,7 +485,7 @@ items. Full context: [`review.md`](review.md) §5.
     `placeholder` lost its default (`input<string>()`) and gained a `computed()`, while
     **`placeholder=""` stays an empty placeholder** — absent and empty mean different things
   - control: a runtime language change reaches the strings; without the fix the test fails on
-    `expected 'Select…' to be 'Wybierz…'`, and `check-texts` guards the rule, because knowing it
+    `expected 'Select…' to be` the Polish placeholder, and `check-texts` guards the rule, because knowing it
     was not enough once ([`lesson-54`](lessons.md#lesson-54))
 
 ## D. Phase 1 — the behaviour layer in `core`
@@ -581,9 +581,9 @@ the compression pass (H2).
 
 Settled 2026-08-06, not to be reopened:
 
-- **identifiers move with everything else** — `wym-` was short for "wymaganie", and an English
-  repository with Polish IDs is exactly the drift this file polices everywhere else. The
-  [rename table](README.md#id-space-migration-2026-08-06) is approved;
+- **identifiers move with everything else** — the old prefixes were Polish abbreviations, and an
+  English repository with Polish IDs is exactly the drift this file polices everywhere else. The
+  rename table is approved;
 - **compression travels with the translation**, not after it — and its target is `tools/`
   (~595 lines of headers), not JSDoc and not the documentation. The instrument is **a link
   instead of a repetition**, possible only because the documentation stands in public;
@@ -625,16 +625,18 @@ is the last row, and it is H11, not a new layer:
 | proper names in contracts           | done — **H8** (1 target, 5 policies/snapshots, 252 fixture cases, 9 READMEs) | —                        |
 | commit history                      | done — **H9** (the convention in `AGENTS.md`; 93 of 107 carried Polish)      | squashed before the push |
 | Polish without diacritics           | done — **H11** (84 files outside `apps/`, measured against a dictionary)     | first push               |
+| identifiers inside the register     | done — **H12** (11 files; `SCREAMING_CASE` and 2–3 letter names)             | first push               |
+| the typographic quote `U+201E`      | done — **H12** (538 in 116 files; a third limb nobody had)                   | first push               |
 
 - [x] **H1 — the identifier and documentation-name space** _(2026-08-06)_
-  - done: **83 requirement identifiers**, **59 lessons** (`lekcja-N` → `lesson-N`) and **2 571
-    citations in 175 files**, plus 24 file and directory names, mapped in
-    [the migration table](README.md#id-space-migration-2026-08-06); `check-docs.mjs` moved to the
+  - done: **83 requirement identifiers**, **59 lessons** (a Polish prefix → `lesson-N`) and **2 571
+    citations in 175 files**, plus 24 file and directory names, mapped in a migration table
+    published for the run and retired by H12; `check-docs.mjs` moved to the
     new space and **rejects the old one**, beside the numeric space from 2026-07-27
   - **the plan said "mechanical" and that was half the truth** — three consequences it did not
     foresee were found by the gate, not by review: `req-ids.ts` started to look like a citation of
     itself (renamed to `doc-ids.ts`), the substitution **rewrote the left column of the migration
-    table**, and fixing `docs/komponenty` in `check-parts.mjs` fired that gate, because five of
+    table**, and fixing the Polish name of `docs/components` in `check-parts.mjs` fired that gate, because five of
     its fixtures carry **their own copy** of that directory
   - control: three repository runs, plus green `typecheck`, `check-parts` and the sandbox tests
   - cost: ~0.5 day (plan: ~1) · journal 2026-08-06
@@ -671,9 +673,9 @@ is the last row, and it is H11, not a new layer:
     [`requirements/`](requirements/), [`decisions/`](decisions/), [`components/`](components/),
     [`lessons.md`](lessons.md), the [registry](registry.md), this file and [`review.md`](review.md)
   - **a requirement's vocabulary is a contract, not prose** and moved with the content:
-    `Obietnica/Bramka/Kontrola/Wiąże przy` → `Promise/Gate/Control/Binds at`, which meant the
+    the four Polish field names → `Promise/Gate/Control/Binds at`, which meant the
     parser, the classifier and the generator in `check-docs.mjs`, its four fixtures, and the
-    `Części` → `Parts` table read by `check-parts` — carried in its own copy by five of its cases
+    `Parts` table read by `check-parts`, renamed with them — carried in its own copy by five of its cases
   - left for **H6**: seven citations of Polish test names pointing at an `it()` that exists.
     Heading anchors have no gate and drift silently — four found, one older than this session
   - cost: ~2 days for 40 files (plan: 3–5) · journal 2026-08-07 (two entries)
@@ -693,11 +695,11 @@ is the last row, and it is H11, not a new layer:
 - [x] **H6 — test names** _(2026-08-08)_
   - done: 196 `it()` in nine `libs` specs and every `test()` in eighteen e2e specs, with their
     comments, their fixture data and the three `src/support/` helpers the specs quote
-  - **the 26 visual baselines belonged here, not to H10**: `przycisk-warianty` is a test name
+  - **the 26 visual baselines belonged here, not to H10**: a Polish test name is a test name
     first and a `.png` second, so the rename was `git mv` plus the table, bytes untouched
   - couplings: the seven **Control** citations (`check-docs` reads the path, never the sentence
     after `›`), `hydration.spec.ts` asserting on what `visit()` throws, and fixture values with
-    a length — `dwanaście!!!` is twelve characters and the counter asserts `12/120`
+    a length — a twelve-character fixture value is twelve characters and the counter asserts `12/120`
   - control: 196 unit tests and every non-visual e2e test green on three engines, eleven gates
     green, bundle unchanged; the 26 chromium screenshot diffs are **older than this change**
   - cost: ~1 day · journal 2026-08-08 · left `apps/` a decision, not a translation (H10)
@@ -714,7 +716,7 @@ is the last row, and it is H11, not a new layer:
   - cost: ~1 day · journal 2026-08-13 · found the fixture prose and left it to H8
 
 - [x] **H8 — proper names in contracts** _(2026-08-14)_
-  - done: the target `mutacja` → **`mutation`**, five snapshots and policies, **252 fixture
+  - done: the target renamed to **`mutation`**, five snapshots and policies, **252 fixture
     cases** across thirteen gates with their prose, nine `*.fixtures/README.md`, the
     vocabulary of four policy files, the `pct-exception` marker and every script-local name
     in fifteen scripts. Outside `apps/` the diacritics scan is empty
@@ -741,7 +743,7 @@ is the last row, and it is H11, not a new layer:
 
 - [x] **H10 — the `apps/` sandbox demo** _(2026-08-14)_
   - done: **58 files** — 46 the diacritics scan saw, 12 only the dictionary limb and all of those
-    e2e specs quoting the UI. Prose, strings, fixtures and `#rodzaje`/`#stany` went together
+    e2e specs quoting the UI. Prose, strings, fixtures and two Polish heading anchors went together
   - **the proof changed language, not homes**: `app.config.ts` was the only live use of
     `providePctTexts` and of the non-English `LOCALE_ID` that
     [`req-api-texts`](requirements/api.md#req-api-texts) needs and never needed Polish for — now
@@ -756,18 +758,72 @@ is the last row, and it is H11, not a new layer:
   - done: **84 files outside `apps/`** — ten gate scripts, 25 fixture files, seven library
     specs, the tokens generator, the live contrast policy and 26 stale citations
   - **the plan counted 32 because the instrument was hand-written**: a function-word list finds
-    prose, not `wartosc` or `przygotujKatalogSond` ([`lesson-60`](lessons.md#lesson-60))
-  - **a rename is a contract on both sides, again**: `fabryki` is a fixture key, and the fixture
-    `name` values are messages — H7 did the real contrast policy, not its two copies
-  - quoted history stays put: the [migration table](README.md#id-space-migration-2026-08-06) and
-    `review.md` go at **B9**; the anecdotes keep their identifier
+    prose, not a constant or a camelCase name ([`lesson-60`](lessons.md#lesson-60))
+  - **a rename is a contract on both sides, again**: one of the renamed names was a fixture key,
+    and the fixture `name` values are messages — H7 did the real contrast policy, not its two
+    copies
+  - quoted history left standing: the migration table and `review.md`, retired by **H12**; the
+    anecdotes keep their identifier
   - control: twelve gates in one pass, `check-consumer` end to end, 196 unit tests; both scan
     limbs empty outside `apps/`
   - cost: ~1 day (plan: ~1) · journal 2026-08-14
 
+- [x] **H12 — the Polish the register excused** _(2026-08-16)_
+  - done: **11 files** — nine gate scripts, `libs/components/check-package.mjs` and one stale
+    citation in `libs/components/project.json`; every name of them a constant in
+    `SCREAMING_CASE` or an abbreviation of two or three letters
+  - **the register of false positives wrote the blind spot**: H11 excused two whole grammatical
+    shapes, and Polish constants are exactly that shape — the same lesson twice on the same
+    instrument, so [`lesson-60`](lessons.md#lesson-60) now carries the second half
+  - **a third limb nobody had**: the opening quote `U+201E`, 538 of them in 116 files, paired
+    against a plain ASCII closer. The fix is the closer's own character; in JSON it is `\"`,
+    the escape the closing half already used
+  - **the quoted history went with it**, ahead of B9's schedule: both migration tables (157
+    lines, 53% of `docs/README.md`) and 58 citations of the old space in `review.md` and
+    `overview.md`, remapped from the tables rather than deleted, so the review still resolves
+    for a reader who never saw the old identifiers
+  - control: eleven gates including `check-consumer` end to end, `lint`, `typecheck` and 196
+    unit tests; the diacritics limb is **empty across the whole index**
+  - cost: ~0.5 day · journal 2026-08-16
+
 ## Journal
 
 One entry per session: what moved, what it ended with, what comes next. Newest on top.
+
+### 2026-08-16 — H12: the scan that cleared H was reading past two grammatical shapes
+
+**H was closed on 2026-08-14 and the repository was not clean.** A scan from outside — the same
+two limbs, the same dictionary — found Polish identifiers in eleven files, all of them gates.
+Not a corner the sweeps missed: `PROJEKT` in three scripts, `FABRYKI`, `DOMYSLNE`,
+`WSTRZYKNIECIE`, `KONSOLA`, `TLO_POCZATKOWE`, `POLA_ZALEZNOSCI`, and the parameters `otw`,
+`zam`, `we`, `typ`, `cel`, `wyl` beside them.
+
+**They survived because the instrument was told to ignore them.** [`lesson-60`](lessons.md#lesson-60)
+listed the false positives H11 needed, and two entries on that list were not words but shapes:
+`SCREAMING_CASE` and abbreviations shorter than four letters. Every constant in the gates and
+every short parameter sat inside one of them. An exclusion by shape excuses everything of that
+shape — the lesson now says so in its own text, because the register that fixed one blind spot
+had opened the next one.
+
+**A third limb the requirement never had.** The opening quote `U+201E` is a typographic
+convention with no English use, and it stood 538 times in 116 files — prose, JSDoc, gate
+messages, fixture descriptions. The pairs put that opening quote against a plain ASCII closer, so the repair is the closer's own character. In JSON the closing half was already
+written `\"`, so the opener takes the same escape and the manifests stay parsable.
+
+**The quoted history went early.** B9 had it scheduled; keeping the repository clean today made
+it cheaper to do now. Both migration tables left `docs/README.md` (157 lines, 53% of the file),
+and the 58 citations of the old space in `review.md` and `overview.md` were **remapped from
+those tables before they were deleted**, not dropped — a review that cites identifiers no
+document resolves is worse than one written in another language. Four sentences in the
+requirement and the lesson were rewritten to describe the renamed names rather than quote them.
+
+Control: `check-texts`, `check-styles`, `check-zoneless`, `check-docs`, `check-tokens`,
+`check-parts`, `check-typecheck`, `check-browsers`, `check-bundle`, `check-package` and
+`check-consumer` end to end, plus `lint`, `typecheck` and 196 unit tests. The diacritics limb
+is now empty across the entire index.
+
+Next: **B8**'s repository limb — the gate that would have caught all of this — then the rest of
+**B9** and **B2**.
 
 ### 2026-08-14 — H9: H is closed, and the first release will not name its own version
 
@@ -778,7 +834,7 @@ the scope and `!` untouched because the release reads them.
 
 **The history needed no translation, only a count.** Both limbs over titles and bodies: 49 commits
 carry diacritics, 44 more the Polish only the H11 dictionary sees — mostly translation commits
-quoting the names they removed (`mutacja`, `wpisy`, `fabryki`). 93 of 107, and the squash takes all.
+quoting the very names they removed. 93 of 107, and the squash takes all.
 
 **The one thing the plan asked to check turned out to be two.** The probe: a throwaway worktree
 squashed to one root commit, `node_modules` symlinked, `nx release --dry-run --first-release`.
@@ -801,9 +857,9 @@ Next: **B8**'s repository limb, **B9**'s clear-out, then **B2** — the squash a
 axis bar, two configuration files and thirteen e2e specs. Both scan limbs are empty across the
 whole repository now, so H has one row left and it is H9.
 
-**The demo and its specs moved in one commit, because the specs quote the demo.** `hasText:
-'Polska'`, `'Darmowy'`, `getByRole('radio', { name: 'ciemny' })`, an `aria-label` matched with
-`/profilu/` — fifteen citations of strings that exist only in a template. Split in two, either
+**The demo and its specs moved in one commit, because the specs quote the demo.** A `hasText`
+filter on a country name, a price label, a `getByRole` on a radio, an `aria-label` matched
+with a regex — fifteen citations of Polish strings that exist only in a template. Split in two, either
 half is red on its own.
 
 **The locale swap needed a measurement and it was one character wide.** The number field formats
@@ -828,14 +884,14 @@ specs, the tokens generator, the live contrast policy and 26 stale citations. Th
 limb outside `apps/` now reports one file, and it is this one, quoting the Polish it discusses.
 
 **The estimate was 32 and the instrument was the reason.** A hand-written function-word list
-finds prose, because function words stand in sentences; it cannot find `wartosc`, `skroc` or
-`przygotujKatalogSond`, and identifiers were most of what was left. Swapped for
+finds prose, because function words stand in sentences; it cannot find a constant, a short
+parameter or a camelCase name, and identifiers were most of what was left. Swapped for
 `/usr/share/dict/polish` folded of diacritics minus `american-english`, over identifiers split
 at camelCase, the same index gave **94 files** ([`lesson-60`](lessons.md#lesson-60)). The false
 positives are what the plan promised — acronyms, `SCREAMING_CASE`, `repo`/`config`/`proc`, the
 words Polish and English share — and a hundred entries settle them. **That register is B8's.**
 
-**Two gates carried Polish in their contracts, not only their locals**: `fabryki` is a key of
+**Two gates carried Polish in their contracts, not only their locals**: one renamed name is a key of
 `check-consumer.fixtures/_reference.json`, and the `name` values of the fixture contrast
 policies are messages the a11y gate prints, per theme. H7 translated the real
 `contrast.policy.json` and left its two fixture copies — the miss H8 recorded, one layer down.
@@ -860,13 +916,13 @@ over the index — the second limb B8 has promised since A5 — finds Polish in 
 under `apps/`, where the diacritics scan had counted 46.
 
 **The most expensive one ships.** The JSDoc of `texts.ts` demonstrates the texts channel with
-`selectPlaceholder: 'Wybierz…'`, so it stands in `types/*.d.ts` and on the npm page; the README
+`selectPlaceholder` carried a Polish default, so it stands in `types/*.d.ts` and on the npm page; the README
 repeats it at line 254. "The built package carries no Polish at all" was true of diacritics and
 of nothing else — and equally so for H3, H7 and H8.
 
-**Two gates still print Polish and two carry Polish identifiers**: `check-docs` ("nie biegnie w
-`nx affected -t`"), `check-tokens` (`wpisy`), `check-parts` (`wpisy`, `skroc`). The requirements
-cite four names H8 renamed away, `fakt-bez-odniesienia` among them — `check-docs` compares the
+**Two gates still print Polish and two carry Polish identifiers**: `check-docs` in a message
+about `nx affected -t`, `check-tokens` and `check-parts` in the name of an entry list and of a
+truncation helper. The requirements cite four names H8 renamed away — `check-docs` compares the
 path, never the name after `›`, the blind spot H6 recorded and nobody has closed.
 
 **The sandbox decision is made**: English, with the texts channel demonstrated in `fr-FR` — not
@@ -884,11 +940,11 @@ the script throws them; a rename on one side alone leaves a gate that fires on t
 point and says so. So each gate went in one commit — script, fixtures, snapshots and the
 **Control** citations in `docs/` — and `check-docs` found the last four of those itself.
 
-**Four renames the gates caught and review would not have.** `odwiedz` → `visit` collided
+**Four renames the gates caught and review would not have.** one name → `visit` collided
 with the `TmplAstRecursiveVisitor` protocol: `visitAll` then calls it for every node
 instead of dispatching, three template points stopped firing and the run stayed green.
-`package` and `private` are reserved words — those at least throw. And `wzorcowy` (the
-baseline engine) wanted the same English word as `_poprawny` (the reference input).
+`package` and `private` are reserved words — those at least throw. And the baseline engine wanted the same
+English word as the reference input.
 
 **A generated file is regenerated, not translated.** `check-consumer`'s reference input is
 an imprint of a real measurement, and a hand-written copy lost `tarball.manifest` — two
@@ -909,16 +965,16 @@ Headers went **609 → 249 lines** against the budget of 251 from
   stands in [`lessons.md`](lessons.md); it now names what the gate measures, lists its points
   and links the lesson. `check-tokens` went 74 → 19 that way and lost no argument.
 - **A diacritics scan finds half the Polish.** `check-package.mjs` was written without them,
-  so "uruchom" and "brak zbudowanego pakietu" survived the first sweep. A second pass, by
+  so two of its messages survived the first sweep. A second pass, by
   Polish function words over comments and strings, found leftovers in seven files already
-  reported clean — including a `punkt ${fx.punkt}` left by the shared boilerplate pass.
+  reported clean — including an interpolated field name left by the shared boilerplate pass.
 - **Generated files follow their generator; deliberately stale ones must not.** Four
   snapshots were regenerated, but the two stale fixture copies (`check-parts`,
   `check-tokens`) had to be rebuilt by hand as "the current file minus its defect" —
   regenerating them would have deleted the defect they exist for.
-- **One rename crossed a contract.** `RAZEM` → `TOTAL` in the mutation snapshot broke the
+- **One rename crossed a contract.** The total row → `TOTAL` in the mutation snapshot broke the
   fixture composer, which inserts a row above that word. The gate named it precisely ("passed
-  and was meant not to"), which is the `regula` field from A12 doing its job.
+  and was meant not to"), which is the `rule` field from A12 doing its job.
 - **The fixture prose is the part nobody counted** — eight READMEs, ~400 lines, invisible to
   `measure-prose.mjs`. Written into H8 now.
 
@@ -932,12 +988,12 @@ fixture data and the three helpers in `src/support/` that the specs quote by mes
 
 - **The screenshot names were test names.** The plan filed the 26 Polish baselines under H10,
   beside the sandbox. But `visual.spec.ts` names every test after its own file, so
-  `przycisk-warianty` was a test name that happened to end in `.png` — the rename belonged
+  a baseline was a test name that happened to end in `.png` — the rename belonged
   here and cost one `git mv` loop, with the bytes untouched.
 - **What a test quotes, it binds to.** Three couplings, one uncounted: the seven requirement
   **Control** citations (`check-docs` reads the path, never the sentence after `›`);
   `hydration.spec.ts`, which asserts on the message `visit()` throws, so `support/dom.ts` moved
-  with it; and fixture values carrying a length — `dwanaście!!!` is twelve characters.
+  with it; and fixture values carrying a length — the string had to stay twelve characters long.
 - **`apps/` is not a translation.** `app.config.ts` states that the sandbox is Polish on
   purpose: it is the only live use of `providePctTexts` and of a non-English `LOCALE_ID`, and
   `select.spec.ts` follows that chain through SSR and hydration. Translating the demo would
@@ -1009,16 +1065,16 @@ Next: **B2** — squash the history and push, then **B3 + B4 + B8** as one move;
 unchanged — 54/16/13, because this was a translation, not a measurement, and **that is its
 control**: had the parser drifted from the content, the classification would have collapsed.
 
-- **A requirement's fields are read by a machine**, so `Obietnica/Bramka/Kontrola/Wiąże przy`
-  could not be translated apart from `check-docs.mjs`. One move took the parser, the state
+- **A requirement's fields are read by a machine**, so the four Polish field names could not
+  be translated apart from `check-docs.mjs`. One move took the parser, the state
   classifier, the registry generator and four fixtures — otherwise a faulty case would fire on
   "field missing", that is on somebody else's point ([`lesson-50`](lessons.md#lesson-50)).
-- **The same in the second gate, and dearer there:** the `Części` table in the component cards
+- **The same in the second gate, and dearer there:** the parts table in the component cards
   is input to `check-parts`, and **five of its cases carry their own copy of `docs/components/`**.
   "The price is in the dispersion, not in the count" from **H8** came true on one name.
 - **Nothing guards heading anchors** — `check-docs` resolves `req-*`/`lesson-*` and paths, but
   not the sentence after `#`. An ad-hoc script found four, one of them **standing since H1**:
-  `README.md#planowane-przemianowanie-przestrzeni-id` pointed at a heading H1 itself renamed.
+  A link pointed at a Polish heading anchor that H1 had itself renamed.
 - **`docs/README.md` carried a corrupted ID migration table**: a separator with no header and
   rows reading `req-project-*` → `req-project-*`. The same path substitution from H1 that
   rewrote the left column — that entry says the table "was saved by its exemption from citation
@@ -1133,24 +1189,24 @@ Next: **H3** (`README.md`) → **H4** (`docs/`) → **B2** (squash the history a
 
 **H1** done. No change to the numbers (83 requirements, 13 gaps) — this was a migration of names,
 not of promises: 83 requirement identifiers, 59 lessons, **2 571 citations in 175 files** and 24
-file and directory names ([migration table](README.md#id-space-migration-2026-08-06)). The plan
+file and directory names, mapped in a migration table since retired by H12. The plan
 called it **"mechanical"** and that was the one word wrong: the substitution is mechanical, the
 consequences are not — and the gate found them, not review.
 
-- **The new prefix started catching its own tool.** After `wym-` → `req-` the citation pattern
+- **The new prefix started catching its own tool.** After the move to `req-` the citation pattern
   matches the file name `apps/sandbox/src/app/ui/req-ids.ts`, so the gate reported it as a
   dangling citation. Renamed to `doc-ids.ts`, which is truer anyway; the pattern also stopped
   treating a **path segment** as a citation — `req-` is too ordinary a prefix.
 - **The path substitution rewrote the left column of the migration table**, the one document
   whose only job is to remember the old names; what saved it is that the table lives in the only
   file exempt from citation control. **A migration must not run over the file describing it.**
-- **`tools/check-parts.mjs` held `docs/komponenty` without a trailing slash** and fell out of the
+- **`tools/check-parts.mjs` held the old Polish directory name without a trailing slash** and fell out of the
   substitution pattern. The more interesting half: **fixing that one constant fired the gate**,
   because five cases in `check-parts.fixtures/` carry their own copy of the cards directory. A
   documentation path lives in as many places as there are cases mirroring it.
 - **The old space is rejected from now on**, but the pattern requires a letter after the dash —
-  otherwise a sentence about the prefix itself (`wym-*`) would be a citation and the migration
-  could not be described anywhere.
+  otherwise a sentence about the old prefix itself would be a citation and the migration could
+  not be described anywhere.
 
 Next: **B1** → **H3** → **H4** → **B2**. From now on every new sentence is written in the target
 namespace, so H3 and H4 will not be written twice.
@@ -1167,7 +1223,7 @@ about them was **what enforced them**: nothing.
   the built package **24 files** carry Polish text, among them **all eight `types/*.d.ts`** —
   precisely the surface the split was meant to defend. A rule without a gate is no rule, hence
   [`req-project-language`](requirements/project.md#req-project-language) and **B8**.
-- **The public `.d.ts` cite `wym-*` and `lekcja-*` 31 times** — identifiers of documentation the
+- **The public `.d.ts` cite internal documentation identifiers 31 times** — identifiers of documentation the
   consumer does not have; translated they would be just as useless. Measured with it: the
   `PctReqId` union is built for the sandbox, so renaming identifiers (**H8**) is internal.
 - **Concision is a separate axis and travels with the same move.** Gate headers run 34–76 lines,
@@ -1223,7 +1279,7 @@ adding three projects is not the **execution** of that promise, it is its declar
 - **An exclusion resting on a fact about a browser must measure that fact.** "Webkit cannot do
   this" is a sentence about a **package version**, not about this repository. So the register has
   two kinds of entry: `record` (a decision written once) and `measurement` (a probe on every run), with
-  `fakt-bez-odniesienia` as denominator — a fact holding for **no** engine is a broken probe.
+  the fact-without-reference fixture as denominator — a fact holding for **no** engine is a broken probe.
 - **An engine that does not repaint the result shows a defect the other two cannot.**
   `:host([disabled])` in a forced-colors block has specificity (0,2,0) against the base rule's
   (0,3,0), so `color: GrayText` loses to a token — dead declaration, no symptom today. → **C8**
@@ -1302,7 +1358,7 @@ mechanism right and was wrong about **where to take the list** you compare again
 - **A gate point is not one sentence.** Point 6 carries nine rules, point 7 six. Comparing the
   point identifier alone — how every negative control here works
   ([`lesson-50`](lessons.md#lesson-50)) — lets through a case that fired on a neighbouring rule.
-  Hence the `regula` field: disarming five rules moves their cases to neighbours.
+  Hence the `rule` field: disarming five rules moves their cases to neighbours.
 - Point 7 itself **passed green having measured no colour at all** at first, which is
   [`lesson-48`](lessons.md#lesson-48) in a point written to avoid repeating it. In **another**
   gate: `toHaveScreenshot` has two thresholds, one measured ([`lesson-53`](lessons.md#lesson-53)).
@@ -1502,7 +1558,7 @@ Three things worth remembering beyond the code itself:
 - **Checking that a fixture fired is not enough — you have to check which point rejected it.**
   With six checks in one script a prepared package can fall over for a reason it was not examining
   (a broken manifest, a typo in a path) and look like proof. Hence a check identifier on every
-  error and a `kontrola` declaration in `fixture.json`. The run confirmed it: when the reference
+  error and a `control` declaration in `fixture.json`. The run confirmed it: when the reference
   package became faulty, **all seven** cases started firing on other points.
 - **The reference package must pass** — otherwise every case fires for its reason rather than its
   own, and the whole control becomes the thing it stands against.

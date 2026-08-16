@@ -2,8 +2,7 @@
 
 This area is **the implementation of [`req-axis`](../00-axis.md)**: it describes the machines
 that can fire. It merges the former test and sandbox sections plus four requirements that
-used to be scattered across the project and accessibility areas. Old identifiers are mapped
-in the [migration table](../README.md#identifier-migration-2026-07-27).
+used to be scattered across the project and accessibility areas.
 
 The sandbox sits here rather than in a section of its own, deliberately:
 [`lesson-33`](../lessons.md#lesson-33) showed that the "every component × every state"

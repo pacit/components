@@ -2,8 +2,7 @@
 
 The contract the consumer sees: names, inputs, outputs, slots, parts and configuration. This
 area absorbed the former icons section plus the `data-pct-part` contract, which used to sit
-among the tokens even though it is styling API and not a token. Old identifiers are mapped in
-the [migration table](../README.md#identifier-migration-2026-07-27).
+among the tokens even though it is styling API and not a token.
 
 > The shape of an entry and the meaning of the **Gate** / **Control** fields are described
 > in the [README](../README.md#requirement-shape).

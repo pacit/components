@@ -1,8 +1,7 @@
 # Requirements — project
 
 How the project is built, out of what, and what comes out of it. This area merges three
-former sections that sat apart while answering one question. Old identifiers are mapped in
-the [migration table](../README.md#identifier-migration-2026-07-27).
+former sections that sat apart while answering one question.
 
 > The shape of an entry and the meaning of the **Gate** / **Control** fields are described
 > in the [README](../README.md#requirement-shape).
@@ -200,16 +199,21 @@ names visible in the Actions tab.
 **Gate:** none — gap: `tools/check-language.mjs` — two measurements with different reach.
 The public surface is measured on the **packed artifact** (that is where what the consumer
 really sees ends up, not what stands in the source), the rest of the repository on the files
-in the git index. Detection has two limbs, because diacritics alone are not enough
-(`Przycisk`, `Rozmiar`, `domyslnie` carry none): diacritical marks **plus** a list of Polish
-function words that English does not contain (`jest`, `czyli`, `przez`, `oraz`, `albo`,
-`wtedy`, `przy`, `bez`). Plus a denominator of its own — a non-empty set of scanned files
-and a non-empty measurement, because a scan that stopped reading anything lets everything
-through ([`lesson-48`](../lessons.md#lesson-48))
-**Control:** none — gap: a Polish comment in a file outside the register has to fire; an
-entry pointing at a file that is **already** translated has to fire as dead; a Polish
-`description` in the packed manifest has to fire on the public-surface point **despite** an
-entry in the register; a scan with an empty file list has to fire on the denominator
+in the git index. Detection has three limbs, because diacritics alone are not enough — a
+name spelled without them carries none: diacritical marks, a **dictionary**
+(`/usr/share/dict/polish` folded of diacritics, minus the English one) read over identifiers
+split at camelCase, and the opening quote `U+201E`, a typographic convention with no English
+use. The dictionary limb needs a register of false positives, and that register may **not**
+excuse `SCREAMING_CASE` or short abbreviations — a whole layer of constants survived two
+passes in exactly that blind spot ([`lesson-60`](../lessons.md#lesson-60)). Plus a
+denominator of its own — a non-empty set of scanned files and a non-empty measurement,
+because a scan that stopped reading anything lets everything through
+([`lesson-48`](../lessons.md#lesson-48))
+**Control:** none — gap: a Polish comment in a file outside the register has to
+fire; an entry pointing at a file that is **already** translated has to fire as dead; a Polish
+`description` in the packed manifest has to fire on the public-surface point
+**despite** an entry in the register; a constant in `SCREAMING_CASE` has to fire like any
+other identifier; a scan with an empty file list has to fire on the denominator
 **Binds at:** **the first push to upstream** — the repository is public from that second,
 with no private stage, so `README.md` and `docs/` are the first thing anybody sees. The
 package release binds the second part: 24 files in the built artifact, including all eight
@@ -222,15 +226,14 @@ package release binds the second part: 24 files in the built artifact, including
 > translation — that is, switched off on day one.
 
 > The rule used to apply **by halves and only as prose**: `docs/README.md` recorded a split
-> of "working documentation in Polish, public surface in English". The split had no gate and
-> was not kept — the package `description` is in Polish, and the public JSDoc cites internal
-> `wym-*` / `lekcja-*` **31 times**, i.e. identifiers of documentation the consumer does not
-> have. That is exactly the [`req-axis`](../00-axis.md) class: a promise without a gate is
-> not a promise.
+> of "working documentation in Polish, public surface in English". The split had no
+> gate and was not kept — the package `description` was in Polish, and the
+> public JSDoc cited internal documentation identifiers **31 times**, i.e. names of documents
+> the consumer does not have. That is exactly the [`req-axis`](../00-axis.md) class: a
+> promise without a gate is not a promise.
 
-> The promise covers **identifiers** as well: `wym-` is short for "wymaganie", `lekcja-`
-> speaks for itself, and file and directory names (`requirements/`, `decisions/`,
-> `tokens.md`) are cited in the same places as the content. The renaming is run by
+> The promise covers **identifiers** as well: the old prefixes were Polish abbreviations, and file and directory names (`requirements/`, `decisions/`, `tokens.md`)
+> are cited in the same places as the content. The renaming is run by
 > [H1](../plan.md#h-one-language-for-the-repository), and it is the exception to the "an ID
 > never changes" rule — the only one, deliberate and dated.
 

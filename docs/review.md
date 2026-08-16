@@ -7,9 +7,9 @@
 This document answers three questions: **is the direction right**, **what to change**, **what to do next** — plus the RTL decision separately.
 
 > **A dated snapshot.** Translated into English on 2026-08-07 (task H4) and otherwise left as it
-> was written; the identifiers below (`wym-*`) belong to the namespace that H1 replaced, and the
-> [migration table](README.md#id-space-migration-2026-08-06) maps them onto today's. Its own
-> recommendation to keep the working documentation in Polish (risk E) was reversed on 2026-08-06:
+> was written, except that its identifiers were remapped onto the space H1 introduced, so they
+> resolve for a reader who never saw the old one. Its own recommendation to keep the working
+> documentation in Polish (risk E) was reversed on 2026-08-06:
 > the whole repository moves to English, because a rule with no gate is no rule.
 
 ## 1. Verdict
@@ -25,28 +25,28 @@ You can win on something else — and you already are, only without writing it d
 
 The contrast gate blocks the build. `check-package` examines the packed artefact, not the sources.
 The hydration gate sits in `visit()`, so it covers every view at once instead of waiting to be
-added to the next spec. `wym-real-39` says it plainly: _"a new gate is not ready when it passes —
+added to the next spec. `lesson-39` says it plainly: _"a new gate is not ready when it passes —
 it is ready when it has been shown that it can fail"_.
 
 None of the libraries named above has this. Material has a11y documentation; nobody fails a build
 on a contrast ratio. PrimeNG has a JS theme engine with SSR/FOUC problems — your CSS-first
 zero-runtime approach is simply a better solution to the same problem.
 
-**To do:** write it down as `wym-proj-0` in `overview.md`. Every other priority follows from that
+**To do:** write it down as `req-axis` in `overview.md`. Every other priority follows from that
 thesis, and an unnamed thesis cannot settle arguments about order.
 
 ## 2. What is already world class — and must not be traded away
 
-| Thing                                                      | Why it is an advantage                                                                                                                    |
-| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `wym-token-13` — transitive closure of overrides           | A real defect PrimeNG had for years. Solved properly, with a regression test comparing a component token in `:root` and in a scope.       |
-| The contrast gate as a skin policy (`wym-token-11`)        | Nobody does this. `wym-token-12` (no `opacity`) closes the hole through which hex arithmetic lies about composition with the background.  |
-| Signal forms without `ControlValueAccessor` (`wym-real-9`) | A bet on Angular's future, verified by experiment rather than assumption. You will be ~2 years ahead of Material.                         |
-| `check-package` examining the artefact (`wym-real-36`)     | "A green build is no proof that the artefact can be used" — a sentence worth a whole textbook chapter.                                    |
-| Negative controls for gates (`wym-a11y-4`, `-38`, `-39`)   | A methodology above that of commercial libraries. A gate that always passes is more dangerous than no gate.                               |
-| Cursor map × `elementFromPoint` (`wym-real-27`)            | It caught a class of defect ("it looks clickable") that no automated audit sees.                                                          |
-| The motion axis in tokens (`wym-a11y-5`)                   | Motion reduction holds from one rule, and a new component inherits it by using the token — instead of starting from its absence.          |
-| The `wym-real-*` log                                       | **The jewel of the project.** An ADR with empirical evidence beside every decision. For onboarding people it is worth more than the code. |
+| Thing                                                                      | Why it is an advantage                                                                                                                           |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `req-token-closure` — transitive closure of overrides                      | A real defect PrimeNG had for years. Solved properly, with a regression test comparing a component token in `:root` and in a scope.              |
+| The contrast gate as a skin policy (`req-token-contrast`)                  | Nobody does this. `req-token-no-opacity` (no `opacity`) closes the hole through which hex arithmetic lies about composition with the background. |
+| Signal forms without `ControlValueAccessor` (`lesson-9`)                   | A bet on Angular's future, verified by experiment rather than assumption. You will be ~2 years ahead of Material.                                |
+| `check-package` examining the artefact (`lesson-36`)                       | "A green build is no proof that the artefact can be used" — a sentence worth a whole textbook chapter.                                           |
+| Negative controls for gates (`req-quality-negative-control`, `-38`, `-39`) | A methodology above that of commercial libraries. A gate that always passes is more dangerous than no gate.                                      |
+| Cursor map × `elementFromPoint` (`lesson-27`)                              | It caught a class of defect ("it looks clickable") that no automated audit sees.                                                                 |
+| The motion axis in tokens (`req-a11y-motion`)                              | Motion reduction holds from one rule, and a new component inherits it by using the token — instead of starting from its absence.                 |
+| The `lesson-*` log                                                         | **The jewel of the project.** An ADR with empirical evidence beside every decision. For onboarding people it is worth more than the code.        |
 
 These are **structural** advantages — the competition cannot catch up with a feature, only by
 rewriting a foundation. Any decision to go faster at the cost of one of them is a bad trade.
@@ -60,7 +60,7 @@ menu, tooltip, popover, tabs, drawer, autocomplete, date picker, tree) all need 
 focus trap, focus restore, roving tabindex / `aria-activedescendant`, the closing stack (Escape
 order with nested overlays!), scroll lock, `inert` background, live announcer, positioning.
 
-`wym-api-6` says CDK a11y "binds only at the dialog". That is one component too late. The decision
+`req-a11y-built-in` says CDK a11y "binds only at the dialog". That is one component too late. The decision
 to take **now**: do overlay and focus semantics belong to CDK, or to you?
 
 **Recommendation: mechanics from CDK, our own API.** Wrap `Overlay`, `FocusTrap`, `LiveAnnouncer`
@@ -80,7 +80,7 @@ Something else matters more, though: **the list machinery** (typeahead, `enabled
 `moveActive`, `activeIndex`) sits as private methods in `PctSelect`. Autocomplete, multiselect,
 menu, combobox and a command palette all need the same.
 
-**Extract it into `core` before the second consumer, not after** — otherwise `wym-real-21` (the
+**Extract it into `core` before the second consumer, not after** — otherwise `lesson-21` (the
 same logic copied into four controls) repeats on a much bigger piece and with a much dearer fix.
 
 ### C. Nothing proves the library scales
@@ -92,11 +92,11 @@ it changes the inside of the select and determines the architecture of the table
 
 ### D. The public API is not machine-controlled
 
-`wym-token-7` promises a versioned `data-pct-part` contract. Today: no inventory of parts, no
+`req-api-parts` promises a versioned `data-pct-part` contract. Today: no inventory of parts, no
 snapshot of public exports, no test firing when somebody renames an input.
 
 For a library whose selling point is "you can safely style the inside", that is **a promise
-without a gate** — exactly the pattern you criticise yourselves in `wym-real-36`. It is the only
+without a gate** — exactly the pattern you criticise yourselves in `lesson-36`. It is the only
 place where the project behaves like an ordinary library.
 
 ### E. The documentation is in Polish — including the JSDoc
@@ -113,12 +113,13 @@ but in theirs, on every hover over an input.
 
 A split that costs nothing:
 
-- `overview.md`, `review.md`, the `wym-real-*` log — **stay in Polish.** That is where thinking
-  happens, and thinking happens in one's own language. It is not a public surface.
+- `overview.md`, `review.md`, the `lesson-*` log — **stay in Polish.** That is where thinking
+  happens, and thinking happens in one's own language. It is not a public surface. _(Reversed
+  on 2026-08-06: the split had no gate and was not kept.)_
 - README, the docs app, **JSDoc on the public API**, CHANGELOG, developer warnings, issue
   templates, gate messages visible to a consumer — **English.**
 
-The warnings in `[pctNumber]` are already in English and the justification in `wym-api-21` is the
+The warnings in `[pctNumber]` are already in English and the justification in `req-api-texts` is the
 right one ("a programmer reads them, not a user"). JSDoc falls under the same rule, one step
 further.
 
@@ -166,7 +167,7 @@ strategy "we win on quality".
 
 ### What to do
 
-1. Write it down as a requirement (`wym-styl-3`): _library stylesheets use logical properties only_.
+1. Write it down as a requirement (`req-token-logical`): _library stylesheets use logical properties only_.
 2. **Gate:** a lint rule (stylelint or a script of your own in the spirit of `check-package.mjs`)
    forbidding `left`/`right`, `margin-left`, `padding-right`, `text-align: left|right`,
    `border-*-left` in `libs/components/**/*.scss`. Exceptions only with a comment giving the
@@ -174,7 +175,7 @@ strategy "we win on quality".
    `left: 50%` in hit areas).
 3. **A `dir` axis in the sandbox shell** — of the same shape as the existing theme, skin and size
    axes. Then every view becomes an RTL test in passing, with no separate examples to write. The
-   same trick you already used in `wym-sbx-2` for the theme.
+   same trick you already used in `req-quality-card` for the theme.
 4. One RTL visual screenshot per component + an axe audit in RTL.
 5. **Draw the boundary explicitly:** _"the layout mirrors; full bidi (mixed directions inside one
    run of text, isolation when truncating labels) is not solved in v1"_.
@@ -215,10 +216,10 @@ today it is written down nowhere.
 ### 5.3 `_tokens.scss` is generated, shipped in the package and used by zero lines of code
 
 Components write `var(--pct-*)` as raw strings (159 unique ones, zero `@use` in component
-stylesheets). `wym-token-2` requires SCSS maps "for internal use" — there is no use.
+stylesheets). `req-token-artifacts` requires SCSS maps "for internal use" — there is no use.
 
 Either drop it from the requirement and from the package, or make it the mandatory road to a token.
-For the second speaks `wym-real-43` (a typo should be a compile error), although here
+For the second speaks `lesson-43` (a typo should be a compile error), although here
 `check-package` catches the typo after the fact — so this is not a live defect, only a dead
 artefact in a published package.
 
@@ -242,7 +243,7 @@ that is the first thing a corporate consumer's legal department checks.
 
 ### 5.7 The 80% coverage threshold is declared and not enforced
 
-`wym-proj-4` / `wym-real-5`. This is the one place where the project breaks its own first
+`req-quality-coverage` / `lesson-5`. This is the one place where the project breaks its own first
 principle: a promise without a gate. It is also the oldest debt — the longer it stands, the more
 there is to make up.
 
@@ -256,19 +257,19 @@ problems in half of them.
 
 Everything here gets dearer with every additional component.
 
-| Task                                                                        | Closes                     |
-| --------------------------------------------------------------------------- | -------------------------- |
-| `coverageInclude` + an enforced coverage threshold                          | `wym-proj-4`, `wym-real-5` |
-| A snapshot of the public TS API (`api-extractor` → `.api.md` in the repo)   | risk D                     |
-| A generated `data-pct-part` inventory + a gate on unaccepted change         | `wym-token-7`, risk D      |
-| A snapshot of token names (you already generate `tokens.ts` — add a gate)   | `wym-token-2`              |
-| JSDoc of the public API + README into English                               | risk E                     |
-| RTL: requirement + lint + a `dir` axis in the sandbox + screenshots         | section 4                  |
-| Closing the shape of `PctConfig` **with a per-component defaults strategy** | `wym-api-8`                |
-| Browser matrix: + webkit, + firefox (functionally)                          | risk F                     |
-| `LICENSE`, `repository`                                                     | release readiness          |
-| A consumer test on Verdaccio (`pack` → install → SSR build → e2e)           | risk G                     |
-| Fixes 5.1–5.5                                                               | —                          |
+| Task                                                                        | Closes                             |
+| --------------------------------------------------------------------------- | ---------------------------------- |
+| `coverageInclude` + an enforced coverage threshold                          | `req-quality-coverage`, `lesson-5` |
+| A snapshot of the public TS API (`api-extractor` → `.api.md` in the repo)   | risk D                             |
+| A generated `data-pct-part` inventory + a gate on unaccepted change         | `req-api-parts`, risk D            |
+| A snapshot of token names (you already generate `tokens.ts` — add a gate)   | `req-token-artifacts`              |
+| JSDoc of the public API + README into English                               | risk E                             |
+| RTL: requirement + lint + a `dir` axis in the sandbox + screenshots         | section 4                          |
+| Closing the shape of `PctConfig` **with a per-component defaults strategy** | `req-api-config`                   |
+| Browser matrix: + webkit, + firefox (functionally)                          | risk F                             |
+| `LICENSE`, `repository`                                                     | release readiness                  |
+| A consumer test on Verdaccio (`pack` → install → SSR build → e2e)           | risk G                             |
+| Fixes 5.1–5.5                                                               | —                                  |
 
 A note on `PctConfig`: the question is not "which fields to add" but **"do per-component defaults
 go through configuration (`providePctConfig({ button: { variant: 'outline' } })`) or through
@@ -282,14 +283,14 @@ The thing that makes Phase 2 fast.
 - **List navigation**: `activeIndex`, typeahead, skipping disabled — extract from `PctSelect`.
 - **Overlay**: positioning, the closing stack (Escape order when nested), outside click, `inert`
   background, scroll lock, inheritance of theme and writing direction. The last one is **solved
-  once in `wym-real-35` — generalise it**, because the lesson was "every inherited property is
+  once in `lesson-35` — generalise it**, because the lesson was "every inherited property is
   silently broken in an overlay", which is a rule, not a peculiarity of the select.
 - **Focus**: trap, restore, initial focus, roving tabindex as an alternative to
   `aria-activedescendant`.
 - **Live announcer**: one `polite` channel, one `assertive`, with deduplication — not a region per
   component.
-- **`*pctTemplate` / `TemplateRef`** (`wym-api-7`) — it also unblocks icons.
-- **Icons** (`wym-ikon-2`): `pct-icon` taking a projected SVG **plus** a `PCT_ICONS` token mapping
+- **`*pctTemplate` / `TemplateRef`** (`req-api-templates`) — it also unblocks icons.
+- **Icons** (`req-api-icons`): `pct-icon` taking a projected SVG **plus** a `PCT_ICONS` token mapping
   semantic names (`chevron-down`, `check`, `close`, `calendar`) onto templates, with built-in
   defaults. It satisfies "zero dependencies" and "swap in your own set" at once, without forcing
   anybody into either.
@@ -300,7 +301,7 @@ The thing that makes Phase 2 fast.
    safety. The highest architectural gain per component.
 2. **Tooltip + Popover** — forces the "describes vs names" distinction, hover/focus/touch parity
    (the tooltip is the most frequently broken component in _every_ library) and motion reduction on
-   a real enter/leave, which `wym-api-9` is waiting for.
+   a real enter/leave, which `req-api-animations` is waiting for.
 3. **Menu** — roving focus, submenus, reuse of the typeahead from Phase 1.
 4. **Closing out the select family** — projected `pct-option`, an option template, groups, multiple
    selection, filtering, clearing, async/loading, virtualisation. Deliberately **after** the
@@ -348,7 +349,7 @@ human eye:
 | SSR + hydration with no `NG05xx`                                   | the gate in `visit()` (you have it)   |
 | Forms: signal forms **and** `[formControl]` **and** `[(ngModel)]`  | unit tests                            |
 | Size axis `sm`/`md`/`lg` aligned to `--pct-control-height-*`       | a measuring e2e (you have it)         |
-| Density axis                                                       | after `wym-token-8`                   |
+| Density axis                                                       | after `req-token-density`             |
 | Touch target ≥ 24×24 px directly, not through a spacing exception  | e2e (you have it)                     |
 | `data-pct-part` parts registered in the inventory                  | the gate from Phase 0                 |
 | Tokens registered + an entry in `contrast.policy.json`             | the token build                       |
@@ -362,11 +363,11 @@ Half of this already exists as scattered practice. The value is in writing it do
 
 ### 7.2 The gates that do not exist yet
 
-Consistently with the `wym-proj-0` thesis — every promise below needs a machine that can fire on it:
+Consistently with the `req-axis` thesis — every promise below needs a machine that can fire on it:
 
 - **A size budget per entrypoint.** Today `field` is 62 kB and `select` 43 kB in FESM. Without a
   budget nobody notices when it doubles. Track it over time, fail on a jump.
-- **Verification of tree-shaking.** `wym-ws-5` promises that the primary entrypoint is minimal and
+- **Verification of tree-shaking.** `req-project-tree-shaking` promises that the primary entrypoint is minimal and
   that you import through the secondary ones. Nothing checks it: a test should build an application
   importing **only** `@pacit/components/button` and check that the bundle contains neither
   `PctField` nor CDK Overlay.
@@ -379,7 +380,7 @@ Consistently with the `wym-proj-0` thesis — every promise below needs a machin
 - **Memory-leak detection.** You caught the timer leak in `PctSelect` by reading the code. With
   twenty components carrying overlays you need a test that mounts and destroys a component N times
   and checks the number of detached nodes.
-- **A zoneless gate.** `wym-real-8` removed `zone.js` and boasts that "coming back by accident is
+- **A zoneless gate.** `lesson-8` removed `zone.js` and boasts that "coming back by accident is
   impossible". Nothing guards it: a test should fail when `zone.js` appears in the dependency tree
   or `window.Zone` in the bundle.
 - **Automated screen-reader tests.** Tools exist that drive NVDA and VoiceOver from tests
@@ -407,12 +408,12 @@ to know what to do), an SBOM at release, a written security policy. Provenance y
 
 ### 7.4 A bridge to design tools
 
-The source of truth is DTCG (`wym-token-1`) and that is **an unused advantage**. The format is read
+The source of truth is DTCG (`req-token-dtcg`) and that is **an unused advantage**. The format is read
 and written by Figma / Tokens Studio. Two-way synchronisation — a designer changes a token in
 Figma, the PR trips the contrast gate, the build ships a skin — is a workflow no Angular library
 has, and one that sells itself to every team with a designer.
 
-It ties into `wym-theme-5` (the path for an outsider to build a skin). Done together they give a
+It ties into `req-token-skin` (the path for an outsider to build a skin). Done together they give a
 complete story: _"your designer defines the theme in Figma, and our gate will not let them ship a
 theme with too little contrast"_. That is a sentence that wins presentations.
 
@@ -460,11 +461,11 @@ A company does not buy a library on the strength of its code, but on its predict
 - a versioning policy and a **support window** (how many Angular versions back, for how long),
 - a deprecation policy (how many minors of warning before removal),
 - a migration collection **with real migrations** — today it is empty, and rightly ships in the
-  package from the first release (`wym-wer-2`), but the first breaking change has to arrive with a
+  package from the first release (`req-release-ng-add`), but the first breaking change has to arrive with a
   codemod, not with a paragraph in the CHANGELOG,
 - a public roadmap and an RFC process for API changes,
 - CONTRIBUTING with the "Definition of Done" from 7.1,
-- `beta`/`rc` channels with `dist-tag` (`wym-wer-1` leaves this to be pinned down).
+- `beta`/`rc` channels with `dist-tag` (`req-release-semver` leaves this to be pinned down).
 
 ## 8. The merged order
 
@@ -492,14 +493,14 @@ An axis is the competitive dimension you win on. The competition has theirs: Pri
 of components, Material — fidelity to the specification and the Google brand, Telerik — the support
 contract and the depth of the table, Spartan — headless and code ownership through copy-paste.
 
-Yours cannot be guessed from the README, but **it can be read out of `wym-real-*`**. That log looks
+Yours cannot be guessed from the README, but **it can be read out of `lesson-*`**. That log looks
 like a collection of independent lessons and is nine occurrences of one — see the table in
-`wym-proj-0` (`overview.md`). Every one of them says "silently", "nobody saw it", "born dead",
+`req-axis` (`overview.md`). Every one of them says "silently", "nobody saw it", "born dead",
 "it survived".
 
 Hence the name of the axis:
 
-> **`wym-proj-0` — in this library nothing breaks silently.**
+> **`req-axis` — in this library nothing breaks silently.**
 
 Three reasons to name it by the **silent defect** rather than by "verifiability" or "quality":
 
@@ -514,16 +515,16 @@ Three reasons to name it by the **silent defect** rather than by "verifiability"
 Not a11y, not tokens, not tests. It is about **a class of failure that runs through every layer** —
 the one where the platform answers an error with silence:
 
-| layer       | what the platform does instead of erroring               | where in your code             |
-| ----------- | -------------------------------------------------------- | ------------------------------ |
-| CSS         | missing `var()` → the initial value                      | `wym-real-36`, `check-package` |
-| DOM reads   | a non-existent token → `''`                              | `wym-real-43`                  |
-| test infra  | no screenshot baseline → record the current one as good  | `wym-real-39`                  |
-| test infra  | emulation does not arrive → a test on default values     | `wym-real-38`                  |
-| build graph | a missing edge → the build succeeds, the output is wrong | `wym-real-36`                  |
-| SSR         | id drift → a silent re-render, ARIA into the void        | `wym-real-31`                  |
-| a11y        | state by colour alone → gone in `forced-colors`          | `wym-real-40`                  |
-| types       | `T` too wide → contradictory bindings compile            | `wym-real-37`                  |
+| layer       | what the platform does instead of erroring               | where in your code           |
+| ----------- | -------------------------------------------------------- | ---------------------------- |
+| CSS         | missing `var()` → the initial value                      | `lesson-36`, `check-package` |
+| DOM reads   | a non-existent token → `''`                              | `lesson-43`                  |
+| test infra  | no screenshot baseline → record the current one as good  | `lesson-39`                  |
+| test infra  | emulation does not arrive → a test on default values     | `lesson-38`                  |
+| build graph | a missing edge → the build succeeds, the output is wrong | `lesson-36`                  |
+| SSR         | id drift → a silent re-render, ARIA into the void        | `lesson-31`                  |
+| a11y        | state by colour alone → gone in `forced-colors`          | `lesson-40`                  |
+| types       | `T` too wide → contradictory bindings compile            | `lesson-37`                  |
 
 The common denominator: **the default behaviour of a layer is "nothing happened"**. That is why a
 missing gate never shows up as an absence — it shows up as green.
@@ -536,14 +537,14 @@ The drift between the document and reality has already happened and has already 
 The heading "How to read this document" exists precisely because the requirements could be read as
 a description of the state of the code — and the answer was **adding 18 annotations by hand**
 (`495483d`). That is the same pattern as the manual `node libs/tokens/build.mjs` in CI before
-`wym-real-36`: a workaround masking a missing structure instead of exposing it.
+`lesson-36`: a workaround masking a missing structure instead of exposing it.
 
 The gate is **a registry in which every requirement names its gate and that gate's negative
-control** (`wym-proj-6`):
+control** (`req-quality-registry`):
 
 | column    | meaning                                                                  |
 | --------- | ------------------------------------------------------------------------ |
-| `wym-*`   | the promise                                                              |
+| `req-*`   | the promise                                                              |
 | `gate`    | the path to the target / test / script that fires on it                  |
 | `control` | the test proving that gate can **fail**                                  |
 | `state`   | **derived**, not typed in: `enforced` / `none (deliberately, because …)` |
@@ -564,8 +565,8 @@ silently.** The axis begins to enforce itself.
 ### 9.4 The order — the reverse of what the first version suggested
 
 `data-pct-part` is not the gate for the axis. It is **the first item the registry will show red** —
-along with the 80% coverage threshold, tree-shaking of the primary entrypoint (`wym-ws-5`), the
-irreversibility of zoneless (`wym-real-8`), the RTL intention and a few others.
+along with the 80% coverage threshold, tree-shaking of the primary entrypoint (`req-project-tree-shaking`), the
+irreversibility of zoneless (`lesson-8`), the RTL intention and a few others.
 
 So: **first the registry, then whatever the registry points at.** Because the registry will tell
 you how many gaps you cannot see yet — today I estimate 6–10, but that is guessing, and the guessing

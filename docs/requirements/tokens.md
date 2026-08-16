@@ -1,9 +1,7 @@
 # Requirements — tokens, styling and themes
 
 This area merges three former sections that described **one layer** — and some of their points
-were duplicated: two pairs of requirements said the same thing in different words. Old
-identifiers are mapped in the
-[migration table](../README.md#identifier-migration-2026-07-27).
+were duplicated: two pairs of requirements said the same thing in different words.
 
 **The governing principle: CSS-first, zero-runtime.** A theme at runtime is nothing but
 cascading CSS — no JS engine generating styles. That is where the SSR safety comes from (no

@@ -1231,18 +1231,25 @@ both causes and does not settle anything by itself; what settles it is the recor
 **The language scan that reported four layers clean was measuring diacritics; the one that
 replaced it was measuring a list of Polish function words I wrote by hand — and it counted 32
 files where a dictionary counts 94.** Both limbs were honest about what they compared and
-neither was honest about what that left out. A function-word list catches PROSE: `nie`, `jest`,
-`przez` stand in sentences. It cannot catch `wartosc`, `skroc`, `nadmiarowe`,
-`przygotujKatalogSond` — identifiers, which carry no function words by construction, and which
-[H1](plan.md#h) had already ruled move with everything else.
+neither was honest about what that left out. A function-word list catches PROSE, because
+function words stand in sentences. It cannot catch a single identifier — a local, a constant,
+a camelCase name — because an identifier carries no function words by construction, and
+[H1](plan.md#h-one-language-for-the-repository) had already ruled that identifiers move with everything else.
 
 The fix cost nothing: `/usr/share/dict/polish` folded of its diacritics, minus
 `/usr/share/dict/american-english`, over identifiers split at camelCase. **The design work is
 where the plan said it would be — the false positives** — but they are enumerable and boring:
-acronyms shorter than four letters, `SCREAMING_CASE`, the abbreviations of the trade (`repo`,
-`config`, `dom`, `proc`), and the words that are Polish and English at once (`jest`, `test`,
-`role`, `data`, `rate`). A register of about a hundred entries turns a 61 MB dictionary into an
-instrument with no false negatives worth the name.
+acronyms of two or three letters, the abbreviations of the trade (`repo`, `config`, `dom`,
+`proc`), and the words that belong to both languages at once (`test`, `role`, `data`, `rate`).
+A register of about a hundred entries turns a 61 MB dictionary into an instrument with no false
+negatives worth the name.
+
+**The register wrote the next blind spot itself.** Two entries on that list — `SCREAMING_CASE`
+and abbreviations shorter than four letters — are not false positives at all, they are whole
+grammatical classes, and every constant and short parameter in the gates sat inside them:
+eleven files still carrying Polish names after two passes had reported those
+files clean. An exclusion by SHAPE excuses everything of that shape; an exclusion has to name
+the word, never the form it is written in.
 
 The rule generalises past language: **when a measurement's denominator is a list somebody typed,
 the measurement's ceiling is that person's recall, not the thing being measured.** Ask what

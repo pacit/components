@@ -1,8 +1,7 @@
 # Requirements — release
 
 This area covers the former versioning section plus the release-readiness points that used
-to hang without an identifier in the "What is still missing" table. Old identifiers are
-mapped in the [migration table](../README.md#identifier-migration-2026-07-27).
+to hang without an identifier in the "What is still missing" table.
 
 > The shape of an entry and the meaning of the **Gate** / **Control** fields are described
 > in the [README](../README.md#requirement-shape).
