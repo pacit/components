@@ -283,9 +283,10 @@ for (const req of requirements) {
 
 /**
  * Two dead namespaces, both rejected. The numeric one comes from the 2026-07-27 migration,
- * the Polish one (`wym-…`, `lekcja-N`) from 2026-08-06; the table in `docs/README.md`
- * resolves both. The Polish pattern requires a letter after the dash, so a sentence about
- * the prefix alone (`wym-*`, `wym-…`) is not a citation and does not fire.
+ * the Polish one from 2026-08-06. The tables that resolved them were retired with H12, so
+ * this pattern is all that is left of either — which is the point: it is what stops a space
+ * nobody can look up from coming back. It requires a letter after the dash, so a sentence
+ * about the prefix alone is not a citation and does not fire.
  */
 const LEGACY =
   /wym-(proj|tech|ws|sbx|api|a11y|styl|theme|token|ikon|test|wer|real)-\d+|\bwym-[a-z][a-z0-9-]*[a-z0-9]\b|\blekcja-\d+\b/g;
