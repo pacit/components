@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "dependencies",
+  "rule": "undeclared",
+  "description": "An import of `rxjs` in the packed code with no declaration behind it. The half of point 7 that reads the manifest cannot see this at all — the defect lives in the code, and the manifest is exactly the file a reflex leaves untouched. Here it resolves from the workspace's node_modules; at the consumer's it is a module not found, on the first render."
+}

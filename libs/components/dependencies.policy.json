@@ -1,0 +1,28 @@
+{
+  "$description": "Which packages `@pacit/components` is allowed to bring into a consumer's tree (req-project-dependencies). Point 7 of `check-package.mjs` reads this file against the PACKED manifest and against the imports of the packed code, in both directions: a name declared without an entry here is a dependency added by reflex, an entry with no dependency behind it is a permit the next reflex slips in under, and an import nobody declared is a package the consumer's install does not bring. The promise is \"as few as possible\", and no gate can measure \"as possible\" — what it can measure is that every one of them was written down on purpose, with the reason readable at the place the next one gets added.",
+
+  "$allowed": "One entry per package. `name` is the package as it stands in the manifest, `kind` is the field it has to stand in — `peer` for `peerDependencies` (the consumer already has it, and a second copy in their tree is a second injector), `runtime` for `dependencies` (it arrives with the install and weighs something in every application). `reason` says why it is deliberate; it is read by a person, and its absence fires. `unimported` is the exception for a dependency no import in the package can show — it carries its own reason, and without it a dependency nothing imports fires as dead weight. There is deliberately no entry for what the Angular CLI provides to a schematic at `ng add` time (`@angular-devkit/schematics` and its neighbours): today the only schematic imports it as a TYPE, which the compiler erases, so the artefact needs no such rule — and a mechanism with no case behind it is a rule nobody has read.",
+  "allowed": [
+    {
+      "name": "@angular/core",
+      "kind": "peer",
+      "reason": "The framework the components are compiled against. It can be nothing but a peer: a second copy of `@angular/core` in the consumer's tree is a second injector and a second set of the tokens the library resolves through, and the failure it produces reads as a bug in the library."
+    },
+    {
+      "name": "@angular/forms",
+      "kind": "peer",
+      "reason": "Signal forms: the controls bind to `Control` and to the field API from `@angular/forms/signals`. The same peer argument as `@angular/core` — a form control from a second copy of the package is a different class than the one the library checks against."
+    },
+    {
+      "name": "@angular/cdk",
+      "kind": "peer",
+      "reason": "Overlay mechanics, and nothing else — decision 0013 buys the machinery here and keeps the API our own. It is a peer because the consumer includes `@angular/cdk/overlay-prebuilt.css` themselves: a version they cannot see is a stylesheet they cannot match."
+    },
+    {
+      "name": "tslib",
+      "kind": "runtime",
+      "reason": "The only runtime dependency, and nobody here typed it: `libs/components/package.json` declares no `dependencies` at all, and ng-packagr writes this one into the PACKED manifest when the library declares none, taking the range from `@angular/compiler`'s own manifest (lesson-64). It is not ceremonial — `importHelpers: true` in `tsconfig.base.json` makes the compiler emit its helpers as imports from `tslib` instead of a copy in every file that needs one.",
+      "unimported": "Today no bundle imports it: at the target these sources compile to, nothing needs a helper. The entry says so out loud rather than letting the day one appears read as a new dependency — the declaration is right now, and the import may arrive at any change of the target."
+    }
+  ]
+}

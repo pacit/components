@@ -8,11 +8,11 @@
     "url": "git+https://example.invalid/pacit/components.git"
   },
   "peerDependencies": {
-    "@angular/cdk": "^22.0.0",
     "@angular/core": "^22.0.0",
     "@angular/forms": "^22.0.0"
   },
   "dependencies": {
+    "@angular/cdk": "^22.0.0",
     "tslib": "^2.3.0"
   },
   "sideEffects": false,
@@ -21,6 +21,7 @@
     "migrations": "./schematics/migration.json"
   },
   "exports": {
+    "./themes/*": "./themes/*",
     "./schematics/*": "./schematics/*",
     ".": {
       "default": "./fesm2022/pacit-components.mjs"

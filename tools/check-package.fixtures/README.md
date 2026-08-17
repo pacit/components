@@ -1,6 +1,6 @@
 # Negative control of the package gate
 
-Deliberately defective packages. `libs/components/check-package.mjs` runs all six of its
+Deliberately defective packages. `libs/components/check-package.mjs` runs all seven of its
 checks on each of them and **requires every one to be rejected — and rejected by the point
 it declares**. A package that passes is a fault; a package that fires for a reason other
 than the one written in its `fixture.json` is a fault just the same, because it proves
@@ -16,7 +16,7 @@ that is, it does not exist between sessions — this is its machine form.
 
 ## How a case is built
 
-A case is not a sixth copy of the correct package with one thing broken. The gate builds
+A case is not one more copy of the correct package with one thing broken. The gate builds
 it from three layers:
 
 1. `_reference/` — the reference package in miniature, holding exactly what the gate
@@ -44,19 +44,31 @@ good measure: were the reference itself defective, every case would fire because
 rather than because of its own defect, and every "rejected" would be false — that is,
 this whole negative control would become exactly what it stands against.
 
-| directory                                                 | what it breaks                                           | point |
-| --------------------------------------------------------- | -------------------------------------------------------- | ----- |
-| [`theme-missing`](theme-missing/)                         | a package with no `themes/pct.css`                       | 1     |
-| [`theme-outside-exports`](theme-outside-exports/)         | the theme is in the package but outside `exports`        | 2     |
-| [`token-without-declaration`](token-without-declaration/) | a used `var(--pct-*)` with no declaration in the package | 3     |
-| [`wrong-version`](wrong-version/)                         | `PCT_VERSION` other than `version` from the manifest     | 4     |
-| [`no-version-constant`](no-version-constant/)             | `PCT_VERSION` vanished from the package entirely         | 4     |
-| [`schematic-missing`](schematic-missing/)                 | the `ng add` collection points at an uncompiled factory  | 5     |
-| [`repository-missing`](repository-missing/)               | a manifest with no `repository`                          | 6     |
+| directory                                                       | what it breaks                                               | point | rule           |
+| --------------------------------------------------------------- | ------------------------------------------------------------ | ----- | -------------- |
+| [`theme-missing`](theme-missing/)                               | a package with no `themes/pct.css`                           | 1     | —              |
+| [`theme-outside-exports`](theme-outside-exports/)               | the theme is in the package but outside `exports`            | 2     | —              |
+| [`token-without-declaration`](token-without-declaration/)       | a used `var(--pct-*)` with no declaration in the package     | 3     | —              |
+| [`wrong-version`](wrong-version/)                               | `PCT_VERSION` other than `version` from the manifest         | 4     | —              |
+| [`no-version-constant`](no-version-constant/)                   | `PCT_VERSION` vanished from the package entirely             | 4     | —              |
+| [`schematic-missing`](schematic-missing/)                       | the `ng add` collection points at an uncompiled factory      | 5     | —              |
+| [`repository-missing`](repository-missing/)                     | a manifest with no `repository`                              | 6     | —              |
+| [`licence-missing`](licence-missing/)                           | `"license": "MIT"` in the manifest and no LICENSE file       | 6     | —              |
+| [`licence-mismatch`](licence-mismatch/)                         | the LICENSE file names a different licence than the manifest | 6     | —              |
+| [`policy-without-reason`](policy-without-reason/)               | a policy entry with a name and no reason                     | 7     | policy         |
+| [`dependency-field-unread`](dependency-field-unread/)           | the dependency arrives through `optionalDependencies`        | 7     | unread-field   |
+| [`import-not-declared`](import-not-declared/)                   | the code imports a package the manifest never declares       | 7     | undeclared     |
+| [`dependency-outside-list`](dependency-outside-list/)           | a declared dependency with no entry in the policy            | 7     | not-allowed    |
+| [`dependency-as-runtime`](dependency-as-runtime/)               | an allowed peer declared under `dependencies`                | 7     | wrong-kind     |
+| [`dependency-nothing-imports`](dependency-nothing-imports/)     | a declared dependency nothing in the package imports         | 7     | unused         |
+| [`allowance-without-dependency`](allowance-without-dependency/) | a policy entry outliving the dependency it allowed           | 7     | dead           |
+| [`peer-range-behind-compiler`](peer-range-behind-compiler/)     | a peer range that does not admit the compiler that built it  | 7     | compiler-drift |
+| [`compiler-stamp-missing`](compiler-stamp-missing/)             | the compiler's version is nowhere in the package             | 7     | compiler-stamp |
 
 Point 4 has two cases, because there are two different failures: a wrong value and a
 missing constant. The second means the shape of the output changed and the version check
-has nothing left to compare — while passing green.
+has nothing left to compare — while passing green. Point 7 carries the same pair for the
+same reason (`peer-range-behind-compiler` and `compiler-stamp-missing`).
 
 Point 6 is the only one with two modes, so its case carries `"releaseOnly": true` in
 `fixture.json` and is examined both ways: under `--release` it must block, in a normal run
@@ -64,11 +76,31 @@ it must **warn and pass**. An assertion on "it blocks" alone would let through a
 regression after which point 6 always blocks — and then a repository with no remote would
 not build at all.
 
+Point 7 is the first with more than one rule under one check, so its cases name the
+**rule** as well, and the gate compares that too. The argument is the one the whole
+directory rests on, one floor down: a case built for a dead allowance and rejected because
+of an undeclared import satisfies a comparison on the check alone — while proving nothing
+about the rule it was written for. Measured, not assumed: with the `rule` of
+`dependency-outside-list` changed to `dead`, the run reports `rule not-allowed of check
+dependencies fired, and dead was meant to`.
+
+Two of the point-7 cases are the ones a person reaches for first, and they are opposites:
+a name declared and never imported, and a name imported and never declared. The second is
+what a dependency added by reflex actually looks like — `npm i` writes it into the **root**
+manifest and the import into a source file, so the library's own manifest, the only thing
+a check of the declared list would read, never learns of it.
+
+A case whose defect is in the manifest carries a whole `manifest.json`, not a patch of one:
+that is what lets `repository-missing` remove a field at all. The cost is real — the day
+the reference manifest grows a field the gate reads, every one of those copies needs it too
+— and the run says so plainly, because the reference package is checked first and the cases
+fire on their own points afterwards.
+
 ## Why this directory sits in `tools/` and not beside the script
 
 The script is in `libs/components/`, because the `check-package` target belongs to that
 project. The fixtures do not stand there, because a project's directory is an input to its
-own tasks: seven fake packages would enter the `inputs` of the library's build and lint,
+own tasks: eighteen fake packages would enter the `inputs` of the library's build and lint,
 and `manifest.json` would fall under the `@nx/dependency-checks` rule, which covers
 `**/*.json` in that project. Standing next to
 [`check-docs.fixtures/`](check-docs.fixtures/) is incidental: both directories are the

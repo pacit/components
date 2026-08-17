@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "dependencies",
+  "rule": "policy",
+  "description": "An entry with a name and no reason. The policy is the one input of this point that always looks fine — a list of names passes every reading of it and answers no question — so its shape is measured like any other input: an entry is a `name`, a `kind` the manifest field has to match, and a `reason` a person reads at the moment they add the next dependency. The case carries a policy of its own, which is what makes the rules ABOUT the policy provable at all."
+}

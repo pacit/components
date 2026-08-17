@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "dependencies",
+  "rule": "compiler-drift",
+  "description": "A package compiled by Angular 22 whose `@angular/core` peer range admits 19 — the range left where it was through an upgrade, which is what a peer range does when nothing reads it. `check-consumer` writes this down as its own blind spot: that gate takes `@angular/*` from the workspace rather than from the registry, so a package like this installs and works there and fails at the first consumer who takes the manifest at its word. The version it is measured against is a fact the artefact carries, not a second copy of a number somebody typed."
+}

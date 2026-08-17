@@ -1,0 +1,14 @@
+{
+  "$description": "A policy of the case's own — the only file of this fixture. `check-package.mjs` reads the policy out of the package when the package carries one, and out of the library otherwise, so a case can put a defective list in front of the gate. A real package never carries this file: nothing in `ng-package.json` copies it, so day to day the road is always the library's.",
+  "allowed": [
+    {
+      "name": "@angular/core",
+      "kind": "peer",
+      "reason": "The framework the components are compiled against."
+    },
+    {
+      "name": "date-fns",
+      "kind": "runtime"
+    }
+  ]
+}

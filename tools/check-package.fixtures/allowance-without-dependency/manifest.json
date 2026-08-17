@@ -12,15 +12,13 @@
     "@angular/core": "^22.0.0",
     "@angular/forms": "^22.0.0"
   },
-  "dependencies": {
-    "tslib": "^2.3.0"
-  },
   "sideEffects": false,
   "schematics": "./schematics/collection.json",
   "ng-update": {
     "migrations": "./schematics/migration.json"
   },
   "exports": {
+    "./themes/*": "./themes/*",
     "./schematics/*": "./schematics/*",
     ".": {
       "default": "./fesm2022/pacit-components.mjs"

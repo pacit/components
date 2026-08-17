@@ -13,6 +13,7 @@
     "@angular/forms": "^22.0.0"
   },
   "dependencies": {
+    "date-fns": "^4.1.0",
     "tslib": "^2.3.0"
   },
   "sideEffects": false,
@@ -21,6 +22,7 @@
     "migrations": "./schematics/migration.json"
   },
   "exports": {
+    "./themes/*": "./themes/*",
     "./schematics/*": "./schematics/*",
     ".": {
       "default": "./fesm2022/pacit-components.mjs"

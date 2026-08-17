@@ -37,15 +37,38 @@ the compatibility matrix, and the gate comes with it
 
 **Promise.** The library has as few runtime dependencies on other TS/JS libraries as
 possible. Allowed: `@angular/*` and `@angular/cdk` (declared as a `peerDependency`; the
-consumer includes `@angular/cdk/overlay-prebuilt.css`).
+consumer includes `@angular/cdk/overlay-prebuilt.css`), plus **`tslib`** — the one runtime
+dependency, and nobody here typed it: ng-packagr writes it into the packed manifest when the
+library declares none ([`lesson-64`](../lessons.md#lesson-64)). The list of record, with the
+reason beside each name, is
+[`libs/components/dependencies.policy.json`](../../libs/components/dependencies.policy.json).
 
-**Gate:** none — gap: a check of the `dependencies` / `peerDependencies` lists in the packed
-manifest against the allowed list. Its natural home is a seventh point in
-`libs/components/check-package.mjs`
-**Control:** none — gap: a manifest with a dependency from outside the list added has to
-fire the gate
-**Binds at:** the first dependency added out of reflex — today nothing tells `@angular/cdk`
-apart from anything else somebody installs
+**Gate:** point 7 of `libs/components/check-package.mjs`, over the **packed** manifest and
+the packed code, with seven rules. The list of names is the smaller half: a name declared
+with no entry in the policy fires (`not-allowed`), an entry outliving its dependency fires
+too (`dead`), and an allowed name in the wrong field is a second copy in the consumer's tree
+(`wrong-kind`). The half that catches a real reflex is the closure over the artefact —
+`npm i` writes the name into the ROOT manifest and the import into a source file, so the
+library's own manifest never learns of it: an import nobody declared fires (`undeclared`)
+and a declaration nothing imports fires (`unused`, waived only by an `unimported` entry
+carrying its reason). `unread-field` closes the road round the point — `optionalDependencies`
+and its neighbours are lists npm installs from and this gate does not read. `compiler-drift`
+is the one the neighbours leave: the peer range has to admit the Angular major stamped into
+the artefact by partial compilation, which is what `check-consumer` names as its own blind
+spot (it takes `@angular/*` from the workspace, so a package declaring `^21.0.0` and built
+by 22 passes there), and `check-support` asks a different question of the same ranges — how
+many majors the window holds. `@nx/dependency-checks` in the library's ESLint config is the
+same closure over the SOURCES, and it stops at consistency: it would have `date-fns` added
+to the manifest rather than argued for
+**Control:** `tools/check-package.fixtures/` — nine prepared packages for point 7 alone, one
+per rule, each rejected by the rule it declares and not merely by the point (the case naming
+the wrong rule is reported, and that was measured). Plus three recorded runs on the real
+artefact: `date-fns` added to `dependencies` fires `not-allowed`, an `import { debounceTime }
+from 'rxjs'` in `fesm2022/pacit-components-button.mjs` fires `undeclared`, and
+`@angular/core` moved to `^21.0.0` fires `compiler-drift`
+**Binds at:** bound. It measures the artefact on every build, and the first dependency added
+out of reflex is now the one that has to be argued for in the policy before CI is green
+**Lessons:** [`lesson-64`](../lessons.md#lesson-64)
 
 **Non-goals:** [`@angular/animations`](api.md#req-api-animations),
 [`zone.js`](#req-project-angular) — see [00-axis.md](../00-axis.md#explicit-non-goals)

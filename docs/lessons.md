@@ -1349,3 +1349,28 @@ a clock, a network response, a dictionary outside the workspace
 ([`check-language` names that one out loud](../project.json)) — each of them turns a cached
 target into a measurement with a timestamp nobody prints. Either the input comes into the
 filesystem where the cache can see it, or the cache comes off.
+
+---
+
+### <a id="lesson-64"></a>`lesson-64` — The published manifest is not the manifest anybody wrote
+
+`libs/components/package.json` declares **no `dependencies` at all**. The package published
+from it declares one: `"tslib": "^2.3.0"`. Nobody in this repository typed either half of that
+line — ng-packagr adds it while writing the packed manifest whenever the library declares no
+tslib of its own, and it takes the range from **`@angular/compiler`'s** dependencies, so the
+version a consumer installs is Angular's opinion arriving through a build step.
+
+The dependency itself is defensible; the interesting part is where a gate would have looked.
+A check of "the dependency list" written against the source manifest reads **zero runtime
+dependencies** and is green — for a package that publishes one. The same asymmetry applies
+one field over: the artefact carries `module`, `typings`, an `exports` map with entries the
+source never had, and the compiler's version stamped into every declaration. **What the
+consumer installs is a document written by two authors**, and only one of them is in the
+repository.
+
+This is [`lesson-17`](#lesson-17) in a second disguise — there the build succeeded while
+dropping the tokens out of the package, here the build succeeds while adding a dependency to
+it — and it is why point 7 of `check-package.mjs` reads `dist`, like every other point of
+that gate. The general shape: **when a tool both builds an artefact and writes part of its
+manifest, the manifest in the repository is a request, not a record.** Measure the thing that
+gets published.

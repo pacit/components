@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "dependencies",
+  "rule": "unused",
+  "description": "A declared dependency the code does not import — the mirror of the case above, and the one that survives a release without anybody noticing: the package works, so nothing points at it. A peer nothing reaches for is still a condition of the install, and a runtime one is weight in every application. The exception exists and is written down rather than guessed at: a policy entry may carry `unimported` with its reason, as `tslib` does."
+}

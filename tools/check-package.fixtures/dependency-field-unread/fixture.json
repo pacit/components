@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "dependencies",
+  "rule": "unread-field",
+  "description": "The dependency arrives through `optionalDependencies` — a third list npm installs from and this point does not read. Without the rule the case is worse than a dependency added by reflex: the gate is green and says the lists were checked, so the road around it is the one thing the run appears to rule out. The gate reads two fields, so the others have to be absent rather than unexamined."
+}

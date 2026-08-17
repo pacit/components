@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "dependencies",
+  "rule": "compiler-stamp",
+  "description": "The compiler's version is nowhere in the package. Point 7 reads the peer ranges against a fact the artefact carries, and the fact can go away without anybody deciding it should — a change in what Angular's partial compilation emits, a bundler pass that strips it. Then the range rule passes on every input, including a wrong one. Point 4 has the same pair of cases for the same reason: a wrong value and a value that stopped being there are two different failures."
+}

@@ -9,28 +9,27 @@ There is no "built, just unverified" state — see
 
 | state       | means                                                         |  count |
 | ----------- | ------------------------------------------------------------- | -----: |
-| ✅ enforced | gate and control exist and run in CI                          |     57 |
+| ✅ enforced | gate and control exist and run in CI                          |     58 |
 | 🟡 partial  | the gate is there, the negative control is not (deliberately) |     16 |
-| ⛔ gap      | gate or control missing, with a recorded deadline             |     11 |
+| ⛔ gap      | gate or control missing, with a recorded deadline             |     10 |
 | **total**   |                                                               | **84** |
 
 ## Gaps by urgency
 
 The order comes from the **Binds at** field, not from a requirement number.
 
-| requirement                                                                    | what is missing                                                                    | binds at                                                     |
-| ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| [`req-api-animations`](requirements/api.md#req-api-animations)                 | the ban is kept, but **nothing watches it** — the only thing in force…             | the first component with an enter/leave transition (panel, … |
-| [`req-api-icons`](requirements/api.md#req-api-icons)                           | today every icon is **written into the template** as SVG in `currentC…             | the second component that needs a swappable icon             |
-| [`req-api-number`](requirements/api.md#req-api-number)                         | property tests for the parser (`parse(format(n)) === n` for any `n` a… _(control)_ | the first locale outside `pl`/`en` reported by a consumer    |
-| [`req-api-templates`](requirements/api.md#req-api-templates)                   | projection works (the wrapper's slots), but **`TemplateRef` appears n…             | the first real use of the select (the option template) and … |
-| [`req-project-apps`](requirements/project.md#req-project-apps)                 | `apps/docs` does not exist, so a gate would describe a state that doe…             | the first external user — without documentation there is no… |
-| [`req-project-concise`](requirements/project.md#req-project-concise)           | a prose volume budget per file, a snapshot with **two-sided** toleran…             | the close of the compression pass — **not earlier**. A snap… |
-| [`req-project-dependencies`](requirements/project.md#req-project-dependencies) | a check of the `dependencies` / `peerDependencies` lists in the packe…             | the first dependency added out of reflex — today nothing te… |
-| [`req-project-files`](requirements/project.md#req-project-files)               | a check of the entrypoint directory layout (a script in the spirit of…             | the first component added by somebody other than the author… |
-| [`req-project-layout`](requirements/project.md#req-project-layout)             | follows from `req-project-apps`; it will close together with it                    | the creation of `apps/docs`                                  |
-| [`req-token-density`](requirements/tokens.md#req-token-density)                | the DTCG sources contain **not one** density token                                 | once the size axis has settled. Note: density will drop bel… |
-| [`req-token-directive`](requirements/tokens.md#req-token-directive)            | the directive does not exist, the theme is set with a hand-written `d…             | when setting `data-theme` from a template starts to repeat … |
+| requirement                                                          | what is missing                                                                    | binds at                                                     |
+| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| [`req-api-animations`](requirements/api.md#req-api-animations)       | the ban is kept, but **nothing watches it** — the only thing in force…             | the first component with an enter/leave transition (panel, … |
+| [`req-api-icons`](requirements/api.md#req-api-icons)                 | today every icon is **written into the template** as SVG in `currentC…             | the second component that needs a swappable icon             |
+| [`req-api-number`](requirements/api.md#req-api-number)               | property tests for the parser (`parse(format(n)) === n` for any `n` a… _(control)_ | the first locale outside `pl`/`en` reported by a consumer    |
+| [`req-api-templates`](requirements/api.md#req-api-templates)         | projection works (the wrapper's slots), but **`TemplateRef` appears n…             | the first real use of the select (the option template) and … |
+| [`req-project-apps`](requirements/project.md#req-project-apps)       | `apps/docs` does not exist, so a gate would describe a state that doe…             | the first external user — without documentation there is no… |
+| [`req-project-concise`](requirements/project.md#req-project-concise) | a prose volume budget per file, a snapshot with **two-sided** toleran…             | the close of the compression pass — **not earlier**. A snap… |
+| [`req-project-files`](requirements/project.md#req-project-files)     | a check of the entrypoint directory layout (a script in the spirit of…             | the first component added by somebody other than the author… |
+| [`req-project-layout`](requirements/project.md#req-project-layout)   | follows from `req-project-apps`; it will close together with it                    | the creation of `apps/docs`                                  |
+| [`req-token-density`](requirements/tokens.md#req-token-density)      | the DTCG sources contain **not one** density token                                 | once the size axis has settled. Note: density will drop bel… |
+| [`req-token-directive`](requirements/tokens.md#req-token-directive)  | the directive does not exist, the theme is set with a hand-written `d…             | when setting `data-theme` from a template starts to repeat … |
 
 ## axis
 
@@ -83,7 +82,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | ------------------------------------------------------------------------------ | ----------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | [`req-project-monorepo`](requirements/project.md#req-project-monorepo)         | 🟡 partial  | `.github/workflows/ci.yml` — the entire run goes through `nx affected` | none — deliberately: the failure is immediate and total (CI has nothi… |
 | [`req-project-latest`](requirements/project.md#req-project-latest)             | 🟡 partial  | none — deliberately: this is a process rule, not a property of the ar… | not applicable                                                         |
-| [`req-project-dependencies`](requirements/project.md#req-project-dependencies) | ⛔ gap      | none — gap: a check of the `dependencies` / `peerDependencies` lists … | none — gap: a manifest with a dependency from outside the list added … |
+| [`req-project-dependencies`](requirements/project.md#req-project-dependencies) | ✅ enforced | point 7 of `libs/components/check-package.mjs`, over the **packed** m… | `tools/check-package.fixtures/` — nine prepared packages for point 7 … |
 | [`req-project-apps`](requirements/project.md#req-project-apps)                 | ⛔ gap      | none — gap: `apps/docs` does not exist, so a gate would describe a st… | none — gap: the same as for the gate above                             |
 | [`req-project-package`](requirements/project.md#req-project-package)           | ✅ enforced | `libs/components/check-package.mjs` (target `check-package`, in CI) —… | `tools/check-package.fixtures/` — a doctored package for every point … |
 | [`req-project-entrypoints`](requirements/project.md#req-project-entrypoints)   | ✅ enforced | `libs/components/check-package.mjs` — the `exports` map in the packed… | `tools/check-package.fixtures/theme-outside-exports/` — a file presen… |
@@ -220,3 +219,4 @@ Which lesson feeds which requirement. Generated from the **Lessons** fields.
 | [`lesson-61`](lessons.md#lesson-61) | `req-project-reach`                                                                                                                                               |
 | [`lesson-62`](lessons.md#lesson-62) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-63`](lessons.md#lesson-63) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-64`](lessons.md#lesson-64) | `req-project-dependencies`                                                                                                                                        |

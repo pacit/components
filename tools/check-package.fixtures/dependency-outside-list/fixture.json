@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "dependencies",
+  "rule": "not-allowed",
+  "description": "A runtime dependency nobody wrote down: `date-fns` in `dependencies`, with no entry in the policy. This is the case the requirement was written for — a date helper reached for once inside one component, and from then on every consumer of the library installs it. The gate cannot tell a good dependency from a bad one; it can tell one somebody argued for from one that arrived."
+}

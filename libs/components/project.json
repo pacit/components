@@ -91,6 +91,7 @@
       "inputs": [
         { "dependentTasksOutputFiles": "**/*", "transitive": false },
         "{projectRoot}/check-package.mjs",
+        "{projectRoot}/dependencies.policy.json",
         "{workspaceRoot}/tools/check-package.fixtures/**/*"
       ],
       "options": {

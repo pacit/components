@@ -52,11 +52,11 @@ Snapshot, `node tools/check-docs.mjs`:
 | measure                                     | value |
 | ------------------------------------------- | ----: |
 | requirements                                |    84 |
-| ✅ enforced                                 |    57 |
+| ✅ enforced                                 |    58 |
 | 🟡 partial (deliberately without a control) |    16 |
-| ⛔ gap                                      |    11 |
+| ⛔ gap                                      |    10 |
 
-All 11 gaps have an owner below (B, D, F, G). If adding a requirement raises the gap count
+All 10 gaps have an owner below (B, D, F, G). If adding a requirement raises the gap count
 and no task changes, this list has stopped being complete — and that is a fault of this list,
 not of the registry.
 
@@ -80,11 +80,11 @@ too**, and with the same shape: the clear-out went with a gate, so what a public
 should never have carried is now measured on every push rather than tidied once. **Nothing
 stands between here and B2 any more** — the task itself is minutes, and it is the last one
 whose price is paid before a first visitor arrives, not after. Of B, **B3 has closed as well**,
-so the npm page is written and the last file that travelled in a second language is gone; what
-stands between here and npm is B4 (held with B2) and B7 — **B6 has closed too**, so the support
-window, the deprecation notice and the codemod obligation are a published document with a gate
-reading its numbers. In parallel: F1 is unblocked — the inventories it renders both exist — and
-C is filler.
+so the npm page is written and the last file that travelled in a second language is gone.
+**B6 and B7 have closed too** — the support window with a gate reading its numbers, and the
+dependency lists with a gate reading the artefact — so **what stands between here and npm is
+B4 alone, and B4 is held with B2**. In parallel: F1 is unblocked — the inventories it renders
+both exist — and C is filler.
 
 **B2 is deferred by decision, not blocked** — and the decision has a shape: **the first push
 happens only when the maintainer asks for it outright.** It is not triggered by a state of the
@@ -113,6 +113,16 @@ that holds is worth more than a six that does not. Each row says what it becomes
 task also produced [`lesson-63`](lessons.md#lesson-63): this is the first gate here whose
 input is git rather than files, and a cached one would answer from before the amendment that
 added the `!`.
+
+And on to **B7**, which closed and moved the question the plan had written down. The task was
+"the declared lists against an allowed list", and the declared list is the one place a
+dependency added by reflex does not touch — `npm i` writes the name into the root manifest and
+the import into a source file, and the library's manifest never learns of it. So the point
+measures the closure in both directions over the artefact, and the first thing that fell out
+of doing so is [`lesson-64`](lessons.md#lesson-64): the published manifest declares a runtime
+dependency (`tslib`) that no file in this repository declares — ng-packagr writes it, with
+Angular's range. The promise was amended rather than the package: **a document that describes
+an artefact nobody measured describes what somebody meant.**
 
 ## B. Readiness for the first release
 
@@ -212,13 +222,36 @@ not a derivation.
     on fixtures: `angular-majors` moved to 2 against `^22.0.0` fires point 2. The one cost
     named out loud is `cache: false` ([`lesson-63`](lessons.md#lesson-63))
 
-- [ ] **B7 — dependency list gate**
-  - closes: `req-project-dependencies`
+- [x] **B7 — dependency list gate** — **closed, and the list was the smaller half**
+  - closes: [`req-project-dependencies`](requirements/project.md#req-project-dependencies)
   - what: a seventh point in `check-package.mjs` — `dependencies` / `peerDependencies` of the
     **packed** manifest against an allowed list. Today nothing tells a deliberate dependency
     apart from one added by reflex
   - control: a manifest with a dependency outside the list must fire
-  - cost: ~0.5 day · _notes:_ —
+  - cost: ~0.5 day · _notes:_ **done** — point 7 of `libs/components/check-package.mjs`
+    (seven rules) plus `libs/components/dependencies.policy.json`, nine prepared packages,
+    the target already in CI. **The task as written would have watched the one place a
+    reflex does not reach**: `npm i` writes the name into the root manifest and the import
+    into a source file, so the library's own manifest never learns of it. Hence the closure
+    runs both ways over the artefact — an import nobody declared fires, a declaration nothing
+    imports fires — and the list of names keeps the half the requirement asked for: an entry
+    carries the reason, a dependency without one fires, and **an entry outliving its
+    dependency fires just the same** (the `check-language` register idiom, one gate over).
+    Two things the task did not foresee. **The policy is a list, and a list of names always
+    looks fine**, so a case may carry a policy of its own — that is what makes the rules
+    _about_ the policy provable, and the entry with no reason is one of the nine. And
+    `compiler-drift`, which pays a debt written down elsewhere: `check-consumer` records that
+    a peer-range drift passes it and that only this requirement watches for one, so the range
+    is measured against the Angular major **stamped into the artefact** by partial
+    compilation — not against a number typed a second time. The stamp going missing is its
+    own rule, for the reason point 4 has two cases. Proof on the real artefact, not only on
+    fixtures: `date-fns` in `dependencies` fires `not-allowed`, an `rxjs` import in
+    `pacit-components-button.mjs` fires `undeclared`, `@angular/core` at `^21.0.0` fires
+    `compiler-drift`. The negative control grew a floor: point 7 is the first with several
+    rules under one check, so a case names the rule too — measured, with
+    `dependency-outside-list` retagged as `dead` and the run saying which fired instead.
+    One thing found by accident and left visible: the fixtures' README had never listed the
+    two `licence` cases, so it now does
 
 - [x] **B8 — language gate** — **stood before B2, and it is closed**
   - closes: [`req-project-language`](requirements/project.md#req-project-language)

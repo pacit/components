@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "dependencies",
+  "rule": "dead",
+  "description": "The manifest has no `dependencies` at all and the policy still allows `tslib` — a permit outliving the thing it permitted. It fires for the reason the register of `check-language` fires on a dead entry: an allowance nobody uses reads as a decision somebody made, and the next dependency of that name arrives under it without anybody arguing for it. This is also the state the day `importHelpers` is turned off — and the gate then asks for the entry to go rather than letting it wait for a use."
+}

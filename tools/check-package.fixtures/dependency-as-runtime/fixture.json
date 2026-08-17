@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "dependencies",
+  "rule": "wrong-kind",
+  "description": "`@angular/cdk` in `dependencies` instead of `peerDependencies` — an allowed name in the wrong field, which the list-of-names half of this point would pass without a word. npm then installs the CDK the library was built against beside the one the consumer already has: two overlay containers, two sets of tokens, and a stylesheet (`overlay-prebuilt.css`) that matches only one of them. The requirement names the field for this reason, so the gate reads it."
+}
