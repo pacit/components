@@ -594,17 +594,20 @@ const isSource = (p) => p.endsWith('.ts') && !p.endsWith('.spec.ts');
  * material.
  */
 const buildFixture = (name, fx) => {
-  const cel = mkdtempSync(join(tmpdir(), 'pct-check-styles-'));
-  cpSync(join(FIXTURES, REFERENCE), cel, { recursive: true });
-  cpSync(join(FIXTURES, name), cel, {
+  const destination = mkdtempSync(join(tmpdir(), 'pct-check-styles-'));
+  cpSync(join(FIXTURES, REFERENCE), destination, { recursive: true });
+  cpSync(join(FIXTURES, name), destination, {
     recursive: true,
     filter: (src) => basename(src) !== 'fixture.json',
   });
   for (const path of fx.drop ?? [])
-    rmSync(join(cel, path), { recursive: true, force: true });
-  for (const file of globSync('**/*.ts.txt', { cwd: cel }))
-    renameSync(join(cel, file), join(cel, file.replace(/\.txt$/, '')));
-  return cel;
+    rmSync(join(destination, path), { recursive: true, force: true });
+  for (const file of globSync('**/*.ts.txt', { cwd: destination }))
+    renameSync(
+      join(destination, file),
+      join(destination, file.replace(/\.txt$/, '')),
+    );
+  return destination;
 };
 
 const files = (directory, pattern) =>

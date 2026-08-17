@@ -4,7 +4,7 @@ import { Directive, input } from '@angular/core';
  * A slot directive — it exists so that the reference input carries a `host` block
  * with a static attribute whose key has NO quotes (`role`) beside a binding
  * whose key does. Prettier writes them exactly like that and the scanner must see
- * oba.
+ * both.
  */
   @Directive({
   selector: '[pctMarker]',

@@ -1111,8 +1111,8 @@ const packageComponents = async (root) => {
   const exports = JSON.parse(read(root, `${DIST}/package.json`)).exports ?? {};
   const out = [];
 
-  for (const [input, cel] of Object.entries(exports)) {
-    const file = typeof cel === 'object' ? cel.default : cel;
+  for (const [input, target] of Object.entries(exports)) {
+    const file = typeof target === 'object' ? target.default : target;
     if (typeof file !== 'string' || !file.endsWith('.mjs')) continue;
 
     const module = await import(
@@ -1276,18 +1276,21 @@ const repoFiles = () =>
  * gate's fixture must not be another's defect.
  */
 const buildFixture = (name, fx) => {
-  const cel = mkdtempSync(join(tmpdir(), 'pct-check-texts-'));
-  cpSync(join(FIXTURES, REFERENCE), cel, { recursive: true });
+  const destination = mkdtempSync(join(tmpdir(), 'pct-check-texts-'));
+  cpSync(join(FIXTURES, REFERENCE), destination, { recursive: true });
   if (name !== REFERENCE)
-    cpSync(join(FIXTURES, name), cel, {
+    cpSync(join(FIXTURES, name), destination, {
       recursive: true,
       filter: (src) => basename(src) !== 'fixture.json',
     });
   for (const path of fx.drop ?? [])
-    rmSync(join(cel, path), { recursive: true, force: true });
-  for (const file of globSync('**/*.ts.txt', { cwd: cel }))
-    renameSync(join(cel, file), join(cel, file.replace(/\.txt$/, '')));
-  return cel;
+    rmSync(join(destination, path), { recursive: true, force: true });
+  for (const file of globSync('**/*.ts.txt', { cwd: destination }))
+    renameSync(
+      join(destination, file),
+      join(destination, file.replace(/\.txt$/, '')),
+    );
+  return destination;
 };
 
 const fixtureInput = (directory) =>

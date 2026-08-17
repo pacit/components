@@ -571,8 +571,8 @@ const sourceEntrypoints = () =>
  */
 const entrypointFiles = (manifest) => {
   const out = new Map();
-  for (const [input, cel] of Object.entries(manifest?.exports ?? {})) {
-    const file = typeof cel === 'object' ? cel?.default : cel;
+  for (const [input, target] of Object.entries(manifest?.exports ?? {})) {
+    const file = typeof target === 'object' ? target?.default : target;
     if (typeof file === 'string' && file.endsWith('.mjs')) out.set(input, file);
   }
   return out;

@@ -87,7 +87,7 @@ test.describe('PctField — the field wrapper', () => {
 
     await expect(error).toHaveCount(0);
 
-    await input.fill('to-nie-email');
+    await input.fill('this-is-not-an-email');
     await input.press('Tab');
 
     await expect(error).toBeVisible();
