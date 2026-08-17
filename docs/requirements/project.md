@@ -244,7 +244,7 @@ package release binds the second part: 24 files in the built artifact, including
 that has already cost something once. Whatever can be **pointed at with a link** is pointed
 at, not summarised: the documentation stands publicly at a stable address, so a gate header
 links the decision and the lesson instead of retelling them in its own words. Narration has
-one home: [`lessons.md`](../lessons.md) and the journal in the [plan](../plan.md).
+one home and it is [`lessons.md`](../lessons.md).
 
 The budget covers **prose**, not code: `@example` and examples are outside it entirely,
 because in a public API they are the most valuable text there is. The volume problem is in
@@ -253,8 +253,8 @@ because in a public API they are the most valuable text there is. The volume pro
 **Decision:** [0017 — one home per fact: the criterion and its budget](../decisions/0017-one-home-per-fact.md)
 **Gate:** none — gap: a prose volume budget per file, a snapshot with **two-sided**
 tolerance, in the idiom of `libs/components/size.snapshot.md`. The values are settled in
-[0017](../decisions/0017-one-home-per-fact.md) (gate header 12 lines + 1 per point, journal
-entry 25, task position 12 closed / 20 open), and the denominator is already counted by
+[0017](../decisions/0017-one-home-per-fact.md) (gate header 12 lines + 1 per point, task
+position 12 closed / 20 open), and the denominator is already counted by
 `tools/measure-prose.mjs` — a measurement with no target, which this gate will grow out of.
 The limit is written down rather than passed over: the machine measures **volume, not
 weight** — growth becomes a line in the diff, while the judgment of whether a paragraph
