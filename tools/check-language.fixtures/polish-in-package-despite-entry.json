@@ -1,0 +1,19 @@
+{
+  "$what": "A Polish `description` in the packed manifest fires on the public surface DESPITE an entry in the register. The consumer cannot read a register, so the artifact scope does not have one.",
+  "check": "artifact",
+  "rule": "polish-in-package",
+  "addFiles": [
+    {
+      "path": "dist/libs/components/package.json",
+      "scope": "artifact",
+      "text": "{ \"description\": \"ustawienie domyslne komponentow\" }\n"
+    }
+  ],
+  "addExceptions": [
+    {
+      "file": "dist/libs/components/package.json",
+      "reason": "It was to be translated with the README.",
+      "task": "B3"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "$what": "An entry taking a file OUT of the measurement without a sentence saying why.",
+  "check": "generated",
+  "rule": "entry-without-reason",
+  "addGenerated": [{ "file": "tmp/build.json" }]
+}

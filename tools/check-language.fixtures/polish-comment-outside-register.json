@@ -1,0 +1,12 @@
+{
+  "$what": "A Polish comment in a file that stands in no register — the plainest case there is, and the one a translation pass leaves behind.",
+  "check": "repository",
+  "rule": "polish-outside-register",
+  "addFiles": [
+    {
+      "path": "tools/fresh.mjs",
+      "scope": "repository",
+      "text": "// ustawienie domyslne\nexport const value = 2;\n"
+    }
+  ]
+}

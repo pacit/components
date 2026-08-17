@@ -1,0 +1,6 @@
+{
+  "$what": "An entry that is a pattern rather than a word. It would excuse a whole grammatical class — the blind spot a layer of constants once rode through two passes in.",
+  "check": "vocabulary",
+  "rule": "word-is-a-shape",
+  "addVocabulary": { "abbreviations": ["[a-z]{1,3}"] }
+}

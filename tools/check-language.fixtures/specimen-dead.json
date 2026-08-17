@@ -1,0 +1,18 @@
+{
+  "$what": "A specimen that carries no Polish any more — a hole in the shape of a sample: the file keeps the permit and nothing measures it.",
+  "check": "specimens",
+  "rule": "dead-specimen",
+  "addSpecimens": [
+    {
+      "file": "tools/check-language.fixtures/empty.json",
+      "reason": "A sample of nothing."
+    }
+  ],
+  "addFiles": [
+    {
+      "path": "tools/check-language.fixtures/empty.json",
+      "scope": "repository",
+      "text": "{ \"check\": \"denominator\" }\n"
+    }
+  ]
+}

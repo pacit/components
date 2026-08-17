@@ -1,0 +1,6 @@
+{
+  "$what": "An entry that names no file at all — the register read as data, not as prose.",
+  "check": "register",
+  "rule": "entry-without-file",
+  "addExceptions": [{ "reason": "Somebody wrote half an entry.", "task": "B8" }]
+}

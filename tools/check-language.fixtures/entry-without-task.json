@@ -1,0 +1,6 @@
+{
+  "$what": "An entry with a reason and no task. An exception with no end is a second language with a permit.",
+  "check": "register",
+  "rule": "entry-without-justification",
+  "replaceException": { "tools/legacy.mjs": { "task": "" } }
+}

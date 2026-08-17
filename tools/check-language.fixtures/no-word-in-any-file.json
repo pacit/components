@@ -1,0 +1,19 @@
+{
+  "$what": "Files that are read and yield no word at all. Every later point then compares empty sets.",
+  "check": "denominator",
+  "rule": "no-words",
+  "dropFiles": [
+    "docs/README.md",
+    "tools/legacy.mjs",
+    "libs/components/src/button.ts",
+    "dist/libs/components/types/button.d.ts"
+  ],
+  "addFiles": [
+    { "path": "docs/numbers.md", "scope": "repository", "text": "1 2 3\n" },
+    {
+      "path": "dist/libs/components/version.json",
+      "scope": "artifact",
+      "text": "{ \"1\": 2 }\n"
+    }
+  ]
+}

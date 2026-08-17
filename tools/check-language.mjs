@@ -1,0 +1,741 @@
+#!/usr/bin/env node
+/**
+ * Language gate: does `req-project-language` — "the repository speaks one language" — have
+ * a measurement behind it, or a sentence in the documentation that both sides broke while
+ * it stood? A second language leaves NO RED TEST: it compiles, it renders, it ships.
+ *
+ *  1. DENOMINATOR: the scan can see, split and look up — proved on a built-in probe,
+ *  2. REPOSITORY: no Polish in the git index outside the register,
+ *  3. ARTIFACT: no Polish in the built package — with no register at all,
+ *  4. the register of exceptions is alive and justified,
+ *  5. the vocabulary names words, never shapes, and every entry still earns its place,
+ *  6. the list of machine-written files is alive,
+ *  7. the specimens — this gate's own samples — stay inside this gate's own tree.
+ *
+ * TWO MEASUREMENTS OF DIFFERENT REACH. The public surface is measured on the ARTIFACT —
+ * what `dist/libs/components` really carries, not what stands in the source — because that
+ * is what a consumer opens. The rest of the repository is measured on the GIT INDEX: an
+ * uncommitted file binds nobody yet.
+ *
+ * DETECTION HAS THREE LIMBS, because each is blind where the next one sees. Diacritics
+ * carry prose and nothing else — a name spelled `wartosc` has none. So the second limb is
+ * `/usr/share/dict/polish`, folded of its diacritics and minus `american-english`, read
+ * over identifiers split at camelCase and at `_`. The third is the opening quote `U+201E`,
+ * a typographic convention with no English use.
+ *
+ * THE FALSE POSITIVES OF THE SECOND LIMB ARE THE DESIGN WORK, and they live in
+ * `language.policy.json` as WORDS. Never as shapes: an exclusion of `SCREAMING_CASE` or of
+ * "abbreviations under four letters" excuses everything of that shape, and a whole layer of
+ * constants once survived two passes in exactly that blind spot
+ * ([`lesson-60`](../docs/lessons.md#lesson-60)). Point 5 enforces the format that makes the
+ * blind spot unwritable.
+ *
+ * Usage: node tools/check-language.mjs
+ */
+import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
+import { dirname, extname, join, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { execFileSync } from 'node:child_process';
+import { createReadStream } from 'node:fs';
+import { createInterface } from 'node:readline';
+
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
+const FIXTURES = join(ROOT, 'tools/check-language.fixtures');
+const REFERENCE = '_reference.json';
+
+const POLICY = 'tools/language.policy.json';
+const DIST = 'dist/libs/components';
+const PACKAGE_SOURCES = 'libs/';
+
+/**
+ * The one tree that carries Polish by construction: this gate and its fixtures. A canary
+ * has to be a word a dictionary really holds and a diacritics case has to carry real
+ * diacritics, so an instrument for finding Polish cannot be written without any.
+ *
+ * The prefix is HARD-CODED rather than configured, and that is the whole safety of the
+ * idea: the policy can name which files of this tree are specimens, and it can never widen
+ * the tree. A register that could excuse an arbitrary directory would be the second
+ * language's way back in, with a sentence to justify it.
+ */
+const SPECIMENS = 'tools/check-language.';
+
+const DICTIONARY = '/usr/share/dict/polish';
+const ENGLISH = '/usr/share/dict/american-english';
+
+/**
+ * What the artifact limb reads. Source maps are on the list deliberately: they carry the
+ * ORIGINAL text of every comment, so a package can measure clean on its `.d.ts` and ship
+ * the same sentence one file further on.
+ */
+const TEXT = new Set([
+  '.css',
+  '.scss',
+  '.js',
+  '.mjs',
+  '.ts',
+  '.json',
+  '.md',
+  '.map',
+  '.html',
+]);
+
+const FOLD = {
+  ą: 'a',
+  ć: 'c',
+  ę: 'e',
+  ł: 'l',
+  ń: 'n',
+  ó: 'o',
+  ś: 's',
+  ź: 'z',
+  ż: 'z',
+};
+
+const DIACRITIC = /[ąćęłńóśźżĄĆĘŁŃÓŚŹŻ]/;
+const QUOTE = '„';
+
+/**
+ * `ɵ` (U+0275) is on the list because it IS a letter and Angular builds identifiers out of
+ * it — `ɵfac`, `ɵcmp`, `ɵmod`. Left out, it separates instead of joining, and the compiler's
+ * own property names arrive at the dictionary as `fac`, `cmp`, `mod`: words nobody wrote,
+ * in a language nobody chose.
+ */
+const LETTERS = /[A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźżɵ]+/g;
+
+/**
+ * Where an identifier comes apart. `ustawienieDomyslne` at the lowercase-to-uppercase seam,
+ * `HTMLElement` before the last capital of a run — and `MOJA_WARTOSC` needs no rule at all,
+ * because `_` is not a letter and `LETTERS` never joins across it. That is the whole answer
+ * to `SCREAMING_CASE`: it is not excused anywhere, it simply splits.
+ */
+const CAMEL =
+  /(?<=[a-ząćęłńóśźżɵ])(?=[A-ZĄĆĘŁŃÓŚŹŻ])|(?<=[A-ZĄĆĘŁŃÓŚŹŻ])(?=[A-ZĄĆĘŁŃÓŚŹŻ][a-ząćęłńóśźżɵ])/;
+
+/**
+ * The probe of point 1. Not a sample of the repository — a constant, so the denominator
+ * says something about the INSTRUMENT and not about what it happens to be pointed at
+ * ([`lesson-48`](../docs/lessons.md#lesson-48)). It has to come apart into all four words:
+ * `MOJA_WARTOŚĆ` proves the split at `_` and the fold of `Ś`/`Ć`, `ustawienieDomyslne`
+ * the split at camelCase.
+ */
+const PROBE = 'const MOJA_WARTOŚĆ = "ustawienieDomyslne";';
+const PROBE_WORDS = ['moja', 'wartosc', 'ustawienie', 'domyslne'];
+
+/**
+ * The canaries of the dictionary limb, each answering a different way for the lookup to go
+ * quiet. `ustawienie` says the Polish list was read at all; `wartosc` — a spelling that
+ * stands in the dictionary only WITH diacritics — says it was folded; `test` says the
+ * English list was subtracted, and it is the one that would drown the gate in false
+ * positives if it were not.
+ */
+const CANARY = { read: 'ustawienie', folded: 'wartosc', shared: 'test' };
+
+const fold = (word) =>
+  word.toLowerCase().replace(/[ąćęłńóśźż]/g, (c) => FOLD[c]);
+
+/** A word that may stand in the vocabulary: a bare folded word, so no shape can hide in it. */
+const PLAIN = /^[a-z]+$/;
+
+class LanguageError extends Error {
+  constructor(check, rule, description) {
+    super(description);
+    this.check = check;
+    this.rule = rule;
+  }
+}
+
+const list = (items) => items.map((i) => `      ${i}`).join('\n');
+
+/** At most `n` of them, and the rest counted — a translation pass has more than fits. */
+const some = (items, n = 12) =>
+  items.length <= n
+    ? list(items)
+    : `${list(items.slice(0, n))}\n      … and ${items.length - n} more`;
+
+// ── the measurement ─────────────────────────────────────────────────────────────
+
+/**
+ * A source map read AS A SOURCE MAP. Its `mappings` field is base64 VLQ by the spec — read
+ * as letters it gives two-letter runs by the thousand, the same debris a lockfile's
+ * `integrity` gives. The text a person wrote is in the other fields, `sourcesContent` above
+ * all: that is where a comment translated in the source but not rebuilt would still stand,
+ * so the file is narrowed rather than skipped.
+ *
+ * An unparseable map is scanned whole. A gate that goes quiet on a file it failed to
+ * understand is the defect this whole instrument is against.
+ */
+const sourceMapText = (text) => {
+  let map;
+  try {
+    map = JSON.parse(text);
+  } catch {
+    return text;
+  }
+  return [
+    map.file ?? '',
+    ...(map.sources ?? []),
+    ...(map.names ?? []),
+    ...(map.sourcesContent ?? []),
+  ].join('\n');
+};
+
+/** The text of a file as this gate reads it — a source map through its fields. */
+const textOf = (file) =>
+  file.path?.endsWith('.map')
+    ? sourceMapText(file.text ?? '')
+    : (file.text ?? '');
+
+/**
+ * Every word of a text, with the line it stands on. Exported because the measurement needs
+ * it before the checks do — the dictionary is 61 MB and is read against the words really
+ * found, not the other way round.
+ */
+export const wordsOf = (text) => {
+  const out = [];
+  text.split('\n').forEach((line, i) => {
+    for (const run of line.match(LETTERS) ?? [])
+      for (const part of run.split(CAMEL)) {
+        const word = fold(part);
+        if (word) out.push({ word, line: i + 1 });
+      }
+  });
+  return out;
+};
+
+// ── the checks ──────────────────────────────────────────────────────────────────
+
+/**
+ * The full set of checks over a ready input:
+ *   `policy` — the contents of `language.policy.json`,
+ *   `files`  — `[{ path, scope, text }]`, `scope` being `repository` or `artifact`,
+ *   `polish` — the words the dictionary confirmed: in the Polish list, not in the English
+ *              one, already folded,
+ *   `probe`  — the text of point 1, `PROBE` unless a fixture says otherwise. The words it
+ *              has to yield stay constant, so a case can hand it a line with the seams
+ *              taken out and prove that the SPLIT is what produces them. The real run
+ *              never passes it.
+ * Throws `LanguageError` on the first violation — the checks start from the denominator,
+ * so the later ones would have nothing to examine anyway.
+ */
+export const checkLanguage = ({ policy, files, polish, probe: text }) => {
+  const confirmed = new Set(polish ?? []);
+  const exceptions = policy?.exceptions ?? [];
+  const generated = policy?.generated ?? [];
+  const specimens = policy?.specimens ?? [];
+  const groups = Object.entries(policy?.vocabulary ?? {});
+  const vocabulary = new Set(
+    groups.flatMap(([, group]) => group?.words ?? []).map((w) => fold(w)),
+  );
+
+  const scoped = (scope) => (files ?? []).filter((f) => f.scope === scope);
+  const repository = scoped('repository');
+  const artifact = scoped('artifact');
+
+  // 1. DENOMINATOR. Each limb can go quiet in a way that leaves the gate green, and a
+  // green gate on a repository nobody scanned looks exactly like a green gate on a clean
+  // one. So the instrument is proved on a constant before it is pointed at anything.
+  if (!repository.length)
+    throw new LanguageError(
+      'denominator',
+      'no-files',
+      `no file to scan in the \`repository\` scope. The git index is what this gate walks — ` +
+        `an empty list gives a run that reads nothing and reports nothing wrong.`,
+    );
+  if (!artifact.length)
+    throw new LanguageError(
+      'denominator',
+      'no-artifact',
+      `no file to scan in the \`artifact\` scope (\`${DIST}\`). The public surface is ` +
+        `measured on what the package really carries — with no package there is no ` +
+        `measurement, and point 3 would pass having opened nothing.`,
+    );
+
+  const source = text ?? PROBE;
+  const probe = new Set(wordsOf(source).map((w) => w.word));
+  const unsplit = PROBE_WORDS.filter((w) => !probe.has(w));
+  if (unsplit.length)
+    throw new LanguageError(
+      'denominator',
+      'tokenizer-blind',
+      `the probe \`${source}\` does not come apart into ${unsplit.join(', ')}.\n` +
+        `    The dictionary limb sees exactly what the split hands it: a lost seam at \`_\` ` +
+        `hides every constant, a lost seam at camelCase hides every identifier, a lost fold ` +
+        `hides every word written with diacritics. None of that turns the gate red — it ` +
+        `turns it quiet.`,
+    );
+
+  const words = new Set(
+    (files ?? []).flatMap((f) => wordsOf(textOf(f)).map((w) => w.word)),
+  );
+  if (!words.size)
+    throw new LanguageError(
+      'denominator',
+      'no-words',
+      `the scan of ${files.length} files produced not one word. The files are being read ` +
+        `and the split returns nothing — every later point then compares empty sets.`,
+    );
+
+  if (!confirmed.has(CANARY.read))
+    throw new LanguageError(
+      'denominator',
+      'dictionary-unread',
+      `\`${CANARY.read}\` is not among the confirmed Polish words, and it stands in ` +
+        `\`${DICTIONARY}\` with no English counterpart.\n` +
+        `    The list was not read — a moved file, a changed package, a permission. The ` +
+        `limb then confirms nothing and the gate passes every Polish name written without ` +
+        `diacritics.`,
+    );
+  if (!confirmed.has(CANARY.folded))
+    throw new LanguageError(
+      'denominator',
+      'dictionary-unfolded',
+      `\`${CANARY.folded}\` is not among the confirmed words. It stands in the dictionary ` +
+        `only as \`wartość\`, so its absence means the dictionary was NOT folded of its ` +
+        `diacritics.\n` +
+        `    Unfolded, the second limb only ever confirms what the first limb already sees — ` +
+        `two limbs measuring one thing.`,
+    );
+  if (confirmed.has(CANARY.shared))
+    throw new LanguageError(
+      'denominator',
+      'english-not-subtracted',
+      `\`${CANARY.shared}\` is confirmed as Polish, and it stands in BOTH dictionaries.\n` +
+        `    \`${ENGLISH}\` was not subtracted. Every word the two languages share then ` +
+        `fires, the register fills up with English to keep the gate green, and the ` +
+        `measurement is worth nothing in either direction.`,
+    );
+
+  // 5. VOCABULARY, before it is used. A register that excuses a shape excuses everything of
+  // that shape, and it has to be unwritable rather than discouraged — so the format is
+  // checked before the words are trusted to silence anything.
+  for (const [name, group] of groups) {
+    if (!group?.reason)
+      throw new LanguageError(
+        'vocabulary',
+        'group-without-reason',
+        `the vocabulary group \`${name}\` carries no \`reason\`. A word list with no ` +
+          `sentence saying why those words are not Polish is a list nobody can review.`,
+      );
+    for (const word of group.words ?? [])
+      if (!PLAIN.test(word))
+        throw new LanguageError(
+          'vocabulary',
+          'word-is-a-shape',
+          `\`${word}\` in the group \`${name}\` is not a plain word.\n` +
+            `    An entry names a WORD, never the form it is written in. \`SCREAMING_CASE\`, ` +
+            `a length, a pattern — each of those excuses a whole grammatical class, and a ` +
+            `layer of constants once rode through two passes on exactly that (lesson-60).`,
+        );
+  }
+
+  const notPolish = [...vocabulary].filter((w) => !confirmed.has(w));
+  if (notPolish.length)
+    throw new LanguageError(
+      'vocabulary',
+      'word-not-polish',
+      `${notPolish.length} words are excused and the dictionary would never have flagged ` +
+        `them:\n${some(notPolish)}\n` +
+        `    An entry that silences nothing is superstition, and it grows: the next reader ` +
+        `takes the list for the set of words the gate cannot handle.`,
+    );
+  const unused = [...vocabulary].filter((w) => !words.has(w));
+  if (unused.length)
+    throw new LanguageError(
+      'vocabulary',
+      'dead-word',
+      `${unused.length} excused words stand nowhere in the repository any more:\n${some(unused)}\n` +
+        `    The list is to shrink as the reasons for it go. A dead entry fires just like ` +
+        `new Polish — that is what keeps it a register and not a sediment.`,
+    );
+
+  // 6. The machine-written files, likewise before they are used to narrow the scan. A name
+  // that matches nothing narrows nothing today and hides a file the day it is recreated.
+  for (const entry of generated) {
+    if (!entry?.reason)
+      throw new LanguageError(
+        'generated',
+        'entry-without-reason',
+        `the \`generated\` entry for \`${entry?.file}\` carries no \`reason\`. This list ` +
+          `takes files OUT of the measurement — each one owes a sentence.`,
+      );
+    if (!(files ?? []).some((f) => f.path === entry.file)) continue; // the file is out of the scan — which is what the entry asked for
+    throw new LanguageError(
+      'generated',
+      'entry-still-scanned',
+      `\`${entry.file}\` stands among the scanned files and in the \`generated\` list at ` +
+        `once. One of the two is a lie: either the file is machine-written and the scan is ` +
+        `to skip it, or it is not and the entry is to go.`,
+    );
+  }
+
+  // 2. and 3. THE MEASUREMENT ITSELF. Three limbs over the same text; the artifact scope
+  // knows no register, because a consumer cannot read one.
+  const excused = new Set(exceptions.map((e) => e?.file));
+  const hits = new Map(); // path -> [{ line, word, limb }]
+
+  for (const file of files ?? []) {
+    const found = [];
+    const text = textOf(file);
+    text.split('\n').forEach((line, i) => {
+      if (line.includes(QUOTE))
+        found.push({ line: i + 1, word: QUOTE, limb: 'quote' });
+      const mark = line.match(DIACRITIC);
+      if (mark) found.push({ line: i + 1, word: mark[0], limb: 'diacritics' });
+    });
+    for (const { word, line } of wordsOf(text))
+      if (confirmed.has(word) && !vocabulary.has(word))
+        found.push({ line, word, limb: 'dictionary' });
+    if (found.length) hits.set(file.path, found);
+  }
+
+  const inPackage = artifact.filter((f) => hits.has(f.path));
+  if (inPackage.length) {
+    const shown = inPackage.flatMap((f) =>
+      hits
+        .get(f.path)
+        .slice(0, 3)
+        .map((h) => `${f.path}:${h.line}  ${h.word}  (${h.limb})`),
+    );
+    throw new LanguageError(
+      'artifact',
+      'polish-in-package',
+      `${inPackage.length} files of the built package carry Polish:\n${some(shown)}\n` +
+        `    The public surface has NO register — an exception there would be a note the ` +
+        `consumer cannot read, in a package they cannot edit. What is measured here is the ` +
+        `artifact, so a translated source with a stale \`${DIST}\` does not answer it: ` +
+        `rebuild, then read.`,
+    );
+  }
+
+  const sample = new Set(specimens.map((s) => s?.file));
+  const offenders = repository.filter(
+    (f) => hits.has(f.path) && !excused.has(f.path) && !sample.has(f.path),
+  );
+  if (offenders.length) {
+    const shown = offenders.flatMap((f) =>
+      hits
+        .get(f.path)
+        .slice(0, 3)
+        .map((h) => `${f.path}:${h.line}  ${h.word}  (${h.limb})`),
+    );
+    throw new LanguageError(
+      'repository',
+      'polish-outside-register',
+      `${offenders.length} files carry Polish and stand in no register:\n${some(shown)}\n` +
+        `    Translate them, or — if the Polish is the point of the file — add an entry to ` +
+        `\`${POLICY}\` with the reason and the task that removes it. A word the dictionary ` +
+        `reads wrong belongs in \`vocabulary\` instead, named singly.`,
+    );
+  }
+
+  // 4. THE REGISTER. Last, because everything above decides what is really left in it.
+  for (const entry of exceptions) {
+    if (!entry?.file)
+      throw new LanguageError(
+        'register',
+        'entry-without-file',
+        `an entry of the register names no file: ${JSON.stringify(entry)}`,
+      );
+    if (!entry.reason || !entry.task)
+      throw new LanguageError(
+        'register',
+        'entry-without-justification',
+        `the entry for \`${entry.file}\` carries no ${!entry.reason ? '`reason`' : '`task`'}.\n` +
+          `    An exception with no reason cannot be reviewed and an exception with no task ` +
+          `has no end — that is how a register becomes a second language with a permit.`,
+      );
+    if (entry.file.startsWith(PACKAGE_SOURCES))
+      throw new LanguageError(
+        'register',
+        'entry-on-public-surface',
+        `the register excuses \`${entry.file}\`, and \`${PACKAGE_SOURCES}\` is what the ` +
+          `package is built from.\n` +
+          `    The promise allows NOT ONE entry on the public surface: a comment there ` +
+          `travels to \`types/*.d.ts\` and into the bundles, where no register reaches.`,
+      );
+    if (!repository.some((f) => f.path === entry.file))
+      throw new LanguageError(
+        'register',
+        'entry-unknown-file',
+        `the register excuses \`${entry.file}\`, which is not among the scanned files.\n` +
+          `    A file that was renamed or deleted leaves an entry that silences nothing — ` +
+          `and the next file to take that name inherits the permit.`,
+      );
+    if (!hits.has(entry.file))
+      throw new LanguageError(
+        'register',
+        'dead-entry',
+        `the register excuses \`${entry.file}\`, and there is no Polish left in it.\n` +
+          `    The entry has outlived its reason. A dead entry fires just like new Polish, ` +
+          `so that the list shrinks by measurement rather than by somebody remembering.`,
+      );
+  }
+
+  // 7. THE SPECIMENS. The gate's own calibration samples, held to every rule the register is
+  // held to — plus the one that cannot be written around: they live in this gate's tree or
+  // they are not specimens.
+  for (const entry of specimens) {
+    if (!entry?.file || !entry.reason)
+      throw new LanguageError(
+        'specimens',
+        'entry-without-justification',
+        `a specimen entry names no ${!entry?.file ? 'file' : '`reason`'}: ` +
+          `${JSON.stringify(entry)}`,
+      );
+    if (!entry.file.startsWith(SPECIMENS))
+      throw new LanguageError(
+        'specimens',
+        'entry-outside-the-gate',
+        `\`${entry.file}\` is named a specimen and does not stand under \`${SPECIMENS}*\`.\n` +
+          `    Only this gate's own files carry Polish by construction. Anywhere else the ` +
+          `word for it is an exception, and an exception owes a task that removes it — this ` +
+          `list owes none, which is exactly why it may not reach outside.`,
+      );
+    if (!repository.some((f) => f.path === entry.file))
+      throw new LanguageError(
+        'specimens',
+        'entry-unknown-file',
+        `the specimen \`${entry.file}\` is not among the scanned files — renamed, deleted, ` +
+          `or never committed.`,
+      );
+    if (!hits.has(entry.file))
+      throw new LanguageError(
+        'specimens',
+        'dead-specimen',
+        `the specimen \`${entry.file}\` carries no Polish at all.\n` +
+          `    A sample that stopped being a sample is a hole in the shape of one: the file ` +
+          `keeps the permit and nothing measures it any more.`,
+      );
+  }
+
+  return (
+    `${repository.length} files of the repository and ${artifact.length} of the package, ` +
+    `${words.size} distinct words, ${vocabulary.size} excused, ` +
+    `${exceptions.length} exceptions, ${specimens.length} specimens`
+  );
+};
+
+// ── reading the real state ──────────────────────────────────────────────────────
+
+const readFile = (path) => {
+  const text = readFileSync(path, 'latin1');
+  // A binary file has no language. Read once as bytes, decide, then read as text —
+  // an extension list would let through the next format nobody thought of.
+  if (text.includes('\0')) return null;
+  return readFileSync(path, 'utf8');
+};
+
+/**
+ * The repository from the GIT INDEX, minus what a machine wrote. `package-lock.json` and
+ * the generated registry are not hand-written text and the promise is about hand-written
+ * text — but they are named one by one in the policy, never matched by a pattern.
+ */
+const repositoryFiles = (policy) => {
+  const skip = new Set((policy.generated ?? []).map((e) => e.file));
+  return execFileSync('git', ['ls-files', '-z'], {
+    cwd: ROOT,
+    encoding: 'utf8',
+  })
+    .split('\0')
+    .filter((path) => path && !skip.has(path))
+    .map((path) => {
+      const text = readFile(join(ROOT, path));
+      return text === null ? null : { path, scope: 'repository', text };
+    })
+    .filter(Boolean);
+};
+
+/** Every text file of the built package, by the same walk `check-package` takes. */
+const artifactFiles = () => {
+  const root = join(ROOT, DIST);
+  if (!existsSync(root)) return [];
+  const out = [];
+  const walk = (dir) => {
+    for (const name of readdirSync(dir)) {
+      const path = join(dir, name);
+      if (statSync(path).isDirectory()) walk(path);
+      else if (TEXT.has(extname(name))) {
+        const text = readFile(path);
+        if (text !== null)
+          out.push({
+            path: `${DIST}/${relative(root, path)}`,
+            scope: 'artifact',
+            text,
+          });
+      }
+    }
+  };
+  walk(root);
+  return out;
+};
+
+/**
+ * The dictionary limb, read the only way a 61 MB list can be: as a STREAM against the words
+ * really found, so memory is the repository's size and not the dictionary's. The canaries go
+ * into the candidate set directly — if the split ever returns nothing, the lookup still has
+ * to answer for them, and point 1 catches the silence.
+ */
+const confirmPolish = async (files) => {
+  const candidates = new Set(Object.values(CANARY));
+  for (const file of files)
+    for (const { word } of wordsOf(textOf(file))) candidates.add(word);
+
+  const english = new Set();
+  for (const line of readFileSync(ENGLISH, 'utf8').split('\n')) {
+    const word = fold(line.trim());
+    if (!word) continue;
+    english.add(word);
+    // `cat's` also stands for `cat`; the apostrophe form never reaches us from a split.
+    if (word.includes("'")) english.add(word.split("'")[0]);
+  }
+
+  const confirmed = new Set();
+  const stream = createInterface({
+    input: createReadStream(DICTIONARY),
+    crlfDelay: Infinity,
+  });
+  for await (const line of stream) {
+    const word = fold(line.trim());
+    if (word && candidates.has(word) && !english.has(word)) confirmed.add(word);
+  }
+  return [...confirmed].sort();
+};
+
+// ── the negative control ────────────────────────────────────────────────────────
+
+const readFixture = (name) =>
+  JSON.parse(readFileSync(join(FIXTURES, name), 'utf8'));
+
+/**
+ * Builds a case's input ON A COPY of the reference one, so the case file holds nothing but
+ * its own defect — you cannot break something in passing and not notice.
+ */
+const buildFixture = (fx) => {
+  const reference = readFixture(REFERENCE);
+  const w = structuredClone(reference.input);
+
+  w.files = w.files.filter((f) => !(fx.dropFiles ?? []).includes(f.path));
+  for (const [path, text] of Object.entries(fx.replaceFile ?? {})) {
+    const file = w.files.find((f) => f.path === path);
+    if (file) file.text = text;
+  }
+  w.files.push(...(fx.addFiles ?? []));
+  if (fx.clearScope) w.files = w.files.filter((f) => f.scope !== fx.clearScope);
+
+  w.polish = w.polish.filter((word) => !(fx.dropPolish ?? []).includes(word));
+  w.polish.push(...(fx.addPolish ?? []));
+
+  w.policy.exceptions = w.policy.exceptions.filter(
+    (e) => !(fx.dropExceptions ?? []).includes(e.file),
+  );
+  for (const [file, fields] of Object.entries(fx.replaceException ?? {})) {
+    const entry = w.policy.exceptions.find((e) => e.file === file);
+    if (entry) for (const [k, v] of Object.entries(fields)) entry[k] = v;
+  }
+  w.policy.exceptions.push(...(fx.addExceptions ?? []));
+
+  w.policy.generated = w.policy.generated.filter(
+    (e) => !(fx.dropGenerated ?? []).includes(e.file),
+  );
+  w.policy.generated.push(...(fx.addGenerated ?? []));
+
+  w.policy.specimens = (w.policy.specimens ?? []).filter(
+    (e) => !(fx.dropSpecimens ?? []).includes(e.file),
+  );
+  w.policy.specimens.push(...(fx.addSpecimens ?? []));
+
+  for (const [group, words] of Object.entries(fx.addVocabulary ?? {}))
+    w.policy.vocabulary[group] = {
+      reason:
+        w.policy.vocabulary[group]?.reason ?? 'a group added by a fixture',
+      words: [...(w.policy.vocabulary[group]?.words ?? []), ...words],
+    };
+  for (const [group, fields] of Object.entries(fx.replaceGroup ?? {}))
+    w.policy.vocabulary[group] = { ...w.policy.vocabulary[group], ...fields };
+
+  if (fx.probe !== undefined) w.probe = fx.probe;
+
+  return w;
+};
+
+// ── the run ─────────────────────────────────────────────────────────────────────
+
+const problems = [];
+let summary = null;
+
+try {
+  const policy = JSON.parse(readFileSync(join(ROOT, POLICY), 'utf8'));
+  const files = [...repositoryFiles(policy), ...artifactFiles()];
+  summary = checkLanguage({
+    policy,
+    files,
+    polish: await confirmPolish(files),
+  });
+} catch (error) {
+  if (!(error instanceof LanguageError)) throw error;
+  problems.push(`${error.check}/${error.rule}: ${error.message}`);
+}
+
+if (!existsSync(FIXTURES))
+  problems.push(
+    `tools/check-language.fixtures: the directory does not exist — a gate with no proof ` +
+      `that it can fail is one more silent defect (req-quality-negative-control)`,
+  );
+
+const cases = existsSync(FIXTURES)
+  ? readdirSync(FIXTURES)
+      .filter((n) => n.endsWith('.json') && n !== REFERENCE)
+      .sort()
+  : [];
+
+if (existsSync(FIXTURES) && !cases.length)
+  problems.push(
+    `tools/check-language.fixtures: no prepared inputs — a gate with no proof that it can ` +
+      `fail is one more silent defect (req-quality-negative-control)`,
+  );
+
+// The reference input MUST pass. Were it defective itself, every case would fire because
+// of it and not because of its own defect — every "it fired" would be false.
+if (cases.length) {
+  try {
+    checkLanguage(buildFixture({}));
+  } catch (error) {
+    if (!(error instanceof LanguageError)) throw error;
+    problems.push(
+      `${REFERENCE}: the reference input does NOT pass (${error.check}/${error.rule}) — ` +
+        `every prepared case now fires because of it.\n    ${error.message}`,
+    );
+  }
+}
+
+for (const name of cases) {
+  const fx = readFixture(name);
+  try {
+    checkLanguage(buildFixture(fx));
+    problems.push(
+      `${name}: the prepared input PASSED and was meant not to — ` +
+        `rule \`${fx.check}/${fx.rule}\` stopped examining anything`,
+    );
+  } catch (error) {
+    if (!(error instanceof LanguageError)) throw error;
+    if (error.check !== fx.check || error.rule !== fx.rule)
+      problems.push(
+        `${name}: rule \`${error.check}/${error.rule}\` fired, and \`${fx.check}/${fx.rule}\` ` +
+          `was meant to — the fixture proves something other than what it declares`,
+      );
+  }
+}
+
+// ── result ──────────────────────────────────────────────────────────────────────
+
+if (problems.length) {
+  console.error(`X Language gate — ${problems.length} violations:\n`);
+  for (const p of problems) console.error(`  - ${p}`);
+  console.error('');
+  process.exit(1);
+}
+
+console.log(
+  `✓ One language: ${summary}. Negative control: the reference input passes, ` +
+    `${cases.length} prepared ones rejected on their own rules.`,
+);

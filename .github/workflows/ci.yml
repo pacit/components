@@ -66,4 +66,4 @@ jobs:
       # all belongs to the requirement it implements and the lesson it came from.
       # Tokens are not built by a step of their own: `tokens` is a graph dependency
       # of its consumers, and a manual build here would only mask a missing edge.
-      - run: npx nx affected -t lint test vite:test build typecheck check-package check-coverage check-zoneless check-typecheck check-styles check-texts check-tokens check-parts check-bundle check-consumer check-browsers mutation check-mutation check-docs e2e
+      - run: npx nx affected -t lint test vite:test build typecheck check-package check-coverage check-zoneless check-typecheck check-styles check-texts check-tokens check-parts check-bundle check-consumer check-browsers check-language mutation check-mutation check-docs e2e

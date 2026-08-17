@@ -1,0 +1,6 @@
+{
+  "$what": "A scan with an empty file list. It reads nothing, reports nothing wrong, and looks exactly like a clean repository (lesson-48).",
+  "check": "denominator",
+  "rule": "no-files",
+  "clearScope": "repository"
+}

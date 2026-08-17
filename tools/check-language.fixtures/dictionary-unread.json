@@ -1,0 +1,6 @@
+{
+  "$what": "The Polish list was not read — a moved file, a changed package, a permission. The limb then confirms nothing and every Polish name written without diacritics passes.",
+  "check": "denominator",
+  "rule": "dictionary-unread",
+  "dropPolish": ["ustawienie"]
+}

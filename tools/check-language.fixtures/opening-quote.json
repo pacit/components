@@ -1,0 +1,12 @@
+{
+  "$what": "The third limb: U+201E, a typographic convention with no English use. It survives a translation that kept the punctuation.",
+  "check": "repository",
+  "rule": "polish-outside-register",
+  "addFiles": [
+    {
+      "path": "docs/quote.md",
+      "scope": "repository",
+      "text": "The card says „something” and nobody looked.\n"
+    }
+  ]
+}

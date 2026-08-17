@@ -1,0 +1,8 @@
+{
+  "$what": "A file outside this gate's tree named a specimen. The list owes no task that removes it, so it may not reach anywhere an exception would have to — that is the whole safety of the idea, and the tree is hard-coded rather than configured.",
+  "check": "specimens",
+  "rule": "entry-outside-the-gate",
+  "addSpecimens": [
+    { "file": "tools/legacy.mjs", "reason": "It has always been like that." }
+  ]
+}

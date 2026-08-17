@@ -1,0 +1,6 @@
+{
+  "$what": "A permanent permit with no sentence saying what it is a sample of.",
+  "check": "specimens",
+  "rule": "entry-without-justification",
+  "addSpecimens": [{ "file": "tools/check-language.mjs" }]
+}

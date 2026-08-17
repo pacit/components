@@ -1,0 +1,6 @@
+{
+  "$what": "`american-english` was not subtracted, so a word both languages share is confirmed as Polish. The register then fills up with English to keep the gate green.",
+  "check": "denominator",
+  "rule": "english-not-subtracted",
+  "addPolish": ["test"]
+}

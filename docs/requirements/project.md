@@ -196,33 +196,58 @@ one**: the package (`types/*.d.ts`, README, `description`, the artifacts in `the
 **the repository itself**, which stands publicly on GitHub — `README.md`, `docs/` and the
 names visible in the Actions tab.
 
-**Gate:** none — gap: `tools/check-language.mjs` — two measurements with different reach.
-The public surface is measured on the **packed artifact** (that is where what the consumer
-really sees ends up, not what stands in the source), the rest of the repository on the files
-in the git index. Detection has three limbs, because diacritics alone are not enough — a
-name spelled without them carries none: diacritical marks, a **dictionary**
-(`/usr/share/dict/polish` folded of diacritics, minus the English one) read over identifiers
-split at camelCase, and the opening quote `U+201E`, a typographic convention with no English
-use. The dictionary limb needs a register of false positives, and that register may **not**
-excuse `SCREAMING_CASE` or short abbreviations — a whole layer of constants survived two
-passes in exactly that blind spot ([`lesson-60`](../lessons.md#lesson-60)). Plus a
-denominator of its own — a non-empty set of scanned files and a non-empty measurement,
-because a scan that stopped reading anything lets everything through
+**Gate:** `tools/check-language.mjs` (target `check-language` in the root project, in CI) —
+seven points, 24 rules, **two measurements with different reach**. The public surface is
+measured on the **artifact** (`dist/libs/components` — that is where what the consumer
+really sees ends up, not what stands in the source) and knows no register at all; the rest
+of the repository is measured on the files in the git index. Detection has three limbs,
+because diacritics alone are not enough — a name spelled without them carries none:
+diacritical marks, a **dictionary** (`/usr/share/dict/polish` folded of diacritics, minus
+the English one, streamed against the words really found) read over identifiers split at
+camelCase and at `_`, and the opening quote `U+201E`, a typographic convention with no
+English use. The false positives of the second limb live in `tools/language.policy.json` as
+**words** — 103 of them — and the format is what forbids the blind spot: an entry that is
+not a bare lowercase word fires, so `SCREAMING_CASE` or "anything under four letters"
+cannot be written down at all, and a whole layer of constants once survived two passes in
+exactly that gap ([`lesson-60`](../lessons.md#lesson-60)). Point 1 is a denominator of its
+own and it answers for the INSTRUMENT, not for the input: a constant probe has to come apart
+into four known words, and three canaries have to hold: a Polish word confirmed (the list was
+read at all), a word the dictionary carries **only** with diacritics confirmed (it was
+folded), and a word both languages share **not** confirmed (the English list was subtracted)
 ([`lesson-48`](../lessons.md#lesson-48))
-**Control:** none — gap: a Polish comment in a file outside the register has to
-fire; an entry pointing at a file that is **already** translated has to fire as dead; a Polish
-`description` in the packed manifest has to fire on the public-surface point
-**despite** an entry in the register; a constant in `SCREAMING_CASE` has to fire like any
-other identifier; a scan with an empty file list has to fire on the denominator
-**Binds at:** **the first push to upstream** — the repository is public from that second,
-with no private stage, so `README.md` and `docs/` are the first thing anybody sees. The
-package release binds the second part: 24 files in the built artifact, including all eight
-`types/*.d.ts`.
+**Control:** `tools/check-language.fixtures/` — 27 doctored inputs, each rejected on its own
+**rule**: a Polish comment in a file outside the register; a constant in `SCREAMING_CASE`
+with no diacritics anywhere; diacritics the dictionary does not confirm; the opening quote;
+a Polish `description` in the packed manifest firing on the public-surface point **despite**
+an entry in the register; a source map whose `sourcesContent` carries what the rebuilt
+source no longer does; an entry pointing at a file **already** translated, firing as dead;
+an entry under `libs/`; a scan with an empty file list; a probe with its seams taken out;
+each of the three canaries. Plus two runs against the real repository (a Polish comment in
+`libs/components/button/src/button.ts`; a Polish constant in `SCREAMING_CASE`, with no
+diacritic in it, in `tools/check-docs.mjs`) — the second being the shape that had passed
+twice before. The samples themselves are quoted nowhere but in the gate's own tree, which
+the policy names as `specimens`: this file is measured like every other
+**Binds at:** bound. Both limbs run today: the repository one before the first push, which is
+what turns "nothing is left" into a measurement rather than a declaration, and the artifact
+one on `dist/libs/components` — clean on the run that closed this, so it costs nothing to
+keep and would have to be paid for at the release otherwise.
 
 > The register of exceptions plays the part here that `browsers.policy.json` plays for
 > [`req-quality-browsers`](quality.md#req-quality-browsers): migration through a shrinking
-> list rather than in one run. Without it the gate would be red for all the weeks of
-> translation — that is, switched off on day one.
+> list rather than in one run. Without it the gate would have been red for all the weeks of
+> translation — that is, switched off on day one. It arrived **empty** all the same, because
+> the translation went first and the gate came to prove it, and the one survivor the plan had
+> left to rule on turned out not to be a case at all: the `pl-PL` default of
+> `libs/components/field/src/number.spec.ts` is a BCP-47 tag naming a formatting convention
+> (that locale groups with `U+00A0`, which is what those tests are about), no limb flags it,
+> and an entry for it would have been dead the day it was written.
+
+> **What the gate found on its first run, in a repository three passes had already declared
+> clean:** a Polish local for "target" in three gate scripts, a Polish "both" in a fixture's
+> JSDoc, and a Polish "this is not an email" as the invalid address in an e2e test. None of
+> them carries a diacritic; none is a function word; two of them are three letters long. That
+> is the whole argument for the dictionary limb, and the reason the first point of this gate
+> answers for the instrument before any of them answers for the repository.
 
 > The rule used to apply **by halves and only as prose**: `docs/README.md` recorded a split
 > of "working documentation in Polish, public surface in English". The split had no

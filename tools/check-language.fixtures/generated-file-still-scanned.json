@@ -1,0 +1,8 @@
+{
+  "$what": "A file named as machine-written and scanned all the same. One of the two is a lie, and the quiet reading is the dangerous one.",
+  "check": "generated",
+  "rule": "entry-still-scanned",
+  "addGenerated": [
+    { "file": "docs/README.md", "reason": "Somebody took it for generated." }
+  ]
+}

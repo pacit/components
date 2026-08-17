@@ -1,0 +1,12 @@
+{
+  "$what": "An exception under `libs/`. The promise allows not one there: a comment in the sources travels into `types/*.d.ts` and the bundles, where no register reaches.",
+  "check": "register",
+  "rule": "entry-on-public-surface",
+  "addExceptions": [
+    {
+      "file": "libs/components/src/button.ts",
+      "reason": "One comment left.",
+      "task": "B4"
+    }
+  ]
+}

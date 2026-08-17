@@ -1,0 +1,8 @@
+{
+  "$what": "An entry pointing at a file that is ALREADY translated. Without this rule the register only ever grows, and the permits outlive the reasons.",
+  "check": "register",
+  "rule": "dead-entry",
+  "replaceFile": {
+    "tools/legacy.mjs": "// the default setting\nexport const value = 1;\n"
+  }
+}

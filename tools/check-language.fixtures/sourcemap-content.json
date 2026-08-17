@@ -1,0 +1,12 @@
+{
+  "$what": "A source map is read as a source map: `mappings` is base64 by the spec and gives debris, `sourcesContent` is where a comment translated in the source but never rebuilt still stands. The map here has both, and only the second may fire.",
+  "check": "artifact",
+  "rule": "polish-in-package",
+  "addFiles": [
+    {
+      "path": "dist/libs/components/fesm2022/button.mjs.map",
+      "scope": "artifact",
+      "text": "{\"version\":3,\"file\":\"button.mjs\",\"sources\":[\"button.ts\"],\"names\":[],\"mappings\":\"AAAA,cAAc,GAAG,CAAC,IAAI,MAAM,CAAC,KAAK,CAAC,cAAc,CAAC\",\"sourcesContent\":[\"// ustawienie domyslne\\nexport const value = 1;\\n\"]}\n"
+    }
+  ]
+}

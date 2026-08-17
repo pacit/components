@@ -52,11 +52,11 @@ Snapshot, `node tools/check-docs.mjs`:
 | measure                                     | value |
 | ------------------------------------------- | ----: |
 | requirements                                |    83 |
-| ✅ enforced                                 |    54 |
+| ✅ enforced                                 |    55 |
 | 🟡 partial (deliberately without a control) |    16 |
-| ⛔ gap                                      |    13 |
+| ⛔ gap                                      |    12 |
 
-All 13 gaps have an owner below (B, D, F, G). If adding a requirement raises the gap count
+All 12 gaps have an owner below (B, D, F, G). If adding a requirement raises the gap count
 and no task changes, this list has stopped being complete — and that is a fault of this list,
 not of the registry.
 
@@ -73,19 +73,21 @@ G  gaps with no deadline    waiting for the trigger written in their "Binds at" 
 
 **The next milestone is not a release but the first push to the public repository** (B2), and
 the rule for it is settled: nothing leaves in a second language — not the sandbox, not a
-comment, not a fixture value. So B2 waits on the repository limb of **B8**, because "nothing is
-left" is a measurement and not a declaration, this file's own
-[definition of done](#definition-of-done). Of B, the package README (B3) and B4 stand between
-here and npm. In parallel: F1 is unblocked — the inventories it renders both exist — and C is
-filler.
+comment, not a fixture value. **B8 has closed, so that is now a measurement and not a
+declaration** — both limbs run, the register of exceptions is empty, and the run that closed
+it found three survivors in a repository three passes had declared clean. What stands between
+here and the push is **B9**: the clear-out of what a public repository should never have
+carried. Of B, the package README (B3) and B4 stand between here and npm. In parallel: F1 is
+unblocked — the inventories it renders both exist — and C is filler.
 
 ## B. Readiness for the first release
 
-Binds at the first publication — and then all of it at once, with **B9** and B8's repository
-limb one step earlier, at the push.
+Binds at the first publication — and then all of it at once, with **B9** one step earlier, at
+the push.
 
 Three of the seven tasks (**B3**, **B4**, **B8**) are about language: the text that travels
-inside the package, and the gate that proves the rest of the repository holds to it.
+inside the package, and the gate that proves the rest of the repository holds to it. The gate
+went first and is closed, so the two that are left are measured rather than reviewed.
 
 - [ ] **B2 — remote repository + `repository` in the manifest**
   - concerns: `req-release-metadata` — the gate and its control exist, so the registry says ✅;
@@ -103,8 +105,8 @@ inside the package, and the gate that proves the rest of the repository holds to
     of that order is written down plainly — until the first push there is no remote CI, no
     provenance and no copy off this machine
   - the condition is wider than the public surface: **nothing leaves in a second language at
-    all**, and a measurement says so, not a declaration — **B8's repository limb is what proves
-    it**
+    all**, and a measurement says so, not a declaration — **B8 proves it, and it is closed**:
+    720 files of the index and 31 of the package, no entry in the register
   - cost: minutes for the task itself · _notes:_ —
 
 - [ ] **B3 — package README in English**
@@ -152,7 +154,7 @@ inside the package, and the gate that proves the rest of the repository holds to
   - control: a manifest with a dependency outside the list must fire
   - cost: ~0.5 day · _notes:_ —
 
-- [ ] **B8 — language gate** — **stands before B2**
+- [x] **B8 — language gate** — **stood before B2, and it is closed**
   - closes: [`req-project-language`](requirements/project.md#req-project-language)
   - **without it every translation pass is a one-off tidy-up.** A language rule with no gate is
     the [`req-axis`](00-axis.md) class exactly: it was written down once and broken on **both**
@@ -174,7 +176,21 @@ inside the package, and the gate that proves the rest of the repository holds to
     groups with U+00A0. Denominator: [`lesson-48`](lessons.md#lesson-48)
   - control: Polish in a file outside the register; an entry pointing at a file **already**
     translated; a Polish `description` **despite** an entry; a scan with an empty file list
-  - cost: ~1 day · _notes:_ —
+  - cost: ~1 day · _notes:_ **done** — `tools/check-language.mjs` (seven points, 24 rules),
+    `tools/language.policy.json`, 27 fixtures, target `check-language` in the root project
+    and in CI. The register of exceptions is **empty**: the survivor left to rule on turned
+    out not to be a case (a BCP-47 tag is not prose, and no limb flags it), so an entry would
+    have been dead on arrival. The vocabulary holds **103 words**, and the shape the plan
+    forbade is not merely discouraged — an entry that is not a bare lowercase word fires.
+    **The first run found three survivors** three passes had declared clean: a Polish local
+    for "target" in three gate scripts, a Polish "both" in a fixture's JSDoc, a Polish
+    "this is not an email" in an e2e test; all translated in the same commit. A third list
+    was needed that the plan had not foreseen — `specimens`, the gate's own samples, which
+    carry Polish by construction and whose tree the script hard-codes, so the list cannot be
+    widened into a second register of permits. Two limbs of noise were fixed rather than
+    registered —
+    `ɵ` is a letter, so Angular's `ɵfac` stops coming apart at the barred o, and a source map is read
+    through its fields, so `mappings` stops arriving as base64 debris
 
 - [ ] **B9 — the repository is tidied before it is published** _(binds at B2)_
   - **what a first visitor must not find**: an identifier space no public reader can observe,

@@ -1,0 +1,6 @@
+{
+  "$what": "The dictionary was read and not folded of its diacritics. `wartosc` stands in it only as `wartość`, so the second limb would confirm nothing the first does not already see — two limbs measuring one thing.",
+  "check": "denominator",
+  "rule": "dictionary-unfolded",
+  "dropPolish": ["wartosc"]
+}

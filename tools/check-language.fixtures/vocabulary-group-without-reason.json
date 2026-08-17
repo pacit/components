@@ -1,0 +1,6 @@
+{
+  "$what": "A word list with no sentence saying why those words are not Polish — a list nobody can review.",
+  "check": "vocabulary",
+  "rule": "group-without-reason",
+  "replaceGroup": { "abbreviations": { "reason": "" } }
+}

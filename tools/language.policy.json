@@ -1,0 +1,202 @@
+{
+  "$description": "One language (req-project-language). tools/check-language.mjs measures three limbs — diacritics, a dictionary and the opening quote U+201E — over the git index and over the built package. This file is everything that measurement is allowed NOT to fire on, and each of its three lists shrinks by measurement: an entry that stops silencing something fires exactly like new Polish.",
+
+  "$generated": "Files no hand wrote. The promise is about hand-written text, and these two are the output of a tool — `npm` and `check-docs --write`. They are named one by one and never matched by a pattern: `*.lock`, `**/generated/**` or any other shape would take the next file nobody weighed with it. The registry costs nothing to skip anyway — it is assembled from `docs/**`, which is scanned in full.",
+  "generated": [
+    {
+      "file": "package-lock.json",
+      "reason": "npm writes it. Its `integrity` fields are base64, and a base64 blob read as letters gives two-letter runs by the hundred — measured: 1310 flagged words with it against 121 for the whole rest of the repository, and every one of the difference was debris."
+    },
+    {
+      "file": "docs/registry.md",
+      "reason": "`node tools/check-docs.mjs --write` assembles it from the requirements and the lessons, and truncates every table cell to fit — so it holds a dozen words cut in half by the ellipsis, standing nowhere in the sources and answering to nobody. Its content is measured at the source, in `docs/**`."
+    }
+  ],
+
+  "$exceptions": "Files allowed to carry Polish, each with the task that removes it. EMPTY, and that is a measurement rather than a declaration — the gate walks the whole index and finds nothing. The list may never name a file under `libs/`: what stands there travels into `types/*.d.ts` and the bundles, where no register reaches. The one survivor the plan left to rule on — the `pl-PL` default of `libs/components/field/src/number.spec.ts` — is NOT here: a BCP-47 tag is not prose but the name of a formatting convention (that locale groups with U+00A0, which is the whole point of those tests), no limb flags it, and an entry for it would be dead on the day it was written.",
+  "exceptions": [],
+
+  "$specimens": "The gate's own calibration samples. An instrument for finding Polish cannot be written without any: a canary has to be a word the dictionary really holds, and a diacritics case has to carry real diacritics. These are not exceptions — an exception owes a task that removes it and these are permanent — so they are a list of their own, and `check-language.mjs` hard-codes the tree they may name (`tools/check-language.*`). The policy chooses which files of that tree are specimens; it cannot widen the tree. Every entry is held to the same aliveness rule as everything else here: a file that stopped carrying Polish is a hole in the shape of a sample, and it fires.",
+  "specimens": [
+    {
+      "file": "tools/check-language.mjs",
+      "reason": "The probe of point 1 and the three canaries. They are compared against `/usr/share/dict/polish`, so they have to be words that stand in it."
+    },
+    {
+      "file": "tools/check-language.fixtures/README.md",
+      "reason": "It quotes the constant of the `SCREAMING_CASE` case — the shape that survived two passes before a dictionary was pointed at it."
+    },
+    {
+      "file": "tools/check-language.fixtures/_reference.json",
+      "reason": "The file every case is built on carries the one excused file of that small repository, and that file is in Polish."
+    },
+    {
+      "file": "tools/check-language.fixtures/diacritics-with-no-dictionary-hit.json",
+      "reason": "The first limb on its own. Diacritics cannot be simulated — a sample without them proves nothing."
+    },
+    {
+      "file": "tools/check-language.fixtures/dictionary-unread.json",
+      "reason": "It names the canary that says the Polish list was read at all, so it has to spell it."
+    },
+    {
+      "file": "tools/check-language.fixtures/dictionary-unfolded.json",
+      "reason": "It names the canary that stands in the dictionary only with diacritics, so it has to write it both ways."
+    },
+    {
+      "file": "tools/check-language.fixtures/opening-quote.json",
+      "reason": "U+201E, in the position it really appears in."
+    },
+    {
+      "file": "tools/check-language.fixtures/polish-comment-outside-register.json",
+      "reason": "The plainest case there is: a comment nobody translated."
+    },
+    {
+      "file": "tools/check-language.fixtures/polish-in-package-despite-entry.json",
+      "reason": "A `description` on the public surface, in the language it would really have shipped in."
+    },
+    {
+      "file": "tools/check-language.fixtures/screaming-case-constant.json",
+      "reason": "The constant of lesson-60, spelled without a diacritic — which is the entire point of the case."
+    },
+    {
+      "file": "tools/check-language.fixtures/sourcemap-content.json",
+      "reason": "A `sourcesContent` holding what a rebuilt source no longer does."
+    },
+    {
+      "file": "tools/check-language.fixtures/vocabulary-dead-word.json",
+      "reason": "It excuses a word the reference's dictionary confirms, and that word is Polish."
+    }
+  ],
+
+  "$vocabulary": "The false positives of the dictionary limb — 103 words `/usr/share/dict/polish` holds and `american-english` does not, none of them Polish here. Every entry is a WORD. Never a shape: an exclusion of `SCREAMING_CASE` or of anything under four letters excuses a whole grammatical class, and a layer of constants once rode through two passes in exactly that blind spot (lesson-60). The gate enforces the format — an entry that is not a bare lowercase word fires — and it also fires on any entry the dictionary would never have flagged, so nobody can pad the list with superstition.",
+  "vocabulary": {
+    "abbreviations": {
+      "reason": "English words written short, in identifiers and in prose. Each is a shortening a reader expands without thinking; none is a Polish word here.",
+      "words": [
+        "abs",
+        "acc",
+        "aux",
+        "bg",
+        "config",
+        "const",
+        "cp",
+        "ctrl",
+        "def",
+        "deg",
+        "dep",
+        "div",
+        "el",
+        "ep",
+        "exe",
+        "exp",
+        "ext",
+        "fg",
+        "fn",
+        "frac",
+        "fs",
+        "fx",
+        "gt",
+        "infra",
+        "init",
+        "kb",
+        "mts",
+        "pre",
+        "proc",
+        "proj",
+        "pts",
+        "reg",
+        "rej",
+        "rel",
+        "repo",
+        "res",
+        "ro",
+        "sem",
+        "tok",
+        "txt",
+        "ul",
+        "ver"
+      ]
+    },
+    "acronyms": {
+      "reason": "Initialisms of the trade and of the standards this library answers to. They are read letter by letter, so no dictionary of either language has anything to say about them.",
+      "words": [
+        "adr",
+        "apg",
+        "ast",
+        "bidi",
+        "cipe",
+        "cla",
+        "cli",
+        "dco",
+        "dns",
+        "dom",
+        "ds",
+        "gpl",
+        "osi",
+        "rc",
+        "rgb",
+        "rtl",
+        "uri",
+        "wai"
+      ]
+    },
+    "codes": {
+      "reason": "Identifiers out of somebody else's code list — ISO country and currency codes, BCP-47 language subtags. They stand in test data and in demo rows, where translating them would break the thing they name.",
+      "words": ["cz", "en", "eur", "pln", "ua"]
+    },
+    "english": {
+      "reason": "English words `american-english` simply does not carry — it is a spelling list from another decade, and the trade's vocabulary moved. The subtraction cannot remove what the English side never held, so they are named here instead.",
+      "words": [
+        "bio",
+        "centre",
+        "favicon",
+        "frontend",
+        "goto",
+        "linter",
+        "linters",
+        "quo",
+        "readme",
+        "stepper",
+        "todo",
+        "tri"
+      ]
+    },
+    "names": {
+      "reason": "Proper names: tools, fonts, packages, an organisation and a person. A name is not translated in either direction.",
+      "words": [
+        "arial",
+        "deja",
+        "git",
+        "glab",
+        "marek",
+        "nitro",
+        "noto",
+        "nx",
+        "org",
+        "pinia",
+        "pom",
+        "testem",
+        "turbo",
+        "verdaccio",
+        "vue"
+      ]
+    },
+    "fragments": {
+      "reason": "Not words at all — what the split cuts out of text that is not prose, and the one class this list may hold without naming a language. Each is written down singly, with the string it comes from, because a rule saying `skip regular expressions` or `skip base64` would blind the scan to whole files instead of to one word: `za` from `[A-Za-z]`, `bis` from `\\bis`, `oo` from `[Oo]nly`, `bj` and `ww` from a `sha512-` integrity string, `cw` from a base64 data URI, `eb` and `ff` from the hex colours `#2563eb` and `#eff6ff`, `fes` from the plural `FESMs`, `fi` from the shell's `if … fi`, `rf` from `rm -rf`, `vu` from `DejaVu`.",
+      "words": [
+        "bis",
+        "bj",
+        "cw",
+        "eb",
+        "fes",
+        "ff",
+        "fi",
+        "oo",
+        "rf",
+        "vu",
+        "ww",
+        "za"
+      ]
+    }
+  }
+}

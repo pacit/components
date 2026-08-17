@@ -1,0 +1,12 @@
+{
+  "$what": "The first limb on its own: a word the fixture dictionary does not confirm, carrying diacritics. Prose translated by ear leaves exactly this.",
+  "check": "repository",
+  "rule": "polish-outside-register",
+  "addFiles": [
+    {
+      "path": "docs/note.md",
+      "scope": "repository",
+      "text": "Zażółć gęślą jaźń.\n"
+    }
+  ]
+}

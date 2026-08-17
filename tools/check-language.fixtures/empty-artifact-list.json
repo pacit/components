@@ -1,0 +1,6 @@
+{
+  "$what": "The public surface with no package to measure. Point 3 would pass having opened nothing.",
+  "check": "denominator",
+  "rule": "no-artifact",
+  "clearScope": "artifact"
+}

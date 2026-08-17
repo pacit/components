@@ -1,0 +1,6 @@
+{
+  "$what": "The probe of point 1 with its seams taken out. The words it must yield are constant, so this proves the SPLIT is what produces them — a lost seam at `_` hides every constant, one at camelCase every identifier.",
+  "check": "denominator",
+  "rule": "tokenizer-blind",
+  "probe": "const mojawartosc = ustawieniedomyslne;"
+}

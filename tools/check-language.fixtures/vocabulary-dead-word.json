@@ -1,0 +1,6 @@
+{
+  "$what": "An excused word that stands nowhere in the repository any more. The list is to shrink as the reasons for it go.",
+  "check": "vocabulary",
+  "rule": "dead-word",
+  "addVocabulary": { "abbreviations": ["moja"] }
+}

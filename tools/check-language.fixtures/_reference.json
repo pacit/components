@@ -1,0 +1,50 @@
+{
+  "$description": "The input every case is built on: a small repository that passes all six points, plus the one built package file the artifact limb needs. Cases carry nothing but their own defect — the builder copies this and applies the named change, so a fixture cannot break something in passing.",
+  "$polish": "`polish` is what the dictionary would have confirmed for these files: in the Polish list, not in the English one, folded. The three canaries have to be right here too — `ustawienie` present, `wartosc` present, `test` absent — or the reference itself would fail point 1.",
+  "input": {
+    "policy": {
+      "generated": [
+        {
+          "file": "package-lock.json",
+          "reason": "npm writes it, and its `integrity` fields read as letters give debris by the hundred."
+        }
+      ],
+      "exceptions": [
+        {
+          "file": "tools/legacy.mjs",
+          "reason": "The last script of the old pass, still in Polish.",
+          "task": "B8"
+        }
+      ],
+      "vocabulary": {
+        "abbreviations": {
+          "reason": "English words written short.",
+          "words": ["config"]
+        }
+      }
+    },
+    "files": [
+      {
+        "path": "docs/README.md",
+        "scope": "repository",
+        "text": "The repository speaks one language, and this file speaks it.\n"
+      },
+      {
+        "path": "tools/legacy.mjs",
+        "scope": "repository",
+        "text": "// ustawienie domyslne\nexport const value = 1;\n"
+      },
+      {
+        "path": "libs/components/src/button.ts",
+        "scope": "repository",
+        "text": "export const config = { label: 'Send' };\n"
+      },
+      {
+        "path": "dist/libs/components/types/button.d.ts",
+        "scope": "artifact",
+        "text": "/** The button's configuration. */\nexport declare const config: { label: string };\n"
+      }
+    ],
+    "polish": ["domyslne", "moja", "ustawienie", "wartosc", "config"]
+  }
+}

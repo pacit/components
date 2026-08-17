@@ -1,0 +1,12 @@
+{
+  "$what": "A constant in SCREAMING_CASE fires like any other identifier. `_` is not a letter, so the name comes apart without a rule of its own — and no entry may ever excuse the shape (lesson-60).",
+  "check": "repository",
+  "rule": "polish-outside-register",
+  "addFiles": [
+    {
+      "path": "tools/const.mjs",
+      "scope": "repository",
+      "text": "const MOJA_WARTOSC = 1;\n"
+    }
+  ]
+}

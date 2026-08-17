@@ -1,0 +1,12 @@
+{
+  "$what": "An entry naming a file nobody scans — renamed or deleted. It silences nothing, and the next file to take that name inherits the permit.",
+  "check": "register",
+  "rule": "entry-unknown-file",
+  "addExceptions": [
+    {
+      "file": "tools/gone.mjs",
+      "reason": "It was here yesterday.",
+      "task": "B8"
+    }
+  ]
+}
