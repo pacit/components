@@ -1,0 +1,11 @@
+{
+  "// why": "A root naming a file that is no longer in the index. It silences nothing, points at nothing and reads as a rule — the state a register drifts into when a file leaves and its entry stays behind.",
+  "point": 2,
+  "check": "roots",
+  "addRoots": [
+    {
+      "path": "CHANGELOG.md",
+      "reason": "A file the release used to write and that no longer stands in the repository."
+    }
+  ]
+}

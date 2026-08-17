@@ -343,3 +343,47 @@ together with it
 **Control:** none — gap: the same as for the gate above
 **Binds at:** the creation of `apps/docs`
 **Lessons:** [`lesson-1`](../lessons.md#lesson-1), [`lesson-2`](../lessons.md#lesson-2)
+
+---
+
+### <a id="req-project-reach"></a>`req-project-reach` — Every tracked file has a reader
+
+**Promise.** Something in the repository opens every file the repository carries — an import,
+a path in a configuration, a pattern over a directory, a link in the documentation — or a tool
+convention written down **with the reader named**. A file nobody reads is not harmless idle
+weight: it compiles nothing, ships nothing and fires nothing, so no measurement ever
+contradicts it, and the reader who finds it has to decide from the outside whether they are
+looking at the source of truth or at its copy.
+
+**Gate:** `tools/check-reach.mjs` (target `check-reach` in the root project, in CI) — five
+points over the whole git index. The measurement is a **walk from the roots**, not the question
+"does any other file mention this one": the second calls a copied tree alive, because a copy
+brings its citations with it ([`lesson-61`](../lessons.md#lesson-61)). Reach is entered from
+outside and follows five kinds of naming — a path from the repository root, a path relative to
+the mentioning file, an import with the extension left off, a pattern **that names a directory**
+(`libs/tokens/src/**/*.json`, never `**/*.md`, which names a kind of file) and a bare name
+**while that name belongs to one file**. Two grants are not names at all, and neither can be
+widened by hand: a gate reaches its own `check-<x>.fixtures/` tree, which it walks with
+`readdirSync` and never names a case of — the pairing is derived from the two file names, so
+the list cannot grow an entry no gate backs — and `tools/reach.policy.json` names the trees an
+outside tool enumerates. The policy is held to the aliveness rule of every register here: a
+root matching nothing fires, an entry whose reader has left fires, and an entry over a tree the
+walk reaches anyway fires, measured by repeating the walk without it
+**Control:** `tools/check-reach.fixtures/` — 17 prepared inputs, each rejected on its own
+point: a file nothing points at; two files citing only each other; a name two files share; a
+pattern naming a kind and not a file; a root written as a pattern, as a path in the name form,
+in both forms at once, with a one-word reason, and pointing at a file that is gone; a register
+entry that grants nothing, one whose reader is gone, one over an empty tree, one without a
+reason; a fixtures tree whose gate is gone; an empty index; a corpus with nothing readable in
+it; a policy with no roots. Plus a run against the real repository: the deleted copy of the
+vendored guide put back as two files citing each other, which fired point 5 with both named
+**Lessons:** [`lesson-61`](../lessons.md#lesson-61)
+
+> The register may not be read as a place to put a tree that has become inconvenient. It holds
+> two entries and both name a reader that is itself tracked: `.opencode` against `opencode.json`
+> (proof the tool is configured here at all) and the Playwright baselines against the config
+> whose `snapshotPathTemplate` builds their paths out of test titles. The price of the second is
+> written into it rather than hidden: a baseline whose test was deleted stays, and this gate
+> will not say so — that measurement belongs to
+> [`req-quality-browsers`](quality.md#req-quality-browsers), which already reads the specs
+> through `playwright test --list`.

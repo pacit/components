@@ -1,0 +1,6 @@
+{
+  "// why": "A file added to the repository and pointed at by nothing: no import, no configuration, no line of documentation. The plain case of point 5 — and the cheapest one to produce, because it costs a `git add` of something that was going to be temporary.",
+  "point": 5,
+  "check": "reach",
+  "addFiles": { "src/scratch.ts": "export const scratch = 1;" }
+}

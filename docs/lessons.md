@@ -1257,3 +1257,34 @@ generates the list before trusting what it reports — [`lesson-48`](#lesson-48)
 question about an empty denominator, and this is its other half: a denominator that is non-empty
 and still too small says nothing about it, because a scan that finds Polish in 32 files looks
 exactly like a scan that finds Polish in 32 files.
+
+---
+
+### <a id="lesson-61"></a>`lesson-61` — A copy carries its citations with it, so "is this file mentioned?" cannot see a dead tree
+
+**`.github/skills/` was 17 files byte-identical to `.opencode/skills/`, and the obvious
+measurement — does any other file in the repository mention this one — called every one of them
+alive.** Of course it did: a skill's `SKILL.md` points at its own `references/VITE.md`, and the
+copy points at the copy's. The citations were duplicated along with the files, so the tree
+answered for itself. Nothing outside it had pointed at either directory for months.
+
+The measurement that works asks a different question: **not "who mentions this file" but "what
+gets there from a root"** — from the files a tool opens by its own convention, following what
+each reached file names. A dead island then falls out on the first pass, because nobody enters
+it. Ten lines separate the two questions in the implementation and everything separates them in
+what they can see: the first is a relation between files, the second is a walk, and only a walk
+can tell a subgraph nothing points into from one everything points into.
+
+**The second finding sits one floor down, in what counts as a mention.** With the walk in
+place, the same 19 files came back alive, granted by `**/*.md` in the header of an unrelated
+gate — a pattern in a cache declaration saying "prose is checked everywhere". A pattern like
+that names a KIND of file, not a file: read as a mention it reaches the whole repository from
+one line, which is a gate that passes everything while looking exactly like a gate. The rule
+that survived measurement: **a pattern names files only inside the directory it names** — a
+segment before the first wildcard, or it names nobody. The same instinct that makes
+[`lesson-60`](#lesson-60) forbid an exclusion by shape: `libs/tokens/src/**/*.json` points at
+files somebody chose, `**/*.md` points at a category, and a category granted anything grants
+everything of that category, including what arrived after the sentence was written.
+
+Both halves are one shape — **a measurement that reads a repository has to be told where it
+starts.** Roots, and only then edges.

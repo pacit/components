@@ -1,0 +1,12 @@
+{
+  "// why": "A root that is both forms at once. `path` says \"this file at this place\" and `name` says \"any file called that\" — an entry carrying the two says neither, and the reader has to open the gate to find out which one it granted.",
+  "point": 2,
+  "check": "roots",
+  "addRoots": [
+    {
+      "path": "docs/plan.md",
+      "name": "plan.md",
+      "reason": "An entry written in both forms, so that it holds whichever the gate happens to read."
+    }
+  ]
+}

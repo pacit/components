@@ -1,0 +1,8 @@
+{
+  "// why": "An entry with no reason worth the name. This register asserts an edge no measurement can find, so the sentence explaining WHICH tool walks the tree is the entire evidence — without it the entry is a permit, and a permit is what a register may not become.",
+  "point": 3,
+  "check": "register",
+  "addEntries": [
+    { "tree": "vendor", "reader": "vendor.json", "reason": "vendored" }
+  ]
+}

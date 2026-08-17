@@ -1,0 +1,12 @@
+{
+  "// why": "A register entry over a tree the walk reaches anyway. It silences nothing and only takes a directory out of the measurement — the entry survives the day something inside it dies. The gate repeats the walk WITHOUT the register and requires every entry to make a difference, which is the rule the language register runs on: a dead entry fires exactly like a new violation.",
+  "point": 3,
+  "check": "register",
+  "addEntries": [
+    {
+      "tree": "src",
+      "reader": "package.json",
+      "reason": "A tree the build already names in its inputs, declared as one an outside tool walks."
+    }
+  ]
+}

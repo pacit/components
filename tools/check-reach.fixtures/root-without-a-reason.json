@@ -1,0 +1,6 @@
+{
+  "// why": "A root with a reason of one word. An entry whose reason is a word is a permit: the next reader cannot tell whether a tool really finds that file by name or whether somebody needed the gate to be quiet. The shape rule is the whole defence, exactly as in the language register, where an entry that is not a bare lowercase word fires.",
+  "point": 2,
+  "check": "roots",
+  "addRoots": [{ "path": "docs/plan.md", "reason": "needed" }]
+}

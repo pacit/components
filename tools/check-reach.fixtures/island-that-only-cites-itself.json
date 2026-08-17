@@ -1,0 +1,9 @@
+{
+  "// why": "Two files nothing outside names, citing each other. This is the case B9 exists for: `.github/skills/` was a byte-identical copy of `.opencode/skills/`, and the files of a copied tree point at each other exactly as the original's do. The question \"does any other file mention this one\" answers yes for both and calls a dead island alive — only a walk FROM THE ROOTS sees that nothing ever enters it.",
+  "point": 5,
+  "check": "reach",
+  "addFiles": {
+    "copy/skills/build/SKILL.md": "The steps of the build live in steps.md.",
+    "copy/skills/build/steps.md": "Written up in SKILL.md."
+  }
+}

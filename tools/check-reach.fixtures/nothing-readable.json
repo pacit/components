@@ -1,0 +1,6 @@
+{
+  "// why": "A file list with not one readable file. Every mention lives in text, so the walk stops at the roots and everything else looks dead — the gate would fire, but on the whole repository at once and for a reason that has nothing to do with reach. A real trigger: a decoding error swallowed while reading the corpus.",
+  "point": 1,
+  "check": "denominator",
+  "clearTexts": true
+}

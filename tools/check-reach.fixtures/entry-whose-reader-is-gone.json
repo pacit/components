@@ -1,0 +1,6 @@
+{
+  "// why": "The register keeps granting a tree after the tool that read it left the repository. That is how the two vendored copies came about in the first place: one directory belonged to a tool configured here, the other to a tool nothing configured, and the two were indistinguishable from the inside.",
+  "point": 3,
+  "check": "register",
+  "dropFiles": ["vendor.json"]
+}

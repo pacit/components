@@ -1,0 +1,6 @@
+{
+  "// why": "A second `guide.md`. In the reference the README reaches `docs/guide.md` by its bare name, because that name belongs to one file; with two of them the same sentence chooses between neither, and BOTH fall out of the walk. That is the rule this gate needs most: a copied tree is exactly where names stop being unique, so a generous reading of a bare name would blind it to the copy.",
+  "point": 5,
+  "check": "reach",
+  "addFiles": { "notes/guide.md": "A second page with the same name." }
+}

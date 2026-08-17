@@ -1,0 +1,6 @@
+{
+  "// why": "A `check-<x>.fixtures/` tree whose gate script is gone. The convention of point 5 grants such a tree reach FROM its gate, so without this point the cases would go on granting themselves: prepared defects nobody runs, proving a gate that no longer exists.",
+  "point": 4,
+  "check": "fixtures",
+  "dropFiles": ["tools/check-widget.mjs"]
+}

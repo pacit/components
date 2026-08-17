@@ -1,0 +1,109 @@
+{
+  "$description": "Every tracked file has a reader (req-project-reach). tools/check-reach.mjs walks the repository from the roots below, following what a reached file names — a path, an import, a pattern in `inputs` — and requires the walk to end holding every file in the git index. This file is everything the walk cannot derive from the text: where it starts, and which trees an outside tool opens without leaving a trace inside.",
+
+  "$roots": "Files a tool finds by its own convention, so nothing in the repository has to point at them. Two forms and no third: `path` is one file at one place, `name` is a file name a tool looks for at any depth. Neither may carry a wildcard — a pattern here would take a whole tree out of the measurement in a single line, which is the shape of the defect the gate exists for, and `check-reach.mjs` rejects it. The list is short on purpose: everything else in the repository is reached from these, and a file that needs an entry of its own is telling you nobody reads it.",
+  "roots": [
+    {
+      "name": "package.json",
+      "reason": "npm reads the root manifest by name and Nx takes the package manager from it; a project's own manifest is read the same way, by the name and the place — `libs/tokens/package.json` is what makes that directory a project at all."
+    },
+    {
+      "path": "package-lock.json",
+      "reason": "npm writes it and `npm ci` reads it. Nothing in the repository names it — a lockfile is an artifact of the manifest above, not a file anyone imports."
+    },
+    {
+      "path": "nx.json",
+      "reason": "The workspace configuration: Nx reads it by name before it knows any project exists."
+    },
+    {
+      "name": "project.json",
+      "reason": "Nx enumerates project configurations by this name at any depth — that is how a directory becomes a project. A root per project would turn adding a library into an entry in this file, and the name form says the true thing instead: the tool looks for the name, not for the path."
+    },
+    {
+      "name": "eslint.config.mjs",
+      "reason": "ESLint reads the flat config of the directory it lints, and `@nx/eslint/plugin` infers a `lint` target from exactly that file being there — the root one and the per-project ones alike."
+    },
+    {
+      "path": "README.md",
+      "reason": "The repository's front page: GitHub renders it on the landing page and npm on the package page."
+    },
+    {
+      "path": "LICENSE",
+      "reason": "GitHub and npm find the licence by name — decision 0015 makes MIT a fact about the whole repository, so the file answers to no single project."
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "reason": "GitHub links it from the issue and pull request forms without anything pointing at it from inside."
+    },
+    {
+      "path": "AGENTS.md",
+      "reason": "The convention most agent tools read by name. It is the source of truth for the rules of this repository — `CLAUDE.md` imports it rather than the other way round."
+    },
+    {
+      "path": "CLAUDE.md",
+      "reason": "Claude Code loads it by name and expands the `@AGENTS.md` import in it."
+    },
+    {
+      "path": ".gitignore",
+      "reason": "git reads it by name. It is also the only record of which untracked paths are deliberate — `docs/private/` and the fixtures' `dist` exception."
+    },
+    {
+      "path": ".editorconfig",
+      "reason": "Editors read it by name before any project configuration."
+    },
+    {
+      "path": ".prettierrc",
+      "reason": "prettier finds its configuration by name; `nx format` runs prettier and passes it nothing."
+    },
+    {
+      "path": ".prettierignore",
+      "reason": "prettier finds it by name. AGENTS.md explains why the symlink it would have replaced cannot exist."
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "reason": "GitHub Actions enumerates `.github/workflows/`. Every gate of this repository runs from here, so the walk enters most of `tools/` through it."
+    },
+    {
+      "path": ".github/workflows/release.yml",
+      "reason": "The second workflow the same enumeration finds — the publication path, which runs on a tag rather than on a push."
+    },
+    {
+      "path": ".mcp.json",
+      "reason": "The MCP server list, read by name by every client that supports the protocol."
+    },
+    {
+      "path": ".claude/settings.json",
+      "reason": "Claude Code reads it by name: the Nx plugin declared here is where that tool gets the workspace skills from, instead of a copy of them in the repository."
+    },
+    {
+      "path": ".claude/launch.json",
+      "reason": "The dev server definition the same tool reads by name when it opens a preview."
+    },
+    {
+      "path": "opencode.json",
+      "reason": "opencode reads it by name. It is also the proof that the tool is configured here at all, which is what the `.opencode` entry of the register below leans on."
+    },
+    {
+      "path": ".vscode/extensions.json",
+      "reason": "VS Code reads it by name and offers the recommended extensions on opening the workspace."
+    },
+    {
+      "path": ".vscode/launch.json",
+      "reason": "The debug configurations, found by name in the same directory."
+    }
+  ],
+
+  "$enumerated": "Trees an outside tool walks. Its reading leaves nothing inside the repository — no import, no path in a configuration — so no measurement can find the edge and an entry has to assert it. Each names the READER and stands only while it grants something: `check-reach.mjs` repeats the walk without the register and fires on an entry whose tree is reached anyway. The gates' own `check-<x>.fixtures/` trees are NOT here — that pairing follows from the names and the script derives it, so this list can never grow an entry that no gate backs.",
+  "enumerated": [
+    {
+      "tree": "apps/sandbox-e2e/src/__screenshots__",
+      "reader": "apps/sandbox-e2e/playwright.config.mts",
+      "reason": "Playwright composes a baseline's path from `snapshotPathTemplate` and the TEST TITLE, so the file name stands in no file — it is assembled at runtime from a sentence. What this entry costs is written down rather than hidden: a baseline whose test was deleted stays here and this gate will not say so, because it never looked inside the tree. Catching that needs the measurement `check-browsers` already does — the specs read through `playwright test --list` — and not a second register."
+    },
+    {
+      "tree": ".opencode",
+      "reader": "opencode.json",
+      "reason": "opencode walks its own directory: skills, agents and commands are found by the shape of the tree, and the name of a skill is what AGENTS.md tells an agent to invoke — never a path. The tracked configuration next to it is the proof the tool is in use here; the copy of the same tree for a tool that is NOT configured here was what B9 deleted."
+    }
+  ]
+}

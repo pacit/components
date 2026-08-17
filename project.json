@@ -7,6 +7,7 @@
   "// check-parts": "The parts inventory gate lives in the root project for two reasons at once. First it reads `docs/components/*.md` — the **Parts** tables are the only surface where a consumer ever sees that inventory — and `docs/` belongs to no library, so a target in `components` would not move when only a card changes. Second, the root project is affected by EVERY change (measured in `lesson-47`), and this gate guards the public styling API: the day it does not run is the day a part disappears without a trace. `dependsOn` on the library build is hard — the second reading of the inventory takes `ɵcmp` from the built package, not from sources, and without it has nothing to compare.",
   "// check-browsers": "The browser matrix gate lives in the root project although it is about `sandbox-e2e`, and not for convenience: it reads `.github/workflows/ci.yml` (point 5 — which engines the workflow installs and whether `e2e` is on the list at all), and a workflow belongs to no application. A target in `sandbox-e2e` would not move when only CI changes, leaving it blind to exactly the way of shrinking the matrix that leaves no trace in the Playwright configuration. The root project is affected by EVERY change (measured in `lesson-47`), so the gate always runs. `inputs` name everything it reads: the e2e configuration and policy, the spec files (the denominator of point 3), the workflow and `project.json` (the `e2e` target is INFERRED by `@nx/playwright/plugin`, so its command comes from the graph, not from a file). No `dependsOn`: the measurement goes through `playwright test --list`, which starts neither a server nor a browser — and the probe in point 6 asks about engine behaviour, not about this library.",
   "// check-language": "The language gate lives in the root project because its denominator is the WHOLE git index — no library owns that, and a target inside one would be blind to every file outside it. Hence `inputs` of `{workspaceRoot}/**/*`: any file at all can carry a second language, so any change has to invalidate this cache. `dependsOn` on the library build is hard — the public-surface limb reads `dist/libs/components`, and a translated source with a stale artifact is exactly the state it exists to catch. One thing it CANNOT hash: `/usr/share/dict/polish` and `/usr/share/dict/american-english` live outside the workspace, so a changed dictionary does not invalidate a cached run. The canaries of point 1 answer for that on every real run — but a cache hit executes nothing, so the honest statement is that the dictionaries are trusted between runs and measured on each one.",
+  "// check-reach": "The reach gate walks the WHOLE git index from a list of roots, so it lives in the root project for the same reason `check-language` does: no library owns that denominator, and a target inside one would be blind to every file outside it. Hence `inputs` of `{workspaceRoot}/**/*` — a file added anywhere is a file to reach, and a line deleted anywhere can be the last thing that pointed at one, so any change has to invalidate this cache. No `dependsOn`: the measurement is over the repository, not over anything built from it — the walk reads sources, configuration and documentation, and `dist` is not tracked.",
   "// check-docs": "The documentation gate: every promise in docs/ names a gate and its reference control, and the named paths exist and run in CI. It lives in the root project because `docs/` belongs to no library — which is what makes a documentation change mark this project affected. The comment sits HERE rather than in `targets`: there a value must be a target object, and a string blows up the Nx graph (`lesson-43`).",
   "targets": {
     "typecheck": {
@@ -110,6 +111,19 @@
       ],
       "options": {
         "command": "node tools/check-language.mjs"
+      }
+    },
+    "check-reach": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/**/*",
+        "{workspaceRoot}/tools/check-reach.mjs",
+        "{workspaceRoot}/tools/reach.policy.json",
+        "{workspaceRoot}/tools/check-reach.fixtures/**/*"
+      ],
+      "options": {
+        "command": "node tools/check-reach.mjs"
       }
     },
     "check-docs": {

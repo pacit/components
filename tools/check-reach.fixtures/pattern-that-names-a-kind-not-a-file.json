@@ -1,0 +1,9 @@
+{
+  "// why": "A file added together with a pattern that matches it — `**/*.md`, the shape `inputs` use to say \"everything of this kind\". A pattern names files only inside the directory it names: measured on the real repository, reading a wildcard with no directory in front of it as a mention kept a vendored tree of 19 files alive from one cache declaration in an unrelated gate. Here the same reading would call `notes/orphan.md` read by the README.",
+  "point": 5,
+  "check": "reach",
+  "addFiles": { "notes/orphan.md": "A page nothing points at." },
+  "setTexts": {
+    "README.md": "The plan is in docs/plan.md, the shape of a page in guide.md, the mark in assets/logo.png, and the prose of **/*.md is checked in full."
+  }
+}

@@ -51,6 +51,7 @@ export type PctReqId =
   | 'req-project-monorepo'
   | 'req-project-package'
   | 'req-project-prefix'
+  | 'req-project-reach'
   | 'req-project-ssr'
   | 'req-project-tokens-lib'
   | 'req-project-tree-shaking'
@@ -153,7 +154,8 @@ export type PctLessonId =
   | 'lesson-57'
   | 'lesson-58'
   | 'lesson-59'
-  | 'lesson-60';
+  | 'lesson-60'
+  | 'lesson-61';
 
 /** Anything a sandbox card may refer to. */
 export type PctDocId = PctReqId | PctLessonId;

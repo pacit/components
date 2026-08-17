@@ -9,10 +9,10 @@ There is no "built, just unverified" state — see
 
 | state       | means                                                         |  count |
 | ----------- | ------------------------------------------------------------- | -----: |
-| ✅ enforced | gate and control exist and run in CI                          |     55 |
+| ✅ enforced | gate and control exist and run in CI                          |     56 |
 | 🟡 partial  | the gate is there, the negative control is not (deliberately) |     16 |
 | ⛔ gap      | gate or control missing, with a recorded deadline             |     12 |
-| **total**   |                                                               | **83** |
+| **total**   |                                                               | **84** |
 
 ## Gaps by urgency
 
@@ -98,6 +98,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-project-angular`](requirements/project.md#req-project-angular)           | ✅ enforced | `tools/check-zoneless.mjs` (target `check-zoneless`, in CI) — three p… | `tools/check-zoneless.fixtures/` — doctored inputs, one per way for z… |
 | [`req-project-ssr`](requirements/project.md#req-project-ssr)                   | ✅ enforced | `apps/sandbox-e2e/src/hydration.spec.ts` — the check sits in the `vis… | `hydration.spec.ts › "the gate really does detect a hydration error (… |
 | [`req-project-layout`](requirements/project.md#req-project-layout)             | ⛔ gap      | none — gap: follows from `req-project-apps`; it will close together w… | none — gap: the same as for the gate above                             |
+| [`req-project-reach`](requirements/project.md#req-project-reach)               | ✅ enforced | `tools/check-reach.mjs` (target `check-reach` in the root project, in… | `tools/check-reach.fixtures/` — 17 prepared inputs, each rejected on … |
 
 ## quality
 
@@ -217,3 +218,4 @@ Which lesson feeds which requirement. Generated from the **Lessons** fields.
 | [`lesson-58`](lessons.md#lesson-58) | `req-quality-unit`                                                                                                                                                |
 | [`lesson-59`](lessons.md#lesson-59) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-60`](lessons.md#lesson-60) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-61`](lessons.md#lesson-61) | `req-project-reach`                                                                                                                                               |

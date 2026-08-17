@@ -1,0 +1,65 @@
+{
+  "// why": "The reference input of the negative control: a minimal but WHOLE repository, in which every tracked file is reached from a root. Every case beside it is built on a copy of this one and brings in exactly one defect, so a case file holds the defect alone rather than one more copy of a correct input. Were this reference itself defective, every case would fire because of it — which is why the gate checks it separately.",
+
+  "// files": "Sixteen files covering the five ways a file is reached at once: from a root (`package.json`), by a path in a configuration (`vendor.json`), by a pattern in `inputs` (`src/button.scss`), by an import with the extension left off (`./button` in `src/index.ts`), by a bare unique name (`guide.md` in the README) and through the two grants that are not names — the fixtures tree of `check-widget.mjs`, and the `vendor` tree of the register. `assets/logo.png` is binary: it has no entry in `texts`, mentions nothing and still has to be reached.",
+  "files": [
+    "README.md",
+    "assets/logo.png",
+    "docs/guide.md",
+    "docs/plan.md",
+    "package.json",
+    "project.json",
+    "src/button.html",
+    "src/button.scss",
+    "src/button.ts",
+    "src/index.ts",
+    "tools/check-widget.fixtures/_reference.json",
+    "tools/check-widget.fixtures/case.json",
+    "tools/check-widget.mjs",
+    "vendor.json",
+    "vendor/skills/build/SKILL.md",
+    "vendor/skills/build/notes.md"
+  ],
+
+  "texts": {
+    "README.md": "The plan is in docs/plan.md, the shape of a page in guide.md, and the mark in assets/logo.png.",
+    "docs/guide.md": "How a page is written. Points nowhere further.",
+    "docs/plan.md": "The task list. Points nowhere further.",
+    "package.json": "{ \"name\": \"reference\", \"scripts\": { \"check\": \"node tools/check-widget.mjs\" }, \"vendor\": \"vendor.json\" }",
+    "project.json": "{ \"targets\": { \"build\": { \"inputs\": [\"{workspaceRoot}/src/**/*.scss\", \"{workspaceRoot}/src/index.ts\"] } } }",
+    "src/button.html": "<button><ng-content /></button>",
+    "src/button.scss": ":host { display: inline-flex; }",
+    "src/button.ts": "@Component({ templateUrl: './button.html', styleUrl: './button.scss' })",
+    "src/index.ts": "export * from './button';",
+    "tools/check-widget.fixtures/_reference.json": "{ \"widgets\": [] }",
+    "tools/check-widget.fixtures/case.json": "{ \"point\": 1 }",
+    "tools/check-widget.mjs": "const FIXTURES = 'tools/check-widget.fixtures'; readdirSync(FIXTURES);",
+    "vendor.json": "{ \"enabled\": true }",
+    "vendor/skills/build/SKILL.md": "The steps of the build live in notes.md.",
+    "vendor/skills/build/notes.md": "Step one, step two."
+  },
+
+  "policy": {
+    "roots": [
+      {
+        "path": "package.json",
+        "reason": "npm reads the manifest by name — the entry point of everything else here."
+      },
+      {
+        "path": "project.json",
+        "reason": "The task runner enumerates project configurations by this name."
+      },
+      {
+        "path": "README.md",
+        "reason": "The front page: rendered by name, pointed at by nothing inside."
+      }
+    ],
+    "enumerated": [
+      {
+        "tree": "vendor",
+        "reader": "vendor.json",
+        "reason": "The outside tool walks its own tree and finds a skill by the shape of the directory, so no path to those files is ever written down here."
+      }
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "// why": "A root in the name form carrying a directory. The name form grants every file called that, wherever it lies — with a path in it the entry would grant a tree, which is the one thing the shape of a root has to make impossible.",
+  "point": 2,
+  "check": "roots",
+  "addRoots": [
+    {
+      "name": "vendor/skills/build/SKILL.md",
+      "reason": "A path written into the form that was meant to hold a bare file name."
+    }
+  ]
+}

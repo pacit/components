@@ -1,0 +1,11 @@
+{
+  "// why": "A root written as a pattern. One line would take a whole tree out of the measurement — and a tree nothing reads is the entire defect the gate was built for, so the one place where reach is ASSERTED rather than measured may name a single file and nothing wider.",
+  "point": 2,
+  "check": "roots",
+  "addRoots": [
+    {
+      "path": "vendor/**",
+      "reason": "A tree declared a root in one line, which is how a gate stops seeing a directory."
+    }
+  ]
+}

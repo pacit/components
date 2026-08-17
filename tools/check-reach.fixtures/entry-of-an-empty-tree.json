@@ -1,0 +1,12 @@
+{
+  "// why": "An entry naming a directory that holds no tracked file. Nothing fires and nothing is granted — but the entry reads as a fact about the repository, and the next reader has to check the disk to find out that it is not one.",
+  "point": 3,
+  "check": "register",
+  "addEntries": [
+    {
+      "tree": "themes",
+      "reader": "package.json",
+      "reason": "A tree of generated skins that is built into dist and tracked nowhere here."
+    }
+  ]
+}

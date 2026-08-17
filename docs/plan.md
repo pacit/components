@@ -51,8 +51,8 @@ Snapshot, `node tools/check-docs.mjs`:
 
 | measure                                     | value |
 | ------------------------------------------- | ----: |
-| requirements                                |    83 |
-| ✅ enforced                                 |    55 |
+| requirements                                |    84 |
+| ✅ enforced                                 |    56 |
 | 🟡 partial (deliberately without a control) |    16 |
 | ⛔ gap                                      |    12 |
 
@@ -75,15 +75,18 @@ G  gaps with no deadline    waiting for the trigger written in their "Binds at" 
 the rule for it is settled: nothing leaves in a second language — not the sandbox, not a
 comment, not a fixture value. **B8 has closed, so that is now a measurement and not a
 declaration** — both limbs run, the register of exceptions is empty, and the run that closed
-it found three survivors in a repository three passes had declared clean. What stands between
-here and the push is **B9**: the clear-out of what a public repository should never have
-carried. Of B, the package README (B3) and B4 stand between here and npm. In parallel: F1 is
-unblocked — the inventories it renders both exist — and C is filler.
+it found three survivors in a repository three passes had declared clean. **B9 has closed
+too**, and with the same shape: the clear-out went with a gate, so what a public repository
+should never have carried is now measured on every push rather than tidied once. **Nothing
+stands between here and B2 any more** — the task itself is minutes, and it is the last one
+whose price is paid before a first visitor arrives, not after. Of B, the package README (B3)
+and B4 stand between here and npm. In parallel: F1 is unblocked — the inventories it renders
+both exist — and C is filler.
 
 ## B. Readiness for the first release
 
-Binds at the first publication — and then all of it at once, with **B9** one step earlier, at
-the push.
+Binds at the first publication — and then all of it at once. **B9** bound one step earlier, at
+the push, and is closed; what is left binds at npm.
 
 Three of the seven tasks (**B3**, **B4**, **B8**) are about language: the text that travels
 inside the package, and the gate that proves the rest of the repository holds to it. The gate
@@ -192,13 +195,26 @@ went first and is closed, so the two that are left are measured rather than revi
     `ɵ` is a letter, so Angular's `ɵfac` stops coming apart at the barred o, and a source map is read
     through its fields, so `mappings` stops arriving as base64 debris
 
-- [ ] **B9 — the repository is tidied before it is published** _(binds at B2)_
+- [x] **B9 — the repository is tidied before it is published** — **closed, and it left a gate
+      behind**
+  - closes: [`req-project-reach`](requirements/project.md#req-project-reach)
   - **what a first visitor must not find**: an identifier space no public reader can observe,
     findings closed long before they could read them, and files whose deletion was nobody's task
   - `.opencode/skills/` and `.github/skills/` are **byte-identical copies** of a vendored Nx
     guide, 18 files each — one of the two is a directory nothing reads
   - control: no tracked file that no other file mentions
-  - cost: ~0.5 day · _notes:_ —
+  - cost: ~0.5 day · _notes:_ **done** — 21 files went (the `.github` copy of the vendored
+    guide with its agent and prompt twins, and `tools/ai-migrations/`, the prompts of an ESLint
+    migration that has already run); which copy stays was decided by evidence rather than by
+    preference — `opencode.json` is tracked, nothing configures the tool that would read the
+    other. The four citations of section A (`A7`, `A12`) in `project.json` now name
+    [`lesson-47`](lessons.md#lesson-47), which holds the measurement A7 stood for.
+    **The control as this task wrote it would not have found the tree it names**: a copy brings
+    its citations with it, so "no tracked file that no other file mentions" answers alive for
+    every file of a duplicated directory. `tools/check-reach.mjs` walks from roots instead —
+    five points, 17 fixtures, 728 files reached, and it took a second design pass to see that
+    `**/*.md` in an unrelated gate's `inputs` was granting the whole tree
+    ([`lesson-61`](lessons.md#lesson-61))
 
 ## C. Open findings
 

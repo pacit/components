@@ -1,0 +1,6 @@
+{
+  "// why": "A policy with no roots. The walk starts nowhere, so nothing is reached and the gate turns into a listing of every file in the repository — a message so large that the first response to it is to disarm the gate.",
+  "point": 1,
+  "check": "denominator",
+  "clearRoots": true
+}
