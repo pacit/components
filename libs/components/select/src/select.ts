@@ -3,7 +3,6 @@ import {
   booleanAttribute,
   Component,
   computed,
-  DestroyRef,
   effect,
   ElementRef,
   inject,
@@ -21,6 +20,7 @@ import {
   PCT_TEXTS,
   pctDescribedBy,
   pctFieldMessages,
+  pctListNavigation,
   PctCompareWith,
   PctFieldAppearance,
   PctFieldControl,
@@ -263,8 +263,20 @@ export class PctSelect<T = string>
     ];
   });
 
+  /**
+   * The keyboard walk over the list — the shared machinery from `core` rather than private
+   * methods here, extracted before the second control that needs it (`lesson-21`). What the
+   * select keeps is the key map: which key opens, picks and closes is a property of the
+   * combobox role, not of walking a list.
+   */
+  private readonly nav = pctListNavigation({
+    items: this.options,
+    isDisabled: (option) => option.disabled === true,
+    label: (option) => option.label,
+  });
+
   /** Index of the option active by keyboard (not the same as the selected one). */
-  protected readonly activeIndex = signal(-1);
+  protected readonly activeIndex = this.nav.activeIndex;
 
   /**
    * Index of the selected option (`-1` when there is none). What is computed is the **index**
@@ -374,13 +386,27 @@ export class PctSelect<T = string>
     this.open.set(true);
     // The selected option becomes active, or the first available one when there is no choice.
     const selected = this.selectedIndex();
-    this.activeIndex.set(selected >= 0 ? selected : this.firstEnabled());
+    if (selected >= 0) {
+      this.nav.setActive(selected);
+    } else {
+      this.nav.first();
+    }
   }
 
   protected close(): void {
     if (!this.open()) return;
     this.open.set(false);
-    this.activeIndex.set(-1);
+    this.nav.clear();
+  }
+
+  /**
+   * Hovering an option makes it the active one, so the mouse and the keyboard point at the
+   * same place. A pass-through to the walk rather than a call on the signal: `activeIndex` is
+   * read-only here — the machinery that decides which entries can be reached owns the writing
+   * (`lesson-21`).
+   */
+  protected activateAt(index: number): void {
+    this.nav.setActive(index);
   }
 
   protected selectAt(index: number): void {
@@ -416,19 +442,19 @@ export class PctSelect<T = string>
     switch (key) {
       case 'ArrowDown':
         event.preventDefault();
-        this.moveActive(1);
+        this.nav.move(1);
         break;
       case 'ArrowUp':
         event.preventDefault();
-        this.moveActive(-1);
+        this.nav.move(-1);
         break;
       case 'Home':
         event.preventDefault();
-        this.activeIndex.set(this.firstEnabled());
+        this.nav.first();
         break;
       case 'End':
         event.preventDefault();
-        this.activeIndex.set(this.lastEnabled());
+        this.nav.last();
         break;
       case 'Enter':
       case ' ':
@@ -444,64 +470,9 @@ export class PctSelect<T = string>
         this.close();
         break;
       default:
-        if (key.length === 1) this.typeahead(key);
+        // Typeahead on the first letters — parity with a native `<select>`.
+        if (key.length === 1) this.nav.typeahead(key);
     }
-  }
-
-  // --- navigation ---
-
-  private enabledIndexes(): number[] {
-    return this.options()
-      .map((o, i) => (o.disabled ? -1 : i))
-      .filter((i) => i >= 0);
-  }
-
-  private firstEnabled(): number {
-    const list = this.enabledIndexes();
-    return list.length > 0 ? list[0] : -1;
-  }
-
-  private lastEnabled(): number {
-    const list = this.enabledIndexes();
-    return list.length > 0 ? list[list.length - 1] : -1;
-  }
-
-  /** Moves the active option, skipping disabled ones; no wrapping (as a native select). */
-  private moveActive(delta: number): void {
-    const list = this.enabledIndexes();
-    if (list.length === 0) return;
-    const current = list.indexOf(this.activeIndex());
-    if (current === -1) {
-      this.activeIndex.set(delta > 0 ? list[0] : list[list.length - 1]);
-      return;
-    }
-    const next = Math.min(Math.max(current + delta, 0), list.length - 1);
-    this.activeIndex.set(list[next]);
-  }
-
-  private typeaheadBuffer = '';
-  private typeaheadTimer: ReturnType<typeof setTimeout> | undefined;
-
-  /**
-   * The timer clearing the buffer would outlive the component: closing the panel with a key
-   * right after typing leaves a scheduled call which, once the control is destroyed, keeps it
-   * in memory — and in tests hands work over to the next one.
-   */
-  private readonly typeaheadCleanup = inject(DestroyRef).onDestroy(() =>
-    clearTimeout(this.typeaheadTimer),
-  );
-
-  /** Typeahead on the first letters — parity with a native `<select>`. */
-  private typeahead(char: string): void {
-    this.typeaheadBuffer += char.toLowerCase();
-    clearTimeout(this.typeaheadTimer);
-    this.typeaheadTimer = setTimeout(() => (this.typeaheadBuffer = ''), 500);
-
-    const match = this.options().findIndex(
-      (o) =>
-        !o.disabled && o.label.toLowerCase().startsWith(this.typeaheadBuffer),
-    );
-    if (match >= 0) this.activeIndex.set(match);
   }
 
   /** Called by signal forms (`focusBoundControl()`, for instance). */

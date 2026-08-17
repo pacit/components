@@ -100,7 +100,7 @@
       [attr.data-pct-selected]="i === selectedIndex() ? '' : null"
       [attr.data-pct-disabled]="option.disabled ? '' : null"
       (click)="selectAt(i)"
-      (mouseenter)="option.disabled ? null : activeIndex.set(i)"
+      (mouseenter)="option.disabled ? null : activateAt(i)"
     >
       {{ option.label }}
     </div>

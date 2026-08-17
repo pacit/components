@@ -591,6 +591,41 @@ describe('PctSelect', () => {
     });
   });
 
+  describe('the mouse and the keyboard point at the same option', () => {
+    const hover = async (fixture: ComponentFixture<unknown>, index: number) => {
+      optionsInPanel()[index].dispatchEvent(
+        new MouseEvent('mouseenter', { bubbles: false }),
+      );
+      fixture.detectChanges();
+      await fixture.whenStable();
+    };
+
+    it('hovering an option makes it the active one', async () => {
+      const fixture = await render(Host);
+      await press(fixture, 'ArrowDown');
+
+      await hover(fixture, 3);
+
+      // Otherwise Enter after a hover would pick something other than what is
+      // highlighted — the mouse moved the eye, the keyboard kept its own place.
+      expect(optionsInPanel()[3].hasAttribute('data-pct-active')).toBe(true);
+      await press(fixture, 'Enter');
+      expect(fixture.componentInstance.value()).toBe('sk');
+    });
+
+    it('hovering a disabled option activates nothing', async () => {
+      const fixture = await render(Host);
+      await press(fixture, 'ArrowDown');
+
+      await hover(fixture, 2);
+
+      // A highlight on an option a click cannot pick promises what the control will
+      // not deliver.
+      expect(optionsInPanel()[2].hasAttribute('data-pct-active')).toBe(false);
+      expect(optionsInPanel()[0].hasAttribute('data-pct-active')).toBe(true);
+    });
+  });
+
   it('disabled blocks opening', async () => {
     const fixture = await render(Host);
     fixture.componentInstance.disabled.set(true);

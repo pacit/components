@@ -1288,3 +1288,36 @@ everything of that category, including what arrived after the sentence was writt
 
 Both halves are one shape — **a measurement that reads a repository has to be told where it
 starts.** Roots, and only then edges.
+
+---
+
+### <a id="lesson-62"></a>`lesson-62` — A condition in a template is measured by nobody
+
+Extracting the list walk into `core` (D1) uncovered a guard nothing had ever run:
+`(mouseenter)="option.disabled ? null : activateAt(i)"` in `select.html` — the rule that
+hovering a disabled option must not highlight it. **Deliberate regression: the guard was
+removed and the whole suite of 213 cases stayed green.**
+
+The guard sat inside two measurements and neither could see it:
+
+- **the mutation run does not reach it.** `mutate` in `stryker.config.json` names `.ts` files,
+  so a condition written in a template produces **no mutants at all** — not a surviving one,
+  which the snapshot would show, but none, which looks exactly like code that has nothing to
+  break,
+- **the coverage gate does not read the column that saw it.** `select.html` measured
+  **100% of lines and 85.71% of branches**; `tools/check-coverage.mjs` reads
+  `total.lines.pct` and the threshold in `project.json` is `lines: 80`. The untested arm of
+  the condition was visible the whole time, in a number no gate looks at. Two DOM cases took
+  the branches to 100% and the removal of the guard to red.
+
+The shape is the [axis](00-axis.md) one, one floor further out than
+[`lesson-45`](#lesson-45): there the denominator was narrowed by a pattern, here it is
+**the choice of metric** — lines answer "was this rendered", branches answer "was this
+decided", and a template is where the difference lives, because a template is all decisions
+and hardly any lines. Hence the rule: **logic put in a template leaves the tested part of the
+library**, and the two answers to it are a branch floor on templates
+([`req-quality-unit`](requirements/quality.md#req-quality-unit)) or the condition moved into
+the class, where the mutation run reaches it. What
+[decision 0013](decisions/0013-no-headless-split.md) recorded about the template↔class
+contract — that it is unchecked — turns out to have a second half: the template side is not
+merely unchecked by the compiler, it is outside the evidence base as well.

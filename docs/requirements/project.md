@@ -105,7 +105,8 @@ cannot see: the file is right there, the consumer simply has no way to import it
 distributed in the same package.
 
 **Gate:** `libs/components/field/src/field-controls.spec.ts` — the shared message logic is
-tested once, not in every control
+tested once, not in every control; `libs/components/core/src/core.spec.ts` — the same for the
+shared code under its own name, the list walk included ([`lesson-57`](../lessons.md#lesson-57))
 **Control:** none — deliberately: the violation here is **duplication**, not a failure;
 review catches it, not a test. A machine gate would have to be similarity analysis
 **Decision:** [0013 — no headless core / skin split](../decisions/0013-no-headless-split.md)

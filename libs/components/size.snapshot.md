@@ -21,11 +21,11 @@ measures the contribution of **this library**, not the weight of somebody else's
 framework. Budget: ±5% or ±256 B, whichever is larger.
 
 ```
-. 1183 ./core @angular/core
-./button 7888 ./core @angular/core
-./checkbox 16105 ./core @angular/core
-./core 1705 - @angular/core
-./field 38848 ./core @angular/core,@angular/forms,@angular/forms/signals
-./radio 18439 ./core @angular/core
-./select 30598 ./core @angular/cdk/overlay,@angular/core
+. 1295 ./core @angular/core
+./button 7932 ./core @angular/core
+./checkbox 16127 ./core @angular/core
+./core 2628 - @angular/core
+./field 38479 ./core @angular/core,@angular/forms,@angular/forms/signals
+./radio 18483 ./core @angular/core
+./select 30510 ./core @angular/cdk/overlay,@angular/core
 ```

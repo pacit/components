@@ -16,6 +16,7 @@
     "libs/components/core/src/config.ts",
     "libs/components/core/src/field.ts",
     "libs/components/core/src/id.ts",
+    "libs/components/core/src/list.ts",
     "libs/components/core/src/texts.ts",
     "libs/components/core/src/value.ts",
     "libs/components/field/src/number.ts",
