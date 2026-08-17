@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "policy",
+  "description": "The document is gone. The three numbers and the codemod obligation revert to whatever the last person to be asked remembers - which is the state req-release-support was written against.",
+  "dropPolicy": true
+}

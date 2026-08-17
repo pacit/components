@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "codemod",
+  "description": "THE CONTROL THE REQUIREMENT NAMES: a `feat!:` commit after the last release tag and an empty collection. Before this gate existed, this was the passing state - the collection had shipped since the first commit and nothing ever obliged a breaking change to add to it.",
+  "migrations": []
+}

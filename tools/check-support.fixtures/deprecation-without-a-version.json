@@ -1,0 +1,12 @@
+{
+  "point": 5,
+  "check": "deprecation",
+  "description": "A `@deprecated` tag with advice and no `since`. Two minors of notice cannot be counted from a moment nobody recorded, so the countdown starts at whenever the next reader happens to look.",
+  "deprecations": [
+    {
+      "path": "libs/components/field/src/field.ts",
+      "line": 42,
+      "text": "   * @deprecated use `messages` instead."
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "point": 3,
+  "check": "collection",
+  "description": "An entry with a factory and a description and no version. `ng update` picks migrations by version, so this one runs for nobody - and point 4 would count it as the codemod that was owed.",
+  "migrations": [
+    {
+      "name": "field-messages-as-a-signal",
+      "description": "Rewrites `messages` from an object literal to the signal factory.",
+      "factory": "./migrations/v0-2-0/index#fieldMessages",
+      "factoryExists": true
+    }
+  ]
+}

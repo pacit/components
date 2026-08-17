@@ -277,6 +277,12 @@ publish. A build before the bump ships the old constant
 Publishing needs the `repository` field in `libs/components/package.json` — without it npm
 refuses to attach provenance. `check-package.mjs --release` blocks on that; day to day it only warns.
 
+What a consumer gets after the release — which Angular majors a version supports, how long an
+old line lives, how much notice a deprecation gets and why a breaking change arrives with an
+`ng update` migration — is in [docs/support.md](docs/support.md). The three numbers there are
+not prose: `check-support.mjs` reads them out of the table and requires the Angular window to
+equal the one the peer ranges admit, so the document and the manifest cannot drift apart.
+
 ## License
 
 [MIT](LICENSE) — Copyright (c) 2026 PacIT - Marek Pac. No CLA: contributions arrive under the

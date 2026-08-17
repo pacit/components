@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "policy",
+  "description": "The table lost its `deprecation-minors` row. The prose around it can still describe a deprecation policy at length; the number nobody can be held to is gone.",
+  "dropRows": ["deprecation-minors"]
+}

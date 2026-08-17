@@ -1,0 +1,6 @@
+{
+  "point": 2,
+  "check": "window",
+  "description": "`@angular/cdk` stayed a major behind the other two. The window is then a different one per package, and the single number in the policy cannot be true of all three.",
+  "peers": { "@angular/cdk": "^21.0.0" }
+}

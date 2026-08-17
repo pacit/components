@@ -1,0 +1,14 @@
+{
+  "point": 3,
+  "check": "collection",
+  "description": "The factory names a file that is not there. It blows up at the consumer mid-upgrade, not here - the same shape as the `ng add` failure lesson-55 records, one command further along.",
+  "migrations": [
+    {
+      "name": "field-messages-as-a-signal",
+      "version": "0.2.0",
+      "description": "Rewrites `messages` from an object literal to the signal factory.",
+      "factory": "./migrations/v0-2-0/index#fieldMessages",
+      "factoryExists": false
+    }
+  ]
+}

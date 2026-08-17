@@ -103,10 +103,32 @@ the repository the publish runs from, so the condition only closes when the remo
 how long, how many minors of warning before an API is removed, and that **the first breaking
 change arrives with a codemod**, not with a paragraph in the CHANGELOG.
 
-**Gate:** none — gap: the document does not exist. The migration collection does
-([`req-release-ng-add`](#req-release-ng-add)), but nothing ties a breaking change to an
-obligation to ship a migration
-**Control:** none — gap: a `feat!:` commit with no entry in the migration collection has to
-fire
+**Gate:** `tools/check-support.mjs` (five points) over [`docs/support.md`](../support.md),
+which holds the three numbers in a table the gate reads. Point 1: the rows are declared and
+are numbers. Point 2: the declared Angular window equals the one the `@angular/*` peer ranges
+admit — the point that stops the document being a second, drifting copy of the manifest.
+Point 3: every entry of the `ng update` collection is whole. **Point 4 is the tie the
+promise was missing** — a `feat!:` commit (or a `BREAKING CHANGE:` trailer) after the newest
+release tag obliges an entry in the collection for a version above the released one. Point 5:
+every `@deprecated` names the version it started in, without which the notice cannot be
+counted
+**Control:** `tools/check-support.fixtures/` — fifteen prepared inputs, each rejected by the
+point it declares, headed by
+`tools/check-support.fixtures/breaking-change-without-a-migration.json`: a breaking change
+since the last tag against an empty collection, which is the state this repository was in
+before the gate existed. Point 4 has two more, because there are three ways to stop owing a
+codemod and only one of them is not writing it — the others are counting a migration older
+than the release and setting `codemod-required` to `no`. Plus a recorded run on the real
+input: `angular-majors` moved to 2 against a `^22.0.0` peer range fires point 2
+**Decision:** [0015 — MIT everywhere, rights to the entity, no CLA](../decisions/0015-license-and-model.md)
 **Binds at:** the first external consumer — a company does not buy a library on the strength
 of its code, but on the strength of its **predictability**
+
+> **Two of the promise's clauses are measured and one is not**, and the document says so
+> rather than leaving it to be discovered. Point 5 sees that a deprecation recorded its
+> starting version; **nothing sees that the removal waited the declared two minors**, because
+> that needs a record of the public API as it stood at each release and there is none —
+> `parts.snapshot.md` is that shape of record for CSS parts and the API has no equivalent.
+> Point 4 likewise measures **nothing until the first release tag**: before it there is no
+> installed version to migrate from, so a breaking change owes no codemod. The run says which
+> of the two states it is in on every line it prints.

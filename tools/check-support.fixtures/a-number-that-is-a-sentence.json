@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "policy",
+  "description": "`support-months` answers with circumstances instead of a number. This is how a policy dies without an edit anybody would flag in review: the row is still there, still reads well, and measures nothing.",
+  "policy": { "support-months": "as long as Angular does" }
+}

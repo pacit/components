@@ -1,0 +1,14 @@
+{
+  "point": 3,
+  "check": "collection",
+  "description": "The entry runs and says nothing while it does. The description is what scrolls past during an upgrade - the consumer's only account of what was rewritten in their source tree.",
+  "migrations": [
+    {
+      "name": "field-messages-as-a-signal",
+      "version": "0.2.0",
+      "description": "  ",
+      "factory": "./migrations/v0-2-0/index#fieldMessages",
+      "factoryExists": true
+    }
+  ]
+}

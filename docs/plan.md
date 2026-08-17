@@ -52,11 +52,11 @@ Snapshot, `node tools/check-docs.mjs`:
 | measure                                     | value |
 | ------------------------------------------- | ----: |
 | requirements                                |    84 |
-| ✅ enforced                                 |    56 |
+| ✅ enforced                                 |    57 |
 | 🟡 partial (deliberately without a control) |    16 |
-| ⛔ gap                                      |    12 |
+| ⛔ gap                                      |    11 |
 
-All 12 gaps have an owner below (B, D, F, G). If adding a requirement raises the gap count
+All 11 gaps have an owner below (B, D, F, G). If adding a requirement raises the gap count
 and no task changes, this list has stopped being complete — and that is a fault of this list,
 not of the registry.
 
@@ -81,8 +81,10 @@ should never have carried is now measured on every push rather than tidied once.
 stands between here and B2 any more** — the task itself is minutes, and it is the last one
 whose price is paid before a first visitor arrives, not after. Of B, **B3 has closed as well**,
 so the npm page is written and the last file that travelled in a second language is gone; what
-stands between here and npm is B4 (held with B2), B6 and B7. In parallel: F1 is unblocked — the
-inventories it renders both exist — and C is filler.
+stands between here and npm is B4 (held with B2) and B7 — **B6 has closed too**, so the support
+window, the deprecation notice and the codemod obligation are a published document with a gate
+reading its numbers. In parallel: F1 is unblocked — the inventories it renders both exist — and
+C is filler.
 
 **B2 is deferred by decision, not blocked** — and the decision has a shape: **the first push
 happens only when the maintainer asks for it outright.** It is not triggered by a state of the
@@ -102,6 +104,15 @@ not a remote**, so the session that skipped B2 took it. It closed, and it proved
 does not exempt a task from being read carefully — the file B3 was written to replace was
 reachable only through the sentence in this plan that described it, so ticking the task off
 without a second thought would have deleted the reader of the page it produced.
+
+The same rule carried on to **B6**, which closed as well and cost the plan a decision it had
+left open: a support policy is numbers, and there were none to copy. They are written down as
+the honest ones rather than the generous ones — **`support-months` is 0**, because a backport
+promise costs a second CI matrix and a maintainer on somebody else's timetable, and a zero
+that holds is worth more than a six that does not. Each row says what it becomes at 1.0. The
+task also produced [`lesson-63`](lessons.md#lesson-63): this is the first gate here whose
+input is git rather than files, and a cached one would answer from before the amendment that
+added the `!`.
 
 ## B. Readiness for the first release
 
@@ -183,13 +194,23 @@ not a derivation.
     hold costs, since the citations are the only work in the file that needs an address
   - cost: ~0.5 day · _notes:_ —
 
-- [ ] **B6 — support policy document**
-  - closes: `req-release-support`
-  - what: the support window (how many Angular versions back, for how long), the deprecation
-    policy (how many minors of warning before removal), and the requirement of a codemod for a
-    breaking change — the migration collection exists, but nothing ties `feat!` to an entry in it
-  - control: a `feat!:` commit without an entry in the migration collection must fire
-  - cost: ~1 day · _notes:_ —
+- [x] **B6 — support policy document** — **closed, and the document is an input, not a page**
+  - closes: [`req-release-support`](requirements/release.md#req-release-support)
+  - cost: ~1 day · _notes:_ **done** — [`docs/support.md`](support.md) plus
+    `tools/check-support.mjs` (five points, 15 fixtures), target `check-support` in the root
+    project and in CI. **A document is the one input that always looks fine**, so the three
+    numbers live in a table the gate reads: 1 Angular major, 0 months of an old line, 2 minors
+    of notice, and `codemod-required` as a switch that fires when reached for. Point 2 is what
+    stops the page drifting — it counts the majors the `@angular/*` peer ranges admit and
+    requires the count to equal the declared one; widening the window is one edit in each
+    place and doing only one fails CI. **Point 4 is the tie the requirement was missing**, and
+    it measures nothing until the first release tag: there is no installed version to migrate
+    from, so a breaking change before it owes no codemod — the run prints which of the two
+    states it is in rather than passing quietly. Deliberately **not** measured, and written
+    into the document: that a removal actually waited the two minors, which needs a record of
+    the public API at each release that only CSS parts have. Proof on the real input, not only
+    on fixtures: `angular-majors` moved to 2 against `^22.0.0` fires point 2. The one cost
+    named out loud is `cache: false` ([`lesson-63`](lessons.md#lesson-63))
 
 - [ ] **B7 — dependency list gate**
   - closes: `req-project-dependencies`

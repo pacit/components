@@ -9,9 +9,9 @@ There is no "built, just unverified" state — see
 
 | state       | means                                                         |  count |
 | ----------- | ------------------------------------------------------------- | -----: |
-| ✅ enforced | gate and control exist and run in CI                          |     56 |
+| ✅ enforced | gate and control exist and run in CI                          |     57 |
 | 🟡 partial  | the gate is there, the negative control is not (deliberately) |     16 |
-| ⛔ gap      | gate or control missing, with a recorded deadline             |     12 |
+| ⛔ gap      | gate or control missing, with a recorded deadline             |     11 |
 | **total**   |                                                               | **84** |
 
 ## Gaps by urgency
@@ -29,7 +29,6 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-project-dependencies`](requirements/project.md#req-project-dependencies) | a check of the `dependencies` / `peerDependencies` lists in the packe…             | the first dependency added out of reflex — today nothing te… |
 | [`req-project-files`](requirements/project.md#req-project-files)               | a check of the entrypoint directory layout (a script in the spirit of…             | the first component added by somebody other than the author… |
 | [`req-project-layout`](requirements/project.md#req-project-layout)             | follows from `req-project-apps`; it will close together with it                    | the creation of `apps/docs`                                  |
-| [`req-release-support`](requirements/release.md#req-release-support)           | the document does not exist. The migration collection does (`req-rele…             | the first external consumer — a company does not buy a libr… |
 | [`req-token-density`](requirements/tokens.md#req-token-density)                | the DTCG sources contain **not one** density token                                 | once the size axis has settled. Note: density will drop bel… |
 | [`req-token-directive`](requirements/tokens.md#req-token-directive)            | the directive does not exist, the theme is set with a hand-written `d…             | when setting `data-theme` from a template starts to repeat … |
 
@@ -126,7 +125,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-release-semver`](requirements/release.md#req-release-semver)     | ✅ enforced | `libs/components/check-package.mjs` (point 4: `PCT_VERSION` == `versi… | `stamp-version` is **not** a dependency of `build` — if it were, the … |
 | [`req-release-ng-add`](requirements/release.md#req-release-ng-add)     | ✅ enforced | `libs/components/check-package.mjs` (point 5) — the collections are i… | `tools/check-package.fixtures/schematic-missing/` — a package whose c… |
 | [`req-release-metadata`](requirements/release.md#req-release-metadata) | ✅ enforced | `libs/components/check-package.mjs` (point 6) — two different severit… | `tools/check-package.fixtures/repository-missing/` — a manifest witho… |
-| [`req-release-support`](requirements/release.md#req-release-support)   | ⛔ gap      | none — gap: the document does not exist. The migration collection doe… | none — gap: a `feat!:` commit with no entry in the migration collecti… |
+| [`req-release-support`](requirements/release.md#req-release-support)   | ✅ enforced | `tools/check-support.mjs` (five points) over `docs/support.md`, which… | `tools/check-support.fixtures/` — fifteen prepared inputs, each rejec… |
 
 ## tokens
 
@@ -220,3 +219,4 @@ Which lesson feeds which requirement. Generated from the **Lessons** fields.
 | [`lesson-60`](lessons.md#lesson-60) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-61`](lessons.md#lesson-61) | `req-project-reach`                                                                                                                                               |
 | [`lesson-62`](lessons.md#lesson-62) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-63`](lessons.md#lesson-63) | — _(not cited)_                                                                                                                                                   |

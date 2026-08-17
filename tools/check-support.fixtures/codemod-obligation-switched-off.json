@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "codemod",
+  "description": "The row that drives point 4 is set to `no`. It is a switch, and reaching for it is the one edit that turns the tie back off - so it fires, and the message says which requirement promises the opposite.",
+  "policy": { "codemod-required": "no" }
+}

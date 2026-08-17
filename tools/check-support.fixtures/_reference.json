@@ -1,0 +1,39 @@
+{
+  "description": "The reference input: a released library whose policy, manifest and migration collection agree. It is deliberately a RELEASED one — before the first tag point 4 measures nothing, and a reference in that state would leave the tie the whole gate exists for untested by every case built on it.",
+  "input": {
+    "policy": {
+      "angular-majors": "1",
+      "support-months": "0",
+      "deprecation-minors": "2",
+      "codemod-required": "yes"
+    },
+    "peers": {
+      "@angular/cdk": "^22.0.0",
+      "@angular/core": "^22.0.0",
+      "@angular/forms": "^22.0.0"
+    },
+    "migrations": [
+      {
+        "name": "field-messages-as-a-signal",
+        "version": "0.2.0",
+        "description": "Rewrites `messages` from an object literal to the signal factory.",
+        "factory": "./migrations/v0-2-0/index#fieldMessages",
+        "factoryExists": true
+      }
+    ],
+    "released": "0.1.0",
+    "breaking": [
+      {
+        "hash": "1a2b3c4d",
+        "subject": "feat(field)!: messages arrive as a signal"
+      }
+    ],
+    "deprecations": [
+      {
+        "path": "libs/components/field/src/field.ts",
+        "line": 42,
+        "text": "   * @deprecated since 0.2.0 - use `messages` instead. Removed no earlier than 0.4.0."
+      }
+    ]
+  }
+}

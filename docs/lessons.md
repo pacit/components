@@ -1321,3 +1321,31 @@ the class, where the mutation run reaches it. What
 [decision 0013](decisions/0013-no-headless-split.md) recorded about the template↔class
 contract — that it is unchecked — turns out to have a second half: the template side is not
 merely unchecked by the compiler, it is outside the evidence base as well.
+
+---
+
+### <a id="lesson-63"></a>`lesson-63` — A gate whose input is not a file cannot be cached, and a cached one answers from before the change
+
+The support gate ties a breaking change to an `ng update` migration, so its input is **git**:
+the newest release tag, and the subjects of the commits after it. Every other gate here reads
+files, and `inputs` in `project.json` is a list of file patterns — which means the honest
+pattern list for this one is empty of the thing it actually measures.
+
+The failure that follows is quiet and complete. **`git commit --amend` to add the `!` of a
+breaking change touches no file at all.** The tree is byte-identical, so the hash Nx computed
+before the amendment is still valid, so the run is served from cache — and the cached answer
+was taken from a repository where the breaking change did not exist. The gate does not fail;
+it does not run. Nothing in the output says which of the two happened.
+
+`cache: false`, and the reasoning written next to it. That is a real cost and it is worth
+naming rather than hiding: the target runs on every invocation, in CI and locally. It is
+affordable here because the run is a handful of file reads and two `git` calls — the
+calculation that matters is **the price of always running against the price of listing what
+the gate reads and being wrong about it**, and for an input outside the filesystem the second
+price is not a risk but a certainty.
+
+The general shape: an input Nx cannot hash is an input Nx cannot invalidate on. Git history,
+a clock, a network response, a dictionary outside the workspace
+([`check-language` names that one out loud](../project.json)) — each of them turns a cached
+target into a measurement with a timestamp nobody prints. Either the input comes into the
+filesystem where the cache can see it, or the cache comes off.

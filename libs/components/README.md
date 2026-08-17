@@ -250,8 +250,28 @@ limit is in that component's page under
 [docs/components/](https://github.com/pacit/components/blob/main/docs/components/README.md)
 rather than left for you to discover.
 
+## Support
+
+Which Angular majors a release supports, how long a line keeps getting fixes once it is no
+longer the newest, and how many minor releases an API stays deprecated before it may be
+removed — all four numbers are in the
+[support policy](https://github.com/pacit/components/blob/main/docs/support.md). They are
+kept there and nowhere else on purpose: a gate reads them out of that page and requires the
+Angular window to equal the one the peer ranges above admit, so the promise and the package
+cannot drift apart.
+
+One of them is worth knowing before you install: **every breaking change ships an `ng update`
+migration**, and that is enforced rather than intended — a breaking commit with no entry in
+the migration collection fails the build.
+
+```bash
+ng update @pacit/components
+```
+
 ## Documentation
 
+- [Support policy](https://github.com/pacit/components/blob/main/docs/support.md) — versions,
+  deprecation notice, codemods
 - [Component contracts](https://github.com/pacit/components/blob/main/docs/components/README.md) —
   API, keyboard map and known limits, one page each
 - [Gate registry](https://github.com/pacit/components/blob/main/docs/registry.md) — every promise

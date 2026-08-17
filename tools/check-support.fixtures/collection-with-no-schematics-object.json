@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "collection",
+  "description": "`migration.json` parses and declares no `schematics`. That is not an empty collection but no collection, and the difference only shows up at a consumer who ran `ng update` against the version they had installed.",
+  "dropCollection": true
+}

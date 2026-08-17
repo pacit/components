@@ -6,10 +6,11 @@ The whole repository is in English — [`req-project-language`](requirements/pro
 
 ```
 00-axis.md      LEVEL 0   the one requirement every other one is ordered by
-requirements/   LEVEL 1   promises: what has to be true                (83 entries)
+requirements/   LEVEL 1   promises: what has to be true                (84 entries)
 decisions/      LEVEL 2   why this way, and what it costs us           (17 ADRs)
 components/     LEVEL 3   whether this component keeps them            (filled-in DoD)
-lessons.md                the evidence base: what actually happened    (59 entries)
+lessons.md                the evidence base: what actually happened    (63 entries)
+support.md                what a consumer can count on: versions, notice, codemods
 registry.md               GENERATED: promise → gate → control → state
 plan.md                   the task list — the only place holding "done"
 ```
@@ -24,6 +25,7 @@ Reading order is the reverse of writing order: **requirements come out of lesson
 | check what is still missing                   | [`registry.md`](registry.md) — do **not** read this from the requirements |
 | know what to do next and what is already done | [`plan.md`](plan.md)                                                      |
 | find out what went wrong in the past          | [`lessons.md`](lessons.md)                                                |
+| know how long a version is supported          | [`support.md`](support.md)                                                |
 
 ### Level 1 — requirements
 

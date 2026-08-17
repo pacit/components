@@ -1,0 +1,10 @@
+{
+  "point": 2,
+  "check": "window",
+  "description": "The other direction, and it fires too. The peer ranges admit two majors while the policy promises one, so the library ships support it does not claim - untested by construction, since nothing declares the second major exists.",
+  "peers": {
+    "@angular/cdk": "^21.0.0 || ^22.0.0",
+    "@angular/core": "^21.0.0 || ^22.0.0",
+    "@angular/forms": "^21.0.0 || ^22.0.0"
+  }
+}

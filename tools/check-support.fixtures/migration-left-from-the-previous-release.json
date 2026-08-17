@@ -1,0 +1,14 @@
+{
+  "point": 4,
+  "check": "codemod",
+  "description": "The collection is not empty, and every entry in it is older than the last release. A count of entries would call this covered; the migration a consumer on 0.1.0 needs is one for a version above 0.1.0, and there is none.",
+  "migrations": [
+    {
+      "name": "field-messages-as-a-signal",
+      "version": "0.1.0",
+      "description": "Rewrites `messages` from an object literal to the signal factory.",
+      "factory": "./migrations/v0-1-0/index#fieldMessages",
+      "factoryExists": true
+    }
+  ]
+}
