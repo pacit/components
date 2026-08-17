@@ -51,7 +51,7 @@ gone out under MIT beforehand.
   MIT whether or not it went to npm. A deferred component is deferred as a commit too.
 - The protection is not the code but **the name and being upstream**: the npm scope `@pacit`,
   the `github.com/pacit` organisation and the `pacit.pl` domain — all held by the entity from
-  the `Copyright` line (the scope checked on 2026-08-07, not assumed). A formal trademark
+  the `Copyright` line (the scope checked, not assumed). A formal trademark
   filing is deliberately deferred — the name is the company's name, and registering before the
   first user is a cost with no use.
 - The second half of "being upstream" is **provenance**, and npm issues it only with

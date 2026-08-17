@@ -69,7 +69,7 @@ const INITIAL_BACKGROUND = 'rgba(0, 0, 0, 0)';
  * A violation of one of the seven checks. It carries the identifier of the check AND of
  * the rule: a point is not one sentence, and a negative control comparing the point alone
  * lets through a case that fired on a neighbouring rule of that same point — measured in
- * A12 and confirmed in A11 ([`lesson-50`](../docs/lessons.md#lesson-50)).
+ * ([`lesson-50`](../docs/lessons.md#lesson-50)).
  */
 class ConsumerError extends Error {
   constructor(check, rule, description) {
@@ -90,8 +90,8 @@ const list = (xs) => [...xs].sort().join(', ') || '(empty)';
  * Every rule reads the measurement DEFENSIVELY, even though the previous one "already
  * checked that". A dependency between rules is normal; writing it so that disarming the
  * previous one turns the gate into a `TypeError` is not — the negative control then loses
- * the ability to examine the rule it was meant to examine. The same defect came out in A3,
- * A4, A7, A8, A11 and A12, six times running.
+ * the ability to examine the rule it was meant to examine. The same defect has come out six
+ * times running.
  */
 const checkConsumer = (input) => {
   const fail = (check, rule, description) => {
@@ -228,7 +228,7 @@ const checkConsumer = (input) => {
 
   // `entry?.` even though the rule above "already checked" that the entry exists. Disarming
   // that one gave a `TypeError` here instead of a message — the SEVENTH time for this
-  // defect in this repository (A3, A4, A7, A8, A11, A12), this time in a gate written in
+  // defect in this repository, this time in a gate written in
   // full awareness of the previous six and with a paragraph about it in the header. A
   // dependency between rules is normal; writing it so that disarming the previous one puts
   // out the next one's message is not.

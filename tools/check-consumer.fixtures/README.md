@@ -7,7 +7,7 @@ other than where its file says is a fault just the same, because it proves somet
 other than what it declares.
 
 A case file **always** carries the pair `check` + `rule`, not the point alone — straight
-from A12 and [`lesson-50`](../../docs/lessons.md#lesson-50). Measured on this gate:
+from [`lesson-50`](../../docs/lessons.md#lesson-50). Measured on this gate:
 disarming four of the twenty-eight rules moves their cases onto a **neighbouring rule in
 the same point**, and without that field those four runs would be green.
 

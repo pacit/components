@@ -65,7 +65,7 @@ export default defineConfig({
        *   - ramp step blue-500 -> blue-600    ->  0.0101,
        *   - slate-900 -> slate-800            ->  0.0042.
        * So REPAINTING A WHOLE BUTTON by one step of the ramp gave zero differing
-       * pixels and a green run — found at A12, when a change to `--pct-primary` in
+       * pixels and a green run — found when a change to `--pct-primary` in
        * the dark theme moved not a single baseline, although the screenshot after it
        * has 2155 pixels in the new colour instead of 2145 in the old. The gate looked
        * like it worked and did not catch the regression it was there to catch — the

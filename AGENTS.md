@@ -29,13 +29,13 @@ here ([`req-project-language`](docs/requirements/project.md#req-project-language
 and the scope are read by the release, not only by people: the type decides whether the commit
 reaches the CHANGELOG at all and `!` marks a breaking change (`release.conventionalCommits`
 in `nx.json`), and the scope names the part that moved — `feat(tokens)!:`, `fix(select):`,
-`docs(h9):`.
+`docs(plan):`.
 
 ## This file and CLAUDE.md
 
 This file is the **source of truth**. `CLAUDE.md` is three sentences and an `@AGENTS.md`
-import that Claude Code expands on load. The two used to be independent files, identical
-byte for byte — a drift waiting for the first edit of either. Write changes here.
+import that Claude Code expands on load. Two independent copies would be a drift waiting for
+the first edit of either, so write changes here.
 
 A symlink would be cleaner but **breaks `nx format:check`**: prettier rejects a symlink
 handed to it as an explicit path (`Explicitly specified pattern is a symbolic link`), and

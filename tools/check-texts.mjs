@@ -48,7 +48,7 @@ const REFERENCE = '_reference';
  * The attributes whose value a user SEES or HEARS. The list is closed, and that is its
  * defect, known in advance: there is no way for a machine to derive it. It is visible,
  * though — adding an entry is a line in the diff, exactly like the name dictionary in
- * `check-tokens` (A4).
+ * `check-tokens`.
  *
  * The first group holds the ARIA properties with a STRING value (not an idref, an enum or
  * a number) — only they carry text for a screen reader. The second holds the HTML
@@ -588,8 +588,7 @@ const CONSOLE_CALL = /\bconsole\.(log|warn|error|info|debug)\s*\(/g;
 /**
  * A violation — with the identifier of the point AND of the rule. The point alone is not
  * enough: point 3 carries four rules, point 5 six, and a negative control comparing only
- * the point would let through a case that fired on a neighbouring rule (`lesson-50`, the
- * conclusion of A12).
+ * the point would let through a case that fired on a neighbouring rule (`lesson-50`).
  */
 class TextsError extends Error {
   constructor(check, rule, description) {
@@ -699,9 +698,7 @@ const checkTexts = (input) => {
       'empty-measurement',
       `${templates.length} templates, 0 visited nodes — the measurement never started.\n` +
         `    The non-emptiness check stands on the RESULT's side, not the input's: the ` +
-        `file count is sometimes right while the read itself is empty (lesson-48, the ` +
-        `same mistake as ` +
-        `w A5 i A12).`,
+        `file count is sometimes right while the read itself is empty (lesson-48).`,
     );
 
   // ── 2. ARTIFACT ─────────────────────────────────────────────────────────────
@@ -709,7 +706,7 @@ const checkTexts = (input) => {
   //    The source read reads a decorator's text, so it is blind to a `host` block
   //    composed by spreading somebody else's object (`...fitHost`). The package read
   //    reads `ɵdir.hostAttrs` and `ɵcmp.consts` after linking — the output of the REAL
-  //    compiler. The same move as in A3 and A6.
+  //    compiler.
   if (!pkg.length)
     throw new TextsError(
       'artifact',
@@ -751,7 +748,7 @@ const checkTexts = (input) => {
   // A template's owner has a precondition of ITS OWN, even though point 1 guarantees it.
   // Without that, disarming the `orphaned-template` rule turned this loop into a
   // `TypeError` — the negative control lost the ability to examine the rule it was meant to
-  // examine. The same defect as in A3, A4, A7, A8 and A12; "do not trust the previous
+  // examine. The same defect has come out five times here; "do not trust the previous
   // point" apparently has to be written out in every gate.
   const ownerOf = (file) => used.get(file)?.[0]?.className ?? file;
 
@@ -1016,7 +1013,7 @@ const checkTexts = (input) => {
         list(dead) +
         `\n    That is coverage which does not exist: the field stands in a public type, ` +
         `the consumer translates it, and it appears nowhere. The same move as removing the ` +
-        `dead \`--pct-on-danger\` in A12 — the field comes back with a component that ` +
+        `dead \`--pct-on-danger\` — the field comes back with a component that ` +
         `prints it.`,
     );
 

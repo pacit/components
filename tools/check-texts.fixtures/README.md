@@ -7,7 +7,7 @@ An input that passes is a fault; an input that fires somewhere other than where 
 it declares.
 
 A `fixture.json` here **always** carries the pair `check` + `rule`, not the point alone.
-That is straight from A12 and [`lesson-50`](../../docs/lessons.md#lesson-50): a gate's
+That is straight from [`lesson-50`](../../docs/lessons.md#lesson-50): a gate's
 point is not one sentence. Measured on this gate — disarming nine of the twenty-nine rules
 moves their cases onto a **neighbouring rule in the same point**, and without that field
 all nine runs would be green.

@@ -46,8 +46,8 @@ Two supplementary rules:
 - **~~`PCT_TEXTS` will not survive a runtime language change.~~** Closed by
   [0014](0014-texts-as-signal.md): the token carries `Signal<PctTexts>` and a string is read at
   render time. The entry stays here because this decision created it: the static `useValue` was
-  its price and stood in the library from `a4794a4` (2026-07-27) until 2026-08-06, with CI
-  green ([`lesson-54`](../lessons.md#lesson-54)).
+  its price, and it stood in the library with CI green throughout
+  ([`lesson-54`](../lessons.md#lesson-54)).
 
 - **The shape of `PctConfig` is unfinished.** It has one field (`defaultSize`). The open
   question is not "which fields to add" but **whether per-component defaults go through the

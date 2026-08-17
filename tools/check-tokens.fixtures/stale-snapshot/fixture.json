@@ -1,5 +1,5 @@
 {
   "point": 5,
   "check": "snapshot",
-  "description": "The snapshot says `--pct-button-hover-bg`, the sources say `--pct-button-bg-hover`. This is a check straight from the plan (A4): renaming a token without updating the snapshot must fire. The defect is on the snapshot's side here."
+  "description": "The snapshot says `--pct-button-hover-bg`, the sources say `--pct-button-bg-hover`. This is a check straight from the plan: renaming a token without updating the snapshot must fire. The defect is on the snapshot's side here."
 }

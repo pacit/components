@@ -398,7 +398,7 @@ const checkTokens = (input) => {
   //    negative control disarms the points one by one, and then it will. The first version
   //    read `p.part` directly, trusting the previous point: switching point 3 off turned
   //    the gate into a `TypeError`, and the negative control lost the ability to examine
-  //    the point it was meant to examine. Exactly the defect of `check-typecheck` (A7) — a
+  //    the point it was meant to examine. Exactly the defect `check-typecheck` had — a
   //    dependency between points is normal, writing it so that breaking it produces no
   //    sentence is not.
   const uses = new Map();
@@ -579,8 +579,8 @@ const checkTokens = (input) => {
       if (!target) {
         // Unreachable with a green build (the generator throws "Unknown reference"), but
         // reading `target.layer` directly would give a `TypeError` here instead of a
-        // sentence — the defect this repository has caught four times already (A3, A4, A7,
-        // A8), each time in a gate written in awareness of the previous one.
+        // sentence — the defect this repository has caught four times already, each time in a
+        // gate written in awareness of the previous one.
         tierViolations.push({
           rule: 'reference-to-nowhere',
           description: `${where}: points at a token that does not exist, \`${pointsAt}\``,
@@ -664,7 +664,7 @@ const checkTokens = (input) => {
   //    stylesheets really paint. The difference is measurable, not theoretical: a button in
   //    the outline variant paints its background with `var(--pct-surface-100)` and its
   //    label with `var(--pct-primary)` — two SEMANTIC tokens no rule based on component
-  //    token names would see. Until A12 both stood outside the policy, and that is exactly
+  //    token names would see. Both once stood outside the policy, and that is exactly
   //    the shape of `lesson-33`: a contrast gate examines only what somebody wrote into it.
   //
   //    The `on-*` rule works the other way round: it reads NAMES, because a pair declared
@@ -676,7 +676,7 @@ const checkTokens = (input) => {
   // asked only about the number of stylesheets — and passed green, printing "0 colours
   // painted in 7 stylesheets": the declaration pattern required a leading dash, so it saw
   // custom properties alone and not `background:`. That is `lesson-48` inside a point
-  // written so as not to repeat it, and the same mistake as in A5: the non-emptiness check
+  // written so as not to repeat it, and the same mistake once more: the non-emptiness check
   // stood on the INPUT's side while the MEASUREMENT was empty. Zero pairs to check is
   // always zero violations.
   if (!sheets.length || !painted.size || !contrast.checks?.length)
@@ -705,7 +705,7 @@ const checkTokens = (input) => {
     // trusting the previous one. The dependency between them is natural — a token outside
     // the skin has no type — but written with a bare `continue` it turned disarming the
     // first rule into a `TypeError` instead of a message, and the negative control lost
-    // the ability to examine the other two. The same defect as in A3, A4, A7 and A8; the
+    // the ability to examine the other two. The same defect four times over; the
     // fifth time, and the second time INSIDE one point.
     if (!n)
       pairViolations.push({

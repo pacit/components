@@ -85,16 +85,15 @@ word `LIMITED`, which has `MIT` inside it as a substring, so a comparison by `in
 call it a match. The archive is guarded by
 `tools/check-consumer.fixtures/tarball-without-licence.json`
 **Decision:** [0015 — MIT everywhere, rights to the entity, no CLA](../decisions/0015-license-and-model.md)
-**Binds at:** the first publish — the LICENSE file and its gate have been there since
-2026-08-06, the `repository` field since 2026-08-07. It points at
+**Binds at:** the first publish — the LICENSE file, its gate and the `repository` field are
+all in place. It points at
 `github.com/pacit/components`, which does not exist yet; provenance demands agreement with
 the repository the publish runs from, so the condition only closes when the remote is created
 (B2)
 
-> The promise was **double and measured single**: the manifest fields had a gate from A1, the
-> LICENSE file had none and did not exist, while the requirement stood in the registry as ✅.
-> Closed in B1 — measured on both sides of `npm pack`, because those are two different
-> filters.
+> The promise is **double and has to be measured twice**: the manifest fields on one side of
+> `npm pack` and the LICENSE file on the other, because those are two different filters. A gate
+> on the fields alone leaves the file free to be missing while the registry says ✅.
 
 ---
 

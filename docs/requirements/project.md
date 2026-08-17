@@ -217,8 +217,7 @@ other identifier; a scan with an empty file list has to fire on the denominator
 **Binds at:** **the first push to upstream** — the repository is public from that second,
 with no private stage, so `README.md` and `docs/` are the first thing anybody sees. The
 package release binds the second part: 24 files in the built artifact, including all eight
-`types/*.d.ts`. The layer-by-layer state is tracked by
-[section H of the plan](../plan.md#h-one-language-for-the-repository)
+`types/*.d.ts`.
 
 > The register of exceptions plays the part here that `browsers.policy.json` plays for
 > [`req-quality-browsers`](quality.md#req-quality-browsers): migration through a shrinking
@@ -233,9 +232,8 @@ package release binds the second part: 24 files in the built artifact, including
 > promise without a gate is not a promise.
 
 > The promise covers **identifiers** as well: the old prefixes were Polish abbreviations, and file and directory names (`requirements/`, `decisions/`, `tokens.md`)
-> are cited in the same places as the content. The renaming is run by
-> [H1](../plan.md#h-one-language-for-the-repository), and it is the exception to the "an ID
-> never changes" rule — the only one, deliberate and dated.
+> are cited in the same places as the content. That renaming is the exception to the "an ID
+> never changes" rule — the only one, deliberate and closed.
 
 ---
 
@@ -263,7 +261,7 @@ weight** — growth becomes a line in the diff, while the judgment of whether a 
 carries anything stays with review
 **Control:** none — gap: a file with a paragraph added beyond the tolerance has to fire; so
 does a file shortened without rewriting the snapshot
-**Binds at:** the close of the compression pass ([section H](../plan.md#h-one-language-for-the-repository))
+**Binds at:** the close of the compression pass
 — **not earlier**. A snapshot laid on today's 74-line headers would freeze them as the
 accepted state, exactly like the token-name snapshot laid before normalisation
 ([`lesson-49`](../lessons.md#lesson-49))

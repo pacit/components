@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /**
  * Documentation gate: does every promise in `docs/` name a machine that can fail on it,
- * and does that machine exist (`req-quality-registry`)? The drift between documentation
- * and reality has happened once already and was patched by hand — 18 "not implemented"
- * annotations in a single commit after the fact.
+ * and does that machine exist (`req-quality-registry`)? Documentation drifts from reality
+ * silently, and a hand-maintained "not implemented" annotation is worth exactly as much as
+ * somebody's memory of adding it.
  *
  *  1. completeness — every requirement has `Promise`, `Gate`, `Control`, a gap `Binds at`,
  *  2. existence — every path cited in `Gate`/`Control` exists on disk,
@@ -42,17 +42,8 @@ const trackedFiles = execSync('git ls-files', { cwd: ROOT, encoding: 'utf8' })
   .split('\n')
   .filter(Boolean);
 
-/**
- * Files where the old identifiers are the content rather than a citation: `docs/README.md`
- * carries the migration table, `docs/overview.md` is the signpost left after the split,
- * `docs/review.md` is a dated snapshot kept in its own shape.
- */
-const CITATION_EXEMPT = new Set([
-  'docs/README.md',
-  'docs/overview.md',
-  'docs/review.md',
-  REGISTRY,
-]);
+/** The registry is generated FROM the citations, so it cites everything by construction. */
+const CITATION_EXEMPT = new Set([REGISTRY]);
 
 /** An index of file names — lets `number.spec.ts` be verified without a directory. */
 const byBasename = new Map();
@@ -282,18 +273,9 @@ for (const req of requirements) {
 // ── 4. dangling citations across the repo ─────────────────────────────────────────
 
 /**
- * Two dead namespaces, both rejected. The numeric one comes from the 2026-07-27 migration,
- * the Polish one from 2026-08-06. The tables that resolved them were retired with H12, so
- * this pattern is all that is left of either — which is the point: it is what stops a space
- * nobody can look up from coming back. It requires a letter after the dash, so a sentence
- * about the prefix alone is not a citation and does not fire.
- */
-const LEGACY =
-  /wym-(proj|tech|ws|sbx|api|a11y|styl|theme|token|ikon|test|wer|real)-\d+|\bwym-[a-z][a-z0-9-]*[a-z0-9]\b|\blekcja-\d+\b/g;
-/**
  * A citation is not a **path segment**: `req-` is a prefix common enough to turn up in file
- * names (`req-ids.ts` used to fire this gate as a dangling citation). Hence the slash
- * before and the extension after are excluded.
+ * names, and a file name is not a citation. Hence the slash before and the extension after
+ * are excluded.
  */
 const REF =
   /(?<![\w/-])(req-[a-z][a-z0-9-]*[a-z0-9]|lesson-\d+)(?![\w-]|\.[a-z])/g;
@@ -308,19 +290,7 @@ for (const rel of trackedFiles) {
   } catch {
     continue;
   }
-  if (
-    !text.includes('req-') &&
-    !text.includes('lesson-') &&
-    !text.includes('wym-') &&
-    !text.includes('lekcja-')
-  )
-    continue;
-
-  for (const [old] of text.matchAll(LEGACY))
-    fail(
-      rel,
-      `old identifier \`${old}\` — see the migration tables in docs/README.md`,
-    );
+  if (!text.includes('req-') && !text.includes('lesson-')) continue;
 
   for (const [, ref] of text.matchAll(REF)) {
     if (ref.startsWith('lesson-')) {

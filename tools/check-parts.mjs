@@ -587,7 +587,7 @@ const renderSnapshot = (rows) =>
  * point is normal; writing it so that breaking it produces no sentence is not: the first
  * version read `null.split`, and disarming the "no snapshot" branch as part of the negative
  * control turned the gate into a `TypeError` — the control lost the ability to examine the
- * point it was meant to examine. The same defect as in A4 and A7, found by the same
+ * point it was meant to examine. The same defect twice over, found by the same
  * control.
  */
 const snapshotRows = (content) =>

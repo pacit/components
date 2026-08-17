@@ -24,8 +24,7 @@ the control contract, message derivation, id generation, configuration and texts
 surfaces have a DOM of their own: the wrapper, the checkbox, the radio and the select. Only one
 is genuinely complex.
 
-**2. `@angular/aria` exists.** Version 22.1.0 (checked 2026-08-03, the same line as our
-22.0.x), with `listbox`, `combobox`, `menu`, `tabs`, `accordion`, `grid` entrypoints, each with
+**2. `@angular/aria` exists.** Version 22.1.0 (checked, and the same line as our 22.0.x), with `listbox`, `combobox`, `menu`, `tabs`, `accordion`, `grid` entrypoints, each with
 its own `/testing`. A headless layer of our own for those roles means competing with the
 framework team over something they ship in the same version.
 

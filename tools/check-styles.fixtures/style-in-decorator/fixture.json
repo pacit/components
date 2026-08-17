@@ -1,5 +1,5 @@
 {
   "point": 3,
   "check": "style-source",
-  "description": "The component keeps its styles in the decorator (`styles: [...]`), not in a sheet. The styles travel to the consumer like all the others, but the gate reads `.scss` files — so it rules \"no violations\" about this component only because it cannot see it. The same denominator as in A6: the set of measured components is the whole content of the promise."
+  "description": "The component keeps its styles in the decorator (`styles: [...]`), not in a sheet. The styles travel to the consumer like all the others, but the gate reads `.scss` files — so it rules \"no violations\" about this component only because it cannot see it. The same denominator problem elsewhere: the set of measured components is the whole content of the promise."
 }

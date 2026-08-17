@@ -7,7 +7,7 @@ where its file says is a fault just the same, because it proves something other 
 what it declares.
 
 Every case carries the pair `check` + `rule`, not the point number alone — straight from
-A12 and [`lesson-50`](../../docs/lessons.md#lesson-50). Measured on this gate: disarming
+[`lesson-50`](../../docs/lessons.md#lesson-50). Measured on this gate: disarming
 **twelve of the thirty-seven** rules moves their cases onto a neighbouring rule, and
 without that field all twelve runs would be green.
 
@@ -59,7 +59,7 @@ This is the same choice as in `check-browsers` and for the same reason: four rea
 from disk and from the graph are four functions of a dozen lines each, while the checks
 are seven points and thirty-seven rules, and that is where all the content sits. The
 readings are guarded by runs against the real repository, recorded in
-[`plan.md`](../../docs/plan.md) under task A13.
+[`plan.md`](../../docs/plan.md).
 
 ## The rule that outlives disarming Stryker itself
 

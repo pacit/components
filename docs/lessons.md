@@ -478,7 +478,7 @@ already being carried over explicitly, but that was treated as a peculiarity of 
 than as a rule — and the rule reads: whatever is supposed to look like an extension of the
 control has to be read from it, because the DOM tree will not do it.
 
-**Addendum from 2026-08-05: the third property.** While introducing the `dir` axis into the
+**Addendum — the third property.** While introducing the `dir` axis into the
 sandbox (`req-token-logical`) it turned out that writing direction is exactly the same case —
 measured `direction: rtl` on the trigger against `ltr` on the panel. The stylesheet was
 impeccably logical all the while: `text-align: start` simply resolves the other way when the
@@ -1059,8 +1059,8 @@ seems.
 A practical rule: **a string, a value depending on DI and anything a consumer can swap after
 startup are to be read in a `computed()`, not in a default value.** Written down as a point of
 a gate (`check-texts`, the rule `text-at-construction`), because knowing is not enough: the
-previous notation stood from `a4794a4` (2026-07-27) — the very commit that introduced
-`PCT_TEXTS` — and in all that time produced not one red test. The defect was moreover **described
+previous notation stood in the library from the day `PCT_TEXTS` was introduced and produced
+not one red test in all that time. The defect was moreover **described
 in decision 0007 as open**; what kept it alive was not a lack of knowledge but a lack of
 machinery.
 
@@ -1234,7 +1234,7 @@ files where a dictionary counts 94.** Both limbs were honest about what they com
 neither was honest about what that left out. A function-word list catches PROSE, because
 function words stand in sentences. It cannot catch a single identifier — a local, a constant,
 a camelCase name — because an identifier carries no function words by construction, and
-[H1](plan.md#h-one-language-for-the-repository) had already ruled that identifiers move with everything else.
+identifiers had already been ruled to move with everything else.
 
 The fix cost nothing: `/usr/share/dict/polish` folded of its diacritics, minus
 `/usr/share/dict/american-english`, over identifiers split at camelCase. **The design work is

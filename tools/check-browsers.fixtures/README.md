@@ -7,7 +7,7 @@ where its file says is a fault just the same, because it proves something other 
 what it declares.
 
 Every case carries the pair `check` + `rule`, not the point number alone — straight from
-A12 and [`lesson-50`](../../docs/lessons.md#lesson-50). Measured on this gate: disarming
+[`lesson-50`](../../docs/lessons.md#lesson-50). Measured on this gate: disarming
 **eight of the twenty-six** rules moves their cases onto a neighbouring rule, and without
 that field all eight runs would be green.
 

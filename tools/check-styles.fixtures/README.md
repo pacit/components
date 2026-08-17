@@ -65,8 +65,8 @@ the run green and each leaves a repository that looks sensible.
 ## Points 1–3 are the denominator, not a formality
 
 The rules are in points 5 and 6; points 1–3 guard the set those rules work over. The same
-mechanism that shrank the sample of files in the coverage report in A2, the set of
-measured components in A6 and the set of projects in A7 — here it is the set of
+mechanism that has shrunk the sample of files in a coverage report, the set of
+measured components and the set of projects — here it is the set of
 declarations that shrinks.
 
 Two of those cases are not hypotheses. `no-components` exists because the gate **passed**

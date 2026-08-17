@@ -101,8 +101,8 @@ const list = (items) => [...items].sort().join(', ') || '(empty)';
  * Every point reads the input DEFENSIVELY, even though the previous one "already checked
  * that". A dependency between points is normal; writing it so that disarming the previous
  * one turns the gate into a `TypeError` is not — the negative control then loses the
- * ability to examine the point it was meant to examine. The same defect came out in A4, A7
- * and A3, three times running ([`lesson-50`](../docs/lessons.md#lesson-50)).
+ * ability to examine the point it was meant to examine. The same defect has come out three
+ * times running ([`lesson-50`](../docs/lessons.md#lesson-50)).
  */
 const checkBundle = (input) => {
   const sources = input.sources ?? [];
@@ -210,7 +210,7 @@ const checkBundle = (input) => {
           `off the list`,
       );
     // `s?.` despite the branch above that "already checked that": disarming that one
-    // must not turn this into a `TypeError`. The same defect came out in A7, A4 and A3 —
+    // must not turn this into a `TypeError`. The same defect has come out three times —
     // three times BETWEEN points, here a fourth time and inside one ([`lesson-50`]).
     if (!(s?.pulled ?? []).includes(e))
       throw new BundleError(
@@ -404,7 +404,7 @@ const checkBundle = (input) => {
   //     `@angular/build: application`, that is, by what really assembles an application at
   //     the consumer's. The probes above go through their own esbuild — fast, but MY
   //     setting of a bundler, not his. The same move as "do not read `include`, run the
-  //     compiler" from A7 and "do not read the sheet's text, run sass" from A5.
+  //     compiler" and "do not read the sheet's text, run sass".
   //
   //     The third probe (all the entrypoints) is the denominator of the first two: it
   //     proves this read CAN see what it fails to find in them.

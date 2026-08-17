@@ -6,7 +6,7 @@ declares**. An input that passes is a fault; an input that fires for a reason ot
 the one written in its `fixture.json` is a fault just the same, because it proves
 something other than what it declares.
 
-Since A12 a `fixture.json` may add a `rule` as well — and then that has to match too. The
+A `fixture.json` may add a `rule` as well — and then that has to match too. The
 reason is straight from [`lesson-50`](../../docs/lessons.md#lesson-50): **a gate's point is
 not one sentence.** Point 6 carries nine rules, point 7 six; comparing the point's
 identifier alone lets through a case that fired on a neighbouring rule of that same point
@@ -63,7 +63,7 @@ else's point at once.
 The reference's dictionary (`_reference/libs/tokens/src/names.policy.json`) lists **only
 words used** by some token of the reference. That is not thrift: point 4 rejects a dead
 word, so a dictionary padded "just in case" would break the reference. The same rule holds
-for the policies added at A12: the reference's `levels.policy.json` lists one axis
+for the policies: the reference's `levels.policy.json` lists one axis
 (`space`), because an unused axis fires point 6, and its `contrast.policy.json` has a pair
 for **every** colour painted by `button.scss`, because otherwise the reference would fire
 point 7 on itself.

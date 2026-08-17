@@ -57,7 +57,7 @@ test.describe('A scoped theme — the cascade of CSS custom properties', () => {
       );
 
     // :root -> primary = blue-600, dark scope -> primary = blue-400. The dark ramp
-    // sits HIGHER than the light one (blue-400, not blue-500) since A12: `on-primary`
+    // sits HIGHER than the light one (blue-400, not blue-500) deliberately: `on-primary`
     // is dark in it, so a hover that darkened the background dropped the label
     // contrast below AA, and the same token is sometimes text on a dark surface too.
     expect(rootButtonBg).toBe('#2563eb');

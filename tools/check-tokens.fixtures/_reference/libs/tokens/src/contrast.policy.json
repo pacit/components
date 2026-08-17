@@ -1,5 +1,5 @@
 {
-  "$comment": "The reference input's contrast policy. Until A12 the build alone read it; from point 7 this gate reads it too and requires a pair for every colour the stylesheet paints.",
+  "$comment": "The reference input's contrast policy. The build alone used to read it; point 7 reads it too and requires a pair for every colour the stylesheet paints.",
   "checks": [
     {
       "name": "body text",

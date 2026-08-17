@@ -1,8 +1,6 @@
 # `@pacit/components` documentation
 
 The whole repository is in English — [`req-project-language`](requirements/project.md#req-project-language).
-The order in which the remaining layers shed Polish is kept by
-[section H of the plan](plan.md#h-one-language-for-the-repository).
 
 ## Map
 
@@ -13,8 +11,7 @@ decisions/      LEVEL 2   why this way, and what it costs us           (17 ADRs)
 components/     LEVEL 3   whether this component keeps them            (filled-in DoD)
 lessons.md                the evidence base: what actually happened    (59 entries)
 registry.md               GENERATED: promise → gate → control → state
-review.md                 dated snapshot of an outside review
-plan.md                   task list and work journal — the only place holding "done"
+plan.md                   the task list — the only place holding "done"
 ```
 
 Reading order is the reverse of writing order: **requirements come out of lessons.**
@@ -109,12 +106,6 @@ under the same rule.
 - Shape: `req-<area>-<slug>`, slug 1–2 words, ASCII, no diacritics.
 - Lessons: `lesson-<number>`, next free number.
 - Decisions: `<NNNN>` chronologically.
-
-The space moved twice — numbers to slugs (2026-07-27), and to English with the rest of the
-repository ([`req-project-language`](requirements/project.md#req-project-language),
-2026-08-06). Both are closed, and the second is the one exception to the rule above, dated
-and final. The `LEGACY` guard in `check-docs.mjs` **rejects** either old form; the tables
-that mapped them went out with the history they described.
 
 ### Typing on the code side
 

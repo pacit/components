@@ -1,6 +1,6 @@
 {
   "pct": {
-    "$comment": "Here the `primary` ramp goes UP (lighter on hover/active), the opposite of the light theme. The reason is measurable, not aesthetic: in the dark theme `on-primary` is DARK, so darkening the background drives the label's contrast down instead of up — until A12 that gave 3.45:1 on hover and 2.66:1 on active, below AA, with a green build. The same token is also text on a dark surface (the outline variant's label), and that needs a light step: blue.500 on `surface-100` gave 3.98:1.",
+    "$comment": "Here the `primary` ramp goes UP (lighter on hover/active), the opposite of the light theme. The reason is measurable, not aesthetic: in the dark theme `on-primary` is DARK, so darkening the background drives the label's contrast down instead of up — that once gave 3.45:1 on hover and 2.66:1 on active, below AA, with a green build. The same token is also text on a dark surface (the outline variant's label), and that needs a light step: blue.500 on `surface-100` gave 3.98:1.",
     "primary": {
       "$type": "color",
       "$value": "{pct.blue.400}"

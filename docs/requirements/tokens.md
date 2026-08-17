@@ -157,8 +157,8 @@ point 4
 > The same rule governs **requirement identifiers** — and it is where the move away from
 > numbers came from. See [README](../README.md#why-slugs-not-numbers).
 
-> **A snapshot alone does not close this — it freezes it.** The gate was written on 2026-08-05
-> and found 34 tokens with their segments in reverse order (`--pct-checkbox-checked-bg` next
+> **A snapshot alone does not close this — it freezes it.** The gate, when it was written,
+> found 34 tokens with their segments in reverse order (`--pct-checkbox-checked-bg` next
 > to `--pct-checkbox-border-hover` in the same file), so knowing one name did not let you guess
 > its sibling. A snapshot laid before normalisation would have recorded that drift as the
 > accepted state. Hence point 3 **before** point 5 — and hence the normalisation done in the
@@ -190,7 +190,7 @@ repository: a new `background: var(--pct-surface-disabled)` declaration in `butt
 fires, removing the `button/solid — label` pair from the policy fires, restoring the dead
 `--pct-on-danger` fires once the snapshot is accepted
 
-> **Until 2026-08-05 the policy was silent about 27 colours.** The contrast gate counted 38
+> **The policy was once silent about 27 colours.** The contrast gate counted 38
 > pairs and was green; outside its reach stood every hover and disabled state of the button,
 > the error messages of the checkbox, the radio and the select, and seven borders — plus two
 > **semantic** tokens painted directly by the outline variant (`--pct-surface-100` beneath the
