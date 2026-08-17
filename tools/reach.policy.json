@@ -25,7 +25,11 @@
     },
     {
       "path": "README.md",
-      "reason": "The repository's front page: GitHub renders it on the landing page and npm on the package page."
+      "reason": "The repository's front page: GitHub renders it on the landing page. It is NOT the npm page — that one is the library's own README below, and the two answer to different readers."
+    },
+    {
+      "path": "libs/components/README.md",
+      "reason": "The npm page of `@pacit/components`. ng-packagr copies it into `dist` by its own convention — `ng-package.json` names the `themes` assets and says nothing about this file — so nothing in the repository has to point at it, and until B3 the only thing that did was the task in the plan that was going to rewrite it."
     },
     {
       "path": "LICENSE",
