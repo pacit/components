@@ -83,6 +83,19 @@ whose price is paid before a first visitor arrives, not after. Of B, the package
 and B4 stand between here and npm. In parallel: F1 is unblocked — the inventories it renders
 both exist — and C is filler.
 
+**B2 is deferred by decision, not blocked** — and the decision has a shape: **the first push
+happens only when the maintainer asks for it outright.** It is not triggered by a state of the
+repository, by a green run or by B2 standing next in this order; a session that reaches it
+**skips it and takes the next item**, and so does anything whose price is a remote (B4's links,
+provenance, remote CI). The reason is the premiere: everything the first visitor sees becomes
+the product at that second, and "the list says it was next" is not a reason to spend that
+once-only moment.
+
+So the work went on into D: **D1 has closed**, and the walk over a list now stands in `core`
+before the second control that needs it rather than after the fourth. What it left behind is a
+new finding of the C kind — **C9**, the metric that sees neither a template's conditions nor
+their absence.
+
 ## B. Readiness for the first release
 
 Binds at the first publication — and then all of it at once. **B9** bound one step earlier, at
@@ -92,11 +105,18 @@ Three of the seven tasks (**B3**, **B4**, **B8**) are about language: the text t
 inside the package, and the gate that proves the rest of the repository holds to it. The gate
 went first and is closed, so the two that are left are measured rather than reviewed.
 
-- [ ] **B2 — remote repository + `repository` in the manifest**
-  - concerns: `req-release-metadata` — the gate and its control exist, so the registry says ✅;
-    what is missing is **the field itself**, and day to day the gate only warns
-  - the field points at `github.com/pacit/components`.
-    The `pacit` organisation exists on GitHub and on npm (scope `@pacit`, owner `markovy`);
+- [ ] **B2 — remote repository + `repository` in the manifest** — **held: it starts on an
+      explicit request and on nothing else**
+  - **the trigger is a sentence, not a state.** No other task may pull the push forward, no run
+    turning green starts it, and its standing next in the order is not a start either — a
+    session that reaches B2 passes over it and takes the next item. Recorded here because the
+    opposite is the natural reading of a task list: everything else in this file starts when the
+    thing above it is done
+  - concerns: `req-release-metadata` — the gate and its control exist, so the registry says ✅.
+    **The manifest field is done** (`libs/components/package.json` points at
+    `github.com/pacit/components`); what is left is the repository, the remote and the push,
+    and day to day the gate only warns
+  - the `pacit` organisation exists on GitHub and on npm (scope `@pacit`, owner `markovy`);
     the repository itself does not yet
   - `git remote -v` is still **empty**, deliberately: the first push is a premiere, so a remote
     added early is an invitation to an accidental `git push`. Until then npm refuses provenance and `check-package.mjs --release` blocks
@@ -139,6 +159,8 @@ went first and is closed, so the two that are left are measured rather than revi
     nowhere for a consumer. The answer is **a link, not a deletion** — so this waits on **B2**,
     because the address `@see https://…/docs/requirements/a11y.md#req-a11y-built-in` has to
     resolve before it is worth more than the paragraph it replaces
+  - **B2 being held on a request, this one is held with it** — and it is the whole of what the
+    hold costs, since the citations are the only work in the file that needs an address
   - cost: ~0.5 day · _notes:_ —
 
 - [ ] **B6 — support policy document**
@@ -283,18 +305,56 @@ current.
   - cost: ~0.5 day including measuring whether it can be written as a `check-styles` rule
     · _notes:_ —
 
+- [ ] **C9 — a condition in a template is measured by nobody**
+  - concerns: [`req-quality-unit`](requirements/quality.md#req-quality-unit) — the registry says
+    ✅, and it is right about what it measures: the floor holds, the denominator is guarded.
+    What has no owner is the **metric** — `tools/check-coverage.mjs` reads `total.lines.pct`
+    and Stryker mutates `.ts` only, so a guard living in a template is in neither
+    ([`lesson-62`](lessons.md#lesson-62), measured: the guard removed, 213 cases green)
+  - the number that saw it exists already — `select.html` read 100% of lines against 85.71%
+    of branches — so the cheap half is a **branch floor on templates** in `coverageThresholds`
+    plus a point in the gate that the two thresholds are declared, not inherited
+  - the expensive half is the one worth arguing about: today the arms of an `@if` in six
+    templates have never been counted, and a floor set at what they measure ratifies whatever
+    that is. The order is therefore **measure first, choose the floor after** — the same order
+    the mutation snapshot was built in
+  - what the fix does NOT buy: mutation testing of templates. A branch count says an arm ran,
+    not that anything would have noticed it being wrong
+  - cost: ~0.5 day for the measurement and the floor · _notes:_ —
+
 ## D. Phase 1 — the behaviour layer in `core`
 
 The largest architectural risk. The list machinery (typeahead, `activeIndex`, skipping disabled
-options) sits today as private methods in `PctSelect`, and autocomplete, multiselect, menu,
+options) sat as private methods in `PctSelect`, and autocomplete, multiselect, menu,
 combobox and a command palette all need it. **Extract before the second consumer, not after** —
 otherwise [`lesson-21`](lessons.md#lesson-21) (the same logic copied into four controls) repeats
-on a much bigger piece.
+on a much bigger piece. **D1 has closed**, so that half of the risk is paid: what the walk
+shares now stands in `core`, and what the roles do not share stayed with the control.
 
 Guiding principle: **mechanics from CDK, our own API** — CDK types never leak into the public
 contract. The pattern is ready: `PCT_FIELD` is exactly that for the field chrome and its control.
 
-- [ ] **D1 — list navigation** → extract from `PctSelect` into `core` · _notes:_ —
+- [x] **D1 — list navigation** → extracted from `PctSelect` into `core` · _notes:_ **done** —
+      `pctListNavigation` in `libs/components/core/src/list.ts`: a function returning signals,
+      the `pctFieldMessages` idiom that [0013](decisions/0013-no-headless-split.md) settled on.
+      It owns the active index, skipping what cannot be reached, the edges and the typeahead
+      prefix; **the key map stayed with the control**, because which key opens and which picks
+      is a property of the combobox role, not of walking a list. Left out deliberately, one
+      consumer being unable to tell a shared property from an accident of the only case:
+      wrapping at the ends (a menu wraps, a listbox does not) and scrolling the active entry
+      into view, which is DOM the walk never touches. Measured rather than declared: 17 cases
+      under the primitive's own name ([`lesson-57`](lessons.md#lesson-57)), the select's
+      keyboard cases unchanged as the proof that behaviour did not move, and the mutation run
+      says **98.59%** for `list.ts` — `select.ts` rose 79.48 → 80.73 in the same pass, the
+      weakly measured code having left it. **One mutant survives and stays**: `delta > 0` in
+      `move()` reads the same as `delta >= 0` for every input but `move(0)`, and pinning a
+      direction for a step of nothing would be inventing a promise to satisfy a mutant
+      ([`lesson-60`](lessons.md#lesson-60) is the same instinct one floor down).
+      Cost of the entrypoint, from the size snapshot: `./core` 1705 → 2628 B, `./select`
+      30598 → 30510 B, and `./button` +44 B — the walk does not travel to controls that do not
+      walk. The extraction also turned up a guard nothing had ever run
+      ([`lesson-62`](lessons.md#lesson-62)); the two DOM cases it now has are here, the metric
+      it exposed is **C9**
 - [ ] **D2 — overlay**: positioning, the closing stack (Escape order when nested), outside click,
       `inert` background, scroll lock, inheritance of theme and writing direction — the last one
       solved once in [`lesson-35`](lessons.md#lesson-35), to be generalised · _notes:_ —
