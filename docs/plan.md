@@ -79,9 +79,10 @@ it found three survivors in a repository three passes had declared clean. **B9 h
 too**, and with the same shape: the clear-out went with a gate, so what a public repository
 should never have carried is now measured on every push rather than tidied once. **Nothing
 stands between here and B2 any more** — the task itself is minutes, and it is the last one
-whose price is paid before a first visitor arrives, not after. Of B, the package README (B3)
-and B4 stand between here and npm. In parallel: F1 is unblocked — the inventories it renders
-both exist — and C is filler.
+whose price is paid before a first visitor arrives, not after. Of B, **B3 has closed as well**,
+so the npm page is written and the last file that travelled in a second language is gone; what
+stands between here and npm is B4 (held with B2), B6 and B7. In parallel: F1 is unblocked — the
+inventories it renders both exist — and C is filler.
 
 **B2 is deferred by decision, not blocked** — and the decision has a shape: **the first push
 happens only when the maintainer asks for it outright.** It is not triggered by a state of the
@@ -96,14 +97,27 @@ before the second control that needs it rather than after the fourth. What it le
 new finding of the C kind — **C9**, the metric that sees neither a template's conditions nor
 their absence.
 
+Then back to the rule above, taken literally: **B3 is the next item after B2, and its price is
+not a remote**, so the session that skipped B2 took it. It closed, and it proved the skip rule
+does not exempt a task from being read carefully — the file B3 was written to replace was
+reachable only through the sentence in this plan that described it, so ticking the task off
+without a second thought would have deleted the reader of the page it produced.
+
 ## B. Readiness for the first release
 
 Binds at the first publication — and then all of it at once. **B9** bound one step earlier, at
 the push, and is closed; what is left binds at npm.
 
-Three of the seven tasks (**B3**, **B4**, **B8**) are about language: the text that travels
+Three of the seven tasks (**B3**, **B4**, **B8**) were about language: the text that travels
 inside the package, and the gate that proves the rest of the repository holds to it. The gate
-went first and is closed, so the two that are left are measured rather than reviewed.
+went first, the package text followed it, and **both are closed** — so what still carries B4's
+number is not about language at all, but about 31 citations that need an address.
+
+**The version of that first release does not follow from the history**, and it belongs to no
+single task below: with a single root commit `releaseVersion` sees an empty range and keeps the
+`0.0.1` of the manifest, so the run needs an explicit `--specifier`. At `0.0.1` every bump lands
+on a patch anyway (`adjustSemverBumpsForZeroMajorVersion`), so the first version is a decision,
+not a derivation.
 
 - [ ] **B2 — remote repository + `repository` in the manifest** — **held: it starts on an
       explicit request and on nothing else**
@@ -132,21 +146,27 @@ went first and is closed, so the two that are left are measured rather than revi
     720 files of the index and 31 of the package, no entry in the register
   - cost: minutes for the task itself · _notes:_ —
 
-- [ ] **B3 — package README in English**
-  - concerns: [`req-project-language`](requirements/project.md#req-project-language) — the layer
-    that has no right to stand in a register of exceptions
-  - **two of the three files are done**: the manifest `description` (the sentence npm shows
-    in search results) and the headers of the generated theme artefacts, fixed in
-    `libs/tokens/build.mjs` rather than in its output, as this position said they should be
-  - what is left is `libs/components/README.md` — still the Nx generator stub ("This library
-    was generated with Nx", seven lines) and it **travels to `dist`**, so it is the package
-    page on npm. Written from scratch rather than translated: the stub has nothing to carry
-    over, and it is the first page anybody sees
-  - **the version of that first release does not follow from the history**: with a single root
-    commit `releaseVersion` sees an empty range and keeps the `0.0.1` of the manifest,
-    so the run needs an explicit `--specifier`. At `0.0.1` every bump lands on a patch anyway
-    (`adjustSemverBumpsForZeroMajorVersion`), so the first version is a decision, not a derivation
-  - cost: ~0.5 day · _notes:_ —
+- [x] **B3 — package README in English** — **closed, and it had to be made reachable to survive
+      its own task**
+  - closes: [`req-project-language`](requirements/project.md#req-project-language) on the last
+    file that carried the layer with no right to stand in a register of exceptions
+  - cost: ~0.5 day · _notes:_ **done** — `libs/components/README.md`, 268 lines written from
+    scratch over the seven-line Nx stub: install and what each of the two stylesheets buys,
+    the peer dependencies, the entrypoint table, a section per component, theming, texts,
+    configuration, accessibility, documentation, licence. The other two files of this task
+    were already done — the manifest `description` and the headers of the generated theme
+    artefacts, fixed in `libs/tokens/build.mjs` rather than in its output.
+    **The file was alive only because this task named it**: `check-reach` reached
+    `libs/components/README.md` through one sentence of this position, so ticking B3 off would
+    have killed the file B3 had just written. It is a root now, for the reason it was always
+    one — ng-packagr copies a library README into `dist` by its own convention, and
+    `ng-package.json` names the `themes` assets and nothing else. The same edit corrected the
+    root README's reason in the policy, which claimed npm renders it: npm renders this one, and
+    the two answer to different readers. Two things deliberately left out — `_tokens.scss`,
+    because advertising it on the npm page would settle **C4** by publishing it, and any
+    mention of the primitive ramps, which is **C6**. The documentation links are absolute
+    `github.com/pacit/components` addresses, dead until B2 and costing nothing for it: the page
+    reaches its first reader at npm, and npm is behind B2
 
 - [ ] **B4 — citations in the public API as links**
   - concerns: [`req-project-language`](requirements/project.md#req-project-language)
