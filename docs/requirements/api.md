@@ -276,15 +276,16 @@ pair of options without a `compareWith` that calls them equal
 `data-pct-part="…"` attributes, letting a consumer target them with a selector that survives
 updates.
 
-**Gate:** `tools/check-parts.mjs` (target `check-parts` in the root project, in CI) — five
+**Gate:** `tools/check-parts.mjs` (target `check-parts` in the root project, in CI) — six
 points. Point 3 forbids binding a part name with an expression (a name that comes into being
 at runtime cannot be inventoried), point 4 compares the **Parts** sections in
 [`components/`](../components/) with what the entrypoint actually exposes, and point 5
-compares `libs/components/parts.snapshot.md` with the current inventory. Points 1 and 2 guard
+compares `libs/components/parts.snapshot.md` with the current inventory, and point 6 holds
+[`req-api-parts-unique`](#req-api-parts-unique) below. Points 1 and 2 guard
 the denominator: every decorator and every occurrence of the attribute in a template must be
 recognised, and the list of parts is built **twice** — from the sources and from the built
 package (`ɵcmp.consts`, `ɵdir.hostAttrs` after linking)
-**Control:** `tools/check-parts.fixtures/` — twenty-one inputs, each rejected on its own
+**Control:** `tools/check-parts.fixtures/` — 22 inputs, each rejected on its own
 point; plus runs against the repository: renaming a part fires point 2 with a stale `dist`,
 point 4 after a rebuild and point 5 once the card is reconciled; `[attr.data-pct-part]` in
 a template fires point 3 from both readings at once; a part removed from a card fires point 4;
@@ -298,17 +299,23 @@ a directive whose part is not exported from the entrypoint fires point 2
 
 ### <a id="req-api-parts-unique"></a>`req-api-parts-unique` — Part names are unambiguous under nesting
 
-**Promise.** In composite components the container's parts carry a prefix of their own
-(`group-label`, `group-hint`, `group-error`); the wrapper names its own `field-*`
+**Promise.** In composite components the container's parts carry a prefix of their own —
+**all of them**, `group-label`, `group-hint`, `group-error` and `group-options` alike; the
+wrapper names its own `field-*`
 (`field-header`, `field-label`, `field-label-aux`, `field-row`, `field-prefix`,
 `field-control`, `field-suffix`, `field-footer`, `field-hint`, `field-error`,
 `field-message-aux`). A consumer's selector must not accidentally hit the parts of member
 elements.
 
-**Gate:** `apps/sandbox-e2e/src/radio.spec.ts`, `apps/sandbox-e2e/src/field.spec.ts` —
+**Gate:** `tools/check-parts.mjs` point 6 — a component whose parts share a prefix has to
+give it to **all** of them, read off the inventory rather than off a list of container
+components ("is this a container" is not decidable from a template: a button projects content
+too). Plus `apps/sandbox-e2e/src/radio.spec.ts`, `apps/sandbox-e2e/src/field.spec.ts` —
 assertions on the **cardinality** of a collection, not on its first element
-**Control:** the collision in [`lesson-15`](../lessons.md#lesson-15) and
-[`lesson-24`](../lessons.md#lesson-24) is a documented run in which this gate fired — the
+**Control:** `tools/check-parts.fixtures/part-outside-namespace`, and a run against the
+repository: `group-options` renamed back to `options` fires point 6 by name. Older than both,
+the collision in [`lesson-15`](../lessons.md#lesson-15) and
+[`lesson-24`](../lessons.md#lesson-24) is a documented run in which the e2e half fired — the
 unit tests did **not** see it, because they queried a specific element
 **Lessons:** [`lesson-15`](../lessons.md#lesson-15), [`lesson-24`](../lessons.md#lesson-24)
 

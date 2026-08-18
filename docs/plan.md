@@ -160,6 +160,14 @@ is painted ([`lesson-69`](lessons.md#lesson-69)). So the file went and the check
 point of the token gate; the reason for dropping is recorded as "no reader", not "never"
 ([0018](decisions/0018-no-sass-entry-point.md)).
 
+**C7 closed with it**, and there the question was settled by reading the promise literally:
+`req-api-parts-unique` says a container's parts carry a prefix of **their own**, not "the parts
+that would collide" — so the code was out of line, not the requirement. `options` became
+`group-options`, and the rule became point 6 of `check-parts`, which needs no list of container
+components: a component that disagrees with itself is visible in the inventory. That promise
+had stood on two e2e cardinality assertions until now, that is on the pages we happen to
+render.
+
 **C6 closed after it**, the second decision-shaped finding in a row, and its question — do
 primitives belong to the public surface? — turned out to have two answers rather than one:
 a colour has a semantic tier above it and a scale has none, so the ramps are the skin's
@@ -537,7 +545,8 @@ var(--pct-button-heigth)` passed every one of them, and the 7 stylesheets read 1
     of the skin)
   - cost: minutes for the change, the decision is the whole task · _notes:_ —
 
-- [ ] **C7 — `options`, the only container part without the `group-` prefix**
+- [x] **C7 — `options`, the only container part without the `group-` prefix** — **closed:
+      renamed, and the promise got the static gate it never had**
   - `libs/components/radio/src/radio-group.html` — the group ships `group-label`, `group-hint`,
     `group-error` and `options`. The prefix came from a real collision with option labels
     ([`lesson-15`](lessons.md#lesson-15)), and this one part stayed outside the rule that
@@ -547,7 +556,25 @@ var(--pct-button-heigth)` passed every one of them, and the 7 stylesheets read 1
     deliberately, the same call as C6 — with the difference that a rename is now a visible
     change to the public API (the parts snapshot), not a quiet fix
   - cost: minutes for the change (`options` → `group-options`, nobody uses it in tests or in the
-    sandbox), the decision is the whole task · _notes:_ —
+    sandbox), the decision is the whole task · _notes:_ **done** — one line in the template,
+    the card, and the snapshot rewritten so the change to the public API stands in the diff.
+    **What decided it was reading the promise literally**: `req-api-parts-unique` says the
+    container's parts carry a prefix of their own, not "the parts that would collide" — so the
+    code was out of line, not the requirement, and the rule is worth keeping because `options`
+    is exactly the kind of generic word a second component will want. Renaming is free today
+    and one-way after the first release, the same argument as
+    [0018](decisions/0018-no-sass-entry-point.md). **The finding named one part; the rule names
+    the class**, and it turned out measurable without any register of container components:
+    **point 6 of `check-parts`** — a component whose parts share a prefix gives it to all of
+    them. "Is this a container" is not decidable from a template (a button projects content
+    too); a component disagreeing with itself is. Scope written into the gate rather than
+    guessed at: it fires only where there is exactly one shared prefix, so a future component
+    with deliberate sub-namespaces (`panel-header` beside a `trigger`) is the day to decide
+    whether it needs a register — inventing one now would be machinery for a case that does
+    not exist. Proof on the real input, not only on the fixture: `group-options` renamed back
+    fires point 6 by name. **The requirement gains a static gate it never had** — until now it
+    stood on two e2e cardinality assertions, that is on the pages we happen to render
+    ([`lesson-65`](lessons.md#lesson-65) one requirement over)
 
 - [ ] **C8 — forced-colors rules lose on specificity to the base rules**
   - `libs/components/button/src/button.scss` — `:host([disabled])` inside

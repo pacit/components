@@ -1,0 +1,27 @@
+{
+  "$comment": "The reading from the BUILT package, doctored with the case: `PctWidget` ships two parts carrying the component's prefix and one that does not. Both reads have to agree, or point 2 fires first and the case proves something else.",
+  "entrypoints": [
+    ".",
+    "./widget"
+  ],
+  "classes": [
+    {
+      "entrypoint": "./widget",
+      "className": "PctWidget",
+      "parts": [
+        "widget-label",
+        "widget-value",
+        "spinner"
+      ],
+      "dynamic": 0
+    },
+    {
+      "entrypoint": "./widget",
+      "className": "PctMarker",
+      "parts": [
+        "widget-marker"
+      ],
+      "dynamic": 0
+    }
+  ]
+}

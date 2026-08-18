@@ -1,0 +1,5 @@
+{
+  "point": 6,
+  "check": "namespace",
+  "$reason": "Two of the component's parts carry `widget-` and the third does not. That is the shape `PctRadioGroup` had — `group-label`, `group-hint`, `group-error` and a bare `options` — where the one part left outside is the hole the prefix was introduced to close, and the one nobody notices, because it collides with nothing today."
+}

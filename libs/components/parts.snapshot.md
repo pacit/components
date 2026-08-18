@@ -46,7 +46,7 @@ from what the browser really gets.
 ./radio PctRadioGroup group-error
 ./radio PctRadioGroup group-hint
 ./radio PctRadioGroup group-label
-./radio PctRadioGroup options
+./radio PctRadioGroup group-options
 ./select PctSelect arrow
 ./select PctSelect empty
 ./select PctSelect error

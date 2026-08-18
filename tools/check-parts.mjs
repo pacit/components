@@ -9,7 +9,8 @@
  *  2. SET: the parts read from the sources match those read from the BUILT package,
  *  3. STATICNESS: a part's name is nowhere bound by an expression,
  *  4. SURFACE: the **Parts** rows in `docs/components/` carry exactly the exposed names,
- *  5. SNAPSHOT: the versioned inventory matches the current one.
+ *  5. SNAPSHOT: the versioned inventory matches the current one,
+ *  6. NAMESPACE: a component whose parts share a prefix gives it to ALL of them.
  *
  * Two independent reads are the point: the source read catches a part that never reached
  * the package, the package read (JIT over `dist/`) one our scanner cannot see.
@@ -488,6 +489,48 @@ const checkParts = (input) => {
         `matching nothing; a card silent about an existing one undoes the "recorded" ` +
         `promise entirely. ` +
         `The section is written: \`| **Parts** | \\\`name\\\`, \\\`name\\\` |\`.`,
+    );
+
+  // 6. NAMESPACE — a container's parts carry one prefix, and all of them do
+  // (`req-api-parts-unique`). The rule reads the inventory rather than a list of container
+  // components, because "is this a container" is not decidable from a template: a button
+  // projects content too. What IS visible is a component whose own parts disagree — three
+  // of `PctRadioGroup`'s four carried `group-` and `options` did not, so a consumer's
+  // `[data-pct-part="options"]` inside a group had nothing telling it apart from the same
+  // selector aimed at anything else.
+  //
+  // Scope written down rather than guessed at: the rule fires only where there is EXACTLY
+  // ONE shared prefix. A component that deliberately builds sub-namespaces (`panel-header`,
+  // `panel-body` beside a `trigger`) has two, and the day one arrives is the day to decide
+  // whether it needs a register of exceptions — inventing that register now would be
+  // machinery for a case that does not exist.
+  const outside = [];
+  for (const [className, w] of fromPackage) {
+    const parts = sorted(w.parts);
+    const counted = new Map();
+    for (const part of parts) {
+      const i = part.indexOf('-');
+      if (i < 1) continue;
+      const prefix = part.slice(0, i + 1);
+      counted.set(prefix, (counted.get(prefix) ?? 0) + 1);
+    }
+    const shared = [...counted].filter(([, n]) => n >= 2).map(([p]) => p);
+    if (shared.length !== 1) continue;
+    for (const part of parts)
+      if (!part.startsWith(shared[0]))
+        outside.push(
+          `${className}: \`${part}\` stands outside \`${shared[0]}\``,
+        );
+  }
+  if (outside.length)
+    throw new PartsError(
+      'namespace',
+      `${outside.length} parts stand outside their component's namespace:\n` +
+        list(shorten(outside)) +
+        `\n    A composite component prefixes its own parts so that a consumer's selector ` +
+        `cannot reach the parts of the members inside it (lesson-15, req-api-parts-unique). ` +
+        `One part left outside is the hole the prefix was introduced to close — and it is ` +
+        `the one nobody notices, because it collides with nothing TODAY.`,
     );
 
   // 5. SNAPSHOT — the versioned inventory a change is measured against. It stands LAST,
