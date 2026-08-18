@@ -203,6 +203,20 @@ produced a finding of its own: the field replaces the hint with the error, the s
 shows both — **C13**, one promise with two answers, invisible for as long as nothing rendered
 the second one.
 
+**C10 followed it**, and it is the plan's own either/or dissolving for the second time in a row.
+The finding offered a registration channel or a documented promise; the answer was neither,
+because the comment those options rested on was true of the class and false of a query. A token
+beside the group lets a `contentChildren` read what the options carry with the import still
+pointing one way — so the group now reports a duplicated value exactly as `pct-select` does, and
+`req-api-generic`, which had named `PctRadioGroup<T>` since C2, stops being a promise only one
+component keeps. The measurement first, as the finding asked: two options with one value paint
+themselves both chosen while the browser keeps the last one checked — the opposite arbiter to
+the select's, which is why the message names the mechanics and not just the rule. The price is
+in the diff, 1234 B on `./radio`, of which 403 B is the message text. Two more things came out
+of it: [`lesson-72`](lessons.md#lesson-72), where the obvious `effect()` passes five of six
+cases and fails the one the feature exists for, and **C14**, the size snapshot that records the
+last breach rather than the last build.
+
 ## B. Readiness for the first release
 
 Binds at the first publication — and then all of it at once. **B9** bound one step earlier, at
@@ -711,7 +725,7 @@ var(--pct-button-heigth)` passed every one of them, and the 7 stylesheets read 1
     says the DOM was created, a branch count that an arm was taken — neither says anything
     would have noticed it being wrong
 
-- [ ] **C10 — two `pct-radio` with one value both render checked**
+- [x] **C10 — two `pct-radio` with one value both render checked**
   - `libs/components/radio/src/radio.ts` — `checked` is computed
     (`group.isSelected(this.value())`), so two options carrying one value both compute `true`:
     both hosts get `data-pct-checked`, which is what the CSS paints, while the native inputs
@@ -722,7 +736,53 @@ var(--pct-button-heigth)` passed every one of them, and the 7 stylesheets read 1
   - read off the code, not measured. The first task here is therefore a failing case; the
     second is the decision whether the registration channel a duplicate scan would need is
     worth its price, or whether the promise stays a documented one in the group's JSDoc
-  - cost: ~0.5 day · _notes:_ —
+  - cost: ~0.5 day · _notes:_ **done** — measured first, as the finding asked. With `'pro'` on
+    two of three options `data-pct-checked` reads `[null, "", ""]` and the natives read
+    `[false, false, true]`: both duplicates paint themselves chosen, the browser keeps the
+    **last** one checked, and that is the element carrying `role="radio"` — so the user sees two
+    chosen options where a screen reader announces one. The **opposite** resolution to the
+    select's, where the code picks the first match. One promise, two arbiters, so the message
+    has to say which one is speaking
+  - the channel turned out not to be a registration channel at all. The group's own comment said
+    `contentChildren(PctRadio)` would close the import cycle — true of the **class**, false of a
+    **query**: `PCT_RADIO_OPTION`, a token declared beside the group and provided by the option,
+    lets the group read what its options carry with the import still pointing one way. Both
+    roads now stand and neither replaces the other — the DOM road carries what the browser holds
+    (`focus()` needs the checked native), the token road what the options MEAN, which the DOM
+    cannot say at all for a non-primitive `T` ([`lesson-16`](lessons.md#lesson-16) amended)
+  - the promise was **already written**: `req-api-generic` names `PctRadioGroup<T>` and has said
+    since C2 that a duplicated pair is reported under `isDevMode()`. Only the select had the
+    machine, so this is an unowned promise closed rather than a feature bought — and the
+    requirement now states both mechanics instead of the select's alone
+  - **the price is measured, not estimated**: `./radio` 19326 → 20560 B, of which the message
+    text is **403 B** and the token, the query and the scan **831 B** (measured by rebuilding
+    with a one-character message). Six cases, and the control of the control: with the report
+    switched off three fail and their three mirrors stay green, the same shape as C2's — one of
+    the six measures the defect rather than the report, so it stays green either way
+  - [`lesson-72`](lessons.md#lesson-72) came out of the implementation, and it is the kind that
+    ships green: a plain `effect()` reading a required input through a content query throws
+    NG0950 for options built by `@for`. **Five of the six cases passed** — everything except the
+    case the feature exists for, since a duplicated value arrives with the second list, not with
+    the template. `afterRenderEffect` is the read that is late enough, and it costs 14 B more
+    than the `try`/`catch` that would also have worked
+  - the size snapshot's rewrite exposed **C14**: it records the last breach, not the last build,
+    so this commit's diff shows five entrypoints growing that this commit never touched
+
+- [ ] **C14 — the size snapshot records the last breach, not the last build**
+  - `tools/check-bundle.mjs` holds every entrypoint to its snapshot ±5% and rewrites the file
+    only when that band is crossed, so the recorded numbers age. Measured on an unchanged tree
+    before C10 touched anything: `./button` 8116 against 7932 in the file, `./core` 2723 against
+    2628, `./field` 39294 against 38479, `./select` 32400 against 32114 — every entrypoint had
+    drifted upward inside the tolerance since C2 last wrote it. The likeliest source is C8: a
+    stylesheet is compiled into the FESM, so a forced-colors block is bytes
+  - the consequence is a **false diff**: the first commit to cross the band rewrites the whole
+    file, and a reader who trusts the diff attributes months of drift to one change. C10's is
+    that commit — `./radio` is its 1234 B, the other five lines are everybody else's
+  - the question is which of the two the file is: a **budget** (the numbers are a baseline, the
+    drift is the tolerance doing its job — and then `--write` must touch only the line that
+    breached) or a **snapshot** (every byte rewrites it, the diff is honest and noisy). The
+    mutation snapshot next door answers it a third way, with a two-sided per-file tolerance
+  - cost: minutes for either change, the decision is the whole task · _notes:_ —
 
 - [ ] **C11 — the size budget counts a template as text**
   - `tools/check-bundle.mjs` — the probe bundles the FESM with esbuild and **does not run

@@ -22,10 +22,10 @@ framework. Budget: ±5% or ±256 B, whichever is larger.
 
 ```
 . 1295 ./core @angular/core
-./button 7932 ./core @angular/core
-./checkbox 16866 ./core @angular/core
-./core 2628 - @angular/core
-./field 38479 ./core @angular/core,@angular/forms,@angular/forms/signals
-./radio 19214 ./core @angular/core
-./select 32114 ./core @angular/cdk/overlay,@angular/core
+./button 8116 ./core @angular/core
+./checkbox 16966 ./core @angular/core
+./core 2723 - @angular/core
+./field 39294 ./core @angular/core,@angular/forms,@angular/forms/signals
+./radio 20560 ./core @angular/core
+./select 32400 ./core @angular/cdk/overlay,@angular/core
 ```

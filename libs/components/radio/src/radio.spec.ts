@@ -13,6 +13,7 @@ import {
   requiredError,
   ValidationError,
 } from '@angular/forms/signals';
+import type { PctCompareWith } from '@pacit/components/core';
 import { PctRadio } from './radio';
 import { PctRadioGroup } from './radio-group';
 
@@ -159,6 +160,75 @@ class NamedHost {
   value = signal('free');
   ariaLabel = signal('');
   ariaLabelledby = signal('');
+}
+
+/** A plan as an entity — two objects can stand for one plan. */
+interface Plan {
+  id: string;
+  name: string;
+}
+
+/** Two options carry one value. What the group reports — and what it looks like meanwhile. */
+@Component({
+  imports: [PctRadioGroup, PctRadio],
+  template: `<pct-radio-group label="Plan" [(value)]="value">
+    <pct-radio value="free">Free</pct-radio>
+    <pct-radio value="pro">Pro monthly</pct-radio>
+    <pct-radio value="pro">Pro yearly</pct-radio>
+  </pct-radio-group>`,
+})
+class DuplicateHost {
+  value = signal<string | null>('pro');
+}
+
+/** The options written from data — the list that duplicates a value is usually the second one. */
+@Component({
+  imports: [PctRadioGroup, PctRadio],
+  template: `<pct-radio-group label="Plan" [(value)]="value">
+    @for (plan of plans(); track $index) {
+      <pct-radio [value]="plan.id">{{ plan.name }}</pct-radio>
+    }
+  </pct-radio-group>`,
+})
+class ListHost {
+  plans = signal([
+    { id: 'free', name: 'Free' },
+    { id: 'pro', name: 'Pro' },
+  ]);
+  value = signal<string | null>(null);
+}
+
+/** Two different objects standing for one plan; the comparator says they are one. */
+@Component({
+  imports: [PctRadioGroup, PctRadio],
+  template: `<pct-radio-group
+    label="Plan"
+    [compareWith]="byId"
+    [(value)]="value"
+  >
+    <pct-radio [value]="monthly">Pro monthly</pct-radio>
+    <pct-radio [value]="yearly">Pro yearly</pct-radio>
+  </pct-radio-group>`,
+})
+class EntityDuplicateHost {
+  monthly: Plan = { id: 'pro', name: 'Pro monthly' };
+  yearly: Plan = { id: 'pro', name: 'Pro yearly' };
+  byId: PctCompareWith<Plan> = (a, b) => a.id === b.id;
+  value = signal<Plan | null>(null);
+}
+
+/** The same two options with no comparator: two references, so two values. */
+@Component({
+  imports: [PctRadioGroup, PctRadio],
+  template: `<pct-radio-group label="Plan" [(value)]="value">
+    <pct-radio [value]="monthly">Pro monthly</pct-radio>
+    <pct-radio [value]="yearly">Pro yearly</pct-radio>
+  </pct-radio-group>`,
+})
+class EntityWithoutCompareHost {
+  monthly: Plan = { id: 'pro', name: 'Pro monthly' };
+  yearly: Plan = { id: 'pro', name: 'Pro yearly' };
+  value = signal<Plan | null>(null);
 }
 
 describe('PctRadioGroup / PctRadio', () => {
@@ -471,6 +541,123 @@ describe('PctRadioGroup / PctRadio', () => {
       for (const radio of radiosOf(fixture)) {
         expect(radio.getAttribute('aria-label')).toBeNull();
         expect(radio.getAttribute('aria-labelledby')).toBeNull();
+      }
+    });
+  });
+
+  /**
+   * A value maps back to an option, so two options sharing one make the mapping ambiguous —
+   * and the group cannot pick for the application. It says so in dev mode instead, permanently
+   * in English and outside `PCT_TEXTS` (`req-api-texts`), as `pct-select` does one component
+   * over (`req-api-generic`).
+   */
+  describe('two options with one value', () => {
+    /** Every case here provokes a warning; a real one in the output would read as a failure. */
+    const silenced = () =>
+      vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    it('paints both options as chosen while the browser keeps one — the defect itself', async () => {
+      const warn = silenced();
+      try {
+        const fixture = await render(DuplicateHost);
+        const hosts = Array.from(
+          fixture.nativeElement.querySelectorAll('pct-radio'),
+        ) as HTMLElement[];
+
+        // What the stylesheet paints: two dots filled, because `checked()` is computed from
+        // the value and both options carry it.
+        expect(hosts.map((h) => h.getAttribute('data-pct-checked'))).toEqual([
+          null,
+          '',
+          '',
+        ]);
+        // What the browser holds: the natives share a `name`, so only the LAST write stands —
+        // and that is what carries the role, so that is what a screen reader announces.
+        expect(radiosOf(fixture).map((r) => r.checked)).toEqual([
+          false,
+          false,
+          true,
+        ]);
+      } finally {
+        warn.mockRestore();
+      }
+    });
+
+    it('names both positions and both labels, once for the pair', async () => {
+      const warn = silenced();
+      try {
+        await render(DuplicateHost);
+        expect(warn).toHaveBeenCalledTimes(1);
+        // The whole message, not a fragment of it: the positions because the labels are what
+        // differ, and the way out because "do not do this" leaves the reader where it found
+        // them.
+        expect(String(warn.mock.calls[0][0])).toBe(
+          '[pct-radio-group] Options with the same value: ' +
+            '1 ("Pro monthly") and 2 ("Pro yearly"). ' +
+            'A value maps back to an option through `compareWith`, and EVERY option it ' +
+            'matches paints itself selected — while the native radios share a `name`, so ' +
+            'the browser keeps only the LAST of them checked. The user sees two chosen ' +
+            'options where a screen reader announces one. Give the options distinct ' +
+            'values, or a `compareWith` that tells them apart.',
+        );
+      } finally {
+        warn.mockRestore();
+      }
+    });
+
+    it('a group with distinct values stays silent', async () => {
+      const warn = silenced();
+      try {
+        await render(Host);
+        expect(warn).not.toHaveBeenCalled();
+      } finally {
+        warn.mockRestore();
+      }
+    });
+
+    it('follows the content rather than the first render, and reports every pair', async () => {
+      const fixture = await render(ListHost);
+      const warn = silenced();
+      try {
+        fixture.componentInstance.plans.set([
+          { id: 'free', name: 'Free' },
+          { id: 'pro', name: 'Pro' },
+          { id: 'free', name: 'Free (again)' },
+          { id: 'pro', name: 'Pro (again)' },
+        ]);
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        expect(warn).toHaveBeenCalledTimes(1);
+        expect(String(warn.mock.calls[0][0])).toContain(
+          'same value: 0 ("Free") and 2 ("Free (again)"), ' +
+            '1 ("Pro") and 3 ("Pro (again)").',
+        );
+      } finally {
+        warn.mockRestore();
+      }
+    });
+
+    it('what counts as the same value is compareWith, not the reference', async () => {
+      const warn = silenced();
+      try {
+        await render(EntityDuplicateHost);
+        expect(warn).toHaveBeenCalledTimes(1);
+        expect(String(warn.mock.calls[0][0])).toContain(
+          '0 ("Pro monthly") and 1 ("Pro yearly")',
+        );
+      } finally {
+        warn.mockRestore();
+      }
+    });
+
+    it('the same two options without a comparator are two values', async () => {
+      const warn = silenced();
+      try {
+        await render(EntityWithoutCompareHost);
+        expect(warn).not.toHaveBeenCalled();
+      } finally {
+        warn.mockRestore();
       }
     });
   });

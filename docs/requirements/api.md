@@ -245,22 +245,31 @@ selected" is a separate state (`T | null`, with `emptyValue` for non-nullable mo
 native radio's `value` attribute describes the option but **takes no part in the choice**.
 
 The mapping runs both ways, so **option values are unique** under that equality: a value is
-what points back at an option, and of two options a comparison calls equal only the earlier is
-reachable — picking the later one shows the earlier one's label. The component neither chooses
-for the application nor repairs the list; it reports the pair under `isDevMode()`, because a
+what points back at an option. **Which of two equal options wins is not the same in both
+components, and neither answer is a choice of ours.** In `pct-select` the code resolves it and
+the earlier option wins — picking the later one shows the earlier one's label. In
+`pct-radio-group` the browser resolves it: the native radios share a `name`, so only the **last**
+of them stays checked, while **every** option the value matches paints itself selected — the
+user sees two chosen options where a screen reader announces one. Neither component chooses for
+the application nor repairs the list; each reports the pair under `isDevMode()`, because a
 defect whose only witness was somebody else's diagnostic goes silent the moment that
 diagnostic is removed ([`lesson-66`](../lessons.md#lesson-66)).
 
 **Gate:** `libs/components/select/src/select.spec.ts` — the generic contract, plus the
-dev-mode report of two options with one value; the `typecheck` target of the `sandbox-e2e`
-project
+dev-mode report of two options with one value; `libs/components/radio/src/radio.spec.ts` — the
+same report for the group, which reads its options through the `PCT_RADIO_OPTION` token rather
+than through the class, so the container↔element import still points one way
+([`lesson-16`](../lessons.md#lesson-16)); the `typecheck` target of the `sandbox-e2e` project
 **Control:** the probe from [`lesson-37`](../lessons.md#lesson-37) — five deliberately
 contradictory bindings, four of which **must** break the build. Without `NoInfer<T>` the
 compiler let all five through. For the uniqueness half the switched-off warning leaves three
 cases red, and its mirrors stay green on their own: a list with distinct values and the same
-pair of options without a `compareWith` that calls them equal
+pair of options without a `compareWith` that calls them equal. The group answers the same way,
+six cases to three red — and one of its six measures the DEFECT rather than the report (both
+options painted, one native checked), so it would go on standing if the warning ever left
 **Decision:** [0010 — a generic value and `NoInfer`](../decisions/0010-generic-noinfer.md)
-**Lessons:** [`lesson-37`](../lessons.md#lesson-37), [`lesson-66`](../lessons.md#lesson-66)
+**Lessons:** [`lesson-37`](../lessons.md#lesson-37), [`lesson-66`](../lessons.md#lesson-66),
+[`lesson-72`](../lessons.md#lesson-72)
 
 > The probe's fifth case stays open and is **a limitation of Angular**: `PctRadioGroup` has no
 > options input, so the only source of `T` is `value` — and `$event` from `(valueChange)` is

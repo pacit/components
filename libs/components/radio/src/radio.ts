@@ -3,12 +3,13 @@ import {
   Component,
   computed,
   ElementRef,
+  forwardRef,
   inject,
   input,
   viewChild,
 } from '@angular/core';
 import { nextPctId } from '@pacit/components/core';
-import { PctRadioGroup } from './radio-group';
+import { PCT_RADIO_OPTION, PctRadioGroup } from './radio-group';
 
 /**
  * A single option inside `pct-radio-group`. **Not a form control of its own** — the group
@@ -29,6 +30,15 @@ import { PctRadioGroup } from './radio-group';
     '[attr.data-pct-disabled]': 'isDisabled() ? "" : null',
     '[attr.data-pct-invalid]': 'group.showInvalid() ? "" : null',
   },
+  // The group reads its options through this token rather than through the class: it is the
+  // group that `pct-radio` imports, so the query the other way round would close the cycle.
+  // `forwardRef`, because the class is not defined yet where its own decorator is evaluated.
+  providers: [
+    {
+      provide: PCT_RADIO_OPTION,
+      useExisting: forwardRef(() => PctRadio),
+    },
+  ],
 })
 export class PctRadio<T = string> {
   protected readonly group = inject<PctRadioGroup<T>>(PctRadioGroup);
@@ -55,6 +65,19 @@ export class PctRadio<T = string> {
 
   private readonly control =
     viewChild.required<ElementRef<HTMLInputElement>>('control');
+  private readonly hostRef = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  /**
+   * What to call this option in a message from the group (`PCT_RADIO_OPTION`). The projected
+   * content is the option's label, so it is read from the host rather than declared twice —
+   * and `ariaLabel` wins, for the same reason it wins in the accessible name: where the
+   * content is an icon or a swatch, the text is empty and the name is the only thing there is.
+   */
+  label(): string {
+    return (
+      this.ariaLabel() || (this.hostRef.nativeElement.textContent ?? '').trim()
+    );
+  }
 
   private readonly uid = nextPctId('pct-radio');
   protected readonly controlId = `${this.uid}-control`;

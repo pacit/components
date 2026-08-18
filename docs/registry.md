@@ -227,3 +227,4 @@ Which lesson feeds which requirement. Generated from the **Lessons** fields.
 | [`lesson-69`](lessons.md#lesson-69) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-70`](lessons.md#lesson-70) | `req-a11y-forced-colors`                                                                                                                                          |
 | [`lesson-71`](lessons.md#lesson-71) | `req-quality-unit`, `req-quality-coverage`                                                                                                                        |
+| [`lesson-72`](lessons.md#lesson-72) | `req-api-generic`                                                                                                                                                 |

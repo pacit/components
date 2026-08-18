@@ -2,12 +2,17 @@ import {
   booleanAttribute,
   Component,
   computed,
+  afterRenderEffect,
+  contentChildren,
   ElementRef,
   inject,
+  InjectionToken,
   input,
+  isDevMode,
   model,
   output,
   signal,
+  type Signal,
 } from '@angular/core';
 import type { FormValueControl, ValidationError } from '@angular/forms/signals';
 import {
@@ -22,6 +27,26 @@ import {
   PctLabelStrategy,
   pctSameValue,
 } from '@pacit/components/core';
+
+/**
+ * What the group needs to know about an option, and nothing more: the value it stands for and
+ * a name to call it by in a message. Declared HERE, beside the group, so that the option can
+ * provide it while importing the group — the other direction (`contentChildren(PctRadio)`)
+ * would close the import cycle.
+ *
+ * The value is `unknown` rather than a generic: one token serves every `T`, and the group is
+ * the only place that knows which `T` its own options were written for.
+ */
+export interface PctRadioOption {
+  readonly value: Signal<unknown>;
+  /** The option's visible text (or its `ariaLabel`) — what tells two of them apart. */
+  label(): string;
+}
+
+/** The channel through which `pct-radio` announces itself to the group. */
+export const PCT_RADIO_OPTION = new InjectionToken<PctRadioOption>(
+  'PCT_RADIO_OPTION',
+);
 
 /**
  * A single-choice group. **The group is the form control** (`FormValueControl`), not the
@@ -108,8 +133,12 @@ export class PctRadioGroup<T = string>
 
   /** The options are content projected from outside, so the host DOM is what gets queried —
       a `viewChildren` query does not see the templates of child components, and
-      `contentChildren(PctRadio)` would create a circular import. */
+      `contentChildren(PctRadio)` would create a circular import. The native controls are read
+      through the DOM; what the options MEAN is read through a token (`PCT_RADIO_OPTION`),
+      which the class import would have made impossible and a token does not. */
   private readonly hostRef = inject<ElementRef<HTMLElement>>(ElementRef);
+
+  private readonly options = contentChildren(PCT_RADIO_OPTION);
 
   private controls(): HTMLInputElement[] {
     return Array.from(
@@ -178,6 +207,14 @@ export class PctRadioGroup<T = string>
 
   constructor() {
     pctAttachToField(this.fieldApi, this);
+
+    // An effect and not a one-off: the options can be written by a `@for` over data, and the
+    // list that duplicates a value is usually the second one — the one from the server. And
+    // `afterRenderEffect` rather than `effect`, because a query sees an option created inside
+    // an embedded view BEFORE its inputs are bound: reading a required input there throws
+    // NG0950, and it throws for `@for` options only — that is, for exactly the case this
+    // report exists for (`lesson-72`).
+    if (isDevMode()) afterRenderEffect(() => this.warnOnDuplicateValues());
   }
 
   /**
@@ -189,6 +226,44 @@ export class PctRadioGroup<T = string>
     const current = this.value();
     if (current === null || current === undefined) return false;
     return this.compareWith()(current, optionValue);
+  }
+
+  /**
+   * Two options that `compareWith` calls equal. The comparison is pairwise and therefore
+   * O(n²), for the reason it is in `pct-select`: the comparator belongs to the application, so
+   * a `Set` has a key only for the default identity and a scan that measured one case and not
+   * the other would be worse than one that measures both. It runs under `isDevMode()` alone.
+   *
+   * The values arrive as `unknown` from the token and are handed to the comparator as `T`: the
+   * options of a group are written for the group's own `T`, and this is the one place that
+   * knows it.
+   */
+  private warnOnDuplicateValues(): void {
+    const options = this.options();
+    const same = this.compareWith();
+    const pairs: string[] = [];
+
+    for (let i = 1; i < options.length; i++) {
+      for (let j = 0; j < i; j++) {
+        if (!same(options[j].value() as T, options[i].value() as T)) continue;
+        // Reported against the first option that claims the value — as in the select, so that
+        // one list of positions reads the same way in both components.
+        pairs.push(
+          `${j} ("${options[j].label()}") and ${i} ("${options[i].label()}")`,
+        );
+        break;
+      }
+    }
+    if (pairs.length === 0) return;
+
+    console.warn(
+      `[pct-radio-group] Options with the same value: ${pairs.join(', ')}. ` +
+        `A value maps back to an option through \`compareWith\`, and EVERY option it ` +
+        `matches paints itself selected — while the native radios share a \`name\`, so ` +
+        `the browser keeps only the LAST of them checked. The user sees two chosen ` +
+        `options where a screen reader announces one. Give the options distinct values, ` +
+        `or a \`compareWith\` that tells them apart.`,
+    );
   }
 
   /** Selects an option; ignored in readonly mode. */

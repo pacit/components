@@ -190,6 +190,15 @@ In a group the options are **projected content**, so the container cannot see th
 a `viewChildren` query; `contentChildren(PctRadio)` would create a circular container↔element
 import. So the group's `focus()` queries the host's DOM (`input[type="radio"]`).
 
+The second half of that sentence is true of the **class**, not of the query — and C10 needed the
+difference. A token declared beside the group (`PCT_RADIO_OPTION`) and provided by the option
+lets a `contentChildren` query see what the options carry, with the import still pointing one
+way only. Both roads now stand, and neither replaces the other: the DOM road carries what the
+BROWSER holds (which native is checked — `focus()` needs exactly that), the token road what the
+options MEAN. The DOM cannot carry the second, because `[attr.value]` is absent for a
+non-primitive `T` — which is precisely where `compareWith` lives
+([`lesson-72`](#lesson-72)).
+
 ---
 
 ### <a id="lesson-17"></a>`lesson-17` — The scoped theme was broken at the component tier
@@ -1540,6 +1549,8 @@ a "don't know" costs an unexamined pair, a wrong "yes" would cost a false accusa
 that spells the more specific state out itself (`[data-pct-selected] { background: SelectedItem }`
 beside the general `background: Canvas`) is not a hole and is not reported.
 
+---
+
 ### <a id="lesson-71"></a>`lesson-71` — Four coverage metrics, and each was blind to what another one caught
 
 A guard living in a template is in no measurement this repository had. `check-coverage` read
@@ -1576,3 +1587,26 @@ test after all, the exception fires as stale rather than quietly covering the ne
 One more thing the same run made plain: a declared threshold is not inherited. `lines: 80`
 alone left every branch in the library — 535 of them — under no floor at all, while the log
 said the threshold was met.
+
+---
+
+### <a id="lesson-72"></a>`lesson-72` — A content query sees the option before its inputs are bound
+
+`contentChildren(PCT_RADIO_OPTION)` plus an `effect()` reading `option.value()` is the obvious
+way for a group to see what its options carry. It works — for options written out in the
+template. For options produced by `@for` it throws **NG0950: Input "value" is required but no
+value is available yet**: a query is populated when the components are created, and a component
+created inside an embedded view has its inputs bound later in the same pass.
+
+The measurement is the whole lesson: with a plain `effect()` **five of the six cases passed and
+the `@for` one failed** — everything except the case the feature exists for. A duplicated value
+is rarely typed by hand; it arrives with the second list, the one from the server. A spec whose
+hosts were all static would have shipped this green, and the first consumer to build options
+from data would have got an exception from a diagnostic.
+
+The read that is late enough is `afterRenderEffect`: by the render phase every component created
+in that pass has its inputs. A `try`/`catch` would also work, and soundly — in `createInputSignal`
+the `producerAccessed(node)` call runs BEFORE the throw, so the effect records the dependency and
+re-runs the moment the input arrives — but it catches a framework error to discover a condition
+instead of stating it. The price of preferring the statement was measured: **14 B** on `./radio`
+(20574 against 20560).

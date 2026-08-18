@@ -153,6 +153,11 @@ The value is of any type (`PctRadioGroup<T>`, `string` by default), so an option
 member or an entity. Equality is the application's call through `compareWith`, and no selection
 is `null`.
 
+Option values have to be **unique** under that comparison, as in the select — with the
+difference the platform makes here: the native radios share a `name`, so of two options
+carrying one value the browser keeps only the **last** checked while both paint themselves as
+chosen. Reported in dev mode rather than quietly repaired.
+
 ### Select
 
 A listbox with its own panel rather than a native `<select>`, following the ARIA select-only
