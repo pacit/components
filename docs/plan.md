@@ -124,6 +124,14 @@ dependency (`tslib`) that no file in this repository declares — ng-packagr wri
 Angular's range. The promise was amended rather than the package: **a document that describes
 an artefact nobody measured describes what somebody meant.**
 
+With B exhausted — B2 held on a sentence, B4 held with it — the order handed the session to
+**C**, and **C1 has closed**. The finding named one component and the rule written for it
+found three: `pct-checkbox` and `pct-radio` carry the same shape as the select, a role one
+level down and a host with none. Why none of the three had been caught is the part worth
+keeping in view ([`lesson-65`](lessons.md#lesson-65)): **the axe audit reads the sandbox's
+DOM, and in the sandbox every control is given a label** — so the one configuration in which
+the promise fails is the one no page renders.
+
 ## B. Readiness for the first release
 
 Binds at the first publication — and then all of it at once. **B9** bound one step earlier, at
@@ -317,12 +325,36 @@ not a derivation.
 Small, good filler between the bigger items. Each one is verified in the code and still
 current.
 
-- [ ] **C1 — `pct-select` without the field chrome is an unnamed combobox**
+- [x] **C1 — `pct-select` without the field chrome is an unnamed combobox** — **closed, and it
+      was three components, not one**
   - `aria-label` lands on the `<pct-select>` host, which has no role; `role="combobox"` sits on
     the inner `<button>`. A consumer has no way to fix this
   - needed: explicit `ariaLabel` / `ariaLabelledby` inputs forwarded to the element that has the
     role — a rule for every future component whose role does not sit on the host
-  - a real a11y gap, not cosmetics · _notes:_ —
+  - a real a11y gap, not cosmetics · _notes:_ **done** — the two inputs on `pct-select`,
+    `pct-checkbox` and `pct-radio`, forwarded to the element that carries the role (in the
+    select also to the panel, which is the second element with one), plus
+    `tools/check-aria.mjs` (five points, 10 fixtures), target `check-aria` in the root project
+    and in CI. **The finding named the place it was seen; the rule named the class** — the
+    same defect stood in the checkbox and in the radio, and nothing had caught it because the
+    axe audit reads pages and the pages all pass a `label`
+    ([`lesson-65`](lessons.md#lesson-65)). What the gate measures: a component whose widget
+    sits inside its own template declares both inputs and binds both on **exactly one**
+    focusable element — one carrier, because two named elements are two names for one control,
+    and none because an input read by nobody is worse than an input that does not exist. The
+    mirror rule is point 2: an ARIA name written into a `host` block needs a role on that
+    host, which is the same defect committed by us one floor lower, where it looks like a fix.
+    Deliberately **not** measured, and written into the cards and the JSDoc instead:
+    precedence. `ariaLabel` wins over a visible `label` by the accessible-name algorithm, so
+    setting both makes the two say different things — a dev-mode warning is **C3**'s idiom and
+    nothing has established it yet. Left out with its reason: **no page renders a control
+    named only from outside**, so the axe audit still never sees the configuration the gate
+    now guarantees is reachable — a sandbox specimen for it means new visual snapshots, and
+    the unit cases of the three components carry that proof instead. Proof on the real input,
+    not only on fixtures: the
+    bindings removed from `select.html` fire `forwarded`, an input removed from
+    `checkbox.ts` fires `inputs`, an `aria-label` written into the select's roleless host
+    fires `host`
 
 - [ ] **C2 — `track option.value` with a generic `T`**
   - `libs/components/select/src/select.html` — for a non-primitive `T` this tracks by reference,

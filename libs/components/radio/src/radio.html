@@ -8,6 +8,8 @@
     [name]="name()"
     [attr.value]="valueAttr()"
     [checked]="checked()"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
     [disabled]="isDisabled()"
     (click)="onClick($event)"
     (change)="onChange()"

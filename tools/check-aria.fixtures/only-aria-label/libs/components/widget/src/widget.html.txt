@@ -1,0 +1,10 @@
+<span class="pct-widget__box">
+  <button
+    class="pct-widget__trigger"
+    type="button"
+    role="combobox"
+    [attr.aria-label]="ariaLabel() || null"
+  >
+    {{ label() }}
+  </button>
+</span>

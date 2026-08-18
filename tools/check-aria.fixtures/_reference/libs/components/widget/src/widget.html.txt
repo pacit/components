@@ -1,0 +1,12 @@
+<!-- The role sits here and not on the host, so the name has to be handed over. -->
+<span class="pct-widget__box">
+  <button
+    class="pct-widget__trigger"
+    type="button"
+    role="combobox"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+  >
+    {{ label() }}
+  </button>
+</span>

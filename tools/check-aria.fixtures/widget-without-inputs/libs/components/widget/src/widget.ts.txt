@@ -1,0 +1,13 @@
+import { Component, input } from '@angular/core';
+
+/** No name comes in from outside, and the role is not on the host. */
+@Component({
+  selector: 'pct-widget',
+  templateUrl: './widget.html',
+  host: {
+    class: 'pct-widget',
+  },
+})
+export class PctWidget {
+  readonly label = input<string>('');
+}

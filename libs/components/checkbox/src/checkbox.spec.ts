@@ -57,7 +57,10 @@ class Host {
 
 @Component({
   imports: [PctCheckbox, FormField],
-  template: `<pct-checkbox label="Terms and conditions" [formField]="f.terms" />`,
+  template: `<pct-checkbox
+    label="Terms and conditions"
+    [formField]="f.terms"
+  />`,
 })
 class SignalFormHost {
   model = signal({ terms: false });
@@ -80,6 +83,25 @@ class ReactiveHost {
 })
 class NgModelHost {
   agreed = true;
+}
+
+/**
+ * A checkbox named from outside — no `label` of its own, which is the case the name has to
+ * cover: the role sits on the `<input>` inside and the host carries none.
+ */
+@Component({
+  imports: [PctCheckbox],
+  template: `<span id="terms-heading">Terms</span>
+    <pct-checkbox
+      [label]="label()"
+      [ariaLabel]="ariaLabel()"
+      [ariaLabelledby]="ariaLabelledby()"
+    />`,
+})
+class NamedHost {
+  label = signal('');
+  ariaLabel = signal('');
+  ariaLabelledby = signal('');
 }
 
 describe('PctCheckbox', () => {
@@ -249,6 +271,45 @@ describe('PctCheckbox', () => {
       box.click();
       await fixture.whenStable();
       expect(fixture.componentInstance.agreed).toBe(false);
+    });
+  });
+
+  // The name the host cannot carry: a consumer's `aria-label` on `<pct-checkbox>` lands on an
+  // element with no role and is ignored, so it comes in as an input (req-a11y-built-in).
+  describe('the accessible name comes in through an input', () => {
+    it('ariaLabel names the control, and never the host', async () => {
+      const fixture = await render(NamedHost);
+      fixture.componentInstance.ariaLabel.set('I accept the terms');
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(boxOf(fixture).getAttribute('aria-label')).toBe(
+        'I accept the terms',
+      );
+      expect(
+        (
+          fixture.nativeElement.querySelector('pct-checkbox') as HTMLElement
+        ).getAttribute('aria-label'),
+      ).toBeNull();
+    });
+
+    it('ariaLabelledby points the control at an element of the page', async () => {
+      const fixture = await render(NamedHost);
+      fixture.componentInstance.ariaLabelledby.set('terms-heading');
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(boxOf(fixture).getAttribute('aria-labelledby')).toBe(
+        'terms-heading',
+      );
+    });
+
+    it('with neither input it leaves no dangling ARIA attribute', async () => {
+      const fixture = await render(NamedHost);
+      const box = boxOf(fixture);
+
+      expect(box.getAttribute('aria-label')).toBeNull();
+      expect(box.getAttribute('aria-labelledby')).toBeNull();
     });
   });
 });

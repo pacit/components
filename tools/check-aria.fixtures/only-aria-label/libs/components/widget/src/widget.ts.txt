@@ -1,0 +1,14 @@
+import { Component, input } from '@angular/core';
+
+/** Only the literal half of the name arrives. */
+@Component({
+  selector: 'pct-widget',
+  templateUrl: './widget.html',
+  host: {
+    class: 'pct-widget',
+  },
+})
+export class PctWidget {
+  readonly label = input<string>('');
+  readonly ariaLabel = input<string>('');
+}

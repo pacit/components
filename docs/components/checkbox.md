@@ -8,13 +8,14 @@
 
 ## Contract
 
-|                 |                                                                                                                                        |
-| --------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| **Value**       | `boolean` through `checked` — the `FormCheckboxControl` contract **forbids defining `value`** ([`lesson-12`](../lessons.md#lesson-12)) |
-| **Inputs**      | `checked` (`model`), `indeterminate`, `label`, `hint`, plus `FormUiControl`                                                            |
-| **Binding**     | `model()` does not accept `booleanAttribute`, so `[checked]="true"` in brackets — a bare attribute does not compile                    |
-| **Parts**       | `control`, `box`, `mark`, `label`, `hint`, `error`                                                                                     |
-| **DI contract** | `PCT_FIELD`; `fieldAppearance: 'bare'` — a frame around a checkbox looks alien                                                         |
+|                 |                                                                                                                                                                                                                                                 |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Value**       | `boolean` through `checked` — the `FormCheckboxControl` contract **forbids defining `value`** ([`lesson-12`](../lessons.md#lesson-12))                                                                                                          |
+| **Inputs**      | `checked` (`model`), `indeterminate`, `label`, `hint`, `ariaLabel`, `ariaLabelledby`, plus `FormUiControl`                                                                                                                                      |
+| **Naming**      | `ariaLabel` / `ariaLabelledby` are **inputs and not attributes on the tag**: the role sits on the `<input>` inside, the host carries no role, and an ARIA name on a roleless element is ignored. Both win over `label` (`tools/check-aria.mjs`) |
+| **Binding**     | `model()` does not accept `booleanAttribute`, so `[checked]="true"` in brackets — a bare attribute does not compile                                                                                                                             |
+| **Parts**       | `control`, `box`, `mark`, `label`, `hint`, `error`                                                                                                                                                                                              |
+| **DI contract** | `PCT_FIELD`; `fieldAppearance: 'bare'` — a frame around a checkbox looks alien                                                                                                                                                                  |
 
 ## Keyboard map
 

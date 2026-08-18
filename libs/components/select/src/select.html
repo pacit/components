@@ -21,7 +21,8 @@
   [attr.aria-controls]="open() ? listboxId : null"
   aria-haspopup="listbox"
   [attr.aria-activedescendant]="activeOptionId()"
-  [attr.aria-labelledby]="!inField && label() ? labelId : null"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || (!inField && label() ? labelId : null)"
   [attr.aria-describedby]="describedBy()"
   [attr.aria-invalid]="showInvalid() ? 'true' : null"
   [attr.aria-required]="required() || null"
@@ -79,7 +80,8 @@
     [attr.dir]="panelDir()"
     [style.font-family]="panelFont()?.family"
     [style.font-size]="panelFont()?.size"
-    [attr.aria-labelledby]="label() ? labelId : null"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || (label() ? labelId : null)"
   >
     @for (option of options(); track option.value; let i = $index) {
     <!--

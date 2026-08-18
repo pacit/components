@@ -247,6 +247,28 @@ class AllDisabledHost {
   ];
 }
 
+/**
+ * A select named from outside. The name is an INPUT because the host carries no role for a
+ * consumer's `aria-label` to sit on — the heading is here so `ariaLabelledby` has something
+ * real to point at.
+ */
+@Component({
+  imports: [PctSelect],
+  template: `<h2 id="shipping-heading">Shipping country</h2>
+    <pct-select
+      [options]="options"
+      [label]="label()"
+      [ariaLabel]="ariaLabel()"
+      [ariaLabelledby]="ariaLabelledby()"
+    />`,
+})
+class NamedHost {
+  readonly options = OPTIONS;
+  label = signal('');
+  ariaLabel = signal('');
+  ariaLabelledby = signal('');
+}
+
 describe('PctSelect', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -994,6 +1016,63 @@ describe('PctSelect', () => {
       const overlay = panel()?.closest('.cdk-overlay-pane') as HTMLElement;
       expect(overlay.style.width).toBe('320px');
       expect(overlay.style.minWidth).toBe('');
+    });
+  });
+
+  // The name the host cannot carry: `role="combobox"` sits on the trigger and `role="listbox"`
+  // on the panel, so a consumer's `aria-label` on `<pct-select>` lands on an element with no
+  // role and is ignored (req-a11y-built-in).
+  describe('the accessible name comes in through an input', () => {
+    it('ariaLabel names the trigger and the panel, and never the host', async () => {
+      const fixture = await render(NamedHost);
+      fixture.componentInstance.ariaLabel.set('Shipping country');
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(triggerOf(fixture).getAttribute('aria-label')).toBe(
+        'Shipping country',
+      );
+      expect(
+        (
+          fixture.nativeElement.querySelector('pct-select') as HTMLElement
+        ).getAttribute('aria-label'),
+      ).toBeNull();
+
+      await press(fixture, 'ArrowDown');
+      expect(panel()?.getAttribute('aria-label')).toBe('Shipping country');
+    });
+
+    it('ariaLabelledby replaces the internal label rather than joining it', async () => {
+      const fixture = await render(NamedHost);
+      fixture.componentInstance.label.set('Country');
+      fixture.componentInstance.ariaLabelledby.set('shipping-heading');
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      // Joined, the name would read "Country Shipping country" — two names for one control.
+      expect(triggerOf(fixture).getAttribute('aria-labelledby')).toBe(
+        'shipping-heading',
+      );
+
+      await press(fixture, 'ArrowDown');
+      expect(panel()?.getAttribute('aria-labelledby')).toBe('shipping-heading');
+    });
+
+    it('with neither input the visible label still names the trigger', async () => {
+      const fixture = await render(NamedHost);
+      fixture.componentInstance.label.set('Country');
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const trigger = triggerOf(fixture);
+      expect(trigger.getAttribute('aria-label')).toBeNull();
+      expect(trigger.getAttribute('aria-labelledby')).toBe(
+        (
+          fixture.nativeElement.querySelector(
+            '[data-pct-part="label"]',
+          ) as HTMLElement
+        ).id,
+      );
     });
   });
 });

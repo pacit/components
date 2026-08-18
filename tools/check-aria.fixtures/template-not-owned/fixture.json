@@ -1,0 +1,5 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "$reason": "A template no decorator names. A widget standing in it is examined by nobody, and the gate says nothing — the same silence as a component the parser missed."
+}

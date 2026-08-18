@@ -1,0 +1,5 @@
+{
+  "point": 4,
+  "check": "forwarded",
+  "$reason": "The inputs are in the public type and reach no element. The consumer sees them in the editor, writes them, and the screen reader announces nothing — worse than their absence, which at least says so."
+}

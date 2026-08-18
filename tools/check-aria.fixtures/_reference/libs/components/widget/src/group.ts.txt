@@ -1,0 +1,15 @@
+import { Component, input } from '@angular/core';
+
+/** A container with a role of its own: an ARIA name in the host block reaches something. */
+@Component({
+  selector: 'pct-group',
+  templateUrl: './group.html',
+  host: {
+    class: 'pct-group',
+    role: 'radiogroup',
+    '[attr.aria-labelledby]': 'labelledBy()',
+  },
+})
+export class PctGroup {
+  protected readonly labelledBy = input<string>('');
+}

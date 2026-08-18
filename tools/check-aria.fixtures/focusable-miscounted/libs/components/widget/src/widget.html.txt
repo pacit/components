@@ -1,0 +1,5 @@
+<span class="pct-widget__box">
+  <button class="pct-widget__trigger type="button" role="combobox">
+    Trigger
+  </button>
+</span>

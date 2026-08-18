@@ -1,0 +1,17 @@
+import { Component, input } from '@angular/core';
+
+/** A control whose role sits inside the template — the case this gate exists for. */
+@Component({
+  selector: 'pct-widget',
+  templateUrl: './widget.html',
+  host: {
+    class: 'pct-widget',
+    '[attr.data-pct-open]': 'open() ? "" : null',
+  },
+})
+export class PctWidget {
+  readonly label = input<string>('');
+  readonly ariaLabel = input<string>('');
+  readonly ariaLabelledby = input<string>('');
+  protected readonly open = input(false);
+}

@@ -220,3 +220,4 @@ Which lesson feeds which requirement. Generated from the **Lessons** fields.
 | [`lesson-62`](lessons.md#lesson-62) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-63`](lessons.md#lesson-63) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-64`](lessons.md#lesson-64) | `req-project-dependencies`                                                                                                                                        |
+| [`lesson-65`](lessons.md#lesson-65) | `req-a11y-built-in`                                                                                                                                               |

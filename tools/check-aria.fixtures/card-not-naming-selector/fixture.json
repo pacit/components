@@ -1,0 +1,5 @@
+{
+  "point": 5,
+  "check": "surface",
+  "$reason": "A released component with no card of its own — the selector is named by no page, so point 5 has nothing to read and says so instead of passing on an empty set."
+}

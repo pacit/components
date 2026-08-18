@@ -39,6 +39,20 @@ export class PctRadio<T = string> {
   /** Disables a single option; the group can disable them all. */
   readonly disabled = input(false, { transform: booleanAttribute });
 
+  /**
+   * The accessible name of an option whose projected content is not text — an icon, a colour
+   * swatch. An INPUT rather than an `aria-label` written on the tag, because the tag cannot
+   * carry one: `role="radio"` sits on the `<input>` inside, the host has no role at all, and
+   * an ARIA name on a roleless element is ignored
+   * ([`req-a11y-built-in`](../../../../docs/requirements/a11y.md#req-a11y-built-in)).
+   *
+   * It wins over the projected label — the accessible-name algorithm, not a choice of ours.
+   */
+  readonly ariaLabel = input<string>('');
+
+  /** As `ariaLabel`, for a name that already stands elsewhere on the page. It wins over both. */
+  readonly ariaLabelledby = input<string>('');
+
   private readonly control =
     viewChild.required<ElementRef<HTMLInputElement>>('control');
 

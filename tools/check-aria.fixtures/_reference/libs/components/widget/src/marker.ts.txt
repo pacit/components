@@ -1,0 +1,11 @@
+import { Component } from '@angular/core';
+
+/** A component on a native button: the host IS the widget, so there is nothing to forward. */
+@Component({
+  selector: 'button[pctMarker]',
+  templateUrl: './marker.html',
+  host: {
+    class: 'pct-marker',
+  },
+})
+export class PctMarker {}

@@ -1,0 +1,9 @@
+import { Component, input } from '@angular/core';
+
+/** The decorator on one line — parsed by nobody, counted all the same. */
+@Component({ selector: 'pct-widget', templateUrl: './widget.html' })
+export class PctWidget {
+  readonly label = input<string>('');
+  readonly ariaLabel = input<string>('');
+  readonly ariaLabelledby = input<string>('');
+}

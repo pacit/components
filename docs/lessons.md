@@ -1374,3 +1374,31 @@ it — and it is why point 7 of `check-package.mjs` reads `dist`, like every oth
 that gate. The general shape: **when a tool both builds an artefact and writes part of its
 manifest, the manifest in the repository is a request, not a record.** Measure the thing that
 gets published.
+
+---
+
+### <a id="lesson-65"></a>`lesson-65` — An audit of the rendered page measures the pages you wrote, not the component you shipped
+
+The finding named one component: `<pct-select aria-label="Country">` puts the name on a host
+that has no role, while `role="combobox"` sits on the trigger inside. The gate written for it
+found **three** — `pct-checkbox` and `pct-radio` have the same shape, a role on an `<input>`
+one level down and a host that carries none.
+
+Two gates stood over that code and neither could see it. The axe audit reads the DOM of the
+sandbox, and in the sandbox every checkbox is given a `label` — a page where the defect is
+invisible by construction, because the defect is not "this control is unnamed" but "this
+control cannot be named from outside". The per-component ARIA specs assert the relations that
+exist; there is no test for a relation a consumer is unable to create. Both answer **is this
+page correct**. Neither answers **can a consumer make this component correct**.
+
+What hides it is that nothing goes wrong. Angular puts the consumer's `aria-label` on the
+host exactly as asked, the attribute sits there in the inspector, and ARIA prohibits it on a
+roleless element — so it is read by nobody, silently, in a spot that looks handled.
+[`lesson-33`](#lesson-33) is the same family seen from the other side: there an attribute
+disallowed for a role was a critical violation, here the element has no role for the
+attribute to be allowed on.
+
+The general shape: **a promise about the API surface has to be measured against the
+component's own template, not against the pages that happen to use it.** A demo is a witness
+for what it shows and for nothing else — and the configuration it never shows is exactly
+where the promise fails.

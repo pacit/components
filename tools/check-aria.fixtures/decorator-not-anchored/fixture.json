@@ -1,0 +1,5 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "$reason": "A decorator written on one line: the anchored regex does not see it, the counter does. Without the comparison the gate would pronounce on the rest of the components as though on all of them (lesson-48)."
+}

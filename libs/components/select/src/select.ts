@@ -112,6 +112,28 @@ export class PctSelect<T = string>
   readonly options = input<readonly PctSelectOption<T>[]>([]);
   readonly label = input<string>('');
   readonly hint = input<string>('');
+
+  /**
+   * The accessible name of a select with no visible label — an INPUT rather than an
+   * `aria-label` written on the tag, because the tag cannot carry one: `role="combobox"` sits
+   * on the trigger inside, the host has no role at all, and an ARIA name on a roleless element
+   * is ignored (`aria-label` is prohibited for the `generic` role). Without this a standalone
+   * select is an **unnamed combobox** and the consumer has no way in
+   * ([`req-a11y-built-in`](../../../../docs/requirements/a11y.md#req-a11y-built-in)).
+   *
+   * It goes to the two elements that carry a role — the trigger and the panel. Set together
+   * with a visible `label` it wins over it, that being the accessible-name algorithm rather
+   * than a choice of ours: the two then say different things, which is a decision for the
+   * caller and not something the component can quietly repair.
+   */
+  readonly ariaLabel = input<string>('');
+
+  /**
+   * As `ariaLabel`, for a name that already stands somewhere on the page — a heading, the
+   * header of the column the select sits in. It wins over `ariaLabel` and over `label`, in
+   * ARIA's order and not ours.
+   */
+  readonly ariaLabelledby = input<string>('');
   /**
    * The placeholder. With no value it comes from `PCT_TEXTS` — and it comes **at render time**,
    * not at construction: an input's default value is produced once, so an application

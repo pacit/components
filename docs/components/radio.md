@@ -11,13 +11,14 @@ The library's first composite component. **The form control is the group**, not 
 
 ## Contract
 
-|                  |                                                                                                                  |
-| ---------------- | ---------------------------------------------------------------------------------------------------------------- |
-| **Value**        | `T \| null`, generic (`T = string` by default)                                                                   |
-| **Group inputs** | `value` (`model`), `label`, `hint`, `orientation`, `compareWith`, `emptyValue`, plus `FormUiControl`             |
-| **Options**      | are **projected content**; they have no form state of their own                                                  |
-| **Parts**        | the group: `group-label`, `group-hint`, `group-error`, `options`; an option: `control`, `circle`, `dot`, `label` |
-| **DI contract**  | `PCT_FIELD`; `fieldAppearance: 'bare'`                                                                           |
+|                   |                                                                                                                                                                                                                                                                                                                                              |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Value**         | `T \| null`, generic (`T = string` by default)                                                                                                                                                                                                                                                                                               |
+| **Group inputs**  | `value` (`model`), `label`, `hint`, `orientation`, `compareWith`, `emptyValue`, plus `FormUiControl`                                                                                                                                                                                                                                         |
+| **Options**       | are **projected content**; they have no form state of their own                                                                                                                                                                                                                                                                              |
+| **Option inputs** | `value` (required), `disabled`, `ariaLabel`, `ariaLabelledby` — the last two are **inputs and not attributes on the tag**: `role="radio"` sits on the `<input>` inside `pct-radio`, the host carries no role, and an ARIA name there is ignored. They are the name of an option whose projected content is not text (`tools/check-aria.mjs`) |
+| **Parts**         | the group: `group-label`, `group-hint`, `group-error`, `options`; an option: `control`, `circle`, `dot`, `label`                                                                                                                                                                                                                             |
+| **DI contract**   | `PCT_FIELD`; `fieldAppearance: 'bare'`                                                                                                                                                                                                                                                                                                       |
 
 ## Keyboard map
 

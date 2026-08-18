@@ -1,0 +1,11 @@
+import { Component } from '@angular/core';
+
+/** Chrome around somebody else's control: no role, no widget of its own, nothing to name. */
+@Component({
+  selector: 'pct-chrome',
+  templateUrl: './chrome.html',
+  host: {
+    class: 'pct-chrome',
+  },
+})
+export class PctChrome {}

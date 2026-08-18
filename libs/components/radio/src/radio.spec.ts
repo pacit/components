@@ -143,6 +143,24 @@ class TwoGroupsHost {
   b = signal<string | null>('');
 }
 
+/**
+ * Options whose projected content is not text — the case `ariaLabel` exists for: the role sits
+ * on the `<input>` inside `pct-radio` and the host carries none.
+ */
+@Component({
+  imports: [PctRadioGroup, PctRadio],
+  template: `<span id="plan-heading">Plan</span>
+    <pct-radio-group [(value)]="value">
+      <pct-radio value="free" [ariaLabel]="ariaLabel()">★</pct-radio>
+      <pct-radio value="pro" [ariaLabelledby]="ariaLabelledby()">✦</pct-radio>
+    </pct-radio-group>`,
+})
+class NamedHost {
+  value = signal('free');
+  ariaLabel = signal('');
+  ariaLabelledby = signal('');
+}
+
 describe('PctRadioGroup / PctRadio', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -402,6 +420,44 @@ describe('PctRadioGroup / PctRadio', () => {
       group.reset();
       await fixture.whenStable();
       expect(fixture.componentInstance.value()).toBe(LONDON);
+    });
+  });
+
+  // The name the host cannot carry: a consumer's `aria-label` on `<pct-radio>` lands on an
+  // element with no role and is ignored, so it comes in as an input (req-a11y-built-in).
+  describe('an option names itself through an input', () => {
+    it('ariaLabel names the control, and never the host', async () => {
+      const fixture = await render(NamedHost);
+      fixture.componentInstance.ariaLabel.set('Free');
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(radiosOf(fixture)[0].getAttribute('aria-label')).toBe('Free');
+      expect(
+        (
+          fixture.nativeElement.querySelector('pct-radio') as HTMLElement
+        ).getAttribute('aria-label'),
+      ).toBeNull();
+    });
+
+    it('ariaLabelledby points the control at an element of the page', async () => {
+      const fixture = await render(NamedHost);
+      fixture.componentInstance.ariaLabelledby.set('plan-heading');
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(radiosOf(fixture)[1].getAttribute('aria-labelledby')).toBe(
+        'plan-heading',
+      );
+    });
+
+    it('with neither input it leaves no dangling ARIA attribute', async () => {
+      const fixture = await render(NamedHost);
+
+      for (const radio of radiosOf(fixture)) {
+        expect(radio.getAttribute('aria-label')).toBeNull();
+        expect(radio.getAttribute('aria-labelledby')).toBeNull();
+      }
     });
   });
 });

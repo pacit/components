@@ -1,0 +1,5 @@
+{
+  "point": 5,
+  "check": "surface",
+  "$reason": "The input works and its page does not mention it. A consumer looking for how to name the control finds `label` and concludes there is no other way — the `check-parts` case one gate over, with a11y in place of a selector."
+}

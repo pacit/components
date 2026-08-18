@@ -1,0 +1,5 @@
+{
+  "point": 3,
+  "check": "inputs",
+  "$reason": "The exact state `pct-select` was in: the role on the trigger inside, no way for a consumer to name it. An unnamed combobox that every other gate passes."
+}

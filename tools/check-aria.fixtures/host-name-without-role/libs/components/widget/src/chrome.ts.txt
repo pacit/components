@@ -1,0 +1,14 @@
+import { Component, input } from '@angular/core';
+
+/** The name goes onto the host, and the host has no role to carry it. */
+@Component({
+  selector: 'pct-chrome',
+  templateUrl: './chrome.html',
+  host: {
+    class: 'pct-chrome',
+    '[attr.aria-label]': 'ariaLabel()',
+  },
+})
+export class PctChrome {
+  readonly ariaLabel = input<string>('');
+}

@@ -12,6 +12,8 @@
       [attr.name]="name() || null"
       [attr.required]="required() || null"
       [attr.aria-checked]="ariaChecked()"
+      [attr.aria-label]="ariaLabel() || null"
+      [attr.aria-labelledby]="ariaLabelledby() || null"
       [attr.aria-invalid]="showInvalid() ? 'true' : null"
       [attr.aria-readonly]="readonly() ? 'true' : null"
       [attr.aria-describedby]="describedBy()"

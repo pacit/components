@@ -1,0 +1,5 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "$reason": "An unbalanced quote in an attribute: the tag parser swallows the rest of the file and finds no button at all, while the counter finds one. Every element after the quote would stop being examined in silence."
+}

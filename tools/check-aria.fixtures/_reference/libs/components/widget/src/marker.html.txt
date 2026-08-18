@@ -1,0 +1,1 @@
+<span class="pct-marker__text"><ng-content></ng-content></span>

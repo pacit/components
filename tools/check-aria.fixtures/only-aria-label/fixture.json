@@ -1,0 +1,5 @@
+{
+  "point": 3,
+  "check": "inputs",
+  "$reason": "Half the pair. A literal name can be given, a name that already stands on the page cannot — and the second is the case of a control in a table row, where the column header is the name."
+}

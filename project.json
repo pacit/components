@@ -82,6 +82,20 @@
         "command": "node tools/check-parts.mjs"
       }
     },
+    "check-aria": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/libs/components/*/src/**/*.ts",
+        "{workspaceRoot}/libs/components/*/src/**/*.html",
+        "{workspaceRoot}/docs/components/*.md",
+        "{workspaceRoot}/tools/check-aria.mjs",
+        "{workspaceRoot}/tools/check-aria.fixtures/**/*"
+      ],
+      "options": {
+        "command": "node tools/check-aria.mjs"
+      }
+    },
     "check-browsers": {
       "executor": "nx:run-commands",
       "cache": true,

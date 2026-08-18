@@ -68,6 +68,24 @@ export class PctCheckbox implements FormCheckboxControl, PctFieldControl {
   readonly label = input<string>('');
   readonly hint = input<string>('');
 
+  /**
+   * The accessible name of a checkbox with no visible `label` — an INPUT rather than an
+   * `aria-label` written on the tag, because the tag cannot carry one: the role sits on the
+   * `<input>` inside, the host has no role at all, and an ARIA name on a roleless element is
+   * ignored (`aria-label` is prohibited for the `generic` role)
+   * ([`req-a11y-built-in`](../../../../docs/requirements/a11y.md#req-a11y-built-in)).
+   *
+   * Set together with a visible `label` it wins over it — the accessible-name algorithm, not
+   * a choice of ours.
+   */
+  readonly ariaLabel = input<string>('');
+
+  /**
+   * As `ariaLabel`, for a name that already stands somewhere on the page — the header of the
+   * column a checkbox in a row belongs to. It wins over `ariaLabel` and over `label`.
+   */
+  readonly ariaLabelledby = input<string>('');
+
   /** Indeterminate state (a partial choice in a group, say); ARIA: `aria-checked="mixed"`. */
   readonly indeterminate = input(false, { transform: booleanAttribute });
 
