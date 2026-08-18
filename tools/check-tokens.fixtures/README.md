@@ -1,6 +1,6 @@
 # Negative control of the token gate
 
-Deliberately defective inputs. `tools/check-tokens.mjs` runs all seven of its checks on
+Deliberately defective inputs. `tools/check-tokens.mjs` runs all nine of its checks on
 each of them and **requires every one to be rejected — and rejected by the point it
 declares**. An input that passes is a fault; an input that fires for a reason other than
 the one written in its `fixture.json` is a fault just the same, because it proves
@@ -116,6 +116,9 @@ would be writing the same code a second time in markdown.
 | `dead-on-pair`                 |     7 | `pairs`      | `on-dead`                | a `--pct-on-surface` nobody uses                            |
 | `on-without-surface`           |     7 | `pairs`      | `on-without-surface`     | `--pct-on-danger` with no `--pct-danger`                    |
 | `sheet-removed`                |     7 | `pairs`      | `denominator`            | an input with not one stylesheet                            |
+| `sheet-reads-a-stranger`       |     8 | `names`      | `read-unknown`           | a sheet reads `--pct-button-heigth` outside a colour slot   |
+| `sheet-declares-a-stranger`    |     8 | `names`      | `declared-unknown`       | a sheet sets a `--pct-…` name the skin does not carry       |
+| `dead-primitive`               |     9 | `palette`    | `primitive-dead`         | a ramp step no token references and no sheet reads          |
 
 The two cases on point 3, one for the order and one for the dictionary, are kept apart on
 purpose: they are two different halves of the same promise and they break independently.
@@ -124,6 +127,12 @@ that its only defect is the order of the segments — `fg-disabled` stands besid
 parses faultlessly. In the same way `unmeasured-colour` and `pair-removed-from-policy`
 describe the same rule from two sides: once a painting arrives with no pair, once the pair
 disappears from under a painting, and those are two different human moves.
+
+The reference input's stylesheet also carries the one line point 9 needs: a `transition`
+reading `--pct-motion-transition-duration`. The motion axis is referenced by no token — it has
+no semantic tier and no component token above it — so without that read the reference would
+hold a dead primitive itself. It is the reference's smallest copy of the repository's shape,
+and of the reason point 9 counts two kinds of reader ([`lesson-74`](../../docs/lessons.md#lesson-74)).
 
 **One rule of point 6 has no case here and that is deliberate.** `reference-to-nowhere` (a
 token pointing at a token that does not exist) is unreachable for this construction: a

@@ -53,10 +53,12 @@ a green test comparing two empty strings
 
 **Promise.**
 
-- **primitive** — raw values with no meaning (`--pct-blue-500`, `--pct-space-4`), colour ramps
-  50–950. The **ramps are private** — a colour has a semantic tier above it, so a ramp is this
-  skin's implementation; the scales have none and stay public
-  ([0019](../decisions/0019-primitives-are-not-the-contract.md)),
+- **primitive** — raw values with no meaning (`--pct-blue-500`, `--pct-space-4`): the colour
+  ramps and the scales. The **ramps are private** — a colour has a semantic tier above it, so
+  a ramp is this skin's implementation; the scales have none and stay public
+  ([0019](../decisions/0019-primitives-are-not-the-contract.md)). The ramps are **not** kept
+  whole from 50 to 950: a step stands here only if a token or a stylesheet reads it
+  ([0020](../decisions/0020-the-palette-carries-no-spares.md)),
 - **semantic** — intent and states (`--pct-primary`, `--pct-surface-100`, `--pct-text-muted`,
   `--pct-focus-ring`); **the only layer a theme author has to know**,
 - **component** — per component (`--pct-button-bg`); they reference semantic tokens only,
@@ -68,19 +70,26 @@ literal. A sideways reference (one component's token pointing at another's) also
 component) inverts the whole model.
 
 **Gate:** `tools/check-tokens.mjs` (target `check-tokens` in the root project, in CI) —
-point 6. For **colour** the rule has not one exception: above colour the semantic layer exists
+points 6 and 9. For **colour** the rule has not one exception: above colour the semantic layer exists
 and is complete, so a component colour pointing at a primitive or written in as a literal
 fires. For **dimension** the exceptions are the axes declared in
 `libs/tokens/src/levels.policy.json` (today `control`, `font`, `radius`, `space`, `target`),
 and that list is watched from both sides: an unused axis fires, and an axis carrying
-a `$type: color` token fires on the declaration itself. Plus `libs/tokens/build.mjs` —
+a `$type: color` token fires on the declaration itself. **Point 9** watches the floor from
+underneath: a primitive read by no token and no stylesheet fires, because the tier model says
+which way a reference may point and nothing about a step nobody stands on
+([0020](../decisions/0020-the-palette-carries-no-spares.md)). Plus `libs/tokens/build.mjs` —
 auto-discovery of `component.*.json`, so adding a component needs no build changes
 **Control:** `tools/check-tokens.fixtures/` — one input per rule: `colour-under-semantics`,
 `colour-literal`, `sideways-reference`, `upward-reference`, `primitive-with-reference`,
-`shared-axis-dead`, `shared-axis-coloured`, `undeclared-axis`; plus runs against the
-repository: `--pct-button-bg` repointed at `{pct.blue.600}`, a field colour written in by
-hand, `--pct-select-bg` pointing at `{pct.field.bg}`, the `space` axis removed from the policy
-(15 violations), the `motion` axis added without being used
+`shared-axis-dead`, `shared-axis-coloured`, `undeclared-axis`, `dead-primitive`; plus runs
+against the repository: `--pct-button-bg` repointed at `{pct.blue.600}`, a field colour written
+in by hand, `--pct-select-bg` pointing at `{pct.field.bg}`, the `space` axis removed from the
+policy (15 violations), the `motion` axis added without being used, and point 9 finding
+`--pct-blue-50` and `--pct-red-700` on the real sources — the run that removed them. Disarming
+point 9 moves `dead-primitive` alone to "PASSED and was meant not to", and disarming its
+stylesheet half condemns the whole motion axis
+**Lessons:** [`lesson-74`](../lessons.md#lesson-74)
 
 > **The exception for dimension axes is written down, not silent.** Read literally, the rule
 > was broken **35 times** in this repository — every component dimension token points straight

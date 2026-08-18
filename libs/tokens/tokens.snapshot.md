@@ -19,7 +19,6 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-blue-200 color primitive private
 --pct-blue-300 color primitive private
 --pct-blue-400 color primitive private
---pct-blue-50 color primitive private
 --pct-blue-500 color primitive private
 --pct-blue-600 color primitive private
 --pct-blue-700 color primitive private
@@ -125,7 +124,6 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-radius-md dimension primitive public
 --pct-red-400 color primitive private
 --pct-red-600 color primitive private
---pct-red-700 color primitive private
 --pct-select-arrow-fg color component public
 --pct-select-bg color component public
 --pct-select-bg-disabled color component public

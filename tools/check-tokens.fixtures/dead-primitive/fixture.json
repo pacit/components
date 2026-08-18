@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "palette",
+  "rule": "primitive-dead",
+  "description": "The step `pct.blue.50` added to the ramp and read by nothing — no token references it, no stylesheet touches it. This is the state the real repository was in from its first commit: the step was born unused, and every point before this one passed on it, because a name that parses, sits in the snapshot and points at a literal is faultless in every way but one — nobody asked for it."
+}

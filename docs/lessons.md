@@ -1642,3 +1642,40 @@ was not read off documentation but off a real `@angular/build` bundle: no `ngDec
 no `setClassMetadata`, no `setClassDebugInfo`. And the honest denominator was cheap — running
 babel over the sources with **no plugin at all** moved every entrypoint by exactly **0 B**, which
 is what makes "the linker did this" a measurement rather than an attribution.
+
+---
+
+### <a id="lesson-74"></a>`lesson-74` — The obvious denominator for "used" would have deleted a live axis
+
+A gate point written to find dead primitives has one interesting decision in it, and it is not
+the comparison — it is what counts as a **reader**. The obvious answer is a reference: a
+primitive is used when a token points at it, which is exactly what the tier model is about.
+
+Run that way against this repository, the rule names three tokens:
+`--pct-motion-transition-duration`, `--pct-motion-transition-easing` and
+`--pct-motion-loop-duration`. That is the entire motion axis, and it is as alive as anything in
+the skin — every transition and the spinner run on it. It has **no reader among the tokens**
+because it has no tier above it: motion has no semantic layer, and no component token points at
+it either, since a duration is not a lever a theme author reaches for
+([0008](decisions/0008-motion-axis.md)). Its readers are the stylesheets, which write
+`var(--pct-motion-transition-duration)` directly.
+
+Two things are worth keeping. The first is that the rule needed the second half — a stylesheet
+read counts as much as a reference — and the reference input of the negative control had to
+grow a `transition` line to carry that shape, or the reference itself would have held a dead
+primitive.
+
+The second is what the gate would have done had nobody noticed, and it was run rather than
+guessed. Point 9 advises deleting the three tokens; deleting them takes **three more runs of
+the same gate**, each with advice of its own:
+
+1. point 4 — `primitives.axes: motion` is now a declared word no token uses, so drop it from
+   the dictionary,
+2. point 5 — three names have left the skin, so `node tools/check-tokens.mjs --write`,
+3. point 8 — `--pct-motion-transition-duration: read in
+libs/components/button/src/button.scss and absent from the skin`, three times over.
+
+One gate, four points, and the last one forbids what the first advised — with two accepting
+steps in between, one of which is a `--write`, so the wrong move arrives in review looking
+recorded. A measurement contradicting a neighbouring one is not a tie to be broken by
+whichever ran first: it says the newer one has the wrong denominator.

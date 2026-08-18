@@ -230,6 +230,19 @@ code touched** ([`lesson-73`](lessons.md#lesson-73)). The task also settled wher
 belongs: written last, it fired after the budget, whose advice is `--write` — so a run that
 found the probe measuring the wrong thing would have offered to write the wrong number down.
 
+**C12 closed after that**, and its either/or was decided by the repository's own past rather
+than by an argument about palettes: the ramps here are gapped in three places, so "a designer
+keeps the full ramp" was never what this skin did, and the two steps in question were never
+referenced by anything in the whole history. They are gone, and a step nobody reads is now
+point 9 of the token gate ([0020](decisions/0020-the-palette-carries-no-spares.md)). The work
+was not in the comparison but in the **denominator**: the obvious reading of "used" — a token
+points at it — condemns the entire motion axis, which has no tier above it and is read by the
+stylesheets directly, so the rule counts two kinds of reader
+([`lesson-74`](lessons.md#lesson-74)). Written the obvious way it advises a deletion that three
+further runs of the same gate walk through — two of them accepting it, the last one forbidding
+it. The task left **C15** behind: the two hand-kept indexes it had to edit had both already
+drifted.
+
 ## B. Readiness for the first release
 
 Binds at the first publication — and then all of it at once. **B9** bound one step earlier, at
@@ -586,7 +599,8 @@ var(--pct-button-heigth)` passed every one of them, and the 7 stylesheets read 1
     on the way is **C12**: of 34 primitives, two are referenced by nothing — and one of them
     was public
 
-- [ ] **C12 — two primitives nothing references, and no gate that would say so**
+- [x] **C12 — two primitives nothing references, and no gate that would say so** — **closed:
+      a step nobody reads is a defect, and the rule needed a second kind of reader**
   - measured while closing C6: of 34 primitives, `pct.blue.50` and `pct.red.700` are
     referenced by no token and painted by no stylesheet. `--pct-red-700` was in the public
     `PctCssVar` union until [0019](decisions/0019-primitives-are-not-the-contract.md); both are
@@ -597,7 +611,54 @@ var(--pct-button-heigth)` passed every one of them, and the 7 stylesheets read 1
     either a step nothing uses is a defect (then it is a rule, and the two go), or a palette
     may carry spare steps (then it is written down, and the ramps stop looking like the rest
     of the skin)
-  - cost: minutes for the change, the decision is the whole task · _notes:_ —
+  - cost: minutes for the change, the decision is the whole task · _notes:_ **done** —
+    point 9 of `check-tokens` (`palette`, rule `primitive-dead`), the fixture
+    `dead-primitive`, and the two steps are gone from `primitive.json`
+    ([0020](decisions/0020-the-palette-carries-no-spares.md)). **The decision went the way the
+    repository already worked, and the measurement is what said so**: these ramps are gapped
+    already — blue has no 100 and no 900, slate no 300, 400 or 600, red no 500 — so "a
+    designer keeps the full ramp" describes a palette this one never was, and
+    `req-token-tiers`, which promised "ramps 50–950", was corrected rather than obeyed.
+    `git log -S` over the whole history finds **no commit** that ever added or removed a
+    reference to either: `pct.blue.50` was born unused in the first commit of the workspace,
+    `pct.red.700` in the one that added the input — not residue of a redesign, never used
+  - **the rule's denominator was the whole task, and the obvious one was wrong**
+    ([`lesson-74`](lessons.md#lesson-74)): written as "a primitive a token references", it
+    condemns `--pct-motion-transition-duration`, `--pct-motion-transition-easing` and
+    `--pct-motion-loop-duration` — the entire motion axis, which no token can reference
+    because it has no tier above it and the stylesheets read it directly. So a reader is a
+    token **or** a stylesheet, and the reference input of the negative control had to grow a
+    `transition` line to carry that shape. What the wrong denominator would have cost was run,
+    not guessed: the deletion it advises takes **three more runs of the same gate** — point 4
+    (the `motion` word is now dead), point 5 (`--write`, which records it), and only then
+    point 8, which forbids it. Four points of one gate, two of them accepting the step on the
+    way to the one that refuses it
+  - the point stands **last** and not beside the reference graph in point 6: it reads what
+    points 7 and 8 measure, and with a broken list of stylesheets every sheet-read primitive
+    looks dead — point 7's denominator then fires first and names the real defect
+  - the two runs behind the tick: on the real sources point 9 named exactly
+    `--pct-blue-50` and `--pct-red-700`, and disarming the rule leaves `dead-primitive` as the
+    one case reported as "PASSED and was meant not to". Two lists nobody measures turned up on
+    the way and became **C15**
+
+- [ ] **C15 — two hand-kept indexes, both already drifted**
+  - found while closing C12, in the two files that had to be edited to record it:
+    [`docs/decisions/README.md`](decisions/README.md) carried an index ending at **0017**,
+    with 0018 and 0019 missing, and `tools/check-tokens.fixtures/README.md` said the gate
+    "runs all seven of its checks" while it had eight, with both point 8 cases absent from
+    its table of cases. Both are fixed in this commit — by hand, which is the finding
+  - the repository has gates for exactly this shape everywhere else: the registry is
+    **generated** from the requirements, `check-reach` measures whether a file has a reader,
+    `check-support` reads the numbers out of a table rather than trusting the prose. These
+    two lists are the leftovers, and both drifted within two tasks of being written
+  - the question is which of the two roads: **generate** them (the fixtures table is a walk
+    over the directories and their `fixture.json`, the decisions index a walk over
+    `docs/decisions/0*.md` and their `Implements:` line — same shape as the registry), or
+    **check** them (a gate compares the table against the directories and fires on a
+    difference). Generating leaves nothing to drift; checking keeps the prose column a human
+    writes. The defect column in the fixtures table is that human column, so the answer may
+    differ per file
+  - cost: ~0.5 day · _notes:_ —
 
 - [ ] **C13 — one promise, two answers: the field replaces the hint, the group adds to it**
   - `libs/components/field/src/field.html` lights exactly ONE line below the field

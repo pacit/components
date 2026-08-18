@@ -2,7 +2,6 @@
   "pct": {
     "blue": {
       "$comment": "Steps 200–400 exist for the dark theme, not the light one: there the `primary` ramp has to go UP on hover/active, because the background lightens under the dark `on-primary` text. Going down (as in light) drove the button label's contrast to 3.45:1 and 2.66:1 — measured when the policy started counting those pairs at all.",
-      "50": { "$type": "color", "$value": "#eff6ff" },
       "200": { "$type": "color", "$value": "#bfdbfe" },
       "300": { "$type": "color", "$value": "#93c5fd" },
       "400": { "$type": "color", "$value": "#60a5fa" },
@@ -22,8 +21,7 @@
     },
     "red": {
       "400": { "$type": "color", "$value": "#f87171" },
-      "600": { "$type": "color", "$value": "#dc2626" },
-      "700": { "$type": "color", "$value": "#b91c1c" }
+      "600": { "$type": "color", "$value": "#dc2626" }
     },
     "space": {
       "2": { "$type": "dimension", "$value": "4px" },

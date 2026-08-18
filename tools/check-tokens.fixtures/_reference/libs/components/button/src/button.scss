@@ -4,11 +4,17 @@
  * sheet REALLY paints. With not one sheet point 7 fires on an empty denominator,
  * so the reference must have one — and must have a policy pair for every colour
  * standing here.
+ *
+ * The `transition` is here for point 9, and it carries the repository's shape:
+ * the motion axis is referenced by NO token — it has no semantic tier and no
+ * component token above it — so a stylesheet reading it is its only reader.
+ * Without this line the reference itself holds a dead primitive.
  */
 :host {
   background: var(--pct-button-bg);
   color: var(--pct-button-fg);
   padding-inline: var(--pct-button-padding-x);
+  transition: background-color var(--pct-motion-transition-duration);
 }
 
 :host(:hover) {

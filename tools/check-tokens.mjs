@@ -12,10 +12,14 @@
  *  5. SNAPSHOT: the versioned list of names matches the current one,
  *  6. TIERS: references point downwards — component → semantic → primitive → literal,
  *  7. PAIRS: every colour the library REALLY paints stands in the contrast policy,
- *  8. NAMES: every `--pct-…` a stylesheet touches is a token of the skin.
+ *  8. NAMES: every `--pct-…` a stylesheet touches is a token of the skin,
+ *  9. PALETTE: every primitive is read by a token or by a stylesheet.
  *
  * Point 5 stands before 6 and 7: a snapshot fires on every change of a name, including one
  * point 3 can name precisely. Point 7 reads `libs/components` stylesheets through sass.
+ * Point 9 stands last because it reads what points 7 and 8 measure — with a broken list of
+ * stylesheets their denominators fire first, and a primitive nobody reads is what a broken
+ * list looks like.
  *
  * Usage: node tools/check-tokens.mjs [--write [<fixture>]]
  */
@@ -814,11 +818,52 @@ const checkTokens = (input) => {
       strangers[0].rule,
     );
 
+  // 9. PALETTE — every primitive is read by somebody (req-token-tiers).
+  //
+  //    The tier model says which way a reference may point and says nothing about a floor
+  //    tile nobody stands on. A primitive nothing reads still ships in `pct.css` to every
+  //    consumer, stands in no type (the ramps are private —
+  //    `docs/decisions/0019-primitives-are-not-the-contract.md`) and answers no override:
+  //    the same construction as a dead word in the dictionary (point 4), a dead private
+  //    prefix (point 2) and a dead `on-` pair (point 7), one tier lower.
+  //
+  //    A rule and not an exception for the palette, because the palette here is not a
+  //    designer's full ramp: the steps are already gapped — blue has no 100 and no 900,
+  //    slate no 300, 400 or 600, red no 500 — so a step stands here because something asked
+  //    for it (`docs/decisions/0020-the-palette-carries-no-spares.md`).
+  //
+  //    A primitive has TWO kinds of reader and the rule needs both. The three `motion`
+  //    primitives are referenced by NO token — motion has neither a semantic tier nor a
+  //    component token above it, the stylesheets read the axis directly — so a rule reading
+  //    references alone would have called the live half of an axis dead (lesson-74). A
+  //    declaration counts as a touch just as a read does: `touched` records both, and a
+  //    component stylesheet declaring a primitive is a different defect from this one.
+  //
+  //    What CANNOT keep a step alive is another primitive: the tier's floor has to be a
+  //    literal, and point 6 rejects a primitive holding a reference before this point counts
+  //    it as a reader — so two dead steps cannot hold each other up.
+  const primitives = names.filter((n) => n.layer === 'primitive');
+  const orphans = primitives.filter(
+    (n) => !referenced.has(n.path) && !touched.has(n.name),
+  );
+  if (orphans.length)
+    throw new TokenError(
+      'palette',
+      `${orphans.length} primitives are read by no token and no stylesheet:\n` +
+        list(shorten(orphans.map((n) => `${n.name} (${n.type})`))) +
+        `\n    A step nobody reads is not a reserve for the future — it is a name the ` +
+        `skin declares, a consumer downloads and nothing answers. A step a design really ` +
+        `needs arrives WITH the first token or stylesheet that reads it: one line in a ` +
+        `diff, instead of a palette that grows where nobody looks.`,
+      'primitive-dead',
+    );
+
   const publicCount = publicNames.size;
   return {
     description:
       `${names.length} tokens (${publicCount} public, ` +
       `${names.length - publicCount} private), ` +
+      `${primitives.length} primitives each with a reader, ` +
       `${entrypoints.size} entrypoints, ` +
       `${painted.size} colours painted and ${touched.size} names touched across ` +
       `${sheets.length} stylesheets, ` +
