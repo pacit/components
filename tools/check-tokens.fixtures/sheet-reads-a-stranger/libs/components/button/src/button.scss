@@ -1,0 +1,20 @@
+:host {
+  background: var(--pct-button-bg);
+  color: var(--pct-button-fg);
+  padding-inline: var(--pct-button-padding-x);
+  /* The case defect: one letter short of a real token, and in a slot no colour
+     rule looks at. */
+  min-height: var(--pct-button-heigth);
+}
+
+:host(:hover) {
+  background: var(--pct-button-bg-hover);
+}
+
+:host([data-pct-size='sm']) {
+  --pct-button-padding-x: var(--pct-button-padding-x-sm);
+}
+
+.pct-button__label {
+  color: var(--pct-button-label-fg);
+}

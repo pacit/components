@@ -25,7 +25,6 @@
       "schematics/ng-add/index.js",
       "schematics/ng-add/schema.json",
       "schematics/package.json",
-      "themes/_tokens.scss",
       "themes/pct.css",
       "types/pacit-components-button.d.ts",
       "types/pacit-components-checkbox.d.ts",

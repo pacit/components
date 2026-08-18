@@ -29,10 +29,12 @@ tools (Figma / Tokens Studio).
 
 ### <a id="req-token-artifacts"></a>`req-token-artifacts` — The build generates artifacts from the source
 
-**Promise.** Out of the DTCG source come: CSS with custom properties (the distributed
-themes), SCSS maps/functions for internal use, and TS types/constants with the token names.
-The TS is **generated**, not hand-written. `tokens.ts` emits two shapes of the same knowledge:
-`PctTokenName` (the DTCG path) and `PctCssVar` (the custom property name).
+**Promise.** Out of the DTCG source come **two** artifacts: CSS with custom properties (the
+distributed themes) and TS types/constants with the token names. The TS is **generated**, not
+hand-written. `tokens.ts` emits two shapes of the same knowledge: `PctTokenName` (the DTCG
+path) and `PctCssVar` (the custom property name). There is no Sass artefact — what one would
+have bought is a name check, and that is point 8 of the token gate
+([0018](../decisions/0018-no-sass-entry-point.md)).
 
 **Gate:** the `typecheck` target of the `sandbox-e2e` project — the `tokenOf` / `rootToken`
 helpers take a `PctCssVar`, so a typo in a token name is a **compile error** rather than
@@ -40,14 +42,6 @@ a green test comparing two empty strings
 **Control:** swapping one name for a wrong one produces 6 type errors — a run documented in
 [`lesson-43`](../lessons.md#lesson-43)
 **Lessons:** [`lesson-42`](../lessons.md#lesson-42), [`lesson-43`](../lessons.md#lesson-43)
-
-> **Open — a dead artifact.** `_tokens.scss` is generated, shipped in the package and used by
-> **zero lines of code**: the components write `var(--pct-*)` as raw strings (159 unique ones,
-> zero `@use` in the stylesheets). Either drop it from the requirement and from the package,
-> or make it the mandatory way to reference a token. The second is argued for by
-> [`lesson-43`](../lessons.md#lesson-43) (a typo should be a compile error), though here
-> `check-package` does catch the typo after the fact — so this is not a live defect, only
-> a dead artifact in a published package.
 
 > **Open — no external consumer.** There is nobody to use the typed names **on the consumer
 > side** today, because `@pacit/tokens` is `private`. Ties into
@@ -141,18 +135,20 @@ never appears, because it is the base value ([`req-api-size`](api.md#req-api-siz
 semantic layer has its own flat shape, `[on-]{role}[-{variant}]`, and the primitive layer is
 the DTCG path one to one.
 
-**Gate:** `tools/check-tokens.mjs` (target `check-tokens` in the root project, in CI) — five
+**Gate:** `tools/check-tokens.mjs` (target `check-tokens` in the root project, in CI) — eight
 points. Point 3 parses every name against the dictionary in
 `libs/tokens/src/names.policy.json` and requires the component in a name to be a real package
-entrypoint; point 5 compares `libs/tokens/tokens.snapshot.md` with the current list. Points 1,
-2 and 4 guard the denominator: two independent readings of the list (`dist/pct.css` against
-the DTCG sources), agreement of `tokens.ts` and `_tokens.scss` with that list, and a ban on
-dead words in the dictionary
-**Control:** `tools/check-tokens.fixtures/` — eleven inputs, each rejected on its own point;
-plus runs against the repository: renaming to another valid name fires point 5, `disabled-bg`
-instead of `bg-disabled` fires point 3, `component.dialog.json` with no entrypoint fires
-point 3, a stale `dist` fires point 1, a word added to the dictionary without being used fires
-point 4
+entrypoint; point 5 compares `libs/tokens/tokens.snapshot.md` with the current list; point 8
+requires every `--pct-…` a stylesheet reads or declares to be a token of the skin, in any
+property. Points 1, 2 and 4 guard the denominator: two independent readings of the list
+(`dist/pct.css` against the DTCG sources), agreement of `tokens.ts` with that list, and a ban
+on dead words in the dictionary
+**Control:** `tools/check-tokens.fixtures/` — 28 inputs, each rejected on its own point **and
+its own rule**; plus runs against the repository: renaming to another valid name fires point 5,
+`disabled-bg` instead of `bg-disabled` fires point 3, `component.dialog.json` with no
+entrypoint fires point 3, a stale `dist` fires point 1, a word added to the dictionary without
+being used fires point 4, and `min-height: var(--pct-button-heigth)` — a misspelling no colour
+rule can see — fires point 8
 
 > The same rule governs **requirement identifiers** — and it is where the move away from
 > numbers came from. See [README](../README.md#why-slugs-not-numbers).

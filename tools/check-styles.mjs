@@ -552,8 +552,8 @@ const collectInput = (root, sheetPaths, sourcePaths) => ({
  * All the project's files from the GIT INDEX, not from a glob over the disk. The reason is
  * the same as in `check-zoneless` and `check-typecheck`: the index is an independent
  * record of what the repository really carries, and it cuts out generated things by itself
- * — `libs/components/themes/_tokens.scss` is produced from the tokens on every build and
- * is gitignored, so there is nothing here to exclude it with.
+ * — `libs/components/themes/` is written by the token build on every run and is gitignored,
+ * so there is nothing here to exclude it with.
  *
  * The pathspec is a DIRECTORY and the filtering sits in JS. Not a matter of taste: a git
  * pathspec is not a shell glob — without `:(glob)` a star crosses `/`, so

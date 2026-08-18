@@ -152,6 +152,14 @@ control would. The contract had only the half that speaks, so **`detach` came fi
 message second** ([`lesson-68`](lessons.md#lesson-68)), and the pair closed a defect the
 finding had not named: the chrome was reading the state of a control that had left the DOM.
 
+**C4 closed after them**, and it is the third finding in a row whose "either/or" turned out to
+be a question about where a check lives rather than which of two roads to take: the argument
+for keeping a generated Sass file was that `@use` would make a misspelt token a compile error,
+and the measurement showed the gate already catches such a typo — but only where a **colour**
+is painted ([`lesson-69`](lessons.md#lesson-69)). So the file went and the check stayed, as a
+point of the token gate; the reason for dropping is recorded as "no reader", not "never"
+([0018](decisions/0018-no-sass-entry-point.md)).
+
 ## B. Readiness for the first release
 
 Binds at the first publication — and then all of it at once. **B9** bound one step earlier, at
@@ -444,12 +452,43 @@ current.
     Last-in still takes the chrome, because the chrome cannot know which of the two the label
     was written for, and a quiet reordering would be a second guess on top of the first
 
-- [ ] **C4 — `_tokens.scss`: generated, shipped in the package, used by zero lines**
+- [x] **C4 — `_tokens.scss`: generated, shipped in the package, used by zero lines** —
+      **closed: the file is gone, its argument stayed and became a gate**
   - concerns: `req-token-scss` — component stylesheets contain no `@use` at all; every reference
     is a raw `var(--pct-*)`
   - decision: either make it the mandatory road to a token (a typo becomes a compile error — the
     spirit of [`lesson-43`](lessons.md#lesson-43)), or drop it from the requirement and from the
-    package. Today it is a dead artefact in a published package · _notes:_ —
+    package. Today it is a dead artefact in a published package · _notes:_ **done** —
+    [0018](decisions/0018-no-sass-entry-point.md) settles it: dropped from the generator, from
+    the package assets and from the gate that compared it against the token list; the promise
+    in [`req-token-artifacts`](requirements/tokens.md#req-token-artifacts) now names two
+    artefacts, not three. **The road not taken was measured before it was refused**: the whole
+    case for `@use` was that a misspelt token would become a compile error, so the defect was
+    provoked — `background: var(--pct-button-bgg)` fires today, `min-height:
+var(--pct-button-heigth)` passed every one of them, and the 7 stylesheets read 127 names of
+    which all are real. So the hole was real and **narrower than the remedy**:
+    what Sass would have bought is a name check, and a name check does not need Sass. It is
+    **point 8 (NAMES)** of `check-tokens` — every `--pct-…` a stylesheet reads or declares is
+    a token of the skin, in any property, two rules and a prepared input each (28 fixtures
+    now), and the rule name is compared too: disarming `declared-unknown` moves its case onto
+    `read-unknown` and the run says so. Proof on the real input as well: the same `min-height`
+    typo put back into `button.scss` fires point 8 today, and the colour one still fires
+    point 7. The first misspelling tried had to be changed,
+    because dropping a letter from `button` leaves a Polish word and `check-language` fired on
+    every file that quoted it — a gate reading the repository does not know that a name was
+    misspelt on purpose, and the register stays empty rather than gaining an entry for a joke. Why dropping rather than adopting, in one line:
+    **publishing is the one-way direction** — nothing is on npm yet, and a Sass entry point can
+    arrive in a minor the day somebody asks, with the reader, the page and the gate it never
+    had. The cost is written into the decision: a consumer writing Sass has no typo protection
+    on overrides, which is the price paid by a consumer who does not exist yet. One thing the
+    removal gave back, unplanned: `check-package`'s token closure now reads **159 used against
+    161 declared** instead of 161 against 161 — the file named every token in the skin, so the
+    packed artefact was proving the closure with a copy of the list it was being measured
+    against. What the
+    measurement left behind is [`lesson-69`](lessons.md#lesson-69): the branch that caught the
+    colour typo was a **precondition** of the contrast question, not a rule of its own — and a
+    gate catching a defect on its way to a different question stops catching it where that
+    question is not asked
 
 - [ ] **C6 — primitives in the public `PctCssVar` union: two ramps private, the third not**
   - `libs/tokens/src/names.policy.json` declares `pct.blue.` and `pct.slate.` private and

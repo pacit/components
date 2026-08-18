@@ -1,0 +1,6 @@
+{
+  "point": 8,
+  "check": "names",
+  "rule": "read-unknown",
+  "description": "The sheet reads `--pct-button-heigth`, a transposition away from a real token, in `min-height` — a slot no colour rule looks at. Point 7 sees a misspelt name only where a colour is painted, and here the declaration simply does nothing: CSS has no undefined variable to report."
+}

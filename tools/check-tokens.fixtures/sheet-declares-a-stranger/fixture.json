@@ -1,0 +1,6 @@
+{
+  "point": 8,
+  "check": "names",
+  "rule": "declared-unknown",
+  "description": "The sheet sets `--pct-button-padding-y-sm`, a name the skin does not carry. The same defect from the other side: an override that reaches nothing, and one that looks like the size axis it stands next to."
+}

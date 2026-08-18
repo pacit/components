@@ -35,7 +35,7 @@
       "inputs": [{ "dependentTasksOutputFiles": "**/*" }],
       "outputs": ["{projectRoot}/themes"],
       "options": {
-        "command": "mkdir -p themes && cp ../tokens/dist/pct.css ../tokens/dist/_tokens.scss themes/",
+        "command": "mkdir -p themes && cp ../tokens/dist/pct.css themes/",
         "cwd": "libs/components"
       }
     },

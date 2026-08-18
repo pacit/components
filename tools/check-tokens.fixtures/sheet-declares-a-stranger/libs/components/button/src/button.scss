@@ -1,0 +1,19 @@
+:host {
+  background: var(--pct-button-bg);
+  color: var(--pct-button-fg);
+  padding-inline: var(--pct-button-padding-x);
+}
+
+:host(:hover) {
+  background: var(--pct-button-bg-hover);
+}
+
+:host([data-pct-size='sm']) {
+  --pct-button-padding-x: var(--pct-button-padding-x-sm);
+  /* The case defect: an override of a token the skin does not have. */
+  --pct-button-padding-y-sm: 0;
+}
+
+.pct-button__label {
+  color: var(--pct-button-label-fg);
+}

@@ -6,12 +6,13 @@
  * unmeasured at once, and each of the three rules alone would look green beside it.
  *
  *  1. SET: the names in `dist/pct.css` match an independent walk of the DTCG sources,
- *  2. SURFACE: `dist/tokens.ts` and `_tokens.scss` carry exactly the names they should,
+ *  2. SURFACE: `dist/tokens.ts` carries exactly the names it should,
  *  3. SCHEMA: every name parses against the dictionary; a component in it is an entrypoint,
  *  4. DICTIONARY: every declared word is used,
  *  5. SNAPSHOT: the versioned list of names matches the current one,
  *  6. TIERS: references point downwards — component → semantic → primitive → literal,
- *  7. PAIRS: every colour the library REALLY paints stands in the contrast policy.
+ *  7. PAIRS: every colour the library REALLY paints stands in the contrast policy,
+ *  8. NAMES: every `--pct-…` a stylesheet touches is a token of the skin.
  *
  * Point 5 stands before 6 and 7: a snapshot fires on every change of a name, including one
  * point 3 can name precisely. Point 7 reads `libs/components` stylesheets through sass.
@@ -149,7 +150,6 @@ const checkTokens = (input) => {
     sheets,
     css,
     ts,
-    scss,
     snapshot,
     entrypoints,
   } = input;
@@ -263,9 +263,9 @@ const checkTokens = (input) => {
 
   // 2. SURFACE — what of that list the consumer sees.
   //
-  //    `_tokens.scss` carries everything, `tokens.ts` everything outside the prefixes
-  //    declared isPrivate. The prefixes are read from the policy and not from the generator,
-  //    or the gate would only be confirming that the generator does what it does.
+  //    `tokens.ts` carries everything outside the prefixes declared isPrivate. The prefixes
+  //    are read from the policy and not from the generator, or the gate would only be
+  //    confirming that the generator does what it does.
   const isPrivate = (path) =>
     policy.private.prefixes.some((p) => path.startsWith(p));
 
@@ -281,17 +281,6 @@ const checkTokens = (input) => {
         `does not exist, and at the next rename it will stop protecting what it was meant ` +
         `to protect — quietly.`,
     );
-
-  compareSurfaces(
-    'dist/_tokens.scss',
-    new Set(
-      [...scss.matchAll(/^\$[a-z0-9-]+:\s*var\((--pct-[a-z0-9-]+)\)/gm)].map(
-        (m) => m[1],
-      ),
-    ),
-    new Set(names.map((n) => n.name)),
-    'all tokens',
-  );
 
   const publicNames = new Set(
     names.filter((n) => !isPrivate(n.path)).map((n) => n.name),
@@ -794,13 +783,45 @@ const checkTokens = (input) => {
         `dictionary (point 4).`,
     );
 
+  // 8. NAMES — a custom property that looks like a token and is not.
+  //
+  //    Point 7 sees a misspelt name only where a COLOUR is painted: `min-height:
+  //    var(--pct-button-heigth)` passes it and the declaration then simply does nothing,
+  //    because CSS has no undefined variable to report ([`lesson-69`](../docs/lessons.md)).
+  //    A declaration of such a name is the same defect from the other side: an override
+  //    that reaches nothing.
+  const touched = touchedTokens(sheets);
+  const strangers = [];
+  for (const [token, { kind, file }] of touched) {
+    if (byName.has(token)) continue;
+    strangers.push({
+      rule: kind === 'read' ? 'read-unknown' : 'declared-unknown',
+      description: `${token}: ${kind} in \`${file}\` and absent from the skin`,
+    });
+  }
+  if (strangers.length)
+    throw new TokenError(
+      'names',
+      `${strangers.length} custom properties look like tokens and are not:\n` +
+        list(
+          shorten(
+            strangers.map((z) => `[${z.rule}] ${z.description}`),
+            12,
+          ),
+        ) +
+        `\n    The prefix is the promise: \`--pct-…\` says "this is the library's token", ` +
+        `and a browser reading one that stands nowhere paints nothing and reports nothing.`,
+      strangers[0].rule,
+    );
+
   const publicCount = publicNames.size;
   return {
     description:
       `${names.length} tokens (${publicCount} public, ` +
       `${names.length - publicCount} private), ` +
       `${entrypoints.size} entrypoints, ` +
-      `${painted.size} colours painted across ${sheets.length} stylesheets, ` +
+      `${painted.size} colours painted and ${touched.size} names touched across ` +
+      `${sheets.length} stylesheets, ` +
       `${contrast.checks.length} pairs in the policy`,
     snapshot: content,
   };
@@ -870,6 +891,26 @@ const paintedColours = (sheets) => {
     }
   }
   return { painted, assignments: assignments.size > 0 };
+};
+
+/**
+ * Every `--pct-…` a stylesheet touches, and how: `read` for a `var(--pct-…)`, `declared` for
+ * one the sheet sets itself (the size axis does that). Read from sass's output for the same
+ * reason as `paintedColours`. A name both declared and read counts as declared — the stronger
+ * statement of the two, and the one whose rule names the defect more precisely.
+ */
+const touchedTokens = (sheets) => {
+  const out = new Map();
+  for (const { file, css } of sheets)
+    for (const [, property, value] of css.matchAll(
+      /^\s*(-{0,2}[a-z][a-z0-9-]*)\s*:\s*([^;{}]+);/gm,
+    )) {
+      for (const [, token] of value.matchAll(/var\(\s*(--pct-[a-z0-9-]+)/g))
+        if (!out.has(token)) out.set(token, { kind: 'read', file });
+      if (property.startsWith('--pct-'))
+        out.set(property, { kind: 'declared', file });
+    }
+  return out;
 };
 
 /** One surface compared against the list it is meant to carry. */
@@ -997,7 +1038,7 @@ const read = (root, path) => readFileSync(join(root, path), 'utf8');
  */
 const collectInput = (root, files) => {
   const dist = join(root, TOKENS, 'dist');
-  for (const file of ['pct.css', 'tokens.ts', '_tokens.scss'])
+  for (const file of ['pct.css', 'tokens.ts'])
     if (!existsSync(join(dist, file)))
       throw new TokenError(
         'set',
@@ -1012,11 +1053,10 @@ const collectInput = (root, files) => {
     // the generator — see the comment at point 1.
     .filter(({ tree }) => tree && typeof tree === 'object' && 'pct' in tree);
 
-  // The library's stylesheets — `libs/components` alone, and only those written by hand:
-  // `libs/components/themes/` carries the GENERATED token artifacts (`_tokens.scss` is a
-  // list of `$variable: var(--pct-…)`), so counting them as painting would add every skin
-  // token to the denominator at once and point 7 would demand a pair for the whole
-  // primitive ramp.
+  // The library's stylesheets — `libs/components` alone, and only those written by hand.
+  // `libs/components/themes/` carries the generated skin, copied there as an asset of the
+  // package: a stylesheet landing in that directory would be measured as if the library
+  // painted with every token of the skin at once.
   const sheets = files
     .filter(
       (p) =>
@@ -1037,7 +1077,6 @@ const collectInput = (root, files) => {
     sheets,
     css: read(root, `${TOKENS}/dist/pct.css`),
     ts: read(root, `${TOKENS}/dist/tokens.ts`),
-    scss: read(root, `${TOKENS}/dist/_tokens.scss`),
     snapshot: existsSync(join(root, SNAPSHOT)) ? read(root, SNAPSHOT) : null,
     entrypoints: new Set(
       files

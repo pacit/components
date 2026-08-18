@@ -99,8 +99,7 @@ both entries to add by hand.
 
 Source: `libs/tokens/src/*.json` (DTCG). `libs/tokens/build.mjs` generates `dist/pct.css` (custom
 properties: light theme on `:root`, `[data-theme="light"]` and `[data-theme="dark"]`, plus
-`@media` blocks for system preferences), `dist/_tokens.scss` for internal use and typed
-`dist/tokens.ts`.
+`@media` blocks for system preferences) and typed `dist/tokens.ts`.
 
 Three tiers — **primitive → semantic → component** — with references kept as `var()`, so
 overriding one variable in any scope cascades without recompiling. Dark mode binds to

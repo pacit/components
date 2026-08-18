@@ -1476,3 +1476,30 @@ you when one goes away.** A life-cycle event that only fires on the way in canno
 duplicate from a replacement, and a rule built on it reports normal life as a defect —
 [`lesson-60`](#lesson-60) one floor over, where the noise was a word list rather than a
 life cycle.
+
+---
+
+### <a id="lesson-69"></a>`lesson-69` — A rule that fires on the way to something else is not the rule you think you have
+
+The token gate had a point that reads the stylesheets: every colour the library really paints
+must stand in the contrast policy. Among its branches is "this name is not a token of the
+skin — there is nothing to measure", so a misspelt token appeared to be covered.
+
+Measured both ways in one stylesheet: `background: var(--pct-button-bgg)` fires, and
+`min-height: var(--pct-button-heigth)` passes every gate in the repository. The second is the
+likelier typo of the two — a stylesheet reads more dimensions than colours — and its symptom
+is nothing at all. CSS has no undefined variable to report: the declaration is dropped, the
+element keeps whatever the cascade gave it, and the screenshot changes only if that particular
+property happened to be visible in that particular state.
+
+What hid it is that the branch was a **precondition**, not a rule. The point's subject is
+contrast, and it asks about a name only far enough to know whether a colour can be judged.
+Where no colour is judged, the question is never asked — and the summary line, "74 colours
+painted across 7 stylesheets", reports a number about colours while a reader takes it for a
+promise about tokens.
+
+The general shape: **when a gate catches a defect as a precondition of a different question,
+ask what happens to that defect where the question is not asked.** The answer here was a
+point of its own (NAMES), and it cost less than the artefact whose whole argument had been
+that it would have caught the same typo
+([0018](decisions/0018-no-sass-entry-point.md)).

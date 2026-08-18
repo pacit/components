@@ -1,5 +1,5 @@
 {
   "point": 3,
   "check": "style-source",
-  "description": "The component points at a sheet outside the list the gate reads. In this repository that is not a typo only on paper: `libs/components/themes/_tokens.scss` is produced by every build and is gitignored, so a sheet that exists on disk and is invisible to the gate is within arm's reach there."
+  "description": "The component points at a sheet outside the list the gate reads. In this repository that is not a typo only on paper: `libs/components/themes/` is written by the token build and is gitignored, so a sheet that exists on disk and is invisible to the gate is within arm's reach there."
 }

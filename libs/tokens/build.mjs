@@ -300,15 +300,6 @@ function run() {
     ].join('\n\n') + '\n';
   writeFileSync(join(DIST, 'pct.css'), css);
 
-  // SCSS (variables pointing at CSS custom properties — for internal use)
-  const scss =
-    '// GENERATED — SCSS variables pointing at CSS custom properties.\n' +
-    Object.keys(base)
-      .map((path) => `$${path.replace(/\./g, '-')}: var(${cssVar(path)});`)
-      .join('\n') +
-    '\n';
-  writeFileSync(join(DIST, '_tokens.scss'), scss);
-
   // TS (typed names of the semantic and component tokens)
   const publicPaths = Object.keys(base).filter(
     (p) => !names.private.prefixes.some((prefix) => p.startsWith(prefix)),
@@ -335,7 +326,7 @@ function run() {
     `\n✓ Built ${Object.keys(base).length} tokens ` +
       `(+${Object.keys(darkOverrides).length} dark, ` +
       `+${Object.keys(reducedOverrides).length} reduced-motion) ` +
-      `-> dist/{pct.css,_tokens.scss,tokens.ts}`,
+      `-> dist/{pct.css,tokens.ts}`,
   );
 }
 
