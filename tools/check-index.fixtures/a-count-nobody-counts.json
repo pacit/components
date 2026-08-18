@@ -1,0 +1,6 @@
+{
+  "point": 5,
+  "check": "counts",
+  "description": "A new line of the map arrives with a number of its own and no counter behind it. Passing over it quietly is how the three stale counts survived: a number nobody takes is a number nobody can contradict.",
+  "mapText": "00-axis.md      LEVEL 0   the one requirement every other one is ordered by\nrequirements/   LEVEL 1   promises: what has to be true                (2 entries)\ndecisions/      LEVEL 2   why this way, and what it costs us           (3 ADRs)\nlessons.md                the evidence base: what actually happened    (5 entries)\nplan.md                   the task list — the only place holding \"done\"\nglossary/       LEVEL 4   the words this documentation uses            (7 entries)\n"
+}

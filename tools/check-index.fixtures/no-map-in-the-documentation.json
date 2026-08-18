@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "corpus",
+  "description": "The map block of `docs/README.md` is gone, and with it half of what point 5 counts. A count that disappears is not a count that agrees.",
+  "map": null
+}

@@ -1,0 +1,11 @@
+{
+  "point": 3,
+  "check": "cases",
+  "description": "The heading claims the tree is listed below and the table under it is gone. Deleting the rows is the cheapest way to stop a table disagreeing with anything, and the heading left behind still reads as an index.",
+  "trees": [
+    {
+      "path": "tools/check-alpha.fixtures",
+      "readme": "# Negative control of the alpha gate\n\nDeliberately defective inputs. `tools/check-alpha.mjs` runs all three of its points on each\nof them and **requires every one to be rejected — and rejected by the point it declares**.\n\n## The cases\n\n"
+    }
+  ]
+}

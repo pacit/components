@@ -46,6 +46,8 @@ the collection with it, and point 1, 2 or 3 fires on the real run at once. The r
 that the two halves are wired together is in the task position (B6) of
 [`plan.md`](../../docs/plan.md): the real run, with `angular-majors` moved to 2, fires point 2.
 
+## The cases
+
 | file                                                                                             | what it breaks                                             | point |
 | ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------- | ----- |
 | [`no-policy-document.json`](no-policy-document.json)                                             | the policy document is gone                                | 1     |

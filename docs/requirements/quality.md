@@ -68,6 +68,45 @@ no control), **every one** of which must be rejected
 
 ---
 
+### <a id="req-quality-index"></a>`req-quality-index` — A list that describes a directory is derived from it
+
+**Promise.** Where the repository keeps a list of what a directory holds — the index of
+decisions, a negative control's table of cases, the map on the first page of the
+documentation — that list is **generated from the directory or measured against it**, and a
+number written in prose is measured against what it counts. A hand-kept list drifts in
+silence: nothing compiles it, nothing renders it, and a reader cannot tell a row that is
+missing from a case that does not exist.
+
+**Decision:** [0021 — an index is generated where every column is derivable, measured where one is not](../decisions/0021-an-index-is-derived-or-measured.md)
+**Gate:** `tools/check-index.mjs` (target `check-index` in the root project, in CI) — five
+points. The decisions index is **generated** (`--write`), because its three columns all have
+a home in the decision file; a fixtures table is **measured**, because its `defect` column is
+a sentence a human writes. A tree claims to list its cases with the heading `## The cases`,
+and nowhere else: completeness cannot tell a deliberate selection
+(`check-reach.fixtures/README.md` tabulates three of seventeen) from a list that has lost two
+rows, so the claim is written down. **The limit is deliberate**: the gate measures the lists
+that exist and does not require a list to exist — five fixture trees carry no README, and
+deleting a table to silence the gate is a removal visible in the diff, which drift never was
+**Control:** `tools/check-index.fixtures/` — 23 prepared inputs, each rejected on its own
+point: an empty walk over the decisions, a deleted index section, no fixtures tree, no
+declared table, no map; a decision missing from the index, a row outliving its file, a
+paraphrased title, a short `implements` list, a decision with no heading; a case outside the
+table, a row for a case that is gone, a case named twice, a claiming heading with no table;
+a `point`, `check` or `rule` column disagreeing with the case, and one naming a rule the case
+does not declare; a point count out of date, missing, and written as a word the gate refuses
+to guess at; a map count out of date, and a map count nobody counts. Plus the run that opened
+the gate: on the real repository it named `tarball-without-licence`, absent from
+`check-consumer.fixtures/README.md`, before anybody had looked
+**Lessons:** [`lesson-75`](../lessons.md#lesson-75)
+
+> **Why this is a promise of its own and not part of the registry.**
+> [`req-quality-registry`](#req-quality-registry) generates one list out of one directory and
+> has done since it was written; what it never said is that this is the rule rather than that
+> file's arrangement. The eleven wrong rows of the decisions index were written by people who
+> had the registry in front of them.
+
+---
+
 ### <a id="req-quality-typecheck"></a>`req-quality-typecheck` — Every project has a `typecheck` target
 
 **Promise.** There is no TypeScript in the workspace that the compiler does not see. **Lint

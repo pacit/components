@@ -1,0 +1,10 @@
+{
+  "point": 1,
+  "check": "corpus",
+  "description": "The walk over `docs/decisions/` comes back empty — a mistyped glob, a renamed directory. Without this point the run would render an empty index, and `--write` would save it: the gate would then have deleted twenty rows and reported success.",
+  "dropDecisions": [
+    "0001-the-first-decision.md",
+    "0002-the-second-decision.md",
+    "0003-the-third-decision.md"
+  ]
+}

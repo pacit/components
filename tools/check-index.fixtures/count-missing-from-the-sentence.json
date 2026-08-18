@@ -1,0 +1,11 @@
+{
+  "point": 5,
+  "check": "counts",
+  "description": "The opening sentence drops the number. The cheapest way to make a count stop being wrong is to stop writing it, and then nobody can tell a gate that grew a point from one whose cases stopped covering it.",
+  "trees": [
+    {
+      "path": "tools/check-alpha.fixtures",
+      "readme": "# Negative control of the alpha gate\n\nDeliberately defective inputs. `tools/check-alpha.mjs` runs its points on each\nof them and **requires every one to be rejected — and rejected by the point it declares**.\n\n## The cases\n\n| case            | point | check    | rule      | defect                  |\n| --------------- | ----: | -------- | --------- | ----------------------- |\n| `a-case`        |     1 | `first`  | `broken`  | the first thing breaks  |\n| `another-case`  |     2 | `second` | —         | the second thing breaks |\n| `a-third-case`  |     3 | `third`  | `unnamed` | the third thing breaks  |\n"
+    }
+  ]
+}

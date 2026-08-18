@@ -1,0 +1,15 @@
+{
+  "point": 2,
+  "check": "index",
+  "description": "A fourth decision is written and the index still lists three. This is exactly the state `docs/decisions/README.md` was in when C15 found it: the table ended at 0017 while the directory held 0019.",
+  "decisions": [
+    {
+      "file": "0004-the-fourth-decision.md",
+      "number": "0004",
+      "title": "The fourth decision",
+      "status": "accepted",
+      "implements": ["req-quality-negative-control"]
+    }
+  ],
+  "index": "@stale"
+}

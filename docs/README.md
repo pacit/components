@@ -6,10 +6,10 @@ The whole repository is in English — [`req-project-language`](requirements/pro
 
 ```
 00-axis.md      LEVEL 0   the one requirement every other one is ordered by
-requirements/   LEVEL 1   promises: what has to be true                (84 entries)
-decisions/      LEVEL 2   why this way, and what it costs us           (17 ADRs)
+requirements/   LEVEL 1   promises: what has to be true                (85 entries)
+decisions/      LEVEL 2   why this way, and what it costs us           (21 ADRs)
 components/     LEVEL 3   whether this component keeps them            (filled-in DoD)
-lessons.md                the evidence base: what actually happened    (63 entries)
+lessons.md                the evidence base: what actually happened    (75 entries)
 support.md                what a consumer can count on: versions, notice, codemods
 registry.md               GENERATED: promise → gate → control → state
 plan.md                   the task list — the only place holding "done"

@@ -1,0 +1,11 @@
+{
+  "point": 2,
+  "check": "index",
+  "description": "A decision file with no `# NNNN — Title` line. The renderer takes the title from there, so without the guard the row would be rendered from nothing and the index would agree with it.",
+  "decisions": [
+    {
+      "file": "0002-the-second-decision.md",
+      "title": null
+    }
+  ]
+}

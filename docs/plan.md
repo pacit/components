@@ -51,8 +51,8 @@ Snapshot, `node tools/check-docs.mjs`:
 
 | measure                                     | value |
 | ------------------------------------------- | ----: |
-| requirements                                |    84 |
-| ✅ enforced                                 |    58 |
+| requirements                                |    85 |
+| ✅ enforced                                 |    59 |
 | 🟡 partial (deliberately without a control) |    16 |
 | ⛔ gap                                      |    10 |
 
@@ -242,6 +242,19 @@ stylesheets directly, so the rule counts two kinds of reader
 further runs of the same gate walk through — two of them accepting it, the last one forbidding
 it. The task left **C15** behind: the two hand-kept indexes it had to edit had both already
 drifted.
+
+**C15 closed after it**, and it is the position where the finding turned out to have measured
+the smaller half of its own subject. The two lists were fixed by hand at C12 and looked right
+afterwards; the renderer's first run disagreed with **eleven of the twenty rows** of the
+decisions index — five paraphrased titles, six short `implements` lists — because absence is
+the only drift a reader spots without opening the sources
+([`lesson-75`](lessons.md#lesson-75)). The plan's either/or held this time and split per file:
+generated where every column has a home in the directory, measured where one column is a
+sentence a human writes ([0021](decisions/0021-an-index-is-derived-or-measured.md)). What the
+rule could not decide by itself is completeness — `check-reach.fixtures` tabulates three of its
+seventeen cases on purpose — so a tree now says it is listing itself, under `## The cases`, and
+the gate holds only the tables that make that claim. Pointed at the rest of the repository it
+found two more lists already wrong before anybody looked.
 
 ## B. Readiness for the first release
 
@@ -641,24 +654,51 @@ var(--pct-button-heigth)` passed every one of them, and the 7 stylesheets read 1
     one case reported as "PASSED and was meant not to". Two lists nobody measures turned up on
     the way and became **C15**
 
-- [ ] **C15 — two hand-kept indexes, both already drifted**
+- [x] **C15 — two hand-kept indexes, both already drifted** — **closed, and the by-hand fix
+      that produced the finding had corrected the smaller half**
   - found while closing C12, in the two files that had to be edited to record it:
     [`docs/decisions/README.md`](decisions/README.md) carried an index ending at **0017**,
     with 0018 and 0019 missing, and `tools/check-tokens.fixtures/README.md` said the gate
     "runs all seven of its checks" while it had eight, with both point 8 cases absent from
-    its table of cases. Both are fixed in this commit — by hand, which is the finding
-  - the repository has gates for exactly this shape everywhere else: the registry is
-    **generated** from the requirements, `check-reach` measures whether a file has a reader,
-    `check-support` reads the numbers out of a table rather than trusting the prose. These
-    two lists are the leftovers, and both drifted within two tasks of being written
-  - the question is which of the two roads: **generate** them (the fixtures table is a walk
-    over the directories and their `fixture.json`, the decisions index a walk over
-    `docs/decisions/0*.md` and their `Implements:` line — same shape as the registry), or
-    **check** them (a gate compares the table against the directories and fires on a
-    difference). Generating leaves nothing to drift; checking keeps the prose column a human
-    writes. The defect column in the fixtures table is that human column, so the answer may
-    differ per file
-  - cost: ~0.5 day · _notes:_ —
+    its table of cases. Both were fixed by hand then — which is the finding
+  - the question was which of the two roads: **generate** or **check**, with the defect column
+    of the fixtures table as the human column that decides it
+  - cost: ~0.5 day · _notes:_ **done** — `tools/check-index.mjs` (five points, 23 prepared
+    inputs), target `check-index` in the root project and in CI,
+    [`req-quality-index`](requirements/quality.md#req-quality-index) and
+    [0021](decisions/0021-an-index-is-derived-or-measured.md). Both roads, one per file, and
+    the question that picks between them is _is every column derivable?_ — the decisions index
+    is generated, the fixtures tables are measured and keep their prose
+  - **the by-hand fix had corrected the visible half.** The renderer's first run disagreed with
+    **eleven of the twenty rows**: five titles paraphrased away from the heading they quote,
+    six `implements` lists naming the first requirement of a decision carrying three or four.
+    Absence is the one drift a reader can spot without opening the sources, and it is the
+    smaller half ([`lesson-75`](lessons.md#lesson-75))
+  - the same rule pointed at the rest of the repository found **a third and a fourth list**
+    before anybody looked: `tarball-without-licence`, a case of `check-consumer.fixtures` its
+    own table did not name, and the map on the first page of the documentation counting 17
+    decisions against 21 and 63 lessons against 74. Three kinds of drift, none visible in
+    review of the commits that caused them — every one of those diffs was right in the file it
+    touched
+  - **completeness cannot declare itself, and that decided the shape of point 3.**
+    `check-reach.fixtures/README.md` tabulates "the three cases the design rests on" out of
+    seventeen, deliberately; a gate counting rows cannot tell that from a table that has lost
+    fourteen. So the claim is written: a tree lists itself under `## The cases`, and a table
+    anywhere else is prose. Five READMEs gained that heading over tables they already had
+  - the limit is deliberate and written into the requirement: **the gate measures the lists
+    that exist and does not require a list to exist.** Five fixture trees carry no README at
+    all; demanding one would be 130 rows of prose nobody asked for, against
+    [0017](decisions/0017-one-home-per-fact.md) pulling the other way
+  - proof on the real input, not only on the fixture: the paraphrase of 0017 put back fires
+    point 2 by name, `dead-primitive`'s row moved to point 8 fires point 4, the row deleted
+    fires point 3, and the map returned to 63 lessons fires point 5. In the other direction,
+    disarming the map comparison leaves `map-count-out-of-date` reported as "PASSED and was
+    meant not to", and disarming the duplicate-row rule does the same to `case-listed-twice`
+  - one collision on the way, the shape [`lesson-67`](lessons.md#lesson-67) names one gate
+    over: the prepared decisions cited invented requirement
+    identifiers, and `check-docs` point 4 resolves every citation in every tracked file. The fixtures took real identifiers rather
+    than the exemption `check-docs.fixtures` has — **one gate's fixture may not be another's
+    defect**, and an exemption is a hole in a denominator that has no gate of its own
 
 - [ ] **C13 — one promise, two answers: the field replaces the hint, the group adds to it**
   - `libs/components/field/src/field.html` lights exactly ONE line below the field

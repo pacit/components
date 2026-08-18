@@ -1,0 +1,12 @@
+{
+  "point": 2,
+  "check": "index",
+  "description": "A decision grows a second requirement and the index still names one. Six of the twenty real rows were in this state — the column a reader uses to ask \"which decision covers this promise\" answered with a subset.",
+  "decisions": [
+    {
+      "file": "0003-the-third-decision.md",
+      "implements": ["req-project-concise", "req-quality-registry"]
+    }
+  ],
+  "index": "@stale"
+}

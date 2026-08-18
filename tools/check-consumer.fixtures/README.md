@@ -54,6 +54,7 @@ rule, described in
 | `tarball-without-theme`         |     1 | `tarball`  | `theme-missing`             | the theme is in `dist`, not in the archive             |
 | `tarball-without-entrypoint`    |     1 | `tarball`  | `entrypoint-missing`        | `exports` promises a file that was not packed          |
 | `tarball-without-factory`       |     1 | `tarball`  | `schematic-missing`         | the collection is there, the factory is not            |
+| `tarball-without-licence`       |     1 | `tarball`  | `licence-missing`           | the LICENSE is in `dist`, not in the archive           |
 | `registry-publish-failed`       |     2 | `registry` | `publish`                   | `npm publish` ended in an error                        |
 | `registry-version-differs`      |     2 | `registry` | `version`                   | the registry does not know the packed version          |
 | `registry-integrity-differs`    |     2 | `registry` | `integrity`                 | the registry serves a different archive                |

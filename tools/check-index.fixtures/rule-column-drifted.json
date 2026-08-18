@@ -1,0 +1,11 @@
+{
+  "point": 4,
+  "check": "columns",
+  "description": "The row names a rule the case does not declare. `lesson-50` is why the rule is in the fixture at all: a point carries several, and a case that fires on a neighbouring one looks like proof while proving something else.",
+  "trees": [
+    {
+      "path": "tools/check-alpha.fixtures",
+      "readme": "# Negative control of the alpha gate\n\nDeliberately defective inputs. `tools/check-alpha.mjs` runs all three of its points on each\nof them and **requires every one to be rejected — and rejected by the point it declares**.\n\n## The cases\n\n| case            | point | check    | rule      | defect                  |\n| --------------- | ----: | -------- | --------- | ----------------------- |\n| `a-case`        |     1 | `first`  | `mended`  | the first thing breaks  |\n| `another-case`  |     2 | `second` | —         | the second thing breaks |\n| `a-third-case`  |     3 | `third`  | `unnamed` | the third thing breaks  |\n"
+    }
+  ]
+}

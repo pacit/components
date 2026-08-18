@@ -1,0 +1,11 @@
+{
+  "point": 5,
+  "check": "counts",
+  "description": "The gate grows a fourth point and the README still opens with three. This is the second half of what C15 found: `check-tokens.fixtures/README.md` said seven while the gate had eight.",
+  "trees": [
+    {
+      "path": "tools/check-alpha.fixtures",
+      "points": [1, 2, 3, 4]
+    }
+  ]
+}

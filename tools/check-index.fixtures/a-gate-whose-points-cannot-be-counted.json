@@ -1,0 +1,6 @@
+{
+  "point": 5,
+  "check": "counts",
+  "description": "The gate's header numbers its points other than 1..n — renumbered halfway through an edit, or written as prose. The sentence in the README then has nothing to be measured against, and passing over it quietly is how the count in `check-tokens.fixtures/README.md` stayed at seven while the gate had nine.",
+  "trees": [{ "path": "tools/check-alpha.fixtures", "points": null }]
+}

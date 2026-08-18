@@ -9,6 +9,7 @@
   "// check-language": "The language gate lives in the root project because its denominator is the WHOLE git index — no library owns that, and a target inside one would be blind to every file outside it. Hence `inputs` of `{workspaceRoot}/**/*`: any file at all can carry a second language, so any change has to invalidate this cache. `dependsOn` on the library build is hard — the public-surface limb reads `dist/libs/components`, and a translated source with a stale artifact is exactly the state it exists to catch. One thing it CANNOT hash: `/usr/share/dict/polish` and `/usr/share/dict/american-english` live outside the workspace, so a changed dictionary does not invalidate a cached run. The canaries of point 1 answer for that on every real run — but a cache hit executes nothing, so the honest statement is that the dictionaries are trusted between runs and measured on each one.",
   "// check-reach": "The reach gate walks the WHOLE git index from a list of roots, so it lives in the root project for the same reason `check-language` does: no library owns that denominator, and a target inside one would be blind to every file outside it. Hence `inputs` of `{workspaceRoot}/**/*` — a file added anywhere is a file to reach, and a line deleted anywhere can be the last thing that pointed at one, so any change has to invalidate this cache. No `dependsOn`: the measurement is over the repository, not over anything built from it — the walk reads sources, configuration and documentation, and `dist` is not tracked.",
   "// check-support": "The support policy gate lives in the root project because it reads `docs/support.md` — a document belonging to no library, so a target inside `components` would not move when only the policy changes, which is exactly the drift point 2 exists to catch. It is the one gate here with `cache: false`, and for a reason no `inputs` list can fix: point 4 reads GIT — the release tags and the commit subjects since the newest one — and git history is not a file pattern. Amending a message to add the `!` of a breaking change touches no file at all, so a cached run would answer from a measurement taken before the breaking change existed. The run is a handful of file reads and two `git` calls, so the price of always running it is smaller than the price of listing what it reads and being wrong.",
+  "// check-index": "The index gate lives in the root project because the lists it measures belong to no library: `docs/decisions/`, the map on the first page of the documentation, and the README of every `check-*.fixtures/` tree in `tools/` and in `libs/components/`. Its `inputs` name both sides of each comparison — a list drifts when EITHER side moves, so the gate has to be invalidated by a new decision file as much as by an edit to the index, and by a gate growing a numbered point as much as by the sentence that counts them. Prettier is deliberately not among them: it shapes what `--write` writes, and the checking run compares cells, so a bump of the formatter cannot change this gate's answer.",
   "// check-docs": "The documentation gate: every promise in docs/ names a gate and its reference control, and the named paths exist and run in CI. It lives in the root project because `docs/` belongs to no library — which is what makes a documentation change mark this project affected. The comment sits HERE rather than in `targets`: there a value must be a target object, and a string blows up the Nx graph (`lesson-43`).",
   "targets": {
     "typecheck": {
@@ -155,6 +156,24 @@
       ],
       "options": {
         "command": "node tools/check-support.mjs"
+      }
+    },
+    "check-index": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/docs/decisions/*.md",
+        "{workspaceRoot}/docs/README.md",
+        "{workspaceRoot}/docs/00-axis.md",
+        "{workspaceRoot}/docs/requirements/*.md",
+        "{workspaceRoot}/docs/lessons.md",
+        "{workspaceRoot}/tools/check-*.mjs",
+        "{workspaceRoot}/tools/*.fixtures/**/*",
+        "{workspaceRoot}/libs/components/check-*.mjs",
+        "{workspaceRoot}/libs/components/*.fixtures/**/*"
+      ],
+      "options": {
+        "command": "node tools/check-index.mjs"
       }
     },
     "check-docs": {

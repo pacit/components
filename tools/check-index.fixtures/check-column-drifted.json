@@ -1,0 +1,11 @@
+{
+  "point": 4,
+  "check": "columns",
+  "description": "A point renamed in the gate and not in the table. The number still agrees, so the row reads as correct — the name is the half a reader searches the gate's source for.",
+  "trees": [
+    {
+      "path": "tools/check-alpha.fixtures",
+      "readme": "# Negative control of the alpha gate\n\nDeliberately defective inputs. `tools/check-alpha.mjs` runs all three of its points on each\nof them and **requires every one to be rejected — and rejected by the point it declares**.\n\n## The cases\n\n| case            | point | check    | rule      | defect                  |\n| --------------- | ----: | -------- | --------- | ----------------------- |\n| `a-case`        |     1 | `first`  | `broken`  | the first thing breaks  |\n| `another-case`  |     2 | `sekond` | —         | the second thing breaks |\n| `a-third-case`  |     3 | `third`  | `unnamed` | the third thing breaks  |\n"
+    }
+  ]
+}

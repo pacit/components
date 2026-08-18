@@ -52,6 +52,8 @@ belongs to no compiler program, so it would fire `check-typecheck`. One gate's f
 not be another's defect — the same class of problem as the fake `package.json` in
 [`check-package.fixtures`](../check-package.fixtures/README.md).
 
+## The cases
+
 | directory                                                            | what it breaks                                                  | point |
 | -------------------------------------------------------------------- | --------------------------------------------------------------- | ----- |
 | [`no-sheets`](no-sheets)                                             | not one sheet to examine                                        | 1     |

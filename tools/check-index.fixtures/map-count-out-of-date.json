@@ -1,0 +1,8 @@
+{
+  "point": 5,
+  "check": "counts",
+  "description": "The map says three ADRs and the directory holds four — the state `docs/README.md` was really in, with 17 against 20 decisions and 63 against 74 lessons. The map is the first page of the documentation and it is read as a fact.",
+  "mapActual": {
+    "decisions/": 4
+  }
+}

@@ -1,6 +1,6 @@
 # Negative control for the docs gate
 
-Deliberately broken requirements. `tools/check-docs.mjs` runs its checks on each of them and
+Deliberately broken requirements. `tools/check-docs.mjs` runs all six of its checks on each of them and
 **requires every one to be rejected**. A fixture that passes is a bug — it means the gate has
 stopped measuring anything.
 
@@ -12,6 +12,8 @@ it has been shown to fail.** The two documented runs this rule came from are `le
 
 This directory is **exempt** from the citation check — the identifiers in it are fictional by
 design.
+
+## The cases
 
 | file                                                 | what it breaks                                   | which check must fire |
 | ---------------------------------------------------- | ------------------------------------------------ | --------------------- |

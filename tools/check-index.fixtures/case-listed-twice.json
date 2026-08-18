@@ -1,0 +1,11 @@
+{
+  "point": 3,
+  "check": "cases",
+  "description": "One case, two rows — what a copied row left half-edited looks like. The set would still be complete, and the two rows can send the reader to two different points.",
+  "trees": [
+    {
+      "path": "tools/check-alpha.fixtures",
+      "readme": "# Negative control of the alpha gate\n\nDeliberately defective inputs. `tools/check-alpha.mjs` runs all three of its points on each\nof them and **requires every one to be rejected — and rejected by the point it declares**.\n\n## The cases\n\n| case            | point | check    | rule      | defect                  |\n| --------------- | ----: | -------- | --------- | ----------------------- |\n| `a-case`        |     1 | `first`  | `broken`  | the first thing breaks  |\n| `another-case`  |     2 | `second` | —         | the second thing breaks |\n| `a-third-case`  |     3 | `third`  | `unnamed` | the third thing breaks  |\n| `a-case`        |     1 | `first`  | `broken`  | the first thing breaks  |\n"
+    }
+  ]
+}

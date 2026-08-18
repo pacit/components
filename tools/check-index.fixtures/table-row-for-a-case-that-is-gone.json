@@ -1,0 +1,11 @@
+{
+  "point": 3,
+  "check": "cases",
+  "description": "The case directory is deleted and its row stays. The table then promises proof the repository does not hold, which is worse than promising none.",
+  "trees": [
+    {
+      "path": "tools/check-alpha.fixtures",
+      "dropCases": ["another-case"]
+    }
+  ]
+}

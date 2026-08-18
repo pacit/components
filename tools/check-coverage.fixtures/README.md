@@ -45,6 +45,8 @@ reading of files. The plumbing defends itself — were the source glob or the pa
 normalisation from the report to stop working, point 2 or 3 fires on the real run, loudly
 and at once.
 
+## The cases
+
 | file                                                             | what it breaks                                             | point |
 | ---------------------------------------------------------------- | ---------------------------------------------------------- | ----- |
 | [`missing-report.json`](missing-report.json)                     | the run left no coverage report                            | 1     |

@@ -1,0 +1,19 @@
+{
+  "point": 3,
+  "check": "cases",
+  "description": "A fourth case is prepared and the table still lists three — the state `check-tokens.fixtures/README.md` was in for both cases of point 8. A negative control outside the table is proof nobody reading the table knows about.",
+  "trees": [
+    {
+      "path": "tools/check-alpha.fixtures",
+      "cases": [
+        {
+          "name": "a-fourth-case",
+          "declares": true,
+          "point": 1,
+          "check": "first",
+          "rule": "broken"
+        }
+      ]
+    }
+  ]
+}

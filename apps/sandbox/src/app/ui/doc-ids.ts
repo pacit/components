@@ -61,6 +61,7 @@ export type PctReqId =
   | 'req-quality-coverage'
   | 'req-quality-e2e'
   | 'req-quality-hydration'
+  | 'req-quality-index'
   | 'req-quality-negative-control'
   | 'req-quality-package'
   | 'req-quality-prefix'
@@ -168,7 +169,8 @@ export type PctLessonId =
   | 'lesson-71'
   | 'lesson-72'
   | 'lesson-73'
-  | 'lesson-74';
+  | 'lesson-74'
+  | 'lesson-75';
 
 /** Anything a sandbox card may refer to. */
 export type PctDocId = PctReqId | PctLessonId;

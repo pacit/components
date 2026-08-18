@@ -9,10 +9,10 @@ There is no "built, just unverified" state — see
 
 | state       | means                                                         |  count |
 | ----------- | ------------------------------------------------------------- | -----: |
-| ✅ enforced | gate and control exist and run in CI                          |     58 |
+| ✅ enforced | gate and control exist and run in CI                          |     59 |
 | 🟡 partial  | the gate is there, the negative control is not (deliberately) |     16 |
 | ⛔ gap      | gate or control missing, with a recorded deadline             |     10 |
-| **total**   |                                                               | **84** |
+| **total**   |                                                               | **85** |
 
 ## Gaps by urgency
 
@@ -104,6 +104,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | -------------------------------------------------------------------------------------- | ----------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | [`req-quality-negative-control`](requirements/quality.md#req-quality-negative-control) | ✅ enforced | `tools/check-docs.mjs` — the **Control** field is required on every r… | `tools/check-docs.fixtures/` — a requirement with a gate but no contr… |
 | [`req-quality-registry`](requirements/quality.md#req-quality-registry)                 | ✅ enforced | `tools/check-docs.mjs` (target `check-docs`, in CI) — the six checks … | `tools/check-docs.fixtures/` — a set of deliberately broken requireme… |
+| [`req-quality-index`](requirements/quality.md#req-quality-index)                       | ✅ enforced | `tools/check-index.mjs` (target `check-index` in the root project, in… | `tools/check-index.fixtures/` — 23 prepared inputs, each rejected on … |
 | [`req-quality-typecheck`](requirements/quality.md#req-quality-typecheck)               | ✅ enforced | `tools/check-typecheck.mjs` (target `check-typecheck`, in CI) — four … | `tools/check-typecheck.fixtures/` — eleven doctored inputs, each reje… |
 | [`req-quality-unit`](requirements/quality.md#req-quality-unit)                         | ✅ enforced | in three parts, because "the tests run", "how many pass" and "how man… | `tools/check-mutation.fixtures/` — 37 doctored inputs on a fake libra… |
 | [`req-quality-coverage`](requirements/quality.md#req-quality-coverage)                 | ✅ enforced | in three parts, because the percentage, its denominator and the templ… | `tools/check-coverage.fixtures/` — twelve doctored inputs, one per wa… |
@@ -230,3 +231,4 @@ Which lesson feeds which requirement. Generated from the **Lessons** fields.
 | [`lesson-72`](lessons.md#lesson-72) | `req-api-generic`                                                                                                                                                 |
 | [`lesson-73`](lessons.md#lesson-73) | `req-project-tree-shaking`                                                                                                                                        |
 | [`lesson-74`](lessons.md#lesson-74) | `req-token-tiers`                                                                                                                                                 |
+| [`lesson-75`](lessons.md#lesson-75) | `req-quality-index`                                                                                                                                               |

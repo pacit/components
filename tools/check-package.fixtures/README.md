@@ -44,6 +44,8 @@ good measure: were the reference itself defective, every case would fire because
 rather than because of its own defect, and every "rejected" would be false — that is,
 this whole negative control would become exactly what it stands against.
 
+## The cases
+
 | directory                                                       | what it breaks                                               | point | rule           |
 | --------------------------------------------------------------- | ------------------------------------------------------------ | ----- | -------------- |
 | [`theme-missing`](theme-missing/)                               | a package with no `themes/pct.css`                           | 1     | —              |

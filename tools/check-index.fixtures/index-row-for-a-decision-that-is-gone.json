@@ -1,0 +1,7 @@
+{
+  "point": 2,
+  "check": "index",
+  "description": "The row outlives its file. A decision is immutable once accepted, so this is the rarer direction — and it is the one where every link in the row leads nowhere.",
+  "dropDecisions": ["0003-the-third-decision.md"],
+  "index": "@stale"
+}

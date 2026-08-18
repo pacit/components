@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "corpus",
+  "description": "The `## Index` heading is gone from the README, so there is no section to compare the directory against. Deleting the list is the cheapest way to make a list agree with anything, and it has to be louder than leaving it wrong.",
+  "index": null
+}

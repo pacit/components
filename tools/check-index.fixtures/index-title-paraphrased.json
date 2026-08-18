@@ -1,0 +1,12 @@
+{
+  "point": 2,
+  "check": "index",
+  "description": "The decision's heading is edited and the index keeps the older, shorter wording. Five of the twenty real rows were in this state, and none of them looked wrong: a paraphrase reads like a title (`lesson-75`).",
+  "decisions": [
+    {
+      "file": "0001-the-first-decision.md",
+      "title": "The first decision, and what it costs"
+    }
+  ],
+  "index": "@stale"
+}

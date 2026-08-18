@@ -1,0 +1,10 @@
+{
+  "point": 1,
+  "check": "corpus",
+  "description": "Not one `*.fixtures/` tree found. Points 3 to 5 would then pass having examined no negative control at all — the shape `check-styles` guards with its own point 1.",
+  "dropTrees": [
+    "tools/check-alpha.fixtures",
+    "tools/check-beta.fixtures",
+    "tools/check-gamma.fixtures"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "point": 1,
+  "check": "corpus",
+  "description": "Every fixtures README still exists and not one carries a table of its cases — the state the table parser reaching for a shape nobody writes would produce. Points 3 and 4 measure the tables that exist, so an empty set of them is silence, not agreement.",
+  "trees": [
+    {
+      "path": "tools/check-alpha.fixtures",
+      "readme": "Deliberately defective inputs. `tools/check-alpha.mjs` runs all three of its points on each of them.\n"
+    }
+  ]
+}

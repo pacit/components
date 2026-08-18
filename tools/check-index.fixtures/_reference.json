@@ -1,0 +1,108 @@
+{
+  "//": "The reference input: three decisions, three fixture trees and a map — the smallest copy of the repository shape this gate walks. Every case is built on a COPY of it and holds nothing but its own defect. The index is never written out here: `@render` means the directory's own rendering, so the reference cannot drift from the renderer.",
+  "input": {
+    "decisions": [
+      {
+        "file": "0001-the-first-decision.md",
+        "number": "0001",
+        "title": "The first decision",
+        "status": "accepted",
+        "implements": ["req-quality-index"]
+      },
+      {
+        "file": "0002-the-second-decision.md",
+        "number": "0002",
+        "title": "The second decision",
+        "status": "superseded by 0003",
+        "implements": ["req-quality-index", "req-quality-negative-control"]
+      },
+      {
+        "file": "0003-the-third-decision.md",
+        "number": "0003",
+        "title": "The third decision",
+        "status": "accepted",
+        "implements": []
+      }
+    ],
+    "index": "@render",
+    "trees": [
+      {
+        "path": "tools/check-alpha.fixtures",
+        "gate": "tools/check-alpha.mjs",
+        "points": [1, 2, 3],
+        "readme_path": "tools/check-alpha.fixtures/README.md",
+        "readme": "# Negative control of the alpha gate\n\nDeliberately defective inputs. `tools/check-alpha.mjs` runs all three of its points on each\nof them and **requires every one to be rejected — and rejected by the point it declares**.\n\n## The cases\n\n| case            | point | check    | rule      | defect                  |\n| --------------- | ----: | -------- | --------- | ----------------------- |\n| `a-case`        |     1 | `first`  | `broken`  | the first thing breaks  |\n| `another-case`  |     2 | `second` | —         | the second thing breaks |\n| `a-third-case`  |     3 | `third`  | `unnamed` | the third thing breaks  |\n",
+        "cases": [
+          {
+            "name": "a-case",
+            "declares": true,
+            "point": 1,
+            "check": "first",
+            "rule": "broken"
+          },
+          {
+            "name": "a-third-case.json",
+            "declares": true,
+            "point": 3,
+            "check": "third",
+            "rule": "unnamed"
+          },
+          {
+            "name": "another-case",
+            "declares": true,
+            "point": 2,
+            "check": "second",
+            "rule": null
+          }
+        ]
+      },
+      {
+        "path": "tools/check-beta.fixtures",
+        "gate": "tools/check-beta.mjs",
+        "points": [1, 2, 3, 4, 5],
+        "readme_path": "tools/check-beta.fixtures/README.md",
+        "readme": "# Negative control of the beta gate\n\nDeliberately defective inputs. `tools/check-beta.mjs` runs all five of its points on each of\nthem and **requires every one to be rejected**. This one keeps no table of its cases, which is\na state the gate measures rather than forbids.\n",
+        "cases": [
+          {
+            "name": "a-prepared-input.json",
+            "declares": true,
+            "point": 1,
+            "check": "only",
+            "rule": null
+          },
+          {
+            "name": "a-prepared-requirement.md",
+            "declares": false,
+            "point": null,
+            "check": null,
+            "rule": null
+          }
+        ]
+      },
+      {
+        "path": "tools/check-gamma.fixtures",
+        "gate": "tools/check-gamma.mjs",
+        "points": [1, 2],
+        "readme_path": null,
+        "readme": null,
+        "cases": [
+          {
+            "name": "a-case-nobody-wrote-up.json",
+            "declares": true,
+            "point": 1,
+            "check": "only",
+            "rule": null
+          }
+        ]
+      }
+    ],
+    "map": {
+      "text": "00-axis.md      LEVEL 0   the one requirement every other one is ordered by\nrequirements/   LEVEL 1   promises: what has to be true                (2 entries)\ndecisions/      LEVEL 2   why this way, and what it costs us           (3 ADRs)\nlessons.md                the evidence base: what actually happened    (5 entries)\nplan.md                   the task list — the only place holding \"done\"\n",
+      "actual": {
+        "requirements/": 2,
+        "decisions/": 3,
+        "lessons.md": 5
+      }
+    }
+  }
+}

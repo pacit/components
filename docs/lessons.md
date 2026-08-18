@@ -1679,3 +1679,36 @@ One gate, four points, and the last one forbids what the first advised — with 
 steps in between, one of which is a `--write`, so the wrong move arrives in review looking
 recorded. A measurement contradicting a neighbouring one is not a tie to be broken by
 whichever ran first: it says the newer one has the wrong denominator.
+
+---
+
+### <a id="lesson-75"></a>`lesson-75` — Eleven of twenty rows were wrong in the list a hand had just fixed
+
+The decisions index was corrected by hand two tasks earlier: 0018 and 0019 were missing, both
+were added, and the file looked right afterwards. It was not. The first run of a renderer over
+`docs/decisions/` disagreed with **eleven of the twenty rows** — five titles paraphrased away
+from the heading they quote, six `implements` lists naming the first requirement of a decision
+that carries three or four. Nothing about the file said so. A shortened title reads like a
+title, and a list of one requirement reads like a list of requirements; the only way to see
+either is to open the twenty files and compare, which is what a hand-kept index quietly asks of
+every reader.
+
+The by-hand fix had done what a person does: it looked for what was **absent**. Absence is the
+one kind of drift a reader can spot without the source, and it is the smaller half — the two
+missing rows were fixed and the eleven wrong ones were read straight past, in the same file, in
+the same sitting.
+
+Then the same rule, written and pointed at the rest of the repository, found more of it before
+anybody had looked: `tarball-without-licence` was a case in `check-consumer.fixtures` that its
+own table did not name, and the map on the first page of the documentation counted 17 decisions
+against 21 and 63 lessons against 74. Three hand-kept lists, three kinds of drift, none of them
+visible in review of the diffs that caused them — because every one of those diffs was correct
+in the file it touched. The drift is always in **the other** file, the one the commit did not
+open.
+
+What the measurement did not settle is which of the two roads each list takes; that needed a
+question, not a run — is every column derivable? — and the answer differs per file
+([0021](decisions/0021-an-index-is-derived-or-measured.md)). One thing it did settle: a table
+of cases cannot be held to completeness unless it says it is complete. `check-reach.fixtures`
+tabulates "the three cases the design rests on" out of seventeen, deliberately, and a gate
+counting rows cannot tell that from a list that has lost fourteen.
