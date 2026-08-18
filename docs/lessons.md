@@ -1539,3 +1539,40 @@ browser really parses, and only where one selector's match set is contained in t
 a "don't know" costs an unexamined pair, a wrong "yes" would cost a false accusation. A block
 that spells the more specific state out itself (`[data-pct-selected] { background: SelectedItem }`
 beside the general `background: Canvas`) is not a hole and is not reported.
+
+### <a id="lesson-71"></a>`lesson-71` — Four coverage metrics, and each was blind to what another one caught
+
+A guard living in a template is in no measurement this repository had. `check-coverage` read
+`total.lines.pct`, Stryker mutates `.ts` only — so an `@if` in a template was a promise with
+no machine behind it. The fix looked like one line of configuration (a branch floor), and the
+measurement that had to come first said something else entirely.
+
+Three templates, one run, four metrics:
+
+- **`field.html`** — the false arms of two `@if`s had never been rendered: no field without a
+  label, none with an add-on and no label. **Branches 84.61%** (11/13) and **lines 100%**. An
+  arm not taken writes no line; it only fails to.
+- **`radio-group.html`** — the standalone hint block had never been created: 3 lines and 4
+  statements dead, **lines 82.35%** — and **branches 100%** (8/8). The `@if (hint() && !inField)`
+  came back from v8 with two arms at the same source position and the same count, 49 and 49.
+  The metric said "both taken" about a block created zero times.
+- **`select.html`** — `(overlayOutsideClick)` is never called in a unit test: **functions
+  85.71%**, **statements 98.36%**, lines and branches **100%** both.
+
+No single metric saw all three, and each of them was the only witness of one. A floor has to
+stand on all four, per template — which is exactly what the build configuration cannot
+express: the executor's `coverageThresholds` is four numbers and a `perFile` flag with
+`additionalProperties: false`, so a floor for one glob has no place to be written. It lives in
+the gate (`check-coverage` point 6) or nowhere.
+
+The whole-report number cannot stand in for it. The templates are 136 of 694 lines and 47 of
+535 branches: `select.html` could go entirely unrendered and the line total would still read
+93.37%, thirteen points above the floor. The two defects above read 84.61% and 82.35% — both
+comfortably above the 80% the whole library is held to. Hence 100% per template, and what a
+template cannot reach is a matter for an **exception with a reason and both sides**: the
+select's listener is guarded by an e2e in three engines, and were somebody to write the unit
+test after all, the exception fires as stale rather than quietly covering the next defect.
+
+One more thing the same run made plain: a declared threshold is not inherited. `lines: 80`
+alone left every branch in the library — 535 of them — under no floor at all, while the log
+said the threshold was met.

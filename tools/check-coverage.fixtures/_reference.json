@@ -1,21 +1,39 @@
 {
-  "description": "The reference input. The report covers every source file, the target declares a threshold and the coverage meets it. Cases are built on a copy of this file, so each of them holds nothing but its own defect.",
+  "description": "The reference input. The report covers every source file — the template among them — the target declares both thresholds and the coverage meets them; the template stands at its own floor, and the one metric that does not reach it has an exception with a reason. Cases are built on a copy of this file, so each of them holds nothing but its own defect.",
   "target": {
     "coverage": true,
-    "coverageThresholds": { "lines": 80 }
+    "coverageThresholds": { "lines": 80, "branches": 80 }
   },
   "sources": [
     "libs/components/button/src/button.ts",
+    "libs/components/button/src/button.html",
     "libs/components/field/src/number.ts"
   ],
+  "exceptions": {
+    "libs/components/button/src/button.html": {
+      "functions": {
+        "floor": 50,
+        "reason": "one listener the browser raises and jsdom would only imitate — guarded by an e2e instead. The reference carries this on purpose: a case directory can prove the floor FIRES, and that the gate stays silent where an exception says why has nowhere else to be shown."
+      }
+    }
+  },
   "report": {
-    "total": { "lines": { "total": 122, "covered": 116, "pct": 95.08 } },
+    "total": {
+      "lines": { "total": 122, "covered": 116, "pct": 95.08 },
+      "branches": { "total": 88, "covered": 80, "pct": 90.9 }
+    },
     "files": {
       "libs/components/button/src/button.ts": {
         "lines": { "total": 8, "covered": 8, "pct": 100 }
       },
       "libs/components/field/src/number.ts": {
         "lines": { "total": 114, "covered": 108, "pct": 94.73 }
+      },
+      "libs/components/button/src/button.html": {
+        "lines": { "total": 5, "covered": 5, "pct": 100 },
+        "statements": { "total": 5, "covered": 5, "pct": 100 },
+        "branches": { "total": 2, "covered": 2, "pct": 100 },
+        "functions": { "total": 2, "covered": 1, "pct": 50 }
       }
     }
   }

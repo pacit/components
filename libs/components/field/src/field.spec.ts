@@ -79,7 +79,7 @@ class FillAffixHost {
 /** A field with a hint and two aux slots (the label aux and the message aux). */
 @Component({
   imports: [PctField, PctText, PctLabelAux, PctMessageAux],
-  template: `<pct-field label="Description" [hint]="hint()">
+  template: `<pct-field [label]="label()" [hint]="hint()">
     <button pctLabelAux type="button" aria-label="Help">ⓘ</button>
     <input
       pctText
@@ -92,6 +92,7 @@ class FillAffixHost {
   </pct-field>`,
 })
 class AuxHost {
+  label = signal('Description');
   hint = signal('A few words about you');
   invalid = signal(false);
   touched = signal(false);
@@ -713,6 +714,38 @@ describe('PctField + PctText', () => {
 
       expect(footer.contains(part(fixture, 'field-error'))).toBe(true);
       expect(footer.contains(part(fixture, 'field-message-aux'))).toBe(true);
+    });
+  });
+
+  /**
+   * The label row is the arm of an `@if` that nothing rendered until C9 — the metric saw
+   * `100%` of lines in `field.html` while both of these conditions had only ever been true.
+   */
+  describe('the label row appears only when there is something to put in it', () => {
+    it('with neither a label nor an add-on the row does not render at all', async () => {
+      const fixture = await render(Host);
+      fixture.componentInstance.label.set('');
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      // Not an empty row: the header is gone, so it takes no `gap` of the column either.
+      expect(allParts(fixture, 'field-header')).toEqual([]);
+      expect(allParts(fixture, 'field-label')).toEqual([]);
+      // With no label element there is nothing to point `for` at — naming the control is
+      // then the consumer's job (`aria-label` on the input).
+      expect(fixture.nativeElement.querySelector('label')).toBeNull();
+      expect(inputOf(fixture).id).toBeTruthy();
+    });
+
+    it('an add-on with no label keeps the row, without the label element', async () => {
+      const fixture = await render(AuxHost);
+      fixture.componentInstance.label.set('');
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const header = part(fixture, 'field-header');
+      expect(header.contains(part(fixture, 'field-label-aux'))).toBe(true);
+      expect(allParts(fixture, 'field-label')).toEqual([]);
     });
   });
 

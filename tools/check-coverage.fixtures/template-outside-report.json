@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "complete",
+  "description": "A template outside the report — that is, a component no test renders. This is C9 in its pure form: the conditions of that template are measured by nobody, and the percentage RISES as they leave, because they take the denominator with them. `lesson-45` with a different file extension; the remedy is a different one too, a rendering test rather than an import.",
+  "dropFromReport": ["libs/components/button/src/button.html"],
+  "pct": 100
+}

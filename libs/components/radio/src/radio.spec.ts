@@ -293,6 +293,20 @@ describe('PctRadioGroup / PctRadio', () => {
     expect(group.getAttribute('aria-invalid')).toBeNull();
   });
 
+  it('a standalone group renders its own hint and is described by it', async () => {
+    const fixture = await render(Host);
+    fixture.componentInstance.hint.set('One plan per account');
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const group = fixture.nativeElement.querySelector('pct-radio-group');
+    const hint = fixture.nativeElement.querySelector(
+      '[data-pct-part="group-hint"]',
+    );
+    expect(hint.textContent.trim()).toBe('One plan per account');
+    expect(group.getAttribute('aria-describedby')).toContain(hint.id);
+  });
+
   it('once touched it binds the error to the group through aria-describedby', async () => {
     const fixture = await render(Host);
     fixture.componentInstance.invalid.set(true);

@@ -1,0 +1,6 @@
+{
+  "point": 6,
+  "check": "exception-stale",
+  "description": "The metric of the exempted template climbed above what its exception allows — somebody wrote the missing test. The entry now covers nothing, which means it covers the NEXT defect: the file could drop back to the exempted value and the gate would stay silent. A floor with no upper side is an exception that outlives its reason.",
+  "filePct": { "libs/components/button/src/button.html": { "functions": 100 } }
+}

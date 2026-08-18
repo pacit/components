@@ -1,0 +1,9 @@
+{
+  "point": 4,
+  "check": "threshold",
+  "description": "The target declares a line threshold and no branch one. This is the state before C9 — and it looks like a threshold is in place. Vitest enforces the keys it is handed and infers none, so every condition in the library stands under no floor whatsoever, while the log says `Coverage threshold met`.",
+  "target": {
+    "coverage": true,
+    "coverageThresholds": { "lines": 80 }
+  }
+}

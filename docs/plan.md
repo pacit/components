@@ -189,6 +189,20 @@ the axe audit agree either way, and webkit — the one engine that would show it
 be a static one: point 7 of `check-styles`, and `req-a11y-forced-colors` stops resting on an
 e2e run alone.
 
+**C9 closed after that**, and it is the item where the plan's own guess did not survive the
+measurement it asked for. The cheap half was to be a branch floor on templates; the branch
+number turned out to be the metric that could not see the defect the finding was written from.
+Three templates carried three different gaps and each of the four metrics was the only witness
+of one: an `@if` arm nobody took shows in branches and not in lines, a block nobody rendered
+shows in lines while its own `@if` reports both arms taken, a listener nobody calls shows in
+functions. So the floor stands on all four, per template, at 100% — with an exception that has
+a reason and two sides — and the whole-report figure keeps its own job, since a template is a
+seventh of the lines and any one of them could vanish inside it
+([`lesson-71`](lessons.md#lesson-71)). Rendering one of those blocks for the first time
+produced a finding of its own: the field replaces the hint with the error, the standalone group
+shows both — **C13**, one promise with two answers, invisible for as long as nothing rendered
+the second one.
+
 ## B. Readiness for the first release
 
 Binds at the first publication — and then all of it at once. **B9** bound one step earlier, at
@@ -558,6 +572,23 @@ var(--pct-button-heigth)` passed every one of them, and the 7 stylesheets read 1
     of the skin)
   - cost: minutes for the change, the decision is the whole task · _notes:_ —
 
+- [ ] **C13 — one promise, two answers: the field replaces the hint, the group adds to it**
+  - `libs/components/field/src/field.html` lights exactly ONE line below the field
+    (`@if (showError()) … @else if (hint())`), and the comment above it says why: the field
+    must not grow by a row on an error, and `aria-describedby` must not point at an element
+    the user cannot see. `libs/components/radio/src/radio-group.html` has two independent
+    `@if`s, so a standalone group shows the hint AND the error at once and names both ids in
+    `aria-describedby`
+  - read off the templates, not measured — but found the moment C9's first test rendered that
+    hint at all, which is the point: for as long as nothing rendered it, the two components
+    could disagree in the open
+  - neither behaviour is written down as a requirement (the field's rule lives in a template
+    comment), so the first task is the **decision**: either one line is the library's answer
+    everywhere, and the group gives up a row, or a group is different because its message
+    describes a SET rather than a control — and then it goes into
+    [`req-api-frame`](requirements/api.md#req-api-frame) instead of a comment
+  - cost: minutes for either change, the decision is the whole task · _notes:_ —
+
 - [x] **C7 — `options`, the only container part without the `group-` prefix** — **closed:
       renamed, and the promise got the static gate it never had**
   - `libs/components/radio/src/radio-group.html` — the group ships `group-label`, `group-hint`,
@@ -626,7 +657,7 @@ var(--pct-button-heigth)` passed every one of them, and the 7 stylesheets read 1
     on the fixture: the button's rule shortened back to `:host([disabled])` fires by name, four
     declarations at once
 
-- [ ] **C9 — a condition in a template is measured by nobody**
+- [x] **C9 — a condition in a template is measured by nobody**
   - concerns: [`req-quality-unit`](requirements/quality.md#req-quality-unit) — the registry says
     ✅, and it is right about what it measures: the floor holds, the denominator is guarded.
     What has no owner is the **metric** — `tools/check-coverage.mjs` reads `total.lines.pct`
@@ -641,7 +672,44 @@ var(--pct-button-heigth)` passed every one of them, and the 7 stylesheets read 1
     the mutation snapshot was built in
   - what the fix does NOT buy: mutation testing of templates. A branch count says an arm ran,
     not that anything would have noticed it being wrong
-  - cost: ~0.5 day for the measurement and the floor · _notes:_ —
+  - cost: ~0.5 day for the measurement and the floor · _notes:_ **done** — and the measurement
+    took the cheap half apart before it could be built. **A branch floor on templates would
+    not have caught the defect this task was written from.** Three templates, one run, four
+    metrics, and each metric was the only witness of one of them: `field.html` had never
+    rendered the false arms of two `@if`s (a field with no label, a field with an add-on and
+    no label) — **branches 84.61%, lines 100%**, because an arm not taken writes no line;
+    `radio-group.html` had never created the standalone hint block — **lines 82.35%, branches
+    100%**, its `@if` coming back from v8 with two arms at the same source position and the
+    same count, 49 and 49, that is "both taken" said about a block created zero times; and
+    `select.html` never calls `(overlayOutsideClick)` in a unit test — **functions 85.71%,
+    statements 98.36%**, lines and branches 100% both. The number quoted in this finding as
+    "85.71% of branches" was in fact the FUNCTIONS column, which is the same mistake one floor
+    down: reading a metric that happened to be in view rather than the one that saw it
+    ([`lesson-71`](lessons.md#lesson-71))
+  - so the floor is **100% per template on all four metrics** (`check-coverage` point 6), not
+    a number chosen to sit below the measurement — the two defects above read 84.61% and
+    82.35%, both comfortably above the 80% the whole library is held to. It cannot live in the
+    target either: the executor's `coverageThresholds` is four numbers and a `perFile` flag,
+    `additionalProperties: false`. Templates are now **required in the report** (point 3) as
+    the code is, because a template out of the report is the same defect with the percentage
+    rising as it leaves. What a template cannot reach is an **exception with a reason and both
+    sides**: `select.html` is exempted on the CDK's outside-click listener, guarded one floor
+    up by an e2e in three engines, and the day somebody writes the unit test the exception
+    fires as stale rather than covering the next defect quietly. The cheap half was kept for
+    what it is worth — `coverageThresholds.branches` = 80 now stands beside `lines`, because
+    vitest infers neither from the other and 535 branches stood under no floor at all
+  - the three tests those numbers asked for are written, and the control is on the real
+    repository: with them taken back out the `test` target is **green** (235 passed, both
+    thresholds met) while point 6 names three metrics across two files. Sizes: 6 templates,
+    136 of the 694 lines and 47 of the 535 branches — `select.html` alone could go entirely
+    unrendered and the line total would still read 93.37%
+  - one finding fell out of rendering that hint for the first time: the field **replaces** the
+    hint with the error (`@else if`), the standalone radio group shows **both** and names both
+    in `aria-describedby`. Two components, one promise, two answers — and nobody could see it,
+    because nobody had ever rendered the second one. Recorded as **C13**, not fixed here
+  - what the fix does NOT buy, as written above: mutation testing of templates. A line count
+    says the DOM was created, a branch count that an arm was taken — neither says anything
+    would have noticed it being wrong
 
 - [ ] **C10 — two `pct-radio` with one value both render checked**
   - `libs/components/radio/src/radio.ts` — `checked` is computed

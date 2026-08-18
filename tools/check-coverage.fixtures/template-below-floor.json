@@ -1,0 +1,6 @@
+{
+  "point": 6,
+  "check": "templates",
+  "description": "A template with a block no test renders: 82.35% of lines — the very number `radio-group.html` read while the standalone hint, its span and the id it hands to `aria-describedby` had never been created once. Above the 80% the whole report is held to, and invisible in it: those lines are a fraction of a percent of the total.",
+  "filePct": { "libs/components/button/src/button.html": { "lines": 82.35 } }
+}

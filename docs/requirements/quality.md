@@ -112,7 +112,10 @@ denominator: seven points and 37 rules for the measurement being current, coveri
 declared file inventory, running **the same specs as the `test` target**, having a binding
 and unnarrowed threshold (ignorers, excluded mutators, `ignoreStatic`, `// Stryker disable`
 comments, a shortened `timeoutMS`), and fitting inside the `libs/components/mutation.snapshot.md`
-snapshot with a **two-sided** per-file tolerance
+snapshot with a **two-sided** per-file tolerance. Stryker mutates `.ts` and nothing else, so
+what a **template** promises stands outside this measurement altogether — that half is held by
+`check-coverage` point 6, a floor per template on all four metrics
+([`lesson-71`](../lessons.md#lesson-71))
 **Control:** `tools/check-mutation.fixtures/` — 37 doctored inputs on a fake library, each
 rejected on its own **rule**; plus runs against the real repository (removing an assertion
 from `select.spec.ts` drops that file's score and fires `score/score-dropped`, adding a test
@@ -122,7 +125,7 @@ Plus a control of that control: disarming each of the 37 rules in turn — 25 gi
 12 move the case onto a neighbouring rule
 **Lessons:** [`lesson-3`](../lessons.md#lesson-3), [`lesson-19`](../lessons.md#lesson-19),
 [`lesson-28`](../lessons.md#lesson-28), [`lesson-57`](../lessons.md#lesson-57),
-[`lesson-58`](../lessons.md#lesson-58)
+[`lesson-58`](../lessons.md#lesson-58), [`lesson-71`](../lessons.md#lesson-71)
 
 > **Coverage and mutation score measure two different things, and the difference is large.**
 > At 96.62% line coverage the core scored **63.54%** on mutation: every third mutant passed
@@ -146,25 +149,40 @@ Plus a control of that control: disarming each of the 37 rules in turn — 25 gi
 ### <a id="req-quality-coverage"></a>`req-quality-coverage` — Coverage ≥ 80% of lines
 
 **Promise.** The library's code is covered by tests as fully as possible; the SonarQube
-minimum, i.e. ≥ 80% line coverage.
+minimum, i.e. ≥ 80% line coverage and the same floor on branches. A template is code as much
+as a class is — and it is held **higher**: each of them at 100%, on all four metrics, or with
+an exception that says why.
 
-**Gate:** in two parts, because the percentage and its denominator break separately.
-`libs/components/project.json` — the `test` target collects coverage (`coverage`,
-`coverageInclude`) and **fails** below `coverageThresholds.lines` = 80.
-`tools/check-coverage.mjs` (target `check-coverage`, in CI) guards the denominator: **every
-source file of the library must be in the report**, and the threshold must be declared and no
-lower than 80. On top of that, `libs/components/src/public-api.spec.ts` brings the modules of
-every package gate into the run — without it a file with no test does not show up as zero, it
-**drops out of the statistic** ([`lesson-45`](../lessons.md#lesson-45))
-**Control:** `tools/check-coverage.fixtures/` — seven doctored inputs, one per way of
-disarming the gate (no report, an empty source list, a file outside the report, measurement
-switched off, threshold removed, threshold lowered, coverage below the threshold). Each must
-be rejected **by the point it declares**, and the reference input must pass. Plus two runs
-against the real repository: removing `libs/components/src/public-api.spec.ts` leaves the
-`test` target **green** (96.55%) while `check-coverage` fires on
+**Gate:** in three parts, because the percentage, its denominator and the templates break
+separately. `libs/components/project.json` — the `test` target collects coverage (`coverage`,
+`coverageInclude`) and **fails** below `coverageThresholds.lines` = 80 and
+`coverageThresholds.branches` = 80. `tools/check-coverage.mjs` (target `check-coverage`, in
+CI) guards the rest in six points: **every source file of the library, its templates included,
+must be in the report**; both thresholds must be declared and no lower than 80, because vitest
+enforces the keys it is handed and infers none from the other; and **every template must meet
+a floor of its own — 100% of lines, statements, branches and functions** (point 6), since in
+the whole-report figure a template is a rounding error and each of the four metrics turned out
+to be the only witness of one defect ([`lesson-71`](../lessons.md#lesson-71)). The per-file
+floor cannot live in the target: the executor's `coverageThresholds` is four numbers and a
+`perFile` flag, `additionalProperties: false`. On top of that,
+`libs/components/src/public-api.spec.ts` brings the modules of every package gate into the run
+— without it a file with no test does not show up as zero, it **drops out of the statistic**
+([`lesson-45`](../lessons.md#lesson-45))
+**Control:** `tools/check-coverage.fixtures/` — twelve doctored inputs, one per way of
+disarming the gate (no report, an empty source list, a source file outside the report, a
+TEMPLATE outside the report, measurement switched off, a threshold removed, the branch
+threshold alone removed, a threshold lowered, lines below the threshold, branches below the
+threshold, a template below its floor, an exception that no longer covers anything). Each must
+be rejected **by the point it declares**, and the reference input must pass — it carries an
+exempted template, which is the only place where the gate staying SILENT is measured. Plus
+three runs against the real repository: removing `libs/components/src/public-api.spec.ts`
+leaves the `test` target **green** (96.55%) while `check-coverage` fires on
 `libs/components/src/index.ts`; removing `select.spec.ts` and `number.spec.ts` drops coverage
-to 64.96% and fires both thresholds at once
-**Lessons:** [`lesson-5`](../lessons.md#lesson-5), [`lesson-45`](../lessons.md#lesson-45)
+to 64.96% and fires both thresholds at once; taking the three template tests back out leaves
+the `test` target green as well (235 passed, both thresholds met) while point 6 names three
+metrics across two files
+**Lessons:** [`lesson-5`](../lessons.md#lesson-5), [`lesson-45`](../lessons.md#lesson-45),
+[`lesson-71`](../lessons.md#lesson-71)
 
 > Why two gates for one number. The threshold alone guards **the numerator over the
 > denominator**, and v8 computes both only over the modules that entered the run. Removing

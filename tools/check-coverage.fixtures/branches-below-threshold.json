@@ -1,0 +1,6 @@
+{
+  "point": 5,
+  "check": "result",
+  "description": "The lines meet their threshold and the branches do not. Without the loop over both metrics point 5 would read the line total alone and pass — the number it enforces would not be the number that broke.",
+  "branchPct": 79.9
+}
