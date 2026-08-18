@@ -1,6 +1,6 @@
 {
   "// defect": "A real build with an entrypoint reaching for the CDK overlay does not contain it. This is not good news — it is a sign that the overlay's marker stopped being findable, that is, that \"there is no Overlay here\" from the first probe stopped meaning anything.",
-  "point": 10,
+  "point": 11,
   "check": "builder",
   "builderOverlay": {
     "i": 1,

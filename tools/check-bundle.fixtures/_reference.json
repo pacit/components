@@ -35,25 +35,29 @@
       "bytes": 1200,
       "pulled": [".", "./kernel"],
       "external": ["@angular/core"],
-      "inText": []
+      "inText": [],
+      "residue": []
     },
     "./alpha": {
       "bytes": 8000,
       "pulled": ["./alpha", "./kernel"],
       "external": ["@angular/core"],
-      "inText": ["./alpha"]
+      "inText": ["./alpha"],
+      "residue": []
     },
     "./beta": {
       "bytes": 30000,
       "pulled": ["./beta", "./kernel"],
       "external": ["@angular/cdk/overlay", "@angular/core"],
-      "inText": ["./beta"]
+      "inText": ["./beta"],
+      "residue": []
     },
     "./kernel": {
       "bytes": 1700,
       "pulled": ["./kernel"],
       "external": ["@angular/core"],
-      "inText": []
+      "inText": [],
+      "residue": []
     }
   },
   "pair": {

@@ -8,16 +8,22 @@
  *   2. `side-effects` — the packed manifest declares `sideEffects: false`,
  *   3. `snapshot`     — a snapshot exists, with a row for every entrypoint,
  *   4. `presence`     — DENOMINATOR: a probe brings its own entrypoint in, primary none,
- *   5. `isolation`    — the entrypoints a probe pulls in match the snapshot,
- *   6. `markers`      — a second read of the same, over the bundle's text, BOTH ways,
- *   7. `external`     — a probe's external dependencies match the snapshot,
- *   8. `size`         — a size budget per entrypoint, tolerance TWO-SIDED,
- *   9. `differential` — a two-entrypoint probe is noticeably larger than either single one,
- *  10. `builder`      — the same measured by Angular's REAL builder.
+ *   5. `linked`       — DENOMINATOR: the probe is built the way a consumer builds,
+ *   6. `isolation`    — the entrypoints a probe pulls in match the snapshot,
+ *   7. `markers`      — a second read of the same, over the bundle's text, BOTH ways,
+ *   8. `external`     — a probe's external dependencies match the snapshot,
+ *   9. `size`         — a size budget per entrypoint, tolerance TWO-SIDED,
+ *  10. `differential` — a two-entrypoint probe is noticeably larger than either single one,
+ *  11. `builder`      — the same measured by Angular's REAL builder.
  *
- * Points 5 and 7 are the promise itself (7 is where "no CDK Overlay with `button`" lives);
- * 4, 6, 9 and 10 watch the DENOMINATOR — without them "the `button` bundle holds no
+ * Points 6 and 8 are the promise itself (8 is where "no CDK Overlay with `button`" lives);
+ * 4, 5, 7, 10 and 11 watch the DENOMINATOR — without them "the `button` bundle holds no
  * `PctField`" is vacuously true exactly when the measurement stopped measuring.
+ *
+ * The numbers are the ORDER, and point 5 earned its place by firing in the wrong one: with
+ * `linked` last, a probe built the package's way failed the BUDGET first, and the budget's
+ * advice is `--write` — which would have written the wrong number down and called it
+ * accepted. Everything that compares against the snapshot stands behind it now.
  *
  * Usage: node tools/check-bundle.mjs [--write]  (--write: rewrite the size snapshot)
  */
@@ -64,11 +70,20 @@ const TOLERANCE_MIN = 256;
  */
 const MARKER_OVERLAY = 'cdk-overlay';
 
+/**
+ * What must NOT survive into a probe: the calls of partial compilation and the dev-mode
+ * residue a production build folds away. `ngDeclare*` present means the linker did not run
+ * over that file; `setClassMetadata` / `setClassDebugInfo` mean it ran and the fold did not.
+ * Both are searched as plain substrings, because in the bundle they are members of an
+ * EXTERNAL namespace (`i0.ɵɵngDeclareComponent`) — a minifier renames locals, not those.
+ */
+const RESIDUE = ['ngDeclare', 'setClassMetadata', 'setClassDebugInfo'];
+
 /** The primary entrypoint's name in the `exports` map — the package, not a subpath. */
 const PRIMARY = '.';
 
 /**
- * A violation of one of the ten checks. It carries the check's identifier, not just the
+ * A violation of one of the eleven checks. It carries the check's identifier, not just the
  * message: the negative control has to verify that a prepared input fired ON ITS OWN
  * point — a fixture failing for a reason other than the one written into it proves
  * something other than what it declares.
@@ -90,7 +105,7 @@ const list = (items) => [...items].sort().join(', ') || '(empty)';
  *   `manifest`  — the packed `package.json` (the `exports` map, `sideEffects`),
  *   `snapshot`  — the file's contents, or `null`,
  *   `markers`   — `{ entrypoint: [selectors] }` from the built package,
- *   `probes`     — `{ entrypoint: { bytes, pulled, external, inText } }`,
+ *   `probes`     — `{ entrypoint: { bytes, pulled, external, inText, residue } }`,
  *   `pair`      — `{ entrypoints: [a, b], bytes }`,
  *   `builder`   — `[{ entrypoints, found, overlay }]` from a real build.
  *
@@ -274,7 +289,41 @@ const checkBundle = (input) => {
             `really is`,
         );
 
-  // 5. ISOLATION: what a probe really pulled in. Read from the bundler's metafile, that
+  // 5. Did the probe measure what a consumer carries? Points 9 and 10 read a NUMBER, and a
+  //    number is right-looking whatever produced it: with the linker plugin silently not
+  //    applying, every entrypoint would jump by half and the budget would say "growth" —
+  //    the truest-sounding diagnosis of a measurement that stopped measuring. So the
+  //    probe's text is asked directly whether the two steps between the package and the
+  //    consumer really happened, and the message names the step rather than the string:
+  //    the two halves are two edits away from each other, so what fired decides what to fix.
+  const REASON = {
+    ngDeclare:
+      'the Angular linker did not run over the FESM, so a template is being counted as ' +
+      "the string it travels as — twice, the class metadata carrying the decorator's " +
+      'argument as well',
+    setClassMetadata:
+      'the linker ran and the `ngDevMode` fold of a production build did not, so the ' +
+      'decorator source ships in the measurement and in no application — the bigger half',
+    setClassDebugInfo:
+      'the linker ran and the `ngDevMode` fold of a production build did not, so the ' +
+      'decorator source ships in the measurement and in no application — the bigger half',
+  };
+  for (const e of sources) {
+    const residue = probes[e]?.residue ?? [];
+    if (residue.length)
+      throw new BundleError(
+        'linked',
+        `the probe of \`${e}\` still holds ${list(residue)} — so it measures the ` +
+          `PACKAGE's bytes, not the consumer's:\n` +
+          [...new Set(residue.map((name) => REASON[name]))]
+            .map((why) => `      ${why}\n`)
+            .join('') +
+          `    The budget of point 9 is only as honest as this — so it is the probe to ` +
+          `fix, never the snapshot`,
+      );
+  }
+
+  // 6. ISOLATION: what a probe really pulled in. Read from the bundler's metafile, that
   //    is, from whom it assigned the output's bytes to — not from a list of imports in the
   //    source. A drift does not mean "an error": it means "the consumer started paying for
   //    something other than yesterday, and that is to be visible in review".
@@ -293,7 +342,7 @@ const checkBundle = (input) => {
       );
   }
 
-  // 6. The same measurement, a second read: over the built bundle's TEXT. The metafile
+  // 7. The same measurement, a second read: over the built bundle's TEXT. The metafile
   //    says whom the bundler assigned bytes to; the text says what really stands in those
   //    bytes. The comparison goes BOTH ways, because each catches something else: a marker
   //    with no metafile entry is content that arrived by a route the bundler does not
@@ -313,7 +362,7 @@ const checkBundle = (input) => {
       );
   }
 
-  // 7. External dependencies per entrypoint. This is where the literal "the `button`
+  // 8. External dependencies per entrypoint. This is where the literal "the `button`
   //    bundle has no CDK Overlay" lives: the snapshot records `@angular/cdk/overlay` at
   //    `./select` and nowhere else, so a second entrypoint reaching for it is a line in the
   //    diff. The same mechanism will cover every future dependency, including one nobody
@@ -332,11 +381,12 @@ const checkBundle = (input) => {
       );
   }
 
-  // 8. The size budget. The number is the raw size of the probe's minified bundle, with
+  // 9. The size budget. The number is the raw size of the probe's PRODUCTION bundle, with
   //    Angular as an external dependency — so it measures THE LIBRARY'S CONTRIBUTION, not
   //    the weight of somebody else's framework. Were Angular part of the measurement,
   //    every patch of it would rewrite the whole snapshot and the budget would stop saying
-  //    anything about this library.
+  //    anything about this library. Production, and not "minified", is point 5's doing:
+  //    what the package holds and an application never ships is outside the number.
   for (const e of sources) {
     const measuredBytes = probes[e]?.bytes;
     const recordedBytes = rows.get(e)?.bytes;
@@ -363,7 +413,7 @@ const checkBundle = (input) => {
       );
   }
 
-  // 9. DIFFERENTIAL CONTROL. A two-entrypoint probe has to be noticeably larger than
+  // 10. DIFFERENTIAL CONTROL. A two-entrypoint probe has to be noticeably larger than
   //    either single one — otherwise the measurement measures nothing. This point fires in
   //    exactly the scenario where every other one looks healthy: the bundler stopped
   //    pulling the library in (a wrong alias, too wide an `external` list), so every probe
@@ -400,7 +450,7 @@ const checkBundle = (input) => {
         `about tree-shaking but a sign the measurement stopped pulling the library in`,
     );
 
-  // 10. A second read of the WHOLE gate: the same thing measured by the real
+  // 11. A second read of the WHOLE gate: the same thing measured by the real
   //     `@angular/build: application`, that is, by what really assembles an application at
   //     the consumer's. The probes above go through their own esbuild — fast, but MY
   //     setting of a bundler, not his. The same move as "do not read `include`, run the
@@ -486,10 +536,16 @@ const renderSnapshot = (sources, probes) =>
     'to be visible in review".',
     '',
     'Columns: entrypoint · size in bytes · other entrypoints brought in · external',
-    'dependencies. The size is the raw size of the minified bundle of an application that',
-    'imports **only** this one entrypoint, with Angular as an external dependency — so it',
-    "measures the contribution of **this library**, not the weight of somebody else's",
-    `framework. Budget: ±${(TOLERANCE * 100).toFixed(0)}% or ±${TOLERANCE_MIN} B, whichever is larger.`,
+    'dependencies. The size is the raw size of a **production** bundle of an application',
+    'that imports **only** this one entrypoint: Angular external, so it measures the',
+    "contribution of **this library** and not the weight of somebody else's framework —",
+    'and built the way a consumer builds, with the Angular linker run over the package and',
+    '`ngDevMode` folded away. That is what the number is: **what an application carries**,',
+    'not what the tarball weighs. The package holds more — a template travels in it as text',
+    'and the class metadata carries the decorator a second time, and both are compiled away',
+    'before an application ships them.',
+    '',
+    `Budget: ±${(TOLERANCE * 100).toFixed(0)}% or ±${TOLERANCE_MIN} B, whichever is larger.`,
     '',
     '```',
     ...sources.map((e) =>
@@ -631,6 +687,54 @@ const specyfikator = (e) =>
   e === PRIMARY ? '@pacit/components' : `@pacit/components${e.slice(1)}`;
 
 /**
+ * The step between the package and the consumer: Angular's LINKER, as an esbuild plugin.
+ *
+ * A published FESM is compiled PARTIALLY — a template travels in it as the string it still
+ * is, and `ɵɵngDeclareClassMetadata` carries the whole decorator argument a second time,
+ * template and styles included. A consumer's builder runs this linker over it before
+ * bundling, turning the declarations into instructions. A probe that skips the step
+ * measures the PACKAGE's bytes, and the two differ in BOTH directions — measured:
+ * `./field` -1850 B, `./checkbox` +823 B, the template compiling into more than it was
+ * written as. So this is not a discount for prose ([`lesson-67`](../docs/lessons.md#lesson-67));
+ * it is a different quantity, and the promise on the snapshot names the consumer's.
+ *
+ * The result is cached per file: with a dozen probes over the same handful of FESMs the
+ * linker would otherwise run the same transform a dozen times. The cache is why the plugin
+ * takes the PACKAGE rather than every `.mjs` it is handed — the probes' entry file has a
+ * fixed name by design (its own path would otherwise land in the measured bytes), so it is
+ * a different program at the same address on every probe, and a cache keyed by path serves
+ * the first probe's imports to all the rest. Written down because it happened: point 4
+ * caught it on the first run, reporting a `./button` probe that had brought in the primary
+ * entrypoint and no button.
+ */
+const angularLinker = async (dist) => {
+  const { transformAsync } = await import('@babel/core');
+  const plugin = (await import('@angular/compiler-cli/linker/babel')).default;
+  const cache = new Map();
+  return {
+    name: 'angular-linker',
+    setup(build) {
+      build.onLoad({ filter: /\.mjs$/ }, async ({ path }) => {
+        if (!path.startsWith(dist)) return null;
+        if (!cache.has(path)) {
+          const source = readFileSync(path, 'utf8');
+          const out = await transformAsync(source, {
+            filename: path,
+            babelrc: false,
+            configFile: false,
+            compact: false,
+            sourceMaps: false,
+            plugins: [plugin],
+          });
+          cache.set(path, out.code);
+        }
+        return { contents: cache.get(path), loader: 'js' };
+      });
+    },
+  };
+};
+
+/**
  * One probe: an application importing the given entrypoints and NOTHING else.
  *
  * The `globalThis` at the end is there for a reason: with the imported namespace unused, a
@@ -642,8 +746,25 @@ const specyfikator = (e) =>
  * Angular is an EXTERNAL dependency: we measure this library's contribution, not the
  * framework's weight. `@pacit/components/*` cannot be external — there would then be no
  * way to see that `button` pulled `field` in, and the whole measured thing would vanish.
+ *
+ * `ngDevMode: false` is the second half of the same declaration `minify: true` already
+ * makes — this is a PRODUCTION build. It is not a detail: unfolded, the linker's output
+ * keeps `setClassMetadata` with the whole decorator source, and the compiler's `debugName`
+ * for every signal. Measured, `./button` 7932 → 4481 B, `./field` 37444 → 22316 B. The
+ * two steps only work together: neither alone moves the number by a fifth of that, because
+ * partial compilation emits the metadata UNGUARDED and it is the linker that wraps it in
+ * the guard this define then folds. What does NOT fold is `isDevMode()` — a call to an
+ * external module, so C2's and C10's reports stay in the measurement, as they stay in a
+ * consumer's bundle.
  */
-const probe = async (esbuild, directory, markers, byFile, entrypoints) => {
+const probe = async (
+  esbuild,
+  linker,
+  directory,
+  markers,
+  byFile,
+  entrypoints,
+) => {
   // The input file's name is FIXED, because the bundle's size is the measured quantity
   // here: a name with a counter or a timestamp can end up in the output and the budget
   // starts measuring the length of a path. The probes run in turn and the file is removed
@@ -664,6 +785,8 @@ const probe = async (esbuild, directory, markers, byFile, entrypoints) => {
     platform: 'browser',
     write: false,
     metafile: true,
+    plugins: [linker],
+    define: { ngDevMode: 'false' },
     external: ['@angular/*', 'rxjs', 'rxjs/*', 'tslib'],
   });
   rmSync(input, { force: true });
@@ -685,6 +808,7 @@ const probe = async (esbuild, directory, markers, byFile, entrypoints) => {
       .filter(([, m]) => m.length > 0 && m.some((x) => text.includes(x)))
       .map(([e]) => e)
       .sort(),
+    residue: RESIDUE.filter((name) => text.includes(name)),
   };
 };
 
@@ -810,13 +934,14 @@ const measureRepository = async () => {
 
   const markers = await collectMarkers(dist, files);
   const esbuild = await import('esbuild');
+  const linker = await angularLinker(dist);
   const directory = prepareProbeDirectory(dist);
   const sources = sourceEntrypoints();
 
   try {
     const probes = {};
     for (const e of files.keys())
-      probes[e] = await probe(esbuild, directory, markers, byFile, [e]);
+      probes[e] = await probe(esbuild, linker, directory, markers, byFile, [e]);
 
     const componentEntrypoints = [...files.keys()]
       .filter((e) => e !== PRIMARY && (markers[e] ?? []).length > 0)
@@ -827,7 +952,7 @@ const measureRepository = async () => {
     ].filter(Boolean);
     const pairMeasurement =
       pair.length === 2
-        ? await probe(esbuild, directory, markers, byFile, pair)
+        ? await probe(esbuild, linker, directory, markers, byFile, pair)
         : null;
 
     return {
@@ -923,6 +1048,7 @@ const buildFixture = (fx) => {
       fx.addExternal.what,
     ].sort();
   if (fx.size) input.probes[fx.size.ep].bytes = fx.size.bytes;
+  if (fx.residue) input.probes[fx.residue.ep].residue = fx.residue.found;
   if (fx.pairBytes !== undefined) input.pair.bytes = fx.pairBytes;
   if (fx.builderFound)
     input.builder[fx.builderFound.i].found = fx.builderFound.found;

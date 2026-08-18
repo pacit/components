@@ -1,6 +1,6 @@
 {
   "// defect": "Importing `./alpha` pulls `./beta` in — the heart of the promise. In the code it looks like one import in one file, it compiles, it passes the tests and it hands the consumer a neighbour's whole weight.",
-  "point": 5,
+  "point": 6,
   "check": "isolation",
   "addPulled": {
     "ep": "./alpha",

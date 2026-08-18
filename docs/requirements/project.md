@@ -159,23 +159,27 @@ used but not declared in the package must fire point 3
 version. Components are imported through secondary entrypoints — which forces tree-shaking
 and explicit imports.
 
-**Gate:** `tools/check-bundle.mjs` (target `check-bundle` in `components`, in CI) — ten
+**Gate:** `tools/check-bundle.mjs` (target `check-bundle` in `components`, in CI) — eleven
 points. The probes bundle the **artifact** through `node_modules` and the `exports` map, the
-same way a consumer does: point 5 watches which entrypoints an import of one of them pulls
-in, point 7 which external dependencies come along (CDK Overlay is allowed in `./select`
-only), point 8 the size budget per entrypoint (`libs/components/size.snapshot.md`,
+same way a consumer does: point 6 watches which entrypoints an import of one of them pulls
+in, point 8 which external dependencies come along (CDK Overlay is allowed in `./select`
+only), point 9 the size budget per entrypoint (`libs/components/size.snapshot.md`,
 two-sided tolerance ±5%). Point 4 watches that the primary entrypoint brings in no component
 at all. The rest is the denominator: two readings of the entrypoint list, presence of the
 measured entrypoint in the probe, a second reading of isolation from the bundle text, a
 differential check, and a repeat of the measurement with the **real**
-`@angular/build:application`
-**Control:** `tools/check-bundle.fixtures/` — 22 doctored inputs, each rejected on its own
+`@angular/build:application`. The budget's number is what an **application** carries, not
+what the tarball weighs: point 5 requires the probe to be built the way a consumer builds —
+the Angular linker run over the package and `ngDevMode` folded — and the two together take a
+component entrypoint to some 60% of its unlinked size
+**Control:** `tools/check-bundle.fixtures/` — 24 doctored inputs, each rejected on its own
 point; among them `entrypoint-pulls-neighbour/` (importing `./alpha` pulls in `./beta`),
 `new-external-dependency/` (an entrypoint reaches for the CDK overlay),
-`probe-without-its-entrypoint/` (the measurement stopped pulling anything in) and
+`probe-without-its-entrypoint/` (the measurement stopped pulling anything in),
+`probe-not-linked/` (the probe measures the package's bytes rather than the consumer's) and
 `pair-no-larger-than-single/` — literally "an app importing two entrypoints must
 produce a noticeably bigger bundle"
-**Lessons:** [`lesson-51`](../lessons.md#lesson-51)
+**Lessons:** [`lesson-51`](../lessons.md#lesson-51), [`lesson-73`](../lessons.md#lesson-73)
 
 ---
 

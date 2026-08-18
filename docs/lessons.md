@@ -1610,3 +1610,35 @@ the `producerAccessed(node)` call runs BEFORE the throw, so the effect records t
 re-runs the moment the input arrives — but it catches a framework error to discover a condition
 instead of stating it. The price of preferring the statement was measured: **14 B** on `./radio`
 (20574 against 20560).
+
+---
+
+### <a id="lesson-73"></a>`lesson-73` — A partially compiled package is not what an application carries
+
+The size budget bundled the published FESM with esbuild and called the result "the contribution
+of this library" to an application. It was the contribution of the **tarball**. Between the two
+stands a step every consumer's builder takes and the probe did not: Angular's linker, which
+turns `ɵɵngDeclareComponent` — where the template still travels as the string it was written
+as — into instructions.
+
+The finding this was written from said the number therefore **overstates** the real cost by the
+size of the template source. The measurement says something else: linking alone moved `./field`
+by **−1850 B** and `./checkbox` by **+823 B**. A template compiles into more than it was written
+as or into less, depending on how much of it was structure and how much was prose — so the
+unlinked figure is not an inflated version of the right number, it is a **different quantity**,
+and it errs in both directions at about the width of the ±5% budget itself.
+
+The bigger half was nowhere in the finding. Partial compilation emits `ɵɵngDeclareClassMetadata`
+carrying the **whole decorator argument a second time**, template and styles included, and the
+compiler puts a `debugName` on every signal input. Both are dev-mode only, and both are dropped
+by a production build — but the drop needs BOTH steps: the metadata call in the package is
+unguarded, and it is the linker that wraps it in `ngDevMode`, which `define` then folds. Either
+step alone is worth under 200 B on `./button`; together they take it from **8116 to 4481**, and
+`./field` from 39294 to 22316. The library's whole recorded weight fell from 121354 B to 72999 B
+without one line of component code changing.
+
+Two things are worth keeping from how it was verified. The claim "a production build drops this"
+was not read off documentation but off a real `@angular/build` bundle: no `ngDeclareComponent`,
+no `setClassMetadata`, no `setClassDebugInfo`. And the honest denominator was cheap — running
+babel over the sources with **no plugin at all** moved every entrypoint by exactly **0 B**, which
+is what makes "the linker did this" a measurement rather than an attribution.

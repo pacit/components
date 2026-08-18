@@ -1,0 +1,9 @@
+{
+  "// defect": "The other half of the same step: the linker ran, the `ngDevMode` fold of a production build did not, so the probe holds `setClassMetadata` — the decorator's whole argument, template included, which no application ships. Its own case, because the two halves fail separately: a plugin that did not apply is not a define that was dropped.",
+  "point": 5,
+  "check": "linked",
+  "residue": {
+    "ep": "./alpha",
+    "found": ["setClassMetadata", "setClassDebugInfo"]
+  }
+}

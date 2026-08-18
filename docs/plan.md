@@ -217,6 +217,19 @@ of it: [`lesson-72`](lessons.md#lesson-72), where the obvious `effect()` passes 
 cases and fails the one the feature exists for, and **C14**, the size snapshot that records the
 last breach rather than the last build.
 
+**C11 closed after it**, and it is the second position in a row where the plan's own either/or
+was two halves of one answer — but this time the measurement went further and took the finding's
+premise with it. "The budget counts a template as text, so it overstates" turned out to be true
+of neither half: linking a template can cost more than the text it replaces (`./checkbox`
++823 B) or much less (`./field` −1850 B), and the real overstatement was somewhere else
+entirely — the class metadata that carries the whole decorator a second time, template
+included, together with a `debugName` on every signal. Both are dev-mode only and both need
+the linker AND the production fold to disappear, which is why neither step alone is worth
+200 B and the two together halve the library: **121354 → 72999 B recorded, with no component
+code touched** ([`lesson-73`](lessons.md#lesson-73)). The task also settled where a new check
+belongs: written last, it fired after the budget, whose advice is `--write` — so a run that
+found the probe measuring the wrong thing would have offered to write the wrong number down.
+
 ## B. Readiness for the first release
 
 Binds at the first publication — and then all of it at once. **B9** bound one step earlier, at
@@ -782,9 +795,13 @@ var(--pct-button-heigth)` passed every one of them, and the 7 stylesheets read 1
     drift is the tolerance doing its job — and then `--write` must touch only the line that
     breached) or a **snapshot** (every byte rewrites it, the diff is honest and noisy). The
     mutation snapshot next door answers it a third way, with a two-sided per-file tolerance
+  - the figures above are in the **old unit** — C11 has since made the number what an
+    application carries rather than what the tarball weighs, and rewrote every row. The
+    finding is unaffected: it is about when the file is written, not about what is in it
   - cost: minutes for either change, the decision is the whole task · _notes:_ —
 
-- [ ] **C11 — the size budget counts a template as text**
+- [x] **C11 — the size budget counts a template as text** — **closed: the probe runs the
+      linker, and the overstatement it was written about ran in both directions**
   - `tools/check-bundle.mjs` — the probe bundles the FESM with esbuild and **does not run
     Angular's linker**, so a partially compiled template is measured as the string it still
     is: the HTML comments of `select.html` alone are 2928 B, and stripping them takes the
@@ -798,7 +815,48 @@ var(--pct-button-heigth)` passed every one of them, and the 7 stylesheets read 1
     and leaves the budget sensitive to prose), or the probe runs the linker first (costly, and
     the number becomes what an app really carries). **Not** an argument for templates without
     comments — the reason for a decision then simply lives in the TypeScript beside it
-  - cost: ~0.5 day · _notes:_ —
+  - cost: ~0.5 day · _notes:_ **done** — the probe runs Angular's linker (an esbuild plugin
+    over `@babel/core` and `@angular/compiler-cli/linker/babel`) and folds `ngDevMode` the
+    way a production build does, plus **point 5 `linked`** with two prepared inputs, and the
+    snapshot's sentence now says what the number is. Both roads, because they are not
+    alternatives: the sentence alone would have described a quantity nobody wants, and the
+    probe alone would leave the file claiming something it had only just started to deserve
+  - **the finding's premise did not survive its own measurement.** Linking is not a discount
+    for prose: on its own it moves `./field` by **−1850 B** and `./checkbox` by **+823 B** —
+    a template compiles into more than it was written as or into less, depending on how much
+    of it was structure. So the old figure was not an inflated version of the right number but
+    a **different quantity**, erring both ways by about the width of the ±5% budget itself
+  - **the bigger half was nowhere in the finding**: partial compilation emits
+    `ɵɵngDeclareClassMetadata` carrying the whole decorator argument a second time — template
+    and styles included — and a `debugName` on every signal input. Both are dev-mode only, and
+    dropping them needs BOTH steps, because the metadata call in the package is unguarded and
+    it is the linker that wraps it in the guard the define then folds. Either step alone is
+    worth under 200 B on `./button`; together, **8116 → 4481 B**, `./field` 39294 → 22316,
+    the recorded whole **121354 → 72999 B** with no component code touched
+    ([`lesson-73`](lessons.md#lesson-73))
+  - verified against the real thing rather than against documentation: an `@angular/build`
+    production bundle holds no `ngDeclareComponent`, no `setClassMetadata` and no
+    `setClassDebugInfo` — the three names point 5 now looks for. The denominator was cheap
+    and worth having: babel over the same sources with **no plugin at all** moves every
+    entrypoint by exactly **0 B**, which is what makes "the linker did this" a measurement
+  - **point 5 and not point 11, because the first control run said so.** With the check last,
+    a probe built the package's way failed the BUDGET first — and the budget's advice is
+    `--write`, which would have written the wrong number down and called it accepted. The
+    numbers here are the order, so everything that compares against the snapshot now stands
+    behind it and the rest moved up one
+  - the gate also caught a defect of its own author: the linker's per-file cache is keyed by
+    path and the probes' entry file has a **fixed name** by design, so the first probe's
+    imports were served to all the rest. Point 4 named it in one line — a `./button` probe
+    that had brought in the primary entrypoint and no button
+  - the price, written down: `@babel/core` becomes a declared devDependency (it was there
+    transitively, which is [B7](#b-readiness-for-the-first-release)'s defect one repository
+    up), and the target gains two `externalDependencies` — a bump of either changes the
+    measured size. Measured and NOT changed by any of this: `pulled` and `external` are
+    identical before and after, so only the size column moved. Byte figures quoted in earlier
+    positions (C2, C10, D1) were taken in the old unit and are left as they were — they were
+    true about what the package held. **C14 is untouched**: this rewrite of every row is the
+    honest kind, the number having changed meaning, and the question of budget-versus-snapshot
+    stands exactly where C10 left it
 
 ## D. Phase 1 — the behaviour layer in `core`
 

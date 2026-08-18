@@ -1,6 +1,6 @@
 {
   "// defect": "The entrypoint grew by half with no line in the diff. The budget does not forbid growth — it forbids growth nobody looked at.",
-  "point": 8,
+  "point": 9,
   "check": "size",
   "size": {
     "ep": "./alpha",

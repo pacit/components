@@ -1,6 +1,6 @@
 {
   "// defect": "The metafile counts the entrypoint as pulled in, and there is not one marker left of it in the text. The other side of the same drift: an entrypoint counted although nothing of it survived.",
-  "point": 6,
+  "point": 7,
   "check": "markers",
   "dropFromText": {
     "ep": "./alpha",

@@ -1,0 +1,9 @@
+{
+  "// defect": "The probe carries `ngDeclare*`: the Angular linker did not run over the FESM, so the measurement is the package's bytes rather than the consumer's — a template counted as the string it travels as, and counted twice. Point 8 would go on reading a number, and a number looks right whatever produced it.",
+  "point": 5,
+  "check": "linked",
+  "residue": {
+    "ep": "./beta",
+    "found": ["ngDeclare"]
+  }
+}

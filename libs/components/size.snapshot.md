@@ -15,17 +15,23 @@ it means "the consumer started paying for something other than yesterday, and th
 to be visible in review".
 
 Columns: entrypoint · size in bytes · other entrypoints brought in · external
-dependencies. The size is the raw size of the minified bundle of an application that
-imports **only** this one entrypoint, with Angular as an external dependency — so it
-measures the contribution of **this library**, not the weight of somebody else's
-framework. Budget: ±5% or ±256 B, whichever is larger.
+dependencies. The size is the raw size of a **production** bundle of an application
+that imports **only** this one entrypoint: Angular external, so it measures the
+contribution of **this library** and not the weight of somebody else's framework —
+and built the way a consumer builds, with the Angular linker run over the package and
+`ngDevMode` folded away. That is what the number is: **what an application carries**,
+not what the tarball weighs. The package holds more — a template travels in it as text
+and the class metadata carries the decorator a second time, and both are compiled away
+before an application ships them.
+
+Budget: ±5% or ±256 B, whichever is larger.
 
 ```
-. 1295 ./core @angular/core
-./button 8116 ./core @angular/core
-./checkbox 16966 ./core @angular/core
-./core 2723 - @angular/core
-./field 39294 ./core @angular/core,@angular/forms,@angular/forms/signals
-./radio 20560 ./core @angular/core
-./select 32400 ./core @angular/cdk/overlay,@angular/core
+. 992 ./core @angular/core
+./button 4481 ./core @angular/core
+./checkbox 10507 ./core @angular/core
+./core 2248 - @angular/core
+./field 22316 ./core @angular/core,@angular/forms,@angular/forms/signals
+./radio 12885 ./core @angular/core
+./select 19570 ./core @angular/cdk/overlay,@angular/core
 ```
