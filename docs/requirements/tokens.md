@@ -54,7 +54,9 @@ a green test comparing two empty strings
 **Promise.**
 
 - **primitive** — raw values with no meaning (`--pct-blue-500`, `--pct-space-4`), colour ramps
-  50–950,
+  50–950. The **ramps are private** — a colour has a semantic tier above it, so a ramp is this
+  skin's implementation; the scales have none and stay public
+  ([0019](../decisions/0019-primitives-are-not-the-contract.md)),
 - **semantic** — intent and states (`--pct-primary`, `--pct-surface-100`, `--pct-text-muted`,
   `--pct-focus-ring`); **the only layer a theme author has to know**,
 - **component** — per component (`--pct-button-bg`); they reference semantic tokens only,

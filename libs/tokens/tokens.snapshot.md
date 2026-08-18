@@ -123,9 +123,9 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-radio-size dimension component public
 --pct-radio-target-min dimension component public
 --pct-radius-md dimension primitive public
---pct-red-400 color primitive public
---pct-red-600 color primitive public
---pct-red-700 color primitive public
+--pct-red-400 color primitive private
+--pct-red-600 color primitive private
+--pct-red-700 color primitive private
 --pct-select-arrow-fg color component public
 --pct-select-bg color component public
 --pct-select-bg-disabled color component public

@@ -160,6 +160,14 @@ is painted ([`lesson-69`](lessons.md#lesson-69)). So the file went and the check
 point of the token gate; the reason for dropping is recorded as "no reader", not "never"
 ([0018](decisions/0018-no-sass-entry-point.md)).
 
+**C6 closed after it**, the second decision-shaped finding in a row, and its question — do
+primitives belong to the public surface? — turned out to have two answers rather than one:
+a colour has a semantic tier above it and a scale has none, so the ramps are the skin's
+implementation while `--pct-space-3` and `--pct-control-height-md` are the only name a shared
+metric has ([0019](decisions/0019-primitives-are-not-the-contract.md)). The drift is gone,
+the union is three names smaller, and the measurement left **C12** behind: two primitives that
+nothing references at all, in the one tier where no gate would have said so.
+
 ## B. Readiness for the first release
 
 Binds at the first publication — and then all of it at once. **B9** bound one step earlier, at
@@ -490,7 +498,8 @@ var(--pct-button-heigth)` passed every one of them, and the 7 stylesheets read 1
     gate catching a defect on its way to a different question stops catching it where that
     question is not asked
 
-- [ ] **C6 — primitives in the public `PctCssVar` union: two ramps private, the third not**
+- [x] **C6 — primitives in the public `PctCssVar` union: two ramps private, the third not** —
+      **closed: the wider question had two answers, because the tiers are not symmetrical**
   - `libs/tokens/src/names.policy.json` declares `pct.blue.` and `pct.slate.` private and
     `pct.red.` not — so a consumer sees `--pct-red-600` in the type and does not see
     `--pct-blue-600`. An inherited drift, moved out of an expression in `build.mjs` and into the
@@ -499,6 +508,33 @@ var(--pct-button-heigth)` passed every one of them, and the 7 stylesheets read 1
     e2e and theme-building code ask the browser for values and the type is the only protection
     against a typo ([`lesson-43`](lessons.md#lesson-43)). Against: a primitive is an
     implementation of the skin, not its contract
+  - cost: minutes for the change, the decision is the whole task · _notes:_ **done** —
+    [0019](decisions/0019-primitives-are-not-the-contract.md): **the primitive colour ramps are
+    private, every other primitive stays public**, and the rule sits in the policy so the next
+    ramp does not reopen the question. Why not one answer for the whole tier: **a colour has a
+    tier above it** (`--pct-danger`, the `on-` pairs), so a ramp is how this skin happens to be
+    built — **a scale has none**, components reference `--pct-space-3` and
+    `--pct-control-height-md` directly, so those are the only name a shared metric has, and an
+    application placing its own control beside ours reads exactly them. The argument for
+    keeping the ramps survives untouched, which is what made the split safe to take: not one
+    line of the workspace asks for a raw ramp by name (measured — the only `--pct-red-*`
+    outside the skin is prose), and everything the e2e helpers do read is semantic, component
+    or scale. The union is **143 names, not 146**, and the change is visible in review because
+    the snapshot moved three lines from `public` to `private`. What the measurement turned up
+    on the way is **C12**: of 34 primitives, two are referenced by nothing — and one of them
+    was public
+
+- [ ] **C12 — two primitives nothing references, and no gate that would say so**
+  - measured while closing C6: of 34 primitives, `pct.blue.50` and `pct.red.700` are
+    referenced by no token and painted by no stylesheet. `--pct-red-700` was in the public
+    `PctCssVar` union until [0019](decisions/0019-primitives-are-not-the-contract.md); both are
+    still declared in `pct.css`, so a consumer's override of them reaches nothing
+  - the gate has a rule for a dead dictionary word, a dead private prefix and a dead `on-`
+    pair, and **none for a dead primitive** — the one tier where "declared and unused" is a
+    normal state of a palette a designer keeps a full ramp of. That is the whole question:
+    either a step nothing uses is a defect (then it is a rule, and the two go), or a palette
+    may carry spare steps (then it is written down, and the ramps stop looking like the rest
+    of the skin)
   - cost: minutes for the change, the decision is the whole task · _notes:_ —
 
 - [ ] **C7 — `options`, the only container part without the `group-` prefix**
