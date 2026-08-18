@@ -53,9 +53,12 @@ None of its own — the wrapper is not focusable. A click on the row's backgroun
 
 ## Known limitations
 
-- **`attach()` — last one wins, quietly.** `control` is a single signal and `attach` simply
-  overwrites it. Two controls in one wrapper is a silent defect of the kind this project
-  usually catches. To be fixed with a cheap `console.warn` under `isDevMode()`.
+- **Two controls in one chrome are reported, not repaired.** The last to register wins, as
+  before — the chrome cannot know which of the two the label was written for — but it is no
+  longer quiet about it: a dev-mode message names both control ids
+  ([`lesson-68`](../lessons.md#lesson-68)). Registration is a pair (`attach` / `detach`), so a
+  control merely replaced inside an `@if` is not mistaken for a second one, and a control that
+  leaves takes its state out of the chrome with it.
 - **An `inset` button has to be one step smaller than the field.** At size `sm` there is no
   step below, so the button fills the height there and pushes the row out by the thickness of
   the frame. That is a corollary of [0004](../decisions/0004-explicit-height.md), not

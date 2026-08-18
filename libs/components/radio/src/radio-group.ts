@@ -14,6 +14,7 @@ import {
   nextPctId,
   PCT_FIELD,
   pctDescribedBy,
+  pctAttachToField,
   pctFieldMessages,
   PctCompareWith,
   PctFieldAppearance,
@@ -176,7 +177,7 @@ export class PctRadioGroup<T = string>
   );
 
   constructor() {
-    this.fieldApi?.attach(this);
+    pctAttachToField(this.fieldApi, this);
   }
 
   /**

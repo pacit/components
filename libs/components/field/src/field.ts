@@ -7,6 +7,7 @@ import {
   ElementRef,
   inject,
   input,
+  isDevMode,
   signal,
   viewChild,
 } from '@angular/core';
@@ -124,7 +125,39 @@ export class PctField implements PctFieldApi {
   );
 
   attach(control: PctFieldControl): void {
+    const taken = this.control();
     this.control.set(control);
+    if (taken !== null && taken !== control)
+      this.warnOnSecondControl(taken, control);
+  }
+
+  detach(control: PctFieldControl): void {
+    // A goodbye from a control that is no longer the current one changes nothing: the chrome
+    // has already been taken over by its successor (`pctAttachToField` in `core`).
+    if (this.control() === control) this.control.set(null);
+  }
+
+  /**
+   * Two controls inside one chrome. The last to register wins, and it wins **quietly** — the
+   * label points at it, the hint and error ids go to it, and the earlier control is left
+   * unlabelled and undescribed while looking exactly as it should. The chrome cannot choose
+   * between them (which one the label was written for is not its to know), so it says so.
+   *
+   * A control **replaced** is not this case: it detaches on destruction, so what is reported
+   * here is two controls alive at once.
+   */
+  private warnOnSecondControl(
+    previous: PctFieldControl,
+    next: PctFieldControl,
+  ): void {
+    if (!isDevMode()) return;
+    console.warn(
+      `[pct-field] Two controls inside one field ("${previous.controlId}" and ` +
+        `"${next.controlId}"). The chrome describes the last one to ` +
+        `register: the label points at it and the hint and error ids go to it, so ` +
+        `the earlier control is left unlabelled and undescribed. Give each control ` +
+        `a field of its own.`,
+    );
   }
 
   private readonly row = viewChild<ElementRef<HTMLElement>>('row');

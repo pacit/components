@@ -18,6 +18,7 @@ import {
   nextPctId,
   PCT_FIELD,
   pctDescribedBy,
+  pctAttachToField,
   pctFieldMessages,
   PctFieldAppearance,
   PctFieldControl,
@@ -143,7 +144,7 @@ export class PctCheckbox implements FormCheckboxControl, PctFieldControl {
   );
 
   constructor() {
-    this.fieldApi?.attach(this);
+    pctAttachToField(this.fieldApi, this);
   }
 
   /**

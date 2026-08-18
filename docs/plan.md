@@ -144,6 +144,14 @@ template, produced **C11** and [`lesson-67`](lessons.md#lesson-67): a template t
 artefact as a string, so prose for a maintainer is bytes, while the same prose in TypeScript
 is free.
 
+**C3 closed next**, and it repeated C2's shape one component over: the finding asked for a
+`console.warn` when a second control registers with a field chrome, and written that way the
+message would have fired on a page that is entirely correct — a control inside an `@if` is
+destroyed and built again, and its second construction calls `attach` exactly as a second
+control would. The contract had only the half that speaks, so **`detach` came first and the
+message second** ([`lesson-68`](lessons.md#lesson-68)), and the pair closed a defect the
+finding had not named: the chrome was reading the state of a control that had left the DOM.
+
 ## B. Readiness for the first release
 
 Binds at the first publication — and then all of it at once. **B9** bound one step earlier, at
@@ -405,10 +413,36 @@ current.
     counts a template as text — and this component's page still carried two limitations that
     D1 and C1 had closed, a "Known limitations" section outliving what it knew
 
-- [ ] **C3 — `PctField.attach()` overwrites silently**
+- [x] **C3 — `PctField.attach()` overwrites silently** — **closed, and the message needed a
+      life-cycle event that did not exist**
   - `libs/components/field/src/field.ts` — a second control in one field chrome wins without a
     word. A classic silent defect, cheap to close: `console.warn` under `isDevMode()`
-    · _notes:_ —
+    · _notes:_ **done** — `detach` in the `PctFieldApi` contract, `pctAttachToField` in `core`
+    (one call, both halves, booked through the control's `DestroyRef`), the report in
+    `PctField.attach` under `isDevMode()`, four cases in `field.spec.ts`, and the promise in
+    [`req-api-wrapper`](requirements/api.md#req-api-wrapper) and on the component page.
+    **The task as written would have reported a correct page** ([`lesson-68`](lessons.md#lesson-68)):
+    a control inside an `@if` is destroyed and built again, and the second construction calls
+    `attach` exactly as a second control would — nothing in the contract told the two apart,
+    because the contract had only the half that speaks. The pair therefore came first and the
+    message second. It also closed something the finding had not named: **the chrome went on
+    reading a destroyed control's state**, a signal outliving its component, so the error of a
+    control removed from the DOM stayed lit under the field. Measured, not argued: `detach`
+    made a no-op leaves the swap case and the departure case red, the report switched off
+    leaves the first case red. The five controls that used to call `attach` by hand now call
+    the helper — the same three lines in five places is a fix that has to be made five times
+    ([`lesson-21`](lessons.md#lesson-21)), and the mutation run reads `core/field.ts` at
+    **96.97%** (96.43 before), its one survivor unchanged — an optional-chaining mutant in
+    `pctFieldMessages` that only a control reporting `null` errors could kill, and the types
+    forbid one. It says 96.97 rather than 100 because the run was made **twice**: the first
+    shared the machine with other gates and recorded that survivor as killed by the CLOCK,
+    which is the purchase `mutation.policy.json` was written to catch. It also records two
+    scores falling by a hundredth,
+    which is the same edit seen from the other end: `this.field?.attach(this)` carried an
+    optional-chaining mutant that a plain call does not, so `number.ts` and `select.ts` each
+    have one killed mutant fewer to their name. Deliberately **not** changed: which control wins.
+    Last-in still takes the chrome, because the chrome cannot know which of the two the label
+    was written for, and a quiet reordering would be a second guess on top of the first
 
 - [ ] **C4 — `_tokens.scss`: generated, shipped in the package, used by zero lines**
   - concerns: `req-token-scss` — component stylesheets contain no `@use` at all; every reference

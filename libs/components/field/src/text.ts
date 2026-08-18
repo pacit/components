@@ -16,6 +16,7 @@ import type { FormValueControl, ValidationError } from '@angular/forms/signals';
 import {
   nextPctId,
   PCT_FIELD,
+  pctAttachToField,
   PctFieldControl,
   PctFieldCursor,
   PctLabelStrategy,
@@ -112,7 +113,7 @@ export class PctText implements FormValueControl<string>, PctFieldControl {
   constructor() {
     // The chrome is optional: without it the control works standalone (no label, no
     // messages), which is useful in a table cell, for instance.
-    this.field?.attach(this);
+    pctAttachToField(this.field, this);
 
     // Signal -> DOM only while classic forms are not in charge.
     effect(() => {

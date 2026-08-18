@@ -1,4 +1,10 @@
-import { computed, InjectionToken, Signal } from '@angular/core';
+import {
+  computed,
+  DestroyRef,
+  inject,
+  InjectionToken,
+  Signal,
+} from '@angular/core';
 
 /** Minimal structural shape of a validation error — keeps `core` free of any forms API. */
 export interface PctValidationError {
@@ -78,6 +84,17 @@ export interface PctFieldApi {
   /** A control registers itself with the chrome (called from its constructor). */
   attach(control: PctFieldControl): void;
   /**
+   * A control unregisters itself when it is destroyed. Without the other half of the pair the
+   * chrome would go on reading the state of a control that has left the DOM — a signal
+   * outlives the component that owns it and answers with the last value it held — and it
+   * would have no way of telling **one control replaced** (`@if` around it) from **two
+   * controls at once**, which is a defect it is meant to report.
+   *
+   * A call from a control that is not the current one is ignored: that is a late goodbye from
+   * one already replaced, not a request to empty the chrome.
+   */
+  detach(control: PctFieldControl): void;
+  /**
    * The field border element — the surface a control with an overlay of its own (select,
    * and date in the future) aligns its panel to. Inside the chrome a control stands in a
    * column inset from the border by padding and decorations, so a panel anchored to the
@@ -93,6 +110,26 @@ export interface PctFieldApi {
  * of their own (checkbox, radiogroup) work both standalone and inside `pct-field`.
  */
 export const PCT_FIELD = new InjectionToken<PctFieldApi>('PCT_FIELD');
+
+/**
+ * Registers a control with the chrome and books its unregistration for the moment it is
+ * destroyed. Called from a control's constructor, that being an injection context — the
+ * `DestroyRef` is what makes the pair symmetrical without every control repeating it
+ * ([`lesson-21`](../../../../docs/lessons.md#lesson-21): the same three lines in five
+ * controls are a fix that has to be made five times).
+ *
+ * `api` is nullable, because a control inside the chrome and the same control standing alone
+ * are the same class: with no chrome there is nothing to register with, and nothing to
+ * unregister from either.
+ */
+export function pctAttachToField(
+  api: PctFieldApi | null,
+  control: PctFieldControl,
+): void {
+  if (api === null) return;
+  api.attach(control);
+  inject(DestroyRef).onDestroy(() => api.detach(control));
+}
 
 /**
  * Shared message logic: the text of the first error, and gating visibility on `touched`.

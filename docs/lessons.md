@@ -1447,3 +1447,32 @@ consumer's bill: the probe bundles the FESM with esbuild and **does not run Angu
 linker**, while a real application does — the linker compiles the template into instructions
 and the comments never reach the app. The bytes are real in the package on npm; in the
 consumer's bundle they are not. That the snapshot does not say so is **C11**.
+
+---
+
+### <a id="lesson-68"></a>`lesson-68` — A warning about a second one needs to be told when the first one left
+
+The chrome of a field kept its control in a signal and `attach` simply overwrote it, so two
+controls inside one `pct-field` ended with the later one taking the label, the hint and the
+error ids, and the earlier one looking exactly as it should while being unlabelled and
+undescribed. The finding said what to do about it: a `console.warn` under `isDevMode()` when
+`attach` arrives at a chrome that already has a control.
+
+Written that way it reports the wrong thing. A control inside an `@if` is destroyed and built
+again, and the second construction calls `attach` exactly like a second control would — the
+message would fire on a page that is entirely correct, which is how a warning teaches people
+to ignore warnings. Nothing in the contract distinguished the two, because the contract had
+only the half that speaks: **there was no `detach`.**
+
+So the pair came first and the message second (`pctAttachToField` books both from the
+control's `DestroyRef`). The pair also closed something the finding had not named: the chrome
+went on reading the state of a destroyed control, because a signal outlives the component that
+owns it and answers with the last value it held — the error of a control removed from the DOM
+stayed lit under the field. Measured: with `detach` made a no-op, the swap case and the
+departure case both fail.
+
+The general shape: **before writing a warning about "one too many", check that something tells
+you when one goes away.** A life-cycle event that only fires on the way in cannot tell a
+duplicate from a replacement, and a rule built on it reports normal life as a defect —
+[`lesson-60`](#lesson-60) one floor over, where the noise was a word list rather than a
+life cycle.

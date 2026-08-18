@@ -140,16 +140,27 @@ wrapper** but by the control inside it — which keeps the typing with the kind 
 control registers itself through the `PCT_FIELD` token; the wrapper hands it the description
 ids for `aria-describedby`.
 
-**Gate:** `libs/components/field/src/field.spec.ts`,
-`apps/sandbox-e2e/src/field.spec.ts`, `apps/sandbox-e2e/src/field-hitarea.spec.ts`
+**One chrome holds one control**, and registration is a **pair**: `attach` on construction,
+`detach` on destruction (`pctAttachToField` in `core` books both). The pair is what tells a
+control **replaced** — an `@if` around it — from **two controls at once**, which is reported
+under `isDevMode()` rather than repaired: the chrome cannot know which of the two the label
+was written for, and the one that did not win looks exactly as it should
+([`lesson-68`](../lessons.md#lesson-68)).
+
+**Gate:** `libs/components/field/src/field.spec.ts` — the chrome's own cases plus the four
+about registration (two controls reported, one silent, a swap silent, and a control leaving
+taking its state with it); `apps/sandbox-e2e/src/field.spec.ts`,
+`apps/sandbox-e2e/src/field-hitarea.spec.ts`
 **Control:** `field-hitarea.spec.ts` — a cursor map over a grid of points
 (`elementFromPoint` × `getComputedStyle().cursor`); the test measures the **whole** surface of
-the frame, so it cannot pass with an uncovered strip
+the frame, so it cannot pass with an uncovered strip. For the pair: `detach` made a no-op
+leaves the swap and the departure red (measured — and it is what a naive count of `attach`
+calls would have got wrong), and the report switched off leaves the first case red
 **Decision:** [0003 — wrapper and control](../decisions/0003-wrapper-and-control.md)
 **Lessons:** [`lesson-21`](../lessons.md#lesson-21),
 [`lesson-22`](../lessons.md#lesson-22), [`lesson-24`](../lessons.md#lesson-24),
 [`lesson-27`](../lessons.md#lesson-27), [`lesson-28`](../lessons.md#lesson-28),
-[`lesson-34`](../lessons.md#lesson-34)
+[`lesson-34`](../lessons.md#lesson-34), [`lesson-68`](../lessons.md#lesson-68)
 
 ---
 

@@ -20,6 +20,7 @@ import {
   PCT_FIELD,
   PCT_TEXTS,
   pctDescribedBy,
+  pctAttachToField,
   pctFieldMessages,
   pctListNavigation,
   PctCompareWith,
@@ -382,7 +383,7 @@ export class PctSelect<T = string>
   }
 
   constructor() {
-    this.fieldApi?.attach(this);
+    pctAttachToField(this.fieldApi, this);
 
     // The active option has to be visible in a scrolling list.
     effect(() => {

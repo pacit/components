@@ -19,6 +19,7 @@ import type { FormValueControl, ValidationError } from '@angular/forms/signals';
 import {
   nextPctId,
   PCT_FIELD,
+  pctAttachToField,
   PctFieldControl,
   PctFieldCursor,
   PctLabelStrategy,
@@ -215,7 +216,7 @@ export class PctNumber
   });
 
   constructor() {
-    this.field?.attach(this);
+    pctAttachToField(this.field, this);
 
     effect(() => {
       const v = this.value();

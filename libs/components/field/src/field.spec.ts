@@ -152,6 +152,58 @@ class SizeHost {
   size = signal<PctFieldSize>('lg');
 }
 
+/** Two controls in one chrome — a configuration the chrome cannot repair. */
+@Component({
+  imports: [PctField, PctText],
+  template: `<pct-field label="E-mail">
+    <input pctText [(value)]="first" />
+    <input pctText [(value)]="second" />
+  </pct-field>`,
+})
+class TwoControlsHost {
+  first = signal('');
+  second = signal('');
+}
+
+/** One control at a time, swapped — what a rule counting `attach` calls would report. */
+@Component({
+  imports: [PctField, PctText],
+  template: `<pct-field label="E-mail">
+    @if (second()) {
+      <input pctText [(value)]="value" />
+    } @else {
+      <input pctText type="email" [(value)]="value" />
+    }
+  </pct-field>`,
+})
+class SwappedControlHost {
+  second = signal(false);
+  value = signal('');
+}
+
+/** The control leaves the chrome, and with it everything the chrome said about it. */
+@Component({
+  imports: [PctField, PctText],
+  template: `<pct-field label="E-mail">
+    @if (present()) {
+      <input
+        pctText
+        [invalid]="true"
+        [touched]="true"
+        [errors]="errors"
+        [(value)]="value"
+      />
+    }
+  </pct-field>`,
+})
+class RemovableControlHost {
+  present = signal(true);
+  readonly errors: readonly { kind: string; message?: string }[] = [
+    { kind: 'email', message: 'Not an e-mail' },
+  ];
+  value = signal('');
+}
+
 /** A wrapper with no explicit size — it takes one from the global config. */
 @Component({
   imports: [PctField, PctText],
@@ -539,6 +591,89 @@ describe('PctField + PctText', () => {
       // The error takes the line -> describedby is the error id, with no dangling hint id.
       const errorId = part(fixture, 'field-error').id;
       expect(input.getAttribute('aria-describedby')).toBe(errorId);
+    });
+  });
+
+  /**
+   * The chrome holds ONE control: it describes it, points its label at it and reads its
+   * state. A second one inside the same chrome wins by arriving later, and the first is left
+   * unlabelled and undescribed while looking exactly as it should — so the chrome says so
+   * (`req-api-wrapper`). The pair `attach`/`detach` is what tells that from a control merely
+   * replaced.
+   */
+  describe('one chrome, one control', () => {
+    const silenced = () =>
+      vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    it('a second control in the same chrome is reported, naming both', async () => {
+      const warn = silenced();
+      try {
+        const fixture = await render(TwoControlsHost);
+        const inputs = fixture.nativeElement.querySelectorAll('input');
+
+        expect(warn).toHaveBeenCalledTimes(1);
+        expect(String(warn.mock.calls[0][0])).toBe(
+          `[pct-field] Two controls inside one field ("${inputs[0].id}" and ` +
+            `"${inputs[1].id}"). The chrome describes the last one to register: ` +
+            `the label points at it and the hint and error ids go to it, so the ` +
+            `earlier control is left unlabelled and undescribed. Give each control ` +
+            `a field of its own.`,
+        );
+        // Named, not repaired: the label still points at the control that came last.
+        expect(part(fixture, 'field-label').getAttribute('for')).toBe(
+          inputs[1].id,
+        );
+      } finally {
+        warn.mockRestore();
+      }
+    });
+
+    it('one control is silent', async () => {
+      const warn = silenced();
+      try {
+        await render(Host);
+        expect(warn).not.toHaveBeenCalled();
+      } finally {
+        warn.mockRestore();
+      }
+    });
+
+    it('a control replaced is not two controls', async () => {
+      const fixture = await render(SwappedControlHost);
+      const warn = silenced();
+      try {
+        fixture.componentInstance.second.set(true);
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        // The new control took the chrome over, and the label goes with it.
+        expect(warn).not.toHaveBeenCalled();
+        expect(part(fixture, 'field-label').getAttribute('for')).toBe(
+          inputOf(fixture).id,
+        );
+      } finally {
+        warn.mockRestore();
+      }
+    });
+
+    it('the control leaving takes its state out of the chrome', async () => {
+      const fixture = await render(RemovableControlHost);
+      expect(part(fixture, 'field-error').textContent?.trim()).toBe(
+        'Not an e-mail',
+      );
+
+      fixture.componentInstance.present.set(false);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      // A signal outlives its component, so without `detach` the chrome would go on
+      // showing the error of a control that has left the DOM.
+      expect(allParts(fixture, 'field-error')).toHaveLength(0);
+      expect(
+        query<HTMLElement>(fixture, 'pct-field').hasAttribute(
+          'data-pct-invalid',
+        ),
+      ).toBe(false);
     });
   });
 
