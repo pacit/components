@@ -108,7 +108,11 @@
     outline-color: Highlight;
   }
 
+  /* The surface stays `Field` when disabled too — the same reason as in the checkbox: the
+     base rule for this state is more specific than the general one above, and `@media` adds
+     no specificity (lesson-70). */
   :host([data-pct-disabled]) .pct-radio__circle {
+    background: Field;
     border-color: GrayText;
   }
 

@@ -1,18 +1,22 @@
 #!/usr/bin/env node
 /**
  * Style gate: `req-token-logical` (layout in logical properties, so it mirrors under
- * `dir="rtl"`) and `req-token-no-opacity` (no compositing `opacity`). Breaking either
- * gives no red test — an LTR screenshot looks right, and so does `opacity: 0.6`, which
- * quietly undoes `req-token-contrast` ([`lesson-6`](../docs/lessons.md#lesson-6)).
+ * `dir="rtl"`), `req-token-no-opacity` (no compositing `opacity`) and
+ * `req-a11y-forced-colors` (the mode's rules really paint). Breaking any of them gives no
+ * red test — an LTR screenshot looks right, so does `opacity: 0.6`, which quietly undoes
+ * `req-token-contrast` ([`lesson-6`](../docs/lessons.md#lesson-6)), and so does a
+ * forced-colors rule that loses on specificity, because the browser substitutes the
+ * colours by itself anyway ([`lesson-70`](../docs/lessons.md#lesson-70)).
  *
  *  1. the list of stylesheets is not empty (else points 5 and 6 pass over nothing),
  *  2. COMPILER: everything sass EMITS is visible to the source scanner as well,
  *  3. STYLE SOURCE: every `@Component` takes its styles from a sheet this gate reads,
  *  4. exceptions are named, justified and USED,
  *  5. no physical property of the inline axis,
- *  6. no compositing `opacity`.
+ *  6. no compositing `opacity`,
+ *  7. FORCED COLOURS: a rule of that mode is not outranked by a base rule of the sheet.
  *
- * Points 5 and 6 are the rules; 1–3 watch the DENOMINATOR they run over — an unread sheet
+ * Points 5–7 are the rules; 1–3 watch the DENOMINATOR they run over — an unread sheet
  * is to them what a missing file is to coverage ([`lesson-48`](../docs/lessons.md#lesson-48)).
  *
  * Usage: node tools/check-styles.mjs
@@ -267,6 +271,289 @@ const binaryOpacity = (value) => {
   return count === 0 || count === 1;
 };
 
+// ── the cascade under forced colours ─────────────────────────────────────────
+
+/**
+ * Comments out of the text, strings left whole: `content: "/*"` is a string and not the
+ * start of a comment, and an attribute selector (`[data-pct-size='sm']`) has to survive
+ * intact — the whole of point 7 is about selectors.
+ */
+const withoutComments = (css) => {
+  let out = '';
+  let i = 0;
+  while (i < css.length) {
+    const c = css[i];
+    if (c === '/' && css[i + 1] === '*') {
+      const end = css.indexOf('*/', i + 2);
+      i = end === -1 ? css.length : end + 2;
+      out += ' ';
+      continue;
+    }
+    if (c === '"' || c === "'") {
+      let j = i + 1;
+      while (j < css.length && css[j] !== c) j += css[j] === '\\' ? 2 : 1;
+      out += css.slice(i, j + 1);
+      i = j + 1;
+      continue;
+    }
+    out += c;
+    i++;
+  }
+  return out;
+};
+
+/**
+ * The rules of a sheet in source order, each with its selectors, its body and whether it
+ * stands inside `@media (forced-colors: active)`.
+ *
+ * Read from SASS'S OUTPUT and not from the source. Point 7 asks about SELECTORS, and in
+ * the output nesting, `&` and a mixin's body are already resolved into the text a browser
+ * really parses — the same material point 2 compares against. The scanner above returns
+ * declarations without the rule they sit in, so it cannot answer this question at all.
+ */
+const cssRules = (css) => {
+  const source = withoutComments(css);
+  const rules = [];
+  const at = [];
+  let prelude = '';
+  let i = 0;
+  while (i < source.length) {
+    const c = source[i];
+    if (c === '"' || c === "'") {
+      let j = i + 1;
+      while (j < source.length && source[j] !== c)
+        j += source[j] === '\\' ? 2 : 1;
+      prelude += source.slice(i, j + 1);
+      i = j + 1;
+      continue;
+    }
+    if (c === '}') {
+      at.pop();
+      prelude = '';
+      i++;
+      continue;
+    }
+    if (c !== '{') {
+      prelude += c;
+      i++;
+      continue;
+    }
+
+    const head = prelude.replace(/\s+/g, ' ').trim();
+    prelude = '';
+    i++;
+    // An at-rule with a block (`@media`, `@supports`) is a context; a style rule is read.
+    if (head.startsWith('@')) {
+      at.push(head);
+      continue;
+    }
+    let depth = 1;
+    const start = i;
+    while (i < source.length && depth > 0) {
+      if (source[i] === '{') depth++;
+      else if (source[i] === '}') depth--;
+      if (depth > 0) i++;
+    }
+    rules.push({
+      selectors: head
+        .split(',')
+        .map((selector) => selector.trim())
+        .filter(Boolean),
+      body: source.slice(start, i),
+      forced: at.some((rule) => /forced-colors\s*:\s*active/.test(rule)),
+      order: rules.length,
+    });
+    i++;
+  }
+  return rules;
+};
+
+/** The `property: value` pairs of a rule's body — plain CSS, no nested rules to skip. */
+const bodyDeclarations = (body) =>
+  body
+    .split(';')
+    .map((piece) => /^\s*(-{0,2}[a-z][-\w]*)\s*:\s*([\s\S]+)$/i.exec(piece))
+    .filter((m) => m !== null)
+    .map(([, property, raw]) => ({
+      property: property.toLowerCase(),
+      value: raw.trim().replace(/\s+/g, ' '),
+      important: /!\s*important$/i.test(raw),
+    }));
+
+/**
+ * The simple selectors of ONE compound, each kept as written — a functional pseudo-class
+ * carries its argument along (`:not([data-pct-loading])`), so two compounds compare as
+ * sets of the same strings.
+ */
+const simpleSelectors = (compound) => {
+  const out = [];
+  let i = 0;
+  while (i < compound.length) {
+    if (compound[i] === '[') {
+      const end = compound.indexOf(']', i);
+      const stop = end === -1 ? compound.length : end + 1;
+      out.push(compound.slice(i, stop));
+      i = stop;
+      continue;
+    }
+    let j = i + 1;
+    if (compound[i] === ':' && compound[j] === ':') j++;
+    while (j < compound.length && /[-\w]/.test(compound[j])) j++;
+    if (compound[j] === '(') {
+      let depth = 1;
+      j++;
+      while (j < compound.length && depth > 0) {
+        if (compound[j] === '(') depth++;
+        else if (compound[j] === ')') depth--;
+        j++;
+      }
+    }
+    out.push(compound.slice(i, j));
+    i = j;
+  }
+  return out.filter((simple) => simple.trim() !== '');
+};
+
+const FUNCTIONAL = /^(::?[-\w]+)\(([\s\S]*)\)$/;
+
+/** Specificity as `[id, class, type]` — the rules a browser decides the cascade by. */
+const specificity = (selector) => {
+  const total = [0, 0, 0];
+  for (const compound of selector.split(/\s*[\s>+~]\s*/).filter(Boolean))
+    for (const simple of simpleSelectors(compound)) {
+      const fn = FUNCTIONAL.exec(simple);
+      if (fn) {
+        const name = fn[1].toLowerCase();
+        // `:where()` contributes nothing — that is what it is for.
+        if (name === ':where') continue;
+        // `:host()` and `:host-context()` count themselves AND their argument; `:is()`,
+        // `:not()` and `:has()` take the specificity of their strongest argument.
+        if (name === ':host' || name === ':host-context') total[1]++;
+        const strongest = fn[2]
+          .split(',')
+          .map((argument) => specificity(argument.trim()))
+          .sort((a, b) => b[0] - a[0] || b[1] - a[1] || b[2] - a[2])[0] ?? [
+          0, 0, 0,
+        ];
+        for (const k of [0, 1, 2]) total[k] += strongest[k];
+        continue;
+      }
+      if (simple.startsWith('#')) total[0]++;
+      else if (simple.startsWith('::')) total[2]++;
+      else if (/^[.[:]/.test(simple)) total[1]++;
+      else if (simple !== '*') total[2]++;
+    }
+  return total;
+};
+
+const bySpecificity = (a, b) => a[0] - b[0] || a[1] - b[1] || a[2] - b[2];
+
+/**
+ * The compounds of a selector, each as the SET of its simple selectors. `:host(X)` is
+ * flattened into `{ ':host', …X }`, because `:host()` takes a compound and nothing else —
+ * that way `:host([disabled])` and `:host([disabled]:not([x]))` compare as sets.
+ *
+ * `null` for anything but descendant combinators. `>`, `+` and `~` say something about
+ * position that a comparison of sets does not carry, and reading them wrong would put the
+ * point onto a rule that is fine. The library has none.
+ */
+const compoundsOf = (selector) => {
+  if (/[>+~]/.test(selector)) return null;
+  return selector
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((compound) => {
+      const out = new Set();
+      for (const simple of simpleSelectors(compound)) {
+        const fn = FUNCTIONAL.exec(simple);
+        if (fn && [':host', ':host-context'].includes(fn[1].toLowerCase())) {
+          out.add(fn[1].toLowerCase());
+          for (const inner of simpleSelectors(fn[2].trim())) out.add(inner);
+          continue;
+        }
+        out.add(simple);
+      }
+      return out;
+    });
+};
+
+/**
+ * "Every element `narrow` matches, `wide` matches too" — decided on the text, so it says
+ * yes only where it is sure. A selector narrows in two ways: more conditions in a compound
+ * (`:host([disabled]:not([x]))` under `:host([disabled])`) and more ancestors
+ * (`:host([x]) .box` under `.box`). Both only ever REMOVE elements, so the answer errs in
+ * the direction that matters — a missed "yes" costs one unexamined pair, a wrong one would
+ * cost a false accusation.
+ */
+const matchesWithin = (wide, narrow) => {
+  const outer = compoundsOf(wide);
+  const inner = compoundsOf(narrow);
+  if (outer === null || inner === null || outer.length > inner.length)
+    return false;
+  let index = inner.length - 1;
+  for (let k = outer.length - 1; k >= 0; k--) {
+    const covers = (compound) =>
+      [...outer[k]].every((simple) => compound.has(simple));
+    // The rightmost compound is the element the rule paints — it has to line up.
+    if (k === outer.length - 1) {
+      if (!covers(inner[index])) return false;
+      index--;
+      continue;
+    }
+    // An ancestor may sit anywhere further up: `.a .c .b` is inside `.a .b`.
+    let found = false;
+    while (index >= 0 && !found) {
+      if (covers(inner[index])) found = true;
+      index--;
+    }
+    if (!found) return false;
+  }
+  return true;
+};
+
+const BORDER_SIDES = [
+  'top',
+  'right',
+  'bottom',
+  'left',
+  'inline-start',
+  'inline-end',
+  'block-start',
+  'block-end',
+];
+
+/**
+ * Shorthands and the longhands they RESET. Written out rather than derived from the name:
+ * `border` resets `border-color`, while `border-radius` begins with the same word and
+ * resets nothing of the kind — a guessed rule would either accuse or miss. A property
+ * outside the list collides with itself alone; the list grows on the day a sheet needs it.
+ */
+const RESETS = new Map([
+  ['background', ['background-color', 'background-image']],
+  [
+    'border',
+    [
+      'border-color',
+      'border-style',
+      'border-width',
+      ...BORDER_SIDES.flatMap((side) => [
+        `border-${side}`,
+        `border-${side}-color`,
+        `border-${side}-style`,
+        `border-${side}-width`,
+      ]),
+    ],
+  ],
+  ['border-color', BORDER_SIDES.map((side) => `border-${side}-color`)],
+  ['outline', ['outline-color', 'outline-style', 'outline-width']],
+]);
+
+/** Do two declarations fight over the same pixel? */
+const overlapping = (a, b) =>
+  a === b ||
+  (RESETS.get(a) ?? []).includes(b) ||
+  (RESETS.get(b) ?? []).includes(a);
+
 // ── checks ──────────────────────────────────────────────────────────────────
 
 /**
@@ -480,10 +767,91 @@ const checkStyles = ({ sheets, components, declarations }) => {
         `colour token of its own. Only \`0\` and \`1\` are allowed (a visibility switch).`,
     );
 
+  // 7. Forced colours (`req-a11y-forced-colors`): a declaration inside
+  //    `@media (forced-colors: active)` is not outranked by a base rule of the same sheet.
+  //
+  //    `@media` adds NO specificity, so `:host([disabled])` in the mode's block loses to
+  //    `:host([disabled]:not([data-pct-loading]))` outside it: the rule looks like it
+  //    handles the mode and paints nothing. Nothing goes red over that — chromium and
+  //    firefox substitute the colours themselves, so the result comes out right whichever
+  //    rule won, and the difference shows only in webkit (`lesson-56`) — and everywhere
+  //    from the day any part of the library takes `forced-color-adjust: none`.
+  //
+  //    Sheet by sheet, which is how a browser sees them: component styles are scoped by
+  //    the encapsulation shim, so a rule of `field.scss` never meets one of `select.scss`.
+  //    The shim appends an attribute selector to every compound, and under the containment
+  //    above the narrower selector never has fewer compounds than the wider one — so the
+  //    shim can only widen the difference measured here, never close it.
+  const outranked = [];
+  let forcedDeclarations = 0;
+  for (const sheet of sheets) {
+    const declarations = [];
+    for (const rule of cssRules(sheet.css))
+      for (const selector of rule.selectors)
+        for (const d of bodyDeclarations(rule.body))
+          declarations.push({
+            ...d,
+            selector,
+            forced: rule.forced,
+            order: rule.order,
+            spec: specificity(selector),
+          });
+    forcedDeclarations += declarations.filter((d) => d.forced).length;
+
+    /** Which of two declarations for ONE element the browser applies. */
+    const wins = (a, b) => {
+      if (a.important !== b.important) return a.important;
+      const difference = bySpecificity(a.spec, b.spec);
+      return difference === 0 ? a.order > b.order : difference > 0;
+    };
+
+    for (const forced of declarations.filter((d) => d.forced))
+      for (const base of declarations.filter((d) => !d.forced)) {
+        if (!overlapping(forced.property, base.property)) continue;
+        if (
+          !matchesWithin(forced.selector, base.selector) &&
+          !matchesWithin(base.selector, forced.selector)
+        )
+          continue;
+        if (!wins(base, forced)) continue;
+        // Another rule of the mode may already cover exactly the elements the base rule
+        // takes: `.option { background: Canvas }` gives way to `[data-pct-selected]`, and
+        // the block says so itself with `[data-pct-selected] { background: SelectedItem }`.
+        // That is a block written out state by state, not a hole in the mode.
+        const covered = declarations.some(
+          (other) =>
+            other.forced &&
+            other !== forced &&
+            overlapping(other.property, base.property) &&
+            matchesWithin(other.selector, base.selector) &&
+            wins(other, base),
+        );
+        if (covered) continue;
+        outranked.push(
+          `${sheet.file}: \`${forced.property}: ${forced.value}\` on ` +
+            `\`${forced.selector}\` (${forced.spec.join(',')}) gives way to ` +
+            `\`${base.property}\` on \`${base.selector}\` (${base.spec.join(',')})`,
+        );
+      }
+  }
+
+  if (outranked.length)
+    throw new StyleError(
+      'forced-colors',
+      `${outranked.length} declarations of forced-colors mode that never paint ` +
+        `(req-a11y-forced-colors):\n` +
+        list(outranked) +
+        `\n    \`@media\` adds no specificity of its own — inside it a rule beats the ` +
+        `base sheet by its own selector alone. Repeat the base rule's selector, or narrow ` +
+        `it further. Nothing here turns a test red: chromium and firefox substitute the ` +
+        `colours anyway, so the mode looks handled everywhere but webkit (lesson-56).`,
+    );
+
   const exceptions = justified.size;
   return (
     `${sheets.length} stylesheets, ${components.length} components, ` +
-    `${exceptions} justified ${exceptions === 1 ? 'exception' : 'exceptions'}`
+    `${exceptions} justified ${exceptions === 1 ? 'exception' : 'exceptions'}, ` +
+    `${forcedDeclarations} forced-colors declarations`
   );
 };
 

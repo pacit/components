@@ -1503,3 +1503,39 @@ ask what happens to that defect where the question is not asked.** The answer he
 point of its own (NAMES), and it cost less than the artefact whose whole argument had been
 that it would have caught the same typo
 ([0018](decisions/0018-no-sass-entry-point.md)).
+
+---
+
+### <a id="lesson-70"></a>`lesson-70` — A media query adds no specificity, and the browser it is written for hides that
+
+`@media (forced-colors: active)` says **when** a rule applies, never **how strongly**. A rule
+inside it beats the base sheet by its own selector alone — so `:host([disabled])` in the block
+loses to `:host([disabled]:not([data-pct-loading]))` outside it, and `color: GrayText` paints
+nothing. The sheet looks like it handles the mode; the button carries the theme's disabled
+colour into a palette that was meant to replace it.
+
+What kept it out of sight for six stylesheets is the mode itself. Chromium and firefox
+**substitute** colours in forced-colors mode: whichever rule won, what reaches the screen is a
+system colour, so the screenshot, the axe audit and every e2e assertion come out the same. The
+one engine that would show the difference is webkit, which does not substitute
+([`lesson-56`](#lesson-56)) — and `forced-colors.spec.ts` is excluded there **by policy**, on
+the sound ground that the engine does not have the mode at all
+([`req-quality-browsers`](requirements/quality.md#req-quality-browsers)). So the defect had no
+runner anywhere: not one browser in the matrix could have shown it, and it would show in all
+of them from the day any part of the library takes `forced-color-adjust: none`. The static
+gate here is not the cheaper instrument, it is the only one.
+
+Five sheets carried it. In two the declaration really was dead (the disabled checkbox and
+radio kept a theme surface, an active option in the panel a theme background). In three the
+result was **right for the wrong reason**: a bare field draws no surface and no ring, a
+trigger inside the chrome no ring of its own — the base rules said so, and the mode's block
+never did. Both are the same defect, and the second kind is the one that turns into the first
+the moment somebody reorders a sheet.
+
+The rule generalises without a register of any kind, because both rules stand in one file:
+**point 7 of `check-styles`** compares each declaration of the mode with the base rules whose
+elements it claims, and asks who wins. It is decided on sass's output, that is, on the text a
+browser really parses, and only where one selector's match set is contained in the other's —
+a "don't know" costs an unexamined pair, a wrong "yes" would cost a false accusation. A block
+that spells the more specific state out itself (`[data-pct-selected] { background: SelectedItem }`
+beside the general `background: Canvas`) is not a hole and is not reported.

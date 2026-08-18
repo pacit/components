@@ -1,0 +1,5 @@
+{
+  "point": 7,
+  "check": "forced-colors",
+  "description": "A rule of forced-colors mode with a selector shorter than the base rule's for the same state. `@media` adds no specificity of its own, so `border-color: GrayText` never paints — the sheet looks like it handles the mode and does not. Nothing turns red over it: chromium and firefox substitute the colours themselves, so every screenshot and every e2e assertion comes out the same whichever rule won. The difference shows in webkit alone, and `forced-colors.spec.ts` does not run there — the engine does not have the mode, so `browsers.policy.json` excludes it on measurement (lesson-56). It would show everywhere from the day any part of the library takes `forced-color-adjust: none`."
+}

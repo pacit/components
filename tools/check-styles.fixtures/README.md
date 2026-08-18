@@ -1,6 +1,6 @@
 # Negative control of the styles gate
 
-Deliberately defective inputs. `tools/check-styles.mjs` runs all six of its checks on each
+Deliberately defective inputs. `tools/check-styles.mjs` runs all seven of its checks on each
 of them and **requires every one to be rejected — and rejected by the point it declares**.
 An input that passes is a fault; an input that fires for a reason other than the one
 written in its `fixture.json` is a fault just the same, because it proves something other
@@ -11,17 +11,21 @@ The reason it exists is the same as for every other gate in this repository
 **a new gate is not ready when it passes — it is ready when it has been shown to fail.**
 Here that is particularly literal, because both guarded promises break in silence: a sheet
 with `padding-left` looks faultless in every LTR screenshot, that is, in every one the
-repository takes, and `opacity: 0.6` on a text layer looks faultless always and takes
+repository takes, `opacity: 0.6` on a text layer looks faultless always and takes
 [`req-token-contrast`](../../docs/requirements/tokens.md#req-token-contrast) back to the
-state before [`lesson-6`](../../docs/lessons.md#lesson-6).
+state before [`lesson-6`](../../docs/lessons.md#lesson-6), and a forced-colors rule that
+loses on specificity looks faultless in the two browsers that substitute the colours
+themselves — that is, in the two the screenshots are taken in
+([`lesson-70`](../../docs/lessons.md#lesson-70)).
 
 ## How a case is built
 
-A case is not a thirteenth copy of the correct input with one thing broken. The gate
+A case is not a fourteenth copy of the correct input with one thing broken. The gate
 builds it from two layers:
 
 1. `_reference/` — the reference input: two components with their sheets, one of them
-   carrying a justified exception,
+   carrying a justified exception and each of them a block of forced-colors mode written
+   the way point 7 asks for,
 2. the case directory's files, copied **onto a copy of the reference**, plus the removals
    from `drop` in `fixture.json`.
 
@@ -34,6 +38,12 @@ reference itself defective, every case would fire because of it rather than beca
 own defect, and every "rejected" would be false. Verified by a run — a `margin-left` added
 to the reference `button.scss` moved `partial-opacity` and `opacity-from-variable` onto
 somebody else's point at once.
+
+It carries one thing besides: `field.scss` has a forced-colors block **written out state by
+state**, and that is the only place the exemption in point 7 is measured. A case directory
+proves a check FIRES; that the check stays silent where a sheet does say what the more
+specific state is to be has nowhere else to be shown. Removing the second rule from that
+block does make the reference fail — which is how it was verified.
 
 The component sources sit here as `*.ts.txt` and become `*.ts` only at assembly, in a
 temporary directory outside the repository. The reason is hard and was written down
@@ -56,6 +66,7 @@ not be another's defect — the same class of problem as the fake `package.json`
 | [`physical-text-align`](physical-text-align)                         | `text-align: left` — a physical VALUE, not a name               | 5     |
 | [`partial-opacity`](partial-opacity)                                 | `opacity: 0.6` on a state                                       | 6     |
 | [`opacity-from-variable`](opacity-from-variable)                     | `opacity: var(...)` — an undecidable value                      | 6     |
+| [`forced-colors-outranked`](forced-colors-outranked)                 | a rule of forced-colors mode shorter than the base rule's       | 7     |
 
 Point 3 has four cases, because there are four different routes by which a component
 disappears from the measurement: it is not in the file list, the parser does not see it,
@@ -64,7 +75,7 @@ the run green and each leaves a repository that looks sensible.
 
 ## Points 1–3 are the denominator, not a formality
 
-The rules are in points 5 and 6; points 1–3 guard the set those rules work over. The same
+The rules are in points 5–7; points 1–3 guard the set those rules work over. The same
 mechanism that has shrunk the sample of files in a coverage report, the set of
 measured components and the set of projects — here it is the set of
 declarations that shrinks.

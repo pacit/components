@@ -29,11 +29,9 @@
   border-color: var(--pct-button-disabled-border);
 }
 
-/* Forced-colors mode. The selector repeats the base rule's, and it has to: `@media` adds no
-   specificity of its own, so a shorter one would lose to it and this rule would paint
-   nothing at all. */
+/* Forced-colors mode. */
 @media (forced-colors: active) {
-  :host([disabled]:not([data-pct-loading])) {
+  :host([disabled]) {
     border-color: GrayText;
   }
 }

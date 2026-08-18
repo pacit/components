@@ -146,7 +146,11 @@
     outline-color: Highlight;
   }
 
+  /* The surface stays `Field` when disabled too. It has to be written out: the base rule
+     paints it with a token of its own and is more specific than the general one above, and
+     `@media` adds no specificity (lesson-70). */
   :host([data-pct-disabled]) .pct-checkbox__box {
+    background: Field;
     border-color: GrayText;
   }
 

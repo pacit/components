@@ -176,6 +176,19 @@ metric has ([0019](decisions/0019-primitives-are-not-the-contract.md)). The drif
 the union is three names smaller, and the measurement left **C12** behind: two primitives that
 nothing references at all, in the one tier where no gate would have said so.
 
+**C8 closed after it** and broke the run of decision-shaped findings: this one was a plain
+defect in the code, and the measurement widened it from one sheet to five. `@media` adds no
+specificity, so a rule of forced-colors mode beats the base sheet by its own selector alone —
+and in two sheets it did not, leaving a disabled checkbox and radio with a theme surface and
+an active option with a theme background. In three more the result was right for the wrong
+reason, decided by base rules that know nothing of the mode. What hid all of it is the mode
+itself: chromium and firefox substitute the colours whichever rule won, so the screenshot and
+the axe audit agree either way, and webkit — the one engine that would show it — runs none of
+`forced-colors.spec.ts`, excluded there by a policy that is right for its own reasons
+([`lesson-70`](lessons.md#lesson-70)). The defect had no runner anywhere, so the rule had to
+be a static one: point 7 of `check-styles`, and `req-a11y-forced-colors` stops resting on an
+e2e run alone.
+
 ## B. Readiness for the first release
 
 Binds at the first publication — and then all of it at once. **B9** bound one step earlier, at
@@ -576,7 +589,7 @@ var(--pct-button-heigth)` passed every one of them, and the 7 stylesheets read 1
     stood on two e2e cardinality assertions, that is on the pages we happen to render
     ([`lesson-65`](lessons.md#lesson-65) one requirement over)
 
-- [ ] **C8 — forced-colors rules lose on specificity to the base rules**
+- [x] **C8 — forced-colors rules lose on specificity to the base rules**
   - `libs/components/button/src/button.scss` — `:host([disabled])` inside
     `@media (forced-colors: active)` has specificity (0,2,0) while the base rule
     `:host([disabled]:not([data-pct-loading]))` has (0,3,0). A media query adds no specificity,
@@ -589,7 +602,29 @@ var(--pct-button-heigth)` passed every one of them, and the 7 stylesheets read 1
   - this is a declaration without coverage, the same family as a dead token nothing paints:
     code that looks like it handles a case and does not
   - cost: ~0.5 day including measuring whether it can be written as a `check-styles` rule
-    · _notes:_ —
+    · _notes:_ **done** — it can, and the measurement was worth more than the fix: **five
+    sheets carried it, not one**. Point 7 of `check-styles` compares each declaration of the
+    mode with the base rules whose elements it claims and asks who wins — on sass's output
+    (the text a browser parses, so nesting and `&` are already resolved) and only where one
+    selector's match set is contained in the other's, a "don't know" costing an unexamined
+    pair where a wrong "yes" would cost a false accusation. In two sheets the declaration was
+    really dead: the disabled checkbox and radio kept a theme surface instead of `Field`, and
+    an active option in the panel a theme background although the cursor there is the outline.
+    In three the result was **right for the wrong reason** — a bare field draws no surface and
+    no ring, a trigger inside the chrome no ring of its own, and the base rules said so while
+    the mode's block never did. The second kind is the first one waiting for somebody to
+    reorder a sheet, so both are written out now. A block that spells the more specific state
+    out itself is not a hole and is not reported — the exemption is measured too, in the
+    reference input, because a case directory can only prove a check FIRES
+    ([`lesson-70`](lessons.md#lesson-70)). What made the whole thing invisible is the mode
+    itself: chromium and firefox substitute the colours, so the screenshot, the axe audit and
+    every e2e assertion come out the same whichever rule won — measured after the fix as well,
+    the 12 cases of `forced-colors.spec.ts` pass exactly as they did before. And the one engine
+    that would show the difference runs none of that file: webkit does not have the mode, so
+    `browsers.policy.json` excludes it on measurement (`lesson-56`). The defect had **no runner
+    anywhere**, which is why the rule had to be a static one. Proof on the real input, not only
+    on the fixture: the button's rule shortened back to `:host([disabled])` fires by name, four
+    declarations at once
 
 - [ ] **C9 — a condition in a template is measured by nobody**
   - concerns: [`req-quality-unit`](requirements/quality.md#req-quality-unit) — the registry says

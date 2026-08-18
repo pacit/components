@@ -46,7 +46,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-a11y-touch`](requirements/a11y.md#req-a11y-touch)                 | ✅ enforced | `apps/sandbox-e2e/src/field-hitarea.spec.ts`, `apps/sandbox-e2e/src/c… | the gate has two documented runs in which it fired: `lesson-25` (a wr… |
 | [`req-a11y-axe`](requirements/a11y.md#req-a11y-axe)                     | ✅ enforced | `apps/sandbox-e2e/src/a11y.spec.ts`                                    | `a11y.spec.ts › "the a11y gate really does detect violations (a contr… |
 | [`req-a11y-motion`](requirements/a11y.md#req-a11y-motion)               | ✅ enforced | `apps/sandbox-e2e/src/preferences.spec.ts`                             | `preferences.spec.ts › "with no preference the motion axis stands at … |
-| [`req-a11y-forced-colors`](requirements/a11y.md#req-a11y-forced-colors) | ✅ enforced | `apps/sandbox-e2e/src/forced-colors.spec.ts`                           | emulation goes through `page.emulateMedia()` in the `visit()` helper,… |
+| [`req-a11y-forced-colors`](requirements/a11y.md#req-a11y-forced-colors) | ✅ enforced | `apps/sandbox-e2e/src/forced-colors.spec.ts` — what the browser paint… | emulation goes through `page.emulateMedia()` in the `visit()` helper,… |
 
 ## API
 
@@ -225,3 +225,4 @@ Which lesson feeds which requirement. Generated from the **Lessons** fields.
 | [`lesson-67`](lessons.md#lesson-67) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-68`](lessons.md#lesson-68) | `req-api-wrapper`                                                                                                                                                 |
 | [`lesson-69`](lessons.md#lesson-69) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-70`](lessons.md#lesson-70) | `req-a11y-forced-colors`                                                                                                                                          |

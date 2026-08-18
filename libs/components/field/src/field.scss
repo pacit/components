@@ -293,6 +293,19 @@
     outline-color: Highlight;
   }
 
+  /* The `bare` variant has neither a surface nor a ring of its own in this mode either — the
+     control inside draws its own focus. Written out rather than left to the base rules: they
+     do win here, but only because they are more specific, and `@media` adds no specificity
+     (lesson-70) — that is, the right result for the wrong reason. The order follows the base
+     sheet's: `bare` before `disabled`, so a disabled field keeps its surface. */
+  :host([data-pct-appearance='bare']) .pct-field__row {
+    background: none;
+  }
+
+  :host([data-pct-appearance='bare']) .pct-field__row:has(:focus-visible) {
+    outline: none;
+  }
+
   /* `color` on the row, so that the control and the decorations inside inherit the state too
      — otherwise a dimmed field is left with text in the active colour. */
   :host([data-pct-disabled]) .pct-field__row {

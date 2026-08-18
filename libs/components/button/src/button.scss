@@ -115,15 +115,20 @@
     outline-color: Highlight;
   }
 
-  :host([disabled]) {
+  /* The selector repeats the base rule's, and it has to: `@media` adds no specificity of its
+     own, so the shorter `:host([disabled])` loses to it and this rule paints nothing
+     (lesson-70). Loading keeps the variant's colour here as well — greying out a button that
+     is working would say "unavailable" about it. */
+  :host([disabled]:not([data-pct-loading])),
+  :host([disabled][data-pct-variant='outline']:not([data-pct-loading])) {
     color: GrayText;
     border-color: GrayText;
   }
 
   /* The spinner draws the gap in the ring rather than a colour: had the substitution painted
      all four edges, what would be left is a circle that looks motionless, and the button would
-     stop showing that it is working. `currentColor` follows the button's state, so in a
-     disabled spinner the ring greys out too. */
+     stop showing that it is working. `currentColor` follows the button's state, which while it
+     works is the variant's colour — the same as outside this mode. */
   .pct-button__spinner {
     border-color: currentColor;
     /* pct-exception border-right-color: the same gap as in the base rule, only restored after

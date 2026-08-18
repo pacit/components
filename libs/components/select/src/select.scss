@@ -205,6 +205,13 @@
     outline-color: Highlight;
   }
 
+  /* Inside the chrome the ring belongs to the field's row here as well. Written out for the
+     same reason as the background above: the base rule wins on specificity, and `@media` adds
+     none of its own (lesson-70). */
+  :host([data-pct-in-field]) .pct-select__trigger:focus-visible {
+    outline: none;
+  }
+
   .pct-select__trigger:disabled {
     background: Field;
     color: GrayText;
@@ -233,16 +240,22 @@
     color: CanvasText;
   }
 
+  /* The cursor is carried by the outline alone, so the surface goes back to the panel's — the
+     base rule for this state paints it with a theme colour and is more specific than the rule
+     above, and `@media` adds no specificity (lesson-70). The outline goes inwards, so the
+     cursor neither pushes the row apart nor runs past the panel's rounded corner. The order
+     follows the base sheet's — `active` before `selected` — so an option that is both keeps
+     the selected surface and takes the cursor's outline on top of it. */
+  .pct-select__option[data-pct-active] {
+    background: Canvas;
+    color: CanvasText;
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+
   .pct-select__option[data-pct-selected] {
     background: SelectedItem;
     color: SelectedItemText;
-  }
-
-  /* The outline goes inwards, so the cursor neither pushes the row apart nor runs past the
-     panel's rounded corner. */
-  .pct-select__option[data-pct-active] {
-    outline: 2px solid Highlight;
-    outline-offset: -2px;
   }
 
   .pct-select__option[data-pct-disabled] {

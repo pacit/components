@@ -13,3 +13,24 @@
      so nothing composites with the background. */
   opacity: 0;
 }
+
+.field__row {
+  background: var(--pct-field-bg);
+}
+
+.field__row[data-pct-invalid] {
+  background: var(--pct-field-bg-invalid);
+}
+
+/* Forced-colors mode written out state by state. The general rule gives way to the invalid
+   one, which is more specific — so the block says what that state is to be as well, instead
+   of leaving it to a base rule that knows nothing of this mode. */
+@media (forced-colors: active) {
+  .field__row {
+    background: Field;
+  }
+
+  .field__row[data-pct-invalid] {
+    background: Field;
+  }
+}
