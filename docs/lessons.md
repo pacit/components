@@ -1402,3 +1402,48 @@ The general shape: **a promise about the API surface has to be measured against 
 component's own template, not against the pages that happen to use it.** A demo is a witness
 for what it shows and for nothing else — and the configuration it never shows is exactly
 where the promise fails.
+
+---
+
+### <a id="lesson-66"></a>`lesson-66` — When the only witness of a defect is somebody else's diagnostic, the cheap fix silences it
+
+The finding was written as an either/or: the select's `@for` tracked by `option.value`, so
+either track `$index`, or promise that values are unique and warn when they are not. The two
+roads read as alternatives because they close the same finding. They do different work.
+
+`track` decides which DOM node a row reuses. Uniqueness decides which option a value denotes.
+Duplicated values were audible only because Angular says NG0955 about a track expression —
+one standing inside a library, addressed to a reader who cannot reach it. Change the tracking
+and that message goes, and with it the only thing that had ever mentioned the defect: the
+later of two options that share a value still cannot be shown as selected, picking it still
+displays the earlier one's label, and now nothing says so. The list would have gone from noisy
+to quiet without getting any more correct.
+
+The general shape: **ask what still fails after the fix.** When the answer is "the same thing,
+without the message", the change has moved a defect from loud to silent — and it owes a
+message of its own, from the component, in the words of its own API. The mirror image is
+[`lesson-62`](#lesson-62), where the code nobody measured was quiet from the start; here the
+quiet would have been something we did.
+
+---
+
+### <a id="lesson-67"></a>`lesson-67` — A comment in a template is shipped; a comment in TypeScript is not
+
+The `@for` in the select got a seven-line comment saying why it tracks `$index`, and the size
+gate fired: `./select` 30510 → 33178 B. The dev-mode report written in the same task accounts
+for 588 B of that (measured by stripping the method out of the built FESM and bundling both).
+The comment was most of the rest.
+
+A library compiled in **partial mode carries its templates as strings** — `ɵɵngDeclareComponent`
+holds the template source, and that source is what the size probe bundles. Prose written for a
+maintainer therefore lands in the artefact and in the budget: the HTML comments of
+`select.html` are 2928 B, and stripping them takes the probe's minified bundle from 33178 to
+30262 B — around a tenth of the entrypoint. A TypeScript comment costs nothing at all; the
+compiler drops it long before anything measures.
+
+Hence the reason for a decision belongs beside the code that implements it, and a template
+keeps a pointer at most. And a second thing, worth knowing before the number is read as a
+consumer's bill: the probe bundles the FESM with esbuild and **does not run Angular's
+linker**, while a real application does — the linker compiles the template into instructions
+and the comments never reach the app. The bytes are real in the package on npm; in the
+consumer's bundle they are not. That the snapshot does not say so is **C11**.

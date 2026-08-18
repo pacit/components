@@ -26,6 +26,6 @@ libs/components/core/src/id.ts 100.00 5(0) 0 0 0
 libs/components/core/src/list.ts 98.59 70(0) 1 0 0
 libs/components/core/src/texts.ts 100.00 15(0) 0 0 0
 libs/components/field/src/number.ts 80.43 185(0) 43 2 11
-libs/components/select/src/select.ts 80.73 176(0) 39 3 5
-TOTAL 84.52 486/575
+libs/components/select/src/select.ts 83.47 207(1) 38 3 5
+TOTAL 85.45 517/605
 ```

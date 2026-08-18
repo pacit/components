@@ -177,6 +177,10 @@ protected byId = (a: City, b: City) => a.id === b.id;
 <pct-select [options]="cities" [compareWith]="byId" [(value)]="city" />
 ```
 
+Option values have to be **unique** under that comparison: a value points back at exactly one
+option, so of two options that compare equal only the first is ever reachable. A list that
+breaks it is reported in dev mode rather than quietly repaired.
+
 No selection is `null`. An application with a non-nullable field supplies its own empty value
 (`[emptyValue]="''"`), so resetting the form does not write `null` against the model's type.
 `panelWidth` and `panelAlign` control the panel geometry.

@@ -7,6 +7,7 @@ import {
   ElementRef,
   inject,
   input,
+  isDevMode,
   model,
   output,
   signal,
@@ -109,6 +110,24 @@ export class PctSelect<T = string>
 
   // --- component API ---
 
+  /**
+   * The option list. **The values have to be unique** by `compareWith`: a value is what maps
+   * back to an option (`selectedIndex` takes the first match), so of two options sharing one
+   * value only the earlier is ever reachable — picking the later one shows the earlier one's
+   * label and leaves `aria-selected` on it. Which option an equal value denotes is not the
+   * component's to decide, so it does not repair the list quietly: in dev mode it says so.
+   *
+   * The panel's loop tracks `$index` and not the value. Every binding of a row is already a
+   * function of the index — the id, `aria-selected`, both flags, both handlers — so keying by
+   * value moves DOM that is rewritten in place anyway, while a list rebuilt from a response
+   * (the very case `compareWith` exists for) arrives as all new references and would re-create
+   * every row. It also takes away Angular's NG0955, which is the reason the report above had
+   * to be written: it was the only thing that ever spoke about a duplicated value, and it
+   * asked the reader to fix a track expression standing inside a library
+   * ([`lesson-66`](../../../../docs/lessons.md#lesson-66)). The reasoning stands here rather
+   * than in the template, because a template travels to the consumer as a string and a
+   * comment in it is bytes in the artefact ([`lesson-67`](../../../../docs/lessons.md#lesson-67)).
+   */
   readonly options = input<readonly PctSelectOption<T>[]>([]);
   readonly label = input<string>('');
   readonly hint = input<string>('');
@@ -376,6 +395,42 @@ export class PctSelect<T = string>
       )[i];
       el?.scrollIntoView?.({ block: 'nearest' });
     });
+
+    // An effect and not a one-off: `options` is an input, so the list that duplicates a value
+    // is often the second one — the one that arrived from the server.
+    if (isDevMode()) effect(() => this.warnOnDuplicateValues());
+  }
+
+  /**
+   * Two options that `compareWith` calls equal. Comparison is pairwise and therefore O(n²),
+   * because the comparator belongs to the application: a key that a `Set` could hold exists
+   * only for the default identity, and a scan that measures one case and not the other would
+   * be worse than one that measures both. It runs under `isDevMode()` alone.
+   */
+  private warnOnDuplicateValues(): void {
+    const options = this.options();
+    const same = this.compareWith();
+    const pairs: string[] = [];
+
+    for (let i = 1; i < options.length; i++) {
+      for (let j = 0; j < i; j++) {
+        if (!same(options[j].value, options[i].value)) continue;
+        // Reported against the first option that claims the value — the one that wins.
+        pairs.push(
+          `${j} ("${options[j].label}") and ${i} ("${options[i].label}")`,
+        );
+        break;
+      }
+    }
+    if (pairs.length === 0) return;
+
+    console.warn(
+      `[pct-select] Options with the same value: ${pairs.join(', ')}. ` +
+        `A value maps back to an option through \`compareWith\`, and the first match wins: ` +
+        `the later option can never show as selected, and choosing it displays the ` +
+        `earlier one's label. Give the options distinct values, or a \`compareWith\` ` +
+        `that tells them apart.`,
+    );
   }
 
   // --- interaction ---

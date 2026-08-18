@@ -13,15 +13,16 @@ controlled — a deliberate exception to
 
 ## Contract
 
-|                 |                                                                                                                                                                                                                                                                                                                                            |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Value**       | `T \| null`, generic; `value` and `emptyValue` as `NoInfer<T>` — the type comes **from the option list alone**                                                                                                                                                                                                                             |
-| **Inputs**      | `options`, `value` (`model`), `label`, `hint`, `ariaLabel`, `ariaLabelledby`, `placeholder`, `size`, `compareWith`, `emptyValue`, `panelWidth`, `panelAlign`, plus `FormUiControl`                                                                                                                                                         |
-| **Naming**      | `ariaLabel` / `ariaLabelledby` are **inputs and not attributes on the tag**: `role="combobox"` sits on the trigger, the host carries no role, and an ARIA name on a roleless element is ignored. They reach the trigger and the panel, and win over `label` — the accessible-name algorithm, not a choice of ours (`tools/check-aria.mjs`) |
-| **Panel**       | `panelWidth`: `"field"` (the default) \| `"auto"` \| a CSS length; `panelAlign`: `start` \| `center` \| `end`; one running off the viewport is pushed back in (`push`)                                                                                                                                                                     |
-| **Parts**       | `trigger`, `value`, `placeholder`, `arrow`, `panel`, `option`, `empty`, `label`, `hint`, `error`                                                                                                                                                                                                                                           |
-| **DI contract** | `PCT_FIELD`; `fieldAppearance: 'boxed'`, `fieldCursor: 'pointer'`, `activate()` opens the panel                                                                                                                                                                                                                                            |
-| **Strings**     | `placeholder` (when unbound) and the empty-list message through `PCT_TEXTS`, read at render time ([0014](../decisions/0014-texts-as-signal.md))                                                                                                                                                                                            |
+|                 |                                                                                                                                                                                                                                                                                                                                                  |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Value**       | `T \| null`, generic; `value` and `emptyValue` as `NoInfer<T>` — the type comes **from the option list alone**                                                                                                                                                                                                                                   |
+| **Options**     | `{ value, label, disabled? }`; **the values are unique** under `compareWith` — a value points back at one option (the first match), so the later of a duplicated pair is unreachable. Reported in dev mode, not repaired ([`lesson-66`](../lessons.md#lesson-66)). The panel loop tracks `$index`, every binding of a row being a function of it |
+| **Inputs**      | `options`, `value` (`model`), `label`, `hint`, `ariaLabel`, `ariaLabelledby`, `placeholder`, `size`, `compareWith`, `emptyValue`, `panelWidth`, `panelAlign`, plus `FormUiControl`                                                                                                                                                               |
+| **Naming**      | `ariaLabel` / `ariaLabelledby` are **inputs and not attributes on the tag**: `role="combobox"` sits on the trigger, the host carries no role, and an ARIA name on a roleless element is ignored. They reach the trigger and the panel, and win over `label` — the accessible-name algorithm, not a choice of ours (`tools/check-aria.mjs`)       |
+| **Panel**       | `panelWidth`: `"field"` (the default) \| `"auto"` \| a CSS length; `panelAlign`: `start` \| `center` \| `end`; one running off the viewport is pushed back in (`push`)                                                                                                                                                                           |
+| **Parts**       | `trigger`, `value`, `placeholder`, `arrow`, `panel`, `option`, `empty`, `label`, `hint`, `error`                                                                                                                                                                                                                                                 |
+| **DI contract** | `PCT_FIELD`; `fieldAppearance: 'boxed'`, `fieldCursor: 'pointer'`, `activate()` opens the panel                                                                                                                                                                                                                                                  |
+| **Strings**     | `placeholder` (when unbound) and the empty-list message through `PCT_TEXTS`, read at render time ([0014](../decisions/0014-texts-as-signal.md))                                                                                                                                                                                                  |
 
 **The library's first use of CDK Overlay.**
 
@@ -69,15 +70,10 @@ controlled — a deliberate exception to
   an option template, groups, multiple selection, filtering, clearing, a loading/async state
   and virtualisation. Deliberately **after** the behaviour layer in `core` — otherwise we build
   it twice.
-- **The list machinery is private.** Typeahead, `enabledIndexes`, `moveActive`, `activeIndex`
-  sit as private methods. Autocomplete, multiselect, menu and a command palette all need the
-  same — **extract it into `core` before the second consumer**, or
-  [`lesson-21`](../lessons.md#lesson-21) repeats itself on a much bigger piece.
-- **`track option.value` in the template.** For non-primitive `T` that tracks by reference, and
-  two options with the same value give `NG0955` in dev mode. To be settled: `track $index`, or
-  a documented uniqueness requirement with a warning under `isDevMode()`.
-- **No `ariaLabel` / `ariaLabelledby`.** `<pct-select aria-label="Country">` lands on a host
-  that has no role — the role sits on the inner `<button>`. A standalone select with no label
-  and no wrapper is an **unnamed combobox**, and the consumer has no way to fix it.
+- **Duplicate option values are reported, not repaired.** Which option an equal value denotes
+  is the application's call, so the component says so in dev mode and leaves the list alone
+  ([`lesson-66`](../lessons.md#lesson-66)). What is deliberately **not** measured: that the
+  message ever reaches a browser console — no page renders a list with a duplicate, and the
+  unit cases carry the proof instead.
 - **No virtualisation.** `@for` over every option. Legitimate for v0 but **unmeasured** —
   nothing answers "what happens at 5,000 options".

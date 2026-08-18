@@ -114,6 +114,11 @@ interface City {
   readonly name: string;
 }
 
+const cities = (): readonly PctSelectOption<City>[] => [
+  { value: { id: 1, name: 'London' }, label: 'London' },
+  { value: { id: 2, name: 'Paris' }, label: 'Paris' },
+];
+
 @Component({
   imports: [PctSelect],
   template: `<pct-select
@@ -245,6 +250,59 @@ class AllDisabledHost {
     { value: 'a', label: 'Alpha', disabled: true },
     { value: 'b', label: 'Beta', disabled: true },
   ];
+}
+
+/** Two options carrying one value — a defect of the input the component cannot repair. */
+@Component({
+  imports: [PctSelect],
+  template: `<pct-select [options]="options()" [(value)]="value" />`,
+})
+class DuplicateHost {
+  readonly options = signal<readonly PctSelectOption[]>([
+    { value: 'pl', label: 'Poland' },
+    { value: 'de', label: 'Germany' },
+    { value: 'pl', label: 'Poland (again)' },
+  ]);
+  value = signal<string | null>(null);
+}
+
+/** Two instances of one identity: equal for `byId`, distinct for the default comparison. */
+@Component({
+  imports: [PctSelect],
+  template: `<pct-select [options]="options" [compareWith]="byId" />`,
+})
+class EntityDuplicateHost {
+  readonly options: readonly PctSelectOption<City>[] = [
+    { value: { id: 1, name: 'London' }, label: 'London' },
+    { value: { id: 1, name: 'London' }, label: 'London (again)' },
+  ];
+  byId = (a: City, b: City) => a.id === b.id;
+}
+
+/** The same list without a comparator — the identical options are then two values. */
+@Component({
+  imports: [PctSelect],
+  template: `<pct-select [options]="options" />`,
+})
+class EntityDuplicateWithoutCompareHost {
+  readonly options: readonly PctSelectOption<City>[] = [
+    { value: { id: 1, name: 'London' }, label: 'London' },
+    { value: { id: 1, name: 'London' }, label: 'London (again)' },
+  ];
+}
+
+/** A list rebuilt from a response: the same data arriving as new instances. */
+@Component({
+  imports: [PctSelect],
+  template: `<pct-select [options]="options()" [compareWith]="byId" />`,
+})
+class RebuiltListHost {
+  readonly options = signal<readonly PctSelectOption<City>[]>(cities());
+  byId = (a: City, b: City) => a.id === b.id;
+
+  rebuild(): void {
+    this.options.set(cities());
+  }
 }
 
 /**
@@ -1017,6 +1075,139 @@ describe('PctSelect', () => {
       expect(overlay.style.width).toBe('320px');
       expect(overlay.style.minWidth).toBe('');
     });
+  });
+
+  /**
+   * A value maps back to an option, so two options sharing a value make the mapping
+   * ambiguous — and the component cannot pick for the application. It says so in dev mode
+   * instead, permanently in English and outside `PCT_TEXTS` (`req-api-texts`).
+   */
+  describe('two options with one value', () => {
+    /** Every case here provokes a warning; a real one in the output would read as a failure. */
+    const silenced = () =>
+      vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    it('names both positions and both labels, once for the pair', async () => {
+      const warn = silenced();
+      try {
+        await render(DuplicateHost);
+        expect(warn).toHaveBeenCalledTimes(1);
+        // The whole message, not a fragment of it: the positions because the labels are what
+        // differ (naming the value alone leaves the reader searching a list they have just
+        // read), and the way out because "do not do this" leaves them where it found them.
+        expect(String(warn.mock.calls[0][0])).toBe(
+          '[pct-select] Options with the same value: ' +
+            '0 ("Poland") and 2 ("Poland (again)"). ' +
+            'A value maps back to an option through `compareWith`, and the first ' +
+            'match wins: the later option can never show as selected, and choosing ' +
+            "it displays the earlier one's label. Give the options distinct values, " +
+            'or a `compareWith` that tells them apart.',
+        );
+      } finally {
+        warn.mockRestore();
+      }
+    });
+
+    it('a list with distinct values stays silent', async () => {
+      const warn = silenced();
+      try {
+        await render(Host);
+        expect(warn).not.toHaveBeenCalled();
+      } finally {
+        warn.mockRestore();
+      }
+    });
+
+    it('follows the input rather than the first render, and reports every pair', async () => {
+      const fixture = await render(Host);
+      const warn = silenced();
+      try {
+        fixture.componentInstance.options.set([
+          { value: 'pl', label: 'Poland' },
+          { value: 'de', label: 'Germany' },
+          { value: 'pl', label: 'Poland (again)' },
+          { value: 'de', label: 'Germany (again)' },
+        ]);
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        expect(warn).toHaveBeenCalledTimes(1);
+        expect(String(warn.mock.calls[0][0])).toContain(
+          'same value: 0 ("Poland") and 2 ("Poland (again)"), ' +
+            '1 ("Germany") and 3 ("Germany (again)").',
+        );
+      } finally {
+        warn.mockRestore();
+      }
+    });
+
+    it('what counts as the same value is compareWith, not the reference', async () => {
+      const warn = silenced();
+      try {
+        await render(EntityDuplicateHost);
+        expect(warn).toHaveBeenCalledTimes(1);
+        expect(String(warn.mock.calls[0][0])).toContain('0 ("London")');
+      } finally {
+        warn.mockRestore();
+      }
+    });
+
+    it('the same two options without a comparator are two values', async () => {
+      const warn = silenced();
+      try {
+        await render(EntityDuplicateWithoutCompareHost);
+        expect(warn).not.toHaveBeenCalled();
+      } finally {
+        warn.mockRestore();
+      }
+    });
+
+    it('the later option cannot show as selected — what the warning is about', async () => {
+      const warn = silenced();
+      try {
+        const fixture = await render(DuplicateHost);
+        triggerOf(fixture).click();
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        optionsInPanel()[2].click();
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        // The click set the value it shares with option 0 — and the trigger shows that one.
+        expect(fixture.componentInstance.value()).toBe('pl');
+        expect(part(fixture.nativeElement, 'value').textContent).toContain(
+          'Poland',
+        );
+        expect(part(fixture.nativeElement, 'value').textContent).not.toContain(
+          'again',
+        );
+      } finally {
+        warn.mockRestore();
+      }
+    });
+  });
+
+  /**
+   * `track $index`: a row is a function of its index in every binding, so the loop has no use
+   * for the identity of values the library did not create.
+   */
+  it('a list rebuilt from equal data reuses the rows', async () => {
+    const fixture = await render(RebuiltListHost);
+    triggerOf(fixture).click();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const before = optionsInPanel();
+    fixture.componentInstance.rebuild();
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    const after = optionsInPanel();
+    expect(after).toHaveLength(before.length);
+    // Tracking by value would key on the references, so all of these would be new elements.
+    expect(after[0]).toBe(before[0]);
+    expect(after[1]).toBe(before[1]);
   });
 
   // The name the host cannot carry: `role="combobox"` sits on the trigger and `role="listbox"`

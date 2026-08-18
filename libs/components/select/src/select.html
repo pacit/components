@@ -83,7 +83,8 @@
     [attr.aria-label]="ariaLabel() || null"
     [attr.aria-labelledby]="ariaLabelledby() || (label() ? labelId : null)"
   >
-    @for (option of options(); track option.value; let i = $index) {
+    <!-- `track $index`: the reason is with the `options` input (`lesson-66`, `lesson-67`). -->
+    @for (option of options(); track $index; let i = $index) {
     <!--
       The ARIA listbox pattern: focus stays on the trigger, and the active option is pointed at
       by `aria-activedescendant` (lesson-18). Options are by design not focusable and have no

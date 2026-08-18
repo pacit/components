@@ -233,13 +233,23 @@ thought up by hand
 selected" is a separate state (`T | null`, with `emptyValue` for non-nullable models), and the
 native radio's `value` attribute describes the option but **takes no part in the choice**.
 
-**Gate:** `libs/components/select/src/select.spec.ts`, the `typecheck` target of the
-`sandbox-e2e` project
+The mapping runs both ways, so **option values are unique** under that equality: a value is
+what points back at an option, and of two options a comparison calls equal only the earlier is
+reachable — picking the later one shows the earlier one's label. The component neither chooses
+for the application nor repairs the list; it reports the pair under `isDevMode()`, because a
+defect whose only witness was somebody else's diagnostic goes silent the moment that
+diagnostic is removed ([`lesson-66`](../lessons.md#lesson-66)).
+
+**Gate:** `libs/components/select/src/select.spec.ts` — the generic contract, plus the
+dev-mode report of two options with one value; the `typecheck` target of the `sandbox-e2e`
+project
 **Control:** the probe from [`lesson-37`](../lessons.md#lesson-37) — five deliberately
 contradictory bindings, four of which **must** break the build. Without `NoInfer<T>` the
-compiler let all five through
+compiler let all five through. For the uniqueness half the switched-off warning leaves three
+cases red, and its mirrors stay green on their own: a list with distinct values and the same
+pair of options without a `compareWith` that calls them equal
 **Decision:** [0010 — a generic value and `NoInfer`](../decisions/0010-generic-noinfer.md)
-**Lessons:** [`lesson-37`](../lessons.md#lesson-37)
+**Lessons:** [`lesson-37`](../lessons.md#lesson-37), [`lesson-66`](../lessons.md#lesson-66)
 
 > The probe's fifth case stays open and is **a limitation of Angular**: `PctRadioGroup` has no
 > options input, so the only source of `T` is `value` — and `$event` from `(valueChange)` is

@@ -132,6 +132,18 @@ keeping in view ([`lesson-65`](lessons.md#lesson-65)): **the axe audit reads the
 DOM, and in the sandbox every control is given a label** — so the one configuration in which
 the promise fails is the one no page renders.
 
+**C2 closed after it**, and it moved the finding it was written from. The plan offered
+`track $index` **or** a uniqueness promise with a warning under `isDevMode()`, as two roads to
+one place; they do different work. Tracking decides which DOM node a row reuses, uniqueness
+decides which option a value denotes — so the cheap road on its own would have taken away
+NG0955, the only thing that had ever spoken about a duplicated value, and left the defect
+where it was, now silent ([`lesson-66`](lessons.md#lesson-66)). Both were done. The same
+promise turned out to have no owner one component over: **C10**, where the radio group cannot
+even see the values of its own options — and the size gate, fired by a comment written into a
+template, produced **C11** and [`lesson-67`](lessons.md#lesson-67): a template travels to the
+artefact as a string, so prose for a maintainer is bytes, while the same prose in TypeScript
+is free.
+
 ## B. Readiness for the first release
 
 Binds at the first publication — and then all of it at once. **B9** bound one step earlier, at
@@ -356,10 +368,42 @@ current.
     `checkbox.ts` fires `inputs`, an `aria-label` written into the select's roleless host
     fires `host`
 
-- [ ] **C2 — `track option.value` with a generic `T`**
+- [x] **C2 — `track option.value` with a generic `T`** — **closed, and the either/or in it was
+      a false choice**
   - `libs/components/select/src/select.html` — for a non-primitive `T` this tracks by reference,
     and two options with the same value give NG0955 in dev mode. Either `track $index`, or a
-    documented uniqueness requirement with a warning under `isDevMode()` · _notes:_ —
+    documented uniqueness requirement with a warning under `isDevMode()` · _notes:_ **done** —
+    `track $index` in `select.html`, `warnOnDuplicateValues` in `select.ts` under
+    `isDevMode()`, seven unit cases, and the promise written down where a consumer meets it:
+    [`req-api-generic`](requirements/api.md#req-api-generic), the component page and the npm
+    README. **The two roads were not alternatives** ([`lesson-66`](lessons.md#lesson-66)):
+    tracking decides which DOM node a row reuses, uniqueness decides which option a value
+    denotes — so the cheap road alone would have removed NG0955, the only thing that had ever
+    spoken about a duplicated value, and left the defect standing in silence. Why `$index` and
+    not the value: **every binding of a row is already a function of the index** (the id,
+    `aria-selected`, both flags, both handlers), so keying by value moves DOM that is rewritten
+    in place anyway — while a list rebuilt from a response, the very case `compareWith` exists
+    for, arrives as all new references and re-creates every row. Measured rather than argued:
+    with `option.value` back in the track expression the case "a list rebuilt from equal data
+    reuses the rows" fails, and with the warning switched off three of the six duplicate cases
+    fail while their mirrors stay green. The message names **positions and labels**, the labels
+    being what differ between two options a value cannot tell apart. The cost written down
+    plainly: the scan is pairwise and therefore O(n²), because the comparator belongs to the
+    application — a `Set` has a key only for the default identity, and measuring one case and
+    not the other would be worse than measuring both. Deliberately **not** measured, for C1's
+    reason one component over: that the message reaches a real console — no page renders a
+    duplicated list, so the unit cases carry it. **The price is measured, not estimated**: the
+    mutation run reads 83.47% for `select.ts` (80.73 before, one new survivor and it is the
+    `isDevMode()` guard itself — the same one `number.ts` carries at its own guard), and the
+    size snapshot `./select` 30510 → 32114 B, of which the report is **588 B** — stripped out
+    of the built FESM and bundled again to get that number. It ships, because `isDevMode()` is
+    a call and not a flag a minifier can fold. The same rewrite records 739 B on `./checkbox`
+    and 731 B on `./radio` that C1 had left inside the tolerance. Three things found by
+    accident: the same promise has no owner in the radio group (**C10**), a seven-line comment
+    written into the template cost **1064 B** in the artefact and moved into TypeScript
+    ([`lesson-67`](lessons.md#lesson-67)) — which in turn opened **C11**, the budget that
+    counts a template as text — and this component's page still carried two limitations that
+    D1 and C1 had closed, a "Known limitations" section outliving what it knew
 
 - [ ] **C3 — `PctField.attach()` overwrites silently**
   - `libs/components/field/src/field.ts` — a second control in one field chrome wins without a
@@ -427,6 +471,35 @@ current.
   - what the fix does NOT buy: mutation testing of templates. A branch count says an arm ran,
     not that anything would have noticed it being wrong
   - cost: ~0.5 day for the measurement and the floor · _notes:_ —
+
+- [ ] **C10 — two `pct-radio` with one value both render checked**
+  - `libs/components/radio/src/radio.ts` — `checked` is computed
+    (`group.isSelected(this.value())`), so two options carrying one value both compute `true`:
+    both hosts get `data-pct-checked`, which is what the CSS paints, while the native inputs
+    share a `name` and the DOM keeps only the last of them checked. **The same promise as C2
+    one component over** — and the group cannot measure it today: it has no
+    `contentChildren(PctRadio)`, deliberately (a circular import), so it never sees the values
+    its options carry
+  - read off the code, not measured. The first task here is therefore a failing case; the
+    second is the decision whether the registration channel a duplicate scan would need is
+    worth its price, or whether the promise stays a documented one in the group's JSDoc
+  - cost: ~0.5 day · _notes:_ —
+
+- [ ] **C11 — the size budget counts a template as text**
+  - `tools/check-bundle.mjs` — the probe bundles the FESM with esbuild and **does not run
+    Angular's linker**, so a partially compiled template is measured as the string it still
+    is: the HTML comments of `select.html` alone are 2928 B, and stripping them takes the
+    entrypoint from 33178 to 30262 B ([`lesson-67`](lessons.md#lesson-67))
+  - the bytes are real in the package on npm; in a consumer's bundle they are not, because
+    the linker compiles the template into instructions before the app is bundled. So
+    `size.snapshot.md`, which says it measures "the contribution of this library" to an
+    application, overstates it by the size of the template source — and a maintainer's comment
+    moves a budget that is supposed to be watching what a consumer pays
+  - to be settled: either the sentence in the snapshot says what the number is (cheap, honest,
+    and leaves the budget sensitive to prose), or the probe runs the linker first (costly, and
+    the number becomes what an app really carries). **Not** an argument for templates without
+    comments — the reason for a decision then simply lives in the TypeScript beside it
+  - cost: ~0.5 day · _notes:_ —
 
 ## D. Phase 1 — the behaviour layer in `core`
 
