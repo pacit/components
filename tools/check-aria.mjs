@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 /**
- * Accessible-name gate: `req-a11y-built-in` — the name of a widget has to be REACHABLE from
- * the host. A consumer writes attributes on the tag they type and on nothing else, so when
- * the role sits on an element INSIDE the template, an `aria-label` written on the tag lands
- * on an element with no role, where ARIA prohibits it and assistive technology ignores it.
- * `<pct-select aria-label="Country">` was exactly that: an unnamed combobox with no way in.
+ * Accessible name and description gate: `req-a11y-built-in` — what a screen reader says about
+ * a widget has to be REACHABLE from the host. A consumer writes attributes on the tag they
+ * type and on nothing else, so when the role sits on an element INSIDE the template, an
+ * `aria-label` written on the tag lands on an element with no role, where ARIA prohibits it
+ * and assistive technology ignores it. `<pct-select aria-label="Country">` was exactly that:
+ * an unnamed combobox with no way in.
  *
  *  1. DENOMINATOR: every decorator parsed, every template owned, every tag read,
  *  2. HOST: an ARIA name written into a `host` block needs a role on the host to carry it,
@@ -12,13 +13,18 @@
  *     `ariaLabelledby`,
  *  4. FORWARDED: both are bound on that one element — an input nobody reads is the same
  *     defect one floor up,
- *  5. SURFACE: the card that names the selector names both inputs.
+ *  5. SURFACE: the card that names the selector names both inputs,
+ *  6. DESCRIPTION: a hint part and an error part are ALTERNATIVES of one conditional and
+ *     never neighbours (`req-api-message`).
  *
  * Points 3 and 4 are one rule split at the place it breaks: declaring the inputs is what a
- * consumer sees in the type, binding them is what the screen reader sees.
+ * consumer sees in the type, binding them is what the screen reader sees. Point 6 reads the
+ * template's real syntax tree (`parseTemplate`): which block excludes which is exactly the
+ * question a pattern over `@if` cannot answer.
  *
  * Usage: node tools/check-aria.mjs
  */
+import { parseTemplate } from '@angular/compiler';
 import { execFileSync } from 'node:child_process';
 import {
   cpSync,
@@ -50,6 +56,16 @@ const HOST_NAME_KEYS = [
   '[attr.aria-label]',
   '[attr.aria-labelledby]',
 ];
+
+/**
+ * The two message parts, whatever a component prefixes them with (`hint`, `group-hint`).
+ * Their names are never bound by an expression — `check-parts` point 3 is what holds that —
+ * so reading the static attributes here reads all of them.
+ */
+const MESSAGE_PART = /(^|-)(hint|error)$/;
+const PART_ATTRIBUTE = 'data-pct-part';
+/** The same parts counted without parsing, as the denominator of the walk. */
+const MESSAGE_COUNTER = /data-pct-part="(?:[a-z-]*-)?(?:hint|error)"/g;
 
 const list = (entries) => entries.map((w) => `      ${w}`).join('\n');
 const sorted = (set) => [...set].sort();
@@ -199,6 +215,77 @@ const readTemplate = (content) => {
   };
 };
 
+/**
+ * Where a node sits in the template's CONDITIONAL structure: one entry per enclosing block,
+ * `<block>#<branch>`. Two nodes are alternatives when one block holds them both and their
+ * branches differ — "the error takes the line" as a fact about the tree rather than about
+ * a page somebody rendered.
+ *
+ * `@if`/`@switch` branch through `branches`/`cases`; `@for` and `@defer` branch through a
+ * side block (`@empty`, `@placeholder`, `@loading`, `@error`) against their own body, so
+ * the body is branch 0 and each side block one after it.
+ */
+const walkMessages = (nodes, path, state) => {
+  for (const node of nodes) {
+    const branches = node.branches ?? node.cases ?? null;
+    if (branches) {
+      const block = state.blocks++;
+      branches.forEach((branch, i) =>
+        walkMessages(branch.children ?? [], [...path, `${block}#${i}`], state),
+      );
+      continue;
+    }
+    const sides = [
+      node.empty,
+      node.placeholder,
+      node.loading,
+      node.error,
+    ].filter(Boolean);
+    if (sides.length) {
+      const block = state.blocks++;
+      walkMessages(node.children ?? [], [...path, `${block}#0`], state);
+      sides.forEach((side, i) =>
+        walkMessages(
+          side.children ?? [],
+          [...path, `${block}#${i + 1}`],
+          state,
+        ),
+      );
+      continue;
+    }
+    const part = node.attributes?.find((a) => a.name === PART_ATTRIBUTE)?.value;
+    if (part && MESSAGE_PART.test(part)) state.messages.push({ part, path });
+    walkMessages(node.children ?? [], path, state);
+  }
+};
+
+/** A block that holds both, on different branches — then they are never in the DOM together. */
+const exclusive = (a, b) =>
+  a.path.some((entry) => {
+    const [block, branch] = entry.split('#');
+    return b.path.some((other) => {
+      const [otherBlock, otherBranch] = other.split('#');
+      return block === otherBlock && branch !== otherBranch;
+    });
+  });
+
+/**
+ * The message parts of one template, with the conditional path of each. The parse is the
+ * compiler's own — a template it cannot read leaves the gate with nothing to say, which is
+ * why the errors travel back rather than being swallowed into an empty list.
+ */
+const readMessages = (file, content) => {
+  const text = content.replace(COMMENT, '');
+  const parsed = parseTemplate(text, file, { preserveWhitespaces: false });
+  const state = { blocks: 0, messages: [] };
+  if (!parsed.errors?.length) walkMessages(parsed.nodes, [], state);
+  return {
+    messages: state.messages,
+    errors: parsed.errors ?? [],
+    counted: countOf(text, MESSAGE_COUNTER),
+  };
+};
+
 // ── documentation ──────────────────────────────────────────────────────────────
 
 const SELECTOR_LINE = /^\*\*Selector:\*\*(.*)$/m;
@@ -266,6 +353,22 @@ const checkAria = ({ components, counted, templates, documents }) => {
           `after it stops being examined`,
       );
     byPath.get(template.file).read = read;
+
+    const said = readMessages(template.file, template.content);
+    if (said.errors.length)
+      throw new AriaError(
+        'denominator',
+        `${template.file} does not parse (${said.errors[0].msg}) — point 6 would then read ` +
+          `a message-free template and pass it`,
+      );
+    if (said.messages.length !== said.counted)
+      throw new AriaError(
+        'denominator',
+        `${template.file}: ${said.counted} message part(s) in the text, ` +
+          `${said.messages.length} walked — a part the walk does not reach is a part point 6 ` +
+          `does not examine`,
+      );
+    byPath.get(template.file).said = said.messages;
   }
 
   // ── classification ───────────────────────────────────────────────────────────
@@ -350,10 +453,31 @@ const checkAria = ({ components, counted, templates, documents }) => {
       );
   }
 
+  // ── 6. one message line ──────────────────────────────────────────────────────
+  let pairs = 0;
+  for (const template of templates) {
+    const said = byPath.get(template.file).said;
+    const hints = said.filter((m) => m.part.endsWith('hint'));
+    const errors = said.filter((m) => m.part.endsWith('error'));
+    for (const hint of hints)
+      for (const error of errors) {
+        pairs++;
+        if (exclusive(hint, error)) continue;
+        throw new AriaError(
+          'description',
+          `${template.file}: \`${hint.part}\` and \`${error.part}\` can be in the DOM at ` +
+            `the same time — they are not two branches of one conditional. Then the control ` +
+            `grows by a row on an error and \`aria-describedby\` names a message the wrapped ` +
+            `same control never shows (req-api-message)`,
+        );
+      }
+  }
+
   return {
     description:
       `${components.length} components, ${naming.length} of them naming a widget of their ` +
-      `own (${sorted(naming.map((c) => c.selector)).join(', ')})`,
+      `own (${sorted(naming.map((c) => c.selector)).join(', ')}); ${pairs} hint/error pair(s) ` +
+      `on separate branches`,
   };
 };
 
@@ -494,13 +618,15 @@ for (const name of cases) {
 // ── result ─────────────────────────────────────────────────────────────────────
 
 if (problems.length) {
-  console.error(`X Accessible-name gate — ${problems.length} violations:\n`);
+  console.error(
+    `X ARIA name and description gate — ${problems.length} violations:\n`,
+  );
   for (const p of problems) console.error(`  - ${p}`);
   console.error('');
   process.exit(1);
 }
 
 console.log(
-  `✓ ARIA names: ${description}. Negative control: the reference input passes, ` +
+  `✓ ARIA names and descriptions: ${description}. Negative control: the reference input passes, ` +
     `${cases.length} prepared ones rejected on their own points.`,
 );

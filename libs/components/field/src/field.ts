@@ -211,9 +211,8 @@ export class PctField implements PctFieldApi {
     // The description ids belong to the chrome, but the control has to expose them (it is the
     // one carrying `aria-describedby`). This is a write into the control, not a derived value
     // — hence effect, not computed.
-    // Only one message is lit below the field, so `aria-describedby` points at exactly the one
-    // that is in the DOM: the error, or the hint when there is none. Pointing at a hidden
-    // element would be a dangling reference for the screen reader.
+    // One message is lit at a time (`req-api-message`), so this points at exactly the one in
+    // the DOM: the error, or the hint when there is none.
     effect(() => {
       this.control()?.setDescribedBy(
         pctDescribedBy([

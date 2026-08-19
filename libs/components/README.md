@@ -102,8 +102,9 @@ the whole slot and is a surface of its own:
 </pct-field>
 ```
 
-Controls also work **without the wrapper** — with no label and no messages then; a checkbox and
-a radio group draw their own label in that case.
+Controls also work **without the wrapper**; a checkbox, a radio group and the select draw their
+own label, hint and error message in that case. There is one message line either way — while an
+error is lit it takes the line and the hint gives way.
 
 ### Number
 

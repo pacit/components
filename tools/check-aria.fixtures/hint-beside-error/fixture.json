@@ -1,0 +1,5 @@
+{
+  "point": 6,
+  "check": "description",
+  "$reason": "Two independent blocks, so an error adds a row instead of taking one: the hint stays on the screen beside it and `aria-describedby` names both. The same control inside `pct-field` shows one message — the wrapper would then change the behaviour it is supposed to leave alone."
+}

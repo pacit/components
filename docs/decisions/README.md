@@ -69,3 +69,4 @@ because you had to walk through the reasoning.
 | [0019](0019-primitives-are-not-the-contract.md) | A primitive colour is not the contract; a primitive scale is                         | `req-token-names`, `req-token-tiers`                                             |
 | [0020](0020-the-palette-carries-no-spares.md)   | The palette carries no spare steps                                                   | `req-token-tiers`                                                                |
 | [0021](0021-an-index-is-derived-or-measured.md) | An index is generated where every column is derivable, measured where one is not     | `req-quality-index`                                                              |
+| [0022](0022-one-message-line.md)                | One message line, and it is the error that takes it                                  | `req-api-message`, `req-api-no-wrapper`                                          |

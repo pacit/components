@@ -51,8 +51,8 @@ Snapshot, `node tools/check-docs.mjs`:
 
 | measure                                     | value |
 | ------------------------------------------- | ----: |
-| requirements                                |    85 |
-| ✅ enforced                                 |    59 |
+| requirements                                |    86 |
+| ✅ enforced                                 |    60 |
 | 🟡 partial (deliberately without a control) |    16 |
 | ⛔ gap                                      |    10 |
 
@@ -255,6 +255,22 @@ rule could not decide by itself is completeness — `check-reach.fixtures` tabul
 seventeen cases on purpose — so a tree now says it is listing itself, under `## The cases`, and
 the gate holds only the tables that make that claim. Pointed at the rest of the repository it
 found two more lists already wrong before anybody looked.
+
+**C13 closed after it**, and it is the plan's own either/or dissolving a third time — this one
+by naming the wrong pair. The finding read the field against the radio group and offered "a
+group's message describes a SET" as the reason the two might differ; the run over all four
+components that draw messages found the checkbox and the select doing exactly what the group
+did, and neither is a set. What the two shapes divide is the chrome against a control's own
+footer, so the same `pct-select` showed one message inside `pct-field` and two outside it — a
+wrapper documented as optional changing the behaviour it exists to leave alone. The chrome's
+answer won, as the only one with a reason, two gates and a rendered page behind it, and the
+price is written down rather than gated ([0022](decisions/0022-one-message-line.md)): the hint
+is gone exactly when the user has to correct the value, so WCAG 3.3.3 now rests on a text the
+consumer writes and no gate here can read. The lesson sits one floor above the defect
+([`lesson-76`](lessons.md#lesson-76)) — `field-controls.spec.ts` tested both modes and never
+asked whether they agree, because a per-mode suite has no place where the modes meet. The task
+left **C16** behind: `check-texts.mjs` carried a Polish section header past every run of the
+language gate, an English stem with a Polish ending being a word in neither dictionary it reads.
 
 ## B. Readiness for the first release
 
@@ -700,22 +716,23 @@ var(--pct-button-heigth)` passed every one of them, and the 7 stylesheets read 1
     than the exemption `check-docs.fixtures` has — **one gate's fixture may not be another's
     defect**, and an exemption is a hole in a denominator that has no gate of its own
 
-- [ ] **C13 — one promise, two answers: the field replaces the hint, the group adds to it**
-  - `libs/components/field/src/field.html` lights exactly ONE line below the field
-    (`@if (showError()) … @else if (hint())`), and the comment above it says why: the field
-    must not grow by a row on an error, and `aria-describedby` must not point at an element
-    the user cannot see. `libs/components/radio/src/radio-group.html` has two independent
-    `@if`s, so a standalone group shows the hint AND the error at once and names both ids in
-    `aria-describedby`
-  - read off the templates, not measured — but found the moment C9's first test rendered that
-    hint at all, which is the point: for as long as nothing rendered it, the two components
-    could disagree in the open
-  - neither behaviour is written down as a requirement (the field's rule lives in a template
-    comment), so the first task is the **decision**: either one line is the library's answer
-    everywhere, and the group gives up a row, or a group is different because its message
-    describes a SET rather than a control — and then it goes into
-    [`req-api-frame`](requirements/api.md#req-api-frame) instead of a comment
-  - cost: minutes for either change, the decision is the whole task · _notes:_ —
+- [x] **C13 — one promise, two answers: the field replaces the hint, the group adds to it** —
+      **closed, and the second answer was three components' rather than the group's**
+  - closes: [`req-api-message`](requirements/api.md#req-api-message) — the rule had no home at
+    all, and the plan's suggested one ([`req-api-frame`](requirements/api.md#req-api-frame))
+    turned out to be about the frame and the touch target, not about what stands below it
+  - the decision is [0022](decisions/0022-one-message-line.md): **one message line everywhere,
+    the error takes it**, and the argument the finding offered for a second row — a group's
+    message describes a SET — died on the measurement, because the checkbox and the select are
+    single controls and both did the same thing
+  - cost: half a day (the decision, two gates and the prose) · _notes:_ **done** — three
+    templates and three `describedBy` computations; the gate is in two independent parts,
+    behaviour per control (`field-controls.spec.ts`, three cases) and structure over every
+    template (`check-aria.mjs` point 6, `parseTemplate` — a hint part and an error part must
+    be branches of one conditional), with `hint-beside-error` as the prepared input. Both
+    were written before the fix and both fired. What the task really found is
+    [`lesson-76`](lessons.md#lesson-76): the wrapper's two modes each had a green test and the
+    difference between them was nobody's assertion
 
 - [x] **C7 — `options`, the only container part without the `group-` prefix** — **closed:
       renamed, and the promise got the static gate it never had**
@@ -881,6 +898,21 @@ var(--pct-button-heigth)` passed every one of them, and the 7 stylesheets read 1
     than the `try`/`catch` that would also have worked
   - the size snapshot's rewrite exposed **C14**: it records the last breach, not the last build,
     so this commit's diff shows five entrypoints growing that this commit never touched
+
+- [ ] **C16 — the language gate cannot see a foreign word with a Polish ending**
+  - `tools/check-texts.mjs:478` carried `// ── scanner TypeScriptu ──` through B8, C1–C15 and
+    every run since: 843 files, 5570 distinct words, 0 exceptions, green. The word is fixed;
+    the blind spot it came out of is not
+  - the second limb reads `/usr/share/dict/polish` minus `american-english`, so it sees a word
+    that is in the Polish dictionary. `TypeScriptu` is in neither — an English stem with
+    a Polish case ending belongs to no dictionary, and the first limb (diacritics) has nothing
+    to catch either. `buildzie`, `commita`, `selecta` are the same shape
+  - a scan for a hand-written list of such words found exactly one occurrence in the whole
+    index, so the class is rare — which is the argument for a rule rather than a pass: rare
+    and invisible is what survives eight passes
+  - the shape is a **suffix on a foreign stem**, and point 5 of the gate forbids excusing
+    shapes for a good reason — so the rule has to name the endings it looks for, not the words
+  - cost: half a day · _notes:_ —
 
 - [ ] **C14 — the size snapshot records the last breach, not the last build**
   - `tools/check-bundle.mjs` holds every entrypoint to its snapshot ±5% and rewrites the file

@@ -23,6 +23,7 @@ export type PctReqId =
   | 'req-api-generic'
   | 'req-api-icons'
   | 'req-api-icons-custom'
+  | 'req-api-message'
   | 'req-api-names'
   | 'req-api-native-input'
   | 'req-api-no-wrapper'
@@ -170,7 +171,8 @@ export type PctLessonId =
   | 'lesson-72'
   | 'lesson-73'
   | 'lesson-74'
-  | 'lesson-75';
+  | 'lesson-75'
+  | 'lesson-76';
 
 /** Anything a sandbox card may refer to. */
 export type PctDocId = PctReqId | PctLessonId;

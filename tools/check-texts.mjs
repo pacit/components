@@ -475,7 +475,7 @@ const readTemplate = (file, content) => {
   return { file, errors: result.errors ?? [], scanner };
 };
 
-// ── scanner TypeScriptu ────────────────────────────────────────────────────────
+// ── TypeScript scanner ─────────────────────────────────────────────────────────
 
 /**
  * Signal factory calls together with their first argument. The generic is not parsed with a

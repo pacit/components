@@ -9,10 +9,10 @@ There is no "built, just unverified" state — see
 
 | state       | means                                                         |  count |
 | ----------- | ------------------------------------------------------------- | -----: |
-| ✅ enforced | gate and control exist and run in CI                          |     59 |
+| ✅ enforced | gate and control exist and run in CI                          |     60 |
 | 🟡 partial  | the gate is there, the negative control is not (deliberately) |     16 |
 | ⛔ gap      | gate or control missing, with a recorded deadline             |     10 |
-| **total**   |                                                               | **85** |
+| **total**   |                                                               | **86** |
 
 ## Gaps by urgency
 
@@ -61,6 +61,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-api-container`](requirements/api.md#req-api-container)       | 🟡 partial  | `libs/components/radio/src/radio.spec.ts`                              | none — deliberately: the violation would be a second `FormValueContro… |
 | [`req-api-wrapper`](requirements/api.md#req-api-wrapper)           | ✅ enforced | `libs/components/field/src/field.spec.ts` — the chrome's own cases pl… | `field-hitarea.spec.ts` — a cursor map over a grid of points (`elemen… |
 | [`req-api-no-wrapper`](requirements/api.md#req-api-no-wrapper)     | 🟡 partial  | `libs/components/field/src/field-controls.spec.ts` — every control is… | none — deliberately: the standalone mode is **the default**, so its f… |
+| [`req-api-message`](requirements/api.md#req-api-message)           | ✅ enforced | `libs/components/field/src/field-controls.spec.ts` — the three contro… | `tools/check-aria.fixtures/hint-beside-error` — the same two messages… |
 | [`req-api-frame`](requirements/api.md#req-api-frame)               | ✅ enforced | `apps/sandbox-e2e/src/field.spec.ts`, `req-a11y-touch`                 | the touch-target test caught the regression described in `lesson-25` … |
 | [`req-api-native-input`](requirements/api.md#req-api-native-input) | 🟡 partial  | `libs/components/field/src/field-controls.spec.ts`                     | none — deliberately: swapping `<input>` for an element of our own kno… |
 | [`req-api-platform`](requirements/api.md#req-api-platform)         | 🟡 partial  | `apps/sandbox-e2e/src/radio.spec.ts` — keyboard navigation             | none — deliberately: a navigation test has no mode in which it passes… |
@@ -232,3 +233,4 @@ Which lesson feeds which requirement. Generated from the **Lessons** fields.
 | [`lesson-73`](lessons.md#lesson-73) | `req-project-tree-shaking`                                                                                                                                        |
 | [`lesson-74`](lessons.md#lesson-74) | `req-token-tiers`                                                                                                                                                 |
 | [`lesson-75`](lessons.md#lesson-75) | `req-quality-index`                                                                                                                                               |
+| [`lesson-76`](lessons.md#lesson-76) | `req-api-message`                                                                                                                                                 |

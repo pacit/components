@@ -1712,3 +1712,33 @@ question, not a run — is every column derivable? — and the answer differs pe
 of cases cannot be held to completeness unless it says it is complete. `check-reach.fixtures`
 tabulates "the three cases the design rests on" out of seventeen, deliberately, and a gate
 counting rows cannot tell that from a list that has lost fourteen.
+
+---
+
+### <a id="lesson-76"></a>`lesson-76` — Both modes were tested; that the two disagree belonged to neither test
+
+`req-api-no-wrapper` promises the wrapper is optional, and its gate does what the promise says:
+`field-controls.spec.ts` tests every control **inside** `pct-field` and the checkbox **outside**
+it. Ten green cases. What none of them asked is whether the two modes give the **same** answer —
+and for the message line they did not: `pct-select` inside the chrome showed the error alone, the
+same `pct-select` on its own showed the hint and the error together and named both in
+`aria-describedby`. Three of the four components that draw messages diverged, in a state no page
+had ever rendered, with every test of both modes passing.
+
+A per-mode suite has no place where the modes meet. Each half asserts what its own template does,
+and the difference between the halves is nobody's assertion — which is why the discovery came
+from a template read at C13 and not from a run: the code was correct in every file it was
+written in.
+
+The measurement then took the finding's premise with it. The finding named the radio group and
+offered an argument for it — a group's message describes a **set** rather than a control, so
+maybe it earns a second line. The run over all four showed the checkbox and the select doing the
+same thing, and neither is a set. What the two shapes divide is the chrome against a control's
+own footer, and that is the defect rather than the design ([0022](decisions/0022-one-message-line.md)).
+
+The gate that came out of it had to read the template's **conditional tree**, not its text: the
+question "can these two be in the DOM at once?" is a question about which block excludes which,
+and `@if (a) { … } @else if (b) { … }` differs from `@if (a) { … } @if (b) { … }` by two
+characters that a pattern over the file cannot weigh. `parseTemplate` answers it, and the answer
+covers a component nobody has written yet — which the unit spec, a hand-kept list of three, does
+not.

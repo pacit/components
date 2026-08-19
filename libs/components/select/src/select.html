@@ -115,11 +115,8 @@
   </div>
 </ng-template>
 
-@if (hint() && !inField) {
-<span class="pct-select__hint" data-pct-part="hint" [id]="hintId">
-  {{ hint() }}
-</span>
-} @if (showError()) {
+<!-- One message line, and the error takes it (`req-api-message`). -->
+@if (showError()) {
 <span
   class="pct-select__error"
   data-pct-part="error"
@@ -127,5 +124,9 @@
   role="alert"
 >
   {{ errorText() }}
+</span>
+} @else if (hint() && !inField) {
+<span class="pct-select__hint" data-pct-part="hint" [id]="hintId">
+  {{ hint() }}
 </span>
 }

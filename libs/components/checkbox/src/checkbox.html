@@ -51,11 +51,8 @@
   }
 </div>
 
-@if (hint() && !inField) {
-<span class="pct-checkbox__hint" data-pct-part="hint" [id]="hintId">
-  {{ hint() }}
-</span>
-} @if (showError()) {
+<!-- One message line, and the error takes it (`req-api-message`). -->
+@if (showError()) {
 <span
   class="pct-checkbox__error"
   data-pct-part="error"
@@ -63,5 +60,9 @@
   role="alert"
 >
   {{ errorText() }}
+</span>
+} @else if (hint() && !inField) {
+<span class="pct-checkbox__hint" data-pct-part="hint" [id]="hintId">
+  {{ hint() }}
 </span>
 }

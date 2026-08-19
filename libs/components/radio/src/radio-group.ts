@@ -200,8 +200,8 @@ export class PctRadioGroup<T = string>
     this.inField
       ? this.fieldDescribedBy()
       : pctDescribedBy([
-          [this.hintId, this.hint() !== ''],
-          [this.errorId, this.messages.showError()],
+          [this.errorId, this.showError()],
+          [this.hintId, !this.showError() && this.hint() !== ''],
         ]),
   );
 

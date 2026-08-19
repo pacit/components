@@ -75,6 +75,60 @@ class RadioInFieldHost {
 })
 class CheckboxStandaloneHost {}
 
+/** The error state, driven from the host — the three controls take the same three inputs. */
+class MessageHost {
+  invalid = signal(false);
+  touched = signal(false);
+  errors = signal<readonly ValidationError.WithOptionalFieldTree[]>([]);
+}
+
+/**
+ * The three controls that draw their own messages, standalone. One host per control rather
+ * than a generic one: the inputs are typed per component, and a `hint` bound through a
+ * common interface would compile without any of them declaring it.
+ */
+@Component({
+  imports: [PctCheckbox],
+  template: `<pct-checkbox
+    label="Terms"
+    hint="Read them first"
+    [invalid]="invalid()"
+    [touched]="touched()"
+    [errors]="errors()"
+  />`,
+})
+class CheckboxAloneHost extends MessageHost {}
+
+@Component({
+  imports: [PctRadioGroup, PctRadio],
+  template: `<pct-radio-group
+    label="Plan"
+    hint="Pick one"
+    [invalid]="invalid()"
+    [touched]="touched()"
+    [errors]="errors()"
+  >
+    <pct-radio value="free">Free</pct-radio>
+    <pct-radio value="pro">Pro</pct-radio>
+  </pct-radio-group>`,
+})
+class GroupAloneHost extends MessageHost {}
+
+@Component({
+  imports: [PctSelect],
+  template: `<pct-select
+    label="Country"
+    hint="Pick from the list"
+    [options]="options"
+    [invalid]="invalid()"
+    [touched]="touched()"
+    [errors]="errors()"
+  />`,
+})
+class SelectAloneHost extends MessageHost {
+  options = OPTIONS;
+}
+
 describe('Controls inside the pct-field wrapper', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -198,4 +252,73 @@ describe('Controls inside the pct-field wrapper', () => {
       expect(fixture.componentInstance.value()).toBe('pro');
     });
   });
+});
+
+/** Whatever the component prefixes them with: `hint` / `error`, `group-hint` / `group-error`. */
+const messagesIn = (root: HTMLElement) =>
+  Array.from(root.querySelectorAll<HTMLElement>('[data-pct-part]')).filter(
+    (el) => /(^|-)(hint|error)$/.test(el.dataset['pctPart'] ?? ''),
+  );
+
+/** Every `aria-describedby` in the tree, resolved to the parts it points at. */
+const describedParts = (root: HTMLElement) =>
+  Array.from(root.querySelectorAll<HTMLElement>('[aria-describedby]')).flatMap(
+    (el) =>
+      (el.getAttribute('aria-describedby') ?? '')
+        .split(/\s+/)
+        .filter(Boolean)
+        .map(
+          (id) =>
+            root.querySelector<HTMLElement>(`[id="${id}"]`)?.dataset[
+              'pctPart'
+            ] ?? `${id} (no element)`,
+        ),
+  );
+
+/**
+ * `req-api-message` — the rule holds for the control's own footer as it does for the
+ * chrome's, and the three controls are read by one loop: a fourth that draws its own
+ * messages is one row here, and `check-aria` (point 6) is what notices a component that
+ * never got the row.
+ */
+describe('Controls outside the wrapper: one message line', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+  });
+
+  const controls: [string, Type<MessageHost>][] = [
+    ['pct-checkbox', CheckboxAloneHost],
+    ['pct-radio-group', GroupAloneHost],
+    ['pct-select', SelectAloneHost],
+  ];
+
+  for (const [name, host] of controls) {
+    it(`${name}: the error takes the line and the hint gives way`, async () => {
+      const fixture = await render(host);
+      const root = fixture.nativeElement as HTMLElement;
+
+      // The hint alone: one line, and the description points at it.
+      expect(messagesIn(root).map((el) => el.dataset['pctPart'])).toEqual([
+        expect.stringMatching(/hint$/),
+      ]);
+      expect(describedParts(root)).toEqual([expect.stringMatching(/hint$/)]);
+
+      fixture.componentInstance.invalid.set(true);
+      fixture.componentInstance.touched.set(true);
+      fixture.componentInstance.errors.set([
+        requiredError({ message: 'This one is required' }),
+      ]);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      // The error: still one line, and the hint is out of the DOM rather than hidden —
+      // `aria-describedby` names what is on the screen and nothing else.
+      expect(messagesIn(root).map((el) => el.dataset['pctPart'])).toEqual([
+        expect.stringMatching(/error$/),
+      ]);
+      expect(describedParts(root)).toEqual([expect.stringMatching(/error$/)]);
+    });
+  }
 });

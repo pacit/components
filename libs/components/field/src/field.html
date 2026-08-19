@@ -51,10 +51,8 @@
 </div>
 
 <!--
-  One line only below the field. The error wins over the hint: while it is lit the hint goes
-  away — otherwise the field would grow by a row on every error, and `aria-describedby` could
-  point at an element the user cannot see. At the end of that same line stands an optional
-  add-on (a character counter, say), independent of which message is lit.
+  One message line, and the error takes it (`req-api-message`). At the end of that same line
+  stands an optional add-on (a character counter, say), independent of which message is lit.
 -->
 @if (showError() || hint() || messageAux()) {
 <div class="pct-field__footer" data-pct-part="field-footer">

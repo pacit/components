@@ -166,14 +166,38 @@ calls would have got wrong), and the report switched off leaves the first case r
 
 ### <a id="req-api-no-wrapper"></a>`req-api-no-wrapper` — The wrapper is optional
 
-**Promise.** Controls also work without `pct-field` (with no label and no messages then) —
-in a table cell, for instance. Controls with a label layout of their own (checkbox,
-radiogroup) draw it themselves, and hand it over to the wrapper inside `pct-field`.
+**Promise.** Controls also work without `pct-field` (a text field then has no label and no
+messages) — in a table cell, for instance. Controls with a label layout of their own
+(checkbox, radio group, select) draw the label and the messages themselves, and hand both over
+to the wrapper inside `pct-field`. What they draw is what the wrapper would have drawn:
+one message line, per [`req-api-message`](#req-api-message).
 
 **Gate:** `libs/components/field/src/field-controls.spec.ts` — every control is tested in
-both modes
+both modes, and the three that draw their own messages are tested against the wrapper's answer
+rather than only against themselves ([`lesson-76`](../lessons.md#lesson-76))
 **Control:** none — deliberately: the standalone mode is **the default**, so its failure
 knocks over the control's entire test suite
+
+---
+
+### <a id="req-api-message"></a>`req-api-message` — One message line, and the error takes it
+
+**Promise.** Below a control there is **one** message at a time: the error while it is lit, the
+hint otherwise. The rule is the same for the chrome's footer and for a control drawing its own
+messages, so wrapping a control in `pct-field` does not change what it shows. The message that
+gives way **leaves the DOM** rather than being hidden, and `aria-describedby` names exactly the
+one on the screen.
+
+**Gate:** `libs/components/field/src/field-controls.spec.ts` — the three controls that draw
+their own messages, each in both states; `tools/check-aria.mjs` (point 6, target `check-aria`)
+— every template of the library, so a component nobody has written yet is covered from its
+first commit
+**Control:** `tools/check-aria.fixtures/hint-beside-error` — the same two messages in two
+independent blocks, rejected on point 6; the unit case was written first and fired on the
+repository as it stood (`expected [ 'error', 'hint' ] to deeply equal [ StringMatching
+/error$/ ]`)
+**Decision:** [0022 — one message line](../decisions/0022-one-message-line.md)
+**Lessons:** [`lesson-76`](../lessons.md#lesson-76)
 
 ---
 

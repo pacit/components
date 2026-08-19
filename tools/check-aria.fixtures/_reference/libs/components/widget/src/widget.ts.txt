@@ -14,4 +14,7 @@ export class PctWidget {
   readonly ariaLabel = input<string>('');
   readonly ariaLabelledby = input<string>('');
   protected readonly open = input(false);
+  protected readonly hint = input<string>('');
+  protected readonly error = input<string>('');
+  protected readonly showError = input(false);
 }

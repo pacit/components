@@ -10,11 +10,8 @@
   <ng-content select="pct-radio"></ng-content>
 </div>
 
-@if (hint() && !inField) {
-<span class="pct-radio-group__hint" data-pct-part="group-hint" [id]="hintId">
-  {{ hint() }}
-</span>
-} @if (showError()) {
+<!-- One message line, and the error takes it (`req-api-message`). -->
+@if (showError()) {
 <span
   class="pct-radio-group__error"
   data-pct-part="group-error"
@@ -22,5 +19,9 @@
   role="alert"
 >
   {{ errorText() }}
+</span>
+} @else if (hint() && !inField) {
+<span class="pct-radio-group__hint" data-pct-part="group-hint" [id]="hintId">
+  {{ hint() }}
 </span>
 }
