@@ -1,0 +1,9 @@
+{
+  "// defect": "76 B less, the real drift the old band let through: that is what C13 took off each of `./checkbox`, `./radio` and `./select`, and the file recorded none of it. A drop is not good news by default — it is also what a measurement going quiet looks like (lesson-45, lesson-48).",
+  "point": 9,
+  "check": "size",
+  "size": {
+    "ep": "./beta",
+    "bytes": 29924
+  }
+}

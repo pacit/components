@@ -284,6 +284,20 @@ is the half of a denominator this repository keeps rediscovering
 ([`lesson-77`](lessons.md#lesson-77)): the same unread English list makes the second limb flood
 the run and the fourth go quiet, so "the dictionary is read" is not one question but two.
 
+**C14 closed after it**, and it is the position where the plan's own either/or was answered by
+a question neither half had asked. Budget or snapshot: the finding read both as answers to "how
+big a jump has to be before somebody looks", and the band was quietly answering a second
+question as well — **when is the record written?** `--write` fires only on a failure, so
+everything inside the band was never accepted but never written either, and the file aged until
+the first change to leave it paid for everybody. What decided between the two readings is a
+measurement rather than a taste: the same artifact and the same toolchain give byte-identical
+sizes, across repeated runs and across a hundred characters of path on both sides, so there was
+no wobble for a tolerance to protect the record from
+([0023](decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md),
+[`lesson-78`](lessons.md#lesson-78)). The exact comparison's first run was red on a live drift
+of three rows the old band had swallowed, and the task left **C17** behind: those four generated
+snapshots are compared by their rows and by nothing else.
+
 ## B. Readiness for the first release
 
 Binds at the first publication — and then all of it at once. **B9** bound one step earlier, at
@@ -955,7 +969,8 @@ var(--pct-button-heigth)` passed every one of them, and the 7 stylesheets read 1
     limb. What the limb **cannot** see is written down rather than left to be discovered: a
     case that softens the stem's last letter replaces it, so no strip returns the stem
 
-- [ ] **C14 — the size snapshot records the last breach, not the last build**
+- [x] **C14 — the size snapshot records the last breach, not the last build** — **closed: the
+      band was measured, and it was deciding a second thing nobody had argued**
   - `tools/check-bundle.mjs` holds every entrypoint to its snapshot ±5% and rewrites the file
     only when that band is crossed, so the recorded numbers age. Measured on an unchanged tree
     before C10 touched anything: `./button` 8116 against 7932 in the file, `./core` 2723 against
@@ -972,7 +987,32 @@ var(--pct-button-heigth)` passed every one of them, and the 7 stylesheets read 1
   - the figures above are in the **old unit** — C11 has since made the number what an
     application carries rather than what the tarball weighs, and rewrote every row. The
     finding is unaffected: it is about when the file is written, not about what is in it
-  - cost: minutes for either change, the decision is the whole task · _notes:_ —
+  - **the answer is "snapshot", and the band went out with the question**
+    ([0023](decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md)): point 9 compares to
+    the byte, in both directions, and `--write` stays the one command that accepts a change.
+    What the finding put as one question turned out to be two, and the second had never been
+    argued — **a band decides when a run fails AND when the record is rewritten**, so a drift
+    inside it is not accepted, it is simply never written down
+    ([`lesson-78`](lessons.md#lesson-78))
+  - **what settled it is a measurement rather than a preference.** A tolerance is for a
+    measurement that wobbles, and this one does not: two runs over the same artifact are
+    byte-identical, and so are runs with ~100 characters added to the probe workspace's path
+    and to the artifact's — the two lengths that differ between this machine and CI.
+    `mutation.snapshot.md` keeps its ±2 points for exactly the opposite reason, a mutant killed
+    by the clock depending on what else the machine was doing
+  - the control is a run against the real repository, and it found a live drift the moment it
+    ran: `./checkbox`, `./radio` and `./select`, **76 B each** — C13's price, taken off exactly
+    the three controls that lost a second message line, and recorded nowhere. The fixtures moved
+    to the same scale: `size-grew` is **one byte**, `size-shrank` is that same 76
+  - the false diff is paid once more here and then never again: the snapshot in this commit
+    carries C13's −228 B and nothing of its own, this task having touched no component. What
+    the finding could not know is how wide the band was where it mattered — ±5% of `./field` is
+    1115 B, a kilobyte of growth in steps with nothing anywhere to show for it
+  - cost: minutes for either change, the decision is the whole task · _notes:_ **done** — and it
+    left two findings behind. **C17**: the four generated snapshots are rendered whole and
+    compared by their rows alone, so the two paragraphs this task rewrote in `size.snapshot.md`
+    would have sat stale had no byte moved with them. **C18**: the gate's own file carries a
+    Polish identifier that all four limbs of the language gate are blind to
 
 - [x] **C11 — the size budget counts a template as text** — **closed: the probe runs the
       linker, and the overstatement it was written about ran in both directions**
@@ -1031,6 +1071,48 @@ var(--pct-button-heigth)` passed every one of them, and the 7 stylesheets read 1
     true about what the package held. **C14 is untouched**: this rewrite of every row is the
     honest kind, the number having changed meaning, and the question of budget-versus-snapshot
     stands exactly where C10 left it
+
+- [ ] **C17 — a generated snapshot's prose is compared by nobody**
+  - all four generated snapshots (`size`, `parts`, `tokens`, `mutation`) are rendered **whole**
+    by their gate — header, explanation, rows — and all four compare **rows only**. Change the
+    renderer's prose and the file keeps yesterday's text until some row happens to drift: C14
+    rewrote two paragraphs of `size.snapshot.md`, and nothing but a byte moving with them would
+    have put the new text in the file
+  - the same shape as [C15](#c-open-findings) one floor down, with a worse disguise: the rows
+    are right, so the file reads as measured. And its first line says "this file is generated",
+    which is the sentence a reader trusts instead of checking
+  - the cheap version is one comparison per gate — the render equals the file — and it has a
+    trap worth writing down first: it must fire **after** the points that name what moved, or a
+    size drift starts reporting "the file is not the render" instead of "`./field` grew by
+    800 B" (the ordering [C11](#c-open-findings) already paid for once)
+  - to be settled: four comparisons in four gates, or one rule in `check-index`, which already
+    rules on whether a list is derived or measured
+    ([0021](decisions/0021-an-index-is-derived-or-measured.md)) but knows nothing today about
+    files outside `docs/`
+  - cost: ~0.5 day for all four · _notes:_ —
+
+- [ ] **C18 — a Polish word the Polish dictionary does not hold**
+  - `tools/check-bundle.mjs` names the function that builds an entrypoint's import specifier in
+    Polish — one identifier, in a file the language gate reads, green over it through all of B8
+    and C1–C17: 849 files, 5669 words, 0 exceptions
+  - all four limbs are blind and each for its own reason: the word carries no diacritics;
+    `american-english` does not hold it; **`/usr/share/dict/polish` does not hold it either** —
+    the list has the noun it is derived from and the abstract noun made from that one, and not
+    the agent noun made from either; and the fourth limb hunts the 37 endings of
+    [`lesson-77`](lessons.md#lesson-77), none of which ends in the letter this word does
+  - so it is the second class of word belonging to neither list, and the mirror image of C16's:
+    not a foreign stem with a Polish ending, but a **Polish derivation the word list never got
+    round to**. Agent and abstract nouns are formed productively there, and 4.4 million lines
+    are still somebody's list of words rather than a language
+  - to be settled, and it is the whole task: what a detector may name. A suffix list is point
+    5's forbidden shape read one way and lesson-77's permitted detector read the other — with
+    one difference to build on: a stem that IS in the Polish dictionary plus a derivational
+    suffix is a far narrower claim than an ending on any stem at all
+  - the word stays where it is until then, exactly as C16's did, and this entry points at the
+    specimen instead of quoting it — the first draft quoted three dictionary words as evidence
+    and the language gate was red on the position describing the defect, which is
+    [`lesson-77`](lessons.md#lesson-77) happening again to the file that recorded it
+  - cost: ~0.5 day · _notes:_ —
 
 ## D. Phase 1 — the behaviour layer in `core`
 

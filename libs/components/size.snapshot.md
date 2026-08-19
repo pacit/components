@@ -10,9 +10,13 @@ import from a neighbouring entrypoint compiles, passes the tests and adds tens o
 kilobytes for the consumer, who will learn about them from their own bundle report,
 if they have one.
 
-This file is the list a change is measured against. A drift does not mean "an error" —
-it means "the consumer started paying for something other than yesterday, and that is
-to be visible in review".
+This file is the list a change is measured against, and it is written down to the
+byte. A drift does not mean "an error" — it means "the consumer started paying for
+something other than yesterday, and that is to be visible in review". So every byte
+lands here, in both directions, and it lands in the diff of the change that moved it:
+`node tools/check-bundle.mjs --write`. There is no tolerance, because a tolerance
+decides two things and is argued about one — when the gate fails, and when this file
+is written ([0023](../../docs/decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md)).
 
 Columns: entrypoint · size in bytes · other entrypoints brought in · external
 dependencies. The size is the raw size of a **production** bundle of an application
@@ -24,14 +28,12 @@ not what the tarball weighs. The package holds more — a template travels in it
 and the class metadata carries the decorator a second time, and both are compiled away
 before an application ships them.
 
-Budget: ±5% or ±256 B, whichever is larger.
-
 ```
 . 992 ./core @angular/core
 ./button 4481 ./core @angular/core
-./checkbox 10507 ./core @angular/core
+./checkbox 10431 ./core @angular/core
 ./core 2248 - @angular/core
 ./field 22316 ./core @angular/core,@angular/forms,@angular/forms/signals
-./radio 12885 ./core @angular/core
-./select 19570 ./core @angular/cdk/overlay,@angular/core
+./radio 12809 ./core @angular/core
+./select 19494 ./core @angular/cdk/overlay,@angular/core
 ```

@@ -1782,3 +1782,39 @@ by ticking its own task off. There is nowhere in this repository to quote such a
 gate's own tree, where the constant of [`lesson-60`](#lesson-60) already lives: this lesson cannot
 print its own evidence, and the sample stands in
 `tools/check-language.fixtures/inflected-foreign-stem.json`.
+
+---
+
+### <a id="lesson-78"></a>`lesson-78` — A threshold decides two things and is argued about one
+
+**The size point of `check-bundle` held every entrypoint to ±5% of its recorded number, and
+`--write` rewrote the record only when a row left that band.** The band was argued as a failure
+threshold — how big a jump has to be before somebody looks — and it was never argued as what it
+also was: **the resolution of the record**. Anything smaller was not accepted, it was never
+written down.
+
+Measured on an unchanged tree, three of the seven rows stood 76 B above the truth. That is
+[C13](plan.md#c-open-findings)'s price: it took a second message line out of `pct-checkbox`,
+`pct-radio-group` and `pct-select`, and each of the three got 76 B smaller. The file was last
+written at C11, and C13 is the only commit since to have touched a component — so the
+attribution needs no guess. A file whose own prose says each row is the size of a production
+bundle was describing three bundles nobody had built since.
+
+The other half is who pays. The first change to leave the band rewrites **every** row, so its
+diff carries everybody's drift: C10's commit rewrote six rows, one of them C10's. And the band
+is not narrow where it counts — ±5% of `./field` is 1115 B, so a component may grow by a
+kilobyte in steps with nothing anywhere to show for it.
+
+The band's justification would be a measurement that wobbles, and this one does not. Measured
+three ways: two runs of the same artifact are byte-identical, ~100 characters added to the probe
+workspace's path change nothing, and ~100 added to the artifact's path change nothing either —
+the two lengths that differ between a developer's machine and CI. `mutation.snapshot.md` next
+door keeps its ±2 points and should: a mutant killed by the clock depends on what else the
+machine was doing. Hence the rule in
+[0023](decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md): **a tolerance is for a
+measurement that wobbles, not for a record somebody would rather not rewrite.**
+
+The conclusion is wider than one gate. Wherever a threshold both decides a failure and triggers
+the rewrite of the record it compares against, it silently sets **how much history that record
+can lose**. Ask of a threshold not only what it lets pass, but what it stops writing down — and
+which commit ends up carrying what it swallowed.

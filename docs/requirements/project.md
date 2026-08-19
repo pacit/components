@@ -163,8 +163,10 @@ and explicit imports.
 points. The probes bundle the **artifact** through `node_modules` and the `exports` map, the
 same way a consumer does: point 6 watches which entrypoints an import of one of them pulls
 in, point 8 which external dependencies come along (CDK Overlay is allowed in `./select`
-only), point 9 the size budget per entrypoint (`libs/components/size.snapshot.md`,
-two-sided tolerance ±5%). Point 4 watches that the primary entrypoint brings in no component
+only), point 9 the size per entrypoint against `libs/components/size.snapshot.md` — **to the
+byte**, in both directions, because the measurement does not wobble and a band decides not
+only when a run fails but when the record is written
+([0023](../decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md)). Point 4 watches that the primary entrypoint brings in no component
 at all. The rest is the denominator: two readings of the entrypoint list, presence of the
 measured entrypoint in the probe, a second reading of isolation from the bundle text, a
 differential check, and a repeat of the measurement with the **real**
@@ -176,10 +178,15 @@ component entrypoint to some 60% of its unlinked size
 point; among them `entrypoint-pulls-neighbour/` (importing `./alpha` pulls in `./beta`),
 `new-external-dependency/` (an entrypoint reaches for the CDK overlay),
 `probe-without-its-entrypoint/` (the measurement stopped pulling anything in),
-`probe-not-linked/` (the probe measures the package's bytes rather than the consumer's) and
+`probe-not-linked/` (the probe measures the package's bytes rather than the consumer's),
+`size-grew/` (one byte, the smallest thing the point can be asked to see) and
 `pair-no-larger-than-single/` — literally "an app importing two entrypoints must
-produce a noticeably bigger bundle"
-**Lessons:** [`lesson-51`](../lessons.md#lesson-51), [`lesson-73`](../lessons.md#lesson-73)
+produce a noticeably bigger bundle". Plus a run against the real repository: the exact
+comparison's first run was red on `./checkbox`, `./radio` and `./select`, 76 B each, a drift
+of C13's that the old ±5% band had recorded nowhere
+**Decision:** [0023 — a tolerance is for a measurement that wobbles](../decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md)
+**Lessons:** [`lesson-51`](../lessons.md#lesson-51), [`lesson-73`](../lessons.md#lesson-73),
+[`lesson-78`](../lessons.md#lesson-78)
 
 ---
 
@@ -315,8 +322,10 @@ because in a public API they are the most valuable text there is. The volume pro
 `tools/` (~590 lines of gate headers alone), not in JSDoc.
 
 **Decision:** [0017 — one home per fact: the criterion and its budget](../decisions/0017-one-home-per-fact.md)
-**Gate:** none — gap: a prose volume budget per file, a snapshot with **two-sided**
-tolerance, in the idiom of `libs/components/size.snapshot.md`. The values are settled in
+**Gate:** none — gap: a prose volume budget per file, a **two-sided** snapshot in the idiom of
+`libs/components/size.snapshot.md` — which since
+[0023](../decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md) records every byte and
+holds no tolerance; a line count does not wobble either. The values are settled in
 [0017](../decisions/0017-one-home-per-fact.md) (gate header 12 lines + 1 per point, task
 position 12 closed / 20 open), and the denominator is already counted by
 `tools/measure-prose.mjs` — a measurement with no target, which this gate will grow out of.

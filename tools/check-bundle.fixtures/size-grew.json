@@ -1,0 +1,9 @@
+{
+  "// defect": "One byte, and it is the smallest thing this gate can be asked to see. The ±5% band that stood here until 0023 called a change of this size no change at all — and nothing in this repository moves a bundle by a byte except the code inside it.",
+  "point": 9,
+  "check": "size",
+  "size": {
+    "ep": "./alpha",
+    "bytes": 8001
+  }
+}

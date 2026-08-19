@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Tree-shaking and size budget gate: what does a consumer really pay for importing one
+ * Tree-shaking and size gate: what does a consumer really pay for importing one
  * entrypoint? "Secondary entrypoints force tree-shaking" is the SALES promise
  * (`req-project-tree-shaking`), and breaking it gives no red test.
  *
@@ -12,7 +12,7 @@
  *   6. `isolation`    — the entrypoints a probe pulls in match the snapshot,
  *   7. `markers`      — a second read of the same, over the bundle's text, BOTH ways,
  *   8. `external`     — a probe's external dependencies match the snapshot,
- *   9. `size`         — a size budget per entrypoint, tolerance TWO-SIDED,
+ *   9. `size`         — the bytes per entrypoint, EXACTLY as recorded, both ways,
  *  10. `differential` — a two-entrypoint probe is noticeably larger than either single one,
  *  11. `builder`      — the same measured by Angular's REAL builder.
  *
@@ -21,9 +21,9 @@
  * `PctField`" is vacuously true exactly when the measurement stopped measuring.
  *
  * The numbers are the ORDER, and point 5 earned its place by firing in the wrong one: with
- * `linked` last, a probe built the package's way failed the BUDGET first, and the budget's
- * advice is `--write` — which would have written the wrong number down and called it
- * accepted. Everything that compares against the snapshot stands behind it now.
+ * `linked` last, a probe built the package's way failed the SIZE point first, and that
+ * point's advice is `--write` — which would have written the wrong number down and called
+ * it accepted. Everything that compares against the snapshot stands behind it now.
  *
  * Usage: node tools/check-bundle.mjs [--write]  (--write: rewrite the size snapshot)
  */
@@ -51,15 +51,13 @@ const REFERENCE = '_reference.json';
 const WRITE = process.argv.includes('--write');
 
 /**
- * The budget: how far a probe's size may drift from the snapshot before it counts as a
- * jump. The tolerance is TWO-SIDED, and not out of courtesy to optimisation. A growth has
- * to be accepted in a visible line of the diff — that is what a budget is for. But a DROP
- * is at least as suspect in this repository: a gate whose measurement goes quiet looks
- * exactly like a gate whose guarded code got smaller (`lesson-45`, `lesson-48`). The only
- * difference is whether anybody looked — so let them look.
+ * The pair probe's slack, and the only tolerance left in this gate — point 9 compares the
+ * sizes to the byte ([0023](../docs/decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md)).
+ * Here it is a threshold on a DIFFERENCE OF TWO MEASUREMENTS rather than on a record: the
+ * arithmetic `a + b − shared` leaves a remainder nothing measures, the entry file's glue,
+ * and that remainder is not a drift anybody has to write down.
  */
-const TOLERANCE = 0.05;
-const TOLERANCE_MIN = 256;
+const PAIR_SLACK = 0.05;
 
 /**
  * The CDK overlay's CSS classes. The only string in this gate written by hand and the only
@@ -381,12 +379,23 @@ const checkBundle = (input) => {
       );
   }
 
-  // 9. The size budget. The number is the raw size of the probe's PRODUCTION bundle, with
-  //    Angular as an external dependency — so it measures THE LIBRARY'S CONTRIBUTION, not
-  //    the weight of somebody else's framework. Were Angular part of the measurement,
-  //    every patch of it would rewrite the whole snapshot and the budget would stop saying
+  // 9. The size, to the byte. The number is the raw size of the probe's PRODUCTION bundle,
+  //    with Angular as an external dependency — so it measures THE LIBRARY'S CONTRIBUTION,
+  //    not the weight of somebody else's framework. Were Angular part of the measurement,
+  //    every patch of it would rewrite the whole snapshot and the number would stop saying
   //    anything about this library. Production, and not "minified", is point 5's doing:
   //    what the package holds and an application never ships is outside the number.
+  //
+  //    The ±5% band that used to stand here died of being measured
+  //    ([0023](../docs/decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md)): the
+  //    same artifact and the same toolchain give the same bytes, twice over and with a
+  //    hundred characters added to the probe's path and to the artifact's, so the only
+  //    thing that moves this number is the code it is there to watch. And a band decides
+  //    two things while being argued about one: when the gate fails, and — unargued — when
+  //    the file is WRITTEN. A drift inside it was never recorded, so the first change to
+  //    leave the band rewrote every row at once and a reader of that diff took months of
+  //    everybody's drift for one commit's price
+  //    ([`lesson-78`](../docs/lessons.md#lesson-78)).
   for (const e of sources) {
     const measuredBytes = probes[e]?.bytes;
     const recordedBytes = rows.get(e)?.bytes;
@@ -396,21 +405,21 @@ const checkBundle = (input) => {
         `no size for \`${e}\` (measured: ${measuredBytes ?? 'none'}, ` +
           `snapshot: ${recordedBytes ?? 'none'})`,
       );
-    const slack = Math.max(
-      TOLERANCE_MIN,
-      Math.round(recordedBytes * TOLERANCE),
-    );
-    if (Math.abs(measuredBytes - recordedBytes) > slack)
+    const delta = measuredBytes - recordedBytes;
+    if (delta !== 0) {
+      const sign = delta > 0 ? '+' : '−';
       throw writable(
         'size',
-        `probe \`${e}\` fell outside its budget: ${measuredBytes} B against ` +
-          `${recordedBytes} B ± ${slack} B (${(((measuredBytes - recordedBytes) / recordedBytes) * 100).toFixed(1)}%).\n` +
+        `probe \`${e}\` weighs ${measuredBytes} B, the snapshot records ${recordedBytes} B ` +
+          `(${sign}${Math.abs(delta)} B, ${sign}` +
+          `${Math.abs((delta / recordedBytes) * 100).toFixed(1)}%).\n` +
           `    ${
-            measuredBytes > recordedBytes
-              ? 'A growth is acceptable, but in a visible line of the diff'
-              : 'A drop needs a look too: a measurement going quiet looks exactly like code that got smaller'
+            delta > 0
+              ? 'A growth is acceptable — in a visible line of the diff, which is the whole point of the file'
+              : 'A drop is news of the same kind: it is also what a measurement going quiet looks like (`lesson-45`, `lesson-48`)'
           } — \`node tools/check-bundle.mjs --write\``,
       );
+    }
   }
 
   // 10. DIFFERENTIAL CONTROL. A two-entrypoint probe has to be noticeably larger than
@@ -440,7 +449,7 @@ const checkBundle = (input) => {
   );
   const expected =
     (probes[first]?.bytes ?? 0) + (probes[second]?.bytes ?? 0) - sharedBytes;
-  if (pairBytes < expected * (1 - TOLERANCE))
+  if (pairBytes < expected * (1 - PAIR_SLACK))
     throw new BundleError(
       'differential',
       `the \`${first}\` + \`${second}\` probe weighs ${pairBytes} B, and the sum of the ` +
@@ -531,9 +540,13 @@ const renderSnapshot = (sources, probes) =>
     'kilobytes for the consumer, who will learn about them from their own bundle report,',
     'if they have one.',
     '',
-    'This file is the list a change is measured against. A drift does not mean "an error" —',
-    'it means "the consumer started paying for something other than yesterday, and that is',
-    'to be visible in review".',
+    'This file is the list a change is measured against, and it is written down to the',
+    'byte. A drift does not mean "an error" — it means "the consumer started paying for',
+    'something other than yesterday, and that is to be visible in review". So every byte',
+    'lands here, in both directions, and it lands in the diff of the change that moved it:',
+    '`node tools/check-bundle.mjs --write`. There is no tolerance, because a tolerance',
+    'decides two things and is argued about one — when the gate fails, and when this file',
+    'is written ([0023](../../docs/decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md)).',
     '',
     'Columns: entrypoint · size in bytes · other entrypoints brought in · external',
     'dependencies. The size is the raw size of a **production** bundle of an application',
@@ -544,8 +557,6 @@ const renderSnapshot = (sources, probes) =>
     'not what the tarball weighs. The package holds more — a template travels in it as text',
     'and the class metadata carries the decorator a second time, and both are compiled away',
     'before an application ships them.',
-    '',
-    `Budget: ±${(TOLERANCE * 100).toFixed(0)}% or ±${TOLERANCE_MIN} B, whichever is larger.`,
     '',
     '```',
     ...sources.map((e) =>
