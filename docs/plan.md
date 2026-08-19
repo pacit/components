@@ -84,8 +84,8 @@ so the npm page is written and the last file that travelled in a second language
 **B6 and B7 have closed too** — the support window with a gate reading its numbers, and the
 dependency lists with a gate reading the artefact — so **what stands between here and npm is
 B4 alone, and B4 is held with B2**. In parallel: F1 is unblocked — the inventories it renders
-both exist — and C, the filler, is **empty**: seventeen findings, all closed, so the next
-unstarted item in the order is **D2**.
+both exist — and C, the filler, is **empty**: seventeen findings, all closed. **D2 has closed
+too**, so the next unstarted item in the order is **D3**.
 
 **B2 is deferred by decision, not blocked** — and the decision has a shape: **the first push
 happens only when the maintainer asks for it outright.** It is not triggered by a state of the
@@ -323,6 +323,29 @@ point 5 cannot see it, and refusing it is the answer to "what may a detector nam
 ([`lesson-80`](lessons.md#lesson-80)). The specimen is now the limb's probe, in the gate's tree
 where such a word may stand, and the function it named is `specifierOf`.
 
+With C empty, the order handed the session back to **D**, and **D2 has closed**. It is the
+position where the plan's own list turned out to name three different kinds of thing under one
+heading. Of the six — positioning, the closing stack, the outside click, `inert`, the scroll
+lock, the carrying-over — three had a consumer and a measurement behind them, two have **no
+consumer at all** until there is a modal, and one was already built in the dependency this
+library had already chosen: the CDK dispatcher delivers a keydown to the top-most attached
+overlay and to no other, which is the Escape ordering the line asked for. So the layer carries
+what an overlay severs and pins what it borrows — two overlays and two Escapes in
+`core.spec.ts` — and the rule that follows is written where the dialog will read it: **an
+overlay closes from the stack, never from a listener above the control**
+([0024](decisions/0024-the-closing-stack-is-the-dependency-s.md)). What the plan could not
+foresee is where the second half of the work was. `./core`'s first directive turned the
+tree-shaking gate red on the **primary** entrypoint — a bundle of 1003 B that contains no
+directive at all — because point 4 asked the bundler's metafile, which speaks of modules, a
+question the promise asks about bytes: primary re-exports `providePctConfig` from `./core`, so
+it pulls that entrypoint whatever it takes from it ([`lesson-81`](lessons.md#lesson-81)). Three
+points moved onto the text read, the exemption they needed is computed from the artifact rather
+than listed, and the price of the directive is now a visible line in the snapshot: `./core`
++937 B, `./select` +578 B, and 11 B on everything else — one unused `input` import in a module
+every consumer already carries. The task left **C19** behind: the rule it wrote down — one
+owner per key — is broken inside the select itself, where the CDK closes the panel on an Escape
+the trigger never sees, and nothing in the repository says so.
+
 ## B. Readiness for the first release
 
 Binds at the first publication — and then all of it at once. **B9** bound one step earlier, at
@@ -514,9 +537,9 @@ not a derivation.
 ## C. Open findings
 
 Small, good filler between the bigger items. Each one is verified in the code and still
-current. **All seventeen are closed** (the numbers run to C18; there is no C5) — the list is
-kept because it is where the next finding lands, and because six of them ended in a decision
-record rather than in a line of code: [0018](decisions/0018-no-sass-entry-point.md) through
+current. **Seventeen are closed and one is open** (the numbers run to C19; there is no C5) —
+the list is where the next finding lands, and six of the closed ones ended in a decision record
+rather than in a line of code: [0018](decisions/0018-no-sass-entry-point.md) through
 [0023](decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md).
 
 - [x] **C1 — `pct-select` without the field chrome is an unnamed combobox** — **closed, and it
@@ -1194,6 +1217,26 @@ var(--pct-button-heigth)` passed every one of them, and the 7 stylesheets read 1
     hand-kept count already drifted: the fixtures README said its denominator had seven cases
     and it had nine, which is [C15](#c-open-findings)'s shape in prose no index gate reads.
 
+- [ ] **C19 — the select's panel closes on Escape twice, and only one of the two is written
+      down**
+  - `libs/components/select/src/select.ts` handles Escape in its key map (`close()` plus
+    `preventDefault()`, which `select.spec.ts` asserts), and `cdkConnectedOverlay` closes the
+    same panel on the same key by itself: `disableClose` is `false` by default, so the CDK
+    detaches the overlay and `(detach)="close()"` finishes the job
+  - **measured, not deduced**: an Escape dispatched on the panel — inside the overlay
+    container, where the trigger's `(keydown)` cannot see it — closes the panel. So the second
+    owner is real and no test names it. In the unit suite it stays invisible for a second
+    reason: the CDK reads `keyCode`, and the spec's helper builds events with `key` alone
+  - the behaviour is right today, both paths closing the same panel. What is not right is that
+    **the layer's rule says one owner per key** ([0024](decisions/0024-the-closing-stack-is-the-dependency-s.md))
+    and this component has two — and the day a component wants Escape **not** to close (a
+    confirm dialog at E1), the owner it has to switch off is the one nothing here mentions
+  - either the control keeps the key and says so (`[cdkConnectedOverlayDisableClose]="true"`,
+    the trigger's handler being the single owner), or the CDK keeps it and the key map drops
+    the case — which costs the `preventDefault` promise its current author. Whichever wins,
+    the pinning test is the probe above
+  - binds at: **E1**, where the question stops being cosmetic · _notes:_ —
+
 ## D. Phase 1 — the behaviour layer in `core`
 
 The largest architectural risk. The list machinery (typeahead, `activeIndex`, skipping disabled
@@ -1201,7 +1244,9 @@ options) sat as private methods in `PctSelect`, and autocomplete, multiselect, m
 combobox and a command palette all need it. **Extract before the second consumer, not after** —
 otherwise [`lesson-21`](lessons.md#lesson-21) (the same logic copied into four controls) repeats
 on a much bigger piece. **D1 has closed**, so that half of the risk is paid: what the walk
-shares now stands in `core`, and what the roles do not share stayed with the control.
+shares now stands in `core`, and what the roles do not share stayed with the control. **D2 has
+closed the same way** — what an overlay severs stands in `core`, what a role decides stayed
+with the select, and what the dependency already ordered was pinned rather than rewritten.
 
 Guiding principle: **mechanics from CDK, our own API** — CDK types never leak into the public
 contract. The pattern is ready: `PCT_FIELD` is exactly that for the field chrome and its control.
@@ -1227,9 +1272,35 @@ contract. The pattern is ready: `PCT_FIELD` is exactly that for the field chrome
       walk. The extraction also turned up a guard nothing had ever run
       ([`lesson-62`](lessons.md#lesson-62)); the two DOM cases it now has are here, the metric
       it exposed is **C9**
-- [ ] **D2 — overlay**: positioning, the closing stack (Escape order when nested), outside click,
+- [x] **D2 — overlay**: positioning, the closing stack (Escape order when nested), outside click,
       `inert` background, scroll lock, inheritance of theme and writing direction — the last one
-      solved once in [`lesson-35`](lessons.md#lesson-35), to be generalised · _notes:_ —
+      solved once in [`lesson-35`](lessons.md#lesson-35), to be generalised · _notes:_ **done**
+      — `pctOverlay` and `PctOverlayPanel` in `libs/components/core/src/overlay.ts`: the open
+      state, the four properties an overlay severs (theme, typeface, size, writing direction)
+      and the anchor's width, plus one binding that puts on a panel **whatever the reading
+      holds** rather than the four a template happened to name. The read is not a step of
+      opening — `show()` **is** the read, so there is no path to an open panel that carries
+      nothing, which is the half of `lesson-35` a control could previously forget. `PctSelect`
+      is rewired onto it with its own spec unchanged, as the proof that behaviour did not move.
+      **The six things this line named turned out to be three kinds of thing**
+      ([0024](decisions/0024-the-closing-stack-is-the-dependency-s.md)): three with a consumer
+      and a measurement behind them, two — `inert` and the scroll lock — with **no consumer at
+      all** until there is a modal, and one already built in the dependency the library had
+      already chosen. The CDK dispatcher delivers a keydown to the top-most attached overlay and
+      to no other, so the closing stack is not code to write here but an ordering to pin: two
+      overlays and two Escapes in `core.spec.ts`, and the rule that follows — **an overlay
+      closes from the stack, never from a listener above the control**. Positioning stayed with
+      the role for D1's reason (`'field'` is the chrome's vocabulary and the position list is
+      the combobox's). Measured rather than declared: 11 cases under the layer's own name,
+      100% on all four metrics for the new file. The cost is in the snapshot: `./core`
+      2248 → 3185 B, `./select` 19494 → 20072 B, and **+11 B on every other entrypoint** — an
+      unused `input` import that a directive in the shared kernel drags into a module every
+      consumer already has. That last byte count is how the task found its second half:
+      `./core`'s first directive turned the tree-shaking gate red on a bundle measured at
+      1003 B that contains no directive at all, because point 4 read modules where the promise
+      is about bytes ([`lesson-81`](lessons.md#lesson-81)). Three points of `check-bundle` moved
+      onto the text read, and the fake library in its fixtures now has a mixed kernel, like the
+      real one
 - [ ] **D3 — focus**: trap, restore, initial focus, roving tabindex as an alternative to
       `aria-activedescendant` · _notes:_ —
 - [ ] **D4 — live announcer**: one `polite` channel, one `assertive`, with deduplication — not a
@@ -1252,7 +1323,13 @@ Every new component fills in [`components/_template.md`](components/_template.md
 exists and is a condition of entering a release.
 
 - [ ] **E1 — dialog** — forces a focus trap, scroll lock, `inert`, focus restore, the Escape
-      stack, SSR safety. The highest architectural gain per component
+      stack, SSR safety. The highest architectural gain per component. **Two of those arrive
+      with it rather than before it**: `inert` on the background and the scroll lock are the
+      modal half of D2's overlay layer, left out there for want of a consumer — a listbox panel
+      that locked the page's scroll would be a defect
+      ([0024](decisions/0024-the-closing-stack-is-the-dependency-s.md)). The Escape stack is
+      **not** among them: it is the dependency's, measured in `core.spec.ts`, and what the
+      dialog inherits is the rule that its own Escape may not live above its control
 - [ ] **E2 — tooltip + popover** — the "describes vs names" distinction, hover/focus/touch
       parity, motion reduction on a real enter/leave
 - [ ] **E3 — menu** — roving focus, submenus, reuse of the typeahead from D1

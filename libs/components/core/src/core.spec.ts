@@ -1,4 +1,6 @@
+import { OverlayModule } from '@angular/cdk/overlay';
 import {
+  Component,
   createEnvironmentInjector,
   EnvironmentInjector,
   Injector,
@@ -6,11 +8,12 @@ import {
   runInInjectionContext,
   signal,
 } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PCT_CONFIG } from './config';
 import { PCT_FIELD, pctDescribedBy, pctFieldMessages } from './field';
 import { nextPctId, PctIdCounter } from './id';
 import { pctListNavigation, PctListSource } from './list';
+import { pctOverlay, PctOverlayInherited, PctOverlayPanel } from './overlay';
 import { PCT_TEXTS } from './texts';
 
 /**
@@ -407,6 +410,299 @@ describe('@pacit/components/core', () => {
       } finally {
         vi.useRealTimers();
       }
+    });
+  });
+
+  /**
+   * The overlay layer, checked here rather than through the select: what a panel outside the
+   * host tree stops inheriting is a property of overlays, and the control that opens one is
+   * only the first consumer (`lesson-57`, one floor down).
+   *
+   * jsdom lays nothing out, so `offsetWidth` is `0` for every element it holds. The two
+   * widths are therefore defined on the elements themselves — and they are the numbers from
+   * the measurement that produced the rule: a 301 px field around a 275 px trigger
+   * (`lesson-35`).
+   */
+  describe('pctOverlay', () => {
+    const withWidth = (element: HTMLElement, width: number) => {
+      Object.defineProperty(element, 'offsetWidth', {
+        value: width,
+        configurable: true,
+      });
+      return element;
+    };
+
+    /**
+     * A control in the document: a themed ancestor, the visible edge (what a field chrome
+     * would draw) and the trigger inside it.
+     */
+    const control = (theme: string | null = 'dark') => {
+      const themed = document.createElement('div');
+      if (theme !== null) themed.setAttribute('data-theme', theme);
+      const edge = withWidth(document.createElement('div'), 301);
+      const trigger = withWidth(document.createElement('button'), 275);
+      trigger.style.fontFamily = 'Inter, system-ui';
+      trigger.style.fontSize = '16px';
+      trigger.style.direction = 'rtl';
+      edge.append(trigger);
+      themed.append(edge);
+      document.body.append(themed);
+      return { themed, edge, trigger, destroy: () => themed.remove() };
+    };
+
+    it('before the first opening it is closed and carries nothing', () => {
+      const { trigger, destroy } = control();
+      const panel = pctOverlay({ from: () => trigger });
+
+      expect(panel.open()).toBe(false);
+      // Not an empty reading but no reading at all: nothing has been opened yet, and a
+      // panel described by defaults would be a panel described by a guess.
+      expect(panel.inherited()).toBeNull();
+      expect(panel.anchorWidth()).toBe(0);
+      destroy();
+    });
+
+    it('opening reads the theme, the typeface, the size and the direction off the control', () => {
+      const { trigger, destroy } = control();
+      const panel = pctOverlay({ from: () => trigger });
+
+      panel.show();
+
+      expect(panel.open()).toBe(true);
+      expect(panel.inherited()).toEqual({
+        theme: 'dark',
+        fontFamily: 'Inter, system-ui',
+        fontSize: '16px',
+        direction: 'rtl',
+      });
+      destroy();
+    });
+
+    it('with no themed ancestor the theme is null, not the string "null"', () => {
+      const { trigger, destroy } = control(null);
+      const panel = pctOverlay({ from: () => trigger });
+
+      panel.show();
+
+      // The value goes into an attribute binding: anything other than `null` writes
+      // `data-theme` onto the panel and takes it out of the page's theme.
+      expect(panel.inherited()?.theme).toBeNull();
+      destroy();
+    });
+
+    it('the width is the anchor’s, because the anchor is the visible edge', () => {
+      const { edge, trigger, destroy } = control();
+      const panel = pctOverlay({ from: () => trigger, anchor: () => edge });
+
+      panel.show();
+
+      // The measurement of `lesson-35`: anchored to the trigger the panel came out 275 px
+      // wide against a 301 px field, inset by the padding of the control column.
+      expect(panel.anchorWidth()).toBe(301);
+      destroy();
+    });
+
+    it('a control with no chrome is its own edge', () => {
+      const { trigger, destroy } = control();
+      const noChrome = pctOverlay({ from: () => trigger, anchor: () => null });
+      const noAnchorAtAll = pctOverlay({ from: () => trigger });
+
+      noChrome.show();
+      noAnchorAtAll.show();
+
+      // Two ways of saying the same thing: a wrapper that is absent, and a wrapper the
+      // control never asks about.
+      expect(noChrome.anchorWidth()).toBe(275);
+      expect(noAnchorAtAll.anchorWidth()).toBe(275);
+      destroy();
+    });
+
+    it('every opening reads again, because the page moves under a control that stays', () => {
+      const { themed, edge, trigger, destroy } = control();
+      const panel = pctOverlay({ from: () => trigger, anchor: () => edge });
+
+      panel.show();
+      panel.hide();
+      themed.setAttribute('data-theme', 'light');
+      trigger.style.fontSize = '14px';
+      withWidth(edge, 240);
+      panel.show();
+
+      expect(panel.inherited()).toMatchObject({
+        theme: 'light',
+        fontSize: '14px',
+      });
+      expect(panel.anchorWidth()).toBe(240);
+      destroy();
+    });
+
+    it('hide closes and leaves the last reading where it was', () => {
+      const { trigger, destroy } = control();
+      const panel = pctOverlay({ from: () => trigger });
+
+      panel.show();
+      panel.hide();
+
+      expect(panel.open()).toBe(false);
+      // A closing panel is still on screen for as long as it takes to leave; a reading
+      // cleared here would repaint it on the way out.
+      expect(panel.inherited()?.theme).toBe('dark');
+      destroy();
+    });
+  });
+
+  /**
+   * The panel side of the same rule: one binding puts on the element whatever the reading
+   * holds. The four properties are not named in the template of any control, so a fifth one
+   * is an entry in `PctOverlayInherited` rather than an edit in every component that opens
+   * a panel.
+   */
+  describe('PctOverlayPanel', () => {
+    @Component({
+      imports: [PctOverlayPanel],
+      template: `<div id="panel" [pctOverlayPanel]="inherited()"></div>`,
+    })
+    class PanelHost {
+      readonly inherited = signal<PctOverlayInherited | null>(null);
+    }
+
+    const render = async () => {
+      const fixture = TestBed.createComponent(PanelHost);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const element = fixture.nativeElement.querySelector(
+        '#panel',
+      ) as HTMLElement;
+      return { fixture, element };
+    };
+
+    const apply = async (
+      fixture: ComponentFixture<PanelHost>,
+      inherited: PctOverlayInherited,
+    ) => {
+      fixture.componentInstance.inherited.set(inherited);
+      fixture.detectChanges();
+      await fixture.whenStable();
+    };
+
+    const INHERITED: PctOverlayInherited = {
+      theme: 'dark',
+      fontFamily: 'Inter, system-ui',
+      fontSize: '16px',
+      direction: 'rtl',
+    };
+
+    it('with nothing read yet it writes nothing on the element', async () => {
+      const { element } = await render();
+
+      expect(element.getAttribute('data-theme')).toBeNull();
+      expect(element.getAttribute('dir')).toBeNull();
+      expect(element.style.fontFamily).toBe('');
+      expect(element.style.fontSize).toBe('');
+    });
+
+    it('a reading puts all four onto the element at once', async () => {
+      const { fixture, element } = await render();
+
+      await apply(fixture, INHERITED);
+
+      expect(element.getAttribute('data-theme')).toBe('dark');
+      expect(element.getAttribute('dir')).toBe('rtl');
+      expect(element.style.fontFamily).toBe('Inter, system-ui');
+      expect(element.style.fontSize).toBe('16px');
+    });
+
+    it('a control with no theme leaves the attribute off rather than writing an empty one', async () => {
+      const { fixture, element } = await render();
+
+      await apply(fixture, { ...INHERITED, theme: null });
+
+      // `data-theme=""` is a theme in the stylesheets — the empty string selects the
+      // default skin, which is not the same as answering to the page.
+      expect(element.hasAttribute('data-theme')).toBe(false);
+      expect(element.getAttribute('dir')).toBe('rtl');
+    });
+  });
+
+  /**
+   * The order in which overlays close, measured rather than assumed — the layer rests on it
+   * and writes not a line of it. An overlay is a child of `body`, so DOM propagation cannot
+   * express nesting: a panel opened from inside a dialog is that dialog's SIBLING in the
+   * tree, and a key travelling up from the control would reach the dialog first. What orders
+   * them is the CDK dispatcher, which delivers a keydown to the top-most attached overlay
+   * and to no other — that is the closing stack this repository would otherwise write for a
+   * second time.
+   *
+   * The rule it leaves for our components: **an overlay closes from the stack, never from a
+   * listener above the control.** A control may answer for its own key (the select eats
+   * Escape on its trigger, and its panel is the top of the stack whenever it is open); a
+   * component listening one floor up would answer for the overlays above it as well.
+   */
+  describe('the closing stack', () => {
+    @Component({
+      imports: [OverlayModule],
+      template: `<button cdkOverlayOrigin #origin="cdkOverlayOrigin">o</button>
+        <ng-template
+          cdkConnectedOverlay
+          [cdkConnectedOverlayOrigin]="origin"
+          [cdkConnectedOverlayOpen]="lower()"
+          (detach)="lower.set(false)"
+        >
+          <div data-overlay="lower">lower</div>
+        </ng-template>
+        <ng-template
+          cdkConnectedOverlay
+          [cdkConnectedOverlayOrigin]="origin"
+          [cdkConnectedOverlayOpen]="upper()"
+          (detach)="upper.set(false)"
+        >
+          <div data-overlay="upper">upper</div>
+        </ng-template>`,
+    })
+    class NestedHost {
+      readonly lower = signal(false);
+      readonly upper = signal(false);
+    }
+
+    const shown = () =>
+      Array.from(document.querySelectorAll('[data-overlay]')).map((element) =>
+        element.getAttribute('data-overlay'),
+      );
+
+    it('Escape closes the top-most overlay alone, and the next one after it', async () => {
+      const fixture = TestBed.createComponent(NestedHost);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      fixture.componentInstance.lower.set(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      fixture.componentInstance.upper.set(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(shown()).toEqual(['lower', 'upper']);
+
+      const escape = async () => {
+        // On `body`, where the dispatcher listens — not on an element inside an overlay:
+        // the point is that the delivery is decided by the stack and not by the target.
+        // `keyCode` alongside `key` because that is what the CDK reads.
+        document.body.dispatchEvent(
+          new KeyboardEvent('keydown', {
+            key: 'Escape',
+            keyCode: 27,
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+        fixture.detectChanges();
+        await fixture.whenStable();
+      };
+
+      await escape();
+      expect(shown()).toEqual(['lower']);
+
+      await escape();
+      expect(shown()).toEqual([]);
     });
   });
 

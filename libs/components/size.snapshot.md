@@ -29,11 +29,11 @@ and the class metadata carries the decorator a second time, and both are compile
 before an application ships them.
 
 ```
-. 992 ./core @angular/core
-./button 4481 ./core @angular/core
-./checkbox 10431 ./core @angular/core
-./core 2248 - @angular/core
-./field 22316 ./core @angular/core,@angular/forms,@angular/forms/signals
-./radio 12809 ./core @angular/core
-./select 19494 ./core @angular/cdk/overlay,@angular/core
+. 1003 ./core @angular/core
+./button 4492 ./core @angular/core
+./checkbox 10442 ./core @angular/core
+./core 3185 - @angular/core
+./field 22328 ./core @angular/core,@angular/forms,@angular/forms/signals
+./radio 12821 ./core @angular/core
+./select 20072 ./core @angular/cdk/overlay,@angular/core
 ```

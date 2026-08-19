@@ -23,11 +23,13 @@ import {
   pctAttachToField,
   pctFieldMessages,
   pctListNavigation,
+  pctOverlay,
   PctCompareWith,
   PctFieldAppearance,
   PctFieldControl,
   PctFieldCursor,
   PctLabelStrategy,
+  PctOverlayPanel,
   pctSameValue,
   PctSize,
 } from '@pacit/components/core';
@@ -65,7 +67,7 @@ import {
  */
 @Component({
   selector: 'pct-select',
-  imports: [OverlayModule],
+  imports: [OverlayModule, PctOverlayPanel],
   templateUrl: './select.html',
   styleUrl: './select.scss',
   host: {
@@ -229,53 +231,29 @@ export class PctSelect<T = string>
     this.fieldDescribedBy.set(ids);
   }
 
-  private readonly hostRef = inject<ElementRef<HTMLElement>>(ElementRef);
-
-  protected readonly open = signal(false);
-
   /**
-   * The panel renders in a CDK overlay, outside the host tree, so the scoped-theme cascade
-   * (`req-token-scoped`) does not reach it. The theme is therefore carried from the host's
-   * nearest ancestor onto the panel itself.
-   */
-  protected readonly panelTheme = signal<string | null>(null);
-
-  /**
-   * For the same reason the panel does not inherit its type — outside the host tree it takes
-   * it from `body`, that is the browser's default serif font instead of the application's. The
-   * family belongs to the application (there is no token for it) and the size to the control's
-   * context: inside the chrome `pct-field[size]` sets it, standalone its own `size` does. So
-   * both are read from the trigger on opening: the panel is set in exactly what the visible
-   * control is set in.
-   */
-  protected readonly panelFont = signal<{
-    family: string;
-    size: string;
-  } | null>(null);
-
-  /**
-   * The third property broken in an overlay, for the same reason as the theme and the type
-   * (`lesson-35`): writing direction. The panel is a child of `body`, so it inherits the
-   * direction from it rather than from the control — in `dir="rtl"` the trigger was set from
-   * the right and the list below it from the left (measured: `direction: rtl` on the trigger
-   * against `ltr` on the panel). It shows only once the panel is open, so no screenshot of the
-   * resting state would have caught it, and the stylesheet is impeccably logical throughout —
-   * `text-align: start` simply resolves the other way.
-   *
-   * The read goes from the trigger, not from `document.dir`: direction can be scoped just as
-   * the theme can, and the panel is to be an extension of THIS control, not of the page.
-   */
-  protected readonly panelDir = signal<string | null>(null);
-
-  /**
-   * The panel's width and anchor point: inside the chrome `pct-field` draws the border, so the
-   * panel lines up with **it** rather than with the trigger, which stands in a column inset by
+   * The panel's anchor point: inside the chrome `pct-field` draws the border, so the panel
+   * lines up with **it** rather than with the trigger, which stands in a column inset by
    * padding and decorations. A standalone control is its own border.
    */
   protected readonly anchor = computed(() => this.fieldApi?.surface() ?? null);
 
-  /** The anchor width measured on opening — the reference for the panel. */
-  private readonly anchorWidth = signal(0);
+  /**
+   * The overlay half of the control, from `core`: the open state, the anchor's width and the
+   * properties a panel outside the host tree stops inheriting — theme, typeface, size and
+   * writing direction (`lesson-35`). Three of the four were found here one at a time, each by
+   * a measurement in the browser, which is why the reading is no longer this component's to
+   * remember: `show()` **is** the read, so there is no way to open a panel and carry nothing.
+   */
+  private readonly panelOverlay = pctOverlay({
+    from: () => this.trigger().nativeElement,
+    anchor: () => this.anchor(),
+  });
+
+  protected readonly open = this.panelOverlay.open;
+
+  /** What the panel is given explicitly, because the DOM tree hands it nothing. */
+  protected readonly inherited = this.panelOverlay.inherited;
 
   /**
    * The width handed to the overlay. An empty string means "do not set it" — the content then
@@ -285,11 +263,11 @@ export class PctSelect<T = string>
   protected readonly overlayWidth = computed(() => {
     const width = this.panelWidth();
     if (width === 'auto') return '';
-    return width === 'field' ? this.anchorWidth() : width;
+    return width === 'field' ? this.panelOverlay.anchorWidth() : width;
   });
 
   protected readonly overlayMinWidth = computed(() =>
-    this.panelWidth() === 'auto' ? this.anchorWidth() : '',
+    this.panelWidth() === 'auto' ? this.panelOverlay.anchorWidth() : '',
   );
 
   /**
@@ -451,17 +429,7 @@ export class PctSelect<T = string>
 
   protected openPanel(): void {
     if (!this.interactive) return;
-    const trigger = this.trigger().nativeElement;
-    this.panelTheme.set(
-      this.hostRef.nativeElement
-        .closest('[data-theme]')
-        ?.getAttribute('data-theme') ?? null,
-    );
-    const style = getComputedStyle(trigger);
-    this.panelFont.set({ family: style.fontFamily, size: style.fontSize });
-    this.panelDir.set(style.direction);
-    this.anchorWidth.set((this.anchor() ?? trigger).offsetWidth);
-    this.open.set(true);
+    this.panelOverlay.show();
     // The selected option becomes active, or the first available one when there is no choice.
     const selected = this.selectedIndex();
     if (selected >= 0) {
@@ -473,7 +441,7 @@ export class PctSelect<T = string>
 
   protected close(): void {
     if (!this.open()) return;
-    this.open.set(false);
+    this.panelOverlay.hide();
     this.nav.clear();
   }
 

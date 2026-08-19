@@ -70,16 +70,14 @@
   (overlayOutsideClick)="close()"
   (detach)="close()"
 >
+  <!-- `pctOverlayPanel`: what the tree stops carrying outside the host (`lesson-35`). -->
   <div
     #panel
     class="pct-select__panel"
     data-pct-part="panel"
     role="listbox"
     [id]="listboxId"
-    [attr.data-theme]="panelTheme()"
-    [attr.dir]="panelDir()"
-    [style.font-family]="panelFont()?.family"
-    [style.font-size]="panelFont()?.size"
+    [pctOverlayPanel]="inherited()"
     [attr.aria-label]="ariaLabel() || null"
     [attr.aria-labelledby]="ariaLabelledby() || (label() ? labelId : null)"
   >

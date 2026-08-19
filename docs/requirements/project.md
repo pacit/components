@@ -166,8 +166,10 @@ in, point 8 which external dependencies come along (CDK Overlay is allowed in `.
 only), point 9 the size per entrypoint against `libs/components/size.snapshot.md` — **to the
 byte**, in both directions, because the measurement does not wobble and a band decides not
 only when a run fails but when the record is written
-([0023](../decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md)). Point 4 watches that the primary entrypoint brings in no component
-at all. The rest is the denominator: two readings of the entrypoint list, presence of the
+([0023](../decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md)). Point 4 watches that the primary entrypoint carries no component
+at all — read over the probe's **text**, because primary re-exports `providePctConfig` from
+`./core` and so pulls that entrypoint whatever it takes from it
+([`lesson-81`](../lessons.md#lesson-81)). The rest is the denominator: two readings of the entrypoint list, presence of the
 measured entrypoint in the probe, a second reading of isolation from the bundle text, a
 differential check, and a repeat of the measurement with the **real**
 `@angular/build:application`. Point 12 holds the FILE rather than the measurement: the

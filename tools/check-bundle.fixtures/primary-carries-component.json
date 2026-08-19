@@ -1,0 +1,9 @@
+{
+  "// defect": "A component's marker stands in the bundle of the primary entrypoint — that is, `@pacit/components` stopped being minimal and every consumer pays for something they did not import. This is literally the content of the `req-project-tree-shaking` promise. The read is the TEXT and not the pulled set: primary re-exports `providePctConfig` from `./core`, so it pulls that entrypoint by construction and the module-level read cannot tell a token taken from a directive left behind (`lesson-81`).",
+  "point": 4,
+  "check": "presence",
+  "addInText": {
+    "ep": ".",
+    "what": "./alpha"
+  }
+}

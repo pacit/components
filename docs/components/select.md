@@ -61,7 +61,10 @@ controlled — a deliberate exception to
 
 ## Decisions
 
-[0006](../decisions/0006-overlay.md) (the main one), [0010](../decisions/0010-generic-noinfer.md),
+[0006](../decisions/0006-overlay.md) (the main one),
+[0024](../decisions/0024-the-closing-stack-is-the-dependency-s.md) (the panel's state and its
+carried-over properties come from `pctOverlay` in `core`; the control keeps the key map and the
+panel geometry), [0010](../decisions/0010-generic-noinfer.md),
 [0003](../decisions/0003-wrapper-and-control.md), [0007](../decisions/0007-config-and-texts.md)
 
 ## Known limitations

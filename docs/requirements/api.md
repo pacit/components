@@ -433,15 +433,24 @@ field, a literal in an interpolation, a static `aria-label` in a `host` block)
 **Promise.** The wrapper offers controls its row as the reference surface
 (`PctFieldApi.surface`); with no wrapper the anchor is the trigger itself. The panel width is
 an axis of the API (`panelWidth="field" | "auto" | <CSS length>`), the abutting edge is
-`panelAlign`. **The panel inherits nothing from the host**: theme, typeface and font size are
-read from the trigger when it opens and carried over explicitly.
+`panelAlign`. **The panel inherits nothing from the host**: theme, typeface, font size and
+writing direction are read from the control when it opens and carried over explicitly. That
+reading is `pctOverlay()` in `@pacit/components/core` and it is not optional machinery —
+`show()` **is** the read, so no control can open a panel and carry nothing. Escape closes the
+**top-most** open overlay and only it; a component never listens for it above its own control.
 
 **Gate:** `apps/sandbox-e2e/src/select.spec.ts` — measuring the panel's width and offset
-against the field, and the typeface and font size inside the panel
+against the field, and the typeface and font size inside the panel;
+`libs/components/core/src/core.spec.ts` — the layer under its own name: the four properties
+read off the control, the anchor's width, a second opening re-reading a page that moved, and
+the closing order over two stacked overlays
 **Control:** the measurement from [`lesson-35`](../lessons.md#lesson-35) (a 301 px field ⇒
 a 275 px panel, offset by 13 px; `Times New Roman` in the panel against `system-ui` in the
-control) — the test compares **specific values**, so it does not pass on "roughly right"
-**Decision:** [0006 — the anchor and inheritance in an overlay](../decisions/0006-overlay.md)
+control) — the test compares **specific values**, so it does not pass on "roughly right". The
+unit cases carry the same numbers, and the closing case discriminates by construction: an
+Escape delivered to every overlay rather than to the top one closes both at the first press
+**Decision:** [0006 — the anchor and inheritance in an overlay](../decisions/0006-overlay.md),
+[0024 — the overlay layer carries what an overlay severs](../decisions/0024-the-closing-stack-is-the-dependency-s.md)
 **Lessons:** [`lesson-18`](../lessons.md#lesson-18), [`lesson-35`](../lessons.md#lesson-35)
 
 ---

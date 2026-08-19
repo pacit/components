@@ -71,3 +71,4 @@ because you had to walk through the reasoning.
 | [0021](0021-an-index-is-derived-or-measured.md)           | An index is generated where every column is derivable, measured where one is not     | `req-quality-index`                                                              |
 | [0022](0022-one-message-line.md)                          | One message line, and it is the error that takes it                                  | `req-api-message`, `req-api-no-wrapper`                                          |
 | [0023](0023-a-tolerance-is-for-a-wobbling-measurement.md) | A tolerance is for a measurement that wobbles                                        | `req-project-tree-shaking`                                                       |
+| [0024](0024-the-closing-stack-is-the-dependency-s.md)     | The overlay layer carries what an overlay severs, and borrows the closing stack      | `req-api-overlay`, `req-project-core`                                            |

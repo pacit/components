@@ -1892,3 +1892,42 @@ second limb had fired on the entry that first described this defect
 ([`lesson-77`](#lesson-77)). **The evidence for a rule about a language cannot be written in
 the language the rule forbids.** The specimen goes into the gate's own tree, as a constant of
 the instrument, and everything else points at it.
+
+---
+
+### <a id="lesson-81"></a>`lesson-81` — A gate reading modules cannot answer a question about bytes
+
+**The first directive in `core` turned the tree-shaking gate red on a bundle that does not
+contain it.** `PctOverlayPanel` went into `@pacit/components/core` at D2, and point 4 of
+`check-bundle` reported that the **primary** entrypoint now "brings in components" — the
+literal text of `req-project-tree-shaking`, the promise a consumer pays nothing for what they
+did not import.
+
+The measurement says otherwise. The primary probe, built the way the gate builds them and the
+way a consumer's builder does, weighs **1003 B** and holds no `pctOverlayPanel` anywhere in
+its text. What it does hold is the reason for the red: `@pacit/components` re-exports
+`providePctConfig` **from `./core`**, so the primary pulls that entrypoint by construction —
+and the gate's read was `pulled`, the bundler's metafile, which speaks of modules. A module
+read cannot tell the provider it took from the directive it left behind, and until that day it
+never had to: `./core` held functions and tokens alone, every other entrypoint held components
+alone, and "pulled it" and "carries its components" were the same sentence.
+
+That equivalence was the model, and one directive in a shared entrypoint ended it. The repair
+is in the same place the promise is: the primary is now measured over its **own text**, the
+marker being a selector, which survives minification and linking as data. The two other points
+resting on the same equivalence moved with it — point 7's second direction gained an exemption
+for a **mixed** entrypoint (components AND plain exports, computed from the artifact rather
+than listed), and point 11 now compares the real builder's text read against the probe's text
+read instead of against a set derived from modules.
+
+The price is measured too, and it is not zero: `./core` 2248 → 3185 B, `./select`
+19494 → 20072 B — and **+11 B on every other entrypoint, the primary included**, which is one
+`,input as b` in an import statement that no longer has a user. A directive in a shared
+entrypoint is imported by the module that no consumer of the plain half will ever instantiate,
+and an unused named import from an external package survives the bundler.
+
+The lesson: **a gate answers the question its read can see.** Point 4's sentence never changed;
+what changed is that its read stopped meaning what the sentence says, and the day it did, the
+gate reported a defect nobody could find in the bytes. When a rule is about what a consumer
+carries, the honest read is the artifact's text — a module graph is an inference from it, and
+an inference is only as good as the model behind it.

@@ -80,9 +80,12 @@ const TEMPLATE_EXCEPTIONS = {
         'click outside it") — in three engines, on a click the browser itself dispatches.',
     },
     statements: {
-      floor: 98.36,
+      floor: 98.33,
       reason:
-        'the body of that same listener — one statement, the same gesture, the same e2e.',
+        'the body of that same listener — one statement, the same gesture, the same e2e. ' +
+        'The number moved with the denominator at D2, not with the coverage: the four ' +
+        'bindings carrying what an overlay severs became one `[pctOverlayPanel]`, so the ' +
+        'template has one statement fewer to divide by.',
     },
   },
 };

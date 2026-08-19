@@ -214,6 +214,7 @@ const checkBundle = (input) => {
   // 4. DENOMINATOR. Four things without which everything below is vacuously true.
   const probes = input.probes ?? {};
   const markers = input.markers ?? {};
+  const plain = input.plain ?? {};
 
   //    a) a probe brings its own entrypoint in. A probe the bundler threw the whole
   //       library out of passes every point about isolation — it holds NOTHING.
@@ -237,18 +238,30 @@ const checkBundle = (input) => {
       );
   }
 
-  //    b) primary brings in no component. This is LITERALLY the text of the promise
+  //    b) primary carries no component. This is LITERALLY the text of the promise
   //       ("`@pacit/components` exports only `providePctConfig`, the shared types and the
   //       version") and at the same time the only reason primary may lack a marker in
-  //       point (c): it has no content of its own to be recognised by. This assertion is
-  //       stronger than a marker, so the exemption is no waiver to be clicked through but
-  //       a different, sharper measurement of the same thing.
+  //       point (c): it has no content of its own to be recognised by.
+  //
+  //       The read is the probe's TEXT and not the set of entrypoints it pulls, and the
+  //       difference showed up the day `./core` grew its first directive (D2): primary
+  //       re-exports `providePctConfig` FROM `./core`, so it pulls that entrypoint by
+  //       construction, and a module-level read cannot tell the token it took from the
+  //       directive it left behind. Measured on that day: the primary probe weighs 1003 B
+  //       and holds no `pctOverlayPanel`, while the rule reading `pulled` called it a
+  //       component in the primary bundle ([`lesson-81`](../docs/lessons.md#lesson-81)).
   const withComponents = (e) => (markers[e] ?? []).length > 0;
-  const wPrimary = (probes[PRIMARY]?.pulled ?? []).filter(withComponents);
+  /**
+   * An entrypoint exporting components AND plain values — a token, a provider, a function.
+   * Read from the built package (an export with no `ɵcmp`/`ɵdir` on it) rather than from a
+   * list here, because the list would be a place to add `./core` to and forget the next one.
+   */
+  const isMixed = (e) => withComponents(e) && (plain[e] ?? false);
+  const wPrimary = probes[PRIMARY]?.inText ?? [];
   if (wPrimary.length)
     throw new BundleError(
       'presence',
-      `the primary entrypoint \`@pacit/components\` brings in components: ${list(wPrimary)}.\n` +
+      `the primary entrypoint \`@pacit/components\` carries components: ${list(wPrimary)}.\n` +
         `    The promise reads "primary exports only \`providePctConfig\`, the shared ` +
         `types and the version" — every consumer then pays for a component they never ` +
         `imported`,
@@ -348,15 +361,30 @@ const checkBundle = (input) => {
   //    bytes. The comparison goes BOTH ways, because each catches something else: a marker
   //    with no metafile entry is content that arrived by a route the bundler does not
   //    report; an entry with no marker is an entrypoint counted though nothing of it left.
+  //
+  //    The second direction has one exemption, and it is computed rather than listed: a
+  //    MIXED entrypoint — one exporting components AND plain values — can legitimately
+  //    contribute bytes with no marker among them, because the bytes are the plain half.
+  //    `./core` is the case that named it: every entrypoint pulls `providePctConfig` from
+  //    it and none of them but `./select` takes its directive. An entrypoint of components
+  //    alone has no such half, so for those the direction stands as it did.
   for (const e of sources) {
     const inText = new Set(probes[e]?.inText ?? []);
-    const expected = new Set((probes[e]?.pulled ?? []).filter(withComponents));
-    if (!equal(inText, expected))
+    const pulled = new Set(probes[e]?.pulled ?? []);
+    const unassigned = [...inText].filter((x) => !pulled.has(x));
+    const unrecognised = [...pulled].filter(
+      (x) => withComponents(x) && !inText.has(x) && !isMixed(x),
+    );
+    if (unassigned.length || unrecognised.length)
       throw new BundleError(
         'markers',
         `the two reads of probe \`${e}\`'s contents have drifted apart:\n` +
-          `      bundler metafile:  ${list(expected)}\n` +
-          `      markers in text:   ${list(inText)}\n` +
+          (unassigned.length
+            ? `      marker in the text, no metafile entry: ${list(unassigned)}\n`
+            : '') +
+          (unrecognised.length
+            ? `      metafile entry, no marker in the text: ${list(unrecognised)}\n`
+            : '') +
           `    A marker in the text with no metafile entry means content brought in by a ` +
           `route the bundler did not assign to a module. An entry with no marker — an ` +
           `entrypoint counted though nothing of it survived`,
@@ -479,10 +507,13 @@ const checkBundle = (input) => {
         `find anything at all`,
     );
   for (const p of runs) {
+    // Both sides are the same KIND of read — the markers found in a built bundle's text —
+    // so the point compares two bundlers and not two models of what a bundle should hold.
+    // Taken from `pulled` it compared a text read against a module read, and the day an
+    // entrypoint held both a directive and a provider the two stopped meaning the same
+    // thing (point 7 above, `lesson-81`).
     const expected = new Set(
-      (p.entrypoints ?? []).flatMap((e) =>
-        (probes[e]?.pulled ?? [e]).filter(withComponents),
-      ),
+      (p.entrypoints ?? []).flatMap((e) => probes[e]?.inText ?? []),
     );
     const found = new Set(p.found ?? []);
     if (!equal(found, expected))
@@ -697,22 +728,31 @@ const entrypointFiles = (manifest) => {
  */
 const collectMarkers = async (dist, files) => {
   await import('@angular/compiler');
-  const out = {};
+  const markersOf = {};
+  const plainOf = {};
   for (const [input, file] of files) {
     const module = await import(
       pathToFileURL(join(dist, file.replace(/^\.\//, ''))).href
     );
     const markers = new Set();
+    let plain = false;
     for (const value of Object.values(module)) {
-      if (typeof value !== 'function') continue;
-      const def = value['ɵcmp'] ?? value['ɵdir'];
+      const def =
+        typeof value === 'function'
+          ? (value['ɵcmp'] ?? value['ɵdir'])
+          : undefined;
+      // Anything that is not a component or a directive: a token, a provider factory, a
+      // function. Types do not count — they are gone by the time this module is imported,
+      // which is the point of reading the artifact rather than the sources.
+      if (!def) plain = true;
       for (const token of (def?.selectors ?? []).flat())
         if (typeof token === 'string' && /^pct[-A-Z]/.test(token))
           markers.add(token);
     }
-    out[input] = [...markers].sort();
+    markersOf[input] = [...markers].sort();
+    plainOf[input] = plain;
   }
-  return out;
+  return { markers: markersOf, plain: plainOf };
 };
 
 /**
@@ -978,7 +1018,7 @@ const measureRepository = async () => {
     [...files].map(([e, file]) => [file.split('/').pop(), e]),
   );
 
-  const markers = await collectMarkers(dist, files);
+  const { markers, plain } = await collectMarkers(dist, files);
   const esbuild = await import('esbuild');
   const linker = await angularLinker(dist);
   const directory = prepareProbeDirectory(dist);
@@ -989,8 +1029,19 @@ const measureRepository = async () => {
     for (const e of files.keys())
       probes[e] = await probe(esbuild, linker, directory, markers, byFile, [e]);
 
-    const componentEntrypoints = [...files.keys()]
-      .filter((e) => e !== PRIMARY && (markers[e] ?? []).length > 0)
+    /**
+     * The two halves of the differential control have to be entrypoints a consumer imports
+     * SEPARATELY, so the shared kernel is out of the running: `./core` is pulled in by
+     * every probe already, and a pair made of it and anything else weighs what that other
+     * one weighs alone — point 10 would then fire on the arithmetic rather than on a
+     * bundler that stopped pulling the library in. Computed and not listed: a kernel is an
+     * entrypoint every other probe brings in.
+     */
+    const others = [...files.keys()].filter((e) => e !== PRIMARY);
+    const isKernel = (e) =>
+      others.every((x) => x === e || (probes[x]?.pulled ?? []).includes(e));
+    const componentEntrypoints = others
+      .filter((e) => (markers[e] ?? []).length > 0 && !isKernel(e))
       .sort((a, b) => probes[a].bytes - probes[b].bytes);
     const pair = [
       componentEntrypoints.at(0),
@@ -1008,6 +1059,7 @@ const measureRepository = async () => {
         ? readFileSync(join(ROOT, SNAPSHOT), 'utf8')
         : null,
       markers,
+      plain,
       probes,
       pair: pairMeasurement
         ? { entrypoints: pair, bytes: pairMeasurement.bytes }
@@ -1052,6 +1104,7 @@ const buildFixture = (fx) => {
     sources: [...reference.sources],
     manifest: structuredClone(reference.manifest),
     markers: structuredClone(reference.markers),
+    plain: structuredClone(reference.plain),
     probes: structuredClone(reference.probes),
     pair: structuredClone(reference.pair),
     builder: structuredClone(reference.builder),
@@ -1067,11 +1120,6 @@ const buildFixture = (fx) => {
     input.probes[fx.probeWithoutItsOwn].pulled = input.probes[
       fx.probeWithoutItsOwn
     ].pulled.filter((e) => e !== fx.probeWithoutItsOwn);
-  if (fx.primaryPulls)
-    input.probes[PRIMARY].pulled = [
-      ...input.probes[PRIMARY].pulled,
-      fx.primaryPulls,
-    ].sort();
   if (fx.dropMarkers) input.markers[fx.dropMarkers] = [];
   if (fx.addMarker) input.markers[fx.addMarker.ep] = fx.addMarker.markers;
   if (fx.addPulled)
