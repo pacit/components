@@ -788,6 +788,69 @@ describe('PctSelect', () => {
     expect(document.querySelector('[data-pct-part="empty"]')).not.toBeNull();
   });
 
+  /**
+   * The same sentence, said to the other reader (`req-a11y-built-in`). Focus stays on the
+   * trigger and an empty listbox has no option for `aria-activedescendant` to name, so the
+   * text drawn inside the panel reaches the eye and nobody else — the live channel from
+   * `core` is where a screen reader is
+   * ([0026](../../../../docs/decisions/0026-one-channel-per-politeness.md)).
+   */
+  describe('the empty panel announces itself', () => {
+    const live = (): string | null =>
+      document.querySelector('[data-pct-live="polite"]')?.textContent ?? null;
+
+    const openEmpty = async (): Promise<ComponentFixture<Host>> => {
+      const fixture = await render(Host);
+      fixture.componentInstance.options.set([]);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      triggerOf(fixture).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      return fixture;
+    };
+
+    it('opening an empty panel puts the text on the polite channel', async () => {
+      await openEmpty();
+
+      expect(live()).toBe('No options');
+    });
+
+    it('a panel with options says nothing', async () => {
+      const fixture = await render(Host);
+      triggerOf(fixture).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(live()).toBe('');
+    });
+
+    it('closing withdraws it, so the next opening says it again', async () => {
+      const fixture = await openEmpty();
+
+      await press(fixture, 'Escape');
+      expect(live()).toBe('');
+
+      triggerOf(fixture).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(live()).toBe('No options');
+    });
+
+    /**
+     * A control destroyed with its panel open takes its sentence with it. Left behind, the
+     * text would sit on a shared channel until something else wrote over it — and the next
+     * select to open an empty panel would find its own message already there and stay silent.
+     */
+    it('a destroyed select leaves nothing on the channel', async () => {
+      const fixture = await openEmpty();
+
+      fixture.destroy();
+
+      expect(live()).toBe('');
+    });
+  });
+
   describe('signal forms', () => {
     it('syncs the choice with the model and propagates validation', async () => {
       const fixture = await render(SignalFormHost);

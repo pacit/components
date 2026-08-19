@@ -1973,3 +1973,44 @@ cancelled and nothing about what the cancellation is for. The promise itself is 
 where focus is real, and the negative control says so outright — `pctFocusStays` taken off the
 panel leaves every unit case green and all three browsers red. **A behaviour whose only witness
 is the browser needs its test in the browser**, however cheap the unit test would have been.
+
+---
+
+### <a id="lesson-83"></a>`lesson-83` — The hiding was in a stylesheet nobody ships
+
+**A live region has to be invisible, and the utility that would have hidden it is a promise
+about a file this library never tells anybody to include.** D4 needed a hidden element in the
+document body, and the obvious answer was CDK's `LiveAnnouncer`: `req-a11y-built-in` names it
+outright, the mechanics are written, and [0013](decisions/0013-no-headless-split.md) buys the
+machinery rather than rewriting it.
+
+What it does with its element is one line: `classList.add('cdk-visually-hidden')`. The class is
+defined in `@angular/cdk/a11y-prebuilt.css` — and the stylesheets this library asks a consumer
+to load are `@angular/cdk/overlay-prebuilt.css` and its own `themes/pct.css`, in the README, in
+the `ng add` schematic and in the sandbox alike. Measured on the sandbox, which loads exactly
+those two, on the element CDK builds, with its two classes and its `aria-live`:
+
+```
+rect: 573 × 18 px      position: static      clip-path: none      overflow: visible
+```
+
+Every announcement painted across the bottom of the page, in the consumer's application, in the
+one configuration the install instructions produce. `grep -c cdk-visually-hidden` over the
+three prebuilt stylesheets says it plainly: two hits in `a11y-prebuilt.css`, zero in the
+other two.
+
+The repair is the size of the defect — the region carries its own declaration block, nine
+properties in one `cssText`, 30 B of the built artifact measured against writing them one at a
+time — and it is not the point. The point is the class of mistake: **a utility class is a
+promise about a stylesheet, and a package that hands you DOM is handing you that promise too.**
+Nothing in the type system, in the compiler or in this repository's gates would have caught it;
+the element is created at runtime, from a service, with a class name that is a string. What
+caught it is asking the browser how big the element is — the same question, in the same place,
+as every other measurement here.
+
+There is a second half, and it is about where such a defect can hide. This library had never
+before created an element outside a template: every component tree is compiled, and its
+stylesheet ships with it. A body-level node built by a service belongs to nobody's `styleUrl`,
+so **whatever it needs, it needs to carry** — the appearance, the ARIA attributes, and the
+removal when the injector that made it goes. That is why the same file also books its cleanup
+on `DestroyRef` rather than trusting a page load to end.

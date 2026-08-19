@@ -9,6 +9,7 @@ import {
   signal,
 } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { PctAnnouncer } from './announce';
 import { PCT_CONFIG } from './config';
 import { PCT_FIELD, pctDescribedBy, pctFieldMessages } from './field';
 import { PctFocusStays } from './focus';
@@ -683,6 +684,168 @@ describe('@pacit/components/core', () => {
       // `click` is not the default action being prevented — the whole point of guarding
       // `mousedown` rather than the pointer event above it.
       expect(press(at('option'), 'click').defaultPrevented).toBe(false);
+    });
+  });
+
+  /**
+   * The live channels (`req-a11y-built-in`). The cases are about the two properties a shared
+   * region has and a per-component one does not: there is exactly ONE of each politeness in
+   * the document, and a sentence already on a channel is not said twice.
+   *
+   * What the unit suite cannot see is whether anything was ANNOUNCED — jsdom has no assistive
+   * technology, and neither has a browser to Playwright. What it can see is the DOM the
+   * announcement is made of, and that is what these measure; the rest is the e2e's
+   * (`select.spec.ts › the empty panel`) and, past it, a decision written down rather than
+   * gated ([0026](../../../../docs/decisions/0026-one-channel-per-politeness.md)).
+   */
+  describe('PctAnnouncer', () => {
+    @Component({ template: '' })
+    class Bare {}
+
+    /**
+     * The service first and the render after it, in that order: `afterNextRender` books the
+     * NEXT render, so a service created once everything has already been drawn waits for a
+     * render that may never come. A component injecting it is created during one, which is why
+     * `pct-select` needs no such care.
+     */
+    const rendered = async (): Promise<PctAnnouncer> => {
+      const announcer = TestBed.inject(PctAnnouncer);
+      const fixture = TestBed.createComponent(Bare);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      return announcer;
+    };
+
+    const region = (politeness: string): HTMLElement | null =>
+      document.querySelector(`[data-pct-live="${politeness}"]`);
+
+    const regions = (): number =>
+      document.querySelectorAll('[data-pct-live]').length;
+
+    it('the first render opens one region per politeness, empty', async () => {
+      await rendered();
+
+      expect(regions()).toBe(2);
+      for (const politeness of ['polite', 'assertive'] as const) {
+        const element = region(politeness);
+        expect(element?.getAttribute('aria-live')).toBe(politeness);
+        // Read as a sentence rather than from the first changed word.
+        expect(element?.getAttribute('aria-atomic')).toBe('true');
+        expect(element?.textContent).toBe('');
+      }
+    });
+
+    it('a message goes to the channel it names and to no other', async () => {
+      const announcer = await rendered();
+
+      announcer.announce('No options');
+      announcer.announce('The form has errors', 'assertive');
+
+      expect(region('polite')?.textContent).toBe('No options');
+      expect(region('assertive')?.textContent).toBe('The form has errors');
+    });
+
+    it('polite is what a message with no politeness gets', async () => {
+      const announcer = await rendered();
+
+      announcer.announce('No options');
+
+      expect(region('assertive')?.textContent).toBe('');
+    });
+
+    /**
+     * The deduplication of the plan's D4, measured where it happens: `textContent = x` on a
+     * region already holding `x` replaces the text node all the same, and a replaced text node
+     * is a change the assistive technology is entitled to read out again.
+     */
+    it('the same sentence twice is one write to the region', async () => {
+      const announcer = await rendered();
+      const element = region('polite') as HTMLElement;
+      const writes: string[] = [];
+      const observer = new MutationObserver((records) =>
+        writes.push(...records.map((record) => record.type)),
+      );
+      observer.observe(element, { childList: true, characterData: true });
+
+      announcer.announce('No options');
+      announcer.announce('No options');
+      await Promise.resolve();
+      observer.disconnect();
+
+      expect(writes).toEqual(['childList']);
+    });
+
+    it('two owners of the same state are one announcement', async () => {
+      const announcer = await rendered();
+      const second = TestBed.inject(PctAnnouncer);
+
+      announcer.announce('No options');
+      second.announce('No options');
+
+      // The same service, and the same region: `providedIn: 'root'` is what makes "one
+      // channel for the document" true of two components as well as of two calls.
+      expect(second).toBe(announcer);
+      expect(regions()).toBe(2);
+    });
+
+    it('an empty message is not an announcement', async () => {
+      const announcer = await rendered();
+      announcer.announce('No options');
+
+      announcer.announce('');
+
+      expect(region('polite')?.textContent).toBe('No options');
+    });
+
+    it('a retracted sentence can be announced again', async () => {
+      const announcer = await rendered();
+
+      announcer.announce('No options');
+      announcer.retract('No options');
+      expect(region('polite')?.textContent).toBe('');
+
+      announcer.announce('No options');
+      expect(region('polite')?.textContent).toBe('No options');
+    });
+
+    /**
+     * The reason `retract` takes the message rather than the channel: a component whose state
+     * has passed cannot know whether the channel still holds ITS sentence, and a blanket clear
+     * would take the next one down with it.
+     */
+    it('a retraction of what is no longer there changes nothing', async () => {
+      const announcer = await rendered();
+
+      announcer.announce('No options');
+      announcer.announce('Loading', 'assertive');
+      announcer.retract('No options', 'assertive');
+      announcer.retract('Nothing anybody said');
+
+      expect(region('assertive')?.textContent).toBe('Loading');
+      expect(region('polite')?.textContent).toBe('No options');
+    });
+
+    /**
+     * The consequence of the regions being opened by a render: on the server there is none, so
+     * nothing is appended to the document being sent (`req-project-ssr`), and a message with no
+     * document to land in is dropped rather than queued. Nothing in this library speaks before
+     * its first render — a panel cannot be open before it has been drawn.
+     */
+    it('with no render there is no region, and no message either', () => {
+      const announcer = TestBed.inject(PctAnnouncer);
+
+      announcer.announce('No options');
+
+      expect(regions()).toBe(0);
+    });
+
+    it('the regions leave with the application that opened them', async () => {
+      await rendered();
+      expect(regions()).toBe(2);
+
+      TestBed.resetTestingModule();
+
+      expect(regions()).toBe(0);
     });
   });
 

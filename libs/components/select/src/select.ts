@@ -3,6 +3,7 @@ import {
   booleanAttribute,
   Component,
   computed,
+  DestroyRef,
   effect,
   ElementRef,
   inject,
@@ -24,6 +25,7 @@ import {
   pctFieldMessages,
   pctListNavigation,
   pctOverlay,
+  PctAnnouncer,
   PctCompareWith,
   PctFieldAppearance,
   PctFieldControl,
@@ -363,8 +365,34 @@ export class PctSelect<T = string>
     return `${this.uid}-option-${index}`;
   }
 
+  /**
+   * What an open panel with nothing in it says, and to whom. The sentence inside the panel is
+   * drawn for the eye: focus stays on the trigger, so a screen reader is pointed at no part of
+   * an empty listbox — `aria-activedescendant` has no option to name and nothing describes the
+   * panel. The same sentence therefore goes to the shared polite channel, where the reader is
+   * (`req-a11y-built-in`, [0026](../../../../docs/decisions/0026-one-channel-per-politeness.md)).
+   *
+   * It is withdrawn as the panel closes, and again when the control is destroyed while open —
+   * a channel holding a sentence nobody can see any more is a channel that will not repeat it.
+   */
+  private readonly announcer = inject(PctAnnouncer);
+
+  private readonly emptyMessage = computed(() =>
+    this.open() && this.options().length === 0 ? this.texts().selectEmpty : '',
+  );
+
   constructor() {
     pctAttachToField(this.fieldApi, this);
+
+    effect(() => {
+      const message = this.emptyMessage();
+      if (message !== '') this.announcer.announce(message);
+      else this.announcer.retract(this.texts().selectEmpty);
+    });
+
+    inject(DestroyRef).onDestroy(() =>
+      this.announcer.retract(this.emptyMessage()),
+    );
 
     // The active option has to be visible in a scrolling list.
     effect(() => {

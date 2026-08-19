@@ -84,8 +84,9 @@ so the npm page is written and the last file that travelled in a second language
 **B6 and B7 have closed too** — the support window with a gate reading its numbers, and the
 dependency lists with a gate reading the artefact — so **what stands between here and npm is
 B4 alone, and B4 is held with B2**. In parallel: F1 is unblocked — the inventories it renders
-both exist — and C, the filler, holds one open finding, **C19**, which binds at E1. **D2 and
-D3 have closed too**, so the next unstarted item in the order is **D4**.
+both exist — and C, the filler, holds one open finding, **C19**, which binds at E1. **D2,
+D3 and D4 have closed too**, so the next unstarted item in the order is **D5** — and C, empty
+since C18, has **C20** in it again, left behind by D4.
 
 **B2 is deferred by decision, not blocked** — and the decision has a shape: **the first push
 happens only when the maintainer asks for it outright.** It is not triggered by a state of the
@@ -367,6 +368,25 @@ on no `mousedown` at all, so the unit suite can assert the cancellation and neve
 for — take the directive off the panel and every unit case stays green while all three browsers
 go red.
 
+**D4 closed after it, and it is the first position where the plan's line asked for something the
+repository already had — correctly.** "Not a region per component" describes four templates here
+exactly: the checkbox, the radio group, the select and the field chrome each draw their message
+inside `role="alert"`. Read as a defect, the repair would have moved four sentences off the
+screen and into a hidden copy of themselves; measured instead, those regions are the right shape
+— the message is where the user reads it, `role="alert"` is the one live region an assistive
+technology reads when it arrives together with its text, and a single shared region would lose
+the second of two errors landing in one frame unless a queue nobody can time were added
+([0026](decisions/0026-one-channel-per-politeness.md)). What has no reader at all is the select's
+**empty** panel: focus on the trigger, no option for `aria-activedescendant` to name, no
+description, and the sentence in the panel in a `<div>` with no role — a sighted user is told,
+a screen reader user hears "expanded" and then silence. That is the channel's one consumer, and
+it is polite. The task also found where the mechanics could not be bought: CDK's `LiveAnnouncer`
+hides its element with a class from a stylesheet this library never asks for, so on the two it
+does ask for the announcement is **573 × 18 px of text across the bottom of the page**
+([`lesson-83`](lessons.md#lesson-83)) — **a utility class is a promise about a stylesheet, and a
+package that hands you DOM hands you that promise too**. The finding left behind is **C20**: the
+`role="alert"` this decision keeps rests on four hand-written templates and no gate reads it.
+
 ## B. Readiness for the first release
 
 Binds at the first publication — and then all of it at once. **B9** bound one step earlier, at
@@ -558,7 +578,7 @@ not a derivation.
 ## C. Open findings
 
 Small, good filler between the bigger items. Each one is verified in the code and still
-current. **Seventeen are closed and one is open** (the numbers run to C19; there is no C5) —
+current. **Eighteen are closed and two are open** (the numbers run to C20; there is no C5) —
 the list is where the next finding lands, and six of the closed ones ended in a decision record
 rather than in a line of code: [0018](decisions/0018-no-sass-entry-point.md) through
 [0023](decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md).
@@ -1258,6 +1278,28 @@ var(--pct-button-heigth)` passed every one of them, and the 7 stylesheets read 1
     the pinning test is the probe above
   - binds at: **E1**, where the question stops being cosmetic · _notes:_ —
 
+- [ ] **C20 — the message that announces itself does so on nobody's rule**
+  - four templates draw their validation message inside `role="alert"`
+    (`checkbox.html`, `select.html`, `radio-group.html`, `field.html`), and
+    [0026](decisions/0026-one-channel-per-politeness.md) keeps them there deliberately: a
+    sentence with a place on the screen announces from that place, and the shared channel
+    carries what has none
+  - **nothing measures it.** `check-aria` reads every template of the library and has six
+    points; none of them asks whether an error part carries a live region. Point 6 pairs the
+    hint and the error as alternatives of one conditional, which is `req-api-message`, and says
+    nothing about how either is announced. So the fifth component to draw a message announces
+    nothing, and the run stays green — the shape of `lesson-65`, where the one configuration
+    that fails is the one no page renders
+  - the promise is now written down and the gate is the half that is missing: a point of
+    `check-aria` over the same templates (`data-pct-part` ending in `error` carries
+    `role="alert"`), with the fixtures the gate already has a home for. Whether the rule is
+    "an error part is a live region" or the narrower "an error part is `role=\"alert\"`" is
+    the question the point has to answer — the first admits `aria-live` on a wrapper, the
+    second is what all four templates do today
+  - binds at: **E5**, where the switch and the textarea are the first components written after
+    this decision that can draw a message of their own — and the toast at E7 is the first
+    caller the `assertive` channel has ever had · _notes:_ —
+
 ## D. Phase 1 — the behaviour layer in `core`
 
 The largest architectural risk. The list machinery (typeahead, `activeIndex`, skipping disabled
@@ -1270,7 +1312,10 @@ closed the same way** — what an overlay severs stands in `core`, what a role d
 with the select, and what the dependency already ordered was pinned rather than rewritten.
 **D3 closed on the same reading**: of its four lines, one had a consumer and a measured defect
 and three had none, so the layer holds the declaration that a panel takes no focus and the
-modal half waits for the modal.
+modal half waits for the modal. **D4 closed on it too, and turned the reading around**: the
+thing its line refuses — a live region per component — is already here, in four templates, and
+it is correct, because those regions sit on messages the user can see. The channel took the one
+change with no reader at all, which the line does not name.
 
 Guiding principle: **mechanics from CDK, our own API** — CDK types never leak into the public
 contract. The pattern is ready: `PCT_FIELD` is exactly that for the field chrome and its control.
@@ -1348,8 +1393,43 @@ contract. The pattern is ready: `PCT_FIELD` is exactly that for the field chrome
       no `mousedown`, so the unit suite can see the cancellation and never what it is for. One
       line went as the guard arrived: `selectAt` used to hand focus back to the trigger after a
       mouse pick, and the control no longer loses it
-- [ ] **D4 — live announcer**: one `polite` channel, one `assertive`, with deduplication — not a
-      region per component · _notes:_ —
+- [x] **D4 — live announcer**: one `polite` channel, one `assertive`, with deduplication — not a
+      region per component · _notes:_ **done, and the region per component the line refuses was
+      already here and stays** — `PctAnnouncer` in `libs/components/core/src/announce.ts`: two
+      regions for the whole document, one `aria-live` value each, fixed when the region is
+      created, opened by `afterNextRender` and cleaned up on the injector that made them
+      ([0026](decisions/0026-one-channel-per-politeness.md)). The consumer count decided the
+      shape again, as at D2 and D3. Four templates already draw their message inside
+      `role="alert"`, and that is **right where it stands**: the sentence is on the screen, in
+      the element `aria-describedby` names, and `role="alert"` is the one live region an
+      assistive technology reads when it arrives with its text — which is what an `@if` around
+      an error does. What has **no reader at all** is the select's empty panel, measured in
+      three engines before anything was written: focus stays on the trigger,
+      `aria-activedescendant` is absent because there is no option to name, `aria-describedby`
+      is absent, and `texts().selectEmpty` sits in a `<div>` with no role inside the listbox —
+      a sighted user is told the list is empty, a screen reader user hears "expanded" and then
+      silence. So the channel has one consumer, it is polite, and it speaks the application's
+      language, `PCT_TEXTS` being where the sentence comes from (`Aucune option` in the
+      sandbox, which is what the e2e asserts). **The deduplication is what makes `retract`
+      necessary** — a channel that will not repeat itself has to be emptied before the same
+      words can be said twice, which is `attach`/`detach` again one layer down
+      ([`lesson-68`](lessons.md#lesson-68)), and the select therefore withdraws on close **and**
+      on being destroyed with the panel open. The task's second half is where CDK stopped being
+      the answer: `LiveAnnouncer` hides its element with `cdk-visually-hidden`, a class from
+      `@angular/cdk/a11y-prebuilt.css` — a stylesheet neither the README nor `ng add` mentions
+      — so on the two this library does ask for, its element measures **573 × 18 px of visible
+      text** at the bottom of the page ([`lesson-83`](lessons.md#lesson-83)). The promise in
+      `req-a11y-built-in` named that class's owner by name and was amended, not obeyed.
+      Measured: 11 cases under the layer's own name plus 4 on the select, 4 in three engines,
+      mutation 85.97 → 86.70% with `announce.ts` at 94.44%, and the price in the snapshot —
+      `./core` 3482 → 4440 B, +939 B on every entrypoint that re-exports it, `./select` a
+      further 308 B. **The two mutants that survive are the hiding itself** — empty the style
+      and every unit case stays green, because jsdom has no layout to make the region visible
+      in; the mutant dies in the browser, where the e2e measures the region's box, which is
+      [`lesson-82`](lessons.md#lesson-82)'s second half met again in a different file. Negative controls are two recorded runs, the
+      announcement out and the withdrawal out, and they fail on different cases. The task left
+      **C20** behind: the `role="alert"` this decision keeps is in four templates by hand and
+      no gate reads it
 - [ ] **D5 — `*pctTemplate` / `TemplateRef`** → closes `req-api-templates`; unblocks icons
       · _notes:_ —
 - [ ] **D6 — icons**: `pct-icon` over a projected SVG plus a `PCT_ICONS` token mapping semantic

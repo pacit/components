@@ -281,6 +281,98 @@ test.describe('PctSelect — a combobox with a panel', () => {
     await expect(p).toHaveCSS('background-color', 'rgb(15, 23, 42)');
   });
 
+  /**
+   * The empty panel and the reader nobody had (`req-a11y-built-in`).
+   *
+   * The sentence inside the panel is drawn for the eye. Focus stays on the trigger, an empty
+   * listbox has no option for `aria-activedescendant` to name, and nothing describes the panel
+   * — so a screen reader is pointed at no part of it, measured here as the ARIA relations the
+   * trigger carries with the panel open. The library therefore says it on a live channel of
+   * its own ([0026](../../../../docs/decisions/0026-one-channel-per-politeness.md)), and this
+   * is where that can be measured at all: what the channel is made of — one region per
+   * politeness, in the document before anything is said, invisible, holding the sentence and
+   * then not holding it — is DOM, and DOM is what a browser can be asked about. Whether an
+   * assistive technology reads it out is not measurable here, in any engine.
+   */
+  test.describe('the empty panel', () => {
+    const live = (
+      page: import('@playwright/test').Page,
+      politeness = 'polite',
+    ) => page.locator(`[data-pct-live="${politeness}"]`);
+
+    test('the channels are open, empty and invisible before anything is said', async ({
+      page,
+    }) => {
+      // One of each for the whole document, however many controls are on the page — the
+      // property a region per component does not have.
+      await expect(live(page)).toHaveCount(1);
+      await expect(live(page, 'assertive')).toHaveCount(1);
+      await expect(live(page)).toHaveAttribute('aria-live', 'polite');
+      await expect(live(page, 'assertive')).toHaveAttribute(
+        'aria-live',
+        'assertive',
+      );
+      await expect(live(page)).toHaveAttribute('aria-atomic', 'true');
+      await expect(live(page)).toHaveText('');
+
+      // Hidden by the element's own style and not by a class, because a class is a promise
+      // about a stylesheet the consumer has to include — CDK's own announcer makes that
+      // promise, and on the two stylesheets this library asks for it paints its text across
+      // the bottom of the page (`lesson-83`).
+      const box = await live(page).boundingBox();
+      expect(box?.width).toBeLessThanOrEqual(1);
+      expect(box?.height).toBeLessThanOrEqual(1);
+    });
+
+    test('opening it announces the text the application translated', async ({
+      page,
+    }) => {
+      const t = trigger(page, 'select-empty');
+      await t.click();
+      await expect(panel(page)).toBeVisible();
+
+      // The measurement of the defect, beside its repair: with the panel open the trigger
+      // points at nothing and is described by nothing, so the sentence in the panel has no
+      // reader on the ARIA side at all.
+      await expect(t).toHaveAttribute('aria-expanded', 'true');
+      await expect(t).not.toHaveAttribute('aria-activedescendant');
+      await expect(t).not.toHaveAttribute('aria-describedby');
+
+      // `Aucune option` and not `No options`: the announcement goes through PCT_TEXTS, so an
+      // application that translates the library is not announced to in English
+      // (req-api-texts).
+      await expect(live(page)).toHaveText('Aucune option');
+      await expect(live(page, 'assertive')).toHaveText('');
+    });
+
+    test('closing withdraws it, and the next opening says it again', async ({
+      page,
+    }) => {
+      const t = trigger(page, 'select-empty');
+      await t.click();
+      await expect(live(page)).toHaveText('Aucune option');
+
+      await page.keyboard.press('Escape');
+      await expect(panel(page)).toHaveCount(0);
+      // Withdrawn, and that is what makes the repeat possible: a channel still holding the
+      // sentence would take the second opening for a duplicate and stay silent.
+      await expect(live(page)).toHaveText('');
+
+      await t.click();
+      await expect(live(page)).toHaveText('Aucune option');
+    });
+
+    test('a panel with options says nothing', async ({ page }) => {
+      await trigger(page).click();
+      await expect(panel(page)).toBeVisible();
+
+      // The list a screen reader already reads is not announced over: `aria-activedescendant`
+      // names the active option, which is the pattern doing its job.
+      await expect(trigger(page)).toHaveAttribute('aria-activedescendant');
+      await expect(live(page)).toHaveText('');
+    });
+  });
+
   test('the clickable area of the trigger is at least 24 px tall', async ({
     page,
   }) => {

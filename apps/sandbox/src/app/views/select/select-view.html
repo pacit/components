@@ -103,3 +103,21 @@
     data-testid="select-bare"
   />
 </sbx-demo>
+
+<sbx-demo
+  heading="An empty list"
+  summary="The panel says there is nothing to pick. Focus stays on the trigger, so the sentence inside the listbox is text no screen reader is pointed at — the library announces it instead."
+  [reqs]="['req-a11y-built-in', 'req-api-texts']"
+  [controls]="[]"
+  data-testid="demo-empty"
+>
+  <div class="stack">
+    <pct-field label="Country (nothing to pick)" data-testid="field-empty">
+      <pct-select
+        [options]="none"
+        [(value)]="emptyCountry"
+        data-testid="select-empty"
+      />
+    </pct-field>
+  </div>
+</sbx-demo>

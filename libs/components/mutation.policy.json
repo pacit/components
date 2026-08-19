@@ -13,6 +13,7 @@
 
   "// files": "The inventory outright: what is to be measured. The patterns above watch that nobody narrowed the measurement; this list watches that a file covered by a pattern really entered the report. Neither is enough alone — a pattern can stay untouched while a file disappears (a rename, a move), and the score rises by itself again.",
   "files": [
+    "libs/components/core/src/announce.ts",
     "libs/components/core/src/config.ts",
     "libs/components/core/src/field.ts",
     "libs/components/core/src/focus.ts",

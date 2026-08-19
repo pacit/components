@@ -50,7 +50,7 @@ does not pay for a select. The primary entrypoint carries configuration only.
 | `@pacit/components/checkbox` | `PctCheckbox`                                                      |
 | `@pacit/components/radio`    | `PctRadioGroup`, `PctRadio`                                        |
 | `@pacit/components/select`   | `PctSelect`, `PctSelectOption`                                     |
-| `@pacit/components/core`     | what the controls share: `PCT_FIELD`, `PctCompareWith`, id helpers |
+| `@pacit/components/core`     | what the controls share: `PCT_FIELD`, `PctAnnouncer`, id helpers   |
 
 `@pacit/components/themes/pct.css` is the built skin — see [Theming](#theming).
 
@@ -255,7 +255,30 @@ bootstrapApplication(App, {
 
 WCAG 2.2 AA is the floor, and it is measured rather than declared: every view of the demo
 application goes through an axe-core audit in e2e, touch targets are at least 24×24 px, and the
-keyboard map of each component is written down and tested. Where a pattern has a known limit, the
+keyboard map of each component is written down and tested.
+
+A change nobody is pointed at is announced, and from one place: the library keeps **two** live
+regions for the whole document — one `polite`, one `assertive` — instead of one per component.
+They carry what has no element on the screen to speak from; a validation message announces from
+the text you can read (`role="alert"`), not from a hidden copy of itself. Your application may
+use the same channel:
+
+```ts
+import { PctAnnouncer } from '@pacit/components/core';
+
+private readonly announcer = inject(PctAnnouncer);
+
+this.announcer.announce('Draft saved');                 // polite, waits its turn
+this.announcer.announce('Connection lost', 'assertive'); // interrupts
+this.announcer.retract('Draft saved');                   // lets it be said again
+```
+
+A channel does not repeat what it is already saying, so the same sentence twice is one
+announcement — and has to be withdrawn before it can be announced afresh. The regions are opened
+by the first render (nothing is rendered on the server) and hide themselves, so there is no
+stylesheet to include for them.
+
+Where a pattern has a known limit, the
 limit is in that component's page under
 [docs/components/](https://github.com/pacit/components/blob/main/docs/components/README.md)
 rather than left for you to discover.
