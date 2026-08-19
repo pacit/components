@@ -1,0 +1,8 @@
+{
+  "check": "score",
+  "rule": "stale-prose",
+  "// defect": "The policy widened the tolerance and the file kept the old one. Every row is inside the new band, so no rule above has anything to say — and the snapshot goes on telling its reader that a score is held to a width it is no longer held to.",
+  "policy": {
+    "tolerance": 3
+  }
+}

@@ -159,7 +159,7 @@ used but not declared in the package must fire point 3
 version. Components are imported through secondary entrypoints — which forces tree-shaking
 and explicit imports.
 
-**Gate:** `tools/check-bundle.mjs` (target `check-bundle` in `components`, in CI) — eleven
+**Gate:** `tools/check-bundle.mjs` (target `check-bundle` in `components`, in CI) — twelve
 points. The probes bundle the **artifact** through `node_modules` and the `exports` map, the
 same way a consumer does: point 6 watches which entrypoints an import of one of them pulls
 in, point 8 which external dependencies come along (CDK Overlay is allowed in `./select`
@@ -170,23 +170,29 @@ only when a run fails but when the record is written
 at all. The rest is the denominator: two readings of the entrypoint list, presence of the
 measured entrypoint in the probe, a second reading of isolation from the bundle text, a
 differential check, and a repeat of the measurement with the **real**
-`@angular/build:application`. The budget's number is what an **application** carries, not
+`@angular/build:application`. Point 12 holds the FILE rather than the measurement: the
+snapshot is exactly what the renderer writes, prose included — the points above read it
+through a map of its rows, so a paragraph rewritten in the renderer used to stay out of the
+file until some byte happened to move with it
+([`lesson-79`](../lessons.md#lesson-79)). The budget's number is what an **application** carries, not
 what the tarball weighs: point 5 requires the probe to be built the way a consumer builds —
 the Angular linker run over the package and `ngDevMode` folded — and the two together take a
 component entrypoint to some 60% of its unlinked size
-**Control:** `tools/check-bundle.fixtures/` — 24 doctored inputs, each rejected on its own
+**Control:** `tools/check-bundle.fixtures/` — 25 doctored inputs, each rejected on its own
 point; among them `entrypoint-pulls-neighbour/` (importing `./alpha` pulls in `./beta`),
 `new-external-dependency/` (an entrypoint reaches for the CDK overlay),
 `probe-without-its-entrypoint/` (the measurement stopped pulling anything in),
 `probe-not-linked/` (the probe measures the package's bytes rather than the consumer's),
-`size-grew/` (one byte, the smallest thing the point can be asked to see) and
-`pair-no-larger-than-single/` — literally "an app importing two entrypoints must
-produce a noticeably bigger bundle". Plus a run against the real repository: the exact
+`size-grew/` (one byte, the smallest thing the point can be asked to see),
+`snapshot-not-the-render/` (every row right, and the prose still describing the band 0023
+removed) and `pair-no-larger-than-single/` — literally "an app importing two entrypoints must
+produce a noticeably bigger bundle". Plus runs against the real repository: the exact
 comparison's first run was red on `./checkbox`, `./radio` and `./select`, 76 B each, a drift
-of C13's that the old ±5% band had recorded nowhere
+of C13's that the old ±5% band had recorded nowhere, and point 12's first run was green — the
+paragraphs 0023 rewrote had reached the file on the back of the rows that moved with them
 **Decision:** [0023 — a tolerance is for a measurement that wobbles](../decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md)
 **Lessons:** [`lesson-51`](../lessons.md#lesson-51), [`lesson-73`](../lessons.md#lesson-73),
-[`lesson-78`](../lessons.md#lesson-78)
+[`lesson-78`](../lessons.md#lesson-78), [`lesson-79`](../lessons.md#lesson-79)
 
 ---
 

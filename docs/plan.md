@@ -298,6 +298,19 @@ no wobble for a tolerance to protect the record from
 of three rows the old band had swallowed, and the task left **C17** behind: those four generated
 snapshots are compared by their rows and by nothing else.
 
+**C17 closed after it**, and it is the position where the finding had measured half of its own
+subject. "All four snapshots compare their rows and nothing else" was true of two:
+`check-tokens` and `check-parts` hold the whole file in one `!==`, and their message even has a
+branch for a heading that drifted. What splits the four is not care but **what their messages
+can say** ([`lesson-79`](lessons.md#lesson-79)) — a byte needs the row parsed into columns
+before "+800 B" is sayable, and once the rows are parsed the parse becomes the comparison. The
+plan's either/or was settled by finding the second road closed rather than merely worse: only a
+gate that renders can compare, and knowing what `size.snapshot.md` should say means running the
+build. The two repairs are deliberately different, which is
+[0023](decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md) taken literally: the size
+file is compared whole, the mutation file everything except a number that wobbles by ±2 with
+the code unchanged.
+
 ## B. Readiness for the first release
 
 Binds at the first publication — and then all of it at once. **B9** bound one step earlier, at
@@ -1072,24 +1085,50 @@ var(--pct-button-heigth)` passed every one of them, and the 7 stylesheets read 1
     honest kind, the number having changed meaning, and the question of budget-versus-snapshot
     stands exactly where C10 left it
 
-- [ ] **C17 — a generated snapshot's prose is compared by nobody**
+- [x] **C17 — a generated snapshot's prose is compared by nobody** — **closed, and the finding
+      was right about half of its own subject**
   - all four generated snapshots (`size`, `parts`, `tokens`, `mutation`) are rendered **whole**
-    by their gate — header, explanation, rows — and all four compare **rows only**. Change the
-    renderer's prose and the file keeps yesterday's text until some row happens to drift: C14
-    rewrote two paragraphs of `size.snapshot.md`, and nothing but a byte moving with them would
-    have put the new text in the file
+    by their gate — header, explanation, rows — and the finding said all four compare **rows
+    only**. Two do not: `check-tokens` and `check-parts` hold the whole file in one `!==`, and
+    their message has a branch for exactly this case ("the list of names is the same — the
+    heading or the row order drifted"). `check-docs` compares the registry the same way. The
+    two that read their file through a map of its rows are `check-bundle` and `check-mutation`,
+    so the two paragraphs C14 rewrote in `size.snapshot.md` would have sat stale had no byte
+    moved with them
   - the same shape as [C15](#c-open-findings) one floor down, with a worse disguise: the rows
     are right, so the file reads as measured. And its first line says "this file is generated",
     which is the sentence a reader trusts instead of checking
-  - the cheap version is one comparison per gate — the render equals the file — and it has a
-    trap worth writing down first: it must fire **after** the points that name what moved, or a
-    size drift starts reporting "the file is not the render" instead of "`./field` grew by
-    800 B" (the ordering [C11](#c-open-findings) already paid for once)
-  - to be settled: four comparisons in four gates, or one rule in `check-index`, which already
-    rules on whether a list is derived or measured
-    ([0021](decisions/0021-an-index-is-derived-or-measured.md)) but knows nothing today about
-    files outside `docs/`
-  - cost: ~0.5 day for all four · _notes:_ —
+  - **what splits the four is what their messages can say** ([`lesson-79`](lessons.md#lesson-79)):
+    a vanished token name needs no arithmetic, so the gate prints two lists and the difference
+    is the message; a byte needs the row parsed into columns before "+800 B, +10.9%" is
+    sayable — and once the rows are parsed, the parse becomes the comparison and the rest of
+    the file leaves the measurement with nobody deciding that it should
+  - the plan's either/or is settled the first way, and the second road turned out to be closed
+    rather than merely worse: **only the gate that renders can compare**, since knowing what
+    `size.snapshot.md` should say means running the build, and `mutation.snapshot.md` a Stryker
+    run — a rule in `check-index` would have to repeat both measurements to have an opinion.
+    So point 12 (`verbatim`) in `check-bundle` and the `score/stale-prose` rule in
+    `check-mutation`, both standing **last** among their file's comparisons: the ordering trap
+    the finding named, plus one it did not — with the differential or the builder control red
+    the MEASUREMENT is in doubt, and its rendering is not a record anybody should be told to
+    write down
+  - **the two gates get different rules, and that is [0023](decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md)
+    read literally.** `check-bundle` compares the file whole, because its rows are already held
+    to the byte both ways. `check-mutation` cannot: the score wobbles, ±2 is the width of the
+    wobble, and the columns beside the score wobble with it — a mutant killed by the clock
+    moves the timeout count with the code unchanged. Its rule is therefore everything that is
+    **not** a row, which is also the honest statement of what that tolerance covers
+  - one control per gate, and between them they take the rule from both sides:
+    `snapshot-not-the-render` keeps every row right and leaves the prose describing the ±5%
+    band 0023 removed, while `stale-prose` widens `tolerance` in the policy to 3 and leaves the
+    file quoting 2 — a text the renderer writes, and a value the policy feeds it. The second
+    needed no new machinery in its fixture builder at all. Disarming either point gives
+    "PASSED", so the count of rules whose disarming only moves a case onto a neighbour stays
+    twelve
+  - the first run against the repository was **green in both files**, unlike C15's: C14's
+    rewritten paragraphs had reached `size.snapshot.md` on the back of the rows that moved in
+    the same commit, which is precisely the accident the points now stop depending on
+  - cost: ~0.5 day for all four · _notes:_ **done** — two gates changed, two already correct.
 
 - [ ] **C18 — a Polish word the Polish dictionary does not hold**
   - `tools/check-bundle.mjs` names the function that builds an entrypoint's import specifier in

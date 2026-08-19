@@ -9,7 +9,8 @@
  *  3. TEST DENOMINATOR: the run executed exactly the specs the `test` target does,
  *  4. the threshold is declared, binding, and cannot be disarmed from the command,
  *  5. the denominator is not narrowed: ignorers, excluded mutators, static mutants,
- *  6. the result: a hard floor and a snapshot with a TWO-SIDED tolerance, per file and total,
+ *  6. the result: a hard floor, a snapshot with a TWO-SIDED tolerance per file and total,
+ *     and the snapshot's PROSE, which no tolerance touches,
  *  7. both targets (`mutation`, `check-mutation`) run in CI.
  *
  * "What the run really did" comes from the report's `config` field, which carries the
@@ -598,6 +599,40 @@ export const checkMutation = (input) => {
         `run stays green. Remedy: \`node tools/check-mutation.mjs --write\`.`,
     );
 
+  // The prose, and it is the same file read the other way round: everything above compares
+  // the snapshot's ROWS, and a snapshot is not its rows. The header, the explanation and
+  // the tolerance quoted in it come from the same renderer and were compared by nobody, so
+  // a rewritten paragraph — or a `tolerance` somebody widened in the policy — stays out of
+  // the file until a row happens to drift and carry it in.
+  //
+  // The rows stay outside this comparison deliberately, and that is
+  // [0023](../docs/decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md) taken
+  // literally: this measurement wobbles, the tolerance is the width of the wobble, and the
+  // columns beside the score wobble with it — a mutant killed by the CLOCK rather than by
+  // an assertion moves the timeout column with the code unchanged. Demanding the rows
+  // verbatim would rewrite the record on runs that measured nothing new.
+  //
+  // Last of point 6, and for the same reason point 12 of `check-bundle` stands last: every
+  // rule above names WHAT moved, this one can only say the file is not the render.
+  const prose = (text) => String(text ?? '').split('\n```')[0];
+  if (prose(input.snapshot) !== prose(fresh)) {
+    const have = prose(input.snapshot).split('\n');
+    const want = prose(fresh).split('\n');
+    const at = want.findIndex((w, i) => w !== have[i]);
+    const line = at === -1 ? want.length : at;
+    throw new MutationError(
+      'score',
+      'stale-prose',
+      `the prose of \`${SNAPSHOT}\` is not what the renderer writes, from line ` +
+        `${line + 1}:\n` +
+        `      file:   ${have[line] ?? '(the file ends here)'}\n` +
+        `      render: ${want[line] ?? '(the render ends here)'}\n` +
+        `    The rows are compared above and this is the rest of the file: the paragraph ` +
+        `that says what the number means, and the tolerance it quotes from the policy. ` +
+        `Remedy: \`node tools/check-mutation.mjs --write\`.`,
+    );
+  }
+
   // 7. CI. The gate and the run itself are two targets, each removable on its own.
   for (const target of ['mutation', 'check-mutation'])
     if (!(input.ci?.targets ?? []).includes(target))
@@ -803,10 +838,10 @@ try {
   problems.push(`${error.check}/${error.rule}: ${error.message}`);
 }
 
-// `--write` is the right answer to three rules of point 6 (`no-snapshot`,
-// `incomplete-snapshot`, `snapshot-adrift`), so the snapshot has to be rewritable EVEN when
-// the gate fired on them — otherwise the one command that fixes those rules would be
-// available exactly outside the state in which it is needed. It renders from disk, not
+// `--write` is the right answer to four rules of point 6 (`no-snapshot`,
+// `incomplete-snapshot`, `snapshot-adrift`, `stale-prose`), so the snapshot has to be
+// rewritable EVEN when the gate fired on them — otherwise the one command that fixes those
+// rules would be available exactly outside the state in which it is needed. It renders from disk, not
 // from the result above: with a rule fired there is no such result.
 if (WRITE) {
   const report = json(REPORT);

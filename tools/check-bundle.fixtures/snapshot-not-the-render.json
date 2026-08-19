@@ -1,0 +1,9 @@
+{
+  "// defect": "Every row of the snapshot is right and its prose still describes the ±5% band that 0023 removed. Nothing compares the text the same renderer writes around the rows, so the file goes on explaining a rule the gate stopped applying — under a first line that says it is generated.",
+  "point": 12,
+  "check": "verbatim",
+  "snapshotWithEditedProse": {
+    "from": "There is no tolerance, because a tolerance",
+    "to": "A row is held to ±5%, because a tolerance"
+  }
+}

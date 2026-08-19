@@ -86,7 +86,13 @@ and nowhere else: completeness cannot tell a deliberate selection
 (`check-reach.fixtures/README.md` tabulates three of seventeen) from a list that has lost two
 rows, so the claim is written down. **The limit is deliberate**: the gate measures the lists
 that exist and does not require a list to exist — five fixture trees carry no README, and
-deleting a table to silence the gate is a removal visible in the diff, which drift never was
+deleting a table to silence the gate is a removal visible in the diff, which drift never was.
+Outside `docs/` the same promise is held by the gate that RENDERS the list, because only it
+can: `check-tokens` point 5, `check-parts` point 5 and `check-bundle` point 12 compare their
+snapshot against the rendering whole, `check-mutation`'s `score/stale-prose` everything in it
+that is not a wobbling number ([`lesson-79`](../lessons.md#lesson-79)). A central gate would
+have to repeat both measurements — a build and a mutation run — to know what those files
+should say
 **Control:** `tools/check-index.fixtures/` — 23 prepared inputs, each rejected on its own
 point: an empty walk over the decisions, a deleted index section, no fixtures tree, no
 declared table, no map; a decision missing from the index, a row outliving its file, a
@@ -97,7 +103,7 @@ does not declare; a point count out of date, missing, and written as a word the 
 to guess at; a map count out of date, and a map count nobody counts. Plus the run that opened
 the gate: on the real repository it named `tarball-without-licence`, absent from
 `check-consumer.fixtures/README.md`, before anybody had looked
-**Lessons:** [`lesson-75`](../lessons.md#lesson-75)
+**Lessons:** [`lesson-75`](../lessons.md#lesson-75), [`lesson-79`](../lessons.md#lesson-79)
 
 > **Why this is a promise of its own and not part of the registry.**
 > [`req-quality-registry`](#req-quality-registry) generates one list out of one directory and
@@ -147,24 +153,28 @@ notice" break separately. `.github/workflows/ci.yml` — `test` and `vite:test` 
 `nx affected -t` list (the run). `libs/components/project.json` — the `mutation` target runs
 Stryker with `thresholds.break` = 80, i.e. **fails below the floor**.
 `tools/check-mutation.mjs` (target `check-mutation`, `dependsOn: mutation`, in CI) guards the
-denominator: seven points and 37 rules for the measurement being current, covering the
+denominator: seven points and 38 rules for the measurement being current, covering the
 declared file inventory, running **the same specs as the `test` target**, having a binding
 and unnarrowed threshold (ignorers, excluded mutators, `ignoreStatic`, `// Stryker disable`
 comments, a shortened `timeoutMS`), and fitting inside the `libs/components/mutation.snapshot.md`
-snapshot with a **two-sided** per-file tolerance. Stryker mutates `.ts` and nothing else, so
+snapshot with a **two-sided** per-file tolerance. The snapshot's PROSE is held exactly
+(`score/stale-prose`): the tolerance is the width of a wobbling number, not of the paragraph
+that says what the number means, nor of the tolerance quoted in it
+([`lesson-79`](../lessons.md#lesson-79)). Stryker mutates `.ts` and nothing else, so
 what a **template** promises stands outside this measurement altogether — that half is held by
 `check-coverage` point 6, a floor per template on all four metrics
 ([`lesson-71`](../lessons.md#lesson-71))
-**Control:** `tools/check-mutation.fixtures/` — 37 doctored inputs on a fake library, each
+**Control:** `tools/check-mutation.fixtures/` — 38 doctored inputs on a fake library, each
 rejected on its own **rule**; plus runs against the real repository (removing an assertion
 from `select.spec.ts` drops that file's score and fires `score/score-dropped`, adding a test
 beyond the tolerance fires `score/snapshot-adrift`, `thresholds.break: null` fires
 `threshold/threshold-unset`, a file struck from `mutate` fires `inventory/patterns-changed`).
-Plus a control of that control: disarming each of the 37 rules in turn — 25 give "PASSED",
+Plus a control of that control: disarming each of the 38 rules in turn — 26 give "PASSED",
 12 move the case onto a neighbouring rule
 **Lessons:** [`lesson-3`](../lessons.md#lesson-3), [`lesson-19`](../lessons.md#lesson-19),
 [`lesson-28`](../lessons.md#lesson-28), [`lesson-57`](../lessons.md#lesson-57),
-[`lesson-58`](../lessons.md#lesson-58), [`lesson-71`](../lessons.md#lesson-71)
+[`lesson-58`](../lessons.md#lesson-58), [`lesson-71`](../lessons.md#lesson-71),
+[`lesson-79`](../lessons.md#lesson-79)
 
 > **Coverage and mutation score measure two different things, and the difference is large.**
 > At 96.62% line coverage the core scored **63.54%** on mutation: every third mutant passed

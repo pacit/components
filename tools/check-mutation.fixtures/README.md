@@ -8,7 +8,7 @@ what it declares.
 
 Every case carries the pair `check` + `rule`, not the point number alone — straight from
 [`lesson-50`](../../docs/lessons.md#lesson-50). Measured on this gate: disarming
-**twelve of the thirty-seven** rules moves their cases onto a neighbouring rule, and
+**twelve of the thirty-eight** rules moves their cases onto a neighbouring rule, and
 without that field all twelve runs would be green.
 
 The reason it exists is the same as for every other gate
@@ -57,7 +57,7 @@ Four readings arrive here as data rather than from a real run:
 
 This is the same choice as in `check-browsers` and for the same reason: four readings
 from disk and from the graph are four functions of a dozen lines each, while the checks
-are seven points and thirty-seven rules, and that is where all the content sits. The
+are seven points and thirty-eight rules, and that is where all the content sits. The
 readings are guarded by runs against the real repository, recorded in
 [`plan.md`](../../docs/plan.md).
 

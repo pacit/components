@@ -14,11 +14,14 @@
  *   8. `external`     — a probe's external dependencies match the snapshot,
  *   9. `size`         — the bytes per entrypoint, EXACTLY as recorded, both ways,
  *  10. `differential` — a two-entrypoint probe is noticeably larger than either single one,
- *  11. `builder`      — the same measured by Angular's REAL builder.
+ *  11. `builder`      — the same measured by Angular's REAL builder,
+ *  12. `verbatim`     — the snapshot file is EXACTLY what the renderer writes.
  *
  * Points 6 and 8 are the promise itself (8 is where "no CDK Overlay with `button`" lives);
  * 4, 5, 7, 10 and 11 watch the DENOMINATOR — without them "the `button` bundle holds no
- * `PctField`" is vacuously true exactly when the measurement stopped measuring.
+ * `PctField`" is vacuously true exactly when the measurement stopped measuring. Point 12
+ * watches the FILE: everything before it reads the snapshot through a map of its rows, so
+ * the prose the same renderer writes around them was compared by nobody.
  *
  * The numbers are the ORDER, and point 5 earned its place by firing in the wrong one: with
  * `linked` last, a probe built the package's way failed the SIZE point first, and that
@@ -81,7 +84,7 @@ const RESIDUE = ['ngDeclare', 'setClassMetadata', 'setClassDebugInfo'];
 const PRIMARY = '.';
 
 /**
- * A violation of one of the eleven checks. It carries the check's identifier, not just the
+ * A violation of one of the twelve checks. It carries the check's identifier, not just the
  * message: the negative control has to verify that a prepared input fired ON ITS OWN
  * point — a fixture failing for a reason other than the one written into it proves
  * something other than what it declares.
@@ -504,6 +507,37 @@ const checkBundle = (input) => {
           `    CDK Overlay is this library's most expensive optional dependency — a ` +
           `consumer who never used \`pct-select\` has no business receiving it`,
       );
+  }
+
+  // 12. The file IS the render. Points 3, 6, 8 and 9 read the snapshot through
+  //     `snapshotRows`, that is, through a map keyed by entrypoint — and everything the
+  //     renderer writes around those rows is compared by nobody. Rewrite a paragraph of
+  //     the explanation and the file keeps yesterday's text until some byte happens to
+  //     move with it: [0023](../docs/decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md)
+  //     rewrote two paragraphs here, and only a row moving at the same time carried them
+  //     into the file. The first line of that text says "this file is generated", which is
+  //     the sentence a reader trusts instead of checking.
+  //
+  //     It stands LAST, and for a reason of its own rather than point 5's. Every point
+  //     before it names WHAT moved — a size, an entrypoint, a dependency — while this one
+  //     can only say "the file is not the render"; and with 10 or 11 red the MEASUREMENT
+  //     is in doubt, so its rendering is not a record anybody should be told to write down.
+  const rendered = renderSnapshot(sources, probes);
+  if (input.snapshot !== rendered) {
+    const have = String(input.snapshot ?? '').split('\n');
+    const want = rendered.split('\n');
+    const at = want.findIndex((w, i) => w !== have[i]);
+    const line = at === -1 ? want.length : at;
+    throw writable(
+      'verbatim',
+      `\`${SNAPSHOT}\` is not what the renderer writes, from line ${line + 1}:\n` +
+        `      file:   ${have[line] ?? '(the file ends here)'}\n` +
+        `      render: ${want[line] ?? '(the render ends here)'}\n` +
+        `    The rows are compared one by one by the points above, so a difference here ` +
+        `is usually the PROSE — a paragraph the renderer rewrote and nothing carried into ` +
+        `the file, or a hand edit of a file that says it is generated. ` +
+        `\`node tools/check-bundle.mjs --write\``,
+    );
   }
 
   const total = sources.reduce((n, e) => n + (probes[e]?.bytes ?? 0), 0);
@@ -1082,6 +1116,15 @@ const buildFixture = (fx) => {
       '```\n',
       `\`\`\`\n${fx.snapshotWithAlienRow} 100 - @angular/core\n`,
     );
+  // The prose is edited rather than written out: a case carrying its own copy of the
+  // header would drift from the renderer at the first change to it, and would then fire
+  // on that drift instead of on the sentence it names. A `from` matching nothing leaves
+  // the snapshot equal to the render, and the case reports itself as one that PASSED.
+  else if (fx.snapshotWithEditedProse)
+    snapshot = snapshot.replace(
+      fx.snapshotWithEditedProse.from,
+      fx.snapshotWithEditedProse.to,
+    );
   input.snapshot = snapshot;
   return input;
 };
@@ -1101,7 +1144,9 @@ try {
   // that started pulling its neighbour in.
   if (
     WRITE &&
-    ['snapshot', 'isolation', 'external', 'size'].includes(error.check) &&
+    ['snapshot', 'isolation', 'external', 'size', 'verbatim'].includes(
+      error.check,
+    ) &&
     error.snapshot
   ) {
     writeFileSync(join(ROOT, SNAPSHOT), error.snapshot);

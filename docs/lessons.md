@@ -1818,3 +1818,36 @@ The conclusion is wider than one gate. Wherever a threshold both decides a failu
 the rewrite of the record it compares against, it silently sets **how much history that record
 can lose**. Ask of a threshold not only what it lets pass, but what it stops writing down — and
 which commit ends up carrying what it swallowed.
+
+---
+
+### <a id="lesson-79"></a>`lesson-79` — The message that names what moved is the message that stopped comparing the file
+
+**Four files here are snapshots: a gate renders them whole — header, explanation, rows — and
+compares them against what is on disk.** The finding that opened this said all four compare
+their rows and nothing else. Two of them do not. `check-tokens` and `check-parts` compare the
+rendering with the file in one `!==`, and their message carries a branch for exactly this case:
+"the list of names is the same — the heading or the row order drifted". `check-bundle` and
+`check-mutation` read the file through a map keyed by the row's first column, and everything
+the same renderer writes around those rows — the header, the paragraphs saying what the number
+means, the tolerance quoted from the policy — was compared by nobody.
+
+What splits the four is not care, it is what their messages can say. A token name that vanished
+needs no arithmetic: print the two lists and the difference is the message. A byte needs it —
+"probe `./field` weighs 8123 B, the snapshot records 7323 B (+800 B, +10.9%)" can only be said
+by a gate that has parsed the row into columns. And once the rows are parsed, **the parse
+becomes the comparison**: the file around them leaves the measurement without anybody deciding
+that it should. The better the diagnosis, the narrower the thing being diagnosed.
+
+The repair is not one rule in both places, and that is
+[0023](decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md) read literally.
+`check-bundle` compares the file whole, because its rows are already held to the byte in both
+directions, so nothing in the file is allowed to move on its own. `check-mutation` cannot: that
+score wobbles, ±2 points is the width of the wobble, and the columns beside the score wobble
+with it — a mutant killed by the clock rather than by an assertion moves the timeout count with
+the code unchanged. So its rule is everything that is **not** a row, which is also the honest
+statement of what a tolerance covers: the numbers that move by themselves, and not the sentence
+explaining what they mean.
+
+Ask of a generated file not whether it is compared, but **which part of it is**. The part
+nobody compares is the part that reads as measured, because the rows beside it are.
