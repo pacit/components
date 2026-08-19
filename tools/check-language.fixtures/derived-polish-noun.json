@@ -1,0 +1,12 @@
+{
+  "$what": "A Polish word made of another Polish word — a stem the word list holds with a derivational suffix on it. The word stands in NEITHER dictionary and for the opposite reason to the fourth limb's: the list has the noun it is derived from and the abstract noun made from that one, and never got round to the agent noun. No diacritic, no opening quote, no foreign stem — it is the shape that stood in this gate's neighbour, `check-bundle.mjs`, through every pass of the four limbs before it.",
+  "check": "repository",
+  "rule": "polish-outside-register",
+  "addFiles": [
+    {
+      "path": "tools/fresh-tool.mjs",
+      "scope": "repository",
+      "text": "export const specyfikator = (entrypoint) => entrypoint;\n"
+    }
+  ]
+}

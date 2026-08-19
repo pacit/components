@@ -1851,3 +1851,44 @@ explaining what they mean.
 
 Ask of a generated file not whether it is compared, but **which part of it is**. The part
 nobody compares is the part that reads as measured, because the rows beside it are.
+
+---
+
+### <a id="lesson-80"></a>`lesson-80` — A shape may be named to see a class, never to stop seeing one
+
+**The language gate holds two rules about shapes that look like opposites and are one.** The
+register may name only words, because an excused shape lets a whole grammatical class through
+— a layer of constants once rode two passes on exactly that
+([`lesson-60`](#lesson-60)). The detector names nothing but shapes: endings, suffixes, a
+quotation mark. Both were written down years apart, and the fifth limb put them in the same
+place at once.
+
+That limb reads a **Polish stem carrying a derivational suffix** — the class no dictionary
+holds because the word list has the noun a word is made from, and the abstract noun made from
+that one, and never got round to the agent noun made from either. Its first run over this
+repository: 5715 distinct words, seven splits. One was the name a neighbouring gate had given
+a function and no pass had ever seen; one was the fourth limb's own probe; **five were English
+agent nouns** whose stem the Polish list happens to hold.
+
+And those five share a property. The English verb behind each of them —
+`locate`, `paginate`, `activate` — stands in `american-english`. Three lines in the detector
+("quiet when the stem plus `ate` is a word") would have removed every false positive at once,
+shortened the register by five entries and looked like tidying. It would have been an
+**excused shape written where the rule against excused shapes cannot reach**: point 5 checks
+the format of the policy, and nothing checks the format of the instrument. The register would
+have got shorter and the gate would have acquired a silent hole in the shape of a grammatical
+class.
+
+So the direction is what decides, not the file. A shape may be named to make a class visible;
+it may never be named to make one invisible, and moving it from the policy into the code
+changes only who can review it. The five words are in the register, one by one, where the
+`dead-word` rule will take them out the day they stop silencing anything.
+
+There is a smaller one on top, and it happened **twice more while this was being written**:
+the first draft of the entry excusing those five quoted their Polish-looking stems as evidence
+and turned the policy file red, and the plan entry recording that quoted the fourth limb's
+probe and turned the plan red — the new limb firing on the description of itself, as the
+second limb had fired on the entry that first described this defect
+([`lesson-77`](#lesson-77)). **The evidence for a rule about a language cannot be written in
+the language the rule forbids.** The specimen goes into the gate's own tree, as a constant of
+the instrument, and everything else points at it.

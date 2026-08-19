@@ -238,46 +238,58 @@ one**: the package (`types/*.d.ts`, README, `description`, the artifacts in `the
 names visible in the Actions tab.
 
 **Gate:** `tools/check-language.mjs` (target `check-language` in the root project, in CI) —
-seven points, 26 rules, **two measurements with different reach**. The public surface is
+seven points, 27 rules, **two measurements with different reach**. The public surface is
 measured on the **artifact** (`dist/libs/components` — that is where what the consumer
 really sees ends up, not what stands in the source) and knows no register at all; the rest
-of the repository is measured on the files in the git index. Detection has four limbs,
+of the repository is measured on the files in the git index. Detection has five limbs,
 because diacritics alone are not enough — a name spelled without them carries none:
 diacritical marks, a **dictionary** (`/usr/share/dict/polish` folded of diacritics, minus
 the English one, streamed against the words really found) read over identifiers split at
 camelCase and at `_`, the opening quote `U+201E`, a typographic convention with no
 English use, and a **foreign stem carrying a Polish ending**, which is the one word standing
 in NEITHER dictionary and therefore invisible to the three above
-([`lesson-77`](../lessons.md#lesson-77)). That fourth limb names the 37 endings it looks for
-in the gate's own source, which is the inverse of what the register may do and not an
-exception to it: an excused shape lets a whole class through, a hunted shape lets a whole
-class be seen. The false positives of the two dictionary limbs live in
-`tools/language.policy.json` as **words** — 115 of them — and the format is what forbids the
+([`lesson-77`](../lessons.md#lesson-77)), and — the fifth limb — a **Polish stem carrying a
+derivational suffix**, which is in neither list for the opposite reason: the word list holds
+the noun it is made from and the abstract noun made from that one, and never got round to the
+agent noun made from either ([`lesson-80`](../lessons.md#lesson-80)). Those two limbs name the
+37 endings and the 26 suffixes they look for in the gate's own source, which is the inverse of
+what the register may do and not an exception to it: an excused shape lets a whole class
+through, a hunted shape lets a whole class be seen — and the rule holds wherever the shape is
+written, so the fifth limb's false positives go into the policy as words rather than into the
+detector as the one line that would have silenced all of them. The false positives of the
+dictionary limbs live in
+`tools/language.policy.json` as **words** — 120 of them — and the format is what forbids the
 blind spot: an entry that is
 not a bare lowercase word fires, so `SCREAMING_CASE` or "anything under four letters"
 cannot be written down at all, and a whole layer of constants once survived two passes in
 exactly that gap ([`lesson-60`](../lessons.md#lesson-60)). Point 1 is a denominator of its
-own and it answers for the INSTRUMENT, not for the input: two constant probes have to be
-read — one coming apart into four known words, one recognised as a borrowing — and four
-canaries have to hold: a Polish word confirmed (the list was
+own and it answers for the INSTRUMENT, not for the input: three constant probes have to be
+read — one coming apart into four known words, one recognised as a borrowing, one as a
+derivation — and four canaries have to hold: a Polish word confirmed (the list was
 read at all), a word the dictionary carries **only** with diacritics confirmed (it was
 folded), a word both languages share **not** confirmed (the English list was subtracted), and
 an English word confirmed as a **stem** — the fourth limb's failure is silence, not noise
 ([`lesson-48`](../lessons.md#lesson-48))
-**Control:** `tools/check-language.fixtures/` — 30 doctored inputs, each rejected on its own
+**Control:** `tools/check-language.fixtures/` — 32 doctored inputs, each rejected on its own
 **rule**: a Polish comment in a file outside the register; a constant in `SCREAMING_CASE`
 with no diacritics anywhere; diacritics the dictionary does not confirm; the opening quote;
-an English stem with a Polish ending, which no dictionary can be asked about; a Polish
+an English stem with a Polish ending, which no dictionary can be asked about; a Polish stem
+with a Polish suffix, which one can be asked about and answers with the two words either side
+of the missing one; a Polish
 `description` in the packed manifest firing on the public-surface point **despite**
 an entry in the register; a source map whose `sourcesContent` carries what the rebuilt
 source no longer does; an entry pointing at a file **already** translated, firing as dead;
-an entry under `libs/`; a scan with an empty file list; a probe with its seams taken out and
-one with its ending taken off; each of the four canaries. Plus three runs against the real repository (a Polish comment in
+an entry under `libs/`; a scan with an empty file list; a probe with its seams taken out, one
+with its ending taken off and one with its suffix taken off; each of the four canaries. Plus
+four runs against the real repository (a Polish comment in
 `libs/components/button/src/button.ts`; a Polish constant in `SCREAMING_CASE`, with no
 diacritic in it, in `tools/check-docs.mjs`; and `tools/check-texts.mjs` restored from
 `a5b1a74~1`, the historical file rather than a made-up one, firing at line 478) — the second
 being the shape that had passed twice before, the third the shape that had passed **every**
-run of this gate while the gate stood. The samples themselves are quoted nowhere but in the gate's own tree, which
+run of this gate while the gate stood. The fourth is the fifth limb's own first run: one true
+hit — the name `tools/check-bundle.mjs` gave the function building an import specifier, green
+through every pass before it — against five English agent nouns, and the entry written to
+excuse those five was red on the file it stands in until it stopped quoting their stems. The samples themselves are quoted nowhere but in the gate's own tree, which
 the policy names as `specimens`: this file is measured like every other
 **Binds at:** bound. Both limbs run today: the repository one before the first push, which is
 what turns "nothing is left" into a measurement rather than a declaration, and the artifact

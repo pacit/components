@@ -32,7 +32,7 @@ the one thing at issue. The reference input is checked separately and first: wer
 defective itself, every case would fire because of it rather than because of its own —
 that is, this whole control would become what it stands against.
 
-## The four limbs, and why each has a case of its own
+## The five limbs, and why each has a case of its own
 
 Each limb is blind where the next one sees, so a case proving one proves nothing about
 the others:
@@ -49,12 +49,18 @@ the others:
   English one no such tail, so the three limbs above are all quiet on it and it rode
   through the gate's own source for as long as the gate had stood
   ([`lesson-77`](../../docs/lessons.md#lesson-77)).
+- `derived-polish-noun` — the mirror of it: a Polish stem with a Polish derivational
+  suffix. Also in neither dictionary, and for the opposite reason — the word list holds
+  the noun it is made from and the abstract noun made from that one, and never got round
+  to the agent noun. This one rode through the four limbs above in a neighbouring gate
+  ([`lesson-80`](../../docs/lessons.md#lesson-80)).
 
-## The denominator has seven cases, not one
+## The denominator has ten cases, not one
 
 A scan can go quiet in more ways than it can be wrong, and every one of them is green:
 
-- `empty-repository-list`, `no-word-in-any-file` — nothing read, nothing found;
+- `empty-repository-list`, `empty-artifact-list`, `no-word-in-any-file` — nothing read,
+  nothing found, or one of the two scopes silently missing;
 - `dictionary-unread`, `dictionary-unfolded` — the second limb confirming nothing, or
   confirming only what the first limb already sees;
 - `english-not-subtracted` — the opposite failure, which is just as fatal: the shared
@@ -63,11 +69,14 @@ A scan can go quiet in more ways than it can be wrong, and every one of them is 
   it for its STEMS, and without them it finds nothing and says so quietly, which is the
   failure the other three cannot have.
 
-`probe-without-seams` and `inflection-blind` are the ones that answer for the instrument
-rather than the input. The words the first probe has to yield are a constant in the gate
-and the case hands it a line with the seams taken out, so what it proves is that the
-**split** is what produces them; the second case hands the fourth limb's probe with its
-ending taken off, which proves the same about the **ending**.
+`probe-without-seams`, `inflection-blind` and `derivation-blind` are the ones that answer
+for the instrument rather than the input. The words the first probe has to yield are a
+constant in the gate and the case hands it a line with the seams taken out, so what it
+proves is that the **split** is what produces them; the other two hand the fourth and the
+fifth limb's probe with its ending and its suffix taken off, which proves the same about
+the **ending** and the **suffix**. Measured on the fifth: emptying its suffix list turns
+the reference input itself red, so the limb cannot go quiet on a repository without every
+case saying so.
 
 ## What these cases do NOT exercise
 
@@ -75,7 +84,7 @@ Three readings arrive here as data rather than from a real run:
 
 - `polish` — instead of `/usr/share/dict/polish` streamed against the words really found,
 - `english` — instead of `american-english` read over those words and over the stems they
-  leave when an ending comes off,
+  leave when an ending comes off, and `polish` likewise over the stems a suffix leaves,
 - `files` — instead of `git ls-files` and a walk of `dist/libs/components`.
 
 This is the same choice as in `check-parts` and `check-browsers` and for the same reason:

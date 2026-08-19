@@ -17,7 +17,7 @@
  * is what a consumer opens. The rest of the repository is measured on the GIT INDEX: an
  * uncommitted file binds nobody yet.
  *
- * DETECTION HAS FOUR LIMBS, because each is blind where the next one sees. Diacritics
+ * DETECTION HAS FIVE LIMBS, because each is blind where the next one sees. Diacritics
  * carry prose and nothing else — a name spelled `wartosc` has none. So the second limb is
  * `/usr/share/dict/polish`, folded of its diacritics and minus `american-english`, read
  * over identifiers split at camelCase and at `_`. The third is the opening quote `U+201E`,
@@ -31,12 +31,26 @@
  * which is the exact inverse of point 5: a register that names a shape excuses a whole
  * grammatical class, a detector that names one sees a whole grammatical class.
  *
- * THE FALSE POSITIVES OF THE SECOND LIMB ARE THE DESIGN WORK, and they live in
+ * THE FIFTH IS THE MIRROR OF THE FOURTH: a Polish stem with a Polish DERIVATIONAL suffix,
+ * and it is in neither list for the opposite reason — the word list holds the noun the word
+ * is made from and the abstract noun made from that one, and never got round to the agent
+ * noun made from either. Polish forms those productively, `/usr/share/dict/polish` is
+ * somebody's four million lines rather than a language, and the gap is where a name like
+ * the one this limb's probe is made of stood in this repository through every pass of the
+ * four above ([`lesson-80`](../docs/lessons.md#lesson-80)). Its claim is narrower than the
+ * fourth's by one dictionary fact: not an ending on any stem at all, but a suffix on a stem
+ * the POLISH list confirms.
+ *
+ * THE FALSE POSITIVES OF THE DICTIONARY LIMBS ARE THE DESIGN WORK, and they live in
  * `language.policy.json` as WORDS. Never as shapes: an exclusion of `SCREAMING_CASE` or of
  * "abbreviations under four letters" excuses everything of that shape, and a whole layer of
  * constants once survived two passes in exactly that blind spot
  * ([`lesson-60`](../docs/lessons.md#lesson-60)). Point 5 enforces the format that makes the
- * blind spot unwritable.
+ * blind spot unwritable — and the rule holds wherever a shape is written, the policy or the
+ * instrument: the fifth limb's five false positives are all English agent nouns whose
+ * English verb the word list holds (`locate`, `activate`, …), so three lines in the detector
+ * would have silenced every one of them and excused the class with it. A shape may be named
+ * to SEE a class and never to stop seeing one ([`lesson-80`](../docs/lessons.md#lesson-80)).
  *
  * Usage: node tools/check-language.mjs
  */
@@ -238,6 +252,90 @@ const inflectionOf = (word, english, stems) => {
   return null;
 };
 
+/**
+ * The suffixes of the fifth limb, and the whole of what it looks for. Polish makes new words
+ * out of its own: an agent noun from a noun or a verb, an abstract noun from either, an
+ * adjective from all of them — productively, which is why a word list always trails the
+ * language and holds two of the three.
+ *
+ * THE CLAIM IS NARROWER THAN THE FOURTH LIMB'S by one dictionary fact. There the stem is
+ * anything at all and the ending carries the finding; here the stem has to be a word
+ * `/usr/share/dict/polish` confirms, so the two ends of the split are both looked up and
+ * only the join between them is guessed at. Measured on the run that opened it: 5715 distinct
+ * words of this repository, seven splits — one the word the limb was written for, one the
+ * fourth limb's probe in this file, five English agent nouns now named in the policy one by
+ * one.
+ *
+ * WHAT IT CANNOT SEE, written down rather than discovered later: a derivation that softens
+ * the stem's last letter before the suffix — a `k` becoming `cz`, a `g` becoming `z` — leaves
+ * no stem to look up, and neither does one whose stem the word list is missing too. The gap is
+ * in the list, and this limb reads the same list.
+ */
+const SUFFIXES = [
+  // the agent and the instrument: what does the thing, and what it is done with
+  'ator',
+  'tor',
+  'or',
+  'acz',
+  'nik',
+  'arz',
+  'ca',
+  'ec',
+  'ista',
+  // the abstract noun: the property, the action, the doctrine
+  'nosc',
+  'osc',
+  'anie',
+  'enie',
+  'acja',
+  'cja',
+  'izm',
+  'stwo',
+  'ctwo',
+  // the adjective made of any of them, and the diminutive
+  'alny',
+  'liwy',
+  'owy',
+  'ny',
+  'ski',
+  'cki',
+  'ek',
+  'ka',
+].sort((a, b) => b.length - a.length); // longest first: the split a reader is shown is the plausible one
+
+/**
+ * The probe of the fifth limb, and it is the specimen the limb was written for: the name
+ * `tools/check-bundle.mjs` gave the function that builds an entrypoint's import specifier.
+ * It stood there green through the whole language gate and through sixteen findings after
+ * it, because `/usr/share/dict/polish` holds the noun it is made from and the abstract noun
+ * made from that one, and not this one. It lives here now, as a constant of the instrument,
+ * for the same reason `owany` does: the gate's own tree is the one place in this repository
+ * where such a word may stand ([`lesson-77`](../docs/lessons.md#lesson-77)).
+ */
+const PROBE_DERIVED = 'specyfikator';
+
+/**
+ * The fifth limb over one word: `null`, or the split that makes it a Polish word derived
+ * from another. `english` ends the question, as in the fourth limb — a word an English list
+ * holds is an English word. `polish` is the set the SECOND limb flags on, read here for
+ * stems, so what the limb finally claims is "the dictionary knows the stem, and neither
+ * dictionary knows the word".
+ *
+ * The English agent nouns this catches (`locator`, `activator`) are false positives and go
+ * into the vocabulary one by one. Not into this function: a rule that says "quiet when the
+ * stem plus `ate` is English" is an excused SHAPE, and it excuses it where point 5 cannot
+ * see it.
+ */
+const derivationOf = (word, english, polish) => {
+  if (english.has(word) || polish.has(word)) return null;
+  for (const suffix of SUFFIXES) {
+    if (!word.endsWith(suffix)) continue;
+    const stem = word.slice(0, -suffix.length);
+    if (stem.length > 1 && polish.has(stem)) return { stem, suffix };
+  }
+  return null;
+};
+
 const fold = (word) =>
   word.toLowerCase().replace(/[ąćęłńóśźż]/g, (c) => FOLD[c]);
 
@@ -327,7 +425,9 @@ export const wordsOf = (text) => {
  *              never passes it,
  *   `inflected` — the same idea for the fourth limb: `PROBE_INFLECTED` unless a fixture
  *              hands the bare stem instead, which is what proves the ENDING is doing the
- *              work.
+ *              work,
+ *   `derived` — and for the fifth: `PROBE_DERIVED` unless a fixture hands the stem the
+ *              suffix comes off, which proves the SUFFIX is.
  * Throws `LanguageError` on the first violation — the checks start from the denominator,
  * so the later ones would have nothing to examine anyway.
  */
@@ -338,6 +438,7 @@ export const checkLanguage = ({
   english,
   probe: text,
   inflected,
+  derived,
 }) => {
   const confirmed = new Set(polish ?? []);
   const known = new Set(english ?? []);
@@ -450,6 +551,19 @@ export const checkLanguage = ({
         `invisible here means green.`,
     );
 
+  const derivation = derived ?? PROBE_DERIVED;
+  if (!derivationOf(derivation, known, confirmed))
+    throw new LanguageError(
+      'denominator',
+      'derivation-blind',
+      `the probe \`${derivation}\` is not read as a Polish stem with a derivational ` +
+        `suffix.\n` +
+        `    The fifth limb is the other half of the class no dictionary holds, and it is ` +
+        `the half where the WORD LIST is what is missing: an emptied suffix list, a strip ` +
+        `off by one, or a stem lookup pointed at the English set instead of the Polish one, ` +
+        `and every agent noun this language makes of its own words rides through again.`,
+    );
+
   // 5. VOCABULARY, before it is used. A register that excuses a shape excuses everything of
   // that shape, and it has to be unwritable rather than discouraged — so the format is
   // checked before the words are trusted to silence anything.
@@ -473,12 +587,15 @@ export const checkLanguage = ({
         );
   }
 
-  // An entry earns its place by silencing a real hit, and there are two ways to be one:
-  // the dictionary confirms the word, or the fourth limb reads it as a borrowing. The
-  // check is over BOTH, because the list has one meaning — the words this repository
-  // writes that are not Polish — and not one per limb.
+  // An entry earns its place by silencing a real hit, and there are three ways to be one:
+  // the dictionary confirms the word, the fourth limb reads it as a borrowing, or the fifth
+  // reads it as a derivation. The check is over ALL THREE, because the list has one
+  // meaning — the words this repository writes that are not Polish — and not one per limb.
   const unflagged = [...vocabulary].filter(
-    (w) => !confirmed.has(w) && !inflectionOf(w, known, stems),
+    (w) =>
+      !confirmed.has(w) &&
+      !inflectionOf(w, known, stems) &&
+      !derivationOf(w, known, confirmed),
   );
   if (unflagged.length)
     throw new LanguageError(
@@ -540,11 +657,20 @@ export const checkLanguage = ({
         continue;
       }
       const split = inflectionOf(word, known, stems);
-      if (split)
+      if (split) {
         found.push({
           line,
           word: `${word} = ${split.stem} + -${split.ending}`,
           limb: 'inflection',
+        });
+        continue;
+      }
+      const made = derivationOf(word, known, confirmed);
+      if (made)
+        found.push({
+          line,
+          word: `${word} = ${made.stem} + -${made.suffix}`,
+          limb: 'derivation',
         });
     }
     if (found.length) hits.set(file.path, found);
@@ -752,6 +878,15 @@ const confirmWords = async (files) => {
     for (const ending of ENDINGS)
       if (word.endsWith(ending)) asked.add(word.slice(0, -ending.length));
 
+  // The same thing on the Polish side, for the fifth limb. The 61 MB list is streamed
+  // against a set rather than held in memory, so a stem nobody wrote as a word has to be
+  // asked for BY NAME or the lookup never sees it — and the limb, which fails by going
+  // quiet, would confirm nothing while looking exactly like a clean repository.
+  const sought = new Set(candidates);
+  for (const word of candidates)
+    for (const suffix of SUFFIXES)
+      if (word.endsWith(suffix)) sought.add(word.slice(0, -suffix.length));
+
   const english = new Set();
   for (const line of readFileSync(ENGLISH, 'utf8').split('\n')) {
     const word = fold(line.trim());
@@ -768,7 +903,7 @@ const confirmWords = async (files) => {
   });
   for await (const line of stream) {
     const word = fold(line.trim());
-    if (word && candidates.has(word) && !english.has(word)) confirmed.add(word);
+    if (word && sought.has(word) && !english.has(word)) confirmed.add(word);
   }
   return {
     polish: [...confirmed].sort(),
@@ -835,6 +970,7 @@ const buildFixture = (fx) => {
 
   if (fx.probe !== undefined) w.probe = fx.probe;
   if (fx.inflected !== undefined) w.inflected = fx.inflected;
+  if (fx.derived !== undefined) w.derived = fx.derived;
 
   return w;
 };

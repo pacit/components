@@ -728,7 +728,8 @@ const prepareProbeDirectory = (dist) => {
   return directory;
 };
 
-const specyfikator = (e) =>
+/** The specifier a consumer writes for an entrypoint: `@pacit/components/select`. */
+const specifierOf = (e) =>
   e === PRIMARY ? '@pacit/components' : `@pacit/components${e.slice(1)}`;
 
 /**
@@ -818,7 +819,7 @@ const probe = async (
   writeFileSync(
     input,
     entrypoints
-      .map((e, i) => `import * as m${i} from '${specyfikator(e)}';`)
+      .map((e, i) => `import * as m${i} from '${specifierOf(e)}';`)
       .join('\n') +
       `\nglobalThis.__pctProbe = [${entrypoints.map((_, i) => `m${i}`).join(',')}];\n`,
   );
@@ -920,7 +921,7 @@ const builderProbe = (dist, markers, entrypoints) => {
     join(directory, 'src/main.ts'),
     [
       ...entrypoints.map(
-        (e, i) => `import * as m${i} from '${specyfikator(e)}';`,
+        (e, i) => `import * as m${i} from '${specifierOf(e)}';`,
       ),
       `import { bootstrapApplication } from '@angular/platform-browser';`,
       `import { Component } from '@angular/core';`,

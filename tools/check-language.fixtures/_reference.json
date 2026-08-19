@@ -46,7 +46,14 @@
         "text": "/** The button's configuration. */\nexport declare const config: { label: string };\n"
       }
     ],
-    "polish": ["domyslne", "moja", "ustawienie", "wartosc", "config"],
+    "polish": [
+      "config",
+      "domyslne",
+      "moja",
+      "specyfik",
+      "ustawienie",
+      "wartosc"
+    ],
     "english": ["build", "script"]
   }
 }

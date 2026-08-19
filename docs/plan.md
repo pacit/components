@@ -84,7 +84,8 @@ so the npm page is written and the last file that travelled in a second language
 **B6 and B7 have closed too** — the support window with a gate reading its numbers, and the
 dependency lists with a gate reading the artefact — so **what stands between here and npm is
 B4 alone, and B4 is held with B2**. In parallel: F1 is unblocked — the inventories it renders
-both exist — and C is filler.
+both exist — and C, the filler, is **empty**: seventeen findings, all closed, so the next
+unstarted item in the order is **D2**.
 
 **B2 is deferred by decision, not blocked** — and the decision has a shape: **the first push
 happens only when the maintainer asks for it outright.** It is not triggered by a state of the
@@ -311,6 +312,17 @@ build. The two repairs are deliberately different, which is
 file is compared whole, the mutation file everything except a number that wobbles by ±2 with
 the code unchanged.
 
+**C18 closed after it, and C is now empty.** The word was found where the plan said it was, and
+the fifth limb reads it as the plan proposed: a suffix on a stem the Polish list confirms, both
+ends looked up. What the plan could not know is where the task really was. The limb's first run
+gave seven splits over 5715 words — one true, one in the gate's own tree, and five English agent
+nouns that all share the same property, so three lines in the detector would have silenced every
+one of them and shortened the register besides. That is the shape point 5 forbids, written where
+point 5 cannot see it, and refusing it is the answer to "what may a detector name":
+**a shape may be named to SEE a class and never to stop seeing one**
+([`lesson-80`](lessons.md#lesson-80)). The specimen is now the limb's probe, in the gate's tree
+where such a word may stand, and the function it named is `specifierOf`.
+
 ## B. Readiness for the first release
 
 Binds at the first publication — and then all of it at once. **B9** bound one step earlier, at
@@ -502,7 +514,10 @@ not a derivation.
 ## C. Open findings
 
 Small, good filler between the bigger items. Each one is verified in the code and still
-current.
+current. **All seventeen are closed** (the numbers run to C18; there is no C5) — the list is
+kept because it is where the next finding lands, and because six of them ended in a decision
+record rather than in a line of code: [0018](decisions/0018-no-sass-entry-point.md) through
+[0023](decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md).
 
 - [x] **C1 — `pct-select` without the field chrome is an unnamed combobox** — **closed, and it
       was three components, not one**
@@ -1130,11 +1145,12 @@ var(--pct-button-heigth)` passed every one of them, and the 7 stylesheets read 1
     the same commit, which is precisely the accident the points now stop depending on
   - cost: ~0.5 day for all four · _notes:_ **done** — two gates changed, two already correct.
 
-- [ ] **C18 — a Polish word the Polish dictionary does not hold**
-  - `tools/check-bundle.mjs` names the function that builds an entrypoint's import specifier in
+- [x] **C18 — a Polish word the Polish dictionary does not hold** — **closed: a fifth limb,
+      and the cheap way out of its false positives was the defect it exists against**
+  - `tools/check-bundle.mjs` named the function that builds an entrypoint's import specifier in
     Polish — one identifier, in a file the language gate reads, green over it through all of B8
     and C1–C17: 849 files, 5669 words, 0 exceptions
-  - all four limbs are blind and each for its own reason: the word carries no diacritics;
+  - all four limbs were blind and each for its own reason: the word carries no diacritics;
     `american-english` does not hold it; **`/usr/share/dict/polish` does not hold it either** —
     the list has the noun it is derived from and the abstract noun made from that one, and not
     the agent noun made from either; and the fourth limb hunts the 37 endings of
@@ -1143,15 +1159,40 @@ var(--pct-button-heigth)` passed every one of them, and the 7 stylesheets read 1
     not a foreign stem with a Polish ending, but a **Polish derivation the word list never got
     round to**. Agent and abstract nouns are formed productively there, and 4.4 million lines
     are still somebody's list of words rather than a language
-  - to be settled, and it is the whole task: what a detector may name. A suffix list is point
-    5's forbidden shape read one way and lesson-77's permitted detector read the other — with
-    one difference to build on: a stem that IS in the Polish dictionary plus a derivational
-    suffix is a far narrower claim than an ending on any stem at all
-  - the word stays where it is until then, exactly as C16's did, and this entry points at the
-    specimen instead of quoting it — the first draft quoted three dictionary words as evidence
-    and the language gate was red on the position describing the defect, which is
-    [`lesson-77`](lessons.md#lesson-77) happening again to the file that recorded it
-  - cost: ~0.5 day · _notes:_ —
+  - **the fifth limb is the plan's narrower claim taken literally**: 26 derivational suffixes
+    in three families (the agent and instrument noun, the abstract noun, the adjective and the
+    diminutive), and a split counts only when the stem left behind is a word
+    `/usr/share/dict/polish` confirms — both ends looked up, only the join between them
+    guessed at. The Polish list is streamed against the words really found, so the stems a
+    suffix leaves have to be asked for by name too, or the limb confirms nothing and fails the
+    way it is worst at failing: quietly
+  - **the measurement over the repository**: 5715 distinct words, **seven** splits — the
+    specimen, the fourth limb's own probe inside the gate's tree, and five English agent nouns
+    (`locator` in 21 files, plus four others). They are in the register as five words
+  - **and that is where the task turned out to be about something else**
+    ([`lesson-80`](lessons.md#lesson-80)). All five false positives share a property — the
+    English verb behind each stands in `american-english` — so three lines in the detector
+    would have removed every one of them and shortened the register with it. That is an
+    **excused shape written where the rule against excused shapes does not reach**: point 5
+    checks the format of the policy and nothing checks the format of the instrument. So the
+    answer to "what may a detector name" has a direction rather than a place: **a shape may be
+    named to SEE a class and never to stop seeing one**, and moving it into the code changes
+    only who can review it
+  - the word did stay where it was until the rule existed, and then moved rather than
+    disappeared: it is `PROBE_DERIVED`, the fifth limb's probe, in the gate's own tree beside
+    the fourth limb's — and `check-bundle.mjs` calls the function `specifierOf`. The
+    denominator is what
+    makes that safe: emptying the suffix list turns the reference input itself red, so the limb
+    cannot go quiet without all 32 cases saying so
+  - [`lesson-77`](lessons.md#lesson-77) happened **twice more while this was being closed**,
+    and both times the gate said so within the minute: the first draft of the register entry
+    quoted the five stems as evidence and turned the policy file red, and this entry quoted the
+    fourth limb's probe and turned the plan red — the new limb catching the description of
+    itself. Both now point at their specimen instead of spelling it, which is the rule the
+    whole register runs on
+  - cost: ~0.5 day · _notes:_ **done** — 27 rules, 32 cases, 120 excused words. It also found a
+    hand-kept count already drifted: the fixtures README said its denominator had seven cases
+    and it had nine, which is [C15](#c-open-findings)'s shape in prose no index gate reads.
 
 ## D. Phase 1 — the behaviour layer in `core`
 

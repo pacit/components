@@ -1,6 +1,5 @@
 {
-  "$description": "One language (req-project-language). tools/check-language.mjs measures four limbs — diacritics, a dictionary, the opening quote U+201E and a foreign stem carrying a Polish ending — over the git index and over the built package. This file is everything that measurement is allowed NOT to fire on, and each of its three lists shrinks by measurement: an entry that stops silencing something fires exactly like new Polish.",
-
+  "$description": "One language (req-project-language). tools/check-language.mjs measures five limbs — diacritics, a dictionary, the opening quote U+201E, a foreign stem carrying a Polish ending and a Polish stem carrying a derivational suffix — over the git index and over the built package. This file is everything that measurement is allowed NOT to fire on, and each of its three lists shrinks by measurement: an entry that stops silencing something fires exactly like new Polish.",
   "$generated": "Files no hand wrote. The promise is about hand-written text, and these two are the output of a tool — `npm` and `check-docs --write`. They are named one by one and never matched by a pattern: `*.lock`, `**/generated/**` or any other shape would take the next file nobody weighed with it. The registry costs nothing to skip anyway — it is assembled from `docs/**`, which is scanned in full.",
   "generated": [
     {
@@ -12,15 +11,13 @@
       "reason": "`node tools/check-docs.mjs --write` assembles it from the requirements and the lessons, and truncates every table cell to fit — so it holds a dozen words cut in half by the ellipsis, standing nowhere in the sources and answering to nobody. Its content is measured at the source, in `docs/**`."
     }
   ],
-
   "$exceptions": "Files allowed to carry Polish, each with the task that removes it. EMPTY, and that is a measurement rather than a declaration — the gate walks the whole index and finds nothing. The list may never name a file under `libs/`: what stands there travels into `types/*.d.ts` and the bundles, where no register reaches. The one survivor the plan left to rule on — the `pl-PL` default of `libs/components/field/src/number.spec.ts` — is NOT here: a BCP-47 tag is not prose but the name of a formatting convention (that locale groups with U+00A0, which is the whole point of those tests), no limb flags it, and an entry for it would be dead on the day it was written.",
   "exceptions": [],
-
   "$specimens": "The gate's own calibration samples. An instrument for finding Polish cannot be written without any: a canary has to be a word the dictionary really holds, and a diacritics case has to carry real diacritics. These are not exceptions — an exception owes a task that removes it and these are permanent — so they are a list of their own, and `check-language.mjs` hard-codes the tree they may name (`tools/check-language.*`). The policy chooses which files of that tree are specimens; it cannot widen the tree. Every entry is held to the same aliveness rule as everything else here: a file that stopped carrying Polish is a hole in the shape of a sample, and it fires.",
   "specimens": [
     {
       "file": "tools/check-language.mjs",
-      "reason": "The two probes of point 1 and the four canaries. Three of them are compared against `/usr/share/dict/polish`, so they have to be words that stand in it; the fourth limb's probe is a word that stands in no dictionary at all, which is the whole of what that limb is for."
+      "reason": "The three probes of point 1 and the four canaries. Three of the canaries are compared against `/usr/share/dict/polish`, so they have to be words that stand in it; the fourth limb's probe is a word that stands in no dictionary at all, and the fifth limb's is the one word this repository really carried in that class — the name a neighbouring gate gave a function, which no word list holds and no other limb sees."
     },
     {
       "file": "tools/check-language.fixtures/README.md",
@@ -47,6 +44,14 @@
       "reason": "An English stem with a Polish ending glued to it — the one class no dictionary can be asked about, so the sample has to be spelled out here."
     },
     {
+      "file": "tools/check-language.fixtures/derived-polish-noun.json",
+      "reason": "A Polish stem carrying a derivational suffix — the class the word list itself is missing, so the sample cannot be looked up anywhere and has to be spelled out here."
+    },
+    {
+      "file": "tools/check-language.fixtures/derivation-blind.json",
+      "reason": "The fifth limb's probe with its suffix taken off. The stem is what the case is about: the Polish list holds it, and a word the list holds is not a derivation the limb may report."
+    },
+    {
       "file": "tools/check-language.fixtures/opening-quote.json",
       "reason": "U+201E, in the position it really appears in."
     },
@@ -71,8 +76,7 @@
       "reason": "It excuses a word the reference's dictionary confirms, and that word is Polish."
     }
   ],
-
-  "$vocabulary": "The false positives of the two dictionary limbs — 115 words: 104 that `/usr/share/dict/polish` holds and `american-english` does not, and 11 that the fourth limb reads as a foreign stem carrying a Polish ending. None of them is Polish here. Every entry is a WORD. Never a shape: an exclusion of `SCREAMING_CASE` or of anything under four letters excuses a whole grammatical class, and a layer of constants once rode through two passes in exactly that blind spot (lesson-60). The gate enforces the format — an entry that is not a bare lowercase word fires — and it also fires on any entry the dictionary would never have flagged, so nobody can pad the list with superstition.",
+  "$vocabulary": "The false positives of the two dictionary limbs — 120 words: 104 that `/usr/share/dict/polish` holds and `american-english` does not, 11 that the fourth limb reads as a foreign stem carrying a Polish ending, and 5 that the fifth reads as a Polish stem carrying a derivational suffix. None of them is Polish here. Every entry is a WORD. Never a shape: an exclusion of `SCREAMING_CASE` or of anything under four letters excuses a whole grammatical class, and a layer of constants once rode through two passes in exactly that blind spot (lesson-60). The gate enforces the format — an entry that is not a bare lowercase word fires — and it also fires on any entry the dictionary would never have flagged, so nobody can pad the list with superstition.",
   "vocabulary": {
     "abbreviations": {
       "reason": "English words written short, in identifiers and in prose. Each is a shortening a reader expands without thinking; none is a Polish word here.",
@@ -216,6 +220,16 @@
         "vu",
         "ww",
         "za"
+      ]
+    },
+    "derivations": {
+      "reason": "The false positives of the fifth limb, which reads a word standing in neither dictionary as a Polish stem carrying a derivational suffix. All five are English agent nouns whose stem, once the suffix comes off, is a form the Polish list happens to hold — and the stems are not quoted here, because a word that list holds is exactly what the second limb fires on, and the first draft of this entry made the file it stands in red. Each is written down singly for the reason the whole file exists: what they share is that the English verb behind them (`locate`, `paginate`, `activate`) stands in `american-english`, and three lines in the detector reading that would have silenced the whole class where point 5 cannot see it. A shape may be named to SEE a class, never to stop seeing one.",
+      "words": [
+        "activator",
+        "differentiator",
+        "locator",
+        "orchestrator",
+        "paginator"
       ]
     }
   }
