@@ -239,3 +239,4 @@ Which lesson feeds which requirement. Generated from the **Lessons** fields.
 | [`lesson-79`](lessons.md#lesson-79) | `req-project-tree-shaking`, `req-quality-index`, `req-quality-unit`                                                                                               |
 | [`lesson-80`](lessons.md#lesson-80) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-81`](lessons.md#lesson-81) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-82`](lessons.md#lesson-82) | `req-api-overlay`                                                                                                                                                 |

@@ -438,20 +438,30 @@ writing direction are read from the control when it opens and carried over expli
 reading is `pctOverlay()` in `@pacit/components/core` and it is not optional machinery —
 `show()` **is** the read, so no control can open a panel and carry nothing. Escape closes the
 **top-most** open overlay and only it; a component never listens for it above its own control.
+**A panel says whether it takes focus.** Where the role keeps focus on the control — a listbox
+under a combobox, pointed at by `aria-activedescendant` — the panel carries `pctFocusStays`,
+which refuses the press that would move it: without that refusal a press on the panel's own
+background lands on `body`, and every key the control owns loses its handler.
 
 **Gate:** `apps/sandbox-e2e/src/select.spec.ts` — measuring the panel's width and offset
-against the field, and the typeface and font size inside the panel;
+against the field, the typeface and font size inside the panel, and a press on the panel that
+leaves focus on the trigger with the keyboard still answering;
 `libs/components/core/src/core.spec.ts` — the layer under its own name: the four properties
-read off the control, the anchor's width, a second opening re-reading a page that moved, and
-the closing order over two stacked overlays
+read off the control, the anchor's width, a second opening re-reading a page that moved, the
+closing order over two stacked overlays, and the press `PctFocusStays` refuses
 **Control:** the measurement from [`lesson-35`](../lessons.md#lesson-35) (a 301 px field ⇒
 a 275 px panel, offset by 13 px; `Times New Roman` in the panel against `system-ui` in the
 control) — the test compares **specific values**, so it does not pass on "roughly right". The
 unit cases carry the same numbers, and the closing case discriminates by construction: an
-Escape delivered to every overlay rather than to the top one closes both at the first press
+Escape delivered to every overlay rather than to the top one closes both at the first press.
+The focus case has a recorded run: `pctFocusStays` taken off the panel and the e2e case red in
+all three engines — `expect(locator).toBeFocused() failed / Received: inactive` — while the
+unit cases stay green, jsdom moving focus on no `mousedown` at all
 **Decision:** [0006 — the anchor and inheritance in an overlay](../decisions/0006-overlay.md),
-[0024 — the overlay layer carries what an overlay severs](../decisions/0024-the-closing-stack-is-the-dependency-s.md)
-**Lessons:** [`lesson-18`](../lessons.md#lesson-18), [`lesson-35`](../lessons.md#lesson-35)
+[0024 — the overlay layer carries what an overlay severs](../decisions/0024-the-closing-stack-is-the-dependency-s.md),
+[0025 — a panel says whether it takes focus](../decisions/0025-a-panel-says-whether-it-takes-focus.md)
+**Lessons:** [`lesson-18`](../lessons.md#lesson-18), [`lesson-35`](../lessons.md#lesson-35),
+[`lesson-82`](../lessons.md#lesson-82)
 
 ---
 

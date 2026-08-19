@@ -84,8 +84,8 @@ so the npm page is written and the last file that travelled in a second language
 **B6 and B7 have closed too** — the support window with a gate reading its numbers, and the
 dependency lists with a gate reading the artefact — so **what stands between here and npm is
 B4 alone, and B4 is held with B2**. In parallel: F1 is unblocked — the inventories it renders
-both exist — and C, the filler, is **empty**: seventeen findings, all closed. **D2 has closed
-too**, so the next unstarted item in the order is **D3**.
+both exist — and C, the filler, holds one open finding, **C19**, which binds at E1. **D2 and
+D3 have closed too**, so the next unstarted item in the order is **D4**.
 
 **B2 is deferred by decision, not blocked** — and the decision has a shape: **the first push
 happens only when the maintainer asks for it outright.** It is not triggered by a state of the
@@ -345,6 +345,27 @@ than listed, and the price of the directive is now a visible line in the snapsho
 every consumer already carries. The task left **C19** behind: the rule it wrote down — one
 owner per key — is broken inside the select itself, where the CDK closes the panel on an Escape
 the trigger never sees, and nothing in the repository says so.
+
+**D3 closed after it, and it is D2's shape one item further on: a list of four whose consumers
+had to be counted before any of it was written.** Three of the four — the focus trap, the
+restore, the initial focus — are the modal half, deferred for exactly the reason `inert` and the
+scroll lock were, and the fourth, a roving tabindex, has no consumer either: the radio group
+stands on native radios the browser walks and the select points with `aria-activedescendant`.
+What the line did not name is the one thing that had a consumer **and** a defect. The listbox
+pattern promises focus stays on the trigger while the panel is open, and the browser breaks
+that promise for free — a press on the panel's own background moves focus to `body` in all
+three engines, the panel stays open, and every key the control owns goes quiet, since they all
+sit on the trigger. Only Escape answers, through the CDK's document listener, which is **C19**
+seen from the other side. So the layer gained the declaration that a panel takes no focus
+([0025](decisions/0025-a-panel-says-whether-it-takes-focus.md)), and the work turned out to be
+in choosing the event: `pointerdown` covers mouse, pen and touch in one listener and is the
+wrong answer — touch never moved focus here, while preventing that event's default cancels the
+compatibility events after it, and in webkit that includes the `click` a tap on an option needs
+([`lesson-82`](lessons.md#lesson-82)). **A guard is as wide as the default action it cancels,
+and no wider.** The second half of the lesson is where the case had to live: jsdom moves focus
+on no `mousedown` at all, so the unit suite can assert the cancellation and never what it is
+for — take the directive off the panel and every unit case stays green while all three browsers
+go red.
 
 ## B. Readiness for the first release
 
@@ -1247,6 +1268,9 @@ on a much bigger piece. **D1 has closed**, so that half of the risk is paid: wha
 shares now stands in `core`, and what the roles do not share stayed with the control. **D2 has
 closed the same way** — what an overlay severs stands in `core`, what a role decides stayed
 with the select, and what the dependency already ordered was pinned rather than rewritten.
+**D3 closed on the same reading**: of its four lines, one had a consumer and a measured defect
+and three had none, so the layer holds the declaration that a panel takes no focus and the
+modal half waits for the modal.
 
 Guiding principle: **mechanics from CDK, our own API** — CDK types never leak into the public
 contract. The pattern is ready: `PCT_FIELD` is exactly that for the field chrome and its control.
@@ -1301,8 +1325,29 @@ contract. The pattern is ready: `PCT_FIELD` is exactly that for the field chrome
       is about bytes ([`lesson-81`](lessons.md#lesson-81)). Three points of `check-bundle` moved
       onto the text read, and the fake library in its fixtures now has a mixed kernel, like the
       real one
-- [ ] **D3 — focus**: trap, restore, initial focus, roving tabindex as an alternative to
-      `aria-activedescendant` · _notes:_ —
+- [x] **D3 — focus**: trap, restore, initial focus, roving tabindex as an alternative to
+      `aria-activedescendant` · _notes:_ **done, and three of the four lines are deliberately
+      not built** — `PctFocusStays` in `libs/components/core/src/focus.ts`, the declaration that
+      a panel takes no focus, plus the measurement that says why the other three wait
+      ([0025](decisions/0025-a-panel-says-whether-it-takes-focus.md)). The consumer count
+      decided it, as at D2: the trap, the restore and the initial focus are the modal half —
+      the same half `inert` and the scroll lock were deferred for — and the roving tabindex has
+      no consumer either, `pct-radio-group` standing on native radios the browser walks and
+      `pct-select` pointing with `aria-activedescendant`. What **does** have a consumer is a
+      fourth thing the line does not name: the promise that focus stays on the trigger while
+      the panel is open, which the browser breaks for free. Measured before it was repaired, in
+      all three engines: a press on the panel's own background puts focus on `body`, the panel
+      stays open, `ArrowDown` moves nothing — the key map sits on the trigger — and
+      `aria-activedescendant` goes on naming the active option from an element that no longer
+      has focus; only Escape survives, through the CDK's document listener (which is
+      **C19**, seen from the other side). The guard reads `mousedown` and not the wider
+      `pointerdown`, because the wider one cancels the compatibility events after it and in
+      webkit that takes the `click` a tap needs ([`lesson-82`](lessons.md#lesson-82)); touch
+      never had the defect at all. The negative control is a recorded run: `pctFocusStays` off
+      the panel leaves every unit case green and all three browsers red — jsdom moves focus on
+      no `mousedown`, so the unit suite can see the cancellation and never what it is for. One
+      line went as the guard arrived: `selectAt` used to hand focus back to the trigger after a
+      mouse pick, and the control no longer loses it
 - [ ] **D4 — live announcer**: one `polite` channel, one `assertive`, with deduplication — not a
       region per component · _notes:_ —
 - [ ] **D5 — `*pctTemplate` / `TemplateRef`** → closes `req-api-templates`; unblocks icons

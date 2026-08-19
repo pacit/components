@@ -70,7 +70,11 @@
   (overlayOutsideClick)="close()"
   (detach)="close()"
 >
-  <!-- `pctOverlayPanel`: what the tree stops carrying outside the host (`lesson-35`). -->
+  <!--
+    `pctOverlayPanel`: what the tree stops carrying outside the host (`lesson-35`).
+    `pctFocusStays`: the panel takes no focus, so the trigger keeps it and every key below
+    still has an owner — a press on the panel's own surface would otherwise land on `body`.
+  -->
   <div
     #panel
     class="pct-select__panel"
@@ -78,6 +82,7 @@
     role="listbox"
     [id]="listboxId"
     [pctOverlayPanel]="inherited()"
+    pctFocusStays
     [attr.aria-label]="ariaLabel() || null"
     [attr.aria-labelledby]="ariaLabelledby() || (label() ? labelId : null)"
   >

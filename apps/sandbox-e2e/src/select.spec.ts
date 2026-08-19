@@ -194,6 +194,48 @@ test.describe('PctSelect — a combobox with a panel', () => {
     );
   });
 
+  /**
+   * The panel is a surface the user presses without it taking anything — focus stays on the
+   * trigger, which is where the listbox pattern keeps it (`req-api-overlay`). Left to the
+   * browser it does not: a press on the panel's own background moves focus to `body` in all
+   * three engines, and everything the trigger owns dies with it — the arrows, Home and End,
+   * Enter and the typeahead all sit on its `keydown`, while `aria-activedescendant` goes on
+   * pointing at the active option from an element that no longer has focus. The panel stays
+   * open through all of it, a press inside it being no press outside it.
+   *
+   * Which is why the case is here and not in a unit suite: jsdom moves focus on no
+   * `mousedown` at all, so it cannot tell the guarded panel from the unguarded one.
+   */
+  test('a press on the panel takes no focus, so the keyboard stays alive', async ({
+    page,
+  }) => {
+    const t = trigger(page);
+    await t.click();
+    await expect(panel(page)).toBeVisible();
+
+    // The padding strip along the top edge: the panel itself, not an option.
+    const box = await boxOf(panel(page));
+    await page.mouse.move(box.x + box.width / 2, box.y + 2);
+    await page.mouse.down();
+    await page.mouse.up();
+
+    await expect(t).toBeFocused();
+    await expect(panel(page)).toBeVisible();
+
+    const germany = options(page).filter({ hasText: 'Germany' });
+    await page.keyboard.press('ArrowDown');
+    await expect(germany).toHaveAttribute('data-pct-active', '');
+    await expect(t).toHaveAttribute(
+      'aria-activedescendant',
+      await attrOf(germany, 'id'),
+    );
+
+    // And the pick itself: the control never lost focus, so nothing has to give it back.
+    await germany.click();
+    await expect(panel(page)).toHaveCount(0);
+    await expect(t).toBeFocused();
+  });
+
   test('Escape closes the panel, and so does a click outside it', async ({
     page,
   }) => {

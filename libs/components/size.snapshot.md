@@ -32,8 +32,8 @@ before an application ships them.
 . 1003 ./core @angular/core
 ./button 4492 ./core @angular/core
 ./checkbox 10442 ./core @angular/core
-./core 3185 - @angular/core
+./core 3482 - @angular/core
 ./field 22328 ./core @angular/core,@angular/forms,@angular/forms/signals
-./radio 12821 ./core @angular/core
-./select 20072 ./core @angular/cdk/overlay,@angular/core
+./radio 12822 ./core @angular/core
+./select 20335 ./core @angular/cdk/overlay,@angular/core
 ```

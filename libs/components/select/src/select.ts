@@ -28,6 +28,7 @@ import {
   PctFieldAppearance,
   PctFieldControl,
   PctFieldCursor,
+  PctFocusStays,
   PctLabelStrategy,
   PctOverlayPanel,
   pctSameValue,
@@ -44,7 +45,9 @@ import {
  *
  * It implements the ARIA "select-only combobox" pattern: the trigger has `role="combobox"`, the
  * panel `role="listbox"`, and focus **never leaves the trigger** — the active option is pointed
- * at by `aria-activedescendant`.
+ * at by `aria-activedescendant`. That last part is a promise the browser breaks by default, so
+ * the panel carries `pctFocusStays`: a press on it moves focus nowhere, and the key map below
+ * keeps the element it is bound to.
  *
  * Panel positioning stands on CDK Overlay (`req-project-dependencies`) — the only runtime
  * dependency allowed. The keyboard handling is ours, because a custom listbox has no native
@@ -67,7 +70,7 @@ import {
  */
 @Component({
   selector: 'pct-select',
-  imports: [OverlayModule, PctOverlayPanel],
+  imports: [OverlayModule, PctFocusStays, PctOverlayPanel],
   templateUrl: './select.html',
   styleUrl: './select.scss',
   host: {
@@ -460,7 +463,6 @@ export class PctSelect<T = string>
     if (!option || option.disabled || !this.interactive) return;
     this.value.set(option.value);
     this.close();
-    this.trigger().nativeElement.focus();
   }
 
   protected onBlur(): void {

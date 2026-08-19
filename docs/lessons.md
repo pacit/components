@@ -1931,3 +1931,45 @@ what changed is that its read stopped meaning what the sentence says, and the da
 gate reported a defect nobody could find in the bytes. When a rule is about what a consumer
 carries, the honest read is the artifact's text — a module graph is an inference from it, and
 an inference is only as good as the model behind it.
+
+---
+
+### <a id="lesson-82"></a>`lesson-82` — The wider event is not the safer guard
+
+**A listbox panel that keeps focus on its trigger has to refuse a press, and the obvious refusal
+takes a component's pointer with it.** The promise is the ARIA pattern's: focus stays on the
+combobox, the active option is named by `aria-activedescendant` ([`lesson-18`](#lesson-18)).
+The browser does not keep it — a press on the panel's own background moves focus to `body`,
+measured the same way in blink, gecko and webkit — and everything the trigger owns goes quiet
+with it, the arrows, Home and End, Enter and the typeahead, while the trigger goes on pointing
+at an option from an element that no longer has focus. Only Escape survives, because the CDK
+listens for it on the document.
+
+The repair is one prevented default, and the only question was which event to prevent.
+`pointerdown` is the modern one and covers mouse, pen and touch in a single listener, so it
+looks like the safer choice. The measurement says otherwise, and it says three things:
+
+- **touch never had the defect.** A tap inside the panel left the trigger focused in chromium
+  and in webkit alike, with no guard installed at all — where the same press with a mouse blurs
+  it. The default action that moves focus belongs
+  to the mouse event, not to the pointer event above it;
+- **preventing `pointerdown` cancels what follows it.** With the guard on `pointerdown`, a tap
+  fired `pointerdown, click` in chromium and **`pointerdown` alone** in webkit — the
+  compatibility events are the pointer event's default action, and webkit counts the `click`
+  among them. A panel guarded that way cannot be tapped: the pick never arrives;
+- **`mousedown` is exact.** Guarded there, focus stayed on the trigger in all three engines,
+  the keyboard went on answering, the pick still arrived, and a scrollbar drag inside the panel
+  still scrolled it — the same 17 px it scrolled unguarded.
+
+The lesson generalises past this panel: **a guard should be as wide as the default action it is
+cancelling, and no wider.** Reaching for the broader event buys coverage of a case that was
+never broken and pays for it with the events the component needs — and the price is invisible
+in the engine most people develop in, which is why it is a measurement in three and not a
+reading of a specification.
+
+There is a second half, one floor up. jsdom moves focus on no `mousedown` at all, so the unit
+suite cannot tell the guarded panel from the unguarded one: it can assert that the event was
+cancelled and nothing about what the cancellation is for. The promise itself is only readable
+where focus is real, and the negative control says so outright — `pctFocusStays` taken off the
+panel leaves every unit case green and all three browsers red. **A behaviour whose only witness
+is the browser needs its test in the browser**, however cheap the unit test would have been.

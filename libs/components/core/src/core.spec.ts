@@ -11,6 +11,7 @@ import {
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PCT_CONFIG } from './config';
 import { PCT_FIELD, pctDescribedBy, pctFieldMessages } from './field';
+import { PctFocusStays } from './focus';
 import { nextPctId, PctIdCounter } from './id';
 import { pctListNavigation, PctListSource } from './list';
 import { pctOverlay, PctOverlayInherited, PctOverlayPanel } from './overlay';
@@ -621,6 +622,67 @@ describe('@pacit/components/core', () => {
       // default skin, which is not the same as answering to the page.
       expect(element.hasAttribute('data-theme')).toBe(false);
       expect(element.getAttribute('dir')).toBe('rtl');
+    });
+  });
+
+  /**
+   * What a unit suite can say about focus, and what it cannot.
+   *
+   * The defect this directive was written from is a browser one: pressing a panel that takes
+   * no focus moves focus to `body`, and the control's keys — arrows, Home, End, Enter, the
+   * typeahead — go with it, because their handler sits on the trigger. jsdom implements no
+   * such default action: nothing here moves focus on a `mousedown`, so a test asserting that
+   * the trigger kept it would pass with the directive deleted.
+   *
+   * So the two halves are measured in the two places that can see them. Here: the event is
+   * cancelled, wherever inside the panel it started, and the `click` that carries a pick is
+   * not. In the browser: `apps/sandbox-e2e/src/select.spec.ts`, where focus and a dead
+   * keyboard are readable facts (`req-api-overlay`).
+   */
+  describe('PctFocusStays', () => {
+    @Component({
+      imports: [PctFocusStays],
+      template: `<div id="panel" pctFocusStays>
+        <div id="option">Poland</div>
+      </div>`,
+    })
+    class PanelHost {}
+
+    const render = async () => {
+      const fixture = TestBed.createComponent(PanelHost);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      const at = (id: string) =>
+        fixture.nativeElement.querySelector(`#${id}`) as HTMLElement;
+      return { fixture, at };
+    };
+
+    const press = (element: HTMLElement, type = 'mousedown') => {
+      const event = new MouseEvent(type, { bubbles: true, cancelable: true });
+      element.dispatchEvent(event);
+      return event;
+    };
+
+    it('a press on the panel itself is refused', async () => {
+      const { at } = await render();
+
+      expect(press(at('panel')).defaultPrevented).toBe(true);
+    });
+
+    it('a press that starts inside the panel is refused as well', async () => {
+      const { at } = await render();
+
+      // The padding, the gap between options, the empty-list text and the options themselves
+      // are one case: the event bubbles to the panel, and that is where the guard reads it.
+      expect(press(at('option')).defaultPrevented).toBe(true);
+    });
+
+    it('the click that follows is untouched, so a pick still arrives', async () => {
+      const { at } = await render();
+
+      // `click` is not the default action being prevented — the whole point of guarding
+      // `mousedown` rather than the pointer event above it.
+      expect(press(at('option'), 'click').defaultPrevented).toBe(false);
     });
   });
 

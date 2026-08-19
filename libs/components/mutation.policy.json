@@ -15,6 +15,7 @@
   "files": [
     "libs/components/core/src/config.ts",
     "libs/components/core/src/field.ts",
+    "libs/components/core/src/focus.ts",
     "libs/components/core/src/id.ts",
     "libs/components/core/src/list.ts",
     "libs/components/core/src/overlay.ts",
