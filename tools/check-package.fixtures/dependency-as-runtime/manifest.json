@@ -8,6 +8,7 @@
     "url": "git+https://example.invalid/pacit/components.git"
   },
   "peerDependencies": {
+    "@angular/common": "^22.0.0",
     "@angular/core": "^22.0.0",
     "@angular/forms": "^22.0.0"
   },

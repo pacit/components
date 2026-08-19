@@ -2014,3 +2014,48 @@ stylesheet ships with it. A body-level node built by a service belongs to nobody
 so **whatever it needs, it needs to carry** — the appearance, the ARIA attributes, and the
 removal when the injector that made it goes. That is why the same file also books its cleanup
 on `DestroyRef` rather than trusting a page load to end.
+
+---
+
+### <a id="lesson-84"></a>`lesson-84` — A template's name and a template's context are two different checks, and no one shape gives both
+
+**The compiler can see what a template is called or what it is handed, and which of the two
+depends on how the consumer was asked to write it.** D5 had to choose the channel through
+which a consumer supplies an `<ng-template>`, and the plan named two — `TemplateRef` passed as
+a value, or a `*pctTemplate` directive. They are not two roads to one place. Four probes under
+`strictTemplates`, each a deliberately wrong binding that either breaks the build or does not:
+
+| what is written                                                  | wrong NAME | wrong CONTEXT READ          |
+| ---------------------------------------------------------------- | ---------- | --------------------------- |
+| `<ng-template pctWhatever>` — an attribute matching no directive | silent     | silent                      |
+| `<ng-template #ref>` handed to an input                          | **NG8002** | silent (`TemplateRef<any>`) |
+| a slot directive with `ngTemplateContextGuard` and no input      | silent     | silent — `T` is `any`       |
+| the same directive with an input the context type depends on     | silent     | **TS2339 / TS2345**         |
+
+Two things fall out of the table. The first: **an attribute is not a name the compiler reads.**
+Not misspelt (`pctSelectOptoin`), not left out of `imports`, not in its structural form — every
+one of them compiles, renders nothing and says nothing. The second: a context guard types
+`let-option` only when the context type is fully known, and a directive with no input has no
+inference site at all, so Angular's type-check block instantiates its generic as `any`. The
+guard on its own is decoration.
+
+So `*pctTemplate="'option'"` — the shape most libraries ship — is the one that gives up **both**
+halves: the name lives inside a string, and one directive serving many names has nowhere to put
+a context guard per name. What buys the context back is a directive per slot with a required
+input that carries the type; what buys the name back is the compiler, one step earlier, since a
+required input left unbound is `NG8008`.
+
+The half that stays open is the misspelling, and the obvious repair for it is measured shut.
+Have the component compare the `<ng-template>`s in its content against the slots that claimed
+one: `contentChildren(TemplateRef)` really does see every template, claimed or not — `3/1` over
+three of them. But it also sees things nobody wrote as a template. An `@if` in projected content
+**is** a `TemplateRef`, and so is each block inside it: one template with the condition false,
+two with it true, every anchor an identical `<!--container-->` with no parent to tell it apart.
+The comparison therefore accuses a consumer who merely wrapped a correct slot in an `@if` —
+[`lesson-68`](#lesson-68) again, a message that fires on a page that is right. The check that
+survives is the other direction, and it is exact: a slot that matched, standing under a
+component that does not offer it, reported by the slot itself through the element injector.
+
+The rule: **a mechanism for passing templates has two checks to buy and they are bought
+separately.** Ask which one a shape gives before choosing it, and say plainly which one it does
+not — a channel that quietly gives neither looks exactly like a channel that gives both.

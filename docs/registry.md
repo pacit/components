@@ -9,9 +9,9 @@ There is no "built, just unverified" state — see
 
 | state       | means                                                         |  count |
 | ----------- | ------------------------------------------------------------- | -----: |
-| ✅ enforced | gate and control exist and run in CI                          |     60 |
+| ✅ enforced | gate and control exist and run in CI                          |     61 |
 | 🟡 partial  | the gate is there, the negative control is not (deliberately) |     16 |
-| ⛔ gap      | gate or control missing, with a recorded deadline             |     10 |
+| ⛔ gap      | gate or control missing, with a recorded deadline             |      9 |
 | **total**   |                                                               | **86** |
 
 ## Gaps by urgency
@@ -23,7 +23,6 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-api-animations`](requirements/api.md#req-api-animations)       | the ban is kept, but **nothing watches it** — the only thing in force…             | the first component with an enter/leave transition (panel, … |
 | [`req-api-icons`](requirements/api.md#req-api-icons)                 | today every icon is **written into the template** as SVG in `currentC…             | the second component that needs a swappable icon             |
 | [`req-api-number`](requirements/api.md#req-api-number)               | property tests for the parser (`parse(format(n)) === n` for any `n` a… _(control)_ | the first locale outside `pl`/`en` reported by a consumer    |
-| [`req-api-templates`](requirements/api.md#req-api-templates)         | projection works (the wrapper's slots), but **`TemplateRef` appears n…             | the first real use of the select (the option template) and … |
 | [`req-project-apps`](requirements/project.md#req-project-apps)       | `apps/docs` does not exist, so a gate would describe a state that doe…             | the first external user — without documentation there is no… |
 | [`req-project-concise`](requirements/project.md#req-project-concise) | a prose volume budget per file, a **two-sided** snapshot in the idiom…             | the close of the compression pass — **not earlier**. A snap… |
 | [`req-project-files`](requirements/project.md#req-project-files)     | a check of the entrypoint directory layout (a script in the spirit of…             | the first component added by somebody other than the author… |
@@ -69,7 +68,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-api-generic`](requirements/api.md#req-api-generic)           | ✅ enforced | `libs/components/select/src/select.spec.ts` — the generic contract, p… | the probe from `lesson-37` — five deliberately contradictory bindings… |
 | [`req-api-parts`](requirements/api.md#req-api-parts)               | ✅ enforced | `tools/check-parts.mjs` (target `check-parts` in the root project, in… | `tools/check-parts.fixtures/` — 22 inputs, each rejected on its own p… |
 | [`req-api-parts-unique`](requirements/api.md#req-api-parts-unique) | ✅ enforced | `tools/check-parts.mjs` point 6 — a component whose parts share a pre… | `tools/check-parts.fixtures/part-outside-namespace`, and a run agains… |
-| [`req-api-templates`](requirements/api.md#req-api-templates)       | ⛔ gap      | none — gap: projection works (the wrapper's slots), but **`TemplateRe… | none — gap: an option template supplied by the consumer and never use… |
+| [`req-api-templates`](requirements/api.md#req-api-templates)       | ✅ enforced | `libs/components/core/src/core.spec.ts` — `pctReportOrphanSlot` under… | two recorded runs that fail on different cases. `pctReportOrphanSlot`… |
 | [`req-api-icons`](requirements/api.md#req-api-icons)               | ⛔ gap      | none — gap: today every icon is **written into the template** as SVG … | none — gap: an icon override through `PCT_ICONS` that does not reach … |
 | [`req-api-icons-custom`](requirements/api.md#req-api-icons-custom) | 🟡 partial  | `libs/components/check-package.mjs` — the absence of icon files in th… | none — deliberately: the violation here is **adding** something, not … |
 | [`req-api-texts`](requirements/api.md#req-api-texts)               | ✅ enforced | `tools/check-texts.mjs` (target `check-texts`) — six points: a string… | `tools/check-texts.fixtures/` — 29 doctored inputs, each rejected on … |
@@ -241,3 +240,4 @@ Which lesson feeds which requirement. Generated from the **Lessons** fields.
 | [`lesson-81`](lessons.md#lesson-81) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-82`](lessons.md#lesson-82) | `req-api-overlay`                                                                                                                                                 |
 | [`lesson-83`](lessons.md#lesson-83) | `req-a11y-built-in`                                                                                                                                               |
+| [`lesson-84`](lessons.md#lesson-84) | `req-api-templates`                                                                                                                                               |

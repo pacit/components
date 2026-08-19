@@ -42,15 +42,15 @@ it works in a zoneless application and renders on the server.
 Components are imported from **secondary entrypoints**, so an application that uses a button
 does not pay for a select. The primary entrypoint carries configuration only.
 
-| entrypoint                   | what is in it                                                      |
-| ---------------------------- | ------------------------------------------------------------------ |
-| `@pacit/components`          | `providePctConfig`, `providePctTexts`, their tokens, `PCT_VERSION` |
-| `@pacit/components/button`   | `PctButton`                                                        |
-| `@pacit/components/field`    | `PctField`, `PctText`, `PctNumber`, `PctPrefix`, `PctSuffix`       |
-| `@pacit/components/checkbox` | `PctCheckbox`                                                      |
-| `@pacit/components/radio`    | `PctRadioGroup`, `PctRadio`                                        |
-| `@pacit/components/select`   | `PctSelect`, `PctSelectOption`                                     |
-| `@pacit/components/core`     | what the controls share: `PCT_FIELD`, `PctAnnouncer`, id helpers   |
+| entrypoint                   | what is in it                                                                    |
+| ---------------------------- | -------------------------------------------------------------------------------- |
+| `@pacit/components`          | `providePctConfig`, `providePctTexts`, their tokens, `PCT_VERSION`               |
+| `@pacit/components/button`   | `PctButton`                                                                      |
+| `@pacit/components/field`    | `PctField`, `PctText`, `PctNumber`, `PctPrefix`, `PctSuffix`                     |
+| `@pacit/components/checkbox` | `PctCheckbox`                                                                    |
+| `@pacit/components/radio`    | `PctRadioGroup`, `PctRadio`                                                      |
+| `@pacit/components/select`   | `PctSelect`, `PctSelectOption`                                                   |
+| `@pacit/components/core`     | what the controls share: `PCT_FIELD`, `PctAnnouncer`, template slots, id helpers |
 
 `@pacit/components/themes/pct.css` is the built skin — see [Theming](#theming).
 
@@ -190,6 +190,33 @@ breaks it is reported in dev mode rather than quietly repaired.
 No selection is `null`. An application with a non-nullable field supplies its own empty value
 (`[emptyValue]="''"`), so resetting the form does not write `null` against the model's type.
 `panelWidth` and `panelAlign` control the panel geometry.
+
+#### An option row of your own
+
+The built-in row draws the label. To draw it yourself, write an `<ng-template>` carrying the
+slot's directive inside the select:
+
+```html
+<pct-select [options]="countries" [(value)]="country">
+  <ng-template [pctSelectOption]="countries" let-option let-selected="selected">
+    <img [src]="option.value.flag" alt="" />
+    <span>{{ option.label }}</span>
+    @if (selected) {
+    <small>chosen</small>
+    }
+  </ng-template>
+</pct-select>
+```
+
+The list is bound a **second** time on purpose: a directive has no inference site of its own,
+so that binding is where `let-option` gets its type from — without it the context would be
+`any`. It is read by nothing at runtime, and it is required, so leaving it off is a build
+error rather than a silently untyped template.
+
+Besides `$implicit` the context carries `index`, `active`, `selected` and `disabled` — the
+state the built-in row paints, so a row of your own can show it too. The template replaces what
+is **inside** the option: `role="option"`, the id, `aria-selected` and the keyboard stay with
+the component, because they are the listbox pattern rather than decoration.
 
 > Needs the CDK overlay styles — see [Install](#install).
 

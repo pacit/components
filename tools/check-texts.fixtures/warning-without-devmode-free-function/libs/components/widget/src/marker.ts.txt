@@ -1,4 +1,4 @@
-import { Directive, input, isDevMode } from '@angular/core';
+import { Directive, input } from '@angular/core';
 
 /**
  * A slot directive — it exists so that the reference input carries a `host` block
@@ -26,8 +26,6 @@ export class PctMarker {
  * the guard below was measured from the wrong place.
  */
 export function pctWarnOnEmptyMarker(description: string): void {
-  if (!isDevMode()) return;
-
   if (description === '') {
     console.warn('[pctMarker] Rendered with no description.');
   }

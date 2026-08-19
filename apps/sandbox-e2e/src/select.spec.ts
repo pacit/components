@@ -373,6 +373,54 @@ test.describe('PctSelect — a combobox with a panel', () => {
     });
   });
 
+  test.describe('an option row the consumer wrote (req-api-templates)', () => {
+    const templated = (page: import('@playwright/test').Page) =>
+      page.getByTestId('select-template').locator('[data-pct-part="trigger"]');
+
+    test('replaces what is inside the row and keeps the row itself', async ({
+      page,
+    }) => {
+      await templated(page).click();
+      const rows = options(page);
+      await expect(rows).toHaveCount(6);
+
+      // The consumer's markup is there…
+      await expect(rows.first().getByTestId('option-row')).toBeVisible();
+      await expect(rows.first()).toHaveText(/Poland\s*pl/);
+      // …and the listbox pattern is still the component's: role, id and aria-selected are
+      // not the template's to draw, so a custom row cannot lose them.
+      await expect(rows.first()).toHaveRole('option');
+      await expect(rows.first()).toHaveAttribute('id', /-option-0$/);
+      await expect(rows.nth(1)).toHaveAttribute('aria-selected', 'true');
+    });
+
+    test('the context follows the state, in the browser and not only in jsdom', async ({
+      page,
+    }) => {
+      await templated(page).click();
+      // `de` is the chosen value on this page, so exactly one row draws the mark.
+      await expect(page.getByText('chosen')).toHaveCount(1);
+      await expect(options(page).nth(1)).toContainText('chosen');
+
+      await options(page).first().click();
+      await templated(page).click();
+      await expect(options(page).first()).toContainText('chosen');
+      await expect(options(page).nth(1)).not.toContainText('chosen');
+    });
+
+    test('the keyboard is unchanged by a custom row', async ({ page }) => {
+      const t = templated(page);
+      await t.click();
+      // The keys sit on the trigger, not on the row — a template that replaces the row's
+      // content cannot take them away. From `de` at 1 the walk skips the disabled option at
+      // 2 and lands on 3, which is the walk the built-in row gets as well.
+      await page.keyboard.press('ArrowDown');
+      await expect(t).toHaveAttribute('aria-activedescendant', /-option-3$/);
+      await page.keyboard.press('Enter');
+      await expect(t).toHaveText(/Slovakia/);
+    });
+  });
+
   test('the clickable area of the trigger is at least 24 px tall', async ({
     page,
   }) => {

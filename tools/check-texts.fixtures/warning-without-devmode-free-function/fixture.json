@@ -1,0 +1,6 @@
+{
+  "point": 6,
+  "check": "warnings",
+  "rule": "warning-without-devmode",
+  "description": "The same rule for a warning that stands in a FREE FUNCTION rather than in a class method. The reference carries the guarded shape; here the guard is gone. It has a case of its own because the enclosure is read by a different branch of the scanner — a free function's statements sit at the two-space indent a class puts its methods at, so before D5 the gate read `if (` as the enclosing method, measured the guard from the wrong place and called a guarded warning unguarded."
+}

@@ -9,6 +9,11 @@
       "reason": "The framework the components are compiled against. It can be nothing but a peer: a second copy of `@angular/core` in the consumer's tree is a second injector and a second set of the tokens the library resolves through, and the failure it produces reads as a bug in the library."
     },
     {
+      "name": "@angular/common",
+      "kind": "peer",
+      "reason": "`NgTemplateOutlet`, and nothing else — the one piece of the framework that renders a template a consumer handed over (`req-api-templates`, decision 0027). It arrived with the select's option slot at D5 and is a peer for `@angular/core`'s reason rather than a weaker one: `@angular/common` is versioned in lockstep with the framework and a second copy of it is the same second injector. Writing the outlet by hand was the alternative and was refused — the context-update semantics (when an embedded view is rebuilt and when its context is merely rewritten) are the framework's to specify, and a library reimplementing them owns a divergence nobody would see until it misrendered."
+    },
+    {
       "name": "@angular/forms",
       "kind": "peer",
       "reason": "Signal forms: the controls bind to `Control` and to the field API from `@angular/forms/signals`. The same peer argument as `@angular/core` — a form control from a second copy of the package is a different class than the one the library checks against."

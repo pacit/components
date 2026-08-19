@@ -52,11 +52,11 @@ Snapshot, `node tools/check-docs.mjs`:
 | measure                                     | value |
 | ------------------------------------------- | ----: |
 | requirements                                |    86 |
-| ✅ enforced                                 |    60 |
+| ✅ enforced                                 |    61 |
 | 🟡 partial (deliberately without a control) |    16 |
-| ⛔ gap                                      |    10 |
+| ⛔ gap                                      |     9 |
 
-All 10 gaps have an owner below (B, D, F, G). If adding a requirement raises the gap count
+All 9 gaps have an owner below (B, D, F, G). If adding a requirement raises the gap count
 and no task changes, this list has stopped being complete — and that is a fault of this list,
 not of the registry.
 
@@ -85,8 +85,8 @@ so the npm page is written and the last file that travelled in a second language
 dependency lists with a gate reading the artefact — so **what stands between here and npm is
 B4 alone, and B4 is held with B2**. In parallel: F1 is unblocked — the inventories it renders
 both exist — and C, the filler, holds one open finding, **C19**, which binds at E1. **D2,
-D3 and D4 have closed too**, so the next unstarted item in the order is **D5** — and C, empty
-since C18, has **C20** in it again, left behind by D4.
+D3, D4 and D5 have closed too**, so the next unstarted item in the order is **D6** — and C,
+empty since C18, holds **C20**, left behind by D4.
 
 **B2 is deferred by decision, not blocked** — and the decision has a shape: **the first push
 happens only when the maintainer asks for it outright.** It is not triggered by a state of the
@@ -386,6 +386,36 @@ does ask for the announcement is **573 × 18 px of text across the bottom of the
 ([`lesson-83`](lessons.md#lesson-83)) — **a utility class is a promise about a stylesheet, and a
 package that hands you DOM hands you that promise too**. The finding left behind is **C20**: the
 `role="alert"` this decision keeps rests on four hand-written templates and no gate reads it.
+
+**D5 closed after it, and it is the position where the plan's line named a mechanism the
+measurement threw out.** "`*pctTemplate` / `TemplateRef`" reads as two roads to one place, and
+they are not roads to the same place at all: a template a consumer writes has two ways to be
+wrong — the **name** it is called by and the **context** it is handed — and four probes under
+`strictTemplates` say which shape buys which. An attribute is invisible to the compiler in
+every form it can take, misspelt or unimported or structural; a context guard types
+`let-option` only where the context type is fully known, and a directive with no input has no
+inference site at all, so Angular's type-check block instantiates its generic as `any`. So
+`*pctTemplate="'option'"` — the shape most libraries ship — is the one that gives up **both**
+halves while looking exactly like the one that gives both
+([0027](decisions/0027-a-slot-is-a-directive.md),
+[`lesson-84`](lessons.md#lesson-84)). A slot is therefore a directive of its own with a
+required input carrying the type, and the half that stays open is named rather than faked: the
+misspelling has no witness anywhere, because the obvious repair — counting the content's
+templates against the slots that claimed one — accuses a consumer who merely wrapped a correct
+slot in an `@if`, control flow in projected content being a `TemplateRef` with an anchor
+identical to any other. That is [`lesson-68`](lessons.md#lesson-68)'s defect met in a new file,
+and refusing it is what the task is. Two gates moved on the way, both on their **denominator**
+rather than on their subject: the coverage exception for `select.html` (the template gained
+statements, the one uncovered statement is the same one) and `check-texts`, whose scanner of
+what encloses a `console.*` could see a class method and not a **free function** — a free
+function's statements sit at the two-space indent a class puts its methods at, so it read
+`if (` as the enclosing method and called a guarded warning unguarded. The price is a fourth
+peer, `@angular/common` for `NgTemplateOutlet` alone, written into the dependency policy with
+its reason. The last thing the task found was about itself: `@param` is a Polish word by the
+dictionary and the public surface admits no register of exceptions, so the first JSDoc
+`@param` in this repository's history turned the language gate red on the package. It is a
+word read wrong rather than an exception to be excused, and it went into
+`vocabulary.abbreviations` named singly.
 
 ## B. Readiness for the first release
 
@@ -1315,7 +1345,11 @@ and three had none, so the layer holds the declaration that a panel takes no foc
 modal half waits for the modal. **D4 closed on it too, and turned the reading around**: the
 thing its line refuses — a live region per component — is already here, in four templates, and
 it is correct, because those regions sit on messages the user can see. The channel took the one
-change with no reader at all, which the line does not name.
+change with no reader at all, which the line does not name. **D5 closed on a reading of its own**:
+its line names a mechanism, and the mechanism named is the one that was measured out. A template
+has two ways to be wrong — the name it is called by, the context it is handed — and
+`*pctTemplate` is the one shape that checks neither, so the slot became a directive of its own
+with the type carried by a required input.
 
 Guiding principle: **mechanics from CDK, our own API** — CDK types never leak into the public
 contract. The pattern is ready: `PCT_FIELD` is exactly that for the field chrome and its control.
@@ -1430,8 +1464,52 @@ contract. The pattern is ready: `PCT_FIELD` is exactly that for the field chrome
       announcement out and the withdrawal out, and they fail on different cases. The task left
       **C20** behind: the `role="alert"` this decision keeps is in four templates by hand and
       no gate reads it
-- [ ] **D5 — `*pctTemplate` / `TemplateRef`** → closes `req-api-templates`; unblocks icons
-      · _notes:_ —
+- [x] **D5 — `*pctTemplate` / `TemplateRef`** → closes `req-api-templates`; unblocks icons
+      · _notes:_ **done, and the shape the line names is the one shape that was measured out**
+      — `providePctTemplateHost` and `pctReportOrphanSlot` in
+      `libs/components/core/src/template.ts`, `PctSelectOptionTemplate` in
+      `libs/components/select/src/select.template.ts`, the select's option row drawn by the
+      consumer with a fallback to its own label
+      ([0027](decisions/0027-a-slot-is-a-directive.md)). The consumer count decided that the
+      layer gets built at all, as at D2, D3 and D4: the option row is this requirement's own
+      binding trigger and the icons of D6 are the second caller, so two, not one.
+      **A template has two ways to be wrong and they are bought separately**
+      ([`lesson-84`](lessons.md#lesson-84)) — the name it is called by and the context it is
+      handed. Four probes under `strictTemplates` settle it: an attribute is invisible to the
+      compiler in **every** form (misspelt, unimported, structural or not), while a context
+      guard types `let-option` only when the context type is fully known — a directive with no
+      input has no inference site, so Angular instantiates its generic as `any`. So
+      `*pctTemplate="'option'"` gives up **both** halves at once, which is why the slot is a
+      directive of its own with a required input carrying the type: the context is checked by
+      the guard, the spelt-right name by `NG8008`. The half that stays open is the
+      **misspelling**, and the obvious repair was measured shut rather than merely disliked:
+      `contentChildren(TemplateRef)` does see every template (`3/1` over three of them), but an
+      `@if` in projected content **is** a `TemplateRef` — one with the condition false, two
+      with it true, every anchor an identical `<!--container-->` — so the count accuses a
+      consumer who wrapped a correct slot in a conditional, which is
+      [`lesson-68`](lessons.md#lesson-68)'s defect. The check that survives runs the other way
+      and is exact: a slot standing under a component that does not offer it reports itself
+      through the element injector, and the case an `@if` between the two is **not** a fault is
+      pinned in both suites. Measured: 4 cases under the layer's own name, 5 on the select,
+      3 in three engines; `template.ts` at 96.00% with one survivor that is `isDevMode()`
+      itself, total 86.70 → 87.25%. Two negative controls that fail on different cases — the
+      report silenced leaves every rendering case green, the rendering taken out leaves every
+      report case green. The price in the snapshot: `./core` 4440 → 5024 B, `./select`
+      21582 → 23450 B, +48 B on every other entrypoint, and **a fourth peer**:
+      `@angular/common`, for `NgTemplateOutlet` alone, argued for in
+      `dependencies.policy.json` rather than added by reflex. Two gates moved on the way: the
+      coverage exception for `select.html` (the denominator again, not the coverage), and
+      `check-texts`, whose enclosure scanner could not see a **free function** — a free
+      function's statements sit at the two-space indent a class puts its methods at, so it read
+      `if (` as the enclosing method and called a guarded warning unguarded. It has a case of
+      its own in the gate's fixtures now. And one thing the task found about itself: **`@param`
+      could not be written anywhere in this package** — `param` is a Polish word by the
+      dictionary, and the public surface admits no register of exceptions, deliberately. The
+      tag had never been used here (`grep -c` says 0 before this task), so a standard JSDoc tag
+      had been unavailable without anybody noticing. It is a word the dictionary reads wrong
+      rather than an exception to be excused, so it joined `vocabulary.abbreviations` named
+      singly — the one channel point 5 leaves open
+      ([`lesson-80`](lessons.md#lesson-80)) — and the tag is in the artefact
 - [ ] **D6 — icons**: `pct-icon` over a projected SVG plus a `PCT_ICONS` token mapping semantic
       names to templates, with built-in defaults → closes `req-api-icons` · _notes:_ —
 - [ ] **D7 — gate forbidding `@angular/animations`** → closes `req-api-animations`; binds at the

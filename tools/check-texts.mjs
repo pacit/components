@@ -1139,6 +1139,27 @@ const packageComponents = async (root) => {
 };
 
 /**
+ * What encloses a `console.*` call: a class method at two-space indent, or a free function at
+ * column zero.
+ *
+ * **Both alternatives, because one of them was the whole denominator until D5.** Every warning
+ * in this library had until then stood in a class method, so the pattern was written for that
+ * shape alone — and a free function's body still matches it, on its own `if (` and `for (`
+ * lines. The gate then read `pctReportOrphanSlot`'s guard as belonging to a method called
+ * `if`, measured the slice from the WRONG `if` and reported a guarded warning as unguarded
+ * (`console.if(…)`, which is not a call anybody wrote). A free function's statements sit at
+ * the same two-space indent a class puts its methods at, so the keywords have to be named as
+ * keywords — a shape written to see one class of enclosure was silently deciding for another
+ * ([`lesson-80`](../docs/lessons.md#lesson-80)).
+ */
+const KEYWORD = '(?:if|for|while|switch|catch|do|else|return)';
+const ENCLOSING = new RegExp(
+  `^ {2}(?:private |protected )?(?!${KEYWORD}\\s*\\()([A-Za-z_$][\\w$]*)\\s*\\(` +
+    `|^(?:export\\s+)?(?:async\\s+)?function\\s+([A-Za-z_$][\\w$]*)\\s*\\(`,
+  'gm',
+);
+
+/**
  * The developer warnings of one file. An `isDevMode()` guard is accepted in two places: in
  * the same function the `console.*` stands in, or at every call of it. The second form is
  * better in a library — it does not enter a function there is no point running — so the
@@ -1153,20 +1174,28 @@ const readWarnings = (file, content) => {
     const before = content.slice(0, m.index);
     const line = before.split('\n').length;
 
-    // The enclosing function: the last method declaration before the call.
-    const methods = [
-      ...before.matchAll(
-        /^ {2}(?:private |protected )?([A-Za-z_$][\w$]*)\s*\(/gm,
-      ),
-    ];
-    const method = methods.at(-1)?.[1] ?? null;
-    const bodyFrom = methods.at(-1)?.index ?? 0;
+    // The enclosing function: the last declaration of either shape before the call.
+    const methods = [...before.matchAll(ENCLOSING)];
+    const last = methods.at(-1);
+    const method = last ? (last[1] ?? last[2]) : null;
+    const bodyFrom = last?.index ?? 0;
+    // A free function is called by its bare name, a method through `this`.
+    const free = last !== undefined && last[2] !== undefined;
 
     const inFunction = /\bisDevMode\s*\(\s*\)/.test(
       content.slice(bodyFrom, m.index),
     );
     const calls = method
-      ? [...content.matchAll(new RegExp(`\\bthis\\.${method}\\s*\\(`, 'g'))]
+      ? [
+          ...content.matchAll(
+            new RegExp(
+              free
+                ? `(?<!\\.)\\b${method}\\s*\\(`
+                : `\\bthis\\.${method}\\s*\\(`,
+              'g',
+            ),
+          ),
+        ].filter((w) => w.index !== bodyFrom)
       : [];
     const atCalls =
       calls.length > 0 &&

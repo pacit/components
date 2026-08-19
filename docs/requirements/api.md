@@ -356,16 +356,44 @@ unit tests did **not** see it, because they queried a specific element
 
 ### <a id="req-api-templates"></a>`req-api-templates` — Customisation through projection and templates
 
-**Promise.** Content projection with `<ng-content select="…">` plus passing templates as
-`TemplateRef` / the `*pctTemplate` directive for item-template-like elements.
+**Promise.** Two mechanisms, and the line between them is whether the component renders the
+content **once** or **per item**. Content it merely places comes in through
+`<ng-content select="…">` — the chrome's prefix, suffix and label aux. Content it draws per
+item comes in through a **slot**: an `<ng-template>` carrying a directive of that slot's own
+(`pctSelectOption` is the first), typed by a context guard, registered with the component
+through `PCT_TEMPLATE_HOST`. A slot replaces what is inside the item and never the item —
+`role`, the id, `aria-selected` and the key map stay with the component.
 
-**Gate:** none — gap: projection works (the wrapper's slots), but **`TemplateRef` appears
-nowhere in the library** — a select's option cannot be styled with a template of one's own
-today
-**Control:** none — gap: an option template supplied by the consumer and never used has to
-fire
-**Binds at:** the first real use of the select (the option template) and at
-[`req-api-icons`](#req-api-icons) — a template is the simplest icon-swap mechanism
+**`*pctTemplate` is deliberately not the shape**, and the reason is measured rather than
+argued: a name inside a string is invisible to the compiler, and one directive serving many
+names has nowhere to put a context guard per name, so it gives up both of the two checks a
+template channel has to buy ([0027](../decisions/0027-a-slot-is-a-directive.md),
+[`lesson-84`](../lessons.md#lesson-84)).
+
+**What no gate here can see, named rather than implied:** a slot attribute that is _misspelt_
+matches no directive, so nothing exists to report it. The obvious repair — the component
+comparing the templates in its content against the slots that claimed one — is measured shut,
+because control flow in projected content is itself a `TemplateRef` and the comparison would
+fire on correct markup. What answers the misspelling is one step earlier and only for the name
+spelt right: a slot's type carrier is `input.required`, so leaving it unbound is `NG8008`.
+
+**Gate:** `libs/components/core/src/core.spec.ts` — `pctReportOrphanSlot` under the layer's own
+name, including the case an `@if` between the slot and its component would have broken;
+`libs/components/select/src/select.spec.ts` — the option row rendered, the whole context it is
+handed, the built-in label when no slot is written, and the slot placed where no select reads
+it; `apps/sandbox-e2e/src/select.spec.ts` — the custom row in three engines, with the listbox
+pattern and the keyboard unchanged by it
+**Control:** two recorded runs that fail on different cases. `pctReportOrphanSlot` silenced at
+its entry leaves the three reporting cases red and the three asserting silence green; the
+slot's rendering taken out of `select.html` leaves the three rendering cases red and the report
+green. Above both, the compile-time half is the probe of
+[`lesson-84`](../lessons.md#lesson-84): four deliberately wrong bindings under
+`strictTemplates`, of which the table records which break the build and which do not — the two
+that stay silent are why the shape is what it is
+**Binds at:** closed at D5. The next caller is [`req-api-icons`](#req-api-icons), where a slot
+is the swap mechanism [0011](../decisions/0011-icons.md) is waiting for
+**Decision:** [0027 — a slot is a directive of its own](../decisions/0027-a-slot-is-a-directive.md)
+**Lessons:** [`lesson-84`](../lessons.md#lesson-84)
 
 ---
 

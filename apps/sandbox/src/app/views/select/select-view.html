@@ -121,3 +121,39 @@
     </pct-field>
   </div>
 </sbx-demo>
+
+<sbx-demo
+  heading="An option row of your own"
+  summary="The built-in row draws the label and nothing else. A template replaces what is inside the row — the role, the id, aria-selected and the keyboard stay with the component, because they are the listbox pattern rather than decoration."
+  [reqs]="['req-api-templates']"
+  [controls]="[]"
+  data-testid="demo-option-template"
+>
+  <div class="stack">
+    <pct-field label="Country" data-testid="field-template">
+      <pct-select
+        [options]="countries"
+        [(value)]="templateCountry"
+        data-testid="select-template"
+      >
+        <!--
+          The list is bound a second time on purpose: a directive has no inference site of
+          its own, so this binding is where `let-option` gets its type from.
+        -->
+        <ng-template
+          [pctSelectOption]="countries"
+          let-option
+          let-selected="selected"
+        >
+          <span class="option-row" data-testid="option-row">
+            <span>{{ option.label }}</span>
+            <code class="option-row__code">{{ option.value }}</code>
+            @if (selected) {
+            <span class="option-row__mark">chosen</span>
+            }
+          </span>
+        </ng-template>
+      </pct-select>
+    </pct-field>
+  </div>
+</sbx-demo>

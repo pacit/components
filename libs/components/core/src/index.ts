@@ -5,5 +5,6 @@ export * from './focus';
 export * from './id';
 export * from './list';
 export * from './overlay';
+export * from './template';
 export * from './texts';
 export * from './value';

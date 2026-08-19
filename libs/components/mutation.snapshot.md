@@ -27,8 +27,9 @@ libs/components/core/src/focus.ts 100.00 1(0) 0 0 0
 libs/components/core/src/id.ts 100.00 5(0) 0 0 0
 libs/components/core/src/list.ts 98.59 70(0) 1 0 0
 libs/components/core/src/overlay.ts 100.00 14(0) 0 0 2
+libs/components/core/src/template.ts 96.00 24(0) 1 0 0
 libs/components/core/src/texts.ts 100.00 15(0) 0 0 0
 libs/components/field/src/number.ts 80.35 184(0) 43 2 11
-libs/components/select/src/select.ts 84.44 217(1) 37 3 5
-TOTAL 86.70 580/669
+libs/components/select/src/select.ts 85.13 229(1) 37 3 5
+TOTAL 87.25 616/706
 ```

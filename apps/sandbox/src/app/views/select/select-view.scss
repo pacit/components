@@ -8,3 +8,25 @@
 .stack--narrow {
   max-width: 240px;
 }
+
+/* The option row a consumer writes — two columns and a mark, so the demo shows that the
+   template is handed more than the label. */
+.option-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--pct-space-2);
+  width: 100%;
+}
+
+.option-row__code {
+  font-size: 0.85em;
+  opacity: 0.7;
+}
+
+.option-row__mark {
+  margin-inline-start: auto;
+  font-size: 0.8em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.7;
+}

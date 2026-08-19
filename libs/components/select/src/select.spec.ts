@@ -18,6 +18,7 @@ import { providePctTexts } from '@pacit/components/core';
 import { PctField } from '@pacit/components/field';
 import { part } from '../../testing/src/dom';
 import { PctSelect } from './select';
+import { PctSelectOptionTemplate } from './select.template';
 import { PctSelectOption, PctSelectPanelWidth } from './select.types';
 
 const OPTIONS: readonly PctSelectOption[] = [
@@ -325,6 +326,61 @@ class NamedHost {
   label = signal('');
   ariaLabel = signal('');
   ariaLabelledby = signal('');
+}
+
+/** The consumer's own option row, and everything the context carries. */
+@Component({
+  imports: [PctSelect, PctSelectOptionTemplate],
+  template: `<pct-select [options]="options()" [(value)]="value">
+    <ng-template
+      [pctSelectOption]="options()"
+      let-option
+      let-i="index"
+      let-active="active"
+      let-selected="selected"
+      let-disabled="disabled"
+    >
+      <b data-testid="custom"
+        >{{ i }}:{{ option.label }}:{{ option.value }}:{{ active }}:{{
+          selected
+        }}:{{ disabled }}</b
+      >
+    </ng-template>
+  </pct-select>`,
+})
+class OptionTemplateHost {
+  options = signal<readonly PctSelectOption[]>(OPTIONS);
+  value = signal<string | null>('');
+}
+
+/** The slot written where no select reads it — inside the chrome, beside the control. */
+@Component({
+  imports: [PctField, PctSelect, PctSelectOptionTemplate],
+  template: `<pct-field label="Country">
+    <pct-select [options]="options" />
+    <ng-template [pctSelectOption]="options" let-option>{{
+      option.label
+    }}</ng-template>
+  </pct-field>`,
+})
+class MisplacedSlotHost {
+  options = OPTIONS;
+}
+
+/** The same slot inside an `@if` — right markup that a counting report would have accused. */
+@Component({
+  imports: [PctSelect, PctSelectOptionTemplate],
+  template: `<pct-select [options]="options">
+    @if (shown()) {
+      <ng-template [pctSelectOption]="options" let-option
+        ><b data-testid="custom">{{ option.label }}</b></ng-template
+      >
+    }
+  </pct-select>`,
+})
+class ConditionalSlotHost {
+  options = OPTIONS;
+  shown = signal(true);
 }
 
 describe('PctSelect', () => {
@@ -1327,6 +1383,90 @@ describe('PctSelect', () => {
           ) as HTMLElement
         ).id,
       );
+    });
+  });
+  describe('the option row a consumer writes (req-api-templates)', () => {
+    it('replaces the built-in label and is handed the whole context', async () => {
+      const fixture = await render(OptionTemplateHost);
+      triggerOf(fixture).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const rows = optionsInPanel();
+      expect(rows).toHaveLength(4);
+      // The row's own chrome stays with the component — only its CONTENT is the consumer's.
+      expect(rows[0].getAttribute('role')).toBe('option');
+      expect(rows[0].querySelector('[data-testid="custom"]')).not.toBeNull();
+      // index, label, value, active, selected, disabled — the first option is the active one
+      // on opening with no value chosen.
+      expect(rows[0].textContent?.trim()).toBe('0:Poland:pl:true:false:false');
+      expect(rows[2].textContent?.trim()).toBe('2:Czechia:cz:false:false:true');
+    });
+
+    it('the context follows the state the built-in row paints', async () => {
+      const fixture = await render(OptionTemplateHost);
+      fixture.componentInstance.value.set('de');
+      fixture.detectChanges();
+      await fixture.whenStable();
+      triggerOf(fixture).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(optionsInPanel()[1].textContent?.trim()).toBe(
+        '1:Germany:de:true:true:false',
+      );
+      // The same row, after the keyboard moves the active option off it.
+      await press(fixture, 'ArrowDown');
+      expect(optionsInPanel()[1].textContent?.trim()).toBe(
+        '1:Germany:de:false:true:false',
+      );
+    });
+
+    it('without a template the built-in label is what renders', async () => {
+      const fixture = await render(Host);
+      triggerOf(fixture).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(optionsInPanel()[0].textContent?.trim()).toBe('Poland');
+      expect(
+        optionsInPanel()[0].querySelector('[data-testid="custom"]'),
+      ).toBeNull();
+    });
+  });
+
+  describe('a slot the select never reads', () => {
+    const silenced = () =>
+      vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    it('says so when the slot stands beside the control rather than inside it', async () => {
+      const warn = silenced();
+      try {
+        await render(MisplacedSlotHost);
+        expect(warn).toHaveBeenCalledTimes(1);
+        expect(String(warn.mock.calls[0][0])).toContain(
+          '[pctSelectOption] This template fills a slot of a component that is not ' +
+            'among its ancestors',
+        );
+      } finally {
+        warn.mockRestore();
+      }
+    });
+
+    it('an `@if` between the slot and the select is not a fault, and still renders', async () => {
+      const warn = silenced();
+      try {
+        const fixture = await render(ConditionalSlotHost);
+        expect(warn).not.toHaveBeenCalled();
+        triggerOf(fixture).click();
+        fixture.detectChanges();
+        await fixture.whenStable();
+        expect(
+          optionsInPanel()[0].querySelector('[data-testid="custom"]'),
+        ).not.toBeNull();
+      } finally {
+        warn.mockRestore();
+      }
     });
   });
 });

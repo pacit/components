@@ -1,6 +1,10 @@
 import { Component, signal } from '@angular/core';
 import { PctField } from '@pacit/components/field';
-import { PctSelect, PctSelectOption } from '@pacit/components/select';
+import {
+  PctSelect,
+  PctSelectOption,
+  PctSelectOptionTemplate,
+} from '@pacit/components/select';
 import { COUNTRIES, LANGUAGES } from '../../ui/data';
 import { SbxDemo } from '../../ui/demo';
 
@@ -10,7 +14,7 @@ import { SbxDemo } from '../../ui/demo';
  */
 @Component({
   selector: 'sbx-select-view',
-  imports: [SbxDemo, PctField, PctSelect],
+  imports: [SbxDemo, PctField, PctSelect, PctSelectOptionTemplate],
   templateUrl: './select-view.html',
   styleUrl: './select-view.scss',
 })
@@ -24,6 +28,7 @@ export class SelectView {
   protected readonly scopedCountry = signal<string | null>('');
   protected readonly bareCountry = signal<string | null>('pl');
   protected readonly emptyCountry = signal<string | null>(null);
+  protected readonly templateCountry = signal<string | null>('de');
 
   protected readonly widthField = signal<string | null>('pl');
   protected readonly widthAuto = signal<string | null>('pl');

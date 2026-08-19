@@ -9,6 +9,7 @@
 import { signal } from '@angular/core';
 import { Control } from '@angular/forms/signals';
 import { createOverlayRef } from '@angular/cdk/overlay';
+import { NgTemplateOutlet } from '@angular/common';
 
 const PCT_VERSION = '0.0.1';
 

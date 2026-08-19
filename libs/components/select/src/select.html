@@ -108,7 +108,12 @@
       (click)="selectAt(i)"
       (mouseenter)="option.disabled ? null : activateAt(i)"
     >
-      {{ option.label }}
+      @if (optionTemplate(); as slot) {
+      <ng-container
+        [ngTemplateOutlet]="slot.template"
+        [ngTemplateOutletContext]="optionContext(option, i)"
+      />
+      } @else { {{ option.label }} }
     </div>
     } @empty {
     <div class="pct-select__empty" data-pct-part="empty">

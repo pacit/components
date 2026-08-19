@@ -20,6 +20,7 @@
     "libs/components/core/src/id.ts",
     "libs/components/core/src/list.ts",
     "libs/components/core/src/overlay.ts",
+    "libs/components/core/src/template.ts",
     "libs/components/core/src/texts.ts",
     "libs/components/core/src/value.ts",
     "libs/components/field/src/number.ts",

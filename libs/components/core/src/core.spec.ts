@@ -2,11 +2,13 @@ import { OverlayModule } from '@angular/cdk/overlay';
 import {
   Component,
   createEnvironmentInjector,
+  Directive,
   EnvironmentInjector,
   Injector,
   provideZonelessChangeDetection,
   runInInjectionContext,
   signal,
+  Type,
 } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PctAnnouncer } from './announce';
@@ -16,6 +18,11 @@ import { PctFocusStays } from './focus';
 import { nextPctId, PctIdCounter } from './id';
 import { pctListNavigation, PctListSource } from './list';
 import { pctOverlay, PctOverlayInherited, PctOverlayPanel } from './overlay';
+import {
+  PCT_TEMPLATE_HOST,
+  pctReportOrphanSlot,
+  providePctTemplateHost,
+} from './template';
 import { PCT_TEXTS } from './texts';
 
 /**
@@ -936,6 +943,7 @@ describe('@pacit/components/core', () => {
       ['PCT_FIELD', PCT_FIELD],
       ['PCT_CONFIG', PCT_CONFIG],
       ['PCT_TEXTS', PCT_TEXTS],
+      ['PCT_TEMPLATE_HOST', PCT_TEMPLATE_HOST],
     ])('%s', (name, token) => {
       // A token's description is the only thing the consumer gets in NG0201 — a
       // token without one gives a message about "InjectionToken" with no hint as to
@@ -951,6 +959,142 @@ describe('@pacit/components/core', () => {
 
     it('the texts with no provider are English', () => {
       expect(TestBed.inject(PCT_TEXTS)().selectPlaceholder).toBe('Select…');
+    });
+  });
+  describe('a slot that stands where nothing reads it', () => {
+    @Directive({ selector: 'ng-template[pctProbeSlot]' })
+    class ProbeSlot {
+      constructor() {
+        pctReportOrphanSlot('pctProbeSlot');
+      }
+    }
+
+    /** A component that offers the slot — the shape `pct-select` has. */
+    @Component({
+      selector: 'pct-probe-host',
+      template: `<i>host</i>`,
+      providers: [
+        providePctTemplateHost('pct-probe-host', [
+          'pctProbeSlot',
+          'pctProbeOther',
+        ]),
+      ],
+    })
+    class ProbeHost {}
+
+    /** One that offers slots, but not this one. */
+    @Component({
+      selector: 'pct-probe-other',
+      template: `<i>other</i>`,
+      // Two slots rather than one: the message joins their names, and a separator with a
+      // single name to print is a separator no case has ever seen.
+      providers: [
+        providePctTemplateHost('pct-probe-other', [
+          'pctProbeOther',
+          'pctProbeThird',
+        ]),
+      ],
+    })
+    class ProbeOther {}
+
+    @Component({
+      imports: [ProbeHost, ProbeSlot],
+      template: `<pct-probe-host
+        ><ng-template pctProbeSlot>a</ng-template></pct-probe-host
+      >`,
+    })
+    class AtHome {}
+
+    @Component({
+      imports: [ProbeOther, ProbeSlot],
+      template: `<pct-probe-other
+        ><ng-template pctProbeSlot>a</ng-template></pct-probe-other
+      >`,
+    })
+    class WrongHost {}
+
+    @Component({
+      imports: [ProbeSlot],
+      template: `<ng-template pctProbeSlot>a</ng-template>`,
+    })
+    class NoHost {}
+
+    @Component({
+      imports: [ProbeHost, ProbeSlot],
+      template: `<pct-probe-host>
+        @if (shown()) {
+          <ng-template pctProbeSlot>a</ng-template>
+        }
+      </pct-probe-host>`,
+    })
+    class WrappedInControlFlow {
+      readonly shown = signal(true);
+    }
+
+    const silenced = () =>
+      vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    const render = async <T>(type: Type<T>) => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+      const fixture = TestBed.createComponent(type);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      return fixture;
+    };
+
+    it('says nothing when the component above it offers the slot', async () => {
+      const warn = silenced();
+      try {
+        await render(AtHome);
+        expect(warn).not.toHaveBeenCalled();
+      } finally {
+        warn.mockRestore();
+      }
+    });
+
+    it('says nothing when control flow stands between it and the component', async () => {
+      // The case the counting report would have fired on: an `@if` in the content is itself
+      // a `TemplateRef`, so "templates present minus slots claimed" reads 1 here on markup
+      // that is entirely right (`lesson-84`).
+      const warn = silenced();
+      try {
+        await render(WrappedInControlFlow);
+        expect(warn).not.toHaveBeenCalled();
+      } finally {
+        warn.mockRestore();
+      }
+    });
+
+    it('names the component that does offer slots, and the ones it offers', async () => {
+      const warn = silenced();
+      try {
+        await render(WrongHost);
+        expect(warn).toHaveBeenCalledTimes(1);
+        expect(String(warn.mock.calls[0][0])).toBe(
+          '[pctProbeSlot] This template fills a slot of `pct-probe-other`, which offers ' +
+            '`pctProbeOther`, `pctProbeThird` and not this one. A slot is read by the ' +
+            'component it stands directly inside, and this one is rendered by nobody.',
+        );
+      } finally {
+        warn.mockRestore();
+      }
+    });
+
+    it('says so plainly when there is no component above it at all', async () => {
+      const warn = silenced();
+      try {
+        await render(NoHost);
+        expect(warn).toHaveBeenCalledTimes(1);
+        expect(String(warn.mock.calls[0][0])).toBe(
+          '[pctProbeSlot] This template fills a slot of a component that is not among ' +
+            'its ancestors. A slot is read by the component it stands directly ' +
+            'inside, and this one is rendered by nobody.',
+        );
+      } finally {
+        warn.mockRestore();
+      }
     });
   });
 });

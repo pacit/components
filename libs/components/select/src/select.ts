@@ -1,8 +1,10 @@
+import { NgTemplateOutlet } from '@angular/common';
 import { ConnectedPosition, OverlayModule } from '@angular/cdk/overlay';
 import {
   booleanAttribute,
   Component,
   computed,
+  contentChild,
   DestroyRef,
   effect,
   ElementRef,
@@ -35,7 +37,12 @@ import {
   PctOverlayPanel,
   pctSameValue,
   PctSize,
+  providePctTemplateHost,
 } from '@pacit/components/core';
+import {
+  PctSelectOptionContext,
+  PctSelectOptionTemplate,
+} from './select.template';
 import {
   PctSelectOption,
   PctSelectPanelAlign,
@@ -72,9 +79,11 @@ import {
  */
 @Component({
   selector: 'pct-select',
-  imports: [OverlayModule, PctFocusStays, PctOverlayPanel],
+  imports: [NgTemplateOutlet, OverlayModule, PctFocusStays, PctOverlayPanel],
   templateUrl: './select.html',
   styleUrl: './select.scss',
+  // The slots this component reads, so one written where nothing reads it can say so.
+  providers: [providePctTemplateHost('pct-select', ['pctSelectOption'])],
   host: {
     class: 'pct-select',
     '[attr.data-pct-size]': 'size()',
@@ -201,6 +210,14 @@ export class PctSelect<T = string>
   private readonly trigger =
     viewChild.required<ElementRef<HTMLButtonElement>>('trigger');
   private readonly panel = viewChild<ElementRef<HTMLElement>>('panel');
+
+  // --- templates (req-api-templates) ---
+
+  /**
+   * The consumer's option row, if they wrote one. Queried by the slot's class rather than by
+   * a token, because the class is what carries the context type.
+   */
+  protected readonly optionTemplate = contentChild(PctSelectOptionTemplate);
 
   // --- a11y ---
 
@@ -409,6 +426,24 @@ export class PctSelect<T = string>
     // An effect and not a one-off: `options` is an input, so the list that duplicates a value
     // is often the second one — the one that arrived from the server.
     if (isDevMode()) effect(() => this.warnOnDuplicateValues());
+  }
+
+  /**
+   * What an option template is handed for one row. Built here rather than as a literal in the
+   * template: a template travels to the consumer as a string, so its bytes are the artefact's
+   * ([`lesson-67`](../../../../docs/lessons.md#lesson-67)).
+   */
+  protected optionContext(
+    option: PctSelectOption<T>,
+    index: number,
+  ): PctSelectOptionContext<T> {
+    return {
+      $implicit: option,
+      index,
+      active: index === this.activeIndex(),
+      selected: index === this.selectedIndex(),
+      disabled: option.disabled === true,
+    };
   }
 
   /**
