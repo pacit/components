@@ -1,6 +1,7 @@
 {
   "$description": "The input every case is built on: a small repository that passes all six points, plus the one built package file the artifact limb needs. Cases carry nothing but their own defect — the builder copies this and applies the named change, so a fixture cannot break something in passing.",
   "$polish": "`polish` is what the dictionary would have confirmed for these files: in the Polish list, not in the English one, folded. The three canaries have to be right here too — `ustawienie` present, `wartosc` present, `test` absent — or the reference itself would fail point 1.",
+  "$english": "`english` is the other dictionary, read the way the fourth limb needs it: the scanned words AND the stems they leave when an ending comes off. It holds the canary of that limb (`build`, which also makes its probe `buildzie` recognisable) and the one stem a case hangs a Polish ending on. Two words rather than a hundred thousand, for the same reason `polish` is a list here: what these cases prove is the rules, and the dictionaries are read on every real run.",
   "input": {
     "policy": {
       "generated": [
@@ -45,6 +46,7 @@
         "text": "/** The button's configuration. */\nexport declare const config: { label: string };\n"
       }
     ],
-    "polish": ["domyslne", "moja", "ustawienie", "wartosc", "config"]
+    "polish": ["domyslne", "moja", "ustawienie", "wartosc", "config"],
+    "english": ["build", "script"]
   }
 }

@@ -1,6 +1,0 @@
-{
-  "$what": "An excused word the dictionary would never have flagged. It silences nothing, and the next reader takes the list for the set of words the gate cannot handle.",
-  "check": "vocabulary",
-  "rule": "word-not-polish",
-  "addVocabulary": { "abbreviations": ["speaks"] }
-}

@@ -1,0 +1,6 @@
+{
+  "$what": "An excused word no limb would ever have flagged — neither the dictionary, which does not hold it, nor the fourth limb, which reads no ending on it. It silences nothing, and the next reader takes the list for the set of words the gate cannot handle.",
+  "check": "vocabulary",
+  "rule": "word-not-flagged",
+  "addVocabulary": { "abbreviations": ["speaks"] }
+}

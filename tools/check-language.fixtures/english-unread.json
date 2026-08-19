@@ -1,0 +1,6 @@
+{
+  "$what": "The English list was not read as STEMS. The second limb fails loudly when its subtraction goes missing — every shared word fires; the fourth fails the other way, finding no stem to hang an ending on and reporting a clean repository.",
+  "check": "denominator",
+  "rule": "english-unread",
+  "dropEnglish": ["build"]
+}

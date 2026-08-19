@@ -1742,3 +1742,43 @@ and `@if (a) { … } @else if (b) { … }` differs from `@if (a) { … } @if (b)
 characters that a pattern over the file cannot weigh. `parseTemplate` answers it, and the answer
 covers a component nobody has written yet — which the unit spec, a hand-kept list of three, does
 not.
+
+---
+
+### <a id="lesson-77"></a>`lesson-77` — Two dictionaries, and the word that belongs to neither
+
+**A section header in `tools/check-texts.mjs` had been half translated: the comment around it
+was English and the name of the language it scans was left standing in a Polish case.** It rode
+through the whole of B8, through C1–C15 and through every run in between — 843 files,
+5570 distinct words, no exception in the register, green each time. The gate that measures "the
+repository speaks one language" had the word in its own denominator on every one of those runs.
+
+The reason is arithmetic rather than oversight. The second limb confirms a word by finding it in
+`/usr/share/dict/polish` and not in `american-english`; a foreign stem with a Polish ending is in
+**neither** list — the Polish one has no such stem, the English one no such tail — and the
+diacritics limb has nothing to catch, because an ending like that carries none. **The union of
+two word lists is not the union of two languages**, and what falls between them is exactly the
+register a mixed repository actually writes in: the imported noun, declined.
+
+The rule for it had to name a SHAPE — 37 endings — in a gate whose fifth point exists to forbid
+naming shapes. The two are not in conflict and the difference is worth keeping: **an excused
+shape lets a whole grammatical class through, a hunted shape lets a whole grammatical class be
+seen.** A register names words; a detector names forms. Measured over the whole index the limb
+finds 16 words: four of the class and twelve that enumerate and are boring — an initialism with
+a vowel after it, the debris the split leaves in a regular expression, an account name, a test
+matcher — which is where [`lesson-60`](#lesson-60) said the design work would be, one limb over.
+
+The failure direction is the other half. An unread English list makes the **second** limb flood
+the run — every word the two languages share fires at once, and nobody can miss it. It makes the
+**fourth** limb find no stem to hang an ending on, and report a clean repository. Same file
+unread, opposite symptom: one gate goes red, the other goes quiet. That is what the fourth canary
+of point 1 is for, and it generalises past this gate — **ask of every input not only what breaks
+without it, but in which direction.**
+
+And then the finding fell into itself. The plan's entry describing the class spelled four
+examples of it, so the first run of the new limb was red on the position that had asked for the
+limb — the same shape as the file [B3](plan.md#b-readiness-for-the-first-release) nearly deleted
+by ticking its own task off. There is nowhere in this repository to quote such a word except the
+gate's own tree, where the constant of [`lesson-60`](#lesson-60) already lives: this lesson cannot
+print its own evidence, and the sample stands in
+`tools/check-language.fixtures/inflected-foreign-stem.json`.

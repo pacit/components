@@ -272,6 +272,18 @@ asked whether they agree, because a per-mode suite has no place where the modes 
 left **C16** behind: `check-texts.mjs` carried a Polish section header past every run of the
 language gate, an English stem with a Polish ending being a word in neither dictionary it reads.
 
+**C16 closed after it**, and it is the position where the finding turned out to be describing
+itself. The rule was written as the plan asked — the endings named, not the words — and its first
+run over the repository was red on **this file**, in the very entry that had spelled four
+examples of the class it was asking for a rule against. They live in the gate's tree now, beside
+the constant of [`lesson-60`](lessons.md#lesson-60), because there is nowhere else here a word
+like that may stand. The rest of the measurement was smaller than the argument for it: 16 words
+in 849 files, four of the class and twelve enumerable false positives, one of them
+(`rgba`) on the public surface. What the task added past the finding is a canary, and the reason
+is the half of a denominator this repository keeps rediscovering
+([`lesson-77`](lessons.md#lesson-77)): the same unread English list makes the second limb flood
+the run and the fourth go quiet, so "the dictionary is read" is not one question but two.
+
 ## B. Readiness for the first release
 
 Binds at the first publication — and then all of it at once. **B9** bound one step earlier, at
@@ -899,20 +911,49 @@ var(--pct-button-heigth)` passed every one of them, and the 7 stylesheets read 1
   - the size snapshot's rewrite exposed **C14**: it records the last breach, not the last build,
     so this commit's diff shows five entrypoints growing that this commit never touched
 
-- [ ] **C16 — the language gate cannot see a foreign word with a Polish ending**
-  - `tools/check-texts.mjs:478` carried `// ── scanner TypeScriptu ──` through B8, C1–C15 and
-    every run since: 843 files, 5570 distinct words, 0 exceptions, green. The word is fixed;
-    the blind spot it came out of is not
+- [x] **C16 — the language gate cannot see a foreign word with a Polish ending** — **closed,
+      and the entry that described the finding could not survive it**
+  - a section header of `tools/check-texts.mjs` carried an English name with a Polish case
+    ending through B8, C1–C15 and every run since: 843 files, 5570 distinct words,
+    0 exceptions, green. The word was fixed at C13; the blind spot it came out of was not
   - the second limb reads `/usr/share/dict/polish` minus `american-english`, so it sees a word
-    that is in the Polish dictionary. `TypeScriptu` is in neither — an English stem with
-    a Polish case ending belongs to no dictionary, and the first limb (diacritics) has nothing
-    to catch either. `buildzie`, `commita`, `selecta` are the same shape
+    that stands in the Polish dictionary. A foreign stem with a Polish ending stands in
+    NEITHER — the Polish list holds no such stem, the English one no such tail — and the first
+    limb (diacritics) has nothing to catch either
   - a scan for a hand-written list of such words found exactly one occurrence in the whole
     index, so the class is rare — which is the argument for a rule rather than a pass: rare
     and invisible is what survives eight passes
   - the shape is a **suffix on a foreign stem**, and point 5 of the gate forbids excusing
     shapes for a good reason — so the rule has to name the endings it looks for, not the words
-  - cost: half a day · _notes:_ —
+  - cost: half a day · _notes:_ **done** — a **fourth limb** in `tools/check-language.mjs`:
+    37 endings named in the source (the cases of a masculine noun, the two feminine diminutive
+    forms whose ending leaves the stem whole, the verb and the adjective a borrowing grows),
+    a word that no English list holds, and a stem that one does. **Naming a shape in the
+    detector is the inverse of naming one in the register**, which is why point 5's rule and
+    this list are not in conflict: an excused shape lets a class through, a hunted shape lets
+    a class be seen. Two rules more in point 1 (26 in all) and three prepared inputs more
+    (30): the limb has a probe of its own, and a canary for the English list — because it
+    fails in the opposite direction to the second limb, which floods the run when its
+    subtraction goes missing while this one **simply goes quiet**
+  - **the measurement over the whole index: 16 words**, of which 4 are the class and 12 are
+    noise that enumerates (an initialism with a vowel after it, the split's own debris, an
+    npm account, a matcher) — the design work exactly where [`lesson-60`](lessons.md#lesson-60)
+    put it, in a `borrowings` group of the vocabulary. The artifact limb found one, `rgba`,
+    and that is the whole of what the public surface carries
+  - **all four of the class stood in this file, in the entry above** — the plan spelled its
+    examples, so the first green run of the new limb was red on the position that described
+    it. They moved into the gate's own tree, where the constant of `lesson-60` already lives,
+    and the entry now points at the specimen instead of quoting it
+    ([`lesson-77`](lessons.md#lesson-77))
+  - proof on the real input and not only on fixtures, and the input is the historical file
+    rather than a made-up one: `tools/check-texts.mjs` restored from `a5b1a74~1` fires at
+    **line 478**, the line the finding named. The vocabulary count in the policy was one out
+    while nobody was counting (103 written, 104 held) — corrected in passing
+  - the register's aliveness rule widened with the limb rather than beside it:
+    `vocabulary/word-not-polish` became `word-not-flagged`, since a list with one meaning —
+    the words this repository writes that are not Polish — cannot have one aliveness test per
+    limb. What the limb **cannot** see is written down rather than left to be discovered: a
+    case that softens the stem's last letter replaces it, so no strip returns the stem
 
 - [ ] **C14 — the size snapshot records the last breach, not the last build**
   - `tools/check-bundle.mjs` holds every entrypoint to its snapshot ±5% and rewrites the file

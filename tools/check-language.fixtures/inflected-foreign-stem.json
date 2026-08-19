@@ -1,0 +1,12 @@
+{
+  "$what": "A borrowed noun declined in Polish — an English stem with a Polish ending glued to it. The word stands in NEITHER dictionary: the Polish list has no such stem, the English one no such tail, and it carries no diacritic and no opening quote. It is the shape that rode through the gate's own source from the day the gate was written.",
+  "check": "repository",
+  "rule": "polish-outside-register",
+  "addFiles": [
+    {
+      "path": "tools/fresh.mjs",
+      "scope": "repository",
+      "text": "// ── scanner TypeScriptu ──\nexport const value = 3;\n"
+    }
+  ]
+}

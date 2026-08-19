@@ -1,5 +1,5 @@
 {
-  "$description": "One language (req-project-language). tools/check-language.mjs measures three limbs — diacritics, a dictionary and the opening quote U+201E — over the git index and over the built package. This file is everything that measurement is allowed NOT to fire on, and each of its three lists shrinks by measurement: an entry that stops silencing something fires exactly like new Polish.",
+  "$description": "One language (req-project-language). tools/check-language.mjs measures four limbs — diacritics, a dictionary, the opening quote U+201E and a foreign stem carrying a Polish ending — over the git index and over the built package. This file is everything that measurement is allowed NOT to fire on, and each of its three lists shrinks by measurement: an entry that stops silencing something fires exactly like new Polish.",
 
   "$generated": "Files no hand wrote. The promise is about hand-written text, and these two are the output of a tool — `npm` and `check-docs --write`. They are named one by one and never matched by a pattern: `*.lock`, `**/generated/**` or any other shape would take the next file nobody weighed with it. The registry costs nothing to skip anyway — it is assembled from `docs/**`, which is scanned in full.",
   "generated": [
@@ -20,7 +20,7 @@
   "specimens": [
     {
       "file": "tools/check-language.mjs",
-      "reason": "The probe of point 1 and the three canaries. They are compared against `/usr/share/dict/polish`, so they have to be words that stand in it."
+      "reason": "The two probes of point 1 and the four canaries. Three of them are compared against `/usr/share/dict/polish`, so they have to be words that stand in it; the fourth limb's probe is a word that stands in no dictionary at all, which is the whole of what that limb is for."
     },
     {
       "file": "tools/check-language.fixtures/README.md",
@@ -41,6 +41,10 @@
     {
       "file": "tools/check-language.fixtures/dictionary-unfolded.json",
       "reason": "It names the canary that stands in the dictionary only with diacritics, so it has to write it both ways."
+    },
+    {
+      "file": "tools/check-language.fixtures/inflected-foreign-stem.json",
+      "reason": "An English stem with a Polish ending glued to it — the one class no dictionary can be asked about, so the sample has to be spelled out here."
     },
     {
       "file": "tools/check-language.fixtures/opening-quote.json",
@@ -68,7 +72,7 @@
     }
   ],
 
-  "$vocabulary": "The false positives of the dictionary limb — 103 words `/usr/share/dict/polish` holds and `american-english` does not, none of them Polish here. Every entry is a WORD. Never a shape: an exclusion of `SCREAMING_CASE` or of anything under four letters excuses a whole grammatical class, and a layer of constants once rode through two passes in exactly that blind spot (lesson-60). The gate enforces the format — an entry that is not a bare lowercase word fires — and it also fires on any entry the dictionary would never have flagged, so nobody can pad the list with superstition.",
+  "$vocabulary": "The false positives of the two dictionary limbs — 115 words: 104 that `/usr/share/dict/polish` holds and `american-english` does not, and 11 that the fourth limb reads as a foreign stem carrying a Polish ending. None of them is Polish here. Every entry is a WORD. Never a shape: an exclusion of `SCREAMING_CASE` or of anything under four letters excuses a whole grammatical class, and a layer of constants once rode through two passes in exactly that blind spot (lesson-60). The gate enforces the format — an entry that is not a bare lowercase word fires — and it also fires on any entry the dictionary would never have flagged, so nobody can pad the list with superstition.",
   "vocabulary": {
     "abbreviations": {
       "reason": "English words written short, in identifiers and in prose. Each is a shortening a reader expands without thinking; none is a Polish word here.",
@@ -179,6 +183,22 @@
         "turbo",
         "verdaccio",
         "vue"
+      ]
+    },
+    "borrowings": {
+      "reason": "The false positives of the fourth limb, which reads a word standing in neither dictionary as a foreign stem with a Polish ending. Each is written down singly with what it really is, for the same reason `fragments` are: a rule saying `ignore anything shorter than five letters` or `ignore an ending after an acronym` would blind the limb to the class it exists for. `cra` is CRA and `eaa` the European Accessibility Act, read letter by letter; `jpe` is what the split leaves of `jpe?g` and `nthem` what it leaves of a `\\n` before `them`; `markovy` is an npm account and `teama` a placeholder package name; `napi` is N-API; `rgba` is the CSS function; `sha` is a commit SHA; `surfce` is a misspelt custom property quoted in a lesson about that very typo; `truthy` is the matcher.",
+      "words": [
+        "cra",
+        "eaa",
+        "jpe",
+        "markovy",
+        "napi",
+        "nthem",
+        "rgba",
+        "sha",
+        "surfce",
+        "teama",
+        "truthy"
       ]
     },
     "fragments": {

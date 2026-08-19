@@ -17,11 +17,19 @@
  * is what a consumer opens. The rest of the repository is measured on the GIT INDEX: an
  * uncommitted file binds nobody yet.
  *
- * DETECTION HAS THREE LIMBS, because each is blind where the next one sees. Diacritics
+ * DETECTION HAS FOUR LIMBS, because each is blind where the next one sees. Diacritics
  * carry prose and nothing else — a name spelled `wartosc` has none. So the second limb is
  * `/usr/share/dict/polish`, folded of its diacritics and minus `american-english`, read
  * over identifiers split at camelCase and at `_`. The third is the opening quote `U+201E`,
  * a typographic convention with no English use.
+ *
+ * THE FOURTH IS THE WORD THAT IS IN NEITHER DICTIONARY: a foreign stem with a Polish
+ * ending glued to it. A borrowed noun is declined here like any other, and the result
+ * belongs to no word list at all — the Polish one has no such stem, the English one has no
+ * such tail — so the three limbs above are all quiet on it and it rides through every pass
+ * ([`lesson-77`](../docs/lessons.md#lesson-77)). The limb names the ENDINGS it looks for,
+ * which is the exact inverse of point 5: a register that names a shape excuses a whole
+ * grammatical class, a detector that names one sees a whole grammatical class.
  *
  * THE FALSE POSITIVES OF THE SECOND LIMB ARE THE DESIGN WORK, and they live in
  * `language.policy.json` as WORDS. Never as shapes: an exclusion of `SCREAMING_CASE` or of
@@ -128,7 +136,107 @@ const PROBE_WORDS = ['moja', 'wartosc', 'ustawienie', 'domyslne'];
  * English list was subtracted, and it is the one that would drown the gate in false
  * positives if it were not.
  */
-const CANARY = { read: 'ustawienie', folded: 'wartosc', shared: 'test' };
+const CANARY = {
+  read: 'ustawienie',
+  folded: 'wartosc',
+  shared: 'test',
+  /**
+   * The fourth limb's own canary, and it answers for the ENGLISH list read the other way
+   * round: not as the subtraction that keeps the second limb usable, but as the source of
+   * the STEMS the fourth one stands on. Unread, the second limb drowns the gate in false
+   * positives and everybody notices; the fourth simply finds nothing and stays green.
+   */
+  stem: 'build',
+};
+
+/**
+ * The endings of the fourth limb, and the whole of what it looks for. A noun borrowed into
+ * Polish is declined like a Polish one: the foreign stem stays whole and the ending is glued
+ * to it, so the word belongs to neither list — the Polish one holds no such stem, the
+ * English one no such tail.
+ *
+ * NAMING A SHAPE IS WHAT A DETECTOR DOES, and it is the inverse of what point 5 forbids the
+ * register: an excused shape lets a whole grammatical class through, a hunted shape lets a
+ * whole grammatical class be seen. The list is closed and it is three families — the cases
+ * of a masculine noun (the pattern every English borrowing takes), the two feminine
+ * diminutive forms whose ending leaves the stem whole, and the verb and adjective a
+ * borrowing grows.
+ *
+ * WHAT IT CANNOT SEE is written down rather than discovered later: where the case softens
+ * the stem's LAST LETTER the ending replaces it — a `t` becomes `ci`, an `r` becomes `rz` —
+ * and no strip returns the stem, so those forms pass. `-zie` is here because it is the one
+ * softening that adds rather than replaces: a stem ending in `d` keeps the `d`.
+ */
+const ENDINGS = [
+  // the seven cases, singular and plural
+  'a',
+  'u',
+  'owi',
+  'em',
+  'ie',
+  'y',
+  'i',
+  'e',
+  'ow',
+  'om',
+  'ami',
+  'ach',
+  'owie',
+  // the softened locative that leaves the stem whole, and the feminine diminutive
+  'zie',
+  'ka',
+  'ki',
+  'ku',
+  'ce',
+  // the verb made of the borrowing, and the adjective made of the verb
+  'owac',
+  'owanie',
+  'owania',
+  'owany',
+  'owana',
+  'owane',
+  'owal',
+  'owala',
+  'owano',
+  'uje',
+  'ujesz',
+  'ujemy',
+  'uja',
+  'owy',
+  'owa',
+  'owe',
+  'owego',
+  'owym',
+  'owych',
+].sort((a, b) => b.length - a.length); // longest first: the split a reader is shown is the plausible one
+
+/**
+ * The probe of the fourth limb — a constant, like `PROBE`, so point 1 says something about
+ * the instrument rather than about what it is pointed at. It has to be recognised: an
+ * emptied ending list, a strip off by one, a stem lookup reading the wrong set, and the limb
+ * goes quiet on the one class no other limb sees.
+ */
+const PROBE_INFLECTED = 'buildzie';
+
+/**
+ * The fourth limb over one word: `null`, or the split that makes it a borrowing declined in
+ * Polish. `english` ends the question — a word an English list holds is an English word,
+ * whatever its tail. `stems` is wider by this gate's own vocabulary, because the foreign
+ * words this repository writes are not all in a spelling list from another decade: `config`
+ * and `repo` are stems here exactly as `script` and `build` are.
+ *
+ * A single letter is not a stem. `american-english` lists the alphabet, so without that line
+ * every word ending in a vowel comes apart into a letter and an ending.
+ */
+const inflectionOf = (word, english, stems) => {
+  if (english.has(word)) return null;
+  for (const ending of ENDINGS) {
+    if (!word.endsWith(ending)) continue;
+    const stem = word.slice(0, -ending.length);
+    if (stem.length > 1 && stems.has(stem)) return { stem, ending };
+  }
+  return null;
+};
 
 const fold = (word) =>
   word.toLowerCase().replace(/[ąćęłńóśźż]/g, (c) => FOLD[c]);
@@ -210,15 +318,29 @@ export const wordsOf = (text) => {
  *   `files`  — `[{ path, scope, text }]`, `scope` being `repository` or `artifact`,
  *   `polish` — the words the dictionary confirmed: in the Polish list, not in the English
  *              one, already folded,
+ *   `english` — the same reading of `american-english`, over the scanned words AND over the
+ *              stems they yield when an ending comes off. Two limbs read it for opposite
+ *              purposes: the second subtracts it, the fourth stands on it,
  *   `probe`  — the text of point 1, `PROBE` unless a fixture says otherwise. The words it
  *              has to yield stay constant, so a case can hand it a line with the seams
  *              taken out and prove that the SPLIT is what produces them. The real run
- *              never passes it.
+ *              never passes it,
+ *   `inflected` — the same idea for the fourth limb: `PROBE_INFLECTED` unless a fixture
+ *              hands the bare stem instead, which is what proves the ENDING is doing the
+ *              work.
  * Throws `LanguageError` on the first violation — the checks start from the denominator,
  * so the later ones would have nothing to examine anyway.
  */
-export const checkLanguage = ({ policy, files, polish, probe: text }) => {
+export const checkLanguage = ({
+  policy,
+  files,
+  polish,
+  english,
+  probe: text,
+  inflected,
+}) => {
   const confirmed = new Set(polish ?? []);
+  const known = new Set(english ?? []);
   const exceptions = policy?.exceptions ?? [];
   const generated = policy?.generated ?? [];
   const specimens = policy?.specimens ?? [];
@@ -226,6 +348,7 @@ export const checkLanguage = ({ policy, files, polish, probe: text }) => {
   const vocabulary = new Set(
     groups.flatMap(([, group]) => group?.words ?? []).map((w) => fold(w)),
   );
+  const stems = new Set([...known, ...vocabulary]);
 
   const scoped = (scope) => (files ?? []).filter((f) => f.scope === scope);
   const repository = scoped('repository');
@@ -304,6 +427,28 @@ export const checkLanguage = ({ policy, files, polish, probe: text }) => {
         `fires, the register fills up with English to keep the gate green, and the ` +
         `measurement is worth nothing in either direction.`,
     );
+  if (!known.has(CANARY.stem))
+    throw new LanguageError(
+      'denominator',
+      'english-unread',
+      `\`${CANARY.stem}\` is not among the confirmed English words, and it stands in ` +
+        `\`${ENGLISH}\`.\n` +
+        `    The list was not read as STEMS. The fourth limb then finds no stem to hang an ` +
+        `ending on and confirms nothing — and unlike the second limb, which floods the run ` +
+        `when its subtraction goes missing, this one fails by going quiet.`,
+    );
+
+  const borrowing = inflected ?? PROBE_INFLECTED;
+  if (!inflectionOf(borrowing, known, stems))
+    throw new LanguageError(
+      'denominator',
+      'inflection-blind',
+      `the probe \`${borrowing}\` is not read as a foreign stem with a Polish ending.\n` +
+        `    The fourth limb is the only one that sees a word standing in NEITHER ` +
+        `dictionary, so nothing else covers it: an emptied ending list, a strip off by one ` +
+        `or a stem lookup pointed at the wrong set leaves the whole class invisible, and ` +
+        `invisible here means green.`,
+    );
 
   // 5. VOCABULARY, before it is used. A register that excuses a shape excuses everything of
   // that shape, and it has to be unwritable rather than discouraged — so the format is
@@ -328,13 +473,19 @@ export const checkLanguage = ({ policy, files, polish, probe: text }) => {
         );
   }
 
-  const notPolish = [...vocabulary].filter((w) => !confirmed.has(w));
-  if (notPolish.length)
+  // An entry earns its place by silencing a real hit, and there are two ways to be one:
+  // the dictionary confirms the word, or the fourth limb reads it as a borrowing. The
+  // check is over BOTH, because the list has one meaning — the words this repository
+  // writes that are not Polish — and not one per limb.
+  const unflagged = [...vocabulary].filter(
+    (w) => !confirmed.has(w) && !inflectionOf(w, known, stems),
+  );
+  if (unflagged.length)
     throw new LanguageError(
       'vocabulary',
-      'word-not-polish',
-      `${notPolish.length} words are excused and the dictionary would never have flagged ` +
-        `them:\n${some(notPolish)}\n` +
+      'word-not-flagged',
+      `${unflagged.length} words are excused and no limb would ever have flagged ` +
+        `them:\n${some(unflagged)}\n` +
         `    An entry that silences nothing is superstition, and it grows: the next reader ` +
         `takes the list for the set of words the gate cannot handle.`,
     );
@@ -382,9 +533,20 @@ export const checkLanguage = ({ policy, files, polish, probe: text }) => {
       const mark = line.match(DIACRITIC);
       if (mark) found.push({ line: i + 1, word: mark[0], limb: 'diacritics' });
     });
-    for (const { word, line } of wordsOf(text))
-      if (confirmed.has(word) && !vocabulary.has(word))
+    for (const { word, line } of wordsOf(text)) {
+      if (vocabulary.has(word)) continue;
+      if (confirmed.has(word)) {
         found.push({ line, word, limb: 'dictionary' });
+        continue;
+      }
+      const split = inflectionOf(word, known, stems);
+      if (split)
+        found.push({
+          line,
+          word: `${word} = ${split.stem} + -${split.ending}`,
+          limb: 'inflection',
+        });
+    }
     if (found.length) hits.set(file.path, found);
   }
 
@@ -570,15 +732,25 @@ const artifactFiles = () => {
 };
 
 /**
- * The dictionary limb, read the only way a 61 MB list can be: as a STREAM against the words
- * really found, so memory is the repository's size and not the dictionary's. The canaries go
- * into the candidate set directly — if the split ever returns nothing, the lookup still has
- * to answer for them, and point 1 catches the silence.
+ * Both dictionary limbs in one read, because they read the same two files for opposite
+ * purposes: the second subtracts the English list, the fourth stands on it. The Polish one
+ * is 61 MB and is streamed against the words really found, so memory is the repository's
+ * size and not the dictionary's. The canaries go into the candidate set directly — if the
+ * split ever returns nothing, the lookups still have to answer for them, and point 1
+ * catches the silence.
  */
-const confirmPolish = async (files) => {
+const confirmWords = async (files) => {
   const candidates = new Set(Object.values(CANARY));
   for (const file of files)
     for (const { word } of wordsOf(textOf(file))) candidates.add(word);
+
+  // What the fourth limb may ask about: every candidate, plus every stem one could come
+  // apart into. Asking only about the words themselves would leave `stems` empty of exactly
+  // the entries that matter — a stem is a word nobody wrote in that form.
+  const asked = new Set(candidates);
+  for (const word of candidates)
+    for (const ending of ENDINGS)
+      if (word.endsWith(ending)) asked.add(word.slice(0, -ending.length));
 
   const english = new Set();
   for (const line of readFileSync(ENGLISH, 'utf8').split('\n')) {
@@ -598,7 +770,10 @@ const confirmPolish = async (files) => {
     const word = fold(line.trim());
     if (word && candidates.has(word) && !english.has(word)) confirmed.add(word);
   }
-  return [...confirmed].sort();
+  return {
+    polish: [...confirmed].sort(),
+    english: [...asked].filter((word) => english.has(word)).sort(),
+  };
 };
 
 // ── the negative control ────────────────────────────────────────────────────────
@@ -624,6 +799,11 @@ const buildFixture = (fx) => {
 
   w.polish = w.polish.filter((word) => !(fx.dropPolish ?? []).includes(word));
   w.polish.push(...(fx.addPolish ?? []));
+
+  w.english = w.english.filter(
+    (word) => !(fx.dropEnglish ?? []).includes(word),
+  );
+  w.english.push(...(fx.addEnglish ?? []));
 
   w.policy.exceptions = w.policy.exceptions.filter(
     (e) => !(fx.dropExceptions ?? []).includes(e.file),
@@ -654,6 +834,7 @@ const buildFixture = (fx) => {
     w.policy.vocabulary[group] = { ...w.policy.vocabulary[group], ...fields };
 
   if (fx.probe !== undefined) w.probe = fx.probe;
+  if (fx.inflected !== undefined) w.inflected = fx.inflected;
 
   return w;
 };
@@ -666,11 +847,8 @@ let summary = null;
 try {
   const policy = JSON.parse(readFileSync(join(ROOT, POLICY), 'utf8'));
   const files = [...repositoryFiles(policy), ...artifactFiles()];
-  summary = checkLanguage({
-    policy,
-    files,
-    polish: await confirmPolish(files),
-  });
+  const { polish, english } = await confirmWords(files);
+  summary = checkLanguage({ policy, files, polish, english });
 } catch (error) {
   if (!(error instanceof LanguageError)) throw error;
   problems.push(`${error.check}/${error.rule}: ${error.message}`);
