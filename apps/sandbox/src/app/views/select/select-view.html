@@ -157,3 +157,15 @@
     </pct-field>
   </div>
 </sbx-demo>
+
+<sbx-demo
+  heading="An arrow of your own"
+  summary="The trigger's arrow comes from PCT_ICONS: an icon set is a component whose templates are the icons, and providing one swaps them everywhere below that injector. This card provides its own, the cards above it do not — same component, two drawings."
+  [reqs]="['req-api-icons']"
+  [controls]="[]"
+  data-testid="demo-icons"
+>
+  <div class="stack">
+    <sbx-select-icons [options]="countries" />
+  </div>
+</sbx-demo>

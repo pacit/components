@@ -1,0 +1,17 @@
+<button type="button">
+  <span data-pct-part="value">Poland</span>
+
+  <pct-icon
+    class="widget__arrow"
+    data-pct-part="arrow"
+    name="chevron-down"
+  ></pct-icon>
+</button>
+
+@if (checked()) {
+<pct-icon data-pct-part="mark" [name]="mixed() ? 'check' : 'chevron-down'">
+  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor">
+    <path d="M3.5 8.5l3 3 6-6.5" />
+  </svg>
+</pct-icon>
+}

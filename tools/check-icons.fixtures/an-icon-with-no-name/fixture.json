@@ -1,0 +1,5 @@
+{
+  "point": 3,
+  "check": "named",
+  "why": "The wrapper is there and the name is not, so a set has nothing to answer to — the swap mechanism looks built and is not."
+}

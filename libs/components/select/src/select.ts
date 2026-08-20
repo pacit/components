@@ -39,6 +39,7 @@ import {
   PctSize,
   providePctTemplateHost,
 } from '@pacit/components/core';
+import { PctIcon } from '@pacit/components/icon';
 import {
   PctSelectOptionContext,
   PctSelectOptionTemplate,
@@ -79,7 +80,13 @@ import {
  */
 @Component({
   selector: 'pct-select',
-  imports: [NgTemplateOutlet, OverlayModule, PctFocusStays, PctOverlayPanel],
+  imports: [
+    NgTemplateOutlet,
+    OverlayModule,
+    PctFocusStays,
+    PctIcon,
+    PctOverlayPanel,
+  ],
   templateUrl: './select.html',
   styleUrl: './select.scss',
   // The slots this component reads, so one written where nothing reads it can say so.

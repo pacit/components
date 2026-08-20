@@ -104,9 +104,13 @@ test.describe('forced-colors: active', () => {
     const checkbox = page.getByTestId('idle-checkbox');
     await checkbox.locator('[data-pct-part="control"]').check();
 
+    // The part is the icon's box and the drawing sits inside it, painting itself in
+    // `currentColor` — so what the mode has to reach is the box's `color`, and what the
+    // user sees is the `stroke` the drawing resolves it to (req-api-icons).
     const mark = checkbox.locator('[data-pct-part="mark"]');
     await expect(mark).toBeVisible();
-    expect(await styleOf(mark, 'stroke')).toBe(sys.FieldText);
+    expect(await styleOf(mark, 'color')).toBe(sys.FieldText);
+    expect(await styleOf(mark.locator('svg'), 'stroke')).toBe(sys.FieldText);
     expect(
       await styleOf(
         checkbox.locator('[data-pct-part="box"]'),
@@ -180,7 +184,9 @@ test.describe('forced-colors: active', () => {
         'background-color',
       ),
       'checkbox tick': styleOf(
-        page.getByTestId('disabled-checkbox').locator('[data-pct-part="mark"]'),
+        page
+          .getByTestId('disabled-checkbox')
+          .locator('[data-pct-part="mark"] svg'),
         'stroke',
       ),
     };

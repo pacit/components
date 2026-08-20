@@ -14,7 +14,8 @@
     "checkbox/**/*.ts",
     "radio/**/*.ts",
     "select/**/*.ts",
-    "field/**/*.ts"
+    "field/**/*.ts",
+    "icon/**/*.ts"
   ],
   "exclude": ["**/*.spec.ts", "**/*.test.ts"]
 }

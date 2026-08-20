@@ -13,6 +13,7 @@ import {
   requiredError,
   ValidationError,
 } from '@angular/forms/signals';
+import { PctIconTemplate, providePctIcons } from '@pacit/components/icon';
 import { PctCheckbox } from './checkbox';
 
 const boxOf = (f: ComponentFixture<unknown>) =>
@@ -310,6 +311,50 @@ describe('PctCheckbox', () => {
 
       expect(box.getAttribute('aria-label')).toBeNull();
       expect(box.getAttribute('aria-labelledby')).toBeNull();
+    });
+  });
+  describe('the mark a consumer replaces (req-api-icons)', () => {
+    /** A set that carries one of the two names the checkbox draws. */
+    @Component({
+      selector: 'pct-probe-ticks',
+      imports: [PctIconTemplate],
+      template: `<ng-template pctIcon="check"
+        ><i data-testid="own-tick">ok</i></ng-template
+      >`,
+    })
+    class Ticks {}
+
+    const mark = (f: ComponentFixture<unknown>) =>
+      f.nativeElement.querySelector('[data-pct-part="mark"]') as HTMLElement;
+
+    it('the part is the icon element, and its name follows the state', async () => {
+      const fixture = await render(Host);
+      // The part a stylesheet names is the box, not the drawing: what a consumer swaps
+      // stands inside it, so the contract survives the swap.
+      expect(mark(fixture).tagName).toBe('PCT-ICON');
+      expect(mark(fixture).firstElementChild?.tagName).toBe('svg');
+
+      fixture.componentInstance.indeterminate.set(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(mark(fixture).querySelector('path')?.getAttribute('d')).toBe(
+        'M4 8h8',
+      );
+    });
+
+    it('a provided set draws the tick and leaves the dash to the component', async () => {
+      TestBed.configureTestingModule({ providers: providePctIcons(Ticks) });
+      const fixture = await render(Host);
+
+      expect(mark(fixture).firstElementChild?.getAttribute('data-testid')).toBe(
+        'own-tick',
+      );
+
+      fixture.componentInstance.indeterminate.set(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      // The set says nothing about `indeterminate`, so the component's own drawing stays.
+      expect(mark(fixture).firstElementChild?.tagName).toBe('svg');
     });
   });
 });

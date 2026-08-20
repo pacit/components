@@ -1,0 +1,18 @@
+:host {
+  display: inline-flex;
+  padding-inline: var(--pct-space-3);
+  text-align: start;
+}
+
+/* The drawing painted from the component's sheet instead of the box around it. */
+.button__icon {
+  fill: none;
+  stroke: var(--pct-button-fg);
+  stroke-width: 2;
+}
+
+@media (forced-colors: active) {
+  :host {
+    border: 1px solid ButtonText;
+  }
+}

@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 /**
  * Style gate: `req-token-logical` (layout in logical properties, so it mirrors under
- * `dir="rtl"`), `req-token-no-opacity` (no compositing `opacity`) and
- * `req-a11y-forced-colors` (the mode's rules really paint). Breaking any of them gives no
+ * `dir="rtl"`), `req-token-no-opacity` (no compositing `opacity`),
+ * `req-a11y-forced-colors` (the mode's rules really paint) and `req-api-icons` (a
+ * component paints the box an icon sits in, never the drawing inside it). Breaking any of them gives no
  * red test — an LTR screenshot looks right, so does `opacity: 0.6`, which quietly undoes
  * `req-token-contrast` ([`lesson-6`](../docs/lessons.md#lesson-6)), and so does a
  * forced-colors rule that loses on specificity, because the browser substitutes the
@@ -14,9 +15,10 @@
  *  4. exceptions are named, justified and USED,
  *  5. no physical property of the inline axis,
  *  6. no compositing `opacity`,
- *  7. FORCED COLOURS: a rule of that mode is not outranked by a base rule of the sheet.
+ *  7. FORCED COLOURS: a rule of that mode is not outranked by a base rule of the sheet,
+ *  8. PAINT: no property that only an `<svg>` understands (`req-api-icons`).
  *
- * Points 5–7 are the rules; 1–3 watch the DENOMINATOR they run over — an unread sheet
+ * Points 5–8 are the rules; 1–3 watch the DENOMINATOR they run over — an unread sheet
  * is to them what a missing file is to coverage ([`lesson-48`](../docs/lessons.md#lesson-48)).
  *
  * Usage: node tools/check-styles.mjs
@@ -121,6 +123,29 @@ const OPACITY = new Set([
 ]);
 
 // ── sheet scanner ────────────────────────────────────────────────────────────
+
+/**
+ * The properties only an `<svg>` obeys. A component that reaches for them is painting a
+ * drawing it happens to know — and the drawing is the one thing about an icon a consumer
+ * may replace, so the rule paints nothing the day they do (`req-api-icons`,
+ * [0028](../docs/decisions/0028-an-icon-set-is-a-component.md)). What reaches an icon
+ * whoever drew it is `color`, and the drawing paints itself in `currentColor`.
+ *
+ * `fill-opacity` and `stroke-opacity` are NOT here — they are in `OPACITY` above, where
+ * they answer to a promise of their own.
+ */
+const PAINT = new Set([
+  'fill',
+  'fill-rule',
+  'stroke',
+  'stroke-width',
+  'stroke-linecap',
+  'stroke-linejoin',
+  'stroke-dasharray',
+  'stroke-dashoffset',
+  'stroke-miterlimit',
+  'paint-order',
+]);
 
 /**
  * The scanner: turns a stylesheet's text into a list of declarations and comments, each
@@ -717,6 +742,8 @@ const checkStyles = ({ sheets, components, declarations }) => {
   const physical = [];
   // 6. No compositing `opacity` (`req-token-no-opacity`).
   const translucent = [];
+  // 8. No painting of an icon's insides (`req-api-icons`).
+  const painted = [];
 
   for (const sheet of sheets)
     for (const d of scans.get(sheet.file).declarations) {
@@ -743,8 +770,12 @@ const checkStyles = ({ sheets, components, declarations }) => {
         );
         continue;
       }
-      if (OPACITY.has(d.property) && !binaryOpacity(d.value))
+      if (OPACITY.has(d.property) && !binaryOpacity(d.value)) {
         translucent.push(`${where}: \`${d.property}: ${d.value}\``);
+        continue;
+      }
+      if (PAINT.has(d.property))
+        painted.push(`${where}: \`${d.property}: ${d.value}\``);
     }
 
   if (physical.length)
@@ -845,6 +876,20 @@ const checkStyles = ({ sheets, components, declarations }) => {
         `base sheet by its own selector alone. Repeat the base rule's selector, or narrow ` +
         `it further. Nothing here turns a test red: chromium and firefox substitute the ` +
         `colours anyway, so the mode looks handled everywhere but webkit (lesson-56).`,
+    );
+
+  // 8. The drawing paints itself (`req-api-icons`).
+  if (painted.length)
+    throw new StyleError(
+      'paint',
+      `${painted.length} declarations paint the inside of an icon (req-api-icons):\n` +
+        list(painted) +
+        `\n    These properties are obeyed by an \`<svg>\` and by nothing else, so the rule ` +
+        `holds only for as long as the drawing is the one we wrote — and a consumer who ` +
+        `registers a set through \`PCT_ICONS\` gets an unpainted icon with every test still ` +
+        `green. Set \`color\` on the \`pct-icon\` and let the drawing take it through ` +
+        `\`currentColor\`. If this one really is safe, say why: ` +
+        `/* pct-exception <property>: <reason> */`,
     );
 
   const exceptions = justified.size;

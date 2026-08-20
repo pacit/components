@@ -449,7 +449,7 @@ const checkParts = (input) => {
     if (!cards.length) {
       documentationProblems.push(
         `\`${entrypoint}\` exposes ${parts.size} parts and has no card at all ` +
-          `w \`${DOCUMENTS}/\``,
+          `in \`${DOCUMENTS}/\``,
       );
       continue;
     }

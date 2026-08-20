@@ -1,0 +1,3 @@
+// The published list of names, read by point 5. Two of them, because a comparison of sets
+// with one element on each side passes for reasons that have nothing to do with the rule.
+export type PctIconName = 'check' | 'chevron-down';

@@ -52,11 +52,11 @@ Snapshot, `node tools/check-docs.mjs`:
 | measure                                     | value |
 | ------------------------------------------- | ----: |
 | requirements                                |    86 |
-| ✅ enforced                                 |    61 |
+| ✅ enforced                                 |    62 |
 | 🟡 partial (deliberately without a control) |    16 |
-| ⛔ gap                                      |     9 |
+| ⛔ gap                                      |     8 |
 
-All 9 gaps have an owner below (B, D, F, G). If adding a requirement raises the gap count
+All 8 gaps have an owner below (B, D, F, G). If adding a requirement raises the gap count
 and no task changes, this list has stopped being complete — and that is a fault of this list,
 not of the registry.
 
@@ -85,8 +85,8 @@ so the npm page is written and the last file that travelled in a second language
 dependency lists with a gate reading the artefact — so **what stands between here and npm is
 B4 alone, and B4 is held with B2**. In parallel: F1 is unblocked — the inventories it renders
 both exist — and C, the filler, holds one open finding, **C19**, which binds at E1. **D2,
-D3, D4 and D5 have closed too**, so the next unstarted item in the order is **D6** — and C,
-empty since C18, holds **C20**, left behind by D4.
+D3, D4, D5 and D6 have closed too**, so the next unstarted item in the order is **D7** — and C,
+empty since C18, holds **C20**, left behind by D4, and **C21**, left behind by D6.
 
 **B2 is deferred by decision, not blocked** — and the decision has a shape: **the first push
 happens only when the maintainer asks for it outright.** It is not triggered by a state of the
@@ -417,6 +417,33 @@ dictionary and the public surface admits no register of exceptions, so the first
 word read wrong rather than an exception to be excused, and it went into
 `vocabulary.abbreviations` named singly.
 
+**D6 closed after it, and it is the first task here whose line was wrong twice — about the
+mechanism and about the place.** [0011](decisions/0011-icons.md) had promised "a `PCT_ICONS`
+token mapping semantic names to templates", and a token cannot hold a template: a `TemplateRef`
+is a handle on part of a component's view, and the provider array where "one declaration for
+the whole application" has to be written is not in a view. Four probes over what a provider
+**can** hold settled it ([`lesson-85`](lessons.md#lesson-85)), and the first row is the one
+worth keeping: a registry of markup strings — the shape most icon libraries ship — renders
+**nothing**, because Angular's sanitizer deletes an `<svg>` from `[innerHTML]` outright, so the
+shape exists only if a library calls `bypassSecurityTrustHtml` on what a consumer handed it.
+What survives is a component whose templates are the icons, and the same probes made it cheap:
+`createComponent()` hands back a readable template with no change detection at all. The second
+half of that lesson corrects one this repository wrote itself three tasks ago:
+`pctIcon="chevrn-down"` is **`TS2820` with the right name suggested**, so a name in a string is
+invisible to the compiler only when the string is a **selector** — as a union-typed input value
+it is checked wherever it is written. Then the place: the plan puts icons in `core` with the
+rest of D, and the size snapshot answered before anything else was touched — **754 B and
+`@angular/common` on every entrypoint**, a button paying for a component it never draws
+([`lesson-86`](lessons.md#lesson-86)). In an entrypoint of its own the same code leaves four of
+the seven rows unmoved to the byte. The task's real subject turned out to be neither: it is
+**where a component's styling contract lives**, because everything below a `pct-icon` is
+replaced the moment somebody provides a set. The part, the size, the colour and the state moved
+onto the box, the drawing kept its geometry and `currentColor`, and two gates now say so — a
+new `check-icons` with six points and point 8 of `check-styles`, whose fixture is the shape this
+library shipped until today. The proof that the swap is invisible is the whole e2e suite: 488
+cases, three engines, **not one visual baseline moved** although an element appeared in the DOM
+around every icon in the library.
+
 ## B. Readiness for the first release
 
 Binds at the first publication — and then all of it at once. **B9** bound one step earlier, at
@@ -608,7 +635,7 @@ not a derivation.
 ## C. Open findings
 
 Small, good filler between the bigger items. Each one is verified in the code and still
-current. **Eighteen are closed and two are open** (the numbers run to C20; there is no C5) —
+current. **Eighteen are closed and three are open** (the numbers run to C21; there is no C5) —
 the list is where the next finding lands, and six of the closed ones ended in a decision record
 rather than in a line of code: [0018](decisions/0018-no-sass-entry-point.md) through
 [0023](decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md).
@@ -1330,6 +1357,24 @@ var(--pct-button-heigth)` passed every one of them, and the 7 stylesheets read 1
     this decision that can draw a message of their own — and the toast at E7 is the first
     caller the `assertive` channel has ever had · _notes:_ —
 
+- [ ] **C21 — a one-letter Polish word walks through the language gate**
+  - `tools/check-parts.mjs` said `has no card at all w \`docs/components/\`` — a Polish
+preposition in a message a maintainer reads, in the repository whose whole first rule is
+one language ([`req-project-language`](requirements/project.md#req-project-language))
+  - **measured, not deduced**: the gate was run over the repository with the word in place and
+    reported one violation, in a different file. So the word is not excused anywhere — it is
+    **not seen**, and the reason is almost certainly the floor on word length that keeps `a`,
+    `i` and `z` from firing on every initial, index variable and axis name in the tree
+  - the word is fixed. What is not fixed is the class: `w`, `i`, `z`, `o`, `u` and `a` are all
+    Polish words, and all of them are also things an English source writes constantly — so a
+    rule here cannot be "look them up", it has to be about the CONTEXT a one-letter word stands
+    in (prose between two English words, rather than an identifier, a table cell or a formula)
+  - the same shape as [`lesson-77`](lessons.md#lesson-77) one floor down: the limb that reads
+    the dictionary has a denominator nobody measures, and a word it never looks at is
+    indistinguishable from a word it approved
+  - binds at: the next language-gate task, or the first time a second one of these is found ·
+    _notes:_ —
+
 ## D. Phase 1 — the behaviour layer in `core`
 
 The largest architectural risk. The list machinery (typeahead, `activeIndex`, skipping disabled
@@ -1349,7 +1394,10 @@ change with no reader at all, which the line does not name. **D5 closed on a rea
 its line names a mechanism, and the mechanism named is the one that was measured out. A template
 has two ways to be wrong — the name it is called by, the context it is handed — and
 `*pctTemplate` is the one shape that checks neither, so the slot became a directive of its own
-with the type carried by a required input.
+with the type carried by a required input. **D6 closed against its line twice**: the token it
+names cannot hold a template at all, so an icon set is a component whose templates are the
+icons, and the layer is not in `core` — measured there, it cost every entrypoint 754 B for a
+component most of them never draw.
 
 Guiding principle: **mechanics from CDK, our own API** — CDK types never leak into the public
 contract. The pattern is ready: `PCT_FIELD` is exactly that for the field chrome and its control.
@@ -1510,8 +1558,75 @@ contract. The pattern is ready: `PCT_FIELD` is exactly that for the field chrome
       rather than an exception to be excused, so it joined `vocabulary.abbreviations` named
       singly — the one channel point 5 leaves open
       ([`lesson-80`](lessons.md#lesson-80)) — and the tag is in the artefact
-- [ ] **D6 — icons**: `pct-icon` over a projected SVG plus a `PCT_ICONS` token mapping semantic
-      names to templates, with built-in defaults → closes `req-api-icons` · _notes:_ —
+- [x] **D6 — icons**: `pct-icon` over a projected SVG plus a `PCT_ICONS` token mapping semantic
+      names to templates, with built-in defaults → closes `req-api-icons` · _notes:_ **done,
+      and neither the mechanism nor the place the line names survived being measured** —
+      `PctIcon`, `PctIconTemplate`, `providePctIcons` and `PCT_ICONS` in a new entrypoint,
+      `@pacit/components/icon`, with `pct-select`'s arrow and `pct-checkbox`'s mark rewired
+      onto them ([0028](decisions/0028-an-icon-set-is-a-component.md)). **A token cannot map a
+      name to a template**, and that is a fact about the framework rather than a preference: a
+      `TemplateRef` is a handle on part of a component's view, and a provider array at
+      bootstrap is not in a view. Four probes over what a provider CAN hold
+      ([`lesson-85`](lessons.md#lesson-85)) — the string of markup renders **nothing**, Angular's
+      sanitizer deleting the whole `<svg>` from `[innerHTML]`, so the shape most icon libraries
+      ship works only through `bypassSecurityTrustHtml` on consumer input; a component type
+      renders correctly and puts the consumer's host element between the icon's box and the
+      drawing. What is left is the fourth row: **an icon set is a component whose templates are
+      the icons**, created once, outside the document, attached to nothing — and measured to be
+      cheap, `createComponent()` giving a readable `TemplateRef` with no change detection at
+      all and the slots inside it constructed as the view is built. The second half of that
+      lesson is the counterweight to [`lesson-84`](lessons.md#lesson-84): `pctIcon="chevrn-down"`
+      is **`TS2820`, with the right name suggested**, because here the string is the VALUE of an
+      input typed `PctIconName` and not a selector — the name half D5 could not buy, bought for
+      free. The **placement** is where the plan's line lost to the snapshot
+      ([`lesson-86`](lessons.md#lesson-86)): in `core`, where section D puts it, the layer cost
+      **754 B and `@angular/common` on every entrypoint**, including a button that draws no
+      icon; in its own entrypoint the same code costs `./checkbox` 11429 → 13354 and `./select`
+      23450 → 25336, `./icon` stands at 2552 B and the other four rows do not move by a byte.
+      The built-in defaults stayed **in the templates that draw them** rather than in a default
+      set, which is what keeps that true and makes `req-api-icons-custom` literal in a second
+      sense: there is no icon set anywhere in the package. What the task really turned on is
+      **where the styling contract lives**: the part, the size, the colour and the state a
+      component paints (the arrow's turn, the mark's hiding) moved onto the `pct-icon` element,
+      which survives a swap, and the drawing kept only its own geometry, painting itself in
+      `currentColor`. Two gates say so — `check-styles` point 8 (no `fill` / `stroke` /
+      `stroke-width` in a component sheet; the fixture is the shape this library shipped until
+      today) and `tools/check-icons.mjs`, six points over the templates: the denominator, a
+      drawing inside a `pct-icon`, a name on it, a drawing of its own under it, the published
+      names against the drawn ones both ways, and no `data-pct-part` below an icon. The
+      denominator earned its place on the first run — Angular namespaces what it parses inside
+      an `<svg>`, so the walk saw `:svg:svg` and reported zero drawings in two templates that
+      hold one each. A second gate moved for a reason of the same family as
+      [`lesson-81`](lessons.md#lesson-81): `check-bundle`'s differential control pairs the
+      smallest component entrypoint with the largest, and excluded from the candidates the
+      **kernel** — what **every** other probe pulls in, a property only `./core` had ever
+      had. `./icon` is pulled by two entrypoints and not by four, so the pair became
+      `./icon` + `./select`, whose sum double-counts nothing and whose bundle is `./select`'s:
+      red on a measurement that was working perfectly. Shared by ALL was never the property
+      that mattered; shared by THESE TWO is. Measured: 8 cases under the layer's own name, 2 on the select, 2 on the
+      checkbox, 2 in three engines, `icon.ts` at **92.11%** in the mutation run (total
+      87.25 → 87.50), and the whole e2e suite green — **488 cases and not one visual baseline
+      moved**, which is the claim the swap rests on: an element appeared in the DOM around
+      every icon in the library and the page is the same page. The forced-colors spec did move,
+      and honestly: it used to read `stroke` off the part, and the part is now the box, so it
+      reads the box's `color` and the drawing's `stroke`. Negative control: the lookup in
+      `PctIcon` returning `null` always — **7 cases red, 291 green**, every red one a
+      replacement and every fallback case untouched; and the first run of it found one that
+      should have gone red and did not:
+      the set and the component drew the same NAME, so comparing names read the same either
+      way, and the case now compares where each drawing came from. **The mutation run paid
+      for itself twice over**: 77.50% on the first pass, with three of the nine survivors
+      naming the same hole — the component-scoped set, the case the sandbox demo uses and no
+      unit test did, and the destruction of a component that is attached to nothing and so
+      would never be taken down by anybody else. Three more were optional chains on a field
+      that is never null, that is defensive code with no reachable defect behind it; they are
+      gone, and the file is at 92.11%. **The three survivors that stay are named**: the
+      `isDevMode()` guard, which is [`lesson-60`](lessons.md#lesson-60)'s shape and D5's
+      survivor met again; the token's own description string, a debugging name no assertion
+      should freeze; and `name === null ? null : …`, which is equivalent — a set has no
+      template under a name that is not a name, so both arms return `null`. The task left
+      **C21** behind: `check-parts.mjs` carried a one-letter Polish
+      word past every run of the language gate
 - [ ] **D7 — gate forbidding `@angular/animations`** → closes `req-api-animations`; binds at the
       first component with an enter/leave transition, that is at D2 · _notes:_ —
 

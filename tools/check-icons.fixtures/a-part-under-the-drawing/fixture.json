@@ -1,0 +1,5 @@
+{
+  "point": 6,
+  "check": "part",
+  "why": "The part written on the `<svg>` rather than on the box around it: the styling contract then disappears together with the drawing the moment a set replaces it."
+}

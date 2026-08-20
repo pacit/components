@@ -24,12 +24,13 @@ libs/components/core/src/announce.ts 94.44 34(0) 2 0 0
 libs/components/core/src/config.ts 100.00 8(0) 0 0 0
 libs/components/core/src/field.ts 96.97 32(0) 1 0 0
 libs/components/core/src/focus.ts 100.00 1(0) 0 0 0
-libs/components/core/src/id.ts 100.00 5(0) 0 0 0
+libs/components/core/src/id.ts 100.00 5(1) 0 0 0
 libs/components/core/src/list.ts 98.59 70(0) 1 0 0
 libs/components/core/src/overlay.ts 100.00 14(0) 0 0 2
 libs/components/core/src/template.ts 96.00 24(0) 1 0 0
 libs/components/core/src/texts.ts 100.00 15(0) 0 0 0
 libs/components/field/src/number.ts 80.35 184(0) 43 2 11
+libs/components/icon/src/icon.ts 92.11 35(0) 3 0 2
 libs/components/select/src/select.ts 85.13 229(1) 37 3 5
-TOTAL 87.25 616/706
+TOTAL 87.50 651/744
 ```

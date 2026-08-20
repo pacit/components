@@ -42,6 +42,7 @@ No handling of its own ([`req-api-platform`](../requirements/api.md#req-api-plat
 | RTL                             | none — gap. Note: the symmetric `left: 50%` in the hit zone is RTL-safe                                                                                                                                                                                                                                                                     |
 | SSR + hydration                 | `apps/sandbox-e2e/src/hydration.spec.ts`                                                                                                                                                                                                                                                                                                    |
 | Forms                           | `libs/components/checkbox/src/checkbox.spec.ts`, `apps/sandbox-e2e/src/forms.spec.ts`                                                                                                                                                                                                                                                       |
+| The mark through `PCT_ICONS`    | `tools/check-icons.mjs` (target `check-icons`), `libs/components/checkbox/src/checkbox.spec.ts` — `check` and `indeterminate` are two names, and a set carrying one of them leaves the other to the component                                                                                                                               |
 | Parts in the inventory          | `libs/components/parts.snapshot.md`, `tools/check-parts.mjs` (target `check-parts`). Note: the `control` part collided with the native input once wrapped ([`lesson-24`](../lessons.md#lesson-24))                                                                                                                                          |
 | Tokens + `contrast.policy.json` | `libs/tokens/src/contrast.policy.json`                                                                                                                                                                                                                                                                                                      |
 | Strings through `PCT_TEXTS`     | `tools/check-texts.mjs` — no strings of its own                                                                                                                                                                                                                                                                                             |
@@ -51,12 +52,13 @@ No handling of its own ([`req-api-platform`](../requirements/api.md#req-api-plat
 
 ## Decisions
 
-[0005](../decisions/0005-signal-forms-without-cva.md), [0003](../decisions/0003-wrapper-and-control.md)
+[0005](../decisions/0005-signal-forms-without-cva.md), [0003](../decisions/0003-wrapper-and-control.md),
+[0028](../decisions/0028-an-icon-set-is-a-component.md) (the tick and the dash are `check` and
+`indeterminate` inside a `pct-icon`; the colour and the hiding belong to the box, the drawing
+to whoever provided it)
 
 ## Known limitations
 
-- **The tick is an inline SVG in `currentColor`** — the consumer has no way to swap it.
-  Waiting for [`req-api-icons`](../requirements/api.md#req-api-icons).
 - **No switch variant** — that is a separate component despite the same
   `FormCheckboxControl` contract, because the semantics differ ("turn on now" vs "tick to
   submit").

@@ -2,6 +2,7 @@ import * as button from '@pacit/components/button';
 import * as checkbox from '@pacit/components/checkbox';
 import * as core from '@pacit/components/core';
 import * as field from '@pacit/components/field';
+import * as icon from '@pacit/components/icon';
 import * as radio from '@pacit/components/radio';
 import * as select from '@pacit/components/select';
 import * as primary from './index';
@@ -26,7 +27,16 @@ import * as primary from './index';
  * load and export something.
  */
 describe('the public surface of the package', () => {
-  const entrypoints = { primary, core, button, checkbox, field, radio, select };
+  const entrypoints = {
+    primary,
+    core,
+    button,
+    checkbox,
+    field,
+    icon,
+    radio,
+    select,
+  };
 
   for (const [name, mod] of Object.entries(entrypoints))
     it(`entrypoint ${name} loads and exports something`, () => {

@@ -421,6 +421,55 @@ test.describe('PctSelect — a combobox with a panel', () => {
     });
   });
 
+  test.describe('an arrow the consumer registered (req-api-icons)', () => {
+    const arrowOf = (page: import('@playwright/test').Page, id: string) =>
+      page.getByTestId(id).locator('[data-pct-part="arrow"]');
+
+    test('the set replaces the drawing and nothing else about the icon', async ({
+      page,
+    }) => {
+      const own = arrowOf(page, 'select-icons');
+      const builtIn = arrowOf(page, 'select-country');
+
+      // The two cards are the same component on one page, and only one of them is under
+      // a `providePctIcons` — which is the whole claim about the scope of the token.
+      await expect(own.getByTestId('own-arrow')).toBeVisible();
+      await expect(own.locator('svg')).toHaveCount(0);
+      await expect(builtIn.locator('svg')).toHaveCount(1);
+      await expect(builtIn.getByTestId('own-arrow')).toHaveCount(0);
+
+      // The box the sheet sizes and turns is the same element in both, so a swapped
+      // drawing takes the layout it was given rather than one of its own.
+      const swapped = await boxOf(own);
+      const original = await boxOf(builtIn);
+      expect(swapped.width).toBeCloseTo(original.width, 0);
+      expect(swapped.height).toBeCloseTo(original.height, 0);
+      await expect(own).toHaveAttribute('aria-hidden', 'true');
+    });
+
+    test('the state the component paints on the icon still reaches it', async ({
+      page,
+    }) => {
+      const own = arrowOf(page, 'select-icons');
+      const transform = () =>
+        own.evaluate((el) => getComputedStyle(el).transform);
+      const resting = await transform();
+
+      await page
+        .getByTestId('select-icons')
+        .locator('[data-pct-part="trigger"]')
+        .click();
+      await expect(page.locator('[data-pct-part="panel"]')).toBeVisible();
+
+      // `[data-pct-open]` turns the icon's BOX, so the consumer's drawing turns with it —
+      // a rule written on the `<svg>` would have stopped applying with the swap.
+      await expect
+        .poll(transform, { message: 'the icon box turns on opening' })
+        .not.toBe(resting);
+      expect(await transform()).toContain('matrix');
+    });
+  });
+
   test('the clickable area of the trigger is at least 24 px tall', async ({
     page,
   }) => {

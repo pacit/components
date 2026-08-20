@@ -390,8 +390,12 @@ green. Above both, the compile-time half is the probe of
 [`lesson-84`](../lessons.md#lesson-84): four deliberately wrong bindings under
 `strictTemplates`, of which the table records which break the build and which do not — the two
 that stay silent are why the shape is what it is
-**Binds at:** closed at D5. The next caller is [`req-api-icons`](#req-api-icons), where a slot
-is the swap mechanism [0011](../decisions/0011-icons.md) is waiting for
+**Binds at:** closed at D5. The second caller arrived at D6 and took the mechanism one step
+further: an icon set is a component whose `<ng-template>`s are its icons, and the name they
+are called by is an **input of a union type** rather than a selector — which buys back
+exactly the half this requirement names as unbuyable, for the string being a value
+([0028](../decisions/0028-an-icon-set-is-a-component.md),
+[`lesson-85`](../lessons.md#lesson-85))
 **Decision:** [0027 — a slot is a directive of its own](../decisions/0027-a-slot-is-a-directive.md)
 **Lessons:** [`lesson-84`](../lessons.md#lesson-84)
 
@@ -402,13 +406,45 @@ is the swap mechanism [0011](../decisions/0011-icons.md) is waiting for
 **Promise.** The library makes it possible to use icons from the popular sets (FontAwesome,
 PrimeIcons, Material) and to supply your own (SVG / icon fonts).
 
-**Gate:** none — gap: today every icon is **written into the template** as SVG in
-`currentColor`. It works and adds no dependency, but it is not a mechanism — a consumer has no
-way to swap the select's arrow
-**Control:** none — gap: an icon override through `PCT_ICONS` that does not reach the
-component has to fire
-**Binds at:** the second component that needs a swappable icon
-**Decision:** [0011 — icons through a template and `PCT_ICONS`](../decisions/0011-icons.md)
+An icon the library draws sits inside `<pct-icon>` under a **semantic name** — the role it
+plays, `chevron-down` and not `arrow-down-16`. The drawing written there is what a consumer
+who registers nothing sees; `providePctIcons(Set)` replaces the names the set carries and
+leaves the rest. **A set is a component whose templates are the icons**, because that is the
+only thing that fits in a provider and yields a `TemplateRef`
+([0028](../decisions/0028-an-icon-set-is-a-component.md),
+[`lesson-85`](../lessons.md#lesson-85)) — and it is an ordinary provider, so a subtree may
+carry a different set from the application around it.
+
+**What the swap holds still, and what it may not touch.** The `pct-icon` element is the
+contract: `data-pct-part`, the size, the colour and any state the component paints on it (the
+select's arrow turns on opening, the checkbox's mark is hidden until it is checked) are
+written on the box, which survives the swap. The drawing owns its geometry and paints itself
+in `currentColor`, so a stylesheet that reaches for its `fill` or `stroke` is styling the one
+icon it happens to know — that is what `check-styles` point 8 refuses.
+
+**`PctIconName` is public API** in the sense of [`req-api-parts`](#req-api-parts): a published
+name promises that some component draws it and that a set replacing it is seen. The name is an
+input of a union type rather than a directive selector, so a misspelling is `TS2820` with the
+right name suggested.
+
+**Gate:** `tools/check-icons.mjs` (target `check-icons`) — six points over the library's
+templates: the denominator (every `<svg>` and every `<pct-icon>` the text holds is one the
+walk saw), a drawing stands inside a `pct-icon`, that icon carries a name, a named icon
+carries its own drawing, the published names and the drawn names are the same set both ways,
+and no `data-pct-part` sits below an icon; `tools/check-styles.mjs` point 8 — no SVG paint
+property in a component stylesheet; `libs/components/icon/src/icon.spec.ts` — the layer under
+its own name, including a partial set and a set nobody reads;
+`apps/sandbox-e2e/src/select.spec.ts` — a registered arrow in three engines, in the same box
+and turning with it
+**Control:** `tools/check-icons.fixtures/` — six prepared inputs, each rejected on its own
+point, the first of them being the shape the library shipped until D6 (an `<svg>` written
+straight into the template); `tools/check-styles.fixtures/paint-inside-an-icon/` for point 8.
+Above them a recorded run: the lookup in `PctIcon` returning `null` always leaves 291 cases
+green and turns 7 red, every one of them a replacement
+**Binds at:** closed at D6
+**Decision:** [0011 — icons through a template and `PCT_ICONS`](../decisions/0011-icons.md),
+[0028 — an icon set is a component](../decisions/0028-an-icon-set-is-a-component.md)
+**Lessons:** [`lesson-85`](../lessons.md#lesson-85), [`lesson-86`](../lessons.md#lesson-86)
 
 ---
 
@@ -418,7 +454,10 @@ component has to fire
 library ships **the swap mechanism**, not icons.
 
 **Gate:** `libs/components/check-package.mjs` — the absence of icon files in the packed
-artifact would be detectable on the content listing
+artifact would be detectable on the content listing. Since D6 the promise is literal in a
+second sense: there is no default icon SET anywhere in the package either. A default drawing
+lives in the template of the component that draws it, so `./checkbox` never carries the
+select's arrow ([0028](../decisions/0028-an-icon-set-is-a-component.md))
 **Control:** none — deliberately: the violation here is **adding** something, not a quiet
 disappearance; it does not belong to the [`req-axis`](../00-axis.md) class
 

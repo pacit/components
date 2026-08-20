@@ -50,6 +50,7 @@ does not pay for a select. The primary entrypoint carries configuration only.
 | `@pacit/components/checkbox` | `PctCheckbox`                                                                    |
 | `@pacit/components/radio`    | `PctRadioGroup`, `PctRadio`                                                      |
 | `@pacit/components/select`   | `PctSelect`, `PctSelectOption`                                                   |
+| `@pacit/components/icon`     | `PctIcon`, `PctIconTemplate`, `providePctIcons`, `PCT_ICONS`                     |
 | `@pacit/components/core`     | what the controls share: `PCT_FIELD`, `PctAnnouncer`, template slots, id helpers |
 
 `@pacit/components/themes/pct.css` is the built skin — see [Theming](#theming).
@@ -267,6 +268,39 @@ The token carries a **signal**, so changing language does not need a page reload
 `providePctTexts` also works in a component's own `providers`, so one section of an application
 can speak a different language than the rest. Development warnings are not part of this channel:
 they are English, and silent outside development mode.
+
+## Icons
+
+The library ships **no icon set** — it ships the swap. Every icon a component draws sits inside
+`<pct-icon>` under a semantic name (`chevron-down`, `check`, `indeterminate`), and the drawing
+written there is what you see if you register nothing.
+
+An icon set is a **component whose templates are the icons**:
+
+```ts
+import { PctIconTemplate, providePctIcons } from '@pacit/components/icon';
+
+@Component({
+  imports: [PctIconTemplate],
+  template: `
+    <ng-template pctIcon="chevron-down"><i class="pi pi-chevron-down"></i></ng-template>
+    <ng-template pctIcon="check"><i class="pi pi-check"></i></ng-template>
+  `,
+})
+export class AppIcons {}
+
+bootstrapApplication(App, { providers: [providePctIcons(AppIcons)] });
+```
+
+The names you supply are replaced, the rest keep the library's drawing. The name is checked by
+the compiler — a misspelt one is a build error with the right name suggested — and
+`providePctIcons` works in a component's `providers` too, so one section can use a different
+set from the rest of the application.
+
+Anything renders: an `<svg>`, an `<i>` of an icon font, an `<img>`. What the component keeps is
+the **box**: its size, its colour (the drawing should paint itself in `currentColor`) and any
+state it shows there — the select's arrow turns on opening whoever drew it. `<pct-icon>` is
+usable on its own as well, for a one-off drawing of your own that needs no name.
 
 ## Configuration
 

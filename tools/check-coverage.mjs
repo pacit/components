@@ -80,14 +80,15 @@ const TEMPLATE_EXCEPTIONS = {
         'click outside it") — in three engines, on a click the browser itself dispatches.',
     },
     statements: {
-      floor: 98.43,
+      floor: 98.46,
       reason:
         'the body of that same listener — one statement, the same gesture, the same e2e. ' +
         'The number keeps moving with the DENOMINATOR rather than with the coverage: at ' +
         'D2 the four bindings carrying what an overlay severs became one ' +
         '`[pctOverlayPanel]` and the template lost a statement, at D5 the option row ' +
         'gained the `@if` that lets a consumer draw it instead and the template gained ' +
-        'several. One statement stays uncovered throughout, and it is the same one.',
+        'several, at D6 the arrow gained the `pct-icon` that lets one replace it. One ' +
+        'statement stays uncovered throughout, and it is the same one.',
     },
   },
 };

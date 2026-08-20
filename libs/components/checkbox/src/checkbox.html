@@ -22,20 +22,33 @@
       (blur)="onBlur()"
     />
 
-    <!-- The mark drawn as SVG in currentColor — no dependency on an icon set. -->
-    <svg
+    <!-- The mark drawn as SVG in currentColor — no dependency on an icon set, and the
+         name is what lets a consumer put their own drawing here (`req-api-icons`). The
+         state is one thing said twice on purpose: the name is what a set is asked for,
+         the path is what this component draws when no set answers. -->
+    <pct-icon
       class="pct-checkbox__mark"
       data-pct-part="mark"
-      viewBox="0 0 16 16"
-      aria-hidden="true"
-      focusable="false"
+      [name]="indeterminate() ? 'indeterminate' : 'check'"
     >
-      @if (indeterminate()) {
-      <path d="M4 8h8" />
-      } @else {
-      <path d="M3.5 8.5l3 3 6-6.5" />
-      }
-    </svg>
+      <svg
+        viewBox="0 0 16 16"
+        width="100%"
+        height="100%"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        focusable="false"
+      >
+        @if (indeterminate()) {
+        <path d="M4 8h8" />
+        } @else {
+        <path d="M3.5 8.5l3 3 6-6.5" />
+        }
+      </svg>
+    </pct-icon>
   </span>
 
   @if (label() && !inField) {

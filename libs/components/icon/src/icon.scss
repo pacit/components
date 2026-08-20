@@ -1,0 +1,12 @@
+/* The box an icon is drawn in. The size is the text's own (`1em`) until the component that
+   draws it says otherwise, and the colour is inherited — a drawing paints itself in
+   `currentColor`, so a swapped icon takes the colour of the state it stands in without
+   knowing anything about it (0011). */
+:host {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 1em;
+  height: 1em;
+}

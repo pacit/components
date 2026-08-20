@@ -1,6 +1,6 @@
 # Negative control of the styles gate
 
-Deliberately defective inputs. `tools/check-styles.mjs` runs all seven of its checks on each
+Deliberately defective inputs. `tools/check-styles.mjs` runs all eight of its checks on each
 of them and **requires every one to be rejected — and rejected by the point it declares**.
 An input that passes is a fault; an input that fires for a reason other than the one
 written in its `fixture.json` is a fault just the same, because it proves something other
@@ -20,7 +20,7 @@ themselves — that is, in the two the screenshots are taken in
 
 ## How a case is built
 
-A case is not a fourteenth copy of the correct input with one thing broken. The gate
+A case is not a fifteenth copy of the correct input with one thing broken. The gate
 builds it from two layers:
 
 1. `_reference/` — the reference input: two components with their sheets, one of them
@@ -69,6 +69,7 @@ not be another's defect — the same class of problem as the fake `package.json`
 | [`partial-opacity`](partial-opacity)                                 | `opacity: 0.6` on a state                                       | 6     |
 | [`opacity-from-variable`](opacity-from-variable)                     | `opacity: var(...)` — an undecidable value                      | 6     |
 | [`forced-colors-outranked`](forced-colors-outranked)                 | a rule of forced-colors mode shorter than the base rule's       | 7     |
+| [`paint-inside-an-icon`](paint-inside-an-icon)                       | `stroke` on the drawing a consumer may replace                  | 8     |
 
 Point 3 has four cases, because there are four different routes by which a component
 disappears from the measurement: it is not in the file list, the parser does not see it,

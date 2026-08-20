@@ -2059,3 +2059,83 @@ component that does not offer it, reported by the slot itself through the elemen
 The rule: **a mechanism for passing templates has two checks to buy and they are bought
 separately.** Ask which one a shape gives before choosing it, and say plainly which one it does
 not — a channel that quietly gives neither looks exactly like a channel that gives both.
+
+---
+
+### <a id="lesson-85"></a>`lesson-85` — A registry of markup is a registry of components, and a name in a string is checked when the string is a value
+
+**Angular has exactly one thing that carries markup somebody else wrote, and it cannot be
+handed to a provider.** D6 had to build the icon registry
+[0011](decisions/0011-icons.md) describes as "a token mapping semantic names to templates",
+and the word _templates_ is where the design stops being writable: a `TemplateRef` is a handle
+on part of a component's view, and a `bootstrapApplication` provider array is not in a view.
+Four probes over the shapes the registry could take:
+
+| what the token carries                        | what it renders                                       | what it costs                                                   |
+| --------------------------------------------- | ----------------------------------------------------- | --------------------------------------------------------------- |
+| a **markup string** in `[innerHTML]`          | **nothing** — the sanitizer deletes the whole `<svg>` | works only through `bypassSecurityTrustHtml`, on consumer input |
+| a **component type**, `NgComponentOutlet`     | the drawing inside the consumer's host element        | one element between the icon's box and the drawing              |
+| a **`TemplateRef`**                           | correctly, in place                                   | cannot be built at bootstrap — there is no view to build it in  |
+| a **component whose templates are the icons** | correctly, in place                                   | the library creates and destroys that component                 |
+
+The first row is the shape most icon libraries ship, and it is the one that measures worst:
+`<span [innerHTML]="'<svg …>…</svg>'">` renders `<span></span>`. Angular's HTML sanitizer
+allows no SVG element at all, so the shape works only if the library calls
+`bypassSecurityTrustHtml` on something the consumer supplied — a library-shaped XSS vector,
+paid for a chevron.
+
+The last row wins, and the two things that make it cheap were measured rather than assumed:
+`createComponent()` in an environment injector gives a component whose `viewChild` template is
+**readable immediately**, with no change detection and no attachment to `ApplicationRef`; and
+the directives on the `<ng-template>`s inside it are **constructed as the view is created**,
+two of two. One `detectChanges()` on the detached view is still needed, and only because the
+name is an `input` — inputs are set on the first check, so the registration happens in
+`ngOnInit`.
+
+The second half of the lesson is about the name, and it is the exact counterweight to
+[`lesson-84`](#lesson-84). That lesson's rule reads as "a name inside a string is invisible to
+the compiler", and the truth is narrower: **`pctIcon="chevrn-down"` is `TS2820`, with the
+right name suggested.** What differs is not the quoting but what the string _is_ — in
+`*pctTemplate="'option'"` it picks a slot the compiler has no type for, here it is the
+**value** of an input typed `PctIconName`, and a union type checks a string literal wherever
+one is written: a static attribute, a bound literal, either arm of a conditional.
+
+So: **ask what a registry can hold before designing what it holds, and prefer a name the type
+system can read over a name a lookup can.**
+
+---
+
+### <a id="lesson-86"></a>`lesson-86` — A shared kernel is where a cost stops being visible
+
+The plan puts icons in `core`, with D1–D5, and the layer went there first. The size snapshot,
+rewritten before anything else was touched:
+
+| entrypoint   | before | icons in `./core` | icons in `./icon` |
+| ------------ | -----: | ----------------: | ----------------: |
+| `.`          |   1990 |          **2744** |              1990 |
+| `./button`   |   5479 |          **6233** |              5479 |
+| `./radio`    |  13811 |         **14575** |             13811 |
+| `./field`    |  23323 |         **24089** |             23323 |
+| `./checkbox` |  11429 |             13271 |             13354 |
+| `./select`   |  23450 |             25252 |             25336 |
+| `./icon`     |      — |                 — |              2552 |
+
+**754 B and a new external dependency on every entrypoint** — `@angular/common`, for a
+`NgTemplateOutlet` a button never renders. (The middle column was measured before a clean-up
+of the same file worth some 80 B, so the two placements are comparable to about that; what the
+table is about is which rows move at all.) Nothing in the library imported the icon
+component there; `./core`'s barrel re-exports it, every entrypoint imports `./core`, and a
+component is not tree-shaken out of that graph the way a plain function is. In its own
+entrypoint the same code costs the two components that draw icons about 2 kB each and
+everybody else **nothing, to the byte** — the four unchanged rows are the measurement, not an
+argument.
+
+This is [`lesson-81`](#lesson-81) one floor up. There, `./core`'s first directive turned the
+tree-shaking gate red on a bundle containing no directive, and the repair was to the gate's
+reading. Here the gate was right and the placement was wrong: a shared kernel is precisely the
+place where "it is only a few hundred bytes" is said about every consumer at once, and where
+nobody importing `@pacit/components/button` will ever see what they are paying for.
+
+The rule: **before putting something in the kernel, measure what the kernel costs the
+entrypoints that will never call it.** The plan's placement is a proposal; the snapshot is the
+answer.

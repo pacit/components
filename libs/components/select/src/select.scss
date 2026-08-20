@@ -93,15 +93,13 @@
   white-space: nowrap;
 }
 
+/* The icon's box, not the drawing inside it: the size, the colour it paints itself in and
+   the turn on opening are the component's business, everything the `<svg>` does is the
+   icon's own (`req-api-icons`). A swapped arrow therefore turns as well. */
 .pct-select__arrow {
-  flex: none;
   width: 16px;
   height: 16px;
-  fill: none;
-  stroke: var(--pct-select-arrow-fg);
-  stroke-width: 2;
-  stroke-linecap: round;
-  stroke-linejoin: round;
+  color: var(--pct-select-arrow-fg);
   transition: transform var(--pct-motion-transition-duration)
     var(--pct-motion-transition-easing);
 }
@@ -218,9 +216,11 @@
     border-color: GrayText;
   }
 
-  /* The arrow follows the trigger's state instead of having a forced colour of its own. */
+  /* The arrow follows the trigger's state instead of having a forced colour of its own.
+     Written out rather than left to the mode: `@media` adds no specificity, so the base
+     rule's token would otherwise be the one that wins the cascade (lesson-70). */
   .pct-select__arrow {
-    stroke: currentColor;
+    color: inherit;
   }
 
   .pct-select__placeholder,

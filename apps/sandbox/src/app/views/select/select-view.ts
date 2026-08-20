@@ -7,6 +7,7 @@ import {
 } from '@pacit/components/select';
 import { COUNTRIES, LANGUAGES } from '../../ui/data';
 import { SbxDemo } from '../../ui/demo';
+import { SelectIcons } from './select-icons';
 
 /**
  * A picker list with a panel of its own (not a native `<select>`): the ARIA
@@ -14,7 +15,7 @@ import { SbxDemo } from '../../ui/demo';
  */
 @Component({
   selector: 'sbx-select-view',
-  imports: [SbxDemo, PctField, PctSelect, PctSelectOptionTemplate],
+  imports: [SbxDemo, PctField, PctSelect, PctSelectOptionTemplate, SelectIcons],
   templateUrl: './select-view.html',
   styleUrl: './select-view.scss',
 })

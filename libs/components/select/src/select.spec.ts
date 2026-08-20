@@ -15,6 +15,7 @@ import {
   ValidationError,
 } from '@angular/forms/signals';
 import { providePctTexts } from '@pacit/components/core';
+import { PctIconTemplate, providePctIcons } from '@pacit/components/icon';
 import { PctField } from '@pacit/components/field';
 import { part } from '../../testing/src/dom';
 import { PctSelect } from './select';
@@ -1467,6 +1468,39 @@ describe('PctSelect', () => {
       } finally {
         warn.mockRestore();
       }
+    });
+  });
+  describe('the arrow a consumer replaces (req-api-icons)', () => {
+    @Component({
+      selector: 'pct-probe-arrows',
+      imports: [PctIconTemplate],
+      template: `<ng-template pctIcon="chevron-down"
+        ><i data-testid="own-arrow">v</i></ng-template
+      >`,
+    })
+    class Arrows {}
+
+    const arrow = (f: ComponentFixture<unknown>) =>
+      f.nativeElement.querySelector('[data-pct-part="arrow"]') as HTMLElement;
+
+    it('the built-in arrow is the content of the icon that names it', async () => {
+      const fixture = await render(Host);
+      expect(arrow(fixture).tagName).toBe('PCT-ICON');
+      expect(arrow(fixture).getAttribute('aria-hidden')).toBe('true');
+      expect(arrow(fixture).firstElementChild?.tagName).toBe('svg');
+    });
+
+    it('a provided set draws it instead, in the same place', async () => {
+      TestBed.configureTestingModule({ providers: providePctIcons(Arrows) });
+      const fixture = await render(Host);
+
+      // The part, the class the sheet turns on opening and the element the flex layout
+      // measures are all the same element as before — only its content changed.
+      expect(arrow(fixture).tagName).toBe('PCT-ICON');
+      expect(
+        arrow(fixture).firstElementChild?.getAttribute('data-testid'),
+      ).toBe('own-arrow');
+      expect(arrow(fixture).querySelector('svg')).toBeNull();
     });
   });
 });

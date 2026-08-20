@@ -24,6 +24,7 @@ import {
   PctFieldControl,
   PctLabelStrategy,
 } from '@pacit/components/core';
+import { PctIcon } from '@pacit/components/icon';
 
 /**
  * Checkbox. A native signal-forms control — it implements `FormCheckboxControl`
@@ -36,6 +37,7 @@ import {
  */
 @Component({
   selector: 'pct-checkbox',
+  imports: [PctIcon],
   templateUrl: './checkbox.html',
   styleUrl: './checkbox.scss',
   host: {

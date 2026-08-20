@@ -13,6 +13,7 @@
     "radio/**/*.ts",
     "select/**/*.ts",
     "field/**/*.ts",
+    "icon/**/*.ts",
     "testing/**/*.ts"
   ]
 }

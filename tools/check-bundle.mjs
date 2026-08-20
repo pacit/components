@@ -1031,17 +1031,23 @@ const measureRepository = async () => {
 
     /**
      * The two halves of the differential control have to be entrypoints a consumer imports
-     * SEPARATELY, so the shared kernel is out of the running: `./core` is pulled in by
-     * every probe already, and a pair made of it and anything else weighs what that other
-     * one weighs alone — point 10 would then fire on the arithmetic rather than on a
-     * bundler that stopped pulling the library in. Computed and not listed: a kernel is an
-     * entrypoint every other probe brings in.
+     * SEPARATELY, so anything another entrypoint drags in is out of the running: a pair
+     * made of `./select` and something `./select` already pulls weighs what `./select`
+     * weighs alone, and point 10 would fire on the arithmetic rather than on a bundler
+     * that stopped pulling the library in.
+     *
+     * The first reading here was **every** other probe — a kernel — and `./core` was the
+     * only entrypoint in the library that answered to it. D6 added `./icon`, which two
+     * entrypoints pull and four do not, and the pair became `./icon` + `./select` with a
+     * "shared core" of nothing: 26037 B measured against 27888 B expected, on a
+     * measurement working exactly as intended. Shared by ALL was never the property that
+     * mattered — shared by THESE TWO is, and `some` is what says so.
      */
     const others = [...files.keys()].filter((e) => e !== PRIMARY);
-    const isKernel = (e) =>
-      others.every((x) => x === e || (probes[x]?.pulled ?? []).includes(e));
+    const isPulledByAnother = (e) =>
+      others.some((x) => x !== e && (probes[x]?.pulled ?? []).includes(e));
     const componentEntrypoints = others
-      .filter((e) => (markers[e] ?? []).length > 0 && !isKernel(e))
+      .filter((e) => (markers[e] ?? []).length > 0 && !isPulledByAnother(e))
       .sort((a, b) => probes[a].bytes - probes[b].bytes);
     const pair = [
       componentEntrypoints.at(0),

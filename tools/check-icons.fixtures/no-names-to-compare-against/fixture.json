@@ -1,0 +1,5 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "why": "The union renamed — the one side of point 5 that the gate cannot derive from anything else. Without this the inventory would compare the drawn names against an empty set and pass."
+}

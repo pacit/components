@@ -10,6 +10,7 @@
   "mutate": [
     "libs/components/core/src/*.ts",
     "libs/components/field/src/number.ts",
+    "libs/components/icon/src/icon.ts",
     "libs/components/select/src/select.ts",
     "!libs/components/**/index.ts",
     "!libs/components/**/*.types.ts",

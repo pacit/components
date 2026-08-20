@@ -1,0 +1,5 @@
+{
+  "point": 8,
+  "check": "paint",
+  "description": "The shape every icon in this repository had before D6: the component paints the drawing's `stroke` from its own sheet. It renders correctly, every screenshot agrees, and the day a consumer registers a set through `PCT_ICONS` the rule addresses an element that is no longer there — an icon in whatever colour its author chose, with nothing red anywhere."
+}

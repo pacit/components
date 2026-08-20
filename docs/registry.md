@@ -9,9 +9,9 @@ There is no "built, just unverified" state — see
 
 | state       | means                                                         |  count |
 | ----------- | ------------------------------------------------------------- | -----: |
-| ✅ enforced | gate and control exist and run in CI                          |     61 |
+| ✅ enforced | gate and control exist and run in CI                          |     62 |
 | 🟡 partial  | the gate is there, the negative control is not (deliberately) |     16 |
-| ⛔ gap      | gate or control missing, with a recorded deadline             |      9 |
+| ⛔ gap      | gate or control missing, with a recorded deadline             |      8 |
 | **total**   |                                                               | **86** |
 
 ## Gaps by urgency
@@ -21,7 +21,6 @@ The order comes from the **Binds at** field, not from a requirement number.
 | requirement                                                          | what is missing                                                                    | binds at                                                     |
 | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------ |
 | [`req-api-animations`](requirements/api.md#req-api-animations)       | the ban is kept, but **nothing watches it** — the only thing in force…             | the first component with an enter/leave transition (panel, … |
-| [`req-api-icons`](requirements/api.md#req-api-icons)                 | today every icon is **written into the template** as SVG in `currentC…             | the second component that needs a swappable icon             |
 | [`req-api-number`](requirements/api.md#req-api-number)               | property tests for the parser (`parse(format(n)) === n` for any `n` a… _(control)_ | the first locale outside `pl`/`en` reported by a consumer    |
 | [`req-project-apps`](requirements/project.md#req-project-apps)       | `apps/docs` does not exist, so a gate would describe a state that doe…             | the first external user — without documentation there is no… |
 | [`req-project-concise`](requirements/project.md#req-project-concise) | a prose volume budget per file, a **two-sided** snapshot in the idiom…             | the close of the compression pass — **not earlier**. A snap… |
@@ -69,7 +68,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-api-parts`](requirements/api.md#req-api-parts)               | ✅ enforced | `tools/check-parts.mjs` (target `check-parts` in the root project, in… | `tools/check-parts.fixtures/` — 22 inputs, each rejected on its own p… |
 | [`req-api-parts-unique`](requirements/api.md#req-api-parts-unique) | ✅ enforced | `tools/check-parts.mjs` point 6 — a component whose parts share a pre… | `tools/check-parts.fixtures/part-outside-namespace`, and a run agains… |
 | [`req-api-templates`](requirements/api.md#req-api-templates)       | ✅ enforced | `libs/components/core/src/core.spec.ts` — `pctReportOrphanSlot` under… | two recorded runs that fail on different cases. `pctReportOrphanSlot`… |
-| [`req-api-icons`](requirements/api.md#req-api-icons)               | ⛔ gap      | none — gap: today every icon is **written into the template** as SVG … | none — gap: an icon override through `PCT_ICONS` that does not reach … |
+| [`req-api-icons`](requirements/api.md#req-api-icons)               | ✅ enforced | `tools/check-icons.mjs` (target `check-icons`) — six points over the … | `tools/check-icons.fixtures/` — six prepared inputs, each rejected on… |
 | [`req-api-icons-custom`](requirements/api.md#req-api-icons-custom) | 🟡 partial  | `libs/components/check-package.mjs` — the absence of icon files in th… | none — deliberately: the violation here is **adding** something, not … |
 | [`req-api-texts`](requirements/api.md#req-api-texts)               | ✅ enforced | `tools/check-texts.mjs` (target `check-texts`) — six points: a string… | `tools/check-texts.fixtures/` — 29 doctored inputs, each rejected on … |
 | [`req-api-overlay`](requirements/api.md#req-api-overlay)           | ✅ enforced | `apps/sandbox-e2e/src/select.spec.ts` — measuring the panel's width a… | the measurement from `lesson-35` (a 301 px field ⇒ a 275 px panel, of… |
@@ -241,3 +240,5 @@ Which lesson feeds which requirement. Generated from the **Lessons** fields.
 | [`lesson-82`](lessons.md#lesson-82) | `req-api-overlay`                                                                                                                                                 |
 | [`lesson-83`](lessons.md#lesson-83) | `req-a11y-built-in`                                                                                                                                               |
 | [`lesson-84`](lessons.md#lesson-84) | `req-api-templates`                                                                                                                                               |
+| [`lesson-85`](lessons.md#lesson-85) | `req-api-icons`                                                                                                                                                   |
+| [`lesson-86`](lessons.md#lesson-86) | `req-api-icons`                                                                                                                                                   |
