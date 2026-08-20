@@ -247,3 +247,5 @@ Which lesson feeds which requirement. Generated from the **Lessons** fields.
 | [`lesson-90`](lessons.md#lesson-90) | `req-api-overlay`                                                                                                                                                 |
 | [`lesson-91`](lessons.md#lesson-91) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-92`](lessons.md#lesson-92) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-93`](lessons.md#lesson-93) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-94`](lessons.md#lesson-94) | — _(not cited)_                                                                                                                                                   |

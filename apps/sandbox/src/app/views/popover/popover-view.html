@@ -1,0 +1,153 @@
+<h2 class="view__title">Popover</h2>
+<p class="muted view__intro">
+  A panel of content hanging off the control that opened it. It is the
+  <em>non-modal</em> half of the dialog, and every difference follows from that
+  one word: no veil, nothing made inert, no scroll lock — the page behind goes
+  on answering. What it keeps is the part a panel with content cannot do
+  without: it takes focus, it says what it is, and it gives focus back to the
+  trigger.
+</p>
+
+<sbx-demo
+  heading="A panel that takes focus"
+  summary="The trigger says aria-expanded and points at the panel while it is up. Focus goes to the panel itself — it is what carries the name and the role — and Escape brings it back to the control that opened it."
+  [reqs]="['req-a11y-built-in', 'req-api-overlay']"
+  [controls]="[]"
+  data-testid="demo-panel"
+>
+  <div class="sbx-popover__row">
+    <button
+      pctButton
+      [pctPopoverTrigger]="filtersPanel"
+      data-testid="panel-trigger"
+    >
+      Filters
+    </button>
+
+    <pct-popover #filtersPanel heading="Filters" [(open)]="filters">
+      <div class="sbx-popover__body">
+        <pct-field label="Owner" hint="A name, or part of one">
+          <input
+            pctText
+            [value]="owner()"
+            (input)="owner.set($any($event.target).value)"
+            data-testid="panel-input"
+          />
+        </pct-field>
+        <button
+          pctButton
+          (click)="filters.set(false)"
+          data-testid="panel-apply"
+        >
+          Apply
+        </button>
+      </div>
+    </pct-popover>
+
+    <span class="muted" data-testid="panel-owner"
+      >Owner: {{ owner() || '—' }}</span
+    >
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="The four sides"
+  summary="The side is logical, not physical: `start` and `end` are the ones the writing direction decides, and a side with no room falls back to the one across the trigger."
+  [reqs]="['req-token-logical', 'req-api-overlay']"
+  [controls]="[]"
+  data-testid="demo-sides"
+>
+  <div class="sbx-popover__sides">
+    <button
+      pctButton
+      variant="outline"
+      [pctPopoverTrigger]="startPanel"
+      data-testid="side-start"
+    >
+      start
+    </button>
+    <pct-popover #startPanel heading="Start" placement="start"
+      >On the starting side.</pct-popover
+    >
+
+    <button
+      pctButton
+      variant="outline"
+      [pctPopoverTrigger]="topPanel"
+      data-testid="side-top"
+    >
+      top
+    </button>
+    <pct-popover #topPanel heading="Top" placement="top"
+      >Above the control.</pct-popover
+    >
+
+    <button
+      pctButton
+      variant="outline"
+      [pctPopoverTrigger]="bottomPanel"
+      data-testid="side-bottom"
+    >
+      bottom
+    </button>
+    <pct-popover #bottomPanel heading="Bottom" placement="bottom"
+      >Below the control.</pct-popover
+    >
+
+    <button
+      pctButton
+      variant="outline"
+      [pctPopoverTrigger]="endPanel"
+      data-testid="side-end"
+    >
+      end
+    </button>
+    <pct-popover #endPanel heading="End" placement="end"
+      >On the ending side.</pct-popover
+    >
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="The page behind still answers"
+  summary="Nothing is inert and nothing is locked, so the counter goes on counting with the panel up. Closing it says why — a press on the trigger, Escape, a press outside, or Tab walking out of it."
+  [reqs]="['req-api-signals', 'req-a11y-built-in']"
+  [controls]="[]"
+  data-testid="demo-live"
+>
+  <div class="sbx-popover__row">
+    <button
+      pctButton
+      [pctPopoverTrigger]="livePanel"
+      data-testid="live-trigger"
+    >
+      Open the panel
+    </button>
+
+    <pct-popover
+      #livePanel
+      heading="Still non-modal"
+      placement="top"
+      (closed)="reason.set($event)"
+    >
+      <p>
+        The button beside this one is not inert. Press it while this panel is
+        open — the count goes up.
+      </p>
+    </pct-popover>
+
+    <button
+      pctButton
+      variant="outline"
+      (click)="count.set(count() + 1)"
+      data-testid="live-counter"
+    >
+      Count up
+    </button>
+
+    <span class="muted" data-testid="live-count">Count: {{ count() }}</span>
+    <span class="muted" data-testid="live-reason"
+      >Last close: {{ reason() ?? '—' }}</span
+    >
+  </div>
+</sbx-demo>

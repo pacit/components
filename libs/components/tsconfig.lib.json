@@ -16,6 +16,7 @@
     "radio/**/*.ts",
     "select/**/*.ts",
     "tooltip/**/*.ts",
+    "popover/**/*.ts",
     "field/**/*.ts",
     "icon/**/*.ts"
   ],

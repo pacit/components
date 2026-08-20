@@ -212,6 +212,28 @@ test.describe('forced-colors: active', () => {
     expect(await styleOf(panel, 'border-top-style')).toBe('solid');
   });
 
+  /**
+   * A popover draws the page's own surface, so this mode changes nothing about the colour —
+   * and takes away the shadow that was separating the panel from the page. The edge is what
+   * is left, and it has to be the system's rather than the skin's `border-strong`, which the
+   * mode does not keep either.
+   */
+  test('the popover keeps a system edge once the shadow is gone', async ({
+    page,
+  }) => {
+    await visit(page, '/popover', { media: FORCED });
+    const sys = await systemColors(page);
+
+    await page.getByTestId('panel-trigger').click();
+    const panel = page.locator('[data-pct-part="panel"]');
+    await expect(panel).toBeVisible();
+
+    expect(await bg(page, '[data-pct-part="panel"]')).toBe(sys.Canvas);
+    expect(await styleOf(panel, 'color')).toBe(sys.CanvasText);
+    expect(await styleOf(panel, 'border-top-color')).toBe(sys.CanvasText);
+    expect(await styleOf(panel, 'border-top-style')).toBe('solid');
+  });
+
   test('the disabled state says GrayText in every control', async ({
     page,
   }) => {

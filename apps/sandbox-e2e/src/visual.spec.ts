@@ -135,6 +135,25 @@ test.describe('Appearance — compared with the baseline', () => {
   });
 
   /**
+   * The popover, which shows on no screenshot of a resting page. The whole viewport and not
+   * the card, for the dialog's reason and one of its own: the panel is drawn OUTSIDE the card
+   * it belongs to — an overlay is a child of `body` — so a shot of the card would catch its
+   * top edge and nothing else. And what this component draws is the page's own surface, unlike
+   * the tooltip's inverted one, so the page around it is half the picture: the edge and the
+   * shadow are all there is between the two.
+   */
+  test('popover-open', async ({ page }) => {
+    await stage(page, '/popover');
+    await page.getByTestId('panel-trigger').click();
+    const panel = page.locator('[data-pct-part="panel"]');
+    await expect(panel).toBeVisible();
+    // The enter is a fade, so the shot has to wait for it to have finished.
+    await expect(panel).toHaveCSS('opacity', '1');
+
+    await expect(page).toHaveScreenshot('popover-open.png');
+  });
+
+  /**
    * The same set of controls in the dark theme. The theme is a cross-cutting axis,
    * so a regression in the semantic layer of the tokens will show up here rather
    * than in the light screenshots.

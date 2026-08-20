@@ -7,6 +7,7 @@
     "libs/components/dialog/src/dialog.ts",
     "libs/components/field/src/number.ts",
     "libs/components/icon/src/icon.ts",
+    "libs/components/popover/src/popover.ts",
     "libs/components/select/src/select.ts",
     "libs/components/tooltip/src/tooltip.ts",
     "!libs/components/**/index.ts",
@@ -32,6 +33,7 @@
     "libs/components/dialog/src/dialog.ts",
     "libs/components/field/src/number.ts",
     "libs/components/icon/src/icon.ts",
+    "libs/components/popover/src/popover.ts",
     "libs/components/select/src/select.ts",
     "libs/components/tooltip/src/tooltip.ts"
   ],

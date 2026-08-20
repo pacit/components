@@ -45,6 +45,9 @@ from what the browser really gets.
 ./field PctMessageAux field-message-aux-item
 ./field PctPrefix field-prefix-item
 ./field PctSuffix field-suffix-item
+./popover PctPopover content
+./popover PctPopover heading
+./popover PctPopover panel
 ./radio PctRadio circle
 ./radio PctRadio control
 ./radio PctRadio dot

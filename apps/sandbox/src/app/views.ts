@@ -99,6 +99,15 @@ export const SBX_VIEWS: readonly SbxView[] = [
       import('./views/tooltip/tooltip-view').then((m) => m.TooltipView),
   },
   {
+    path: 'popover',
+    title: 'Popover',
+    summary:
+      'A panel of content on a live page — the non-modal half of the dialog.',
+    group: 'components',
+    load: () =>
+      import('./views/popover/popover-view').then((m) => m.PopoverView),
+  },
+  {
     path: 'size',
     title: 'Size',
     summary: 'Every component on the shared sm/md/lg axis.',

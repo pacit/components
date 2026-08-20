@@ -496,6 +496,28 @@
       "severity": "error"
     },
     {
+      "name": "popover \u2014 text on the panel",
+      "fg": "pct.popover.panel-fg",
+      "bg": "pct.popover.panel-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "popover \u2014 heading",
+      "fg": "pct.popover.heading-fg",
+      "bg": "pct.popover.panel-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "$comment": "A popover has no veil under it, so its edge is measured against the PAGE \u2014 the surface it really stands on. The dialog's own edge is measured against the veil instead, and the two entries together are the whole difference between the modal and the non-modal panel.",
+      "name": "UI: popover panel edge against the page",
+      "fg": "pct.popover.panel-border",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
       "$comment": "The whole of a tooltip is one pair: a panel with a sentence on it and nothing else. It stands here twice over — once as text on a surface, and once as the only measurement the inverted pair ever gets, since `pct.surface-inverse` is painted by no other component yet.",
       "name": "tooltip — text on the panel",
       "fg": "pct.tooltip.fg",

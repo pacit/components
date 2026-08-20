@@ -129,6 +129,24 @@ test.describe('Accessibility (axe-core, WCAG 2.2 AA)', () => {
     expect(report(violations)).toBe('');
   });
 
+  /**
+   * An open popover, and the WHOLE page with it rather than the panel alone. The dialog's
+   * audit is scoped to its panel because everything else is `inert` while it is up; here
+   * nothing is, so the page and the panel are one tree a reader walks — and the trigger's
+   * `aria-expanded`/`aria-controls` only mean anything measured together with what they
+   * point at.
+   */
+  test('an open popover has no violations, page and panel together', async ({
+    page,
+  }) => {
+    await visit(page, '/popover');
+    await page.getByTestId('panel-trigger').click();
+    await expect(page.locator('[data-pct-part="panel"]')).toBeVisible();
+
+    const violations = await audit(page);
+    expect(report(violations)).toBe('');
+  });
+
   test('a card with a dark stage has no violations', async ({ page }) => {
     await visit(page, '/button');
     const violations = await audit(page, '[data-testid="demo-dark"]');

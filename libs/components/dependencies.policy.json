@@ -21,7 +21,7 @@
     {
       "name": "@angular/cdk",
       "kind": "peer",
-      "reason": "Overlay mechanics and the focus trap — decision 0013 buys the machinery here and keeps the API our own. Two entrypoints, not one: `@angular/cdk/overlay` for the panels and the closing stack they are ordered by, `@angular/cdk/a11y` for the `FocusTrap` the dialog drives (decisions 0025 and 0029). The second name arrived with E1 and this sentence changed with it — a reason that no longer describes the dependency is a permit nobody is reading. It is a peer because the consumer includes `@angular/cdk/overlay-prebuilt.css` themselves: a version they cannot see is a stylesheet they cannot match."
+      "reason": "Overlay mechanics and the focus trap — decision 0013 buys the machinery here and keeps the API our own. Two entrypoints, not one: `@angular/cdk/overlay` for the panels and the closing stack they are ordered by, `@angular/cdk/a11y` for the two opposite halves of focus — the `FocusTrap` the dialog drives (decisions 0025 and 0029) and the `InteractivityChecker` the popover asks where its own tab order ends (decision 0031), a panel that takes focus without trapping it. The second name arrived with E1 and the second use of it with E2; this sentence changed with each — a reason that no longer describes the dependency is a permit nobody is reading. It is a peer because the consumer includes `@angular/cdk/overlay-prebuilt.css` themselves: a version they cannot see is a stylesheet they cannot match."
     },
     {
       "name": "tslib",

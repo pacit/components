@@ -36,6 +36,7 @@ before an application ships them.
 ./dialog 14802 ./core,./icon @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
 ./field 24341 ./core @angular/core,@angular/forms,@angular/forms/signals
 ./icon 2552 - @angular/common,@angular/core
+./popover 13075 ./core @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/core
 ./radio 14829 ./core @angular/core
 ./select 26430 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core
 ./tooltip 12597 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core

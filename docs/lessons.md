@@ -2338,3 +2338,66 @@ What makes this a lesson rather than a note is the direction the measurement run
 interesting state of a tooltip is not the open one everybody looks at; it is the closed one,
 which is where a control spends its whole life. An audit that only ever sees panels open would
 have said both roads were fine.
+
+---
+
+### <a id="lesson-93"></a>`lesson-93` — The outside press and the trigger's press are one event
+
+A popover closes on a press outside its panel, and the trigger is outside its panel. Written the
+obvious way — dismiss on the overlay's `outsidePointerEvents`, toggle on the trigger's `click` —
+the one control that opens the panel becomes the one control that cannot shut it: the press
+closes it and reopens it in the same gesture, and the panel looks as if it had ignored the user.
+
+The order is not the one the names suggest. `OverlayOutsideClickDispatcher` binds to `body` with
+`{ capture: true }` and fires on **`click`** (plus `auxclick` and `contextmenu`); the
+`pointerdown` beside them only records where the press began, so that a selection dragged out of
+a panel is not counted as a press outside it. A capture listener on `body` runs on the way
+**down**, before the event has reached the trigger at all — so the dismissal is delivered first
+and the toggle answers it afterwards. Reordering is not on the table: no handler on the target
+can run before a capture-phase handler above it.
+
+So the guard belongs to the component: **a press whose target is inside the trigger is not a
+press outside the panel.** That gesture is the trigger's, and the toggle it runs _is_ the close.
+
+The general form is worth keeping, because the next two components inherit it unchanged: **the
+dismissal paths of a panel and the opening path of its control are one event, not two.** Any
+panel here that closes on an outside press and is toggled from a control has to name the control
+that press belongs to — otherwise the control works exactly once.
+
+---
+
+### <a id="lesson-94"></a>`lesson-94` — An effect that reads what it writes: one consumer pays a pass, two never finish
+
+The popover's trigger registers itself with the panel it opens. The partner is a **required
+input** (`[pctPopoverTrigger]="filters"`), so the registration cannot happen in the constructor
+the way a field control's does — an input has no value there — and it went into an `effect`:
+
+```ts
+effect((onCleanup) => {
+  const popover = this.popover();
+  popover.bindTrigger(this.host.nativeElement); // reads `trigger()` inside, to warn on a second one
+  onCleanup(() => popover.unbindTrigger(this.host.nativeElement));
+});
+```
+
+`bindTrigger` reads the `trigger` signal — it has to, in order to tell a second trigger from the
+same one built again — and then writes it. Reading a signal inside an effect makes the effect
+depend on it, so the write invalidates the effect that performed it.
+
+With **one** trigger the loop stops after a second pass: the value written is the value already
+there, and a `signal.set` of an equal value notifies nobody. With **two** triggers it does not
+stop at all. Each effect writes its own element, each write invalidates the other effect, and
+the two go round for ever — which is not a stack overflow, an error or a warning, but a unit
+run that simply never ends. It cost a fifteen-minute test suite that had passed an hour earlier,
+and the symptom pointed nowhere near the cause.
+
+`untracked` is the fix and it is not a tidy-up: the read is genuinely not a dependency — the
+question "is somebody else already registered?" is asked _at the moment of registering_ and
+never again.
+
+The wider lesson is about a shape this repository already had and got right for another reason.
+`pctFieldControl` registers in a **constructor** and unregisters through `DestroyRef`, because
+the partner arrives by injection; nothing there is reactive, so nothing can loop. Moving the
+same pattern to a partner that arrives as an **input** moves it into a reactive context, and the
+pattern stops being safe without a word of warning. **A registration is not a computation, and
+an effect is the wrong place for it unless every read inside is untracked.**

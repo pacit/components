@@ -1,0 +1,527 @@
+import { InteractivityChecker } from '@angular/cdk/a11y';
+import {
+  createFlexibleConnectedPositionStrategy,
+  createOverlayRef,
+  createRepositionScrollStrategy,
+  OverlayRef,
+} from '@angular/cdk/overlay';
+import { TemplatePortal } from '@angular/cdk/portal';
+import {
+  afterNextRender,
+  Component,
+  DestroyRef,
+  Directive,
+  DOCUMENT,
+  effect,
+  ElementRef,
+  EmbeddedViewRef,
+  inject,
+  Injector,
+  input,
+  isDevMode,
+  model,
+  output,
+  signal,
+  TemplateRef,
+  untracked,
+  ViewContainerRef,
+  viewChild,
+} from '@angular/core';
+import {
+  nextPctId,
+  pctAfterTransition,
+  pctOverlay,
+  PctOverlayPanel,
+  PctPlacement,
+  pctPlacementPositions,
+} from '@pacit/components/core';
+import { PctPopoverCloseReason } from './popover.types';
+
+/**
+ * The gap between the trigger and the panel, in pixels — the tooltip's number and the
+ * tooltip's reason: the distance is an argument the position strategy is handed before any
+ * stylesheet exists, so a token here would have to be read back out of the computed style on
+ * every opening.
+ */
+const OFFSET = 8;
+
+/**
+ * A popover: a panel of content hanging off the control that opened it, with focus inside it
+ * and the rest of the page still answering.
+ *
+ * **It is the non-modal half of the dialog, and every difference follows from that one word.**
+ * `role="dialog"` with **no** `aria-modal`, no veil, no `inert` over the background and no
+ * scroll lock — the page behind stays live, which is the whole point of a panel that hangs off
+ * a control instead of standing over the page. What it keeps from the dialog is the part a
+ * panel with content cannot do without: it takes focus, it says what it is, and it gives focus
+ * back to the trigger when the user dismisses it.
+ *
+ * **Focus goes to the panel itself, not to the first control in it.** The panel carries the
+ * name and the role, so focusing it is what makes a screen reader announce what has just
+ * opened; landing on the first field skips that announcement and starts the user in the middle
+ * of something they were never told about. Tab from there reaches the content, because the
+ * panel stands before its own children.
+ *
+ * **And it comes back only if it was inside.** A popover is non-modal, so the user can click
+ * into the page behind it and dismiss it from there — pulling focus back to the trigger then
+ * would take it off whatever they had just started typing in. Tab out of the panel is the
+ * third way out and the one the DOM would get wrong on its own: an overlay is a child of
+ * `body`, so its content sits at the end of the document's tab order however near the trigger
+ * it is drawn, and Tab therefore closes the panel and hands focus back to the trigger for the
+ * page's own order to carry on from.
+ *
+ * **SSR**: nothing renders on the server. The panel is a template attached to an overlay by a
+ * browser render, so a popover left `open` at bootstrap sends no markup and hydrates no
+ * mismatch (`req-project-ssr`). The trigger's `aria-expanded` is the deliberate exception —
+ * it is part of the control's markup rather than of an interaction.
+ *
+ * @example
+ * <button pctButton [pctPopoverTrigger]="filters">Filters</button>
+ * <pct-popover #filters heading="Filters" placement="bottom">
+ *   <pct-field label="Owner"><input pctText /></pct-field>
+ *   <button pctButton (click)="filters.open.set(false)">Apply</button>
+ * </pct-popover>
+ */
+@Component({
+  selector: 'pct-popover',
+  imports: [PctOverlayPanel],
+  templateUrl: './popover.html',
+  styleUrl: './popover.scss',
+  host: {
+    class: 'pct-popover',
+    // The host renders nothing — everything it draws lives in the overlay. It stays in the
+    // tree because it is where the panel's severed properties are read from.
+    style: 'display: contents',
+  },
+})
+export class PctPopover {
+  private readonly injector = inject(Injector);
+  private readonly viewContainer = inject(ViewContainerRef);
+  private readonly host = inject(ElementRef<HTMLElement>);
+  private readonly document = inject(DOCUMENT);
+  private readonly interactivity = inject(InteractivityChecker);
+
+  /**
+   * Whether the panel is up. A `model`, because both directions are ordinary: an application
+   * opens it, and the popover closes itself on Escape, on a press outside and on the trigger.
+   */
+  readonly open = model(false);
+
+  /**
+   * The visible title, rendered as the panel's heading and used as its accessible name. A
+   * panel with no name is announced as "dialog" and nothing else, so an empty one is reported
+   * in dev mode rather than passed over.
+   */
+  readonly heading = input<string>('');
+
+  /**
+   * The accessible name of a popover with no visible heading — an INPUT and not an attribute
+   * on the tag, for the dialog's reason: the role sits on the panel inside the overlay, and
+   * the host carries none at all (`req-a11y-built-in`).
+   */
+  readonly ariaLabel = input<string>('');
+
+  /** As `ariaLabel`, for a name that already stands somewhere inside the content. */
+  readonly ariaLabelledby = input<string>('');
+
+  /**
+   * Which side of the trigger it opens on — logical, so `end` is the right in an English page
+   * and the left in an Arabic one. The window has the last word: a side with no room for the
+   * panel falls back to the one across the trigger (`pctPlacementPositions`).
+   */
+  readonly placement = input<PctPlacement>('bottom');
+
+  /** Why it closed. See `PctPopoverCloseReason`. */
+  readonly closed = output<PctPopoverCloseReason>();
+
+  private readonly uid = nextPctId('pct-popover');
+
+  /** What the trigger's `aria-controls` points at while the panel is up. */
+  readonly panelId = `${this.uid}-panel`;
+
+  protected readonly headingId = `${this.uid}-heading`;
+
+  /**
+   * The control this panel hangs off, as registered by `PctPopoverTrigger`. A signal and not a
+   * field, because a popover asked to open before its trigger has rendered has to open the
+   * moment it does — the effect below is waiting for this rather than giving up.
+   */
+  private readonly trigger = signal<HTMLElement | null>(null);
+
+  private readonly panelTemplate =
+    viewChild.required<TemplateRef<void>>('panel');
+
+  /**
+   * The overlay half from `core`: the four properties a panel outside the host tree stops
+   * inheriting (`lesson-35`). The popover is the layer's fourth consumer and the second one
+   * whose panel takes focus.
+   */
+  private readonly panelOverlay = pctOverlay({
+    // The trigger is what the panel is an extension of. The host is the fallback and never
+    // the real answer — nothing opens without a trigger — but it inherits the same four
+    // properties, so a reading taken from it is honest rather than empty.
+    from: () => this.trigger() ?? this.host.nativeElement,
+  });
+
+  protected readonly inherited = this.panelOverlay.inherited;
+
+  /** The overlay while it is up; `null` whenever the popover is closed. */
+  private ref: OverlayRef | null = null;
+
+  /** The panel's view, so the leave can be put on the screen before it is waited for. */
+  private view: EmbeddedViewRef<void> | null = null;
+
+  /** True while the panel is fading out — the state the leave transition runs from. */
+  protected readonly leaving = signal(false);
+
+  /** The pending wait for that transition; `null` when nothing is leaving. */
+  private cancelLeave: (() => void) | null = null;
+
+  /**
+   * Why the **next** close happened. Set by whichever path closes the popover and read once by
+   * the effect; `api` is the default, because a value written from outside is what every path
+   * that does not announce itself looks like.
+   */
+  private reason: PctPopoverCloseReason = 'api';
+
+  /**
+   * Whether a render has happened. There is none on the server, so this is the gate that keeps
+   * the overlay a browser-only thing without the component asking which platform it is on.
+   */
+  private readonly rendered = signal(false);
+
+  constructor() {
+    afterNextRender(() => this.rendered.set(true));
+
+    // Three dependencies and no more, which is why the body is `untracked`: attaching reads
+    // the placement, the template and the properties the overlay layer has just written, and
+    // every one of those would otherwise be a reason to run this again. It converges — the
+    // second pass finds the panel attached and returns — but a run that exists only to
+    // discover it has nothing to do is the near miss of [`lesson-94`](../../../../docs/lessons.md#lesson-94),
+    // and the near miss is the one worth writing down.
+    effect(() => {
+      if (!this.rendered()) return;
+      const trigger = this.trigger();
+      const open = this.open();
+      untracked(() => {
+        if (open) {
+          if (trigger) this.attach(trigger);
+          return;
+        }
+        this.beginLeave();
+      });
+    });
+
+    // Destroyed while open: nothing is left to hear a `closed`, and the panel goes at once
+    // rather than fading out of a tree that no longer exists.
+    inject(DestroyRef).onDestroy(() => {
+      this.cancelLeave?.();
+      this.detach();
+    });
+
+    if (isDevMode()) effect(() => this.warnOnUnnamed());
+    if (isDevMode()) effect(() => this.warnOnNoTrigger());
+  }
+
+  /**
+   * Opens it if it is closed and closes it if it is open — what a press on the trigger does,
+   * and the one path whose close carries the `trigger` reason.
+   */
+  toggle(): void {
+    if (this.open()) this.dismiss('trigger', false);
+    else this.open.set(true);
+  }
+
+  // ── what the trigger registers ──────────────────────────────────────────────────────────
+
+  /**
+   * Registers the control the panel hangs off. Called by `PctPopoverTrigger` and by nothing
+   * else: the attributes a trigger carries belong to a directive standing on it, rather than
+   * to a component reaching into an element it does not own.
+   */
+  bindTrigger(element: HTMLElement): void {
+    // `untracked`, and it is not a tidy-up: this runs inside the trigger directive's effect,
+    // so reading the signal there would make each trigger's registration depend on the
+    // registration. With one trigger that is a wasted second pass; with TWO it is a loop that
+    // never ends — each effect invalidated by the other's write, for ever
+    // ([`lesson-94`](../../../../docs/lessons.md#lesson-94)).
+    const current = untracked(this.trigger);
+    if (isDevMode() && current && current !== element)
+      console.warn(
+        `[pct-popover] Two controls carry \`pctPopoverTrigger\` for the same popover. Both ` +
+          `will say \`aria-expanded\`, the panel will hang off whichever registered last, and ` +
+          `focus goes back to that one whoever opened it. Give each control a popover of its ` +
+          `own.`,
+      );
+    this.trigger.set(element);
+  }
+
+  /**
+   * Gives the registration back. It exists so that the warning above can tell a **second**
+   * trigger from the same trigger built again — a control inside an `@if` is destroyed and
+   * recreated, and a contract with only the half that speaks reports that as a defect
+   * ([`lesson-68`](../../../../docs/lessons.md#lesson-68)).
+   */
+  unbindTrigger(element: HTMLElement): void {
+    if (untracked(this.trigger) === element) this.trigger.set(null);
+  }
+
+  // ── open and close ──────────────────────────────────────────────────────────────────────
+
+  private attach(trigger: HTMLElement): void {
+    if (this.ref) {
+      // Asked for again before its leave had finished — so the fade is turned round rather
+      // than a second panel attached over the first.
+      this.cancelLeave?.();
+      this.cancelLeave = null;
+      this.leaving.set(false);
+      return;
+    }
+
+    // `show()` on the overlay layer **is** the read of what an overlay severs: there is no
+    // path to an open panel that carries no theme (`lesson-35`).
+    this.panelOverlay.show();
+    const inherited = this.panelOverlay.inherited();
+    const direction = inherited?.direction === 'rtl' ? 'rtl' : 'ltr';
+
+    const position = createFlexibleConnectedPositionStrategy(
+      this.injector,
+      trigger,
+    )
+      .withPositions(pctPlacementPositions(this.placement(), OFFSET, direction))
+      // A panel that does not fit is slid back into the window rather than clipped: content
+      // with its edge cut off is worse than a panel a few pixels off its side.
+      .withPush(true);
+
+    const ref = createOverlayRef(this.injector, {
+      positionStrategy: position,
+      // The panel follows a scrolling page rather than closing on it: the page behind is live,
+      // so scrolling is something the user may well be doing *because* the panel is open.
+      scrollStrategy: createRepositionScrollStrategy(this.injector),
+      // The direction is the TRIGGER's, not the page's: `start`/`end` are resolved by the
+      // dependency against the overlay's own direction, and a panel outside the host tree has
+      // no other way of learning it.
+      direction,
+      panelClass: 'pct-popover__pane',
+      // A popover left attached across a route change hangs off a control that has gone.
+      disposeOnNavigation: true,
+    });
+    this.ref = ref;
+    this.view = ref.attach(
+      new TemplatePortal<void>(this.panelTemplate(), this.viewContainer),
+    );
+
+    // The strategy measures the panel as it is attached, and what it measures has to be the
+    // panel with its content in it — the portal outlet has run a detection pass by now, so
+    // this is a second measurement of a laid-out box rather than of an empty one.
+    ref.updatePosition();
+
+    // From the stack and never from a listener above the control: the dispatcher hands a
+    // keydown to the top-most attached overlay alone, so a select opened inside this popover
+    // answers Escape first and the popover does not see the key at all
+    // ([0024](../../../../docs/decisions/0024-the-closing-stack-is-the-dependency-s.md)).
+    ref.keydownEvents().subscribe((event) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      this.dismiss('escape', true);
+    });
+
+    // A press outside the panel dismisses it — **except on the trigger**, which has a press
+    // of its own to answer. The two are the same click and this one arrives first: the
+    // dependency listens on `body` in the CAPTURE phase, so a popover that closed here would
+    // be re-opened by its own toggle on the way back up, and would never shut from its
+    // control at all ([`lesson-93`](../../../../docs/lessons.md#lesson-93)).
+    ref.outsidePointerEvents().subscribe((event) => {
+      const target = event.target as Node | null;
+      if (target && trigger.contains(target)) return;
+      this.dismiss('outside', false);
+    });
+
+    this.panelElement()?.focus();
+  }
+
+  /**
+   * Puts the panel into its leaving state and detaches it once the motion is over. The
+   * `closed` event does **not** wait for that: it says the popover was closed, which is a
+   * decision, and the fade is what the pixels do about it afterwards.
+   */
+  private beginLeave(): void {
+    if (!this.ref || this.cancelLeave) return;
+
+    this.closed.emit(this.reason);
+    this.reason = 'api';
+
+    this.leaving.set(true);
+    const panel = this.panelElement();
+    if (!panel) {
+      this.detach();
+      return;
+    }
+    // The state has to be on the element before the transition can run from it, and an
+    // embedded view is checked when the application gets round to it.
+    this.view?.detectChanges();
+
+    const cancel = pctAfterTransition(panel, () => this.detach());
+    // `pctAfterTransition` calls back at once where there is no transition to wait for — in
+    // jsdom, and for a user who asked for no motion. The assignment then lands AFTER the
+    // detach it belongs to, so what is kept is a wait that is still pending.
+    this.cancelLeave = this.ref ? cancel : null;
+  }
+
+  private detach(): void {
+    const ref = this.ref;
+    this.cancelLeave = null;
+    this.ref = null;
+    this.view = null;
+    if (!ref) return;
+
+    ref.dispose();
+    this.leaving.set(false);
+    this.panelOverlay.hide();
+  }
+
+  private dismiss(reason: PctPopoverCloseReason, restore: boolean): void {
+    if (!this.open()) return;
+    this.reason = reason;
+    // The state first and the focus second, and the order is readable rather than incidental:
+    // the close is a decision the application hears about, and where focus lands afterwards is
+    // what this component does about it. The panel is still on the screen for both — the leave
+    // has not begun — so `restoreFocus` can still ask whether focus was inside it.
+    this.open.set(false);
+    if (restore) this.restoreFocus();
+  }
+
+  /**
+   * Tab out of the panel: it closes, and focus goes back to the trigger rather than onwards.
+   *
+   * **The panel is not where it looks like it is.** An overlay is a child of `body`, so its
+   * content stands at the END of the document's tab order however near the trigger it is
+   * drawn — Tab past the last control in it leaves the page for the browser's own chrome, and
+   * Shift+Tab out of the first one lands wherever the page happens to end. Splicing focus back
+   * onto the trigger puts the panel where the reader thinks it is: the next Tab carries on
+   * from the control the panel belongs to, in either direction.
+   *
+   * The alternative was to close on `focusout` and let the browser take focus where it would.
+   * It was refused on what the event really reports: `relatedTarget` is `null` both for focus
+   * going nowhere in the page and for the whole WINDOW losing it, so a popover that closed on
+   * that would be gone when the user came back from another application.
+   */
+  protected onKeydown(event: KeyboardEvent): void {
+    if (event.key !== 'Tab') return;
+    const panel = this.panelElement();
+    if (!panel) return;
+
+    const tabbable = this.tabbables(panel);
+    const target = event.target as HTMLElement;
+    // With focus on the panel itself, a forward Tab is the way IN to the content — and the
+    // way out only when there is no content to go into.
+    const leaving = event.shiftKey
+      ? target === panel || target === tabbable[0]
+      : tabbable.length === 0 || target === tabbable[tabbable.length - 1];
+    if (!leaving) return;
+
+    event.preventDefault();
+    this.dismiss('away', true);
+  }
+
+  /**
+   * What Tab can reach inside the panel, in document order. The dependency's checker and not a
+   * selector written here: which elements are tabbable is a question about disabled states,
+   * `contenteditable`, media elements and four engines' disagreements about them, and this
+   * library buys that machinery rather than keeping a second opinion of its own
+   * ([0013](../../../../docs/decisions/0013-no-headless-split.md)).
+   */
+  private tabbables(panel: HTMLElement): HTMLElement[] {
+    return Array.from(panel.querySelectorAll<HTMLElement>('*')).filter(
+      (element) =>
+        this.interactivity.isFocusable(element) &&
+        this.interactivity.isTabbable(element),
+    );
+  }
+
+  /**
+   * Gives focus back to the trigger — **if the panel still has it**. The page behind a
+   * popover is live, so a user can click into it, start typing, and dismiss the panel with
+   * Escape from there; a restore that did not ask would then take focus off what they were
+   * doing and hand it to a control they had left behind.
+   */
+  private restoreFocus(): void {
+    const panel = this.panelElement();
+    const active = this.document.activeElement;
+    if (!panel || !active || !panel.contains(active)) return;
+    this.trigger()?.focus();
+  }
+
+  private panelElement(): HTMLElement | null {
+    return (
+      this.ref?.overlayElement.querySelector<HTMLElement>(
+        '[data-pct-part="panel"]',
+      ) ?? null
+    );
+  }
+
+  // ── what the author is told in dev mode ─────────────────────────────────────────────────
+
+  /** An open panel with no accessible name is announced as "dialog" and nothing more. */
+  private warnOnUnnamed(): void {
+    if (!this.open()) return;
+    if (this.heading() || this.ariaLabel() || this.ariaLabelledby()) return;
+    console.warn(
+      `[pct-popover] An open popover with no accessible name. Give it a \`heading\`, or ` +
+        `\`ariaLabel\`/\`ariaLabelledby\` when the name already stands somewhere in the ` +
+        `content. Without one a screen reader announces "dialog" and the user has to read ` +
+        `the panel to find out what it is.`,
+    );
+  }
+
+  /**
+   * A popover has to hang off something. Opened with no trigger registered it does nothing at
+   * all — no panel, no error, no clue — and the missing piece is one attribute in a template.
+   */
+  private warnOnNoTrigger(): void {
+    if (!this.rendered() || !this.open() || this.trigger()) return;
+    console.warn(
+      `[pct-popover] An open popover with no trigger: there is nothing for the panel to hang ` +
+        `off, so nothing is shown. Put \`[pctPopoverTrigger]\` on the control that opens it.`,
+    );
+  }
+}
+
+/**
+ * The control a popover hangs off: it toggles the panel and says so about itself.
+ *
+ * `aria-expanded` is why this is a directive on the trigger rather than a `for` input on the
+ * panel. The attribute belongs to the control — it is what a screen reader reads when the user
+ * arrives at the button, open or closed — and a component that wrote it into an element
+ * somewhere else in the template would be reaching into markup it does not own. `aria-controls`
+ * is written **only while the panel is up**, which is the select's rule for the same reason: an
+ * id that points at nothing is a reference into the void.
+ *
+ * @example
+ * <button pctButton [pctPopoverTrigger]="filters">Filters</button>
+ * <pct-popover #filters heading="Filters">…</pct-popover>
+ */
+@Directive({
+  selector: '[pctPopoverTrigger]',
+  host: {
+    'aria-haspopup': 'dialog',
+    '[attr.aria-expanded]': 'popover().open()',
+    '[attr.aria-controls]': 'popover().open() ? popover().panelId : null',
+    '(click)': 'popover().toggle()',
+  },
+})
+export class PctPopoverTrigger {
+  private readonly host = inject(ElementRef<HTMLElement>);
+
+  /** The panel this control opens — the `pct-popover` from a template reference variable. */
+  readonly popover = input.required<PctPopover>({ alias: 'pctPopoverTrigger' });
+
+  constructor() {
+    effect((onCleanup) => {
+      const popover = this.popover();
+      const element: HTMLElement = this.host.nativeElement;
+      popover.bindTrigger(element);
+      onCleanup(() => popover.unbindTrigger(element));
+    });
+  }
+}

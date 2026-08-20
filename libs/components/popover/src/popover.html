@@ -1,0 +1,34 @@
+<!--
+  Everything below is attached to a CDK overlay and lives outside the host tree — the host
+  element renders nothing. The panel therefore carries `pctOverlayPanel`: what the tree stops
+  handing it — theme, typeface, size, writing direction (`lesson-35`).
+
+  It is a panel of the kind that DOES take focus, which is the other declaration 0025 named —
+  and `tabindex="-1"` is how it takes it itself rather than handing it to the first control
+  inside. The panel is what carries the role and the name, so it is what a screen reader has to
+  announce before the user is anywhere.
+-->
+<ng-template #panel>
+  <div
+    class="pct-popover__panel"
+    data-pct-part="panel"
+    role="dialog"
+    [id]="panelId"
+    [pctOverlayPanel]="inherited()"
+    tabindex="-1"
+    [attr.data-pct-leaving]="leaving() ? '' : null"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || (heading() ? headingId : null)"
+    (keydown)="onKeydown($event)"
+  >
+    @if (heading()) {
+    <h2 class="pct-popover__heading" data-pct-part="heading" [id]="headingId">
+      {{ heading() }}
+    </h2>
+    }
+
+    <div class="pct-popover__content" data-pct-part="content">
+      <ng-content />
+    </div>
+  </div>
+</ng-template>

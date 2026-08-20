@@ -509,13 +509,19 @@ reading is `pctOverlay()` in `@pacit/components/core` and it is not optional mac
 under a combobox, pointed at by `aria-activedescendant` — the panel carries `pctFocusStays`,
 which refuses the press that would move it: without that refusal a press on the panel's own
 background lands on `body`, and every key the control owns loses its handler. **A panel of the
-other kind — one that takes focus — is a modal**, and it takes the page with it: everything
-outside it goes `inert` and the document stops scrolling, both released **before** the panel is
-detached, because focus goes back to an element that sits in the background and an inert
-subtree refuses `focus()`. That is `PctModalBackground` in `@pacit/components/core`, and it is
+other kind — one that takes focus — comes in two, and the difference is what it does to the
+page.** A **modal** takes the page with it: everything outside it goes `inert` and the document
+stops scrolling, both released **before** the panel is detached, because focus goes back to an
+element that sits in the background and an inert subtree refuses `focus()`. That is `PctModalBackground` in `@pacit/components/core`, and it is
 reference-counted — a dialog opened from a dialog hands the page back once, at the end. One
 thing it must not take: a live region that is a child of `body` goes on speaking, or a control
-inside the modal loses the only channel it has. **Which side a panel opens on is logical**:
+inside the modal loses the only channel it has. A **non-modal** panel takes focus and nothing
+else — the page behind answers, and what it owes in exchange is the **tab order**: an overlay is
+a child of `body`, so its content stands at the end of the document however near its trigger it
+is drawn, and Tab out of the panel therefore closes it and hands focus back to the trigger for
+the page's own order to carry on from. Focus goes to the **panel** rather than to the first
+control in it — the panel is what carries the role and the name — and comes back only if it was
+still inside, because a live page can be clicked into and dismissed from there. **Which side a panel opens on is logical**:
 `start` and `end` are the sides the writing direction decides, and a side the window has no room
 for gives way to the one across the control rather than to the nearest empty corner. That list
 is `pctPlacementPositions()` in `@pacit/components/core`, and the reason it is shared rather
@@ -533,6 +539,9 @@ opened inside a dialog that answers Escape before the dialog does;
 `apps/sandbox-e2e/src/tooltip.spec.ts` — the placement half: each side measured against the
 control it hangs on, the 8 px gap, `end` measured on both sides of the writing direction, and a
 side with no room giving way across the control;
+`apps/sandbox-e2e/src/popover.spec.ts` — the non-modal half: the page behind answering a press
+and still scrolling while the panel is up, focus taken by the panel and given back by Escape,
+and Tab walking out of the panel in both directions;
 `libs/components/core/src/core.spec.ts` — the layer under its own name: the four properties
 read off the control, the anchor's width, a second opening re-reading a page that moved, the
 closing order over two stacked overlays, the press `PctFocusStays` refuses, which elements

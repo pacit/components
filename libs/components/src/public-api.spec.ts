@@ -4,6 +4,7 @@ import * as core from '@pacit/components/core';
 import * as dialog from '@pacit/components/dialog';
 import * as field from '@pacit/components/field';
 import * as icon from '@pacit/components/icon';
+import * as popover from '@pacit/components/popover';
 import * as radio from '@pacit/components/radio';
 import * as select from '@pacit/components/select';
 import * as tooltip from '@pacit/components/tooltip';
@@ -37,6 +38,7 @@ describe('the public surface of the package', () => {
     dialog,
     field,
     icon,
+    popover,
     radio,
     select,
     tooltip,

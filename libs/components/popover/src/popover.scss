@@ -1,0 +1,82 @@
+/* The whole component is in a CDK overlay, that is outside the host tree — `:host(…)` describes
+   nothing here, and the tokens still reach it because they are defined on `:root`. */
+
+.pct-popover__panel {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: var(--pct-popover-panel-gap);
+  max-inline-size: var(--pct-popover-panel-max-width);
+  /* The panel never grows past the window it hangs in, so long content scrolls inside it
+     rather than reaching off the screen — the page behind is live and scrolling that one
+     would not bring the rest of the panel back. */
+  max-block-size: calc(100vh - var(--pct-space-5) * 2);
+  overflow: auto;
+  padding-block: var(--pct-popover-panel-padding-y);
+  padding-inline: var(--pct-popover-panel-padding-x);
+  background: var(--pct-popover-panel-bg);
+  color: var(--pct-popover-panel-fg);
+  border: 1px solid var(--pct-popover-panel-border);
+  border-radius: var(--pct-popover-panel-radius);
+  box-shadow: var(--pct-popover-panel-shadow);
+  font-family: inherit;
+
+  /* The enter and the leave are one property in two directions, and the duration comes from
+     the motion axis in both — `prefers-reduced-motion` is answered by the token build rather
+     than by a media query written here (`req-a11y-motion`). `opacity` is the one animation
+     `req-token-no-opacity` leaves open, and it stays at its two ends: 0 and 1, never a value
+     in between that would compose with the background and move the contrast out from under
+     the gate that measured it. */
+  opacity: 1;
+  transition: opacity var(--pct-motion-transition-duration)
+    var(--pct-motion-transition-easing);
+
+  /* The enter needs no JavaScript: `@starting-style` gives the browser the state to come from,
+     so the panel fades in on being attached. The leave cannot be done the same way — an
+     element removed from the DOM takes its transition with it — and that half is
+     `pctAfterTransition` in `core`. */
+  @starting-style {
+    opacity: 0;
+  }
+}
+
+.pct-popover__panel[data-pct-leaving] {
+  opacity: 0;
+}
+
+/* The panel takes focus itself, so that its name and role are announced before the user is
+   anywhere inside it. That is a programmatic focus and not a keyboard cursor, and a ring drawn
+   around the whole panel would read as a defect — `:focus-visible` is deliberately not used
+   here, because it would draw exactly that ring for a keyboard user. */
+.pct-popover__panel:focus {
+  outline: none;
+}
+
+.pct-popover__heading {
+  margin: 0;
+  color: var(--pct-popover-heading-fg);
+  font-size: var(--pct-popover-heading-font-size);
+  font-weight: var(--pct-popover-heading-font-weight);
+  line-height: 1.4;
+}
+
+.pct-popover__content {
+  /* The content is the consumer's; the panel gives it a column and stays out of it. */
+  min-inline-size: 0;
+}
+
+/* Forced colours: every surface goes to the system's, and the edge is the only thing left to
+   say where the panel ends. Each rule is written out with the base selector's own weight,
+   because `@media` adds no specificity and the base rule would otherwise win the cascade
+   ([`lesson-70`](../../../../docs/lessons.md#lesson-70)). */
+@media (forced-colors: active) {
+  .pct-popover__panel {
+    background: Canvas;
+    color: CanvasText;
+    border-color: CanvasText;
+  }
+
+  .pct-popover__heading {
+    color: CanvasText;
+  }
+}

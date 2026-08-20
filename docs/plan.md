@@ -86,14 +86,24 @@ dependency lists with a gate reading the artefact — so **what stands between h
 B4 alone, and B4 is held with B2**. In parallel: F1 is unblocked — the inventories it renders
 both exist. **D2, D3, D4, D5, D6 and D7 have closed, so D is empty — and E1 has closed with
 them**, taking **C19** with it: the finding bound at E1, and E1 is where the select's second
-Escape owner stopped being cosmetic. **E2 is open and half closed**: the tooltip ships, the
-popover is what is left of the item. The half that is done settled the question the item was
-named for — "describes vs names" turned out to be two different relations rather than two ways
-of writing one, and the measurement that says so is of the state nobody audits, the **closed**
-one ([`lesson-92`](lessons.md#lesson-92),
+Escape owner stopped being cosmetic. **E2 has closed too, in two halves that
+asked different questions.** The tooltip settled the one the item was named for — "describes vs
+names" turned out to be two different relations rather than two ways of writing one, and the
+measurement that says so is of the state nobody audits, the **closed** one
+([`lesson-92`](lessons.md#lesson-92),
 [0030](decisions/0030-a-name-is-an-attribute-a-description-is-a-reference.md)). It also brought
 the first real enter/leave here, and with it the third shared thing the plan had not foreseen:
-placement, extracted at the moment the second role needed it rather than after. C, the
+placement, extracted at the moment the second role needed it rather than after. The popover
+then asked the question a panel with no content and no focus could not: **where does Tab go
+when the panel is not modal?** An overlay is a child of `body`, so the DOM's answer is "out of
+the page" — the panel's tab order is spliced back onto its trigger
+([0031](decisions/0031-a-panel-s-tab-order-belongs-to-its-trigger.md)), and the road not taken
+is written down beside it, because `focusout` cannot tell focus going nowhere from a **window**
+losing it. It left two lessons of the kind that cost an afternoon each: a dismissal delivered
+in the capture phase, before the press it _is_, so the one control that opens a panel could
+never shut it ([`lesson-93`](lessons.md#lesson-93)); and a registration put in an `effect`
+because its partner is an input, which loops for ever the moment a second consumer registers —
+a unit run that never ends rather than an error ([`lesson-94`](lessons.md#lesson-94)). C, the
 filler, is down to **C20**, left behind by D4, and **C21**, left behind by D6; both are held by
 their own **binds at** — C20 at E5, C21 at the next language-gate task.
 
@@ -1745,12 +1755,10 @@ exists and is a condition of entering a release.
     the dependency policy's reason, one ramp step (`slate.1000`), one semantic role (`pct.scrim`)
     and one rule in `check-tokens` point 7 — the amount slot of a `color-mix()` is not a colour,
     with a fixture pinning that boundary
-- [~] **E2 — tooltip + popover** — the "describes vs names" distinction, hover/focus/touch
-  parity, motion reduction on a real enter/leave. **The tooltip is closed; the popover is
-  what is left** — a panel with content in it, a trigger that says `aria-expanded`, and
-  focus that goes in and comes back
-  - _notes:_ **half done, and the half that is done answered the question the item was named
-    for.** "Describes vs names" is not two ways of writing one thing: measured with axe over the
+- [x] **E2 — tooltip + popover** — the "describes vs names" distinction, hover/focus/touch
+      parity, motion reduction on a real enter/leave; and the popover beside it — a panel with
+      content in it, a trigger that says `aria-expanded`, and focus that goes in and comes back
+  - _notes (the tooltip):_ **the half that answered the question the item was named for.** "Describes vs names" is not two ways of writing one thing: measured with axe over the
     state a tooltip spends its life in — **closed** — an icon-only button named by a panel that
     is not attached fails `button-name` at critical, and so does one pointing at that panel's id
     with `aria-labelledby`; a dangling `aria-describedby` produces not one finding
@@ -1783,6 +1791,42 @@ exists and is a condition of entering a release.
     `./dialog` and `./select`** — the shared layer is tree-shaken by the components that do not
     use it; `./tooltip` 12597 B; one semantic role (`pct.surface-inverse` with its `on-` pair)
     and one word in the token dictionary (`inverse`)
+  - _notes (the popover):_ **done, and it is the dialog minus one word.** `role="dialog"`
+    without `aria-modal`, no veil, nothing `inert`, no scroll lock — and every question the
+    component asked came out of that. The one the item had not written down: **where does Tab
+    go when the panel is not modal?** Measured in the browser rather than assumed — a CDK
+    overlay is `body`'s **last element child**, so the panel's content stands at the end of the
+    document's tab order however near the trigger it is drawn, and Tab out of it would leave
+    the page for the browser's chrome. So the order is spliced back onto the trigger, in both
+    directions ([0031](decisions/0031-a-panel-s-tab-order-belongs-to-its-trigger.md)); the road
+    not taken is in the decision, because `focusout` reports focus going nowhere and the WINDOW
+    losing focus with the same `null`, and a panel that closed on that would be gone when the
+    user came back from another application. Focus goes to the **panel** and not to the first
+    control in it — the panel is what carries the role and the name — and comes back only if it
+    was still inside. Two defects the shape of an afternoon each. **The dismissal arrives
+    before the press it is** ([`lesson-93`](lessons.md#lesson-93)): the CDK's outside-press
+    dispatcher listens on `body` in the CAPTURE phase and fires on `click`, so the naive
+    version closed the panel and its own toggle reopened it on the way back up — the one
+    control that opens a popover could never shut it. And **a registration in an `effect` that
+    reads what it writes** ([`lesson-94`](lessons.md#lesson-94)): with one trigger it costs a
+    second pass, with two it never finishes, and the symptom was a fifteen-minute unit suite
+    that simply stopped — no error, no warning. `pctFieldControl` has the same shape and is
+    safe only because its partner arrives by injection, so the registration sits in a
+    constructor; an input moved it into a reactive context and took the safety with it
+  - gate: `apps/sandbox-e2e/src/popover.spec.ts` (15 cases × 3 engines), an open popover added
+    to the axe audit **with the whole page** rather than the panel alone — nothing is `inert`
+    here, so the trigger and what it points at are one tree — a `popover-open` baseline, a
+    forced-colours case, plus `popover.spec.ts` in the unit suite (27 cases) — 405 unit cases
+    green, 663 e2e cases green
+  - control: two recorded runs, each on the line it defends. The trigger guard removed ⇒ two
+    unit cases red, and they are the two that press the trigger twice; the Tab splice removed
+    ⇒ the two Tab cases red. Beside them the e2e measures the promise the component exists
+    for — the counter behind the panel still counts and `<html>` still scrolls — which is
+    exactly the case a modal fails
+  - cost: `./popover` 13075 B, `./core` **unchanged** — the popover uses the shared layer and
+    adds nothing to it; twelve tokens and three pairs in the contrast policy, no new word in
+    the token dictionary and no new string in `PCT_TEXTS`; `@angular/cdk/a11y` gains a second
+    use (`InteractivityChecker`) and the dependency policy's reason says so
 - [ ] **E3 — menu** — roving focus, submenus, reuse of the typeahead from D1
 - [ ] **E4 — closing out the select family** — projected `pct-option`, an option template,
       groups, multiple selection, filtering, clearing, async, virtualisation. Deliberately
