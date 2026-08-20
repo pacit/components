@@ -2,12 +2,15 @@
 /**
  * Style gate: `req-token-logical` (layout in logical properties, so it mirrors under
  * `dir="rtl"`), `req-token-no-opacity` (no compositing `opacity`),
- * `req-a11y-forced-colors` (the mode's rules really paint) and `req-api-icons` (a
- * component paints the box an icon sits in, never the drawing inside it). Breaking any of them gives no
+ * `req-a11y-forced-colors` (the mode's rules really paint), `req-api-icons` (a
+ * component paints the box an icon sits in, never the drawing inside it) and
+ * `req-a11y-motion` (a duration is a token, not a number in a sheet). Breaking any of them gives no
  * red test — an LTR screenshot looks right, so does `opacity: 0.6`, which quietly undoes
- * `req-token-contrast` ([`lesson-6`](../docs/lessons.md#lesson-6)), and so does a
+ * `req-token-contrast` ([`lesson-6`](../docs/lessons.md#lesson-6)), so does a
  * forced-colors rule that loses on specificity, because the browser substitutes the
- * colours by itself anyway ([`lesson-70`](../docs/lessons.md#lesson-70)).
+ * colours by itself anyway ([`lesson-70`](../docs/lessons.md#lesson-70)), and so does a
+ * `150ms` written by hand, which reads exactly like the token it replaced until somebody
+ * asks for less motion.
  *
  *  1. the list of stylesheets is not empty (else points 5 and 6 pass over nothing),
  *  2. COMPILER: everything sass EMITS is visible to the source scanner as well,
@@ -16,9 +19,11 @@
  *  5. no physical property of the inline axis,
  *  6. no compositing `opacity`,
  *  7. FORCED COLOURS: a rule of that mode is not outranked by a base rule of the sheet,
- *  8. PAINT: no property that only an `<svg>` understands (`req-api-icons`).
+ *  8. PAINT: no property that only an `<svg>` understands (`req-api-icons`),
+ *  9. MOTION: a duration comes from the motion axis, and the preference is answered by
+ *     the token build rather than by a sheet of its own (`req-a11y-motion`).
  *
- * Points 5–8 are the rules; 1–3 watch the DENOMINATOR they run over — an unread sheet
+ * Points 5–9 are the rules; 1–3 watch the DENOMINATOR they run over — an unread sheet
  * is to them what a missing file is to coverage ([`lesson-48`](../docs/lessons.md#lesson-48)).
  *
  * Usage: node tools/check-styles.mjs
@@ -121,6 +126,41 @@ const OPACITY = new Set([
   'stroke-opacity',
   'stop-opacity',
 ]);
+
+/**
+ * The properties that carry a duration (`req-a11y-motion`). Their time may only come from
+ * the motion axis: the tokens have a second set of values under
+ * `@media (prefers-reduced-motion: reduce)`, emitted once by the token build, and a
+ * component that writes its own `150ms` opts out of the preference without saying so —
+ * the screenshot is identical, the axis still reads right in the browser, and this one
+ * component keeps moving for the user who asked it not to.
+ *
+ * `animation-timing-function` and `transition-timing-function` are deliberately not here:
+ * an easing is a shape, not a length, and reduction has nothing to do to it.
+ */
+const MOTION = new Set([
+  'transition',
+  'transition-duration',
+  'transition-delay',
+  'animation',
+  'animation-duration',
+  'animation-delay',
+]);
+
+/**
+ * A time in a value: `150ms`, `.3s`, `0s`. Anchored on what precedes it so that the `s`
+ * of a keyframe name or a custom property (`--pct-motion-4s-loop`) is not read as a unit.
+ */
+const TIME = /(?:^|[\s,(])\.?\d+(?:\.\d+)?m?s\b/i;
+
+/**
+ * The preference's own query. A component sheet may not carry it
+ * ([0008](../docs/decisions/0008-motion-axis.md)): reduction is a set of token VALUES the
+ * build emits once, so a second answer written in a component's own sheet is a rule that
+ * has to be found and repeated by every component after it — and the day the two disagree,
+ * the one that wins is decided by the cascade rather than by anybody's intent.
+ */
+const REDUCED = /@media[^{]*prefers-reduced-motion/g;
 
 // ── sheet scanner ────────────────────────────────────────────────────────────
 
@@ -582,15 +622,21 @@ const overlapping = (a, b) =>
 // ── checks ──────────────────────────────────────────────────────────────────
 
 /**
- * A violation of one of the six checks. It carries the check's identifier, not just the
+ * A violation of one of the nine checks. It carries the check's identifier, not just the
  * message: the negative control has to verify that a prepared input fired ON ITS OWN
  * point — a sheet failing for a reason other than the one written into it proves
  * something other than what it declares.
+ *
+ * `rule` is the finer address, for a point that holds more than one: point 9 refuses a
+ * duration and refuses a second answer to the motion preference, and an input built for
+ * the second one would be satisfied by the first firing — that is, by the rule it exists
+ * for having stopped working. A fixture names it when it has one to name.
  */
 class StyleError extends Error {
-  constructor(check, description) {
+  constructor(check, description, rule) {
     super(description);
     this.check = check;
+    this.rule = rule;
   }
 }
 
@@ -744,6 +790,8 @@ const checkStyles = ({ sheets, components, declarations }) => {
   const translucent = [];
   // 8. No painting of an icon's insides (`req-api-icons`).
   const painted = [];
+  // 9. Motion takes its time from the axis (`req-a11y-motion`).
+  const hurried = [];
 
   for (const sheet of sheets)
     for (const d of scans.get(sheet.file).declarations) {
@@ -774,8 +822,12 @@ const checkStyles = ({ sheets, components, declarations }) => {
         translucent.push(`${where}: \`${d.property}: ${d.value}\``);
         continue;
       }
-      if (PAINT.has(d.property))
+      if (PAINT.has(d.property)) {
         painted.push(`${where}: \`${d.property}: ${d.value}\``);
+        continue;
+      }
+      if (MOTION.has(d.property) && TIME.test(d.value))
+        hurried.push(`${where}: \`${d.property}: ${d.value}\``);
     }
 
   if (physical.length)
@@ -890,6 +942,44 @@ const checkStyles = ({ sheets, components, declarations }) => {
         `green. Set \`color\` on the \`pct-icon\` and let the drawing take it through ` +
         `\`currentColor\`. If this one really is safe, say why: ` +
         `/* pct-exception <property>: <reason> */`,
+    );
+
+  // 9. Motion on the axis (`req-a11y-motion`): a duration written into a component sheet
+  //    is a component that keeps its own time. The e2e gate of that promise measures the
+  //    TOKENS — `150ms` with no preference, `0.01ms` with it — and a literal beside them
+  //    is invisible to it: the axis reads right in the browser and this one component
+  //    still moves for the user who asked it not to.
+  if (hurried.length)
+    throw new StyleError(
+      'motion',
+      `${hurried.length} declarations time themselves (req-a11y-motion):\n` +
+        list(hurried) +
+        `\n    Only the motion axis carries a second set of values under ` +
+        `\`prefers-reduced-motion\`, so a duration written here opts this component out of ` +
+        `the preference — and nothing turns red: the token gate measures the tokens, the ` +
+        `screenshot is identical either way. Use ` +
+        `\`var(--pct-motion-transition-duration)\` or \`var(--pct-motion-loop-duration)\`. ` +
+        `If this one really is safe, say why: /* pct-exception <property>: <reason> */`,
+      'literal',
+    );
+
+  const reduced = sheets.flatMap((sheet) =>
+    [...sheet.css.matchAll(REDUCED)].map(
+      () => `${sheet.file}: \`@media (prefers-reduced-motion: …)\``,
+    ),
+  );
+  if (reduced.length)
+    throw new StyleError(
+      'motion',
+      `${reduced.length} component sheets answer the motion preference themselves ` +
+        `(req-a11y-motion, decision 0008):\n` +
+        list(reduced) +
+        `\n    The preference is answered once, in the token build, by a second set of ` +
+        `values for the motion axis — every component inherits it by using the token and ` +
+        `no component has to remember the rule. A sheet with its own query is a second ` +
+        `answer to the same question, and which of them the user gets is then decided by ` +
+        `the cascade.`,
+      'query',
     );
 
   const exceptions = justified.size;
@@ -1100,6 +1190,12 @@ for (const name of cases) {
       problems.push(
         `${name}: check \`${error.check}\` fired, and point ${fx.point} ` +
           `(\`${fx.check}\`) was meant to — the fixture proves something other than what it declares`,
+      );
+    else if (fx.rule && error.rule !== fx.rule)
+      problems.push(
+        `${name}: point ${fx.point} fired on rule \`${error.rule ?? '—'}\` and the case ` +
+          `is built for \`${fx.rule}\` — one point, two rules, and the one this input ` +
+          `exists to prove is the one that stayed silent`,
       );
   } finally {
     rmSync(directory, { recursive: true, force: true });

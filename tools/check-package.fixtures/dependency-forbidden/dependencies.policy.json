@@ -1,0 +1,15 @@
+{
+  "$description": "A policy of the case's own, permitting the one package no policy may permit. The entry is written exactly as the gate asks for one — a `name`, the `kind` the manifest declares it under, and a reason a person can read and agree with — because that is the case: the dependency arrives ARGUED FOR, through the door the gate itself points at, and the ban is what a reason cannot open.",
+  "allowed": [
+    {
+      "name": "@angular/core",
+      "kind": "peer",
+      "reason": "The framework the components are compiled against."
+    },
+    {
+      "name": "@angular/animations",
+      "kind": "peer",
+      "reason": "The panel and the dialog need an enter/leave transition, the framework has an engine for exactly that, and as a peer it costs the consumer nothing they do not already have."
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # Negative control of the package gate
 
-Deliberately defective packages. `libs/components/check-package.mjs` runs all seven of its
+Deliberately defective packages. `libs/components/check-package.mjs` runs all eight of its
 checks on each of them and **requires every one to be rejected — and rejected by the point
 it declares**. A package that passes is a fault; a package that fires for a reason other
 than the one written in its `fixture.json` is a fault just the same, because it proves
@@ -66,6 +66,11 @@ this whole negative control would become exactly what it stands against.
 | [`allowance-without-dependency`](allowance-without-dependency/) | a policy entry outliving the dependency it allowed           | 7     | dead           |
 | [`peer-range-behind-compiler`](peer-range-behind-compiler/)     | a peer range that does not admit the compiler that built it  | 7     | compiler-drift |
 | [`compiler-stamp-missing`](compiler-stamp-missing/)             | the compiler's version is nowhere in the package             | 7     | compiler-stamp |
+| [`dependency-forbidden`](dependency-forbidden/)                 | `@angular/animations` declared as a peer AND permitted       | 7     | forbidden      |
+| [`import-forbidden`](import-forbidden/)                         | an import of `@angular/platform-browser/animations`          | 7     | forbidden      |
+| [`animation-binding`](animation-binding/)                       | `[@panel]` and `(@panel.done)` in a component's template     | 8     | binding        |
+| [`animation-host-binding`](animation-host-binding/)             | the same pair in the declaration's `host`                    | 8     | binding        |
+| [`no-component-declaration`](no-component-declaration/)         | a package point 8 finds no template in                       | 8     | declarations   |
 
 Point 4 has two cases, because there are two different failures: a wrong value and a
 missing constant. The second means the shape of the output changed and the version check
@@ -102,7 +107,7 @@ fire on their own points afterwards.
 
 The script is in `libs/components/`, because the `check-package` target belongs to that
 project. The fixtures do not stand there, because a project's directory is an input to its
-own tasks: eighteen fake packages would enter the `inputs` of the library's build and lint,
+own tasks: twenty-three fake packages would enter the `inputs` of the library's build and lint,
 and `manifest.json` would fall under the `@nx/dependency-checks` rule, which covers
 `**/*.json` in that project. Standing next to
 [`check-docs.fixtures/`](check-docs.fixtures/) is incidental: both directories are the

@@ -1,6 +1,6 @@
 # Negative control of the styles gate
 
-Deliberately defective inputs. `tools/check-styles.mjs` runs all eight of its checks on each
+Deliberately defective inputs. `tools/check-styles.mjs` runs all nine of its checks on each
 of them and **requires every one to be rejected — and rejected by the point it declares**.
 An input that passes is a fault; an input that fires for a reason other than the one
 written in its `fixture.json` is a fault just the same, because it proves something other
@@ -16,7 +16,9 @@ repository takes, `opacity: 0.6` on a text layer looks faultless always and take
 state before [`lesson-6`](../../docs/lessons.md#lesson-6), and a forced-colors rule that
 loses on specificity looks faultless in the two browsers that substitute the colours
 themselves — that is, in the two the screenshots are taken in
-([`lesson-70`](../../docs/lessons.md#lesson-70)).
+([`lesson-70`](../../docs/lessons.md#lesson-70)) — and a `150ms` written by hand looks
+faultless to everybody, including the gate that measures the motion axis, because the axis
+it measures is still right and this component simply no longer reads it.
 
 ## How a case is built
 
@@ -70,6 +72,8 @@ not be another's defect — the same class of problem as the fake `package.json`
 | [`opacity-from-variable`](opacity-from-variable)                     | `opacity: var(...)` — an undecidable value                      | 6     |
 | [`forced-colors-outranked`](forced-colors-outranked)                 | a rule of forced-colors mode shorter than the base rule's       | 7     |
 | [`paint-inside-an-icon`](paint-inside-an-icon)                       | `stroke` on the drawing a consumer may replace                  | 8     |
+| [`duration-literal`](duration-literal)                               | `transition: … 150ms` — a component keeping its own time        | 9     |
+| [`motion-query-in-a-sheet`](motion-query-in-a-sheet)                 | a sheet answering `prefers-reduced-motion` a second time        | 9     |
 
 Point 3 has four cases, because there are four different routes by which a component
 disappears from the measurement: it is not in the file list, the parser does not see it,

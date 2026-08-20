@@ -52,11 +52,11 @@ Snapshot, `node tools/check-docs.mjs`:
 | measure                                     | value |
 | ------------------------------------------- | ----: |
 | requirements                                |    86 |
-| ✅ enforced                                 |    62 |
+| ✅ enforced                                 |    63 |
 | 🟡 partial (deliberately without a control) |    16 |
-| ⛔ gap                                      |     8 |
+| ⛔ gap                                      |     7 |
 
-All 8 gaps have an owner below (B, D, F, G). If adding a requirement raises the gap count
+All 7 gaps have an owner below (B, F, G) — **D holds none any more**. If adding a requirement raises the gap count
 and no task changes, this list has stopped being complete — and that is a fault of this list,
 not of the registry.
 
@@ -85,8 +85,10 @@ so the npm page is written and the last file that travelled in a second language
 dependency lists with a gate reading the artefact — so **what stands between here and npm is
 B4 alone, and B4 is held with B2**. In parallel: F1 is unblocked — the inventories it renders
 both exist — and C, the filler, holds one open finding, **C19**, which binds at E1. **D2,
-D3, D4, D5 and D6 have closed too**, so the next unstarted item in the order is **D7** — and C,
-empty since C18, holds **C20**, left behind by D4, and **C21**, left behind by D6.
+D3, D4, D5, D6 and D7 have closed too, so D is empty and the next unstarted item in the order
+is E1** — and C, empty since C18, holds **C20**, left behind by D4, and **C21**, left behind
+by D6. All three of C's open findings are held by their own **binds at**: C19 at E1, C20 at
+E5, C21 at the next language-gate task.
 
 **B2 is deferred by decision, not blocked** — and the decision has a shape: **the first push
 happens only when the maintainer asks for it outright.** It is not triggered by a state of the
@@ -443,6 +445,30 @@ new `check-icons` with six points and point 8 of `check-styles`, whose fixture i
 library shipped until today. The proof that the swap is invisible is the whole e2e suite: 488
 cases, three engines, **not one visual baseline moved** although an element appeared in the DOM
 around every icon in the library.
+
+**D7 closed after it, and D is empty.** Its line is one sentence — a gate forbidding
+`@angular/animations` — and the measurement it asked for turned that ban into two, because the
+runtime has two roads and only one of them is a dependency. Four probes compiled with the
+package **not installed at all**: `[@panel]`, `(@panel.done)` and the same pair on a host all
+pass `strictTemplates` and import nothing but `@angular/core`
+([`lesson-87`](lessons.md#lesson-87)). So a library can require an animation engine from every
+consumer while declaring nothing — NG5105 in their dev build, and in production a DOM property
+called `@panel` that animates nothing and says nothing. The second point reads that road in the
+packed templates, where ng-packagr's partial declarations carry a template as a **string**.
+The first road cost the task its second finding, and it is about a gate's manners rather than
+its verdict ([`lesson-88`](lessons.md#lesson-88)): walked with the ban removed, point 7 answers
+an import of `@angular/animations` with **declare it**, answers the declaration with **write
+down why**, and — before today — passed the moment somebody did. Every message a gate prints is
+a repair instruction, so the ban had to be evaluated **first** among the rules of its point,
+before the ones that ask for deliberateness; placed last it would have taught the forbidden
+road twice and then changed its mind. The requirement's own binding sentence carried a second
+half — that motion takes its duration from a token — and it had no witness either: the e2e
+measures the **axis** (`150ms` / `0.01ms`), so a component writing its own `150ms` leaves that
+measurement exactly as green as it finds it and stops reading the axis. That is point 9 of
+`check-styles`, in two rules: a literal duration, and a component sheet answering
+`prefers-reduced-motion` a second time. The by-product is a word: `callback` is in the Polish
+dictionary and not in the English list, which is [`lesson-77`](lessons.md#lesson-77) met for
+the second time — the first occurrence in the whole repository was written by this task.
 
 ## B. Readiness for the first release
 
@@ -1397,7 +1423,9 @@ has two ways to be wrong — the name it is called by, the context it is handed 
 with the type carried by a required input. **D6 closed against its line twice**: the token it
 names cannot hold a template at all, so an icon set is a component whose templates are the
 icons, and the layer is not in `core` — measured there, it cost every entrypoint 754 B for a
-component most of them never draw.
+component most of them never draw. **D7 closed last, and the phase is done**: the ban it asks
+for is two bans, because the animation runtime reaches a consumer through a dependency and,
+without one, through a binding that compiles with the package uninstalled.
 
 Guiding principle: **mechanics from CDK, our own API** — CDK types never leak into the public
 contract. The pattern is ready: `PCT_FIELD` is exactly that for the field chrome and its control.
@@ -1627,8 +1655,31 @@ contract. The pattern is ready: `PCT_FIELD` is exactly that for the field chrome
       template under a name that is not a name, so both arms return `null`. The task left
       **C21** behind: `check-parts.mjs` carried a one-letter Polish
       word past every run of the language gate
-- [ ] **D7 — gate forbidding `@angular/animations`** → closes `req-api-animations`; binds at the
-      first component with an enter/leave transition, that is at D2 · _notes:_ —
+- [x] **D7 — gate forbidding `@angular/animations`** → closes `req-api-animations` · _notes:_
+      **done** — three points over the packed artefact, and the task's work was in finding that
+      one line asked for three. Point 7 gained the rule `forbidden`: the banned **specifiers**
+      (`@angular/animations`, `@angular/platform-browser/animations`, subpaths included) in the
+      manifest, in the policy and among the imports — specifiers rather than names, because the
+      second one reads as `@angular/platform-browser` to anything that asks for a package. It
+      is evaluated **before** the rules that ask whether a dependency was deliberate, and that
+      order is the finding: those rules answer an import with "declare it" and a declaration
+      with "say why", so a ban placed after them would walk a maintainer to the forbidden
+      dependency in two green commits and refuse on the third
+      ([`lesson-88`](lessons.md#lesson-88)). Point 8 is the road with no dependency at all —
+      an animation binding needs no import, in a template or on a host, and the four probes
+      that measured it had `@angular/animations` absent from the workspace
+      ([`lesson-87`](lessons.md#lesson-87)); its denominator is the count of component
+      declarations, because the templates are only readable while the compilation keeps
+      leaving them in the artefact as strings. Point 9 of `check-styles` is the requirement's
+      other half, the one its **Binds at** named: a duration comes from the motion axis
+      (`literal`) and a component sheet does not answer `prefers-reduced-motion` itself
+      (`query`) — the e2e that guards `req-a11y-motion` measures the tokens, so a hand-written
+      `150ms` beside them is invisible to it. Five prepared packages and two prepared inputs,
+      each rejected on its own rule; the strongest of them is `dependency-forbidden`, where the
+      dependency arrives declared, argued for and in the right field, and is refused anyway.
+      `check-styles` gained a `rule` address for the same reason `check-package` has one — one
+      point, two rules, and a case that cannot say which of them fired proves nothing. The
+      recorded runs are in the requirement: all three roads fire on `dist/libs/components`
 
 ## E. Phase 2 — components
 

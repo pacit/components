@@ -2139,3 +2139,68 @@ nobody importing `@pacit/components/button` will ever see what they are paying f
 The rule: **before putting something in the kernel, measure what the kernel costs the
 entrypoints that will never call it.** The plan's placement is a proposal; the snapshot is the
 answer.
+
+---
+
+### <a id="lesson-87"></a>`lesson-87` — The dependency a library can require without depending on it
+
+`req-api-animations` bans `@angular/animations`, and the natural reading of a banned package is
+a name: in a manifest, in a policy, in an import. Four probes compiled with the package **not
+installed in the workspace at all**, under `strictTemplates`:
+
+| the component writes            | compiles | what the emitted file imports |
+| ------------------------------- | -------- | ----------------------------- |
+| `<div [@fade]="state">`         | yes      | `@angular/core`               |
+| `<div (@fade.done)="onDone()">` | yes      | `@angular/core`               |
+| `host: { '[@fade]': "'in'" }`   | yes      | `@angular/core`               |
+| `<div [@.disabled]="true">`     | yes      | `@angular/core`               |
+
+No error, no import, no dependency — the only trace is a name beginning with `@`:
+`ɵɵproperty("@fade", …)` and `ɵɵsyntheticHostProperty("@fade", …)` in a full compilation, and in
+the partial declarations ng-packagr ships, the template as a **string** and the host as an
+object with `@`-prefixed keys.
+
+What the consumer gets is not a missing dependency but a broken component, and it breaks
+differently in each of their two builds. Angular's DOM renderer:
+
+```js
+setProperty(el, name, value) {
+  (typeof ngDevMode === 'undefined' || ngDevMode) &&
+    this.throwOnSyntheticProps && checkNoSyntheticProp(name, 'property');
+  el[name] = value;
+}
+```
+
+In their **dev** build that is NG5105 — `Unexpected synthetic property @fade found`, advising
+them to add `provideAnimations()`, that is, to install the runtime this library refused to
+declare. In their **production** build the guard is folded out and the line assigns a DOM
+property called `@fade` to an element that has no such thing: nothing throws, nothing animates,
+and no test anywhere says so.
+
+The rule: **a ban on a dependency has to be measured on the shape that requires it, not only on
+the name that declares it.** The one road here that leaves neither an import nor a manifest
+entry is also the only one that reaches the consumer as a crash.
+
+---
+
+### <a id="lesson-88"></a>`lesson-88` — A gate's order is the repair it advises
+
+The ban's first draft was written after the rules point 7 already had. With the ban removed
+again, the same defect — an import of `@angular/animations` in the packed code — was walked
+through the gate three times:
+
+| the state of the package       | what fires    | what the message advises          |
+| ------------------------------ | ------------- | --------------------------------- |
+| imported, nothing declared     | `undeclared`  | declare it                        |
+| + declared as a peer           | `not-allowed` | write the policy entry saying WHY |
+| + a policy entry with a reason | **nothing**   | — (the run is green)              |
+
+The third row is the gap `req-api-animations` had been describing since it was written, and the
+first two are the reason it is worse than a hole: every message here is a **repair
+instruction**, and read in order they are directions to the forbidden dependency, given by the
+gate that forbids it, one green commit at a time. Placed last, the ban would then read as the
+gate changing its mind on the third try.
+
+The rule: **where one rule refuses and another asks for a justification, the refusal is
+evaluated first.** A gate is not only a verdict — the order of its rules is the sequence of
+repairs it teaches, and a repair that is forbidden must never be the one it teaches first.

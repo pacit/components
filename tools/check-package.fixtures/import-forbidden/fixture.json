@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "dependencies",
+  "rule": "forbidden",
+  "description": "An import of `@angular/platform-browser/animations` — the same runtime under the name of a package whose own name says nothing about animation. Two things are pinned here. The specifier: read as a package name it is `@angular/platform-browser`, which is not banned and one day may be declared for a reason of its own. And the ORDER: nothing declares this import, so the `undeclared` rule would fire on it first and answer, correctly for every other package, that the repair is to declare it — walking a maintainer to the forbidden dependency in two green commits."
+}

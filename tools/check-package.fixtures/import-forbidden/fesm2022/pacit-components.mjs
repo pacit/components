@@ -1,17 +1,16 @@
 /*
- * The package's code in miniature. The gate reads five things out of it: the
- * PCT_VERSION constant (point 4), the uses of `var(--pct-*)` in the style's
- * text (point 3), the imports and the compiler's stamp (point 7) and the
- * template of a component declaration (point 8). The style and the template are
- * strings here on purpose — in a real artefact, which ng-packagr emits as partial
- * declarations, component styles and templates sit in the bundle in exactly that
- * form.
+ * The bundle imports `@angular/platform-browser/animations` — `provideAnimations()` and
+ * the module beside it. Nothing declares it, and that is the point: the rule that reads
+ * undeclared imports would answer first, and its answer — declare it — is the road the
+ * ban exists to close. The package name here is `@angular/platform-browser`, so a ban
+ * written on names rather than on specifiers would not see this file at all.
  */
 import * as i0 from '@angular/core';
 import { signal } from '@angular/core';
 import { Control } from '@angular/forms/signals';
 import { createOverlayRef } from '@angular/cdk/overlay';
 import { NgTemplateOutlet } from '@angular/common';
+import { provideAnimations } from '@angular/platform-browser/animations';
 
 const PCT_VERSION = '0.0.1';
 
@@ -47,6 +46,7 @@ export {
   PCT_VERSION,
   PctControl,
   createOverlayRef,
+  provideAnimations,
   signal,
   styles,
 };

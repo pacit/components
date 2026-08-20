@@ -1,0 +1,6 @@
+{
+  "point": 8,
+  "check": "animations",
+  "rule": "binding",
+  "description": "An animation binding in a component's template, with no import, no declaration and no policy entry anywhere in the package — the whole of point 7 reads manifests, policies and imports, and here there is none of the three. What the consumer gets is NG5105 in their dev build, telling them to add `provideAnimations()`, and in production a DOM property called `@panel` that animates nothing. The template travels into the artefact as a string, which is what makes the binding readable here at all."
+}

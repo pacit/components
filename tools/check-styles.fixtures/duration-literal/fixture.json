@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "motion",
+  "rule": "literal",
+  "description": "A duration written into a component sheet. It is the same 150ms the motion axis carries, so nothing about the component looks different and no screenshot moves \u2014 and it is the one declaration that stays at 150ms when the user asks for less motion, because the second set of values belongs to the tokens and this number is not one. The e2e gate of `req-a11y-motion` cannot see it: that one measures the axis, and the axis is still right."
+}

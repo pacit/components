@@ -1,11 +1,9 @@
 /*
- * The package's code in miniature. The gate reads five things out of it: the
- * PCT_VERSION constant (point 4), the uses of `var(--pct-*)` in the style's
- * text (point 3), the imports and the compiler's stamp (point 7) and the
- * template of a component declaration (point 8). The style and the template are
- * strings here on purpose — in a real artefact, which ng-packagr emits as partial
- * declarations, component styles and templates sit in the bundle in exactly that
- * form.
+ * The component's template carries `[@panel]` and `(@panel.done)`, and the bundle
+ * imports nothing it did not import before — measured, not assumed: both bindings
+ * compile with `@angular/animations` absent from the workspace altogether. The rest of
+ * the template is the reference's, `@if` included, because the two are told apart by
+ * the punctuation of a binding and by nothing else.
  */
 import * as i0 from '@angular/core';
 import { signal } from '@angular/core';
@@ -33,7 +31,7 @@ class PctControl {
     host: { properties: { 'attr.data-pct-part': '"control"' } },
     ngImport: i0,
     template:
-      '@if (label()) { <span data-pct-part="label">{{ label() }}</span> }',
+      '@if (label()) { <span data-pct-part="label" [@panel]="state()" (@panel.done)="settled()">{{ label() }}</span> }',
     isInline: true,
   });
 }

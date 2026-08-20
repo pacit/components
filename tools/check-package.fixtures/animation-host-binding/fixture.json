@@ -1,0 +1,6 @@
+{
+  "point": 8,
+  "check": "animations",
+  "rule": "binding",
+  "description": "The same runtime required through the decorator's `host` instead of the template. It is a separate case because it is a separate SHAPE in the artefact: the template is a string and the host is an object, so a pattern written for one reads nothing in the other. A host binding is also where an enter/leave transition naturally goes — on the component's own element — so this is the likelier of the two, not the exotic one."
+}

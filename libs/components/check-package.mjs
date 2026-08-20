@@ -14,8 +14,11 @@
  *  5. the `ng add` / `ng update` collections are there and their factories point at
  *     compiled files,
  *  6. the manifest has the metadata publishing needs (a warning; `--release` blocks),
- *  7. the dependency lists: every declared name is deliberate, everything the code imports
- *     is declared, and the `@angular/*` ranges admit the compiler that built the package.
+ *  7. the dependency lists: nothing forbidden is imported, declared or permitted, every
+ *     declared name is deliberate, everything the code imports is declared, and the
+ *     `@angular/*` ranges admit the compiler that built the package,
+ *  8. no animation binding in the packed templates — the road to a runtime that leaves no
+ *     dependency behind to find (`req-api-animations`).
  *
  * Point 3 is the one that catches the regression — an empty file passes 1 and 2 as well.
  * Negative control: `tools/check-package.fixtures/` (`req-quality-negative-control`).
@@ -86,6 +89,90 @@ const COMPILER =
  */
 const PEER_TERM = /^\^(\d+)\.\d+\.\d+(?:-[\w.]+)?$/;
 
+/**
+ * The runtime this library refuses (`req-api-animations`): animation here is CSS and the
+ * Web Animations API, and `@angular/animations` is a weight no consumer of a control
+ * library agreed to carry.
+ *
+ * The ban is written in the gate and not in `dependencies.policy.json` on purpose. That
+ * file is a list of PERMITS — every entry says why a dependency is deliberate — and a
+ * refusal standing among permits is one word's edit away from being a permit itself,
+ * written by the same hand, in the same commit, for the same reason.
+ *
+ * The entries are SPECIFIERS rather than package names, because one runtime arrives under
+ * several: `@angular/animations` with its `browser` subpath, and
+ * `@angular/platform-browser/animations`, a subpath of a package whose name says nothing
+ * about animation at all — a ban on names alone would read the second one as
+ * `@angular/platform-browser` and let it through the day that package is declared for a
+ * reason of its own.
+ */
+const FORBIDDEN = [
+  {
+    specifier: '@angular/animations',
+    reason:
+      'the animation runtime itself, plus its `browser` driver — a dependency for what ' +
+      '`transition`, `@keyframes` and `Element.animate()` already do',
+  },
+  {
+    specifier: '@angular/platform-browser/animations',
+    reason:
+      '`provideAnimations()`, `BrowserAnimationsModule` and the async variant — the same ' +
+      'runtime, reached through a package a library never needs and an application ' +
+      'always has',
+  },
+];
+
+/** The banned entry a specifier falls under, subpaths included, or `undefined`. */
+const forbids = (specifier) =>
+  FORBIDDEN.find(
+    (entry) =>
+      specifier === entry.specifier ||
+      specifier.startsWith(`${entry.specifier}/`),
+  );
+
+/**
+ * An animation binding in the packed code — the road to the same runtime that leaves no
+ * dependency behind at all. Measured rather than assumed ([`lesson-87`](../../docs/lessons.md#lesson-87)):
+ * all four shapes compile under `strictTemplates` with `@angular/animations` not even
+ * installed, and the emitted file imports nothing but `@angular/core`.
+ *
+ * The first two are what a template carries into the artefact: ng-packagr emits partial
+ * declarations, so a component's template travels as a STRING and its bindings are visible
+ * as text. The third is the same pair written in the decorator's `host`, which the
+ * declaration carries as an object with `@`-prefixed keys. The fourth is the full
+ * compilation's output — not what this package holds today, and the day it does the rule
+ * is to keep reading rather than to go quiet.
+ *
+ * Each pattern is anchored on the punctuation of a BINDING (`[@name]`, `(@name.done)`),
+ * never on a bare `@`: a template is full of `@if`, `@for` and `@let`, and the package's
+ * own prose holds `(@pacit/components)`.
+ */
+const SYNTHETIC = [
+  { what: 'a property binding', pattern: /\[@[A-Za-z_.][\w.-]*\]/g },
+  {
+    what: 'a callback binding',
+    pattern: /\(@[A-Za-z_][\w.-]*\.(?:start|done)\)/g,
+  },
+  {
+    what: 'a host binding',
+    pattern: /(?:properties|listeners)\s*:\s*\{[^{}]*["']@[\w.-]+["']/g,
+  },
+  {
+    what: 'a compiled binding',
+    pattern:
+      /\u0275\u0275synthetic(?:Host)?(?:Property|Listener)|\u0275\u0275(?:property|listener)\(\s*["']@/g,
+  },
+];
+
+/**
+ * A component declaration in the packed code, in either compilation mode. It is point 8's
+ * DENOMINATOR: the patterns above read templates, and a package whose templates stopped
+ * being visible to them — a change of compilation mode, a bundler that inlines them
+ * differently — would leave the point examining nothing and reporting green
+ * ([`lesson-48`](../../docs/lessons.md#lesson-48)).
+ */
+const DECLARATION = /\u0275\u0275(?:ngDeclare|define)Component/g;
+
 // We scan the package's textual outputs. Component styles sit in the bundles as strings,
 // so the definitions from .scss arrive here together with the code.
 const TEXT = new Set(['.css', '.scss', '.js', '.mjs', '.ts', '.json']);
@@ -100,7 +187,7 @@ const walk = (dir, out = []) => {
 };
 
 /**
- * A violation of one of the seven checks. It carries the check's identifier and not just
+ * A violation of one of the eight checks. It carries the check's identifier and not just
  * the message, because the negative control has to verify that a prepared package fired
  * ON ITS OWN point: a fixture failing for a reason other than the one in `fixture.json`
  * proves something other than what it declares — the same silent defect this whole gate
@@ -444,6 +531,7 @@ const checks = (ROOT, { release }, warnings) => {
     return specifier.startsWith('@') ? parts.slice(0, 2).join('/') : parts[0];
   };
   const imported = new Map(); // package -> the files that import it
+  const specifiers = new Map(); // the specifier as written -> the same files
   for (const path of files) {
     const text = readFileSync(path, 'utf8');
     const where = relative(ROOT, path);
@@ -454,8 +542,59 @@ const checks = (ROOT, { release }, warnings) => {
         if (name === pkg.name) continue;
         if (!imported.has(name)) imported.set(name, new Set());
         imported.get(name).add(where);
+        if (!specifiers.has(specifier)) specifiers.set(specifier, new Set());
+        specifiers.get(specifier).add(where);
       }
   }
+
+  // The ban comes first among the rules of this point, and the order is the rule
+  // ([`req-api-animations`](../../docs/requirements/api.md#req-api-animations)). Every
+  // rule below asks whether a dependency was DELIBERATE, and each of them advises the
+  // road to make it so: an undeclared import is answered with "declare it", a declared
+  // name with "write down why". Walked in that order a maintainer would be led by this
+  // gate, in two green commits, to exactly the dependency the requirement forbids — and
+  // the third refusal would read as the gate changing its mind.
+  const banned = [
+    ...[...specifiers.keys()].flatMap((specifier) => {
+      const entry = forbids(specifier);
+      return entry
+        ? [
+            `imported as \`${specifier}\` in ${[...specifiers.get(specifier)]
+              .sort()
+              .join(', ')} — ${entry.reason}`,
+          ]
+        : [];
+    }),
+    ...[...declared.keys()].flatMap((name) => {
+      const entry = forbids(name);
+      return entry
+        ? [
+            `declared in \`${declared.get(name).field}\` as \`${name}\`: \`${
+              declared.get(name).range
+            }\` — ${entry.reason}`,
+          ]
+        : [];
+    }),
+    ...[...allowed.keys()].flatMap((name) => {
+      const entry = forbids(name);
+      return entry
+        ? [
+            `permitted by ${policySource}, with a reason written beside it — ` +
+              `${entry.reason}`,
+          ]
+        : [];
+    }),
+  ];
+  if (banned.length)
+    fail(
+      'dependencies',
+      `${banned.length} appearance(s) of a runtime this library does not use:\n` +
+        banned.map((line) => `  - ${line}`).join('\n') +
+        `\n  This one is not a dependency to argue for: no entry in the policy makes it ` +
+        `deliberate, because the promise is that a consumer of a control library never ` +
+        `installs an animation engine. Animation here is CSS and the Web Animations API.`,
+      'forbidden',
+    );
 
   const undeclared = [...imported.keys()]
     .filter((name) => !declared.has(name))
@@ -590,11 +729,60 @@ const checks = (ROOT, { release }, warnings) => {
       );
   }
 
+  // 8. The same runtime, reached with no dependency to show for it. An animation binding
+  // needs no import: `[@fade]`, `(@fade.done)` and the pair of them on a host all compile
+  // with `@angular/animations` absent from the workspace, and the emitted file imports
+  // `@angular/core` and nothing else ([`lesson-87`](../../docs/lessons.md#lesson-87)). Point
+  // 7 therefore cannot see this road at all — it reads manifests, policies and imports, and
+  // here there is none of the three.
+  //
+  // What the consumer gets is worse than a dependency they can see: in dev mode Angular's
+  // renderer throws NG5105 (`Unexpected synthetic property @fade found`) and advises adding
+  // `provideAnimations()`, that is, it asks the consumer to install the package this
+  // library refused to declare; in production the same code writes the value onto a DOM
+  // property called `@fade`, and the animation simply never happens — silently, in an
+  // application nobody here will ever run.
+  const declarations = files
+    .map((path) => [...readFileSync(path, 'utf8').matchAll(DECLARATION)].length)
+    .reduce((sum, n) => sum + n, 0);
+  if (declarations === 0)
+    fail(
+      'animations',
+      `no component declaration anywhere in the package — the rule below reads templates ` +
+        `out of the declarations Angular's compilation leaves behind, so with none of them ` +
+        `found it examines nothing and reports green.\n` +
+        `  Either the package stopped carrying components, or the shape of the output ` +
+        `changed and the patterns have to follow it.`,
+      'declarations',
+    );
+
+  const bindings = [];
+  for (const path of files) {
+    const text = readFileSync(path, 'utf8');
+    for (const { what, pattern } of SYNTHETIC)
+      for (const [match] of text.matchAll(pattern))
+        bindings.push(`${relative(ROOT, path)}: ${what} \`${match.trim()}\``);
+  }
+  if (bindings.length)
+    fail(
+      'animations',
+      `${bindings.length} animation binding(s) in the packed code:\n` +
+        bindings.map((line) => `  - ${line}`).join('\n') +
+        `\n  A binding like this brings the animation runtime into the consumer's ` +
+        `application without any dependency of ours saying so: NG5105 in their dev build, ` +
+        `and in production a DOM property whose name begins with \`@\`, set on an element ` +
+        `that has no such thing, where it does nothing at all. An enter/leave transition ` +
+        `here is CSS or \`Element.animate()\`, ` +
+        `with its duration on the motion axis (req-a11y-motion).`,
+      'binding',
+    );
+
   return (
     `${THEME} present and exported, ` +
     `${used.size} used tokens covered by ${defined.size} declarations, ` +
     `PCT_VERSION = ${pkg.version}, ` +
-    `${declared.size} dependencies allowed by policy against Angular ${[...stamps].join('/')}`
+    `${declared.size} dependencies allowed by policy against Angular ${[...stamps].join('/')}, ` +
+    `${declarations} component declarations with no animation binding`
   );
 };
 

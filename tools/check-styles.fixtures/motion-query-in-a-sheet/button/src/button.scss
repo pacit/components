@@ -53,3 +53,12 @@
     transform: rotate(360deg);
   }
 }
+
+/* The preference answered a second time, in a component's own sheet. Everything here is
+   on the axis, so point 9's first rule has nothing to say — what is wrong is that the
+   answer exists twice. */
+@media (prefers-reduced-motion: reduce) {
+  :host {
+    transition: none;
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "motion",
+  "rule": "query",
+  "description": "A component sheet answering `prefers-reduced-motion` on its own. Every duration in it is still a token, so this is not a defect anybody can see \u2014 it is a second answer to a question already answered by the token build, and decision 0008 is about which of the two a new component would then have to copy. The two rules of this point are separate cases for that reason: this input passes the first one."
+}

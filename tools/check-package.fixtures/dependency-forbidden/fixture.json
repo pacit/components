@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "dependencies",
+  "rule": "forbidden",
+  "description": "`@angular/animations` declared as a peer and permitted by a policy entry that says why — the shape every other rule of this point exists to require. That is what makes it the case: the ban is not a rule about carelessness, so it cannot be satisfied by care. The reason in the entry is a good one, the kind is right, the manifest and the policy agree, and the answer is still no (`req-api-animations`)."
+}

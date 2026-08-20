@@ -12,8 +12,11 @@
    `prefers-reduced-motion` is answered once, by a second set of values for these tokens,
    and a component inherits the answer by naming them. */
 :host {
-  transition: background-color var(--pct-motion-transition-duration)
-    var(--pct-motion-transition-easing);
+  /* The number that undoes the axis. It reads as the token's own value — 150ms is
+     exactly what the axis carries without the preference — and under
+     `prefers-reduced-motion` it is the one declaration in the library that does not
+     change. */
+  transition: background-color 150ms ease;
 }
 
 .button__spinner {

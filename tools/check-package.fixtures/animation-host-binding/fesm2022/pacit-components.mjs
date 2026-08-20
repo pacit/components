@@ -1,11 +1,9 @@
 /*
- * The package's code in miniature. The gate reads five things out of it: the
- * PCT_VERSION constant (point 4), the uses of `var(--pct-*)` in the style's
- * text (point 3), the imports and the compiler's stamp (point 7) and the
- * template of a component declaration (point 8). The style and the template are
- * strings here on purpose — in a real artefact, which ng-packagr emits as partial
- * declarations, component styles and templates sit in the bundle in exactly that
- * form.
+ * The same pair of bindings, written in the decorator's `host` rather than in the
+ * template. Angular's partial declaration carries them as `properties` and `listeners`
+ * with `@`-prefixed keys, so a rule that reads templates alone passes this file — and
+ * the component is the one that ships an enter/leave transition on its own element,
+ * which is exactly where a panel or a dialog would put it.
  */
 import * as i0 from '@angular/core';
 import { signal } from '@angular/core';
@@ -30,7 +28,10 @@ class PctControl {
     type: PctControl,
     isStandalone: true,
     selector: 'pct-control',
-    host: { properties: { 'attr.data-pct-part': '"control"' } },
+    host: {
+      properties: { 'attr.data-pct-part': '"control"', '@panel': 'state()' },
+      listeners: { '@panel.done': 'settled()' },
+    },
     ngImport: i0,
     template:
       '@if (label()) { <span data-pct-part="label">{{ label() }}</span> }',

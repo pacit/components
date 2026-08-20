@@ -9,9 +9,9 @@ There is no "built, just unverified" state — see
 
 | state       | means                                                         |  count |
 | ----------- | ------------------------------------------------------------- | -----: |
-| ✅ enforced | gate and control exist and run in CI                          |     62 |
+| ✅ enforced | gate and control exist and run in CI                          |     63 |
 | 🟡 partial  | the gate is there, the negative control is not (deliberately) |     16 |
-| ⛔ gap      | gate or control missing, with a recorded deadline             |      8 |
+| ⛔ gap      | gate or control missing, with a recorded deadline             |      7 |
 | **total**   |                                                               | **86** |
 
 ## Gaps by urgency
@@ -20,7 +20,6 @@ The order comes from the **Binds at** field, not from a requirement number.
 
 | requirement                                                          | what is missing                                                                    | binds at                                                     |
 | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| [`req-api-animations`](requirements/api.md#req-api-animations)       | the ban is kept, but **nothing watches it** — the only thing in force…             | the first component with an enter/leave transition (panel, … |
 | [`req-api-number`](requirements/api.md#req-api-number)               | property tests for the parser (`parse(format(n)) === n` for any `n` a… _(control)_ | the first locale outside `pl`/`en` reported by a consumer    |
 | [`req-project-apps`](requirements/project.md#req-project-apps)       | `apps/docs` does not exist, so a gate would describe a state that doe…             | the first external user — without documentation there is no… |
 | [`req-project-concise`](requirements/project.md#req-project-concise) | a prose volume budget per file, a **two-sided** snapshot in the idiom…             | the close of the compression pass — **not earlier**. A snap… |
@@ -43,7 +42,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-a11y-built-in`](requirements/a11y.md#req-a11y-built-in)           | ✅ enforced | `libs/components/*/src/*.spec.ts` — ARIA relations checked per compon… | `a11y.spec.ts › "the a11y gate really does detect violations (a contr… |
 | [`req-a11y-touch`](requirements/a11y.md#req-a11y-touch)                 | ✅ enforced | `apps/sandbox-e2e/src/field-hitarea.spec.ts`, `apps/sandbox-e2e/src/c… | the gate has two documented runs in which it fired: `lesson-25` (a wr… |
 | [`req-a11y-axe`](requirements/a11y.md#req-a11y-axe)                     | ✅ enforced | `apps/sandbox-e2e/src/a11y.spec.ts`                                    | `a11y.spec.ts › "the a11y gate really does detect violations (a contr… |
-| [`req-a11y-motion`](requirements/a11y.md#req-a11y-motion)               | ✅ enforced | `apps/sandbox-e2e/src/preferences.spec.ts`                             | `preferences.spec.ts › "with no preference the motion axis stands at … |
+| [`req-a11y-motion`](requirements/a11y.md#req-a11y-motion)               | ✅ enforced | `apps/sandbox-e2e/src/preferences.spec.ts` — the axis itself, in the … | `preferences.spec.ts › "with no preference the motion axis stands at … |
 | [`req-a11y-forced-colors`](requirements/a11y.md#req-a11y-forced-colors) | ✅ enforced | `apps/sandbox-e2e/src/forced-colors.spec.ts` — what the browser paint… | emulation goes through `page.emulateMedia()` in the `visit()` helper,… |
 
 ## API
@@ -73,7 +72,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-api-texts`](requirements/api.md#req-api-texts)               | ✅ enforced | `tools/check-texts.mjs` (target `check-texts`) — six points: a string… | `tools/check-texts.fixtures/` — 29 doctored inputs, each rejected on … |
 | [`req-api-overlay`](requirements/api.md#req-api-overlay)           | ✅ enforced | `apps/sandbox-e2e/src/select.spec.ts` — measuring the panel's width a… | the measurement from `lesson-35` (a 301 px field ⇒ a 275 px panel, of… |
 | [`req-api-size`](requirements/api.md#req-api-size)                 | ✅ enforced | `apps/sandbox-e2e/src/size.spec.ts` — measured in the browser          | the test checks that the heights are equal *_and what that height is_… |
-| [`req-api-animations`](requirements/api.md#req-api-animations)     | ⛔ gap      | none — gap: the ban is kept, but **nothing watches it** — the only th… | none — gap: an `@angular/animations` import added to the package has … |
+| [`req-api-animations`](requirements/api.md#req-api-animations)     | ✅ enforced | `libs/components/check-package.mjs` point 7, rule `forbidden` — the b… | `tools/check-package.fixtures/` — five prepared packages, each reject… |
 
 ## project
 
@@ -242,3 +241,5 @@ Which lesson feeds which requirement. Generated from the **Lessons** fields.
 | [`lesson-84`](lessons.md#lesson-84) | `req-api-templates`                                                                                                                                               |
 | [`lesson-85`](lessons.md#lesson-85) | `req-api-icons`                                                                                                                                                   |
 | [`lesson-86`](lessons.md#lesson-86) | `req-api-icons`                                                                                                                                                   |
+| [`lesson-87`](lessons.md#lesson-87) | `req-api-animations`                                                                                                                                              |
+| [`lesson-88`](lessons.md#lesson-88) | `req-api-animations`                                                                                                                                              |

@@ -552,13 +552,34 @@ equality alone both components could collapse to the text line height and still 
 **Promise.** Animation is done with CSS + the Web Animations API. `@angular/animations` is
 not a dependency.
 
-**Gate:** none — gap: the ban is kept, but **nothing watches it** — the only thing in force is
-the package's absence from `package.json`. Its natural home is the dependency gate from
-[`req-project-dependencies`](project.md#req-project-dependencies)
-**Control:** none — gap: an `@angular/animations` import added to the package has to fire
-**Binds at:** the first component with an enter/leave transition (panel, dialog, toast) — at
-which point it also has to be checked that the motion takes its duration from a token
-([`req-a11y-motion`](a11y.md#req-a11y-motion)) and not from a stylesheet
+**And it is not a dependency in two senses**, because the runtime has two roads here. One is
+the name — in the manifest, in the dependency policy, in an import — and on that road the
+answer is that **no reason opens it**: every other rule of the dependency gate asks whether a
+dependency was deliberate, and this one is refused when it is. The other road leaves no name
+anywhere: an animation binding (`[@panel]`, `(@panel.done)`, the same pair on a host) compiles
+with the package absent from the workspace and imports nothing but `@angular/core`
+([`lesson-87`](../lessons.md#lesson-87)), and it reaches the consumer as NG5105 in their dev
+build and as silence in their production one. A library can therefore require this runtime
+without depending on it, which is why the ban is measured on the shape of a binding as well as
+on the name of a package.
+
+**Gate:** `libs/components/check-package.mjs` point 7, rule `forbidden` — the banned
+specifiers (`@angular/animations` and `@angular/platform-browser/animations`, subpaths
+included) in the packed manifest, in the policy and among the imports of the packed code,
+evaluated **before** the rules that ask for a justification
+([`lesson-88`](../lessons.md#lesson-88)); the same gate's point 8 — no animation binding in the
+packed templates, host bindings included, with the count of component declarations as its
+denominator. The duration half is `tools/check-styles.mjs` point 9
+([`req-a11y-motion`](a11y.md#req-a11y-motion))
+**Control:** `tools/check-package.fixtures/` — five prepared packages, each rejected on its own
+rule: `dependency-forbidden` (declared as a peer **and** permitted by a policy entry that says
+why), `import-forbidden` (`@angular/platform-browser/animations`, which a ban on package names
+would read as `@angular/platform-browser`), `animation-binding`, `animation-host-binding` and
+`no-component-declaration`, the denominator. Above them a recorded run over the real package:
+the same three roads fire on `dist/libs/components`, naming the bundle and the shape found
+**Binds at:** closed at D7
+**Lessons:** [`lesson-87`](../lessons.md#lesson-87), [`lesson-88`](../lessons.md#lesson-88)
 
 > Nothing uses WAAPI today; the only transitions are `transition` declarations in the
-> stylesheets.
+> stylesheets, and every one of them takes its time from the motion axis — which is the
+> promise `check-styles` point 9 holds.

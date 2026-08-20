@@ -1,0 +1,6 @@
+{
+  "point": 8,
+  "check": "animations",
+  "rule": "declarations",
+  "description": "The denominator, and the one defect in this tree that is not a defect in the package: nothing here is wrong except that the point has nothing to read. Angular's compilation is what makes a template visible in the artefact, so the day it changes shape — a different mode, a bundler that stores templates elsewhere — every pattern of point 8 would match nothing and the gate would report a package with no animation binding, which is also what it reports when it cannot see one (`lesson-48`)."
+}
