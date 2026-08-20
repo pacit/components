@@ -21,6 +21,7 @@
       "@pacit/components/checkbox": ["./libs/components/checkbox/src/index.ts"],
       "@pacit/components/radio": ["./libs/components/radio/src/index.ts"],
       "@pacit/components/select": ["./libs/components/select/src/index.ts"],
+      "@pacit/components/dialog": ["./libs/components/dialog/src/index.ts"],
       "@pacit/components/field": ["./libs/components/field/src/index.ts"],
       "@pacit/components/icon": ["./libs/components/icon/src/index.ts"]
     }

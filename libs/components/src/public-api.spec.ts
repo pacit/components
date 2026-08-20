@@ -1,6 +1,7 @@
 import * as button from '@pacit/components/button';
 import * as checkbox from '@pacit/components/checkbox';
 import * as core from '@pacit/components/core';
+import * as dialog from '@pacit/components/dialog';
 import * as field from '@pacit/components/field';
 import * as icon from '@pacit/components/icon';
 import * as radio from '@pacit/components/radio';
@@ -32,6 +33,7 @@ describe('the public surface of the package', () => {
     core,
     button,
     checkbox,
+    dialog,
     field,
     icon,
     radio,

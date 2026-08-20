@@ -17,6 +17,7 @@ import { PCT_FIELD, pctDescribedBy, pctFieldMessages } from './field';
 import { PctFocusStays } from './focus';
 import { nextPctId, PctIdCounter } from './id';
 import { pctListNavigation, PctListSource } from './list';
+import { PctModalBackground } from './modal';
 import { pctOverlay, PctOverlayInherited, PctOverlayPanel } from './overlay';
 import {
   PCT_TEMPLATE_HOST,
@@ -935,6 +936,120 @@ describe('@pacit/components/core', () => {
 
       await escape();
       expect(shown()).toEqual([]);
+    });
+  });
+
+  /**
+   * The modal half of the overlay layer, under its own name. `inert` itself is the platform's
+   * and jsdom implements none of it — so what is measurable here is WHICH elements the service
+   * marks and whether it hands back exactly what it took. That the mark does anything at all
+   * is measured in a browser, in `apps/sandbox-e2e/src/dialog.spec.ts`; the split is the same
+   * one `PctFocusStays` lives with, and for the same reason (0025).
+   */
+  describe('PctModalBackground', () => {
+    const service = () => TestBed.inject(PctModalBackground);
+    const root = () => document.documentElement;
+    const added: HTMLElement[] = [];
+
+    const child = (): HTMLElement => {
+      const element = document.createElement('div');
+      document.body.append(element);
+      added.push(element);
+      return element;
+    };
+
+    afterEach(() => {
+      for (const element of added.splice(0)) element.remove();
+      root().style.overflow = '';
+      root().style.paddingInlineEnd = '';
+    });
+
+    it('everything that does not hold the live element goes inert', () => {
+      const background = child();
+      const live = child();
+      const inside = document.createElement('span');
+      live.append(inside);
+
+      service().hold(inside);
+
+      expect(background.hasAttribute('inert')).toBe(true);
+      // The child that CONTAINS the panel keeps answering — the overlay container is one
+      // element and every panel of this library is inside it, the select's included.
+      expect(live.hasAttribute('inert')).toBe(false);
+    });
+
+    it('a live region goes on speaking', () => {
+      const region = child();
+      region.setAttribute('aria-live', 'polite');
+      const live = child();
+
+      service().hold(live);
+
+      // This library's own channels are children of `body`, and a select opened inside a
+      // dialog announces an empty list on one of them. Inert content is hidden from
+      // assistive technology, so a region marked inert is a sentence nobody hears.
+      expect(region.hasAttribute('inert')).toBe(false);
+      service().release();
+    });
+
+    it('what it did not take, it does not give back', () => {
+      const already = child();
+      already.setAttribute('inert', '');
+      const live = child();
+
+      service().hold(live);
+      service().release();
+
+      // Somebody else's `inert` is still somebody else's.
+      expect(already.hasAttribute('inert')).toBe(true);
+    });
+
+    it('the page comes back only once the last holder lets go', () => {
+      const background = child();
+      const live = child();
+
+      service().hold(live);
+      service().hold(live);
+      expect(service().depth()).toBe(2);
+
+      service().release();
+      expect(background.hasAttribute('inert')).toBe(true);
+      expect(root().style.overflow).toBe('hidden');
+
+      service().release();
+      expect(background.hasAttribute('inert')).toBe(false);
+      expect(root().style.overflow).toBe('');
+    });
+
+    it('a release with nothing held changes nothing', () => {
+      service().release();
+      expect(service().depth()).toBe(0);
+
+      // The count cannot go below zero: were it to, the next `hold()` would raise it to zero
+      // and engage nothing at all — a modal with a live page behind it.
+      const background = child();
+      service().hold(child());
+      expect(background.hasAttribute('inert')).toBe(true);
+      service().release();
+    });
+
+    it('the lock puts back the overflow it found, not an empty one', () => {
+      root().style.overflow = 'clip';
+      const live = child();
+
+      service().hold(live);
+      expect(root().style.overflow).toBe('hidden');
+
+      service().release();
+      expect(root().style.overflow).toBe('clip');
+    });
+
+    it('a document with no layout is not compensated for a scrollbar', () => {
+      // `clientWidth` is 0 here, and `innerWidth` is not — the difference between them is the
+      // whole viewport, and writing it as padding would push the page off its own edge.
+      service().hold(child());
+      expect(root().style.paddingInlineEnd).toBe('');
+      service().release();
     });
   });
 

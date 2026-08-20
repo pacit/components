@@ -1,0 +1,77 @@
+<!--
+  Everything below is attached to a CDK overlay and lives outside the host tree — the host
+  element renders nothing. The panel therefore carries `pctOverlayPanel`: what the tree stops
+  handing it — theme, typeface, size, writing direction.
+
+  It is also a panel of the kind that DOES take focus, which is the other declaration 0025
+  named. The trap itself is created in the component rather than bound here, because the ORDER
+  it runs in is the promise (see `detach`), and `tabindex="-1"` is what lets the panel be the
+  last answer when its content has nothing focusable in it.
+-->
+<ng-template #panel>
+  <!--
+    The veil. A `click` with no key handler beside it is the shape the a11y rule warns about,
+    and here the key is Escape on the dialog itself — the surface is a shortcut for a gesture
+    the keyboard already has, not the only way out.
+  -->
+  <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+  <div
+    class="pct-dialog__backdrop"
+    data-pct-part="backdrop"
+    (pointerdown)="pressBackdrop($event)"
+    (click)="clickBackdrop($event)"
+  >
+    <div
+      class="pct-dialog__panel"
+      data-pct-part="panel"
+      role="dialog"
+      aria-modal="true"
+      [id]="panelId"
+      [pctOverlayPanel]="inherited()"
+      tabindex="-1"
+      [attr.aria-label]="ariaLabel() || null"
+      [attr.aria-labelledby]="ariaLabelledby() || (heading() ? headingId : null)"
+    >
+      @if (heading() || closeButton()) {
+      <div class="pct-dialog__header" data-pct-part="header">
+        @if (heading()) {
+        <h2
+          class="pct-dialog__heading"
+          data-pct-part="heading"
+          [id]="headingId"
+        >
+          {{ heading() }}
+        </h2>
+        } @if (closeButton()) {
+        <button
+          type="button"
+          class="pct-dialog__close"
+          data-pct-part="close"
+          [attr.aria-label]="texts().dialogClose"
+          (click)="closeFromButton()"
+        >
+          <pct-icon name="close">
+            <svg
+              viewBox="0 0 16 16"
+              width="100%"
+              height="100%"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              focusable="false"
+            >
+              <path d="M4 4l8 8M12 4l-8 8" />
+            </svg>
+          </pct-icon>
+        </button>
+        }
+      </div>
+      }
+
+      <div class="pct-dialog__content" data-pct-part="content">
+        <ng-content />
+      </div>
+    </div>
+  </div>
+</ng-template>

@@ -1,0 +1,181 @@
+<h2 class="view__title">Dialog</h2>
+<p class="muted view__intro">
+  A modal: focus is trapped in the panel and given back on close, the background
+  goes <code>inert</code> and the page stops scrolling. Escape comes from the
+  closing stack, so a panel opened inside the dialog answers it first.
+</p>
+
+<sbx-demo
+  heading="The basics"
+  summary="A heading, a close button, a veil. Escape, the veil and the button all close it — and each says which one it was."
+  [reqs]="['req-a11y-built-in', 'req-api-overlay']"
+  [controls]="[]"
+  data-testid="demo-basics"
+>
+  <div class="row">
+    <button pctButton (click)="basic.set(true)" data-testid="open-basic">
+      Open the dialog
+    </button>
+    <span class="muted">
+      last close:
+      <code class="sbx-dialog__reason" data-testid="last-reason"
+        >{{ lastReason() || '—' }}</code
+      >
+    </span>
+  </div>
+
+  <pct-dialog
+    heading="Project settings"
+    [(open)]="basic"
+    (closed)="record($event)"
+    data-testid="dialog-basic"
+  >
+    <p>
+      The panel is an overlay, so it inherits nothing from the tree — the theme,
+      the typeface and the writing direction are carried over by hand.
+    </p>
+    <div class="sbx-dialog__actions">
+      <button pctButton (click)="basic.set(false)" data-testid="basic-done">
+        Done
+      </button>
+    </div>
+  </pct-dialog>
+</sbx-demo>
+
+<sbx-demo
+  heading="A confirmation, with the safe answer focused"
+  summary="pctAutofocus decides what takes focus — without it the close button would, being first in the DOM."
+  [reqs]="['req-a11y-built-in']"
+  [controls]="[]"
+  data-testid="demo-confirm"
+>
+  <button pctButton (click)="confirm.set(true)" data-testid="open-confirm">
+    Delete the project
+  </button>
+
+  <pct-dialog
+    heading="Delete the project?"
+    [(open)]="confirm"
+    (closed)="record($event)"
+    data-testid="dialog-confirm"
+  >
+    <p>Everything in it goes with it. This cannot be undone.</p>
+    <div class="sbx-dialog__actions">
+      <button
+        pctButton
+        variant="outline"
+        pctAutofocus
+        (click)="confirm.set(false)"
+        data-testid="confirm-cancel"
+      >
+        Cancel
+      </button>
+      <button pctButton (click)="confirm.set(false)" data-testid="confirm-ok">
+        Delete
+      </button>
+    </div>
+  </pct-dialog>
+</sbx-demo>
+
+<sbx-demo
+  heading="A dialog that insists"
+  summary="Escape and the veil switched off: the only way out is a control in the content. Switching the button off as well is reported in dev mode — that would be a keyboard trap."
+  [reqs]="['req-a11y-wcag']"
+  [controls]="[]"
+  data-testid="demo-insistent"
+>
+  <button pctButton (click)="insistent.set(true)" data-testid="open-insistent">
+    Open the insistent one
+  </button>
+
+  <pct-dialog
+    heading="Answer before you leave"
+    [closeOnEscape]="false"
+    [closeOnBackdrop]="false"
+    [(open)]="insistent"
+    (closed)="record($event)"
+    data-testid="dialog-insistent"
+  >
+    <p>Escape does nothing here, and neither does a press on the veil.</p>
+    <div class="sbx-dialog__actions">
+      <button
+        pctButton
+        (click)="insistent.set(false)"
+        data-testid="insistent-ok"
+      >
+        Understood
+      </button>
+    </div>
+  </pct-dialog>
+</sbx-demo>
+
+<sbx-demo
+  heading="A panel inside a modal"
+  summary="The case that decided the whole component: a select's panel is a second overlay, and Escape closes it without touching the dialog underneath."
+  [reqs]="['req-api-overlay', 'req-api-platform']"
+  [controls]="[]"
+  data-testid="demo-nested-overlay"
+>
+  <button
+    pctButton
+    (click)="withSelect.set(true)"
+    data-testid="open-with-select"
+  >
+    Open a form dialog
+  </button>
+
+  <pct-dialog
+    heading="Where do you write from?"
+    [(open)]="withSelect"
+    (closed)="record($event)"
+    data-testid="dialog-with-select"
+  >
+    <pct-field label="Country" data-testid="field-country">
+      <pct-select
+        [options]="countries"
+        [(value)]="country"
+        data-testid="select-country"
+      />
+    </pct-field>
+    <pct-field label="A note" data-testid="field-note">
+      <input
+        pctText
+        [value]="note()"
+        (input)="note.set($any($event.target).value)"
+        data-testid="note-input"
+      />
+    </pct-field>
+    <div class="sbx-dialog__actions">
+      <button
+        pctButton
+        (click)="withSelect.set(false)"
+        data-testid="with-select-done"
+      >
+        Save
+      </button>
+    </div>
+  </pct-dialog>
+</sbx-demo>
+
+<sbx-demo
+  heading="A body taller than the window"
+  summary="The panel scrolls inside the veil; the page behind it does not scroll at all."
+  [reqs]="['req-api-overlay']"
+  [controls]="[]"
+  data-testid="demo-tall"
+>
+  <button pctButton (click)="tall.set(true)" data-testid="open-tall">
+    Open a long one
+  </button>
+
+  <pct-dialog
+    heading="Terms"
+    [(open)]="tall"
+    (closed)="record($event)"
+    data-testid="dialog-tall"
+  >
+    @for (paragraph of paragraphs; track $index) {
+    <p>{{ paragraph }}</p>
+    }
+  </pct-dialog>
+</sbx-demo>

@@ -1,0 +1,156 @@
+/* The whole component lives in a CDK overlay, that is OUTSIDE the host tree — `:host(…)`
+   selectors describe nothing here, and every state that matters is on the elements themselves.
+   Tokens still work: they are defined on `:root`, which is the CSS-first approach paying for
+   itself a second time (the select's sheet says the same about its panel). */
+
+/* The host renders nothing at all — its `display: contents` is in the decorator, so that a
+   consumer reading the DOM sees why the element is empty rather than looking for a rule. */
+
+/* The veil, and the frame that centres the panel in the viewport. It is `position: fixed`
+   rather than a CDK position strategy on purpose: a strategy positions the PANE, and then the
+   veil would have to be a second element somewhere above it — the dependency's own backdrop,
+   which no stylesheet of this library can reach, because it is created outside any component's
+   view and carries no encapsulation attribute. One element that is both is one element the
+   part inventory can name. */
+.pct-dialog__backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* A dialog taller than the window scrolls in the veil, not in the page behind it — the page
+     is locked while this is up. */
+  overflow: auto;
+  padding: var(--pct-space-5);
+  box-sizing: border-box;
+  /* Not one number of the veil is written here: the colour, how much of it there is and how
+     far the page behind it is blurred are three tokens, so a skin can make a modal dim the
+     page or barely tint it without a component being touched. `color-mix` and not `opacity` —
+     `opacity` composites the whole element, the panel inside it included (`check-styles`
+     point 2). */
+  background: color-mix(
+    in srgb,
+    var(--pct-dialog-backdrop-bg) var(--pct-dialog-backdrop-alpha),
+    transparent
+  );
+  backdrop-filter: blur(var(--pct-dialog-backdrop-blur));
+}
+
+.pct-dialog__panel {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: var(--pct-dialog-panel-gap);
+  width: 100%;
+  max-width: var(--pct-dialog-panel-max-width);
+  /* The panel never grows past the frame it stands in, so its own content scrolls instead of
+     the panel leaving the window. */
+  max-height: 100%;
+  overflow: auto;
+  padding: var(--pct-dialog-panel-padding-y) var(--pct-dialog-panel-padding-x);
+  background: var(--pct-dialog-panel-bg);
+  color: var(--pct-dialog-panel-fg);
+  border: 1px solid var(--pct-dialog-panel-border);
+  border-radius: var(--pct-dialog-panel-radius);
+  box-shadow: var(--pct-dialog-panel-shadow);
+  font-family: inherit;
+}
+
+/* The trap parks focus on the panel when nothing inside it can take it. That is a real state
+   — a dialog with a sentence and no buttons — and an outline around the whole panel then reads
+   as a defect rather than as a cursor. */
+.pct-dialog__panel:focus {
+  outline: none;
+}
+
+.pct-dialog__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--pct-space-4);
+}
+
+.pct-dialog__heading {
+  margin: 0;
+  color: var(--pct-dialog-heading-fg);
+  font-size: var(--pct-dialog-heading-font-size);
+  font-weight: var(--pct-dialog-heading-font-weight);
+  line-height: 1.4;
+}
+
+.pct-dialog__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  /* The target is a token and not a number: 24 px is the floor `req-a11y-touch` promises, and
+     a button that draws a 16 px cross would otherwise be 16 px to a finger. */
+  width: var(--pct-dialog-close-size);
+  height: var(--pct-dialog-close-size);
+  /* The header's first line is the heading's, and the button lines up with it. */
+  margin-block-start: -2px;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: var(--pct-dialog-close-radius);
+  color: var(--pct-dialog-close-fg);
+  cursor: pointer;
+  /* The box the icon is drawn in — the drawing paints itself in `currentColor` and knows
+     nothing of the state around it (0028). */
+  font-size: 16px;
+}
+
+.pct-dialog__close:hover {
+  background: var(--pct-dialog-close-bg-hover);
+  color: var(--pct-dialog-close-fg-hover);
+}
+
+.pct-dialog__close:focus-visible {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: 1px;
+}
+
+.pct-dialog__content {
+  /* The content is the consumer's; the panel gives it a column and stays out of it. */
+  min-width: 0;
+}
+
+/* Forced colours: the veil is not a colour the mode keeps, and every surface underneath goes to
+   the system's. Each rule is written out rather than left to the base one — `@media` adds no
+   specificity, so a base rule of the same sheet wins the cascade otherwise
+   ([`lesson-70`](../../../../docs/lessons.md#lesson-70)). */
+@media (forced-colors: active) {
+  .pct-dialog__backdrop {
+    /* `Canvas` is opaque, so the page behind stops showing through — which is the honest
+       reading of the mode: it has no translucent system colour, and a veil that vanished
+       would leave a dialog with no edge to the page at all. The blur goes with it: a filter
+       over a surface that is now opaque blurs nothing, and it would cost a compositing layer
+       for a picture it no longer changes. */
+    background: Canvas;
+    backdrop-filter: none;
+  }
+
+  .pct-dialog__panel {
+    background: Canvas;
+    color: CanvasText;
+    border-color: CanvasText;
+  }
+
+  .pct-dialog__heading {
+    color: CanvasText;
+  }
+
+  .pct-dialog__close {
+    background: none;
+    color: CanvasText;
+  }
+
+  .pct-dialog__close:hover {
+    background: Highlight;
+    color: HighlightText;
+  }
+
+  .pct-dialog__close:focus-visible {
+    outline-color: Highlight;
+  }
+}

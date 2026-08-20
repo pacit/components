@@ -2204,3 +2204,73 @@ gate changing its mind on the third try.
 The rule: **where one rule refuses and another asks for a justification, the refusal is
 evaluated first.** A gate is not only a verdict — the order of its rules is the sequence of
 repairs it teaches, and a repair that is forbidden must never be the one it teaches first.
+
+---
+
+### <a id="lesson-89"></a>`lesson-89` — The platform's modal is not composable with the library's overlays
+
+`<dialog>` with `showModal()` answers most of what a modal needs, and it answers it better than
+we could: measured in blink, gecko and webkit, it traps focus, honours `autofocus`, gives focus
+back to the opener, makes the background refuse the pointer and `focus()`, and — the surprise —
+**severs nothing** through the top layer. Custom properties, the typeface, the writing direction
+and `closest('[data-theme]')` all resolve through it, and `::backdrop` inherits from the
+originating element. The whole of `lesson-35` would simply not apply.
+
+Then the same three engines were asked the one question that decides:
+
+| what was outside the open modal                                 | hit test   | `focus()` | click | Tab   |
+| --------------------------------------------------------------- | ---------- | --------- | ----- | ----- |
+| a plain child of `body` — where the CDK overlay container lives | the dialog | refused   | never | never |
+| `popover="manual"` + `showPopover()`, i.e. **the top layer**    | the dialog | refused   | never | never |
+
+The second row is the one that matters: CDK v22 puts every overlay host in the top layer by
+default (`usePopover`), and it makes no difference. Everything outside the topmost modal dialog
+is inert, top layer included. So a `pct-select` inside a native `<dialog>` has a panel nobody can
+click, focus or reach — in every engine.
+
+Two smaller findings from the same session, worth keeping because they are protocol rather than
+preference:
+
+- `preventDefault()` on the **keydown** stops a native dialog closing; `stopPropagation()` does
+  not. The close watcher is not propagation-based — which is exactly why a control that wants to
+  keep Escape to itself must prevent the default rather than stop the bubble;
+- `preventDefault()` on `cancel` holds for a few presses and then stops. Blink and gecko
+  force-close on the fourth Escape, webkit never does. "Escape does not close this" is not a
+  promise the platform lets a library keep.
+
+The rule: **a platform feature is only "what the platform gives us" if it composes with what we
+already ship.** `req-api-platform` is a preference for the browser's answer, not an obligation to
+take it where taking it breaks a component that already exists — and the way to tell the two
+apart is to measure the composition, not the feature.
+
+---
+
+### <a id="lesson-90"></a>`lesson-90` — What a modal must NOT silence
+
+The first version of the `inert` walk was three lines and looked obviously right: every child of
+`body` that does not contain the panel stops answering. Opening a dialog in the sandbox and
+reading the DOM showed what those three lines had also taken:
+
+```
+APP-ROOT      inert
+DIV aria-live="polite"      inert      <- the library's own channel
+DIV aria-live="assertive"   inert      <- and the other one
+DIV .cdk-overlay-container  live
+```
+
+Inert content is hidden from assistive technology, so a live region inside one is a sentence
+nobody hears. The regions are children of `body` because that is where `PctAnnouncer` puts them
+(0026), which means the one case the sandbox demonstrates — a select opened **inside** a dialog,
+announcing that its list is empty — had lost its only voice, to a component that had never heard
+of it.
+
+No test would have caught it. The unit suite cannot see `inert` at all (jsdom implements
+neither), the axe audit reads structure rather than announcements, and the sentence itself is
+delivered by a screen reader nothing here runs. It was found by opening the page and looking at
+`document.body.children`.
+
+The rule: **`inert` on the background is not "everything except the modal" — it is "everything
+except the modal and the channels that speak to the user".** And the narrower rule that follows
+from writing it down: the test is `aria-live` on the child **itself**, never a search below it —
+a region an application put inside its own root would otherwise keep the whole page answering,
+which is the opposite of a modal.

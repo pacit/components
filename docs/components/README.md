@@ -17,6 +17,7 @@ a machine; prose with a missing paragraph is not.
 | [`PctCheckbox`](checkbox.md) | `@pacit/components/checkbox` | checkbox                            |
 | [`PctRadioGroup`](radio.md)  | `@pacit/components/radio`    | group of mutually exclusive options |
 | [`PctSelect`](select.md)     | `@pacit/components/select`   | choice list with a panel of its own |
+| [`PctDialog`](dialog.md)     | `@pacit/components/dialog`   | modal dialog                        |
 
 ## The order of the components to come
 
@@ -26,8 +27,10 @@ a11y problems in half of them.
 
 The order follows **architectural debt**, not popularity:
 
-1. **Dialog** — forces a focus trap, scroll locking, `inert`, focus return, an Escape stack,
-   SSR safety. The highest architectural return per component.
+1. ~~**Dialog**~~ — **built.** It forced the focus trap, the scroll lock, `inert`, the focus
+   restore, the Escape stack and SSR safety; of those, three came from the dependency, one from
+   the platform and two were written here
+   ([0029](../decisions/0029-a-modal-is-an-overlay-not-a-dialog-element.md)).
 2. **Tooltip + Popover** — forces the "describes vs names" distinction, hover/focus/touch
    parity and reduced motion on a real enter/leave.
 3. **Menu** — roving focus, submenus, reuse of the typeahead.

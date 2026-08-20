@@ -102,6 +102,20 @@ test.describe('Appearance — compared with the baseline', () => {
   });
 
   /**
+   * The modal, which shows on no screenshot of a resting page: the panel is an overlay and the
+   * veil covers everything behind it. The shot is of the whole viewport rather than of the
+   * panel, because the veil IS part of what this component draws — its darkness over the page
+   * is the signal that the page has stopped answering.
+   */
+  test('dialog-open', async ({ page }) => {
+    await stage(page, '/dialog');
+    await page.getByTestId('open-with-select').click();
+    await expect(page.locator('[data-pct-part="panel"]')).toBeVisible();
+
+    await expect(page).toHaveScreenshot('dialog-open.png');
+  });
+
+  /**
    * The same set of controls in the dark theme. The theme is a cross-cutting axis,
    * so a regression in the semantic layer of the tokens will show up here rather
    * than in the light screenshots.
@@ -161,6 +175,15 @@ test.describe('Appearance in RTL — compared with the baseline', () => {
    * its `direction` measurement; this screenshot also shows which side the panel is
    * anchored to and how the option content is laid out.
    */
+  test('dialog-open-rtl', async ({ page }) => {
+    await stage(page, '/dialog');
+    await setRtl(page);
+    await page.getByTestId('open-with-select').click();
+    await expect(page.locator('[data-pct-part="panel"]')).toBeVisible();
+
+    await expect(page).toHaveScreenshot('dialog-open-rtl.png');
+  });
+
   test('select-panel-open-rtl', async ({ page }) => {
     await stage(page, '/select');
     await setRtl(page);

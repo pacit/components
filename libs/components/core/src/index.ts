@@ -4,6 +4,7 @@ export * from './field';
 export * from './focus';
 export * from './id';
 export * from './list';
+export * from './modal';
 export * from './overlay';
 export * from './template';
 export * from './texts';

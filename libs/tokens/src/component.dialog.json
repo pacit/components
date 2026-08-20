@@ -1,0 +1,36 @@
+{
+  "pct": {
+    "dialog": {
+      "$comment-backdrop": "Three tokens for one surface, because a veil is three decisions and a stylesheet may keep none of them: WHAT colour dims the page (through `pct.scrim`, so the two themes can answer differently), HOW MUCH of it there is, and how far what is behind it is blurred. The alpha is its own token rather than part of the colour — a colour literal above the primitive tier is refused, and `opacity` is not the road, since it would composite the panel along with the veil (`check-styles` point 2).",
+      "backdrop-bg": { "$type": "color", "$value": "{pct.scrim}" },
+      "backdrop-alpha": { "$type": "dimension", "$value": "40%" },
+      "backdrop-blur": { "$type": "dimension", "$value": "3px" },
+
+      "panel-bg": { "$type": "color", "$value": "{pct.surface}" },
+      "panel-fg": { "$type": "color", "$value": "{pct.text}" },
+      "panel-border": { "$type": "color", "$value": "{pct.border-strong}" },
+      "panel-radius": { "$type": "dimension", "$value": "{pct.radius.md}" },
+      "panel-shadow": { "$type": "shadow", "$value": "{pct.shadow-panel}" },
+      "panel-max-width": { "$type": "dimension", "$value": "480px" },
+      "panel-padding-x": { "$type": "dimension", "$value": "{pct.space.5}" },
+      "panel-padding-y": { "$type": "dimension", "$value": "{pct.space.5}" },
+      "panel-gap": { "$type": "dimension", "$value": "{pct.space.4}" },
+
+      "heading-fg": { "$type": "color", "$value": "{pct.text}" },
+      "heading-font-size": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.lg}"
+      },
+      "heading-font-weight": {
+        "$type": "fontWeight",
+        "$value": "{pct.font.weight.medium}"
+      },
+
+      "close-fg": { "$type": "color", "$value": "{pct.text-muted}" },
+      "close-fg-hover": { "$type": "color", "$value": "{pct.text}" },
+      "close-bg-hover": { "$type": "color", "$value": "{pct.surface-100}" },
+      "close-radius": { "$type": "dimension", "$value": "{pct.radius.md}" },
+      "close-size": { "$type": "dimension", "$value": "{pct.target.min}" }
+    }
+  }
+}

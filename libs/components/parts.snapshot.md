@@ -24,6 +24,12 @@ from what the browser really gets.
 ./checkbox PctCheckbox hint
 ./checkbox PctCheckbox label
 ./checkbox PctCheckbox mark
+./dialog PctDialog backdrop
+./dialog PctDialog close
+./dialog PctDialog content
+./dialog PctDialog header
+./dialog PctDialog heading
+./dialog PctDialog panel
 ./field PctField field-control
 ./field PctField field-error
 ./field PctField field-footer

@@ -53,6 +53,11 @@
       "$type": "color",
       "$value": "{pct.slate.500}"
     },
+    "$comment-scrim": "The veil, and here it has to be the ramp's endpoint rather than `slate.900`: the dark theme's page IS `slate.900`, so a veil of the same step would dim it by nothing at all. How translucent it is, and how far the page behind it is blurred, are the component's two other tokens — all three are the skin's to set.",
+    "scrim": {
+      "$type": "color",
+      "$value": "{pct.slate.1000}"
+    },
     "focus-ring": {
       "$type": "color",
       "$value": "{pct.blue.500}"

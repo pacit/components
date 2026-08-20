@@ -95,6 +95,22 @@ test.describe('Accessibility (axe-core, WCAG 2.2 AA)', () => {
     expect(report(violations)).toBe('');
   });
 
+  /**
+   * An open modal is the one state the walk over the routes cannot reach: every dialog in the
+   * sandbox starts closed, and a panel that is not attached is a panel axe has nothing to say
+   * about. The audit is scoped to the panel, because the rest of the page is `inert` while it
+   * is up — and axe reads the tree as rendered, which is the whole point of running it here
+   * rather than over a template.
+   */
+  test('an open dialog has no violations', async ({ page }) => {
+    await visit(page, '/dialog');
+    await page.getByTestId('open-with-select').click();
+    await expect(page.locator('[data-pct-part="panel"]')).toBeVisible();
+
+    const violations = await audit(page, '[data-pct-part="panel"]');
+    expect(report(violations)).toBe('');
+  });
+
   test('a card with a dark stage has no violations', async ({ page }) => {
     await visit(page, '/button');
     const violations = await audit(page, '[data-testid="demo-dark"]');

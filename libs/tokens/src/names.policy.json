@@ -27,6 +27,7 @@
       "border",
       "danger",
       "focus-ring",
+      "scrim",
       "shadow-panel"
     ],
     "variants": ["hover", "active", "disabled", "muted", "strong", "100"]
@@ -36,8 +37,11 @@
     "parts": [
       "affix",
       "arrow",
+      "backdrop",
+      "close",
       "dot",
       "group-label",
+      "heading",
       "hint",
       "label",
       "option",
@@ -45,7 +49,9 @@
       "placeholder"
     ],
     "properties": [
+      "alpha",
       "bg",
+      "blur",
       "border",
       "fg",
       "font-size",
@@ -53,6 +59,7 @@
       "gap",
       "height",
       "max-height",
+      "max-width",
       "padding-x",
       "padding-y",
       "radius",

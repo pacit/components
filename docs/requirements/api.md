@@ -508,14 +508,26 @@ reading is `pctOverlay()` in `@pacit/components/core` and it is not optional mac
 **A panel says whether it takes focus.** Where the role keeps focus on the control — a listbox
 under a combobox, pointed at by `aria-activedescendant` — the panel carries `pctFocusStays`,
 which refuses the press that would move it: without that refusal a press on the panel's own
-background lands on `body`, and every key the control owns loses its handler.
+background lands on `body`, and every key the control owns loses its handler. **A panel of the
+other kind — one that takes focus — is a modal**, and it takes the page with it: everything
+outside it goes `inert` and the document stops scrolling, both released **before** the panel is
+detached, because focus goes back to an element that sits in the background and an inert
+subtree refuses `focus()`. That is `PctModalBackground` in `@pacit/components/core`, and it is
+reference-counted — a dialog opened from a dialog hands the page back once, at the end. One
+thing it must not take: a live region that is a child of `body` goes on speaking, or a control
+inside the modal loses the only channel it has.
 
 **Gate:** `apps/sandbox-e2e/src/select.spec.ts` — measuring the panel's width and offset
 against the field, the typeface and font size inside the panel, and a press on the panel that
 leaves focus on the trigger with the keyboard still answering;
+`apps/sandbox-e2e/src/dialog.spec.ts` — the modal half in a browser: the background refusing
+the pointer, the keyboard and a script, the page that stops scrolling and starts again, the
+scrollbar's width handed back to the layout, the live regions left speaking, and a select panel
+opened inside a dialog that answers Escape before the dialog does;
 `libs/components/core/src/core.spec.ts` — the layer under its own name: the four properties
 read off the control, the anchor's width, a second opening re-reading a page that moved, the
-closing order over two stacked overlays, and the press `PctFocusStays` refuses
+closing order over two stacked overlays, the press `PctFocusStays` refuses, and which elements
+`PctModalBackground` marks and gives back
 **Control:** the measurement from [`lesson-35`](../lessons.md#lesson-35) (a 301 px field ⇒
 a 275 px panel, offset by 13 px; `Times New Roman` in the panel against `system-ui` in the
 control) — the test compares **specific values**, so it does not pass on "roughly right". The
@@ -523,12 +535,20 @@ unit cases carry the same numbers, and the closing case discriminates by constru
 Escape delivered to every overlay rather than to the top one closes both at the first press.
 The focus case has a recorded run: `pctFocusStays` taken off the panel and the e2e case red in
 all three engines — `expect(locator).toBeFocused() failed / Received: inactive` — while the
-unit cases stay green, jsdom moving focus on no `mousedown` at all
+unit cases stay green, jsdom moving focus on no `mousedown` at all. The modal half discriminates
+the same way and was measured before it was written: the native `<dialog showModal()>` refused
+on the one finding that decides it — an overlay outside the topmost modal is inert in blink,
+gecko and webkit, the top layer included, so the select's panel inside one takes no click, no
+focus and no Tab ([`lesson-89`](../lessons.md#lesson-89)). And the order the release keeps has
+a recorded run of its own: with `inert` still on the background at the moment of detach, focus
+lands on `body` instead of on the control that opened the dialog
 **Decision:** [0006 — the anchor and inheritance in an overlay](../decisions/0006-overlay.md),
 [0024 — the overlay layer carries what an overlay severs](../decisions/0024-the-closing-stack-is-the-dependency-s.md),
-[0025 — a panel says whether it takes focus](../decisions/0025-a-panel-says-whether-it-takes-focus.md)
+[0025 — a panel says whether it takes focus](../decisions/0025-a-panel-says-whether-it-takes-focus.md),
+[0029 — a modal is an overlay, not a `<dialog>`](../decisions/0029-a-modal-is-an-overlay-not-a-dialog-element.md)
 **Lessons:** [`lesson-18`](../lessons.md#lesson-18), [`lesson-35`](../lessons.md#lesson-35),
-[`lesson-82`](../lessons.md#lesson-82)
+[`lesson-82`](../lessons.md#lesson-82), [`lesson-89`](../lessons.md#lesson-89),
+[`lesson-90`](../lessons.md#lesson-90)
 
 ---
 

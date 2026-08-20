@@ -10,6 +10,7 @@
     "core/**/*.ts",
     "button/**/*.ts",
     "checkbox/**/*.ts",
+    "dialog/**/*.ts",
     "radio/**/*.ts",
     "select/**/*.ts",
     "field/**/*.ts",

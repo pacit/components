@@ -83,6 +83,13 @@ export const SBX_VIEWS: readonly SbxView[] = [
     load: () => import('./views/select/select-view').then((m) => m.SelectView),
   },
   {
+    path: 'dialog',
+    title: 'Dialog',
+    summary: 'A modal: a focus trap, an inert background and a locked page.',
+    group: 'components',
+    load: () => import('./views/dialog/dialog-view').then((m) => m.DialogView),
+  },
+  {
     path: 'size',
     title: 'Size',
     summary: 'Every component on the shared sm/md/lg axis.',

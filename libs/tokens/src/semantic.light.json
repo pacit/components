@@ -45,6 +45,11 @@
       "$type": "color",
       "$value": "{pct.red.600}"
     },
+    "$comment-scrim": "The veil a modal draws over the page, and the reason it is a SEMANTIC token rather than a value in a component sheet: how much a modal takes the page away is a property of the skin, not of the dialog. Here it is the ramp's darkest ordinary step — over a light page that reads as a dimming rather than as a blackout. The dark theme answers differently, which is the whole point of the tier.",
+    "scrim": {
+      "$type": "color",
+      "$value": "{pct.slate.900}"
+    },
     "focus-ring": {
       "$type": "color",
       "$value": "{pct.blue.500}"

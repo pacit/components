@@ -458,6 +458,42 @@
       "bg": "pct.field.bg-disabled",
       "level": "UI",
       "severity": "warn"
+    },
+    {
+      "name": "dialog — text on the panel",
+      "fg": "pct.dialog.panel-fg",
+      "bg": "pct.dialog.panel-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "dialog — heading",
+      "fg": "pct.dialog.heading-fg",
+      "bg": "pct.dialog.panel-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "$comment": "The one pair a veil can be measured in: not \"is the veil readable\" — it carries no text — but \"can you see where the dialog ends\". The panel and the dimmed page behind it are both dark in the dark theme, and the edge is the only thing that separates them. Measured against the veil ALONE, with its alpha ignored: what is really behind the border is the veil composited over whatever the page had there, and the darkest that can be is the veil at full strength. So the number is the worst case, which is the one worth having.",
+      "name": "UI: dialog panel edge against the dimmed page",
+      "fg": "pct.dialog.panel-border",
+      "bg": "pct.dialog.backdrop-bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: dialog close button",
+      "fg": "pct.dialog.close-fg",
+      "bg": "pct.dialog.panel-bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: dialog close button (hover)",
+      "fg": "pct.dialog.close-fg-hover",
+      "bg": "pct.dialog.close-bg-hover",
+      "level": "UI",
+      "severity": "error"
     }
   ]
 }

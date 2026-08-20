@@ -580,6 +580,11 @@ export class PctSelect<T = string>
         this.selectAt(this.activeIndex());
         break;
       case 'Escape':
+        // The single owner of this key, since the panel's overlay is told not to answer it
+        // (`cdkConnectedOverlayDisableClose`). `preventDefault` is the part that needs an
+        // author: it is what tells whatever the select is standing inside — a dialog, above
+        // all — that the key has been spent here, and the CDK's own handler could close the
+        // panel but could never promise that.
         event.preventDefault();
         this.close();
         break;

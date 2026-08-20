@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "pairs",
+  "rule": "not-a-colour",
+  "description": "The boundary of the `color-mix()` exemption. Point 7 stopped reading the AMOUNT slot of a `color-mix()` as a colour, because a translucent surface is a colour token plus a token holding how much of it there is — and a `dimension` in that slot is correct CSS, not a defect. This case puts the dimension in the OTHER slot: the same function, the same two tokens, the colour one swapped for a length. It has to go on firing, or the exemption has quietly become \"point 7 does not read `color-mix()` at all\"."
+}

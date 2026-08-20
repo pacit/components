@@ -15,6 +15,7 @@ export const SBX_ROUTES = [
   '/checkbox',
   '/radio',
   '/select',
+  '/dialog',
   '/size',
   '/states',
   '/all',

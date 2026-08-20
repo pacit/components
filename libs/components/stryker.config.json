@@ -9,6 +9,7 @@
   "ignorers": ["angular"],
   "mutate": [
     "libs/components/core/src/*.ts",
+    "libs/components/dialog/src/dialog.ts",
     "libs/components/field/src/number.ts",
     "libs/components/icon/src/icon.ts",
     "libs/components/select/src/select.ts",

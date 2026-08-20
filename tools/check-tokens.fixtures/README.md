@@ -112,6 +112,7 @@ would be writing the same code a second time in markdown.
 | `unmeasured-colour`            |     7 | `pairs`      | `unmeasured`             | a sheet paints a background with a token outside the policy |
 | `pair-removed-from-policy`     |     7 | `pairs`      | `unmeasured`             | the pair leaves the policy, the painting stays              |
 | `dimension-painted-as-colour`  |     7 | `pairs`      | `not-a-colour`           | a dimension token in a colour slot                          |
+| `dimension-mixed-as-colour`    |     7 | `pairs`      | `not-a-colour`           | the same, in the colour slot of a `color-mix()`             |
 | `token-outside-theme`          |     7 | `pairs`      | `token-outside-theme`    | a sheet paints with a token the theme does not know         |
 | `dead-on-pair`                 |     7 | `pairs`      | `on-dead`                | a `--pct-on-surface` nobody uses                            |
 | `on-without-surface`           |     7 | `pairs`      | `on-without-surface`     | `--pct-on-danger` with no `--pct-danger`                    |

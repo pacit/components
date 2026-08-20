@@ -25,11 +25,18 @@ export interface PctTexts {
   readonly selectPlaceholder: string;
   /** Select: when there is not a single option. */
   readonly selectEmpty: string;
+  /**
+   * Dialog: the accessible name of the button that closes it. The button draws a cross and
+   * nothing else, so this string is the only name it has — a component's own string and not
+   * content the view authored, which is what puts it here rather than in an input.
+   */
+  readonly dialogClose: string;
 }
 
 export const PCT_DEFAULT_TEXTS: PctTexts = {
   selectPlaceholder: 'Select…',
   selectEmpty: 'No options',
+  dialogClose: 'Close',
 };
 
 /**

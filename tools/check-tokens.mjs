@@ -888,6 +888,53 @@ const checkTokens = (input) => {
  * problem at all. Measured, not assumed: today that pattern concerns the size axes alone,
  * that is, dimension tokens, so it brings in not one colour role.
  */
+/**
+ * A value with the AMOUNT slots of every `color-mix()` cut out of it.
+ *
+ * The point's model was "every `var(--pct-…)` in a `background`/`color`/`border` declaration
+ * names a colour", and that was true until a component needed a translucent surface. A colour
+ * literal is refused above the primitive tier and an alpha has no tier of its own, so the veil
+ * of `pct-dialog` is a colour token and a SECOND token holding how much of it there is:
+ *
+ *     background: color-mix(in srgb, var(--pct-dialog-backdrop-bg) var(--pct-dialog-backdrop-alpha), transparent);
+ *
+ * Read whole, that declaration paints a `dimension` as a colour and rule `not-a-colour` fires
+ * on a stylesheet doing nothing wrong. The exemption is deliberately narrow: only inside a
+ * `color-mix()`, and only for a `var()` standing immediately after another one — that is the
+ * `<color> <percentage>` pair the function is defined in terms of, and nothing else in CSS
+ * puts two `var()`s side by side inside it. Everywhere outside `color-mix()` the old model
+ * stands, so `background: var(--pct-space-3)` still fires.
+ */
+const withoutMixAmounts = (value) => {
+  let out = value;
+  for (;;) {
+    const start = out.indexOf('color-mix(');
+    if (start < 0) return out;
+    // The call's own parentheses, counted — `var()` inside it has parentheses of its own.
+    let depth = 0;
+    let end = start;
+    for (let i = start + 'color-mix'.length; i < out.length; i++) {
+      if (out[i] === '(') depth++;
+      else if (out[i] === ')' && --depth === 0) {
+        end = i + 1;
+        break;
+      }
+    }
+    if (end <= start) return out; // unbalanced — leave it to the CSS parser to complain
+    const call = out
+      .slice(start, end)
+      // The second of two adjacent `var()`s is the amount; the first is the colour.
+      .replace(
+        /(var\(\s*--pct-[a-z0-9-]+\s*\))(\s+)var\(\s*--pct-[a-z0-9-]+\s*\)/g,
+        '$1$2',
+      );
+    out =
+      out.slice(0, start) +
+      call.replace('color-mix(', 'mixed(') +
+      out.slice(end);
+  }
+};
+
 const paintedColours = (sheets) => {
   const ROLE = [
     [/^background(-color)?$/, 'background'],
@@ -901,9 +948,10 @@ const paintedColours = (sheets) => {
   const assignments = new Map(); // target token -> Set(tokens on the right)
 
   for (const { css } of sheets)
-    for (const [, property, value] of css.matchAll(
+    for (const [, property, rawValue] of css.matchAll(
       /^\s*(-{0,2}[a-z][a-z0-9-]*)\s*:\s*([^;{}]+);/gm,
     )) {
+      const value = withoutMixAmounts(rawValue);
       const used = [...value.matchAll(/var\(\s*(--pct-[a-z0-9-]+)/g)].map(
         (m) => m[1],
       );

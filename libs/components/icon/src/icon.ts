@@ -28,7 +28,7 @@ import {
  * ([0011](../../../../docs/decisions/0011-icons.md)). `check-icons` holds both directions:
  * a name nothing draws is a promise nobody keeps, a drawing with no name cannot be swapped.
  */
-export type PctIconName = 'check' | 'chevron-down' | 'indeterminate';
+export type PctIconName = 'check' | 'chevron-down' | 'close' | 'indeterminate';
 
 /**
  * The consumer's icon set: **a component whose templates are the icons**.

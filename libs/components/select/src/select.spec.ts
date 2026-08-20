@@ -687,6 +687,32 @@ describe('PctSelect', () => {
       expect(event.defaultPrevented).toBe(true);
     });
 
+    it('the CDK is not a second owner of Escape', async () => {
+      const fixture = await render(Host);
+      await press(fixture, 'ArrowDown');
+      expect(panel()).not.toBeNull();
+
+      // The road the CDK's dispatcher takes: a listener on the document, delivering to the
+      // top-most attached overlay — so the target is `body` and not the trigger, and
+      // `keyCode` is set because that is the field the CDK reads. Until C19 this closed the
+      // panel: `disableClose` was false, the overlay detached itself and `(detach)` finished
+      // the job, and no test in this file named that owner. The panel now stays, because the
+      // key belongs to the trigger's map and to nothing else. Switch
+      // `cdkConnectedOverlayDisableClose` back off and this case goes red.
+      document.body.dispatchEvent(
+        new KeyboardEvent('keydown', {
+          key: 'Escape',
+          keyCode: 27,
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(panel()).not.toBeNull();
+    });
+
     it('space picks the active option the same as Enter', async () => {
       const fixture = await render(Host);
       await press(fixture, 'ArrowDown');

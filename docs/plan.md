@@ -84,11 +84,11 @@ so the npm page is written and the last file that travelled in a second language
 **B6 and B7 have closed too** — the support window with a gate reading its numbers, and the
 dependency lists with a gate reading the artefact — so **what stands between here and npm is
 B4 alone, and B4 is held with B2**. In parallel: F1 is unblocked — the inventories it renders
-both exist — and C, the filler, holds one open finding, **C19**, which binds at E1. **D2,
-D3, D4, D5, D6 and D7 have closed too, so D is empty and the next unstarted item in the order
-is E1** — and C, empty since C18, holds **C20**, left behind by D4, and **C21**, left behind
-by D6. All three of C's open findings are held by their own **binds at**: C19 at E1, C20 at
-E5, C21 at the next language-gate task.
+both exist. **D2, D3, D4, D5, D6 and D7 have closed, so D is empty — and E1 has closed with
+them**, taking **C19** with it: the finding bound at E1, and E1 is where the select's second
+Escape owner stopped being cosmetic. **The next unstarted item in the order is E2.** C, the
+filler, is down to **C20**, left behind by D4, and **C21**, left behind by D6; both are held by
+their own **binds at** — C20 at E5, C21 at the next language-gate task.
 
 **B2 is deferred by decision, not blocked** — and the decision has a shape: **the first push
 happens only when the maintainer asks for it outright.** It is not triggered by a state of the
@@ -1341,7 +1341,7 @@ var(--pct-button-heigth)` passed every one of them, and the 7 stylesheets read 1
     hand-kept count already drifted: the fixtures README said its denominator had seven cases
     and it had nine, which is [C15](#c-open-findings)'s shape in prose no index gate reads.
 
-- [ ] **C19 — the select's panel closes on Escape twice, and only one of the two is written
+- [x] **C19 — the select's panel closes on Escape twice, and only one of the two is written
       down**
   - `libs/components/select/src/select.ts` handles Escape in its key map (`close()` plus
     `preventDefault()`, which `select.spec.ts` asserts), and `cdkConnectedOverlay` closes the
@@ -1359,7 +1359,17 @@ var(--pct-button-heigth)` passed every one of them, and the 7 stylesheets read 1
     the trigger's handler being the single owner), or the CDK keeps it and the key map drops
     the case — which costs the `preventDefault` promise its current author. Whichever wins,
     the pinning test is the probe above
-  - binds at: **E1**, where the question stops being cosmetic · _notes:_ —
+  - binds at: **E1**, where the question stops being cosmetic · _notes:_ **done, with E1.** The
+    control keeps the key: `[cdkConnectedOverlayDisableClose]="true"`, so the CDK stops
+    answering Escape and the trigger's map is the single owner. Which of the two roads to take
+    was decided by a measurement rather than by the rule alone — a native dialog's close watcher
+    honours `preventDefault()` on the **keydown** and ignores `stopPropagation()`, and the CDK's
+    own Escape handler reads neither `defaultPrevented` nor anything else the control could set.
+    So of the two owners only one could ever promise "this key was spent here", which is the
+    promise a select standing inside a dialog lives on. The flag reaches Escape alone; the
+    outside click and `(detach)` are untouched. The pinning test is the probe the finding named,
+    dispatched the way the dispatcher delivers — on `body`, with `keyCode` — and it goes red the
+    moment the flag comes off
 
 - [ ] **C20 — the message that announces itself does so on nobody's rule**
   - four templates draw their validation message inside `role="alert"`
@@ -1691,7 +1701,7 @@ hand. The numbers are stable, the list order is not.
 Every new component fills in [`components/_template.md`](components/_template.md) — the DoD form
 exists and is a condition of entering a release.
 
-- [ ] **E1 — dialog** — forces a focus trap, scroll lock, `inert`, focus restore, the Escape
+- [x] **E1 — dialog** — forces a focus trap, scroll lock, `inert`, focus restore, the Escape
       stack, SSR safety. The highest architectural gain per component. **Two of those arrive
       with it rather than before it**: `inert` on the background and the scroll lock are the
       modal half of D2's overlay layer, left out there for want of a consumer — a listbox panel
@@ -1699,6 +1709,35 @@ exists and is a condition of entering a release.
       ([0024](decisions/0024-the-closing-stack-is-the-dependency-s.md)). The Escape stack is
       **not** among them: it is the dependency's, measured in `core.spec.ts`, and what the
       dialog inherits is the rule that its own Escape may not live above its control
+  - _notes:_ **done** — and the first question it answered was whether to build it at all.
+    `<dialog showModal()>` was measured before anything was written and gives four of the six
+    lines for free — the trap, the initial focus, the restore and `inert` — while severing
+    nothing through the top layer. It was refused on one finding, measured twice in three
+    engines: **everything outside the topmost modal dialog is inert, the top layer included**,
+    so a `pct-select` inside one has a panel that takes no click, no focus and no Tab
+    ([`lesson-89`](lessons.md#lesson-89),
+    [0029](decisions/0029-a-modal-is-an-overlay-not-a-dialog-element.md)). So `PctDialog` is a
+    CDK overlay like every other panel here, and the two lines the plan promised — `inert` and
+    the scroll lock — are `PctModalBackground` in `core`, exactly where 0024 said they would
+    bind. What the plan did **not** foresee is the third thing that turned out to be ours: the
+    **order** the pieces run in on the way out. Focus is restored to the element that opened the
+    dialog, that element sits in the background, and an inert subtree refuses `focus()` — so the
+    page is given back before the panel is detached, and that sequence is the component rather
+    than a detail of it. One defect found by opening the page rather than by a test
+    ([`lesson-90`](lessons.md#lesson-90)): the first `inert` walk silenced the library's own live
+    regions, and with them the one sentence a select opened inside a dialog has to say.
+  - gate: `apps/sandbox-e2e/src/dialog.spec.ts` (15 cases × 3 engines), the open panel added to
+    the axe audit, `dialog-open` / `dialog-open-rtl` baselines, a forced-colours case, plus
+    `dialog.spec.ts` and `core.spec.ts` in the unit suite — 330 unit cases green
+  - control: the native element refused on a recorded measurement rather than on a taste; the
+    release order has a run of its own (inert still on at detach ⇒ focus lands on `body`); and
+    the size snapshot's differential control caught **itself** lying — deleting the export and
+    re-measuring gave identical numbers because the build had failed, so the gate read the
+    artefact from before the experiment
+  - cost: `./core` +1041 B on every entrypoint that stands on it, `@angular/cdk/a11y` added to
+    the dependency policy's reason, one ramp step (`slate.1000`), one semantic role (`pct.scrim`)
+    and one rule in `check-tokens` point 7 — the amount slot of a `color-mix()` is not a colour,
+    with a fixture pinning that boundary
 - [ ] **E2 — tooltip + popover** — the "describes vs names" distinction, hover/focus/touch
       parity, motion reduction on a real enter/leave
 - [ ] **E3 — menu** — roving focus, submenus, reuse of the typeahead from D1

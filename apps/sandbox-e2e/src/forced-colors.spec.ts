@@ -167,6 +167,29 @@ test.describe('forced-colors: active', () => {
     expect(await styleOf(active, 'outline-style')).toBe('solid');
   });
 
+  /**
+   * The veil is a translucent black in every theme, and forced colours has no translucent
+   * system colour to swap it for. Left alone it would be repainted opaque by the mode's own
+   * rules and the page behind it would go on showing through in strips — so the sheet says
+   * `Canvas` outright, and the panel keeps its edge in `CanvasText`. Without that edge a
+   * dialog in this mode is a rectangle of page on a rectangle of page.
+   */
+  test('the dialog keeps an edge against the surface it covers', async ({
+    page,
+  }) => {
+    await visit(page, '/dialog', { media: FORCED });
+    const sys = await systemColors(page);
+
+    await page.getByTestId('open-basic').click();
+    const panel = page.locator('[data-pct-part="panel"]');
+    await expect(panel).toBeVisible();
+
+    expect(await bg(page, '[data-pct-part="backdrop"]')).toBe(sys.Canvas);
+    expect(await bg(page, '[data-pct-part="panel"]')).toBe(sys.Canvas);
+    // The one thing that separates the two is the border, and it comes from the palette.
+    expect(await styleOf(panel, 'border-top-color')).toBe(sys.CanvasText);
+  });
+
   test('the disabled state says GrayText in every control', async ({
     page,
   }) => {

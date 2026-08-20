@@ -17,7 +17,9 @@
       "500": { "$type": "color", "$value": "#64748b" },
       "700": { "$type": "color", "$value": "#334155" },
       "800": { "$type": "color", "$value": "#1e293b" },
-      "900": { "$type": "color", "$value": "#0f172a" }
+      "900": { "$type": "color", "$value": "#0f172a" },
+      "$comment-1000": "The ramp's endpoint, and it exists for exactly one reader: `pct.scrim` in the DARK theme. A veil has to darken a page that is already `slate.900`, and 900 over 900 dims by nothing — so the step below it is the only value that works there. The light theme's veil is `slate.900`, which is why this is a step of the ramp and not a literal in the component tier (req-token-tiers).",
+      "1000": { "$type": "color", "$value": "#000000" }
     },
     "red": {
       "400": { "$type": "color", "$value": "#f87171" },

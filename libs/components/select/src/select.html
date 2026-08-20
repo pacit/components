@@ -63,6 +63,13 @@
   the trigger outside it). `push` slides a panel that does not fit back into the window — one
   wider than the control (`panelWidth="auto"` or an explicit width) can run past the edge, and
   clipped options cannot be read.
+
+  `disableClose` leaves Escape with ONE owner, the trigger's key map. The CDK closes an overlay
+  on Escape by itself, from a listener on the document, and it neither reads nor sets anything
+  the control could see — so until C19 this panel had two owners for one key and the second
+  was named nowhere. The one that stays is the one that can make the promise: it calls
+  `preventDefault()`, which is what stops the key travelling on to a dialog this select may be
+  standing inside. The flag reaches Escape alone — the outside click below is unaffected.
 -->
 <ng-template
   cdkConnectedOverlay
@@ -72,6 +79,7 @@
   [cdkConnectedOverlayWidth]="overlayWidth()"
   [cdkConnectedOverlayMinWidth]="overlayMinWidth()"
   [cdkConnectedOverlayPush]="true"
+  [cdkConnectedOverlayDisableClose]="true"
   cdkConnectedOverlayPanelClass="pct-select__overlay"
   (overlayOutsideClick)="close()"
   (detach)="close()"
