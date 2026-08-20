@@ -6,6 +6,7 @@ import * as field from '@pacit/components/field';
 import * as icon from '@pacit/components/icon';
 import * as radio from '@pacit/components/radio';
 import * as select from '@pacit/components/select';
+import * as tooltip from '@pacit/components/tooltip';
 import * as primary from './index';
 
 /**
@@ -38,6 +39,7 @@ describe('the public surface of the package', () => {
     icon,
     radio,
     select,
+    tooltip,
   };
 
   for (const [name, mod] of Object.entries(entrypoints))

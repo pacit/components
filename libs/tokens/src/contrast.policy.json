@@ -494,6 +494,14 @@
       "bg": "pct.dialog.close-bg-hover",
       "level": "UI",
       "severity": "error"
+    },
+    {
+      "$comment": "The whole of a tooltip is one pair: a panel with a sentence on it and nothing else. It stands here twice over — once as text on a surface, and once as the only measurement the inverted pair ever gets, since `pct.surface-inverse` is painted by no other component yet.",
+      "name": "tooltip — text on the panel",
+      "fg": "pct.tooltip.fg",
+      "bg": "pct.tooltip.bg",
+      "level": "AA",
+      "severity": "error"
     }
   ]
 }

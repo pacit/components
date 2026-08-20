@@ -1,0 +1,55 @@
+/* The whole component is in a CDK overlay, that is outside the host tree — `:host(…)` describes
+   nothing here, and the tokens still reach it because they are defined on `:root`. */
+
+.pct-tooltip__panel {
+  box-sizing: border-box;
+  max-inline-size: var(--pct-tooltip-max-width);
+  padding-block: var(--pct-tooltip-padding-y);
+  padding-inline: var(--pct-tooltip-padding-x);
+  background: var(--pct-tooltip-bg);
+  color: var(--pct-tooltip-fg);
+  border-radius: var(--pct-tooltip-radius);
+  box-shadow: var(--pct-tooltip-shadow);
+  font-family: inherit;
+  font-size: var(--pct-tooltip-font-size);
+  line-height: 1.4;
+  /* A tooltip is read, not clicked — but the pointer has to be able to REACH it: WCAG 1.4.13
+     asks that content shown on hover survive the pointer moving onto it, and a panel that let
+     the events through would close while the user was reading it. */
+  pointer-events: auto;
+
+  /* The enter and the leave are one property in two directions, and the duration comes from
+     the motion axis in both — `prefers-reduced-motion` is answered by the token build rather
+     than by a media query written here (`req-a11y-motion`). `opacity` is the one animation
+     `req-token-no-opacity` leaves open, and it stays at its two ends: 0 and 1, never a value
+     in between that would compose with the background and move the contrast out from under
+     the gate that measured it. */
+  opacity: 1;
+  transition: opacity var(--pct-motion-transition-duration)
+    var(--pct-motion-transition-easing);
+
+  /* The enter needs no JavaScript: `@starting-style` gives the browser the state to come from,
+     so the panel fades in on being attached. The leave cannot be done the same way — an
+     element removed from the DOM takes its transition with it — and that half is
+     `pctAfterTransition` in `core`. */
+  @starting-style {
+    opacity: 0;
+  }
+}
+
+.pct-tooltip__panel[data-pct-leaving] {
+  opacity: 0;
+}
+
+/* Forced colours: the tooltip is an inverted surface, and inversion is exactly what this mode
+   takes away — both its background and the page's become `Canvas`. What is left to separate
+   them is an edge, so the panel draws one here and only here. Every rule is written out with
+   the base selector's own weight, because `@media` adds no specificity and the base rule would
+   otherwise win the cascade ([`lesson-70`](../../../../docs/lessons.md#lesson-70)). */
+@media (forced-colors: active) {
+  .pct-tooltip__panel {
+    background: Canvas;
+    color: CanvasText;
+    border: 1px solid CanvasText;
+  }
+}

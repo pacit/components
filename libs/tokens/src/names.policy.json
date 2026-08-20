@@ -30,7 +30,15 @@
       "scrim",
       "shadow-panel"
     ],
-    "variants": ["hover", "active", "disabled", "muted", "strong", "100"]
+    "variants": [
+      "hover",
+      "active",
+      "disabled",
+      "muted",
+      "strong",
+      "inverse",
+      "100"
+    ]
   },
   "component": {
     "$comment": "The component tier: `--pct-{component}[-{part}]-{property}[-{variant}]`. The component is not listed, because it is not a dictionary — it has to be a real package entrypoint (`libs/components/<name>/ng-package.json`), and point 3 watches that. The variant stands ALWAYS at the end: `--pct-button-bg-hover`, never `--pct-button-hover-bg`. That order is the only reason why knowing one name lets you guess its sibling.",

@@ -515,7 +515,13 @@ detached, because focus goes back to an element that sits in the background and 
 subtree refuses `focus()`. That is `PctModalBackground` in `@pacit/components/core`, and it is
 reference-counted — a dialog opened from a dialog hands the page back once, at the end. One
 thing it must not take: a live region that is a child of `body` goes on speaking, or a control
-inside the modal loses the only channel it has.
+inside the modal loses the only channel it has. **Which side a panel opens on is logical**:
+`start` and `end` are the sides the writing direction decides, and a side the window has no room
+for gives way to the one across the control rather than to the nearest empty corner. That list
+is `pctPlacementPositions()` in `@pacit/components/core`, and the reason it is shared rather
+than written per component is one line the dependency does not carry — the box is resolved by
+direction and the offset is added as plain pixels afterwards, so the gap has to change sign in a
+right-to-left page or the panel lies over the control it belongs to.
 
 **Gate:** `apps/sandbox-e2e/src/select.spec.ts` — measuring the panel's width and offset
 against the field, the typeface and font size inside the panel, and a press on the panel that
@@ -524,10 +530,13 @@ leaves focus on the trigger with the keyboard still answering;
 the pointer, the keyboard and a script, the page that stops scrolling and starts again, the
 scrollbar's width handed back to the layout, the live regions left speaking, and a select panel
 opened inside a dialog that answers Escape before the dialog does;
+`apps/sandbox-e2e/src/tooltip.spec.ts` — the placement half: each side measured against the
+control it hangs on, the 8 px gap, `end` measured on both sides of the writing direction, and a
+side with no room giving way across the control;
 `libs/components/core/src/core.spec.ts` — the layer under its own name: the four properties
 read off the control, the anchor's width, a second opening re-reading a page that moved, the
-closing order over two stacked overlays, the press `PctFocusStays` refuses, and which elements
-`PctModalBackground` marks and gives back
+closing order over two stacked overlays, the press `PctFocusStays` refuses, which elements
+`PctModalBackground` marks and gives back, and the sign of the inline gap in each direction
 **Control:** the measurement from [`lesson-35`](../lessons.md#lesson-35) (a 301 px field ⇒
 a 275 px panel, offset by 13 px; `Times New Roman` in the panel against `system-ui` in the
 control) — the test compares **specific values**, so it does not pass on "roughly right". The

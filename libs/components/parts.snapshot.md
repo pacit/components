@@ -63,4 +63,5 @@ from what the browser really gets.
 ./select PctSelect placeholder
 ./select PctSelect trigger
 ./select PctSelect value
+./tooltip PctTooltipPanel panel
 ```

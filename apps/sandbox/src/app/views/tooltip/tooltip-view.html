@@ -1,0 +1,192 @@
+<h2 class="view__title">Tooltip</h2>
+<p class="muted view__intro">
+  A sentence about a control, on hover, on keyboard focus and on a long press.
+  The question the component exists to force is what that sentence
+  <em>is</em>: a control that already has a name gets a description, and one
+  that has none — the icon-only button — gets its name from here and keeps it
+  whether the tooltip is open or not.
+</p>
+
+<sbx-demo
+  heading="A description"
+  summary="The button says what it does; the tooltip says what that costs. It reaches a screen reader as aria-describedby, and only while it is on the screen."
+  [reqs]="['req-a11y-built-in', 'req-api-overlay']"
+  [controls]="[]"
+  data-testid="demo-describes"
+>
+  <div class="sbx-tooltip__row">
+    <button
+      pctButton
+      pctTooltip="Removes the project and everything in it"
+      data-testid="describes-trigger"
+    >
+      Delete the project
+    </button>
+    <span class="muted">…and the same one on the side:</span>
+    <button
+      pctButton
+      variant="outline"
+      pctTooltip="Runs every check before publishing"
+      pctTooltipPlacement="end"
+      data-testid="describes-end"
+    >
+      Publish
+    </button>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="A name"
+  summary="An icon-only button has nothing to read. The tooltip is its name, so it is written as aria-label and stands there whether anybody hovers or not — a name that came and went with the pointer would leave the button unnamed for everyone else."
+  [reqs]="['req-a11y-built-in', 'req-a11y-axe']"
+  [controls]="[]"
+  data-testid="demo-names"
+>
+  <div class="sbx-tooltip__row">
+    <button
+      pctButton
+      variant="outline"
+      pctTooltip="Approve the release"
+      pctTooltipAs="name"
+      pctTooltipPlacement="bottom"
+      data-testid="names-trigger"
+    >
+      <pct-icon name="check">
+        <svg
+          viewBox="0 0 16 16"
+          width="100%"
+          height="100%"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          focusable="false"
+        >
+          <path d="M3.5 8.5l3 3 6-7" />
+        </svg>
+      </pct-icon>
+    </button>
+
+    <button
+      pctButton
+      variant="outline"
+      pctTooltip="Close the panel"
+      pctTooltipAs="name"
+      pctTooltipPlacement="bottom"
+      data-testid="names-close"
+    >
+      <pct-icon name="close">
+        <svg
+          viewBox="0 0 16 16"
+          width="100%"
+          height="100%"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          focusable="false"
+        >
+          <path d="M4 4l8 8M12 4l-8 8" />
+        </svg>
+      </pct-icon>
+    </button>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="The four sides"
+  summary="The side is logical, not physical: `start` and `end` are the ones the writing direction decides, and a side with no room falls back to the one across the control."
+  [reqs]="['req-token-logical', 'req-api-overlay']"
+  [controls]="[]"
+  data-testid="demo-sides"
+>
+  <div class="sbx-tooltip__sides">
+    <button
+      pctButton
+      variant="outline"
+      pctTooltip="On the starting side"
+      pctTooltipPlacement="start"
+      data-testid="side-start"
+    >
+      start
+    </button>
+    <button
+      pctButton
+      variant="outline"
+      pctTooltip="Above the control"
+      pctTooltipPlacement="top"
+      data-testid="side-top"
+    >
+      top
+    </button>
+    <button
+      pctButton
+      variant="outline"
+      pctTooltip="Below the control"
+      pctTooltipPlacement="bottom"
+      data-testid="side-bottom"
+    >
+      bottom
+    </button>
+    <button
+      pctButton
+      variant="outline"
+      pctTooltip="On the ending side"
+      pctTooltipPlacement="end"
+      data-testid="side-end"
+    >
+      end
+    </button>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="On a control that already says something"
+  summary="A field's hint is an aria-describedby of its own. The tooltip adds its id to that list instead of writing over it — one description does not take the other away."
+  [reqs]="['req-api-message', 'req-a11y-built-in']"
+  [controls]="[]"
+  data-testid="demo-field"
+>
+  <pct-field
+    label="Release note"
+    hint="Shown in the changelog"
+    data-testid="field-note"
+  >
+    <input
+      pctText
+      pctTooltip="Markdown is allowed here"
+      [value]="note()"
+      (input)="note.set($any($event.target).value)"
+      data-testid="note-input"
+    />
+  </pct-field>
+</sbx-demo>
+
+<sbx-demo
+  heading="Switched off"
+  summary="A tooltip taken away while it is up goes with the state it was showing, rather than staying on the screen describing something that no longer says it."
+  [reqs]="['req-api-signals']"
+  [controls]="[]"
+  data-testid="demo-off"
+>
+  <div class="sbx-tooltip__row">
+    <button
+      pctButton
+      variant="outline"
+      pctTooltip="This one can be taken away"
+      [pctTooltipDisabled]="off()"
+      data-testid="off-trigger"
+    >
+      Hover me
+    </button>
+    <button
+      pctButton
+      variant="outline"
+      (click)="off.set(!off())"
+      data-testid="off-toggle"
+    >
+      {{ off() ? 'Give it back' : 'Take it away' }}
+    </button>
+  </div>
+</sbx-demo>

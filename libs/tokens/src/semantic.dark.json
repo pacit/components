@@ -58,6 +58,15 @@
       "$type": "color",
       "$value": "{pct.slate.1000}"
     },
+    "$comment-surface-inverse": "The surface that answers the page rather than joining it — dark on a light theme and light on a dark one. It exists for the annotation kind of panel (the tooltip is the first): a surface a reader is meant to notice for a moment and then stop seeing, which the ordinary `surface` cannot be, being what the page is made of. The `on-` pair is not decoration here — an inverted surface is the one place where reaching for `pct.text` by reflex paints text the same colour as the box it stands in.",
+    "surface-inverse": {
+      "$type": "color",
+      "$value": "{pct.slate.100}"
+    },
+    "on-surface-inverse": {
+      "$type": "color",
+      "$value": "{pct.slate.900}"
+    },
     "focus-ring": {
       "$type": "color",
       "$value": "{pct.blue.500}"

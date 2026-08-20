@@ -18,7 +18,9 @@ import { PctFocusStays } from './focus';
 import { nextPctId, PctIdCounter } from './id';
 import { pctListNavigation, PctListSource } from './list';
 import { PctModalBackground } from './modal';
+import { pctAfterTransition } from './motion';
 import { pctOverlay, PctOverlayInherited, PctOverlayPanel } from './overlay';
+import { pctPlacementPositions } from './placement';
 import {
   PCT_TEMPLATE_HOST,
   pctReportOrphanSlot,
@@ -567,6 +569,232 @@ describe('@pacit/components/core', () => {
    * is an entry in `PctOverlayInherited` rather than an edit in every component that opens
    * a panel.
    */
+  describe('pctPlacementPositions', () => {
+    /**
+     * The four sides, and the gap between the panel and what it hangs on. The offsets are the
+     * whole content of this helper — the box itself is the dependency's to resolve — so what
+     * is checked is the sign of the gap on each side and in each direction.
+     */
+    it('opens on the side that was asked for, at the distance it was given', () => {
+      const [top] = pctPlacementPositions('top', 8);
+      expect(top).toMatchObject({
+        originY: 'top',
+        overlayY: 'bottom',
+        offsetY: -8,
+      });
+
+      const [bottom] = pctPlacementPositions('bottom', 8);
+      expect(bottom).toMatchObject({
+        originY: 'bottom',
+        overlayY: 'top',
+        offsetY: 8,
+      });
+
+      const [start] = pctPlacementPositions('start', 8);
+      expect(start).toMatchObject({
+        originX: 'start',
+        overlayX: 'end',
+        offsetX: -8,
+      });
+
+      const [end] = pctPlacementPositions('end', 8);
+      expect(end).toMatchObject({
+        originX: 'end',
+        overlayX: 'start',
+        offsetX: 8,
+      });
+    });
+
+    /**
+     * The one thing about this that a screenshot would not catch. `start` and `end` are
+     * resolved by the dependency against the writing direction, and `offsetX` is NOT — it is
+     * added as plain pixels afterwards. The same number therefore opens a gap in an English
+     * page and closes one in an Arabic page, laying the panel over the control it belongs to.
+     */
+    it('the inline gap changes sign with the writing direction, the block gap does not', () => {
+      expect(pctPlacementPositions('end', 8, 'rtl')[0]).toMatchObject({
+        originX: 'end',
+        overlayX: 'start',
+        offsetX: -8,
+      });
+      expect(pctPlacementPositions('start', 8, 'rtl')[0]).toMatchObject({
+        offsetX: 8,
+      });
+      expect(pctPlacementPositions('top', 8, 'rtl')[0]).toMatchObject({
+        offsetY: -8,
+      });
+    });
+
+    it('falls back across the control first, and only then onto the other axis', () => {
+      const positions = pctPlacementPositions('top', 8);
+
+      expect(positions).toHaveLength(4);
+      // A tooltip asked for `top` and shown below is still a tooltip about the same control;
+      // one shown at its side has moved to an axis nobody chose.
+      expect(positions[1]).toMatchObject({
+        originY: 'bottom',
+        overlayY: 'top',
+      });
+      expect(positions.slice(2).map((p) => p.originX)).toEqual([
+        'end',
+        'start',
+      ]);
+    });
+  });
+
+  describe('pctAfterTransition', () => {
+    /**
+     * An element that answers whatever computed style the test asks for. The real
+     * `getComputedStyle` in jsdom returns an empty string for every duration — which is one of
+     * the cases here, and exactly why the other ones cannot be measured through it.
+     */
+    const element = (duration: string | undefined, delay = '0s') => {
+      const listeners = new Set<(event: TransitionEvent) => void>();
+      // The event NAME is honoured, not ignored: a fake that answers to every name would let
+      // a listener registered for the wrong event look exactly like a working one.
+      const node = {
+        addEventListener: (
+          type: string,
+          fn: (event: TransitionEvent) => void,
+        ) => {
+          if (type === 'transitionend') listeners.add(fn);
+        },
+        removeEventListener: (
+          type: string,
+          fn: (event: TransitionEvent) => void,
+        ) => {
+          if (type === 'transitionend') listeners.delete(fn);
+        },
+        ownerDocument: {
+          defaultView: {
+            getComputedStyle: () => ({
+              transitionDuration: duration,
+              transitionDelay: delay,
+            }),
+          },
+        },
+      };
+      return {
+        node: node as unknown as HTMLElement,
+        end: (target: unknown = node) =>
+          listeners.forEach((fn) => fn({ target } as TransitionEvent)),
+        listeners,
+      };
+    };
+
+    it('calls back at once when there is nothing to wait for', () => {
+      const done = vi.fn();
+      // The user who asked for less motion, and jsdom, arrive here by different roads: the
+      // token build answers the preference with `0.01ms`, and jsdom answers with nothing at
+      // all. Both have to end with the panel gone rather than with a wait.
+      pctAfterTransition(element('0s').node, done);
+
+      expect(done).toHaveBeenCalledTimes(1);
+    });
+
+    it('waits for the transition of the element itself, not of what is inside it', () => {
+      vi.useFakeTimers();
+      try {
+        const done = vi.fn();
+        const el = element('150ms');
+        pctAfterTransition(el.node, done);
+
+        el.end({});
+        expect(done).not.toHaveBeenCalled();
+
+        el.end();
+        expect(done).toHaveBeenCalledTimes(1);
+        // And once the callback has run, nothing is left listening or ticking.
+        expect(el.listeners.size).toBe(0);
+        expect(vi.getTimerCount()).toBe(0);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('the longest time in the value decides, and the delay counts', () => {
+      vi.useFakeTimers();
+      try {
+        const done = vi.fn();
+        pctAfterTransition(element('50ms, 0.3s', '0s, 100ms').node, done);
+
+        // `transitionend` never comes — a panel hidden or repainted mid-flight is the
+        // ordinary case, and a leave waiting on the event alone would never end.
+        vi.advanceTimersByTime(400);
+        expect(done).not.toHaveBeenCalled();
+
+        vi.advanceTimersByTime(50);
+        expect(done).toHaveBeenCalledTimes(1);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('an element in no window, or with nothing to read, is not waited for', () => {
+      const done = vi.fn();
+      // A detached element has no view to compute a style from, and a style with no
+      // transition in it answers `undefined`. Neither is an error and neither is a duration:
+      // the panel goes now rather than in a made-up number of milliseconds.
+      pctAfterTransition({} as HTMLElement, done);
+      pctAfterTransition(element(undefined).node, done);
+
+      expect(done).toHaveBeenCalledTimes(2);
+    });
+
+    it('an unreadable part of the value is passed over, not guessed at', () => {
+      vi.useFakeTimers();
+      try {
+        const done = vi.fn();
+        // `auto` is not a time. The longest of what CAN be read decides, and the rest is
+        // simply not there — the alternative is a wait built on a number nobody wrote.
+        pctAfterTransition(element('auto, 300ms, 50ms').node, done);
+
+        vi.advanceTimersByTime(300);
+        expect(done).not.toHaveBeenCalled();
+
+        vi.advanceTimersByTime(50);
+        expect(done).toHaveBeenCalledTimes(1);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('whichever ending comes first, it comes once', () => {
+      vi.useFakeTimers();
+      try {
+        const done = vi.fn();
+        const el = element('150ms');
+        pctAfterTransition(el.node, done);
+
+        el.end();
+        el.end();
+        vi.advanceTimersByTime(1000);
+
+        expect(done).toHaveBeenCalledTimes(1);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('a cancelled wait calls nobody back', () => {
+      vi.useFakeTimers();
+      try {
+        const done = vi.fn();
+        const el = element('150ms');
+        const cancel = pctAfterTransition(el.node, done);
+
+        cancel();
+        el.end();
+        vi.advanceTimersByTime(1000);
+
+        expect(done).not.toHaveBeenCalled();
+        expect(el.listeners.size).toBe(0);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+  });
+
   describe('PctOverlayPanel', () => {
     @Component({
       imports: [PctOverlayPanel],

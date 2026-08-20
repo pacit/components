@@ -13,6 +13,7 @@
     "dialog/**/*.ts",
     "radio/**/*.ts",
     "select/**/*.ts",
+    "tooltip/**/*.ts",
     "field/**/*.ts",
     "icon/**/*.ts",
     "testing/**/*.ts"

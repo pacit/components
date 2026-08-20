@@ -120,6 +120,7 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-motion-transition-duration duration primitive public
 --pct-motion-transition-easing cubicBezier primitive public
 --pct-on-primary color semantic public
+--pct-on-surface-inverse color semantic public
 --pct-primary color semantic public
 --pct-primary-active color semantic public
 --pct-primary-hover color semantic public
@@ -193,8 +194,17 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-surface color semantic public
 --pct-surface-100 color semantic public
 --pct-surface-disabled color semantic public
+--pct-surface-inverse color semantic public
 --pct-target-min dimension primitive public
 --pct-text color semantic public
 --pct-text-disabled color semantic public
 --pct-text-muted color semantic public
+--pct-tooltip-bg color component public
+--pct-tooltip-fg color component public
+--pct-tooltip-font-size dimension component public
+--pct-tooltip-max-width dimension component public
+--pct-tooltip-padding-x dimension component public
+--pct-tooltip-padding-y dimension component public
+--pct-tooltip-radius dimension component public
+--pct-tooltip-shadow shadow component public
 ```

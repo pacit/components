@@ -13,6 +13,7 @@
     "libs/components/field/src/number.ts",
     "libs/components/icon/src/icon.ts",
     "libs/components/select/src/select.ts",
+    "libs/components/tooltip/src/tooltip.ts",
     "!libs/components/**/index.ts",
     "!libs/components/**/*.types.ts",
     "!libs/components/**/*.spec.ts"

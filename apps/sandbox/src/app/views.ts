@@ -90,6 +90,15 @@ export const SBX_VIEWS: readonly SbxView[] = [
     load: () => import('./views/dialog/dialog-view').then((m) => m.DialogView),
   },
   {
+    path: 'tooltip',
+    title: 'Tooltip',
+    summary:
+      'A sentence about a control — a description, or the name it has none of.',
+    group: 'components',
+    load: () =>
+      import('./views/tooltip/tooltip-view').then((m) => m.TooltipView),
+  },
+  {
     path: 'size',
     title: 'Size',
     summary: 'Every component on the shared sm/md/lg axis.',

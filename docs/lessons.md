@@ -2274,3 +2274,67 @@ except the modal and the channels that speak to the user".** And the narrower ru
 from writing it down: the test is `aria-live` on the child **itself**, never a search below it —
 a region an application put inside its own root would otherwise keep the whole page answering,
 which is the opposite of a modal.
+
+---
+
+### <a id="lesson-91"></a>`lesson-91` — The name of a control is often in another element
+
+The tooltip reports in dev mode when it is set to _describe_ a control that has no name of its
+own — the case where a screen reader announces the description and nothing else. The first
+version of that check read the trigger: `aria-label`, `aria-labelledby`, `title`, its own text,
+the `alt` of an image inside it. Every one of those is an attribute **on the element**.
+
+Opening the sandbox printed a false alarm on the first page it ran on:
+
+```
+[pctTooltip] "Markdown is allowed here" describes a control that has no name of its own …
+```
+
+The control was an `<input pctText>` inside the field chrome — named by a `<label for>` sitting
+in another part of the template entirely. The input carries **not one attribute** saying so, and
+no amount of reading the element would have found it: the association is the document's, held by
+the label and resolved by the browser.
+
+The platform answers the question itself. `HTMLInputElement.labels` is the list, it is
+implemented everywhere including jsdom, and reading it turned the check from a guess about
+markup into a question put to the engine — the same road `:focus-visible` takes one method above
+it, and the same rule as [`req-api-platform`](requirements/api.md#req-api-platform) one floor
+down: **do not reimplement what the browser already computes.**
+
+The wider point is about heuristics that report to a human. A false alarm is not a small defect
+in one: it is the thing that teaches the reader to ignore the channel, and after that the true
+alarms cost nothing either. A check that speaks in the console has to be measured on a real page
+before it ships, exactly like a gate — this one was, and it fired on the second card.
+
+---
+
+### <a id="lesson-92"></a>`lesson-92` — A name that comes and goes is not a name
+
+A tooltip's text can reach assistive technology two ways, and the choice looks like a matter of
+taste until an audit is run over the closed state. Four buttons, one page, axe-core with the
+WCAG 2.2 AA tags:
+
+```
+A  icon-only, named ONLY by a panel that is not attached      button-name  [critical]
+D  icon-only, aria-labelledby -> an id that is not in the DOM button-name  [critical]
+B  labelled, aria-describedby -> an id that is not in the DOM (nothing)
+C  icon-only, aria-label="Approve"                            (nothing)
+```
+
+Two findings in one measurement. The **name** half is not a preference: a control whose name
+lives in a panel is nameless for as long as nobody is pointing at it, and pointing at a dangling
+id is exactly as nameless — a reference to nothing contributes nothing to the accessible name,
+so the audit reports the same critical violation for both. The **description** half is the
+opposite: a dangling `aria-describedby` produces not a word from the audit, because a
+description is optional by construction and its absence is not a defect.
+
+Hence the shape of `PctTooltip` and of
+[0030](decisions/0030-a-name-is-an-attribute-a-description-is-a-reference.md): **the name is an
+attribute written once and kept, the description is a reference held exactly as long as the
+panel it points at.** The asymmetry is not symmetry avoided for convenience — it is what the two
+relations mean.
+
+What makes this a lesson rather than a note is the direction the measurement runs in. The
+interesting state of a tooltip is not the open one everybody looks at; it is the closed one,
+which is where a control spends its whole life. An audit that only ever sees panels open would
+have said both roads were fine.

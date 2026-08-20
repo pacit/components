@@ -1,0 +1,18 @@
+<!--
+  The panel lives in a CDK overlay — outside the host tree — so `pctOverlayPanel` carries over
+  what the tree stops handing it: theme, typeface, size, writing direction (`lesson-35`).
+
+  `role="tooltip"` and nothing else: the panel takes no focus, holds no control and is not in
+  the Tab order. What points at it is `aria-describedby` on the trigger, and it points only
+  while this element exists — which is exactly the window in which it is readable.
+-->
+<div
+  class="pct-tooltip__panel"
+  data-pct-part="panel"
+  role="tooltip"
+  [id]="panelId()"
+  [pctOverlayPanel]="inherited()"
+  [attr.data-pct-leaving]="leaving() ? '' : null"
+>
+  {{ text() }}
+</div>

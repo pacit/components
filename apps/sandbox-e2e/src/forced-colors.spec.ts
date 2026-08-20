@@ -190,6 +190,28 @@ test.describe('forced-colors: active', () => {
     expect(await styleOf(panel, 'border-top-color')).toBe(sys.CanvasText);
   });
 
+  /**
+   * A tooltip is an inverted surface, and inversion is the first thing this mode takes away:
+   * the panel and the page behind it both become `Canvas`. What is left to tell them apart is
+   * an edge, and the sheet draws one here and nowhere else — without it a tooltip in this mode
+   * is a rectangle of page floating on a rectangle of page.
+   */
+  test('the tooltip keeps an edge once its inversion is gone', async ({
+    page,
+  }) => {
+    await visit(page, '/tooltip', { media: FORCED });
+    const sys = await systemColors(page);
+
+    await page.getByTestId('describes-trigger').hover();
+    const panel = page.locator('[data-pct-part="panel"]');
+    await expect(panel).toBeVisible();
+
+    expect(await bg(page, '[data-pct-part="panel"]')).toBe(sys.Canvas);
+    expect(await styleOf(panel, 'color')).toBe(sys.CanvasText);
+    expect(await styleOf(panel, 'border-top-color')).toBe(sys.CanvasText);
+    expect(await styleOf(panel, 'border-top-style')).toBe('solid');
+  });
+
   test('the disabled state says GrayText in every control', async ({
     page,
   }) => {

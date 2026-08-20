@@ -1,0 +1,16 @@
+.sbx-tooltip__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* A strip wide enough for the four sides to be told apart, and tall enough that a panel above
+   the top button has somewhere to go. */
+.sbx-tooltip__sides {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-block: 32px;
+}

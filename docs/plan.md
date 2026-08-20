@@ -86,7 +86,14 @@ dependency lists with a gate reading the artefact — so **what stands between h
 B4 alone, and B4 is held with B2**. In parallel: F1 is unblocked — the inventories it renders
 both exist. **D2, D3, D4, D5, D6 and D7 have closed, so D is empty — and E1 has closed with
 them**, taking **C19** with it: the finding bound at E1, and E1 is where the select's second
-Escape owner stopped being cosmetic. **The next unstarted item in the order is E2.** C, the
+Escape owner stopped being cosmetic. **E2 is open and half closed**: the tooltip ships, the
+popover is what is left of the item. The half that is done settled the question the item was
+named for — "describes vs names" turned out to be two different relations rather than two ways
+of writing one, and the measurement that says so is of the state nobody audits, the **closed**
+one ([`lesson-92`](lessons.md#lesson-92),
+[0030](decisions/0030-a-name-is-an-attribute-a-description-is-a-reference.md)). It also brought
+the first real enter/leave here, and with it the third shared thing the plan had not foreseen:
+placement, extracted at the moment the second role needed it rather than after. C, the
 filler, is down to **C20**, left behind by D4, and **C21**, left behind by D6; both are held by
 their own **binds at** — C20 at E5, C21 at the next language-gate task.
 
@@ -1738,8 +1745,44 @@ exists and is a condition of entering a release.
     the dependency policy's reason, one ramp step (`slate.1000`), one semantic role (`pct.scrim`)
     and one rule in `check-tokens` point 7 — the amount slot of a `color-mix()` is not a colour,
     with a fixture pinning that boundary
-- [ ] **E2 — tooltip + popover** — the "describes vs names" distinction, hover/focus/touch
-      parity, motion reduction on a real enter/leave
+- [~] **E2 — tooltip + popover** — the "describes vs names" distinction, hover/focus/touch
+  parity, motion reduction on a real enter/leave. **The tooltip is closed; the popover is
+  what is left** — a panel with content in it, a trigger that says `aria-expanded`, and
+  focus that goes in and comes back
+  - _notes:_ **half done, and the half that is done answered the question the item was named
+    for.** "Describes vs names" is not two ways of writing one thing: measured with axe over the
+    state a tooltip spends its life in — **closed** — an icon-only button named by a panel that
+    is not attached fails `button-name` at critical, and so does one pointing at that panel's id
+    with `aria-labelledby`; a dangling `aria-describedby` produces not one finding
+    ([`lesson-92`](lessons.md#lesson-92)). So the name is an attribute written once and kept and
+    the description is a reference held exactly as long as the panel
+    ([0030](decisions/0030-a-name-is-an-attribute-a-description-is-a-reference.md)), and the
+    asymmetry is what the two relations mean rather than a convenience. The enter/leave the
+    dialog's card said would arrive here did: `@starting-style` gives the enter with no
+    JavaScript at all, the leave has no CSS answer — an element removed from the DOM takes its
+    transition with it — and `pctAfterTransition` in `core` is that half. It reads the duration
+    rather than assuming one, which is where `motion.reduced.json`'s `0.01ms` rather than `0s`
+    stopped being a note and became the reason a panel is ever detached. What the item did not
+    foresee is the third thing that turned out to be shared: **placement**. D2 left positioning
+    with the role deliberately, and two roles arriving at once — a tooltip and a popover both
+    take a side from the author — is the moment to extract; `pctPlacementPositions` carries the
+    one line the dependency does not, that `offsetX` is physical while `start`/`end` are not.
+    One defect found by opening the page rather than by a test
+    ([`lesson-91`](lessons.md#lesson-91)): the dev-mode report about an unnamed control fired a
+    false alarm on the first page it ran on, because the name of a native control lives in a
+    `<label for>` somewhere else and the control carries no attribute saying so
+  - gate: `apps/sandbox-e2e/src/tooltip.spec.ts` (13 cases × 3 engines), the open panel added to
+    the axe audit over the icon-only button, a `tooltip-open` baseline, a forced-colours case,
+    plus `tooltip.spec.ts` and `core.spec.ts` in the unit suite — 377 unit cases green, 603
+    e2e cases green; `tooltip.ts` at 70.54% mutation, total 85.38 → 83.35
+  - control: the two roads for the text audited in the closed state rather than the open one;
+    `pctAfterTransition` measured on all four of its endings (the event, the timeout floor, the
+    cancel, and nothing to wait for); the reduced-motion case reads the duration off the panel
+    and still ends
+  - cost: `./core` +1309 B for an application importing the entrypoint whole, **+4 B for
+    `./dialog` and `./select`** — the shared layer is tree-shaken by the components that do not
+    use it; `./tooltip` 12597 B; one semantic role (`pct.surface-inverse` with its `on-` pair)
+    and one word in the token dictionary (`inverse`)
 - [ ] **E3 — menu** — roving focus, submenus, reuse of the typeahead from D1
 - [ ] **E4 — closing out the select family** — projected `pct-option`, an option template,
       groups, multiple selection, filtering, clearing, async, virtualisation. Deliberately

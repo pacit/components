@@ -116,6 +116,25 @@ test.describe('Appearance — compared with the baseline', () => {
   });
 
   /**
+   * The tooltip, which shows on no screenshot of a resting page. The shot is of the card
+   * rather than of the panel alone: what this component draws is a surface that answers the
+   * page's own — an inverted one — and a picture of the panel by itself would say nothing
+   * about the contrast between the two.
+   */
+  test('tooltip-open', async ({ page }) => {
+    await stage(page, '/tooltip');
+    await page.getByTestId('describes-trigger').hover();
+    const panel = page.locator('[data-pct-part="panel"]');
+    await expect(panel).toBeVisible();
+    // The enter is a fade, so the shot has to wait for it to have finished.
+    await expect(panel).toHaveCSS('opacity', '1');
+
+    await expect(page.getByTestId('demo-describes')).toHaveScreenshot(
+      'tooltip-open.png',
+    );
+  });
+
+  /**
    * The same set of controls in the dark theme. The theme is a cross-cutting axis,
    * so a regression in the semantic layer of the tokens will show up here rather
    * than in the light screenshots.

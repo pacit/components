@@ -18,6 +18,7 @@ a machine; prose with a missing paragraph is not.
 | [`PctRadioGroup`](radio.md)  | `@pacit/components/radio`    | group of mutually exclusive options |
 | [`PctSelect`](select.md)     | `@pacit/components/select`   | choice list with a panel of its own |
 | [`PctDialog`](dialog.md)     | `@pacit/components/dialog`   | modal dialog                        |
+| [`PctTooltip`](tooltip.md)   | `@pacit/components/tooltip`  | a sentence about a control          |
 
 ## The order of the components to come
 
@@ -31,8 +32,13 @@ The order follows **architectural debt**, not popularity:
    restore, the Escape stack and SSR safety; of those, three came from the dependency, one from
    the platform and two were written here
    ([0029](../decisions/0029-a-modal-is-an-overlay-not-a-dialog-element.md)).
-2. **Tooltip + Popover** — forces the "describes vs names" distinction, hover/focus/touch
-   parity and reduced motion on a real enter/leave.
+2. **Tooltip + Popover** — the tooltip is **built**; the popover is what is left of this item.
+   The tooltip forced all three: the "describes vs names" distinction — settled as _a name is an
+   attribute, a description is a reference_
+   ([0030](../decisions/0030-a-name-is-an-attribute-a-description-is-a-reference.md)) — the
+   hover/focus/touch parity, and the first real enter/leave in the library, which is where
+   `0.01ms` rather than `0s` in the reduced-motion tokens stopped being a note and became the
+   reason a panel is ever detached.
 3. **Menu** — roving focus, submenus, reuse of the typeahead.
 4. **Completing the select family** — projected `pct-option`, an option template, groups,
    multiple selection, filtering, clearing, async, virtualisation. Deliberately **after** the

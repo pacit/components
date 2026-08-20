@@ -111,6 +111,24 @@ test.describe('Accessibility (axe-core, WCAG 2.2 AA)', () => {
     expect(report(violations)).toBe('');
   });
 
+  /**
+   * An open tooltip, for the same reason as the open dialog above: the walk over the routes
+   * finds every panel closed, and a panel that is not attached is one axe has nothing to say
+   * about. The trigger is the icon-only button — the one place where a violation would be a
+   * real one rather than a sandbox artefact, since the tooltip is the only name it has
+   * ([`lesson-65`](../../../docs/lessons.md#lesson-65)).
+   */
+  test('an open tooltip and the button it names have no violations', async ({
+    page,
+  }) => {
+    await visit(page, '/tooltip');
+    await page.getByTestId('names-trigger').hover();
+    await expect(page.locator('[data-pct-part="panel"]')).toBeVisible();
+
+    const violations = await audit(page, '[data-testid="demo-names"]');
+    expect(report(violations)).toBe('');
+  });
+
   test('a card with a dark stage has no violations', async ({ page }) => {
     await visit(page, '/button');
     const violations = await audit(page, '[data-testid="demo-dark"]');
