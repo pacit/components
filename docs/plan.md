@@ -123,6 +123,8 @@ and it is about this repository's own machinery rather than its components: **C2
 gates that take seventeen and ten minutes, sharing one CI job on half the cores this was
 measured on. E4 has since added three more — **C23**, **C24** and **C25** — so the filler has
 six items and every one of them is held by a **binds at** rather than by anybody's mood.
+Filtering has since added **C26** and **C27**, both of them about the mutation run: what its
+snapshot cannot say, and a guard whose promise no test here can notice.
 
 **E4 is open and its first half has closed**, and that half is the fork the other six items
 stand on: **is an option a row of data or a `<pct-option>` the consumer projects?** Written as
@@ -160,6 +162,26 @@ their sight (`check-aria`, `check-texts` — both read one class body,
 [`lesson-100`](lessons.md#lesson-100)) and left two findings: **C24**, one template compiled
 twice in the artefact, and **C25**, the inheritance taught to the gates that fired and to none
 of the rest.
+
+**The fourth item is filtering, and it is the first fork this plan settled with a rule it
+already had.** 0034 said a tag is what the **type** cannot say otherwise; filtering changes no
+type, so it is an input on both tags — as a tag it would have made four of them for two
+questions. What does carry the defects is the pair of things a text trigger holds at once: the
+answer, and the question being typed. Every filtering select that misbehaves conflates them, so
+the rule is one sentence and the implementation is a reading of it — **the question narrows the
+panel, never the value, and it does not outlive the panel it was asked in**
+([0035](decisions/0035-a-filter-is-a-question-not-a-value.md)). The trigger changes **element**
+with the role, `<button>` to `<input>`, and the key map splits with it: the caret takes back
+the letters, the space bar and `Home`/`End`, which is `req-api-platform` applied to a control
+that has now borrowed a real field. Two lessons of the kind that are cheaper to read than to
+find: an accent is not a formatting detail but a question of language, and the platform's own
+answer differs per locale on one pair of letters ([`lesson-101`](lessons.md#lesson-101)); and a
+`#ref` declared inside an `@if` cannot be seen from outside it, which is why the panel's origin
+is now an element rather than a directive's export ([`lesson-103`](lessons.md#lesson-103)). It
+cost `check-aria` its arithmetic — two named elements were a violation by counting, and two
+branches of one conditional are not two names for one control — and it closed the last two
+coverage exceptions in the repository, on a reason that turned out never to have been true
+([`lesson-102`](lessons.md#lesson-102)).
 
 **B2 is deferred by decision, not blocked** — and the decision has a shape: **the first push
 happens only when the maintainer asks for it outright.** It is not triggered by a state of the
@@ -1576,6 +1598,33 @@ one language ([`req-project-language`](requirements/project.md#req-project-langu
     the measurement; at two, "which gates read a class body" has to be a list somebody keeps ·
     _notes:_ —
 
+- [ ] **C26 — the mutation snapshot cannot say that a mutant errored**
+  - the columns are `score · killed (of that, by the clock) · surviving · not covered ·
+ignored`, and `RuntimeError` is in none of them — while `check-mutation` counts it in the
+    **denominator**, deliberately and stricter than Stryker's own score. Two lines of the
+    snapshot now carry a number that does not follow from the numbers beside it:
+    `select.ts 88.89 32(0) 3 0 0` (32 of 36) and `multi-select.ts 97.14 34(0) 0 0 0` (34 of
+    35). A reader checking the arithmetic finds a mistake that is not one
+  - what an errored mutant is, in both cases: `if (row === null) return;` in `selectAt`. Drop
+    the guard and the next line dereferences `null` inside a DOM listener, and the vitest
+    worker dies rather than a test failing — "Cannot convert object to primitive value", twice
+    restarted. It has always been so for `pct-select`; E4's filtering step gave the many-choice
+    tag the same shape, because a pick now reads the row's value before anything else
+  - binds at: **the next task that touches `check-mutation`** — a sixth column, or a score the
+    columns can be added up to · _notes:_ —
+
+- [ ] **C27 — the guard that keeps `null` away from a consumer's comparator is promised and not
+      measured**
+  - `selectedIndex` and `selectedOption` both filter `null`/`undefined` out before calling
+    `compareWith`, and the JSDoc says why: a comparator an application wrote
+    (`(a, b) => a.id === b.id`) blows up on a value it never declared. Both guards' mutants
+    **survive**: with the default identity comparator, dropping the guard changes nothing that
+    can be seen, and no test here supplies one that would notice
+  - it is ten lines to close — an entity list whose value is set to `null`, asserting the
+    trigger goes empty rather than throwing — and it costs a full mutation run to record,
+    which is why it is a filler item rather than part of the step that noticed it
+  - binds at: **the next full mutation run** · _notes:_ —
+
 ## D. Phase 1 — the behaviour layer in `core`
 
 The largest architectural risk. The list machinery (typeahead, `activeIndex`, skipping disabled
@@ -2141,7 +2190,70 @@ exists and is a condition of entering a release.
     **81.48 → 81.70** overall, with `multi-select.ts` at **100.00**: the two mutants that
     survived the first pass were a default nobody bound and an id prefix a comment promised,
     and both are now cases rather than reasons
-  - left: filtering, clearing, async, virtualisation
+  - _notes (filtering):_ **the fourth of the eight, and the first whose fork was settled by a
+    rule this plan already had rather than by a new measurement.** 0034 said a tag is what the
+    **type** cannot say otherwise; filtering changes no type, so it is an input — as a tag it
+    would have multiplied the family into four (`pct-filter-select`,
+    `pct-multi-filter-select`) for two questions, all four the same implementation. Which
+    leaves the question that does have defects in it: a combobox with a text field holds **two
+    things that look like one**, the answer and the question being typed, and every way of
+    getting filtering wrong is those two conflated — a trigger that goes blank while the user
+    types, a many-choice value that loses the choices the question hid, a panel that reopens
+    narrowed by letters nobody can see, a native submit that sends `country=Pol`. So the rule
+    is one sentence and every item of the implementation is a reading of it: **the question
+    narrows the panel, never the value, and it does not outlive the panel it was asked in**
+    ([0035](decisions/0035-a-filter-is-a-question-not-a-value.md)). The trigger changes
+    **element** with the role — a `<button>` for the select-only pattern, an `<input
+role="combobox" aria-autocomplete="list">` for the editable one, on two branches of one
+    `@if` — and with it the key map: the arrows, `Enter`, `Escape` and `Tab` stay with the
+    list, the letters, the space bar and `Home`/`End` go back to the caret, and the typeahead
+    goes altogether, because letters already going somewhere cannot also jump within the list
+    they have just narrowed. The value is read against `allOptions` and the panel draws `rows`,
+    which is what keeps a chosen label on a trigger whose question hides it. Three smaller
+    things fell out. The default predicate folds case and stops there: whether an accent is a
+    letter of its own is a question of **language** — `Intl.Collator` at `sensitivity: 'base'`
+    says one thing for German and the opposite for Swedish on one pair of letters, and the NFD
+    trick every library reaches for folds what decomposes and leaves what does not
+    ([`lesson-101`](lessons.md#lesson-101)). A `#ref` declared inside an `@if` is invisible
+    outside it, so the overlay's origin stopped being the CDK directive's export and became
+    the element a `viewChild.required` resolves to — which reaches into both branches
+    ([`lesson-103`](lessons.md#lesson-103)). And the step cost `check-aria` its arithmetic:
+    two elements binding both name inputs used to be a violation by counting, and two branches
+    of one conditional are not two names for one control. The gate already knew how to ask —
+    point 6 asks it of the hint and the error — so points 4 and 6 now read one tree, joined to
+    the tag scan by the offset both report.
+  - gate: `libs/components/select/src/select.spec.ts` and `multi-select.spec.ts` — 26 unit
+    cases (the text trigger, the list narrowing, the cursor on the first row still standing,
+    the two empty sentences, the chosen label behind the question, the caret's keys, the query
+    that dies with the panel, the pick that keeps what the question hid, the chrome's cursor,
+    the default predicate); `apps/sandbox-e2e/src/select.spec.ts › a question typed into the
+trigger` (7 cases × 3 engines), the narrowed panel added to the axe audit **whole-page**,
+    `select-filter-trigger` and its RTL twin as baselines — 519 unit cases and 797 e2e cases
+    green
+  - control: with the branch distinction disarmed in `check-aria`, the gate's own reference
+    input stops passing — the two triggers it now carries are read as two names for one
+    control; a new prepared input (`two-names-at-once`) holds the same two elements **side by
+    side**, so the widening did not turn into a shrug. And with the arrow skipped in
+    `check-texts`' bracket matcher disarmed, that gate's reference input fails too:
+    `computed<(o: T) => U>(…)` ends at the arrow for a scanner counting angle brackets.
+  - cost: `./select` 46749 → **55713 B** (+19.1%), the second trigger and what stands behind
+    it; every other entrypoint grew by **29 B**, which is one `PCT_TEXTS` string — a default
+    in `core` is carried by everything that imports `core`, including the entrypoints that
+    never read it. No new part (the filtering trigger keeps `trigger`; `value` and
+    `placeholder` become the input's own properties), no new token, no new peer, one string
+    (`selectNoMatches`). The two coverage exceptions this repository had left are **gone**:
+    `select.html` measures 100% on all four metrics, and the reason the last one gave — that
+    jsdom cannot raise the CDK's outside click — was never true, it was a test nobody had
+    written ([`lesson-102`](lessons.md#lesson-102)). The mutation run went **81.70 → 82.25** overall and
+    `select.base.ts` **86.99 → 89.17**, six of the new survivors having been read rather than
+    counted: two are guards whose reason is now written beside them (a question nobody asked is
+    not cleared, and `show()` on an open panel re-reads the anchor's computed style), one was a
+    line no test could ever have failed on and is deleted, and three became cases — the
+    predicate that is not consulted without a question, the placeholder that is the library's
+    while nothing is chosen, and the cursor a second click must not move. What it also left is
+    **C26**: `multi-select.ts` reads 97.14 with nothing surviving, because the pick's guard now
+    **errors** instead of failing, and the snapshot has no column for that
+  - left: clearing, async, virtualisation
 - [ ] **E5 — switch, textarea (autosize), slider, date picker** — the date picker forces deep
       i18n, which `[pctNumber]` has already started
 - [ ] **E7 — the rest**: toast, tabs, accordion, drawer, pagination, progress, skeleton, chips,

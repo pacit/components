@@ -63,37 +63,19 @@ const TEMPLATE_METRICS = ['lines', 'statements', 'branches', 'functions'];
 const TEMPLATE_FLOOR = 100;
 
 /**
- * Templates that do not reach the floor, each with a reason and with the value measured
- * when the reason was written. The floor is two-sided: a metric that climbs ABOVE it fires
- * too, because an exception nothing needs any more is an exception that covers the next
- * defect silently.
+ * Templates that do not reach the floor, each with a reason and with the value measured when
+ * the reason was written. The floor is two-sided: a metric that climbs ABOVE it fires too,
+ * because an exception nothing needs any more is an exception that covers the next defect
+ * silently — and that is how this list came to be empty.
+ *
+ * `select.html` held the only two entries for the whole life of the file, both for the panel's
+ * `(overlayOutsideClick)`, and the reason they gave was that jsdom could not raise it. It can:
+ * the CDK listens on the document and answers a synthetic click like any other, which
+ * `select.spec.ts` ("a click outside the panel closes it") now says. Nothing had asked, and an
+ * exception is what a question nobody asks looks like a year later
+ * ([`lesson-102`](../docs/lessons.md#lesson-102)).
  */
-const TEMPLATE_EXCEPTIONS = {
-  'libs/components/select/src/select.html': {
-    functions: {
-      floor: 85.71,
-      reason:
-        'the panel\u2019s `(overlayOutsideClick)` — the CDK raises it from a real click ' +
-        'outside a real overlay, so a jsdom test would measure its own synthetic event ' +
-        'and nothing else. The gesture is guarded one floor up, by ' +
-        'apps/sandbox-e2e/src/select.spec.ts ("Escape closes the panel, and so does a ' +
-        'click outside it") — in three engines, on a click the browser itself dispatches.',
-    },
-    statements: {
-      floor: 98.82,
-      reason:
-        'the body of that same listener — one statement, the same gesture, the same e2e. ' +
-        'The number keeps moving with the DENOMINATOR rather than with the coverage: at ' +
-        'D2 the four bindings carrying what an overlay severs became one ' +
-        '`[pctOverlayPanel]` and the template lost a statement, at D5 the option row ' +
-        'gained the `@if` that lets a consumer draw it instead and the template gained ' +
-        'several, at D6 the arrow gained the `pct-icon` that lets one replace it, at ' +
-        'E4 the panel gained the headings and the row moved into a template of its own, ' +
-        'and then the mark that a many-choice row carries. ' +
-        'One statement stays uncovered throughout, and it is the same one.',
-    },
-  },
-};
+const TEMPLATE_EXCEPTIONS = {};
 
 /**
  * What counts as "library code". We deliberately do NOT read `coverageInclude` from

@@ -27,19 +27,19 @@ libs/components/core/src/focus.ts 100.00 1(0) 0 0 0
 libs/components/core/src/id.ts 100.00 5(0) 0 0 0
 libs/components/core/src/list.ts 98.78 81(0) 1 0 0
 libs/components/core/src/modal.ts 80.85 38(0) 5 4 0
-libs/components/core/src/motion.ts 91.38 53(3) 5 0 0
+libs/components/core/src/motion.ts 91.38 53(4) 5 0 0
 libs/components/core/src/overlay.ts 100.00 14(0) 0 0 2
-libs/components/core/src/placement.ts 98.46 64(8) 1 0 0
+libs/components/core/src/placement.ts 98.46 64(7) 1 0 0
 libs/components/core/src/template.ts 96.00 24(1) 1 0 0
-libs/components/core/src/texts.ts 100.00 17(0) 0 0 0
+libs/components/core/src/texts.ts 100.00 18(1) 0 0 0
 libs/components/dialog/src/dialog.ts 73.73 87(1) 31 0 3
 libs/components/field/src/number.ts 80.35 184(0) 43 2 11
 libs/components/icon/src/icon.ts 92.11 35(0) 3 0 2
 libs/components/menu/src/menu.ts 78.57 209(0) 51 5 2
 libs/components/popover/src/popover.ts 65.61 124(0) 55 10 2
-libs/components/select/src/multi-select.ts 100.00 37(0) 0 0 0
-libs/components/select/src/select.base.ts 86.99 254(1) 34 4 5
-libs/components/select/src/select.ts 89.66 26(0) 2 0 0
+libs/components/select/src/multi-select.ts 97.14 34(0) 0 0 0
+libs/components/select/src/select.base.ts 89.17 321(1) 35 4 6
+libs/components/select/src/select.ts 88.89 32(0) 3 0 0
 libs/components/tooltip/src/tooltip.ts 70.54 182(0) 71 5 8
-TOTAL 81.70 1509/1847
+TOTAL 82.25 1580/1921
 ```

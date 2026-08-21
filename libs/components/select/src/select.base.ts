@@ -10,6 +10,7 @@ import {
   inject,
   input,
   isDevMode,
+  model,
   output,
   Signal,
   signal,
@@ -44,6 +45,8 @@ import {
   PctSelectOptionTemplate,
 } from './select.template';
 import {
+  pctFilterByLabel,
+  PctSelectFilter,
   PctSelectItem,
   PctSelectOption,
   PctSelectOptionGroup,
@@ -239,6 +242,38 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
   readonly compareWith = input<PctCompareWith<T>>(pctSameValue);
 
   /**
+   * Whether the trigger is a **text field** and the list narrows to what is typed into it.
+   *
+   * It is an input and not a third tag, and the line between the two is the one
+   * [0034](../../../../docs/decisions/0034-multiplicity-is-a-tag.md) drew: a tag is what the
+   * **type** cannot say otherwise, and filtering changes no type — `value` is `T | null` here
+   * and `T[]` there, filter or no filter. As a tag it would have multiplied the family instead
+   * of extending it (`pct-filter-select`, `pct-multi-filter-select`), which is four tags for
+   * two questions ([0035](../../../../docs/decisions/0035-a-filter-is-a-question-not-a-value.md)).
+   *
+   * What it changes is the ELEMENT the trigger is: a select-only combobox is a `<button>`, a
+   * filtering one an `<input>`, because that is what each role needs — and the key map splits
+   * with it, the caret taking the letters, `Home`/`End` and the space bar.
+   */
+  readonly filterable = input(false, { transform: booleanAttribute });
+
+  /**
+   * What has been typed into the trigger. A `model`, so an application filtering on a server
+   * can read the question and answer it with another `options` list — and the control still
+   * owns the clearing, because the question belongs to the panel: it is set to `''` when the
+   * panel closes and when a pick answers it. It is **not** the value and never becomes one.
+   */
+  readonly filterText = model<string>('');
+
+  /**
+   * What counts as a match. The default folds case on the label and asks for `includes`;
+   * anything more than that — a second field, a code beside the label, an idea of which
+   * letters are the same letter — is the application's, because it is the application that
+   * knows the language (`pctFilterByLabel`, and `lesson-101` for why).
+   */
+  readonly filterWith = input<PctSelectFilter<T>>(pctFilterByLabel);
+
+  /**
    * Width of the dropdown panel — equal to the control by default (`'field'`). The panel then
    * comes out exactly from its edge, so the list reads as an extension of the field. `'auto'`
    * fits the width to the longest option (without narrowing the panel below the control), and
@@ -249,8 +284,10 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
   /** Alignment of the panel to the control when it is wider or narrower than it. */
   readonly panelAlign = input<PctSelectPanelAlign>('start');
 
-  private readonly trigger =
-    viewChild.required<ElementRef<HTMLButtonElement>>('trigger');
+  // A `<button>` or an `<input>`, whichever branch of the template is standing — one of them
+  // always is, which is what keeps the query `required`.
+  protected readonly trigger =
+    viewChild.required<ElementRef<HTMLElement>>('trigger');
   private readonly panel = viewChild<ElementRef<HTMLElement>>('panel');
 
   // --- templates (req-api-templates) ---
@@ -281,11 +318,23 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
   readonly controlId: string;
   readonly labelStrategy: PctLabelStrategy = 'for';
   readonly fieldAppearance: PctFieldAppearance = 'boxed';
-  readonly fieldCursor: PctFieldCursor = 'pointer';
+  /**
+   * A getter and not a field, because the answer changes with an input: over a filtering
+   * control a click places the caret, over a select-only one it opens the list. The chrome
+   * reads this inside a `computed`, so a getter that reads a signal is itself a signal to
+   * whoever reads it there — the same reactivity as a field, without widening the contract
+   * every other control implements.
+   */
+  get fieldCursor(): PctFieldCursor {
+    return this.filterable() ? 'text' : 'pointer';
+  }
 
-  /** A click on the border outside the trigger opens the list — as a click on the trigger. */
+  /**
+   * A click on the border outside the trigger opens the list — as a click on the trigger, and
+   * with the trigger's own rule about what a second click does.
+   */
   activate(): void {
-    this.toggle();
+    this.press();
   }
 
   /** Set by the chrome when one is present. */
@@ -348,6 +397,43 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
   });
 
   /**
+   * The question, as the list sees it: what was typed, or nothing at all when the control
+   * takes no questions. A control that is not `filterable` is one whose `filterText` nobody
+   * can have changed — but the input exists on both, so the state is read through the flag
+   * rather than through the string, and a `[filterText]` bound on a plain select narrows
+   * nothing.
+   */
+  protected readonly query = computed(() =>
+    this.filterable() ? this.filterText() : '',
+  );
+
+  /**
+   * The predicate the list is walked with — the consumer's over a real question, and one that
+   * lets everything through when there is none. Built once per change of the question rather
+   * than per option: `filterWith` is the application's function, so calling it is the
+   * expensive part and deciding whether to call it at all is not.
+   */
+  private readonly matches = computed<(option: PctSelectOption<T>) => boolean>(
+    () => {
+      const query = this.query();
+      if (query === '') return () => true;
+      const test = this.filterWith();
+      return (option) => test(option, query);
+    },
+  );
+
+  /**
+   * Every option the list holds, flat, in the order they were written — **before** the
+   * question. This is what the VALUE is read against, and the two are kept apart on purpose:
+   * a filter narrows the panel and never the value, so a chosen option the question hides is
+   * still the one the trigger names, and a many-choice pick still writes the list's order and
+   * not the visible list's ([0035](../../../../docs/decisions/0035-a-filter-is-a-question-not-a-value.md)).
+   */
+  protected readonly allOptions = computed<readonly PctSelectOption<T>[]>(() =>
+    this.options().flatMap((item) => (isGroup(item) ? item.options : [item])),
+  );
+
+  /**
    * The list as the panel draws it: sections in the order they were written, each with the
    * rows below its heading. An **empty group is dropped here** rather than hidden by the
    * template — a heading over nothing is noise on the screen and an empty `role="group"` in
@@ -360,19 +446,23 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
    */
   protected readonly sections = computed<readonly PctSelectSection<T>[]>(() => {
     const sections: { label: string | null; rows: PctSelectRow<T>[] }[] = [];
+    const keep = this.matches();
     let index = 0;
 
     for (const item of this.options()) {
       if (isGroup(item)) {
-        const rows = item.options.map((option) => ({
+        const rows = item.options.filter(keep).map((option) => ({
           option,
           index: index++,
           // A disabled group disables what stands under it — `<optgroup disabled>`.
           disabled: option.disabled === true || item.disabled === true,
         }));
+        // A heading whose options the question has all taken away goes with them: it is the
+        // same rule as an empty group written empty, arrived at from the other side.
         if (rows.length > 0) sections.push({ label: item.label, rows });
         continue;
       }
+      if (!keep(item)) continue;
 
       // Bare options following one another belong to ONE nameless section. What keeps them
       // out of a wrapper the listbox would have to own is the missing label, not the merging
@@ -426,6 +516,26 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
   protected readonly placeholderText = computed(
     () => this.placeholder() ?? this.texts().selectPlaceholder,
   );
+
+  /**
+   * What the **text** trigger holds. While the panel is up it is the question, always: one
+   * source, one direction, and no second state that could disagree with the letters on the
+   * screen. While it is down it is the answer — the same string the button branch draws.
+   */
+  protected readonly triggerText = computed(() =>
+    this.open() ? this.filterText() : this.displayText(),
+  );
+
+  /**
+   * …and what stands behind it while it is empty. An open panel moves the chosen label here,
+   * so the answer is still readable while the question is being typed — as a **placeholder**
+   * and not as the field's text, because a placeholder is nobody's value: a reader announces
+   * it as the field's hint and never as what the field holds.
+   */
+  protected readonly triggerPlaceholder = computed(() => {
+    const chosen = this.displayText();
+    return this.open() && chosen !== '' ? chosen : this.placeholderText();
+  });
 
   // The shared message logic from `core` — not duplicated in every control.
   private readonly messages = pctFieldMessages({
@@ -489,8 +599,19 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
    */
   private readonly announcer = inject(PctAnnouncer);
 
+  /**
+   * Which of the two sentences an empty panel carries. They are two facts and not one phrasing
+   * of one: "there is nothing to choose from" is the list's state, "nothing here answers what
+   * you typed" is the question's, and a user three letters into a question is owed the second.
+   */
+  protected readonly emptyText = computed(() =>
+    this.query() === ''
+      ? this.texts().selectEmpty
+      : this.texts().selectNoMatches,
+  );
+
   private readonly emptyMessage = computed(() =>
-    this.open() && this.rows().length === 0 ? this.texts().selectEmpty : '',
+    this.open() && this.rows().length === 0 ? this.emptyText() : '',
   );
 
   /**
@@ -512,7 +633,13 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
     effect(() => {
       const message = this.emptyMessage();
       if (message !== '') this.announcer.announce(message);
-      else this.announcer.retract(this.texts().selectEmpty);
+      else {
+        // Both, because the question dies WITH the panel: by the time this runs the query is
+        // already `''`, so the sentence to withdraw is no longer the one `emptyText()` names.
+        // `retract` takes off only what is still there, which is what makes asking twice free.
+        this.announcer.retract(this.texts().selectEmpty);
+        this.announcer.retract(this.texts().selectNoMatches);
+      }
     });
 
     inject(DestroyRef).onDestroy(() =>
@@ -559,16 +686,19 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
    * be worse than one that measures both. It runs under `isDevMode()` alone.
    */
   private warnOnDuplicateValues(): void {
-    const rows = this.rows();
+    // The WHOLE list, not the one the panel is showing: a duplicate a question happens to
+    // hide is still a duplicate, and the positions in the message are the ones the consumer
+    // wrote rather than the ones three typed letters left standing.
+    const options = this.allOptions();
     const same = this.compareWith();
     const pairs: string[] = [];
 
-    for (let i = 1; i < rows.length; i++) {
+    for (let i = 1; i < options.length; i++) {
       for (let j = 0; j < i; j++) {
-        if (!same(rows[j].option.value, rows[i].option.value)) continue;
+        if (!same(options[j].value, options[i].value)) continue;
         // Reported against the first option that claims the value — the one that wins.
         pairs.push(
-          `${j} ("${rows[j].option.label}") and ${i} ("${rows[i].option.label}")`,
+          `${j} ("${options[j].label}") and ${i} ("${options[i].label}")`,
         );
         break;
       }
@@ -595,13 +725,22 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
     return !this.disabled() && !this.readonly();
   }
 
-  protected toggle(): void {
-    if (!this.interactive) return;
-    if (this.open()) {
-      this.close();
-    } else {
-      this.openPanel();
-    }
+  /**
+   * What a press on the trigger does — and the two triggers answer differently, which is the
+   * one thing about the mouse this step changes. A press on a `<button>` toggles: it is a
+   * switch, and pressing a switch that is on turns it off. A press on a **text field** is a
+   * caret being placed — a user clicking between two letters of what they have typed is
+   * aiming at a position, not asking for the list to go away — so it opens and never closes.
+   *
+   * What closes the filtering panel is therefore Escape, Tab, a pick, or a click outside it;
+   * the CDK's outside click never fires here, because it excludes the overlay's own origin.
+   */
+  protected press(): void {
+    // No guard of its own on `disabled`/`readonly`: `openPanel()` carries one, and a control
+    // that went readonly with its panel up should still shut it. A second guard here was a
+    // line no test could ever fail on — the mutation run said so before it was deleted.
+    if (this.open() && !this.filterable()) this.close();
+    else if (!this.open()) this.openPanel();
   }
 
   protected openPanel(): void {
@@ -621,6 +760,47 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
     if (!this.open()) return;
     this.panelOverlay.hide();
     this.nav.clear();
+    // The question does not outlive the panel: a trigger that reopened onto three letters
+    // typed a minute ago would be showing a list narrowed by something the user cannot see.
+    this.filterText.set('');
+  }
+
+  /**
+   * Takes the question back while the panel stays up — what a pick does on a many-choice
+   * list. The cursor is put back on the row the pick landed on, **by identity**: the list has
+   * just widened underneath it, so the position that row had among three matches names a
+   * different option among thirty.
+   */
+  protected clearFilter(landed: PctSelectOption<T>): void {
+    // The guard is for the CONSUMER's signal, not for the work: with no question standing,
+    // clearing writes `''` into a `[(filterText)]` somebody may have bound and the cursor
+    // lands where it already was. A mutation run cannot see the difference — nothing in this
+    // repository binds the question on a control that takes none — and the write is real, so
+    // the guard stays and the reason stands here rather than in a case that cannot be written.
+    if (this.query() === '') return;
+    this.filterText.set('');
+    const index = this.rows().findIndex((row) => row.option === landed);
+    this.nav.setActive(index);
+  }
+
+  /**
+   * A letter typed into the trigger. The field's own text IS the question — there is no
+   * second state to keep in step with it — and the first letter of a question is also what
+   * opens the panel, because a list nobody can see cannot be narrowed usefully.
+   *
+   * The active row goes to the first one still standing: the list under the cursor has
+   * changed, so a cursor left where it was would be pointing at a row that has moved, and
+   * `aria-activedescendant` would name an id that is no longer in the tree.
+   */
+  protected onFilterInput(event: Event): void {
+    if (!this.interactive) return;
+    this.filterText.set((event.target as HTMLInputElement).value);
+    // `show()` on an open panel is not free: it re-reads the computed style of the anchor and
+    // writes a NEW `inherited` object, so every keystroke would repaint what an overlay severs.
+    // Nothing observable changes, so the mutant that drops this guard survives — the cost is
+    // the reason, and it is written here.
+    if (!this.open()) this.panelOverlay.show();
+    this.nav.first();
   }
 
   /**
@@ -648,13 +828,16 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
     const key = event.key;
 
     if (!this.open()) {
-      // Opening: the arrows, Enter, space or Alt+ArrowDown.
-      if (
+      // Opening: the arrows, Enter, space or Alt+ArrowDown — and where the trigger is a text
+      // field the last two are not ours to take. A space is a character of the question and
+      // Enter is the form's submit; a control that answered them here would be taking back
+      // what the platform gives an `<input>` for free (`req-api-platform`). Typing opens the
+      // panel on the other channel, the one a text field has and a button has not: `input`.
+      const opens =
         key === 'ArrowDown' ||
         key === 'ArrowUp' ||
-        key === 'Enter' ||
-        key === ' '
-      ) {
+        (!this.filterable() && (key === 'Enter' || key === ' '));
+      if (opens) {
         event.preventDefault();
         this.openPanel();
       }
@@ -671,15 +854,27 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
         this.nav.move(-1);
         break;
       case 'Home':
+        // In a text field the ends belong to the caret: a user with a question typed in front
+        // of them presses Home to reach its first letter, and a list that jumped to its first
+        // row instead would have answered a key it was not sent.
+        if (this.filterable()) break;
         event.preventDefault();
         this.nav.first();
         break;
       case 'End':
+        if (this.filterable()) break;
         event.preventDefault();
         this.nav.last();
         break;
       case 'Enter':
+        event.preventDefault();
+        this.selectAt(this.activeIndex());
+        break;
       case ' ':
+        // A space picks on a button and is a character in a text field — "New Zealand" is two
+        // words, and a list that closed on the space between them could never be filtered by
+        // the second.
+        if (this.filterable()) break;
         event.preventDefault();
         this.selectAt(this.activeIndex());
         break;
@@ -697,8 +892,11 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
         this.close();
         break;
       default:
-        // Typeahead on the first letters — parity with a native `<select>`.
-        if (key.length === 1) this.nav.typeahead(key);
+        // Typeahead on the first letters — parity with a native `<select>`. A filtering
+        // control has no use for it: the letters are already going somewhere, and a walk that
+        // jumped to a prefix WITHIN the list the same letters had just narrowed would be two
+        // answers to one keystroke.
+        if (!this.filterable() && key.length === 1) this.nav.typeahead(key);
     }
   }
 

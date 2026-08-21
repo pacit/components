@@ -87,9 +87,21 @@ export class PctSelect<T = string>
     return this.rows().findIndex((row) => same(row.option.value, current));
   });
 
-  protected readonly selectedOption = computed(
-    () => this.rows()[this.selectedIndex()]?.option ?? null,
-  );
+  /**
+   * The chosen option, looked up in the WHOLE list rather than in the rows the panel is
+   * showing. The two part company the moment a filter is on: an option a question hides is
+   * still the answer, and a trigger that went blank while the user typed would be reporting a
+   * value nobody had cleared
+   * ([0035](../../../../docs/decisions/0035-a-filter-is-a-question-not-a-value.md)).
+   */
+  protected readonly selectedOption = computed(() => {
+    const current = this.value();
+    if (current === null || current === undefined) return null;
+    const same = this.compareWith();
+    return (
+      this.allOptions().find((option) => same(option.value, current)) ?? null
+    );
+  });
 
   protected override readonly displayText = computed(
     () => this.selectedOption()?.label ?? '',

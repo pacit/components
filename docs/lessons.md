@@ -2564,3 +2564,92 @@ The part worth keeping is the shape of the failure. Both gates failed **loudly a
 they named a real component and made a false claim about it. That is the good case. The same
 blindness in a gate written to _find_ something (a part inventory, a size budget) would have
 reported nothing at all, and a green run would have said the surface was measured.
+
+### <a id="lesson-101"></a>`lesson-101` — Whether an accent is a letter is a question of language, and the trick that pretends otherwise folds half the alphabet
+
+Every filtering select needs a default predicate, and the tempting one is "case-insensitive,
+accent-insensitive contains" — three lines with `normalize('NFD')` and a strip of the combining
+marks. Two measurements, run before writing them:
+
+**The platform answers per language.** `Intl.Collator(locale, { sensitivity: 'base' })` is the
+setting whose entire job is to ignore accents. Asked whether an `o` with an umlaut is the same
+letter as a plain `o`:
+
+| locale           | `o`-umlaut vs `o` | `a`-umlaut vs `a` |
+| ---------------- | ----------------: | ----------------: |
+| `en`, `de`, `pl` |          0 (same) |          0 (same) |
+| `sv`, `da`       |     1 (different) |     1 (different) |
+
+Same pair of strings, opposite answers. In Swedish and Danish those are letters of their own,
+at the end of the alphabet; in German they are an `o` wearing a hat. A library that folds
+accents has picked one of those languages for every application that installs it.
+
+**And the shortcut is not even consistent with itself.** `normalize('NFD')` decomposes what has
+a combining form and leaves alone what does not:
+
+| written               | after NFD + strip |
+| --------------------- | ----------------- |
+| an `o` with an umlaut | `o`               |
+| an `o` with a stroke  | unchanged         |
+| an `a` with a ring    | `a`               |
+| an `a` and `e` joined | unchanged         |
+
+So a Danish label is reachable by typing the slashed letter and unreachable by typing the plain
+one, while its Swedish neighbour folds — in a library whose documentation says "accents are
+ignored". The user is on the wrong side of a rule nobody wrote down.
+
+The decision is therefore not "we did not get round to it": **the library folds case and stops
+there**, and `filterWith` takes the whole option, so an application that knows its language
+writes the two lines it actually needs ([0035](decisions/0035-a-filter-is-a-question-not-a-value.md)).
+
+There is a second-order note worth keeping, because it cost half an hour. This repository's own
+language gate hunts Polish letters, so the examples that first illustrated this lesson —
+Polish place names, the sharpest case there is, since Polish collation makes `l`-with-stroke a
+letter of its own — could not be written down anywhere in the repository. The gate that keeps
+one language out of the package also keeps its letters out of a sentence about letters, and the
+measurements above are Nordic for that reason and for no other.
+
+### <a id="lesson-102"></a>`lesson-102` — An exception outlives the reason it names, and reads as a limit of the environment
+
+`check-coverage` held two entries for `select.html`, both for the panel's
+`(overlayOutsideClick)`. The reason they gave was that jsdom cannot raise it: "the CDK raises
+it from a real click outside a real overlay, so a jsdom test would measure its own synthetic
+event and nothing else." The gesture was guarded one floor up, in three engines, and the
+exception was read by four later sessions as a fact about the environment.
+
+It is not one. The CDK listens on the **document** and answers a synthetic click like any
+other: `document.body.click()` with the panel open closes it, in jsdom, in ten lines. Nothing
+had ever asked. The exception did not describe a limit — it described a test nobody had
+written, and it kept describing it long after the sentence had stopped being checked by
+anything.
+
+What made it visible was the gate's own two-sided floor: an exception fires when the metric
+climbs **above** what it allows, and E4's filtering trigger brought a click on the trigger with
+the panel open into the unit suite. The gate then said the entry covers nothing — which is the
+part worth copying. **An exception that only ever guards a floor is a claim nobody re-reads; an
+exception that also fires from above is a claim with an expiry date.** The two entries are
+gone, `select.html` measures 100% on all four metrics, and the repository now carries no
+template exception at all.
+
+### <a id="lesson-103"></a>`lesson-103` — A template reference inside a control-flow block cannot be seen from outside it
+
+The select's panel is anchored on its trigger, and it was written the way the CDK documents:
+`#origin="cdkOverlayOrigin"` on the `<button>`, `[cdkConnectedOverlayOrigin]="origin"` on the
+overlay template below. That works while the trigger is one element. The moment it becomes two
+— a `<button>` and an `<input>` on the branches of an `@if`
+([0035](decisions/0035-a-filter-is-a-question-not-a-value.md)) — the reference is declared
+**inside an embedded view**, and the overlay standing beside the block cannot name it. Writing
+`#origin` in both branches does not help: they are two views, and neither of them is the one
+asking.
+
+The fix is not a wrapper element around both branches (which would have moved the border and
+the part) but the other form of the same input: `cdkConnectedOverlayOrigin` takes a
+`CdkOverlayOrigin`, an `ElementRef`, an `Element` or a point — so the origin becomes the
+element itself, `anchor() ?? trigger()`, where `trigger` is a `viewChild.required` that
+resolves to whichever branch is standing.
+
+Two things worth keeping from it. **A signal view query reaches into embedded views**, so one
+`viewChild('trigger')` covers both branches and stays `required` — exactly one of them is ever
+in the tree. And a directive's export is a **name in a view**, while the thing it exports is an
+object: whenever a reference cannot be reached, the question to ask is what the binding would
+have taken instead of the reference.

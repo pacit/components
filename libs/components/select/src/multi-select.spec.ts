@@ -485,6 +485,102 @@ describe('PctMultiSelect', () => {
     expect(valueText(fixture)).toBeNull();
   });
 
+  /**
+   * A question over a list-valued control, where "the question narrows the panel and never the
+   * value" has a second half the single-choice one cannot show: what a pick writes back while
+   * most of the value is hidden
+   * ([0035](../../../../docs/decisions/0035-a-filter-is-a-question-not-a-value.md)).
+   */
+  describe('a question typed into the trigger (filterable)', () => {
+    @Component({
+      imports: [PctMultiSelect],
+      template: `<pct-multi-select
+        label="Countries"
+        [options]="options"
+        [filterable]="true"
+        [(value)]="value"
+        [(filterText)]="query"
+      />`,
+    })
+    class FilterHost {
+      options = OPTIONS;
+      value = signal<string[]>(['pl', 'sk']);
+      query = signal('');
+    }
+
+    const field = (f: ComponentFixture<unknown>) =>
+      triggerOf(f) as unknown as HTMLInputElement;
+
+    const type = async (f: ComponentFixture<unknown>, text: string) => {
+      const input = field(f);
+      input.value = text;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      await settle(f);
+    };
+
+    it('the trigger reads every chosen label, including the ones the question hides', async () => {
+      const fixture = await render(FilterHost);
+      expect(field(fixture).value).toBe('Poland, Slovakia');
+
+      await type(fixture, 'ger');
+
+      // The question is in the field and the answer behind it — whole, not narrowed to what
+      // is standing in the panel.
+      expect(field(fixture).value).toBe('ger');
+      expect(field(fixture).getAttribute('placeholder')).toBe(
+        'Poland, Slovakia',
+      );
+    });
+
+    it('a pick keeps what the question hides, in the order of the list', async () => {
+      const fixture = await render(FilterHost);
+      await type(fixture, 'ger');
+      expect(optionsInPanel()).toHaveLength(1);
+
+      await clickRow(fixture, 0);
+
+      // Poland and Slovakia were nowhere in the panel and are still in the value, each in
+      // its own place — the list's order is the list's, not the visible list's.
+      expect(fixture.componentInstance.value()).toEqual(['pl', 'de', 'sk']);
+    });
+
+    it('a pick answers the question, and the cursor stays on the row it landed on', async () => {
+      const fixture = await render(FilterHost);
+      await type(fixture, 'ger');
+
+      await clickRow(fixture, 0);
+
+      // The panel stays up — three choices are one journey — and the list is whole again.
+      expect(panel()).not.toBeNull();
+      expect(fixture.componentInstance.query()).toBe('');
+      expect(optionsInPanel()).toHaveLength(4);
+      // Germany is row 1 of the whole list; the cursor followed the option, not the position
+      // it held among the matches.
+      expect(optionsInPanel()[1].hasAttribute('data-pct-active')).toBe(true);
+      expect(field(fixture).getAttribute('aria-activedescendant')).toBe(
+        optionsInPanel()[1].id,
+      );
+    });
+
+    it('taking a choice back through a question leaves the rest alone', async () => {
+      const fixture = await render(FilterHost);
+      await type(fixture, 'pol');
+      expect(checksInPanel()).toHaveLength(1);
+
+      await clickRow(fixture, 0);
+
+      expect(fixture.componentInstance.value()).toEqual(['sk']);
+      // The panel is still up, so the field still holds the question — an empty one now, the
+      // pick having answered it — and the answer is behind it. It comes back to the field
+      // when the panel goes.
+      expect(field(fixture).value).toBe('');
+      expect(field(fixture).getAttribute('placeholder')).toBe('Slovakia');
+
+      await press(fixture, 'Escape');
+      expect(field(fixture).value).toBe('Slovakia');
+    });
+  });
+
   it('the two controls declare the same inputs, but for the value and its empty', async () => {
     // The two classes are one implementation with two value channels, and the inputs are
     // declared once — on the base. This is what says so after a build: an input added to one

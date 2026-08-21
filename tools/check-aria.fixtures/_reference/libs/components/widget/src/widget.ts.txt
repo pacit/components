@@ -14,6 +14,8 @@ import { PctWidgetBase } from './base';
 export class PctWidget extends PctWidgetBase {
   readonly label = input<string>('');
   protected readonly open = input(false);
+  /** Which of the two triggers is standing — the template's `@if`, and nothing else. */
+  protected readonly editable = input(false);
   protected readonly hint = input<string>('');
   protected readonly error = input<string>('');
   protected readonly showError = input(false);

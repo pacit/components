@@ -151,7 +151,7 @@
     },
     "codes": {
       "reason": "Identifiers out of somebody else's code list — ISO country and currency codes, BCP-47 language subtags. They stand in test data and in demo rows, where translating them would break the thing they name.",
-      "words": ["cz", "en", "eur", "lv", "pln", "ua"]
+      "words": ["cz", "en", "eur", "lv", "pln", "sv", "ua"]
     },
     "english": {
       "reason": "English words `american-english` simply does not carry — it is a spelling list from another decade, and the trade's vocabulary moved. The subtraction cannot remove what the English side never held, so they are named here instead.",
@@ -162,6 +162,7 @@
         "centre",
         "favicon",
         "frontend",
+        "getter",
         "goto",
         "linter",
         "linters",
@@ -181,6 +182,7 @@
         "git",
         "glab",
         "marek",
+        "mui",
         "nitro",
         "noto",
         "nx",
@@ -227,9 +229,10 @@
       ]
     },
     "derivations": {
-      "reason": "The false positives of the fifth limb, which reads a word standing in neither dictionary as a Polish stem carrying a derivational suffix. All five are English agent nouns whose stem, once the suffix comes off, is a form the Polish list happens to hold — and the stems are not quoted here, because a word that list holds is exactly what the second limb fires on, and the first draft of this entry made the file it stands in red. Each is written down singly for the reason the whole file exists: what they share is that the English verb behind them (`locate`, `paginate`, `activate`) stands in `american-english`, and three lines in the detector reading that would have silenced the whole class where point 5 cannot see it. A shape may be named to SEE a class, never to stop seeing one.",
+      "reason": "The false positives of the fifth limb, which reads a word standing in neither dictionary as a Polish stem carrying a derivational suffix. All six are English agent nouns whose stem, once the suffix comes off, is a form the Polish list happens to hold — and the stems are not quoted here, because a word that list holds is exactly what the second limb fires on, and the first draft of this entry made the file it stands in red. Each is written down singly for the reason the whole file exists: what they share is that the English verb behind them (`locate`, `paginate`, `activate`) — or, for the one that names a platform API, the noun `Intl.Collator` is spelt with — stands in `american-english`, and three lines in the detector reading that would have silenced the whole class where point 5 cannot see it. A shape may be named to SEE a class, never to stop seeing one.",
       "words": [
         "activator",
+        "collator",
         "differentiator",
         "locator",
         "orchestrator",

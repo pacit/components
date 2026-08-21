@@ -67,12 +67,9 @@ export class PctMultiSelect<T = string>
    * template would make it a scan **per row**.
    */
   private readonly selected = computed(() => {
-    const chosen = this.value();
-    const same = this.compareWith();
     const positions = new Set<number>();
     for (const row of this.rows())
-      if (chosen.some((value) => same(row.option.value, value)))
-        positions.add(row.index);
+      if (this.isChosen(row.option.value)) positions.add(row.index);
     return positions;
   });
 
@@ -85,13 +82,25 @@ export class PctMultiSelect<T = string>
    * what the eye sees below it. A value the list cannot name adds nothing here: the text says
    * what the options say, and a value with no option is still part of the value.
    */
-  protected override readonly displayText = computed(() => {
-    const chosen = this.selected();
-    return this.rows()
-      .filter((row) => chosen.has(row.index))
-      .map((row) => row.option.label)
-      .join(this.texts().selectSeparator);
-  });
+  /**
+   * Whether a value is one of the chosen ones — the membership test written once, because it
+   * is asked of the visible rows (which rows carry a mark) and of the whole list (what the
+   * trigger reads, and what a pick writes back).
+   */
+  private isChosen(value: T): boolean {
+    const same = this.compareWith();
+    return this.value().some((chosen) => same(value, chosen));
+  }
+
+  protected override readonly displayText = computed(() =>
+    // The WHOLE list, not the rows the panel is showing: a question narrows the panel and
+    // never the value, so three letters typed into the trigger cannot take a chosen label off
+    // it ([0035](../../../../docs/decisions/0035-a-filter-is-a-question-not-a-value.md)).
+    this.allOptions()
+      .filter((option) => this.isChosen(option.value))
+      .map((option) => option.label)
+      .join(this.texts().selectSeparator),
+  );
 
   /** A list already answered opens on the first of its answers. */
   protected override initialActive(): number {
@@ -115,17 +124,23 @@ export class PctMultiSelect<T = string>
     if (row === null) return;
 
     const same = this.compareWith();
-    const rows = this.rows();
+    const options = this.allOptions();
+    const picked = row.option.value;
     const adding = !this.isSelected(index);
 
     const unknown = this.value().filter(
-      (value) => !rows.some((r) => same(r.option.value, value)),
+      (value) => !options.some((option) => same(option.value, value)),
     );
-    const chosen = rows
-      .filter((r) => (r.index === index ? adding : this.isSelected(r.index)))
-      .map((r) => r.option.value);
+    const chosen = options
+      .filter((option) =>
+        same(option.value, picked) ? adding : this.isChosen(option.value),
+      )
+      .map((option) => option.value);
 
     this.value.set([...unknown, ...chosen]);
+    // The question is answered, so it goes — and the cursor stays on the row the pick landed
+    // on, which the list widening underneath it would otherwise have moved.
+    this.clearFilter(row.option);
   }
 
   /** Called by signal forms when the form is reset: no choices, and the panel shut. */

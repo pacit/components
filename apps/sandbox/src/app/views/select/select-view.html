@@ -159,6 +159,34 @@
 </sbx-demo>
 
 <sbx-demo
+  heading="A question typed into the trigger"
+  summary="A filtering combobox is a text field with a list behind it: the letters narrow the panel and never the value, so a chosen option the question hides is still the one the trigger names — and the question dies with the panel it was asked in. The keyboard splits with the element: the arrows, Enter and Escape belong to the list, the letters, the space bar and Home/End to the caret."
+  [reqs]="['req-a11y-built-in', 'req-api-platform']"
+  [controls]="[]"
+  data-testid="demo-filter"
+>
+  <div class="stack">
+    <pct-field label="Country" data-testid="field-filter">
+      <pct-select
+        filterable
+        [options]="regions"
+        [(value)]="filteredCountry"
+        data-testid="select-filter"
+      />
+    </pct-field>
+
+    <pct-field label="Countries" data-testid="field-filter-multi">
+      <pct-multi-select
+        filterable
+        [options]="countries"
+        [(value)]="filteredCountries"
+        data-testid="select-filter-multi"
+      />
+    </pct-field>
+  </div>
+</sbx-demo>
+
+<sbx-demo
   heading="An option row of your own"
   summary="The built-in row draws the label and nothing else. A template replaces what is inside the row — the role, the id, aria-selected and the keyboard stay with the component, because they are the listbox pattern rather than decoration."
   [reqs]="['req-api-templates']"

@@ -48,6 +48,10 @@ export class SelectView {
    */
   protected readonly chosenCountries = signal<string[]>(['pl', 'sk']);
 
+  /** The filtering pair: a grouped list narrowed by hand, and a list-valued one beside it. */
+  protected readonly filteredCountry = signal<string | null>('lt');
+  protected readonly filteredCountries = signal<string[]>(['pl', 'sk']);
+
   protected readonly widthField = signal<string | null>('pl');
   protected readonly widthAuto = signal<string | null>('pl');
   protected readonly widthFixed = signal<string | null>('pl');

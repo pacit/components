@@ -13,15 +13,19 @@
  *  3. INPUTS: a component whose widget sits inside its template declares `ariaLabel` and
  *     `ariaLabelledby`,
  *  4. FORWARDED: both are bound on that one element — an input nobody reads is the same
- *     defect one floor up,
+ *     defect one floor up. "One" is counted per DOM state and not per file: two triggers on
+ *     two branches of one `@if` are one control in two elements, and only elements that can
+ *     stand there TOGETHER are two names for it,
  *  5. SURFACE: the card that names the selector names both inputs,
  *  6. DESCRIPTION: a hint part and an error part are ALTERNATIVES of one conditional and
  *     never neighbours (`req-api-message`).
  *
  * Points 3 and 4 are one rule split at the place it breaks: declaring the inputs is what a
- * consumer sees in the type, binding them is what the screen reader sees. Point 6 reads the
- * template's real syntax tree (`parseTemplate`): which block excludes which is exactly the
- * question a pattern over `@if` cannot answer.
+ * consumer sees in the type, binding them is what the screen reader sees. Points 4 and 6 read
+ * the template's real syntax tree (`parseTemplate`): which block excludes which is exactly the
+ * question a pattern over `@if` cannot answer. The two readings are joined by the **offset**
+ * of the tag — the tag scanner's match index and the node's `sourceSpan`, over the same string
+ * — so an element found by one and not by the other is a denominator failure and not a shrug.
  *
  * Usage: node tools/check-aria.mjs
  */
@@ -218,6 +222,9 @@ const readTemplate = (content) => {
   const tags = [...text.matchAll(OPENING_TAG)].map((m) => ({
     tag: m[1].toLowerCase(),
     attrs: attributesOf(m[2]),
+    // Where the `<` stands, which is what the parsed node's `sourceSpan` reports for the same
+    // string — the one key by which the two readings of one template name the same element.
+    offset: m.index,
   }));
   return {
     focusable: tags.filter((t) => isFocusable(t.tag, t.attrs)),
@@ -236,13 +243,13 @@ const readTemplate = (content) => {
  * side block (`@empty`, `@placeholder`, `@loading`, `@error`) against their own body, so
  * the body is branch 0 and each side block one after it.
  */
-const walkMessages = (nodes, path, state) => {
+const walkTemplate = (nodes, path, state) => {
   for (const node of nodes) {
     const branches = node.branches ?? node.cases ?? null;
     if (branches) {
       const block = state.blocks++;
       branches.forEach((branch, i) =>
-        walkMessages(branch.children ?? [], [...path, `${block}#${i}`], state),
+        walkTemplate(branch.children ?? [], [...path, `${block}#${i}`], state),
       );
       continue;
     }
@@ -254,9 +261,9 @@ const walkMessages = (nodes, path, state) => {
     ].filter(Boolean);
     if (sides.length) {
       const block = state.blocks++;
-      walkMessages(node.children ?? [], [...path, `${block}#0`], state);
+      walkTemplate(node.children ?? [], [...path, `${block}#0`], state);
       sides.forEach((side, i) =>
-        walkMessages(
+        walkTemplate(
           side.children ?? [],
           [...path, `${block}#${i + 1}`],
           state,
@@ -264,9 +271,13 @@ const walkMessages = (nodes, path, state) => {
       );
       continue;
     }
+    // An element — the only kind of node with a tag name of its own. Where it stands in the
+    // conditional structure is what point 4 asks of it; the offset is how it is found again.
+    if (typeof node.name === 'string' && node.sourceSpan)
+      state.paths.set(node.sourceSpan.start.offset, path);
     const part = node.attributes?.find((a) => a.name === PART_ATTRIBUTE)?.value;
     if (part && MESSAGE_PART.test(part)) state.messages.push({ part, path });
-    walkMessages(node.children ?? [], path, state);
+    walkTemplate(node.children ?? [], path, state);
   }
 };
 
@@ -281,17 +292,19 @@ const exclusive = (a, b) =>
   });
 
 /**
- * The message parts of one template, with the conditional path of each. The parse is the
- * compiler's own — a template it cannot read leaves the gate with nothing to say, which is
- * why the errors travel back rather than being swallowed into an empty list.
+ * One template read through the compiler's own parser: the message parts with the conditional
+ * path of each, and the path of every element by the offset it starts at. A template it cannot
+ * read leaves the gate with nothing to say, which is why the errors travel back rather than
+ * being swallowed into an empty list.
  */
 const readMessages = (file, content) => {
   const text = content.replace(COMMENT, '');
   const parsed = parseTemplate(text, file, { preserveWhitespaces: false });
-  const state = { blocks: 0, messages: [] };
-  if (!parsed.errors?.length) walkMessages(parsed.nodes, [], state);
+  const state = { blocks: 0, messages: [], paths: new Map() };
+  if (!parsed.errors?.length) walkTemplate(parsed.nodes, [], state);
   return {
     messages: state.messages,
+    paths: state.paths,
     errors: parsed.errors ?? [],
     counted: countOf(text, MESSAGE_COUNTER),
   };
@@ -408,6 +421,7 @@ const checkAria = ({ components, counted, templates, documents }) => {
           `does not examine`,
       );
     byPath.get(template.file).said = said.messages;
+    byPath.get(template.file).paths = said.paths;
   }
 
   // ── classification ───────────────────────────────────────────────────────────
@@ -420,10 +434,25 @@ const checkAria = ({ components, counted, templates, documents }) => {
       (tags.length > 0 && tags.every((t) => FOCUSABLE_TAGS.has(t))) ||
       component.host.has('role') ||
       component.host.has('[attr.role]');
-    component.widgets =
-      (component.templatePath && byPath.get(component.templatePath).read
-        ? byPath.get(component.templatePath).read.focusable
-        : []) ?? [];
+    const template = component.templatePath
+      ? byPath.get(component.templatePath)
+      : null;
+    component.widgets = template?.read?.focusable ?? [];
+    // Where each of them stands in the conditional structure, joined to the tag scan by the
+    // offset both readings report. A focusable element the walk never reached would be one
+    // point 4 could say nothing about — and it would say it by passing, so it is a
+    // denominator failure like every other half-read template above.
+    for (const widget of component.widgets) {
+      const path = template.paths.get(widget.offset);
+      if (path === undefined)
+        throw new AriaError(
+          'denominator',
+          `${component.templatePath}: a focusable <${widget.tag}> at offset ${widget.offset} ` +
+            `is in the tag scan and not in the parsed tree — point 4 asks which elements can ` +
+            `stand in the DOM together, and about this one it would have nothing to ask`,
+        );
+      widget.path = path;
+    }
     component.needsName =
       !component.hostIsWidget && component.widgets.length > 0;
   }
@@ -455,19 +484,36 @@ const checkAria = ({ components, counted, templates, documents }) => {
   }
 
   // ── 4. and they are forwarded ────────────────────────────────────────────────
+  // One carrier per DOM STATE, which is not the same as one per file. A control whose trigger
+  // changes element with an input — `pct-select` is a `<button>` and, filtering, an `<input>`
+  // — writes it twice on two branches of one `@if`, and exactly one of the two is ever in the
+  // tree. Two names for one control is what the rule is about, and two elements that cannot
+  // meet are not that ([0035](../docs/decisions/0035-a-filter-is-a-question-not-a-value.md)).
   for (const component of naming) {
     const carriers = component.widgets.filter((widget) =>
       NAME_ATTRIBUTES.every((attribute, i) =>
         (widget.attrs.get(attribute) ?? '').includes(`${NAME_INPUTS[i]}(`),
       ),
     );
-    if (carriers.length !== 1)
+    if (carriers.length === 0)
       throw new AriaError(
         'forwarded',
-        `${component.className} (${component.templatePath}): ${carriers.length} of the ` +
+        `${component.className} (${component.templatePath}): none of the ` +
           `${component.widgets.length} focusable element(s) bind both ` +
-          `${NAME_ATTRIBUTES.join(' and ')} to the inputs, and exactly one has to — ` +
-          `${carriers.length === 0 ? 'an input read by nobody names nothing' : 'two named elements are two names for one control'}`,
+          `${NAME_ATTRIBUTES.join(' and ')} to the inputs, and one has to — an input read ` +
+          `by nobody names nothing`,
+      );
+    const together = carriers.flatMap((widget, i) =>
+      carriers.slice(i + 1).filter((other) => !exclusive(widget, other)),
+    );
+    if (together.length)
+      throw new AriaError(
+        'forwarded',
+        `${component.className} (${component.templatePath}): ${carriers.length} focusable ` +
+          `element(s) bind both ${NAME_ATTRIBUTES.join(' and ')} to the inputs and ` +
+          `${together.length + 1} of them can be in the DOM at the same time — two named ` +
+          `elements are two names for one control. Two branches of one conditional are not ` +
+          `that; two elements standing side by side are`,
       );
   }
 

@@ -63,3 +63,38 @@ export interface PctSelectOptionGroup<T = string> {
  */
 export type PctSelectItem<T = string> =
   PctSelectOption<T> | PctSelectOptionGroup<T>;
+
+/**
+ * What decides whether an option stays in the panel while a filter is on: the option, and
+ * what the user has typed. A predicate rather than a mode name (`'contains'`, `'startsWith'`)
+ * — the moment a list wants matching on a second field, on a code beside the label or on what
+ * a server said, a name in an enum has to grow another member and a function does not.
+ *
+ * The query arrives exactly as typed, trimmed of nothing: leading space is a character of the
+ * question like any other, and a predicate that wants it gone can say so in one call.
+ */
+export type PctSelectFilter<T = string> = (
+  option: PctSelectOption<T>,
+  query: string,
+) => boolean;
+
+/**
+ * The default filter: the label, case-folded, **contains** what was typed.
+ *
+ * What it deliberately does not do is fold accents, and that is a measurement rather than a
+ * shortcut. `Intl.Collator(locale, { sensitivity: 'base' })` — the setting whose entire job is
+ * "ignore the accents" — answers the question **per language**: an `o` with an umlaut and a
+ * plain `o` are one letter in German and in English and two in Swedish and in Danish, on the
+ * same pair of strings. And the trick every library reaches for instead, `normalize('NFD')`
+ * with the combining marks stripped, is not consistent with itself: it folds the accents that
+ * come apart and leaves the ones that are a codepoint of their own, so an umlaut goes and a
+ * stroke through the letter stays — which makes a Danish label reachable by typing the slashed
+ * letter and unreachable by typing the plain one, in a library that never said which of the
+ * two the user is in ([`lesson-101`](../../../../docs/lessons.md#lesson-101)).
+ *
+ * So the library folds case and stops there, and a list that needs its own idea of "the same
+ * letter" says so in a `filterWith` of its own — where the application's language is known,
+ * which is the one place the question has an answer.
+ */
+export const pctFilterByLabel: PctSelectFilter<unknown> = (option, query) =>
+  option.label.toLowerCase().includes(query.toLowerCase());

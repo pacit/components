@@ -255,3 +255,6 @@ Which lesson feeds which requirement. Generated from the **Lessons** fields.
 | [`lesson-98`](lessons.md#lesson-98)   | `req-api-generic`                                                                                                                                                 |
 | [`lesson-99`](lessons.md#lesson-99)   | `req-api-generic`                                                                                                                                                 |
 | [`lesson-100`](lessons.md#lesson-100) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-101`](lessons.md#lesson-101) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-102`](lessons.md#lesson-102) | `req-a11y-built-in`                                                                                                                                               |
+| [`lesson-103`](lessons.md#lesson-103) | — _(not cited)_                                                                                                                                                   |

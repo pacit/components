@@ -509,6 +509,11 @@ const ASSIGNMENT = /=\s*$/;
 const match = (text, i, opening, closing) => {
   let depth = 0;
   for (let k = i; k < text.length; k++) {
+    // The `>` of an arrow closes no angle bracket. `computed<(o: T) => U>(…)` would otherwise
+    // end at the arrow, and the `(` the scanner then looks for is three tokens away — so a
+    // factory written with a function type would be reported as one it cannot read. Louder
+    // than a silent miss, and still not the truth: the call is there and is legal TypeScript.
+    if (closing === '>' && text[k] === '>' && text[k - 1] === '=') continue;
     if (text[k] === opening) depth++;
     else if (text[k] === closing && --depth === 0) return k;
   }

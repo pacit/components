@@ -135,6 +135,29 @@ test.describe('Accessibility (axe-core, WCAG 2.2 AA)', () => {
   });
 
   /**
+   * A filtering combobox with its panel open, and audited WHOLE-PAGE rather than scoped to the
+   * panel: what is new here is a relation between two elements that live in different trees.
+   * The trigger is an `<input role="combobox">` in the page and the listbox is in the overlay
+   * container, so `aria-controls` and `aria-activedescendant` are references crossing between
+   * them — and a reference to an id that is not in the document is exactly what
+   * `aria-valid-attr-value` reports. The question typed leaves one row standing under one
+   * heading, which is also the narrowed list's own audit.
+   */
+  test('a filtering combobox with a narrowed panel has no violations', async ({
+    page,
+  }) => {
+    await visit(page, '/select');
+    await page
+      .getByTestId('select-filter')
+      .locator('[data-pct-part="trigger"]')
+      .fill('lat');
+    await expect(page.locator('[data-pct-part="panel"]')).toBeVisible();
+
+    const violations = await audit(page);
+    expect(report(violations)).toBe('');
+  });
+
+  /**
    * An open modal is the one state the walk over the routes cannot reach: every dialog in the
    * sandbox starts closed, and a panel that is not attached is a panel axe has nothing to say
    * about. The audit is scoped to the panel, because the rest of the page is `inert` while it

@@ -26,6 +26,13 @@ export interface PctTexts {
   /** Select: when there is not a single option. */
   readonly selectEmpty: string;
   /**
+   * Select: when a filter has left nothing standing. A different sentence from `selectEmpty`
+   * because it is a different fact about the world — "there is nothing to choose from" is the
+   * list's state, "nothing here answers what you typed" is the question's, and a user who has
+   * just typed three letters is owed the second one.
+   */
+  readonly selectNoMatches: string;
+  /**
    * Multi-select: what stands between the chosen labels on the trigger. Punctuation is a
    * string like any other — an Arabic list is separated by `،` and a Japanese one by `、`,
    * so a comma written into the template would be a word of English in every language.
@@ -42,6 +49,7 @@ export interface PctTexts {
 export const PCT_DEFAULT_TEXTS: PctTexts = {
   selectPlaceholder: 'Select…',
   selectEmpty: 'No options',
+  selectNoMatches: 'No matches',
   selectSeparator: ', ',
   dialogClose: 'Close',
 };

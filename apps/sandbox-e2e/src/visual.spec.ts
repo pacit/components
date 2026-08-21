@@ -119,6 +119,20 @@ test.describe('Appearance — compared with the baseline', () => {
   });
 
   /**
+   * The filtering triggers at rest. This is the one drawing of the step no behavioural case
+   * touches: an `<input>` wearing the button's border, and the arrow standing over its end
+   * padding rather than inside a flex row — the two ways of putting one icon in one box, which
+   * have to come out as the same box.
+   */
+  test('select-filter-trigger', async ({ page }) => {
+    await stage(page, '/select');
+
+    const demo = page.getByTestId('demo-filter').locator('.stack');
+    await expect(demo).toBeVisible();
+    await expect(demo).toHaveScreenshot('select-filter-trigger.png');
+  });
+
+  /**
    * The same panel taking many answers. The mark on a chosen row is drawn and never touched:
    * its size, its place at the end of the row and the gap before it are what no behavioural
    * case would catch — and two rows chosen at once is the state that says the mark and the
@@ -301,6 +315,21 @@ test.describe('Appearance in RTL — compared with the baseline', () => {
     const panel = page.locator('[data-pct-part="panel"]');
     await expect(panel).toBeVisible();
     await expect(panel).toHaveScreenshot('select-panel-multiple-rtl.png');
+  });
+
+  /**
+   * The same triggers mirrored. The arrow of a text trigger is the one icon in this library
+   * placed by `position: absolute`, and `inset-inline-end` is what carries it to the other
+   * side — a property that reads correctly in a stylesheet and proves nothing until a
+   * direction is set.
+   */
+  test('select-filter-trigger-rtl', async ({ page }) => {
+    await stage(page, '/select');
+    await setRtl(page);
+
+    const demo = page.getByTestId('demo-filter').locator('.stack');
+    await expect(demo).toBeVisible();
+    await expect(demo).toHaveScreenshot('select-filter-trigger-rtl.png');
   });
 
   test('select-panel-open-rtl', async ({ page }) => {

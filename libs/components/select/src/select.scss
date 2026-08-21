@@ -82,6 +82,63 @@
   border-color: var(--pct-select-border-invalid);
 }
 
+/* The box a filtering trigger stands in, and its only reason for existing: an `<input>` holds
+   no children, so the arrow cannot sit inside the border the way it does in a button. Nothing
+   about the control's look moves here — the border, the padding, the ring and the part stay on
+   the input — so the box is a positioning context and a row of the field, nothing more. */
+.pct-select__box {
+  position: relative;
+  display: flex;
+  width: 100%;
+  align-self: stretch;
+}
+
+/* The text trigger. It keeps every rule of the button above it and changes two things: the
+   cursor announces a caret rather than a switch, and the end padding leaves the arrow a square
+   to stand in — an absolutely positioned icon takes no space of its own, so the text would run
+   underneath it. */
+input.pct-select__trigger {
+  cursor: text;
+  text-overflow: ellipsis;
+  padding-inline-end: calc(
+    var(--pct-select-padding-x) + var(--pct-space-3) + 16px
+  );
+}
+
+/* Inside the chrome the padding is the field's (`padding: 0` above), and the arrow still needs
+   its square: the end alone comes back, so the text stops where the icon starts. */
+:host([data-pct-in-field]) input.pct-select__trigger {
+  padding-inline-end: calc(var(--pct-space-3) + 16px);
+}
+
+/* The native placeholder, painted as the span in the other branch is. `opacity: 1` because
+   Firefox dims it by default, and a dimmed token is a contrast promise nobody measured. */
+input.pct-select__trigger::placeholder {
+  color: var(--pct-select-placeholder-fg);
+  opacity: 1;
+}
+
+/* The arrow over the input's end padding. `pointer-events: none` so it is not a target of its
+   own: a press anywhere on this control belongs to the field under it, which is what puts the
+   caret where the user aimed. */
+.pct-select__box .pct-select__arrow {
+  position: absolute;
+  inset-inline-end: var(--pct-select-padding-x);
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+:host([data-pct-in-field]) .pct-select__box .pct-select__arrow {
+  inset-inline-end: 0;
+}
+
+/* The turn on opening, written out for this branch: `transform` is what puts the icon on its
+   line here, so the rotation has to carry the centring with it. */
+:host([data-pct-open]) .pct-select__box .pct-select__arrow {
+  transform: translateY(-50%) rotate(180deg);
+}
+
 .pct-select__placeholder {
   color: var(--pct-select-placeholder-fg);
 }
@@ -262,6 +319,22 @@
 
   .pct-select__placeholder,
   .pct-select__empty {
+    color: GrayText;
+  }
+
+  input.pct-select__trigger::placeholder {
+    color: GrayText;
+  }
+
+  /* A filtering trigger's arrow stands BESIDE the input rather than inside it, so the two
+     states it used to inherit through the button have to be written for the box it now sits
+     in. Written out for the same reason as everything else in this block: `@media` adds no
+     specificity, so the base rule's token would win the cascade (lesson-70). */
+  .pct-select__box {
+    color: FieldText;
+  }
+
+  :host([data-pct-disabled]) .pct-select__box {
     color: GrayText;
   }
 

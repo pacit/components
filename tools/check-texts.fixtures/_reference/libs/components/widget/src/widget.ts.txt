@@ -32,6 +32,15 @@ export class PctWidget {
     () => this.texts().widgetCollapse,
   );
 
+  /**
+   * A generic argument that is a FUNCTION type: the `>` of the arrow is not the one that
+   * closes the type argument, and a scanner counting angle brackets alone stops there. Here
+   * so that the shape is measured and not assumed.
+   */
+  protected readonly visible = computed<(item: string) => boolean>(
+    () => (item) => item !== '',
+  );
+
   protected readonly open = signal(true);
 
   toggle(): void {

@@ -239,12 +239,17 @@ of our own only where there is no native equivalent.
 `apps/sandbox-e2e/src/menu.spec.ts` — `Enter` and `Space` on a command, in three engines. The
 menu's rows are `<button>` elements and the component reads neither key: the case exists because
 "the platform does it" is a claim about browsers rather than about intentions, and this is the
-one component here whose activation is entirely borrowed
+one component here whose activation is entirely borrowed;
+`apps/sandbox-e2e/src/select.spec.ts › "the caret keeps the keys the list does not take"` — the
+same claim about a text field: where the select's trigger can be typed into, `Home`, `End` and
+the space bar go back to the caret, and the space that used to pick lengthens the question
+instead ([0035](../decisions/0035-a-filter-is-a-question-not-a-value.md))
 **Control:** none — deliberately: a navigation test has no mode in which it passes without
 a working keyboard
 **Exceptions:** [`req-api-number`](#req-api-number) (native `type="number"` does not know the
-local separator), `PctSelect` (a native `<select>` gives no panel), `PctMenu` (a native menu is
-not a thing the platform has at all — what it borrows is the row, which is a button)
+local separator), `PctSelect` (a native `<select>` gives no panel — and a filtering one borrows
+back what a real `<input>` answers on its own), `PctMenu` (a native menu is not a thing the
+platform has at all — what it borrows is the row, which is a button)
 
 ---
 
@@ -281,7 +286,11 @@ declare `T | T[] | null` — and then it accepts an array nobody asked for while
 single-choice consumer's own `(valueChange)` handler, which is the only channel that still
 carries a check ([`lesson-99`](../lessons.md#lesson-99)). `pct-multi-select` is therefore a
 second tag over one implementation, and the two are measured against each other rather than
-kept in step by hand ([0034](../decisions/0034-multiplicity-is-a-tag.md)).
+kept in step by hand ([0034](../decisions/0034-multiplicity-is-a-tag.md)). **What the type
+cannot say otherwise is a tag; everything else is an input** — filtering changes no type, so it
+is an input on both tags rather than two more of them, and its predicate takes the whole option
+so that a list can be narrowed on something other than the text
+([0035](../decisions/0035-a-filter-is-a-question-not-a-value.md)).
 
 The mapping runs both ways, so **option values are unique** under that equality: a value is
 what points back at an option. **Which of two equal options wins is not the same in both

@@ -647,6 +647,155 @@ test.describe('PctSelect — a combobox with a panel', () => {
     });
   });
 
+  /**
+   * Filtering, in a browser rather than in jsdom: the trigger is a different ELEMENT here, so
+   * what is measured is the part jsdom cannot answer — that the letters reach the field, that
+   * the caret keeps the keys the list does not take, and that the panel narrows under them
+   * ([0035](../../../docs/decisions/0035-a-filter-is-a-question-not-a-value.md)).
+   */
+  test.describe('a question typed into the trigger', () => {
+    const filtering = (page: import('@playwright/test').Page) =>
+      trigger(page, 'select-filter');
+    const many = (page: import('@playwright/test').Page) =>
+      trigger(page, 'select-filter-multi');
+    const active = (page: import('@playwright/test').Page) =>
+      page.locator('[data-pct-part="option"][data-pct-active]');
+
+    test('the trigger is a text field, and the panel is what answers it', async ({
+      page,
+    }) => {
+      const field = filtering(page);
+      await expect(field).toHaveRole('combobox');
+      await expect(field).toHaveJSProperty('tagName', 'INPUT');
+      await expect(field).toHaveAttribute('aria-autocomplete', 'list');
+      // The select-only trigger of the same page is a button and says none of it.
+      await expect(trigger(page)).toHaveJSProperty('tagName', 'BUTTON');
+      await expect(trigger(page)).not.toHaveAttribute('aria-autocomplete');
+    });
+
+    test('the letters open the panel and narrow it, and the cursor follows', async ({
+      page,
+    }) => {
+      const field = filtering(page);
+      await field.fill('ith');
+
+      await expect(panel(page)).toBeVisible();
+      await expect(options(page)).toHaveCount(1);
+      await expect(options(page).first()).toHaveText('Lithuania');
+      // The row the cursor stands on is the row that is left, and the trigger names it by an
+      // id that is in the tree.
+      await expect(field).toHaveAttribute(
+        'aria-activedescendant',
+        await attrOf(options(page).first(), 'id'),
+      );
+      // A heading with nothing left under it is gone with its rows. Scoped to the panel: the
+      // sandbox's own controls are radio groups, and a group label is their part too.
+      await expect(
+        panel(page).locator('[data-pct-part="group-label"]'),
+      ).toHaveText('Baltic');
+    });
+
+    /**
+     * The cursor goes to the first row that can be REACHED, and a question can leave none —
+     * `Latvia` is the one row matching `lat` and it is disabled. Then the trigger names no
+     * option at all, which is the honest answer: `aria-activedescendant` is a reference, and
+     * there is nothing there to point at.
+     */
+    test('a question that leaves only a row nobody may pick points at none', async ({
+      page,
+    }) => {
+      const field = filtering(page);
+      await field.fill('lat');
+
+      await expect(options(page)).toHaveCount(1);
+      await expect(options(page).first()).toHaveAttribute(
+        'aria-disabled',
+        'true',
+      );
+      await expect(field).not.toHaveAttribute('aria-activedescendant');
+
+      // …and Enter picks nothing, so the panel is still standing.
+      await page.keyboard.press('Enter');
+      await expect(panel(page)).toBeVisible();
+    });
+
+    test('Enter answers the question, and the field goes back to the answer', async ({
+      page,
+    }) => {
+      const field = filtering(page);
+      await field.fill('czech');
+      await page.keyboard.press('Enter');
+
+      await expect(panel(page)).toHaveCount(0);
+      await expect(field).toHaveValue('Czechia');
+    });
+
+    test('a chosen label survives a question that hides it', async ({
+      page,
+    }) => {
+      const field = filtering(page);
+      await expect(field).toHaveValue('Lithuania');
+
+      await field.fill('never');
+
+      // The field holds the question; the answer stands behind it and the panel says that
+      // nothing answers it.
+      await expect(field).toHaveValue('never');
+      await expect(field).toHaveAttribute('placeholder', 'Lithuania');
+      await expect(panel(page).locator('[data-pct-part="empty"]')).toHaveText(
+        'No matches',
+      );
+
+      await page.keyboard.press('Escape');
+      await expect(field).toHaveValue('Lithuania');
+    });
+
+    test('the caret keeps the keys the list does not take', async ({
+      page,
+    }) => {
+      const field = filtering(page);
+      await field.fill('a');
+      await page.keyboard.press('ArrowDown');
+      await expect(active(page)).toHaveText('Poland');
+
+      // On a select-only trigger End is the last row of the list. Here it belongs to the text,
+      // so the cursor does not move — `Lithuania` is what the list would have jumped to.
+      await page.keyboard.press('End');
+      await expect(active(page)).toHaveText('Poland');
+
+      // And the space bar is a character: it neither picks nor closes, it lengthens the
+      // question — which nothing on this list answers.
+      await page.keyboard.press(' ');
+      await expect(panel(page)).toBeVisible();
+      await expect(field).toHaveValue('a ');
+      await expect(panel(page).locator('[data-pct-part="empty"]')).toHaveText(
+        'No matches',
+      );
+    });
+
+    test('a pick over a many-choice list keeps what the question hid', async ({
+      page,
+    }) => {
+      const field = many(page);
+      await expect(field).toHaveValue('Poland, Slovakia');
+
+      await field.fill('ger');
+      await expect(options(page)).toHaveCount(1);
+      await options(page).first().click();
+
+      // The panel stays up, the question is answered and gone, and the two chosen countries
+      // the panel never showed are still chosen — in the order of the list.
+      await expect(panel(page)).toBeVisible();
+      await expect(field).toHaveValue('');
+      await expect(options(page)).toHaveCount(6);
+      await expect(page.locator('[data-pct-part="option-check"]')).toHaveCount(
+        3,
+      );
+      await page.keyboard.press('Escape');
+      await expect(field).toHaveValue('Poland, Germany, Slovakia');
+    });
+  });
+
   test('the clickable area of the trigger is at least 24 px tall', async ({
     page,
   }) => {

@@ -1,5 +1,17 @@
-<!-- The role sits here and not on the host, so the name has to be handed over. -->
+<!-- The role sits here and not on the host, so the name has to be handed over. It is handed
+     over TWICE, because the element a trigger is follows the role it carries: one that can be
+     typed into is an `<input>`, one that cannot is a `<button>`. Exactly one of the two is
+     ever in the tree, which is the question point 4 asks — and the answer it must accept. -->
 <span class="pct-widget__box">
+  @if (editable()) {
+  <input
+    class="pct-widget__trigger"
+    type="text"
+    role="combobox"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+  />
+  } @else {
   <button
     class="pct-widget__trigger"
     type="button"
@@ -9,6 +21,7 @@
   >
     {{ label() }}
   </button>
+  }
 </span>
 
 <!-- One message line: the error takes it, the hint gives way (req-api-message). -->

@@ -21,6 +21,8 @@ import { part } from '../../testing/src/dom';
 import { PctSelect } from './select';
 import { PctSelectOptionTemplate } from './select.template';
 import {
+  pctFilterByLabel,
+  PctSelectFilter,
   PctSelectItem,
   PctSelectOption,
   PctSelectPanelWidth,
@@ -600,6 +602,27 @@ describe('PctSelect', () => {
       const fixture = await render(Host);
       await press(fixture, 'ArrowDown');
       await press(fixture, 'Escape');
+
+      expect(panel()).toBeNull();
+      expect(fixture.componentInstance.value()).toBe('');
+    });
+
+    /**
+     * The gesture the template's `(overlayOutsideClick)` answers, in jsdom. It is here because
+     * a coverage exception said it could not be: the reason written down was that a synthetic
+     * click measures nothing, and the CDK's dispatcher listens on the document and answers
+     * one — the environment was never the limit, nothing had asked. The three-engine case in
+     * `apps/sandbox-e2e/src/select.spec.ts` stays where it is: it is the one that proves the
+     * gesture works on a click a browser dispatched.
+     */
+    it('a click outside the panel closes it', async () => {
+      const fixture = await render(Host);
+      await press(fixture, 'ArrowDown');
+      expect(panel()).not.toBeNull();
+
+      document.body.click();
+      fixture.detectChanges();
+      await fixture.whenStable();
 
       expect(panel()).toBeNull();
       expect(fixture.componentInstance.value()).toBe('');
@@ -1750,6 +1773,394 @@ describe('PctSelect', () => {
       }
     });
   });
+  /**
+   * Filtering. What is measured here is one sentence in two halves: the question narrows the
+   * PANEL and never the value, and it does not outlive the panel it was asked in
+   * ([0035](../../../../docs/decisions/0035-a-filter-is-a-question-not-a-value.md)).
+   */
+  describe('a question typed into the trigger (filterable)', () => {
+    @Component({
+      imports: [PctSelect],
+      template: `<pct-select
+        label="Country"
+        [options]="options()"
+        [filterable]="true"
+        [filterWith]="filterWith()"
+        [readonly]="ro()"
+        [(value)]="value"
+        [(filterText)]="query"
+        (touch)="touchCount = touchCount + 1"
+      />`,
+    })
+    class FilterHost {
+      options = signal<readonly PctSelectItem[]>(OPTIONS);
+      value = signal<string | null>('');
+      query = signal('');
+      ro = signal(false);
+      filterWith = signal<PctSelectFilter>(pctFilterByLabel);
+      touchCount = 0;
+    }
+
+    const field = (f: ComponentFixture<unknown>) =>
+      triggerOf(f) as unknown as HTMLInputElement;
+
+    /** What a keystroke really is on a text field: the value, then the `input` event. */
+    const type = async (f: ComponentFixture<unknown>, text: string) => {
+      const input = field(f);
+      input.value = text;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      f.detectChanges();
+      await f.whenStable();
+    };
+
+    const labels = () => optionsInPanel().map((o) => o.textContent?.trim());
+
+    it('the trigger is a text field, and the select-only one is not', async () => {
+      const fixture = await render(FilterHost);
+      const input = field(fixture);
+
+      expect(input.tagName).toBe('INPUT');
+      expect(input.getAttribute('role')).toBe('combobox');
+      // The one ARIA attribute that says the panel answers what is typed.
+      expect(input.getAttribute('aria-autocomplete')).toBe('list');
+      // On an `<input>` `name` is what a native form submits the TEXT under, and the text is
+      // the question — so this branch carries none.
+      expect(input.hasAttribute('name')).toBe(false);
+
+      const plain = triggerOf(await render(Host));
+      expect(plain.tagName).toBe('BUTTON');
+      expect(plain.hasAttribute('aria-autocomplete')).toBe(false);
+    });
+
+    it('typing opens the panel and leaves standing what the letters name', async () => {
+      const fixture = await render(FilterHost);
+      expect(panel()).toBeNull();
+
+      await type(fixture, 'la');
+
+      expect(panel()).not.toBeNull();
+      expect(labels()).toEqual(['Poland']);
+      expect(fixture.componentInstance.query()).toBe('la');
+    });
+
+    it('the case of the letters is not part of the question', async () => {
+      const fixture = await render(FilterHost);
+      await type(fixture, 'POL');
+
+      expect(labels()).toEqual(['Poland']);
+    });
+
+    it('the cursor goes to the first row still standing, skipping a disabled one', async () => {
+      const fixture = await render(FilterHost);
+
+      // `ia` leaves Czechia (disabled) and Slovakia, in that order.
+      await type(fixture, 'ia');
+      expect(labels()).toEqual(['Czechia', 'Slovakia']);
+
+      const active = optionsInPanel().findIndex((o) =>
+        o.hasAttribute('data-pct-active'),
+      );
+      expect(active).toBe(1);
+      // …and the id it is named by is one that is in the tree.
+      const named = field(fixture).getAttribute('aria-activedescendant');
+      expect(named).toBe(optionsInPanel()[1].id);
+    });
+
+    it('a question nothing answers says so, and not what an empty list says', async () => {
+      const fixture = await render(FilterHost);
+      await type(fixture, 'never');
+
+      expect(optionsInPanel()).toHaveLength(0);
+      expect(
+        panel()?.querySelector('[data-pct-part="empty"]')?.textContent?.trim(),
+      ).toBe('No matches');
+      expect(
+        document.querySelector('[data-pct-live="polite"]')?.textContent,
+      ).toBe('No matches');
+    });
+
+    it('and the sentence is withdrawn when the question goes', async () => {
+      const fixture = await render(FilterHost);
+      await type(fixture, 'never');
+      await press(fixture, 'Escape');
+
+      // The query is already `''` by now, so the sentence to take off the channel is no
+      // longer the one the control would compute — both are withdrawn, and `retract` takes
+      // off only what is still there.
+      expect(
+        document.querySelector('[data-pct-live="polite"]')?.textContent,
+      ).toBe('');
+    });
+
+    it('Enter picks what is standing, and the question goes with the panel', async () => {
+      const fixture = await render(FilterHost);
+      await type(fixture, 'ny');
+      expect(labels()).toEqual(['Germany']);
+
+      await press(fixture, 'Enter');
+
+      expect(fixture.componentInstance.value()).toBe('de');
+      expect(panel()).toBeNull();
+      expect(fixture.componentInstance.query()).toBe('');
+      // The field goes back to holding the answer.
+      expect(field(fixture).value).toBe('Germany');
+    });
+
+    it('Escape closes and the list comes back whole', async () => {
+      const fixture = await render(FilterHost);
+      await type(fixture, 'la');
+      await press(fixture, 'Escape');
+
+      expect(panel()).toBeNull();
+      expect(fixture.componentInstance.query()).toBe('');
+
+      await press(fixture, 'ArrowDown');
+      expect(labels()).toEqual(['Poland', 'Germany', 'Czechia', 'Slovakia']);
+    });
+
+    it('with nothing chosen the placeholder is the library string, open or closed', async () => {
+      const fixture = await render(FilterHost);
+      fixture.componentInstance.value.set(null);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(field(fixture).getAttribute('placeholder')).toBe('Select…');
+
+      await press(fixture, 'ArrowDown');
+      // Open, and still the library's: an answer is what moves to the placeholder, and there
+      // is none.
+      expect(field(fixture).getAttribute('placeholder')).toBe('Select…');
+    });
+
+    it('a chosen label survives a question that hides it', async () => {
+      const fixture = await render(FilterHost);
+      fixture.componentInstance.value.set('pl');
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(field(fixture).value).toBe('Poland');
+
+      await type(fixture, 'never');
+
+      // The field holds the question — and the answer stands behind it, as a placeholder,
+      // which is the one string a reader never calls the field's value.
+      expect(field(fixture).value).toBe('never');
+      expect(field(fixture).getAttribute('placeholder')).toBe('Poland');
+      // …and nothing was written: a question is not an answer.
+      expect(fixture.componentInstance.value()).toBe('pl');
+
+      await press(fixture, 'Escape');
+      expect(field(fixture).value).toBe('Poland');
+    });
+
+    it('a filter nobody asked is not called: no question, no narrowing', async () => {
+      const fixture = await render(FilterHost);
+      // A predicate that answers "no" to everything. With a question typed it empties the
+      // panel; with none it is never reached, because there is nothing to be asked about.
+      fixture.componentInstance.filterWith.set(() => false);
+      fixture.detectChanges();
+
+      await press(fixture, 'ArrowDown');
+      expect(optionsInPanel()).toHaveLength(4);
+
+      await type(fixture, 'la');
+      expect(optionsInPanel()).toHaveLength(0);
+    });
+
+    it('a filter of the consumer own decides instead of the label', async () => {
+      const fixture = await render(FilterHost);
+      // A list where the code is what the user knows: `de` names Germany, not Poland.
+      fixture.componentInstance.filterWith.set((option, query) =>
+        String(option.value).startsWith(query.toLowerCase()),
+      );
+      fixture.detectChanges();
+
+      await type(fixture, 'de');
+      expect(labels()).toEqual(['Germany']);
+    });
+
+    it('the letters belong to the caret: End, Home and the space bar move no cursor', async () => {
+      const fixture = await render(FilterHost);
+      await type(fixture, 'a');
+      expect(labels()).toHaveLength(4);
+
+      await press(fixture, 'ArrowDown'); // Poland → Germany
+      const active = () =>
+        optionsInPanel().findIndex((o) => o.hasAttribute('data-pct-active'));
+      expect(active()).toBe(1);
+
+      await press(fixture, 'End');
+      expect(active()).toBe(1);
+      await press(fixture, 'Home');
+      expect(active()).toBe(1);
+
+      await press(fixture, ' ');
+      expect(active()).toBe(1);
+      // A space is a character, so it neither picks nor closes.
+      expect(fixture.componentInstance.value()).toBe('');
+      expect(panel()).not.toBeNull();
+    });
+
+    it('and no typeahead — the letters are already going somewhere', async () => {
+      const fixture = await render(FilterHost);
+      await press(fixture, 'ArrowDown');
+      const active = () =>
+        optionsInPanel().findIndex((o) => o.hasAttribute('data-pct-active'));
+      expect(active()).toBe(0);
+
+      await press(fixture, 'g');
+
+      expect(active()).toBe(0);
+      // The same key on the select-only trigger jumps to Germany.
+      const plain = await render(Host);
+      triggerOf(plain).click();
+      plain.detectChanges();
+      await press(plain, 'g');
+      expect(
+        optionsInPanel().findIndex((o) => o.hasAttribute('data-pct-active')),
+      ).toBe(1);
+    });
+
+    it('neither Enter nor a space opens the panel, because the field has both', async () => {
+      const fixture = await render(FilterHost);
+
+      await press(fixture, 'Enter');
+      expect(panel()).toBeNull();
+      await press(fixture, ' ');
+      expect(panel()).toBeNull();
+
+      await press(fixture, 'ArrowDown');
+      expect(panel()).not.toBeNull();
+    });
+
+    it('a heading left with nothing standing is not drawn', async () => {
+      const fixture = await render(FilterHost);
+      fixture.componentInstance.options.set(GROUPED);
+      fixture.detectChanges();
+
+      await type(fixture, 'or');
+
+      expect(labels()).toEqual(['Korea']);
+      expect(groupsInPanel()).toHaveLength(1);
+      expect(
+        groupsInPanel()[0]
+          .querySelector('[data-pct-part="group-label"]')
+          ?.textContent?.trim(),
+      ).toBe('Asia');
+      // The numbering is the numbering of what is standing: the one row left is row 0.
+      expect(optionsInPanel()[0].id.endsWith('-option-0')).toBe(true);
+    });
+
+    it('a question written on a select that takes none narrows nothing', async () => {
+      @Component({
+        imports: [PctSelect],
+        template: `<pct-select [options]="options" filterText="never" />`,
+      })
+      class Unasked {
+        options = OPTIONS;
+      }
+
+      const fixture = await render(Unasked);
+      triggerOf(fixture).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(optionsInPanel()).toHaveLength(4);
+    });
+
+    it('a readonly control refuses the letters, and the platform refuses them first', async () => {
+      const fixture = await render(FilterHost);
+      fixture.componentInstance.ro.set(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(field(fixture).hasAttribute('readonly')).toBe(true);
+
+      await type(fixture, 'la');
+      expect(panel()).toBeNull();
+      expect(fixture.componentInstance.query()).toBe('');
+
+      // A readonly `<input>` still takes a click, unlike a disabled `<button>` — so the press
+      // has a guard of its own and this is what says so.
+      field(fixture).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(panel()).toBeNull();
+    });
+
+    it('a click on the text field opens and never closes', async () => {
+      const fixture = await render(FilterHost);
+
+      field(fixture).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(panel()).not.toBeNull();
+
+      await type(fixture, 'a');
+      expect(optionsInPanel()).toHaveLength(4);
+      await press(fixture, 'ArrowDown');
+
+      // A press on a text field is a caret being placed, not a switch being flipped — and the
+      // question stands where it was. A panel that closed and reopened under the click would
+      // have taken it with it, which is the one way this could look right and be wrong.
+      field(fixture).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(panel()).not.toBeNull();
+      expect(fixture.componentInstance.query()).toBe('a');
+      expect(optionsInPanel()).toHaveLength(4);
+      // …and the cursor is where the walk left it, on the SECOND row. A panel opened again
+      // under the click would have put it back on the first.
+      expect(field(fixture).getAttribute('aria-activedescendant')).toBe(
+        optionsInPanel()[1].id,
+      );
+    });
+
+    it('the chrome is told the cursor is a caret, and told again when it stops being one', async () => {
+      @Component({
+        imports: [PctField, PctSelect],
+        template: `<pct-field label="Country"
+          ><pct-select [options]="options" [filterable]="asks()"
+        /></pct-field>`,
+      })
+      class InField {
+        options = OPTIONS;
+        asks = signal(true);
+      }
+
+      const fixture = await render(InField);
+      const field = fixture.nativeElement.querySelector('pct-field');
+      expect(field.getAttribute('data-pct-cursor')).toBe('text');
+
+      fixture.componentInstance.asks.set(false);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      // A getter that reads a signal is a signal to the `computed` that reads it.
+      expect(field.getAttribute('data-pct-cursor')).toBe('pointer');
+    });
+
+    it('leaving the field reports the touch, as leaving the button does', async () => {
+      const fixture = await render(FilterHost);
+
+      field(fixture).dispatchEvent(new FocusEvent('blur', { bubbles: true }));
+      await fixture.whenStable();
+
+      expect(fixture.componentInstance.touchCount).toBe(1);
+    });
+
+    it('the default filter folds case and leaves the accents alone', () => {
+      const person: PctSelectOption = { value: 'zoe', label: 'Zoë' };
+
+      expect(pctFilterByLabel(person, 'ZOË')).toBe(true);
+      expect(pctFilterByLabel(person, 'oë')).toBe(true);
+      // The half nobody promises: whether an accent is a letter of its own is a question of
+      // language — `Intl.Collator` answers it one way for German and the other for Swedish on
+      // the same pair of letters — so the library leaves it to `filterWith` (`lesson-101`).
+      expect(pctFilterByLabel(person, 'zoe')).toBe(false);
+    });
+  });
+
   describe('the arrow a consumer replaces (req-api-icons)', () => {
     @Component({
       selector: 'pct-probe-arrows',

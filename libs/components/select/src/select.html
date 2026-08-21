@@ -6,10 +6,84 @@
 </span>
 }
 
+<!--
+  The arrow, declared once and drawn inside whichever trigger is standing: within the button,
+  which holds its own children, and beside the input, which holds none. A second copy would be
+  a second drawing to keep in step and a second copy of its bytes in the artefact
+  (`lesson-67`).
+-->
+<ng-template #arrowIcon>
+  <pct-icon class="pct-select__arrow" data-pct-part="arrow" name="chevron-down">
+    <svg
+      viewBox="0 0 16 16"
+      width="100%"
+      height="100%"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      focusable="false"
+    >
+      <path d="M4 6l4 4 4-4" />
+    </svg>
+  </pct-icon>
+</ng-template>
+
+@if (filterable()) {
+<!--
+  The filtering trigger. It is an `<input>` and not a `<button>` with a field in the panel,
+  because a combobox is a value being edited and the caret belongs to the control the list
+  hangs off (0032, 0035). Everything the other branch binds is bound here too — the two are
+  ONE control in two elements, and `check-aria` measures that they are never two names at once
+  — with three deliberate differences:
+
+  - `aria-autocomplete="list"`: the panel answers what is typed, and only this branch can be
+    typed into;
+  - `readonly`, the platform's own: a control nobody may change is one the letters may not
+    reach either, and `aria-readonly` alone stops nothing;
+  - no `name`. On an `<input>` that attribute is what a form submits the field's TEXT under,
+    and the text here is the question — a native submit would send `country=Pol`.
+
+  The box around it exists for the arrow alone: an `<input>` holds no children, so the icon
+  cannot go inside the border the way it does in a button. The border, the ring, the padding
+  and the part stay on the input, which is what keeps `[data-pct-part="trigger"]` the element
+  with the role in both branches.
+-->
+<div class="pct-select__box">
+  <input
+    #trigger
+    class="pct-select__trigger"
+    data-pct-part="trigger"
+    type="text"
+    role="combobox"
+    autocomplete="off"
+    aria-autocomplete="list"
+    [id]="triggerId"
+    [disabled]="disabled()"
+    [value]="triggerText()"
+    [attr.placeholder]="triggerPlaceholder()"
+    [attr.readonly]="readonly() ? '' : null"
+    [attr.aria-expanded]="open()"
+    [attr.aria-controls]="open() ? listboxId : null"
+    aria-haspopup="listbox"
+    [attr.aria-activedescendant]="activeOptionId()"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || (!inField && label() ? labelId : null)"
+    [attr.aria-describedby]="describedBy()"
+    [attr.aria-invalid]="showInvalid() ? 'true' : null"
+    [attr.aria-required]="required() || null"
+    [attr.aria-readonly]="readonly() ? 'true' : null"
+    (input)="onFilterInput($event)"
+    (click)="press()"
+    (keydown)="onKeydown($event)"
+    (blur)="onBlur()"
+  />
+  <ng-container [ngTemplateOutlet]="arrowIcon" />
+</div>
+} @else {
 <button
   #trigger
-  cdkOverlayOrigin
-  #origin="cdkOverlayOrigin"
   class="pct-select__trigger"
   data-pct-part="trigger"
   type="button"
@@ -27,7 +101,7 @@
   [attr.aria-invalid]="showInvalid() ? 'true' : null"
   [attr.aria-required]="required() || null"
   [attr.aria-readonly]="readonly() ? 'true' : null"
-  (click)="toggle()"
+  (click)="press()"
   (keydown)="onKeydown($event)"
   (blur)="onBlur()"
 >
@@ -41,22 +115,9 @@
   </span>
   }
 
-  <pct-icon class="pct-select__arrow" data-pct-part="arrow" name="chevron-down">
-    <svg
-      viewBox="0 0 16 16"
-      width="100%"
-      height="100%"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      focusable="false"
-    >
-      <path d="M4 6l4 4 4-4" />
-    </svg>
-  </pct-icon>
+  <ng-container [ngTemplateOutlet]="arrowIcon" />
 </button>
+}
 
 <!--
   Panel: width and alignment computed against the anchor (the field border inside the chrome,
@@ -73,7 +134,7 @@
 -->
 <ng-template
   cdkConnectedOverlay
-  [cdkConnectedOverlayOrigin]="anchor() ?? origin"
+  [cdkConnectedOverlayOrigin]="anchor() ?? trigger()"
   [cdkConnectedOverlayOpen]="open()"
   [cdkConnectedOverlayPositions]="panelPositions()"
   [cdkConnectedOverlayWidth]="overlayWidth()"
@@ -194,9 +255,7 @@
       [ngTemplateOutletContext]="{ $implicit: s }"
     />
     } } @empty {
-    <div class="pct-select__empty" data-pct-part="empty">
-      {{ texts().selectEmpty }}
-    </div>
+    <div class="pct-select__empty" data-pct-part="empty">{{ emptyText() }}</div>
     }
   </div>
 </ng-template>
