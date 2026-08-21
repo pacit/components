@@ -150,6 +150,30 @@
   user-select: none;
 }
 
+/* A many-choice row carries a mark as well as a surface, so it is a row of two things: the
+   label, and the check pushed to the far end (`margin-inline-start: auto` — the end, not the
+   right, so RTL mirrors with it). The rule is scoped to the panel of a many-choice control:
+   the two controls draw ONE template, and a single-choice row that became a flex box would be
+   a layout change nobody asked for. */
+.pct-select__panel[data-pct-multiple] .pct-select__option {
+  display: flex;
+  align-items: center;
+  gap: var(--pct-space-3);
+}
+
+/* The box, not the drawing: a swapped `check` icon lands in the same square (`req-api-icons`).
+   The square is the arrow's, written the same way and for the same reason — an icon box is
+   the component's own metric and not a lever the skin is offered, and the two icons of this
+   control are one size. No colour of its own either: `currentColor` follows the option
+   through active, selected and disabled alike, and through the forced-colors substitution,
+   which is one mapping fewer than a colour of its own would have needed. */
+.pct-select__check {
+  flex: none;
+  margin-inline-start: auto;
+  width: 16px;
+  height: 16px;
+}
+
 /* Active by keyboard (aria-activedescendant) — marked out by background. */
 .pct-select__option[data-pct-active] {
   background: var(--pct-select-option-bg-active);

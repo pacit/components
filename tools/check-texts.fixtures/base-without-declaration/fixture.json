@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "rule": "base-without-declaration",
+  "$reason": "A class whose base the scan cannot see. Angular merges a decorated base's host block into the subclass's definition, so the package read finds those attributes on the subclass while the source read has never seen them — point 2 would then compare the half declared here against the whole of what ships."
+}

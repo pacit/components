@@ -7,7 +7,8 @@
  * and assistive technology ignores it. `<pct-select aria-label="Country">` was exactly that:
  * an unnamed combobox with no way in.
  *
- *  1. DENOMINATOR: every decorator parsed, every template owned, every tag read,
+ *  1. DENOMINATOR: every decorator parsed, every base found, every template owned, every
+ *     tag read,
  *  2. HOST: an ARIA name written into a `host` block needs a role on the host to carry it,
  *  3. INPUTS: a component whose widget sits inside its template declares `ariaLabel` and
  *     `ariaLabelledby`,
@@ -73,19 +74,28 @@ const sorted = (set) => [...set].sort();
 // ── source scanners ────────────────────────────────────────────────────────────
 
 /**
- * A component decorator. It anchors on the formatting `nx format:check` enforces
- * (`@Component({` and `})` in column zero), and the number of matches is therefore compared
- * against a counter that does NOT repeat that anchor — otherwise a decorator written some
- * other way would leave a whole component unexamined and both sides of the comparison would
- * be out by one together (`lesson-48`).
+ * A decorated class, up to the brace its body opens with — that tail is where `extends`
+ * stands. It anchors on the formatting `nx format:check` enforces (`@Component({` and `})` in
+ * column zero), and the number of matches is therefore compared against a counter that does
+ * NOT repeat that anchor — otherwise a decorator written some other way would leave a whole
+ * component unexamined and both sides of the comparison would be out by one together
+ * (`lesson-48`).
  *
- * `@Directive` is deliberately absent: an attribute directive sits on an element the
- * consumer chose, so the gate cannot know what role that host carries, nor whether the name
- * reaches it.
+ * **`@Directive` is read too, and it was not always.** An attribute directive is still not
+ * judged by the points below — it sits on an element the consumer chose, so the gate cannot
+ * know what role that host carries. It is read because a component's surface is not always
+ * declared in its own body: `PctSelect` and `PctMultiSelect` draw one template and take their
+ * fifteen inputs from a `@Directive()` base, and a scan of one class body sees a combobox
+ * that declares no name at all — and says so, wrongly
+ * ([0034](../docs/decisions/0034-multiplicity-is-a-tag.md),
+ * [`lesson-100`](../docs/lessons.md#lesson-100)).
  */
 const DECORATOR =
-  /^@Component\(\{\r?\n([\s\S]*?)^\}\)\r?\n(?:export\s+)?(?:abstract\s+)?class\s+([A-Za-z_$][\w$]*)/gm;
-const DECORATOR_COUNTER = /^[ \t]*@Component\(/gm;
+  /^@(Component|Directive)\(\{?\r?\n?([\s\S]*?)^\}?\)\r?\n(?:export\s+)?(?:abstract\s+)?class\s+([A-Za-z_$][\w$]*)([^{]*)\{/gm;
+const DECORATOR_COUNTER = /^[ \t]*@(?:Component|Directive)\(/gm;
+
+/** `class X extends Y` — the base whose inputs and host block are the subclass's too. */
+const EXTENDS = /\bextends\s+([A-Za-z_$][\w$]*)/;
 
 const SELECTOR = /selector\s*:\s*(['"])([^'"]*)\1/;
 const TEMPLATE_URL = /templateUrl\s*:\s*(['"])([^'"]*)\1/;
@@ -143,7 +153,7 @@ const readSources = (root, files) => {
     const content = readFileSync(join(root, file), 'utf8');
     counted += countOf(content, DECORATOR_COUNTER);
     for (const match of content.matchAll(DECORATOR)) {
-      const [body, className] = [match[1], match[2]];
+      const [body, className, heritage] = [match[2], match[3], match[4]];
       // The class body ends at the first `}` in column zero — the same formatting anchor
       // as the decorator. Inputs are read from it and not from the file, so a second
       // component in one file cannot lend its inputs to the first.
@@ -154,6 +164,7 @@ const readSources = (root, files) => {
       components.push({
         file,
         className,
+        base: EXTENDS.exec(heritage)?.[1] ?? null,
         selector: SELECTOR.exec(body)?.[2] ?? '',
         template: TEMPLATE_URL.exec(body)?.[2] ?? null,
         host: host === null ? new Map() : hostEntries(host),
@@ -315,6 +326,34 @@ const checkAria = ({ components, counted, templates, documents }) => {
         `decorator written some other way leaves a whole component unexamined, and the ` +
         `gate would report on the rest as though on all of them (lesson-48)`,
     );
+
+  // What a class inherits is part of its surface: Angular merges a decorated base's inputs
+  // and host bindings into the subclass, so a rule that reads one class body reads half a
+  // component. The merge is done HERE, once, and every point below sees whole components.
+  // A base the scan cannot see is a denominator failure and not a shrug — it is exactly the
+  // half that would go unexamined.
+  const byName = new Map(components.map((c) => [c.className, c]));
+  const inherited = (component, seen = new Set()) => {
+    if (component.base === null) return component;
+    if (seen.has(component.className)) return component;
+    seen.add(component.className);
+    const base = byName.get(component.base);
+    if (base === undefined)
+      throw new AriaError(
+        'denominator',
+        `${component.className} (${component.file}) extends \`${component.base}\`, which is ` +
+          `not among the decorated classes read — its inputs and its host block are part of ` +
+          `this component's surface, and every point below would examine the half declared ` +
+          `here`,
+      );
+    const whole = inherited(base, seen);
+    for (const name of whole.inputs) component.inputs.add(name);
+    for (const [key, value] of whole.host)
+      if (!component.host.has(key)) component.host.set(key, value);
+    component.base = null;
+    return component;
+  };
+  for (const component of components) inherited(component);
 
   const byPath = new Map(templates.map((t) => [t.file, t]));
   const owned = new Set();

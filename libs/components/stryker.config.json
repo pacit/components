@@ -14,6 +14,8 @@
     "libs/components/icon/src/icon.ts",
     "libs/components/menu/src/menu.ts",
     "libs/components/popover/src/popover.ts",
+    "libs/components/select/src/multi-select.ts",
+    "libs/components/select/src/select.base.ts",
     "libs/components/select/src/select.ts",
     "libs/components/tooltip/src/tooltip.ts",
     "!libs/components/**/index.ts",

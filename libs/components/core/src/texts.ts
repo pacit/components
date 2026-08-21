@@ -26,6 +26,12 @@ export interface PctTexts {
   /** Select: when there is not a single option. */
   readonly selectEmpty: string;
   /**
+   * Multi-select: what stands between the chosen labels on the trigger. Punctuation is a
+   * string like any other — an Arabic list is separated by `،` and a Japanese one by `、`,
+   * so a comma written into the template would be a word of English in every language.
+   */
+  readonly selectSeparator: string;
+  /**
    * Dialog: the accessible name of the button that closes it. The button draws a cross and
    * nothing else, so this string is the only name it has — a component's own string and not
    * content the view authored, which is what puts it here rather than in an input.
@@ -36,6 +42,7 @@ export interface PctTexts {
 export const PCT_DEFAULT_TEXTS: PctTexts = {
   selectPlaceholder: 'Select…',
   selectEmpty: 'No options',
+  selectSeparator: ', ',
   dialogClose: 'Close',
 };
 

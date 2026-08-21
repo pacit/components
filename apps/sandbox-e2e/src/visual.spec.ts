@@ -119,6 +119,24 @@ test.describe('Appearance — compared with the baseline', () => {
   });
 
   /**
+   * The same panel taking many answers. The mark on a chosen row is drawn and never touched:
+   * its size, its place at the end of the row and the gap before it are what no behavioural
+   * case would catch — and two rows chosen at once is the state that says the mark and the
+   * surface are two channels rather than one.
+   */
+  test('select-panel-multiple', async ({ page }) => {
+    await stage(page, '/select');
+    await page
+      .getByTestId('select-multi')
+      .locator('[data-pct-part="trigger"]')
+      .click();
+
+    const panel = page.locator('[data-pct-part="panel"]');
+    await expect(panel).toBeVisible();
+    await expect(panel).toHaveScreenshot('select-panel-multiple.png');
+  });
+
+  /**
    * The modal, which shows on no screenshot of a resting page: the panel is an overlay and the
    * veil covers everything behind it. The shot is of the whole viewport rather than of the
    * panel, because the veil IS part of what this component draws — its darkness over the page
@@ -264,6 +282,25 @@ test.describe('Appearance in RTL — compared with the baseline', () => {
     await expect(page.locator('[data-pct-part="panel"]')).toBeVisible();
 
     await expect(page).toHaveScreenshot('dialog-open-rtl.png');
+  });
+
+  /**
+   * The mark on a chosen row is the one thing in this panel placed along the inline axis:
+   * `margin-inline-start: auto` puts it at the END of the row, so in RTL it belongs on the
+   * left. A stylesheet that says so proves nothing on its own — the direction has to reach
+   * the panel, which is an overlay outside the host tree.
+   */
+  test('select-panel-multiple-rtl', async ({ page }) => {
+    await stage(page, '/select');
+    await setRtl(page);
+    await page
+      .getByTestId('select-multi')
+      .locator('[data-pct-part="trigger"]')
+      .click();
+
+    const panel = page.locator('[data-pct-part="panel"]');
+    await expect(panel).toBeVisible();
+    await expect(panel).toHaveScreenshot('select-panel-multiple-rtl.png');
   });
 
   test('select-panel-open-rtl', async ({ page }) => {

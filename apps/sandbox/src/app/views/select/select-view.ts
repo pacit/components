@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { PctField } from '@pacit/components/field';
 import {
+  PctMultiSelect,
   PctSelect,
   PctSelectOption,
   PctSelectOptionTemplate,
@@ -15,7 +16,14 @@ import { SelectIcons } from './select-icons';
  */
 @Component({
   selector: 'sbx-select-view',
-  imports: [SbxDemo, PctField, PctSelect, PctSelectOptionTemplate, SelectIcons],
+  imports: [
+    SbxDemo,
+    PctField,
+    PctMultiSelect,
+    PctSelect,
+    PctSelectOptionTemplate,
+    SelectIcons,
+  ],
   templateUrl: './select-view.html',
   styleUrl: './select-view.scss',
 })
@@ -32,6 +40,13 @@ export class SelectView {
   protected readonly emptyCountry = signal<string | null>(null);
   protected readonly templateCountry = signal<string | null>('de');
   protected readonly groupedCountry = signal<string | null>('pl');
+
+  /**
+   * A list of values, and that is the whole difference: `pct-multi-select` is a tag of its
+   * own precisely so this signal cannot be handed to `pct-select` by mistake
+   * (decision 0034).
+   */
+  protected readonly chosenCountries = signal<string[]>(['pl', 'sk']);
 
   protected readonly widthField = signal<string | null>('pl');
   protected readonly widthAuto = signal<string | null>('pl');

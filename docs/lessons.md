@@ -2509,3 +2509,58 @@ async loading and a filter that never renders what it hides are all promises of 
 and a component that takes its rows through projection has given away the only place from which
 any of them can be kept. **The authoring channel decides who owns the count**, and the count is
 where the last three items of this component's own plan live.
+
+### <a id="lesson-99"></a>`lesson-99` — A two-way binding is checked in the read direction only
+
+Measured while deciding where multiplicity lives ([0034](decisions/0034-multiplicity-is-a-tag.md)),
+on a probe compiled by `nx build sandbox` with `strictTemplates`. A control whose model is
+`string | null`, bound two ways to a signal that holds a plain `string`:
+
+```html
+<pct-probe-one [options]="countries" [(value)]="required" />
+<!-- protected required = signal<string>('pl'); -->
+```
+
+This **compiles**. So does the same mismatch written to an ordinary field
+(`plainRequired: string`). The component may write `null` into either, and nothing in the
+build says so — while the read direction of the very same binding is checked strictly:
+`[(value)]="many"` on a control whose value is `string | null` is `TS2322` at the binding.
+
+The consequence is about where a type promise can actually be kept. `[(x)]` looks like the
+tightest binding in a template and is the loosest: of the three channels a value travels
+through, only two carry a check — the input, and an explicit `(valueChange)="fn($event)"`
+handler, where `$event` is the model's type and the method's parameter is compared with it.
+That is why [0034](decisions/0034-multiplicity-is-a-tag.md)'s union road is silent in the
+cases that matter: every wrong value it accepts arrives through the one unchecked direction,
+and the one thing it breaks is the checked one.
+
+The rule to write bindings by: a component that widens its value type is not paid for by its
+own consumers in their two-way bindings — it is paid for by the ones who wrote a handler, and
+their code was right.
+
+### <a id="lesson-100"></a>`lesson-100` — A base class hides half a component from every gate that reads one class body
+
+`PctSelect` and `PctMultiSelect` are one implementation with two value channels: fifteen
+inputs, the overlay, the walk and the chrome contract live on a `@Directive()` base they both
+extend ([0034](decisions/0034-multiplicity-is-a-tag.md)). Two gates went red on the spot, and
+neither was reporting a defect in the components:
+
+- `check-aria`: "`PctSelect` keeps its widget inside the template and declares no
+  `ariaLabel` / `ariaLabelledby`". The inputs are declared — one file away. The scanner reads
+  a decorator and the class body beneath it, which is a complete description of every
+  component this library had until that day;
+- `check-texts`: "`PctSelectBase` is not in the built package". It is in the bundle and not in
+  the exports, because an internal base is not public API — and the gate's list of package
+  classes is the list of exported ones.
+
+Both are the same defect one level up: **a scanner that reads one class body reads a
+component's surface only while no component has a base.** The fix is the same in both — read
+`@Directive` classes as well as `@Component` ones, follow `extends`, and merge what the base
+declares into the subclass, exactly as Angular merges `hostAttrs`, inputs and queries into the
+subclass's definition. A base no entrypoint exports then stops being a class of its own: its
+strings and its attributes travel inside whatever extends it.
+
+The part worth keeping is the shape of the failure. Both gates failed **loudly and wrongly** —
+they named a real component and made a false claim about it. That is the good case. The same
+blindness in a gate written to _find_ something (a part inventory, a size budget) would have
+reported nothing at all, and a green run would have said the surface was measured.

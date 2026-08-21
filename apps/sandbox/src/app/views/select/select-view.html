@@ -141,6 +141,24 @@
 </sbx-demo>
 
 <sbx-demo
+  heading="More than one answer"
+  summary="A many-choice list is another tag rather than a flag: what `value` is cannot be decided by an input, because the compiler relates no input to another's type. Picking leaves the panel open, the chosen rows carry a mark as well as a surface, and the value comes back in the order of the list."
+  [reqs]="['req-api-generic', 'req-a11y-built-in']"
+  [controls]="[]"
+  data-testid="demo-multiple"
+>
+  <div class="stack">
+    <pct-field label="Countries" data-testid="field-multi">
+      <pct-multi-select
+        [options]="countries"
+        [(value)]="chosenCountries"
+        data-testid="select-multi"
+      />
+    </pct-field>
+  </div>
+</sbx-demo>
+
+<sbx-demo
   heading="An option row of your own"
   summary="The built-in row draws the label and nothing else. A template replaces what is inside the row — the role, the id, aria-selected and the keyboard stay with the component, because they are the listbox pattern rather than decoration."
   [reqs]="['req-api-templates']"

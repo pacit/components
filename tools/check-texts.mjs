@@ -110,8 +110,19 @@ const countOf = (text, pattern) => (text.match(pattern) ?? []).length;
  * at once (`lesson-48`).
  */
 const DECORATOR =
-  /^@(Component|Directive)\(\{\r?\n([\s\S]*?)^\}\)\r?\n(?:export\s+)?(?:abstract\s+)?class\s+([A-Za-z_$][\w$]*)/gm;
+  /^@(Component|Directive)\(\{\r?\n([\s\S]*?)^\}\)\r?\n(?:export\s+)?(?:abstract\s+)?class\s+([A-Za-z_$][\w$]*)([^{]*)\{/gm;
+
 const DECORATOR_COUNT = /^[ \t]*@(?:Component|Directive)\(/gm;
+
+/**
+ * `class X extends Y` — and what Y declares is X's too. Angular merges a decorated base's
+ * host bindings into the subclass's definition, so the package read finds them ON THE
+ * SUBCLASS while the source read finds them one file away. An unexported base is not a class
+ * of the package at all: its strings travel inside whatever extends it
+ * ([0034](../docs/decisions/0034-multiplicity-is-a-tag.md),
+ * [`lesson-100`](../docs/lessons.md#lesson-100)).
+ */
+const EXTENDS = /\bextends\s+([A-Za-z_$][\w$]*)/;
 
 const TEMPLATE_URL = /templateUrl\s*:\s*(['"])([^'"]*)\1/;
 const TEMPLATE_INLINE = /^\s{2}template\s*:\s*([\s\S]*?),?\s*$/m;
@@ -199,7 +210,9 @@ const readSources = (root, files) => {
     const content = readFileSync(join(root, file), 'utf8');
     declarations += countOf(content, DECORATOR_COUNT);
 
-    for (const [, kind, body, className] of content.matchAll(DECORATOR)) {
+    for (const [, kind, body, className, heritage] of content.matchAll(
+      DECORATOR,
+    )) {
       const url = TEMPLATE_URL.exec(body);
       const inline = TEMPLATE_INLINE.exec(body);
       const host = hostBlock(body) ?? '';
@@ -221,6 +234,7 @@ const readSources = (root, files) => {
         file,
         className,
         kind,
+        base: EXTENDS.exec(heritage ?? '')?.[1] ?? null,
         template: url
           ? relative(root, resolve(join(root, dirname(file)), url[2]))
               .split('\\')
@@ -716,8 +730,43 @@ const checkTexts = (input) => {
         `\`${DIST}\` (the gate needs \`dependsOn: build\`).`,
     );
 
-  const fromSources = new Map(classes.map((k) => [k.className, k]));
+  const declared = new Map(classes.map((k) => [k.className, k]));
   const fromPackage = new Map(pkg.map((p) => [p.className, p]));
+
+  // Inheritance, resolved before the two lists are compared. What a base declares is merged
+  // INTO the classes that extend it, because that is where the package puts it; and a base
+  // no entrypoint exports stops being a class of its own, because that is what the package
+  // does with it. A decorated class nobody extends is untouched by this and still has to be
+  // in the package — the rule below is about a base, not about any class the read missed.
+  const extended = new Set(
+    classes.map((k) => k.base).filter((base) => base !== null),
+  );
+  const merge = (k, seen = new Set()) => {
+    if (k.base === null || seen.has(k.className)) return k;
+    seen.add(k.className);
+    const base = declared.get(k.base);
+    if (base === undefined)
+      throw new TextsError(
+        'denominator',
+        'base-without-declaration',
+        `${k.className} (${k.file}) extends \`${k.base}\`, which is not among the decorated ` +
+          `classes read — whatever that base writes into a \`host\` block is part of this ` +
+          `class in the package, and point 2 would compare the half declared here against ` +
+          `the whole of what ships`,
+      );
+    const whole = merge(base, seen);
+    k.attributes = [...whole.attributes, ...k.attributes];
+    k.literals = [...whole.literals, ...k.literals];
+    k.base = null;
+    return k;
+  };
+  for (const k of classes) merge(k);
+
+  const fromSources = new Map(
+    classes
+      .filter((k) => fromPackage.has(k.className) || !extended.has(k.className))
+      .map((k) => [k.className, k]),
+  );
 
   const withoutPackage = [...fromSources.keys()].filter(
     (k) => !fromPackage.has(k),
@@ -753,7 +802,9 @@ const checkTexts = (input) => {
   const ownerOf = (file) => used.get(file)?.[0]?.className ?? file;
 
   const speakingInSources = new Set();
-  for (const k of classes)
+  // The classes the package has, with what they inherited already merged in — a base that
+  // travels inside its subclasses must not be compared under a name the package has not got.
+  for (const k of fromSources.values())
     for (const [name, value] of k.attributes)
       if (SPEAKING_ATTRIBUTES.has(name))
         speakingInSources.add(`${k.className} ${name}=${value}`);

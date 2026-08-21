@@ -268,10 +268,20 @@ thought up by hand
 
 ### <a id="req-api-generic"></a>`req-api-generic` — A choice control's value is of type `T`, not a string
 
-**Promise.** `PctSelect<T>`, `PctSelectOption<T>` and `PctRadioGroup<T>` are generic
-(`T = string` by default). Equality is declared by the application (`compareWith`), "nothing
-selected" is a separate state (`T | null`, with `emptyValue` for non-nullable models), and the
-native radio's `value` attribute describes the option but **takes no part in the choice**.
+**Promise.** `PctSelect<T>`, `PctMultiSelect<T>`, `PctSelectOption<T>` and `PctRadioGroup<T>`
+are generic (`T = string` by default). Equality is declared by the application (`compareWith`),
+"nothing selected" is a separate state (`T | null`, with `emptyValue` for non-nullable models;
+for a list it is `[]`, which every `T` can reach), and the native radio's `value` attribute
+describes the option but **takes no part in the choice**.
+
+**How many values a control holds is part of that type, so it is part of the tag.** A
+`multiple` input cannot decide what `value` is: an input is a value at runtime and the
+compiler relates no input to another's type, so one component serving both shapes has to
+declare `T | T[] | null` — and then it accepts an array nobody asked for while breaking the
+single-choice consumer's own `(valueChange)` handler, which is the only channel that still
+carries a check ([`lesson-99`](../lessons.md#lesson-99)). `pct-multi-select` is therefore a
+second tag over one implementation, and the two are measured against each other rather than
+kept in step by hand ([0034](../decisions/0034-multiplicity-is-a-tag.md)).
 
 The mapping runs both ways, so **option values are unique** under that equality: a value is
 what points back at an option. **Which of two equal options wins is not the same in both
@@ -299,19 +309,29 @@ type nothing.
 dev-mode report of two options with one value; `libs/components/radio/src/radio.spec.ts` — the
 same report for the group, which reads its options through the `PCT_RADIO_OPTION` token rather
 than through the class, so the container↔element import still points one way
-([`lesson-16`](../lessons.md#lesson-16)); the `typecheck` target of the `sandbox-e2e` project
+([`lesson-16`](../lessons.md#lesson-16));
+`libs/components/select/src/multi-select.spec.ts` — the list-valued contract and the **input
+parity** of the two tags, read from `ɵcmp.inputs` after a build, where the one allowed
+difference is `emptyValue`; `apps/sandbox-e2e/src/select.spec.ts` — the two comboboxes side by
+side in three engines; the `typecheck` target of the `sandbox-e2e` project
 **Control:** the probe from [`lesson-37`](../lessons.md#lesson-37) — five deliberately
 contradictory bindings, four of which **must** break the build. Without `NoInfer<T>` the
 compiler let all five through. For the uniqueness half the switched-off warning leaves three
 cases red, and its mirrors stay green on their own: a list with distinct values and the same
 pair of options without a `compareWith` that calls them equal. The group answers the same way,
 six cases to three red — and one of its six measures the DEFECT rather than the report (both
-options painted, one native checked), so it would go on standing if the warning ever left
+options painted, one native checked), so it would go on standing if the warning ever left. For
+the many-choice half, three recorded runs: a pick that ends the question (the single-choice
+behaviour, one line) leaves **six** cases red; the value written in the order the picking went
+rather than the list's leaves **three**, one of them the signal-forms case; and an input
+declared on one tag and not the other leaves **one** — the parity case, which is the only
+thing in the repository that would have said so
 **Decision:** [0010 — a generic value and `NoInfer`](../decisions/0010-generic-noinfer.md),
-[0033 — an option is a row of data](../decisions/0033-an-option-is-a-row-of-data.md)
+[0033 — an option is a row of data](../decisions/0033-an-option-is-a-row-of-data.md),
+[0034 — multiplicity is a type, so it is a tag](../decisions/0034-multiplicity-is-a-tag.md)
 **Lessons:** [`lesson-37`](../lessons.md#lesson-37), [`lesson-66`](../lessons.md#lesson-66),
 [`lesson-72`](../lessons.md#lesson-72), [`lesson-97`](../lessons.md#lesson-97),
-[`lesson-98`](../lessons.md#lesson-98)
+[`lesson-98`](../lessons.md#lesson-98), [`lesson-99`](../lessons.md#lesson-99)
 
 > The probe's fifth case stays open and is **a limitation of Angular**: `PctRadioGroup` has no
 > options input, so the only source of `T` is `value` — and `$event` from `(valueChange)` is

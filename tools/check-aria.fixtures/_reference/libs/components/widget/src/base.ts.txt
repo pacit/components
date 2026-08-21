@@ -1,0 +1,18 @@
+import { Directive, input } from '@angular/core';
+
+/**
+ * The naming inputs live one class away, as they do in `PctSelectBase`: two components draw
+ * one template and take their surface from a base. A scan that reads only the class beneath
+ * the decorator sees a widget that declares no name at all — this file is what keeps the
+ * reference honest about that.
+ */
+@Directive({
+  host: {
+    '[attr.data-pct-size]': 'size()',
+  },
+})
+export abstract class PctWidgetBase {
+  readonly ariaLabel = input<string>('');
+  readonly ariaLabelledby = input<string>('');
+  protected readonly size = input<string>('md');
+}

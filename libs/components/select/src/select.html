@@ -95,6 +95,8 @@
     data-pct-part="panel"
     role="listbox"
     [id]="listboxId"
+    [attr.aria-multiselectable]="multiple ? 'true' : null"
+    [attr.data-pct-multiple]="multiple ? '' : null"
     [pctOverlayPanel]="inherited()"
     pctFocusStays
     [attr.aria-label]="ariaLabel() || null"
@@ -118,10 +120,10 @@
         data-pct-part="option"
         role="option"
         [id]="optionId(row.index)"
-        [attr.aria-selected]="row.index === selectedIndex()"
+        [attr.aria-selected]="isSelected(row.index)"
         [attr.aria-disabled]="row.disabled ? 'true' : null"
         [attr.data-pct-active]="row.index === activeIndex() ? '' : null"
-        [attr.data-pct-selected]="row.index === selectedIndex() ? '' : null"
+        [attr.data-pct-selected]="isSelected(row.index) ? '' : null"
         [attr.data-pct-disabled]="row.disabled ? '' : null"
         (click)="selectAt(row.index)"
         (mouseenter)="row.disabled ? null : activateAt(row.index)"
@@ -132,6 +134,35 @@
           [ngTemplateOutletContext]="optionContext(row)"
         />
         } @else { {{ row.option.label }} }
+
+        <!--
+          A many-choice list marks its rows with a glyph and not with a surface alone: several
+          chosen rows plus the keyboard cursor are three states carried by two backgrounds, and
+          in forced-colors mode the substitution leaves them fewer than that. Drawn only where
+          it is true, and `aria-hidden` because `aria-selected` on the row has already said it.
+        -->
+        @if (multiple && isSelected(row.index)) {
+        <pct-icon
+          class="pct-select__check"
+          data-pct-part="option-check"
+          name="check"
+          aria-hidden="true"
+        >
+          <svg
+            viewBox="0 0 16 16"
+            width="100%"
+            height="100%"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            focusable="false"
+          >
+            <path d="M3.5 8.5l3 3 6-6.5" />
+          </svg>
+        </pct-icon>
+        }
       </div>
       }
     </ng-template>

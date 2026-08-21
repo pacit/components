@@ -1,4 +1,5 @@
 import { Directive, input } from '@angular/core';
+import { PctMarkerBase } from './base';
 
 /**
  * A slot directive — it exists so that the reference input carries a `host` block
@@ -10,12 +11,11 @@ import { Directive, input } from '@angular/core';
   selector: '[pctMarker]',
   host: {
     class: 'pct-marker',
-    role: 'note',
     'aria-label': 'Marker',
     'data-pct-part': 'widget-marker',
     '[attr.aria-label]': 'description()',
   },
 })
-export class PctMarker {
+export class PctMarker extends PctMarkerBase {
   readonly description = input<string>('');
 }

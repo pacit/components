@@ -121,7 +121,8 @@ filler, is down to **C20**, left behind by D4, and **C21**, left behind by D6; b
 their own **binds at** — C20 at E5, C21 at the next language-gate task. E3 left a third behind,
 and it is about this repository's own machinery rather than its components: **C22**, the two
 gates that take seventeen and ten minutes, sharing one CI job on half the cores this was
-measured on.
+measured on. E4 has since added three more — **C23**, **C24** and **C25** — so the filler has
+six items and every one of them is held by a **binds at** rather than by anybody's mood.
 
 **E4 is open and its first half has closed**, and that half is the fork the other six items
 stand on: **is an option a row of data or a `<pct-option>` the consumer projects?** Written as
@@ -144,7 +145,21 @@ wrapper ARIA allows between a listbox and its options, which the audit of an **o
 panel is what says. The rest of the list stays one list: the numbering, the arrows, `Home`/`End`
 and the typed prefix all cross the headings, because a heading is something the user reads and
 not somewhere the user can be. It left one finding behind, in C20's own family: **C23**, the
-group relation that no static gate reads.
+group relation that no static gate reads. The second item settled the fork the whole family's
+API rests on: **is `multiple` an input or a tag?** Written as an input it cannot decide what
+`value` is — the compiler relates no input to another's type — so one component serving both
+shapes types `T | T[] | null`, which **accepts an array nobody asked for and breaks the
+single-choice consumer's own handler**: fifteen bindings say so, and the reason the wrong
+values pass in silence is that a two-way binding's write-back is not checked at all
+([`lesson-99`](lessons.md#lesson-99)). So multiplicity is a tag
+([0034](decisions/0034-multiplicity-is-a-tag.md)) over **one** implementation — one template,
+one stylesheet, and the first base class this library has allowed, for a reason narrow enough
+to write down: Angular declares an input only as a field on the class the tag resolves to, so
+composition would have moved the plumbing and left the fifteen declarations. It cost two gates
+their sight (`check-aria`, `check-texts` — both read one class body,
+[`lesson-100`](lessons.md#lesson-100)) and left two findings: **C24**, one template compiled
+twice in the artefact, and **C25**, the inheritance taught to the gates that fired and to none
+of the rest.
 
 **B2 is deferred by decision, not blocked** — and the decision has a shape: **the first push
 happens only when the maintainer asks for it outright.** It is not triggered by a state of the
@@ -1521,6 +1536,46 @@ one language ([`req-project-language`](requirements/project.md#req-project-langu
   - binds at: **E7**, at the first component after the select to draw a heading inside a list —
     or sooner, the first time a grouped panel is written that no page renders · _notes:_ —
 
+- [ ] **C24 — one template, compiled twice, and nothing says when that stops being worth it**
+  - `pct-select` and `pct-multi-select` share `select.html` and `select.scss` in the sources
+    and duplicate both in the artefact: an `@Component` compiles its own template and carries
+    its own styles, so the entrypoint went 29058 → **46749 B** and became the largest in the
+    library ([0034](decisions/0034-multiplicity-is-a-tag.md))
+  - what the number measures is an application that imports the **whole** entrypoint, which is
+    how every probe of `check-bundle` is written. Whether a consumer importing only `PctSelect`
+    sheds the other class, its template and its styles is the question everybody would answer
+    "of course, ESM" — and **nothing here measures it**, which is the same shape as
+    [`lesson-45`](lessons.md#lesson-45): a promise whose denominator nobody looked at
+  - the road out is known and is not free: draw the panel from an internal component
+    (`role="listbox"`, the groups, the rows) that both triggers hold, which is one template and
+    one stylesheet in the artefact as well as in the sources. It costs an encapsulation move —
+    the rows would carry the panel component's `_ngcontent`, so the row rules leave
+    `select.scss` and the `:host` half has to be rewritten ([`lesson-96`](lessons.md#lesson-96)
+    is what that move gets wrong when it is done in a hurry)
+  - binds at: **the third tag over this template** — an autocomplete or a combobox with a
+    filter field would make it three copies, and three is where "one file, compiled n times"
+    stops reading as a rounding error · _notes:_ —
+
+- [ ] **C25 — inheritance was taught to the two gates that fired, and to none of the rest**
+  - a component's surface can now come from a base class, and two gates said so out loud:
+    `check-aria` reported a combobox that "declares no `ariaLabel`", `check-texts` a class the
+    package does not export. Both follow `extends` now
+    ([`lesson-100`](lessons.md#lesson-100))
+  - the rest were **not audited, they merely stayed green**: `check-parts` reads parts off
+    templates and `templateUrl` is not inherited, so it is right by accident rather than by
+    design; `check-zoneless` reads `changeDetection` from the decorator, which a base could
+    carry; `check-styles`, `check-icons` and `check-texts`'s own point 4 all read a class body
+    or a decorator. A gate that reads the WRONG half of a component reports a false claim
+    loudly, which is the good case — a gate that reads too little and finds nothing reports
+    green
+  - the smaller sibling: `check-texts`'s attribute merge is exercised by the reference tree
+    only through a NON-speaking attribute (`role`), because a static speaking attribute in a
+    host block is a violation of the gate's own point 3. So the half that matters most is
+    proved by the repository and not by a fixture
+  - binds at: **the second base class in this library** — at one, the two gates that fire are
+    the measurement; at two, "which gates read a class body" has to be a list somebody keeps ·
+    _notes:_ —
+
 ## D. Phase 1 — the behaviour layer in `core`
 
 The largest architectural risk. The list machinery (typeahead, `activeIndex`, skipping disabled
@@ -2031,7 +2086,62 @@ exists and is a condition of entering a release.
     for the view count (a hundred bare options as one embedded view rather than a hundred),
     and that reason is now written beside the code so nobody simplifies it out on the strength
     of a green run
-  - left: multiple selection, filtering, clearing, async, virtualisation
+  - _notes (multiple selection):_ **the third of the eight, and the second decided by a
+    measurement rather than by taste.** The obvious shape is `<pct-select multiple>`, and it
+    cannot hold the type: an input is a value at runtime, so one component serving both shapes
+    declares `T | T[] | null` — and fifteen bindings compiled through the real template
+    compiler say what that costs. The union **accepts an array on a control nobody told to be
+    multiple** and **breaks the single-choice consumer's own `(valueChange)` handler**, which
+    is the one channel still carrying a check: a two-way binding's write-back is not
+    type-checked at all ([`lesson-99`](lessons.md#lesson-99)). The generic-marker road fails
+    one floor lower, at the authoring site: `multiple` written as the plain HTML attribute is
+    the string `''`, so without a transform it is TS2322 and with `booleanAttribute` the
+    generic can never be inferred and the value is typed **single** while the control behaves
+    multiple. So the tag decides — `pct-multi-select`, `value: T[]`
+    ([0034](decisions/0034-multiplicity-is-a-tag.md)) — over **one** implementation: one
+    template file, one stylesheet, and the base class this repository had refused until now.
+    0013's ban is on a base class under **somebody else's** template, and the reason
+    composition could not do this job is narrow and worth keeping: Angular declares an input
+    in exactly one way, as a field on the class the tag resolves to, so a kit function would
+    have moved the plumbing and left the fifteen input declarations — that is, the half that
+    drifts. Parity is measured off `ɵcmp.inputs` instead of hoped for. What the tag adds is
+    four things, each the value in another guise: `aria-multiselectable`, a pick that toggles
+    and leaves the panel open, a mark on the chosen rows (three states do not fit in two
+    backgrounds, and forced-colors leaves fewer still), and a trigger reading the chosen
+    labels — joined by a separator from `PCT_TEXTS`, because punctuation is a string and a
+    count would have needed a plural rule. The value comes back in the **list's** order, so
+    the same set of choices is the same array however the picking went. And the step cost two
+    gates their sight: `check-aria` reported a combobox that "declares no `ariaLabel`" and
+    `check-texts` a class the package does not export — both read one class body, which was a
+    complete description of every component here until that day
+    ([`lesson-100`](lessons.md#lesson-100)).
+  - gate: `libs/components/select/src/multi-select.spec.ts` — 23 unit cases (the panel that
+    stays open, list order, a value the list cannot name, the marks, the walk opening on the
+    first chosen row, the entity comparison, the signal-forms field, and the **input parity**
+    of the two tags); `apps/sandbox-e2e/src/select.spec.ts › more than one answer` (3 cases ×
+    3 engines), the open many-choice panel added to the axe audit, `select-panel-multiple` and
+    its RTL twin as baselines — 492 unit cases and 771 e2e cases green
+  - control: three recorded runs on the component — a pick that ends the question (the
+    single-choice behaviour, one line) leaves **six** cases red, the value written in the
+    order the picking went leaves **three** (one of them the signal-forms case), and an input
+    declared on one tag and not the other leaves **one**, which is the only thing here that
+    would have said so. And two on the gates: with the inheritance merge disarmed
+    `check-aria`'s own reference input stops passing, and with "an unexported base is not a
+    class of its own" disarmed so does `check-texts`'s; each gained a prepared input of its own
+    for a base the scan cannot see (`base-not-read`, `base-without-declaration`), so the rule
+    that fires on it is measured and not only written
+  - cost: `./select` 29058 → **46749 B** (+61%), one template compiled twice and one
+    stylesheet emitted twice — the price of the tag, recorded rather than argued about; no new
+    token (the mark takes the arrow's box and `currentColor`) and no new peer; one part
+    (`option-check`), one `PCT_TEXTS` string (`selectSeparator`); the coverage exception for
+    `select.html` moved to 98.82% on its denominator again, the uncovered statement being the
+    same one it has always been. The mutation run reads the three files the select is now
+    written in rather than the one it used to be — the patterns were widened with the split,
+    because a file struck from the measurement takes its survivors with it — and it went
+    **81.48 → 81.70** overall, with `multi-select.ts` at **100.00**: the two mutants that
+    survived the first pass were a default nobody bound and an id prefix a comment promised,
+    and both are now cases rather than reasons
+  - left: filtering, clearing, async, virtualisation
 - [ ] **E5 — switch, textarea (autosize), slider, date picker** — the date picker forces deep
       i18n, which `[pctNumber]` has already started
 - [ ] **E7 — the rest**: toast, tabs, accordion, drawer, pagination, progress, skeleton, chips,

@@ -380,6 +380,82 @@ test.describe('PctSelect — a combobox with a panel', () => {
    * three levels instead of two? Both are measured on the rendered page rather than deduced
    * from the template.
    */
+  /**
+   * The many-choice control. Everything below is the SAME file as the single-choice one —
+   * one template, one stylesheet, one walk — so what is measured here is only what the tag
+   * decides: the listbox says it takes many answers, a pick does not end the question, and
+   * the chosen rows carry a mark as well as a surface. In three engines, because the mark is
+   * a glyph and the panel is an overlay.
+   */
+  test.describe('more than one answer', () => {
+    const multi = (page: import('@playwright/test').Page) =>
+      trigger(page, 'select-multi');
+    const checks = (page: import('@playwright/test').Page) =>
+      page.locator('[data-pct-part="option-check"]');
+    const chosen = (page: import('@playwright/test').Page) =>
+      page.getByTestId('select-multi').locator('[data-pct-part="value"]');
+
+    test('the listbox says it takes many answers, and the single-choice one does not', async ({
+      page,
+    }) => {
+      await multi(page).click();
+      await expect(panel(page)).toHaveAttribute('aria-multiselectable', 'true');
+      await page.keyboard.press('Escape');
+
+      await trigger(page).click();
+      await expect(panel(page)).toBeVisible();
+      await expect(panel(page)).not.toHaveAttribute('aria-multiselectable');
+    });
+
+    test('a pick does not end the question, and a second one takes it back', async ({
+      page,
+    }) => {
+      await expect(chosen(page)).toHaveText('Poland, Slovakia');
+      await multi(page).click();
+      await expect(panel(page)).toBeVisible();
+      await expect(checks(page)).toHaveCount(2);
+
+      await options(page).filter({ hasText: 'Germany' }).click();
+
+      // The panel is still up — three choices are one journey, not three.
+      await expect(panel(page)).toBeVisible();
+      await expect(multi(page)).toHaveAttribute('aria-expanded', 'true');
+      await expect(checks(page)).toHaveCount(3);
+      // Written the way the list reads, not the way the picking went.
+      await expect(chosen(page)).toHaveText('Poland, Germany, Slovakia');
+
+      await options(page).filter({ hasText: 'Poland' }).click();
+      await expect(checks(page)).toHaveCount(2);
+      await expect(chosen(page)).toHaveText('Germany, Slovakia');
+      await expect(options(page).first()).toHaveAttribute(
+        'aria-selected',
+        'false',
+      );
+    });
+
+    test('the keyboard toggles the active row and leaves the panel standing', async ({
+      page,
+    }) => {
+      const t = multi(page);
+      await t.focus();
+      await page.keyboard.press('ArrowDown'); // opens on the first chosen row: Poland
+      await expect(panel(page)).toBeVisible();
+      await expect(t).toHaveAttribute(
+        'aria-activedescendant',
+        await attrOf(options(page).first(), 'id'),
+      );
+
+      await page.keyboard.press('Enter');
+      await expect(panel(page)).toBeVisible();
+      await expect(chosen(page)).toHaveText('Slovakia');
+
+      // …and Escape is still the one thing that closes it.
+      await page.keyboard.press('Escape');
+      await expect(panel(page)).toHaveCount(0);
+      await expect(chosen(page)).toHaveText('Slovakia');
+    });
+  });
+
   test.describe('headings in the list', () => {
     const groups = (page: import('@playwright/test').Page) =>
       page.locator('[data-pct-part="group"]');
@@ -498,8 +574,9 @@ test.describe('PctSelect — a combobox with a panel', () => {
       page,
     }) => {
       await templated(page).click();
-      // `de` is the chosen value on this page, so exactly one row draws the mark.
-      await expect(page.getByText('chosen')).toHaveCount(1);
+      // `de` is the chosen value on this page, so exactly one ROW draws the mark. Counted
+      // among the options and not over the page: the word is prose somewhere else on it.
+      await expect(options(page).filter({ hasText: 'chosen' })).toHaveCount(1);
       await expect(options(page).nth(1)).toContainText('chosen');
 
       await options(page).first().click();

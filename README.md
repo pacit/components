@@ -241,6 +241,19 @@ reference as the option in the list:
 No selection is `null`. An application with a non-nullable field supplies its own empty value
 (`[emptyValue]="''"`), so resetting the form does not write `null` against the model's type.
 
+**More than one answer is a different tag**, `pct-multi-select` — same panel, same options, a
+value that is a list:
+
+```html
+<!-- protected chosen = signal<string[]>([]); -->
+<pct-multi-select [options]="countries" [(value)]="chosen" />
+```
+
+Picking leaves the panel open, the chosen rows carry a mark, and the value comes back in the
+order of the list. It is a tag rather than a `multiple` flag because an input cannot decide what
+`value` is — the measurement behind that is in
+[decision 0034](docs/decisions/0034-multiplicity-is-a-tag.md).
+
 > Requires the CDK overlay styles: `node_modules/@angular/cdk/overlay-prebuilt.css`.
 
 ## Texts and translations

@@ -8,19 +8,20 @@ from the same person having built it in the same mode of attention. That scales 
 a second person nor to a twentieth component. A form with an empty row is a gap visible to
 a machine; prose with a missing paragraph is not.
 
-| component                    | entrypoint                   | role                                |
-| ---------------------------- | ---------------------------- | ----------------------------------- |
-| [`PctButton`](button.md)     | `@pacit/components/button`   | button                              |
-| [`PctField`](field.md)       | `@pacit/components/field`    | form control wrapper                |
-| [`PctText`](text.md)         | `@pacit/components/field`    | text field on a native `<input>`    |
-| [`PctNumber`](number.md)     | `@pacit/components/field`    | number field                        |
-| [`PctCheckbox`](checkbox.md) | `@pacit/components/checkbox` | checkbox                            |
-| [`PctRadioGroup`](radio.md)  | `@pacit/components/radio`    | group of mutually exclusive options |
-| [`PctSelect`](select.md)     | `@pacit/components/select`   | choice list with a panel of its own |
-| [`PctDialog`](dialog.md)     | `@pacit/components/dialog`   | modal dialog                        |
-| [`PctTooltip`](tooltip.md)   | `@pacit/components/tooltip`  | a sentence about a control          |
-| [`PctPopover`](popover.md)   | `@pacit/components/popover`  | a panel of content on a live page   |
-| [`PctMenu`](menu.md)         | `@pacit/components/menu`     | a list of commands to choose from   |
+| component                     | entrypoint                   | role                                |
+| ----------------------------- | ---------------------------- | ----------------------------------- |
+| [`PctButton`](button.md)      | `@pacit/components/button`   | button                              |
+| [`PctField`](field.md)        | `@pacit/components/field`    | form control wrapper                |
+| [`PctText`](text.md)          | `@pacit/components/field`    | text field on a native `<input>`    |
+| [`PctNumber`](number.md)      | `@pacit/components/field`    | number field                        |
+| [`PctCheckbox`](checkbox.md)  | `@pacit/components/checkbox` | checkbox                            |
+| [`PctRadioGroup`](radio.md)   | `@pacit/components/radio`    | group of mutually exclusive options |
+| [`PctSelect`](select.md)      | `@pacit/components/select`   | choice list with a panel of its own |
+| [`PctMultiSelect`](select.md) | `@pacit/components/select`   | the same list, holding many answers |
+| [`PctDialog`](dialog.md)      | `@pacit/components/dialog`   | modal dialog                        |
+| [`PctTooltip`](tooltip.md)    | `@pacit/components/tooltip`  | a sentence about a control          |
+| [`PctPopover`](popover.md)    | `@pacit/components/popover`  | a panel of content on a live page   |
+| [`PctMenu`](menu.md)          | `@pacit/components/menu`     | a list of commands to choose from   |
 
 ## The order of the components to come
 
@@ -55,9 +56,13 @@ The order follows **architectural debt**, not popularity:
    stays one walk. A projected `<pct-option>` is **not** coming — measured, not declined: it
    types nothing (two elements of one template are two instantiations) and it hands the row
    count to the consumer's loop, which is where virtualisation would have had to live
-   ([0033](../decisions/0033-an-option-is-a-row-of-data.md)). Left: multiple selection,
-   filtering, clearing, async, virtualisation. Deliberately **after** the behaviour layer, or we
-   build it twice.
+   ([0033](../decisions/0033-an-option-is-a-row-of-data.md)). **Many-choice selection** is built
+   as well, and as a second **tag**: a `multiple` input is a value at runtime, so it cannot
+   decide what `value` is — written as one component the type accepts an array nobody asked for
+   and breaks the single-choice consumer's own handler, which the measurement shows in fifteen
+   bindings ([0034](../decisions/0034-multiplicity-is-a-tag.md)). One template, one stylesheet,
+   one base. Left: filtering, clearing, async, virtualisation. Deliberately **after** the
+   behaviour layer, or we build it twice.
 5. **Switch, Textarea, Slider, Date picker.**
 6. **Table / DataGrid** — has to stand on a **headless core** separated from rendering.
 

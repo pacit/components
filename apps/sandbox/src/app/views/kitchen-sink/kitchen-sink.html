@@ -81,6 +81,22 @@
       />
     </pct-field>
 
+    <!-- The same wrapper again, and a field whose value is a LIST: the multi-select is a
+         separate tag, so the form field it is bound to is `string[]` and the compiler is the
+         one that says so (decision 0034). Deliberately not required — this card's e2e
+         measures when the form turns valid. -->
+    <pct-field
+      label="Regions"
+      hint="More than one, and the panel stays open"
+      data-testid="field-regions"
+    >
+      <pct-multi-select
+        [options]="countries"
+        [formField]="userForm.regions"
+        data-testid="select-regions"
+      />
+    </pct-field>
+
     <!-- A radio group: the wrapper names it through aria-labelledby, no border -->
     <pct-field
       label="Plan"

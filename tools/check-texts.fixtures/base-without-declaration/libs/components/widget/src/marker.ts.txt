@@ -1,5 +1,5 @@
 import { Directive, input, isDevMode } from '@angular/core';
-import { PctMarkerBase } from './base';
+import { PctMarkerBase } from '@somebody/else';
 
 /**
  * A slot directive — it exists so that the reference input carries a `host` block
@@ -15,7 +15,7 @@ import { PctMarkerBase } from './base';
     '[attr.aria-label]': 'description()',
   },
 })
-export class PctMarker extends PctMarkerBase {
+export class PctMarker extends PctSomeoneElsesBase {
   readonly description = input<string>('');
 }
 

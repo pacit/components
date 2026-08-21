@@ -58,6 +58,19 @@ from what the browser really gets.
 ./radio PctRadioGroup group-hint
 ./radio PctRadioGroup group-label
 ./radio PctRadioGroup group-options
+./select PctMultiSelect arrow
+./select PctMultiSelect empty
+./select PctMultiSelect error
+./select PctMultiSelect group
+./select PctMultiSelect group-label
+./select PctMultiSelect hint
+./select PctMultiSelect label
+./select PctMultiSelect option
+./select PctMultiSelect option-check
+./select PctMultiSelect panel
+./select PctMultiSelect placeholder
+./select PctMultiSelect trigger
+./select PctMultiSelect value
 ./select PctSelect arrow
 ./select PctSelect empty
 ./select PctSelect error
@@ -66,6 +79,7 @@ from what the browser really gets.
 ./select PctSelect hint
 ./select PctSelect label
 ./select PctSelect option
+./select PctSelect option-check
 ./select PctSelect panel
 ./select PctSelect placeholder
 ./select PctSelect trigger

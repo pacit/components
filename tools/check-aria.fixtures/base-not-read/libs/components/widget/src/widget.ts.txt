@@ -1,6 +1,6 @@
 import { Component, input } from '@angular/core';
 
-import { PctWidgetBase } from './base';
+import { PctWidgetBase } from '@somebody/else';
 
 /** A control whose role sits inside the template — the case this gate exists for. */
 @Component({
@@ -11,7 +11,7 @@ import { PctWidgetBase } from './base';
     '[attr.data-pct-open]': 'open() ? "" : null',
   },
 })
-export class PctWidget extends PctWidgetBase {
+export class PctWidget extends PctSomeoneElsesBase {
   readonly label = input<string>('');
   protected readonly open = input(false);
   protected readonly hint = input<string>('');

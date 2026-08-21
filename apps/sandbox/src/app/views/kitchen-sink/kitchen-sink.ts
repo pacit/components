@@ -17,7 +17,11 @@ import {
   PctSuffix,
   PctText,
 } from '@pacit/components/field';
-import { PctSelect, PctSelectOption } from '@pacit/components/select';
+import {
+  PctMultiSelect,
+  PctSelect,
+  PctSelectOption,
+} from '@pacit/components/select';
 
 /**
  * The "everything at once" view — the sandbox page as it used to be, in full.
@@ -32,6 +36,7 @@ import { PctSelect, PctSelectOption } from '@pacit/components/select';
     PctCheckbox,
     PctRadioGroup,
     PctRadio,
+    PctMultiSelect,
     PctSelect,
     PctField,
     PctText,
@@ -62,12 +67,14 @@ export class KitchenSink {
     terms: boolean;
     plan: string;
     country: string;
+    regions: string[];
     seats: number | null;
   }>({
     email: '',
     terms: false,
     plan: '',
     country: '',
+    regions: [],
     seats: 1,
   });
 

@@ -1,0 +1,17 @@
+import { Directive, input } from '@angular/core';
+
+/**
+ * A base a directive takes part of its host block from — the shape `PctSelectBase` has in the
+ * library. The package data does NOT list it, because an internal base is not exported: the
+ * linker writes its `role` onto the SUBCLASS and its own name reaches no entrypoint. The
+ * reference passes only while the gate reads inheritance that way — merged into what extends
+ * it, and not demanded from the package under a name the package has not got.
+ */
+@Directive({
+  host: {
+    role: 'note',
+  },
+})
+export abstract class PctMarkerBase {
+  readonly size = input<'sm' | 'md' | 'lg'>('md');
+}
