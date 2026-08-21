@@ -21,7 +21,7 @@ ignored. Tolerance: ±2 of a percentage point.
 
 ```
 libs/components/core/src/announce.ts 94.44 34(0) 2 0 0
-libs/components/core/src/config.ts 100.00 8(1) 0 0 0
+libs/components/core/src/config.ts 100.00 8(0) 0 0 0
 libs/components/core/src/field.ts 96.97 32(0) 1 0 0
 libs/components/core/src/focus.ts 100.00 1(0) 0 0 0
 libs/components/core/src/id.ts 100.00 5(0) 0 0 0
@@ -37,7 +37,7 @@ libs/components/field/src/number.ts 80.35 184(0) 43 2 11
 libs/components/icon/src/icon.ts 92.11 35(0) 3 0 2
 libs/components/menu/src/menu.ts 78.57 209(0) 51 5 2
 libs/components/popover/src/popover.ts 65.61 124(0) 55 10 2
-libs/components/select/src/select.ts 85.13 229(1) 37 3 5
+libs/components/select/src/select.ts 86.17 268(1) 39 4 5
 libs/components/tooltip/src/tooltip.ts 70.54 182(0) 71 5 8
-TOTAL 80.82 1420/1757
+TOTAL 81.10 1459/1799
 ```

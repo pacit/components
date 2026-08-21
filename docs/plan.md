@@ -123,6 +123,29 @@ and it is about this repository's own machinery rather than its components: **C2
 gates that take seventeen and ten minutes, sharing one CI job on half the cores this was
 measured on.
 
+**E4 is open and its first half has closed**, and that half is the fork the other six items
+stand on: **is an option a row of data or a `<pct-option>` the consumer projects?** Written as
+two ways of putting down one list it reads as taste, so it was measured before anything was
+built — and the projected road **works**, which is what makes this a decision rather than a
+refusal: content projects into the overlay template, survives a close and a reopen without
+rebuilding, and a row's label is readable while the panel has never been attached. What it
+costs is the two things already promised here. The type, because **the compiler relates no two
+elements of a template**: `<pct-option [value]="1">` beside `[value]="'pl'"` compiles silently
+where the same pair in an array literal is TS2322, and the parent's own `contentChildren` hands
+back `any` — the shape that looks like more checking has less
+([`lesson-97`](lessons.md#lesson-97)). And the count, because projected rows are built by the
+**consumer's** loop: a thousand options are a thousand component instances with the panel never
+opened, which is E4's own last item — virtualisation is a promise about how many rows exist,
+and only whoever creates them can make it ([`lesson-98`](lessons.md#lesson-98),
+[0033](decisions/0033-an-option-is-a-row-of-data.md)). So every item left in E4 is a question
+about the data, and the first of them shipped with the decision: **groups**. A heading is a
+shape in the same array, `role="group"` named by the very element the eye reads — and the one
+wrapper ARIA allows between a listbox and its options, which the audit of an **open** grouped
+panel is what says. The rest of the list stays one list: the numbering, the arrows, `Home`/`End`
+and the typed prefix all cross the headings, because a heading is something the user reads and
+not somewhere the user can be. It left one finding behind, in C20's own family: **C23**, the
+group relation that no static gate reads.
+
 **B2 is deferred by decision, not blocked** — and the decision has a shape: **the first push
 happens only when the maintainer asks for it outright.** It is not triggered by a state of the
 repository, by a green run or by B2 standing next in this order; a session that reaches it
@@ -1463,11 +1486,40 @@ one language ([`req-project-language`](requirements/project.md#req-project-langu
     job and pays by serialising what is already the critical path. **Move `mutation` off the
     pull request** — nightly, or on `main` alone — is the cheapest and the only one that
     changes what CI _promises_, which is why it is a decision rather than a setting
+  - **measured since, and it is worse than "somebody waits"**: three runs of `components:mutation`
+    over identical code gave `core/src/motion.ts` **91.38, 86.21, 91.38**. The file was not
+    touched between them. Three of its kills are the **clock's**, and a clock-kill is a kill
+    only while the machine cooperates — under load the same three mutants survive and the file
+    drops 5.17 points, which is past the snapshot's ±2 tolerance. So the arrangement this item
+    describes does not just make CI slow: **halving the cores is what turns a timing-dependent
+    kill into a red gate on a change that touched nothing**, and the failure names an innocent
+    file
   - it does not touch the definition of done: every gate still runs, and a slow gate is a
-    green gate. What it touches is whether anybody waits for it
+    green gate. What it touches is whether anybody waits for it — and, on the measurement
+    above, whether the run answers the same way twice
   - binds at: **B2** — the first push to a public repository is the moment somebody other than
     the maintainer waits for this run, and a first visitor who watches an hour of CI has
     learned something about the project. Sooner if a run starts hitting a limit · _notes:_ —
+
+- [ ] **C23 — an option's owner is measured only where a page renders the panel**
+  - `pct-select` draws a named section as `role="group"`, and the options below it are owned by
+    the listbox **through** it — `option` names `group` and `listbox` as its context, `listbox`
+    names `group` and `option` as what it may own. That relation is what makes a heading legal
+    inside a list at all
+  - **measured, not deduced**: with `role="group"` taken off the wrapper the axe audit answers
+    with a **critical** `aria-required-children`, and it answers from the listbox's side —
+    "element has children which are not allowed: `div[aria-labelledby]`". So the gate exists
+    and it bites
+  - **but it is an audit of a rendered, OPEN panel.** `check-aria` reads every template in the
+    library and has six points; not one of them asks what stands between a role and its
+    required context. The next component to draw a section — a menu with headings at E7, a
+    listbox inside a table at E6 — will be green wherever no sandbox page opens that panel,
+    which is [`lesson-65`](lessons.md#lesson-65)'s shape and C20's family exactly
+  - the rule a static point would carry is the relation itself, read off the template: an
+    element with `role="option"` may have `role="listbox"` or `role="group"` between it and its
+    panel, and nothing else. The fixtures have a home already
+  - binds at: **E7**, at the first component after the select to draw a heading inside a list —
+    or sooner, the first time a grouped panel is written that no page renders · _notes:_ —
 
 ## D. Phase 1 — the behaviour layer in `core`
 
@@ -1929,9 +1981,57 @@ exists and is a condition of entering a release.
     (+48 B) and, through a shared identifier, `./popover` (+13 B); sixteen tokens, four pairs in
     the contrast policy, one new word in the token dictionary (`item`) and no new string in
     `PCT_TEXTS`
-- [ ] **E4 — closing out the select family** — projected `pct-option`, an option template,
-      groups, multiple selection, filtering, clearing, async, virtualisation. Deliberately
-      **after** the behaviour layer
+- [~] **E4 — closing out the select family** — projected `pct-option`, an option template,
+  groups, multiple selection, filtering, clearing, async, virtualisation. Deliberately
+  **after** the behaviour layer
+  - _notes:_ **two of the eight are done, and the first of them decided the shape of the rest.**
+    The option template closed back at D5 ([0027](decisions/0027-a-slot-is-a-directive.md)) and
+    the line had not been read since. **Projected `pct-option` is refused on a measurement**,
+    not on a taste: four probes say the road works — content renders into the overlay template,
+    a close and a reopen move the instances back with no rebuild, and `textContent` is readable
+    with the panel never attached — and that it costs the type and the count.
+    `<pct-probe-option [value]="1">` beside `[value]="'pl'"` is **silent**, where the same pair
+    in an array literal is TS2322, because two elements of one template are two instantiations
+    and neither is evidence about the other; `contentChildren` of a class reference hands back
+    `any`, so the same expression was taken as a `string` and as a `number` in one pass
+    ([`lesson-97`](lessons.md#lesson-97)). And 1000 projected options are **1000 component
+    instances** with the panel never opened, because content is created by the view that
+    declares it — which takes virtualisation, async and a filter that never renders what it
+    hides out of the panel's hands for good ([`lesson-98`](lessons.md#lesson-98),
+    [0033](decisions/0033-an-option-is-a-row-of-data.md)). **Groups** shipped with the decision,
+    as the first item the data road makes cheap: a heading is a shape in the same array, and
+    the panel draws it as `role="group"` named by `aria-labelledby` — the one wrapper ARIA
+    allows to stand between a listbox and its options, which is exactly what the audit of the
+    **open** panel measures and a template could not. Everything else stays one list: the rows
+    are numbered across the headings, so the walk, the ids, `aria-activedescendant` and the
+    typeahead read a flat list however many headings stand in it, and a disabled group reaches
+    its options **beside** them rather than by rewriting them — a consumer's own object comes
+    back the one they handed in. Two smaller things fell out. The row markup is declared once
+    and drawn through `ngTemplateOutlet`, and what travels through the context is the section's
+    **index** rather than its rows: an inline `<ng-template>`'s `let-` is `any`
+    ([`lesson-84`](lessons.md#lesson-84)), so the rows come back through a typed method and the
+    `any` reaches one number instead of every binding of the row. And the language gate went red
+    on `lv` — an ISO country code the Polish dictionary holds — which is the `codes` register
+    doing its job rather than a finding.
+  - gate: `apps/sandbox-e2e/src/select.spec.ts › headings in the list` (3 cases × 3 engines),
+    the open grouped panel added to the axe audit, a `select-panel-groups` baseline, plus 11
+    unit cases in `select.spec.ts` — 468 unit cases green
+  - control: two recorded runs — `role="group"` off the wrapper leaves the audit red with a
+    **critical** `aria-required-children`, and it is reported from the **listbox** ("children
+    which are not allowed: `div[aria-labelledby]`") rather than from the option, so what the
+    audit measures is the owner; the row numbering restarted inside each group leaves five unit
+    cases red
+  - cost: `./select` 26478 → **29058 B** (+9.7%), no new peer; five tokens and one pair in the
+    contrast policy; two parts (`group`, `group-label`); the coverage exception for
+    `select.html` raised to 98.75% on its denominator again, the uncovered statement being the
+    same one it has always been. The mutation run went **85.13 → 86.17** on `select.ts` and
+    left two survivors that are worth reading rather than chasing: merging consecutive bare
+    options into one nameless section is invisible to every behavioural test, because a
+    nameless section draws no element — one section and n sections are the same DOM. It stays
+    for the view count (a hundred bare options as one embedded view rather than a hundred),
+    and that reason is now written beside the code so nobody simplifies it out on the strength
+    of a green run
+  - left: multiple selection, filtering, clearing, async, virtualisation
 - [ ] **E5 — switch, textarea (autosize), slider, date picker** — the date picker forces deep
       i18n, which `[pctNumber]` has already started
 - [ ] **E7 — the rest**: toast, tabs, accordion, drawer, pagination, progress, skeleton, chips,

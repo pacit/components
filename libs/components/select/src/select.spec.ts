@@ -20,7 +20,11 @@ import { PctField } from '@pacit/components/field';
 import { part } from '../../testing/src/dom';
 import { PctSelect } from './select';
 import { PctSelectOptionTemplate } from './select.template';
-import { PctSelectOption, PctSelectPanelWidth } from './select.types';
+import {
+  PctSelectItem,
+  PctSelectOption,
+  PctSelectPanelWidth,
+} from './select.types';
 
 const OPTIONS: readonly PctSelectOption[] = [
   { value: 'pl', label: 'Poland' },
@@ -42,6 +46,34 @@ const optionsInPanel = () =>
   Array.from(
     document.querySelectorAll('[data-pct-part="option"]'),
   ) as HTMLElement[];
+
+const groupsInPanel = () =>
+  Array.from(
+    document.querySelectorAll('[data-pct-part="group"]'),
+  ) as HTMLElement[];
+
+/**
+ * A list with one option standing before the first heading, exactly as a native `<select>`
+ * draws what comes above its first `<optgroup>`. The walk over it is
+ * `Anywhere, Poland, Germany (disabled), Japan, Korea` — indexes 0..4 across the headings.
+ */
+const GROUPED: readonly PctSelectItem[] = [
+  { value: 'any', label: 'Anywhere' },
+  {
+    label: 'Europe',
+    options: [
+      { value: 'pl', label: 'Poland' },
+      { value: 'de', label: 'Germany', disabled: true },
+    ],
+  },
+  {
+    label: 'Asia',
+    options: [
+      { value: 'jp', label: 'Japan' },
+      { value: 'kr', label: 'Korea' },
+    ],
+  },
+];
 
 async function render<T>(type: Type<T>) {
   const fixture = TestBed.createComponent(type);
@@ -83,7 +115,7 @@ class Host {
   hint = signal('');
   /** `undefined` means "no value" — the text then comes from `PCT_TEXTS`. */
   placeholder = signal<string | undefined>(undefined);
-  options = signal<readonly PctSelectOption[]>(OPTIONS);
+  options = signal<readonly PctSelectItem[]>(OPTIONS);
   req = signal(false);
   invalid = signal(false);
   touched = signal(false);
@@ -350,7 +382,7 @@ class NamedHost {
   </pct-select>`,
 })
 class OptionTemplateHost {
-  options = signal<readonly PctSelectOption[]>(OPTIONS);
+  options = signal<readonly PctSelectItem[]>(OPTIONS);
   value = signal<string | null>('');
 }
 
@@ -1459,6 +1491,228 @@ describe('PctSelect', () => {
       expect(
         optionsInPanel()[0].querySelector('[data-testid="custom"]'),
       ).toBeNull();
+    });
+  });
+
+  describe('groups (what a native `<optgroup>` draws)', () => {
+    const openGrouped = async (
+      list: readonly PctSelectItem[] = GROUPED,
+    ): Promise<ComponentFixture<Host>> => {
+      const fixture = await render(Host);
+      fixture.componentInstance.options.set(list);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      triggerOf(fixture).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      return fixture;
+    };
+
+    it('draws a heading as a named group and leaves the loose option outside one', async () => {
+      await openGrouped();
+
+      const groups = groupsInPanel();
+      expect(groups).toHaveLength(2);
+      expect(groups.map((g) => g.getAttribute('role'))).toEqual([
+        'group',
+        'group',
+      ]);
+
+      // The name is a REFERENCE to the visible heading, not a copy of its text: one sentence
+      // on the screen and in the tree (`lesson-91`).
+      const heading = groups[0].querySelector('[data-pct-part="group-label"]');
+      expect(heading?.textContent?.trim()).toBe('Europe');
+      expect(groups[0].getAttribute('aria-labelledby')).toBe(heading?.id);
+      expect(heading?.id).toBeTruthy();
+      expect(groups[1].getAttribute('aria-labelledby')).toBe(
+        groups[1].querySelector('[data-pct-part="group-label"]')?.id,
+      );
+
+      // An option before the first heading is owned by the listbox itself — a plain wrapper
+      // around it would leave `role="option"` with no owner.
+      const rows = optionsInPanel();
+      expect(rows).toHaveLength(5);
+      expect(rows[0].parentElement?.getAttribute('role')).toBe('listbox');
+      expect(rows[1].parentElement).toBe(groups[0]);
+      expect(rows[4].parentElement).toBe(groups[1]);
+    });
+
+    it('an option after a heading belongs to nobody, not to the heading above it', async () => {
+      await openGrouped([
+        { label: 'Europe', options: [{ value: 'pl', label: 'Poland' }] },
+        { value: 'any', label: 'Anywhere' },
+        { value: 'none', label: 'Nowhere' },
+      ]);
+
+      const groups = groupsInPanel();
+      expect(groups).toHaveLength(1);
+      const rows = optionsInPanel();
+      expect(rows[0].parentElement).toBe(groups[0]);
+      // The two loose ones share ONE nameless section and hang off the listbox itself.
+      expect(rows[1].parentElement?.getAttribute('role')).toBe('listbox');
+      expect(rows[2].parentElement).toBe(rows[1].parentElement);
+    });
+
+    it('numbers the options across the headings, not inside them', async () => {
+      const fixture = await openGrouped();
+      const rows = optionsInPanel();
+
+      // Distinct ids, in the order the keyboard walks them.
+      expect(new Set(rows.map((r) => r.id)).size).toBe(5);
+      const trigger = triggerOf(fixture);
+      expect(trigger.getAttribute('aria-activedescendant')).toBe(rows[0].id);
+
+      await press(fixture, 'ArrowDown');
+      expect(trigger.getAttribute('aria-activedescendant')).toBe(rows[1].id);
+      // Germany is disabled, so one press crosses it AND the heading below it.
+      await press(fixture, 'ArrowDown');
+      expect(trigger.getAttribute('aria-activedescendant')).toBe(rows[3].id);
+
+      await press(fixture, 'End');
+      expect(trigger.getAttribute('aria-activedescendant')).toBe(rows[4].id);
+      await press(fixture, 'Home');
+      expect(trigger.getAttribute('aria-activedescendant')).toBe(rows[0].id);
+    });
+
+    it('picks an option out of the second group and shows its label', async () => {
+      const fixture = await openGrouped();
+      optionsInPanel()[3].click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(fixture.componentInstance.value()).toBe('jp');
+      expect(part(fixture, 'value').textContent?.trim()).toBe('Japan');
+    });
+
+    it('a value inside a group is the selected row', async () => {
+      const fixture = await render(Host);
+      fixture.componentInstance.options.set(GROUPED);
+      fixture.componentInstance.value.set('kr');
+      fixture.detectChanges();
+      await fixture.whenStable();
+      triggerOf(fixture).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const rows = optionsInPanel();
+      expect(rows[4].getAttribute('aria-selected')).toBe('true');
+      expect(
+        rows.filter((r) => r.getAttribute('aria-selected') === 'true'),
+      ).toHaveLength(1);
+      // Opening puts the cursor on the chosen row, wherever its heading is.
+      expect(triggerOf(fixture).getAttribute('aria-activedescendant')).toBe(
+        rows[4].id,
+      );
+    });
+
+    it('typeahead crosses the headings', async () => {
+      const fixture = await openGrouped();
+      await press(fixture, 'j');
+      expect(triggerOf(fixture).getAttribute('aria-activedescendant')).toBe(
+        optionsInPanel()[3].id,
+      );
+    });
+
+    it('a disabled group disables every option below it', async () => {
+      const fixture = await openGrouped([
+        { value: 'any', label: 'Anywhere' },
+        {
+          label: 'Europe',
+          disabled: true,
+          options: [
+            { value: 'pl', label: 'Poland' },
+            { value: 'de', label: 'Germany' },
+          ],
+        },
+      ]);
+
+      const rows = optionsInPanel();
+      expect(rows[1].getAttribute('aria-disabled')).toBe('true');
+      expect(rows[2].getAttribute('aria-disabled')).toBe('true');
+      expect(rows[1].hasAttribute('data-pct-disabled')).toBe(true);
+
+      rows[1].click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(fixture.componentInstance.value()).toBe('');
+
+      // The keyboard walks past the whole group: there is nowhere below to go.
+      await press(fixture, 'ArrowDown');
+      expect(triggerOf(fixture).getAttribute('aria-activedescendant')).toBe(
+        rows[0].id,
+      );
+    });
+
+    it("a consumer's own row is told the group's state, not the option's", async () => {
+      const fixture = await render(OptionTemplateHost);
+      fixture.componentInstance.options.set([
+        {
+          label: 'Europe',
+          disabled: true,
+          options: [{ value: 'pl', label: 'Poland' }],
+        },
+      ]);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      triggerOf(fixture).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      // index, label, value, active, selected, disabled — the last one is the ROW's, and the
+      // option object it stands beside carries no `disabled` at all.
+      expect(optionsInPanel()[0].textContent?.trim()).toBe(
+        '0:Poland:pl:false:false:true',
+      );
+    });
+
+    it("the group's state does not rewrite the option a consumer handed in", async () => {
+      const option: PctSelectOption = { value: 'pl', label: 'Poland' };
+      await openGrouped([
+        { label: 'Europe', disabled: true, options: [option] },
+      ]);
+      expect(option.disabled).toBeUndefined();
+    });
+
+    it('a group with no options is drawn by nobody', async () => {
+      await openGrouped([
+        { label: 'Nowhere', options: [] },
+        { label: 'Asia', options: [{ value: 'jp', label: 'Japan' }] },
+      ]);
+
+      const groups = groupsInPanel();
+      expect(groups).toHaveLength(1);
+      expect(
+        groups[0].querySelector('[data-pct-part="group-label"]')?.textContent,
+      ).toContain('Asia');
+    });
+
+    it('groups that are all empty are an empty list, message and all', async () => {
+      await openGrouped([
+        { label: 'Nowhere', options: [] },
+        { label: 'Nowhere either', options: [] },
+      ]);
+
+      expect(optionsInPanel()).toHaveLength(0);
+      expect(groupsInPanel()).toHaveLength(0);
+      expect(
+        document.querySelector('[data-pct-part="empty"]')?.textContent?.trim(),
+      ).toBe('No options');
+    });
+
+    it('two equal values are reported by their position in the whole list', async () => {
+      const warn = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => undefined);
+      await openGrouped([
+        { label: 'Europe', options: [{ value: 'pl', label: 'Poland' }] },
+        { label: 'Again', options: [{ value: 'pl', label: 'Poland twice' }] },
+      ]);
+
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(warn.mock.calls[0][0]).toContain(
+        '0 ("Poland") and 1 ("Poland twice")',
+      );
+      warn.mockRestore();
     });
   });
 

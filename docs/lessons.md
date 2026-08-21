@@ -2453,3 +2453,59 @@ It was found by opening the page and reading `getComputedStyle` — 21 px tall, 
 repository was taking. It is the third defect in a row here found that way
 ([`lesson-90`](#lesson-90), [`lesson-91`](#lesson-91)), and the three of them have one shape —
 **a component is not built until somebody has looked at it.**
+
+### <a id="lesson-97"></a>`lesson-97` — Two elements of one template are two instantiations, and neither is evidence about the other
+
+E4 opens with a fork: is an option a row of data or a `<pct-option>` the consumer projects? The
+second shape is what most libraries ship, and the argument for it is readability — the value
+stands next to the label it belongs to. Four probes under `strictTemplates` say what it costs,
+and the first of them is the whole answer:
+
+```html
+<!-- silent, in every engine and every strictness flag this repository sets -->
+<pct-probe-select [value]="aString">
+  <pct-probe-option [value]="'pl'">Poland</pct-probe-option>
+  <pct-probe-option [value]="1">One</pct-probe-option>
+</pct-probe-select>
+```
+
+The same two values in the array this library already takes are **TS2322 at the literal**. The
+compiler is not being lenient about projection: it never related the two elements at all. A
+parent's `T` is decided at the parent's own binding sites, a child's at the child's, and the
+fact that one stands inside the other is a runtime relation with no type to it. Projection is
+not the only place this bites — it is every parent/child pair in every template.
+
+The parent's own view of its content is worse rather than better.
+`contentChildren(PctOption)` takes a **class reference**, and a class reference carries no type
+argument, so the query's element type falls to `any`: the same expression was accepted as a
+`string` and as a `number` in one file, by one compiler, in one pass. A query is a runtime
+lookup wearing a type, and the type comes from the locator rather than from what the locator
+found.
+
+This is [`lesson-84`](#lesson-84) one floor up. There the finding was that a directive's
+generic has no inference site of its own; here it is that **an element boundary is not an
+inference site either**, and no amount of care inside one component buys checking across two.
+The shape that keeps the type is the one where the values a list holds are written in a single
+expression — an array literal is the one place TypeScript compares a list's members with each
+other.
+
+### <a id="lesson-98"></a>`lesson-98` — Projected rows belong to the consumer's view, so the panel never owns how many exist
+
+The second half of the same probe, and it measures something the type argument above cannot
+reach: a host whose `@for` writes **1000** `<pct-probe-option>` elements into a select whose
+panel is never opened builds **1000 component instances**. The panel is closed, the overlay
+template is not attached, and none of the projected nodes is in the document — `closedInDom: 0`
+— but every constructor has run, every input is bound and every one of them will answer change
+detection for as long as the page lives.
+
+That is not a leak and not a bug: content is created with the view that **declares** it, which
+is the consumer's, and an `<ng-content />` inside an unattached template simply has nowhere to
+put nodes that already exist. The same probe shows the pleasant half — closing and reopening
+the panel moves them back with no rebuild at all, `afterReopenInstances: 3` for three rows.
+
+What it settles is who can make a promise about the size of a list. Rows the panel builds are
+rows the panel can decline to build; rows the consumer builds are already there. Virtualisation,
+async loading and a filter that never renders what it hides are all promises of the first kind,
+and a component that takes its rows through projection has given away the only place from which
+any of them can be kept. **The authoring channel decides who owns the count**, and the count is
+where the last three items of this component's own plan live.

@@ -37,7 +37,26 @@
         "$value": "{pct.text-disabled}"
       },
       "option-padding-y": { "$type": "dimension", "$value": "{pct.space.3}" },
-      "option-padding-x": { "$type": "dimension", "$value": "{pct.space.4}" }
+      "option-padding-x": { "$type": "dimension", "$value": "{pct.space.4}" },
+
+      "$comment-group-label": "A section heading inside the panel — a `<optgroup>`'s label. It is not a row: it takes no value and the keyboard walks past it, so it is set apart by weight and a quieter colour rather than by a rule the panel would have to draw.",
+      "group-label-fg": { "$type": "color", "$value": "{pct.text-muted}" },
+      "group-label-font-size": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.sm}"
+      },
+      "group-label-font-weight": {
+        "$type": "fontWeight",
+        "$value": "{pct.font.weight.medium}"
+      },
+      "group-label-padding-y": {
+        "$type": "dimension",
+        "$value": "{pct.space.2}"
+      },
+      "group-label-padding-x": {
+        "$type": "dimension",
+        "$value": "{pct.space.4}"
+      }
     }
   }
 }

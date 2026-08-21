@@ -1,6 +1,6 @@
 import { Directive, inject, input, TemplateRef } from '@angular/core';
 import { pctReportOrphanSlot } from '@pacit/components/core';
-import { PctSelectOption } from './select.types';
+import { PctSelectItem, PctSelectOption } from './select.types';
 
 /**
  * What the select hands an option template on every row it draws.
@@ -55,10 +55,11 @@ export class PctSelectOptionTemplate<T> {
     inject<TemplateRef<PctSelectOptionContext<T>>>(TemplateRef);
 
   /**
-   * The same list the select is given. It carries `T` into the context and is never read —
-   * binding a different list of the same type changes nothing but the type.
+   * The same list the select is given — groups included, because that is the list a consumer
+   * has to hand. It carries `T` into the context and is never read: binding a different list
+   * of the same type changes nothing but the type.
    */
-  readonly options = input.required<readonly PctSelectOption<T>[]>({
+  readonly options = input.required<readonly PctSelectItem<T>[]>({
     alias: 'pctSelectOption',
   });
 

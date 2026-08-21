@@ -45,10 +45,39 @@ import {
   PctSelectOptionTemplate,
 } from './select.template';
 import {
+  PctSelectItem,
   PctSelectOption,
+  PctSelectOptionGroup,
   PctSelectPanelAlign,
   PctSelectPanelWidth,
 } from './select.types';
+
+/**
+ * One drawable row of the panel: the option a consumer wrote, its position in the walk, and
+ * whether it can be reached. `disabled` stands BESIDE the option instead of inside a copy of
+ * it — a group's `disabled` reaches its options, and rewriting them would hand a consumer's
+ * `let-option` an object their own list does not contain.
+ */
+interface PctSelectRow<T> {
+  readonly option: PctSelectOption<T>;
+  readonly index: number;
+  readonly disabled: boolean;
+}
+
+/** A heading with its rows, or — when `label` is `null` — the rows standing before any. */
+interface PctSelectSection<T> {
+  readonly label: string | null;
+  readonly rows: readonly PctSelectRow<T>[];
+}
+
+/**
+ * A group is told from an option by the shape of what it carries, and nothing else. The
+ * narrowing is written once: three copies of it are three chances to read the same list
+ * differently.
+ */
+function isGroup<T>(item: PctSelectItem<T>): item is PctSelectOptionGroup<T> {
+  return Array.isArray((item as PctSelectOptionGroup<T>).options);
+}
 
 /**
  * A single-choice select with a panel of its own (not a native `<select>`).
@@ -151,8 +180,15 @@ export class PctSelect<T = string>
    * ([`lesson-66`](../../../../docs/lessons.md#lesson-66)). The reasoning stands here rather
    * than in the template, because a template travels to the consumer as a string and a
    * comment in it is bytes in the artefact ([`lesson-67`](../../../../docs/lessons.md#lesson-67)).
+   *
+   * An entry may also be a **group** — a heading and options of its own
+   * (`PctSelectOptionGroup`), which is what a native `<optgroup>` draws. Groups and bare
+   * options mix in one list, in the order they are written. Everything below reads the list
+   * through `rows()`, the flat walk the panel draws: the uniqueness above is a promise about
+   * the whole select and not about one heading, and an index that meant a different thing
+   * inside a group would put `aria-activedescendant` and the keyboard on different rows.
    */
-  readonly options = input<readonly PctSelectOption<T>[]>([]);
+  readonly options = input<readonly PctSelectItem<T>[]>([]);
   readonly label = input<string>('');
   readonly hint = input<string>('');
 
@@ -313,15 +349,75 @@ export class PctSelect<T = string>
   });
 
   /**
+   * The list as the panel draws it: sections in the order they were written, each with the
+   * rows below its heading. An **empty group is dropped here** rather than hidden by the
+   * template — a heading over nothing is noise on the screen and an empty `role="group"` in
+   * the tree, and dropping it in one place keeps the section list and the row list agreeing
+   * about what exists.
+   *
+   * The index a row carries is its position in the WHOLE select, handed out while walking:
+   * it is what the keyboard moves over, what `aria-activedescendant` names and what an option
+   * id is built from, so it cannot restart inside a heading.
+   */
+  protected readonly sections = computed<readonly PctSelectSection<T>[]>(() => {
+    const sections: { label: string | null; rows: PctSelectRow<T>[] }[] = [];
+    let index = 0;
+
+    for (const item of this.options()) {
+      if (isGroup(item)) {
+        const rows = item.options.map((option) => ({
+          option,
+          index: index++,
+          // A disabled group disables what stands under it — `<optgroup disabled>`.
+          disabled: option.disabled === true || item.disabled === true,
+        }));
+        if (rows.length > 0) sections.push({ label: item.label, rows });
+        continue;
+      }
+
+      // Bare options following one another belong to ONE nameless section. What keeps them
+      // out of a wrapper the listbox would have to own is the missing label, not the merging
+      // — `role="option"` inside a plain `<div>` inside `role="listbox"` is an option with
+      // no owner, and a nameless section draws no element at all.
+      //
+      // So the merging is INVISIBLE to every behavioural test, and the mutation run says so:
+      // both mutants here survive, because a flat list drawn as one section and as n sections
+      // is the same DOM. What it buys is the view count — a hundred bare options are one
+      // embedded view with a hundred rows instead of a hundred views with one row each — and
+      // that is the reason it stays.
+      let last = sections[sections.length - 1];
+      if (last === undefined || last.label !== null) {
+        last = { label: null, rows: [] };
+        sections.push(last);
+      }
+      last.rows.push({
+        option: item,
+        index: index++,
+        disabled: item.disabled === true,
+      });
+    }
+    return sections;
+  });
+
+  /**
+   * The same rows, flat. Every reading of the list below goes through here — the walk, the
+   * selection, the duplicate report, the empty panel — because a group is a way of drawing
+   * the list and not a second list.
+   */
+  protected readonly rows = computed<readonly PctSelectRow<T>[]>(() =>
+    this.sections().flatMap((section) => section.rows),
+  );
+
+  /**
    * The keyboard walk over the list — the shared machinery from `core` rather than private
    * methods here, extracted before the second control that needs it (`lesson-21`). What the
    * select keeps is the key map: which key opens, picks and closes is a property of the
    * combobox role, not of walking a list.
    */
   private readonly nav = pctListNavigation({
-    items: this.options,
-    isDisabled: (option) => option.disabled === true,
-    label: (option) => option.label,
+    items: this.rows,
+    isDisabled: (row) => row.disabled,
+    label: (row) => row.option.label,
   });
 
   /** Index of the option active by keyboard (not the same as the selected one). */
@@ -340,11 +436,11 @@ export class PctSelect<T = string>
     const current = this.value();
     if (current === null || current === undefined) return -1;
     const same = this.compareWith();
-    return this.options().findIndex((o) => same(o.value, current));
+    return this.rows().findIndex((row) => same(row.option.value, current));
   });
 
   protected readonly selectedOption = computed(
-    () => this.options()[this.selectedIndex()] ?? null,
+    () => this.rows()[this.selectedIndex()]?.option ?? null,
   );
 
   protected readonly displayText = computed(
@@ -389,6 +485,23 @@ export class PctSelect<T = string>
     return `${this.uid}-option-${index}`;
   }
 
+  /** What a group's heading is called, so `aria-labelledby` on the group can point at it. */
+  protected groupId(index: number): string {
+    return `${this.uid}-group-${index}`;
+  }
+
+  /**
+   * The rows of one section, by its position. The panel's row markup is declared once and
+   * drawn through `ngTemplateOutlet`, and an inline `<ng-template>`'s `let-` variable is
+   * typed `any` — a context guard needs an inference site and a local template has none
+   * ([`lesson-84`](../../../../docs/lessons.md#lesson-84)). So what travels through the
+   * context is the index alone, and the rows come back through here with their type: an
+   * `any` that reaches one number instead of every binding of the row.
+   */
+  protected sectionRows(index: number): readonly PctSelectRow<T>[] {
+    return this.sections()[index]?.rows ?? [];
+  }
+
   /**
    * What an open panel with nothing in it says, and to whom. The sentence inside the panel is
    * drawn for the eye: focus stays on the trigger, so a screen reader is pointed at no part of
@@ -402,7 +515,7 @@ export class PctSelect<T = string>
   private readonly announcer = inject(PctAnnouncer);
 
   private readonly emptyMessage = computed(() =>
-    this.open() && this.options().length === 0 ? this.texts().selectEmpty : '',
+    this.open() && this.rows().length === 0 ? this.texts().selectEmpty : '',
   );
 
   constructor() {
@@ -440,16 +553,14 @@ export class PctSelect<T = string>
    * template: a template travels to the consumer as a string, so its bytes are the artefact's
    * ([`lesson-67`](../../../../docs/lessons.md#lesson-67)).
    */
-  protected optionContext(
-    option: PctSelectOption<T>,
-    index: number,
-  ): PctSelectOptionContext<T> {
+  protected optionContext(row: PctSelectRow<T>): PctSelectOptionContext<T> {
     return {
-      $implicit: option,
-      index,
-      active: index === this.activeIndex(),
-      selected: index === this.selectedIndex(),
-      disabled: option.disabled === true,
+      $implicit: row.option,
+      index: row.index,
+      active: row.index === this.activeIndex(),
+      selected: row.index === this.selectedIndex(),
+      // The row's flag and not the option's: a group carries the state its options do not.
+      disabled: row.disabled,
     };
   }
 
@@ -460,16 +571,16 @@ export class PctSelect<T = string>
    * be worse than one that measures both. It runs under `isDevMode()` alone.
    */
   private warnOnDuplicateValues(): void {
-    const options = this.options();
+    const rows = this.rows();
     const same = this.compareWith();
     const pairs: string[] = [];
 
-    for (let i = 1; i < options.length; i++) {
+    for (let i = 1; i < rows.length; i++) {
       for (let j = 0; j < i; j++) {
-        if (!same(options[j].value, options[i].value)) continue;
+        if (!same(rows[j].option.value, rows[i].option.value)) continue;
         // Reported against the first option that claims the value — the one that wins.
         pairs.push(
-          `${j} ("${options[j].label}") and ${i} ("${options[i].label}")`,
+          `${j} ("${rows[j].option.label}") and ${i} ("${rows[i].option.label}")`,
         );
         break;
       }
@@ -529,9 +640,9 @@ export class PctSelect<T = string>
   }
 
   protected selectAt(index: number): void {
-    const option = this.options()[index];
-    if (!option || option.disabled || !this.interactive) return;
-    this.value.set(option.value);
+    const row = this.rows()[index];
+    if (!row || row.disabled || !this.interactive) return;
+    this.value.set(row.option.value);
     this.close();
   }
 

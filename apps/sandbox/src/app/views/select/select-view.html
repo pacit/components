@@ -123,6 +123,24 @@
 </sbx-demo>
 
 <sbx-demo
+  heading="Headings in the list"
+  summary="A group is a heading and options of its own — role=group named by the heading it draws, exactly as a native optgroup. The walk stays one walk: the arrows, Home/End and typeahead cross the headings, and a disabled group takes its whole section out of reach."
+  [reqs]="['req-a11y-built-in']"
+  [controls]="[]"
+  data-testid="demo-groups"
+>
+  <div class="stack">
+    <pct-field label="Country" data-testid="field-groups">
+      <pct-select
+        [options]="regions"
+        [(value)]="groupedCountry"
+        data-testid="select-groups"
+      />
+    </pct-field>
+  </div>
+</sbx-demo>
+
+<sbx-demo
   heading="An option row of your own"
   summary="The built-in row draws the label and nothing else. A template replaces what is inside the row — the role, the id, aria-selected and the keyboard stay with the component, because they are the listbox pattern rather than decoration."
   [reqs]="['req-api-templates']"

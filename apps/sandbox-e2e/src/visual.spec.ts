@@ -102,6 +102,23 @@ test.describe('Appearance — compared with the baseline', () => {
   });
 
   /**
+   * The same panel with headings in it. A group's label is the one thing here that is drawn
+   * and never interacted with — no state, no cursor, nothing a behavioural case would catch
+   * if its weight or its spacing went.
+   */
+  test('select-panel-groups', async ({ page }) => {
+    await stage(page, '/select');
+    await page
+      .getByTestId('select-groups')
+      .locator('[data-pct-part="trigger"]')
+      .click();
+
+    const panel = page.locator('[data-pct-part="panel"]');
+    await expect(panel).toBeVisible();
+    await expect(panel).toHaveScreenshot('select-panel-groups.png');
+  });
+
+  /**
    * The modal, which shows on no screenshot of a resting page: the panel is an overlay and the
    * veil covers everything behind it. The shot is of the whole viewport rather than of the
    * panel, because the veil IS part of what this component draws — its darkness over the page

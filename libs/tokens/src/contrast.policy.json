@@ -278,6 +278,13 @@
       "severity": "error"
     },
     {
+      "name": "select — group heading in the panel",
+      "fg": "pct.select.group-label-fg",
+      "bg": "pct.select.panel-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
       "name": "select — option in the list",
       "fg": "pct.select.option-fg",
       "bg": "pct.select.option-bg",

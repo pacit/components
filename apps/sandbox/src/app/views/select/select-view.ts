@@ -5,7 +5,7 @@ import {
   PctSelectOption,
   PctSelectOptionTemplate,
 } from '@pacit/components/select';
-import { COUNTRIES, LANGUAGES } from '../../ui/data';
+import { COUNTRIES, COUNTRIES_BY_REGION, LANGUAGES } from '../../ui/data';
 import { SbxDemo } from '../../ui/demo';
 import { SelectIcons } from './select-icons';
 
@@ -21,6 +21,7 @@ import { SelectIcons } from './select-icons';
 })
 export class SelectView {
   protected readonly countries = COUNTRIES;
+  protected readonly regions = COUNTRIES_BY_REGION;
   protected readonly languages = LANGUAGES;
   /** The list a filter has emptied, before there is a filter to empty it. */
   protected readonly none: readonly PctSelectOption[] = [];
@@ -30,6 +31,7 @@ export class SelectView {
   protected readonly bareCountry = signal<string | null>('pl');
   protected readonly emptyCountry = signal<string | null>(null);
   protected readonly templateCountry = signal<string | null>('de');
+  protected readonly groupedCountry = signal<string | null>('pl');
 
   protected readonly widthField = signal<string | null>('pl');
   protected readonly widthAuto = signal<string | null>('pl');

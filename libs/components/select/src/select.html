@@ -100,36 +100,69 @@
     [attr.aria-label]="ariaLabel() || null"
     [attr.aria-labelledby]="ariaLabelledby() || (label() ? labelId : null)"
   >
+    <!-- The row, declared once: a named section wraps it in `role="group"`, a nameless one
+         does not, and a second copy of it is a second row to keep in step. The context is
+         the section's INDEX, so everything the row binds is typed by `sectionRows()` — an
+         `<ng-template>`'s own `let-` is `any` (`lesson-84`). -->
+    <ng-template #optionRows let-s>
+      @for (row of sectionRows(s); track row.index) {
+      <!--
+        The ARIA listbox pattern: focus stays on the trigger, and the active option is pointed
+        at by `aria-activedescendant` (lesson-18). Options are by design not focusable and have
+        no keyboard handling of their own — that sits on the trigger. Both rules are false
+        positives here.
+      -->
+      <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+      <div
+        class="pct-select__option"
+        data-pct-part="option"
+        role="option"
+        [id]="optionId(row.index)"
+        [attr.aria-selected]="row.index === selectedIndex()"
+        [attr.aria-disabled]="row.disabled ? 'true' : null"
+        [attr.data-pct-active]="row.index === activeIndex() ? '' : null"
+        [attr.data-pct-selected]="row.index === selectedIndex() ? '' : null"
+        [attr.data-pct-disabled]="row.disabled ? '' : null"
+        (click)="selectAt(row.index)"
+        (mouseenter)="row.disabled ? null : activateAt(row.index)"
+      >
+        @if (optionTemplate(); as slot) {
+        <ng-container
+          [ngTemplateOutlet]="slot.template"
+          [ngTemplateOutletContext]="optionContext(row)"
+        />
+        } @else { {{ row.option.label }} }
+      </div>
+      }
+    </ng-template>
+
     <!-- `track $index`: the reason is with the `options` input (`lesson-66`, `lesson-67`). -->
-    @for (option of options(); track $index; let i = $index) {
-    <!--
-      The ARIA listbox pattern: focus stays on the trigger, and the active option is pointed at
-      by `aria-activedescendant` (lesson-18). Options are by design not focusable and have no
-      keyboard handling of their own — that sits on the trigger
-      (`(keydown)="onKeydown($event)"`). Both rules are false positives here.
-    -->
-    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+    @for (section of sections(); track $index; let s = $index) { @if
+    (section.label !== null) {
     <div
-      class="pct-select__option"
-      data-pct-part="option"
-      role="option"
-      [id]="optionId(i)"
-      [attr.aria-selected]="i === selectedIndex()"
-      [attr.aria-disabled]="option.disabled ? 'true' : null"
-      [attr.data-pct-active]="i === activeIndex() ? '' : null"
-      [attr.data-pct-selected]="i === selectedIndex() ? '' : null"
-      [attr.data-pct-disabled]="option.disabled ? '' : null"
-      (click)="selectAt(i)"
-      (mouseenter)="option.disabled ? null : activateAt(i)"
+      class="pct-select__group"
+      data-pct-part="group"
+      role="group"
+      [attr.aria-labelledby]="groupId(s)"
     >
-      @if (optionTemplate(); as slot) {
+      <div
+        class="pct-select__group-label"
+        data-pct-part="group-label"
+        [id]="groupId(s)"
+      >
+        {{ section.label }}
+      </div>
       <ng-container
-        [ngTemplateOutlet]="slot.template"
-        [ngTemplateOutletContext]="optionContext(option, i)"
+        [ngTemplateOutlet]="optionRows"
+        [ngTemplateOutletContext]="{ $implicit: s }"
       />
-      } @else { {{ option.label }} }
     </div>
-    } @empty {
+    } @else {
+    <ng-container
+      [ngTemplateOutlet]="optionRows"
+      [ngTemplateOutletContext]="{ $implicit: s }"
+    />
+    } } @empty {
     <div class="pct-select__empty" data-pct-part="empty">
       {{ texts().selectEmpty }}
     </div>

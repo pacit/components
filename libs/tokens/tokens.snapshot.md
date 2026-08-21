@@ -186,6 +186,11 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-select-fg-disabled color component public
 --pct-select-fg-invalid color component public
 --pct-select-font-size dimension component public
+--pct-select-group-label-fg color component public
+--pct-select-group-label-font-size dimension component public
+--pct-select-group-label-font-weight fontWeight component public
+--pct-select-group-label-padding-x dimension component public
+--pct-select-group-label-padding-y dimension component public
 --pct-select-hint-fg color component public
 --pct-select-label-fg color component public
 --pct-select-option-bg color component public

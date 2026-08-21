@@ -39,6 +39,6 @@ before an application ships them.
 ./menu 17561 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core
 ./popover 13088 ./core @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/core
 ./radio 14829 ./core @angular/core
-./select 26478 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core
+./select 29058 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core
 ./tooltip 12597 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core
 ```

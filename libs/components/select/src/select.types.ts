@@ -32,3 +32,34 @@ export type PctSelectPanelWidth = 'field' | 'auto' | (string & {});
  * result.
  */
 export type PctSelectPanelAlign = 'start' | 'center' | 'end';
+
+/**
+ * A named section of a list — what a native `<optgroup>` is, and what the ARIA listbox
+ * pattern draws as a `role="group"` with its label referenced by `aria-labelledby`.
+ *
+ * The label is a heading, not an option: it takes no value, the keyboard walks past it and
+ * `aria-activedescendant` never names it. `disabled` on the group reaches every option below
+ * it — native parity, and the option objects are left alone: the state is carried beside them
+ * so a consumer's `let-option` is still their own object and not a copy.
+ *
+ * A group with no options is drawn by nobody: a heading over nothing is noise on the screen
+ * and an empty `role="group"` in the tree.
+ */
+export interface PctSelectOptionGroup<T = string> {
+  readonly label: string;
+  readonly options: readonly PctSelectOption<T>[];
+  readonly disabled?: boolean;
+}
+
+/**
+ * What `options` accepts: a flat list, a list of groups, or the two mixed — options standing
+ * before the first heading are exactly what a native `<select>` draws above its first
+ * `<optgroup>`.
+ *
+ * The two are told apart by the **shape** rather than by a discriminant field a consumer
+ * would have to write: an object whose `options` is an array is a group. A literal carrying
+ * both `value` and an `options` array is therefore read as a group — recorded here because
+ * silence would make it a defect report later.
+ */
+export type PctSelectItem<T = string> =
+  PctSelectOption<T> | PctSelectOptionGroup<T>;

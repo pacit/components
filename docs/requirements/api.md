@@ -284,6 +284,17 @@ the application nor repairs the list; each reports the pair under `isDevMode()`,
 defect whose only witness was somebody else's diagnostic goes silent the moment that
 diagnostic is removed ([`lesson-66`](../lessons.md#lesson-66)).
 
+**The promise is kept by the authoring channel, and by nothing else.** `T` comes from the
+option list because the list is **one expression** — an array literal is the one place
+TypeScript compares a collection's members with each other. Written as elements a consumer
+projects, the same list is one instantiation per element with no relation between any two of
+them: `<pct-option [value]="1">` beside `[value]="'pl'"` compiles silently, and a
+`contentChildren` query hands the component back `any`
+([`lesson-97`](../lessons.md#lesson-97),
+[0033](../decisions/0033-an-option-is-a-row-of-data.md)). A group is therefore a shape in the
+data too — `PctSelectOptionGroup<T>` inside the same array — so a heading in the list costs the
+type nothing.
+
 **Gate:** `libs/components/select/src/select.spec.ts` — the generic contract, plus the
 dev-mode report of two options with one value; `libs/components/radio/src/radio.spec.ts` — the
 same report for the group, which reads its options through the `PCT_RADIO_OPTION` token rather
@@ -296,9 +307,11 @@ cases red, and its mirrors stay green on their own: a list with distinct values 
 pair of options without a `compareWith` that calls them equal. The group answers the same way,
 six cases to three red — and one of its six measures the DEFECT rather than the report (both
 options painted, one native checked), so it would go on standing if the warning ever left
-**Decision:** [0010 — a generic value and `NoInfer`](../decisions/0010-generic-noinfer.md)
+**Decision:** [0010 — a generic value and `NoInfer`](../decisions/0010-generic-noinfer.md),
+[0033 — an option is a row of data](../decisions/0033-an-option-is-a-row-of-data.md)
 **Lessons:** [`lesson-37`](../lessons.md#lesson-37), [`lesson-66`](../lessons.md#lesson-66),
-[`lesson-72`](../lessons.md#lesson-72)
+[`lesson-72`](../lessons.md#lesson-72), [`lesson-97`](../lessons.md#lesson-97),
+[`lesson-98`](../lessons.md#lesson-98)
 
 > The probe's fifth case stays open and is **a limitation of Angular**: `PctRadioGroup` has no
 > options input, so the only source of `T` is `value` — and `$event` from `(valueChange)` is

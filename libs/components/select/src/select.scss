@@ -166,6 +166,19 @@
   cursor: not-allowed;
 }
 
+/* A section heading. It is not a row: no hover, no cursor, no selection — what sets it apart
+   from the options below it is weight and a quieter colour, both of which survive a palette
+   the user forces. */
+.pct-select__group-label {
+  padding: var(--pct-select-group-label-padding-y)
+    var(--pct-select-group-label-padding-x);
+  color: var(--pct-select-group-label-fg);
+  font-size: var(--pct-select-group-label-font-size);
+  font-weight: var(--pct-select-group-label-font-weight);
+  line-height: 1.4;
+  user-select: none;
+}
+
 .pct-select__empty {
   padding: var(--pct-select-option-padding-y) var(--pct-select-option-padding-x);
   color: var(--pct-select-hint-fg);
@@ -260,5 +273,12 @@
 
   .pct-select__option[data-pct-disabled] {
     color: GrayText;
+  }
+
+  /* `CanvasText` and not `GrayText`: a heading is not a disabled row, and the weight that
+     tells it from an option is the one thing this mode leaves alone. Written out because
+     `@media` adds no specificity (lesson-70). */
+  .pct-select__group-label {
+    color: CanvasText;
   }
 }

@@ -49,9 +49,15 @@ The order follows **architectural debt**, not popularity:
    became a parameter of the shared walk rather than a second copy of it. Why focus moves here
    and points in the select is written down beside it
    ([0032](../decisions/0032-a-menu-moves-focus-a-listbox-points-at-it.md)).
-4. **Completing the select family** — projected `pct-option`, an option template, groups,
-   multiple selection, filtering, clearing, async, virtualisation. Deliberately **after** the
-   behaviour layer, or we build it twice.
+4. **Completing the select family** — **started.** The option template closed at D5 and
+   **groups** are built: a heading is a shape in the option array, drawn as the one wrapper ARIA
+   lets stand between a listbox and its options, with the rows numbered across it so the walk
+   stays one walk. A projected `<pct-option>` is **not** coming — measured, not declined: it
+   types nothing (two elements of one template are two instantiations) and it hands the row
+   count to the consumer's loop, which is where virtualisation would have had to live
+   ([0033](../decisions/0033-an-option-is-a-row-of-data.md)). Left: multiple selection,
+   filtering, clearing, async, virtualisation. Deliberately **after** the behaviour layer, or we
+   build it twice.
 5. **Switch, Textarea, Slider, Date picker.**
 6. **Table / DataGrid** — has to stand on a **headless core** separated from rendering.
 

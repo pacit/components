@@ -61,6 +61,8 @@ from what the browser really gets.
 ./select PctSelect arrow
 ./select PctSelect empty
 ./select PctSelect error
+./select PctSelect group
+./select PctSelect group-label
 ./select PctSelect hint
 ./select PctSelect label
 ./select PctSelect option

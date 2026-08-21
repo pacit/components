@@ -151,7 +151,7 @@
     },
     "codes": {
       "reason": "Identifiers out of somebody else's code list — ISO country and currency codes, BCP-47 language subtags. They stand in test data and in demo rows, where translating them would break the thing they name.",
-      "words": ["cz", "en", "eur", "pln", "ua"]
+      "words": ["cz", "en", "eur", "lv", "pln", "ua"]
     },
     "english": {
       "reason": "English words `american-english` simply does not carry — it is a spelling list from another decade, and the trade's vocabulary moved. The subtraction cannot remove what the English side never held, so they are named here instead.",

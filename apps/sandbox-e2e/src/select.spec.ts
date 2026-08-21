@@ -373,6 +373,106 @@ test.describe('PctSelect — a combobox with a panel', () => {
     });
   });
 
+  /**
+   * A heading in the list is drawn where a native `<select>` would put an `<optgroup>`, and
+   * the questions it raises are the ones only a browser answers: does the tree really own the
+   * options through the group, and does the walk still behave as ONE list once the DOM has
+   * three levels instead of two? Both are measured on the rendered page rather than deduced
+   * from the template.
+   */
+  test.describe('headings in the list', () => {
+    const groups = (page: import('@playwright/test').Page) =>
+      page.locator('[data-pct-part="group"]');
+
+    test('a group is named by the heading it draws, and owns the options below it', async ({
+      page,
+    }) => {
+      await trigger(page, 'select-groups').click();
+      await expect(panel(page)).toBeVisible();
+
+      await expect(groups(page)).toHaveCount(3);
+      await expect(groups(page).first()).toHaveRole('group');
+
+      const heading = groups(page)
+        .first()
+        .locator('[data-pct-part="group-label"]');
+      await expect(heading).toHaveText('Central Europe');
+      await expect(groups(page).first()).toHaveAttribute(
+        'aria-labelledby',
+        await attrOf(heading, 'id'),
+      );
+
+      // The loose option above the first heading is the listbox's own child; the rest hang
+      // under a group. `role="option"` inside a plain wrapper would be an option with no
+      // owner, which is why the nameless section is drawn with no element at all.
+      const first = options(page).first();
+      await expect(first).toHaveText('Anywhere');
+      expect(
+        await first.evaluate((el) =>
+          el.parentElement?.getAttribute('data-pct-part'),
+        ),
+      ).toBe('panel');
+      expect(
+        await options(page)
+          .nth(1)
+          .evaluate((el) => el.parentElement?.getAttribute('data-pct-part')),
+      ).toBe('group');
+    });
+
+    test('the walk crosses the headings and skips what a disabled group holds', async ({
+      page,
+    }) => {
+      const t = trigger(page, 'select-groups');
+      await t.focus();
+      await page.keyboard.press('ArrowDown'); // opens on the chosen row: Poland
+
+      await expect(options(page).nth(1)).toHaveAttribute('data-pct-active', '');
+      await expect(t).toHaveAttribute(
+        'aria-activedescendant',
+        await attrOf(options(page).nth(1), 'id'),
+      );
+
+      // Czechia, Slovakia, then over the "Baltic" heading to Lithuania.
+      await page.keyboard.press('ArrowDown');
+      await page.keyboard.press('ArrowDown');
+      await page.keyboard.press('ArrowDown');
+      await expect(options(page).nth(4)).toHaveAttribute('data-pct-active', '');
+
+      // Latvia is disabled, the whole last group is: End lands on Lithuania, the last row
+      // anybody can reach.
+      await page.keyboard.press('End');
+      await expect(options(page).nth(4)).toHaveAttribute('data-pct-active', '');
+
+      // Typeahead reads one list too — "s" is Slovakia, two headings up.
+      await page.keyboard.press('s');
+      await expect(options(page).nth(3)).toHaveAttribute('data-pct-active', '');
+
+      await page.keyboard.press('Home');
+      await expect(options(page).first()).toHaveAttribute(
+        'data-pct-active',
+        '',
+      );
+    });
+
+    test('a disabled group takes its whole section out of reach', async ({
+      page,
+    }) => {
+      await trigger(page, 'select-groups').click();
+      const japan = options(page).filter({ hasText: 'Japan' });
+      await expect(japan).toHaveAttribute('aria-disabled', 'true');
+
+      // `force`, and it is the measurement rather than a workaround: an ordinary click never
+      // lands, because Playwright's own actionability reads `aria-disabled` and refuses the
+      // press — the browser agrees the row is out of reach before we ask. What is left to
+      // prove is that a press delivered anyway changes nothing.
+      await japan.click({ force: true });
+      await expect(panel(page)).toBeVisible();
+      await expect(
+        page.getByTestId('select-groups').locator('[data-pct-part="value"]'),
+      ).toHaveText('Poland');
+    });
+  });
+
   test.describe('an option row the consumer wrote (req-api-templates)', () => {
     const templated = (page: import('@playwright/test').Page) =>
       page.getByTestId('select-template').locator('[data-pct-part="trigger"]');

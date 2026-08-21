@@ -96,6 +96,25 @@ test.describe('Accessibility (axe-core, WCAG 2.2 AA)', () => {
   });
 
   /**
+   * A grouped listbox is three levels where the walk over the routes only ever sees two, and
+   * the closed panel is a panel axe has nothing to say about. What is being asked here is
+   * whether the options are still OWNED once a heading stands between them and the listbox:
+   * `option` names `group` and `listbox` as its context, `listbox` names `group` and `option`
+   * as what it may own, and only the rendered tree says which of the two we actually built.
+   */
+  test('an open panel with headings has no violations', async ({ page }) => {
+    await visit(page, '/select');
+    await page
+      .getByTestId('select-groups')
+      .locator('[data-pct-part="trigger"]')
+      .click();
+    await expect(page.locator('[data-pct-part="panel"]')).toBeVisible();
+
+    const violations = await audit(page, '[data-pct-part="panel"]');
+    expect(report(violations)).toBe('');
+  });
+
+  /**
    * An open modal is the one state the walk over the routes cannot reach: every dialog in the
    * sandbox starts closed, and a panel that is not attached is a panel axe has nothing to say
    * about. The audit is scoped to the panel, because the rest of the page is `inert` while it

@@ -251,3 +251,5 @@ Which lesson feeds which requirement. Generated from the **Lessons** fields.
 | [`lesson-94`](lessons.md#lesson-94) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-95`](lessons.md#lesson-95) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-96`](lessons.md#lesson-96) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-97`](lessons.md#lesson-97) | `req-api-generic`                                                                                                                                                 |
+| [`lesson-98`](lessons.md#lesson-98) | `req-api-generic`                                                                                                                                                 |
