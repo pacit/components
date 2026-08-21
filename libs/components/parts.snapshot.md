@@ -45,6 +45,8 @@ from what the browser really gets.
 ./field PctMessageAux field-message-aux-item
 ./field PctPrefix field-prefix-item
 ./field PctSuffix field-suffix-item
+./menu PctMenu panel
+./menu PctMenuItem item
 ./popover PctPopover content
 ./popover PctPopover heading
 ./popover PctPopover panel

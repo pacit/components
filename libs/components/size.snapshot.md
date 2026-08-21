@@ -32,12 +32,13 @@ before an application ships them.
 . 3006 ./core @angular/core
 ./button 6495 ./core @angular/core
 ./checkbox 14374 ./core,./icon @angular/common,@angular/core
-./core 7374 - @angular/core
+./core 7420 - @angular/core
 ./dialog 14802 ./core,./icon @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
 ./field 24341 ./core @angular/core,@angular/forms,@angular/forms/signals
 ./icon 2552 - @angular/common,@angular/core
-./popover 13075 ./core @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/core
+./menu 17561 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core
+./popover 13088 ./core @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/core
 ./radio 14829 ./core @angular/core
-./select 26430 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core
+./select 26478 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core
 ./tooltip 12597 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core
 ```

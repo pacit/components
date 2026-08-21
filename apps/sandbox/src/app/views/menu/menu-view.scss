@@ -1,0 +1,13 @@
+.sbx-menu__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Room under the trigger for a panel to open into: a menu that does not fit is pushed back
+   into the window rather than clipped, so a card with no room under it would show the push
+   rather than the menu. */
+.sbx-menu__room {
+  padding-block-end: 160px;
+}

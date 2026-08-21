@@ -20,6 +20,7 @@ a machine; prose with a missing paragraph is not.
 | [`PctDialog`](dialog.md)     | `@pacit/components/dialog`   | modal dialog                        |
 | [`PctTooltip`](tooltip.md)   | `@pacit/components/tooltip`  | a sentence about a control          |
 | [`PctPopover`](popover.md)   | `@pacit/components/popover`  | a panel of content on a live page   |
+| [`PctMenu`](menu.md)         | `@pacit/components/menu`     | a list of commands to choose from   |
 
 ## The order of the components to come
 
@@ -43,7 +44,11 @@ The order follows **architectural debt**, not popularity:
    overlay is a child of `body`, so the answer the DOM gives is "out of the page" — the panel's
    order is spliced back onto its trigger
    ([0031](../decisions/0031-a-panel-s-tab-order-belongs-to-its-trigger.md)).
-3. **Menu** — roving focus, submenus, reuse of the typeahead.
+3. ~~**Menu**~~ — **built.** Roving focus, submenus and the typeahead reused from `core`, which
+   learned one line for it: a menu comes round at the ends and a listbox stops there, so the edge
+   became a parameter of the shared walk rather than a second copy of it. Why focus moves here
+   and points in the select is written down beside it
+   ([0032](../decisions/0032-a-menu-moves-focus-a-listbox-points-at-it.md)).
 4. **Completing the select family** — projected `pct-option`, an option template, groups,
    multiple selection, filtering, clearing, async, virtualisation. Deliberately **after** the
    behaviour layer, or we build it twice.

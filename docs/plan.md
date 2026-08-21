@@ -103,9 +103,25 @@ losing it. It left two lessons of the kind that cost an afternoon each: a dismis
 in the capture phase, before the press it _is_, so the one control that opens a panel could
 never shut it ([`lesson-93`](lessons.md#lesson-93)); and a registration put in an `effect`
 because its partner is an input, which loops for ever the moment a second consumer registers —
-a unit run that never ends rather than an error ([`lesson-94`](lessons.md#lesson-94)). C, the
+a unit run that never ends rather than an error ([`lesson-94`](lessons.md#lesson-94)).
+**E3 has closed after it**, and it is the item where a promise `core` had deliberately left open
+came due. D1 wrote down that wrapping at the ends is exactly the kind of thing one consumer
+cannot judge; the menu arrived with the opposite answer to the listbox's, so the edge became a
+parameter of the shared walk rather than a second copy of it — with one distinction the obvious
+version would have lost, between a movement that ends **at** the end and one that runs **past**
+it. The larger thing it settled is a fork this library now has two live examples of: **a menu
+moves focus and a listbox points at it**
+([0032](decisions/0032-a-menu-moves-focus-a-listbox-points-at-it.md)), each road with a bill
+already paid here. And two defects a browser reports and no test here was asking for: a row's
+stylesheet that never reached the row, because projected content keeps the encapsulation of the
+template that declared it ([`lesson-96`](lessons.md#lesson-96)), and a disabled command that
+would have said so and run anyway, because a directive's host listener is registered after the
+consumer's own ([`lesson-95`](lessons.md#lesson-95)). C, the
 filler, is down to **C20**, left behind by D4, and **C21**, left behind by D6; both are held by
-their own **binds at** — C20 at E5, C21 at the next language-gate task.
+their own **binds at** — C20 at E5, C21 at the next language-gate task. E3 left a third behind,
+and it is about this repository's own machinery rather than its components: **C22**, the two
+gates that take seventeen and ten minutes, sharing one CI job on half the cores this was
+measured on.
 
 **B2 is deferred by decision, not blocked** — and the decision has a shape: **the first push
 happens only when the maintainer asks for it outright.** It is not triggered by a state of the
@@ -1428,6 +1444,31 @@ one language ([`req-project-language`](requirements/project.md#req-project-langu
   - binds at: the next language-gate task, or the first time a second one of these is found ·
     _notes:_ —
 
+- [ ] **C22 — the two longest gates share one runner, and CI gives them half the cores**
+  - measured, from the `task_history` table nx keeps in `.nx/workspace-data`:
+    `components:mutation` **1052 s and 1030 s** on two clean runs, `sandbox-e2e:e2e`
+    **603 s** — that is 17½ and 10 minutes on an **eight-core** machine, and they are the two
+    longest tasks in the repository by an order of magnitude
+  - CI runs them **in one job on `ubuntu-latest`, which has four vCPUs**, and in one
+    `nx affected -t …` line, so nx is free to start both at once. Halving the cores and then
+    dividing them between the two is exactly the arrangement that turned a 17½-minute run into
+    a **30-minute** one on the machine this was measured on — with the difference that here it
+    was an accident of two background commands, and in CI it is the configuration
+  - so the number nobody has is the one that matters: **what a push that touches
+    `libs/components` really costs in CI**. The estimate is 45–60 minutes, and an estimate is
+    what this repository builds gates against
+  - the fork is a real one and both halves have a price. **Split the job** — a matrix with the
+    slow pair on runners of their own — buys wall-clock and pays with a second `npm ci` and a
+    second Playwright cache per run. **Cap the parallelism** for the heavy targets keeps one
+    job and pays by serialising what is already the critical path. **Move `mutation` off the
+    pull request** — nightly, or on `main` alone — is the cheapest and the only one that
+    changes what CI _promises_, which is why it is a decision rather than a setting
+  - it does not touch the definition of done: every gate still runs, and a slow gate is a
+    green gate. What it touches is whether anybody waits for it
+  - binds at: **B2** — the first push to a public repository is the moment somebody other than
+    the maintainer waits for this run, and a first visitor who watches an hour of CI has
+    learned something about the project. Sooner if a run starts hitting a limit · _notes:_ —
+
 ## D. Phase 1 — the behaviour layer in `core`
 
 The largest architectural risk. The list machinery (typeahead, `activeIndex`, skipping disabled
@@ -1827,7 +1868,67 @@ exists and is a condition of entering a release.
     adds nothing to it; twelve tokens and three pairs in the contrast policy, no new word in
     the token dictionary and no new string in `PCT_TEXTS`; `@angular/cdk/a11y` gains a second
     use (`InteractivityChecker`) and the dependency policy's reason says so
-- [ ] **E3 — menu** — roving focus, submenus, reuse of the typeahead from D1
+- [x] **E3 — menu** — roving focus, submenus, reuse of the typeahead from D1
+  - _notes:_ **done, and the item's three words each turned out to be a question the plan had
+    not written down.** _Roving focus_ is not a technique this component picked, it is what
+    separates it from the select — and the two now stand side by side in one library, so the
+    fork is written down rather than left to be reconstructed
+    ([0032](decisions/0032-a-menu-moves-focus-a-listbox-points-at-it.md)): a combobox keeps
+    focus on the trigger because the user is editing a value, a menu gives it to the row
+    because the row is all there is. Each road brings its own bill and both were already paid
+    here — `PctFocusStays` for the one, an answered Tab for the other. _Submenus_ needed no
+    second component: an item carrying `[pctMenuTrigger]` opens another `pct-menu`, which
+    learns its parent from that registration, and the tree closes from the root down so that
+    nothing is left hanging off a panel on its way out. _The typeahead_ came from `core`
+    unchanged — but the walk beside it did not: **D1 had listed wrapping as the thing one
+    consumer cannot judge, and the second consumer arrived with the opposite answer**, so the
+    edge became a parameter (`wrap`) rather than a second copy. What that parameter had to be
+    careful about is the difference between _past_ the end and _at_ it: `PageDown` is
+    `move(10)`, and a modulo would answer "ten rows down" with a lap round the menu.
+    Two defects of the kind only a browser reports. **A row's styles never reached it**
+    ([`lesson-96`](lessons.md#lesson-96)): written as a directive, every `.pct-menu__item` rule
+    was dead, because projected content keeps the encapsulation of the template that DECLARED
+    it — the panel was right, the rows were browser-default buttons, and jsdom computes no
+    styles, so nothing was red. The repository already had the answer one entrypoint over
+    (`input[pctText]` is a **component** on a native element) and half the reason written down.
+    And **a host listener cannot stop one the template registered first**
+    ([`lesson-95`](lessons.md#lesson-95)), which is why a disabled command carries the
+    platform's `disabled` rather than the APG's preferred `aria-disabled`: a consumer's
+    `(click)` sits on the same element and is always ahead of ours in the queue, so
+    `aria-disabled` would say the command is unavailable and run it. The third thing cost an
+    hour and taught nothing new — the dev server served a template calling a method the class
+    no longer had, and three engines agreed on a defect that was not in the source.
+    The mutation run then took a piece of the component away rather than adding tests to it:
+    `holds()` walked its own subtree of open submenus, and **every test passed with the walk
+    deleted**. The dependency's outside-press dispatcher stops at the first attached overlay
+    containing the press, so a menu is never asked about a press that landed in a panel opened
+    from it. What keeps that from being a guess about somebody else's code is a test rather
+    than the walk: a press inside a submenu is not a press outside its parent, and that case
+    goes red the day the dispatcher stops stopping. And it moved a register one floor up: the
+    Angular plugin strikes the options object of a signal QUERY with a different sentence from
+    the one it uses for `input()`/`model()`/`output()`, so the first `contentChildren()` in a
+    measured file arrived looking exactly like a `// Stryker disable` comment smuggled past the
+    configuration. An ignorer is not one sentence, and `mutation.policy.json` can now say so.
+  - gate: `apps/sandbox-e2e/src/menu.spec.ts` (22 cases × 3 engines), an open menu **with a
+    submenu beside it** in the axe audit — `role="menu"` has required children and
+    `role="menuitem"` a required parent, and a nested panel is where either would break — a
+    `menu-open` baseline showing both panels, a forced-colours case measuring the one state
+    this component has, plus `menu.spec.ts` (40 cases) and two `core.spec.ts` cases for the
+    edge the walk learned. 457 unit cases green, 744 e2e green; `menu.ts` at 78.87% mutation,
+    total 79.51 → **80.82** against the 80% floor
+  - control: the wrap parameter measured on both readings of "the end" — one step past it comes
+    round, ten steps past it do not; `Enter` and `Space` measured in three engines precisely
+    because nothing in the component reads them, so the case fails the day the claim stops
+    being true; and the RTL case measures the side and the arrow keys **together**, which is
+    the one place in this library where the writing direction reaches a key map. One control
+    ran the other way and took code with it: the walk inside `holds()` was deleted and the
+    whole unit suite stayed green, which is what a piece of code with no reachable caller looks
+    like — the promise it was written for is kept by the dependency and pinned by one test
+  - cost: `./menu` 17561 B, no `@angular/cdk/a11y` — a panel that takes focus without trapping
+    it or asking where its tab order ends; `./core` +46 B for `wrap`, which reaches `./select`
+    (+48 B) and, through a shared identifier, `./popover` (+13 B); sixteen tokens, four pairs in
+    the contrast policy, one new word in the token dictionary (`item`) and no new string in
+    `PCT_TEXTS`
 - [ ] **E4 — closing out the select family** — projected `pct-option`, an option template,
       groups, multiple selection, filtering, clearing, async, virtualisation. Deliberately
       **after** the behaviour layer

@@ -234,6 +234,34 @@ test.describe('forced-colors: active', () => {
     expect(await styleOf(panel, 'border-top-style')).toBe('solid');
   });
 
+  /**
+   * The row a user is on is the one piece of state a menu carries, and in this mode a
+   * background is the only way left to carry it — the skin's `surface-100` is not kept. So the
+   * highlighted row is the system's own selected pair — the mapping `field.scss` writes down
+   * for a selected list item — and a disabled row is `GrayText`: two
+   * states that a screenshot in the ordinary mode would show and this mode would silently
+   * flatten into one ([`lesson-70`](../../../docs/lessons.md#lesson-70)).
+   */
+  test('the menu carries its row on the system colours', async ({ page }) => {
+    await visit(page, '/menu', { media: FORCED });
+    const sys = await systemColors(page);
+
+    await page.getByTestId('actions-trigger').click();
+    const panel = page.locator('[role="menu"]').first();
+    await expect(panel).toBeVisible();
+
+    expect(await bg(page, '[role="menu"]')).toBe(sys.Canvas);
+    expect(await styleOf(panel, 'border-top-color')).toBe(sys.CanvasText);
+
+    const active = page.getByTestId('item-rename');
+    expect(await styleOf(active, 'background-color')).toBe(sys.SelectedItem);
+    expect(await styleOf(active, 'color')).toBe(sys.SelectedItemText);
+
+    const off = page.getByTestId('item-archive');
+    expect(await styleOf(off, 'color')).toBe(sys.GrayText);
+    expect(await styleOf(off, 'background-color')).toBe(sys.Canvas);
+  });
+
   test('the disabled state says GrayText in every control', async ({
     page,
   }) => {

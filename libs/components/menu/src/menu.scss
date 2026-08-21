@@ -1,0 +1,64 @@
+/* The whole component is in a CDK overlay, that is outside the host tree — `:host(…)` describes
+   nothing here, and the tokens still reach it because they are defined on `:root`. */
+
+.pct-menu__panel {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  min-inline-size: 0;
+  /* A menu that outgrows the window scrolls inside itself rather than reaching off the
+     screen: the page behind is live, and scrolling that one would not bring the rest of the
+     panel back. */
+  max-block-size: min(
+    var(--pct-menu-panel-max-height),
+    calc(100vh - var(--pct-space-5) * 2)
+  );
+  overflow: auto;
+  padding-block: var(--pct-menu-panel-padding-y);
+  background: var(--pct-menu-panel-bg);
+  color: var(--pct-menu-panel-fg);
+  border: 1px solid var(--pct-menu-panel-border);
+  border-radius: var(--pct-menu-panel-radius);
+  box-shadow: var(--pct-menu-panel-shadow);
+  font-family: inherit;
+
+  /* The enter and the leave are one property in two directions, and the duration comes from
+     the motion axis in both — `prefers-reduced-motion` is answered by the token build rather
+     than by a media query written here (`req-a11y-motion`). `opacity` is the one animation
+     `req-token-no-opacity` leaves open, and it stays at its two ends: 0 and 1, never a value
+     in between that would compose with the background and move the contrast out from under
+     the gate that measured it. */
+  opacity: 1;
+  transition: opacity var(--pct-motion-transition-duration)
+    var(--pct-motion-transition-easing);
+
+  /* The enter needs no JavaScript: `@starting-style` gives the browser the state to come from.
+     The leave cannot be done the same way — an element removed from the DOM takes its
+     transition with it — and that half is `pctAfterTransition` in `core`. */
+  @starting-style {
+    opacity: 0;
+  }
+}
+
+.pct-menu__panel[data-pct-leaving] {
+  opacity: 0;
+}
+
+/* The panel takes focus only when it has no item to give it to, and that is a programmatic
+   focus rather than a keyboard cursor: a ring around the whole panel would read as a defect. */
+.pct-menu__panel:focus {
+  outline: none;
+}
+
+/* Forced colours: the surface goes to the system's, and the edge is the only thing left to say
+   where the panel ends. The rows are the item's own sheet — the same mode, one file over. The
+   rule is written out with the base selector's own weight, because `@media` adds no
+   specificity and the base rule would otherwise win the cascade
+   ([`lesson-70`](../../../../docs/lessons.md#lesson-70)). */
+@media (forced-colors: active) {
+  .pct-menu__panel {
+    background: Canvas;
+    color: CanvasText;
+    border-color: CanvasText;
+  }
+}

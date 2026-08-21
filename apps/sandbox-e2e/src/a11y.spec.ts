@@ -147,6 +147,24 @@ test.describe('Accessibility (axe-core, WCAG 2.2 AA)', () => {
     expect(report(violations)).toBe('');
   });
 
+  /**
+   * An open menu with a submenu beside it, and the whole page with them — the popover's
+   * reading of the audit, for the popover's reason: nothing here is `inert`, so the trigger,
+   * the panel and the row that opened the second panel are one tree a reader walks. The
+   * submenu is open on purpose: `role="menu"` has required children and `role="menuitem"` a
+   * required parent, and a nested panel is the arrangement where either could go wrong.
+   */
+  test('an open menu with a submenu has no violations', async ({ page }) => {
+    await visit(page, '/menu');
+    await page.getByTestId('file-trigger').click();
+    await expect(page.locator('[role="menu"]').first()).toBeVisible();
+    await page.getByTestId('file-move').hover();
+    await expect(page.locator('[role="menu"]')).toHaveCount(2);
+
+    const violations = await audit(page);
+    expect(report(violations)).toBe('');
+  });
+
   test('a card with a dark stage has no violations', async ({ page }) => {
     await visit(page, '/button');
     const violations = await audit(page, '[data-testid="demo-dark"]');

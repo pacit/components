@@ -235,11 +235,16 @@ radio group stands on native `<input type="radio">` elements sharing a `name`, s
 navigation, wrapping and "one stop in the Tab order" come from the platform. We add handling
 of our own only where there is no native equivalent.
 
-**Gate:** `apps/sandbox-e2e/src/radio.spec.ts` — keyboard navigation
+**Gate:** `apps/sandbox-e2e/src/radio.spec.ts` — keyboard navigation;
+`apps/sandbox-e2e/src/menu.spec.ts` — `Enter` and `Space` on a command, in three engines. The
+menu's rows are `<button>` elements and the component reads neither key: the case exists because
+"the platform does it" is a claim about browsers rather than about intentions, and this is the
+one component here whose activation is entirely borrowed
 **Control:** none — deliberately: a navigation test has no mode in which it passes without
 a working keyboard
 **Exceptions:** [`req-api-number`](#req-api-number) (native `type="number"` does not know the
-local separator), `PctSelect` (a native `<select>` gives no panel)
+local separator), `PctSelect` (a native `<select>` gives no panel), `PctMenu` (a native menu is
+not a thing the platform has at all — what it borrows is the row, which is a button)
 
 ---
 
@@ -542,6 +547,9 @@ side with no room giving way across the control;
 `apps/sandbox-e2e/src/popover.spec.ts` — the non-modal half: the page behind answering a press
 and still scrolling while the panel is up, focus taken by the panel and given back by Escape,
 and Tab walking out of the panel in both directions;
+`apps/sandbox-e2e/src/menu.spec.ts` — a TREE of non-modal panels: one Escape per level, a press
+inside a submenu that is "outside" every panel above it, the pointer opening one without taking
+focus into it, and the side and the arrow keys mirroring together in a right-to-left page;
 `libs/components/core/src/core.spec.ts` — the layer under its own name: the four properties
 read off the control, the anchor's width, a second opening re-reading a page that moved, the
 closing order over two stacked overlays, the press `PctFocusStays` refuses, which elements

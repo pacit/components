@@ -496,21 +496,59 @@
       "severity": "error"
     },
     {
-      "name": "popover \u2014 text on the panel",
+      "name": "popover — text on the panel",
       "fg": "pct.popover.panel-fg",
       "bg": "pct.popover.panel-bg",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "popover \u2014 heading",
+      "name": "popover — heading",
       "fg": "pct.popover.heading-fg",
       "bg": "pct.popover.panel-bg",
       "level": "AA",
       "severity": "error"
     },
     {
-      "$comment": "A popover has no veil under it, so its edge is measured against the PAGE \u2014 the surface it really stands on. The dialog's own edge is measured against the veil instead, and the two entries together are the whole difference between the modal and the non-modal panel.",
+      "$comment": "A menu draws the page's own surface, so its edge is measured against the page — the popover's reading, one component over. The row is measured against ITS OWN background rather than against the panel's, and the two happen to be the same colour today: the pair has to name what the row really paints, or the day somebody tints the rows is the day this entry stops describing anything. The text stands twice over, because a menu spends half its life with one row painted.",
+      "name": "menu — a command on its own row",
+      "fg": "pct.menu.item-fg",
+      "bg": "pct.menu.item-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "$comment": "The panel paints a text colour of its own, and it is what anything a consumer puts between the rows inherits — a heading, a line of explanation. It is measured even though no part of the component draws text directly on it.",
+      "name": "menu — the panel's own text",
+      "fg": "pct.menu.panel-fg",
+      "bg": "pct.menu.panel-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "menu — a command on the row the user is on",
+      "fg": "pct.menu.item-fg",
+      "bg": "pct.menu.item-bg-active",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "$comment": "A disabled command, on the same footing as every other disabled state here: a warning and not an error, because the greying IS the message. This pair happens to clear AA against the panel, and pinning it as an error would forbid the one change that would make a disabled row read as one (req-token-contrast).",
+      "name": "menu/disabled — a command that cannot be chosen",
+      "fg": "pct.menu.item-fg-disabled",
+      "bg": "pct.menu.item-bg",
+      "level": "AA",
+      "severity": "warn"
+    },
+    {
+      "name": "UI: menu panel edge against the page",
+      "fg": "pct.menu.panel-border",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "$comment": "A popover has no veil under it, so its edge is measured against the PAGE — the surface it really stands on. The dialog's own edge is measured against the veil instead, and the two entries together are the whole difference between the modal and the non-modal panel.",
       "name": "UI: popover panel edge against the page",
       "fg": "pct.popover.panel-border",
       "bg": "pct.surface",

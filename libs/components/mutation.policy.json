@@ -1,12 +1,12 @@
 {
   "// why": "The register of the mutation run (req-quality-unit). It holds what cannot be read out of Stryker's report: WHICH files are to be measured, WHAT score is the floor and WHICH narrowings of the denominator are deliberate. The gate `tools/check-mutation.mjs` compares this file against the report, that is against what the run REALLY did — not against the configuration that declares it.",
-
   "// patterns": "A copy of `mutate` from `stryker.config.json`, written out here so that changing it is a comparison rather than an act of trust. Narrowing the pattern is the cheapest way of raising the score: a file struck from the measurement takes its surviving mutants with it and the percentage rises although no test was added. The same defect as `coverageInclude` in `lesson-45`, one floor up.",
   "patterns": [
     "libs/components/core/src/*.ts",
     "libs/components/dialog/src/dialog.ts",
     "libs/components/field/src/number.ts",
     "libs/components/icon/src/icon.ts",
+    "libs/components/menu/src/menu.ts",
     "libs/components/popover/src/popover.ts",
     "libs/components/select/src/select.ts",
     "libs/components/tooltip/src/tooltip.ts",
@@ -14,7 +14,6 @@
     "!libs/components/**/*.types.ts",
     "!libs/components/**/*.spec.ts"
   ],
-
   "// files": "The inventory outright: what is to be measured. The patterns above watch that nobody narrowed the measurement; this list watches that a file covered by a pattern really entered the report. Neither is enough alone — a pattern can stay untouched while a file disappears (a rename, a move), and the score rises by itself again.",
   "files": [
     "libs/components/core/src/announce.ts",
@@ -33,11 +32,11 @@
     "libs/components/dialog/src/dialog.ts",
     "libs/components/field/src/number.ts",
     "libs/components/icon/src/icon.ts",
+    "libs/components/menu/src/menu.ts",
     "libs/components/popover/src/popover.ts",
     "libs/components/select/src/select.ts",
     "libs/components/tooltip/src/tooltip.ts"
   ],
-
   "// noMutants": "A file inside the measurement out of which Stryker can make not one mutant does NOT appear in the report. Without this list it would be indistinguishable from a file that dropped out of the measurement — and those are two different things, only one of them in order. An entry requires a reason and stops being true on the day the file gets its first mutant: the gate fires then.",
   "noMutants": [
     {
@@ -45,21 +44,20 @@
       "reason": "The file carries the type `PctCompareWith` and one assignment, `export const pctSameValue = Object.is`. The type vanishes at compilation, and assigning a reference to a built-in function has nothing to mutate: there is no condition here, no literal, no call with an argument. Zero mutants is the correct result of the measurement here, not the absence of one."
     }
   ],
-
   "// threshold": "The hard floor of the score for the whole, in percent. The same number stands in `thresholds.break` in `stryker.config.json` and the gate watches that the two agree — because that one fails the run and this one is its only justification. `break` is `null` by Stryker's own default, so BY DEFAULT the mutation run exits zero whatever the score and is a report to look at.",
   "threshold": 80,
-
   "// tolerance": "By how many percentage points a file's score may drift from the snapshot before it is a change requiring a decision. Checked BOTH WAYS: downwards, because that is what a removed assertion looks like; upwards, because a floor standing ten points below the measurement stops measuring anything — one could then delete every fifth assertion and stay green. The price is written down outright: improving the tests requires rewriting the snapshot (`--write`), that is a line in the diff visible in review.",
   "tolerance": 2,
-
   "// ignorers": "Stryker plugins that STRIKE mutants out of the denominator (status `Ignored`). Each has to stand here together with a reason, because each raises the score without adding a single test. The gate compares this list against what the report declares as used, and checks separately that NO ignored mutant carries a reason from outside this list — that is how `// Stryker disable` comments, invisible in the configuration, enter the repository.",
   "ignorers": {
     "angular": {
-      "mutantReason": "Angular signal based input, model and output functions configuration object cannot be mutated as that causes issues with the Angular compiler.",
-      "reason": "The configuration object of `input()`, `model()`, `output()` and of the view queries is read STATICALLY by the Angular compiler. Mutated, it stops being a literal, so ngtsc does not compile the component at all — the whole file falls back to JIT and brings the dry run down with `Component 'PctSelect' is not resolved`. This is not a mutant the tests failed to kill, it is a mutant that cannot be run."
+      "mutantReasons": [
+        "Angular signal based input, model and output functions configuration object cannot be mutated as that causes issues with the Angular compiler.",
+        "Angular signal query options object cannot be mutated as that causes issues with the Angular compiler."
+      ],
+      "reason": "The configuration object of `input()`, `model()`, `output()` and of the view queries is read STATICALLY by the Angular compiler. Mutated, it stops being a literal, so ngtsc does not compile the component at all — the whole file falls back to JIT and brings the dry run down with `Component 'PctSelect' is not resolved`. This is not a mutant the tests failed to kill, it is a mutant that cannot be run. TWO texts and not one: the plugin words the QUERY case differently, and the second sentence arrived with the first `contentChildren()` in a measured file — until then the register looked complete, and the new wording read exactly like a `// Stryker disable` comment somebody had smuggled in."
     }
   },
-
   "// clock": "A mutant killed by the CLOCK counts towards the score exactly like one killed by an assertion. Shortening the limits is therefore a way of raising the percentage without writing tests, and a long tail of timeouts means the score is being bought with the clock. `minimumMS` and `minimumFactor` are lower bounds on Stryker's settings, `clockShare` — the upper bound on the share of timeouts among the killed, in percent.",
   "clock": {
     "minimumMS": 5000,

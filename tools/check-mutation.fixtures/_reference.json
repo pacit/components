@@ -79,7 +79,9 @@
       "tolerance": 2,
       "ignorers": {
         "angular": {
-          "mutantReason": "Angular signal based input, model and output functions configuration object cannot be mutated as that causes issues with the Angular compiler.",
+          "mutantReasons": [
+            "Angular signal based input, model and output functions configuration object cannot be mutated as that causes issues with the Angular compiler."
+          ],
           "reason": "The input's configuration object is read statically by the Angular compiler — mutated, it stops being a literal and the component does not compile at all."
         }
       },

@@ -21,21 +21,23 @@ ignored. Tolerance: ±2 of a percentage point.
 
 ```
 libs/components/core/src/announce.ts 94.44 34(0) 2 0 0
-libs/components/core/src/config.ts 100.00 8(0) 0 0 0
+libs/components/core/src/config.ts 100.00 8(1) 0 0 0
 libs/components/core/src/field.ts 96.97 32(0) 1 0 0
 libs/components/core/src/focus.ts 100.00 1(0) 0 0 0
 libs/components/core/src/id.ts 100.00 5(0) 0 0 0
-libs/components/core/src/list.ts 98.59 70(0) 1 0 0
+libs/components/core/src/list.ts 98.78 81(0) 1 0 0
 libs/components/core/src/modal.ts 80.85 38(0) 5 4 0
 libs/components/core/src/motion.ts 91.38 53(3) 5 0 0
 libs/components/core/src/overlay.ts 100.00 14(0) 0 0 2
-libs/components/core/src/placement.ts 98.46 64(12) 1 0 0
-libs/components/core/src/template.ts 96.00 24(1) 1 0 0
+libs/components/core/src/placement.ts 98.46 64(6) 1 0 0
+libs/components/core/src/template.ts 96.00 24(0) 1 0 0
 libs/components/core/src/texts.ts 100.00 16(0) 0 0 0
 libs/components/dialog/src/dialog.ts 73.73 87(1) 31 0 3
 libs/components/field/src/number.ts 80.35 184(0) 43 2 11
 libs/components/icon/src/icon.ts 92.11 35(0) 3 0 2
+libs/components/menu/src/menu.ts 78.57 209(0) 51 5 2
+libs/components/popover/src/popover.ts 65.61 124(0) 55 10 2
 libs/components/select/src/select.ts 85.13 229(1) 37 3 5
 libs/components/tooltip/src/tooltip.ts 70.54 182(0) 71 5 8
-TOTAL 83.35 1076/1291
+TOTAL 80.82 1420/1757
 ```

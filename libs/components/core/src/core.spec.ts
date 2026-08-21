@@ -264,7 +264,7 @@ describe('@pacit/components/core', () => {
       expect(nav.activeIndex()).toBe(1);
     });
 
-    it('move does not wrap, and a delta wider than the list stops at the edge', () => {
+    it('move does not wrap by default, and a delta wider than the list stops at the edge', () => {
       const { nav } = walk();
 
       nav.last();
@@ -276,6 +276,47 @@ describe('@pacit/components/core', () => {
       expect(nav.activeIndex()).toBe(0);
       nav.move(-1);
       expect(nav.activeIndex()).toBe(0);
+    });
+
+    it('with wrap a step from the edge comes round, and the disabled ends are still skipped', () => {
+      const { nav } = walk({
+        items: signal([
+          { label: 'Alpha', disabled: true },
+          { label: 'Beta' },
+          { label: 'Gamma' },
+          { label: 'Delta', disabled: true },
+        ]),
+        wrap: true,
+      });
+
+      nav.last();
+      expect(nav.activeIndex()).toBe(2);
+      nav.move(1);
+      // Round to the first REACHABLE entry, not to index 0 — wrapping is a movement
+      // over the same domain every other movement walks.
+      expect(nav.activeIndex()).toBe(1);
+      nav.move(-1);
+      expect(nav.activeIndex()).toBe(2);
+    });
+
+    /**
+     * The distinction the `wrap` flag would be wrong without. `PageDown` is `move(10)`, and
+     * a wrapping list that took a modulo of it would answer a request for "ten rows down"
+     * with a lap round the menu — so a delta that merely runs PAST the end still clamps,
+     * and only one made FROM the end comes round.
+     */
+    it('with wrap a delta wider than the list still stops at the edge', () => {
+      const { nav } = walk({ wrap: true });
+
+      nav.first();
+      nav.move(10);
+      expect(nav.activeIndex()).toBe(3);
+      nav.move(1);
+      expect(nav.activeIndex()).toBe(0);
+      nav.move(-10);
+      expect(nav.activeIndex()).toBe(0);
+      nav.move(-1);
+      expect(nav.activeIndex()).toBe(3);
     });
 
     it('move from outside the reachable list jumps to the edge it comes from', () => {

@@ -1,0 +1,132 @@
+<h2 class="view__title">Menu</h2>
+<p class="muted view__intro">
+  A list of commands on a panel, walked by the keyboard and chosen from. Focus
+  really moves here — the item is where the user stands, which is the whole
+  difference from the select's listbox, where focus never leaves the trigger.
+  Tab does not walk the menu: it closes it and hands the page back its own
+  order.
+</p>
+
+<sbx-demo
+  heading="A menu button"
+  summary="The trigger says aria-expanded and points at the panel while it is up. ArrowDown opens it at the first command and ArrowUp at the last; the arrows come round at the ends, Home and End go to them, and a letter jumps to the command that starts with it."
+  [reqs]="['req-a11y-built-in', 'req-api-platform']"
+  [controls]="[]"
+  data-testid="demo-button"
+>
+  <div class="sbx-menu__row sbx-menu__room">
+    <button pctButton [pctMenuTrigger]="actions" data-testid="actions-trigger">
+      Actions
+    </button>
+
+    <pct-menu #actions (closed)="reason.set($event)">
+      <button pctMenuItem (click)="choose('Rename')" data-testid="item-rename">
+        Rename
+      </button>
+      <button
+        pctMenuItem
+        (click)="choose('Duplicate')"
+        data-testid="item-duplicate"
+      >
+        Duplicate
+      </button>
+      <button pctMenuItem disabled data-testid="item-archive">Archive</button>
+      <button pctMenuItem (click)="choose('Delete')" data-testid="item-delete">
+        Delete
+      </button>
+    </pct-menu>
+
+    <button
+      pctButton
+      variant="outline"
+      (click)="count.set(count() + 1)"
+      data-testid="counter"
+    >
+      Count up
+    </button>
+
+    <span class="muted" data-testid="count">Count: {{ count() }}</span>
+    <span class="muted" data-testid="chosen"
+      >Chosen: {{ chosen() ?? '—' }}</span
+    >
+    <span class="muted" data-testid="reason"
+      >Last close: {{ reason() ?? '—' }}</span
+    >
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="A submenu is a menu"
+  summary="There is no second component: an item carrying [pctMenuTrigger] opens another pct-menu, which learns from that registration who its parent is. ArrowRight walks in and ArrowLeft walks back out — logically, so in a right-to-left page they swap. Choosing anywhere closes the whole tree."
+  [reqs]="['req-api-overlay', 'req-token-logical']"
+  [controls]="[]"
+  data-testid="demo-submenu"
+>
+  <div class="sbx-menu__row sbx-menu__room">
+    <button pctButton [pctMenuTrigger]="file" data-testid="file-trigger">
+      File
+    </button>
+
+    <pct-menu #file>
+      <button pctMenuItem (click)="choose('New')" data-testid="file-new">
+        New
+      </button>
+      <button pctMenuItem [pctMenuTrigger]="moveTo" data-testid="file-move">
+        Move to
+      </button>
+      <pct-menu #moveTo placement="end">
+        <button pctMenuItem (click)="choose('Inbox')" data-testid="move-inbox">
+          Inbox
+        </button>
+        <button
+          pctMenuItem
+          (click)="choose('Archive')"
+          data-testid="move-archive"
+        >
+          Archive
+        </button>
+        <button pctMenuItem [pctMenuTrigger]="deeper" data-testid="move-more">
+          Somewhere else
+        </button>
+        <pct-menu #deeper placement="end">
+          <button
+            pctMenuItem
+            (click)="choose('Trash')"
+            data-testid="deeper-trash"
+          >
+            Trash
+          </button>
+        </pct-menu>
+      </pct-menu>
+      <button pctMenuItem (click)="choose('Close')" data-testid="file-close">
+        Close
+      </button>
+    </pct-menu>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="Typeahead over a list worth typing at"
+  summary="The prefix machinery is the select's, reused from core: a letter activates the first command it starts, and a second letter within half a second narrows rather than starting again."
+  [reqs]="['req-project-core']"
+  [controls]="[]"
+  data-testid="demo-typeahead"
+>
+  <div class="sbx-menu__row sbx-menu__room">
+    <button pctButton [pctMenuTrigger]="langs" data-testid="langs-trigger">
+      Language
+    </button>
+
+    <pct-menu #langs ariaLabel="Language">
+      @for (language of languages; track language) {
+      <button
+        pctMenuItem
+        (click)="choose(language)"
+        [attr.data-testid]="'lang-' + language"
+      >
+        {{ language }}
+      </button>
+      }
+    </pct-menu>
+  </div>
+</sbx-demo>

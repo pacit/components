@@ -154,6 +154,33 @@ test.describe('Appearance — compared with the baseline', () => {
   });
 
   /**
+   * The menu, with a submenu open beside it — the arrangement no resting page shows and the
+   * one where the picture is worth taking: two panels of the same surface, drawn side by side
+   * with nothing but their edges and shadows between them and the page.
+   */
+  test('menu-open', async ({ page }) => {
+    await stage(page, '/menu');
+    const trigger = page.getByTestId('file-trigger');
+    // Into the middle of the window first. A panel that does not fit is pushed back into the
+    // viewport rather than clipped, so a trigger near the bottom of the page gives a picture
+    // of the push instead of a picture of the menu.
+    await trigger.evaluate((el) => el.scrollIntoView({ block: 'center' }));
+    await trigger.click();
+    const first = page.locator('[role="menu"]').first();
+    await expect(first).toBeVisible();
+    await page.getByTestId('file-move').hover();
+    await expect(page.locator('[role="menu"]')).toHaveCount(2);
+    // The enter is a fade, so the shot has to wait for both of them to have finished.
+    await expect(first).toHaveCSS('opacity', '1');
+    await expect(page.locator('[role="menu"]').nth(1)).toHaveCSS(
+      'opacity',
+      '1',
+    );
+
+    await expect(page).toHaveScreenshot('menu-open.png');
+  });
+
+  /**
    * The same set of controls in the dark theme. The theme is a cross-cutting axis,
    * so a regression in the semantic layer of the tokens will show up here rather
    * than in the light screenshots.

@@ -1,0 +1,33 @@
+{
+  "pct": {
+    "menu": {
+      "$comment": "A menu is a list of commands lifted off the page for a moment, so its surface is the page's own (`pct.surface`) exactly as the popover's is — the same reasoning one component over, and the same distinction from the tooltip, whose inverted panel says \"read me and forget me\". The rows are what the component really is, which is why the item tier carries more names than the panel tier: a panel is a box, and everything the user aims at is a row.",
+      "panel-bg": { "$type": "color", "$value": "{pct.surface}" },
+      "panel-fg": { "$type": "color", "$value": "{pct.text}" },
+      "$comment-panel-border": "`border-strong` and not `border`, for the popover's reason: the panel stands on the page rather than over a veil, so this line is the only thing separating a light panel from a light page. A shadow is not that thing — it goes with the mode that takes shadows away.",
+      "panel-border": { "$type": "color", "$value": "{pct.border-strong}" },
+      "panel-radius": { "$type": "dimension", "$value": "{pct.radius.md}" },
+      "panel-shadow": { "$type": "shadow", "$value": "{pct.shadow-panel}" },
+      "$comment-panel-padding-y": "The block padding is the panel's only inset: a row runs the full width of the menu, because the target a user aims at is the row and not the text on it. That is also why there is no `padding-x` here — it would draw a margin the pointer would fall into.",
+      "panel-padding-y": { "$type": "dimension", "$value": "{pct.space.2}" },
+      "$comment-panel-max-height": "Taller than the select's 240px, because a menu's rows are commands rather than choices and a list of them is usually shorter — the number is the point at which a menu stops being a menu and starts being a list to scroll, and past it the panel scrolls rather than reaching off the screen.",
+      "panel-max-height": { "$type": "dimension", "$value": "320px" },
+
+      "item-fg": { "$type": "color", "$value": "{pct.text}" },
+      "item-bg": { "$type": "color", "$value": "{pct.surface}" },
+      "$comment-item-bg-active": "ONE colour for the row the user is on, and the reason is what a menu does with the pointer: hovering a row moves the keyboard's own position to it, so `:hover` and `:focus` are never two different rows. A second token would promise a distinction the component spends its code making sure cannot happen.",
+      "item-bg-active": { "$type": "color", "$value": "{pct.surface-100}" },
+      "item-fg-disabled": { "$type": "color", "$value": "{pct.text-disabled}" },
+      "item-font-size": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.md}"
+      },
+      "item-padding-y": { "$type": "dimension", "$value": "{pct.space.2}" },
+      "item-padding-x": { "$type": "dimension", "$value": "{pct.space.4}" },
+      "$comment-item-gap": "Between the label and whatever a consumer puts beside it — an icon, a shortcut, the arrow of a submenu.",
+      "item-gap": { "$type": "dimension", "$value": "{pct.space.3}" },
+      "$comment-item-target-min": "WCAG 2.2 SC 2.5.8 on the row itself. The padding alone would very nearly do it, and \"very nearly\" is what a floor is for: a consumer who shrinks the font size would take the target under 24px without changing a rule that mentions targets.",
+      "item-target-min": { "$type": "dimension", "$value": "{pct.target.min}" }
+    }
+  }
+}

@@ -108,6 +108,13 @@ export const SBX_VIEWS: readonly SbxView[] = [
       import('./views/popover/popover-view').then((m) => m.PopoverView),
   },
   {
+    path: 'menu',
+    title: 'Menu',
+    summary: 'A list of commands, walked by the keyboard and chosen from.',
+    group: 'components',
+    load: () => import('./views/menu/menu-view').then((m) => m.MenuView),
+  },
+  {
     path: 'size',
     title: 'Size',
     summary: 'Every component on the shared sm/md/lg axis.',

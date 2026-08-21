@@ -2401,3 +2401,55 @@ the partner arrives by injection; nothing there is reactive, so nothing can loop
 same pattern to a partner that arrives as an **input** moves it into a reactive context, and the
 pattern stops being safe without a word of warning. **A registration is not a computation, and
 an effect is the wrong place for it unless every read inside is untracked.**
+
+### <a id="lesson-95"></a>`lesson-95` — A host listener cannot stop a listener the template registered first
+
+A menu item is a `<button>` a consumer binds their own `(click)` to. Marking one unavailable
+therefore has two candidate spellings, and only one of them is a promise:
+
+```html
+<button pctMenuItem disabled (click)="destroy()">Delete</button>
+```
+
+Written with `aria-disabled="true"` — the spelling the APG prefers, because a disabled item
+stays discoverable — the row **says** the command is unavailable and runs it anyway. The
+directive's own `(click)` handler can decide not to act, but the consumer's handler is a second
+listener on the same element, and stopping it would take `stopImmediatePropagation` from a
+listener that runs **first**. It does not: Angular registers a template's own listeners during
+the creation pass of the element and a directive's host listeners after them, so the consumer's
+handler is always ahead of ours in the list. There is no ordering to arrange — the two are not
+in a race, they are in a queue, and we are behind.
+
+The platform's `disabled` has no such problem: a disabled `<button>` dispatches no `click` at
+all, to anybody. So the item is declared as `button[pctMenuItem]` and binds the real property,
+and the APG's discoverability argument is answered instead by the walk — a disabled row is
+skipped rather than hidden, and it is still read out by a virtual cursor going over the panel.
+
+**The general shape:** a directive that guards an event on somebody else's element can only
+guard what nobody else is listening for. Where a consumer may bind the same event, the guard has
+to be a state the platform enforces, not a decision the component makes.
+
+### <a id="lesson-96"></a>`lesson-96` — Projected content keeps the encapsulation of the template that declared it
+
+The menu's rows were written as a directive with the styling left in the component's own
+stylesheet — `.pct-menu__item { … }` in `menu.scss`, beside `.pct-menu__panel`. Every rule for a
+row was dead, and nothing said so: the panel was drawn correctly, the rows were the browser's
+default buttons, and the unit suite was green because jsdom computes no styles.
+
+Emulated encapsulation rewrites `.pct-menu__item` to `.pct-menu__item[_ngcontent-abc]`, where
+`abc` is the id of the component whose template the element was **written in**. The rows are
+written in the consumer's template, so they carry the consumer's id — the menu's selector cannot
+match them however deeply they are nested inside its panel. What the panel gets right and the
+row gets wrong is not depth, it is authorship.
+
+The repository already had the answer one entrypoint over and had written down half the reason:
+`pct-text` is a **component on a native element** (`input[pctText]`) because "a directive cannot
+carry styles, and the API is not to stand on `::ng-deep`". The other half is this: a component
+on the element brings `:host`, which matches the element itself rather than its contents, and
+`:host` is the only selector that reaches a projected node from the component that owns it.
+
+It was found by opening the page and reading `getComputedStyle` — 21 px tall, 6 px of padding,
+`rgb(239, 239, 239)`: a browser default button, in the one measurement no test in this
+repository was taking. It is the third defect in a row here found that way
+([`lesson-90`](#lesson-90), [`lesson-91`](#lesson-91)), and the three of them have one shape —
+**a component is not built until somebody has looked at it.**

@@ -17,6 +17,7 @@
     "select/**/*.ts",
     "tooltip/**/*.ts",
     "popover/**/*.ts",
+    "menu/**/*.ts",
     "field/**/*.ts",
     "icon/**/*.ts"
   ],

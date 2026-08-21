@@ -1,0 +1,93 @@
+/* The rules stand on `:host`, and that is not a style: the element is the consumer's `<button>`
+   and it is PROJECTED into the panel, so it carries the encapsulation attribute of the
+   template that declared it and never the menu's. A `.pct-menu__item` selector written in the
+   menu's own sheet matches nothing at all
+   ([`lesson-96`](../../../../docs/lessons.md#lesson-96)). */
+
+:host {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: var(--pct-menu-item-gap);
+  inline-size: 100%;
+  /* The row is the target, so the floor goes on the row (`req-a11y-touch`). */
+  min-block-size: var(--pct-menu-item-target-min);
+  padding-block: var(--pct-menu-item-padding-y);
+  padding-inline: var(--pct-menu-item-padding-x);
+  border: 0;
+  margin: 0;
+  background: var(--pct-menu-item-bg);
+  color: var(--pct-menu-item-fg);
+  font-family: inherit;
+  font-size: var(--pct-menu-item-font-size);
+  line-height: 1.4;
+  text-align: start;
+  cursor: pointer;
+}
+
+/* One rule for both, because in a menu they are one state: the pointer arriving on a row moves
+   the keyboard's position to it, so `:hover` and `:focus` are never two different rows. */
+:host(:hover),
+:host(:focus) {
+  background: var(--pct-menu-item-bg-active);
+}
+
+/* The highlight above is the focus indicator for a pointer; a keyboard gets the ring as well,
+   drawn INSIDE the row because a row runs the full width of the panel and an outset ring would
+   be clipped by its edge. */
+:host(:focus-visible) {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: -2px;
+}
+
+:host([data-pct-disabled]) {
+  color: var(--pct-menu-item-fg-disabled);
+  cursor: not-allowed;
+}
+
+/* A disabled row is not reachable by the keyboard and answers no press, so a highlight would
+   be saying something untrue about what the pointer is on. */
+:host([data-pct-disabled]:hover),
+:host([data-pct-disabled]:focus) {
+  background: var(--pct-menu-item-bg);
+}
+
+/* Forced colours: every surface goes to the system's. Each rule is written out with the base
+   selector's own weight, because `@media` adds no specificity and the base rule would
+   otherwise win the cascade ([`lesson-70`](../../../../docs/lessons.md#lesson-70)). */
+@media (forced-colors: active) {
+  :host {
+    background: Canvas;
+    color: CanvasText;
+  }
+
+  /* The row the user is on is the one piece of state this component carries, and in this mode
+     a background is the only way left to carry it: `surface-100` is not kept. It is
+     `SelectedItem`/`SelectedItemText` — the pair the library-wide mapping in `field.scss`
+     gives a selected list item — and the text goes with the background or the row would be
+     unreadable. */
+  :host(:hover),
+  :host(:focus) {
+    background: SelectedItem;
+    color: SelectedItemText;
+  }
+
+  /* `SelectedItemText` and not the mapping's `Highlight`, and the reason is what this
+     component is: the row a menu's keyboard is on IS its selection, so the ring is drawn on
+     that row's own background rather than on the panel's. A `Highlight` ring there is one
+     high-contrast theme away from being the same colour as the rectangle under it — the
+     select can afford it because its two states are two channels, and here there is one. */
+  :host(:focus-visible) {
+    outline-color: SelectedItemText;
+  }
+
+  :host([data-pct-disabled]) {
+    color: GrayText;
+  }
+
+  :host([data-pct-disabled]:hover),
+  :host([data-pct-disabled]:focus) {
+    background: Canvas;
+    color: GrayText;
+  }
+}

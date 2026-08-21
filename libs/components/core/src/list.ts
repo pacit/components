@@ -30,6 +30,17 @@ export interface PctListSource<T> {
   readonly label?: (item: T) => string;
   /** Life of the typed prefix, in milliseconds; `PCT_TYPEAHEAD_DELAY` unless given. */
   readonly typeaheadDelay?: number;
+  /**
+   * What happens at the ends: `false` (the default) stops there, `true` comes round. **It is
+   * the role that decides**, and the two roles here disagree — a native `<select>` stops at
+   * the last option and a menu returns to its first, both of them matching what the platform
+   * does for the same pattern.
+   *
+   * It is a parameter and not a walk of its own for the reason `move` gives: only the EDGE
+   * differs, and everything before the edge — the reachable set, the clamping of a wide
+   * delta, the prefix — is the same walk in both roles.
+   */
+  readonly wrap?: boolean;
 }
 
 /**
@@ -57,9 +68,15 @@ export interface PctListNavigation {
   /** Activates the last reachable entry; `-1` when there is none. */
   last(): void;
   /**
-   * Moves by `delta` over the reachable entries, **without wrapping** — a native `<select>`
-   * stops at the ends and so does this. A delta wider than what is left clamps to the edge,
-   * which is what makes it the whole answer for `PageDown` as well as for `ArrowDown`.
+   * Moves by `delta` over the reachable entries. A delta wider than what is left clamps to
+   * the edge, which is what makes it the whole answer for `PageDown` as well as for
+   * `ArrowDown`.
+   *
+   * **At the edge `wrap` decides**, and it decides for a movement that ends exactly ONE place
+   * past it: `ArrowDown` from the last entry is the first, `PageDown` from anywhere is the
+   * last and stays there. That is the distinction a wrapping list needs in order to keep
+   * answering `PageDown` at all — a modulo would turn "ten rows down" into a lap round the
+   * menu, and clamping alone would take the wrap away from the key it exists for.
    *
    * From an index outside the reachable list (`-1`, or an entry gone disabled) it jumps to
    * the edge the movement comes from: down from nowhere is the first entry, up is the last.
@@ -86,9 +103,12 @@ export interface PctListNavigation {
  * the menu and a command palette all walk a list the same way, so the copy was going to
  * happen on a much bigger piece (req-project-core).
  *
- * Deliberately **not** here, because one consumer cannot tell a shared property from an
- * accident of the only case: wrapping at the ends (a menu wraps, a listbox does not), the key
- * map, and scrolling the active entry into view, which is DOM the walk never touches.
+ * Deliberately **not** here while there was one consumer, because one consumer cannot tell a
+ * shared property from an accident of the only case: the key map, and scrolling the active
+ * entry into view, which is DOM the walk never touches. **Wrapping at the ends was on that
+ * list and has come off it** — the menu arrived with the opposite answer to the listbox's, and
+ * two roles that disagree about one line of a walk make it a parameter of the walk rather than
+ * a second copy of it (`wrap`, and `move` for what "at the end" means).
  *
  * Needs an injection context — the typeahead timer is released with the component that owns
  * it, so call this in a field initialiser.
@@ -150,7 +170,16 @@ export function pctListNavigation<T>(src: PctListSource<T>): PctListNavigation {
         activeIndex.set(delta > 0 ? list[0] : list[list.length - 1]);
         return;
       }
-      const next = Math.min(Math.max(current + delta, 0), list.length - 1);
+      const last = list.length - 1;
+      const target = current + delta;
+      // Off the end is not the same question as at the end. A wide delta clamps in both
+      // roles — `PageDown` from the middle of a wrapping menu is its last entry, not a lap
+      // round it — and the wrap is what a movement made FROM the edge does.
+      let next = Math.min(Math.max(target, 0), last);
+      if (src.wrap) {
+        if (target === -1) next = last;
+        else if (target === last + 1) next = 0;
+      }
       activeIndex.set(list[next]);
     },
 

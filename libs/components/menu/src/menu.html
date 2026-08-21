@@ -1,0 +1,30 @@
+<!--
+  Everything below is attached to a CDK overlay and lives outside the host tree — the host
+  element renders nothing. The panel therefore carries `pctOverlayPanel`: what the tree stops
+  handing it — theme, typeface, size, writing direction (`lesson-35`).
+
+  It is a panel of the kind that DOES take focus, which is the other declaration 0025 named.
+  Unlike the popover it does not keep it: focus goes on to an ITEM, because in this pattern the
+  item is where the user stands. `tabindex="-1"` is the answer for the one menu that has no
+  item to hand focus to — an empty one still has to be somewhere for Escape to be pressed.
+
+  The items are the consumer's, projected here as they were written. They are direct content of
+  `role="menu"` on purpose: a wrapper drawn between the two would break the parent/child
+  relation the role rests on, and axe says so (`aria-required-children`).
+-->
+<ng-template #panel>
+  <div
+    class="pct-menu__panel"
+    data-pct-part="panel"
+    role="menu"
+    [id]="panelId"
+    [pctOverlayPanel]="inherited()"
+    tabindex="-1"
+    [attr.data-pct-leaving]="leaving() ? '' : null"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || (ariaLabel() ? null : triggerId())"
+    (keydown)="onKeydown($event)"
+  >
+    <ng-content />
+  </div>
+</ng-template>

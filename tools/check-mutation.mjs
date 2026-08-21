@@ -425,8 +425,14 @@ export const checkMutation = (input) => {
         `as a description of today's measurement.`,
     );
 
+  // `mutantReasons` is a LIST because one ignorer is not one sentence: the Angular plugin
+  // strikes the configuration object of `input()`/`model()`/`output()` and the options object
+  // of a signal QUERY, and says so in two different texts. Written as a single string, the
+  // second text looked exactly like a `// Stryker disable` comment somebody had smuggled in —
+  // the register has to be able to describe an ignorer with more than one reason, or it
+  // reports the first `contentChildren()` in a measured file as a defect.
   const allowedReasons = new Set(
-    Object.values(ignorers).map((w) => w?.mutantReason),
+    Object.values(ignorers).flatMap((w) => w?.mutantReasons ?? []),
   );
   const alien = allMutants.filter(
     (m) => m.status === 'Ignored' && !allowedReasons.has(m.statusReason),
