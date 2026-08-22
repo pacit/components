@@ -215,6 +215,9 @@
     [attr.aria-multiselectable]="multiple ? 'true' : null"
     [attr.data-pct-multiple]="multiple ? '' : null"
     [attr.aria-busy]="loading() ? 'true' : null"
+    [attr.data-pct-virtual]="virtual() ? '' : null"
+    [style.--_pct-select-lead]="panelView().lead + 'px'"
+    [style.--_pct-select-tail]="panelView().tail + 'px'"
     [pctOverlayPanel]="inherited()"
     pctFocusStays
     [attr.aria-label]="ariaLabel() || null"
@@ -240,6 +243,8 @@
         [id]="optionId(row.index)"
         [attr.aria-selected]="isSelected(row.index)"
         [attr.aria-disabled]="row.disabled ? 'true' : null"
+        [attr.aria-setsize]="setSize()"
+        [attr.aria-posinset]="setSize() === null ? null : row.index + 1"
         [attr.data-pct-active]="row.index === activeIndex() ? '' : null"
         [attr.data-pct-selected]="isSelected(row.index) ? '' : null"
         [attr.data-pct-disabled]="row.disabled ? '' : null"
@@ -285,19 +290,30 @@
       }
     </ng-template>
 
-    <!-- `track $index`: the reason is with the `options` input (`lesson-66`, `lesson-67`). -->
-    @for (section of sections(); track $index; let s = $index) { @if
-    (section.label !== null) {
+    <!--
+      The sections the panel DRAWS, which is every one of them until a window cuts the list.
+      Tracked by the section's own index rather than by its position here: with a window the
+      two differ, and a heading's id has to name the same section however the window moved
+      (`lesson-66`, `lesson-67` are why the rows below track an index at all).
+
+      A group carries the space its own skipped rows would have taken. A nameless section
+      draws no element and carries none — what it skips is on the panel, which is where it
+      can only ever be: a section in the middle of a window is drawn whole.
+    -->
+    @for (section of panelView().sections; track section.index; let s = $index)
+    { @if (section.label !== null) {
     <div
       class="pct-select__group"
       data-pct-part="group"
       role="group"
-      [attr.aria-labelledby]="groupId(s)"
+      [attr.aria-labelledby]="groupId(section.index)"
+      [style.--_pct-select-lead]="section.lead + 'px'"
+      [style.--_pct-select-tail]="section.tail + 'px'"
     >
       <div
         class="pct-select__group-label"
         data-pct-part="group-label"
-        [id]="groupId(s)"
+        [id]="groupId(section.index)"
       >
         {{ section.label }}
       </div>

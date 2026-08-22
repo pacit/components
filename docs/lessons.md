@@ -2773,3 +2773,96 @@ walk therefore asks and does not assume — and the select's answer was already 
 something else: `compareWith`, the function that maps a value back to an option **because a
 fetch brings back another instance of the same thing**. A cursor is another way of naming an
 option, so it is put back the same way the value is.
+
+### <a id="lesson-108"></a>`lesson-108` — `offsetHeight` is an integer, and a list is arithmetic over a fraction
+
+A window over a list is arithmetic over one number: the height of a row. The height was refused
+as an input for a reason that was written down before anything was built — a row here is
+**35.59 px**, `line-height: 1.4` on a 14 px type plus the padding, there is no token for it
+because it falls out of the type, and `size` moves it again per instance — so a number a
+consumer typed by hand would be wrong by a fraction of a pixel per row and by two thousand over
+five thousand of them.
+
+The first implementation then measured it with `offsetHeight`, and `offsetHeight` **rounds to an
+integer**. The panel drawn whole reported a `scrollHeight` of 177,977 px and the windowed one
+180,004: the same list, 2,027 px apart, which is fifty-seven rows of scrollbar describing rows
+nobody has. The very drift the input was refused for, arrived through the measurement instead.
+
+`getBoundingClientRect().height` answers 35.59375 and the two totals agree to the pixel. The
+lesson is not about one property: **a measurement is a promise about precision**, and the DOM
+has two kinds of length — the rounded ones (`offsetHeight`, `clientHeight`, `scrollTop` in
+some engines) and the exact ones (every `DOMRect`). A number that is multiplied by five
+thousand has to come from the second kind.
+
+The gate is the one that says so without naming a number: the same list is opened twice, drawn
+whole and windowed, and the two `scrollHeight`s are compared against **each other** with a
+pixel of tolerance. A test asserting 177,977 would have been a test about this machine's fonts.
+
+### <a id="lesson-109"></a>`lesson-109` — Two repairs in one run, and the count of red cases cannot say which one worked
+
+The window moved on Chromium and did not on Firefox. Two things were changed in answer to that,
+in the same edit: a demo whose keyboard case was asking `End` of a **filtering** trigger, where
+that key belongs to the caret and not to the list; and `overflow-anchor: none` on the panel, on
+the reasoning that scroll anchoring is the browser keeping a chosen element still while the
+content around it changes, which is a fair description of what a window does on every frame.
+
+The run went from five red cases to two. Both changes looked justified, the story was coherent —
+and the anchoring had done **nothing at all**. It was found out only because the negative
+control for it was actually run: the property was put back to its default and every case stayed
+green, including a wheel-driven scroll in Firefox, twenty-five notches down, which is the
+interaction anchoring bites hardest. All five of the original failures belonged to the demo and
+to the two defects in [`lesson-110`](#lesson-110) and [`lesson-111`](#lesson-111).
+
+The line is gone, because a line no test can fail on is a line this repository deletes. The
+lesson is about the method rather than about the property: **a run that goes from five red to
+two has measured the pair, not either one.** Changing two things and reading one number is how a
+guess earns a permanent place in a stylesheet — and the thing that finds it out is the rule this
+plan already has, that every gate needs a recorded run of it failing. The control here did not
+confirm a repair; it deleted one.
+
+### <a id="lesson-110"></a>`lesson-110` — An effect that follows the cursor must be woken by the cursor alone
+
+The hook that keeps the active row in view read four things: the cursor, whether the panel is
+open, the panel element, and — through the arithmetic that finds the row's offset — the
+geometry. Only the first two are what it is **about**. The other two are how it does its job.
+
+An `afterRenderEffect` tracks every signal it reads, so a measurement that moved by a fraction
+of a pixel woke a hook whose entire body is "scroll the panel to the cursor" — and the cursor
+was standing on row 0 while the user was looking at row 4,989. The panel snapped back to the
+top, in one engine and not the other, on a scroll the user had asked for.
+
+`untracked` around the body, with the cursor read outside it. The rule generalises past this
+component: **an effect's dependencies are the question it answers, not the data it needs to
+answer it** — and the two are easy to confuse, because reading the second is how you compute
+the first.
+
+### <a id="lesson-111"></a>`lesson-111` — Two engines lay out on two grids, so a measured value is compared with a tolerance and never rounded
+
+With the hook untracked and the anchoring off, Firefox still froze the panel where it stood,
+and the console said why: `NG0103: Infinite change detection while refreshing application
+views`.
+
+The instrumented run is the whole lesson in six lines:
+
+```
+SET metrics 35.600006103515625   HOOK measure 4989 177608.43045043945
+SET metrics 35.59999084472656    HOOK measure 4989 177608.35432434082
+SET metrics 35.600006103515625   HOOK measure 4989 177608.43045043945
+```
+
+Firefox reports the row's height as two values a **fifteen-millionth of a pixel** apart, and
+they alternate, because each measurement writes the spacer that decides where the next row is
+laid out. Measure, write, re-render, measure. The loop is not slow, it is endless, and Angular
+gives up rather than hanging — which is why the symptom is a panel that stops responding rather
+than a tab that dies.
+
+The obvious repair is to round the value, and it is wrong: **engines do not share a grid.**
+Blink lays out on 1/64 px and reports 35.59375; Gecko lays out on 1/60 px and reports 35.6.
+Rounding to either grid moves every reading of the other by tens of pixels over five thousand
+rows — the same defect as [`lesson-108`](#lesson-108), reintroduced by the fix for the loop.
+
+So the reading stays exact and the **question** gets coarse: two heights within a sixty-fourth
+of a pixel are one measurement, in the signal's `equal`. That is a thousand times the jitter and
+a two-hundredth of the smallest change that can be real, because a row's height comes out of
+the type and moves by whole points when it moves at all. A stored value is exact; "is this a
+different value" is a judgement, and a judgement about a measurement needs a tolerance.

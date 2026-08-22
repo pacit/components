@@ -179,6 +179,45 @@ test.describe('Accessibility (axe-core, WCAG 2.2 AA)', () => {
   });
 
   /**
+   * A panel drawing eleven rows of five thousand, scrolled into the middle of them — the state
+   * a window is FOR, and the one the geometry only exists in a browser to reach.
+   *
+   * Two things are being asked here and only one of them has a rule. The one that has: the
+   * listbox is still the element that scrolls, and it stays that way because the exemption
+   * keeping a panel of unfocusable rows out of `scrollable-region-focusable` is for a
+   * combobox's own popup — put the scrolling one element in, which is exactly what a
+   * virtual-scroll viewport does, and the same tree is a serious violation
+   * ([0038](../../../docs/decisions/0038-a-window-is-measured-and-its-spacer-is-not-an-element.md)).
+   * The one that has not: `aria-setsize` and `aria-posinset` exist for a set the DOM does not
+   * hold, and axe has no rule about them at all — a windowed listbox that says neither is
+   * green here and lies to the reader about how long the list is. That promise is measured in
+   * `select.spec.ts`, and this case is why it has to be.
+   */
+  test('a panel drawing a window of a long list has no violations', async ({
+    page,
+  }) => {
+    await visit(page, '/select');
+    await page
+      .getByTestId('select-many')
+      .locator('[data-pct-part="trigger"]')
+      .click();
+    const panel = page.locator('[data-pct-part="panel"]');
+    await expect(panel).toBeVisible();
+
+    // Into the middle of the list, where the panel is drawing a window with a spacer on both
+    // sides of it — the top of a list is the one place a window looks like an ordinary panel.
+    await panel.evaluate((el) => {
+      el.scrollTop = el.scrollHeight / 2;
+    });
+    await expect(
+      page.locator('[data-pct-part="option"]').first(),
+    ).not.toHaveText('Row 0');
+
+    const violations = await audit(page);
+    expect(report(violations)).toBe('');
+  });
+
+  /**
    * The cross, audited where it really stands: a `<button>` beside the trigger, inside the
    * same field row. Two things about it are only ever true in a rendered tree — its name comes
    * from `PCT_TEXTS` through `aria-label`, so a control that lost the string would be an

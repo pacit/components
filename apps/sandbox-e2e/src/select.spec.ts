@@ -1073,6 +1073,157 @@ test.describe('PctSelect — a combobox with a panel', () => {
     });
   });
 
+  /**
+   * The window (`virtual`). This is where it has to be measured rather than in a unit run:
+   * every number the window is arithmetic over is read from a real layout, and jsdom has
+   * none — a row is 0 px tall there, which is why the unit gate measures the count promise
+   * and the browser measures the geometry.
+   */
+  test.describe('a list too long to draw', () => {
+    const windowed = (page: import('@playwright/test').Page) =>
+      trigger(page, 'select-many');
+    const whole = (page: import('@playwright/test').Page) =>
+      trigger(page, 'select-many-plain');
+
+    test('the panel draws what it can show, and the list is still five thousand long', async ({
+      page,
+    }) => {
+      await windowed(page).click();
+      await expect(panel(page)).toBeVisible();
+
+      // Eleven rows against five thousand, and the pair that says so to a reader: the DOM no
+      // longer holds the set, so the length has to be written down. No audit asks for it —
+      // `aria-setsize` has no axe rule — which is why it is asserted here.
+      const drawn = await options(page).count();
+      expect(drawn).toBeGreaterThan(0);
+      expect(drawn).toBeLessThan(60);
+      await expect(options(page).first()).toHaveAttribute(
+        'aria-setsize',
+        '5000',
+      );
+      await expect(options(page).first()).toHaveAttribute('aria-posinset', '1');
+      await expect(panel(page)).toHaveAttribute('data-pct-virtual', '');
+    });
+
+    test('the same list drawn whole puts five thousand rows on the page', async ({
+      page,
+    }) => {
+      await whole(page).click();
+      await expect(panel(page)).toBeVisible();
+      await expect(options(page)).toHaveCount(5000);
+      // The promise is the window's alone: without it, neither attribute is written, because
+      // the DOM holds the whole set and saying so twice is two things to keep in step.
+      await expect(options(page).first()).not.toHaveAttribute('aria-setsize');
+    });
+
+    /**
+     * The measurement the whole feature turns on. A row here is 35.59 px — `line-height: 1.4`
+     * on a 14 px type plus the padding — and `offsetHeight` calls it 36: over five thousand
+     * rows that rounding is two thousand pixels of scrollbar describing a list nobody has
+     * ([`lesson-108`](../../../docs/lessons.md#lesson-108)). So the two panels are compared
+     * against each other rather than against a number written here, and the one that is drawn
+     * whole is the authority: it is the list, at its real height.
+     */
+    test('a windowed panel scrolls exactly as far as the list it stands for', async ({
+      page,
+    }) => {
+      await whole(page).click();
+      const real = await panel(page).evaluate((el) => el.scrollHeight);
+      await page.keyboard.press('Escape');
+
+      await windowed(page).click();
+      const windowedHeight = await panel(page).evaluate(
+        (el) => el.scrollHeight,
+      );
+
+      // One pixel of tolerance for the subpixel rounding of a single row, and not one row's
+      // worth: a window built on a rounded height would be out by two thousand.
+      expect(Math.abs(windowedHeight - real)).toBeLessThanOrEqual(1);
+    });
+
+    test('a scroll to the bottom draws the last row, and the window follows it back', async ({
+      page,
+    }) => {
+      await windowed(page).click();
+      await expect(options(page).first()).toHaveText('Row 0');
+
+      await panel(page).evaluate((el) => {
+        el.scrollTop = el.scrollHeight;
+      });
+      await expect(options(page).last()).toHaveText('Row 4999');
+
+      // A drag of the scrollbar moves no cursor, so the two have come apart — and a name
+      // pointing at a row nobody drew is a reference to nothing.
+      await expect(windowed(page)).not.toHaveAttribute('aria-activedescendant');
+
+      await panel(page).evaluate((el) => {
+        el.scrollTop = 0;
+      });
+      await expect(options(page).first()).toHaveText('Row 0');
+    });
+
+    /**
+     * The deadlock this would have been: `End` puts the cursor on a row that was never drawn,
+     * so there is nothing to scroll into view, so the row is never drawn. The panel is moved
+     * by the geometry instead, and the window follows the scrollbar it moved.
+     */
+    test('End reaches the five thousandth row, and the trigger names it', async ({
+      page,
+    }) => {
+      await windowed(page).click();
+      await page.keyboard.press('End');
+
+      await expect(options(page).last()).toHaveText('Row 4999');
+      const named = await attrOf(windowed(page), 'aria-activedescendant');
+      expect(named).toBeTruthy();
+      await expect(page.locator(`#${named}`)).toHaveCount(1);
+      await expect(page.locator(`#${named}`)).toHaveText('Row 4999');
+
+      // And back, by the other edge: `Home` is the same journey in reverse.
+      await page.keyboard.press('Home');
+      await expect(options(page).first()).toHaveText('Row 0');
+    });
+
+    test('a question narrows a windowed list to what answers it', async ({
+      page,
+    }) => {
+      const filtered = trigger(page, 'select-many-filter');
+      await filtered.click();
+      await filtered.fill('Row 4999');
+
+      await expect(options(page)).toHaveCount(1);
+      await expect(options(page).first()).toHaveAttribute('aria-setsize', '1');
+      await expect(options(page).first()).toHaveAttribute('aria-posinset', '1');
+    });
+
+    /**
+     * A heading is drawn with the rows of its own section, and the space its skipped ones
+     * would have taken is the group's rather than the panel's — a nameless section draws no
+     * element and would have had nowhere to put it.
+     */
+    test('a windowed list keeps its headings, and each heading names its own section', async ({
+      page,
+    }) => {
+      const groups = page.locator('[data-pct-part="group"]');
+      await trigger(page, 'select-many-groups').click();
+      await expect(groups.first()).toBeVisible();
+
+      await panel(page).evaluate((el) => {
+        el.scrollTop = el.scrollHeight / 2;
+      });
+
+      const label = groups
+        .first()
+        .locator('[data-pct-part="group-label"]')
+        .first();
+      await expect(label).not.toHaveText('Section 0');
+      await expect(groups.first()).toHaveAttribute(
+        'aria-labelledby',
+        (await attrOf(label, 'id')) as string,
+      );
+    });
+  });
+
   test('the clickable area of the trigger is at least 24 px tall', async ({
     page,
   }) => {

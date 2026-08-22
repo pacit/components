@@ -50,7 +50,7 @@ The order follows **architectural debt**, not popularity:
    became a parameter of the shared walk rather than a second copy of it. Why focus moves here
    and points in the select is written down beside it
    ([0032](../decisions/0032-a-menu-moves-focus-a-listbox-points-at-it.md)).
-4. **Completing the select family** — **started.** The option template closed at D5 and
+4. **Completing the select family** — **done, all eight items.** The option template closed at D5 and
    **groups** are built: a heading is a shape in the option array, drawn as the one wrapper ARIA
    lets stand between a listbox and its options, with the rows numbered across it so the walk
    stays one walk. A projected `<pct-option>` is **not** coming — measured, not declined: it
@@ -61,8 +61,17 @@ The order follows **architectural debt**, not popularity:
    decide what `value` is — written as one component the type accepts an array nobody asked for
    and breaks the single-choice consumer's own handler, which the measurement shows in fifteen
    bindings ([0034](../decisions/0034-multiplicity-is-a-tag.md)). One template, one stylesheet,
-   one base. Left: filtering, clearing, async, virtualisation. Deliberately **after** the
-   behaviour layer, or we build it twice.
+   one base. **Filtering** is an input on both tags and by the same rule read the other way — a
+   question narrows the panel and never the value, and it does not outlive the panel it was
+   asked in ([0035](../decisions/0035-a-filter-is-a-question-not-a-value.md)); **clearing** is a
+   cross that takes back what the trigger is showing, standing beside the trigger because a
+   `<button>` may hold no interactive content
+   ([0036](../decisions/0036-a-clear-takes-back-what-the-trigger-shows.md)); **async** is a fact
+   about the list rather than about the control, and `aria-busy` is what makes an empty listbox
+   legal ([0037](../decisions/0037-loading-is-a-fact-about-the-list.md)); and **virtualisation**
+   is a window whose spacer is not an element and whose row height is measured rather than
+   declared — five thousand options are eleven elements and 15 ms instead of five thousand and
+   626 ([0038](../decisions/0038-a-window-is-measured-and-its-spacer-is-not-an-element.md)).
 5. **Switch, Textarea, Slider, Date picker.**
 6. **Table / DataGrid** — has to stand on a **headless core** separated from rendering.
 

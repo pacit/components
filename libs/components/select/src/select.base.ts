@@ -1,6 +1,7 @@
 import { NgTemplateOutlet } from '@angular/common';
 import { ConnectedPosition, OverlayModule } from '@angular/cdk/overlay';
 import {
+  afterRenderEffect,
   booleanAttribute,
   computed,
   DestroyRef,
@@ -14,6 +15,7 @@ import {
   output,
   Signal,
   signal,
+  untracked,
   viewChild,
   contentChild,
 } from '@angular/core';
@@ -84,6 +86,74 @@ export interface PctSelectSection<T> {
   readonly label: string | null;
   readonly rows: readonly PctSelectRow<T>[];
 }
+
+/**
+ * A section as the panel really draws it: the rows the window kept, and the height of the
+ * ones it did not. `index` is the position in `sections()` and travels with the section
+ * because the heading's id is built from it — a window that renumbered its sections would
+ * point `aria-labelledby` at a heading standing somewhere else.
+ *
+ * `lead` and `tail` are that section's OWN skipped rows and are drawn by the group element.
+ * A nameless section draws no element, so it carries none: what it skips folds into the
+ * panel's, which is where the arithmetic below puts it.
+ */
+export interface PctSelectPanelSection<T> {
+  readonly index: number;
+  readonly label: string | null;
+  readonly rows: readonly PctSelectRow<T>[];
+  readonly lead: number;
+  readonly tail: number;
+}
+
+/** The list as the panel draws it, with the space the rows it did not draw would have taken. */
+export interface PctSelectPanelView<T> {
+  readonly sections: readonly PctSelectPanelSection<T>[];
+  readonly lead: number;
+  readonly tail: number;
+}
+
+/** What the panel's own geometry says, read from the panel after it has drawn. */
+interface PctSelectMetrics {
+  readonly row: number;
+  readonly heading: number;
+  readonly viewport: number;
+}
+
+/**
+ * How many rows are drawn beyond each edge of what the panel shows. A window cut exactly at
+ * the edge leaves a strip of nothing on any scroll faster than one row per frame: the row
+ * that has to appear is created by the very pass the scroll starts.
+ */
+const OVERSCAN = 4;
+
+/**
+ * The window drawn while nothing has been measured — the first frame after the panel opens,
+ * and every frame where there is no layout to read at all. It is a COUNT and not a height,
+ * because it has to fill a panel whose height nobody knows yet; forty rows are taller than
+ * `--pct-select-panel-max-height` allows a panel to be at any type size this library ships.
+ *
+ * It is also what a unit run sees from end to end: `offsetHeight` is 0 in jsdom, a window
+ * computed from a row of zero height is a division by zero, and a gate whose numbers came
+ * out of a guessed layout would be measuring the guess.
+ */
+const PROBE_ROWS = 40;
+
+/**
+ * Below this, two measurements of a row are the same measurement — and without it the panel
+ * never settles. Firefox reports the row as **35.600006 px** and **35.599990 px** by turns,
+ * a fifteen-millionth of a pixel apart, and the two alternate because each one moves the
+ * spacer that decides where the next row is laid out: measure, write, re-render, measure. The
+ * loop is not slow, it is infinite — Angular gives up with NG0103 and the panel freezes where
+ * it stood ([`lesson-111`](../../../../docs/lessons.md#lesson-111)).
+ *
+ * A sixty-fourth of a pixel is a thousand times the jitter and a two-hundredth of the
+ * smallest change that can be real — the row height comes out of the type, so it moves by
+ * whole points when it moves. Quantising the VALUE to that grid was the other road and it is
+ * worse: engines do not share a grid (Blink lays out on 1/64 px, Gecko on 1/60), so rounding
+ * to either one moves every reading of the other by tens of pixels over five thousand rows.
+ * The reading stays exact; only the question "is this a different reading" is coarse.
+ */
+const HAIR = 1 / 64;
 
 /**
  * A group is told from an option by the shape of what it carries, and nothing else. The
@@ -328,6 +398,28 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
   readonly loading = input(false, { transform: booleanAttribute });
 
   /**
+   * Draw only the rows the panel can show. It is a promise about **how many rows exist**, and
+   * that is why it is the control's to make: the panel builds its own rows, so it is the one
+   * thing here that can decide not to
+   * ([0033](../../../../docs/decisions/0033-an-option-is-a-row-of-data.md)).
+   *
+   * An input rather than a tag, by 0034's own rule: a tag is what the TYPE cannot say
+   * otherwise, and a window changes no type — the list, the value and every one of them
+   * stay what they were.
+   *
+   * Opt-in rather than a length the library decides for itself, and the reason is a thing the
+   * user has and the library cannot see: **find-in-page**. A row that is not in the DOM is not
+   * found by `Ctrl+F`, and a list that quietly stopped being searchable at the four hundredth
+   * option would be a defect nobody could report against a promise nobody made.
+   *
+   * What it asks of the list in return is one thing, and the library cannot check it: **every
+   * row is the same height.** The window is arithmetic over one measured row, so a label that
+   * wraps onto a second line or a `pctSelectOption` template drawing two lines moves every row
+   * below it. Dev mode says so — see `warnOnUnevenRows`.
+   */
+  readonly virtual = input(false, { transform: booleanAttribute });
+
+  /**
    * Width of the dropdown panel — equal to the control by default (`'field'`). The panel then
    * comes out exactly from its edge, so the list reads as an extension of the field. `'auto'`
    * fits the width to the longest option (without narrowing the panel below the control), and
@@ -551,6 +643,181 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
     this.sections().flatMap((section) => section.rows),
   );
 
+  // --- the window (`virtual`) ---
+
+  /**
+   * Where the panel is scrolled to. Written by a listener added to the panel rather than by a
+   * template binding, and that is a cost rather than a style: an `(scroll)` in the template
+   * runs change detection on every scroll frame of every panel, including the ones drawn
+   * whole — a pass over five thousand rows for a window nobody asked for.
+   */
+  private readonly scrolled = signal(0);
+
+  /**
+   * The panel's own geometry, MEASURED rather than declared, and that is the measurement this
+   * whole feature turns on: a row here is **35.59 px** — `line-height: 1.4` on a 14 px type
+   * plus the padding — and there is no token for it, because the height falls out of the type
+   * rather than being chosen. A number a consumer typed by hand would be wrong by a fraction
+   * of a pixel per row, which over five thousand rows is two thousand pixels of scrollbar
+   * telling the user something that is not true. `size` moves it again, per instance.
+   *
+   * Compared field by field, so a measurement that says what the last one said is not a
+   * change: this signal is written from an after-render hook that reads what it draws.
+   */
+  private readonly metrics = signal<PctSelectMetrics | null>(null, {
+    equal: (a, b) =>
+      a === b ||
+      (a !== null &&
+        b !== null &&
+        Math.abs(a.row - b.row) < HAIR &&
+        Math.abs(a.heading - b.heading) < HAIR &&
+        a.viewport === b.viewport),
+  });
+
+  /**
+   * Where every section starts and how tall the whole list would be if it were all drawn.
+   * A computed and not a walk per scroll frame: the list changes when the options or the
+   * question do, and a scroll changes neither.
+   */
+  private readonly geometry = computed(() => {
+    const metrics = this.metrics();
+    if (metrics === null) return null;
+    const tops: number[] = [];
+    let y = 0;
+    for (const section of this.sections()) {
+      tops.push(y);
+      y +=
+        (section.label === null ? 0 : metrics.heading) +
+        section.rows.length * metrics.row;
+    }
+    return { tops, total: y };
+  });
+
+  /**
+   * The list as the panel draws it. Without `virtual` that is every section with every row
+   * and no spacer anywhere — one shape for both, so the template has one row in it and the
+   * two modes cannot drift apart.
+   *
+   * With it, the window is the rows the panel shows plus `OVERSCAN` at each end, and the
+   * space the rest would have taken is a **pseudo-element** rather than a spacer, a wrapper
+   * or padding. All three were measured
+   * ([0038](../../../../docs/decisions/0038-a-window-is-measured-and-its-spacer-is-not-an-element.md)):
+   * padding does not scroll — it is inside the padding box, so it makes the panel taller
+   * instead of its content; a wrapper that scrolls is no longer the combobox's own popup, and
+   * axe reports a scrollable region with nothing focusable in it; and `::before` / `::after`
+   * are boxes with no node, so the listbox keeps exactly its options and its groups as
+   * children.
+   */
+  protected readonly panelView = computed<PctSelectPanelView<T>>(() => {
+    const sections = this.sections();
+    if (!this.virtual())
+      return {
+        sections: sections.map((section, index) => ({
+          index,
+          label: section.label,
+          rows: section.rows,
+          lead: 0,
+          tail: 0,
+        })),
+        lead: 0,
+        tail: 0,
+      };
+
+    const metrics = this.metrics();
+    const geometry = this.geometry();
+    const count = this.rows().length;
+
+    let first: number;
+    let last: number;
+    if (metrics === null || geometry === null) {
+      // Nothing measured yet. The window starts at the cursor — the row the answer already
+      // names is the one the panel is about to be scrolled to, and drawing the first forty
+      // rows of a five-thousand-row list would be drawing the wrong end of it. It is the ONE
+      // place the cursor decides the window: once there are metrics the scrollbar does, and
+      // the cursor reaches its row by moving the scrollbar rather than by bending the window
+      // (`scrollToActive`).
+      first = Math.min(
+        Math.max(this.activeIndex(), 0),
+        Math.max(count - PROBE_ROWS, 0),
+      );
+      last = first + PROBE_ROWS - 1;
+    } else {
+      const rowAt = (y: number): number => {
+        let index = 0;
+        for (const [i, section] of sections.entries()) {
+          const body =
+            geometry.tops[i] + (section.label === null ? 0 : metrics.heading);
+          if (y < body + section.rows.length * metrics.row)
+            return index + Math.max(Math.floor((y - body) / metrics.row), 0);
+          index += section.rows.length;
+        }
+        return index - 1;
+      };
+      const top = this.scrolled();
+      first = rowAt(top) - OVERSCAN;
+      last = rowAt(top + metrics.viewport) + OVERSCAN;
+    }
+    first = Math.max(first, 0);
+    last = Math.min(last, count - 1);
+
+    const drawn: PctSelectPanelSection<T>[] = [];
+    let top = 0;
+    let bottom = 0;
+    let index = 0;
+    for (const [i, section] of sections.entries()) {
+      const start = index;
+      index += section.rows.length;
+      if (index <= first || start > last) continue;
+
+      const from = Math.max(first - start, 0);
+      const to = Math.min(last - start, section.rows.length - 1);
+      const named = section.label !== null;
+      const head =
+        (geometry?.tops[i] ?? 0) + (named ? (metrics?.heading ?? 0) : 0);
+      const row = metrics?.row ?? 0;
+
+      // A named section is an element, so it carries its own skipped rows and stands at its
+      // own top whatever the window kept of it. A nameless one draws nothing at all, so what
+      // it skips is the panel's — which it can only ever be at an edge of the window, because
+      // a section in the middle of one is drawn whole.
+      if (drawn.length === 0)
+        top = named ? (geometry?.tops[i] ?? 0) : head + from * row;
+      bottom = named ? head + section.rows.length * row : head + (to + 1) * row;
+
+      drawn.push({
+        index: i,
+        label: section.label,
+        rows: section.rows.slice(from, to + 1),
+        lead: named ? from * row : 0,
+        tail: named ? (section.rows.length - 1 - to) * row : 0,
+      });
+    }
+
+    return {
+      sections: drawn,
+      lead: Math.max(top, 0),
+      tail: Math.max((geometry?.total ?? 0) - bottom, 0),
+    };
+  });
+
+  /**
+   * The size of the set an option stands in, and `null` wherever the DOM holds the whole list.
+   *
+   * This pair is the one thing a window OWES the reader, and no gate here can ask for it:
+   * `aria-setsize` and `aria-posinset` exist for exactly the case where the elements of a set
+   * are not all present, and axe has no rule about them — a windowed listbox with neither is
+   * green in the audit and lies to the user about how long the list is. So the promise is a
+   * test's, and it is written down beside the ones a gate makes
+   * ([0038](../../../../docs/decisions/0038-a-window-is-measured-and-its-spacer-is-not-an-element.md)).
+   *
+   * The numbering is the FLAT one — the list's, not the group's. It is what the walk, the ids
+   * and `aria-activedescendant` already count in, and "row 4,201 of 5,000" is the sentence the
+   * user of a long list needs; "2 of 3" inside a heading is not.
+   */
+  protected readonly setSize = computed(() =>
+    this.virtual() ? this.rows().length : null,
+  );
+
   /**
    * The keyboard walk over the list — the shared machinery from `core` rather than private
    * methods here, extracted before the second control that needs it (`lesson-21`). What the
@@ -656,7 +923,21 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
   /** Id of the active option, for `aria-activedescendant`. */
   protected readonly activeOptionId = computed(() => {
     const i = this.activeIndex();
-    return this.open() && i >= 0 ? this.optionId(i) : null;
+    if (!this.open() || i < 0) return null;
+    // A name may point only at something that is there. The cursor and the scrollbar are two
+    // ways of pointing at one list and they can come apart — a drag of the scrollbar moves no
+    // cursor — so a windowed panel can be showing the four thousandth row while the cursor
+    // stands on the first. `aria-activedescendant` naming a row nobody drew is a reference to
+    // nothing, which is worse than no reference: the attribute is optional, and the next
+    // arrow press brings both back together.
+    const drawn = this.panelView().sections;
+    if (drawn.length > 0) {
+      const rows = drawn[drawn.length - 1].rows;
+      const from = drawn[0].rows[0].index;
+      const to = rows[rows.length - 1].index;
+      if (i < from || i > to) return null;
+    }
+    return this.optionId(i);
   });
 
   protected optionId(index: number): string {
@@ -675,9 +956,13 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
    * ([`lesson-84`](../../../../docs/lessons.md#lesson-84)). So what travels through the
    * context is the index alone, and the rows come back through here with their type: an
    * `any` that reaches one number instead of every binding of the row.
+   *
+   * The index is a position in what the panel DRAWS rather than in `sections()`: with a
+   * window the two differ, and the section carries its own `index` for the one thing that
+   * must not move with the window — the heading's id.
    */
   protected sectionRows(index: number): readonly PctSelectRow<T>[] {
-    return this.sections()[index]?.rows ?? [];
+    return this.panelView().sections[index]?.rows ?? [];
   }
 
   /**
@@ -754,16 +1039,56 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
     inject(DestroyRef).onDestroy(() => say(''));
 
     // The active option has to be visible in a scrolling list.
-    effect(() => {
+    //
+    // `afterRenderEffect` and not `effect`: with a window the row the cursor names is created
+    // by the very pass that moved the cursor, so a hook running before the panel is drawn
+    // would be looking for an element that does not exist yet.
+    //
+    // The row is found by its id and not by its position among the drawn ones, which is the
+    // first thing the window broke here: `querySelectorAll(...)[i]` was right only while
+    // every row stood in the DOM, and it is a reading that says nothing about its own
+    // assumption — the wrong row scrolls into view and nothing reports it. The ids are
+    // compared rather than selected on, so no `CSS.escape` is needed (absent in jsdom).
+    afterRenderEffect(() => {
       const i = this.activeIndex();
       if (!this.open() || i < 0) return;
-      // The list is indexed instead of building a selector from the id — that needs no
-      // `CSS.escape` (absent in jsdom) and matches the semantics of activeIndex directly.
-      const el = this.panel()?.nativeElement.querySelectorAll<HTMLElement>(
-        '[data-pct-part="option"]',
-      )[i];
-      el?.scrollIntoView?.({ block: 'nearest' });
+      // Everything below is read UNTRACKED, and that is the whole correctness of it: this
+      // hook exists to follow the CURSOR, so the cursor and the panel being open are the only
+      // two things that may wake it. Tracked, it woke on the geometry as well — and Firefox
+      // remeasures a row by a fraction of a pixel at some scroll offsets — so a scroll to the
+      // middle of a long list was pulled straight back to wherever the cursor stood, in one
+      // engine and not the other ([`lesson-110`](../../../../docs/lessons.md#lesson-110)).
+      untracked(() => this.keepInView(i));
     });
+
+    // The panel's own geometry, read back from what it drew. It runs after every render of an
+    // open panel and writes a value compared field by field, so the pass it causes by writing
+    // is the last one: the second reading says what the first did and the signal does not
+    // move ([`lesson-94`](../../../../docs/lessons.md#lesson-94) is the shape this avoids).
+    afterRenderEffect(() => {
+      if (!this.virtual()) return;
+      // Read, so a window that moved is measured again — the panel's own height changes with
+      // the rows in it while the list is short.
+      this.panelView();
+      const panel = this.panel()?.nativeElement;
+      if (panel) this.measure(panel);
+    });
+
+    // The scroll listener, added rather than bound in the template. An `(scroll)` binding runs
+    // change detection on every scroll frame of every panel — including the ones drawn whole,
+    // which is a pass over the entire list for a window nobody asked for.
+    effect((onCleanup) => {
+      const panel = this.panel()?.nativeElement;
+      if (!panel || !this.virtual()) return;
+      const onScroll = (): void => {
+        this.scrolled.set(panel.scrollTop);
+        this.measure(panel);
+      };
+      panel.addEventListener('scroll', onScroll, { passive: true });
+      onCleanup(() => panel.removeEventListener('scroll', onScroll));
+    });
+
+    if (isDevMode()) afterRenderEffect(() => this.warnOnUnevenRows());
 
     // An effect and not a one-off: `options` is an input, so the list that duplicates a value
     // is often the second one — the one that arrived from the server.
@@ -821,6 +1146,134 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
     );
   }
 
+  /**
+   * The three numbers the window is arithmetic over, read from the panel that drew the last
+   * one. Nothing here is declared: there is no token for a row's height, because the height
+   * falls out of the type — `line-height: 1.4` on the panel's font plus the row's padding —
+   * and `size` moves it per instance.
+   *
+   * `getBoundingClientRect().height` and not `offsetHeight`, which is the first thing the
+   * browser said that this file had guessed wrong: **`offsetHeight` is an integer.** A row
+   * here is 35.59 px, `offsetHeight` calls it 36, and over five thousand rows that rounding
+   * is 2,027 px of scrollbar describing a list nobody has — the very drift a hand-typed
+   * number was refused for ([`lesson-108`](../../../../docs/lessons.md#lesson-108)).
+   *
+   * A row of no height is refused rather than stored, and that is what keeps a run with no
+   * layout honest: jsdom answers 0 to every measurement, and a window computed from it would
+   * divide by zero. With no metrics the panel draws `PROBE_ROWS` and the count promise is
+   * still measurable, which is exactly what the unit gate measures.
+   *
+   * The heading falls back to the last one seen: a window standing entirely among bare rows
+   * has no heading to read, and forgetting the one measured a scroll ago would move every
+   * section below it.
+   */
+  /**
+   * The row the cursor names, brought into view — `block: 'nearest'` written out.
+   */
+  private keepInView(i: number): void {
+    const panel = this.panel()?.nativeElement;
+    if (!panel) return;
+
+    // With a window the row may not be there to scroll to, and that is not a detail: a
+    // cursor put on the four thousandth row by `End` would wait for a scroll that waits for
+    // the row. So the panel is scrolled by ARITHMETIC — the geometry knows where the row
+    // stands whether or not anything drew it — and the window follows the scrollbar it
+    // moved. `block: 'nearest'` written out: a row already in view is left alone.
+    const top = this.rowTop(i);
+    if (top !== null) {
+      const height = this.metrics()?.row ?? 0;
+      const view = panel.clientHeight;
+      if (top < panel.scrollTop) panel.scrollTop = top;
+      else if (top + height > panel.scrollTop + view)
+        panel.scrollTop = top + height - view;
+      // The listener is what tells the window; setting `scrollTop` fires no event of its own
+      // in every engine, so the reading is taken here as well.
+      this.scrolled.set(panel.scrollTop);
+      return;
+    }
+
+    const wanted = this.optionId(i);
+    const rows = panel.querySelectorAll<HTMLElement>(
+      '[data-pct-part="option"]',
+    );
+    for (const row of rows)
+      if (row.id === wanted) {
+        row.scrollIntoView?.({ block: 'nearest' });
+        return;
+      }
+  }
+
+  /**
+   * Where a row stands in the list, in pixels — `null` wherever the arithmetic has no numbers
+   * to run on, which is every panel drawn whole and the first frame of every windowed one.
+   */
+  private rowTop(index: number): number | null {
+    const metrics = this.metrics();
+    const geometry = this.geometry();
+    if (!this.virtual() || metrics === null || geometry === null) return null;
+    let seen = 0;
+    for (const [i, section] of this.sections().entries()) {
+      if (index < seen + section.rows.length)
+        return (
+          geometry.tops[i] +
+          (section.label === null ? 0 : metrics.heading) +
+          (index - seen) * metrics.row
+        );
+      seen += section.rows.length;
+    }
+    return null;
+  }
+
+  private measure(panel: HTMLElement): void {
+    const row = panel.querySelector<HTMLElement>('[data-pct-part="option"]');
+    const height = row?.getBoundingClientRect().height ?? 0;
+    if (height <= 0) return;
+    const heading = panel.querySelector<HTMLElement>(
+      '[data-pct-part="group-label"]',
+    );
+    this.metrics.set({
+      row: height,
+      heading:
+        heading?.getBoundingClientRect().height ??
+        this.metrics()?.heading ??
+        height,
+      viewport: panel.clientHeight,
+    });
+  }
+
+  /**
+   * The one thing a window asks of the list and cannot check for itself: that every row is
+   * the same height. Reported and not repaired, like a duplicated value — which of two heights
+   * is the right one is the application's question, and a library that answered it would be
+   * cropping somebody's second line.
+   *
+   * The rows drawn are what it reads, so a list of five thousand costs a walk over the forty
+   * on the screen. Under `isDevMode()` alone.
+   */
+  private warnOnUnevenRows(): void {
+    if (!this.virtual() || !this.open()) return;
+    const rows = this.panel()?.nativeElement.querySelectorAll<HTMLElement>(
+      '[data-pct-part="option"]',
+    );
+    if (!rows || rows.length < 2) return;
+    // `offsetHeight` here and a rect above, on purpose: the arithmetic needs the fraction and
+    // a comparison of two fractions would fire on a rounding. What this is looking for is a
+    // row twenty pixels taller, not half a one.
+    const first = rows[0].offsetHeight;
+    if (first <= 0) return;
+    for (const row of rows) {
+      if (row.offsetHeight === first) continue;
+      console.warn(
+        `[${this.tag}] A windowed panel draws rows of two heights ` +
+          `(${first}px and ${row.offsetHeight}px). The window is arithmetic over one row, ` +
+          `so the scrollbar and every row below the taller one are off by the difference. ` +
+          `Give the rows one height — a label that wraps and an option template drawing two ` +
+          `lines are the usual causes — or drop \`virtual\`.`,
+      );
+      return;
+    }
+  }
+
   /** The tag, for a message a consumer reads in their console. */
   private get tag(): string {
     return this.multiple ? 'pct-multi-select' : 'pct-select';
@@ -867,6 +1320,11 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
     if (!this.open()) return;
     this.panelOverlay.hide();
     this.nav.clear();
+    // A shut panel forgets its geometry and its scroll: the next one is a new element at the
+    // top of the list, and both readings belong to the panel that was measured, not to the
+    // control. A `size` changed between two openings is picked up for the same reason.
+    this.metrics.set(null);
+    this.scrolled.set(0);
     // The question does not outlive the panel: a trigger that reopened onto three letters
     // typed a minute ago would be showing a list narrowed by something the user cannot see.
     this.filterText.set('');

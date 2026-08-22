@@ -11,6 +11,7 @@ import {
   pctKeepAll,
   PctMultiSelect,
   PctSelect,
+  PctSelectItem,
   PctSelectOption,
   PctSelectOptionTemplate,
 } from '@pacit/components/select';
@@ -131,6 +132,30 @@ export class SelectView {
     this.asyncLoading.set(false);
     this.answers.update((n) => n + 1);
   }
+
+  /**
+   * A list nobody types by hand: five thousand rows, which is the size at which the question
+   * "how many of them exist" stops being theoretical. Built once, in a field rather than in a
+   * getter, so the reference is stable and no change detection pass rebuilds it.
+   */
+  protected readonly manyOptions: readonly PctSelectOption[] = Array.from(
+    { length: 5000 },
+    (_, i) => ({ value: `r${i}`, label: `Row ${i}` }),
+  );
+
+  /** The same five thousand rows under a heading every hundred. */
+  protected readonly manyGroups: readonly PctSelectItem[] = Array.from(
+    { length: 50 },
+    (_, g) => ({
+      label: `Section ${g}`,
+      options: this.manyOptions.slice(g * 100, g * 100 + 100),
+    }),
+  );
+
+  protected readonly manyValue = signal<string | null>(null);
+  protected readonly manyPlainValue = signal<string | null>(null);
+  protected readonly manyFilterValue = signal<string | null>(null);
+  protected readonly manyGroupValue = signal<string | null>(null);
 
   protected readonly widthField = signal<string | null>('pl');
   protected readonly widthAuto = signal<string | null>('pl');

@@ -127,9 +127,13 @@ Filtering has since added **C26** and **C27**, both of them about the mutation r
 snapshot cannot say, and a guard whose promise no test here can notice. Clearing added none of its own
 and instead handed **C22** a second file — the same run that reads `motion.ts`
 five points low under load reads `placement.ts` nine points low, so what that item describes is
-a property of every clock-kill here rather than of one file's three.
+a property of every clock-kill here rather than of one file's three. Async added **C28**, the
+empty listbox nobody had audited, and the window added **C29** — which is about this
+repository's own machinery rather than about a component: a size snapshot written from a build
+nx had cached, so the baseline that exists to notice eighteen bytes was itself eighteen bytes
+out.
 
-**E4 is open and five of its eight items have closed**, and the first of them is the fork the rest
+**E4 has closed, all eight items of it**, and the first of them is the fork the rest
 stand on: **is an option a row of data or a `<pct-option>` the consumer projects?** Written as
 two ways of putting down one list it reads as taste, so it was measured before anything was
 built — and the projected road **works**, which is what makes this a decision rather than a
@@ -204,6 +208,34 @@ decimals — and a visual baseline went red on 309 pixels, because `position: re
 paint layer and the text inside one loses its subpixel antialiasing
 ([`lesson-105`](lessons.md#lesson-105)). "Nothing moved" and "nothing changed" are two
 measurements, which is the argument for keeping both kinds of gate.
+
+**The sixth is async and the eighth is the window, and between them they say what this family
+was really about.** `loading` is a fact about the LIST rather than about the control
+([0037](decisions/0037-loading-is-a-fact-about-the-list.md)) — it takes nothing away, and the
+empty panel says a third sentence because "no options" and "no matches" are conclusions a
+request in flight has reached neither of. Its own sharpest measurement came from a gate expected
+to be a formality: a `role="listbox"` owning no `role="option"` is a **critical** violation, and
+`aria-busy` is the specification's own way of saying "not yet"
+([`lesson-106`](lessons.md#lesson-106)). It also taught the walk that **a cursor names an entry,
+not a position** ([`lesson-107`](lessons.md#lesson-107)), and left **C28** behind — the panel of
+a genuinely empty list, which four axe cases over this component had never opened.
+
+Then the window, and it answers the question this component's card had carried since v0: five
+thousand options are **626 ms and 5,000 elements** drawn whole, **15 ms and 11** windowed. Every
+fork was settled by a browser
+([0038](decisions/0038-a-window-is-measured-and-its-spacer-is-not-an-element.md)): the listbox
+stays the element that scrolls, because the exemption keeping a panel of unfocusable rows out of
+`scrollable-region-focusable` is written for a combobox's own popup — which is what refused the
+CDK's viewport; the space the undrawn rows would have taken is a **pseudo-element**, because
+padding does not scroll and any spacer is a child the listbox does not own; and the row's height
+is measured rather than declared, twice over, since `offsetHeight` rounds
+([`lesson-108`](lessons.md#lesson-108)) and an exact reading is still not a stable one
+([`lesson-111`](lessons.md#lesson-111)). The finding worth keeping past this component is what a
+window OWES a reader that no gate will ask for: `aria-setsize` and `aria-posinset` have no axe
+rule at all, so a windowed listbox that says neither is green in the audit and lies about how
+long the list is — the recorded control says exactly that. And one repair was **deleted by its
+own control** rather than confirmed, which is the plan's own rule doing work nobody expected of
+it ([`lesson-109`](lessons.md#lesson-109)).
 
 **B2 is deferred by decision, not blocked** — and the decision has a shape: **the first push
 happens only when the maintainer asks for it outright.** It is not triggered by a state of the
@@ -1559,6 +1591,20 @@ run-many`, which is the closest thing here to what CI does, and the same run rep
     on a second file nothing had touched. So the reading is not a quirk of `motion.ts`'s three
     mutants: it is what every clock-kill in the repository does when the cores are shared, and
     the number of files that can name is unknown
+  - **and E4's window step wrote the mechanism into the snapshot's own columns.** Four full
+    runs that evening over code neither file had been touched by: `motion.ts` read 86.21, 86.21,
+    86.21 and then **91.38**; `placement.ts` read 89.23, 89.23, 89.23 and then **98.46**. Run
+    **alone** (`stryker --mutate` over just the two) they came back at 91.38 and 98.46 first
+    time and in four minutes. The column that says why is the one the snapshot already carries:
+    `killed (of that, by the clock)` reads `53(3)` and `64(6)` on a run that lands them and
+    `50(0)` and `58(0)` on one that does not. So a clock-kill here is not slow, it is **absent**
+    — the mutant survives — and how many are absent is decided by what else the run is doing
+  - the practical rule that falls out, and it is the one this step followed: **the snapshot
+    records the run that lands them.** A `--write` from a starved run buries a nine-point
+    tolerance in two rows, and every regression smaller than that in either file becomes
+    invisible. Which means `--write` is not a mechanical step for these two files — somebody has
+    to look at the clock column — and that is a gate needing a person, which is what this item
+    exists to remove
   - it does not touch the definition of done: every gate still runs, and a slow gate is a
     green gate. What it touches is whether anybody waits for it — and, on the measurement
     above, whether the run answers the same way twice
@@ -1674,6 +1720,28 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     `select-empty` in place of `select-async`, and it is red today
   - binds at: **the next step that touches the empty panel** — E5 opens no listbox, so this
     is a filler item · _notes:_ —
+
+- [ ] **C29 — a snapshot written from a cached build records the cache**
+  - the window's own measurement was clean, and the run beside it was not: `check-bundle`
+    reported `./core` **18 B lighter** than `libs/components/size.snapshot.md` records, and
+    `./menu` — which imports it — by the same 18. Neither file was touched by this step, and
+    neither was anything they import
+  - **measured, not deduced**: the whole change was stashed and the gate run against a clean
+    tree, where it reported the same 18 B. So the drift is at `HEAD` and predates the window. A
+    run with `--skip-nx-cache` then agreed with the NEW number, which is what names the cause:
+    the snapshot recorded a build nx had cached, and the cached artefact was not what the source
+    at that commit really produces
+  - what makes this worth an item rather than a shrug is which gate it is. A size snapshot is
+    the one measurement here whose whole job is to notice 18 B, and a value written from a cache
+    is a reading of the cache: the next real regression of that size is invisible, because the
+    baseline already moved by it. Every `--write` in this repository has the same shape, and
+    `check-bundle` is only the one where a stale input is small enough to look like noise
+  - the fix is a property of the target rather than a habit of whoever runs it: the snapshot's
+    inputs have to be rebuilt for a write, which is `--skip-nx-cache` on the build the gate
+    depends on, or a target that does not read the cache at all when `--write` is passed. Both
+    are one line and neither is the point — the point is that nothing measures it today
+  - binds at: the next `--write` of any snapshot, and no later than the first release that
+    quotes a size · _notes:_ —
 
 ## D. Phase 1 — the behaviour layer in `core`
 
@@ -2135,9 +2203,9 @@ exists and is a condition of entering a release.
     (+48 B) and, through a shared identifier, `./popover` (+13 B); sixteen tokens, four pairs in
     the contrast policy, one new word in the token dictionary (`item`) and no new string in
     `PCT_TEXTS`
-- [~] **E4 — closing out the select family** — projected `pct-option`, an option template,
-  groups, multiple selection, filtering, clearing, async, virtualisation. Deliberately
-  **after** the behaviour layer
+- [x] **E4 — closing out the select family** — projected `pct-option`, an option template,
+      groups, multiple selection, filtering, clearing, async, virtualisation. Deliberately
+      **after** the behaviour layer
   - _notes:_ **two of the eight are done, and the first of them decided the shape of the rest.**
     The option template closed back at D5 ([0027](decisions/0027-a-slot-is-a-directive.md)) and
     the line had not been read since. **Projected `pct-option` is refused on a measurement**,
@@ -2448,7 +2516,74 @@ still coming` (7 cases × 3 engines, driven by an event rather than a press, bec
     announcer withdraws only what is on the channel. The same run took the two guards out of
     that closure — every mutant of both had survived, and they were the announcer's own
     contract written twice
-  - left: virtualisation
+  - _notes (virtualisation):_ **the eighth and last, and the one the card had been carrying an
+    open question about since v0** — "what happens at 5,000 options" is answered in a browser
+    and the answer is **626 ms** and 5,000 elements against **15 ms** and 11. 0033 had already
+    said what the feature is ("a promise about how many rows exist, and it can only be made by
+    whoever creates them"), so the work was four questions and every one of them was settled by
+    a measurement. **Where the scroll lives**: the listbox itself, because the exemption that
+    keeps a panel of unfocusable rows out of `scrollable-region-focusable` is written for a
+    combobox's own popup — one element in, which is exactly what a virtual-scroll viewport is,
+    and the same tree is a serious violation. That, plus a fixed item size where a grouped list
+    has two heights and a wrapper, is what refused `@angular/cdk/scrolling`. **What holds the
+    space**: a pseudo-element, because padding does not scroll (it is inside the padding box —
+    `clientHeight` grows and `scrollHeight - clientHeight` stays 0, in all three engines) and
+    any spacer element is a child the listbox does not own. **What the arithmetic runs on**: a
+    measurement, never a number — the row is 35.59 px, it falls out of the type, and the input
+    that was refused for drifting came back through `offsetHeight`, which rounds
+    ([`lesson-108`](lessons.md#lesson-108)). **What a window owes the reader**: `aria-setsize`
+    and `aria-posinset`, and this is the item's sharpest finding — **axe has no rule for
+    either**, so the promise is a test's rather than a gate's, and the recorded control says so
+    outright: dropped, the audit stays green and only the cases go red. Two defects of the kind
+    that cost an afternoon: an `afterRenderEffect` following the cursor woke on the geometry it
+    read as well, so a fraction of a pixel remeasured mid-scroll snapped the panel back to the
+    cursor — in one engine ([`lesson-110`](lessons.md#lesson-110)); and Firefox reports the row
+    as two values a fifteen-millionth of a pixel apart, alternating, because each measurement
+    writes the spacer that decides where the next row is laid out — a loop Angular ends with
+    NG0103 and a frozen panel. Rounding is the wrong repair (Blink lays out on 1/64 px, Gecko
+    on 1/60): the reading stays exact and the QUESTION gets a tolerance
+    ([`lesson-111`](lessons.md#lesson-111)). And one repair was deleted by its own control
+    rather than confirmed — `overflow-anchor: none`, written while Firefox was failing for two
+    other reasons, with the run going five red to two and nobody able to say which change did it
+    ([`lesson-109`](lessons.md#lesson-109))
+  - gate: `select.spec.ts › a window over a list nobody scrolls to the end of` — **18** unit
+    cases (the count drawn whole and windowed, the pair written and not written, the cursor past
+    the window, a value far down the list, the two spacers, a scroll, the arithmetic scroll up
+    and down, a row already on the screen that is left alone, the row a panel drawn whole
+    scrolls into view by ID, an empty windowed panel, a heading keeping its id, a heading
+    counted into where its rows begin, the hair that is not a measurement, and two row heights
+    reported); `apps/sandbox-e2e/src/select.spec.ts › a list too long to draw` — 7 cases × 3
+    engines, because every number the window runs on is read from a real layout and jsdom has
+    none; `a11y.spec.ts › "a panel drawing a window of a long list has no violations"` and a
+    `select-panel-window` baseline — 578 unit cases and 874 e2e cases green. The two runs
+    measure different halves on purpose: the unit one has no layout at all, so the panel draws
+    its probe window and the COUNT is what it can prove; the browser has the geometry and
+    nothing else does. Seven of the eighteen were written **after** the first mutation run and
+    because of it: the measured paths are the ones a run with no layout never reaches, so they
+    had the survivors
+  - mutation: `select.base.ts` **89.90 → 84.97** on 570 more mutants than it had, and the drop
+    is read rather than reported. Seven unit cases were written against the first run's 118
+    survivors and took it to 99; what is left is a long tail of four kinds, none of which a
+    case would honestly kill — guards that fire only where the view query is empty, which
+    cannot happen once the panel has drawn (**C27**'s class); `<` against `<=` at boundaries
+    where both branches do the same thing; the warning's own prose; and the `isDevMode()`
+    conditionals. `multi-select.ts` went to **100.00** and `select.ts` to 91.43. The same run
+    dropped `motion.ts` and `placement.ts` on three runs out of four, and that is **C22** rather
+    than this step: run alone they come back at 91.38 and 98.46 to the digit, in four minutes,
+    and the snapshot here records the run that landed their clock-kills rather than the ones
+    that starved them
+  - control: five recorded runs, and one of them deleted a repair. The pair dropped leaves two
+    unit cases and two e2e cases red **and the audit green**, which is the reason that promise
+    is written down at all; the tolerance replaced by exact equality leaves Firefox red with
+    NG0103; `aria-activedescendant` left naming a row outside the window leaves one unit and one
+    e2e case red; `offsetHeight` in place of the rect leaves the two `scrollHeight`s 2,027 px
+    apart and the e2e case that compares them red; and `overflow-anchor` put back to its default
+    leaves everything green, wheel-driven scrolling in Firefox included
+  - cost: `./select` 62607 → **68536 B** (+9.5%), no new peer, no new token, no new string, no
+    new part. One state attribute (`data-pct-virtual`) and one private custom property, which is
+    deliberately not a `--pct-…` name: the prefix is the promise that a skin may set the value,
+    and a number the window computes is not a skin's to move. The same snapshot also records
+    **18 B off `./core` and `./menu`**, which this change did not cause — see C29
 - [ ] **E5 — switch, textarea (autosize), slider, date picker** — the date picker forces deep
       i18n, which `[pctNumber]` has already started
 - [ ] **E7 — the rest**: toast, tabs, accordion, drawer, pagination, progress, skeleton, chips,

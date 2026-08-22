@@ -314,3 +314,63 @@
     <sbx-select-icons [options]="countries" />
   </div>
 </sbx-demo>
+
+<sbx-demo
+  heading="A list too long to draw"
+  summary="Five thousand rows. Without a window the panel puts five thousand elements in the DOM and takes half a second to open one; with it, the panel draws what it can show and the rest is a height. The row's height is measured rather than declared — it falls out of the type (line-height on the panel's font plus the row's padding) and there is no token for it, so a number typed by hand would be wrong by a fraction of a pixel per row and by two thousand over this list. What a window owes the reader in return is the pair no audit asks for: aria-setsize and aria-posinset, because the DOM no longer holds the set."
+  [reqs]="['req-a11y-built-in', 'req-a11y-wcag']"
+  [controls]="[]"
+  data-testid="demo-many"
+>
+  <div class="stack">
+    <pct-field label="Row (windowed)" data-testid="field-many">
+      <pct-select
+        virtual
+        [options]="manyOptions"
+        [(value)]="manyValue"
+        data-testid="select-many"
+      />
+    </pct-field>
+
+    <!-- A question over a windowed list: the two are independent, because a filter narrows
+         the list and a window draws part of it — so what the window is over is whatever the
+         question left standing, and `aria-setsize` counts that. -->
+    <pct-field
+      label="Row (windowed, with a question)"
+      data-testid="field-many-filter"
+    >
+      <pct-select
+        virtual
+        filterable
+        [options]="manyOptions"
+        [(value)]="manyFilterValue"
+        data-testid="select-many-filter"
+      />
+    </pct-field>
+
+    <!-- The same list drawn whole, which is what the card is measured against: one press on
+         each, and the difference is the number of elements the panel put on the page. -->
+    <pct-field label="Row (drawn whole)" data-testid="field-many-plain">
+      <pct-select
+        [options]="manyOptions"
+        [(value)]="manyPlainValue"
+        data-testid="select-many-plain"
+      />
+    </pct-field>
+
+    <!-- Headings over a windowed list: the heading is drawn with the rows of its own section,
+         and the space its skipped ones would have taken is the group's rather than the
+         panel's. -->
+    <pct-field
+      label="Row (windowed, in sections)"
+      data-testid="field-many-groups"
+    >
+      <pct-select
+        virtual
+        [options]="manyGroups"
+        [(value)]="manyGroupValue"
+        data-testid="select-many-groups"
+      />
+    </pct-field>
+  </div>
+</sbx-demo>

@@ -2749,6 +2749,562 @@ describe('PctSelect', () => {
     });
   });
 
+  describe('a window over a list nobody scrolls to the end of (virtual)', () => {
+    /**
+     * A thousand rows — twenty-five times the probe window, which is what these cases need to
+     * be about. The honest number is **five thousand** and it is measured where it means
+     * something: in a browser, on the sandbox card and in `select.spec.ts` of the e2e suite.
+     * Here it is one thousand for a reason worth writing down rather than tuning away: a case
+     * that really builds every row takes seconds under coverage instrumentation and **twenty
+     * of them** under the mutation runner's, where it times out and takes the whole gate with
+     * it. The list a test builds is part of the test's cost.
+     */
+    const MANY: readonly PctSelectOption[] = Array.from(
+      { length: 1000 },
+      (_, i) => ({ value: `r${i}`, label: `Row ${i}` }),
+    );
+
+    @Component({
+      imports: [PctSelect],
+      template: `<pct-select
+        [options]="options()"
+        [virtual]="virtual()"
+        [(value)]="value"
+      />`,
+    })
+    class ManyHost {
+      options = signal<readonly PctSelectItem[]>(MANY);
+      virtual = signal(true);
+      value = signal<string | null>(null);
+    }
+
+    /**
+     * jsdom has no layout — every `offsetHeight` and every `clientHeight` is 0 — so the panel
+     * measures nothing and draws its probe window. That is the state the count promise is
+     * measured in, and it is deliberate: a gate whose numbers came out of a guessed layout
+     * would be measuring the guess.
+     *
+     * The cases about the ARITHMETIC declare the layout instead, on the prototype and for the
+     * length of one case, because the three numbers the window runs on are read from the DOM
+     * and there is no other way to give a DOM without layout a height.
+     */
+    const withLayout = (row: number, viewport: number, heading = 0) => {
+      const proto = HTMLElement.prototype;
+      const offset = Object.getOwnPropertyDescriptor(proto, 'offsetHeight');
+      const client = Object.getOwnPropertyDescriptor(proto, 'clientHeight');
+      const rect = proto.getBoundingClientRect;
+      Object.defineProperty(proto, 'offsetHeight', {
+        configurable: true,
+        get(this: HTMLElement) {
+          const part = this.getAttribute('data-pct-part');
+          if (part === 'option') return row;
+          if (part === 'group-label') return heading;
+          return 0;
+        },
+      });
+      // The arithmetic reads a rect and not `offsetHeight`, because `offsetHeight` is an
+      // integer and a row is 35.59 px (`lesson-108`).
+      proto.getBoundingClientRect = function (this: HTMLElement) {
+        const part = this.getAttribute('data-pct-part');
+        const height =
+          part === 'option' ? row : part === 'group-label' ? heading : 0;
+        return {
+          height,
+          width: 0,
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: height,
+          x: 0,
+          y: 0,
+          toJSON: () => ({}),
+        } as DOMRect;
+      };
+      Object.defineProperty(proto, 'clientHeight', {
+        configurable: true,
+        get(this: HTMLElement) {
+          return this.getAttribute('data-pct-part') === 'panel' ? viewport : 0;
+        },
+      });
+      return () => {
+        if (offset) Object.defineProperty(proto, 'offsetHeight', offset);
+        if (client) Object.defineProperty(proto, 'clientHeight', client);
+        proto.getBoundingClientRect = rect;
+      };
+    };
+
+    const scrollTo = async (
+      fixture: ComponentFixture<unknown>,
+      top: number,
+    ) => {
+      const element = panel() as HTMLElement & { scrollTop: number };
+      element.scrollTop = top;
+      element.dispatchEvent(new Event('scroll'));
+      fixture.detectChanges();
+      await fixture.whenStable();
+    };
+
+    const lead = (element: HTMLElement | null) =>
+      element?.style.getPropertyValue('--_pct-select-lead') ?? '';
+    const tail = (element: HTMLElement | null) =>
+      element?.style.getPropertyValue('--_pct-select-tail') ?? '';
+
+    it('a list drawn whole puts every row in the DOM', async () => {
+      const fixture = await render(ManyHost);
+      fixture.componentInstance.virtual.set(false);
+      fixture.detectChanges();
+      triggerOf(fixture).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(optionsInPanel()).toHaveLength(1000);
+      expect(panel()?.getAttribute('data-pct-virtual')).toBeNull();
+    });
+
+    it('a window draws forty of them, and the list is still a thousand long', async () => {
+      const fixture = await render(ManyHost);
+      triggerOf(fixture).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const rows = optionsInPanel();
+      expect(rows).toHaveLength(40);
+      expect(rows[0].textContent?.trim()).toBe('Row 0');
+      expect(panel()?.getAttribute('data-pct-virtual')).toBe('');
+
+      // The pair a window owes the reader, and the one no audit asks for: the length the DOM
+      // no longer carries, and where in it this row stands.
+      expect(rows[0].getAttribute('aria-setsize')).toBe('1000');
+      expect(rows[0].getAttribute('aria-posinset')).toBe('1');
+      expect(rows[39].getAttribute('aria-posinset')).toBe('40');
+    });
+
+    it('a list drawn whole says neither, because the DOM holds the set', async () => {
+      const fixture = await render(ManyHost);
+      fixture.componentInstance.virtual.set(false);
+      fixture.detectChanges();
+      triggerOf(fixture).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const row = optionsInPanel()[0];
+      expect(row.getAttribute('aria-setsize')).toBeNull();
+      expect(row.getAttribute('aria-posinset')).toBeNull();
+    });
+
+    it('the row the cursor names is drawn, wherever in the list it stands', async () => {
+      const fixture = await render(ManyHost);
+      triggerOf(fixture).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      await press(fixture, 'End');
+
+      // `aria-activedescendant` names an ELEMENT, so the window has to hold the cursor: a
+      // name pointing at a row that was not drawn is a name pointing at nothing.
+      const named = triggerOf(fixture).getAttribute('aria-activedescendant');
+      expect(named).toBeTruthy();
+      expect(document.getElementById(named as string)).not.toBeNull();
+      expect(optionsInPanel()).toHaveLength(40);
+      const drawn = optionsInPanel();
+      expect(drawn[drawn.length - 1].textContent?.trim()).toBe('Row 999');
+    });
+
+    it('a value far down the list opens the panel on its own row', async () => {
+      const fixture = await render(ManyHost);
+      fixture.componentInstance.value.set('r840');
+      fixture.detectChanges();
+      triggerOf(fixture).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const labels = optionsInPanel().map((row) => row.textContent?.trim());
+      expect(labels).toContain('Row 840');
+      expect(labels).not.toContain('Row 0');
+    });
+
+    it('the space the rows nobody drew would have taken is on the panel', async () => {
+      const restore = withLayout(36, 240);
+      try {
+        const fixture = await render(ManyHost);
+        triggerOf(fixture).click();
+        fixture.detectChanges();
+        await fixture.whenStable();
+        // The measurement lands on the render that follows the one it read.
+        await scrollTo(fixture, 0);
+
+        const rows = optionsInPanel();
+        // Rows 0..6 fill the 240 px on the screen, four more are drawn past the bottom edge,
+        // and the top edge has nothing to overscan into.
+        expect(rows).toHaveLength(11);
+        expect(lead(panel())).toBe('0px');
+        // Everything below the window: 1000 rows of 36 px, less the eleven drawn.
+        expect(tail(panel())).toBe(`${(1000 - 11) * 36}px`);
+      } finally {
+        restore();
+      }
+    });
+
+    it('a cursor put past the window scrolls the panel to it by arithmetic', async () => {
+      const restore = withLayout(36, 240);
+      try {
+        const fixture = await render(ManyHost);
+        triggerOf(fixture).click();
+        fixture.detectChanges();
+        await fixture.whenStable();
+        await scrollTo(fixture, 0);
+
+        await press(fixture, 'End');
+
+        // The row `End` lands on was not in the DOM, so there was nothing to scroll into
+        // view: the panel is moved by the geometry, and the window follows the scrollbar it
+        // moved. The other way round is a deadlock — the row waits for the scroll and the
+        // scroll waits for the row.
+        expect((panel() as HTMLElement).scrollTop).toBe(1000 * 36 - 240);
+        const drawn = optionsInPanel();
+        expect(drawn[drawn.length - 1].textContent?.trim()).toBe('Row 999');
+        expect(triggerOf(fixture).getAttribute('aria-activedescendant')).toBe(
+          drawn[drawn.length - 1].id,
+        );
+      } finally {
+        restore();
+      }
+    });
+
+    it('a scroll away from the cursor leaves the trigger naming nobody', async () => {
+      const restore = withLayout(36, 240);
+      try {
+        const fixture = await render(ManyHost);
+        triggerOf(fixture).click();
+        fixture.detectChanges();
+        await fixture.whenStable();
+        await scrollTo(fixture, 0);
+        expect(
+          triggerOf(fixture).getAttribute('aria-activedescendant'),
+        ).not.toBeNull();
+
+        // A drag of the scrollbar moves no cursor, so the two come apart. A name pointing at
+        // a row nobody drew is a reference to nothing, and the attribute is optional.
+        await scrollTo(fixture, 36 * 500);
+        expect(
+          triggerOf(fixture).getAttribute('aria-activedescendant'),
+        ).toBeNull();
+
+        // The next arrow press brings them back together.
+        await press(fixture, 'ArrowDown');
+        const named = triggerOf(fixture).getAttribute('aria-activedescendant');
+        expect(named).not.toBeNull();
+        expect(document.getElementById(named as string)).not.toBeNull();
+      } finally {
+        restore();
+      }
+    });
+
+    it('a heading keeps its own id, and its group carries the rows it skipped', async () => {
+      const restore = withLayout(36, 240, 24);
+      try {
+        const fixture = await render(ManyHost);
+        // Two headings of a hundred rows each, and a window that starts inside the second.
+        fixture.componentInstance.options.set([
+          { label: 'First', options: MANY.slice(0, 100) },
+          { label: 'Second', options: MANY.slice(100, 200) },
+        ]);
+        fixture.detectChanges();
+        triggerOf(fixture).click();
+        fixture.detectChanges();
+        await fixture.whenStable();
+        await scrollTo(fixture, 24 + 100 * 36 + 24 + 10 * 36);
+
+        const groups = groupsInPanel();
+        expect(groups).toHaveLength(1);
+        // The id names the section it belongs to and not its position in the window: the
+        // first group was not drawn at all, and this one is still the second.
+        expect(groups[0].getAttribute('aria-labelledby')).toBe(
+          panel()?.querySelector('[data-pct-part="group-label"]')?.id,
+        );
+        expect(
+          panel()?.querySelector('[data-pct-part="group-label"]')?.textContent,
+        ).toContain('Second');
+
+        // Its own skipped rows are the group's, and everything above the heading is the
+        // panel's — a nameless section would have had nowhere to put either.
+        expect(lead(groups[0])).toBe(`${6 * 36}px`);
+        expect(lead(panel())).toBe(`${24 + 100 * 36}px`);
+      } finally {
+        restore();
+      }
+    });
+
+    it('two row heights are reported and not repaired', async () => {
+      const warn = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => undefined);
+      const proto = HTMLElement.prototype;
+      const offset = Object.getOwnPropertyDescriptor(proto, 'offsetHeight');
+      Object.defineProperty(proto, 'offsetHeight', {
+        configurable: true,
+        get(this: HTMLElement) {
+          if (this.getAttribute('data-pct-part') !== 'option') return 0;
+          return this.textContent?.trim() === 'Row 3' ? 72 : 36;
+        },
+      });
+      try {
+        const fixture = await render(ManyHost);
+        triggerOf(fixture).click();
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        expect(warn).toHaveBeenCalled();
+        expect(warn.mock.calls[0][0]).toContain('rows of two heights');
+        expect(warn.mock.calls[0][0]).toContain('36px');
+        // Reported, and the list is untouched — which of the two heights is right is the
+        // application's question.
+        expect(optionsInPanel().length).toBeGreaterThan(0);
+      } finally {
+        if (offset) Object.defineProperty(proto, 'offsetHeight', offset);
+        warn.mockRestore();
+      }
+    });
+
+    it('a row already on the screen is not scrolled to', async () => {
+      const restore = withLayout(36, 240);
+      try {
+        const fixture = await render(ManyHost);
+        triggerOf(fixture).click();
+        fixture.detectChanges();
+        await fixture.whenStable();
+        await scrollTo(fixture, 36 * 10);
+
+        // The window starts four rows above the fold, so the seventh row drawn is row 12 —
+        // whole inside the 240 px on the screen, which leaves the panel nothing to do.
+        // `block: 'nearest'` written out, and the half of it that is "do nothing".
+        expect(optionsInPanel()[6].textContent?.trim()).toBe('Row 12');
+        optionsInPanel()[6].dispatchEvent(
+          new MouseEvent('mouseenter', { bubbles: true }),
+        );
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        expect((panel() as HTMLElement).scrollTop).toBe(360);
+      } finally {
+        restore();
+      }
+    });
+
+    it('a row just past the bottom edge scrolls the panel by exactly its overhang', async () => {
+      const restore = withLayout(36, 240);
+      try {
+        const fixture = await render(ManyHost);
+        triggerOf(fixture).click();
+        fixture.detectChanges();
+        await fixture.whenStable();
+        await scrollTo(fixture, 0);
+
+        // Rows 0..5 are whole on the screen and row 6 is cut by the bottom edge. Walking onto
+        // row 7 moves the panel by what hangs over it and by nothing more: 7×36 + 36 − 240.
+        for (let i = 0; i < 7; i++) await press(fixture, 'ArrowDown');
+
+        expect((panel() as HTMLElement).scrollTop).toBe(7 * 36 + 36 - 240);
+      } finally {
+        restore();
+      }
+    });
+
+    it('a panel drawn whole scrolls its row into view instead', async () => {
+      const into = vi.fn();
+      const proto = HTMLElement.prototype as unknown as {
+        scrollIntoView?: (options?: unknown) => void;
+      };
+      const had = Object.prototype.hasOwnProperty.call(proto, 'scrollIntoView');
+      const before = proto.scrollIntoView;
+      proto.scrollIntoView = into;
+      try {
+        const fixture = await render(ManyHost);
+        fixture.componentInstance.virtual.set(false);
+        fixture.componentInstance.options.set(OPTIONS);
+        fixture.detectChanges();
+        triggerOf(fixture).click();
+        fixture.detectChanges();
+        await fixture.whenStable();
+        await press(fixture, 'ArrowDown');
+
+        // No window, so there is no arithmetic to scroll by: the row is found by its ID among
+        // the ones drawn and asked to bring itself into view. It is the id and not the
+        // position, which is what the window broke and what this pins.
+        expect(into).toHaveBeenCalled();
+        expect(into.mock.instances[into.mock.instances.length - 1]).toBe(
+          optionsInPanel()[1],
+        );
+        expect(into.mock.calls[into.mock.calls.length - 1][0]).toStrictEqual({
+          block: 'nearest',
+        });
+      } finally {
+        if (had) proto.scrollIntoView = before;
+        else delete proto.scrollIntoView;
+      }
+    });
+
+    it('a windowed panel with nothing in it draws the sentence and measures nothing', async () => {
+      const restore = withLayout(36, 240);
+      try {
+        const fixture = await render(ManyHost);
+        fixture.componentInstance.options.set([]);
+        fixture.detectChanges();
+        triggerOf(fixture).click();
+        fixture.detectChanges();
+        await fixture.whenStable();
+
+        // There is no row to read a height from, so the measurement has to survive having
+        // nothing to measure — and the panel is the ordinary empty one.
+        expect(optionsInPanel()).toHaveLength(0);
+        expect(
+          panel()
+            ?.querySelector('[data-pct-part="empty"]')
+            ?.textContent?.trim(),
+        ).toBe('No options');
+        expect(lead(panel())).toBe('0px');
+        expect(tail(panel())).toBe('0px');
+      } finally {
+        restore();
+      }
+    });
+
+    it('a heading is counted in where its rows begin', async () => {
+      const restore = withLayout(36, 240, 24);
+      try {
+        const fixture = await render(ManyHost);
+        fixture.componentInstance.options.set([
+          { label: 'First', options: MANY.slice(0, 100) },
+          { label: 'Second', options: MANY.slice(100, 200) },
+        ]);
+        fixture.detectChanges();
+        triggerOf(fixture).click();
+        fixture.detectChanges();
+        await fixture.whenStable();
+        await scrollTo(fixture, 0);
+
+        await press(fixture, 'End');
+
+        // The last row of the second section, and the arithmetic that finds it has to count
+        // both headings and the whole of the first section: 24 + 100×36 + 24 + 99×36, plus the
+        // row itself, less the panel.
+        const last = 24 + 100 * 36 + 24 + 99 * 36;
+        expect((panel() as HTMLElement).scrollTop).toBe(last + 36 - 240);
+      } finally {
+        restore();
+      }
+    });
+
+    it('rows of one height are not reported, and an uneven list is only reported where a window reads it', async () => {
+      const warn = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => undefined);
+      const proto = HTMLElement.prototype;
+      const offset = Object.getOwnPropertyDescriptor(proto, 'offsetHeight');
+      let uneven = false;
+      Object.defineProperty(proto, 'offsetHeight', {
+        configurable: true,
+        get(this: HTMLElement) {
+          if (this.getAttribute('data-pct-part') !== 'option') return 0;
+          return uneven && this.textContent?.trim() === 'Row 3' ? 72 : 36;
+        },
+      });
+      try {
+        const fixture = await render(ManyHost);
+        triggerOf(fixture).click();
+        fixture.detectChanges();
+        await fixture.whenStable();
+        expect(warn).not.toHaveBeenCalled();
+
+        // The same uneven list drawn whole says nothing: the height only matters to a window,
+        // because a window is arithmetic over it.
+        uneven = true;
+        fixture.componentInstance.virtual.set(false);
+        fixture.detectChanges();
+        await fixture.whenStable();
+        expect(warn).not.toHaveBeenCalled();
+      } finally {
+        if (offset) Object.defineProperty(proto, 'offsetHeight', offset);
+        warn.mockRestore();
+      }
+    });
+
+    it('a hair of difference in the measurement is not a measurement', async () => {
+      const proto = HTMLElement.prototype;
+      const rect = proto.getBoundingClientRect;
+      const client = Object.getOwnPropertyDescriptor(proto, 'clientHeight');
+      let row = 36;
+      Object.defineProperty(proto, 'clientHeight', {
+        configurable: true,
+        get(this: HTMLElement) {
+          return this.getAttribute('data-pct-part') === 'panel' ? 240 : 0;
+        },
+      });
+      proto.getBoundingClientRect = function (this: HTMLElement) {
+        const height =
+          this.getAttribute('data-pct-part') === 'option' ? row : 0;
+        return {
+          height,
+          width: 0,
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: height,
+          x: 0,
+          y: 0,
+          toJSON: () => ({}),
+        } as DOMRect;
+      };
+      try {
+        const fixture = await render(ManyHost);
+        triggerOf(fixture).click();
+        fixture.detectChanges();
+        await fixture.whenStable();
+        await scrollTo(fixture, 0);
+        expect(tail(panel())).toBe(`${(1000 - 11) * 36}px`);
+
+        // Firefox reports a row as two values a fifteen-millionth of a pixel apart and
+        // alternates between them, because each reading writes the spacer that decides where
+        // the next row is laid out. Below a sixty-fourth of a pixel the two are one reading —
+        // without that, the panel never settles (`lesson-111`).
+        row = 36 + 1 / 128;
+        await scrollTo(fixture, 0);
+        expect(tail(panel())).toBe(`${(1000 - 11) * 36}px`);
+
+        // A row that really changed height — a type size, not a rounding — is a new reading.
+        row = 40;
+        await scrollTo(fixture, 0);
+        expect(tail(panel())).not.toBe(`${(1000 - 11) * 36}px`);
+      } finally {
+        proto.getBoundingClientRect = rect;
+        if (client) Object.defineProperty(proto, 'clientHeight', client);
+      }
+    });
+
+    it('a scroll moves the window and the two spacers still add up to the list', async () => {
+      const restore = withLayout(36, 240);
+      try {
+        const fixture = await render(ManyHost);
+        triggerOf(fixture).click();
+        fixture.detectChanges();
+        await fixture.whenStable();
+        await scrollTo(fixture, 36 * 100);
+
+        const rows = optionsInPanel();
+        expect(rows[0].textContent?.trim()).toBe('Row 96');
+        expect(rows[rows.length - 1].textContent?.trim()).toBe('Row 110');
+
+        const drawn = rows.length * 36;
+        const above = Number.parseInt(lead(panel()), 10);
+        const below = Number.parseInt(tail(panel()), 10);
+        expect(above).toBe(96 * 36);
+        expect(above + drawn + below).toBe(1000 * 36);
+      } finally {
+        restore();
+      }
+    });
+  });
+
   describe('the arrow a consumer replaces (req-api-icons)', () => {
     @Component({
       selector: 'pct-probe-arrows',

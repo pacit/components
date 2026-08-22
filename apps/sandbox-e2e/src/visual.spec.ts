@@ -123,6 +123,32 @@ test.describe('Appearance — compared with the baseline', () => {
    * interacted with, so no behavioural case would catch its padding, its weight or its colour
    * going — and this is the one of the three sentences that stands where the rows will be.
    */
+  /**
+   * A window in the middle of a long list. What only a picture can say here is that the panel
+   * looks like an ordinary one: the rows nobody drew are a height and not a gap, so there is
+   * no seam at either edge of the window and no half-row at the top — the two things a spacer
+   * of the wrong size shows and no behavioural case can see.
+   */
+  test('select-panel-window', async ({ page }) => {
+    await stage(page, '/select');
+    await page
+      .getByTestId('select-many')
+      .locator('[data-pct-part="trigger"]')
+      .click();
+
+    const panel = page.locator('[data-pct-part="panel"]');
+    await expect(panel).toBeVisible();
+    // A round number of rows down, so the picture is the same one every time: a scroll to a
+    // fraction of a row would put a different sliver of the first one on every engine.
+    await panel.evaluate((el) => {
+      el.scrollTop = 2000 * 35.59375;
+    });
+    await expect(
+      page.locator('[data-pct-part="option"]').first(),
+    ).not.toHaveText('Row 0');
+    await expect(panel).toHaveScreenshot('select-panel-window.png');
+  });
+
   test('select-panel-loading', async ({ page }) => {
     await stage(page, '/select');
     await page

@@ -290,6 +290,41 @@ input.pct-select__trigger::placeholder {
   padding: var(--pct-space-2) 0;
 }
 
+/* The space the rows a window did not draw would have taken, and it is a PSEUDO-ELEMENT
+   because the alternatives were measured and both cost something the panel cannot pay
+   (0038):
+
+   - padding does not scroll. It stands inside the padding box, so `padding-block: 300px` on a
+     scroll container makes the box 300px taller instead of its content — `clientHeight` grows
+     with it and `scrollHeight - clientHeight` stays 0, in all three engines;
+   - a wrapper that scrolls is no longer the combobox's own popup, and that exemption is the
+     only reason a listbox with nothing focusable in it passes `scrollable-region-focusable`.
+     Moving the scroll one element in — which is exactly what a virtual-scroll viewport does —
+     turns the audit red with a serious violation.
+
+   `::before` and `::after` are boxes with no node: they scroll, they take the height they are
+   given, and the listbox keeps exactly its options and its groups as children. The custom
+   property is written by the component on the element itself and is deliberately NOT a
+   `--pct-…` name — the prefix is the promise that a skin may set it, and a number the window
+   computes is not a skin's to move. */
+.pct-select__panel[data-pct-virtual]::before,
+.pct-select__panel[data-pct-virtual]::after,
+.pct-select__panel[data-pct-virtual] .pct-select__group::before,
+.pct-select__panel[data-pct-virtual] .pct-select__group::after {
+  content: '';
+  display: block;
+}
+
+.pct-select__panel[data-pct-virtual]::before,
+.pct-select__panel[data-pct-virtual] .pct-select__group::before {
+  block-size: var(--_pct-select-lead, 0);
+}
+
+.pct-select__panel[data-pct-virtual]::after,
+.pct-select__panel[data-pct-virtual] .pct-select__group::after {
+  block-size: var(--_pct-select-tail, 0);
+}
+
 .pct-select__option {
   padding: var(--pct-select-option-padding-y) var(--pct-select-option-padding-x);
   color: var(--pct-select-option-fg);
