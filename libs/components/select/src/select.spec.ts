@@ -22,6 +22,7 @@ import { PctSelect } from './select';
 import { PctSelectOptionTemplate } from './select.template';
 import {
   pctFilterByLabel,
+  pctKeepAll,
   PctSelectFilter,
   PctSelectItem,
   PctSelectOption,
@@ -2490,6 +2491,261 @@ describe('PctSelect', () => {
 
       expect(fixture.componentInstance.value()).toBeNull();
       expect(panel()).toBeNull();
+    });
+  });
+
+  /**
+   * A list that arrives after the control does. What is measured here is a fact about the
+   * LIST — the panel says the list is coming instead of concluding that there is nothing, and
+   * it says so to the reader as well — and the one thing a late list moves without anybody
+   * touching a key: the cursor
+   * ([0037](../../../../docs/decisions/0037-loading-is-a-fact-about-the-list.md)).
+   */
+  describe('a list that is still coming (loading)', () => {
+    @Component({
+      imports: [PctSelect],
+      template: `<pct-select
+        label="Country"
+        [options]="options()"
+        [loading]="loading()"
+        [filterable]="filterable()"
+        [filterWith]="filterWith()"
+        [(value)]="value"
+        [(filterText)]="query"
+      />`,
+    })
+    class AsyncHost {
+      options = signal<readonly PctSelectItem[]>([]);
+      loading = signal(true);
+      filterable = signal(false);
+      filterWith = signal<PctSelectFilter>(pctFilterByLabel);
+      value = signal<string | null>(null);
+      query = signal('');
+    }
+
+    const live = (): string | null =>
+      document.querySelector('[data-pct-live="polite"]')?.textContent ?? null;
+
+    const settle = async (f: ComponentFixture<unknown>) => {
+      f.detectChanges();
+      await f.whenStable();
+    };
+
+    const openAsync = async (): Promise<ComponentFixture<AsyncHost>> => {
+      const fixture = await render(AsyncHost);
+      triggerOf(fixture).click();
+      await settle(fixture);
+      return fixture;
+    };
+
+    /** The same options again — another instance of each, as a second fetch brings them. */
+    const arrive = (labels: readonly [string, string][]): PctSelectOption[] =>
+      labels.map(([value, label]) => ({ value, label }));
+
+    const COUNTRIES: readonly [string, string][] = [
+      ['pl', 'Poland'],
+      ['de', 'Germany'],
+      ['sk', 'Slovakia'],
+    ];
+
+    const activeLabel = (): string | undefined =>
+      optionsInPanel()
+        .find((o) => o.hasAttribute('data-pct-active'))
+        ?.textContent?.trim();
+
+    it('an empty panel says the list is coming, and only then that there is none', async () => {
+      const fixture = await openAsync();
+
+      expect(part(document, 'empty').textContent?.trim()).toBe('Loading…');
+
+      // The two sentences it replaces are CONCLUSIONS, and one is reached the moment the
+      // request is over — with the panel never closing.
+      fixture.componentInstance.loading.set(false);
+      await settle(fixture);
+
+      expect(part(document, 'empty').textContent?.trim()).toBe('No options');
+    });
+
+    it('a question nobody has answered yet is not a question with no answer', async () => {
+      const fixture = await render(AsyncHost);
+      fixture.componentInstance.filterable.set(true);
+      await settle(fixture);
+
+      const input = triggerOf(fixture) as unknown as HTMLInputElement;
+      input.value = 'pol';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      await settle(fixture);
+
+      // "No matches" here would be a sentence about a server that has not spoken yet, and
+      // the user's next act — deleting the letters — is decided by it.
+      expect(part(document, 'empty').textContent?.trim()).toBe('Loading…');
+    });
+
+    it('the listbox says it is busy, and stops saying it', async () => {
+      const fixture = await openAsync();
+
+      expect(part(document, 'panel').getAttribute('aria-busy')).toBe('true');
+
+      fixture.componentInstance.loading.set(false);
+      await settle(fixture);
+
+      // `aria-busy="false"` is the default value: written out it would stand in the tree of
+      // every panel on the page and say nothing.
+      expect(part(document, 'panel').hasAttribute('aria-busy')).toBe(false);
+    });
+
+    it('the rows already on the screen are marked, not taken away', async () => {
+      const fixture = await render(AsyncHost);
+      fixture.componentInstance.loading.set(false);
+      fixture.componentInstance.options.set(arrive(COUNTRIES));
+      await settle(fixture);
+      triggerOf(fixture).click();
+      await settle(fixture);
+
+      // A second question is on its way and the answer to the first is on the screen. Taking
+      // it away would empty the panel under a user who is reading it — `aria-busy` is the
+      // whole of what a stale reading needs.
+      fixture.componentInstance.loading.set(true);
+      await settle(fixture);
+
+      expect(optionsInPanel().map((o) => o.textContent?.trim())).toEqual([
+        'Poland',
+        'Germany',
+        'Slovakia',
+      ]);
+      expect(document.querySelector('[data-pct-part="empty"]')).toBeNull();
+    });
+
+    it('a list arriving takes nothing away — not the focus, not the panel', async () => {
+      const fixture = await render(AsyncHost);
+      const trigger = triggerOf(fixture);
+      trigger.focus();
+      trigger.click();
+      await settle(fixture);
+
+      fixture.componentInstance.loading.set(true);
+      fixture.componentInstance.options.set(arrive(COUNTRIES));
+      await settle(fixture);
+
+      // The difference from `pctButton`'s input of the same name, in one case: there the
+      // loading IS the control's action in flight, here the control works and its list is
+      // late. A disabled element drops focus on `body`, which is the end of the key map.
+      expect(trigger.hasAttribute('disabled')).toBe(false);
+      expect(document.activeElement).toBe(trigger);
+      expect(panel()).not.toBeNull();
+    });
+
+    it('the reader is told, and what was said is taken back', async () => {
+      const fixture = await openAsync();
+
+      expect(live()).toBe('Loading…');
+
+      // The list arrives and the request ends in one pass. The channel is SHARED, so a
+      // sentence left standing on it is not merely stale: the next control to say the same
+      // thing is deduplicated into silence. A retraction that names the sentences it knows
+      // about cannot serve three of them — the third one is exactly what it does not name.
+      fixture.componentInstance.options.set(arrive(COUNTRIES));
+      fixture.componentInstance.loading.set(false);
+      await settle(fixture);
+
+      expect(live()).toBe('');
+    });
+
+    it('a sentence that replaces another is announced in its place', async () => {
+      const fixture = await openAsync();
+      expect(live()).toBe('Loading…');
+
+      // One conclusion IS reached the moment the request is over, with the panel never
+      // closing — which is the second thing the old retraction could not have known about.
+      fixture.componentInstance.loading.set(false);
+      await settle(fixture);
+
+      expect(live()).toBe('No options');
+    });
+
+    it('the list arriving puts the cursor on its first row', async () => {
+      const fixture = await openAsync();
+      const trigger = triggerOf(fixture);
+
+      // An open panel over a list nobody could stand in: there is no active option, so the
+      // trigger names none.
+      expect(trigger.hasAttribute('aria-activedescendant')).toBe(false);
+
+      fixture.componentInstance.options.set(arrive(COUNTRIES));
+      fixture.componentInstance.loading.set(false);
+      await settle(fixture);
+
+      expect(activeLabel()).toBe('Poland');
+      // And the reader is pointed at it: what ends "Loading…" is the list itself being read.
+      expect(
+        document.getElementById(
+          trigger.getAttribute('aria-activedescendant') ?? '',
+        ),
+      ).toBe(optionsInPanel()[0]);
+    });
+
+    it('a list fetched again keeps the cursor on the option it was standing on', async () => {
+      const fixture = await openAsync();
+      fixture.componentInstance.options.set(arrive(COUNTRIES));
+      fixture.componentInstance.loading.set(false);
+      await settle(fixture);
+
+      await press(fixture, 'ArrowDown');
+      expect(activeLabel()).toBe('Germany');
+
+      // Another instance of the same options, one more in front: the same fetch, answered
+      // twice. An index kept as a number would now be naming Poland.
+      fixture.componentInstance.options.set(
+        arrive([['at', 'Austria'], ...COUNTRIES]),
+      );
+      await settle(fixture);
+
+      expect(activeLabel()).toBe('Germany');
+    });
+
+    it('a shorter list never leaves the trigger naming an option that is gone', async () => {
+      const fixture = await openAsync();
+      fixture.componentInstance.options.set(arrive(COUNTRIES));
+      fixture.componentInstance.loading.set(false);
+      await settle(fixture);
+
+      await press(fixture, 'ArrowDown');
+      await press(fixture, 'ArrowDown');
+      expect(activeLabel()).toBe('Slovakia');
+
+      // The server's second answer holds one row, and it is not the row the cursor stood on.
+      fixture.componentInstance.options.set(arrive([['at', 'Austria']]));
+      await settle(fixture);
+
+      const named = triggerOf(fixture).getAttribute('aria-activedescendant');
+      expect(document.getElementById(named ?? '')).toBe(optionsInPanel()[0]);
+      expect(activeLabel()).toBe('Austria');
+    });
+
+    it('a list narrowed by somebody else is not narrowed again', async () => {
+      const fixture = await render(AsyncHost);
+      const host = fixture.componentInstance;
+      host.filterable.set(true);
+      host.loading.set(false);
+      // What a server answered "nyc" with: the label does not contain the letters, because
+      // the matching was somebody else's — a code, an old name, a misspelling.
+      host.options.set(arrive([['us-ny', 'New York']]));
+      await settle(fixture);
+
+      const input = triggerOf(fixture) as unknown as HTMLInputElement;
+      input.value = 'nyc';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      await settle(fixture);
+
+      // The default predicate takes the row back out — in a library that never said it would.
+      expect(optionsInPanel()).toHaveLength(0);
+
+      host.filterWith.set(pctKeepAll);
+      await settle(fixture);
+
+      expect(optionsInPanel().map((o) => o.textContent?.trim())).toEqual([
+        'New York',
+      ]);
     });
   });
 

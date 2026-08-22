@@ -1,4 +1,4 @@
-import { DestroyRef, inject, signal, Signal } from '@angular/core';
+import { DestroyRef, inject, linkedSignal, Signal } from '@angular/core';
 
 /**
  * How long a typed prefix lives before the next letter starts a new one, in milliseconds.
@@ -28,6 +28,17 @@ export interface PctListSource<T> {
    * accident rather than by a decision.
    */
   readonly label?: (item: T) => string;
+  /**
+   * Whether two entries of two readings of one list are the **same entry** — what the cursor
+   * is put back on when the list is replaced under it. Absent means identity, which is the
+   * answer wherever the entries themselves survive the change (a menu's items are component
+   * instances); a control whose rows are rebuilt on every reading — because they are derived
+   * from data — says here what makes two of them one.
+   *
+   * It is asked only about a list that changed on **nobody's keystroke**: a walk that moves
+   * itself has already said where it stands.
+   */
+  readonly sameItem?: (a: T, b: T) => boolean;
   /** Life of the typed prefix, in milliseconds; `PCT_TYPEAHEAD_DELAY` unless given. */
   readonly typeaheadDelay?: number;
   /**
@@ -55,6 +66,14 @@ export interface PctListNavigation {
    * Index of the entry active by keyboard, `-1` for none. **Not the same as the selected
    * one**: in the `aria-activedescendant` pattern focus never leaves the trigger, so the
    * active entry is where the keyboard stands, and the selected one is what the value says.
+   *
+   * It **follows its entry when the list is replaced**, because an index alone is a promise
+   * only a list that never changes can keep: a list answered by a server arrives twice, and
+   * the position a row held among three matches names a different row among thirty. Where the
+   * new list cannot name the entry any more the cursor goes to the first reachable one, and a
+   * walk that had no list at all — an empty one, waiting — starts at the top when it arrives.
+   * A cursor deliberately put nowhere over a list that HAD entries stays nowhere: that is a
+   * closed panel, and nobody is walking it.
    */
   readonly activeIndex: Signal<number>;
   /**
@@ -121,19 +140,63 @@ export interface PctListNavigation {
  * });
  */
 export function pctListNavigation<T>(src: PctListSource<T>): PctListNavigation {
-  const activeIndex = signal(-1);
   const delay = src.typeaheadDelay ?? PCT_TYPEAHEAD_DELAY;
 
-  /** Positions of the reachable entries, in list order — the domain of every movement. */
-  const reachable = (): number[] => {
+  /** Positions of the reachable entries of one reading of the list, in order. */
+  const reachableIn = (items: readonly T[]): number[] => {
     const isDisabled = src.isDisabled;
-    const items = src.items();
     const indexes: number[] = [];
     for (let i = 0; i < items.length; i++) {
       if (!isDisabled?.(items[i])) indexes.push(i);
     }
     return indexes;
   };
+
+  /** The domain of every movement — the reachable entries of the list as it stands now. */
+  const reachable = (): number[] => reachableIn(src.items());
+
+  /**
+   * The active index is **derived from the list** and written over by the walk, which is what
+   * `linkedSignal` is: every movement below sets it outright, and a new list recomputes it
+   * from where the cursor stood. An effect could not do this job — it would read the index it
+   * writes, which is one consumer paying an extra pass and two never finishing
+   * (`lesson-94`) — and a plain signal could not do it at all: it would keep a number whose
+   * row has moved, so `aria-activedescendant` would name an id no element carries and the
+   * next `Enter` would pick a row nobody pointed at.
+   */
+  const activeIndex = linkedSignal<readonly T[], number>({
+    source: src.items,
+    computation: (items, previous) => {
+      // Nobody has walked yet: the control decides where a walk starts (a select opens on its
+      // answer), and until it does there is no active entry.
+      if (previous === undefined) return -1;
+
+      const first = (): number => {
+        const list = reachableIn(items);
+        return list.length > 0 ? list[0] : -1;
+      };
+
+      const before = previous.source;
+      // `-1` indexes an array to `undefined` exactly as a position past its end does, and the
+      // two are one fact here: there is no entry under the cursor.
+      const stood = before[previous.value];
+      if (stood === undefined) {
+        // Nothing under the cursor, and the two reasons for that are different facts. A list
+        // that was EMPTY was a list nobody could stand in — the panel of an async control
+        // waiting for its rows — and its arrival is what a cursor was waiting for. A cursor
+        // put nowhere over a list that had entries was put there on purpose, by the control
+        // that closed its panel.
+        return before.length === 0 ? first() : -1;
+      }
+
+      const same = src.sameItem ?? Object.is;
+      const found = items.findIndex((item) => same(item, stood));
+      // A disabled entry is not skipped here: `setActive` already lets the cursor stand on
+      // one — a selected option gone disabled is still where the keyboard starts — and it is
+      // the MOVEMENTS that decide what may be landed on.
+      return found >= 0 ? found : first();
+    },
+  });
 
   let buffer = '';
   let timer: ReturnType<typeof setTimeout> | undefined;

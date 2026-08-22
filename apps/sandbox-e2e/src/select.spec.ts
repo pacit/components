@@ -921,6 +921,158 @@ test.describe('PctSelect — a combobox with a panel', () => {
     });
   });
 
+  /**
+   * A list that arrives after the page does. Everything here is measured in a real browser
+   * because it is about what the reader and the keyboard find in the tree: `aria-busy` on a
+   * listbox that lives in the overlay container, and a cursor that has to keep naming an
+   * option that EXISTS after the rows underneath it were replaced — an `aria-activedescendant`
+   * pointing at an id nothing carries is a reference axe reports and a reader falls silent on
+   * ([0037](../../../docs/decisions/0037-loading-is-a-fact-about-the-list.md)).
+   *
+   * The question and the answer are sent as events rather than pressed, and the demo card
+   * takes them on both channels for that reason: everything below is about a panel that is
+   * OPEN, and a press anywhere on the page closes it — the CDK reads a click outside the
+   * panel as the question being over. A clock would be the other way out and a worse one.
+   */
+  test.describe('a list that is still coming', () => {
+    const combo = (page: import('@playwright/test').Page) =>
+      trigger(page, 'select-async');
+    const empty = (page: import('@playwright/test').Page) =>
+      page.locator('[data-pct-part="empty"]');
+    const answered = (page: import('@playwright/test').Page) =>
+      page.getByTestId('demo-async').locator('[data-answers]');
+
+    /** What a server does, with no pointer and no clock involved. */
+    const send = (page: import('@playwright/test').Page, what: string) =>
+      page.evaluate(
+        (name) => window.dispatchEvent(new Event(name)),
+        `sbx-select-${what}`,
+      );
+
+    test("an empty panel says the list is coming, in the application's own words", async ({
+      page,
+    }) => {
+      await combo(page).click();
+      await expect(panel(page)).toBeVisible();
+
+      // `Chargement…` and not `Loading…`: the third sentence goes through PCT_TEXTS like the
+      // two it replaces, so an application that translated the library is not told in English
+      // that its list is late (req-api-texts).
+      await expect(empty(page)).toHaveText('Chargement…');
+      await expect(panel(page)).toHaveAttribute('aria-busy', 'true');
+      // Announced as well, because focus stays on the trigger: with no option to point at,
+      // nothing inside the panel has a reader.
+      await expect(page.locator('[data-pct-live="polite"]')).toHaveText(
+        'Chargement…',
+      );
+    });
+
+    test('and only once the request is over does it conclude', async ({
+      page,
+    }) => {
+      await combo(page).click();
+      await expect(empty(page)).toHaveText('Chargement…');
+
+      await send(page, 'answer');
+
+      await expect(empty(page)).toHaveCount(0);
+      await expect(options(page).first()).toHaveText('Poland');
+      // The state comes off with the request: a panel left busy is one every reader keeps
+      // treating as unfinished.
+      await expect(panel(page)).not.toHaveAttribute('aria-busy', 'true');
+      await expect(page.locator('[data-pct-live="polite"]')).toHaveText('');
+    });
+
+    test('the list arriving is what the cursor was waiting for', async ({
+      page,
+    }) => {
+      await combo(page).click();
+      // Nothing to stand in, so nothing is pointed at.
+      await expect(combo(page)).not.toHaveAttribute('aria-activedescendant');
+
+      await send(page, 'answer');
+
+      const first = options(page).first();
+      await expect(first).toHaveAttribute('data-pct-active', '');
+      expect(await attrOf(combo(page), 'aria-activedescendant')).toBe(
+        await attrOf(first, 'id'),
+      );
+    });
+
+    test('a list replaced under the cursor never leaves it naming nothing', async ({
+      page,
+    }) => {
+      await combo(page).click();
+      await send(page, 'answer');
+      await expect(answered(page)).toHaveAttribute('data-answers', '1');
+
+      await combo(page).press('ArrowDown');
+      await combo(page).press('ArrowDown');
+      // Czechia is disabled, so two steps down from Poland is Slovakia.
+      await expect(options(page).nth(3)).toHaveAttribute('data-pct-active', '');
+
+      // The same six rows answered a second time, on nobody's keystroke — another instance
+      // of every one of them, which is what a second fetch brings and what identity cannot
+      // follow.
+      await send(page, 'answer');
+      await expect(answered(page)).toHaveAttribute('data-answers', '2');
+
+      const named = await attrOf(combo(page), 'aria-activedescendant');
+      // The id names an element that is really in the document: this is the whole defect a
+      // cursor kept as a number produces, and the reason it is measured in a browser.
+      await expect(page.locator(`[id="${named}"]`)).toHaveText('Slovakia');
+      await expect(options(page).nth(3)).toHaveAttribute('data-pct-active', '');
+    });
+
+    test('a list refreshed under the eye keeps what is on the screen', async ({
+      page,
+    }) => {
+      await combo(page).click();
+      await send(page, 'answer');
+      await expect(options(page)).toHaveCount(6);
+
+      // A second question in flight with the answer to the first on the screen: taking the
+      // rows away would empty the panel under somebody reading it, and `aria-busy` is the
+      // whole of what a stale reading needs.
+      await send(page, 'ask');
+
+      await expect(panel(page)).toHaveAttribute('aria-busy', 'true');
+      await expect(empty(page)).toHaveText('Chargement…');
+      // And the cursor goes with the rows: an id left in the attribute would name nothing.
+      await expect(combo(page)).not.toHaveAttribute('aria-activedescendant');
+    });
+
+    test('a list on its way takes neither the focus nor the keys', async ({
+      page,
+    }) => {
+      await combo(page).focus();
+      await send(page, 'ask');
+
+      // The difference from a button's `loading`, which disables: there the loading is the
+      // control's own action in flight, here the control works and its list is late. A
+      // disabled element drops focus on `body`, which is the end of the key map.
+      await expect(combo(page)).toBeFocused();
+      await expect(combo(page)).not.toBeDisabled();
+      await combo(page).press('ArrowDown');
+      await expect(panel(page)).toBeVisible();
+      await expect(empty(page)).toHaveText('Chargement…');
+    });
+
+    test('a question the control does not answer twice', async ({ page }) => {
+      await combo(page).click();
+      await send(page, 'answer');
+      await expect(options(page)).toHaveCount(6);
+
+      // `pctKeepAll`: the letters went to whoever answers them, and the list that came back
+      // is the answer — narrowing it again here would take out the rows a server matched on
+      // something other than the label.
+      await combo(page).fill('iceland');
+
+      await expect(options(page)).toHaveCount(6);
+      await expect(empty(page)).toHaveCount(0);
+    });
+  });
+
   test('the clickable area of the trigger is at least 24 px tall', async ({
     page,
   }) => {

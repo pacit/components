@@ -288,6 +288,10 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
    * anything more than that — a second field, a code beside the label, an idea of which
    * letters are the same letter — is the application's, because it is the application that
    * knows the language (`pctFilterByLabel`, and `lesson-101` for why).
+   *
+   * A list a **server** narrowed is already the answer, so narrowing it again here would take
+   * out the rows it matched on something other than the label: that control says `pctKeepAll`
+   * ([0037](../../../../docs/decisions/0037-loading-is-a-fact-about-the-list.md)).
    */
   readonly filterWith = input<PctSelectFilter<T>>(pctFilterByLabel);
 
@@ -305,6 +309,23 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
    * accident, and only its author knows whether that is a road worth having.
    */
   readonly clearable = input(false, { transform: booleanAttribute });
+
+  /**
+   * The list is on its way. A fact about the **list**, not about the control
+   * ([0037](../../../../docs/decisions/0037-loading-is-a-fact-about-the-list.md)): it takes
+   * nothing away — not the focus, not the answer already given, not the rows still on the
+   * screen — and says two things instead. The panel carries `aria-busy`, so a reader knows
+   * that what it is reading may not be the last word, and an empty one says "loading" where
+   * it would otherwise have said "no options": that sentence is a **conclusion**, and a list
+   * still coming has reached none.
+   *
+   * Deliberately NOT `disabled`, which is where it parts company with `pctButton`'s input of
+   * the same name. There the loading is the button's own action in flight and a second press
+   * would send it twice; here the control is in perfect working order and its list is late —
+   * the user can type the very question that fetches it. Disabling would take the focus with
+   * it (a disabled element drops it on `body`), which is the end of the key map.
+   */
+  readonly loading = input(false, { transform: booleanAttribute });
 
   /**
    * Width of the dropdown panel — equal to the control by default (`'field'`). The panel then
@@ -540,6 +561,13 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
     items: this.rows,
     isDisabled: (row) => row.disabled,
     label: (row) => row.option.label,
+    // A row is rebuilt on every reading of the list, so identity would say that no two lists
+    // share an entry. What makes two rows one is what makes two values one — the application's
+    // own `compareWith`, which is already the answer to "does this option carry the value":
+    // a list fetched twice brings back another instance of the same option, and the cursor
+    // names an option exactly as the value does
+    // ([0037](../../../../docs/decisions/0037-loading-is-a-fact-about-the-list.md)).
+    sameItem: (a, b) => this.compareWith()(a.option.value, b.option.value),
   });
 
   /** Index of the option active by keyboard (not the same as a selected one). */
@@ -665,15 +693,22 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
   private readonly announcer = inject(PctAnnouncer);
 
   /**
-   * Which of the two sentences an empty panel carries. They are two facts and not one phrasing
-   * of one: "there is nothing to choose from" is the list's state, "nothing here answers what
-   * you typed" is the question's, and a user three letters into a question is owed the second.
+   * Which of the three sentences an empty panel carries. They are three facts and not one
+   * phrasing of one: "there is nothing to choose from" is the list's state, "nothing here
+   * answers what you typed" is the question's, and a user three letters into a question is
+   * owed the second.
+   *
+   * **A list still coming takes both of them off the screen**, because both are conclusions
+   * and a request in flight has reached neither: a panel that says "no matches" while the
+   * server is still answering is telling the user something that is not yet true, and the
+   * user's next act — deleting the letters, giving up on the list — is decided by it.
    */
-  protected readonly emptyText = computed(() =>
-    this.query() === ''
+  protected readonly emptyText = computed(() => {
+    if (this.loading()) return this.texts().selectLoading;
+    return this.query() === ''
       ? this.texts().selectEmpty
-      : this.texts().selectNoMatches,
-  );
+      : this.texts().selectNoMatches;
+  });
 
   private readonly emptyMessage = computed(() =>
     this.open() && this.rows().length === 0 ? this.emptyText() : '',
@@ -695,21 +730,28 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
 
     pctAttachToField(this.fieldApi, this);
 
-    effect(() => {
-      const message = this.emptyMessage();
-      if (message !== '') this.announcer.announce(message);
-      else {
-        // Both, because the question dies WITH the panel: by the time this runs the query is
-        // already `''`, so the sentence to withdraw is no longer the one `emptyText()` names.
-        // `retract` takes off only what is still there, which is what makes asking twice free.
-        this.announcer.retract(this.texts().selectEmpty);
-        this.announcer.retract(this.texts().selectNoMatches);
-      }
-    });
+    // What the channel is holding on this control's behalf. It is kept rather than derived,
+    // because the sentence to WITHDRAW is never the one the state now names: the question
+    // dies with the panel, so by the time the panel is shut `emptyText()` already says
+    // something else — and since a list can stop loading while it is still empty, one
+    // sentence can replace another with the panel never closing. Three sentences retracted
+    // blindly would be three, and the next one is a `retract` nobody remembered to add.
+    //
+    // Neither call is guarded, and that is the announcer's contract rather than an oversight:
+    // it says nothing when handed nothing, and it withdraws only what is still there — so
+    // `say('')` on a control that never spoke touches neither the channel nor another
+    // control's sentence. The guards this began with were that contract written twice, and
+    // the mutation run said so: every one of them survived.
+    let announced = '';
+    const say = (message: string): void => {
+      this.announcer.retract(announced);
+      this.announcer.announce(message);
+      announced = message;
+    };
 
-    inject(DestroyRef).onDestroy(() =>
-      this.announcer.retract(this.emptyMessage()),
-    );
+    effect(() => say(this.emptyMessage()));
+
+    inject(DestroyRef).onDestroy(() => say(''));
 
     // The active option has to be visible in a scrolling list.
     effect(() => {

@@ -1653,6 +1653,28 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     which is why it is a filler item rather than part of the step that noticed it
   - binds at: **the next full mutation run** · _notes:_ —
 
+- [ ] **C28 — an empty listbox is a critical violation, and no case had ever opened one**
+  - measured while auditing the waiting panel of E4's async step: axe reports
+    `aria-required-children` at **critical** on a `role="listbox"` that owns no
+    `role="option"`, from the listbox itself ("Required ARIA children role not present:
+    group, option"). The waiting panel is now legal because `aria-busy` is the state ARIA
+    has for a container whose content has not arrived ([`lesson-106`](lessons.md#lesson-106),
+    [0037](decisions/0037-loading-is-a-fact-about-the-list.md)) — and the panel of a control
+    whose list is **genuinely** empty is the same tree without that excuse: the recorded run
+    over `select-empty` reports the identical violation
+  - what it is not: a defect this step introduced. The empty panel has been drawn since the
+    first version of the select, four axe cases stand over this component, and none of them
+    had ever opened a panel with nothing in it — a state can be audited from four sides and
+    still have a floor nobody stood on
+  - what closing it takes is a decision rather than an attribute: a message row wearing
+    `role="option"` is an option nobody can pick, dropping the role while the panel is empty
+    is a combobox whose `aria-haspopup="listbox"` points at something else, and closing the
+    panel over an empty list is a press that answers nothing. The one thing that is already
+    settled is that the audit will hold the answer: the case is `a11y.spec.ts` with
+    `select-empty` in place of `select-async`, and it is red today
+  - binds at: **the next step that touches the empty panel** — E5 opens no listbox, so this
+    is a filler item · _notes:_ —
+
 ## D. Phase 1 — the behaviour layer in `core`
 
 The largest architectural risk. The list machinery (typeahead, `activeIndex`, skipping disabled
@@ -2347,7 +2369,86 @@ trigger` (7 cases × 3 engines), the narrowed panel added to the axe audit **who
     unit tests it reported `motion.ts` at 86.21 **and `placement.ts` at 89.23**, against 91.38
     and 98.46 from a run of its own over the same code — so the gate went red naming two files
     this step never touched
-  - left: async, virtualisation
+  - _notes (async):_ **the sixth of the eight, and the one whose sharpest measurement came
+    from a gate that was expected to be a formality.** Written down it is an input called
+    `loading`, and three questions sit under it. **What the panel says**: "no options" and "no
+    matches" are **conclusions**, and a request in flight has reached neither — so a third
+    sentence takes both off the screen, through `PCT_TEXTS` like the two it replaces, and onto
+    the same polite channel. **What the state takes away**: nothing, which is where the input
+    parts company with `pctButton`'s of the same name — there the loading IS the control's
+    action in flight, here the control works and its list is late, and disabling would drop
+    focus on `body`, the end of the key map. And **what happens to the cursor**, which is the
+    half nobody would have written down as part of "async": every list change this library had
+    seen came from a keystroke, and all three keystroke paths set the cursor on the same line
+    that changed the list. A server's answer is the first change that arrives on nobody's, and
+    an index kept as a number then names a different row — `aria-activedescendant` pointing at
+    an id nothing carries, `Enter` picking a row nobody pointed at
+    ([`lesson-107`](lessons.md#lesson-107)). So the walk in `core` learned one rule — **a
+    cursor names an entry, not a position** — as a `linkedSignal` rather than an effect (an
+    effect would read the index it writes, [`lesson-94`](lessons.md#lesson-94)), and what makes
+    two entries one is asked of the control rather than assumed: the select answers
+    `compareWith`, which is already its answer to "does this option carry the value", and the
+    menu keeps identity because its items are instances that survive the change.
+    **The gate that was supposed to be a formality is the one that decided the shape**: the
+    waiting panel audited by axe came back **critical** — a `role="listbox"` owning no
+    `role="option"` is `aria-required-children`, reported from the listbox — and the repair is
+    not a placeholder row but the state the specification has for exactly this, which axe
+    implements: `aria-busy` marks a container whose content has not arrived, so the rule waits
+    with it ([`lesson-106`](lessons.md#lesson-106),
+    [0037](decisions/0037-loading-is-a-fact-about-the-list.md)). The same run said something
+    that is **not** this step's: the panel of a control whose list is genuinely empty is the
+    same tree without that excuse, and four axe cases over this component had never opened
+    one — that is **C28**. Two smaller things fell out. The withdrawal of the announced
+    sentence stopped naming the sentences it knew: with three of them a list can stop loading
+    while the panel stays open, so what is retracted is now what was actually said. And the
+    server-side filter got a name, `pctKeepAll` — 0035 had already opened that door ("on
+    nothing at all when a server is doing the narrowing"), and a constant rather than
+    `() => true` in a template is the difference between one identity and a new function on
+    every change detection pass, which rebuilds every row of the panel for as long as the page
+    lives
+  - gate: `libs/components/select/src/select.spec.ts` — 11 unit cases (the third sentence and
+    the conclusion that replaces it, the busy listbox, the rows a refresh keeps, the focus a
+    late list does not take, the retraction, the cursor an arriving list lands on, the cursor
+    a second fetch keeps, the trigger that never names a row that is gone, the list somebody
+    else narrowed, and the question nobody has answered yet);
+    `libs/components/core/src/core.spec.ts › a list replaced under the cursor` — 7 unit cases
+    over the walk itself; `apps/sandbox-e2e/src/select.spec.ts › a list that is
+still coming` (7 cases × 3 engines, driven by an event rather than a press, because a
+    press anywhere on the page closes the panel every one of them is about);
+    `a11y.spec.ts › "a panel waiting for its list has no violations"` and a
+    `select-panel-loading` baseline — 560 unit cases and 851 e2e cases green
+  - control: nine recorded runs. `aria-busy` taken off the listbox leaves the **audit** red
+    with a critical `aria-required-children`, which is the sharpest of them; a `loading` that
+    disables leaves **eight** unit cases red, because a disabled trigger opens no panel at
+    all; the loading sentence dropped leaves **three**; the old blind retraction leaves
+    **one**, and it is the case where one sentence replaces another with the panel never
+    closing; `aria-busy` written unconditionally leaves **one**. And four on the walk: the
+    cursor kept as a number leaves **seven** (four in `core`, three in the select), the
+    arriving list not starting the walk leaves **four**, the entry never found again leaves
+    **six**, and the select's `sameItem` dropped leaves exactly **one** — the case that says a
+    list fetched twice is two instances of one list
+  - cost: `./select` 62106 → **62607 B** (+0.8%), and the shape of the rest is worth more than
+    that number: `./core` and `./menu` each grew by **323 B**, which is the walk's re-anchor —
+    the menu pays for a repair nobody asked it for and needed anyway, since an item list that
+    changes used to leave its cursor on a position there too — and every entrypoint that
+    imports `core` grew by **48 B**, which is the one new `PCT_TEXTS` string. No new part, no
+    new token, no new peer, one string (`selectLoading`), one attribute (`aria-busy`, the
+    platform's own — no `data-` twin, because a second copy of one state is two things to keep
+    in step). Coverage stands where it stood: no exception anywhere in the repository, and the
+    templates at their own floor of 100%. The mutation run went **82.57 → 82.77** overall, and
+    the shape of it is the part worth keeping. `list.ts` gained **26 mutants and not one
+    survivor** (98.78 → **99.07**, the one survivor being the pre-existing `delta > 0` in
+    `move`) — but only after a first pass had left six, and all six were read: three said that
+    "the first of an empty list" was measured by nobody, one that the cursor standing on the
+    FIRST row was a case nobody had written, one that an entry following its list to the top
+    while arriving disabled was another, and one that the `previous.value >= 0` guard was
+    `array[-1]` written out — the guard is gone and two cases are there instead.
+    `select.base.ts` reads **89.90** with **one** new survivor, and it is the initial value of
+    the sentence the control remembers saying: any string behaves identically, because the
+    announcer withdraws only what is on the channel. The same run took the two guards out of
+    that closure — every mutant of both had survived, and they were the announcer's own
+    contract written twice
+  - left: virtualisation
 - [ ] **E5 — switch, textarea (autosize), slider, date picker** — the date picker forces deep
       i18n, which `[pctNumber]` has already started
 - [ ] **E7 — the rest**: toast, tabs, accordion, drawer, pagination, progress, skeleton, chips,

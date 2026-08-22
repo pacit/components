@@ -2716,3 +2716,60 @@ this and a screenshot did not, which is the argument for keeping both. And the f
 the defect suggests: a positioning context **only where something is going to be positioned in
 it** — here, the branch whose arrow stands beside the trigger, and the control that carries a
 cross — rather than always, on the reasoning that it costs nothing.
+
+### <a id="lesson-106"></a>`lesson-106` — An empty listbox is a critical violation, and `aria-busy` is the specification's way of saying "not yet"
+
+The async step needed the waiting panel audited, and the audit was expected to be a formality:
+a `role="listbox"` with a sentence in it and no rows, drawn by a control that has been through
+five accessibility reviews. It came back **critical**, from the listbox and not from anything
+inside it:
+
+```
+[critical] aria-required-children: Required ARIA children role not present: group, option
+  - #pct-select-39-listbox
+```
+
+`listbox` is one of the roles ARIA declares with required owned elements, and a panel waiting
+for its rows owns none. The obvious repairs are both worse than the fault — a message row
+wearing `role="option"` is an option nobody can pick, and dropping the role while the panel is
+empty is a combobox whose `aria-haspopup="listbox"` points at something else.
+
+The answer is a state the specification already has for this exact case, and axe implements it:
+`aria-busy="true"` marks a container whose content **has not arrived**, and the rule stands
+down until it does. Putting the attribute on makes the violation go; taking it off brings it
+straight back, which is how the two runs above were produced. So the accessible reading of
+"loading" is not decoration around the list — it is what makes the empty list legal.
+
+The second half of the measurement is the one that was not asked for. Pointed at the panel of
+a control whose list is **genuinely** empty — the same audit, the sentence "No options" instead
+of "Loading…" — it reports the same critical violation, and no case in this repository had ever
+opened an empty panel under axe. A state can be audited by four cases and still have a floor
+nobody stood on.
+
+### <a id="lesson-107"></a>`lesson-107` — A cursor kept as a number survives only a list that changes on a keystroke
+
+The keyboard cursor of the select was an index into the row list, and for five steps of E4 that
+was exactly right: every change of the list came from a keystroke — a letter typed into the
+filter, a question cleared, a pick — and each of those paths set the cursor itself, on the same
+line that changed the list.
+
+A list answered by a server is the first change that arrives on **nobody's** keystroke, and the
+number then names a different row. What that costs is not a cosmetic slip:
+`aria-activedescendant` on the trigger points at an id nothing in the document carries, so the
+reader has nothing to read; the row drawn as active is one the user never moved to; and `Enter`
+picks whatever has slid under the number. The e2e case is the shape of it — two steps down to
+Slovakia, the same six options answered again as another instance of each, and the id in the
+attribute has to still name a row that exists.
+
+The repair is one sentence — **a cursor names an entry, not a position** — and the mechanism it
+needs is a `linkedSignal`: the index is derived from the list and written over by the walk,
+which is what that primitive is. An effect cannot do this job, because it would read the index
+it writes ([`lesson-94`](#lesson-94)).
+
+What makes two entries "the same" is where the general answer runs out. Rows built from data
+are rebuilt on every reading, so identity says two readings of one list share nothing; items
+that are component instances survive the change, so identity is exactly right for them. The
+walk therefore asks and does not assume — and the select's answer was already written down as
+something else: `compareWith`, the function that maps a value back to an option **because a
+fetch brings back another instance of the same thing**. A cursor is another way of naming an
+option, so it is put back the same way the value is.

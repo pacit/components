@@ -158,6 +158,27 @@ test.describe('Accessibility (axe-core, WCAG 2.2 AA)', () => {
   });
 
   /**
+   * A listbox with nothing in it — the state an async control is in before its list arrives,
+   * and the first EMPTY one this suite audits. `aria-required-children` is what has an
+   * opinion about it: a `listbox` must own options, and a panel waiting for its rows owns
+   * none. The way out is not a placeholder row but the state the specification has for
+   * exactly this, and axe implements it — a container marked `aria-busy` is a container whose
+   * content has not arrived, so the rule stands down until it does
+   * ([0037](../../../docs/decisions/0037-loading-is-a-fact-about-the-list.md)).
+   */
+  test('a panel waiting for its list has no violations', async ({ page }) => {
+    await visit(page, '/select');
+    await page
+      .getByTestId('select-async')
+      .locator('[data-pct-part="trigger"]')
+      .click();
+    await expect(page.locator('[data-pct-part="panel"]')).toBeVisible();
+
+    const violations = await audit(page);
+    expect(report(violations)).toBe('');
+  });
+
+  /**
    * The cross, audited where it really stands: a `<button>` beside the trigger, inside the
    * same field row. Two things about it are only ever true in a rendered tree — its name comes
    * from `PCT_TEXTS` through `aria-label`, so a control that lost the string would be an

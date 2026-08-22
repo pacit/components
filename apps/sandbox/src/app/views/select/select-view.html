@@ -225,6 +225,49 @@
 </sbx-demo>
 
 <sbx-demo
+  heading="A list that is still coming"
+  summary="Loading is a fact about the list, not about the control: nothing is disabled, nothing is taken away, and an empty panel says the list is coming instead of concluding that there is none — a conclusion nobody has reached yet. The listbox carries aria-busy, so rows left over from the last answer are marked stale rather than removed. The question goes to whoever answers it, which is why this control does not narrow the answer a second time (pctKeepAll)."
+  [reqs]="['req-a11y-built-in', 'req-api-texts']"
+  [controls]="[]"
+  data-testid="demo-async"
+>
+  <!-- Which answer is on the screen. Two fetches of one list look alike — the same six rows
+       drawn again — so the count is what tells the second from the first, on the screen for a
+       reader and in an attribute for the run that measures the cursor across it. -->
+  <div class="stack" [attr.data-answers]="answers()">
+    <pct-field label="Country" data-testid="field-async">
+      <pct-select
+        filterable
+        [options]="asyncOptions()"
+        [loading]="asyncLoading()"
+        [filterWith]="keepAll"
+        [(value)]="asyncCountry"
+        data-testid="select-async"
+      />
+    </pct-field>
+
+    <!--
+      What a clock does in an application, done here by hand: a demo that answered after
+      300 ms would be a screenshot of whichever state the run happened to catch.
+    -->
+    <div class="row">
+      <button
+        pctButton
+        variant="outline"
+        (click)="ask()"
+        data-testid="async-ask"
+      >
+        Ask again
+      </button>
+      <button pctButton (click)="answer()" data-testid="async-answer">
+        Answer
+      </button>
+      <span class="muted">Answers so far: {{ answers() }}</span>
+    </div>
+  </div>
+</sbx-demo>
+
+<sbx-demo
   heading="An option row of your own"
   summary="The built-in row draws the label and nothing else. A template replaces what is inside the row — the role, the id, aria-selected and the keyboard stay with the component, because they are the listbox pattern rather than decoration."
   [reqs]="['req-api-templates']"

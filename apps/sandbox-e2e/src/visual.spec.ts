@@ -119,6 +119,23 @@ test.describe('Appearance — compared with the baseline', () => {
   });
 
   /**
+   * The panel with nothing in it yet. The sentence inside an empty panel is drawn and never
+   * interacted with, so no behavioural case would catch its padding, its weight or its colour
+   * going — and this is the one of the three sentences that stands where the rows will be.
+   */
+  test('select-panel-loading', async ({ page }) => {
+    await stage(page, '/select');
+    await page
+      .getByTestId('select-async')
+      .locator('[data-pct-part="trigger"]')
+      .click();
+
+    const panel = page.locator('[data-pct-part="panel"]');
+    await expect(panel).toBeVisible();
+    await expect(panel).toHaveScreenshot('select-panel-loading.png');
+  });
+
+  /**
    * The filtering triggers at rest. This is the one drawing of the step no behavioural case
    * touches: an `<input>` wearing the button's border, and the arrow standing over its end
    * padding rather than inside a flex row — the two ways of putting one icon in one box, which

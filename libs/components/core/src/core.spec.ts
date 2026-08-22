@@ -450,6 +450,144 @@ describe('@pacit/components/core', () => {
       expect(nav.activeIndex()).toBe(0);
     });
 
+    /**
+     * A list that changes on nobody's keystroke — the one an async control has. Every
+     * movement below says where the cursor stands in the list it was walking; these say what
+     * happens to it when that list is replaced underneath, which is the only case in which
+     * the walk has to decide something by itself
+     * ([0037](../../../../docs/decisions/0037-loading-is-a-fact-about-the-list.md)).
+     */
+    describe('a list replaced under the cursor', () => {
+      /** Two readings of one list: another instance of the same entries, as a fetch brings. */
+      const again = (labels: readonly string[]): Item[] =>
+        labels.map((label) => ({ label }));
+
+      const sameLabel = (a: Item, b: Item) => a.label === b.label;
+
+      it('the cursor follows its entry to the position it now holds', () => {
+        const items = signal(again(['Poland', 'Germany', 'Slovakia']));
+        const { nav } = walk({
+          items,
+          sameItem: sameLabel,
+          isDisabled: undefined,
+        });
+
+        nav.move(1);
+        nav.move(1);
+        expect(nav.activeIndex()).toBe(1);
+
+        // The same three entries, another instance of each, one more in front: an index kept
+        // as a number would now be naming Poland.
+        items.set(again(['Austria', 'Poland', 'Germany', 'Slovakia']));
+
+        expect(nav.activeIndex()).toBe(2);
+      });
+
+      it('an entry the new list cannot name puts the cursor at the top', () => {
+        const items = signal(again(['Poland', 'Germany', 'Slovakia']));
+        const { nav } = walk({
+          items,
+          sameItem: sameLabel,
+          isDisabled: undefined,
+        });
+
+        nav.last();
+        expect(nav.activeIndex()).toBe(2);
+
+        items.set(again(['Austria', 'Belgium']));
+
+        expect(nav.activeIndex()).toBe(0);
+      });
+
+      it('a list that arrives into an empty one starts the walk at the top', () => {
+        const items = signal<Item[]>([]);
+        const { nav } = walk({ items, sameItem: sameLabel });
+
+        // Nowhere, because there was nowhere to stand — an open panel waiting for its rows.
+        nav.first();
+        expect(nav.activeIndex()).toBe(-1);
+
+        items.set(again(['Poland', 'Germany']));
+
+        expect(nav.activeIndex()).toBe(0);
+      });
+
+      it('a cursor put nowhere over a list that had entries stays nowhere', () => {
+        const items = signal(again(['Poland', 'Germany']));
+        const { nav } = walk({ items, sameItem: sameLabel });
+
+        nav.first();
+        // What a control does when its panel closes — and a list arriving afterwards is not
+        // an invitation to start walking a list nobody is looking at.
+        nav.clear();
+        items.set(again(['Poland', 'Germany', 'Slovakia']));
+
+        expect(nav.activeIndex()).toBe(-1);
+      });
+
+      it('without sameItem two readings of one list share no entry', () => {
+        const items = signal(again(['Poland', 'Germany', 'Slovakia']));
+        const { nav } = walk({ items, isDisabled: undefined });
+
+        nav.last();
+        // Identity is the default, and it is the right answer wherever the entries themselves
+        // survive the change: here they do not, so the cursor goes to the top rather than
+        // pretending to have found its entry.
+        items.set(again(['Poland', 'Germany', 'Slovakia']));
+
+        expect(nav.activeIndex()).toBe(0);
+
+        // The same list, the very same objects: nothing has been replaced, so nothing moves.
+        const kept = again(['Poland', 'Germany', 'Slovakia']);
+        const stable = signal(kept);
+        const walked = walk({ items: stable, isDisabled: undefined }).nav;
+        walked.last();
+        stable.set([...kept]);
+        expect(walked.activeIndex()).toBe(2);
+      });
+
+      it('an entry gone disabled keeps the cursor, exactly as setActive leaves it', () => {
+        const items = signal<Item[]>([
+          { label: 'Poland' },
+          { label: 'Germany' },
+        ]);
+        const { nav } = walk({ items, sameItem: sameLabel });
+
+        nav.last();
+        expect(nav.activeIndex()).toBe(1);
+
+        // Germany comes back FIRST and disabled. `setActive` already lets the cursor stand on
+        // a disabled entry — a selected option gone disabled is still where the keyboard
+        // starts — so a list that disables the entry under the cursor is not a reason to move
+        // it, and "the first reachable row" is not where it goes: that would be Poland.
+        items.set([{ label: 'Germany', disabled: true }, { label: 'Poland' }]);
+
+        expect(nav.activeIndex()).toBe(0);
+        // The MOVEMENTS decide what may be landed on, and the next one leaves it.
+        nav.move(1);
+        expect(nav.activeIndex()).toBe(1);
+      });
+
+      it('a list with nothing to stand in leaves the cursor nowhere', () => {
+        const items = signal<Item[]>(again(['Poland', 'Germany']));
+        const { nav } = walk({ items, sameItem: sameLabel });
+
+        nav.first();
+        expect(nav.activeIndex()).toBe(0);
+
+        // The answer came back empty. `-1`, and not "the first of none" — an index into a
+        // list that has no entries is what `aria-activedescendant` would then name.
+        items.set([]);
+        expect(nav.activeIndex()).toBe(-1);
+
+        // A list every entry of which is out of reach is the same fact arrived at from the
+        // other side, and it is reached through the branch above: the previous list was
+        // empty, so this one is the arrival it was waiting for.
+        items.set([{ label: 'Austria', disabled: true }]);
+        expect(nav.activeIndex()).toBe(-1);
+      });
+    });
+
     it('the timer dies with the injector that created the walk', () => {
       vi.useFakeTimers();
       try {

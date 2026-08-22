@@ -33,6 +33,13 @@ export interface PctTexts {
    */
   readonly selectNoMatches: string;
   /**
+   * Select: while the list is still coming. The third fact an empty panel can carry, and the
+   * one that is not a conclusion — "there is nothing" and "nothing matches" are both answers,
+   * and a request in flight has given neither
+   * ([0037](../../../../docs/decisions/0037-loading-is-a-fact-about-the-list.md)).
+   */
+  readonly selectLoading: string;
+  /**
    * Multi-select: what stands between the chosen labels on the trigger. Punctuation is a
    * string like any other — an Arabic list is separated by `،` and a Japanese one by `、`,
    * so a comma written into the template would be a word of English in every language.
@@ -59,6 +66,7 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   selectPlaceholder: 'Select…',
   selectEmpty: 'No options',
   selectNoMatches: 'No matches',
+  selectLoading: 'Loading…',
   selectSeparator: ', ',
   selectClear: 'Clear',
   dialogClose: 'Close',

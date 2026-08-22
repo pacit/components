@@ -98,3 +98,18 @@ export type PctSelectFilter<T = string> = (
  */
 export const pctFilterByLabel: PctSelectFilter<unknown> = (option, query) =>
   option.label.toLowerCase().includes(query.toLowerCase());
+
+/**
+ * The predicate that decides nothing: **for a list somebody else has already narrowed.** An
+ * application filtering on a server answers the question with another `options` list, and the
+ * control would otherwise narrow that answer a second time — a server that matched a city by
+ * its old name, by a code or by a misspelling would watch the row it found be taken out again
+ * by a client-side `includes`, in a library that never said it would
+ * ([0037](../../../../docs/decisions/0037-loading-is-a-fact-about-the-list.md)).
+ *
+ * It is a constant and not `() => true` written into the template, and that is a cost rather
+ * than a style: an arrow in a binding is a NEW function on every change detection pass, so
+ * the input changes, the predicate changes, and every row of the panel is rebuilt for as long
+ * as the page lives. One shared identity is the whole difference.
+ */
+export const pctKeepAll: PctSelectFilter<unknown> = () => true;

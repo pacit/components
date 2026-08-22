@@ -198,6 +198,13 @@
     `pctOverlayPanel`: what the tree stops carrying outside the host (`lesson-35`).
     `pctFocusStays`: the panel takes no focus, so the trigger keeps it and every key below
     still has an owner — a press on the panel's own surface would otherwise land on `body`.
+
+    `aria-busy` goes HERE and nowhere else, because it is the listbox's content that is late:
+    a shut panel is not a stale reading of anything, and while there is none there is nothing
+    on the screen for the state to be about (0037). Written only while it is true —
+    `aria-busy="false"` is the default value, so spelling it out would stand in the tree of
+    every panel on the page. It gets no `data-` twin either: this is the platform's own name
+    for the fact, and `[aria-busy="true"]` is already a selector a skin can use.
   -->
   <div
     #panel
@@ -207,6 +214,7 @@
     [id]="listboxId"
     [attr.aria-multiselectable]="multiple ? 'true' : null"
     [attr.data-pct-multiple]="multiple ? '' : null"
+    [attr.aria-busy]="loading() ? 'true' : null"
     [pctOverlayPanel]="inherited()"
     pctFocusStays
     [attr.aria-label]="ariaLabel() || null"
