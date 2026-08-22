@@ -39,6 +39,15 @@ export interface PctTexts {
    */
   readonly selectSeparator: string;
   /**
+   * Select: the accessible name of the control that takes the answer back. It draws a cross
+   * and nothing else, so this string is the only name it has — and one name serves both jobs
+   * the button does, because what it takes back is whatever the trigger is showing
+   * ([0036](../../../../docs/decisions/0036-a-clear-takes-back-what-the-trigger-shows.md)):
+   * a second string for "clear the question" would be a distinction the user never sees, the
+   * button standing in one place and doing one thing.
+   */
+  readonly selectClear: string;
+  /**
    * Dialog: the accessible name of the button that closes it. The button draws a cross and
    * nothing else, so this string is the only name it has — a component's own string and not
    * content the view authored, which is what puts it here rather than in an input.
@@ -51,6 +60,7 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   selectEmpty: 'No options',
   selectNoMatches: 'No matches',
   selectSeparator: ', ',
+  selectClear: 'Clear',
   dialogClose: 'Close',
 };
 

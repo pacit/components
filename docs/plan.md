@@ -124,9 +124,12 @@ gates that take seventeen and ten minutes, sharing one CI job on half the cores 
 measured on. E4 has since added three more — **C23**, **C24** and **C25** — so the filler has
 six items and every one of them is held by a **binds at** rather than by anybody's mood.
 Filtering has since added **C26** and **C27**, both of them about the mutation run: what its
-snapshot cannot say, and a guard whose promise no test here can notice.
+snapshot cannot say, and a guard whose promise no test here can notice. Clearing added none of its own
+and instead handed **C22** a second file — the same run that reads `motion.ts`
+five points low under load reads `placement.ts` nine points low, so what that item describes is
+a property of every clock-kill here rather than of one file's three.
 
-**E4 is open and its first half has closed**, and that half is the fork the other six items
+**E4 is open and five of its eight items have closed**, and the first of them is the fork the rest
 stand on: **is an option a row of data or a `<pct-option>` the consumer projects?** Written as
 two ways of putting down one list it reads as taste, so it was measured before anything was
 built — and the projected road **works**, which is what makes this a decision rather than a
@@ -182,6 +185,25 @@ cost `check-aria` its arithmetic — two named elements were a violation by coun
 branches of one conditional are not two names for one control — and it closed the last two
 coverage exceptions in the repository, on a reason that turned out never to have been true
 ([`lesson-102`](lessons.md#lesson-102)).
+
+**The fifth item is clearing, and it is the one whose every fork was answered from outside this
+repository.** Where the cross goes was answered by the parser: a `<button>` may hold no
+interactive content, and that is not a validator's opinion — the HTML parser closes the open
+button when the second one starts, the DOM API keeps the nesting, and Angular's own template
+parser reports nothing at all, so the same template is two trees depending on who read it and
+the place they meet is server rendering ([`lesson-104`](lessons.md#lesson-104)). Whether it is a
+tab stop was answered by the platform, measured in three engines: the only clear control a
+browser draws by itself is in `<input type="search">`, and it is in **no** engine's tab order,
+with Escape as the keyboard's road to the same thing. And what it clears was answered by 0035
+read once more — the trigger holds the answer and the question at once, so **the cross takes
+back what the trigger is showing**
+([0036](decisions/0036-a-clear-takes-back-what-the-trigger-shows.md)), which decides when it is
+drawn at all. The step's own defect came from the gate that had no business being involved: the
+wrapper the cross needed moved nothing measurable — same x, same width, same height to three
+decimals — and a visual baseline went red on 309 pixels, because `position: relative` makes a
+paint layer and the text inside one loses its subpixel antialiasing
+([`lesson-105`](lessons.md#lesson-105)). "Nothing moved" and "nothing changed" are two
+measurements, which is the argument for keeping both kinds of gate.
 
 **B2 is deferred by decision, not blocked** — and the decision has a shape: **the first push
 happens only when the maintainer asks for it outright.** It is not triggered by a state of the
@@ -1531,6 +1553,12 @@ one language ([`req-project-language`](requirements/project.md#req-project-langu
     describes does not just make CI slow: **halving the cores is what turns a timing-dependent
     kill into a red gate on a change that touched nothing**, and the failure names an innocent
     file
+  - **and it is not one file.** E4's clearing step ran the whole gate list in one `nx
+run-many`, which is the closest thing here to what CI does, and the same run reported
+    `core/src/placement.ts` at **89.23** against **98.46** from a run of its own — nine points,
+    on a second file nothing had touched. So the reading is not a quirk of `motion.ts`'s three
+    mutants: it is what every clock-kill in the repository does when the cores are shared, and
+    the number of files that can name is unknown
   - it does not touch the definition of done: every gate still runs, and a slow gate is a
     green gate. What it touches is whether anybody waits for it — and, on the measurement
     above, whether the run answers the same way twice
@@ -2253,7 +2281,73 @@ trigger` (7 cases × 3 engines), the narrowed panel added to the axe audit **who
     while nothing is chosen, and the cursor a second click must not move. What it also left is
     **C26**: `multi-select.ts` reads 97.14 with nothing surviving, because the pick's guard now
     **errors** instead of failing, and the snapshot has no column for that
-  - left: clearing, async, virtualisation
+  - _notes (clearing):_ **the fifth of the eight, and the one whose every fork was settled by
+    something outside this repository.** Written down it is one line — a cross that puts the
+    value back to empty — and three questions sit under it. **Where the cross goes** is
+    answered by the parser: the select-only trigger IS a `<button>`, and a `<button>` inside a
+    `<button>` is not a nesting the platform keeps. The HTML parser closes the first when the
+    second opens, the DOM API keeps the nesting, and Angular's template parser reports no error
+    at all — so the same template is two different trees depending on **who read it**, and the
+    place the two readings meet is server rendering ([`lesson-104`](lessons.md#lesson-104)). So
+    the cross is a sibling, the box the filtering branch already had now wraps both, and it
+    became the panel's origin as well: the CDK reads "outside the panel" as "outside the
+    origin", so with the trigger as origin a press on a control beside it would have arrived as
+    a click outside. **Whether it is a tab stop** is answered by the platform, measured in the
+    three engines: the one clear control a browser draws by itself — `<input type="search">` —
+    is in **no** engine's tab order, and Escape empties it in two of the three. So the cross
+    carries `tabindex="-1"` (a `<button>` still, so a virtual cursor reaches it) and **Escape
+    over a shut panel is the keyboard's cross**, spent only when it did something: a control
+    with nothing to take back leaves the key to the dialog it may be standing in. **What it
+    clears** is answered by 0035 read once more — the trigger holds the answer and the question
+    at once, so **the cross takes back what the trigger is showing**
+    ([0036](decisions/0036-a-clear-takes-back-what-the-trigger-shows.md)), which also decides
+    when it is drawn at all: off the trigger's own TEXT, so a value no option names offers to
+    undo nothing. The step's own defect was found by the gate that was not supposed to be
+    involved: the wrapper moved nothing — same `x`, same width, same height to three decimals —
+    and the visual baseline went red on 309 pixels, because `position: relative` makes a paint
+    layer and Chromium hands the text inside one greyscale antialiasing instead of subpixel
+    ([`lesson-105`](lessons.md#lesson-105)). The box is therefore a positioning context only
+    where something is positioned in it. And `reset()` came back one floor: it is `clearValue()`
+    plus the panel, so what the empty state IS stayed with the subclass and what a reset MEANS
+    is written once
+  - gate: `libs/components/select/src/select.spec.ts` and `multi-select.spec.ts` — 22 unit
+    cases (what the cross takes back in each of the four states a trigger can be in, the value
+    a list cannot name, the control nobody may change, the control nobody asked, Escape spent
+    and Escape left alone, the key that is not Escape, the press that keeps focus on the
+    trigger, the press that is not a click outside the panel, and the reserved space that does
+    not follow the cross);
+    `apps/sandbox-e2e/src/select.spec.ts › a cross that takes the answer back` (8 cases × 3
+    engines, in a page that was really **parsed**), the cross added to the axe audit,
+    `select-clear-trigger` and its RTL twin as baselines — 542 unit cases and 826 e2e cases
+    green
+  - control: five recorded runs on the component. The cross clearing the value whatever the
+    trigger is showing leaves **three** cases red, all of them about a question; Escape spent
+    whatever the state leaves **two**, and they are the two that say the key travels on;
+    the trigger back as the panel's origin leaves **six**, because the CDK then reads a press
+    on a sibling of the origin as a click outside; the `tabindex` taken off leaves the e2e
+    tab-order case red in three engines; and the `mousedown` default kept leaves **two** —
+    focus on `body` is not only a lost ring, it is the next arrow key going nowhere. The
+    sixth control was not arranged: the visual gate fired on its own, on 309 pixels of a card
+    nothing had moved ([`lesson-105`](lessons.md#lesson-105))
+  - cost: `./select` 55713 → **62106 B** (+11.5%); every other entrypoint grew by **20 B**,
+    which is the one new `PCT_TEXTS` string, carried by everything that imports `core`. One
+    part (`clear`), one string (`selectClear`), one host attribute (`data-pct-clearable`), no
+    new token — the target is `--pct-target-min` and the colour is the arrow's — and no new
+    peer. Coverage stands where it stood: `select.html` at 100% on all four metrics, and no
+    exception anywhere in the repository. The mutation run went **82.25 → 82.57** overall and
+    `select.base.ts` **89.17 → 90.10**, and the shape of that is worth more than the number:
+    the file gained **34 mutants and not one survivor**, the surviving count standing at the
+    35 it stood at before. It took two passes to get there, and both of the first pass's new
+    survivors were read rather than counted. One was the `clearable` default read as `true` —
+    no control in this repository had ever been asked to draw **no** cross. The other is the
+    sharper, and the eye would not have found it: `key === 'Escape'` read as `true`, which is
+    **any** key over a shut panel taking the answer back, with every Escape case still green
+    because Escape is one of the keys `true` also covers. The run also handed **C22** its
+    fourth data point and a second file: run inside an `nx run-many` beside the build and the
+    unit tests it reported `motion.ts` at 86.21 **and `placement.ts` at 89.23**, against 91.38
+    and 98.46 from a run of its own over the same code — so the gate went red naming two files
+    this step never touched
+  - left: async, virtualisation
 - [ ] **E5 — switch, textarea (autosize), slider, date picker** — the date picker forces deep
       i18n, which `[pctNumber]` has already started
 - [ ] **E7 — the rest**: toast, tabs, accordion, drawer, pagination, progress, skeleton, chips,

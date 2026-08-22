@@ -133,6 +133,22 @@ test.describe('Appearance — compared with the baseline', () => {
   });
 
   /**
+   * The three triggers with a cross. It is the one drawing of this step that no behavioural
+   * case touches: a 24px target holding a 16px drawing, standing one gap before the arrow, and
+   * doing so over a button whose arrow is a flex child and over an input whose arrow is
+   * absolutely positioned — two ways of ending a trigger that have to come out as one pair of
+   * icons. The many-choice row underneath is where a long value meets it, which is what says
+   * the space is reserved rather than overlapped.
+   */
+  test('select-clear-trigger', async ({ page }) => {
+    await stage(page, '/select');
+
+    const demo = page.getByTestId('demo-clear').locator('.stack');
+    await expect(demo).toBeVisible();
+    await expect(demo).toHaveScreenshot('select-clear-trigger.png');
+  });
+
+  /**
    * The same panel taking many answers. The mark on a chosen row is drawn and never touched:
    * its size, its place at the end of the row and the gap before it are what no behavioural
    * case would catch — and two rows chosen at once is the state that says the mark and the
@@ -315,6 +331,20 @@ test.describe('Appearance in RTL — compared with the baseline', () => {
     const panel = page.locator('[data-pct-part="panel"]');
     await expect(panel).toBeVisible();
     await expect(panel).toHaveScreenshot('select-panel-multiple-rtl.png');
+  });
+
+  /**
+   * The same crosses mirrored. The cross is placed by `inset-inline-end` like the arrow, but
+   * one icon and one gap further in — so this is the shot that says the two travel together to
+   * the other side instead of crossing over each other.
+   */
+  test('select-clear-trigger-rtl', async ({ page }) => {
+    await stage(page, '/select');
+    await setRtl(page);
+
+    const demo = page.getByTestId('demo-clear').locator('.stack');
+    await expect(demo).toBeVisible();
+    await expect(demo).toHaveScreenshot('select-clear-trigger-rtl.png');
   });
 
   /**

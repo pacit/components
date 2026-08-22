@@ -16,8 +16,8 @@ import { PCT_SELECT_IMPORTS, PctSelectBase } from './select.base';
  * ([0034](../../../../docs/decisions/0034-multiplicity-is-a-tag.md)).
  *
  * What differs from the single-choice control, in full: `aria-multiselectable` on the listbox,
- * a pick that toggles and leaves the panel open, a check on the chosen rows, and a trigger that
- * reads the chosen labels.
+ * a pick that toggles and leaves the panel open, a check on the chosen rows, a trigger that
+ * reads the chosen labels, and a cross that takes every one of them back at once.
  *
  * @example
  * <pct-multi-select label="Countries" [options]="countries" [(value)]="chosen" />
@@ -143,9 +143,8 @@ export class PctMultiSelect<T = string>
     this.clearFilter(row.option);
   }
 
-  /** Called by signal forms when the form is reset: no choices, and the panel shut. */
-  override reset(): void {
+  /** No choices is the empty list — the one empty state every `T` can reach. */
+  protected override clearValue(): void {
     this.value.set([]);
-    this.close();
   }
 }

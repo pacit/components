@@ -59,6 +59,7 @@ from what the browser really gets.
 ./radio PctRadioGroup group-label
 ./radio PctRadioGroup group-options
 ./select PctMultiSelect arrow
+./select PctMultiSelect clear
 ./select PctMultiSelect empty
 ./select PctMultiSelect error
 ./select PctMultiSelect group
@@ -72,6 +73,7 @@ from what the browser really gets.
 ./select PctMultiSelect trigger
 ./select PctMultiSelect value
 ./select PctSelect arrow
+./select PctSelect clear
 ./select PctSelect empty
 ./select PctSelect error
 ./select PctSelect group

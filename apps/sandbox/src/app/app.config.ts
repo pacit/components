@@ -29,6 +29,7 @@ export const appConfig: ApplicationConfig = {
     providePctTexts({
       selectPlaceholder: 'Sélectionner…',
       selectEmpty: 'Aucune option',
+      selectClear: 'Effacer',
     }),
     // The number field formats by LOCALE_ID — here that gives a decimal comma and a
     // narrow no-break space as the thousands separator. Deliberately not English:

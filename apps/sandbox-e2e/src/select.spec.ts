@@ -796,6 +796,131 @@ test.describe('PctSelect — a combobox with a panel', () => {
     });
   });
 
+  test.describe('a cross that takes the answer back', () => {
+    const clearable = (page: import('@playwright/test').Page) =>
+      trigger(page, 'select-clear');
+    const cross = (
+      page: import('@playwright/test').Page,
+      id = 'select-clear',
+    ) => page.getByTestId(id).locator('[data-pct-part="clear"]');
+
+    test('the cross is a named button that stands beside the trigger, not inside it', async ({
+      page,
+    }) => {
+      // The whole reason it is a sibling: a `<button>` may hold no interactive content, and
+      // the HTML parser does not nest one — it closes the first. The same template would then
+      // be one tree when Angular builds it and another when the browser parses the server's
+      // answer, which is what this measures in a page that really was parsed (lesson-104).
+      await expect(cross(page)).toHaveRole('button');
+      await expect(cross(page)).toHaveAccessibleName('Effacer');
+      expect(
+        await cross(page).evaluate((el) =>
+          el.closest('[data-pct-part="trigger"]') === null
+            ? 'beside'
+            : 'inside',
+        ),
+      ).toBe('beside');
+    });
+
+    test('a press takes the answer back and leaves the panel shut', async ({
+      page,
+    }) => {
+      await expect(clearable(page)).toHaveText('Poland');
+      await cross(page).click();
+
+      await expect(
+        page.getByTestId('select-clear').locator('[data-pct-part="value"]'),
+      ).toHaveCount(0);
+      await expect(panel(page)).toHaveCount(0);
+      await expect(cross(page)).toHaveCount(0);
+    });
+
+    /**
+     * The press must not cost the trigger its focus: the cross removes itself the moment it
+     * works, and focus on an element that leaves the tree lands on `body` — the end of the
+     * key map. `mousedown` is refused, so focus never moves in the first place.
+     */
+    test('and focus stays where the keyboard can carry on', async ({
+      page,
+    }) => {
+      await clearable(page).focus();
+      await cross(page).click();
+
+      await expect(clearable(page)).toBeFocused();
+      await page.keyboard.press('ArrowDown');
+      await expect(panel(page)).toBeVisible();
+    });
+
+    test('the cross is not a stop on the way to the next control', async ({
+      page,
+    }) => {
+      await clearable(page).focus();
+      await page.keyboard.press('Tab');
+
+      // Out of the tab order, exactly as the platform's own clear control is: the next stop
+      // is the trigger of the card below, not the cross standing beside this one.
+      await expect(cross(page)).not.toBeFocused();
+      await expect(trigger(page, 'select-clear-filter')).toBeFocused();
+    });
+
+    test('Escape over a shut panel is the keyboard’s cross', async ({
+      page,
+    }) => {
+      await clearable(page).focus();
+      await page.keyboard.press('Escape');
+
+      await expect(
+        page.getByTestId('select-clear').locator('[data-pct-part="value"]'),
+      ).toHaveCount(0);
+      // A second press has nothing to take back and is left to whatever stands around the
+      // control — nothing here, which is what "the key was not spent" looks like from outside.
+      await page.keyboard.press('Escape');
+      await expect(clearable(page)).toBeFocused();
+    });
+
+    test('over an open question the cross takes the letters, not the answer', async ({
+      page,
+    }) => {
+      const field = trigger(page, 'select-clear-filter');
+      await expect(field).toHaveValue('Lithuania');
+
+      await field.fill('pol');
+      await expect(options(page)).toHaveCount(1);
+      await cross(page, 'select-clear-filter').click();
+
+      // The list is whole again, the panel never went away, and the answer the question was
+      // hiding is still the answer.
+      await expect(panel(page)).toBeVisible();
+      await expect(field).toHaveValue('');
+      await expect(options(page).first()).toBeVisible();
+      await page.keyboard.press('Escape');
+      await expect(field).toHaveValue('Lithuania');
+    });
+
+    test('a many-choice cross takes every answer at once', async ({ page }) => {
+      const field = trigger(page, 'select-clear-multi');
+      await expect(field).toHaveText('Poland, Slovakia');
+
+      await cross(page, 'select-clear-multi').click();
+
+      await expect(
+        page
+          .getByTestId('select-clear-multi')
+          .locator('[data-pct-part="value"]'),
+      ).toHaveCount(0);
+      await field.click();
+      await expect(page.locator('[data-pct-part="option-check"]')).toHaveCount(
+        0,
+      );
+    });
+
+    test('the cross is a target of at least 24 px', async ({ page }) => {
+      const box = await boxOf(cross(page));
+      expect(box.width).toBeGreaterThanOrEqual(24);
+      expect(box.height).toBeGreaterThanOrEqual(24);
+    });
+  });
+
   test('the clickable area of the trigger is at least 24 px tall', async ({
     page,
   }) => {

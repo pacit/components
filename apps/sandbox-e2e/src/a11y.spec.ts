@@ -158,6 +158,26 @@ test.describe('Accessibility (axe-core, WCAG 2.2 AA)', () => {
   });
 
   /**
+   * The cross, audited where it really stands: a `<button>` beside the trigger, inside the
+   * same field row. Two things about it are only ever true in a rendered tree — its name comes
+   * from `PCT_TEXTS` through `aria-label`, so a control that lost the string would be an
+   * unnamed button, and it is out of the tab order, which `aria-hidden-focus` would report the
+   * moment somebody "tidied" it away from a reader as well. The audit runs whole-page, because
+   * the cross is not in the panel and the trigger's references still cross into one.
+   */
+  test('a control with a cross beside its trigger has no violations', async ({
+    page,
+  }) => {
+    await visit(page, '/select');
+    await expect(
+      page.getByTestId('select-clear').locator('[data-pct-part="clear"]'),
+    ).toBeVisible();
+
+    const violations = await audit(page);
+    expect(report(violations)).toBe('');
+  });
+
+  /**
    * An open modal is the one state the walk over the routes cannot reach: every dialog in the
    * sandbox starts closed, and a panel that is not attached is a panel axe has nothing to say
    * about. The audit is scoped to the panel, because the rest of the page is `inert` while it

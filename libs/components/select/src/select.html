@@ -30,27 +30,38 @@
   </pct-icon>
 </ng-template>
 
-@if (filterable()) {
 <!--
-  The filtering trigger. It is an `<input>` and not a `<button>` with a field in the panel,
-  because a combobox is a value being edited and the caret belongs to the control the list
-  hangs off (0032, 0035). Everything the other branch binds is bound here too — the two are
-  ONE control in two elements, and `check-aria` measures that they are never two names at once
-  — with three deliberate differences:
+  The row the control stands in. It began as the filtering branch's alone — an `<input>` holds
+  no children, so its arrow had to stand beside it — and it now wraps both, because the cross
+  can be a child of NEITHER trigger: a `<button>` may hold no interactive content, and that is
+  not a validator's opinion but the parser's behaviour, so the same template would give a
+  different tree built and parsed (`lesson-104`, 0036).
 
-  - `aria-autocomplete="list"`: the panel answers what is typed, and only this branch can be
-    typed into;
-  - `readonly`, the platform's own: a control nobody may change is one the letters may not
-    reach either, and `aria-readonly` alone stops nothing;
-  - no `name`. On an `<input>` that attribute is what a form submits the field's TEXT under,
-    and the text here is the question — a native submit would send `country=Pol`.
+  Nothing about the control's look moves here — the border, the padding, the ring and the part
+  stay on the trigger, so `[data-pct-part="trigger"]` is the element with the role in both
+  branches.
 
-  The box around it exists for the arrow alone: an `<input>` holds no children, so the icon
-  cannot go inside the border the way it does in a button. The border, the ring, the padding
-  and the part stay on the input, which is what keeps `[data-pct-part="trigger"]` the element
-  with the role in both branches.
+  It is also the panel's ORIGIN outside the chrome, and that is the cross's doing too: the CDK
+  reads "outside the panel" as "outside the origin", so with the trigger as origin a press on
+  a control standing beside it would arrive as a click outside and shut the panel. The two are
+  the same width, so nothing the panel measures changes.
 -->
-<div class="pct-select__box">
+<div #box class="pct-select__box">
+  @if (filterable()) {
+  <!--
+    The filtering trigger. It is an `<input>` and not a `<button>` with a field in the panel,
+    because a combobox is a value being edited and the caret belongs to the control the list
+    hangs off (0032, 0035). Everything the other branch binds is bound here too — the two are
+    ONE control in two elements, and `check-aria` measures that they are never two names at
+    once — with three deliberate differences:
+
+    - `aria-autocomplete="list"`: the panel answers what is typed, and only this branch can be
+      typed into;
+    - `readonly`, the platform's own: a control nobody may change is one the letters may not
+      reach either, and `aria-readonly` alone stops nothing;
+    - no `name`. On an `<input>` that attribute is what a form submits the field's TEXT under,
+      and the text here is the question — a native submit would send `country=Pol`.
+  -->
   <input
     #trigger
     class="pct-select__trigger"
@@ -80,44 +91,82 @@
     (blur)="onBlur()"
   />
   <ng-container [ngTemplateOutlet]="arrowIcon" />
-</div>
-} @else {
-<button
-  #trigger
-  class="pct-select__trigger"
-  data-pct-part="trigger"
-  type="button"
-  role="combobox"
-  [id]="triggerId"
-  [disabled]="disabled()"
-  [attr.name]="name() || null"
-  [attr.aria-expanded]="open()"
-  [attr.aria-controls]="open() ? listboxId : null"
-  aria-haspopup="listbox"
-  [attr.aria-activedescendant]="activeOptionId()"
-  [attr.aria-label]="ariaLabel() || null"
-  [attr.aria-labelledby]="ariaLabelledby() || (!inField && label() ? labelId : null)"
-  [attr.aria-describedby]="describedBy()"
-  [attr.aria-invalid]="showInvalid() ? 'true' : null"
-  [attr.aria-required]="required() || null"
-  [attr.aria-readonly]="readonly() ? 'true' : null"
-  (click)="press()"
-  (keydown)="onKeydown($event)"
-  (blur)="onBlur()"
->
-  @if (displayText()) {
-  <span class="pct-select__text" data-pct-part="value"
-    >{{ displayText() }}</span
-  >
   } @else {
-  <span class="pct-select__placeholder" data-pct-part="placeholder">
-    {{ placeholderText() }}
-  </span>
+  <button
+    #trigger
+    class="pct-select__trigger"
+    data-pct-part="trigger"
+    type="button"
+    role="combobox"
+    [id]="triggerId"
+    [disabled]="disabled()"
+    [attr.name]="name() || null"
+    [attr.aria-expanded]="open()"
+    [attr.aria-controls]="open() ? listboxId : null"
+    aria-haspopup="listbox"
+    [attr.aria-activedescendant]="activeOptionId()"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || (!inField && label() ? labelId : null)"
+    [attr.aria-describedby]="describedBy()"
+    [attr.aria-invalid]="showInvalid() ? 'true' : null"
+    [attr.aria-required]="required() || null"
+    [attr.aria-readonly]="readonly() ? 'true' : null"
+    (click)="press()"
+    (keydown)="onKeydown($event)"
+    (blur)="onBlur()"
+  >
+    @if (displayText()) {
+    <span class="pct-select__text" data-pct-part="value"
+      >{{ displayText() }}</span
+    >
+    } @else {
+    <span class="pct-select__placeholder" data-pct-part="placeholder">
+      {{ placeholderText() }}
+    </span>
+    }
+
+    <ng-container [ngTemplateOutlet]="arrowIcon" />
+  </button>
   }
 
-  <ng-container [ngTemplateOutlet]="arrowIcon" />
-</button>
-}
+  <!--
+    The cross, standing before the arrow and drawn only where there is something for it to
+    take back — the question while the panel is up over a filtering trigger, the answer
+    otherwise (0036).
+
+    Out of the tab order on purpose, and that is a measurement rather than a habit: the one
+    clear control the platform draws by itself, the one in `<input type="search">`, is in no
+    engine's tab order either, and Escape over a shut panel is the keyboard's way to the same
+    thing. `mousedown` is refused because the button removes itself the moment it works, and
+    focus taken by an element that then leaves the tree ends up on `body`.
+  -->
+  @if (showClear()) {
+  <button
+    class="pct-select__clear"
+    data-pct-part="clear"
+    type="button"
+    tabindex="-1"
+    [attr.aria-label]="texts().selectClear"
+    (mousedown)="onClearPress($event)"
+    (click)="clear()"
+  >
+    <pct-icon name="close">
+      <svg
+        viewBox="0 0 16 16"
+        width="100%"
+        height="100%"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        focusable="false"
+      >
+        <path d="M4 4l8 8M12 4l-8 8" />
+      </svg>
+    </pct-icon>
+  </button>
+  }
+</div>
 
 <!--
   Panel: width and alignment computed against the anchor (the field border inside the chrome,
@@ -134,7 +183,7 @@
 -->
 <ng-template
   cdkConnectedOverlay
-  [cdkConnectedOverlayOrigin]="anchor() ?? trigger()"
+  [cdkConnectedOverlayOrigin]="anchor() ?? box"
   [cdkConnectedOverlayOpen]="open()"
   [cdkConnectedOverlayPositions]="panelPositions()"
   [cdkConnectedOverlayWidth]="overlayWidth()"

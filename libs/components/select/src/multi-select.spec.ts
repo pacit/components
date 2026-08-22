@@ -581,6 +581,88 @@ describe('PctMultiSelect', () => {
     });
   });
 
+  describe('the cross that takes the answer back (clearable)', () => {
+    @Component({
+      imports: [PctMultiSelect],
+      template: `<pct-multi-select
+        label="Countries"
+        [options]="options"
+        [clearable]="true"
+        [filterable]="filterable()"
+        [(value)]="value"
+        [(filterText)]="query"
+      />`,
+    })
+    class ClearHost {
+      options = OPTIONS;
+      filterable = signal(false);
+      value = signal<string[]>(['pl', 'sk']);
+      query = signal('');
+    }
+
+    const cross = (f: ComponentFixture<unknown>) =>
+      f.nativeElement.querySelector(
+        '[data-pct-part="clear"]',
+      ) as HTMLButtonElement | null;
+
+    const pressCross = async (f: ComponentFixture<unknown>) => {
+      cross(f)?.dispatchEvent(
+        new MouseEvent('mousedown', { bubbles: true, cancelable: true }),
+      );
+      cross(f)?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await settle(f);
+    };
+
+    it('takes every choice back at once, and the empty state is the empty list', async () => {
+      const fixture = await render(ClearHost);
+      expect(cross(fixture)).not.toBeNull();
+
+      await pressCross(fixture);
+
+      expect(fixture.componentInstance.value()).toEqual([]);
+      expect(cross(fixture)).toBeNull();
+      expect(valueText(fixture)).toBeNull();
+    });
+
+    it('a value the list cannot name draws no cross, because the trigger names nothing', async () => {
+      const fixture = await render(ClearHost);
+      fixture.componentInstance.value.set(['xx']);
+      await settle(fixture);
+
+      expect(cross(fixture)).toBeNull();
+    });
+
+    it('an open panel keeps every row it had, marks and all', async () => {
+      const fixture = await render(ClearHost);
+      await open(fixture);
+      expect(checksInPanel().length).toBe(2);
+
+      await pressCross(fixture);
+
+      expect(panel()).not.toBeNull();
+      expect(optionsInPanel().length).toBe(4);
+      expect(checksInPanel().length).toBe(0);
+    });
+
+    it('over an open question it takes the letters and leaves the choices', async () => {
+      const fixture = await render(ClearHost);
+      fixture.componentInstance.filterable.set(true);
+      await settle(fixture);
+
+      const input = triggerOf(fixture) as unknown as HTMLInputElement;
+      input.value = 'ger';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      await settle(fixture);
+      expect(optionsInPanel().length).toBe(1);
+
+      await pressCross(fixture);
+
+      expect(fixture.componentInstance.query()).toBe('');
+      expect(fixture.componentInstance.value()).toEqual(['pl', 'sk']);
+      expect(optionsInPanel().length).toBe(4);
+    });
+  });
+
   it('the two controls declare the same inputs, but for the value and its empty', async () => {
     // The two classes are one implementation with two value channels, and the inputs are
     // declared once — on the base. This is what says so after a build: an input added to one

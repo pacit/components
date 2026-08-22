@@ -17,7 +17,9 @@ import { PCT_SELECT_IMPORTS, PctSelectBase } from './select.base';
  * counterpart (`req-api-platform`).
  *
  * The value is of any type `T` (a string by default) — see `PctSelectOption`. The absence of a
- * choice is `emptyValue`, `null` by default. **Many choices are another tag**, `pct-multi-select`
+ * choice is `emptyValue`, `null` by default, and `clearable` is what gives the user a way back
+ * to it ([0036](../../../../docs/decisions/0036-a-clear-takes-back-what-the-trigger-shows.md)).
+ * **Many choices are another tag**, `pct-multi-select`
  * ([0034](../../../../docs/decisions/0034-multiplicity-is-a-tag.md)): everything else about the
  * two is the same file.
  *
@@ -124,9 +126,8 @@ export class PctSelect<T = string>
     this.close();
   }
 
-  /** Called by signal forms when the form is reset. */
-  override reset(): void {
+  /** Nothing chosen is whatever the application said it is — `null` unless it said otherwise. */
+  protected override clearValue(): void {
     this.value.set(this.emptyValue());
-    this.close();
   }
 }

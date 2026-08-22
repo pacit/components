@@ -243,7 +243,10 @@ one component here whose activation is entirely borrowed;
 `apps/sandbox-e2e/src/select.spec.ts › "the caret keeps the keys the list does not take"` — the
 same claim about a text field: where the select's trigger can be typed into, `Home`, `End` and
 the space bar go back to the caret, and the space that used to pick lengthens the question
-instead ([0035](../decisions/0035-a-filter-is-a-question-not-a-value.md))
+instead ([0035](../decisions/0035-a-filter-is-a-question-not-a-value.md));
+`apps/sandbox-e2e/src/select.spec.ts › "the cross is not a stop on the way to the next
+control"` — Tab really walking past a control the mouse can press, which is what the platform's
+own clear does in all three engines
 **Control:** none — deliberately: a navigation test has no mode in which it passes without
 a working keyboard
 **Exceptions:** [`req-api-number`](#req-api-number) (native `type="number"` does not know the

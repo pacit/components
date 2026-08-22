@@ -2653,3 +2653,66 @@ Two things worth keeping from it. **A signal view query reaches into embedded vi
 in the tree. And a directive's export is a **name in a view**, while the thing it exports is an
 object: whenever a reference cannot be reached, the question to ask is what the binding would
 have taken instead of the reference.
+
+### <a id="lesson-104"></a>`lesson-104` — A `<button>` inside a `<button>` is two buttons, and only the parser says so
+
+The select's cross had one obvious home: inside the trigger, where every library draws it. The
+select-only trigger **is** a `<button>`, so that is a button inside a button — filed, usually,
+under "the validator will complain about it". It is not a validator's opinion. Measured, in two
+lines:
+
+```js
+// the HTML parser — the server's answer, and the browser's own parse of it
+new JSDOM('<div><button>text<button>x</button></button></div>');
+// → <button>text</button><button>x</button>
+
+// the DOM API on the same tree — which is how a framework builds a template
+a.appendChild(b);
+// → <button>text<button>x</button></button>
+```
+
+The spec says it outright: a `<button>` start tag while a button is in scope generates implied
+end tags and pops the open one. And **Angular's template parser does not do that** —
+`parseTemplate` on the nested markup returns no error and the nested tree, because a compiled
+template is built through the DOM rather than through the fragment parser.
+
+So the same template is two different trees depending on who read it, and the place the two
+readings meet is **server rendering**: Angular serialises the built tree and the browser parses
+it back, so hydration compares a nested button against two siblings. What would have been a
+lint note in a client-rendered page is a tree that rearranges itself under SSR, with no
+message a reader can act on.
+
+The general form is worth more than the case: **a content model is not advice, it is what the
+parser will do to you** — and any rule of it that a framework's own parser does not implement
+becomes visible only where a string is parsed. Server rendering is that place, so "it works in
+the browser" is not evidence about the markup.
+
+### <a id="lesson-105"></a>`lesson-105` — A positioning context is a paint layer, and the text inside one loses its subpixel antialiasing
+
+The cross had to be a sibling of the trigger ([`lesson-104`](#lesson-104)), a sibling needs a
+box to be positioned in, and so a `<div class="pct-select__box">` with `position: relative`
+went around both branches of the select's trigger. Every geometric measurement said nothing had
+changed: same `x`, same `width`, same `height`, to three decimal places, with the wrapper and
+with `display: contents` in its place.
+
+The visual gate disagreed — 309 differing pixels on a card nothing had moved. They were all in
+one band, the trigger's line of text, and reading the values said what had happened:
+
+```
+baseline (191, 136, 106)   actual (132, 141, 153)
+baseline (140, 213, 244)   actual (219, 221, 225)
+```
+
+Strongly coloured pixels against nearly grey ones: the baseline was rasterised with **subpixel
+(LCD) antialiasing** and the new render with greyscale. `position: relative` makes the element
+a positioned box painted in its own phase, and Chromium will not use subpixel antialiasing for
+text whose background it cannot vouch for. The card counted 5385 pixels with a colour cast
+before and 5303 after — the same rule, measured from the other side, by putting the wrapper
+back to `static`.
+
+Two things follow. **A wrapper is not free even when the layout is identical**, so "nothing
+moved" is not the same measurement as "nothing changed"; a geometric test would have passed
+this and a screenshot did not, which is the argument for keeping both. And the fix is the shape
+the defect suggests: a positioning context **only where something is going to be positioned in
+it** — here, the branch whose arrow stands beside the trigger, and the control that carries a
+cross — rather than always, on the reasoning that it costs nothing.

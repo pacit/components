@@ -82,15 +82,30 @@
   border-color: var(--pct-select-border-invalid);
 }
 
-/* The box a filtering trigger stands in, and its only reason for existing: an `<input>` holds
-   no children, so the arrow cannot sit inside the border the way it does in a button. Nothing
+/* The row both triggers stand in. It began as the filtering branch's alone — an `<input>` holds
+   no children, so the arrow could not sit inside the border the way it does in a button — and
+   the cross widened it to both, because that one can be a child of neither (0036). Nothing
    about the control's look moves here — the border, the padding, the ring and the part stay on
-   the input — so the box is a positioning context and a row of the field, nothing more. */
+   the trigger — so the box is a positioning context and a row of the field, nothing more. */
 .pct-select__box {
-  position: relative;
   display: flex;
   width: 100%;
   align-self: stretch;
+}
+
+/* …and a POSITIONING CONTEXT only where something is going to be positioned in it: the
+   filtering branch's arrow, which is a child of the box rather than of the trigger, or a
+   cross. Not always, and that is a measurement rather than a scruple — `position: relative`
+   makes a paint layer of its own, and Chromium hands the text inside one greyscale
+   antialiasing instead of subpixel: 82 pixels of an unchanged card came out a different
+   colour, at unchanged geometry, which is exactly what the visual gate is for
+   ([`lesson-105`](../../../../docs/lessons.md#lesson-105)).
+
+   Both limbs are stable for the life of the control — the attribute reflects the INPUT and
+   the arrow is a child on one branch — so nothing here toggles while a user is reading. */
+:host([data-pct-clearable]) .pct-select__box,
+.pct-select__box:has(> .pct-select__arrow) {
+  position: relative;
 }
 
 /* The text trigger. It keeps every rule of the button above it and changes two things: the
@@ -118,10 +133,11 @@ input.pct-select__trigger::placeholder {
   opacity: 1;
 }
 
-/* The arrow over the input's end padding. `pointer-events: none` so it is not a target of its
-   own: a press anywhere on this control belongs to the field under it, which is what puts the
-   caret where the user aimed. */
-.pct-select__box .pct-select__arrow {
+/* The arrow over the input's end padding — the filtering branch only, where it stands beside
+   the field rather than inside it. `pointer-events: none` so it is not a target of its own: a
+   press anywhere on this control belongs to the field under it, which is what puts the caret
+   where the user aimed. */
+.pct-select__box > .pct-select__arrow {
   position: absolute;
   inset-inline-end: var(--pct-select-padding-x);
   top: 50%;
@@ -129,14 +145,90 @@ input.pct-select__trigger::placeholder {
   pointer-events: none;
 }
 
-:host([data-pct-in-field]) .pct-select__box .pct-select__arrow {
+:host([data-pct-in-field]) .pct-select__box > .pct-select__arrow {
   inset-inline-end: 0;
 }
 
 /* The turn on opening, written out for this branch: `transform` is what puts the icon on its
    line here, so the rotation has to carry the centring with it. */
-:host([data-pct-open]) .pct-select__box .pct-select__arrow {
+:host([data-pct-open]) .pct-select__box > .pct-select__arrow {
   transform: translateY(-50%) rotate(180deg);
+}
+
+/* Room for the cross, taken from the TEXT rather than from the trigger's padding — the two
+   branches spend their end padding differently (a button's arrow is inside it, an input's
+   beside it) and the size axis rewrites the padding shorthand outright, so a rule that added
+   to it would have to be written once per size. A margin on the text is the same distance at
+   every size and in both branches, and it is reserved by the input alone: a trigger whose
+   words reflowed the moment an answer appeared under them would move while being read. */
+:host([data-pct-clearable]) .pct-select__text,
+:host([data-pct-clearable]) .pct-select__placeholder {
+  margin-inline-end: calc(var(--pct-space-3) + 16px);
+}
+
+:host([data-pct-clearable]) input.pct-select__trigger {
+  padding-inline-end: calc(
+    var(--pct-select-padding-x) + 2 * (var(--pct-space-3) + 16px)
+  );
+}
+
+:host([data-pct-clearable][data-pct-in-field]) input.pct-select__trigger {
+  padding-inline-end: calc(2 * (var(--pct-space-3) + 16px));
+}
+
+/* The cross, standing one icon and one gap before the arrow — the same gap the arrow keeps
+   from the text, so the two read as a pair. It is a box of its own and not a bare icon,
+   because it is a target: `--pct-target-min` is the floor `req-a11y-touch` promises, and a
+   button drawing a 16px cross would otherwise be 16px to a finger. The target being wider
+   than the drawing is what the offset's last term is for — half the difference comes back, so
+   the DRAWING lands where the pair wants it rather than the box. */
+.pct-select__clear {
+  position: absolute;
+  inset-inline-end: calc(
+    var(--pct-select-padding-x) + var(--pct-space-3) + 16px -
+      (var(--pct-target-min) - 16px) / 2
+  );
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: var(--pct-target-min);
+  height: var(--pct-target-min);
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: var(--pct-select-radius);
+  color: var(--pct-select-arrow-fg);
+  cursor: pointer;
+}
+
+/* Inside the chrome the arrow starts at the row's edge, so the cross moves in with it. */
+:host([data-pct-in-field]) .pct-select__clear {
+  inset-inline-end: calc(
+    var(--pct-space-3) + 16px - (var(--pct-target-min) - 16px) / 2
+  );
+}
+
+.pct-select__clear:hover {
+  color: var(--pct-select-fg);
+}
+
+/* The cross is out of the tab order, so this ring is only ever drawn where a browser gives
+   focus to a `tabindex="-1"` element on its own — a press, on the engines that do it. Written
+   all the same: an element that can hold focus and shows nothing when it does fails
+   `req-a11y-wcag` (SC 2.4.7), and "it cannot be tabbed to" is not the same promise. */
+.pct-select__clear:focus-visible {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: 1px;
+}
+
+/* The box the icon is drawn in — the drawing paints itself in `currentColor` and knows
+   nothing of the state around it (0028). An icon is `1em` square, so its size is said here in
+   the one property that reaches it through the swap. */
+.pct-select__clear {
+  font-size: 16px;
 }
 
 .pct-select__placeholder {
@@ -315,6 +407,18 @@ input.pct-select__trigger::placeholder {
      rule's token would otherwise be the one that wins the cascade (lesson-70). */
   .pct-select__arrow {
     color: inherit;
+  }
+
+  /* The cross the same way, hover included: in this mode it follows the trigger's state
+     rather than carrying a colour of its own, and both base rules have to be answered because
+     `@media` adds no specificity to either (lesson-70). */
+  .pct-select__clear,
+  .pct-select__clear:hover {
+    color: inherit;
+  }
+
+  .pct-select__clear:focus-visible {
+    outline-color: Highlight;
   }
 
   .pct-select__placeholder,

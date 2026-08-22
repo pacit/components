@@ -2161,6 +2161,338 @@ describe('PctSelect', () => {
     });
   });
 
+  describe('the cross that takes the answer back (clearable)', () => {
+    @Component({
+      imports: [PctSelect],
+      template: `<pct-select
+        label="Country"
+        [options]="options()"
+        [clearable]="clearable()"
+        [filterable]="filterable()"
+        [disabled]="disabled()"
+        [readonly]="ro()"
+        [emptyValue]="emptyValue()"
+        [(value)]="value"
+        [(filterText)]="query"
+      />`,
+    })
+    class ClearHost {
+      options = signal<readonly PctSelectItem[]>(OPTIONS);
+      clearable = signal(true);
+      filterable = signal(false);
+      disabled = signal(false);
+      ro = signal(false);
+      emptyValue = signal<string | null>(null);
+      value = signal<string | null>('pl');
+      query = signal('');
+    }
+
+    const cross = (f: ComponentFixture<unknown>) =>
+      f.nativeElement.querySelector(
+        '[data-pct-part="clear"]',
+      ) as HTMLButtonElement | null;
+
+    /** A real press: `mousedown` first, which is where the focus decision is taken. */
+    const pressCross = async (f: ComponentFixture<unknown>) => {
+      const button = cross(f);
+      const down = new MouseEvent('mousedown', {
+        bubbles: true,
+        cancelable: true,
+      });
+      button?.dispatchEvent(down);
+      button?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      f.detectChanges();
+      await f.whenStable();
+      return down;
+    };
+
+    const type = async (f: ComponentFixture<unknown>, text: string) => {
+      const input = triggerOf(f) as unknown as HTMLInputElement;
+      input.value = text;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      f.detectChanges();
+      await f.whenStable();
+    };
+
+    it('stands only where there is an answer to take back, and only when asked for', async () => {
+      const fixture = await render(ClearHost);
+      expect(cross(fixture)).not.toBeNull();
+      expect(cross(fixture)?.getAttribute('aria-label')).toBe('Clear');
+
+      fixture.componentInstance.value.set(null);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(cross(fixture)).toBeNull();
+
+      fixture.componentInstance.value.set('pl');
+      fixture.componentInstance.clearable.set(false);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(cross(fixture)).toBeNull();
+    });
+
+    it('a select nobody told to be clearable draws none, answer or no answer', async () => {
+      // The default is part of the promise: a cross is a road back out of a required field,
+      // and an application has to ask for it.
+      const fixture = await render(Host);
+      fixture.componentInstance.value.set('pl');
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(part(fixture, 'value').textContent?.trim()).toBe('Poland');
+      expect(
+        fixture.nativeElement.querySelector('[data-pct-part="clear"]'),
+      ).toBeNull();
+    });
+
+    it('is out of the tab order, because the platform’s own clear is', async () => {
+      const fixture = await render(ClearHost);
+      expect(cross(fixture)?.getAttribute('tabindex')).toBe('-1');
+      // A `<button>`, so a virtual cursor still reaches it — the tab order is the only thing
+      // it is kept out of.
+      expect(cross(fixture)?.tagName).toBe('BUTTON');
+      expect(cross(fixture)?.getAttribute('type')).toBe('button');
+    });
+
+    it('a press writes the empty value and leaves the panel alone', async () => {
+      const fixture = await render(ClearHost);
+      await pressCross(fixture);
+
+      expect(fixture.componentInstance.value()).toBeNull();
+      expect(panel()).toBeNull();
+      // Gone with the answer it was offering to take back.
+      expect(cross(fixture)).toBeNull();
+      expect(part(fixture, 'placeholder')?.textContent?.trim()).toBe('Select…');
+    });
+
+    it('the empty value is the consumer’s, not `null`', async () => {
+      const fixture = await render(ClearHost);
+      fixture.componentInstance.emptyValue.set('');
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      await pressCross(fixture);
+      expect(fixture.componentInstance.value()).toBe('');
+    });
+
+    it('an open panel stays open, and stays on the row it was on', async () => {
+      const fixture = await render(ClearHost);
+      triggerOf(fixture).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(panel()).not.toBeNull();
+
+      await pressCross(fixture);
+
+      expect(fixture.componentInstance.value()).toBeNull();
+      expect(panel()).not.toBeNull();
+      // The panel opened on the answer; taking the answer back does not move the cursor.
+      expect(optionsInPanel()[0].getAttribute('data-pct-active')).toBe('');
+    });
+
+    it('refuses the default of the press, so focus never leaves the trigger', async () => {
+      const fixture = await render(ClearHost);
+      const down = await pressCross(fixture);
+      expect(down.defaultPrevented).toBe(true);
+    });
+
+    it('a value no option names draws no cross — the trigger shows nothing to take back', async () => {
+      const fixture = await render(ClearHost);
+      fixture.componentInstance.value.set('xx');
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(
+        fixture.nativeElement.querySelector('[data-pct-part="value"]'),
+      ).toBeNull();
+      expect(cross(fixture)).toBeNull();
+    });
+
+    it('a control nobody may change draws none either', async () => {
+      const fixture = await render(ClearHost);
+      fixture.componentInstance.ro.set(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(cross(fixture)).toBeNull();
+
+      fixture.componentInstance.ro.set(false);
+      fixture.componentInstance.disabled.set(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(cross(fixture)).toBeNull();
+    });
+
+    it('Escape over a shut panel takes the answer back and spends the key', async () => {
+      const fixture = await render(ClearHost);
+      const event = new KeyboardEvent('keydown', {
+        key: 'Escape',
+        bubbles: true,
+        cancelable: true,
+      });
+      triggerOf(fixture).dispatchEvent(event);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(fixture.componentInstance.value()).toBeNull();
+      expect(event.defaultPrevented).toBe(true);
+    });
+
+    it('and it is Escape that does it, not any key that reaches a shut trigger', async () => {
+      const fixture = await render(ClearHost);
+      // A letter over a shut panel is typeahead's, and typeahead needs a list to walk: it
+      // does nothing here. What it must not do is take the answer back.
+      await press(fixture, 'a');
+
+      expect(fixture.componentInstance.value()).toBe('pl');
+      expect(panel()).toBeNull();
+    });
+
+    it('…and with nothing to take back it leaves the key to whatever stands around it', async () => {
+      const fixture = await render(ClearHost);
+      fixture.componentInstance.value.set(null);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const event = new KeyboardEvent('keydown', {
+        key: 'Escape',
+        bubbles: true,
+        cancelable: true,
+      });
+      triggerOf(fixture).dispatchEvent(event);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      // A dialog this select stands inside is the reason: a key spent here is a dialog that
+      // stops closing.
+      expect(event.defaultPrevented).toBe(false);
+    });
+
+    it('a select nobody made clearable answers Escape with nothing at all', async () => {
+      const fixture = await render(ClearHost);
+      fixture.componentInstance.clearable.set(false);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const event = new KeyboardEvent('keydown', {
+        key: 'Escape',
+        bubbles: true,
+        cancelable: true,
+      });
+      triggerOf(fixture).dispatchEvent(event);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(fixture.componentInstance.value()).toBe('pl');
+      expect(event.defaultPrevented).toBe(false);
+    });
+
+    it('over an open filtering panel it takes the QUESTION and leaves the answer', async () => {
+      const fixture = await render(ClearHost);
+      fixture.componentInstance.filterable.set(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      await type(fixture, 'ger');
+      expect(optionsInPanel().map((o) => o.textContent?.trim())).toEqual([
+        'Germany',
+      ]);
+
+      await pressCross(fixture);
+
+      expect(fixture.componentInstance.query()).toBe('');
+      expect(fixture.componentInstance.value()).toBe('pl');
+      expect(panel()).not.toBeNull();
+      expect(optionsInPanel().length).toBe(4);
+      // The list widened underneath it, so the walk starts again from the top.
+      expect(optionsInPanel()[0].getAttribute('data-pct-active')).toBe('');
+    });
+
+    it('…and with the question gone there is nothing left for it to take', async () => {
+      const fixture = await render(ClearHost);
+      fixture.componentInstance.filterable.set(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      await type(fixture, 'ger');
+      expect(cross(fixture)).not.toBeNull();
+
+      await pressCross(fixture);
+
+      // The panel is up and the trigger holds no text: an answer stands behind it as the
+      // placeholder, and a placeholder is nobody's value.
+      expect(cross(fixture)).toBeNull();
+      expect(
+        (triggerOf(fixture) as unknown as HTMLInputElement).placeholder,
+      ).toBe('Poland');
+    });
+
+    it('a shut filtering trigger clears the answer, as the button one does', async () => {
+      const fixture = await render(ClearHost);
+      fixture.componentInstance.filterable.set(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(cross(fixture)).not.toBeNull();
+      await pressCross(fixture);
+
+      expect(fixture.componentInstance.value()).toBeNull();
+      expect(panel()).toBeNull();
+    });
+
+    it('a press on the cross is not a click outside the panel', async () => {
+      const fixture = await render(ClearHost);
+      fixture.componentInstance.filterable.set(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      await type(fixture, 'ger');
+      expect(panel()).not.toBeNull();
+
+      // What the CDK really listens to: a click on the document, read against the overlay's
+      // origin. The origin is the box, and the cross stands inside it.
+      cross(fixture)?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(panel()).not.toBeNull();
+    });
+
+    it('the space the cross needs is reserved by the input alone', async () => {
+      const fixture = await render(ClearHost);
+      const host = fixture.nativeElement.querySelector('pct-select');
+      expect(host.hasAttribute('data-pct-clearable')).toBe(true);
+
+      // Not "there is a cross standing": the value goes, the attribute stays, and the words
+      // on the trigger do not move.
+      fixture.componentInstance.value.set(null);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(cross(fixture)).toBeNull();
+      expect(host.hasAttribute('data-pct-clearable')).toBe(true);
+
+      fixture.componentInstance.clearable.set(false);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(host.hasAttribute('data-pct-clearable')).toBe(false);
+    });
+
+    it('a form reset is the same two things plus the panel', async () => {
+      const fixture = await render(ClearHost);
+      const select = fixture.debugElement.children[0].componentInstance;
+      triggerOf(fixture).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(panel()).not.toBeNull();
+
+      select.reset();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(fixture.componentInstance.value()).toBeNull();
+      expect(panel()).toBeNull();
+    });
+  });
+
   describe('the arrow a consumer replaces (req-api-icons)', () => {
     @Component({
       selector: 'pct-probe-arrows',

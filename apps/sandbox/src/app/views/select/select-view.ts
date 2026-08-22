@@ -52,6 +52,11 @@ export class SelectView {
   protected readonly filteredCountry = signal<string | null>('lt');
   protected readonly filteredCountries = signal<string[]>(['pl', 'sk']);
 
+  /** The clearing trio: a button trigger, a text one, and a list of answers. */
+  protected readonly clearableCountry = signal<string | null>('pl');
+  protected readonly clearableFiltered = signal<string | null>('lt');
+  protected readonly clearableCountries = signal<string[]>(['pl', 'sk']);
+
   protected readonly widthField = signal<string | null>('pl');
   protected readonly widthAuto = signal<string | null>('pl');
   protected readonly widthFixed = signal<string | null>('pl');

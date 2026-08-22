@@ -120,6 +120,10 @@ function isGroup<T>(item: PctSelectItem<T>): item is PctSelectOptionGroup<T> {
     // the same DOM, so the tag is what tells them apart, and a tag is not a selector the
     // parts contract exposes (`req-api-attributes`).
     '[attr.data-pct-multiple]': 'multiple ? "" : null',
+    // Not "there is a cross standing" but "this control has one": the space it takes is
+    // reserved by the input alone, so a trigger's text does not reflow the moment an answer
+    // appears under it.
+    '[attr.data-pct-clearable]': 'clearable() ? "" : null',
     // Inside the chrome `pct-field` draws the border and the label — the control hands
     // them over.
     '[attr.data-pct-in-field]': 'inField ? "" : null',
@@ -145,6 +149,12 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
   /** Whether the row at this position is part of the value. */
   protected abstract isSelected(index: number): boolean;
 
+  /**
+   * Back to no answer at all. The subclass owns it because the empty state is the value's
+   * shape: `emptyValue` on one side, the empty list on the other.
+   */
+  protected abstract clearValue(): void;
+
   /** What a click or `Enter` on a row does — the one behaviour the two do not share. */
   protected abstract selectAt(index: number): void;
 
@@ -154,8 +164,16 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
    */
   protected abstract initialActive(): number;
 
-  /** Called by signal forms when the form is reset. */
-  abstract reset(): void;
+  /**
+   * Called by signal forms when the form is reset — the same two things a clear does, plus
+   * the panel: a form put back to its start has no open list hanging off it. Written once
+   * here rather than twice below, because "what the empty state is" is the subclass's
+   * (`clearValue`) and "what a reset means" is not.
+   */
+  reset(): void {
+    this.clearValue();
+    this.close();
+  }
 
   // --- FormUiControl (kept in sync by the FormField directive) ---
 
@@ -272,6 +290,21 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
    * knows the language (`pctFilterByLabel`, and `lesson-101` for why).
    */
   readonly filterWith = input<PctSelectFilter<T>>(pctFilterByLabel);
+
+  /**
+   * Whether the control draws a cross that takes back what the trigger is showing — the
+   * answer, or the question being typed while the panel is up
+   * ([0036](../../../../docs/decisions/0036-a-clear-takes-back-what-the-trigger-shows.md)).
+   *
+   * An input on both tags, by 0034's rule read the same way `filterable` was: clearing changes
+   * no type — an emptied `pct-select` is `emptyValue` and an emptied `pct-multi-select` is
+   * `[]`, both of them states the value could already reach.
+   *
+   * Off by default, because a cross is a promise the application has to want: a required
+   * field whose answer can be taken back in one press is a form that can be left invalid by
+   * accident, and only its author knows whether that is a road worth having.
+   */
+  readonly clearable = input(false, { transform: booleanAttribute });
 
   /**
    * Width of the dropdown panel — equal to the control by default (`'field'`). The panel then
@@ -537,6 +570,38 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
     return this.open() && chosen !== '' ? chosen : this.placeholderText();
   });
 
+  /**
+   * Whether the trigger is holding the question rather than the answer — the one state in
+   * which a filtering control's text is not its value. The cross reads the same signal the
+   * text does, so what it takes back is what the eye can see and never the other one
+   * ([0036](../../../../docs/decisions/0036-a-clear-takes-back-what-the-trigger-shows.md)).
+   */
+  private readonly showsQuestion = computed(
+    () => this.filterable() && this.open(),
+  );
+
+  /**
+   * Whether there is an answer to take back — read off the **text the trigger draws** and not
+   * off the value, because that is the same rule once more. A value no option carries shows
+   * nothing on the trigger, and a cross over a control that looks empty would be offering to
+   * undo something the user cannot see; a value equal to `emptyValue` draws nothing either,
+   * which is what keeps `0` and `''` answers wherever an application declared them to be.
+   */
+  private readonly hasChoice = computed(() => this.displayText() !== '');
+
+  /**
+   * Whether the cross is standing. Not `clearable()` alone: a control that shows one over
+   * nothing is a button that does nothing, and one that shows it over a value nobody may
+   * change is a button that lies — so the state it clears has to be there, and the control
+   * has to be one a user can still write to.
+   */
+  protected readonly showClear = computed(
+    () =>
+      this.clearable() &&
+      this.interactive &&
+      (this.showsQuestion() ? this.query() !== '' : this.hasChoice()),
+  );
+
   // The shared message logic from `core` — not duplicated in every control.
   private readonly messages = pctFieldMessages({
     invalid: this.invalid,
@@ -784,6 +849,39 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
   }
 
   /**
+   * The cross. It takes back **what the trigger is showing**: the question while the panel is
+   * up on a filtering control, the answer in every other state
+   * ([0036](../../../../docs/decisions/0036-a-clear-takes-back-what-the-trigger-shows.md)).
+   * The panel is left exactly as it was found — clearing is not an opening and not a closing,
+   * and a list that vanished under the press would take the next choice with it.
+   *
+   * No guard of its own on "is there anything to take back": `showClear()` is what draws the
+   * button and what lets Escape through, so a second reading here would be a line no test
+   * could ever fail on.
+   */
+  protected clear(): void {
+    if (this.showsQuestion()) {
+      this.filterText.set('');
+      // The list has just widened, so the row under the cursor is a different option — the
+      // walk starts again from the top, as it does after every keystroke that narrows it.
+      this.nav.first();
+      return;
+    }
+    this.clearValue();
+  }
+
+  /**
+   * Why the press on the cross is answered on `mousedown` and not only on `click`: the button
+   * disappears the moment it works — there is nothing left to clear — and a focused element
+   * removed from the tree leaves focus on `body`, which is the end of the key map. Refusing
+   * the default keeps focus where it already was, on the trigger, so nothing has to be put
+   * back afterwards.
+   */
+  protected onClearPress(event: Event): void {
+    event.preventDefault();
+  }
+
+  /**
    * A letter typed into the trigger. The field's own text IS the question — there is no
    * second state to keep in step with it — and the first letter of a question is also what
    * opens the panel, because a list nobody can see cannot be narrowed usefully.
@@ -840,6 +938,20 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
       if (opens) {
         event.preventDefault();
         this.openPanel();
+        return;
+      }
+      // Escape over a shut panel takes the answer back — the keyboard's half of the cross,
+      // and the platform's own answer where the platform has one: the clear control of an
+      // `<input type="search">` is in no engine's tab order, and Escape is what empties it
+      // ([0036](../../../../docs/decisions/0036-a-clear-takes-back-what-the-trigger-shows.md)).
+      //
+      // The key is spent ONLY when it did something. A control with nothing to clear leaves
+      // the event alone, so it travels on to whatever this select is standing inside — a
+      // dialog, above all, which is the one place where swallowing it would be a defect the
+      // user reads as "Escape stopped working".
+      if (key === 'Escape' && this.showClear()) {
+        event.preventDefault();
+        this.clear();
       }
       return;
     }

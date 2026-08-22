@@ -187,6 +187,44 @@
 </sbx-demo>
 
 <sbx-demo
+  heading="A cross that takes the answer back"
+  summary="The cross takes back what the trigger is showing: the answer, or — while a filtering panel is up — the question being typed. It is drawn only where there is something to take, it stands beside the trigger rather than inside it (a button may hold no interactive content), and it is out of the tab order, exactly as the platform's own clear is: the keyboard's way to the same thing is Escape over a shut panel."
+  [reqs]="['req-a11y-built-in', 'req-api-platform']"
+  [controls]="[]"
+  data-testid="demo-clear"
+>
+  <div class="stack">
+    <pct-field label="Country" data-testid="field-clear">
+      <pct-select
+        clearable
+        [options]="countries"
+        [(value)]="clearableCountry"
+        data-testid="select-clear"
+      />
+    </pct-field>
+
+    <pct-field label="Country" data-testid="field-clear-filter">
+      <pct-select
+        clearable
+        filterable
+        [options]="regions"
+        [(value)]="clearableFiltered"
+        data-testid="select-clear-filter"
+      />
+    </pct-field>
+
+    <pct-field label="Countries" data-testid="field-clear-multi">
+      <pct-multi-select
+        clearable
+        [options]="countries"
+        [(value)]="clearableCountries"
+        data-testid="select-clear-multi"
+      />
+    </pct-field>
+  </div>
+</sbx-demo>
+
+<sbx-demo
   heading="An option row of your own"
   summary="The built-in row draws the label and nothing else. A template replaces what is inside the row — the role, the id, aria-selected and the keyboard stay with the component, because they are the listbox pattern rather than decoration."
   [reqs]="['req-api-templates']"
