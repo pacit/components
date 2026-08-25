@@ -41,3 +41,14 @@ A symlink would be cleaner but **breaks `nx format:check`**: prettier rejects a 
 handed to it as an explicit path (`Explicitly specified pattern is a symbolic link`), and
 that is exactly how Nx passes it the changed files. `.prettierignore` does not save it —
 the refusal happens before filtering.
+
+## Node / nvm in non-interactive shells
+
+This repo uses nvm to manage Node (v24). A non-interactive shell (e.g. spawned by an AI agent)
+does not load `~/.nvm/nvm.sh`, so `node`/`npx` may not be on `PATH`.
+
+Use the wrapper: `scripts/with-node <command>`. Example:
+
+```bash
+scripts/with-node npx nx serve sandbox
+```

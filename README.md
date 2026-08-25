@@ -42,16 +42,14 @@ tools/           the gates (check-*) and the release script
 
 ## Getting started
 
-Node 24 (the repo uses nvm). In a non-interactive shell, first:
+Node 24 (the repo uses nvm). In a non-interactive shell, prefix commands with the wrapper script:
 
 ```bash
-export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"
+scripts/with-node npm ci
+scripts/with-node npx nx serve sandbox --port 4200   # demo on http://localhost:4200
 ```
 
-```bash
-npm ci
-npx nx serve sandbox --port 4200   # demo on http://localhost:4200
-```
+(Or manually: `export NVM_DIR="$HOME/.nvm"; . "$NVM_DIR/nvm.sh"`)
 
 Tokens build themselves: `tokens` is a graph dependency of `components` and `sandbox`, so
 `nx serve` and `nx build` generate them before their consumers. On their own: `npx nx build tokens`.
