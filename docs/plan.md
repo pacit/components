@@ -52,8 +52,8 @@ Snapshot, `node tools/check-docs.mjs`:
 | measure                                     | value |
 | ------------------------------------------- | ----: |
 | requirements                                |    86 |
-| ✅ enforced                                 |    63 |
-| 🟡 partial (deliberately without a control) |    16 |
+| ✅ enforced                                 |    64 |
+| 🟡 partial (deliberately without a control) |    15 |
 | ⛔ gap                                      |     7 |
 
 All 7 gaps have an owner below (B, F, G) — **D holds none any more**. If adding a requirement raises the gap count
@@ -141,7 +141,20 @@ vendored skills lockfile is repository material and the tree it locks is not
 answered to the git index and the third to the working tree, which is the half that survived
 untracking; and by the time the item ran, the reach gate had already gone green by itself,
 because the entry describing the unreached tree named it
-([`lesson-113`](lessons.md#lesson-113)).
+([`lesson-113`](lessons.md#lesson-113)). **C29 has closed as well**, at the textarea, which is
+the first snapshot in this repository written from a build the writing run produced — and it
+left the gates their first shared module, because the property is about writing a record and
+not about bundles. The finding the textarea was expected to leave is **not** there — a plain
+`<textarea pctText>` keeps the browser's `resize: both`, and a frame it could be dragged out of
+would have been an item, but the control column is a flex line with `min-width: 0` and a width
+written onto the element moves nothing in any of the three engines. The one it did leave is
+about this repository's own machinery: **C33**, the mutation run measuring 22 of the 36 source
+files, with two lists guarding the denominator against narrowing and nothing at all watching
+that it was never widened. It also moved a count that had not moved in a while:
+**`req-api-platform` stops being partial**. Its control had been "none — deliberately", on the
+true observation that a navigation test has no mode in which it passes without a keyboard — and
+the layout half added by 0041 is nothing like that, because a fallback CAN quietly agree with
+nothing. Five recorded runs say so, and they fail in different engines on purpose.
 
 **E4 has closed, all eight items of it**, and the first of them is the fork the rest
 stand on: **is an option a row of data or a `<pct-option>` the consumer projects?** Written as
@@ -264,6 +277,34 @@ engines) and refused the third state to the **type** rather than to a gate, beca
 read. It also closed **C20** on the way past, on the narrow reading of the two the item left
 open: the error part IS the live region, `role="alert"`, measured over every template of the
 library.
+
+**The textarea closed after it, and it is the same rule met one floor down: not behaviour this
+time, but a LAYOUT.** `PctText` has served `textarea[pctText]` since v0, so the item's whole
+content was a height — and the fork was settled by a browser before a line was written.
+`field-sizing: content` is in chromium 149 and webkit 26.5 and **absent from firefox 151**,
+where the absence is silent and total, so the height is the platform's where the platform has
+one and a measurement where it has not
+([0041](decisions/0041-a-height-the-platform-computes.md)). What makes that a decision rather
+than a shrug is that **the two roads are made to agree**: the sheet gives the CSS road back the
+`rows` the property discards, the script adds back the border `scrollHeight` leaves out, and
+one set of assertions is run over both in three engines. The road most libraries ship was
+refused by a measurement — **a `<textarea>` renders no generated content in any engine**, so
+the replicated-text trick needs a wrapper and a wrapper costs the native element. The sharpest
+half is what a fallback has to be TOLD that layout hears for free: a value written with no
+event at all, where `patchValue` reaches the DOM through `writeValue` and dispatches nothing;
+and a width that rewrapped the text, where nothing announces anything. The first cost
+[`lesson-114`](lessons.md#lesson-114) — `NgControl.valueChanges` is `null` for the whole of a
+sibling directive's constructor, so the obvious wiring is a subscription to nothing and the
+optional chaining turns an ordering bug into a **no-op rather than an error**. The second cost
+[`lesson-115`](lessons.md#lesson-115), and it was found by the poorest environment in the
+matrix rather than by a browser: jsdom has no `ResizeObserver`, and built first the observer
+took the subscription and the first fit down with it. A third came from the gate rather than
+from the code: an element baseline went red on a panel that had not changed at all, because
+what moved was its `top` onto a fractional pixel and an element screenshot is a crop of a
+raster rather than a measurement of a box ([`lesson-116`](lessons.md#lesson-116)). It closed **C29** on the way past, at the
+item its own "binds at" named — and that item produced the **first shared module among the
+gates**, because "a record is written from what this run produced" is a property of writing a
+snapshot rather than of any one gate.
 
 **B2 is deferred by decision, not blocked** — and the decision has a shape: **the first push
 happens only when the maintainer asks for it outright.** It is not triggered by a state of the
@@ -1765,7 +1806,8 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
   - binds at: **the next step that touches the empty panel** — E5 opens no listbox, so this
     is a filler item · _notes:_ —
 
-- [ ] **C29 — a snapshot written from a cached build records the cache**
+- [x] **C29 — a snapshot written from a cached build records the cache** — **closed, and the
+      property turned out to belong to writing a snapshot rather than to a gate**
   - the window's own measurement was clean, and the run beside it was not: `check-bundle`
     reported `./core` **18 B lighter** than `libs/components/size.snapshot.md` records, and
     `./menu` — which imports it — by the same 18. Neither file was touched by this step, and
@@ -1785,7 +1827,26 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     depends on, or a target that does not read the cache at all when `--write` is passed. Both
     are one line and neither is the point — the point is that nothing measures it today
   - binds at: the next `--write` of any snapshot, and no later than the first release that
-    quotes a size · _notes:_ —
+    quotes a size · _notes:_ **done, at the item its own "binds at" named** — the textarea's
+    `./field` row is the first size ever recorded here from a build the writing run produced.
+    The item offered two one-line fixes and the choice between them is the whole of the work:
+    `--skip-nx-cache` on the gate's `dependsOn` would slow every CHECK run down as well, and a
+    check reading a cached artefact **is not the defect** — a wrong BASELINE is, because it
+    moves the thing every later run is compared against. So the rebuild hangs on `--write` and
+    on nothing else, and CI pays nothing.
+    Where it lives is the part the finding got right and did not say out loud: `tools/fresh-inputs.mjs`
+    is the **first shared module among the gates**, because the sentence "a record is written
+    from what this run produced" is about writing a snapshot and not about bundles. Three
+    writers read an artefact somebody else's target built and all three now call it —
+    `check-bundle` (`components:build`), `check-parts` (the same) and `check-tokens`
+    (`tokens:build`). A write that cannot rebuild its inputs **throws** rather than falling back
+    to the cache quietly, which is the failure this exists to remove appearing one level up.
+    Deliberately excluded, with the reason: `check-mutation`, whose input is a seventeen-minute
+    run — forcing a second one would double the measurement rather than freshen it, and its
+    snapshot already carries the ±2 tolerance of [0023](decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md)
+    for a number that is not byte-exact anyway. That leaves the hole C31 fell into (a cached
+    mutation run standing in for one that crashes) open on purpose and named here rather than
+    forgotten
 
 - [ ] **C30 — the checkbox writes an `aria-checked` that no engine reads**
   - `checkbox.html` binds `[attr.aria-checked]="ariaChecked()"`, a computed of its own feeds
@@ -1914,6 +1975,33 @@ directory` at `readFileSync`. Four of the new entries are tracked as SYMLINKS to
     same page to drift at the sixth component, which is exactly how it got here
   - binds at: **B2**, the first push to a public repository — that is the moment the npm page
     stops being a draft and becomes what a first visitor reads · _notes:_ —
+
+- [ ] **C33 — the mutation run measures 22 of 36 source files, and nothing says which 22**
+  - `mutation.policy.json` holds two lists and guards them beautifully in one direction. Its
+    own prose says why: "narrowing the pattern is the cheapest way of raising the score", and
+    the `patterns` copy plus the `files` inventory together make a file that **drops out** of
+    the measurement fire the gate. Neither says anything about a file that was never in
+  - measured at the textarea: 22 of the 36 source files under `libs/components/*/src` are in
+    the set. Outside it are `field.ts` — the wrapper every control in the library is drawn by —
+    `checkbox.ts`, `radio.ts`, `radio-group.ts`, `switch.ts`, `text.ts`, `button.ts`,
+    `menu-item.ts`, `menu-trigger.ts`, `select.template.ts`, the two field slots and, as of
+    this step, `autosize.ts`
+  - **the shape is [`lesson-45`](lessons.md#lesson-45) one floor up, and the policy names that
+    lesson itself** — about a denominator narrowed on purpose. What this item is about is a
+    denominator that was never widened: a new behaviour file lands outside the measurement by
+    **default**, silently, and the score keeps rising because the files it is computed over are
+    the ones somebody already wrote tests for
+  - what makes it an item rather than a chore is that the list is not obviously wrong. Some of
+    the fourteen really are declarative — `aux.ts` is two empty classes — and Stryker's
+    `noMutants` register exists for exactly that. So the work is a **rule**, not a bulk
+    addition: what property puts a file in, checked by the gate against the sources, with the
+    deliberate absences named and reasoned in the policy the way every other narrowing here is
+  - the price is known and is the reason this is not done in passing: the run is seventeen
+    minutes, and widening it means both a longer run and a first reading full of survivors
+    somebody has to answer for one file at a time — which is the work, not the obstacle
+  - binds at: **the next task that touches `mutation.policy.json`**, or the first component
+    whose behaviour is genuinely its own rather than the chrome's — whichever comes first ·
+    _notes:_ —
 
 ## D. Phase 1 — the behaviour layer in `core`
 
@@ -2802,6 +2890,101 @@ still coming` (7 cases × 3 engines, driven by an event rather than a press, bec
     control's own reading, taken after a build with `--skip-nx-cache` because of
     **C29**. Two visual baselines were rewritten (`states-disabled`, `states-invalid`), which is
     the states view keeping its promise that every control appears in it
+  - _notes (textarea):_ **the second of the four is done, and its whole content turned out to
+    be a HEIGHT rather than a component.** `PctText`'s selector has read
+    `input[pctText], textarea[pctText]` since v0, so a textarea in a field already worked; what
+    the item names is the one thing it did not do. Four probes over three engines settled every
+    fork before a line was written, and the first of them settled the shape:
+    **`field-sizing: content` is in chromium 149 and webkit 26.5 and absent from firefox 151**,
+    where the absence is silent and total — a `rows="2"` box stays two lines tall whatever is
+    typed into it. So the height is the platform's where the platform has one and a measurement
+    where it has not ([0041](decisions/0041-a-height-the-platform-computes.md)), and what makes
+    that honest rather than convenient is that **the two are made to produce the same
+    geometry**: the sheet gives the CSS road back the `rows` the property discards (measured:
+    an empty `rows="2"` box under it is 34 px against 58), and the measurement adds back the
+    border `scrollHeight` leaves out (measured: 2 px of scroll, three engines). The road most
+    libraries ship — a replicated `::after` sharing a grid cell — was refused by a measurement
+    and not by taste: **a `<textarea>` renders no generated content in any engine**, so it needs
+    a wrapper, and a wrapper costs the native element that `req-api-platform` and
+    [0003](decisions/0003-wrapper-and-control.md) exist to keep. The shape follows
+    [0034](decisions/0034-multiplicity-is-a-tag.md) read once more: an `autosize` input would
+    exist on `input[pctText]` too, where a height that follows the content means nothing, so
+    what the type cannot say the **selector** says — and it is a directive rather than a
+    component because `PctText` already is one on that element, which is why the rules live in
+    the control's own sheet behind an attribute. **In two of the three engines that stylesheet
+    IS the feature.**
+  - _notes (what the fallback had to be told):_ this is the half that decides what the measured
+    road is worth, and none of it was guesswork. Beside typing, it has to hear **a value written
+    with no event at all** — `patchValue` reaches the DOM through
+    `DefaultValueAccessor.writeValue`, which dispatches nothing, so the CSS road went 39 px to
+    59 and the measured one stayed at 39 with two lines out of sight — and **a width that
+    rewrapped the text**, where nothing announces anything and the same 39 → 59 split appeared.
+    Each cost a lesson. The subscription that fixes the first is `null` at construction, because
+    `NgControl` forwards to a control the forms directive binds in its own `ngOnChanges`: the
+    optional chaining then makes an ordering bug into a **no-op rather than an error**, and
+    three engines, a compiler and a unit suite all say nothing
+    ([`lesson-114`](lessons.md#lesson-114)). The second is a `ResizeObserver` whose callback
+    reads a WIDTH, because our own writes wake it on every height it sets —
+    [`lesson-110`](lessons.md#lesson-110)'s loop waiting to happen. And building it FIRST cost
+    the third lesson: jsdom has no `ResizeObserver`, so the constructor threw and took the
+    subscription, the ready flag and the first fit down with it —
+    **install what a consumer cannot do without before what merely improves the result**
+    ([`lesson-115`](lessons.md#lesson-115)). The environment that found it is the one poorer
+    than a browser, which no e2e case could ever have been
+  - gate: `apps/sandbox-e2e/src/textarea.spec.ts` — 7 cases × 3 engines, and deliberately **one
+    set of assertions over two implementations**: the floor compared against a plain
+    `<textarea rows="2">` on the same page rather than against a number of ours, three lines,
+    six lines, the way back down, a four-line value already in the page, the ceiling with its
+    scroll, the silent write and the rewrap. Plus 10 unit cases in `autosize.spec.ts` for the
+    plumbing a run with no layout can prove — jsdom reports `scrollHeight` 0 for everything, so
+    the geometry is not a question it can be asked ([`lesson-82`](lessons.md#lesson-82)'s split
+    met again). **606 unit cases and 937 e2e cases green.** The `/textarea` view is in
+    `SBX_ROUTES`, so the axe audit, the RTL audit and hydration all take it. One case is written
+    to **expire**: it asserts which engine lacks `field-sizing`, so the day firefox ships it the
+    run goes red and says the measured road has lost its last consumer
+  - control: five recorded runs, and they fail in different engines on purpose. The
+    `field-sizing` declaration removed leaves **10 of 21** red — chromium and webkit, the whole
+    feature; the floor removed, 6; the reset before measuring removed, 2 on firefox (a box that
+    grows and never shrinks); the resize observer removed, 1 on firefox and 1 unit case; the
+    subscription taken at construction rather than after the first render, again 1 and 1, which
+    is [`lesson-114`](lessons.md#lesson-114) proved on both limbs at once
+  - cost: `./field` 24460 → **26804 B** (+9.5%), `./core` only, no new peer, no new token, no
+    new part, no new string a user reads. One dev-mode warning (a ceiling under a floor, which
+    CSS resolves by silently keeping the floor). Two private custom properties and two data
+    attributes. **`@angular/core/rxjs-interop` was in the external column for one commit and is
+    not any more**: `takeUntilDestroyed` is the idiom and it put a whole entrypoint of the
+    framework in the snapshot for a teardown the same four lines already hold a `DestroyRef`
+    for — 35 B, and the bytes were not the argument. The measured road's own price, over 300
+    keystrokes: chromium 34.2 → 39.6 ms, webkit 83 → 88, **firefox 41 → 66** — the engine that
+    needs the fallback pays the most for it, which is the argument for it being a fallback
+  - _the finding that was not there:_ `resize: none` under autosize raised the question about
+    the control it does NOT cover — a plain `<textarea pctText>` keeps the browser's
+    `resize: both`, and a frame the user can drag a control out of would be a defect worth an
+    item. Measured instead of assumed, in three engines: the computed value really is `both`,
+    and a width written onto the element moves nothing, because the field's control column is a
+    flex line and the control carries `flex: 1 1 auto; min-width: 0`. The vertical drag grows
+    the field, which is [0004](decisions/0004-explicit-height.md) working as written
+    (`min-height`, so taller content pushes the control out). No item
+  - _the baseline that moved for a reason worth reading:_ five visual baselines were rewritten.
+    Four are the sandbox navigation gaining a row, which every whole-viewport shot carries
+    (`dialog-open`, `dialog-open-rtl`, `menu-open`, `popover-open`) — the switch paid the same
+    price. **The fifth is not that, and it nearly went down as a flake**: `states-dark`
+    photographs an ELEMENT, and the element was 166 px before and 166 px after, same width,
+    same children — while the picture went 166 to 167. What moved is the one number nobody
+    photographs, the panel's `top`, from 1893 to **1991.1875**: a box 166 px tall starting at
+    `.1875` covers 167 rows of device pixels ([`lesson-116`](lessons.md#lesson-116)). The
+    fraction is a textarea being on the page above it — two rows of the field's type is
+    39.1875 px — and it is **not** this step's arithmetic: a plain `<textarea rows="2">`
+    measures 39.19 too, in three engines, which is exactly what `1lh` was chosen to reproduce.
+    Three things settled it and each was cheap: the case repeated (167 three times out of
+    three, so not noise), the change stashed and the gate run at `HEAD` (green, so ours), and
+    then `height` and `top` read from the DOM, which said in one line what two identical
+    pictures could not
+  - _the finding that was:_ **C33** — `autosize.ts` is the most behaviour-shaped file this
+    entrypoint has and it landed **outside** the mutation measurement without anybody deciding
+    so, because the set is a curated list of 22 files and a new one is simply not in it. Two
+    lists in `mutation.policy.json` make a file that DROPS OUT fire the gate, and neither says
+    a word about one that was never in
 - [ ] **E7 — the rest**: toast, tabs, accordion, drawer, pagination, progress, skeleton, chips,
       avatar, badge, breadcrumb, stepper, tree
 - [ ] **E6 — table / datagrid** on a headless core (column model, sorting, filtering, grouping,

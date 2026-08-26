@@ -53,6 +53,15 @@ export const SBX_VIEWS: readonly SbxView[] = [
     load: () => import('./views/text/text-view').then((m) => m.TextView),
   },
   {
+    path: 'textarea',
+    title: 'Textarea',
+    summary:
+      'A textarea as tall as its text — and where that height comes from.',
+    group: 'components',
+    load: () =>
+      import('./views/textarea/textarea-view').then((m) => m.TextareaView),
+  },
+  {
     path: 'number',
     title: 'Number',
     summary:

@@ -9,8 +9,8 @@ There is no "built, just unverified" state — see
 
 | state       | means                                                         |  count |
 | ----------- | ------------------------------------------------------------- | -----: |
-| ✅ enforced | gate and control exist and run in CI                          |     63 |
-| 🟡 partial  | the gate is there, the negative control is not (deliberately) |     16 |
+| ✅ enforced | gate and control exist and run in CI                          |     64 |
+| 🟡 partial  | the gate is there, the negative control is not (deliberately) |     15 |
 | ⛔ gap      | gate or control missing, with a recorded deadline             |      7 |
 | **total**   |                                                               | **86** |
 
@@ -61,7 +61,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-api-message`](requirements/api.md#req-api-message)           | ✅ enforced | `libs/components/field/src/field-controls.spec.ts` — the three contro… | `tools/check-aria.fixtures/hint-beside-error` — the same two messages… |
 | [`req-api-frame`](requirements/api.md#req-api-frame)               | ✅ enforced | `apps/sandbox-e2e/src/field.spec.ts`, `req-a11y-touch`                 | the touch-target test caught the regression described in `lesson-25` … |
 | [`req-api-native-input`](requirements/api.md#req-api-native-input) | 🟡 partial  | `libs/components/field/src/field-controls.spec.ts`                     | none — deliberately: swapping `<input>` for an element of our own kno… |
-| [`req-api-platform`](requirements/api.md#req-api-platform)         | 🟡 partial  | `apps/sandbox-e2e/src/radio.spec.ts` — keyboard navigation; `apps/san… | none — deliberately: a navigation test has no mode in which it passes… |
+| [`req-api-platform`](requirements/api.md#req-api-platform)         | ✅ enforced | `apps/sandbox-e2e/src/radio.spec.ts` — keyboard navigation; `apps/san… | the keyboard half has none — deliberately: a navigation test has no m… |
 | [`req-api-number`](requirements/api.md#req-api-number)             | ⛔ gap      | `libs/components/field/src/number.spec.ts`, `apps/sandbox-e2e/src/num… | none — gap: property tests for the parser (`parse(format(n)) === n` f… |
 | [`req-api-generic`](requirements/api.md#req-api-generic)           | ✅ enforced | `libs/components/select/src/select.spec.ts` — the generic contract, p… | the probe from `lesson-37` — five deliberately contradictory bindings… |
 | [`req-api-parts`](requirements/api.md#req-api-parts)               | ✅ enforced | `tools/check-parts.mjs` (target `check-parts` in the root project, in… | `tools/check-parts.fixtures/` — 22 inputs, each rejected on its own p… |
@@ -268,3 +268,6 @@ Which lesson feeds which requirement. Generated from the **Lessons** fields.
 | [`lesson-111`](lessons.md#lesson-111) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-112`](lessons.md#lesson-112) | `req-a11y-built-in`                                                                                                                                               |
 | [`lesson-113`](lessons.md#lesson-113) | `req-project-reach`                                                                                                                                               |
+| [`lesson-114`](lessons.md#lesson-114) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-115`](lessons.md#lesson-115) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-116`](lessons.md#lesson-116) | — _(not cited)_                                                                                                                                                   |

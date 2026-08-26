@@ -2962,3 +2962,116 @@ Two things follow, and the first is worth more than the second:
 The trees are gone from the index now ([0040](decisions/0040-a-lockfile-is-material-the-tree-it-locks-is-not.md)),
 so the citation grants nothing and the question does not arise for these files again. It
 arises for the next finding.
+
+---
+
+### <a id="lesson-114"></a>`lesson-114` — `NgControl.valueChanges` is `null` for the whole of a sibling directive's constructor
+
+**A subscription made in a constructor was a subscription to nothing, and the only symptom was
+a height that never moved.** `PctAutosize` sits on the same element as a forms directive and
+needs to hear a value written with no event — `patchValue` reaches the DOM through
+`DefaultValueAccessor.writeValue`, which dispatches nothing, so `(input)` is deaf to it. The
+obvious wiring is the one every other listener here uses:
+
+```ts
+constructor() {
+  const classic = inject(NgControl, { optional: true, self: true });
+  classic?.valueChanges?.pipe(takeUntilDestroyed()).subscribe(() => this.fit());
+}
+```
+
+`classic` is **not** null — the injection is fine, and a probe printing it says so. What is
+null is `classic.valueChanges`, because `NgControl` is an abstract forwarder: the getter
+returns `this.control?.valueChanges`, and `control` is bound by the forms directive in its own
+`ngOnChanges`, which runs after every constructor on the node. Optional chaining then does
+exactly what it is for and the line evaluates to `undefined` in silence.
+
+**Nothing reports this.** Not the compiler, which types the getter as nullable and is satisfied
+by the `?.`; not a unit test, which can assert that the subscription was attempted and cannot
+tell an observable from an absent one; not a browser, which throws nothing. In three engines
+the only difference was that firefox — the one on the measured road — stopped following
+`patchValue`, and it stopped by doing nothing at all.
+
+Moved into `afterNextRender`, the same three lines work. The general form is worth more than
+the fix: **a value a framework binds in a lifecycle hook is not readable from a constructor
+that runs before it, and reading it through a nullable getter turns the ordering bug into a
+no-op rather than an error.** The habit that follows is to ask, of anything injected from a
+neighbour, _when_ it is populated — `inject()` answering is a fact about the injector and not
+about the object being ready.
+
+The control is recorded and it is cheap: taken at construction, one e2e case goes red in
+firefox and one unit case with it, and the other twenty stay green.
+
+---
+
+### <a id="lesson-115"></a>`lesson-115` — Build the optional part of a fallback last, or its absence takes the rest with it
+
+**jsdom has no `ResizeObserver`, and the line that constructed one threw before the two lines
+under it had run — so a missing nicety cost the whole road.** The measured half of
+`pctAutosize` has three inputs: the value the control owns, a value written with no event, and
+a width that changed under the text. Written in that order in the source, they were installed
+in a different one, and the observer went first because it read best there.
+
+`new ResizeObserver(...)` then threw a `ReferenceError` inside `afterNextRender`, which took
+down the subscription that follows it, the `ready` flag under that, and the first fit under
+that. The symptom was not "rewraps are not followed" but "the height is never written at all",
+in an environment where none of the other two mechanisms is even in question.
+
+The repair is an ordering and a `typeof` guard, and the rule it stands on is worth keeping:
+**inside one block, install what a consumer cannot do without before what merely improves the
+result** — a fallback's parts are not equal, and the sequence is where that inequality gets
+expressed. Guarded and moved to the end, the same absence now costs exactly what it should: an
+environment with no `ResizeObserver` follows every value and misses only a rewrap.
+
+The wider half is about where this was found. Three browsers all have `ResizeObserver`, so no
+e2e case could ever have shown this; it took the one environment in the matrix that is poorer
+than a browser. **A test runner is a platform too, and the things it lacks are a free probe of
+what the code assumes.**
+
+---
+
+### <a id="lesson-116"></a>`lesson-116` — An element screenshot's height depends on where the element starts
+
+**A visual baseline went red on a panel that had not changed at all: same width, same
+children, same height to the pixel — 166 px before and 166 px after.** The screenshot was
+167 px.
+
+The panel was `panel-scoped` on the kitchen-sink page, photographed as an ELEMENT rather than
+as a viewport. What moved was one number nobody photographs:
+
+|        | `height` | `top` (page)  | screenshot |
+| ------ | -------- | ------------- | ---------- |
+| before | 166      | **1893**      | 166 px     |
+| after  | 166      | **1991.1875** | **167 px** |
+
+A box 166 px tall starting at `.1875` covers 167 rows of device pixels, so a rasteriser that
+must return whole pixels returns 167. Nothing about the element changed; the element moved
+onto a fractional offset, and an element screenshot is a crop of a raster rather than a
+measurement of a box.
+
+**Where the fraction came from is the half worth keeping.** A `<textarea>` was added to the
+page ABOVE that panel, and a textarea's height is a whole number of LINE BOXES — which is not
+a whole number of pixels: two rows of the field's type is 39.1875 px. That is not an artefact
+of `pctAutosize`'s `min-block-size: calc(var(--_pct-text-rows) * 1lh)` either, and the
+measurement says so outright: a plain `<textarea rows="2">` on the same page is **39.19 px**
+too, in all three engines. The arithmetic in `lh` reproduces the platform's own number,
+fraction included — which is the point of it.
+
+So the rule is about the gate rather than about the code: **an element baseline is invalidated
+by anything that changes the element's vertical offset, not only by what changes the element.**
+Adding a control anywhere above it is enough, and the diff image will show two identical
+pictures — which is exactly how this was nearly written off as flake.
+
+Two practical consequences:
+
+- **Reproduce before you accept.** Run the case again: a rounding that depends on a layout is
+  stable, and a flake is not. This one gave 167 three times out of three, which is what turned
+  it from noise into a question.
+- **Measure the element, not the picture, before rewriting a baseline.** `height` and `top`
+  read from the DOM said in one line what the two images could not: the panel is untouched.
+  Rewriting the file was still right — the raster really is different — but for a reason that
+  can be written down instead of shrugged at.
+
+It is [`lesson-105`](#lesson-105)'s pair. There, "nothing moved" and "nothing changed" were two
+measurements because a paint layer changed the pixels of an unmoved box; here they come apart
+the other way, because a box that did not change was moved.

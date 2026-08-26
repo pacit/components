@@ -182,6 +182,17 @@
       </button>
     </pct-field>
 
+    <pct-field label="Notes" hint="The box follows what you type into it">
+      <textarea
+        pctText
+        pctAutosize
+        rows="2"
+        maxRows="6"
+        [(value)]="notes"
+        data-testid="textarea-notes"
+      ></textarea>
+    </pct-field>
+
     <pct-field label="Disabled" data-testid="field-disabled">
       <input pctText value="not editable" disabled />
     </pct-field>

@@ -11,6 +11,7 @@ import { PctButton } from '@pacit/components/button';
 import { PctCheckbox } from '@pacit/components/checkbox';
 import { PctRadio, PctRadioGroup } from '@pacit/components/radio';
 import {
+  PctAutosize,
   PctField,
   PctNumber,
   PctPrefix,
@@ -41,6 +42,7 @@ import { PctSwitch } from '@pacit/components/switch';
     PctMultiSelect,
     PctSelect,
     PctField,
+    PctAutosize,
     PctText,
     PctNumber,
     PctPrefix,
@@ -105,6 +107,8 @@ export class KitchenSink {
   protected readonly sizeCountry = signal<string | null>('pl');
 
   /** A pct-field demo with slots — an amount with two decimal places. */
+  protected readonly notes = signal('');
+
   protected readonly price = signal<number | null>(1499.9);
 
   protected clearPrice(): void {

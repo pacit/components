@@ -13,6 +13,7 @@ a machine; prose with a missing paragraph is not.
 | [`PctButton`](button.md)      | `@pacit/components/button`   | button                              |
 | [`PctField`](field.md)        | `@pacit/components/field`    | form control wrapper                |
 | [`PctText`](text.md)          | `@pacit/components/field`    | text field on a native `<input>`    |
+| [`PctAutosize`](textarea.md)  | `@pacit/components/field`    | a textarea as tall as its text      |
 | [`PctNumber`](number.md)      | `@pacit/components/field`    | number field                        |
 | [`PctCheckbox`](checkbox.md)  | `@pacit/components/checkbox` | checkbox                            |
 | [`PctRadioGroup`](radio.md)   | `@pacit/components/radio`    | group of mutually exclusive options |
@@ -80,7 +81,15 @@ The order follows **architectural debt**, not popularity:
    three engines, which is what decides the element
    ([0039](../decisions/0039-a-state-the-platform-publishes-is-not-ours-to-write.md),
    [`lesson-112`](../lessons.md#lesson-112)). ARIA gives the role no third state and no audit
-   says so, so the missing `indeterminate` input is the gate.
+   says so, so the missing `indeterminate` input is the gate. The **textarea** is built too,
+   and its content was a height rather than a component: `field-sizing: content` is in two of
+   the three engines here and the third does not degrade, so the platform lays the box out
+   where it can and a measurement fills in where it cannot — the two made to agree to within
+   the pixel `scrollHeight` rounds away
+   ([0041](../decisions/0041-a-height-the-platform-computes.md)). What the fallback has to be
+   TOLD is the part worth keeping: a value written with no event, and a width that rewrapped
+   the text ([`lesson-114`](../lessons.md#lesson-114),
+   [`lesson-115`](../lessons.md#lesson-115)).
 6. **Table / DataGrid** — has to stand on a **headless core** separated from rendering.
 
 Before item 1 the **behaviour layer in `core`** has to exist: list navigation (private methods

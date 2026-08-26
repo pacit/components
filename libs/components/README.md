@@ -107,6 +107,25 @@ Controls also work **without the wrapper**; a checkbox, a radio group and the se
 own label, hint and error message in that case. There is one message line either way — while an
 error is lit it takes the line and the hint gives way.
 
+### Textarea
+
+`pctText` serves a native `<textarea>` as well as an `<input>`. Add `pctAutosize` and the box
+is as tall as what is written in it — `rows` stays the floor and `maxRows` is the ceiling,
+past which the text scrolls:
+
+```html
+<pct-field label="About you">
+  <textarea pctText pctAutosize rows="3" maxRows="10" [(value)]="bio"></textarea>
+</pct-field>
+```
+
+Where the height comes from is the browser's business first: in engines with
+`field-sizing: content` the box is laid out against its own text, with no script involved at
+any point and the right height already at the first server-rendered paint. Where the property
+is missing, the same height is measured — and the two are held to the same numbers by the same
+tests, in three engines. Autosize sets `resize: none`: a drag handle would be a second author
+of a height this already owns.
+
 ### Number
 
 `input[pctNumber]` is a numeric field whose value is `number | null`. It is built on

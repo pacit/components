@@ -34,7 +34,7 @@ before an application ships them.
 ./checkbox 14493 ./core,./icon @angular/common,@angular/core
 ./core 7795 - @angular/core
 ./dialog 14921 ./core,./icon @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
-./field 24460 ./core @angular/core,@angular/forms,@angular/forms/signals
+./field 26804 ./core @angular/core,@angular/forms,@angular/forms/signals
 ./icon 2552 - @angular/common,@angular/core
 ./menu 17936 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core
 ./popover 13207 ./core @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/core

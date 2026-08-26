@@ -33,6 +33,8 @@ import { tmpdir } from 'node:os';
 import { basename, dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
+import { freshInputsFor } from './fresh-inputs.mjs';
+
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PROJECT = 'libs/components';
 const DIST = 'dist/libs/components';
@@ -42,6 +44,10 @@ const FIXTURES = join(ROOT, 'tools/check-parts.fixtures');
 const REFERENCE = '_reference';
 
 const WRITE = process.argv.includes('--write');
+
+// A parts inventory is read from the built package, so it is written from a build this run
+// produced rather than one nx had lying around (**C29**).
+freshInputsFor(WRITE, ['components:build']);
 const WRITE_FIXTURE = (() => {
   const next = process.argv[process.argv.indexOf('--write') + 1];
   return WRITE && next && !next.startsWith('--') ? next : null;

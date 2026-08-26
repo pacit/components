@@ -45,6 +45,8 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
+import { freshInputsFor } from './fresh-inputs.mjs';
+
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PROJECT = 'libs/components';
 const DIST = 'dist/libs/components';
@@ -52,6 +54,11 @@ const SNAPSHOT = `${PROJECT}/size.snapshot.md`;
 const FIXTURES = join(ROOT, 'tools/check-bundle.fixtures');
 const REFERENCE = '_reference.json';
 const WRITE = process.argv.includes('--write');
+
+// A size record is written from a build this run produced, never from one nx had lying
+// around — the finding that made this a shared concern was eighteen bytes of cache in this
+// very snapshot (**C29**).
+freshInputsFor(WRITE, ['components:build']);
 
 /**
  * The pair probe's slack, and the only tolerance left in this gate — point 9 compares the

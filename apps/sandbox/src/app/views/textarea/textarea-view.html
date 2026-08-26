@@ -1,0 +1,104 @@
+<h2 class="view__title">Textarea</h2>
+<p class="muted view__intro">
+  The same <code>pctText</code> a text field is, on a native
+  <code>&lt;textarea&gt;</code>. What <code>pctAutosize</code> adds is a height
+  — and the engine computes it wherever it can (<code
+    >field-sizing: content</code
+  >), which is why nothing here jumps at the first paint.
+</p>
+
+<sbx-demo
+  heading="A height that follows the text"
+  summary="rows is the floor and stays the platform's; past it the box grows a line at a time."
+  [reqs]="['req-api-platform', 'req-api-native-input']"
+  data-testid="demo-grows"
+>
+  <div class="stack">
+    <pct-field label="About you" hint="Type — the box follows.">
+      <textarea
+        pctText
+        pctAutosize
+        rows="2"
+        placeholder="A few words…"
+        [(value)]="bio"
+        data-testid="ta-grows"
+      ></textarea>
+    </pct-field>
+
+    <pct-field label="A plain textarea, for comparison">
+      <textarea
+        pctText
+        rows="2"
+        placeholder="This one keeps its two lines and scrolls."
+        data-testid="ta-plain"
+      ></textarea>
+    </pct-field>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="A value that was already there"
+  summary="The height is right at the first paint, before any script has measured anything."
+  [reqs]="['req-quality-hydration']"
+  data-testid="demo-initial"
+>
+  <div class="stack">
+    <pct-field label="Note">
+      <textarea
+        pctText
+        pctAutosize
+        rows="2"
+        [(value)]="note"
+        data-testid="ta-initial"
+      ></textarea>
+    </pct-field>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="A ceiling"
+  summary="maxRows caps the growth; past it the text scrolls rather than being cut off."
+  [reqs]="['req-api-signals']"
+  data-testid="demo-capped"
+>
+  <div class="stack">
+    <pct-field label="Comment" hint="Grows to four lines, then scrolls.">
+      <textarea
+        pctText
+        pctAutosize
+        rows="2"
+        maxRows="4"
+        [(value)]="capped"
+        data-testid="ta-capped"
+      ></textarea>
+    </pct-field>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="A value written with no event"
+  summary="patchValue assigns the DOM through DefaultValueAccessor and dispatches nothing — the height has to follow anyway."
+  [reqs]="['req-api-signal-forms']"
+  data-testid="demo-silent"
+>
+  <div class="stack">
+    <pct-field label="Old forms">
+      <textarea
+        pctText
+        pctAutosize
+        rows="2"
+        [formControl]="reactive"
+        data-testid="ta-silent"
+      ></textarea>
+    </pct-field>
+
+    <div class="row">
+      <button type="button" (click)="fill()" data-testid="ta-silent-fill">
+        patchValue three lines
+      </button>
+      <button type="button" (click)="clear()" data-testid="ta-silent-clear">
+        patchValue empty
+      </button>
+    </div>
+  </div>
+</sbx-demo>

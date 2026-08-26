@@ -38,6 +38,8 @@ import {
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+
+import { freshInputsFor } from './fresh-inputs.mjs';
 import * as sass from 'sass';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -51,6 +53,10 @@ const FIXTURES = join(ROOT, 'tools/check-tokens.fixtures');
 const REFERENCE = '_reference';
 
 const WRITE = process.argv.includes('--write');
+
+// The token inventory is read from what `libs/tokens` builds, so a write rebuilds it rather
+// than trusting a cached one (**C29**).
+freshInputsFor(WRITE, ['tokens:build']);
 const WRITE_FIXTURE = (() => {
   const next = process.argv[process.argv.indexOf('--write') + 1];
   return WRITE && next && !next.startsWith('--') ? next : null;

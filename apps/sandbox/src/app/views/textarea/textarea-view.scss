@@ -1,0 +1,9 @@
+:host {
+  display: block;
+}
+
+.row {
+  display: flex;
+  gap: var(--pct-space-2);
+  flex-wrap: wrap;
+}

@@ -29,6 +29,41 @@
   cursor: not-allowed;
 }
 
+/* Autosize (`pctAutosize` — a directive, so its rules live here; see `autosize.ts`).
+
+   These four declarations ARE the feature in chromium and webkit and only the frame of it in
+   firefox, which has no `field-sizing`: there the height is measured in script and written to
+   `height`, and what stays below is the floor, the ceiling and the two rules that keep a
+   measurement honest. */
+:host([data-pct-autosize]) {
+  /* The floor `field-sizing: content` throws away. The property ignores `rows` — measured, an
+     empty `rows="2"` box under it is 34 px, one line, against the 58 a plain one is — so the
+     attribute is given back as a length. The control draws no frame of its own (`pct-field`
+     does, 0003), so N lines are exactly N line boxes. */
+  min-block-size: calc(var(--_pct-text-rows, 2) * 1lh);
+
+  /* Nothing ever overflows a box that is as tall as its text, and a scrollbar appearing
+     during the measured road's reset would narrow the line and rewrap it — the reading would
+     then be of a box nobody is looking at. */
+  overflow-y: hidden;
+
+  /* A drag handle is a second author of the height. Autosize is the first one, and two
+     authors of one number is the defect this exists to remove. */
+  resize: none;
+}
+
+/* Past the ceiling the text scrolls rather than being cut off — measured on both roads, in
+   three engines. `max-block-size` itself is written by the directive, in `lh`. */
+:host([data-pct-autosize][data-pct-capped]) {
+  overflow-y: auto;
+}
+
+@supports (field-sizing: content) {
+  :host([data-pct-autosize]) {
+    field-sizing: content;
+  }
+}
+
 /* Forced-colors mode — the mapping is written down in `field.scss`. The field is transparent
    and inherits its colour from the chrome's row; only what has a colour of its own is
    replaced. */
