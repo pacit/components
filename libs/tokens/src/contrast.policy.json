@@ -166,6 +166,97 @@
       "severity": "warn"
     },
     {
+      "name": "switch — label",
+      "fg": "pct.switch.label-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "switch — hint",
+      "fg": "pct.switch.hint-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "switch — error message",
+      "fg": "pct.switch.fg-invalid",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "UI: switch track border",
+      "fg": "pct.switch.track-border",
+      "bg": "pct.switch.track-bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: switch track border (hover)",
+      "fg": "pct.switch.track-border-hover",
+      "bg": "pct.switch.track-bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: switch track border (error)",
+      "fg": "pct.switch.track-border-invalid",
+      "bg": "pct.switch.track-bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: switch track border (on)",
+      "fg": "pct.switch.track-border-checked",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: an on switch against the page",
+      "fg": "pct.switch.track-bg-checked",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: switch thumb (off)",
+      "fg": "pct.switch.thumb-bg",
+      "bg": "pct.switch.track-bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: switch thumb (on)",
+      "fg": "pct.switch.thumb-bg-checked",
+      "bg": "pct.switch.track-bg-checked",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "switch/disabled — label",
+      "fg": "pct.switch.fg-disabled",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "warn"
+    },
+    {
+      "name": "UI: switch track border (disabled)",
+      "fg": "pct.switch.track-border-disabled",
+      "bg": "pct.switch.track-bg-disabled",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "UI: switch thumb (disabled)",
+      "fg": "pct.switch.thumb-bg-disabled",
+      "bg": "pct.switch.track-bg-disabled",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
       "name": "radio — option label",
       "fg": "pct.radio.label-fg",
       "bg": "pct.surface",

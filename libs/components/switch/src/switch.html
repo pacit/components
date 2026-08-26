@@ -1,0 +1,63 @@
+<div class="pct-switch__row">
+  <!-- The track is the whole control the eye sees; the native input lies over it,
+       transparent, and keeps the semantics, the keyboard and the form participation
+       (`req-a11y-built-in`). `role="switch"` is the ONE thing written on top of the native
+       element — the checked state comes from the element itself, and an `aria-checked`
+       beside it would be a second source of truth nobody reads (0039). -->
+  <span class="pct-switch__track" data-pct-part="track">
+    <input
+      #control
+      class="pct-switch__control"
+      data-pct-part="control"
+      type="checkbox"
+      role="switch"
+      [id]="controlId"
+      [checked]="checked()"
+      [disabled]="disabled()"
+      [attr.name]="name() || null"
+      [attr.required]="required() || null"
+      [attr.aria-label]="ariaLabel() || null"
+      [attr.aria-labelledby]="ariaLabelledby() || null"
+      [attr.aria-invalid]="showInvalid() ? 'true' : null"
+      [attr.aria-readonly]="readonly() ? 'true' : null"
+      [attr.aria-describedby]="describedBy()"
+      (click)="onClick($event)"
+      (change)="onChange($event)"
+      (blur)="onBlur()"
+    />
+
+    <!-- The thumb. Its POSITION is the state: it travels along the inline axis, so the
+         reading survives any palette substitution and mirrors under `dir="rtl"` without a
+         rule of its own (`req-a11y-forced-colors`, `req-token-logical`). -->
+    <span
+      class="pct-switch__thumb"
+      data-pct-part="thumb"
+      aria-hidden="true"
+    ></span>
+  </span>
+
+  @if (label() && !inField) {
+  <label class="pct-switch__label" data-pct-part="label" [attr.for]="controlId">
+    {{ label() }} @if (required()) {
+    <span class="pct-switch__required" aria-hidden="true">*</span>
+    }
+  </label>
+  }
+</div>
+
+<!-- One message line, and the error takes it (`req-api-message`). The sentence announces
+     from where it is drawn — `role="alert"`, which is `check-aria` point 7 (`req-a11y-built-in`). -->
+@if (showError()) {
+<span
+  class="pct-switch__error"
+  data-pct-part="error"
+  [id]="errorId"
+  role="alert"
+>
+  {{ errorText() }}
+</span>
+} @else if (hint() && !inField) {
+<span class="pct-switch__hint" data-pct-part="hint" [id]="hintId">
+  {{ hint() }}
+</span>
+}

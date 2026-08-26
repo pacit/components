@@ -18,14 +18,24 @@
  *     stand there TOGETHER are two names for it,
  *  5. SURFACE: the card that names the selector names both inputs,
  *  6. DESCRIPTION: a hint part and an error part are ALTERNATIVES of one conditional and
- *     never neighbours (`req-api-message`).
+ *     never neighbours (`req-api-message`),
+ *  7. ANNOUNCEMENT: an error part IS the live region that speaks it (`role="alert"`).
  *
  * Points 3 and 4 are one rule split at the place it breaks: declaring the inputs is what a
- * consumer sees in the type, binding them is what the screen reader sees. Points 4 and 6 read
- * the template's real syntax tree (`parseTemplate`): which block excludes which is exactly the
- * question a pattern over `@if` cannot answer. The two readings are joined by the **offset**
+ * consumer sees in the type, binding them is what the screen reader sees. Points 4, 6 and 7
+ * read the template's real syntax tree (`parseTemplate`): which block excludes which is exactly
+ * the question a pattern over `@if` cannot answer. The two readings are joined by the **offset**
  * of the tag — the tag scanner's match index and the node's `sourceSpan`, over the same string
  * — so an element found by one and not by the other is a denominator failure and not a shrug.
+ *
+ * Point 7 is the half point 6 never had. A message that leaves and re-enters the DOM is a
+ * change nobody is pointed at, and the library's answer to that is written down twice: the
+ * shared channel carries what has no place on the screen, and what IS on the screen announces
+ * from where it is drawn ([0026](../docs/decisions/0026-one-channel-per-politeness.md),
+ * `req-a11y-built-in`). Four templates did it correctly and nothing measured them, so the
+ * fifth component to draw a message would have announced nothing and the run would have
+ * stayed green — the shape of `lesson-65`, where the one configuration that fails is the one
+ * no page renders.
  *
  * Usage: node tools/check-aria.mjs
  */
@@ -69,6 +79,20 @@ const HOST_NAME_KEYS = [
  */
 const MESSAGE_PART = /(^|-)(hint|error)$/;
 const PART_ATTRIBUTE = 'data-pct-part';
+/** The attribute point 7 reads, and the value it requires of an error part. */
+const LIVE_ATTRIBUTE = 'role';
+const LIVE_ROLE = 'alert';
+/**
+ * The same name written as a binding, in either of the two forms Angular gives it. A role
+ * arriving from an expression is a value the template does not hold, so point 7 reports it
+ * rather than reading it — the alternative would be to pass on a role nobody has seen.
+ */
+const BOUND_LIVE = new Set([
+  'role',
+  'attr.role',
+  'aria-live',
+  'attr.aria-live',
+]);
 /** The same parts counted without parsing, as the denominator of the walk. */
 const MESSAGE_COUNTER = /data-pct-part="(?:[a-z-]*-)?(?:hint|error)"/g;
 
@@ -276,7 +300,19 @@ const walkTemplate = (nodes, path, state) => {
     if (typeof node.name === 'string' && node.sourceSpan)
       state.paths.set(node.sourceSpan.start.offset, path);
     const part = node.attributes?.find((a) => a.name === PART_ATTRIBUTE)?.value;
-    if (part && MESSAGE_PART.test(part)) state.messages.push({ part, path });
+    if (part && MESSAGE_PART.test(part))
+      state.messages.push({
+        part,
+        path,
+        // Point 7 reads the STATIC attribute, and records separately whether a binding
+        // writes the same name. An expression's value is not in the template, so a bound
+        // role is neither a pass nor a violation to a reader of the source — it is a thing
+        // this gate cannot judge, and it says so instead of guessing.
+        role:
+          node.attributes?.find((a) => a.name === LIVE_ATTRIBUTE)?.value ??
+          null,
+        boundRole: (node.inputs ?? []).some((i) => BOUND_LIVE.has(i.name)),
+      });
     walkTemplate(node.children ?? [], path, state);
   }
 };
@@ -558,11 +594,41 @@ const checkAria = ({ components, counted, templates, documents }) => {
       }
   }
 
+  // ── 7. the message announces itself ─────────────────────────────────────────
+  // A validation message appears without anybody being pointed at it, so the text the user
+  // can read has to BE the live region — one owner for one sentence, rather than the shared
+  // channel repeating what is already on the screen (0026). The rule is the narrow one:
+  // `role="alert"` on the error part itself, which is what every template here already does
+  // and what `req-a11y-built-in` promises in those words. `aria-live` on a wrapper would
+  // satisfy a reader and move the owner off the sentence, and then two components would
+  // announce the same fact in two shapes.
+  let announced = 0;
+  for (const template of templates)
+    for (const message of byPath.get(template.file).said) {
+      if (!message.part.endsWith('error')) continue;
+      if (message.role === LIVE_ROLE) {
+        announced++;
+        continue;
+      }
+      throw new AriaError(
+        'announcement',
+        `${template.file}: \`${message.part}\` carries ` +
+          (message.boundRole
+            ? `a BOUND role, so what it announces with is not in the template`
+            : message.role === null
+              ? `no \`role\``
+              : `\`role="${message.role}"\``) +
+          ` — a validation message enters the DOM with nobody pointed at it, so the text the ` +
+          `user reads has to be the live region that speaks it: \`role="${LIVE_ROLE}"\`, ` +
+          `written as a plain attribute (req-a11y-built-in)`,
+      );
+    }
+
   return {
     description:
       `${components.length} components, ${naming.length} of them naming a widget of their ` +
       `own (${sorted(naming.map((c) => c.selector)).join(', ')}); ${pairs} hint/error pair(s) ` +
-      `on separate branches`,
+      `on separate branches, ${announced} error part(s) announcing themselves`,
   };
 };
 

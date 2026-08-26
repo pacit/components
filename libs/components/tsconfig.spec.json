@@ -12,6 +12,7 @@
     "checkbox/**/*.ts",
     "dialog/**/*.ts",
     "radio/**/*.ts",
+    "switch/**/*.ts",
     "select/**/*.ts",
     "tooltip/**/*.ts",
     "popover/**/*.ts",

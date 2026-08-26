@@ -209,6 +209,13 @@
       <pct-radio value="a">Option A</pct-radio>
       <pct-radio value="b">Option B</pct-radio>
     </pct-radio-group>
+
+    <pct-switch
+      label="Nightly backups (with no wrapper)"
+      hint="Runs every night at 03:00"
+      [(checked)]="backups"
+      data-testid="switch-backups"
+    />
   </div>
 </section>
 

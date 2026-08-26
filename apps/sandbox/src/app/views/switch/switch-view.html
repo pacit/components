@@ -1,0 +1,50 @@
+<h2 class="view__title">Switch</h2>
+<p class="muted view__intro">
+  A setting that takes effect the moment it is moved. The control is the same
+  native <code>&lt;input type="checkbox"&gt;</code> as the checkbox with
+  <code>role="switch"</code> over it — and no <code>aria-checked</code>, because
+  the checked state is the element's own.
+</p>
+
+<sbx-demo
+  heading="Inside the wrapper"
+  summary="The label is drawn by pct-field; there is no border, because the switch declares the bare appearance."
+  [reqs]="['req-api-frame', 'req-api-no-wrapper']"
+  data-testid="demo-in-field"
+>
+  <div class="stack">
+    <pct-field
+      label="Backups"
+      hint="Runs every night at 03:00"
+      data-testid="field-backups"
+    >
+      <pct-switch
+        [formField]="settingsForm.backups"
+        data-testid="switch-backups"
+      />
+    </pct-field>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="With no wrapper"
+  summary="Outside pct-field the control draws a label of its own — a settings row, for instance."
+  [reqs]="['req-api-no-wrapper', 'req-a11y-touch']"
+  data-testid="demo-standalone"
+>
+  <div class="stack">
+    <pct-switch
+      label="Wi-Fi"
+      hint="Turns off when you leave the house"
+      [(checked)]="wifi"
+      data-testid="switch-wifi"
+    />
+    <pct-switch label="On, disabled" [checked]="true" disabled />
+    <pct-switch
+      label="Read-only — focusable, but not changeable"
+      [checked]="true"
+      readonly
+      data-testid="switch-readonly"
+    />
+  </div>
+</sbx-demo>

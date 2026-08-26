@@ -16,6 +16,7 @@ a machine; prose with a missing paragraph is not.
 | [`PctNumber`](number.md)      | `@pacit/components/field`    | number field                        |
 | [`PctCheckbox`](checkbox.md)  | `@pacit/components/checkbox` | checkbox                            |
 | [`PctRadioGroup`](radio.md)   | `@pacit/components/radio`    | group of mutually exclusive options |
+| [`PctSwitch`](switch.md)      | `@pacit/components/switch`   | a setting that takes effect at once |
 | [`PctSelect`](select.md)      | `@pacit/components/select`   | choice list with a panel of its own |
 | [`PctMultiSelect`](select.md) | `@pacit/components/select`   | the same list, holding many answers |
 | [`PctDialog`](dialog.md)      | `@pacit/components/dialog`   | modal dialog                        |
@@ -72,7 +73,14 @@ The order follows **architectural debt**, not popularity:
    is a window whose spacer is not an element and whose row height is measured rather than
    declared — five thousand options are eleven elements and 15 ms instead of five thousand and
    626 ([0038](../decisions/0038-a-window-is-measured-and-its-spacer-is-not-an-element.md)).
-5. **Switch, Textarea, Slider, Date picker.**
+5. **Switch, Textarea, Slider, Date picker.** The **switch** is built, and what it settled is
+   wider than the component: a role put on a native element does not take that element's states
+   with it, so `aria-checked` over an `<input type="checkbox">` is **inert** and the component
+   writes none — while the same role on a `<button>` is a critical `aria-required-attr` in
+   three engines, which is what decides the element
+   ([0039](../decisions/0039-a-state-the-platform-publishes-is-not-ours-to-write.md),
+   [`lesson-112`](../lessons.md#lesson-112)). ARIA gives the role no third state and no audit
+   says so, so the missing `indeterminate` input is the gate.
 6. **Table / DataGrid** — has to stand on a **headless core** separated from rendering.
 
 Before item 1 the **behaviour layer in `core`** has to exist: list navigation (private methods

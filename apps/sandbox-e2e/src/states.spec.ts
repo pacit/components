@@ -8,7 +8,14 @@ import { visit } from './support/dom';
  * whether every control understands it **the same way** — because the drift starts
  * with the one that does it its own way.
  */
-const CONTROLS = ['text', 'number', 'select', 'checkbox', 'radio'] as const;
+const CONTROLS = [
+  'text',
+  'number',
+  'select',
+  'checkbox',
+  'radio',
+  'switch',
+] as const;
 
 /**
  * The element that really takes focus and the disabled state. No single selector

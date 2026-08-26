@@ -22,6 +22,7 @@ import {
   PctSelect,
   PctSelectOption,
 } from '@pacit/components/select';
+import { PctSwitch } from '@pacit/components/switch';
 
 /**
  * The "everything at once" view — the sandbox page as it used to be, in full.
@@ -36,6 +37,7 @@ import {
     PctCheckbox,
     PctRadioGroup,
     PctRadio,
+    PctSwitch,
     PctMultiSelect,
     PctSelect,
     PctField,
@@ -114,6 +116,9 @@ export class KitchenSink {
 
   /** The horizontal radiogroup layout demo. */
   protected readonly layoutDemo = signal<string | null>('a');
+
+  /** A setting that takes effect the moment it is moved. */
+  protected readonly backups = signal(true);
 
   protected togglePanel(): void {
     this.panelDark.update((v) => !v);

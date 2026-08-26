@@ -1,0 +1,174 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pct-space-2);
+  font-family: inherit;
+}
+
+.pct-switch__row {
+  display: flex;
+  align-items: center;
+  gap: var(--pct-switch-gap);
+}
+
+/* The track holds the native input (transparent, on top) and the thumb. The input keeps
+   full semantics and keyboard handling (req-a11y-built-in). */
+.pct-switch__track {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  /* The track IS the touch target, so the threshold is a floor on the drawing rather than a
+     hit zone laid over it: a theme that shrinks the switch cannot take it below
+     `--pct-target-min`, and what a finger gets is what an eye sees, at every size. The
+     checkbox needs the other technique because its box is 18 px by design. */
+  width: max(var(--pct-switch-width), var(--pct-switch-target-min));
+  height: max(var(--pct-switch-height), var(--pct-switch-target-min));
+  background: var(--pct-switch-track-bg);
+  border: 1px solid var(--pct-switch-track-border);
+  border-radius: var(--pct-switch-radius);
+  transition:
+    background-color var(--pct-motion-transition-duration)
+      var(--pct-motion-transition-easing),
+    border-color var(--pct-motion-transition-duration)
+      var(--pct-motion-transition-easing);
+}
+
+/* The input fills the track's padding box — that is, everything inside the 1 px border —
+   and nothing more, because the track already carries the SC 2.5.8 floor above. A
+   `min-width` here would be a declaration that can never apply at the default size and
+   would grow the hit zone off-centre if it ever did. */
+.pct-switch__control {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* The thumb travels along the INLINE axis, and `inset-inline-start` is both the logical
+   property and an animatable length — so one declaration mirrors under `dir="rtl"` and
+   the transition still runs (measured in three engines). A `translateX` would need the
+   sign flipped by a rule that reads the direction, which is the defect req-token-logical
+   exists to prevent. */
+.pct-switch__thumb {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: var(--pct-switch-padding-x);
+  transform: translateY(-50%);
+  width: var(--pct-switch-thumb-size);
+  height: var(--pct-switch-thumb-size);
+  background: var(--pct-switch-thumb-bg);
+  border-radius: var(--pct-switch-radius);
+  transition:
+    inset-inline-start var(--pct-motion-transition-duration)
+      var(--pct-motion-transition-easing),
+    background-color var(--pct-motion-transition-duration)
+      var(--pct-motion-transition-easing);
+}
+
+:host([data-pct-checked]) .pct-switch__track {
+  background: var(--pct-switch-track-bg-checked);
+  border-color: var(--pct-switch-track-border-checked);
+}
+
+:host([data-pct-checked]) .pct-switch__thumb {
+  inset-inline-start: calc(
+    100% - var(--pct-switch-thumb-size) - var(--pct-switch-padding-x)
+  );
+  background: var(--pct-switch-thumb-bg-checked);
+}
+
+:host(:not([data-pct-disabled])) .pct-switch__track:hover {
+  border-color: var(--pct-switch-track-border-hover);
+}
+
+/* Focus drawn on the track, because the native input is transparent. */
+.pct-switch__track:has(.pct-switch__control:focus-visible) {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: 2px;
+}
+
+:host([data-pct-invalid]) .pct-switch__track {
+  border-color: var(--pct-switch-track-border-invalid);
+}
+
+/* Disabled without opacity (req-token-no-opacity) — explicit colour tokens. */
+:host([data-pct-disabled]) .pct-switch__track {
+  background: var(--pct-switch-track-bg-disabled);
+  border-color: var(--pct-switch-track-border-disabled);
+}
+
+:host([data-pct-disabled]) .pct-switch__thumb {
+  background: var(--pct-switch-thumb-bg-disabled);
+}
+
+:host([data-pct-disabled]) .pct-switch__control,
+:host([data-pct-disabled]) .pct-switch__label {
+  cursor: not-allowed;
+}
+
+:host([data-pct-disabled]) .pct-switch__label {
+  color: var(--pct-switch-fg-disabled);
+}
+
+.pct-switch__label {
+  color: var(--pct-switch-label-fg);
+  font-size: var(--pct-font-size-md);
+  cursor: pointer;
+}
+
+.pct-switch__required {
+  color: var(--pct-switch-fg-invalid);
+  margin-inline-start: 2px;
+}
+
+.pct-switch__hint {
+  color: var(--pct-switch-hint-fg);
+  font-size: var(--pct-font-size-sm);
+}
+
+.pct-switch__error {
+  color: var(--pct-switch-fg-invalid);
+  font-size: var(--pct-font-size-sm);
+}
+
+/* Forced-colors mode — the mapping is written down in `field.scss`. The state here is
+   carried by the thumb's POSITION, which no palette can substitute away, so this block
+   only has to keep the two shapes apart from the surface they sit on. Every base rule
+   with a colour is repeated at its own specificity: `@media` adds none (lesson-70). */
+@media (forced-colors: active) {
+  /* Only the SURFACE is repainted. The border is left to the browser's own substitution,
+     as on the checkbox: a `border-color` written here would have to be repeated for the
+     hover and invalid rules too, and it would flatten them into the one edge the mode
+     draws anyway. */
+  .pct-switch__track,
+  :host([data-pct-checked]) .pct-switch__track {
+    background: Field;
+  }
+
+  .pct-switch__thumb,
+  :host([data-pct-checked]) .pct-switch__thumb {
+    background: FieldText;
+  }
+
+  .pct-switch__track:has(.pct-switch__control:focus-visible) {
+    outline-color: Highlight;
+  }
+
+  /* The surface stays `Field` when disabled too — the base rule paints it with a token of
+     its own and is more specific than the general one above. */
+  :host([data-pct-disabled]) .pct-switch__track {
+    background: Field;
+    border-color: GrayText;
+  }
+
+  :host([data-pct-disabled]) .pct-switch__thumb {
+    background: GrayText;
+  }
+
+  :host([data-pct-disabled]) .pct-switch__label {
+    color: GrayText;
+  }
+}

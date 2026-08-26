@@ -4,6 +4,7 @@ import { PctCheckbox } from '@pacit/components/checkbox';
 import { PctField, PctNumber, PctText } from '@pacit/components/field';
 import { PctRadio, PctRadioGroup } from '@pacit/components/radio';
 import { PctSelect } from '@pacit/components/select';
+import { PctSwitch } from '@pacit/components/switch';
 import { COUNTRIES } from '../../ui/data';
 import { SbxDemo } from '../../ui/demo';
 
@@ -26,6 +27,7 @@ import { SbxDemo } from '../../ui/demo';
     PctCheckbox,
     PctRadioGroup,
     PctRadio,
+    PctSwitch,
     PctButton,
   ],
   templateUrl: './states-view.html',
@@ -47,4 +49,5 @@ export class StatesView {
   protected readonly country = signal<string | null>('pl');
   protected readonly checked = signal(true);
   protected readonly plan = signal<string | null>('a');
+  protected readonly backups = signal(true);
 }

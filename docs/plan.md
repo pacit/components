@@ -131,7 +131,15 @@ a property of every clock-kill here rather than of one file's three. Async added
 empty listbox nobody had audited, and the window added **C29** — which is about this
 repository's own machinery rather than about a component: a size snapshot written from a build
 nx had cached, so the baseline that exists to notice eighteen bytes was itself eighteen bytes
-out.
+out. **C20 has since closed**, at the item its own "binds at" named, and the switch added two
+more: **C30**, an attribute the checkbox has been writing to itself since v0, **C32**, the npm page's
+entrypoint table drifting behind the package with nothing reading it, and **C31**,
+which is not a promise without a gate at all but **three** gates that are already red — the
+skills tree of the previous commit is tracked, nothing reaches it, and four of its entries are
+symlinks to directories that `check-language` reads as files and dies on, as does Stryker
+copying its sandbox. All three fail on a clean `HEAD`; the mutation one had been sitting behind
+a cache hit and came out on the first miss, which is what makes it C29's shape one floor up. It
+is the one item here whose binds-at is "immediately".
 
 **E4 has closed, all eight items of it**, and the first of them is the fork the rest
 stand on: **is an option a row of data or a `<pct-option>` the consumer projects?** Written as
@@ -236,6 +244,24 @@ rule at all, so a windowed listbox that says neither is green in the audit and l
 long the list is — the recorded control says exactly that. And one repair was **deleted by its
 own control** rather than confirmed, which is the plan's own rule doing work nobody expected of
 it ([`lesson-109`](lessons.md#lesson-109)).
+
+**E5 has opened, and its first item is the switch.** What it settled is a rule wider than the
+component: **write ARIA for what the element does not already say, and check which of the two
+you are doing before you write it**
+([0039](decisions/0039-a-state-the-platform-publishes-is-not-ours-to-write.md)). `role="switch"`
+declares `aria-checked` a required state, `PctCheckbox` one directory over writes it on every
+render, and on a native `<input type="checkbox">` the attribute is **inert** — Chromium's own
+accessibility tree reports a checked box carrying `aria-checked="false"` as checked, and every
+engine's reading agrees. So the switch writes none, and the interesting half is what that says
+about a gate: an attribute that cannot be wrong is one whose drift nothing measures — not the
+unit case that reads back what it wrote, not axe, which has no rule for it, not a reader, which
+never looked ([`lesson-112`](lessons.md#lesson-112)). The same probe settled the element with no
+preference needed (the role on a `<button>` is a **critical** `aria-required-attr` in three
+engines) and refused the third state to the **type** rather than to a gate, because
+`aria-checked="mixed"` over the role is green everywhere and a gate would have had nothing to
+read. It also closed **C20** on the way past, on the narrow reading of the two the item left
+open: the error part IS the live region, `role="alert"`, measured over every template of the
+library.
 
 **B2 is deferred by decision, not blocked** — and the decision has a shape: **the first push
 happens only when the maintainer asks for it outright.** It is not triggered by a state of the
@@ -1518,7 +1544,8 @@ var(--pct-button-heigth)` passed every one of them, and the 7 stylesheets read 1
     dispatched the way the dispatcher delivers — on `body`, with `keyCode` — and it goes red the
     moment the flag comes off
 
-- [ ] **C20 — the message that announces itself does so on nobody's rule**
+- [x] **C20 — the message that announces itself does so on nobody's rule** — **closed at E5's
+      first item, and the rule turned out to be the narrow one**
   - four templates draw their validation message inside `role="alert"`
     (`checkbox.html`, `select.html`, `radio-group.html`, `field.html`), and
     [0026](decisions/0026-one-channel-per-politeness.md) keeps them there deliberately: a
@@ -1538,7 +1565,22 @@ var(--pct-button-heigth)` passed every one of them, and the 7 stylesheets read 1
     second is what all four templates do today
   - binds at: **E5**, where the switch and the textarea are the first components written after
     this decision that can draw a message of their own — and the toast at E7 is the first
-    caller the `assertive` channel has ever had · _notes:_ —
+    caller the `assertive` channel has ever had
+  - _notes:_ **done** — `check-aria` grew a seventh point, and the question the item left open
+    (a live region, or `role="alert"`?) is answered by the narrow reading: the error part
+    itself carries `role="alert"`. An `aria-live` on a wrapper would satisfy a reader and move
+    the OWNER off the sentence, and then two components would announce the same fact in two
+    shapes — 0026's rule is one owner for one sentence, and this is that rule applied to the
+    half of it that is drawn on the screen. The point reads the parsed tree, like points 4 and
+    6, so it sees a **static** attribute and reports a bound one as something it cannot judge
+    rather than passing it. The gate went green on the repository as it stood — four templates
+    doing it right and none of them measured — and the switch shipped under it the same day,
+    which is the whole point of a gate over every template rather than over a list of names
+  - gate: `tools/check-aria.mjs` point 7 (target `check-aria`), over all 13 templates of the
+    library; `req-a11y-built-in` carries the promise in words
+  - control: `tools/check-aria.fixtures/error-without-alert` — the reference input's error part
+    with the attribute taken off, rejected on point 7 and on nothing else, which is what says
+    the other six pass over it unchanged
 
 - [ ] **C21 — a one-letter Polish word walks through the language gate**
   - `tools/check-parts.mjs` said `has no card at all w \`docs/components/\`` — a Polish
@@ -1742,6 +1784,93 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     are one line and neither is the point — the point is that nothing measures it today
   - binds at: the next `--write` of any snapshot, and no later than the first release that
     quotes a size · _notes:_ —
+
+- [ ] **C30 — the checkbox writes an `aria-checked` that no engine reads**
+  - `checkbox.html` binds `[attr.aria-checked]="ariaChecked()"`, a computed of its own feeds
+    it, and `apps/sandbox-e2e/src/checkbox.spec.ts` asserts the value it produces. All three
+    measure a string this library writes to itself: on a native `<input type="checkbox">` the
+    checked state comes from the element's checkedness and the `indeterminate` PROPERTY, and
+    the ARIA attribute is not consulted at all
+  - **measured, not deduced** ([`lesson-112`](lessons.md#lesson-112)), in three engines and
+    in Chromium's own accessibility tree: an unchecked box carrying `aria-checked="true"`
+    comes out `checked=false`, and `indeterminate` set through the DOM with nothing written
+    comes out `checked=mixed`. The attribute is inert in both directions
+  - what makes it an item rather than a tidy-up is the class of defect it belongs to: an
+    inert attribute cannot be wrong, so it can drift from the state it claims to mirror and
+    nothing will say so — not the unit case that reads back what it wrote, not axe, which has
+    no rule about it, not a reader, which never looked. It is `req-axis` with the layers
+    rearranged: the gate exists, runs, passes, and examines our own echo
+  - the repair is a deletion — the binding, the computed and the e2e assertion, with the
+    assertion replaced by a reading of the accessible tree, which is what the switch's own
+    cases already do. It moves a public part of the rendered DOM, which is why it is not
+    folded into the step that found it
+  - binds at: **the next task that touches `PctCheckbox`**, or the first screen-reader log,
+    whichever comes first — a log is the one measurement that would show what a reader really
+    says about the `mixed` state · _notes:_ —
+
+- [ ] **C31 — the skills tree breaks two gates at `HEAD`, one by measuring and one by
+      crashing**
+  - measured on a clean worktree at `HEAD`, not deduced, and it is two failures with one
+    cause — `e2df582` added `.agents/skills/**`, `.claude/skills/**` and `skills-lock.json`:
+    - `node tools/check-reach.mjs` reports **45 tracked files nothing reaches**. The gate is
+      right: nothing in the repository points at those trees
+    - `node tools/check-language.mjs` **crashes** — `EISDIR: illegal operation on a
+directory` at `readFileSync`. Four paths under `.claude/skills/` and `.opencode/skills/`
+      are tracked as SYMLINKS to directories (mode `120000`), and the gate reads every path in
+      the index as a file
+    - and behind the crash there is a violation waiting: run over the same index with the
+      symlinks taken out, the gate reports **`skills-lock.json`** — the hex of two digests
+      (`ee`, `bd`) read as Polish words. So the file needs a register entry or the
+      `vocabulary` list, and nobody has seen that yet because the run never got that far
+    - `nx run components:mutation` **crashes too**, and on the same symlink:
+      `EISDIR: illegal operation on a directory, copyfile '.claude/skills/angular-developer'`.
+      Stryker copies the repository into a sandbox and walks it itself, so `ignorePatterns`
+      in `stryker.config.json` is its only filter and none of `.claude`, `.agents`,
+      `.opencode` is in it. **`check-mutation` therefore cannot run at all**, and with it the
+      only machine that answers whether the unit tests catch anything
+  - **the third one is the reason nobody saw the first two**: `mutation` had not re-run since
+    the skills commit, because nothing in its `inputs` had moved — the failure sat behind a
+    cache hit and came out on the first miss, which was a new component's `.ts` file. That is
+    **C29**'s shape one floor up: a cached result standing in for a measurement, and the thing
+    it stood in for was a crash
+  - so CI is red for a reason that predates this item and has nothing to do with any
+    component, and the halves need different answers. The reach half is a **judgement the
+    gate cannot make**: those trees are opened by an outside tool that finds them by
+    convention, which is exactly what `tools/reach.policy.json` has a `roots` form for — and a
+    root entry has to NAME the reader, which is a fact about somebody's tooling rather than
+    about this repository's sources. The language half is not a judgement at all but the shape
+    [`lesson-77`](lessons.md#lesson-77) keeps taking: a gate that stops at the first input it
+    was not written for. A symlink carries no text of its own, so it is a file to STEP OVER
+    rather than to read — and a crash and a pass are the same thing to a run that ends
+  - what makes it an item rather than a patch in passing is that the answers are one
+    decision: whether a tracked symlink is part of this repository's material at all — and,
+    before that, whether a tree of vendored skills belongs in the index rather than in
+    `.gitignore`. Reach, language and Stryker have to say the same thing about it, and "an
+    agent reads it" is not a reader
+  - binds at: **immediately** — this is the only open item whose subject is a red CI rather
+    than a promise without a gate · _notes:_ —
+
+- [ ] **C32 — the two READMEs list the entrypoints, and no gate reads either list**
+  - the npm page's **Entrypoints** table
+    ([`libs/components/README.md`](../libs/components/README.md)) names seven of the twelve
+    entrypoints the package really exports: `./dialog`, `./tooltip`, `./popover`, `./menu` and
+    now `./switch` are missing, and its **Components** section stops at the select. The
+    repository's own `README.md` carries the same list, one line shorter still, inside the
+    layout tree
+  - B3 wrote that page and it was true then. Four components have been built since, each with
+    a card in `docs/components/` that `check-parts` compares against the built package — so the
+    inventory a MAINTAINER reads is measured and the one a VISITOR reads is not. That is the
+    asymmetry worth an item: the npm page is the first thing anybody sees, and it is the only
+    surface here whose drift nothing notices
+  - the shape of the gate is already known, twice over: `check-parts` point 5 finds a card by
+    the selector it names, and `check-tokens` point 3 requires a component token's name to
+    match a real entrypoint manifest. The same reading over the README's table — every
+    `libs/components/*/ng-package.json` has a row, every row has a manifest — is the missing
+    half, and it is cheap because the denominator is already computed by two gates
+  - it is not fixed in passing deliberately: putting five rows in by hand today leaves the
+    same page to drift at the sixth component, which is exactly how it got here
+  - binds at: **B2**, the first push to a public repository — that is the moment the npm page
+    stops being a draft and becomes what a first visitor reads · _notes:_ —
 
 ## D. Phase 1 — the behaviour layer in `core`
 
@@ -2586,6 +2715,50 @@ still coming` (7 cases × 3 engines, driven by an event rather than a press, bec
     **18 B off `./core` and `./menu`**, which this change did not cause — see C29
 - [ ] **E5 — switch, textarea (autosize), slider, date picker** — the date picker forces deep
       i18n, which `[pctNumber]` has already started
+  - _notes (switch):_ **one of the four is done, and it is the one whose whole content was a
+    question about who owns a state.** The checkbox's card had said since v0 that a switch is a
+    separate component "because the semantics differ", and that sentence settles the packaging
+    and none of the three questions the control actually asks: what element carries
+    `role="switch"`, whether the component writes `aria-checked`, and whether there is a third
+    state. **All three were answered by a browser rather than by the specification**, and the
+    second answer is the opposite of what the specification alone would give
+    ([0039](decisions/0039-a-state-the-platform-publishes-is-not-ours-to-write.md)).
+    `aria-checked` is a REQUIRED state of the role — and on a native `<input type="checkbox">`
+    it is **inert**: Chromium's own accessibility tree reports a checked box carrying
+    `aria-checked="false"` as checked, and Playwright's spec-shaped reading agrees in all three
+    engines. An attribute that cannot be wrong can drift with nothing to notice, so the switch
+    writes none and its cases assert the ABSENCE
+    ([`lesson-112`](lessons.md#lesson-112)). The same probe settled the element without a
+    preference being needed: the role on a `<button>` or a `<div>`, with no checkedness to
+    derive the state from, is a **critical** `aria-required-attr` in every engine. And the
+    third state is refused by the TYPE — `switch` has no `mixed`, `aria-checked="mixed"` over
+    the role drew not one violation with every axe rule enabled, so a gate would have had
+    nothing to read and the missing input is the whole control. The step also found a defect in
+    a component nobody was looking at: `PctCheckbox` has been writing the same inert attribute
+    since v0, with a computed feeding it and an e2e case reading it back — **C30**, left where
+    it was found rather than repaired in passing
+  - gate: `apps/sandbox-e2e/src/switch.spec.ts` (6 cases × 3 engines), the `/switch` view added
+    to the axe audit and to `SBX_ROUTES` (so hydration and the RTL audit take it too), the
+    `switch-states` and `switch-states-rtl` baselines, a forced-colors case of its own plus the
+    two cross-control cases that say "every control" and now mean it, and 18 unit cases in
+    `switch.spec.ts` — 596 unit cases green
+  - control: two recorded probes rather than repairs, and that is deliberate — what they
+    measure is what would otherwise have been assumed. `role="switch"` moved onto a `<button>`
+    and onto a `<div>` leaves the audit **critical** in three engines; `aria-checked="mixed"`
+    written over the role on a native checkbox leaves it **green** in three engines with every
+    rule enabled. The first is why the role sits on an input, the second is why the third state
+    is refused by the compiler instead of by a run. Beside them, `check-styles` fired on the
+    first draft of the stylesheet — a `border-color: FieldText` in the forced-colors block
+    outranked by the hover and invalid rules, which is [`lesson-70`](lessons.md#lesson-70)
+    caught by the gate built for it rather than by a person
+  - cost: `./switch` **11905 B**, `./core` only — smaller than the checkbox's 14493 and
+    carrying neither `./icon` nor `@angular/common`, because the thumb is a shape the
+    stylesheet moves rather than a drawing anybody could replace. 22 tokens and 13 pairs in the
+    contrast policy; three new words in the name dictionary (`track`, `thumb`, `width`); six
+    parts, no new string, no new peer. **No other entrypoint moved** — the differential
+    control's own reading, taken after a build with `--skip-nx-cache` because of
+    **C29**. Two visual baselines were rewritten (`states-disabled`, `states-invalid`), which is
+    the states view keeping its promise that every control appears in it
 - [ ] **E7 — the rest**: toast, tabs, accordion, drawer, pagination, progress, skeleton, chips,
       avatar, badge, breadcrumb, stepper, tree
 - [ ] **E6 — table / datagrid** on a headless core (column model, sorting, filtering, grouping,

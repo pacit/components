@@ -76,6 +76,13 @@ export const SBX_VIEWS: readonly SbxView[] = [
     load: () => import('./views/radio/radio-view').then((m) => m.RadioView),
   },
   {
+    path: 'switch',
+    title: 'Switch',
+    summary: 'A setting that takes effect the moment it is moved.',
+    group: 'components',
+    load: () => import('./views/switch/switch-view').then((m) => m.SwitchView),
+  },
+  {
     path: 'select',
     title: 'Select',
     summary: 'A combobox with a panel of its own in a CDK overlay.',

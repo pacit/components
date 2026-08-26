@@ -2866,3 +2866,49 @@ of a pixel are one measurement, in the signal's `equal`. That is a thousand time
 a two-hundredth of the smallest change that can be real, because a row's height comes out of
 the type and moves by whole points when it moves at all. A stored value is exact; "is this a
 different value" is a judgement, and a judgement about a measurement needs a tolerance.
+
+---
+
+### <a id="lesson-112"></a>`lesson-112` — An ARIA attribute over a native state is written by us and read by nobody
+
+`PctSwitch` had one question to settle before a line of it was written: `role="switch"`
+declares `aria-checked` a **required** state, so does the component write it? The
+specification says yes, `PctCheckbox` one directory over has been writing it since v0, and
+both of those turn out to be about a different element.
+
+The probe is four inputs on one page, read in three engines and — for the one browser that
+exposes it — out of the accessibility tree the browser itself builds:
+
+```
+                                                          axe            Chromium AX tree
+<input type=checkbox role=switch checked>                 —              switch   checked=true
+<button  type=button role=switch>                         critical/      switch   checked=false
+<div     role=switch tabindex=0>                          aria-required- switch   checked=false
+                                                          attr
+<input type=checkbox role=switch checked aria-checked=false>  —          switch   checked=true
+```
+
+Two readings, and the second is the lesson. The **fourth** row writes `aria-checked="false"`
+onto a box that is checked, and the browser reports it as checked anyway: for a native
+checkbox the checkedness is the state and the ARIA attribute is not consulted. The same holds
+one role over — an unchecked `<input type="checkbox" aria-checked="true">` comes out of the
+tree as `checked=false`, and an `indeterminate` set through the DOM property comes out as
+`checked=mixed` with nothing written at all.
+
+So the attribute is not redundant, it is **inert**. And an inert attribute is worse than a
+missing one, because it looks like the thing that is working: it can drift from the state it
+claims to mirror — a stale computed, a binding left behind by a refactor, a `mixed` that
+outlives the `indeterminate` — and nothing will say so. Not a unit test, which reads the same
+attribute back and finds it exactly as written; not an axe audit, which has no rule about it;
+not a reader, which never looked. The whole apparatus around such a line agrees with itself
+and measures nothing, which is [`req-axis`](00-axis.md) with the layers rearranged: here the
+gate exists, runs and passes, and the thing it examines is our own echo.
+
+Rows two and three are the other half, and they are what settled the element. With no
+checkedness to derive the state from, the role's required attribute really is required — the
+audit reports it as **critical**, from the element itself, in every engine. So a
+`<button role="switch">` obliges the component to publish the state for ever, and a native
+checkbox with the same role obliges it to publish nothing. The rule that comes out of both
+readings is one sentence: **write ARIA for what the element does not already say, and check
+which of the two you are doing before you write it**
+([0039](decisions/0039-a-state-the-platform-publishes-is-not-ours-to-write.md)).

@@ -266,3 +266,4 @@ Which lesson feeds which requirement. Generated from the **Lessons** fields.
 | [`lesson-109`](lessons.md#lesson-109) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-110`](lessons.md#lesson-110) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-111`](lessons.md#lesson-111) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-112`](lessons.md#lesson-112) | `req-a11y-built-in`                                                                                                                                               |

@@ -86,5 +86,11 @@ from what the browser really gets.
 ./select PctSelect placeholder
 ./select PctSelect trigger
 ./select PctSelect value
+./switch PctSwitch control
+./switch PctSwitch error
+./switch PctSwitch hint
+./switch PctSwitch label
+./switch PctSwitch thumb
+./switch PctSwitch track
 ./tooltip PctTooltipPanel panel
 ```

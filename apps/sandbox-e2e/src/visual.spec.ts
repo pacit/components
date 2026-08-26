@@ -71,6 +71,7 @@ const CARDS: ReadonlyArray<
   ['/number', 'demo-price', 'number-amount'],
   ['/checkbox', 'demo-in-field', 'checkbox-in-wrapper'],
   ['/radio', 'demo-in-field', 'radio-in-wrapper'],
+  ['/switch', 'demo-standalone', 'switch-states'],
   ['/select', 'demo-in-field', 'select-in-wrapper'],
   ['/size', 'demo-axis', 'size-axis'],
   ['/states', 'states-disabled', 'states-disabled'],
@@ -327,6 +328,7 @@ const CARDS_RTL: ReadonlyArray<
   ['/number', 'demo-price', 'number-amount'],
   ['/checkbox', 'demo-in-field', 'checkbox-in-wrapper'],
   ['/radio', 'demo-in-field', 'radio-in-wrapper'],
+  ['/switch', 'demo-standalone', 'switch-states'],
   ['/select', 'demo-in-field', 'select-in-wrapper'],
 ];
 

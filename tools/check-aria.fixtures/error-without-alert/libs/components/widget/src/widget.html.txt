@@ -1,0 +1,19 @@
+<!-- The role sits here and not on the host, so the name has to be handed over. -->
+<span class="pct-widget__box">
+  <button
+    class="pct-widget__trigger"
+    type="button"
+    role="combobox"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+  >
+    {{ label() }}
+  </button>
+</span>
+
+<!-- One message line, and the error takes it — and says it to nobody. -->
+@if (showError()) {
+<span class="pct-widget__error" data-pct-part="error">{{ error() }}</span>
+} @else if (hint()) {
+<span class="pct-widget__hint" data-pct-part="hint">{{ hint() }}</span>
+}

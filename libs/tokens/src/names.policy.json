@@ -55,7 +55,9 @@
       "label",
       "option",
       "panel",
-      "placeholder"
+      "placeholder",
+      "thumb",
+      "track"
     ],
     "properties": [
       "alpha",
@@ -74,7 +76,8 @@
       "radius",
       "shadow",
       "size",
-      "target-min"
+      "target-min",
+      "width"
     ],
     "states": [
       "active",

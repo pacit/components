@@ -105,6 +105,9 @@ test.describe('prefers-reduced-motion', () => {
       'the list trigger': page
         .getByTestId('idle-select')
         .locator('[data-pct-part="trigger"]'),
+      'the switch thumb': page
+        .getByTestId('idle-switch')
+        .locator('[data-pct-part="thumb"]'),
     };
 
     for (const [name, surface] of Object.entries(surfaces)) {

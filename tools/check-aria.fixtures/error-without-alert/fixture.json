@@ -1,0 +1,5 @@
+{
+  "point": 7,
+  "check": "announcement",
+  "$reason": "A validation message drawn with no live region on it. It enters the DOM with focus somewhere else entirely, so a reader is never taken past it — the control is red, the sentence explaining why is on the screen, and the only user who learns of it is the one looking at it. Every other point of this gate would pass over this template unchanged."
+}

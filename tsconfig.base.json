@@ -20,6 +20,7 @@
       "@pacit/components/button": ["./libs/components/button/src/index.ts"],
       "@pacit/components/checkbox": ["./libs/components/checkbox/src/index.ts"],
       "@pacit/components/radio": ["./libs/components/radio/src/index.ts"],
+      "@pacit/components/switch": ["./libs/components/switch/src/index.ts"],
       "@pacit/components/select": ["./libs/components/select/src/index.ts"],
       "@pacit/components/dialog": ["./libs/components/dialog/src/index.ts"],
       "@pacit/components/field": ["./libs/components/field/src/index.ts"],

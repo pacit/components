@@ -45,6 +45,10 @@
       </pct-radio-group>
     </pct-field>
 
+    <pct-field label="Backups">
+      <pct-switch [(checked)]="backups" data-testid="idle-switch" />
+    </pct-field>
+
     <div class="states__cell">
       <button pctButton [size]="idle.activeSize()" data-testid="idle-button">
         Button
@@ -94,6 +98,10 @@
         <pct-radio value="a">A</pct-radio>
         <pct-radio value="b">B</pct-radio>
       </pct-radio-group>
+    </pct-field>
+
+    <pct-field label="Backups">
+      <pct-switch [checked]="true" disabled data-testid="disabled-switch" />
     </pct-field>
 
     <div class="states__cell">
@@ -150,6 +158,10 @@
         <pct-radio value="a">A</pct-radio>
         <pct-radio value="b">B</pct-radio>
       </pct-radio-group>
+    </pct-field>
+
+    <pct-field label="Backups">
+      <pct-switch [checked]="true" readonly data-testid="readonly-switch" />
     </pct-field>
 
     <p class="muted states__note">
@@ -222,6 +234,16 @@
         <pct-radio value="a">A</pct-radio>
         <pct-radio value="b">B</pct-radio>
       </pct-radio-group>
+    </pct-field>
+
+    <pct-field label="Backups">
+      <pct-switch
+        [checked]="false"
+        [invalid]="true"
+        [touched]="true"
+        [errors]="errors"
+        data-testid="invalid-switch"
+      />
     </pct-field>
   </div>
 </sbx-demo>

@@ -40,5 +40,6 @@ before an application ships them.
 ./popover 13207 ./core @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/core
 ./radio 14948 ./core @angular/core
 ./select 68536 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core
+./switch 11905 ./core @angular/core
 ./tooltip 12716 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core
 ```

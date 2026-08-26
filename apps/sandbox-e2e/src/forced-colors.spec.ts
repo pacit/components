@@ -120,6 +120,44 @@ test.describe('forced-colors: active', () => {
   });
 
   /**
+   * The switch's own answer to the same question, and it is a different one. The checkbox
+   * carries its state in the PRESENCE of a shape; here both states draw the same two
+   * shapes, and what changes is where the thumb stands. So the colours are deliberately
+   * equal after the swap — the assertion is that they are, and that the geometry still
+   * separates the two states (`req-a11y-forced-colors`).
+   */
+  test('the switch carries its state in the thumb’s position, not in a colour', async ({
+    page,
+  }) => {
+    await visit(page, '/states', { media: FORCED });
+    const sys = await systemColors(page);
+
+    const host = page.getByTestId('idle-switch');
+    const control = host.locator('[data-pct-part="control"]');
+    const thumb = host.locator('[data-pct-part="thumb"]');
+    const track = host.locator('[data-pct-part="track"]');
+
+    const read = async () => ({
+      thumb: await styleOf(thumb, 'background-color'),
+      track: await styleOf(track, 'background-color'),
+      x: (await thumb.boundingBox())?.x ?? 0,
+    });
+
+    await control.uncheck();
+    const off = await read();
+    await control.check();
+    const on = await read();
+
+    expect(on.thumb).toBe(sys.FieldText);
+    expect(on.track).toBe(sys.Field);
+    // The two states are indistinguishable by colour — and that is the point being made.
+    expect(on.thumb).toBe(off.thumb);
+    expect(on.track).toBe(off.track);
+    // What tells them apart survives any palette: the thumb moved.
+    expect(on.x).toBeGreaterThan(off.x);
+  });
+
+  /**
    * The hardest case: in a list panel an ordinary option, a selected one and the one
    * active from the keyboard differ by background ALONE. After the palette swap all
    * three would be the same rectangle, so the selection was split into two
@@ -283,6 +321,10 @@ test.describe('forced-colors: active', () => {
           .getByTestId('disabled-checkbox')
           .locator('[data-pct-part="mark"] svg'),
         'stroke',
+      ),
+      'switch thumb': styleOf(
+        page.getByTestId('disabled-switch').locator('[data-pct-part="thumb"]'),
+        'background-color',
       ),
     };
 
