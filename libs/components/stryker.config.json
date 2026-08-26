@@ -23,13 +23,16 @@
     "!libs/components/**/*.spec.ts"
   ],
   "tempDirName": "tmp/stryker",
-  "// ignorePatterns": "Stryker copies the repository into a sandbox and walks it ITSELF, not the git index: without this list it saw 3907 files where git knows 708. The excess is generated directories, and those have concurrent writers — `nx affected` runs `build` beside `mutation`, ng-packagr creates and deletes `tmp/libs/components/build/tsconfig.generated.<uuid>.json`, and Stryker falls over on `ENOENT ... copyfile` halfway through copying. The symptom is misleading at that: the task is flaky and passes on its own, so the first suspect was the mutant timeout. In passing, the sandbox stops copying its own previous sandboxes from `tmp/stryker`.",
+  "// ignorePatterns": "Stryker copies the repository into a sandbox and walks it ITSELF, not the git index: without this list it saw 3907 files where git knows 708. The excess is generated directories, and those have concurrent writers — `nx affected` runs `build` beside `mutation`, ng-packagr creates and deletes `tmp/libs/components/build/tsconfig.generated.<uuid>.json`, and Stryker falls over on `ENOENT ... copyfile` halfway through copying. The symptom is misleading at that: the task is flaky and passes on its own, so the first suspect was the mutant timeout. In passing, the sandbox stops copying its own previous sandboxes from `tmp/stryker`. The agent directories are here for a second reason and not for their size: two of them hold SYMLINKS to a tree in a third, and `copyFile` on a link to a directory is `EISDIR` — the run ends before the first mutant. Taking those trees out of the git index did not help and could not, because Stryker walks the WORKING TREE: what git no longer tracks is still on disk, and this list is the only place that can say so.",
   "ignorePatterns": [
     "tmp",
     "dist",
     "coverage",
     ".nx",
     ".angular",
+    ".agents",
+    ".claude",
+    ".opencode",
     "libs/components/themes"
   ],
   "reporters": ["progress", "clear-text", "json"],

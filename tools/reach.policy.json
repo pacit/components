@@ -12,6 +12,10 @@
       "reason": "npm writes it and `npm ci` reads it. Nothing in the repository names it — a lockfile is an artifact of the manifest above, not a file anyone imports."
     },
     {
+      "path": "skills-lock.json",
+      "reason": "The `skills` CLI reads it by name: `skills experimental_install` restores the vendored agent skills from the source and the digest recorded here, exactly as `npm ci` restores `node_modules` from the lockfile above. The trees themselves are not tracked (decision 0040), so this file is the whole of what the repository keeps of them — and a lockfile whose payload is ignored is reached by nobody inside, which is what a root is for."
+    },
+    {
       "path": "nx.json",
       "reason": "The workspace configuration: Nx reads it by name before it knows any project exists."
     },

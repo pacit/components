@@ -132,14 +132,16 @@ empty listbox nobody had audited, and the window added **C29** — which is abou
 repository's own machinery rather than about a component: a size snapshot written from a build
 nx had cached, so the baseline that exists to notice eighteen bytes was itself eighteen bytes
 out. **C20 has since closed**, at the item its own "binds at" named, and the switch added two
-more: **C30**, an attribute the checkbox has been writing to itself since v0, **C32**, the npm page's
-entrypoint table drifting behind the package with nothing reading it, and **C31**,
-which is not a promise without a gate at all but **three** gates that are already red — the
-skills tree of the previous commit is tracked, nothing reaches it, and four of its entries are
-symlinks to directories that `check-language` reads as files and dies on, as does Stryker
-copying its sandbox. All three fail on a clean `HEAD`; the mutation one had been sitting behind
-a cache hit and came out on the first miss, which is what makes it C29's shape one floor up. It
-is the one item here whose binds-at is "immediately".
+more: **C30**, an attribute the checkbox has been writing to itself since v0, and **C32**, the
+npm page's entrypoint table drifting behind the package with nothing reading it. It also added
+**C31**, which was not a promise without a gate at all but **three** gates already red on a
+clean `HEAD` — and **C31 has closed too**, on the one decision the three of them needed: the
+vendored skills lockfile is repository material and the tree it locks is not
+([0040](decisions/0040-a-lockfile-is-material-the-tree-it-locks-is-not.md)). Two of the three
+answered to the git index and the third to the working tree, which is the half that survived
+untracking; and by the time the item ran, the reach gate had already gone green by itself,
+because the entry describing the unreached tree named it
+([`lesson-113`](lessons.md#lesson-113)).
 
 **E4 has closed, all eight items of it**, and the first of them is the fork the rest
 stand on: **is an option a row of data or a `<pct-option>` the consumer projects?** Written as
@@ -834,7 +836,7 @@ not a derivation.
 ## C. Open findings
 
 Small, good filler between the bigger items. Each one is verified in the code and still
-current. **Eighteen are closed and three are open** (the numbers run to C21; there is no C5) —
+current. **Twenty are closed and eleven are open** (the numbers run to C32; there is no C5) —
 the list is where the next finding lands, and six of the closed ones ended in a decision record
 rather than in a line of code: [0018](decisions/0018-no-sass-entry-point.md) through
 [0023](decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md).
@@ -1808,25 +1810,24 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     whichever comes first — a log is the one measurement that would show what a reader really
     says about the `mixed` state · _notes:_ —
 
-- [ ] **C31 — the skills tree breaks two gates at `HEAD`, one by measuring and one by
-      crashing**
+- [x] **C31 — the skills tree breaks two gates at `HEAD`, one by measuring and one by
+      crashing** — **closed, and the third one was reading a different repository**
   - measured on a clean worktree at `HEAD`, not deduced, and it is two failures with one
-    cause — `e2df582` added `.agents/skills/**`, `.claude/skills/**` and `skills-lock.json`:
+    cause — `e2df582` added a vendored Angular skills tree under `.agents/`, a symlink to it
+    in each of two tools' directories, and a lockfile recording the source and the digest:
     - `node tools/check-reach.mjs` reports **45 tracked files nothing reaches**. The gate is
       right: nothing in the repository points at those trees
     - `node tools/check-language.mjs` **crashes** — `EISDIR: illegal operation on a
-directory` at `readFileSync`. Four paths under `.claude/skills/` and `.opencode/skills/`
-      are tracked as SYMLINKS to directories (mode `120000`), and the gate reads every path in
-      the index as a file
+directory` at `readFileSync`. Four of the new entries are tracked as SYMLINKS to
+      directories (mode `120000`), and the gate reads every path in the index as a file
     - and behind the crash there is a violation waiting: run over the same index with the
-      symlinks taken out, the gate reports **`skills-lock.json`** — the hex of two digests
-      (`ee`, `bd`) read as Polish words. So the file needs a register entry or the
-      `vocabulary` list, and nobody has seen that yet because the run never got that far
-    - `nx run components:mutation` **crashes too**, and on the same symlink:
-      `EISDIR: illegal operation on a directory, copyfile '.claude/skills/angular-developer'`.
-      Stryker copies the repository into a sandbox and walks it itself, so `ignorePatterns`
-      in `stryker.config.json` is its only filter and none of `.claude`, `.agents`,
-      `.opencode` is in it. **`check-mutation` therefore cannot run at all**, and with it the
+      symlinks taken out, the gate reports the **lockfile** — two fragments of the hex
+      digests read as Polish words. So the file needs a register entry, and nobody has seen
+      that yet because the run never got that far
+    - `nx run components:mutation` **crashes too**, and on the same symlink. Stryker copies
+      the repository into a sandbox and walks it itself, so `ignorePatterns` in
+      `libs/components/stryker.config.json` is its only filter and none of the three agent
+      directories is in it. **`check-mutation` therefore cannot run at all**, and with it the
       only machine that answers whether the unit tests catch anything
   - **the third one is the reason nobody saw the first two**: `mutation` had not re-run since
     the skills commit, because nothing in its `inputs` had moved — the failure sat behind a
@@ -1838,17 +1839,59 @@ directory` at `readFileSync`. Four paths under `.claude/skills/` and `.opencode/
     gate cannot make**: those trees are opened by an outside tool that finds them by
     convention, which is exactly what `tools/reach.policy.json` has a `roots` form for — and a
     root entry has to NAME the reader, which is a fact about somebody's tooling rather than
-    about this repository's sources. The language half is not a judgement at all but the shape
-    [`lesson-77`](lessons.md#lesson-77) keeps taking: a gate that stops at the first input it
-    was not written for. A symlink carries no text of its own, so it is a file to STEP OVER
-    rather than to read — and a crash and a pass are the same thing to a run that ends
+    about this repository's sources. The language half is not a judgement at all but a gate
+    that stops at the first input it was not written for. A symlink carries no text of its
+    own, so it is a file to STEP OVER rather than to read — and a crash and a pass are the
+    same thing to a run that ends
   - what makes it an item rather than a patch in passing is that the answers are one
     decision: whether a tracked symlink is part of this repository's material at all — and,
     before that, whether a tree of vendored skills belongs in the index rather than in
     `.gitignore`. Reach, language and Stryker have to say the same thing about it, and "an
     agent reads it" is not a reader
   - binds at: **immediately** — this is the only open item whose subject is a red CI rather
-    than a promise without a gate · _notes:_ —
+    than a promise without a gate · _notes:_ **done**, and the one decision the item asked for
+    is [0040](decisions/0040-a-lockfile-is-material-the-tree-it-locks-is-not.md): **the
+    lockfile is repository material and the tree it locks is not.** The split already stood
+    one directory up — `package-lock.json` tracked, `node_modules` not — and the three
+    arguments for reusing it were that no tool configured here reads the vendored directory
+    at all (the two that are configured reach it through links, and the reach policy has said
+    since B9 where the first of them takes its workspace skills from), that forty of the 42
+    files are reference pages about a framework shipping a minor every few weeks, and that a
+    register entry would have had to name a reader whose honest name is "any agent tool" —
+    which is the absence of one. So `.gitignore` took the trees, the index kept the lockfile,
+    and the lockfile got the two entries it needs: a **root** in `tools/reach.policy.json`
+    naming the installer that reads it by name, and a **`generated`** entry in
+    `tools/language.policy.json` — every value in it is a source, a path or a digest, and hex
+    read as letters gives the same debris `package-lock.json` gives by the thousand
+  - **and the first gate had already gone green on its own, which is the finding worth more
+    than the fix.** By the time this item ran, `check-reach` reported a clean repository:
+    the commit that wrote C31 down had spelled the tree's path with a wildcard after it, which
+    is a legal mention by [`lesson-61`](lessons.md#lesson-61)'s own rule, so the walk entered
+    the dead island through the paragraph explaining that nobody enters it. The same entry
+    quoted the two hex fragments and the language gate then reported them at `docs/plan.md`
+    as well — the report of a violation being a fresh instance of it, which is where
+    [`lesson-77`](lessons.md#lesson-77) had already ended once and did not generalise, because
+    it looked like a property of a gate that hunts words. It is not:
+    [`lesson-113`](lessons.md#lesson-113) — **a document in the git index is an input to every
+    gate that walks the index**, and a gate that turns green on a commit that only wrote prose
+    has not been fixed
+  - **what untracking did not fix, and could not**: the mutation run went on crashing on the
+    same path afterwards, because Stryker copies the WORKING TREE and git tracking is not a
+    property of the disk. That is [`lesson-59`](lessons.md#lesson-59) a second time, on a new
+    failure mode — `EISDIR` on a link to a directory rather than `ENOENT` on a race — and the
+    remedy is where that lesson already put it, in `ignorePatterns`, which now names the three
+    agent directories and carries the reason
+  - gate: `check-reach` and `check-language` green over the whole index (1050 tracked files,
+    1004 of them scanned), and `check-mutation` green over a run that starts at all — 2261
+    mutants, score 82.13% against an 80% floor, where the target had been producing a stack
+    trace in five seconds
+  - control: the language gate's reader is proved on constants at every run, in **both**
+    directions — a regular file and an executable kept, a symlink and a gitlink stepped over.
+    It is the one layer the 32 fixtures cannot reach, a case there being a list of files and
+    never an index, and the middle is the silent failure: a wrong set of modes drops real
+    files and reports a smaller, cleaner repository than the one that exists. Proved the other
+    way too, end to end: a symlink to a directory added to the index takes the run to its
+    report instead of to a stack trace
 
 - [ ] **C32 — the two READMEs list the entrypoints, and no gate reads either list**
   - the npm page's **Entrypoints** table

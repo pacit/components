@@ -1233,6 +1233,17 @@ sensitive to everybody writing in that tree — and the remedy is narrowing what
 (`ignorePatterns`), not raising limits. The symptom "passes solo, fails in a batch" is common to
 both causes and does not settle anything by itself; what settles it is the recorded message.
 
+**It bit a second time, on a different failure and the same sentence.** Two agent directories
+held symlinks to a tree in a third, and `copyFile` on a link to a directory is `EISDIR`: the run
+ended before the first mutant, and the crash sat behind a cache hit until an unrelated new source
+file finally missed. What makes it worth adding here is what did NOT fix it — the trees were
+taken out of the git index, and the mutation run went on crashing on exactly the same path,
+because **the tool copies the working tree and git tracking is not a property of the disk**.
+The remedy was `ignorePatterns` again, and the general form of the rule is one question to ask
+of any tool that reads a project: _which repository is it reading — the index or the directory?_
+Reach and language answer to the first, Stryker to the second, and a fix aimed at the wrong one
+looks like a fix right up to the run.
+
 ---
 
 ### <a id="lesson-60"></a>`lesson-60` — A scan is only as wide as its word list, and a hand-written list is narrower than its author thinks
@@ -2912,3 +2923,42 @@ checkbox with the same role obliges it to publish nothing. The rule that comes o
 readings is one sentence: **write ARIA for what the element does not already say, and check
 which of the two you are doing before you write it**
 ([0039](decisions/0039-a-state-the-platform-publishes-is-not-ours-to-write.md)).
+
+---
+
+### <a id="lesson-113"></a>`lesson-113` — A finding written down is an input to the gate that found it
+
+**`check-reach` reported 45 tracked files nothing reaches. One commit later it reported a clean
+repository, and nothing had been fixed — the commit had written the finding into the plan.**
+The entry naming the trees spelled `.agents/skills/**`, which is a legal mention by
+[`lesson-61`](#lesson-61)'s own rule (a directory segment before the first wildcard), so the
+walk entered the dead island through the paragraph explaining that nobody enters it. The entry
+named the other two paths as well, so all 45 files came back alive on a commit that touched no
+configuration at all.
+
+The same entry did it twice. It quoted the two fragments of hex the language gate had been
+about to flag inside a lockfile, and the next run reported them at `docs/plan.md` as well —
+the report of a violation being a fresh instance of it, which is where
+[`lesson-77`](#lesson-77) had already ended once, and it did not generalise then because it
+looked like a property of a gate that hunts words.
+
+It is not. **A document in the git index is a file like any other, and every gate that walks
+the index walks the description of its own failures.** The plan is where findings are recorded
+here, so the plan is an input to `check-reach`, `check-language`, `check-texts` and
+`check-docs` alike — writing a finding down changes the measurement, in the direction that
+makes the finding disappear.
+
+Two things follow, and the first is worth more than the second:
+
+- **A gate that goes green after a commit that only wrote prose has not been fixed.** That is
+  a cheap thing to check and it costs nothing to remember: compare what moved against what the
+  gate reads, and a documentation-only diff answers immediately.
+- Naming a defective path in a report is a **choice of form**: `.agents/skills/**` reaches 42
+  files, `.agents/skills/` reaches none. There is no way to write about a hunted word at all —
+  the fixtures tree is the one place a sample of it can stand, which is what
+  [`lesson-77`](#lesson-77) settled — and there is no reason to make the general habit of it,
+  because the cure would be prose written badly on purpose.
+
+The trees are gone from the index now ([0040](decisions/0040-a-lockfile-is-material-the-tree-it-locks-is-not.md)),
+so the citation grants nothing and the question does not arise for these files again. It
+arises for the next finding.

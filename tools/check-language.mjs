@@ -814,19 +814,63 @@ const readFile = (path) => {
 };
 
 /**
+ * The modes git records in the index, and which of them carry text of their OWN. A regular
+ * file does. A symlink (`120000`) does not: git stores the target path as the blob, and
+ * reading it through the filesystem gives either the target's words a second time, under a
+ * path nobody wrote them at, or — when the target is a directory — `EISDIR` and a run that
+ * ends. A gitlink (`160000`) is another repository and answers to its own gate. Both are
+ * stepped over rather than read, because a crash and a pass are the same thing to a run
+ * that never reaches its report.
+ */
+const CARRIES_TEXT = new Set(['100644', '100755']);
+
+/**
+ * The classifier proved on constants, in both directions, the way `CANARY` proves the two
+ * dictionaries. Let every mode through and the run dies on the first symlink to a
+ * directory; let none through and point 1 fires on an empty denominator. Only a wrong set
+ * in the MIDDLE is silent — it drops real files and reports a smaller, cleaner repository
+ * than the one that exists.
+ */
+const classifierFaults = () =>
+  [
+    ['100644', true],
+    ['100755', true],
+    ['120000', false],
+    ['160000', false],
+  ]
+    .filter(([mode, carries]) => CARRIES_TEXT.has(mode) !== carries)
+    .map(([mode, carries]) =>
+      carries
+        ? `mode \`${mode}\` is stepped over, and it is a file the gate has to read`
+        : `mode \`${mode}\` is read as text, and an entry of that kind carries none`,
+    );
+
+/** How many index entries the reader stepped over on the real run. */
+let steppedOver = 0;
+
+/**
  * The repository from the GIT INDEX, minus what a machine wrote. `package-lock.json` and
  * the generated registry are not hand-written text and the promise is about hand-written
  * text — but they are named one by one in the policy, never matched by a pattern.
  */
 const repositoryFiles = (policy) => {
   const skip = new Set((policy.generated ?? []).map((e) => e.file));
-  return execFileSync('git', ['ls-files', '-z'], {
+  const entries = execFileSync('git', ['ls-files', '-sz'], {
     cwd: ROOT,
     encoding: 'utf8',
   })
     .split('\0')
-    .filter((path) => path && !skip.has(path))
-    .map((path) => {
+    .filter(Boolean)
+    // `<mode> <object> <stage>\t<path>`. The path is taken from the tab on and never split
+    // on whitespace: a file name may hold anything but a NUL.
+    .map((line) => ({
+      mode: line.slice(0, 6),
+      path: line.slice(line.indexOf('\t') + 1),
+    }));
+  steppedOver = entries.filter((e) => !CARRIES_TEXT.has(e.mode)).length;
+  return entries
+    .filter((e) => CARRIES_TEXT.has(e.mode) && !skip.has(e.path))
+    .map(({ path }) => {
       const text = readFile(join(ROOT, path));
       return text === null ? null : { path, scope: 'repository', text };
     })
@@ -990,6 +1034,8 @@ try {
   problems.push(`${error.check}/${error.rule}: ${error.message}`);
 }
 
+problems.push(...classifierFaults());
+
 if (!existsSync(FIXTURES))
   problems.push(
     `tools/check-language.fixtures: the directory does not exist — a gate with no proof ` +
@@ -1050,6 +1096,10 @@ if (problems.length) {
 }
 
 console.log(
-  `✓ One language: ${summary}. Negative control: the reference input passes, ` +
+  `✓ One language: ${summary}` +
+    (steppedOver
+      ? `, ${steppedOver} index entries carrying no text of their own`
+      : '') +
+    `. Negative control: the reference input passes, ` +
     `${cases.length} prepared ones rejected on their own rules.`,
 );

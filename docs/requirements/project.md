@@ -243,7 +243,11 @@ names visible in the Actions tab.
 seven points, 27 rules, **two measurements with different reach**. The public surface is
 measured on the **artifact** (`dist/libs/components` — that is where what the consumer
 really sees ends up, not what stands in the source) and knows no register at all; the rest
-of the repository is measured on the files in the git index. Detection has five limbs,
+of the repository is measured on the files in the git index — on the **regular** files of
+it, because git records a mode per entry and only a regular file carries text of its own: a
+symlink (`120000`) holds the target path as its blob, so reading one through the filesystem
+gives the target's words a second time under a path nobody wrote them at, or `EISDIR` and a
+run that never reaches its report. Detection has five limbs,
 because diacritics alone are not enough — a name spelled without them carries none:
 diacritical marks, a **dictionary** (`/usr/share/dict/polish` folded of diacritics, minus
 the English one, streamed against the words really found) read over identifiers split at
@@ -292,7 +296,13 @@ run of this gate while the gate stood. The fourth is the fifth limb's own first 
 hit — the name `tools/check-bundle.mjs` gave the function building an import specifier, green
 through every pass before it — against five English agent nouns, and the entry written to
 excuse those five was red on the file it stands in until it stopped quoting their stems. The samples themselves are quoted nowhere but in the gate's own tree, which
-the policy names as `specimens`: this file is measured like every other
+the policy names as `specimens`: this file is measured like every other. Plus the index
+classifier proved on constants at every run, in both directions — a regular file and an
+executable kept, a symlink and a gitlink stepped over — which is the one layer the fixtures
+cannot reach, a case there being a list of files and never an index. Let every mode through
+and the run dies on the first symlink to a directory; let none through and point 1 fires on
+an empty denominator; a wrong set in the MIDDLE is the silent one, dropping real files and
+reporting a smaller, cleaner repository than the one that exists
 **Binds at:** bound. Both limbs run today: the repository one before the first push, which is
 what turns "nothing is left" into a measurement rather than a declaration, and the artifact
 one on `dist/libs/components` — clean on the run that closed this, so it costs nothing to
@@ -445,7 +455,17 @@ entry that grants nothing, one whose reader is gone, one over an empty tree, one
 reason; a fixtures tree whose gate is gone; an empty index; a corpus with nothing readable in
 it; a policy with no roots. Plus a run against the real repository: the deleted copy of the
 vendored guide put back as two files citing each other, which fired point 5 with both named
-**Lessons:** [`lesson-61`](../lessons.md#lesson-61)
+**Decision:** [0040 — a lockfile is repository material, the tree it locks is not](../decisions/0040-a-lockfile-is-material-the-tree-it-locks-is-not.md)
+**Lessons:** [`lesson-61`](../lessons.md#lesson-61),
+[`lesson-113`](../lessons.md#lesson-113)
+
+> **A mention is an edge, and the report of a defect is a mention.** The gate reported 45
+> unreached files, the finding describing them went into the plan naming that directory with
+> a wildcard after it, and the next run was clean with nothing fixed — a legal pattern by the
+> rule above, written in the one paragraph that says nobody reads those files
+> ([`lesson-113`](../lessons.md#lesson-113)). What the walk cannot do is tell a reader from a
+> witness. The rule that catches it is not in the gate: a gate that turns green on a commit
+> that only wrote prose has not been fixed.
 
 > The register may not be read as a place to put a tree that has become inconvenient. It holds
 > two entries and both name a reader that is itself tracked: `.opencode` against `opencode.json`

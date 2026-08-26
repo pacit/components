@@ -52,3 +52,20 @@ Use the wrapper: `scripts/with-node <command>`. Example:
 ```bash
 scripts/with-node npx nx serve sandbox
 ```
+
+## Vendored agent skills
+
+The skills of **this** repository are tracked, under `.opencode/skills/`. The Angular ones
+installed from `angular/skills` are **not**: only `skills-lock.json` is, and it restores them
+([0040](docs/decisions/0040-a-lockfile-is-material-the-tree-it-locks-is-not.md) — the same
+split as `package-lock.json` and `node_modules`).
+
+A fresh clone gets them back with:
+
+```bash
+scripts/with-node npx skills experimental_install
+```
+
+Do not commit the trees. `check-reach` fires on a tracked file nothing reaches, but a mention
+is an edge and prose about a defect is a mention — the gate is the second line here, not the
+first ([`lesson-113`](docs/lessons.md#lesson-113)).

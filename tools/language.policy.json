@@ -7,6 +7,10 @@
       "reason": "npm writes it. Its `integrity` fields are base64, and a base64 blob read as letters gives two-letter runs by the hundred — measured: 1310 flagged words with it against 121 for the whole rest of the repository, and every one of the difference was debris."
     },
     {
+      "file": "skills-lock.json",
+      "reason": "The `skills` CLI writes it. Every value in it is a source, a path or a 64-character digest, and hex read as letters gives the same two-letter runs the Polish dictionary confirms in `package-lock.json` above — with no prose anywhere in the file to measure against them. The vendored trees it locks are not tracked at all (decision 0040); this record of them is."
+    },
+    {
       "file": "docs/registry.md",
       "reason": "`node tools/check-docs.mjs --write` assembles it from the requirements and the lessons, and truncates every table cell to fit — so it holds a dozen words cut in half by the ellipsis, standing nowhere in the sources and answering to nobody. Its content is measured at the source, in `docs/**`."
     }

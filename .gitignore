@@ -58,6 +58,21 @@ Thumbs.db
 .claude/worktrees
 .playwright-mcp
 
+# Vendored agent skills. `npx skills add` writes the trees under `.agents/skills/` and links
+# them into each configured tool's directory; `skills-lock.json` records the source and the
+# digest, and `npx skills experimental_install` restores them from it. The LOCKFILE is
+# tracked and the
+# payload is not — the same split as `package-lock.json` and `node_modules`, for the same
+# reason (decision 0040): a copy of somebody else's documentation ages from the moment it
+# lands, and no tool configured here reads `.agents/` at all. `.claude/skills/` is ignored
+# whole, because `.claude/settings.json` already says where that tool takes its workspace
+# skills from; under `.opencode/skills/` the vendored names are listed one by one, because
+# the skills of THIS repository live there and are tracked.
+/.agents/
+/.claude/skills/
+/.opencode/skills/angular-developer
+/.opencode/skills/angular-new-app
+
 vite.config.*.timestamp*
 vitest.config.*.timestamp*
 
