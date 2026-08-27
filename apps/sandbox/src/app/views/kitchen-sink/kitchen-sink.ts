@@ -23,6 +23,7 @@ import {
   PctSelect,
   PctSelectOption,
 } from '@pacit/components/select';
+import { PctDate, PctDay } from '@pacit/components/date';
 import { PctSlider } from '@pacit/components/slider';
 import { PctSwitch } from '@pacit/components/switch';
 
@@ -39,6 +40,7 @@ import { PctSwitch } from '@pacit/components/switch';
     PctCheckbox,
     PctRadioGroup,
     PctRadio,
+    PctDate,
     PctSlider,
     PctSwitch,
     PctMultiSelect,
@@ -57,6 +59,9 @@ import { PctSwitch } from '@pacit/components/switch';
 export class KitchenSink {
   /** The theme of the second panel — a scoped theme demo (req-token-scoped). */
   protected readonly panelDark = signal(true);
+
+  /** A calendar day: the value crosses a form boundary as the string it is. */
+  protected readonly startsOn = signal<PctDay | null>('2026-08-27');
 
   /** The form model — signal forms (req-api-signal-forms). */
   protected readonly countries: readonly PctSelectOption[] = [

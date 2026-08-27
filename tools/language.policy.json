@@ -80,10 +80,10 @@
       "reason": "It excuses a word the reference's dictionary confirms, and that word is Polish."
     }
   ],
-  "$vocabulary": "The false positives of the two dictionary limbs — 120 words: 104 that `/usr/share/dict/polish` holds and `american-english` does not, 11 that the fourth limb reads as a foreign stem carrying a Polish ending, and 5 that the fifth reads as a Polish stem carrying a derivational suffix. None of them is Polish here. Every entry is a WORD. Never a shape: an exclusion of `SCREAMING_CASE` or of anything under four letters excuses a whole grammatical class, and a layer of constants once rode through two passes in exactly that blind spot (lesson-60). The gate enforces the format — an entry that is not a bare lowercase word fires — and it also fires on any entry the dictionary would never have flagged, so nobody can pad the list with superstition.",
+  "$vocabulary": "The false positives of the two dictionary limbs — 126 words: 108 that `/usr/share/dict/polish` holds and `american-english` does not, 13 that the fourth limb reads as a foreign stem carrying a Polish ending, and 5 that the fifth reads as a Polish stem carrying a derivational suffix. None of them is Polish here. Every entry is a WORD. Never a shape: an exclusion of `SCREAMING_CASE` or of anything under four letters excuses a whole grammatical class, and a layer of constants once rode through two passes in exactly that blind spot (lesson-60). The gate enforces the format — an entry that is not a bare lowercase word fires — and it also fires on any entry the dictionary would never have flagged, so nobody can pad the list with superstition.",
   "vocabulary": {
     "abbreviations": {
-      "reason": "English words written short, in identifiers and in prose. Each is a shortening a reader expands without thinking; none is a Polish word here.",
+      "reason": "English words written short, in identifiers and in prose — HTML element names among them (`div`, `ul`, `tr`), which reach the artifact as the tags a template really emits. Each is a shortening a reader expands without thinking; none is a Polish word here.",
       "words": [
         "abs",
         "acc",
@@ -127,6 +127,7 @@
         "ro",
         "sem",
         "tok",
+        "tr",
         "txt",
         "ul",
         "ver"
@@ -156,8 +157,8 @@
       ]
     },
     "codes": {
-      "reason": "Identifiers out of somebody else's code list — ISO country and currency codes, BCP-47 language subtags. They stand in test data and in demo rows, where translating them would break the thing they name.",
-      "words": ["cz", "en", "eur", "lv", "pln", "sv", "ua"]
+      "reason": "Identifiers out of somebody else's code list — ISO country and currency codes, BCP-47 language subtags. They stand in test data, in demo rows and in the calendar's table of the regions whose week does not start on Monday, where translating them would break the thing they name.",
+      "words": ["cz", "en", "eur", "hu", "ja", "lv", "mv", "pln", "sv", "ua"]
     },
     "english": {
       "reason": "English words `american-english` simply does not carry — it is a spelling list from another decade, and the trade's vocabulary moved. The subtraction cannot remove what the English side never held, so they are named here instead.",
@@ -206,8 +207,9 @@
       ]
     },
     "borrowings": {
-      "reason": "The false positives of the fourth limb, which reads a word standing in neither dictionary as a foreign stem with a Polish ending. Each is written down singly with what it really is, for the same reason `fragments` are: a rule saying `ignore anything shorter than five letters` or `ignore an ending after an acronym` would blind the limb to the class it exists for. `cra` is CRA and `eaa` the European Accessibility Act, read letter by letter; `jpe` is what the split leaves of `jpe?g` and `nthem` what it leaves of a `\\n` before `them`; `markovy` is an npm account and `teama` a placeholder package name; `napi` is N-API; `rgba` is the CSS function; `sha` is a commit SHA; `surfce` is a misspelt custom property quoted in a lesson about that very typo; `truthy` is the matcher.",
+      "reason": "The false positives of the fourth limb, which reads a word standing in neither dictionary as a foreign stem with a Polish ending. Each is written down singly with what it really is, for the same reason `fragments` are: a rule saying `ignore anything shorter than five letters` or `ignore an ending after an acronym` would blind the limb to the class it exists for. `cra` is CRA and `eaa` the European Accessibility Act, read letter by letter; `jpe` is what the split leaves of `jpe?g` and `nthem` what it leaves of a `\\n` before `them`; `markovy` is an npm account and `teama` a placeholder package name; `napi` is N-API; `rgba` is the CSS function; `aaaa` is the year in a French format hint (`jj/mm/aaaa`), four letters standing for a field and not a word in any language; `une` is the French article, in the one string this repository writes in French on purpose; `sha` is a commit SHA; `surfce` is a misspelt custom property quoted in a lesson about that very typo; `truthy` is the matcher.",
       "words": [
+        "aaaa",
         "cra",
         "eaa",
         "jpe",
@@ -218,7 +220,8 @@
         "sha",
         "surfce",
         "teama",
-        "truthy"
+        "truthy",
+        "une"
       ]
     },
     "fragments": {

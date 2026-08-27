@@ -19,6 +19,8 @@ a machine; prose with a missing paragraph is not.
 | [`PctRadioGroup`](radio.md)   | `@pacit/components/radio`    | group of mutually exclusive options |
 | [`PctSwitch`](switch.md)      | `@pacit/components/switch`   | a setting that takes effect at once |
 | [`PctSlider`](slider.md)      | `@pacit/components/slider`   | a position on a numeric continuum   |
+| [`PctDate`](date.md)          | `@pacit/components/date`     | a calendar day, typed or picked     |
+| [`PctCalendar`](calendar.md)  | `@pacit/components/date`     | one month of days as a grid         |
 | [`PctSelect`](select.md)      | `@pacit/components/select`   | choice list with a panel of its own |
 | [`PctMultiSelect`](select.md) | `@pacit/components/select`   | the same list, holding many answers |
 | [`PctDialog`](dialog.md)      | `@pacit/components/dialog`   | modal dialog                        |
@@ -98,7 +100,20 @@ The order follows **architectural debt**, not popularity:
    way the decision expected is the drawing: a range carries generated content in **one**
    engine of three, so the fill and the ticks are drawn boxes under a transparent input
    rather than pseudo-elements — which is what buys RTL and the vertical axis with no rule
-   reading the direction ([`lesson-118`](../lessons.md#lesson-118)).
+   reading the direction ([`lesson-118`](../lessons.md#lesson-118)). The **date picker** closes
+   the item, and it is the one where the platform's own control was refused on three
+   measurements rather than one: `<input type="date">` takes the order it shows a date in from
+   `lang` in chromium, from the browser's locale in webkit and from neither in firefox — three
+   engines, three sources, one of them settable — a half-typed date reads `value === ''` in all
+   three with `validity.badInput` false in webkit, and one such control is four tab stops in
+   two engines and one in the third. So the field is text the library formats, and the value
+   is a calendar DAY: `new Date(2026, 7, 27).toISOString()` is the 26th in Warsaw, and
+   `Temporal.PlainDate` — which is exactly the right type — is absent from webkit
+   ([0043](../decisions/0043-a-day-is-not-an-instant.md)). Two things it found that nobody
+   asks about until a user does: `Intl` resolves `th-TH` to the **buddhist** calendar in all
+   three engines, so a field and its grid would disagree about the year unless the calendar is
+   pinned; and `getWeekInfo()` is absent from firefox, so the first day of the week is a table
+   of 80 regions with the platform's own CLDR as its gate.
 6. **Table / DataGrid** — has to stand on a **headless core** separated from rendering.
 
 Before item 1 the **behaviour layer in `core`** has to exist: list navigation (private methods

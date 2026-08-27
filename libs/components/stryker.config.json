@@ -9,6 +9,8 @@
   "ignorers": ["angular"],
   "mutate": [
     "libs/components/core/src/*.ts",
+    "libs/components/date/src/day.ts",
+    "libs/components/date/src/locale.ts",
     "libs/components/dialog/src/dialog.ts",
     "libs/components/field/src/number.ts",
     "libs/components/icon/src/icon.ts",

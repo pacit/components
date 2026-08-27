@@ -1,0 +1,223 @@
+:host {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--pct-date-gap);
+  font-family: inherit;
+  color: var(--pct-date-fg);
+}
+
+.pct-calendar__header {
+  display: flex;
+  align-items: center;
+  gap: var(--pct-date-gap);
+}
+
+.pct-calendar__caption {
+  flex: 1;
+  /* The month name is the widest thing in this row and it changes on every step, so the
+     row is centred on it rather than laid out around it — otherwise "May 2026" and
+     "September 2026" would move both buttons. */
+  text-align: center;
+  font-weight: var(--pct-date-caption-font-weight);
+  font-size: var(--pct-date-caption-font-size);
+}
+
+.pct-calendar__nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  inline-size: var(--pct-date-nav-size);
+  block-size: var(--pct-date-nav-size);
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--pct-date-nav-radius);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.pct-calendar__nav:hover:not(:disabled) {
+  background: var(--pct-date-nav-bg-hover);
+}
+
+.pct-calendar__nav:disabled {
+  color: var(--pct-date-fg-disabled);
+  cursor: default;
+}
+
+.pct-calendar__nav:focus-visible {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: 1px;
+}
+
+/* The chevron points along the INLINE axis, and which way that is the platform answers with
+   `:dir()` — a direction-aware SELECTOR rather than a rule reading `[dir]`, so nothing here
+   has to know which way the page is written (`req-token-logical`). The drawing itself is one
+   icon used twice: a quarter turn each way is what tells the two buttons apart. */
+.pct-calendar__nav--back pct-icon {
+  transform: rotate(90deg);
+}
+
+.pct-calendar__nav--forward pct-icon {
+  transform: rotate(-90deg);
+}
+
+.pct-calendar__nav--back:dir(rtl) pct-icon {
+  transform: rotate(-90deg);
+}
+
+.pct-calendar__nav--forward:dir(rtl) pct-icon {
+  transform: rotate(90deg);
+}
+
+.pct-calendar__nav pct-icon {
+  inline-size: var(--pct-date-icon-size);
+  block-size: var(--pct-date-icon-size);
+}
+
+.pct-calendar__grid {
+  border-collapse: collapse;
+  /* A fixed layout is what keeps the seven columns equal: the widest cell in a month must
+     not decide the width of its column, or the grid would breathe as the months change. */
+  table-layout: fixed;
+}
+
+.pct-calendar__weekday {
+  inline-size: var(--pct-date-day-size);
+  padding: 0;
+  font-size: var(--pct-date-weekday-font-size);
+  font-weight: var(--pct-date-weekday-font-weight);
+  color: var(--pct-date-weekday-fg);
+}
+
+/* The long weekday name: read by a screen reader, never drawn. The declarations are the
+   ones `PctAnnouncer` uses on its own regions — a clipped 1 px box keeps the text in the
+   accessibility tree, which `display: none` and `visibility: hidden` both take it out of. */
+.pct-calendar__sr {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.pct-calendar__day {
+  inline-size: var(--pct-date-day-size);
+  block-size: var(--pct-date-day-size);
+  padding: 0;
+  text-align: center;
+  vertical-align: middle;
+  border-radius: var(--pct-date-day-radius);
+  font-size: var(--pct-date-day-font-size);
+  cursor: pointer;
+  transition:
+    background-color var(--pct-motion-transition-duration)
+      var(--pct-motion-transition-easing),
+    color var(--pct-motion-transition-duration)
+      var(--pct-motion-transition-easing);
+}
+
+.pct-calendar__day:hover:not([data-pct-disabled]) {
+  background: var(--pct-date-day-bg-hover);
+}
+
+.pct-calendar__day:focus-visible {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: -2px;
+}
+
+/* A day of a neighbouring month. It is drawn faintly and still pickable — a click on it is
+   how a user reaches the 1st of next month without a step — so the difference is colour and
+   not a state. The colour is a token that clears the contrast policy on its own: this is
+   `req-token-no-opacity`'s case, where the obvious road would have been a fade that quietly
+   undoes the contrast the palette was chosen for (lesson-6). */
+.pct-calendar__day[data-pct-outside] {
+  color: var(--pct-date-day-fg-muted);
+}
+
+/* Today, when it is not the chosen day: a ring, not a fill, because the fill means chosen
+   and two facts drawn the same way are one fact said twice. */
+.pct-calendar__day[data-pct-today]:not([data-pct-chosen]) {
+  box-shadow: inset 0 0 0 1px var(--pct-date-day-border-today);
+}
+
+.pct-calendar__day[data-pct-chosen] {
+  background: var(--pct-date-day-bg-selected);
+  color: var(--pct-date-day-fg-selected);
+  font-weight: var(--pct-date-day-font-weight-selected);
+}
+
+.pct-calendar__day[data-pct-disabled] {
+  color: var(--pct-date-day-fg-disabled);
+  cursor: default;
+}
+
+:host([data-pct-disabled]) {
+  color: var(--pct-date-fg-disabled);
+}
+
+:host([data-pct-disabled]) .pct-calendar__day {
+  color: var(--pct-date-day-fg-disabled);
+  cursor: default;
+}
+
+/* Sizes: one number moves the whole grid, because every box in it is derived from the day
+   cell (req-api-size). */
+:host([data-pct-size='sm']) {
+  --pct-date-day-size: var(--pct-date-day-size-sm);
+  --pct-date-day-font-size: var(--pct-date-day-font-size-sm);
+}
+
+:host([data-pct-size='lg']) {
+  --pct-date-day-size: var(--pct-date-day-size-lg);
+  --pct-date-day-font-size: var(--pct-date-day-font-size-lg);
+}
+
+/* Forced-colors mode — the mapping is written down in `field.scss`. The three states this
+   grid draws with colour alone (chosen, today, refused) each need a shape or a system colour
+   of their own, because the mode substitutes every palette colour with the same pair. Every
+   base rule with a colour is repeated at its own specificity: `@media` adds none
+   (lesson-70). */
+@media (forced-colors: active) {
+  .pct-calendar__day,
+  .pct-calendar__day[data-pct-outside] {
+    color: CanvasText;
+  }
+
+  /* The chosen day is the one place `forced-color-adjust: none` would be wrong: the mode's
+     own `Highlight` / `HighlightText` pair IS "this one is picked", and it is the pair the
+     user chose. */
+  .pct-calendar__day[data-pct-chosen],
+  :host([data-pct-disabled]) .pct-calendar__day[data-pct-chosen] {
+    background: Highlight;
+    color: HighlightText;
+  }
+
+  /* Today keeps its ring, and the ring has to be drawn again here rather than left to the
+     mode. Measured: chromium 149 and firefox 151 force `box-shadow` to `none` in this mode
+     and webkit 26.5 leaves it exactly as written — so a rule that relied on the mode
+     REMOVING the shadow would draw two rings in one engine of three, and one that relied on
+     the mode KEEPING it would draw none in two (`lesson-119`). Both halves are written out:
+     the shadow off, the outline on. */
+  .pct-calendar__day[data-pct-today]:not([data-pct-chosen]) {
+    box-shadow: none;
+    outline: 1px solid CanvasText;
+    outline-offset: -2px;
+  }
+
+  .pct-calendar__day[data-pct-disabled],
+  :host([data-pct-disabled]) .pct-calendar__day {
+    color: GrayText;
+  }
+
+  .pct-calendar__nav:disabled {
+    color: GrayText;
+  }
+
+  .pct-calendar__weekday {
+    color: CanvasText;
+  }
+}

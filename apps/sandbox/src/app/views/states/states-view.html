@@ -53,6 +53,10 @@
       <pct-slider [(value)]="budget" data-testid="idle-slider" />
     </pct-field>
 
+    <pct-field label="Starts on">
+      <pct-date [(value)]="startsOn" data-testid="idle-date" />
+    </pct-field>
+
     <div class="states__cell">
       <button pctButton [size]="idle.activeSize()" data-testid="idle-button">
         Button
@@ -110,6 +114,10 @@
 
     <pct-field label="Budget">
       <pct-slider [value]="40" disabled data-testid="disabled-slider" />
+    </pct-field>
+
+    <pct-field label="Starts on">
+      <pct-date value="2026-08-27" disabled data-testid="disabled-date" />
     </pct-field>
 
     <div class="states__cell">
@@ -174,6 +182,10 @@
 
     <pct-field label="Budget">
       <pct-slider [value]="40" readonly data-testid="readonly-slider" />
+    </pct-field>
+
+    <pct-field label="Starts on">
+      <pct-date value="2026-08-27" readonly data-testid="readonly-date" />
     </pct-field>
 
     <p class="muted states__note">
@@ -267,6 +279,16 @@
         data-testid="invalid-slider"
       />
     </pct-field>
+
+    <pct-field label="Starts on">
+      <pct-date
+        value="2026-08-27"
+        [invalid]="true"
+        [touched]="true"
+        [errors]="errors"
+        data-testid="invalid-date"
+      />
+    </pct-field>
   </div>
 </sbx-demo>
 
@@ -294,6 +316,14 @@
         [value]="country()"
         [required]="true"
         data-testid="required-select"
+      />
+    </pct-field>
+
+    <pct-field label="Starts on" [size]="required.activeSize()">
+      <pct-date
+        value="2026-08-27"
+        [required]="true"
+        data-testid="required-date"
       />
     </pct-field>
 

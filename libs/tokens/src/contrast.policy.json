@@ -257,6 +257,167 @@
       "severity": "warn"
     },
     {
+      "name": "date \u2014 the value in the field",
+      "fg": "pct.date.fg",
+      "bg": "pct.date.bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "date \u2014 label",
+      "fg": "pct.date.label-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "date \u2014 hint",
+      "fg": "pct.date.hint-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "date \u2014 error message",
+      "fg": "pct.date.fg-invalid",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "date \u2014 the format hint standing in the empty field",
+      "fg": "pct.date.placeholder-fg",
+      "bg": "pct.date.bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "date \u2014 the value in a disabled field",
+      "fg": "pct.date.fg-disabled",
+      "bg": "pct.date.bg-disabled",
+      "level": "AA",
+      "severity": "warn"
+    },
+    {
+      "name": "UI: date field border",
+      "fg": "pct.date.border",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: date field border (hover)",
+      "fg": "pct.date.border-hover",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: date field border (focus)",
+      "fg": "pct.date.border-focus",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: date field border (invalid)",
+      "fg": "pct.date.border-invalid",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: date field border (disabled)",
+      "fg": "pct.date.border-disabled",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "date \u2014 the calendar button's drawing",
+      "fg": "pct.date.toggle-fg",
+      "bg": "pct.date.bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "date \u2014 the calendar button under the pointer",
+      "fg": "pct.date.toggle-fg",
+      "bg": "pct.date.toggle-bg-hover",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "UI: the calendar panel's edge against the page",
+      "fg": "pct.date.panel-border",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "date \u2014 a day in the panel",
+      "fg": "pct.date.fg",
+      "bg": "pct.date.panel-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "date \u2014 a day under the pointer",
+      "fg": "pct.date.fg",
+      "bg": "pct.date.day-bg-hover",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "date \u2014 the chosen day",
+      "fg": "pct.date.day-fg-selected",
+      "bg": "pct.date.day-bg-selected",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "UI: the chosen day against the panel",
+      "fg": "pct.date.day-bg-selected",
+      "bg": "pct.date.panel-bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "date \u2014 a day of a neighbouring month (drawn quieter and still pickable, so it is measured as text and not exempted)",
+      "fg": "pct.date.day-fg-muted",
+      "bg": "pct.date.panel-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "date \u2014 a day outside the bounds",
+      "fg": "pct.date.day-fg-disabled",
+      "bg": "pct.date.panel-bg",
+      "level": "AA",
+      "severity": "warn"
+    },
+    {
+      "name": "UI: the ring around today",
+      "fg": "pct.date.day-border-today",
+      "bg": "pct.date.panel-bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "date \u2014 the weekday headings",
+      "fg": "pct.date.weekday-fg",
+      "bg": "pct.date.panel-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "date \u2014 the month over the grid",
+      "fg": "pct.date.fg",
+      "bg": "pct.date.nav-bg-hover",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
       "name": "slider — label",
       "fg": "pct.slider.label-fg",
       "bg": "pct.surface",

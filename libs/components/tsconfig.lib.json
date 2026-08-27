@@ -12,6 +12,7 @@
     "core/**/*.ts",
     "button/**/*.ts",
     "checkbox/**/*.ts",
+    "date/**/*.ts",
     "dialog/**/*.ts",
     "radio/**/*.ts",
     "slider/**/*.ts",

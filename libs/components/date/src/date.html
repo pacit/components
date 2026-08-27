@@ -1,0 +1,129 @@
+@if (label() && !inField) {
+<label class="pct-date__label" data-pct-part="label" [attr.for]="controlId">
+  {{ label() }} @if (required()) {
+  <span class="pct-date__required" aria-hidden="true">*</span>
+  }
+</label>
+}
+
+<!--
+  The row the control stands in, and the panel's ORIGIN outside the chrome: the CDK reads
+  "outside the panel" as "outside the origin", so with the input alone as origin a press on
+  the toggle button would be an outside click that closes the panel the same press reopens
+  (`lesson-93`, met here as the select met it).
+-->
+<div class="pct-date__row" cdkOverlayOrigin #box="cdkOverlayOrigin">
+  <!--
+    A plain textbox. It carries no `role="combobox"` and no `aria-expanded`, and that is the
+    reading of 0035 backwards: a combobox promises a popup that helps COMPLETE what is being
+    typed, and a calendar narrows nothing — it is a second road to the same value. What has a
+    popup is the button beside it, and that is where the state says so.
+  -->
+  <input
+    #control
+    class="pct-date__control"
+    data-pct-part="control"
+    type="text"
+    autocomplete="off"
+    inputmode="numeric"
+    [id]="controlId"
+    [disabled]="disabled()"
+    [readOnly]="readonly()"
+    [attr.name]="name() || null"
+    [attr.placeholder]="formatHint()"
+    [attr.required]="required() || null"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+    [attr.aria-invalid]="showInvalid() || malformed() ? 'true' : null"
+    [attr.aria-describedby]="describedBy()"
+    (input)="onInput()"
+    (blur)="onBlur()"
+  />
+
+  <button
+    #trigger
+    type="button"
+    class="pct-date__toggle"
+    data-pct-part="toggle"
+    aria-haspopup="dialog"
+    [attr.aria-label]="texts().dateOpen"
+    [attr.aria-expanded]="open()"
+    [attr.aria-controls]="open() ? panelId : null"
+    [disabled]="disabled() || readonly()"
+    (click)="toggle()"
+  >
+    <pct-icon name="calendar">
+      <svg
+        viewBox="0 0 16 16"
+        width="100%"
+        height="100%"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        focusable="false"
+      >
+        <rect x="2" y="3.5" width="12" height="10.5" rx="1.5" />
+        <path d="M2 6.5h12M5.5 2v3M10.5 2v3" />
+      </svg>
+    </pct-icon>
+  </button>
+</div>
+
+<!--
+  `disableClose` leaves Escape with ONE owner, the panel's own key map — the CDK closes an
+  overlay on Escape by itself, and a second owner is a close nobody can predict the order of
+  (0024, and the select's reading of the same line).
+-->
+<ng-template
+  cdkConnectedOverlay
+  [cdkConnectedOverlayOrigin]="anchor() ?? box"
+  [cdkConnectedOverlayOpen]="open()"
+  [cdkConnectedOverlayPositions]="panelPositions()"
+  [cdkConnectedOverlayPush]="true"
+  [cdkConnectedOverlayDisableClose]="true"
+  cdkConnectedOverlayPanelClass="pct-date__overlay"
+  (overlayOutsideClick)="close(false)"
+>
+  <!--
+    A panel of the kind that TAKES focus (0025), and `tabindex="-1"` is how it holds it for
+    the moment between opening and the grid getting it. It carries the role and the name,
+    because that is what a screen reader announces before the user is anywhere inside.
+  -->
+  <div
+    #panel
+    class="pct-date__panel"
+    data-pct-part="panel"
+    role="dialog"
+    tabindex="-1"
+    [id]="panelId"
+    [pctOverlayPanel]="inherited()"
+    [attr.aria-label]="texts().dateOpen"
+    (keydown)="onPanelKeydown($event)"
+  >
+    <pct-calendar
+      [value]="value()"
+      (valueChange)="value.set($event)"
+      (dayPicked)="onPicked()"
+      [min]="min()"
+      [max]="max()"
+      [dateDisabled]="dateDisabled()"
+      [locale]="locale()"
+      [firstDayOfWeek]="firstDayOfWeek()"
+      [size]="size()"
+    />
+  </div>
+</ng-template>
+
+<!-- One message line, and the error takes it (`req-api-message`). The sentence announces
+     from where it is drawn — `role="alert"`, which is `check-aria` point 7. -->
+@if (showError() && !inField) {
+<span class="pct-date__error" data-pct-part="error" [id]="errorId" role="alert">
+  {{ errorText() }}
+</span>
+} @else if (hint() && !inField) {
+<span class="pct-date__hint" data-pct-part="hint" [id]="hintId">
+  {{ hint() }}
+</span>
+}

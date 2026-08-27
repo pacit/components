@@ -29,18 +29,19 @@ and the class metadata carries the decorator a second time, and both are compile
 before an application ships them.
 
 ```
-. 3124 ./core @angular/core
-./button 6613 ./core @angular/core
-./checkbox 14493 ./core,./icon @angular/common,@angular/core
-./core 7795 - @angular/core
-./dialog 14921 ./core,./icon @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
-./field 26804 ./core @angular/core,@angular/forms,@angular/forms/signals
+. 3266 ./core @angular/core
+./button 6755 ./core @angular/core
+./checkbox 14635 ./core,./icon @angular/common,@angular/core
+./core 7937 - @angular/core
+./date 38835 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
+./dialog 15063 ./core,./icon @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
+./field 26946 ./core @angular/core,@angular/forms,@angular/forms/signals
 ./icon 2552 - @angular/common,@angular/core
-./menu 17936 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core
-./popover 13207 ./core @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/core
-./radio 14948 ./core @angular/core
-./select 68536 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core
-./slider 16906 ./core @angular/core
-./switch 11905 ./core @angular/core
-./tooltip 12716 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core
+./menu 18078 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core
+./popover 13349 ./core @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/core
+./radio 15090 ./core @angular/core
+./select 68678 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core
+./slider 17048 ./core @angular/core
+./switch 12047 ./core @angular/core
+./tooltip 12858 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core
 ```

@@ -185,6 +185,55 @@ test.describe('forced-colors: active', () => {
   });
 
   /**
+   * The calendar draws three facts on one square — the chosen day, today, and a day that
+   * cannot be taken — and in the light theme all three are colour. After the swap the
+   * palette gives back one pair, so each of the three has to be something else: the chosen
+   * day takes the mode's own `Highlight` pair (which IS "this one is picked"), today keeps a
+   * SHAPE, and a refused day takes `GrayText`.
+   *
+   * Today's ring is the case worth having: it is a `box-shadow` in the light theme, and a
+   * `box-shadow` is not painted in this mode at all — so the shape is drawn again as an
+   * outline, and this is what says the second drawing really arrived.
+   */
+  test('the calendar keeps the chosen day, today and a refused day apart', async ({
+    page,
+  }) => {
+    // The clock is fixed inside the month the calendars stand in and away from the day they
+    // hold, so "today" and "the chosen day" are two different cells whatever day the suite
+    // runs on — which is the whole of what this case compares.
+    await visit(page, '/date', { media: FORCED, now: '2026-08-12T12:00:00Z' });
+    const sys = await systemColors(page);
+
+    const grid = page.getByTestId('calendar-inline');
+    const chosen = grid.locator('[data-pct-part="day"][data-pct-chosen]');
+    await expect(chosen).toHaveCount(1);
+    expect(await styleOf(chosen, 'background-color')).toBe(sys.Highlight);
+    expect(await styleOf(chosen, 'color')).toBe(sys.HighlightText);
+
+    // Today's ring. It is a `box-shadow` in the light theme, and chromium and firefox force
+    // `box-shadow` to `none` in this mode while webkit leaves it — so the shape is drawn
+    // again as an outline and both halves are written out (`lesson-119`).
+    const today = grid.locator(
+      '[data-pct-part="day"][data-pct-today]:not([data-pct-chosen])',
+    );
+    await expect(today).toHaveCount(1);
+    expect(await styleOf(today, 'outline-style')).toBe('solid');
+
+    // A day outside the bounds. The panel lives outside the host tree, so it is looked for
+    // on the page once the button beside the bounded field has opened it.
+    await page
+      .getByTestId('date-bounded')
+      .locator('[data-pct-part="toggle"]')
+      .click();
+    const refused = page
+      .locator('[data-pct-part="panel"]')
+      .locator('[data-pct-part="day"][data-pct-disabled]')
+      .first();
+    await expect(refused).toBeVisible();
+    expect(await styleOf(refused, 'color')).toBe(sys.GrayText);
+  });
+
+  /**
    * The hardest case: in a list panel an ordinary option, a selected one and the one
    * active from the keyboard differ by background ALONE. After the palette swap all
    * three would be the same rectangle, so the selection was split into two

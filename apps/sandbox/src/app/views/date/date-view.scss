@@ -1,0 +1,9 @@
+:host {
+  display: block;
+}
+
+.date-view__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pct-space-5);
+}

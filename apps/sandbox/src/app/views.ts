@@ -70,6 +70,14 @@ export const SBX_VIEWS: readonly SbxView[] = [
     load: () => import('./views/number/number-view').then((m) => m.NumberView),
   },
   {
+    path: 'date',
+    title: 'Date',
+    summary:
+      'A calendar day — the text a locale writes, and the grid beside it.',
+    group: 'components',
+    load: () => import('./views/date/date-view').then((m) => m.DateView),
+  },
+  {
     path: 'checkbox',
     title: 'Checkbox',
     summary: 'The checked state, the indeterminate one and the touch area.',

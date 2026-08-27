@@ -1,0 +1,96 @@
+<h2 class="view__title">Date</h2>
+<p class="muted view__intro">
+  A calendar day — <code>YYYY-MM-DD</code>, not a <code>Date</code>. The field
+  is a text control the library formats and parses per locale, because
+  <code>&lt;input type="date"&gt;</code> takes the order it shows a date in from
+  a different place in each of the three engines.
+</p>
+
+<sbx-demo
+  heading="Inside the wrapper"
+  summary="The label, the hint and the message line are drawn by pct-field; the panel lines up with the field's border rather than with the input, which stands in a column inset by padding."
+  [reqs]="['req-api-frame', 'req-api-no-wrapper', 'req-api-overlay']"
+  data-testid="demo-in-field"
+>
+  <div class="stack">
+    <pct-field
+      label="Start date"
+      hint="Type it, or pick it from the calendar"
+      data-testid="field-starts-on"
+    >
+      <pct-date
+        [formField]="bookingForm.startsOn"
+        data-testid="date-starts-on"
+      />
+    </pct-field>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="With no wrapper"
+  summary="Outside pct-field the control draws its own label. The empty field shows the FORMAT — the order and the separators come from Intl, the letters from the texts channel."
+  [reqs]="['req-api-no-wrapper', 'req-a11y-touch', 'req-api-texts']"
+  data-testid="demo-standalone"
+>
+  <div class="stack">
+    <pct-date
+      label="Day"
+      hint="The sandbox runs under fr-FR, so the format hint reads jj/mm/aaaa"
+      [(value)]="day"
+      data-testid="date-standalone"
+    />
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="Bounds, and the holes in them"
+  summary="min/max clamp where the keyboard can go; a predicate marks days inside them that still cannot be taken. Neither rewrites a date typed in full — that is the form's to report."
+  [reqs]="['req-api-signal-forms', 'req-a11y-built-in']"
+  data-testid="demo-bounds"
+>
+  <div class="stack">
+    <pct-date
+      label="Within August 2026, weekdays only"
+      min="2026-08-01"
+      max="2026-08-31"
+      [dateDisabled]="noWeekends"
+      [(value)]="bounded"
+      data-testid="date-bounded"
+    />
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="The language the date is written in"
+  summary="The order, the separators, the month and weekday names and the first day of the week all come from Intl. The CALENDAR is pinned to the Gregorian one — the value is a Gregorian day — while the numbering system is the reader's."
+  [reqs]="['req-api-number', 'req-api-texts']"
+  data-testid="demo-locale"
+>
+  <div class="date-view__row">
+    <pct-date
+      label="Polish"
+      locale="pl-PL"
+      [(value)]="polish"
+      data-testid="date-pl"
+    />
+    <pct-date
+      label="Japanese"
+      locale="ja-JP"
+      [(value)]="japanese"
+      data-testid="date-ja"
+    />
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="The calendar on its own"
+  summary="A grid walked by a roving tabindex — a component of its own, because a calendar standing on the page is a real control and not a degenerate date field."
+  [reqs]="['req-a11y-built-in', 'req-api-parts']"
+  data-testid="demo-inline"
+>
+  <pct-calendar
+    [(value)]="inline"
+    locale="en-GB"
+    data-testid="calendar-inline"
+  />
+</sbx-demo>

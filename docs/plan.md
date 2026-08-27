@@ -156,6 +156,27 @@ true observation that a navigation test has no mode in which it passes without a
 the layout half added by 0041 is nothing like that, because a fallback CAN quietly agree with
 nothing. Five recorded runs say so, and they fail in different engines on purpose.
 
+**E5 has closed, all four items of it, and the fourth is the one where the platform's own
+control was refused on three measurements rather than one.** `<input type="date">` takes the
+order it shows a date in from `lang` in chromium, from the browser's locale in webkit and
+from **neither** in firefox — three engines, three sources, exactly one of them settable — so
+an application in Polish shows `12/01/2026` to two users in three and cannot say otherwise.
+Beside that, a half-typed date reads `value === ''` in all three with `validity.badInput`
+false in webkit, which is `req-api-number`'s complaint arriving a second time, and one control
+is four tab stops in two engines and one in the third. What the value is settled itself:
+`new Date(2026, 7, 27).toISOString()` is the **26th** in Warsaw, so a `Date` cannot hold a
+calendar day, and `Temporal.PlainDate` — which is exactly the right type — is absent from
+webkit, so it cannot be a public one either. The value is the string both of them serialise
+to ([0043](decisions/0043-a-day-is-not-an-instant.md)). Two things nobody asks about until a
+user does came with it: `Intl` resolves **`th-TH` to the buddhist calendar** in all three
+engines, so a field and its grid would disagree about the year unless the calendar is pinned;
+and `getWeekInfo()` is absent from firefox, so the first day of the week is 80 regions written
+down with the platform's own CLDR as their gate. That gate is also this step's sharpest
+lesson: written the obvious way it compared the platform with a function whose first line
+asks the platform, and it was green with the table emptied
+([`lesson-120`](lessons.md#lesson-120)). The step left **C34** behind — a control that knows
+its text is not a date and has no channel to say so — and gave **C33** four more files.
+
 **E5's third item, the slider, is the first here where a decision written before the code was
 wrong about a browser** — and the interesting part is that it was wrong in the safest-looking
 way. 0042 rested its whole drawing on C1, "a range carries generated content in all three
@@ -2019,8 +2040,61 @@ directory` at `readFileSync`. Four of the new entries are tracked as SYMLINKS to
     minutes, and widening it means both a longer run and a first reading full of survivors
     somebody has to answer for one file at a time — which is the work, not the obstacle
   - binds at: **the next task that touches `mutation.policy.json`**, or the first component
-    whose behaviour is genuinely its own rather than the chrome's — whichever comes first ·
-    _notes:_ —
+    whose behaviour is genuinely its own rather than the chrome's — whichever comes first.
+    **Both have now happened, so this item is next** — it was not done inside E5 because it is
+    a gate rule with its own fixtures and controls, and E5 was a component
+  - _notes:_ the date picker added four files, and **two of them went into the measurement —
+    not by a decision, by the gate.** The set is 24 files and 2575 mutants now, against 22 and
+    2261; the score moved 82.18 → 82.87, so the two came in above the floor rather than being
+    carried by it — `day.ts` at 95.83 and `locale.ts` at 80.49. The run's own reading was
+    lower first (92.41 and 77.44) and the survivors it named were worth answering: the
+    `maximize()` road no case had ever entered, the window's oldest year, the formatter cache,
+    and a `setUTCHours` that does nothing. `check-mutation` point 3 requires every spec in the git
+    index to appear in the report's `testFiles`, and Stryker lists a spec there only when its
+    tests covered MUTATED code. `day.spec.ts` and `locale.spec.ts` touch no Angular at all, so
+    they covered nothing in the set and the gate read them as "did not run" — a false sentence
+    with a true consequence, because the only remedy is to measure the files they cover. So
+    `day.ts` and `locale.ts` are in, and `calendar.ts` and `date.ts` are out, which is this
+    item's own content drawn in one diff: **the rule that decides is "does some spec of this
+    file touch a mutated one", and nobody wrote that rule down.** The two that stayed out have
+    specs that render components, so they pull `core` and satisfy the gate while contributing
+    nothing to the score — exactly as `switch.ts`, `autosize.ts` and `slider.ts` do
+
+- [ ] **C34 — a control knows its text is not a date and has no channel to say so**
+  - `<pct-date>` reports malformed text with `aria-invalid="true"` and a `data-pct-malformed`
+    state, and puts **no sentence** in the message line. Not a wording decision: `errors` is an
+    `input` the form owns, and `PctFieldControl.errors` is the signal the chrome reads — so a
+    control cannot add an error of its own without shadowing the member the
+    `FormValueControl` contract requires. Two members cannot share one name
+  - what the user gets today: a required date typed as `31.02.2026` leaves the value `null`,
+    so the form says **"this field is required"** while three numbers stand in front of them.
+    The red border and the ARIA flag are true; the sentence is wrong, and it is the form's
+  - the shape of the answer is a second channel on the contract — a control-side error the
+    chrome merges with the form's — and it is not the date field's alone: `[pctNumber]`
+    silently clears junk on blur for want of the same channel, which is `req-api-number`'s own
+    complaint about `<input type="number">` committed one floor down
+  - binds at: **the first control that has to say something the form cannot know**, which is
+    either the next one with a parser (a time field, a masked input) or C34 itself being
+    picked up as filler · _notes:_ —
+
+- [ ] **C35 — a state attribute that contains another entrypoint's selector is read as that
+      entrypoint**
+  - `check-bundle` point 7 reads an entrypoint's presence in a probe two ways — the bundler's
+    metafile and a search of the bundle's TEXT for a marker, which is a component's selector
+    from the built package — and requires the two to agree. The calendar's chosen day was
+    `data-pct-chosen` only after the gate fired: written `data-pct-selected`, the way the
+    select writes the same idea, the text `pct-selected` **contains** `pct-select`, so every
+    bundle holding a calendar read as holding the select as well
+  - the gate is right that the text is ambiguous and the report it gives is exactly the drift
+    it exists for. What is missing is the rule one floor up: **no `data-pct-*` name may contain
+    an entrypoint's selector as a substring**, and nothing says so — point 6(d) already guards
+    markers against each other and stops there. The next component to want a `selected`,
+    `switch`-ish or `menu`-ish state word finds this the same way, by a gate firing on
+    something that looks like a tree-shaking defect and is a naming one
+  - the shape of the answer is a word-boundary read in the marker scan, or the rule written
+    into `check-parts` where part names already live. Which of the two is the item
+  - binds at: **the next `data-pct-*` name that collides**, or the first change to
+    `check-bundle`'s marker scan — whichever comes first · _notes:_ —
 
 ## D. Phase 1 — the behaviour layer in `core`
 
@@ -2863,9 +2937,9 @@ still coming` (7 cases × 3 engines, driven by an event rather than a press, bec
     deliberately not a `--pct-…` name: the prefix is the promise that a skin may set the value,
     and a number the window computes is not a skin's to move. The same snapshot also records
     **18 B off `./core` and `./menu`**, which this change did not cause — see C29
-- [ ] **E5 — switch, textarea (autosize), slider, date picker** — the date picker forces deep
-      i18n, which `[pctNumber]` has already started. **Three of the four are done**; the date
-      picker is what is left
+- [x] **E5 — switch, textarea (autosize), slider, date picker** — the date picker forced the
+      deep i18n `[pctNumber]` had started, and went two floors further down: a calendar, a
+      parser and a table of somebody else's data
   - _notes (switch):_ **one of the four is done, and it is the one whose whole content was a
     question about who owns a state.** The checkbox's card had said since v0 that a switch is a
     separate component "because the semantics differ", and that sentence settles the packaging
@@ -3096,6 +3170,125 @@ still coming` (7 cases × 3 engines, driven by an event rather than a press, bec
     `switch.ts` and `autosize.ts` did. It is left there on purpose: C33's own content is that
     the work is a RULE and not a bulk addition, and adding one file would hide the gap it
     names rather than close it
+  - _notes (date picker):_ **the fourth is the date picker, and it is the item where the
+    platform's own control was refused on three measurements rather than one.**
+    `<input type="date">` takes the order it shows a date in from **`lang` in chromium, from
+    the browser's locale in webkit, and from neither in firefox** — three engines, three
+    sources, and exactly one of them is something an application can set, so an application in
+    Polish shows `12/01/2026` to two users in three and has no way of saying otherwise. Beside
+    that: a half-typed date reads `value === ''` in all three and `validity.badInput` — the one
+    flag that tells junk from empty — is `false` in webkit, which is
+    [`req-api-number`](requirements/api.md#req-api-number)'s own complaint about
+    `<input type="number">` arriving a second time; and one such control is **four tab stops**
+    in chromium and firefox and one in webkit, so the same form is walked differently by
+    engine. Hence a text field the library formats and parses
+    ([0043](decisions/0043-a-day-is-not-an-instant.md))
+  - _notes (the value, which is the half that outlives the control):_ a `Date` is an INSTANT
+    and a calendar day is not one — `new Date(2026, 7, 27).toISOString()` is the **26th** in
+    Warsaw, so the day a user picked becomes the day before it the moment anything serialises
+    it, with no error, no warning and no red test. `Temporal.PlainDate` is exactly the right
+    type and is **absent from webkit 26.5** while present in the other two, so it cannot be a
+    public one. The value is therefore the string `YYYY-MM-DD` — which is what
+    `<input type="date">.value` carries, what `<time datetime>` takes, what SQL `DATE` stores
+    **and what `PlainDate.toString()` emits**, so the day webkit ships it the interop is one
+    call each way and no stored value changes. The arithmetic under it is UTC-only, and
+    `Date.UTC` is never called from it: `Date.UTC(1, 0, 1)` is the year **1901** in all three
+    engines
+  - _notes (two things nobody asks about until a user does):_ `Intl` resolves **`th-TH` to the
+    buddhist calendar and `fa-IR` to the persian one**, in all three engines — so a field
+    formatting with the locale's default would write `01/12/2569` beside a grid drawn in 2026,
+    the two halves of one control disagreeing about which year it is, in silence. The formatter
+    pins `calendar: 'gregory'` and deliberately does **not** pin the numbering system, on a
+    distinction worth the sentence: **a numbering system is how a number is written, a calendar
+    is which number it is.** The other is the first day of the week:
+    `Intl.Locale.prototype.getWeekInfo()` is in chromium and webkit and **absent from
+    firefox**, and a week that started on Monday in two engines and on Sunday in the third is
+    [`req-axis`](00-axis.md) itself — so 80 regions of the 676 are written down, and the gate
+    over them is the platform's own CLDR, asked about **every** two-letter region code
+  - gate: `apps/sandbox-e2e/src/date.spec.ts` — 16 cases × 3 engines, and every one is about
+    something jsdom has no answer for: what the platform's own control does with the same
+    keystrokes (measured on the same page rather than quoted), where focus goes when a panel
+    outside the host tree opens, whether a month step that REBUILDS the grid carries focus with
+    it, and which way an arrow moves in a grid written right to left — geometry and behaviour
+    both. Plus **92 unit cases** in `day.spec.ts`, `locale.spec.ts`, `calendar.spec.ts` and
+    `date.spec.ts`, of which the sharpest is the week-start table against `getWeekInfo()` over
+    all 676 region codes — no sample, and a first assertion that the platform still HAS
+    `getWeekInfo`, so the day the runtime loses it the check goes red rather than passing over
+    nothing. The `/date` view is in `SBX_ROUTES`, so the axe audit, the RTL audit and hydration
+    all take it; `states.spec.ts`'s cross-control list has it and the forced-colors spec has a
+    case of its own — **723 unit cases green**, and 1045 e2e
+  - control: **five recorded runs, and two of them found the gate rather than the code.** The
+    Gregorian pin removed leaves 3 unit cases red, the sharpest reading `1405-09-10` instead of
+    `2026-12-01` — the Persian year, round-tripped; the parser's refusal of an overflow
+    replaced by the normalising builder leaves 2, with `32.08.2026` becoming 1 September; the
+    RTL arrow mirror removed leaves the direction case red in **3 of 3 engines**; and the
+    hook that lets focus follow a rebuilt grid leaves 6 red, in three engines and on two
+    cases at once. **The fourth control found a gate that measured nothing** — the week-start
+    table dropped Egypt and all twenty cases stayed green, because `pctFirstDayOfWeek` asks
+    the platform first and node's ICU answers, so the comparison was the platform against
+    itself ([`lesson-120`](lessons.md#lesson-120)); rewritten to take `getWeekInfo` AWAY —
+    which is firefox — the same edit reads `EG: ours 1, ICU 6`. **The fifth found dead code**:
+    the bidi strip the `ar-EG` comment argued for changes nothing, because the parser splits
+    on runs of digits and every other character already separates — removed, and the cases
+    stayed green. The mutation run then found a second piece of the same: `new Date(0)` IS
+    midnight UTC, so the `setUTCHours(0, 0, 0, 0)` beside it was a no-op, and the mutant that
+    deletes it is what said so
+  - _the controls that were the tests' own defects:_ two of the cases were written so they
+    could not fail. The RTL one asserted that the label after `ArrowRight` **contained `26`**,
+    and every label on that page contains `26` — it is in the year; the case passed with the
+    mirroring taken out. It compares DOM positions now, which have no second reading. The
+    other named the focused cell by `27` where `2027` would have done as well; it compares
+    ELEMENTS. Beside them, a page-wide `[tabindex="0"]` selector resolved to **two** cells —
+    the view carries an inline calendar as well as the panel — 30 of 48 red, and the view
+    doing exactly what it is there for; Playwright's own actionability check **reads
+    `aria-disabled` and refuses to press the cell**, which is a third party confirming the
+    state is legible; and `check-coverage` fired on the one template branch no case rendered,
+    where the fix was a real defect — `aria-describedby` named a hint the error had just
+    replaced, an id pointing at nothing
+  - cost: `./date` **38835 B** on `./core` and `./icon`, with `@angular/cdk/overlay`,
+    `@angular/common`, `@angular/forms` and `@angular/forms/signals`. 58 tokens and 23 pairs in
+    the contrast policy; six new words in the name dictionary (`caption`, `day`, `icon`, `nav`,
+    `toggle`, `weekday`) and two states (`muted`, `today`); one new icon name (`calendar`);
+    twelve parts; **six new strings** — and those six are the line worth reading twice:
+    **every other entrypoint grew by exactly 142 B**, because `PCT_DEFAULT_TEXTS` is one
+    constant in `./core` and a consumer importing `./button` alone now carries the date
+    field's vocabulary. `./icon`, which depends on `./core` not at all, is the control: it did
+    not move
+  - _the tool that writes more than the gate reads:_ `--update-snapshots` rewrote
+    `checkbox-in-wrapper.png` and `number-amount.png`, neither of which had failed. Measured:
+    reverting both and running the two cases again leaves them green, so the flag writes on
+    ANY pixel difference while the gate judges on its own budget
+    ([0023](decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md) — the writer and the
+    gate disagreeing about what a change is). The two were reverted by hand; the seven that
+    really moved are in the diff
+  - _the finding that was not there:_ the toggle button's icon raised the question of whether
+    `NgTemplateOutlet` earns `@angular/common` for one chevron drawn twice. It is left as the
+    select left it — one `<ng-template>` and two outlets, because
+    [`lesson-67`](lessons.md#lesson-67) is about a second drawing to keep in step, and the
+    entrypoint already carries `@angular/common` for the calendar's own. No item
+  - _the finding that was:_ **C34** — the control knows there is text in the field and that it
+    is not a date, and has **nowhere to say so**: `errors` is an input the form owns, so a
+    required date typed as `31.02.2026` leaves the form saying "this field is required" while
+    three numbers stand in front of the user. It reports `aria-invalid` and a state attribute
+    and stops there. **C35** is the second, and the gate found it: a calendar's chosen day
+    written `data-pct-selected` makes every bundle holding one read as holding the select,
+    because `pct-selected` contains `pct-select` and that is the marker `check-bundle` reads
+    an entrypoint by. The attribute is `data-pct-chosen`; the missing rule is the item.
+    **C33 has bound as well, and it bound by FIRING**: `check-mutation` reads
+    its spec denominator out of the report's coverage, so `day.spec.ts` and `locale.spec.ts` —
+    which touch no Angular and therefore covered nothing in the mutated set — read as "did not
+    run". The sentence is false and the only remedy is true: measure the files they cover. So
+    `day.ts` and `locale.ts` are the first two files added to that set since it was written,
+    `calendar.ts` and `date.ts` stay out, and the rule that decides between them is exactly
+    what C33 says nobody has written down
+  - _the baseline that would have moved on its own:_ a calendar is the one control here whose
+    DRAWING depends on the wall clock — today carries a ring, and which cell that is moves
+    every midnight. Left alone, the calendar baselines would have been right for eleven months
+    of the year and gone red in the twelfth with nothing having changed, and the forced-colors
+    case would have compared today with itself on exactly one day of it (which is the day this
+    was built, and how it was found). `visit()` takes a `now` now — `page.clock.setFixedTime`
+    and deliberately not `install`, whose faked timers would take the transition waits down
+    with them
 - [ ] **E7 — the rest**: toast, tabs, accordion, drawer, pagination, progress, skeleton, chips,
       avatar, badge, breadcrumb, stepper, tree
 - [ ] **E6 — table / datagrid** on a headless core (column model, sorting, filtering, grouping,

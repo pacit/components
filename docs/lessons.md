@@ -3153,3 +3153,57 @@ on a measurement and a decision resting on a syntax check.
 The other half of the same probe: an `outline` on `::-webkit-slider-thumb` / `::-moz-range-thumb`
 applies in **one engine of three** (firefox). The focus ring is therefore on a box of ours,
 where all three can be asked about it.
+
+---
+
+### <a id="lesson-119"></a>`lesson-119` — Forced-colors mode is a request, and each engine honours a different part of it
+
+**A `box-shadow` is forced to `none` in chromium and firefox and left alone in webkit.**
+Measured on one page in the three engines with `forced-colors: active` emulated: the computed
+`box-shadow` reads `none` in chromium 149 and firefox 151, and reads the author's own
+`rgb(37, 99, 235) 0px 0px 0px 1px inset` in webkit 26.5.
+
+The same probe answers a bigger question by accident. An `outline-color` written as
+`rgb(37, 99, 235)` computes to `rgb(0, 0, 0)` in chromium and firefox — the substitution
+doing its work — and stays `rgb(37, 99, 235)` in webkit. **Webkit matches the media query and
+substitutes nothing.** That is not a defect in the emulation to route around: it is why every
+forced-colors block in this library NAMES its system colours (`Field`, `CanvasText`,
+`Highlight`) instead of leaving the palette to be swapped for it, and it is why the gate that
+reads those blocks passes in three engines at all
+([`lesson-70`](#lesson-70) is the same discipline arrived at from the specificity side).
+
+The rule that falls out is one line: **in that mode, remove what you want removed and paint
+what you want painted — never rely on the mode to do either.** The calendar's "today" ring is
+where it was found. It is an inset `box-shadow` in the light theme, and today is one of three
+facts drawn on the same square (chosen, today, refused), so it has to survive the swap as a
+SHAPE. Leaving it to the mode would have drawn two rings in webkit and none in the other two;
+the block writes `box-shadow: none` and an `outline` of its own, and both halves are needed
+for the same three engines to agree.
+
+---
+
+### <a id="lesson-120"></a>`lesson-120` — A fallback checked against the platform it falls back FROM is checked against nothing
+
+**The gate over the week-start table was green with the table emptied.** The table exists
+because `Intl.Locale.prototype.getWeekInfo()` is absent from firefox 151 and a calendar that
+started the week on a different day per engine would be [`req-axis`](00-axis.md) itself
+([0043](decisions/0043-a-day-is-not-an-instant.md)). Eighty regions of the 676 are written
+down, and the case over them compares every one with the platform's own CLDR — 676
+comparisons, no sample, which is exactly the shape a written-down copy of somebody else's data
+needs.
+
+It measured nothing. `pctFirstDayOfWeek` asks the platform **first** and reads the table only
+where the platform is silent; node's ICU has `getWeekInfo`, so the case was comparing
+`getWeekInfo()` with a function whose first line is `getWeekInfo()`. Measured rather than
+reasoned: Egypt dropped out of the Saturday row left **all twenty cases passing**.
+
+The fix is three lines and it is the shape worth keeping. Read the platform's answers first,
+then **take the platform away** — `delete Intl.Locale.prototype.getWeekInfo`, which is firefox
+— and ask the fallback the same 676 questions with the real function restored in a `finally`.
+The same edit then reads `EG: ours 1, ICU 6`, and a second case holds the other half: with
+`getWeekInfo` present the table must NOT be reached.
+
+The general form is worth more than the case: **a fallback is only measured in the world it
+exists for.** Any check of one that runs in the environment where the primary answers is a
+check of the primary, twice — green whatever the fallback holds, and green for exactly as long
+as nobody visits the browser it was written for.

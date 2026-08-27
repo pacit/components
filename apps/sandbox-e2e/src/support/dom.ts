@@ -98,6 +98,21 @@ export interface VisitOptions {
    * so nobody has to remember which is which.
    */
   media?: Parameters<Page['emulateMedia']>[0];
+  /**
+   * The instant the page's own clock starts at, set BEFORE entering it.
+   *
+   * A calendar is the one control here whose DRAWING depends on the wall clock: today
+   * carries a ring, and which cell that is moves every midnight — so a screenshot of one,
+   * or an assertion about the ring, is a test that passes for eleven months of the year and
+   * goes red in the twelfth with nothing having changed. Given, the clock is fixed and the
+   * question stops being about the day the suite happens to run on.
+   *
+   * `setFixedTime` and not `install`: `install` fakes the timers as well, and this
+   * repository's panels are timed by real transitions (`pctAfterTransition`) — a faked
+   * `setTimeout` would take the enter/leave waits down with it. What is wanted here is
+   * `new Date()`, and nothing else.
+   */
+  now?: string;
 }
 
 export async function visit(
@@ -107,6 +122,7 @@ export async function visit(
 ): Promise<void> {
   const problems = watch(page);
   if (options.media) await page.emulateMedia(options.media);
+  if (options.now) await page.clock.setFixedTime(new Date(options.now));
   await page.goto(path);
   await page.locator('html[data-sbx-ready]').waitFor();
 

@@ -33,9 +33,20 @@ const VIEWPORT = { width: 1280, height: 900 };
  * both locally and in the CI image (`playwright install --with-deps` pulls in
  * `fonts-liberation`).
  */
+/**
+ * The instant every baseline is taken at.
+ *
+ * A calendar is the one control here whose drawing depends on the wall clock — today carries
+ * a ring, and which cell that is moves every midnight. Left to the real clock, the calendar
+ * baselines would be right for eleven months of the year and go red in the twelfth with
+ * nothing having changed. The date chosen is inside the month the sandbox's calendars stand
+ * in and is NOT the day they hold, so the picture carries both marks and keeps them apart.
+ */
+const NOW = '2026-08-12T12:00:00Z';
+
 async function stage(page: Page, path: string): Promise<void> {
   await page.setViewportSize(VIEWPORT);
-  await visit(page, path);
+  await visit(page, path, { now: NOW });
   await page.addStyleTag({
     content: `
       *, *::before, *::after {
@@ -73,6 +84,8 @@ const CARDS: ReadonlyArray<
   ['/radio', 'demo-in-field', 'radio-in-wrapper'],
   ['/slider', 'demo-standalone', 'slider-states'],
   ['/switch', 'demo-standalone', 'switch-states'],
+  ['/date', 'demo-standalone', 'date-field'],
+  ['/date', 'demo-inline', 'date-calendar'],
   ['/select', 'demo-in-field', 'select-in-wrapper'],
   ['/size', 'demo-axis', 'size-axis'],
   ['/states', 'states-disabled', 'states-disabled'],
@@ -331,6 +344,7 @@ const CARDS_RTL: ReadonlyArray<
   ['/radio', 'demo-in-field', 'radio-in-wrapper'],
   ['/slider', 'demo-standalone', 'slider-states'],
   ['/switch', 'demo-standalone', 'switch-states'],
+  ['/date', 'demo-inline', 'date-calendar'],
   ['/select', 'demo-in-field', 'select-in-wrapper'],
 ];
 

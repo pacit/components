@@ -47,20 +47,26 @@
       "arrow",
       "backdrop",
       "bubble",
+      "caption",
       "close",
+      "day",
       "dot",
       "fill",
       "group-label",
       "heading",
       "hint",
+      "icon",
       "item",
       "label",
       "mark",
+      "nav",
       "option",
       "panel",
       "placeholder",
       "thumb",
-      "track"
+      "toggle",
+      "track",
+      "weekday"
     ],
     "properties": [
       "alpha",
@@ -89,7 +95,9 @@
       "focus",
       "hover",
       "invalid",
-      "selected"
+      "muted",
+      "selected",
+      "today"
     ],
     "sizes": {
       "$comment": "Size is a variant like a state and stands in the same place — at the end. `md` does not appear in a name, because it is the base value: `--pct-button-height` IS the `md` height (req-api-size).",

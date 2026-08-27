@@ -72,6 +72,7 @@ export const SYSTEM_COLORS = [
   'FieldText',
   'GrayText',
   'Highlight',
+  'HighlightText',
   'SelectedItem',
   'SelectedItemText',
 ] as const;

@@ -1,0 +1,234 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pct-space-2);
+  font-family: inherit;
+}
+
+.pct-date__label {
+  color: var(--pct-date-label-fg);
+  font-size: var(--pct-font-size-sm);
+  font-weight: var(--pct-font-weight-medium);
+}
+
+.pct-date__required {
+  color: var(--pct-date-fg-invalid);
+  margin-inline-start: 2px;
+}
+
+/* The row the field and its button stand in. It carries the border standalone and hands it
+   to the chrome inside a field — the same split the select makes, and for the same reason:
+   two borders around one control is what a wrapper costs when nobody hands anything over
+   (req-api-wrapper). */
+.pct-date__row {
+  display: flex;
+  align-items: center;
+  gap: var(--pct-space-2);
+  box-sizing: border-box;
+  inline-size: 100%;
+  background: var(--pct-date-bg);
+  color: var(--pct-date-fg);
+  border: 1px solid var(--pct-date-border);
+  border-radius: var(--pct-date-radius);
+  padding: var(--pct-date-padding-y) var(--pct-date-padding-x);
+  font-size: var(--pct-date-font-size);
+  transition: border-color var(--pct-motion-transition-duration)
+    var(--pct-motion-transition-easing);
+}
+
+.pct-date__row:hover:not(:has(.pct-date__control:disabled)) {
+  border-color: var(--pct-date-border-hover);
+}
+
+/* The ring goes on the ROW and not on the input, because the button is inside the same
+   border: a ring around the input alone would draw a box through the middle of the control.
+   `:focus-within` is what makes one border answer for two elements. */
+.pct-date__row:focus-within {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: 1px;
+  border-color: var(--pct-date-border-focus);
+}
+
+:host([data-pct-invalid]) .pct-date__row,
+:host([data-pct-malformed]) .pct-date__row {
+  border-color: var(--pct-date-border-invalid);
+}
+
+:host([data-pct-disabled]) .pct-date__row {
+  background: var(--pct-date-bg-disabled);
+  color: var(--pct-date-fg-disabled);
+  border-color: var(--pct-date-border-disabled);
+}
+
+.pct-date__control {
+  flex: 1 1 auto;
+  min-inline-size: 0;
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+  padding: 0;
+}
+
+.pct-date__control:focus {
+  /* The row draws the ring for the whole control. */
+  outline: none;
+}
+
+.pct-date__control:disabled {
+  color: var(--pct-date-fg-disabled);
+  cursor: not-allowed;
+}
+
+.pct-date__control::placeholder {
+  color: var(--pct-date-placeholder-fg);
+}
+
+.pct-date__toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  /* The button is the one thing in this row a finger aims at, so the touch floor is a floor
+     on the DRAWING and not a zone laid over it — the switch's reading of SC 2.5.8, met
+     again. */
+  inline-size: max(var(--pct-date-toggle-size), var(--pct-date-target-min));
+  block-size: max(var(--pct-date-toggle-size), var(--pct-date-target-min));
+  padding: 0;
+  border: none;
+  border-radius: var(--pct-date-toggle-radius);
+  background: none;
+  color: var(--pct-date-toggle-fg);
+  cursor: pointer;
+}
+
+.pct-date__toggle:hover:not(:disabled) {
+  background: var(--pct-date-toggle-bg-hover);
+}
+
+.pct-date__toggle:disabled {
+  color: var(--pct-date-fg-disabled);
+  cursor: not-allowed;
+}
+
+.pct-date__toggle:focus-visible {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: -2px;
+}
+
+.pct-date__toggle pct-icon {
+  inline-size: var(--pct-date-icon-size);
+  block-size: var(--pct-date-icon-size);
+}
+
+/* Inside the chrome `pct-field` draws the border, the background and the padding — the row
+   hands them over. */
+:host([data-pct-in-field]) {
+  display: contents;
+}
+
+:host([data-pct-in-field]) .pct-date__row {
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  align-self: stretch;
+  /* Inside the chrome the size belongs to it (`pct-field[size]`) — the row takes the text
+     size from the field instead of keeping a token of its own. */
+  font-size: inherit;
+}
+
+:host([data-pct-in-field]) .pct-date__row:focus-within {
+  /* The chrome draws the ring around the whole row. */
+  outline: none;
+}
+
+.pct-date__panel {
+  box-sizing: border-box;
+  background: var(--pct-date-panel-bg);
+  border: 1px solid var(--pct-date-panel-border);
+  border-radius: var(--pct-date-panel-radius);
+  box-shadow: var(--pct-date-panel-shadow);
+  padding: var(--pct-date-panel-padding-y) var(--pct-date-panel-padding-x);
+}
+
+.pct-date__panel:focus {
+  outline: none;
+}
+
+.pct-date__hint {
+  color: var(--pct-date-hint-fg);
+  font-size: var(--pct-font-size-sm);
+}
+
+.pct-date__error {
+  color: var(--pct-date-fg-invalid);
+  font-size: var(--pct-font-size-sm);
+}
+
+/* Sizes: the row's padding and type, and the button with them (req-api-size). */
+:host([data-pct-size='sm']) .pct-date__row {
+  padding: var(--pct-date-padding-y-sm) var(--pct-date-padding-x-sm);
+  font-size: var(--pct-date-font-size-sm);
+}
+
+:host([data-pct-size='lg']) .pct-date__row {
+  padding: var(--pct-date-padding-y-lg) var(--pct-date-padding-x-lg);
+  font-size: var(--pct-date-font-size-lg);
+}
+
+/* Forced-colors mode — the mapping is written down in `field.scss`. Every base rule with a
+   colour is repeated at its own specificity: `@media` adds none (lesson-70). */
+@media (forced-colors: active) {
+  /* Every selector the base sheet paints this box with is repeated here, at its own
+     specificity: the hover rule, the focus rule and the in-field rule each beat a bare
+     `.pct-date__row` inside a media block, because `@media` adds none of its own
+     (`lesson-70`). Written the short way, the mode looked handled in chromium and firefox —
+     which substitute the palette anyway — and painted nothing in webkit, which does not
+     (`lesson-119`). */
+  .pct-date__row,
+  .pct-date__row:hover:not(:has(.pct-date__control:disabled)),
+  .pct-date__row:focus-within,
+  :host([data-pct-in-field]) .pct-date__row {
+    background: Field;
+    color: FieldText;
+    border-color: FieldText;
+  }
+
+  /* Inside the chrome the row hands its border over, so it has none to repaint — the field
+     draws it — and the declaration above must not put one back. */
+  :host([data-pct-in-field]) .pct-date__row {
+    background: none;
+    border-color: transparent;
+  }
+
+  .pct-date__row:focus-within,
+  :host([data-pct-in-field]) .pct-date__row:focus-within {
+    outline-color: Highlight;
+  }
+
+  :host([data-pct-invalid]) .pct-date__row,
+  :host([data-pct-malformed]) .pct-date__row {
+    /* The invalid state is a COLOUR in the palette and colour is what this mode takes away,
+       so the edge is drawn twice as thick instead — a shape the substitution keeps
+       (req-a11y-forced-colors, lesson-40). */
+    border-color: FieldText;
+    border-width: 2px;
+  }
+
+  :host([data-pct-disabled]) .pct-date__row {
+    background: Field;
+    color: GrayText;
+    border-color: GrayText;
+  }
+
+  .pct-date__control:disabled,
+  .pct-date__toggle:disabled {
+    color: GrayText;
+  }
+
+  .pct-date__panel {
+    background: Canvas;
+    border-color: CanvasText;
+  }
+}

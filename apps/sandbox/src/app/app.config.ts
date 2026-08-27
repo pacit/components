@@ -31,6 +31,15 @@ export const appConfig: ApplicationConfig = {
       selectEmpty: 'Aucune option',
       selectLoading: 'Chargement…',
       selectClear: 'Effacer',
+      dateOpen: 'Choisir une date',
+      datePreviousMonth: 'Mois précédent',
+      dateNextMonth: 'Mois suivant',
+      // The three letters of a format hint are WORDS: `jj/mm/aaaa` is how French writes
+      // one, and a `y` there would be a letter that means nothing. The order and the
+      // separators are not translated — those come from `Intl`.
+      dateDayLetter: 'j',
+      dateMonthLetter: 'm',
+      dateYearLetter: 'a',
     }),
     // The number field formats by LOCALE_ID — here that gives a decimal comma and a
     // narrow no-break space as the thousands separator. Deliberately not English:

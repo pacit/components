@@ -58,6 +58,14 @@
 
     <pct-field
       [size]="size"
+      [label]="'Date ' + size"
+      [attr.data-testid]="'size-date-' + size"
+    >
+      <pct-date [(value)]="startsOn" />
+    </pct-field>
+
+    <pct-field
+      [size]="size"
       [label]="'Disabled ' + size"
       [attr.data-testid]="'size-disabled-' + size"
     >

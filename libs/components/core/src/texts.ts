@@ -60,6 +60,30 @@ export interface PctTexts {
    * content the view authored, which is what puts it here rather than in an input.
    */
   readonly dialogClose: string;
+  /**
+   * Date: the accessible name of the button that opens the calendar, and the name of the
+   * panel it opens. One string in both places on purpose — the button says what it will show
+   * and the panel is that thing, so a second string would be a distinction the user never
+   * meets ([0036](../../../../docs/decisions/0036-a-clear-takes-back-what-the-trigger-shows.md)'s
+   * reading of one control doing one thing).
+   */
+  readonly dateOpen: string;
+  /** Date: the accessible name of the button that steps the calendar back a month. */
+  readonly datePreviousMonth: string;
+  /** Date: the accessible name of the button that steps it forward a month. */
+  readonly dateNextMonth: string;
+  /**
+   * Date: the letters a format hint is written with — `d`, `m`, `y` in English, `d`, `m`, `r`
+   * in Polish. They are **texts and not constants** because they are words: the hint
+   * `dd.mm.yyyy` is read as language, and a `y` in a Polish field is a letter that means
+   * nothing there.
+   *
+   * The ORDER and the separators are not here — those come from `Intl`, which knows them for
+   * every locale and cannot be got wrong by a translator.
+   */
+  readonly dateDayLetter: string;
+  readonly dateMonthLetter: string;
+  readonly dateYearLetter: string;
 }
 
 export const PCT_DEFAULT_TEXTS: PctTexts = {
@@ -70,6 +94,12 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   selectSeparator: ', ',
   selectClear: 'Clear',
   dialogClose: 'Close',
+  dateOpen: 'Choose date',
+  datePreviousMonth: 'Previous month',
+  dateNextMonth: 'Next month',
+  dateDayLetter: 'd',
+  dateMonthLetter: 'm',
+  dateYearLetter: 'y',
 };
 
 /**

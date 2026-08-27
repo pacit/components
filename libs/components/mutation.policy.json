@@ -3,6 +3,8 @@
   "// patterns": "A copy of `mutate` from `stryker.config.json`, written out here so that changing it is a comparison rather than an act of trust. Narrowing the pattern is the cheapest way of raising the score: a file struck from the measurement takes its surviving mutants with it and the percentage rises although no test was added. The same defect as `coverageInclude` in `lesson-45`, one floor up.",
   "patterns": [
     "libs/components/core/src/*.ts",
+    "libs/components/date/src/day.ts",
+    "libs/components/date/src/locale.ts",
     "libs/components/dialog/src/dialog.ts",
     "libs/components/field/src/number.ts",
     "libs/components/icon/src/icon.ts",
@@ -31,6 +33,8 @@
     "libs/components/core/src/template.ts",
     "libs/components/core/src/texts.ts",
     "libs/components/core/src/value.ts",
+    "libs/components/date/src/day.ts",
+    "libs/components/date/src/locale.ts",
     "libs/components/dialog/src/dialog.ts",
     "libs/components/field/src/number.ts",
     "libs/components/icon/src/icon.ts",
