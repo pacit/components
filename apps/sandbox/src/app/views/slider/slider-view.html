@@ -1,0 +1,88 @@
+<h2 class="view__title">Slider</h2>
+<p class="muted view__intro">
+  A position on a numeric continuum. The control is the platform's own
+  <code>&lt;input type="range"&gt;</code>, so the role, the value, the bounds
+  and the whole keyboard come with it — and no <code>aria-orientation</code>,
+  because the engine reads that off the writing mode.
+</p>
+
+<sbx-demo
+  heading="Inside the wrapper"
+  summary="The label is drawn by pct-field; there is no border, because the slider declares the bare appearance. The bounds are the min/max validators of the schema and the native attributes at once."
+  [reqs]="['req-api-frame', 'req-api-no-wrapper']"
+  data-testid="demo-in-field"
+>
+  <div class="stack">
+    <pct-field
+      label="Budget"
+      hint="Between 20 and 80"
+      data-testid="field-budget"
+    >
+      <pct-slider
+        [formField]="limitsForm.budget"
+        [marks]="true"
+        [step]="10"
+        data-testid="slider-budget"
+      />
+    </pct-field>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="With no wrapper"
+  summary="Outside pct-field the control draws a label of its own. A plain 0–100 slider says nothing beyond the platform's number; a format or a labels list turns on the bubble and aria-valuetext together."
+  [reqs]="['req-api-no-wrapper', 'req-a11y-touch', 'req-api-platform']"
+  data-testid="demo-standalone"
+>
+  <div class="stack">
+    <pct-slider
+      label="Volume"
+      hint="Nothing is formatted, so nothing is written"
+      [(value)]="volume"
+      data-testid="slider-volume"
+    />
+
+    <pct-slider
+      label="Discount"
+      [(value)]="discount"
+      [max]="1"
+      [step]="0.05"
+      [format]="percent"
+      data-testid="slider-discount"
+    />
+
+    <pct-slider
+      label="Size"
+      [(value)]="size"
+      [max]="2"
+      [labels]="sizes"
+      [marks]="true"
+      data-testid="slider-size"
+    />
+
+    <pct-slider label="Disabled" [value]="40" disabled />
+
+    <pct-slider
+      label="Read-only — focusable, but not movable"
+      [value]="70"
+      readonly
+      data-testid="slider-readonly"
+    />
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="Vertical"
+  summary="One input, no tag of its own — the value is a number either way. The mechanism is writing-mode, so up increases in both directions of the page and the accessibility tree says vertical without being told."
+  [reqs]="['req-token-logical', 'req-a11y-built-in']"
+  data-testid="demo-vertical"
+>
+  <div class="slider-view__vertical">
+    <pct-slider
+      label="Gain"
+      orientation="vertical"
+      [(value)]="gain"
+      data-testid="slider-gain"
+    />
+  </div>
+</sbx-demo>

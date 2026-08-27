@@ -15,6 +15,7 @@ const CONTROLS = [
   'checkbox',
   'radio',
   'switch',
+  'slider',
 ] as const;
 
 /**

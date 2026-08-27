@@ -257,6 +257,111 @@
       "severity": "warn"
     },
     {
+      "name": "slider — label",
+      "fg": "pct.slider.label-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "slider — hint",
+      "fg": "pct.slider.hint-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "slider — error message",
+      "fg": "pct.slider.fg-invalid",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "slider — the value in words",
+      "fg": "pct.slider.bubble-fg",
+      "bg": "pct.slider.bubble-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "UI: the travelled part of a slider against the rest of the rail",
+      "fg": "pct.slider.fill-bg",
+      "bg": "pct.slider.track-bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: the travelled part of a slider against the page",
+      "fg": "pct.slider.fill-bg",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: the untravelled rail of a slider against the page (the thumb and the fill are what identify the control; the rail is the road they travel, and no one colour clears 3:1 against both the page and the fill)",
+      "fg": "pct.slider.track-bg",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "UI: slider thumb border",
+      "fg": "pct.slider.thumb-border",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: slider thumb border (hover)",
+      "fg": "pct.slider.thumb-border-hover",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: slider thumb border (error)",
+      "fg": "pct.slider.thumb-border-invalid",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: slider thumb against its own border",
+      "fg": "pct.slider.thumb-bg",
+      "bg": "pct.slider.thumb-border",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: slider tick against the track",
+      "fg": "pct.slider.mark-bg",
+      "bg": "pct.slider.track-bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "slider/disabled — label",
+      "fg": "pct.slider.fg-disabled",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "warn"
+    },
+    {
+      "name": "UI: the travelled part of a disabled slider",
+      "fg": "pct.slider.fill-bg-disabled",
+      "bg": "pct.slider.track-bg-disabled",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "UI: slider thumb border (disabled)",
+      "fg": "pct.slider.thumb-border-disabled",
+      "bg": "pct.slider.thumb-bg-disabled",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
       "name": "radio — option label",
       "fg": "pct.radio.label-fg",
       "bg": "pct.surface",

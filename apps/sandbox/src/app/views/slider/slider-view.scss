@@ -1,0 +1,8 @@
+:host {
+  display: block;
+}
+
+.slider-view__vertical {
+  display: flex;
+  gap: var(--pct-space-5);
+}

@@ -3075,3 +3075,81 @@ Two practical consequences:
 It is [`lesson-105`](#lesson-105)'s pair. There, "nothing moved" and "nothing changed" were two
 measurements because a paint layer changed the pixels of an unmoved box; here they come apart
 the other way, because a box that did not change was moved.
+
+---
+
+### <a id="lesson-117"></a>`lesson-117` — The forms interop writes `null` into a model typed `number`, and nothing says so
+
+**`[(ngModel)]` on a control that only implements `FormValueControl` writes `null` before it
+writes the value.** [`lesson-9`](#lesson-9) settled that `ControlValueAccessor` is
+unnecessary — the classic forms bind to a signal control with no adapter of ours. What that
+lesson did not say is WHEN. The bridge sets the control up in the same turn as the directive
+and its own value has not resolved yet, so the first write reaching the model is `null`; the
+real one arrives a microtask later.
+
+For `PctSwitch` that is invisible: `checked` is a `boolean`, `null` is falsy, and the box is
+simply unchecked for one tick. For a slider it is not. `value` is typed `number`, the
+stylesheet runs on `(value - min) / (max - min)`, and `null` there is a `0` that happens to
+be right at `min = 0` and wrong everywhere else — while `[value]="null"` on the element
+writes an empty string, which a `<input type="range">` answers with **its own default, 50**.
+So the first frame of a `[(ngModel)]`-bound slider showed 50 for a model holding 70, and the
+declared type had refused nothing: `model<number>` accepts whatever the interop hands it,
+because the write comes from outside the compiler's sight.
+
+The repair is not a cast and not a guard at the one place it hurt. It is **one read of the
+value, defensive from the first version**:
+
+```ts
+protected readonly position = computed(() => {
+  const v = this.value() as number | null | undefined;
+  return typeof v === 'number' && Number.isFinite(v) ? v : this.lower();
+});
+```
+
+and every consumer of the value — the arithmetic, the formatting, the DOM binding, the
+readonly restore — reads `position()` and not `value()`.
+
+The general rule, and it is the one this repository keeps relearning: **a value that arrives
+from a framework's own plumbing is an input from outside, whatever its declared type.** The
+type describes the contract a consumer writes against; the plumbing is not that consumer. A
+control that reads it defensively from the first version pays four lines; one that waits for
+a `NaN` to reach a `calc()` pays an afternoon and a bug report about a slider that "jumps on
+load".
+
+---
+
+### <a id="lesson-118"></a>`lesson-118` — `getComputedStyle(el, '::before')` answers for an element that renders no `::before`
+
+**A range does not carry generated content, and the obvious probe says it does.**
+[0042](decisions/0042-a-slider-is-the-platforms-range.md) was decided on thirteen probes, and
+one of them — C1, "`input[type=range]::before` renders in all three engines" — was wrong. It
+was read the way generated content is usually read, by asking the browser for the computed
+`content` of the pseudo-element. That reading is not about rendering at all: it reports the
+declaration, and an `<input>` is a replaced element on which the box is never generated.
+
+Measured by PIXEL instead — the element screenshotted and the colours sampled where the box
+would be — the answer is **chromium yes, firefox no, webkit no**. And in chromium, an
+absolutely positioned `::before` paints ABOVE the UA shadow content, so a fill drawn that way
+covers half the thumb it is supposed to end at.
+
+Two things follow, and the second is worth more than the first.
+
+**The mechanism changed.** The fill, the ticks and the thumb are drawn boxes inside the
+component's own template, with the native range laid over them at `opacity: 0` — the switch's
+technique, for a reason the switch never had to argue: a gradient on `::-webkit-slider-runnable-track`
+does render in all three (that part of C2 held), but a gradient direction is PHYSICAL, so the
+RTL slider would have needed a rule reading the direction, which is the one thing
+[`req-token-logical`](requirements/tokens.md#req-token-logical) forbids. Drawn boxes take
+`inset-inline-start` and `inline-size` and mirror for free — in RTL and under the vertical
+writing mode alike.
+
+**The check that would have caught it is cheap.** A probe that asks a browser to REPORT a
+declaration has measured the parser. A probe that samples a pixel has measured the renderer.
+When the question is "does this render", only the second one is an answer — and the way to
+read a PNG with no dependency is to hand it back to the page: `img.decode()` into a canvas
+and `getImageData` a point. Three lines, and it is the difference between a decision resting
+on a measurement and a decision resting on a syntax check.
+
+The other half of the same probe: an `outline` on `::-webkit-slider-thumb` / `::-moz-range-thumb`
+applies in **one engine of three** (firefox). The focus ring is therefore on a box of ours,
+where all three can be asked about it.

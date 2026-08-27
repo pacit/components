@@ -1,0 +1,99 @@
+@if (label() && !inField) {
+<label class="pct-slider__label" data-pct-part="label" [attr.for]="controlId">
+  {{ label() }} @if (required()) {
+  <span class="pct-slider__required" aria-hidden="true">*</span>
+  }
+</label>
+}
+
+<div class="pct-slider__group">
+  <!-- The row carries the slider's own axis. Everything inside it is placed with LOGICAL
+       properties, so `dir="rtl"` mirrors the drawing without a rule of its own and the
+       vertical variant is the same declarations read along the other axis
+       (`req-token-logical`). -->
+  <div class="pct-slider__row">
+    <!-- The native range lies over the drawing, transparent, and keeps the role, the value,
+         the bounds, the whole keyboard and the form participation (`req-a11y-built-in`,
+         `req-api-platform`). It is also the only layer a pointer can reach: the drawn parts
+         are `pointer-events: none`, so a press anywhere on the track is the PLATFORM's press
+         and a drag from there is the platform's drag — measured to land within 1 px of where
+         the thumb is drawn, in three engines (0042).
+
+         Two attributes are deliberately absent, and both are the same reading as the
+         switch's `aria-checked` (0039): `aria-orientation`, which the engine derives from
+         the writing mode and ignores when it disagrees, and `aria-required`, which does not
+         reach the accessibility tree of a range at all. -->
+    <input
+      #control
+      class="pct-slider__control"
+      data-pct-part="control"
+      type="range"
+      [id]="controlId"
+      [attr.min]="lower()"
+      [attr.max]="upper()"
+      [attr.step]="step()"
+      [value]="position()"
+      [disabled]="disabled()"
+      [attr.name]="name() || null"
+      [attr.aria-label]="ariaLabel() || null"
+      [attr.aria-labelledby]="ariaLabelledby() || null"
+      [attr.aria-invalid]="showInvalid() ? 'true' : null"
+      [attr.aria-readonly]="readonly() ? 'true' : null"
+      [attr.aria-valuetext]="valueText()"
+      [attr.aria-describedby]="describedBy()"
+      (input)="onInput($event)"
+      (blur)="onBlur()"
+    />
+
+    <span class="pct-slider__track" data-pct-part="track" aria-hidden="true">
+      <!-- Ticks of our own: a `<datalist>` draws none in firefox and snaps in no engine,
+           so the marks come from `step` and the snapping is `step` alone. They stand
+           BEFORE the fill and are covered by it, which is not a drawing preference: a
+           tick has one colour, and no one colour clears 3:1 against both the rail and the
+           travelled part (`req-token-contrast`, measured). Ahead of the thumb, where a
+           reader needs them, they are on the rail alone. -->
+      @if (showMarks()) { @for (at of markFractions(); track $index) {
+      <span
+        class="pct-slider__mark"
+        data-pct-part="mark"
+        [style.--_pct-slider-mark-at]="at"
+      ></span>
+      } }
+
+      <span class="pct-slider__fill" data-pct-part="fill"></span>
+    </span>
+
+    <span
+      class="pct-slider__thumb"
+      data-pct-part="thumb"
+      aria-hidden="true"
+    ></span>
+  </div>
+
+  <!-- The value in words, drawn only when the platform's bare number is not enough. It is
+       `aria-hidden` because the SAME string is already the slider's `aria-valuetext` — the
+       eye gets it here, the reader gets it from the control itself, and neither gets it
+       twice (`req-a11y-built-in`). -->
+  @if (valueText(); as text) {
+  <span class="pct-slider__bubble" data-pct-part="bubble" aria-hidden="true">
+    {{ text }}
+  </span>
+  }
+</div>
+
+<!-- One message line, and the error takes it (`req-api-message`). The sentence announces
+     from where it is drawn — `role="alert"`, which is `check-aria` point 7. -->
+@if (showError()) {
+<span
+  class="pct-slider__error"
+  data-pct-part="error"
+  [id]="errorId"
+  role="alert"
+>
+  {{ errorText() }}
+</span>
+} @else if (hint() && !inField) {
+<span class="pct-slider__hint" data-pct-part="hint" [id]="hintId">
+  {{ hint() }}
+</span>
+}

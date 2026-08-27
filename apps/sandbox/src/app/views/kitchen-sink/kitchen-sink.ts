@@ -23,6 +23,7 @@ import {
   PctSelect,
   PctSelectOption,
 } from '@pacit/components/select';
+import { PctSlider } from '@pacit/components/slider';
 import { PctSwitch } from '@pacit/components/switch';
 
 /**
@@ -38,6 +39,7 @@ import { PctSwitch } from '@pacit/components/switch';
     PctCheckbox,
     PctRadioGroup,
     PctRadio,
+    PctSlider,
     PctSwitch,
     PctMultiSelect,
     PctSelect,
@@ -123,6 +125,9 @@ export class KitchenSink {
 
   /** A setting that takes effect the moment it is moved. */
   protected readonly backups = signal(true);
+
+  /** A position on a numeric continuum. */
+  protected readonly budget = signal(40);
 
   protected togglePanel(): void {
     this.panelDark.update((v) => !v);

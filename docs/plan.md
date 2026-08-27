@@ -156,6 +156,24 @@ true observation that a navigation test has no mode in which it passes without a
 the layout half added by 0041 is nothing like that, because a fallback CAN quietly agree with
 nothing. Five recorded runs say so, and they fail in different engines on purpose.
 
+**E5's third item, the slider, is the first here where a decision written before the code was
+wrong about a browser** — and the interesting part is that it was wrong in the safest-looking
+way. 0042 rested its whole drawing on C1, "a range carries generated content in all three
+engines", measured by reading `getComputedStyle(el, '::before').content` — which reports the
+DECLARATION and not the rendering. Sampled by pixel, it renders in **one** engine of three,
+and where it does it paints over the thumb ([`lesson-118`](lessons.md#lesson-118)). The road
+that replaced it was refused earlier for taste and taken now for arithmetic: a gradient's
+direction is physical, so the pseudo-element road needed a rule reading the direction and the
+drawn-box road needs none. The same step read
+[0039](decisions/0039-a-state-the-platform-publishes-is-not-ours-to-write.md) twice more, and
+both times the accessibility tree answered: `aria-orientation` is derived from the writing
+mode and ignored when it disagrees, and `aria-required` never reaches a range's node at all —
+with a textbox in the same run reporting `required: true`, which is what makes it a
+measurement rather than a missing field. It also found the one thing four gates and a compiler
+had never said out loud: **the forms interop writes `null` into a model typed `number`**
+before it writes the value ([`lesson-117`](lessons.md#lesson-117)). It left **C33** a third
+file and no item of its own.
+
 **E4 has closed, all eight items of it**, and the first of them is the fork the rest
 stand on: **is an option a row of data or a `<pct-option>` the consumer projects?** Written as
 two ways of putting down one list it reads as taste, so it was measured before anything was
@@ -1985,7 +2003,8 @@ directory` at `readFileSync`. Four of the new entries are tracked as SYMLINKS to
     the set. Outside it are `field.ts` — the wrapper every control in the library is drawn by —
     `checkbox.ts`, `radio.ts`, `radio-group.ts`, `switch.ts`, `text.ts`, `button.ts`,
     `menu-item.ts`, `menu-trigger.ts`, `select.template.ts`, the two field slots and, as of
-    this step, `autosize.ts`
+    this step, `autosize.ts`. **The slider added a third**, `slider.ts`, by doing nothing at
+    all: a new entrypoint is outside the set the moment it exists
   - **the shape is [`lesson-45`](lessons.md#lesson-45) one floor up, and the policy names that
     lesson itself** — about a denominator narrowed on purpose. What this item is about is a
     denominator that was never widened: a new behaviour file lands outside the measurement by
@@ -2845,7 +2864,8 @@ still coming` (7 cases × 3 engines, driven by an event rather than a press, bec
     and a number the window computes is not a skin's to move. The same snapshot also records
     **18 B off `./core` and `./menu`**, which this change did not cause — see C29
 - [ ] **E5 — switch, textarea (autosize), slider, date picker** — the date picker forces deep
-      i18n, which `[pctNumber]` has already started
+      i18n, which `[pctNumber]` has already started. **Three of the four are done**; the date
+      picker is what is left
   - _notes (switch):_ **one of the four is done, and it is the one whose whole content was a
     question about who owns a state.** The checkbox's card had said since v0 that a switch is a
     separate component "because the semantics differ", and that sentence settles the packaging
@@ -2985,6 +3005,97 @@ still coming` (7 cases × 3 engines, driven by an event rather than a press, bec
     so, because the set is a curated list of 22 files and a new one is simply not in it. Two
     lists in `mutation.policy.json` make a file that DROPS OUT fire the gate, and neither says
     a word about one that was never in
+  - _notes (slider):_ **the third of the four is done, and it is the first item where a
+    decision written before the code was WRONG about a browser and said so in its own
+    revision.** The five questions 0042 opened were all settled by measurement, and four of
+    the five held. The element is the platform's `<input type="range">` — the role, both
+    bounds, the value and the whole key map come free, byte-identical in three engines, and
+    `disabled` drops the control from the Tab order without a line from us. What is ours is
+    the one thing the platform cannot do: a value it can **pronounce**. `aria-valuenow` is a
+    bare number a reader says in the user's own language; `15 %` or `Medium` is not, so a
+    `format` or a `labels` list turns on a visible bubble AND `aria-valuetext` **together and
+    only then** — one string in two places, the eye reading the bubble and the reader reading
+    the control ([0009](decisions/0009-number-field.md)'s locale plumbing, met again).
+  - _notes (0039 read twice more, and both times by the accessibility tree):_ the switch's
+    lesson turned out to have two more instances waiting on this control, and neither is a
+    guess. **`aria-orientation` is inert on a range**: chromium's own AX node reports
+    `vertical` for a range under `writing-mode: vertical-lr` that says nothing, and reports
+    `horizontal` for a horizontal one told `aria-orientation="vertical"` — the attribute is
+    ignored in both directions. That turns `writing-mode` from a drawing choice into the
+    MECHANISM that tells the accessibility tree, which is a better argument for it than the
+    one 0042 made. **`aria-required` is inert too**, and the probe carries its own control:
+    the same attribute on a `<input type="text">` in the same run reports `required: true`
+    and on the range reports nothing at all, so it is the ROLE and not a missing CDP field.
+    `aria-readonly` is the one of the three that IS read — it takes `settable` off the node —
+    so it is the one the component writes ([`lesson-112`](lessons.md#lesson-112))
+  - _notes (the decision that was rewritten):_ 0042's C1 said a range carries generated
+    content in all three engines and the mechanism rested on it. It was measured by asking
+    the browser for `getComputedStyle(el, '::before').content` — **which reports the
+    declaration and not the rendering**, and an `<input>` is a replaced element on which the
+    box is never generated. Sampled by PIXEL instead, `::before` renders in **chromium and
+    in neither of the other two**, and where it does render an absolutely positioned one
+    paints ABOVE the UA shadow content, covering half the thumb it ends at. The gradient
+    half of C2 held — a `linear-gradient` on the engine track pseudo-element renders in all
+    three — and it was refused for this repository's own reason instead: **a gradient's
+    direction is physical**, there is no `to inline-end`, so the RTL slider would have needed
+    a rule reading the direction, which is the very promise 0042 opened by claiming it kept.
+    So the drawing is boxes of the component's own with the native range over them at
+    `opacity: 0` — the switch's technique, and here it costs no consumer markup, because
+    `PctSlider` is a component with a template while `PctAutosize` was a directive on the
+    consumer's element ([`lesson-118`](lessons.md#lesson-118),
+    [0041](decisions/0041-a-height-the-platform-computes.md)). The engine pseudo-elements
+    survive for GEOMETRY alone: the platform maps a pointer to a value through the native
+    thumb's width, so it is given the width of the thumb we draw and nothing else — measured,
+    the drawn thumb's centre then lands within **1 px** of the pointer, in three engines
+  - _notes (what the contrast gate settled that taste could not):_ the rail's colour was a
+    preference until the gate refused it, and then it was arithmetic. **No single colour
+    clears 3:1 against both the page and the travelled part**: `--pct-border-strong` passes
+    against the page at 4.76 and fails against the fill at 1.09, `--pct-border` passes
+    against the fill at 4.19 and fails against the page at 1.23. What SC 1.4.11 asks for is
+    what identifies the control and its state — the thumb (5.17 against the page) and the
+    fill (5.17 against the page, 4.19 against the rail) — so the light rail wins and the
+    pair that gives way is recorded as a `warn` with the reason in the policy's own name. The
+    same arithmetic decided where the ticks stand: a mark has ONE colour, so they sit behind
+    the fill and are legible ahead of the thumb, which is where a reader needs them
+  - gate: `apps/sandbox-e2e/src/slider.spec.ts` — 10 cases × 3 engines, and every one of them
+    is about something jsdom has no answer for: the key map, a press landing the drawn thumb
+    within 2 px of the pointer, a drag that never lets go, the fill ending at the thumb's
+    centre at both ends, the mirror in RTL measured as geometry AND as the platform's own
+    pointer reading, the vertical slider running bottom-to-top with the engine working the
+    orientation out for itself, the tick standing where the thumb stands for its step, and
+    the ring on the thumb. Plus 24 unit cases in `slider.spec.ts` for the arithmetic a run
+    with no layout can prove. The `/slider` view is in `SBX_ROUTES`, so the axe audit, the
+    RTL audit and hydration all take it; `states.spec.ts`'s cross-control list has it, and
+    the forced-colors spec has a case of its own — **630 unit cases green**, and on the e2e
+    side 30 of its own plus 153 axe, 60 hydration, 44 visual, 24 forced-colors, 18 states
+  - control: the gate's own red runs are the record. The three that fired while it was built
+    are each a measurement somebody would otherwise have assumed: `outline-width` reads
+    `medium` (3 px) on an element whose `outline-style` is `none`, so the obvious focus-ring
+    probe passes before the rule exists — it reads `outline-style` instead; playwright's
+    `toMatchAriaSnapshot` reports `aria-valuenow` and never `aria-valuetext`, which is
+    0042's own "what this costs us" arriving as a red test; and `page.mouse.click` takes
+    VIEWPORT coordinates and scrolls nothing, so a control below the fold is pressed at a
+    point that is not on it — one engine of three found that, on a page where the row was in
+    view in the other two
+  - _the finding that was not there:_ **a press ON the thumb is a grab in webkit and a jump
+    in chromium** — the same press at the same fraction, 30 against 33. It is the platform's
+    behaviour on the platform's own element and nothing of ours reaches it, so it is not an
+    item; it is written into the case that nearly asserted it by accident, which now presses
+    away from the current value on purpose
+  - cost: `./slider` **16906 B**, `./core` only — no `./icon`, no `@angular/common`. 28
+    tokens and 14 pairs in the contrast policy; three new words in the name dictionary
+    (`bubble`, `fill`, `mark`), and two in the language one (`moz`, because a vendor prefix
+    that reaches the artifact has no register, and `falsy`, which `american-english` does not
+    carry). Nine parts, no new peer, no new string a user reads. **No other entrypoint
+    moved.** Two visual baselines added and six rewritten — four of them the sandbox
+    navigation gaining a row, which every whole-viewport shot carries, and two the states
+    view keeping its promise that every control appears in it
+  - _the finding that was:_ **C33 gets its third file.** `slider.ts` is the most
+    behaviour-shaped file of this entrypoint — a fraction, a step count, a label index, a
+    defensive read — and it landed outside the mutation measurement by default, exactly as
+    `switch.ts` and `autosize.ts` did. It is left there on purpose: C33's own content is that
+    the work is a RULE and not a bulk addition, and adding one file would hide the gap it
+    names rather than close it
 - [ ] **E7 — the rest**: toast, tabs, accordion, drawer, pagination, progress, skeleton, chips,
       avatar, badge, breadcrumb, stepper, tree
 - [ ] **E6 — table / datagrid** on a headless core (column model, sorting, filtering, grouping,

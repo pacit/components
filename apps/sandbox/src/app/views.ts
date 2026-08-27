@@ -85,6 +85,13 @@ export const SBX_VIEWS: readonly SbxView[] = [
     load: () => import('./views/radio/radio-view').then((m) => m.RadioView),
   },
   {
+    path: 'slider',
+    title: 'Slider',
+    summary: "A position on a numeric continuum, on the platform's own range.",
+    group: 'components',
+    load: () => import('./views/slider/slider-view').then((m) => m.SliderView),
+  },
+  {
     path: 'switch',
     title: 'Switch',
     summary: 'A setting that takes effect the moment it is moved.',

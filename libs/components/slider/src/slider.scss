@@ -1,0 +1,279 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pct-space-2);
+  font-family: inherit;
+  /* A horizontal slider has no width of its own — its content is a track that is whatever
+     it is given. As a flex item (inside `pct-field`, say) an `auto` basis would resolve
+     that to nothing, so the basis is the space rather than the content. */
+  flex: 1;
+}
+
+.pct-slider__group {
+  display: flex;
+  align-items: center;
+  gap: var(--pct-slider-gap);
+}
+
+/* The row is the slider's own axis, and it is the ONE place the axis is named. Everything
+   inside is placed with logical properties, so the vertical variant below is these same
+   declarations read the other way round. */
+.pct-slider__row {
+  position: relative;
+  flex: 1;
+  /* The whole row is the pointer target, and the floor sits on it rather than on a hit zone
+     laid over the drawing: what a finger gets is what an eye sees (SC 2.5.8). */
+  block-size: max(var(--pct-slider-thumb-size), var(--pct-slider-target-min));
+}
+
+/* The native input over the drawing: invisible, and the only layer a pointer reaches. `0`
+   is not a dimming — the element keeps its full hit area, its focus and its keyboard, which
+   is the whole technique (req-token-no-opacity is about compositing a colour away). */
+.pct-slider__control {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  margin: 0;
+  appearance: none;
+  background: transparent;
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* The engine pseudo-elements are used for GEOMETRY and nothing else: the platform maps a
+   pointer position to a value through the thumb's width, so the native thumb has to be the
+   size of the one we draw or the two would part company in the middle of the track
+   (measured: 1 px apart in three engines). Nothing here paints. */
+.pct-slider__control::-webkit-slider-thumb {
+  appearance: none;
+  inline-size: var(--pct-slider-thumb-size);
+  block-size: var(--pct-slider-thumb-size);
+}
+
+.pct-slider__control::-moz-range-thumb {
+  border: 0;
+  inline-size: var(--pct-slider-thumb-size);
+  block-size: var(--pct-slider-thumb-size);
+}
+
+.pct-slider__track,
+.pct-slider__fill,
+.pct-slider__mark,
+.pct-slider__thumb {
+  /* The drawing is drawing. Every press belongs to the input above it. */
+  pointer-events: none;
+}
+
+.pct-slider__track {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 50%;
+  /* A logical half-shift, so the centring survives the vertical variant — a `translateY`
+     would be the block axis in one orientation and the inline axis in the other. */
+  margin-block-start: calc(var(--pct-slider-track-height) / -2);
+  block-size: var(--pct-slider-track-height);
+  background: var(--pct-slider-track-bg);
+  border-radius: var(--pct-slider-track-radius);
+}
+
+/* The travelled part of the track. It runs to the thumb's CENTRE, which is why the length
+   is the thumb's half plus the fraction of the travel — the same arithmetic the platform
+   uses to turn a pointer into a value. */
+.pct-slider__fill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: calc(
+    var(--pct-slider-thumb-size) / 2 + (100% - var(--pct-slider-thumb-size)) *
+      var(--_pct-slider-fraction, 0)
+  );
+  background: var(--pct-slider-fill-bg);
+  border-radius: inherit;
+}
+
+/* A tick sits at the thumb's centre for its step, so it shares the fill's arithmetic and
+   then steps back by half its own width. No transform: the shift has to be inline in both
+   orientations, and only a length written on the inline axis is. It spans the rail's whole
+   thickness, which is one declaration fewer than centring it and reads the same. */
+.pct-slider__mark {
+  position: absolute;
+  inset-block: 0;
+  inline-size: var(--pct-slider-mark-size);
+  inset-inline-start: calc(
+    var(--pct-slider-thumb-size) / 2 + (100% - var(--pct-slider-thumb-size)) *
+      var(--_pct-slider-mark-at, 0) - var(--pct-slider-mark-size) / 2
+  );
+  background: var(--pct-slider-mark-bg);
+}
+
+.pct-slider__thumb {
+  position: absolute;
+  inset-block-start: 50%;
+  margin-block-start: calc(var(--pct-slider-thumb-size) / -2);
+  inset-inline-start: calc(
+    (100% - var(--pct-slider-thumb-size)) * var(--_pct-slider-fraction, 0)
+  );
+  inline-size: var(--pct-slider-thumb-size);
+  block-size: var(--pct-slider-thumb-size);
+  background: var(--pct-slider-thumb-bg);
+  border: 2px solid var(--pct-slider-thumb-border);
+  border-radius: 999px;
+  box-sizing: border-box;
+}
+
+/* Focus drawn on the thumb, because the input is invisible. `:has()` rather than a class of
+   ours: the state is the platform's and reading it is cheaper than mirroring it. */
+.pct-slider__row:has(.pct-slider__control:focus-visible) .pct-slider__thumb {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: 2px;
+}
+
+:host(:not([data-pct-disabled])) .pct-slider__row:hover .pct-slider__thumb {
+  border-color: var(--pct-slider-thumb-border-hover);
+}
+
+:host([data-pct-invalid]) .pct-slider__thumb {
+  border-color: var(--pct-slider-thumb-border-invalid);
+}
+
+/* Disabled without opacity (req-token-no-opacity) — explicit colour tokens. */
+:host([data-pct-disabled]) .pct-slider__track {
+  background: var(--pct-slider-track-bg-disabled);
+}
+
+:host([data-pct-disabled]) .pct-slider__fill {
+  background: var(--pct-slider-fill-bg-disabled);
+}
+
+:host([data-pct-disabled]) .pct-slider__thumb {
+  background: var(--pct-slider-thumb-bg-disabled);
+  border-color: var(--pct-slider-thumb-border-disabled);
+}
+
+:host([data-pct-disabled]) .pct-slider__control,
+:host([data-pct-disabled]) .pct-slider__label {
+  cursor: not-allowed;
+}
+
+:host([data-pct-disabled]) .pct-slider__label {
+  color: var(--pct-slider-fg-disabled);
+}
+
+/* The vertical variant. `writing-mode` and not `appearance: slider-vertical`, which firefox
+   has already dropped — and the choice is not only a drawing one: the accessibility tree
+   reads the slider's orientation off the writing mode, and ignores an `aria-orientation`
+   that disagrees with it (0042). */
+:host([data-pct-orientation='vertical']) {
+  /* The other way round: a vertical slider's inline size IS its content, so it takes the
+     room it needs and no more. */
+  flex: none;
+}
+
+:host([data-pct-orientation='vertical']) .pct-slider__group {
+  flex-direction: column;
+  align-items: center;
+}
+
+:host([data-pct-orientation='vertical']) .pct-slider__row {
+  writing-mode: vertical-lr;
+  /* pct-exception direction: under a vertical writing mode the inline axis is no longer the
+     text direction — it is the slider's own axis, and `rtl` is what puts the MINIMUM at the
+     bottom. "Up increases" is not the document's to decide, and the horizontal slider one
+     line above still mirrors with the page. */
+  direction: rtl;
+  flex: none;
+  inline-size: var(--pct-slider-height);
+}
+
+.pct-slider__bubble {
+  flex: none;
+  min-inline-size: 3ch;
+  padding-inline: var(--pct-slider-bubble-padding-x);
+  border-radius: var(--pct-slider-bubble-radius);
+  background: var(--pct-slider-bubble-bg);
+  color: var(--pct-slider-bubble-fg);
+  font-size: var(--pct-slider-bubble-font-size);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.pct-slider__label {
+  color: var(--pct-slider-label-fg);
+  font-size: var(--pct-font-size-md);
+  cursor: pointer;
+}
+
+.pct-slider__required {
+  color: var(--pct-slider-fg-invalid);
+  margin-inline-start: 2px;
+}
+
+.pct-slider__hint {
+  color: var(--pct-slider-hint-fg);
+  font-size: var(--pct-font-size-sm);
+}
+
+.pct-slider__error {
+  color: var(--pct-slider-fg-invalid);
+  font-size: var(--pct-font-size-sm);
+}
+
+/* Forced-colors mode — the mapping is written down in `field.scss`. `appearance: none` took
+   the platform's own high-contrast rendering away with it, so every shape has to be
+   repainted here. Each rule is repeated at its OWN specificity, because `@media` adds none
+   (lesson-70). */
+@media (forced-colors: active) {
+  .pct-slider__track {
+    background: Field;
+    outline: 1px solid CanvasText;
+  }
+
+  .pct-slider__fill {
+    background: Highlight;
+  }
+
+  .pct-slider__mark {
+    background: CanvasText;
+  }
+
+  .pct-slider__thumb {
+    background: FieldText;
+    border-color: FieldText;
+  }
+
+  .pct-slider__row:has(.pct-slider__control:focus-visible) .pct-slider__thumb {
+    outline-color: Highlight;
+  }
+
+  :host(:not([data-pct-disabled])) .pct-slider__row:hover .pct-slider__thumb {
+    border-color: FieldText;
+  }
+
+  :host([data-pct-invalid]) .pct-slider__thumb {
+    border-color: FieldText;
+  }
+
+  :host([data-pct-disabled]) .pct-slider__track {
+    background: Field;
+  }
+
+  :host([data-pct-disabled]) .pct-slider__fill {
+    background: GrayText;
+  }
+
+  :host([data-pct-disabled]) .pct-slider__thumb {
+    background: GrayText;
+    border-color: GrayText;
+  }
+
+  :host([data-pct-disabled]) .pct-slider__label {
+    color: GrayText;
+  }
+
+  .pct-slider__bubble {
+    background: Field;
+    color: FieldText;
+  }
+}

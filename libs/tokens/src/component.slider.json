@@ -1,0 +1,45 @@
+{
+  "pct": {
+    "slider": {
+      "height": { "$type": "dimension", "$value": "10rem" },
+      "gap": { "$type": "dimension", "$value": "{pct.space.3}" },
+      "target-min": { "$type": "dimension", "$value": "{pct.target.min}" },
+      "track-height": { "$type": "dimension", "$value": "6px" },
+      "track-radius": { "$type": "dimension", "$value": "999px" },
+      "track-bg": { "$type": "color", "$value": "{pct.border}" },
+      "track-bg-disabled": {
+        "$type": "color",
+        "$value": "{pct.surface-disabled}"
+      },
+      "fill-bg": { "$type": "color", "$value": "{pct.primary}" },
+      "fill-bg-disabled": { "$type": "color", "$value": "{pct.text-disabled}" },
+      "thumb-size": { "$type": "dimension", "$value": "18px" },
+      "thumb-bg": { "$type": "color", "$value": "{pct.on-primary}" },
+      "thumb-bg-disabled": {
+        "$type": "color",
+        "$value": "{pct.surface-disabled}"
+      },
+      "thumb-border": { "$type": "color", "$value": "{pct.primary}" },
+      "thumb-border-hover": {
+        "$type": "color",
+        "$value": "{pct.primary-hover}"
+      },
+      "thumb-border-invalid": { "$type": "color", "$value": "{pct.danger}" },
+      "thumb-border-disabled": { "$type": "color", "$value": "{pct.border}" },
+      "mark-size": { "$type": "dimension", "$value": "2px" },
+      "mark-bg": { "$type": "color", "$value": "{pct.text-muted}" },
+      "bubble-bg": { "$type": "color", "$value": "{pct.surface-100}" },
+      "bubble-fg": { "$type": "color", "$value": "{pct.text}" },
+      "bubble-font-size": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.sm}"
+      },
+      "bubble-radius": { "$type": "dimension", "$value": "{pct.radius.md}" },
+      "bubble-padding-x": { "$type": "dimension", "$value": "{pct.space.2}" },
+      "label-fg": { "$type": "color", "$value": "{pct.text}" },
+      "hint-fg": { "$type": "color", "$value": "{pct.text-muted}" },
+      "fg-invalid": { "$type": "color", "$value": "{pct.danger}" },
+      "fg-disabled": { "$type": "color", "$value": "{pct.text-disabled}" }
+    }
+  }
+}

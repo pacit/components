@@ -158,6 +158,33 @@ test.describe('forced-colors: active', () => {
   });
 
   /**
+   * The slider has to repaint MORE than the others, and the reason is measurable rather
+   * than stylistic: `appearance: none` is what lets a range be drawn at all, and it takes
+   * the platform's own high-contrast rendering with it. So every shape the eye needs —
+   * the track, the part travelled and the thumb — is named from the palette here, and the
+   * case is that the three are three DIFFERENT system colours (`req-a11y-forced-colors`).
+   */
+  test('the slider repaints every shape appearance:none took away', async ({
+    page,
+  }) => {
+    await visit(page, '/states', { media: FORCED });
+    const sys = await systemColors(page);
+
+    const host = page.getByTestId('idle-slider');
+    const read = (part: string, prop = 'background-color') =>
+      styleOf(host.locator(`[data-pct-part="${part}"]`), prop);
+
+    expect(await read('track')).toBe(sys.Field);
+    expect(await read('fill')).toBe(sys.Highlight);
+    expect(await read('thumb')).toBe(sys.FieldText);
+    expect(await read('thumb', 'border-top-color')).toBe(sys.FieldText);
+
+    // The travelled part and the rest of the track are what the eye reads the value off,
+    // so they have to stay two colours after the swap.
+    expect(await read('fill')).not.toBe(await read('track'));
+  });
+
+  /**
    * The hardest case: in a list panel an ordinary option, a selected one and the one
    * active from the keyboard differ by background ALONE. After the palette swap all
    * three would be the same rectangle, so the selection was split into two
@@ -324,6 +351,14 @@ test.describe('forced-colors: active', () => {
       ),
       'switch thumb': styleOf(
         page.getByTestId('disabled-switch').locator('[data-pct-part="thumb"]'),
+        'background-color',
+      ),
+      'slider fill': styleOf(
+        page.getByTestId('disabled-slider').locator('[data-pct-part="fill"]'),
+        'background-color',
+      ),
+      'slider thumb': styleOf(
+        page.getByTestId('disabled-slider').locator('[data-pct-part="thumb"]'),
         'background-color',
       ),
     };

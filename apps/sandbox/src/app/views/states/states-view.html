@@ -49,6 +49,10 @@
       <pct-switch [(checked)]="backups" data-testid="idle-switch" />
     </pct-field>
 
+    <pct-field label="Budget">
+      <pct-slider [(value)]="budget" data-testid="idle-slider" />
+    </pct-field>
+
     <div class="states__cell">
       <button pctButton [size]="idle.activeSize()" data-testid="idle-button">
         Button
@@ -102,6 +106,10 @@
 
     <pct-field label="Backups">
       <pct-switch [checked]="true" disabled data-testid="disabled-switch" />
+    </pct-field>
+
+    <pct-field label="Budget">
+      <pct-slider [value]="40" disabled data-testid="disabled-slider" />
     </pct-field>
 
     <div class="states__cell">
@@ -162,6 +170,10 @@
 
     <pct-field label="Backups">
       <pct-switch [checked]="true" readonly data-testid="readonly-switch" />
+    </pct-field>
+
+    <pct-field label="Budget">
+      <pct-slider [value]="40" readonly data-testid="readonly-slider" />
     </pct-field>
 
     <p class="muted states__note">
@@ -243,6 +255,16 @@
         [touched]="true"
         [errors]="errors"
         data-testid="invalid-switch"
+      />
+    </pct-field>
+
+    <pct-field label="Budget">
+      <pct-slider
+        [value]="40"
+        [invalid]="true"
+        [touched]="true"
+        [errors]="errors"
+        data-testid="invalid-slider"
       />
     </pct-field>
   </div>

@@ -18,6 +18,7 @@ a machine; prose with a missing paragraph is not.
 | [`PctCheckbox`](checkbox.md)  | `@pacit/components/checkbox` | checkbox                            |
 | [`PctRadioGroup`](radio.md)   | `@pacit/components/radio`    | group of mutually exclusive options |
 | [`PctSwitch`](switch.md)      | `@pacit/components/switch`   | a setting that takes effect at once |
+| [`PctSlider`](slider.md)      | `@pacit/components/slider`   | a position on a numeric continuum   |
 | [`PctSelect`](select.md)      | `@pacit/components/select`   | choice list with a panel of its own |
 | [`PctMultiSelect`](select.md) | `@pacit/components/select`   | the same list, holding many answers |
 | [`PctDialog`](dialog.md)      | `@pacit/components/dialog`   | modal dialog                        |
@@ -89,7 +90,15 @@ The order follows **architectural debt**, not popularity:
    ([0041](../decisions/0041-a-height-the-platform-computes.md)). What the fallback has to be
    TOLD is the part worth keeping: a value written with no event, and a width that rewrapped
    the text ([`lesson-114`](../lessons.md#lesson-114),
-   [`lesson-115`](../lessons.md#lesson-115)).
+   [`lesson-115`](../lessons.md#lesson-115)). The **slider** is built as well, and it read 0039
+   twice more: `aria-orientation` is derived by the engine from the writing mode and IGNORED
+   when it disagrees, and `aria-required` never reaches a range's accessibility node at all,
+   so the component writes neither
+   ([0042](../decisions/0042-a-slider-is-the-platforms-range.md)). What it did not settle the
+   way the decision expected is the drawing: a range carries generated content in **one**
+   engine of three, so the fill and the ticks are drawn boxes under a transparent input
+   rather than pseudo-elements — which is what buys RTL and the vertical axis with no rule
+   reading the direction ([`lesson-118`](../lessons.md#lesson-118)).
 6. **Table / DataGrid** — has to stand on a **headless core** separated from rendering.
 
 Before item 1 the **behaviour layer in `core`** has to exist: list navigation (private methods

@@ -86,6 +86,15 @@ from what the browser really gets.
 ./select PctSelect placeholder
 ./select PctSelect trigger
 ./select PctSelect value
+./slider PctSlider bubble
+./slider PctSlider control
+./slider PctSlider error
+./slider PctSlider fill
+./slider PctSlider hint
+./slider PctSlider label
+./slider PctSlider mark
+./slider PctSlider thumb
+./slider PctSlider track
 ./switch PctSwitch control
 ./switch PctSwitch error
 ./switch PctSwitch hint
