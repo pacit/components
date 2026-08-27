@@ -84,6 +84,14 @@ export interface PctTexts {
   readonly dateDayLetter: string;
   readonly dateMonthLetter: string;
   readonly dateYearLetter: string;
+  /**
+   * Toast: the accessible name of the cross that takes a message down. The button draws
+   * nothing but the cross, so this string is the only name it has — the dialog's `dialogClose`
+   * one component over, and deliberately a second key rather than a shared one: "close" is
+   * what a panel does and "dismiss" is what happens to a message, and a language that spells
+   * the two differently has nowhere else to say so.
+   */
+  readonly toastDismiss: string;
 }
 
 export const PCT_DEFAULT_TEXTS: PctTexts = {
@@ -100,6 +108,7 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   dateDayLetter: 'd',
   dateMonthLetter: 'm',
   dateYearLetter: 'y',
+  toastDismiss: 'Dismiss',
 };
 
 /**

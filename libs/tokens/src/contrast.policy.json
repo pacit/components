@@ -926,6 +926,43 @@
       "bg": "pct.tooltip.bg",
       "level": "AA",
       "severity": "error"
+    },
+    {
+      "$comment": "A toast stands on the page with nothing under it — no veil, no anchor — so its edge is measured against the page, which is the popover's reading and not the dialog's. The difference is not cosmetic: this is the one panel here that can be the only thing on a screen the user is not looking at, so the boundary is what makes it a message rather than a smudge in the corner.",
+      "name": "UI: toast edge against the page",
+      "fg": "pct.toast.item-border",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "toast — the message",
+      "fg": "pct.toast.item-fg",
+      "bg": "pct.toast.item-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "$comment": "The action is the one thing on a toast that does something other than making it go away, and it is drawn as text rather than as a filled button — so it is measured as text (AA) and not as a non-text control (UI). The background is the toast's own surface and deliberately not the page's: the two are the same colour today and the entry has to name what is really painted underneath, or a skin that tints the toast leaves this measuring nothing.",
+      "name": "toast — the action",
+      "fg": "pct.toast.action-fg",
+      "bg": "pct.toast.item-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "UI: toast close button",
+      "fg": "pct.toast.close-fg",
+      "bg": "pct.toast.item-bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: toast close button (hover)",
+      "fg": "pct.toast.close-fg-hover",
+      "bg": "pct.toast.close-bg-hover",
+      "level": "UI",
+      "severity": "error"
     }
   ]
 }

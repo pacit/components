@@ -156,6 +156,35 @@ true observation that a navigation test has no mode in which it passes without a
 the layout half added by 0041 is nothing like that, because a fallback CAN quietly agree with
 nothing. Five recorded runs say so, and they fail in different engines on purpose.
 
+**E7 has opened with the toast, and it is the item where a prediction this plan had carried
+since D4 turned out to be wrong twice.** 0026 wrote that the assertive channel's "first callers
+are the toast and the dialog"; neither is one, and both for 0026's **own** reason — a message
+with a place on the screen announces from that place. So a toast is drawn inside a live region
+rather than duplicated into a hidden one, and the correction is a document rather than a
+silence ([0044](decisions/0044-a-toast-is-a-change-in-a-region-that-was-already-there.md),
+**C37**). What 0026 got right is the half the component is built on, and it decided the
+lifecycle: a region entering the document with its text is a region nobody has registered, so a
+render opens the viewport **empty**. The role was then settled by chromium's own accessibility
+tree against the reflex — `role="status"` publishes `atomic=true` and re-reads the whole stack
+on every arrival, `role="log"` publishes `polite`, `atomic=false`, `relevant="additions text"`
+**with no attribute of ours at all**, and urgency becomes a property of the message
+(`role="alert"` nested inside publishes `assertive` for itself while the log stays polite).
+That is [0039](decisions/0039-a-state-the-platform-publishes-is-not-ours-to-write.md) read a
+fourth time and the first time it has decided a role. The afternoon's real finding is one floor
+below every component here: **a `z-index` cannot get above the top layer**, because the CDK
+renders its overlays inside a shown popover — the stack sat under a dialog's veil at 1100
+against a container declaring 1000, and 99999 changed nothing
+([`lesson-122`](lessons.md#lesson-122)). The viewport is a `popover="manual"` shown again per
+message, since the top layer orders by recency; a closed popover's live region is **absent**
+from the accessibility tree, which is the same discipline arriving from a third direction, and
+so is `inert`, measured now rather than quoted — which is why `PctModalBackground` had to learn
+the live **roles** and not just the attribute. The other measurement worth keeping is about a
+clock: **focus removed with its element lands on `body`** in three engines, so a control that
+expires under a keyboard user takes their place on the page with it
+([`lesson-121`](lessons.md#lesson-121)) — the type refuses a `duration` to any message carrying
+an action, and nothing expires while a pointer or focus is in the stack. It left **C36**, **C37**
+and **C38** behind, and gave **C33** two more files.
+
 **E5 has closed, all four items of it, and the fourth is the one where the platform's own
 control was refused on three measurements rather than one.** `<input type="date">` takes the
 order it shows a date in from `lang` in chromium, from the browser's locale in webkit and
@@ -2096,6 +2125,66 @@ directory` at `readFileSync`. Four of the new entries are tracked as SYMLINKS to
   - binds at: **the next `data-pct-*` name that collides**, or the first change to
     `check-bundle`'s marker scan — whichever comes first · _notes:_ —
 
+- [ ] **C36 — a message reports nothing by colour, and the channel that would repair it is a
+      decision nobody has made**
+  - every toast is drawn the same: one surface, one edge, one sentence. Success, warning and
+    failure look alike, and the only thing that separates an urgent message from an ordinary
+    one is what it is announced as (`role="alert"`) and the clock it does not have
+  - that is deliberate and it is written down
+    ([0044](decisions/0044-a-toast-is-a-change-in-a-region-that-was-already-there.md)): a tone
+    painted in colour alone is a state carried by colour alone
+    ([`req-a11y-forced-colors`](requirements/a11y.md#req-a11y-forced-colors)), so a tone needs a
+    second channel, and the only one a card of text has is an **icon**. An icon is a public
+    name and a promise that supplying one replaces the drawing
+    ([0011](decisions/0011-icons.md)), so "success, warning, danger, info" is four names added
+    to `PctIconName` at once — the kind of set D1's rule says one consumer cannot judge
+  - what the item is: the decision, not the CSS. Whether tones exist at all; if they do,
+    whether the icon is the library's or a slot; and whether the same set then serves the
+    field's error, the dialog's confirm and whatever the banner turns out to be. Every one of
+    those wants the same four drawings, which is exactly why the first component to want them
+    should not settle it alone
+  - binds at: **the second component that wants a tone** — a banner, an inline alert — or the
+    first consumer report, whichever comes first · _notes:_ —
+
+- [ ] **C37 — the assertive channel has no consumer, and therefore no gate**
+  - `PctAnnouncer` opens two regions and has done since D4. The polite one is read by the
+    select's empty panel and measured in `core.spec.ts`; the assertive one is created, hidden,
+    exported — and spoken through by nothing in this library
+  - 0026 said so out loud and named who would fix it: "the first callers are the toast and the
+    dialog, at E1". Neither turned out to be one, and both for the same reason, which is 0026's
+    own rule: a message with a place on the screen announces from that place. The dialog is a
+    panel that takes focus; the toast is a `role="log"` with the message inside it
+    ([0044](decisions/0044-a-toast-is-a-change-in-a-region-that-was-already-there.md)). So the
+    prediction is not merely unfulfilled — it was **wrong twice**, and the second time on
+    purpose
+  - what is left is a mechanism this library ships, exports and never exercises: no unit case
+    puts a sentence on it, no e2e page draws it, and the one thing that would notice it
+    breaking is an application using it. That is the shape of a promise with no gate, and the
+    two roads are opposite — find the consumer that needs an interruption with no place on the
+    screen, or take the region out and let a consumer pass `'assertive'` into a channel opened
+    on demand, which is the very failure 0026 refused
+  - binds at: **the first message in this library that has no home** — or the next change to
+    `announce.ts`, whichever comes first · _notes:_ —
+
+- [ ] **C38 — a control in the corner is last in the page's tab order, and nothing carries the
+      keyboard to it**
+  - a toast's `Undo` is a real control on a real card, and it is a child of `body` — so it
+    stands after every control on the page. A keyboard user who wants it walks the whole
+    document first. The clock at least does not run out during that walk (an action makes a
+    message standing, and focus inside the stack stops every clock), but "reachable in
+    principle" is not the same promise as "reachable"
+  - the usual answer is a global key that moves focus into the stack (F6 in several
+    implementations, F8 in others), and the disagreement between them is the item: a library
+    that installs a document-level listener is taking a keystroke away from the application,
+    and this repository has measured nothing about which one is free
+    ([`req-api-platform`](requirements/api.md#req-api-platform) is about not inventing what the
+    platform already has, and here the platform has nothing)
+  - the same gap will arrive from the other side at the first banner or skip link, which is why
+    it is worth settling once: **how does a keyboard reach a region that is not where the
+    reading order says it is?**
+  - binds at: **the second body-level control this library draws**, or the first consumer
+    report about the toast's action · _notes:_ —
+
 ## D. Phase 1 — the behaviour layer in `core`
 
 The largest architectural risk. The list machinery (typeahead, `activeIndex`, skipping disabled
@@ -3289,8 +3378,83 @@ still coming` (7 cases × 3 engines, driven by an event rather than a press, bec
     was built, and how it was found). `visit()` takes a `now` now — `page.clock.setFixedTime`
     and deliberately not `install`, whose faked timers would take the transition waits down
     with them
-- [ ] **E7 — the rest**: toast, tabs, accordion, drawer, pagination, progress, skeleton, chips,
-      avatar, badge, breadcrumb, stepper, tree
+- [~] **E7 — the rest**: toast, tabs, accordion, drawer, pagination, progress, skeleton, chips,
+  avatar, badge, breadcrumb, stepper, tree
+  - _notes (the toast):_ **one of thirteen is done, and it is the one whose every fork was
+    settled by reading what an engine publishes rather than by reading a specification.** The
+    item began with a prediction two phases old:
+    [0026](decisions/0026-one-channel-per-politeness.md) said the assertive channel's "first
+    callers are the toast and the dialog, at E1". Both turned out not to be, and by 0026's own
+    rule — **a message with a place on the screen announces from that place** — so the toast
+    is drawn inside a live region rather than duplicated into a hidden one, and the
+    prediction is corrected in a document rather than left standing
+    ([0044](decisions/0044-a-toast-is-a-change-in-a-region-that-was-already-there.md),
+    **C37**). What 0026 got right is the half this component is built on: a region entering
+    the document together with its text is a region nobody has registered, so a render opens
+    the viewport **empty** and every message after that is a change inside it.
+    · The role was settled by chromium's own accessibility tree, and it is the reflex that is
+    wrong: `role="status"` publishes `atomic=true`, which re-reads every message on the screen
+    each time one arrives; `role="log"` publishes `polite`, `atomic=false`,
+    `relevant="additions text"` — a stack read one message at a time — **with no attribute of
+    ours at all**, which is
+    [0039](decisions/0039-a-state-the-platform-publishes-is-not-ours-to-write.md) read a fourth
+    time and the first time it has decided a role rather than an attribute. Urgency is then a
+    property of the MESSAGE: an `alert` nested in the `log` publishes `assertive` and `atomic`
+    for itself while the log around it stays polite, so one stack in one place holds both
+    kinds in the order they arrived
+  - _the thing the plan did not foresee, and it cost the afternoon:_ **a `z-index` cannot get
+    above the top layer.** The stack sat under a dialog's veil at 1100 against a container
+    declaring 1000, and raising the number to 99999 changed nothing — the CDK renders every
+    overlay inside a shown `popover`, and the `z-index: 1000` still on
+    `.cdk-overlay-container` is exactly what makes the defect read as an ordinary stacking bug
+    ([`lesson-122`](lessons.md#lesson-122)). The way out is the platform's: the viewport is a
+    `popover="manual"`, shown when created and shown again per message, because the top layer
+    orders by **when a thing was shown**. Three measurements came with that road — a closed
+    popover is `display: none` and its live region is ABSENT from the accessibility tree; the
+    user agent's own sheet gives a popover `inset: 0`, a border, padding, a background and
+    `overflow: auto`, every one of which has to be taken back; and the toggle does **not**
+    restart the transitions of the cards already in the stack, measured in three engines,
+    which is the only reason the road is affordable
+  - _the second cross-cutting finding:_ `PctModalBackground` leaves the live children of `body`
+    speaking, and it recognised them by the `aria-live` **attribute** — which a `role="log"`
+    does not carry. So the exemption learned the five live roles, and the claim it rested on
+    stopped being a quotation: measured through CDP, a `role="status"` under `inert` is
+    **absent** from chromium's accessibility tree, the same as under `aria-hidden`, and it
+    comes back when the attribute goes. That is D1's rule arriving on a second consumer — one
+    consumer cannot tell a shared property from an accident of the only case — and it is why
+    the toast is a child of `body` rather than of `<app-root>`
+  - _what the type does instead of a rule:_ the spec is a discriminated pair. A notice carries
+    a `duration`; a **standing** message — one that is urgent or carries an action — has no
+    `duration` field at all, so a clock on it is a compile error. The reason it must not have
+    one is a measurement too: **focus removed with its element lands on `body`** in three
+    engines, so a control expiring under a keyboard user takes their place on the page with it
+    ([`lesson-121`](lessons.md#lesson-121)). Nothing expires while a pointer is over the stack
+    or focus is inside it, and what is left of a clock is resumed rather than restarted
+  - gate: `apps/sandbox-e2e/src/toast.spec.ts` (15 cases × 3 engines), the `/toast` view added
+    to the axe audit, hydration and the RTL audit, a stack of three messages audited separately
+    (the state the walk over the routes cannot reach), the `toast-stack` and `toast-stack-rtl`
+    baselines, a forced-colours case of its own, and 21 unit cases in `toast.spec.ts` — 744
+    unit cases green
+  - control: the ABSENCE of `aria-live`, `aria-atomic` and `aria-relevant` asserted in both
+    suites, which is the only way to hold an attribute that must not be written
+    ([`lesson-112`](lessons.md#lesson-112)); the top layer's recency rule pinned from **both**
+    sides — a message raised while the modal is up can be pressed through the veil, an older
+    one cannot; and the pointer's pass-through measured on the page rather than on the
+    stylesheet (a point in the corner the stack does not cover answers as the page)
+  - cost: `./toast` **15311 B** on `./core` and `./icon`. `./core` grew 200 B, and the fan-out
+    of that is the line worth reading twice: every entrypoint standing on it grew **142 B** for
+    the one new string (`PCT_DEFAULT_TEXTS` is one constant) and the five that open overlays a
+    further 35 B for `pctInheritedFrom` becoming a function instead of three lines inside
+    `show()`. `./icon`, which depends on `./core` not at all, did not move — the same control
+    the date field had. 21 tokens and 5 contrast pairs; two new part words (`action`,
+    `message`) and two new properties (`inset`, `z-index`) in the name dictionary; one new
+    system colour (`LinkText`) in the e2e palette; four parts; one new string
+  - _the findings left behind:_ **C36** (a message reports nothing by colour, and the icon set
+    that would repair it is a decision nobody has made), **C37** (the assertive channel now has
+    no candidate consumer at all) and **C38** (a control in the corner is last in the page's
+    tab order and nothing carries the keyboard to it). **C33 gained two more files** — the
+    toast's two are the first added to the mutation set on nothing but the habit that component
+    logic belongs in it, which is precisely the rule that item says is unwritten
 - [ ] **E6 — table / datagrid** on a headless core (column model, sorting, filtering, grouping,
       selection as signals) separated from rendering. **The last item of the phase** — the only
       one counted in months rather than days; until the decision in

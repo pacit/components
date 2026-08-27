@@ -304,6 +304,26 @@ test.describe('Appearance — compared with the baseline', () => {
   });
 
   /**
+   * A stack of messages in the corner. The whole viewport and not a card, for the dialog's
+   * reason and one further: the stack is drawn outside the page's tree AND in the top layer,
+   * so what the picture has to show is where it lands against the window's own edges — the
+   * inset from two of them, the gap between the cards, and the fact that they are all as wide
+   * as the widest of them.
+   */
+  test('toast-stack', async ({ page }) => {
+    await stage(page, '/toast');
+    await page.getByTestId('raise-standing').click();
+    await page.getByTestId('raise-action').click();
+    const items = page.locator('[data-pct-part="item"]');
+    await expect(items).toHaveCount(2);
+    // The enter is a fade, so the shot has to wait for it to have finished.
+    await expect(items.first()).toHaveCSS('opacity', '1');
+    await expect(items.nth(1)).toHaveCSS('opacity', '1');
+
+    await expect(page).toHaveScreenshot('toast-stack.png');
+  });
+
+  /**
    * The same set of controls in the dark theme. The theme is a cross-cutting axis,
    * so a regression in the semantic layer of the tokens will show up here rather
    * than in the light screenshots.
@@ -373,6 +393,25 @@ test.describe('Appearance in RTL — compared with the baseline', () => {
     await expect(page.locator('[data-pct-part="panel"]')).toBeVisible();
 
     await expect(page).toHaveScreenshot('dialog-open-rtl.png');
+  });
+
+  /**
+   * The stack pinned to the other corner. The placement is `inset-inline-end`, and the whole
+   * question this picture answers is whether the direction REACHED the box: it is a child of
+   * `body`, so nothing inherits into it and `dir` is handed over by hand (`lesson-35`) — a
+   * stylesheet full of logical properties proves nothing on its own.
+   */
+  test('toast-stack-rtl', async ({ page }) => {
+    await stage(page, '/toast');
+    await setRtl(page);
+    await page.getByTestId('raise-standing').click();
+    await page.getByTestId('raise-action').click();
+    const items = page.locator('[data-pct-part="item"]');
+    await expect(items).toHaveCount(2);
+    await expect(items.first()).toHaveCSS('opacity', '1');
+    await expect(items.nth(1)).toHaveCSS('opacity', '1');
+
+    await expect(page).toHaveScreenshot('toast-stack-rtl.png');
   });
 
   /**

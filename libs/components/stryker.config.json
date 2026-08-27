@@ -19,6 +19,8 @@
     "libs/components/select/src/multi-select.ts",
     "libs/components/select/src/select.base.ts",
     "libs/components/select/src/select.ts",
+    "libs/components/toast/src/toast-viewport.ts",
+    "libs/components/toast/src/toaster.ts",
     "libs/components/tooltip/src/tooltip.ts",
     "!libs/components/**/index.ts",
     "!libs/components/**/*.types.ts",

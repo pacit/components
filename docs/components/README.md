@@ -27,6 +27,7 @@ a machine; prose with a missing paragraph is not.
 | [`PctTooltip`](tooltip.md)    | `@pacit/components/tooltip`  | a sentence about a control          |
 | [`PctPopover`](popover.md)    | `@pacit/components/popover`  | a panel of content on a live page   |
 | [`PctMenu`](menu.md)          | `@pacit/components/menu`     | a list of commands to choose from   |
+| [`PctToaster`](toast.md)      | `@pacit/components/toast`    | a message on top of the page        |
 
 ## The order of the components to come
 
@@ -114,7 +115,18 @@ The order follows **architectural debt**, not popularity:
    three engines, so a field and its grid would disagree about the year unless the calendar is
    pinned; and `getWeekInfo()` is absent from firefox, so the first day of the week is a table
    of 80 regions with the platform's own CLDR as its gate.
-6. **Table / DataGrid** — has to stand on a **headless core** separated from rendering.
+6. **The rest** — toast, tabs, accordion, drawer, pagination, progress, skeleton, chips,
+   avatar, badge, breadcrumb, stepper, tree. The **toast** is built, and it is the one that had
+   to be argued down from the reflex twice: `role="status"` on the region publishes
+   `atomic=true`, which re-reads every message on the screen each time one arrives, so the
+   region is a `role="log"` and writes no ARIA of its own; and a `z-index` cannot put the stack
+   above a modal, because the CDK renders its overlays in the top layer and nothing outside it
+   can be above it whatever the number says ([`lesson-122`](../lessons.md#lesson-122)). The
+   region is opened **empty** by a render — a live region arriving with its text is one nobody
+   registered — and the whole surface is a service, because a message about something that has
+   just happened is raised by the code that made it happen
+   ([0044](../decisions/0044-a-toast-is-a-change-in-a-region-that-was-already-there.md)).
+7. **Table / DataGrid** — has to stand on a **headless core** separated from rendering.
 
 Before item 1 the **behaviour layer in `core`** has to exist: list navigation (private methods
 in `PctSelect` today), the overlay, focus, the live announcer, templates

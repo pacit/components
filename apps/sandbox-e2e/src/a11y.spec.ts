@@ -307,6 +307,26 @@ test.describe('Accessibility (axe-core, WCAG 2.2 AA)', () => {
     expect(report(violations)).toBe('');
   });
 
+  /**
+   * A stack of messages, and the whole page with them. An empty live region is nothing an
+   * audit has an opinion about — which is itself worth knowing, since an empty LISTBOX is a
+   * critical violation ([`lesson-106`](../../../docs/lessons.md#lesson-106)): a listbox is a
+   * list and a log is a place. What is asked here is the state the walk over the routes never
+   * reaches, a region holding messages: an `alert` nested inside a `log`, two buttons on a
+   * card whose only text is a sentence, and the contrast of the whole thing composed over the
+   * page it stands on. The stack is in the top layer, and that is part of the question too.
+   */
+  test('a stack of messages has no violations', async ({ page }) => {
+    await visit(page, '/toast');
+    await page.getByTestId('raise-standing').click();
+    await page.getByTestId('raise-urgent').click();
+    await page.getByTestId('raise-action').click();
+    await expect(page.locator('[data-pct-part="item"]')).toHaveCount(3);
+
+    const violations = await audit(page);
+    expect(report(violations)).toBe('');
+  });
+
   test('a card with a dark stage has no violations', async ({ page }) => {
     await visit(page, '/button');
     const violations = await audit(page, '[data-testid="demo-dark"]');

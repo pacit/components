@@ -43,6 +43,7 @@
   "component": {
     "$comment": "The component tier: `--pct-{component}[-{part}]-{property}[-{variant}]`. The component is not listed, because it is not a dictionary — it has to be a real package entrypoint (`libs/components/<name>/ng-package.json`), and point 3 watches that. The variant stands ALWAYS at the end: `--pct-button-bg-hover`, never `--pct-button-hover-bg`. That order is the only reason why knowing one name lets you guess its sibling.",
     "parts": [
+      "action",
       "affix",
       "arrow",
       "backdrop",
@@ -59,6 +60,7 @@
       "item",
       "label",
       "mark",
+      "message",
       "nav",
       "option",
       "panel",
@@ -78,6 +80,7 @@
       "font-weight",
       "gap",
       "height",
+      "inset",
       "max-height",
       "max-width",
       "padding-x",
@@ -86,7 +89,8 @@
       "shadow",
       "size",
       "target-min",
-      "width"
+      "width",
+      "z-index"
     ],
     "states": [
       "active",

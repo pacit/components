@@ -1,0 +1,53 @@
+<!-- One element per message, and the region around them is the HOST — a place that was there
+     before anything had to be said (0044). `role="alert"` on an urgent one is the other half
+     of the same measurement: the engines publish it as `live=assertive` with `atomic=true`
+     for that message alone, while the log around it stays polite and non-atomic. -->
+@for (toast of toasts(); track toast.id) {
+<div
+  class="pct-toast__item"
+  data-pct-part="item"
+  [attr.role]="toast.urgent ? 'alert' : null"
+  [attr.data-pct-urgent]="toast.urgent ? '' : null"
+>
+  <span class="pct-toast__message" data-pct-part="message"
+    >{{ toast.text }}</span
+  >
+
+  @if (toast.actionLabel) {
+  <button
+    type="button"
+    class="pct-toast__action"
+    data-pct-part="action"
+    (click)="run(toast)"
+  >
+    {{ toast.actionLabel }}
+  </button>
+  }
+
+  <!-- The one control every message has. A toast that can be taken down by hand is what
+       makes the clock an accelerator rather than the only way out of it, and it is the same
+       cross the dialog draws (0028). -->
+  <button
+    type="button"
+    class="pct-toast__close"
+    data-pct-part="close"
+    [attr.aria-label]="texts().toastDismiss"
+    (click)="dismiss(toast)"
+  >
+    <pct-icon name="close">
+      <svg
+        viewBox="0 0 16 16"
+        width="100%"
+        height="100%"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        focusable="false"
+      >
+        <path d="M4 4l8 8M12 4l-8 8" />
+      </svg>
+    </pct-icon>
+  </button>
+</div>
+}

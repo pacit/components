@@ -1,0 +1,113 @@
+<h2 class="view__title">Toast</h2>
+<p class="muted view__intro">
+  A message that arrives on top of the page. There is no
+  <code>&lt;pct-toast&gt;</code> to put in a template — the surface is
+  <code>PctToaster</code>, injected where the thing being reported happens. The
+  region it lands in is a <code>role="log"</code> opened empty by the first
+  render, so every message after that is a change inside a region an assistive
+  technology has already registered.
+</p>
+
+<sbx-demo
+  heading="A message"
+  summary="A notice goes away by itself; one with no duration waits. Pointing at the stack or tabbing into it stops every clock."
+  [reqs]="['req-a11y-built-in', 'req-api-config']"
+  data-testid="demo-notice"
+>
+  <div class="row">
+    <button pctButton (click)="notice()" data-testid="raise-notice">
+      Save the draft
+    </button>
+    <button
+      pctButton
+      variant="outline"
+      (click)="brief()"
+      data-testid="raise-brief"
+    >
+      Copy (a shorter clock)
+    </button>
+    <button
+      pctButton
+      variant="outline"
+      (click)="standing()"
+      data-testid="raise-standing"
+    >
+      Report something that waits
+    </button>
+    <button
+      pctButton
+      variant="outline"
+      (click)="clear()"
+      data-testid="clear-toasts"
+    >
+      Clear the stack
+    </button>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="Urgent"
+  summary="role=alert on the message itself: the engines publish it as assertive and atomic for that message alone, while the log around it stays polite. It never expires — something urgent enough to interrupt is urgent enough to wait to be read."
+  [reqs]="['req-a11y-built-in', 'req-a11y-wcag']"
+  data-testid="demo-urgent"
+>
+  <div class="row">
+    <button pctButton (click)="urgent()" data-testid="raise-urgent">
+      Fail to save
+    </button>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="With an action"
+  summary="A toast carrying a control does not expire: the control is at the very end of the page's tab order, and a clock running underneath that walk is a promise the library cannot keep."
+  [reqs]="['req-a11y-wcag', 'req-a11y-touch']"
+  data-testid="demo-action"
+>
+  <div class="row">
+    <button pctButton (click)="withAction()" data-testid="raise-action">
+      Delete the message
+    </button>
+    <span class="muted" data-testid="undone-count"
+      >Undone {{ undone() }} time(s)</span
+    >
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="From inside a modal"
+  summary="Everything outside a modal goes inert, and an inert subtree is absent from the accessibility tree — not merely ignored. The viewport is a live child of body, which is the one place the modal background leaves speaking."
+  [reqs]="['req-a11y-built-in', 'req-project-core']"
+  data-testid="demo-modal"
+>
+  <div class="row">
+    <button pctButton (click)="confirm.set(true)" data-testid="open-modal">
+      Open the settings
+    </button>
+  </div>
+
+  <pct-dialog [(open)]="confirm" heading="Settings">
+    <p>Nothing here changes anything — press save and watch the corner.</p>
+    <div class="row">
+      <button pctButton (click)="fromModal()" data-testid="modal-save">
+        Save
+      </button>
+      <button
+        pctButton
+        variant="outline"
+        (click)="fromOpenModal()"
+        data-testid="modal-report"
+      >
+        Report without closing
+      </button>
+      <button
+        pctButton
+        variant="outline"
+        (click)="confirm.set(false)"
+        data-testid="modal-cancel"
+      >
+        Cancel
+      </button>
+    </div>
+  </pct-dialog>
+</sbx-demo>

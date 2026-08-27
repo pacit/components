@@ -376,6 +376,40 @@ test.describe('forced-colors: active', () => {
     expect(await styleOf(off, 'background-color')).toBe(sys.Canvas);
   });
 
+  /**
+   * A message card in this mode is a rectangle of `Canvas` on a page of `Canvas`, so the edge
+   * is the whole of what says where it ends — the popover's situation exactly. What is new
+   * here is the second reading INSIDE the card: the sentence and the control that acts on it
+   * are the same colour in the ordinary mode only because the skin says so, and this mode
+   * keeps them apart on its own terms — `CanvasText` for what is read, `LinkText` for what can
+   * be pressed for its own sake.
+   */
+  test('a message keeps its edge, and its action apart from its sentence', async ({
+    page,
+  }) => {
+    await visit(page, '/toast', { media: FORCED });
+    const sys = await systemColors(page);
+
+    await page.getByTestId('raise-action').click();
+    const item = page.locator('[data-pct-part="item"]').first();
+    await expect(item).toBeVisible();
+
+    expect(await styleOf(item, 'background-color')).toBe(sys.Canvas);
+    expect(await styleOf(item, 'border-top-color')).toBe(sys.CanvasText);
+    expect(await styleOf(item, 'border-top-style')).toBe('solid');
+
+    const message = item.locator('[data-pct-part="message"]');
+    const action = item.locator('[data-pct-part="action"]');
+    expect(await styleOf(message, 'color')).toBe(sys.CanvasText);
+    expect(await styleOf(action, 'color')).toBe(sys.LinkText);
+    expect(await styleOf(action, 'color')).not.toBe(
+      await styleOf(message, 'color'),
+    );
+    expect(
+      await styleOf(item.locator('[data-pct-part="close"]'), 'color'),
+    ).toBe(sys.CanvasText);
+  });
+
   test('the disabled state says GrayText in every control', async ({
     page,
   }) => {

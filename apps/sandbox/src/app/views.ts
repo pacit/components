@@ -146,6 +146,14 @@ export const SBX_VIEWS: readonly SbxView[] = [
     load: () => import('./views/menu/menu-view').then((m) => m.MenuView),
   },
   {
+    path: 'toast',
+    title: 'Toast',
+    summary:
+      'A message on top of the page, in a region that was already there.',
+    group: 'components',
+    load: () => import('./views/toast/toast-view').then((m) => m.ToastView),
+  },
+  {
     path: 'size',
     title: 'Size',
     summary: 'Every component on the shared sm/md/lg axis.',

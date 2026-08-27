@@ -28,6 +28,29 @@ export interface PctOverlayInherited {
 }
 
 /**
+ * Reads off `el` everything a panel outside the host tree stops inheriting.
+ *
+ * It is a function of its own, and not three lines inside `show()` below, because the second
+ * consumer is not an overlay at all: a toast's viewport is a child of `body` created by a
+ * service, with no trigger to be opened against and no template to be written into — and the
+ * list of severed properties has to be one list, or the fifth entry added here reaches the
+ * panels and not the toasts ([`lesson-35`](../../../../docs/lessons.md#lesson-35)).
+ *
+ * `getComputedStyle` is a browser's; nothing here may be called on a server.
+ */
+export function pctInheritedFrom(el: HTMLElement): PctOverlayInherited {
+  const style = getComputedStyle(el);
+  return {
+    // `closest` starts at the element itself, so a control carrying the attribute is
+    // its own answer — the same reading a themed ancestor gives.
+    theme: el.closest('[data-theme]')?.getAttribute('data-theme') ?? null,
+    fontFamily: style.fontFamily,
+    fontSize: style.fontSize,
+    direction: style.direction,
+  };
+}
+
+/**
  * The two elements an overlay is opened against, as functions rather than values: both are
  * read **on every open**, because either can move under a control that outlives one opening.
  */
@@ -117,15 +140,7 @@ export function pctOverlay(src: PctOverlaySource): PctOverlay {
 
     show(): void {
       const from = src.from();
-      const style = getComputedStyle(from);
-      inherited.set({
-        // `closest` starts at the element itself, so a control carrying the attribute is
-        // its own answer — the same reading a themed ancestor gives.
-        theme: from.closest('[data-theme]')?.getAttribute('data-theme') ?? null,
-        fontFamily: style.fontFamily,
-        fontSize: style.fontSize,
-        direction: style.direction,
-      });
+      inherited.set(pctInheritedFrom(from));
       anchorWidth.set((src.anchor?.() ?? from).offsetWidth);
       open.set(true);
     },

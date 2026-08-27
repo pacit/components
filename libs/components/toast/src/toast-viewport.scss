@@ -1,0 +1,186 @@
+/* The host IS the live region and the box the stack stands in, so everything about the place
+   is written on `:host` — a class selector here would be scoped to the CONTENT and would
+   describe nothing (`_nghost` against `_ngcontent`). */
+:host {
+  position: fixed;
+  /* The stack lives in the top layer (`popover="manual"`), so this number orders nothing
+     while the API is there — it is what a browser without one has instead, and the moment
+     before the first `showPopover()` in every other. */
+  z-index: var(--pct-toast-z-index);
+  /* Everything the user-agent sheet gives a popover, taken back: `inset: 0` (which would
+     stretch the box across the window and undo every placement rule below), a 3 px border,
+     4 px of padding, an opaque background and `overflow: auto` — the last of which would clip
+     the shadows off the cards. */
+  inset: auto;
+  border: none;
+  padding: 0;
+  background: none;
+  color: inherit;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  /* Every message is as wide as the widest of them rather than as wide as its own sentence:
+     a ragged column of cards reads as several unrelated things. */
+  align-items: stretch;
+  gap: var(--pct-toast-gap);
+  /* The box is as big as its messages, and the distance from the window's edge is a MARGIN
+     and not padding. Measured in three engines: a viewport stretched across the window takes
+     the hit test away from the whole page under it, and padding would leave a band of dead
+     page around the stack for the same reason. A margin area answers no pointer at all. */
+  margin: var(--pct-toast-inset);
+  inline-size: max-content;
+  max-inline-size: calc(100% - var(--pct-toast-inset) * 2);
+}
+
+/* Where the stack stands. Only the insets change: which edge it is pinned to is the whole of
+   the placement, and `start` / `end` are logical, so a right-to-left page mirrors with no rule
+   of its own (`req-token-logical`). */
+:host([data-pct-block='start']) {
+  inset-block-start: 0;
+}
+
+:host([data-pct-block='end']) {
+  inset-block-end: 0;
+}
+
+:host([data-pct-inline='start']) {
+  inset-inline-start: 0;
+}
+
+:host([data-pct-inline='end']) {
+  inset-inline-end: 0;
+}
+
+/* Centring needs both insets and an automatic margin — which is also why the inline margins
+   are written after the shorthand above rather than instead of it. */
+:host([data-pct-inline='center']) {
+  inset-inline: 0;
+  margin-inline: auto;
+}
+
+.pct-toast__item {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: var(--pct-toast-item-gap);
+  max-inline-size: var(--pct-toast-item-max-width);
+  padding-block: var(--pct-toast-item-padding-y);
+  padding-inline: var(--pct-toast-item-padding-x);
+  background: var(--pct-toast-item-bg);
+  color: var(--pct-toast-item-fg);
+  border: 1px solid var(--pct-toast-item-border);
+  border-radius: var(--pct-toast-item-radius);
+  box-shadow: var(--pct-toast-item-shadow);
+
+  /* The enter, and there is deliberately no leave. `@starting-style` gives the browser the
+     state to come from, so a message fades in on being added with no JavaScript at all; the
+     duration comes from the motion axis, which is where `prefers-reduced-motion` is answered
+     (`req-a11y-motion`). A leave would mean the message outliving its own removal while every
+     message under it moves up at the same time — a layout animation, which is a different
+     thing from a fade and one this library has no machinery for. */
+  opacity: 1;
+  transition: opacity var(--pct-motion-transition-duration)
+    var(--pct-motion-transition-easing);
+
+  @starting-style {
+    opacity: 0;
+  }
+}
+
+.pct-toast__message {
+  /* The sentence takes the room the two buttons do not, and `min-inline-size: 0` is what lets
+     it wrap instead of pushing them off the card. */
+  flex: 1;
+  min-inline-size: 0;
+  font-size: var(--pct-toast-message-font-size);
+  line-height: 1.4;
+}
+
+.pct-toast__action {
+  flex: none;
+  /* A text button, so the target has to be made rather than drawn: 24 px is the floor
+     `req-a11y-touch` promises, and one line of small type is nowhere near it. */
+  min-block-size: var(--pct-target-min);
+  padding-block: 0;
+  padding-inline: var(--pct-space-2);
+  background: none;
+  border: none;
+  border-radius: var(--pct-toast-action-radius);
+  color: var(--pct-toast-action-fg);
+  font-family: inherit;
+  font-size: var(--pct-toast-message-font-size);
+  font-weight: var(--pct-toast-action-font-weight);
+  cursor: pointer;
+}
+
+.pct-toast__action:focus-visible {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: 1px;
+}
+
+.pct-toast__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  inline-size: var(--pct-toast-close-size);
+  block-size: var(--pct-toast-close-size);
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: var(--pct-toast-close-radius);
+  color: var(--pct-toast-close-fg);
+  cursor: pointer;
+  /* The box the icon is drawn in — the drawing paints itself in `currentColor` and knows
+     nothing of the state around it (0028). */
+  font-size: 16px;
+}
+
+.pct-toast__close:hover {
+  background: var(--pct-toast-close-bg-hover);
+  color: var(--pct-toast-close-fg-hover);
+}
+
+.pct-toast__close:focus-visible {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: 1px;
+}
+
+/* Forced colours: the card's surface and the page's both become `Canvas`, so the edge is the
+   only thing left saying where the message ends — the popover's situation exactly. Every rule
+   repeats the base selector's own weight, because `@media` adds no specificity and the base
+   rule would otherwise win the cascade ([`lesson-70`](../../../../docs/lessons.md#lesson-70)). */
+@media (forced-colors: active) {
+  .pct-toast__item {
+    background: Canvas;
+    color: CanvasText;
+    border-color: CanvasText;
+  }
+
+  .pct-toast__message {
+    color: CanvasText;
+  }
+
+  /* The one thing on the card that can be pressed for its own sake says so as a link would —
+     the mode has a system colour for exactly that and none for "accent". */
+  .pct-toast__action {
+    color: LinkText;
+  }
+
+  .pct-toast__close {
+    color: CanvasText;
+  }
+
+  .pct-toast__close:hover {
+    background: Highlight;
+    color: HighlightText;
+  }
+
+  .pct-toast__action:focus-visible {
+    outline-color: Highlight;
+  }
+
+  .pct-toast__close:focus-visible {
+    outline-color: Highlight;
+  }
+}

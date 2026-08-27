@@ -1,6 +1,26 @@
 import { DOCUMENT, inject, Injectable, signal } from '@angular/core';
 
 /**
+ * The roles that ARE a live region, as opposed to the elements that carry one as an
+ * attribute. The list is the specification's, and the reason it exists here is a measurement:
+ * an element with `role="log"` publishes `live=polite` to the engine and carries **no**
+ * `aria-live` attribute at all, so an exemption reading the attribute alone would have made
+ * this library's own toast viewport go silent behind its own dialog
+ * ([0044](../../../../docs/decisions/0044-a-toast-is-a-change-in-a-region-that-was-already-there.md)).
+ * `marquee` and `timer` are in it for completeness — nothing here draws either, and an
+ * application's own is exactly what this loop must not silence.
+ */
+const LIVE_ROLES = new Set(['alert', 'log', 'marquee', 'status', 'timer']);
+
+/** Whether the element itself is a live region, by attribute or by role. */
+function isLive(element: Element): boolean {
+  return (
+    element.hasAttribute('aria-live') ||
+    LIVE_ROLES.has(element.getAttribute('role') ?? '')
+  );
+}
+
+/**
  * The half of a modal that is about the page rather than about the modal: the background stops
  * answering, and the page stops scrolling underneath.
  *
@@ -74,14 +94,18 @@ export class PctModalBackground {
       // A live region goes on speaking. Found by looking rather than by reasoning: this
       // library's own channels are children of `body` (`PctAnnouncer`), so the first version
       // of this loop silenced them — and with them the one sentence a select opened INSIDE a
-      // dialog has to say, that its list is empty. An inert subtree is hidden from assistive
-      // technology, so a status message inside one reaches nobody.
+      // dialog has to say, that its list is empty.
+      //
+      // "Hidden from assistive technology" is measured and not quoted from the specification:
+      // in chromium's own accessibility tree a `role="status"` under `inert` is not ignored
+      // but ABSENT — the same as under `aria-hidden` — and it comes back when the attribute
+      // goes. A message inside an inert subtree reaches nobody.
       //
       // The test is `aria-live` on the child ITSELF, not anywhere below it: a region an
       // application put inside its own root would otherwise keep the whole page answering,
       // which is the opposite of what a modal is. A toast container below `<app-root>` does
       // go quiet, and that is the honest boundary — it is the same one the dependency draws.
-      if (child.hasAttribute('aria-live')) continue;
+      if (isLive(child)) continue;
       // The attribute rather than the property, though in a browser the two are one thing:
       // the attribute is the version a test can read and a person can see in the inspector,
       // and jsdom implements neither `inert` nor its reflection — so the property alone

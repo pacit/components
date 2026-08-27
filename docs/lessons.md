@@ -3207,3 +3207,64 @@ The general form is worth more than the case: **a fallback is only measured in t
 exists for.** Any check of one that runs in the environment where the primary answers is a
 check of the primary, twice — green whatever the fallback holds, and green for exactly as long
 as nobody visits the browser it was written for.
+
+---
+
+### <a id="lesson-121"></a>`lesson-121` — A control that vanishes on a timer takes the user's place on the page with it
+
+**Measured in three engines: when the element holding focus is removed from the document,
+focus goes to `body`.** Not to the neighbour, not to the parent, not back where it came from —
+to the root, which for a keyboard user means the next `Tab` starts the page again from the top.
+
+The finding arrived with the toast, which is the first thing in this library that removes
+itself while the user may be standing in it. Everything else here is dismissed by an action:
+a dialog closes because somebody closed it, and the component then restores focus to the
+element that opened it, deliberately and in a written-down order
+([0029](decisions/0029-a-modal-is-an-overlay-not-a-dialog-element.md)). A message on a clock
+has no such moment — the clock is not an action and there is nobody to give focus back to.
+
+So the rule is not "restore focus afterwards" but **do not let the clock run**: nothing expires
+while focus is inside the stack, and what is left of the timer is resumed rather than
+restarted. The pointer gets the same treatment for a different reason (a message being read is
+a message being read), and the two are one hold, so that neither can release the other's.
+
+The general form is a question to ask of anything that disappears by itself: **who is standing
+on it when it goes?** A tooltip nobody can focus, a panel that closes on a click, a row
+replaced by a re-render — the first has no answer to give, the second has one, and the third
+is where this bites next.
+
+---
+
+### <a id="lesson-122"></a>`lesson-122` — A `z-index` cannot get above the top layer, and the number that says it can is the dependency's
+
+**The toast stack was under a modal's veil at `z-index: 1100`, with the veil's own container
+declaring `1000`.** Read as CSS that is impossible, and the first half-hour of it was spent
+reading it as CSS: raising the number to 99999 changed nothing, no ancestor had a transform, a
+filter or an `isolation`, and both elements were children of `body`.
+
+What the DOM said, once it was asked instead of the stylesheet, is that the CDK renders every
+overlay inside `<div class="cdk-overlay-popover" popover>` — a **shown popover**, which is the
+top layer. Nothing outside the top layer can be above something inside it, whatever either
+side's `z-index` is; and the `z-index: 1000` still sitting on `.cdk-overlay-container` is
+exactly what makes the defect read as an ordinary stacking bug. A number that describes what
+the dependency used to do is worse than no number.
+
+The way out is the platform's own: be in the top layer too. The stack is a
+`popover="manual"`, shown when it is created and shown again as each message is raised —
+because the order in the top layer is the order things were **shown** in, so being last is the
+only way of being on top, and "shown last" is a fair description of a message that has just
+arrived.
+
+Three things that come with that road, each measured rather than assumed:
+
+- a popover the user agent has **closed** is `display: none`, and a `display: none` live region
+  is **absent** from the accessibility tree — so the region has to be shown while it is still
+  empty, which is the same discipline
+  [0026](decisions/0026-one-channel-per-politeness.md) arrived at from the other side;
+- the user-agent sheet gives a popover `inset: 0`, a 3 px border, 4 px of padding, an opaque
+  background and `overflow: auto`. Every one of them has to be taken back, and the first would
+  have quietly undone every placement rule the component has;
+- toggling the popover to move it up the top layer does **not** restart the transitions of the
+  children already inside it: in all three engines they stay at `opacity: 1` and only the new
+  one runs its `@starting-style`. That was the measurement the road depended on, and it is the
+  kind that is cheaper to take than to reason about.
