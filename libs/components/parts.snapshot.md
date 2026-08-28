@@ -46,6 +46,10 @@ from what the browser really gets.
 ./dialog PctDialog header
 ./dialog PctDialog heading
 ./dialog PctDialog panel
+./drawer PctDrawer close
+./drawer PctDrawer content
+./drawer PctDrawer header
+./drawer PctDrawer heading
 ./field PctField field-control
 ./field PctField field-error
 ./field PctField field-footer

@@ -15,6 +15,7 @@
     "checkbox/**/*.ts",
     "date/**/*.ts",
     "dialog/**/*.ts",
+    "drawer/**/*.ts",
     "radio/**/*.ts",
     "slider/**/*.ts",
     "toast/**/*.ts",

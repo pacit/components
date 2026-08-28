@@ -411,6 +411,32 @@ test.describe('forced-colors: active', () => {
   });
 
   /**
+   * A drawer has no veil, so in this mode the border is the whole of what says where the panel
+   * stops — and the mode paints every surface `Canvas`, the page behind it included. A panel
+   * that lost its edge would be an unbroken field of one colour with a heading somewhere in
+   * the middle of it, which is the state `req-a11y-forced-colors` exists to prevent.
+   */
+  test('the drawer keeps an edge against a page painted the same colour', async ({
+    page,
+  }) => {
+    await visit(page, '/drawer', { media: FORCED });
+    const sys = await systemColors(page);
+
+    await page.getByTestId('trigger-nav').click();
+    const nav = page.getByTestId('drawer-nav');
+    await expect(nav).toHaveAttribute('data-pct-open', '');
+
+    expect(await styleOf(nav, 'background-color')).toBe(sys.Canvas);
+    expect(await styleOf(nav, 'border-inline-end-color')).toBe(sys.CanvasText);
+    expect(
+      await styleOf(nav.locator('[data-pct-part="heading"]'), 'color'),
+    ).toBe(sys.CanvasText);
+    expect(await styleOf(nav.locator('[data-pct-part="close"]'), 'color')).toBe(
+      sys.CanvasText,
+    );
+  });
+
+  /**
    * The accordion has almost nothing to lose here, and that is the reading worth recording:
    * whether a section is open is announced by the platform rather than drawn, so the mode
    * cannot flatten the one state that matters. What it CAN flatten is the heading row's three

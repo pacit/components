@@ -29,6 +29,7 @@
       "@pacit/components/tabs": ["./libs/components/tabs/src/index.ts"],
       "@pacit/components/select": ["./libs/components/select/src/index.ts"],
       "@pacit/components/dialog": ["./libs/components/dialog/src/index.ts"],
+      "@pacit/components/drawer": ["./libs/components/drawer/src/index.ts"],
       "@pacit/components/field": ["./libs/components/field/src/index.ts"],
       "@pacit/components/icon": ["./libs/components/icon/src/index.ts"],
       "@pacit/components/tooltip": ["./libs/components/tooltip/src/index.ts"],

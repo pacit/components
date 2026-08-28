@@ -92,6 +92,17 @@ export interface PctTexts {
    * the two differently has nowhere else to say so.
    */
   readonly toastDismiss: string;
+  /**
+   * Drawer: the accessible name of the cross that shuts a docked panel. The button draws
+   * nothing but the cross, so this string is the only name it has — and it is a key of its own
+   * rather than the dialog's, which the English default makes look like duplication and is
+   * not. A dialog is a window: it is CLOSED, and it leaves. A drawer stays part of the page
+   * with its text still findable ([0047](../../../../docs/decisions/0047-a-drawer-is-a-region-of-the-page-not-a-layer-over-it.md)),
+   * so a language that spells "shut this away" differently from "close this window" has
+   * nowhere else to say so. One key serving both would freeze that distinction out of every
+   * translation at once, which is `toastDismiss`'s argument at the next component.
+   */
+  readonly drawerClose: string;
 }
 
 export const PCT_DEFAULT_TEXTS: PctTexts = {
@@ -109,6 +120,7 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   dateMonthLetter: 'm',
   dateYearLetter: 'y',
   toastDismiss: 'Dismiss',
+  drawerClose: 'Close',
 };
 
 /**

@@ -1,0 +1,141 @@
+<h2 class="view__title">Drawer</h2>
+<p class="muted view__intro">
+  A panel docked to an edge of the window. It is not an overlay: it is drawn
+  where it stands in the document, so the tab order, the theme and the writing
+  direction are the page's own — and a shut drawer is still text the browser's
+  find-in-page can reach.
+</p>
+
+<sbx-demo
+  heading="A panel and the button that opens it"
+  summary="The button says aria-expanded about itself and points at the panel with aria-controls. That pair is the whole ARIA Disclosure pattern, and it is here because the platform's own disclosure needs its button inside the thing it opens."
+  [reqs]="['req-a11y-built-in', 'req-api-platform']"
+  data-testid="demo-basic"
+>
+  <div class="view__row">
+    <button
+      pctButton
+      [pctDrawerTrigger]="nav"
+      data-testid="trigger-nav"
+      type="button"
+    >
+      Sections
+    </button>
+    <button
+      pctButton
+      variant="outline"
+      [pctDrawerTrigger]="nav"
+      data-testid="trigger-nav-second"
+      type="button"
+    >
+      Sections, from further down
+    </button>
+  </div>
+
+  <pct-drawer
+    #nav
+    heading="Sections"
+    data-testid="drawer-nav"
+    (closed)="record($event)"
+  >
+    <!-- Short, one line each. This panel stands in a VIEWPORT screenshot, and a line of text
+         that wraps inside a 320 px column is one whose second line the renderer draws
+         differently between runs — measured twice here, at 362 pixels of difference over
+         prose nothing asserts on. -->
+    <nav class="view__nav">
+      <a href="#one">Shipping</a>
+      <a href="#two">Payment</a>
+      <a href="#three">Returns</a>
+    </nav>
+  </pct-drawer>
+
+  <p class="muted view__reasons" data-testid="nav-reasons">
+    Closed: {{ reasons().join(', ') || '—' }}
+  </p>
+</sbx-demo>
+
+<sbx-demo
+  heading="Every edge, and both of them logical"
+  summary="start and end are the inline axis, so a right-to-left page mirrors them with no rule of its own; top and bottom are the block one. The slide is a transition of the inset, which is why it mirrors too."
+  [reqs]="['req-token-logical', 'req-a11y-motion']"
+  data-testid="demo-sides"
+>
+  <div class="view__row">
+    <button
+      pctButton
+      [pctDrawerTrigger]="atEnd"
+      data-testid="trigger-end"
+      type="button"
+    >
+      From the end edge
+    </button>
+    <button
+      pctButton
+      [pctDrawerTrigger]="atBottom"
+      data-testid="trigger-bottom"
+      type="button"
+    >
+      From the bottom
+    </button>
+  </div>
+
+  <pct-drawer
+    #atEnd
+    side="end"
+    heading="Filters"
+    data-testid="drawer-end"
+    [(open)]="filters"
+  >
+    <p class="view__body">
+      A place to park: tab in, change something, tab out, come back. Nothing
+      here takes the page away.
+    </p>
+
+    <!-- A panel of this library opened from INSIDE the drawer: the CDK's overlay container
+         is stamped at 1000 and the drawer's own layer is 900, which is the whole reason
+         that token has the number it has. -->
+    <pct-select
+      ariaLabel="Size"
+      [options]="sizes"
+      data-testid="filter-select"
+    />
+  </pct-drawer>
+
+  <pct-drawer
+    #atBottom
+    side="bottom"
+    heading="Details"
+    data-testid="drawer-bottom"
+  >
+    <p class="view__body">A sheet along the block edge.</p>
+  </pct-drawer>
+</sbx-demo>
+
+<sbx-demo
+  heading="No chrome of ours"
+  summary="closeButton and closeOnEscape switched off: what is left is the trigger and whatever the content puts there. The panel still carries its name — through aria-label, since there is no heading to point at."
+  [reqs]="['req-a11y-built-in']"
+  data-testid="demo-bare"
+>
+  <button
+    pctButton
+    [pctDrawerTrigger]="bare"
+    data-testid="trigger-bare"
+    type="button"
+  >
+    Open the bare one
+  </button>
+
+  <pct-drawer
+    #bare
+    ariaLabel="Notes"
+    [closeButton]="false"
+    [closeOnEscape]="false"
+    data-testid="drawer-bare"
+  >
+    <p class="view__body">
+      Escape does nothing here, and there is no cross. The way out is the button
+      that opened it — which never left the page.
+    </p>
+  </pct-drawer>
+</sbx-demo>

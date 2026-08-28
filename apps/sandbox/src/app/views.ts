@@ -146,6 +146,14 @@ export const SBX_VIEWS: readonly SbxView[] = [
     load: () => import('./views/menu/menu-view').then((m) => m.MenuView),
   },
   {
+    path: 'drawer',
+    title: 'Drawer',
+    summary:
+      'A panel docked to an edge — and what falls out of it not being an overlay.',
+    group: 'components',
+    load: () => import('./views/drawer/drawer-view').then((m) => m.DrawerView),
+  },
+  {
     path: 'accordion',
     title: 'Accordion',
     summary:

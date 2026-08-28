@@ -1,0 +1,41 @@
+<!--
+  The host is the panel, so there is no wrapper here and no `pctOverlayPanel`: nothing was
+  moved out of the consumer's tree, so nothing stopped being inherited (0047, `lesson-35` read
+  as an absence). What is left is the chrome — a title row, a cross, and the content slot.
+-->
+@if (heading() || closeButton()) {
+<div class="pct-drawer__header" data-pct-part="header">
+  @if (heading()) {
+  <h2 class="pct-drawer__heading" data-pct-part="heading" [id]="headingId">
+    {{ heading() }}
+  </h2>
+  } @if (closeButton()) {
+  <button
+    type="button"
+    class="pct-drawer__close"
+    data-pct-part="close"
+    [attr.aria-label]="texts().drawerClose"
+    (click)="closeFromButton()"
+  >
+    <pct-icon name="close">
+      <svg
+        viewBox="0 0 16 16"
+        width="100%"
+        height="100%"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        focusable="false"
+      >
+        <path d="M4 4l8 8M12 4l-8 8" />
+      </svg>
+    </pct-icon>
+  </button>
+  }
+</div>
+}
+
+<div class="pct-drawer__content" data-pct-part="content">
+  <ng-content />
+</div>

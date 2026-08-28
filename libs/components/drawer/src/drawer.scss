@@ -1,0 +1,191 @@
+/* The host IS the panel — it was never moved anywhere, so `:host(…)` really describes the box
+   the user sees and every state can be read off the tag the consumer typed. That is the whole
+   difference from the dialog's sheet, whose first sentence has to explain that `:host` names
+   nothing. */
+:host {
+  position: fixed;
+  box-sizing: border-box;
+  /* Below the CDK overlay container, which the dependency stamps at 1000: a select panel or a
+     dialog opened from INSIDE a drawer has to stand above it. A drawer that climbed over its
+     own content would be the toast's number read backwards. */
+  z-index: var(--pct-drawer-z-index);
+  display: flex;
+  flex-direction: column;
+  gap: var(--pct-drawer-panel-gap);
+  padding: var(--pct-drawer-panel-padding-y) var(--pct-drawer-panel-padding-x);
+  background: var(--pct-drawer-panel-bg);
+  color: var(--pct-drawer-panel-fg);
+  border: 1px solid var(--pct-drawer-panel-border);
+  box-shadow: var(--pct-drawer-panel-shadow);
+  /* A panel taller than the window scrolls in itself. The page behind is live and scrolls on
+     its own — there is no lock here, because there is no modality. */
+  overflow: auto;
+  /* The slide is a transition of the INSET and not of a transform: `translateX` names an axis
+     the page's writing direction may have mirrored, and a drawer docked to the start edge has
+     to come from the left in English and from the right in Arabic. The logical properties
+     already know which edge that is (`req-token-logical`), so the motion mirrors with no rule
+     of its own. The duration is the motion axis's, which is where `prefers-reduced-motion` is
+     answered for the whole library (`req-a11y-motion`). */
+  transition:
+    inset-inline-start var(--pct-motion-transition-duration)
+      var(--pct-motion-transition-easing),
+    inset-inline-end var(--pct-motion-transition-duration)
+      var(--pct-motion-transition-easing),
+    inset-block-start var(--pct-motion-transition-duration)
+      var(--pct-motion-transition-easing),
+    inset-block-end var(--pct-motion-transition-duration)
+      var(--pct-motion-transition-easing);
+}
+
+/* Where it is docked, and how far off the window it stands while shut. Two rules per side and
+   nothing else: the closed position is the open one pushed out by the panel's own measure, so
+   a skin that changes the width changes the distance the panel travels by the same edit. */
+:host([data-pct-side='start']),
+:host([data-pct-side='end']) {
+  inset-block: 0;
+  inline-size: min(var(--pct-drawer-panel-width), 100%);
+}
+
+:host([data-pct-side='top']),
+:host([data-pct-side='bottom']) {
+  inset-inline: 0;
+  block-size: min(var(--pct-drawer-panel-height), 100%);
+}
+
+:host([data-pct-side='start']) {
+  inset-inline-start: calc(-1 * min(var(--pct-drawer-panel-width), 100%));
+}
+
+:host([data-pct-side='end']) {
+  inset-inline-end: calc(-1 * min(var(--pct-drawer-panel-width), 100%));
+}
+
+:host([data-pct-side='top']) {
+  inset-block-start: calc(-1 * min(var(--pct-drawer-panel-height), 100%));
+}
+
+:host([data-pct-side='bottom']) {
+  inset-block-end: calc(-1 * min(var(--pct-drawer-panel-height), 100%));
+}
+
+:host([data-pct-side='start'][data-pct-open]) {
+  inset-inline-start: 0;
+}
+
+:host([data-pct-side='end'][data-pct-open]) {
+  inset-inline-end: 0;
+}
+
+:host([data-pct-side='top'][data-pct-open]) {
+  inset-block-start: 0;
+}
+
+:host([data-pct-side='bottom'][data-pct-open]) {
+  inset-block-end: 0;
+}
+
+/* `:host` above is an author rule and the browser's `[hidden] { display: none }` is not, so
+   the hidden state has to be written back here or a shut drawer would show. It is the tabs'
+   rule at its second component, and the reasoning is theirs
+   ([0045](../../../../docs/decisions/0045-a-panel-nobody-chose-is-still-text-in-the-document.md)):
+   `hidden="until-found"` must NOT become `display: none`, because the browser hides such a
+   subtree with `content-visibility`, which does nothing to a box that is not rendered at all.
+
+   The `@supports` is the fallback and not decoration. An engine that does not know the
+   attribute reads `until-found` as an unknown value and falls back to plain hidden — the right
+   answer, and this rule must not undo it. What such an engine loses is the slide, not the
+   drawer: a box that goes from `display: none` to laid out has no value to transition from. */
+:host([hidden]) {
+  display: none;
+}
+
+@supports (content-visibility: hidden) {
+  :host([hidden='until-found']) {
+    display: flex;
+    content-visibility: hidden;
+  }
+}
+
+.pct-drawer__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--pct-space-4);
+  flex: none;
+}
+
+.pct-drawer__heading {
+  margin: 0;
+  color: var(--pct-drawer-heading-fg);
+  font-size: var(--pct-drawer-heading-font-size);
+  font-weight: var(--pct-drawer-heading-font-weight);
+  line-height: 1.4;
+}
+
+.pct-drawer__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  /* The target is a token and not a number: 24 px is the floor `req-a11y-touch` promises, and
+     a button that draws a 16 px cross would otherwise be 16 px to a finger. */
+  width: var(--pct-drawer-close-size);
+  height: var(--pct-drawer-close-size);
+  /* The header's first line is the heading's, and the button lines up with it. */
+  margin-block-start: -2px;
+  padding: 0;
+  background: none;
+  border: none;
+  border-radius: var(--pct-drawer-close-radius);
+  color: var(--pct-drawer-close-fg);
+  cursor: pointer;
+  /* The box the icon is drawn in — the drawing paints itself in `currentColor` and knows
+     nothing of the state around it (0028). */
+  font-size: 16px;
+}
+
+.pct-drawer__close:hover {
+  background: var(--pct-drawer-close-bg-hover);
+  color: var(--pct-drawer-close-fg-hover);
+}
+
+.pct-drawer__close:focus-visible {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: 1px;
+}
+
+.pct-drawer__content {
+  /* The content is the consumer's; the panel gives it a column and stays out of it. */
+  min-width: 0;
+}
+
+/* Forced colours: the surface goes to the system's, and the edge is the only thing left saying
+   where the panel stops — there is no veil here to separate it from the page, so the border
+   matters more than it does in a dialog. Each rule is written out rather than left to the base
+   one: `@media` adds no specificity, so a base rule of the same sheet wins the cascade
+   otherwise ([`lesson-70`](../../../../docs/lessons.md#lesson-70)). */
+@media (forced-colors: active) {
+  :host {
+    background: Canvas;
+    color: CanvasText;
+    border-color: CanvasText;
+  }
+
+  .pct-drawer__heading {
+    color: CanvasText;
+  }
+
+  .pct-drawer__close {
+    background: none;
+    color: CanvasText;
+  }
+
+  .pct-drawer__close:hover {
+    background: Highlight;
+    color: HighlightText;
+  }
+
+  .pct-drawer__close:focus-visible {
+    outline-color: Highlight;
+  }
+}

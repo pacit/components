@@ -182,6 +182,39 @@ decision says it is"` goes red the day a second engine ships it
     one survivor being the DI token's description string — which survives in `tabs.ts` and
     `menu.ts` too, and is a debugging label with no behaviour
   - left **4.19** and **4.20** behind, and gave **4.2** a third file
+  - _the drawer is done_ (4 of 13). It is **not an overlay**: the panel is drawn where the
+    consumer wrote it, so the tab order, the theme, the writing direction and the stacking
+    context are the page's own — which is the shape
+    [0031](decisions/0031-a-panel-s-tab-order-belongs-to-its-trigger.md) named and handed here
+    ("a docked filter panel, a side sheet — is not this component"). The one thing written is
+    the ARIA Disclosure pattern, and that is the exact residue of
+    [0046](decisions/0046-a-disclosure-is-the-platforms-and-so-is-the-group-it-belongs-to.md):
+    the platform's disclosure needs its button **inside** the thing it opens, and a drawer's
+    never is. A shut drawer is `hidden="until-found"` — 0045's mechanism at its second
+    component, which is what turns it from the tabs' accident into a rule. See
+    [0047](decisions/0047-a-drawer-is-a-region-of-the-page-not-a-layer-over-it.md),
+    [`lesson-129`](lessons.md#lesson-129), [`lesson-130`](lessons.md#lesson-130)
+  - gate: `apps/sandbox-e2e/src/drawer.spec.ts` (12 × 3) plus `/drawer` in the axe / hydration
+    audits, one forced-colours reading, one screenshot and 27 unit cases. Almost every e2e case
+    is a reading of what the component does **not** do — zero `[inert]`, the root's `overflow`
+    untouched, Tab walking in and out with no handler run, `closest('[data-theme]')` resolving
+    to the card's own stage — because a negative is exactly what jsdom agrees with for free.
+    Cost `./drawer` **14031 B** on `./core` and `./icon`, and the column to read is the
+    dependency one: **no CDK at all**, which no other panel here can say
+  - the modal drawer is **refused with a reason**, not deferred by taste: a side sheet that
+    takes the page is `pct-dialog`, the two differ in promises rather than in looks, and
+    `PctModalBackground.hold()` walks `body.children` — which is right for an overlay and does
+    nothing for a panel inside an application's own tree. Making it work would generalise a
+    shipped, gated behaviour of the dialog for a component with no consumer yet
+  - it cost everybody else **+20 B per entrypoint**: `drawerClose` is a new `PCT_TEXTS` key, the
+    toast's price at a fifth of the size. Every row of the size snapshot moved by exactly that
+  - the mutation run is `drawer-trigger.ts` **100.00** and `drawer.ts` **98.46**; the two that
+    are not killed are both known shapes — the `isDevMode()` guard, which no dev-mode test can
+    tell from `true`, and an errored mutant that **4.6** has no column for (the fifth such row,
+    and the first where the test proving the guard was written on purpose)
+  - left **4.21** and **4.22** behind, gave **4.6** a fifth row, widened **4.10** to eight
+    missing of fifteen, and gave **4.2** two more files and a fifth reading of its own defect.
+    The whole library is **4130 mutants** now (3878 before) at **81.89%**, in **55 m 47 s**
 
 - [ ] **1.2 — table / datagrid** on a headless core (column model, sorting, filtering, grouping,
       selection as signals) separated from rendering. **The last item of the phase** — the only
@@ -342,6 +375,20 @@ run-many`, which is the closest thing here to what CI does, and the same run rep
     `91.38 53(3)` and `98.46 64(6)`. **Three and a half points on a file nothing touched**, and
     the whole of the difference is in the clock column. The snapshot in the tree is the second
     run's, per this item's own rule — which is a gate needing a person, twice now
+  - **the cleanest reading of this item yet, and it took two runs to get it.** The drawer's step
+    ran the gate **twice, alone, on a quiet machine, over identical code** — the second only
+    because prettier had reflowed a comment and the gate rightly called the first measurement
+    stale. The five files whose clock column moved between them are
+    `config.ts 8(0)↔8(1)`, `field.ts 32(0)↔32(1)`, `motion.ts 53(3)↔53(5)`,
+    `placement.ts 64(6)↔64(7)` and `template.ts 24(0)↔24(1)` — and it went **out and back**:
+    the second run landed on exactly the numbers the snapshot held before this step began. Not
+    one score moved either way, because every one of those mutants was killed both times, by an
+    assertion in one run and by a timeout in the other
+  - so the wobble is not a symptom of a busy machine at all: it is **always there**, visible in
+    the columns on every run, and what a shared runner changes is only how far it swings. What
+    decides whether it reaches the score is how close a file already stands to a boundary —
+    `motion.ts` and `texts.ts` were the two where it landed on one, and these five were the same
+    event with nowhere to fall
   - **a third file, and this time the clock gave rather than took.** The accordion's step ran
     the gate twice over code that never touched `core/`, and `texts.ts` came back
     `96.30 26(0) 1` from the recorded run and `100.00 27(5) 0` from the one that landed: the
@@ -450,6 +497,13 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     inside a DOM listener and the vitest worker dies instead of a test failing. So the column
     that is missing is not an edge case of one component; it is what a defensive guard looks
     like whenever the test that proves it is an event handler
+  - **and a fifth, this time on purpose.** `drawer.ts 98.46 64(0) 1 0 0` is 64 killed of 66:
+    one survivor (the `isDevMode()` guard) and one errored — `this.openedBy?.focus()` with the
+    optional chaining taken off, on a drawer that never had a trigger. The difference from the
+    four above is that the case which turns it into an error was **written for it**: a drawer
+    opened by find-in-page, focus inside, Escape. So the guard is measured, the measurement
+    works, and the snapshot cannot say either — which is the clearest statement of this item
+    there is going to be
 
 - [ ] **4.7 — the guard that keeps `null` away from a consumer's comparator is promised and not
       measured**
@@ -530,9 +584,10 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     same page to drift at the sixth component, which is exactly how it got here
   - binds at: **3.1**, the first push to a public repository — that is the moment the npm page
     stops being a draft and becomes what a first visitor reads
-  - _notes:_ the drift is **half the table** now. Each component since has widened it by one
-    row and none has fixed it in passing, which is the item's own argument holding: seven
-    missing of fourteen is not a page anybody would call out of date by a line
+  - _notes:_ the drift is **past half the table** now — **eight missing of fifteen**, the
+    drawer being the latest. Each component since has widened it by one row and none has fixed
+    it in passing, which is the item's own argument holding: a page that names fewer than half
+    of what the package exports is not one anybody would call out of date by a line
 
 - [x] **4.11 — the mutation run measures 22 of 36 source files, and nothing says which 22**
   - closed with a **rule**, which is what the item asked for. The gate reads the library's
@@ -666,7 +721,15 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     it is worth settling once: **how does a keyboard reach a region that is not where the
     reading order says it is?**
   - binds at: **the second body-level control this library draws**, or the first consumer
-    report about the toast's action · _notes:_ —
+    report about the toast's action
+  - _notes:_ **the second side has arrived, and it is not body-level.** A drawer is drawn where
+    the consumer wrote it, so it is reachable by Tab in principle from the moment it opens —
+    and where in the walk depends entirely on where they put the tag. A navigation drawer
+    written at the end of a document is at the end of the tab order while looking like it is at
+    the top of the page. That is the same question the toast raises and it is NOT the same
+    mechanism: the toast has nowhere in the document to be, the drawer has somewhere and it is
+    the wrong somewhere. Whatever answers this has to answer both, which is the argument for
+    settling it once rather than per component
 
 - [ ] **4.17 — a snapshot with no tolerance drifted with nothing to point at**
   - `libs/components/size.snapshot.md` records `./toast` at **15311 B**. Built today from the
@@ -755,6 +818,43 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     repository — so it can be derived rather than curated, which is what makes it worth an item
   - binds at: **the third tag added to this list**, or the first component here to draw one of
     the five above · _notes:_ —
+
+- [ ] **4.21 — the library's layer order is three numbers in three files and no rule**
+  - `--pct-toast-z-index` is **1100** and its comment says why: above the CDK's overlay
+    container. `--pct-drawer-z-index` is **900** and its comment says why: below the same
+    container. The number both of them are written against — the **1000** the dependency
+    stamps on `.cdk-overlay-container` — is in neither file, in no policy, and in no gate
+  - each of the two is measured, and measured well: a hit test on a toast raised from inside a
+    dialog, and a hit test on a listbox opened from inside a drawer. What is not measured is
+    the thing they are both instances of. So the fourth component that needs a layer picks its
+    number by opening two token files and inferring the middle one, which is how `pct-selected`
+    was picked in **4.13** — a workaround found without the reason behind it
+  - it is cheap to state and the shape is known: the order is a list (page < drawer < overlay <
+    toast), the CDK's number is a fact about a dependency, and a fact about a dependency is what
+    `check-browsers` point 6 already re-probes on every run rather than remembers
+  - binds at: **the third `z-index` token in this library**, or the first `@angular/cdk` bump
+    that moves the overlay container's number · _notes:_ —
+
+- [ ] **4.22 — a fixed panel's containing block belongs to the consumer, and only prose says so**
+  - `pct-drawer` is the first component here drawn **in place** and positioned against the
+    window: `position: fixed`, docked to an edge, no overlay. That is the whole of
+    [0047](decisions/0047-a-drawer-is-a-region-of-the-page-not-a-layer-over-it.md) and it comes
+    with a platform rule nobody in this repository has had to think about before — a
+    `transform`, a `filter`, `contain: paint` or `container-type` on **any** ancestor makes
+    that element the containing block, and the panel docks to it instead of to the window
+  - none of those is exotic. `container-type: inline-size` is what a component library's own
+    consumer writes on a card to use container queries; a `transform` is what an animation
+    library leaves on a wrapper. The failure is silent and looks like a bug in the drawer: the
+    panel lands in the middle of the page, at an edge nobody asked for
+  - it is written in the card's limitations and that is all it is — a sentence a consumer reads
+    if they read that section. What a gate could do is narrower and real: the component knows
+    its own offset parent at runtime, so a **dev-mode report** ("this drawer is docked to a
+    `<div>` and not to the window, because an ancestor establishes a containing block") is the
+    same shape as the four warnings this library already ships
+  - the cost of not having it is asymmetric: the consumer cannot diagnose it without knowing
+    the rule, and the library can detect it in three lines
+  - binds at: **the second component drawn in place and positioned against the window**, or the
+    first consumer report that a drawer is in the wrong place · _notes:_ —
 
 ## 5. Gaps with no deadline
 

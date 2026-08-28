@@ -35,12 +35,14 @@ libs/components/core/src/motion.ts 91.38 53(3) 5 0 0
 libs/components/core/src/overlay.ts 100.00 15(0) 0 0 2
 libs/components/core/src/placement.ts 98.46 64(6) 1 0 0
 libs/components/core/src/template.ts 96.00 24(0) 1 0 0
-libs/components/core/src/texts.ts 100.00 27(5) 0 0 0
+libs/components/core/src/texts.ts 100.00 28(1) 0 0 0
 libs/components/date/src/calendar.ts 73.60 131(0) 45 2 4
 libs/components/date/src/date.ts 66.18 135(0) 67 2 8
 libs/components/date/src/day.ts 95.83 138(2) 6 0 0
 libs/components/date/src/locale.ts 80.49 132(2) 27 5 0
 libs/components/dialog/src/dialog.ts 73.73 87(1) 31 0 3
+libs/components/drawer/src/drawer-trigger.ts 100.00 6(0) 0 0 2
+libs/components/drawer/src/drawer.ts 96.97 64(0) 1 0 2
 libs/components/field/src/autosize.ts 75.34 55(0) 17 1 2
 libs/components/field/src/field.ts 71.56 78(0) 27 2 1
 libs/components/field/src/number.ts 80.35 184(0) 43 2 11
@@ -64,5 +66,5 @@ libs/components/toast/src/toast-viewport.ts 95.00 19(0) 1 0 0
 libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0
 libs/components/toast/src/toaster.ts 71.71 109(0) 42 1 0
 libs/components/tooltip/src/tooltip.ts 70.54 182(0) 71 5 8
-TOTAL 81.61 3311/4057
+TOTAL 81.89 3382/4130
 ```

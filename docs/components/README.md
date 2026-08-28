@@ -144,6 +144,16 @@ The order follows **architectural debt**, not popularity:
    ([`lesson-127`](../lessons.md#lesson-127)); `preventDefault()` as the only way to refuse a
    press ([`lesson-128`](../lessons.md#lesson-128)); and an `open` model written from `toggle`
    ([0046](../decisions/0046-a-disclosure-is-the-platforms-and-so-is-the-group-it-belongs-to.md)).
+   The **drawer** is built, and it is the first component here that is not an overlay at all:
+   the panel is drawn where the consumer wrote it and fixed to an edge of the window, so the
+   tab order, the theme, the writing direction and the stacking context are the page's own —
+   which is exactly the shape 0031 refused a popover and handed on. What had to be written is
+   the ARIA Disclosure pattern (`aria-expanded` on the consumer's own `<button>`,
+   `aria-controls` at the panel), and that is the residue of 0046 rather than a preference: the
+   platform's own disclosure needs its button **inside** the thing it opens, and a drawer's
+   never is. A shut drawer is `hidden="until-found"`, which is 0045's mechanism transplanted
+   whole — the evidence it was a rule and not the tabs' accident
+   ([0047](../decisions/0047-a-drawer-is-a-region-of-the-page-not-a-layer-over-it.md)).
 7. **Table / DataGrid** — has to stand on a **headless core** separated from rendering.
 
 Before item 1 the **behaviour layer in `core`** has to exist: list navigation (private methods

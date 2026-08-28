@@ -337,6 +337,23 @@ test.describe('Appearance — compared with the baseline', () => {
   });
 
   /**
+   * The panel docked to the edge, open. The VIEWPORT and not the card, which is the one
+   * component here where that is the honest frame: a drawer is `position: fixed`, so what it
+   * looks like is a relation between the panel and the window rather than anything inside a
+   * demo card — the edge it is flush with, the shadow it casts over the page, and the page
+   * still showing beside it.
+   */
+  test('drawer-docked', async ({ page }) => {
+    await stage(page, '/drawer');
+    await page.getByTestId('trigger-nav').click();
+    await expect(page.getByTestId('drawer-nav')).toHaveAttribute(
+      'data-pct-open',
+      '',
+    );
+    await expect(page).toHaveScreenshot('drawer-docked.png');
+  });
+
+  /**
    * The strip and the panel showing under it. The card and not the viewport: a tabs component
    * draws nothing outside the page's tree, so what a picture here has to hold is the rail, the
    * mark on the chosen label and the three colours the labels take — including the disabled

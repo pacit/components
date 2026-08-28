@@ -33,6 +33,8 @@
     "libs/components/date/src/day.ts",
     "libs/components/date/src/locale.ts",
     "libs/components/dialog/src/dialog.ts",
+    "libs/components/drawer/src/drawer-trigger.ts",
+    "libs/components/drawer/src/drawer.ts",
     "libs/components/field/src/autosize.ts",
     "libs/components/field/src/aux.ts",
     "libs/components/field/src/field.ts",

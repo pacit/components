@@ -1046,6 +1046,42 @@
       "bg": "pct.surface",
       "level": "UI",
       "severity": "error"
+    },
+    {
+      "name": "drawer — text on the panel",
+      "fg": "pct.drawer.panel-fg",
+      "bg": "pct.drawer.panel-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "drawer — heading",
+      "fg": "pct.drawer.heading-fg",
+      "bg": "pct.drawer.panel-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "$comment": "The drawer's edge is measured against the PAGE and not against a veil, because there is no veil: a drawer is not modal, so what lies beside its border is whatever the application was already drawing there. That makes this pair stricter than the dialog's namesake rather than looser — the dialog's edge is measured against a surface the library itself paints.",
+      "name": "UI: drawer panel edge against the page",
+      "fg": "pct.drawer.panel-border",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: drawer close button",
+      "fg": "pct.drawer.close-fg",
+      "bg": "pct.drawer.panel-bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: drawer close button (hover)",
+      "fg": "pct.drawer.close-fg-hover",
+      "bg": "pct.drawer.close-bg-hover",
+      "level": "UI",
+      "severity": "error"
     }
   ]
 }

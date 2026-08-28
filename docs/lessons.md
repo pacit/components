@@ -3413,3 +3413,49 @@ A section nobody may open still names what is inside it — the argument `pct-ta
 The corollary is the part to watch: a section that is **open** when it is disabled stays open,
 because refusing the press is all this does. That is the correct reading of "disabled" here and
 it is the one arrangement in which a consumer can show a section the user may not close.
+
+### <a id="lesson-129"></a>`lesson-129` — A page the browser is not rendering has a frozen clock, and every transition on it reads as broken
+
+The drawer's slide looked stuck: the panel took `data-pct-open`, the more specific rule really
+matched (`element.matches()` said so), the cascade really preferred it (`transition: none`
+inline jumped the panel straight to `0`), and yet `getComputedStyle` reported the shut inset
+for as long as anybody cared to wait. `element.getAnimations()` gave the shape of the answer —
+a `CSSTransition` for `left`, `playState: "running"`, `currentTime: 0`, permanently.
+
+The cause was not in the component. `document.visibilityState` was `hidden` and
+`document.timeline.currentTime` was `0` and stayed `0`: the preview pane was not being
+rendered, so no frame was ever produced, `requestAnimationFrame` never fired, and a transition
+created in that state simply never advanced. `setTimeout` fires perfectly well in such a page,
+which is what makes the trap convincing — a probe that waits and then reads gets an answer, and
+the answer is the from-value.
+
+Two rules come out of it. **Before believing a measurement of motion, ask the page whether it is
+being drawn**: `document.visibilityState`, or two readings of `document.timeline.currentTime`.
+Neither costs anything and either would have saved the hour spent proving a cascade that was
+never wrong. And **anything about motion belongs in the e2e suite**, where three real engines
+render for real — the same boundary [`lesson-13`](#lesson-13) drew for `getComputedStyle` in a
+preview panel, one layer further down: there the styles were stale, here the clock is.
+
+### <a id="lesson-130"></a>`lesson-130` — A state attribute lands when the motion starts, not when it ends
+
+Six red cases in three engines, all of them a box measured in the wrong place: the drawer's
+`left` read `-135.4` where `0` was expected, the bottom sheet's edge `855` where the viewport
+ended at `720`. Both numbers are somewhere in the middle of a 150 ms slide.
+
+The mistake is in the shape of the wait, and it is the kind that passes review because it looks
+like a proper Playwright assertion:
+
+```ts
+await expect(panel).toHaveAttribute('data-pct-open', ''); // ← retries until the attribute is there
+const box = await panel.evaluate((el) => el.getBoundingClientRect()); // ← reads one frame later
+```
+
+`toHaveAttribute` retries, so it feels like a settle. It is not: the attribute is what **starts**
+the transition, so the assertion succeeds at the first frame of the motion and the reading that
+follows catches the panel in flight. Nothing is flaky about it — it fails the same way every
+time, on every engine, which is the only reason it was cheap to find.
+
+What is being asserted is where the panel comes to **rest**, so the retry has to be around the
+geometry itself: `expect.poll(() => box())`. The general rule is worth more than the fix — a
+retrying assertion settles the thing it names, and naming the cause of a motion does not settle
+its effect.
