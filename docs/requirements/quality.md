@@ -145,16 +145,20 @@ command fires point 3
 ### <a id="req-quality-unit"></a>`req-quality-unit` — Unit tests on Vitest
 
 **Promise.** The library's and the app's unit tests run on Vitest, zoneless, and they **catch
-something**: the core (`core`, `[pctNumber]`, `PctSelect`) has a measured mutation score with
-an enforced floor.
+something**: **every source file of the library** has a measured mutation score with an
+enforced floor, and whatever is not measured stands in a register with the reason it cannot
+be.
 
 **Gate:** in three parts, because "the tests run", "how many pass" and "how many defects they
 notice" break separately. `.github/workflows/ci.yml` — `test` and `vite:test` in the
 `nx affected -t` list (the run). `libs/components/project.json` — the `mutation` target runs
 Stryker with `thresholds.break` = 80, i.e. **fails below the floor**.
 `tools/check-mutation.mjs` (target `check-mutation`, `dependsOn: mutation`, in CI) guards the
-denominator: seven points and 38 rules for the measurement being current, covering the
-declared file inventory, running **the same specs as the `test` target**, having a binding
+denominator: seven points and 42 rules for the measurement being current, covering the
+declared file inventory **and every source file of the library** — the candidate set is read
+off the git index and not off `mutate`, so a file nobody decided about is a violation
+(`inventory/source-unaccounted`) and not a silence — running **the same specs as the `test`
+target**, having a binding
 and unnarrowed threshold (ignorers, excluded mutators, `ignoreStatic`, `// Stryker disable`
 comments, a shortened `timeoutMS`), and fitting inside the `libs/components/mutation.snapshot.md`
 snapshot with a **two-sided** per-file tolerance. The snapshot's PROSE is held exactly
@@ -164,17 +168,21 @@ that says what the number means, nor of the tolerance quoted in it
 what a **template** promises stands outside this measurement altogether — that half is held by
 `check-coverage` point 6, a floor per template on all four metrics
 ([`lesson-71`](../lessons.md#lesson-71))
-**Control:** `tools/check-mutation.fixtures/` — 38 doctored inputs on a fake library, each
+**Control:** `tools/check-mutation.fixtures/` — 42 doctored inputs on a fake library, each
 rejected on its own **rule**; plus runs against the real repository (removing an assertion
 from `select.spec.ts` drops that file's score and fires `score/score-dropped`, adding a test
 beyond the tolerance fires `score/snapshot-adrift`, `thresholds.break: null` fires
 `threshold/threshold-unset`, a file struck from `mutate` fires `inventory/patterns-changed`).
-Plus a control of that control: disarming each of the 38 rules in turn — 26 give "PASSED",
+`inventory/source-unaccounted` was run against the real repository before the widening and
+named exactly the 17 sources that stood outside the measurement — `slider.ts`, `field.ts`,
+`date.ts` and fourteen more — while `affix.ts`, put into `mutate` by hand, brought the initial
+test run down rather than the score ([`lesson-123`](../lessons.md#lesson-123)).
+Plus a control of that control: disarming each of the 42 rules in turn — 30 give "PASSED",
 12 move the case onto a neighbouring rule
 **Lessons:** [`lesson-3`](../lessons.md#lesson-3), [`lesson-19`](../lessons.md#lesson-19),
 [`lesson-28`](../lessons.md#lesson-28), [`lesson-57`](../lessons.md#lesson-57),
 [`lesson-58`](../lessons.md#lesson-58), [`lesson-71`](../lessons.md#lesson-71),
-[`lesson-79`](../lessons.md#lesson-79)
+[`lesson-79`](../lessons.md#lesson-79), [`lesson-123`](../lessons.md#lesson-123)
 
 > **Coverage and mutation score measure two different things, and the difference is large.**
 > At 96.62% line coverage the core scored **63.54%** on mutation: every third mutant passed

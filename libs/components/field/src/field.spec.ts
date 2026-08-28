@@ -5,6 +5,7 @@ import {
   Type,
 } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { email, form, FormField, required } from '@angular/forms/signals';
 import { providePctConfig } from '@pacit/components/core';
@@ -142,6 +143,37 @@ class NgModelHost {
 class BareHost {
   value = signal('no wrapper');
 }
+
+/** The chrome with no control inside it at all — a field waiting for its content. */
+@Component({
+  imports: [PctField],
+  template: `<pct-field label="E-mail" hint="Work address" />`,
+})
+class EmptyChromeHost {}
+
+/**
+ * The control with NOTHING bound. Every other host in this file binds the inputs it cares
+ * about, so the values the contract promises when nobody writes one are the single thing
+ * none of them can answer for — a default is exercised only where it is left alone.
+ */
+@Component({
+  imports: [PctText],
+  template: `<input pctText />`,
+})
+class UnboundHost {}
+
+/** `invalid` set, `touched` left to its default — and the other way round. */
+@Component({
+  imports: [PctText],
+  template: `<input pctText invalid />`,
+})
+class InvalidOnlyHost {}
+
+@Component({
+  imports: [PctText],
+  template: `<input pctText touched />`,
+})
+class TouchedOnlyHost {}
 
 @Component({
   imports: [PctField, PctText],
@@ -758,5 +790,84 @@ describe('PctField + PctText', () => {
     input.dispatchEvent(new Event('input'));
     await fixture.whenStable();
     expect(fixture.componentInstance.value()).toBe('changed');
+  });
+  describe('the defaults of the control, which every other host here binds over', () => {
+    it('an unbound control is empty, enabled, unnamed and says nothing about itself', async () => {
+      const el = inputOf(await render(UnboundHost));
+
+      expect(el.value).toBe('');
+      expect(el.disabled).toBe(false);
+      expect(el.readOnly).toBe(false);
+      expect(el.hasAttribute('required')).toBe(false);
+      expect(el.getAttribute('name')).toBeNull();
+      expect(el.getAttribute('aria-invalid')).toBeNull();
+      expect(el.getAttribute('aria-describedby')).toBeNull();
+    });
+
+    it('`invalid` with no touch is not a state the user is shown', async () => {
+      expect(
+        inputOf(await render(InvalidOnlyHost)).getAttribute('aria-invalid'),
+      ).toBeNull();
+    });
+
+    it('a touch with nothing wrong is not a state either', async () => {
+      expect(
+        inputOf(await render(TouchedOnlyHost)).getAttribute('aria-invalid'),
+      ).toBeNull();
+    });
+
+    it('focus() and reset() answer for the contract, which nothing in the DOM calls', async () => {
+      // Signal forms reach for these two by name (`focusBoundControl()`), so they are
+      // public API with no event of their own to arrive through.
+      const fixture = await render(BareHost);
+      const el = inputOf(fixture);
+      const control = fixture.debugElement.query(By.directive(PctText))
+        .componentInstance as PctText;
+
+      control.focus();
+      expect(document.activeElement).toBe(el);
+
+      control.reset();
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      expect(fixture.componentInstance.value()).toBe('');
+      expect(el.value).toBe('');
+    });
+  });
+  describe('a chrome with nothing registered in it', () => {
+    /**
+     * Every reach into the control is written `control()?.x?.()`, and both halves are
+     * needed: the chrome is drawn before anything registers (and after a control leaves),
+     * and a control that registers need not implement the optional half of the contract.
+     * Without a case standing here, a press on the row of an empty field is a `TypeError`
+     * in an application and nothing at all in this file.
+     */
+    it('takes a press on its row without reaching into anything', async () => {
+      const fixture = await render(EmptyChromeHost);
+      const row = part(fixture, 'field-row');
+
+      expect(() => {
+        row.dispatchEvent(
+          new MouseEvent('mousedown', { bubbles: true, cancelable: true }),
+        );
+        row.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      }).not.toThrow();
+    });
+
+    it('stays neutral: no state of a control it does not have', async () => {
+      const fixture = await render(EmptyChromeHost);
+      const field = fixture.nativeElement.querySelector(
+        'pct-field',
+      ) as HTMLElement;
+
+      expect(field.getAttribute('data-pct-invalid')).toBeNull();
+      expect(field.getAttribute('data-pct-disabled')).toBeNull();
+      expect(allParts(fixture, 'field-error')).toEqual([]);
+      // The hint is the chrome's own and stands without a control; its id is what a
+      // control would be pointed at, so an empty one is a relation to nothing.
+      expect(part(fixture, 'field-hint').id).not.toBe('');
+      expect(part(fixture, 'field-label').id).not.toBe('');
+    });
   });
 });

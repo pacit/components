@@ -1,0 +1,8 @@
+{
+  "check": "inventory",
+  "rule": "source-unaccounted",
+  "// defect": "A source file of the library that is neither measured nor excused — here the register is gone, so `gamma.ts` is simply not decided about. That is the DEFAULT state of every new file: `mutate` names what is measured, so a new entrypoint's source stands outside the set the moment it exists, silently, and the score goes on being computed over the files somebody already wrote tests for.",
+  "policy": {
+    "unmeasured": null
+  }
+}

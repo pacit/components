@@ -52,18 +52,24 @@
     "sources": {
       "libs/fake/alpha.ts": "export const alpha = (n: number) => (n > 0 ? n : 0);\n",
       "libs/fake/beta.ts": "export const beta = (s: string) => s.trim();\n",
-      "libs/fake/empty.ts": "export type Empty = string;\n"
+      "libs/fake/empty.ts": "export type Empty = string;\n",
+      "libs/fake/delta.ts": "export const delta = (s: string) => s.toUpperCase();\n"
     },
     "inRepo": [
       "libs/fake/alpha.ts",
       "libs/fake/beta.ts",
       "libs/fake/empty.ts",
+      "libs/fake/delta.ts",
       "libs/fake/alpha.spec.ts",
       "libs/fake/beta.spec.ts"
     ],
     "specs": ["libs/fake/alpha.spec.ts", "libs/fake/beta.spec.ts"],
     "policy": {
-      "patterns": ["libs/fake/*.ts", "!libs/fake/*.spec.ts"],
+      "patterns": [
+        "libs/fake/*.ts",
+        "!libs/fake/delta.ts",
+        "!libs/fake/*.spec.ts"
+      ],
       "files": [
         "libs/fake/alpha.ts",
         "libs/fake/beta.ts",
@@ -73,6 +79,12 @@
         {
           "file": "libs/fake/empty.ts",
           "reason": "The file carries a type alias alone, and that vanishes at compilation — there is no condition here, no literal and no call, so zero mutants is a correct result of the measurement."
+        }
+      ],
+      "unmeasured": [
+        {
+          "file": "libs/fake/delta.ts",
+          "reason": "Instrumented, the file brings the initial test run down: the alias in its `input()` configuration stops being readable statically, so an attribute carrying a value stops being a binding. Not a file with a low score — a file the measurement cannot hold."
         }
       ],
       "threshold": 80,
@@ -92,7 +104,11 @@
       }
     },
     "runConfig": {
-      "mutate": ["libs/fake/*.ts", "!libs/fake/*.spec.ts"],
+      "mutate": [
+        "libs/fake/*.ts",
+        "!libs/fake/delta.ts",
+        "!libs/fake/*.spec.ts"
+      ],
       "thresholds": {
         "high": 90,
         "low": 80,

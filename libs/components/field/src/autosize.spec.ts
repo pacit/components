@@ -146,7 +146,26 @@ describe('PctAutosize — a height that follows the text', () => {
     await fixture.whenStable();
 
     expect(warn).toHaveBeenCalledTimes(1);
-    expect(warn.mock.calls[0][0]).toContain('maxRows');
+    // The whole sentence, and not its first clause: what a warning is FOR is the two
+    // halves that follow — what the platform will do instead, and what to change.
+    const said = String(warn.mock.calls[0][0]);
+    expect(said).toContain('maxRows (3) is below rows (6)');
+    expect(said).toContain('the ceiling stands under the floor');
+    expect(said).toContain('Raise maxRows or lower rows');
+    warn.mockRestore();
+  });
+
+  it('says nothing about a ceiling standing exactly ON its floor', async () => {
+    // The boundary the comparison is written at: `maxRows === rows` is a ceiling of one
+    // line's room, not a contradiction, and CSS keeps it.
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+    const fixture = await render(Host);
+
+    fixture.componentInstance.rows.set(4);
+    fixture.componentInstance.maxRows.set(4);
+    await fixture.whenStable();
+
+    expect(warn).not.toHaveBeenCalled();
     warn.mockRestore();
   });
 

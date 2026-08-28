@@ -1,0 +1,13 @@
+{
+  "check": "inventory",
+  "rule": "absence-without-reason",
+  "// defect": "An absence with no sentence. Without one the register says \"this file is not measured\", which is what the measurement says anyway by leaving it out — the reason is the whole of the entry, exactly as in `noMutants`.",
+  "policy": {
+    "unmeasured": [
+      {
+        "file": "libs/fake/delta.ts",
+        "reason": "declarative"
+      }
+    ]
+  }
+}

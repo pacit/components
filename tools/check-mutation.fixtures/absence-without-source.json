@@ -1,0 +1,17 @@
+{
+  "check": "inventory",
+  "rule": "absence-without-source",
+  "// defect": "The register excuses a file the rule never asks about — a spec, which is not a source of the library at all. An excuse like that excuses nothing, and in the register it reads exactly like one that does. A rename leaves this behind.",
+  "policy": {
+    "unmeasured": [
+      {
+        "file": "libs/fake/delta.ts",
+        "reason": "Instrumented, the file brings the initial test run down: the alias in its `input()` configuration stops being readable statically, so an attribute carrying a value stops being a binding. Not a file with a low score — a file the measurement cannot hold."
+      },
+      {
+        "file": "libs/fake/alpha.spec.ts",
+        "reason": "Instrumented, the file brings the initial test run down, so it cannot enter the measurement at all."
+      }
+    ]
+  }
+}

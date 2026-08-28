@@ -1,0 +1,17 @@
+{
+  "check": "inventory",
+  "rule": "absence-inside-inventory",
+  "// defect": "A file that is measured AND excused from being measured. One of the two entries is out of date, and it is the register that nobody compares against the report — so it is the register that stays wrong, and it is the register a reader believes.",
+  "policy": {
+    "unmeasured": [
+      {
+        "file": "libs/fake/delta.ts",
+        "reason": "Instrumented, the file brings the initial test run down: the alias in its `input()` configuration stops being readable statically, so an attribute carrying a value stops being a binding. Not a file with a low score — a file the measurement cannot hold."
+      },
+      {
+        "file": "libs/fake/alpha.ts",
+        "reason": "Instrumented, the file brings the initial test run down, so it cannot enter the measurement at all."
+      }
+    ]
+  }
+}

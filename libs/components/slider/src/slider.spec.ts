@@ -130,6 +130,84 @@ class NamedHost {
   ariaLabelledby = signal('');
 }
 
+/** A slider with NOTHING bound — where the defaults of the contract are what answers. */
+@Component({
+  imports: [PctSlider],
+  template: `<pct-slider />`,
+})
+class BareHost {}
+
+/** `invalid` set, `touched` left to its default — and the other way round. */
+@Component({
+  imports: [PctSlider],
+  template: `<pct-slider label="Volume" invalid />`,
+})
+class InvalidOnlyHost {}
+
+@Component({
+  imports: [PctSlider],
+  template: `<pct-slider label="Volume" touched />`,
+})
+class TouchedOnlyHost {}
+
+/** Marks asked for over a step that divides nothing. */
+@Component({
+  imports: [PctSlider],
+  template: `<pct-slider
+    label="Volume"
+    marks
+    [min]="0"
+    [max]="100"
+    [step]="0"
+  />`,
+})
+class ZeroStepMarksHost {}
+
+/**
+ * The bounds as ATTRIBUTES, which is how they arrive from a template that does not compute
+ * them. `optionalNumber` reads all three of these; a `number` binding exercises none.
+ */
+@Component({
+  imports: [PctSlider],
+  template: `<pct-slider label="Empty" max="" />
+    <pct-slider label="Junk" max="abc" />
+    <pct-slider label="Text" max="60" />`,
+})
+class AttributeBoundsHost {}
+
+/** Marks asked for at CREATION — the warning is a one-shot in the constructor. */
+@Component({
+  imports: [PctSlider],
+  template: `<pct-slider
+    label="Volume"
+    marks
+    [min]="0"
+    [max]="100"
+    [step]="0.5"
+  />`,
+})
+class TooManyMarksHost {}
+
+/** The same count, with `marks` never asked for. */
+@Component({
+  imports: [PctSlider],
+  template: `<pct-slider label="Volume" [min]="0" [max]="100" [step]="0.5" />`,
+})
+class NoMarksAskedHost {}
+
+/** Exactly as many intervals as are still legible — the boundary itself. */
+@Component({
+  imports: [PctSlider],
+  template: `<pct-slider
+    label="Volume"
+    marks
+    [min]="0"
+    [max]="100"
+    [step]="2"
+  />`,
+})
+class BoundaryMarksHost {}
+
 describe('PctSlider', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -500,5 +578,157 @@ describe('PctSlider', () => {
     slider.focus();
 
     expect(document.activeElement).toBe(boxOf(fixture));
+  });
+  describe('the defaults, which the host above binds over', () => {
+    it('a slider with nothing bound is enabled, unnamed and says nothing about itself', async () => {
+      const fixture = await render(BareHost);
+      const box = boxOf(fixture);
+
+      expect(box.disabled).toBe(false);
+      expect(box.getAttribute('name')).toBeNull();
+      expect(box.getAttribute('aria-readonly')).toBeNull();
+      expect(box.getAttribute('aria-invalid')).toBeNull();
+      expect(box.getAttribute('aria-label')).toBeNull();
+      expect(box.getAttribute('aria-labelledby')).toBeNull();
+      // No `format` and no `labels`: the platform's own `aria-valuenow` is the whole
+      // announcement, and a `valuetext` beside it would be a second one.
+      expect(box.getAttribute('aria-valuetext')).toBeNull();
+      expect(partsOf(fixture, 'label')).toEqual([]);
+      expect(partsOf(fixture, 'hint')).toEqual([]);
+      expect(partsOf(fixture, 'error')).toEqual([]);
+      expect(partsOf(fixture, 'mark')).toEqual([]);
+      expect(partsOf(fixture, 'bubble')).toEqual([]);
+    });
+
+    it('and it runs along the inline axis until told otherwise', async () => {
+      const host = (await render(BareHost)).nativeElement.querySelector(
+        'pct-slider',
+      ) as HTMLElement;
+
+      expect(host.getAttribute('data-pct-orientation')).toBe('horizontal');
+    });
+
+    it('`invalid` with no touch is not a state the user is shown', async () => {
+      expect(
+        boxOf(await render(InvalidOnlyHost)).getAttribute('aria-invalid'),
+      ).toBeNull();
+    });
+
+    it('a touch with nothing wrong is not a state either', async () => {
+      expect(
+        boxOf(await render(TouchedOnlyHost)).getAttribute('aria-invalid'),
+      ).toBeNull();
+    });
+
+    it('a bound written as an attribute is read, and an unusable one is not a bound', async () => {
+      // `numberAttribute` would answer `NaN` here, and `NaN` in a `calc()` is a track
+      // nobody can see. The three cases are the three the reader was written for.
+      const fixture = await render(AttributeBoundsHost);
+      const [empty, junk, text] = [
+        ...(fixture.nativeElement as HTMLElement).querySelectorAll('input'),
+      ];
+
+      expect(empty.max).toBe('100');
+      expect(junk.max).toBe('100');
+      expect(text.max).toBe('60');
+    });
+  });
+
+  describe('marks the slider will not draw', () => {
+    it('says which numbers produced a band instead of ticks', async () => {
+      const warn = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => undefined);
+
+      const fixture = await render(TooManyMarksHost);
+      await fixture.whenStable();
+
+      expect(warn).toHaveBeenCalledTimes(1);
+      const said = String(warn.mock.calls[0]?.[0] ?? '');
+      expect(said).toContain('would be a grey band');
+      expect(said).toContain('min=0');
+      expect(said).toContain('max=100');
+      expect(said).toContain('step=0.5');
+      expect(said).toContain('Raise "step"');
+      expect(partsOf(fixture, 'mark')).toEqual([]);
+
+      warn.mockRestore();
+    });
+
+    it('and says nothing at all where no marks were asked for', async () => {
+      // The same two hundred intervals: what makes the sentence worth printing is that
+      // somebody asked for ticks and will not get them.
+      const warn = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => undefined);
+
+      const fixture = await render(NoMarksAskedHost);
+      await fixture.whenStable();
+
+      expect(warn).not.toHaveBeenCalled();
+
+      warn.mockRestore();
+    });
+
+    it('the boundary count is still drawn, and still silent', async () => {
+      // 50 intervals is the last legible number rather than the first illegible one, and
+      // a comparison written one step off is exactly what nobody would notice.
+      const warn = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => undefined);
+
+      const fixture = await render(BoundaryMarksHost);
+      await fixture.whenStable();
+
+      expect(partsOf(fixture, 'mark')).toHaveLength(51);
+      expect(warn).not.toHaveBeenCalled();
+
+      warn.mockRestore();
+    });
+
+    it('a step of zero divides nothing, and the count says zero rather than infinity', async () => {
+      // `span / 0` is `Infinity`, and an interval count of `Infinity` is above the
+      // legibility ceiling — so the marks disappear either way and only the WARNING can
+      // tell the guarded division from the unguarded one.
+      const warn = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => undefined);
+
+      const fixture = await render(ZeroStepMarksHost);
+      await fixture.whenStable();
+
+      expect(partsOf(fixture, 'mark')).toEqual([]);
+      expect(warn).not.toHaveBeenCalled();
+
+      warn.mockRestore();
+    });
+
+    it('a step of zero divides nothing and draws nothing', async () => {
+      const fixture = await render(Host);
+      fixture.componentInstance.marks.set(true);
+      fixture.componentInstance.step.set(0);
+      await fixture.whenStable();
+
+      expect(partsOf(fixture, 'mark')).toEqual([]);
+    });
+
+    it('a negative step is not a step either', async () => {
+      const fixture = await render(Host);
+      fixture.componentInstance.marks.set(true);
+      fixture.componentInstance.step.set(-10);
+      await fixture.whenStable();
+
+      expect(partsOf(fixture, 'mark')).toEqual([]);
+    });
+
+    it('and a span of zero leaves no interval to mark', async () => {
+      const fixture = await render(Host);
+      fixture.componentInstance.marks.set(true);
+      fixture.componentInstance.lo.set(5);
+      fixture.componentInstance.hi.set(5);
+      await fixture.whenStable();
+
+      expect(partsOf(fixture, 'mark')).toEqual([]);
+    });
   });
 });

@@ -5,7 +5,8 @@
  * run ends zero at 4% as at 94%.
  *
  *  1. DENOMINATOR: the measurement exists, is not empty and is CURRENT with the sources,
- *  2. the inventory of mutated files matches the policy — both ways,
+ *  2. the inventory of mutated files matches the policy — both ways — and every source
+ *     file of the library is either in that inventory or excused in the register,
  *  3. TEST DENOMINATOR: the run executed exactly the specs the `test` target does,
  *  4. the threshold is declared, binding, and cannot be disarmed from the command,
  *  5. the denominator is not narrowed: ignorers, excluded mutators, static mutants,
@@ -39,6 +40,47 @@ const WRITE = process.argv.includes('--write');
 
 /** Spec file pattern — the denominator of point 3. */
 const SPEC = /\.spec\.ts$/;
+
+/**
+ * What a source file of the library IS — the candidate set of the measurement, that is the
+ * denominator of the denominator. Deliberately NOT read from `mutate`: a list taken from
+ * the configuration would strike a file off both sides of the comparison at once and the
+ * rule walking it would stop seeing anything (`check-coverage` computes its own list for
+ * exactly this reason). The exceptions are CATEGORIES rather than files, and each carries
+ * the reason it is one; a single file left out is a matter for the policy's register.
+ */
+const NOT_A_SOURCE = [
+  // Anything that is not TypeScript. Stryker mutates `.ts` and nothing else, so what a
+  // template promises stands outside this measurement altogether — that half is held by
+  // `check-coverage` point 6, a floor per template on all four metrics.
+  (p) => !p.endsWith('.ts'),
+  // The tests themselves.
+  (p) => SPEC.test(p),
+  // Pure types: they vanish at compilation, so there is no executable line to break.
+  (p) => p.endsWith('.types.ts'),
+  // Re-export barrels. `export * from './x'` promises nothing that the file it names does
+  // not promise itself — and the same three lines stand in `mutate` as exclusions.
+  (p) => p.endsWith('/index.ts'),
+  // Testing utilities. They have no `ng-package.json`, so they do not travel in the
+  // package, and a defect in them shows up as a broken test rather than as a silent one
+  // downstream (the same exception `check-coverage` makes, for the same reason).
+  (p) => p.startsWith(`${PROJECT}/testing/`),
+  // The version stamp `stamp-version` writes — one constant, whose agreement with the
+  // manifest is `check-package`'s point 4 and not a unit test's.
+  (p) => p === `${PROJECT}/src/version.ts`,
+  // The mutation run's own harness: it is what RUNS the specs, not something they measure.
+  (p) => p === `${PROJECT}/mutation.setup.ts`,
+  // The `ng add` schematic. It runs once, in the consumer's CLI at install time, and it is
+  // measured where it runs — `check-consumer` installs the package into a real application
+  // and runs the schematic there.
+  (p) => p.startsWith(`${PROJECT}/schematics/`),
+];
+
+/** The library's source files, off the git index — everything `NOT_A_SOURCE` leaves. */
+const librarySources = (inRepo) =>
+  (Array.isArray(inRepo) ? inRepo : []).filter(
+    (p) => typeof p === 'string' && !NOT_A_SOURCE.some((no) => no(p)),
+  );
 
 /**
  * The mutant statuses Stryker counts as DETECTED. `Timeout` stands beside `Killed` not out
@@ -158,6 +200,8 @@ const snapshotRows = (text) =>
  *   `policy`  — the contents of `mutation.policy.json`,
  *   `report`    — the contents of `tmp/mutation/mutation.json` (with its `config` field),
  *   `sources`    — `{ [file]: content }` from disk, for the report's and the policy's files,
+ *   `inRepo`    — every file of the library from the git index; point 2 reads the
+ *                 candidate set of the measurement off it (`librarySources`),
  *   `specs` — the library's `*.spec.ts` files from the git index,
  *   `snapshot`  — the contents of `mutation.snapshot.md`, or `null`,
  *   `config`    — the contents of `stryker.config.json`,
@@ -307,6 +351,58 @@ export const checkMutation = (input) => {
         `\n    Point 6 walks the files FROM THE REPORT, so this one would be measured ` +
         `with nowhere for its floor to stand. Remedy: add it to ${POLICY}.`,
     );
+
+  // The fourth question, and the one the three above cannot ask. All three watch a file
+  // LEAVING the measurement; not one of them looks at a file that was never in it. A new
+  // entrypoint's source is outside the set the moment it exists — `mutate` names what is
+  // measured, so "not measured" is the DEFAULT for everything new, it is silent, and the
+  // score goes on being computed over the files somebody already wrote tests for. That is
+  // `lesson-45` one floor up: not a denominator narrowed on purpose, one never widened.
+  const sources = librarySources(input.inRepo);
+  const unmeasured = Array.isArray(policy.unmeasured) ? policy.unmeasured : [];
+  const excused = new Set(unmeasured.map((e) => e?.file));
+  const unaccounted = sources.filter(
+    (p) => !fromPolicy.includes(p) && !excused.has(p),
+  );
+  if (unaccounted.length)
+    throw new MutationError(
+      'inventory',
+      'source-unaccounted',
+      `${unaccounted.length} source files of the library are neither measured nor ` +
+        `excused:\n` +
+        list(unaccounted) +
+        `\n    A file nobody decided about looks in the report exactly like a file there ` +
+        `was nothing to measure in. Remedy: into \`patterns\` and \`files\`, or into ` +
+        `\`unmeasured\` with a reason.`,
+    );
+
+  for (const entry of unmeasured) {
+    if (!sources.includes(entry?.file))
+      throw new MutationError(
+        'inventory',
+        'absence-without-source',
+        `the \`unmeasured\` register excuses \`${entry?.file ?? '(no file)'}\`, which is ` +
+          `not a source file of the library.\n` +
+          `    An excuse for a file the rule never asks about excuses nothing — and in the ` +
+          `register it reads as though it did. A rename leaves exactly this behind.`,
+      );
+    if (fromPolicy.includes(entry.file))
+      throw new MutationError(
+        'inventory',
+        'absence-inside-inventory',
+        `\`${entry.file}\` is measured AND excused from being measured.\n` +
+          `    One of the two entries is out of date, and it is the register that nobody ` +
+          `compares against the report — so it is the register that will stay wrong.`,
+      );
+    if (typeof entry.reason !== 'string' || entry.reason.trim().length < 40)
+      throw new MutationError(
+        'inventory',
+        'absence-without-reason',
+        `the \`unmeasured\` entry for \`${entry.file}\` carries no reason.\n` +
+          `    Without one the register says "this file is not measured", which is what ` +
+          `the measurement says anyway by leaving it out. The reason is the whole entry.`,
+      );
+  }
 
   // 3. TEST DENOMINATOR. The mutation run uses a Vitest configuration of its own, so the
   // set of executed specs is a separate measurement — and breaks separately.
@@ -652,10 +748,11 @@ export const checkMutation = (input) => {
 
   return {
     description:
-      `${files.length} files, ${total.denominator} mutants — score ` +
-      `${percent(total.score)} against a ${threshold}% floor ` +
+      `${files.length} of ${sources.length} source files, ${total.denominator} mutants — ` +
+      `score ${percent(total.score)} against a ${threshold}% floor ` +
       `(${total.denominator - total.detected} surviving, ` +
-      `${allMutants.filter((m) => m.status === 'Ignored').length} ignored)`,
+      `${allMutants.filter((m) => m.status === 'Ignored').length} ignored` +
+      `${unmeasured.length ? `, ${unmeasured.length} excused` : ''})`,
     snapshot: fresh,
   };
 };

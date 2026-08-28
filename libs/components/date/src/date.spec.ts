@@ -351,12 +351,79 @@ describe('PctDate — the panel', () => {
     f.detectChanges();
     await f.whenStable();
 
-    panel()?.dispatchEvent(
-      new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
-    );
+    const escape = new KeyboardEvent('keydown', {
+      key: 'Escape',
+      bubbles: true,
+      cancelable: true,
+    });
+    panel()?.dispatchEvent(escape);
     f.detectChanges();
     await f.whenStable();
     expect(panel()).toBeNull();
+    // The press is answered here and nowhere else: a dialog holding this field must not
+    // take the same Escape as its own (0024), and a user agent must not act on it either.
+    expect(escape.defaultPrevented).toBe(true);
+  });
+
+  /**
+   * The panel is a child of `body`, so the DOM's own answer to Tab off its last stop is
+   * "the end of the document". The trap is therefore not a loop but a WAY OUT: the panel
+   * closes and the field keeps the tab order it always had.
+   */
+  describe('Tab leaves the panel rather than walking off the page', () => {
+    const stopsIn = (root: HTMLElement) =>
+      Array.from(
+        root.querySelectorAll<HTMLElement>(
+          'button:not(:disabled), [tabindex="0"]',
+        ),
+      );
+
+    const tab = async (
+      f: ComponentFixture<unknown>,
+      from: HTMLElement,
+      shiftKey: boolean,
+    ) => {
+      from.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Tab', shiftKey, bubbles: true }),
+      );
+      f.detectChanges();
+      await f.whenStable();
+    };
+
+    const open = async () => {
+      const f = await render(Host);
+      toggleOf(f).click();
+      f.detectChanges();
+      await f.whenStable();
+      return f;
+    };
+
+    it('forward off the last stop', async () => {
+      const f = await open();
+      const stops = stopsIn(panel() as HTMLElement);
+
+      await tab(f, stops[stops.length - 1], false);
+
+      expect(panel()).toBeNull();
+    });
+
+    it('backward off the first', async () => {
+      const f = await open();
+      const stops = stopsIn(panel() as HTMLElement);
+
+      await tab(f, stops[0], true);
+
+      expect(panel()).toBeNull();
+    });
+
+    it('and stays where the walk is still inside it', async () => {
+      const f = await open();
+      const stops = stopsIn(panel() as HTMLElement);
+
+      await tab(f, stops[0], false);
+
+      expect(panel()).not.toBeNull();
+    });
   });
 
   it('closes on the button that opened it', async () => {

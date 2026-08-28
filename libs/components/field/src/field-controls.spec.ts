@@ -9,6 +9,8 @@ import { requiredError, ValidationError } from '@angular/forms/signals';
 import { PctCheckbox } from '@pacit/components/checkbox';
 import { PctRadio, PctRadioGroup } from '@pacit/components/radio';
 import { PctSelect, PctSelectOption } from '@pacit/components/select';
+import { PctSlider } from '@pacit/components/slider';
+import { PctSwitch } from '@pacit/components/switch';
 import { allParts, part } from '../../testing/src/dom';
 import { PctField } from './field';
 
@@ -68,6 +70,26 @@ class RadioInFieldHost {
   value = signal('');
 }
 
+@Component({
+  imports: [PctField, PctSwitch],
+  template: `<pct-field label="Notifications" hint="Two a week at most">
+    <pct-switch [(checked)]="checked" />
+  </pct-field>`,
+})
+class SwitchInFieldHost {
+  checked = signal(false);
+}
+
+@Component({
+  imports: [PctField, PctSlider],
+  template: `<pct-field label="Volume" hint="Loud after seven">
+    <pct-slider [(value)]="value" />
+  </pct-field>`,
+})
+class SliderInFieldHost {
+  value = signal(20);
+}
+
 /** The same control outside the wrapper — it has to draw its own label. */
 @Component({
   imports: [PctCheckbox],
@@ -98,6 +120,18 @@ class MessageHost {
   />`,
 })
 class CheckboxAloneHost extends MessageHost {}
+
+@Component({
+  imports: [PctSwitch],
+  template: `<pct-switch
+    label="Notifications"
+    hint="Two a week at most"
+    [invalid]="invalid()"
+    [touched]="touched()"
+    [errors]="errors()"
+  />`,
+})
+class SwitchAloneHost extends MessageHost {}
 
 @Component({
   imports: [PctRadioGroup, PctRadio],
@@ -218,6 +252,74 @@ describe('Controls inside the pct-field wrapper', () => {
     });
   });
 
+  describe('PctSwitch', () => {
+    it('the wrapper draws no border around a switch (the bare appearance)', async () => {
+      const fixture = await render(SwitchInFieldHost);
+      const field = fixture.nativeElement.querySelector('pct-field');
+
+      expect(field.getAttribute('data-pct-appearance')).toBe('bare');
+    });
+
+    it('hands the label to the wrapper but keeps it bound to the native input', async () => {
+      const fixture = await render(SwitchInFieldHost);
+      const labels = allParts(fixture, 'field-label');
+      const input = fixture.nativeElement.querySelector(
+        'input[role="switch"]',
+      ) as HTMLInputElement;
+
+      expect(labels).toHaveLength(1);
+      expect(labels[0].getAttribute('for')).toBe(input.id);
+    });
+
+    it('the description comes from the chrome, and the switch adds none of its own', async () => {
+      const fixture = await render(SwitchInFieldHost);
+      const root = fixture.nativeElement as HTMLElement;
+      const input = root.querySelector('input[role="switch"]') as HTMLElement;
+
+      // One line in the whole tree, drawn by the wrapper, and the control points at it —
+      // which it can only do because the wrapper handed it the ids to point at.
+      expect(messagesIn(root).map((el) => el.dataset['pctPart'])).toEqual([
+        'field-hint',
+      ]);
+      expect(input.getAttribute('aria-describedby')).toBe(
+        part(fixture, 'field-hint').id,
+      );
+    });
+  });
+
+  describe('PctSlider', () => {
+    it('the wrapper draws no border around a slider (the bare appearance)', async () => {
+      const fixture = await render(SliderInFieldHost);
+      const field = fixture.nativeElement.querySelector('pct-field');
+
+      expect(field.getAttribute('data-pct-appearance')).toBe('bare');
+    });
+
+    it('hands the label to the wrapper but keeps it bound to the native input', async () => {
+      const fixture = await render(SliderInFieldHost);
+      const labels = allParts(fixture, 'field-label');
+      const input = fixture.nativeElement.querySelector(
+        'input[type="range"]',
+      ) as HTMLInputElement;
+
+      expect(labels).toHaveLength(1);
+      expect(labels[0].getAttribute('for')).toBe(input.id);
+    });
+
+    it('the description comes from the chrome, and the slider adds none of its own', async () => {
+      const fixture = await render(SliderInFieldHost);
+      const root = fixture.nativeElement as HTMLElement;
+      const input = root.querySelector('input[type="range"]') as HTMLElement;
+
+      expect(messagesIn(root).map((el) => el.dataset['pctPart'])).toEqual([
+        'field-hint',
+      ]);
+      expect(input.getAttribute('aria-describedby')).toBe(
+        part(fixture, 'field-hint').id,
+      );
+    });
+  });
+
   describe('PctRadioGroup', () => {
     it('names the group through aria-labelledby pointing at the wrapper label', async () => {
       const fixture = await render(RadioInFieldHost);
@@ -292,6 +394,7 @@ describe('Controls outside the wrapper: one message line', () => {
     ['pct-checkbox', CheckboxAloneHost],
     ['pct-radio-group', GroupAloneHost],
     ['pct-select', SelectAloneHost],
+    ['pct-switch', SwitchAloneHost],
   ];
 
   for (const [name, host] of controls) {

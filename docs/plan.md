@@ -123,7 +123,8 @@ menu, the select family, and switch / textarea / slider / date.
     RTL / forced-colours audits and 21 unit cases; control is the asserted **absence** of the
     three live attributes. Cost `./toast` **15311 B** on `./core` and `./icon`, `./core` +200 B
     and +142 B fanned out to every entrypoint for one new string.
-  - left **4.14**, **4.15**, **4.16** behind and gave **4.11** two more files
+  - left **4.14**, **4.15** and **4.16** behind; the two files it added to the mutation set
+    are measured now, with everything else the library ships
 - [ ] **1.2 — table / datagrid** on a headless core (column model, sorting, filtering, grouping,
       selection as signals) separated from rendering. **The last item of the phase** — the only
       one counted in months rather than days; until the decision in
@@ -272,7 +273,17 @@ run-many`, which is the closest thing here to what CI does, and the same run rep
     above, whether the run answers the same way twice
   - binds at: **3.1** — the first push to a public repository is the moment somebody other than
     the maintainer waits for this run, and a first visitor who watches an hour of CI has
-    learned something about the project. Sooner if a run starts hitting a limit · _notes:_ —
+    learned something about the project. Sooner if a run starts hitting a limit
+  - _notes:_ **the number above is out of date and the direction is the wrong one.** Widening
+    the measured set to the whole library took `components:mutation` from 2762 mutants and
+    ~17½ minutes to **3878 mutants and 49 m 30 s / 50 m 59 s** — two full runs, on the same
+    eight-core machine. So the estimate for a push that touches `libs/components` is no longer
+    45–60 minutes but something the four vCPUs of `ubuntu-latest` have to be asked about
+  - and the two runs measured this item's own defect again, at the new scale: over identical
+    code the first landed `motion.ts 87.93 51(1)` and `placement.ts 96.92 63(5)`, the second
+    `91.38 53(3)` and `98.46 64(6)`. **Three and a half points on a file nothing touched**, and
+    the whole of the difference is in the clock column. The snapshot in the tree is the second
+    run's, per this item's own rule — which is a gate needing a person, twice now
 
 - [ ] **4.3 — an option's owner is measured only where a page renders the panel**
   - `pct-select` draws a named section as `role="group"`, and the options below it are owned by
@@ -348,7 +359,12 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     restarted. It has always been so for `pct-select`; the filtering step gave the many-choice
     tag the same shape, because a pick now reads the row's value before anything else
   - binds at: **the next task that touches `check-mutation`** — a sixth column, or a score the
-    columns can be added up to · _notes:_ —
+    columns can be added up to
+  - _notes:_ **the trigger has fired**: the widening of the measured set gave the gate four
+    rules and the snapshot sixteen rows, and left this column exactly where it was. It was not
+    taken in passing because a sixth column is not a rendering change — the row format is
+    parsed by point 6 and written out literally in five fixtures, so it is its own step with
+    its own controls
 
 - [ ] **4.7 — the guard that keeps `null` away from a consumer's comparator is promised and not
       measured**
@@ -430,50 +446,35 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
   - binds at: **3.1**, the first push to a public repository — that is the moment the npm page
     stops being a draft and becomes what a first visitor reads · _notes:_ —
 
-- [ ] **4.11 — the mutation run measures 22 of 36 source files, and nothing says which 22**
-  - `mutation.policy.json` holds two lists and guards them beautifully in one direction. Its
-    own prose says why: "narrowing the pattern is the cheapest way of raising the score", and
-    the `patterns` copy plus the `files` inventory together make a file that **drops out** of
-    the measurement fire the gate. Neither says anything about a file that was never in
-  - measured at the textarea: 22 of the 36 source files under `libs/components/*/src` are in
-    the set. Outside it are `field.ts` — the wrapper every control in the library is drawn by —
-    `checkbox.ts`, `radio.ts`, `radio-group.ts`, `switch.ts`, `text.ts`, `button.ts`,
-    `menu-item.ts`, `menu-trigger.ts`, `select.template.ts`, the two field slots and, as of
-    this step, `autosize.ts`. **The slider added a third**, `slider.ts`, by doing nothing at
-    all: a new entrypoint is outside the set the moment it exists
-  - **the shape is [`lesson-45`](lessons.md#lesson-45) one floor up, and the policy names that
-    lesson itself** — about a denominator narrowed on purpose. What this item is about is a
-    denominator that was never widened: a new behaviour file lands outside the measurement by
-    **default**, silently, and the score keeps rising because the files it is computed over are
-    the ones somebody already wrote tests for
-  - what makes it an item rather than a chore is that the list is not obviously wrong. Some of
-    the fourteen really are declarative — `aux.ts` is two empty classes — and Stryker's
-    `noMutants` register exists for exactly that. So the work is a **rule**, not a bulk
-    addition: what property puts a file in, checked by the gate against the sources, with the
-    deliberate absences named and reasoned in the policy the way every other narrowing here is
-  - the price is known and is the reason this is not done in passing: the run is seventeen
-    minutes, and widening it means both a longer run and a first reading full of survivors
-    somebody has to answer for one file at a time — which is the work, not the obstacle
-  - binds at: **the next task that touches `mutation.policy.json`**, or the first component
-    whose behaviour is genuinely its own rather than the chrome's — whichever comes first.
-    **Both have now happened, so this item is next** — it was not done inside the date field
-    because it is a gate rule with its own fixtures and controls, and that was a component
-  - _notes:_ the date picker added four files, and **two of them went into the measurement —
-    not by a decision, by the gate.** The set is 24 files and 2575 mutants now, against 22 and
-    2261; the score moved 82.18 → 82.87, so the two came in above the floor rather than being
-    carried by it — `day.ts` at 95.83 and `locale.ts` at 80.49. The run's own reading was
-    lower first (92.41 and 77.44) and the survivors it named were worth answering: the
-    `maximize()` road no case had ever entered, the window's oldest year, the formatter cache,
-    and a `setUTCHours` that does nothing. `check-mutation` point 3 requires every spec in the git
-    index to appear in the report's `testFiles`, and Stryker lists a spec there only when its
-    tests covered MUTATED code. `day.spec.ts` and `locale.spec.ts` touch no Angular at all, so
-    they covered nothing in the set and the gate read them as "did not run" — a false sentence
-    with a true consequence, because the only remedy is to measure the files they cover. So
-    `day.ts` and `locale.ts` are in, and `calendar.ts` and `date.ts` are out, which is this
-    item's own content drawn in one diff: **the rule that decides is "does some spec of this
-    file touch a mutated one", and nobody wrote that rule down.** The two that stayed out have
-    specs that render components, so they pull `core` and satisfy the gate while contributing
-    nothing to the score — exactly as `switch.ts`, `autosize.ts` and `slider.ts` do
+- [x] **4.11 — the mutation run measures 22 of 36 source files, and nothing says which 22**
+  - closed with a **rule**, which is what the item asked for. The gate reads the library's
+    sources off the git index and requires every one of them to stand either in the inventory
+    or in a new `unmeasured` register with a reason; a file nobody decided about is a violation
+    (`inventory/source-unaccounted`) and not a silence. So **a new entrypoint's file is inside
+    the measurement by default** — the exact inversion of the state this item was written about
+  - `mutate` now says what is NOT measured instead of what is, which is the same inversion
+    written where Stryker reads it. The categories that stay out carry a reason each — specs,
+    `*.types.ts`, barrels, `testing/`, the version stamp, the mutation harness, the `ng add`
+    schematic — and the gate computes them **independently of the configuration**, for
+    `check-coverage`'s reason: a list read off `mutate` would strike a file from both sides of
+    the comparison at once
+  - **the measurement it opened with**: run over the repository before the widening, the rule
+    named exactly the **17** sources that stood outside — `field.ts`, the wrapper every control
+    is drawn by, `slider.ts`, `date.ts`, `calendar.ts` and thirteen more
+  - the set is **42 of 43 files** now, 2762 → 3878 mutants. The one absence is
+    `field/src/affix.ts`, and it is not a low score: instrumented, the file brings the INITIAL
+    test run down, because the alias in its `input()` configuration stops being a literal the
+    compiler can read and a static `pctPrefix="fill"` stops being a binding
+    ([`lesson-123`](lessons.md#lesson-123)). An ignored mutant is still instrumented
+  - **the price the item predicted came due and was paid.** The sixteen files arrived at
+    **64.25%** with 399 mutants nobody had ever looked at; **51 cases across ten specs** answered
+    them, and what they turned out to be is worth the sentence: defaults no host had ever left
+    alone, two guards blocking one outcome and masking each other, a focus trap nobody had
+    tabbed out of, three dev-mode warnings nobody had read, and a chrome with no control in it.
+    Total **81.05%** against the 80 floor, and the widened run is **50 minutes** where the
+    narrow one was seventeen — which is 4.2's number, not this item's, and it just tripled
+  - four rules and four fixtures (38 → 42), each proved by disarming it: all four answer
+    "PASSED", none moves onto a neighbour
 
 - [ ] **4.12 — a control knows its text is not a date and has no channel to say so**
   - `<pct-date>` reports malformed text with `aria-invalid="true"` and a `data-pct-malformed`

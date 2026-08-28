@@ -73,6 +73,16 @@ describe('PctToaster', () => {
       expect(viewport?.getAttribute('aria-relevant')).toBeNull();
     });
 
+    it('stands at the end of both axes where no configuration says otherwise', async () => {
+      // The one case that boots with no `providePctToastConfig` at all: everywhere else
+      // the host writes the placement, so the defaults the token carries are exercised
+      // here or nowhere.
+      await boot();
+
+      expect(region()?.getAttribute('data-pct-block')).toBe('end');
+      expect(region()?.getAttribute('data-pct-inline')).toBe('end');
+    });
+
     it('stands where the configuration puts it', async () => {
       await boot([providePctToastConfig({ block: 'start', inline: 'center' })]);
 

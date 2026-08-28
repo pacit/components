@@ -3263,3 +3263,35 @@ Three things that come with that road, each measured rather than assumed:
   children already inside it: in all three engines they stay at `opacity: 1` and only the new
   one runs its `@starting-style`. That was the measurement the road depended on, and it is the
   kind that is cheaper to take than to reason about.
+
+### <a id="lesson-123"></a>`lesson-123` — An ignored mutant is still instrumented, and a static attribute is where that shows
+
+**`affix.ts` cannot enter the mutation measurement at all — not because it would score badly,
+but because with the file in `mutate` the run dies in the INITIAL test run.** One case of
+`field.spec.ts` fails and exactly one: `<span pctPrefix="fill">` renders
+`data-pct-fit="inset"`. The sibling case a line above writes the attribute bare and passes,
+because bare means `inset` and `inset` is also what a directive that received nothing answers.
+
+The `angular` ignorer is why the file looked safe. It strikes the mutants of an `input()`
+configuration object out of the score, and its reason in the policy says why they cannot be
+run: mutated, the object stops being a literal the compiler can read. What that reason did not
+say, because nothing had needed it, is that **striking a mutant out of the score does not take
+it out of the code**. Instrumentation goes in first; every mutant of that object — ignored or
+not — leaves a `stryMutAct(id) ? … : …` where a string used to be. The alias is one of those
+strings.
+
+An alias the compiler cannot read is not an error anywhere. It is an input the consuming
+template never learns about, so `pctPrefix="fill"` compiles as a plain attribute, `fit()`
+answers with its default, and nothing throws or warns. The only thing in the world that says
+so is an assertion on the value.
+
+Which is why the same instrumentation is harmless in `icon`, `popover`, `tooltip` and
+`overlay` — four measured files, all four carrying aliases. No spec of theirs sets an aliased
+input as a plain attribute with a value. So the property that decides is not "the file has an
+alias" but "some spec binds one the way an application would", and that is the sort of
+property nobody can read off a file.
+
+The consequence for the register is the general one: a file can be **unmeasurable** and not
+merely unmeasured, the two look identical from outside, and a policy that can only say "in" or
+"out" leaves whoever meets this pushing at the run instead of writing the sentence down. Here
+the sentence costs 14 mutants, and it is in `mutation.policy.json` under `unmeasured`.

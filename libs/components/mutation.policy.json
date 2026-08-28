@@ -1,27 +1,18 @@
 {
   "// why": "The register of the mutation run (req-quality-unit). It holds what cannot be read out of Stryker's report: WHICH files are to be measured, WHAT score is the floor and WHICH narrowings of the denominator are deliberate. The gate `tools/check-mutation.mjs` compares this file against the report, that is against what the run REALLY did — not against the configuration that declares it.",
-  "// patterns": "A copy of `mutate` from `stryker.config.json`, written out here so that changing it is a comparison rather than an act of trust. Narrowing the pattern is the cheapest way of raising the score: a file struck from the measurement takes its surviving mutants with it and the percentage rises although no test was added. The same defect as `coverageInclude` in `lesson-45`, one floor up.",
+  "// patterns": "A copy of `mutate` from `stryker.config.json`, written out here so that changing it is a comparison rather than an act of trust. Narrowing the pattern is the cheapest way of raising the score: a file struck from the measurement takes its surviving mutants with it and the percentage rises although no test was added. The same defect as `coverageInclude` in `lesson-45`, one floor up. The list names what is NOT measured rather than what is: as an allow-list every new file landed outside the measurement by default and silently, which is the state `unmeasured` and the gate's `source-unaccounted` were written against.",
   "patterns": [
-    "libs/components/core/src/*.ts",
-    "libs/components/date/src/day.ts",
-    "libs/components/date/src/locale.ts",
-    "libs/components/dialog/src/dialog.ts",
-    "libs/components/field/src/number.ts",
-    "libs/components/icon/src/icon.ts",
-    "libs/components/menu/src/menu.ts",
-    "libs/components/popover/src/popover.ts",
-    "libs/components/select/src/multi-select.ts",
-    "libs/components/select/src/select.base.ts",
-    "libs/components/select/src/select.ts",
-    "libs/components/toast/src/toast-viewport.ts",
-    "libs/components/toast/src/toaster.ts",
-    "libs/components/tooltip/src/tooltip.ts",
+    "libs/components/*/src/**/*.ts",
     "!libs/components/**/index.ts",
     "!libs/components/**/*.types.ts",
-    "!libs/components/**/*.spec.ts"
+    "!libs/components/**/*.spec.ts",
+    "!libs/components/testing/**",
+    "!libs/components/field/src/affix.ts"
   ],
   "// files": "The inventory outright: what is to be measured. The patterns above watch that nobody narrowed the measurement; this list watches that a file covered by a pattern really entered the report. Neither is enough alone — a pattern can stay untouched while a file disappears (a rename, a move), and the score rises by itself again.",
   "files": [
+    "libs/components/button/src/button.ts",
+    "libs/components/checkbox/src/checkbox.ts",
     "libs/components/core/src/announce.ts",
     "libs/components/core/src/config.ts",
     "libs/components/core/src/field.ts",
@@ -35,17 +26,31 @@
     "libs/components/core/src/template.ts",
     "libs/components/core/src/texts.ts",
     "libs/components/core/src/value.ts",
+    "libs/components/date/src/calendar.ts",
+    "libs/components/date/src/date.ts",
     "libs/components/date/src/day.ts",
     "libs/components/date/src/locale.ts",
     "libs/components/dialog/src/dialog.ts",
+    "libs/components/field/src/autosize.ts",
+    "libs/components/field/src/aux.ts",
+    "libs/components/field/src/field.ts",
     "libs/components/field/src/number.ts",
+    "libs/components/field/src/text.ts",
     "libs/components/icon/src/icon.ts",
+    "libs/components/menu/src/menu-item.ts",
+    "libs/components/menu/src/menu-trigger.ts",
     "libs/components/menu/src/menu.ts",
     "libs/components/popover/src/popover.ts",
+    "libs/components/radio/src/radio-group.ts",
+    "libs/components/radio/src/radio.ts",
     "libs/components/select/src/multi-select.ts",
     "libs/components/select/src/select.base.ts",
+    "libs/components/select/src/select.template.ts",
     "libs/components/select/src/select.ts",
+    "libs/components/slider/src/slider.ts",
+    "libs/components/switch/src/switch.ts",
     "libs/components/toast/src/toast-viewport.ts",
+    "libs/components/toast/src/toast.ts",
     "libs/components/toast/src/toaster.ts",
     "libs/components/tooltip/src/tooltip.ts"
   ],
@@ -54,6 +59,17 @@
     {
       "file": "libs/components/core/src/value.ts",
       "reason": "The file carries the type `PctCompareWith` and one assignment, `export const pctSameValue = Object.is`. The type vanishes at compilation, and assigning a reference to a built-in function has nothing to mutate: there is no condition here, no literal, no call with an argument. Zero mutants is the correct result of the measurement here, not the absence of one."
+    },
+    {
+      "file": "libs/components/field/src/aux.ts",
+      "reason": "Two directives with an EMPTY body: `PctLabelAux` and `PctMessageAux` are a selector and a `data-pct-part` each, and both of those live in the decorator, which Stryker leaves alone. There is no condition here, no call and no literal outside the metadata, so zero mutants is the correct result of the measurement rather than the absence of one — what the two really promise is a slot in `field.html`, and that is `check-parts`."
+    }
+  ],
+  "// unmeasured": "The register of what is deliberately NOT measured, and why. `patterns` and `files` watch that nothing DROPS OUT of the measurement; neither of them can say anything about a file that was never in — and that was the default state of every new file, because a pattern names what is measured. The gate reads the library's sources off the git index and requires each of them to stand either in `files` or here. An entry here does not say \"this file scores poorly\", it says \"this file cannot be measured\" — and the reason has to say what stops it, because that sentence is the whole of the entry.",
+  "unmeasured": [
+    {
+      "file": "libs/components/field/src/affix.ts",
+      "reason": "Instrumented, the file brings the INITIAL TEST RUN down, and with it the whole run rather than its own score. Measured: with `affix.ts` in `mutate`, `field.spec.ts` reads `data-pct-fit=\"inset\"` where the fixture writes `pctPrefix=\"fill\"`. Stryker instruments the `input()` configuration object BEFORE the `angular` ignorer strikes its mutants out of the score, so the alias stops being a literal the compiler can read, and a static attribute carrying a value stops being an input binding — it stays an attribute and the input keeps its default. The library's other aliased inputs (`icon`, `popover`, `tooltip`, `overlay`) are measured because no spec of theirs sets one as a plain attribute with a value. This is not a file with a low score; it is a file the measurement cannot hold, and 14 mutants is what it costs."
     }
   ],
   "// threshold": "The hard floor of the score for the whole, in percent. The same number stands in `thresholds.break` in `stryker.config.json` and the gate watches that the two agree — because that one fails the run and this one is its only justification. `break` is `null` by Stryker's own default, so BY DEFAULT the mutation run exits zero whatever the score and is a report to look at.",

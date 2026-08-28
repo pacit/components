@@ -19,6 +19,9 @@ import { PctCheckbox } from './checkbox';
 const boxOf = (f: ComponentFixture<unknown>) =>
   f.nativeElement.querySelector('input') as HTMLInputElement;
 
+const partOf = (f: ComponentFixture<unknown>, part: string) =>
+  f.nativeElement.querySelector(`[data-pct-part="${part}"]`) as HTMLElement;
+
 async function render<T>(type: Type<T>) {
   const fixture = TestBed.createComponent(type);
   fixture.detectChanges();
@@ -105,6 +108,30 @@ class NamedHost {
   ariaLabelledby = signal('');
 }
 
+/**
+ * A checkbox with NOTHING bound. Every other host in this file binds every input it has,
+ * so the values the API promises when nobody writes one are the single thing none of them
+ * can answer for — a default is exercised only where it is left alone.
+ */
+@Component({
+  imports: [PctCheckbox],
+  template: `<pct-checkbox />`,
+})
+class BareHost {}
+
+/** `invalid` set, `touched` left to its default — and the other way round. */
+@Component({
+  imports: [PctCheckbox],
+  template: `<pct-checkbox label="I accept" invalid />`,
+})
+class InvalidOnlyHost {}
+
+@Component({
+  imports: [PctCheckbox],
+  template: `<pct-checkbox label="I accept" touched />`,
+})
+class TouchedOnlyHost {}
+
 describe('PctCheckbox', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -120,6 +147,7 @@ describe('PctCheckbox', () => {
     ) as HTMLLabelElement;
 
     expect(box.type).toBe('checkbox');
+    expect(box.id).not.toBe('');
     expect(label.getAttribute('for')).toBe(box.id);
     expect(label.textContent?.trim()).toContain('I accept the terms');
   });
@@ -355,6 +383,93 @@ describe('PctCheckbox', () => {
       await fixture.whenStable();
       // The set says nothing about `indeterminate`, so the component's own drawing stays.
       expect(mark(fixture).firstElementChild?.tagName).toBe('svg');
+    });
+  });
+  describe('the defaults, which every other host here binds over', () => {
+    it('a checkbox with nothing bound is off, enabled, unnamed and draws no text of its own', async () => {
+      const fixture = await render(BareHost);
+      const box = boxOf(fixture);
+
+      expect(box.checked).toBe(false);
+      expect(box.indeterminate).toBe(false);
+      expect(box.disabled).toBe(false);
+      expect(box.required).toBe(false);
+      expect(box.getAttribute('name')).toBeNull();
+      expect(box.getAttribute('aria-readonly')).toBeNull();
+      expect(box.getAttribute('aria-label')).toBeNull();
+      expect(box.getAttribute('aria-labelledby')).toBeNull();
+      expect(box.getAttribute('aria-describedby')).toBeNull();
+      expect(partOf(fixture, 'label')).toBeNull();
+      expect(partOf(fixture, 'hint')).toBeNull();
+      expect(partOf(fixture, 'error')).toBeNull();
+    });
+
+    it('the control keeps an id even where no label points at it', async () => {
+      // The `for`/`id` pair reads as correct when BOTH halves are empty, so the relation
+      // has to be asserted against something that is not the other half.
+      expect(boxOf(await render(BareHost)).id).not.toBe('');
+    });
+
+    it('`invalid` with no touch is not a state the user is shown', async () => {
+      const fixture = await render(InvalidOnlyHost);
+
+      expect(boxOf(fixture).getAttribute('aria-invalid')).toBeNull();
+      expect(partOf(fixture, 'error')).toBeNull();
+    });
+
+    it('a touch with nothing wrong is not a state either', async () => {
+      const fixture = await render(TouchedOnlyHost);
+
+      expect(boxOf(fixture).getAttribute('aria-invalid')).toBeNull();
+      expect(partOf(fixture, 'error')).toBeNull();
+    });
+
+    it('the hint the control draws itself carries the id its description runs on', async () => {
+      const fixture = await render(Host);
+      fixture.componentInstance.hint.set('One tick, one consent');
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const hint = partOf(fixture, 'hint');
+      expect(hint.id).not.toBe('');
+      expect(boxOf(fixture).getAttribute('aria-describedby')).toBe(hint.id);
+    });
+  });
+
+  describe('readonly, which two guards block at once', () => {
+    /**
+     * `onClick` prevents the default and `onChange` ignores the event, and either one
+     * alone keeps the MODEL where it was — so an assertion on the model passes with the
+     * other gone. What separates them is the native checkedness: without the prevented
+     * default the box flips under the click and the DOM starts saying something the model
+     * does not.
+     */
+    it('the native box does not flip under the click', async () => {
+      const fixture = await render(Host);
+      fixture.componentInstance.ro.set(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const box = boxOf(fixture);
+      box.click();
+      await fixture.whenStable();
+
+      expect(box.checked).toBe(false);
+      expect(fixture.componentInstance.checked()).toBe(false);
+    });
+
+    it('and a change that never came from a click is ignored as well', async () => {
+      const fixture = await render(Host);
+      fixture.componentInstance.ro.set(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const box = boxOf(fixture);
+      box.checked = true;
+      box.dispatchEvent(new Event('change'));
+      await fixture.whenStable();
+
+      expect(fixture.componentInstance.checked()).toBe(false);
     });
   });
 });

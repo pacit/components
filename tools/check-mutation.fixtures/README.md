@@ -8,7 +8,7 @@ what it declares.
 
 Every case carries the pair `check` + `rule`, not the point number alone — straight from
 [`lesson-50`](../../docs/lessons.md#lesson-50). Measured on this gate: disarming
-**twelve of the thirty-eight** rules moves their cases onto a neighbouring rule, and
+**twelve of the forty-two** rules moves their cases onto a neighbouring rule, and
 without that field all twelve runs would be green.
 
 The reason it exists is the same as for every other gate
@@ -24,8 +24,8 @@ is those five moves these cases exercise.
 A case is not one more copy of the correct input with a single thing broken. The gate
 builds it from two layers:
 
-1. a copy of `_reference.json` — a fake library (`alpha`, `beta`, `empty`) that **must
-   pass**;
+1. a copy of `_reference.json` — a fake library (`alpha`, `beta`, `empty`, `delta`) that
+   **must pass**;
 2. the changes from the case file (`replaceStatuses`, `runConfig`, `policy`,
    `dropSnapshotRow`, …).
 
@@ -67,3 +67,16 @@ the real repository, recorded in the **Control** of
 happen** today: the repository has zero timeouts. The case proves the rule works, but its
 real test will be the day the first mutant loops the code — and then it is to be loud
 that the score has started buying the clock rather than the assertion.
+
+## The file the measurement cannot hold
+
+`delta.ts` is in the fake library and in nothing else: not in `files`, not in `patterns`, not
+in the report — only in `unmeasured`, with a reason. It is there so that the reference input
+proves the register in the AFFIRMATIVE, and the four cases around it can each break one thing:
+the register gone (`source-unaccounted`), an excuse for a file that is not a source
+(`absence-without-source`), a file both measured and excused (`absence-inside-inventory`), and
+an excuse with no sentence (`absence-without-reason`).
+
+Its reason is the real one, shortened: `field/src/affix.ts` cannot be instrumented without
+bringing the initial test run down ([`lesson-123`](../../docs/lessons.md#lesson-123)). A fake
+library made only of files that CAN be measured would have had nowhere to put that case.

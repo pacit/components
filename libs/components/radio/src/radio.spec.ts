@@ -5,6 +5,7 @@ import {
   Type,
 } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { By } from '@angular/platform-browser';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {
   form,
@@ -14,6 +15,7 @@ import {
   ValidationError,
 } from '@angular/forms/signals';
 import type { PctCompareWith } from '@pacit/components/core';
+import { allParts, part } from '../../testing/src/dom';
 import { PctRadio } from './radio';
 import { PctRadioGroup } from './radio-group';
 
@@ -162,6 +164,37 @@ class NamedHost {
   ariaLabelledby = signal('');
 }
 
+/**
+ * A group with NOTHING bound. Every other host in this file binds the inputs it needs, so
+ * the values the API promises where nobody writes one answer here or nowhere.
+ */
+@Component({
+  imports: [PctRadioGroup, PctRadio],
+  template: `<pct-radio-group>
+    <pct-radio value="free">Free</pct-radio>
+  </pct-radio-group>`,
+})
+class BareGroupHost {}
+
+/** A group with no options at all — every walk over the list starts empty. */
+@Component({
+  imports: [PctRadioGroup],
+  template: `<pct-radio-group label="Plan" />`,
+})
+class EmptyGroupHost {}
+
+/** Options whose values are the other two primitives a `value` attribute can describe. */
+@Component({
+  imports: [PctRadioGroup, PctRadio],
+  template: `<pct-radio-group label="Copies" [(value)]="value">
+    <pct-radio [value]="1">One</pct-radio>
+    <pct-radio [value]="true">Yes</pct-radio>
+  </pct-radio-group>`,
+})
+class PrimitiveHost {
+  value = signal<number | boolean | null>(null);
+}
+
 /** A plan as an entity — two objects can stand for one plan. */
 interface Plan {
   id: string;
@@ -248,6 +281,17 @@ describe('PctRadioGroup / PctRadio', () => {
     expect(label.textContent?.trim()).toContain('Plan');
   });
 
+  it('an option nobody named carries no name attribute of its own', async () => {
+    // `Host` binds neither `ariaLabel` nor `ariaLabelledby`, so this is the one host in
+    // the file where their defaults are what answers.
+    const fixture = await render(Host);
+
+    for (const radio of radiosOf(fixture)) {
+      expect(radio.hasAttribute('aria-label')).toBe(false);
+      expect(radio.hasAttribute('aria-labelledby')).toBe(false);
+    }
+  });
+
   it('every option shares one name attribute (a native group)', async () => {
     const fixture = await render(Host);
     const names = new Set(radiosOf(fixture).map((r) => r.name));
@@ -329,6 +373,10 @@ describe('PctRadioGroup / PctRadio', () => {
     await fixture.whenStable();
 
     expect(fixture.componentInstance.value()).toBe('');
+    // The model alone cannot separate the two guards: `onClick` prevents the default and
+    // the group refuses the choice, and either one keeps the value where it was. The
+    // native checkedness is what the prevented default is FOR.
+    expect(free.checked).toBe(false);
     expect(free.disabled).toBe(false);
 
     // The GROUP announces the "read only" state: the `radio` role does not support
@@ -337,6 +385,18 @@ describe('PctRadioGroup / PctRadio', () => {
     const group = fixture.nativeElement.querySelector('pct-radio-group');
     expect(group.getAttribute('aria-readonly')).toBe('true');
     expect(free.hasAttribute('aria-readonly')).toBe(false);
+  });
+
+  it('focus() on an option lands on its native control', async () => {
+    // `PctRadioGroup.focus()` reaches for the element rather than for this method, so the
+    // option's own contract is exercised nowhere else.
+    const fixture = await render(Host);
+    const option = fixture.debugElement.queryAll(By.directive(PctRadio))[1]
+      .componentInstance as PctRadio<string>;
+
+    option.focus();
+
+    expect(document.activeElement).toBe(radiosOf(fixture)[1]);
   });
 
   it('blur on any option marks the group as touched', async () => {
@@ -485,6 +545,16 @@ describe('PctRadioGroup / PctRadio', () => {
     it('the value attribute still describes primitive options', async () => {
       const fixture = await render(Host);
       expect(radiosOf(fixture)[0].getAttribute('value')).toBe('free');
+    });
+
+    it('a number and a boolean are primitives too, and each keeps its own text form', async () => {
+      // Three types, not one: `String(value)` is right for all three, and a guard that
+      // admits only strings passes every test written over a list of strings.
+      const fixture = await render(PrimitiveHost);
+      const [one, yes] = radiosOf(fixture);
+
+      expect(one.getAttribute('value')).toBe('1');
+      expect(yes.getAttribute('value')).toBe('true');
     });
 
     it('reset() returns to the emptyValue the application declared', async () => {
@@ -659,6 +729,71 @@ describe('PctRadioGroup / PctRadio', () => {
       } finally {
         warn.mockRestore();
       }
+    });
+  });
+  describe('the defaults, which every other host here binds over', () => {
+    it('a group with nothing bound is vertical, enabled and says nothing about itself', async () => {
+      const fixture = await render(BareGroupHost);
+      const group = fixture.nativeElement.querySelector(
+        'pct-radio-group',
+      ) as HTMLElement;
+
+      expect(group.getAttribute('aria-orientation')).toBe('vertical');
+      expect(group.getAttribute('data-pct-orientation')).toBe('vertical');
+      expect(group.getAttribute('aria-invalid')).toBeNull();
+      expect(group.getAttribute('aria-required')).toBeNull();
+      expect(group.getAttribute('aria-readonly')).toBeNull();
+      expect(group.getAttribute('aria-describedby')).toBeNull();
+      expect(allParts(fixture, 'group-hint')).toEqual([]);
+      expect(allParts(fixture, 'group-error')).toEqual([]);
+      // No label was written, so no label row is drawn — and the group names itself
+      // through nothing rather than through an id that stands for an absent element.
+      expect(allParts(fixture, 'group-label')).toEqual([]);
+      expect(group.getAttribute('aria-labelledby')).toBeNull();
+    });
+
+    it('the label and the hint carry the ids the ARIA relations run on', async () => {
+      const fixture = await render(Host);
+      fixture.componentInstance.hint.set('One plan at a time');
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const group = fixture.nativeElement.querySelector(
+        'pct-radio-group',
+      ) as HTMLElement;
+      const label = part(fixture, 'group-label');
+      const hint = part(fixture, 'group-hint');
+
+      // A relation between two empty ids reads as correct from either end, so what is
+      // asserted is that neither end is empty.
+      expect(label.id).not.toBe('');
+      expect(hint.id).not.toBe('');
+      expect(group.getAttribute('aria-labelledby')).toBe(label.id);
+      expect(group.getAttribute('aria-describedby')).toBe(hint.id);
+    });
+
+    it('focus() on a group with no options at all does nothing, and does not throw', async () => {
+      const fixture = await render(EmptyGroupHost);
+      const group = fixture.debugElement.children[0]
+        .componentInstance as PctRadioGroup<string>;
+
+      expect(() => group.focus()).not.toThrow();
+    });
+
+    it('readonly refuses a change that never came from a click', async () => {
+      // The option prevents the default of the click, so the group's own guard is reached
+      // only by an event that did not start as one.
+      const fixture = await render(Host);
+      fixture.componentInstance.ro.set(true);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      const [free] = radiosOf(fixture);
+      free.checked = true;
+      free.dispatchEvent(new Event('change'));
+      await fixture.whenStable();
+
+      expect(fixture.componentInstance.value()).toBe('');
     });
   });
 });

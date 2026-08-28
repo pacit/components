@@ -191,6 +191,17 @@ class TwoTriggersHost {
   readonly open = signal(false);
 }
 
+/**
+ * An item written outside any `<pct-menu>` — a configuration the component cannot repair
+ * and therefore reports. It is also the only place where the item's own optional injection
+ * and its two null-safe calls are exercised: everywhere else the menu is there.
+ */
+@Component({
+  imports: [PctMenuItem],
+  template: `<button pctMenuItem id="orphan">Rename</button>`,
+})
+class OrphanItemHost {}
+
 describe('PctMenu', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -873,6 +884,43 @@ describe('PctMenu', () => {
 
       expect(press(focused()!, 'ArrowLeft').defaultPrevented).toBe(false);
       expect(panels()).toHaveLength(1);
+    });
+  });
+  describe('an item with no menu around it', () => {
+    it('says so, and says what breaks and what to do instead', async () => {
+      const warn = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => undefined);
+
+      await render(OrphanItemHost);
+
+      expect(warn).toHaveBeenCalledTimes(1);
+      const said = String(warn.mock.calls[0]?.[0] ?? '');
+      expect(said).toContain('outside any');
+      expect(said).toContain('role="menuitem"');
+      expect(said).toContain('no keyboard');
+      expect(said).toContain('<pct-menu>');
+
+      warn.mockRestore();
+    });
+
+    it('and it is a warning, not a failure: the press and the pointer answer nothing', async () => {
+      // `menu?.closeTree()` and `menu?.pointTo()` are null-safe for this one case, and a
+      // menu is present in every other test in this file — so the `?.` is measured here or
+      // it is not measured at all.
+      const warn = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => undefined);
+      const fixture = await render(OrphanItemHost);
+      const item = byId('orphan') as HTMLButtonElement;
+
+      expect(() => {
+        hover(item);
+        item.click();
+      }).not.toThrow();
+
+      await fixture.whenStable();
+      warn.mockRestore();
     });
   });
 });
