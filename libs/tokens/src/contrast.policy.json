@@ -963,6 +963,51 @@
       "bg": "pct.toast.close-bg-hover",
       "level": "UI",
       "severity": "error"
+    },
+    {
+      "$comment": "The rail under the strip is a separator and not the boundary of a control: what identifies a tab is its text, and what identifies the CHOSEN one is the entry below plus the label pair above it — both measured as errors. SC 1.4.11 covers what is required to identify components and their states, which this line is not, so it is measured at `warn` for the reason the disabled states are: being exempt from a requirement is no reason to stop measuring.",
+      "name": "UI: tabs rail",
+      "fg": "pct.tabs.list-border",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "tabs — an unchosen label",
+      "fg": "pct.tabs.tab-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "$comment": "The hovered label is measured against the tint the hover paints under it and not against the page: the two are different colours the moment a skin gives the strip a surface of its own, and the entry has to name what is really underneath.",
+      "name": "tabs — a hovered label",
+      "fg": "pct.tabs.tab-fg-hover",
+      "bg": "pct.tabs.tab-bg-hover",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "tabs — the chosen label",
+      "fg": "pct.tabs.tab-fg-selected",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "tabs — a disabled label",
+      "fg": "pct.tabs.tab-fg-disabled",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "warn"
+    },
+    {
+      "$comment": "The edge that marks the chosen tab, against the page it is drawn on. This one IS a state of a control, so it is an error: it is the second channel the label colour alone would leave the component without (req-a11y-forced-colors).",
+      "name": "UI: tabs — the mark of the chosen tab",
+      "fg": "pct.tabs.tab-border-selected",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
     }
   ]
 }

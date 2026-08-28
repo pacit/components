@@ -43,6 +43,7 @@ before an application ships them.
 ./select 68855 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core
 ./slider 17190 ./core @angular/core
 ./switch 12190 ./core @angular/core
-./toast 15311 ./core,./icon @angular/common,@angular/core
+./tabs 13458 ./core @angular/core
+./toast 15346 ./core,./icon @angular/common,@angular/core
 ./tooltip 13035 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core
 ```

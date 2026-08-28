@@ -27,6 +27,7 @@ a machine; prose with a missing paragraph is not.
 | [`PctTooltip`](tooltip.md)    | `@pacit/components/tooltip`  | a sentence about a control          |
 | [`PctPopover`](popover.md)    | `@pacit/components/popover`  | a panel of content on a live page   |
 | [`PctMenu`](menu.md)          | `@pacit/components/menu`     | a list of commands to choose from   |
+| [`PctTabs`](tabs.md)          | `@pacit/components/tabs`     | one section of a page at a time     |
 | [`PctToaster`](toast.md)      | `@pacit/components/toast`    | a message on top of the page        |
 
 ## The order of the components to come
@@ -126,6 +127,13 @@ The order follows **architectural debt**, not popularity:
    registered — and the whole surface is a service, because a message about something that has
    just happened is raised by the code that made it happen
    ([0044](../decisions/0044-a-toast-is-a-change-in-a-region-that-was-already-there.md)).
+   The **tabs** are built, and they asked a question no component here had had to answer: what
+   is text a user cannot currently see? The panels stay where the consumer wrote them — a
+   `<pct-tab>` **is** the panel — and one nobody chose is `hidden="until-found"`, so the
+   browser's own find-in-page searches it, reveals it and fires `beforematch`, which the panel
+   answers by choosing its tab. A **disabled** panel is hidden outright, because find-in-page
+   is a promise of a way in and a disabled tab has none
+   ([0045](../decisions/0045-a-panel-nobody-chose-is-still-text-in-the-document.md)).
 7. **Table / DataGrid** — has to stand on a **headless core** separated from rendering.
 
 Before item 1 the **behaviour layer in `core`** has to exist: list navigation (private methods

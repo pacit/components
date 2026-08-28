@@ -1,0 +1,9 @@
+.view__panel-body {
+  margin: 0;
+}
+
+/* A box narrow enough that the strip has to scroll — what a real page does to a strip with
+   more labels than room. */
+.view__narrow {
+  max-inline-size: 22rem;
+}

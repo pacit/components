@@ -410,6 +410,40 @@ test.describe('forced-colors: active', () => {
     ).toBe(sys.CanvasText);
   });
 
+  /**
+   * The chosen tab is the state this mode is most likely to level: it is told apart by a
+   * colour and by an edge, and the mode substitutes both. The edge survives because it is
+   * drawn on EVERY tab and only its colour differs — `Canvas` on a `Canvas` page for the ones
+   * not chosen, `Highlight` for the one that is — so what the reader is left with is a line
+   * that is there against lines that are not, which no palette can flatten.
+   */
+  test('the chosen tab keeps its mark under the user palette', async ({
+    page,
+  }) => {
+    await visit(page, '/tabs', { media: FORCED });
+    const sys = await systemColors(page);
+
+    const strip = page.getByTestId('tabs-basic');
+    const chosen = strip.locator('[data-pct-part="tab"][data-pct-chosen]');
+    const other = strip.locator('[data-pct-part="tab"]:not([data-pct-chosen])').first();
+
+    expect(await styleOf(chosen, 'border-bottom-color')).toBe(sys.Highlight);
+    expect(await styleOf(chosen, 'color')).toBe(sys.Highlight);
+    expect(await styleOf(other, 'border-bottom-color')).toBe(sys.Canvas);
+    expect(await styleOf(chosen, 'border-bottom-color')).not.toBe(
+      await styleOf(other, 'border-bottom-color'),
+    );
+
+    // A tab nobody can choose reads as unavailable here too, and by the one word the mode
+    // has for it.
+    expect(
+      await styleOf(
+        strip.locator('[data-pct-part="tab"][data-pct-disabled]'),
+        'color',
+      ),
+    ).toBe(sys.GrayText);
+  });
+
   test('the disabled state says GrayText in every control', async ({
     page,
   }) => {

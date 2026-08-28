@@ -214,6 +214,34 @@ const ATTRIBUTE = /([^\s=/>"']+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g;
 
 const FOCUSABLE_TAGS = new Set(['a', 'button', 'input', 'select', 'textarea']);
 
+/**
+ * The ARIA roles a name belongs on although the element itself never takes focus. A
+ * **composite** widget is named as a whole and the keyboard lands on its children: a
+ * `role="tablist"` is named "Account settings" while every `<button role="tab">` inside it
+ * carries a name of its own, and the strip's name is the one a consumer supplies.
+ *
+ * Without this the proxy for "carries a role" was `tabindex`, which is how a role on a `div`
+ * became a widget — and a composite that needs no `tabindex`, because its children take the
+ * focus, was invisible: the gate counted zero widgets, asked for no name inputs, and passed a
+ * component whose strip could not be named at all.
+ *
+ * It is a closed list of the composite roles and deliberately **not** "any role". A
+ * `role="alert"` on a message part is a live region, not a widget a consumer names; treating
+ * every role as one would ask every component with an error line for two inputs it has no use
+ * for — the same over-reach point 2 refuses in the other direction.
+ */
+const COMPOSITE_ROLES = new Set([
+  'grid',
+  'listbox',
+  'menu',
+  'menubar',
+  'radiogroup',
+  'tablist',
+  'toolbar',
+  'tree',
+  'treegrid',
+]);
+
 const attributesOf = (text) => {
   const attrs = new Map();
   for (const m of text.matchAll(ATTRIBUTE))
@@ -222,12 +250,14 @@ const attributesOf = (text) => {
 };
 
 /**
- * Focusable — that is, an element the user can land on, and therefore one whose accessible
- * name is announced. A link without an address is not focusable, nor is a hidden input; a
- * `tabindex` makes anything focusable, which is how a role written onto a `div` becomes a
- * widget.
+ * A widget — that is, an element whose accessible name is announced, so that a name the
+ * consumer supplies has somewhere to land. Two ways in: the user can focus it, or it carries a
+ * composite role and its children are what the user focuses. A link without an address is not
+ * focusable, nor is a hidden input; a `tabindex` makes anything focusable, which is how a role
+ * written onto a `div` becomes a widget.
  */
-const isFocusable = (tag, attrs) => {
+const isWidget = (tag, attrs) => {
+  if (COMPOSITE_ROLES.has(attrs.get('role'))) return true;
   if (
     attrs.has('tabindex') ||
     attrs.has('[tabindex]') ||
@@ -251,7 +281,9 @@ const readTemplate = (content) => {
     offset: m.index,
   }));
   return {
-    focusable: tags.filter((t) => isFocusable(t.tag, t.attrs)),
+    widgets: tags
+      .filter((t) => isWidget(t.tag, t.attrs))
+      .map((t) => ({ ...t, composite: COMPOSITE_ROLES.has(t.attrs.get('role')) })),
     parsed: tags.filter((t) => FOCUSABLE_TAGS.has(t.tag)).length,
     counted: countOf(text, FOCUSABLE_COUNTER),
   };
@@ -473,7 +505,7 @@ const checkAria = ({ components, counted, templates, documents }) => {
     const template = component.templatePath
       ? byPath.get(component.templatePath)
       : null;
-    component.widgets = template?.read?.focusable ?? [];
+    component.widgets = template?.read?.widgets ?? [];
     // Where each of them stands in the conditional structure, joined to the tag scan by the
     // offset both readings report. A focusable element the walk never reached would be one
     // point 4 could say nothing about — and it would say it by passing, so it is a
@@ -483,7 +515,7 @@ const checkAria = ({ components, counted, templates, documents }) => {
       if (path === undefined)
         throw new AriaError(
           'denominator',
-          `${component.templatePath}: a focusable <${widget.tag}> at offset ${widget.offset} ` +
+          `${component.templatePath}: a widget <${widget.tag}> at offset ${widget.offset} ` +
             `is in the tag scan and not in the parsed tree — point 4 asks which elements can ` +
             `stand in the DOM together, and about this one it would have nothing to ask`,
         );
@@ -535,17 +567,23 @@ const checkAria = ({ components, counted, templates, documents }) => {
       throw new AriaError(
         'forwarded',
         `${component.className} (${component.templatePath}): none of the ` +
-          `${component.widgets.length} focusable element(s) bind both ` +
+          `${component.widgets.length} element(s) that carry a name bind both ` +
           `${NAME_ATTRIBUTES.join(' and ')} to the inputs, and one has to — an input read ` +
           `by nobody names nothing`,
       );
-    const together = carriers.flatMap((widget, i) =>
-      carriers.slice(i + 1).filter((other) => !exclusive(widget, other)),
+    // The pairwise rule is about the FOCUSABLE carriers, because that is what "two names for
+    // one control" means: two things a user can land on, each announcing the same name. A
+    // composite container named alongside the control that owns it is not that — it is the
+    // APG's own arrangement, and `pct-select` is the case: the combobox trigger and the
+    // `role="listbox"` it opens carry one name between them, deliberately.
+    const landable = carriers.filter((widget) => !widget.composite);
+    const together = landable.flatMap((widget, i) =>
+      landable.slice(i + 1).filter((other) => !exclusive(widget, other)),
     );
     if (together.length)
       throw new AriaError(
         'forwarded',
-        `${component.className} (${component.templatePath}): ${carriers.length} focusable ` +
+        `${component.className} (${component.templatePath}): ${landable.length} focusable ` +
           `element(s) bind both ${NAME_ATTRIBUTES.join(' and ')} to the inputs and ` +
           `${together.length + 1} of them can be in the DOM at the same time — two named ` +
           `elements are two names for one control. Two branches of one conditional are not ` +

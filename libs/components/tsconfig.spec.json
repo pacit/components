@@ -16,6 +16,7 @@
     "slider/**/*.ts",
     "toast/**/*.ts",
     "switch/**/*.ts",
+    "tabs/**/*.ts",
     "select/**/*.ts",
     "tooltip/**/*.ts",
     "popover/**/*.ts",

@@ -1,0 +1,127 @@
+:host {
+  display: block;
+  font-family: inherit;
+}
+
+/* The strip scrolls rather than wraps: a second row of tabs under the first has no rail to
+   sit on and no reading order the pattern describes. What carries the keyboard to a tab
+   scrolled out of sight is the platform — `focus()` brings a focused element into view, and
+   this component writes no scrolling of its own (`req-api-platform`). */
+.pct-tabs__list {
+  display: flex;
+  align-items: stretch;
+  gap: var(--pct-tabs-list-gap);
+  overflow: auto;
+  border-block-end: 1px solid var(--pct-tabs-list-border);
+}
+
+:host([data-pct-orientation='vertical']) .pct-tabs__list {
+  flex-direction: column;
+  align-items: stretch;
+  border-block-end: none;
+  border-inline-end: 1px solid var(--pct-tabs-list-border);
+}
+
+.pct-tabs__tab {
+  flex: none;
+  /* The whole tab is the touch target, so the threshold is a floor on the drawing rather
+     than a hit zone laid over it (`req-a11y-touch`); the switch's argument, one component
+     over. */
+  min-block-size: var(--pct-tabs-tab-target-min);
+  padding-block: var(--pct-tabs-tab-padding-y);
+  padding-inline: var(--pct-tabs-tab-padding-x);
+  border: none;
+  border-radius: var(--pct-tabs-tab-radius) var(--pct-tabs-tab-radius) 0 0;
+  background: none;
+  color: var(--pct-tabs-tab-fg);
+  font: inherit;
+  font-weight: var(--pct-tabs-tab-font-weight);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--pct-motion-transition-duration)
+    var(--pct-motion-transition-easing);
+}
+
+/* The mark of the chosen tab is an edge, and it is drawn on the tab in BOTH states — a
+   transparent one when it is not chosen — so that nothing moves by two pixels at the moment
+   of choosing. It is pulled onto the strip's own rail by the negative margin, which is what
+   makes one line out of two. */
+.pct-tabs__tab {
+  border-block-end: 2px solid transparent;
+  margin-block-end: -1px;
+}
+
+:host([data-pct-orientation='vertical']) .pct-tabs__tab {
+  border-block-end: none;
+  border-inline-end: 2px solid transparent;
+  margin-block-end: 0;
+  margin-inline-end: -1px;
+  border-radius: var(--pct-tabs-tab-radius) 0 0 var(--pct-tabs-tab-radius);
+  text-align: start;
+}
+
+.pct-tabs__tab[data-pct-chosen] {
+  color: var(--pct-tabs-tab-fg-selected);
+  border-block-end-color: var(--pct-tabs-tab-border-selected);
+}
+
+:host([data-pct-orientation='vertical'])
+  .pct-tabs__tab[data-pct-chosen] {
+  border-inline-end-color: var(--pct-tabs-tab-border-selected);
+}
+
+.pct-tabs__tab:hover:not([data-pct-disabled]) {
+  color: var(--pct-tabs-tab-fg-hover);
+  background: var(--pct-tabs-tab-bg-hover);
+}
+
+/* The ring is drawn INSIDE the tab. The strip is a scroll container, so a ring laid outside
+   the first or the last tab would be clipped by it — the one place in this library where
+   `outline-offset` points the other way, and it is the container that decides, not taste. */
+.pct-tabs__tab:focus-visible {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: -2px;
+}
+
+/* Disabled without `opacity` (`req-token-no-opacity`) — an explicit colour token. */
+.pct-tabs__tab[data-pct-disabled] {
+  color: var(--pct-tabs-tab-fg-disabled);
+  cursor: not-allowed;
+}
+
+/* Forced-colors mode. The chosen tab is told apart by an edge that is THERE rather than by a
+   colour, but `transparent` is a value the mode may substitute, so both states are written
+   back here at the specificity of the base rules they answer (`@media` adds none —
+   `lesson-70`). `Canvas` on a `Canvas` page is the edge that is not drawn. */
+@media (forced-colors: active) {
+  .pct-tabs__tab {
+    border-block-end-color: Canvas;
+  }
+
+  :host([data-pct-orientation='vertical']) .pct-tabs__tab {
+    border-inline-end-color: Canvas;
+  }
+
+  .pct-tabs__tab[data-pct-chosen] {
+    color: Highlight;
+    border-block-end-color: Highlight;
+  }
+
+  :host([data-pct-orientation='vertical'])
+    .pct-tabs__tab[data-pct-chosen] {
+    border-inline-end-color: Highlight;
+  }
+
+  .pct-tabs__tab:hover:not([data-pct-disabled]) {
+    color: Highlight;
+    background: Canvas;
+  }
+
+  .pct-tabs__tab[data-pct-disabled] {
+    color: GrayText;
+  }
+
+  .pct-tabs__tab:focus-visible {
+    outline-color: Highlight;
+  }
+}

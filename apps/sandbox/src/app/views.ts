@@ -146,6 +146,14 @@ export const SBX_VIEWS: readonly SbxView[] = [
     load: () => import('./views/menu/menu-view').then((m) => m.MenuView),
   },
   {
+    path: 'tabs',
+    title: 'Tabs',
+    summary:
+      'One section showing at a time — and what the panels nobody chose still are.',
+    group: 'components',
+    load: () => import('./views/tabs/tabs-view').then((m) => m.TabsView),
+  },
+  {
     path: 'toast',
     title: 'Toast',
     summary:

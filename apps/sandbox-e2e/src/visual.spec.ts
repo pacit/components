@@ -324,6 +324,27 @@ test.describe('Appearance — compared with the baseline', () => {
   });
 
   /**
+   * The strip and the panel showing under it. The card and not the viewport: a tabs component
+   * draws nothing outside the page's tree, so what a picture here has to hold is the rail, the
+   * mark on the chosen label and the three colours the labels take — including the disabled
+   * one, which is the state the mode below is about.
+   */
+  test('tabs-strip', async ({ page }) => {
+    await stage(page, '/tabs');
+    await expect(page.getByTestId('demo-basic')).toHaveScreenshot(
+      'tabs-strip.png',
+    );
+  });
+
+  /** The strip down the side, where the mark of the chosen tab is on the inline edge. */
+  test('tabs-vertical', async ({ page }) => {
+    await stage(page, '/tabs');
+    await expect(page.getByTestId('demo-vertical')).toHaveScreenshot(
+      'tabs-vertical.png',
+    );
+  });
+
+  /**
    * The same set of controls in the dark theme. The theme is a cross-cutting axis,
    * so a regression in the semantic layer of the tokens will show up here rather
    * than in the light screenshots.
@@ -420,6 +441,20 @@ test.describe('Appearance in RTL — compared with the baseline', () => {
    * left. A stylesheet that says so proves nothing on its own — the direction has to reach
    * the panel, which is an overlay outside the host tree.
    */
+  /**
+   * The vertical strip mirrored. This is the picture the component's logical properties are
+   * FOR: the rail and the mark of the chosen tab both sit on the inline axis, so under `rtl`
+   * they have to change sides with no rule of their own — and `border-inline-end` is the one
+   * declaration that says so.
+   */
+  test('tabs-vertical-rtl', async ({ page }) => {
+    await stage(page, '/tabs');
+    await setRtl(page);
+    await expect(page.getByTestId('demo-vertical')).toHaveScreenshot(
+      'tabs-vertical-rtl.png',
+    );
+  });
+
   test('select-panel-multiple-rtl', async ({ page }) => {
     await stage(page, '/select');
     await setRtl(page);

@@ -1,0 +1,32 @@
+{
+  "pct": {
+    "tabs": {
+      "$comment": "A strip of labels over a section of the page. It paints almost nothing: the panel keeps the page's own surface, because a tab is a way of dividing what is already there rather than a panel arriving on top of it — which is what separates this component from every overlay in the library. So the tokens are the rail, the label's three colours and the edge that marks the chosen one.",
+
+      "$comment-list-border": "The rail the strip stands on — one line under (or beside) every tab, which is what makes a row of labels read as a set of choices rather than as buttons that happen to be adjacent. `border` and not `border-strong`: it is the quietest line in the library, and the chosen tab's own edge is drawn over it.",
+      "list-border": { "$type": "color", "$value": "{pct.border}" },
+      "list-gap": { "$type": "dimension", "$value": "{pct.space.2}" },
+
+      "$comment-tab-fg": "An unchosen tab is muted and the chosen one is the page's text, so the pair carries the state on its own before the edge is looked at — the edge is the second channel, not the first (req-a11y-forced-colors).",
+      "tab-fg": { "$type": "color", "$value": "{pct.text-muted}" },
+      "tab-fg-hover": { "$type": "color", "$value": "{pct.text}" },
+      "tab-fg-selected": { "$type": "color", "$value": "{pct.text}" },
+      "tab-fg-disabled": { "$type": "color", "$value": "{pct.text-disabled}" },
+      "tab-bg-hover": { "$type": "color", "$value": "{pct.surface-100}" },
+      "$comment-tab-border-selected": "The mark of the chosen tab. It is the accent, and it is the only place in this component where the accent is used at all — a filled tab would make the strip louder than the section it introduces.",
+      "tab-border-selected": { "$type": "color", "$value": "{pct.primary}" },
+      "tab-padding-x": { "$type": "dimension", "$value": "{pct.space.4}" },
+      "tab-padding-y": { "$type": "dimension", "$value": "{pct.space.3}" },
+      "tab-radius": { "$type": "dimension", "$value": "{pct.radius.md}" },
+      "tab-font-weight": {
+        "$type": "fontWeight",
+        "$value": "{pct.font.weight.medium}"
+      },
+      "$comment-tab-target-min": "The floor on the tab's own box, so that what a finger gets is what an eye sees at every skin (req-a11y-touch). The padding above already clears it at the default type size; this is what a theme that shrinks the padding runs into.",
+      "tab-target-min": { "$type": "dimension", "$value": "{pct.target.min}" },
+
+      "$comment-panel-padding-y": "The panel is separated from the strip and from what follows it, and on the inline axis by nothing at all: a section of the page is as wide as the page, and an inset here would make it look like a card that is not one.",
+      "panel-padding-y": { "$type": "dimension", "$value": "{pct.space.4}" }
+    }
+  }
+}

@@ -1,0 +1,5 @@
+<div class="pct-widget__list" role="tablist">
+  @for (item of items(); track item) {
+  <button class="pct-widget__tab" type="button" role="tab">{{ item }}</button>
+  }
+</div>

@@ -49,6 +49,8 @@
     "libs/components/select/src/select.ts",
     "libs/components/slider/src/slider.ts",
     "libs/components/switch/src/switch.ts",
+    "libs/components/tabs/src/tab.ts",
+    "libs/components/tabs/src/tabs.ts",
     "libs/components/toast/src/toast-viewport.ts",
     "libs/components/toast/src/toast.ts",
     "libs/components/toast/src/toaster.ts",

@@ -125,6 +125,24 @@ menu, the select family, and switch / textarea / slider / date.
     and +142 B fanned out to every entrypoint for one new string.
   - left **4.14**, **4.15** and **4.16** behind; the two files it added to the mutation set
     are measured now, with everything else the library ships
+  - _the tabs are done_ (2 of 13). The panels are the consumer's markup where they wrote it —
+    a `<pct-tab>` **is** the panel, `role="tabpanel"` on its own host, and the strip is drawn
+    from the labels handed up — and a panel nobody chose is `hidden="until-found"`, so the
+    browser's find-in-page searches it and the reveal is answered rather than undone. A
+    **disabled** panel is hidden outright, because find-in-page promises a way in. See
+    [0045](decisions/0045-a-panel-nobody-chose-is-still-text-in-the-document.md),
+    [`lesson-124`](lessons.md#lesson-124), [`lesson-125`](lessons.md#lesson-125),
+    [`lesson-126`](lessons.md#lesson-126).
+  - gate: `apps/sandbox-e2e/src/tabs.spec.ts` (11 × 3) plus `/tabs` in the axe / hydration /
+    RTL audits, two forced-colours readings, three screenshots and 37 unit cases; the control
+    for the central claim is the `@supports` fallback, which is why an engine without the
+    attribute hides the panel rather than showing it. Cost `./tabs` **13458 B** on `./core`
+    alone — no CDK, no `./icon`, no `@angular/common`
+  - it made **`check-aria` read one thing more**: a composite role (`tablist`, `listbox`,
+    `menu`, `radiogroup`, …) is a widget a consumer names, even with no `tabindex` on it. The
+    old proxy for "carries a role" was focusability, so a strip named as a whole and focused
+    through its children counted as zero widgets and asked for no name inputs. One new
+    fixture, `composite-without-inputs`, is that rule's control
 - [ ] **1.2 — table / datagrid** on a headless core (column model, sorting, filtering, grouping,
       selection as signals) separated from rendering. **The last item of the phase** — the only
       one counted in months rather than days; until the decision in
@@ -365,6 +383,14 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     taken in passing because a sixth column is not a rendering change — the row format is
     parsed by point 6 and written out literally in five fixtures, so it is its own step with
     its own controls
+  - **and it is four rows now, not two.** The tabs brought two more:
+    `tab.ts 91.43 32(0) 2 0 1` (32 killed of 35 counted) and `tabs.ts 93.55 116(0) 7 0 2`
+    (116 of 124). Both errored mutants are guards this step added tests FOR — `this.tabs?.select()`
+    on a panel with no strip, and `if (!tab) return` in the walk's `settle` — and both die the
+    same way the select's does: the guard removed, the next line dereferences `undefined`
+    inside a DOM listener and the vitest worker dies instead of a test failing. So the column
+    that is missing is not an edge case of one component; it is what a defensive guard looks
+    like whenever the test that proves it is an event handler
 
 - [ ] **4.7 — the guard that keeps `null` away from a consumer's comparator is promised and not
       measured**
@@ -425,11 +451,11 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
 
 - [ ] **4.10 — the two READMEs list the entrypoints, and no gate reads either list**
   - the npm page's **Entrypoints** table
-    ([`libs/components/README.md`](../libs/components/README.md)) names seven of the twelve
-    entrypoints the package really exports: `./dialog`, `./tooltip`, `./popover`, `./menu` and
-    now `./switch` are missing, and its **Components** section stops at the select. The
-    repository's own `README.md` carries the same list, one line shorter still, inside the
-    layout tree
+    ([`libs/components/README.md`](../libs/components/README.md)) names seven of the **thirteen**
+    entrypoints the package really exports: `./dialog`, `./tooltip`, `./popover`, `./menu`,
+    `./switch` and now `./tabs` are missing, and its **Components** section stops at the
+    select. The repository's own `README.md` carries the same list, one line shorter still,
+    inside the layout tree
   - the page was written in English before the push and was true then. Four components have
     been built since, each with
     a card in `docs/components/` that `check-parts` compares against the built package — so the
@@ -510,7 +536,13 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
   - the shape of the answer is a word-boundary read in the marker scan, or the rule written
     into `check-parts` where part names already live. Which of the two is the item
   - binds at: **the next `data-pct-*` name that collides**, or the first change to
-    `check-bundle`'s marker scan — whichever comes first · _notes:_ —
+    `check-bundle`'s marker scan — whichever comes first
+  - _notes:_ **it has been met a second time, and avoided by hand again.** The tabs' chosen tab
+    wanted `data-pct-selected` for the same reason the calendar's day did, and took
+    `data-pct-chosen` for the same reason it did — with the token beside it still named
+    `--pct-tabs-tab-border-selected`, because a token name is not scanned. So one idea is now
+    written with two words in two components, and what decides which is a rule nothing
+    enforces: the second person to want it will find the workaround and not the reason
 
 - [ ] **4.14 — a message reports nothing by colour, and the channel that would repair it is a
       decision nobody has made**
@@ -573,6 +605,48 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     reading order says it is?**
   - binds at: **the second body-level control this library draws**, or the first consumer
     report about the toast's action · _notes:_ —
+
+- [ ] **4.17 — a snapshot with no tolerance drifted with nothing to point at**
+  - `libs/components/size.snapshot.md` records `./toast` at **15311 B**. Built today from the
+    same sources it reads **15346 B**, and the drift is at **HEAD**: measured with the tabs
+    work stashed, so `check-bundle` was already red on `main` before this step touched
+    anything. No source of `./toast` or of `./core` has moved since the row was written — the
+    last commit over either is the toast's own
+  - the file's own header is what makes this an item rather than a correction: "there is no
+    tolerance, because a tolerance decides two things and is argued about one"
+    ([0023](decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md)). A number with no
+    tolerance is a promise that the same sources give the same bytes — and here they did not,
+    with nothing in the diff to blame
+  - the suspects are all outside the library: a patch of Angular or of the linker in the
+    lockfile, a change in `esbuild`, the token build. Each is testable and none has been
+    tested, which is the work: **what moved 35 bytes, and does the gate need to say which of
+    its inputs it is measuring?** Today it reads as though it measured this repository alone
+  - the same question one floor up is the one that matters for CI: a gate that can go red on a
+    dependency bump with no source change is a gate whose failures somebody has to interpret,
+    and this repository's whole argument is that a red gate names its cause
+  - it is corrected in the step that found it — the snapshot now records 15346 — because
+    leaving a known-stale row would be worse than a drift nobody has explained
+  - binds at: **the next `check-bundle` drift with no source change**, or the first dependency
+    bump · _notes:_ —
+
+- [ ] **4.18 — a guard the pointer makes unreachable, found by the mutant that survived it**
+  - `PctTabs.onPress` opens with `if (tab.disabled()) return;` and the mutation run says the
+    branch changes nothing: removed, every case stays green. Three things already refuse a
+    disabled tab — `select()` will not take the value, `rovingIndex` will not put the tab stop
+    on it, and every movement of the shared walk skips it — so what the guard alone stops is
+    the CURSOR landing there
+  - and it does not stop that either, because of a measurement taken in the same step: a click
+    on a tab focuses it in **all three engines**, so `onFocusin` puts the cursor on the pressed
+    tab before `onPress` is reached. The guard has an effect only where the press arrives with
+    no focus event, which is a synthetic `click()` — that is, in a unit test and nowhere else
+  - it is the shape [`lesson-95`](lessons.md#lesson-95) describes from the other side: there a
+    guard was too weak because the platform got there first, here it is unreachable for the
+    same reason. A branch nothing can reach is a claim with no measurement behind it, which is
+    exactly what `PctMenuItem.press` says about the guard it deliberately does NOT have
+  - what it costs to close is why it is a filler item and not part of the step that found it:
+    deleting three lines is minutes, and re-recording the snapshot they move is a **55-minute**
+    mutation run — 4.7's reasoning exactly, one component over
+  - binds at: **the next full mutation run** · _notes:_ —
 
 ## 5. Gaps with no deadline
 

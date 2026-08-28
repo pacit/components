@@ -1,0 +1,57 @@
+<!--
+  The strip. `role="tablist"` sits here rather than on the host, because the host also holds
+  the panels — and a tablist that owns its own panels is a parent/child relation the role
+  does not have (`aria-required-children` says so from the listbox side one component over).
+
+  The name is bound from two inputs and never written as an attribute on this element: the
+  host carries no role, so an `aria-label` on the tag would be ignored, and `check-aria`'s
+  points 3 and 4 are that rule read off the template.
+-->
+<div
+  #list
+  class="pct-tabs__list"
+  data-pct-part="list"
+  role="tablist"
+  [attr.aria-orientation]="orientation()"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+  (focusin)="onFocusin($event)"
+  (focusout)="onFocusout($event)"
+>
+  @for (tab of tabs(); track tab.panelId) {
+  <!--
+    A real `<button>`, so `Enter` and `Space` are the platform's and `manual` activation needs
+    no key of its own. `type="button"` because a strip inside a form must not submit it.
+
+    `aria-disabled` and not the native `disabled`: a disabled tab still names a section that
+    exists, and the native attribute would take it out of the accessibility tree entirely.
+    The press is guarded in `onPress` instead — the button is ours, so there is no consumer
+    listener registered before ours to outrun (`lesson-95` is the case where there is).
+
+    The walk's keys are handled HERE and not on the strip around it: the key is pressed on the
+    tab that has focus, and a listener on a container that cannot take focus is a handler the
+    linter is right to ask about.
+  -->
+  <button
+    #tabButton
+    class="pct-tabs__tab"
+    data-pct-part="tab"
+    type="button"
+    role="tab"
+    [id]="tab.tabId"
+    [tabIndex]="$index === rovingIndex() ? 0 : -1"
+    [attr.aria-controls]="tab.panelId"
+    [attr.aria-selected]="$index === chosenIndex()"
+    [attr.aria-disabled]="tab.disabled() ? 'true' : null"
+    [attr.data-pct-chosen]="$index === chosenIndex() ? '' : null"
+    [attr.data-pct-disabled]="tab.disabled() ? '' : null"
+    (click)="onPress(tab)"
+    (keydown)="onKeydown($event)"
+  >
+    {{ tab.label() }}
+  </button>
+  }
+</div>
+
+<!-- The panels, exactly where the consumer wrote them and in that order. -->
+<ng-content />

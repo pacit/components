@@ -23,6 +23,7 @@
       "@pacit/components/date": ["./libs/components/date/src/index.ts"],
       "@pacit/components/slider": ["./libs/components/slider/src/index.ts"],
       "@pacit/components/switch": ["./libs/components/switch/src/index.ts"],
+      "@pacit/components/tabs": ["./libs/components/tabs/src/index.ts"],
       "@pacit/components/select": ["./libs/components/select/src/index.ts"],
       "@pacit/components/dialog": ["./libs/components/dialog/src/index.ts"],
       "@pacit/components/field": ["./libs/components/field/src/index.ts"],

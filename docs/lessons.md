@@ -3295,3 +3295,76 @@ The consequence for the register is the general one: a file can be **unmeasurabl
 merely unmeasured, the two look identical from outside, and a policy that can only say "in" or
 "out" leaves whoever meets this pushing at the run instead of writing the sentence down. Here
 the sentence costs 14 mutants, and it is in `mutation.policy.json` under `unmeasured`.
+
+### <a id="lesson-124"></a>`lesson-124` — A required input read from a sibling's host binding throws, and `@for` is where that happens
+
+`PctTab.value` was `input.required<string>()` for about an hour. Every unit case failed with
+`NG0950 — Input "value" is required but no value is available yet`, and the stack said where:
+`PctTabs.chosenIndex`, reading `tab.value()` over the whole content, called from **another
+panel's host binding**.
+
+The shape is worth having, because nothing about the component looks wrong. A strip has to
+compare every panel's value against its own to decide which one shows, and each panel asks that
+question from its own `[attr.hidden]` binding. So panel one asks panel two for its value.
+
+**What decides is the loop, not the query.** Written out as three `<pct-tab>` elements in one
+template, this is safe: Ivy runs the template's update function first and the view's host
+bindings afterwards, so by the time any panel asks, every sibling's inputs are set. Written
+inside an `@for` — which is how anybody with a list writes it — each iteration is an embedded
+view refreshed **whole**: template and host bindings together, one iteration at a time. Panel
+one's host binding therefore runs before panel two's input exists, and a required input read
+there does not return `undefined`, it throws.
+
+There is no API for "has this input been set yet", and there could not be a useful one: the
+answer changes inside a single change-detection pass. So the repair is the input's declaration
+— `input<string>('')` with a default nobody sees, and a dev-mode report after the first render
+for the consumer who really did leave it out. `label` stayed `input.required`, and the
+asymmetry is the lesson in one line: **it is read from the strip's own template, one phase
+later, where the ordering does not reach.**
+
+What generalises: a component that publishes a signal derived from **all** of its content's
+inputs cannot have that signal read from the content's own host bindings unless every input in
+it has a default. It is not a rule about queries — the query is resolved and correct — it is a
+rule about when an embedded view's inputs exist.
+
+### <a id="lesson-125"></a>`lesson-125` — The testing tool's accessibility tree is not the browser's
+
+Probing `hidden="until-found"` for [0045](decisions/0045-a-panel-nobody-chose-is-still-text-in-the-document.md),
+Playwright's `ariaSnapshot()` reported the hidden subtree's heading and button **on webkit** and
+not on chromium or firefox. Read as a browser fact that is a finding: it would mean a screen
+reader on Safari walks the content of every tab panel that is not showing, and the whole
+decision would have to be reconsidered.
+
+It is not a browser fact. `ariaSnapshot()` is computed by Playwright's own injected script,
+which implements the ARIA algorithm in JavaScript and decides visibility with its own rules.
+Asking the **engines** instead gave one answer three times: `checkVisibility()` is `false`
+inside such a subtree in all three, focus cannot enter it in any of them, and chromium's real
+tree — `Accessibility.getFullAXTree` over CDP — holds no node for the heading at all, not even
+an ignored one with a reason.
+
+This is [`lesson-112`](#lesson-112) from the other side. There the attribute was written by us
+and read by nobody; here the tree was read by us and written by nobody — a layer that looks
+like the platform, answers like the platform, and is a library. The rule that falls out is
+narrow and worth keeping: **a claim about what an engine exposes is measured with something the
+engine computes** — `checkVisibility`, `getComputedStyle`, the focus that does or does not
+move, CDP where it exists — and a tool's convenience view is evidence about the tool.
+
+### <a id="lesson-126"></a>`lesson-126` — `overflow: auto` makes an element focusable in two engines of three
+
+The tab strip scrolls, so it carries `overflow: auto`. Two e2e cases then failed on chromium
+and firefox and passed on webkit — and the cause was in the test, which sent keys with
+`locator.press()`. That call focuses the element first, and it succeeded: **the tablist took
+focus**, the component saw `focusout` from the tab, and the walk was cleared before the key
+arrived.
+
+Measured across the three: blink and gecko let a container with `overflow: auto` take
+programmatic focus — `focus()` moves the focus there — and webkit does not. It is not about
+whether the element really scrolls: the horizontal strip in the sandbox does not overflow at
+all and is focusable all the same in both.
+
+The part that keeps it from being a defect is the second reading: `tabIndex` is `-1` on that
+element in every engine, so it never joins the page's sequential tab order and a keyboard user
+meets no extra stop. Both halves are now a test, because both are invisible from the markup —
+nothing in the template asks for either, and the next person to wonder why a `press()` on a
+scroll container behaves differently in Safari should find the answer written down rather than
+measure it again.

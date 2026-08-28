@@ -1,0 +1,99 @@
+<h2 class="view__title">Tabs</h2>
+<p class="muted view__intro">
+  One section of a page showing at a time. The panels stay where they are
+  written — a <code>&lt;pct-tab&gt;</code> <em>is</em> the panel, and the strip
+  above is drawn from the labels it hands up.
+</p>
+
+<sbx-demo
+  heading="A strip and its panels"
+  summary="Arrow keys walk the strip, Home and End jump to its ends, and moving also chooses — the panels here cost nothing to show."
+  [reqs]="['req-a11y-built-in', 'req-api-platform']"
+  data-testid="demo-basic"
+>
+  <pct-tabs [(value)]="section" ariaLabel="Account settings" data-testid="tabs-basic">
+    <pct-tab value="general" label="General" data-testid="panel-general">
+      <p class="view__panel-body">
+        The general settings, and a word that lives nowhere else on this page:
+        marmalade.
+      </p>
+    </pct-tab>
+    <pct-tab value="network" label="Network" data-testid="panel-network">
+      <p class="view__panel-body">
+        The network settings, and a word of their own: parsnip.
+      </p>
+    </pct-tab>
+    <pct-tab value="billing" label="Billing" disabled data-testid="panel-billing">
+      <p class="view__panel-body">Nothing to bill for yet.</p>
+    </pct-tab>
+  </pct-tabs>
+</sbx-demo>
+
+<sbx-demo
+  heading="Choosing by hand"
+  summary="With activation='manual' the arrows only move the focus; Enter or Space chooses. It is the answer for a panel that costs something to show."
+  [reqs]="['req-api-platform']"
+  data-testid="demo-manual"
+>
+  <pct-tabs
+    [(value)]="manual"
+    activation="manual"
+    ariaLabel="Report"
+    data-testid="tabs-manual"
+  >
+    <pct-tab value="overview" label="Overview">
+      <p class="view__panel-body">A summary nobody had to fetch.</p>
+    </pct-tab>
+    <pct-tab value="details" label="Details">
+      <p class="view__panel-body">The rows behind it.</p>
+    </pct-tab>
+  </pct-tabs>
+</sbx-demo>
+
+<sbx-demo
+  heading="Down the side"
+  summary="orientation='vertical' turns the strip and the arrows with it: aria-orientation says so, and the mark of the chosen tab moves to the inline edge, so it mirrors under dir='rtl'."
+  [reqs]="['req-token-logical', 'req-a11y-built-in']"
+  data-testid="demo-vertical"
+>
+  <pct-tabs
+    [(value)]="side"
+    orientation="vertical"
+    ariaLabel="Profile"
+    data-testid="tabs-vertical"
+  >
+    <pct-tab value="profile" label="Profile">
+      <p class="view__panel-body">Who you are.</p>
+    </pct-tab>
+    <pct-tab value="keys" label="Keys">
+      <p class="view__panel-body">What you sign with.</p>
+    </pct-tab>
+  </pct-tabs>
+</sbx-demo>
+
+<sbx-demo
+  heading="More labels than room"
+  summary="The strip scrolls rather than wraps, and nothing here scrolls it: the browser brings a focused tab into view by itself."
+  [reqs]="['req-api-platform', 'req-a11y-touch']"
+  data-testid="demo-overflow"
+>
+  <div class="view__narrow">
+    <pct-tabs [(value)]="many" ariaLabel="Sections" data-testid="tabs-overflow">
+      <pct-tab value="m1" label="Introduction">
+        <p class="view__panel-body">One.</p>
+      </pct-tab>
+      <pct-tab value="m2" label="Installation">
+        <p class="view__panel-body">Two.</p>
+      </pct-tab>
+      <pct-tab value="m3" label="Configuration">
+        <p class="view__panel-body">Three.</p>
+      </pct-tab>
+      <pct-tab value="m4" label="Deployment">
+        <p class="view__panel-body">Four.</p>
+      </pct-tab>
+      <pct-tab value="m5" label="Troubleshooting">
+        <p class="view__panel-body">Five.</p>
+      </pct-tab>
+    </pct-tabs>
+  </div>
+</sbx-demo>

@@ -1,0 +1,39 @@
+:host {
+  display: block;
+  padding-block: var(--pct-tabs-panel-padding-y);
+}
+
+/* `:host` above is an author rule and the browser's `[hidden] { display: none }` is not, so
+   the two hidden states have to be written back here or every panel would show.
+   `hidden="until-found"` is the one that must NOT become `display: none`: the browser hides
+   such a subtree with `content-visibility`, which does nothing to a box that is not rendered
+   at all — and `display: none` is exactly not rendering it.
+
+   The `@supports` is the fallback, not decoration. An engine that does not know the
+   attribute reads `until-found` as an unknown value and falls back to plain hidden, which is
+   the right answer — and this rule must not undo it. Support for the PROPERTY is the closest
+   thing to a question a stylesheet can ask about the attribute, since `until-found` is
+   defined in terms of it; the property is restated inside so that the answer holds even for
+   an engine that has one and not the other. Measured in three engines
+   ([0045](../../../../docs/decisions/0045-a-panel-nobody-chose-is-still-text-in-the-document.md)). */
+:host([hidden]) {
+  display: none;
+}
+
+@supports (content-visibility: hidden) {
+  :host([hidden='until-found']) {
+    display: block;
+    content-visibility: hidden;
+  }
+}
+
+:host(:focus-visible) {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: -2px;
+}
+
+@media (forced-colors: active) {
+  :host(:focus-visible) {
+    outline-color: Highlight;
+  }
+}

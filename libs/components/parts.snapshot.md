@@ -113,6 +113,9 @@ from what the browser really gets.
 ./switch PctSwitch label
 ./switch PctSwitch thumb
 ./switch PctSwitch track
+./tabs PctTab panel
+./tabs PctTabs list
+./tabs PctTabs tab
 ./toast PctToastViewport action
 ./toast PctToastViewport close
 ./toast PctToastViewport item

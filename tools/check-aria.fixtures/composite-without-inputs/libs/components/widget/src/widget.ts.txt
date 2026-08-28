@@ -1,0 +1,13 @@
+import { Component, input } from '@angular/core';
+
+/** A strip named as a whole, and no way for a consumer to name it. */
+@Component({
+  selector: 'pct-widget',
+  templateUrl: './widget.html',
+  host: {
+    class: 'pct-widget',
+  },
+})
+export class PctWidget {
+  readonly items = input<readonly string[]>([]);
+}
