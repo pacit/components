@@ -190,14 +190,13 @@ In a group the options are **projected content**, so the container cannot see th
 a `viewChildren` query; `contentChildren(PctRadio)` would create a circular container↔element
 import. So the group's `focus()` queries the host's DOM (`input[type="radio"]`).
 
-The second half of that sentence is true of the **class**, not of the query — and C10 needed the
-difference. A token declared beside the group (`PCT_RADIO_OPTION`) and provided by the option
-lets a `contentChildren` query see what the options carry, with the import still pointing one
-way only. Both roads now stand, and neither replaces the other: the DOM road carries what the
-BROWSER holds (which native is checked — `focus()` needs exactly that), the token road what the
-options MEAN. The DOM cannot carry the second, because `[attr.value]` is absent for a
-non-primitive `T` — which is precisely where `compareWith` lives
-([`lesson-72`](#lesson-72)).
+The second half of that sentence is true of the **class**, not of the query — and the radio group's
+duplicate-value check needed the difference. A token declared beside the group (`PCT_RADIO_OPTION`)
+and provided by the option lets a `contentChildren` query see what the options carry, with the
+import still pointing one way only. Both roads now stand, and neither replaces the other: the DOM
+road carries what the BROWSER holds (which native is checked — `focus()` needs exactly that), the
+token road what the options MEAN. The DOM cannot carry the second, because `[attr.value]` is absent
+for a non-primitive `T` — which is precisely where `compareWith` lives ([`lesson-72`](#lesson-72)).
 
 ---
 
@@ -487,15 +486,14 @@ already being carried over explicitly, but that was treated as a peculiarity of 
 than as a rule — and the rule reads: whatever is supposed to look like an extension of the
 control has to be read from it, because the DOM tree will not do it.
 
-**Addendum — the third property.** While introducing the `dir` axis into the
-sandbox (`req-token-logical`) it turned out that writing direction is exactly the same case —
-measured `direction: rtl` on the trigger against `ltr` on the panel. The stylesheet was
-impeccably logical all the while: `text-align: start` simply resolves the other way when the
-direction does not arrive. So the rule repeated for a third time, which is an argument for
-extracting this carrying-over into the overlay layer in `core` (**D2**) instead of appending
-a fourth property to `openPanel()`. A secondary conclusion: a gate reading stylesheets is
-a necessary condition for the RTL promise, never a sufficient one — the rest lives on the
-rendered page.
+**Addendum — the third property.** While introducing the `dir` axis into the sandbox
+(`req-token-logical`) it turned out that writing direction is exactly the same case — measured
+`direction: rtl` on the trigger against `ltr` on the panel. The stylesheet was impeccably logical
+all the while: `text-align: start` simply resolves the other way when the direction does not arrive.
+So the rule repeated for a third time, which is an argument for extracting this carrying-over into
+the overlay layer in `core` instead of appending a fourth property to `openPanel()`. A secondary
+conclusion: a gate reading stylesheets is a necessary condition for the RTL promise, never a
+sufficient one — the rest lives on the rendered page.
 
 The lesson: **a CSS rule inferring intent from a slot's content is hidden API** — cheap only
 while there is one example. When an author wants a variant the heuristic does not anticipate,
@@ -1313,10 +1311,10 @@ starts.** Roots, and only then edges.
 
 ### <a id="lesson-62"></a>`lesson-62` — A condition in a template is measured by nobody
 
-Extracting the list walk into `core` (D1) uncovered a guard nothing had ever run:
-`(mouseenter)="option.disabled ? null : activateAt(i)"` in `select.html` — the rule that
-hovering a disabled option must not highlight it. **Deliberate regression: the guard was
-removed and the whole suite of 213 cases stayed green.**
+Extracting the list walk into `core` uncovered a guard nothing had ever run:
+`(mouseenter)="option.disabled ? null : activateAt(i)"` in `select.html` — the rule that hovering a
+disabled option must not highlight it. **Deliberate regression: the guard was removed and the whole
+suite of 213 cases stayed green.**
 
 The guard sat inside two measurements and neither could see it:
 
@@ -1461,12 +1459,12 @@ maintainer therefore lands in the artefact and in the budget: the HTML comments 
 30262 B — around a tenth of the entrypoint. A TypeScript comment costs nothing at all; the
 compiler drops it long before anything measures.
 
-Hence the reason for a decision belongs beside the code that implements it, and a template
-keeps a pointer at most. And a second thing, worth knowing before the number is read as a
-consumer's bill: the probe bundles the FESM with esbuild and **does not run Angular's
-linker**, while a real application does — the linker compiles the template into instructions
-and the comments never reach the app. The bytes are real in the package on npm; in the
-consumer's bundle they are not. That the snapshot does not say so is **C11**.
+Hence the reason for a decision belongs beside the code that implements it, and a template keeps a
+pointer at most. And a second thing, worth knowing before the number is read as a consumer's bill:
+the probe bundles the FESM with esbuild and **does not run Angular's linker**, while a real
+application does — the linker compiles the template into instructions and the comments never reach
+the app. The bytes are real in the package on npm; in the consumer's bundle they are not. That the
+snapshot does not say so is a finding of its own.
 
 ---
 
@@ -1737,9 +1735,9 @@ same `pct-select` on its own showed the hint and the error together and named bo
 had ever rendered, with every test of both modes passing.
 
 A per-mode suite has no place where the modes meet. Each half asserts what its own template does,
-and the difference between the halves is nobody's assertion — which is why the discovery came
-from a template read at C13 and not from a run: the code was correct in every file it was
-written in.
+and the difference between the halves is nobody's assertion — which is why the discovery came from a
+template read while the message line was being settled, and not from a run: the code was correct in
+every file it was written in.
 
 The measurement then took the finding's premise with it. The finding named the radio group and
 offered an argument for it — a group's message describes a **set** rather than a control, so
@@ -1758,11 +1756,11 @@ not.
 
 ### <a id="lesson-77"></a>`lesson-77` — Two dictionaries, and the word that belongs to neither
 
-**A section header in `tools/check-texts.mjs` had been half translated: the comment around it
-was English and the name of the language it scans was left standing in a Polish case.** It rode
-through the whole of B8, through C1–C15 and through every run in between — 843 files,
-5570 distinct words, no exception in the register, green each time. The gate that measures "the
-repository speaks one language" had the word in its own denominator on every one of those runs.
+**A section header in `tools/check-texts.mjs` had been half translated: the comment around it was
+English and the name of the language it scans was left standing in a Polish case.** It rode through
+the whole of the language gate and every run after it — 843 files, 5570 distinct words, no exception
+in the register, green each time. The gate that measures "the repository speaks one language" had
+the word in its own denominator on every one of those runs.
 
 The reason is arithmetic rather than oversight. The second limb confirms a word by finding it in
 `/usr/share/dict/polish` and not in `american-english`; a foreign stem with a Polish ending is in
@@ -1786,13 +1784,12 @@ unread, opposite symptom: one gate goes red, the other goes quiet. That is what 
 of point 1 is for, and it generalises past this gate — **ask of every input not only what breaks
 without it, but in which direction.**
 
-And then the finding fell into itself. The plan's entry describing the class spelled four
-examples of it, so the first run of the new limb was red on the position that had asked for the
-limb — the same shape as the file [B3](plan.md#b-readiness-for-the-first-release) nearly deleted
-by ticking its own task off. There is nowhere in this repository to quote such a word except the
-gate's own tree, where the constant of [`lesson-60`](#lesson-60) already lives: this lesson cannot
-print its own evidence, and the sample stands in
-`tools/check-language.fixtures/inflected-foreign-stem.json`.
+And then the finding fell into itself. The plan's entry describing the class spelled four examples
+of it, so the first run of the new limb was red on the position that had asked for the limb — the
+same shape as the package README, which was nearly deleted by ticking off the very task that had
+just written it. There is nowhere in this repository to quote such a word except the gate's own
+tree, where the constant of [`lesson-60`](#lesson-60) already lives: this lesson cannot print its
+own evidence, and the sample stands in `tools/check-language.fixtures/inflected-foreign-stem.json`.
 
 ---
 
@@ -1804,17 +1801,17 @@ threshold — how big a jump has to be before somebody looks — and it was neve
 also was: **the resolution of the record**. Anything smaller was not accepted, it was never
 written down.
 
-Measured on an unchanged tree, three of the seven rows stood 76 B above the truth. That is
-[C13](plan.md#c-open-findings)'s price: it took a second message line out of `pct-checkbox`,
+Measured on an unchanged tree, three of the seven rows stood 76 B above the truth. That is the price
+of [0022](decisions/0022-one-message-line.md): it took a second message line out of `pct-checkbox`,
 `pct-radio-group` and `pct-select`, and each of the three got 76 B smaller. The file was last
-written at C11, and C13 is the only commit since to have touched a component — so the
-attribution needs no guess. A file whose own prose says each row is the size of a production
+written one task earlier, and that change is the only commit since to have touched a component — so
+the attribution needs no guess. A file whose own prose says each row is the size of a production
 bundle was describing three bundles nobody had built since.
 
-The other half is who pays. The first change to leave the band rewrites **every** row, so its
-diff carries everybody's drift: C10's commit rewrote six rows, one of them C10's. And the band
-is not narrow where it counts — ±5% of `./field` is 1115 B, so a component may grow by a
-kilobyte in steps with nothing anywhere to show for it.
+The other half is who pays. The first change to leave the band rewrites **every** row, so its diff
+carries everybody's drift: the commit that gave the radio group its duplicate-value message rewrote
+six rows, one of them its own. And the band is not narrow where it counts — ±5% of `./field` is 1115
+B, so a component may grow by a kilobyte in steps with nothing anywhere to show for it.
 
 The band's justification would be a measurement that wobbles, and this one does not. Measured
 three ways: two runs of the same artifact are byte-identical, ~100 characters added to the probe
@@ -1908,11 +1905,10 @@ the instrument, and everything else points at it.
 
 ### <a id="lesson-81"></a>`lesson-81` — A gate reading modules cannot answer a question about bytes
 
-**The first directive in `core` turned the tree-shaking gate red on a bundle that does not
-contain it.** `PctOverlayPanel` went into `@pacit/components/core` at D2, and point 4 of
-`check-bundle` reported that the **primary** entrypoint now "brings in components" — the
-literal text of `req-project-tree-shaking`, the promise a consumer pays nothing for what they
-did not import.
+**The first directive in `core` turned the tree-shaking gate red on a bundle that does not contain
+it.** `PctOverlayPanel` went into `@pacit/components/core`, and point 4 of `check-bundle` reported
+that the **primary** entrypoint now "brings in components" — the literal text of
+`req-project-tree-shaking`, the promise a consumer pays nothing for what they did not import.
 
 The measurement says otherwise. The primary probe, built the way the gate builds them and the
 way a consumer's builder does, weighs **1003 B** and holds no `pctOverlayPanel` anywhere in
@@ -1989,9 +1985,9 @@ is the browser needs its test in the browser**, however cheap the unit test woul
 
 ### <a id="lesson-83"></a>`lesson-83` — The hiding was in a stylesheet nobody ships
 
-**A live region has to be invisible, and the utility that would have hidden it is a promise
-about a file this library never tells anybody to include.** D4 needed a hidden element in the
-document body, and the obvious answer was CDK's `LiveAnnouncer`: `req-a11y-built-in` names it
+**A live region has to be invisible, and the utility that would have hidden it is a promise about a
+file this library never tells anybody to include.** The live announcer needed a hidden element in
+the document body, and the obvious answer was CDK's `LiveAnnouncer`: `req-a11y-built-in` names it
 outright, the mechanics are written, and [0013](decisions/0013-no-headless-split.md) buys the
 machinery rather than rewriting it.
 
@@ -2030,10 +2026,10 @@ on `DestroyRef` rather than trusting a page load to end.
 
 ### <a id="lesson-84"></a>`lesson-84` — A template's name and a template's context are two different checks, and no one shape gives both
 
-**The compiler can see what a template is called or what it is handed, and which of the two
-depends on how the consumer was asked to write it.** D5 had to choose the channel through
-which a consumer supplies an `<ng-template>`, and the plan named two — `TemplateRef` passed as
-a value, or a `*pctTemplate` directive. They are not two roads to one place. Four probes under
+**The compiler can see what a template is called or what it is handed, and which of the two depends
+on how the consumer was asked to write it.** The slot directive had to choose the channel through
+which a consumer supplies an `<ng-template>`, and the plan named two — `TemplateRef` passed as a
+value, or a `*pctTemplate` directive. They are not two roads to one place. Four probes under
 `strictTemplates`, each a deliberately wrong binding that either breaks the build or does not:
 
 | what is written                                                  | wrong NAME | wrong CONTEXT READ          |
@@ -2075,12 +2071,12 @@ not — a channel that quietly gives neither looks exactly like a channel that g
 
 ### <a id="lesson-85"></a>`lesson-85` — A registry of markup is a registry of components, and a name in a string is checked when the string is a value
 
-**Angular has exactly one thing that carries markup somebody else wrote, and it cannot be
-handed to a provider.** D6 had to build the icon registry
-[0011](decisions/0011-icons.md) describes as "a token mapping semantic names to templates",
-and the word _templates_ is where the design stops being writable: a `TemplateRef` is a handle
-on part of a component's view, and a `bootstrapApplication` provider array is not in a view.
-Four probes over the shapes the registry could take:
+**Angular has exactly one thing that carries markup somebody else wrote, and it cannot be handed to
+a provider.** The icon work had to build the registry [0011](decisions/0011-icons.md) describes as
+"a token mapping semantic names to templates", and the word _templates_ is where the design stops
+being writable: a `TemplateRef` is a handle on part of a component's view, and a
+`bootstrapApplication` provider array is not in a view. Four probes over the shapes the registry
+could take:
 
 | what the token carries                        | what it renders                                       | what it costs                                                   |
 | --------------------------------------------- | ----------------------------------------------------- | --------------------------------------------------------------- |
@@ -2118,8 +2114,8 @@ system can read over a name a lookup can.**
 
 ### <a id="lesson-86"></a>`lesson-86` — A shared kernel is where a cost stops being visible
 
-The plan puts icons in `core`, with D1–D5, and the layer went there first. The size snapshot,
-rewritten before anything else was touched:
+The plan puts icons in `core`, with the rest of the behaviour layer, and they went there first. The
+size snapshot, rewritten before anything else was touched:
 
 | entrypoint   | before | icons in `./core` | icons in `./icon` |
 | ------------ | -----: | ----------------: | ----------------: |
@@ -2467,9 +2463,9 @@ repository was taking. It is the third defect in a row here found that way
 
 ### <a id="lesson-97"></a>`lesson-97` — Two elements of one template are two instantiations, and neither is evidence about the other
 
-E4 opens with a fork: is an option a row of data or a `<pct-option>` the consumer projects? The
-second shape is what most libraries ship, and the argument for it is readability — the value
-stands next to the label it belongs to. Four probes under `strictTemplates` say what it costs,
+The select family opens with a fork: is an option a row of data or a `<pct-option>` the consumer
+projects? The second shape is what most libraries ship, and the argument for it is readability — the
+value stands next to the label it belongs to. Four probes under `strictTemplates` say what it costs,
 and the first of them is the whole answer:
 
 ```html
@@ -2634,13 +2630,12 @@ had ever asked. The exception did not describe a limit — it described a test n
 written, and it kept describing it long after the sentence had stopped being checked by
 anything.
 
-What made it visible was the gate's own two-sided floor: an exception fires when the metric
-climbs **above** what it allows, and E4's filtering trigger brought a click on the trigger with
-the panel open into the unit suite. The gate then said the entry covers nothing — which is the
-part worth copying. **An exception that only ever guards a floor is a claim nobody re-reads; an
-exception that also fires from above is a claim with an expiry date.** The two entries are
-gone, `select.html` measures 100% on all four metrics, and the repository now carries no
-template exception at all.
+What made it visible was the gate's own two-sided floor: an exception fires when the metric climbs
+**above** what it allows, and the filtering trigger brought a click on the trigger with the panel
+open into the unit suite. The gate then said the entry covers nothing — which is the part worth
+copying. **An exception that only ever guards a floor is a claim nobody re-reads; an exception that
+also fires from above is a claim with an expiry date.** The two entries are gone, `select.html`
+measures 100% on all four metrics, and the repository now carries no template exception at all.
 
 ### <a id="lesson-103"></a>`lesson-103` — A template reference inside a control-flow block cannot be seen from outside it
 
@@ -2759,10 +2754,10 @@ nobody stood on.
 
 ### <a id="lesson-107"></a>`lesson-107` — A cursor kept as a number survives only a list that changes on a keystroke
 
-The keyboard cursor of the select was an index into the row list, and for five steps of E4 that
-was exactly right: every change of the list came from a keystroke — a letter typed into the
-filter, a question cleared, a pick — and each of those paths set the cursor itself, on the same
-line that changed the list.
+The keyboard cursor of the select was an index into the row list, and for five steps of the family
+that was exactly right: every change of the list came from a keystroke — a letter typed into the
+filter, a question cleared, a pick — and each of those paths set the cursor itself, on the same line
+that changed the list.
 
 A list answered by a server is the first change that arrives on **nobody's** keystroke, and the
 number then names a different row. What that costs is not a cosmetic slip:

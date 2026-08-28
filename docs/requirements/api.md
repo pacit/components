@@ -461,7 +461,7 @@ green. Above both, the compile-time half is the probe of
 [`lesson-84`](../lessons.md#lesson-84): four deliberately wrong bindings under
 `strictTemplates`, of which the table records which break the build and which do not — the two
 that stay silent are why the shape is what it is
-**Binds at:** closed at D5. The second caller arrived at D6 and took the mechanism one step
+**Binds at:** closed with the template slots. The second caller arrived with the icons and took the mechanism one step
 further: an icon set is a component whose `<ng-template>`s are its icons, and the name they
 are called by is an **input of a union type** rather than a selector — which buys back
 exactly the half this requirement names as unbuyable, for the string being a value
@@ -508,11 +508,11 @@ its own name, including a partial set and a set nobody reads;
 `apps/sandbox-e2e/src/select.spec.ts` — a registered arrow in three engines, in the same box
 and turning with it
 **Control:** `tools/check-icons.fixtures/` — six prepared inputs, each rejected on its own
-point, the first of them being the shape the library shipped until D6 (an `<svg>` written
+point, the first of them being the shape the library shipped until the icons (an `<svg>` written
 straight into the template); `tools/check-styles.fixtures/paint-inside-an-icon/` for point 8.
 Above them a recorded run: the lookup in `PctIcon` returning `null` always leaves 291 cases
 green and turns 7 red, every one of them a replacement
-**Binds at:** closed at D6
+**Binds at:** closed with the icons
 **Decision:** [0011 — icons through a template and `PCT_ICONS`](../decisions/0011-icons.md),
 [0028 — an icon set is a component](../decisions/0028-an-icon-set-is-a-component.md)
 **Lessons:** [`lesson-85`](../lessons.md#lesson-85), [`lesson-86`](../lessons.md#lesson-86)
@@ -525,7 +525,7 @@ green and turns 7 red, every one of them a replacement
 library ships **the swap mechanism**, not icons.
 
 **Gate:** `libs/components/check-package.mjs` — the absence of icon files in the packed
-artifact would be detectable on the content listing. Since D6 the promise is literal in a
+artifact would be detectable on the content listing. Since the icons the promise is literal in a
 second sense: there is no default icon SET anywhere in the package either. A default drawing
 lives in the template of the component that draws it, so `./checkbox` never carries the
 select's arrow ([0028](../decisions/0028-an-icon-set-is-a-component.md))
@@ -689,7 +689,7 @@ why), `import-forbidden` (`@angular/platform-browser/animations`, which a ban on
 would read as `@angular/platform-browser`), `animation-binding`, `animation-host-binding` and
 `no-component-declaration`, the denominator. Above them a recorded run over the real package:
 the same three roads fire on `dist/libs/components`, naming the bundle and the shape found
-**Binds at:** closed at D7
+**Binds at:** closed with the ban on `@angular/animations`
 **Lessons:** [`lesson-87`](../lessons.md#lesson-87), [`lesson-88`](../lessons.md#lesson-88)
 
 > Nothing uses WAAPI today; the only transitions are `transition` declarations in the

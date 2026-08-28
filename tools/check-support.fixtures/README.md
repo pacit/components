@@ -40,11 +40,12 @@ The reference describes a **released** library, and deliberately: before the fir
 measures nothing, so a reference in today's actual state would leave the tie the whole gate
 exists for untested by every case built on it.
 
-The input is **data, not a directory on disk**: the gate examines the decision, not the
-reading of files. The plumbing defends itself — a broken reader takes a row, a peer range or
-the collection with it, and point 1, 2 or 3 fires on the real run at once. The recorded proof
-that the two halves are wired together is in the task position (B6) of
-[`plan.md`](../../docs/plan.md): the real run, with `angular-majors` moved to 2, fires point 2.
+The input is **data, not a directory on disk**: the gate examines the decision, not the reading of
+files. The plumbing defends itself — a broken reader takes a row, a peer range or the collection
+with it, and point 1, 2 or 3 fires on the real run at once. The recorded proof that the two halves
+are wired together is in the **Control** of
+[`req-release-support`](../../docs/requirements/release.md#req-release-support): the real run, with
+`angular-majors` moved to 2, fires point 2.
 
 ## The cases
 

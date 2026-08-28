@@ -11,11 +11,11 @@ name of a control is often held by another element entirely
 
 ## Context
 
-A tooltip carries one string, and the question E2 was written to force is what that string
-**is** to the control it hangs on. HTML answers with `title`, which makes no distinction at all:
-the browser turns it into a description on a named control and into a name on an unnamed one,
-shows it after a delay nobody can set, hides it from touch entirely and cannot be styled. Every
-library that replaces it has to make the choice `title` avoids.
+A tooltip carries one string, and the question the tooltip was written to force is what that string
+**is** to the control it hangs on. HTML answers with `title`, which makes no distinction at all: the
+browser turns it into a description on a named control and into a name on an unnamed one, shows it
+after a delay nobody can set, hides it from touch entirely and cannot be styled. Every library that
+replaces it has to make the choice `title` avoids.
 
 The two cases are real and they are not variants of one another:
 

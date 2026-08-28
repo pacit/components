@@ -82,12 +82,11 @@ Type `not a date` into the field and leave it. The value goes `null`, the text *
 the control reports `aria-invalid="true"` with a `data-pct-malformed` state — which is the
 opposite of what `<input type="date">` does and the whole reason this control is not one.
 
-What it does **not** do is put a sentence in the message line, and the reason is structural
-rather than a decision about wording: `errors` is an `input`, so the message line belongs to
-the form, and a form that sees `null` for a required field reports "this is required" while
-the user is looking at three numbers they typed. The state attribute and the ARIA flag are
-what the control has; a channel of its own is
-[**C34**](../plan.md#c-open-findings) in the plan.
+What it does **not** do is put a sentence in the message line, and the reason is structural rather
+than a decision about wording: `errors` is an `input`, so the message line belongs to the form, and
+a form that sees `null` for a required field reports "this is required" while the user is looking at
+three numbers they typed. The state attribute and the ARIA flag are what the control has; a channel
+of its own is an open finding in the work plan.
 
 ## Decisions
 

@@ -9,19 +9,18 @@ each a deliberately wrong binding that either breaks the build or does not; plus
 
 ## Context
 
-The plan's D5 asks for "`*pctTemplate` / `TemplateRef`", and
+The plan asks for "`*pctTemplate` / `TemplateRef`", and
 [`req-api-templates`](../requirements/api.md#req-api-templates) promises both: projection with
-`<ng-content select="…">`, which already works, and templates passed as `TemplateRef` or
-through a `*pctTemplate` directive, of which **nothing exists** — `TemplateRef` appeared
-nowhere in the library, so a select's option could not be drawn by the application at all.
+`<ng-content select="…">`, which already works, and templates passed as `TemplateRef` or through a
+`*pctTemplate` directive, of which **nothing exists** — `TemplateRef` appeared nowhere in the
+library, so a select's option could not be drawn by the application at all.
 
-Two consumers were counted before anything was written, the reading D2, D3 and D4 all came out
-of ([0024](0024-the-closing-stack-is-the-dependency-s.md),
-[0025](0025-a-panel-says-whether-it-takes-focus.md),
-[0026](0026-one-channel-per-politeness.md)): the select's option row, which this requirement
-names as its own binding trigger, and the icons of [0011](0011-icons.md), which the plan puts
-one item later and which the requirement calls "the simplest icon-swap mechanism". Both are
-real, so the layer is not a guess about a second variant.
+Two consumers were counted before anything was written, the reading the overlay, the focus layer and
+the announcer all came out of ([0024](0024-the-closing-stack-is-the-dependency-s.md),
+[0025](0025-a-panel-says-whether-it-takes-focus.md), [0026](0026-one-channel-per-politeness.md)):
+the select's option row, which this requirement names as its own binding trigger, and the icons of
+[0011](0011-icons.md), which the plan puts one item later and which the requirement calls "the
+simplest icon-swap mechanism". Both are real, so the layer is not a guess about a second variant.
 
 **What the plan offered as one thing turned out to be two checks, and no one shape gives
 both.** A template a consumer writes has two ways to be wrong: called by a name the component

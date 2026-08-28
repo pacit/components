@@ -13,8 +13,8 @@ A template comment held the reason, and no requirement held the rule.
 
 `pct-checkbox`, `pct-radio-group` and `pct-select` each wrote two independent `@if` blocks, so
 standing on their own they showed the hint AND the error at once and named both in
-`aria-describedby`. Measured rather than read off, because the finding
-([C13](../plan.md#c-open-findings)) named one component and was written from a template:
+`aria-describedby`. Measured rather than read off, because the finding named one component and was
+written from a template:
 
 | component         | hint only | hint + error, before         | after         |
 | ----------------- | --------- | ---------------------------- | ------------- |

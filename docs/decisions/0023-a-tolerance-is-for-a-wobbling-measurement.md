@@ -13,16 +13,17 @@ larger, in both directions — and `--write` rewrote the file only when a row le
 
 Two things follow from that pair, and only the first was ever argued.
 
-The band is also the **resolution of the record**. A change inside it is never written down, so
-the file ages: measured on an unchanged tree, `./checkbox`, `./radio` and `./select` each stood
-76 B above the truth — the price of [C13](../plan.md#c-open-findings), which took a second
-message line out of exactly those three. The file was last written at C11 and C13 is the only
-commit to have touched a component since, so the attribution is by elimination rather than by
-guess. Nothing in the repository said that those three components had got smaller.
+The band is also the **resolution of the record**. A change inside it is never written down, so the
+file ages: measured on an unchanged tree, `./checkbox`, `./radio` and `./select` each stood 76 B
+above the truth — the price of [0022](0022-one-message-line.md), which took a second message line
+out of exactly those three. The file was last written one task earlier and that change is the only
+commit to have touched a component since, so the attribution is by elimination rather than by guess.
+Nothing in the repository said that those three components had got smaller.
 
-The band is also **who pays for it**. The first change to leave it rewrites every row at once,
-so its diff carries everybody's accumulated drift. That already happened: C10's commit rewrote
-six rows, of which one was C10's 1234 B on `./radio`.
+The band is also **who pays for it**. The first change to leave it rewrites every row at once, so
+its diff carries everybody's accumulated drift. That already happened: the commit that gave the
+radio group its duplicate-value message rewrote six rows, of which one was its own 1234 B on
+`./radio`.
 
 And the width is not small where it matters. ±5% of `./field` is 1115 B — a component can grow
 by a kilobyte, in steps, with nothing anywhere to show for it.
@@ -80,11 +81,11 @@ is not a size.
 
 ## Alternatives considered
 
-- **Keep the band, and make `--write` touch only the row that breached** (the finding's
-  "budget" reading). It fixes the false diff and keeps CI quiet, and it was rejected because it
-  makes the file a set of baselines of different ages while its own prose claims each row is the
-  size of a production bundle — the shape [`lesson-64`](../lessons.md#lesson-64) already named
-  once. It also keeps the resolution: C13's −228 B would still be recorded nowhere.
+- **Keep the band, and make `--write` touch only the row that breached** (the finding's "budget"
+  reading). It fixes the false diff and keeps CI quiet, and it was rejected because it makes the
+  file a set of baselines of different ages while its own prose claims each row is the size of a
+  production bundle — the shape [`lesson-64`](../lessons.md#lesson-64) already named once. It also
+  keeps the resolution: the −228 B of the single message line would still be recorded nowhere.
 - **Keep the band and re-derive the whole file on every run**, failing only on a breach. The
   record then never ages, and the diff never attributes — every commit rewrites every row it
   touched _and_ the ones it did not, which is the very confusion this decision is about.

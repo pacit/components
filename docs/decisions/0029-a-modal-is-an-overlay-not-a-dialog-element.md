@@ -11,10 +11,10 @@ gecko and webkit before it was refused, and refused on one finding rather than o
 
 ## Context
 
-[`req-api-platform`](../requirements/api.md#req-api-platform) says we do not write what the
-browser provides. `<dialog>` with `showModal()` provides a great deal of E1's list, so the first
-question was not "how do we build a modal" but "why would we build one at all". The answer had
-to be measured, because every part of it is behaviour no signal reports.
+[`req-api-platform`](../requirements/api.md#req-api-platform) says we do not write what the browser
+provides. `<dialog>` with `showModal()` provides a great deal of the dialog's list, so the first
+question was not "how do we build a modal" but "why would we build one at all". The answer had to be
+measured, because every part of it is behaviour no signal reports.
 
 Measured in blink, gecko and webkit, on a native modal dialog:
 
@@ -47,9 +47,9 @@ what CDK v22 does by default (`usePopover` defaults to `true`). In both cases, i
 engines: the hit test returns the dialog, `focus()` is refused, `click` never lands, Tab never
 arrives. A `pct-select` inside a native `<dialog>` has a panel nobody can use.
 
-That is not a corner case. The select ships today, and the tooltip, the popover and the menu at
-E2 and E3 are all overlays. A modal that makes the rest of the library inert is a modal nothing
-in the library can be put inside.
+That is not a corner case. The select ships today, and the tooltip, the popover and the menu are all
+overlays. A modal that makes the rest of the library inert is a modal nothing in the library can be
+put inside.
 
 ## Decision
 
@@ -97,10 +97,10 @@ panel's own `tabindex="-1"` is the last answer, which is what the native element
   `body`, and inert content is hidden from assistive technology, so a select opened _inside_ a
   dialog lost the one sentence it has to say ([`lesson-90`](../lessons.md#lesson-90)). The rule
   is now written into the walk: a child that is itself `[aria-live]` goes on speaking.
-- **C19 closes with it.** The select's panel had two owners for Escape and the second was named
-  nowhere; a dialog underneath is what made the question stop being cosmetic. The owner that
-  stays is the one that can `preventDefault()` — measured above as the mechanism that keeps a key
-  from travelling on.
+- **The select's second Escape owner closes with it.** Its panel had two owners for the key and the
+  second was named nowhere; a dialog underneath is what made the question stop being cosmetic. The
+  owner that stays is the one that can `preventDefault()` — measured above as the mechanism that
+  keeps a key from travelling on.
 
 ## What this costs us
 
@@ -135,7 +135,7 @@ panel's own `tabindex="-1"` is the last answer, which is what the native element
 
 | alternative                                                        | why rejected                                                                                                                                                                                                                                          |
 | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Native `<dialog showModal()>`                                      | it makes every overlay in the library inert, the top layer included — measured in three engines, twice. The select inside it is unusable, and E2/E3 are overlays too                                                                                  |
+| Native `<dialog showModal()>`                                      | it makes every overlay in the library inert, the top layer included — measured in three engines, twice. The select inside it is unusable, and the tooltip, the popover and the menu are overlays too                                                  |
 | Native `<dialog>` plus moving every panel inside it                | the CDK can insert an overlay next to its origin rather than in the container, but then every control would have to know whether it stands in a modal — a property of the ancestor leaking into every component's positioning                         |
 | A panel rendered inline, with `inert` applied along the path to it | precise, and it is what the `blocking-elements` proposal does. Rejected: the dialog would not be a CDK overlay, so it would not be in the closing stack, and its Escape would have to come from a listener above the control — which 0024 forbids     |
 | `cdkTrapFocus` with `cdkTrapFocusAutoCapture`, as 0025 sketched    | it hides the release-then-restore order inside a directive's destroy hook, and it has no answer for a panel with nothing focusable in it. The trap itself is still the dependency's — only the choreography moved                                     |

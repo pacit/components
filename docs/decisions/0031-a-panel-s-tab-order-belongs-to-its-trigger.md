@@ -57,19 +57,19 @@ restore that did not ask would take focus off what they were doing.
 ## Consequences
 
 **A popover is not a place to park.** Tab is a way out, so a panel whose content the user is
-expected to leave and come back to — a docked filter panel, a side sheet — is not this
-component. That is the honest boundary of a non-modal overlay panel, and E7's drawer is where
-the other shape belongs.
+expected to leave and come back to — a docked filter panel, a side sheet — is not this component.
+That is the honest boundary of a non-modal overlay panel, and the drawer is where the other shape
+belongs.
 
 **One trigger per panel.** Focus returns to "the trigger", so two controls opening one popover
 would make that "whichever registered last" — reported in dev mode rather than repaired, because
 the fix is a popover each and the library cannot know which of the two the author meant.
 
-**The rule outlives this component.** The menu (E3) and the select family (E4) open panels from
-controls in the same way, and both inherit this line and [`lesson-93`](../lessons.md#lesson-93)
-with it. The select is the exception that proves it: its panel takes no focus at all
-([0025](0025-a-panel-says-whether-it-takes-focus.md)), so there is no tab order to splice —
-which is why this decision is written down at the first component that _does_ have one.
+**The rule outlives this component.** The menu and the select family open panels from controls in
+the same way, and both inherit this line and [`lesson-93`](../lessons.md#lesson-93) with it. The
+select is the exception that proves it: its panel takes no focus at all
+([0025](0025-a-panel-says-whether-it-takes-focus.md)), so there is no tab order to splice — which is
+why this decision is written down at the first component that _does_ have one.
 
 **What it costs.** A keystroke the browser would have handled is handled here, so a page that
 wanted the browser's own answer cannot have it. The measurement is `preventDefault` on a Tab,

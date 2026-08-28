@@ -44,11 +44,11 @@ outside of.
 
 ### The line `core` learned here
 
-`pctListNavigation` was extracted at D1 with wrapping deliberately **left out**: one consumer
-cannot tell a shared property from an accident of the only case. The menu is the second
-consumer and it arrives with the opposite answer — a native `<select>` stops at its last option
-and every menu the platform draws comes round — so the edge became a parameter of the walk
-(`wrap`) rather than a second copy of it.
+`pctListNavigation` was extracted with wrapping deliberately **left out**: one consumer cannot tell
+a shared property from an accident of the only case. The menu is the second consumer and it arrives
+with the opposite answer — a native `<select>` stops at its last option and every menu the platform
+draws comes round — so the edge became a parameter of the walk (`wrap`) rather than a second copy of
+it.
 
 What the parameter had to be careful about is the difference between **past** the end and **at**
 it: `PageDown` is `move(10)`, and a wrapping list that took a modulo of it would answer "ten rows
@@ -84,7 +84,7 @@ no command to give it to, so that an empty menu is still somewhere Escape can be
 | `prefers-reduced-motion`        | `apps/sandbox-e2e/src/menu.spec.ts` — the duration read from the panel is the reduced one, and the leave still ends                                                                                                                                                                        |
 | Touch target ≥ 24×24 px         | `libs/components/menu/src/menu-item.scss` — `min-block-size: var(--pct-menu-item-target-min)` on the row, which is the target: a row runs the full width of the panel, so the pointer never has to find the text                                                                           |
 | Size axis                       | none — deliberately: a menu row is not a control with a height. `req-api-size` is about `--pct-control-height-*`, and the row's floor is a touch target rather than a size step                                                                                                            |
-| Density axis                    | none — gap. The same one every component here has ([`req-token-density`](../requirements/tokens.md#req-token-density), G4)                                                                                                                                                                 |
+| Density axis                    | none — gap. The same one every component here has ([`req-token-density`](../requirements/tokens.md#req-token-density))                                                                                                                                                                     |
 | RTL                             | `apps/sandbox-e2e/src/menu.spec.ts` — the submenu drawn on the starting side and **the arrow keys mirrored with it**. It is the one component here where the writing direction reaches the key map, not just the layout                                                                    |
 | SSR + hydration                 | `apps/sandbox-e2e/src/hydration.spec.ts` — the `/menu` view renders and hydrates with no `NG05xx`; a closed menu contributes no markup, and the trigger's `aria-expanded="false"` is there from the server                                                                                 |
 | Forms                           | none — deliberately: a menu is not a form control. It holds no value and implements no `FormValueControl`; a command that edits one is the consumer's                                                                                                                                      |
@@ -95,7 +95,7 @@ no command to give it to, so that an empty menu is still somewhere Escape can be
 | Strings through `PCT_TEXTS`     | none — deliberately: the component writes no string of its own                                                                                                                                                                                                                             |
 | Size budget                     | `libs/components/size.snapshot.md` — the `./menu` row, with `./core` beside it                                                                                                                                                                                                             |
 | Screen-reader log               | none — gap. The same one the dialog, the select, the tooltip and the popover have. What a reader really announces on arriving at a row of a nested menu is a question axe does not answer — axe examines structure, it does not listen                                                     |
-| docs page                       | none — gap. F1                                                                                                                                                                                                                                                                             |
+| docs page                       | none — gap. The documentation site                                                                                                                                                                                                                                                         |
 
 ## Decisions
 

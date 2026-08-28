@@ -16,10 +16,10 @@ kept after the value went back to one line). `libs/components/field/src/autosize
 
 ## Context
 
-`PctText`'s selector has read `input[pctText], textarea[pctText]` since v0, so a textarea in a
-field already works. What E5 names is the thing it does not do: **be as tall as what is
-written in it.** The card had recorded the gap as "autosize is a separate component, not built
-yet", which is a note about packaging and not one of the questions the feature asks.
+`PctText`'s selector has read `input[pctText], textarea[pctText]` since v0, so a textarea in a field
+already works. What the plan names is the thing it does not do: **be as tall as what is written in
+it.** The card had recorded the gap as "autosize is a separate component, not built yet", which is a
+note about packaging and not one of the questions the feature asks.
 
 There are three of those, and every one of them was settled by a browser.
 

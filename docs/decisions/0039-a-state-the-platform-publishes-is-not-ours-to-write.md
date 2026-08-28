@@ -16,10 +16,9 @@ when an `aria-checked="false"` is written **beside** a checked box
 
 ## Context
 
-E5 opens with the switch, and the checkbox's card has been saying since v0 that it is a
-separate component "despite the same `FormCheckboxControl` contract, because the semantics
-differ". That sentence settles the packaging and none of the three questions the control
-actually asks:
+The field phase opens with the switch, and the checkbox's card has been saying since v0 that it is a
+separate component "despite the same `FormCheckboxControl` contract, because the semantics differ".
+That sentence settles the packaging and none of the three questions the control actually asks:
 
 1. **What element carries `role="switch"`?** The APG shows two examples, one on a native
    checkbox and one on a `<div>` the author wires up.
@@ -61,11 +60,11 @@ reading the DOM, not an axe audit, not a reader — will say so. So `PctSwitch` 
 `aria-checked`, and its unit and e2e cases assert the **absence**, because the absence is the
 promise ([`lesson-112`](../lessons.md#lesson-112)).
 
-This is a fact about `PctCheckbox` too, and the honest thing to say is that the checkbox has
-been writing an inert attribute since v0 — its `ariaChecked` computed, the binding and the
-e2e assertion that reads it all measure a string the library writes to itself. Repairing it
-moves a public part of the rendered DOM and belongs to a step of its own, so it is written
-down as a finding (**C30**) rather than quietly folded into this one.
+This is a fact about `PctCheckbox` too, and the honest thing to say is that the checkbox has been
+writing an inert attribute since v0 — its `ariaChecked` computed, the binding and the e2e assertion
+that reads it all measure a string the library writes to itself. Repairing it moves a public part of
+the rendered DOM and belongs to a step of its own, so it is written down as a finding of its own
+rather than quietly folded into this one.
 
 ## The third state: the type is the gate, because nothing else is
 

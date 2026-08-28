@@ -13,7 +13,8 @@ moment two components shared a base
 
 ## Context
 
-E4's next item is **multiple selection**, and every library writes it the same way:
+The next item of the select family is **multiple selection**, and every library writes it the same
+way:
 
 ```html
 <pct-select multiple [(value)]="countries" />
@@ -102,12 +103,11 @@ half that drifts. The parity is now measured instead of hoped for: a unit case r
 - **The value comes back in the list's order**, so the same set of choices is the same array
   however the picking went. A value no option carries is kept — the list cannot order it, so
   it stands ahead of the ones it can.
-- **The bytes are real and are recorded**: one template compiled twice, one stylesheet emitted
-  twice — `./select` went 29058 → 46749 B and is now the library's largest entrypoint. That
-  number is what an application importing the WHOLE entrypoint carries; whether a consumer who
-  imports only `PctSelect` sheds the other half is a question about tree-shaking that
-  **nothing here measures**, and it is written down as such (C24 in the plan) rather than
-  assumed.
+- **The bytes are real and are recorded**: one template compiled twice, one stylesheet emitted twice
+  — `./select` went 29058 → 46749 B and is now the library's largest entrypoint. That number is what
+  an application importing the WHOLE entrypoint carries; whether a consumer who imports only
+  `PctSelect` sheds the other half is a question about tree-shaking that **nothing here measures**,
+  and it is written down as a finding of its own rather than assumed.
 - **Two gates had to learn what inheritance is** — `check-aria` read a component's inputs from
   one class body and reported a combobox that "declares no `ariaLabel`", `check-texts` found a
   class in the sources that no entrypoint exports

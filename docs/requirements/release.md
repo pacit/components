@@ -89,7 +89,6 @@ call it a match. The archive is guarded by
 all in place. It points at
 `github.com/pacit/components`, which does not exist yet; provenance demands agreement with
 the repository the publish runs from, so the condition only closes when the remote is created
-(B2)
 
 > The promise is **double and has to be measured twice**: the manifest fields on one side of
 > `npm pack` and the LICENSE file on the other, because those are two different filters. A gate

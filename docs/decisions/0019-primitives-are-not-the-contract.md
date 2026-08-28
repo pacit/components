@@ -60,6 +60,6 @@ today is a semantic, component or scale token, and all of those stay in the unio
 
 - `libs/tokens/src/names.policy.json` carries the rule and the three prefixes.
 - `tokens.snapshot.md` records the three names as private.
-- The dead primitives the measurement found are **not** touched here — that is a finding of
-  its own (**C12** in the plan), because whether a palette may hold an unused step is a
-  question about the skin, not about the type.
+- The dead primitives the measurement found are **not** touched here — that is a finding of its
+  own, written down as a finding, because whether a palette may hold an unused step is a question
+  about the skin, not about the type.

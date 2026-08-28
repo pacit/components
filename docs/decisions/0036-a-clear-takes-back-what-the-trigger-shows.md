@@ -14,8 +14,8 @@ costs the text inside it its subpixel antialiasing
 
 ## Context
 
-E4's fifth item is **clearing**, and written down as a feature it is one line: a cross that
-puts the value back to empty. Three questions sit under that line, and two of them were
+The select family's fifth item is **clearing**, and written down as a feature it is one line: a
+cross that puts the value back to empty. Three questions sit under that line, and two of them were
 settled by a measurement rather than by taste.
 
 1. **Where does the cross go?** Inside the trigger is where every library draws it.
@@ -73,11 +73,11 @@ The platform draws exactly one clear control of its own — the one in `<input t
 so the question has an answer that is not ours to invent. Measured in the three engines this
 library supports:
 
-| engine   | Tab from the field lands on | Escape in the field  |
-| -------- | --------------------------- | -------------------- |
-| chromium | the next control            | clears it            |
-| firefox  | the next control            | clears it            |
-| webkit   | the next control            | leaves it alone      |
+| engine   | Tab from the field lands on | Escape in the field |
+| -------- | --------------------------- | ------------------- |
+| chromium | the next control            | clears it           |
+| firefox  | the next control            | clears it           |
+| webkit   | the next control            | leaves it alone     |
 
 Unanimous on the part that matters: **the platform's clear control is in no engine's tab
 order**, and where the platform gives the keyboard a way to the same thing, that way is

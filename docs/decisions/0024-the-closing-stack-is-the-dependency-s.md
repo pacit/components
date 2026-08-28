@@ -14,15 +14,15 @@ control's **visible** edge, and every inherited property carried over by hand. I
 once, in `PctSelect`, and its last consequence read "to be generalised into the `core`
 behaviour layer at the first dialog".
 
-D2 is that generalisation, and it arrives before the dialog rather than after it — the same
-order as D1's list walk and for the same reason: the second consumer is when copying starts,
+The overlay layer is that generalisation, and it arrives before the dialog rather than after it —
+the same order as the list walk and for the same reason: the second consumer is when copying starts,
 not when it is noticed ([`lesson-21`](../lessons.md#lesson-21)).
 
-The plan's D2 named six things at once: positioning, the closing stack, the outside click,
-`inert` on the background, the scroll lock, and the carrying-over of theme and direction. They
-do not all have the same standing. Three of them have one consumer and a measurement behind
-them; two have **no consumer at all** until there is a modal; and one turned out to be already
-built, in the dependency the library had already chosen.
+The plan named six things at once: positioning, the closing stack, the outside click, `inert` on the
+background, the scroll lock, and the carrying-over of theme and direction. They do not all have the
+same standing. Three of them have one consumer and a measurement behind them; two have **no consumer
+at all** until there is a modal; and one turned out to be already built, in the dependency the
+library had already chosen.
 
 ## Decision
 
@@ -46,8 +46,8 @@ the stack whenever it is open — but a component listening one floor up would a
 overlays above it as well.
 
 **The modal half waits for the first modal.** `inert` on the background and the scroll lock are
-written for a dialog and for nothing else here today; a listbox panel that locked the page's
-scroll would be a defect. They bind at E1.
+written for a dialog and for nothing else here today; a listbox panel that locked the page's scroll
+would be a defect. They bind at the dialog.
 
 **Positioning stays with the role.** Which way a panel drops and which edge it abuts is a
 property of a listbox under a combobox — a submenu opens to the side, a tooltip flips onto the
@@ -72,8 +72,8 @@ axis it has room on. What the layer does own is the anchor, which is what
 - **11 B on every entrypoint, the primary included** — an unused `input` import that a
   directive in the shared kernel drags into a module every consumer of the plain half already
   has. Measured, and visible in `size.snapshot.md`.
-- **Two of the six things D2 named are not built**, so the dialog will still have to write
-  them. What it will not have to do is guess which of them the panel already solved.
+- **Two of the six things named are not built**, so the dialog will still have to write them. What
+  it will not have to do is guess which of them the panel already solved.
 
 ## Alternatives considered
 

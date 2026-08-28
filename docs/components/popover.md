@@ -65,7 +65,7 @@ opening, so that its role and name are announced before the user is anywhere ins
 | `prefers-reduced-motion`        | `apps/sandbox-e2e/src/popover.spec.ts` — the duration read from the panel is the reduced one, and the leave still ends                                                                                                                                                                                                      |
 | Touch target ≥ 24×24 px         | none — deliberately: the popover draws no target of its own. It hangs on the consumer's control, and that control's size is that control's promise                                                                                                                                                                          |
 | Size axis                       | none — deliberately: a popover has no control height. `req-api-size` is about `--pct-control-height-*`; the only width here is `--pct-popover-panel-max-width`, which a consumer overrides                                                                                                                                  |
-| Density axis                    | none — gap. The same one every component here has ([`req-token-density`](../requirements/tokens.md#req-token-density), G4)                                                                                                                                                                                                  |
+| Density axis                    | none — gap. The same one every component here has ([`req-token-density`](../requirements/tokens.md#req-token-density))                                                                                                                                                                                                      |
 | RTL                             | `apps/sandbox-e2e/src/popover.spec.ts` — the inline gap measured in both writing directions. It is the one thing a screenshot would not catch: the dependency resolves `start`/`end` by direction and adds the offset as plain pixels afterwards, so a sign left physical lays the panel over the control it belongs to     |
 | SSR + hydration                 | `apps/sandbox-e2e/src/hydration.spec.ts` — the `/popover` view renders and hydrates with no `NG05xx`; a closed popover contributes no markup, and the trigger's `aria-expanded="false"` is there from the server                                                                                                            |
 | Forms                           | none — deliberately: a popover is not a form control. It holds no value and implements no `FormValueControl`. A form **inside** one is the consumer's, and it reaches the chrome exactly as it would anywhere else                                                                                                          |
@@ -77,7 +77,7 @@ opening, so that its role and name are announced before the user is anywhere ins
 | Strings through `PCT_TEXTS`     | none — deliberately: the component writes no string of its own                                                                                                                                                                                                                                                              |
 | Size budget                     | `libs/components/size.snapshot.md` — the `./popover` row, with `./core` beside it                                                                                                                                                                                                                                           |
 | Screen-reader log               | none — gap. The same one the dialog, the select and the tooltip have. What a reader really announces when a non-modal dialog takes focus is a question axe does not answer — axe examines structure, it does not listen                                                                                                     |
-| docs page                       | none — gap. F1                                                                                                                                                                                                                                                                                                              |
+| docs page                       | none — gap. The documentation site                                                                                                                                                                                                                                                                                          |
 
 ## Decisions
 
@@ -103,12 +103,12 @@ mechanisms the dependency's)
   string to translate.
 - **It is not a place to park.** Tab is a way out, so a panel the user is meant to leave and come
   back to — a docked filter panel, a side sheet — is not this component
-  ([0031](../decisions/0031-a-panel-s-tab-order-belongs-to-its-trigger.md)). The drawer in E7 is
-  where that shape belongs.
+  ([0031](../decisions/0031-a-panel-s-tab-order-belongs-to-its-trigger.md)). The drawer is where
+  that shape belongs.
 - **No arrow.** A pointer drawn from the panel to the trigger is one more thing to position and
   repaint on every flip; the 8 px gap and the placement say the same thing more cheaply. The
   same call as the tooltip's.
 - **A popover inside a popover is not a pattern here.** Nothing forbids it and the closing stack
   orders the two correctly, but the focus return of the inner one lands on a trigger inside the
-  outer one, and nothing measures that arrangement. A menu with submenus is E3's problem, and it
-  is a different component.
+  outer one, and nothing measures that arrangement. A menu with submenus is the menu's problem, and
+  it is a different component.

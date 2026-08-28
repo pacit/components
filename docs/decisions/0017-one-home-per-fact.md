@@ -98,5 +98,5 @@ so halving the count by doubling the width has to show up somewhere.
   the gates use for their denominators.
 - **One budget for every layer.** Rejected: twelve lines is slack for one layer and tight for
   another, and JSDoc must not have a budget at all.
-- **Budget JSDoc too.** Rejected for the reason B4 gives: the example is what a consumer reads,
-  and it is the first thing a line budget would eat.
+- **Budget JSDoc too.** Rejected for the reason already given: the example is what a consumer
+  reads, and it is the first thing a line budget would eat.

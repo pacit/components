@@ -10,12 +10,12 @@ three engines before anything was written
 
 ## Context
 
-The plan's D4 asks for a live announcer: "one `polite` channel, one `assertive`, with
-deduplication — not a region per component". D2 and D3 had both come out of the same shape — a
-line naming several things, of which some had a consumer here and some named the modal half of
-a library that has no modal ([0024](0024-the-closing-stack-is-the-dependency-s.md),
-[0025](0025-a-panel-says-whether-it-takes-focus.md)) — so the question was again which of it
-has a consumer today.
+The plan asks for a live announcer: "one `polite` channel, one `assertive`, with deduplication — not
+a region per component". The overlay and the focus layer had both come out of the same shape — a
+line naming several things, of which some had a consumer here and some named the modal half of a
+library that has no modal ([0024](0024-the-closing-stack-is-the-dependency-s.md),
+[0025](0025-a-panel-says-whether-it-takes-focus.md)) — so the question was again which of it has a
+consumer today.
 
 **A region per component already exists, and it is not the defect the line is about.** Four
 templates draw their message inside `role="alert"`: the checkbox, the radio group, the select
@@ -84,10 +84,10 @@ have painted its text across the bottom of every consumer's page.
 - the four `role="alert"` messages stay as they are, and now say so in a document rather than
   by being the only thing anybody wrote. The rule that decides between them is the one above:
   a sentence with a home announces from the home;
-- the `assertive` channel has **no consumer inside the library today**. It is not a second
-  mechanism but the same one under a different attribute, and it is created with its twin
-  because a channel opened at the moment of its first message is the failure this decision is
-  built around. The first callers are the toast and the dialog, at E1;
+- the `assertive` channel has **no consumer inside the library today**. It is not a second mechanism
+  but the same one under a different attribute, and it is created with its twin because a channel
+  opened at the moment of its first message is the failure this decision is built around. The first
+  callers are the toast and the dialog;
 - `pct-select` gained an owner it must release: a control destroyed with an empty panel open
   retracts its sentence, or the next select to open an empty panel would find the channel
   already holding those words and stay silent;

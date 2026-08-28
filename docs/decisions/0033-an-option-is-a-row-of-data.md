@@ -11,8 +11,8 @@ so a panel with projected rows never owns how many of them exist
 
 ## Context
 
-E4's line opens with **projected `pct-option`** — the shape most component libraries ship, and
-the one a consumer coming from Angular Material or from a native `<select>` expects:
+The select family's line opens with **projected `pct-option`** — the shape most component libraries
+ship, and the one a consumer coming from Angular Material or from a native `<select>` expects:
 
 ```html
 <pct-select [(value)]="country">
@@ -27,9 +27,9 @@ against the one this library shipped from the start:
 <pct-select [options]="countries" [(value)]="country" />
 ```
 
-Two ways of writing one list, so it reads as a matter of taste — and E4 has six more items
-below this one (groups, multiple selection, filtering, clearing, async, virtualisation) whose
-shape follows from whichever wins. It was measured before anything was written.
+Two ways of writing one list, so it reads as a matter of taste — and the family has six more items
+below this one (groups, multiple selection, filtering, clearing, async, virtualisation) whose shape
+follows from whichever wins. It was measured before anything was written.
 
 ## The measurement
 
@@ -62,12 +62,11 @@ like more type safety, because the values are written next to the labels, has le
 array puts every value of the list in one literal, which is exactly where TypeScript checks
 them against each other.
 
-**The count.** A projected option is built by the **consumer's** `@for`, in the consumer's
-view, when the host renders — not when the panel opens. A thousand options are a thousand
-component instances on a page where nobody has clicked anything. Today's panel builds rows
-inside the overlay and has none while it is closed. That difference is E4's own last item:
-virtualisation is a promise about how many rows exist, and it can only be made by whoever
-creates them.
+**The count.** A projected option is built by the **consumer's** `@for`, in the consumer's view,
+when the host renders — not when the panel opens. A thousand options are a thousand component
+instances on a page where nobody has clicked anything. Today's panel builds rows inside the overlay
+and has none while it is closed. That difference is the family's own last item: virtualisation is a
+promise about how many rows exist, and it can only be made by whoever creates them.
 
 ## Decision
 
@@ -82,9 +81,9 @@ the two things projection is usually reached for are answered where they already
 
 ## Consequences
 
-- Every item left in E4 is a question about the **data**: a group is a nested row, multiple
-  selection is a value shape, filtering is a predicate over the list, virtualisation is a
-  window over it. None of them needs a second authoring channel.
+- Every item left in the family is a question about the **data**: a group is a nested row, multiple
+  selection is a value shape, filtering is a predicate over the list, virtualisation is a window
+  over it. None of them needs a second authoring channel.
 - The library has one list and one place where `T` is decided. A consumer who wants the
   `<pct-option>` look writes a `@for` over their own array to build it and hands the array
   over — the same keystrokes, with the values checked against one another.

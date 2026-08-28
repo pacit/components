@@ -13,7 +13,8 @@ library does not answer it
 
 ## Context
 
-E4's next item is **filtering**, and it arrives with three questions that look like one:
+The next item of the select family is **filtering**, and it arrives with three questions that look
+like one:
 
 1. is `filterable` a tag, as multiplicity is ([0034](0034-multiplicity-is-a-tag.md)), or an
    input?

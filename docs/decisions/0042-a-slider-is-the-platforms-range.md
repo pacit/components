@@ -21,9 +21,9 @@ any engine; and a `<datalist>` neither snaps nor renders a tick in firefox
 
 ## Context
 
-E5's third control is the slider. The card has carried it since v0 as one line — "a slider,
-later" — and that line settles nothing. Five questions do the work, and this repository has
-already answered four of their shapes elsewhere:
+The third control of the field phase is the slider. The card has carried it since v0 as one line —
+"a slider, later" — and that line settles nothing. Five questions do the work, and this repository
+has already answered four of their shapes elsewhere:
 
 1. **What element carries the slider?** `<input type="range">`, or a `<div role="slider">` the
    author wires up — the same fork as the switch's element ([0039](0039-a-state-the-platform-publishes-is-not-ours-to-write.md)).

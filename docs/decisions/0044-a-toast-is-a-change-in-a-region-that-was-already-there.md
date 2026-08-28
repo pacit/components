@@ -19,15 +19,15 @@ inside it at `opacity: 1` while only the new one runs its `@starting-style`
 
 ## Context
 
-E7's first item is the toast, and the plan's own note about it was written two phases earlier:
-[0026](0026-one-channel-per-politeness.md) said the `assertive` channel of `PctAnnouncer` has
-no consumer inside the library yet and that **"the first callers are the toast and the dialog,
-at E1"**. The dialog came and was not one. The toast is not one either, and the reason is the
-rule 0026 itself settled: **a live channel is for a change with no element the reader is
-pointed at; everything else announces from where it is drawn.** A toast is drawn. It has a
-place on the screen, a sentence in it and sometimes a button — it is the most _homed_ message
-this library has. Announcing it through a hidden region as well would put the same words in
-the document twice, which is the thing 0026 refused for the four `role="alert"` errors.
+The first of the remaining components is the toast, and the plan's own note about it was written two
+phases earlier: [0026](0026-one-channel-per-politeness.md) said the `assertive` channel of
+`PctAnnouncer` has no consumer inside the library yet and that **"the first callers are the toast
+and the dialog"**. The dialog came and was not one. The toast is not one either, and the reason is
+the rule 0026 itself settled: **a live channel is for a change with no element the reader is pointed
+at; everything else announces from where it is drawn.** A toast is drawn. It has a place on the
+screen, a sentence in it and sometimes a button — it is the most _homed_ message this library has.
+Announcing it through a hidden region as well would put the same words in the document twice, which
+is the thing 0026 refused for the four `role="alert"` errors.
 
 So the prediction in 0026 is wrong and this decision says so out loud rather than quietly
 leaving the channel unused. What is **right** in 0026 is its second half, and it turns out to
@@ -91,15 +91,14 @@ What urgency does change besides the announcement is the clock: it stops there b
 
 Three separate measurements decide the box.
 
-**A child of `body`, because that is where a modal leaves it speaking.** `PctModalBackground`
-makes every child of `body` inert except the one holding the modal, and inert is not a
-courtesy: in chromium's own accessibility tree a `role="status"` under `inert` is **absent**,
-the same as under `aria-hidden`, and it returns when the attribute goes. A stack inside
-`<app-root>` would therefore go silent behind the application's own dialog, which is precisely
-the moment a "could not save" has to be heard. `modal.ts` already exempted children carrying
-`aria-live` — and had to learn the **roles**, since a `log` carries no such attribute. That is
-D1's rule arriving on a second consumer: one consumer cannot tell a shared property from an
-accident of the only case.
+**A child of `body`, because that is where a modal leaves it speaking.** `PctModalBackground` makes
+every child of `body` inert except the one holding the modal, and inert is not a courtesy: in
+chromium's own accessibility tree a `role="status"` under `inert` is **absent**, the same as under
+`aria-hidden`, and it returns when the attribute goes. A stack inside `<app-root>` would therefore
+go silent behind the application's own dialog, which is precisely the moment a "could not save" has
+to be heard. `modal.ts` already exempted children carrying `aria-live` — and had to learn the
+**roles**, since a `log` carries no such attribute. That is the list walk's rule arriving on a
+second consumer: one consumer cannot tell a shared property from an accident of the only case.
 
 **In the top layer, because a number cannot get above it.** The CDK renders every overlay
 inside a shown popover, so a modal's veil is in the top layer, and a stack ordered by
@@ -171,10 +170,10 @@ interrupting a screen reader for is worth waiting to be read.
 - **no tone.** No colour for success, warning or failure, for the reason above — which is a
   real thing a consumer will ask for, and the honest answer is that the repair is an icon set
   and the icon set is a decision of its own;
-- **no leave transition.** A message fades in with `@starting-style` and goes at once. A leave
-  would mean the card outliving its own removal while every card under it moves up — a layout
-  animation, which is a different thing from a fade and one this library has no machinery for.
-  The dialog shipped on the same reasoning at E1;
+- **no leave transition.** A message fades in with `@starting-style` and goes at once. A leave would
+  mean the card outliving its own removal while every card under it moves up — a layout animation,
+  which is a different thing from a fade and one this library has no machinery for. The dialog
+  shipped on the same reasoning;
 - **the stack drops the oldest message over the limit.** Four is the default; a burst taller
   than the window would cover the page it is reporting on, and something has to give. Only the
   application knows how tall its window is, so the number is configuration;

@@ -48,10 +48,10 @@ from the component: a row is a `<button>`, so `Enter` and `Space` are the platfo
 commands moves focus; a panel that is the list half of a control keeps focus on the control and
 points at the active item.
 
-The rule generalises to what is coming: `E4`'s multiple-selection and filtering select stay on
-`aria-activedescendant`, and a command palette — a list of commands with a filter above it — is
-the interesting case, because it is a combobox by construction and its items are commands. It
-will point rather than move, because the filter is a text field and the caret has to stay in it.
+The rule generalises to what is coming: the multiple-selection and filtering select stay on
+`aria-activedescendant`, and a command palette — a list of commands with a filter above it — is the
+interesting case, because it is a combobox by construction and its items are commands. It will point
+rather than move, because the filter is a text field and the caret has to stay in it.
 
 ## Consequences
 
@@ -62,9 +62,9 @@ will point rather than move, because the filter is a text field and the caret ha
 - `PctFocusStays` stays what its own JSDoc says it is: the declaration that a panel does **not**
   take focus. The menu does not carry it, and that is now a documented difference rather than an
   omission.
-- The menu's rows need no ids at all, where the select's options each need one. A menu built
-  from a hundred-row `@for` therefore costs a hundred fewer strings than the equivalent select —
-  not the reason for the decision, but worth knowing when E4 asks about virtualisation.
+- The menu's rows need no ids at all, where the select's options each need one. A menu built from a
+  hundred-row `@for` therefore costs a hundred fewer strings than the equivalent select — not the
+  reason for the decision, but worth knowing when virtualisation comes up.
 - A disabled row is genuinely unpressable rather than politely ignored, because the platform's
   own `disabled` is what a menu row has and an `aria-activedescendant` option has not
   ([`lesson-95`](../lessons.md#lesson-95)).

@@ -40,12 +40,11 @@ Three things settle it, and none of them is new here:
    tracked and `node_modules` is not. A lockfile is the reproducible record; the payload is
    what the record can rebuild. A skills lockfile is the same object, down to the digest.
 2. **Nothing configured here reads `.agents/`.** The two tools that are configured — the
-   `.claude/*.json` pair and `opencode.json` — reach it only through links, and the reach
-   policy has said since B9 where the first of them takes its workspace skills from:
-   from the plugin declared in its settings, "instead of a copy of them in the repository".
-   A register entry would have had to name a reader, and the honest name would have been
-   "any agent tool that follows the convention" — which is not a reader, it is the absence
-   of one.
+   `.claude/*.json` pair and `opencode.json` — reach it only through links, and the reach policy has
+   said since the pre-publication tidy-up where the first of them takes its workspace skills from:
+   from the plugin declared in its settings, "instead of a copy of them in the repository". A
+   register entry would have had to name a reader, and the honest name would have been "any agent
+   tool that follows the convention" — which is not a reader, it is the absence of one.
 3. **The payload is somebody else's documentation.** Forty of the 42 files are reference
    pages about a framework that ships a new minor every few weeks. A copy of them ages from
    the moment it lands, and it ages silently, because nothing in this repository is measured

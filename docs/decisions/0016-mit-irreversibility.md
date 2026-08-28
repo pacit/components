@@ -44,8 +44,8 @@ gone out under MIT beforehand.
 
 ## Consequences
 
-- Phase E ends at **E6 (table/datagrid)** instead of having it in the middle of the list. It is
-  the one item on the plan whose build cost is counted in months rather than days.
+- The component phase ends at the **table/datagrid** instead of having it in the middle of the
+  list. It is the one item on the plan whose build cost is counted in months rather than days.
 - **"Build it but do not publish" is not a workaround.** The `LICENSE` file in the root covers
   the whole repository, not only `dist` — code pushed to a public repository is released under
   MIT whether or not it went to npm. A deferred component is deferred as a commit too.
@@ -60,11 +60,9 @@ gone out under MIT beforehand.
   [`req-release-metadata`](../requirements/release.md#req-release-metadata).
 - **There is no gate for this and there will not be.** No machine can check whether a component
   "should have" gone out. A requirement with a sham gate is exactly what
-  [`lesson-39`](../lessons.md#lesson-39) describes — a gate born dead — so this decision
-  **does not become a requirement**. It is enforced by reviewing the list in the
-  [plan](../plan.md), not by CI.
-- 0015 stays in force in full. This decision reverses nothing in it; it adds an axis that was
-  not there.
+  [`lesson-39`](../lessons.md#lesson-39) describes — a gate born dead — so this decision **does not
+  become a requirement**. It is enforced by reviewing the work plan, not by CI. - 0015 stays in
+  force in full. This decision reverses nothing in it; it adds an axis that was not there.
 
 ## What this costs us
 

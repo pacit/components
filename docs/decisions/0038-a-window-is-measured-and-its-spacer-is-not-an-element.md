@@ -17,7 +17,7 @@ measurement is compared with a tolerance and never rounded
 
 ## Context
 
-E4's last item is **virtualisation**, and [0033](0033-an-option-is-a-row-of-data.md) already
+The select family's last item is **virtualisation**, and [0033](0033-an-option-is-a-row-of-data.md) already
 said what it is: _"virtualisation is a promise about how many rows exist, and it can only be
 made by whoever creates them."_ The panel builds its own rows, so the panel is the one thing
 here that can promise not to.

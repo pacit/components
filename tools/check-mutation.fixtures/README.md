@@ -55,11 +55,11 @@ Four readings arrive here as data rather than from a real run:
 - `targets` — instead of the commands from the Nx graph,
 - `ci` — instead of the workflow text.
 
-This is the same choice as in `check-browsers` and for the same reason: four readings
-from disk and from the graph are four functions of a dozen lines each, while the checks
-are seven points and thirty-eight rules, and that is where all the content sits. The
-readings are guarded by runs against the real repository, recorded in
-[`plan.md`](../../docs/plan.md).
+This is the same choice as in `check-browsers` and for the same reason: four readings from disk and
+from the graph are four functions of a dozen lines each, while the checks are seven points and
+thirty-eight rules, and that is where all the content sits. The readings are guarded by runs against
+the real repository, recorded in the **Control** of
+[`req-quality-unit`](../../docs/requirements/quality.md#req-quality-unit).
 
 ## The rule that outlives disarming Stryker itself
 

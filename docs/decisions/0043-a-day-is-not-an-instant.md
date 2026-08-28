@@ -19,9 +19,9 @@ all three; and `my-MM` resolves dates to `latn` in chromium and to `mymr` in the
 
 ## Context
 
-E5's fourth control is the date picker, and the plan has carried one line about it since v0:
-"the date picker forces deep i18n". That line is right and settles nothing. Five questions do
-the work, and four of them are questions this repository has already answered the SHAPE of
+The fourth control of the field phase is the date picker, and the plan has carried one line about it
+since v0: "the date picker forces deep i18n". That line is right and settles nothing. Five questions
+do the work, and four of them are questions this repository has already answered the SHAPE of
 somewhere else:
 
 1. **What element takes the date?** `<input type="date">`, or a text field the library

@@ -52,9 +52,8 @@ A step nothing measures with is not a shared metric, it is a number.
 - **A step cannot be parked in advance.** A designer who knows the next component will want
   `blue.50` adds it with the first token or stylesheet that reads it, in one diff. The
   friction is the point: the palette stops being a place where a name can arrive unnoticed.
-- **The exported palette is gapped.** Whatever the Figma bridge (F4) sends out is the ramp as
-  it really is, holes and all — a designer reading it sees the components' palette rather than
-  a full scale.
+- **The exported palette is gapped.** Whatever the Figma bridge sends out is the ramp as it really
+  is, holes and all — a designer reading it sees the components' palette rather than a full scale.
 - **A one-off experiment costs a gate run.** Painting something with `--pct-blue-50` for an
   afternoon now needs the token back in the sources, not merely in the browser.
 

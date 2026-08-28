@@ -28,14 +28,13 @@ Tab ([`lesson-89`](../lessons.md#lesson-89),
 | **Strings**     | the close button's accessible name through `PCT_TEXTS` (`dialogClose`), read at render time ([0014](../decisions/0014-texts-as-signal.md))                                                                                                                                                                                                                                              |
 | **SSR**         | nothing renders on the server. The panel is a template attached to an overlay by a **browser** render, so a dialog left `open` at bootstrap sends no markup and hydrates no mismatch                                                                                                                                                                                                    |
 
-**What arrives from somewhere else, and what is written here.** Of the six things E1 was to
+**What arrives from somewhere else, and what is written here.** Of the six things the dialog was to
 force: the trap, the initial focus and the focus restore are the CDK's `FocusTrap`
-([0025](../decisions/0025-a-panel-says-whether-it-takes-focus.md)); the Escape ordering is the
-CDK dispatcher's ([0024](../decisions/0024-the-closing-stack-is-the-dependency-s.md)); `inert`
-on the background is the platform's. Written here: the scroll lock, the panel, and **the order
-the three run in on the way out** — the page is given back _before_ the panel goes, because
-focus is restored to an element that sits in the background and an inert subtree refuses
-`focus()`.
+([0025](../decisions/0025-a-panel-says-whether-it-takes-focus.md)); the Escape ordering is the CDK
+dispatcher's ([0024](../decisions/0024-the-closing-stack-is-the-dependency-s.md)); `inert` on the
+background is the platform's. Written here: the scroll lock, the panel, and **the order the three
+run in on the way out** — the page is given back _before_ the panel goes, because focus is restored
+to an element that sits in the background and an inert subtree refuses `focus()`.
 
 ## Keyboard map
 
@@ -59,10 +58,10 @@ the list first and the dialog second").
 | axe audit                       | `apps/sandbox-e2e/src/a11y.spec.ts` — the `/dialog` view, and separately **an open panel**, which the walk over the routes cannot reach                                                                                                                                                                                                                                                                                                     |
 | Visual screenshot               | `apps/sandbox-e2e/src/visual.spec.ts` — `dialog-open` and `dialog-open-rtl`, the whole viewport rather than the panel: the veil over the page is part of what this component draws                                                                                                                                                                                                                                                          |
 | `forced-colors: active`         | `apps/sandbox-e2e/src/forced-colors.spec.ts` — the mode has no translucent system colour, so the veil says `Canvas` outright and the panel keeps a `CanvasText` edge; without it a dialog there is a rectangle of page on a rectangle of page                                                                                                                                                                                               |
-| `prefers-reduced-motion`        | none — deliberately: the dialog animates nothing. There is no duration to reduce, and an enter transition arrives with the tooltip at E2, where hover/focus parity forces one anyway                                                                                                                                                                                                                                                        |
+| `prefers-reduced-motion`        | none — deliberately: the dialog animates nothing. There is no duration to reduce, and an enter transition arrives with the tooltip, where hover/focus parity forces one anyway                                                                                                                                                                                                                                                              |
 | Touch target ≥ 24×24 px         | `libs/tokens/src/component.dialog.json` — the close button's box is `{pct.target.min}`, not the 16 px cross it draws                                                                                                                                                                                                                                                                                                                        |
 | Size axis                       | none — deliberately: a dialog has no control height. `req-api-size` is about `--pct-control-height-*`, and the only width a modal has is `--pct-dialog-panel-max-width`, which a consumer overrides                                                                                                                                                                                                                                         |
-| Density axis                    | none — gap. The same one every component here has ([`req-token-density`](../requirements/tokens.md#req-token-density), G4)                                                                                                                                                                                                                                                                                                                  |
+| Density axis                    | none — gap. The same one every component here has ([`req-token-density`](../requirements/tokens.md#req-token-density))                                                                                                                                                                                                                                                                                                                      |
 | RTL                             | `apps/sandbox-e2e/src/dialog.spec.ts` — the direction carried onto the panel, which an overlay severs (`lesson-35`); plus the `dialog-open-rtl` screenshot. The scroll lock's scrollbar compensation is `padding-inline-end`, so it gives back the edge that moved                                                                                                                                                                          |
 | SSR + hydration                 | `apps/sandbox-e2e/src/hydration.spec.ts` — the `/dialog` view renders and hydrates with no `NG05xx`; a closed dialog contributes no markup at all                                                                                                                                                                                                                                                                                           |
 | Forms                           | none — deliberately: a dialog is not a form control. It holds no value, implements no `FormValueControl`, and the controls inside its content are the ones bound to a form                                                                                                                                                                                                                                                                  |
@@ -74,7 +73,7 @@ the list first and the dialog second").
 | Strings through `PCT_TEXTS`     | `tools/check-texts.mjs` + `libs/components/dialog/src/dialog.spec.ts` — an application's own close label replaces the default and leaves the rest of the texts alone                                                                                                                                                                                                                                                                        |
 | Size budget                     | `libs/components/size.snapshot.md` — `./dialog` at 14798 B, and the `./core` row beside it: the modal half is a service every entrypoint now carries, 1041 B of it, whether or not it ever injects one                                                                                                                                                                                                                                      |
 | Screen-reader log               | none — gap. The same one the select has, and here it is the more wanted of the two: "what a reader announces when a modal opens" and "does a live region behind it still reach the user" are questions axe does not answer — axe examines structure, it does not listen. The second half at least has a machine-readable proxy: `apps/sandbox-e2e/src/dialog.spec.ts` asserts that no `[aria-live]` element ends up inside an inert subtree |
-| docs page                       | none — gap. F1                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| docs page                       | none — gap. The documentation site                                                                                                                                                                                                                                                                                                                                                                                                          |
 
 ## Decisions
 
@@ -92,12 +91,11 @@ mechanism), [0007](../decisions/0007-config-and-texts.md),
 ## Known limitations
 
 - **No animation.** A modal that appears instantly is honest and cheap; the alternative is an
-  enter/leave pair, and a leave transition means the panel outlives its own `open === false`,
-  which is a second state to get wrong. It arrives with the tooltip at E2, where hover/focus
-  parity forces a real enter/leave anyway.
-- **One size.** `--pct-dialog-panel-max-width` is a token a consumer overrides; there is no
-  `size` input, because a dialog's width has nothing to do with the `sm/md/lg` control-height
-  axis the rest of the library shares.
+  enter/leave pair, and a leave transition means the panel outlives its own `open === false`, which
+  is a second state to get wrong. It arrives with the tooltip, where hover/focus parity forces a
+  real enter/leave anyway. - **One size.** `--pct-dialog-panel-max-width` is a token a consumer
+  overrides; there is no `size` input, because a dialog's width has nothing to do with the
+  `sm/md/lg` control-height axis the rest of the library shares.
 - **No `alertdialog`.** The role for an interruption that has to be read at once is a separate
   one, and pretending a boolean input covers it would be worse than not offering it.
 - **No stacking policy.** Two dialogs open at once work — the top layer orders them and the

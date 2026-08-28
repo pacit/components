@@ -10,10 +10,9 @@ of markup can take in Angular, and a fifth over the name; [`lesson-86`](../lesso
 ## Context
 
 [0011](0011-icons.md) settled the direction three years' worth of components ago: two levels,
-`pct-icon` over a projected drawing and a `PCT_ICONS` token "mapping semantic names to
-templates", with built-in defaults. It could not be built then, because a template channel
-did not exist; [0027](0027-a-slot-is-a-directive.md) built one at D5 and named icons as its
-second caller.
+`pct-icon` over a projected drawing and a `PCT_ICONS` token "mapping semantic names to templates",
+with built-in defaults. It could not be built then, because a template channel did not exist;
+[0027](0027-a-slot-is-a-directive.md) built one and named icons as its second caller.
 
 What the library had until now was two `<svg>` elements written straight into
 `checkbox.html` and `select.html`. They work, they add no dependency and they are **not a

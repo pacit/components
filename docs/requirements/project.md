@@ -190,7 +190,7 @@ point; among them `entrypoint-pulls-neighbour/` (importing `./alpha` pulls in `.
 removed) and `pair-no-larger-than-single/` — literally "an app importing two entrypoints must
 produce a noticeably bigger bundle". Plus runs against the real repository: the exact
 comparison's first run was red on `./checkbox`, `./radio` and `./select`, 76 B each, a drift
-of C13's that the old ±5% band had recorded nowhere, and point 12's first run was green — the
+of the single message line that the old ±5% band had recorded nowhere, and point 12's first run was green — the
 paragraphs 0023 rewrote had reached the file on the back of the rows that moved with them
 **Decision:** [0023 — a tolerance is for a measurement that wobbles](../decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md)
 **Lessons:** [`lesson-51`](../lessons.md#lesson-51), [`lesson-73`](../lessons.md#lesson-73),

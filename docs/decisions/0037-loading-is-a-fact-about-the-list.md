@@ -16,9 +16,9 @@ moves what the number names
 
 ## Context
 
-E4's sixth item is **async**: a list that is not there when the control is. It arrives from a
-server, it arrives again when the question changes, and between those two moments there is a
-state this library has never had a name for.
+The select family's sixth item is **async**: a list that is not there when the control is. It
+arrives from a server, it arrives again when the question changes, and between those two moments
+there is a state this library has never had a name for.
 
 Three things have to be decided, and only the first of them looks like the feature:
 
