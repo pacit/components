@@ -1,0 +1,13 @@
+import { Component, input } from '@angular/core';
+
+/** A disclosure whose heading a consumer has no way to name. */
+@Component({
+  selector: 'pct-widget',
+  templateUrl: './widget.html',
+  host: {
+    class: 'pct-widget',
+  },
+})
+export class PctWidget {
+  readonly label = input('');
+}

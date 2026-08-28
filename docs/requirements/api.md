@@ -262,7 +262,16 @@ implementations under one set of assertions: an empty autosizing textarea is exa
 a plain `<textarea rows="2">` beside it, three lines are three and six are six, in three
 engines, of which two are laid out by `field-sizing: content` and one is measured in script.
 Plus `› "the engine is on the road the decision says it is"`, which exists to go red when the
-borrowed road stops being borrowed
+borrowed road stops being borrowed;
+`apps/sandbox-e2e/src/accordion.spec.ts` — the third kind of borrowing, and the widest: not a
+key and not a layout but a **relation between elements**. `<details name>` makes one section
+close its siblings, and `exclusive` is that attribute with no code behind it, so the case is the
+whole of the input's implementation, in three engines
+([0046](../decisions/0046-a-disclosure-is-the-platforms-and-so-is-the-group-it-belongs-to.md)).
+It carries an expiring case of its own with the sign reversed — `interpolate-size` is
+chromium's alone today, which is why nothing animates, and the case goes red when a second
+engine ships it: a road nobody could take opening, rather than a borrowed one losing its last
+consumer
 **Control:** the keyboard half has none — deliberately: a navigation test has no mode in which
 it passes without a working keyboard. The layout half does, and it is recorded rather than
 prepared, because the two roads fail in different engines: the `field-sizing` declaration

@@ -16,6 +16,18 @@ the public `PctCssVar` union (see `private.prefixes` in
 [`src/names.policy.json`](src/names.policy.json)).
 
 ```
+--pct-accordion-heading-bg-hover color component public
+--pct-accordion-heading-fg color component public
+--pct-accordion-heading-fg-disabled color component public
+--pct-accordion-heading-fg-hover color component public
+--pct-accordion-heading-font-weight fontWeight component public
+--pct-accordion-heading-gap dimension component public
+--pct-accordion-heading-padding-x dimension component public
+--pct-accordion-heading-padding-y dimension component public
+--pct-accordion-heading-target-min dimension component public
+--pct-accordion-item-border color component public
+--pct-accordion-marker-fg color component public
+--pct-accordion-panel-padding-y dimension component public
 --pct-blue-200 color primitive private
 --pct-blue-300 color primitive private
 --pct-blue-400 color primitive private

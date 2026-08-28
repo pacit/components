@@ -16,6 +16,10 @@ from the **built package** (`ɵcmp.consts` and `ɵdir.hostAttrs` after linking),
 from what the browser really gets.
 
 ```
+./accordion PctAccordionItem heading
+./accordion PctAccordionItem item
+./accordion PctAccordionItem marker
+./accordion PctAccordionItem panel
 ./button PctButton label
 ./button PctButton spinner
 ./checkbox PctCheckbox box

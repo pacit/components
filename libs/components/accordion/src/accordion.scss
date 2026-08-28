@@ -1,0 +1,18 @@
+/* The group draws a stack and nothing else. It cannot reach into the sections it holds and
+   that is not a limitation to work around: projected content keeps the `_ngcontent` of the
+   template that DECLARED it — the consumer's — so a rule written here for
+   `.pct-accordion__item` would match nothing (`lesson-96`, one component over). Every line a
+   section owns is written in `accordion-item.scss`, on its own `:host`. */
+:host {
+  display: block;
+  font-family: inherit;
+}
+
+/* The line above the first section. Each section draws the line UNDER itself, so this is the
+   one edge of the stack no section can be responsible for — and it is the group's, because
+   the group is the only element that knows a stack begins here. A lone
+   `<pct-accordion-item>` outside a group has no line above it, which is what a single
+   disclosure should look like. */
+:host {
+  border-block-start: 1px solid var(--pct-accordion-item-border);
+}

@@ -143,6 +143,46 @@ menu, the select family, and switch / textarea / slider / date.
     old proxy for "carries a role" was focusability, so a strip named as a whole and focused
     through its children counted as zero widgets and asked for no name inputs. One new
     fixture, `composite-without-inputs`, is that rule's control
+  - _the accordion is done_ (3 of 13). It is a `<details>` with a `<summary>`, so the press,
+    the `expanded` state a reader announces, `Enter` and `Space`, the place in the page's tab
+    order and the browser's find-in-page are all the platform's — and **`exclusive` is one
+    shared `name` attribute with no code behind it at all**, measured closing the others in
+    three engines. Three things were left over and each is here because the element really has
+    nothing for it: a real `<h2>`…`<h6>` written inside the summary, which survives because a
+    `<summary>` is not a button; `preventDefault()` as the only way to refuse a press, which
+    takes the keyboard with it; and an `open` model written from `toggle` and never from a
+    guess. See
+    [0046](decisions/0046-a-disclosure-is-the-platforms-and-so-is-the-group-it-belongs-to.md),
+    [`lesson-127`](lessons.md#lesson-127), [`lesson-128`](lessons.md#lesson-128).
+  - gate: `apps/sandbox-e2e/src/accordion.spec.ts` (12 × 3) plus `/accordion` in the axe and
+    hydration audits, one forced-colours reading, one screenshot and 12 unit cases; the control
+    for the central claim is recorded rather than prepared — `[attr.name]` taken off the
+    `<details>` leaves **3 of 36 red, one per engine**, all three of them the exclusive case
+    and all three on the sibling that failed to close, with every other case green. That is
+    the shape of a component whose one input is an attribute: nothing else moves, because
+    nothing else was ours. Cost
+    `./accordion` **11210 B** on `./core` and `./icon` — the smallest component entrypoint in
+    the library, and the whole of what "the platform does it" is worth in bytes
+  - it made **`check-aria` read one tag more**: `<summary>` was not in the list of what the
+    platform makes focusable, so a component whose only widget is a disclosure counted zero
+    widgets, was asked for no name inputs and passed green with a heading a consumer could not
+    name. One new fixture, `summary-without-inputs`, is that rule's control
+  - the one thing it **refused** is the open/close animation, and the refusal is written to
+    expire: `interpolate-size: allow-keywords` is chromium's alone, so a height that grows
+    would be a different component in different browsers. `› "the engine is on the road the
+decision says it is"` goes red the day a second engine ships it
+  - the mutation run found **six holes of one shape** and they are worth the sentence, because
+    it is the shape **4.11** named: defaults no host had ever left alone. `exclusive`,
+    `disabled`, `ariaLabel` and `ariaLabelledby` were bound in every arrangement the spec drew,
+    so their own defaults were never what answered; `onToggle`'s body could be emptied, because
+    nothing read the model back; and the generated `name`'s prefix was asserted by nobody, so a
+    blank one — which would put every section in the document into a single group — passed. The
+    answer is a third arrangement in the spec: a group binding nothing and a section outside any
+    group binding only its label. `accordion-item.ts` **100.00**, `accordion.ts` **75.00**, the
+    one survivor being the DI token's description string — which survives in `tabs.ts` and
+    `menu.ts` too, and is a debugging label with no behaviour
+  - left **4.19** and **4.20** behind, and gave **4.2** a third file
+
 - [ ] **1.2 — table / datagrid** on a headless core (column model, sorting, filtering, grouping,
       selection as signals) separated from rendering. **The last item of the phase** — the only
       one counted in months rather than days; until the decision in
@@ -302,6 +342,25 @@ run-many`, which is the closest thing here to what CI does, and the same run rep
     `91.38 53(3)` and `98.46 64(6)`. **Three and a half points on a file nothing touched**, and
     the whole of the difference is in the clock column. The snapshot in the tree is the second
     run's, per this item's own rule — which is a gate needing a person, twice now
+  - **a third file, and this time the clock gave rather than took.** The accordion's step ran
+    the gate twice over code that never touched `core/`, and `texts.ts` came back
+    `96.30 26(0) 1` from the recorded run and `100.00 27(5) 0` from the one that landed: the
+    surviving mutant is killed by a **timeout**, so the file's score moves 3.7 points — past
+    the ±2 tolerance — on the strength of what else the machine was doing. `placement.ts` moved
+    in the column without moving in the score (`64(7)` → `64(6)`), which is the same mechanism
+    with the arithmetic cancelling
+  - so the rule's own price is now visible from both sides: the snapshot records `100.00`,
+    because that is the run that landed them, and **a future run that does not land them reads
+    96.30 and goes red on a file nobody edited**. Recording the starved number would put the
+    red on the run that succeeds instead. There is no third option while the clock counts
+    towards the score, which is what makes this a decision rather than a setting
+  - **and it is not only the mutation run any more.** The same step's full e2e finished
+    `2 failed, 1202 passed`, and both failures were the select's: `End reaches the five
+thousandth row` timed out with the list still showing row 44, and the forced-colours case
+    over the same panel went with it. Re-run **alone**, both pass in 20 seconds. Neither test
+    touches anything the step changed. So the shape this item describes is not a property of
+    Stryker — it is what a machine running a hundred browser pages at once does to any gate
+    with a deadline in it, and the e2e suite has deadlines in every wait
 
 - [ ] **4.3 — an option's owner is measured only where a page renders the panel**
   - `pct-select` draws a named section as `role="group"`, and the options below it are owned by
@@ -451,11 +510,11 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
 
 - [ ] **4.10 — the two READMEs list the entrypoints, and no gate reads either list**
   - the npm page's **Entrypoints** table
-    ([`libs/components/README.md`](../libs/components/README.md)) names seven of the **thirteen**
-    entrypoints the package really exports: `./dialog`, `./tooltip`, `./popover`, `./menu`,
-    `./switch` and now `./tabs` are missing, and its **Components** section stops at the
-    select. The repository's own `README.md` carries the same list, one line shorter still,
-    inside the layout tree
+    ([`libs/components/README.md`](../libs/components/README.md)) names seven of the
+    **fourteen** entrypoints the package really exports: `./dialog`, `./tooltip`, `./popover`,
+    `./menu`, `./switch`, `./tabs` and now `./accordion` are missing, and its **Components**
+    section stops at the select. The repository's own `README.md` carries the same list, one
+    line shorter still, inside the layout tree
   - the page was written in English before the push and was true then. Four components have
     been built since, each with
     a card in `docs/components/` that `check-parts` compares against the built package — so the
@@ -470,7 +529,10 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
   - it is not fixed in passing deliberately: putting five rows in by hand today leaves the
     same page to drift at the sixth component, which is exactly how it got here
   - binds at: **3.1**, the first push to a public repository — that is the moment the npm page
-    stops being a draft and becomes what a first visitor reads · _notes:_ —
+    stops being a draft and becomes what a first visitor reads
+  - _notes:_ the drift is **half the table** now. Each component since has widened it by one
+    row and none has fixed it in passing, which is the item's own argument holding: seven
+    missing of fourteen is not a page anybody would call out of date by a line
 
 - [x] **4.11 — the mutation run measures 22 of 36 source files, and nothing says which 22**
   - closed with a **rule**, which is what the item asked for. The gate reads the library's
@@ -627,7 +689,11 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
   - it is corrected in the step that found it — the snapshot now records 15346 — because
     leaving a known-stale row would be worse than a drift nobody has explained
   - binds at: **the next `check-bundle` drift with no source change**, or the first dependency
-    bump · _notes:_ —
+    bump
+  - _notes:_ measured again in the accordion's step, which rewrote the whole snapshot: `./toast`
+    came back at **15346** and every other row was unchanged, the new `./accordion` line being
+    the only difference. So the 35 bytes moved once and have stayed moved — which rules out a
+    measurement that wobbles and leaves the dependency bump as the suspect it always was
 
 - [ ] **4.18 — a guard the pointer makes unreachable, found by the mutant that survived it**
   - `PctTabs.onPress` opens with `if (tab.disabled()) return;` and the mutation run says the
@@ -647,6 +713,48 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     deleting three lines is minutes, and re-recording the snapshot they move is a **55-minute**
     mutation run — 4.7's reasoning exactly, one component over
   - binds at: **the next full mutation run** · _notes:_ —
+
+- [ ] **4.19 — a component that is mostly the platform has almost nothing a mutation run can
+      hold**
+  - `accordion.ts` and `accordion-item.ts` are **74 lines of code between them** and the rest
+    is a template and a stylesheet. What that buys is written down
+    ([0046](decisions/0046-a-disclosure-is-the-platforms-and-so-is-the-group-it-belongs-to.md));
+    what it costs is a measurement that has almost no surface: the exclusive group, the
+    keyboard, the disclosure state and the searchability of a closed section are all **outside**
+    the two files the mutation run reads
+  - the numbers say it plainly. The whole entrypoint is **20 mutants**, where `tabs.ts` alone
+    is 124 — and the run was not useless, it found six real holes on the first pass. But what
+    it can go red about afterwards is four inputs' defaults and one method body: the exclusive
+    group, the keyboard, the disclosure state and the searchability of a closed section are
+    **outside** the files it reads. So a green 95% on this entrypoint is a true statement about
+    a small thing, and it looks exactly like a true statement about a component
+  - the gate that really holds the promises is `apps/sandbox-e2e/src/accordion.spec.ts`, and it
+    is an e2e run: 36 cases in three engines, none of which the mutation snapshot knows about
+  - the same shape will arrive from every component that borrows more than it writes, and the
+    library's whole direction is to borrow more ([`req-api-platform`](requirements/api.md#req-api-platform)).
+    So the question is not "why is this file's score meaningless" but **what measures a
+    component whose implementation is a browser** — and the honest answers are all outside
+    Stryker: a mutation over the TEMPLATE (which nothing here reads), or a recorded disarming
+    per claim, of which this step took one by hand
+  - binds at: **the second component built mostly out of the platform**, or the first time a
+    mutation score is used to argue that a component is well tested · _notes:_ —
+
+- [ ] **4.20 — the list of what the platform makes focusable is written by hand, and nobody
+      counts what is missing**
+  - `check-aria`'s widget test rests on `FOCUSABLE_TAGS`, five tags until this step and six
+    now. `summary` was the missing one and it was found the way these are always found: by
+    building a component whose only widget was one, and noticing that the gate said nothing
+  - what is still not in it, off the top of the platform's own list: `<audio controls>`,
+    `<video controls>`, `<iframe>`, anything with `contenteditable`, and `<details>` itself in
+    the engines that focus it. None of them is in this library today, which is exactly the
+    state `summary` was in last week
+  - it is [`lesson-77`](lessons.md#lesson-77)'s shape one floor up and the same one **4.5**
+    describes for inheritance: the limb that decides what to look at has a denominator nobody
+    measures, and a tag it never looks at is indistinguishable from a tag it approved. The
+    difference from 4.5 is that here the list is a fact about HTML rather than about this
+    repository — so it can be derived rather than curated, which is what makes it worth an item
+  - binds at: **the third tag added to this list**, or the first component here to draw one of
+    the five above · _notes:_ —
 
 ## 5. Gaps with no deadline
 

@@ -1,0 +1,6 @@
+<details class="pct-widget__details">
+  <summary class="pct-widget__heading">
+    <h3 class="pct-widget__title">{{ label() }}</h3>
+  </summary>
+  <div class="pct-widget__panel"><ng-content /></div>
+</details>

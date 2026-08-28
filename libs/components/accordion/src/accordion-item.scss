@@ -1,0 +1,115 @@
+:host {
+  display: block;
+  font-family: inherit;
+  /* The section draws the line under itself, so a stack needs no rule about "every one but
+     the last" and a lone disclosure still has a bottom edge. What no section can draw is the
+     line above the first one — that edge belongs to `pct-accordion`. */
+  border-block-end: 1px solid var(--pct-accordion-item-border);
+}
+
+/* The platform's own disclosure triangle, taken away. `list-style: none` is the standard way
+   and `::-webkit-details-marker` is the older one — both are written, because a design system
+   that shows a different arrow in one engine has stopped being one, and the two roads cost a
+   line each. */
+.pct-accordion__heading {
+  list-style: none;
+}
+
+.pct-accordion__heading::-webkit-details-marker {
+  display: none;
+}
+
+.pct-accordion__heading {
+  display: flex;
+  align-items: center;
+  gap: var(--pct-accordion-heading-gap);
+  /* The whole row is the touch target, so the threshold is a floor on the drawing rather than
+     a hit zone laid over it (`req-a11y-touch`) — the tabs' argument, one component over. */
+  min-block-size: var(--pct-accordion-heading-target-min);
+  padding-block: var(--pct-accordion-heading-padding-y);
+  padding-inline: var(--pct-accordion-heading-padding-x);
+  color: var(--pct-accordion-heading-fg);
+  cursor: pointer;
+  transition: color var(--pct-motion-transition-duration)
+    var(--pct-motion-transition-easing);
+}
+
+.pct-accordion__heading:hover:not([data-pct-disabled]) {
+  color: var(--pct-accordion-heading-fg-hover);
+  background: var(--pct-accordion-heading-bg-hover);
+}
+
+.pct-accordion__heading:focus-visible {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: -2px;
+}
+
+/* Disabled without `opacity` (`req-token-no-opacity`) — an explicit colour token. The cursor
+   says the press will be refused; `aria-disabled` on the same element says it to a reader. */
+.pct-accordion__heading[data-pct-disabled] {
+  color: var(--pct-accordion-heading-fg-disabled);
+  cursor: not-allowed;
+}
+
+/* The title fills the row so that the marker sits at its far end whatever the writing
+   direction — `margin-inline-start: auto` on the marker would do the same and would be one
+   more thing to mirror. A heading element brings a browser's own margins and type scale with
+   it; both are reset here, because the level is a fact about the document's outline and not
+   about how big the row is. */
+.pct-accordion__title {
+  flex: 1 1 auto;
+  margin: 0;
+  font: inherit;
+  font-weight: var(--pct-accordion-heading-font-weight);
+}
+
+/* The marker turns a half circle on the platform's own state. There is no `data-pct-open` of
+   ours to hang it on and there is no need for one: `[open]` is the attribute the browser
+   writes, and reading it is the stylesheet's half of 0039. */
+.pct-accordion__marker {
+  flex: none;
+  color: var(--pct-accordion-marker-fg);
+  transition: rotate var(--pct-motion-transition-duration)
+    var(--pct-motion-transition-easing);
+}
+
+.pct-accordion__details[open] .pct-accordion__marker {
+  rotate: 180deg;
+}
+
+/* The panel keeps the page's own surface — a section of a page is as wide as the page, and an
+   inset on the inline axis would make it look like a card that is not one. That is the tabs'
+   panel exactly, and for the same reason. */
+.pct-accordion__panel {
+  padding-block-end: var(--pct-accordion-panel-padding-y);
+  padding-inline: var(--pct-accordion-heading-padding-x);
+}
+
+/* Forced-colors mode. The three states of the row are colours from the palette rather than
+   from the skin, and they are written at the specificity of the base rules they answer
+   (`@media` adds none — `lesson-70`).
+
+   The marker gives its own colour BACK to the row here, and that line is a measured one: with
+   `color` still coming from the token, the engine substitutes the marker independently of the
+   heading it stands in, so a refused section had a `GrayText` title beside a marker in some
+   other colour entirely. `currentColor` in the drawing resolves against the marker's own
+   `color`, which is exactly the thing being overridden — inheriting is what makes the pair one
+   colour again, and the mode's whole point is that the user's palette decides. */
+@media (forced-colors: active) {
+  .pct-accordion__heading {
+    color: CanvasText;
+  }
+
+  .pct-accordion__heading:hover:not([data-pct-disabled]) {
+    color: Highlight;
+    background: Canvas;
+  }
+
+  .pct-accordion__heading[data-pct-disabled] {
+    color: GrayText;
+  }
+
+  .pct-accordion__marker {
+    color: inherit;
+  }
+}

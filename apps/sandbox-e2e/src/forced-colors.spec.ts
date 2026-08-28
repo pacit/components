@@ -411,6 +411,43 @@ test.describe('forced-colors: active', () => {
   });
 
   /**
+   * The accordion has almost nothing to lose here, and that is the reading worth recording:
+   * whether a section is open is announced by the platform rather than drawn, so the mode
+   * cannot flatten the one state that matters. What it CAN flatten is the heading row's three
+   * colours, and the one this component has to keep apart from the rest is the refused
+   * section — the mode has exactly one word for it.
+   */
+  test('a section nobody may open says GrayText, and the rest say CanvasText', async ({
+    page,
+  }) => {
+    await visit(page, '/accordion', { media: FORCED });
+    const sys = await systemColors(page);
+
+    const ordinary = page
+      .getByTestId('item-open')
+      .locator('[data-pct-part="heading"]');
+    const refused = page
+      .getByTestId('item-refused')
+      .locator('[data-pct-part="heading"]');
+
+    expect(await styleOf(ordinary, 'color')).toBe(sys.CanvasText);
+    expect(await styleOf(refused, 'color')).toBe(sys.GrayText);
+
+    // The marker gives its colour back to the row in this mode, and the case exists because
+    // it did not at first: with `color` still coming from the token, the engine substituted
+    // the marker on its own and a refused section had a `GrayText` title beside a marker in a
+    // different colour. `currentColor` in the drawing resolves against the marker's own
+    // `color`, which is the thing the skin overrides — so inheriting is what makes the pair
+    // one colour.
+    expect(
+      await styleOf(
+        page.getByTestId('item-refused').locator('[data-pct-part="marker"]'),
+        'color',
+      ),
+    ).toBe(sys.GrayText);
+  });
+
+  /**
    * The chosen tab is the state this mode is most likely to level: it is told apart by a
    * colour and by an edge, and the mode substitutes both. The edge survives because it is
    * drawn on EVERY tab and only its colour differs — `Canvas` on a `Canvas` page for the ones
@@ -425,7 +462,9 @@ test.describe('forced-colors: active', () => {
 
     const strip = page.getByTestId('tabs-basic');
     const chosen = strip.locator('[data-pct-part="tab"][data-pct-chosen]');
-    const other = strip.locator('[data-pct-part="tab"]:not([data-pct-chosen])').first();
+    const other = strip
+      .locator('[data-pct-part="tab"]:not([data-pct-chosen])')
+      .first();
 
     expect(await styleOf(chosen, 'border-bottom-color')).toBe(sys.Highlight);
     expect(await styleOf(chosen, 'color')).toBe(sys.Highlight);

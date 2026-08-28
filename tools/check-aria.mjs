@@ -209,10 +209,31 @@ const COMMENT = /<!--[\s\S]*?-->/g;
 /** An opening tag with its attribute text; quoted values may hold `>`. */
 const OPENING_TAG = /<([a-zA-Z][\w-]*)((?:"[^"]*"|'[^']*'|[^>"'])*)>/g;
 /** The same tags counted without parsing, as the denominator of the parse. */
-const FOCUSABLE_COUNTER = /<(?:a|button|input|select|textarea)(?=[\s/>])/gi;
+const FOCUSABLE_COUNTER =
+  /<(?:a|button|input|select|summary|textarea)(?=[\s/>])/gi;
 const ATTRIBUTE = /([^\s=/>"']+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g;
 
-const FOCUSABLE_TAGS = new Set(['a', 'button', 'input', 'select', 'textarea']);
+/**
+ * The tags a user can land on with no `tabindex` written anywhere. `summary` is the newest and
+ * the one that shows what the list is FOR: it is the disclosure the platform ships, it takes
+ * focus and it is announced as a control, and until the accordion was built this gate could
+ * not see it — a component whose only widget was a `<summary>` counted zero widgets, was asked
+ * for no name inputs, and passed green with a heading a consumer had no way to name.
+ *
+ * The reading is deliberately coarser than the platform's: a `<summary>` is focusable only as
+ * the first summary child of a `<details>`, and one written anywhere else is not. Counting
+ * that one too costs a false demand for name inputs in a template that has no business holding
+ * such a tag at all — where the alternative, the state this list was in, costs a component
+ * that cannot be named and a gate that says nothing about it.
+ */
+const FOCUSABLE_TAGS = new Set([
+  'a',
+  'button',
+  'input',
+  'select',
+  'summary',
+  'textarea',
+]);
 
 /**
  * The ARIA roles a name belongs on although the element itself never takes focus. A
@@ -283,7 +304,10 @@ const readTemplate = (content) => {
   return {
     widgets: tags
       .filter((t) => isWidget(t.tag, t.attrs))
-      .map((t) => ({ ...t, composite: COMPOSITE_ROLES.has(t.attrs.get('role')) })),
+      .map((t) => ({
+        ...t,
+        composite: COMPOSITE_ROLES.has(t.attrs.get('role')),
+      })),
     parsed: tags.filter((t) => FOCUSABLE_TAGS.has(t.tag)).length,
     counted: countOf(text, FOCUSABLE_COUNTER),
   };

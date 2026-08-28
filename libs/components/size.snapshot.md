@@ -30,6 +30,7 @@ before an application ships them.
 
 ```
 . 3408 ./core @angular/core
+./accordion 11210 ./core,./icon @angular/common,@angular/core
 ./button 6897 ./core @angular/core
 ./checkbox 14781 ./core,./icon @angular/common,@angular/core
 ./core 8137 - @angular/core

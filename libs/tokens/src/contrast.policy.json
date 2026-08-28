@@ -965,6 +965,44 @@
       "severity": "error"
     },
     {
+      "$comment": "The line between two sections is a separator and not the boundary of a control: what identifies a section is the heading on it, and whether it is open is announced by the platform rather than drawn by this line. SC 1.4.11 covers what is required to identify components and their states, which this is not, so it is measured at `warn` for the reason the disabled states are: being exempt from a requirement is no reason to stop measuring.",
+      "name": "UI: accordion — the line between sections",
+      "fg": "pct.accordion.item-border",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "accordion \u2014 a heading",
+      "fg": "pct.accordion.heading-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "$comment": "The hovered heading is measured against the tint the hover paints under it and not against the page \u2014 the tabs' rule, one component over: the two are different colours the moment a skin gives the row a surface of its own.",
+      "name": "accordion \u2014 a hovered heading",
+      "fg": "pct.accordion.heading-fg-hover",
+      "bg": "pct.accordion.heading-bg-hover",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "accordion \u2014 a disabled heading",
+      "fg": "pct.accordion.heading-fg-disabled",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "warn"
+    },
+    {
+      "$comment": "The marker says which way the section will move, and it is the only thing in the row that says it in a drawing. It is measured at `UI` rather than as text because it is a shape and not a letter, and as an error because the direction it points IS the state of the disclosure.",
+      "name": "UI: accordion \u2014 the marker",
+      "fg": "pct.accordion.marker-fg",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
       "$comment": "The rail under the strip is a separator and not the boundary of a control: what identifies a tab is its text, and what identifies the CHOSEN one is the entry below plus the label pair above it — both measured as errors. SC 1.4.11 covers what is required to identify components and their states, which this line is not, so it is measured at `warn` for the reason the disabled states are: being exempt from a requirement is no reason to stop measuring.",
       "name": "UI: tabs rail",
       "fg": "pct.tabs.list-border",

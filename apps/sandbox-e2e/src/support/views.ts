@@ -23,6 +23,7 @@ export const SBX_ROUTES = [
   '/tooltip',
   '/popover',
   '/menu',
+  '/accordion',
   '/tabs',
   '/toast',
   '/size',

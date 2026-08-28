@@ -146,6 +146,15 @@ export const SBX_VIEWS: readonly SbxView[] = [
     load: () => import('./views/menu/menu-view').then((m) => m.MenuView),
   },
   {
+    path: 'accordion',
+    title: 'Accordion',
+    summary:
+      'A stack of sections, and how little of a disclosure is ours to write.',
+    group: 'components',
+    load: () =>
+      import('./views/accordion/accordion-view').then((m) => m.AccordionView),
+  },
+  {
     path: 'tabs',
     title: 'Tabs',
     summary:

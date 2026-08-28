@@ -1,0 +1,5 @@
+{
+  "point": 3,
+  "check": "inputs",
+  "$reason": "The state `pct-accordion-item` would have been in before `summary` was added to the focusable tags. A `<summary>` is the disclosure the platform ships: it takes focus with no `tabindex` written anywhere and it is announced as a control — so the old list saw nothing here, counted zero widgets, asked for no name inputs, and passed green a heading a consumer had no way to name. Nothing else in the file is unusual, which is the point."
+}

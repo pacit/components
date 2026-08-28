@@ -324,6 +324,19 @@ test.describe('Appearance — compared with the baseline', () => {
   });
 
   /**
+   * A stack of sections, one of them open. What a picture here has to hold is the line between
+   * the sections, the heading row and the marker's two positions — the closed sections and the
+   * open one are in the same shot, so the quarter turn is a difference inside one image rather
+   * than between two.
+   */
+  test('accordion-stack', async ({ page }) => {
+    await stage(page, '/accordion');
+    await expect(page.getByTestId('demo-basic')).toHaveScreenshot(
+      'accordion-stack.png',
+    );
+  });
+
+  /**
    * The strip and the panel showing under it. The card and not the viewport: a tabs component
    * draws nothing outside the page's tree, so what a picture here has to hold is the rail, the
    * mark on the chosen label and the three colours the labels take — including the disabled

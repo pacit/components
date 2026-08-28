@@ -3368,3 +3368,48 @@ meets no extra stop. Both halves are now a test, because both are invisible from
 nothing in the template asks for either, and the next person to wonder why a `press()` on a
 scroll container behaves differently in Safari should find the answer written down rather than
 measure it again.
+
+### <a id="lesson-127"></a>`lesson-127` — A heading inside a `<summary>` survives, because a `<summary>` is not a button
+
+The APG's accordion pattern wants each header to be a heading, so that a screen-reader user can
+jump between sections with `H`. The obvious way to give a `<details>` one is to write the
+heading inside the `<summary>` — and the obvious reason to expect that not to work is ARIA's
+**presentational children** rule: the contents of a `role="button"` are flattened into its
+accessible name, and a heading inside one is dropped from the tree.
+
+Measured before the accordion was written, and it survives: chromium's own accessibility tree,
+read through CDP, holds two nodes for `<summary><h3>Heading inside</h3></summary>` — a
+`DisclosureTriangle` named "Heading inside" with `expanded`, and a separate `heading` at level 3. Playwright's `ariaSnapshot()` agrees in all three engines.
+
+The reason is the half of the mapping that is easy to skip: a `<summary>` is **not** mapped to
+`button`. Chromium calls it a disclosure triangle, and that role has no presentational-children
+rule to apply. The lesson generalises past this one tag — "the children of a control are
+flattened" is a fact about specific ROLES, and reading it as a fact about controls is what
+would have cost this component the navigation the pattern exists for.
+
+The reading that ships is the one taken in an engine, which is why the title is a real
+`<h2>`…`<h6>` and not a `role="heading"` with an `aria-level`: the second was checked only in
+the testing tool's tree, and that tree is not the browser's ([`lesson-125`](#lesson-125)).
+
+### <a id="lesson-128"></a>`lesson-128` — `preventDefault()` is the only way to refuse a disclosure, and it takes the keyboard with it
+
+The platform has no disabled `<details>`. There is no attribute, no property and nothing in the
+element's IDL that says "this one does not open" — which is awkward for a library whose every
+other control has a `disabled` input.
+
+What works is one line, and it works because of how the element opens at all: `<summary>`'s
+activation behaviour is a **click**, so cancelling the click cancels the toggle. Measured in
+chromium, firefox and webkit: with a `click` listener that calls `preventDefault()`, the
+section stays closed under the pointer — and under `Enter`, because `Enter` on a `<summary>`
+arrives as a click too. One listener covers both, and there is no key map to keep in step with
+the pointer.
+
+What it does **not** do is take the section out of the accessibility tree or out of the tab
+order, which is the reason to prefer it over the alternatives even if there were any: the
+heading is still announced, still says whether it is open, and still carries `aria-disabled`.
+A section nobody may open still names what is inside it — the argument `pct-tabs` makes for
+`aria-disabled` over the native attribute, one component over.
+
+The corollary is the part to watch: a section that is **open** when it is disabled stays open,
+because refusing the press is all this does. That is the correct reading of "disabled" here and
+it is the one arrangement in which a consumer can show a section the user may not close.

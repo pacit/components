@@ -1,0 +1,100 @@
+<h2 class="view__title">Accordion</h2>
+<p class="muted view__intro">
+  A stack of sections a user opens and closes. Each one is a
+  <code>&lt;details&gt;</code> with a <code>&lt;summary&gt;</code>, so the
+  press, the state a screen reader announces, the place in the tab order and the
+  browser's own find-in-page all belong to the platform.
+</p>
+
+<sbx-demo
+  heading="A stack of sections"
+  summary="Several may stand open at once, which is what a <details> with no name does. Tab reaches every heading, Enter and Space open one, and none of those three is code in this library."
+  [reqs]="['req-api-platform', 'req-a11y-built-in']"
+  data-testid="demo-basic"
+>
+  <pct-accordion data-testid="accordion-basic">
+    <pct-accordion-item
+      label="Shipping"
+      [(open)]="shipping"
+      data-testid="item-shipping"
+    >
+      <p class="view__panel-body">
+        Delivered in two working days, and a word that lives nowhere else on
+        this page: marmalade.
+      </p>
+    </pct-accordion-item>
+    <pct-accordion-item label="Payment" data-testid="item-payment">
+      <p class="view__panel-body">
+        Card or transfer, and a word of its own: parsnip.
+      </p>
+    </pct-accordion-item>
+    <pct-accordion-item label="Returns" data-testid="item-returns">
+      <p class="view__panel-body">Thirty days, no questions.</p>
+    </pct-accordion-item>
+  </pct-accordion>
+</sbx-demo>
+
+<sbx-demo
+  heading="One at a time"
+  summary="exclusive gives every section the same name, and from there the closing of the others is the browser's — measured in all three engines, with no bookkeeping of ours."
+  [reqs]="['req-api-platform']"
+  data-testid="demo-exclusive"
+>
+  <pct-accordion exclusive data-testid="accordion-exclusive">
+    <pct-accordion-item label="First" data-testid="item-first">
+      <p class="view__panel-body">Opening the next one closes this.</p>
+    </pct-accordion-item>
+    <pct-accordion-item label="Second" data-testid="item-second">
+      <p class="view__panel-body">And opening the first closes this.</p>
+    </pct-accordion-item>
+    <pct-accordion-item label="Third" data-testid="item-third">
+      <p class="view__panel-body">Three is enough to see it happen twice.</p>
+    </pct-accordion-item>
+  </pct-accordion>
+</sbx-demo>
+
+<sbx-demo
+  heading="A section that will not move"
+  summary="The platform has no disabled disclosure, so the press is refused instead: aria-disabled says so to a reader, and the heading keeps its place in the tab order — a section nobody may open still names what is in it."
+  [reqs]="['req-a11y-built-in']"
+  data-testid="demo-disabled"
+>
+  <pct-accordion data-testid="accordion-disabled">
+    <pct-accordion-item label="Open to anyone" data-testid="item-open">
+      <p class="view__panel-body">An ordinary section.</p>
+    </pct-accordion-item>
+    <pct-accordion-item
+      label="Not yours to open"
+      disabled
+      data-testid="item-refused"
+    >
+      <p class="view__panel-body">Nothing here yet.</p>
+    </pct-accordion-item>
+  </pct-accordion>
+</sbx-demo>
+
+<sbx-demo
+  heading="The level is the page's"
+  summary="Every heading is a real h2…h6, because the point of it being a heading is that a screen-reader user jumps between sections with H — and that reads the document's outline."
+  [reqs]="['req-a11y-built-in', 'req-a11y-wcag']"
+  data-testid="demo-level"
+>
+  <pct-accordion [headingLevel]="4" data-testid="accordion-level">
+    <pct-accordion-item label="An h4 section" data-testid="item-level">
+      <p class="view__panel-body">Under the h3 this card's heading is.</p>
+    </pct-accordion-item>
+  </pct-accordion>
+</sbx-demo>
+
+<sbx-demo
+  heading="On its own"
+  summary="A single item outside any group is a plain disclosure: no shared name, no group to be exclusive within, and the default h3."
+  [reqs]="['req-api-platform']"
+  data-testid="demo-lone"
+>
+  <pct-accordion-item label="More about this" data-testid="item-lone">
+    <p class="view__panel-body">
+      One section, standing by itself, and a word only it has: rutabaga.
+    </p>
+  </pct-accordion-item>
+</sbx-demo>

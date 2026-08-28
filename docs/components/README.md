@@ -8,27 +8,28 @@ from the same person having built it in the same mode of attention. That scales 
 a second person nor to a twentieth component. A form with an empty row is a gap visible to
 a machine; prose with a missing paragraph is not.
 
-| component                     | entrypoint                   | role                                |
-| ----------------------------- | ---------------------------- | ----------------------------------- |
-| [`PctButton`](button.md)      | `@pacit/components/button`   | button                              |
-| [`PctField`](field.md)        | `@pacit/components/field`    | form control wrapper                |
-| [`PctText`](text.md)          | `@pacit/components/field`    | text field on a native `<input>`    |
-| [`PctAutosize`](textarea.md)  | `@pacit/components/field`    | a textarea as tall as its text      |
-| [`PctNumber`](number.md)      | `@pacit/components/field`    | number field                        |
-| [`PctCheckbox`](checkbox.md)  | `@pacit/components/checkbox` | checkbox                            |
-| [`PctRadioGroup`](radio.md)   | `@pacit/components/radio`    | group of mutually exclusive options |
-| [`PctSwitch`](switch.md)      | `@pacit/components/switch`   | a setting that takes effect at once |
-| [`PctSlider`](slider.md)      | `@pacit/components/slider`   | a position on a numeric continuum   |
-| [`PctDate`](date.md)          | `@pacit/components/date`     | a calendar day, typed or picked     |
-| [`PctCalendar`](calendar.md)  | `@pacit/components/date`     | one month of days as a grid         |
-| [`PctSelect`](select.md)      | `@pacit/components/select`   | choice list with a panel of its own |
-| [`PctMultiSelect`](select.md) | `@pacit/components/select`   | the same list, holding many answers |
-| [`PctDialog`](dialog.md)      | `@pacit/components/dialog`   | modal dialog                        |
-| [`PctTooltip`](tooltip.md)    | `@pacit/components/tooltip`  | a sentence about a control          |
-| [`PctPopover`](popover.md)    | `@pacit/components/popover`  | a panel of content on a live page   |
-| [`PctMenu`](menu.md)          | `@pacit/components/menu`     | a list of commands to choose from   |
-| [`PctTabs`](tabs.md)          | `@pacit/components/tabs`     | one section of a page at a time     |
-| [`PctToaster`](toast.md)      | `@pacit/components/toast`    | a message on top of the page        |
+| component                      | entrypoint                    | role                                   |
+| ------------------------------ | ----------------------------- | -------------------------------------- |
+| [`PctButton`](button.md)       | `@pacit/components/button`    | button                                 |
+| [`PctField`](field.md)         | `@pacit/components/field`     | form control wrapper                   |
+| [`PctText`](text.md)           | `@pacit/components/field`     | text field on a native `<input>`       |
+| [`PctAutosize`](textarea.md)   | `@pacit/components/field`     | a textarea as tall as its text         |
+| [`PctNumber`](number.md)       | `@pacit/components/field`     | number field                           |
+| [`PctCheckbox`](checkbox.md)   | `@pacit/components/checkbox`  | checkbox                               |
+| [`PctRadioGroup`](radio.md)    | `@pacit/components/radio`     | group of mutually exclusive options    |
+| [`PctSwitch`](switch.md)       | `@pacit/components/switch`    | a setting that takes effect at once    |
+| [`PctSlider`](slider.md)       | `@pacit/components/slider`    | a position on a numeric continuum      |
+| [`PctDate`](date.md)           | `@pacit/components/date`      | a calendar day, typed or picked        |
+| [`PctCalendar`](calendar.md)   | `@pacit/components/date`      | one month of days as a grid            |
+| [`PctSelect`](select.md)       | `@pacit/components/select`    | choice list with a panel of its own    |
+| [`PctMultiSelect`](select.md)  | `@pacit/components/select`    | the same list, holding many answers    |
+| [`PctDialog`](dialog.md)       | `@pacit/components/dialog`    | modal dialog                           |
+| [`PctTooltip`](tooltip.md)     | `@pacit/components/tooltip`   | a sentence about a control             |
+| [`PctPopover`](popover.md)     | `@pacit/components/popover`   | a panel of content on a live page      |
+| [`PctMenu`](menu.md)           | `@pacit/components/menu`      | a list of commands to choose from      |
+| [`PctTabs`](tabs.md)           | `@pacit/components/tabs`      | one section of a page at a time        |
+| [`PctToaster`](toast.md)       | `@pacit/components/toast`     | a message on top of the page           |
+| [`PctAccordion`](accordion.md) | `@pacit/components/accordion` | a stack of sections, opened and closed |
 
 ## The order of the components to come
 
@@ -134,6 +135,15 @@ The order follows **architectural debt**, not popularity:
    answers by choosing its tab. A **disabled** panel is hidden outright, because find-in-page
    is a promise of a way in and a disabled tab has none
    ([0045](../decisions/0045-a-panel-nobody-chose-is-still-text-in-the-document.md)).
+   The **accordion** is built, and it is the smallest component in the library because almost
+   none of it is code: a section is a `<details>` with a `<summary>`, so the press, the
+   `expanded` state, `Enter` and `Space`, the tab order and the browser's find-in-page are the
+   platform's, and `exclusive` is one shared `name` attribute that makes the browser close the
+   others — measured in three engines. What was left over is a real `<h2>`…`<h6>` inside the
+   summary, which survives because a `<summary>` is not a button
+   ([`lesson-127`](../lessons.md#lesson-127)); `preventDefault()` as the only way to refuse a
+   press ([`lesson-128`](../lessons.md#lesson-128)); and an `open` model written from `toggle`
+   ([0046](../decisions/0046-a-disclosure-is-the-platforms-and-so-is-the-group-it-belongs-to.md)).
 7. **Table / DataGrid** — has to stand on a **headless core** separated from rendering.
 
 Before item 1 the **behaviour layer in `core`** has to exist: list navigation (private methods

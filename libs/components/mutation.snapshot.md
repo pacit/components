@@ -20,6 +20,8 @@ Columns: file · score · killed (of that, by the clock) · surviving · not cov
 ignored. Tolerance: ±2 of a percentage point.
 
 ```
+libs/components/accordion/src/accordion-item.ts 100.00 16(0) 0 0 1
+libs/components/accordion/src/accordion.ts 75.00 3(0) 1 0 1
 libs/components/button/src/button.ts 100.00 7(0) 0 0 2
 libs/components/checkbox/src/checkbox.ts 89.83 53(0) 6 0 6
 libs/components/core/src/announce.ts 94.44 34(0) 2 0 0
@@ -31,9 +33,9 @@ libs/components/core/src/list.ts 99.07 107(0) 1 0 0
 libs/components/core/src/modal.ts 80.00 48(1) 8 4 0
 libs/components/core/src/motion.ts 91.38 53(3) 5 0 0
 libs/components/core/src/overlay.ts 100.00 15(0) 0 0 2
-libs/components/core/src/placement.ts 98.46 64(7) 1 0 0
+libs/components/core/src/placement.ts 98.46 64(6) 1 0 0
 libs/components/core/src/template.ts 96.00 24(0) 1 0 0
-libs/components/core/src/texts.ts 96.30 26(0) 1 0 0
+libs/components/core/src/texts.ts 100.00 27(5) 0 0 0
 libs/components/date/src/calendar.ts 73.60 131(0) 45 2 4
 libs/components/date/src/date.ts 66.18 135(0) 67 2 8
 libs/components/date/src/day.ts 95.83 138(2) 6 0 0
@@ -62,5 +64,5 @@ libs/components/toast/src/toast-viewport.ts 95.00 19(0) 1 0 0
 libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0
 libs/components/toast/src/toaster.ts 71.71 109(0) 42 1 0
 libs/components/tooltip/src/tooltip.ts 70.54 182(0) 71 5 8
-TOTAL 81.52 3291/4037
+TOTAL 81.61 3311/4057
 ```

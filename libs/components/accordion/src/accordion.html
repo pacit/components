@@ -1,0 +1,12 @@
+<!--
+  The sections, exactly where the consumer wrote them. This component renders no chrome of its
+  own: an accordion is a stack of disclosures, and a stack is a rule in the stylesheet rather
+  than an element in the tree.
+
+  There is no role here on purpose. The APG's optional `role="region"` per panel is what a
+  group of `<details>` would collide with — a landmark for every section is six landmarks in
+  a six-section accordion, which is the proliferation the pattern's own note warns about, and
+  the platform already publishes each section as a `group`
+  (`docs/decisions/0046-a-disclosure-is-the-platforms-and-so-is-the-group-it-belongs-to.md`).
+-->
+<ng-content />

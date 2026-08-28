@@ -1,0 +1,88 @@
+<!--
+  The section. Everything a user does to it is the element's own: `[open]` is a property the
+  platform also writes, `name` is what ties the group together, and `toggle` is how both of
+  them are reported back. There is no `aria-expanded`, no `role`, no `aria-controls` and no
+  key handler — writing any of them would be a second opinion about a state the platform
+  already publishes (0039).
+-->
+<details
+  class="pct-accordion__details"
+  [attr.name]="groupName()"
+  [open]="open()"
+  (toggle)="onToggle($event)"
+>
+  <!--
+    The heading the user presses. `aria-disabled` and not a native attribute, because a
+    `<summary>` has none — what refuses the press is `preventDefault()` in `onPress`, and the
+    flag beside it is what a reader announces.
+
+    The name is bound from the two inputs and never written as an attribute on the tag: the
+    host carries no role, so an `aria-label` there would be ignored, and `check-aria`'s
+    points 3 and 4 are that rule read off this template.
+  -->
+  <summary
+    class="pct-accordion__heading"
+    data-pct-part="heading"
+    [attr.aria-disabled]="disabled() ? 'true' : null"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+    [attr.data-pct-disabled]="disabled() ? '' : null"
+    (click)="onPress($event)"
+  >
+    <!--
+      A real heading element, and five of them, because the level is the consumer's. It is
+      not `role="heading"` with an `aria-level`: the accessible tree of a browser was
+      measured for the `<h3>` and the tree of a testing tool is not the browser's
+      (`lesson-125`), so the reading that was taken in an engine is the one that ships.
+
+      The branches are alternatives of one `@switch`, so exactly one heading stands in the
+      DOM at a time — which is what `check-aria` point 4 asks about elements that carry a
+      name.
+    -->
+    @switch (headingLevel()) { @case (2) {
+    <h2 class="pct-accordion__title">{{ label() }}</h2>
+    } @case (4) {
+    <h4 class="pct-accordion__title">{{ label() }}</h4>
+    } @case (5) {
+    <h5 class="pct-accordion__title">{{ label() }}</h5>
+    } @case (6) {
+    <h6 class="pct-accordion__title">{{ label() }}</h6>
+    } @default {
+    <h3 class="pct-accordion__title">{{ label() }}</h3>
+    } }
+
+    <!--
+      The marker. The platform draws one of its own — a disclosure triangle that is a
+      different shape in every engine — and the stylesheet takes it away, because a design
+      system that cannot say what its own chevron looks like has stopped being one. It turns
+      a half circle on `[open]`, which is a rule over the platform's state and not a state of
+      ours.
+    -->
+    <pct-icon
+      class="pct-accordion__marker"
+      data-pct-part="marker"
+      name="chevron-down"
+    >
+      <svg
+        viewBox="0 0 16 16"
+        width="100%"
+        height="100%"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        focusable="false"
+      >
+        <path d="M4 6l4 4 4-4" />
+      </svg>
+    </pct-icon>
+  </summary>
+
+  <!--
+    The content, exactly as the consumer wrote it, and rendered whether the section is open or
+    not: what hides it is `::details-content`, the platform's own `content-visibility: hidden`,
+    which is why find-in-page can still reach it (0045, 0046).
+  -->
+  <div class="pct-accordion__panel" data-pct-part="panel"><ng-content /></div>
+</details>
