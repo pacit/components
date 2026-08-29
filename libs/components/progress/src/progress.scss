@@ -1,0 +1,123 @@
+/* The host is the box the bar fills — it paints nothing itself, and it is the containing
+   block the fill is positioned against, which is the whole reason it is `relative`. */
+:host {
+  display: block;
+  position: relative;
+}
+
+/* The `<progress>` element is the groove. Painting it needs `appearance: none` in every
+   engine, and that switch is not free: it takes the engine's own indeterminate animation with
+   it and hands back nothing — an indeterminate bar is then empty in Chromium and WebKit and
+   FULL in Firefox, where `::-moz-progress-bar` keeps its width. So the three parts the
+   engines paint are cleared here and the fill below is drawn instead
+   ([`lesson-133`](../../../../docs/lessons.md#lesson-133), 0049). */
+.pct-progress__track {
+  display: block;
+  appearance: none;
+  inline-size: 100%;
+  block-size: var(--pct-progress-track-height);
+  border: none;
+  border-radius: var(--pct-progress-track-radius);
+  background: var(--pct-progress-track-bg);
+}
+
+.pct-progress__track::-webkit-progress-bar {
+  background: transparent;
+}
+
+.pct-progress__track::-webkit-progress-value {
+  background: transparent;
+}
+
+.pct-progress__track::-moz-progress-bar {
+  background: transparent;
+}
+
+/* The fill: a sibling over the element, because a `<progress>` renders no children in any
+   engine and its own value part cannot be painted without the switch above. The width is the
+   binding's; everything else is here. */
+.pct-progress__fill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  inline-size: 0;
+  border-radius: var(--pct-progress-track-radius);
+  background: var(--pct-progress-fill-bg);
+  /* The duration is the motion axis's, which is where `prefers-reduced-motion` is answered
+     for the whole library — the sheet repeats no media query of its own (`req-a11y-motion`). */
+  transition: inline-size var(--pct-motion-transition-duration)
+    var(--pct-motion-transition-easing);
+}
+
+/* Indeterminate: a band that travels the groove. It moves by `inset-inline-start` and not by
+   a `translateX`, for the reason the switch's thumb and the drawer's slide are written the
+   same way — `translateX` names an axis the writing direction may have mirrored, and the
+   logical property already knows which edge it starts from (`req-token-logical`). The
+   duration is the LOOP token, the one a reduced-motion setting slows instead of stopping: a
+   band that stood still would stop saying that anything is under way. */
+:host([data-pct-indeterminate]) .pct-progress__fill {
+  inline-size: var(--pct-progress-fill-size);
+  animation: pct-progress-band var(--pct-motion-loop-duration) linear infinite;
+  /* The width does not change while the band travels, so the transition above has nothing to
+     do here — and left on, it would fight the animation at the wrap. */
+  transition: none;
+}
+
+@keyframes pct-progress-band {
+  from {
+    inset-inline-start: calc(-1 * var(--pct-progress-fill-size));
+  }
+
+  to {
+    inset-inline-start: 100%;
+  }
+}
+
+:host([data-pct-size='sm']) {
+  --pct-progress-track-height: var(--pct-progress-track-height-sm);
+}
+
+:host([data-pct-size='lg']) {
+  --pct-progress-track-height: var(--pct-progress-track-height-lg);
+}
+
+/* Forced colours. Two things are measured here rather than assumed
+   ([`lesson-134`](../../../../docs/lessons.md#lesson-134)):
+
+   a background COLOUR named as a system colour survives the mode, which is why the fill is an
+   element with a background and not a moving gradient — a `linear-gradient` is dropped
+   outright in this mode, so a band painted that way is invisible exactly where the contrast
+   matters most;
+
+   and the groove keeps its extent through an `outline` rather than a `border`, because the
+   fill is positioned against the host and a border would put a line under it. `@media` adds
+   no specificity, so both rules are written out in full
+   ([`lesson-70`](../../../../docs/lessons.md#lesson-70)). */
+@media (forced-colors: active) {
+  .pct-progress__track {
+    background: Field;
+    outline: 1px solid CanvasText;
+  }
+
+  /* The three engine parts are cleared here as well as above, and the repetition is the
+     point: a pseudo-element's rule outranks the host's, so the groove's own `Field` would
+     give way to a `background` declared for `::-webkit-progress-bar` in the base sheet —
+     `@media` adds no specificity to help it. `transparent` survives the substitution (the
+     mode leaves it alone, which is why the groove really is the element's background), so
+     what this block changes is the cascade and not the drawing. */
+  .pct-progress__track::-webkit-progress-bar {
+    background: transparent;
+  }
+
+  .pct-progress__track::-webkit-progress-value {
+    background: transparent;
+  }
+
+  .pct-progress__track::-moz-progress-bar {
+    background: transparent;
+  }
+
+  .pct-progress__fill {
+    background: Highlight;
+  }
+}

@@ -1,0 +1,6 @@
+<progress
+  class="pct-widget__track"
+  [attr.value]="value()"
+  [attr.max]="100"
+></progress>
+<div class="pct-widget__fill"></div>

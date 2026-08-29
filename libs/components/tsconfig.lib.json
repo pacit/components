@@ -26,6 +26,7 @@
     "popover/**/*.ts",
     "menu/**/*.ts",
     "pagination/**/*.ts",
+    "progress/**/*.ts",
     "field/**/*.ts",
     "icon/**/*.ts"
   ],

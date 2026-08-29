@@ -1126,6 +1126,28 @@
       "bg": "pct.surface",
       "level": "UI",
       "severity": "error"
+    },
+    {
+      "name": "UI: the filled part of a progress bar against the groove",
+      "fg": "pct.progress.fill-bg",
+      "bg": "pct.progress.track-bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: the filled part of a progress bar against the page",
+      "fg": "pct.progress.fill-bg",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "$comment": "The same reading as the slider's rail, and the same answer: what identifies a progress bar is the FILL, the groove is the road it travels, and no one grey clears 3:1 against both the page and the fill.",
+      "name": "UI: the groove of a progress bar against the page",
+      "fg": "pct.progress.track-bg",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
     }
   ]
 }

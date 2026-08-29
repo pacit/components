@@ -144,4 +144,35 @@ test.describe('Writing direction — the layout mirrors in dir="rtl"', () => {
     const rtlFirst = await boxOf(first);
     expect(rtlFirst.x).toBeLessThan(rtlPrevious.x);
   });
+
+  /**
+   * A progress bar has one direction and it is the reading direction: the fill grows from the
+   * start edge. Nothing in the stylesheet knows which edge that is — the fill is placed by
+   * `inset-inline-start` and the band's keyframes animate the same property, so the mirroring
+   * is the platform's arithmetic rather than a rule of ours (`req-token-logical`).
+   *
+   * Geometry, not attributes: a physical `left` here would leave the DOM intact and the
+   * picture wrong, which is the case this file exists for.
+   */
+  test('a progress bar fills from the other edge', async ({ page }) => {
+    await visit(page, '/progress');
+    const bar = page.getByTestId('progress-value');
+    const groove = bar.locator('[data-pct-part="track"]');
+    const fill = bar.locator('[data-pct-part="fill"]');
+
+    const ltrGroove = await boxOf(groove);
+    const ltrFill = await boxOf(fill);
+    expect(ltrFill.x).toBeCloseTo(ltrGroove.x, 0);
+
+    await setRtl(page);
+    expect(await directionOf(page, 'pct-progress')).toBe('rtl');
+
+    const rtlGroove = await boxOf(groove);
+    const rtlFill = await boxOf(fill);
+    expect(rtlFill.x + rtlFill.width).toBeCloseTo(
+      rtlGroove.x + rtlGroove.width,
+      0,
+    );
+    expect(rtlFill.x).toBeGreaterThan(rtlGroove.x);
+  });
 });

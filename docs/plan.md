@@ -277,6 +277,79 @@ decision says it is"` goes red the day a second engine ships it
     and it is inside a **behavioural** case as well. The dialog's scroll-lock test fails 5 of 5
     in webkit on `main` with this work stashed and passes 4 of 5 with it in place, on a page
     whose only difference is one more row in the navigation list
+  - _the progress bar is done_ (6 of 13). It **is** a `<progress>`, and what that buys is one
+    sentence: an element with no `value` attribute reaches the accessibility tree with **no
+    value at all**, which is what indeterminate is — where an author writing `aria-valuenow` by
+    hand has to choose a number and every number is a claim nobody has measured. So the role,
+    the bounds, the value and the indeterminate state are the element's, and this component
+    writes no ARIA anywhere. What the platform would **not** do is the paint: `appearance: none`
+    is the price of styling the element and it takes the engine's own indeterminate animation
+    with it, leaving an **empty** groove in chromium and webkit and a **full** one in firefox
+    off the same two declarations. The fill is therefore a sibling drawn over the element — the
+    checkbox's shape one component over — and the band is an element rather than a gradient
+    because a forced-colours mode drops gradients outright. See
+    [0049](decisions/0049-a-progress-bar-is-the-platforms-element-under-our-paint.md),
+    [`lesson-133`](lessons.md#lesson-133), [`lesson-134`](lessons.md#lesson-134),
+    [`lesson-135`](lessons.md#lesson-135)
+  - gate: `apps/sandbox-e2e/src/progress.spec.ts` (11 × 3) plus `/progress` in the axe and
+    hydration audits through `SBX_ROUTES`, one forced-colours reading, one reduced-motion
+    reading, one RTL geometry case, two screenshots and 31 unit cases. Cost `./progress`
+    **7029 B** on `./core` alone — no CDK, no `./icon`, no `@angular/common`, and the smallest
+    component entrypoint in the library by 4181 B (the accordion held that place at 11210)
+  - and it cost everybody else **nothing**: no `PCT_TEXTS` key, so not one other row of the size
+    snapshot moved. The toast was +200 B per entrypoint, the drawer +20, the pagination +91;
+    this is the first component in five whose price is paid by its own consumers alone, and the
+    reason is that it draws no text — the name is the consumer's sentence, through
+    `ariaLabelledby`
+  - it made **`check-aria` read one thing more**, the third component in a row to do so. A
+    `<progress>` is focusable in no engine and carries no `role` attribute, so both of the
+    gate's ways of finding a widget were shut and the component would have passed green with its
+    name inputs deleted. There is a third list now — `NAMED_TAGS`, the tags whose IMPLICIT role
+    is announced with a name (`progress`, `meter`) — and `progress-without-inputs` is its
+    control. That is **4.20** widened rather than closed, and the item's note says why
+  - **the band's direction is the measurement that decided how it is written.** It travels by
+    `inset-inline-start` and not by a `translateX`, which is the switch's and the drawer's rule
+    applied to an ANIMATION for the first time: sampled over six frames in three engines, the
+    band runs start-to-end under `ltr` and end-to-start under `rtl` with no rule of its own to
+    reverse it
+  - **`check-styles` caught the forced-colours block on its first run**, and correctly: a
+    pseudo-element's rule outranks its host's, so the groove's `Field` gave way to the
+    `background` the base sheet declares for `::-webkit-progress-bar`. That is
+    [`lesson-70`](lessons.md#lesson-70) at a selector nobody would think to repeat — the three
+    engine parts are cleared inside the mode as well now
+  - **the suite's own red was the step's, and it is worth the sentence.** The new band case
+    read `animation-duration` once and got an **empty string** in webkit, under 22 workers, on a
+    view routed lazily — a reading taken before the first style resolution, where empty is
+    indistinguishable from wrong. It waits for the value now (`toHaveCSS`), and the direction is
+    measured on the same keyframes deliberately slowed to six seconds, because a 600 ms loop
+    sampled by a process that can be descheduled for longer than a cycle is aliasing rather than
+    measurement: two samples a cycle apart look like stillness and three look like travel the
+    other way. Recorded under **4.2**, with the calendar's own flake beside it
+  - **the mutation run found eight survivors, and they split four and four.** Four were the
+    dev-mode warning's own sentence: the test matched its first clause, so the other three
+    quarters could be blanked and nothing said so — which matters more here than it usually
+    would, because this component invents no name and that sentence IS what stands between a
+    consumer and an unnamed `progressbar`. The case reads four fragments now (both input names,
+    the reason there is no default, and the closing clause), and `progress.ts` goes
+    **84.62 → 92.31**
+  - the other four are **equivalent, and proved so by hand rather than argued**: `isDevMode()`
+    forced to `true` is the drawer's shape (no dev-mode test can tell it from the truth), and
+    the three in the `value` transform are arithmetic — `value === undefined` dropped still
+    answers `null`, because `Number(undefined)` is `NaN` and fails `isFinite`; and
+    `typeof value === 'number'` dropped changes nothing, because `Number(n)` of a number is
+    that number. Applied by hand, both survive a green 31-case run, which is the reading that
+    settles it
+  - and one attempt at that reading **did not compile**, which is worth the line: Stryker's
+    mutant `false ? value : Number(value)` is fine at runtime and is a type error in the
+    source, because `value` is `unknown` there. A mutant is applied after the compiler, so a
+    hand-check of one has to be written in a form the compiler accepts — the runtime-equivalent
+    `Number(value)` here
+  - recorded: `progress.ts` **92.31 48(0) 4 0 2**, and the library is **4297 mutants at 82.41%**
+    in **56 m 38 s** (4130 at 81.89% before this step), counted the gate's way rather than
+    Stryker's — its own line reads 4184 at 82.60%, the difference being the errored mutants
+    **4.6** has no column for. The whole file's mutants die by
+    assertion — the clock column reads zero, which is what a component with no timing in it
+    looks like
 
 - [ ] **1.2 — table / datagrid** on a headless core (column model, sorting, filtering, grouping,
       selection as signals) separated from rendering. **The last item of the phase** — the only
@@ -482,6 +555,30 @@ down' })` and a host that overrides a default is a host that never observes it
     default or a branch a test could name, the wobble is a missing assertion wearing a timing
     defect's clothes. `motion.ts` and `placement.ts` are the two where it will not be, since
     what times out there is real waiting
+  - **a fifth reading, and the cleanest statement yet that the wobble decides nothing on its
+    own.** This step ran the gate twice over the same library — once before the progress bar's
+    four new assertions and once after — and **four** files moved in the clock column with
+    **no score change at all**: `field.ts 32(0)→32(1)`, `placement.ts 64(7)→64(6)`,
+    `template.ts 24(1)→24(0)`, `texts.ts 31(0)→31(1)`. Two gained a timeout-kill and two lost
+    one, over code neither run touched. So the mechanism is exactly what the drawer's step
+    measured — it is always there, on every run, in the columns — and what decides whether it
+    reaches a SCORE is only how close a file stands to a boundary. `texts.ts` is the file to
+    watch: it reads 100.00 with zero survivors since the pagination's step, so its clock-kills
+    now have nowhere to fall
+  - **a sixth reading, from the e2e side, and this one names a second component's cases.** The
+    progress step's full suite ran twice. The first came back `1364 passed, 1 failed` and the
+    failure was the new band case in webkit — a single `getComputedStyle` answering an EMPTY
+    string, which is a reading taken before the lazily routed view had its first style
+    resolution. The second run, after that case was made to retry, failed a **different** test
+    on a component the step never touched: the calendar's `an arrow follows the writing
+direction`, expecting index 32 and getting 31. Run again, the date spec failed its
+    right-to-left twin instead — and then went green **five times out of five** with the work in
+    place and twice out of twice with it stashed
+  - so the family is now three components wide (the select's End-key case, the dialog's
+    scroll-lock case, the calendar's walk), and what they share is not a component but a shape:
+    a case whose answer depends on a keypress or a style landing before the next line reads it.
+    Under 22 workers on eight cores the window closes. That is this item's own argument reaching
+    the suite CI actually runs, and it is why a red e2e here has to be re-run before it is read
   - **and it is not only the mutation run any more.** The same step's full e2e finished
     `2 failed, 1202 passed`, and both failures were the select's: `End reaches the five
 thousandth row` timed out with the list still showing row 44, and the forced-colours case
@@ -669,6 +766,11 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     drawer being the latest. Each component since has widened it by one row and none has fixed
     it in passing, which is the item's own argument holding: a page that names fewer than half
     of what the package exports is not one anybody would call out of date by a line
+  - and the arithmetic above is itself out of date, which is the item at work on its own note.
+    Counted against the denominator two gates already compute — every `ng-package.json` in the
+    library, the twenty `check-tokens` reports — the table names **seven of twenty**, so
+    thirteen entrypoints are missing rather than eight. `./pagination` and `./progress` are the
+    two most recent, and neither was added by hand for the reason written above
 
 - [x] **4.11 — the mutation run measures 22 of 36 source files, and nothing says which 22**
   - closed with a **rule**, which is what the item asked for. The gate reads the library's
@@ -762,7 +864,15 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     those wants the same four drawings, which is exactly why the first component to want them
     should not settle it alone
   - binds at: **the second component that wants a tone** — a banner, an inline alert — or the
-    first consumer report, whichever comes first · _notes:_ —
+    first consumer report, whichever comes first
+  - _notes:_ **the second component arrived and refused it for the same reason.** A progress
+    bar has an obvious use for tones — a failed upload is not a finished one — and
+    `pct-progress` ships without them, with the refusal written in its card: a tone painted in
+    colour alone is a state carried by colour alone, and the second channel a bar could carry
+    is the same four icon names the toast would need. Two components now stand on one unmade
+    decision, which is what this item said would happen; what it changes is the trigger, since
+    "the second component that wants a tone" has been met and the decision is still the right
+    one to make once rather than twice
 
 - [ ] **4.15 — the assertive channel has no consumer, and therefore no gate**
   - `PctAnnouncer` opens two regions and has done since the live announcer was built. The
@@ -898,7 +1008,16 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     difference from 4.5 is that here the list is a fact about HTML rather than about this
     repository — so it can be derived rather than curated, which is what makes it worth an item
   - binds at: **the third tag added to this list**, or the first component here to draw one of
-    the five above · _notes:_ —
+    the five above
+  - _notes:_ **the trigger fired sideways.** The progress bar needed the gate to see a
+    `<progress>`, and that tag belongs on no list here: it is not focusable in any engine
+    (measured) and carries no `role` attribute, so both of the gate's ways in were shut and a
+    component whose only widget is a bar counted zero widgets — the accordion's `<summary>`
+    story, one tag over. The answer was a **second** hand-written list, `NAMED_TAGS`
+    (`progress`, `meter`), with `progress-without-inputs` as its control. So the count is eight
+    curated tags across two lists now, and the item's complaint is not merely still true — it
+    has been reproduced by the fix. What would settle it is the same for both lists: derive
+    them from the platform's own tables rather than remember them
 
 - [ ] **4.21 — the library's layer order is three numbers in three files and no rule**
   - `--pct-toast-z-index` is **1100** and its comment says why: above the CDK's overlay
@@ -970,6 +1089,26 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     the dialog, the lock or that spec — the only thing that changed for `/dialog` is that the
     navigation list has one more entry, so the document is one row taller and the test's
     arithmetic sits somewhere else against it
+  - **and the behavioural half now has a second component and a baseline.** With `/progress`
+    added, two full suites came back `1364 passed, 1 failed`, and the failure both times was
+    the calendar's arrow walk on a page this step never touched — `an arrow follows the writing
+direction` expecting index 32 and getting 31 in the first, its right-to-left twin expecting
+    30 and getting 31 in the second. The same spec run **alone** is green five times out of
+    five. The reading that makes it evidence rather than a shrug is the baseline: the identical
+    suite, with this work **stashed**, is `1313 passed` and **zero failed** under the same load
+  - so a view added to the sandbox costs six re-recorded pictures AND, on this machine, one red
+    behavioural case in a component nobody touched — the dialog's scroll lock last time, the
+    calendar's walk this time. Both are cases that press or read one frame after an assertion
+    that only names the cause ([`lesson-130`](lessons.md#lesson-130)), and what the extra row
+    changes is where the page stands when they do. It is not fixed here for the reason this
+    item exists: the repair is a page whose height the case decides, and that is a change to
+    the sandbox's stage rather than to a component
+  - **it happened again at the very next view, which is the whole of what "binds at: the next
+    sandbox view" was for.** Adding `/progress` re-recorded the same six page-level baselines —
+    `dialog-open`, `dialog-open-rtl`, `menu-open`, `popover-open`, `toast-stack`,
+    `toast-stack-rtl` — beside the two the component actually earned. Two consecutive components
+    have now paid a six-picture toll for one row in a navigation list, so the cost is not a
+    one-off of the pagination's step but the standing price of adding a view
   - so a behavioural case, not only a picture, takes its answer partly from the sandbox's own
     chrome. That widens this item from "six baselines" to **a gate whose subject is the shell
     as much as the component**, and it is the more expensive half: a screenshot that moves is

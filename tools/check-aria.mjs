@@ -210,7 +210,7 @@ const COMMENT = /<!--[\s\S]*?-->/g;
 const OPENING_TAG = /<([a-zA-Z][\w-]*)((?:"[^"]*"|'[^']*'|[^>"'])*)>/g;
 /** The same tags counted without parsing, as the denominator of the parse. */
 const FOCUSABLE_COUNTER =
-  /<(?:a|button|input|select|summary|textarea)(?=[\s/>])/gi;
+  /<(?:a|button|input|meter|progress|select|summary|textarea)(?=[\s/>])/gi;
 const ATTRIBUTE = /([^\s=/>"']+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g;
 
 /**
@@ -263,6 +263,27 @@ const COMPOSITE_ROLES = new Set([
   'treegrid',
 ]);
 
+/**
+ * The tags whose IMPLICIT role has to be named although nothing can focus them and no `role`
+ * attribute is written anywhere. They are the third way a widget hid from this gate, after the
+ * composite roles and `<summary>`, and the narrowest: the two lists above both rest on
+ * something a user does — landing on the element, or landing on its children. A `<progress>`
+ * offers neither. It is not focusable in any engine (measured in three), it carries no role
+ * attribute because the role is the tag's own, and a screen reader still announces it — as
+ * "progressbar", with whatever name it has, which for an unnamed one is nothing at all. axe
+ * says the same from the other side and calls it `aria-progressbar-name`.
+ *
+ * So a component whose only widget is a bar counted zero widgets, was asked for no name inputs
+ * and passed green, exactly as the accordion's `<summary>` did. `<meter>` is here for the same
+ * reason and before the fact rather than after it — it is the same shape of element and this
+ * library does not draw one yet.
+ *
+ * It stays a closed list of TAGS and not "any element with an implicit role", for the reason
+ * `COMPOSITE_ROLES` is closed: `<p>` has one too, and asking a paragraph for name inputs would
+ * be the over-reach point 2 refuses in the other direction.
+ */
+const NAMED_TAGS = new Set(['meter', 'progress']);
+
 const attributesOf = (text) => {
   const attrs = new Map();
   for (const m of text.matchAll(ATTRIBUTE))
@@ -272,13 +293,15 @@ const attributesOf = (text) => {
 
 /**
  * A widget — that is, an element whose accessible name is announced, so that a name the
- * consumer supplies has somewhere to land. Two ways in: the user can focus it, or it carries a
- * composite role and its children are what the user focuses. A link without an address is not
- * focusable, nor is a hidden input; a `tabindex` makes anything focusable, which is how a role
- * written onto a `div` becomes a widget.
+ * consumer supplies has somewhere to land. Three ways in: the user can focus it, it carries a
+ * composite role and its children are what the user focuses, or its TAG has a role that is
+ * announced with a name although nobody can land on it at all. A link without an address is
+ * not focusable, nor is a hidden input; a `tabindex` makes anything focusable, which is how a
+ * role written onto a `div` becomes a widget.
  */
 const isWidget = (tag, attrs) => {
   if (COMPOSITE_ROLES.has(attrs.get('role'))) return true;
+  if (NAMED_TAGS.has(tag)) return true;
   if (
     attrs.has('tabindex') ||
     attrs.has('[tabindex]') ||
@@ -308,7 +331,9 @@ const readTemplate = (content) => {
         ...t,
         composite: COMPOSITE_ROLES.has(t.attrs.get('role')),
       })),
-    parsed: tags.filter((t) => FOCUSABLE_TAGS.has(t.tag)).length,
+    parsed: tags.filter(
+      (t) => FOCUSABLE_TAGS.has(t.tag) || NAMED_TAGS.has(t.tag),
+    ).length,
     counted: countOf(text, FOCUSABLE_COUNTER),
   };
 };
@@ -492,7 +517,7 @@ const checkAria = ({ components, counted, templates, documents }) => {
     if (read.parsed !== read.counted)
       throw new AriaError(
         'denominator',
-        `${template.file}: ${read.counted} focusable tag(s) in the text, ${read.parsed} ` +
+        `${template.file}: ${read.counted} named-widget tag(s) in the text, ${read.parsed} ` +
           `parsed — an unbalanced quote swallows the rest of the file, and every element ` +
           `after it stops being examined`,
       );

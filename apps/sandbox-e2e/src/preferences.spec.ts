@@ -117,6 +117,29 @@ test.describe('prefers-reduced-motion', () => {
       ).toBeLessThan(1);
     }
   });
+
+  /**
+   * The second continuous indicator in the library, and the same rule read on it: the
+   * progress band slows and does not stop, while the determinate fill — a state transition
+   * — disappears. Both numbers come from the token axis, so this measures that a new
+   * component fell INTO the rule rather than repeating it.
+   */
+  test('a progress band slows down while the fill it shares a sheet with stops', async ({
+    page,
+  }) => {
+    await visit(page, '/progress', { media: REDUCE });
+    await expectMedia(page, '(prefers-reduced-motion: reduce)', true);
+
+    const band = page
+      .getByTestId('progress-indeterminate')
+      .locator('[data-pct-part="fill"]');
+    expect(await firstDurationMs(band, 'animation-duration')).toBe(1500);
+
+    const fill = page
+      .getByTestId('progress-value')
+      .locator('[data-pct-part="fill"]');
+    expect(await firstDurationMs(fill, 'transition-duration')).toBeLessThan(1);
+  });
 });
 
 test.describe('prefers-color-scheme', () => {

@@ -3540,3 +3540,93 @@ what open finding 4.13 records happening twice with `data-pct-selected`. The con
 `_reference/`: the reference input now carries a comment with an apostrophe standing over a
 `'sm'` in the code, and disarming `literalsIn` turns the reference red and moves **seven**
 prepared cases onto the wrong rule.
+
+### <a id="lesson-133"></a>`lesson-133` — A switch that turns a drawing off turns a behaviour off with it, and the three engines disagree about what is left
+
+`appearance: none` is how you get permission to paint a form control. On a `<progress>` it also
+withdraws the engine's indeterminate animation — and what stands there afterwards is not
+"nothing" but three different things:
+
+| engine   | `<progress>` with no `value`, `appearance: none`, value part painted |
+| -------- | -------------------------------------------------------------------- |
+| Chromium | an EMPTY groove — `::-webkit-progress-value` has no width            |
+| WebKit   | an empty groove, the same                                            |
+| Firefox  | a FULL groove — `::-moz-progress-bar` keeps its width                |
+
+So the same two declarations say "nothing has happened" in two engines and "it is finished" in
+the third, about a bar whose whole message is that nobody knows. A component that shipped after
+testing in one browser would be wrong in the other two and would look right in all three
+screenshots taken by its author.
+
+Two things generalise past this component.
+
+**A property that removes a drawing can remove a behaviour.** `appearance` reads like a paint
+switch and is a switch on the whole UA widget: the animation lived in the same shadow tree as
+the colours. The question to ask of any `appearance: none` is therefore not "what do I have to
+repaint" but "what did this element DO that nobody wrote down" — the answer here was the one
+thing the element was chosen for.
+
+**"The platform does it" and "the platform draws it" are two claims, and only the first is
+free.** This library takes the first wherever it can
+([`req-api-platform`](requirements/api.md#req-api-platform)) — and the second is what
+[0049](decisions/0049-a-progress-bar-is-the-platforms-element-under-our-paint.md) had to buy
+back element by element: a fill that is a sibling because a `<progress>` renders no children,
+and a pseudo-element that was not an option because `progress::before` paints in two engines
+and not in Firefox. The semantics stayed the platform's; only the paint moved.
+
+### <a id="lesson-134"></a>`lesson-134` — Forced colours keep a background colour and drop a gradient, so what a state is painted WITH decides whether it survives
+
+Two ways to draw a moving band along a groove, indistinguishable in a screenshot:
+
+```css
+.band {
+  background: var(--pct-progress-fill-bg);
+} /* an element */
+.track {
+  background-image: linear-gradient(90deg, …, #0b5fd0, …);
+} /* a gradient */
+```
+
+Under `forced-colors: active` the first can be given a system colour and paints; the second is
+**gone**. The mode forces author background colours to the user palette and forces
+`background-image` to `none` for every value that is not a `url()` — a gradient is one of
+those. Measured in the probe: the gradient band came back as an empty outlined groove, while
+the element band with `background: Highlight` came back painted in all three engines.
+
+The reading that matters is not "avoid gradients". It is that
+[`req-a11y-forced-colors`](requirements/a11y.md#req-a11y-forced-colors) is usually stated as a
+rule about COLOUR — do not carry a state by colour alone — and this is the same requirement one
+level lower, about the PROPERTY the colour is carried in. A state painted in a background
+colour has a system colour to fall back to; the same state painted in a gradient, a shadow or
+an image has nothing, and the fallback cannot be written because the declaration itself is
+dropped. So the mode is a filter on the drawing technique before it is a filter on the palette.
+
+The neighbouring measurement is worth keeping too, because it is [`lesson-70`](#lesson-70) met
+from a new side: a forced-colours rule written ABOVE the base rule it corrects loses the
+cascade and paints nothing, and the failure looks exactly like "the browser dropped my colour".
+Both readings in the probe that produced this lesson were of that kind before they were of any
+other kind.
+
+### <a id="lesson-135"></a>`lesson-135` — A spy on an already-spied method is the same spy, so a per-case spy without a restore is one spy for the file
+
+Three cases in `progress.spec.ts` failed with a number nobody could account for:
+`expected "warn" to not be called at all, but actually been called 3 times` — in cases that
+render a bar which HAS a name and cannot warn.
+
+Three is the number of earlier cases in the file that render the nameless bar on purpose.
+`vi.spyOn(console, 'warn')` over a method that is already spied does not install a second spy:
+it hands back the first one, history and all (measured — a second `spyOn` inside one case is
+`===` the first). So a spy created per case and never restored is **one spy for the whole
+file**, and `expect(warn).not.toHaveBeenCalled()` stops being a statement about this case.
+
+What makes it worth a lesson rather than a fix is which way it fails. The sharing turns
+"was not called" into a claim about the whole file, so the assertion gets **stricter** and
+fails loudly — this time. Its mirror image is the quiet one: `toHaveBeenCalledWith(…)` passes
+on a call some earlier case made, and a component that stopped warning altogether keeps a green
+test. Same shared object, same missing `restoreAllMocks`, opposite symptom.
+
+The fix is one line — `afterEach(() => vi.restoreAllMocks())` — and the general rule is the
+one this repository keeps re-learning about denominators: a measurement whose SCOPE is
+implicit measures whatever the harness happens to hand it. The date field's own warning case
+sidesteps this by declaring the spy inside the single case that uses it, which works right up
+until a second case in the same file wants one.

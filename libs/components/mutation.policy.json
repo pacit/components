@@ -45,6 +45,7 @@
     "libs/components/menu/src/menu-trigger.ts",
     "libs/components/menu/src/menu.ts",
     "libs/components/pagination/src/pagination.ts",
+    "libs/components/progress/src/progress.ts",
     "libs/components/popover/src/popover.ts",
     "libs/components/radio/src/radio-group.ts",
     "libs/components/radio/src/radio.ts",

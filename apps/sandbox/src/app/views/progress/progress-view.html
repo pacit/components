@@ -1,0 +1,135 @@
+<h2 class="view__title">Progress</h2>
+<p class="muted view__intro">
+  A bar that reports how far along a task is. It <em>is</em> a
+  <code>&lt;progress&gt;</code>: the role, the bounds and the value come from
+  the element, and this library writes no <code>aria-valuenow</code> of its own.
+  What it draws over it is a groove and a fill, because painting the element's
+  own parts needs <code>appearance: none</code> — and that takes the engine's
+  indeterminate animation away.
+</p>
+
+<sbx-demo
+  heading="A value, and something moving it"
+  summary="The value is the consumer's number and the element carries it. Press the buttons and watch two things follow: the fill's width, and the value attribute on the <progress> underneath it."
+  [reqs]="['req-api-platform', 'req-api-signals']"
+  data-testid="demo-value"
+>
+  <pct-progress
+    [value]="done()"
+    ariaLabel="Uploading"
+    data-testid="progress-value"
+  />
+  <div class="view__row">
+    <button pctButton variant="outline" (click)="move(-10)" data-testid="less">
+      −10
+    </button>
+    <button pctButton variant="outline" (click)="move(10)" data-testid="more">
+      +10
+    </button>
+    <span class="view__state">{{ done() }} of 100</span>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="Named by the sentence beside it"
+  summary="A progress bar's name is what is progressing, and this library invents none: with no ariaLabel and no ariaLabelledby the component writes a dev-mode warning rather than a name of its own. Here the caption a sighted user reads is the name a screen reader hears."
+  [reqs]="['req-a11y-built-in']"
+  data-testid="demo-caption"
+>
+  <p class="view__caption" id="progress-caption">Copying files</p>
+  <pct-progress
+    [value]="copied()"
+    [max]="total"
+    ariaLabelledby="progress-caption"
+    data-testid="progress-caption-bar"
+  />
+  <p class="view__state">
+    {{ copied() }} of {{ total }} — the scale is bytes, so the element carries
+    <code>max="256"</code> and a reader works out the {{ copiedPercent() }}%
+    itself.
+  </p>
+</sbx-demo>
+
+<sbx-demo
+  heading="Indeterminate"
+  summary="No value at all — not a value of zero. The element reaches the accessibility tree with nothing where a number would be, which is the one thing an author writing aria-valuenow by hand cannot say. The band travels at the loop duration, the one a reduced-motion setting slows instead of stopping."
+  [reqs]="['req-a11y-motion', 'req-api-platform']"
+  data-testid="demo-indeterminate"
+>
+  <pct-progress ariaLabel="Working" data-testid="progress-indeterminate" />
+</sbx-demo>
+
+<sbx-demo
+  heading="From not knowing to knowing"
+  summary="The same bar, switched between a number and nothing. Nothing is disabled and nothing is swapped out: the value input takes null, and null is what the platform already means by indeterminate."
+  [reqs]="['req-api-signals']"
+  data-testid="demo-switch"
+>
+  <pct-progress
+    [value]="known()"
+    ariaLabel="Preparing the report"
+    data-testid="progress-switch"
+  />
+  <div class="view__row">
+    <button
+      pctButton
+      variant="outline"
+      (click)="toggleKnown()"
+      data-testid="toggle"
+    >
+      {{ known() === null ? 'A number arrives' : 'Back to not knowing' }}
+    </button>
+    <span class="view__state"
+      >{{ known() === null ? 'indeterminate' : known() + ' of 100' }}</span
+    >
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="The size axis"
+  summary="Thickness, not the shared control height: nothing lands on a progress bar and nothing is pressed, so lining it up with a field's box would say it were a control."
+  [reqs]="['req-api-size']"
+  data-testid="demo-sizes"
+>
+  <div class="view__stack">
+    <pct-progress
+      size="sm"
+      [value]="30"
+      ariaLabel="Small"
+      data-testid="progress-sm"
+    />
+    <pct-progress [value]="55" ariaLabel="Medium" data-testid="progress-md" />
+    <pct-progress
+      size="lg"
+      [value]="80"
+      ariaLabel="Large"
+      data-testid="progress-lg"
+    />
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="Out of range, and no scale at all"
+  summary="A value above the scale is clamped and the element carries the clamped number, so the fill and the accessibility tree never disagree. A max that is not a positive number is not a scale, so the default hundred stands in for it."
+  [reqs]="['req-api-attributes']"
+  data-testid="demo-bounds"
+>
+  <div class="view__stack">
+    <pct-progress
+      [value]="150"
+      ariaLabel="Above the scale"
+      data-testid="progress-over"
+    />
+    <pct-progress
+      [value]="-20"
+      ariaLabel="Below the scale"
+      data-testid="progress-under"
+    />
+    <pct-progress
+      [value]="40"
+      [max]="0"
+      ariaLabel="No scale"
+      data-testid="progress-noscale"
+    />
+  </div>
+</sbx-demo>

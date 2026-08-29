@@ -190,6 +190,15 @@ export const SBX_VIEWS: readonly SbxView[] = [
       ),
   },
   {
+    path: 'progress',
+    title: 'Progress',
+    summary:
+      'A <progress> under our own paint — and what an indeterminate bar really is.',
+    group: 'components',
+    load: () =>
+      import('./views/progress/progress-view').then((m) => m.ProgressView),
+  },
+  {
     path: 'size',
     title: 'Size',
     summary: 'Every component on the shared sm/md/lg axis.',

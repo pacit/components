@@ -38,7 +38,8 @@
       "@pacit/components/toast": ["./libs/components/toast/src/index.ts"],
       "@pacit/components/pagination": [
         "./libs/components/pagination/src/index.ts"
-      ]
+      ],
+      "@pacit/components/progress": ["./libs/components/progress/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

@@ -1,0 +1,5 @@
+{
+  "point": 3,
+  "check": "inputs",
+  "$reason": "The state `pct-progress` would have been in before `progress` was added to the tags whose implicit role has to be named. A `<progress>` is announced as a progressbar and takes focus in no engine, so both of the older ways in were shut: no `tabindex` to notice and no composite role to read. The gate saw nothing here, counted zero widgets, asked for no name inputs and passed green a bar a consumer had no way to name — which axe reports on a rendered page as `aria-progressbar-name`, one floor down and only where a page happens to draw one."
+}

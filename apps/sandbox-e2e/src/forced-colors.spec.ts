@@ -556,6 +556,43 @@ test.describe('forced-colors: active', () => {
     ).toBe(sys.CanvasText);
   });
 
+  /**
+   * The measurement that decided how the bar is drawn at all.
+   *
+   * In this mode the browser forces every author background to `Canvas` and drops every
+   * background IMAGE that is not a `url()` — a gradient among them. So the two shapes a
+   * progress bar is usually built from behave differently: a fill painted as an ELEMENT with
+   * a background colour can be given a system colour and survives, while a band painted as a
+   * moving gradient is gone, and gone in exactly the mode where the contrast matters most
+   * (`lesson-134`). Both bars here are the surviving kind, and the groove keeps its extent
+   * through an outline rather than a border, since the fill is positioned over it.
+   */
+  test('a progress bar keeps its fill, its band and the groove they travel', async ({
+    page,
+  }) => {
+    await visit(page, '/progress', { media: FORCED });
+    const sys = await systemColors(page);
+
+    const groove = page
+      .getByTestId('progress-value')
+      .locator('[data-pct-part="track"]');
+    const fill = page
+      .getByTestId('progress-value')
+      .locator('[data-pct-part="fill"]');
+    const band = page
+      .getByTestId('progress-indeterminate')
+      .locator('[data-pct-part="fill"]');
+
+    expect(await styleOf(fill, 'background-color')).toBe(sys.Highlight);
+    expect(await styleOf(band, 'background-color')).toBe(sys.Highlight);
+
+    // The groove is the page's own surface in this mode, so what says where it ends is the
+    // outline — and the fill has to stay distinguishable from it.
+    expect(await styleOf(groove, 'background-color')).toBe(sys.Field);
+    expect(await styleOf(groove, 'outline-color')).toBe(sys.CanvasText);
+    expect(await styleOf(groove, 'background-color')).not.toBe(sys.Highlight);
+  });
+
   test('the disabled state says GrayText in every control', async ({
     page,
   }) => {

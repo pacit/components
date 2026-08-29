@@ -26,16 +26,16 @@ libs/components/button/src/button.ts 100.00 7(0) 0 0 2
 libs/components/checkbox/src/checkbox.ts 89.83 53(0) 6 0 6
 libs/components/core/src/announce.ts 94.44 34(0) 2 0 0
 libs/components/core/src/config.ts 100.00 8(0) 0 0 0
-libs/components/core/src/field.ts 96.97 32(0) 1 0 0
+libs/components/core/src/field.ts 96.97 32(1) 1 0 0
 libs/components/core/src/focus.ts 100.00 1(0) 0 0 0
 libs/components/core/src/id.ts 100.00 5(0) 0 0 0
 libs/components/core/src/list.ts 99.07 107(0) 1 0 0
 libs/components/core/src/modal.ts 80.00 48(1) 8 4 0
 libs/components/core/src/motion.ts 91.38 53(3) 5 0 0
 libs/components/core/src/overlay.ts 100.00 15(0) 0 0 2
-libs/components/core/src/placement.ts 98.46 64(7) 1 0 0
-libs/components/core/src/template.ts 96.00 24(1) 1 0 0
-libs/components/core/src/texts.ts 100.00 31(0) 0 0 0
+libs/components/core/src/placement.ts 98.46 64(6) 1 0 0
+libs/components/core/src/template.ts 96.00 24(0) 1 0 0
+libs/components/core/src/texts.ts 100.00 31(1) 0 0 0
 libs/components/date/src/calendar.ts 73.60 131(0) 45 2 4
 libs/components/date/src/date.ts 66.18 135(0) 67 2 8
 libs/components/date/src/day.ts 95.83 138(2) 6 0 0
@@ -53,6 +53,7 @@ libs/components/menu/src/menu-trigger.ts 79.31 23(0) 6 0 2
 libs/components/menu/src/menu.ts 78.57 209(0) 51 5 2
 libs/components/pagination/src/pagination.ts 96.43 108(0) 4 0 4
 libs/components/popover/src/popover.ts 65.61 124(0) 55 10 2
+libs/components/progress/src/progress.ts 92.31 48(0) 4 0 2
 libs/components/radio/src/radio-group.ts 90.63 87(1) 9 0 5
 libs/components/radio/src/radio.ts 90.24 37(0) 3 1 1
 libs/components/select/src/multi-select.ts 97.14 34(0) 0 0 0
@@ -67,5 +68,5 @@ libs/components/toast/src/toast-viewport.ts 95.00 19(0) 1 0 0
 libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0
 libs/components/toast/src/toaster.ts 71.71 109(0) 42 1 0
 libs/components/tooltip/src/tooltip.ts 70.54 182(0) 71 5 8
-TOTAL 82.29 3493/4245
+TOTAL 82.41 3541/4297
 ```

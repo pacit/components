@@ -1,0 +1,39 @@
+<!--
+  Two elements, and the split between them is the whole component (0049).
+
+  The `<progress>` is the semantics AND the groove: it carries the role, the bounds, the
+  value — and, when the `value` attribute is absent, the indeterminate state, which reaches
+  the accessibility tree as no value at all rather than as a number somebody had to invent.
+  Nothing here writes `role`, `aria-valuenow`, `aria-valuemin` or `aria-valuemax`: they are
+  the element's, and an attribute we wrote beside them would be an echo nobody reads (0039,
+  `lesson-112`).
+
+  The fill is a sibling and not a child, because a `<progress>` renders no children in any
+  engine — its content is fallback for browsers that predate it. It is not the element's own
+  `::-webkit-progress-value` / `::-moz-progress-bar` either: painting those needs
+  `appearance: none`, which takes the engine's indeterminate animation away and leaves the
+  three engines disagreeing about what an indeterminate bar looks like (`lesson-133`).
+
+  `aria-label` and `aria-labelledby` land HERE, on the element that has the role. Written on
+  the `<pct-progress>` tag they would stand on an element ARIA gives no role to, where a
+  screen reader ignores them (`req-a11y-built-in`, the defect `check-aria` exists for).
+-->
+<progress
+  class="pct-progress__track"
+  data-pct-part="track"
+  [attr.value]="reported()"
+  [attr.max]="upper()"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+></progress>
+
+<!--
+  The width is the only thing bound: while indeterminate it is `null`, so the inline style
+  disappears and the band's width in the stylesheet answers instead. An inline `0%` would win
+  over it and there would be nothing to see.
+-->
+<div
+  class="pct-progress__fill"
+  data-pct-part="fill"
+  [style.inline-size.%]="percent()"
+></div>

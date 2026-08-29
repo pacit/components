@@ -75,6 +75,8 @@ from what the browser really gets.
 ./popover PctPopover content
 ./popover PctPopover heading
 ./popover PctPopover panel
+./progress PctProgress fill
+./progress PctProgress track
 ./radio PctRadio circle
 ./radio PctRadio control
 ./radio PctRadio dot

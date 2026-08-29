@@ -262,6 +262,13 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-primary color semantic public
 --pct-primary-active color semantic public
 --pct-primary-hover color semantic public
+--pct-progress-fill-bg color component public
+--pct-progress-fill-size dimension component public
+--pct-progress-track-bg color component public
+--pct-progress-track-height dimension component public
+--pct-progress-track-height-lg dimension component public
+--pct-progress-track-height-sm dimension component public
+--pct-progress-track-radius dimension component public
 --pct-radio-bg color component public
 --pct-radio-bg-disabled color component public
 --pct-radio-border color component public

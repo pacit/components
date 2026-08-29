@@ -1,0 +1,22 @@
+.view__state {
+  margin: var(--pct-space-3) 0 0;
+  color: var(--pct-text-muted);
+  font-size: var(--pct-font-size-sm);
+}
+
+.view__caption {
+  margin: 0 0 var(--pct-space-2);
+}
+
+.view__row {
+  display: flex;
+  gap: var(--pct-space-3);
+  align-items: center;
+  margin-block-start: var(--pct-space-3);
+}
+
+.view__stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pct-space-4);
+}

@@ -28,6 +28,7 @@ export const SBX_ROUTES = [
   '/tabs',
   '/toast',
   '/pagination',
+  '/progress',
   '/size',
   '/states',
   '/all',

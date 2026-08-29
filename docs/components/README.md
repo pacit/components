@@ -31,6 +31,7 @@ a machine; prose with a missing paragraph is not.
 | [`PctToaster`](toast.md)         | `@pacit/components/toast`      | a message on top of the page           |
 | [`PctAccordion`](accordion.md)   | `@pacit/components/accordion`  | a stack of sections, opened and closed |
 | [`PctPagination`](pagination.md) | `@pacit/components/pagination` | a control that owns the current page   |
+| [`PctProgress`](progress.md)     | `@pacit/components/progress`   | how far along a task is                |
 
 ## The order of the components to come
 
@@ -162,6 +163,18 @@ The order follows **architectural debt**, not popularity:
    `<a href>` is a different component, and the future table's pager is most likely this one
    wired to the grid's paging signals
    ([0048](../decisions/0048-a-pagination-owns-its-page-number.md)).
+   The **progress** bar is built, and it is the sharpest case yet of the difference between
+   "the platform does it" and "the platform draws it". The bar IS a `<progress>`, because the
+   element publishes something no hand-written `role="progressbar"` can: an indeterminate bar
+   arrives in the accessibility tree with **no value at all**, where an author has to invent a
+   number. But painting it needs `appearance: none`, and that switch takes the engine's own
+   indeterminate animation away and leaves the three engines disagreeing — an empty groove in
+   Chromium and WebKit, a FULL one in Firefox — so the fill is a sibling drawn over the
+   element, the checkbox's shape one component over
+   ([0049](../decisions/0049-a-progress-bar-is-the-platforms-element-under-our-paint.md),
+   [`lesson-133`](../lessons.md#lesson-133)). The travelling band is an element and not a
+   gradient for a measured reason: a forced-colours mode drops gradients outright
+   ([`lesson-134`](../lessons.md#lesson-134)).
 7. **Table / DataGrid** — has to stand on a **headless core** separated from rendering.
 
 Before item 1 the **behaviour layer in `core`** has to exist: list navigation (private methods
