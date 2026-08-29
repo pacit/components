@@ -89,6 +89,7 @@ const CARDS: ReadonlyArray<
   ['/select', 'demo-in-field', 'select-in-wrapper'],
   ['/pagination', 'demo-many', 'pagination-fold'],
   ['/progress', 'demo-sizes', 'progress-sizes'],
+  ['/skeleton', 'demo-shapes', 'skeleton-shapes'],
   ['/size', 'demo-axis', 'size-axis'],
   ['/states', 'states-disabled', 'states-disabled'],
   ['/states', 'states-invalid', 'states-invalid'],
@@ -421,6 +422,7 @@ const CARDS_RTL: ReadonlyArray<
   ['/select', 'demo-in-field', 'select-in-wrapper'],
   ['/pagination', 'demo-many', 'pagination-fold'],
   ['/progress', 'demo-sizes', 'progress-sizes'],
+  ['/skeleton', 'demo-shapes', 'skeleton-shapes'],
 ];
 
 test.describe('Appearance in RTL — compared with the baseline', () => {

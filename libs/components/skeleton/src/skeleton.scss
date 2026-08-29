@@ -1,0 +1,104 @@
+/* The host is a column of line boxes, and that is the whole geometry of the component
+   ([`lesson-136`](../../../../docs/lessons.md#lesson-136), 0050).
+
+   `grid-auto-rows: 1lh` makes every row exactly one line box of the type the skeleton stands
+   in — the browser's own arithmetic over the consumer's font size and line height — so three
+   bars occupy exactly what three lines of text will occupy and nothing moves when the text
+   arrives. `align-items: center` puts the bar where the letters would be: the space around it
+   is the leading, which is not a gap anybody has to choose.
+
+   `position: relative` is for the `block` shape below, whose single track is placed against
+   this box rather than against its own content. */
+:host {
+  display: grid;
+  position: relative;
+  grid-auto-rows: 1lh;
+  align-items: center;
+}
+
+/* One placeholder. `overflow: hidden` is what keeps the sheen inside the rounded bar — and it
+   is measured rather than assumed to be harmless: `overflow: auto` makes an element focusable
+   in two engines of three ([`lesson-126`](../../../../docs/lessons.md#lesson-126)), which
+   inside an `aria-hidden` subtree would be axe's `aria-hidden-focus`. `hidden` and `clip`
+   take focus in none of the three. */
+.pct-skeleton__track {
+  position: relative;
+  overflow: hidden;
+  block-size: var(--pct-skeleton-track-height);
+  inline-size: 100%;
+  border-radius: var(--pct-skeleton-track-radius);
+  background: var(--pct-skeleton-track-bg);
+}
+
+/* The last line of a paragraph is not a full line. `:not(:only-child)` is the other half of
+   the same sentence: one bar standing alone is a whole line and there is nothing for it to be
+   the end of. Both are the platform's own reading of the DOM — no input decides this and no
+   class is written for it. */
+.pct-skeleton__track:last-child:not(:only-child) {
+  inline-size: var(--pct-skeleton-track-width-last);
+}
+
+/* The sheen. It travels by `inset-inline-start` and not by a `translateX`, which is the
+   progress band's rule at its second component: `translateX` names an axis the writing
+   direction may have mirrored, and the logical property already knows which edge it starts
+   from (`req-token-logical`). The duration is the LOOP token — the one a reduced-motion
+   setting slows instead of stopping, since a still sheen would stop saying that anything is
+   on its way (`req-a11y-motion`). */
+.pct-skeleton__fill {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: calc(-1 * var(--pct-skeleton-fill-size));
+  inline-size: var(--pct-skeleton-fill-size);
+  background: var(--pct-skeleton-fill-bg);
+  animation: pct-skeleton-sheen var(--pct-motion-loop-duration) linear infinite;
+}
+
+@keyframes pct-skeleton-sheen {
+  from {
+    inset-inline-start: calc(-1 * var(--pct-skeleton-fill-size));
+  }
+
+  to {
+    inset-inline-start: 100%;
+  }
+}
+
+/* A box instead of lines: a picture, a map, an avatar. The height is the consumer's, because
+   only they know what is coming — `min-block-size` is a floor and not a value, so a box they
+   size wins outright and one they do not size is a line of the surrounding text tall. The
+   track is placed against the host, which is how it follows a box of any height with no
+   number written here. */
+:host([data-pct-shape='block']) {
+  display: block;
+  min-block-size: 1lh;
+}
+
+:host([data-pct-shape='block']) .pct-skeleton__track {
+  position: absolute;
+  inset: 0;
+  block-size: auto;
+  inline-size: auto;
+}
+
+/* Forced colours. The mode replaces every author background with a colour from the user's
+   palette, so a skeleton drawn as two greys arrives as two identical blocks
+   ([`lesson-134`](../../../../docs/lessons.md#lesson-134)). What is written here is the same
+   division as the progress bar's, one component over: the box keeps its EXTENT through an
+   outline in the user's own palette, and the sheen keeps its motion through a colour that is
+   not the page's.
+
+   `GrayText` rather than `Highlight`, deliberately: `Highlight` is the colour of a selection
+   and this is not one — a wall of highlighted blocks is a page shouting that nothing has
+   happened yet. `GrayText` is the palette's own word for "not live", which is exactly what a
+   placeholder is. `@media` adds no specificity, so every rule is written out in full
+   ([`lesson-70`](../../../../docs/lessons.md#lesson-70)). */
+@media (forced-colors: active) {
+  .pct-skeleton__track {
+    background: Canvas;
+    outline: 1px solid GrayText;
+  }
+
+  .pct-skeleton__fill {
+    background: GrayText;
+  }
+}

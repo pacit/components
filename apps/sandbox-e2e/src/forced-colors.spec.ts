@@ -593,6 +593,40 @@ test.describe('forced-colors: active', () => {
     expect(await styleOf(groove, 'background-color')).not.toBe(sys.Highlight);
   });
 
+  /**
+   * A skeleton is two greys, and two greys are ONE colour in this mode: the browser forces
+   * every author background to the user's palette, so a placeholder and the sheen travelling
+   * across it arrive as the same rectangle unless something is written for them
+   * (`lesson-134`). What is written is the progress bar's division one component over — the
+   * box keeps its EXTENT through an outline, and the motion keeps a colour of its own.
+   *
+   * `GrayText` rather than `Highlight`, and the choice is the point: a wall of highlighted
+   * blocks would be a page shouting that nothing has happened yet, while `GrayText` is the
+   * palette's own word for "not live", which is what a placeholder is.
+   */
+  test('a skeleton keeps its extent and its sheen apart in the user palette', async ({
+    page,
+  }) => {
+    await visit(page, '/skeleton', { media: FORCED });
+    const sys = await systemColors(page);
+
+    const bar = page
+      .getByTestId('skeleton-text')
+      .locator('[data-pct-part="track"]')
+      .first();
+    const sheen = bar.locator('[data-pct-part="fill"]');
+
+    expect(await styleOf(bar, 'background-color')).toBe(sys.Canvas);
+    expect(await styleOf(bar, 'outline-color')).toBe(sys.GrayText);
+    expect(await styleOf(sheen, 'background-color')).toBe(sys.GrayText);
+
+    // The two have to stay apart, which is the whole reading: the mode had one colour for
+    // both of them and the rules above take that back.
+    expect(await styleOf(sheen, 'background-color')).not.toBe(
+      await styleOf(bar, 'background-color'),
+    );
+  });
+
   test('the disabled state says GrayText in every control', async ({
     page,
   }) => {

@@ -1,0 +1,25 @@
+{
+  "pct": {
+    "skeleton": {
+      "$comment": "A placeholder standing where content has not arrived yet. It paints the same two things a progress bar does and carries the same two names deliberately: a `track` — the box that stands in for a line of text or for a picture — and a `fill`, the sheen that travels across it. That is not a coincidence to be tidied away later: a skeleton IS an indeterminate progress bar wearing the shape of the content, so one vocabulary for both is the honest one. What it has NO token for is its own size: the height of a text line comes from `1lh` and the height of the bar inside it from `1cap`, both computed by the browser out of the consumer's own type (0050).",
+
+      "$comment-track-height": "How tall the bar inside a line box is. `1cap` is the height of a capital letter in whatever font the skeleton stands in — so the placeholder is the size of the text it replaces at every font size, in a heading and in a caption alike, with nothing to keep in step. A number in pixels here would be right in the one place it was chosen and wrong everywhere else.",
+      "track-height": { "$type": "dimension", "$value": "1cap" },
+
+      "$comment-track-radius": "The skin's own corner, and not the fully rounded end the progress bar uses. It has to answer for both shapes: on a bar the height of a capital letter the radius clamps to half the height and the ends come out round anyway, while a picture's box keeps the corner every other surface in the library has. A `999px` here would round a placeholder for a photograph into a pill.",
+      "track-radius": { "$type": "dimension", "$value": "{pct.radius.md}" },
+
+      "$comment-track-width-last": "The last line of a paragraph is not a full line, and a stack of identical full-width bars reads as a table rather than as text. It applies only where there IS a last line — a single bar standing alone is a whole line and keeps its width.",
+      "track-width-last": { "$type": "dimension", "$value": "60%" },
+
+      "$comment-track-bg": "The placeholder is the progress bar's groove one component over, and the same token behind it. Against the page it is a `warn` in `contrast.policy.json` for the reason written there: a skeleton stands in for content that is not there, so it has to be visible and must not read as something anybody can use.",
+      "track-bg": { "$type": "color", "$value": "{pct.border}" },
+
+      "$comment-fill-bg": "The sheen is the page's own colour travelling across the placeholder, which is why it is `surface` and not a third colour: it lightens the bar on a light theme and darkens it on a dark one, and in both it is a colour the skin already has.",
+      "fill-bg": { "$type": "color", "$value": "{pct.surface}" },
+
+      "$comment-fill-size": "How much of the bar the sheen covers, the progress band's number and for the same reason: wide enough to be seen crossing at the loop duration, narrow enough that the placeholder behind it stays a placeholder.",
+      "fill-size": { "$type": "dimension", "$value": "33%" }
+    }
+  }
+}

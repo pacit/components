@@ -53,6 +53,7 @@
     "libs/components/select/src/select.base.ts",
     "libs/components/select/src/select.template.ts",
     "libs/components/select/src/select.ts",
+    "libs/components/skeleton/src/skeleton.ts",
     "libs/components/slider/src/slider.ts",
     "libs/components/switch/src/switch.ts",
     "libs/components/tabs/src/tab.ts",

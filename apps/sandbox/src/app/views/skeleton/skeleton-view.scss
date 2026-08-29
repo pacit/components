@@ -1,0 +1,75 @@
+/* A column of a fixed width, so the three lines of the answer are three lines in every
+   engine — the comparison the card is about is a comparison of heights. */
+.view__region {
+  inline-size: 20rem;
+}
+
+.view__text {
+  margin: 0;
+}
+
+.view__row {
+  display: flex;
+  gap: var(--pct-space-3);
+  align-items: center;
+  margin-block-start: var(--pct-space-3);
+}
+
+.view__state {
+  color: var(--pct-text-muted);
+  font-size: var(--pct-font-size-sm);
+}
+
+/* Two stages set in different type. Nothing here touches the skeleton — the numbers are the
+   font size and the line height, which is the whole point of the card. */
+.view__type {
+  inline-size: 20rem;
+  margin-block-end: var(--pct-space-4);
+}
+
+.view__type--large {
+  font-size: 2rem;
+  line-height: 1.5;
+}
+
+.view__type--small {
+  font-size: 0.75rem;
+  line-height: 2;
+}
+
+.view__shapes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pct-space-4);
+  inline-size: 20rem;
+}
+
+/* A block is the box the consumer gives it. Ours sets a height and nothing else. */
+.view__picture {
+  block-size: 8rem;
+}
+
+/* And a disc is that box with a radius — the reason there is no `circle` shape to pick. */
+.view__avatar {
+  inline-size: 3rem;
+  block-size: 3rem;
+  --pct-skeleton-track-radius: 50%;
+}
+
+.view__card {
+  display: flex;
+  gap: var(--pct-space-4);
+  inline-size: 22rem;
+  padding: var(--pct-space-4);
+  border: 1px solid var(--pct-border);
+  border-radius: var(--pct-radius-md);
+}
+
+.view__card-body {
+  flex: 1;
+}
+
+.view__card-title {
+  inline-size: 55%;
+  margin-block-end: var(--pct-space-2);
+}

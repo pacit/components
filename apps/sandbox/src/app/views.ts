@@ -199,6 +199,15 @@ export const SBX_VIEWS: readonly SbxView[] = [
       import('./views/progress/progress-view').then((m) => m.ProgressView),
   },
   {
+    path: 'skeleton',
+    title: 'Skeleton',
+    summary:
+      'The shape of content that has not arrived — and who says that it is late.',
+    group: 'components',
+    load: () =>
+      import('./views/skeleton/skeleton-view').then((m) => m.SkeletonView),
+  },
+  {
     path: 'size',
     title: 'Size',
     summary: 'Every component on the shared sm/md/lg axis.',

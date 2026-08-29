@@ -19,7 +19,9 @@
  *  5. SURFACE: the card that names the selector names both inputs,
  *  6. DESCRIPTION: a hint part and an error part are ALTERNATIVES of one conditional and
  *     never neighbours (`req-api-message`),
- *  7. ANNOUNCEMENT: an error part IS the live region that speaks it (`role="alert"`).
+ *  7. ANNOUNCEMENT: an error part IS the live region that speaks it (`role="alert"`),
+ *  8. HIDDEN: a component taken out of the accessibility tree holds nothing to land on and
+ *     no name of its own.
  *
  * Points 3 and 4 are one rule split at the place it breaks: declaring the inputs is what a
  * consumer sees in the type, binding them is what the screen reader sees. Points 4, 6 and 7
@@ -27,6 +29,15 @@
  * the question a pattern over `@if` cannot answer. The two readings are joined by the **offset**
  * of the tag — the tag scanner's match index and the node's `sourceSpan`, over the same string
  * — so an element found by one and not by the other is a denominator failure and not a shrug.
+ *
+ * Point 8 is axe's `aria-hidden-focus` moved to build time. A component whose host carries
+ * `aria-hidden` is drawn and not announced — `pct-icon` beside the text it belongs to,
+ * `pct-skeleton` where content has not arrived — and the whole subtree is then invisible to a
+ * reader while remaining perfectly reachable by the keyboard. A `<button>` grown inside one
+ * later is a control a screen-reader user cannot see and a sighted keyboard user lands on;
+ * axe reports it only on a page that renders it, which is `lesson-65`'s shape again. The
+ * other half of the same point is a name declared by such a component: an `ariaLabel` on a
+ * hidden host is read by nobody, so an input for it promises what it cannot deliver.
  *
  * Point 7 is the half point 6 never had. A message that leaves and re-enters the DOM is a
  * change nobody is pointed at, and the library's answer to that is written down twice: the
@@ -64,6 +75,14 @@ const REFERENCE = '_reference';
 const NAME_INPUTS = ['ariaLabel', 'ariaLabelledby'];
 /** The attributes they are forwarded through. */
 const NAME_ATTRIBUTES = ['[attr.aria-label]', '[attr.aria-labelledby]'];
+/**
+ * How a component takes ITSELF out of the accessibility tree. Written as a plain attribute in
+ * the host block, or bound — a bound one is not read here, and it does not have to be: the
+ * question point 8 asks is whether the subtree can be hidden at all, and a binding says it can
+ * be, in some state a page will render.
+ */
+const HOST_HIDDEN_KEYS = ['aria-hidden', '[attr.aria-hidden]'];
+
 /** The same names as a consumer could write them on the host, plain or bound. */
 const HOST_NAME_KEYS = [
   'aria-label',
@@ -299,9 +318,18 @@ const attributesOf = (text) => {
  * not focusable, nor is a hidden input; a `tabindex` makes anything focusable, which is how a
  * role written onto a `div` becomes a widget.
  */
-const isWidget = (tag, attrs) => {
-  if (COMPOSITE_ROLES.has(attrs.get('role'))) return true;
-  if (NAMED_TAGS.has(tag)) return true;
+const isWidget = (tag, attrs) =>
+  COMPOSITE_ROLES.has(attrs.get('role')) ||
+  NAMED_TAGS.has(tag) ||
+  isFocusable(tag, attrs);
+
+/**
+ * The narrower question inside the one above: can a user LAND on this element. It is the whole
+ * of what point 8 asks — a `<progress>` inside a hidden subtree is announced to nobody and
+ * that is the intent, while a `<button>` there is a control the keyboard reaches and the
+ * reader cannot describe.
+ */
+const isFocusable = (tag, attrs) => {
   if (
     attrs.has('tabindex') ||
     attrs.has('[tabindex]') ||
@@ -711,11 +739,50 @@ const checkAria = ({ components, counted, templates, documents }) => {
       );
     }
 
+  // ── 8. a hidden component holds nothing to land on ──────────────────────────
+  // The two rules are one sentence read from both ends. A subtree taken out of the
+  // accessibility tree may hold nothing a user can land on — that is axe's
+  // `aria-hidden-focus`, and here it is answered before a page exists to report it on. And a
+  // component that hides itself may declare no name: `ariaLabel` on a hidden host is an input
+  // whose value nothing ever reads, which is point 3's defect turned inside out.
+  //
+  // It reads the HOST and not every `aria-hidden` in a template, deliberately: what the tag
+  // scan gives is a flat list, so "inside a hidden element" is a question about nesting it
+  // cannot answer. A host is the one hidden element whose subtree IS the whole template, so
+  // this is the part of the rule that can be decided rather than guessed.
+  const hidden = components.filter((c) =>
+    HOST_HIDDEN_KEYS.some((key) => c.host.has(key)),
+  );
+  for (const component of hidden) {
+    const landable = component.widgets.filter((widget) =>
+      isFocusable(widget.tag, widget.attrs),
+    );
+    if (landable.length)
+      throw new AriaError(
+        'hidden',
+        `${component.className} (${component.templatePath}) hides its host from the ` +
+          `accessibility tree and holds ${landable.length} element(s) a user can land on ` +
+          `(${sorted(landable.map((w) => `<${w.tag}>`)).join(', ')}) — a keyboard reaches ` +
+          `them and a screen reader cannot describe them, which is axe's ` +
+          `\`aria-hidden-focus\`. Either the subtree is decoration and holds no control, or ` +
+          `it is not decoration and the host may not be hidden`,
+      );
+    const named = NAME_INPUTS.filter((name) => component.inputs.has(name));
+    if (named.length)
+      throw new AriaError(
+        'hidden',
+        `${component.className} (${component.file}) hides its host from the accessibility ` +
+          `tree and declares ${named.join(' / ')} — a name inside a hidden subtree is read ` +
+          `by nobody, so the input promises a consumer something it cannot deliver`,
+      );
+  }
+
   return {
     description:
       `${components.length} components, ${naming.length} of them naming a widget of their ` +
       `own (${sorted(naming.map((c) => c.selector)).join(', ')}); ${pairs} hint/error pair(s) ` +
-      `on separate branches, ${announced} error part(s) announcing themselves`,
+      `on separate branches, ${announced} error part(s) announcing themselves, ` +
+      `${hidden.length} hidden from the tree with nothing to land on`,
   };
 };
 

@@ -1,0 +1,5 @@
+{
+  "point": 8,
+  "check": "hidden",
+  "$reason": "The state a decorative component grows into the day somebody adds a control to it. The host is `aria-hidden`, so the whole subtree is out of the accessibility tree — and the `<button>` inside it is still in the tab order: a sighted keyboard user lands on a control a screen-reader user is never told about. axe calls it `aria-hidden-focus` and reports it on a page that renders it; here there is no page yet, and the two name inputs are bound correctly, so every other point of this gate passes over it in silence."
+}

@@ -1,0 +1,98 @@
+<h2 class="view__title">Skeleton</h2>
+<p class="muted view__intro">
+  A placeholder standing where content will be. It draws and says nothing — the
+  component is <code>aria-hidden</code> outright — and what a screen reader has
+  to hear is on the region instead: <code>aria-busy="true"</code> on the element
+  the content will land in. Its size is not a number of ours either: a line is
+  <code>1lh</code> and the bar inside it is <code>1cap</code>, both computed by
+  the browser out of the type the skeleton stands in.
+</p>
+
+<sbx-demo
+  heading="The space it holds"
+  summary="Press the button and watch the region's height: the skeleton stands in exactly three line boxes, and three lines of text take exactly three line boxes, so nothing moves when the content arrives. The busy state is on the region — a skeleton is hidden from the accessibility tree and cannot announce its own wait."
+  [reqs]="['req-a11y-built-in', 'lesson-136']"
+  data-testid="demo-swap"
+>
+  <div
+    class="view__region"
+    [attr.aria-busy]="pending() ? 'true' : null"
+    data-testid="region"
+  >
+    @if (pending()) {
+    <pct-skeleton [lines]="3" data-testid="skeleton-swap" />
+    } @else {
+    <p class="view__text" data-testid="text-swap">
+      The answer arrived.<br />It is three lines long,<br />as the placeholder
+      said.
+    </p>
+    }
+  </div>
+  <div class="view__row">
+    <button pctButton variant="outline" (click)="toggle()" data-testid="toggle">
+      {{ pending() ? 'The content arrives' : 'Back to waiting' }}
+    </button>
+    <span class="view__state"
+      >{{ pending() ? 'aria-busy="true"' : 'no busy state — the region has
+      answered' }}</span
+    >
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="Measured in the type it stands in"
+  summary="The same component with the same inputs, in two places set in different type. Nothing is bound: a line is one line box of the surrounding text and the bar inside it is the height of a capital letter, so a skeleton in a heading is a heading's size and one in a caption is a caption's."
+  [reqs]="['req-api-platform']"
+  data-testid="demo-type"
+>
+  <div
+    class="view__type view__type--large"
+    aria-busy="true"
+    data-testid="type-large"
+  >
+    <pct-skeleton [lines]="2" data-testid="skeleton-large" />
+  </div>
+  <div
+    class="view__type view__type--small"
+    aria-busy="true"
+    data-testid="type-small"
+  >
+    <pct-skeleton [lines]="2" data-testid="skeleton-small" />
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="Lines, a box, and the disc that is neither"
+  summary="Two shapes and no third one: text is lines of a paragraph, block is one box the consumer sizes — a picture, a map. A disc is a block with a radius token, which is why there is no circle shape to choose."
+  [reqs]="['req-api-attributes', 'req-token-override']"
+  data-testid="demo-shapes"
+>
+  <div class="view__shapes" aria-busy="true">
+    <pct-skeleton [lines]="3" data-testid="skeleton-text" />
+    <pct-skeleton
+      shape="block"
+      class="view__picture"
+      data-testid="skeleton-block"
+    />
+    <pct-skeleton
+      shape="block"
+      class="view__avatar"
+      data-testid="skeleton-avatar"
+    />
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="A card that is still coming"
+  summary="What the two shapes are for, arranged the way an application arranges them. One busy region holds the lot: the wait is a fact about the card, not about each of the five placeholders inside it."
+  [reqs]="['req-a11y-built-in']"
+  data-testid="demo-card"
+>
+  <div class="view__card" aria-busy="true" data-testid="card">
+    <pct-skeleton shape="block" class="view__avatar" />
+    <div class="view__card-body">
+      <pct-skeleton class="view__card-title" />
+      <pct-skeleton [lines]="3" />
+    </div>
+  </div>
+</sbx-demo>

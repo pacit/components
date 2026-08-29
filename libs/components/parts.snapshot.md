@@ -113,6 +113,8 @@ from what the browser really gets.
 ./select PctSelect placeholder
 ./select PctSelect trigger
 ./select PctSelect value
+./skeleton PctSkeleton fill
+./skeleton PctSkeleton track
 ./slider PctSlider bubble
 ./slider PctSlider control
 ./slider PctSlider error

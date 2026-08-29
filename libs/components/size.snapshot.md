@@ -45,6 +45,7 @@ before an application ships them.
 ./progress 7029 ./core @angular/core
 ./radio 15347 ./core @angular/core
 ./select 68966 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core
+./skeleton 2997 - @angular/core
 ./slider 17301 ./core @angular/core
 ./switch 12301 ./core @angular/core
 ./tabs 13569 ./core @angular/core

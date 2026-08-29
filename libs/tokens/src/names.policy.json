@@ -102,6 +102,7 @@
       "focus",
       "hover",
       "invalid",
+      "last",
       "muted",
       "selected",
       "today"

@@ -1,0 +1,5 @@
+{
+  "point": 8,
+  "check": "hidden",
+  "$reason": "The same point read from the other end. The component hides its host and holds nothing focusable — the drawing is correct — and it declares the two name inputs anyway. Nothing else in the gate objects: with no widget in the template the component is not in the naming set at all, so points 3, 4 and 5 never look at it, and a consumer is offered an `ariaLabel` whose value lands in a subtree no reader ever visits."
+}

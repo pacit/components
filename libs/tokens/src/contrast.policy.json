@@ -1148,6 +1148,22 @@
       "bg": "pct.surface",
       "level": "UI",
       "severity": "warn"
+    },
+    {
+      "$comment": "The third of the same family, and the one where the reason is strongest. A skeleton stands in for content that HAS NOT ARRIVED: it has to be visible enough to hold the space and say that something is coming, and it must not look like something a user can read or press. A placeholder clearing 3:1 against the page would turn a waiting card into a wall of solid blocks — so the requirement it really answers is the forced-colours one, where the box keeps its extent through an outline in the user's own palette.",
+      "name": "UI: a skeleton's placeholder against the page",
+      "fg": "pct.skeleton.track-bg",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "$comment": "The sheen against the placeholder it travels across — this pair is the one above turned around (the page's colour on the border's), so it could not clear 3:1 even in principle. It is motion and not information: nothing is said by the sheen that the placeholder does not already say, and a band that cleared a contrast floor would be a flash on every card that is waiting.",
+      "name": "UI: the sheen of a skeleton against its placeholder",
+      "fg": "pct.skeleton.fill-bg",
+      "bg": "pct.skeleton.track-bg",
+      "level": "UI",
+      "severity": "warn"
     }
   ]
 }

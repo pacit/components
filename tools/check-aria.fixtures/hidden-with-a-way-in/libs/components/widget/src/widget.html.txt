@@ -1,0 +1,9 @@
+<div class="pct-widget__surface"></div>
+<button
+  type="button"
+  class="pct-widget__retry"
+  [attr.aria-label]="ariaLabel() || null"
+  [attr.aria-labelledby]="ariaLabelledby() || null"
+>
+  Retry
+</button>

@@ -175,4 +175,33 @@ test.describe('Writing direction — the layout mirrors in dir="rtl"', () => {
     );
     expect(rtlFill.x).toBeGreaterThan(rtlGroove.x);
   });
+
+  /**
+   * A paragraph's last line is short at its END, and which edge that is nobody wrote down: the
+   * bar is placed by `inline-size` inside a grid row, so the start edge is the one the writing
+   * direction hands it. The sheen inside it travels the same way, by `inset-inline-start`.
+   *
+   * Geometry again, and it has to be: the DOM is identical in both directions, so a physical
+   * `left` here would leave every attribute right and the picture mirrored.
+   */
+  test('a skeleton’s short last line keeps to the reading direction', async ({
+    page,
+  }) => {
+    await visit(page, '/skeleton');
+    const host = page.getByTestId('skeleton-text');
+    const last = host.locator('[data-pct-part="track"]').last();
+
+    const ltrHost = await boxOf(host);
+    const ltrLast = await boxOf(last);
+    expect(ltrLast.width).toBeLessThan(ltrHost.width);
+    expect(ltrLast.x).toBeCloseTo(ltrHost.x, 0);
+
+    await setRtl(page);
+    expect(await directionOf(page, 'pct-skeleton')).toBe('rtl');
+
+    const rtlHost = await boxOf(host);
+    const rtlLast = await boxOf(last);
+    expect(rtlLast.x + rtlLast.width).toBeCloseTo(rtlHost.x + rtlHost.width, 0);
+    expect(rtlLast.x).toBeGreaterThan(rtlHost.x);
+  });
 });

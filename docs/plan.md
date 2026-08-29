@@ -350,6 +350,79 @@ decision says it is"` goes red the day a second engine ships it
     **4.6** has no column for. The whole file's mutants die by
     assertion — the clock column reads zero, which is what a component with no timing in it
     looks like
+  - _the skeleton is done_ (7 of 13). It is the first component here that stands **alone and
+    says nothing**: `aria-hidden` on the host, no role, no text, no slot, no `size` input and no
+    `PCT_TEXTS` key. `pct-icon` is decoration too, but it is decoration beside a control that
+    carries the meaning; a skeleton stands where the meaning has not arrived yet. What it answers instead is where the wait lives — `aria-busy` on the
+    **region**, which is the consumer's own element and never this one, 0037's attribute at its
+    second appearance and its first outside the library's own markup — and how big a placeholder
+    is: a line is `1lh` and the bar inside it `1cap`, both the browser's arithmetic over the
+    consumer's type. Measured on the sandbox's own card, the region is **57 px with the
+    placeholder and 57 px with the answer** in all three engines, which is the whole reason the
+    component exists. See
+    [0050](decisions/0050-a-skeleton-is-a-picture-of-a-wait.md),
+    [`lesson-136`](lessons.md#lesson-136), [`lesson-137`](lessons.md#lesson-137)
+  - gate: `apps/sandbox-e2e/src/skeleton.spec.ts` (11 × 3) plus `/skeleton` in the axe /
+    hydration audits through `SBX_ROUTES`, one forced-colours reading, one reduced-motion
+    reading, one RTL geometry case, two screenshots and 20 unit cases. Cost `./skeleton`
+    **2997 B on `@angular/core` alone** — it carries **no `./core`**, which every component
+    entrypoint but the icon seam does, and the smallest component entrypoint before it was
+    `./progress` at 7029 B. It falls out of the decisions rather than out of thrift: no `size`
+    input is no `PCT_CONFIG`, no text is no `PCT_TEXTS`, no icon is no drawing to import
+  - and it cost everybody else **nothing** for the second component running: no `PCT_TEXTS`
+    key, so not one other row of the size snapshot moved
+  - **the sheen is the progress band at its second component**, which is what turns 0049's
+    answer into a rule rather than one component's accident — an element with a background
+    colour travelling by `inset-inline-start`, because a gradient is dropped outright in
+    forced colours ([`lesson-134`](lessons.md#lesson-134)) and an `opacity` pulse is refused by
+    `req-token-no-opacity`. The two parts carry the progress bar's own names (`track`, `fill`)
+    for the same reason: it is the same drawing
+  - it made **`check-aria` read one thing more**, the fourth component in a row to do so — and
+    this time a whole point rather than a list. **Point 8**: a component whose host carries
+    `aria-hidden` holds nothing focusable and declares no name of its own. That is axe's
+    `aria-hidden-focus` moved to build time, where the audit can only report it on a page
+    somebody rendered ([`lesson-65`](lessons.md#lesson-65)'s shape); the two controls are
+    `hidden-with-a-way-in` (a `<button>` grown inside the decoration) and `hidden-with-a-name`
+    (an `ariaLabel` no reader will ever visit). It widens **4.20** rather than closing it: the
+    new point's correctness now rests on the same hand-written `FOCUSABLE_TAGS`, so a tag
+    missing from that list is no longer only a widget the gate cannot see — it is a control the
+    gate approves inside a subtree it knows is hidden
+  - **two e2e readings were written from memory and had to be measured instead**, and both are
+    the same mistake in two shapes. A bar of `1cap` is **under half** the line box at
+    `line-height: 1.5` (22.84 against 48), so "taller than half the line" was a claim about a
+    line height nobody had fixed — the proportion that holds is against the FONT (0.714 of the
+    em box in all three engines). And the sheen's bounding rectangle really does travel out of
+    the bar and past its end: what keeps the paint inside is the CLIP, and a rectangle reports
+    the box rather than what was painted. Both cases assert what is true now
+  - one word joins the token dictionary — `last`, for `--pct-skeleton-track-width-last` — and
+    the placeholder's corner is `{pct.radius.md}` rather than the progress bar's `999px`: the
+    first screenshot showed a photograph's placeholder rounded into a pill, while on a bar the
+    height of a capital letter the radius clamps to half the height and the ends come out round
+    anyway
+  - **the mutation run found one hole and named two mutants nothing can kill**, and the hole is
+    the same one three components in a row have now produced: `shape`'s default. Every
+    arrangement in the spec that could see the drawing bound the input, so `'text'` could be
+    blanked and the bar-drawing branch answered exactly as before — the accordion's six, the
+    pagination's three and the progress bar's four, at a component with only two inputs. The
+    bare host reads `data-pct-shape` now, and `skeleton.ts` goes **88.46 → 92.31**
+  - the two left are **equivalent, and one of them for a reason worth the line**: `isDevMode()`
+    forced to `true` is the drawer's and the progress bar's shape, and `parsed >= 1` weakened to
+    `parsed > 1` cannot be told apart at the boundary **because the fallback IS the boundary** —
+    one line means one line whichever branch answers. A clamp whose default equals its own floor
+    has no observable edge, which is a nicer statement of `lesson-95`'s family than the guard
+    that is merely unreachable
+  - recorded: `skeleton.ts` **92.31 24(0) 2 0 1**, and the library is **4323 mutants at 82.47%**
+    (4297 at 82.41% before this step), counted the gate's way rather than Stryker's — its own
+    line reads **82.66%** over the same run, because the gate keeps in the denominator what
+    Stryker sets aside. The clock column reads zero here, which is what a component with no
+    timing in it looks like; and two rows that had a `1` there — `core/src/field.ts` and
+    `core/src/texts.ts` — read `0` over untouched code, which is the wobble **4.2** already
+    records from the other side
+  - left **4.23** behind again, and told its two halves apart in passing: the new view is a
+    seventh row in the navigation, so the six page-level baselines were re-recorded once more —
+    but the full suite came back **1417 passed, zero failed** in 20.1 minutes, where each of the
+    two steps before it had one red behavioural case in a component nobody had touched. The
+    pictures are the deterministic cost of a view; the red case is a load-dependent one
 
 - [ ] **1.2 — table / datagrid** on a headless core (column model, sorting, filtering, grouping,
       selection as signals) separated from rendering. **The last item of the phase** — the only
@@ -771,6 +844,9 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     library, the twenty `check-tokens` reports — the table names **seven of twenty**, so
     thirteen entrypoints are missing rather than eight. `./pagination` and `./progress` are the
     two most recent, and neither was added by hand for the reason written above
+  - `./skeleton` makes it **fourteen missing of twenty-one**, and it is the one that would be
+    worth naming first: at 2997 B against `@angular/core` alone it is the cheapest component in
+    the package to take, which is precisely the sort of fact a first visitor reads a table for
 
 - [x] **4.11 — the mutation run measures 22 of 36 source files, and nothing says which 22**
   - closed with a **rule**, which is what the item asked for. The gate reads the library's
@@ -1018,6 +1094,12 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     curated tags across two lists now, and the item's complaint is not merely still true — it
     has been reproduced by the fix. What would settle it is the same for both lists: derive
     them from the platform's own tables rather than remember them
+  - _notes, one component later:_ **the stakes went up without the list moving.** The skeleton
+    added point 8 — a host hidden from the accessibility tree holds nothing focusable — and that
+    point reads the very same `FOCUSABLE_TAGS`. So a tag missing from it used to cost one thing,
+    a widget nobody could name; it now costs a second, a control the gate declares safe inside a
+    subtree it knows is hidden. `<video controls>` in a skeleton is not a component anybody has
+    written, and neither was a `<summary>` the week before it was
 
 - [ ] **4.21 — the library's layer order is three numbers in three files and no rule**
   - `--pct-toast-z-index` is **1100** and its comment says why: above the CDK's overlay
@@ -1115,6 +1197,16 @@ direction` expecting index 32 and getting 31 in the first, its right-to-left twi
     read by a person, and a scroll assertion that flips is read as the component's defect. The
     dialog case needs a page whose height it decides — content of its own, or a fixed
     `min-height` on the stage — rather than whatever the sandbox happens to be that week
+  - **the third view in a row paid the picture toll and NOT the behavioural one**, and that is
+    worth recording because it is what tells the two halves of this item apart. `/skeleton` re-
+    recorded the same six baselines — the seventh row in the navigation, nothing else — and the
+    full suite came back `1417 passed`, **zero failed**, in 20.1 minutes on the same machine
+    that had one red case in each of the two steps before it. So the six pictures are a
+    **deterministic** cost of adding a view, and the red behavioural case is a load-dependent
+    one: the extra row moves where the page stands, and whether that matters depends on which
+    worker is descheduled that minute. The repair is unchanged and so is the priority — a
+    picture that moves is read by a person, an assertion that flips at random is read as a
+    defect in a component nobody touched
 
 ## 5. Gaps with no deadline
 

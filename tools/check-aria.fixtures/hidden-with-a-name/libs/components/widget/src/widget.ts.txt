@@ -1,0 +1,15 @@
+import { Component, input } from '@angular/core';
+
+/** Decoration that offers a name: hidden from the tree, and asking for a string nobody reads. */
+@Component({
+  selector: 'pct-widget',
+  templateUrl: './widget.html',
+  host: {
+    class: 'pct-widget',
+    'aria-hidden': 'true',
+  },
+})
+export class PctWidget {
+  readonly ariaLabel = input<string>('');
+  readonly ariaLabelledby = input<string>('');
+}

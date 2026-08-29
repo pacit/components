@@ -1,0 +1,21 @@
+<!--
+  One markup for both shapes, and the sheet is what tells them apart (0050).
+
+  A `track` is one placeholder: the bar standing where a line of text will be, or the box
+  standing where a picture will be. A `fill` is the sheen travelling across it — the same two
+  names the progress bar uses, because it is the same drawing: a skeleton IS an indeterminate
+  progress bar wearing the shape of the content, and one vocabulary for both is what lets a
+  skin style them together.
+
+  There is no `<ng-content>` here and there will not be one. The host is `aria-hidden`, and a
+  slot is where a consumer puts a button — a control the keyboard reaches inside a subtree no
+  reader visits, which is axe's `aria-hidden-focus` in a component they have no way to fix.
+  `check-aria` point 8 refuses a focusable element written HERE, before any page exists to
+  report it on; what a consumer would project through a slot is past the end of what any gate
+  in this repository can see, so the slot is what is refused.
+-->
+@for (bar of bars(); track $index) {
+<div class="pct-skeleton__track" data-pct-part="track">
+  <div class="pct-skeleton__fill" data-pct-part="fill"></div>
+</div>
+}

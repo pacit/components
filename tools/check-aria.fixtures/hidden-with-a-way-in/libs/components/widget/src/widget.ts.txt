@@ -1,0 +1,15 @@
+import { Component, input } from '@angular/core';
+
+/** Decoration that grew a control: hidden from the tree, and still reachable by the keyboard. */
+@Component({
+  selector: 'pct-widget',
+  templateUrl: './widget.html',
+  host: {
+    class: 'pct-widget',
+    'aria-hidden': 'true',
+  },
+})
+export class PctWidget {
+  readonly ariaLabel = input<string>('');
+  readonly ariaLabelledby = input<string>('');
+}

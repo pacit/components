@@ -25,6 +25,7 @@
     "menu/**/*.ts",
     "pagination/**/*.ts",
     "progress/**/*.ts",
+    "skeleton/**/*.ts",
     "field/**/*.ts",
     "icon/**/*.ts",
     "testing/**/*.ts"

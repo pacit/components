@@ -3630,3 +3630,59 @@ one this repository keeps re-learning about denominators: a measurement whose SC
 implicit measures whatever the harness happens to hand it. The date field's own warning case
 sidesteps this by declaring the spy inside the single case that uses it, which works right up
 until a second case in the same file wants one.
+
+### <a id="lesson-136"></a>`lesson-136` — A placeholder measured in `1lh` holds exactly the space the text will take, and one measured in pixels holds a guess
+
+Every skeleton component in the wild is built out of numbers somebody chose: a bar 16 px tall,
+a gap of 8, a last line at 60%. The first two are the interesting ones, because the browser
+already computes both and has done since 2023:
+
+| unit   | what it is                     | measured at `font-size: 32px; line-height: 1.5` |
+| ------ | ------------------------------ | ----------------------------------------------- |
+| `1lh`  | the element's own LINE BOX     | 48 px in chromium, firefox and webkit alike     |
+| `1em`  | the font size                  | 32 px                                           |
+| `1cap` | the height of a capital letter | 22.84 px (firefox 22.850 — a font metric)       |
+
+The reading that matters is the one below the table. A `<p>` of three lines in that same type
+is **144 px**; a stack of `1lh` rows is 48 px a row — 192 px for the four the probe drew, and
+144 for three. The same number in all three engines, because it is the same arithmetic done
+twice. So a skeleton whose rows are line boxes holds exactly the space the text will occupy:
+measured on the sandbox's own card, the region is **57 px with the placeholder and 57 px with
+the answer**, and the page does not move when the content lands.
+
+A token in pixels cannot do that, and the reason is not precision but SCOPE: `--pct-skeleton-
+line-height: 16px` is right at the one font size it was chosen for and wrong in a heading, in a
+caption, and in every application that sets its own type. The same goes for the gap between the
+lines, which is the sharper half — there is no gap. What stands between two bars is the
+LEADING the line box already has, so a component that centred a `1cap` bar in a `1lh` row has
+nothing left to choose.
+
+`cap` is the one to watch: it comes from the font's own metrics, so the three engines agree to
+about a hundredth of a pixel and not exactly (22.84375 against 22.850006). An assertion on it
+has to be a proportion — shorter than the line, taller than half of it — and never an equality.
+
+### <a id="lesson-137"></a>`lesson-137` — `overflow: hidden` takes focus in no engine, where `overflow: auto` takes it in two of three
+
+[`lesson-126`](#lesson-126) measured that a scrollable box is focusable in chromium and firefox
+and not in webkit. The skeleton needed the other half of that measurement, because its bar
+clips a travelling sheen and the whole component is `aria-hidden`: an element that is hidden
+from the accessibility tree and reachable by the keyboard is axe's `aria-hidden-focus`, which
+is the one violation this component could cause.
+
+Probed on a bare page, one overflowing child each, `Tab` from the button before them:
+
+| box                | chromium        | firefox         | webkit        |
+| ------------------ | --------------- | --------------- | ------------- |
+| `overflow: auto`   | focused, in Tab | focused, in Tab | not focusable |
+| `overflow: hidden` | not focusable   | not focusable   | not focusable |
+| `overflow: clip`   | not focusable   | not focusable   | not focusable |
+
+So the rule the engines implement is about SCROLLABILITY and not about clipping: a box a user
+could scroll is given a way to scroll it, and a box that merely cuts its content off is not a
+scroll container at all. `hidden` is the odd one in the CSS specification — it is scrollable
+programmatically — and no engine treats that as a reason to focus it.
+
+What the pair of lessons is really about is that "make it clip" and "make it scroll" are one
+declaration apart and one requirement apart. The first is safe inside a hidden subtree; the
+second turns the same subtree into a violation in two engines out of three, and the visible
+result — content cut off at the box's edge — is identical in both.

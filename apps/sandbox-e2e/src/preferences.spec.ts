@@ -140,6 +140,25 @@ test.describe('prefers-reduced-motion', () => {
       .locator('[data-pct-part="fill"]');
     expect(await firstDurationMs(fill, 'transition-duration')).toBeLessThan(1);
   });
+
+  /**
+   * The third continuous indicator, and the reading is the same one again: the sheen slows to
+   * the loop token's reduced value and keeps going. A skeleton that stood still would be a
+   * grey box nobody can tell from a finished layout — the reduction takes the vestibular
+   * trigger away, not the meaning.
+   */
+  test('a skeleton’s sheen slows to the loop token and does not stop', async ({
+    page,
+  }) => {
+    await visit(page, '/skeleton', { media: REDUCE });
+    await expectMedia(page, '(prefers-reduced-motion: reduce)', true);
+
+    const sheen = page
+      .getByTestId('skeleton-text')
+      .locator('[data-pct-part="fill"]')
+      .first();
+    expect(await firstDurationMs(sheen, 'animation-duration')).toBe(1500);
+  });
 });
 
 test.describe('prefers-color-scheme', () => {

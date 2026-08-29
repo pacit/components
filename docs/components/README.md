@@ -32,6 +32,7 @@ a machine; prose with a missing paragraph is not.
 | [`PctAccordion`](accordion.md)   | `@pacit/components/accordion`  | a stack of sections, opened and closed |
 | [`PctPagination`](pagination.md) | `@pacit/components/pagination` | a control that owns the current page   |
 | [`PctProgress`](progress.md)     | `@pacit/components/progress`   | how far along a task is                |
+| [`PctSkeleton`](skeleton.md)     | `@pacit/components/skeleton`   | the shape of content still coming      |
 
 ## The order of the components to come
 
@@ -175,6 +176,14 @@ The order follows **architectural debt**, not popularity:
    [`lesson-133`](../lessons.md#lesson-133)). The travelling band is an element and not a
    gradient for a measured reason: a forced-colours mode drops gradients outright
    ([`lesson-134`](../lessons.md#lesson-134)).
+   The **skeleton** is built, and it is the first component here that is nothing but a picture:
+   `aria-hidden` outright, no text, no slot, no role. What it answers instead is where the wait
+   lives — `aria-busy` on the REGION, which is the consumer's own element — and how big a
+   placeholder is: a line is `1lh` and the bar inside it `1cap`, so it holds exactly the space
+   the text will take and the page does not move when the content lands
+   ([0050](../decisions/0050-a-skeleton-is-a-picture-of-a-wait.md),
+   [`lesson-136`](../lessons.md#lesson-136)). Its sheen is the progress bar's band at its
+   second component, which is what turns that mechanism into a rule.
 7. **Table / DataGrid** — has to stand on a **headless core** separated from rendering.
 
 Before item 1 the **behaviour layer in `core`** has to exist: list navigation (private methods
