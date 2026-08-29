@@ -103,6 +103,21 @@ export interface PctTexts {
    * translation at once, which is `toastDismiss`'s argument at the next component.
    */
   readonly drawerClose: string;
+  /**
+   * Pagination: the accessible name of the navigation landmark the pager is. A default in the
+   * application's language and nothing more — a page with two pagers (above and below a
+   * table) tells them apart through the `ariaLabel` input, not through this.
+   */
+  readonly paginationLabel: string;
+  /**
+   * Pagination: the accessible name of the stepper that goes back one page. The button draws
+   * a chevron and nothing else, so this string is the only name it has. A key of its own and
+   * not the calendar's `datePreviousMonth`: one steps a pager and the other a grid of days,
+   * and a language that says the two differently has nowhere else to.
+   */
+  readonly paginationPrevious: string;
+  /** Pagination: the accessible name of the stepper that goes forward one page. */
+  readonly paginationNext: string;
 }
 
 export const PCT_DEFAULT_TEXTS: PctTexts = {
@@ -121,6 +136,9 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   dateYearLetter: 'y',
   toastDismiss: 'Dismiss',
   drawerClose: 'Close',
+  paginationLabel: 'Pagination',
+  paginationPrevious: 'Previous page',
+  paginationNext: 'Next page',
 };
 
 /**

@@ -41,6 +41,19 @@ export class PctWidget {
     () => (item) => item !== '',
   );
 
+  /**
+   * A comment INSIDE a factory's argument, and the apostrophe below is the whole of what this
+   * member is for. Point 4 reads a factory's argument as source text; a scanner pairing quotes
+   * with a regular expression closes a literal that opened in the prose on the `'sm'` in the
+   * code, and hands `isProse` everything between the two — which reads as prose, because half
+   * of it is. Disarm `literalsIn` and this reference input goes red on `prose-in-factory`,
+   * naming a file that did nothing wrong ([`lesson-132`](../../../../../docs/lessons.md#lesson-132)).
+   */
+  protected readonly narrowest = computed(() => {
+    // The widget's narrowest size on the axis.
+    return this.size() === 'sm';
+  });
+
   protected readonly open = signal(true);
 
   toggle(): void {

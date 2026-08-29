@@ -1,0 +1,74 @@
+{
+  "pct": {
+    "pagination": {
+      "$comment": "A row of buttons that moves through the pages of a collection. It paints almost nothing of its own: a pager stands on the page's surface, not on a panel of its own, so the tokens are the gap between the items, the item box on the shared control axis, the three colours a page label wears (rest, hover, current) and the muted marker that stands for a folded run of pages. The current page is the one place the accent appears — it is filled, because `aria-current` is the only other channel and a forced-colours mode drops the fill.",
+
+      "list-gap": { "$type": "dimension", "$value": "{pct.space.2}" },
+
+      "$comment-item-height": "Every button in the strip — a page number and a stepper alike — is an `item`. The box tracks the token shared with the field and the button ({pct.control.height}), so a pager lines up with a control of the same size (`req-api-size`). The `-sm` / `-lg` variants swap the base tokens; size `md` keeps to them.",
+      "item-height": {
+        "$type": "dimension",
+        "$value": "{pct.control.height.md}"
+      },
+      "item-height-sm": {
+        "$type": "dimension",
+        "$value": "{pct.control.height.sm}"
+      },
+      "item-height-lg": {
+        "$type": "dimension",
+        "$value": "{pct.control.height.lg}"
+      },
+      "$comment-item-target-min": "The floor a finger gets, so it is the floor an eye sees at every skin (`req-a11y-touch`). The height above clears it at the default type size; this is what a theme that shrinks the control axis runs into — the tabs' `tab-target-min`, one component over.",
+      "item-target-min": {
+        "$type": "dimension",
+        "$value": "{pct.target.min}"
+      },
+      "item-padding-x": { "$type": "dimension", "$value": "{pct.space.3}" },
+      "item-padding-x-sm": {
+        "$type": "dimension",
+        "$value": "{pct.space.2}"
+      },
+      "item-padding-x-lg": {
+        "$type": "dimension",
+        "$value": "{pct.space.4}"
+      },
+      "item-radius": { "$type": "dimension", "$value": "{pct.radius.md}" },
+      "item-font-size": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.md}"
+      },
+      "item-font-size-sm": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.sm}"
+      },
+      "item-font-size-lg": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.lg}"
+      },
+      "item-font-weight-selected": {
+        "$type": "fontWeight",
+        "$value": "{pct.font.weight.medium}"
+      },
+
+      "$comment-item-bg": "Equal to the page surface rather than `transparent`, so the contrast gate has a concrete partner to measure the label against — visually it is the same thing on a surface-coloured page.",
+      "item-bg": { "$type": "color", "$value": "{pct.surface}" },
+      "item-fg": { "$type": "color", "$value": "{pct.text-muted}" },
+      "item-bg-hover": { "$type": "color", "$value": "{pct.surface-100}" },
+      "item-fg-hover": { "$type": "color", "$value": "{pct.text}" },
+      "item-fg-disabled": {
+        "$type": "color",
+        "$value": "{pct.text-disabled}"
+      },
+
+      "$comment-item-selected": "The page you are on: filled with the accent, because `aria-current` is the only channel left once a forced-colours mode removes the fill, and a quiet outline would not read as 'here' next to eight other buttons. Named `selected` for the token dictionary; the DOM attribute is `data-pct-current`, which cannot be mistaken for another entrypoint's selector (4.13, the tabs' and calendar's workaround made a rule).",
+      "item-bg-selected": { "$type": "color", "$value": "{pct.primary}" },
+      "item-fg-selected": { "$type": "color", "$value": "{pct.on-primary}" },
+      "item-border-selected": {
+        "$type": "color",
+        "$value": "{pct.primary}"
+      },
+
+      "marker-fg": { "$type": "color", "$value": "{pct.text-muted}" }
+    }
+  }
+}

@@ -29,23 +29,24 @@ and the class metadata carries the decorator a second time, and both are compile
 before an application ships them.
 
 ```
-. 3428 ./core @angular/core
-./accordion 11286 ./core,./icon @angular/common,@angular/core
-./button 6917 ./core @angular/core
-./checkbox 14801 ./core,./icon @angular/common,@angular/core
-./core 8157 - @angular/core
-./date 39032 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
-./dialog 15260 ./core,./icon @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
-./drawer 14031 ./core,./icon @angular/common,@angular/core
-./field 27112 ./core @angular/core,@angular/forms,@angular/forms/signals
+. 3519 ./core @angular/core
+./accordion 11377 ./core,./icon @angular/common,@angular/core
+./button 7008 ./core @angular/core
+./checkbox 14892 ./core,./icon @angular/common,@angular/core
+./core 8248 - @angular/core
+./date 39123 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
+./dialog 15351 ./core,./icon @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
+./drawer 14122 ./core,./icon @angular/common,@angular/core
+./field 27203 ./core @angular/core,@angular/forms,@angular/forms/signals
 ./icon 2552 - @angular/common,@angular/core
-./menu 18275 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core
-./popover 13546 ./core @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/core
-./radio 15256 ./core @angular/core
-./select 68875 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core
-./slider 17210 ./core @angular/core
-./switch 12210 ./core @angular/core
-./tabs 13478 ./core @angular/core
-./toast 15366 ./core,./icon @angular/common,@angular/core
-./tooltip 13055 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core
+./menu 18366 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core
+./pagination 13581 ./core,./icon @angular/common,@angular/core
+./popover 13637 ./core @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/core
+./radio 15347 ./core @angular/core
+./select 68966 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core
+./slider 17301 ./core @angular/core
+./switch 12301 ./core @angular/core
+./tabs 13569 ./core @angular/core
+./toast 15457 ./core,./icon @angular/common,@angular/core
+./tooltip 13146 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core
 ```

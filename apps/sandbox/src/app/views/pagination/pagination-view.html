@@ -1,0 +1,113 @@
+<h2 class="view__title">Pagination</h2>
+<p class="muted view__intro">
+  A control that owns the current page of a collection. <code>count</code> is a
+  number of pages, never a number of items; a press emits, it does not navigate.
+  Every button in the strip is a native <code>&lt;button&gt;</code>, so
+  <kbd>Tab</kbd> moves between them and <kbd>Enter</kbd> activates — none of
+  that is code in this library.
+</p>
+
+<sbx-demo
+  heading="A short pager"
+  summary="Three pages, so nothing folds: the strip is just the numbers and the two steppers, which sit disabled at the ends."
+  [reqs]="['req-api-platform', 'req-a11y-built-in']"
+  data-testid="demo-few"
+>
+  <pct-pagination [(page)]="few" [count]="3" data-testid="pagination-few" />
+  <p class="view__state">page {{ few() }}</p>
+</sbx-demo>
+
+<sbx-demo
+  heading="The folding"
+  summary="Twenty pages. The ends stay pinned, a window of three follows the current page, and a run of two or more hidden pages becomes one ellipsis — a single hidden page is drawn as itself."
+  [reqs]="['req-api-signals']"
+  data-testid="demo-many"
+>
+  <pct-pagination [(page)]="many" [count]="20" data-testid="pagination-many" />
+  <p class="view__state">page {{ many() }} of 20</p>
+</sbx-demo>
+
+<sbx-demo
+  heading="Bound to a list"
+  summary="count is Math.ceil(items / pageSize) at the call site — the pager moves the integer, the application slices its own data."
+  [reqs]="['req-api-signals']"
+  data-testid="demo-list"
+>
+  <ul class="view__list">
+    @for (row of visibleRows(); track row) {
+    <li>{{ row }}</li>
+    }
+  </ul>
+  <pct-pagination
+    [(page)]="listPage"
+    [count]="pageCount()"
+    ariaLabel="Rows"
+    data-testid="pagination-list"
+  />
+</sbx-demo>
+
+<sbx-demo
+  heading="Two pagers, one value"
+  summary="Above and below the same content. Each is its own navigation landmark, so each needs a name of its own — ariaLabel is what tells a screen reader them apart."
+  [reqs]="['req-a11y-built-in']"
+  data-testid="demo-framed"
+>
+  <pct-pagination
+    [(page)]="framed"
+    [count]="12"
+    ariaLabel="Results, top"
+    data-testid="pagination-top"
+  />
+  <p class="view__state">page {{ framed() }} of 12</p>
+  <pct-pagination
+    [(page)]="framed"
+    [count]="12"
+    ariaLabel="Results, bottom"
+    data-testid="pagination-bottom"
+  />
+</sbx-demo>
+
+<sbx-demo
+  heading="Sizes"
+  summary="The button box tracks --pct-control-height-*, the token shared with the field and the button, so a pager lines up with a control of the same size."
+  [reqs]="['req-api-size']"
+  data-testid="demo-sizes"
+>
+  <div class="view__stack">
+    <pct-pagination
+      [(page)]="sized"
+      [count]="9"
+      size="sm"
+      ariaLabel="Small"
+      data-testid="pagination-sm"
+    />
+    <pct-pagination
+      [(page)]="sized"
+      [count]="9"
+      size="md"
+      ariaLabel="Medium"
+      data-testid="pagination-md"
+    />
+    <pct-pagination
+      [(page)]="sized"
+      [count]="9"
+      size="lg"
+      ariaLabel="Large"
+      data-testid="pagination-lg"
+    />
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="Disabled"
+  summary="Every button carries disabled — the whole control is inert, and a press does nothing."
+  [reqs]="['req-a11y-built-in']"
+  data-testid="demo-disabled"
+>
+  <pct-pagination
+    [(page)]="disabledPage"
+    [count]="6"
+    disabled
+    data-testid="pagination-disabled"
+  />
+</sbx-demo>

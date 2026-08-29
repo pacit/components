@@ -1,0 +1,17 @@
+.view__state {
+  margin: var(--pct-space-3) 0 0;
+  color: var(--pct-text-muted);
+  font-size: var(--pct-font-size-sm);
+}
+
+.view__list {
+  margin: 0 0 var(--pct-space-4);
+  padding-inline-start: var(--pct-space-5);
+}
+
+.view__stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pct-space-4);
+  align-items: flex-start;
+}

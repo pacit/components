@@ -1,0 +1,86 @@
+<!--
+  The host is the `navigation` landmark (0048). What is inside it is a list, because a pager
+  is a set of sibling controls and a screen reader is owed the count — and then the two
+  steppers and the page buttons, every one of them a real `<button>` so the press, the
+  keyboard and the disabled state are the platform's (`req-api-platform`).
+
+  The chevron is declared once and drawn in both steppers, pointing by a CSS rotation of the
+  host button rather than by a second icon name: the icon set is a component and a new name
+  in it is a decision of its own (0011, 0028), so a component that needs "the same arrow the
+  other way" turns it in the stylesheet — the calendar's move, one component over.
+-->
+<ng-template #chevron>
+  <pct-icon name="chevron-down">
+    <svg
+      viewBox="0 0 16 16"
+      width="100%"
+      height="100%"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      focusable="false"
+    >
+      <path d="M4 6l4 4 4-4" />
+    </svg>
+  </pct-icon>
+</ng-template>
+
+<ul class="pct-pagination__list" data-pct-part="list">
+  <li class="pct-pagination__item">
+    <button
+      type="button"
+      class="pct-pagination__button pct-pagination__step"
+      data-pct-part="previous"
+      data-pct-direction="previous"
+      [attr.aria-label]="texts().paginationPrevious"
+      [attr.aria-controls]="controls() || null"
+      [disabled]="!hasPrevious()"
+      (click)="go(current() - 1)"
+    >
+      <ng-container [ngTemplateOutlet]="chevron" />
+    </button>
+  </li>
+
+  @for (item of items(); track $index) {
+  <li class="pct-pagination__item">
+    @if (item === 'ellipsis') {
+    <span
+      class="pct-pagination__ellipsis"
+      data-pct-part="ellipsis"
+      aria-hidden="true"
+      >…</span
+    >
+    } @else {
+    <button
+      type="button"
+      class="pct-pagination__button pct-pagination__page"
+      data-pct-part="page"
+      [attr.data-pct-current]="item === current() ? '' : null"
+      [attr.aria-current]="item === current() ? 'page' : null"
+      [attr.aria-controls]="controls() || null"
+      [disabled]="disabled()"
+      (click)="go(item)"
+    >
+      {{ item }}
+    </button>
+    }
+  </li>
+  }
+
+  <li class="pct-pagination__item">
+    <button
+      type="button"
+      class="pct-pagination__button pct-pagination__step"
+      data-pct-part="next"
+      data-pct-direction="next"
+      [attr.aria-label]="texts().paginationNext"
+      [attr.aria-controls]="controls() || null"
+      [disabled]="!hasNext()"
+      (click)="go(current() + 1)"
+    >
+      <ng-container [ngTemplateOutlet]="chevron" />
+    </button>
+  </li>
+</ul>

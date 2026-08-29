@@ -1,0 +1,146 @@
+/* The host is the navigation landmark — it was never moved anywhere, so `:host` really
+   describes the row the user sees. It paints nothing of its own: a pager is a set of buttons
+   on the page's surface, not a panel arriving on top of it. */
+:host {
+  display: block;
+}
+
+.pct-pagination__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--pct-pagination-list-gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pct-pagination__item {
+  display: flex;
+}
+
+.pct-pagination__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  /* The floor a finger gets is the floor an eye sees, at every skin (`req-a11y-touch`). The
+     height token tracks the shared control axis so a pager lines up with a field or a button
+     of the same size (`req-api-size`); the min box is the touch floor the height must clear. */
+  min-inline-size: var(--pct-pagination-item-target-min);
+  min-block-size: var(--pct-pagination-item-target-min);
+  block-size: var(--pct-pagination-item-height);
+  padding-inline: var(--pct-pagination-item-padding-x);
+  border: 1px solid transparent;
+  border-radius: var(--pct-pagination-item-radius);
+  background: var(--pct-pagination-item-bg);
+  color: var(--pct-pagination-item-fg);
+  font: inherit;
+  font-size: var(--pct-pagination-item-font-size);
+  line-height: 1;
+  cursor: pointer;
+}
+
+.pct-pagination__button:hover:not([disabled]) {
+  background: var(--pct-pagination-item-bg-hover);
+  color: var(--pct-pagination-item-fg-hover);
+}
+
+.pct-pagination__button:focus-visible {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: 1px;
+}
+
+.pct-pagination__button[disabled] {
+  color: var(--pct-pagination-item-fg-disabled);
+  cursor: not-allowed;
+}
+
+/* The current page carries its state on two channels before the border is looked at: a fill
+   and a text colour of its own, so a forced-colours mode that drops the fill still has the
+   edge, and a reader has `aria-current` regardless (`req-a11y-forced-colors`). */
+.pct-pagination__page[data-pct-current] {
+  background: var(--pct-pagination-item-bg-selected);
+  color: var(--pct-pagination-item-fg-selected);
+  border-color: var(--pct-pagination-item-border-selected);
+  font-weight: var(--pct-pagination-item-font-weight-selected);
+}
+
+.pct-pagination__step {
+  /* The box the chevron is drawn in — the drawing paints itself in `currentColor` and knows
+     nothing of the state around it (0028). */
+  font-size: 16px;
+}
+
+/* The chevron is one drawing pointing down; each stepper turns it to point its own way. The
+   rotation is logical-safe because it is a quarter turn of a symmetric glyph — `previous`
+   points at the inline start in both writing directions once the row itself is mirrored by
+   `dir`. */
+.pct-pagination__step[data-pct-direction='previous'] pct-icon {
+  display: inline-flex;
+  rotate: 90deg;
+}
+
+.pct-pagination__step[data-pct-direction='next'] pct-icon {
+  display: inline-flex;
+  rotate: -90deg;
+}
+
+.pct-pagination__ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-inline-size: var(--pct-pagination-item-target-min);
+  min-block-size: var(--pct-pagination-item-target-min);
+  color: var(--pct-pagination-marker-fg);
+  font-size: var(--pct-pagination-item-font-size);
+  user-select: none;
+}
+
+/* Sizes driven by a state attribute on the host (`req-api-attributes`). `md` overrides
+   nothing, so a theme that moves the base token still works (`req-token-override`). */
+:host([data-pct-size='sm']) {
+  --pct-pagination-item-height: var(--pct-pagination-item-height-sm);
+  --pct-pagination-item-font-size: var(--pct-pagination-item-font-size-sm);
+  --pct-pagination-item-padding-x: var(--pct-pagination-item-padding-x-sm);
+}
+
+:host([data-pct-size='lg']) {
+  --pct-pagination-item-height: var(--pct-pagination-item-height-lg);
+  --pct-pagination-item-font-size: var(--pct-pagination-item-font-size-lg);
+  --pct-pagination-item-padding-x: var(--pct-pagination-item-padding-x-lg);
+}
+
+/* Forced colours: the current page keeps a channel that is not the fill. `@media` adds no
+   specificity, so every rule the mode needs is written out rather than left to a base rule of
+   the same sheet that would win the cascade otherwise
+   ([`lesson-70`](../../../../docs/lessons.md#lesson-70)). */
+@media (forced-colors: active) {
+  .pct-pagination__button {
+    border-color: CanvasText;
+    color: CanvasText;
+  }
+
+  .pct-pagination__button:hover:not([disabled]) {
+    background: Highlight;
+    color: HighlightText;
+  }
+
+  .pct-pagination__button[disabled] {
+    color: GrayText;
+  }
+
+  .pct-pagination__page[data-pct-current] {
+    background: Highlight;
+    color: HighlightText;
+    border-color: Highlight;
+  }
+
+  .pct-pagination__button:focus-visible {
+    outline-color: Highlight;
+  }
+
+  .pct-pagination__ellipsis {
+    color: CanvasText;
+  }
+}

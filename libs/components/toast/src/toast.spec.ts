@@ -185,6 +185,27 @@ describe('PctToaster', () => {
       expect(close?.getAttribute('aria-label')).toBe('Take it down');
     });
 
+    /**
+     * The same name with NOBODY providing one, which the case above cannot see: a host that
+     * overrides a default is a host that never observes it.
+     *
+     * It is here because of what its absence cost. `toastDismiss`'s own default was the one
+     * mutant in `core/src/texts.ts` that no assertion in the library reached, so it was killed
+     * by a TIMEOUT or not at all — and the file's score read `100.00` or `96.77` for the same
+     * sources depending on what else the machine was doing (plan §4.2, third reading). One
+     * assertion is the third option that item says does not exist, and for this mutant it does:
+     * a string default is trivially assertable, so the clock stops counting towards the score.
+     */
+    it('and the cross keeps its English name when nobody provides one', async () => {
+      const { toaster } = await boot();
+
+      toaster.show('Draft saved.');
+      flush();
+
+      const close = items()[0].querySelector('[data-pct-part="close"]');
+      expect(close?.getAttribute('aria-label')).toBe('Dismiss');
+    });
+
     it('draws an action only when there is one', async () => {
       const { toaster } = await boot();
 

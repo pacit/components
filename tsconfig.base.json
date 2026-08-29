@@ -35,7 +35,10 @@
       "@pacit/components/tooltip": ["./libs/components/tooltip/src/index.ts"],
       "@pacit/components/popover": ["./libs/components/popover/src/index.ts"],
       "@pacit/components/menu": ["./libs/components/menu/src/index.ts"],
-      "@pacit/components/toast": ["./libs/components/toast/src/index.ts"]
+      "@pacit/components/toast": ["./libs/components/toast/src/index.ts"],
+      "@pacit/components/pagination": [
+        "./libs/components/pagination/src/index.ts"
+      ]
     }
   },
   "exclude": ["node_modules", "tmp"]

@@ -179,6 +179,17 @@ export const SBX_VIEWS: readonly SbxView[] = [
     load: () => import('./views/toast/toast-view').then((m) => m.ToastView),
   },
   {
+    path: 'pagination',
+    title: 'Pagination',
+    summary:
+      'A control that owns the current page — and the folding is all it computes.',
+    group: 'components',
+    load: () =>
+      import('./views/pagination/pagination-view').then(
+        (m) => m.PaginationView,
+      ),
+  },
+  {
     path: 'size',
     title: 'Size',
     summary: 'Every component on the shared sm/md/lg axis.',

@@ -67,6 +67,11 @@ from what the browser really gets.
 ./field PctSuffix field-suffix-item
 ./menu PctMenu panel
 ./menu PctMenuItem item
+./pagination PctPagination ellipsis
+./pagination PctPagination list
+./pagination PctPagination next
+./pagination PctPagination page
+./pagination PctPagination previous
 ./popover PctPopover content
 ./popover PctPopover heading
 ./popover PctPopover panel

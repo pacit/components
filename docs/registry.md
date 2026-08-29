@@ -285,3 +285,5 @@ Which lesson feeds which requirement. Generated from the **Lessons** fields.
 | [`lesson-128`](lessons.md#lesson-128) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-129`](lessons.md#lesson-129) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-130`](lessons.md#lesson-130) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-131`](lessons.md#lesson-131) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-132`](lessons.md#lesson-132) | — _(not cited)_                                                                                                                                                   |

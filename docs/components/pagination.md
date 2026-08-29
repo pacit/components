@@ -1,0 +1,106 @@
+# `PctPagination` — a control that owns the current page of a collection
+
+**Entrypoint:** `@pacit/components/pagination`
+**Selector:** `pct-pagination`
+**Status:** released
+**ARIA APG pattern:** none — there is no APG pattern for pagination. The shape it follows is
+the [WAI tutorial](https://www.w3.org/WAI/tutorials/page-structure/pagination/): a named
+navigation landmark, a list of controls, and `aria-current="page"` on the one you are on. Named
+in the class JSDoc.
+
+It is the model-owning pager. `page` is its value and `count` is a number of **pages**; a
+press emits, it does not navigate. A links pager built on `<a href>`, whose current page comes
+from the router, is a different component and stands beside this one when it is written
+([0048](../decisions/0048-a-pagination-owns-its-page-number.md)).
+
+## Contract
+
+|             |                                                                                                                                                                                                                                                                   |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Value**   | `page: ModelSignal<number>`, 1-based. Both directions are ordinary: an application sets it, a press writes it back. Written out of range, it is clamped into `[1, count]` and the clamp is written back to the model.                                             |
+| **Inputs**  | `count` (required, number of pages — **not** items), `siblingCount` (default `1`), `boundaryCount` (default `1`), `disabled` (default `false`), `ariaLabel` (landmark name override), `controls` (id for `aria-controls`), `size` (`sm \| md \| lg`, from config) |
+| **Outputs** | `page` is a model — `(pageChange)`. There is no separate event: a page is a state, and the only thing that happens to it is a change.                                                                                                                             |
+| **Slots**   | none — the strip is generated. What page numbers to show and where to fold the rest is the one thing the platform has nothing for, and it is this component's whole contribution.                                                                                 |
+| **Parts**   | `list`, `previous`, `page`, `ellipsis`, `next`                                                                                                                                                                                                                    |
+| **Tokens**  | the `--pct-pagination-*` prefix plus six entries in `contrast.policy.json`                                                                                                                                                                                        |
+| **Strings** | `paginationLabel` (the landmark's default name), `paginationPrevious`, `paginationNext` (the icon-only steppers' names). A page button's name is its own number — see the note below.                                                                             |
+
+**Why the host is a `navigation` landmark.** Moving between pages of a collection is navigation
+of content whether or not a page boundary is a URL, and a landmark is how a screen-reader user
+reaches the pager and steps over it. `role="group"` would bury it. It has to be **named**, and
+the name has to be settable: two pagers on one page (above and below a table) are two
+landmarks, and `ariaLabel` is what tells them apart.
+
+**Why a page button's accessible name is just its number.** Inside a landmark named
+"Pagination", a button reading `3` is announced "Pagination … 3, button", and the current one
+"3, current page, button" off `aria-current`. A templated "Page 3" would need a text channel
+that carries a number in a language's own word order, which this library does not have — the
+same seam the date field's format letters stand on. It is a known limitation, not a decision.
+
+## Keyboard map
+
+| key | effect | test |
+| --- | ------ | ---- |
+|     |        |      |
+
+Empty **by design**: every control in the strip is a native `<button>`, so `Tab` / `Shift+Tab`
+move between them and `Enter` / `Space` activate — all the platform's
+([`req-api-platform`](../requirements/api.md#req-api-platform)). It is deliberately **not** a
+`toolbar` with a roving `tabindex`: the buttons are independent destinations, not a set
+operated as a unit, and a roving index would hide every page number but one from sequential
+keyboard navigation and from a screen reader's "next focusable". The cost — one tab stop per
+rendered button — is capped by `siblingCount` / `boundaryCount` keeping the strip to about nine
+numbers plus two steppers.
+
+## Checks
+
+Every row: a path to evidence, or `none — <deliberately|gap>: <reason>`.
+
+| criterion                                                  | evidence                                                                                                                                                                                                                                                                                                                                                                                     |
+| ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ARIA pattern named in the class JSDoc                      | `libs/components/pagination/src/pagination.ts`                                                                                                                                                                                                                                                                                                                                               |
+| Keyboard map tested key by key                             | `apps/sandbox-e2e/src/pagination.spec.ts` — 15 cases × 3 engines. The claim gated is "the platform does it": `Tab` walking every button one stop at a time (`['1', '2', '3', 'next']`), `Enter` **and** `Space` paging, and a disabled stepper refusing focus outright                                                                                                                       |
+| axe audit on the component's own sandbox view              | `apps/sandbox-e2e/src/a11y.spec.ts` — `/pagination` in `SBX_ROUTES`, so the WCAG 2.2 AA sweep and the landmark audit both take it                                                                                                                                                                                                                                                            |
+| Visual screenshot                                          | `apps/sandbox-e2e/src/visual.spec.ts` — `pagination-fold`, the strip with both gaps and the current page marked                                                                                                                                                                                                                                                                              |
+| `forced-colors: active` — no state carried by colour alone | `libs/components/pagination/src/pagination.scss` — the current page has a fill **and** a text colour of its own, plus `aria-current`; the `@media` block is written out rule by rule (`lesson-70`). The reading: `apps/sandbox-e2e/src/forced-colors.spec.ts` — the current page comes back `Highlight`/`HighlightText`, a plain one `CanvasText`, a spent stepper `GrayText`                |
+| `prefers-reduced-motion` — duration from a token           | not applicable — the component has no transition of its own. The chevron rotation is static.                                                                                                                                                                                                                                                                                                 |
+| Touch target ≥ 24×24 px outright                           | `libs/components/pagination/src/pagination.scss` — `min-inline-size` / `min-block-size` are `--pct-pagination-item-target-min` = `{pct.target.min}`, the floor outright. The reading: `apps/sandbox-e2e/src/pagination.spec.ts`, taken at the **smallest** size on the axis, where the height token comes closest to the floor                                                               |
+| Size axis aligned to `--pct-control-height-*`              | `libs/tokens/src/component.pagination.json` — `item-height` / `-sm` / `-lg` are `{pct.control.height.*}`, the token shared with the field and the button; driven by `data-pct-size` on the host                                                                                                                                                                                              |
+| Density axis                                               | none — gap: the same one every component here has ([`req-token-density`](../requirements/tokens.md#req-token-density))                                                                                                                                                                                                                                                                       |
+| RTL — no physical properties + a `dir="rtl"` screenshot    | `libs/components/pagination/src/pagination.scss` — logical properties throughout; the chevron points by a symmetric quarter-turn so it needs no RTL rule. The screenshot: `pagination-fold-rtl` in `visual.spec.ts`; the geometry: `apps/sandbox-e2e/src/rtl.spec.ts` — the two steppers really change sides                                                                                 |
+| SSR + hydration with no `NG05xx`                           | `apps/sandbox-e2e/src/hydration.spec.ts` — `/pagination` in `SBX_ROUTES`                                                                                                                                                                                                                                                                                                                     |
+| Forms                                                      | not applicable — a pager holds no value a form owns and implements no `FormValueControl`. `page` is application state, not a field.                                                                                                                                                                                                                                                          |
+| Parts registered in the inventory                          | `libs/components/parts.snapshot.md`, `tools/check-parts.mjs` — the **Parts** row above                                                                                                                                                                                                                                                                                                       |
+| Tokens registered + an entry in `contrast.policy.json`     | `libs/tokens/src/contrast.policy.json` — six entries; `libs/tokens/tokens.snapshot.md`                                                                                                                                                                                                                                                                                                       |
+| Strings through `PCT_TEXTS`                                | `libs/components/pagination/src/pagination.html` reads `paginationPrevious` / `paginationNext` at render time; `pagination.ts` reads `paginationLabel` in the host binding. Swap test: `providePctTexts` over all three keys in `libs/components/pagination/src/pagination.spec.ts`                                                                                                          |
+| Entrypoint size budget                                     | `libs/components/size.snapshot.md` — `./pagination` **13581 B** on `./core` and `./icon`, no CDK                                                                                                                                                                                                                                                                                             |
+| A screen-reader test log                                   | none — gap: the same one the dialog, select, toast, tabs, accordion and drawer have. The question here: whether a reader offers "Pagination" in its landmark list and reads "current page" on the one you are on                                                                                                                                                                             |
+| A docs page with live examples                             | `apps/sandbox/src/app/views/pagination/` (the sandbox view). The published documentation site: none — gap: `apps/docs` (plan §2.1)                                                                                                                                                                                                                                                           |
+| Unit + mutation                                            | `libs/components/pagination/src/pagination.spec.ts` — 36 cases; `libs/components/mutation.snapshot.md` — `pagination.ts` at **96.43**, the four survivors equivalent (two `set`s of a value already held, and `range`'s guard that `Array.from` already keeps). `pagination.types.ts` has no row and needs none: it is a type alias, struck from the measurement by the `*.types.ts` pattern |
+
+## Decisions this component implements
+
+[0048](../decisions/0048-a-pagination-owns-its-page-number.md) (the main one — why a model and
+not links, what `count` is, why the landmark, why not a toolbar),
+[0011](../decisions/0011-icons.md) (the chevron is a `pct-icon`, one name turned in CSS rather
+than two names added to the set),
+[0028](../decisions/0028-an-icon-set-is-a-component.md) (the icon box knows nothing of the
+state around it).
+
+## Known limitations
+
+- **A page button's accessible name is its number, not "Page N".** See the contract note. It
+  is enough inside a named landmark; the richer phrasing waits on a templated text channel.
+- **`count` is pages, never items.** The component that knows how to turn a data source into a
+  page count is the one that holds the data source. Deriving `Math.ceil(total / pageSize)` is
+  one line at the call site, or a job for the future table wrapper.
+- **The links pager is a separate component.** A pager on `<a href>` takes its current page
+  from the router and "activate" means navigate — every sentence in 0048 is then false. It is
+  not this component behind a flag.
+- **No "jump to page" field, no page-size selector, no "showing 1–20 of 400" summary.** Those
+  are compositions around the pager, not the pager. They may arrive as siblings; they are not
+  inputs here.
+- **The clamp is written back to the model from an effect.** A consumer who sets `page` out of
+  range sees it snap to the nearest valid page on the next tick. This is a narrow exception to
+  "don't write a model from an effect", taken because a view showing page 10 while the model
+  says 999 is a worse contract.

@@ -215,6 +215,68 @@ decision says it is"` goes red the day a second engine ships it
   - left **4.21** and **4.22** behind, gave **4.6** a fifth row, widened **4.10** to eight
     missing of fifteen, and gave **4.2** two more files and a fifth reading of its own defect.
     The whole library is **4130 mutants** now (3878 before) at **81.89%**, in **55 m 47 s**
+  - _the pagination is done_ (5 of 13). It is the **model-owning** pager: `page` is a
+    `model<number>`, `count` is a number of pages and never of items, and a press emits rather
+    than navigates — a pager on `<a href>` takes its current page from the router and is a
+    different component, not this one behind a flag
+    ([0048](decisions/0048-a-pagination-owns-its-page-number.md)). The host is a `navigation`
+    landmark and every control in the strip is a plain `<button>`, so the keyboard, the press
+    and the disabled state are the platform's; the **fold** — the pinned ends, the window
+    around the current page, one `'ellipsis'` per run of two or more, a single hidden page
+    drawn as itself — is the whole of what this component computes. See
+    [`lesson-131`](lessons.md#lesson-131), [`lesson-132`](lessons.md#lesson-132)
+  - gate: `apps/sandbox-e2e/src/pagination.spec.ts` (15 × 3) plus `/pagination` in the axe /
+    hydration audits through `SBX_ROUTES`, one forced-colours reading, one RTL geometry case,
+    two screenshots and 36 unit cases. Cost `./pagination` **13581 B** on `./core` and
+    `./icon` — `@angular/common` for one `NgTemplateOutlet`, and **no CDK**
+  - it cost everybody else **+91 B per entrypoint**: three new `PCT_TEXTS` keys
+    (`paginationLabel` / `-Previous` / `-Next`), the drawer's price at four and a half times
+    the size, and every row of the size snapshot moved by exactly that
+  - **the unit run found a real defect on its first pass, and it is a shape worth the
+    sentence.** The clamp that keeps `page` inside `[1, count]` wrote the correction back from
+    an effect watching `current()` — the clamped value. A clamp is a many-to-one map, so
+    writing `0` or `-5` while standing on page 1 left `current()` unchanged, nothing
+    recomputed, the effect never ran, and the consumer kept the number the card promised to
+    correct. `999` worked only because it happened to move the result. The effect now tracks
+    `page()` as well ([`lesson-131`](lessons.md#lesson-131))
+  - **and it made `check-texts` read one thing more.** Point 4 pulled a factory's string
+    literals out of the argument with a regular expression, comments included — and the
+    comment `wastes the reader's time` left the count of `'` odd, so the opening quote of
+    `['ellipsis']` two lines down closed a literal that had begun in the prose. The gate fired
+    at a file that had done nothing. `literalsIn()` walks the argument in four states now
+    (code, line comment, block comment, string); the control is in `_reference/`, and
+    disarming it turns the reference red and moves **seven** prepared cases onto the wrong
+    rule ([`lesson-132`](lessons.md#lesson-132))
+  - a page button's accessible name is its number and not "Page N" — enough inside a named
+    landmark, and the richer phrasing waits on a templated text channel this library does not
+    have (the date field's format-letters seam). Written in the card as a limitation, not a gap
+  - **the mutation run found five holes and named four mutants nothing can kill.** Three are
+    the accordion's shape one arrangement later: the bare pager EXISTED, and `disabled`,
+    `ariaLabel` and `controls` still survived their defaults, because a strip drawn by a pager
+    that thinks it is disabled looks exactly like one drawn by a pager that does not — until
+    somebody reads the buttons. The fourth is the fold's far clamp, reachable only with
+    `boundaryCount=0`: taken off, the strip offers **page 21 of 20** and repeats page 20 beside
+    it, and every other case here pins an end. The fifth is `go`'s `disabled` guard, which
+    `.click()` can never reach — a disabled button swallows the press before the handler — so
+    the case that claimed to measure it was measuring the browser; it dispatches the event by
+    hand now. `pagination.ts` **91.96 → 96.43**
+  - it also closed one line of **4.2**, and by an unexpected road: the run's own wobble put
+    `core/src/texts.ts` at `100.00` and then `96.77` over identical code, and the single
+    survivor was `toastDismiss`'s default — a string no assertion in the library had ever
+    read, because the toast's case overrides it. One `expect` and the file is 100.00 with zero
+    survivors, clock or no clock
+  - the four left are **equivalent**, and the reason is the same twice over: a `signal.set` of
+    a value already held notifies nobody, so both early returns (`written === clamped` in the
+    clamp effect, `next === this.current()` in `go`) are an optimisation and not a behaviour;
+    and `Array.from({ length: n })` already answers `[]` for every `n <= 0`, so `range`'s own
+    `length > 0` guard is unreachable in effect and two mutants say so. A defensive line the
+    platform already holds — [`lesson-95`](lessons.md#lesson-95)'s family, and **4.18**'s
+    shape with the guard reachable by nobody rather than by the pointer alone
+  - it left **4.23** behind, and widened it in the same breath: the sandbox's own navigation
+    is inside six page-level screenshot baselines, so adding one view re-recorded all six —
+    and it is inside a **behavioural** case as well. The dialog's scroll-lock test fails 5 of 5
+    in webkit on `main` with this work stashed and passes 4 of 5 with it in place, on a page
+    whose only difference is one more row in the navigation list
 
 - [ ] **1.2 — table / datagrid** on a headless core (column model, sorting, filtering, grouping,
       selection as signals) separated from rendering. **The last item of the phase** — the only
@@ -401,6 +463,25 @@ run-many`, which is the closest thing here to what CI does, and the same run rep
     96.30 and goes red on a file nobody edited**. Recording the starved number would put the
     red on the run that succeeds instead. There is no third option while the clock counts
     towards the score, which is what makes this a decision rather than a setting
+  - **the fourth reading is the first one that closed something, and it names the third
+    option this item says does not exist.** The pagination's step ran the gate twice over
+    identical code and `core/src/texts.ts` came back `100.00 31(1) 0` and then
+    `96.77 30(0) 1` — 3.23 points, past the tolerance, on a file the step had touched only by
+    adding three keys. The survivor was one mutant: `toastDismiss: 'Dismiss'` blanked to `""`.
+    Every OTHER default in `PCT_DEFAULT_TEXTS` is asserted somewhere; this one was asserted
+    nowhere, because the toast's own case provides `providePctTexts({ toastDismiss: 'Take it
+down' })` and a host that overrides a default is a host that never observes it
+  - so the mutant had no assertion to die by and was killed by a **timeout** or not at all —
+    which is precisely what "the clock counts towards the score" means, seen at one mutant. The
+    repair is one `expect`: the cross's name with nobody providing one. Measured after it,
+    `texts.ts` reads **100.00 with zero survivors**, and the two mutants still dying on the
+    clock no longer decide anything, because the score is the same either way
+  - that does not dissolve this item — most clock-kills are genuine timeouts and cannot be
+    turned into assertions — but it narrows it, and it gives the practical first move for the
+    next file that wobbles: **look at WHICH mutant the clock is holding.** If it is a string, a
+    default or a branch a test could name, the wobble is a missing assertion wearing a timing
+    defect's clothes. `motion.ts` and `placement.ts` are the two where it will not be, since
+    what times out there is real waiting
   - **and it is not only the mutation run any more.** The same step's full e2e finished
     `2 failed, 1202 passed`, and both failures were the select's: `End reaches the five
 thousandth row` timed out with the list still showing row 44, and the forced-colours case
@@ -855,6 +936,46 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     the rule, and the library can detect it in three lines
   - binds at: **the second component drawn in place and positioned against the window**, or the
     first consumer report that a drawer is in the wrong place · _notes:_ —
+
+- [ ] **4.23 — the sandbox's own navigation is inside six component baselines**
+  - `visual.spec.ts` states the rule in its own comment: a screenshot is of an **element**, not
+    of the whole page, "so a change in the sandbox shell does not invalidate the baselines of
+    every component at once". Six shots take the page anyway — `dialog-open`, `dialog-open-rtl`,
+    `menu-open`, `popover-open`, `toast-stack`, `toast-stack-rtl` — and each of the four tests
+    says why in a paragraph of its own: an overlay is a child of `body`, so a shot of the card
+    would catch its top edge and nothing else; the dialog's veil IS what the component draws;
+    the toast's whole subject is where it lands against the window's edges. Every one of those
+    reasons is good
+  - **the cost the rule predicted came due, and it is measured**: adding `/pagination` to the
+    sandbox put one more entry in the navigation, and six baselines went red at once — 1594
+    different pixels in `menu-open`, every one of them in the sidebar, with the menu panel
+    itself byte for byte the same. Six pictures re-recorded for a change that touched none of
+    the six components
+  - the shape of the answer is not "scope them to an element", because the four paragraphs
+    above are right. It is to take the SHELL out of the frame: a stage with the navigation
+    hidden, a route rendered bare, or a clip box that stops at the content column. Whichever it
+    is, it has to keep the veil, the page surface behind a popover and the window's edges,
+    since those are what the six exist for
+  - until then the cost is a rule for whoever adds a view, and it is written nowhere: **a new
+    sandbox view re-records six baselines that have nothing to do with it**. A reviewer seeing
+    six changed pictures in a pagination commit has to open all six to learn that only a
+    sidebar moved
+  - binds at: **the next sandbox view**, or the first time one of the six really drifts and the
+    drift is missed among the sidebar's — whichever comes first
+  - _notes:_ **the shell is inside more than the pictures, and this is the measurement that
+    says so.** `dialog.spec.ts` › "the page stops scrolling, and starts again" runs at a
+    viewport of 1280x500, wheels 400, and asserts the lock holds. Run five times in webkit on
+    **`main`, with this step's work stashed**, it failed **five times out of five**; run five
+    times with the work in place it passed **four out of five**. Nothing in this step touches
+    the dialog, the lock or that spec — the only thing that changed for `/dialog` is that the
+    navigation list has one more entry, so the document is one row taller and the test's
+    arithmetic sits somewhere else against it
+  - so a behavioural case, not only a picture, takes its answer partly from the sandbox's own
+    chrome. That widens this item from "six baselines" to **a gate whose subject is the shell
+    as much as the component**, and it is the more expensive half: a screenshot that moves is
+    read by a person, and a scroll assertion that flips is read as the component's defect. The
+    dialog case needs a page whose height it decides — content of its own, or a fixed
+    `min-height` on the stage — rather than whatever the sandbox happens to be that week
 
 ## 5. Gaps with no deadline
 

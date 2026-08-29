@@ -8,28 +8,29 @@ from the same person having built it in the same mode of attention. That scales 
 a second person nor to a twentieth component. A form with an empty row is a gap visible to
 a machine; prose with a missing paragraph is not.
 
-| component                      | entrypoint                    | role                                   |
-| ------------------------------ | ----------------------------- | -------------------------------------- |
-| [`PctButton`](button.md)       | `@pacit/components/button`    | button                                 |
-| [`PctField`](field.md)         | `@pacit/components/field`     | form control wrapper                   |
-| [`PctText`](text.md)           | `@pacit/components/field`     | text field on a native `<input>`       |
-| [`PctAutosize`](textarea.md)   | `@pacit/components/field`     | a textarea as tall as its text         |
-| [`PctNumber`](number.md)       | `@pacit/components/field`     | number field                           |
-| [`PctCheckbox`](checkbox.md)   | `@pacit/components/checkbox`  | checkbox                               |
-| [`PctRadioGroup`](radio.md)    | `@pacit/components/radio`     | group of mutually exclusive options    |
-| [`PctSwitch`](switch.md)       | `@pacit/components/switch`    | a setting that takes effect at once    |
-| [`PctSlider`](slider.md)       | `@pacit/components/slider`    | a position on a numeric continuum      |
-| [`PctDate`](date.md)           | `@pacit/components/date`      | a calendar day, typed or picked        |
-| [`PctCalendar`](calendar.md)   | `@pacit/components/date`      | one month of days as a grid            |
-| [`PctSelect`](select.md)       | `@pacit/components/select`    | choice list with a panel of its own    |
-| [`PctMultiSelect`](select.md)  | `@pacit/components/select`    | the same list, holding many answers    |
-| [`PctDialog`](dialog.md)       | `@pacit/components/dialog`    | modal dialog                           |
-| [`PctTooltip`](tooltip.md)     | `@pacit/components/tooltip`   | a sentence about a control             |
-| [`PctPopover`](popover.md)     | `@pacit/components/popover`   | a panel of content on a live page      |
-| [`PctMenu`](menu.md)           | `@pacit/components/menu`      | a list of commands to choose from      |
-| [`PctTabs`](tabs.md)           | `@pacit/components/tabs`      | one section of a page at a time        |
-| [`PctToaster`](toast.md)       | `@pacit/components/toast`     | a message on top of the page           |
-| [`PctAccordion`](accordion.md) | `@pacit/components/accordion` | a stack of sections, opened and closed |
+| component                        | entrypoint                     | role                                   |
+| -------------------------------- | ------------------------------ | -------------------------------------- |
+| [`PctButton`](button.md)         | `@pacit/components/button`     | button                                 |
+| [`PctField`](field.md)           | `@pacit/components/field`      | form control wrapper                   |
+| [`PctText`](text.md)             | `@pacit/components/field`      | text field on a native `<input>`       |
+| [`PctAutosize`](textarea.md)     | `@pacit/components/field`      | a textarea as tall as its text         |
+| [`PctNumber`](number.md)         | `@pacit/components/field`      | number field                           |
+| [`PctCheckbox`](checkbox.md)     | `@pacit/components/checkbox`   | checkbox                               |
+| [`PctRadioGroup`](radio.md)      | `@pacit/components/radio`      | group of mutually exclusive options    |
+| [`PctSwitch`](switch.md)         | `@pacit/components/switch`     | a setting that takes effect at once    |
+| [`PctSlider`](slider.md)         | `@pacit/components/slider`     | a position on a numeric continuum      |
+| [`PctDate`](date.md)             | `@pacit/components/date`       | a calendar day, typed or picked        |
+| [`PctCalendar`](calendar.md)     | `@pacit/components/date`       | one month of days as a grid            |
+| [`PctSelect`](select.md)         | `@pacit/components/select`     | choice list with a panel of its own    |
+| [`PctMultiSelect`](select.md)    | `@pacit/components/select`     | the same list, holding many answers    |
+| [`PctDialog`](dialog.md)         | `@pacit/components/dialog`     | modal dialog                           |
+| [`PctTooltip`](tooltip.md)       | `@pacit/components/tooltip`    | a sentence about a control             |
+| [`PctPopover`](popover.md)       | `@pacit/components/popover`    | a panel of content on a live page      |
+| [`PctMenu`](menu.md)             | `@pacit/components/menu`       | a list of commands to choose from      |
+| [`PctTabs`](tabs.md)             | `@pacit/components/tabs`       | one section of a page at a time        |
+| [`PctToaster`](toast.md)         | `@pacit/components/toast`      | a message on top of the page           |
+| [`PctAccordion`](accordion.md)   | `@pacit/components/accordion`  | a stack of sections, opened and closed |
+| [`PctPagination`](pagination.md) | `@pacit/components/pagination` | a control that owns the current page   |
 
 ## The order of the components to come
 
@@ -154,6 +155,13 @@ The order follows **architectural debt**, not popularity:
    never is. A shut drawer is `hidden="until-found"`, which is 0045's mechanism transplanted
    whole — the evidence it was a rule and not the tabs' accident
    ([0047](../decisions/0047-a-drawer-is-a-region-of-the-page-not-a-layer-over-it.md)).
+   The **pagination** is in progress as the model-owning pager: `page` is its value and
+   `count` is a number of pages, so a press emits rather than navigates. The one thing it
+   computes is the folding — an `'ellipsis'` per run of two or more hidden pages, the ends
+   pinned — and everything else is a row of native `<button>` elements. A links pager on
+   `<a href>` is a different component, and the future table's pager is most likely this one
+   wired to the grid's paging signals
+   ([0048](../decisions/0048-a-pagination-owns-its-page-number.md)).
 7. **Table / DataGrid** — has to stand on a **headless core** separated from rendering.
 
 Before item 1 the **behaviour layer in `core`** has to exist: list navigation (private methods

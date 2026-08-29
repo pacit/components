@@ -131,6 +131,57 @@ const TEMPLATE_INLINE = /^\s{2}template\s*:\s*([\s\S]*?),?\s*$/m;
 const LITERAL_IN_EXPRESSION = /'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"/g;
 
 /**
+ * The string literals of an expression, with comments stepped over — the same job as
+ * `LITERAL_IN_EXPRESSION` where the expression can be several lines long and carry prose.
+ *
+ * A regular expression cannot do this, and the difference is not academic. A factory's
+ * argument in this library is often a whole `computed()` body, a body carries comments,
+ * comments are English, and English carries apostrophes — which is the quote character of
+ * every second literal here. One `reader's` in a comment leaves the count of `'` odd, and the
+ * next quote in the CODE closes a literal that began in the prose: the value handed to
+ * `isProse` is then the source text between the two, which reads as prose because half of it
+ * is. The gate fires, and it names a file that did nothing wrong
+ * ([`lesson-132`](../docs/lessons.md#lesson-132)).
+ *
+ * Template literals are stepped over rather than reported: a backtick default is not a plain
+ * literal and was never reported before, and their contents carry the same apostrophes.
+ */
+const literalsIn = (expression) => {
+  const found = [];
+  for (let i = 0; i < expression.length; i++) {
+    const c = expression[i];
+    if (c === '/' && expression[i + 1] === '/') {
+      const end = expression.indexOf('\n', i);
+      i = end === -1 ? expression.length : end;
+      continue;
+    }
+    if (c === '/' && expression[i + 1] === '*') {
+      const end = expression.indexOf('*/', i + 2);
+      i = end === -1 ? expression.length : end + 1;
+      continue;
+    }
+    if (c !== "'" && c !== '"' && c !== '`') continue;
+
+    let value = '';
+    let j = i + 1;
+    for (; j < expression.length && expression[j] !== c; j++) {
+      if (expression[j] === '\\') {
+        value += expression[j + 1] ?? '';
+        j++;
+        continue;
+      }
+      value += expression[j];
+    }
+    // An unterminated quote outside a comment is an apostrophe in code this scanner cannot
+    // explain. Stepping over it is right; taking the rest of the argument for its value is
+    // the very thing this function exists to stop doing.
+    if (j < expression.length && c !== '`') found.push(value);
+    i = j;
+  }
+  return found;
+};
+
+/**
  * The key of a `host` block entry — the quotes are optional, because prettier does not add
  * them: `role: 'spinbutton'` and `'[attr.aria-label]': 'x()'` stand side by side in the same
  * block (`field/src/number.ts`). A pattern demanding quotes would let the first through
@@ -944,8 +995,7 @@ const checkTexts = (input) => {
     );
 
   const prose = factories.flatMap((f) =>
-    [...f.argument.matchAll(LITERAL_IN_EXPRESSION)]
-      .map((m) => m[1] ?? m[2])
+    literalsIn(f.argument)
       .filter(isProse)
       .map(
         (v) => `${f.file}:${f.line}: ${f.factory}(…) → ${JSON.stringify(v)}`,
@@ -963,13 +1013,7 @@ const checkTexts = (input) => {
     );
 
   const textDefault = factories
-    .filter(
-      (f) =>
-        f.textual &&
-        [...f.argument.matchAll(LITERAL_IN_EXPRESSION)].some(
-          (m) => (m[1] ?? m[2]) !== '',
-        ),
-    )
+    .filter((f) => f.textual && literalsIn(f.argument).some((v) => v !== ''))
     .map((f) => `${f.file}:${f.line}: ${f.factory}<string>(${f.argument})`);
   if (textDefault.length)
     throw new TextsError(

@@ -108,4 +108,40 @@ test.describe('Writing direction — the layout mirrors in dir="rtl"', () => {
       true,
     );
   });
+
+  /**
+   * The pager is a row with a direction of its own: the steppers stand at the two ends and
+   * the page numbers ascend between them. Under `rtl` all of that has to turn round with no
+   * rule to help it — the strip is a flex row of logical properties, and the chevrons point
+   * by a quarter turn of one symmetric drawing rather than by two icon names, so nothing in
+   * the stylesheet knows which way is forward.
+   *
+   * Geometry, not attributes: a physical `margin-left` in this row would leave the DOM order
+   * intact and the picture wrong, which is the case this file exists for.
+   */
+  test('the pager turns round: previous to the right, the numbers descending', async ({
+    page,
+  }) => {
+    await visit(page, '/pagination');
+    const pager = page.getByTestId('pagination-few');
+    const previous = pager.locator('[data-pct-part="previous"]');
+    const next = pager.locator('[data-pct-part="next"]');
+    const first = pager.locator('[data-pct-part="page"]').first();
+
+    const ltrPrevious = await boxOf(previous);
+    const ltrNext = await boxOf(next);
+    expect(ltrPrevious.x).toBeLessThan(ltrNext.x);
+
+    await setRtl(page);
+    expect(await directionOf(page, 'pct-pagination')).toBe('rtl');
+
+    const rtlPrevious = await boxOf(previous);
+    const rtlNext = await boxOf(next);
+    expect(rtlPrevious.x).toBeGreaterThan(rtlNext.x);
+
+    // Page 1 follows the stepper it comes after, which is the reading that says the whole row
+    // mirrored rather than the two ends swapping places.
+    const rtlFirst = await boxOf(first);
+    expect(rtlFirst.x).toBeLessThan(rtlPrevious.x);
+  });
 });

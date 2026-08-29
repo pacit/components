@@ -27,6 +27,7 @@ export const SBX_ROUTES = [
   '/accordion',
   '/tabs',
   '/toast',
+  '/pagination',
   '/size',
   '/states',
   '/all',

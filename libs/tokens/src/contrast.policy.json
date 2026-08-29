@@ -1082,6 +1082,50 @@
       "bg": "pct.drawer.close-bg-hover",
       "level": "UI",
       "severity": "error"
+    },
+    {
+      "name": "pagination — a page label",
+      "fg": "pct.pagination.item-fg",
+      "bg": "pct.pagination.item-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "pagination — a hovered page label",
+      "fg": "pct.pagination.item-fg-hover",
+      "bg": "pct.pagination.item-bg-hover",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "pagination — the current page",
+      "fg": "pct.pagination.item-fg-selected",
+      "bg": "pct.pagination.item-bg-selected",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "$comment": "A disabled stepper and a disabled control: warn, not error — SC 1.4.3 exempts inactive text, and the entry stays only to show how far the disabled state goes down.",
+      "name": "pagination — a disabled control",
+      "fg": "pct.pagination.item-fg-disabled",
+      "bg": "pct.pagination.item-bg",
+      "level": "AA",
+      "severity": "warn"
+    },
+    {
+      "name": "pagination — the folded-pages marker",
+      "fg": "pct.pagination.marker-fg",
+      "bg": "pct.pagination.item-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "$comment": "The current page's edge is drawn over the page surface, and it is the same colour as the fill it surrounds — measured against the surface because that is the boundary a low-vision user needs to see (SC 1.4.11).",
+      "name": "UI: pagination — the current page's edge",
+      "fg": "pct.pagination.item-border-selected",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
     }
   ]
 }

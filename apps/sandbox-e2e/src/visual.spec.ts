@@ -87,6 +87,7 @@ const CARDS: ReadonlyArray<
   ['/date', 'demo-standalone', 'date-field'],
   ['/date', 'demo-inline', 'date-calendar'],
   ['/select', 'demo-in-field', 'select-in-wrapper'],
+  ['/pagination', 'demo-many', 'pagination-fold'],
   ['/size', 'demo-axis', 'size-axis'],
   ['/states', 'states-disabled', 'states-disabled'],
   ['/states', 'states-invalid', 'states-invalid'],
@@ -417,6 +418,7 @@ const CARDS_RTL: ReadonlyArray<
   ['/switch', 'demo-standalone', 'switch-states'],
   ['/date', 'demo-inline', 'date-calendar'],
   ['/select', 'demo-in-field', 'select-in-wrapper'],
+  ['/pagination', 'demo-many', 'pagination-fold'],
 ];
 
 test.describe('Appearance in RTL — compared with the baseline', () => {

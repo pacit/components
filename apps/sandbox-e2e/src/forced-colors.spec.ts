@@ -509,6 +509,53 @@ test.describe('forced-colors: active', () => {
     ).toBe(sys.GrayText);
   });
 
+  /**
+   * The pager's one state is "this is the page you are on", and in the ordinary skin it is
+   * carried by a fill and a text colour. Both of those are gone in this mode, so the case
+   * that matters is whether the substitution keeps the two APART — a current page painted
+   * `Canvas` on `CanvasText` like every other button would leave the number the reader is
+   * standing on indistinguishable from the ones they are not. `Highlight`/`HighlightText` is
+   * the pair the palette has for exactly that, and `aria-current` carries the same fact for
+   * anyone not looking at colours at all.
+   */
+  test('the current page keeps a colour of its own under the user palette', async ({
+    page,
+  }) => {
+    await visit(page, '/pagination', { media: FORCED });
+    const sys = await systemColors(page);
+
+    const pager = page.getByTestId('pagination-many');
+    const current = pager.locator('[data-pct-part="page"][data-pct-current]');
+    const plain = pager
+      .locator('[data-pct-part="page"]:not([data-pct-current])')
+      .first();
+
+    await expect(current).toHaveAttribute('aria-current', 'page');
+
+    expect(await styleOf(current, 'background-color')).toBe(sys.Highlight);
+    expect(await styleOf(current, 'color')).toBe(sys.HighlightText);
+
+    expect(await styleOf(plain, 'color')).toBe(sys.CanvasText);
+    expect(await styleOf(plain, 'background-color')).not.toBe(sys.Highlight);
+
+    // A stepper with nowhere to go says the one word the palette has for "refused", and the
+    // gap says the one it has for "text" — neither of them borrows the current page's colour.
+    expect(
+      await styleOf(
+        page
+          .getByTestId('pagination-few')
+          .locator('[data-pct-part="previous"]'),
+        'color',
+      ),
+    ).toBe(sys.GrayText);
+    expect(
+      await styleOf(
+        pager.locator('[data-pct-part="ellipsis"]').first(),
+        'color',
+      ),
+    ).toBe(sys.CanvasText);
+  });
+
   test('the disabled state says GrayText in every control', async ({
     page,
   }) => {

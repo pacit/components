@@ -3459,3 +3459,84 @@ What is being asserted is where the panel comes to **rest**, so the retry has to
 geometry itself: `expect.poll(() => box())`. The general rule is worth more than the fix — a
 retrying assertion settles the thing it names, and naming the cause of a motion does not settle
 its effect.
+
+### <a id="lesson-131"></a>`lesson-131` — A clamp swallows the change it was written to correct
+
+`pct-pagination` promises that a `page` written out of range is corrected and the correction
+written back to the model. The effect that does it read one signal:
+
+```ts
+effect(() => {
+  const clamped = this.current(); // ← the CLAMPED value
+  untracked(() => {
+    if (this.page() !== clamped) this.page.set(clamped);
+  });
+});
+```
+
+It worked for `page = 999` and did nothing at all for `page = 0` or `page = -5`. Two unit cases
+found it on the first run, and the reason is the whole lesson: **a clamp is a many-to-one map,
+and the effect was watching the image rather than the domain.** Standing on page 1, a consumer
+writing `-5` leaves `current()` at `1` — unchanged, so the computed does not notify, so the
+effect never runs, so the model keeps `-5` while the view shows page 1. `999` worked only
+because it happened to move the result.
+
+Reading `page()` inside `untracked()` is what hides it: the value the effect must react to is
+read in the one place a read establishes no dependency. The fix is to track both, and it makes
+the shape visible in the code —
+
+```ts
+effect(() => {
+  const written = this.page(); // ← tracked: the domain
+  const clamped = this.current(); // ← tracked: the image
+  if (written === clamped) return;
+  untracked(() => this.page.set(clamped));
+});
+```
+
+The rule is wider than pagination and applies to every guard written as "correct it and write it
+back": `Math.min`/`Math.max`, a `Set` that de-duplicates, a normaliser that lowercases, a parser
+returning `null` for anything malformed. **What the effect must depend on is the input it is
+correcting, not the corrected output** — an output that stays the same is exactly the case where
+the correction is still owed. It is [`lesson-95`](#lesson-95)'s family seen from the signal
+graph: a guard that cannot be reached, here because the thing that would wake it is the thing
+it discards.
+
+### <a id="lesson-132"></a>`lesson-132` — An apostrophe in a comment is a quote to a scanner, and the gate then names an innocent file
+
+`check-texts` went red on `pagination.ts` with two "signal defaults are prose", and both quoted
+values were nonsense — fragments of source text starting mid-word:
+
+```
+libs/components/pagination/src/pagination.ts:139: computed(…) → "s time; touching ends fold to nothing.\n      ...(siblingsStart > boundary + 2\n        ? (["
+```
+
+Point 4 reads a factory's argument as **text** and pulls its string literals out with a regular
+expression, `/'((?:[^'\\]|\\.)*)'|"…"/g`. The argument of this `computed()` is a whole function
+body, a body carries comments, and one of the comments said `wastes the reader's time`. That
+apostrophe left the count of `'` odd, so the next quote in the **code** — the opening one of
+`['ellipsis']`, two lines down — closed a literal that had begun in the prose. The captured
+value was the source between the two, which reads as prose because half of it is: a capital, a
+space, a sentence. The rule fired, correctly by its own logic, at a file that had done nothing.
+
+Three things are worth keeping.
+
+**A scanner over source text has no denominator until it knows what a comment is.** This is
+[`lesson-77`](#lesson-77)'s shape once more and the same one open finding 4.1 describes for the
+language gate: the limb that decides _what to look at_ was never measured, so anything it
+reads wrongly is indistinguishable from something it approved. Here it erred loudly, which is
+the good case — the reverse (a real prose default hidden inside a badly paired span) passes
+green.
+
+**The failure needs two authors to meet.** The comments and `'ellipsis'` were written in one
+session and the gate was green; it went red when a later comment changed the parity of
+apostrophes in the same argument. So the trigger is not "a file with a comment" but "a file
+whose comment count of `'` happens to be odd" — which nobody can review for.
+
+**The fix is a scanner, not a reworded comment.** `literalsIn()` walks the argument in four
+states — code, line comment, block comment, string — and is thirty lines. Rewording the comment
+would have been one line and would have left the trap for the next component, which is exactly
+what open finding 4.13 records happening twice with `data-pct-selected`. The control is in
+`_reference/`: the reference input now carries a comment with an apostrophe standing over a
+`'sm'` in the code, and disarming `literalsIn` turns the reference red and moves **seven**
+prepared cases onto the wrong rule.
