@@ -62,13 +62,14 @@ Snapshot, `node tools/check-docs.mjs`:
 | 🟡 partial (deliberately without a control) |    15 |
 | ⛔ gap                                      |     7 |
 
-All 7 gaps have an owner below — in sections 2, 3 and 5. If adding a requirement raises the gap
+All 7 gaps have an owner below — in sections 2 and 5. If adding a requirement raises the gap
 count and no task changes, this list has stopped being complete, and that is a fault of this
 list, not of the registry.
 
 ## Order
 
 ```
+0  the copy off this machine  waits for nothing — the one task with no precondition at all
 1  components             the work in front of everything else
 2  trust surface          the documentation site first — nothing is published without it
 3  publication            the first push, then npm; held behind 2.1 and an explicit request
@@ -84,6 +85,20 @@ now turns on, and it is why publication sits at the end rather than at the front
 explicit request from the maintainer as well — two conditions, not one. **3.2** is held with
 **3.1**, being the only work left in the package that needs an address which resolves.
 
+**The direction was reviewed on 2026-08-31, from outside the daily loop, and it holds.** Six
+subsystem readers over the architecture, the components, the gates, CI, the consumer surface
+and the market position; ten findings adversarially verified against the code; on the day,
+every fast static gate green, 966 of 966 unit cases passing, the tree clean. The verdict in
+one sentence: the moat is not any component — it is the evidence machinery itself, which no
+competitor publishes anything like — and the risk is not architectural but **time and
+fragility**: the product exists on one disk, and the surfaces nothing measures yet are
+exactly the ones a stranger reads first (the npm README, the token inventory, the testing
+story). The review changed three parameters and no ordering: section **0** exists now and
+waits for nothing; **2.1** carries an MVP boundary and may start before 1.1 finishes; and
+what the review found sits in **4.24–4.29** and in notes on the items it widened. It also
+caught this file lying twice — the truncated tail and the orphaned seventh gap, both
+recorded at the end of section 5.
+
 Closed, and gone from this file: the language gate and the package text, the pre-publication
 tidy-up with its gate, the support and dependency-list gates; the whole behaviour layer in
 `libs/components/core` (list navigation, overlay, focus, live announcer, template slots),
@@ -96,6 +111,17 @@ date. What those tasks found lives in the decision records (0018–0044) and
 commit `releaseVersion` sees an empty range and keeps the manifest's `0.0.1`, so the run needs
 an explicit `--specifier`; at `0.0.1` every bump lands on a patch
 (`adjustSemverBumpsForZeroMajorVersion`), so the first version is a decision, not a derivation.
+
+## 0. The copy that must exist
+
+- [ ] **0.1 — an off-machine copy of the repository, private and encrypted.** Until the first
+      push there is "no remote CI, no provenance and no copy off this machine" — 3.1's own
+      words, and the last third of that sentence is an existential risk with no compensating
+      benefit. A `git bundle` to a second disk or to an encrypted store is not a remote, not a
+      publication and not the private stage 3.1 refuses: nothing in
+      [0016](decisions/0016-mit-irreversibility.md) or in the premiere's rules speaks against
+      a copy nobody can read. Minutes of work, repeated on a cadence worth writing down —
+      and until it exists, every gate, lesson and snapshot here shares one disk's fate
 
 ## 1. Components
 
@@ -133,8 +159,8 @@ menu, the select family, and switch / textarea / slider / date.
     [0045](decisions/0045-a-panel-nobody-chose-is-still-text-in-the-document.md),
     [`lesson-124`](lessons.md#lesson-124), [`lesson-125`](lessons.md#lesson-125),
     [`lesson-126`](lessons.md#lesson-126).
-  - gate: `apps/sandbox-e2e/src/tabs.spec.ts` (11 × 3) plus `/tabs` in the axe / hydration /
-    RTL audits, two forced-colours readings, three screenshots and 37 unit cases; the control
+  - gate: `apps/sandbox-e2e/src/tabs.spec.ts` (12 × 3) plus `/tabs` in the axe / hydration /
+    RTL audits, two forced-colours readings, three screenshots and 41 unit cases; the control
     for the central claim is the `@supports` fallback, which is why an engine without the
     attribute hides the panel rather than showing it. Cost `./tabs` **13458 B** on `./core`
     alone — no CDK, no `./icon`, no `@angular/common`
@@ -155,7 +181,7 @@ menu, the select family, and switch / textarea / slider / date.
     [0046](decisions/0046-a-disclosure-is-the-platforms-and-so-is-the-group-it-belongs-to.md),
     [`lesson-127`](lessons.md#lesson-127), [`lesson-128`](lessons.md#lesson-128).
   - gate: `apps/sandbox-e2e/src/accordion.spec.ts` (12 × 3) plus `/accordion` in the axe and
-    hydration audits, one forced-colours reading, one screenshot and 12 unit cases; the control
+    hydration audits, one forced-colours reading, one screenshot and 14 unit cases; the control
     for the central claim is recorded rather than prepared — `[attr.name]` taken off the
     `<details>` leaves **3 of 36 red, one per engine**, all three of them the exclusive case
     and all three on the sibling that failed to close, with every other case green. That is
@@ -207,9 +233,13 @@ decision says it is"` goes red the day a second engine ships it
     nothing for a panel inside an application's own tree. Making it work would generalise a
     shipped, gated behaviour of the dialog for a component with no consumer yet
   - it cost everybody else **+20 B per entrypoint**: `drawerClose` is a new `PCT_TEXTS` key, the
-    toast's price at a fifth of the size. Every row of the size snapshot moved by exactly that
-  - the mutation run is `drawer-trigger.ts` **100.00** and `drawer.ts` **98.46**; the two that
-    are not killed are both known shapes — the `isDevMode()` guard, which no dev-mode test can
+    toast's price at a fifth of the size. Every row of the size snapshot moved by exactly
+    that — every row but one: `./accordion` moved **+76**, and the +56 above the key is a
+    re-measured drift of the toast's family (**4.17**), folded silently into this step's
+    `--write` (measured after the fact: `git show` of the step's own commit)
+  - the mutation run is `drawer-trigger.ts` **100.00** and `drawer.ts` **96.97** counted the
+    gate's way (Stryker's own line reads 98.46 — the errored mutant is the difference); the
+    two that are not killed are both known shapes — the `isDevMode()` guard, which no dev-mode test can
     tell from `true`, and an errored mutant that **4.6** has no column for (the fifth such row,
     and the first where the test proving the guard was written on purpose)
   - left **4.21** and **4.22** behind, gave **4.6** a fifth row, widened **4.10** to eight
@@ -437,14 +467,43 @@ whose first visitor has nowhere to read what it does is published too early.
 
 - [ ] **2.1 — `apps/docs`** → closes `req-project-apps` and `req-project-layout`. Renders the
       **generated** inventories of parts and tokens, not hand-written ones
+  - **an MVP with a stated boundary, not a second product**: the generated inventories, the
+    component cards rendered as they stand, a theming page carrying the token inventory, the
+    support policy and the forms-interop boundary (**4.25**) — and nothing more before the
+    premiere. This is the one item that can grow without any gate saying so, and the
+    signal-forms head start decays while it does
+  - it may **start before 1.1 finishes**: everything it renders is generated today, and no
+    page depends on the six components not yet built
+  - the typed token names (`PctTokenName` / `PctCssVar` in `libs/tokens/dist`) never leave the
+    repository, so a consumer retheming past the one brand variable reads shipped CSS; a
+    `./tokens` entrypoint or the rendered inventory is the same move the icon names already
+    made, and it belongs here or to 2.4 — both read the same source
+  - the dev-mode warnings are rich and unindexed — an id per warning, extracted from sources
+    the text gates already parse, makes every warning an address a consumer can search for
 - [ ] **2.2 — ACR / VPAT** out of the existing gates — you get the machine proof earlier than the
       document, which is the reverse of the industry norm (the EAA enforceable since June 2025,
       EN 301 549 in tenders)
+  - _from the direction review:_ the document's inputs include **a recorded
+    assistive-technology pass** (NVDA and VoiceOver over the sandbox views, logs kept). The
+    a11y gates end where axe ends — DOM and CSS — and an ACR claiming screen-reader support
+    with zero AT runs behind it is a promise without a gate, published to the exact audience
+    that will check
 - [ ] **2.3 — benchmarks as a published number** + a performance regression that fails CI
 - [ ] **2.4 — DTCG ↔ Figma / Tokens Studio bridge** — the source of truth is already DTCG, an
       unused advantage
 - [ ] **2.5 — a surface for AI agents**: `llms.txt`, a machine-readable component catalogue from
       the same source as the docs, canonical examples
+  - built **with** 2.1, not after it: the catalogue falls out of the same generators the site
+    renders, and locale packs for the `PCT_TEXTS` keys (a dictionary per language is an
+    afternoon, and drift is a type error) share the generator. Being the first library an
+    agent can verify claims about is this repository's own axis, worn outward
+- [ ] **2.6 — `@pacit/components/testing`**: consumer-facing harnesses on the `data-pct-part`
+      contract
+  - the parts are already a snapshot-gated public surface, so a harness per card is thin and
+    gate-able the way the cards are; today the only helpers are explicitly unpublished
+    (`libs/components/testing/src/dom.ts` says so in its header) and a consumer re-derives
+    by hand the selectors the library treats as contract. A library that ships promises
+    should ship the instrument a consumer's own suite holds them with after an upgrade
 
 ## 3. Publication
 
@@ -480,6 +539,19 @@ exist, and the maintainer has to ask for the push outright.
   - the condition is wider than the public surface: **nothing leaves in a second language at
     all**, and a measurement says so, not a declaration — the language gate proves it over
     720 files of the index and 31 of the package, with no entry in the register
+  - _from the direction review, three lines for the same checklist:_ the README's external
+    links resolve before publish (every documentation link on the future npm page points at
+    `github.com/pacit/components`, which does not exist yet, and no gate reads a link;
+    `check-package --release` can ask); npm **trusted publishing** replaces the standing
+    `NPM_TOKEN` secret (the workflow is already OIDC for provenance, so it is the last step
+    of a road mostly walked); and the README entrypoints gate of **4.10** is a
+    **precondition of this item**, not a fix the push can carry loose — the npm page is the
+    package's landing page on day one and the only consumer surface whose drift nothing
+    measures
+  - and what the first push buys must be read on arrival: **the first real CI run is a
+    measurement.** `ci.yml` has never executed anywhere — no remote, so no run — which makes
+    every number 4.2 argues about unproven configuration until then. Capture the first run's
+    job timings before tuning anything
   - cost: minutes for the task itself · _notes:_ —
 
 - [ ] **3.2 — citations in the public API as links**
@@ -496,6 +568,24 @@ exist, and the maintainer has to ask for the push outright.
   - **3.1 being held, this one is held with it** — and it is the whole of what the hold costs,
     since the citations are the only work in the file that needs an address
   - cost: ~0.5 day · _notes:_ —
+
+- [ ] **3.3 — the release reads CI's colour before it trusts it**
+  - `release.yml`'s only guard is the ref check: no `needs:`, no check-run query, nothing that
+    asks whether the commit it is about to publish ever went green. A dispatch against a red
+    or still-running `main` publishes anyway — and of the ~26 gate targets CI runs, the
+    release path re-runs only the build and `check-package --release`. The publish is the one
+    gate whose failure a consumer inherits forever
+  - one step asserting the HEAD commit's CI run succeeded closes it (a check-runs query, or
+    the release calling CI as a reusable workflow with `needs`)
+  - binds at: **the first non-dry release** · _notes:_ —
+
+- [ ] **3.4 — the premiere is a task, not an event**
+  - [0016](decisions/0016-mit-irreversibility.md) defers its biggest decision to "data that
+    does not exist today" — and no task acquires the users who would produce that data. The
+    plan has no announcement venues, no feedback channel, no "run the gates yourself"
+    contributor path in `CONTRIBUTING.md`; the strategy's own logic puts users on the
+    critical path of its most expensive open question, and nothing here goes and gets them
+  - binds at: **3.1**, as the half of the premiere that is not a push · _notes:_ —
 
 ## 4. Open findings
 
@@ -659,6 +749,16 @@ thousandth row` timed out with the list still showing row 44, and the forced-col
     touches anything the step changed. So the shape this item describes is not a property of
     Stryker — it is what a machine running a hundred browser pages at once does to any gate
     with a deadline in it, and the e2e suite has deadlines in every wait
+  - _from the direction review, and cheaper than any of the three forks:_ two zero-risk
+    prefixes first — a `concurrency` group with `cancel-in-progress` and a `timeout-minutes`,
+    neither present in either workflow, so today two pushes run the hour-plus suite twice
+    and a hung run holds the runner to GitHub's six-hour ceiling. Then the cache: CI restores
+    npm and the Playwright browsers and **no nx task results**, so a dependency bump reruns
+    the whole pipeline — and by this item's own measurements a **restored** mutation result
+    is more stable than a rerun, which makes the task cache a correctness aid here, not a
+    speed one. And a **nightly full run** (`run-many`, not `affected`) would hand this item
+    its clock-wobble distribution on the real hardware for free, while re-running the
+    environment-dependent gates a quiet `main` never exercises
 
 - [ ] **4.3 — an option's owner is measured only where a page renders the panel**
   - `pct-select` draws a named section as `role="group"`, and the options below it are owned by
@@ -748,7 +848,7 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     inside a DOM listener and the vitest worker dies instead of a test failing. So the column
     that is missing is not an edge case of one component; it is what a defensive guard looks
     like whenever the test that proves it is an event handler
-  - **and a fifth, this time on purpose.** `drawer.ts 98.46 64(0) 1 0 0` is 64 killed of 66:
+  - **and a fifth, this time on purpose.** `drawer.ts 96.97 64(0) 1 0 2` is 64 killed of 66:
     one survivor (the `isDevMode()` guard) and one errored — `this.openedBy?.focus()` with the
     optional chaining taken off, on a drawer that never had a trigger. The difference from the
     four above is that the case which turns it into an error was **written for it**: a drawer
@@ -811,7 +911,15 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     folded into the step that found it
   - binds at: **the next task that touches `PctCheckbox`**, or the first screen-reader log,
     whichever comes first — a log is the one measurement that would show what a reader really
-    says about the `mixed` state · _notes:_ —
+    says about the `mixed` state
+  - _notes:_ the switch's spec is the reference repair — it already asserts the echo's
+    **absence** and reads the native checkedness — so the fix is a copy, not a design. The
+    class has a second member: `core/src/announce.ts` is read back only as DOM, and it is
+    the higher-leverage one, a shared choke point every announcement passes through, so one
+    reader's log fixture there covers the class. And the cheap intermediate between an
+    attribute echo and a reader's log exists and is unused: Playwright's aria snapshots
+    (`toMatchAriaSnapshot`) assert what the engine actually exposes — role, name, state —
+    per component state, and diff the way the parts snapshot already does
 
 - [ ] **4.10 — the two READMEs list the entrypoints, and no gate reads either list**
   - the npm page's **Entrypoints** table
@@ -847,6 +955,11 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
   - `./skeleton` makes it **fourteen missing of twenty-one**, and it is the one that would be
     worth naming first: at 2997 B against `@angular/core` alone it is the cheapest component in
     the package to take, which is precisely the sort of fact a first visitor reads a table for
+  - _from the direction review:_ measured whole rather than counted — the page's **status
+    paragraph** still describes a five-control form library, and the shipped multi-select,
+    filtering, clearing and the virtual window appear nowhere on it. And the item is
+    **promoted**: the gate and the regenerated table are a precondition of 3.1 (named there
+    now), because the npm page is what the premiere ships to a stranger first
 
 - [x] **4.11 — the mutation run measures 22 of 36 source files, and nothing says which 22**
   - closed with a **rule**, which is what the item asked for. The gate reads the library's
@@ -1067,7 +1180,13 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     Stryker: a mutation over the TEMPLATE (which nothing here reads), or a recorded disarming
     per claim, of which this step took one by hand
   - binds at: **the second component built mostly out of the platform**, or the first time a
-    mutation score is used to argue that a component is well tested · _notes:_ —
+    mutation score is used to argue that a component is well tested
+  - _notes:_ widened by the direction review — the stylesheet is the same shape one file
+    over. `.ts` is mutated, templates carry per-template coverage floors, `.scss` has
+    neither: `check-styles` polices rule **patterns** (logical properties, forced-colours
+    ordering), not promises, so a deleted declaration that a case depends on dies silently.
+    The honest cheap version for both non-`.ts` halves is the recorded disarming per claim
+    this item already names
 
 - [ ] **4.20 — the list of what the platform makes focusable is written by hand, and nobody
       counts what is missing**
@@ -1100,6 +1219,11 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     a widget nobody could name; it now costs a second, a control the gate declares safe inside a
     subtree it knows is hidden. `<video controls>` in a skeleton is not a component anybody has
     written, and neither was a `<summary>` the week before it was
+  - _notes, from the direction review:_ the count is **three** curated lists, not two —
+    `COMPOSITE_ROLES` (nine entries) is the same shape beside `FOCUSABLE_TAGS` and
+    `NAMED_TAGS` — and `contenteditable` belongs to the focusability check's attributes
+    rather than to any tag list. Whatever derivation settles this settles all three from one
+    source
 
 - [ ] **4.21 — the library's layer order is three numbers in three files and no rule**
   - `--pct-toast-z-index` is **1100** and its comment says why: above the CDK's overlay
@@ -1208,16 +1332,111 @@ direction` expecting index 32 and getting 31 in the first, its right-to-left twi
     picture that moves is read by a person, an assertion that flips at random is read as a
     defect in a component nobody touched
 
+- [ ] **4.24 — the three-API promise names a gate that measures something else**
+  - `req-api-signal-forms` cites `field-controls.spec.ts` and the e2e `forms.spec.ts` as the
+    gate for "all three form APIs on the same control" — and neither file contains
+    `formControl` or `ngModel` at all: the first tests `aria-describedby` wiring, the second
+    is signal forms only. The real interop cases live in the per-control specs (the
+    "compatibility with classic forms (no CVA)" blocks in `field.spec.ts`, `select.spec.ts`,
+    `checkbox.spec.ts` and their siblings), and the requirement does not point at them
+  - so deleting the interop tests would today fail nothing the requirement names — the exact
+    silent class the axis forbids, standing on the requirement that carries the library's
+    loudest bet
+  - the repair touches the requirement's Gate line alone; `field-controls.spec.ts`
+    legitimately gates three other requirements and keeps them
+  - binds at: **before 3.1** — it is cheap, and the promise is the launch story · _notes:_ —
+
+- [ ] **4.25 — classic-forms interop is promised whole and measured for value alone**
+  - every "no CVA" case asserts two-way **value** sync and stops there: no spec anywhere
+    calls `ctrl.disable()` or `markAsTouched()`, and none reads status propagation through
+    `[formControl]` on a composite control. A native input under `pctText` falls back to the
+    platform's own `DefaultValueAccessor`, which handles disabling; `pct-select` has no such
+    fallback, so `disable()` against it is not provably broken — it is **unmeasured**, which
+    the axis counts as the same state
+  - the ecosystem cost is real and equally unmeasured: an integration that resolves
+    `NG_VALUE_ACCESSOR` directly (the wrapper-library road) finds nothing to resolve
+  - the road is one of two, and both are honest: measure the whole surface per composite —
+    disable/enable, touched, status, then gate it — or fence the boundary in writing in
+    [0005](decisions/0005-signal-forms-without-cva.md) and the consumer docs, so "works with
+    reactive forms" cannot be read wider than what is held. Either way 0005's cost section
+    predates the API's stabilisation: `FormValueControl` ships `@publicApi` in the Angular
+    this library pins, which shrinks the risk it names and changes its shape
+  - binds at: **before 3.1** — the boundary is written before a stranger reads the promise ·
+    _notes:_ —
+
+- [ ] **4.26 — one input block, eight hand-written copies, and only the names are checked**
+  - the form-control quartet (`readonly` / `invalid` / `touched` / `errors`) is declared
+    verbatim in eight controls. `implements FormValueControl` checks the member names; the
+    **transforms and defaults** it does not — a ninth control missing `booleanAttribute` on
+    `invalid` compiles and drifts silently, which is [`lesson-21`](lessons.md#lesson-21)'s
+    shape standing at the public API
+  - two roads: a host-directive carrying the block (it stands under nobody's template, so
+    [0013](decisions/0013-no-headless-split.md) does not speak against it), or a structural
+    gate over the eight declarations
+  - binds at: **the ninth control that takes the block** · _notes:_ —
+
+- [ ] **4.27 — two meta-gates trust a fact about nx that nothing re-measures**
+  - `check-docs` point 3 proves CI wiring by matching the `nx affected -t` **text** in
+    `ci.yml` — presence in the string, not presence in the task graph, so a target whose
+    project stops being affected stays green while never running
+  - and every root-project gate stands on "the root project is affected by every change",
+    measured once ([`lesson-47`](lessons.md#lesson-47)) against an installed nx and
+    remembered since — a behaviour of a dependency, which `check-browsers` point 6 already
+    re-probes for its own facts rather than remembers. The canary is three lines:
+    `nx show projects --affected` over a known file, asserting the root is in the answer
+  - binds at: **the next nx major**, or the first change to `check-docs` point 3 · _notes:_ —
+
+- [ ] **4.28 — the axe audit's denominator is a hand-curated list of opened panels**
+  - `a11y.spec.ts` says it in its own comments, three times over: "a panel that is not
+    attached is a panel axe has nothing to say about" — and then opens, by hand, the panels
+    it knows about. A new overlay component's open state joins the audit only if somebody
+    remembers, which is the state the mutation inventory stood in before 4.11 inverted it
+  - the stage list can be derived from an inventory the gates already own — the parts
+    snapshot, or the sandbox's views registry — so a new open state is inside the audit by
+    default and its absence is a violation rather than a silence
+  - binds at: **the next component with an overlay panel** · _notes:_ —
+
+- [ ] **4.29 — the date field's UTC promise is prose, and no run stands in a hostile timezone**
+  - `day.ts` says "every day in this file is midnight UTC", so no arithmetic can cross a
+    boundary — a design claim with no measurement behind it: no Playwright project sets a
+    `timezoneId`, no unit case runs at a DST boundary, and the suite's machine is the
+    timezone it happens to be
+  - one override (`timezoneId: 'Pacific/Kiritimati'`, UTC+14 — the farthest a clock gets
+    from the meridian) on the date spec plus one DST-boundary unit case is the negative
+    control the sentence is missing
+  - binds at: **the next change under `date/src`**, or the first timezone bug report ·
+    _notes:_ —
+
 ## 5. Gaps with no deadline
 
 Waiting for the trigger written in their **Binds at** field. They are not forgotten — they
 are deferred.
 
 - [ ] **5.1 — `req-api-number`**: property tests for the parser (`parse(format(n)) === n` for any
-      `n` and locale). Binds at the first locale outside `pl`/`en`
+      `n` and locale). Binds at the first locale outside `pl`/`en` — and **widened by the
+      direction review**: the parser is no longer the richest invariant surface here. The
+      pagination's fold, the overlay's placement and the date's day arithmetic are pure
+      algorithms with statable invariants (a strip strictly increasing with pinned ends, a
+      day that round-trips), enumerated today by hand-picked walks; a property sweep over
+      them is also a mutant-killer aimed at the snapshot's lowest rows, and those three bind
+      at their next surviving mutant rather than at a locale
 - [ ] **5.2 — `req-project-files`**: a check on the entrypoint directory layout. Binds at the first
       component added by somebody other than the author of the rule
 - [ ] **5.3 — `req-token-directive`**: a theme directive instead of a hand-written `data-theme`.
       Binds once setting the attribute from a template starts repeating
 - [ ] **5.4 — `req-token-density`**: the DTCG sources contain **not one** density token. Binds once
       the size axis settles — note that density will go below the touch-target threshold, so it
+      has to arrive together with a gate, not before one
+- [ ] **5.5 — `req-project-concise`**: the prose volume budget per file, in the idiom of the
+      size snapshot. Binds at the close of the compression pass — **not earlier**, for
+      [`lesson-49`](lessons.md#lesson-49)'s reason: a snapshot laid on today's headers would
+      freeze them as the accepted state
+
+**This file has no gate, and it showed.** The rewrite that shrank the plan to a working set
+also cut it mid-sentence — 5.4's last line was lost, and the file ended on "so it" for six
+commits with nobody noticing — and the same rewrite orphaned `req-project-concise`: the
+seventh gap, owned by no task while [State](#state) said all seven were owned. Both were
+found by the direction review and repaired above. The lesson is the axis's own, one floor
+up: a plan that lies does it silently, and the session-start `check-docs` counts are the
+only reading that ever catches it — so the counts are checked at the start of a session,
+and the tail of this file is part of what a rewrite has to hand back.
