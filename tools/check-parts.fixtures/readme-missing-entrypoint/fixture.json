@@ -1,0 +1,5 @@
+{
+  "point": 7,
+  "check": "readme",
+  "$reason": "The packed manifest exports ./widget and the npm page has no row for it. A visitor reads the page, not the manifest — a component with no row does not exist for them."
+}

@@ -10,7 +10,8 @@
  *  3. STATICNESS: a part's name is nowhere bound by an expression,
  *  4. SURFACE: the **Parts** rows in `docs/components/` carry exactly the exposed names,
  *  5. SNAPSHOT: the versioned inventory matches the current one,
- *  6. NAMESPACE: a component whose parts share a prefix gives it to ALL of them.
+ *  6. NAMESPACE: a component whose parts share a prefix gives it to ALL of them,
+ *  7. README: the package README's entrypoint table matches the packed manifest.
  *
  * Two independent reads are the point: the source read catches a part that never reached
  * the package, the package read (JIT over `dist/`) one our scanner cannot see.
@@ -40,6 +41,7 @@ const PROJECT = 'libs/components';
 const DIST = 'dist/libs/components';
 const DOCUMENTS = 'docs/components';
 const SNAPSHOT = `${PROJECT}/parts.snapshot.md`;
+const README = `${PROJECT}/README.md`;
 const FIXTURES = join(ROOT, 'tools/check-parts.fixtures');
 const REFERENCE = '_reference';
 
@@ -588,10 +590,50 @@ const checkParts = (input) => {
     );
   }
 
+  // 7. README — the package README's entrypoint table, held to the packed manifest. The
+  // npm page is the first surface a consumer reads and it was the last one whose drift
+  // nothing measured: it named 7 of 21 entrypoints after six components had shipped
+  // without a row. It stands after the snapshot so that `--write` keeps answering a
+  // snapshot drift with one command; a case here always has a current snapshot.
+  const named = new Set(
+    [
+      ...(input.readme ?? '').matchAll(
+        /^\|\s*`@pacit\/components(\/[a-z-]+)?`/gm,
+      ),
+    ].map((m) => `.${m[1] ?? ''}`),
+  );
+  const unlisted = [...input.entrypoints].filter((e) => !named.has(e));
+  const phantom = [...named].filter((e) => !input.entrypoints.has(e));
+  if (input.readme === null)
+    throw new PartsError(
+      'readme',
+      `no \`${README}\` — the package publishes its README as the npm page, and this ` +
+        `gate reads the page's entrypoint table against the packed manifest`,
+    );
+  if (unlisted.length || phantom.length)
+    throw new PartsError(
+      'readme',
+      `the README's entrypoint table has drifted from the packed manifest:\n` +
+        (unlisted.length
+          ? `    entrypoints with no row (${unlisted.length}):\n` +
+            list(shorten(unlisted.map((e) => `\`${e}\``))) +
+            '\n'
+          : '') +
+        (phantom.length
+          ? `    rows naming no entrypoint (${phantom.length}):\n` +
+            list(shorten(phantom.map((e) => `\`${e}\``))) +
+            '\n'
+          : '') +
+        `    The npm page is what a consumer reads before installing, and a table kept by ` +
+        `hand names fewer components every month — measured at seven of twenty-one before ` +
+        `this point existed. A new entrypoint takes a row with it, in \`${README}\`.`,
+    );
+
   return {
     description:
       `${rows.length} parts in ${fromPackage.size} classes ` +
-      `(${byEntrypoint.size} entrypoints), ${documents.length} cards in docs`,
+      `(${byEntrypoint.size} entrypoints), ${documents.length} cards in docs, ` +
+      `${named.size} rows on the npm page`,
     snapshot: content,
   };
 };
@@ -776,6 +818,7 @@ const collectInput = async (root, files, packageFromDisk) => {
       .filter(isCard)
       .map((file) => readCard(file, read(root, file))),
     snapshot: existsSync(join(root, SNAPSHOT)) ? read(root, SNAPSHOT) : null,
+    readme: files.includes(README) ? read(root, README) : null,
   };
 };
 
