@@ -34,7 +34,9 @@ apps/
   sandbox/       demo application / playground
   sandbox-e2e/   e2e tests (Playwright)
 libs/
-  components/    the @pacit/components package (entrypoints: ./core, ./field, ./button, ./checkbox, ./radio, ./select)
+  components/    the @pacit/components package — one entrypoint per component, 21 in all
+                 (./accordion … ./tooltip, plus ./core and ./icon; the full table is in
+                 libs/components/README.md#entrypoints)
   tokens/        DTCG source + build -> CSS/SCSS/TS + contrast gate
 docs/            requirements, decisions, lessons and the generated registry (start: docs/README.md)
 tools/           the gates (check-*) and the release script

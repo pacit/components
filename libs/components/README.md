@@ -3,9 +3,12 @@
 Accessible Angular component library: standalone, zoneless, signal forms, SSR and design-token
 theming.
 
-> **Status: early, and the API still moves.** The set is small on purpose — a button and a field
-> wrapper with a text, numeric, checkbox, radio or select control inside it. What is already
-> decided, and what is still missing, is written down promise by promise in the
+> **Status: early, and the API still moves.** Twenty-one entrypoints ship today: the form
+> controls (a field wrapper with text, textarea, number, prefix/suffix affixes; checkbox,
+> radio group, select and multi-select, switch, slider, date), the overlays (dialog, tooltip,
+> popover, menu, toast) and the page's own structures (tabs, accordion, drawer, pagination,
+> progress, skeleton). What is already decided, and what is still missing, is written down
+> promise by promise in the
 > [gate registry](https://github.com/pacit/components/blob/main/docs/registry.md), which names
 > the machine that proves each one next to it.
 
@@ -42,16 +45,30 @@ it works in a zoneless application and renders on the server.
 Components are imported from **secondary entrypoints**, so an application that uses a button
 does not pay for a select. The primary entrypoint carries configuration only.
 
-| entrypoint                   | what is in it                                                                    |
-| ---------------------------- | -------------------------------------------------------------------------------- |
-| `@pacit/components`          | `providePctConfig`, `providePctTexts`, their tokens, `PCT_VERSION`               |
-| `@pacit/components/button`   | `PctButton`                                                                      |
-| `@pacit/components/field`    | `PctField`, `PctText`, `PctNumber`, `PctPrefix`, `PctSuffix`                     |
-| `@pacit/components/checkbox` | `PctCheckbox`                                                                    |
-| `@pacit/components/radio`    | `PctRadioGroup`, `PctRadio`                                                      |
-| `@pacit/components/select`   | `PctSelect`, `PctSelectOption`                                                   |
-| `@pacit/components/icon`     | `PctIcon`, `PctIconTemplate`, `providePctIcons`, `PCT_ICONS`                     |
-| `@pacit/components/core`     | what the controls share: `PCT_FIELD`, `PctAnnouncer`, template slots, id helpers |
+| entrypoint                     | what is in it                                                                    |
+| ------------------------------ | -------------------------------------------------------------------------------- |
+| `@pacit/components`            | `providePctConfig`, `providePctTexts`, their tokens, `PCT_VERSION`               |
+| `@pacit/components/accordion`  | `PctAccordion`, `PctAccordionItem`                                               |
+| `@pacit/components/button`     | `PctButton`                                                                      |
+| `@pacit/components/checkbox`   | `PctCheckbox`                                                                    |
+| `@pacit/components/date`       | `PctDate`, `PctCalendar`, the `PctDay` helpers                                   |
+| `@pacit/components/dialog`     | `PctDialog`, `PctAutofocus`                                                      |
+| `@pacit/components/drawer`     | `PctDrawer`, `PctDrawerTrigger`                                                  |
+| `@pacit/components/field`      | `PctField`, `PctText`, `PctNumber`, `PctAutosize`, `PctPrefix`, `PctSuffix`      |
+| `@pacit/components/icon`       | `PctIcon`, `PctIconTemplate`, `providePctIcons`, `PCT_ICONS`                     |
+| `@pacit/components/menu`       | `PctMenu`, `PctMenuItem`, `PctMenuTrigger`                                       |
+| `@pacit/components/pagination` | `PctPagination`                                                                  |
+| `@pacit/components/popover`    | `PctPopover`, `PctPopoverTrigger`                                                |
+| `@pacit/components/progress`   | `PctProgress`                                                                    |
+| `@pacit/components/radio`      | `PctRadioGroup`, `PctRadio`                                                      |
+| `@pacit/components/select`     | `PctSelect`, `PctMultiSelect`, `PctSelectOptionTemplate`, the filter helpers     |
+| `@pacit/components/skeleton`   | `PctSkeleton`                                                                    |
+| `@pacit/components/slider`     | `PctSlider`                                                                      |
+| `@pacit/components/switch`     | `PctSwitch`                                                                      |
+| `@pacit/components/tabs`       | `PctTabs`, `PctTab`                                                              |
+| `@pacit/components/toast`      | `PctToaster`, `PctToastViewport`, `providePctToastConfig`                        |
+| `@pacit/components/tooltip`    | `PctTooltip`                                                                     |
+| `@pacit/components/core`       | what the controls share: `PCT_FIELD`, `PctAnnouncer`, template slots, id helpers |
 
 `@pacit/components/themes/pct.css` is the built skin — see [Theming](#theming).
 
@@ -239,6 +256,172 @@ is **inside** the option: `role="option"`, the id, `aria-selected` and the keybo
 the component, because they are the listbox pattern rather than decoration.
 
 > Needs the CDK overlay styles — see [Install](#install).
+
+### Multi-select
+
+`<pct-multi-select>` is the many-choice select: the same options, the same panel, `value` as
+an array, chosen values drawn as tags on the trigger. Both selects also take `filterable`
+(a query field in the panel), `clearable` (a cross that takes the value back) and `loading`
+(a panel that says the list is still coming), and both accept the same option template.
+
+```html
+<pct-multi-select [options]="tags" [(value)]="chosen" filterable clearable />
+```
+
+### Switch
+
+An on/off control on a native input with `role="switch"` — the pressed state, the keyboard
+and what a screen reader announces are the platform's, not re-implemented.
+
+```html
+<pct-switch [(checked)]="notifications" label="Notifications" />
+```
+
+### Slider
+
+The platform's `<input type="range">` under the library's paint: keyboard steps, RTL
+direction and the announced value all come from the element itself.
+
+```html
+<pct-slider [(value)]="volume" [min]="0" [max]="100" label="Volume" />
+```
+
+### Date
+
+A date field with a calendar panel. The value is a `PctDay` — a plain `'2026-08-31'` string,
+**not** a `Date`: a day is not an instant, so no timezone can shift it. Typing and the
+calendar both write the model; `min`, `max` and a `dateDisabled` predicate fence the range.
+
+```html
+<pct-date [(value)]="deadline" label="Deadline" [min]="today" />
+```
+
+### Dialog
+
+A modal overlay: focus moves in and is held, the page behind stops scrolling and is inert,
+`Escape` and the backdrop close it (both refusable). `[pctAutofocus]` names the element
+focus should land on first.
+
+```html
+<pct-dialog [(open)]="confirming" heading="Delete the draft?">…</pct-dialog>
+```
+
+### Tooltip
+
+A description on hover and focus, written as an attribute on the element it describes. By
+default it feeds `aria-describedby` — a **description**, not a name — because a name that
+comes and goes with the pointer is a name a reader cannot rely on.
+
+```html
+<button pctTooltip="Saves without publishing">Save draft</button>
+```
+
+### Popover
+
+An anchored, non-modal panel — a dialog minus the veil. The page keeps working, the tab
+order stays with the trigger, and `Escape` returns focus where it came from.
+
+```html
+<button [pctPopoverTrigger]="panel">Filters</button> <pct-popover #panel heading="Filters">…</pct-popover>
+```
+
+### Menu
+
+An action list on the ARIA menu pattern: focus really moves through the items, the arrows
+walk it, and a press runs the action and closes the panel. Items are the consumer's
+`<button pctMenuItem>` elements, so a disabled one carries the native attribute.
+
+```html
+<button [pctMenuTrigger]="actions">More…</button>
+<pct-menu #actions>
+  <button pctMenuItem (click)="rename()">Rename</button>
+  <button pctMenuItem (click)="remove()">Delete</button>
+</pct-menu>
+```
+
+### Toast
+
+Messages arrive in a `role="log"` region the page carries from the start — `<pct-toast-viewport>`
+once in the shell, `PctToaster.show()` anywhere. A message with an action or marked urgent
+has no duration at all: nothing a user must act on is allowed to expire.
+
+```ts
+this.toaster.show('Draft saved.');
+this.toaster.show({ text: 'Message deleted.', action: { label: 'Undo', run: () => this.undo() } });
+```
+
+### Tabs
+
+The strip is drawn from labels the panels hand up; a `<pct-tab>` **is** its panel, written
+where the content belongs. A panel nobody chose is hidden with `hidden="until-found"`, so
+the browser's find-in-page still searches it and reveals it.
+
+```html
+<pct-tabs [(value)]="section" ariaLabel="Settings">
+  <pct-tab value="general" label="General">…</pct-tab>
+  <pct-tab value="network" label="Network">…</pct-tab>
+</pct-tabs>
+```
+
+### Accordion
+
+A `<details>`/`<summary>` disclosure — the press, the announced state, find-in-page and the
+tab order are the platform's. `exclusive` on the group is one shared `name` attribute, with
+no code behind it; a real heading (`headingLevel`) is written inside the summary.
+
+```html
+<pct-accordion exclusive>
+  <pct-accordion-item label="Shipping">…</pct-accordion-item>
+  <pct-accordion-item label="Returns">…</pct-accordion-item>
+</pct-accordion>
+```
+
+### Drawer
+
+A docked panel that is a **region of the page, not a layer over it**: drawn where you write
+it, in the page's own tab order, theme and direction. Shut, it is `hidden="until-found"`. A
+side sheet that takes the whole page over is `pct-dialog`, not a drawer mode.
+
+```html
+<button [pctDrawerTrigger]="filters">Filters</button> <pct-drawer #filters heading="Filters" side="end">…</pct-drawer>
+```
+
+### Pagination
+
+A `navigation` landmark of plain buttons. `page` is a model, `count` is a number of pages,
+and a press **emits rather than navigates** — a pager built on links takes its page from the
+router and is a different component. The strip folds around the current page with pinned
+ends.
+
+```html
+<pct-pagination [(page)]="page" [count]="pageCount" />
+```
+
+### Progress
+
+A real `<progress>` element under the library's paint, so the role, the bounds and the value
+are the platform's — and a bar with no `value` reaches the accessibility tree with no value
+at all, which is what indeterminate means. The name is yours, through `ariaLabel` or
+`ariaLabelledby`.
+
+```html
+<pct-progress [value]="uploaded" [max]="total" ariaLabel="Upload" /> <pct-progress ariaLabel="Loading" /><!-- no value: indeterminate -->
+```
+
+### Skeleton
+
+A placeholder that stands where meaning has not arrived and says nothing: `aria-hidden`, no
+role, no text. The wait itself belongs on the **region** — put `aria-busy` on the element
+whose content is loading. Lines are `1lh` of your own type, so the layout does not move when
+the answer lands.
+
+```html
+<article [attr.aria-busy]="loading() ? 'true' : null">
+  @if (loading()) {
+  <pct-skeleton [lines]="3" />
+  } @else { … }
+</article>
+```
 
 ## Theming
 

@@ -1002,6 +1002,15 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     filtering, clearing and the virtual window appear nowhere on it. And the item is
     **promoted**: the gate and the regenerated table are a precondition of 3.1 (named there
     now), because the npm page is what the premiere ships to a stranger first
+  - _the night before 3.0, the content half was paid and the gate half was deliberately
+    not:_ the table names all 21 secondary entrypoints, the status paragraph counts what
+    ships, fourteen component sections exist with examples read off the sources (every
+    binding name verified against its `input()`/`model()` declaration), and the root
+    README's layout line points at the table instead of carrying a shorter copy of it. The
+    gate is still owed and the item stays open — this is exactly the by-hand refresh whose
+    drift the item predicts, done consciously at the eve of the private stage, with the
+    gate's shape unchanged: every `ng-package.json` a row, every row a manifest, inside
+    `check-parts` where both denominators already live
 
 - [x] **4.11 — the mutation run measures 22 of 36 source files, and nothing says which 22**
   - closed with a **rule**, which is what the item asked for. The gate reads the library's
