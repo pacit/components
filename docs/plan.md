@@ -1373,7 +1373,10 @@ direction` expecting index 32 and getting 31 in the first, its right-to-left twi
     picture that moves is read by a person, an assertion that flips at random is read as a
     defect in a component nobody touched
 
-- [ ] **4.24 — the three-API promise names a gate that measures something else**
+- [x] **4.24 — the three-API promise names a gate that measures something else**
+  - _closed the night before 3.0:_ the Gate line names the eight per-control interop suites
+    now (plus `forms.spec.ts` for the signal-forms half) and says in place why it moved;
+    `check-docs --write` rewrote the registry in the same step and stayed green
   - `req-api-signal-forms` cites `field-controls.spec.ts` and the e2e `forms.spec.ts` as the
     gate for "all three form APIs on the same control" — and neither file contains
     `formControl` or `ngModel` at all: the first tests `aria-describedby` wiring, the second

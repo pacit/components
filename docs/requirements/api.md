@@ -109,8 +109,15 @@ component, because after that it is a breaking change in every one of them
 `@angular/forms/signals`. **`ControlValueAccessor` is NOT implemented** — and yet
 `[formControl]`, `formControlName` and `[(ngModel)]` work with no compatibility layer.
 
-**Gate:** `libs/components/field/src/field-controls.spec.ts`,
-`apps/sandbox-e2e/src/forms.spec.ts` — all three form APIs on the same control
+**Gate:** the classic-forms interop suites in the per-control specs —
+`libs/components/field/src/field.spec.ts`, `libs/components/field/src/number.spec.ts`,
+`libs/components/select/src/select.spec.ts`, `libs/components/checkbox/src/checkbox.spec.ts`,
+`libs/components/switch/src/switch.spec.ts`, `libs/components/radio/src/radio.spec.ts`,
+`libs/components/slider/src/slider.spec.ts`, `libs/components/date/src/date.spec.ts` —
+`[formControl]` and `[(ngModel)]` per control, plus `apps/sandbox-e2e/src/forms.spec.ts` for
+the signal-forms half. The lines used to point at `field-controls.spec.ts`, which contains
+none of those tests: deleting the interop suites would have failed nothing this requirement
+named
 **Control:** the tests start from a **non-empty** initial value — with an empty model the
 regression in [`lesson-26`](../lessons.md#lesson-26) was invisible
 **Decision:** [0005 — signal forms without CVA](../decisions/0005-signal-forms-without-cva.md)
