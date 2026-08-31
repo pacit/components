@@ -10,9 +10,20 @@ permissions:
   actions: read
   contents: read
 
+# A superseded run keeps burning the runner without one: two pushes in a minute are two
+# hour-class suites running to completion for one merge-worthy result. Cancelling the older
+# is safe exactly because nx-set-shas below keys on the last GREEN run, not the last run.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   main:
     runs-on: ubuntu-latest
+    # Twice the worst full run yet measured (~50 min mutation + ~20 min e2e, sequential
+    # worst case) — a ceiling for a hung browser, not a budget for a slow one. GitHub's own
+    # default is six hours, which on a metered private stage is a bill, not a ceiling.
+    timeout-minutes: 150
     steps:
       - uses: actions/checkout@v5
         with:

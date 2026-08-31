@@ -790,16 +790,17 @@ thousandth row` timed out with the list still showing row 44, and the forced-col
     touches anything the step changed. So the shape this item describes is not a property of
     Stryker — it is what a machine running a hundred browser pages at once does to any gate
     with a deadline in it, and the e2e suite has deadlines in every wait
-  - _from the direction review, and cheaper than any of the three forks:_ two zero-risk
-    prefixes first — a `concurrency` group with `cancel-in-progress` and a `timeout-minutes`,
-    neither present in either workflow, so today two pushes run the hour-plus suite twice
-    and a hung run holds the runner to GitHub's six-hour ceiling. Then the cache: CI restores
-    npm and the Playwright browsers and **no nx task results**, so a dependency bump reruns
-    the whole pipeline — and by this item's own measurements a **restored** mutation result
-    is more stable than a rerun, which makes the task cache a correctness aid here, not a
-    speed one. And a **nightly full run** (`run-many`, not `affected`) would hand this item
-    its clock-wobble distribution on the real hardware for free, while re-running the
-    environment-dependent gates a quiet `main` never exercises
+  - _from the direction review, and two of its three prefixes are in place:_ `ci.yml`
+    carries a `concurrency` group with `cancel-in-progress` (safe exactly because
+    `nx-set-shas` keys on the last GREEN run) and `timeout-minutes: 150` — twice the worst
+    measured full run, a ceiling for a hung browser rather than a budget for a slow one —
+    and `nightly.yml` runs the whole suite on a schedule with the two heaviest gates in a
+    **separate step**, so their wall-clock and their wobble are readable per run straight
+    off the job's step timings, which is the distribution this item has been missing. Still
+    open from the review: the task cache — CI restores npm and the Playwright browsers and
+    **no nx task results**, so a dependency bump reruns the whole pipeline, and by this
+    item's own measurements a **restored** mutation result is more stable than a rerun,
+    which makes the cache a correctness aid here rather than a speed one
 
 - [ ] **4.3 — an option's owner is measured only where a page renders the panel**
   - `pct-select` draws a named section as `role="group"`, and the options below it are owned by
@@ -1390,7 +1391,15 @@ direction` expecting index 32 and getting 31 in the first, its right-to-left twi
     legitimately gates three other requirements and keeps them
   - binds at: **before 3.1** — it is cheap, and the promise is the launch story · _notes:_ —
 
-- [ ] **4.25 — classic-forms interop is promised whole and measured for value alone**
+- [x] **4.25 — classic-forms interop is promised whole and measured for value alone**
+  - _closed the night before 3.0, and by the happier of its two roads:_ the surface was
+    measured and it **holds** — the framework's bridge carries `disable()` / `enable()` to
+    the real control element and validity to `aria-invalid`, asserted now per composite
+    (select ×2, checkbox, switch, radio group, slider; 972 unit cases green). The two
+    boundaries that remain are fenced where they bite: `NG_VALUE_ACCESSOR` resolvers find
+    nothing, recorded in [0005](decisions/0005-signal-forms-without-cva.md)'s refreshed cost
+    section, and `<pct-date>` already warns under classic forms by design (`lesson-117`).
+    0005's "bet on Angular's future" paragraph now also records the API's stabilisation
   - every "no CVA" case asserts two-way **value** sync and stops there: no spec anywhere
     calls `ctrl.disable()` or `markAsTouched()`, and none reads status propagation through
     `[formControl]` on a composite control. A native input under `pctText` falls back to the

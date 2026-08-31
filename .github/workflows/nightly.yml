@@ -1,0 +1,67 @@
+# The nightly full run: `run-many`, not `affected` — everything, every night, on the
+# hardware CI really has. It exists for what a quiet `main` never exercises: the
+# clock-wobble distribution of the mutation gate on shared vCPUs (the measurement the
+# plan's CI item has been missing), toolchain and dependency rot between pushes, and the
+# environment-dependent gates (the language gate's system dictionaries, the consumer
+# gate's registry road) that only fail when the world under them moves.
+name: Nightly
+
+on:
+  schedule:
+    # 02:30 UTC — after midnight in Europe, before anybody's morning push.
+    - cron: '30 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+concurrency:
+  group: nightly
+  cancel-in-progress: false
+
+jobs:
+  full:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          filter: tree:0
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: 'npm'
+
+      - run: npm ci
+
+      # The same two-step Playwright arrangement as ci.yml, and for the same reason: the
+      # cache never covers the system libraries, and every engine must be named in BOTH
+      # branches or it silently disappears on the first cache hit.
+      - name: Resolve the Playwright version
+        id: playwright
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+
+      - if: steps.playwright-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium firefox webkit
+
+      - if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium firefox webkit
+
+      - run: npx nx format:check
+
+      # The full set ci.yml runs on a diff, run over everything. One divergence is
+      # deliberate: the two heaviest gates (mutation, e2e) run in a second, SEPARATE step,
+      # so their wall-clock and their wobble are readable per run straight off the job's
+      # step timings — which is the number the plan's CI item exists to learn.
+      - run: npx nx run-many -t lint test vite:test build typecheck check-package check-coverage check-zoneless check-typecheck check-styles check-texts check-tokens check-parts check-aria check-icons check-bundle check-consumer check-browsers check-language check-reach check-support check-docs check-index
+
+      - run: npx nx run-many -t mutation check-mutation e2e
