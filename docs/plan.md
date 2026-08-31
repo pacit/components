@@ -69,21 +69,29 @@ list, not of the registry.
 ## Order
 
 ```
-0  the copy off this machine  waits for nothing — the one task with no precondition at all
-1  components             the work in front of everything else
-2  trust surface          the documentation site first — nothing is published without it
-3  publication            the first push, then npm; held behind 2.1 and an explicit request
+0  the copy off this machine  superseded by 3.0 the day it lands; a bundle until then
+1  components             the premiere no longer waits for the tail of 1.1
+2  trust surface          the documentation site first — nothing is ANNOUNCED without it
+3  publication            3.0, the quiet push, waits for nothing; the premiere behind 2.1
+                          and an explicit request
 4  open findings          small, good filler between the bigger items
 5  gaps with no deadline  waiting for the trigger written in their "Binds at" field
 ```
 
 ## Where things stand
 
-**Nothing is published without a documentation site.** That is the ordering rule this plan
-now turns on, and it is why publication sits at the end rather than at the front: **2.1**
-(`apps/docs`) stands in front of **3.1** (the first push), and the push then waits for an
-explicit request from the maintainer as well — two conditions, not one. **3.2** is held with
-**3.1**, being the only work left in the package that needs an address which resolves.
+**Nothing is announced without a documentation site — and the push is no longer the
+announcement.** The ordering rule survives with its subject corrected. The maintainer
+reopened the coupling on 2026-08-31 and named the fear it was protecting — "without a docs
+site, nobody will look" — and that fear is about the **first look**, which no push
+produces: an unannounced repository has no visitors, and the premiere's date stays a
+sentence only the maintainer says. So the halves are split. **3.0** pushes quietly to a
+**private** remote and waits for nothing — it buys the off-machine copy, a `ci.yml` that
+has actually executed somewhere, and a rehearsed release path. **3.1** — the premiere: the
+flip to public and npm — keeps both of its conditions, **2.1** and the explicit request,
+so everything a stranger can see still waits exactly as long as it did. **3.2** is held
+with **3.1**, being the only work left in the package that needs an address which resolves
+publicly.
 
 **The direction was reviewed on 2026-08-31, from outside the daily loop, and it holds.** Six
 subsystem readers over the architecture, the components, the gates, CI, the consumer surface
@@ -95,7 +103,9 @@ fragility**: the product exists on one disk, and the surfaces nothing measures y
 exactly the ones a stranger reads first (the npm README, the token inventory, the testing
 story). The review changed three parameters and no ordering: section **0** exists now and
 waits for nothing; **2.1** carries an MVP boundary and may start before 1.1 finishes; and
-what the review found sits in **4.24–4.29** and in notes on the items it widened. It also
+what the review found sits in **4.24–4.29** and in notes on the items it widened. The
+split of the push from the premiere came the same day and is the maintainer's own
+reopening, not the review's — recorded above and in section 3. The review also
 caught this file lying twice — the truncated tail and the orphaned seventh gap, both
 recorded at the end of section 5.
 
@@ -114,14 +124,16 @@ an explicit `--specifier`; at `0.0.1` every bump lands on a patch
 
 ## 0. The copy that must exist
 
-- [ ] **0.1 — an off-machine copy of the repository, private and encrypted.** Until the first
-      push there is "no remote CI, no provenance and no copy off this machine" — 3.1's own
-      words, and the last third of that sentence is an existential risk with no compensating
-      benefit. A `git bundle` to a second disk or to an encrypted store is not a remote, not a
+- [ ] **0.1 — an off-machine copy of the repository, private and encrypted.** Until a remote
+      exists there is no remote CI, no provenance and no copy off this machine — the price
+      section 3 records the old order paying, and the last third of that sentence is an
+      existential risk with no compensating benefit. A `git bundle` to a second disk or to an encrypted store is not a remote, not a
       publication and not the private stage 3.1 refuses: nothing in
       [0016](decisions/0016-mit-irreversibility.md) or in the premiere's rules speaks against
       a copy nobody can read. Minutes of work, repeated on a cadence worth writing down —
-      and until it exists, every gate, lesson and snapshot here shares one disk's fate
+      and until it exists, every gate, lesson and snapshot here shares one disk's fate.
+      **Superseded by 3.0 the day the quiet push lands** — a private remote IS the copy;
+      this item exists for the interval before it, and the interval should be days
 
 ## 1. Components
 
@@ -129,6 +141,11 @@ Ordered by architectural debt, not by popularity — with one reservation from
 [decision 0016](decisions/0016-mit-irreversibility.md): the item with the highest build cost
 goes **last**, because a release under MIT is irreversible and it is better settled with users
 in hand.
+
+And since the push and the premiere split (section 3), **the tail of 1.1 stands in front of
+nothing**: the premiere's conditions are 2.1 and a sentence, so the components still
+unbuilt continue after it as well as before — a library is allowed to grow in public, and
+a repository that moves is its own argument to a first visitor.
 
 Every new component fills in [`components/_template.md`](components/_template.md) — the DoD
 form exists and is a condition of entering a release. Closed: the dialog, tooltip + popover,
@@ -462,8 +479,9 @@ decision says it is"` goes red the day a second engine ships it
 
 ## 2. The trust surface
 
-**2.1 is now a precondition of everything in section 3**, not a nicety after it: a package
-whose first visitor has nowhere to read what it does is published too early.
+**2.1 is a precondition of the premiere (3.1)**, not a nicety after it: a package whose
+first visitor has nowhere to read what it does is published too early. It is **not** a
+precondition of the quiet push (3.0), which no visitor can see.
 
 - [ ] **2.1 — `apps/docs`** → closes `req-project-apps` and `req-project-layout`. Renders the
       **generated** inventories of parts and tokens, not hand-written ones
@@ -507,35 +525,62 @@ whose first visitor has nowhere to read what it does is published too early.
 
 ## 3. Publication
 
-Binds at the first publication — and then all of it at once. Both items below are held, and
-**3.1 now carries two conditions rather than one**: the documentation site of 2.1 has to
-exist, and the maintainer has to ask for the push outright.
+**Split on 2026-08-31, by the maintainer's own reopening of the question.** The push and the
+premiere were one moment here, and the fear that held them both — a first look landing on a
+repository with no documentation — belongs only to the second: an unannounced private
+repository has no first look. So the quiet half moved to the front and waits for nothing,
+and everything a stranger can see still waits for 2.1 and a sentence.
 
-- [ ] **3.1 — remote repository + `repository` in the manifest** — **held on a state and on a
-      sentence, and it needs both**
+- [ ] **3.0 — the quiet push: a private remote, and CI that has actually run** — **waits for
+      nothing**
+  - the repository under the `pacit` organisation is created **private** and `main` is
+    pushed the day this lands. Nobody's first look happens here — the stage is invisible by
+    construction, which honours the fear that used to hold the push instead of arguing with
+    it
+  - what it buys, at the price of minutes: the **copy off this machine** (0.1 is superseded
+    that day); **`ci.yml` executing for the first time anywhere** — every number 4.2 argues
+    about becomes a measurement instead of a guess, read from the first runs before anything
+    is tuned — and the release path rehearsed end to end as a dry run, workflow and all
+  - what it changes in 4.2's economics: a private repository meters Actions minutes, and an
+    hour of mutation + e2e per push does not fit the free tier at this repository's pace. So
+    the private stage takes 4.2's cheapest fork as its default rather than as a debate —
+    **mutation moves to a nightly or manual run** while the stage is private. Free to decide
+    here, because the stage has no external contributors whose expectations a weaker
+    push-gate could betray
+  - what it deliberately does **not** do: no flip to public, no npm, no announcement. npm
+    provenance still refuses a private repository and `check-package.mjs --release` still
+    blocks the release — the guard stays exactly where it was
+  - an accidental `git push` — the reason the remote used to be empty on purpose — is
+    harmless on a private stage, which dissolves that argument rather than overruling it
+  - cost: minutes · _notes:_ when this lands, the reasoning above moves into a decision
+    record — the plan dies, an ADR does not
+
+- [ ] **3.1 — the premiere: the flip to public, `repository` promises that resolve, npm** —
+      **held on a state and on a sentence, and it needs both**
   - **the precondition is 2.1**: a package whose first visitor has nowhere to read what it does
-    is published too early, so the documentation site has to exist before the push is even
+    is published too early, so the documentation site has to exist before the flip is even
     eligible. That half is a state, and a state can be checked
-  - **the trigger is still a sentence.** 2.1 going green does not start the push, no other run
+  - **the trigger is still a sentence.** 2.1 going green does not start the flip, no other run
     turning green starts it, and its standing last in the order is not a start either — a
     session that reaches 3.1 passes over it and takes the next item. Recorded here because the
     opposite is the natural reading of a task list: everything else in this file starts when the
     thing above it is done
   - concerns: `req-release-metadata` — the gate and its control exist, so the registry says ✅.
     **The manifest field is done** (`libs/components/package.json` points at
-    `github.com/pacit/components`); what is left is the repository, the remote and the push,
-    and day to day the gate only warns
+    `github.com/pacit/components`); what is left is the flip and the npm publish, and day to
+    day the gate only warns
   - the `pacit` organisation exists on GitHub and on npm (scope `@pacit`, owner `markovy`);
-    the repository itself does not yet
-  - `git remote -v` is still **empty**, deliberately: the first push is a premiere, so a remote
-    added early is an invitation to an accidental `git push`. Until then npm refuses provenance and `check-package.mjs --release` blocks
-    the release
-  - **the task itself is minutes, but it is now last.** The repository is public
-    **from the first push** (settled: no private stage), so `README.md`,
-    `docs/` and the step names in Actions become **the product** at that second
-  - hence everything the first visitor sees is finished before the push, not after it. The price
-    of that order is written down plainly — until the first push there is no remote CI, no
-    provenance and no copy off this machine
+    the repository arrives with 3.0 and stays private until here
+  - **the flip is the second `README.md`, `docs/` and the step names in Actions become the
+    product** — the sentence written for the push holds, moved to the moment it was always
+    about. The old settlement "no private stage" was reopened by the maintainer on
+    2026-08-31 and resolved into 3.0 + this item; what it protected — no half-public limbo,
+    no second-class launch — is preserved, because the private stage is invisible and the
+    flip is binary
+  - hence everything the first visitor sees is finished before the flip, not after it. The
+    price the old order paid — no remote CI, no provenance, no copy off this machine — is
+    paid down by 3.0; what genuinely waits for this item is provenance, the resolving
+    addresses, and every promise a stranger can read
   - the condition is wider than the public surface: **nothing leaves in a second language at
     all**, and a measurement says so, not a declaration — the language gate proves it over
     720 files of the index and 31 of the package, with no entry in the register
@@ -545,13 +590,9 @@ exist, and the maintainer has to ask for the push outright.
     `check-package --release` can ask); npm **trusted publishing** replaces the standing
     `NPM_TOKEN` secret (the workflow is already OIDC for provenance, so it is the last step
     of a road mostly walked); and the README entrypoints gate of **4.10** is a
-    **precondition of this item**, not a fix the push can carry loose — the npm page is the
+    **precondition of this item**, not a fix the flip can carry loose — the npm page is the
     package's landing page on day one and the only consumer surface whose drift nothing
     measures
-  - and what the first push buys must be read on arrival: **the first real CI run is a
-    measurement.** `ci.yml` has never executed anywhere — no remote, so no run — which makes
-    every number 4.2 argues about unproven configuration until then. Capture the first run's
-    job timings before tuning anything
   - cost: minutes for the task itself · _notes:_ —
 
 - [ ] **3.2 — citations in the public API as links**
@@ -585,7 +626,7 @@ exist, and the maintainer has to ask for the push outright.
     plan has no announcement venues, no feedback channel, no "run the gates yourself"
     contributor path in `CONTRIBUTING.md`; the strategy's own logic puts users on the
     critical path of its most expensive open question, and nothing here goes and gets them
-  - binds at: **3.1**, as the half of the premiere that is not a push · _notes:_ —
+  - binds at: **3.1**, as the half of the premiere that is not a flip · _notes:_ —
 
 ## 4. Open findings
 
@@ -660,7 +701,7 @@ run-many`, which is the closest thing here to what CI does, and the same run rep
   - it does not touch the definition of done: every gate still runs, and a slow gate is a
     green gate. What it touches is whether anybody waits for it — and, on the measurement
     above, whether the run answers the same way twice
-  - binds at: **3.1** — the first push to a public repository is the moment somebody other than
+  - binds at: **3.1** — the flip to a public repository is the moment somebody other than
     the maintainer waits for this run, and a first visitor who watches an hour of CI has
     learned something about the project. Sooner if a run starts hitting a limit
   - _notes:_ **the number above is out of date and the direction is the wrong one.** Widening
@@ -941,7 +982,7 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     half, and it is cheap because the denominator is already computed by two gates
   - it is not fixed in passing deliberately: putting five rows in by hand today leaves the
     same page to drift at the sixth component, which is exactly how it got here
-  - binds at: **3.1**, the first push to a public repository — that is the moment the npm page
+  - binds at: **3.1**, the flip to a public repository — that is the moment the npm page
     stops being a draft and becomes what a first visitor reads
   - _notes:_ the drift is **past half the table** now — **eight missing of fifteen**, the
     drawer being the latest. Each component since has widened it by one row and none has fixed
