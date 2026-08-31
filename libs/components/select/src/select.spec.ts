@@ -1054,6 +1054,37 @@ describe('PctSelect', () => {
 
       expect(fixture.componentInstance.country).toBe('pl');
     });
+
+    // The bridge carries more than the value, and each half below is a promise a consumer's
+    // form code leans on: `disable()` must reach the real <button>, because a trigger only
+    // visually dimmed still opens the panel for the keyboard.
+    it('reactive forms: disable() and enable() reach the trigger', async () => {
+      const fixture = await render(ReactiveHost);
+      const ctrl = fixture.componentInstance.ctrl;
+
+      ctrl.disable();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(triggerOf(fixture).disabled).toBe(true);
+
+      ctrl.enable();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(triggerOf(fixture).disabled).toBe(false);
+    });
+
+    it('reactive forms: validity reaches the trigger as aria-invalid', async () => {
+      const fixture = await render(ReactiveHost);
+      const ctrl = fixture.componentInstance.ctrl;
+
+      expect(triggerOf(fixture).getAttribute('aria-invalid')).toBeNull();
+
+      ctrl.markAsTouched();
+      ctrl.setErrors({ boom: true });
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(triggerOf(fixture).getAttribute('aria-invalid')).toBe('true');
+    });
   });
 
   describe('the texts', () => {
@@ -1183,6 +1214,29 @@ describe('PctSelect', () => {
       fixture.detectChanges();
       await fixture.whenStable();
       expect(optionsInPanel()[1].getAttribute('aria-selected')).toBe('true');
+    });
+
+    it('a value cleared to null never reaches the consumer comparator', async () => {
+      const fixture = await render(EntityHost);
+
+      fixture.componentInstance.value.set(null);
+      fixture.detectChanges();
+      await fixture.whenStable();
+
+      // Both computeds now run against a comparator that would throw on `null` — an empty
+      // trigger and a panel with nothing selected are the proof the guards answered first.
+      expect(
+        fixture.nativeElement.querySelector('[data-pct-part="value"]'),
+      ).toBeNull();
+
+      triggerOf(fixture).click();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(
+        optionsInPanel().filter(
+          (option) => option.getAttribute('aria-selected') === 'true',
+        ),
+      ).toEqual([]);
     });
 
     it('without compareWith another instance of the same entity is not selected', async () => {

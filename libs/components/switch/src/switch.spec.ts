@@ -335,6 +335,21 @@ describe('PctSwitch', () => {
       expect(box.checked).toBe(true);
     });
 
+    it('reactive forms: disable() and enable() reach the native input', async () => {
+      const fixture = await render(ReactiveHost);
+      const ctrl = fixture.componentInstance.ctrl;
+
+      ctrl.disable();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(boxOf(fixture).disabled).toBe(true);
+
+      ctrl.enable();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(boxOf(fixture).disabled).toBe(false);
+    });
+
     it('template-driven: [(ngModel)] syncs both ways', async () => {
       const fixture = await render(NgModelHost);
       const box = boxOf(fixture);

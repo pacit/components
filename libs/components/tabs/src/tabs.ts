@@ -125,10 +125,10 @@ export class PctTabs implements PctTabsApi {
   /** As `ariaLabel`, for a name that already stands somewhere on the page. */
   readonly ariaLabelledby = input<string>('');
 
-  private readonly list =
-    viewChild.required<ElementRef<HTMLElement>>('list');
+  private readonly list = viewChild.required<ElementRef<HTMLElement>>('list');
 
-  private readonly buttons = viewChildren<ElementRef<HTMLButtonElement>>('tabButton');
+  private readonly buttons =
+    viewChildren<ElementRef<HTMLButtonElement>>('tabButton');
 
   /**
    * The panels of THIS strip, in document order. The query is over the whole content —
@@ -203,14 +203,15 @@ export class PctTabs implements PctTabsApi {
    * so `manual` activation needs no key map of its own and cannot disagree with the pointer
    * ([`req-api-platform`](../../../../docs/requirements/api.md#req-api-platform)).
    *
-   * The `disabled` guard the menu's item deliberately does without is needed here, and the
-   * difference is whose element it is: there the `<button>` is the consumer's and carries the
-   * native attribute, here it is ours and carries `aria-disabled`, because a tab is a
-   * signpost as much as a control — one that vanishes from the accessibility tree tells the
-   * reader nothing about the section it names.
+   * There is no `disabled` guard here, and its absence is measured, not an oversight: a
+   * press on a disabled tab already changes nothing without one. `select()` refuses the
+   * value itself, and the cursor is on the pressed tab before this handler runs — a click
+   * focuses the button in all three engines, so `onFocusin` has done the `setActive` this
+   * line repeats. The guard that used to stand here was reachable only by a synthetic
+   * `.click()` with no focus event — a unit test and nowhere else — which is
+   * `PctMenuItem.press`'s reasoning arriving at the element it said it did not apply to.
    */
   protected onPress(tab: PctTabApi): void {
-    if (tab.disabled()) return;
     this.nav.setActive(this.tabs().indexOf(tab));
     this.select(tab.value());
   }
@@ -273,7 +274,8 @@ export class PctTabs implements PctTabsApi {
    */
   protected onFocusout(event: FocusEvent): void {
     const next = event.relatedTarget;
-    if (next instanceof Node && this.list().nativeElement.contains(next)) return;
+    if (next instanceof Node && this.list().nativeElement.contains(next))
+      return;
     this.nav.clear();
   }
 

@@ -506,6 +506,21 @@ describe('PctRadioGroup / PctRadio', () => {
       expect(pro.checked).toBe(true);
     });
 
+    it('reactive forms: disable() and enable() reach every member input', async () => {
+      const fixture = await render(ReactiveHost);
+      const ctrl = fixture.componentInstance.ctrl;
+
+      ctrl.disable();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(radiosOf(fixture).every((r) => r.disabled)).toBe(true);
+
+      ctrl.enable();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(radiosOf(fixture).every((r) => r.disabled)).toBe(false);
+    });
+
     it('template-driven: [(ngModel)] syncs both ways', async () => {
       const fixture = await render(NgModelHost);
       await fixture.whenStable();

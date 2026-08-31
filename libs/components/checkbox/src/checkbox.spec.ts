@@ -301,6 +301,23 @@ describe('PctCheckbox', () => {
       await fixture.whenStable();
       expect(fixture.componentInstance.agreed).toBe(false);
     });
+
+    // The bridge carries more than the value: `disable()` must reach the native input, or a
+    // form's disabled state is a paint job the keyboard walks straight through.
+    it('reactive forms: disable() and enable() reach the native input', async () => {
+      const fixture = await render(ReactiveHost);
+      const ctrl = fixture.componentInstance.ctrl;
+
+      ctrl.disable();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(boxOf(fixture).disabled).toBe(true);
+
+      ctrl.enable();
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(boxOf(fixture).disabled).toBe(false);
+    });
   });
 
   // The name the host cannot carry: a consumer's `aria-label` on `<pct-checkbox>` lands on an

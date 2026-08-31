@@ -153,8 +153,13 @@ test.describe('forced-colors: active', () => {
     // The two states are indistinguishable by colour — and that is the point being made.
     expect(on.thumb).toBe(off.thumb);
     expect(on.track).toBe(off.track);
-    // What tells them apart survives any palette: the thumb moved.
-    expect(on.x).toBeGreaterThan(off.x);
+    // What tells them apart survives any palette: the thumb moved. The position is POLLED,
+    // because the thumb may still be travelling when the first frame is read — under a
+    // loaded machine the one-shot reading came back mid-flight (497.5 against a resting
+    // 503.1), which is `lesson-130`'s family at a fourth component.
+    await expect
+      .poll(async () => (await thumb.boundingBox())?.x ?? 0)
+      .toBeGreaterThan(off.x);
   });
 
   /**

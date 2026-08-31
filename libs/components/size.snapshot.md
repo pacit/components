@@ -48,7 +48,7 @@ before an application ships them.
 ./skeleton 2997 - @angular/core
 ./slider 17301 ./core @angular/core
 ./switch 12301 ./core @angular/core
-./tabs 13569 ./core @angular/core
+./tabs 13553 ./core @angular/core
 ./toast 15457 ./core,./icon @angular/common,@angular/core
 ./tooltip 13146 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core
 ```

@@ -783,6 +783,11 @@ direction`, expecting index 32 and getting 31. Run again, the date spec failed i
     a case whose answer depends on a keypress or a style landing before the next line reads it.
     Under 22 workers on eight cores the window closes. That is this item's own argument reaching
     the suite CI actually runs, and it is why a red e2e here has to be re-run before it is read
+  - _a fourth member, and this one was repaired rather than re-run past:_ the night before
+    3.0, the full suite came back one red — the switch's forced-colours thumb, chromium,
+    the bounding box read mid-flight (497.5 against a resting 503.1) — and green 17 of 17
+    run alone. The case **polls** the position now (`expect.poll`), because what its promise
+    is about is where the thumb lands, not where it happens to be one frame in
   - **and it is not only the mutation run any more.** The same step's full e2e finished
     `2 failed, 1202 passed`, and both failures were the select's: `End reaches the five
 thousandth row` timed out with the list still showing row 44, and the forced-colours case
@@ -898,7 +903,7 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     works, and the snapshot cannot say either — which is the clearest statement of this item
     there is going to be
 
-- [ ] **4.7 — the guard that keeps `null` away from a consumer's comparator is promised and not
+- [x] **4.7 — the guard that keeps `null` away from a consumer's comparator is promised and not
       measured**
   - `selectedIndex` and `selectedOption` both filter `null`/`undefined` out before calling
     `compareWith`, and the JSDoc says why: a comparator an application wrote
@@ -908,7 +913,15 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
   - it is ten lines to close — an entity list whose value is set to `null`, asserting the
     trigger goes empty rather than throwing — and it costs a full mutation run to record,
     which is why it is a filler item rather than part of the step that noticed it
-  - binds at: **the next full mutation run** · _notes:_ —
+  - binds at: **the next full mutation run**
+  - _notes:_ **closed at that run, the night before 3.0** — the case is exactly the ten
+    lines the item drew (the entity host, `value.set(null)`, both computeds read), and the
+    guards' null halves die by it. What the run named instead is the **undefined half** of
+    each guard: `current === undefined → false` survives twice, because `model<T | null>`
+    gives `undefined` no legal road in — the progress bar's equivalent-mutant family,
+    except that `lesson-117`'s bridge has already shown a type is not a fence. One cast
+    case (`value.set(undefined as …)`) would kill both; it waits for the next full run,
+    because a kill the snapshot does not record is a red planted under a future one
 
 - [ ] **4.8 — an empty listbox is a critical violation, and no case had ever opened one**
   - measured while auditing the waiting panel of the select's async step: axe reports
@@ -1189,7 +1202,7 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     the only difference. So the 35 bytes moved once and have stayed moved — which rules out a
     measurement that wobbles and leaves the dependency bump as the suspect it always was
 
-- [ ] **4.18 — a guard the pointer makes unreachable, found by the mutant that survived it**
+- [x] **4.18 — a guard the pointer makes unreachable, found by the mutant that survived it**
   - `PctTabs.onPress` opens with `if (tab.disabled()) return;` and the mutation run says the
     branch changes nothing: removed, every case stays green. Three things already refuse a
     disabled tab — `select()` will not take the value, `rovingIndex` will not put the tab stop
@@ -1206,7 +1219,13 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
   - what it costs to close is why it is a filler item and not part of the step that found it:
     deleting three lines is minutes, and re-recording the snapshot they move is a **55-minute**
     mutation run — 4.7's reasoning exactly, one component over
-  - binds at: **the next full mutation run** · _notes:_ —
+  - binds at: **the next full mutation run**
+  - _notes:_ **closed at that run, the night before 3.0.** The guard is gone, the JSDoc
+    that defended it now records the measurement that dissolved it, and the snapshot moved
+    the way the deletion predicted: `tabs.ts 93.55 → 94.26`, two mutants fewer and one
+    survivor fewer, with the 973-case unit suite green over the change. The full run also
+    read `placement.ts 64(6) → 64(7)` over untouched code — 4.2's wobble in the clock
+    column with the arithmetic cancelling, on schedule
 
 - [ ] **4.19 — a component that is mostly the platform has almost nothing a mutation run can
       hold**

@@ -56,6 +56,17 @@ Two cases only emerged in use and are conditions in the code today:
 
 - **A bet on Angular's future.** Signal forms are younger than the classic API; if their
   contract changed, we have no intermediate layer to absorb it.
+  - _Re-read on 2026-08-31, and the bet has partly settled:_ `FormValueControl` ships
+    `@publicApi` in the Angular this library pins, so the risk is no longer "an experimental
+    contract changes under us" but the smaller "type evolution across majors ripples through
+    eight public signatures with no absorbing alias". And the interop is **wider than the
+    value, measured**: `ctrl.disable()` / `enable()` reaches the real control element and
+    validity arrives as `aria-invalid`, asserted per composite (select, checkbox, switch,
+    radio group, slider) in the same classic-forms suites the requirement's Gate names. The
+    two boundaries that remain are written where they bite: an integration resolving
+    `NG_VALUE_ACCESSOR` directly finds nothing to resolve, and `<pct-date>` warns outright
+    under classic forms, because the bridge writes what `PctDay`'s type forbids
+    ([`lesson-117`](../lessons.md#lesson-117)).
 - A consumer on a very old Angular will not install the library — but
   [`req-project-angular`](../requirements/project.md#req-project-angular) rules that out
   anyway.

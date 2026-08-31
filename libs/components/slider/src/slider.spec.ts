@@ -520,6 +520,21 @@ describe('PctSlider', () => {
     expect(fixture.componentInstance.ctrl.value).toBe(60);
   });
 
+  it('disable() and enable() through [formControl] reach the native input', async () => {
+    const fixture = await render(ReactiveHost);
+    const ctrl = fixture.componentInstance.ctrl;
+
+    ctrl.disable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(boxOf(fixture).disabled).toBe(true);
+
+    ctrl.enable();
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(boxOf(fixture).disabled).toBe(false);
+  });
+
   /**
    * The interop that makes `ControlValueAccessor` unnecessary
    * ([`lesson-9`](../../../../docs/lessons.md#lesson-9)) sets the control up before the
