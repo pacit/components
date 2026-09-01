@@ -19,8 +19,9 @@
  *
  * DETECTION HAS FIVE LIMBS, because each is blind where the next one sees. Diacritics
  * carry prose and nothing else — a name spelled `wartosc` has none. So the second limb is
- * `/usr/share/dict/polish`, folded of its diacritics and minus `american-english`, read
- * over identifiers split at camelCase and at `_`. The third is the opening quote `U+201E`,
+ * the pinned Polish word list (`tools/dictionaries.lock.json`), folded of its diacritics
+ * and minus the English one, read over identifiers split at camelCase and at `_`. The
+ * third is the opening quote `U+201E`,
  * a typographic convention with no English use.
  *
  * THE FOURTH IS THE WORD THAT IS IN NEITHER DICTIONARY: a foreign stem with a Polish
@@ -34,7 +35,7 @@
  * THE FIFTH IS THE MIRROR OF THE FOURTH: a Polish stem with a Polish DERIVATIONAL suffix,
  * and it is in neither list for the opposite reason — the word list holds the noun the word
  * is made from and the abstract noun made from that one, and never got round to the agent
- * noun made from either. Polish forms those productively, `/usr/share/dict/polish` is
+ * noun made from either. Polish forms those productively, the pinned word list is
  * somebody's four million lines rather than a language, and the gap is where a name like
  * the one this limb's probe is made of stood in this repository through every pass of the
  * four above ([`lesson-80`](../docs/lessons.md#lesson-80)). Its claim is narrower than the
@@ -60,6 +61,10 @@ import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import { createReadStream } from 'node:fs';
 import { createInterface } from 'node:readline';
+import {
+  restoreDictionaries,
+  DictionaryError,
+} from './restore-dictionaries.mjs';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const FIXTURES = join(ROOT, 'tools/check-language.fixtures');
@@ -81,8 +86,17 @@ const PACKAGE_SOURCES = 'libs/';
  */
 const SPECIMENS = 'tools/check-language.';
 
-const DICTIONARY = '/usr/share/dict/polish';
-const ENGLISH = '/usr/share/dict/american-english';
+/**
+ * Both lists are restored and hash-verified out of `tools/dictionaries.lock.json` before
+ * the run reads a word — never taken from `/usr/share/dict`. What a machine has installed
+ * is an ambient version: the first CI run had none at all, and the pin's own measurement
+ * caught one package name serving two lists a word apart. The paths are spelled here
+ * rather than derived from the lock so that the canaries' messages name real files; were
+ * the lock's `cache` ever moved without these, the run would die on ENOENT — loudly,
+ * which is the acceptable way for a path to be wrong.
+ */
+const DICTIONARY = 'tools/.dictionaries/polish';
+const ENGLISH = 'tools/.dictionaries/american-english';
 
 /**
  * What the artifact limb reads. Source maps are on the list deliberately: they carry the
@@ -505,9 +519,9 @@ export const checkLanguage = ({
       'dictionary-unread',
       `\`${CANARY.read}\` is not among the confirmed Polish words, and it stands in ` +
         `\`${DICTIONARY}\` with no English counterpart.\n` +
-        `    The list was not read — a moved file, a changed package, a permission. The ` +
-        `limb then confirms nothing and the gate passes every Polish name written without ` +
-        `diacritics.`,
+        `    The list was not read — a moved cache, a permission, a fault past the ` +
+        `verified restore. The limb then confirms nothing and the gate passes every ` +
+        `Polish name written without diacritics.`,
     );
   if (!confirmed.has(CANARY.folded))
     throw new LanguageError(
@@ -932,7 +946,7 @@ const confirmWords = async (files) => {
       if (word.endsWith(suffix)) sought.add(word.slice(0, -suffix.length));
 
   const english = new Set();
-  for (const line of readFileSync(ENGLISH, 'utf8').split('\n')) {
+  for (const line of readFileSync(join(ROOT, ENGLISH), 'utf8').split('\n')) {
     const word = fold(line.trim());
     if (!word) continue;
     english.add(word);
@@ -942,7 +956,7 @@ const confirmWords = async (files) => {
 
   const confirmed = new Set();
   const stream = createInterface({
-    input: createReadStream(DICTIONARY),
+    input: createReadStream(join(ROOT, DICTIONARY)),
     crlfDelay: Infinity,
   });
   for await (const line of stream) {
@@ -1027,11 +1041,19 @@ let summary = null;
 try {
   const policy = JSON.parse(readFileSync(join(ROOT, POLICY), 'utf8'));
   const files = [...repositoryFiles(policy), ...artifactFiles()];
+  // The two word lists, restored out of the lock before a word is read. Warm, this is
+  // two hash checks and no network; cold, it is the road `check-consumer` already walks
+  // to the registry. A failure lands among the problems like any other — and the
+  // fixtures below still run, because the pure checks owe nothing to connectivity.
+  await restoreDictionaries();
   const { polish, english } = await confirmWords(files);
   summary = checkLanguage({ policy, files, polish, english });
 } catch (error) {
-  if (!(error instanceof LanguageError)) throw error;
-  problems.push(`${error.check}/${error.rule}: ${error.message}`);
+  if (error instanceof DictionaryError)
+    problems.push(`dictionaries/${error.rule}: ${error.message}`);
+  else if (error instanceof LanguageError)
+    problems.push(`${error.check}/${error.rule}: ${error.message}`);
+  else throw error;
 }
 
 problems.push(...classifierFaults());

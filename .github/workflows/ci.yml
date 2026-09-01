@@ -68,15 +68,17 @@ jobs:
       - if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps chromium firefox webkit
 
-      # The language gate reads the system word lists — `/usr/share/dict/american-english`
-      # and `/usr/share/dict/polish` — and a runner ships neither, so the gate died with
-      # ENOENT on the very first run this repository ever had. Installing them is the only
-      # honest repair: a gate that skipped a missing dictionary would answer "one language"
-      # having read nothing, which is the silent green `req-axis` exists against. The lists
-      # arrive from the runner's own release — which version reads the file is a real
-      # question (the plan carries it), but not one a pin here should answer before a
-      # divergence is ever measured.
-      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends wamerican wpolish
+      # The language gate's word lists are a pinned input, not a runner fact: the gate
+      # restores them itself out of `tools/dictionaries.lock.json`, hash-verified on every
+      # run, so this cache never has to be trusted — it only spares the archive a 9 MB
+      # download, and a miss costs seconds, not correctness. The apt step that stood here
+      # answered the first run's ENOENT with whatever version the runner's release shipped;
+      # the divergence its comment was waiting for got measured the day of the pin, when
+      # one package name served two lists and the pool had rotated the older one away.
+      - uses: actions/cache@v4
+        with:
+          path: tools/.dictionaries
+          key: dictionaries-${{ hashFiles('tools/dictionaries.lock.json') }}
 
       - run: npx nx format:check
 

@@ -1550,7 +1550,7 @@ direction` expecting index 32 and getting 31 in the first, its right-to-left twi
   - binds at: **before the nightly run is trusted** — a red that fires every night on
     fonts buries the reds the night exists to catch · _notes:_ —
 
-- [ ] **4.31 — the language gate's dictionary is whatever the machine has**
+- [x] **4.31 — the language gate's dictionary is whatever the machine has**
   - proved by the first two CI runs from both sides: no dictionary at all (ENOENT — the
     gate cannot start on a fresh runner), then a run where the verdict depended on which
     machine's lists read the file. The gate's own dead-entry rule couples the vocabulary
@@ -1560,9 +1560,22 @@ direction` expecting index 32 and getting 31 in the first, its right-to-left twi
     dictionary becomes a **versioned, checksummed input** (vendored or fetched by pin)
     rather than an ambient fact of `/usr/share/dict` — the same move `check-browsers`
     made when it stopped remembering facts about engines
-  - binds at: **the first verdict that differs between two machines over identical
-    sources** — the nightly run is now positioned to produce exactly that evidence ·
-    _notes:_ —
+  - it bound earlier than its own trigger, on the input rather than the verdict: the day
+    of the pin, one package name measurably served two lists — the Ubuntu rebuild and
+    the `20240901-1` under it, one word apart (`email`, which the English subtraction
+    absorbs) — the pool had already rotated the older file out of reach, and Debian's
+    snapshot knows no such source at all, so a verdict split was only a question of
+    which runner image moved first ·
+    _notes:_ closed 2026-09-01. Vendoring lost to **fetch-by-pin** on arithmetic (the
+    Polish list is 61 MB); `tools/dictionaries.lock.json` pins both packages by sha256 —
+    the URL is a courtesy, the hash is the identity — and `tools/restore-dictionaries.mjs`
+    restores them into untracked `tools/.dictionaries/` in nothing but the standard
+    library: fetch, `ar`, zstd out of `node:zlib`, tar, a hash at BOTH ends, so any
+    parsing fault lands as a loud mismatch and a tampered cache is a refetch rather than
+    an error (measured: cold 4.1 s, warm 0.35 s, one flipped byte healed on the next
+    run). The apt steps left both workflows for an `actions/cache` keyed on the lock's
+    hash, and the gate now runs on machines that never had a `/usr/share/dict` at all —
+    decision 0040's split, applied to the gate's biggest input
 
 ## 5. Gaps with no deadline
 

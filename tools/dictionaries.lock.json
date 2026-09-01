@@ -1,0 +1,34 @@
+{
+  "$description": "The language gate's biggest input, pinned. `/usr/share/dict` is an ambient fact of whichever machine runs the gate: the first CI run this repository ever had died there with ENOENT, and the day this file was written the one package name `wpolish` resolved to two different word lists — the Ubuntu rebuild and the 20240901-1 it rebuilds, one word apart (`email`) — while the pool had already rotated the older file out of reach. A verdict that depends on the machine is the drift `req-axis` exists against, so the dictionary becomes what `package-lock.json` is to `node_modules` and `skills-lock.json` to the vendored skills (decision 0040): this file is the material record, and the word lists it locks are restored, never tracked. `tools/restore-dictionaries.mjs` fetches each archive, verifies it, unpacks the one member named here and verifies THAT, into `tools/.dictionaries/`. The `url` is a courtesy and the sha256 is the identity: when the pool drops these files — it rotates superseded versions routinely — any mirror serving the same bytes restores the same input.",
+  "cache": "tools/.dictionaries",
+  "dictionaries": [
+    {
+      "name": "american-english",
+      "package": "wamerican 2020.12.07-4build1 (Ubuntu, source package scowl)",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/s/scowl/wamerican_2020.12.07-4build1_all.deb",
+      "deb": {
+        "sha256": "69cb601ca0aa3a0750026a81d97b591431047a3823d785a5cc972235ecee69cc",
+        "bytes": 242090
+      },
+      "member": "./usr/share/dict/american-english",
+      "file": {
+        "sha256": "9e66281f7e51445eab6857488ff6e3d768afffadb7fb1adbef5e4617bee4a53b",
+        "bytes": 985084
+      }
+    },
+    {
+      "name": "polish",
+      "package": "wpolish 20240901-1build1 (Ubuntu, source package ipolish)",
+      "url": "https://archive.ubuntu.com/ubuntu/pool/main/i/ipolish/wpolish_20240901-1build1_all.deb",
+      "deb": {
+        "sha256": "90be9dee17d9478059879212103d9c022fbfca6c596aa49216710ff001dd5029",
+        "bytes": 9105880
+      },
+      "member": "./usr/share/dict/polish",
+      "file": {
+        "sha256": "0965e1df5bc4146106a1b8ba8619d259644d5d79c87962ac7f850b55ce73088b",
+        "bytes": 61821272
+      }
+    }
+  ]
+}

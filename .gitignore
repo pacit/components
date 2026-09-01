@@ -73,6 +73,12 @@ Thumbs.db
 /.opencode/skills/angular-developer
 /.opencode/skills/angular-new-app
 
+# The language gate's word lists, restored out of `tools/dictionaries.lock.json` by
+# `tools/restore-dictionaries.mjs` and verified against its hashes on every run. The
+# LOCKFILE is tracked and the 62 MB of somebody else's word lists are not — the same
+# split as above, for the same reason (decision 0040).
+/tools/.dictionaries/
+
 vite.config.*.timestamp*
 vitest.config.*.timestamp*
 

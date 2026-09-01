@@ -21,7 +21,7 @@
   "specimens": [
     {
       "file": "tools/check-language.mjs",
-      "reason": "The three probes of point 1 and the four canaries. Three of the canaries are compared against `/usr/share/dict/polish`, so they have to be words that stand in it; the fourth limb's probe is a word that stands in no dictionary at all, and the fifth limb's is the one word this repository really carried in that class — the name a neighbouring gate gave a function, which no word list holds and no other limb sees."
+      "reason": "The three probes of point 1 and the four canaries. Three of the canaries are compared against the pinned Polish list (`tools/dictionaries.lock.json`), so they have to be words that stand in it; the fourth limb's probe is a word that stands in no dictionary at all, and the fifth limb's is the one word this repository really carried in that class — the name a neighbouring gate gave a function, which no word list holds and no other limb sees."
     },
     {
       "file": "tools/check-language.fixtures/README.md",
@@ -80,7 +80,7 @@
       "reason": "It excuses a word the reference's dictionary confirms, and that word is Polish."
     }
   ],
-  "$vocabulary": "The false positives of the two dictionary limbs — 126 words: 108 that `/usr/share/dict/polish` holds and `american-english` does not, 13 that the fourth limb reads as a foreign stem carrying a Polish ending, and 5 that the fifth reads as a Polish stem carrying a derivational suffix. None of them is Polish here. Every entry is a WORD. Never a shape: an exclusion of `SCREAMING_CASE` or of anything under four letters excuses a whole grammatical class, and a layer of constants once rode through two passes in exactly that blind spot (lesson-60). The gate enforces the format — an entry that is not a bare lowercase word fires — and it also fires on any entry the dictionary would never have flagged, so nobody can pad the list with superstition.",
+  "$vocabulary": "The false positives of the two dictionary limbs, of three kinds: words the pinned Polish list holds and the English one does not, words the fourth limb reads as a foreign stem carrying a Polish ending, and words the fifth reads as a Polish stem carrying a derivational suffix (the gate's verdict line carries the current count — a number written here would only rot). None of them is Polish here. Every entry is a WORD. Never a shape: an exclusion of `SCREAMING_CASE` or of anything under four letters excuses a whole grammatical class, and a layer of constants once rode through two passes in exactly that blind spot (lesson-60). The gate enforces the format — an entry that is not a bare lowercase word fires — and it also fires on any entry the dictionary would never have flagged, so nobody can pad the list with superstition.",
   "vocabulary": {
     "abbreviations": {
       "reason": "English words written short, in identifiers and in prose — HTML element names among them (`div`, `ul`, `tr`), which reach the artifact as the tags a template really emits. Each is a shortening a reader expands without thinking; none is a Polish word here.",
@@ -227,12 +227,14 @@
       ]
     },
     "fragments": {
-      "reason": "Not words at all — what the split cuts out of text that is not prose, and the one class this list may hold without naming a language. Each is written down singly, with the string it comes from, because a rule saying `skip regular expressions` or `skip base64` would blind the scan to whole files instead of to one word: `za` from `[A-Za-z]`, `bis` from `\\bis`, `oo` from `[Oo]nly`, `bj` and `ww` from a `sha512-` integrity string, `cw` from a base64 data URI, `eb` and `ff` from the hex colours `#2563eb` and `#eff6ff`, `fes` from the plural `FESMs`, `fi` from the shell's `if … fi`, `rf` from `rm -rf`, `vu` from `DejaVu`.",
+      "reason": "Not words at all — what the split cuts out of text that is not prose, and the one class this list may hold without naming a language. Each is written down singly, with the string it comes from, because a rule saying `skip regular expressions` or `skip base64` would blind the scan to whole files instead of to one word: `za` from `[A-Za-z]`, `bis` from `\\bis`, `oo` from `[Oo]nly`, `bj` and `ww` from a `sha512-` integrity string, `cw` from a base64 data URI, `eb` and `ff` from the hex colours `#2563eb` and `#eff6ff`, `fb` and `ce` from the sha256 pins in `tools/dictionaries.lock.json` (hand-written prose around recorded hashes, so the `generated` list would be a lie about it), `fes` from the plural `FESMs`, `fi` from the shell's `if … fi`, `rf` from `rm -rf`, `vu` from `DejaVu`.",
       "words": [
         "bis",
         "bj",
+        "ce",
         "cw",
         "eb",
+        "fb",
         "fes",
         "ff",
         "fi",

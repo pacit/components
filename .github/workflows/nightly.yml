@@ -2,8 +2,8 @@
 # hardware CI really has. It exists for what a quiet `main` never exercises: the
 # clock-wobble distribution of the mutation gate on shared vCPUs (the measurement the
 # plan's CI item has been missing), toolchain and dependency rot between pushes, and the
-# environment-dependent gates (the language gate's system dictionaries, the consumer
-# gate's registry road) that only fail when the world under them moves.
+# environment-dependent roads (the consumer gate's registry, the dictionary restore's
+# archive on a cold cache) that only fail when the world under them moves.
 name: Nightly
 
 on:
@@ -56,9 +56,12 @@ jobs:
       - if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps chromium firefox webkit
 
-      # The same word lists ci.yml installs, and for the reason written there: the language
-      # gate reads them from the system and a runner ships neither.
-      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends wamerican wpolish
+      # The same pinned word lists as ci.yml: the gate restores and verifies them out of
+      # `tools/dictionaries.lock.json` itself, the cache only spares the download.
+      - uses: actions/cache@v4
+        with:
+          path: tools/.dictionaries
+          key: dictionaries-${{ hashFiles('tools/dictionaries.lock.json') }}
 
       - run: npx nx format:check
 
