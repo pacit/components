@@ -68,6 +68,16 @@ jobs:
       - if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps chromium firefox webkit
 
+      # The language gate reads the system word lists — `/usr/share/dict/american-english`
+      # and `/usr/share/dict/polish` — and a runner ships neither, so the gate died with
+      # ENOENT on the very first run this repository ever had. Installing them is the only
+      # honest repair: a gate that skipped a missing dictionary would answer "one language"
+      # having read nothing, which is the silent green `req-axis` exists against. The lists
+      # are a fact about a dependency and are versioned by the distribution, not by us —
+      # `check-language`'s own counts are computed per run rather than snapshotted, so a
+      # newer list changes the verdict's numbers and no gate's floor.
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends wamerican wpolish
+
       - run: npx nx format:check
 
       # One line runs every gate. Which promise each of them proves — and which

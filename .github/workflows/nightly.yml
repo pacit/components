@@ -56,6 +56,10 @@ jobs:
       - if: steps.playwright-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps chromium firefox webkit
 
+      # The same word lists ci.yml installs, and for the same reason: the language gate
+      # reads them from the system and a runner ships neither.
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends wamerican wpolish
+
       - run: npx nx format:check
 
       # The full set ci.yml runs on a diff, run over everything. One divergence is
