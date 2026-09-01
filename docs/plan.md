@@ -69,7 +69,7 @@ list, not of the registry.
 ## Order
 
 ```
-0  the copy off this machine  superseded by 3.0 the day it lands; a bundle until then
+0  the copy off this machine  DONE — 3.0 landed it on 2026-09-01
 1  components             the premiere no longer waits for the tail of 1.1
 2  trust surface          the documentation site first — nothing is ANNOUNCED without it
 3  publication            3.0, the quiet push, waits for nothing; the premiere behind 2.1
@@ -124,7 +124,9 @@ an explicit `--specifier`; at `0.0.1` every bump lands on a patch
 
 ## 0. The copy that must exist
 
-- [ ] **0.1 — an off-machine copy of the repository, private and encrypted.** Until a remote
+- [x] **0.1 — an off-machine copy of the repository, private and encrypted.** _Closed on
+      2026-09-01 by **3.0**, which is how it was written to end: the private remote IS the
+      copy, and the interval this item existed for was one day._ Until a remote
       exists there is no remote CI, no provenance and no copy off this machine — the price
       section 3 records the old order paying, and the last third of that sentence is an
       existential risk with no compensating benefit. A `git bundle` to a second disk or to an encrypted store is not a remote, not a
@@ -531,8 +533,31 @@ repository with no documentation — belongs only to the second: an unannounced 
 repository has no first look. So the quiet half moved to the front and waits for nothing,
 and everything a stranger can see still waits for 2.1 and a sentence.
 
-- [ ] **3.0 — the quiet push: a private remote, and CI that has actually run** — **waits for
+- [x] **3.0 — the quiet push: a private remote, and CI that has actually run** — **waits for
       nothing**
+  - _done on 2026-09-01, and measured rather than assumed:_ `pacit/components` is
+    **PRIVATE** (read back off the API, not off the creation form), `main` is the default
+    branch, the remote HEAD equals the local one at 181 commits, and the three workflows
+    are active. `git remote -v` is no longer empty and 0.1 is superseded — the copy exists
+  - **the push failed first, and the reason is worth the line:** the remote was written as
+    SSH (`git@github.com:…`) into a machine with **no key in `~/.ssh` at all**, so it
+    answered `Permission denied (publickey)` — a refusal that names the protocol and not
+    the missing half. `gh` was authenticated the other way round, over HTTPS with a token,
+    so the fix was to make the two agree rather than to invent a key: `gh auth setup-git`
+    as the credential helper and the remote moved to `https://`. The token's scopes had to
+    include **`workflow`** for the same push to carry `.github/workflows/` at all — a
+    push of two files that would have been refused with everything else in place
+  - **and the first run exposed a half-done step of this very item.** The economics
+    paragraph above says mutation moves off the push while the stage is private; the night
+    before built `nightly.yml` and **did not take `mutation check-mutation` out of
+    `ci.yml`'s `nx affected` line**, so the first run is doing the full 55-minute mutation
+    on four vCPUs. It is left to finish exactly once, because this item's other half wants
+    that number — and then it moves. What makes the move a task rather than a deletion is
+    **`check-docs` point 3**: it proves a gate is wired by matching the target in `ci.yml`'s
+    text alone, so a target that legitimately lives in `nightly.yml` reads to it as a gate
+    that runs nowhere. That is **4.27**'s complaint arriving with a bill attached
+  - _notes:_ the reasoning above still owes its decision record — the plan dies, an ADR
+    does not
   - the repository under the `pacit` organisation is created **private** and `main` is
     pushed the day this lands. Nobody's first look happens here — the stage is invisible by
     construction, which honours the fear that used to hold the push instead of arguing with
