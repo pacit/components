@@ -8,6 +8,7 @@
  *  1. completeness — every requirement has `Promise`, `Gate`, `Control`, a gap `Binds at`,
  *  2. existence — every path cited in `Gate`/`Control` exists on disk,
  *  3. wired into CI — the target implied by a cited path runs in `nx affected -t …`,
+ *     and the graph fact that line stands on is re-probed, never remembered,
  *  4. no dangling citations — every `req-*` / `lesson-*` in the repo resolves,
  *  5. freshness — `docs/registry.md` and the generated ID union agree with the source,
  *  6. negative control — the broken requirements in `check-docs.fixtures/` are rejected.
@@ -237,6 +238,50 @@ const ciTargets = new Set(
     .flatMap((m) => m[1].trim().split(/\s+/))
     .filter(Boolean),
 );
+
+/**
+ * The fact the matching above stands on, re-probed rather than remembered. Presence in
+ * the `-t` text is wiring only while `nx affected` marks the right projects affected:
+ * every `check-*` target lives on the root project, `test` on the library, `vite:test`
+ * and `e2e` on the sandbox pair — so a change deep under `libs/` has to reach all four,
+ * or a push that stays there runs a SUBSET of the gates while this point keeps reporting
+ * them wired. That reach was measured once (lesson-47) against an installed nx and is a
+ * dependency's behaviour, not a constant; `check-browsers` point 6 re-probes its own
+ * facts on every run for exactly this reason. The probe file is a leaf manifest — the
+ * deep case; `--files` overrides the SHAs nx-set-shas exports, measured, so the answer
+ * is about the graph and not about whatever the current diff happens to touch.
+ */
+const AFFECTED_PROBE = 'libs/components/package.json';
+const AFFECTED_REACH = ['components', 'sandbox', 'sandbox-e2e', '@org/source'];
+try {
+  const answer = JSON.parse(
+    execSync(
+      `npx nx show projects --affected --json --files=${AFFECTED_PROBE}`,
+      { cwd: ROOT, encoding: 'utf8' },
+    ),
+  );
+  const missing = AFFECTED_REACH.filter((p) => !answer.includes(p));
+  if (missing.length)
+    fail(
+      'nx-affected',
+      `a change to \`${AFFECTED_PROBE}\` does not mark ${missing
+        .map((p) => `\`${p}\``)
+        .join(
+          ', ',
+        )} affected (nx answered: ${answer.join(', ') || 'nothing'}). ` +
+        `The targets living there — the \`check-*\` family on the root, \`test\`, ` +
+        `\`vite:test\`, \`e2e\` — would silently stop running on such a push, while ` +
+        `the \`-t\` text above still reads as wired`,
+    );
+} catch (error) {
+  fail(
+    'nx-affected',
+    `the probe \`nx show projects --affected\` gave no readable answer over ` +
+      `\`${AFFECTED_PROBE}\` (${error.message.split('\n')[0]}). No answer is not a ` +
+      `pass: this point trusts the affected graph, and a probe that cannot read it ` +
+      `leaves the whole wiring check standing on memory`,
+  );
+}
 
 /** Which target runs this file. `null` = cannot be inferred, and that is fine. */
 const impliedTarget = (path) => {

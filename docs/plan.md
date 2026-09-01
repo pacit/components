@@ -1493,7 +1493,7 @@ direction` expecting index 32 and getting 31 in the first, its right-to-left twi
     gate over the eight declarations
   - binds at: **the ninth control that takes the block** · _notes:_ —
 
-- [ ] **4.27 — two meta-gates trust a fact about nx that nothing re-measures**
+- [x] **4.27 — two meta-gates trust a fact about nx that nothing re-measures**
   - `check-docs` point 3 proves CI wiring by matching the `nx affected -t` **text** in
     `ci.yml` — presence in the string, not presence in the task graph, so a target whose
     project stops being affected stays green while never running
@@ -1502,7 +1502,17 @@ direction` expecting index 32 and getting 31 in the first, its right-to-left twi
     remembered since — a behaviour of a dependency, which `check-browsers` point 6 already
     re-probes for its own facts rather than remembers. The canary is three lines:
     `nx show projects --affected` over a known file, asserting the root is in the answer
-  - binds at: **the next nx major**, or the first change to `check-docs` point 3 · _notes:_ —
+  - binds at: **the next nx major**, or the first change to `check-docs` point 3 ·
+    _notes:_ closed 2026-09-01, on the second trigger — point 3 had just been widened to
+    read nightly.yml. The canary sits beside `ciTargets` and asserts more than the root:
+    one probe over a leaf manifest (`libs/components/package.json`; `--files` measured
+    to override the SHAs nx-set-shas exports, so the answer is about the graph, not the
+    current diff) must mark all four owners of the wired targets affected —
+    `components`, `sandbox`, `sandbox-e2e`, `@org/source` — which folds both halves
+    above into one measurement: a root that stops hearing leaf changes and a leaf
+    target that falls out of the graph fire the same rule. Proved in both directions:
+    probed over `docs/plan.md` it fires naming the three missing projects; restored,
+    the gate is green
 
 - [ ] **4.28 — the axe audit's denominator is a hand-curated list of opened panels**
   - `a11y.spec.ts` says it in its own comments, three times over: "a panel that is not
