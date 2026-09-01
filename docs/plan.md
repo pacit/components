@@ -547,15 +547,23 @@ and everything a stranger can see still waits for 2.1 and a sentence.
     as the credential helper and the remote moved to `https://`. The token's scopes had to
     include **`workflow`** for the same push to carry `.github/workflows/` at all — a
     push of two files that would have been refused with everything else in place
-  - **and the first run exposed a half-done step of this very item.** The economics
-    paragraph above says mutation moves off the push while the stage is private; the night
-    before built `nightly.yml` and **did not take `mutation check-mutation` out of
-    `ci.yml`'s `nx affected` line**, so the first run is doing the full 55-minute mutation
-    on four vCPUs. It is left to finish exactly once, because this item's other half wants
-    that number — and then it moves. What makes the move a task rather than a deletion is
-    **`check-docs` point 3**: it proves a gate is wired by matching the target in `ci.yml`'s
-    text alone, so a target that legitimately lives in `nightly.yml` reads to it as a gate
-    that runs nowhere. That is **4.27**'s complaint arriving with a bill attached
+  - **and the first two runs were the measurement, which is what they were for.** Run one
+    died in four minutes on a gate that had never executed off this machine:
+    `check-language` reads the system word lists and a runner ships neither (ENOENT — the
+    gate failing loudly, correctly, in the first environment that ever lacked its input).
+    Run two, with the lists installed, took **48 minutes wall** and went red four ways at
+    once: the calendar's today-test was a date bomb that detonated everywhere on 1
+    September (August's grid draws September's first days, and the expectation forgot
+    them — it also took `mutation` down with it, through the dry run); `sudo` in the new
+    install step read as Polish to the dictionary limb — pushed without re-running the
+    gate it changed, which is its own lesson; e2e ran **41.3 minutes on ONE worker**,
+    Playwright's own CI default, where this machine runs 22; and **six e2e failures were
+    deterministic and environmental** — font metrics (4.30). Four load-flakes passed on
+    retry, invisibly
+  - the mutation pair is **off the push line now** and lives in `nightly.yml`, which is
+    what the economics paragraph above declared; `check-docs` point 3 reads both workflows
+    and both verbs (`affected`, `run-many`), so a gate that runs at night still counts as
+    wired — **4.27**'s string-reading complaint stands, now over two files
   - _notes:_ the reasoning above still owes its decision record — the plan dies, an ADR
     does not
   - the repository under the `pacit` organisation is created **private** and `main` is
@@ -1515,6 +1523,36 @@ direction` expecting index 32 and getting 31 in the first, its right-to-left twi
     from the meridian) on the date spec plus one DST-boundary unit case is the negative
     control the sentence is missing
   - binds at: **the next change under `date/src`**, or the first timezone bug report ·
+    _notes:_ —
+
+- [ ] **4.30 — six e2e cases measure the machine's fonts, and CI's machine has different ones**
+  - the second CI run failed the textarea's width-follow case **in all three engines**, the
+    skeleton's `1cap` bar in firefox, and two visual baselines (`field-aux-slots` and its
+    RTL twin) — deterministically, while the same suite is green on this machine. The
+    library sets **no font of its own** (no font-family token exists, checked), so every
+    metric a case reads — a wrapped height, a capital's height, a screenshot — is a fact
+    about whichever fonts the machine resolves `system-ui` to, and the runner's are not
+    this machine's
+  - the shape of the answer is a decision, not an apt-install: the **sandbox** (not the
+    library) pins a font it ships, so the numbers the suite reads are the suite's own — or
+    the six cases are rewritten against font-relative expectations where that is honest.
+    An apt-install of this machine's fonts would be the dictionary answer (4.31) worn by
+    typography, and it drifts the same way
+  - binds at: **before the nightly run is trusted** — a red that fires every night on
+    fonts buries the reds the night exists to catch · _notes:_ —
+
+- [ ] **4.31 — the language gate's dictionary is whatever the machine has**
+  - proved by the first two CI runs from both sides: no dictionary at all (ENOENT — the
+    gate cannot start on a fresh runner), then a run where the verdict depended on which
+    machine's lists read the file. The gate's own dead-entry rule couples the vocabulary
+    to the dictionary VERSION: an entry one list flags and another does not is alive here
+    and padding there, so the register itself cannot absorb a version split
+  - the durable answer is the gate's own idiom applied to its biggest input: the
+    dictionary becomes a **versioned, checksummed input** (vendored or fetched by pin)
+    rather than an ambient fact of `/usr/share/dict` — the same move `check-browsers`
+    made when it stopped remembering facts about engines
+  - binds at: **the first verdict that differs between two machines over identical
+    sources** — the nightly run is now positioned to produce exactly that evidence ·
     _notes:_ —
 
 ## 5. Gaps with no deadline

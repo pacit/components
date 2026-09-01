@@ -119,13 +119,20 @@ describe('PctCalendar — the grid', () => {
     expect(selected[0].getAttribute('aria-selected')).toBe('true');
     expect(selected[0].textContent?.trim()).toBe('27');
 
-    // Today is a different fact, and it is drawn where today is — which is not August 2026,
-    // so the grid on that month carries none.
+    // Today is a different fact, and it is drawn where today is — the neighbouring rows
+    // INCLUDED. This grid is fixed by the value (August 2026, weeks from Sunday), so its
+    // range is a constant, 26 July to 5 September — the same arithmetic that makes the
+    // outside-days case count 11. What moves through it is `today`; the old expectation
+    // ("one mark only while today is in August") forgot the September days August's grid
+    // also draws, and on the first of September it called the correct mark a defect — in
+    // every environment at once, the first morning after it was written.
     const today = pctToday();
     const marked = partsOf(f, 'day').filter((d) =>
       d.hasAttribute('data-pct-today'),
     );
-    expect(marked.length).toBe(today.startsWith('2026-08') ? 1 : 0);
+    expect(marked.length).toBe(
+      today >= '2026-07-26' && today <= '2026-09-05' ? 1 : 0,
+    );
     for (const cell of marked)
       expect(cell.getAttribute('aria-current')).toBe('date');
   });

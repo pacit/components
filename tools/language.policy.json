@@ -185,7 +185,7 @@
       ]
     },
     "names": {
-      "reason": "Proper names: tools, fonts, packages, an organisation and a person. A name is not translated in either direction.",
+      "reason": "Proper names: tools, fonts, packages, commands, an organisation and a person. A name is not translated in either direction.",
       "words": [
         "arial",
         "deja",
@@ -200,6 +200,7 @@
         "org",
         "pinia",
         "pom",
+        "sudo",
         "testem",
         "turbo",
         "verdaccio",

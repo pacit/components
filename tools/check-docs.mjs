@@ -224,9 +224,16 @@ for (const req of requirements) {
 
 // ── 3. wired into CI ───────────────────────────────────────────────────────────
 
-const ci = read('.github/workflows/ci.yml');
+// Both workflows count as CI: the push gate (ci.yml) and the nightly full run
+// (nightly.yml), where the two heaviest targets moved while the repository is a metered
+// private stage. A target is wired if either file runs it — `affected` on a push or
+// `run-many` on the schedule; a gate that runs only at night is still a gate, and the
+// alternative reading would force the mutation pair back onto every push for the
+// wiring check's sake alone.
+const ci =
+  read('.github/workflows/ci.yml') + read('.github/workflows/nightly.yml');
 const ciTargets = new Set(
-  [...ci.matchAll(/nx affected -t ([a-z0-9:\-\s]+)/g)]
+  [...ci.matchAll(/nx (?:affected|run-many) -t ([a-z0-9:\-\s]+)/g)]
     .flatMap((m) => m[1].trim().split(/\s+/))
     .filter(Boolean),
 );

@@ -73,9 +73,9 @@ jobs:
       # ENOENT on the very first run this repository ever had. Installing them is the only
       # honest repair: a gate that skipped a missing dictionary would answer "one language"
       # having read nothing, which is the silent green `req-axis` exists against. The lists
-      # are a fact about a dependency and are versioned by the distribution, not by us —
-      # `check-language`'s own counts are computed per run rather than snapshotted, so a
-      # newer list changes the verdict's numbers and no gate's floor.
+      # arrive from the runner's own release — which version reads the file is a real
+      # question (the plan carries it), but not one a pin here should answer before a
+      # divergence is ever measured.
       - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends wamerican wpolish
 
       - run: npx nx format:check
@@ -87,4 +87,10 @@ jobs:
       # all belongs to the requirement it implements and the lesson it came from.
       # Tokens are not built by a step of their own: `tokens` is a graph dependency
       # of its consumers, and a manual build here would only mask a missing edge.
-      - run: npx nx affected -t lint test vite:test build typecheck check-package check-coverage check-zoneless check-typecheck check-styles check-texts check-tokens check-parts check-aria check-icons check-bundle check-consumer check-browsers check-language check-reach check-support mutation check-mutation check-docs check-index e2e
+      #
+      # `mutation` and `check-mutation` are NOT in this line while the stage is private:
+      # they run nightly (nightly.yml), which is the private stage's declared default —
+      # a metered runner cannot pay ~50 minutes of Stryker per push, and the first full
+      # run measured exactly the co-scheduling the plan's CI item predicted. The docs
+      # gate reads both workflows, so the pair still counts as wired into CI.
+      - run: npx nx affected -t lint test vite:test build typecheck check-package check-coverage check-zoneless check-typecheck check-styles check-texts check-tokens check-parts check-aria check-icons check-bundle check-consumer check-browsers check-language check-reach check-support check-docs check-index e2e
