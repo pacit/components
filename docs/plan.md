@@ -1525,19 +1525,28 @@ direction` expecting index 32 and getting 31 in the first, its right-to-left twi
   - binds at: **the next change under `date/src`**, or the first timezone bug report ·
     _notes:_ —
 
-- [ ] **4.30 — six e2e cases measure the machine's fonts, and CI's machine has different ones**
+- [~] **4.30 — six e2e cases measure the machine's fonts, and CI's machine has different ones**
   - the second CI run failed the textarea's width-follow case **in all three engines**, the
     skeleton's `1cap` bar in firefox, and two visual baselines (`field-aux-slots` and its
-    RTL twin) — deterministically, while the same suite is green on this machine. The
-    library sets **no font of its own** (no font-family token exists, checked), so every
-    metric a case reads — a wrapped height, a capital's height, a screenshot — is a fact
-    about whichever fonts the machine resolves `system-ui` to, and the runner's are not
-    this machine's
-  - the shape of the answer is a decision, not an apt-install: the **sandbox** (not the
-    library) pins a font it ships, so the numbers the suite reads are the suite's own — or
-    the six cases are rewritten against font-relative expectations where that is honest.
-    An apt-install of this machine's fonts would be the dictionary answer (4.31) worn by
-    typography, and it drifts the same way
+    RTL twin) — deterministically, twice running, while the same suite is green on this
+    machine. The library sets **no font of its own** (no font-family token exists,
+    checked), so every metric a case reads is a fact about whichever fonts the machine
+    resolves `system-ui` to
+  - **the family split in two under the knife, and only one half is fonts.** The sandbox
+    pins a vendored face now (`public/InterVariable.woff2`, SIL OFL beside it; `visit()`
+    waits on `document.fonts.ready`), which settles the four METRIC cases — and the pin's
+    own first day is a lesson in the class it fixes: `app.scss` set `system-ui` on the
+    application host, so the pin was silently overridden for the whole tree, three
+    re-records produced byte-identical baselines across a font swap, and nothing said
+    why until the fonts API was read from inside the page (`Inter var: unloaded`)
+  - the two VISUAL baselines are a different defect wearing the same shirt:
+    `visual.spec.ts` has pinned `Liberation Sans !important` since it was written —
+    which is exactly why the Inter pin changed no pictures — so their CI red under an
+    already-pinned face is **rasterisation**, freetype and hinting between two machines,
+    not family resolution. The diff images died with the runner (no artifact step —
+    repaired: `ci.yml` uploads the e2e output on failure now), so the next red carries
+    its evidence, and the decision — CI-recorded baselines for the visual pair, or a
+    measured tolerance — waits for that reading rather than a guess
   - binds at: **before the nightly run is trusted** — a red that fires every night on
     fonts buries the reds the night exists to catch · _notes:_ —
 

@@ -3,7 +3,10 @@
   min-height: 100vh;
   background: var(--pct-surface);
   color: var(--pct-text);
-  font-family: system-ui, sans-serif;
+  /* No font-family here: the pinned face cascades from `body` (styles.scss), and a second
+     declaration on this host is exactly how the pin was silently overridden for the whole
+     application on its first day — every screenshot matched its old baseline and nothing
+     said why. */
 }
 
 .shell__head {

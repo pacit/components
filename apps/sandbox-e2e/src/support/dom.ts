@@ -125,6 +125,10 @@ export async function visit(
   if (options.now) await page.clock.setFixedTime(new Date(options.now));
   await page.goto(path);
   await page.locator('html[data-sbx-ready]').waitFor();
+  // The sandbox pins its own font (vendored Inter — see styles.scss), and the pin is
+  // deterministic only once the file has ARRIVED: a metric read during the fallback's
+  // frames is the old per-machine measurement wearing the new name.
+  await page.evaluate(() => document.fonts.ready.then(() => undefined));
 
   if (problems.hydration.length) {
     throw new Error(

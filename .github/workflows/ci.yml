@@ -94,3 +94,14 @@ jobs:
       # run measured exactly the co-scheduling the plan's CI item predicted. The docs
       # gate reads both workflows, so the pair still counts as wired into CI.
       - run: npx nx affected -t lint test vite:test build typecheck check-package check-coverage check-zoneless check-typecheck check-styles check-texts check-tokens check-parts check-aria check-icons check-bundle check-consumer check-browsers check-language check-reach check-support check-docs check-index e2e
+
+      # A red e2e on a runner is unreadable without its evidence: the third run failed two
+      # visual baselines and the diff images died with the machine, so the failure could
+      # only be guessed at. Kept on failure alone — green runs prove themselves.
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-output
+          path: dist/.playwright/apps/sandbox-e2e/test-output
+          retention-days: 7
+          if-no-files-found: ignore

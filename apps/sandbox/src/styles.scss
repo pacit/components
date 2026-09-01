@@ -1,3 +1,23 @@
+/* The sandbox pins its own text face. The library deliberately sets no font — type
+   belongs to the application — so before this rule every metric the e2e suite read (a
+   textarea's wrapped height, a skeleton bar's 1cap, a screenshot) was a fact about
+   whichever fonts the MACHINE resolves system-ui to, and CI's machine answered
+   differently in six cases, deterministically. The face is vendored beside this
+   application — public/InterVariable.woff2, under the SIL Open Font License kept next
+   to it as InterVariable-LICENSE.txt — so the suite measures the same glyphs on every
+   machine that runs it. */
+@font-face {
+  font-family: 'Inter var';
+  src: url('/InterVariable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: block;
+}
+
+body {
+  font-family: 'Inter var', system-ui, sans-serif;
+}
+
 /* The shared demo layout. The classes are global deliberately: every view and every
    card lays its examples out the same way, and Angular component styles are scoped —
    keeping this in a component would mean a copy in every new view. */
