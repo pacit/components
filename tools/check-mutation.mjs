@@ -34,7 +34,7 @@ const REPORT = 'tmp/mutation/mutation.json';
 const POLICY = `${PROJECT}/mutation.policy.json`;
 const CONFIG = `${PROJECT}/stryker.config.json`;
 const SNAPSHOT = `${PROJECT}/mutation.snapshot.md`;
-const CI = '.github/workflows/ci.yml';
+const WORKFLOWS = ['.github/workflows/ci.yml', '.github/workflows/nightly.yml'];
 
 const WRITE = process.argv.includes('--write');
 
@@ -741,7 +741,8 @@ export const checkMutation = (input) => {
       throw new MutationError(
         'ci',
         'ci-without-target',
-        `\`${CI}\` does not have the \`${target}\` target among the ones it runs.\n` +
+        `no workflow (${WORKFLOWS.map((w) => `\`${w}\``).join(', ')}) has the ` +
+          `\`${target}\` target among the ones it runs.\n` +
           `    That is this whole gate's denominator: everything above describes a run ` +
           `nobody starts, and locally each of them passes.`,
       );
@@ -804,10 +805,21 @@ const graphTargets = async () => {
  * target looks to a pattern exactly like a call to it (`lesson-56` in `check-browsers`).
  */
 const ciTargets = () => {
-  const lines = (read(CI) ?? '').split('\n').map((l) => l.replace(/#.*$/, ''));
-  const invocation =
-    lines.find((l) => /nx\s+(?:affected|run-many)/.test(l)) ?? '';
-  return { targets: invocation.split(/\s+/).filter(Boolean) };
+  // The union over EVERY `nx affected` / `nx run-many` line of BOTH workflows. Point 7's
+  // denominator is "a run somebody starts", and the repository deliberately starts the two
+  // heaviest runs from `nightly.yml` rather than from every push — while `nightly.yml`
+  // itself splits its lines in two. Reading one file, and one line of it, is how this gate
+  // came to demand `mutation` of the workflow that deliberately does not run it: the demand
+  // held locally from the day the target moved out of `ci.yml`, and the first nightly would
+  // have fired red on the gate's own assumption rather than on any fact about the run.
+  const targets = WORKFLOWS.flatMap((file) =>
+    (read(file) ?? '')
+      .split('\n')
+      .map((line) => line.replace(/#.*$/, ''))
+      .filter((line) => /nx\s+(?:affected|run-many)/.test(line))
+      .flatMap((line) => line.split(/\s+/)),
+  ).filter(Boolean);
+  return { targets };
 };
 
 const inputFromDisk = async () => {
