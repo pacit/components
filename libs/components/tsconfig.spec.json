@@ -26,6 +26,7 @@
     "pagination/**/*.ts",
     "progress/**/*.ts",
     "skeleton/**/*.ts",
+    "chips/**/*.ts",
     "field/**/*.ts",
     "icon/**/*.ts",
     "testing/**/*.ts"

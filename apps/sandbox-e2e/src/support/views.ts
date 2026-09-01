@@ -30,6 +30,7 @@ export const SBX_ROUTES = [
   '/pagination',
   '/progress',
   '/skeleton',
+  '/chips',
   '/size',
   '/states',
   '/all',

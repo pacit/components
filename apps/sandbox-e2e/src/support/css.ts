@@ -66,6 +66,7 @@ export async function firstDurationMs(
 
 /** The system colour names the library uses in forced-colors mode. */
 export const SYSTEM_COLORS = [
+  'ButtonText',
   'Canvas',
   'CanvasText',
   'Field',

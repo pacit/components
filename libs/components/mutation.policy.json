@@ -15,6 +15,7 @@
     "libs/components/accordion/src/accordion.ts",
     "libs/components/button/src/button.ts",
     "libs/components/checkbox/src/checkbox.ts",
+    "libs/components/chips/src/chips.ts",
     "libs/components/core/src/announce.ts",
     "libs/components/core/src/config.ts",
     "libs/components/core/src/field.ts",

@@ -632,6 +632,29 @@ test.describe('forced-colors: active', () => {
     );
   });
 
+  /**
+   * A chip is a pill whose INSIDE is one step of the ramp — exactly the fill this mode
+   * drops. What has to survive is the boundary and the control: the border was drawn in the
+   * author palette for this moment (0051), the cross takes the palette's own word for a
+   * control, and hover answers in a channel that is not the author's fill.
+   */
+  test('a chip keeps its boundary and its cross in the user palette', async ({
+    page,
+  }) => {
+    await visit(page, '/chips', { media: FORCED });
+    const sys = await systemColors(page);
+
+    const chip = page.getByTestId('row').locator('pct-chip').first();
+    const cross = chip.locator('[data-pct-part="remove"]');
+
+    expect(await styleOf(chip, 'border-top-color')).toBe(sys.CanvasText);
+    expect(await styleOf(cross, 'color')).toBe(sys.ButtonText);
+
+    await cross.hover();
+    expect(await styleOf(cross, 'background-color')).toBe(sys.Highlight);
+    expect(await styleOf(cross, 'color')).toBe(sys.HighlightText);
+  });
+
   test('the disabled state says GrayText in every control', async ({
     page,
   }) => {

@@ -208,6 +208,14 @@ export const SBX_VIEWS: readonly SbxView[] = [
       import('./views/skeleton/skeleton-view').then((m) => m.SkeletonView),
   },
   {
+    path: 'chips',
+    title: 'Chips',
+    summary:
+      'A row of chosen values — and where focus lands when its button leaves.',
+    group: 'components',
+    load: () => import('./views/chips/chips-view').then((m) => m.ChipsView),
+  },
+  {
     path: 'size',
     title: 'Size',
     summary: 'Every component on the shared sm/md/lg axis.',

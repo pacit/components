@@ -1,0 +1,25 @@
+/* The host is the list (0051): a row that wraps, with the gap as its only drawing. The gap
+   and the wrap are the reason long rows behave — a chip never breaks inside, the ROW breaks
+   between chips. */
+:host {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--pct-chips-list-gap);
+}
+
+/* Sizes driven by a state attribute on the host (`req-api-attributes`). The overrides land
+   here and reach every chip by custom-property inheritance — one attribute sizes the row,
+   because a mixed-size row is not a thing this component offers. `md` overrides nothing, so
+   a theme that moves the base token still works (`req-token-override`). */
+:host([data-pct-size='sm']) {
+  --pct-chips-item-height: var(--pct-chips-item-height-sm);
+  --pct-chips-item-font-size: var(--pct-chips-item-font-size-sm);
+  --pct-chips-item-padding-x: var(--pct-chips-item-padding-x-sm);
+}
+
+:host([data-pct-size='lg']) {
+  --pct-chips-item-height: var(--pct-chips-item-height-lg);
+  --pct-chips-item-font-size: var(--pct-chips-item-font-size-lg);
+  --pct-chips-item-padding-x: var(--pct-chips-item-padding-x-lg);
+}

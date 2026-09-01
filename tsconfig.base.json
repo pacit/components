@@ -40,7 +40,8 @@
         "./libs/components/pagination/src/index.ts"
       ],
       "@pacit/components/progress": ["./libs/components/progress/src/index.ts"],
-      "@pacit/components/skeleton": ["./libs/components/skeleton/src/index.ts"]
+      "@pacit/components/skeleton": ["./libs/components/skeleton/src/index.ts"],
+      "@pacit/components/chips": ["./libs/components/chips/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

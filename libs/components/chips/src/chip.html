@@ -1,0 +1,34 @@
+<!--
+  The label is the consumer's own content, projected — a chip generates none of its text
+  (0051). The remove control is a real <button>, so the press, the keyboard and the focus
+  ring are the platform's (`req-api-platform`); it is drawn only where `removable` says so,
+  because a control that cannot be used is not disabled here, it is absent. The cross is the
+  library's one closing drawing (0011, 0028), named by `texts().chipRemove` — the only name
+  the button has, WHAT it removes being said by the label beside it in the same listitem.
+-->
+<span class="pct-chip__label" data-pct-part="label"><ng-content /></span>
+
+@if (removable()) {
+<button
+  type="button"
+  class="pct-chip__remove"
+  data-pct-part="remove"
+  [attr.aria-label]="texts().chipRemove"
+  (click)="remove()"
+>
+  <pct-icon name="close">
+    <svg
+      viewBox="0 0 16 16"
+      width="100%"
+      height="100%"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      focusable="false"
+    >
+      <path d="M4 4l8 8M12 4l-8 8" />
+    </svg>
+  </pct-icon>
+</button>
+}

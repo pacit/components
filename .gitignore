@@ -86,6 +86,10 @@ vitest.config.*.timestamp*
 .nx/self-healing
 .nx/migrate-runs
 
+# Playwright's run ledger (`.last-run.json`), written to the invoking directory even for a
+# run whose config lives elsewhere. Nothing reads it back here.
+/test-results/
+
 # Visual test baselines (apps/sandbox-e2e/src/__screenshots__) ARE in the repository
 # and have to stay: without them Playwright records a baseline on the first run and
 # stores it as correct, so the gate can never fire. Only the output of a failed

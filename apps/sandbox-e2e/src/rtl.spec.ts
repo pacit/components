@@ -204,4 +204,35 @@ test.describe('Writing direction — the layout mirrors in dir="rtl"', () => {
     expect(rtlLast.x + rtlLast.width).toBeCloseTo(rtlHost.x + rtlHost.width, 0);
     expect(rtlLast.x).toBeGreaterThan(rtlHost.x);
   });
+
+  /**
+   * A chips row is reading order twice over: the first value stands at the reading start of
+   * the row, and inside every pill the cross stands at the reading END of its label — both
+   * placed by flex order and a logical gap, with not one physical property to leave behind.
+   * The geometry is the reading: the same DOM has to put the first chip on the right and
+   * every cross on its label's left once the direction flips.
+   */
+  test('a chips row and the cross inside each pill follow the reading direction', async ({
+    page,
+  }) => {
+    await visit(page, '/chips');
+    const row = page.getByTestId('row');
+    const chips = row.locator('pct-chip');
+    const first = chips.first();
+    const label = first.locator('[data-pct-part="label"]');
+    const cross = first.locator('[data-pct-part="remove"]');
+
+    const ltrFirst = await boxOf(first);
+    const ltrSecond = await boxOf(chips.nth(1));
+    expect(ltrFirst.x).toBeLessThan(ltrSecond.x);
+    expect((await boxOf(cross)).x).toBeGreaterThan((await boxOf(label)).x);
+
+    await setRtl(page);
+    expect(await directionOf(page, 'pct-chips')).toBe('rtl');
+
+    const rtlFirst = await boxOf(first);
+    const rtlSecond = await boxOf(chips.nth(1));
+    expect(rtlFirst.x).toBeGreaterThan(rtlSecond.x);
+    expect((await boxOf(cross)).x).toBeLessThan((await boxOf(label)).x);
+  });
 });

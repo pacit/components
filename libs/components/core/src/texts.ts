@@ -118,6 +118,16 @@ export interface PctTexts {
   readonly paginationPrevious: string;
   /** Pagination: the accessible name of the stepper that goes forward one page. */
   readonly paginationNext: string;
+  /**
+   * Chips: the accessible name of the control that takes a chosen value back. The button
+   * draws a cross and nothing else, so this string is the only name it has; WHAT it removes
+   * is said by the chip's own text, standing beside the button in the same list item. A key
+   * of its own rather than the toast's `toastDismiss` or the dialog's `dialogClose`:
+   * "remove" is what happens to a chosen value, and a language that spells it apart from
+   * "dismiss a message" and "close a window" has nowhere else to say so
+   * ([0051](../../../../docs/decisions/0051-chips-are-a-list-the-user-shortens.md)).
+   */
+  readonly chipRemove: string;
 }
 
 export const PCT_DEFAULT_TEXTS: PctTexts = {
@@ -139,6 +149,7 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   paginationLabel: 'Pagination',
   paginationPrevious: 'Previous page',
   paginationNext: 'Next page',
+  chipRemove: 'Remove',
 };
 
 /**

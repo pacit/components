@@ -1,0 +1,62 @@
+{
+  "pct": {
+    "chips": {
+      "$comment": "A row of chosen values the user can take back (0051). The row itself is only a gap; everything else is the pill an item wears — the shared control box, one background, one text colour and a border that survives forced colours — and the remove control inside it, whose cross is quieter than the label at rest and full-strength under the pointer. The current value is nobody: chips carry no selected state, because a selectable chip is a checkbox in different clothes and was refused in the decision.",
+
+      "list-gap": { "$type": "dimension", "$value": "{pct.space.2}" },
+
+      "$comment-item-height": "The pill tracks the shared control axis ({pct.control.height}), so a row of chips lines up with the field or the button beside it (`req-api-size`). The `-sm` / `-lg` variants swap the base tokens; size `md` keeps to them.",
+      "item-height": {
+        "$type": "dimension",
+        "$value": "{pct.control.height.md}"
+      },
+      "item-height-sm": {
+        "$type": "dimension",
+        "$value": "{pct.control.height.sm}"
+      },
+      "item-height-lg": {
+        "$type": "dimension",
+        "$value": "{pct.control.height.lg}"
+      },
+      "item-padding-x": { "$type": "dimension", "$value": "{pct.space.3}" },
+      "item-padding-x-sm": {
+        "$type": "dimension",
+        "$value": "{pct.space.2}"
+      },
+      "item-padding-x-lg": {
+        "$type": "dimension",
+        "$value": "{pct.space.4}"
+      },
+      "$comment-item-radius": "A pill on purpose, where the skeleton's 0050 chose `{pct.radius.md}` and wrote down why it could not have this value: the skeleton answers for a box of any height, and a chip never does — its height is the control axis, so the fully rounded end is a half-circle at every size and cannot round a photograph into anything.",
+      "item-radius": { "$type": "dimension", "$value": "999px" },
+      "item-font-size": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.md}"
+      },
+      "item-font-size-sm": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.sm}"
+      },
+      "item-font-size-lg": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.lg}"
+      },
+      "item-gap": { "$type": "dimension", "$value": "{pct.space.2}" },
+
+      "$comment-item-bg": "A step off the page surface, because a chip is an OBJECT the user acts on, not a run of text — the pill has to read as a thing with an inside. The border is drawn even so: the fill is one step of the ramp and quietly disappears at some skins, and in forced colours it disappears at all of them, so the boundary never rides on the fill alone (`req-a11y-forced-colors`).",
+      "item-bg": { "$type": "color", "$value": "{pct.surface-100}" },
+      "item-fg": { "$type": "color", "$value": "{pct.text}" },
+      "item-border": { "$type": "color", "$value": "{pct.border}" },
+
+      "$comment-remove": "The control that takes the value back. Muted at rest so five chips do not read as five crosses shouting over five labels, full text strength under the pointer, and a hover fill of the page's own surface — the same lift the pagination buttons use, in the opposite direction. The target floor is the shared `{pct.target.min}` outright (`req-a11y-touch`); the pill around it may be shorter only visually, never for a finger.",
+      "remove-fg": { "$type": "color", "$value": "{pct.text-muted}" },
+      "remove-fg-hover": { "$type": "color", "$value": "{pct.text}" },
+      "remove-bg-hover": { "$type": "color", "$value": "{pct.surface}" },
+      "remove-radius": { "$type": "dimension", "$value": "999px" },
+      "remove-target-min": {
+        "$type": "dimension",
+        "$value": "{pct.target.min}"
+      }
+    }
+  }
+}

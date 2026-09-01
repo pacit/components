@@ -1,0 +1,104 @@
+<h2 class="view__title">Chips</h2>
+<p class="muted view__intro">
+  A row of chosen values the user can take back — the active filters above a
+  table, the recipients of a message. The row is a <code>list</code> and every
+  chip a <code>listitem</code>, so a screen reader hears the count first; each
+  remove control is a real <code>&lt;button&gt;</code>, and the one thing the
+  component adds to the platform is where focus goes when the button under it
+  disappears.
+</p>
+
+<sbx-demo
+  heading="A row the user shortens"
+  summary="Tab to a cross and press Enter: the value leaves and focus lands on the next cross, so Enter, Enter, Enter empties the row with no Tab between them. The collection belongs to the page — a chip only announces, and this page answers by filtering its own array."
+  [reqs]="['req-a11y-built-in', 'req-api-platform']"
+  data-testid="demo-row"
+>
+  <pct-chips ariaLabel="Active filters" data-testid="row">
+    @for (filter of filters(); track filter) {
+    <pct-chip removable (removed)="drop(filter)">{{ filter }}</pct-chip>
+    }
+  </pct-chips>
+  <div class="view__row">
+    <button
+      pctButton
+      variant="outline"
+      (click)="restore()"
+      data-testid="restore"
+    >
+      Restore everything
+    </button>
+    <span class="view__state" data-testid="row-state"
+      >{{ filters().length }} of 5 left</span
+    >
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="A value that must stay"
+  summary="The middle chip has removable off, so it draws no button at all — a control that cannot be used is absent here, never struck through. Remove the first value and watch the repair step over the pinned chip to the next cross."
+  [reqs]="['req-api-attributes']"
+  data-testid="demo-mixed"
+>
+  <pct-chips ariaLabel="Statuses" data-testid="mixed">
+    @for (term of terms(); track term) {
+    <pct-chip [removable]="term !== 'published'" (removed)="dropTerm(term)"
+      >{{ term }}</pct-chip
+    >
+    }
+  </pct-chips>
+</sbx-demo>
+
+<sbx-demo
+  heading="An announcement, not an act"
+  summary="This row hears removed and does not shorten the array — it asks first. The chip stands until the page confirms, which is the whole contract stretched out until the seam shows: a removed the consumer ignores removes nothing."
+  [reqs]="['req-api-signals']"
+  data-testid="demo-confirm"
+>
+  <pct-chips ariaLabel="People" data-testid="confirm-row">
+    @for (person of people(); track person) {
+    <pct-chip removable (removed)="asked.set(person)">{{ person }}</pct-chip>
+    }
+  </pct-chips>
+  <div class="view__row">
+    @if (asked(); as leaving) {
+    <button pctButton (click)="confirm()" data-testid="confirm">
+      Really remove {{ leaving }}
+    </button>
+    <button
+      pctButton
+      variant="outline"
+      (click)="asked.set(null)"
+      data-testid="keep"
+    >
+      Keep
+    </button>
+    } @else {
+    <span class="view__state" data-testid="confirm-state"
+      >press a cross — nothing leaves until you confirm</span
+    >
+    }
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="Sizes"
+  summary="One attribute on the row sizes every pill in it, on the shared control axis — a row of chips lines up with the field or the button beside it. There is no mixed-size row on purpose."
+  [reqs]="['req-api-size', 'req-api-config']"
+  data-testid="demo-sizes"
+>
+  <div class="view__sizes">
+    <pct-chips size="sm" ariaLabel="Small" data-testid="size-sm">
+      <pct-chip>small</pct-chip>
+      <pct-chip removable>removable</pct-chip>
+    </pct-chips>
+    <pct-chips ariaLabel="Medium" data-testid="size-md">
+      <pct-chip>medium</pct-chip>
+      <pct-chip removable>removable</pct-chip>
+    </pct-chips>
+    <pct-chips size="lg" ariaLabel="Large" data-testid="size-lg">
+      <pct-chip>large</pct-chip>
+      <pct-chip removable>removable</pct-chip>
+    </pct-chips>
+  </div>
+</sbx-demo>

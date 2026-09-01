@@ -1164,6 +1164,36 @@
       "bg": "pct.skeleton.track-bg",
       "level": "UI",
       "severity": "warn"
+    },
+    {
+      "name": "chips — a chip's label",
+      "fg": "pct.chips.item-fg",
+      "bg": "pct.chips.item-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "$comment": "The cross is the whole drawing of a functional control, so it owes the non-text floor (SC 1.4.11) — muted at rest is allowed to be quiet, not to be invisible.",
+      "name": "UI: chips — the remove cross",
+      "fg": "pct.chips.remove-fg",
+      "bg": "pct.chips.item-bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: chips — the remove cross (hover)",
+      "fg": "pct.chips.remove-fg-hover",
+      "bg": "pct.chips.remove-bg-hover",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "$comment": "The pill's edge over the page. Warn, not error: the chip itself is not an interactive component — the button inside it is, and has its own pairs above — so SC 1.4.11 does not claim this boundary. It stays measured because the edge is what keeps a chip an object when a skin flattens `surface-100` into `surface`, and in forced colours the border is the one channel left standing.",
+      "name": "UI: chips — the pill's edge against the page",
+      "fg": "pct.chips.item-border",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
     }
   ]
 }

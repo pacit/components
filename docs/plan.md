@@ -472,6 +472,45 @@ decision says it is"` goes red the day a second engine ships it
     but the full suite came back **1417 passed, zero failed** in 20.1 minutes, where each of the
     two steps before it had one red behavioural case in a component nobody had touched. The
     pictures are the deterministic cost of a view; the red case is a load-dependent one
+  - _the chips are done_ (8 of 13). The first question was which of the four things wearing
+    the name this is — the static label is the badge's, the selectable chip a checkbox in
+    different clothes (0039), the input chip the select family's road — and what nothing
+    rendered was a row of **chosen values the user can take back**. The row is the platform's
+    `list`/`listitem`, every removal a real `<button>`, removal itself an announcement the
+    consumer answers by shortening their own array (0048's ownership split one notch
+    further); the one thing added to the platform is **where focus goes when the button
+    under it disappears** — measured onto `<body>` in all three engines before anything was
+    written — so the row repairs it and Enter, Enter, Enter empties it with no Tab between.
+    See [0051](decisions/0051-chips-are-a-list-the-user-shortens.md),
+    [`lesson-138`](lessons.md#lesson-138).
+  - **two probes ran before the code and one of them deleted a design**: the hypothesis
+    that an empty `role="list"` needs its role taken off (the empty listbox of 4.8 is a
+    critical violation, and `list` declares the same required children) measured as **zero
+    violations in three engines** — axe's `aria-required-children` carves `list` out — so
+    the conditional role, its unit cases and its mutant surface were never written
+    ([`lesson-138`](lessons.md#lesson-138))
+  - gate: `apps/sandbox-e2e/src/chips.spec.ts` (12 × 3) plus `/chips` in the axe / hydration
+    audits, an RTL geometry case (the row and the cross both follow the reading direction),
+    a forced-colours reading in two engines, two screenshots and 25 unit cases. The control
+    for the repair's central guard is the second chip of the kept-value arrangement: without
+    a candidate to wrongly land on, a dead guard and a standing-down repair read the same.
+    Cost `./chips` **10600 B** on `./core` and `./icon`; the one new string (`chipRemove`)
+    costs +20 B fanned out to every entrypoint that carries `./core` — and `./skeleton`
+    stands unmoved at 2997 B, the one component entrypoint that carries none
+  - it taught **no gate anything new** — the first component in a while to add not one point
+    to `check-aria`: `list`/`listitem` and a named button are shapes the gates already read
+    whole. What it did extend is the measurement's own kit: `ButtonText` joined
+    `SYSTEM_COLORS` in the e2e support, the library's first use of that keyword
+  - the mutation run: `chips.ts` **90.74 49(0) 5 0 2**, all five survivors named — the
+    fourth `isDevMode()`-forced-true in a row, reversing the whole order instead of the
+    predecessors (an unreachable difference: wherever the walk reaches that part of the
+    map, its prefix is dead), `above?.` on a parent no document can null, and the two DI
+    token labels, which are debug strings. The library is **4376 mutants at 82.36%**
+    (4321 at 82.48 before). The run itself became a measurement of **4.2** — recorded there
+  - the full suite: **1469 passed, zero failed** in 21.6 minutes on the second run; the
+    first had three reds, none of them the component's — two were the forced-colours helper
+    missing `ButtonText`, the third the webkit scroll-lock wobble 4.23 already records
+    (green in isolation on the first retry)
 
 - [ ] **1.2 — table / datagrid** on a headless core (column model, sorting, filtering, grouping,
       selection as signals) separated from rendering. **The last item of the phase** — the only
@@ -839,6 +878,27 @@ thousandth row` timed out with the list still showing row 44, and the forced-col
     **no nx task results**, so a dependency bump reruns the whole pipeline, and by this
     item's own measurements a **restored** mutation result is more stable than a rerun,
     which makes the cache a correctness aid here rather than a speed one
+  - **a seventh reading, and it adds a third axis and retires a rule.** The chips step's full
+    run found the axis nobody had turned: Stryker's own `concurrency`. At the default
+    (cpus−1 = 7 workers) the run exhausts the machine's 15 GB at 14% and the **OOM killer
+    takes the parent process with it** — no red, no report, a session gone mid-run. At
+    `--concurrency 4` it finishes in ~50 minutes and reads exactly like the starved
+    `run-many` measurements above: `motion.ts 50(0)`, `placement.ts 58(0)`, `modal.ts 47(0)`
+    — every clock-kill absent, the three scores at 86.21 / 89.23 / 78.33
+  - and the snapshot now RECORDS that starved run, which the drawer-era rule above forbids —
+    deliberately, because the rule died the day `mutation` moved into `nightly.yml`: there
+    it shares one job with `e2e` in a single `run-many` line, so **the only run CI will ever
+    perform is starved by configuration**, and "the run that lands them" is a run nobody
+    starts. A snapshot holding the landed numbers would go red on every nightly for as long
+    as the nightly exists. The first nightly fires tonight over exactly this snapshot, and
+    its columns are the first CI-side numbers this item has been waiting for
+  - the same evening the gate's own **denominator** turned out to be one file and one line
+    wide: `check-mutation` point 7 read the first `nx` invocation of `ci.yml` alone, so from
+    the day the two heavy targets moved to `nightly.yml` it demanded `mutation` of the
+    workflow that deliberately does not run it — locally red on every machine, and the first
+    nightly would have fired red on the gate's assumption rather than on any fact about the
+    run. It reads the union over every `nx` line of both workflows now, and the
+    `ci-without-target` fixture still rejects on its own rule
 
 - [ ] **4.3 — an option's owner is measured only where a page renders the panel**
   - `pct-select` draws a named section as `role="group"`, and the options below it are owned by

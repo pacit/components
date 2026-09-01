@@ -33,6 +33,7 @@ a machine; prose with a missing paragraph is not.
 | [`PctPagination`](pagination.md) | `@pacit/components/pagination` | a control that owns the current page   |
 | [`PctProgress`](progress.md)     | `@pacit/components/progress`   | how far along a task is                |
 | [`PctSkeleton`](skeleton.md)     | `@pacit/components/skeleton`   | the shape of content still coming      |
+| [`PctChips`](chips.md)           | `@pacit/components/chips`      | chosen values the user can take back   |
 
 ## The order of the components to come
 
@@ -184,6 +185,16 @@ The order follows **architectural debt**, not popularity:
    ([0050](../decisions/0050-a-skeleton-is-a-picture-of-a-wait.md),
    [`lesson-136`](../lessons.md#lesson-136)). Its sheen is the progress bar's band at its
    second component, which is what turns that mechanism into a rule.
+   The **chips** are built, and the first question was which of the four things wearing the
+   name this is: the static label is the badge's, the selectable chip is a checkbox in
+   different clothes, the input chip is the select family's road — what nothing rendered was
+   a row of CHOSEN values the user can take back
+   ([0051](../decisions/0051-chips-are-a-list-the-user-shortens.md)). The row is the
+   platform's `list`/`listitem` and every cross a real `<button>`; the one thing added is
+   where focus goes when the button under it disappears (measured: onto `<body>`, in all
+   three engines), so the row repairs it and Enter, Enter, Enter empties it with no Tab
+   between. Removal itself is an announcement, never an act — the collection stays the
+   application's, one notch past the pagination's ownership split.
 7. **Table / DataGrid** — has to stand on a **headless core** separated from rendering.
 
 Before item 1 the **behaviour layer in `core`** has to exist: list navigation (private methods

@@ -3686,3 +3686,31 @@ What the pair of lessons is really about is that "make it clip" and "make it scr
 declaration apart and one requirement apart. The first is safe inside a hidden subtree; the
 second turns the same subtree into a violation in two engines out of three, and the visible
 result — content cut off at the box's edge — is identical in both.
+
+### <a id="lesson-138"></a>`lesson-138` — An empty `list` passes the audit that fails an empty `listbox`, so the machinery has to be sized to the exact role
+
+The chips container was designed with its role conditional — `role="list"` while it holds
+chips, nothing when the row empties — because the nearest precedent said so: an empty listbox
+is a **critical** axe violation (plan 4.8, `aria-required-children`), and the ARIA grammar
+gives `list` the same required owned elements (`listitem`). The hypothesis: same grammar, same
+violation, so the empty row needs the role taken off.
+
+Probed before anything was written — a bare page with a `role="list"` holding zero items,
+beside one holding custom elements with `role="listitem"`, through the same axe build the
+audits run:
+
+| arrangement                                    | chromium | firefox | webkit |
+| ---------------------------------------------- | -------- | ------- | ------ |
+| `role="list"`, zero children                   | clean    | clean   | clean  |
+| custom-element children with `role="listitem"` | clean    | clean   | clean  |
+
+Axe enforces required children per ROLE, not per grammar family: `aria-required-children`
+carries an explicit carve-out for `list` (and a few others) precisely because an empty list is
+an ordinary state of real pages, while an empty `listbox` is a select promising choices it
+does not have. The conditional role would have been machinery against a violation nobody can
+measure — a computed binding, its unit cases, and a mutant surface, all guarding nothing.
+
+The rule: a precedent from a NEIGHBOURING role is a hypothesis, not a constraint. The audit's
+grammar is per-role with carve-outs the specification's grammar does not show, so the probe
+has to name the exact role it stands on — and the cheapest line of code is the one a
+measurement deleted before it was written.

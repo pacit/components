@@ -1,0 +1,79 @@
+/* The pill. Background AND border on purpose: the fill is one step of the ramp and quietly
+   disappears at some skins, and in forced colours it disappears at all of them — the border
+   is the channel that survives (`req-a11y-forced-colors`). The box tracks the shared control
+   axis so a row of chips lines up with the field beside it (`req-api-size`). */
+:host {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--pct-chips-item-gap);
+  box-sizing: border-box;
+  block-size: var(--pct-chips-item-height);
+  padding-inline: var(--pct-chips-item-padding-x);
+  border: 1px solid var(--pct-chips-item-border);
+  border-radius: var(--pct-chips-item-radius);
+  background: var(--pct-chips-item-bg);
+  color: var(--pct-chips-item-fg);
+  font-size: var(--pct-chips-item-font-size);
+  line-height: 1;
+}
+
+/* The label never breaks inside the pill — the ROW breaks between pills (the host's wrap).
+   No ellipsis and no max-width of ours: the content is the consumer's, and how much of a
+   value to show is their sentence to finish. */
+.pct-chip__label {
+  white-space: nowrap;
+}
+
+.pct-chip__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  /* The floor a finger gets (`req-a11y-touch`), whatever the pill's visual height — at `sm`
+     the 24px box stands inside a 28px pill and the pill, not the button, is what looks
+     small. */
+  min-inline-size: var(--pct-chips-remove-target-min);
+  min-block-size: var(--pct-chips-remove-target-min);
+  padding: 0;
+  border: 0;
+  border-radius: var(--pct-chips-remove-radius);
+  background: transparent;
+  color: var(--pct-chips-remove-fg);
+  /* The box the cross is drawn in — the drawing paints itself in `currentColor` and knows
+     nothing of the state around it (0028). */
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.pct-chip__remove:hover {
+  background: var(--pct-chips-remove-bg-hover);
+  color: var(--pct-chips-remove-fg-hover);
+}
+
+.pct-chip__remove:focus-visible {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: 1px;
+}
+
+/* Forced colours: the pill keeps its boundary through the border, the cross takes the
+   button palette, and hover keeps a channel that is not the author's fill. `@media` adds no
+   specificity, so every rule the mode needs is written out
+   ([`lesson-70`](../../../../docs/lessons.md#lesson-70)). */
+@media (forced-colors: active) {
+  :host {
+    border-color: CanvasText;
+  }
+
+  .pct-chip__remove {
+    color: ButtonText;
+  }
+
+  .pct-chip__remove:hover {
+    background: Highlight;
+    color: HighlightText;
+  }
+
+  .pct-chip__remove:focus-visible {
+    outline-color: Highlight;
+  }
+}

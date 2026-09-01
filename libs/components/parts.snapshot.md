@@ -28,6 +28,8 @@ from what the browser really gets.
 ./checkbox PctCheckbox hint
 ./checkbox PctCheckbox label
 ./checkbox PctCheckbox mark
+./chips PctChip label
+./chips PctChip remove
 ./date PctCalendar caption
 ./date PctCalendar day
 ./date PctCalendar grid
