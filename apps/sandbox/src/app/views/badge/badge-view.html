@@ -1,0 +1,59 @@
+<h2 class="view__title">Badge</h2>
+<p class="muted view__intro">
+  A word wearing a tone — <code>Draft</code>, <code>Active</code>,
+  <code>Overdue</code>. It is text and only text: no role, no ARIA, no string of
+  its own, and the tone repeats what the word says, never says it alone. Two
+  tones today, because the skin has colour for two; the union grows the day the
+  ramps land.
+</p>
+
+<sbx-demo
+  heading="The tones the skin can keep"
+  summary="neutral is the base — the same quiet surfaces the rest of the library stands on — and danger is the skin's error colour painting its first background, with the on-danger pair the semantic tier promised back for exactly this component."
+  [reqs]="['req-token-text-pairs', 'req-a11y-forced-colors']"
+  data-testid="demo-tones"
+>
+  <div class="view__row">
+    <pct-badge data-testid="tone-neutral">Draft</pct-badge>
+    <pct-badge tone="danger" data-testid="tone-danger">3 overdue</pct-badge>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="In running text"
+  summary="A badge is part of the sentence it stands in: a reader reads the word as plain text, the box bends no line, and a heading keeps its own type around it."
+  [reqs]="['req-a11y-built-in']"
+  data-testid="demo-inline"
+>
+  <h3 class="view__heading" data-testid="inline-heading">
+    Invoices <pct-badge tone="danger">3 overdue</pct-badge>
+  </h3>
+  <h3 class="view__heading" data-testid="plain-heading">Invoices</h3>
+  <p class="view__text">
+    The report covers <pct-badge>Q3</pct-badge> and every account marked
+    <pct-badge>reviewed</pct-badge> by the finance team.
+  </p>
+</sbx-demo>
+
+<sbx-demo
+  heading="A word beside a glyph"
+  summary="There is no icon slot: the content is projected whole, so a consumer who wants a glyph beside the word projects one, and the gap between them is a token. The tone still repeats the text — the drawing is decoration on decoration."
+  [reqs]="['req-api-icons-custom']"
+  data-testid="demo-glyph"
+>
+  <pct-badge tone="danger" data-testid="glyph">
+    <svg
+      viewBox="0 0 16 16"
+      width="12"
+      height="12"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      aria-hidden="true"
+    >
+      <path d="M8 4v5M8 11.5v.5" />
+    </svg>
+    Payment failed
+  </pct-badge>
+</sbx-demo>

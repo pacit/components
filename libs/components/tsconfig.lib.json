@@ -29,6 +29,8 @@
     "progress/**/*.ts",
     "skeleton/**/*.ts",
     "chips/**/*.ts",
+    "avatar/**/*.ts",
+    "badge/**/*.ts",
     "field/**/*.ts",
     "icon/**/*.ts"
   ],

@@ -20,6 +20,9 @@ from what the browser really gets.
 ./accordion PctAccordionItem item
 ./accordion PctAccordionItem marker
 ./accordion PctAccordionItem panel
+./avatar PctAvatar image
+./avatar PctAvatar initials
+./avatar PctAvatar silhouette
 ./button PctButton label
 ./button PctButton spinner
 ./checkbox PctCheckbox box

@@ -45,6 +45,10 @@
       "$type": "color",
       "$value": "{pct.red.400}"
     },
+    "on-danger": {
+      "$type": "color",
+      "$value": "{pct.slate.1000}"
+    },
     "surface-disabled": {
       "$type": "color",
       "$value": "{pct.slate.800}"

@@ -511,6 +511,78 @@ decision says it is"` goes red the day a second engine ships it
     first had three reds, none of them the component's — two were the forced-colours helper
     missing `ButtonText`, the third the webkit scroll-lock wobble 4.23 already records
     (green in isolation on the first retry)
+  - _the avatar is done_ (9 of 13). It is **decoration all the way down** — `aria-hidden`
+    outright, the third hidden component, because where an avatar stands the name is
+    already text a reader says; the rule is written plainly: an avatar is never the only
+    carrier of a name, and a control showing nothing else names itself. What it owns is the
+    **fallback chain** (image → initials → silhouette, exactly one standing) and initials
+    that are **graphemes**. See
+    [0052](decisions/0052-an-avatar-is-a-picture-beside-a-name.md)
+  - two probes ran before the code: `Intl.Segmenter` returns the emoji family, the flag,
+    the matra and the han whole in all three engines (the five scripts are the unit suite's
+    fixtures now), and an `<img>` fires `error` for a 404 AND for `src=""` — an empty
+    string is a request to the page's own URL — which is why the template never binds an
+    empty `src` rather than trusting the attribute to stay quiet
+  - gate: `apps/sandbox-e2e/src/avatar.spec.ts` (8 × 3 — the dead link breaks over a real
+    404 of the sandbox's own server) plus `/avatar` in the axe / hydration audits, a
+    forced-colours reading, two screenshots and 21 unit cases. Cost `./avatar` **8501 B**
+    on `./core` and `./icon` — and no `PCT_TEXTS` key, so not one other row of the size
+    snapshot moved. The full suite came back **1506 passed, zero failed at the first
+    attempt**, the first component step to manage that
+  - **it lost an argument to a gate and the decision records it**: the first cut drew the
+    silhouette as a bare `<svg>`, arguing an internal state of a hidden subtree is nobody's
+    to address — and `check-icons` refused, rightly: a glyph a consumer cannot swap is
+    exactly the thing their brand's empty state would want to replace. It is `pct-icon
+name="user"` with an inline default now, `user` published in `PctIconName`, and the
+    seam costs 1848 B of the entrypoint's weight
+  - **the flex row nearly made it an ellipse**: measured live, a tight row shrinks even an
+    inline `width` — a specified width is only a flex BASIS — so the host carries
+    `flex: none` and the e2e reads equal sides off every size, which is the circle's
+    arithmetic as an assertion
+  - the mutation run found real work and named the rest: `trim()` beside `filter(Boolean)`
+    was redundancy (either guard deletable with the other covering — neither observable),
+    deleted with a padded-name test that tells the two apart. `avatar.ts` **87.50 28(0) 3
+    1**, all four leftovers named — the reset arrow answering `undefined` for `false`
+    (falsy either way), `\s` for `\s+` (the word filter makes the two regexes one
+    function), the segmenter's granularity option deleted (`grapheme` IS the platform's
+    default), and the `return ''` tail TypeScript demands and no non-empty word reaches
+  - the language gate then read the SPEC and won too: the diacritics fixture and the
+    flag-and-country pair were Polish standing in no register, and the registers are
+    closed by construction
+    (specimens cannot leave the gate's own tree, exceptions may not name `libs/`) — so the
+    fixtures are Norwegian now (`Øyvind`, `🇳🇴 Norge`), which measure the same graphemes
+    while being nobody's dictionary word, and the SVG debris the build spilled (`zm`, `cy`,
+    `mw`) is three fragments in the vocabulary with their strings named
+  - _the badge is done_ (10 of 13). It is **a word wearing a tone** — no role, no ARIA, no
+    string, no size, no parts: the content is projected, a reader reads it as the plain
+    text it is, and the tone repeats what the word says, never says it alone (an empty
+    badge is a dev-mode warning; forced colours make the argument visible by dropping both
+    tones to one palette with the border standing). See
+    [0053](decisions/0053-a-badge-is-a-word-wearing-a-tone.md)
+  - **two tones, and the skin is the reason**: `neutral` on surfaces the skin has, `danger`
+    as the error colour's first background — with `on-danger` the exact pair
+    `semantic.light.json` had removed as unused and promised back "with the first component
+    painting a background with the error colour", naming this component. `success` /
+    `warning` / `info` wait for ramps the skin does not have, as a compile-time fact in the
+    union — 0019's centre of gravity kept where it belongs
+  - gate: `apps/sandbox-e2e/src/badge.spec.ts` (5 × 3) plus `/badge` in the audits, a
+    forced-colours reading, two screenshots and 7 unit cases. Cost `./badge` **1706 B on
+    `@angular/core` alone** — the smallest component entrypoint in the library, under the
+    skeleton's 2997, carrying not even `./core`
+  - **the twin-heading case earned its place twice in one evening.** Written first with a
+    remembered `line-height: 1.5`, it went red against a measured `normal` of 1.325 in all
+    three engines; rewritten as twin headings (the skeleton's same-height idiom), it went
+    red AGAIN — and this time the component was guilty: at `line-height: 1.6` plus the
+    border the box stood taller than the heading's line and lifted it 1.8 px. The fix is
+    the component's (`1.3`, under even a body line), not the test's — "bends no line" is
+    an assertion now, not a hope
+  - and the mutation run caught the template lying about whitespace: the blank-badge
+    arrangement wrote a literal space, Angular drops a whitespace-only text node
+    (`preserveWhitespaces: false`), so the trim's mutant survived over a case that never
+    exercised it — the space is an interpolation now, and the trim's removal dies by it.
+    `badge.ts` **83.33 10(0) 2 0 0**, both leftovers named: the fifth
+    `isDevMode()`-forced-true in a row, and `?.` on a `textContent` no element can null.
+    The library is **4420 mutants at 82.40**
 
 - [ ] **1.2 — table / datagrid** on a headless core (column model, sorting, filtering, grouping,
       selection as signals) separated from rendering. **The last item of the phase** — the only

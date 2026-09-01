@@ -216,6 +216,21 @@ export const SBX_VIEWS: readonly SbxView[] = [
     load: () => import('./views/chips/chips-view').then((m) => m.ChipsView),
   },
   {
+    path: 'avatar',
+    title: 'Avatar',
+    summary:
+      'The picture beside a name — and the chain that stands where it cannot.',
+    group: 'components',
+    load: () => import('./views/avatar/avatar-view').then((m) => m.AvatarView),
+  },
+  {
+    path: 'badge',
+    title: 'Badge',
+    summary: 'A word wearing a tone — and the tone never speaks alone.',
+    group: 'components',
+    load: () => import('./views/badge/badge-view').then((m) => m.BadgeView),
+  },
+  {
     path: 'size',
     title: 'Size',
     summary: 'Every component on the shared sm/md/lg axis.',

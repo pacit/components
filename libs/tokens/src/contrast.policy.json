@@ -1194,6 +1194,68 @@
       "bg": "pct.surface",
       "level": "UI",
       "severity": "warn"
+    },
+    {
+      "name": "avatar — the initials",
+      "fg": "pct.avatar.fg",
+      "bg": "pct.avatar.bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "$comment": "The silhouette of last resort. Warn, not error: the whole subtree is hidden decoration (0052) and SC 1.4.11 claims no part of it — but a silhouette a sighted user cannot see is an avatar that looks empty, so the pair stays measured.",
+      "name": "UI: avatar — the silhouette against its box",
+      "fg": "pct.avatar.icon-fg",
+      "bg": "pct.avatar.bg",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "$comment": "The ring against the page — the chips' entry one component over, and here the border is load-bearing three ways: over a photograph the fill is invisible, over a flattened skin the box melts into the page, and in forced colours the border is the one channel left.",
+      "name": "UI: avatar — the ring against the page",
+      "fg": "pct.avatar.border",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "name": "badge — the word in a neutral box",
+      "fg": "pct.badge.fg",
+      "bg": "pct.badge.bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "$comment": "The promised pair at its first use (0053): `on-danger` over the error colour's first background, measured like every text pair rather than trusted.",
+      "name": "badge — the word in a danger box",
+      "fg": "pct.badge.fg-danger",
+      "bg": "pct.badge.bg-danger",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "$comment": "The danger box against the page — error, not warn: unlike the neutral box's quiet edge this one IS the statement, and a danger badge that melts into the page is a warning nobody was shown.",
+      "name": "UI: badge — the danger box against the page",
+      "fg": "pct.badge.bg-danger",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "$comment": "The same colour as the fill it wraps, measured on its own because it is painted on its own: the edge exists for the modes that drop the fill, and against the page it must hold exactly as the fill does.",
+      "name": "UI: badge — the danger box's edge against the page",
+      "fg": "pct.badge.border-danger",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "$comment": "The neutral box's edge — the chips' entry at the next small box, warn for the chips' reason: not interactive, and the edge is there for the skins and modes that flatten the fill.",
+      "name": "UI: badge — the neutral box's edge against the page",
+      "fg": "pct.badge.border",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
     }
   ]
 }

@@ -1,0 +1,42 @@
+/* One box, text-sized: a badge stands on no control axis, so its height is its own line
+   plus breathing room, and it sits in running text without bending the line it is part of.
+   The border is drawn under every tone for the chips' reason — the fill is the first thing
+   every flattening takes (`req-a11y-forced-colors`). */
+:host {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--pct-badge-gap);
+  box-sizing: border-box;
+  padding-inline: var(--pct-badge-padding-x);
+  border: 1px solid var(--pct-badge-border);
+  border-radius: var(--pct-badge-radius);
+  background: var(--pct-badge-bg);
+  color: var(--pct-badge-fg);
+  font-size: var(--pct-badge-font-size);
+  font-weight: var(--pct-badge-font-weight);
+  /* 1.3, and it is a measured ceiling rather than a taste: an inline box taller than the
+     line it stands in RAISES that line, and the first cut's 1.6 plus the border lifted a
+     heading by 1.8px — the twin-heading case is the reading. At 1.3 the box clears even a
+     body line of the same skin, so "bends no line" holds where badges actually stand. */
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+/* The tone swaps one triple and nothing else (`req-api-attributes`); `neutral` overrides
+   nothing, so a theme that moves the base tokens still works (`req-token-override`). */
+:host([data-pct-tone='danger']) {
+  --pct-badge-bg: var(--pct-badge-bg-danger);
+  --pct-badge-fg: var(--pct-badge-fg-danger);
+  --pct-badge-border: var(--pct-badge-border-danger);
+}
+
+/* Forced colours: both tones drop to the palette's one word for text in a box, and the
+   border is the box's surviving channel — which is why a page that said something by tone
+   alone was already saying nothing here ([`lesson-70`](../../../../docs/lessons.md#lesson-70)
+   for the written-out rules). */
+@media (forced-colors: active) {
+  :host {
+    border-color: CanvasText;
+    color: CanvasText;
+  }
+}

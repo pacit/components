@@ -22,6 +22,8 @@ ignored. Tolerance: ±2 of a percentage point.
 ```
 libs/components/accordion/src/accordion-item.ts 100.00 16(0) 0 0 1
 libs/components/accordion/src/accordion.ts 75.00 3(0) 1 0 1
+libs/components/avatar/src/avatar.ts 87.50 28(0) 3 1 0
+libs/components/badge/src/badge.ts 83.33 10(0) 2 0 0
 libs/components/button/src/button.ts 100.00 7(0) 0 0 2
 libs/components/checkbox/src/checkbox.ts 89.83 53(0) 6 0 6
 libs/components/chips/src/chips.ts 90.74 49(0) 5 0 2
@@ -70,5 +72,5 @@ libs/components/toast/src/toast-viewport.ts 95.00 19(0) 1 0 0
 libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0
 libs/components/toast/src/toaster.ts 71.71 109(0) 42 1 0
 libs/components/tooltip/src/tooltip.ts 70.54 182(0) 71 5 8
-TOTAL 82.36 3604/4376
+TOTAL 82.40 3642/4420
 ```

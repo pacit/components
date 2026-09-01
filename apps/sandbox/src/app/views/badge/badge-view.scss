@@ -1,0 +1,13 @@
+.view__row {
+  display: flex;
+  align-items: center;
+  gap: var(--pct-space-3);
+}
+
+.view__heading {
+  margin: 0;
+}
+
+.view__text {
+  margin-block: var(--pct-space-3) 0;
+}

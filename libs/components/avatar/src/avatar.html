@@ -1,0 +1,38 @@
+<!--
+  Exactly one link of the chain stands at a time (0052): the picture while it is given and
+  alive, the initials once `error` has spoken or there was no picture at all, the
+  silhouette when there is no name either. The `alt=""` is the platform's own word for a
+  decorative image — and the host above is hidden anyway, so nothing here reaches a reader
+  whichever link is up. The silhouette goes through the icon seam like every drawing in the
+  library (`req-api-icons`): the first cut of 0052 drew it as a bare `<svg>` and the icon
+  gate rightly refused — a glyph a consumer cannot swap is not an internal detail, it is
+  the one thing their brand's empty state would want to replace. The inline drawing is the
+  default; `user` in the registry overrides it.
+-->
+@if (showsImage()) {
+<img
+  class="pct-avatar__image"
+  data-pct-part="image"
+  alt=""
+  [src]="src()"
+  (error)="fail()"
+/>
+} @else if (initials()) {
+<span class="pct-avatar__initials" data-pct-part="initials"
+  >{{ initials() }}</span
+>
+} @else {
+<pct-icon name="user" class="pct-avatar__silhouette" data-pct-part="silhouette">
+  <svg
+    viewBox="0 0 16 16"
+    width="100%"
+    height="100%"
+    fill="currentColor"
+    focusable="false"
+  >
+    <path
+      d="M8 7.2a2.7 2.7 0 1 0 0-5.4 2.7 2.7 0 0 0 0 5.4Zm-5.2 6.3c.5-2.6 2.6-4 5.2-4s4.7 1.4 5.2 4c.1.5-.3 1-.8 1H3.6c-.5 0-.9-.5-.8-1Z"
+    />
+  </svg>
+</pct-icon>
+}

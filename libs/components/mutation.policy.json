@@ -14,6 +14,8 @@
     "libs/components/accordion/src/accordion-item.ts",
     "libs/components/accordion/src/accordion.ts",
     "libs/components/button/src/button.ts",
+    "libs/components/avatar/src/avatar.ts",
+    "libs/components/badge/src/badge.ts",
     "libs/components/checkbox/src/checkbox.ts",
     "libs/components/chips/src/chips.ts",
     "libs/components/core/src/announce.ts",

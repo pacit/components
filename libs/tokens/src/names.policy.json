@@ -99,6 +99,7 @@
     "states": [
       "active",
       "checked",
+      "danger",
       "disabled",
       "focus",
       "hover",

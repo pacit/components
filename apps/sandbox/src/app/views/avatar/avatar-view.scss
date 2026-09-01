@@ -1,0 +1,10 @@
+.view__row {
+  display: flex;
+  align-items: center;
+  gap: var(--pct-space-3);
+}
+
+.view__state {
+  color: var(--pct-text-muted);
+  font-size: var(--pct-font-size-sm);
+}

@@ -34,6 +34,8 @@ a machine; prose with a missing paragraph is not.
 | [`PctProgress`](progress.md)     | `@pacit/components/progress`   | how far along a task is                |
 | [`PctSkeleton`](skeleton.md)     | `@pacit/components/skeleton`   | the shape of content still coming      |
 | [`PctChips`](chips.md)           | `@pacit/components/chips`      | chosen values the user can take back   |
+| [`PctAvatar`](avatar.md)         | `@pacit/components/avatar`     | the picture beside a name              |
+| [`PctBadge`](badge.md)           | `@pacit/components/badge`      | a word wearing a tone                  |
 
 ## The order of the components to come
 
@@ -195,6 +197,20 @@ The order follows **architectural debt**, not popularity:
    three engines), so the row repairs it and Enter, Enter, Enter empties it with no Tab
    between. Removal itself is an announcement, never an act — the collection stays the
    application's, one notch past the pagination's ownership split.
+   The **avatar** is built, and it is decoration all the way down: `aria-hidden` outright —
+   the third hidden component — because where an avatar stands the name is already text a
+   reader says ([0052](../decisions/0052-an-avatar-is-a-picture-beside-a-name.md)). What it
+   owns is the fallback chain (image, initials, silhouette — exactly one standing, the
+   dead-image link measured over a real 404) and initials that are graphemes off the
+   platform's segmenter, so an emoji family, a flag or a matra never comes back as half a
+   character.
+   The **badge** is built, and it is a word wearing a tone — no role, no ARIA, no string,
+   no size, no parts ([0053](../decisions/0053-a-badge-is-a-word-wearing-a-tone.md)). Two
+   tones, because the skin has colour for two: `danger` paints the error colour's first
+   background with the `on-danger` pair the semantic tier had promised back for exactly
+   this component, and `success` / `warning` / `info` wait for ramps as a compile-time
+   fact in the union. The tone never speaks alone: an empty badge is a dev-mode warning,
+   and forced colours make the argument visible by dropping both tones to one palette.
 7. **Table / DataGrid** — has to stand on a **headless core** separated from rendering.
 
 Before item 1 the **behaviour layer in `core`** has to exist: list navigation (private methods

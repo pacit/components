@@ -655,6 +655,48 @@ test.describe('forced-colors: active', () => {
     expect(await styleOf(cross, 'color')).toBe(sys.HighlightText);
   });
 
+  /**
+   * An avatar's fill is one step of the ramp and its glyphs ride on author colours — both
+   * go with the mode. What has to stand is the ring (the box's one surviving boundary,
+   * 0052) and the initials as ordinary text in the user palette.
+   */
+  test('an avatar keeps its ring and its initials in the user palette', async ({
+    page,
+  }) => {
+    await visit(page, '/avatar', { media: FORCED });
+    const sys = await systemColors(page);
+
+    const dead = page.getByTestId('dead');
+    await expect(dead.locator('[data-pct-part="initials"]')).toBeVisible();
+
+    expect(await styleOf(dead, 'border-top-color')).toBe(sys.CanvasText);
+    expect(await styleOf(dead, 'color')).toBe(sys.CanvasText);
+    expect(
+      await styleOf(
+        page.getByTestId('nobody').locator('[data-pct-part="silhouette"]'),
+        'color',
+      ),
+    ).toBe(sys.CanvasText);
+  });
+
+  /**
+   * Both tones of a badge drop to the palette's one word for text in a box — which is the
+   * component's own argument made visible: a page that said something by tone alone was
+   * already saying nothing here, and the border is what keeps the box a box (0053).
+   */
+  test('a badge’s two tones become one palette, and the box keeps its edge', async ({
+    page,
+  }) => {
+    await visit(page, '/badge', { media: FORCED });
+    const sys = await systemColors(page);
+
+    for (const id of ['tone-neutral', 'tone-danger'] as const) {
+      const badge = page.getByTestId(id);
+      expect(await styleOf(badge, 'color'), id).toBe(sys.CanvasText);
+      expect(await styleOf(badge, 'border-top-color'), id).toBe(sys.CanvasText);
+    }
+  });
+
   test('the disabled state says GrayText in every control', async ({
     page,
   }) => {

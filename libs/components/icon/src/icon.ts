@@ -29,7 +29,7 @@ import {
  * a name nothing draws is a promise nobody keeps, a drawing with no name cannot be swapped.
  */
 export type PctIconName =
-  'calendar' | 'check' | 'chevron-down' | 'close' | 'indeterminate';
+  'calendar' | 'check' | 'chevron-down' | 'close' | 'indeterminate' | 'user';
 
 /**
  * The consumer's icon set: **a component whose templates are the icons**.

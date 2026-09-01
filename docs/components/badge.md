@@ -1,0 +1,92 @@
+# `PctBadge` — a word wearing a tone
+
+**Entrypoint:** `@pacit/components/badge`
+**Selector:** `pct-badge`
+**Status:** released
+**ARIA APG pattern:** none — a badge is text and only text
+([0053](../decisions/0053-a-badge-is-a-word-wearing-a-tone.md)): the word is projected,
+already part of the document's sentence, and the component adds a box around it and nothing
+audible to it. No role, no ARIA, no string of its own. Named in the class JSDoc.
+
+**The tone never speaks alone.** `data-pct-tone` swaps one colour triple; it cannot verify
+the word beside the colour, but it refuses the one shape where colour would be the only
+channel — an empty badge is a dev-mode warning, and forced colours drop both tones to one
+palette with the border carrying the box.
+
+## Contract
+
+|             |                                                                                                                                                                                                                          |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Value**   | none — a word holds no value                                                                                                                                                                                             |
+| **Inputs**  | `tone` (`'neutral' \| 'danger'`, default `'neutral'`) — a union, so a missing tone is a compile error; it grows the day the skin grows ramps for `success` / `warning` / `info`, the same road `PctIconName` walks       |
+| **Outputs** | none — nothing happens to a word                                                                                                                                                                                         |
+| **Slots**   | the content — the word, and any glyph the consumer projects beside it (the gap is a token, not a slot)                                                                                                                   |
+| **Parts**   | none — the host is the box                                                                                                                                                                                               |
+| **Tokens**  | the `--pct-badge-*` prefix plus five entries in `contrast.policy.json`; the skin gained `on-danger`, the pair `semantic.light.json` promised back "with the first component painting a background with the error colour" |
+| **Strings** | **none.** The fourth component in the library to add nothing to `PCT_TEXTS` — the word is the consumer's                                                                                                                 |
+
+**Why two tones.** `neutral` stands on surfaces the skin already has; `danger` is the error
+colour painting its first background. `success`, `warning` and `info` need colour ramps the
+skin does not have at all, and inventing three ramps at a component's feet would put the
+skin's centre of gravity in the wrong file
+([0019](../decisions/0019-primitives-are-not-the-contract.md)).
+
+**Why not the chips' pill.** A chip looks grabbable because it is; a word of status must not
+borrow that costume. The corner (`radius.md`) is the one visual cue telling a scanning eye
+which small box answers the pointer.
+
+## Keyboard map
+
+| key | effect | test |
+| --- | ------ | ---- |
+|     |        |      |
+
+Empty **by design**: a badge is running text, holds no control, and takes no focus — the
+platform provides nothing here because there is nothing to provide
+([`req-api-platform`](../requirements/api.md#req-api-platform)).
+
+## Checks
+
+Every row: a path to evidence, or `none — <deliberately|gap>: <reason>`.
+
+| criterion                                                  | evidence                                                                                                                                                                                                                                        |
+| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ARIA pattern named in the class JSDoc                      | `libs/components/badge/src/badge.ts`                                                                                                                                                                                                            |
+| Keyboard map tested key by key                             | the empty map is the claim — nothing here is focusable, and the axe sweep's `aria-hidden-focus` family has nothing to bite on a host that hides nothing and holds no control                                                                    |
+| axe audit on the component's own sandbox view              | `apps/sandbox-e2e/src/a11y.spec.ts` — `/badge` in `SBX_ROUTES`                                                                                                                                                                                  |
+| Visual screenshot                                          | `apps/sandbox-e2e/src/visual.spec.ts` — `badge-tones` and `badge-tones-rtl`                                                                                                                                                                     |
+| `forced-colors: active` — no state carried by colour alone | `libs/components/badge/src/badge.scss` — both tones drop to `CanvasText` on `Canvas` with the border standing, which is the component's own argument made visible. The reading: `apps/sandbox-e2e/src/forced-colors.spec.ts`                    |
+| `prefers-reduced-motion` — duration from a token           | not applicable — no motion at all                                                                                                                                                                                                               |
+| Touch target ≥ 24×24 px outright                           | not applicable — nothing here is a target                                                                                                                                                                                                       |
+| Size axis aligned to `--pct-control-height-*`              | deliberately not: a badge is not a control and stands on no control axis — `apps/sandbox-e2e/src/badge.spec.ts` measures the box UNDER the smallest control height, and that reading is the promise                                             |
+| Density axis                                               | none — gap: the same one every component here has ([`req-token-density`](../requirements/tokens.md#req-token-density))                                                                                                                          |
+| RTL — no physical properties + a `dir="rtl"` screenshot    | `libs/components/badge/src/badge.scss` — logical padding and a flex gap, nothing directional. The screenshot: `badge-tones-rtl`                                                                                                                 |
+| SSR + hydration with no `NG05xx`                           | `apps/sandbox-e2e/src/hydration.spec.ts` — `/badge` in `SBX_ROUTES`                                                                                                                                                                             |
+| Forms                                                      | not applicable — a word holds no value a form owns                                                                                                                                                                                              |
+| Parts registered in the inventory                          | none — deliberately: the host is the box and there is nothing inside it to address; `tools/check-parts.mjs` counts zero and the README table carries the entrypoint                                                                             |
+| Tokens registered + an entry in `contrast.policy.json`     | `libs/tokens/src/contrast.policy.json` — five entries: both words over their boxes (AA error), the danger box and its edge against the page (UI error — the box IS the statement), the neutral edge (UI warn); `libs/tokens/tokens.snapshot.md` |
+| Strings through `PCT_TEXTS`                                | not applicable — the component draws no text of its own                                                                                                                                                                                         |
+| Entrypoint size budget                                     | `libs/components/size.snapshot.md` — `./badge` on `./core` alone; no `PCT_TEXTS` key, so not one other row of the snapshot moved                                                                                                                |
+| A screen-reader test log                                   | none — gap: the same one every component here has. The question for the log: that a badge in a heading reads as the heading's own words, with nothing extra before or after                                                                     |
+| A docs page with live examples                             | `apps/sandbox/src/app/views/badge/` (the sandbox view). The published documentation site: none — gap: `apps/docs` (plan §2.1)                                                                                                                   |
+| Unit + mutation                                            | `libs/components/badge/src/badge.spec.ts` — 7 cases; `libs/components/mutation.snapshot.md` — `badge.ts` measured in the same full run as the avatar's row                                                                                      |
+
+## Decisions this component implements
+
+[0053](../decisions/0053-a-badge-is-a-word-wearing-a-tone.md) (the main one — which of the
+two things called "badge" this is, why the tone never speaks alone, why two tones today),
+[0019](../decisions/0019-primitives-are-not-the-contract.md) (why the skin does not grow
+three ramps at a component's feet),
+[0013](../decisions/0013-no-headless-split.md) (tokens as the whole styling contract).
+
+## Known limitations
+
+- **Two tones.** `success` / `warning` / `info` wait for the skin's ramps; the union makes
+  the wait a compile-time fact rather than a silently grey box.
+- **No count overlay.** The `3` on a bell's corner is a different component — anchoring,
+  a live region for the changing number, truncation — and it does not exist yet.
+- **The tone cannot verify the word.** `tone="danger"` beside the text `OK` is a page lying
+  to its users in a way no component can see; the contract is prose, and the empty-badge
+  warning is its enforceable corner.
+- **No `size` input.** A badge is sized by its own type token; one that wants a control's
+  height is a button or a chip wanting to be quiet.

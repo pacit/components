@@ -1,0 +1,88 @@
+<h2 class="view__title">Avatar</h2>
+<p class="muted view__intro">
+  The picture beside a name — and never the name itself: the host is
+  <code>aria-hidden</code> outright, because where an avatar stands the name is
+  already text a reader says. What the component owns is the fallback chain —
+  image, initials, silhouette, exactly one standing — and initials that are
+  <em>graphemes</em>, so an emoji family or a Devanagari matra never comes back
+  as half a character.
+</p>
+
+<sbx-demo
+  heading="The chain"
+  summary="Three avatars, three links: a picture that exists, a picture whose URL answers nothing — the platform's error event fires and the initials stand up — and no picture, no name, so the silhouette of last resort."
+  [reqs]="['req-a11y-built-in', 'req-api-platform']"
+  data-testid="demo-chain"
+>
+  <div class="view__row">
+    <pct-avatar name="Ada Lovelace" [src]="photo" data-testid="alive" />
+    <pct-avatar
+      name="Ada Lovelace"
+      src="/definitely-not-here.png"
+      data-testid="dead"
+    />
+    <pct-avatar data-testid="nobody" />
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="A new src re-arms the chain"
+  summary="The failure is remembered exactly as long as the URL that caused it: swap the dead source for a live one and the image is retried, swap it back and the initials return after the next error."
+  [reqs]="['req-api-signals']"
+  data-testid="demo-retry"
+>
+  <div class="view__row">
+    <pct-avatar name="Grace Hopper" [src]="source()" data-testid="retry" />
+    <button pctButton variant="outline" (click)="retry()" data-testid="swap">
+      Swap the source
+    </button>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="Initials are graphemes"
+  summary="The five scripts of the design probe, drawn as written — no uppercasing, because a case transform needs a locale nobody here knows. The family, the flag and the matra come back whole in all three engines."
+  [reqs]="['req-api-platform']"
+  data-testid="demo-initials"
+>
+  <div class="view__row">
+    @for (name of names; track name) {
+    <pct-avatar [name]="name" />
+    }
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="Sizes, on the control axis"
+  summary="The box is the shared control height, so an avatar lines up with the button beside it by definition — no arithmetic anywhere. The circle is a radius token; a square avatar is one overridden value, not a shape input."
+  [reqs]="['req-api-size', 'req-api-config']"
+  data-testid="demo-sizes"
+>
+  <div class="view__row">
+    <pct-avatar name="Ada Lovelace" size="sm" data-testid="size-sm" />
+    <pct-avatar name="Ada Lovelace" data-testid="size-md" />
+    <pct-avatar name="Ada Lovelace" size="lg" data-testid="size-lg" />
+    <button pctButton variant="outline">A control of the same size</button>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="Beside a name, never the name"
+  summary="The rule the hidden host enforces, shown at the one place it bites: a control that shows nothing but an avatar names itself. The reader hears the button's label once; the picture adds nothing and repeats nothing."
+  [reqs]="['req-a11y-built-in']"
+  data-testid="demo-beside"
+>
+  <div class="view__row">
+    <button
+      pctButton
+      variant="outline"
+      aria-label="Account: Ada Lovelace"
+      data-testid="account"
+    >
+      <pct-avatar name="Ada Lovelace" size="sm" />
+    </button>
+    <span class="view__state"
+      >the reader hears the label, the picture stays silent</span
+    >
+  </div>
+</sbx-demo>

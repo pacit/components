@@ -31,6 +31,8 @@ before an application ships them.
 ```
 . 3539 ./core @angular/core
 ./accordion 11397 ./core,./icon @angular/common,@angular/core
+./avatar 8501 ./core,./icon @angular/common,@angular/core
+./badge 1706 - @angular/core
 ./button 7028 ./core @angular/core
 ./checkbox 14912 ./core,./icon @angular/common,@angular/core
 ./chips 10600 ./core,./icon @angular/common,@angular/core

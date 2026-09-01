@@ -31,6 +31,8 @@ export const SBX_ROUTES = [
   '/progress',
   '/skeleton',
   '/chips',
+  '/avatar',
+  '/badge',
   '/size',
   '/states',
   '/all',

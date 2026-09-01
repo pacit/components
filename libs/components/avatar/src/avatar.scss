@@ -1,0 +1,69 @@
+/* One box on the shared control axis, both axes the same token — and the ring drawn even
+   under a photograph, because the border is the channel that survives all three ways the
+   fill can go: covered by the picture, flattened by a skin, dropped by forced colours
+   (`req-a11y-forced-colors`, 0052). `overflow: hidden` is what makes the radius clip the
+   photograph; nothing here can take focus, so a clipping box costs the accessibility tree
+   nothing ([`lesson-137`](../../../../docs/lessons.md#lesson-137)). */
+:host {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  /* The box is the token's and not the row's to negotiate: an avatar in a tight flex row
+     would otherwise be SHRUNK into an ellipse — a specified width is only a flex basis, and
+     measured, even an inline `width` loses to `flex-shrink` there. `flex: none` is the
+     declaration that a decoration of fixed size does not trade its circle for the row's
+     arithmetic. */
+  flex: none;
+  inline-size: var(--pct-avatar-size);
+  block-size: var(--pct-avatar-size);
+  overflow: hidden;
+  border: 1px solid var(--pct-avatar-border);
+  border-radius: var(--pct-avatar-radius);
+  background: var(--pct-avatar-bg);
+  color: var(--pct-avatar-fg);
+  font-size: var(--pct-avatar-font-size);
+  line-height: 1;
+  user-select: none;
+}
+
+.pct-avatar__image {
+  inline-size: 100%;
+  block-size: 100%;
+  /* The box is the token's, so the picture adapts to it and not the other way around: a
+     portrait crops rather than letterboxing, and no consumer image ratio can bend the row
+     the avatar stands in. */
+  object-fit: cover;
+}
+
+.pct-avatar__silhouette {
+  display: inline-flex;
+  inline-size: 62%;
+  block-size: 62%;
+  color: var(--pct-avatar-icon-fg);
+}
+
+/* Sizes driven by a state attribute on the host (`req-api-attributes`). `md` overrides
+   nothing, so a theme that moves the base token still works (`req-token-override`). */
+:host([data-pct-size='sm']) {
+  --pct-avatar-size: var(--pct-avatar-size-sm);
+  --pct-avatar-font-size: var(--pct-avatar-font-size-sm);
+}
+
+:host([data-pct-size='lg']) {
+  --pct-avatar-size: var(--pct-avatar-size-lg);
+  --pct-avatar-font-size: var(--pct-avatar-font-size-lg);
+}
+
+/* Forced colours: the fill goes, the ring and the glyphs take the user palette. `@media`
+   adds no specificity, so the rules are written out ([`lesson-70`](../../../../docs/lessons.md#lesson-70)). */
+@media (forced-colors: active) {
+  :host {
+    border-color: CanvasText;
+    color: CanvasText;
+  }
+
+  .pct-avatar__silhouette {
+    color: CanvasText;
+  }
+}
