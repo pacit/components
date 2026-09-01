@@ -1525,7 +1525,7 @@ direction` expecting index 32 and getting 31 in the first, its right-to-left twi
   - binds at: **the next change under `date/src`**, or the first timezone bug report ·
     _notes:_ —
 
-- [~] **4.30 — six e2e cases measure the machine's fonts, and CI's machine has different ones**
+- [x] **4.30 — six e2e cases measure the machine's fonts, and CI's machine has different ones**
   - the second CI run failed the textarea's width-follow case **in all three engines**, the
     skeleton's `1cap` bar in firefox, and two visual baselines (`field-aux-slots` and its
     RTL twin) — deterministically, twice running, while the same suite is green on this
@@ -1544,11 +1544,20 @@ direction` expecting index 32 and getting 31 in the first, its right-to-left twi
     which is exactly why the Inter pin changed no pictures — so their CI red under an
     already-pinned face is **rasterisation**, freetype and hinting between two machines,
     not family resolution. The diff images died with the runner (no artifact step —
-    repaired: `ci.yml` uploads the e2e output on failure now), so the next red carries
-    its evidence, and the decision — CI-recorded baselines for the visual pair, or a
-    measured tolerance — waits for that reading rather than a guess
+    repaired: `ci.yml` uploads the e2e output on failure now), and the first artifact
+    ever read paid for the step at once: all 52 differing pixels sat inside one
+    character — `ⓘ` (U+24D8), which Liberation Sans does not cover, so the pin handed
+    exactly that glyph to each machine's symbol fallback. Neither of the two prepared
+    answers fit — not CI-recorded baselines, not a tolerance: the demo now draws the
+    ring in CSS around a plain italic `i`, and every code point the pair rasterises
+    is inside the pinned face
   - binds at: **before the nightly run is trusted** — a red that fires every night on
-    fonts buries the reds the night exists to catch · _notes:_ —
+    fonts buries the reds the night exists to catch · _notes:_ closed 2026-09-01, one
+    run before the first nightly. Run 4 proved the Inter pin (the four metric cases
+    green on CI), run 5 the glyph swap (the visual pair green in all three engines —
+    the repository's first fully green run). One symptom, three causes: what the
+    machine resolves `system-ui` to, a cascade override on the application host, and
+    one uncovered code point — and no tolerance would have named any of them
 
 - [x] **4.31 — the language gate's dictionary is whatever the machine has**
   - proved by the first two CI runs from both sides: no dictionary at all (ENOENT — the
