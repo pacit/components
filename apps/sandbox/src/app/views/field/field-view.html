@@ -49,7 +49,10 @@
         aria-label="The description appears on your profile"
         title="The description appears on your profile"
       >
-        ⓘ
+        <!-- A plain letter with a CSS ring, not U+24D8: the circled glyph sits outside
+             Liberation Sans, so every machine drew it from a different fallback face and
+             the visual baseline failed on CI over exactly its 52 pixels. -->
+        i
       </button>
 
       <input
