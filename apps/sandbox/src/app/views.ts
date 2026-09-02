@@ -274,7 +274,7 @@ export const SBX_VIEWS: readonly SbxView[] = [
     path: 'all',
     title: 'Everything at once',
     summary:
-      'A dense cross-section of every component — for the axe audit and the visual tests.',
+      'A dense cross-section of the form controls — for the axe audit and the visual tests.',
     group: 'cross',
     load: () =>
       import('./views/kitchen-sink/kitchen-sink').then((m) => m.KitchenSink),
