@@ -515,4 +515,15 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-tooltip-padding-y dimension component public
 --pct-tooltip-radius dimension component public
 --pct-tooltip-shadow shadow component public
+--pct-tree-arrow-fg color component public
+--pct-tree-arrow-size dimension component public
+--pct-tree-gap dimension component public
+--pct-tree-indent dimension component public
+--pct-tree-label-bg-hover color component public
+--pct-tree-label-bg-selected color component public
+--pct-tree-label-fg-selected color component public
+--pct-tree-label-padding-x dimension component public
+--pct-tree-label-padding-y dimension component public
+--pct-tree-label-radius dimension component public
+--pct-tree-label-target-min dimension component public
 ```

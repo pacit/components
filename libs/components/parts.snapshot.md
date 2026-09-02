@@ -147,4 +147,6 @@ from what the browser really gets.
 ./toast PctToastViewport item
 ./toast PctToastViewport message
 ./tooltip PctTooltipPanel panel
+./tree PctTreeItem arrow
+./tree PctTreeItem label
 ```

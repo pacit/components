@@ -764,6 +764,30 @@ test.describe('forced-colors: active', () => {
     );
   });
 
+  /**
+   * A tree's chosen row rides on the accent — dropped with every author colour. What
+   * stands: the chosen row in the palette's own highlight pair (the aria state made
+   * visible), the arrow in the text word, and the rows around it on the plain canvas.
+   */
+  test('a tree’s chosen row stands in Highlight and the arrows in CanvasText', async ({
+    page,
+  }) => {
+    await visit(page, '/tree', { media: FORCED });
+    const sys = await systemColors(page);
+
+    const chosen = page
+      .locator('pct-tree-item[value="src/app.ts"]')
+      .locator('[data-pct-part="label"]');
+    expect(await styleOf(chosen, 'background-color')).toBe(sys.Highlight);
+    expect(await styleOf(chosen, 'color')).toBe(sys.HighlightText);
+
+    const restingArrow = page
+      .locator('pct-tree-item[value="docs"]')
+      .locator('[data-pct-part="arrow"]')
+      .first();
+    expect(await styleOf(restingArrow, 'color')).toBe(sys.CanvasText);
+  });
+
   test('the disabled state says GrayText in every control', async ({
     page,
   }) => {

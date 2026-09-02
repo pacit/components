@@ -56,4 +56,5 @@ before an application ships them.
 ./tabs 13623 ./core @angular/core
 ./toast 15527 ./core,./icon @angular/common,@angular/core
 ./tooltip 13216 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core
+./tree 9158 ./icon @angular/common,@angular/core
 ```

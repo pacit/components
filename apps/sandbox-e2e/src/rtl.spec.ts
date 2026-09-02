@@ -301,4 +301,43 @@ test.describe('Writing direction — the layout mirrors in dir="rtl"', () => {
     expect(rtlFirst.x).toBeGreaterThan(rtlSecond.x);
     expect((await boxOf(track)).x).toBeGreaterThan((await boxOf(marker)).x);
   });
+
+  /**
+   * A tree mirrors twice: the depth indents the other way (a logical padding on the
+   * group), and the WALK swaps its inline pair — 0056 reads the computed direction at
+   * the keypress, and only a real engine under a real `dir` can prove that. The gesture
+   * here: on an open branch, the key that WAS "open" in LTR must now close it.
+   */
+  test('a tree indents the other way and the walk swaps its inline pair', async ({
+    page,
+  }) => {
+    await visit(page, '/tree');
+    const parent = page.locator('pct-tree-item[value="src"]');
+    const child = page.locator('pct-tree-item[value="src/app.ts"]');
+
+    const ltrParent = await boxOf(
+      parent.locator('[data-pct-part="label"]').first(),
+    );
+    const ltrChild = await boxOf(child.locator('[data-pct-part="label"]'));
+    expect(ltrChild.x).toBeGreaterThan(ltrParent.x);
+
+    await setRtl(page);
+    expect(await directionOf(page, 'pct-tree')).toBe('rtl');
+
+    const rtlParent = await boxOf(
+      parent.locator('[data-pct-part="label"]').first(),
+    );
+    const rtlChild = await boxOf(child.locator('[data-pct-part="label"]'));
+    expect(rtlChild.x + rtlChild.width).toBeLessThan(
+      rtlParent.x + rtlParent.width,
+    );
+
+    // The swap itself: under RTL the BACK key is ArrowRight — from the leaf it climbs,
+    // and on the open branch it closes, both presses the LTR walk answers with nothing.
+    await child.click();
+    await page.keyboard.press('ArrowRight');
+    await expect(parent).toBeFocused();
+    await page.keyboard.press('ArrowRight');
+    await expect(parent).toHaveAttribute('aria-expanded', 'false');
+  });
 });

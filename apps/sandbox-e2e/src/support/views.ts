@@ -35,6 +35,7 @@ export const SBX_ROUTES = [
   '/badge',
   '/breadcrumb',
   '/stepper',
+  '/tree',
   '/size',
   '/states',
   '/all',

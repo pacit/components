@@ -1,0 +1,5 @@
+/* The tree draws nothing of its own — the rows are the items' and the depth is the
+   groups'. What the host carries is the type it hands down. */
+:host {
+  display: block;
+}

@@ -1,0 +1,118 @@
+/* Every selector that must not leak into DESCENDANT items is written with `>`: nested
+   items are instances of this same component, so their elements carry the same emulated
+   encapsulation attribute, and a bare descendant selector under `:host([aria-selected])`
+   would paint every row of a chosen branch. The child combinator is the boundary. */
+:host {
+  display: block;
+}
+
+.pct-tree__label {
+  display: flex;
+  align-items: center;
+  gap: var(--pct-tree-gap);
+  box-sizing: border-box;
+  /* The floor a finger gets, outright (`req-a11y-touch`) — a tree is rows of targets,
+     and `lesson-139` measured what happens to targets that thought they were text. */
+  min-block-size: var(--pct-tree-label-target-min);
+  padding: var(--pct-tree-label-padding-y) var(--pct-tree-label-padding-x);
+  border-radius: var(--pct-tree-label-radius);
+  cursor: pointer;
+}
+
+.pct-tree__label:hover {
+  background: var(--pct-tree-label-bg-hover);
+}
+
+:host([aria-selected='true']) > .pct-tree__label {
+  background: var(--pct-tree-label-bg-selected);
+  color: var(--pct-tree-label-fg-selected);
+}
+
+/* Focus rides the HOST (the roving tabindex), the ring is drawn on the row. */
+:host(:focus-visible) {
+  outline: none;
+}
+
+:host(:focus-visible) > .pct-tree__label {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: -2px;
+}
+
+/* The arrow: reserved on every row, drawn on branches. Collapsed points
+   inline-forward — the quarter-turn and its `:dir(rtl)` reverse are the breadcrumb's —
+   and an open branch points down in either direction, which is why the expanded rule
+   stands last and wins on specificity. */
+.pct-tree__arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  inline-size: var(--pct-tree-arrow-size);
+  block-size: var(--pct-tree-arrow-size);
+  color: var(--pct-tree-arrow-fg);
+  font-size: var(--pct-tree-arrow-size);
+  rotate: -90deg;
+}
+
+.pct-tree__arrow:dir(rtl) {
+  rotate: 90deg;
+}
+
+:host([aria-expanded='true']) > .pct-tree__label > .pct-tree__arrow {
+  rotate: 0deg;
+}
+
+/* On the chosen row the muted arrow would sit on the accent — it takes the row's word. */
+:host([aria-selected='true']) > .pct-tree__label > .pct-tree__arrow {
+  color: var(--pct-tree-label-fg-selected);
+}
+
+/* One level of depth costs one token, applied by the group — nesting compounds it with
+   no arithmetic anywhere. */
+.pct-tree__group {
+  display: block;
+  padding-inline-start: var(--pct-tree-indent);
+}
+
+/* The two hidden states, the tabs' rules carried whole (0045): plain `hidden` must stay
+   `display: none`, and `until-found` must NOT become it — the browser hides that subtree
+   with `content-visibility`, which does nothing to a box that is not rendered at all.
+   The `@supports` is the fallback for the engine that reads `until-found` as plain
+   hidden, and this rule must not undo that reading. */
+.pct-tree__group[hidden] {
+  display: none;
+}
+
+@supports (content-visibility: hidden) {
+  .pct-tree__group[hidden='until-found'] {
+    display: block;
+    content-visibility: hidden;
+  }
+}
+
+/* Forced colours, written out (`lesson-70`), each rule at the exact specificity of the
+   author rule it answers — a bare class here would lose to the state selectors above and
+   never paint, which `check-styles` measures as a dead declaration. */
+@media (forced-colors: active) {
+  .pct-tree__label:hover {
+    background: Highlight;
+    color: HighlightText;
+  }
+
+  :host([aria-selected='true']) > .pct-tree__label {
+    background: Highlight;
+    color: HighlightText;
+  }
+
+  .pct-tree__arrow {
+    color: CanvasText;
+  }
+
+  :host([aria-selected='true']) > .pct-tree__label > .pct-tree__arrow {
+    color: HighlightText;
+  }
+
+  :host(:focus-visible) > .pct-tree__label {
+    outline-color: Highlight;
+  }
+}

@@ -1,0 +1,36 @@
+<h2 class="view__title">Tree</h2>
+<p class="muted view__intro">
+  A hierarchy the user walks — and the first component of the tail that could
+  not refuse the keys: a tree is <strong>one tab stop</strong> with a roving
+  focus inside, and the platform has no element that does that walk. The markup
+  is the hierarchy (items nested in items), each branch owns its
+  <code>expanded</code>, and the tree owns exactly one thing: which value is
+  chosen.
+</p>
+
+<sbx-demo
+  heading="The walk"
+  summary="Up and Down move over visible rows, inline-forward opens a branch and steps into it, inline-back closes and climbs, Home and End jump the ends, Enter and Space choose. A click chooses too — and on a branch it also folds, the file explorer's one gesture. Tab leaves the whole tree from anywhere in it."
+  [reqs]="['req-a11y-built-in', 'req-api-platform']"
+  data-testid="demo-project"
+>
+  <pct-tree [(selected)]="chosen" ariaLabel="Project files" data-testid="tree">
+    <pct-tree-item value="README.md">README.md</pct-tree-item>
+    <pct-tree-item value="src" [(expanded)]="srcOpen">
+      src
+      <pct-tree-item value="src/app.ts">app.ts</pct-tree-item>
+      <pct-tree-item value="src/views">
+        views
+        <pct-tree-item value="src/views/home.ts">home.ts</pct-tree-item>
+        <pct-tree-item value="src/views/about.ts">about.ts</pct-tree-item>
+      </pct-tree-item>
+    </pct-tree-item>
+    <pct-tree-item value="docs">
+      docs
+      <pct-tree-item value="docs/plan.md">plan.md</pct-tree-item>
+    </pct-tree-item>
+  </pct-tree>
+  <p class="view__state" data-testid="chosen">
+    Chosen: {{ chosen() ?? 'nothing yet' }}
+  </p>
+</sbx-demo>

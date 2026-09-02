@@ -3750,3 +3750,22 @@ probe for (the breadcrumb's reading). For a container (`listitem`), the contract
 text content in reading order — the suffix after the label, the drawings contributing
 nothing. Asserting the name there measures the absence of a computation and calls it the
 component's silence.
+
+### <a id="lesson-141"></a>`lesson-141` — Playwright's visibility is not the platform's `checkVisibility()`, and `content-visibility` is where they part
+
+The tree's folded branch hides as `hidden="until-found"`, which the stylesheet turns into
+`content-visibility: hidden` wherever the property exists (the tabs' arrangement). The e2e
+assertion `toBeHidden()` on a child of that subtree passed in Chromium and Firefox — and
+received "visible" in WebKit, on a child the engine demonstrably does not paint: the
+probe's `elementFromPoint` over the child's box lands on `<html>`, and the platform's own
+`checkVisibility()` answers `false` in the same engine.
+
+The two verdicts differ because they model different things. The locator heuristic reads
+boxes and a handful of styles, and an element under a `content-visibility: hidden`
+ancestor still HAS a geometric box — it is the rendering that is skipped, not the layout
+object. `checkVisibility()` is the platform answering the actual question, ancestors
+included, and it agrees with the paint in all three engines.
+
+The rule: when a hiding mechanism is newer than the test tool's visibility model, assert
+with the platform's own verdict (`checkVisibility()`, `elementFromPoint`) rather than the
+tool's — and record which engine would have shipped a green lie otherwise.

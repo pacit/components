@@ -1352,6 +1352,37 @@
       "bg": "pct.surface",
       "level": "UI",
       "severity": "warn"
+    },
+    {
+      "name": "tree — the chosen row's label",
+      "fg": "pct.tree.label-fg-selected",
+      "bg": "pct.tree.label-bg-selected",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "$comment": "The chosen fill against the page — error, the badge's argument at the next filled box: the fill IS the statement.",
+      "name": "UI: tree — the chosen row against the page",
+      "fg": "pct.tree.label-bg-selected",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "$comment": "A lift, not a statement — the row under the pointer differs from the page by one surface step, and the pointer itself is standing on it.",
+      "name": "UI: tree — the row under the pointer",
+      "fg": "pct.tree.label-bg-hover",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "$comment": "Decorative and aria-hidden — the breadcrumb separator's entry at the next drawn glyph: the fold state it shows is also aria-expanded, which a reader says itself.",
+      "name": "UI: tree — the arrow against the page",
+      "fg": "pct.tree.arrow-fg",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
     }
   ]
 }

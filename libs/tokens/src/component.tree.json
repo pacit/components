@@ -1,0 +1,26 @@
+{
+  "pct": {
+    "tree": {
+      "$comment": "A walk the platform does not have (0056). The row is the whole visual: a padded, rounded label with the disclosure arrow in front, lifted by the menu's one surface step under the pointer and filled with the accent when chosen — `on-primary` over it, because a chosen row is a statement, not a lift. Each level indents its group by one token, so depth is the same number everywhere, and the target floor stands on every row outright (`req-a11y-touch`, the breadcrumb's lesson: rows of targets are not sentences).",
+
+      "gap": { "$type": "dimension", "$value": "{pct.space.2}" },
+      "$comment-indent": "What one level of depth costs, applied by the GROUP (`padding-inline-start`), so nesting compounds it with no arithmetic anywhere.",
+      "indent": { "$type": "dimension", "$value": "{pct.space.5}" },
+
+      "label-padding-x": { "$type": "dimension", "$value": "{pct.space.3}" },
+      "label-padding-y": { "$type": "dimension", "$value": "{pct.space.2}" },
+      "label-radius": { "$type": "dimension", "$value": "{pct.radius.md}" },
+      "label-target-min": {
+        "$type": "dimension",
+        "$value": "{pct.target.min}"
+      },
+      "label-bg-hover": { "$type": "color", "$value": "{pct.surface-100}" },
+      "label-bg-selected": { "$type": "color", "$value": "{pct.primary}" },
+      "label-fg-selected": { "$type": "color", "$value": "{pct.on-primary}" },
+
+      "$comment-arrow": "The disclosure arrow's box — reserved on every row, drawn only on branches, so labels of one level align whether or not they fold.",
+      "arrow-size": { "$type": "dimension", "$value": "12px" },
+      "arrow-fg": { "$type": "color", "$value": "{pct.text-muted}" }
+    }
+  }
+}

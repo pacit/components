@@ -153,8 +153,9 @@ Every new component fills in [`components/_template.md`](components/_template.md
 form exists and is a condition of entering a release. Closed: the dialog, tooltip + popover,
 menu, the select family, and switch / textarea / slider / date.
 
-- [~] **1.1 — the rest**: toast, tabs, accordion, drawer, pagination, progress, skeleton, chips,
-  avatar, badge, breadcrumb, stepper, tree
+- [x] **1.1 — the rest**: toast, tabs, accordion, drawer, pagination, progress, skeleton, chips,
+      avatar, badge, breadcrumb, stepper, tree — **all thirteen built**, each with a decision,
+      a full three-engine gate and a mutation row
   - _the toast is done_ (1 of 13). It is drawn inside a live region rather than duplicated into
     a hidden one — `role="log"`, with **no `aria-live` / `aria-atomic` / `aria-relevant` of
     ours**, urgency a property of the message (an `alert` nested in the `log`). The viewport is
@@ -624,6 +625,31 @@ name="user"` with an inline default now, `user` published in `PctIconName`, and 
     a forced-colours reading (the border keeps the circles, the check keeps done, the
     weight keeps current), an RTL reading where the journey descends the other way with
     no rule to help it, two screenshots and 13 unit cases
+  - _the tree is done_ (13 of 13 — **1.1 closes**). It is **a walk the platform does not
+    have**: the first component of the tail that could not refuse the keys, because the
+    APG Tree View is one tab stop with a roving focus and no element walks a hierarchy —
+    so the walk IS the component, and everything else is refused ownership (the markup is
+    the hierarchy, each branch owns its `expanded`, the tree owns one `selected`). The
+    inline pair swaps under RTL by the computed direction AT the keypress, measured with
+    real keys in three engines. A folded branch is `hidden="until-found"` — 0045 carried
+    whole, an `@if` being wrong twice (a destroyed subtree forgets its own state, and
+    text not in the document cannot be found). See
+    [0056](decisions/0056-a-tree-is-a-walk-the-platform-does-not-have.md)
+  - **the probe and the tools both taught something.** The probe: `treeitem`/`group` on
+    custom elements needs no hand-written `aria-level`/`posinset`/`setsize` (clean ×3),
+    and the `lesson-138` carve-out extends to `tree` — an empty tree is legal, the role
+    static. The tools: an until-found subtree's role-visibility differs by engine, and
+    Playwright's `toBeHidden` is not the platform's `checkVisibility()` — WebKit paints
+    nothing there while the locator says visible
+    ([`lesson-141`](lessons.md#lesson-141)); the assertion now asks the platform
+  - **the walk is the library's third private movement machinery** (the select's list,
+    the menu's walk, now this) — `lesson-21` said "before the second", so the extraction
+    into `core` (the behaviour-layer precondition below 1.2) now has three consumers
+    waiting and typeahead deliberately arrives WITH it, not as a fourth copy
+  - gate: `apps/sandbox-e2e/src/tree.spec.ts` (7 × 3) plus `/tree` in the audits, an RTL
+    reading where the indent mirrors and the walk swaps under real keys, a
+    forced-colours reading (the chosen row in the palette's own highlight pair), two
+    screenshots and 18 unit cases
 
 - [ ] **1.2 — table / datagrid** on a headless core (column model, sorting, filtering, grouping,
       selection as signals) separated from rendering. **The last item of the phase** — the only

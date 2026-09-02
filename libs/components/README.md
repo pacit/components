@@ -3,11 +3,11 @@
 Accessible Angular component library: standalone, zoneless, signal forms, SSR and design-token
 theming.
 
-> **Status: early, and the API still moves.** Twenty-four entrypoints ship today: the form
+> **Status: early, and the API still moves.** Twenty-five entrypoints ship today: the form
 > controls (a field wrapper with text, textarea, number, prefix/suffix affixes; checkbox,
 > radio group, select and multi-select, switch, slider, date), the overlays (dialog, tooltip,
 > popover, menu, toast) and the page's own structures (tabs, accordion, drawer, pagination,
-> progress, skeleton, chips, avatar, badge, breadcrumb, stepper). What is already decided, and what is still missing, is written down
+> progress, skeleton, chips, avatar, badge, breadcrumb, stepper, tree). What is already decided, and what is still missing, is written down
 > promise by promise in the
 > [gate registry](https://github.com/pacit/components/blob/main/docs/registry.md), which names
 > the machine that proves each one next to it.
@@ -53,6 +53,7 @@ does not pay for a select. The primary entrypoint carries configuration only.
 | `@pacit/components/badge`      | `PctBadge`                                                                       |
 | `@pacit/components/breadcrumb` | `PctBreadcrumb`, `PctCrumb`, `PctCrumbLink`                                      |
 | `@pacit/components/stepper`    | `PctStepper`, `PctStep`                                                          |
+| `@pacit/components/tree`       | `PctTree`, `PctTreeItem`                                                         |
 | `@pacit/components/button`     | `PctButton`                                                                      |
 | `@pacit/components/checkbox`   | `PctCheckbox`                                                                    |
 | `@pacit/components/chips`      | `PctChips`, `PctChip`                                                            |

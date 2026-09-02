@@ -19,6 +19,7 @@
     "libs/components/breadcrumb/src/breadcrumb.ts",
     "libs/components/checkbox/src/checkbox.ts",
     "libs/components/stepper/src/stepper.ts",
+    "libs/components/tree/src/tree.ts",
     "libs/components/chips/src/chips.ts",
     "libs/components/core/src/announce.ts",
     "libs/components/core/src/config.ts",

@@ -33,6 +33,7 @@
     "badge/**/*.ts",
     "breadcrumb/**/*.ts",
     "stepper/**/*.ts",
+    "tree/**/*.ts",
     "field/**/*.ts",
     "icon/**/*.ts"
   ],

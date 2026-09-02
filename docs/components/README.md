@@ -38,6 +38,7 @@ a machine; prose with a missing paragraph is not.
 | [`PctBadge`](badge.md)           | `@pacit/components/badge`      | a word wearing a tone                     |
 | [`PctBreadcrumb`](breadcrumb.md) | `@pacit/components/breadcrumb` | the way here, told in links               |
 | [`PctStepper`](stepper.md)       | `@pacit/components/stepper`    | a map of a journey the application steers |
+| [`PctTree`](tree.md)             | `@pacit/components/tree`       | a walk the platform does not have         |
 
 ## The order of the components to come
 
@@ -231,6 +232,15 @@ The order follows **architectural debt**, not popularity:
    A done step is audible: the check is a drawing, so `texts().stepDone` rides after the
    label — content, not name, because a `listitem` computes none
    ([`lesson-140`](../lessons.md#lesson-140)).
+   The **tree** is built, and it is the component the eleven before it existed to make
+   honest: the first that could not refuse the keys, because the APG Tree View is one tab
+   stop with a roving focus and the platform has no element that walks it
+   ([0056](../decisions/0056-a-tree-is-a-walk-the-platform-does-not-have.md)). The markup
+   is the hierarchy, each branch owns its `expanded`, the tree owns one `selected` — and
+   a folded branch is `hidden="until-found"`, the tabs' answer, so found text is landed
+   in. Two lessons came out of its measurements: an until-found subtree's role-visibility
+   differs by engine, and Playwright's visibility is not the platform's
+   `checkVisibility()` ([`lesson-141`](../lessons.md#lesson-141)).
 7. **Table / DataGrid** — has to stand on a **headless core** separated from rendering.
 
 Before item 1 the **behaviour layer in `core`** has to exist: list navigation (private methods

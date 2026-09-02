@@ -249,6 +249,13 @@ export const SBX_VIEWS: readonly SbxView[] = [
       import('./views/stepper/stepper-view').then((m) => m.StepperView),
   },
   {
+    path: 'tree',
+    title: 'Tree',
+    summary: 'A walk the platform does not have — one tab stop, roving focus.',
+    group: 'components',
+    load: () => import('./views/tree/tree-view').then((m) => m.TreeView),
+  },
+  {
     path: 'size',
     title: 'Size',
     summary: 'Every component on the shared sm/md/lg axis.',
