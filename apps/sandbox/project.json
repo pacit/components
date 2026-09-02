@@ -6,6 +6,7 @@
   "sourceRoot": "apps/sandbox/src",
   "tags": ["type:app"],
   "// typecheck": "Overrides the target inferred by `@nx/vite/plugin`, because that one runs `tsconfig.app.json` ONLY — and that config excludes `**/*.spec.ts`. The specs therefore went through vitest, which transpiles them without checking types, and no compiler ever looked at them (`lesson-42`, second edition). `inputs` take `default`, not `production`: `production` subtracts exactly those files, so a change to them would not invalidate the cache — the same namedInput from `nx.json` and the same mechanism measured on `components` (`lesson-47`). No `dependsOn` on `tokens:build` — checked with `--listFilesOnly`: neither of the two programs pulls in the generated `@pacit/tokens`, only `sandbox-e2e` reaches for it.",
+  "// conventions": "What the builder finds by its own convention rather than by a line here: apps/sandbox/src/index.html (the document), and the assets glob carrying apps/sandbox/public/favicon.ico, apps/sandbox/public/InterVariable.woff2 and apps/sandbox/public/InterVariable-LICENSE.txt into dist. Named in full because a bare file name stopped choosing between the two apps the day apps/docs copied this one's (req-project-reach).",
   "// implicitDependencies": "`styles` reaches for libs/tokens/dist/pct.css — a generated, gitignored artefact. Without that edge the build walks into an empty directory and ends in SUCCESS, only with not one token definition.",
   "implicitDependencies": ["tokens"],
   "targets": {

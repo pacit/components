@@ -9,9 +9,9 @@ There is no "built, just unverified" state — see
 
 | state       | means                                                         |  count |
 | ----------- | ------------------------------------------------------------- | -----: |
-| ✅ enforced | gate and control exist and run in CI                          |     65 |
-| 🟡 partial  | the gate is there, the negative control is not (deliberately) |     15 |
-| ⛔ gap      | gate or control missing, with a recorded deadline             |      6 |
+| ✅ enforced | gate and control exist and run in CI                          |     66 |
+| 🟡 partial  | the gate is there, the negative control is not (deliberately) |     16 |
+| ⛔ gap      | gate or control missing, with a recorded deadline             |      4 |
 | **total**   |                                                               | **86** |
 
 ## Gaps by urgency
@@ -21,10 +21,8 @@ The order comes from the **Binds at** field, not from a requirement number.
 | requirement                                                          | what is missing                                                                    | binds at                                                     |
 | -------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------ |
 | [`req-api-number`](requirements/api.md#req-api-number)               | property tests for the parser (`parse(format(n)) === n` for any `n` a… _(control)_ | the first locale outside `pl`/`en` reported by a consumer    |
-| [`req-project-apps`](requirements/project.md#req-project-apps)       | `apps/docs` does not exist, so a gate would describe a state that doe…             | the first external user — without documentation there is no… |
 | [`req-project-concise`](requirements/project.md#req-project-concise) | a prose volume budget per file, a **two-sided** snapshot in the idiom…             | the close of the compression pass — **not earlier**. A snap… |
 | [`req-project-files`](requirements/project.md#req-project-files)     | a check of the entrypoint directory layout (a script in the spirit of…             | the first component added by somebody other than the author… |
-| [`req-project-layout`](requirements/project.md#req-project-layout)   | follows from `req-project-apps`; it will close together with it                    | the creation of `apps/docs`                                  |
 | [`req-token-density`](requirements/tokens.md#req-token-density)      | the DTCG sources contain **not one** density token                                 | once the size axis has settled. Note: density will drop bel… |
 
 ## axis
@@ -80,7 +78,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-project-monorepo`](requirements/project.md#req-project-monorepo)         | 🟡 partial  | `.github/workflows/ci.yml` — the entire run goes through `nx affected` | none — deliberately: the failure is immediate and total (CI has nothi… |
 | [`req-project-latest`](requirements/project.md#req-project-latest)             | 🟡 partial  | none — deliberately: this is a process rule, not a property of the ar… | not applicable                                                         |
 | [`req-project-dependencies`](requirements/project.md#req-project-dependencies) | ✅ enforced | point 7 of `libs/components/check-package.mjs`, over the **packed** m… | `tools/check-package.fixtures/` — nine prepared packages for point 7 … |
-| [`req-project-apps`](requirements/project.md#req-project-apps)                 | ⛔ gap      | none — gap: `apps/docs` does not exist, so a gate would describe a st… | none — gap: the same as for the gate above                             |
+| [`req-project-apps`](requirements/project.md#req-project-apps)                 | ✅ enforced | `apps/docs/project.json`, `apps/docs-e2e/project.json` — the two proj… | `apps/docs-e2e/src/shell.spec.ts › "renders the home page from the li… |
 | [`req-project-package`](requirements/project.md#req-project-package)           | ✅ enforced | `libs/components/check-package.mjs` (target `check-package`, in CI) —… | `tools/check-package.fixtures/` — a doctored package for every point … |
 | [`req-project-entrypoints`](requirements/project.md#req-project-entrypoints)   | ✅ enforced | `libs/components/check-package.mjs` — the `exports` map in the packed… | `tools/check-package.fixtures/theme-outside-exports/` — a file presen… |
 | [`req-project-core`](requirements/project.md#req-project-core)                 | 🟡 partial  | `libs/components/field/src/field-controls.spec.ts` — the shared messa… | none — deliberately: the violation here is **duplication**, not a fai… |
@@ -92,7 +90,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-project-concise`](requirements/project.md#req-project-concise)           | ⛔ gap      | none — gap: a prose volume budget per file, a **two-sided** snapshot … | none — gap: a file with a paragraph added beyond the tolerance has to… |
 | [`req-project-angular`](requirements/project.md#req-project-angular)           | ✅ enforced | `tools/check-zoneless.mjs` (target `check-zoneless`, in CI) — three p… | `tools/check-zoneless.fixtures/` — doctored inputs, one per way for z… |
 | [`req-project-ssr`](requirements/project.md#req-project-ssr)                   | ✅ enforced | `apps/sandbox-e2e/src/hydration.spec.ts` — the check sits in the `vis… | `hydration.spec.ts › "the gate really does detect a hydration error (… |
-| [`req-project-layout`](requirements/project.md#req-project-layout)             | ⛔ gap      | none — gap: follows from `req-project-apps`; it will close together w… | none — gap: the same as for the gate above                             |
+| [`req-project-layout`](requirements/project.md#req-project-layout)             | 🟡 partial  | `apps/docs/project.json`, `apps/sandbox/project.json`, `apps/sandbox-… | none — deliberately: the violation is immediate and total — a project… |
 | [`req-project-reach`](requirements/project.md#req-project-reach)               | ✅ enforced | `tools/check-reach.mjs` (target `check-reach` in the root project, in… | `tools/check-reach.fixtures/` — 17 prepared inputs, each rejected on … |
 
 ## quality
@@ -295,3 +293,4 @@ Which lesson feeds which requirement. Generated from the **Lessons** fields.
 | [`lesson-139`](lessons.md#lesson-139) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-140`](lessons.md#lesson-140) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-141`](lessons.md#lesson-141) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-142`](lessons.md#lesson-142) | `req-project-reach`                                                                                                                                               |

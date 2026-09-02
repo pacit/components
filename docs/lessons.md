@@ -3769,3 +3769,26 @@ included, and it agrees with the paint in all three engines.
 The rule: when a hiding mechanism is newer than the test tool's visibility model, assert
 with the platform's own verdict (`checkVisibility()`, `elementFromPoint`) rather than the
 tool's — and record which engine would have shipped a green lie otherwise.
+
+### <a id="lesson-142"></a>`lesson-142` — A bare file name reaches a file only while the name is unique, and the first copied app tree ends that
+
+The reach gate resolves a mention three ways, and the weakest is the bare name: a token
+with no slash counts as a mention only when exactly one tracked file carries that name.
+The day `apps/docs` copied the sandbox's conventions — `index.html`, `favicon.ico`, the
+vendored `InterVariable.woff2` with its licence — every one of those names stopped being
+unique, and the gate reported **eight** unreached files at once: the four new copies AND
+the four originals, whose reach had silently ridden on uniqueness the whole time. Nothing
+about the sandbox changed; its files went dark because a second application exists.
+
+The walker's own comment had named the hazard in advance ("a copied tree is exactly the
+case where names stop being unique") — what the day added is the measured shape of the
+failure: it is not the copy that goes unreached, it is BOTH sides, and the red arrives in
+a commit that touched neither. The fix is the durable form: each application's
+`project.json` now names its convention-found files by full path in a `"// conventions"`
+comment, so the reach of `index.html` and the public assets no longer depends on how many
+applications the workspace holds.
+
+The rule: a bare-name mention is a loan against every future copy of that name. When a
+file is found by a tool's convention rather than by a path in code, anchor it by full
+path from something reached — the third application should cost a comment, not a debug
+session.

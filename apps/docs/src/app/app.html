@@ -1,0 +1,37 @@
+<div class="site" [pctTheme]="theme()" data-testid="site">
+  <header class="topbar">
+    <pct-container>
+      <div class="topbar__row">
+        <a class="wordmark" routerLink="/" aria-label="pacit — home">pacit</a>
+        <nav class="topbar__nav" aria-label="Site">
+          <!-- The remaining destinations arrive with their pages (2.1.7); a link that
+               leads nowhere would be worse than its absence. -->
+          <a routerLink="/">Home</a>
+        </nav>
+        <button
+          pctButton
+          variant="ghost"
+          size="sm"
+          (click)="cycleTheme()"
+          data-testid="theme-toggle"
+        >
+          Theme: {{ themeLabel() }}
+        </button>
+      </div>
+    </pct-container>
+  </header>
+
+  <main class="page">
+    <router-outlet />
+  </main>
+
+  <footer class="footer">
+    <pct-container>
+      <p class="footer__line">
+        Built from <code>&#64;pacit/components</code> — the library this site
+        documents. Every number on these pages is measured by the repository's
+        own gates.
+      </p>
+    </pct-container>
+  </footer>
+</div>

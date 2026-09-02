@@ -1,0 +1,22 @@
+/* The site pins the same face the sandbox pins, for the same reason it will matter here:
+   the day this application grows visual baselines and Lighthouse numbers (2.1.8), a
+   metric about system-ui would be a fact about the machine. Vendored beside the app —
+   public/InterVariable.woff2 under the SIL OFL, the licence next to it. */
+@font-face {
+  font-family: 'Inter var';
+  src: url('/InterVariable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: block;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter var', system-ui, sans-serif;
+  /* The page ground rides the token, so the theme the shell pins repaints it too. The
+     body itself sits OUTSIDE the shell's [pctTheme] scope — which is why the shell also
+     mirrors the attribute onto <html> (the root writer 0059 records as the one the
+     directive cannot replace). */
+  background: var(--pct-surface);
+  color: var(--pct-text);
+}

@@ -58,11 +58,11 @@ Snapshot, `node tools/check-docs.mjs`:
 | measure                                     | value |
 | ------------------------------------------- | ----: |
 | requirements                                |    86 |
-| ✅ enforced                                 |    65 |
-| 🟡 partial (deliberately without a control) |    15 |
-| ⛔ gap                                      |     6 |
+| ✅ enforced                                 |    66 |
+| 🟡 partial (deliberately without a control) |    16 |
+| ⛔ gap                                      |     4 |
 
-All 6 gaps have an owner below — in sections 2 and 5. If adding a requirement raises the gap
+All 4 gaps have an owner below — in sections 2 and 5. If adding a requirement raises the gap
 count and no task changes, this list has stopped being complete, and that is a fault of this
 list, not of the registry.
 
@@ -757,10 +757,22 @@ precondition of the quiet push (3.0), which no visitor can see.
         the control's other half, and the e2e case reads the same `--pct-surface` from
         both writers. _Landed 2026-09-02:_ unit **1084** (3 new), the registry moves
         **7 gaps → 6** and enforced **64 → 65** · cost: ~0.5 day, spent as estimated
-  - [ ] **2.1.4 — the scaffold**: `apps/docs` + `apps/docs-e2e`, static output, the shell
-        built from the library (drawer, buttons, layout), CI wiring — and the gates
-        promised in `req-project-apps` (the project in the graph, its `build` in CI), so
-        the two `req-project-*` gaps close here · cost: ~1 day
+  - [x] **2.1.4 — the scaffold**: `apps/docs` + `apps/docs-e2e` — **static by
+        construction** (0060): every route prerenders, and the first build's
+        `index.html` carries the headline, thirteen `pct-container`s, seven `pct-grid`s
+        and the hero CTA before any script runs (read with grep, not assumed). The shell
+        is the library's first page — container, ghost button, `[pctTheme]` with the
+        localStorage policy exactly where 0059 sent it — and the drawer deliberately
+        waits for the nav that would fill it (2.1.7). `req-project-apps` closes enforced,
+        `req-project-layout` closes partial: the registry stands at **66 / 16 / 4**.
+        _Landed 2026-09-02, measured:_ docs-e2e **12 of 12 in three engines** — and the
+        suite earned its keep before its first commit: the reload case caught the theme
+        policy erasing its own stored choice (the persisting effect ran before the
+        `afterNextRender` read — the fix is a synchronous read at construction, and the
+        defect died deterministic in all three engines). Copying the app tree also
+        taught the reach gate's bare-name rule the hard way: **lesson-142**, eight files
+        dark on both sides of the copy, anchored by full paths in each `project.json` ·
+        cost: ~1 day estimated, ~half spent
   - [ ] **2.1.5 — the content pipeline**: cards + parts snapshot + token dist + registry +
         mutation snapshot, shiki at build time → typed page data; **`llms.txt` and the
         machine catalogue fall out of the same pass** (2.5, co-built as ordered below) ·

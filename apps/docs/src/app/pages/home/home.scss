@@ -1,0 +1,63 @@
+/* The page's own chrome: display type and the gradient headline — site identity, not
+   library surface. The gradient rides the same three semantic stops as the hero button,
+   so a retheme moves the headline and the CTA together. */
+.hero {
+  display: grid;
+  gap: var(--pct-space-5);
+  justify-items: start;
+  padding-block: var(--pct-space-6);
+}
+
+.hero__title {
+  margin: 0;
+  max-inline-size: 17ch;
+  font-size: clamp(2.2rem, 6vw, 3.6rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  text-wrap: balance;
+}
+
+.hero__grad {
+  background: linear-gradient(
+    100deg,
+    var(--pct-hero),
+    var(--pct-hero-via),
+    var(--pct-hero-to)
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.hero__lead {
+  margin: 0;
+  max-inline-size: 58ch;
+  color: var(--pct-text-muted);
+  font-size: var(--pct-font-size-lg);
+  line-height: 1.6;
+}
+
+.hero__cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pct-space-4);
+}
+
+.tile {
+  border: 1px solid var(--pct-border);
+  border-radius: var(--pct-radius-md);
+  padding: var(--pct-space-5);
+
+  h2 {
+    margin: 0 0 var(--pct-space-3);
+    font-size: var(--pct-font-size-lg);
+  }
+
+  p {
+    margin: 0;
+    color: var(--pct-text-muted);
+    font-size: var(--pct-font-size-md);
+    line-height: 1.55;
+  }
+}

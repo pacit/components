@@ -1,0 +1,93 @@
+{
+  "name": "docs",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "prefix": "app",
+  "sourceRoot": "apps/docs/src",
+  "projectType": "application",
+  "tags": ["type:app"],
+  "// implicitDependencies": "`styles` reaches for libs/tokens/dist/pct.css — a generated, gitignored artefact. Without that edge the build walks into an empty directory and ends in SUCCESS, only with not one token definition. The same edge, for the same reason, as in `sandbox`.",
+  "// conventions": "What the builder finds by its own convention rather than by a line here: apps/docs/src/index.html (the document), and the assets glob below carrying apps/docs/public/favicon.ico, apps/docs/public/InterVariable.woff2 and apps/docs/public/InterVariable-LICENSE.txt into dist. Named in full because a bare file name stopped choosing between the two apps the day this one copied the sandbox's (req-project-reach).",
+  "implicitDependencies": ["tokens"],
+  "// typecheck": "The same override as in `sandbox`, for the same measured reason: the inferred target runs `tsconfig.app.json` only. This application has no spec config yet — the day it grows one, the second command lands here the way it stands in `sandbox`.",
+  "targets": {
+    "build": {
+      "cache": true,
+      "dependsOn": ["^build"],
+      "inputs": ["production", "^production"],
+      "executor": "@angular/build:application",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "outputPath": "dist/apps/docs",
+        "browser": "apps/docs/src/main.ts",
+        "tsConfig": "apps/docs/tsconfig.app.json",
+        "inlineStyleLanguage": "scss",
+        "assets": [{ "glob": "**/*", "input": "apps/docs/public" }],
+        "styles": [
+          "node_modules/@angular/cdk/overlay-prebuilt.css",
+          "libs/tokens/dist/pct.css",
+          "apps/docs/src/styles.scss"
+        ],
+        "server": "apps/docs/src/main.server.ts",
+        "outputMode": "static"
+      },
+      "configurations": {
+        "production": {
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "1mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "4kb",
+              "maximumError": "8kb"
+            }
+          ],
+          "outputHashing": "all"
+        },
+        "development": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true
+        }
+      }
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@angular/build:dev-server",
+      "defaultConfiguration": "development",
+      "dependsOn": [{ "projects": "tokens", "target": "build" }],
+      "options": { "port": 4300 },
+      "configurations": {
+        "production": { "buildTarget": "docs:build:production" },
+        "development": { "buildTarget": "docs:build:development" }
+      }
+    },
+    "serve-static": {
+      "continuous": true,
+      "executor": "@nx/web:file-server",
+      "options": {
+        "buildTarget": "docs:build",
+        "port": 4300,
+        "staticFilePath": "dist/apps/docs/browser",
+        "spa": true
+      }
+    },
+    "typecheck": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "default",
+        "^production",
+        { "externalDependencies": ["typescript"] }
+      ],
+      "options": {
+        "cwd": "apps/docs",
+        "parallel": false,
+        "commands": ["tsc --noEmit -p tsconfig.app.json"]
+      }
+    }
+  }
+}

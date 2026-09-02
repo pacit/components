@@ -81,10 +81,13 @@ out of reflex is now the one that has to be argued for in the policy before CI i
 the library's site), a "sandbox" app (playground and the base for e2e) and e2e tests built
 on the sandbox.
 
-**Gate:** none — gap: `apps/docs` does not exist, so a gate would describe a state that does
-not hold. Once it exists: presence of the project in the graph plus its `build` target in CI
-**Control:** none — gap: the same as for the gate above
-**Binds at:** the first external user — without documentation there is no adoption
+**Gate:** `apps/docs/project.json`, `apps/docs-e2e/project.json` — the two projects in the
+graph — and `.github/workflows/ci.yml`, whose `nx affected` line runs their `build`, `lint`,
+`typecheck` and `e2e` the moment they are touched
+**Control:** `apps/docs-e2e/src/shell.spec.ts › "renders the home page from the library,
+with a clean console"` — an application that stops building, or ships a broken shell, fails
+its own suite in three engines; the gate cannot go quiet by the app quietly rotting
+**Decision:** [0060 — the site is static by construction](../decisions/0060-the-site-is-static-by-construction.md)
 
 > Settled in review: **the inventory of parts and tokens must be generated and gated
 > independently of `apps/docs`.** A pretty page rendering it can come later — the two were
@@ -416,10 +419,13 @@ control of the gate)"`
 **Promise.** `apps/` — `docs`, `sandbox`, `sandbox-e2e`. `libs/` — `components`
 (publishable), `tokens` (DTCG source + build).
 
-**Gate:** none — gap: follows from [`req-project-apps`](#req-project-apps); it will close
-together with it
-**Control:** none — gap: the same as for the gate above
-**Binds at:** the creation of `apps/docs`
+**Gate:** `apps/docs/project.json`, `apps/sandbox/project.json`,
+`apps/sandbox-e2e/project.json`, `apps/docs-e2e/project.json`,
+`libs/components/project.json`, `libs/tokens/project.json` — the six roots of the promised
+layout; a missing one is an existence failure here and a graph error in every nx command
+**Control:** none — deliberately: the violation is immediate and total — a project root
+that vanishes breaks the graph before any gate could speak more politely about it
+**Decision:** [0060 — the site is static by construction](../decisions/0060-the-site-is-static-by-construction.md)
 **Lessons:** [`lesson-1`](../lessons.md#lesson-1), [`lesson-2`](../lessons.md#lesson-2)
 
 ---
@@ -456,7 +462,7 @@ reason; a fixtures tree whose gate is gone; an empty index; a corpus with nothin
 it; a policy with no roots. Plus a run against the real repository: the deleted copy of the
 vendored guide put back as two files citing each other, which fired point 5 with both named
 **Decision:** [0040 — a lockfile is repository material, the tree it locks is not](../decisions/0040-a-lockfile-is-material-the-tree-it-locks-is-not.md)
-**Lessons:** [`lesson-61`](../lessons.md#lesson-61),
+**Lessons:** [`lesson-61`](../lessons.md#lesson-61),, [`lesson-142`](../lessons.md#lesson-142)
 [`lesson-113`](../lessons.md#lesson-113)
 
 > **A mention is an edge, and the report of a defect is a mention.** The gate reported 45
