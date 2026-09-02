@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
+import { visit } from './support/dom';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -29,7 +30,7 @@ test.describe('The pages', () => {
   test('the gallery lists every card and leads into a page', async ({
     page,
   }) => {
-    await page.goto('/components');
+    await visit(page, '/components');
     const tiles = page.getByTestId('gallery').locator('a');
     await expect(tiles).toHaveCount(33);
 
@@ -41,7 +42,7 @@ test.describe('The pages', () => {
   test('a component page shows the demo, and the code tab is its own source', async ({
     page,
   }) => {
-    await page.goto('/components/button');
+    await visit(page, '/components/button');
     // The demo is a running instance — the library's own attribute proves the real
     // component rendered, not a picture of one.
     await expect(
@@ -57,7 +58,7 @@ test.describe('The pages', () => {
   test('a live demo on a page really runs — the dialog opens and traps', async ({
     page,
   }) => {
-    await page.goto('/components/dialog');
+    await visit(page, '/components/dialog');
     await page
       .getByTestId('demo-panel')
       .getByRole('button', { name: 'Project settings' })
@@ -71,7 +72,7 @@ test.describe('The pages', () => {
   test("the card's decision links land on /trust's anchors", async ({
     page,
   }) => {
-    await page.goto('/components/button');
+    await visit(page, '/components/button');
     const link = page.locator('.docs-prose a[href="/trust#adr-0058"]').first();
     await expect(link).toBeVisible();
     await link.click();
@@ -83,7 +84,7 @@ test.describe('The pages', () => {
   });
 
   test('the token chips copy through the toaster', async ({ page }) => {
-    await page.goto('/components/select');
+    await visit(page, '/components/select');
     await page.getByTestId('tokens').getByRole('button').first().click();
     await expect(
       page.locator('pct-toast-viewport [data-pct-part="item"]'),
@@ -93,7 +94,7 @@ test.describe('The pages', () => {
   test('/trust renders the registers the repository tracks', async ({
     page,
   }) => {
-    await page.goto('/trust');
+    await visit(page, '/trust');
     await expect(page.getByTestId('stats')).toContainText('mutation score');
     await expect(
       page.getByTestId('registry').locator('#req-token-directive'),
@@ -107,7 +108,7 @@ test.describe('The pages', () => {
   test('/theming tells the tiers and lists the public inventory', async ({
     page,
   }) => {
-    await page.goto('/theming');
+    await visit(page, '/theming');
     await expect(page.getByTestId('tier-semantic')).toContainText(
       '--pct-surface',
     );
@@ -117,10 +118,10 @@ test.describe('The pages', () => {
   });
 
   test('/support and /start render their documents', async ({ page }) => {
-    await page.goto('/support');
+    await visit(page, '/support');
     await expect(page.getByTestId('policy')).toContainText('angular-majors');
 
-    await page.goto('/start');
+    await visit(page, '/start');
     await expect(page.locator('.shiki')).toHaveCount(3);
     await expect(page.locator('.shiki').first()).toContainText(
       'npm install @pacit/components',
@@ -130,7 +131,7 @@ test.describe('The pages', () => {
   test('the top bar navigates; the narrow drawer takes over below the fold', async ({
     page,
   }) => {
-    await page.goto('/');
+    await visit(page, '/');
     await page
       .getByRole('navigation', { name: 'Site' })
       .first()

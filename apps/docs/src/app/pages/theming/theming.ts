@@ -4,6 +4,7 @@ import { PctContainer } from '@pacit/components/container';
 import { PctStack } from '@pacit/components/stack';
 import { SNIPPET_CODE } from '../../../generated/demo-code';
 import { THEMING_TOKENS } from '../../../generated/pages-data';
+import { describePage } from '../../seo';
 
 const TIERS = [
   {
@@ -39,6 +40,12 @@ const TIERS = [
 })
 export class ThemingPage {
   private readonly sanitizer = inject(DomSanitizer);
+
+  constructor() {
+    describePage(
+      'Three DTCG token tiers, contrast-checked on both themes at build — retheme one variable or a whole scope; dark mode is a data attribute.',
+    );
+  }
 
   protected readonly example = this.sanitizer.bypassSecurityTrustHtml(
     SNIPPET_CODE['theme'] ?? '',

@@ -1,5 +1,12 @@
 import { DOCUMENT } from '@angular/common';
-import { Component, effect, inject, signal } from '@angular/core';
+import {
+  ApplicationRef,
+  Component,
+  afterNextRender,
+  effect,
+  inject,
+  signal,
+} from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { PctButton } from '@pacit/components/button';
 import { PctContainer } from '@pacit/components/container';
@@ -65,6 +72,18 @@ export class App {
   protected readonly menuOpen = signal(false);
 
   constructor() {
+    // The "the page is interactive" marker for the e2e suite — the sandbox's own idiom
+    // (its lesson-30): until hydration the server's DOM can be clicked but nothing
+    // listens, and with the demos arriving as lazy chunks the window between "visible"
+    // and "wired up" is long enough for a loaded test runner to fall into. Measured
+    // here the night 2.1.8's full suite first ran: a switch click swallowed and three
+    // screenshots "never stable", all under 300-test contention.
+    const appRef = inject(ApplicationRef);
+    afterNextRender(async () => {
+      await appRef.whenStable();
+      this.document.documentElement.setAttribute('data-docs-ready', '');
+    });
+
     effect(() => {
       const theme = this.theme();
       const root = this.document.documentElement;

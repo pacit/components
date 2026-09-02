@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { visit } from './support/dom';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -26,7 +27,7 @@ test.describe('The landing', () => {
   test('the evidence strip shows what the tracked sources hold', async ({
     page,
   }) => {
-    await page.goto('/');
+    await visit(page, '/');
     await expect(page.getByTestId('fact-contrast')).toHaveText(String(PAIRS));
     await expect(page.getByTestId('fact-target')).toHaveText(FLOOR);
     await expect(page.getByTestId('machinery')).toContainText(
@@ -37,7 +38,7 @@ test.describe('The landing', () => {
   test('the strip leads with the accessibility claim, worded as measurement', async ({
     page,
   }) => {
-    await page.goto('/');
+    await visit(page, '/');
     const strip = page.getByTestId('evidence');
     await expect(strip).toContainText('WCAG 2.2 AA');
     await expect(strip).toContainText('machine-audited');
@@ -53,7 +54,7 @@ test.describe('The landing', () => {
   test('the stepper card is a live journey, not a screenshot', async ({
     page,
   }) => {
-    await page.goto('/');
+    await visit(page, '/');
     const journey = page.getByTestId('live-stepper');
     await expect(journey.locator('[aria-current="step"]')).toContainText(
       'Delivery',
@@ -69,7 +70,7 @@ test.describe('The landing', () => {
   test('removing a chip shortens the row; restore brings it back', async ({
     page,
   }) => {
-    await page.goto('/');
+    await visit(page, '/');
     const chips = page.getByTestId('live-chips').locator('pct-chip');
     await expect(chips).toHaveCount(4);
 
@@ -81,7 +82,7 @@ test.describe('The landing', () => {
   });
 
   test('the switch drives the bar through a signal', async ({ page }) => {
-    await page.goto('/');
+    await visit(page, '/');
     const bar = page.getByTestId('live-progress').locator('progress');
     await expect(bar).toHaveJSProperty('value', 62);
 
@@ -92,7 +93,7 @@ test.describe('The landing', () => {
   test('the copy button answers through the toast viewport', async ({
     page,
   }) => {
-    await page.goto('/');
+    await visit(page, '/');
     await page.getByTestId('install-copy').click();
     // Clipboard permission differs per engine; either wording rides the same toast.
     await expect(
@@ -108,8 +109,7 @@ test.describe('The landing', () => {
         .locator('.hero__grad')
         .evaluate((el) => getComputedStyle(el).animationDuration);
 
-    await page.emulateMedia({ reducedMotion: 'no-preference' });
-    await page.goto('/');
+    await visit(page, '/', { reducedMotion: 'no-preference' });
     expect(await drift()).toBe('8s');
 
     await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -119,8 +119,7 @@ test.describe('The landing', () => {
   test('forced colors hands the gradient text back to the palette', async ({
     page,
   }) => {
-    await page.emulateMedia({ forcedColors: 'active' });
-    await page.goto('/');
+    await visit(page, '/', { forcedColors: 'active' });
 
     const grad = page.locator('.hero__grad');
     expect(

@@ -12,6 +12,7 @@ import { PctStep, PctStepper } from '@pacit/components/stepper';
 import { PctSwitch } from '@pacit/components/switch';
 import { PctToaster } from '@pacit/components/toast';
 import { DOCS_CARDS, DOCS_EVIDENCE } from '../../../generated/content';
+import { describePage } from '../../seo';
 
 const INSTALL = 'npm install @pacit/components';
 const TOPICS = ['Angular', 'zoneless', 'signals', 'a11y'];
@@ -46,6 +47,12 @@ const TOPICS = ['Angular', 'zoneless', 'signals', 'a11y'];
 })
 export class HomePage {
   private readonly toaster = inject(PctToaster);
+
+  constructor() {
+    describePage(
+      'An accessible Angular component library, built and machine-audited to WCAG 2.2 AA — zoneless, signal forms, SSR, design tokens. Every number on the page is measured at build time.',
+    );
+  }
 
   protected readonly evidence = DOCS_EVIDENCE;
   protected readonly cards = DOCS_CARDS;

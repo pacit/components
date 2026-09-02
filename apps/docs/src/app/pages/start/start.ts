@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { PctContainer } from '@pacit/components/container';
 import { PctStack } from '@pacit/components/stack';
 import { SNIPPET_CODE } from '../../../generated/demo-code';
+import { describePage } from '../../seo';
 
 /**
  * The road in: install, provide, first form — each snippet a real file, highlighted at
@@ -19,6 +20,12 @@ import { SNIPPET_CODE } from '../../../generated/demo-code';
 })
 export class StartPage {
   private readonly sanitizer = inject(DomSanitizer);
+
+  constructor() {
+    describePage(
+      'Install @pacit/components, provide the config, write a first signal form — three steps, SSR-ready from the start.',
+    );
+  }
 
   protected readonly snippet = (name: string) =>
     this.sanitizer.bypassSecurityTrustHtml(SNIPPET_CODE[name] ?? '');

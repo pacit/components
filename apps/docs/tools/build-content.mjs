@@ -39,10 +39,16 @@ const read = (p) => readFileSync(join(ROOT, p), 'utf8');
 
 // ── 0. the shared renderers ──────────────────────────────────────────────────
 
+// The high-contrast pair on purpose, and the route sweep is the reason it stays: plain
+// `github-light` paints tokens at 3.48:1 on white — axe failed /start on the site's own
+// bar the first time the sweep ran. A palette below AA has no seat on this site.
 const highlight = (source, lang) =>
   codeToHtml(source, {
     lang,
-    themes: { light: 'github-light', dark: 'github-dark' },
+    themes: {
+      light: 'github-light-high-contrast',
+      dark: 'github-dark-high-contrast',
+    },
   });
 
 /**

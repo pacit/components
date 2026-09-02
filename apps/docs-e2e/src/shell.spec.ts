@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, Page, test } from '@playwright/test';
+import { visit } from './support/dom';
 
 const WCAG_22_AA = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
@@ -23,7 +24,7 @@ test.describe('The docs shell', () => {
     page,
   }) => {
     const errors = watchErrors(page);
-    await page.goto('/');
+    await visit(page, '/');
 
     await expect(page.locator('h1')).toContainText('prove themselves');
     // The law of site.md, measured: the column, the grid and the CTA are the library's.
@@ -40,7 +41,7 @@ test.describe('The docs shell', () => {
   test('the theme cycle pins the attribute, mirrors it to the root, and lets go', async ({
     page,
   }) => {
-    await page.goto('/');
+    await visit(page, '/');
     const site = page.getByTestId('site');
     const surfaceOf = () =>
       site.evaluate((el) =>
@@ -68,7 +69,7 @@ test.describe('The docs shell', () => {
   test('the stored choice survives a reload — the shell remembers, not the directive', async ({
     page,
   }) => {
-    await page.goto('/');
+    await visit(page, '/');
     await page.getByTestId('theme-toggle').click(); // -> dark
     await page.reload();
 
@@ -81,7 +82,7 @@ test.describe('The docs shell', () => {
   test('the home page passes the axe bar the site will advertise', async ({
     page,
   }) => {
-    await page.goto('/');
+    await visit(page, '/');
     await expect(page.locator('h1')).toBeVisible();
 
     const results = await new AxeBuilder({ page })

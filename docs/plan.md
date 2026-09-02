@@ -694,8 +694,11 @@ name="user"` with an inline default now, `user` published in `PctIconName`, and 
 first visitor has nowhere to read what it does is published too early. It is **not** a
 precondition of the quiet push (3.0), which no visitor can see.
 
-- [ ] **2.1 — `apps/docs`** → closes `req-project-apps` and `req-project-layout`. Renders the
-      **generated** inventories of parts and tokens, not hand-written ones
+- [x] **2.1 — `apps/docs`** → closes `req-project-apps` and `req-project-layout`. Renders the
+      **generated** inventories of parts and tokens, not hand-written ones. _Closed
+      2026-09-02 — all eight steps landed in one day (2.1.1–2.1.8 below carry the
+      measurements); what remains around the site is deploy (3.1's decision) and the
+      library work it surfaced (4.33)_
   - **the boundary was reopened by the maintainer on 2026-09-02, the day after 1.1
     closed.** The content core below is unchanged and still names everything the premiere
     needs; what stopped being optional is the face around it: the first visit has to read
@@ -827,12 +830,37 @@ precondition of the quiet push (3.0), which no visitor can see.
         dialog's own close button (strict mode — the demo now says "Done"), and a shut
         drawer is `hidden="until-found"` — a box Playwright calls visible, so the
         assertion reads the library's contract instead. Named costs: `<button
-    routerLink>` CTAs until `a[pctButton]` exists (**4.33**), `select.scss` 7.69 kB
+routerLink>` CTAs until `a[pctButton]` exists (**4.33**), `select.scss` 7.69 kB
         against the app's 6 kB style warn — the library's heaviest sheet, now printed by
         every docs build · cost: ~1.5 days estimated, ~half spent
-  - [ ] **2.1.8 — the bar, measured**: axe over every route in three engines, hydration,
+  - [x] **2.1.8 — the bar, measured**: axe over every route in three engines, hydration,
         visual baselines light and dark, Lighthouse read before anything is published,
-        SEO plumbing · cost: ~0.5 day
+        SEO plumbing. _Landed 2026-09-02, measured — and the bar bit the hand that built
+        it, which is the point:_ the route sweep (`apps/docs-e2e/src/routes.spec.ts`: **39 routes × both
+        colour schemes × three engines**, each visit also demanding a silent console) failed /start on
+        its first run — shiki's stock `github-light` paints tokens at **3.48:1**, so
+        the site now highlights with the high-contrast pair; then Lighthouse (which
+        prefers dark) caught two unstyled links at **1.89:1** on the dark surface that
+        the light-only sweep could never see — the sweep runs both schemes since, and
+        one of the two fixes taught the `[innerHTML]` scope lesson (a page's scss
+        cannot reach injected markup; `.docs-prose` can). Full-suite contention then
+        surfaced the hydration window: a swallowed switch click and three
+        "never-stable" screenshots — answered the sandbox's own way, a
+        `data-docs-ready` marker after `whenStable()` with every spec entering through
+        `visit()`, and viewport shots instead of full-page stitching (the sandbox's
+        law, re-measured here). **Lighthouse, static build, mobile-throttled:** `/` —
+        performance **72**, accessibility **100**, best practices **100**, SEO **100**;
+        `/components/button` — **71/100/100/100**; **CLS 0** both (was 0.156 — the
+        lazy demo re-rendering through hydration collapsed an unreserved stage; a
+        10rem floor holds it), TBT ≤180 ms; the perf lever left on the table is named:
+        ~121 kB of estimated-unused initial JS and a throttled LCP of 5.6 s — future
+        perf work (2.3's idiom), recorded before anything is published on the page.
+        SEO: per-page descriptions + `og:` mirrored into the prerendered HTML, the
+        font preloaded, `robots.txt` shipped; **deferred with the domain 3.1 decides:
+        `sitemap.xml`, `og:url`/`og:image`, canonicals** — recorded, not faked with a
+        placeholder host. Four viewport baselines (`apps/docs-e2e/src/visual.spec.ts` — landing and
+        the button page, light and dark), twice green in isolation and green under the deciding full run:
+        docs-e2e **304 of 304** (7.3 min) · cost: ~0.5 day, spent as estimated
   - the typed token names (`PctTokenName` / `PctCssVar` in `libs/tokens/dist`) never leave the
     repository, so a consumer retheming past the one brand variable reads shipped CSS; a
     `./tokens` entrypoint or the rendered inventory is the same move the icon names already

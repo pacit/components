@@ -25,6 +25,7 @@ import { CARD_HTML } from '../../../generated/cards-html';
 import { DOCS_CARDS } from '../../../generated/content';
 import { DEMO_CODE } from '../../../generated/demo-code';
 import { DEMOS } from '../../demos';
+import { describePage } from '../../seo';
 
 /**
  * One component's page (site.md: "demo first, code beside it, inventory below it").
@@ -85,6 +86,9 @@ export class ComponentPage {
   protected readonly demo = signal<Type<unknown> | null>(null);
 
   constructor() {
+    describePage(
+      'A component of @pacit/components: the live demo, its own source, the gated card, parts and tokens.',
+    );
     effect(() => {
       const id = this.id();
       this.demo.set(null);

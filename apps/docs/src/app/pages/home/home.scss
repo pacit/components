@@ -216,6 +216,11 @@
   padding-block: var(--pct-space-4);
   color: var(--pct-text-muted);
   font-size: var(--pct-font-size-sm);
+
+  a {
+    color: var(--pct-primary);
+    text-underline-offset: 3px;
+  }
 }
 
 /* ── 3–5 · the blocks ─────────────────────────────────────────────────────── */

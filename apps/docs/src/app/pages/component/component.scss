@@ -37,6 +37,9 @@
   margin: 0;
   color: var(--pct-text-muted);
   font-size: var(--pct-font-size-sm);
+
+  /* The link itself arrives through [innerHTML], outside this component's scope — the
+     colour is the global .docs-prose rule's job; this file cannot reach it. */
 }
 
 .head__pattern-label {
@@ -50,6 +53,9 @@
 }
 
 .panel__stage {
+  /* A floor under the stage: the demo re-renders through a lazy chunk on hydration, and
+     an unreserved box collapsing and re-expanding was 0.156 of measured CLS. */
+  min-block-size: 10rem;
   padding-block: var(--pct-space-5);
 }
 

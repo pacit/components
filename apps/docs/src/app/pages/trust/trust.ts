@@ -9,6 +9,7 @@ import {
   TRUST_LESSONS,
   TRUST_REGISTRY,
 } from '../../../generated/pages-data';
+import { describePage } from '../../seo';
 
 /**
  * The axis worn outward: the promise registry rendered row by row, the gates named, the
@@ -22,6 +23,12 @@ import {
   styleUrl: './trust.scss',
 })
 export class TrustPage {
+  constructor() {
+    describePage(
+      'The proof machinery of @pacit/components: the promise registry with gates and negative controls, the mutation score, every decision and lesson on record.',
+    );
+  }
+
   private readonly sanitizer = inject(DomSanitizer);
   private readonly trust = (value: string): SafeHtml =>
     this.sanitizer.bypassSecurityTrustHtml(value);

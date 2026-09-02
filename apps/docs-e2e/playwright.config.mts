@@ -26,7 +26,18 @@ export default defineConfig({
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
-    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+    {
+      /* The baselines stay on chromium — the sandbox's own measured law (its config
+         records the numbers): another engine diverges from a chromium-rasterised
+         picture because of the machine, not the code. */
+      name: 'firefox',
+      use: { ...devices['Desktop Firefox'] },
+      testIgnore: ['**/visual.spec.ts'],
+    },
+    {
+      name: 'webkit',
+      use: { ...devices['Desktop Safari'] },
+      testIgnore: ['**/visual.spec.ts'],
+    },
   ],
 });
