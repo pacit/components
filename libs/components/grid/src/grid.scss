@@ -1,0 +1,13 @@
+/* The whole component. `auto-fit` collapses empty tracks so the last row's cards can
+   stretch into the space real tracks left; `min(100%, …)` is the overflow guard — on a
+   viewport narrower than the minimum itself, the track yields to the container instead of
+   forcing the page to scroll sideways. Direction never appears: grid flow is writing-mode
+   aware on its own, so RTL costs this file nothing. */
+:host {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(min(100%, var(--pct-grid-min-width)), 1fr)
+  );
+  gap: var(--pct-grid-gap);
+}

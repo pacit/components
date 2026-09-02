@@ -37,11 +37,13 @@ before an application ships them.
 ./button 7078 ./core @angular/core
 ./checkbox 14962 ./core,./icon @angular/common,@angular/core
 ./chips 10650 ./core,./icon @angular/common,@angular/core
+./container 717 - @angular/core
 ./core 8318 - @angular/core
 ./date 39193 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
 ./dialog 15421 ./core,./icon @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
 ./drawer 14192 ./core,./icon @angular/common,@angular/core
 ./field 27273 ./core @angular/core,@angular/forms,@angular/forms/signals
+./grid 673 - @angular/core
 ./icon 2552 - @angular/common,@angular/core
 ./menu 18436 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core
 ./pagination 13651 ./core,./icon @angular/common,@angular/core
@@ -51,6 +53,7 @@ before an application ships them.
 ./select 69036 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core
 ./skeleton 2997 - @angular/core
 ./slider 17371 ./core @angular/core
+./stack 879 - @angular/core
 ./stepper 10628 ./core,./icon @angular/common,@angular/core
 ./switch 12371 ./core @angular/core
 ./tabs 13623 ./core @angular/core

@@ -1,0 +1,13 @@
+{
+  "pct": {
+    "grid": {
+      "$comment": "A grid of equals that finds its own column count: `repeat(auto-fit, minmax(min(100%, min-width), 1fr))`. The whole responsive behaviour hangs on ONE length — how narrow a card may get — and the browser derives every breakpoint from it, so there is none to write. The inner `min(100%, …)` is the overflow guard: on a viewport narrower than the minimum itself, the track yields to the container instead of forcing a horizontal scroll.",
+
+      "$comment-min-width": "The narrowest a column may be before the grid drops a column. 16rem is 256px at the default root size — a card that still fits a heading, two lines and a control. In rem for the container's reason: larger type asks for wider cards, and gets them without a second declaration. Per-instance needs are the same token scoped on the element — the token IS the input.",
+      "min-width": { "$type": "dimension", "$value": "16rem" },
+
+      "$comment-gap": "One step of the spacing scale between cards, both axes — the stack's base step, because a grid row and a stacked block are the same distance apart in one composition.",
+      "gap": { "$type": "dimension", "$value": "{pct.space.5}" }
+    }
+  }
+}

@@ -1,0 +1,74 @@
+<h2 class="view__title">Layout</h2>
+<p class="muted view__intro">
+  Three boxes and not a framework: a reading column, a rhythm, and a grid that
+  finds its own column count. No component here carries a role, a label or a
+  media query — the geometry is tokens, and the tokens are the API.
+</p>
+
+<sbx-demo
+  heading="Container — a reading column"
+  summary="Content capped at --pct-container-max-width and centred, with a gutter that follows the viewport through a clamp. The host declares container-type: inline-size, so anything projected can measure against the column instead of the viewport."
+  [reqs]="['req-token-logical']"
+  data-testid="demo-container"
+>
+  <pct-container data-testid="container">
+    <p class="box">
+      This paragraph lives in the column. Narrow the window and the gutter
+      tightens before the column gives way.
+    </p>
+  </pct-container>
+</sbx-demo>
+
+<sbx-demo
+  heading="Stack — the space between blocks"
+  summary="A flex column with a gap from the spacing scale: sm inside a card, md between neighbours, lg between sections. The gap cannot collapse and the edges stay flush — three things margins never manage together."
+  [reqs]="['req-token-names']"
+  data-testid="demo-stack"
+>
+  <div class="stacks">
+    <pct-stack gap="sm" data-testid="stack-sm">
+      <div class="box">sm</div>
+      <div class="box">8px apart</div>
+    </pct-stack>
+    <pct-stack data-testid="stack-md">
+      <div class="box">md</div>
+      <div class="box">16px apart</div>
+    </pct-stack>
+    <pct-stack gap="lg" data-testid="stack-lg">
+      <div class="box">lg</div>
+      <div class="box">24px apart</div>
+    </pct-stack>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="Grid — columns the browser derives"
+  summary="repeat(auto-fit, minmax(min(100%, --pct-grid-min-width), 1fr)): the one length says how narrow a card may get, and the column count at every width follows from it. Resize the window — no media query fires, here or anywhere."
+  [reqs]="['req-token-names']"
+  data-testid="demo-grid"
+>
+  <pct-grid data-testid="grid">
+    <div class="box">One</div>
+    <div class="box">Two</div>
+    <div class="box">Three</div>
+    <div class="box">Four</div>
+    <div class="box">Five</div>
+    <div class="box">Six</div>
+  </pct-grid>
+</sbx-demo>
+
+<sbx-demo
+  heading="The token is the input"
+  summary="Per-instance tuning without an input: the same grid with --pct-grid-min-width scoped to 8rem on the element packs more columns into the same width (req-token-scoped — a component token overridden in a scope stays overridden)."
+  [reqs]="['req-token-scoped']"
+  data-testid="demo-grid-dense"
+>
+  <pct-grid style="--pct-grid-min-width: 8rem" data-testid="grid-dense">
+    <div class="box">One</div>
+    <div class="box">Two</div>
+    <div class="box">Three</div>
+    <div class="box">Four</div>
+    <div class="box">Five</div>
+    <div class="box">Six</div>
+  </pct-grid>
+</sbx-demo>

@@ -96,6 +96,7 @@ const CARDS: ReadonlyArray<
   ['/breadcrumb', 'demo-pattern', 'breadcrumb-pattern'],
   ['/stepper', 'demo-journey', 'stepper-journey'],
   ['/tree', 'demo-project', 'tree-project'],
+  ['/layout', 'demo-grid', 'layout-grid'],
   ['/size', 'demo-axis', 'size-axis'],
   ['/states', 'states-disabled', 'states-disabled'],
   ['/states', 'states-invalid', 'states-invalid'],
@@ -435,6 +436,8 @@ const CARDS_RTL: ReadonlyArray<
   ['/breadcrumb', 'demo-pattern', 'breadcrumb-pattern'],
   ['/stepper', 'demo-journey', 'stepper-journey'],
   ['/tree', 'demo-project', 'tree-project'],
+  // The grid writes no direction anywhere — the baseline proves the flow flips anyway.
+  ['/layout', 'demo-grid', 'layout-grid'],
 ];
 
 test.describe('Appearance in RTL — compared with the baseline', () => {

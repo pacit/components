@@ -123,6 +123,8 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-chips-remove-fg-hover color component public
 --pct-chips-remove-radius dimension component public
 --pct-chips-remove-target-min dimension component public
+--pct-container-max-width dimension component public
+--pct-container-padding-x dimension component public
 --pct-control-height-lg dimension primitive public
 --pct-control-height-md dimension primitive public
 --pct-control-height-sm dimension primitive public
@@ -254,6 +256,8 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-font-size-md dimension primitive public
 --pct-font-size-sm dimension primitive public
 --pct-font-weight-medium fontWeight primitive public
+--pct-grid-gap dimension component public
+--pct-grid-min-width dimension component public
 --pct-menu-item-bg color component public
 --pct-menu-item-bg-active color component public
 --pct-menu-item-fg color component public
@@ -425,6 +429,10 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-space-3 dimension primitive public
 --pct-space-4 dimension primitive public
 --pct-space-5 dimension primitive public
+--pct-space-6 dimension primitive public
+--pct-stack-gap dimension component public
+--pct-stack-gap-lg dimension component public
+--pct-stack-gap-sm dimension component public
 --pct-stepper-gap dimension component public
 --pct-stepper-label-fg-muted color component public
 --pct-stepper-label-font-weight-current fontWeight component public

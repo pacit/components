@@ -1,0 +1,17 @@
+/* A flex column, not block flow: `gap` spaces BETWEEN blocks only, cannot collapse, and
+   leaves the first and last block flush with the host — three properties margins never
+   quite manage together. The size selectors repeat the button's size idiom: the unsuffixed
+   token is the `md` value (`req-api-size`), the other two steps override per attribute. */
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pct-stack-gap);
+}
+
+:host([data-pct-gap='sm']) {
+  gap: var(--pct-stack-gap-sm);
+}
+
+:host([data-pct-gap='lg']) {
+  gap: var(--pct-stack-gap-lg);
+}

@@ -1,0 +1,20 @@
+/* The boxes exist to make invisible geometry visible — a border where a gap ends, a tint
+   where a column begins. The stacks stand side by side so the three steps of the scale can
+   be read against each other at a glance. */
+.box {
+  margin: 0;
+  padding: var(--pct-space-3) var(--pct-space-5);
+  border: 1px solid var(--pct-border);
+  border-radius: var(--pct-radius-md);
+  background: var(--pct-surface-100);
+}
+
+.stacks {
+  display: flex;
+  gap: var(--pct-space-5);
+  align-items: flex-start;
+
+  > * {
+    flex: 1;
+  }
+}

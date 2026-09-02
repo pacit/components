@@ -32,6 +32,9 @@
     "breadcrumb/**/*.ts",
     "stepper/**/*.ts",
     "tree/**/*.ts",
+    "container/**/*.ts",
+    "stack/**/*.ts",
+    "grid/**/*.ts",
     "field/**/*.ts",
     "icon/**/*.ts",
     "testing/**/*.ts"

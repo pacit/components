@@ -43,9 +43,12 @@ shop window. Two apps, two jobs — exactly the split
 
 ## What the library is missing, named
 
-**The `layout` entrypoint** — the site's skeleton, and the first thing a consumer building
-an app around these components asks for. Three small components, no ARIA at all (layout is
-presentational; the platform's `div` is enough):
+**The layout entrypoints — `container`, `stack`, `grid`** — the site's skeleton, and the
+first thing a consumer building an app around these components asks for. Three small
+components, no ARIA at all (layout is presentational; the platform's `div` is enough).
+_Built as three entrypoints, not the one `layout` this file first said: a component token's
+first word must be a real entrypoint (`check-tokens` point 3), so `--pct-container-*`
+demands `@pacit/components/container` — the reasoning is 0057's._
 
 - `pct-container` — centres a reading column: `max-inline-size` from a token, an inline
   padding ramp from `clamp()`, and `container-type: inline-size` so children can respond to

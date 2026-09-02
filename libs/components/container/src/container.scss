@@ -1,0 +1,12 @@
+/* One sentence of geometry: a centred, capped column with a viewport-following gutter.
+   `container-type: inline-size` costs nothing here and turns the host into the ruler its
+   content can measure against — inline-size containment only, so the height stays the
+   content's own. Everything is logical (`req-token-logical`): the column needs no idea
+   which side of it is "left". */
+:host {
+  display: block;
+  container-type: inline-size;
+  max-inline-size: var(--pct-container-max-width);
+  margin-inline: auto;
+  padding-inline: var(--pct-container-padding-x);
+}

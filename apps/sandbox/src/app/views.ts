@@ -256,6 +256,13 @@ export const SBX_VIEWS: readonly SbxView[] = [
     load: () => import('./views/tree/tree-view').then((m) => m.TreeView),
   },
   {
+    path: 'layout',
+    title: 'Layout',
+    summary: 'Three boxes, not a framework — and no media query anywhere.',
+    group: 'components',
+    load: () => import('./views/layout/layout-view').then((m) => m.LayoutView),
+  },
+  {
     path: 'size',
     title: 'Size',
     summary: 'Every component on the shared sm/md/lg axis.',

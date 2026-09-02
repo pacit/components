@@ -708,10 +708,26 @@ precondition of the quiet push (3.0), which no visitor can see.
   - the content core, as stated at the review: the generated inventories, the component
     cards rendered as they stand, a theming page carrying the token inventory, the support
     policy and the forms-interop boundary (**4.25**)
-  - [ ] **2.1.1 — the `layout` entrypoint**: `pct-container`, `pct-stack`, `pct-grid` —
-        responsive from one token without a media query in consumer code; no ARIA at all,
-        and the e2e proof is geometric (column counts at three widths, three engines).
-        Full 1.1 definition of done · cost: ~1 day
+  - [x] **2.1.1 — the layout entrypoints**: `pct-container`, `pct-stack`, `pct-grid` —
+        **three entrypoints, not the one `layout` first drawn**: a component token's first
+        word must be a real entrypoint (`check-tokens` point 3), and 0057 records why the
+        gate is right. No ARIA at all, no media query anywhere, and the proof is a ruler
+        in three engines: the cap and the centring, the gutter's clamp read at both ends
+        (40px → 16px), the gaps 8/16/24 measured between real boxes, the column count
+        falling to one at 375px, and the scoped token packing more columns than the
+        default (`req-token-scoped`, live). _Landed 2026-09-02:_ unit **1080** passed
+        (8 new), e2e **1665 of 1668** — the three reds measured one by one: the tree
+        focus case green in isolation (load flake); `drawer-docked` red against a
+        baseline the update pass itself caught mid-settle — HEAD's baseline
+        restored, twice green, the new route never reached that page shot; and the WebKit
+        dialog scroll-lock coin toss now standing as **4.32**. Sizes: `./grid` **673 B**
+        — the smallest entrypoint in the package — `./container` **717 B**, `./stack`
+        **879 B**, all three on `@angular/core` alone. Mutation, targeted: **one mutant
+        in the three files, killed** (stack's `'md'` default); container and grid
+        generate none — a component that is one declaration offers Stryker nothing to
+        break — and both stay in the policy so the day they grow logic, the report owes
+        a row. The snapshot row lands with the day's shared full run · cost: ~1 day,
+        spent as estimated
   - [ ] **2.1.2 — the button's new faces**: `ghost`, `soft` and the animated `hero`
         variant — new violet/cyan primitives, **the gradient is three contrast checks,
         not one**, reduced motion freezes the drift, forced colors collapses it to the
@@ -1868,6 +1884,20 @@ direction` expecting index 32 and getting 31 in the first, its right-to-left twi
     run). The apt steps left both workflows for an `actions/cache` keyed on the lock's
     hash, and the gate now runs on machines that never had a `/usr/share/dict` at all —
     decision 0040's split, applied to the gate's biggest input
+
+- [ ] **4.32 — the dialog's scroll-lock case is a coin toss in WebKit, and only there**
+  - measured on 2026-09-02, in isolation and idle (not under the 22-worker load that
+    excuses an ordinary flake): `dialog.spec.ts › "the page stops scrolling, and starts
+again"` fails **1 run in 3** in WebKit at the `Escape` step — the panel is still in
+    the DOM when `toHaveCount(0)` asks — and passes deterministically in Chromium and
+    Firefox. Surfaced by the 2.1.1 full sweep, which touched nothing a dialog reads (a
+    sidebar route, layout tokens), so the margin is old and the day it first went green
+    was the coin landing well
+  - the suspicion to test first: the `mouse.wheel` just before `Escape` — a wheel over a
+    modal in WebKit may move focus or leave the scroll settle racing the keydown, and
+    `settledScrollY` waits for the page, not for the panel's focus
+  - binds at: **the next red CI run it causes** — a retry currently absorbs it, and a
+    fix belongs beside the dialog, not inside 2.1 · _notes:_ —
 
 ## 5. Gaps with no deadline
 

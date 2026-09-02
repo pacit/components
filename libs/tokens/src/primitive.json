@@ -29,7 +29,8 @@
       "2": { "$type": "dimension", "$value": "4px" },
       "3": { "$type": "dimension", "$value": "8px" },
       "4": { "$type": "dimension", "$value": "12px" },
-      "5": { "$type": "dimension", "$value": "16px" }
+      "5": { "$type": "dimension", "$value": "16px" },
+      "6": { "$type": "dimension", "$value": "24px" }
     },
     "radius": {
       "md": { "$type": "dimension", "$value": "8px" }

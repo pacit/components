@@ -130,7 +130,8 @@
         "tr",
         "txt",
         "ul",
-        "ver"
+        "ver",
+        "vw"
       ]
     },
     "acronyms": {
@@ -166,6 +167,7 @@
       "words": [
         "autofocus",
         "bio",
+        "breakpoint",
         "callback",
         "centre",
         "falsy",

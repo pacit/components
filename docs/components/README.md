@@ -39,6 +39,9 @@ a machine; prose with a missing paragraph is not.
 | [`PctBreadcrumb`](breadcrumb.md) | `@pacit/components/breadcrumb` | the way here, told in links               |
 | [`PctStepper`](stepper.md)       | `@pacit/components/stepper`    | a map of a journey the application steers |
 | [`PctTree`](tree.md)             | `@pacit/components/tree`       | a walk the platform does not have         |
+| [`PctContainer`](container.md)   | `@pacit/components/container`  | a reading column capped by a token        |
+| [`PctStack`](stack.md)           | `@pacit/components/stack`      | the space between blocks, from the scale  |
+| [`PctGrid`](grid.md)             | `@pacit/components/grid`       | a grid that finds its own column count    |
 
 ## The order of the components to come
 

@@ -1,0 +1,13 @@
+{
+  "pct": {
+    "container": {
+      "$comment": "A reading column. The component is one sentence of CSS — centre a capped column and pad its sides — and both numbers live here so a page-wide rhythm is a theme decision, not a per-page copy. It also declares `container-type: inline-size`, which costs no token: what it buys is that everything inside can respond to THIS column with a container query instead of guessing at the viewport.",
+
+      "$comment-max-width": "The cap of the column. 72rem is 1152px at the default root size — wide enough for a three-card grid with air, narrow enough that a line of running text inside a half-column still lands near a readable measure. In rem on purpose: a reader who raises the root font size widens the column with the type instead of cramming more letters into the same pixels.",
+      "max-width": { "$type": "dimension", "$value": "72rem" },
+
+      "$comment-padding-x": "The gutter between the column and the screen edge. A clamp, because the gutter is the one length that genuinely follows the viewport: tight on a phone where every pixel is content, generous on a desktop where a hard edge looks unfinished. The floor is the spacing scale's 16px step; the ceiling is a measured 40px, past which the gutter reads as empty margin rather than as breathing room.",
+      "padding-x": { "$type": "dimension", "$value": "clamp(16px, 4vw, 40px)" }
+    }
+  }
+}

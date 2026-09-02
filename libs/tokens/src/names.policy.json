@@ -90,6 +90,7 @@
       "inset",
       "max-height",
       "max-width",
+      "min-width",
       "padding-x",
       "padding-y",
       "radius",
