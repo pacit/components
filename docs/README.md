@@ -13,6 +13,7 @@ lessons.md                the evidence base: what actually happened    (141 entr
 support.md                what a consumer can count on: versions, notice, codemods
 registry.md               GENERATED: promise → gate → control → state
 plan.md                   the task list — the only place holding "done"
+site.md                   the documentation site (apps/docs), designed before it is built
 ```
 
 Reading order is the reverse of writing order: **requirements come out of lessons.**
@@ -26,6 +27,7 @@ Reading order is the reverse of writing order: **requirements come out of lesson
 | know what to do next and what is already done | [`plan.md`](plan.md)                                                      |
 | find out what went wrong in the past          | [`lessons.md`](lessons.md)                                                |
 | know how long a version is supported          | [`support.md`](support.md)                                                |
+| see how the site is designed, and build it    | [`site.md`](site.md)                                                      |
 
 ### Level 1 — requirements
 

@@ -109,6 +109,14 @@ reopening, not the review's — recorded above and in section 3. The review also
 caught this file lying twice — the truncated tail and the orphaned seventh gap, both
 recorded at the end of section 5.
 
+**2.1's boundary was reopened on 2026-09-02, the day after 1.1 closed.** The MVP's content
+core stands; the face around it stopped being optional. The maintainer's bar for the first
+visit is the best sites in the ecosystem, and the site is to be built from the library it
+documents — so the gap between those two sentences is library work before it is site work:
+a `layout` entrypoint, the button's new faces, the theme directive whose own trigger has
+now fired. The design lives in [`site.md`](site.md); the execution is 2.1.1–2.1.8, in
+order, "next step" meaning the first unchecked box.
+
 Closed, and gone from this file: the language gate and the package text, the pre-publication
 tidy-up with its gate, the support and dependency-list gates; the whole behaviour layer in
 `libs/components/core` (list navigation, overlay, focus, live announcer, template slots),
@@ -688,13 +696,45 @@ precondition of the quiet push (3.0), which no visitor can see.
 
 - [ ] **2.1 — `apps/docs`** → closes `req-project-apps` and `req-project-layout`. Renders the
       **generated** inventories of parts and tokens, not hand-written ones
-  - **an MVP with a stated boundary, not a second product**: the generated inventories, the
-    component cards rendered as they stand, a theming page carrying the token inventory, the
-    support policy and the forms-interop boundary (**4.25**) — and nothing more before the
-    premiere. This is the one item that can grow without any gate saying so, and the
-    signal-forms head start decays while it does
-  - it may **start before 1.1 finishes**: everything it renders is generated today, and no
-    page depends on the six components not yet built
+  - **the boundary was reopened by the maintainer on 2026-09-02, the day after 1.1
+    closed.** The content core below is unchanged and still names everything the premiere
+    needs; what stopped being optional is the face around it: the first visit has to read
+    as the best library in the room — angular.dev's motion and identity, primeng.dev's
+    live examples beside their code — and the site is built **from the library it
+    documents**, which turns its missing pieces into library work first. The design, page
+    by page, is [`site.md`](site.md); the steps below execute it in order, each one
+    committable and gate-green on its own. The old "and nothing more" guarded against a
+    second product; that guard is now the step list itself, which is finite and ends
+  - the content core, as stated at the review: the generated inventories, the component
+    cards rendered as they stand, a theming page carrying the token inventory, the support
+    policy and the forms-interop boundary (**4.25**)
+  - [ ] **2.1.1 — the `layout` entrypoint**: `pct-container`, `pct-stack`, `pct-grid` —
+        responsive from one token without a media query in consumer code; no ARIA at all,
+        and the e2e proof is geometric (column counts at three widths, three engines).
+        Full 1.1 definition of done · cost: ~1 day
+  - [ ] **2.1.2 — the button's new faces**: `ghost`, `soft` and the animated `hero`
+        variant — new violet/cyan primitives, **the gradient is three contrast checks,
+        not one**, reduced motion freezes the drift, forced colors collapses it to the
+        solid face · cost: ~1 day
+  - [ ] **2.1.3 — the theme directive** → closes `req-token-directive`: the docs app is
+        the repetition its "Binds at" was waiting for · cost: ~0.5 day
+  - [ ] **2.1.4 — the scaffold**: `apps/docs` + `apps/docs-e2e`, static output, the shell
+        built from the library (drawer, buttons, layout), CI wiring — and the gates
+        promised in `req-project-apps` (the project in the graph, its `build` in CI), so
+        the two `req-project-*` gaps close here · cost: ~1 day
+  - [ ] **2.1.5 — the content pipeline**: cards + parts snapshot + token dist + registry +
+        mutation snapshot, shiki at build time → typed page data; **`llms.txt` and the
+        machine catalogue fall out of the same pass** (2.5, co-built as ordered below) ·
+        cost: ~1 day
+  - [ ] **2.1.6 — the landing**: the gradient headline, live components instead of
+        screenshots, the evidence strip reading **tracked files only** — a number nothing
+        generates does not appear · cost: ~1 day
+  - [ ] **2.1.7 — the pages**: `/components/:id` (demos whose code tab shows their own
+        source, parts and token tables), `/start`, `/theming`, `/trust`, `/support` ·
+        cost: ~1.5 days
+  - [ ] **2.1.8 — the bar, measured**: axe over every route in three engines, hydration,
+        visual baselines light and dark, Lighthouse read before anything is published,
+        SEO plumbing · cost: ~0.5 day
   - the typed token names (`PctTokenName` / `PctCssVar` in `libs/tokens/dist`) never leave the
     repository, so a consumer retheming past the one brand variable reads shipped CSS; a
     `./tokens` entrypoint or the rendered inventory is the same move the icon names already
