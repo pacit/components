@@ -6,6 +6,12 @@
       "runtimeExecutable": "scripts/with-node",
       "runtimeArgs": ["npx", "nx", "serve", "sandbox", "--port", "4200"],
       "port": 4200
+    },
+    {
+      "name": "docs",
+      "runtimeExecutable": "scripts/with-node",
+      "runtimeArgs": ["npx", "nx", "serve", "docs"],
+      "port": 4300
     }
   ]
 }

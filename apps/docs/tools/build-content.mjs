@@ -113,7 +113,21 @@ const count = (label) =>
     )?.[1] ?? NaN,
   );
 
+// The landing leads with accessibility (site.md, recalibrated 2026-09-02), so the two
+// numbers its strip shows come from the same tracked sources the gates read: the contrast
+// policy is the DENOMINATOR of the contrast gate — every entry is measured on both themes
+// at every token build — and the touch floor is the primitive the controls consume.
+const contrastPairs = JSON.parse(read('libs/tokens/src/contrast.policy.json'))
+  .checks.length;
+const touchTarget = JSON.parse(read('libs/tokens/src/primitive.json')).pct
+  .target.min.$value;
+if (!/^\d+px$/.test(touchTarget))
+  throw new Error(
+    `content pass: --pct-target-min reads "${touchTarget}" — not a pixel dimension`,
+  );
+
 const evidence = {
+  a11y: { contrastPairs, touchTarget },
   mutation: {
     score: Number(total?.[1] ?? NaN),
     killed: Number(total?.[2] ?? NaN),
@@ -136,6 +150,7 @@ const evidence = {
 for (const [where, value] of [
   ['mutation snapshot', evidence.mutation.mutants],
   ['registry counts', evidence.requirements.total],
+  ['contrast policy', evidence.a11y.contrastPairs],
 ]) {
   if (!Number.isFinite(value) || value <= 0)
     throw new Error(

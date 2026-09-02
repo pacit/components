@@ -28,7 +28,7 @@ test.describe('The docs shell', () => {
     await expect(page.locator('h1')).toContainText('prove themselves');
     // The law of site.md, measured: the column, the grid and the CTA are the library's.
     await expect(page.locator('pct-container').first()).toBeVisible();
-    await expect(page.locator('pct-grid')).toBeVisible();
+    await expect(page.locator('pct-grid').first()).toBeVisible();
     await expect(page.getByTestId('cta-hero')).toHaveAttribute(
       'data-pct-variant',
       'hero',

@@ -1,63 +1,356 @@
-/* The page's own chrome: display type and the gradient headline — site identity, not
-   library surface. The gradient rides the same three semantic stops as the hero button,
-   so a retheme moves the headline and the CTA together. */
+/* The landing's own chrome (site.md lists it as site-local): display type, the gradient
+   headline, the strip's hairlines. Everything painted here rides the semantic tokens, so
+   both themes and forced colors keep their meaning; the drift rides the motion axis's
+   duration token, which reduced motion sets to 0s — no media query is repeated here. */
+
+/* ── 1 · hero ─────────────────────────────────────────────────────────────── */
+
 .hero {
+  position: relative;
+  overflow: hidden;
+}
+
+/* The glow behind the headline. An absolutely positioned pseudo paints above static
+   content, so the container below lifts itself with `position: relative`. */
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: -20% -10% auto;
+  block-size: 130%;
+  background: radial-gradient(
+    55% 60% at 50% 18%,
+    color-mix(in srgb, var(--pct-primary) 14%, transparent),
+    transparent 70%
+  );
+  animation: docs-breathe var(--pct-motion-drift-duration) ease-in-out infinite;
+  pointer-events: none;
+}
+
+.hero pct-container {
+  position: relative;
+}
+
+.hero__inner {
   display: grid;
   gap: var(--pct-space-5);
-  justify-items: start;
-  padding-block: var(--pct-space-6);
+  justify-items: center;
+  text-align: center;
+  padding-block: clamp(2.5rem, 7vw, 5.5rem) clamp(2rem, 5vw, 3.5rem);
+}
+
+.hero__eyebrow {
+  margin: 0;
+  border: 1px solid var(--pct-border);
+  border-radius: 999px;
+  padding: var(--pct-space-2) var(--pct-space-5);
+  color: var(--pct-text-muted);
+  font-size: var(--pct-font-size-sm);
+
+  code {
+    color: var(--pct-primary);
+    font-family: inherit;
+    font-weight: 600;
+  }
 }
 
 .hero__title {
   margin: 0;
   max-inline-size: 17ch;
-  font-size: clamp(2.2rem, 6vw, 3.6rem);
+  font-size: clamp(2.5rem, 6.5vw, 4.25rem);
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   line-height: 1.05;
   text-wrap: balance;
 }
 
+/* The drifting gradient: the same idiom as the button's hero face — an oversized image,
+   `background-position` walking a closed loop, the duration from the motion axis. The
+   fourth stop repeats the first so the loop has no visible seam. */
 .hero__grad {
-  background: linear-gradient(
+  background-image: linear-gradient(
     100deg,
     var(--pct-hero),
     var(--pct-hero-via),
-    var(--pct-hero-to)
+    var(--pct-hero-to),
+    var(--pct-hero)
   );
+  background-size: 300% 100%;
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
+  animation: docs-drift var(--pct-motion-drift-duration) linear infinite;
+}
+
+@keyframes docs-drift {
+  to {
+    background-position: 300% 0;
+  }
+}
+
+@keyframes docs-breathe {
+  0%,
+  100% {
+    opacity: 0.7;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+/* Forced colors strips author COLOURS but keeps images and alpha: the gradient would
+   survive while `color: transparent` stays transparent — invisible text. The same move
+   as the button's: drop the image by hand, hand the text back to the palette. */
+@media (forced-colors: active) {
+  .hero__grad {
+    background-image: none;
+    color: CanvasText;
+    animation: none;
+  }
+
+  .hero::before {
+    background: none;
+  }
 }
 
 .hero__lead {
   margin: 0;
-  max-inline-size: 58ch;
+  max-inline-size: 60ch;
   color: var(--pct-text-muted);
   font-size: var(--pct-font-size-lg);
   line-height: 1.6;
+
+  strong {
+    color: var(--pct-text);
+  }
 }
 
 .hero__cta {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   gap: var(--pct-space-4);
 }
 
-.tile {
+.hero__install {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--pct-space-4);
   border: 1px solid var(--pct-border);
   border-radius: var(--pct-radius-md);
-  padding: var(--pct-space-5);
+  padding: var(--pct-space-2) var(--pct-space-2) var(--pct-space-2)
+    var(--pct-space-5);
 
-  h2 {
-    margin: 0 0 var(--pct-space-3);
-    font-size: var(--pct-font-size-lg);
-  }
-
-  p {
-    margin: 0;
+  code {
     color: var(--pct-text-muted);
-    font-size: var(--pct-font-size-md);
-    line-height: 1.55;
+    font-size: var(--pct-font-size-sm);
   }
+}
+
+/* ── 2 · the evidence strip ───────────────────────────────────────────────── */
+
+.evidence {
+  border-block: 1px solid var(--pct-border);
+}
+
+/* The separators are the grid's own 1px gaps over a border-coloured ground — hairlines
+   that follow every wrap the auto-fit computes, with no media query and no first/last
+   bookkeeping. */
+.evidence__grid {
+  --pct-grid-min-width: 11rem;
+  --pct-grid-gap: 1px;
+
+  background: var(--pct-border);
+}
+
+.fact {
+  background: var(--pct-surface);
+  padding: var(--pct-space-6) var(--pct-space-5);
+}
+
+.fact__number,
+.fact__word {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.fact__number {
+  font-size: 1.9rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.fact__word {
+  font-size: 1.25rem;
+  padding-block: 0.35rem 0.15rem;
+}
+
+.fact__what {
+  margin: var(--pct-space-2) 0 0;
+  color: var(--pct-text-muted);
+  font-size: var(--pct-font-size-sm);
+
+  strong {
+    color: var(--pct-text);
+  }
+}
+
+.fact__src {
+  margin: var(--pct-space-3) 0 0;
+  color: var(--pct-text-muted);
+  font-size: 0.72rem;
+
+  a {
+    color: inherit;
+    text-underline-offset: 3px;
+
+    &:hover {
+      color: var(--pct-text);
+    }
+  }
+}
+
+.evidence__machinery {
+  margin: 0;
+  border-block-start: 1px solid var(--pct-border);
+  padding-block: var(--pct-space-4);
+  color: var(--pct-text-muted);
+  font-size: var(--pct-font-size-sm);
+}
+
+/* ── 3–5 · the blocks ─────────────────────────────────────────────────────── */
+
+.block {
+  padding-block: clamp(2.5rem, 6vw, 4.5rem);
+}
+
+.block--flush {
+  padding-block-start: 0;
+}
+
+.kicker {
+  margin: 0;
+  color: var(--pct-primary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.block__title {
+  margin: var(--pct-space-3) 0;
+  font-size: clamp(1.4rem, 3vw, 1.85rem);
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.block__lead {
+  margin: 0 0 var(--pct-space-6);
+  max-inline-size: 62ch;
+  color: var(--pct-text-muted);
+
+  strong {
+    color: var(--pct-text);
+  }
+}
+
+.live {
+  --pct-grid-min-width: 17rem;
+}
+
+.card {
+  border: 1px solid var(--pct-border);
+  border-radius: var(--pct-radius-md);
+  background: var(--pct-surface);
+  padding: var(--pct-space-5);
+}
+
+.card__title {
+  margin: 0 0 var(--pct-space-4);
+  font-size: var(--pct-font-size-md);
+  font-weight: 600;
+
+  code {
+    margin-inline-start: var(--pct-space-2);
+    color: var(--pct-text-muted);
+    font-size: 0.78rem;
+    font-weight: 400;
+  }
+}
+
+.card__row {
+  display: flex;
+  align-items: center;
+  gap: var(--pct-space-3);
+}
+
+.card__row--split {
+  justify-content: space-between;
+  gap: var(--pct-space-5);
+}
+
+.card__bar {
+  flex: 1;
+  max-inline-size: 40%;
+}
+
+.card__note {
+  margin: 0;
+  color: var(--pct-text-muted);
+  font-size: var(--pct-font-size-sm);
+}
+
+.card__body {
+  margin: 0;
+  color: var(--pct-text-muted);
+  font-size: var(--pct-font-size-sm);
+  line-height: 1.55;
+}
+
+/* ── 4 · the gallery ──────────────────────────────────────────────────────── */
+
+.gallery {
+  --pct-grid-min-width: 10rem;
+  --pct-grid-gap: var(--pct-space-3);
+}
+
+.gallery__item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--pct-space-3);
+  border: 1px solid var(--pct-border);
+  border-radius: var(--pct-radius-md);
+  padding: var(--pct-space-3) var(--pct-space-4);
+}
+
+.gallery__name {
+  font-size: var(--pct-font-size-sm);
+  font-weight: 600;
+}
+
+.gallery__selector {
+  overflow: hidden;
+  color: var(--pct-text-muted);
+  font-size: 0.72rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── 5 · identity ─────────────────────────────────────────────────────────── */
+
+.tiles {
+  --pct-grid-min-width: 16rem;
+}
+
+.tiles .card {
+  border-block-start: 2px solid var(--pct-hero);
+}
+
+.tiles .card--edge-b {
+  border-block-start-color: var(--pct-hero-via);
+}
+
+.tiles .card--edge-c {
+  border-block-start-color: var(--pct-hero-to);
 }

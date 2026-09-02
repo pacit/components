@@ -788,13 +788,26 @@ precondition of the quiet push (3.0), which no visitor can see.
         parserless: the cards are a form, not prose, so the form's own lines are the
         API; **highlighting (shiki) moved to 2.1.7 with the rendering it serves** —
         data is not the place to paint code · cost: ~1 day estimated, ~half spent
-  - [ ] **2.1.6 — the landing**: the gradient headline, live components instead of
+  - [x] **2.1.6 — the landing**: the gradient headline, live components instead of
         screenshots, the **accessibility-led** evidence strip reading **tracked files
         only** — a number nothing generates does not appear. Recalibrated on the
         maintainer's review of the sketch: WCAG earns the front, the build machinery
         moves to `/trust` (site.md records the reasoning, and the wording stays
-        "machine-audited to WCAG 2.2 AA" until 2.2's ACR earns the stronger sentence) ·
-        cost: ~1 day
+        "machine-audited to WCAG 2.2 AA" until 2.2's ACR earns the stronger sentence —
+        0061 makes that a law with a gate: the suite asserts the strip never says
+        "conformant"). _Landed 2026-09-02, measured:_ docs-e2e **36 of 36 in three
+        engines** (8 new landing cases; the strip↔repository agreement test re-reads
+        the same tracked files the content pass reads and expects the page to match —
+        197 contrast checks, the 24px floor, the mutant count), the headline's drift
+        reads **8s plain and 0s under reduced motion** off the one motion token, and
+        forced colors hands the text back to `CanvasText` (the gradient survives
+        forcing as an image while `transparent` keeps its alpha — the button's lesson,
+        repeated by the headline). The content pass grew the two a11y numbers with a
+        third tripwire; the prerendered `index.html` carries the whole strip, the 4616
+        teaser, the 33-card gallery and the live cards' first frame before any script
+        (grep, not assumption). The landing chrome compiles to 4.85 kB, so the app's
+        `anyComponentStyle` warn line moved 4→6 kB (the 8 kB error stands) — recorded
+        here, not hidden · cost: ~1 day, ~half spent
   - [ ] **2.1.7 — the pages**: `/components/:id` (demos whose code tab shows their own
         source, parts and token tables), `/start`, `/theming`, `/trust`, `/support` ·
         cost: ~1.5 days

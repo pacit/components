@@ -1,45 +1,257 @@
-<pct-container>
-  <pct-stack gap="lg">
-    <div class="hero">
+<!-- 1 · The hero. The headline's gradient and the CTA ride the same three semantic
+     stops, so a retheme moves them together; the drift below is the motion axis's
+     token and freezes itself under reduced motion. -->
+<section class="hero">
+  <pct-container>
+    <div class="hero__inner">
+      <p class="hero__eyebrow">
+        <code>&#64;pacit/components</code> · Angular 22 · zoneless · signal
+        forms
+      </p>
       <h1 class="hero__title">
         Components that <span class="hero__grad">prove themselves.</span>
       </h1>
       <p class="hero__lead">
-        An Angular library where every promise is held by a gate: probed in
-        three engines before a line of code, mutation-tested nightly, every
-        colour pair measured on both themes. This site is being built from the
-        library it documents — including this page.
+        An Angular library
+        <strong>built and machine-audited to WCAG 2.2 AA</strong>: axe across
+        every component in three engines on every commit, every colour pair
+        measured on both themes, keyboard, forced colors and reduced motion as
+        first-class modes. Every number on this page is read from the repository
+        at build time.
       </p>
       <div class="hero__cta">
+        <!-- The destinations arrive with their pages (2.1.7) — the shell's own law:
+             these gain routerLink the day /start and /components exist. -->
         <button pctButton variant="hero" size="lg" data-testid="cta-hero">
           Get started
         </button>
-        <button pctButton variant="outline" size="lg">Components</button>
+        <button pctButton variant="outline" size="lg">Browse components</button>
+      </div>
+      <div class="hero__install">
+        <code data-testid="install-line">{{ install }}</code>
+        <button
+          pctButton
+          variant="soft"
+          size="sm"
+          (click)="copy()"
+          data-testid="install-copy"
+        >
+          Copy
+        </button>
       </div>
     </div>
+  </pct-container>
+</section>
 
-    <pct-grid>
-      <article class="tile">
-        <h2>The pipeline</h2>
-        <p>
-          Component pages rendered from the repository's own cards, parts and
-          token inventories — nothing typed twice. Lands as step 2.1.5.
+<!-- 2 · The evidence strip, accessibility-led. Numbers from DOCS_EVIDENCE only —
+     the content pass throws on a count it cannot read from the tracked files. -->
+<section class="evidence" aria-label="Measured accessibility evidence">
+  <pct-container>
+    <pct-grid class="evidence__grid" data-testid="evidence">
+      <article class="fact">
+        <p class="fact__word">WCAG 2.2 AA</p>
+        <p class="fact__what">
+          built and <strong>machine-audited</strong> — axe on every component,
+          every commit
         </p>
+        <p class="fact__src"><code>a11y.spec.ts</code> × three engines</p>
       </article>
-      <article class="tile">
-        <h2>The landing</h2>
-        <p>
-          The evidence strip: mutation score, promises enforced, decision
-          records — read from tracked files at build time. Lands as step 2.1.6.
+      <article class="fact">
+        <p class="fact__number" data-testid="fact-contrast">
+          {{ evidence.a11y.contrastPairs }}
         </p>
+        <p class="fact__what">
+          colour pairs contrast-measured at build — light
+          <strong>and</strong> dark
+        </p>
+        <p class="fact__src"><code>contrast.policy.json</code></p>
       </article>
-      <article class="tile">
-        <h2>The pages</h2>
-        <p>
-          Live demos whose code tab shows their own source, theming, trust and
-          support. Land as step 2.1.7.
+      <article class="fact">
+        <p class="fact__number">{{ evidence.engines }}</p>
+        <p class="fact__what">
+          engines run every single case — Chromium, Firefox, WebKit
+        </p>
+        <p class="fact__src"><code>playwright.config.mts</code></p>
+      </article>
+      <article class="fact">
+        <p class="fact__number" data-testid="fact-target">
+          {{ evidence.a11y.touchTarget }}
+        </p>
+        <p class="fact__what">
+          touch-target floor, measured per control — not per promise
+        </p>
+        <p class="fact__src"><code>--pct-target-min</code></p>
+      </article>
+      <article class="fact">
+        <p class="fact__word">AI-ready</p>
+        <p class="fact__what">
+          a machine catalogue of every selector, part and token — your copilot
+          can verify what it suggests
+        </p>
+        <p class="fact__src">
+          <a href="/llms.txt">llms.txt</a> ·
+          <a href="/components.json">components.json</a>
         </p>
       </article>
     </pct-grid>
-  </pct-stack>
-</pct-container>
+    <p class="evidence__machinery" data-testid="machinery">
+      For the auditor: the whole proof machinery — {{ evidence.mutation.mutants
+      }} mutants at a measured {{ evidence.mutation.score }}%, a registry of {{
+      evidence.requirements.total }} gated promises, {{ evidence.decisions }}
+      decisions and {{ evidence.lessons }} lessons on record — lives on Trust.
+      <!-- The Trust link lands with the page itself (2.1.7). -->
+    </p>
+  </pct-container>
+</section>
+
+<!-- 3 · Live, not screenshots. -->
+<section class="block">
+  <pct-container>
+    <p class="kicker">Dogfooding, literally</p>
+    <h2 class="block__title">Live, not screenshots.</h2>
+    <p class="block__lead">
+      Every demo below is a running instance of the shipped package — the same
+      build this page is made of, on the same tokens it documents.
+    </p>
+    <pct-grid class="live" data-testid="live">
+      <article class="card">
+        <h3 class="card__title">Stepper <code>pct-stepper</code></h3>
+        <pct-stack gap="md">
+          <pct-stepper
+            [step]="step()"
+            ariaLabel="Checkout"
+            data-testid="live-stepper"
+          >
+            <pct-step>Cart</pct-step>
+            <pct-step>Delivery</pct-step>
+            <pct-step>Payment</pct-step>
+          </pct-stepper>
+          <div class="card__row">
+            <button
+              pctButton
+              variant="ghost"
+              size="sm"
+              [disabled]="atStart()"
+              (click)="move(-1)"
+              data-testid="live-back"
+            >
+              Back
+            </button>
+            <button
+              pctButton
+              variant="ghost"
+              size="sm"
+              [disabled]="atEnd()"
+              (click)="move(1)"
+              data-testid="live-next"
+            >
+              Next
+            </button>
+          </div>
+        </pct-stack>
+      </article>
+      <article class="card">
+        <h3 class="card__title">Chips <code>pct-chips</code></h3>
+        <pct-stack gap="md">
+          <pct-chips ariaLabel="Topics" data-testid="live-chips">
+            @for (topic of topics(); track topic) {
+            <pct-chip removable (removed)="drop(topic)">{{ topic }}</pct-chip>
+            }
+          </pct-chips>
+          <p class="card__note">
+            Backspace walks the row; a screen reader hears what left. @if
+            (missing()) {
+            <button
+              pctButton
+              variant="ghost"
+              size="sm"
+              (click)="restore()"
+              data-testid="live-restore"
+            >
+              Restore
+            </button>
+            }
+          </p>
+        </pct-stack>
+      </article>
+      <article class="card">
+        <h3 class="card__title">Signal forms <code>pct-field</code></h3>
+        <pct-stack gap="md">
+          <pct-field label="Workspace name" hint="The form is a signal">
+            <input
+              pctText
+              [formField]="workspaceForm.name"
+              data-testid="live-input"
+            />
+          </pct-field>
+          <div class="card__row card__row--split">
+            <pct-switch
+              label="Ready to ship"
+              [(checked)]="ready"
+              data-testid="live-switch"
+            />
+            <pct-progress
+              class="card__bar"
+              [value]="readiness()"
+              ariaLabel="Readiness"
+              data-testid="live-progress"
+            />
+          </div>
+        </pct-stack>
+      </article>
+    </pct-grid>
+  </pct-container>
+</section>
+
+<!-- 4 · The inventory — every documented component, counted from the cards. -->
+<section class="block block--flush">
+  <pct-container>
+    <p class="kicker">The inventory</p>
+    <h2 class="block__title">{{ cards.length }} components, one contract.</h2>
+    <p class="block__lead">
+      Every entrypoint ships its parts and tokens as a
+      <strong>gated public surface</strong> — the selectors your tests hold, the
+      variables your theme overrides, snapshot-checked on every commit. This
+      grid is <code>pct-grid</code>: resize the window, not one media query
+      fires.
+    </p>
+    <!-- Plain tiles today; each becomes a link into /components/:id with 2.1.7. -->
+    <pct-grid class="gallery" data-testid="gallery">
+      @for (card of cards; track card.id) {
+      <div class="gallery__item">
+        <span class="gallery__name">{{ card.id }}</span>
+        <code class="gallery__selector">{{ card.selector }}</code>
+      </div>
+      }
+    </pct-grid>
+  </pct-container>
+</section>
+
+<!-- 5 · Three tiles of identity — the teaser of /trust (2.1.7). -->
+<section class="block block--flush">
+  <pct-container>
+    <pct-grid class="tiles">
+      <article class="card card--edge-a">
+        <h3 class="card__title">Probes before code</h3>
+        <p class="card__body">
+          Every ARIA geometry is measured in three engines before the component
+          exists — the probe's numbers, not the spec's prose, decide the design.
+        </p>
+      </article>
+      <article class="card card--edge-b">
+        <h3 class="card__title">Nothing breaks silently</h3>
+        <p class="card__body">
+          Hand-written gates with negative controls — every gate has been proven
+          able to fire. A promise without a gate does not ship.
+        </p>
+      </article>
+      <article class="card card--edge-c">
+        <h3 class="card__title">Tokens all the way down</h3>
+        <p class="card__body">
+          Three DTCG tiers, contrast-checked at build. Retheme one variable or a
+          whole scope — dark mode is a data attribute, not a fork.
+        </p>
+      </article>
+    </pct-grid>
+  </pct-container>
+</section>

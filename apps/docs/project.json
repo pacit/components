@@ -20,6 +20,8 @@
         "{workspaceRoot}/libs/components/parts.snapshot.md",
         "{workspaceRoot}/libs/components/mutation.snapshot.md",
         "{workspaceRoot}/libs/tokens/tokens.snapshot.md",
+        "{workspaceRoot}/libs/tokens/src/contrast.policy.json",
+        "{workspaceRoot}/libs/tokens/src/primitive.json",
         "{projectRoot}/tools/build-content.mjs"
       ],
       "outputs": ["{projectRoot}/src/generated"],
@@ -61,7 +63,7 @@
             },
             {
               "type": "anyComponentStyle",
-              "maximumWarning": "4kb",
+              "maximumWarning": "6kb",
               "maximumError": "8kb"
             }
           ],
@@ -78,7 +80,7 @@
       "continuous": true,
       "executor": "@angular/build:dev-server",
       "defaultConfiguration": "development",
-      "dependsOn": [{ "projects": "tokens", "target": "build" }],
+      "dependsOn": [{ "projects": "tokens", "target": "build" }, "content"],
       "options": { "port": 4300 },
       "configurations": {
         "production": { "buildTarget": "docs:build:production" },
