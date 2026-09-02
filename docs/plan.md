@@ -2029,6 +2029,18 @@ again"` fails **1 run in 3** in WebKit at the `Escape` step — the panel is sti
     measured least
   - binds at: **the next site session** — it opens with the reviewer's list of concrete
     screens, not with a guess · _notes:_ —
+- [ ] **4.35 — the popover's axe audit can catch a button mid-transition, in two
+      engines at once**
+  - CI run 33680164640's sibling (2026-09-02, run 33681596258): `a11y.spec.ts › an open
+popover has no violations` flaked in firefox AND webkit on the same measured pair —
+    `panel-apply`'s label at 4.09 (#eff4fe on #366fed), a pair that is no resting state
+    of the button (the resting faces pass this audit on every commit). A retry absorbed
+    both; the toast-stack audit flaked once beside it
+  - the suspicion to test first: the audit runs right after the interaction that opens
+    the panel, and a colour `transition` is still travelling when axe reads the pixels —
+    a reduced-motion context or a settled wait before `analyze()` would pin it
+  - binds at: **the next red it causes** — today it is a retry's cost, and the fix
+    belongs beside the a11y spec, not inside 2.1 · _notes:_ —
 
 ## 5. Gaps with no deadline
 

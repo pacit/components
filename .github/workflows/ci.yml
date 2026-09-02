@@ -99,11 +99,13 @@ jobs:
 
       # A red e2e on a runner is unreadable without its evidence: the third run failed two
       # visual baselines and the diff images died with the machine, so the failure could
-      # only be guessed at. Kept on failure alone — green runs prove themselves.
+      # only be guessed at. Kept on failure alone — green runs prove themselves. The glob,
+      # not one suite's path: the day docs-e2e turned red the same way, this step was still
+      # spelling `sandbox-e2e` and the landing's diffs died with the machine again.
       - if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: e2e-output
-          path: dist/.playwright/apps/sandbox-e2e/test-output
+          path: dist/.playwright/apps/*/test-output
           retention-days: 7
           if-no-files-found: ignore
