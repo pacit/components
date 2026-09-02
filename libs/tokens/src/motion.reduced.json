@@ -4,11 +4,24 @@
     "motion": {
       "transition": {
         "$comment": "Not `0s`: in some browsers a zero duration emits no `transitionend`, so code waiting for a transition to end stops receiving the event. `0.01ms` is visually instant and keeps the event.",
-        "duration": { "$type": "duration", "$value": "0.01ms" }
+        "duration": {
+          "$type": "duration",
+          "$value": "0.01ms"
+        }
       },
       "loop": {
         "$comment": "A continuous indicator slows down instead of disappearing — the user still sees that work is under way, but the spin stops being a vestibular trigger.",
-        "duration": { "$type": "duration", "$value": "1500ms" }
+        "duration": {
+          "$type": "duration",
+          "$value": "1500ms"
+        }
+      },
+      "drift": {
+        "$comment": "The hero drift is decoration, not information — unlike the loop, which still has to say \"working\". Frozen outright: `0s` shows the gradient standing at its first frame, and nothing anywhere waits for this animation's events (the transition's `0.01ms` caveat is about `transitionend`, which this surface never emits to anyone).",
+        "duration": {
+          "$type": "duration",
+          "$value": "0s"
+        }
       }
     }
   }

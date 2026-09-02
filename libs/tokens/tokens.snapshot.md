@@ -50,6 +50,7 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-badge-gap dimension component public
 --pct-badge-padding-x dimension component public
 --pct-badge-radius dimension component public
+--pct-blue-100 color primitive private
 --pct-blue-200 color primitive private
 --pct-blue-300 color primitive private
 --pct-blue-400 color primitive private
@@ -128,6 +129,7 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-control-height-lg dimension primitive public
 --pct-control-height-md dimension primitive public
 --pct-control-height-sm dimension primitive public
+--pct-cyan-700 color primitive private
 --pct-danger color semantic public
 --pct-date-bg color component public
 --pct-date-bg-disabled color component public
@@ -258,6 +260,9 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-font-weight-medium fontWeight primitive public
 --pct-grid-gap dimension component public
 --pct-grid-min-width dimension component public
+--pct-hero color semantic public
+--pct-hero-to color semantic public
+--pct-hero-via color semantic public
 --pct-menu-item-bg color component public
 --pct-menu-item-bg-active color component public
 --pct-menu-item-fg color component public
@@ -274,11 +279,14 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-menu-panel-padding-y dimension component public
 --pct-menu-panel-radius dimension component public
 --pct-menu-panel-shadow shadow component public
+--pct-motion-drift-duration duration primitive public
 --pct-motion-loop-duration duration primitive public
 --pct-motion-transition-duration duration primitive public
 --pct-motion-transition-easing cubicBezier primitive public
 --pct-on-danger color semantic public
+--pct-on-hero color semantic public
 --pct-on-primary color semantic public
+--pct-on-primary-100 color semantic public
 --pct-on-surface-inverse color semantic public
 --pct-pagination-item-bg color component public
 --pct-pagination-item-bg-hover color component public
@@ -315,6 +323,8 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-popover-panel-radius dimension component public
 --pct-popover-panel-shadow shadow component public
 --pct-primary color semantic public
+--pct-primary-100 color semantic public
+--pct-primary-200 color semantic public
 --pct-primary-active color semantic public
 --pct-primary-hover color semantic public
 --pct-progress-fill-bg color component public
@@ -534,4 +544,5 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-tree-label-padding-y dimension component public
 --pct-tree-label-radius dimension component public
 --pct-tree-label-target-min dimension component public
+--pct-violet-600 color primitive private
 ```

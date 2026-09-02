@@ -830,4 +830,29 @@ test.describe('forced-colors: active', () => {
       );
     }
   });
+
+  /**
+   * The hero gradient is an IMAGE, and the forcing strips colours, not images — left
+   * alone it would keep painting over the forced ButtonFace (the skeleton's shimmer,
+   * one component over). And the boundary-less variants would melt into the Canvas:
+   * `transparent` keeps its alpha through the forcing, so a button whose only edge was
+   * a tint has no edge at all until the stylesheet gives it one back.
+   */
+  test('the hero drops its gradient, and the boundary-less faces get an edge back', async ({
+    page,
+  }) => {
+    await visit(page, '/button', { media: FORCED });
+    const sys = await systemColors(page);
+
+    const hero = page.getByTestId('btn-hero');
+    expect(await styleOf(hero, 'background-image')).toBe('none');
+    expect(await styleOf(hero, 'animation-name')).toBe('none');
+
+    for (const id of ['btn-ghost', 'btn-soft', 'btn-hero'] as const) {
+      expect(
+        await styleOf(page.getByTestId(id), 'border-color'),
+        `${id} has no visible edge`,
+      ).toBe(sys.ButtonText);
+    }
+  });
 });

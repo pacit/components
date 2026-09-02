@@ -728,10 +728,23 @@ precondition of the quiet push (3.0), which no visitor can see.
         break — and both stay in the policy so the day they grow logic, the report owes
         a row. The snapshot row lands with the day's shared full run · cost: ~1 day,
         spent as estimated
-  - [ ] **2.1.2 — the button's new faces**: `ghost`, `soft` and the animated `hero`
-        variant — new violet/cyan primitives, **the gradient is three contrast checks,
-        not one**, reduced motion freezes the drift, forced colors collapses it to the
-        solid face · cost: ~1 day
+  - [x] **2.1.2 — the button's new faces**: `ghost`, `soft` and the animated `hero` —
+        five faces, one directive, **not one new line of TypeScript** (the union widened,
+        the stylesheet grew; zero new mutants by construction — 0058). The gradient lives
+        in the semantic tier as a role with a pair (`--pct-hero/-via/-to`, `--pct-on-hero`),
+        so the pair rule itself delivers the sentence: **a gradient is three contrast
+        checks, not one — 5.17, 5.70, 5.36**, printed by every build, both themes; soft is
+        `primary-100/-200` with its own text (5.49/4.72 light, 6.14/4.72 dark, tint
+        inverted). _Landed 2026-09-02, measured:_ unit **1081**; the targeted e2e set
+        (preferences + forced-colors + full visual) **155 of 155** — the drift reads 8 s
+        plain and **0 s frozen** under reduced motion (the spinner slows, the drift
+        stops: information against decoration), the hero's gradient reads
+        `background-image: none` under forcing (an image survives colour-forcing, so the
+        stylesheet drops it by hand) and the three boundary-less faces read a
+        `ButtonText` edge in all three engines. Baselines: `button-variants` ±rtl grew
+        the three faces; infinite animations are cancelled to frame zero by the
+        screenshot assertion itself, so the drifting surface stays a deterministic
+        picture · cost: ~1 day estimated, ~half spent — paint is cheaper than machinery
   - [ ] **2.1.3 — the theme directive** → closes `req-token-directive`: the docs app is
         the repetition its "Binds at" was waiting for · cost: ~0.5 day
   - [ ] **2.1.4 — the scaffold**: `apps/docs` + `apps/docs-e2e`, static output, the shell

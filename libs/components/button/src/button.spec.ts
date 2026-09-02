@@ -101,6 +101,19 @@ describe('PctButton', () => {
     expect(btn.getAttribute('data-pct-size')).toBe('lg');
   });
 
+  it('every face of the union reflects — the stylesheet hooks have a real value to match', async () => {
+    for (const variant of [
+      'solid',
+      'outline',
+      'ghost',
+      'soft',
+      'hero',
+    ] as const) {
+      const { btn } = await stateHost({ variant });
+      expect(btn.getAttribute('data-pct-variant')).toBe(variant);
+    }
+  });
+
   it('respects the default size from providePctConfig', async () => {
     TestBed.resetTestingModule();
     TestBed.configureTestingModule({

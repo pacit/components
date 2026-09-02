@@ -61,6 +61,41 @@
       "severity": "error"
     },
     {
+      "name": "button/soft — label",
+      "fg": "pct.on-primary-100",
+      "bg": "pct.primary-100",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button/soft hover — label",
+      "fg": "pct.on-primary-100",
+      "bg": "pct.primary-200",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button/hero — label over the first stop",
+      "fg": "pct.on-hero",
+      "bg": "pct.hero",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button/hero — label over the middle stop",
+      "fg": "pct.on-hero",
+      "bg": "pct.hero-via",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "button/hero — label over the last stop",
+      "fg": "pct.on-hero",
+      "bg": "pct.hero-to",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
       "name": "UI: button border",
       "fg": "pct.button.border",
       "bg": "pct.surface",
@@ -257,42 +292,42 @@
       "severity": "warn"
     },
     {
-      "name": "date \u2014 the value in the field",
+      "name": "date — the value in the field",
       "fg": "pct.date.fg",
       "bg": "pct.date.bg",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "date \u2014 label",
+      "name": "date — label",
       "fg": "pct.date.label-fg",
       "bg": "pct.surface",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "date \u2014 hint",
+      "name": "date — hint",
       "fg": "pct.date.hint-fg",
       "bg": "pct.surface",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "date \u2014 error message",
+      "name": "date — error message",
       "fg": "pct.date.fg-invalid",
       "bg": "pct.surface",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "date \u2014 the format hint standing in the empty field",
+      "name": "date — the format hint standing in the empty field",
       "fg": "pct.date.placeholder-fg",
       "bg": "pct.date.bg",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "date \u2014 the value in a disabled field",
+      "name": "date — the value in a disabled field",
       "fg": "pct.date.fg-disabled",
       "bg": "pct.date.bg-disabled",
       "level": "AA",
@@ -334,14 +369,14 @@
       "severity": "warn"
     },
     {
-      "name": "date \u2014 the calendar button's drawing",
+      "name": "date — the calendar button's drawing",
       "fg": "pct.date.toggle-fg",
       "bg": "pct.date.bg",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "date \u2014 the calendar button under the pointer",
+      "name": "date — the calendar button under the pointer",
       "fg": "pct.date.toggle-fg",
       "bg": "pct.date.toggle-bg-hover",
       "level": "AA",
@@ -355,21 +390,21 @@
       "severity": "error"
     },
     {
-      "name": "date \u2014 a day in the panel",
+      "name": "date — a day in the panel",
       "fg": "pct.date.fg",
       "bg": "pct.date.panel-bg",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "date \u2014 a day under the pointer",
+      "name": "date — a day under the pointer",
       "fg": "pct.date.fg",
       "bg": "pct.date.day-bg-hover",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "date \u2014 the chosen day",
+      "name": "date — the chosen day",
       "fg": "pct.date.day-fg-selected",
       "bg": "pct.date.day-bg-selected",
       "level": "AA",
@@ -383,14 +418,14 @@
       "severity": "error"
     },
     {
-      "name": "date \u2014 a day of a neighbouring month (drawn quieter and still pickable, so it is measured as text and not exempted)",
+      "name": "date — a day of a neighbouring month (drawn quieter and still pickable, so it is measured as text and not exempted)",
       "fg": "pct.date.day-fg-muted",
       "bg": "pct.date.panel-bg",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "date \u2014 a day outside the bounds",
+      "name": "date — a day outside the bounds",
       "fg": "pct.date.day-fg-disabled",
       "bg": "pct.date.panel-bg",
       "level": "AA",
@@ -404,14 +439,14 @@
       "severity": "error"
     },
     {
-      "name": "date \u2014 the weekday headings",
+      "name": "date — the weekday headings",
       "fg": "pct.date.weekday-fg",
       "bg": "pct.date.panel-bg",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "date \u2014 the month over the grid",
+      "name": "date — the month over the grid",
       "fg": "pct.date.fg",
       "bg": "pct.date.nav-bg-hover",
       "level": "AA",
@@ -973,22 +1008,22 @@
       "severity": "warn"
     },
     {
-      "name": "accordion \u2014 a heading",
+      "name": "accordion — a heading",
       "fg": "pct.accordion.heading-fg",
       "bg": "pct.surface",
       "level": "AA",
       "severity": "error"
     },
     {
-      "$comment": "The hovered heading is measured against the tint the hover paints under it and not against the page \u2014 the tabs' rule, one component over: the two are different colours the moment a skin gives the row a surface of its own.",
-      "name": "accordion \u2014 a hovered heading",
+      "$comment": "The hovered heading is measured against the tint the hover paints under it and not against the page — the tabs' rule, one component over: the two are different colours the moment a skin gives the row a surface of its own.",
+      "name": "accordion — a hovered heading",
       "fg": "pct.accordion.heading-fg-hover",
       "bg": "pct.accordion.heading-bg-hover",
       "level": "AA",
       "severity": "error"
     },
     {
-      "name": "accordion \u2014 a disabled heading",
+      "name": "accordion — a disabled heading",
       "fg": "pct.accordion.heading-fg-disabled",
       "bg": "pct.surface",
       "level": "AA",
@@ -996,7 +1031,7 @@
     },
     {
       "$comment": "The marker says which way the section will move, and it is the only thing in the row that says it in a drawing. It is measured at `UI` rather than as text because it is a shape and not a letter, and as an error because the direction it points IS the state of the disclosure.",
-      "name": "UI: accordion \u2014 the marker",
+      "name": "UI: accordion — the marker",
       "fg": "pct.accordion.marker-fg",
       "bg": "pct.surface",
       "level": "UI",

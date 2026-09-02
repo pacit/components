@@ -2,7 +2,13 @@
   "$comment": "The token name dictionary — a closed set of words a name may be composed from. A name can be guessed not because the scheme is written down in the documentation, but because a state is called `hover` EVERYWHERE rather than `hover` here, `over` there and `on-hover` elsewhere (req-token-names). The `check-tokens` gate parses every name against this file and requires every word here to be used — adding a word is therefore a line in a diff that shows up in review, not a quiet widening of the set of acceptable names. The machine will not judge whether a new word is a good one; it only makes sure there is something to judge.",
   "private": {
     "$comment": "DTCG prefixes excluded from the public `PctCssVar` union in `dist/tokens.ts` (and from `pctTokens` with it). Both the build (the generator's filter) and the gate (point 2) read from here — one declaration instead of an expression buried in the generator that the gate would have to guess at. WHAT BELONGS HERE, settled by decision 0019 (docs/decisions/0019-primitives-are-not-the-contract.md): the primitive COLOUR ramps, and only they. A colour has a semantic tier above it (`--pct-danger`, `--pct-surface`, the `on-` pairs), so a ramp is how this skin happens to be built and not what the library promises; a primitive SCALE has no tier above it, so `--pct-space-3`, `--pct-control-height-md` or `--pct-target-min` are the only name a shared metric has and they stay public.",
-    "prefixes": ["pct.blue.", "pct.red.", "pct.slate."]
+    "prefixes": [
+      "pct.blue.",
+      "pct.red.",
+      "pct.slate.",
+      "pct.violet.",
+      "pct.cyan."
+    ]
   },
   "primitive": {
     "$comment": "The primitive tier: a name is the DTCG path one to one (`pct.control.height.sm` → `--pct-control-height-sm`), so guessability comes down to knowing the AXES. The axes are listed, the steps are not: `500`, `md`, `medium` belong to their axis, and listing them here would be a second copy of the source file.",
@@ -10,6 +16,8 @@
       "blue",
       "slate",
       "red",
+      "violet",
+      "cyan",
       "space",
       "radius",
       "target",
@@ -25,6 +33,7 @@
       "surface",
       "text",
       "border",
+      "hero",
       "danger",
       "focus-ring",
       "scrim",
@@ -37,7 +46,10 @@
       "muted",
       "strong",
       "inverse",
-      "100"
+      "100",
+      "200",
+      "via",
+      "to"
     ]
   },
   "component": {

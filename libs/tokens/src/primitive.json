@@ -1,70 +1,194 @@
 {
   "pct": {
     "blue": {
+      "100": {
+        "$type": "color",
+        "$value": "#dbeafe"
+      },
       "$comment": "Steps 200–400 exist for the dark theme, not the light one: there the `primary` ramp has to go UP on hover/active, because the background lightens under the dark `on-primary` text. Going down (as in light) drove the button label's contrast to 3.45:1 and 2.66:1 — measured when the policy started counting those pairs at all.",
-      "200": { "$type": "color", "$value": "#bfdbfe" },
-      "300": { "$type": "color", "$value": "#93c5fd" },
-      "400": { "$type": "color", "$value": "#60a5fa" },
-      "500": { "$type": "color", "$value": "#3b82f6" },
-      "600": { "$type": "color", "$value": "#2563eb" },
-      "700": { "$type": "color", "$value": "#1d4ed8" },
-      "800": { "$type": "color", "$value": "#1e40af" }
+      "200": {
+        "$type": "color",
+        "$value": "#bfdbfe"
+      },
+      "300": {
+        "$type": "color",
+        "$value": "#93c5fd"
+      },
+      "400": {
+        "$type": "color",
+        "$value": "#60a5fa"
+      },
+      "500": {
+        "$type": "color",
+        "$value": "#3b82f6"
+      },
+      "600": {
+        "$type": "color",
+        "$value": "#2563eb"
+      },
+      "700": {
+        "$type": "color",
+        "$value": "#1d4ed8"
+      },
+      "800": {
+        "$type": "color",
+        "$value": "#1e40af"
+      }
     },
     "slate": {
-      "0": { "$type": "color", "$value": "#ffffff" },
-      "100": { "$type": "color", "$value": "#f1f5f9" },
-      "200": { "$type": "color", "$value": "#e2e8f0" },
-      "500": { "$type": "color", "$value": "#64748b" },
-      "700": { "$type": "color", "$value": "#334155" },
-      "800": { "$type": "color", "$value": "#1e293b" },
-      "900": { "$type": "color", "$value": "#0f172a" },
+      "0": {
+        "$type": "color",
+        "$value": "#ffffff"
+      },
+      "100": {
+        "$type": "color",
+        "$value": "#f1f5f9"
+      },
+      "200": {
+        "$type": "color",
+        "$value": "#e2e8f0"
+      },
+      "500": {
+        "$type": "color",
+        "$value": "#64748b"
+      },
+      "700": {
+        "$type": "color",
+        "$value": "#334155"
+      },
+      "800": {
+        "$type": "color",
+        "$value": "#1e293b"
+      },
+      "900": {
+        "$type": "color",
+        "$value": "#0f172a"
+      },
       "$comment-1000": "The ramp's endpoint, and it exists for exactly one reader: `pct.scrim` in the DARK theme. A veil has to darken a page that is already `slate.900`, and 900 over 900 dims by nothing — so the step below it is the only value that works there. The light theme's veil is `slate.900`, which is why this is a step of the ramp and not a literal in the component tier (req-token-tiers).",
-      "1000": { "$type": "color", "$value": "#000000" }
+      "1000": {
+        "$type": "color",
+        "$value": "#000000"
+      }
     },
     "red": {
-      "400": { "$type": "color", "$value": "#f87171" },
-      "600": { "$type": "color", "$value": "#dc2626" }
+      "400": {
+        "$type": "color",
+        "$value": "#f87171"
+      },
+      "600": {
+        "$type": "color",
+        "$value": "#dc2626"
+      }
     },
     "space": {
-      "2": { "$type": "dimension", "$value": "4px" },
-      "3": { "$type": "dimension", "$value": "8px" },
-      "4": { "$type": "dimension", "$value": "12px" },
-      "5": { "$type": "dimension", "$value": "16px" },
-      "6": { "$type": "dimension", "$value": "24px" }
+      "2": {
+        "$type": "dimension",
+        "$value": "4px"
+      },
+      "3": {
+        "$type": "dimension",
+        "$value": "8px"
+      },
+      "4": {
+        "$type": "dimension",
+        "$value": "12px"
+      },
+      "5": {
+        "$type": "dimension",
+        "$value": "16px"
+      },
+      "6": {
+        "$type": "dimension",
+        "$value": "24px"
+      }
     },
     "radius": {
-      "md": { "$type": "dimension", "$value": "8px" }
+      "md": {
+        "$type": "dimension",
+        "$value": "8px"
+      }
     },
     "target": {
       "$comment": "Minimum touch area per WCAG 2.2 SC 2.5.8 (24x24 px).",
-      "min": { "$type": "dimension", "$value": "24px" }
+      "min": {
+        "$type": "dimension",
+        "$value": "24px"
+      }
     },
     "control": {
       "$comment": "Control height at a given size — the axis shared by the button and the field row. The height is a value outright here, not the outcome of padding and line height: only then are a field and a button of the same size equal by definition (req-api-size).",
       "height": {
-        "sm": { "$type": "dimension", "$value": "28px" },
-        "md": { "$type": "dimension", "$value": "36px" },
-        "lg": { "$type": "dimension", "$value": "44px" }
+        "sm": {
+          "$type": "dimension",
+          "$value": "28px"
+        },
+        "md": {
+          "$type": "dimension",
+          "$value": "36px"
+        },
+        "lg": {
+          "$type": "dimension",
+          "$value": "44px"
+        }
       }
     },
     "motion": {
       "$comment": "Motion is a token axis, not an exception in a component stylesheet: only that makes `prefers-reduced-motion` apply across the whole library from one rule (req-a11y-motion). The split is not by speed but by KIND of motion, because reduction does two different things to them: a state transition is to disappear, a continuous indicator (a spinner) only to slow down — stopped, it would no longer report that the button is working.",
       "transition": {
-        "duration": { "$type": "duration", "$value": "150ms" },
-        "easing": { "$type": "cubicBezier", "$value": "ease" }
+        "duration": {
+          "$type": "duration",
+          "$value": "150ms"
+        },
+        "easing": {
+          "$type": "cubicBezier",
+          "$value": "ease"
+        }
       },
       "loop": {
-        "duration": { "$type": "duration", "$value": "600ms" }
+        "duration": {
+          "$type": "duration",
+          "$value": "600ms"
+        }
+      },
+      "drift": {
+        "duration": {
+          "$type": "duration",
+          "$value": "8s"
+        }
       }
     },
     "font": {
       "size": {
-        "sm": { "$type": "dimension", "$value": "13px" },
-        "md": { "$type": "dimension", "$value": "14px" },
-        "lg": { "$type": "dimension", "$value": "16px" }
+        "sm": {
+          "$type": "dimension",
+          "$value": "13px"
+        },
+        "md": {
+          "$type": "dimension",
+          "$value": "14px"
+        },
+        "lg": {
+          "$type": "dimension",
+          "$value": "16px"
+        }
       },
       "weight": {
-        "medium": { "$type": "fontWeight", "$value": 500 }
+        "medium": {
+          "$type": "fontWeight",
+          "$value": 500
+        }
+      }
+    },
+    "violet": {
+      "600": {
+        "$type": "color",
+        "$value": "#7c3aed"
+      }
+    },
+    "cyan": {
+      "700": {
+        "$type": "color",
+        "$value": "#0e7490"
       }
     }
   }

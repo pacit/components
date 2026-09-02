@@ -43,12 +43,16 @@ test.describe('prefers-reduced-motion', () => {
       '150ms',
     );
     expect(await rootToken(page, '--pct-motion-loop-duration')).toBe('600ms');
+    expect(await rootToken(page, '--pct-motion-drift-duration')).toBe('8s');
     expect(
       await firstDurationMs(
         page.getByTestId('btn-solid'),
         'transition-duration',
       ),
     ).toBe(150);
+    expect(
+      await firstDurationMs(page.getByTestId('btn-hero'), 'animation-duration'),
+    ).toBe(8000);
   });
 
   test('the transitions disappear and a continuous indicator only slows down', async ({
@@ -78,6 +82,14 @@ test.describe('prefers-reduced-motion', () => {
       .getByTestId('btn-loading')
       .locator('[data-pct-part="spinner"]');
     expect(await firstDurationMs(spinner, 'animation-duration')).toBe(1500);
+
+    // The hero drift DOES stop: unlike the spinner it informs of nothing, so under the
+    // preference it is decoration with a vestibular cost and no message. Frozen at 0s —
+    // the gradient stands at its first frame (the drift token's own comment).
+    expect(await rootToken(page, '--pct-motion-drift-duration')).toBe('0s');
+    expect(
+      await firstDurationMs(page.getByTestId('btn-hero'), 'animation-duration'),
+    ).toBe(0);
   });
 
   /**

@@ -64,6 +64,76 @@
   background: var(--pct-surface-100);
 }
 
+/* The ghost variant — the outline stripped of its boundary: toolbars, top bars, rows of
+   quiet actions. The affordance is the primary colour itself; hover restores a surface
+   under it — the same pair the outline variant already measures. */
+:host([data-pct-variant='ghost']) {
+  border-color: transparent;
+  background: transparent;
+  color: var(--pct-primary);
+}
+
+:host([data-pct-variant='ghost']:hover:not([disabled])),
+:host([data-pct-variant='ghost']:active:not([disabled])) {
+  background: var(--pct-surface-100);
+}
+
+/* The soft variant — a tinted resting surface for secondary actions. Real colours, not
+   primary under an opacity (req-token-no-opacity), so both steps stand in the contrast
+   policy with a measured ratio: the resting tint and the hover tint each carry the label
+   on their own. */
+:host([data-pct-variant='soft']) {
+  border-color: transparent;
+  background: var(--pct-primary-100);
+  color: var(--pct-on-primary-100);
+}
+
+:host([data-pct-variant='soft']:hover:not([disabled])),
+:host([data-pct-variant='soft']:active:not([disabled])) {
+  background: var(--pct-primary-200);
+}
+
+/* The hero variant — the library's one loud face (0058): the brand gradient, drifting.
+   Three semantic stops compose the surface and each stands against `on-hero` in the
+   contrast policy — a gradient is three contrast checks, not one. The drift is
+   `background-position` over an oversized image, its duration from the motion axis:
+   under `prefers-reduced-motion` the axis sets it to `0s` and the surface stands still
+   (req-a11y-motion) — the component repeats no media query, the skeleton's rule. */
+:host([data-pct-variant='hero']) {
+  border-color: transparent;
+  background-image: linear-gradient(
+    120deg,
+    var(--pct-hero),
+    var(--pct-hero-via),
+    var(--pct-hero-to),
+    var(--pct-hero)
+  );
+  background-size: 300% 100%;
+  color: var(--pct-on-hero);
+  animation: pct-button-drift var(--pct-motion-drift-duration) linear infinite;
+  transition: transform var(--pct-motion-transition-duration)
+    var(--pct-motion-transition-easing);
+}
+
+/* Hover answers with lift, not colour: the surface is already in motion, and a transform
+   does not fight the background animation for the same property. */
+:host([data-pct-variant='hero']:hover:not([disabled])) {
+  transform: translateY(-1px);
+}
+
+:host([data-pct-variant='hero']:active:not([disabled])) {
+  transform: translateY(0);
+}
+
+@keyframes pct-button-drift {
+  to {
+    /* pct-exception background-position: the drift travels a closed loop whose start no
+       eye can find — like the spinner's gap, it has no writing direction, and a logical
+       version would change nothing but the animation's initial phase. */
+    background-position: 300% 0;
+  }
+}
+
 /* Sizes driven by a state attribute (req-api-attributes). A variant swaps the base tokens for
    its own counterparts instead of repeating appearance rules — the rule above stays the only
    place that knows where which value lands. Size `md` overrides nothing, so overriding a base
@@ -123,6 +193,22 @@
   :host([disabled][data-pct-variant='outline']:not([data-pct-loading])) {
     color: GrayText;
     border-color: GrayText;
+  }
+
+  /* The gradient is an IMAGE, and forced colors strips colours, not images — left alone
+     the drift would keep painting over the forced ButtonFace (the skeleton's shimmer,
+     one component over). Dropped outright; the hero stands as an ordinary button. */
+  :host([data-pct-variant='hero']) {
+    background-image: none;
+    animation: none;
+  }
+
+  /* The boundary-less variants get their edge back: `transparent` keeps its alpha through
+     the forcing, and a button whose only edge was a tint would melt into the Canvas. */
+  :host([data-pct-variant='ghost']),
+  :host([data-pct-variant='soft']),
+  :host([data-pct-variant='hero']) {
+    border-color: ButtonText;
   }
 
   /* The spinner draws the gap in the ring rather than a colour: had the substitution painted

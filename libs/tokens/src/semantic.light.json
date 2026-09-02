@@ -16,6 +16,34 @@
       "$type": "color",
       "$value": "{pct.slate.0}"
     },
+    "primary-100": {
+      "$type": "color",
+      "$value": "{pct.blue.100}"
+    },
+    "primary-200": {
+      "$type": "color",
+      "$value": "{pct.blue.200}"
+    },
+    "on-primary-100": {
+      "$type": "color",
+      "$value": "{pct.blue.700}"
+    },
+    "hero": {
+      "$type": "color",
+      "$value": "{pct.blue.600}"
+    },
+    "hero-via": {
+      "$type": "color",
+      "$value": "{pct.violet.600}"
+    },
+    "hero-to": {
+      "$type": "color",
+      "$value": "{pct.cyan.700}"
+    },
+    "on-hero": {
+      "$type": "color",
+      "$value": "{pct.slate.0}"
+    },
     "surface": {
       "$type": "color",
       "$value": "{pct.slate.0}"
