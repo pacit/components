@@ -2020,6 +2020,15 @@ again"` fails **1 run in 3** in WebKit at the `Escape` step — the panel is sti
     focus-visible parity with the button, forced-colors reading — mutation, card)
   - binds at: **the premiere's link audit (2.1.8/3.1)**, or the first consumer who asks
     for a link in button's clothes — whichever lands first · _notes:_ —
+- [ ] **4.34 — the first human review of the site: good in parts, owed a design pass**
+  - delivered 2026-09-02 over the running preview, the day 2.1 closed: parts of the site
+    look very good, a lot does not — and the direction is explicit: the site will still
+    change heavily, toward more professional and prettier pages
+  - not a machinery defect: the numbers, the gates, the demos and the prerender all
+    stand; the gap is visual design — composition, rhythm, polish — the one axis 2.1
+    measured least
+  - binds at: **the next site session** — it opens with the reviewer's list of concrete
+    screens, not with a guess · _notes:_ —
 
 ## 5. Gaps with no deadline
 
