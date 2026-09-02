@@ -9,9 +9,9 @@ There is no "built, just unverified" state — see
 
 | state       | means                                                         |  count |
 | ----------- | ------------------------------------------------------------- | -----: |
-| ✅ enforced | gate and control exist and run in CI                          |     64 |
+| ✅ enforced | gate and control exist and run in CI                          |     65 |
 | 🟡 partial  | the gate is there, the negative control is not (deliberately) |     15 |
-| ⛔ gap      | gate or control missing, with a recorded deadline             |      7 |
+| ⛔ gap      | gate or control missing, with a recorded deadline             |      6 |
 | **total**   |                                                               | **86** |
 
 ## Gaps by urgency
@@ -26,7 +26,6 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-project-files`](requirements/project.md#req-project-files)     | a check of the entrypoint directory layout (a script in the spirit of…             | the first component added by somebody other than the author… |
 | [`req-project-layout`](requirements/project.md#req-project-layout)   | follows from `req-project-apps`; it will close together with it                    | the creation of `apps/docs`                                  |
 | [`req-token-density`](requirements/tokens.md#req-token-density)      | the DTCG sources contain **not one** density token                                 | once the size axis has settled. Note: density will drop bel… |
-| [`req-token-directive`](requirements/tokens.md#req-token-directive)  | the directive does not exist, the theme is set with a hand-written `d…             | when setting `data-theme` from a template starts to repeat … |
 
 ## axis
 
@@ -142,7 +141,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-token-scss`](requirements/tokens.md#req-token-scss)                 | 🟡 partial  | none — deliberately: the file extension is visible in review, and a s… | not applicable ---                                                     |
 | [`req-token-override`](requirements/tokens.md#req-token-override)         | ✅ enforced | `apps/sandbox-e2e/src/theme.spec.ts`                                   | as in `req-token-closure` — comparing the component token, not the se… |
 | [`req-token-scoped`](requirements/tokens.md#req-token-scoped)             | ✅ enforced | `apps/sandbox-e2e/src/theme.spec.ts`, `apps/sandbox-e2e/src/a11y.spec… | see `req-token-closure`                                                |
-| [`req-token-directive`](requirements/tokens.md#req-token-directive)       | ⛔ gap      | none — gap: the directive does not exist, the theme is set with a han… | none — gap: a theme set by the directive and a theme set by the attri… |
+| [`req-token-directive`](requirements/tokens.md#req-token-directive)       | ✅ enforced | `libs/components/theme/src/theme.spec.ts` — the attribute written, fo… | `theme.spec.ts › "the directive and the raw attribute are the same th… |
 | [`req-token-system`](requirements/tokens.md#req-token-system)             | ✅ enforced | `apps/sandbox-e2e/src/preferences.spec.ts`                             | `preferences.spec.ts › "with no dark preference :root stays light (th… |
 | [`req-token-skin`](requirements/tokens.md#req-token-skin)                 | ✅ enforced | `libs/tokens/build.mjs` — but **only for the built-in skin**           | see `req-token-contrast`                                               |
 | [`req-token-distribution`](requirements/tokens.md#req-token-distribution) | ✅ enforced | `libs/components/check-package.mjs` — points 1 and 2: the skin is in … | `tools/check-package.fixtures/theme-missing/` — a package with no ski… |

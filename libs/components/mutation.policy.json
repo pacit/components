@@ -24,6 +24,7 @@
     "libs/components/container/src/container.ts",
     "libs/components/stack/src/stack.ts",
     "libs/components/grid/src/grid.ts",
+    "libs/components/theme/src/theme.ts",
     "libs/components/core/src/announce.ts",
     "libs/components/core/src/config.ts",
     "libs/components/core/src/field.ts",

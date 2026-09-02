@@ -8,6 +8,7 @@ import {
   required,
 } from '@angular/forms/signals';
 import { PctButton } from '@pacit/components/button';
+import { PctTheme } from '@pacit/components/theme';
 import { PctCheckbox } from '@pacit/components/checkbox';
 import { PctRadio, PctRadioGroup } from '@pacit/components/radio';
 import {
@@ -52,6 +53,7 @@ import { PctSwitch } from '@pacit/components/switch';
     PctPrefix,
     PctSuffix,
     FormField,
+    PctTheme,
   ],
   templateUrl: './kitchen-sink.html',
   styleUrl: './kitchen-sink.scss',

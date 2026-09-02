@@ -37,6 +37,32 @@ test.describe('A scoped theme — the cascade of CSS custom properties', () => {
   });
 
   /**
+   * The `req-token-directive` control: the scoped panel above writes `data-theme` by
+   * hand, its neighbour goes through the library's `[pctTheme]` — one attribute, two
+   * writers. Sugar may not taste different: the same attribute value and the same
+   * computed surface, or the directive has become a second mechanism.
+   */
+  test('the directive and the raw attribute are the same theme', async ({
+    page,
+  }) => {
+    const surfaceOf = (id: string) =>
+      page
+        .getByTestId(id)
+        .evaluate((el) =>
+          getComputedStyle(el).getPropertyValue('--pct-surface').trim(),
+        );
+
+    await expect(page.getByTestId('panel-directive')).toHaveAttribute(
+      'data-theme',
+      'dark',
+    );
+    expect(await surfaceOf('panel-directive')).toBe(
+      await surfaceOf('panel-scoped'),
+    );
+    expect(await surfaceOf('panel-directive')).toBe('#0f172a');
+  });
+
+  /**
    * A regression: a scoped theme has to re-theme the COMPONENT tokens as well, not
    * only the semantic ones. Custom properties are substituted where they are
    * declared, so a component token declared in `:root` freezes the light value —

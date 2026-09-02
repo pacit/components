@@ -58,11 +58,11 @@ Snapshot, `node tools/check-docs.mjs`:
 | measure                                     | value |
 | ------------------------------------------- | ----: |
 | requirements                                |    86 |
-| ✅ enforced                                 |    64 |
+| ✅ enforced                                 |    65 |
 | 🟡 partial (deliberately without a control) |    15 |
-| ⛔ gap                                      |     7 |
+| ⛔ gap                                      |     6 |
 
-All 7 gaps have an owner below — in sections 2 and 5. If adding a requirement raises the gap
+All 6 gaps have an owner below — in sections 2 and 5. If adding a requirement raises the gap
 count and no task changes, this list has stopped being complete, and that is a fault of this
 list, not of the registry.
 
@@ -744,9 +744,19 @@ precondition of the quiet push (3.0), which no visitor can see.
         `ButtonText` edge in all three engines. Baselines: `button-variants` ±rtl grew
         the three faces; infinite animations are cancelled to frame zero by the
         screenshot assertion itself, so the drifting surface stays a deterministic
-        picture · cost: ~1 day estimated, ~half spent — paint is cheaper than machinery
-  - [ ] **2.1.3 — the theme directive** → closes `req-token-directive`: the docs app is
-        the repetition its "Binds at" was waiting for · cost: ~0.5 day
+        picture. (And 2.1.1's "smallest entrypoint" held for two hours: `./theme` landed
+        at **518 B** the same afternoon) · cost: ~1 day estimated, ~half spent — paint is
+        cheaper than machinery
+  - [x] **2.1.3 — the theme directive** → closed `req-token-directive`, and the trigger
+        had fired earlier than the plan thought: the sandbox already wrote `data-theme`
+        by hand in three places before the docs app could become the fourth. `PctTheme`
+        is one host binding and three refusals (0059): the mechanism stays the cascade,
+        `null` removes the attribute so the system speaks again, and no persistence —
+        policy belongs to the application. The demo stage now drives every themed card
+        through the directive; the kitchen-sink's raw panel deliberately stays raw as
+        the control's other half, and the e2e case reads the same `--pct-surface` from
+        both writers. _Landed 2026-09-02:_ unit **1084** (3 new), the registry moves
+        **7 gaps → 6** and enforced **64 → 65** · cost: ~0.5 day, spent as estimated
   - [ ] **2.1.4 — the scaffold**: `apps/docs` + `apps/docs-e2e`, static output, the shell
         built from the library (drawer, buttons, layout), CI wiring — and the gates
         promised in `req-project-apps` (the project in the graph, its `build` in CI), so

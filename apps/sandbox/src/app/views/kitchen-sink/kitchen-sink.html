@@ -278,3 +278,17 @@
     </pct-field>
   </div>
 </section>
+
+<!-- The other half of the req-token-directive control: the panel above writes
+     `data-theme` by hand, this one goes through the library's [pctTheme] — and the e2e
+     suite measures that both read the SAME surface, because the directive is sugar over
+     the cascade, not a second mechanism. -->
+<section class="panel" pctTheme="dark" data-testid="panel-directive">
+  <div class="panel__head">
+    <h2>The same theme, spelled by the directive</h2>
+  </div>
+  <div class="row">
+    <button pctButton data-testid="directive-solid">Solid</button>
+    <button pctButton variant="soft">Soft</button>
+  </div>
+</section>

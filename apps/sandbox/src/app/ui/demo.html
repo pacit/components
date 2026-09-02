@@ -24,10 +24,13 @@
   }
 </header>
 
-<!-- The stage: the only place where the card theme is in force. -->
+<!-- The stage: the only place where the card theme is in force. The theme goes through
+     the library's own [pctTheme] — the sandbox is the directive's first consumer, and the
+     hand-written attribute it replaced lives on in the kitchen-sink's scoped panel as the
+     other half of the req-token-directive control. -->
 <div
   class="demo__stage"
-  [attr.data-theme]="activeScheme()"
+  [pctTheme]="activeScheme()"
   [attr.data-skin]="activeSkin()"
   [attr.dir]="activeDir()"
   data-testid="demo-stage"

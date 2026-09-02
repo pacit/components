@@ -1,5 +1,6 @@
 import { Component, inject, input, linkedSignal } from '@angular/core';
 import { PctSize } from '@pacit/components';
+import { PctTheme } from '@pacit/components/theme';
 import { SbxControls } from './controls';
 import { PctDocId } from './doc-ids';
 import {
@@ -30,7 +31,7 @@ import {
  */
 @Component({
   selector: 'sbx-demo',
-  imports: [SbxControls],
+  imports: [SbxControls, PctTheme],
   templateUrl: './demo.html',
   styleUrl: './demo.scss',
 })

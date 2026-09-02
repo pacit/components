@@ -316,11 +316,13 @@ explicitly**.
 underlying mechanism remains the cascade itself — the directive is a convenience, not
 a condition.
 
-**Gate:** none — gap: the directive does not exist, the theme is set with a hand-written
-`data-theme`
-**Control:** none — gap: a theme set by the directive and a theme set by the attribute must
-produce the same result
-**Binds at:** when setting `data-theme` from a template starts to repeat
+**Gate:** `libs/components/theme/src/theme.spec.ts` — the attribute written, followed and
+removed on `null`; `apps/sandbox-e2e/src/theme.spec.ts` — the sandbox's demo stage sets the
+card theme through the directive, so every themed card in the suite exercises it
+**Control:** `theme.spec.ts › "the directive and the raw attribute are the same theme"` — a
+hand-written `data-theme` panel and a `[pctTheme]` panel side by side read the same
+computed `--pct-surface`, or the sugar has become a second mechanism
+**Decision:** [0059 — a theme is an attribute the skin reads](../decisions/0059-a-theme-is-an-attribute-the-skin-reads.md)
 
 ---
 

@@ -37,6 +37,7 @@
     "container/**/*.ts",
     "stack/**/*.ts",
     "grid/**/*.ts",
+    "theme/**/*.ts",
     "field/**/*.ts",
     "icon/**/*.ts"
   ],

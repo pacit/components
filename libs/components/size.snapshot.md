@@ -57,6 +57,7 @@ before an application ships them.
 ./stepper 10628 ./core,./icon @angular/common,@angular/core
 ./switch 12371 ./core @angular/core
 ./tabs 13623 ./core @angular/core
+./theme 518 - @angular/core
 ./toast 15527 ./core,./icon @angular/common,@angular/core
 ./tooltip 13216 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core
 ./tree 9158 ./icon @angular/common,@angular/core

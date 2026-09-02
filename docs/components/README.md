@@ -42,6 +42,7 @@ a machine; prose with a missing paragraph is not.
 | [`PctContainer`](container.md)   | `@pacit/components/container`  | a reading column capped by a token        |
 | [`PctStack`](stack.md)           | `@pacit/components/stack`      | the space between blocks, from the scale  |
 | [`PctGrid`](grid.md)             | `@pacit/components/grid`       | a grid that finds its own column count    |
+| [`PctTheme`](theme.md)           | `@pacit/components/theme`      | the theme, spelled from a template        |
 
 ## The order of the components to come
 

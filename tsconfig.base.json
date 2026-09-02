@@ -53,7 +53,8 @@
         "./libs/components/container/src/index.ts"
       ],
       "@pacit/components/stack": ["./libs/components/stack/src/index.ts"],
-      "@pacit/components/grid": ["./libs/components/grid/src/index.ts"]
+      "@pacit/components/grid": ["./libs/components/grid/src/index.ts"],
+      "@pacit/components/theme": ["./libs/components/theme/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
