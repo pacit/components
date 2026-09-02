@@ -54,8 +54,57 @@
     font-size: var(--pct-font-size-md);
     text-decoration: none;
 
-    &:hover {
+    &:hover,
+    &.is-active {
       color: var(--pct-text);
+    }
+  }
+}
+
+.topbar__start {
+  color: var(--pct-primary);
+  font-size: var(--pct-font-size-md);
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+}
+
+/* The bar carries the nav where it fits; below, the drawer takes over. One media query,
+   in the shell's own chrome — the library components under it stay query-free. */
+.topbar__menu {
+  display: none;
+}
+
+@media (max-width: 719px) {
+  .topbar__nav,
+  .topbar__start {
+    display: none;
+  }
+
+  .topbar__theme {
+    margin-inline-start: auto;
+  }
+
+  .topbar__menu {
+    display: inline-flex;
+  }
+}
+
+.drawer-nav {
+  display: grid;
+  gap: var(--pct-space-4);
+
+  a {
+    color: var(--pct-text);
+    font-size: var(--pct-font-size-lg);
+    text-decoration: none;
+
+    &:hover {
+      color: var(--pct-primary);
     }
   }
 }

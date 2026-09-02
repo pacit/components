@@ -808,9 +808,28 @@ precondition of the quiet push (3.0), which no visitor can see.
         (grep, not assumption). The landing chrome compiles to 4.85 kB, so the app's
         `anyComponentStyle` warn line moved 4→6 kB (the 8 kB error stands) — recorded
         here, not hidden · cost: ~1 day, ~half spent
-  - [ ] **2.1.7 — the pages**: `/components/:id` (demos whose code tab shows their own
-        source, parts and token tables), `/start`, `/theming`, `/trust`, `/support` ·
-        cost: ~1.5 days
+  - [x] **2.1.7 — the pages**: `/components/:id` (demos whose code tab shows their own
+        source, parts and token tables), `/start`, `/theming`, `/trust`, `/support`.
+        _Landed 2026-09-02, measured:_ **39 routes prerendered** — six pages plus one per
+        card, the parameterised route naming its pages from the same generated inventory
+        the pages render. The machinery is 0062's: a ~150-line **form renderer** (no
+        markdown engine — an unknown construct renders as escaped text) plus **shiki at
+        build time** (one HTML, both palettes, zero highlighter shipped), and one
+        link-rewriting law that lands every card citation on a /trust anchor — the dist
+        carries **86 `req-`, 62 `adr-` and 142 `lesson-` anchors** (counted, not
+        assumed). **33 demo files** each double as the page's pixels and its code tab;
+        the demo lazy-loads inside a `PendingTasks` span, so the button page's static
+        HTML ships its hero button before any script (grep). The shell grew the nav and
+        the drawer 0060 deferred, the landing's CTAs and gallery wired themselves to the
+        new routes, and the 33 cards traded their "docs page — gap" rows for the real
+        address. docs-e2e: **66 of 66 in three engines** (10 new cases), and two red
+        runs earned their keep first: the dialog demo's "Close" collided with the
+        dialog's own close button (strict mode — the demo now says "Done"), and a shut
+        drawer is `hidden="until-found"` — a box Playwright calls visible, so the
+        assertion reads the library's contract instead. Named costs: `<button
+    routerLink>` CTAs until `a[pctButton]` exists (**4.33**), `select.scss` 7.69 kB
+        against the app's 6 kB style warn — the library's heaviest sheet, now printed by
+        every docs build · cost: ~1.5 days estimated, ~half spent
   - [ ] **2.1.8 — the bar, measured**: axe over every route in three engines, hydration,
         visual baselines light and dark, Lighthouse read before anything is published,
         SEO plumbing · cost: ~0.5 day
@@ -1961,6 +1980,18 @@ again"` fails **1 run in 3** in WebKit at the `Escape` step — the panel is sti
     `settledScrollY` waits for the page, not for the panel's focus
   - binds at: **the next red CI run it causes** — a retry currently absorbs it, and a
     fix belongs beside the dialog, not inside 2.1 · _notes:_ —
+- [ ] **4.33 — the button's faces stop at `<button>`, and the site is the consumer that
+      noticed**
+  - `PctButton` dresses `button[pctButton]` only; a link that should look like a button
+    — the landing's hero CTA, any "Get started" pointing at a route — has no library
+    answer, and the docs app (2.1.6/2.1.7) settled for `<button routerLink>`: it
+    navigates, but it is not an `<a>` — no open-in-new-tab, no link semantics for a
+    crawler. First raised by the site's own CTAs; recorded in 0062's costs
+  - the shape when it binds: widen the selector to `a[pctButton]` at the full 1.1 regime
+    (decision, e2e in three engines — a link keeps its role and its underline policy,
+    focus-visible parity with the button, forced-colors reading — mutation, card)
+  - binds at: **the premiere's link audit (2.1.8/3.1)**, or the first consumer who asks
+    for a link in button's clothes — whichever lands first · _notes:_ —
 
 ## 5. Gaps with no deadline
 

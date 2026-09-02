@@ -1,0 +1,52 @@
+<pct-container>
+  <pct-stack gap="lg" class="page">
+    <header>
+      <h1 class="title">Theming</h1>
+      <p class="lead">
+        Three DTCG tiers, contrast-checked at build — every pair on both themes,
+        and a build that fails on a pair below threshold. Dark mode is a data
+        attribute, not a fork.
+      </p>
+    </header>
+
+    <section>
+      <h2>The two moves</h2>
+      <p class="note">
+        Pin a theme with an attribute anywhere in the tree, or override a token
+        where you need it — both are plain CSS, visible in devtools, no build
+        step of yours involved.
+      </p>
+      <div class="docs-code" [innerHTML]="example"></div>
+    </section>
+
+    @for (tier of tiers(); track tier.tier) {
+    <section [attr.data-testid]="'tier-' + tier.tier">
+      <h2>{{ tier.heading }}</h2>
+      <p class="note">{{ tier.tells }}</p>
+      <div class="docs-table">
+        <table>
+          <thead>
+            <tr>
+              <th>token</th>
+              <th>type</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of tier.tokens; track row.name) {
+            <tr>
+              <td><code>{{ row.name }}</code></td>
+              <td>{{ row.type }}</td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+    }
+
+    <p class="note">
+      {{ privateCount }} further tokens are private plumbing — present in the
+      snapshot, absent from this contract on purpose.
+    </p>
+  </pct-stack>
+</pct-container>

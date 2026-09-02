@@ -93,8 +93,7 @@ a panel the user is expected to leave and come back to has to let them leave.
 | Strings through `PCT_TEXTS`     | `drawerClose`, read at render time in `drawer.html`; swapped in `libs/components/drawer/src/drawer.spec.ts` through `providePctTexts`                                                                                                                                            |
 | Size budget                     | `libs/components/size.snapshot.md` — the `./drawer` row                                                                                                                                                                                                                          |
 | Screen-reader log               | none — gap. The same one the dialog, the select, the toast, the tabs and the accordion have. The question it would answer here is specific: whether a named `region` really is offered in a reader's landmark list while its trigger says `expanded`                             |
-| docs page                       | none — gap. The documentation site                                                                                                                                                                                                                                               |
-
+| docs page                       | `/components/drawer` on the published site — prerendered, the demo's own source is the code tab (2.1.7) |
 ## Decisions
 
 [0047](../decisions/0047-a-drawer-is-a-region-of-the-page-not-a-layer-over-it.md) (the main one

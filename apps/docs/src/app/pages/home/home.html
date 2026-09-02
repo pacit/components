@@ -20,12 +20,20 @@
         at build time.
       </p>
       <div class="hero__cta">
-        <!-- The destinations arrive with their pages (2.1.7) — the shell's own law:
-             these gain routerLink the day /start and /components exist. -->
-        <button pctButton variant="hero" size="lg" data-testid="cta-hero">
+        <!-- Buttons, not anchors: pctButton dresses `<button>` only today, and routerLink
+             navigates it — the a[pctButton] face is named library work (plan 4.33). -->
+        <button
+          pctButton
+          variant="hero"
+          size="lg"
+          routerLink="/start"
+          data-testid="cta-hero"
+        >
           Get started
         </button>
-        <button pctButton variant="outline" size="lg">Browse components</button>
+        <button pctButton variant="outline" size="lg" routerLink="/components">
+          Browse components
+        </button>
       </div>
       <div class="hero__install">
         <code data-testid="install-line">{{ install }}</code>
@@ -98,8 +106,8 @@
       For the auditor: the whole proof machinery — {{ evidence.mutation.mutants
       }} mutants at a measured {{ evidence.mutation.score }}%, a registry of {{
       evidence.requirements.total }} gated promises, {{ evidence.decisions }}
-      decisions and {{ evidence.lessons }} lessons on record — lives on Trust.
-      <!-- The Trust link lands with the page itself (2.1.7). -->
+      decisions and {{ evidence.lessons }} lessons on record — lives on
+      <a routerLink="/trust">Trust</a>.
     </p>
   </pct-container>
 </section>
@@ -215,19 +223,18 @@
       grid is <code>pct-grid</code>: resize the window, not one media query
       fires.
     </p>
-    <!-- Plain tiles today; each becomes a link into /components/:id with 2.1.7. -->
     <pct-grid class="gallery" data-testid="gallery">
       @for (card of cards; track card.id) {
-      <div class="gallery__item">
+      <a class="gallery__item" [routerLink]="['/components', card.id]">
         <span class="gallery__name">{{ card.id }}</span>
         <code class="gallery__selector">{{ card.selector }}</code>
-      </div>
+      </a>
       }
     </pct-grid>
   </pct-container>
 </section>
 
-<!-- 5 · Three tiles of identity — the teaser of /trust (2.1.7). -->
+<!-- 5 · Three tiles of identity — the teaser of /trust. -->
 <section class="block block--flush">
   <pct-container>
     <pct-grid class="tiles">

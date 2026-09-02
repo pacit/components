@@ -76,8 +76,7 @@ bar or a press does.
 | Strings through `PCT_TEXTS`     | `tools/check-texts.mjs` — two keys; everything else is `Intl`                                                                                                                     |
 | Size budget                     | `libs/components/size.snapshot.md` — measured together with the field, one entrypoint                                                                                             |
 | Screen-reader log               | none — gap                                                                                                                                                                        |
-| docs page                       | none — gap                                                                                                                                                                        |
-
+| docs page                       | `/components/calendar` on the published site — prerendered, the demo's own source is the code tab (2.1.7) |
 ## The two names of a column, and why there are two
 
 A column heading carries the **narrow** weekday name for the eye and the **long** one for a

@@ -48,8 +48,7 @@ No handling of its own ([`req-api-platform`](../requirements/api.md#req-api-plat
 | Strings through `PCT_TEXTS`     | `tools/check-texts.mjs` — no strings of its own                                                                                                                                                                                                                                                                                             |
 | Size budget                     | none — gap                                                                                                                                                                                                                                                                                                                                  |
 | Screen-reader log               | none — gap. Relevant: how the `mixed` state is announced differs between readers                                                                                                                                                                                                                                                            |
-| docs page                       | none — gap                                                                                                                                                                                                                                                                                                                                  |
-
+| docs page                       | `/components/checkbox` on the published site — prerendered, the demo's own source is the code tab (2.1.7) |
 ## Decisions
 
 [0005](../decisions/0005-signal-forms-without-cva.md), [0003](../decisions/0003-wrapper-and-control.md),

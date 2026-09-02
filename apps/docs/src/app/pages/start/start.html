@@ -1,0 +1,53 @@
+<pct-container>
+  <pct-stack gap="lg" class="page">
+    <header>
+      <h1 class="title">Get started</h1>
+      <p class="lead">
+        Standalone components on Angular 22 — zoneless, signal forms, SSR-ready.
+        Three steps from an empty app to a validated field.
+      </p>
+    </header>
+
+    <section>
+      <h2>1 · Install</h2>
+      <div class="docs-code" [innerHTML]="snippet('install')"></div>
+      <p class="note">
+        No <code>zone.js</code> anywhere in the tree — the package refuses it by
+        gate, not by convention.
+      </p>
+    </section>
+
+    <section>
+      <h2>2 · Provide</h2>
+      <p class="note">
+        The library reads one optional config for defaults; the application
+        stays the owner of policy — locale, texts, theme.
+      </p>
+      <div class="docs-code" [innerHTML]="snippet('provide')"></div>
+    </section>
+
+    <section>
+      <h2>3 · A first form</h2>
+      <p class="note">
+        Signal forms end to end: the model is a signal, the schema is a
+        function, the field wrapper wires the label, hint and error lines.
+      </p>
+      <div class="docs-code" [innerHTML]="snippet('form')"></div>
+    </section>
+
+    <section>
+      <h2>Server-side rendering</h2>
+      <p class="note">
+        Every component hydrates cleanly — the sandbox suite measures it per
+        view, in three engines. Add <code>provideClientHydration()</code> and
+        prerender or SSR as your host prefers; this documentation site is itself
+        prerendered from the same package.
+      </p>
+    </section>
+
+    <p class="next">
+      Next: <a routerLink="/components">the components</a> ·
+      <a routerLink="/theming">theming</a>
+    </p>
+  </pct-stack>
+</pct-container>

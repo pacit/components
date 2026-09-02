@@ -79,7 +79,7 @@ Every row: a path to evidence, or `none — <deliberately|gap>: <reason>`.
 | Strings through `PCT_TEXTS`                                | not applicable — the component draws no text of its own                                                                                                                                                       |
 | Entrypoint size budget                                     | `libs/components/size.snapshot.md` — `./tree` on `./core` and `./icon`                                                                                                                                        |
 | A screen-reader test log                                   | none — gap: the same one every component here has. The question for the log: that the tree announces item counts and levels from structure alone, and that a folded branch's children are not spoken          |
-| A docs page with live examples                             | `apps/sandbox/src/app/views/tree/` (the sandbox view). The published documentation site: none — gap: `apps/docs` (plan §2.1)                                                                                  |
+| A docs page with live examples                             | `apps/sandbox/src/app/views/tree/` (the sandbox view). The published site: `/components/tree` — prerendered, the demo's own source is the code tab (2.1.7)                                                                                  |
 | Unit + mutation                                            | `libs/components/tree/src/tree.spec.ts` — 21 cases; `libs/components/mutation.snapshot.md` — `tree.ts` measured in the day's shared full run                                                                  |
 
 ## Decisions this component implements

@@ -46,8 +46,7 @@
 | Strings through `PCT_TEXTS`     | `tools/check-texts.mjs` — the developer warnings are **permanently English** and go dark outside `isDevMode()`, which the gate measures with a point of its own ([0007](../decisions/0007-config-and-texts.md)) |
 | Size budget                     | none — gap                                                                                                                                                                                                      |
 | Screen-reader log               | none — gap. **The most needed of all the controls** — `aria-valuetext` is the one thing a reader announces instead of the raw number                                                                            |
-| docs page                       | none — gap                                                                                                                                                                                                      |
-
+| docs page                       | `/components/number` on the published site — prerendered, the demo's own source is the code tab (2.1.7) |
 ## Decisions
 
 [0009](../decisions/0009-number-field.md) (the main one),

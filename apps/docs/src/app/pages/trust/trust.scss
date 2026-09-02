@@ -1,0 +1,110 @@
+.page {
+  padding-block: var(--pct-space-6);
+}
+
+.title {
+  margin: 0 0 var(--pct-space-3);
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  letter-spacing: -0.02em;
+}
+
+.lead {
+  margin: 0;
+  max-inline-size: 62ch;
+  color: var(--pct-text-muted);
+  font-size: var(--pct-font-size-lg);
+}
+
+h2 {
+  margin: 0 0 var(--pct-space-3);
+  font-size: var(--pct-font-size-lg);
+  letter-spacing: -0.01em;
+}
+
+.note {
+  margin: 0 0 var(--pct-space-4);
+  max-inline-size: 62ch;
+  color: var(--pct-text-muted);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+  gap: var(--pct-space-4);
+}
+
+.stat {
+  border: 1px solid var(--pct-border);
+  border-radius: var(--pct-radius-md);
+  padding: var(--pct-space-5);
+}
+
+.stat__n {
+  margin: 0;
+  font-size: 1.9rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.stat__what {
+  margin: var(--pct-space-2) 0 0;
+  color: var(--pct-text-muted);
+  font-size: var(--pct-font-size-sm);
+}
+
+.gates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pct-space-3);
+  margin: 0;
+
+  code {
+    border: 1px solid var(--pct-border);
+    border-radius: 999px;
+    padding: 2px var(--pct-space-4);
+    font-size: var(--pct-font-size-sm);
+  }
+}
+
+.axis {
+  margin: var(--pct-space-6) 0 var(--pct-space-3);
+  font-size: var(--pct-font-size-md);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--pct-text-muted);
+}
+
+.state {
+  font-size: var(--pct-font-size-sm);
+  font-weight: 600;
+}
+
+.state[data-state='enforced'] {
+  color: var(--pct-primary);
+}
+
+.state[data-state='gap'] {
+  color: var(--pct-danger, currentcolor);
+}
+
+.log {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--pct-space-3);
+
+  li {
+    display: flex;
+    gap: var(--pct-space-4);
+    align-items: baseline;
+  }
+}
+
+.log__id {
+  flex: none;
+  color: var(--pct-text-muted);
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: var(--pct-font-size-sm);
+}

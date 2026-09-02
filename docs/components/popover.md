@@ -77,8 +77,7 @@ opening, so that its role and name are announced before the user is anywhere ins
 | Strings through `PCT_TEXTS`     | none — deliberately: the component writes no string of its own                                                                                                                                                                                                                                                              |
 | Size budget                     | `libs/components/size.snapshot.md` — the `./popover` row, with `./core` beside it                                                                                                                                                                                                                                           |
 | Screen-reader log               | none — gap. The same one the dialog, the select and the tooltip have. What a reader really announces when a non-modal dialog takes focus is a question axe does not answer — axe examines structure, it does not listen                                                                                                     |
-| docs page                       | none — gap. The documentation site                                                                                                                                                                                                                                                                                          |
-
+| docs page                       | `/components/popover` on the published site — prerendered, the demo's own source is the code tab (2.1.7) |
 ## Decisions
 
 [0031](../decisions/0031-a-panel-s-tab-order-belongs-to-its-trigger.md) (the main one — where Tab

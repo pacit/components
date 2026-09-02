@@ -76,8 +76,7 @@ handle, because a `<button>` already turns them into a click — does the choosi
 | Strings through `PCT_TEXTS`     | none — deliberately: the component prints no string of its own, so there is no key to route. `tools/check-texts.mjs` reads its templates all the same                                                                                                                           |
 | Size budget                     | `libs/components/size.snapshot.md` — the `./tabs` row                                                                                                                                                                                                                          |
 | Screen-reader log               | none — gap. The same one the dialog, the select and the toast have. The question it would answer here is specific: what a reader says when find-in-page reveals a panel and the tab under it changes                                                                            |
-| docs page                       | none — gap. The documentation site                                                                                                                                                                                                                                             |
-
+| docs page                       | `/components/tabs` on the published site — prerendered, the demo's own source is the code tab (2.1.7) |
 ## Decisions
 
 [0045](../decisions/0045-a-panel-nobody-chose-is-still-text-in-the-document.md) (the main one —

@@ -1,0 +1,18 @@
+<pct-container>
+  <header class="head">
+    <h1 class="head__title">{{ cards.length }} components</h1>
+    <p class="head__lead">
+      Each page renders its live demo, the demo's own source, the card the
+      repository gates, and the parts and tokens that are its public contract.
+    </p>
+  </header>
+  <pct-grid class="gallery" data-testid="gallery">
+    @for (card of cards; track card.id) {
+    <a class="gallery__item" [routerLink]="['/components', card.id]">
+      <span class="gallery__name">{{ card.id }}</span>
+      <span class="gallery__role">{{ card.role }}</span>
+      <code class="gallery__selector">{{ card.selector }}</code>
+    </a>
+    }
+  </pct-grid>
+</pct-container>

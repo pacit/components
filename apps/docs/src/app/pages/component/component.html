@@ -1,0 +1,100 @@
+@if (card(); as card) {
+<pct-container>
+  <pct-stack gap="lg" class="page">
+    <pct-breadcrumb ariaLabel="You are here">
+      <pct-crumb><a pctCrumbLink routerLink="/">Home</a></pct-crumb>
+      <pct-crumb>
+        <a pctCrumbLink routerLink="/components">Components</a>
+      </pct-crumb>
+      <pct-crumb>
+        <a pctCrumbLink [routerLink]="[]" aria-current="page">{{ card.id }}</a>
+      </pct-crumb>
+    </pct-breadcrumb>
+
+    <header class="head">
+      <h1 class="head__title">{{ card.id }}</h1>
+      @if (card.role) {
+      <p class="head__role">{{ card.role }}</p>
+      }
+      <div class="head__facts">
+        @for (name of card.classes; track name) {
+        <code>{{ name }}</code>
+        }
+        <code>{{ card.entrypoint }}</code>
+        <code data-testid="selector">{{ card.selector }}</code>
+      </div>
+      @if (html()?.pattern; as pattern) {
+      <p class="head__pattern">
+        <span class="head__pattern-label">ARIA APG:</span>
+        <span [innerHTML]="pattern"></span>
+      </p>
+      }
+    </header>
+
+    @if (html(); as html) {
+    <div class="docs-prose docs-prose--lead" [innerHTML]="html.intro"></div>
+    }
+
+    <section class="panel" data-testid="demo-panel">
+      <pct-tabs [(value)]="tab" ariaLabel="Demo and its source">
+        <pct-tab value="demo" label="Demo">
+          <div class="panel__stage">
+            @if (demo(); as type) {
+            <ng-container *ngComponentOutlet="type" />
+            }
+          </div>
+        </pct-tab>
+        <pct-tab value="code" label="Source">
+          <!-- The demo's own file, highlighted at build time — the pixels above and
+               this text share one source, so they cannot drift apart. -->
+          <div
+            class="docs-code"
+            [innerHTML]="code()"
+            data-testid="source"
+          ></div>
+        </pct-tab>
+      </pct-tabs>
+    </section>
+
+    @if (html(); as html) {
+    <div class="docs-prose" [innerHTML]="html.body"></div>
+    } @if (card.parts.length) {
+    <section class="inventory" data-testid="parts">
+      <h2 class="inventory__title">Parts — the selectors your tests hold</h2>
+      <div class="inventory__chips">
+        @for (part of card.parts; track part) {
+        <button
+          pctButton
+          variant="ghost"
+          size="sm"
+          (click)="copy('[data-pct-part=&quot;' + part + '&quot;]')"
+        >
+          {{ part }}
+        </button>
+        }
+      </div>
+    </section>
+    } @if (card.tokens.length) {
+    <section class="inventory" data-testid="tokens">
+      <h2 class="inventory__title">
+        Tokens — the variables your theme overrides
+      </h2>
+      <div class="inventory__chips">
+        @for (token of card.tokens; track token) {
+        <button pctButton variant="ghost" size="sm" (click)="copy(token)">
+          {{ token }}
+        </button>
+        }
+      </div>
+    </section>
+    }
+  </pct-stack>
+</pct-container>
+} @else {
+<pct-container>
+  <div class="missing">
+    <h1>No component answers to that name</h1>
+    <p><a routerLink="/components">Back to the gallery.</a></p>
+  </div>
+</pct-container>
+}

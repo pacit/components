@@ -20,3 +20,145 @@ body {
   background: var(--pct-surface);
   color: var(--pct-text);
 }
+
+/* ── rendered content ─────────────────────────────────────────────────────────
+   Everything below styles HTML that arrives through [innerHTML] — the cards' sections,
+   the support document, the highlighted code. Injected markup is outside any component's
+   emulated scope, so its stylesheet is global by necessity, not by preference. */
+
+.docs-prose {
+  h2 {
+    margin: var(--pct-space-6) 0 var(--pct-space-4);
+    font-size: var(--pct-font-size-lg);
+    letter-spacing: -0.01em;
+  }
+
+  h3 {
+    margin: var(--pct-space-5) 0 var(--pct-space-3);
+    font-size: var(--pct-font-size-md);
+  }
+
+  p,
+  li {
+    color: var(--pct-text-muted);
+    line-height: 1.65;
+  }
+
+  p {
+    margin: 0 0 var(--pct-space-4);
+  }
+
+  ul,
+  ol {
+    margin: 0 0 var(--pct-space-4);
+    padding-inline-start: 1.4rem;
+  }
+
+  strong {
+    color: var(--pct-text);
+  }
+
+  a {
+    color: var(--pct-primary);
+    text-underline-offset: 3px;
+  }
+
+  blockquote {
+    margin: 0 0 var(--pct-space-4);
+    border-inline-start: 3px solid var(--pct-border);
+    padding-inline-start: var(--pct-space-5);
+  }
+}
+
+.docs-prose--lead p {
+  font-size: var(--pct-font-size-lg);
+}
+
+/* Inline code everywhere in rendered content — but never inside shiki's blocks,
+   which paint themselves. */
+.docs-prose code:not(.shiki code),
+.docs-table code {
+  background: color-mix(in srgb, var(--pct-border) 45%, transparent);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 0.86em;
+}
+
+/* Wide content scrolls inside its own box — the page never scrolls sideways. */
+.docs-table {
+  margin: 0 0 var(--pct-space-4);
+  overflow-x: auto;
+
+  table {
+    border-collapse: collapse;
+    inline-size: 100%;
+  }
+
+  th,
+  td {
+    border-block-end: 1px solid var(--pct-border);
+    padding: var(--pct-space-3) var(--pct-space-4);
+    text-align: start;
+    vertical-align: top;
+    font-size: var(--pct-font-size-sm);
+    line-height: 1.55;
+  }
+
+  th {
+    color: var(--pct-text-muted);
+    font-weight: 600;
+  }
+
+  td {
+    color: var(--pct-text-muted);
+  }
+
+  td strong {
+    color: var(--pct-text);
+  }
+
+  a {
+    color: var(--pct-primary);
+  }
+}
+
+/* ── shiki ────────────────────────────────────────────────────────────────────
+   One emitted HTML carries both palettes: light inline, dark in `--shiki-dark*`
+   variables. The switch below mirrors the token system's own conditions exactly —
+   an explicit data-theme wins, the system preference fills the silence. */
+
+.docs-code .shiki,
+.docs-prose .shiki {
+  margin: 0 0 var(--pct-space-4);
+  border: 1px solid var(--pct-border);
+  border-radius: var(--pct-radius-md);
+  padding: var(--pct-space-5);
+  overflow-x: auto;
+  font-size: 0.86rem;
+  line-height: 1.6;
+
+  code {
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  }
+}
+
+[data-theme='dark'] .shiki {
+  background-color: var(--shiki-dark-bg) !important;
+  color: var(--shiki-dark) !important;
+
+  span {
+    color: var(--shiki-dark) !important;
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .shiki {
+    background-color: var(--shiki-dark-bg) !important;
+    color: var(--shiki-dark) !important;
+
+    span {
+      color: var(--shiki-dark) !important;
+    }
+  }
+}

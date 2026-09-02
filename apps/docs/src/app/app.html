@@ -4,22 +4,47 @@
       <div class="topbar__row">
         <a class="wordmark" routerLink="/" aria-label="pacit — home">pacit</a>
         <nav class="topbar__nav" aria-label="Site">
-          <!-- The remaining destinations arrive with their pages (2.1.7); a link that
-               leads nowhere would be worse than its absence. -->
-          <a routerLink="/">Home</a>
+          @for (item of nav; track item.path) {
+          <a [routerLink]="item.path" routerLinkActive="is-active">
+            {{ item.label }}
+          </a>
+          }
         </nav>
+        <a class="topbar__start" routerLink="/start">Get started</a>
         <button
           pctButton
           variant="ghost"
           size="sm"
+          class="topbar__theme"
           (click)="cycleTheme()"
           data-testid="theme-toggle"
         >
           Theme: {{ themeLabel() }}
         </button>
+        <button
+          pctButton
+          variant="ghost"
+          size="sm"
+          class="topbar__menu"
+          [pctDrawerTrigger]="menu"
+          data-testid="menu-trigger"
+        >
+          Menu
+        </button>
       </div>
     </pct-container>
   </header>
+
+  <pct-drawer #menu heading="pacit" [(open)]="menuOpen" data-testid="menu">
+    <nav class="drawer-nav" aria-label="Site">
+      <a routerLink="/start" (click)="menuOpen.set(false)">Get started</a>
+      @for (item of nav; track item.path) {
+      <a [routerLink]="item.path" (click)="menuOpen.set(false)">
+        {{ item.label }}
+      </a>
+      }
+    </nav>
+  </pct-drawer>
 
   <main class="page">
     <router-outlet />

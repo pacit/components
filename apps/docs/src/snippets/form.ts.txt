@@ -1,0 +1,19 @@
+import { Component, signal } from '@angular/core';
+import { FormField, form, required } from '@angular/forms/signals';
+import { PctField, PctText } from '@pacit/components/field';
+
+@Component({
+  selector: 'app-first-form',
+  imports: [FormField, PctField, PctText],
+  template: `
+    <pct-field label="Workspace name" hint="Lowercase, dashes allowed">
+      <input pctText [formField]="settings.name" />
+    </pct-field>
+  `,
+})
+export class FirstForm {
+  readonly model = signal({ name: '' });
+  readonly settings = form(this.model, (path) => {
+    required(path.name, { message: 'Every workspace needs a name' });
+  });
+}

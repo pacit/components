@@ -74,8 +74,7 @@ its own: what a user types is text, and the platform's own editing keys are the 
 | Strings through `PCT_TEXTS`     | `tools/check-texts.mjs` — six keys, and the three letters are texts because they are **words**: `dd.mm.yyyy` reads as language, and a `y` in a Polish field means nothing                                                                                                               |
 | Size budget                     | `libs/components/size.snapshot.md`, `tools/check-bundle.mjs` (target `check-bundle`)                                                                                                                                                                                                    |
 | Screen-reader log               | none — gap. Relevant: every grid cell carries the whole date as its accessible name, because the number in it is not one                                                                                                                                                                |
-| docs page                       | none — gap                                                                                                                                                                                                                                                                              |
-
+| docs page                       | `/components/date` on the published site — prerendered, the demo's own source is the code tab (2.1.7) |
 ## What the control knows and cannot say
 
 Type `not a date` into the field and leave it. The value goes `null`, the text **stays**, and

@@ -1,0 +1,127 @@
+<pct-container>
+  <pct-stack gap="lg" class="page">
+    <header>
+      <h1 class="title">Trust</h1>
+      <p class="lead">
+        The whole proof machinery, in the open: every promise in a registry with
+        its gate and its negative control, a mutation score measured over the
+        full suite, and every decision and lesson on record. Nothing on this
+        page is typed — it is read from the repository at build time.
+      </p>
+    </header>
+
+    <section class="stats" data-testid="stats">
+      <div class="stat">
+        <p class="stat__n">{{ evidence.requirements.enforced }}</p>
+        <p class="stat__what">
+          of {{ evidence.requirements.total }} promises enforced — {{
+          evidence.requirements.partial }} partial, {{ evidence.requirements.gap
+          }} gaps, each with a recorded deadline
+        </p>
+      </div>
+      <div class="stat">
+        <p class="stat__n">{{ evidence.mutation.score }}%</p>
+        <p class="stat__what">
+          mutation score — {{ evidence.mutation.killed }} of {{
+          evidence.mutation.mutants }} mutants killed by the unit suite
+        </p>
+      </div>
+      <div class="stat">
+        <p class="stat__n">{{ evidence.gates }}</p>
+        <p class="stat__what">
+          hand-written gates, each with a negative control proving it can fire
+        </p>
+      </div>
+      <div class="stat">
+        <p class="stat__n">{{ evidence.decisions }}</p>
+        <p class="stat__what">
+          decision records · {{ evidence.lessons }} logged lessons
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <h2>The gates</h2>
+      <p class="note">
+        Every gate reads tracked files and runs in CI; a promise without a gate
+        does not ship. By name:
+      </p>
+      <p class="gates">
+        @for (gate of gates; track gate) {
+        <code>{{ gate }}</code>
+        }
+      </p>
+    </section>
+
+    <section data-testid="registry">
+      <h2>The promise registry</h2>
+      <p class="note">
+        One row per requirement: the gate that holds it and the negative control
+        that proves the gate can fire. The component cards link straight into
+        these anchors.
+      </p>
+      @for (group of axes; track group.axis) {
+      <h3 class="axis">{{ group.axis }}</h3>
+      <div class="docs-table">
+        <table>
+          <thead>
+            <tr>
+              <th>requirement</th>
+              <th>state</th>
+              <th>gate</th>
+              <th>control</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of group.rows; track row.id) {
+            <tr [id]="row.id">
+              <td><code>{{ row.id }}</code></td>
+              <td>
+                <span class="state" [attr.data-state]="row.state">
+                  {{ row.state }}
+                </span>
+              </td>
+              <td [innerHTML]="row.gate"></td>
+              <td [innerHTML]="row.control"></td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      }
+    </section>
+
+    <section data-testid="decisions">
+      <h2>{{ evidence.decisions }} decisions</h2>
+      <p class="note">
+        Why this way and what it costs — an ADR per irreversible choice, kept
+        even when the plan that scheduled it is long gone.
+      </p>
+      <ol class="log">
+        @for (decision of decisions; track decision.id) {
+        <li [id]="'adr-' + decision.id">
+          <span class="log__id">{{ decision.id }}</span>
+          <span [innerHTML]="decision.title"></span>
+        </li>
+        }
+      </ol>
+    </section>
+
+    <section data-testid="lessons">
+      <h2>{{ evidence.lessons }} lessons</h2>
+      <p class="note">
+        What building this taught us, one entry per surprise — the builder's
+        diary, published because an audit reads character from how mistakes are
+        handled.
+      </p>
+      <ol class="log">
+        @for (lesson of lessons; track lesson.id) {
+        <li [id]="'lesson-' + lesson.id">
+          <span class="log__id">{{ lesson.id }}</span>
+          <span [innerHTML]="lesson.title"></span>
+        </li>
+        }
+      </ol>
+    </section>
+  </pct-stack>
+</pct-container>

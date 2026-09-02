@@ -1,4 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { FormField, form, required } from '@angular/forms/signals';
 import { PctButton } from '@pacit/components/button';
 import { PctChip, PctChips } from '@pacit/components/chips';
@@ -25,6 +26,7 @@ const TOPICS = ['Angular', 'zoneless', 'signals', 'a11y'];
 @Component({
   selector: 'docs-home',
   imports: [
+    RouterLink,
     FormField,
     PctButton,
     PctChip,

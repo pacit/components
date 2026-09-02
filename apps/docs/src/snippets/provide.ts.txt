@@ -1,0 +1,9 @@
+import { ApplicationConfig, provideZonelessChangeDetection } from '@angular/core';
+import { providePctConfig } from '@pacit/components';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideZonelessChangeDetection(),
+    providePctConfig({ defaultSize: 'md' }),
+  ],
+};

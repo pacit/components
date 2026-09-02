@@ -17,12 +17,18 @@
         "{workspaceRoot}/docs/components/*.md",
         "{workspaceRoot}/docs/registry.md",
         "{workspaceRoot}/docs/lessons.md",
+        "{workspaceRoot}/docs/support.md",
+        "{workspaceRoot}/docs/decisions/*.md",
         "{workspaceRoot}/libs/components/parts.snapshot.md",
         "{workspaceRoot}/libs/components/mutation.snapshot.md",
         "{workspaceRoot}/libs/tokens/tokens.snapshot.md",
         "{workspaceRoot}/libs/tokens/src/contrast.policy.json",
         "{workspaceRoot}/libs/tokens/src/primitive.json",
-        "{projectRoot}/tools/build-content.mjs"
+        "{workspaceRoot}/tools/check-*.mjs",
+        "{projectRoot}/tools/*.mjs",
+        "{projectRoot}/src/app/demos/*.demo.ts",
+        "{projectRoot}/src/snippets/*.txt",
+        { "externalDependencies": ["shiki"] }
       ],
       "outputs": ["{projectRoot}/src/generated"],
       "options": {

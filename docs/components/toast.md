@@ -73,8 +73,7 @@ its sharpest limitation, below.
 | Strings through `PCT_TEXTS`     | `tools/check-texts.mjs` + `libs/components/toast/src/toast.spec.ts` — an application's own dismiss label replaces the default                                                                                                                                                                                                            |
 | Size budget                     | `libs/components/size.snapshot.md` — the `./toast` row, and the `./core` row beside it                                                                                                                                                                                                                                                   |
 | Screen-reader log               | none — gap. The same one the dialog and the select have, and here it is the most wanted of the three: whether a `log` really is read one message at a time, and whether an `alert` nested in it interrupts, are questions axe does not answer — it examines structure, it does not listen. What the engines publish is at least measured |
-| docs page                       | none — gap. The documentation site                                                                                                                                                                                                                                                                                                       |
-
+| docs page                       | `/components/toast` on the published site — prerendered, the demo's own source is the code tab (2.1.7) |
 ## Decisions
 
 [0044](../decisions/0044-a-toast-is-a-change-in-a-region-that-was-already-there.md) (the main

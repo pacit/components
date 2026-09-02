@@ -1,0 +1,28 @@
+.page {
+  padding-block: var(--pct-space-6);
+}
+
+.title {
+  margin: 0 0 var(--pct-space-3);
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  letter-spacing: -0.02em;
+}
+
+.lead {
+  margin: 0;
+  max-inline-size: 62ch;
+  color: var(--pct-text-muted);
+  font-size: var(--pct-font-size-lg);
+}
+
+h2 {
+  margin: 0 0 var(--pct-space-3);
+  font-size: var(--pct-font-size-lg);
+  letter-spacing: -0.01em;
+}
+
+.note {
+  margin: 0 0 var(--pct-space-4);
+  max-inline-size: 62ch;
+  color: var(--pct-text-muted);
+}
