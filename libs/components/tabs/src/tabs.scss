@@ -65,8 +65,7 @@
   border-block-end-color: var(--pct-tabs-tab-border-selected);
 }
 
-:host([data-pct-orientation='vertical'])
-  .pct-tabs__tab[data-pct-chosen] {
+:host([data-pct-orientation='vertical']) .pct-tabs__tab[data-pct-chosen] {
   border-inline-end-color: var(--pct-tabs-tab-border-selected);
 }
 
@@ -107,8 +106,7 @@
     border-block-end-color: Highlight;
   }
 
-  :host([data-pct-orientation='vertical'])
-    .pct-tabs__tab[data-pct-chosen] {
+  :host([data-pct-orientation='vertical']) .pct-tabs__tab[data-pct-chosen] {
     border-inline-end-color: Highlight;
   }
 

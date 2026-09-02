@@ -3792,3 +3792,27 @@ The rule: a bare-name mention is a loan against every future copy of that name. 
 file is found by a tool's convention rather than by a path in code, anchor it by full
 path from something reached — the third application should cost a comment, not a debug
 session.
+
+### <a id="lesson-143"></a>`lesson-143` — A scoped formatter on a clean tree formats nothing, and a green battery says nothing about it
+
+The day 2.1 closed, every commit had gone out over eighteen green gates — and the push
+still turned CI red in under three minutes, on the one step the battery does not
+contain: `nx format:check`. Twenty-seven component cards had been rewritten by a script
+(the "docs page" sweep of 2.1.7) after the day's last real prettier pass, and the
+closing ritual, `nx format:write`, reported nothing to do. Not because the files were
+clean — because the write was **scoped**: with everything committed, the affected set is
+the uncommitted set, and on a clean tree the ritual is a silent no-op that looks exactly
+like a blessing.
+
+The check is scoped on CI too (the SHAs action hands it the range since the last green
+run), which is how the residue accumulates: `--all` locally surfaced three files
+**outside** the pushed range — `libs/components/tabs/src/tabs.scss`, its spec, decision
+0045 — each blessed by the CI run that landed it and dirty under today's prettier. A
+scope-blind spot does not stay where it started; it waits in files nobody is touching
+and bills whoever touches the area next.
+
+The rule: a formatter that takes a scope is run with the scope written out — before any
+push, `nx format:check --all`, because the gate battery does not run the formatter and
+CI opens with it. And a script-made sweep is an edit like any other: it goes through
+prettier before its commit, not at an end-of-day ceremony that may be looking at an
+empty range.

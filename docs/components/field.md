@@ -44,7 +44,8 @@ None of its own — the wrapper is not focusable. A click on the row's backgroun
 | Strings through `PCT_TEXTS`     | `tools/check-texts.mjs` — every string comes from an input                                                                                                                                                                                                                                                                                                             |
 | Size budget                     | none — gap. Measured today: **~62 kB** in the FESM (the largest entrypoint)                                                                                                                                                                                                                                                                                            |
 | Screen-reader log               | none — gap                                                                                                                                                                                                                                                                                                                                                             |
-| docs page                       | `/components/field` on the published site — prerendered, the demo's own source is the code tab (2.1.7) |
+| docs page                       | `/components/field` on the published site — prerendered, the demo's own source is the code tab (2.1.7)                                                                                                                                                                                                                                                                 |
+
 ## Decisions
 
 [0003](../decisions/0003-wrapper-and-control.md) (the main one),

@@ -70,7 +70,8 @@ the control keeps focus the whole time.
 | Strings through `PCT_TEXTS`     | none — deliberately: the component writes no string of its own                                                                                                                                                                                                                                                     |
 | Size budget                     | `libs/components/size.snapshot.md` — `./tooltip` at 12597 B, with the `./core` row beside it                                                                                                                                                                                                                       |
 | Screen-reader log               | none — gap. The same one the dialog and the select have. What a reader really says when a described control takes focus is a question axe does not answer — axe examines structure, it does not listen                                                                                                             |
-| docs page                       | `/components/tooltip` on the published site — prerendered, the demo's own source is the code tab (2.1.7) |
+| docs page                       | `/components/tooltip` on the published site — prerendered, the demo's own source is the code tab (2.1.7)                                                                                                                                                                                                           |
+
 ## Decisions
 
 [0030](../decisions/0030-a-name-is-an-attribute-a-description-is-a-reference.md) (the main one —

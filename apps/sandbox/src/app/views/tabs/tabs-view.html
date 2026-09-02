@@ -11,7 +11,11 @@
   [reqs]="['req-a11y-built-in', 'req-api-platform']"
   data-testid="demo-basic"
 >
-  <pct-tabs [(value)]="section" ariaLabel="Account settings" data-testid="tabs-basic">
+  <pct-tabs
+    [(value)]="section"
+    ariaLabel="Account settings"
+    data-testid="tabs-basic"
+  >
     <pct-tab value="general" label="General" data-testid="panel-general">
       <p class="view__panel-body">
         The general settings, and a word that lives nowhere else on this page:
@@ -23,7 +27,12 @@
         The network settings, and a word of their own: parsnip.
       </p>
     </pct-tab>
-    <pct-tab value="billing" label="Billing" disabled data-testid="panel-billing">
+    <pct-tab
+      value="billing"
+      label="Billing"
+      disabled
+      data-testid="panel-billing"
+    >
       <p class="view__panel-body">Nothing to bill for yet.</p>
     </pct-tab>
   </pct-tabs>

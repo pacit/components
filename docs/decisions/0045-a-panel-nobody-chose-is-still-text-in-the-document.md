@@ -49,11 +49,11 @@ know is on this page is not asking about the strip.
 
 `PctTab` binds `[attr.hidden]` to a computed with three states and no fourth:
 
-| what the panel is           | attribute      | what the browser does                        |
-| --------------------------- | -------------- | -------------------------------------------- |
-| showing                     | absent         | the panel is the page                        |
-| not showing                 | `until-found`  | `content-visibility: hidden`, and findable   |
-| not showing, and disabled   | `''`           | `display: none`                              |
+| what the panel is         | attribute     | what the browser does                      |
+| ------------------------- | ------------- | ------------------------------------------ |
+| showing                   | absent        | the panel is the page                      |
+| not showing               | `until-found` | `content-visibility: hidden`, and findable |
+| not showing, and disabled | `''`          | `display: none`                            |
 
 The third row is not symmetry for its own sake. **Find-in-page is a promise of a way in**: the
 browser reveals what it found and leaves the user standing in it. A disabled tab has no way in

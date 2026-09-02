@@ -65,7 +65,8 @@ platform's doing.
 | Strings through `PCT_TEXTS`     | `tools/check-texts.mjs` — no strings of its own; the value in words is `Intl.NumberFormat` or the consumer's `labels`                                                                                                                                                        |
 | Size budget                     | `libs/components/size.snapshot.md`, `tools/check-bundle.mjs` (target `check-bundle`)                                                                                                                                                                                         |
 | Screen-reader log               | none — gap. Relevant: `aria-valuetext` is confirmed on chromium's accessibility tree and rests on HTML-AAM in the other two                                                                                                                                                  |
-| docs page                       | `/components/slider` on the published site — prerendered, the demo's own source is the code tab (2.1.7) |
+| docs page                       | `/components/slider` on the published site — prerendered, the demo's own source is the code tab (2.1.7)                                                                                                                                                                      |
+
 ## The rail is deliberately below 3:1, and that is written down
 
 `--pct-slider-track-bg` against the page is **1.23:1** and it is a `warn` rather than an

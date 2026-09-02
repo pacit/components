@@ -24,9 +24,13 @@ import { PctTabsActivation, PctTabsOrientation } from './tabs.types';
       [ariaLabelledby]="ariaLabelledby()"
     >
       @for (tab of tabs(); track tab.value) {
-      <pct-tab [value]="tab.value" [label]="tab.label" [disabled]="tab.disabled">
-        <p>{{ tab.value }} content</p>
-      </pct-tab>
+        <pct-tab
+          [value]="tab.value"
+          [label]="tab.label"
+          [disabled]="tab.disabled"
+        >
+          <p>{{ tab.value }} content</p>
+        </pct-tab>
       }
     </pct-tabs>
   `,
@@ -63,9 +67,7 @@ const buttons = () =>
   );
 
 const panels = () =>
-  Array.from(
-    document.querySelectorAll<HTMLElement>('[data-pct-part="panel"]'),
-  );
+  Array.from(document.querySelectorAll<HTMLElement>('[data-pct-part="panel"]'));
 
 const hiddenStates = () => panels().map((p) => p.getAttribute('hidden'));
 
@@ -135,9 +137,9 @@ describe('PctTabs', () => {
 
       expect(list().getAttribute('aria-orientation')).toBe('vertical');
       expect(
-        fixture.nativeElement.querySelector('pct-tabs').getAttribute(
-          'data-pct-orientation',
-        ),
+        fixture.nativeElement
+          .querySelector('pct-tabs')
+          .getAttribute('data-pct-orientation'),
       ).toBe('vertical');
     });
   });
@@ -250,9 +252,11 @@ describe('PctTabs', () => {
       );
       fixture.detectChanges();
 
-      expect(
-        buttons().map((b) => b.getAttribute('aria-selected')),
-      ).toEqual(['false', 'false', 'false']);
+      expect(buttons().map((b) => b.getAttribute('aria-selected'))).toEqual([
+        'false',
+        'false',
+        'false',
+      ]);
       expect(hiddenStates()).toEqual(['', '', '']);
       // Nothing focusable, so the strip is not a Tab stop either.
       expect(buttons().map((b) => b.tabIndex)).toEqual([-1, -1, -1]);
@@ -273,9 +277,11 @@ describe('PctTabs', () => {
     it('marks the showing panel for a stylesheet as well', async () => {
       await boot();
 
-      expect(
-        panels().map((p) => p.getAttribute('data-pct-chosen')),
-      ).toEqual(['', null, null]);
+      expect(panels().map((p) => p.getAttribute('data-pct-chosen'))).toEqual([
+        '',
+        null,
+        null,
+      ]);
     });
   });
 
@@ -571,7 +577,8 @@ describe('PctTabs', () => {
 
     it('refuses a value naming no panel', async () => {
       const fixture = await boot();
-      const tabs = fixture.debugElement.children[0].componentInstance as PctTabs;
+      const tabs = fixture.debugElement.children[0]
+        .componentInstance as PctTabs;
 
       tabs.select('nothing-here');
       TestBed.inject(ApplicationRef).tick();
@@ -637,7 +644,9 @@ describe('PctTabs', () => {
 
   describe('a panel with no strip', () => {
     it('says so, once, and renders its content all the same', async () => {
-      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const warn = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => undefined);
 
       @Component({
         imports: [PctTab],
@@ -662,9 +671,7 @@ describe('PctTabs', () => {
       );
       // Nobody is showing it, so it is hidden — findably, since it is not disabled.
       expect(
-        fixture.nativeElement
-          .querySelector('pct-tab')
-          .getAttribute('hidden'),
+        fixture.nativeElement.querySelector('pct-tab').getAttribute('hidden'),
       ).toBe('until-found');
 
       // And the browser finding text in it has nobody to tell, which must not be a crash.
@@ -677,7 +684,9 @@ describe('PctTabs', () => {
     });
 
     it('is the only case that says anything: a panel in a strip is silent', async () => {
-      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const warn = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => undefined);
 
       await boot();
 
@@ -688,7 +697,9 @@ describe('PctTabs', () => {
 
   describe('a panel with no name', () => {
     it('is reported, because the compiler cannot ask for one here', async () => {
-      const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+      const warn = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => undefined);
 
       @Component({
         imports: [PctTabs, PctTab],

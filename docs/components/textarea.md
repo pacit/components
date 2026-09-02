@@ -55,7 +55,8 @@ None of its own — fully native
 | Strings through `PCT_TEXTS`     | `tools/check-texts.mjs` — one dev-mode `console.warn` (a ceiling under a floor) and no user-facing string                                                                                                                       |
 | Size budget                     | `libs/components/size.snapshot.md`, `tools/check-bundle.mjs` (target `check-bundle`)                                                                                                                                            |
 | Screen-reader log               | none — gap                                                                                                                                                                                                                      |
-| docs page                       | `/components/textarea` on the published site — prerendered, the demo's own source is the code tab (2.1.7) |
+| docs page                       | `/components/textarea` on the published site — prerendered, the demo's own source is the code tab (2.1.7)                                                                                                                       |
+
 ## Decisions
 
 [0041](../decisions/0041-a-height-the-platform-computes.md) (the road, the shape and what the

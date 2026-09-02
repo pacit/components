@@ -189,7 +189,10 @@ test.describe('PctTabs — one section showing at a time', () => {
       .locator('[data-pct-part="tab"][data-pct-chosen]');
 
     // --pct-tabs-tab-border-selected -> --pct-primary -> blue-600
-    await expect(chosen).toHaveCSS('border-inline-end-color', 'rgb(37, 99, 235)');
+    await expect(chosen).toHaveCSS(
+      'border-inline-end-color',
+      'rgb(37, 99, 235)',
+    );
     await expect(chosen).toHaveCSS('border-block-end-width', '0px');
   });
 
@@ -236,7 +239,9 @@ test.describe('PctTabs — one section showing at a time', () => {
     await all.nth(0).focus();
     await page.keyboard.press('Tab');
     await expect(
-      page.getByTestId('demo-overflow').locator('[data-pct-part="panel"]:not([hidden])'),
+      page
+        .getByTestId('demo-overflow')
+        .locator('[data-pct-part="panel"]:not([hidden])'),
     ).toBeFocused();
   });
 

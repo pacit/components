@@ -76,7 +76,8 @@ would be this library taking `ArrowDown` away from the page
 | Strings through `PCT_TEXTS`      | none — deliberately: the component prints no string of its own, so there is no key to route. `tools/check-texts.mjs` reads its templates all the same                                                                                                                                                                                              |
 | Size budget                      | `libs/components/size.snapshot.md` — the `./accordion` row                                                                                                                                                                                                                                                                                         |
 | Screen-reader log                | none — gap. The same one the dialog, the select, the toast and the tabs have. The question it would answer here is specific: what a reader says about a `DisclosureTriangle` that has a heading inside it                                                                                                                                          |
-| docs page                        | `/components/accordion` on the published site — prerendered, the demo's own source is the code tab (2.1.7) |
+| docs page                        | `/components/accordion` on the published site — prerendered, the demo's own source is the code tab (2.1.7)                                                                                                                                                                                                                                         |
+
 ## Decisions
 
 [0046](../decisions/0046-a-disclosure-is-the-platforms-and-so-is-the-group-it-belongs-to.md)

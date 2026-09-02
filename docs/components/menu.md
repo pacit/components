@@ -95,7 +95,8 @@ no command to give it to, so that an empty menu is still somewhere Escape can be
 | Strings through `PCT_TEXTS`     | none — deliberately: the component writes no string of its own                                                                                                                                                                                                                             |
 | Size budget                     | `libs/components/size.snapshot.md` — the `./menu` row, with `./core` beside it                                                                                                                                                                                                             |
 | Screen-reader log               | none — gap. The same one the dialog, the select, the tooltip and the popover have. What a reader really announces on arriving at a row of a nested menu is a question axe does not answer — axe examines structure, it does not listen                                                     |
-| docs page                       | `/components/menu` on the published site — prerendered, the demo's own source is the code tab (2.1.7) |
+| docs page                       | `/components/menu` on the published site — prerendered, the demo's own source is the code tab (2.1.7)                                                                                                                                                                                      |
+
 ## Decisions
 
 [0032](../decisions/0032-a-menu-moves-focus-a-listbox-points-at-it.md) (the main one — why focus

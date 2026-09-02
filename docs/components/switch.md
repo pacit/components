@@ -57,7 +57,8 @@ already implements it. `readonly` blocks the change **without losing focusabilit
 | Strings through `PCT_TEXTS`     | `tools/check-texts.mjs` — no strings of its own                                                                                                                                                                                                                                                                      |
 | Size budget                     | `libs/components/size.snapshot.md`, `tools/check-bundle.mjs` (target `check-bundle`)                                                                                                                                                                                                                                 |
 | Screen-reader log               | none — gap. Relevant: whether a reader says "switch" or "checkbox" is the whole reason the role is written at all                                                                                                                                                                                                    |
-| docs page                       | `/components/switch` on the published site — prerendered, the demo's own source is the code tab (2.1.7) |
+| docs page                       | `/components/switch` on the published site — prerendered, the demo's own source is the code tab (2.1.7)                                                                                                                                                                                                              |
+
 ## Decisions
 
 [0039](../decisions/0039-a-state-the-platform-publishes-is-not-ours-to-write.md) (the role
