@@ -1,0 +1,35 @@
+/* One step: inline, centred, spaced by the trail's one gap token — the separator inside the
+   item and the flex gap between items land on the same number, so the rhythm is uniform. */
+:host {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--pct-breadcrumb-gap);
+}
+
+/* Inline-forward: right in LTR, left under `:dir(rtl)` — the calendar's selector, so nothing
+   here reads `[dir]` off any element. The box is a proportion of the trail's own type
+   (`0.75em`), not a token: the chevron stands beside words and scales with them. */
+.pct-breadcrumb__separator {
+  color: var(--pct-breadcrumb-separator-fg);
+  font-size: 0.75em;
+  rotate: -90deg;
+}
+
+.pct-breadcrumb__separator:dir(rtl) {
+  rotate: 90deg;
+}
+
+/* The first step follows nothing, so it announces nothing — and CSS re-answers the question
+   on every insert and removal, which is why this is not a template branch (0054). */
+:host(:first-of-type) .pct-breadcrumb__separator {
+  display: none;
+}
+
+/* Forced colours: the separator takes the palette's one word for text on the page — it is
+   decoration, and decoration that vanished would fuse the trail into one run-on line
+   ([`lesson-70`](../../../../docs/lessons.md#lesson-70) for the written-out rules). */
+@media (forced-colors: active) {
+  .pct-breadcrumb__separator {
+    color: CanvasText;
+  }
+}

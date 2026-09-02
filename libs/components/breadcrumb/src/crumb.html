@@ -1,0 +1,27 @@
+<!--
+  The separator, then the step's own content. The chevron is the library's one down-pointing
+  drawing (0011, 0028) turned a quarter in the stylesheet — the pagination's "same arrow the
+  other way" rule — and it is silent by the icon host's own `aria-hidden`: the probe behind
+  0054 read the link names beside it and found them unpolluted. Drawn in EVERY crumb; the
+  first crumb's is hidden by CSS, which answers "am I first" on every reorder for free.
+-->
+<pct-icon
+  name="chevron-down"
+  class="pct-breadcrumb__separator"
+  data-pct-part="separator"
+>
+  <svg
+    viewBox="0 0 16 16"
+    width="100%"
+    height="100%"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    focusable="false"
+  >
+    <path d="M4 6l4 4 4-4" />
+  </svg>
+</pct-icon>
+<ng-content />

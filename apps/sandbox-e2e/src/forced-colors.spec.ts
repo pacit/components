@@ -697,6 +697,40 @@ test.describe('forced-colors: active', () => {
     }
   });
 
+  /**
+   * In a trail every anchor wears the palette's one word for a link — the rest colours and
+   * the current colour go with the mode together, which is why 0054 gave the current step a
+   * WEIGHT: the one channel of the pair that survives. The separator is decoration and
+   * takes the text word; the current step spelled as bare text is not a link, so the
+   * palette itself tells it apart.
+   */
+  test('a trail’s links wear LinkText and the current step keeps its weight', async ({
+    page,
+  }) => {
+    await visit(page, '/breadcrumb', { media: FORCED });
+    const sys = await systemColors(page);
+
+    const trail = page.getByTestId('trail');
+    const rest = trail.locator('.pct-breadcrumb__link').first();
+    const current = trail.locator('[aria-current="page"]');
+
+    expect(await styleOf(rest, 'color')).toBe(sys.LinkText);
+    expect(await styleOf(current, 'color')).toBe(sys.LinkText);
+    expect(await styleOf(current, 'font-weight')).not.toBe(
+      await styleOf(rest, 'font-weight'),
+    );
+    expect(
+      await styleOf(
+        trail.locator('[data-pct-part="separator"]').nth(1),
+        'color',
+      ),
+    ).toBe(sys.CanvasText);
+
+    // The other spelling of "you are here": bare text is no link, and the palette says so.
+    const plain = page.getByTestId('trail-plain').locator('pct-crumb').last();
+    expect(await styleOf(plain, 'color')).toBe(sys.CanvasText);
+  });
+
   test('the disabled state says GrayText in every control', async ({
     page,
   }) => {

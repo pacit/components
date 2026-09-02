@@ -29,6 +29,7 @@
     "chips/**/*.ts",
     "avatar/**/*.ts",
     "badge/**/*.ts",
+    "breadcrumb/**/*.ts",
     "field/**/*.ts",
     "icon/**/*.ts",
     "testing/**/*.ts"

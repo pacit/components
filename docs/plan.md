@@ -583,6 +583,28 @@ name="user"` with an inline default now, `user` published in `PctIconName`, and 
     `badge.ts` **83.33 10(0) 2 0 0**, both leftovers named: the fifth
     `isDevMode()`-forced-true in a row, and `?.` on a `textContent` no element can null.
     The library is **4420 mutants at 82.40**
+  - _the breadcrumb is done_ (11 of 13). It is **the way here, told in the platform's own
+    links** — every anchor the consumer's `<a href>` (the router writes `aria-current`,
+    never this component: a guess from position lies on every partial trail), and the
+    structure the library's: a named `navigation` landmark, a `role="list"` a reader
+    counts, a chevron nobody hears. Three pieces on the elements that are really there,
+    the third one a component on the consumer's anchor —
+    [`lesson-96`](lessons.md#lesson-96)'s road, so the styling stands on no `::ng-deep`
+    and `routerLink` stays where the platform put it. See
+    [0054](decisions/0054-a-breadcrumb-is-the-way-here-told-in-links.md)
+  - **two measurements decided the design before and after the code.** The probe: links
+    standing loose in a `role="list"` are a critical `aria-required-children` violation
+    in all three engines — the `lesson-138` carve-out covers only the EMPTY list, which
+    is why `pct-crumb` exists. The audit: axe's `target-size` fired on the wrapped
+    trail's 16px links (18px of safe space against 24 owed), because WCAG 2.5.8's inline
+    exception covers sentences, not bars ([`lesson-139`](lessons.md#lesson-139)) — the
+    links take the shared `{pct.target.min}` floor outright now, the chips' arrangement
+    at a quieter control
+  - gate: `apps/sandbox-e2e/src/breadcrumb.spec.ts` (6 × 3) plus `/breadcrumb` in the
+    audits, a forced-colours reading (links `LinkText`, the current step a WEIGHT — the
+    channel that survives — and bare text told apart by the palette itself), an RTL
+    reading where the trail mirrors and every separator turns by `:dir(rtl)`, two
+    screenshots and 12 unit cases
 
 - [ ] **1.2 — table / datagrid** on a headless core (column model, sorting, filtering, grouping,
       selection as signals) separated from rendering. **The last item of the phase** — the only

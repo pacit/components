@@ -128,6 +128,13 @@ export interface PctTexts {
    * ([0051](../../../../docs/decisions/0051-chips-are-a-list-the-user-shortens.md)).
    */
   readonly chipRemove: string;
+  /**
+   * Breadcrumb: the accessible name of the navigation landmark the trail is. A default in
+   * the application's language and nothing more — a page with two trails tells them apart
+   * through the `ariaLabel` input, not through this. The pagination's key, one landmark
+   * over: two components, two landmarks, two names a translation may spell apart.
+   */
+  readonly breadcrumbLabel: string;
 }
 
 export const PCT_DEFAULT_TEXTS: PctTexts = {
@@ -150,6 +157,7 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   paginationPrevious: 'Previous page',
   paginationNext: 'Next page',
   chipRemove: 'Remove',
+  breadcrumbLabel: 'Breadcrumb',
 };
 
 /**

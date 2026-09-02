@@ -1256,6 +1256,35 @@
       "bg": "pct.surface",
       "level": "UI",
       "severity": "warn"
+    },
+    {
+      "name": "breadcrumb — a step's link at rest",
+      "fg": "pct.breadcrumb.link-fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "breadcrumb — a step's link under the pointer",
+      "fg": "pct.breadcrumb.link-fg-hover",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "breadcrumb — the current step's word",
+      "fg": "pct.breadcrumb.fg",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "$comment": "Decorative and aria-hidden, so SC 1.4.11 has no claim on it — and being exempt is no reason to stop measuring (the disabled entries' argument): a separator nobody can see turns a trail into a run-on word.",
+      "name": "UI: breadcrumb — the separator against the page",
+      "fg": "pct.breadcrumb.separator-fg",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
     }
   ]
 }

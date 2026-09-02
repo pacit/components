@@ -59,6 +59,14 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-blue-800 color primitive private
 --pct-border color semantic public
 --pct-border-strong color semantic public
+--pct-breadcrumb-fg color component public
+--pct-breadcrumb-font-size dimension component public
+--pct-breadcrumb-gap dimension component public
+--pct-breadcrumb-link-fg color component public
+--pct-breadcrumb-link-fg-hover color component public
+--pct-breadcrumb-link-font-weight-current fontWeight component public
+--pct-breadcrumb-link-target-min dimension component public
+--pct-breadcrumb-separator-fg color component public
 --pct-button-bg color component public
 --pct-button-bg-active color component public
 --pct-button-bg-disabled color component public

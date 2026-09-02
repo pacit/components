@@ -43,7 +43,10 @@
       "@pacit/components/skeleton": ["./libs/components/skeleton/src/index.ts"],
       "@pacit/components/chips": ["./libs/components/chips/src/index.ts"],
       "@pacit/components/avatar": ["./libs/components/avatar/src/index.ts"],
-      "@pacit/components/badge": ["./libs/components/badge/src/index.ts"]
+      "@pacit/components/badge": ["./libs/components/badge/src/index.ts"],
+      "@pacit/components/breadcrumb": [
+        "./libs/components/breadcrumb/src/index.ts"
+      ]
     }
   },
   "exclude": ["node_modules", "tmp"]

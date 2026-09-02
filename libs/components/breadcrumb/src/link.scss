@@ -1,0 +1,51 @@
+/* The trail's link: muted at rest so the current step reads first, no underline until the
+   pointer asks — the underline is the hover's added channel, so colour never carries the
+   change alone. The order of the blocks below is the cascade's own tie-breaker: `hover`,
+   then `focus-visible`, then `aria-current` last, so the current step keeps its colour and
+   its quiet even under the pointer. */
+:host {
+  display: inline-flex;
+  align-items: center;
+  /* The floor a finger gets (`req-a11y-touch`), measured into this sheet by the axe audit:
+     a bare 16px line over an 8px row gap leaves a wrapped trail 18px of safe space, and
+     WCAG 2.5.8's inline exception covers sentences, not bars. The word stays a word; the
+     target around it does not. */
+  min-block-size: var(--pct-breadcrumb-link-target-min);
+  color: var(--pct-breadcrumb-link-fg);
+  text-decoration: none;
+}
+
+:host(:hover) {
+  color: var(--pct-breadcrumb-link-fg-hover);
+  text-decoration: underline;
+}
+
+:host(:focus-visible) {
+  outline: 2px solid var(--pct-focus-ring);
+  outline-offset: 1px;
+}
+
+/* "You are here": the trail's own text colour plus a WEIGHT — under forced colours every
+   anchor wears `LinkText` no matter what is written here, and weight is the channel that
+   survives the flattening (`req-a11y-forced-colors`). A step that is current and a link at
+   once (the router's `ariaCurrentWhenActive`) stays a link to the eye that hovers it. */
+:host([aria-current]) {
+  color: var(--pct-breadcrumb-fg);
+  font-weight: var(--pct-breadcrumb-link-font-weight-current);
+  text-decoration: none;
+}
+
+/* Forced colours, written out (`lesson-70`): the platform paints anchors `LinkText` on its
+   own — saying so here keeps the sheet honest about what the mode really shows, and the
+   ring takes the palette's highlight. */
+@media (forced-colors: active) {
+  :host,
+  :host(:hover),
+  :host([aria-current]) {
+    color: LinkText;
+  }
+
+  :host(:focus-visible) {
+    outline-color: Highlight;
+  }
+}

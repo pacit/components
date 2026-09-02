@@ -1,0 +1,19 @@
+/* The trail is typography, not a control: its own type size (under the body's, a quiet line
+   above a heading), the trail's text colour on the host so a bare-text current step simply
+   inherits it, and no control-axis height anywhere (0054 — the badge's argument, one
+   component over). */
+:host {
+  display: block;
+  color: var(--pct-breadcrumb-fg);
+  font-size: var(--pct-breadcrumb-font-size);
+}
+
+/* A trail too long for its line WRAPS — the readable answer 0054 chose over a collapse
+   menu. One gap spaces steps and separators alike, because the crumbs use the same token
+   inside themselves: uniform rhythm from one number. */
+.pct-breadcrumb__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--pct-breadcrumb-gap);
+}

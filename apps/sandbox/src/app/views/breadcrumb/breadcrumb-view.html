@@ -1,0 +1,57 @@
+<h2 class="view__title">Breadcrumb</h2>
+<p class="muted view__intro">
+  The way here, told in the platform's own links: a named navigation landmark, a
+  list a reader counts, and every step an anchor the view wrote itself — with
+  <code>routerLink</code>, the middle click and the keyboard exactly where the
+  platform put them. The component draws the quiet separator and the colours,
+  and writes no <code>aria-current</code> of its own.
+</p>
+
+<sbx-demo
+  heading="The pattern as drawn"
+  summary="Three steps back up the hierarchy. The last one is a link the view marked current — the router's ariaCurrentWhenActive writes the same attribute in a real application — and it wears the trail's text colour plus a weight, because under forced colours every anchor is LinkText and weight is what survives."
+  [reqs]="['req-api-platform', 'req-a11y-built-in']"
+  data-testid="demo-pattern"
+>
+  <pct-breadcrumb data-testid="trail">
+    <pct-crumb><a pctCrumbLink href="#home">Home</a></pct-crumb>
+    <pct-crumb><a pctCrumbLink href="#library">Library</a></pct-crumb>
+    <pct-crumb>
+      <a pctCrumbLink href="#data" aria-current="page">Data</a>
+    </pct-crumb>
+  </pct-breadcrumb>
+</sbx-demo>
+
+<sbx-demo
+  heading="The current step as bare text"
+  summary="The other legal spelling: the place you stand is not a link at all. Bare text inherits the trail's own colour straight off the host, and a reader tells it from the links by what it is rather than by what it wears. The landmark takes its own name here, because two trails on one page are two landmarks."
+  [reqs]="['req-a11y-built-in', 'req-api-texts']"
+  data-testid="demo-plain"
+>
+  <pct-breadcrumb ariaLabel="Reports trail" data-testid="trail-plain">
+    <pct-crumb><a pctCrumbLink href="#reports">Reports</a></pct-crumb>
+    <pct-crumb><a pctCrumbLink href="#finance">Finance</a></pct-crumb>
+    <pct-crumb>Quarterly summary</pct-crumb>
+  </pct-breadcrumb>
+</sbx-demo>
+
+<sbx-demo
+  heading="A trail too long for its line"
+  summary="It wraps — the readable answer 0054 chose over a collapse menu: folding steps into an overflow is a composition with pct-menu that belongs to the view, which knows which steps matter. The gap token keeps the rhythm on both lines."
+  [reqs]="['req-api-platform']"
+  data-testid="demo-wrap"
+>
+  <div class="view__narrow">
+    <pct-breadcrumb ariaLabel="Deep trail" data-testid="trail-wrap">
+      <pct-crumb><a pctCrumbLink href="#org">Organisation</a></pct-crumb>
+      <pct-crumb><a pctCrumbLink href="#dept">Departments</a></pct-crumb>
+      <pct-crumb><a pctCrumbLink href="#eng">Engineering</a></pct-crumb>
+      <pct-crumb><a pctCrumbLink href="#platform">Platform</a></pct-crumb>
+      <pct-crumb>
+        <a pctCrumbLink href="#observability" aria-current="page">
+          Observability
+        </a>
+      </pct-crumb>
+    </pct-breadcrumb>
+  </div>
+</sbx-demo>

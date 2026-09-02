@@ -3714,3 +3714,23 @@ The rule: a precedent from a NEIGHBOURING role is a hypothesis, not a constraint
 grammar is per-role with carve-outs the specification's grammar does not show, so the probe
 has to name the exact role it stands on — and the cheapest line of code is the one a
 measurement deleted before it was written.
+
+### <a id="lesson-139"></a>`lesson-139` — WCAG 2.5.8's inline exception ends where the sentence does, and axe measures the bar you thought was typography
+
+The breadcrumb's links were designed as text — 16px tall, spaced by the trail's own gap —
+on the strength of the target-size rule's inline exception: a link inside a sentence is
+constrained by the line it stands in, and no floor applies. The axe audit disagreed in all
+three engines: `target-size` (serious) on every link of the WRAPPED trail, with 18px of safe
+space where 24px is owed.
+
+The exception covers targets whose size the SURROUNDING TEXT constrains — a link in a
+paragraph. A navigation bar constrains nothing: the trail is a flex row of standalone
+targets, its line height is its own choice, and once it wraps, the second row is a
+neighbouring row of targets at whatever distance the gap token puts it. Axe reads the
+arrangement, not the intention — typography-shaped controls are still controls.
+
+The fix is the chips' arrangement at a quieter control: the shared `{pct.target.min}` floor
+outright on the link's block size (`req-a11y-touch`), with the word centred in the target it
+earns. The rule: an exception in a success criterion names a CONTEXT, not a look — before
+leaning on it, measure whether the context is really the one the exception describes,
+because the audit will.

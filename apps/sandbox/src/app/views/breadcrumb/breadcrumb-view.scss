@@ -1,0 +1,4 @@
+/* Narrow on purpose: the wrap demo exists to show the second line. */
+.view__narrow {
+  max-inline-size: 260px;
+}

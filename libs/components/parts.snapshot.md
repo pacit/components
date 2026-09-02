@@ -23,6 +23,8 @@ from what the browser really gets.
 ./avatar PctAvatar image
 ./avatar PctAvatar initials
 ./avatar PctAvatar silhouette
+./breadcrumb PctBreadcrumb list
+./breadcrumb PctCrumb separator
 ./button PctButton label
 ./button PctButton spinner
 ./checkbox PctCheckbox box

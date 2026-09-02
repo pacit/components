@@ -1,4 +1,5 @@
 import { expect, Page, test } from '@playwright/test';
+import { styleOf } from './support/css';
 import { boxOf, setRtl, visit } from './support/dom';
 
 /**
@@ -234,5 +235,40 @@ test.describe('Writing direction — the layout mirrors in dir="rtl"', () => {
     const rtlSecond = await boxOf(chips.nth(1));
     expect(rtlFirst.x).toBeGreaterThan(rtlSecond.x);
     expect((await boxOf(cross)).x).toBeLessThan((await boxOf(label)).x);
+  });
+
+  /**
+   * A breadcrumb is reading order made into a picture: the trail descends the hierarchy in
+   * the writing direction, and every separator points FORWARD — a direction no stylesheet
+   * rule knows by name. The row mirrors by flex order and a logical gap; the chevron is one
+   * symmetric drawing turned a quarter, `:dir(rtl)` turning it the other way (the
+   * calendar's selector). Geometry first — the separator has to change sides against its
+   * own link — and then the turn itself, read off the computed style, because a symmetric
+   * box photographs the same both ways.
+   */
+  test('the trail turns round and every separator points the other way', async ({
+    page,
+  }) => {
+    await visit(page, '/breadcrumb');
+    const trail = page.getByTestId('trail');
+    const crumbs = trail.locator('pct-crumb');
+    const second = crumbs.nth(1);
+    const separator = second.locator('[data-pct-part="separator"]');
+    const link = second.locator('a');
+
+    const ltrFirst = await boxOf(crumbs.first());
+    const ltrSecond = await boxOf(second);
+    expect(ltrFirst.x).toBeLessThan(ltrSecond.x);
+    expect((await boxOf(separator)).x).toBeLessThan((await boxOf(link)).x);
+    expect(await styleOf(separator, 'rotate')).toBe('-90deg');
+
+    await setRtl(page);
+    expect(await directionOf(page, 'pct-breadcrumb')).toBe('rtl');
+
+    const rtlFirst = await boxOf(crumbs.first());
+    const rtlSecond = await boxOf(second);
+    expect(rtlFirst.x).toBeGreaterThan(rtlSecond.x);
+    expect((await boxOf(separator)).x).toBeGreaterThan((await boxOf(link)).x);
+    expect(await styleOf(separator, 'rotate')).toBe('90deg');
   });
 });

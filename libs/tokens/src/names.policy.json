@@ -59,6 +59,7 @@
       "icon",
       "item",
       "label",
+      "link",
       "list",
       "mark",
       "marker",
@@ -68,6 +69,7 @@
       "panel",
       "placeholder",
       "remove",
+      "separator",
       "tab",
       "thumb",
       "toggle",
@@ -99,6 +101,7 @@
     "states": [
       "active",
       "checked",
+      "current",
       "danger",
       "disabled",
       "focus",

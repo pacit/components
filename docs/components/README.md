@@ -36,6 +36,7 @@ a machine; prose with a missing paragraph is not.
 | [`PctChips`](chips.md)           | `@pacit/components/chips`      | chosen values the user can take back   |
 | [`PctAvatar`](avatar.md)         | `@pacit/components/avatar`     | the picture beside a name              |
 | [`PctBadge`](badge.md)           | `@pacit/components/badge`      | a word wearing a tone                  |
+| [`PctBreadcrumb`](breadcrumb.md) | `@pacit/components/breadcrumb` | the way here, told in links            |
 
 ## The order of the components to come
 
@@ -211,6 +212,15 @@ The order follows **architectural debt**, not popularity:
    this component, and `success` / `warning` / `info` wait for ramps as a compile-time
    fact in the union. The tone never speaks alone: an empty badge is a dev-mode warning,
    and forced colours make the argument visible by dropping both tones to one palette.
+   The **breadcrumb** is built, and the split is ownership again: every anchor is the
+   consumer's own `<a href>` (the router writes `aria-current`, never this component), and
+   the structure is the library's — a named `navigation` landmark, a `list` a reader
+   counts, a chevron nobody hears
+   ([0054](../decisions/0054-a-breadcrumb-is-the-way-here-told-in-links.md)). The probe
+   measured the wrapper's reason for existing (links loose in a `role="list"` are a
+   critical violation in all three engines), and the axe audit measured the target floor
+   into the design: 2.5.8's inline exception covers sentences, not bars
+   ([`lesson-139`](../lessons.md#lesson-139)).
 7. **Table / DataGrid** — has to stand on a **headless core** separated from rendering.
 
 Before item 1 the **behaviour layer in `core`** has to exist: list navigation (private methods

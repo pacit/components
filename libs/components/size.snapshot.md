@@ -29,29 +29,30 @@ and the class metadata carries the decorator a second time, and both are compile
 before an application ships them.
 
 ```
-. 3539 ./core @angular/core
-./accordion 11397 ./core,./icon @angular/common,@angular/core
-./avatar 8501 ./core,./icon @angular/common,@angular/core
+. 3568 ./core @angular/core
+./accordion 11426 ./core,./icon @angular/common,@angular/core
+./avatar 8530 ./core,./icon @angular/common,@angular/core
 ./badge 1706 - @angular/core
-./button 7028 ./core @angular/core
-./checkbox 14912 ./core,./icon @angular/common,@angular/core
-./chips 10600 ./core,./icon @angular/common,@angular/core
-./core 8268 - @angular/core
-./date 39143 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
-./dialog 15371 ./core,./icon @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
-./drawer 14142 ./core,./icon @angular/common,@angular/core
-./field 27223 ./core @angular/core,@angular/forms,@angular/forms/signals
+./breadcrumb 9123 ./core,./icon @angular/common,@angular/core
+./button 7057 ./core @angular/core
+./checkbox 14941 ./core,./icon @angular/common,@angular/core
+./chips 10629 ./core,./icon @angular/common,@angular/core
+./core 8297 - @angular/core
+./date 39172 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
+./dialog 15400 ./core,./icon @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
+./drawer 14171 ./core,./icon @angular/common,@angular/core
+./field 27252 ./core @angular/core,@angular/forms,@angular/forms/signals
 ./icon 2552 - @angular/common,@angular/core
-./menu 18386 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core
-./pagination 13601 ./core,./icon @angular/common,@angular/core
-./popover 13657 ./core @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/core
-./progress 7049 ./core @angular/core
-./radio 15367 ./core @angular/core
-./select 68986 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core
+./menu 18415 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core
+./pagination 13630 ./core,./icon @angular/common,@angular/core
+./popover 13686 ./core @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/core
+./progress 7078 ./core @angular/core
+./radio 15396 ./core @angular/core
+./select 69015 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core
 ./skeleton 2997 - @angular/core
-./slider 17321 ./core @angular/core
-./switch 12321 ./core @angular/core
-./tabs 13573 ./core @angular/core
-./toast 15477 ./core,./icon @angular/common,@angular/core
-./tooltip 13166 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core
+./slider 17350 ./core @angular/core
+./switch 12350 ./core @angular/core
+./tabs 13602 ./core @angular/core
+./toast 15506 ./core,./icon @angular/common,@angular/core
+./tooltip 13195 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core
 ```
