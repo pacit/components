@@ -82,6 +82,18 @@
     {
       "file": "libs/components/field/src/aux.ts",
       "reason": "Two directives with an EMPTY body: `PctLabelAux` and `PctMessageAux` are a selector and a `data-pct-part` each, and both of those live in the decorator, which Stryker leaves alone. There is no condition here, no call and no literal outside the metadata, so zero mutants is the correct result of the measurement rather than the absence of one — what the two really promise is a slot in `field.html`, and that is `check-parts`."
+    },
+    {
+      "file": "libs/components/container/src/container.ts",
+      "reason": "An empty class under a decorator: `PctContainer {}` is a selector, a template of one slot and a host class, all of it metadata Stryker leaves alone. The component's whole behaviour is `container.scss` reading its tokens, and behaviour written in CSS is measured by the e2e ruler (`layout.spec.ts` reads the column's width at three viewports), not by mutants. Zero is the correct result of the measurement, and the day the class grows a first member this entry stops being true and the gate fires."
+    },
+    {
+      "file": "libs/components/grid/src/grid.ts",
+      "reason": "The same shape as the container for the same reason: `PctGrid {}` is decorator metadata around an empty body, and the one declaration that IS the component — the auto-fit `grid-template-columns` — lives in `grid.scss`, where the e2e ruler counts real columns at three widths. There is nothing here for Stryker to hold, and this entry expires with the first member the class grows."
+    },
+    {
+      "file": "libs/components/theme/src/theme.ts",
+      "reason": "One directive whose entire runtime is the decorator's host binding spelling `pctTheme()` onto `data-theme` (0059: the mechanism stays the cascade), plus a type and `readonly pctTheme = input.required<PctThemeName | null>()` — a call with no argument to mutate, assigned to a field with no condition around it. What the directive promises is measured where it acts: three unit cases on the rendered attribute and the sandbox e2e reading `--pct-surface` through both writers. Zero mutants is the measurement's correct answer, not a gap in it."
     }
   ],
   "// unmeasured": "The register of what is deliberately NOT measured, and why. `patterns` and `files` watch that nothing DROPS OUT of the measurement; neither of them can say anything about a file that was never in — and that was the default state of every new file, because a pattern names what is measured. The gate reads the library's sources off the git index and requires each of them to stand either in `files` or here. An entry here does not say \"this file scores poorly\", it says \"this file cannot be measured\" — and the reason has to say what stops it, because that sentence is the whole of the entry.",

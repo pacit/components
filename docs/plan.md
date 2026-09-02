@@ -726,8 +726,9 @@ precondition of the quiet push (3.0), which no visitor can see.
         in the three files, killed** (stack's `'md'` default); container and grid
         generate none — a component that is one declaration offers Stryker nothing to
         break — and both stay in the policy so the day they grow logic, the report owes
-        a row. The snapshot row lands with the day's shared full run · cost: ~1 day,
-        spent as estimated
+        a row. _The day's shared full run (68 min, `--concurrency 4`) confirmed all of
+        it in the snapshot: `stack.ts` **100.00 1(0)**, no rows for the other three, the
+        library at **82.82, 3823/4616**_ · cost: ~1 day, spent as estimated
   - [x] **2.1.2 — the button's new faces**: `ghost`, `soft` and the animated `hero` —
         five faces, one directive, **not one new line of TypeScript** (the union widened,
         the stylesheet grew; zero new mutants by construction — 0058). The gradient lives
