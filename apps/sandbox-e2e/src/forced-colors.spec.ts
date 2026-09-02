@@ -731,6 +731,39 @@ test.describe('forced-colors: active', () => {
     expect(await styleOf(plain, 'color')).toBe(sys.CanvasText);
   });
 
+  /**
+   * A stepper's two filled markers ride on the accent — exactly what this mode drops.
+   * What has to stand: every circle's border, the check as a drawing in the text word
+   * (done stays visibly done), the connector's line, and the current step's label WEIGHT
+   * — the channel 0055 chose because no palette can take it.
+   */
+  test('a stepper keeps its circles, its check and the current step’s weight', async ({
+    page,
+  }) => {
+    await visit(page, '/stepper', { media: FORCED });
+    const sys = await systemColors(page);
+
+    const journey = page.getByTestId('journey');
+    const markers = journey.locator('[data-pct-part="marker"]');
+    expect(await styleOf(markers.first(), 'border-top-color')).toBe(
+      sys.CanvasText,
+    );
+    expect(await styleOf(markers.first(), 'color')).toBe(sys.CanvasText);
+    await expect(markers.first().locator('svg')).toBeVisible();
+    expect(
+      await styleOf(
+        journey.locator('[data-pct-part="track"]').nth(1),
+        'background-color',
+      ),
+    ).toBe(sys.CanvasText);
+
+    const current = journey.locator('[aria-current="step"]');
+    const upcoming = journey.locator('[data-pct-state="upcoming"]').first();
+    expect(await styleOf(current, 'font-weight')).not.toBe(
+      await styleOf(upcoming, 'font-weight'),
+    );
+  });
+
   test('the disabled state says GrayText in every control', async ({
     page,
   }) => {

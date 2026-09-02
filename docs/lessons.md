@@ -3734,3 +3734,19 @@ outright on the link's block size (`req-a11y-touch`), with the word centred in t
 earns. The rule: an exception in a success criterion names a CONTEXT, not a look — before
 leaning on it, measure whether the context is really the one the exception describes,
 because the audit will.
+
+### <a id="lesson-140"></a>`lesson-140` — A `listitem` computes no name from its contents, so what a reader "hears" is measured as content, not as accessible name
+
+The stepper's done-suffix test was written with `toHaveAccessibleName(/Cart Completed/)` —
+and received the empty string in all three engines, on a listitem whose text plainly held
+both words. Nothing was broken: the accessible name computation only runs name-from-content
+for roles that support it (buttons, links, headings…), and `listitem` is not one of them.
+A list item has no NAME; a reader simply walks its CONTENT.
+
+The consequence for tests: "what does a reader get" has two different measurable shapes,
+and the role decides which one applies. For a control (`role="link"`, `role="button"`) the
+accessible name is the contract — separators and drawings polluting it is the defect to
+probe for (the breadcrumb's reading). For a container (`listitem`), the contract is the
+text content in reading order — the suffix after the label, the drawings contributing
+nothing. Asserting the name there measures the absence of a computation and calls it the
+component's silence.

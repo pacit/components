@@ -1,0 +1,69 @@
+<h2 class="view__title">Stepper</h2>
+<p class="muted view__intro">
+  A map of a multi-step journey — "step 2 of 4" above a checkout. The
+  application owns the journey (validation, routing, what "done" means) and
+  hands the map <strong>one number</strong>; the component draws everything
+  else: a list a reader counts, a marker per step, a check that is also a word,
+  and <code>aria-current="step"</code> on the step that number names.
+</p>
+
+<sbx-demo
+  heading="The journey, steered by one number"
+  summary="The two buttons move a signal and nothing else — the map recomputes every state from it. Behind the pointer done (the check, plus a visually-hidden 'Completed' a reader gets), at it current (the accent and a label weight), past it upcoming (muted, with its ordinal waiting)."
+  [reqs]="['req-a11y-built-in', 'req-api-texts']"
+  data-testid="demo-journey"
+>
+  <pct-stepper [step]="step()" ariaLabel="Checkout" data-testid="journey">
+    <pct-step>Cart</pct-step>
+    <pct-step>Delivery</pct-step>
+    <pct-step>Payment</pct-step>
+    <pct-step>Review</pct-step>
+  </pct-stepper>
+  <div class="view__row">
+    <button
+      type="button"
+      class="view__button"
+      data-testid="back"
+      [disabled]="atStart()"
+      (click)="move(-1)"
+    >
+      Back
+    </button>
+    <button
+      type="button"
+      class="view__button"
+      data-testid="next"
+      [disabled]="atEnd()"
+      (click)="move(1)"
+    >
+      Next
+    </button>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="A journey finished, and one not yet started"
+  summary="Nothing is clamped: past the count every step is done, before 1 every step is upcoming — both honest sentences, with no aria-current anywhere because the traveller is not standing on the map."
+  [reqs]="['req-a11y-built-in']"
+  data-testid="demo-ends"
+>
+  <pct-stepper
+    [step]="5"
+    ariaLabel="Finished journey"
+    data-testid="journey-done"
+  >
+    <pct-step>Prepare</pct-step>
+    <pct-step>Record</pct-step>
+    <pct-step>Publish</pct-step>
+  </pct-stepper>
+  <pct-stepper
+    [step]="0"
+    ariaLabel="Unstarted journey"
+    class="view__second"
+    data-testid="journey-ahead"
+  >
+    <pct-step>Draft</pct-step>
+    <pct-step>Review</pct-step>
+    <pct-step>Send</pct-step>
+  </pct-stepper>
+</sbx-demo>

@@ -1285,6 +1285,73 @@
       "bg": "pct.surface",
       "level": "UI",
       "severity": "warn"
+    },
+    {
+      "name": "stepper — an upcoming step's ordinal in its circle",
+      "fg": "pct.stepper.marker-fg",
+      "bg": "pct.stepper.marker-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "stepper — the check in a done marker",
+      "fg": "pct.stepper.marker-fg-done",
+      "bg": "pct.stepper.marker-bg-done",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "stepper — the ordinal in the current marker",
+      "fg": "pct.stepper.marker-fg-current",
+      "bg": "pct.stepper.marker-bg-current",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "$comment": "The filled markers against the page — error, the badge's danger-box argument: the fill IS the statement here, and a map whose finished steps melt into the page has shown nobody anything.",
+      "name": "UI: stepper — the done marker against the page",
+      "fg": "pct.stepper.marker-bg-done",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "$comment": "The upcoming circle's edge — warn for the chips' reason: the border exists for the skins and modes that flatten the fill.",
+      "name": "UI: stepper — an upcoming marker's edge against the page",
+      "fg": "pct.stepper.marker-border",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
+    },
+    {
+      "$comment": "The same colour as the fill it wraps, measured on its own because it is painted on its own — the badge's danger-edge entry at the next filled box.",
+      "name": "UI: stepper — the done marker's edge against the page",
+      "fg": "pct.stepper.marker-border-done",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: stepper — the current marker's edge against the page",
+      "fg": "pct.stepper.marker-border-current",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "stepper — an upcoming step's label",
+      "fg": "pct.stepper.label-fg-muted",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "$comment": "Decorative and aria-hidden — the breadcrumb separator's entry at the next drawn line: exempt from SC 1.4.11, measured anyway, because a connector nobody can see turns a map into scattered dots.",
+      "name": "UI: stepper — the connector against the page",
+      "fg": "pct.stepper.track-bg",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "warn"
     }
   ]
 }

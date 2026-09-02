@@ -1,0 +1,24 @@
+.view__row {
+  display: flex;
+  align-items: center;
+  gap: var(--pct-space-3);
+  margin-block-start: var(--pct-space-4);
+}
+
+.view__button {
+  padding: var(--pct-space-2) var(--pct-space-4);
+  border: 1px solid var(--pct-border);
+  border-radius: var(--pct-radius-md);
+  background: var(--pct-surface);
+  color: var(--pct-text);
+  cursor: pointer;
+}
+
+.view__button:disabled {
+  color: var(--pct-text-muted);
+  cursor: default;
+}
+
+.view__second {
+  margin-block-start: var(--pct-space-4);
+}

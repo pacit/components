@@ -605,6 +605,25 @@ name="user"` with an inline default now, `user` published in `PctIconName`, and 
     channel that survives — and bare text told apart by the palette itself), an RTL
     reading where the trail mirrors and every separator turns by `:dir(rtl)`, two
     screenshots and 12 unit cases
+  - _the stepper is done_ (12 of 13). It is **a map of a journey the application steers**
+    — 0048's ownership split walked one component further: the application hands the map
+    ONE 1-based number, the DOM order numbers the steps, and every state is computed
+    (before it done, at it current, past it upcoming; nothing clamped, nothing written
+    back, no event — a map does not move the traveller). It **stamps
+    `aria-current="step"` where the breadcrumb refused to write `aria-current="page"`**,
+    and the two records agree underneath: the attribute belongs to whoever holds the
+    truth — there the router, here the input that already said it. See
+    [0055](decisions/0055-a-stepper-is-a-map-of-a-journey-the-application-steers.md)
+  - **done is audible, and it is content, not name**: the check is an `aria-hidden`
+    drawing, so `texts().stepDone` rides after the label inside the listitem — whose
+    accessible NAME is empty by specification, because `listitem` computes none from its
+    contents. The first cut asserted the name and measured the absence of a computation
+    ([`lesson-140`](lessons.md#lesson-140)); the suffix's leading space is an
+    interpolation, the badge's whitespace lesson at its second component
+  - gate: `apps/sandbox-e2e/src/stepper.spec.ts` (6 × 3) plus `/stepper` in the audits,
+    a forced-colours reading (the border keeps the circles, the check keeps done, the
+    weight keeps current), an RTL reading where the journey descends the other way with
+    no rule to help it, two screenshots and 13 unit cases
 
 - [ ] **1.2 — table / datagrid** on a headless core (column model, sorting, filtering, grouping,
       selection as signals) separated from rendering. **The last item of the phase** — the only

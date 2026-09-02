@@ -30,6 +30,7 @@
     "avatar/**/*.ts",
     "badge/**/*.ts",
     "breadcrumb/**/*.ts",
+    "stepper/**/*.ts",
     "field/**/*.ts",
     "icon/**/*.ts",
     "testing/**/*.ts"

@@ -1,0 +1,43 @@
+{
+  "pct": {
+    "stepper": {
+      "$comment": "A map of a journey the application steers (0055). Three states, and the marker wears them: upcoming is an outlined circle with a muted ordinal, done and current are the accent's fill with `on-primary` over it — told apart by content (the check against the ordinal) and, for the current step, by the label's weight, because under forced colours both fills drop and weight is the channel that survives (`req-a11y-forced-colors`). The border is drawn under every state for the chips' reason: the fill is the first thing every flattening takes. The connector is decoration a reader never hears.",
+
+      "gap": { "$type": "dimension", "$value": "{pct.space.3}" },
+
+      "$comment-marker-size": "A literal, not a scale step: the circle is the box two digits of the `sm` type sit in with breathing room, and no shared axis answers for that — the control axis was refused (a marker is not a control), and the target floor would claim the circle is pressable, which 0055 refuses.",
+      "marker-size": { "$type": "dimension", "$value": "28px" },
+      "marker-radius": { "$type": "dimension", "$value": "999px" },
+      "marker-font-size": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.sm}"
+      },
+
+      "marker-bg": { "$type": "color", "$value": "{pct.surface-100}" },
+      "marker-fg": { "$type": "color", "$value": "{pct.text-muted}" },
+      "marker-border": { "$type": "color", "$value": "{pct.border}" },
+
+      "$comment-marker-done": "Done and current share the accent today and are separate triples on purpose: they are different statements (\"behind you\" and \"you are here\"), and a skin that wants to quiet the finished steps moves one triple without touching the other.",
+      "marker-bg-done": { "$type": "color", "$value": "{pct.primary}" },
+      "marker-fg-done": { "$type": "color", "$value": "{pct.on-primary}" },
+      "marker-border-done": { "$type": "color", "$value": "{pct.primary}" },
+
+      "marker-bg-current": { "$type": "color", "$value": "{pct.primary}" },
+      "marker-fg-current": { "$type": "color", "$value": "{pct.on-primary}" },
+      "marker-border-current": {
+        "$type": "color",
+        "$value": "{pct.primary}"
+      },
+
+      "$comment-track": "The connector between markers: a drawn line, `aria-hidden`, its length a literal because it is layout rather than a scale step — the space tokens say how far APART things stand, and the track is a thing, not a distance.",
+      "track-size": { "$type": "dimension", "$value": "24px" },
+      "track-bg": { "$type": "color", "$value": "{pct.border}" },
+
+      "label-fg-muted": { "$type": "color", "$value": "{pct.text-muted}" },
+      "label-font-weight-current": {
+        "$type": "fontWeight",
+        "$value": "{pct.font.weight.medium}"
+      }
+    }
+  }
+}

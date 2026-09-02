@@ -94,6 +94,7 @@ const CARDS: ReadonlyArray<
   ['/avatar', 'demo-chain', 'avatar-chain'],
   ['/badge', 'demo-tones', 'badge-tones'],
   ['/breadcrumb', 'demo-pattern', 'breadcrumb-pattern'],
+  ['/stepper', 'demo-journey', 'stepper-journey'],
   ['/size', 'demo-axis', 'size-axis'],
   ['/states', 'states-disabled', 'states-disabled'],
   ['/states', 'states-invalid', 'states-invalid'],
@@ -431,6 +432,7 @@ const CARDS_RTL: ReadonlyArray<
   ['/avatar', 'demo-chain', 'avatar-chain'],
   ['/badge', 'demo-tones', 'badge-tones'],
   ['/breadcrumb', 'demo-pattern', 'breadcrumb-pattern'],
+  ['/stepper', 'demo-journey', 'stepper-journey'],
 ];
 
 test.describe('Appearance in RTL — compared with the baseline', () => {

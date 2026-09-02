@@ -135,6 +135,15 @@ export interface PctTexts {
    * over: two components, two landmarks, two names a translation may spell apart.
    */
   readonly breadcrumbLabel: string;
+  /**
+   * Stepper: the suffix a done step carries for a reader — the check that marks it is a
+   * drawing the accessibility tree never sees, so this word is how "behind you" is said at
+   * all ([0055](../../../../docs/decisions/0055-a-stepper-is-a-map-of-a-journey-the-application-steers.md)).
+   * It rides INSIDE the step's content, after the application's own label, so the name
+   * stays "Payment, Completed" with the application's word first — never in an
+   * `aria-label`, which would replace the label instead of following it.
+   */
+  readonly stepDone: string;
 }
 
 export const PCT_DEFAULT_TEXTS: PctTexts = {
@@ -158,6 +167,7 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   paginationNext: 'Next page',
   chipRemove: 'Remove',
   breadcrumbLabel: 'Breadcrumb',
+  stepDone: 'Completed',
 };
 
 /**

@@ -131,6 +131,8 @@ from what the browser really gets.
 ./slider PctSlider mark
 ./slider PctSlider thumb
 ./slider PctSlider track
+./stepper PctStep marker
+./stepper PctStep track
 ./switch PctSwitch control
 ./switch PctSwitch error
 ./switch PctSwitch hint

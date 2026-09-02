@@ -46,7 +46,8 @@
       "@pacit/components/badge": ["./libs/components/badge/src/index.ts"],
       "@pacit/components/breadcrumb": [
         "./libs/components/breadcrumb/src/index.ts"
-      ]
+      ],
+      "@pacit/components/stepper": ["./libs/components/stepper/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

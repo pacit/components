@@ -1,0 +1,10 @@
+/* The map is a row that WRAPS when the journey outgrows the line — the breadcrumb's
+   answer, for the breadcrumb's reason (0055 refuses a collapse it cannot know how to
+   fold). One gap spaces steps and connectors alike: the same token inside every step,
+   uniform rhythm from one number. */
+:host {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--pct-stepper-gap);
+}

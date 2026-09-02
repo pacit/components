@@ -241,6 +241,14 @@ export const SBX_VIEWS: readonly SbxView[] = [
       ),
   },
   {
+    path: 'stepper',
+    title: 'Stepper',
+    summary: 'A map of a journey — one number in, the whole map out.',
+    group: 'components',
+    load: () =>
+      import('./views/stepper/stepper-view').then((m) => m.StepperView),
+  },
+  {
     path: 'size',
     title: 'Size',
     summary: 'Every component on the shared sm/md/lg axis.',

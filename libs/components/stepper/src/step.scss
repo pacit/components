@@ -1,0 +1,102 @@
+/* One step: inline, centred, spaced by the row's one gap token. The state colours the
+   LABEL through the host, because projected text inherits — an upcoming step is muted,
+   the current one carries a weight, and weight is the channel forced colours cannot take
+   (`req-a11y-forced-colors`, the breadcrumb's channel one decision back). */
+:host {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--pct-stepper-gap);
+}
+
+:host([data-pct-state='upcoming']) {
+  color: var(--pct-stepper-label-fg-muted);
+}
+
+:host([data-pct-state='current']) {
+  font-weight: var(--pct-stepper-label-font-weight-current);
+}
+
+/* The connector: a drawn line, decoration a reader never hears. Its thickness is a
+   literal like every border here; its length is the token, because layout is what a skin
+   may want to stretch. */
+.pct-stepper__track {
+  flex: none;
+  inline-size: var(--pct-stepper-track-size);
+  block-size: 2px;
+  background: var(--pct-stepper-track-bg);
+}
+
+/* The first step follows nothing — CSS re-answers the question on every insert and
+   removal, which is why this is not a template branch (0054's line, one component over). */
+:host(:first-of-type) .pct-stepper__track {
+  display: none;
+}
+
+/* The marker: the circle the ordinal or the check sits in. `flex: none`, because in a
+   flex row even an explicit width is only a basis and a squeezed circle is an ellipse —
+   the avatar's measured lesson. Background AND border under every state, the chips'
+   reason: the fill is the first thing every flattening takes. */
+.pct-stepper__marker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  flex: none;
+  inline-size: var(--pct-stepper-marker-size);
+  block-size: var(--pct-stepper-marker-size);
+  border: 1px solid var(--pct-stepper-marker-border);
+  border-radius: var(--pct-stepper-marker-radius);
+  background: var(--pct-stepper-marker-bg);
+  color: var(--pct-stepper-marker-fg);
+  font-size: var(--pct-stepper-marker-font-size);
+  line-height: 1;
+}
+
+:host([data-pct-state='done']) .pct-stepper__marker {
+  border-color: var(--pct-stepper-marker-border-done);
+  background: var(--pct-stepper-marker-bg-done);
+  color: var(--pct-stepper-marker-fg-done);
+}
+
+:host([data-pct-state='current']) .pct-stepper__marker {
+  border-color: var(--pct-stepper-marker-border-current);
+  background: var(--pct-stepper-marker-bg-current);
+  color: var(--pct-stepper-marker-fg-current);
+}
+
+/* The box the check is drawn in — the drawing paints itself in `currentColor` and knows
+   nothing of the state around it (0028). */
+.pct-stepper__marker pct-icon {
+  font-size: 16px;
+}
+
+/* The word a reader gets for the drawn check: kept in the tree by a clipped 1px box —
+   the calendar's declarations, which `display: none` would take out of the tree. */
+.pct-stepper__sr {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Forced colours, written out (lesson-70): both fills go with every author colour; the
+   border keeps every circle a circle, the check and the ordinal take the palette's one
+   word for text, and the connector stays a line rather than vanishing with its fill. The
+   current step keeps its label weight — declared above, taken by nothing. */
+@media (forced-colors: active) {
+  /* Every state selector is repeated, because `@media` adds no specificity: a bare
+     `.pct-stepper__marker` here would lose to the state rules above and never paint —
+     the exact dead-declaration shape `check-styles` measures (lesson-70). */
+  .pct-stepper__marker,
+  :host([data-pct-state='done']) .pct-stepper__marker,
+  :host([data-pct-state='current']) .pct-stepper__marker {
+    border-color: CanvasText;
+    color: CanvasText;
+  }
+
+  .pct-stepper__track {
+    background: CanvasText;
+  }
+}

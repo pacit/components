@@ -271,4 +271,34 @@ test.describe('Writing direction — the layout mirrors in dir="rtl"', () => {
     expect((await boxOf(separator)).x).toBeGreaterThan((await boxOf(link)).x);
     expect(await styleOf(separator, 'rotate')).toBe('90deg');
   });
+
+  /**
+   * A stepper reads like the breadcrumb: the journey descends in the writing direction,
+   * the connector standing between markers on the flipped side. The connector needs no
+   * turn — a line is a line both ways — so the whole mirroring is flex order and a
+   * logical gap, and the geometry is the only witness.
+   */
+  test('the journey descends the other way and the connector changes sides', async ({
+    page,
+  }) => {
+    await visit(page, '/stepper');
+    const journey = page.getByTestId('journey');
+    const steps = journey.locator('pct-step');
+    const second = steps.nth(1);
+    const track = second.locator('[data-pct-part="track"]');
+    const marker = second.locator('[data-pct-part="marker"]');
+
+    const ltrFirst = await boxOf(steps.first());
+    const ltrSecond = await boxOf(second);
+    expect(ltrFirst.x).toBeLessThan(ltrSecond.x);
+    expect((await boxOf(track)).x).toBeLessThan((await boxOf(marker)).x);
+
+    await setRtl(page);
+    expect(await directionOf(page, 'pct-stepper')).toBe('rtl');
+
+    const rtlFirst = await boxOf(steps.first());
+    const rtlSecond = await boxOf(second);
+    expect(rtlFirst.x).toBeGreaterThan(rtlSecond.x);
+    expect((await boxOf(track)).x).toBeGreaterThan((await boxOf(marker)).x);
+  });
 });

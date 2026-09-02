@@ -1,0 +1,40 @@
+<!--
+  The connector, the marker, the label, and — on a done step — the word a reader gets for
+  the check they cannot hear. The connector and the marker are drawings (`aria-hidden`
+  outright; the check inside the marker is silenced by the icon host's own attribute), so
+  the listitem's accessible name is the application's label plus, when the step is behind
+  the traveller, `texts().stepDone` — "Payment, Completed", the application's word first
+  (0055). The first step's connector is hidden by CSS: the breadcrumb's `:first-of-type`
+  line, which re-answers "am I first" on every insert and removal for free.
+-->
+<span
+  class="pct-stepper__track"
+  data-pct-part="track"
+  aria-hidden="true"
+></span>
+<span class="pct-stepper__marker" data-pct-part="marker" aria-hidden="true">
+  @if (state() === 'done') {
+  <pct-icon name="check">
+    <svg
+      viewBox="0 0 16 16"
+      width="100%"
+      height="100%"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      focusable="false"
+    >
+      <path d="M3.5 8.5l3 3 6-6.5" />
+    </svg>
+  </pct-icon>
+  } @else { {{ ordinal() }} }
+</span>
+<ng-content />
+@if (state() === 'done') {
+<!-- The leading space is data, not formatting: Angular drops a whitespace-only text
+       NODE between the projected label and this span (the badge's measured lesson), and
+       without it the accessible name fuses into one word — "CartCompleted". -->
+<span class="pct-stepper__sr">{{ ' ' + texts().stepDone }}</span>
+}
