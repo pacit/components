@@ -226,6 +226,11 @@ describe('PctStepper — the shapes that warn', () => {
     expect(warn).toHaveBeenCalledTimes(1);
     expect(warn.mock.calls[0][0]).toContain('[pct-step]');
     expect(warn.mock.calls[0][0]).toContain('pct-stepper');
+    // The loose step still RENDERS a coherent state: the guard in the state machine is
+    // what keeps a rowless step at "upcoming" instead of asking a row that is not there.
+    expect(
+      document.querySelector('pct-step')?.getAttribute('data-pct-state'),
+    ).toBe('upcoming');
   });
 
   it('a step wrapped away from the list warns the same warning', async () => {

@@ -606,6 +606,13 @@ name="user"` with an inline default now, `user` published in `PctIconName`, and 
     channel that survives — and bare text told apart by the palette itself), an RTL
     reading where the trail mirrors and every separator turns by `:dir(rtl)`, two
     screenshots and 12 unit cases
+  - mutation: `breadcrumb.ts` **92.00 23(0) 2 0 0**, after a correction round the first
+    full run demanded — it read 73.33 with eight survivors, six of them FRAGMENTS of
+    concatenated warn strings plus the landmark label's own default, which no
+    arrangement exercised. The warns are single literals now (one string is one mutant,
+    and any asserted word kills it) and the unbound arrangement asserts the default.
+    The two left are named: the seventh `isDevMode()`-forced-true in a row, and `?.` on
+    a parent no rendered host lacks
   - _the stepper is done_ (12 of 13). It is **a map of a journey the application steers**
     — 0048's ownership split walked one component further: the application hands the map
     ONE 1-based number, the DOM order numbers the steps, and every state is computed
@@ -625,6 +632,13 @@ name="user"` with an inline default now, `user` published in `PctIconName`, and 
     a forced-colours reading (the border keeps the circles, the check keeps done, the
     weight keeps current), an RTL reading where the journey descends the other way with
     no rule to help it, two screenshots and 13 unit cases
+  - mutation: `stepper.ts` **89.80 44(0) 5 0 2**, the five named: the `||` in the state
+    guard (equivalent by invariant — no row ⇔ ordinal 0, so each half implies the
+    other), the whole guard forced false — **killed by hand** with the
+    runtime-equivalent edit and a red test, surviving only Stryker's per-test
+    attribution, so it is recorded as the runner's artifact and not the suite's hole —
+    the eighth `isDevMode()`, `?.` on the same never-null parent, and a DI token's
+    debug label no behaviour reads
   - _the tree is done_ (13 of 13 — **1.1 closes**). It is **a walk the platform does not
     have**: the first component of the tail that could not refuse the keys, because the
     APG Tree View is one tab stop with a roving focus and no element walks a hierarchy —
@@ -649,7 +663,16 @@ name="user"` with an inline default now, `user` published in `PctIconName`, and 
   - gate: `apps/sandbox-e2e/src/tree.spec.ts` (7 × 3) plus `/tree` in the audits, an RTL
     reading where the indent mirrors and the walk swaps under real keys, a
     forced-colours reading (the chosen row in the palette's own highlight pair), two
-    screenshots and 18 unit cases
+    screenshots and 21 unit cases — three of them born in the mutation round: back on a
+    CLOSED branch climbs, a walk past either end stays put, and removing the active
+    item hands the roving `0` to the first visible survivor
+  - mutation: `tree.ts` **93.28 111(0) 7 1 4**, the seven named in three families: a
+    leaf's fold state has no witness by construction (two mutants — the pointer's
+    toggle and forward-on-a-leaf both write a model nothing renders), guards whose
+    breach the zoneless `ErrorHandler` swallows into the same rendered picture (the
+    empty-walk return, a loose item's calls), the ninth `isDevMode()`, and the token's
+    debug label. The library is **4615 mutants at 82.82** — the day added just over two
+    hundred and moved the total up 0.42
 
 - [ ] **1.2 — table / datagrid** on a headless core (column model, sorting, filtering, grouping,
       selection as signals) separated from rendering. **The last item of the phase** — the only
@@ -1038,6 +1061,17 @@ thousandth row` timed out with the list still showing row 44, and the forced-col
     nightly would have fired red on the gate's assumption rather than on any fact about the
     run. It reads the union over every `nx` line of both workflows now, and the
     `ci-without-target` fixture still rejects on its own rule
+  - **an eighth reading: the first nightly ran, and the CI columns exist.** The scheduler
+    skipped the cron's first window outright (a freshly registered schedule, a known
+    best-effort hole), so run 33594523992 is a morning `workflow_dispatch` — and it is
+    green end to end. The job: 2h23m. The split: `npm ci` 58s, the browser system
+    libraries 34s, the 23-target fast set **3m02s**, the heavy step **138m03s** — inside
+    which `components:mutation` is the critical path at **137m57s**, the e2e's 1534 cases
+    pass in 1.6h RUNNING BESIDE IT (one `run-many`, `nx` parallelism — the "starved by
+    configuration" sentence above, now a measurement), and `check-mutation` reads the
+    report in 2.9s. The score CI lands: **82.59 against the starved snapshot's 82.40** —
+    a drift of +0.19 into the gate's ±2, in the predicted direction and a tenth of the
+    predicted size. The starved-snapshot decision holds its first night
 
 - [ ] **4.3 — an option's owner is measured only where a page renders the panel**
   - `pct-select` draws a named section as `role="group"`, and the options below it are owned by

@@ -24,6 +24,7 @@ libs/components/accordion/src/accordion-item.ts 100.00 16(0) 0 0 1
 libs/components/accordion/src/accordion.ts 75.00 3(0) 1 0 1
 libs/components/avatar/src/avatar.ts 87.50 28(0) 3 1 0
 libs/components/badge/src/badge.ts 83.33 10(0) 2 0 0
+libs/components/breadcrumb/src/breadcrumb.ts 92.00 23(0) 2 0 0
 libs/components/button/src/button.ts 100.00 7(0) 0 0 2
 libs/components/checkbox/src/checkbox.ts 89.83 53(0) 6 0 6
 libs/components/chips/src/chips.ts 90.74 49(0) 5 0 2
@@ -38,7 +39,7 @@ libs/components/core/src/motion.ts 86.21 50(0) 8 0 0
 libs/components/core/src/overlay.ts 100.00 15(0) 0 0 2
 libs/components/core/src/placement.ts 89.23 58(0) 7 0 0
 libs/components/core/src/template.ts 96.00 24(0) 1 0 0
-libs/components/core/src/texts.ts 100.00 32(0) 0 0 0
+libs/components/core/src/texts.ts 100.00 34(0) 0 0 0
 libs/components/date/src/calendar.ts 73.60 131(0) 45 2 4
 libs/components/date/src/date.ts 66.18 135(0) 67 2 8
 libs/components/date/src/day.ts 95.83 138(2) 6 0 0
@@ -65,6 +66,7 @@ libs/components/select/src/select.template.ts 50.00 2(0) 0 2 2
 libs/components/select/src/select.ts 88.89 32(0) 3 0 0
 libs/components/skeleton/src/skeleton.ts 92.31 24(0) 2 0 1
 libs/components/slider/src/slider.ts 79.44 143(0) 36 1 9
+libs/components/stepper/src/stepper.ts 89.80 44(0) 5 0 2
 libs/components/switch/src/switch.ts 96.30 52(0) 2 0 5
 libs/components/tabs/src/tab.ts 91.43 32(0) 2 0 1
 libs/components/tabs/src/tabs.ts 94.26 115(0) 6 0 2
@@ -72,5 +74,6 @@ libs/components/toast/src/toast-viewport.ts 95.00 19(0) 1 0 0
 libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0
 libs/components/toast/src/toaster.ts 71.71 109(0) 42 1 0
 libs/components/tooltip/src/tooltip.ts 70.54 182(0) 71 5 8
-TOTAL 82.40 3642/4420
+libs/components/tree/src/tree.ts 93.28 111(0) 7 1 4
+TOTAL 82.82 3822/4615
 ```

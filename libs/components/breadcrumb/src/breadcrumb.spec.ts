@@ -155,6 +155,9 @@ describe('PctBreadcrumb — the current step is not ours to write', () => {
     await render(TextHost);
 
     expect(document.querySelectorAll('[aria-current]')).toHaveLength(0);
+    // And with nothing bound, the landmark still carries the library default — TextHost
+    // is the arrangement where the input's own default really speaks.
+    expect(breadcrumb().getAttribute('aria-label')).toBe('Breadcrumb');
   });
 
   it('leaves the consumer’s aria-current standing where they put it', async () => {

@@ -74,13 +74,30 @@ class LooseItemHost {}
 
 @Component({
   imports: [PctTree, PctTreeItem],
+  // No ariaLabel on purpose: this is also the arrangement that proves a nameless tree
+  // stays nameless — the input's own default speaking, not a bound empty string.
   template: `
-    <pct-tree ariaLabel="Boxed">
+    <pct-tree>
       <div><pct-tree-item value="boxed">Boxed</pct-tree-item></div>
     </pct-tree>
   `,
 })
 class WrappedItemHost {}
+
+@Component({
+  imports: [PctTree, PctTreeItem],
+  template: `
+    <pct-tree [(selected)]="chosen" ariaLabel="Shrinking">
+      @for (label of labels(); track label) {
+        <pct-tree-item [value]="label">{{ label }}</pct-tree-item>
+      }
+    </pct-tree>
+  `,
+})
+class DynamicTreeHost {
+  readonly chosen = signal<string | null>(null);
+  readonly labels = signal(['One', 'Two', 'Three']);
+}
 
 async function render<T>(type: Type<T>): Promise<ComponentFixture<T>> {
   TestBed.configureTestingModule({
@@ -231,6 +248,54 @@ describe('PctTree — the walk', () => {
     expect(document.activeElement).toBe(item('src'));
   });
 
+  it('back on a CLOSED branch climbs — closing is only for the open one', async () => {
+    const fixture = await render(Host);
+
+    // Open src, walk down to `deep` — a branch that is itself still closed — and press
+    // back: the honest answer is the parent, not a no-op "close" of what is not open.
+    item('readme').focus();
+    await key(fixture, 'ArrowDown');
+    await key(fixture, 'ArrowRight');
+    await key(fixture, 'ArrowDown');
+    await key(fixture, 'ArrowDown');
+    expect(document.activeElement).toBe(item('src/deep'));
+    await key(fixture, 'ArrowLeft');
+    expect(document.activeElement).toBe(item('src'));
+  });
+
+  it('a walk past either end moves nothing — the pointer stays put', async () => {
+    const fixture = await render(Host);
+
+    item('readme').focus();
+    await key(fixture, 'End');
+    expect(document.activeElement).toBe(item('docs'));
+    await key(fixture, 'ArrowDown');
+    // Past the end: the focus AND the roving tabindex both stay on the last item — a
+    // guard that let the pointer fall off would hand the 0 back to the first row.
+    expect(document.activeElement).toBe(item('docs'));
+    expect(item('docs').getAttribute('tabindex')).toBe('0');
+    expect(item('readme').getAttribute('tabindex')).toBe('-1');
+  });
+
+  it('removing the active item hands the roving tabindex to the first visible one', async () => {
+    const fixture = await render(DynamicTreeHost);
+
+    // By index, not by attribute: a BOUND `[value]` input writes no DOM attribute.
+    const nodes = () =>
+      [...document.querySelectorAll('pct-tree-item')] as HTMLElement[];
+    nodes()[1].click();
+    await settle(fixture);
+    expect(nodes()[1].getAttribute('tabindex')).toBe('0');
+
+    fixture.componentInstance.labels.set(['One', 'Three']);
+    await settle(fixture);
+    // The active item left the tree entirely; the map must not keep pointing at a node
+    // that is no longer anybody's child.
+    expect(nodes()).toHaveLength(2);
+    expect(nodes()[0].getAttribute('tabindex')).toBe('0');
+    expect(nodes()[1].getAttribute('tabindex')).toBe('-1');
+  });
+
   it('under RTL the inline pair swaps, read off the rendered direction', async () => {
     const fixture = await render(RtlHost);
 
@@ -313,6 +378,8 @@ describe('PctTree — the shapes that warn', () => {
 
     expect(warn).toHaveBeenCalledTimes(1);
     expect(warn.mock.calls[0][0]).toContain('[pct-tree-item]');
+    // The same arrangement proves a nameless tree stays nameless — no guessed default.
+    expect(tree().getAttribute('aria-label')).toBeNull();
   });
 
   it('the tree as drawn warns nothing', async () => {

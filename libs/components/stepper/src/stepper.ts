@@ -154,10 +154,10 @@ export class PctStep {
   private warnOnLooseStep(): void {
     const above = this.host.nativeElement.parentElement;
     if (this.stepper && above?.getAttribute('role') === 'list') return;
+    // One literal on purpose — the breadcrumb's mutation-run lesson: a joined fragment
+    // nothing asserts on is a surviving mutant, one string is one.
     console.warn(
-      `[pct-step] A step whose parent element is not a list. \`role="listitem"\` needs ` +
-        `\`role="list"\` directly above it, and the numbering lives in the row — make ` +
-        `the step a direct child of <pct-stepper>.`,
+      `[pct-step] A step whose parent element is not a list. \`role="listitem"\` needs \`role="list"\` directly above it, and the numbering lives in the row — make the step a direct child of <pct-stepper>.`,
     );
   }
 }

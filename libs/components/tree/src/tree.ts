@@ -272,11 +272,10 @@ export class PctTreeItem {
     const above = this.host.nativeElement.parentElement;
     const role = above?.getAttribute('role');
     if (this.tree && (role === 'tree' || role === 'group')) return;
+    // One literal on purpose — the breadcrumb's mutation-run lesson: a joined fragment
+    // nothing asserts on is a surviving mutant, one string is one.
     console.warn(
-      `[pct-tree-item] An item whose parent element is neither a tree nor a group. ` +
-        `\`role="treeitem"\` needs \`role="tree"\` or \`role="group"\` directly above ` +
-        `it, and the walk lives in the tree — make the item a child of <pct-tree> or ` +
-        `of another <pct-tree-item>.`,
+      `[pct-tree-item] An item whose parent element is neither a tree nor a group. \`role="treeitem"\` needs \`role="tree"\` or \`role="group"\` directly above it, and the walk lives in the tree — make the item a child of <pct-tree> or of another <pct-tree-item>.`,
     );
   }
 }

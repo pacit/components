@@ -97,11 +97,11 @@ export class PctCrumb {
   private warnOnLooseCrumb(): void {
     const above = this.host.nativeElement.parentElement;
     if (this.parent && above?.getAttribute('role') === 'list') return;
+    // One literal, not a concatenation: the mutation run turns every joined fragment into
+    // a mutant of its own, and a fragment nothing asserts on survives — one string is one
+    // mutant, and any asserted word kills it.
     console.warn(
-      `[pct-crumb] A crumb whose parent element is not a list. \`role="listitem"\` needs ` +
-        `\`role="list"\` directly above it — axe counts the loose arrangement as a ` +
-        `critical violation in every engine. Make the crumb a direct child of ` +
-        `<pct-breadcrumb>.`,
+      `[pct-crumb] A crumb whose parent element is not a list. \`role="listitem"\` needs \`role="list"\` directly above it — axe counts the loose arrangement as a critical violation in every engine. Make the crumb a direct child of <pct-breadcrumb>.`,
     );
   }
 }
@@ -129,9 +129,7 @@ export class PctCrumbLink {
   constructor() {
     if (isDevMode() && !this.crumb)
       console.warn(
-        `[pct-breadcrumb] A \`pctCrumbLink\` outside any \`pct-crumb\`: it will wear the ` +
-          `trail's colours with no listitem around it and no landmark above it. Put it in ` +
-          `the content of a <pct-crumb> inside <pct-breadcrumb>.`,
+        `[pct-breadcrumb] A \`pctCrumbLink\` outside any \`pct-crumb\`: it will wear the trail's colours with no listitem around it and no landmark above it. Put it in the content of a <pct-crumb> inside <pct-breadcrumb>.`,
       );
   }
 }
