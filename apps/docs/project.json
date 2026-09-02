@@ -10,9 +10,26 @@
   "implicitDependencies": ["tokens"],
   "// typecheck": "The same override as in `sandbox`, for the same measured reason: the inferred target runs `tsconfig.app.json` only. This application has no spec config yet — the day it grows one, the second command lands here the way it stands in `sandbox`.",
   "targets": {
+    "content": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/docs/components/*.md",
+        "{workspaceRoot}/docs/registry.md",
+        "{workspaceRoot}/docs/lessons.md",
+        "{workspaceRoot}/libs/components/parts.snapshot.md",
+        "{workspaceRoot}/libs/components/mutation.snapshot.md",
+        "{workspaceRoot}/libs/tokens/tokens.snapshot.md",
+        "{projectRoot}/tools/build-content.mjs"
+      ],
+      "outputs": ["{projectRoot}/src/generated"],
+      "options": {
+        "command": "node apps/docs/tools/build-content.mjs"
+      }
+    },
     "build": {
       "cache": true,
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "content"],
       "inputs": ["production", "^production"],
       "executor": "@angular/build:application",
       "outputs": ["{options.outputPath}"],
@@ -22,7 +39,10 @@
         "browser": "apps/docs/src/main.ts",
         "tsConfig": "apps/docs/tsconfig.app.json",
         "inlineStyleLanguage": "scss",
-        "assets": [{ "glob": "**/*", "input": "apps/docs/public" }],
+        "assets": [
+          { "glob": "**/*", "input": "apps/docs/public" },
+          { "glob": "**/*", "input": "apps/docs/src/generated/public" }
+        ],
         "styles": [
           "node_modules/@angular/cdk/overlay-prebuilt.css",
           "libs/tokens/dist/pct.css",

@@ -773,13 +773,27 @@ precondition of the quiet push (3.0), which no visitor can see.
         taught the reach gate's bare-name rule the hard way: **lesson-142**, eight files
         dark on both sides of the copy, anchored by full paths in each `project.json` ·
         cost: ~1 day estimated, ~half spent
-  - [ ] **2.1.5 — the content pipeline**: cards + parts snapshot + token dist + registry +
-        mutation snapshot, shiki at build time → typed page data; **`llms.txt` and the
-        machine catalogue fall out of the same pass** (2.5, co-built as ordered below) ·
-        cost: ~1 day
+  - [x] **2.1.5 — the content pipeline**: one dependency-free pass
+        (`apps/docs/tools/build-content.mjs`, a cached `content` target the build
+        depends on) reads the cards, the parts and token snapshots, the registry and
+        the mutation snapshot → typed `DOCS_CARDS` + `DOCS_EVIDENCE`, and **`llms.txt`
+        with the machine catalogue (`components.json`) fall out of the same pass**
+        (2.5, co-built as ordered below — an agent reads the same inventory the pages
+        render). _Landed 2026-09-02, measured:_ **33 cards, 119 parts, 465 component
+        tokens** lifted; the evidence numbers guard themselves — a count the parser
+        cannot read throws the build ("a page must never show a number nothing
+        measured"), and the tripwire fired twice during writing (the registry's bold
+        `**86**` and its three-column rows) before the first green pass. Deliberately
+        parserless: the cards are a form, not prose, so the form's own lines are the
+        API; **highlighting (shiki) moved to 2.1.7 with the rendering it serves** —
+        data is not the place to paint code · cost: ~1 day estimated, ~half spent
   - [ ] **2.1.6 — the landing**: the gradient headline, live components instead of
-        screenshots, the evidence strip reading **tracked files only** — a number nothing
-        generates does not appear · cost: ~1 day
+        screenshots, the **accessibility-led** evidence strip reading **tracked files
+        only** — a number nothing generates does not appear. Recalibrated on the
+        maintainer's review of the sketch: WCAG earns the front, the build machinery
+        moves to `/trust` (site.md records the reasoning, and the wording stays
+        "machine-audited to WCAG 2.2 AA" until 2.2's ACR earns the stronger sentence) ·
+        cost: ~1 day
   - [ ] **2.1.7 — the pages**: `/components/:id` (demos whose code tab shows their own
         source, parts and token tables), `/start`, `/theming`, `/trust`, `/support` ·
         cost: ~1.5 days

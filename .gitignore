@@ -103,3 +103,4 @@ vitest.config.*.timestamp*
 # 0015 and 0016 carry only what may be read from outside. The directory is UNTRACKED:
 # git neither copies it nor restores it after `clean -xdf`.
 /docs/private/
+apps/docs/src/generated
