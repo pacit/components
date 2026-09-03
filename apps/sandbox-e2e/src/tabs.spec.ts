@@ -245,6 +245,42 @@ test.describe('PctTabs — one section showing at a time', () => {
     ).toBeFocused();
   });
 
+  /**
+   * A box that overhangs a scroll container by one pixel is a scrollbar. The strip once
+   * pulled the chosen edge onto its rail with a negative margin, and every strip carried a
+   * one-pixel scrollbar across its own axis that thickened the edge when scrolled
+   * (lesson-144). Along its axis a strip scrolls by design; across it, never.
+   */
+  test('the strip never scrolls across its own axis, and the chosen edge fits inside it', async ({
+    page,
+  }) => {
+    const overhang = (id: string) =>
+      strip(page, id).evaluate((el) => ({
+        across: el.scrollHeight - el.clientHeight,
+        along: el.scrollWidth - el.clientWidth,
+      }));
+
+    expect(await overhang('tabs-basic')).toEqual({ across: 0, along: 0 });
+
+    // The strip built to overflow scrolls along its axis — and still not across it.
+    const overflowing = await overhang('tabs-overflow');
+    expect(overflowing.along).toBeGreaterThan(0);
+    expect(overflowing.across).toBe(0);
+
+    // The vertical strip's own axis is the block one; across it is inline.
+    expect(
+      await strip(page, 'tabs-vertical').evaluate(
+        (el) => el.scrollWidth - el.clientWidth,
+      ),
+    ).toBe(0);
+
+    // The edge is whole: two pixels, drawn inside the box, nothing to reveal by scrolling.
+    await expect(tabs(page, 'tabs-basic').first()).toHaveCSS(
+      'border-bottom-width',
+      '2px',
+    );
+  });
+
   test('every tab clears the touch-target floor outright', async ({ page }) => {
     for (const tab of await tabs(page, 'tabs-basic').all()) {
       const box = await tab.boundingBox();

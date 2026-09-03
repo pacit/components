@@ -3816,3 +3816,24 @@ push, `nx format:check --all`, because the gate battery does not run the formatt
 CI opens with it. And a script-made sweep is an edit like any other: it goes through
 prettier before its commit, not at an end-of-day ceremony that may be looking at an
 empty range.
+
+### <a id="lesson-144"></a>`lesson-144` — A box that overhangs a scroll container by one pixel is a scrollbar
+
+The tabs' strip is a scroll container by design — a row of tabs scrolls rather than
+wraps — and the chosen tab's edge was pulled onto the strip's rail with a one-pixel
+negative margin, "to make one line out of two"; the stylesheet's own comment said so. What
+the browser did with it: the tab's box overhung the strip's content box by that pixel, an
+overhang inside `overflow: auto` is scrollable content, and every strip on the site carried
+a one-pixel scrollbar across its own axis. At rest the overhanging pixel was hidden, so the
+edge read one pixel thin; scrolled, it read two — the reviewer's exact words, "the
+underline gets thicker", from the docs site's Preview panel.
+
+Two suites had looked at the strip and neither saw it: the baselines froze the resting
+state, and no assertion asked whether a scroll container scrolls across its own axis. The
+fix draws the edge inside the box — above the rail, not on it — and the spec now asks the
+question outright: along its axis a strip may scroll, across it never.
+
+The rule: inside a scroll container a negative margin is not a drawing trick, it is
+content, and one pixel of it is a scrollbar. When a decoration must overlap a neighbour's
+edge, overlap from INSIDE the box or accept adjacency — and give every scroll container a
+test that names the one axis it is allowed to scroll on.

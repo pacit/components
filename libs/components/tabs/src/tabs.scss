@@ -44,18 +44,17 @@
 
 /* The mark of the chosen tab is an edge, and it is drawn on the tab in BOTH states — a
    transparent one when it is not chosen — so that nothing moves by two pixels at the moment
-   of choosing. It is pulled onto the strip's own rail by the negative margin, which is what
-   makes one line out of two. */
+   of choosing. It sits INSIDE the tab's box, above the strip's own rail. An earlier version
+   pulled it onto the rail with a one-pixel negative margin "to make one line out of two":
+   inside a scroll container that pixel is content, every strip carried a scrollbar across
+   its own axis, and the edge read thicker once scrolled (lesson-144). */
 .pct-tabs__tab {
   border-block-end: 2px solid transparent;
-  margin-block-end: -1px;
 }
 
 :host([data-pct-orientation='vertical']) .pct-tabs__tab {
   border-block-end: none;
   border-inline-end: 2px solid transparent;
-  margin-block-end: 0;
-  margin-inline-end: -1px;
   border-radius: var(--pct-tabs-tab-radius) 0 0 var(--pct-tabs-tab-radius);
   text-align: start;
 }
