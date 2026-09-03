@@ -1,45 +1,141 @@
 {
   "pct": {
     "slider": {
-      "height": { "$type": "dimension", "$value": "10rem" },
-      "gap": { "$type": "dimension", "$value": "{pct.space.3}" },
-      "target-min": { "$type": "dimension", "$value": "{pct.target.min}" },
-      "track-height": { "$type": "dimension", "$value": "6px" },
-      "track-radius": { "$type": "dimension", "$value": "999px" },
-      "track-bg": { "$type": "color", "$value": "{pct.border}" },
+      "height": {
+        "$type": "dimension",
+        "$value": "10rem",
+        "$description": "Height of the slider."
+      },
+      "gap": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Gap between the slider and its label."
+      },
+      "target-min": {
+        "$type": "dimension",
+        "$value": "{pct.target.min}",
+        "$description": "Touch-target floor of the slider."
+      },
+      "track-height": {
+        "$type": "dimension",
+        "$value": "6px",
+        "$description": "Height of the track."
+      },
+      "track-radius": {
+        "$type": "dimension",
+        "$value": "999px",
+        "$description": "Corner radius of the track."
+      },
+      "track-bg": {
+        "$type": "color",
+        "$value": "{pct.border}",
+        "$description": "Background of the track."
+      },
       "track-bg-disabled": {
         "$type": "color",
-        "$value": "{pct.surface-disabled}"
+        "$value": "{pct.surface-disabled}",
+        "$description": "Background of the track while disabled."
       },
-      "fill-bg": { "$type": "color", "$value": "{pct.primary}" },
-      "fill-bg-disabled": { "$type": "color", "$value": "{pct.text-disabled}" },
-      "thumb-size": { "$type": "dimension", "$value": "18px" },
-      "thumb-bg": { "$type": "color", "$value": "{pct.on-primary}" },
+      "fill-bg": {
+        "$type": "color",
+        "$value": "{pct.primary}",
+        "$description": "Background of the fill."
+      },
+      "fill-bg-disabled": {
+        "$type": "color",
+        "$value": "{pct.text-disabled}",
+        "$description": "Background of the fill while disabled."
+      },
+      "thumb-size": {
+        "$type": "dimension",
+        "$value": "18px",
+        "$description": "Size of the thumb."
+      },
+      "thumb-bg": {
+        "$type": "color",
+        "$value": "{pct.on-primary}",
+        "$description": "Background of the thumb."
+      },
       "thumb-bg-disabled": {
         "$type": "color",
-        "$value": "{pct.surface-disabled}"
+        "$value": "{pct.surface-disabled}",
+        "$description": "Background of the thumb while disabled."
       },
-      "thumb-border": { "$type": "color", "$value": "{pct.primary}" },
+      "thumb-border": {
+        "$type": "color",
+        "$value": "{pct.primary}",
+        "$description": "Edge colour of the thumb."
+      },
       "thumb-border-hover": {
         "$type": "color",
-        "$value": "{pct.primary-hover}"
+        "$value": "{pct.primary-hover}",
+        "$description": "Edge colour of the thumb on hover."
       },
-      "thumb-border-invalid": { "$type": "color", "$value": "{pct.danger}" },
-      "thumb-border-disabled": { "$type": "color", "$value": "{pct.border}" },
-      "mark-size": { "$type": "dimension", "$value": "2px" },
-      "mark-bg": { "$type": "color", "$value": "{pct.text-muted}" },
-      "bubble-bg": { "$type": "color", "$value": "{pct.surface-100}" },
-      "bubble-fg": { "$type": "color", "$value": "{pct.text}" },
+      "thumb-border-invalid": {
+        "$type": "color",
+        "$value": "{pct.danger}",
+        "$description": "Edge colour of the thumb when invalid."
+      },
+      "thumb-border-disabled": {
+        "$type": "color",
+        "$value": "{pct.border}",
+        "$description": "Edge colour of the thumb while disabled."
+      },
+      "mark-size": {
+        "$type": "dimension",
+        "$value": "2px",
+        "$description": "Size of the mark."
+      },
+      "mark-bg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Background of the mark."
+      },
+      "bubble-bg": {
+        "$type": "color",
+        "$value": "{pct.surface-100}",
+        "$description": "Background of the value bubble."
+      },
+      "bubble-fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of the value bubble."
+      },
       "bubble-font-size": {
         "$type": "dimension",
-        "$value": "{pct.font.size.sm}"
+        "$value": "{pct.font.size.sm}",
+        "$description": "Font size of the value bubble."
       },
-      "bubble-radius": { "$type": "dimension", "$value": "{pct.radius.md}" },
-      "bubble-padding-x": { "$type": "dimension", "$value": "{pct.space.2}" },
-      "label-fg": { "$type": "color", "$value": "{pct.text}" },
-      "hint-fg": { "$type": "color", "$value": "{pct.text-muted}" },
-      "fg-invalid": { "$type": "color", "$value": "{pct.danger}" },
-      "fg-disabled": { "$type": "color", "$value": "{pct.text-disabled}" }
+      "bubble-radius": {
+        "$type": "dimension",
+        "$value": "{pct.radius.md}",
+        "$description": "Corner radius of the value bubble."
+      },
+      "bubble-padding-x": {
+        "$type": "dimension",
+        "$value": "{pct.space.2}",
+        "$description": "Horizontal padding of the value bubble."
+      },
+      "label-fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of the label."
+      },
+      "hint-fg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Text colour of the hint."
+      },
+      "fg-invalid": {
+        "$type": "color",
+        "$value": "{pct.danger}",
+        "$description": "Text colour of the slider when invalid."
+      },
+      "fg-disabled": {
+        "$type": "color",
+        "$value": "{pct.text-disabled}",
+        "$description": "Text colour of the slider while disabled."
+      }
     }
   }
 }

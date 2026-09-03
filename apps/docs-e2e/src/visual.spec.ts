@@ -27,8 +27,10 @@ const SHOTS = [
   {
     route: '/components/button',
     name: 'component-button',
-    settled: '.panel__stage > *',
-    masked: [],
+    settled: '.stage--hero > *',
+    // The header's proof line and the evidence tiles hold the component's own counts —
+    // the same law as the landing's strip: the numbers are pages.spec's to check.
+    masked: ['[data-testid="proof"]', '[data-testid="evidence"]'],
   },
 ] as const;
 

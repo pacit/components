@@ -1,61 +1,191 @@
 {
   "pct": {
     "select": {
-      "bg": { "$type": "color", "$value": "{pct.surface}" },
-      "fg": { "$type": "color", "$value": "{pct.text}" },
-      "placeholder-fg": { "$type": "color", "$value": "{pct.text-muted}" },
-      "border": { "$type": "color", "$value": "{pct.border-strong}" },
-      "border-hover": { "$type": "color", "$value": "{pct.text-muted}" },
-      "border-focus": { "$type": "color", "$value": "{pct.primary}" },
-      "border-invalid": { "$type": "color", "$value": "{pct.danger}" },
-      "fg-invalid": { "$type": "color", "$value": "{pct.danger}" },
-      "bg-disabled": { "$type": "color", "$value": "{pct.surface-disabled}" },
-      "fg-disabled": { "$type": "color", "$value": "{pct.text-disabled}" },
-      "border-disabled": { "$type": "color", "$value": "{pct.border}" },
-      "label-fg": { "$type": "color", "$value": "{pct.text}" },
-      "hint-fg": { "$type": "color", "$value": "{pct.text-muted}" },
-      "arrow-fg": { "$type": "color", "$value": "{pct.text-muted}" },
-      "radius": { "$type": "dimension", "$value": "{pct.radius.md}" },
-      "font-size": { "$type": "dimension", "$value": "{pct.font.size.md}" },
-      "padding-y": { "$type": "dimension", "$value": "{pct.space.3}" },
-      "padding-x": { "$type": "dimension", "$value": "{pct.space.4}" },
-
-      "panel-bg": { "$type": "color", "$value": "{pct.surface}" },
-      "panel-border": { "$type": "color", "$value": "{pct.border-strong}" },
-      "panel-shadow": { "$type": "shadow", "$value": "{pct.shadow-panel}" },
-      "panel-radius": { "$type": "dimension", "$value": "{pct.radius.md}" },
-      "panel-max-height": { "$type": "dimension", "$value": "240px" },
-
-      "option-fg": { "$type": "color", "$value": "{pct.text}" },
-      "option-bg": { "$type": "color", "$value": "{pct.surface}" },
-      "option-bg-active": { "$type": "color", "$value": "{pct.surface-100}" },
-      "option-fg-active": { "$type": "color", "$value": "{pct.text}" },
-      "option-bg-selected": { "$type": "color", "$value": "{pct.primary}" },
-      "option-fg-selected": { "$type": "color", "$value": "{pct.on-primary}" },
+      "bg": {
+        "$type": "color",
+        "$value": "{pct.surface}",
+        "$description": "Background of the select."
+      },
+      "fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of the select."
+      },
+      "placeholder-fg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Text colour of the placeholder."
+      },
+      "border": {
+        "$type": "color",
+        "$value": "{pct.border-strong}",
+        "$description": "Edge colour of the select."
+      },
+      "border-hover": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Edge colour of the select on hover."
+      },
+      "border-focus": {
+        "$type": "color",
+        "$value": "{pct.primary}",
+        "$description": "Edge colour of the select when focused."
+      },
+      "border-invalid": {
+        "$type": "color",
+        "$value": "{pct.danger}",
+        "$description": "Edge colour of the select when invalid."
+      },
+      "fg-invalid": {
+        "$type": "color",
+        "$value": "{pct.danger}",
+        "$description": "Text colour of the select when invalid."
+      },
+      "bg-disabled": {
+        "$type": "color",
+        "$value": "{pct.surface-disabled}",
+        "$description": "Background of the select while disabled."
+      },
+      "fg-disabled": {
+        "$type": "color",
+        "$value": "{pct.text-disabled}",
+        "$description": "Text colour of the select while disabled."
+      },
+      "border-disabled": {
+        "$type": "color",
+        "$value": "{pct.border}",
+        "$description": "Edge colour of the select while disabled."
+      },
+      "label-fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of the label."
+      },
+      "hint-fg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Text colour of the hint."
+      },
+      "arrow-fg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Text colour of the arrow."
+      },
+      "radius": {
+        "$type": "dimension",
+        "$value": "{pct.radius.md}",
+        "$description": "Corner radius of the select."
+      },
+      "font-size": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.md}",
+        "$description": "Font size of the select."
+      },
+      "padding-y": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Vertical padding of the select."
+      },
+      "padding-x": {
+        "$type": "dimension",
+        "$value": "{pct.space.4}",
+        "$description": "Horizontal padding of the select."
+      },
+      "panel-bg": {
+        "$type": "color",
+        "$value": "{pct.surface}",
+        "$description": "Background of the panel."
+      },
+      "panel-border": {
+        "$type": "color",
+        "$value": "{pct.border-strong}",
+        "$description": "Edge colour of the panel."
+      },
+      "panel-shadow": {
+        "$type": "shadow",
+        "$value": "{pct.shadow-panel}",
+        "$description": "Shadow of the panel."
+      },
+      "panel-radius": {
+        "$type": "dimension",
+        "$value": "{pct.radius.md}",
+        "$description": "Corner radius of the panel."
+      },
+      "panel-max-height": {
+        "$type": "dimension",
+        "$value": "240px",
+        "$description": "Maximum height of the panel."
+      },
+      "option-fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of an option."
+      },
+      "option-bg": {
+        "$type": "color",
+        "$value": "{pct.surface}",
+        "$description": "Background of an option."
+      },
+      "option-bg-active": {
+        "$type": "color",
+        "$value": "{pct.surface-100}",
+        "$description": "Background of the option the keyboard is on."
+      },
+      "option-fg-active": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of the option the keyboard is on."
+      },
+      "option-bg-selected": {
+        "$type": "color",
+        "$value": "{pct.primary}",
+        "$description": "Background of an option when selected."
+      },
+      "option-fg-selected": {
+        "$type": "color",
+        "$value": "{pct.on-primary}",
+        "$description": "Text colour of an option when selected."
+      },
       "option-fg-disabled": {
         "$type": "color",
-        "$value": "{pct.text-disabled}"
+        "$value": "{pct.text-disabled}",
+        "$description": "Text colour of an option while disabled."
       },
-      "option-padding-y": { "$type": "dimension", "$value": "{pct.space.3}" },
-      "option-padding-x": { "$type": "dimension", "$value": "{pct.space.4}" },
-
+      "option-padding-y": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Vertical padding of an option."
+      },
+      "option-padding-x": {
+        "$type": "dimension",
+        "$value": "{pct.space.4}",
+        "$description": "Horizontal padding of an option."
+      },
       "$comment-group-label": "A section heading inside the panel — a `<optgroup>`'s label. It is not a row: it takes no value and the keyboard walks past it, so it is set apart by weight and a quieter colour rather than by a rule the panel would have to draw.",
-      "group-label-fg": { "$type": "color", "$value": "{pct.text-muted}" },
+      "group-label-fg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Text colour of the group label."
+      },
       "group-label-font-size": {
         "$type": "dimension",
-        "$value": "{pct.font.size.sm}"
+        "$value": "{pct.font.size.sm}",
+        "$description": "Font size of the group label."
       },
       "group-label-font-weight": {
         "$type": "fontWeight",
-        "$value": "{pct.font.weight.medium}"
+        "$value": "{pct.font.weight.medium}",
+        "$description": "Font weight of the group label."
       },
       "group-label-padding-y": {
         "$type": "dimension",
-        "$value": "{pct.space.2}"
+        "$value": "{pct.space.2}",
+        "$description": "Vertical padding of the group label."
       },
       "group-label-padding-x": {
         "$type": "dimension",
-        "$value": "{pct.space.4}"
+        "$value": "{pct.space.4}",
+        "$description": "Horizontal padding of the group label."
       }
     }
   }

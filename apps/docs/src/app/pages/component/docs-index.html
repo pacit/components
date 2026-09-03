@@ -1,0 +1,32 @@
+<nav class="index" aria-label="Components" data-testid="index">
+  <pct-field label="Find a component" size="sm">
+    <input
+      pctText
+      type="search"
+      [value]="filter()"
+      (input)="onFilter($event)"
+      data-testid="index-filter"
+    />
+  </pct-field>
+  @for (group of groups(); track group.name) {
+  <div class="index__group">
+    <span class="index__eyebrow">{{ group.name }}</span>
+    <ul class="index__list">
+      @for (card of group.cards; track card.id) {
+      <li>
+        <a
+          [routerLink]="['/components', card.id]"
+          [class.is-current]="card.id === current()"
+          [attr.aria-current]="card.id === current() ? 'page' : null"
+          (click)="navigate.emit(card.id)"
+        >
+          {{ card.id }}
+        </a>
+      </li>
+      }
+    </ul>
+  </div>
+  } @empty {
+  <p class="index__empty">No component answers to that.</p>
+  }
+</nav>

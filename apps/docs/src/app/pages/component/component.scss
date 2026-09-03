@@ -1,77 +1,831 @@
-.page {
-  padding-block: var(--pct-space-6);
+/* The component page (2.7.3). The geometry is the library's container, widened through
+   its own token — `--pct-container-max-width` is the API, not a stylesheet override — and
+   the three columns inside it answer the CONTAINER's width, never the viewport's: the
+   reviewer caught the sketch's columns arriving too early, and a viewport query cannot
+   know whether the rails are there. */
+/* The container element is the library's column itself: a query answers the size of an
+   ANCESTOR's containment, so the grid below asks the column it stands in — asking `.shell`
+   about `.shell` is a question no element can answer, and the first baseline showed the
+   index laid across the whole page for it. */
+.wide {
+  --pct-container-max-width: 88rem;
+  container: shell / inline-size;
+}
+
+.shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--pct-space-6);
+  padding-block: var(--pct-space-5) var(--pct-space-6);
+}
+
+.rail {
+  display: none;
+}
+
+.content {
+  container: content / inline-size;
+  min-width: 0;
+}
+
+/* The rails come back one at a time as the shell widens: the table of contents first,
+   the index last — the drawer carries the index everywhere else. */
+@container shell (min-width: 900px) {
+  .shell {
+    grid-template-columns: minmax(0, 1fr) 200px;
+    gap: var(--pct-space-6) 44px;
+  }
+
+  .rail--toc {
+    display: block;
+  }
+
+  .toc-fold {
+    display: none;
+  }
+}
+
+@container shell (min-width: 1180px) {
+  .shell {
+    grid-template-columns: 220px minmax(0, 1fr) 200px;
+  }
+
+  .rail--index {
+    display: block;
+  }
+}
+
+.rail {
+  position: sticky;
+  top: 76px;
+  align-self: start;
+  max-block-size: calc(100vh - 96px);
+  overflow: auto;
+  scrollbar-width: thin;
+}
+
+/* ── type ─────────────────────────────────────────────────────────────────── */
+.eyebrow {
+  display: block;
+  color: var(--pct-text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.eyebrow--accent {
+  color: var(--pct-primary);
+}
+
+.crumbs {
+  display: block;
+  font-size: var(--pct-font-size-sm);
+}
+
+.toc-fold {
+  margin-block-start: var(--pct-space-4);
+  border: 1px solid var(--pct-border);
+  border-radius: var(--pct-radius-md);
+  padding: var(--pct-space-3) var(--pct-space-4);
+
+  summary {
+    cursor: pointer;
+    font-size: var(--pct-font-size-sm);
+    font-weight: 600;
+  }
+
+  docs-toc {
+    display: block;
+    margin-block-start: var(--pct-space-3);
+  }
 }
 
 .head {
   display: grid;
-  gap: var(--pct-space-3);
+  gap: 18px;
+  margin-block-start: 18px;
 }
 
-.head__title {
-  margin: 0;
-  font-size: clamp(1.8rem, 4vw, 2.4rem);
-  letter-spacing: -0.02em;
-}
-
-.head__role {
-  margin: 0;
-  color: var(--pct-text-muted);
-  font-size: var(--pct-font-size-lg);
-}
-
-.head__facts {
+.head__row {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--pct-space-3);
+  gap: var(--pct-space-5) 24px;
+  align-items: flex-start;
+  justify-content: space-between;
+}
 
-  code {
-    border: 1px solid var(--pct-border);
-    border-radius: var(--pct-radius-md);
-    padding: 2px var(--pct-space-3);
-    color: var(--pct-text-muted);
-    font-size: var(--pct-font-size-sm);
+/* The actions keep the top-right corner once the column can hold both — the sketch's own
+   row; below that width they drop under the lead. */
+@container content (min-width: 640px) {
+  .head__row {
+    flex-wrap: nowrap;
   }
 }
 
-.head__pattern {
-  margin: 0;
-  color: var(--pct-text-muted);
-  font-size: var(--pct-font-size-sm);
-
-  /* The link itself arrives through [innerHTML], outside this component's scope — the
-     colour is the global .docs-prose rule's job; this file cannot reach it. */
+.head__text {
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
-.head__pattern-label {
+.head__title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+  margin: 6px 0 0;
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+.head__status {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.lead {
+  margin-block-start: 12px;
+  max-width: 62ch;
+  color: var(--pct-text-muted);
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+.head__actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: var(--pct-space-3);
+  align-items: center;
+  margin-block-start: 30px;
+}
+
+.head__source {
+  color: var(--pct-primary);
+  font-size: var(--pct-font-size-sm);
+  font-weight: 600;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+}
+
+.spec {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 28px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--pct-text-muted);
+  font-size: 13.5px;
+
+  li {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  code {
+    font-size: 13px;
+  }
+}
+
+.spec__label {
+  color: var(--pct-text-muted);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ── the hero stage: the sketch's card, on the library's tabs ─────────────── */
+.hero {
+  margin-block-start: 28px;
+  scroll-margin-block-start: 88px;
+}
+
+.hero__panel {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--pct-border);
+  border-radius: 18px;
+  background-color: color-mix(
+    in srgb,
+    var(--pct-primary) 4%,
+    var(--pct-surface)
+  );
+  background-image:
+    radial-gradient(
+      60% 90% at 20% 0%,
+      color-mix(in srgb, var(--pct-hero) 16%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      50% 80% at 85% 10%,
+      color-mix(in srgb, var(--pct-hero-via) 12%, transparent),
+      transparent 60%
+    ),
+    radial-gradient(
+      40% 60% at 60% 100%,
+      color-mix(in srgb, var(--pct-hero-to) 10%, transparent),
+      transparent 60%
+    );
+  box-shadow: var(--pct-shadow-panel);
+}
+
+/* The tools sit in the strip's row, at its far end — the same row of chrome the sketch
+   drew, with the switch on the left. */
+.hero__tools {
+  position: absolute;
+  inset-block-start: 12px;
+  inset-inline-end: 14px;
+  z-index: 1;
+  display: flex;
+  gap: 4px;
+}
+
+/* The tabs, as the segmented switch. Every value the library exposes as a token dresses
+   the switch — but NOT here, on the host: a token is a custom property, and custom
+   properties inherit through the DOM across component boundaries. The stage lives inside
+   this switch's own panel, so a `--pct-tabs-*` set on the host reached the tabs demo the
+   stage projects and stripped its chosen edge and its hover to nothing (lesson-148). The
+   overrides live on the switch's OWN tablist instead, beside the pill in styles.scss,
+   where the switch's tabs inherit them and the panel's descendants do not. */
+.hero__tabs {
+  display: block;
+}
+
+.stage {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+  justify-content: center;
+  color: var(--pct-text);
+}
+
+.stage--hero {
+  /* The sketch's stage: room above, and room below for the file's name in the corner. A
+     floor as well — the demo arrives through a lazy chunk on hydration, and an unreserved
+     box collapsing and re-expanding was 0.156 of measured CLS. */
+  min-block-size: 220px;
+  padding: 40px 32px 56px;
+  background: transparent;
+
+  /* A flipped stage paints its own ground — the tokens under [data-theme] repaint every
+     colour, and the surface has to come with them or the page shows through. */
+  &[data-theme] {
+    border-radius: var(--pct-radius-md);
+    background: var(--pct-surface);
+  }
+
+  > * {
+    animation: rise 500ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage--hero > * {
+    animation: none;
+  }
+}
+
+.hero__code {
+  padding: 0 14px 14px;
+}
+
+.hero__note {
+  position: absolute;
+  inset-block-end: 12px;
+  inset-inline-start: 16px;
+  margin: 0;
+  color: var(--pct-text-muted);
+  font-size: 12.5px;
+}
+
+.hero__panel.is-code .hero__note {
+  display: none;
+}
+
+/* ── sections ─────────────────────────────────────────────────────────────── */
+.block {
+  margin-block-start: 72px;
+  scroll-margin-block-start: 88px;
+}
+
+.block__head {
+  display: grid;
+  gap: var(--pct-space-3);
+  max-width: 70ch;
+  margin-block-end: var(--pct-space-6);
+
+  h2 {
+    margin: 0;
+    font-size: 1.7rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  p {
+    margin: 0;
+    color: var(--pct-text-muted);
+  }
+}
+
+.sub {
+  margin-block-start: 40px;
+  scroll-margin-block-start: 88px;
+
+  > h3 {
+    margin: 0 0 var(--pct-space-3);
+    font-size: 1.125rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+}
+
+.sub__lead {
+  max-width: 70ch;
+  margin: 0 0 var(--pct-space-4);
+  color: var(--pct-text-muted);
+  font-size: var(--pct-font-size-md);
+}
+
+.api-class + .api-class {
+  margin-block-start: 56px;
+  padding-block-start: var(--pct-space-5);
+  border-block-start: 1px solid var(--pct-border);
+}
+
+.api-class__name {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+
+  .api__kind {
+    margin-inline-start: var(--pct-space-3);
+    font-weight: 500;
+  }
+}
+
+.api-class__lead {
+  max-width: 70ch;
+  margin: var(--pct-space-3) 0 0;
+  color: var(--pct-text-muted);
+}
+
+.card {
+  overflow: hidden;
+  border: 1px solid var(--pct-border);
+  border-radius: 14px;
+  background: var(--pct-surface);
+  box-shadow: var(--pct-shadow-panel);
+}
+
+.card--pad {
+  display: grid;
+  gap: var(--pct-space-3);
+  align-content: start;
+  padding: var(--pct-space-4) var(--pct-space-5);
+}
+
+.callout {
+  margin: 0;
+  padding: var(--pct-space-4) var(--pct-space-5);
+  border-radius: 12px;
+  background: var(--pct-surface-100);
+  color: var(--pct-text-muted);
+  font-size: var(--pct-font-size-md);
+
+  strong {
+    color: var(--pct-text);
+  }
+}
+
+/* Wraps rather than scrolls: a scroll container with nothing focusable inside is an
+   axe violation on its own (scrollable-region-focusable), and an import line that
+   breaks is still an import line. */
+pre.plain {
+  margin: 0;
+  padding: var(--pct-space-4) var(--pct-space-5);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  border-radius: 10px;
+  background: var(--pct-surface-inverse);
+  color: var(--pct-on-surface-inverse);
+  font-size: var(--pct-font-size-sm);
+  line-height: 1.6;
+
+  code {
+    font-family:
+      'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  }
+}
+
+/* usage: one card — the import line; the install belongs to the start page */
+.usage {
+  margin-block-end: var(--pct-space-4);
+}
+
+.oneline {
+  margin-block-start: var(--pct-space-4);
+}
+
+/* examples: the prose beside the stage, the code under both */
+.example {
+  margin-block-start: var(--pct-space-5);
+  scroll-margin-block-start: 88px;
+}
+
+.example__card {
+  display: grid;
+}
+
+.example__prose {
+  display: grid;
+  gap: var(--pct-space-3);
+  align-content: start;
+  padding: var(--pct-space-5);
+
+  h3 {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+
+  .docs-prose {
+    color: var(--pct-text-muted);
+    font-size: var(--pct-font-size-md);
+  }
+}
+
+.example__toggle {
+  justify-self: start;
+}
+
+.example__stage {
+  min-block-size: 10rem;
+  padding: var(--pct-space-6) var(--pct-space-5);
+  border-block-start: 1px solid var(--pct-border);
+  background: color-mix(in srgb, var(--pct-primary) 4%, var(--pct-surface));
+}
+
+.example__code {
+  grid-column: 1 / -1;
+  border-block-start: 1px solid var(--pct-border);
+}
+
+@container content (min-width: 680px) {
+  .example__card {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  }
+
+  .example__stage {
+    border-block-start: 0;
+    border-inline-start: 1px solid var(--pct-border);
+  }
+}
+
+/* ── tables ───────────────────────────────────────────────────────────────── */
+.tablewrap {
+  overflow-x: auto;
+  border: 1px solid var(--pct-border);
+  border-radius: 10px;
+}
+
+table.api {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--pct-font-size-md);
+
+  th {
+    padding: 10px 14px;
+    border-block-end: 1px solid var(--pct-border);
+    background: var(--pct-surface-100);
+    color: var(--pct-text-muted);
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-align: start;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: 11px 14px;
+    border-block-end: 1px solid var(--pct-border);
+    color: var(--pct-text-muted);
+    vertical-align: top;
+  }
+
+  tr:last-child td {
+    border-block-end: 0;
+  }
+
+  td:first-child {
+    color: var(--pct-text);
+    white-space: nowrap;
+  }
+
+  td code {
+    white-space: nowrap;
+  }
+}
+
+.api__kind {
+  color: var(--pct-text-muted);
+  font-size: var(--pct-font-size-sm);
+  text-transform: capitalize;
+}
+
+/* Primary, not the hero's violet: the hero stops are measured under white on the gradient,
+   never as text on the surface — in the dark theme the violet reads 2.9:1 there. */
+.api__type {
+  color: var(--pct-primary);
+}
+
+.api__default,
+.api__literal {
+  color: var(--pct-text-muted);
+  font-size: var(--pct-font-size-sm);
+}
+
+.api__detail {
+  white-space: normal !important;
+}
+
+/* The kind beside an exported name — the scorecard's pill, without the dot: a word, not a
+   state. The selector or the type's shape goes under the name, like a default does. */
+.api__kindpill {
+  display: inline-flex;
+  align-items: center;
+  block-size: 20px;
+  margin-inline-start: 8px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--pct-surface-100);
+  color: var(--pct-text-muted);
+  font-size: 11.5px;
+  font-weight: 600;
+  vertical-align: middle;
+}
+
+.api__none {
+  color: var(--pct-text-muted);
+}
+
+.api__flag {
+  display: inline-block;
+  margin-inline-start: 6px;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--pct-surface-100);
+  color: var(--pct-text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
+.api__flag--req {
+  background: var(--pct-primary-100);
+  color: var(--pct-on-primary-100);
+}
+
+.api__value {
+  white-space: nowrap;
+}
+
+/* The second line under a name: the default, or a token's swatches and defaults — the
+   reviewer's call, so the description keeps the width a sentence needs. */
+.api__sub {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  align-items: center;
+  margin-block-start: 5px;
+  color: var(--pct-text-muted);
+  font-size: 12px;
+  white-space: normal;
+
+  .swatches {
+    margin-inline-end: 0;
+  }
+}
+
+.swatches {
+  display: inline-flex;
+  gap: 4px;
+  margin-inline-end: 8px;
+  vertical-align: middle;
+}
+
+.swatch {
+  display: inline-block;
+  inline-size: 14px;
+  block-size: 14px;
+  border: 1px solid var(--pct-border-strong);
+  border-radius: 4px;
+}
+
+.copy {
+  margin-inline-start: 4px;
+  font-family: inherit;
+}
+
+/* theming: the code beside a second, overridden instance of the preview */
+.theming {
+  display: grid;
+}
+
+/* A light island on purpose: a brand fence is written on the light theme, and shown on
+   the dark ground it put teal on slate at 1.6:1 (the first dark sweep, four pages). The
+   stage pins data-theme="light" and paints that theme's own surface. */
+.theming__stage {
+  min-block-size: 8rem;
+  padding: var(--pct-space-6) var(--pct-space-5);
+  border-block-start: 1px solid var(--pct-border);
+  background: var(--pct-surface);
+  color: var(--pct-text);
+}
+
+@container content (min-width: 680px) {
+  .theming {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .theming__stage {
+    border-block-start: 0;
+    border-inline-start: 1px solid var(--pct-border);
+  }
+}
+
+/* ── the scorecard ────────────────────────────────────────────────────────── */
+.score {
+  display: grid;
+  gap: var(--pct-space-4);
+}
+
+@container content (min-width: 640px) {
+  .score {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.score__item {
+  display: grid;
+  gap: 6px;
+  padding: var(--pct-space-4) var(--pct-space-5);
+  border: 1px solid var(--pct-border);
+  border-radius: 12px;
+  background: var(--pct-surface);
+
+  &[data-state='gap'] {
+    background: color-mix(in srgb, var(--pct-danger) 6%, var(--pct-surface));
+  }
+}
+
+.score__what {
+  color: var(--pct-text);
+  font-size: var(--pct-font-size-md);
   font-weight: 600;
 }
 
-.panel {
+.score__how {
+  color: var(--pct-text-muted);
+  font-size: var(--pct-font-size-sm);
+}
+
+.pill {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  justify-self: start;
+  block-size: 22px;
+  padding: 0 9px;
+  border-radius: 999px;
+  background: var(--pct-surface-100);
+  color: var(--pct-text-muted);
+  font-size: 12px;
+  font-weight: 600;
+
+  &::before {
+    content: '';
+    inline-size: 6px;
+    block-size: 6px;
+    border-radius: 50%;
+    background: currentcolor;
+  }
+
+  /* The measured pair is the soft face's — primary-100 under on-primary-100 — checked on
+     both themes at every token build; the first sweep measured primary on a 12% tint at
+     4.36:1. A gap keeps the neutral pill and carries its colour in the dot: the word
+     says "gap", the dot only underlines it, so nothing rides on the colour alone. */
+  &[data-state='measured'] {
+    background: var(--pct-primary-100);
+    color: var(--pct-on-primary-100);
+  }
+
+  &[data-state='gap'] {
+    color: var(--pct-text);
+
+    &::before {
+      background: var(--pct-danger);
+    }
+  }
+}
+
+/* ── evidence tiles: the landing's hairline grid ──────────────────────────── */
+.tiles {
+  display: grid;
+  gap: 1px;
+  overflow: hidden;
   border: 1px solid var(--pct-border);
-  border-radius: var(--pct-radius-md);
+  border-radius: 14px;
+  background: var(--pct-border);
+}
+
+@container content (min-width: 560px) {
+  .tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@container content (min-width: 840px) {
+  .tiles {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.tile {
+  display: grid;
+  gap: 4px;
   padding: var(--pct-space-5);
+  background: var(--pct-surface);
 }
 
-.panel__stage {
-  /* A floor under the stage: the demo re-renders through a lazy chunk on hydration, and
-     an unreserved box collapsing and re-expanding was 0.156 of measured CLS. */
-  min-block-size: 10rem;
-  padding-block: var(--pct-space-5);
+.tile__n {
+  font-size: 1.75rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
 }
 
-.inventory__title {
-  margin: 0 0 var(--pct-space-4);
-  font-size: var(--pct-font-size-lg);
-  letter-spacing: -0.01em;
+.tile__l {
+  color: var(--pct-text-muted);
+  font-size: var(--pct-font-size-sm);
 }
 
-.inventory__chips {
-  display: flex;
-  flex-wrap: wrap;
+.tile__f {
+  color: var(--pct-text-muted);
+  font-size: 12px;
+}
+
+.bar {
+  display: block;
+  overflow: hidden;
+  block-size: 6px;
+  margin-block-start: 6px;
+  border-radius: 999px;
+  background: var(--pct-surface-100);
+
+  i {
+    display: block;
+    block-size: 100%;
+    background: linear-gradient(90deg, var(--pct-hero), var(--pct-hero-via));
+  }
+}
+
+.list {
+  display: grid;
   gap: var(--pct-space-3);
+  margin: 0;
+  padding-inline-start: 18px;
+  color: var(--pct-text-muted);
 
-  button {
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  a {
+    color: var(--pct-primary);
+    font-weight: 600;
   }
 }
 

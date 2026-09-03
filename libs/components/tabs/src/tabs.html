@@ -53,5 +53,19 @@
   }
 </div>
 
-<!-- The panels, exactly where the consumer wrote them and in that order. -->
-<ng-content />
+<!--
+  The panels, exactly where the consumer wrote them and in that order.
+
+  The wrapper is layout, not API: it exposes no part of its own, because a consumer already
+  reaches a section through the `panel` part on the tab itself. (Naming the attribute in this
+  comment would be counted: the inventory gate's denominator reads the attribute NAME out of
+  the template, on purpose, so that a part written in syntax its scanner cannot parse drops out
+  loudly rather than quietly.) It exists so that THIS
+  stylesheet can place the panels — projected content keeps the consumer's encapsulation
+  attribute, so a rule written here cannot select a `pct-tab`, and the vertical face needs
+  one box to put beside the strip. No role: a plain box between a tablist and its panels
+  names nothing, and `aria-controls` already ties the two together.
+-->
+<div class="pct-tabs__panels">
+  <ng-content />
+</div>

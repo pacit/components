@@ -1,0 +1,43 @@
+<nav class="toc" aria-label="On this page" data-testid="toc">
+  <span class="toc__eyebrow">On this page</span>
+  <ol class="toc__list">
+    @for (item of items(); track item.id) {
+    <li>
+      <a
+        [routerLink]="[]"
+        [fragment]="item.id"
+        [class.is-active]="isActive(item)"
+        [attr.aria-current]="active() === item.id ? 'location' : null"
+      >
+        {{ item.label }}
+      </a>
+      @if (item.children?.length) {
+      <ol class="toc__list toc__list--nested">
+        @for (child of item.children; track child.id) {
+        <li>
+          <a
+            [routerLink]="[]"
+            [fragment]="child.id"
+            [class.is-active]="active() === child.id"
+            [attr.aria-current]="active() === child.id ? 'location' : null"
+          >
+            {{ child.label }}
+          </a>
+        </li>
+        }
+      </ol>
+      }
+    </li>
+    }
+  </ol>
+  <div class="toc__meta">
+    <a
+      [href]="'https://github.com/pacit/components/blob/main/' + cardPath()"
+      rel="noopener"
+      >Edit this page ↗</a
+    >
+    <a href="https://github.com/pacit/components/issues/new" rel="noopener"
+      >Report an issue ↗</a
+    >
+  </div>
+</nav>

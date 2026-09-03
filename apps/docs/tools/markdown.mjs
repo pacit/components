@@ -109,7 +109,7 @@ export const renderMarkdown = async (markdown, options = {}) => {
       const cells = (row, tag) =>
         row.map((cell) => `<${tag}>${inline(cell)}</${tag}>`).join('');
       out.push(
-        '<div class="docs-table"><table>' +
+        '<div class="docs-table" tabindex="0" role="region" aria-label="Table"><table>' +
           (head ? `<thead><tr>${cells(head, 'th')}</tr></thead>` : '') +
           `<tbody>${rows.map((row) => `<tr>${cells(row, 'td')}</tr>`).join('')}</tbody>` +
           '</table></div>',

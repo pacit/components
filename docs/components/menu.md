@@ -5,6 +5,7 @@
 The panel is `PctMenu`, the commands on it are `PctMenuItem`, and the control that opens either
 is `PctMenuTrigger` — the same directive for a menu button and for a submenu's row.
 **Status:** released
+**Category:** Actions & navigation
 **ARIA APG pattern:** [Menu Button](https://www.w3.org/WAI/ARIA/apg/patterns/menu-button/) —
 `role="menu"` on the panel, `role="menuitem"` on the rows, `aria-haspopup="menu"` and
 `aria-expanded` on the control. A submenu is the same pattern one level down: the item that
@@ -17,6 +18,15 @@ item itself ([0032](../decisions/0032-a-menu-moves-focus-a-listbox-points-at-it.
 else follows from it: the rows are the roving focus, the panel is focused only when it has no
 row to hand focus to, and no row is ever a Tab stop — Tab closes the tree and gives the page
 back its own order ([0031](../decisions/0031-a-panel-s-tab-order-belongs-to-its-trigger.md)).
+
+## Usage
+
+```html
+<button pctButton [pctMenuTrigger]="actions">Actions</button>
+<pct-menu #actions>
+  <button pctMenuItem (click)="rename()">Rename</button>
+</pct-menu>
+```
 
 ## Contract
 
@@ -54,6 +64,23 @@ What the parameter had to be careful about is the difference between **past** th
 it: `PageDown` is `move(10)`, and a wrapping list that took a modulo of it would answer "ten rows
 down" with a lap round the menu. So a movement that ends exactly one place past the edge comes
 round, and one that overshoots by more stops there.
+
+## Parts
+
+| part    | what it is                    |
+| ------- | ----------------------------- |
+| `panel` | the floating list of commands |
+| `item`  | one command                   |
+
+## Theming
+
+```css
+[data-theme='brand'] {
+  --pct-menu-panel-bg: #f0fdfa;
+  --pct-menu-item-fg: #134e4a;
+  --pct-menu-item-bg-active: #ccfbf1;
+}
+```
 
 ## Keyboard map
 

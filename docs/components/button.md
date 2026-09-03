@@ -4,8 +4,19 @@
 **Selector:** `button[pctButton]` (an attribute selector — the button stays a native
 `<button>`)
 **Status:** released
+**Category:** Actions & navigation
 **ARIA APG pattern:** a native `<button>` — no role of its own, no keyboard handling of its
 own ([`req-api-platform`](../requirements/api.md#req-api-platform))
+
+Five faces on one native `<button>`. The element keeps its semantics, its keyboard handling
+and its place in a form — the directive only paints, and every face is measured on both
+themes before it ships.
+
+## Usage
+
+```html
+<button pctButton>Save</button>
+```
 
 ## Contract
 
@@ -17,6 +28,24 @@ own ([`req-api-platform`](../requirements/api.md#req-api-platform))
 | **Slots**   | default (the label's content)                                                                                                                                                                                                                                                                                                                            |
 | **Parts**   | `label`, `spinner`                                                                                                                                                                                                                                                                                                                                       |
 | **Tokens**  | `--pct-button-*`, including `--pct-button-height-{sm,md,lg}`; the soft and hero faces paint from the semantic tier outright (`--pct-primary-100/-200`, `--pct-hero/-via/-to` with `on-` pairs); `contrast.policy.json` holds `button/solid`, `button/disabled`, `button/soft` ×2 and **`button/hero` ×3 — a gradient is three contrast checks, not one** |
+
+## Parts
+
+| part      | what it is                                     |
+| --------- | ---------------------------------------------- |
+| `label`   | the span around the projected content          |
+| `spinner` | the loading ring, present only while `loading` |
+
+## Theming
+
+```css
+[data-theme='brand'] {
+  --pct-button-bg: #0f766e;
+  --pct-button-bg-hover: #115e59;
+  --pct-button-fg: #ffffff;
+  --pct-button-radius: 999px;
+}
+```
 
 ## Keyboard map
 

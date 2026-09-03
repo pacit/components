@@ -61,7 +61,7 @@
 
 <sbx-demo
   heading="Down the side"
-  summary="orientation='vertical' turns the strip and the arrows with it: aria-orientation says so, and the mark of the chosen tab moves to the inline edge, so it mirrors under dir='rtl'."
+  summary="orientation='vertical' puts the strip BESIDE its panel and turns the arrows with it: aria-orientation says so, the mark of the chosen tab moves to the inline edge, and every distance is logical — so the whole layout mirrors under dir='rtl' with no rule of its own."
   [reqs]="['req-token-logical', 'req-a11y-built-in']"
   data-testid="demo-vertical"
 >
@@ -76,6 +76,30 @@
     </pct-tab>
     <pct-tab value="keys" label="Keys">
       <p class="view__panel-body">What you sign with.</p>
+    </pct-tab>
+  </pct-tabs>
+</sbx-demo>
+
+<sbx-demo
+  heading="The segmented face"
+  summary="variant='segmented' swaps the rail for a recessed track and raises the chosen tab out of it. The state is the label pair first — the fill is 1.10:1 against the track and a warn in the policy — and forced colours gets an outline instead, because the platform drops the fill."
+  [reqs]="['req-token-contrast', 'req-a11y-forced-colors', 'req-token-no-opacity']"
+  data-testid="demo-segmented"
+>
+  <pct-tabs
+    [(value)]="period"
+    variant="segmented"
+    ariaLabel="Period"
+    data-testid="tabs-segmented"
+  >
+    <pct-tab value="day" label="Day">
+      <p class="view__panel-body">Today, hour by hour.</p>
+    </pct-tab>
+    <pct-tab value="week" label="Week">
+      <p class="view__panel-body">Seven days side by side.</p>
+    </pct-tab>
+    <pct-tab value="month" label="Month">
+      <p class="view__panel-body">The month on one grid.</p>
     </pct-tab>
   </pct-tabs>
 </sbx-demo>

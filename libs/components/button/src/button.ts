@@ -34,16 +34,16 @@ import { PctButtonSize, PctButtonVariant } from './button.types';
 export class PctButton {
   private readonly config = inject(PCT_CONFIG);
 
-  /** Visual variant. */
+  /** Picks the face. All five paint the same element; `hero` adds the drifting gradient and freezes it under reduced motion. */
   readonly variant = input<PctButtonVariant>('solid');
 
-  /** Size; taken from the global configuration by default (req-api-config). */
+  /** Height 28 / 36 / 44 px — the axis every field shares, so rows line up. From `providePctConfig` by default (req-api-config). */
   readonly size = input<PctButtonSize>(this.config.defaultSize);
 
-  /** Disabled. */
+  /** Blocks the click and greys the face; the grey is written to survive forced colors. */
   readonly disabled = input(false, { transform: booleanAttribute });
 
-  /** Loading state — blocks the button and shows a spinner. */
+  /** Shows the spinner in the face's own colour and sets `aria-busy`. Does not block the click — pair it with `disabled` when it should. */
   readonly loading = input(false, { transform: booleanAttribute });
 
   protected readonly isDisabled = computed(

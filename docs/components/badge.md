@@ -3,6 +3,7 @@
 **Entrypoint:** `@pacit/components/badge`
 **Selector:** `pct-badge`
 **Status:** released
+**Category:** Feedback & display
 **ARIA APG pattern:** none — a badge is text and only text
 ([0053](../decisions/0053-a-badge-is-a-word-wearing-a-tone.md)): the word is projected,
 already part of the document's sentence, and the component adds a box around it and nothing
@@ -12,6 +13,12 @@ audible to it. No role, no ARIA, no string of its own. Named in the class JSDoc.
 the word beside the colour, but it refuses the one shape where colour would be the only
 channel — an empty badge is a dev-mode warning, and forced colours drop both tones to one
 palette with the border carrying the box.
+
+## Usage
+
+```html
+<pct-badge>Draft</pct-badge>
+```
 
 ## Contract
 
@@ -34,6 +41,16 @@ skin's centre of gravity in the wrong file
 **Why not the chips' pill.** A chip looks grabbable because it is; a word of status must not
 borrow that costume. The corner (`radius.md`) is the one visual cue telling a scanning eye
 which small box answers the pointer.
+
+## Theming
+
+```css
+[data-theme='brand'] {
+  --pct-badge-bg: #ccfbf1;
+  --pct-badge-fg: #134e4a;
+  --pct-badge-border: #99f6e4;
+}
+```
 
 ## Keyboard map
 

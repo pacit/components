@@ -3,6 +3,7 @@
 **Entrypoint:** `@pacit/components/tooltip`
 **Selector:** `[pctTooltip]` (the panel it opens is `pct-tooltip`, `PctTooltipPanel`)
 **Status:** released
+**Category:** Overlays
 **ARIA APG pattern:** [Tooltip](https://www.w3.org/WAI/ARIA/apg/patterns/tooltip/) —
 `role="tooltip"` on a panel that takes no focus, reached from the trigger by an ARIA relation,
 dismissible with Escape while focus stays where it was
@@ -11,6 +12,12 @@ The component exists for one distinction a `title` attribute never makes: **what
 is**. A control that already has a name gets a _description_; a control that has none — the
 icon-only button — gets its _name_ from here, and a name may not come and go with the pointer
 ([0030](../decisions/0030-a-name-is-an-attribute-a-description-is-a-reference.md)).
+
+## Usage
+
+```html
+<button pctButton pctTooltip="Runs every check first">Verify</button>
+```
 
 ## Contract
 
@@ -35,6 +42,21 @@ answer to "was this focus a keyboard focus" is `:focus-visible`, the platform's
 describes/names distinction, the three gestures and the grace periods between them, and the
 **leave** — an element removed from the DOM takes its transition with it, so the panel is held
 in place, marked, until the fade has run.
+
+## Parts
+
+| part    | what it is                   |
+| ------- | ---------------------------- |
+| `panel` | the bubble with the sentence |
+
+## Theming
+
+```css
+[data-theme='brand'] {
+  --pct-tooltip-bg: #134e4a;
+  --pct-tooltip-fg: #f0fdfa;
+}
+```
 
 ## Keyboard map
 

@@ -3,6 +3,7 @@
 **Entrypoint:** `@pacit/components/breadcrumb`
 **Selectors:** `pct-breadcrumb`, `pct-crumb`, `a[pctCrumbLink]`
 **Status:** released
+**Category:** Actions & navigation
 **ARIA APG pattern:** [Breadcrumb](https://www.w3.org/WAI/ARIA/apg/patterns/breadcrumb/)
 ([0054](../decisions/0054-a-breadcrumb-is-the-way-here-told-in-links.md)): a named
 `navigation` landmark, a list of links, `aria-current="page"` on the one you are on. Named
@@ -15,6 +16,15 @@ semantics, the quiet separator and the colours. It writes **no `aria-current` of
 the current place is the router's sentence (`routerLinkActive` with
 `ariaCurrentWhenActive="page"`) or the consumer's hand, and a guess from position would lie
 on every partial trail.
+
+## Usage
+
+```html
+<pct-breadcrumb ariaLabel="You are here">
+  <pct-crumb><a pctCrumbLink href="/">Home</a></pct-crumb>
+  <pct-crumb><a pctCrumbLink href="/data" aria-current="page">Data</a></pct-crumb>
+</pct-breadcrumb>
+```
 
 ## Contract
 
@@ -40,6 +50,23 @@ styles, and the styling API here does not stand on `::ng-deep`.
 stylesheet, so the current step carries a **weight** — the channel that survives — and a
 current step spelled as bare text is told apart by the palette itself (`CanvasText` beside
 `LinkText`).
+
+## Parts
+
+| part        | what it is                  |
+| ----------- | --------------------------- |
+| `list`      | the ordered list of crumbs  |
+| `separator` | the mark between two crumbs |
+
+## Theming
+
+```css
+[data-theme='brand'] {
+  --pct-breadcrumb-link-fg: #0f766e;
+  --pct-breadcrumb-link-fg-hover: #134e4a;
+  --pct-breadcrumb-separator-fg: #5eead4;
+}
+```
 
 ## Keyboard map
 

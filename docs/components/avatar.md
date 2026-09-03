@@ -3,6 +3,7 @@
 **Entrypoint:** `@pacit/components/avatar`
 **Selector:** `pct-avatar`
 **Status:** released
+**Category:** Feedback & display
 **ARIA APG pattern:** none — an avatar is decoration, all the way down
 ([0052](../decisions/0052-an-avatar-is-a-picture-beside-a-name.md)). The host is
 `aria-hidden="true"` outright — the third component after `pct-icon` and `pct-skeleton` —
@@ -13,6 +14,12 @@ What the component owns is the **fallback chain** — image, initials, silhouett
 standing — and initials that are **graphemes**: the platform's segmenter, because `charAt`
 cuts an emoji family or a flag into a broken surrogate half. Both were measured in three
 engines before anything was written.
+
+## Usage
+
+```html
+<pct-avatar name="Ada Lovelace" />
+```
 
 ## Contract
 
@@ -40,6 +47,24 @@ is drawn.
 **Why an empty `src` is never bound.** Measured (0052): `src=""` fires `error` in all three
 engines — an empty string is a request to the page's own URL, not an absence — so the chain
 skips the image element entirely rather than mounting one that is born broken.
+
+## Parts
+
+| part         | what it is                            |
+| ------------ | ------------------------------------- |
+| `image`      | the picture, when a source is given   |
+| `initials`   | the letters drawn from the name       |
+| `silhouette` | the placeholder when there is neither |
+
+## Theming
+
+```css
+[data-theme='brand'] {
+  --pct-avatar-bg: #0f766e;
+  --pct-avatar-fg: #ffffff;
+  --pct-avatar-border: #0f766e;
+}
+```
 
 ## Keyboard map
 

@@ -4,9 +4,18 @@
 **Selector:** `textarea[pctText][pctAutosize]` — **a directive**, not a component: `PctText`
 is already the component on that element and Angular matches one component to a node
 **Status:** released
+**Category:** Inputs
 **ARIA APG pattern:** none — the APG has no pattern for a height. The control is a native
 `<textarea>` and stays one, so `placeholder`, `maxlength`, `spellcheck`, `wrap` and the mobile
 keyboard mode are the platform's and untouched
+
+## Usage
+
+```html
+<pct-field label="Release notes">
+  <textarea pctText pctAutosize rows="2"></textarea>
+</pct-field>
+```
 
 ## Contract
 
@@ -26,6 +35,36 @@ firefox, which does not have the property and does not degrade
 The two are made to agree: the sheet gives the CSS road back the `rows` the property discards,
 and the measurement adds back the border `scrollHeight` leaves out. The e2e file asks the same
 questions of all three engines for exactly that reason.
+
+## Parts
+
+| part                     | what it is                                                     |
+| ------------------------ | -------------------------------------------------------------- |
+| `field-header`           | the row above the control: the label and what stands beside it |
+| `field-label`            | the label, tied to the control by id                           |
+| `field-label-aux`        | the slot beside the label — a counter, a link                  |
+| `field-label-aux-item`   | one projected item inside the label slot                       |
+| `field-row`              | the control's row, with its prefix and suffix                  |
+| `field-prefix`           | what sits before the control inside the row                    |
+| `field-prefix-item`      | one projected item inside the prefix                           |
+| `field-control`          | the wrapped control itself                                     |
+| `field-suffix`           | what sits after the control inside the row                     |
+| `field-suffix-item`      | one projected item inside the suffix                           |
+| `field-footer`           | the row under the control: the hint or the error               |
+| `field-hint`             | the hint, read as the description of the control               |
+| `field-error`            | the message when the control is invalid                        |
+| `field-message-aux`      | the slot beside the hint or error                              |
+| `field-message-aux-item` | one projected item inside the message slot                     |
+
+## Theming
+
+```css
+[data-theme='brand'] {
+  --pct-field-border-focus: #0f766e;
+  --pct-field-bg: #f0fdfa;
+  --pct-field-fg: #134e4a;
+}
+```
 
 ## Keyboard map
 

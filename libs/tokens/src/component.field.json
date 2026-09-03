@@ -2,38 +2,136 @@
   "pct": {
     "field": {
       "$comment": "The chrome draws the field border, because the prefix/suffix slots have to sit inside it. The control within is transparent and unbordered. The row height comes from the token shared with the button ({pct.control.height}), not from vertical padding — a field row and a button of the same size are thereby equal by definition (req-api-size).",
-      "bg": { "$type": "color", "$value": "{pct.surface}" },
-      "fg": { "$type": "color", "$value": "{pct.text}" },
-      "placeholder-fg": { "$type": "color", "$value": "{pct.text-muted}" },
-      "border": { "$type": "color", "$value": "{pct.border-strong}" },
-      "border-hover": { "$type": "color", "$value": "{pct.text-muted}" },
-      "border-focus": { "$type": "color", "$value": "{pct.primary}" },
-      "border-invalid": { "$type": "color", "$value": "{pct.danger}" },
-      "fg-invalid": { "$type": "color", "$value": "{pct.danger}" },
-      "bg-disabled": { "$type": "color", "$value": "{pct.surface-disabled}" },
-      "fg-disabled": { "$type": "color", "$value": "{pct.text-disabled}" },
-      "border-disabled": { "$type": "color", "$value": "{pct.border}" },
-      "label-fg": { "$type": "color", "$value": "{pct.text}" },
-      "hint-fg": { "$type": "color", "$value": "{pct.text-muted}" },
-      "affix-fg": { "$type": "color", "$value": "{pct.text-muted}" },
-      "radius": { "$type": "dimension", "$value": "{pct.radius.md}" },
-      "height": { "$type": "dimension", "$value": "{pct.control.height.md}" },
+      "bg": {
+        "$type": "color",
+        "$value": "{pct.surface}",
+        "$description": "Background of the field."
+      },
+      "fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of the field."
+      },
+      "placeholder-fg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Text colour of the placeholder."
+      },
+      "border": {
+        "$type": "color",
+        "$value": "{pct.border-strong}",
+        "$description": "Edge colour of the field."
+      },
+      "border-hover": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Edge colour of the field on hover."
+      },
+      "border-focus": {
+        "$type": "color",
+        "$value": "{pct.primary}",
+        "$description": "Edge colour of the field when focused."
+      },
+      "border-invalid": {
+        "$type": "color",
+        "$value": "{pct.danger}",
+        "$description": "Edge colour of the field when invalid."
+      },
+      "fg-invalid": {
+        "$type": "color",
+        "$value": "{pct.danger}",
+        "$description": "Text colour of the field when invalid."
+      },
+      "bg-disabled": {
+        "$type": "color",
+        "$value": "{pct.surface-disabled}",
+        "$description": "Background of the field while disabled."
+      },
+      "fg-disabled": {
+        "$type": "color",
+        "$value": "{pct.text-disabled}",
+        "$description": "Text colour of the field while disabled."
+      },
+      "border-disabled": {
+        "$type": "color",
+        "$value": "{pct.border}",
+        "$description": "Edge colour of the field while disabled."
+      },
+      "label-fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of the label."
+      },
+      "hint-fg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Text colour of the hint."
+      },
+      "affix-fg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Text colour of an affix."
+      },
+      "radius": {
+        "$type": "dimension",
+        "$value": "{pct.radius.md}",
+        "$description": "Corner radius of the field."
+      },
+      "height": {
+        "$type": "dimension",
+        "$value": "{pct.control.height.md}",
+        "$description": "Height of the field."
+      },
       "height-sm": {
         "$type": "dimension",
-        "$value": "{pct.control.height.sm}"
+        "$value": "{pct.control.height.sm}",
+        "$description": "Height of the field at size sm."
       },
       "height-lg": {
         "$type": "dimension",
-        "$value": "{pct.control.height.lg}"
+        "$value": "{pct.control.height.lg}",
+        "$description": "Height of the field at size lg."
       },
-      "font-size": { "$type": "dimension", "$value": "{pct.font.size.md}" },
-      "font-size-sm": { "$type": "dimension", "$value": "{pct.font.size.sm}" },
-      "font-size-lg": { "$type": "dimension", "$value": "{pct.font.size.lg}" },
-      "padding-x": { "$type": "dimension", "$value": "{pct.space.4}" },
-      "padding-x-sm": { "$type": "dimension", "$value": "{pct.space.3}" },
-      "padding-x-lg": { "$type": "dimension", "$value": "{pct.space.5}" },
-      "gap": { "$type": "dimension", "$value": "{pct.space.3}" },
-      "label-gap": { "$type": "dimension", "$value": "{pct.space.2}" }
+      "font-size": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.md}",
+        "$description": "Font size of the field."
+      },
+      "font-size-sm": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.sm}",
+        "$description": "Font size of the field at size sm."
+      },
+      "font-size-lg": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.lg}",
+        "$description": "Font size of the field at size lg."
+      },
+      "padding-x": {
+        "$type": "dimension",
+        "$value": "{pct.space.4}",
+        "$description": "Horizontal padding of the field."
+      },
+      "padding-x-sm": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Horizontal padding of the field at size sm."
+      },
+      "padding-x-lg": {
+        "$type": "dimension",
+        "$value": "{pct.space.5}",
+        "$description": "Horizontal padding of the field at size lg."
+      },
+      "gap": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Gap between the field's label, control and hint."
+      },
+      "label-gap": {
+        "$type": "dimension",
+        "$value": "{pct.space.2}",
+        "$description": "Gap inside the label."
+      }
     }
   }
 }

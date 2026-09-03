@@ -7,7 +7,11 @@ import {
 import { TestBed } from '@angular/core/testing';
 import { PctTab } from './tab';
 import { PctTabs } from './tabs';
-import { PctTabsActivation, PctTabsOrientation } from './tabs.types';
+import {
+  PctTabsActivation,
+  PctTabsOrientation,
+  PctTabsVariant,
+} from './tabs.types';
 
 /**
  * A strip of three, the middle one optionally disabled — enough for every question the walk
@@ -19,6 +23,7 @@ import { PctTabsActivation, PctTabsOrientation } from './tabs.types';
     <pct-tabs
       [(value)]="value"
       [orientation]="orientation()"
+      [variant]="variant()"
       [activation]="activation()"
       [ariaLabel]="ariaLabel()"
       [ariaLabelledby]="ariaLabelledby()"
@@ -38,6 +43,7 @@ import { PctTabsActivation, PctTabsOrientation } from './tabs.types';
 class Host {
   readonly value = signal('');
   readonly orientation = signal<PctTabsOrientation>('horizontal');
+  readonly variant = signal<PctTabsVariant>('underline');
   readonly activation = signal<PctTabsActivation>('automatic');
   readonly ariaLabel = signal('Settings');
   readonly ariaLabelledby = signal('');
@@ -141,6 +147,28 @@ describe('PctTabs', () => {
           .querySelector('pct-tabs')
           .getAttribute('data-pct-orientation'),
       ).toBe('vertical');
+    });
+
+    /**
+     * The face is an attribute and nothing else: every rule for the segmented look is keyed on
+     * it in the stylesheet, which is the whole of why this face added no branch to the
+     * component (0064, after 0058's five button faces). So what there is to check here is the
+     * default and the reflection — a mutant that stops writing the attribute takes both faces
+     * down and this test with them.
+     */
+    it('wears the underline face unless told otherwise, and says which it wears', async () => {
+      const fixture = await boot();
+      const host = () => fixture.nativeElement.querySelector('pct-tabs');
+
+      expect(host().getAttribute('data-pct-variant')).toBe('underline');
+
+      fixture.componentInstance.variant.set('segmented');
+      fixture.detectChanges();
+
+      expect(host().getAttribute('data-pct-variant')).toBe('segmented');
+      // The face is paint: it moves no semantics, so the strip still says the same things.
+      expect(list().getAttribute('role')).toBe('tablist');
+      expect(list().getAttribute('aria-orientation')).toBe('horizontal');
     });
   });
 

@@ -1418,6 +1418,29 @@
       "bg": "pct.surface",
       "level": "UI",
       "severity": "warn"
+    },
+    {
+      "name": "tabs/segmented — label on the track",
+      "$comment": "The segmented face paints the strip, so an unchosen label no longer stands on the page but on `list-bg`. Measured against the track it actually lies on, per the partner convention above.",
+      "fg": "pct.tabs.tab-fg",
+      "bg": "pct.tabs.list-bg",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "tabs/segmented — chosen label on its segment",
+      "fg": "pct.tabs.tab-fg-selected",
+      "bg": "pct.tabs.tab-bg-selected",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "tabs/segmented — the raised segment against its track",
+      "$comment": "The chosen segment carries the state by its FILL, with no shadow and no edge, so the boundary that makes it an object is fill against track. UI and not AA: this is a non-text element under SC 1.4.11. Warn, not error: the label's own pair above is the primary channel and forced colours restores an outline, so a skin that flattens `surface-100` into `surface` should be told rather than blocked.",
+      "fg": "pct.tabs.tab-bg-selected",
+      "bg": "pct.tabs.list-bg",
+      "level": "UI",
+      "severity": "warn"
     }
   ]
 }

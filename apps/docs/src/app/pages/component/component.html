@@ -1,96 +1,721 @@
-@if (card(); as card) {
-<pct-container>
-  <pct-stack gap="lg" class="page">
-    <pct-breadcrumb ariaLabel="You are here">
-      <pct-crumb><a pctCrumbLink routerLink="/">Home</a></pct-crumb>
-      <pct-crumb>
-        <a pctCrumbLink routerLink="/components">Components</a>
-      </pct-crumb>
-      <pct-crumb>
-        <a pctCrumbLink [routerLink]="[]" aria-current="page">{{ card.id }}</a>
-      </pct-crumb>
-    </pct-breadcrumb>
+@if (page(); as p) { @if (html(); as h) {
+<pct-container class="wide">
+  <div class="shell">
+    <aside class="rail rail--index">
+      <docs-index [current]="p.id" />
+    </aside>
 
-    <header class="head">
-      <h1 class="head__title">{{ card.id }}</h1>
-      @if (card.role) {
-      <p class="head__role">{{ card.role }}</p>
-      }
-      <div class="head__facts">
-        @for (name of card.classes; track name) {
-        <code>{{ name }}</code>
-        }
-        <code>{{ card.entrypoint }}</code>
-        <code data-testid="selector">{{ card.selector }}</code>
-      </div>
-      @if (html()?.pattern; as pattern) {
-      <p class="head__pattern">
-        <span class="head__pattern-label">ARIA APG:</span>
-        <span class="docs-prose" [innerHTML]="pattern"></span>
-      </p>
-      }
-    </header>
+    <main class="content">
+      <pct-breadcrumb ariaLabel="You are here" class="crumbs">
+        <pct-crumb
+          ><a pctCrumbLink routerLink="/components">Components</a></pct-crumb
+        >
+        <pct-crumb
+          ><span class="crumbs__plain">{{ p.category }}</span></pct-crumb
+        >
+        <pct-crumb>
+          <a pctCrumbLink [routerLink]="[]" aria-current="page"
+            >{{ title() }}</a
+          >
+        </pct-crumb>
+      </pct-breadcrumb>
 
-    @if (html(); as html) {
-    <div class="docs-prose docs-prose--lead" [innerHTML]="html.intro"></div>
-    }
+      <details class="toc-fold">
+        <summary>On this page</summary>
+        <docs-toc
+          [items]="toc()"
+          [active]="active()"
+          [cardPath]="'docs/components/' + p.id + '.md'"
+        />
+      </details>
 
-    <section class="panel" data-testid="demo-panel">
-      <pct-tabs [(value)]="tab" ariaLabel="Demo and its source">
-        <pct-tab value="demo" label="Demo">
-          <div class="panel__stage">
-            @if (demo(); as type) {
-            <ng-container *ngComponentOutlet="type" />
+      <header class="head">
+        <div class="head__row">
+          <div class="head__text">
+            <span class="eyebrow eyebrow--accent">{{ p.category }}</span>
+            <h1 class="head__title">
+              {{ title() }} @if (p.status) {
+              <pct-badge class="head__status">{{ p.status }}</pct-badge>
+              }
+            </h1>
+            <div class="lead docs-prose" [innerHTML]="h.intro"></div>
+          </div>
+          <div class="head__actions">
+            <button
+              pctButton
+              variant="outline"
+              size="sm"
+              (click)="copy(importLine(), 'the import')"
+              data-testid="copy-import"
+            >
+              Copy import
+            </button>
+            <a class="head__source" [href]="sourceUrl()" rel="noopener"
+              >Source ↗</a
+            >
+          </div>
+        </div>
+        <ul class="spec" data-testid="spec">
+          <li>
+            <span class="spec__label">Import</span
+            ><code>{{ p.entrypoint }}</code>
+          </li>
+          <li>
+            <span class="spec__label">Selector</span
+            ><code data-testid="selector">{{ p.selector }}</code>
+          </li>
+          @if (h.patternShort) {
+          <li>
+            <span class="spec__label">Pattern</span
+            ><span
+              class="docs-prose spec__pattern"
+              [innerHTML]="h.patternShort"
+            ></span>
+          </li>
+          }
+          <li data-testid="proof">
+            <span class="spec__label">Proof</span>{{ proof() }}
+          </li>
+        </ul>
+      </header>
+
+      <!-- PREVIEW, first: the running component is the page's thesis. The card is the
+           sketch's: one row of chrome — the Preview/Code switch on the left, the tools on
+           the right — then the stage, and the file's name in the corner. The switch IS
+           pct-tabs (tablist, tabs, panels, the keyboard), dressed by its own tokens and
+           parts into the segmented look; nothing here re-implements a tab. -->
+      <section class="hero" id="preview" data-spy>
+        <div class="hero__panel" [class.is-code]="tab() === 'code'">
+          <div class="hero__tools">
+            <button
+              pctButton
+              variant="ghost"
+              size="sm"
+              (click)="flipStage()"
+              [attr.aria-pressed]="stageTheme() !== null"
+              data-testid="stage-theme"
+            >
+              Dark stage
+            </button>
+            <button
+              pctButton
+              variant="ghost"
+              size="sm"
+              (click)="flipDir()"
+              [attr.aria-pressed]="stageDir() === 'rtl'"
+              data-testid="stage-rtl"
+            >
+              RTL
+            </button>
+            @if (p.preview) {
+            <button
+              pctButton
+              variant="ghost"
+              size="sm"
+              (click)="copy(p.preview.source, 'the demo')"
+            >
+              Copy
+            </button>
             }
           </div>
-        </pct-tab>
-        <pct-tab value="code" label="Source">
-          <!-- The demo's own file, highlighted at build time — the pixels above and
-               this text share one source, so they cannot drift apart. -->
-          <div
-            class="docs-code"
-            [innerHTML]="code()"
-            data-testid="source"
-          ></div>
-        </pct-tab>
-      </pct-tabs>
-    </section>
+          <pct-tabs
+            [(value)]="tab"
+            variant="segmented"
+            ariaLabel="Preview and its code"
+            class="hero__tabs"
+          >
+            <pct-tab value="preview" label="Preview">
+              <div
+                class="stage stage--hero"
+                [attr.data-theme]="stageTheme()"
+                [attr.dir]="stageDir()"
+                data-testid="demo-panel"
+              >
+                @if (demo(); as type) {
+                <ng-container *ngComponentOutlet="type" />
+                }
+              </div>
+            </pct-tab>
+            <pct-tab value="code" label="Code">
+              <!-- The demo's own file, highlighted at build time — the pixels above and
+                   this text share one source, so they cannot drift apart. -->
+              <div
+                class="docs-code hero__code"
+                [innerHTML]="h.preview?.code ?? ''"
+                data-testid="source"
+              ></div>
+            </pct-tab>
+          </pct-tabs>
+          <p class="hero__note">
+            {{ p.id }}.demo.ts — the same file runs here and is highlighted
+            under Code
+          </p>
+        </div>
+      </section>
 
-    @if (html(); as html) {
-    <div class="docs-prose" [innerHTML]="html.body"></div>
-    } @if (card.parts.length) {
-    <section class="inventory" data-testid="parts">
-      <h2 class="inventory__title">Parts — the selectors your tests hold</h2>
-      <div class="inventory__chips">
-        @for (part of card.parts; track part) {
-        <button
-          pctButton
-          variant="ghost"
-          size="sm"
-          (click)="copy('[data-pct-part=&quot;' + part + '&quot;]')"
+      <!-- USAGE -->
+      <section class="block" id="usage" data-spy>
+        <div class="block__head">
+          <span class="eyebrow eyebrow--accent">Start here</span>
+          <h2>Usage</h2>
+          <p>
+            One import per component{{ p.usage ? ', and the shortest possible
+            use' : '' }} — the package itself is installed once, on the start
+            page.
+          </p>
+        </div>
+        <div class="card card--pad usage">
+          <span class="eyebrow">Import this component</span>
+          <pre class="plain"><code>{{ importLine() }}</code></pre>
+        </div>
+        @if (h.exports.length) {
+        <div
+          class="tablewrap"
+          tabindex="0"
+          role="region"
+          aria-label="Exports"
+          data-testid="exports"
         >
-          {{ part }}
-        </button>
+          <table class="api">
+            <thead>
+              <tr>
+                <th>Exported</th>
+                <th>What it is</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of h.exports; track row.name) {
+              <tr>
+                <td>
+                  <code>{{ row.name }}</code
+                  ><span class="api__kindpill">{{ row.kind }}</span>
+                  @if (row.selector) {
+                  <span class="api__sub"><code>{{ row.selector }}</code></span>
+                  } @else if (row.detail) {
+                  <span class="api__sub"
+                    ><code class="api__detail">{{ row.detail }}</code></span
+                  >
+                  }
+                </td>
+                <td class="docs-prose" [innerHTML]="row.description"></td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        } @if (h.usage) {
+        <div
+          class="docs-code oneline"
+          [innerHTML]="h.usage"
+          data-testid="usage"
+        ></div>
         }
-      </div>
-    </section>
-    } @if (card.tokens.length) {
-    <section class="inventory" data-testid="tokens">
-      <h2 class="inventory__title">
-        Tokens — the variables your theme overrides
-      </h2>
-      <div class="inventory__chips">
-        @for (token of card.tokens; track token) {
-        <button pctButton variant="ghost" size="sm" (click)="copy(token)">
-          {{ token }}
-        </button>
+      </section>
+
+      <!-- EXAMPLES -->
+      <section class="block" id="examples" data-spy>
+        <div class="block__head">
+          <span class="eyebrow eyebrow--accent">Examples</span>
+          <h2>Every state, running</h2>
+          <p>
+            Each example is the component itself, not a screenshot. Open the
+            code under any of them.
+          </p>
+        </div>
+        @for (ex of p.examples; track ex.key) {
+        <article
+          class="example"
+          [id]="'ex-' + ex.key"
+          data-spy
+          [class.show-code]="openCode().has(ex.key)"
+        >
+          <div class="card example__card">
+            <div class="example__prose">
+              <h3>{{ ex.title }}</h3>
+              <div
+                class="docs-prose"
+                [innerHTML]="h.examples[ex.key].prose"
+              ></div>
+              <button
+                pctButton
+                variant="ghost"
+                size="sm"
+                class="example__toggle"
+                (click)="toggleCode(ex.key)"
+                [attr.aria-expanded]="openCode().has(ex.key)"
+              >
+                {{ openCode().has(ex.key) ? 'Hide code' : 'Show code' }}
+              </button>
+            </div>
+            <div class="stage example__stage">
+              @if (examples().get(ex.key); as type) {
+              <ng-container *ngComponentOutlet="type" />
+              }
+            </div>
+            @if (openCode().has(ex.key)) {
+            <div
+              class="docs-code example__code"
+              [innerHTML]="h.examples[ex.key].code"
+            ></div>
+            }
+          </div>
+        </article>
+        } @empty {
+        <p class="callout">
+          The examples for this component arrive with the sweep (plan 2.7.4) —
+          the preview above is the running one.
+        </p>
         }
-      </div>
-    </section>
-    }
-  </pct-stack>
+      </section>
+
+      <!-- API -->
+      <section class="block" id="api" data-spy>
+        <div class="block__head">
+          <span class="eyebrow eyebrow--accent">API</span>
+          <h2>What it reads, and what it writes back</h2>
+          <p>
+            Read from the source at build time — the types, the defaults and the
+            lines of documentation are the library's own.
+          </p>
+        </div>
+        @for (c of h.api; track c.name) {
+        <div
+          class="api-class"
+          [id]="h.api.length === 1 ? 'api-class' : 'api-' + c.name"
+          [attr.data-spy]="h.api.length === 1 ? null : ''"
+        >
+          @if (h.api.length > 1) {
+          <h3 class="api-class__name">
+            <code>{{ c.name }}</code>
+            <span class="api__kind"
+              >{{ c.kind }}@if (c.selector) { ·
+              <code>{{ c.selector }}</code>}</span
+            >
+          </h3>
+          } @if (c.description) {
+          <p class="api-class__lead docs-prose" [innerHTML]="c.description"></p>
+          }
+
+          <div
+            class="sub"
+            [id]="h.api.length === 1 ? 'api-inputs' : 'api-' + c.name + '-inputs'"
+            [attr.data-spy]="h.api.length === 1 ? '' : null"
+          >
+            <h3>Inputs</h3>
+            <div
+              class="tablewrap"
+              tabindex="0"
+              role="region"
+              aria-label="Inputs"
+              data-testid="inputs"
+            >
+              <table class="api">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>What it does</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (m of c.members; track m.name) { @if (m.kind !==
+                  'output') {
+                  <tr>
+                    <td>
+                      <code>{{ m.name }}</code>@if (m.kind === 'model') {<span
+                        class="api__flag"
+                        >two-way</span
+                      >}@if (m.required) {<span class="api__flag api__flag--req"
+                        >required</span
+                      >} @if (m.default !== null) {
+                      <span class="api__sub"
+                        >default
+                        <code class="api__default">{{ m.default }}</code></span
+                      >
+                      }
+                    </td>
+                    <td><code class="api__type">{{ m.type }}</code></td>
+                    <td class="docs-prose" [innerHTML]="m.description"></td>
+                  </tr>
+                  } } @empty {
+                  <tr>
+                    <td colspan="3" class="api__none">
+                      No inputs — the element is configured by its content.
+                    </td>
+                  </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div
+            class="sub"
+            [id]="h.api.length === 1 ? 'api-outputs' : 'api-' + c.name + '-outputs'"
+            [attr.data-spy]="h.api.length === 1 ? '' : null"
+          >
+            <h3>Outputs</h3>
+            @if (hasOutputs(c)) {
+            <div
+              class="tablewrap"
+              tabindex="0"
+              role="region"
+              aria-label="Outputs"
+            >
+              <table class="api">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Payload</th>
+                    <th>When it fires</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (m of c.members; track m.name) { @if (m.kind ===
+                  'output') {
+                  <tr>
+                    <td><code>{{ m.name }}</code></td>
+                    <td><code class="api__type">{{ m.type }}</code></td>
+                    <td class="docs-prose" [innerHTML]="m.description"></td>
+                  </tr>
+                  } }
+                </tbody>
+              </table>
+            </div>
+            } @else {
+            <div class="callout">
+              <strong>None of its own.</strong> The native events —
+              <code>(click)</code>, <code>(focus)</code>, the form's submit —
+              are the platform's, and two-way models above carry the rest.
+            </div>
+            }
+          </div>
+
+          @if (c.host.length) {
+          <div
+            class="sub"
+            [id]="h.api.length === 1 ? 'api-host' : 'api-' + c.name + '-host'"
+            [attr.data-spy]="h.api.length === 1 ? '' : null"
+          >
+            <h3>What it writes on the element</h3>
+            <p class="sub__lead">
+              The hooks a stylesheet or a test can hold. Stable by contract —
+              the parts inventory gate fails the build when one disappears.
+            </p>
+            <div
+              class="tablewrap"
+              tabindex="0"
+              role="region"
+              aria-label="What it writes on the element"
+              data-testid="host"
+            >
+              <table class="api">
+                <thead>
+                  <tr>
+                    <th>Attribute</th>
+                    <th>Bound to</th>
+                    <th>Note</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of c.host; track row.attribute) {
+                  <tr>
+                    <td>
+                      <code>{{ row.attribute }}</code>@if (row.kind ===
+                      'property') {<span class="api__flag">property</span>}
+                    </td>
+                    <td><code class="api__default">{{ row.bound }}</code></td>
+                    <td class="docs-prose" [innerHTML]="row.note"></td>
+                  </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+          }
+        </div>
+        }
+      </section>
+
+      <!-- STYLING -->
+      <section class="block" id="styling" data-spy>
+        <div class="block__head">
+          <span class="eyebrow eyebrow--accent">Styling</span>
+          <h2>Parts to select, tokens to override</h2>
+          <p>Two ways in, both stable. No class names to depend on.</p>
+        </div>
+
+        <div class="sub" id="styling-parts" data-spy>
+          <h3>Parts</h3>
+          @if (h.parts.length) {
+          <div
+            class="tablewrap"
+            tabindex="0"
+            role="region"
+            aria-label="Parts"
+            data-testid="parts"
+          >
+            <table class="api">
+              <thead>
+                <tr>
+                  <th>Part</th>
+                  <th>Selector</th>
+                  <th>What it is</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (part of h.parts; track part.name) {
+                <tr>
+                  <td><code>{{ part.name }}</code></td>
+                  <td>
+                    <code class="api__default"
+                      >[data-pct-part="{{ part.name }}"]</code
+                    >
+                    <button
+                      pctButton
+                      variant="ghost"
+                      size="sm"
+                      class="copy"
+                      (click)="copy('[data-pct-part=&quot;' + part.name + '&quot;]', 'the selector')"
+                    >
+                      Copy
+                    </button>
+                  </td>
+                  <td class="docs-prose" [innerHTML]="part.description"></td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          } @else {
+          <p class="callout">
+            No parts of its own — the element you write is the whole of it.
+          </p>
+          }
+        </div>
+
+        <div class="sub" id="styling-tokens" data-spy>
+          <h3>Tokens</h3>
+          <p class="sub__lead">
+            Every value the component reads, with the light and the dark
+            default. Override a token at any scope and it cascades like any
+            custom property.
+          </p>
+          @if (h.tokens.length) {
+          <div
+            class="tablewrap"
+            tabindex="0"
+            role="region"
+            aria-label="Tokens"
+            data-testid="tokens"
+          >
+            <table class="api">
+              <thead>
+                <tr>
+                  <th>Token</th>
+                  <th>Styles</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (t of h.tokens; track t.name) {
+                <tr>
+                  <td>
+                    <code>{{ t.name }}</code>
+                    <button
+                      pctButton
+                      variant="ghost"
+                      size="sm"
+                      class="copy"
+                      (click)="copy(t.name, 'the token')"
+                    >
+                      Copy
+                    </button>
+                    <span class="api__sub">
+                      @if (t.type === 'color') {
+                      <span class="swatches" aria-hidden="true">
+                        <i class="swatch" [style.background]="t.light"></i>
+                        <i class="swatch" [style.background]="t.dark"></i>
+                      </span>
+                      } @if (t.ref) {<code class="api__default"
+                        >{{ t.ref }}</code
+                      >}
+                      <span class="api__literal"
+                        >{{ t.light }}@if (t.dark !== t.light) { · {{ t.dark
+                        }}}</span
+                      >
+                    </span>
+                  </td>
+                  <td class="docs-prose" [innerHTML]="t.description"></td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          } @else {
+          <p class="callout">
+            No tokens of its own — it paints from the semantic tier.
+          </p>
+          }
+        </div>
+
+        @if (p.theming && h.theming) {
+        <div class="sub" id="styling-theming" data-spy>
+          <h3>Theming</h3>
+          <p class="sub__lead">
+            A brand override in a few declarations. Scope it to a theme
+            attribute, a page or one container — the component never notices.
+          </p>
+          <div class="card theming">
+            <div class="docs-code theming__code" [innerHTML]="h.theming"></div>
+            <div
+              class="stage theming__stage"
+              [style]="p.theming.style"
+              data-theme="light"
+              data-testid="theming-stage"
+            >
+              @if (demo(); as type) {
+              <ng-container *ngComponentOutlet="type" />
+              }
+            </div>
+          </div>
+        </div>
+        }
+      </section>
+
+      <!-- ACCESSIBILITY -->
+      <section class="block" id="accessibility" data-spy>
+        <div class="block__head">
+          <span class="eyebrow eyebrow--accent">Accessibility</span>
+          <h2>Measured, not assumed</h2>
+          @if (h.pattern) {
+          <p class="docs-prose">
+            Pattern: <span [innerHTML]="h.pattern"></span>
+          </p>
+          }
+        </div>
+        @if (h.keyboard) {
+        <div class="sub" id="a11y-keyboard" data-spy>
+          <h3>Keyboard</h3>
+          <div class="docs-prose" [innerHTML]="h.keyboard"></div>
+        </div>
+        }
+        <div class="sub" id="a11y-measured" data-spy>
+          <h3>What is measured, and what is not yet</h3>
+          <p class="sub__lead">
+            Every line is a test in three engines or a gate on every commit. The
+            gaps are listed the same way, each with the requirement that will
+            close it.
+          </p>
+          <div class="score" data-testid="checks">
+            @for (row of h.checks; track $index) {
+            <div class="score__item" [attr.data-state]="row.state">
+              <span class="pill" [attr.data-state]="row.state"
+                >{{ row.label }}</span
+              >
+              <span
+                class="score__what docs-prose"
+                [innerHTML]="row.criterion"
+              ></span>
+              <span
+                class="score__how docs-prose"
+                [innerHTML]="row.evidence"
+              ></span>
+            </div>
+            }
+          </div>
+        </div>
+      </section>
+
+      <!-- EVIDENCE -->
+      <section class="block" id="evidence" data-spy>
+        <div class="block__head">
+          <span class="eyebrow eyebrow--accent">Evidence</span>
+          <h2>What the repository holds for this component</h2>
+          <p>Read at build time from the tracked snapshots, not typed here.</p>
+        </div>
+        <div class="tiles" data-testid="evidence">
+          <div class="tile">
+            @if (p.evidence.mutation; as m) {
+            <span class="tile__n">{{ m.score }}%</span>
+            <span class="tile__l">mutation score</span>
+            <span class="tile__f"
+              >{{ m.killed }} of {{ m.mutants }} mutants killed</span
+            >
+            <span class="bar" aria-hidden="true"
+              ><i [style.width.%]="m.score"></i
+            ></span>
+            } @else {
+            <span class="tile__n">—</span>
+            <span class="tile__l">mutation score</span>
+            <span class="tile__f"
+              >no mutants to kill — the policy says why</span
+            >
+            }
+          </div>
+          <div class="tile">
+            @if (p.evidence.e2e; as e) {
+            <span class="tile__n">{{ e.cases }} × 3</span>
+            <span class="tile__l">e2e cases × engines</span>
+            <span class="tile__f"
+              >plus the shared audits: axe, forced colors, preferences, size,
+              hydration</span
+            >
+            } @else {
+            <span class="tile__n">—</span>
+            <span class="tile__l">e2e cases</span>
+            <span class="tile__f">covered by the shared suites only</span>
+            }
+          </div>
+          <div class="tile">
+            <span class="tile__n">{{ p.evidence.pairs }}</span>
+            <span class="tile__l">colour pairs measured</span>
+            <span class="tile__f">light and dark, at every token build</span>
+          </div>
+          <div class="tile">
+            <span class="tile__n">{{ p.evidence.baselines }}</span>
+            <span class="tile__l">visual baselines</span>
+            <span class="tile__f">Chromium, the sandbox's own pictures</span>
+          </div>
+        </div>
+
+        @if (h.decisions.length) {
+        <div class="sub" id="evidence-decisions" data-spy>
+          <h3>Decisions behind it</h3>
+          <ul class="list">
+            @for (d of h.decisions; track d.id) {
+            <li>
+              <a routerLink="/trust" [fragment]="'adr-' + d.id">{{ d.id }}</a>
+              <span class="docs-prose" [innerHTML]="d.title"></span>
+            </li>
+            } @for (l of h.lessons; track l.id) {
+            <li>
+              <a routerLink="/trust" [fragment]="'lesson-' + l.id"
+                >lesson-{{ l.id }}</a
+              >
+              <span class="docs-prose" [innerHTML]="l.title"></span>
+            </li>
+            }
+          </ul>
+        </div>
+        } @if (h.limitations) {
+        <div class="sub" id="evidence-limits" data-spy>
+          <h3>Known limitations</h3>
+          <div class="docs-prose" [innerHTML]="h.limitations"></div>
+        </div>
+        }
+      </section>
+    </main>
+
+    <aside class="rail rail--toc">
+      <docs-toc
+        [items]="toc()"
+        [active]="active()"
+        [cardPath]="'docs/components/' + p.id + '.md'"
+      />
+    </aside>
+  </div>
 </pct-container>
-} @else {
+} } @else {
 <pct-container>
   <div class="missing">
     <h1>No component answers to that name</h1>

@@ -12,6 +12,7 @@ import { PctButton } from '@pacit/components/button';
 import { PctContainer } from '@pacit/components/container';
 import { PctDrawer, PctDrawerTrigger } from '@pacit/components/drawer';
 import { PctTheme, PctThemeName } from '@pacit/components/theme';
+import { DocsIndex } from './pages/component/docs-index';
 
 const THEME_KEY = 'pct-docs-theme';
 
@@ -56,6 +57,7 @@ const storedTheme = (): PctThemeName | null => {
     PctDrawer,
     PctDrawerTrigger,
     PctTheme,
+    DocsIndex,
   ],
   templateUrl: './app.html',
   styleUrl: './app.scss',

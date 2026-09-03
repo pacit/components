@@ -376,11 +376,29 @@ test.describe('Appearance — compared with the baseline', () => {
     );
   });
 
-  /** The strip down the side, where the mark of the chosen tab is on the inline edge. */
+  /**
+   * The strip down the side, where the mark of the chosen tab is on the inline edge — and
+   * where the panel stands BESIDE the strip rather than under it (0064). The relation is
+   * asserted outright in `tabs.spec.ts`; this picture is what catches the day the row
+   * silently becomes a column again.
+   */
   test('tabs-vertical', async ({ page }) => {
     await stage(page, '/tabs');
     await expect(page.getByTestId('demo-vertical')).toHaveScreenshot(
       'tabs-vertical.png',
+    );
+  });
+
+  /**
+   * The segmented face (0064): the recessed track, the chosen tab raised out of it on all four
+   * corners, and the track hugging its segments instead of running the width of the card. The
+   * fill is a `warn` in the contrast policy at 1.10:1, so this picture is the only place the
+   * two grounds are compared by eye at all.
+   */
+  test('tabs-segmented', async ({ page }) => {
+    await stage(page, '/tabs');
+    await expect(page.getByTestId('demo-segmented')).toHaveScreenshot(
+      'tabs-segmented.png',
     );
   });
 

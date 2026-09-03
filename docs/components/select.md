@@ -3,6 +3,7 @@
 **Entrypoint:** `@pacit/components/select`
 **Selector:** `pct-select`, `pct-multi-select`
 **Status:** released
+**Category:** Inputs
 **ARIA APG pattern:** [Combobox](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/) — the
 **select-only** one by default and the **editable, list-autocomplete** one with `filterable`:
 `role="combobox"` on the trigger plus `role="listbox"` in the panel, **focus stays on the
@@ -20,6 +21,12 @@ measurement is in [0034](../decisions/0034-multiplicity-is-a-tag.md). **Filterin
 on both**, and by the same rule read the other way — a tag is what the type cannot say
 otherwise, and a filtering select's value is a select's value
 ([0035](../decisions/0035-a-filter-is-a-question-not-a-value.md)).
+
+## Usage
+
+```html
+<pct-select ariaLabel="Country" [options]="countries" [(value)]="country" />
+```
 
 ## Contract
 
@@ -41,6 +48,35 @@ otherwise, and a filtering select's value is a select's value
 | **Announced**   | An **empty** panel says so on the library's polite live channel (`PctAnnouncer` in `core`): focus stays on the trigger and an empty listbox gives `aria-activedescendant` nothing to name, so the sentence drawn inside the panel reaches the eye alone ([0026](../decisions/0026-one-channel-per-politeness.md)). A panel a **question** has emptied says the second sentence, `selectNoMatches`, and one whose list is still coming says the third, `selectLoading` — three facts, not three phrasings of one: the first two are conclusions and a request in flight has reached neither. What is withdrawn is what was actually said, when the panel closes, when one sentence replaces another with the panel still open, and when the control is destroyed with it open. A panel **with** options announces nothing — the listbox pattern is already speaking, and a count of matches would need a plural rule                                                                                                              |
 
 **The library's first use of CDK Overlay.**
+
+## Parts
+
+| part           | what it is                                |
+| -------------- | ----------------------------------------- |
+| `label`        | the label of the control                  |
+| `trigger`      | the combobox element the panel opens from |
+| `value`        | the chosen value as text                  |
+| `placeholder`  | the text while nothing is chosen          |
+| `arrow`        | the chevron at the end                    |
+| `clear`        | the button that empties the value         |
+| `panel`        | the list box                              |
+| `group`        | a group of options                        |
+| `group-label`  | the heading of a group                    |
+| `option`       | one option                                |
+| `option-check` | the mark on a chosen option               |
+| `empty`        | the row shown when nothing matches        |
+| `hint`         | the hint under the control                |
+| `error`        | the message when invalid                  |
+
+## Theming
+
+```css
+[data-theme='brand'] {
+  --pct-select-border-focus: #0f766e;
+  --pct-select-option-bg-selected: #0f766e;
+  --pct-select-option-fg-selected: #ffffff;
+}
+```
 
 ## Keyboard map
 

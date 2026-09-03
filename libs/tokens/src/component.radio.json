@@ -1,24 +1,96 @@
 {
   "pct": {
     "radio": {
-      "size": { "$type": "dimension", "$value": "18px" },
-      "target-min": { "$type": "dimension", "$value": "{pct.target.min}" },
-      "dot-size": { "$type": "dimension", "$value": "8px" },
-      "bg": { "$type": "color", "$value": "{pct.surface}" },
-      "border": { "$type": "color", "$value": "{pct.border-strong}" },
-      "border-hover": { "$type": "color", "$value": "{pct.text-muted}" },
-      "border-checked": { "$type": "color", "$value": "{pct.primary}" },
-      "dot-bg": { "$type": "color", "$value": "{pct.primary}" },
-      "border-invalid": { "$type": "color", "$value": "{pct.danger}" },
-      "fg-invalid": { "$type": "color", "$value": "{pct.danger}" },
-      "bg-disabled": { "$type": "color", "$value": "{pct.surface-disabled}" },
-      "border-disabled": { "$type": "color", "$value": "{pct.border}" },
-      "fg-disabled": { "$type": "color", "$value": "{pct.text-disabled}" },
-      "label-fg": { "$type": "color", "$value": "{pct.text}" },
-      "group-label-fg": { "$type": "color", "$value": "{pct.text}" },
-      "hint-fg": { "$type": "color", "$value": "{pct.text-muted}" },
-      "gap": { "$type": "dimension", "$value": "{pct.space.3}" },
-      "option-gap": { "$type": "dimension", "$value": "{pct.space.3}" }
+      "size": {
+        "$type": "dimension",
+        "$value": "18px",
+        "$description": "Size of the radio."
+      },
+      "target-min": {
+        "$type": "dimension",
+        "$value": "{pct.target.min}",
+        "$description": "Touch-target floor of the radio."
+      },
+      "dot-size": {
+        "$type": "dimension",
+        "$value": "8px",
+        "$description": "Size of the dot."
+      },
+      "bg": {
+        "$type": "color",
+        "$value": "{pct.surface}",
+        "$description": "Background of the radio."
+      },
+      "border": {
+        "$type": "color",
+        "$value": "{pct.border-strong}",
+        "$description": "Edge colour of the radio."
+      },
+      "border-hover": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Edge colour of the radio on hover."
+      },
+      "border-checked": {
+        "$type": "color",
+        "$value": "{pct.primary}",
+        "$description": "Edge colour of the radio when checked."
+      },
+      "dot-bg": {
+        "$type": "color",
+        "$value": "{pct.primary}",
+        "$description": "Background of the dot."
+      },
+      "border-invalid": {
+        "$type": "color",
+        "$value": "{pct.danger}",
+        "$description": "Edge colour of the radio when invalid."
+      },
+      "fg-invalid": {
+        "$type": "color",
+        "$value": "{pct.danger}",
+        "$description": "Colour of the dot when invalid."
+      },
+      "bg-disabled": {
+        "$type": "color",
+        "$value": "{pct.surface-disabled}",
+        "$description": "Background of the radio while disabled."
+      },
+      "border-disabled": {
+        "$type": "color",
+        "$value": "{pct.border}",
+        "$description": "Edge colour of the radio while disabled."
+      },
+      "fg-disabled": {
+        "$type": "color",
+        "$value": "{pct.text-disabled}",
+        "$description": "Colour of the dot while disabled."
+      },
+      "label-fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of the label."
+      },
+      "group-label-fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of the group label."
+      },
+      "hint-fg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Text colour of the hint."
+      },
+      "gap": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Gap between the radio and its label."
+      },
+      "option-gap": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Gap between the options of a group."
+      }
     }
   }
 }

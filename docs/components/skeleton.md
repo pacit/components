@@ -3,6 +3,7 @@
 **Entrypoint:** `@pacit/components/skeleton`
 **Selector:** `pct-skeleton`
 **Status:** released
+**Category:** Feedback & display
 **ARIA APG pattern:** none — a skeleton is not a widget and announces nothing. It is
 `aria-hidden="true"` outright, the second component in the library to be after `pct-icon`;
 what a screen reader has to hear is
@@ -13,6 +14,12 @@ The whole component is two answers
 ([0050](../decisions/0050-a-skeleton-is-a-picture-of-a-wait.md)): it holds the space the
 content will take — a line is `1lh` and the bar inside it `1cap`, both computed by the browser
 out of the consumer's own type — and it says nothing, because there is nothing yet to say.
+
+## Usage
+
+```html
+<pct-skeleton [lines]="3" />
+```
 
 ## Contract
 
@@ -50,6 +57,22 @@ thickness of its own because a bar is not text; this component is text
 With nothing above it marked busy the component reports it in dev mode — a sighted user sees
 three grey bars and a screen-reader user is told nothing at all, which is the one defect this
 component can cause and the one no gate here can see: the region belongs to the application.
+
+## Parts
+
+| part    | what it is                  |
+| ------- | --------------------------- |
+| `track` | one line of the shape       |
+| `fill`  | the shimmer that travels it |
+
+## Theming
+
+```css
+[data-theme='brand'] {
+  --pct-skeleton-track-bg: #ccfbf1;
+  --pct-skeleton-fill-bg: #f0fdfa;
+}
+```
 
 ## Keyboard map
 

@@ -182,10 +182,18 @@ function withDependents(overrides, tree) {
 }
 
 // --- generating ---------------------------------------------------------------
-function emitCssBlock(selector, entries, all) {
+/**
+ * `scheme` names the theme to the PLATFORM (0063): the tokens repaint every colour the
+ * library owns, and the browser still draws its own chrome — scrollbars, form-control
+ * defaults, the canvas — for whatever `color-scheme` says. The site's first dark review
+ * found every scrollbar white for it. It rides in the block, at the block's own scope,
+ * so a dark island inside a light page gets dark scrollbars and only there.
+ */
+function emitCssBlock(selector, entries, all, scheme) {
   const lines = Object.entries(entries).map(
     ([path, tok]) => `  ${cssVar(path)}: ${toCss(tok.value, all)};`,
   );
+  if (scheme) lines.unshift(`  color-scheme: ${scheme};`);
   return `${selector} {\n${lines.join('\n')}\n}`;
 }
 
@@ -279,9 +287,9 @@ function run() {
   const css =
     [
       '/* GENERATED from libs/tokens/src/*.json — do not edit by hand. */',
-      emitCssBlock(':root', base, base),
-      emitCssBlock('[data-theme="light"]', lightOverrides, lightTree),
-      emitCssBlock('[data-theme="dark"]', darkOverrides, darkTree),
+      emitCssBlock(':root', base, base, 'light'),
+      emitCssBlock('[data-theme="light"]', lightOverrides, lightTree, 'light'),
+      emitCssBlock('[data-theme="dark"]', darkOverrides, darkTree, 'dark'),
       // Automatic dark mode (req-token-skin). `:not([data-theme])` makes the system
       // preference a DEFAULT only: a page that declares a theme explicitly wins both
       // ways (`data-theme="light"` on <html> is the off switch). Nested themes keep
@@ -290,7 +298,12 @@ function run() {
       // a missing attribute.
       emitMedia(
         '(prefers-color-scheme: dark)',
-        emitCssBlock(':root:not([data-theme])', darkOverrides, darkTree),
+        emitCssBlock(
+          ':root:not([data-theme])',
+          darkOverrides,
+          darkTree,
+          'dark',
+        ),
       ),
       // Reduced motion (req-a11y-motion) — one rule for the whole library.
       emitMedia(

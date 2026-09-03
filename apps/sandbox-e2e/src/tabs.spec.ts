@@ -197,6 +197,86 @@ test.describe('PctTabs — one section showing at a time', () => {
   });
 
   /**
+   * The layout half of `orientation="vertical"` (0064). Until it was finished the strip became
+   * a column and the panel still stacked underneath it, which is a column of labels
+   * introducing a section nowhere near them. Measured as a relation between two boxes rather
+   * than as a CSS value, because that is the claim: the panel stands BESIDE the strip.
+   */
+  test('a side strip stands beside its panel, and they swap sides under dir="rtl"', async ({
+    page,
+  }) => {
+    const strip = page
+      .getByTestId('tabs-vertical')
+      .locator('[data-pct-part="list"]');
+    const panel = page
+      .getByTestId('tabs-vertical')
+      .locator('[data-pct-part="panel"]:not([hidden])');
+
+    const boxes = async () => {
+      const a = await strip.boundingBox();
+      const b = await panel.boundingBox();
+      if (!a || !b) throw new Error('the strip or its panel has no box');
+      return { a, b };
+    };
+
+    const ltr = await boxes();
+    // Beside, not below: they share the row, and the panel starts after the strip ends.
+    expect(ltr.b.x).toBeGreaterThanOrEqual(ltr.a.x + ltr.a.width);
+    expect(Math.abs(ltr.b.y - ltr.a.y)).toBeLessThan(ltr.a.height);
+
+    await setRtl(page);
+    await expect(strip).toHaveCSS('direction', 'rtl');
+
+    const rtl = await boxes();
+    // Everything mirrors from the logical properties alone — the strip is now on the right,
+    // the panel on its left, and the rail has changed edge with them.
+    expect(rtl.a.x).toBeGreaterThanOrEqual(rtl.b.x + rtl.b.width);
+    await expect(strip).toHaveCSS('border-left-width', '1px');
+    await expect(strip).toHaveCSS('border-right-width', '0px');
+  });
+
+  /**
+   * The segmented face (0064): a recessed track with the chosen tab raised out of it. Every
+   * value here is paint keyed on one attribute, so this test is what says the attribute
+   * reaches the sheet at all — and the four corners are the detail a reviewer caught first
+   * when the face was still being faked from a consumer's stylesheet.
+   */
+  test('the segmented face is a track with the chosen tab raised out of it', async ({
+    page,
+  }) => {
+    const list = page
+      .getByTestId('tabs-segmented')
+      .locator('[data-pct-part="list"]');
+    const chosen = page
+      .getByTestId('tabs-segmented')
+      .locator('[data-pct-part="tab"][data-pct-chosen]');
+    const other = page
+      .getByTestId('tabs-segmented')
+      .locator('[data-pct-part="tab"]:not([data-pct-chosen])')
+      .first();
+
+    // The track: surface-100, no rail, and a corner derived from the segment's plus the inset.
+    await expect(list).toHaveCSS('background-color', 'rgb(241, 245, 249)');
+    await expect(list).toHaveCSS('border-bottom-width', '0px');
+    await expect(list).toHaveCSS('border-radius', '12px');
+
+    // The raised segment: the page's own surface, and rounded on all four corners — inside a
+    // track there is no rail for a tab's bottom edge to meet.
+    await expect(chosen).toHaveCSS('background-color', 'rgb(255, 255, 255)');
+    await expect(chosen).toHaveCSS('border-radius', '8px');
+    await expect(chosen).toHaveCSS('border-bottom-width', '0px');
+
+    // An unchosen segment paints nothing: it is the label's colour that separates them.
+    await expect(other).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+
+    // The track hugs its segments rather than running to the far edge of what holds it.
+    const box = await list.boundingBox();
+    const host = await page.getByTestId('tabs-segmented').boundingBox();
+    if (!box || !host) throw new Error('no box');
+    expect(box.width).toBeLessThan(host.width);
+  });
+
+  /**
    * The strip scrolls and this library scrolls nothing: the browser brings a focused element
    * into view by itself, which is the whole answer for a strip with more labels than room
    * (req-api-platform).

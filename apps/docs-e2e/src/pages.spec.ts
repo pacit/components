@@ -9,6 +9,12 @@ const WCAG_22_AA = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 // The registers' sizes, read from the same tracked sources the content pass reads — the
 // page must agree with the repository, not with a number typed here.
 const ROOT = join(__dirname, '../../..');
+// The page's token rows are the button's DTCG tokens — counted from the same file.
+const BUTTON_TOKENS = Object.keys(
+  JSON.parse(
+    readFileSync(join(ROOT, 'libs/tokens/src/component.button.json'), 'utf8'),
+  ).pct.button,
+).filter((k) => !k.startsWith('$')).length;
 const ADRS = readdirSync(join(ROOT, 'docs/decisions')).filter((f) =>
   /^\d{4}-/.test(f),
 ).length;
@@ -36,7 +42,8 @@ test.describe('The pages', () => {
 
     await tiles.filter({ hasText: 'button' }).first().click();
     await expect(page).toHaveURL(/\/components\/button$/);
-    await expect(page.locator('h1')).toHaveText('button');
+    // The title now carries the status badge beside the name.
+    await expect(page.locator('h1')).toContainText('Button');
   });
 
   test('a component page shows the demo, and the code tab is its own source', async ({
@@ -49,7 +56,7 @@ test.describe('The pages', () => {
       page.getByTestId('demo-panel').locator('[data-pct-variant="hero"]'),
     ).toBeVisible();
 
-    await page.getByRole('tab', { name: 'Source' }).click();
+    await page.getByRole('tab', { name: 'Code' }).click();
     const source = page.getByTestId('source');
     await expect(source.locator('.shiki')).toBeVisible();
     await expect(source).toContainText(`import { PctButton }`);
@@ -73,7 +80,7 @@ test.describe('The pages', () => {
     page,
   }) => {
     await visit(page, '/components/button');
-    const link = page.locator('.docs-prose a[href="/trust#adr-0058"]').first();
+    const link = page.locator('a[href="/trust#adr-0058"]').first();
     await expect(link).toBeVisible();
     await link.click();
     await expect(page).toHaveURL(/\/trust#adr-0058$/);
@@ -81,6 +88,116 @@ test.describe('The pages', () => {
     const target = page.locator('#adr-0058');
     await expect(target).toBeVisible();
     await expect(target).toContainText('gradient');
+  });
+
+  /**
+   * The redesigned page (plan 2.7.3): what it shows is READ, not typed — the API from the
+   * source, the tokens from the DTCG files, the checks from the card — so the assertions
+   * hold the page to the same files the content pass reads.
+   */
+  test('the API table is the source: variant defaults to solid and carries its JSDoc line', async ({
+    page,
+  }) => {
+    await visit(page, '/components/button');
+    const inputs = page.getByTestId('inputs');
+    const variant = inputs.locator('tr', { hasText: 'variant' });
+    await expect(variant).toContainText('PctButtonVariant');
+    await expect(variant).toContainText("'solid'");
+    await expect(variant).toContainText('Picks the face');
+    // What the directive writes on the element, from the decorator's own `host`.
+    await expect(page.getByTestId('host')).toContainText('data-pct-variant');
+    await expect(page.getByTestId('host')).toContainText('aria-busy');
+  });
+
+  test('every token of the page carries a meaning and both defaults', async ({
+    page,
+  }) => {
+    await visit(page, '/components/button');
+    const rows = page.getByTestId('tokens').locator('tbody tr');
+    await expect(rows).toHaveCount(BUTTON_TOKENS);
+    const first = rows.first();
+    await expect(first).toContainText('--pct-button-bg');
+    await expect(first).toContainText('{pct.primary}');
+    await expect(first).toContainText('Background of the solid face');
+  });
+
+  test('the examples run, and the code opens under the one asked', async ({
+    page,
+  }) => {
+    await visit(page, '/components/button');
+    const faces = page.locator('#ex-faces');
+    // The stage's buttons only — the card's own "Show code" is a pctButton too.
+    await expect(
+      faces.locator('.example__stage button[data-pct-variant]'),
+    ).toHaveCount(5);
+    await faces.getByRole('button', { name: 'Show code' }).click();
+    await expect(faces.locator('.shiki')).toBeVisible();
+    await expect(faces).toContainText('variant="hero"');
+  });
+
+  test('the scorecard shows the measurements and the gaps side by side', async ({
+    page,
+  }) => {
+    await visit(page, '/components/button');
+    const checks = page.getByTestId('checks');
+    await expect(
+      checks.locator('[data-state="measured"]').first(),
+    ).toBeVisible();
+    await expect(checks.locator('[data-state="gap"]').first()).toBeVisible();
+    await expect(checks.locator('[data-state="gap"]').first()).toContainText(
+      'Gap',
+    );
+  });
+
+  test('the theming fence is painted onto a second instance of the preview', async ({
+    page,
+  }) => {
+    await visit(page, '/components/button');
+    const themed = page
+      .getByTestId('theming-stage')
+      .locator('button[data-pct-variant="solid"]')
+      .first();
+    await expect(themed).toBeVisible();
+    expect(
+      await themed.evaluate((el) => getComputedStyle(el).backgroundColor),
+    ).toBe('rgb(15, 118, 110)');
+  });
+
+  test('the table of contents follows the reading line', async ({ page }) => {
+    await page.setViewportSize({ width: 1400, height: 900 });
+    await visit(page, '/components/button');
+    // The rail's copy — the fold above the page holds another, hidden at this width.
+    const toc = page.locator('.rail--toc [data-testid="toc"]');
+    await expect(toc.locator('a.is-active')).toHaveText('Preview');
+    await page.locator('#api').scrollIntoViewIfNeeded();
+    await page.evaluate(() => window.scrollBy(0, 40));
+    await expect(toc.locator('a.is-active').first()).toHaveText('API');
+  });
+
+  test('the index filters the components and marks the current one', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1400, height: 900 });
+    await visit(page, '/components/button');
+    // The rail's copy — the drawer holds another, with no current page to light.
+    const index = page.locator('.rail--index [data-testid="index"]');
+    await expect(index.locator('a.is-current')).toHaveText('button');
+    await index.getByTestId('index-filter').fill('sel');
+    await expect(index.locator('a')).toHaveCount(1);
+    await expect(index.locator('a')).toHaveText('select');
+  });
+
+  test('below the thresholds the rails give way and the table of contents folds', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 800, height: 900 });
+    await visit(page, '/components/button');
+    await expect(page.locator('.rail--index')).toBeHidden();
+    await expect(page.locator('.rail--toc')).toBeHidden();
+    const fold = page.locator('.toc-fold');
+    await expect(fold).toBeVisible();
+    await fold.locator('summary').click();
+    await expect(fold.getByTestId('toc')).toBeVisible();
   });
 
   test('the token chips copy through the toaster', async ({ page }) => {
@@ -151,6 +268,9 @@ test.describe('The pages', () => {
   });
 
   test('the two new page shapes pass the axe bar', async ({ page }) => {
+    // The component page grew forty examples' worth of nodes; Firefox's axe pass on it
+    // crossed the default 30 s under full-suite load (measured once, 2026-09-03).
+    test.setTimeout(90_000);
     for (const path of ['/components/button', '/trust']) {
       await page.goto(path);
       await expect(page.locator('h1')).toBeVisible();

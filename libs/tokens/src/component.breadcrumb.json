@@ -2,21 +2,47 @@
   "pct": {
     "breadcrumb": {
       "$comment": "The way here, told in links (0054). The trail is typography, not a control: one type size of its own (a quiet line above a heading, conventionally under the body size), the gap that spaces steps and separators alike, and the link's colours — muted at rest, full strength under the pointer. The current step wears the trail's own text colour plus a weight, because under forced colours every anchor is LinkText no matter the stylesheet, and weight is the channel that survives the flattening (`req-a11y-forced-colors`). The separator rides the muted text role and is never heard: the icon host hides it on its own.",
-
-      "font-size": { "$type": "dimension", "$value": "{pct.font.size.sm}" },
-      "gap": { "$type": "dimension", "$value": "{pct.space.2}" },
-
+      "font-size": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.sm}",
+        "$description": "Font size of the breadcrumb."
+      },
+      "gap": {
+        "$type": "dimension",
+        "$value": "{pct.space.2}",
+        "$description": "Gap between crumbs."
+      },
       "$comment-link-target-min": "Measured by the axe audit before it was believed: a 16px-tall link over an 8px row gap leaves a wrapped trail's touch targets 18px of safe space, and WCAG 2.5.8's inline exception covers sentences, not bars. The links take the shared floor outright (`req-a11y-touch`) — the chips' arrangement at a quieter control.",
-      "link-target-min": { "$type": "dimension", "$value": "{pct.target.min}" },
-
-      "fg": { "$type": "color", "$value": "{pct.text}" },
-      "link-fg": { "$type": "color", "$value": "{pct.text-muted}" },
-      "link-fg-hover": { "$type": "color", "$value": "{pct.text}" },
+      "link-target-min": {
+        "$type": "dimension",
+        "$value": "{pct.target.min}",
+        "$description": "Touch-target floor of a link."
+      },
+      "fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of the breadcrumb."
+      },
+      "link-fg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Text colour of a link."
+      },
+      "link-fg-hover": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of a link on hover."
+      },
       "link-font-weight-current": {
         "$type": "fontWeight",
-        "$value": "{pct.font.weight.medium}"
+        "$value": "{pct.font.weight.medium}",
+        "$description": "Font weight of the link naming the current page."
       },
-      "separator-fg": { "$type": "color", "$value": "{pct.text-muted}" }
+      "separator-fg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Text colour of the separator."
+      }
     }
   }
 }

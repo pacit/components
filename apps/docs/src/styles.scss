@@ -83,9 +83,11 @@ body {
 
 /* Inline code everywhere in rendered content — but never inside shiki's blocks,
    which paint themselves. */
+/* An opaque ground on purpose: a translucent one takes whatever lies behind it — the
+   hero panel's glow and shadow, measured — and a link's code inside read 4.48:1 there. */
 .docs-prose code:not(.shiki code),
 .docs-table code {
-  background: color-mix(in srgb, var(--pct-border) 45%, transparent);
+  background: var(--pct-surface-100);
   border-radius: 4px;
   padding: 1px 5px;
   font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
@@ -168,4 +170,29 @@ body {
       color: var(--shiki-dark) !important;
     }
   }
+}
+
+/* The Preview / Code switch is the library's `pct-tabs` under `variant="segmented"` (0064).
+   The FACE used to be dressed from here — a dozen token overrides on the host to undo the
+   rail and two rules reaching through the parts for the track and the chosen fill, the two
+   values the component named no token for. Both leaked: the overrides inherited into the demo
+   the stage projects (lesson-148) and the part selectors matched whatever it rendered
+   (lesson-147). The variant is the fix for both, and what is left here is the measure of it.
+
+   What remains is the site's SCALE, not the component's face: the sketch's switch is smaller
+   than the library's default and sits inset from the panel's corner. It is set on the
+   switch's own list — a direct child — because that is the one box whose descendants are the
+   tabs and nothing else. `font-size` and the custom properties below are inherited values, so
+   on the host they would reach the demo; on the list they stop at the panels beside it. */
+.hero__tabs > [data-pct-part='list'] {
+  margin: 12px 14px;
+  font-size: 13px;
+  --pct-tabs-tab-padding-x: 12px;
+  --pct-tabs-tab-padding-y: 5px;
+  --pct-tabs-tab-target-min: 28px;
+  /* The corners belong to the scale too, and the track's follows from them: the component
+     derives its radius as `tab-radius + list-inset`, so 7 + 3 gives back the sketch's 10px
+     without a second number to keep in step. */
+  --pct-tabs-tab-radius: 7px;
+  --pct-tabs-list-inset: 3px;
 }

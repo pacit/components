@@ -3,6 +3,7 @@
 **Entrypoint:** `@pacit/components/date`
 **Selector:** `pct-calendar`
 **Status:** released
+**Category:** Inputs
 **ARIA APG pattern:** the grid of the
 [Date Picker Dialog](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/datepicker-dialog/) —
 a `<table role="grid">` walked by a roving tabindex
@@ -11,6 +12,12 @@ It ships in the `date` entrypoint and is a component of its own rather than a pr
 [`PctDate`](./date.md), for one reason: **a calendar standing on the page, always visible, is
 a real control and not a degenerate date field.** `<pct-date>` puts this one in a panel; a
 booking screen puts it in a column.
+
+## Usage
+
+```html
+<pct-calendar [(value)]="day" ariaLabel="Pick a day" />
+```
 
 ## Contract
 
@@ -34,6 +41,33 @@ unnecessary and a `<td>` with `tabindex` sufficient.
 **The grid is always six weeks.** A month spans four to six depending on where it starts, and
 a panel that changed height between March and August would move the page under the pointer
 mid-walk.
+
+## Parts
+
+| part      | what it is                                |
+| --------- | ----------------------------------------- |
+| `label`   | the label of the typed input              |
+| `control` | the typed input                           |
+| `toggle`  | the button that opens the calendar        |
+| `hint`    | the hint under the input                  |
+| `error`   | the message when the value is invalid     |
+| `panel`   | the calendar, floating or inline          |
+| `caption` | the month and the year over the grid      |
+| `nav`     | the previous-month and next-month buttons |
+| `grid`    | the grid of days                          |
+| `week`    | one row of the grid                       |
+| `weekday` | a heading over a column of days           |
+| `day`     | one day cell                              |
+
+## Theming
+
+```css
+[data-theme='brand'] {
+  --pct-date-day-bg-selected: #0f766e;
+  --pct-date-day-fg-selected: #ffffff;
+  --pct-date-day-border-today: #0f766e;
+}
+```
 
 ## Keyboard map
 

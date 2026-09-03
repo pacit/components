@@ -142,17 +142,34 @@ side). Top to bottom:
 
 ## The component page, drawn in words
 
-The primeng lesson, sharpened: **demo first, code beside it, inventory below it.**
+Redrawn on 2026-09-03 from two static sketches the maintainer chose between before a line
+of code moved (plan 2.7): the second sketch's character with the first one's tables.
 
-- Live demos at the top, each one a small standalone component in the app; the code tab
-  shows **the demo's own source file**, highlighted at build time — one source for the
-  pixels and the snippet, so they cannot drift apart.
-- Code tabs are `pct-tabs`. Copy is `pct-button`. The panel chrome is `pct-container` and
-  `pct-stack`. The page is the library using itself in front of the reader.
-- Below: the card's own sections rendered (what it is, the state machine, a11y, keyboard),
-  then the parts table and the token table — generated inventories, names copyable.
-- Syntax highlighting is **shiki at build time**: zero highlighter shipped to the client,
-  both themes emitted once.
+- **Three columns, one long page.** A component index on the left (every card under the
+  category its own header files it in, a filter on top), the page in the middle, a pinned
+  table of contents on the right with a scroll spy. The columns answer the container's
+  width, never the viewport's; below the thresholds the index moves into the shell's drawer
+  and the table of contents folds above the page.
+- **Preview first.** The running component on a stage with the landing's glow, `pct-tabs`
+  for Preview / Code, the code being **the demo's own source file** highlighted at build
+  time — one source for the pixels and the snippet, so they cannot drift apart. The stage
+  flips its theme and its writing direction on the reader's request. It centres its demo
+  by shrink-wrapping it, so a demo of a layout — a column, a grid, a stack — states its
+  own width; the stage would otherwise hand it none ([`lesson-146`](lessons.md#lesson-146)).
+- **Usage**: install, import, the entry point's exports read from the source, and the
+  card's shortest possible use.
+- **Examples**: several running instances per card, each a demo file whose JSDoc carries
+  the title and the prose beside the stage, the code under both.
+- **API**: inputs, models and outputs read from the source with the JSDoc line each
+  carries; what the directive writes on the element, from the decorator's own `host`.
+- **Styling**: parts as selectors with a line each, tokens with a `$description` and both
+  themes' defaults resolved, a theming fence applied live to a second instance.
+- **Accessibility**: the keyboard map, and the card's Checks table read as a scorecard —
+  the gaps shown in public beside the measurements, each naming its requirement.
+- **Evidence**: the component's own mutation score, e2e cases, colour pairs and baselines
+  from the tracked snapshots; the decisions and lessons the card cites; the limitations.
+- Copy is `pct-button`, the status is `pct-badge`, the filter is `pct-field`. Syntax
+  highlighting is **shiki at build time**: zero highlighter shipped, both themes once.
 
 ## The pipeline
 

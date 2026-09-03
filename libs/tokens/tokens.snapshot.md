@@ -486,10 +486,14 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-switch-track-border-hover color component public
 --pct-switch-track-border-invalid color component public
 --pct-switch-width dimension component public
+--pct-tabs-list-bg color component public
 --pct-tabs-list-border color component public
 --pct-tabs-list-gap dimension component public
+--pct-tabs-list-inset dimension component public
+--pct-tabs-panel-gap dimension component public
 --pct-tabs-panel-padding-y dimension component public
 --pct-tabs-tab-bg-hover color component public
+--pct-tabs-tab-bg-selected color component public
 --pct-tabs-tab-border-selected color component public
 --pct-tabs-tab-fg color component public
 --pct-tabs-tab-fg-disabled color component public

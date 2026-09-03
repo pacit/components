@@ -70,11 +70,11 @@ libs/components/stack/src/stack.ts 100.00 1(0) 0 0 0
 libs/components/stepper/src/stepper.ts 89.80 44(0) 5 0 2
 libs/components/switch/src/switch.ts 96.30 52(0) 2 0 5
 libs/components/tabs/src/tab.ts 91.43 32(0) 2 0 1
-libs/components/tabs/src/tabs.ts 94.26 115(0) 6 0 2
+libs/components/tabs/src/tabs.ts 93.50 115(0) 7 0 2
 libs/components/toast/src/toast-viewport.ts 95.00 19(0) 1 0 0
 libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0
 libs/components/toast/src/toaster.ts 71.71 109(0) 42 1 0
 libs/components/tooltip/src/tooltip.ts 70.54 182(0) 71 5 8
 libs/components/tree/src/tree.ts 93.28 111(0) 7 1 4
-TOTAL 82.82 3823/4616
+TOTAL 82.80 3823/4617
 ```

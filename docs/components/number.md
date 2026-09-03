@@ -4,8 +4,17 @@
 **Selector:** `input[pctNumber]` — on an `<input type="text">`, a **deliberate exception** to
 [`req-api-platform`](../requirements/api.md#req-api-platform) ([0009](../decisions/0009-number-field.md))
 **Status:** released
+**Category:** Inputs
 **ARIA APG pattern:** [Spinbutton](https://www.w3.org/WAI/ARIA/apg/patterns/spinbutton/) —
 `role="spinbutton"`, `aria-valuenow`, `aria-valuetext`
+
+## Usage
+
+```html
+<pct-field label="Monthly budget">
+  <input pctNumber [formField]="limits.budget" />
+</pct-field>
+```
 
 ## Contract
 
@@ -15,6 +24,36 @@
 | **Inputs**      | `FormValueControl` + `FormUiControl`, plus `min`, `max`, `step`, `minFractionDigits`, `maxFractionDigits`, `useGrouping`, `locale`                                          |
 | **Bounds**      | `min`/`max` belong to `FormUiControl` — with `[formField]` the directive fills them from the schema's `min()`/`max()` validators. **They are not repeated in the template** |
 | **DI contract** | `PCT_FIELD`; `fieldAppearance: 'boxed'`, `fieldCursor: 'text'`                                                                                                              |
+
+## Parts
+
+| part                     | what it is                                                     |
+| ------------------------ | -------------------------------------------------------------- |
+| `field-header`           | the row above the control: the label and what stands beside it |
+| `field-label`            | the label, tied to the control by id                           |
+| `field-label-aux`        | the slot beside the label — a counter, a link                  |
+| `field-label-aux-item`   | one projected item inside the label slot                       |
+| `field-row`              | the control's row, with its prefix and suffix                  |
+| `field-prefix`           | what sits before the control inside the row                    |
+| `field-prefix-item`      | one projected item inside the prefix                           |
+| `field-control`          | the wrapped control itself                                     |
+| `field-suffix`           | what sits after the control inside the row                     |
+| `field-suffix-item`      | one projected item inside the suffix                           |
+| `field-footer`           | the row under the control: the hint or the error               |
+| `field-hint`             | the hint, read as the description of the control               |
+| `field-error`            | the message when the control is invalid                        |
+| `field-message-aux`      | the slot beside the hint or error                              |
+| `field-message-aux-item` | one projected item inside the message slot                     |
+
+## Theming
+
+```css
+[data-theme='brand'] {
+  --pct-field-border-focus: #0f766e;
+  --pct-field-bg: #f0fdfa;
+  --pct-field-fg: #134e4a;
+}
+```
 
 ## Keyboard map
 

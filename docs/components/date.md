@@ -3,12 +3,19 @@
 **Entrypoint:** `@pacit/components/date`
 **Selector:** `pct-date`
 **Status:** released
+**Category:** Inputs
 **ARIA APG pattern:** [Date Picker Dialog](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/datepicker-dialog/) —
 a plain textbox with a button beside it that opens a `role="dialog"` holding a
 [`role="grid"`](./calendar.md). The textbox is deliberately **not** a `combobox`: a combobox
 promises a popup that helps complete what is being typed, and a calendar narrows nothing —
 it is a second road to the same value ([0035](../decisions/0035-a-filter-is-a-question-not-a-value.md)
 read backwards)
+
+## Usage
+
+```html
+<pct-date label="Starts on" [(value)]="startsOn" />
+```
 
 ## Contract
 
@@ -38,6 +45,33 @@ engines each:
   `<input type="number">` over, met a second time;
 - **one control is four tab stops** in chromium and firefox (three segments plus the picker
   button) and one in webkit, so the same form is walked differently by engine.
+
+## Parts
+
+| part      | what it is                                |
+| --------- | ----------------------------------------- |
+| `label`   | the label of the typed input              |
+| `control` | the typed input                           |
+| `toggle`  | the button that opens the calendar        |
+| `hint`    | the hint under the input                  |
+| `error`   | the message when the value is invalid     |
+| `panel`   | the calendar, floating or inline          |
+| `caption` | the month and the year over the grid      |
+| `nav`     | the previous-month and next-month buttons |
+| `grid`    | the grid of days                          |
+| `week`    | one row of the grid                       |
+| `weekday` | a heading over a column of days           |
+| `day`     | one day cell                              |
+
+## Theming
+
+```css
+[data-theme='brand'] {
+  --pct-date-border-focus: #0f766e;
+  --pct-date-day-bg-selected: #0f766e;
+  --pct-date-day-fg-selected: #ffffff;
+}
+```
 
 ## Keyboard map
 

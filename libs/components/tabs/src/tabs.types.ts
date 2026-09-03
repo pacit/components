@@ -15,3 +15,18 @@ export type PctTabsOrientation = 'horizontal' | 'vertical';
  * requests nobody asked for.
  */
 export type PctTabsActivation = 'automatic' | 'manual';
+
+/**
+ * Which face the strip wears.
+ *
+ * `underline` is the default and the quiet one: labels on a rail, the chosen one marked by an
+ * edge. `segmented` is the control the platform's own settings screens use — the strip becomes
+ * a recessed track and the chosen tab a raised segment filled with the page's own surface.
+ *
+ * It is a variant and not a stylesheet in the consumer's application for the reason
+ * [0058](../../../../docs/decisions/0058-the-hero-face-is-paint-and-a-gradient-is-three-contrast-checks.md)
+ * gives about the button's five faces: paint goes where paint goes. Reaching the same look
+ * from outside took a dozen token overrides to UNDO the rail and two rules through the parts,
+ * because two of the values a segmented control needs had no token at all.
+ */
+export type PctTabsVariant = 'underline' | 'segmented';

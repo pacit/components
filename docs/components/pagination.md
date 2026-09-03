@@ -3,6 +3,7 @@
 **Entrypoint:** `@pacit/components/pagination`
 **Selector:** `pct-pagination`
 **Status:** released
+**Category:** Actions & navigation
 **ARIA APG pattern:** none — there is no APG pattern for pagination. The shape it follows is
 the [WAI tutorial](https://www.w3.org/WAI/tutorials/page-structure/pagination/): a named
 navigation landmark, a list of controls, and `aria-current="page"` on the one you are on. Named
@@ -12,6 +13,12 @@ It is the model-owning pager. `page` is its value and `count` is a number of **p
 press emits, it does not navigate. A links pager built on `<a href>`, whose current page comes
 from the router, is a different component and stands beside this one when it is written
 ([0048](../decisions/0048-a-pagination-owns-its-page-number.md)).
+
+## Usage
+
+```html
+<pct-pagination [(page)]="page" [count]="20" />
+```
 
 ## Contract
 
@@ -36,6 +43,26 @@ landmarks, and `ariaLabel` is what tells them apart.
 "3, current page, button" off `aria-current`. A templated "Page 3" would need a text channel
 that carries a number in a language's own word order, which this library does not have — the
 same seam the date field's format letters stand on. It is a known limitation, not a decision.
+
+## Parts
+
+| part       | what it is                     |
+| ---------- | ------------------------------ |
+| `list`     | the list of page buttons       |
+| `previous` | the button to the page before  |
+| `page`     | one page button                |
+| `ellipsis` | the fold between distant pages |
+| `next`     | the button to the page after   |
+
+## Theming
+
+```css
+[data-theme='brand'] {
+  --pct-pagination-item-bg-selected: #0f766e;
+  --pct-pagination-item-fg-selected: #ffffff;
+  --pct-pagination-item-border-selected: #0f766e;
+}
+```
 
 ## Keyboard map
 

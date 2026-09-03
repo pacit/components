@@ -3,8 +3,15 @@
 **Entrypoint:** `@pacit/components/checkbox`
 **Selector:** `pct-checkbox`
 **Status:** released
+**Category:** Inputs
 **ARIA APG pattern:** [Checkbox (tri-state)](https://www.w3.org/WAI/ARIA/apg/patterns/checkbox/)
 — the indeterminate state through `aria-checked="mixed"`
+
+## Usage
+
+```html
+<pct-checkbox label="Send me release notes" [(checked)]="notes" />
+```
 
 ## Contract
 
@@ -16,6 +23,27 @@
 | **Binding**     | `model()` does not accept `booleanAttribute`, so `[checked]="true"` in brackets — a bare attribute does not compile                                                                                                                             |
 | **Parts**       | `control`, `box`, `mark`, `label`, `hint`, `error`                                                                                                                                                                                              |
 | **DI contract** | `PCT_FIELD`; `fieldAppearance: 'bare'` — a frame around a checkbox looks alien                                                                                                                                                                  |
+
+## Parts
+
+| part      | what it is               |
+| --------- | ------------------------ |
+| `control` | the native input         |
+| `box`     | the square drawn over it |
+| `mark`    | the check inside the box |
+| `label`   | the label beside the box |
+| `hint`    | the hint under the label |
+| `error`   | the message when invalid |
+
+## Theming
+
+```css
+[data-theme='brand'] {
+  --pct-checkbox-bg-checked: #0f766e;
+  --pct-checkbox-border-checked: #0f766e;
+  --pct-checkbox-fg-checked: #ffffff;
+}
+```
 
 ## Keyboard map
 

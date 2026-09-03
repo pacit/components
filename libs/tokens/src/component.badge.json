@@ -2,25 +2,63 @@
   "pct": {
     "badge": {
       "$comment": "A word wearing a tone (0053). The box is text-sized — a badge stands on no control axis, because it is not a control — and every tone is one bg/fg/border triple: `neutral` is the base with no suffix (the `md` rule, on the tone axis), `danger` the first variant, and the union in `PctBadgeTone` grows the day the skin grows ramps for the rest. The border is drawn under every tone for the forced-colours reason the chips wrote down: the fill is the first thing every flattening takes.",
-
       "$comment-radius": "`radius.md` and deliberately not the chips' pill: a chip LOOKS grabbable because it is, and a word of status must not borrow that costume — the corner is the one visual cue telling the scanning eye which small box answers the pointer.",
-      "radius": { "$type": "dimension", "$value": "{pct.radius.md}" },
-      "padding-x": { "$type": "dimension", "$value": "{pct.space.2}" },
-      "font-size": { "$type": "dimension", "$value": "{pct.font.size.sm}" },
+      "radius": {
+        "$type": "dimension",
+        "$value": "{pct.radius.md}",
+        "$description": "Corner radius of the badge."
+      },
+      "padding-x": {
+        "$type": "dimension",
+        "$value": "{pct.space.2}",
+        "$description": "Horizontal padding of the badge."
+      },
+      "font-size": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.sm}",
+        "$description": "Font size of the badge."
+      },
       "font-weight": {
         "$type": "fontWeight",
-        "$value": "{pct.font.weight.medium}"
+        "$value": "{pct.font.weight.medium}",
+        "$description": "Font weight of the badge."
       },
-      "gap": { "$type": "dimension", "$value": "{pct.space.2}" },
-
-      "bg": { "$type": "color", "$value": "{pct.surface-100}" },
-      "fg": { "$type": "color", "$value": "{pct.text}" },
-      "border": { "$type": "color", "$value": "{pct.border}" },
-
+      "gap": {
+        "$type": "dimension",
+        "$value": "{pct.space.2}",
+        "$description": "Gap between the badge's text and its icon."
+      },
+      "bg": {
+        "$type": "color",
+        "$value": "{pct.surface-100}",
+        "$description": "Background of the badge."
+      },
+      "fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of the badge."
+      },
+      "border": {
+        "$type": "color",
+        "$value": "{pct.border}",
+        "$description": "Edge colour of the badge."
+      },
       "$comment-danger": "The skin's error colour painting its first background — the return `semantic.light.json` promised, with `on-danger` as the word over it. The border is the same colour as the fill on purpose: the edge exists for the modes that drop the fill, and in the author palette it simply thickens the box by nothing.",
-      "bg-danger": { "$type": "color", "$value": "{pct.danger}" },
-      "fg-danger": { "$type": "color", "$value": "{pct.on-danger}" },
-      "border-danger": { "$type": "color", "$value": "{pct.danger}" }
+      "bg-danger": {
+        "$type": "color",
+        "$value": "{pct.danger}",
+        "$description": "Background of the badge in the danger tone."
+      },
+      "fg-danger": {
+        "$type": "color",
+        "$value": "{pct.on-danger}",
+        "$description": "Text colour of the badge in the danger tone."
+      },
+      "border-danger": {
+        "$type": "color",
+        "$value": "{pct.danger}",
+        "$description": "Edge colour of the badge in the danger tone."
+      }
     }
   }
 }

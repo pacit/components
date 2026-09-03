@@ -2,36 +2,71 @@
   "pct": {
     "accordion": {
       "$comment": "A stack of sections a user opens and closes. It paints almost nothing, for the tabs' reason: an accordion divides what is already on the page rather than arriving on top of it, so the surface stays the page's and the tokens are the lines between the sections, the heading row's three colours and the marker.",
-
       "$comment-item-border": "The line under every section, which is what makes a run of headings read as one set. `border` and not `border-strong`: it is the quietest line in the library, drawn once per section and once more above the first by the group.",
-      "item-border": { "$type": "color", "$value": "{pct.border}" },
-
+      "item-border": {
+        "$type": "color",
+        "$value": "{pct.border}",
+        "$description": "Edge colour between items."
+      },
       "$comment-heading-fg": "The row the user presses. It is the page's own text and not a muted one — unlike a tab, a closed section's heading is the ONLY thing standing for its content, so it is read before it is chosen.",
-      "heading-fg": { "$type": "color", "$value": "{pct.text}" },
-      "heading-fg-hover": { "$type": "color", "$value": "{pct.text}" },
+      "heading-fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of the heading."
+      },
+      "heading-fg-hover": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of the heading on hover."
+      },
       "heading-fg-disabled": {
         "$type": "color",
-        "$value": "{pct.text-disabled}"
+        "$value": "{pct.text-disabled}",
+        "$description": "Text colour of the heading while disabled."
       },
-      "heading-bg-hover": { "$type": "color", "$value": "{pct.surface-100}" },
-      "heading-gap": { "$type": "dimension", "$value": "{pct.space.3}" },
-      "heading-padding-x": { "$type": "dimension", "$value": "{pct.space.4}" },
-      "heading-padding-y": { "$type": "dimension", "$value": "{pct.space.3}" },
+      "heading-bg-hover": {
+        "$type": "color",
+        "$value": "{pct.surface-100}",
+        "$description": "Background of the heading on hover."
+      },
+      "heading-gap": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Gap between the heading's text and its marker."
+      },
+      "heading-padding-x": {
+        "$type": "dimension",
+        "$value": "{pct.space.4}",
+        "$description": "Horizontal padding of the heading."
+      },
+      "heading-padding-y": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Vertical padding of the heading."
+      },
       "heading-font-weight": {
         "$type": "fontWeight",
-        "$value": "{pct.font.weight.medium}"
+        "$value": "{pct.font.weight.medium}",
+        "$description": "Font weight of the heading."
       },
       "$comment-heading-target-min": "The floor on the row's own box, so that what a finger gets is what an eye sees at every skin (req-a11y-touch). The padding above already clears it at the default type size; this is what a theme that shrinks the padding runs into.",
       "heading-target-min": {
         "$type": "dimension",
-        "$value": "{pct.target.min}"
+        "$value": "{pct.target.min}",
+        "$description": "Touch-target floor of the heading."
       },
-
       "$comment-marker-fg": "The chevron. Muted, because it says which way the section will move and not what the section is — the heading beside it carries the meaning, and two things at full strength in one row is one too many.",
-      "marker-fg": { "$type": "color", "$value": "{pct.text-muted}" },
-
+      "marker-fg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Colour of the open-or-closed marker beside the heading."
+      },
       "$comment-panel-padding-y": "The content is separated from the heading above it by the heading's own padding and from the next section by this. On the inline axis it lines up with the heading rather than with the page, so that a title and the paragraph under it share one edge.",
-      "panel-padding-y": { "$type": "dimension", "$value": "{pct.space.4}" }
+      "panel-padding-y": {
+        "$type": "dimension",
+        "$value": "{pct.space.4}",
+        "$description": "Vertical padding of the panel."
+      }
     }
   }
 }

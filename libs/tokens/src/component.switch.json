@@ -1,34 +1,116 @@
 {
   "pct": {
     "switch": {
-      "width": { "$type": "dimension", "$value": "40px" },
-      "height": { "$type": "dimension", "$value": "24px" },
-      "radius": { "$type": "dimension", "$value": "999px" },
-      "thumb-size": { "$type": "dimension", "$value": "16px" },
-      "padding-x": { "$type": "dimension", "$value": "3px" },
-      "target-min": { "$type": "dimension", "$value": "{pct.target.min}" },
-      "gap": { "$type": "dimension", "$value": "{pct.space.3}" },
-      "track-bg": { "$type": "color", "$value": "{pct.surface}" },
-      "track-bg-checked": { "$type": "color", "$value": "{pct.primary}" },
+      "width": {
+        "$type": "dimension",
+        "$value": "40px",
+        "$description": "Width of the switch."
+      },
+      "height": {
+        "$type": "dimension",
+        "$value": "24px",
+        "$description": "Height of the switch."
+      },
+      "radius": {
+        "$type": "dimension",
+        "$value": "999px",
+        "$description": "Corner radius of the switch."
+      },
+      "thumb-size": {
+        "$type": "dimension",
+        "$value": "16px",
+        "$description": "Size of the thumb."
+      },
+      "padding-x": {
+        "$type": "dimension",
+        "$value": "3px",
+        "$description": "Horizontal padding of the switch."
+      },
+      "target-min": {
+        "$type": "dimension",
+        "$value": "{pct.target.min}",
+        "$description": "Touch-target floor of the switch."
+      },
+      "gap": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Gap between the switch and its label."
+      },
+      "track-bg": {
+        "$type": "color",
+        "$value": "{pct.surface}",
+        "$description": "Background of the track."
+      },
+      "track-bg-checked": {
+        "$type": "color",
+        "$value": "{pct.primary}",
+        "$description": "Background of the track when checked."
+      },
       "track-bg-disabled": {
         "$type": "color",
-        "$value": "{pct.surface-disabled}"
+        "$value": "{pct.surface-disabled}",
+        "$description": "Background of the track while disabled."
       },
-      "track-border": { "$type": "color", "$value": "{pct.border-strong}" },
-      "track-border-hover": { "$type": "color", "$value": "{pct.text-muted}" },
-      "track-border-checked": { "$type": "color", "$value": "{pct.primary}" },
-      "track-border-invalid": { "$type": "color", "$value": "{pct.danger}" },
-      "track-border-disabled": { "$type": "color", "$value": "{pct.border}" },
-      "thumb-bg": { "$type": "color", "$value": "{pct.border-strong}" },
-      "thumb-bg-checked": { "$type": "color", "$value": "{pct.on-primary}" },
+      "track-border": {
+        "$type": "color",
+        "$value": "{pct.border-strong}",
+        "$description": "Edge colour of the track."
+      },
+      "track-border-hover": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Edge colour of the track on hover."
+      },
+      "track-border-checked": {
+        "$type": "color",
+        "$value": "{pct.primary}",
+        "$description": "Edge colour of the track when checked."
+      },
+      "track-border-invalid": {
+        "$type": "color",
+        "$value": "{pct.danger}",
+        "$description": "Edge colour of the track when invalid."
+      },
+      "track-border-disabled": {
+        "$type": "color",
+        "$value": "{pct.border}",
+        "$description": "Edge colour of the track while disabled."
+      },
+      "thumb-bg": {
+        "$type": "color",
+        "$value": "{pct.border-strong}",
+        "$description": "Background of the thumb."
+      },
+      "thumb-bg-checked": {
+        "$type": "color",
+        "$value": "{pct.on-primary}",
+        "$description": "Background of the thumb when checked."
+      },
       "thumb-bg-disabled": {
         "$type": "color",
-        "$value": "{pct.text-disabled}"
+        "$value": "{pct.text-disabled}",
+        "$description": "Background of the thumb while disabled."
       },
-      "label-fg": { "$type": "color", "$value": "{pct.text}" },
-      "hint-fg": { "$type": "color", "$value": "{pct.text-muted}" },
-      "fg-invalid": { "$type": "color", "$value": "{pct.danger}" },
-      "fg-disabled": { "$type": "color", "$value": "{pct.text-disabled}" }
+      "label-fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of the label."
+      },
+      "hint-fg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Text colour of the hint."
+      },
+      "fg-invalid": {
+        "$type": "color",
+        "$value": "{pct.danger}",
+        "$description": "Text colour of the switch when invalid."
+      },
+      "fg-disabled": {
+        "$type": "color",
+        "$value": "{pct.text-disabled}",
+        "$description": "Text colour of the switch while disabled."
+      }
     }
   }
 }

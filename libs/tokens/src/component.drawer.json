@@ -2,39 +2,99 @@
   "pct": {
     "drawer": {
       "$comment": "A panel docked to an edge of the window that the page goes on working around. It paints a surface for the dialog's reason and not the accordion's — a drawer arrives ON TOP of what was there, so it needs a background of its own, an edge and a shadow to sit above the page. What it does NOT have is a veil: there is no modality here, so there is no third token deciding how far the page behind is dimmed, and the panel's border is the only thing saying where it stops.",
-
       "$comment-z-index": "Below the CDK overlay container, which the dependency stamps at 1000: a select panel or a dialog opened from inside a drawer has to stand above it, and a drawer that climbed over its own content would be the toast's 1100 read backwards. It is a token and not a number in the sheet because an application with a layer of its own between the page and ours has nowhere else to say so.",
-      "z-index": { "$type": "number", "$value": 900 },
-
-      "panel-bg": { "$type": "color", "$value": "{pct.surface}" },
-      "panel-fg": { "$type": "color", "$value": "{pct.text}" },
-      "panel-border": { "$type": "color", "$value": "{pct.border-strong}" },
-      "panel-shadow": { "$type": "shadow", "$value": "{pct.shadow-panel}" },
-
+      "z-index": {
+        "$type": "number",
+        "$value": 900,
+        "$description": "Stacking level of the drawer."
+      },
+      "panel-bg": {
+        "$type": "color",
+        "$value": "{pct.surface}",
+        "$description": "Background of the panel."
+      },
+      "panel-fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of the panel."
+      },
+      "panel-border": {
+        "$type": "color",
+        "$value": "{pct.border-strong}",
+        "$description": "Edge colour of the panel."
+      },
+      "panel-shadow": {
+        "$type": "shadow",
+        "$value": "{pct.shadow-panel}",
+        "$description": "Shadow of the panel."
+      },
       "$comment-panel-width": "How far the panel reaches across the window when it is docked to the inline axis — and, by the same number, how far it travels to get there: the shut position is the open one pushed out by exactly this. `min(…, 100%)` in the sheet is what keeps a 320 px panel from overflowing a 280 px window.",
-      "panel-width": { "$type": "dimension", "$value": "320px" },
+      "panel-width": {
+        "$type": "dimension",
+        "$value": "320px",
+        "$description": "Width of the panel."
+      },
       "$comment-panel-height": "The block axis's half of the same decision. It is a separate token rather than one `size` because a sheet that reaches across the window wants a different measure from a column that reaches down it — a bottom sheet is short and wide, a side panel tall and narrow.",
-      "panel-height": { "$type": "dimension", "$value": "320px" },
-
-      "panel-padding-x": { "$type": "dimension", "$value": "{pct.space.5}" },
-      "panel-padding-y": { "$type": "dimension", "$value": "{pct.space.5}" },
-      "panel-gap": { "$type": "dimension", "$value": "{pct.space.4}" },
-
-      "heading-fg": { "$type": "color", "$value": "{pct.text}" },
+      "panel-height": {
+        "$type": "dimension",
+        "$value": "320px",
+        "$description": "Height of the panel."
+      },
+      "panel-padding-x": {
+        "$type": "dimension",
+        "$value": "{pct.space.5}",
+        "$description": "Horizontal padding of the panel."
+      },
+      "panel-padding-y": {
+        "$type": "dimension",
+        "$value": "{pct.space.5}",
+        "$description": "Vertical padding of the panel."
+      },
+      "panel-gap": {
+        "$type": "dimension",
+        "$value": "{pct.space.4}",
+        "$description": "Gap between the panel's heading and its content."
+      },
+      "heading-fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of the heading."
+      },
       "heading-font-size": {
         "$type": "dimension",
-        "$value": "{pct.font.size.lg}"
+        "$value": "{pct.font.size.lg}",
+        "$description": "Font size of the heading."
       },
       "heading-font-weight": {
         "$type": "fontWeight",
-        "$value": "{pct.font.weight.medium}"
+        "$value": "{pct.font.weight.medium}",
+        "$description": "Font weight of the heading."
       },
-
-      "close-fg": { "$type": "color", "$value": "{pct.text-muted}" },
-      "close-fg-hover": { "$type": "color", "$value": "{pct.text}" },
-      "close-bg-hover": { "$type": "color", "$value": "{pct.surface-100}" },
-      "close-radius": { "$type": "dimension", "$value": "{pct.radius.md}" },
-      "close-size": { "$type": "dimension", "$value": "{pct.target.min}" }
+      "close-fg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Text colour of the close button."
+      },
+      "close-fg-hover": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of the close button on hover."
+      },
+      "close-bg-hover": {
+        "$type": "color",
+        "$value": "{pct.surface-100}",
+        "$description": "Background of the close button on hover."
+      },
+      "close-radius": {
+        "$type": "dimension",
+        "$value": "{pct.radius.md}",
+        "$description": "Corner radius of the close button."
+      },
+      "close-size": {
+        "$type": "dimension",
+        "$value": "{pct.target.min}",
+        "$description": "Size of the close button."
+      }
     }
   }
 }

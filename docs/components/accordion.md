@@ -3,6 +3,7 @@
 **Entrypoint:** `@pacit/components/accordion`
 **Selector:** `pct-accordion` (the group) and `pct-accordion-item` (a section)
 **Status:** released
+**Category:** Feedback & display
 **ARIA APG pattern:** [Accordion](https://www.w3.org/WAI/ARIA/apg/patterns/accordion/) — named
 in the class JSDoc
 
@@ -13,6 +14,14 @@ platform. `exclusive` is one shared `name` attribute and no code at all — the 
 the others. What is left for this library is the three things the element has no answer to: the
 heading the pattern asks for, a way to refuse the press, and a signal to bind
 ([0046](../decisions/0046-a-disclosure-is-the-platforms-and-so-is-the-group-it-belongs-to.md)).
+
+## Usage
+
+```html
+<pct-accordion>
+  <pct-accordion-item label="What ships in the package?"> Standalone components, design tokens and schematics. </pct-accordion-item>
+</pct-accordion>
+```
 
 ## Contract
 
@@ -35,6 +44,25 @@ the element underneath it has taught the consumer a second set of rules for the 
 **Why the `name` is generated.** It is not a name anybody reads: it exists so two `<details>`
 know they are siblings. Two accordions on one page that both chose `"main"` would become one
 group nobody meant to make, so the group makes its own.
+
+## Parts
+
+| part      | what it is                                   |
+| --------- | -------------------------------------------- |
+| `item`    | one section: its heading and its panel       |
+| `heading` | the button that opens and closes the section |
+| `marker`  | the open-or-closed sign beside the heading   |
+| `panel`   | the content shown while the section is open  |
+
+## Theming
+
+```css
+[data-theme='brand'] {
+  --pct-accordion-heading-fg: #134e4a;
+  --pct-accordion-heading-bg-hover: #f0fdfa;
+  --pct-accordion-item-border: #99f6e4;
+}
+```
 
 ## Keyboard map
 

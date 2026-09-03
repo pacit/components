@@ -3,9 +3,16 @@
 **Entrypoint:** `@pacit/components/slider`
 **Selector:** `pct-slider`
 **Status:** released
+**Category:** Inputs
 **ARIA APG pattern:** [Slider](https://www.w3.org/WAI/ARIA/apg/patterns/slider/) — in the
 variant the APG's own HTML example is: a native `<input type="range">`, which carries the
 role, the value, both bounds and the whole keyboard without a line from us
+
+## Usage
+
+```html
+<pct-slider label="Volume" [(value)]="volume" />
+```
 
 ## Contract
 
@@ -27,6 +34,31 @@ reach a range's accessibility node at all, where the very same attribute on a te
 ([0042](../decisions/0042-a-slider-is-the-platforms-range.md),
 [`lesson-112`](../lessons.md#lesson-112)'s reading met twice more). And no
 **`aria-valuetext`** unless a `format` or a `labels` list gives it something to say.
+
+## Parts
+
+| part      | what it is                     |
+| --------- | ------------------------------ |
+| `label`   | the label of the control       |
+| `control` | the native range input         |
+| `track`   | the full length                |
+| `fill`    | the part up to the thumb       |
+| `thumb`   | the handle                     |
+| `mark`    | one tick along the track       |
+| `bubble`  | the value shown while dragging |
+| `hint`    | the hint under the control     |
+| `error`   | the message when invalid       |
+
+## Theming
+
+```css
+[data-theme='brand'] {
+  --pct-slider-fill-bg: #0f766e;
+  --pct-slider-thumb-bg: #0f766e;
+  --pct-slider-bubble-bg: #134e4a;
+  --pct-slider-bubble-fg: #ffffff;
+}
+```
 
 ## Keyboard map
 

@@ -3,8 +3,15 @@
 **Entrypoint:** `@pacit/components/switch`
 **Selector:** `pct-switch`
 **Status:** released
+**Category:** Inputs
 **ARIA APG pattern:** [Switch](https://www.w3.org/WAI/ARIA/apg/patterns/switch/) — the
 `role="switch"` variant built on a native checkbox, which the APG's own HTML example is
+
+## Usage
+
+```html
+<pct-switch label="Wi-Fi" [(checked)]="wifi" />
+```
 
 ## Contract
 
@@ -24,6 +31,26 @@ checked state of `role="switch"` over a native checkbox is the element's **own c
 measured in three engines; an `aria-checked` beside it is ignored even when it disagrees
 ([`lesson-112`](../lessons.md#lesson-112)). And ARIA gives `switch` two states with no third,
 which **no audit checks** — so the type is the whole gate: the input does not exist.
+
+## Parts
+
+| part      | what it is                  |
+| --------- | --------------------------- |
+| `control` | the native input            |
+| `track`   | the pill the thumb travels  |
+| `thumb`   | the knob                    |
+| `label`   | the label beside the switch |
+| `hint`    | the hint under the label    |
+| `error`   | the message when invalid    |
+
+## Theming
+
+```css
+[data-theme='brand'] {
+  --pct-switch-track-bg-checked: #0f766e;
+  --pct-switch-thumb-bg: #ffffff;
+}
+```
 
 ## Keyboard map
 

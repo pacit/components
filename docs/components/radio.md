@@ -3,11 +3,21 @@
 **Entrypoint:** `@pacit/components/radio`
 **Selector:** `pct-radio-group`, `pct-radio`
 **Status:** released
+**Category:** Inputs
 **ARIA APG pattern:** [Radio Group](https://www.w3.org/WAI/ARIA/apg/patterns/radio/) —
 `role="radiogroup"`, `aria-labelledby`, `aria-orientation`
 
 The library's first composite component. **The form control is the group**, not the options
 ([`req-api-container`](../requirements/api.md#req-api-container)).
+
+## Usage
+
+```html
+<pct-radio-group ariaLabel="Plan" [(value)]="plan">
+  <pct-radio value="free">Free</pct-radio>
+  <pct-radio value="pro">Pro</pct-radio>
+</pct-radio-group>
+```
 
 ## Contract
 
@@ -19,6 +29,28 @@ The library's first composite component. **The form control is the group**, not 
 | **Option inputs** | `value` (required), `disabled`, `ariaLabel`, `ariaLabelledby` — the last two are **inputs and not attributes on the tag**: `role="radio"` sits on the `<input>` inside `pct-radio`, the host carries no role, and an ARIA name there is ignored. They are the name of an option whose projected content is not text (`tools/check-aria.mjs`)                                     |
 | **Parts**         | the group: `group-label`, `group-hint`, `group-error`, `group-options`; an option: `control`, `circle`, `dot`, `label`                                                                                                                                                                                                                                                           |
 | **DI contract**   | `PCT_FIELD`; `fieldAppearance: 'bare'`. Outwards: `PCT_RADIO_OPTION`, the token `pct-radio` provides so that the group can read what its options carry without importing the class                                                                                                                                                                                               |
+
+## Parts
+
+| part            | what it is                            |
+| --------------- | ------------------------------------- |
+| `group-label`   | the label of the whole group          |
+| `group-options` | the list of options                   |
+| `control`       | the native input of an option         |
+| `circle`        | the ring drawn over it                |
+| `dot`           | the mark inside the chosen ring       |
+| `label`         | the text of an option                 |
+| `group-hint`    | the hint under the group              |
+| `group-error`   | the message when the group is invalid |
+
+## Theming
+
+```css
+[data-theme='brand'] {
+  --pct-radio-border-checked: #0f766e;
+  --pct-radio-dot-bg: #0f766e;
+}
+```
 
 ## Keyboard map
 

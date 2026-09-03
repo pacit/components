@@ -2,27 +2,68 @@
   "pct": {
     "popover": {
       "$comment": "A popover is a piece of the page that has been lifted off it for a moment, not an annotation laid over it — so its surface is `pct.surface` and its text `pct.text`, exactly what a card in the page is made of. That is the whole difference from the tooltip, whose inverted surface says \"read me and forget me\": the content here is something the user works IN, and a panel that inverted the page's own colours would ask them to work in a strip of night.",
-      "panel-bg": { "$type": "color", "$value": "{pct.surface}" },
-      "panel-fg": { "$type": "color", "$value": "{pct.text}" },
+      "panel-bg": {
+        "$type": "color",
+        "$value": "{pct.surface}",
+        "$description": "Background of the panel."
+      },
+      "panel-fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of the panel."
+      },
       "$comment-panel-border": "The edge is `border-strong` rather than `border`, and for the dialog's reason one floor down: the panel stands on the page rather than over a veil, so the only thing separating a light panel from a light page is this line. A shadow is not that thing — it goes with the mode that takes shadows away.",
-      "panel-border": { "$type": "color", "$value": "{pct.border-strong}" },
-      "panel-radius": { "$type": "dimension", "$value": "{pct.radius.md}" },
-      "panel-shadow": { "$type": "shadow", "$value": "{pct.shadow-panel}" },
+      "panel-border": {
+        "$type": "color",
+        "$value": "{pct.border-strong}",
+        "$description": "Edge colour of the panel."
+      },
+      "panel-radius": {
+        "$type": "dimension",
+        "$value": "{pct.radius.md}",
+        "$description": "Corner radius of the panel."
+      },
+      "panel-shadow": {
+        "$type": "shadow",
+        "$value": "{pct.shadow-panel}",
+        "$description": "Shadow of the panel."
+      },
       "$comment-panel-max-width": "Narrower than the dialog's 480px and wider than the tooltip's 280px, and the number says what the component is for: a popover hangs off a control, so a panel as wide as a dialog would cover the thing it belongs to on any screen a phone has.",
-      "panel-max-width": { "$type": "dimension", "$value": "320px" },
-      "panel-padding-x": { "$type": "dimension", "$value": "{pct.space.4}" },
-      "panel-padding-y": { "$type": "dimension", "$value": "{pct.space.4}" },
-      "panel-gap": { "$type": "dimension", "$value": "{pct.space.3}" },
-
-      "heading-fg": { "$type": "color", "$value": "{pct.text}" },
+      "panel-max-width": {
+        "$type": "dimension",
+        "$value": "320px",
+        "$description": "Maximum width of the panel."
+      },
+      "panel-padding-x": {
+        "$type": "dimension",
+        "$value": "{pct.space.4}",
+        "$description": "Horizontal padding of the panel."
+      },
+      "panel-padding-y": {
+        "$type": "dimension",
+        "$value": "{pct.space.4}",
+        "$description": "Vertical padding of the panel."
+      },
+      "panel-gap": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Gap between the panel's heading and its content."
+      },
+      "heading-fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of the heading."
+      },
       "$comment-heading-font-size": "One step below the dialog's heading (`md` against `lg`), because the two headings answer different questions: a modal's title is the only thing on the screen that matters, a popover's is a label on a panel the page around it is still holding up.",
       "heading-font-size": {
         "$type": "dimension",
-        "$value": "{pct.font.size.md}"
+        "$value": "{pct.font.size.md}",
+        "$description": "Font size of the heading."
       },
       "heading-font-weight": {
         "$type": "fontWeight",
-        "$value": "{pct.font.weight.medium}"
+        "$value": "{pct.font.weight.medium}",
+        "$description": "Font weight of the heading."
       }
     }
   }

@@ -3,6 +3,7 @@
 **Entrypoint:** `@pacit/components/container`
 **Selector:** `pct-container`
 **Status:** released
+**Category:** Foundations
 **ARIA APG pattern:** none — layout is presentational and this host carries **no ARIA at
 all**: no role, no label, not one `aria-*` attribute. The unit suite pins the absence
 itself, so a future "helpful" attribute is a red test. Named in the class JSDoc.
@@ -13,6 +14,14 @@ at `--pct-container-max-width`, centred, with a gutter that follows the viewport
 `clamp()`. The host also declares `container-type: inline-size`, so everything projected
 into the column can measure against **this column** with a container query instead of
 guessing at a viewport a sidebar may have eaten half of.
+
+## Usage
+
+```html
+<pct-container>
+  <p>A column no wider than the reading measure.</p>
+</pct-container>
+```
 
 ## Contract
 
@@ -25,6 +34,14 @@ guessing at a viewport a sidebar may have eaten half of.
 | **Parts**   | none — the host is the whole drawing, and there is nothing inside it but the consumer's own content                                                                           |
 | **Tokens**  | `--pct-container-max-width`, `--pct-container-padding-x`; **no entry in `contrast.policy.json`, deliberately** — the component paints no colour at all                        |
 | **Strings** | none — the component draws no text                                                                                                                                            |
+
+## Theming
+
+```css
+[data-theme='brand'] {
+  --pct-container-max-width: 60rem;
+}
+```
 
 ## Keyboard map
 
@@ -71,6 +88,13 @@ is why the cap and the gutter are two tokens and not two inputs).
 
 ## Known limitations
 
+- **No width of its own as a flex or grid item** — inline-size containment reports no
+  content to a box sized by what it holds, and the column's own auto margins absorb the
+  free space of a flex row or a grid track, so it collapses to its gutter there (measured:
+  80 px of an 810 px row). The column is a block-flow element by contract: the parent
+  states the width, the column caps it — in a flex row or a grid, a plain block wrapper is
+  that parent. The rig holds both the collapse and the remedy
+  ([`lesson-146`](../lessons.md#lesson-146)).
 - **The gutter's `clamp()` lives in one token.** A theme overriding
   `--pct-container-padding-x` owns the whole expression — floor, slope and ceiling — not a
   parameter of it. Recorded in 0057's costs.

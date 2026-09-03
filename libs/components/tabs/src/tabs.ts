@@ -11,7 +11,11 @@ import {
   viewChildren,
 } from '@angular/core';
 import { pctListNavigation } from '@pacit/components/core';
-import { PctTabsActivation, PctTabsOrientation } from './tabs.types';
+import {
+  PctTabsActivation,
+  PctTabsOrientation,
+  PctTabsVariant,
+} from './tabs.types';
 
 /**
  * What a strip needs to know about one of its panels, and nothing more. Declared HERE, beside
@@ -89,6 +93,7 @@ export const PCT_TABS = new InjectionToken<PctTabsApi>('PCT_TABS');
   host: {
     class: 'pct-tabs',
     '[attr.data-pct-orientation]': 'orientation()',
+    '[attr.data-pct-variant]': 'variant()',
   },
   providers: [{ provide: PCT_TABS, useExisting: PctTabs }],
 })
@@ -113,6 +118,12 @@ export class PctTabs implements PctTabsApi {
 
   /** Whether a walk over the strip also chooses. See `PctTabsActivation`. */
   readonly activation = input<PctTabsActivation>('automatic');
+
+  /**
+   * Which face the strip wears; the keyboard and the semantics are the same either way.
+   * See `PctTabsVariant`.
+   */
+  readonly variant = input<PctTabsVariant>('underline');
 
   /**
    * The strip's accessible name. An INPUT rather than an `aria-label` on the tag: the role

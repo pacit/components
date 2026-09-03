@@ -3,6 +3,7 @@
 **Entrypoint:** `@pacit/components/grid`
 **Selector:** `pct-grid`
 **Status:** released
+**Category:** Foundations
 **ARIA APG pattern:** none — layout is presentational and this host carries **no ARIA at
 all** (0057). In particular it is **not** `role="grid"`: that role names a keyboard-walked
 widget of cells, and calling a card layout a grid widget is a claim screen-reader users pay
@@ -17,6 +18,16 @@ the one thing only they know — how narrow a card may get — and the engine de
 component's own: the e2e suite watches the column count change with the viewport while the
 stylesheet names no width anywhere.
 
+## Usage
+
+```html
+<pct-grid>
+  <div>One</div>
+  <div>Two</div>
+  <div>Three</div>
+</pct-grid>
+```
+
 ## Contract
 
 |             |                                                                                                                                                             |
@@ -28,6 +39,15 @@ stylesheet names no width anywhere.
 | **Parts**   | none — the host is the whole drawing                                                                                                                        |
 | **Tokens**  | `--pct-grid-min-width`, `--pct-grid-gap`; **no entry in `contrast.policy.json`, deliberately** — the component paints no colour                             |
 | **Strings** | none                                                                                                                                                        |
+
+## Theming
+
+```css
+[data-theme='brand'] {
+  --pct-grid-min-width: 12rem;
+  --pct-grid-gap: 24px;
+}
+```
 
 ## Keyboard map
 

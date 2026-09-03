@@ -4,6 +4,7 @@
 **Selector:** none — the surface is a service. The one element, `<pct-toast-viewport>`, is
 created by `PctToaster` and appended to `document.body`; nobody writes it
 **Status:** released
+**Category:** Overlays
 **ARIA APG pattern:** [Alert](https://www.w3.org/WAI/ARIA/apg/patterns/alert/) for the urgent
 message, and the `log` role for the place it lands in — named in the class JSDoc
 
@@ -12,6 +13,13 @@ The whole component is one decision applied three times over
 region is a place that was already there**, opened empty by a render, so every message after
 that is a change inside a region an assistive technology has registered — and never a region
 arriving with its text, which is what nobody hears.
+
+## Usage
+
+```ts
+// once, in the shell:  <pct-toast-viewport />
+inject(PctToaster).show('Draft saved.');
+```
 
 ## Contract
 
@@ -35,6 +43,25 @@ one message at a time. `role="status"`, the reflex, publishes `atomic=true` and 
 every message on the screen each time one arrived. An **urgent** message carries `role="alert"`
 on its own element inside the log, and the engines publish that as `assertive` and `atomic` for
 that message alone.
+
+## Parts
+
+| part      | what it is                               |
+| --------- | ---------------------------------------- |
+| `item`    | one toast                                |
+| `message` | its text                                 |
+| `action`  | the button that answers it — Undo, Retry |
+| `close`   | the button that dismisses it             |
+
+## Theming
+
+```css
+[data-theme='brand'] {
+  --pct-toast-item-bg: #134e4a;
+  --pct-toast-item-fg: #f0fdfa;
+  --pct-toast-action-fg: #5eead4;
+}
+```
 
 ## Keyboard map
 

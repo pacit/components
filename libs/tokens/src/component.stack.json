@@ -2,15 +2,24 @@
   "pct": {
     "stack": {
       "$comment": "Vertical rhythm as one flex column with a gap — so the space between blocks is chosen from the spacing scale in one place instead of being the sum of whatever margins the blocks brought with them. Three steps, not a free length: rhythm is a system decision, and the scale is the system (req-token-names — the same three words as everywhere else).",
-
       "$comment-gap": "The base step, and the `md` value by the size rule: the unsuffixed name IS the middle of the axis (req-api-size). One 16px step of the spacing scale — the distance at which two blocks read as neighbours in one flow.",
-      "gap": { "$type": "dimension", "$value": "{pct.space.5}" },
-
+      "gap": {
+        "$type": "dimension",
+        "$value": "{pct.space.5}",
+        "$description": "Gap between the stack's children."
+      },
       "$comment-gap-sm": "The tight step, for rows inside a card or a label over its control — related things standing closer than separate things.",
-      "gap-sm": { "$type": "dimension", "$value": "{pct.space.3}" },
-
+      "gap-sm": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Gap between the stack's children at size sm."
+      },
       "$comment-gap-lg": "The loose step, for sections of a page — far enough apart that each reads as its own beginning. The scale grew its 24px step for this token; nothing below the section level needs it.",
-      "gap-lg": { "$type": "dimension", "$value": "{pct.space.6}" }
+      "gap-lg": {
+        "$type": "dimension",
+        "$value": "{pct.space.6}",
+        "$description": "Gap between the stack's children at size lg."
+      }
     }
   }
 }

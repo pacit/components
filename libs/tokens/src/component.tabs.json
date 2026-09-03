@@ -2,31 +2,105 @@
   "pct": {
     "tabs": {
       "$comment": "A strip of labels over a section of the page. It paints almost nothing: the panel keeps the page's own surface, because a tab is a way of dividing what is already there rather than a panel arriving on top of it — which is what separates this component from every overlay in the library. So the tokens are the rail, the label's three colours and the edge that marks the chosen one.",
-
       "$comment-list-border": "The rail the strip stands on — one line under (or beside) every tab, which is what makes a row of labels read as a set of choices rather than as buttons that happen to be adjacent. `border` and not `border-strong`: it is the quietest line in the library, and the chosen tab's own edge is drawn over it.",
-      "list-border": { "$type": "color", "$value": "{pct.border}" },
-      "list-gap": { "$type": "dimension", "$value": "{pct.space.2}" },
-
+      "list-border": {
+        "$type": "color",
+        "$value": "{pct.border}",
+        "$description": "Colour of the strip's rail."
+      },
+      "list-gap": {
+        "$type": "dimension",
+        "$value": "{pct.space.2}",
+        "$description": "Gap between tabs."
+      },
+      "$comment-list-bg": "The strip's own ground. The underline face paints nothing here — a strip of labels sits on the page like the section it introduces — so this is the SEGMENTED face's track: a recessed lane the chosen segment rises out of. An explicit surface role and not the page colour under an opacity (`req-token-no-opacity`), which is also what lets the pair below be measured at all.",
+      "list-bg": {
+        "$type": "color",
+        "$value": "{pct.surface-100}",
+        "$description": "Ground of the strip, painted by the segmented face."
+      },
       "$comment-tab-fg": "An unchosen tab is muted and the chosen one is the page's text, so the pair carries the state on its own before the edge is looked at — the edge is the second channel, not the first (req-a11y-forced-colors).",
-      "tab-fg": { "$type": "color", "$value": "{pct.text-muted}" },
-      "tab-fg-hover": { "$type": "color", "$value": "{pct.text}" },
-      "tab-fg-selected": { "$type": "color", "$value": "{pct.text}" },
-      "tab-fg-disabled": { "$type": "color", "$value": "{pct.text-disabled}" },
-      "tab-bg-hover": { "$type": "color", "$value": "{pct.surface-100}" },
+      "tab-fg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Text colour of a tab."
+      },
+      "tab-fg-hover": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of a tab on hover."
+      },
+      "tab-fg-selected": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of a tab when selected."
+      },
+      "tab-fg-disabled": {
+        "$type": "color",
+        "$value": "{pct.text-disabled}",
+        "$description": "Text colour of a tab while disabled."
+      },
+      "tab-bg-hover": {
+        "$type": "color",
+        "$value": "{pct.surface-100}",
+        "$description": "Background of a tab on hover."
+      },
       "$comment-tab-border-selected": "The mark of the chosen tab. It is the accent, and it is the only place in this component where the accent is used at all — a filled tab would make the strip louder than the section it introduces.",
-      "tab-border-selected": { "$type": "color", "$value": "{pct.primary}" },
-      "tab-padding-x": { "$type": "dimension", "$value": "{pct.space.4}" },
-      "tab-padding-y": { "$type": "dimension", "$value": "{pct.space.3}" },
-      "tab-radius": { "$type": "dimension", "$value": "{pct.radius.md}" },
+      "tab-border-selected": {
+        "$type": "color",
+        "$value": "{pct.primary}",
+        "$description": "Colour of the chosen tab's edge."
+      },
+      "$comment-tab-bg-selected": "The chosen SEGMENT's fill. It is the page's own surface on purpose: against the recessed track above, a segment painted `surface` reads as raised without a shadow, and the library owns no shadow small enough for a control (`shadow-panel` is `0 8px 24px`). The underline face leaves it alone — there the chosen tab is marked by an edge, and a filled tab would make the strip louder than its section.",
+      "tab-bg-selected": {
+        "$type": "color",
+        "$value": "{pct.surface}",
+        "$description": "Background of the chosen tab in the segmented face."
+      },
+      "tab-padding-x": {
+        "$type": "dimension",
+        "$value": "{pct.space.4}",
+        "$description": "Horizontal padding of a tab."
+      },
+      "tab-padding-y": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Vertical padding of a tab."
+      },
+      "tab-radius": {
+        "$type": "dimension",
+        "$value": "{pct.radius.md}",
+        "$description": "Corner radius of a tab."
+      },
       "tab-font-weight": {
         "$type": "fontWeight",
-        "$value": "{pct.font.weight.medium}"
+        "$value": "{pct.font.weight.medium}",
+        "$description": "Font weight of a tab."
       },
       "$comment-tab-target-min": "The floor on the tab's own box, so that what a finger gets is what an eye sees at every skin (req-a11y-touch). The padding above already clears it at the default type size; this is what a theme that shrinks the padding runs into.",
-      "tab-target-min": { "$type": "dimension", "$value": "{pct.target.min}" },
-
+      "tab-target-min": {
+        "$type": "dimension",
+        "$value": "{pct.target.min}",
+        "$description": "Touch-target floor of a tab."
+      },
+      "$comment-list-inset": "How deep the segmented face's track is held around its segments. It is also half the arithmetic of the track's corner: the strip's radius is this plus `tab-radius`, computed in the sheet, so the two curves nest at any skin.",
+      "list-inset": {
+        "$type": "dimension",
+        "$value": "{pct.space.2}",
+        "$description": "Inset of the track around the segments."
+      },
       "$comment-panel-padding-y": "The panel is separated from the strip and from what follows it, and on the inline axis by nothing at all: a section of the page is as wide as the page, and an inset here would make it look like a card that is not one.",
-      "panel-padding-y": { "$type": "dimension", "$value": "{pct.space.4}" }
+      "panel-padding-y": {
+        "$type": "dimension",
+        "$value": "{pct.space.4}",
+        "$description": "Vertical padding of the panel."
+      },
+      "$comment-panel-gap": "What separates the panel from the strip when the strip stands BESIDE it — the vertical face's only new distance. On the inline axis and logical, so RTL moves it with the strip and costs this file nothing. The horizontal face keeps its inline inset of zero, for the reason `panel-padding-y` gives: a section of the page is as wide as the page.",
+      "panel-gap": {
+        "$type": "dimension",
+        "$value": "{pct.space.5}",
+        "$description": "Distance between a side strip and its panel."
+      }
     }
   }
 }

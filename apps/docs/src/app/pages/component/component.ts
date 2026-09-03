@@ -1,8 +1,10 @@
-import { NgComponentOutlet } from '@angular/common';
+import { DOCUMENT, NgComponentOutlet } from '@angular/common';
 import {
   Component,
+  DestroyRef,
   PendingTasks,
   Type,
+  afterNextRender,
   computed,
   effect,
   inject,
@@ -11,6 +13,7 @@ import {
 } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
+import { PctBadge } from '@pacit/components/badge';
 import {
   PctBreadcrumb,
   PctCrumb,
@@ -18,97 +21,336 @@ import {
 } from '@pacit/components/breadcrumb';
 import { PctButton } from '@pacit/components/button';
 import { PctContainer } from '@pacit/components/container';
-import { PctStack } from '@pacit/components/stack';
 import { PctTab, PctTabs } from '@pacit/components/tabs';
 import { PctToaster } from '@pacit/components/toast';
-import { CARD_HTML } from '../../../generated/cards-html';
-import { DOCS_CARDS } from '../../../generated/content';
-import { DEMO_CODE } from '../../../generated/demo-code';
-import { DEMOS } from '../../demos';
+import {
+  COMPONENT_PAGES,
+  ComponentPage,
+} from '../../../generated/component-pages';
+import { DOCS_EVIDENCE } from '../../../generated/content';
+import { DEMOS, EXAMPLES } from '../../demos';
 import { describePage } from '../../seo';
+import { DocsIndex } from './docs-index';
+import { DocsToc, TocItem } from './docs-toc';
+
+const STATE_LABEL = {
+  measured: 'Measured',
+  gap: 'Gap',
+  deliberate: 'By design',
+  na: 'n/a',
+} as const;
 
 /**
- * One component's page (site.md: "demo first, code beside it, inventory below it").
- * Everything rendered here left the content pass as data: the card's sections arrive as
- * built HTML, the code tab is the demo's OWN source file highlighted at build time, and
- * the parts and tokens chips are the snapshots' rows. The `[innerHTML]` payloads are
- * this repository's build output — trusted by construction, so the sanitizer is told so.
+ * One component's page (plan 2.7.3; site.md "The component page, drawn in words").
+ * Everything rendered here left the content pass as data: the API read from the library's
+ * own source, the tokens with their meaning and both themes' defaults, the card's sections
+ * as a form, the examples with their own code. The `[innerHTML]` payloads are this
+ * repository's build output — trusted by construction, so the sanitizer is told so.
  *
- * The demo itself lazy-loads per id inside a `PendingTasks` span: the prerender waits
- * for it, so the static HTML ships with the demo's first frame already drawn.
+ * The preview and the examples lazy-load per id inside one `PendingTasks` span: the
+ * prerender waits for them, so the static HTML ships with every stage's first frame drawn.
  */
 @Component({
   selector: 'docs-component',
   imports: [
     NgComponentOutlet,
     RouterLink,
+    PctBadge,
     PctBreadcrumb,
     PctButton,
     PctContainer,
     PctCrumb,
     PctCrumbLink,
-    PctStack,
     PctTab,
     PctTabs,
+    DocsIndex,
+    DocsToc,
   ],
   templateUrl: './component.html',
   styleUrl: './component.scss',
 })
-export class ComponentPage {
+export class ComponentPageView {
   private readonly sanitizer = inject(DomSanitizer);
   private readonly toaster = inject(PctToaster);
   private readonly tasks = inject(PendingTasks);
+  private readonly document = inject(DOCUMENT);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly id = input.required<string>();
 
-  protected readonly card = computed(
-    () => DOCS_CARDS.find((card) => card.id === this.id()) ?? null,
+  protected readonly page = computed<ComponentPage | null>(
+    () => COMPONENT_PAGES[this.id()] ?? null,
   );
 
+  protected readonly title = computed(() => {
+    const id = this.id();
+    return id.charAt(0).toUpperCase() + id.slice(1);
+  });
+
+  protected readonly importLine = computed(() => {
+    const page = this.page();
+    return page
+      ? `import { ${page.classes.join(', ')} } from '${page.entrypoint}';`
+      : '';
+  });
+
+  protected readonly sourceUrl = computed(
+    () =>
+      `https://github.com/pacit/components/blob/main/${this.page()?.api[0]?.file ?? 'libs/components'}`,
+  );
+
+  protected readonly proof = computed(() => {
+    const evidence = this.page()?.evidence;
+    if (!evidence) return '';
+    const mutation = evidence.mutation
+      ? `${evidence.mutation.killed}/${evidence.mutation.mutants} mutants killed`
+      : 'no mutants to kill';
+    return `${DOCS_EVIDENCE.engines} engines · ${mutation} · ${evidence.pairs} colour pairs`;
+  });
+
+  /** The page's HTML payloads, each marked trusted once. */
   protected readonly html = computed(() => {
-    const rendered = CARD_HTML[this.id()];
-    if (!rendered) return null;
+    const page = this.page();
+    if (!page) return null;
     const trust = (value: string): SafeHtml =>
       this.sanitizer.bypassSecurityTrustHtml(value);
     return {
-      pattern: rendered.pattern ? trust(rendered.pattern) : null,
-      intro: trust(rendered.intro),
-      body: trust(rendered.body),
+      intro: trust(page.intro),
+      pattern: page.pattern ? trust(page.pattern) : null,
+      patternShort: page.patternShort ? trust(page.patternShort) : null,
+      usage: page.usage ? trust(page.usage.code) : null,
+      preview: page.preview
+        ? {
+            code: trust(page.preview.code),
+            caption: trust(page.preview.caption),
+          }
+        : null,
+      examples: Object.fromEntries(
+        page.examples.map((e) => [
+          e.key,
+          { prose: trust(e.prose), code: trust(e.code) },
+        ]),
+      ),
+      api: page.api.map((c) => ({
+        ...c,
+        description: trust(c.description),
+        members: c.members.map((m) => ({
+          ...m,
+          description: trust(m.description),
+        })),
+        host: c.host.map((h) => ({ ...h, note: trust(h.note) })),
+      })),
+      exports: page.exports.map((e) => ({
+        ...e,
+        description: trust(e.description),
+      })),
+      parts: page.parts.map((p) => ({
+        ...p,
+        description: trust(p.description),
+      })),
+      tokens: page.tokens.map((t) => ({
+        ...t,
+        description: trust(t.description),
+      })),
+      theming: page.theming ? trust(page.theming.code) : null,
+      keyboard: page.keyboard ? trust(page.keyboard) : null,
+      checks: page.checks.map((c) => ({
+        ...c,
+        label: STATE_LABEL[c.state],
+        criterion: trust(c.criterion),
+        evidence: trust(c.evidence),
+      })),
+      limitations: page.limitations ? trust(page.limitations) : null,
+      decisions: page.decisions.map((d) => ({ ...d, title: trust(d.title) })),
+      lessons: page.lessons.map((l) => ({ ...l, title: trust(l.title) })),
     };
   });
 
-  protected readonly code = computed(() => {
-    const source = DEMO_CODE[this.id()];
-    return source ? this.sanitizer.bypassSecurityTrustHtml(source) : null;
+  protected readonly toc = computed<readonly TocItem[]>(() => {
+    const page = this.page();
+    if (!page) return [];
+    const api: TocItem[] =
+      page.api.length === 1
+        ? [
+            { id: 'api-inputs', label: 'Inputs' },
+            { id: 'api-outputs', label: 'Outputs' },
+            { id: 'api-host', label: 'On the element' },
+          ]
+        : page.api.map((c) => ({ id: `api-${c.name}`, label: c.name }));
+    return [
+      { id: 'preview', label: 'Preview' },
+      { id: 'usage', label: 'Usage' },
+      {
+        id: 'examples',
+        label: 'Examples',
+        children: page.examples.map((e) => ({
+          id: `ex-${e.key}`,
+          label: e.title,
+        })),
+      },
+      { id: 'api', label: 'API', children: api },
+      {
+        id: 'styling',
+        label: 'Styling',
+        children: [
+          { id: 'styling-parts', label: 'Parts' },
+          { id: 'styling-tokens', label: 'Tokens' },
+          ...(page.theming
+            ? [{ id: 'styling-theming', label: 'Theming' }]
+            : []),
+        ],
+      },
+      {
+        id: 'accessibility',
+        label: 'Accessibility',
+        children: [
+          ...(page.keyboard
+            ? [{ id: 'a11y-keyboard', label: 'Keyboard' }]
+            : []),
+          { id: 'a11y-measured', label: 'Measured' },
+        ],
+      },
+      {
+        id: 'evidence',
+        label: 'Evidence',
+        children: [
+          ...(page.decisions.length
+            ? [{ id: 'evidence-decisions', label: 'Decisions' }]
+            : []),
+          ...(page.limitations
+            ? [{ id: 'evidence-limits', label: 'Limitations' }]
+            : []),
+        ],
+      },
+    ];
   });
 
-  protected readonly tab = signal('demo');
+  protected readonly tab = signal('preview');
+  protected readonly stageTheme = signal<'dark' | 'light' | null>(null);
+  protected readonly stageDir = signal<'ltr' | 'rtl'>('ltr');
+  protected readonly openCode = signal<ReadonlySet<string>>(new Set());
+  protected readonly active = signal<string | null>('preview');
+
   protected readonly demo = signal<Type<unknown> | null>(null);
+  protected readonly examples = signal<ReadonlyMap<string, Type<unknown>>>(
+    new Map(),
+  );
 
   constructor() {
     describePage(
-      'A component of @pacit/components: the live demo, its own source, the gated card, parts and tokens.',
+      'A component of @pacit/components: the running preview and examples, the API read from the source, the tokens, and what is measured.',
     );
+
     effect(() => {
       const id = this.id();
       this.demo.set(null);
-      this.tab.set('demo');
-      const load = DEMOS[id];
-      if (!load) return;
+      this.examples.set(new Map());
+      this.tab.set('preview');
+      this.stageTheme.set(null);
+      this.stageDir.set('ltr');
+      this.openCode.set(new Set());
+      const loads = EXAMPLES[id] ?? [];
+      const preview = DEMOS[id];
+      if (!preview && !loads.length) return;
       const done = this.tasks.add();
-      load().then((type) => {
-        if (this.id() === id) this.demo.set(type);
+      Promise.all([
+        preview ? preview() : Promise.resolve(null),
+        ...loads.map((e) => e.load().then((type) => [e.key, type] as const)),
+      ]).then(([type, ...pairs]) => {
+        if (this.id() === id) {
+          this.demo.set(type);
+          this.examples.set(new Map(pairs));
+        }
         done();
       });
     });
+
+    // The scroll spy: the last heading that passed the reading line owns the table of
+    // contents; a subsection lights its section too. Browser only, and it reads the DOM
+    // fresh on every frame, so a page swap under the same view needs no rewiring.
+    afterNextRender(() => {
+      const view = this.document.defaultView;
+      if (!view) return;
+      let ticking = false;
+      const spy = () => {
+        ticking = false;
+        const targets = Array.from(
+          this.document.querySelectorAll<HTMLElement>('[data-spy]'),
+        );
+        if (!targets.length) return;
+        let current = targets[0];
+        for (const target of targets)
+          if (target.getBoundingClientRect().top <= 120) current = target;
+        if (
+          view.innerHeight + view.scrollY >=
+          this.document.body.offsetHeight - 2
+        )
+          current = targets[targets.length - 1];
+        this.active.set(current.id);
+      };
+      const onScroll = () => {
+        if (ticking) return;
+        ticking = true;
+        view.requestAnimationFrame(spy);
+      };
+      view.addEventListener('scroll', onScroll, { passive: true });
+      this.destroyRef.onDestroy(() =>
+        view.removeEventListener('scroll', onScroll),
+      );
+      spy();
+    });
   }
 
-  protected async copy(name: string): Promise<void> {
+  protected isSectionActive(
+    id: string,
+    children?: readonly TocItem[],
+  ): boolean {
+    const active = this.active();
+    return active === id || Boolean(children?.some((c) => c.id === active));
+  }
+
+  protected hasOutputs(c: {
+    readonly members: readonly { readonly kind: string }[];
+  }): boolean {
+    return c.members.some((m) => m.kind === 'output');
+  }
+
+  protected toggleCode(key: string): void {
+    this.openCode.update((open) => {
+      const next = new Set(open);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
+
+  protected flipStage(): void {
+    if (this.stageTheme()) {
+      this.stageTheme.set(null);
+      return;
+    }
+    const root = this.document.documentElement;
+    const pinned = root.getAttribute('data-theme');
+    const dark =
+      pinned === 'dark' ||
+      (!pinned &&
+        Boolean(
+          this.document.defaultView?.matchMedia('(prefers-color-scheme: dark)')
+            .matches,
+        ));
+    this.stageTheme.set(dark ? 'light' : 'dark');
+  }
+
+  protected flipDir(): void {
+    this.stageDir.update((dir) => (dir === 'rtl' ? 'ltr' : 'rtl'));
+  }
+
+  protected async copy(text: string, what: string): Promise<void> {
     try {
-      await navigator.clipboard.writeText(name);
-      this.toaster.show({ text: `Copied ${name}`, duration: 1500 });
+      await navigator.clipboard.writeText(text);
+      this.toaster.show({ text: `Copied ${what}`, duration: 1500 });
     } catch {
-      this.toaster.show({ text: name, duration: 3000 });
+      this.toaster.show({ text, duration: 3000 });
     }
   }
 }

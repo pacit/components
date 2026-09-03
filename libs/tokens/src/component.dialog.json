@@ -2,35 +2,106 @@
   "pct": {
     "dialog": {
       "$comment-backdrop": "Three tokens for one surface, because a veil is three decisions and a stylesheet may keep none of them: WHAT colour dims the page (through `pct.scrim`, so the two themes can answer differently), HOW MUCH of it there is, and how far what is behind it is blurred. The alpha is its own token rather than part of the colour — a colour literal above the primitive tier is refused, and `opacity` is not the road, since it would composite the panel along with the veil (`check-styles` point 2).",
-      "backdrop-bg": { "$type": "color", "$value": "{pct.scrim}" },
-      "backdrop-alpha": { "$type": "dimension", "$value": "40%" },
-      "backdrop-blur": { "$type": "dimension", "$value": "3px" },
-
-      "panel-bg": { "$type": "color", "$value": "{pct.surface}" },
-      "panel-fg": { "$type": "color", "$value": "{pct.text}" },
-      "panel-border": { "$type": "color", "$value": "{pct.border-strong}" },
-      "panel-radius": { "$type": "dimension", "$value": "{pct.radius.md}" },
-      "panel-shadow": { "$type": "shadow", "$value": "{pct.shadow-panel}" },
-      "panel-max-width": { "$type": "dimension", "$value": "480px" },
-      "panel-padding-x": { "$type": "dimension", "$value": "{pct.space.5}" },
-      "panel-padding-y": { "$type": "dimension", "$value": "{pct.space.5}" },
-      "panel-gap": { "$type": "dimension", "$value": "{pct.space.4}" },
-
-      "heading-fg": { "$type": "color", "$value": "{pct.text}" },
+      "backdrop-bg": {
+        "$type": "color",
+        "$value": "{pct.scrim}",
+        "$description": "Background of the backdrop."
+      },
+      "backdrop-alpha": {
+        "$type": "dimension",
+        "$value": "40%",
+        "$description": "Opacity of the backdrop."
+      },
+      "backdrop-blur": {
+        "$type": "dimension",
+        "$value": "3px",
+        "$description": "Blur of the page behind the backdrop."
+      },
+      "panel-bg": {
+        "$type": "color",
+        "$value": "{pct.surface}",
+        "$description": "Background of the panel."
+      },
+      "panel-fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of the panel."
+      },
+      "panel-border": {
+        "$type": "color",
+        "$value": "{pct.border-strong}",
+        "$description": "Edge colour of the panel."
+      },
+      "panel-radius": {
+        "$type": "dimension",
+        "$value": "{pct.radius.md}",
+        "$description": "Corner radius of the panel."
+      },
+      "panel-shadow": {
+        "$type": "shadow",
+        "$value": "{pct.shadow-panel}",
+        "$description": "Shadow of the panel."
+      },
+      "panel-max-width": {
+        "$type": "dimension",
+        "$value": "480px",
+        "$description": "Maximum width of the panel."
+      },
+      "panel-padding-x": {
+        "$type": "dimension",
+        "$value": "{pct.space.5}",
+        "$description": "Horizontal padding of the panel."
+      },
+      "panel-padding-y": {
+        "$type": "dimension",
+        "$value": "{pct.space.5}",
+        "$description": "Vertical padding of the panel."
+      },
+      "panel-gap": {
+        "$type": "dimension",
+        "$value": "{pct.space.4}",
+        "$description": "Gap between the panel's heading, body and actions."
+      },
+      "heading-fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of the heading."
+      },
       "heading-font-size": {
         "$type": "dimension",
-        "$value": "{pct.font.size.lg}"
+        "$value": "{pct.font.size.lg}",
+        "$description": "Font size of the heading."
       },
       "heading-font-weight": {
         "$type": "fontWeight",
-        "$value": "{pct.font.weight.medium}"
+        "$value": "{pct.font.weight.medium}",
+        "$description": "Font weight of the heading."
       },
-
-      "close-fg": { "$type": "color", "$value": "{pct.text-muted}" },
-      "close-fg-hover": { "$type": "color", "$value": "{pct.text}" },
-      "close-bg-hover": { "$type": "color", "$value": "{pct.surface-100}" },
-      "close-radius": { "$type": "dimension", "$value": "{pct.radius.md}" },
-      "close-size": { "$type": "dimension", "$value": "{pct.target.min}" }
+      "close-fg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Text colour of the close button."
+      },
+      "close-fg-hover": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of the close button on hover."
+      },
+      "close-bg-hover": {
+        "$type": "color",
+        "$value": "{pct.surface-100}",
+        "$description": "Background of the close button on hover."
+      },
+      "close-radius": {
+        "$type": "dimension",
+        "$value": "{pct.radius.md}",
+        "$description": "Corner radius of the close button."
+      },
+      "close-size": {
+        "$type": "dimension",
+        "$value": "{pct.target.min}",
+        "$description": "Size of the close button."
+      }
     }
   }
 }

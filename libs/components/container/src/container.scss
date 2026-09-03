@@ -5,6 +5,13 @@
    which side of it is "left". */
 :host {
   display: block;
+  /* Containment is what this line costs: inline-size containment makes the box's
+     intrinsic inline size zero, so a parent sized by its content — a flex item, a float,
+     an `auto` grid track — gives the column nothing but its gutter (measured on the docs
+     stage: 80 px of an 810 px row, the paragraph at 0). No declaration here can undo
+     that — a percentage resolves against the same parent — so the column is a block-flow
+     element by contract: the parent states the width, the column caps it (lesson-146,
+     the card's Known limitations). */
   container-type: inline-size;
   max-inline-size: var(--pct-container-max-width);
   margin-inline: auto;

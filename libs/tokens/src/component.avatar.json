@@ -2,33 +2,63 @@
   "pct": {
     "avatar": {
       "$comment": "A picture beside a name (0052). The box is the shared control axis, so an avatar lines up with the field or the button it stands next to; the circle is a radius token, so a square avatar is a consumer setting one value rather than a shape input. The three fallback states share one box and one ring: the photograph is clipped by it, the initials are text against `bg`, the silhouette is the muted drawing of last resort.",
-
       "$comment-size": "One box, both axes, off {pct.control.height} — `req-api-size` at a component that is not a control: what the axis buys here is a row (an avatar beside a field, a comment header beside a button) sharing one height with no arithmetic anywhere.",
-      "size": { "$type": "dimension", "$value": "{pct.control.height.md}" },
+      "size": {
+        "$type": "dimension",
+        "$value": "{pct.control.height.md}",
+        "$description": "Size of the avatar."
+      },
       "size-sm": {
         "$type": "dimension",
-        "$value": "{pct.control.height.sm}"
+        "$value": "{pct.control.height.sm}",
+        "$description": "Size of the avatar at size sm."
       },
       "size-lg": {
         "$type": "dimension",
-        "$value": "{pct.control.height.lg}"
+        "$value": "{pct.control.height.lg}",
+        "$description": "Size of the avatar at size lg."
       },
       "$comment-radius": "The circle, as a token rather than a `shape` input — 0050's move in reverse. `999px` clamps to half the box on a square element, so it is a circle at every size; a consumer's card style with square avatars overrides this one value.",
-      "radius": { "$type": "dimension", "$value": "999px" },
-
-      "bg": { "$type": "color", "$value": "{pct.surface-100}" },
-      "fg": { "$type": "color", "$value": "{pct.text}" },
+      "radius": {
+        "$type": "dimension",
+        "$value": "999px",
+        "$description": "Corner radius of the avatar."
+      },
+      "bg": {
+        "$type": "color",
+        "$value": "{pct.surface-100}",
+        "$description": "Background of the avatar."
+      },
+      "fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of the initials."
+      },
       "$comment-border": "The ring survives what the fill does not: over a photograph the background is invisible, over a flattened skin `surface-100` melts into the page, and in forced colours every author fill goes at once — the border is the one channel standing in all three (`req-a11y-forced-colors`).",
-      "border": { "$type": "color", "$value": "{pct.border}" },
-      "icon-fg": { "$type": "color", "$value": "{pct.text-muted}" },
-      "font-size": { "$type": "dimension", "$value": "{pct.font.size.md}" },
+      "border": {
+        "$type": "color",
+        "$value": "{pct.border}",
+        "$description": "Edge colour of the avatar."
+      },
+      "icon-fg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Text colour of the icon."
+      },
+      "font-size": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.md}",
+        "$description": "Font size of the avatar."
+      },
       "font-size-sm": {
         "$type": "dimension",
-        "$value": "{pct.font.size.sm}"
+        "$value": "{pct.font.size.sm}",
+        "$description": "Font size of the avatar at size sm."
       },
       "font-size-lg": {
         "$type": "dimension",
-        "$value": "{pct.font.size.lg}"
+        "$value": "{pct.font.size.lg}",
+        "$description": "Font size of the avatar at size lg."
       }
     }
   }

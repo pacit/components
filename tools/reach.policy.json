@@ -1,6 +1,5 @@
 {
   "$description": "Every tracked file has a reader (req-project-reach). tools/check-reach.mjs walks the repository from the roots below, following what a reached file names — a path, an import, a pattern in `inputs` — and requires the walk to end holding every file in the git index. This file is everything the walk cannot derive from the text: where it starts, and which trees an outside tool opens without leaving a trace inside.",
-
   "$roots": "Files a tool finds by its own convention, so nothing in the repository has to point at them. Two forms and no third: `path` is one file at one place, `name` is a file name a tool looks for at any depth. Neither may carry a wildcard — a pattern here would take a whole tree out of the measurement in a single line, which is the shape of the defect the gate exists for, and `check-reach.mjs` rejects it. The list is short on purpose: everything else in the repository is reached from these, and a file that needs an entry of its own is telling you nobody reads it.",
   "roots": [
     {
@@ -100,18 +99,12 @@
       "reason": "The debug configurations, found by name in the same directory."
     }
   ],
-
   "$enumerated": "Trees an outside tool walks. Its reading leaves nothing inside the repository — no import, no path in a configuration — so no measurement can find the edge and an entry has to assert it. Each names the READER and stands only while it grants something: `check-reach.mjs` repeats the walk without the register and fires on an entry whose tree is reached anyway. The gates' own `check-<x>.fixtures/` trees are NOT here — that pairing follows from the names and the script derives it, so this list can never grow an entry that no gate backs.",
   "enumerated": [
     {
       "tree": "apps/docs-e2e/src/__screenshots__",
       "reader": "apps/docs-e2e/playwright.config.mts",
       "reason": "The same assembly as the sandbox entry below, for the docs suite: Playwright composes a baseline's path from `snapshotPathTemplate` and the TEST TITLE, so the file name stands in no file. The same recorded cost too — a baseline whose test was deleted stays here unseen, and the measurement that catches it is the specs read through `playwright test --list`, not a second register."
-    },
-    {
-      "tree": "apps/sandbox-e2e/src/__screenshots__",
-      "reader": "apps/sandbox-e2e/playwright.config.mts",
-      "reason": "Playwright composes a baseline's path from `snapshotPathTemplate` and the TEST TITLE, so the file name stands in no file — it is assembled at runtime from a sentence. What this entry costs is written down rather than hidden: a baseline whose test was deleted stays here and this gate will not say so, because it never looked inside the tree. Catching that needs the measurement `check-browsers` already does — the specs read through `playwright test --list` — and not a second register."
     },
     {
       "tree": ".opencode",

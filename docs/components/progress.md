@@ -3,6 +3,7 @@
 **Entrypoint:** `@pacit/components/progress`
 **Selector:** `pct-progress`
 **Status:** released
+**Category:** Feedback & display
 **ARIA APG pattern:** none — there is no APG pattern for a progress bar. What there is is the
 [`progressbar` role](https://www.w3.org/TR/wai-aria-1.2/#progressbar), and this component does
 not write it: the bar **is** a `<progress>`, so the role, the bounds, the value and the
@@ -14,6 +15,12 @@ platform's element for what a reader hears, our own drawing for what an eye sees
 checkbox's shape one component over, and it is here for a measured reason rather than a
 stylistic one — `appearance: none` is the price of painting a `<progress>`, and it takes the
 engine's indeterminate animation away.
+
+## Usage
+
+```html
+<pct-progress [value]="42" ariaLabel="Uploading" />
+```
 
 ## Contract
 
@@ -39,6 +46,22 @@ and only the application knows that. A default of "Progress" would satisfy axe's
 `aria-progressbar-name` rule and tell a screen-reader user nothing — a gate passing on our own
 echo. Instead the component reports a bar with neither `ariaLabel` nor `ariaLabelledby` in dev
 mode, the same way `pct-drawer` reports an unnamed panel.
+
+## Parts
+
+| part    | what it is            |
+| ------- | --------------------- |
+| `track` | the full length       |
+| `fill`  | the part that is done |
+
+## Theming
+
+```css
+[data-theme='brand'] {
+  --pct-progress-fill-bg: #0f766e;
+  --pct-progress-track-bg: #ccfbf1;
+}
+```
 
 ## Keyboard map
 

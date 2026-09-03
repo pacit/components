@@ -27,7 +27,7 @@ export const appRoutes: Routes = [
     path: 'components/:id',
     title: (route) => `${route.paramMap.get('id')} — @pacit/components`,
     loadComponent: () =>
-      import('./pages/component/component').then((m) => m.ComponentPage),
+      import('./pages/component/component').then((m) => m.ComponentPageView),
   },
   {
     path: 'theming',

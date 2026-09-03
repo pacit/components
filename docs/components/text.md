@@ -4,8 +4,17 @@
 **Selector:** `input[pctText]` — **a component on a native `<input>`**, not a directive
 (directives cannot have styles, and we do not want an API resting on `::ng-deep`)
 **Status:** released
+**Category:** Inputs
 **ARIA APG pattern:** a native `<input>` — `type`, the browser's autofill and the mobile
 keyboard modes are all preserved
+
+## Usage
+
+```html
+<pct-field label="Workspace name">
+  <input pctText />
+</pct-field>
+```
 
 ## Contract
 
@@ -16,6 +25,36 @@ keyboard modes are all preserved
 | **Outputs**     | `valueChange` (through `model`)                                                                                                                    |
 | **Parts**       | inherits the wrapper's parts; exposes none of its own                                                                                              |
 | **DI contract** | registers through `PCT_FIELD`; `fieldAppearance: 'boxed'`, `fieldCursor: 'text'`                                                                   |
+
+## Parts
+
+| part                     | what it is                                                     |
+| ------------------------ | -------------------------------------------------------------- |
+| `field-header`           | the row above the control: the label and what stands beside it |
+| `field-label`            | the label, tied to the control by id                           |
+| `field-label-aux`        | the slot beside the label — a counter, a link                  |
+| `field-label-aux-item`   | one projected item inside the label slot                       |
+| `field-row`              | the control's row, with its prefix and suffix                  |
+| `field-prefix`           | what sits before the control inside the row                    |
+| `field-prefix-item`      | one projected item inside the prefix                           |
+| `field-control`          | the wrapped control itself                                     |
+| `field-suffix`           | what sits after the control inside the row                     |
+| `field-suffix-item`      | one projected item inside the suffix                           |
+| `field-footer`           | the row under the control: the hint or the error               |
+| `field-hint`             | the hint, read as the description of the control               |
+| `field-error`            | the message when the control is invalid                        |
+| `field-message-aux`      | the slot beside the hint or error                              |
+| `field-message-aux-item` | one projected item inside the message slot                     |
+
+## Theming
+
+```css
+[data-theme='brand'] {
+  --pct-field-border-focus: #0f766e;
+  --pct-field-bg: #f0fdfa;
+  --pct-field-fg: #134e4a;
+}
+```
 
 ## Keyboard map
 

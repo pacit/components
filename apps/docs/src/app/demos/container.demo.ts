@@ -5,7 +5,10 @@ import { PctContainer } from '@pacit/components/container';
 @Component({
   selector: 'demo-container',
   imports: [PctContainer],
-  styles: 'pct-container { outline: 1px dashed var(--pct-border); }',
+  // The host states the width the column needs — the stage is a flex row, and a column
+  // inside a box sized by its content has no width to give (lesson-146).
+  styles:
+    ':host { display: block; inline-size: 100%; } pct-container { outline: 1px dashed var(--pct-border); }',
   template: `
     <pct-container style="--pct-container-max-width: 28rem">
       <p>

@@ -3,6 +3,7 @@
 **Entrypoint:** `@pacit/components/stepper`
 **Selectors:** `pct-stepper`, `pct-step`
 **Status:** released
+**Category:** Actions & navigation
 **ARIA APG pattern:** none exists for a stepper, and none is invented
 ([0055](../decisions/0055-a-stepper-is-a-map-of-a-journey-the-application-steers.md)): the
 host is a `list`, every step a `listitem` — the geometry the breadcrumb's probe measured
@@ -19,6 +20,16 @@ is the application's own `<a>` or `<button>` projected into the label.
 underneath: the attribute belongs to whoever holds the truth. There the router knows; here
 the application has already spoken through the input, and the stamp is the pagination's
 move one component over.
+
+## Usage
+
+```html
+<pct-stepper [step]="2" ariaLabel="Checkout">
+  <pct-step>Cart</pct-step>
+  <pct-step>Delivery</pct-step>
+  <pct-step>Payment</pct-step>
+</pct-stepper>
+```
 
 ## Contract
 
@@ -40,6 +51,23 @@ contents — a reader walks the content itself ([`lesson-140`](../lessons.md#les
 **Forced colours.** Both filled markers drop their accent; the border keeps every circle a
 circle, the check keeps saying done as a `CanvasText` drawing, and the current step keeps
 its label **weight** — the breadcrumb's channel, one decision old.
+
+## Parts
+
+| part     | what it is                    |
+| -------- | ----------------------------- |
+| `marker` | the numbered circle of a step |
+| `track`  | the line between two markers  |
+
+## Theming
+
+```css
+[data-theme='brand'] {
+  --pct-stepper-marker-bg-current: #0f766e;
+  --pct-stepper-marker-bg-done: #ccfbf1;
+  --pct-stepper-marker-border-done: #0f766e;
+}
+```
 
 ## Keyboard map
 

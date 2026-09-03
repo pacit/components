@@ -17,6 +17,7 @@ export class TabsView {
   protected readonly section = signal('general');
   protected readonly manual = signal('overview');
   protected readonly side = signal('profile');
+  protected readonly period = signal('week');
 
   /** Enough labels to overflow the strip on a narrow window. */
   protected readonly many = signal('m1');

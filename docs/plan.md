@@ -898,23 +898,93 @@ routerLink>` CTAs until `a[pctButton]` exists (**4.33**), `select.scss` 7.69 kB
       left, the page, a pinned table of contents on the right), ONE long page rather than
       top tabs, JetBrains Mono as the vendored code face, the accessibility gaps shown in
       public beside the measurements
-  - [ ] **2.7.1 — the strip's scrollbar** — the reviewer's guess was right: `pct-tabs` always
-        shows a scrollbar at the strip's end, and scrolling it by a pixel thickens the chosen
-        tab's edge. Library fix under the full regime (e2e in three engines, baselines), and
-        first, because the page's Preview stands on this component
-  - [ ] **2.7.2 — the page's data** — the content pass grows the readers the design needs:
+  - [x] **2.7.1 — the strip's scrollbar** — the reviewer's guess was right: `pct-tabs` always
+        showed a scrollbar at the strip's end, and scrolling it by a pixel thickened the
+        chosen tab's edge. Library fix under the full regime, and first, because the page's
+        Preview stands on this component. _Landed 2026-09-03 (`fix(tabs)`): the cause was one
+        pixel of `margin-block-end: -1px` pulling the chosen edge onto the strip's rail — inside
+        a scroll container that pixel is content, so every strip carried a one-pixel scrollbar
+        across its own axis (lesson-144). The edge now sits inside the tab's box, the vertical
+        strip loses the same trick on the inline axis; `tabs.spec.ts` asks the question no
+        suite had asked (a strip scrolls along its axis, never across it) — 101 cases green in
+        three engines, three sandbox baselines and the docs' button page regenerated for the
+        pixel that moved._
+  - [x] **2.7.2 — the page's data** — the content pass grows the readers the design needs:
         the API read from the SOURCE (inputs, models and outputs with their JSDoc, the host
         bindings, the entry point's exports), the tokens with a `$description` and their
         defaults resolved for both themes, the card's new fields and sections (`Category`,
         `Usage`, `Parts`, `Theming`), the examples as demo files with a title line, the
         per-component evidence (mutation, e2e cases, colour pairs, baselines) and the Checks
-        table read as a scorecard. Every reader tolerant today, a tripwire the day 2.7.4 closes
-  - [ ] **2.7.3 — the page** — header with a spec line, Preview first on `pct-tabs` (dark
+        table read as a scorecard. Every reader tolerant today, a tripwire the day 2.7.4
+        closes. _Landed 2026-09-03: `build-content.mjs` is a scanner, not a compiler — it
+        reads `readonly x = input<T>(default)` lines with the JSDoc block that ends right above
+        each, the decorator's `host` object, the entry point's `export` lines and the `extends`
+        chain (Select's inputs live on `PctSelectBase`; the first cut missed the base class
+        because Prettier wraps `extends` onto its own line, and read 2 members where there are
+        26). Measured on the tree: 252 API members over 33 cards, 33 previews, 5 examples,
+        the button's 19 tokens resolved to both themes; 799 readings the sweep still owes,
+        counted per card, and one card in STRICT (`button`) that has to read whole or the
+        build fails. Two scanner lessons paid for at once: a bracket scanner has to skip
+        comments (the library's comments are prose, and prose holds braces), and the
+        examples follow the registry's order, not the directory's._
+  - [x] **2.7.3 — the page** — header with a spec line, Preview first on `pct-tabs` (dark
         stage, RTL, copy), Usage, Examples with the prose beside the stage, API tables,
         Styling tables, the Accessibility scorecard, Evidence tiles, the table of contents
         with a scroll spy, the index with a filter and its copy in the drawer; container
         queries on the content column, not viewport queries (the reviewer caught three
-        columns arriving too early in the sketch); baselines with the numbers masked; e2e
+        columns arriving too early in the sketch); baselines with the numbers masked; e2e.
+        _Landed 2026-09-03. The column is the library's container widened through its own
+        token (`--pct-container-max-width: 88rem`); the rails answer `@container` queries on
+        that column — the first cut queried the grid about itself and the baseline held the
+        index laid across the page (lesson-145). The bar bit four times before the deciding
+        run, each time the page's own sweep: primary on an 11% tint read 4.44:1 and a 12%
+        pill 4.36:1 (every tinted seat now takes the soft pair, measured at every token
+        build); a link's inline code on a translucent ground under the hero's shadow read
+        4.48:1 (the ground is opaque now); the theming fence set a brand background and not
+        its foreground, so the dark theme put slate-900 on teal at 3.26:1 (the fence carries
+        `--pct-button-fg` — a lesson the section teaches by example); and Firefox lays a
+        closed drawer out, so the index inside it made a scrollable region nothing could
+        focus on every route (the index renders only while the drawer is open). The initial
+        bundle fell from 501 to 395 kB once the drawer's index left it. Deciding run:
+        docs-e2e 331/331 in three engines (11.2 min); eight new cases hold the API to the
+        source, the tokens to the DTCG file, the examples to their stages, the scorecard to
+        both states, the theming to a computed colour, the spy, the filter and the fold. The reviewer's first look at the built page found it worse than the sketch it came from, and he was right: the port had re-interpreted three things — the demo's JSDoc as a two-line caption over the stage, the Preview/Code switch as the plain tab strip, the pattern's whole sentence in the spec line. Restored to the sketch the same day: `pct-tabs` stays (tablist, keyboard, panels) and wears the segmented look through its own tokens and parts, the caption is gone and the file's name sits in the corner, the spec line names the pattern. The lesson is procedural: an approved sketch is ported line for line, and the picture is compared before the suite is asked. The dark review found a third thing, and it was the library's: every scrollbar white, because the tokens repainted every colour and told the platform nothing — `color-scheme` now rides in each theme block at the block's own scope (0063), measured in the sandbox's theme spec and in the page's dark baseline._
+  - [x] **2.7.6 — the tabs' second face, and the side layout it was missing** — `variant`
+        on `pct-tabs` (`underline | segmented`), `orientation="vertical"` finished so the
+        panel stands beside the strip, RTL from logical properties alone, the two tokens the
+        segmented face needed and the pairs they brought; the site's own switch handed back
+        to the library.
+        _Landed 2026-09-03, out of the reviewer's question: "shouldn't this be a variant like
+        the button's, because it is an awful lot of CSS to write?" It was, and the argument
+        was already on the shelf — 0058 answered it for the button's five faces, so 0064
+        answers it here and records the test it produced: a look is a variant when reaching it
+        from outside means overriding our defaults to nothing first, or needs a value we name
+        no token for. Both were true. The site had spent 72 lines on it, about a dozen of them
+        undoing the rail, and had been bitten twice by the same nesting — the token overrides
+        inherited into the demo its own stage projects (lesson-148) and the part selectors
+        matched whatever that stage rendered (lesson-147). The variant is one union member,
+        one host binding and a block of paint: no branch, so nothing new for Stryker to break.
+        `--pct-tabs-list-bg` and `--pct-tabs-tab-bg-selected` are real surface roles rather
+        than the page under an opacity, which is what let them be measured: the two label
+        pairs are errors at 9.45:1 and 17.85:1, and the raised segment against its track is a
+        deliberate `warn` at 1.10:1, because the fill is not what identifies the state. The
+        track's corner is derived (`tab-radius + list-inset`), the name gate having first
+        rejected `segment-inset` for composing out of nothing in the dictionary. The vertical
+        face had been half-built since it shipped: the strip turned into a column and the panel
+        still stacked underneath it, so the panels got a wrapper of their own (layout, no part,
+        no role) and the host became a flex row — measured beside the strip in LTR and mirrored
+        in RTL, three engines. Site's remainder: six declarations for its smaller scale, set on
+        the switch's own list where inherited values stop. 1085 unit tests, 45 tabs cases in
+        three engines, `tabs-vertical` and `tabs-vertical-rtl` regenerated and `tabs-segmented`
+        new. Deciding runs: docs-e2e 331/331 in three engines, sandbox-e2e clean apart from a
+        webkit flake in the dialog's scroll lock that predates this and is filed on its own (1
+        in 9, an exact-offset assertion where the promise is the lock); full Stryker in 83
+        minutes at concurrency 4 — 4617 mutants against 4616 before, the one new mutant being
+        the variant default's string literal, score 82.80% against an 80% floor. Two numbers in
+        the first draft of 0064 were written before they were measured and are corrected in it:
+        the dark theme's label pairs are 11.87:1 and 17.85:1. The site's baselines moved by a
+        pixel and the cause is in the diff — its old pill kept a transparent 1px rail because
+        the site had only zeroed the rail's COLOUR, and the variant draws no rail at all._
   - [ ] **2.7.4 — the sweep** — a JSDoc line on every input, model and output of the library,
         a `$description` on every component token, `Parts`/`Usage`/`Theming` in every card,
         examples per component batched by category; the tripwires of 2.7.2 flip to throw

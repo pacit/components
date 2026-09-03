@@ -44,6 +44,16 @@
       </a>
       }
     </nav>
+    <!-- The component index rides in the drawer wherever the page's own rail does not
+         fit — the same component, so the two lists cannot disagree. Rendered only while
+         the drawer is open, for two measured reasons: the index and the field it filters
+         with are the component page's weight, not the landing's initial bundle (+1.4 kB
+         over the budget when they were), and a CLOSED drawer holding the whole list is a
+         scrollable region whose links nothing can focus — Firefox lays the hidden panel
+         out and axe fails every route on it. -->
+    @defer (when menuOpen()) { @if (menuOpen()) {
+    <docs-index class="drawer-index" (navigate)="menuOpen.set(false)" />
+    } }
   </pct-drawer>
 
   <main class="page">

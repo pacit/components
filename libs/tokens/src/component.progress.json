@@ -2,20 +2,44 @@
   "pct": {
     "progress": {
       "$comment": "A bar that reports how far along a task is, or that one is under way at all. It paints two things and nothing else: a groove and the part of it that is filled. The names are the slider's, deliberately — two roads a value travels ought not to be two vocabularies — but the SIZE axis is the bar's own and not the shared control height: a progress bar is not a control, nothing lands on it and nothing is pressed, so lining it up with a field's box would say it were one.",
-
       "$comment-track-height": "The bar's own size axis, driven by `data-pct-size` on the host. The steps are small on purpose: a progress bar is read by its LENGTH, and a thick one starts to look like a container rather than a measure.",
-      "track-height": { "$type": "dimension", "$value": "8px" },
-      "track-height-sm": { "$type": "dimension", "$value": "4px" },
-      "track-height-lg": { "$type": "dimension", "$value": "12px" },
-
-      "track-radius": { "$type": "dimension", "$value": "999px" },
-
+      "track-height": {
+        "$type": "dimension",
+        "$value": "8px",
+        "$description": "Height of the track."
+      },
+      "track-height-sm": {
+        "$type": "dimension",
+        "$value": "4px",
+        "$description": "Height of the track at size sm."
+      },
+      "track-height-lg": {
+        "$type": "dimension",
+        "$value": "12px",
+        "$description": "Height of the track at size lg."
+      },
+      "track-radius": {
+        "$type": "dimension",
+        "$value": "999px",
+        "$description": "Corner radius of the track."
+      },
       "$comment-track-bg": "The groove is the slider's rail one component over, and the same token. Against the page it is a `warn` in `contrast.policy.json` for the reason written there: the FILL is what identifies the bar, and no one grey clears 3:1 against both the page and the fill.",
-      "track-bg": { "$type": "color", "$value": "{pct.border}" },
-      "fill-bg": { "$type": "color", "$value": "{pct.primary}" },
-
+      "track-bg": {
+        "$type": "color",
+        "$value": "{pct.border}",
+        "$description": "Background of the track."
+      },
+      "fill-bg": {
+        "$type": "color",
+        "$value": "{pct.primary}",
+        "$description": "Background of the fill."
+      },
       "$comment-fill-size": "How much of the groove the fill covers while the bar is INDETERMINATE — the travelling band. It is a token because it is the one number that decides whether the motion reads as travel or as a pulse: a third is wide enough to be seen crossing at the loop duration and narrow enough that the groove behind it stays visible. In the determinate state the fill's width is the value, and no token has anything to say about it.",
-      "fill-size": { "$type": "dimension", "$value": "33%" }
+      "fill-size": {
+        "$type": "dimension",
+        "$value": "33%",
+        "$description": "Length of the fill while indeterminate, as a share of the track."
+      }
     }
   }
 }

@@ -3837,3 +3837,124 @@ The rule: inside a scroll container a negative margin is not a drawing trick, it
 content, and one pixel of it is a scrollbar. When a decoration must overlap a neighbour's
 edge, overlap from INSIDE the box or accept adjacency — and give every scroll container a
 test that names the one axis it is allowed to scroll on.
+
+### <a id="lesson-145"></a>`lesson-145` — A container query answers for an ancestor, never for the element that asks
+
+The component page's three columns were to answer the width of the column they stand in,
+not the viewport's — the reviewer had caught the sketch's columns arriving too early, and a
+viewport query cannot know whether the rails are there. The first cut put `container` on
+the grid itself and asked `@container` about it in the same rule: the grid stayed a single
+column, the index rail was told to show, and the first baseline held the whole component
+index laid across the page above the content. Nothing in the build objected; a query that
+names the element it sits on simply never matches, because an element is not inside its
+own containment.
+
+The picture was the only reader that noticed, one screenshot into the work — the same
+service the baselines rendered for the tabs' edge (lesson-144) and the landing's counts.
+
+The rule: the element carrying `container` is never the subject of its own `@container`;
+put the containment on the ancestor whose width is the question — here the library's
+column — and query from the descendants. And regenerate the picture BEFORE reading the
+suite's verdict: a baseline is the fastest look at a layout there is.
+
+### <a id="lesson-146"></a>`lesson-146` — Inline-size containment makes a box's intrinsic width zero, and a column in a parent sized by its content collapses to its gutter
+
+The container's stylesheet called `container-type: inline-size` free: "costs nothing here
+and turns the host into the ruler its content can measure against". It is free exactly as
+long as the column is sized by its parent — block flow, a grid track with a length — and
+that was the only place the sandbox and the landing had ever put it. The docs site put the
+demo on a stage that centres its children with flex, and the reviewer saw the first demo of
+the container "terribly narrow": measured, 80 px of an 810 px row, the paragraph inside at 0. Size containment on the inline axis means the box reports no content when a
+shrink-to-fit context asks how wide it wants to be — a flex item, a float, an inline block,
+an `auto` grid track — so the parent shrinks to the column's gutter and nothing else.
+
+The first fix tried `inline-size: 100%` on the column and measured the same 80 px: a
+percentage resolves against the parent, the parent is sized by the column, and in that
+cycle the percentage counts as nothing. No declaration on the column can undo what
+containment does to its intrinsic size — the width has to come from OUTSIDE. The demo's
+host now states it (`inline-size: 100%` of the stage, which is definite), the card names
+the contract in its limitations, and the rig holds both halves: a bare column in a flex row
+that collapses, and one whose parent states the width and that keeps the row up to its cap.
+
+The same trap has a second half in grid and flex: the column centres itself in block
+flow with `margin-inline: auto`, and as a grid or flex ITEM those auto margins mean
+"absorb the free space" — the item shrinks to its intrinsic size, which containment has
+already made zero. A grid host wide enough for the column measured its columns at 80 px
+all the same. The wrapper is the answer in both layouts: a plain block is the item, the
+column is a block inside it.
+
+The third face needs no containment at all. The grid's `repeat(auto-fit, minmax(…, 1fr))`
+counts its tracks against the container's width, and when that width is not definite —
+the same flex stage, the demo host shrink-wrapped — the specification says the list
+repeats exactly once. The reviewer asked what tells a grid from a stack, because the two
+pages showed the same picture: one column of cards, measured at 70 px in a 287 px stage,
+and the grid's example at 99 px with one track. Nothing was wrong in either component; the
+stage had asked "how wide do you want to be" and a grid that answers by counting has no
+answer. The demo hosts state their width now, and the stage centres what is smaller.
+
+The rule: `container-type` is never free — it takes the box's intrinsic size away. A
+component that opts into containment is a block-flow element by contract: its parent
+states the width, it caps it, and in a grid or a flex row a block wrapper is the parent.
+Say so in the card, and measure the collapse as well as the remedy, so the sentence stays
+true the day somebody "fixes" it. And on a stage that centres by shrink-wrapping, a layout
+demo — anything that measures, counts or caps — states its own width; only what is small
+by nature is left to the stage.
+
+### <a id="lesson-147"></a>`lesson-147` — A part-dressing rule scoped by the shared part name leaks onto every projected component that parts the same name
+
+The component page's Preview / Code switch is the library's own `pct-tabs`, dressed as a
+segmented pill through the one hook a consumer's stylesheet also has — the parts, styled
+globally because they live inside the component's emulated scope. The rule read
+`.hero .docs-switch [data-pct-part='list'] { … a 6% pill, 10px radius, 3px padding … }`,
+one class more specific than the component's own rules, and it looked right because on the
+switch it was right.
+
+But the switch is not just chrome around the stage — the stage is INSIDE the switch's own
+Preview panel. So a DESCENDANT selector from `.docs-switch` reaches whatever the demo
+renders: and a part name is a shared vocabulary, not a private one. A breadcrumb parts its
+trail `list`; the rule dressed the trail as a segmented pill, and with only 3px of padding
+the reviewer saw the text hug the rounded edge and asked for "padding in this place" — the
+padding of a control the breadcrumb was never meant to be. A tabs demo parts a `list` that
+is itself a `tablist`, so even a `[role='tablist']` guard could not tell the demo's list
+from ours; it wore the pill too, showing the docs' switch instead of the library's tabs.
+
+The fix is to scope by STRUCTURE, not by the shared name: `.docs-switch > [data-pct-part='list']`
+— a direct child. The switch's own list is a child of the switch; a demo's list is always
+deeper, behind a `[data-pct-part='panel']`. The child combinator costs no specificity and
+draws the line the part name and the role both failed to.
+
+The rule: when a global stylesheet dresses a component through its parts, and that dressed
+component contains a stage that projects OTHER components, the part name is not a selector
+— it is a word those components share. Reach the instance you mean by where it sits, not by
+what it is called, or the dressing lands on every namesake the stage happens to hold.
+
+### <a id="lesson-148"></a>`lesson-148` — A component's token overrides, set on a host that contains a projected instance of the same component, inherit into it
+
+[`lesson-147`](lessons.md#lesson-147) is a selector reaching too far; this is its twin
+through a different door. The Preview / Code switch is `pct-tabs` dressed as a segmented
+pill, and the honest way to dress a component is through the tokens it exposes — set
+`--pct-tabs-tab-border-selected: transparent`, `--pct-tabs-tab-bg-hover: transparent`, and
+a dozen more on the switch, and the pill has no underline and no hover, exactly as a
+segmented control should not.
+
+Those overrides sat on the switch's host (`.hero__tabs`). A token is a custom property, and
+custom properties INHERIT — down the DOM, across every component boundary emulated
+encapsulation puts up, because encapsulation scopes selectors and not the cascade of
+inherited values. The switch's Preview panel holds the stage, the stage projects the tabs
+demo, and the tabs demo is `pct-tabs` too. So it read the switch's `--pct-tabs-*` off its
+inherited environment and rendered as the switch: no chosen edge, no hover, just text. The
+reviewer saw the first demo "has nothing on it" while the examples below — outside the
+switch's subtree — kept their underline.
+
+The fix is to set the overrides where they reach the switch's own tabs and stop: on the
+switch's own tablist (`.docs-switch > [data-pct-part='list']`), not on the host above the
+panel. The tablist's tabs are its children and inherit them; the panel is its sibling and
+does not. The list-level tokens (`--pct-tabs-list-border`, `-gap`) are read by the tablist
+itself, which is fine — an element resolves a custom property it declares on itself.
+
+The rule: styling a component through its tokens is correct, but a token set on an element
+rains down on every descendant, projected content included. When the dressed component
+contains a stage that projects instances of THE SAME component, set the overrides on the
+inner element that only the dressed instance owns — never on a host the projected copies
+sit beneath. Selectors are scoped by encapsulation; inherited custom properties are not
+([`lesson-147`](lessons.md#lesson-147) is the selector half of the same nesting).

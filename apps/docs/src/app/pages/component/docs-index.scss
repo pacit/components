@@ -1,0 +1,48 @@
+.index__group {
+  margin-block-start: var(--pct-space-5);
+}
+
+.index__eyebrow {
+  display: block;
+  margin-block-end: var(--pct-space-2, 4px);
+  padding-inline-start: 12px;
+  color: var(--pct-text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.index__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.index__list a {
+  display: block;
+  padding: 6px 12px;
+  border-radius: var(--pct-radius-md);
+  color: var(--pct-text-muted);
+  font-size: var(--pct-font-size-md);
+  text-decoration: none;
+  text-transform: capitalize;
+
+  &:hover {
+    color: var(--pct-text);
+    background: var(--pct-surface-100);
+  }
+
+  /* The soft pair, measured on both themes — primary on an 11% tint read 4.44:1. */
+  &.is-current {
+    color: var(--pct-on-primary-100);
+    font-weight: 600;
+    background: var(--pct-primary-100);
+  }
+}
+
+.index__empty {
+  margin: var(--pct-space-5) 0 0;
+  color: var(--pct-text-muted);
+  font-size: var(--pct-font-size-sm);
+}

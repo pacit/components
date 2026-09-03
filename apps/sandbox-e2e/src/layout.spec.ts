@@ -28,6 +28,30 @@ test.describe('Layout — three boxes, measured', () => {
     expect(await styleOf(container, 'container-type')).toBe('inline-size');
   });
 
+  /**
+   * The column as a flex item (lesson-146): inline-size containment makes the box's
+   * intrinsic width zero, so a bare column in a flex row collapses to its gutter — and no
+   * declaration on the column can undo it, the width has to come from outside. Both
+   * halves are measured, so the card's limitation stays true the day somebody "fixes" it.
+   */
+  test('a bare column in a flex row collapses to its gutter; a held one keeps the row', async ({
+    page,
+  }) => {
+    const bare = await boxOf(page.getByTestId('container-bare'));
+    const gutter = parseFloat(
+      await styleOf(page.getByTestId('container-bare'), 'padding-inline-start'),
+    );
+    expect(bare.width).toBeLessThanOrEqual(gutter * 2 + 1);
+
+    const held = page.getByTestId('container-held');
+    const box = await boxOf(held);
+    const holder = await boxOf(held.locator('..'));
+    expect(
+      Math.abs(box.width - Math.min(holder.width, 72 * 16)),
+    ).toBeLessThanOrEqual(1);
+    expect((await boxOf(held.locator('p'))).width).toBeGreaterThan(100);
+  });
+
   test('the gutter follows the viewport between its two ends', async ({
     page,
   }) => {

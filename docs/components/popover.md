@@ -4,6 +4,7 @@
 **Selector:** `pct-popover` (the control that opens it carries `[pctPopoverTrigger]`,
 `PctPopoverTrigger`)
 **Status:** released
+**Category:** Overlays
 **ARIA APG pattern:** [Dialog](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/) — the
 **non-modal** reading of it: `role="dialog"` with **no** `aria-modal`, focus moved into the
 panel and given back to the trigger, Escape from the closing stack. The trigger is the
@@ -16,6 +17,12 @@ panel that hangs off a control instead of standing over the page. What it keeps 
 panel with content cannot do without: it takes focus, it says what it is, and it hands focus
 back to the trigger on the way out
 ([0031](../decisions/0031-a-panel-s-tab-order-belongs-to-its-trigger.md)).
+
+## Usage
+
+```html
+<button pctButton [pctPopoverTrigger]="filters">Filters</button> <pct-popover #filters heading="Filters">…</pct-popover>
+```
 
 ## Contract
 
@@ -40,6 +47,24 @@ back from** ([0031](../decisions/0031-a-panel-s-tab-order-belongs-to-its-trigger
 that a press on the trigger is not a press outside the panel
 ([`lesson-93`](../lessons.md#lesson-93)), and the leave — an element removed from the DOM takes
 its transition with it, so the panel is held in place, marked, until the fade has run.
+
+## Parts
+
+| part      | what it is                      |
+| --------- | ------------------------------- |
+| `panel`   | the floating box                |
+| `heading` | the title the panel is named by |
+| `content` | the projected body              |
+
+## Theming
+
+```css
+[data-theme='brand'] {
+  --pct-popover-panel-bg: #f0fdfa;
+  --pct-popover-panel-fg: #134e4a;
+  --pct-popover-heading-fg: #0f766e;
+}
+```
 
 ## Keyboard map
 

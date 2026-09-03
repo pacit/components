@@ -3,8 +3,17 @@
 **Entrypoint:** `@pacit/components/field`
 **Selector:** `pct-field`
 **Status:** released
+**Category:** Inputs
 **ARIA APG pattern:** no role of its own — the wrapper supplies the label and the
 descriptions, and the control inside carries the role
+
+## Usage
+
+```html
+<pct-field label="E-mail" hint="A work address">
+  <input pctText type="email" />
+</pct-field>
+```
 
 ## Contract
 
@@ -17,6 +26,36 @@ descriptions, and the control inside carries the role
 | **Parts**       | the wrapper: `field-header`, `field-label`, `field-label-aux`, `field-row`, `field-prefix`, `field-control`, `field-suffix`, `field-footer`, `field-hint`, `field-error`, `field-message-aux`; slot content: `field-prefix-item`, `field-suffix-item`, `field-label-aux-item`, `field-message-aux-item` |
 | **DI contract** | `PCT_FIELD` — the control registers itself, the wrapper hands over the description ids for `aria-describedby`; `PctFieldApi.surface` as the reference surface for overlays                                                                                                                              |
 | **Tokens**      | `--pct-field-*`, `--pct-control-height-*`, `--pct-target-min`                                                                                                                                                                                                                                           |
+
+## Parts
+
+| part                     | what it is                                                     |
+| ------------------------ | -------------------------------------------------------------- |
+| `field-header`           | the row above the control: the label and what stands beside it |
+| `field-label`            | the label, tied to the control by id                           |
+| `field-label-aux`        | the slot beside the label — a counter, a link                  |
+| `field-label-aux-item`   | one projected item inside the label slot                       |
+| `field-row`              | the control's row, with its prefix and suffix                  |
+| `field-prefix`           | what sits before the control inside the row                    |
+| `field-prefix-item`      | one projected item inside the prefix                           |
+| `field-control`          | the wrapped control itself                                     |
+| `field-suffix`           | what sits after the control inside the row                     |
+| `field-suffix-item`      | one projected item inside the suffix                           |
+| `field-footer`           | the row under the control: the hint or the error               |
+| `field-hint`             | the hint, read as the description of the control               |
+| `field-error`            | the message when the control is invalid                        |
+| `field-message-aux`      | the slot beside the hint or error                              |
+| `field-message-aux-item` | one projected item inside the message slot                     |
+
+## Theming
+
+```css
+[data-theme='brand'] {
+  --pct-field-border-focus: #0f766e;
+  --pct-field-bg: #f0fdfa;
+  --pct-field-fg: #134e4a;
+}
+```
 
 ## Keyboard map
 

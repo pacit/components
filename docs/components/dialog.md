@@ -3,6 +3,7 @@
 **Entrypoint:** `@pacit/components/dialog`
 **Selector:** `pct-dialog` (plus `[pctAutofocus]`, the marker for what takes focus)
 **Status:** released
+**Category:** Overlays
 **ARIA APG pattern:** [Modal Dialog](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/) —
 `role="dialog"` with `aria-modal="true"`, focus trapped in the panel and given back to whatever
 opened it, Escape from the closing stack
@@ -12,6 +13,14 @@ native element makes **every CDK overlay on the page inert while it is open**, t
 included, so a `pct-select` inside one would have a panel nobody could click, focus or reach by
 Tab ([`lesson-89`](../lessons.md#lesson-89),
 [0029](../decisions/0029-a-modal-is-an-overlay-not-a-dialog-element.md)).
+
+## Usage
+
+```html
+<pct-dialog heading="Project settings" [(open)]="open">
+  <p>Everything outside this panel is inert while it stands.</p>
+</pct-dialog>
+```
 
 ## Contract
 
@@ -35,6 +44,27 @@ dispatcher's ([0024](../decisions/0024-the-closing-stack-is-the-dependency-s.md)
 background is the platform's. Written here: the scroll lock, the panel, and **the order the three
 run in on the way out** — the page is given back _before_ the panel goes, because focus is restored
 to an element that sits in the background and an inert subtree refuses `focus()`.
+
+## Parts
+
+| part       | what it is                                       |
+| ---------- | ------------------------------------------------ |
+| `backdrop` | the scrim over the page                          |
+| `panel`    | the box the dialog draws                         |
+| `header`   | the row holding the heading and the close button |
+| `heading`  | the title the dialog is named by                 |
+| `close`    | the close button                                 |
+| `content`  | the projected body                               |
+
+## Theming
+
+```css
+[data-theme='brand'] {
+  --pct-dialog-panel-bg: #f0fdfa;
+  --pct-dialog-panel-fg: #134e4a;
+  --pct-dialog-heading-fg: #0f766e;
+}
+```
 
 ## Keyboard map
 

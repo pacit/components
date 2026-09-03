@@ -3,6 +3,7 @@
 **Entrypoint:** `@pacit/components/theme`
 **Selector:** `[pctTheme]`
 **Status:** released
+**Category:** Foundations
 **ARIA APG pattern:** none — the directive writes one `data-*` attribute and touches
 nothing the accessibility tree carries. Named in the class JSDoc.
 
@@ -12,6 +13,14 @@ writes `data-theme="dark"` — the attribute the generated skin keys its theme b
 and `null` removes it, so the system preference speaks again. The mechanism stays the
 cascade itself; the sandbox measures a hand-written panel and a directive panel reading
 the same computed surface.
+
+## Usage
+
+```html
+<section pctTheme="dark">
+  <p>A dark island: every token below it flips.</p>
+</section>
+```
 
 ## Contract
 
@@ -67,7 +76,8 @@ Every row: a path to evidence, or `none — <deliberately|gap>: <reason>`.
 
 [0059](../decisions/0059-a-theme-is-an-attribute-the-skin-reads.md) (the main one — sugar,
 not a second mechanism; the refusals of persistence and `matchMedia`),
-[0013](../decisions/0013-no-headless-split.md) (the attribute-and-tokens contract it rides).
+[0013](../decisions/0013-no-headless-split.md) (the attribute-and-tokens contract it rides).,
+[0063](../decisions/0063-the-theme-names-its-scheme-to-the-platform.md)
 
 ## Known limitations
 

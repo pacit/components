@@ -3,6 +3,7 @@
 **Entrypoint:** `@pacit/components/tree`
 **Selectors:** `pct-tree`, `pct-tree-item`
 **Status:** released
+**Category:** Actions & navigation
 **ARIA APG pattern:** [Tree View](https://www.w3.org/WAI/ARIA/apg/patterns/treeview/)
 ([0056](../decisions/0056-a-tree-is-a-walk-the-platform-does-not-have.md)): one tab stop,
 a roving focus, `treeitem`s in `group`s, `aria-expanded` on branches and `aria-selected`
@@ -20,6 +21,17 @@ engines: custom elements carrying `treeitem` with `role="group"` children and **
 hand-written `aria-level` / `aria-posinset` / `aria-setsize`** are clean everywhere — the
 DOM structure is the level. An empty `role="tree"` raises nothing (`lesson-138`'s
 carve-out extends to `tree`), so the role is static.
+
+## Usage
+
+```html
+<pct-tree ariaLabel="Files" [(selected)]="chosen">
+  <pct-tree-item value="src" [expanded]="true">
+    src
+    <pct-tree-item value="src/app.ts">app.ts</pct-tree-item>
+  </pct-tree-item>
+</pct-tree>
+```
 
 ## Contract
 
@@ -44,6 +56,23 @@ select the lineage.
 tabs' `@supports` fallback carried whole (0045): find-in-page still searches it and
 `beforematch` opens the branch. An `@if` would have been wrong twice — a destroyed
 subtree forgets its own `expanded`, and text not in the document cannot be found.
+
+## Parts
+
+| part    | what it is                              |
+| ------- | --------------------------------------- |
+| `label` | a node's text, the row that is selected |
+| `arrow` | the toggle that expands a branch        |
+
+## Theming
+
+```css
+[data-theme='brand'] {
+  --pct-tree-label-bg-selected: #0f766e;
+  --pct-tree-label-fg-selected: #ffffff;
+  --pct-tree-arrow-fg: #0f766e;
+}
+```
 
 ## Keyboard map
 

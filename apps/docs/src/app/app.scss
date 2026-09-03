@@ -112,6 +112,13 @@
   }
 }
 
+.drawer-index {
+  display: block;
+  margin-block-start: var(--pct-space-6);
+  padding-block-start: var(--pct-space-5);
+  border-block-start: 1px solid var(--pct-border);
+}
+
 .drawer-nav {
   display: grid;
   gap: var(--pct-space-4);

@@ -41,3 +41,274 @@ export const DEMOS: Readonly<Record<string, () => Promise<Type<unknown>>>> = {
   tooltip: () => import('./tooltip.demo').then((m) => m.TooltipDemo),
   tree: () => import('./tree.demo').then((m) => m.TreeDemo),
 };
+
+/** One example of a card: the key names the file `<id>.<key>.demo.ts`, the content pass reads its title line. */
+export interface DocsExample {
+  readonly key: string;
+  readonly load: () => Promise<Type<unknown>>;
+}
+
+/**
+ * The examples registry (plan 2.7.2): several running instances per card, under the Preview.
+ * Hand-written like `DEMOS` so every import path is a literal the bundler can split — and
+ * the content pass fails the build when a `<id>.<key>.demo.ts` on disk is missing here.
+ */
+export const EXAMPLES: Readonly<Record<string, readonly DocsExample[]>> = {
+  button: [
+    {
+      key: 'faces',
+      load: () => import('./button.faces.demo').then((m) => m.ButtonFacesDemo),
+    },
+    {
+      key: 'sizes',
+      load: () => import('./button.sizes.demo').then((m) => m.ButtonSizesDemo),
+    },
+    {
+      key: 'states',
+      load: () =>
+        import('./button.states.demo').then((m) => m.ButtonStatesDemo),
+    },
+    {
+      key: 'toolbar',
+      load: () =>
+        import('./button.toolbar.demo').then((m) => m.ButtonToolbarDemo),
+    },
+    {
+      key: 'form',
+      load: () => import('./button.form.demo').then((m) => m.ButtonFormDemo),
+    },
+  ],
+  tabs: [
+    {
+      key: 'vertical',
+      load: () =>
+        import('./tabs.vertical.demo').then((m) => m.TabsVerticalDemo),
+    },
+    {
+      key: 'manual',
+      load: () => import('./tabs.manual.demo').then((m) => m.TabsManualDemo),
+    },
+    {
+      key: 'segmented',
+      load: () =>
+        import('./tabs.segmented.demo').then((m) => m.TabsSegmentedDemo),
+    },
+  ],
+  pagination: [
+    {
+      key: 'fold',
+      load: () =>
+        import('./pagination.fold.demo').then((m) => m.PaginationFoldDemo),
+    },
+    {
+      key: 'sizes',
+      load: () =>
+        import('./pagination.sizes.demo').then((m) => m.PaginationSizesDemo),
+    },
+  ],
+  menu: [
+    {
+      key: 'placement',
+      load: () =>
+        import('./menu.placement.demo').then((m) => m.MenuPlacementDemo),
+    },
+  ],
+  accordion: [
+    {
+      key: 'exclusive',
+      load: () =>
+        import('./accordion.exclusive.demo').then(
+          (m) => m.AccordionExclusiveDemo,
+        ),
+    },
+  ],
+  badge: [
+    {
+      key: 'tones',
+      load: () => import('./badge.tones.demo').then((m) => m.BadgeTonesDemo),
+    },
+  ],
+  skeleton: [
+    {
+      key: 'shapes',
+      load: () =>
+        import('./skeleton.shapes.demo').then((m) => m.SkeletonShapesDemo),
+    },
+  ],
+  progress: [
+    {
+      key: 'states',
+      load: () =>
+        import('./progress.states.demo').then((m) => m.ProgressStatesDemo),
+    },
+  ],
+  tree: [
+    {
+      key: 'nested',
+      load: () => import('./tree.nested.demo').then((m) => m.TreeNestedDemo),
+    },
+  ],
+  breadcrumb: [
+    {
+      key: 'trail',
+      load: () =>
+        import('./breadcrumb.trail.demo').then((m) => m.BreadcrumbTrailDemo),
+    },
+  ],
+  avatar: [
+    {
+      key: 'sizes',
+      load: () => import('./avatar.sizes.demo').then((m) => m.AvatarSizesDemo),
+    },
+  ],
+  dialog: [
+    {
+      key: 'guards',
+      load: () =>
+        import('./dialog.guards.demo').then((m) => m.DialogGuardsDemo),
+    },
+  ],
+  drawer: [
+    {
+      key: 'side',
+      load: () => import('./drawer.side.demo').then((m) => m.DrawerSideDemo),
+    },
+  ],
+  popover: [
+    {
+      key: 'placement',
+      load: () =>
+        import('./popover.placement.demo').then((m) => m.PopoverPlacementDemo),
+    },
+  ],
+  tooltip: [
+    {
+      key: 'placement',
+      load: () =>
+        import('./tooltip.placement.demo').then((m) => m.TooltipPlacementDemo),
+    },
+  ],
+  toast: [
+    {
+      key: 'action',
+      load: () => import('./toast.action.demo').then((m) => m.ToastActionDemo),
+    },
+  ],
+  stepper: [
+    {
+      key: 'steered',
+      load: () =>
+        import('./stepper.steered.demo').then((m) => m.StepperSteeredDemo),
+    },
+  ],
+  container: [
+    {
+      key: 'width',
+      load: () =>
+        import('./container.width.demo').then((m) => m.ContainerWidthDemo),
+    },
+  ],
+  stack: [
+    {
+      key: 'gaps',
+      load: () => import('./stack.gaps.demo').then((m) => m.StackGapsDemo),
+    },
+  ],
+  grid: [
+    {
+      key: 'width',
+      load: () => import('./grid.width.demo').then((m) => m.GridWidthDemo),
+    },
+  ],
+  theme: [
+    {
+      key: 'islands',
+      load: () =>
+        import('./theme.islands.demo').then((m) => m.ThemeIslandsDemo),
+    },
+  ],
+  checkbox: [
+    {
+      key: 'states',
+      load: () =>
+        import('./checkbox.states.demo').then((m) => m.CheckboxStatesDemo),
+    },
+  ],
+  switch: [
+    {
+      key: 'states',
+      load: () =>
+        import('./switch.states.demo').then((m) => m.SwitchStatesDemo),
+    },
+  ],
+  radio: [
+    {
+      key: 'horizontal',
+      load: () =>
+        import('./radio.horizontal.demo').then((m) => m.RadioHorizontalDemo),
+    },
+  ],
+  chips: [
+    {
+      key: 'sizes',
+      load: () => import('./chips.sizes.demo').then((m) => m.ChipsSizesDemo),
+    },
+  ],
+  slider: [
+    {
+      key: 'range',
+      load: () => import('./slider.range.demo').then((m) => m.SliderRangeDemo),
+    },
+  ],
+  select: [
+    {
+      key: 'groups',
+      load: () =>
+        import('./select.groups.demo').then((m) => m.SelectGroupsDemo),
+    },
+    {
+      key: 'multi',
+      load: () => import('./select.multi.demo').then((m) => m.SelectMultiDemo),
+    },
+  ],
+  date: [
+    {
+      key: 'bounds',
+      load: () => import('./date.bounds.demo').then((m) => m.DateBoundsDemo),
+    },
+  ],
+  calendar: [
+    {
+      key: 'locale',
+      load: () =>
+        import('./calendar.locale.demo').then((m) => m.CalendarLocaleDemo),
+    },
+  ],
+  field: [
+    {
+      key: 'affixes',
+      load: () =>
+        import('./field.affixes.demo').then((m) => m.FieldAffixesDemo),
+    },
+  ],
+  text: [
+    {
+      key: 'states',
+      load: () => import('./text.states.demo').then((m) => m.TextStatesDemo),
+    },
+  ],
+  textarea: [
+    {
+      key: 'rows',
+      load: () =>
+        import('./textarea.rows.demo').then((m) => m.TextareaRowsDemo),
+    },
+  ],
+  number: [
+    {
+      key: 'format',
+      load: () =>
+        import('./number.format.demo').then((m) => m.NumberFormatDemo),
+    },
+  ],
+};

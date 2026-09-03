@@ -2,99 +2,301 @@
   "pct": {
     "date": {
       "$comment": "The date field AND the calendar it opens. One component tier for both, because `--pct-{component}-…` names the ENTRYPOINT and `PctCalendar` ships inside `@pacit/components/date` — a `--pct-calendar-…` name would promise a package that does not exist (req-token-names, check-tokens point 3).",
-
-      "bg": { "$type": "color", "$value": "{pct.surface}" },
-      "fg": { "$type": "color", "$value": "{pct.text}" },
-      "placeholder-fg": { "$type": "color", "$value": "{pct.text-muted}" },
-      "border": { "$type": "color", "$value": "{pct.border-strong}" },
-      "border-hover": { "$type": "color", "$value": "{pct.text-muted}" },
-      "border-focus": { "$type": "color", "$value": "{pct.primary}" },
-      "border-invalid": { "$type": "color", "$value": "{pct.danger}" },
-      "fg-invalid": { "$type": "color", "$value": "{pct.danger}" },
-      "bg-disabled": { "$type": "color", "$value": "{pct.surface-disabled}" },
-      "fg-disabled": { "$type": "color", "$value": "{pct.text-disabled}" },
-      "border-disabled": { "$type": "color", "$value": "{pct.border}" },
-      "label-fg": { "$type": "color", "$value": "{pct.text}" },
-      "hint-fg": { "$type": "color", "$value": "{pct.text-muted}" },
-      "gap": { "$type": "dimension", "$value": "{pct.space.3}" },
-      "radius": { "$type": "dimension", "$value": "{pct.radius.md}" },
-      "font-size": { "$type": "dimension", "$value": "{pct.font.size.md}" },
-      "font-size-sm": { "$type": "dimension", "$value": "{pct.font.size.sm}" },
-      "font-size-lg": { "$type": "dimension", "$value": "{pct.font.size.lg}" },
-      "padding-y": { "$type": "dimension", "$value": "{pct.space.3}" },
-      "padding-x": { "$type": "dimension", "$value": "{pct.space.4}" },
-      "padding-y-sm": { "$type": "dimension", "$value": "{pct.space.2}" },
-      "padding-x-sm": { "$type": "dimension", "$value": "{pct.space.3}" },
-      "padding-y-lg": { "$type": "dimension", "$value": "{pct.space.4}" },
-      "padding-x-lg": { "$type": "dimension", "$value": "{pct.space.4}" },
-      "target-min": { "$type": "dimension", "$value": "{pct.target.min}" },
-
+      "bg": {
+        "$type": "color",
+        "$value": "{pct.surface}",
+        "$description": "Background of the date field."
+      },
+      "fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of the date field."
+      },
+      "placeholder-fg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Text colour of the placeholder."
+      },
+      "border": {
+        "$type": "color",
+        "$value": "{pct.border-strong}",
+        "$description": "Edge colour of the date field."
+      },
+      "border-hover": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Edge colour of the date field on hover."
+      },
+      "border-focus": {
+        "$type": "color",
+        "$value": "{pct.primary}",
+        "$description": "Edge colour of the date field when focused."
+      },
+      "border-invalid": {
+        "$type": "color",
+        "$value": "{pct.danger}",
+        "$description": "Edge colour of the date field when invalid."
+      },
+      "fg-invalid": {
+        "$type": "color",
+        "$value": "{pct.danger}",
+        "$description": "Text colour of the date field when invalid."
+      },
+      "bg-disabled": {
+        "$type": "color",
+        "$value": "{pct.surface-disabled}",
+        "$description": "Background of the date field while disabled."
+      },
+      "fg-disabled": {
+        "$type": "color",
+        "$value": "{pct.text-disabled}",
+        "$description": "Text colour of the date field while disabled."
+      },
+      "border-disabled": {
+        "$type": "color",
+        "$value": "{pct.border}",
+        "$description": "Edge colour of the date field while disabled."
+      },
+      "label-fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of the label."
+      },
+      "hint-fg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Text colour of the hint."
+      },
+      "gap": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Gap between the label, the input and the hint."
+      },
+      "radius": {
+        "$type": "dimension",
+        "$value": "{pct.radius.md}",
+        "$description": "Corner radius of the date field."
+      },
+      "font-size": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.md}",
+        "$description": "Font size of the date field."
+      },
+      "font-size-sm": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.sm}",
+        "$description": "Font size of the date field at size sm."
+      },
+      "font-size-lg": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.lg}",
+        "$description": "Font size of the date field at size lg."
+      },
+      "padding-y": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Vertical padding of the date field."
+      },
+      "padding-x": {
+        "$type": "dimension",
+        "$value": "{pct.space.4}",
+        "$description": "Horizontal padding of the date field."
+      },
+      "padding-y-sm": {
+        "$type": "dimension",
+        "$value": "{pct.space.2}",
+        "$description": "Vertical padding of the date field at size sm."
+      },
+      "padding-x-sm": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Horizontal padding of the date field at size sm."
+      },
+      "padding-y-lg": {
+        "$type": "dimension",
+        "$value": "{pct.space.4}",
+        "$description": "Vertical padding of the date field at size lg."
+      },
+      "padding-x-lg": {
+        "$type": "dimension",
+        "$value": "{pct.space.4}",
+        "$description": "Horizontal padding of the date field at size lg."
+      },
+      "target-min": {
+        "$type": "dimension",
+        "$value": "{pct.target.min}",
+        "$description": "Touch-target floor of the date field."
+      },
       "$comment-toggle": "The button that opens the calendar. It is the one thing in the row a finger aims at, so its size is a floor rather than a fixed number — `max()` against `target-min` in the sheet.",
-      "toggle-size": { "$type": "dimension", "$value": "20px" },
+      "toggle-size": {
+        "$type": "dimension",
+        "$value": "20px",
+        "$description": "Size of the calendar toggle."
+      },
       "$comment-icon": "The box a drawing sits in — the toggle's calendar and the nav buttons' chevron alike. One number, because `req-api-icons` makes the box the component's and the drawing the consumer's: a set that swaps one of the two would otherwise land in a square sized for the other.",
-      "icon-size": { "$type": "dimension", "$value": "16px" },
-
-      "toggle-radius": { "$type": "dimension", "$value": "{pct.radius.md}" },
-      "toggle-fg": { "$type": "color", "$value": "{pct.text-muted}" },
-      "toggle-bg-hover": { "$type": "color", "$value": "{pct.surface-100}" },
-
-      "panel-bg": { "$type": "color", "$value": "{pct.surface}" },
-      "panel-border": { "$type": "color", "$value": "{pct.border-strong}" },
-      "panel-shadow": { "$type": "shadow", "$value": "{pct.shadow-panel}" },
-      "panel-radius": { "$type": "dimension", "$value": "{pct.radius.md}" },
-      "panel-padding-y": { "$type": "dimension", "$value": "{pct.space.3}" },
-      "panel-padding-x": { "$type": "dimension", "$value": "{pct.space.3}" },
-
+      "icon-size": {
+        "$type": "dimension",
+        "$value": "16px",
+        "$description": "Size of the icon."
+      },
+      "toggle-radius": {
+        "$type": "dimension",
+        "$value": "{pct.radius.md}",
+        "$description": "Corner radius of the calendar toggle."
+      },
+      "toggle-fg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Text colour of the calendar toggle."
+      },
+      "toggle-bg-hover": {
+        "$type": "color",
+        "$value": "{pct.surface-100}",
+        "$description": "Background of the calendar toggle on hover."
+      },
+      "panel-bg": {
+        "$type": "color",
+        "$value": "{pct.surface}",
+        "$description": "Background of the panel."
+      },
+      "panel-border": {
+        "$type": "color",
+        "$value": "{pct.border-strong}",
+        "$description": "Edge colour of the panel."
+      },
+      "panel-shadow": {
+        "$type": "shadow",
+        "$value": "{pct.shadow-panel}",
+        "$description": "Shadow of the panel."
+      },
+      "panel-radius": {
+        "$type": "dimension",
+        "$value": "{pct.radius.md}",
+        "$description": "Corner radius of the panel."
+      },
+      "panel-padding-y": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Vertical padding of the panel."
+      },
+      "panel-padding-x": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Horizontal padding of the panel."
+      },
       "$comment-caption": "The month over the grid. It is the one part of the calendar that changes without the user having moved anything they can see, so it is set apart by weight rather than by a rule the panel would have to draw.",
       "caption-font-size": {
         "$type": "dimension",
-        "$value": "{pct.font.size.md}"
+        "$value": "{pct.font.size.md}",
+        "$description": "Font size of the month caption."
       },
       "caption-font-weight": {
         "$type": "fontWeight",
-        "$value": "{pct.font.weight.medium}"
+        "$value": "{pct.font.weight.medium}",
+        "$description": "Font weight of the month caption."
       },
-
-      "nav-size": { "$type": "dimension", "$value": "28px" },
-
-      "nav-radius": { "$type": "dimension", "$value": "{pct.radius.md}" },
-      "nav-bg-hover": { "$type": "color", "$value": "{pct.surface-100}" },
-
-      "weekday-fg": { "$type": "color", "$value": "{pct.text-muted}" },
+      "nav-size": {
+        "$type": "dimension",
+        "$value": "28px",
+        "$description": "Size of the month navigation."
+      },
+      "nav-radius": {
+        "$type": "dimension",
+        "$value": "{pct.radius.md}",
+        "$description": "Corner radius of the month navigation."
+      },
+      "nav-bg-hover": {
+        "$type": "color",
+        "$value": "{pct.surface-100}",
+        "$description": "Background of the month navigation on hover."
+      },
+      "weekday-fg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Text colour of a weekday heading."
+      },
       "weekday-font-size": {
         "$type": "dimension",
-        "$value": "{pct.font.size.sm}"
+        "$value": "{pct.font.size.sm}",
+        "$description": "Font size of a weekday heading."
       },
       "weekday-font-weight": {
         "$type": "fontWeight",
-        "$value": "{pct.font.weight.medium}"
+        "$value": "{pct.font.weight.medium}",
+        "$description": "Font weight of a weekday heading."
       },
-
       "$comment-day": "One cell of the grid. Everything else in the calendar is derived from this square, so a theme that resizes it resizes the whole month (req-api-size).",
-      "day-size": { "$type": "dimension", "$value": "32px" },
-      "day-size-sm": { "$type": "dimension", "$value": "28px" },
-      "day-size-lg": { "$type": "dimension", "$value": "36px" },
-      "day-radius": { "$type": "dimension", "$value": "{pct.radius.md}" },
-      "day-font-size": { "$type": "dimension", "$value": "{pct.font.size.md}" },
+      "day-size": {
+        "$type": "dimension",
+        "$value": "32px",
+        "$description": "Size of a day cell."
+      },
+      "day-size-sm": {
+        "$type": "dimension",
+        "$value": "28px",
+        "$description": "Size of a day cell at size sm."
+      },
+      "day-size-lg": {
+        "$type": "dimension",
+        "$value": "36px",
+        "$description": "Size of a day cell at size lg."
+      },
+      "day-radius": {
+        "$type": "dimension",
+        "$value": "{pct.radius.md}",
+        "$description": "Corner radius of a day cell."
+      },
+      "day-font-size": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.md}",
+        "$description": "Font size of a day cell."
+      },
       "day-font-size-sm": {
         "$type": "dimension",
-        "$value": "{pct.font.size.sm}"
+        "$value": "{pct.font.size.sm}",
+        "$description": "Font size of a day cell at size sm."
       },
       "day-font-size-lg": {
         "$type": "dimension",
-        "$value": "{pct.font.size.lg}"
+        "$value": "{pct.font.size.lg}",
+        "$description": "Font size of a day cell at size lg."
       },
-      "day-bg-hover": { "$type": "color", "$value": "{pct.surface-100}" },
-      "day-bg-selected": { "$type": "color", "$value": "{pct.primary}" },
-      "day-fg-selected": { "$type": "color", "$value": "{pct.on-primary}" },
+      "day-bg-hover": {
+        "$type": "color",
+        "$value": "{pct.surface-100}",
+        "$description": "Background of a day cell on hover."
+      },
+      "day-bg-selected": {
+        "$type": "color",
+        "$value": "{pct.primary}",
+        "$description": "Background of a day cell when selected."
+      },
+      "day-fg-selected": {
+        "$type": "color",
+        "$value": "{pct.on-primary}",
+        "$description": "Text colour of a day cell when selected."
+      },
       "day-font-weight-selected": {
         "$type": "fontWeight",
-        "$value": "{pct.font.weight.medium}"
+        "$value": "{pct.font.weight.medium}",
+        "$description": "Font weight of a day cell when selected."
       },
       "$comment-day-muted": "A day of a neighbouring month. It is drawn quieter and stays pickable, so the colour has to clear the contrast policy on its own — this is where the obvious road was a fade, and `req-token-no-opacity` is what refuses it (lesson-6).",
-      "day-fg-muted": { "$type": "color", "$value": "{pct.text-muted}" },
-      "day-fg-disabled": { "$type": "color", "$value": "{pct.text-disabled}" },
-      "day-border-today": { "$type": "color", "$value": "{pct.primary}" }
+      "day-fg-muted": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Text colour of a day outside the month shown."
+      },
+      "day-fg-disabled": {
+        "$type": "color",
+        "$value": "{pct.text-disabled}",
+        "$description": "Text colour of a day cell while disabled."
+      },
+      "day-border-today": {
+        "$type": "color",
+        "$value": "{pct.primary}",
+        "$description": "Edge colour of a day cell for today."
+      }
     }
   }
 }

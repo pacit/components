@@ -24,8 +24,22 @@ pattern for the ones after it.
 **Entrypoint:** `@pacit/components/<name>`
 **Selector:** `pct-name` / `[pctName]`
 **Status:** draft | released
+**Category:** Foundations | Actions & navigation | Inputs | Overlays | Feedback & display —
+the group the site's index files the component under
 **ARIA APG pattern:** [pattern name](https://www.w3.org/WAI/ARIA/apg/patterns/…) — named in
 the class JSDoc as well
+
+One or two sentences between the header and the first section: what the component is for the
+reader, not for the maintainer. The site leads the page with them.
+
+## Usage
+
+The shortest possible use, as a fence the site renders under the import line — one element
+where one element is enough:
+
+```html
+<pct-name>…</pct-name>
+```
 
 ## Contract
 
@@ -37,6 +51,23 @@ the class JSDoc as well
 | **Slots**                   | `<ng-content select="…">`                                                                 |
 | **Parts** (`data-pct-part`) | list — must match the inventory ([`req-api-parts`](../requirements/api.md#req-api-parts)) |
 | **Tokens**                  | the `--pct-<name>-*` prefix plus an entry in `contrast.policy.json`                       |
+
+## Parts
+
+| part   | what it is                      |
+| ------ | ------------------------------- |
+| `name` | one line: which box the part is |
+
+## Theming
+
+A brand override in a few declarations — the site applies it to a second instance of the
+preview, so the reader sees the tokens move:
+
+```css
+[data-theme='brand'] {
+  --pct-name-bg: #0f766e;
+}
+```
 
 ## Keyboard map
 

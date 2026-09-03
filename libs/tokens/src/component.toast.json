@@ -3,43 +3,117 @@
     "toast": {
       "$comment": "A toast is a piece of the page that has arrived on top of it — the popover's surface rather than the tooltip's inverted one, and for the popover's reason: the message is something the user reads and may act on, not an annotation on a control they are pointing at. What is different from every other panel here is that nothing anchors it, so the two numbers no other component needs are the distance from the window's edge and the layer it sits on.",
       "$comment-inset": "How far the stack stands off the window's edge. One token for both axes: a toast in the corner is inset from two edges at once, and a skin that wants it tighter wants it tighter in both.",
-      "inset": { "$type": "dimension", "$value": "{pct.space.5}" },
+      "inset": {
+        "$type": "dimension",
+        "$value": "{pct.space.5}",
+        "$description": "Distance of the toast from the edge of the viewport."
+      },
       "$comment-gap": "Between two toasts. It is what says they are separate messages rather than one panel with several lines — the shadow alone does not, since a shadow falls on the toast below it.",
-      "gap": { "$type": "dimension", "$value": "{pct.space.3}" },
+      "gap": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Gap between stacked toasts."
+      },
       "$comment-z-index": "Above the CDK overlay container, which the dependency stamps at 1000: a message raised by a dialog's own save button has to be visible over that dialog, and a toast behind a modal is a message nobody reads. It is a token and not a number in the sheet because an application with a layer of its own above ours has nowhere else to say so.",
-      "z-index": { "$type": "number", "$value": 1100 },
-
-      "item-bg": { "$type": "color", "$value": "{pct.surface}" },
-      "item-fg": { "$type": "color", "$value": "{pct.text}" },
+      "z-index": {
+        "$type": "number",
+        "$value": 1100,
+        "$description": "Stacking level of the toast."
+      },
+      "item-bg": {
+        "$type": "color",
+        "$value": "{pct.surface}",
+        "$description": "Background of an item."
+      },
+      "item-fg": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of an item."
+      },
       "$comment-item-border": "The popover's argument exactly: the toast stands on the page rather than over a veil, so this line is the only thing separating a light panel from a light page, and a shadow is not that thing — it goes with the mode that takes shadows away.",
-      "item-border": { "$type": "color", "$value": "{pct.border-strong}" },
-      "item-radius": { "$type": "dimension", "$value": "{pct.radius.md}" },
-      "item-shadow": { "$type": "shadow", "$value": "{pct.shadow-panel}" },
+      "item-border": {
+        "$type": "color",
+        "$value": "{pct.border-strong}",
+        "$description": "Edge colour of an item."
+      },
+      "item-radius": {
+        "$type": "dimension",
+        "$value": "{pct.radius.md}",
+        "$description": "Corner radius of an item."
+      },
+      "item-shadow": {
+        "$type": "shadow",
+        "$value": "{pct.shadow-panel}",
+        "$description": "Shadow of an item."
+      },
       "$comment-item-max-width": "Wider than a tooltip and narrower than a popover: a toast is a sentence about something that has just happened, and a panel as wide as a dialog would cover the corner of the page the user is still working in.",
-      "item-max-width": { "$type": "dimension", "$value": "360px" },
-      "item-padding-x": { "$type": "dimension", "$value": "{pct.space.4}" },
-      "item-padding-y": { "$type": "dimension", "$value": "{pct.space.3}" },
-      "item-gap": { "$type": "dimension", "$value": "{pct.space.3}" },
-
+      "item-max-width": {
+        "$type": "dimension",
+        "$value": "360px",
+        "$description": "Maximum width of an item."
+      },
+      "item-padding-x": {
+        "$type": "dimension",
+        "$value": "{pct.space.4}",
+        "$description": "Horizontal padding of an item."
+      },
+      "item-padding-y": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Vertical padding of an item."
+      },
+      "item-gap": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Gap between a toast's message and its action."
+      },
       "message-font-size": {
         "$type": "dimension",
-        "$value": "{pct.font.size.sm}"
+        "$value": "{pct.font.size.sm}",
+        "$description": "Font size of the message."
       },
-
       "$comment-action-fg": "The one thing on a toast that can be pressed for a reason other than making it go away, so it is the page's accent — and it is measured against the toast's own surface rather than against the page's, which is the same colour today and need not stay so.",
-      "action-fg": { "$type": "color", "$value": "{pct.primary}" },
+      "action-fg": {
+        "$type": "color",
+        "$value": "{pct.primary}",
+        "$description": "Text colour of the action button."
+      },
       "action-font-weight": {
         "$type": "fontWeight",
-        "$value": "{pct.font.weight.medium}"
+        "$value": "{pct.font.weight.medium}",
+        "$description": "Font weight of the action button."
       },
-      "action-radius": { "$type": "dimension", "$value": "{pct.radius.md}" },
-
-      "close-fg": { "$type": "color", "$value": "{pct.text-muted}" },
-      "close-fg-hover": { "$type": "color", "$value": "{pct.text}" },
-      "close-bg-hover": { "$type": "color", "$value": "{pct.surface-100}" },
-      "close-radius": { "$type": "dimension", "$value": "{pct.radius.md}" },
+      "action-radius": {
+        "$type": "dimension",
+        "$value": "{pct.radius.md}",
+        "$description": "Corner radius of the action button."
+      },
+      "close-fg": {
+        "$type": "color",
+        "$value": "{pct.text-muted}",
+        "$description": "Text colour of the close button."
+      },
+      "close-fg-hover": {
+        "$type": "color",
+        "$value": "{pct.text}",
+        "$description": "Text colour of the close button on hover."
+      },
+      "close-bg-hover": {
+        "$type": "color",
+        "$value": "{pct.surface-100}",
+        "$description": "Background of the close button on hover."
+      },
+      "close-radius": {
+        "$type": "dimension",
+        "$value": "{pct.radius.md}",
+        "$description": "Corner radius of the close button."
+      },
       "$comment-close-size": "The box, not the cross: the drawing is 16px and the target the pointer has to hit is `pct.target.min` (req-a11y-touch).",
-      "close-size": { "$type": "dimension", "$value": "{pct.target.min}" }
+      "close-size": {
+        "$type": "dimension",
+        "$value": "{pct.target.min}",
+        "$description": "Size of the close button."
+      }
     }
   }
 }

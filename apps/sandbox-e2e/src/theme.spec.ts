@@ -37,6 +37,25 @@ test.describe('A scoped theme — the cascade of CSS custom properties', () => {
   });
 
   /**
+   * 0063: the theme names its scheme to the platform. The tokens repaint every colour
+   * the library owns; `color-scheme` is what makes the browser's OWN chrome — the
+   * scrollbars, the form-control defaults — follow, at the same scope and no wider.
+   */
+  test('the theme names its scheme to the platform, at its own scope', async ({
+    page,
+  }) => {
+    const schemeOf = (locator: import('@playwright/test').Locator) =>
+      locator.evaluate((el) => getComputedStyle(el).colorScheme);
+    expect(await schemeOf(page.locator('html'))).toBe('light');
+    const panel = page.getByTestId('panel-scoped');
+    expect(await schemeOf(panel)).toBe('dark');
+
+    await page.getByTestId('toggle').click();
+    await expect(panel).not.toHaveAttribute('data-theme', 'dark');
+    expect(await schemeOf(panel)).toBe('light');
+  });
+
+  /**
    * The `req-token-directive` control: the scoped panel above writes `data-theme` by
    * hand, its neighbour goes through the library's `[pctTheme]` — one attribute, two
    * writers. Sugar may not taste different: the same attribute value and the same

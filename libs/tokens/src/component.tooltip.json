@@ -2,15 +2,47 @@
   "pct": {
     "tooltip": {
       "$comment": "A tooltip is an INVERTED surface, and that is a decision about what it is rather than about how it looks: the panel is not part of the page's furniture but an annotation laid over it for a moment, and the fastest way of saying so is to answer the page's own light with dark. That is why the colours come through `pct.surface-inverse` and its `on-` pair instead of `pct.surface` — the two themes then answer the question separately, which is exactly what the semantic tier is for.",
-      "bg": { "$type": "color", "$value": "{pct.surface-inverse}" },
-      "fg": { "$type": "color", "$value": "{pct.on-surface-inverse}" },
-      "radius": { "$type": "dimension", "$value": "{pct.radius.md}" },
-      "padding-x": { "$type": "dimension", "$value": "{pct.space.3}" },
-      "padding-y": { "$type": "dimension", "$value": "{pct.space.2}" },
-      "font-size": { "$type": "dimension", "$value": "{pct.font.size.sm}" },
+      "bg": {
+        "$type": "color",
+        "$value": "{pct.surface-inverse}",
+        "$description": "Background of the tooltip."
+      },
+      "fg": {
+        "$type": "color",
+        "$value": "{pct.on-surface-inverse}",
+        "$description": "Text colour of the tooltip."
+      },
+      "radius": {
+        "$type": "dimension",
+        "$value": "{pct.radius.md}",
+        "$description": "Corner radius of the tooltip."
+      },
+      "padding-x": {
+        "$type": "dimension",
+        "$value": "{pct.space.3}",
+        "$description": "Horizontal padding of the tooltip."
+      },
+      "padding-y": {
+        "$type": "dimension",
+        "$value": "{pct.space.2}",
+        "$description": "Vertical padding of the tooltip."
+      },
+      "font-size": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.sm}",
+        "$description": "Font size of the tooltip."
+      },
       "$comment-max-width": "A tooltip is one or two lines about a control, not a paragraph. The cap is what turns a long string into a wrapped panel rather than a ribbon across the window — and it is a token, because how much a skin lets a tooltip say is a property of the skin.",
-      "max-width": { "$type": "dimension", "$value": "280px" },
-      "shadow": { "$type": "shadow", "$value": "{pct.shadow-panel}" }
+      "max-width": {
+        "$type": "dimension",
+        "$value": "280px",
+        "$description": "Maximum width of the tooltip."
+      },
+      "shadow": {
+        "$type": "shadow",
+        "$value": "{pct.shadow-panel}",
+        "$description": "Shadow of the tooltip."
+      }
     }
   }
 }

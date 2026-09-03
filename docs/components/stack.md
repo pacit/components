@@ -3,6 +3,7 @@
 **Entrypoint:** `@pacit/components/stack`
 **Selector:** `pct-stack`
 **Status:** released
+**Category:** Foundations
 **ARIA APG pattern:** none — layout is presentational and this host carries **no ARIA at
 all** (0057). The unit suite pins the absence itself. Named in the class JSDoc.
 
@@ -12,6 +13,15 @@ whose blocks stand one chosen step apart. The step comes from the spacing scale 
 shared `sm | md | lg` axis, so rhythm is picked, not typed — and because it is a flex `gap`,
 it cannot collapse, spaces **between** blocks only, and leaves the first and last block
 flush with the host: three properties margins never manage together.
+
+## Usage
+
+```html
+<pct-stack gap="lg">
+  <div>First</div>
+  <div>Second</div>
+</pct-stack>
+```
 
 ## Contract
 
@@ -30,6 +40,14 @@ and a page's rhythm is not a control height — a `compact` form is no reason fo
 touch. For the same reason the attribute is `data-pct-gap`, not `data-pct-size`: the size
 axis of [`req-api-size`](../requirements/api.md#req-api-size) promises equal _heights_, and
 a stack has none to promise.
+
+## Theming
+
+```css
+[data-theme='brand'] {
+  --pct-stack-gap: 32px;
+}
+```
 
 ## Keyboard map
 

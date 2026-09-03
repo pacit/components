@@ -296,3 +296,7 @@ Which lesson feeds which requirement. Generated from the **Lessons** fields.
 | [`lesson-142`](lessons.md#lesson-142) | `req-project-reach`                                                                                                                                               |
 | [`lesson-143`](lessons.md#lesson-143) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-144`](lessons.md#lesson-144) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-145`](lessons.md#lesson-145) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-146`](lessons.md#lesson-146) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-147`](lessons.md#lesson-147) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-148`](lessons.md#lesson-148) | — _(not cited)_                                                                                                                                                   |

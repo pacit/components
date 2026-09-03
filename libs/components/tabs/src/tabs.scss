@@ -15,11 +15,35 @@
   border-block-end: 1px solid var(--pct-tabs-list-border);
 }
 
+/* The vertical face is a ROW: the strip on one side, the chosen panel beside it. Until this
+   block the strip turned into a column and the panel still stacked underneath it, which is a
+   column of labels introducing a section nowhere near them — the reviewer read it as the
+   layout being half-built, and it was.
+
+   `align-items: start` so a short strip does not stretch to a tall panel's height, and the
+   rail stops where the labels stop. Everything is logical: in RTL the strip moves to the
+   right and the panel to the left with no rule of its own. */
+:host([data-pct-orientation='vertical']) {
+  display: flex;
+  align-items: start;
+}
+
 :host([data-pct-orientation='vertical']) .pct-tabs__list {
   flex-direction: column;
   align-items: stretch;
   border-block-end: none;
   border-inline-end: 1px solid var(--pct-tabs-list-border);
+  /* The strip is as wide as its longest label and no wider; the panel takes the rest. */
+  flex: none;
+}
+
+/* `min-inline-size: 0` is what lets a wide panel — a table, a code block — scroll inside
+   itself instead of pushing the strip off the box: a flex item's floor is its content's
+   min-content width until it is told otherwise. */
+:host([data-pct-orientation='vertical']) .pct-tabs__panels {
+  flex: 1 1 0;
+  min-inline-size: 0;
+  padding-inline-start: var(--pct-tabs-panel-gap);
 }
 
 .pct-tabs__tab {
@@ -120,5 +144,99 @@
 
   .pct-tabs__tab:focus-visible {
     outline-color: Highlight;
+  }
+}
+
+/* ── the segmented face (0064) ───────────────────────────────────────────────
+   The same strip, the same keyboard, the same roles — a recessed track with the chosen tab
+   raised out of it. Everything below is paint keyed on the variant attribute, which is why
+   this face cost no TypeScript beyond one union member (0058's argument, applied a second
+   time).
+
+   The track wraps the tabs tightly: no rail, a gap of nothing between segments, and the
+   radius on the strip a little larger than the tabs' own so the two curves nest. */
+:host([data-pct-variant='segmented']) .pct-tabs__list {
+  gap: 0;
+  /* The track hugs its segments: a segmented strip is a CONTROL, and a control that runs to
+     the far edge of whatever holds it reads as a rail again — measured on the site, where the
+     track ran the full width of the card.
+
+     `fit-content` and not `inline-flex`, because the strip is also a scroll container (the
+     library's answer to more labels than room). An inline-flex box takes its max-content
+     width and overflows its parent instead of scrolling inside itself; `fit-content` is
+     min(max-content, available), so a short strip hugs and a long one still caps and
+     scrolls. */
+  inline-size: fit-content;
+  padding: var(--pct-tabs-list-inset);
+  border: none;
+  /* Derived, not a token of its own: a track whose radius is the segment's plus the inset it
+     is held by nests the two curves exactly, and keeps doing so after a theme changes either
+     number. The library's radius scale has one step, so the alternative was a raw length. */
+  border-radius: calc(var(--pct-tabs-tab-radius) + var(--pct-tabs-list-inset));
+  background: var(--pct-tabs-list-bg);
+}
+
+/* A segment is rounded on ALL four corners. The underline face rounds the top only, because
+   a tab's bottom edge meets the rail it stands on — inside a track there is no rail to meet,
+   and a square bottom under a rounded top is the first thing an eye catches. */
+:host([data-pct-variant='segmented']) .pct-tabs__tab {
+  border-block-end: none;
+  border-radius: var(--pct-tabs-tab-radius);
+}
+
+:host([data-pct-variant='segmented']) .pct-tabs__tab[data-pct-chosen] {
+  background: var(--pct-tabs-tab-bg-selected);
+}
+
+/* The chosen segment already carries a fill, so a hover fill underneath it would be a second
+   answer to the same question; the label's colour is the whole hover here. */
+:host([data-pct-variant='segmented'])
+  .pct-tabs__tab:hover:not([data-pct-disabled]) {
+  background: none;
+}
+
+:host([data-pct-variant='segmented'])
+  .pct-tabs__tab[data-pct-chosen]:hover:not([data-pct-disabled]) {
+  background: var(--pct-tabs-tab-bg-selected);
+}
+
+/* Vertical AND segmented: the track runs down the side, so its inline edge goes with it. */
+:host([data-pct-variant='segmented'][data-pct-orientation='vertical'])
+  .pct-tabs__list {
+  border-inline-end: none;
+}
+
+/* Forced colors drops every fill, and this face carries its whole state in one. So the
+   chosen segment is given an edge that IS there — the same channel the underline face uses,
+   restored at the specificity of the rules above (`@media` adds none — `lesson-70`). */
+@media (forced-colors: active) {
+  :host([data-pct-variant='segmented']) .pct-tabs__list {
+    border: 1px solid CanvasText;
+  }
+
+  /* The vertical face drops the track's inline edge at (0,4,0), and `@media` lends this block
+     no specificity of its own — so the border is written back at that selector rather than
+     left to a base rule the cascade has already answered (`lesson-70`). */
+  :host([data-pct-variant='segmented'][data-pct-orientation='vertical'])
+    .pct-tabs__list {
+    border: 1px solid CanvasText;
+  }
+
+  :host([data-pct-variant='segmented']) .pct-tabs__tab[data-pct-chosen] {
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+    color: Highlight;
+  }
+
+  /* Same reason, for the hover the segmented face turns off: this face carries the pointer in
+     the label's colour because the chosen segment already owns a fill, and in forced colours
+     that fill is gone — so the mode's own answer (a `Canvas` ground under a `Highlight` label)
+     is repeated at each of the two selectors that outrank it. */
+  :host([data-pct-variant='segmented'])
+    .pct-tabs__tab:hover:not([data-pct-disabled]),
+  :host([data-pct-variant='segmented'])
+    .pct-tabs__tab[data-pct-chosen]:hover:not([data-pct-disabled]) {
+    background: Canvas;
+    color: Highlight;
   }
 }

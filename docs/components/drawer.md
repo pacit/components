@@ -3,6 +3,7 @@
 **Entrypoint:** `@pacit/components/drawer`
 **Selector:** `pct-drawer` (the panel) and `button[pctDrawerTrigger]` (the control that opens it)
 **Status:** released
+**Category:** Overlays
 **ARIA APG pattern:** [Disclosure](https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/) — named
 in the class JSDoc
 
@@ -19,6 +20,12 @@ apart and no element expresses them — what is left is `aria-expanded` on someb
 wrote it, so the tab order, the theme, the writing direction and the stacking context are the
 page's own. It is the "place to park" that
 [0031](../decisions/0031-a-panel-s-tab-order-belongs-to-its-trigger.md) named and handed here.
+
+## Usage
+
+```html
+<button pctButton [pctDrawerTrigger]="nav">Sections</button> <pct-drawer #nav heading="Sections">…</pct-drawer>
+```
 
 ## Contract
 
@@ -54,6 +61,25 @@ drawer may be opened from the header bar and from a link in the footer, and 0031
 that ambiguity in dev mode because a popover has one trigger. Here there is nothing to report.
 And it goes back **only if focus was inside** — the page behind is live, so a user who has
 already clicked into it must not be pulled out.
+
+## Parts
+
+| part      | what it is                                       |
+| --------- | ------------------------------------------------ |
+| `header`  | the row holding the heading and the close button |
+| `heading` | the title the drawer is named by                 |
+| `close`   | the close button                                 |
+| `content` | the projected body                               |
+
+## Theming
+
+```css
+[data-theme='brand'] {
+  --pct-drawer-panel-bg: #f0fdfa;
+  --pct-drawer-panel-fg: #134e4a;
+  --pct-drawer-heading-fg: #0f766e;
+}
+```
 
 ## Keyboard map
 

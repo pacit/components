@@ -118,6 +118,7 @@
         "proc",
         "proj",
         "ol",
+        "toc",
         "proto",
         "pts",
         "reg",
@@ -156,13 +157,26 @@
         "rgb",
         "rtl",
         "sil",
+        "sms",
         "uri",
         "wai"
       ]
     },
     "codes": {
       "reason": "Identifiers out of somebody else's code list — ISO country and currency codes, BCP-47 language subtags. They stand in test data, in demo rows and in the calendar's table of the regions whose week does not start on Monday, where translating them would break the thing they name.",
-      "words": ["cz", "en", "eur", "hu", "ja", "lv", "mv", "pln", "sv", "ua"]
+      "words": [
+        "cz",
+        "en",
+        "eur",
+        "hu",
+        "ja",
+        "lv",
+        "mv",
+        "pln",
+        "sa",
+        "sv",
+        "ua"
+      ]
     },
     "english": {
       "reason": "English words `american-english` simply does not carry — it is a spelling list from another decade, and the trade's vocabulary moved. The subtraction cannot remove what the English side never held, so they are named here instead.",

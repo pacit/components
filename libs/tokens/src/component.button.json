@@ -2,34 +2,101 @@
   "pct": {
     "button": {
       "$comment": "The height comes from the token shared with the field ({pct.control.height}), not from vertical padding — otherwise a button and a field row of the same size cannot be lined up (req-api-size). The `-sm` / `-lg` variants swap the base tokens; size `md` keeps to the base tokens themselves.",
-      "bg": { "$type": "color", "$value": "{pct.primary}" },
-      "bg-hover": { "$type": "color", "$value": "{pct.primary-hover}" },
-      "bg-active": { "$type": "color", "$value": "{pct.primary-active}" },
-      "fg": { "$type": "color", "$value": "{pct.on-primary}" },
-      "border": { "$type": "color", "$value": "{pct.primary}" },
-      "bg-disabled": { "$type": "color", "$value": "{pct.surface-disabled}" },
-      "fg-disabled": { "$type": "color", "$value": "{pct.text-disabled}" },
-      "border-disabled": { "$type": "color", "$value": "{pct.border}" },
-      "radius": { "$type": "dimension", "$value": "{pct.radius.md}" },
-      "height": { "$type": "dimension", "$value": "{pct.control.height.md}" },
+      "bg": {
+        "$type": "color",
+        "$value": "{pct.primary}",
+        "$description": "Background of the solid face."
+      },
+      "bg-hover": {
+        "$type": "color",
+        "$value": "{pct.primary-hover}",
+        "$description": "Solid face background on hover."
+      },
+      "bg-active": {
+        "$type": "color",
+        "$value": "{pct.primary-active}",
+        "$description": "Solid face background while pressed."
+      },
+      "fg": {
+        "$type": "color",
+        "$value": "{pct.on-primary}",
+        "$description": "Label and spinner colour on the solid face."
+      },
+      "border": {
+        "$type": "color",
+        "$value": "{pct.primary}",
+        "$description": "Edge of the solid and outline faces."
+      },
+      "bg-disabled": {
+        "$type": "color",
+        "$value": "{pct.surface-disabled}",
+        "$description": "Background of any face while disabled."
+      },
+      "fg-disabled": {
+        "$type": "color",
+        "$value": "{pct.text-disabled}",
+        "$description": "Label colour while disabled — measured on purpose, though SC 1.4.3 exempts it."
+      },
+      "border-disabled": {
+        "$type": "color",
+        "$value": "{pct.border}",
+        "$description": "Edge while disabled."
+      },
+      "radius": {
+        "$type": "dimension",
+        "$value": "{pct.radius.md}",
+        "$description": "Corner radius of every face."
+      },
+      "height": {
+        "$type": "dimension",
+        "$value": "{pct.control.height.md}",
+        "$description": "Height at size md — the control axis every field shares, so rows line up."
+      },
       "height-sm": {
         "$type": "dimension",
-        "$value": "{pct.control.height.sm}"
+        "$value": "{pct.control.height.sm}",
+        "$description": "Height at size sm."
       },
       "height-lg": {
         "$type": "dimension",
-        "$value": "{pct.control.height.lg}"
+        "$value": "{pct.control.height.lg}",
+        "$description": "Height at size lg."
       },
-      "font-size": { "$type": "dimension", "$value": "{pct.font.size.md}" },
-      "font-size-sm": { "$type": "dimension", "$value": "{pct.font.size.sm}" },
-      "font-size-lg": { "$type": "dimension", "$value": "{pct.font.size.lg}" },
+      "font-size": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.md}",
+        "$description": "Label size at size md."
+      },
+      "font-size-sm": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.sm}",
+        "$description": "Label size at size sm."
+      },
+      "font-size-lg": {
+        "$type": "dimension",
+        "$value": "{pct.font.size.lg}",
+        "$description": "Label size at size lg."
+      },
       "font-weight": {
         "$type": "fontWeight",
-        "$value": "{pct.font.weight.medium}"
+        "$value": "{pct.font.weight.medium}",
+        "$description": "Label weight, every face."
       },
-      "padding-x": { "$type": "dimension", "$value": "{pct.space.5}" },
-      "padding-x-sm": { "$type": "dimension", "$value": "{pct.space.4}" },
-      "padding-x-lg": { "$type": "dimension", "$value": "{pct.space.5}" }
+      "padding-x": {
+        "$type": "dimension",
+        "$value": "{pct.space.5}",
+        "$description": "Horizontal padding at size md."
+      },
+      "padding-x-sm": {
+        "$type": "dimension",
+        "$value": "{pct.space.4}",
+        "$description": "Horizontal padding at size sm."
+      },
+      "padding-x-lg": {
+        "$type": "dimension",
+        "$value": "{pct.space.5}",
+        "$description": "Horizontal padding at size lg."
+      }
     }
   }
 }
