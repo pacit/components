@@ -891,6 +891,35 @@ routerLink>` CTAs until `a[pctButton]` exists (**4.33**), `select.scss` 7.69 kB
     (`libs/components/testing/src/dom.ts` says so in its header) and a consumer re-derives
     by hand the selectors the library treats as contract. A library that ships promises
     should ship the instrument a consumer's own suite holds them with after an upgrade
+- [ ] **2.7 — the component page, redesigned to the approved sketch** — the reviewer's second
+      item (2026-09-03): "the worst-looking part of the site". Two static sketches were
+      shown before a line of code moved (the rule he set); the decision is the second
+      sketch's character with the first one's tables — layout B (a component index on the
+      left, the page, a pinned table of contents on the right), ONE long page rather than
+      top tabs, JetBrains Mono as the vendored code face, the accessibility gaps shown in
+      public beside the measurements
+  - [ ] **2.7.1 — the strip's scrollbar** — the reviewer's guess was right: `pct-tabs` always
+        shows a scrollbar at the strip's end, and scrolling it by a pixel thickens the chosen
+        tab's edge. Library fix under the full regime (e2e in three engines, baselines), and
+        first, because the page's Preview stands on this component
+  - [ ] **2.7.2 — the page's data** — the content pass grows the readers the design needs:
+        the API read from the SOURCE (inputs, models and outputs with their JSDoc, the host
+        bindings, the entry point's exports), the tokens with a `$description` and their
+        defaults resolved for both themes, the card's new fields and sections (`Category`,
+        `Usage`, `Parts`, `Theming`), the examples as demo files with a title line, the
+        per-component evidence (mutation, e2e cases, colour pairs, baselines) and the Checks
+        table read as a scorecard. Every reader tolerant today, a tripwire the day 2.7.4 closes
+  - [ ] **2.7.3 — the page** — header with a spec line, Preview first on `pct-tabs` (dark
+        stage, RTL, copy), Usage, Examples with the prose beside the stage, API tables,
+        Styling tables, the Accessibility scorecard, Evidence tiles, the table of contents
+        with a scroll spy, the index with a filter and its copy in the drawer; container
+        queries on the content column, not viewport queries (the reviewer caught three
+        columns arriving too early in the sketch); baselines with the numbers masked; e2e
+  - [ ] **2.7.4 — the sweep** — a JSDoc line on every input, model and output of the library,
+        a `$description` on every component token, `Parts`/`Usage`/`Theming` in every card,
+        examples per component batched by category; the tripwires of 2.7.2 flip to throw
+  - [ ] **2.7.5 — the mono face** — JetBrains Mono vendored beside Inter (OFL, the licence
+        next to it), first in the code stack; the baselines that hold code regenerated
 
 ## 3. Publication
 
