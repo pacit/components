@@ -3958,3 +3958,41 @@ contains a stage that projects instances of THE SAME component, set the override
 inner element that only the dressed instance owns — never on a host the projected copies
 sit beneath. Selectors are scoped by encapsulation; inherited custom properties are not
 ([`lesson-147`](lessons.md#lesson-147) is the selector half of the same nesting).
+
+### <a id="lesson-149"></a>`lesson-149` — Two equal readings are not stillness: a scroll comes to rest in frames, not in round trips
+
+The modal's scroll-lock case was flaky in webkit alone — one failure in nine runs (three
+engines, `--repeat-each=3`), `Expected: 350, Received: 400`. The number the assertion
+compared against was not a literal: the case wheels the page, opens the dialog, reads the
+offset the lock is holding and asserts a second wheel does not change it. So the reading
+itself was wrong, and the lock — which was holding — took the blame.
+
+What a frame-by-frame log of `window.scrollY` says, taken in the page at 1280×500 on the
+sandbox's dialog view: a wheel of 400 px is an ANIMATION in webkit, twelve frames and some
+190 ms from the first pixel to the last, and its tail crawls — 384, 393, 398, 400. The
+scroll-into-view that `element.focus()` does is the opposite, a single frame: 400 → 128
+between two consecutive samples, because the opener sits above the fold once the page has
+moved. Both were in flight at once, since the case opened the dialog while the wheel was
+still running.
+
+The helper that read the offset polled `scrollY` every 100 ms and returned the first value
+it saw twice. That is a claim about two moments and not about the interval between them:
+where the animation crawls by single pixels, one value stands across both round trips, the
+helper reports "stopped" at 350, and the page arrives at 400 a moment later — inside the
+window in which the lock is supposed to hold everything still. Counting the stillness in
+the page's own frames instead (twenty unchanged `requestAnimationFrame` samples, a third of
+a second) makes the same question answerable, and letting the wheel come to rest BEFORE the
+dialog opens leaves one scroll to talk about instead of two.
+
+The case now says both things out loud: it reads the room left below the offset the lock is
+holding, and the reading after the dialog closes is the control for the one before it. With
+the lock taken out of the service on purpose, all three engines carry the page 400 px past
+the offset it was holding — 528 against a held 128 — so the equality is not passing on a
+page that had nowhere to go.
+
+The rule: stillness is a property of an interval, so measure it where the frames are — a
+run of unchanged frames inside the page, not two round trips that happen to agree — and let
+synthetic input settle before the thing under test starts. And when the assertion is "this
+number did not change", measure the room the number had to move in: at the bottom of a
+document, or on a page that does not scroll at all, an equality like that is free, and it
+passes just as well on a component that does nothing.

@@ -31,21 +31,59 @@ test.describe('PctDialog — a modal', () => {
   }
 
   /**
-   * The scroll offset once it has stopped moving. A wheel event does not land in one frame —
-   * webkit in particular goes on settling after the promise resolves — so a reading taken
-   * straight afterwards is a reading of a scroll still in progress. Comparing two of them
-   * against each other made the lock case fail about one run in three, on a lock that was
-   * working: the flake was in the measurement, not in the component.
+   * The scroll offset once the page has come to rest — stillness counted in the page's own
+   * frames, not in round trips.
+   *
+   * A wheel event does not land in one frame: webkit animates it, measured here at some
+   * twelve frames from the first pixel to the last, and a reading taken straight afterwards
+   * is a reading of a scroll still in progress. The first version of this helper asked for
+   * `scrollY` every 100 ms and called two equal answers "stopped" — which is a claim about
+   * two moments and not about the interval between them. The tail of that animation moves by
+   * single pixels, so one value can stand across both round trips and go on afterwards: the
+   * lock case then read its baseline mid-flight and failed once in nine runs against a lock
+   * that was working ([`lesson-149`](../../../docs/lessons.md#lesson-149)). Twenty frames
+   * without a change is a third of a second in which the page really did not move, and the
+   * counting happens where the frames are.
    */
   async function settledScrollY(page: Page): Promise<number> {
-    let last = -1;
-    for (let i = 0; i < 20; i++) {
-      const now = await page.evaluate(() => window.scrollY);
-      if (now === last) return now;
-      last = now;
-      await page.waitForTimeout(100);
-    }
-    throw new Error(`the page never stopped scrolling (last ${last})`);
+    return page.evaluate(async () => {
+      const STILL = 20;
+      const LIMIT = 600;
+      let last = window.scrollY;
+      let still = 0;
+      for (let frame = 0; frame < LIMIT; frame++) {
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+        const now = window.scrollY;
+        still = now === last ? still + 1 : 0;
+        last = now;
+        if (still === STILL) return now;
+      }
+      throw new Error(`the page never stopped scrolling (last ${last})`);
+    });
+  }
+
+  /**
+   * Where the page is standing and how much of it is left below — measured on the page
+   * itself and never derived from the delta handed to `mouse.wheel`, which is a request and
+   * not a result: what an engine does with it is the engine's business, and in webkit it is
+   * an animation a dozen frames long.
+   *
+   * The lock is asserted as "the number does not change", and a number cannot change when the
+   * page has nowhere left to go: at the bottom of the document that equality is free and
+   * passes just as well on a component that does nothing. So the room is read out loud, and
+   * the case fails on a page too short to prove anything rather than passing on it.
+   */
+  async function standing(
+    page: Page,
+  ): Promise<{ y: number; below: number; height: number }> {
+    return page.evaluate(() => {
+      const height = document.documentElement.scrollHeight;
+      return {
+        y: window.scrollY,
+        below: height - window.innerHeight - window.scrollY,
+        height,
+      };
+    });
   }
 
   test('the panel is a modal dialog named by its heading', async ({ page }) => {
@@ -145,26 +183,39 @@ test.describe('PctDialog — a modal', () => {
     test('the page stops scrolling, and starts again', async ({ page }) => {
       await page.setViewportSize({ width: 1280, height: 500 });
       await visit(page, '/dialog');
-      const scrollY = () => page.evaluate(() => window.scrollY);
+      /** One notch of the wheel, big enough to be unmistakable and to leave room below. */
+      const WHEEL = 400;
 
       await page.mouse.move(640, 250);
-      await page.mouse.wheel(0, 400);
-      // The page really does scroll, or the lock below would be proving nothing.
-      await expect.poll(scrollY).toBeGreaterThan(0);
+      await page.mouse.wheel(0, WHEEL);
+      // At rest BEFORE the dialog exists, and the wait is half the point: a wheel still
+      // animating when the panel opens goes on animating underneath it, and the offset the
+      // lock is then asked about belongs to neither. The reading also says the page really
+      // does scroll, or the lock below would be proving nothing.
+      expect(await settledScrollY(page)).toBeGreaterThan(0);
 
       // Read AFTER opening, not before: focusing the opener scrolls it into view, so the
-      // reading taken first is a reading of a different page.
+      // reading taken first is a reading of a different page. Which offset the page holds is
+      // not the promise — that it holds the one it had is.
       await openWith(page, 'open-basic');
       const locked = await settledScrollY(page);
-      await page.mouse.wheel(0, 400);
-      await page.waitForTimeout(300);
-      expect(await scrollY()).toBe(locked);
+      // A hundred pixels is not a derived figure — any room at all gives the equality below
+      // its teeth. It is the line under which this case stops being worth running, and the
+      // sandbox page leaves several hundred.
+      const room = await standing(page);
+      expect(
+        room.below,
+        `the page stands at ${room.y} of ${room.height}`,
+      ).toBeGreaterThan(100);
+
+      await page.mouse.wheel(0, WHEEL);
+      expect(await settledScrollY(page)).toBe(locked);
 
       await page.keyboard.press('Escape');
       await expect(panel(page)).toHaveCount(0);
       const released = await settledScrollY(page);
-      await page.mouse.wheel(0, 400);
-      await expect.poll(scrollY).toBeGreaterThan(released);
+      await page.mouse.wheel(0, WHEEL);
+      expect(await settledScrollY(page)).toBeGreaterThan(released);
     });
 
     /**
