@@ -11,7 +11,24 @@
 }
 
 .topbar {
+  /* The sketch's frost, restored: the bar stays while the page passes beneath it.
+     86% of the surface colour stays in the mix and the rest arrives pre-blurred, so
+     the nav keeps its contrast over anything the page scrolls past. Forced colors
+     needs no branch of its own — it repaints backgrounds in Canvas and ignores the
+     filter; reduced transparency gets the solid bar below. */
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 10;
   border-block-end: 1px solid var(--pct-border);
+  background: color-mix(in srgb, var(--pct-surface) 86%, transparent);
+  backdrop-filter: blur(10px);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .topbar {
+    background: var(--pct-surface);
+    backdrop-filter: none;
+  }
 }
 
 .topbar__row {
@@ -73,8 +90,9 @@
   }
 }
 
-/* The bar carries the nav where it fits; below, the drawer takes over. One media query,
-   in the shell's own chrome — the library components under it stay query-free. */
+/* The bar carries the nav where it fits; below, the drawer takes over. The layout's one
+   media query, in the shell's own chrome — the library components under it stay
+   query-free (the preference query above answers the user, not the viewport). */
 .topbar__menu {
   display: none;
 }

@@ -79,6 +79,23 @@ test.describe('The docs shell', () => {
     );
   });
 
+  test('the topbar stays pinned under scroll, frosting what passes beneath', async ({
+    page,
+  }) => {
+    await visit(page, '/');
+    await page.evaluate(() => window.scrollTo(0, 600));
+    // The page really moved — without this, a y of zero would also describe a bar
+    // that simply scrolled away on an unscrolled page.
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+
+    const bar = page.locator('.topbar');
+    const box = await bar.boundingBox();
+    expect(box?.y).toBe(0);
+    expect(
+      await bar.evaluate((el) => getComputedStyle(el).backdropFilter),
+    ).toContain('blur');
+  });
+
   test('the home page passes the axe bar the site will advertise', async ({
     page,
   }) => {

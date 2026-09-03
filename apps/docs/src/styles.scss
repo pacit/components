@@ -10,6 +10,13 @@
   font-display: block;
 }
 
+/* The topbar is sticky, so a followed anchor must land BELOW it — without this, every
+   /trust#lesson-N jump hides its own heading under the bar (56px of chrome plus a
+   breath). The router's anchorScrolling and the browser's #fragment both read it. */
+html {
+  scroll-padding-block-start: 72px;
+}
+
 body {
   margin: 0;
   font-family: 'Inter var', system-ui, sans-serif;
