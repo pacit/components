@@ -4242,3 +4242,60 @@ given.
 
 And both were found the same way — by measuring what the page computed rather than by
 looking at it. A rule that does nothing renders a page that looks deliberate.
+
+### <a id="lesson-158"></a>`lesson-158` — A box painted over a transparent control is the box the pointer lands on
+
+The switch is a native `<input>` made transparent and laid over a drawn track, with a thumb
+drawn beside it — the idiom every "styled checkbox" uses, and the library's own since the
+checkbox. The thumb is the input's LATER sibling, and both are absolutely positioned inside the
+track, so the thumb is painted above the input. That is the whole defect: `elementFromPoint` at
+the knob's centre answered `thumb`, a click there bubbled through a `<span>` to the track and
+the host and reached no input, and the state stayed where it was. The one part of the control
+that looks most like the thing to press was the one part that did nothing — and the label, the
+track's ends and the keyboard all worked, which is why no case had ever asked.
+
+The fix is one declaration, `pointer-events: none` on the thumb, and the lesson is the
+question that was missing: **whatever is drawn over a transparent control has to decline the
+pointer, or it is the control.** A decoration's job is to show the state, and a box that shows
+the state and also intercepts the gesture that changes it is a control with no handler. The
+sandbox now presses the knob's centre by coordinates and watches the state turn, in three
+engines; the unit spec pins the declaration, because jsdom lays nothing out and cannot say what
+a pointer lands on.
+
+### <a id="lesson-159"></a>`lesson-159` — The router scrolls to an anchor by arithmetic, and reads no CSS while doing it
+
+The docs shell had answered the sticky-bar question twice in CSS: `scroll-padding-block-start`
+on `html` for the register's `#lesson-N` links, and `scroll-margin-block-start` on every
+section of the component page. Both are the platform's own way of saying "land below the
+bar", both are read by a native `#fragment` jump and by `scrollIntoView` — and neither is read
+by Angular's `anchorScrolling`. `BrowserViewportScroller.scrollToElement` takes the element's
+rectangle, adds the page offset and calls `window.scrollTo` with that number less whatever
+`setOffset` was given, which was nothing. Measured on the component page: a table-of-contents
+link put its heading at y=0 under a 57px bar, on every click, since the day the page was
+written. The two CSS declarations had made the page LOOK handled, and the register's links
+happened to be followed as native jumps often enough for nobody to notice the router's path
+was blind.
+
+So the offset is one custom property on `html`, `scroll-padding` reads it for the native
+path, and the shell hands the router the same property through `setOffset(() => …)`, read at
+each scroll rather than copied. The wider conclusion: **a router that owns navigation owns the
+landing too, and "the browser handles anchors" stops being true the moment a framework
+intercepts the link** — check which path a click really takes before trusting the CSS that
+serves the other one.
+
+### <a id="lesson-160"></a>`lesson-160` — A demo whose content has no width of its own has no width in a centred stage
+
+The skeleton's demos declared `max-inline-size: 24rem` and stood in a stage that centres its
+demo with `display: flex; justify-content: center`. A flex item's width is the width of its
+content, and a skeleton's content is bars that are 100% OF THEIR CONTAINER — so the item
+measured 0px wide, the bars 0px with it, and the component page showed a heading, a busy region
+and nothing in it. The progress bar's demos had the same declaration and the same stage, and
+were 97px across because a button beside the bar gave the item that much.
+
+A ceiling on a width that is not there is a ceiling on nothing: the demo needs a WIDTH
+(`inline-size: min(24rem, 100%)`), and the ceiling comes with it. Twenty-one other demos carry
+the same `max-inline-size` alone and are fine, because an input, a select or a button has a
+width of its own; the two that were not are the two whose only content sizes itself by the
+container. The rule that generalises is the platform's, not the stage's: **`100%` of an
+element sized by its content is a circle, and the browser resolves it to zero without a
+word.**
