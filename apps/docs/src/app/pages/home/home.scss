@@ -78,12 +78,90 @@
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
-  animation: docs-drift var(--pct-motion-drift-duration) linear infinite;
+  /* Two beats, and the second is the resting state: the colour sweeps ONTO the words
+     once, then hands over to the endless drift at exactly the position it left off, so
+     the arrival and the rest are one sentence rather than two. Both durations are
+     divisions of the same axis token, which is what makes the whole thing freeze on its
+     LAST frame under reduced motion rather than its first. */
+  animation:
+    docs-bloom calc(var(--pct-motion-drift-duration) / 10)
+      cubic-bezier(0.3, 0, 0.2, 1) backwards,
+    docs-drift var(--pct-motion-drift-duration) linear
+      calc(var(--pct-motion-drift-duration) / 10) infinite;
 }
 
 @keyframes docs-drift {
   to {
     background-position: 300% 0;
+  }
+}
+
+/* The sweep starts far to the left of the resting position and lands on it. `backwards`
+   and not `forwards`: what follows is the drift, whose own first frame IS the resting
+   position, so the bloom must let go of the property rather than hold it. */
+@keyframes docs-bloom {
+  from {
+    background-position: -180% 0;
+  }
+
+  to {
+    background-position: 0 0;
+  }
+}
+
+/* ── the hero arrives, and hides nothing to do it ─────────────────────────────
+   Five parts settle into place from 14px below, 90ms apart, in the order a reader
+   meets them. Three constraints shaped this and are worth writing down, because each
+   of them rules out the entrance one would reach for first:
+
+   · **Not one glyph is hidden.** No `opacity`, no clip, no reveal. This headline is the
+     page's largest painted element, so anything that withholds it withholds the LCP the
+     site intends to publish — and text at `opacity: 0` is what axe reads as a 1.01:1
+     contrast failure, measured on this very page ([`lesson-151`](../../../../../docs/lessons.md#lesson-151)).
+     What moves is position and colour; what the words say is legible in frame one.
+
+   · **The page is prerendered**, so the finished state has to be the state a reader
+     without javascript gets. This entrance is pure CSS with no script to arm it — unlike
+     the strip below, which needs an observer and therefore needs a default of "present".
+
+   · **Reduced motion freezes it at the END.** Every duration and every delay is a
+     multiple of an axis token, so `0.01ms` scaled by 3.2 or 0.6 is still nothing: the
+     parts stand where they belong, immediately, and the landing's visual baselines —
+     taken under exactly that preference since lesson-155 — do not move a pixel.
+
+   The curve and the distance are the evidence strip's own, one section down. The page
+   gets one vocabulary of arrival, in two axes: the hero settles, the facts step in. */
+.hero__inner > * {
+  /* The step rides a CUSTOM PROPERTY inside the shorthand rather than an
+     `animation-delay` on each child, and that is not a flourish: emulated
+     encapsulation gives this selector `.hero__inner[a] > *[a]` — two classes and two
+     attributes of weight — while `.hero__title[a]` carries one of each, so a delay
+     written on the child LOSES to this shorthand and every part starts at zero. Read
+     as a stagger that quietly is not one. A variable is inherited, not cascaded
+     against, so there is nothing here to win. */
+  animation: docs-settle calc(var(--pct-motion-transition-duration) * 3.2)
+    cubic-bezier(0.2, 0.7, 0.2, 1) var(--docs-step, 0s) backwards;
+}
+
+.hero__title {
+  --docs-step: calc(var(--pct-motion-transition-duration) * 0.6);
+}
+
+.hero__lead {
+  --docs-step: calc(var(--pct-motion-transition-duration) * 1.2);
+}
+
+.hero__cta {
+  --docs-step: calc(var(--pct-motion-transition-duration) * 1.8);
+}
+
+.hero__install {
+  --docs-step: calc(var(--pct-motion-transition-duration) * 2.4);
+}
+
+@keyframes docs-settle {
+  from {
+    transform: translateY(14px);
   }
 }
 

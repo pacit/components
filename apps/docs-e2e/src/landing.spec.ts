@@ -163,6 +163,65 @@ test.describe('The landing', () => {
     ).toBeVisible();
   });
 
+  test('the hero arrives without withholding a word of itself', async ({
+    page,
+  }) => {
+    const PARTS = [
+      '.hero__eyebrow',
+      '.hero__title',
+      '.hero__lead',
+      '.hero__cta',
+      '.hero__install',
+    ];
+    const read = () =>
+      page.evaluate(
+        (parts) =>
+          parts.map((selector) => {
+            const style = getComputedStyle(document.querySelector(selector)!);
+            return {
+              delay: style.animationDelay,
+              duration: style.animationDuration,
+              opacity: style.opacity,
+              transform: style.transform,
+            };
+          }),
+        PARTS,
+      );
+
+    await visit(page, '/', { reducedMotion: 'no-preference' });
+    const arriving = await read();
+
+    // One step per part, in the order a reader meets them — and every step a division of
+    // the axis token, which is what lets the whole thing freeze at its LAST frame below.
+    expect(arriving.map((part) => part.delay)).toEqual([
+      '0s',
+      '0.09s',
+      '0.18s',
+      '0.27s',
+      '0.36s',
+    ]);
+    expect(arriving.map((part) => part.duration)).toEqual(
+      Array.from({ length: 5 }, () => '0.48s'),
+    );
+
+    // Nothing is withheld to make the arrival: this headline is the page's largest
+    // painted element, and text at zero opacity is what axe reads as a contrast failure
+    // — measured on this very page once already.
+    expect(arriving.map((part) => part.opacity)).toEqual(
+      Array.from({ length: 5 }, () => '1'),
+    );
+
+    // Less motion means the parts stand where they belong, immediately. `transform: none`
+    // is the assertion that matters: a freeze on the FIRST frame would read as 14px of
+    // displacement that never resolves, and the visual baselines are taken here.
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    for (const part of await read()) {
+      expect(Number.parseFloat(part.duration)).toBeLessThan(0.05);
+      expect(Number.parseFloat(part.delay)).toBeLessThan(0.05);
+      expect(part.transform).toBe('none');
+    }
+  });
+
   test('the headline drift rides the motion axis and freezes under reduced motion', async ({
     page,
   }) => {
@@ -181,11 +240,13 @@ test.describe('The landing', () => {
         .evaluate((el) => getComputedStyle(el, '::after').animationDuration);
 
     await visit(page, '/', { reducedMotion: 'no-preference' });
-    expect(await drift()).toBe('8s');
+    // Two animations on one span: the colour sweeps onto the words once, then the endless
+    // drift takes over at the position it let go of. Both are divisions of one token.
+    expect(await drift()).toBe('0.8s, 8s');
     expect(await rim()).toBe('4s');
 
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    expect(await drift()).toBe('0s');
+    expect(await drift()).toBe('0s, 0s');
     expect(await rim()).toBe('0s');
   });
 
