@@ -232,6 +232,13 @@ test.describe('Date — the panel', () => {
     const host = page.getByTestId('date-standalone');
     const input = host.locator('input').first();
     await partOf(host, 'toggle').click();
+    // Where the cursor IS, asked before it is asked to move. The panel takes focus one
+    // RENDER after the click and not one round trip — `focusCursor()` runs in an
+    // `afterRenderEffect` — so a key pressed straight after the click can arrive while
+    // focus still sits on the toggle: `ArrowRight` reaches no grid, `Enter` writes the day
+    // the field already held, and the case reads as a component that cannot count
+    // (`lesson-152`).
+    await expect(cursorOf(page)).toBeFocused();
 
     await page.keyboard.press('ArrowRight');
     await page.keyboard.press('Enter');

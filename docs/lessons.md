@@ -4051,3 +4051,40 @@ rather than by luck. Measured blast radius the day this was fixed: 34 such rules
 other stylesheets that project content, none of them yet nested by anybody. The regression
 case is the segmented assertions negated on the inner strip, and it fails on the descendant
 selector restored — `rgba(0, 0, 0, 0)` expected, the track's `rgb(241, 245, 249)` received.
+
+### <a id="lesson-152"></a>`lesson-152` — A click returns before the panel it opened has taken focus, and the key pressed on that round trip goes to the opener
+
+The date panel's "writes the day it is given and closes" was flaky in chromium alone — one
+failure in a full sandbox run of 1692 cases across three engines, `Expected "28/08/2026"`,
+`Received "27/08/2026"`, and six of six green when the case was re-run on its own. So the
+component was writing the day it was given; the case was asking before there was anybody to
+ask.
+
+The panel takes focus one RENDER after the click, not one round trip. `focusCursor()` is called
+from an `afterRenderEffect`, because the grid the panel opens on does not exist until the
+overlay has drawn it. Playwright's `click()` resolves when the click has been dispatched, which
+is strictly earlier — nothing in the protocol waits for a framework's next render.
+
+Measured on chromium, the page freshly visited and the toggle clicked forty times: at the
+instant `click()` returned, focus stood on the TOGGLE 26 times and on the day cell 14, and the
+cell needed a further 6 to 93 ms to take it. Two openings in three therefore pass through a
+state in which every key the grid owns is dead, and the only thing that usually saves the next
+line is that `keyboard.press()` is itself a round trip — one that usually, not always, outruns
+what is left of that window.
+
+The pairing is the proof. Twenty openings with the key dispatched INSIDE the page, with no
+round trip to hide behind: 18 reached the day cell and wrote `28/08/2026`, 2 reached the toggle
+and wrote `27/08/2026`. Where the key went predicts the value with no exceptions, and the value
+it predicts for the toggle is the number the failing run reported.
+
+The fix is one line, and it is what [`lesson-149`](lessons.md#lesson-149) reached for from the
+other side: assert the real state before acting, rather than trusting a round trip to have
+meant something. The case asks where the cursor IS — `await expect(cursorOf(page)).toBeFocused()`
+— before asking it to move, which is what its neighbours in the file already did. This was the
+one case in the block that clicked and pressed in the same breath.
+
+The rule: an opening that moves focus asynchronously makes the click's resolution and the
+panel's readiness two different moments, and a key sent between them is not late — it is
+delivered somewhere else, to a listener that has no opinion about it. Nothing reports that: the
+key is simply gone, and the assertion downstream blames the component. Wait for the element that
+will RECEIVE the key to hold focus, never for the click that is supposed to give it.
