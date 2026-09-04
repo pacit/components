@@ -6,14 +6,32 @@
  * silent defect to find, and a second hand-written copy is where they drift apart —
  * the argument `AGENTS.md` makes about this file and `CLAUDE.md`.
  *
- * `home.scss` still carries its own copy at the time of writing: the file is open in
- * another working session, so switching the landing over to this mixin is a separate
- * one-line commit rather than a conflict taken here. The two are bit-for-bit the same
- * today, `docs-drift-edge` included — an identical redefinition of a keyframe is inert,
- * and the duplicate ends the moment the landing takes the `@include`.
+ * Both pages take it from here — the landing for the three cards of "Live, not
+ * screenshots", the gallery for all thirty-three — and there is no second copy.
  *
  * Both selectors are parameters because the two pages name their nodes differently, and
  * because a mixin that hard-codes `.card` cannot be read at the call site.
+ *
+ * Two choices here carry measurements, both taken 2026-09-04 with the WCAG formula over
+ * the tokens' own values:
+ *
+ * · the EDGE keeps the brand's three stops in both themes. A boundary is non-text, so
+ *   its bar is 3:1 (SC 1.4.11), and the stops stand at 4.72–5.70 on the light card and
+ *   3.13–3.45 on the dark one.
+ * · the NAME cannot have them in the dark. It is 16px text, so its bar is 4.5:1, and
+ *   those same three stops measure 3.13, 3.45 and 3.33 against the dark card — the very
+ *   colours the huge headline gets away with, because text at 24px and over is measured
+ *   against 3:1 too. In the dark the name takes them lifted 70% of the way to white:
+ *   5.91, 5.43 and 5.88, and the evenness is worth as much as the numbers, because no
+ *   stop of the sweep is then the weak one nobody looked at.
+ *
+ * Worth saying plainly: nothing MEASURES this. Text painted through `background-clip`
+ * carries `color: transparent`, so axe reports that it cannot tell rather than that it is
+ * wrong, and the contrast policy watches hero as a BACKGROUND — three entries, the
+ * button's label over each stop. Point 7 of `check-tokens` would demand these three the
+ * moment a library stylesheet painted them as text; here they are a comment. That gap is
+ * the argument for the primitive, not an excuse for the copy — and it is now one comment
+ * over one implementation rather than one over two.
  */
 
 @mixin hero-edge($card: '.card', $name: '.card__name') {
