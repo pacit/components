@@ -340,7 +340,10 @@ export const CARD_DEMOS: Readonly<
   chips: () => import('./cards/chips.card').then((m) => m.ChipsCardScene),
   container: () =>
     import('./cards/container.card').then((m) => m.ContainerCardScene),
+  drawer: () => import('./cards/drawer.card').then((m) => m.DrawerCardScene),
   grid: () => import('./cards/grid.card').then((m) => m.GridCardScene),
   stepper: () => import('./cards/stepper.card').then((m) => m.StepperCardScene),
   theme: () => import('./cards/theme.card').then((m) => m.ThemeCardScene),
+  toast: () => import('./cards/toast.card').then((m) => m.ToastCardScene),
+  tooltip: () => import('./cards/tooltip.card').then((m) => m.TooltipCardScene),
 };
