@@ -138,40 +138,36 @@
       build this page is made of, on the same tokens it documents.
     </p>
     <pct-grid class="live" data-testid="live">
+      <!--
+        Tabs and not the stepper this card opened with: three labelled steps need 348px of
+        row and the card gives 339, so the map wrapped to two lines on every desktop — the
+        component doing exactly what 0055 asks of it, in a box too narrow to ask (measured
+        2026-09-04). A strip fits any card, and what it demonstrates is the thing a
+        screenshot cannot hold: the arrow keys move the selection and the panel follows.
+      -->
       <article class="card">
-        <h3 class="card__title">Stepper <code>pct-stepper</code></h3>
+        <h3 class="card__title">Tabs <code>pct-tabs</code></h3>
         <pct-stack gap="md">
-          <pct-stepper
-            [step]="step()"
-            ariaLabel="Checkout"
-            data-testid="live-stepper"
+          <pct-tabs
+            variant="segmented"
+            [(value)]="section"
+            ariaLabel="Workspace settings"
+            data-testid="live-tabs"
           >
-            <pct-step>Cart</pct-step>
-            <pct-step>Delivery</pct-step>
-            <pct-step>Payment</pct-step>
-          </pct-stepper>
-          <div class="card__row">
-            <button
-              pctButton
-              variant="ghost"
-              size="sm"
-              [disabled]="atStart()"
-              (click)="move(-1)"
-              data-testid="live-back"
-            >
-              Back
-            </button>
-            <button
-              pctButton
-              variant="ghost"
-              size="sm"
-              [disabled]="atEnd()"
-              (click)="move(1)"
-              data-testid="live-next"
-            >
-              Next
-            </button>
-          </div>
+            <pct-tab value="general" label="General">
+              Name, avatar, and the language dates are written in.
+            </pct-tab>
+            <pct-tab value="network" label="Network">
+              Proxies, retries, and how long a call may take.
+            </pct-tab>
+            <pct-tab value="alerts" label="Alerts">
+              Who gets paged when a build turns red, and how.
+            </pct-tab>
+          </pct-tabs>
+          <p class="card__note">
+            Arrow keys walk the strip and the panel follows — one tab stop for
+            the strip, not three.
+          </p>
         </pct-stack>
       </article>
       <article class="card">

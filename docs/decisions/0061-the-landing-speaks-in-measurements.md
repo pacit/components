@@ -49,13 +49,19 @@ repository without a red test naming the drift.
 
 ## The live cards are the page's own state, not a harness
 
-"Live, not screenshots" means the stepper moves, the chips really leave, the switch drives
-the bar, and the copy button answers through the toaster — real instances of the shipped
+"Live, not screenshots" means the tabs follow the arrow keys, the chips really leave, the
+switch drives the bar, and the copy button answers through the toaster — real instances of the shipped
 package driven by a handful of signals the page owns. The gradient headline repeats the
 hero button's exact idiom (an oversized image drifting by `background-position`, duration
 from the motion axis) so reduced motion freezes both through one token; forced colors gets
 the same hand-off the button needed, because the mode strips colours but keeps images and
 alpha — without the guard the headline would be a gradient with invisible text.
+
+The first card was the stepper until 2026-09-04, and what replaced it is a measurement: three
+labelled steps need 348px of row where the card gives 339, so the map wrapped to two lines on
+every desktop — [0055](0055-a-stepper-is-a-map-of-a-journey-the-application-steers.md) obeyed
+exactly, in a box too narrow to ask the question. A demo card is a fixed width, so what goes
+in it is chosen by what fits it, not by which component one would rather show.
 
 ## Costs
 

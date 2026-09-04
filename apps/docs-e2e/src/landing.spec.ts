@@ -70,20 +70,22 @@ test.describe('The landing', () => {
     }
   });
 
-  test('the stepper card is a live journey, not a screenshot', async ({
+  test('the tabs card follows the arrow keys, not a screenshot', async ({
     page,
   }) => {
     await visit(page, '/');
-    const journey = page.getByTestId('live-stepper');
-    await expect(journey.locator('[aria-current="step"]')).toContainText(
-      'Delivery',
-    );
+    const strip = page.getByTestId('live-tabs');
+    const chosen = strip.locator('[role="tab"][aria-selected="true"]');
+    await expect(chosen).toHaveText('General');
 
-    await page.getByTestId('live-next').click();
-    await expect(journey.locator('[aria-current="step"]')).toContainText(
-      'Payment',
-    );
-    await expect(page.getByTestId('live-next')).toBeDisabled();
+    // The whole strip is one tab stop: the press goes to the chosen tab, and the arrow
+    // moves the selection from there. Automatic activation, so the panel follows the
+    // selection without a second key.
+    await chosen.press('ArrowRight');
+    await expect(chosen).toHaveText('Network');
+    await expect(
+      strip.locator('[role="tabpanel"]:not([hidden])'),
+    ).toContainText('Proxies');
   });
 
   test('removing a chip shortens the row; restore brings it back', async ({

@@ -17,8 +17,8 @@ import { PctField, PctText } from '@pacit/components/field';
 import { PctGrid } from '@pacit/components/grid';
 import { PctProgress } from '@pacit/components/progress';
 import { PctStack } from '@pacit/components/stack';
-import { PctStep, PctStepper } from '@pacit/components/stepper';
 import { PctSwitch } from '@pacit/components/switch';
+import { PctTab, PctTabs } from '@pacit/components/tabs';
 import { PctToaster } from '@pacit/components/toast';
 import { DOCS_CARDS, DOCS_EVIDENCE } from '../../../generated/content';
 import { describePage } from '../../seo';
@@ -46,9 +46,9 @@ const TOPICS = ['Angular', 'zoneless', 'signals', 'a11y'];
     PctGrid,
     PctProgress,
     PctStack,
-    PctStep,
-    PctStepper,
     PctSwitch,
+    PctTab,
+    PctTabs,
     PctText,
   ],
   templateUrl: './home.html',
@@ -106,10 +106,8 @@ export class HomePage {
   protected readonly cards = DOCS_CARDS;
   protected readonly install = INSTALL;
 
-  /** The stepper card: a journey mid-way, steered by the two buttons beside it. */
-  protected readonly step = signal(2);
-  protected readonly atStart = computed(() => this.step() <= 1);
-  protected readonly atEnd = computed(() => this.step() >= 3);
+  /** The tabs card: the strip's own value, two-way bound so the arrow keys write it. */
+  protected readonly section = signal('general');
 
   /** The chips card: removal really shortens this array — restore brings it back. */
   protected readonly topics = signal(TOPICS);
@@ -124,10 +122,6 @@ export class HomePage {
   });
   protected readonly ready = signal(false);
   protected readonly readiness = computed(() => (this.ready() ? 100 : 62));
-
-  protected move(by: number): void {
-    this.step.update((at) => at + by);
-  }
 
   protected drop(topic: string): void {
     this.topics.update((all) => all.filter((kept) => kept !== topic));
