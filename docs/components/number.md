@@ -1,5 +1,6 @@
 # `PctNumber` — number field
 
+**Summary:** A number field with a step and bounds, and the keyboard the platform already gives it.
 **Entrypoint:** `@pacit/components/field`
 **Selector:** `input[pctNumber]` — on an `<input type="text">`, a **deliberate exception** to
 [`req-api-platform`](../requirements/api.md#req-api-platform) ([0009](../decisions/0009-number-field.md))

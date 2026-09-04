@@ -1,5 +1,6 @@
 # `PctMenu` — a list of commands, walked by the keyboard and chosen from
 
+**Summary:** A list of commands to choose from, walked by the keyboard and closed by the choice.
 **Entrypoint:** `@pacit/components/menu`
 **Selector:** `pct-menu` · `button[pctMenuItem]` · `[pctMenuTrigger]`
 The panel is `PctMenu`, the commands on it are `PctMenuItem`, and the control that opens either

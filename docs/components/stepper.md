@@ -1,10 +1,11 @@
 # `PctStepper` — a map of a journey the application steers
 
+**Summary:** A map of a journey: the steps behind, the step now, and the steps still to come.
 **Entrypoint:** `@pacit/components/stepper`
 **Selectors:** `pct-stepper`, `pct-step`
 **Status:** released
 **Category:** Actions & navigation
-**ARIA APG pattern:** none exists for a stepper, and none is invented
+**ARIA APG pattern:** none — none exists for a stepper, and none is invented
 ([0055](../decisions/0055-a-stepper-is-a-map-of-a-journey-the-application-steers.md)): the
 host is a `list`, every step a `listitem` — the geometry the breadcrumb's probe measured
 clean in three engines — and `aria-current="step"` stands on the step the input names.

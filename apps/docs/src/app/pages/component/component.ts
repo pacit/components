@@ -27,7 +27,6 @@ import {
   COMPONENT_PAGES,
   ComponentPage,
 } from '../../../generated/component-pages';
-import { DOCS_EVIDENCE } from '../../../generated/content';
 import { DEMOS, EXAMPLES } from '../../demos';
 import { describePage } from '../../seo';
 import { DocsIndex } from './docs-index';
@@ -99,15 +98,6 @@ export class ComponentPageView {
       `https://github.com/pacit/components/blob/main/${this.page()?.api[0]?.file ?? 'libs/components'}`,
   );
 
-  protected readonly proof = computed(() => {
-    const evidence = this.page()?.evidence;
-    if (!evidence) return '';
-    const mutation = evidence.mutation
-      ? `${evidence.mutation.killed}/${evidence.mutation.mutants} mutants killed`
-      : 'no mutants to kill';
-    return `${DOCS_EVIDENCE.engines} engines · ${mutation} · ${evidence.pairs} colour pairs`;
-  });
-
   /** The page's HTML payloads, each marked trusted once. */
   protected readonly html = computed(() => {
     const page = this.page();
@@ -115,9 +105,9 @@ export class ComponentPageView {
     const trust = (value: string): SafeHtml =>
       this.sanitizer.bypassSecurityTrustHtml(value);
     return {
-      intro: trust(page.intro),
+      summary: trust(page.summary),
+      notes: page.notes ? trust(page.notes) : null,
       pattern: page.pattern ? trust(page.pattern) : null,
-      patternShort: page.patternShort ? trust(page.patternShort) : null,
       usage: page.usage ? trust(page.usage.code) : null,
       preview: page.preview
         ? {
@@ -214,6 +204,9 @@ export class ComponentPageView {
         id: 'evidence',
         label: 'Evidence',
         children: [
+          ...(page.notes
+            ? [{ id: 'evidence-notes', label: 'Why this way' }]
+            : []),
           ...(page.decisions.length
             ? [{ id: 'evidence-decisions', label: 'Decisions' }]
             : []),

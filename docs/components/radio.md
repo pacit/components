@@ -1,5 +1,6 @@
 # `PctRadioGroup` + `PctRadio` — group of mutually exclusive options
 
+**Summary:** A group of mutually exclusive options, where the group is the form control and the options are its values.
 **Entrypoint:** `@pacit/components/radio`
 **Selector:** `pct-radio-group`, `pct-radio`
 **Status:** released

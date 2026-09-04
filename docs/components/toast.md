@@ -1,12 +1,13 @@
 # `PctToaster` — a message on top of the page
 
+**Summary:** A short message on top of the page, said out loud without taking focus from anybody.
 **Entrypoint:** `@pacit/components/toast`
 **Selector:** none — the surface is a service. The one element, `<pct-toast-viewport>`, is
 created by `PctToaster` and appended to `document.body`; nobody writes it
 **Status:** released
 **Category:** Overlays
-**ARIA APG pattern:** [Alert](https://www.w3.org/WAI/ARIA/apg/patterns/alert/) for the urgent
-message, and the `log` role for the place it lands in — named in the class JSDoc
+**ARIA APG pattern:** [Alert](https://www.w3.org/WAI/ARIA/apg/patterns/alert/) — for the
+urgent message, and the `log` role for the place it lands in; named in the class JSDoc
 
 The whole component is one decision applied three times over
 ([0044](../decisions/0044-a-toast-is-a-change-in-a-region-that-was-already-there.md)): **the

@@ -1,5 +1,6 @@
 # `PctChips` / `PctChip` — a row of chosen values the user can take back
 
+**Summary:** A row of chosen values the reader can take back, one cross at a time.
 **Entrypoint:** `@pacit/components/chips`
 **Selector:** `pct-chips` / `pct-chip`
 **Status:** released

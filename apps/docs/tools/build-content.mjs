@@ -54,6 +54,8 @@ const read = (p) => readFileSync(join(ROOT, p), 'utf8');
 
 /** The cards whose page has to read whole — the model page first, the sweep adds the rest. */
 const STRICT = new Set(['button']);
+/** The lead's ceiling: the longest of the thirty-three written is 106 characters. */
+const SUMMARY_MAX = 200;
 const CATEGORIES = [
   'Foundations',
   'Actions & navigation',
@@ -113,6 +115,51 @@ const field = (text, name) => {
   return m ? m[1].replace(/\s+/g, ' ').trim() : null;
 };
 
+/**
+ * The conformance claim, read out of the card's `**ARIA APG pattern:**` field.
+ *
+ * The page states it as a sentence — "Implements the W3C ARIA APG Tabs pattern" — and a
+ * sentence cannot be assembled from a field cut at its first dash, which is what this used
+ * to do: eleven cards ended up saying the single word "none" where they hold an argument,
+ * and the stepper's said half of one. So the field's HEAD is read as a small grammar, and a
+ * card whose head fits none of the three is rejected rather than rendered badly.
+ *
+ *   `<qualifier?> [Name](https://www.w3.org/WAI/…)`  a pattern is implemented
+ *   `a native \`<button>\``                          the platform carries the semantics
+ *   `none`                                          no pattern applies, deliberately
+ *
+ * Everything after the first dash is prose, and it keeps its seat under Accessibility.
+ */
+const patternClaim = (pattern, file) => {
+  if (!pattern) return null;
+  const head = pattern.split(' — ')[0].trim();
+
+  if (head === 'none') return { kind: 'none' };
+
+  // The tag as text, not as rendered markup: the page puts it in a `<code>` of its own and
+  // Angular escapes it there, so nothing on this path needs the sanitizer.
+  const platform = head.match(/^(?:a )?native `(<[a-z]+>)`$/);
+  if (platform) return { kind: 'platform', element: platform[1] };
+
+  const apg = head.match(
+    /^(.*?)\[([^\]]+)\]\((https:\/\/www\.w3\.org\/[^)]+)\)$/,
+  );
+  if (apg)
+    return {
+      kind: 'apg',
+      // "the grid of", "the non-modal reading of" — kept, because a component that
+      // implements one part of a pattern must not claim the whole of it.
+      qualifier: apg[1].trim() || null,
+      name: apg[2],
+      href: apg[3],
+    };
+
+  throw new Error(
+    `content pass: ${file} opens its **ARIA APG pattern:** with "${head}", which is none of ` +
+      `the three the page can state — a W3C link, a native element, or the word "none"`,
+  );
+};
+
 /** The body of one `## name` section, or null when the card has none. */
 const sectionOf = (text, name) =>
   text
@@ -166,14 +213,39 @@ const cards = await Promise.all(
     const selector = field(text, 'Selector') ?? null;
     const status = field(text, 'Status') ?? null;
     const pattern = field(text, 'ARIA APG pattern') ?? null;
+    const claim = patternClaim(pattern, file);
     const category = field(text, 'Category');
     if (!category || !CATEGORIES.includes(category))
       throw new Error(
         `content pass: ${file} carries no **Category:** the index knows (${category ?? 'none'})`,
       );
 
-    // The prose between the header block and the first section is the card's own lead.
-    const intro = (text.split(/\n## /)[0] ?? '')
+    // The lead the page opens with, and the one field this pass reads with a shape. It is
+    // held to being SHORT and SELF-CONTAINED because of where it is rendered: directly under
+    // the component's name, to somebody who has not decided to use it yet. A requirement
+    // number or a decision link there sends that reader into this repository's own machinery
+    // before they have seen the component run — the card's prose below is where that belongs,
+    // and the page puts it under Evidence.
+    const summary = field(text, 'Summary');
+    if (!summary)
+      throw new Error(
+        `content pass: ${file} carries no **Summary:** to lead the page with`,
+      );
+    if (summary.length > SUMMARY_MAX)
+      throw new Error(
+        `content pass: ${file} leads with ${summary.length} characters, and the lead is capped at ${SUMMARY_MAX}`,
+      );
+    const inward = summary.match(
+      /\]\(|req-[a-z]+-|lesson-\d|decisions\/\d/,
+    )?.[0];
+    if (inward)
+      throw new Error(
+        `content pass: ${file} leads with "${inward}" — a link or a promise number, which the lead does not carry`,
+      );
+
+    // The prose between the header block and the first section is the design note: the
+    // reasoning, with every link it needs.
+    const notes = (text.split(/\n## /)[0] ?? '')
       .split(/\n\n/)
       .slice(1)
       .filter((p) => !p.startsWith('**') && !p.startsWith('# '))
@@ -238,12 +310,9 @@ const cards = await Promise.all(
       status,
       category,
       pattern: pattern ? inline(pattern) : null,
-      // The spec line wants the name, not the sentence: the clause before the dash —
-      // "a native `<button>`", "[Tabs](…)" — and the whole sentence keeps its seat in
-      // Accessibility.
-      patternShort: pattern ? inline(pattern.split(' — ')[0].trim()) : null,
-      intro,
-      introHtml: paragraphs(intro),
+      patternClaim: claim,
+      summary: inline(summary),
+      notesHtml: notes ? paragraphs(notes) : null,
       usage: usage ? { code: await highlight(usage.code, usage.lang) } : null,
       theming: theming
         ? {
@@ -1028,7 +1097,7 @@ const lean = full.map((card) => ({
   selector: card.selector,
   status: card.status,
   category: card.category,
-  intro: card.intro,
+  summary: card.summary,
   parts: card.parts.map((p) => p.name),
   tokens: card.tokens.map((t) => t.name),
 }));
@@ -1044,7 +1113,7 @@ export interface DocsCard {
   readonly selector: string | null;
   readonly status: string | null;
   readonly category: string;
-  readonly intro: string;
+  readonly summary: string;
   readonly parts: readonly string[];
   readonly tokens: readonly string[];
 }
@@ -1069,8 +1138,9 @@ const pages = Object.fromEntries(
       entrypoint: c.entrypoint,
       selector: c.selector,
       pattern: c.pattern,
-      patternShort: c.patternShort,
-      intro: c.introHtml,
+      patternClaim: c.patternClaim,
+      summary: c.summary,
+      notes: c.notesHtml,
       usage: c.usage,
       preview: c.preview,
       examples: c.examples,
@@ -1152,6 +1222,16 @@ export interface DemoDoc {
   readonly source: string;
 }
 
+export type PatternClaim =
+  | { readonly kind: 'none' }
+  | { readonly kind: 'platform'; readonly element: string }
+  | {
+      readonly kind: 'apg';
+      readonly qualifier: string | null;
+      readonly name: string;
+      readonly href: string;
+    };
+
 export interface ExampleDoc extends DemoDoc {
   readonly key: string;
   readonly title: string;
@@ -1167,8 +1247,9 @@ export interface ComponentPage {
   readonly entrypoint: string | null;
   readonly selector: string | null;
   readonly pattern: string | null;
-  readonly patternShort: string | null;
-  readonly intro: string;
+  readonly patternClaim: PatternClaim | null;
+  readonly summary: string;
+  readonly notes: string | null;
   readonly usage: { readonly code: string } | null;
   readonly preview: (DemoDoc & { readonly caption: string }) | null;
   readonly examples: readonly ExampleDoc[];

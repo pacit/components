@@ -15,7 +15,20 @@
   border-block-end: 1px solid var(--pct-tabs-list-border);
 }
 
-/* The vertical face is a ROW: the strip on one side, the chosen panel beside it. Until this
+/* Every rule below that keys on one of the host's attributes reaches its target through
+   CHILD combinators, and that is load-bearing rather than a style. A panel holds whatever
+   the consumer wrote — including another `pct-tabs` — and both instances are the same
+   component, so their elements carry the same encapsulation attribute. A descendant
+   selector written from the outer host therefore matches the INNER strip as well, at a
+   specificity the inner instance's own unqualified rules cannot answer: a plain
+   `variant="underline"` inside a segmented switch came out segmented, on this library's own
+   documentation page, and a vertical one inside a horizontal one would turn its column the
+   same way. `>` says what the rule means — this host's own strip, and the tabs in it — and
+   an instance a panel holds is out of its reach by structure. Same nesting as
+   [`lesson-147`](../../../../docs/lessons.md#lesson-147), one level in: there the site
+   reached a library part by name, here the library reached its own.
+
+   The vertical face is a ROW: the strip on one side, the chosen panel beside it. Until this
    block the strip turned into a column and the panel still stacked underneath it, which is a
    column of labels introducing a section nowhere near them — the reviewer read it as the
    layout being half-built, and it was.
@@ -28,7 +41,7 @@
   align-items: start;
 }
 
-:host([data-pct-orientation='vertical']) .pct-tabs__list {
+:host([data-pct-orientation='vertical']) > .pct-tabs__list {
   flex-direction: column;
   align-items: stretch;
   border-block-end: none;
@@ -40,7 +53,7 @@
 /* `min-inline-size: 0` is what lets a wide panel — a table, a code block — scroll inside
    itself instead of pushing the strip off the box: a flex item's floor is its content's
    min-content width until it is told otherwise. */
-:host([data-pct-orientation='vertical']) .pct-tabs__panels {
+:host([data-pct-orientation='vertical']) > .pct-tabs__panels {
   flex: 1 1 0;
   min-inline-size: 0;
   padding-inline-start: var(--pct-tabs-panel-gap);
@@ -76,7 +89,7 @@
   border-block-end: 2px solid transparent;
 }
 
-:host([data-pct-orientation='vertical']) .pct-tabs__tab {
+:host([data-pct-orientation='vertical']) > .pct-tabs__list > .pct-tabs__tab {
   border-block-end: none;
   border-inline-end: 2px solid transparent;
   border-radius: var(--pct-tabs-tab-radius) 0 0 var(--pct-tabs-tab-radius);
@@ -88,7 +101,9 @@
   border-block-end-color: var(--pct-tabs-tab-border-selected);
 }
 
-:host([data-pct-orientation='vertical']) .pct-tabs__tab[data-pct-chosen] {
+:host([data-pct-orientation='vertical'])
+  > .pct-tabs__list
+  > .pct-tabs__tab[data-pct-chosen] {
   border-inline-end-color: var(--pct-tabs-tab-border-selected);
 }
 
@@ -120,7 +135,7 @@
     border-block-end-color: Canvas;
   }
 
-  :host([data-pct-orientation='vertical']) .pct-tabs__tab {
+  :host([data-pct-orientation='vertical']) > .pct-tabs__list > .pct-tabs__tab {
     border-inline-end-color: Canvas;
   }
 
@@ -129,7 +144,9 @@
     border-block-end-color: Highlight;
   }
 
-  :host([data-pct-orientation='vertical']) .pct-tabs__tab[data-pct-chosen] {
+  :host([data-pct-orientation='vertical'])
+    > .pct-tabs__list
+    > .pct-tabs__tab[data-pct-chosen] {
     border-inline-end-color: Highlight;
   }
 
@@ -155,7 +172,7 @@
 
    The track wraps the tabs tightly: no rail, a gap of nothing between segments, and the
    radius on the strip a little larger than the tabs' own so the two curves nest. */
-:host([data-pct-variant='segmented']) .pct-tabs__list {
+:host([data-pct-variant='segmented']) > .pct-tabs__list {
   gap: 0;
   /* The track hugs its segments: a segmented strip is a CONTROL, and a control that runs to
      the far edge of whatever holds it reads as a rail again — measured on the site, where the
@@ -179,30 +196,34 @@
 /* A segment is rounded on ALL four corners. The underline face rounds the top only, because
    a tab's bottom edge meets the rail it stands on — inside a track there is no rail to meet,
    and a square bottom under a rounded top is the first thing an eye catches. */
-:host([data-pct-variant='segmented']) .pct-tabs__tab {
+:host([data-pct-variant='segmented']) > .pct-tabs__list > .pct-tabs__tab {
   border-block-end: none;
   border-radius: var(--pct-tabs-tab-radius);
 }
 
-:host([data-pct-variant='segmented']) .pct-tabs__tab[data-pct-chosen] {
+:host([data-pct-variant='segmented'])
+  > .pct-tabs__list
+  > .pct-tabs__tab[data-pct-chosen] {
   background: var(--pct-tabs-tab-bg-selected);
 }
 
 /* The chosen segment already carries a fill, so a hover fill underneath it would be a second
    answer to the same question; the label's colour is the whole hover here. */
 :host([data-pct-variant='segmented'])
-  .pct-tabs__tab:hover:not([data-pct-disabled]) {
+  > .pct-tabs__list
+  > .pct-tabs__tab:hover:not([data-pct-disabled]) {
   background: none;
 }
 
 :host([data-pct-variant='segmented'])
-  .pct-tabs__tab[data-pct-chosen]:hover:not([data-pct-disabled]) {
+  > .pct-tabs__list
+  > .pct-tabs__tab[data-pct-chosen]:hover:not([data-pct-disabled]) {
   background: var(--pct-tabs-tab-bg-selected);
 }
 
 /* Vertical AND segmented: the track runs down the side, so its inline edge goes with it. */
 :host([data-pct-variant='segmented'][data-pct-orientation='vertical'])
-  .pct-tabs__list {
+  > .pct-tabs__list {
   border-inline-end: none;
 }
 
@@ -210,7 +231,7 @@
    chosen segment is given an edge that IS there — the same channel the underline face uses,
    restored at the specificity of the rules above (`@media` adds none — `lesson-70`). */
 @media (forced-colors: active) {
-  :host([data-pct-variant='segmented']) .pct-tabs__list {
+  :host([data-pct-variant='segmented']) > .pct-tabs__list {
     border: 1px solid CanvasText;
   }
 
@@ -218,11 +239,13 @@
      no specificity of its own — so the border is written back at that selector rather than
      left to a base rule the cascade has already answered (`lesson-70`). */
   :host([data-pct-variant='segmented'][data-pct-orientation='vertical'])
-    .pct-tabs__list {
+    > .pct-tabs__list {
     border: 1px solid CanvasText;
   }
 
-  :host([data-pct-variant='segmented']) .pct-tabs__tab[data-pct-chosen] {
+  :host([data-pct-variant='segmented'])
+    > .pct-tabs__list
+    > .pct-tabs__tab[data-pct-chosen] {
     outline: 2px solid Highlight;
     outline-offset: -2px;
     color: Highlight;
@@ -233,9 +256,11 @@
      that fill is gone — so the mode's own answer (a `Canvas` ground under a `Highlight` label)
      is repeated at each of the two selectors that outrank it. */
   :host([data-pct-variant='segmented'])
-    .pct-tabs__tab:hover:not([data-pct-disabled]),
+    > .pct-tabs__list
+    > .pct-tabs__tab:hover:not([data-pct-disabled]),
   :host([data-pct-variant='segmented'])
-    .pct-tabs__tab[data-pct-chosen]:hover:not([data-pct-disabled]) {
+    > .pct-tabs__list
+    > .pct-tabs__tab[data-pct-chosen]:hover:not([data-pct-disabled]) {
     background: Canvas;
     color: Highlight;
   }

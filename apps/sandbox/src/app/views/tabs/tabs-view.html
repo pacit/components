@@ -130,3 +130,38 @@
     </pct-tabs>
   </div>
 </sbx-demo>
+
+<sbx-demo
+  heading="A strip inside a strip"
+  summary="A panel holds whatever the consumer wrote, including another strip — and the two are the same component, so a rule the outer one keys on its own attribute would reach the inner one's tabs by descent. The inner strip here is the default face inside a segmented one: it keeps its rail and its underline, and the track belongs to the outer strip alone."
+  [reqs]="['req-api-parts-unique']"
+  data-testid="demo-nested"
+>
+  <pct-tabs
+    [(value)]="outer"
+    variant="segmented"
+    ariaLabel="Period"
+    data-testid="tabs-outer"
+  >
+    <pct-tab value="day" label="Day">
+      <p class="view__panel-body">Today, hour by hour.</p>
+    </pct-tab>
+    <pct-tab value="week" label="Week">
+      <pct-tabs
+        [(value)]="nested"
+        ariaLabel="Week detail"
+        data-testid="tabs-inner"
+      >
+        <pct-tab value="hours" label="Hours">
+          <p class="view__panel-body">Seven days, hour by hour.</p>
+        </pct-tab>
+        <pct-tab value="totals" label="Totals">
+          <p class="view__panel-body">One number per day.</p>
+        </pct-tab>
+      </pct-tabs>
+    </pct-tab>
+    <pct-tab value="month" label="Month">
+      <p class="view__panel-body">The month on one grid.</p>
+    </pct-tab>
+  </pct-tabs>
+</sbx-demo>

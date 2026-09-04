@@ -1,5 +1,6 @@
 # `PctDate` — date field
 
+**Summary:** A date typed into a field or picked from a calendar the field opens.
 **Entrypoint:** `@pacit/components/date`
 **Selector:** `pct-date`
 **Status:** released

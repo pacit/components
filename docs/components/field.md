@@ -1,11 +1,12 @@
 # `PctField` — form control wrapper
 
+**Summary:** The wrapper around a form control — its label, its hint, its error, and the wiring between the three.
 **Entrypoint:** `@pacit/components/field`
 **Selector:** `pct-field`
 **Status:** released
 **Category:** Inputs
-**ARIA APG pattern:** no role of its own — the wrapper supplies the label and the
-descriptions, and the control inside carries the role
+**ARIA APG pattern:** none — the wrapper has no role of its own: it supplies the label and
+the descriptions, and the control inside carries the role
 
 ## Usage
 

@@ -985,6 +985,38 @@ routerLink>` CTAs until `a[pctButton]` exists (**4.33**), `select.scss` 7.69 kB
         the dark theme's label pairs are 11.87:1 and 17.85:1. The site's baselines moved by a
         pixel and the cause is in the diff — its old pill kept a transparent 1px rail because
         the site had only zeroed the rail's COLOUR, and the variant draws no rail at all._
+  - [x] **2.7.7 — the second review of the component page** — the head reads for somebody
+        choosing a component rather than auditing one: a `**Summary:**` field on every card
+        as the lead, the proof line gone, the import's copy moved down to the panel that
+        shows the import, a GitHub mark on Source, the preview panel a third shorter, and the
+        card's reasoning moved under Evidence.
+        _Landed 2026-09-04, from the maintainer's five notes. The lead was the card's opening
+        prose, which is where the reasoning lives — so fourteen pages led with nothing at all
+        and the rest led with a decision number. The field is machine-held: the content pass
+        throws on a missing one, on more than 200 characters, and on a markdown link or a
+        `req-`/`lesson-`/`decisions/` reference inside it (33 written, the longest 106). Two
+        defects surfaced under the height note and both were the library's, not the site's.
+        A panel nobody chose keeps its box under `content-visibility: hidden`, so it kept its
+        padding: 24px of nothing per spare panel, 48 under the sandbox's segmented fixture
+        (lesson-150). And every rule keyed on the host's own attribute reached its target by
+        DESCENT, which in a component that can hold itself reaches the nested instance too —
+        the reviewer's screenshot caught a default strip rendered segmented inside the page's
+        own switch (lesson-151); the selectors are child combinators now, the fixture is a
+        strip inside a strip, and the case fails on the descendant selector restored. The
+        panel: 424px to 296px, 30.2% of it, from a 220px floor under a 36px demo plus the
+        ghost padding. The third item of the spec line came back as its own line after a
+        sketch of five ways to write it (the maintainer chose C, the sentence): the field is
+        read as a grammar of three — a W3C link, a native element, or the word "none" — and
+        the page states "Implements the W3C ARIA APG Tabs pattern", "Semantics come from the
+        native `<button>`", or "No APG pattern applies, and none is invented", the last
+        pointing down at the section that argues it. Eleven cards had been rendering the
+        single word "none" and the stepper half a sentence, because the line was cut at the
+        field's first dash; seven cards were reworded so the head parses, the qualifiers that
+        keep a partial claim honest survive into the sentence ("the grid of", "the non-modal
+        reading of"), and a card the reader cannot classify is refused. Deciding runs: docs-e2e 331 in three engines, 329 passed with the two
+        component-button baselines red on the change itself and regenerated after; sandbox-e2e
+        tabs 24 in chromium, `tabs-strip` and `tabs-segmented` regenerated 24px and 48px
+        shorter. No TypeScript in the library moved, so the mutation snapshot stands._
   - [ ] **2.7.4 — the sweep** — a JSDoc line on every input, model and output of the library,
         a `$description` on every component token, `Parts`/`Usage`/`Theming` in every card,
         examples per component batched by category; the tripwires of 2.7.2 flip to throw

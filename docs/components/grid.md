@@ -1,5 +1,6 @@
 # `PctGrid` — a grid that finds its own column count
 
+**Summary:** A grid that finds its own column count from the narrowest a card may get, with no media query to write.
 **Entrypoint:** `@pacit/components/grid`
 **Selector:** `pct-grid`
 **Status:** released

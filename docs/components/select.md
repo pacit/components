@@ -1,5 +1,6 @@
 # `PctSelect` / `PctMultiSelect` — choice list with a panel of its own
 
+**Summary:** A choice list with a panel of its own, holding one answer or many.
 **Entrypoint:** `@pacit/components/select`
 **Selector:** `pct-select`, `pct-multi-select`
 **Status:** released

@@ -1,5 +1,6 @@
 # `PctDrawer` — a panel docked to an edge of the window that the page works around
 
+**Summary:** A panel docked to an edge of the window that the page makes room for instead of disappearing under.
 **Entrypoint:** `@pacit/components/drawer`
 **Selector:** `pct-drawer` (the panel) and `button[pctDrawerTrigger]` (the control that opens it)
 **Status:** released

@@ -1,11 +1,12 @@
 # `PctTree` — a walk the platform does not have
 
+**Summary:** A tree the reader walks with the keyboard: branches that open, leaves that get chosen.
 **Entrypoint:** `@pacit/components/tree`
 **Selectors:** `pct-tree`, `pct-tree-item`
 **Status:** released
 **Category:** Actions & navigation
-**ARIA APG pattern:** [Tree View](https://www.w3.org/WAI/ARIA/apg/patterns/treeview/)
-([0056](../decisions/0056-a-tree-is-a-walk-the-platform-does-not-have.md)): one tab stop,
+**ARIA APG pattern:** [Tree View](https://www.w3.org/WAI/ARIA/apg/patterns/treeview/) —
+([0056](../decisions/0056-a-tree-is-a-walk-the-platform-does-not-have.md)) one tab stop,
 a roving focus, `treeitem`s in `group`s, `aria-expanded` on branches and `aria-selected`
 on the chosen row. Named in the class JSDoc.
 

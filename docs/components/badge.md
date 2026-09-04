@@ -1,5 +1,6 @@
 # `PctBadge` — a word wearing a tone
 
+**Summary:** A short word wearing a tone: a status, a count, a label beside something that already has a name.
 **Entrypoint:** `@pacit/components/badge`
 **Selector:** `pct-badge`
 **Status:** released

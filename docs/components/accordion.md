@@ -1,5 +1,6 @@
 # `PctAccordion` — a stack of sections a user opens and closes
 
+**Summary:** A stack of sections the reader opens and closes — one at a time, or as many as they like.
 **Entrypoint:** `@pacit/components/accordion`
 **Selector:** `pct-accordion` (the group) and `pct-accordion-item` (a section)
 **Status:** released

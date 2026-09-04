@@ -24,6 +24,13 @@
   :host([hidden='until-found']) {
     display: block;
     content-visibility: hidden;
+    /* `content-visibility: hidden` skips the CONTENTS, not the box: the panel keeps
+       generating one, and with it the padding above and below. Measured on the docs site —
+       every panel nobody chose was adding 24px of empty space under the chosen one, so a
+       strip of five tabs carried 96px of nothing. The padding belongs to a panel being
+       read; a panel that is hidden has none, and gets it back with the attribute the
+       moment find-in-page reveals it. */
+    padding-block: 0;
   }
 }
 

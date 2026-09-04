@@ -3996,3 +3996,58 @@ synthetic input settle before the thing under test starts. And when the assertio
 number did not change", measure the room the number had to move in: at the bottom of a
 document, or on a page that does not scroll at all, an equality like that is free, and it
 passes just as well on a component that does nothing.
+
+### <a id="lesson-150"></a>`lesson-150` — `content-visibility: hidden` hides the contents; the box, and its padding, stay
+
+A panel nobody chose is `hidden="until-found"` so find-in-page can still search it
+([0045](decisions/0045-a-panel-nobody-chose-is-still-text-in-the-document.md)), and the
+stylesheet keeps that state OUT of `display: none` on purpose — the browser hides such a
+subtree with `content-visibility`, which does nothing to a box that is not rendered at all.
+What was never checked is what a box with hidden contents is still worth. Measured on the
+documentation site: `getBoundingClientRect().height` on the panel nobody chose returned 24,
+which is the panel's own `padding-block` twice over. The property skips the CONTENTS of the
+element; the element goes on generating a box, and the padding is the box's.
+
+So every unchosen panel was quietly adding its padding under the chosen one. One spare
+panel on the component page's Preview / Code switch, 24px; the sandbox's segmented fixture
+carried two, 48px of nothing under a strip 264px tall once it was gone. Nobody saw it as a
+defect because it does not look like one — it reads as a stage with generous room below,
+which is exactly how the reviewer described the panel before asking for it to be shorter.
+
+The rule: when a hiding mechanism is chosen for what it PRESERVES — searchability, the
+element's place in the document — measure what else it preserves. `display: none` takes the
+box and the padding with it and needs no second thought; every hiding that stops short of
+that leaves geometry behind, and geometry with no content in it is space nobody asked for.
+The fix is one declaration beside the mechanism (`padding-block: 0` under the same
+`:host([hidden='until-found'])`), and the padding comes back with the attribute the moment
+find-in-page reveals the panel.
+
+### <a id="lesson-151"></a>`lesson-151` — Encapsulation scopes a selector to a COMPONENT, not to an instance: a component that can hold itself must reach its parts by structure
+
+The reviewer's screenshot of the documentation page: the Preview / Code switch is
+`variant="segmented"`, and the tabs demo running on the stage inside it — a plain
+`variant="underline"`, the default — was drawn as a segmented strip too. The variant input
+was right, the attribute was on the right host, and the sheet was doing exactly what it said.
+
+Emulated encapsulation writes one `_ngcontent` attribute per COMPONENT DEFINITION, not per
+instance, so both strips' elements carry the same one. `:host([data-pct-variant='segmented'])
+.pct-tabs__list` therefore compiles to a selector that matches any `.pct-tabs__list` **inside**
+a segmented host — including the list of another `pct-tabs` a panel holds. And it wins:
+(0,2,1) against the (0,1,0) of the unqualified base rules the inner instance's own stylesheet
+lays down. Nothing about that is a bug in Angular; it is what a descendant combinator asks for.
+
+This is [`lesson-147`](lessons.md#lesson-147) one level in. There the site reached a library
+part by name and dressed whatever a demo rendered; here the library reached its own parts the
+same way, and the site was merely the first page to nest one strip in another. Same shape a
+third time in [`lesson-148`](lessons.md#lesson-148), through inherited custom properties. The
+constant is nesting: every one of the three was invisible until an instance of a component
+stood inside an instance of the same component.
+
+The rule: in a component whose content is the consumer's — anything with an `<ng-content>` —
+a rule keyed on the host's own attribute must reach its target with CHILD combinators
+(`:host([…]) > .list > .tab`), never by descent. `>` says the thing the rule means, which is
+"this host's own strip", and it puts an instance a panel holds out of reach by structure
+rather than by luck. Measured blast radius the day this was fixed: 34 such rules in six
+other stylesheets that project content, none of them yet nested by anybody. The regression
+case is the segmented assertions negated on the inner strip, and it fails on the descendant
+selector restored — `rgba(0, 0, 0, 0)` expected, the track's `rgb(241, 245, 249)` received.

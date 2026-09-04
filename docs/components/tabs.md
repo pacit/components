@@ -1,5 +1,6 @@
 # `PctTabs` — one section of a page showing at a time
 
+**Summary:** One section of a page showing at a time, in two faces and two layouts.
 **Entrypoint:** `@pacit/components/tabs`
 **Selector:** `pct-tabs` (the strip) and `pct-tab` (a panel)
 **Status:** released
@@ -13,7 +14,14 @@ the labels the panels hand up, so nothing is projected twice and the DOM order t
 for is the order anybody would write. And **a panel nobody chose is still text in the
 document**: it is `hidden="until-found"`, so the browser's own find-in-page searches it and can
 reveal it, and the reveal is answered rather than undone
-([0045](../decisions/0045-a-panel-nobody-chose-is-still-text-in-the-document.md)).
+([0045](../decisions/0045-a-panel-nobody-chose-is-still-text-in-the-document.md)) — and
+because that hiding keeps the element's box rather than taking it away, the panel drops its
+padding while it is hidden, or every panel nobody chose would leave its own empty space
+under the chosen one ([`lesson-150`](../lessons.md#lesson-150)). Every rule that keys on one
+of the host's attributes reaches its target with child combinators for the same family of
+reason: a panel may hold another strip, both are the same component and so carry the same
+encapsulation attribute, and a descendant selector from the outer host would dress the inner
+one's tabs ([`lesson-151`](../lessons.md#lesson-151)).
 
 It wears **two faces and two layouts**, and all four are paint on the same machinery — the same
 roles, the same roving tabindex, the same walk. `variant="underline"` is the default: labels on

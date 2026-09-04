@@ -86,7 +86,8 @@ body {
 /* An opaque ground on purpose: a translucent one takes whatever lies behind it — the
    hero panel's glow and shadow, measured — and a link's code inside read 4.48:1 there. */
 .docs-prose code:not(.shiki code),
-.docs-table code {
+.docs-table code,
+.claim code {
   background: var(--pct-surface-100);
   border-radius: 4px;
   padding: 1px 5px;

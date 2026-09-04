@@ -1,5 +1,6 @@
 # `PctSkeleton` — the shape of content that has not arrived
 
+**Summary:** The shape of content that has not arrived, holding the room it is going to take.
 **Entrypoint:** `@pacit/components/skeleton`
 **Selector:** `pct-skeleton`
 **Status:** released

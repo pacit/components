@@ -111,6 +111,16 @@ computed, in three engines.
 - **One more element in the DOM** for every strip, vertical or not.
 - **A second face to keep measured.** Every future colour move in this component now answers
   to nine contrast entries instead of six.
+- **A law on the selectors, because paint keyed on an attribute is reachable by descent.** A
+  panel may hold another strip, and both instances are the same component, so they share one
+  encapsulation attribute: `:host([data-pct-variant='segmented']) .pct-tabs__list` dressed the
+  inner strip as well, and outranked the inner instance's own base rules while doing it. The
+  first page to nest one strip in another was this library's own documentation, which rendered
+  a default strip segmented ([`lesson-151`](../lessons.md#lesson-151)). Every rule keyed on a
+  host attribute in this component now reaches its target with child combinators, and the
+  regression case is a strip inside a strip. The cost is that the next face has to be written
+  the same way; the alternative was a face that leaks into whatever a consumer puts in a
+  panel.
 
 ## What was rejected
 

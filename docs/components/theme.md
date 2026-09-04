@@ -1,5 +1,6 @@
 # `PctTheme` — the theme, spelled from a template
 
+**Summary:** The theme as an attribute: light, dark, or the system's own answer.
 **Entrypoint:** `@pacit/components/theme`
 **Selector:** `[pctTheme]`
 **Status:** released

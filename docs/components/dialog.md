@@ -1,5 +1,6 @@
 # `PctDialog` — a modal dialog
 
+**Summary:** A window over the page: what is behind it waits, focus stays inside, Escape closes it.
 **Entrypoint:** `@pacit/components/dialog`
 **Selector:** `pct-dialog` (plus `[pctAutofocus]`, the marker for what takes focus)
 **Status:** released

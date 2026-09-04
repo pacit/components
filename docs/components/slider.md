@@ -1,5 +1,6 @@
 # `PctSlider` — slider
 
+**Summary:** A position on a numeric continuum, dragged with the pointer or walked with the arrows.
 **Entrypoint:** `@pacit/components/slider`
 **Selector:** `pct-slider`
 **Status:** released

@@ -1,5 +1,6 @@
 # `PctAvatar` — the picture beside a name, and never the name itself
 
+**Summary:** The picture beside a name, with initials and then a silhouette standing in when there is no picture.
 **Entrypoint:** `@pacit/components/avatar`
 **Selector:** `pct-avatar`
 **Status:** released

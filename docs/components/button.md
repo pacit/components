@@ -1,5 +1,6 @@
 # `PctButton` — button
 
+**Summary:** A button in five faces and three sizes, drawn on the platform's own `<button>` element.
 **Entrypoint:** `@pacit/components/button`
 **Selector:** `button[pctButton]` (an attribute selector — the button stays a native
 `<button>`)

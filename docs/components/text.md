@@ -1,5 +1,6 @@
 # `PctText` — text field
 
+**Summary:** A text field on the platform's own `<input>` element, wired to the label and the error around it.
 **Entrypoint:** `@pacit/components/field`
 **Selector:** `input[pctText]` — **a component on a native `<input>`**, not a directive
 (directives cannot have styles, and we do not want an API resting on `::ng-deep`)

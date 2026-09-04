@@ -1,5 +1,6 @@
 # `PctCheckbox` — checkbox
 
+**Summary:** A box the reader ticks, with the third state a parent of many options needs.
 **Entrypoint:** `@pacit/components/checkbox`
 **Selector:** `pct-checkbox`
 **Status:** released

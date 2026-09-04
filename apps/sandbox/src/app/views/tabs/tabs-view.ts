@@ -21,4 +21,9 @@ export class TabsView {
 
   /** Enough labels to overflow the strip on a narrow window. */
   protected readonly many = signal('m1');
+
+  /** The two strips of the nesting fixture — its own state, so choosing here moves nothing
+      in the fixture above it. */
+  protected readonly outer = signal('week');
+  protected readonly nested = signal('hours');
 }

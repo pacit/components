@@ -150,6 +150,19 @@ of code moved (plan 2.7): the second sketch's character with the first one's tab
   table of contents on the right with a scroll spy. The columns answer the container's
   width, never the viewport's; below the thresholds the index moves into the shell's drawer
   and the table of contents folds above the page.
+- **The head is for choosing, not for auditing.** Name, status, category, and one short
+  lead — the card's `**Summary:**` field, held by the content pass to a plain sentence with
+  no link and no requirement number in it. What the component costs to import and what it
+  is called are the spec line under it; the mutation counts that used to stand there moved
+  to Evidence, and the card's reasoning with them. A reader deciding whether to use a
+  component has not yet asked how it is proved (review, 2026-09-04).
+- **The conformance claim is a sentence, not a field.** Under the spec line, one line saying
+  which of three things is true: a W3C ARIA APG pattern is implemented (with its name and a
+  link to the pattern), the platform's own element carries the semantics, or no pattern
+  applies and none was invented — that one pointing down at Accessibility, where the card's
+  argument is. It is the only claim in the head, so it is the only line there with a mark in
+  front of it. The card's `**ARIA APG pattern:**` field is read as a small grammar to build
+  it, and a card the reader cannot classify is refused rather than rendered badly.
 - **Preview first.** The running component on a stage with the landing's glow, `pct-tabs`
   for Preview / Code, the code being **the demo's own source file** highlighted at build
   time — one source for the pixels and the snippet, so they cannot drift apart. The stage
@@ -167,7 +180,8 @@ of code moved (plan 2.7): the second sketch's character with the first one's tab
 - **Accessibility**: the keyboard map, and the card's Checks table read as a scorecard —
   the gaps shown in public beside the measurements, each naming its requirement.
 - **Evidence**: the component's own mutation score, e2e cases, colour pairs and baselines
-  from the tracked snapshots; the decisions and lessons the card cites; the limitations.
+  from the tracked snapshots; the card's design note — why it is built this way, with every
+  link it needs; the decisions and lessons the card cites; the limitations.
 - Copy is `pct-button`, the status is `pct-badge`, the filter is `pct-field`. Syntax
   highlighting is **shiki at build time**: zero highlighter shipped, both themes once.
 

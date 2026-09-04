@@ -21,6 +21,9 @@ pattern for the ones after it.
 
 # `PctName` — <one-sentence description>
 
+**Summary:** <one or two plain sentences, and the page's own lead — what the component is,
+for somebody deciding whether to use it. No links, no requirement or decision numbers: the
+reasoning has its own place further down this card, and the site puts it under Evidence.>
 **Entrypoint:** `@pacit/components/<name>`
 **Selector:** `pct-name` / `[pctName]`
 **Status:** draft | released
@@ -29,8 +32,24 @@ the group the site's index files the component under
 **ARIA APG pattern:** [pattern name](https://www.w3.org/WAI/ARIA/apg/patterns/…) — named in
 the class JSDoc as well
 
-One or two sentences between the header and the first section: what the component is for the
-reader, not for the maintainer. The site leads the page with them.
+<!-- The page states this field as a sentence under the component's name, so its HEAD — the
+     part before the first `—` — has to be one of exactly three shapes, and the content pass
+     refuses a card whose head is none of them:
+
+       [Name](https://www.w3.org/WAI/…)   a pattern is implemented, and the page links it
+       the grid of [Name](https://…)      the same, for a component that implements PART of
+                                          a pattern: the words before the link survive into
+                                          the sentence, so the claim stays honest
+       a native `<button>`                the platform's element carries the semantics
+       none                               no pattern applies, and none was invented
+
+     Everything after the first `—` is prose and goes under Accessibility, links and all. -->
+
+The prose between the header and the first section is the design note: why the component is
+built the way it is, what it refuses to do, which decision it stands on. Links belong here —
+this is where a reader who wants the reasoning is sent. The site renders it under **Evidence**,
+below the running component and the API, because somebody choosing a component reads the
+Summary and the preview first.
 
 ## Usage
 

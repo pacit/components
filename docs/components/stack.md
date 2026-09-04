@@ -1,5 +1,6 @@
 # `PctStack` — the space between blocks, from the scale
 
+**Summary:** A column of blocks standing one chosen step apart, the step taken from the spacing scale.
 **Entrypoint:** `@pacit/components/stack`
 **Selector:** `pct-stack`
 **Status:** released

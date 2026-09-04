@@ -1,5 +1,6 @@
 # `PctSwitch` — switch
 
+**Summary:** A setting that takes effect the moment it is flipped, with no Save button beside it.
 **Entrypoint:** `@pacit/components/switch`
 **Selector:** `pct-switch`
 **Status:** released

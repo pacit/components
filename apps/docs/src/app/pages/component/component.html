@@ -38,21 +38,29 @@
               <pct-badge class="head__status">{{ p.status }}</pct-badge>
               }
             </h1>
-            <div class="lead docs-prose" [innerHTML]="h.intro"></div>
+            <p class="lead docs-prose" [innerHTML]="h.summary"></p>
           </div>
           <div class="head__actions">
-            <button
-              pctButton
-              variant="outline"
-              size="sm"
-              (click)="copy(importLine(), 'the import')"
-              data-testid="copy-import"
-            >
-              Copy import
-            </button>
-            <a class="head__source" [href]="sourceUrl()" rel="noopener"
-              >Source ↗</a
-            >
+            <!-- The mark, not a word: "Source" alone says what the link holds and not where
+                 it goes, and the two are a different promise to somebody deciding to click.
+                 It is decoration beside a text label, so it is hidden from the reader who
+                 hears the page rather than sees it. -->
+            <a class="head__source" [href]="sourceUrl()" rel="noopener">
+              <svg
+                class="head__mark"
+                viewBox="0 0 16 16"
+                width="16"
+                height="16"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <path
+                  fill="currentColor"
+                  d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.4 7.4 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"
+                />
+              </svg>
+              Source
+            </a>
           </div>
         </div>
         <ul class="spec" data-testid="spec">
@@ -64,19 +72,67 @@
             <span class="spec__label">Selector</span
             ><code data-testid="selector">{{ p.selector }}</code>
           </li>
-          @if (h.patternShort) {
-          <li>
-            <span class="spec__label">Pattern</span
-            ><span
-              class="docs-prose spec__pattern"
-              [innerHTML]="h.patternShort"
-            ></span>
-          </li>
-          }
-          <li data-testid="proof">
-            <span class="spec__label">Proof</span>{{ proof() }}
-          </li>
         </ul>
+        <!-- The conformance claim, in a sentence of its own. It used to be the third item on
+             the spec line above, cut out of the card's field at its first dash — which left
+             eleven components claiming the single word "none" where they hold an argument.
+             A claim is not an address, so it reads as prose and stands on its own line
+             (sketch C, chosen 2026-09-04). -->
+        @if (p.patternClaim; as claim) {
+        <p
+          class="claim"
+          [class.claim--none]="claim.kind === 'none'"
+          data-testid="pattern"
+        >
+          @if (claim.kind === 'none') {
+          <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true">
+            <circle
+              cx="8"
+              cy="8"
+              r="6"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            />
+            <path
+              d="M5 8h6"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            />
+          </svg>
+          <span
+            >No APG pattern applies, and none is invented —
+            <a [routerLink]="[]" fragment="accessibility"
+              >the reasoning is under Accessibility ↓</a
+            ></span
+          >
+          } @else {
+          <svg viewBox="0 0 16 16" width="15" height="15" aria-hidden="true">
+            <path
+              d="M2 8.5 6 12.5 14 4"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          @if (claim.kind === 'platform') {
+          <span
+            >Semantics come from the native <code>{{ claim.element }}</code> —
+            no role and no keyboard handling of ours</span
+          >
+          } @else {
+          <span
+            >Implements {{ claim.qualifier ? claim.qualifier + ' the' : 'the' }}
+            <a [href]="claim.href" rel="noopener"
+              >W3C ARIA APG {{ claim.name }} pattern ↗</a
+            ></span
+          >
+          } }
+        </p>
+        }
       </header>
 
       <!-- PREVIEW, first: the running component is the page's thesis. The card is the
@@ -165,7 +221,18 @@
           </p>
         </div>
         <div class="card card--pad usage">
-          <span class="eyebrow">Import this component</span>
+          <div class="usage__row">
+            <span class="eyebrow">Import this component</span>
+            <button
+              pctButton
+              variant="outline"
+              size="sm"
+              (click)="copy(importLine(), 'the import')"
+              data-testid="copy-import"
+            >
+              Copy
+            </button>
+          </div>
           <pre class="plain"><code>{{ importLine() }}</code></pre>
         </div>
         @if (h.exports.length) {
@@ -678,7 +745,12 @@
           </div>
         </div>
 
-        @if (h.decisions.length) {
+        @if (h.notes) {
+        <div class="sub" id="evidence-notes" data-spy>
+          <h3>Why it is built this way</h3>
+          <div class="docs-prose" [innerHTML]="h.notes"></div>
+        </div>
+        } @if (h.decisions.length) {
         <div class="sub" id="evidence-decisions" data-spy>
           <h3>Decisions behind it</h3>
           <ul class="list">

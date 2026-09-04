@@ -1,5 +1,6 @@
 # `PctAutosize` — a textarea as tall as its text
 
+**Summary:** A textarea as tall as its text, growing and shrinking as the reader types.
 **Entrypoint:** `@pacit/components/field`
 **Selector:** `textarea[pctText][pctAutosize]` — **a directive**, not a component: `PctText`
 is already the component on that element and Angular matches one component to a node

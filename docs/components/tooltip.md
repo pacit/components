@@ -1,5 +1,6 @@
 # `PctTooltip` — a sentence about a control
 
+**Summary:** A sentence about a control — its description, or its name when it has none of its own.
 **Entrypoint:** `@pacit/components/tooltip`
 **Selector:** `[pctTooltip]` (the panel it opens is `pct-tooltip`, `PctTooltipPanel`)
 **Status:** released

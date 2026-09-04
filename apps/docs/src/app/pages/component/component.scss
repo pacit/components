@@ -146,8 +146,10 @@
   letter-spacing: 0.01em;
 }
 
+/* The card's `**Summary:**` field, one paragraph of it — so the margin is written out
+   rather than left to the browser's own block margins on a `<p>`. */
 .lead {
-  margin-block-start: 12px;
+  margin: 12px 0 0;
   max-width: 62ch;
   color: var(--pct-text-muted);
   font-size: 18px;
@@ -163,6 +165,9 @@
 }
 
 .head__source {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
   color: var(--pct-primary);
   font-size: var(--pct-font-size-sm);
   font-weight: 600;
@@ -172,6 +177,11 @@
     text-decoration: underline;
     text-underline-offset: 3px;
   }
+}
+
+/* The mark rides the text's colour, and `flex: none` keeps it square when the label wraps. */
+.head__mark {
+  flex: none;
 }
 
 .spec {
@@ -193,6 +203,44 @@
   code {
     font-size: 13px;
   }
+}
+
+/* The conformance claim (sketch C). A sentence, not an address — so it sits below the spec
+   line rather than in it, and the mark in front says which of the three it is before a word
+   is read: a tick in the accent for a pattern implemented or a platform element carrying the
+   semantics, a struck circle in the muted colour for a deliberate none.
+
+   The muted colour and not the accent under an opacity: this site follows the library's own
+   `req-token-no-opacity`, so a second state is a second colour. `align-items: baseline` with
+   the mark nudged down by two pixels — a 15px square sitting on the text baseline reads a
+   touch high, and this is the same correction the claim carried in the sketch. */
+.claim {
+  display: flex;
+  gap: 9px;
+  align-items: baseline;
+  margin: 10px 0 0;
+  color: var(--pct-text-muted);
+  font-size: 14px;
+
+  svg {
+    position: relative;
+    inset-block-start: 2px;
+    flex: none;
+    color: var(--pct-primary);
+  }
+
+  a {
+    color: var(--pct-primary);
+    text-underline-offset: 3px;
+  }
+
+  /* The tag in it is an inline code chip like every other on the site, so it takes the one
+     rule that draws them — in styles.scss, beside the prose and table selectors. This
+     stylesheet is the site's largest and sits inside a measured budget (project.json). */
+}
+
+.claim--none svg {
+  color: var(--pct-text-muted);
 }
 
 .spec__label {
@@ -272,9 +320,16 @@
 .stage--hero {
   /* The sketch's stage: room above, and room below for the file's name in the corner. A
      floor as well — the demo arrives through a lazy chunk on hydration, and an unreserved
-     box collapsing and re-expanding was 0.156 of measured CLS. */
-  min-block-size: 220px;
-  padding: 40px 32px 56px;
+     box collapsing and re-expanding was 0.156 of measured CLS.
+
+     The floor is a floor and not a height: it only shows under a demo shorter than it, and
+     the review found the panel too tall for exactly those. 220px of reserved room under a
+     36px button is 184px of nothing, and the panel it made was the first thing on the page
+     after the name. What replaces it is measured against the same picture: the numbers
+     below hold the button's panel at 296px where it was 424px. The bottom padding stays
+     the largest of the three — the file's name sits in that corner, 15px of it 12px up. */
+  min-block-size: 144px;
+  padding: 28px 32px 40px;
   background: transparent;
 
   /* A flipped stage paints its own ground — the tokens under [data-theme] repaint every
@@ -443,6 +498,15 @@ pre.plain {
 /* usage: one card — the import line; the install belongs to the start page */
 .usage {
   margin-block-end: var(--pct-space-4);
+}
+
+/* The copy stands with the line it copies, not up in the header: the button by itself says
+   "copy" and only the panel around it says what. */
+.usage__row {
+  display: flex;
+  gap: var(--pct-space-4);
+  align-items: center;
+  justify-content: space-between;
 }
 
 .oneline {

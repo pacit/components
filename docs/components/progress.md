@@ -1,5 +1,6 @@
 # `PctProgress` — how far along a task is, or that it is under way at all
 
+**Summary:** How far along a task is — or, when nobody can say, that it is under way at all.
 **Entrypoint:** `@pacit/components/progress`
 **Selector:** `pct-progress`
 **Status:** released

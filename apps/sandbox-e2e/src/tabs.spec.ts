@@ -277,6 +277,42 @@ test.describe('PctTabs — one section showing at a time', () => {
   });
 
   /**
+   * A strip inside a strip. Both instances are the same component, so their elements carry
+   * the same encapsulation attribute, and a rule the outer one keys on its own attribute
+   * reaches the inner one's tabs unless the selector says CHILD. It did not: a default strip
+   * inside a segmented one came out segmented, on the library's own documentation page
+   * (lesson-151). What this case reads is the inner strip's own face — the assertions are the
+   * segmented test's, negated, on the instance a panel holds.
+   */
+  test('a strip inside a panel keeps its own face, not the outer one', async ({
+    page,
+  }) => {
+    const outerList = page
+      .getByTestId('tabs-outer')
+      .locator('> [data-pct-part="list"]');
+    const innerList = page
+      .getByTestId('tabs-inner')
+      .locator('> [data-pct-part="list"]');
+    const innerChosen = page
+      .getByTestId('tabs-inner')
+      .locator('[data-pct-part="tab"][data-pct-chosen]');
+
+    // The outer strip is the track, and the assertions are the segmented case's own.
+    await expect(outerList).toHaveCSS('background-color', 'rgb(241, 245, 249)');
+    await expect(outerList).toHaveCSS('border-bottom-width', '0px');
+
+    // The inner strip is the default face: a rail under it, no track behind it, and the
+    // chosen tab marked by an edge rather than by a fill.
+    await expect(innerList).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+    await expect(innerList).toHaveCSS('border-bottom-width', '1px');
+    await expect(innerList).toHaveCSS('padding', '0px');
+    await expect(innerChosen).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+    await expect(innerChosen).toHaveCSS('border-bottom-width', '2px');
+    // Rounded on top only — the segmented face rounds all four, and that is the tell.
+    await expect(innerChosen).toHaveCSS('border-radius', '8px 8px 0px 0px');
+  });
+
+  /**
    * The strip scrolls and this library scrolls nothing: the browser brings a focused element
    * into view by itself, which is the whole answer for a strip with more labels than room
    * (req-api-platform).

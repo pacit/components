@@ -1,5 +1,6 @@
 # `PctContainer` — a reading column capped by a token
 
+**Summary:** A reading column: content capped at a maximum width, centred, with a gutter that follows the viewport.
 **Entrypoint:** `@pacit/components/container`
 **Selector:** `pct-container`
 **Status:** released

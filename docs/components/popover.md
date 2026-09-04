@@ -1,12 +1,14 @@
 # `PctPopover` — a panel of content on a live page
 
+**Summary:** A panel of content anchored to a control, with the page behind it still answering.
 **Entrypoint:** `@pacit/components/popover`
 **Selector:** `pct-popover` (the control that opens it carries `[pctPopoverTrigger]`,
 `PctPopoverTrigger`)
 **Status:** released
 **Category:** Overlays
-**ARIA APG pattern:** [Dialog](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/) — the
-**non-modal** reading of it: `role="dialog"` with **no** `aria-modal`, focus moved into the
+**ARIA APG pattern:** the non-modal reading of
+[Dialog](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/) — `role="dialog"` with **no**
+`aria-modal`, focus moved into the
 panel and given back to the trigger, Escape from the closing stack. The trigger is the
 [Disclosure](https://www.w3.org/WAI/ARIA/apg/patterns/disclosure/) half: `aria-expanded` on the
 control, `aria-haspopup="dialog"`, `aria-controls` while the panel is up

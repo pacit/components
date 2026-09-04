@@ -1,5 +1,6 @@
 # `PctPagination` — a control that owns the current page of a collection
 
+**Summary:** A pager that owns the current page of a collection and says when the reader moves.
 **Entrypoint:** `@pacit/components/pagination`
 **Selector:** `pct-pagination`
 **Status:** released

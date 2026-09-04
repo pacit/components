@@ -1,11 +1,12 @@
 # `PctBreadcrumb` — the way here, told in links
 
+**Summary:** The trail to the current page, told in links, with the page itself at the end of it.
 **Entrypoint:** `@pacit/components/breadcrumb`
 **Selectors:** `pct-breadcrumb`, `pct-crumb`, `a[pctCrumbLink]`
 **Status:** released
 **Category:** Actions & navigation
-**ARIA APG pattern:** [Breadcrumb](https://www.w3.org/WAI/ARIA/apg/patterns/breadcrumb/)
-([0054](../decisions/0054-a-breadcrumb-is-the-way-here-told-in-links.md)): a named
+**ARIA APG pattern:** [Breadcrumb](https://www.w3.org/WAI/ARIA/apg/patterns/breadcrumb/) —
+([0054](../decisions/0054-a-breadcrumb-is-the-way-here-told-in-links.md)) a named
 `navigation` landmark, a list of links, `aria-current="page"` on the one you are on. Named
 in the class JSDoc.
 

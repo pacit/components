@@ -1,10 +1,11 @@
 # `PctCalendar` — calendar
 
+**Summary:** One month of days as a grid, standing on the page rather than folded into a panel.
 **Entrypoint:** `@pacit/components/date`
 **Selector:** `pct-calendar`
 **Status:** released
 **Category:** Inputs
-**ARIA APG pattern:** the grid of the
+**ARIA APG pattern:** the grid of
 [Date Picker Dialog](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/datepicker-dialog/) —
 a `<table role="grid">` walked by a roving tabindex
 

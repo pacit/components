@@ -46,6 +46,39 @@ test.describe('The pages', () => {
     await expect(page.locator('h1')).toContainText('Button');
   });
 
+  /**
+   * The conformance claim, stated as a sentence under the description (sketch C). It is the
+   * one thing in the head that is a CLAIM rather than an address, and it has three readings:
+   * a W3C pattern implemented, the platform carrying the semantics, or no pattern applying
+   * at all. The third used to render as the single word "none", which read as a gap where
+   * eleven cards hold an argument — so all three are checked here on the pages that carry
+   * them, and the link each one offers is checked to lead somewhere.
+   */
+  test('the pattern claim reads as a sentence, in each of its three kinds', async ({
+    page,
+  }) => {
+    await visit(page, '/components/tabs');
+    const apg = page.getByTestId('pattern');
+    await expect(apg).toContainText('Implements the W3C ARIA APG Tabs pattern');
+    await expect(apg.locator('a')).toHaveAttribute(
+      'href',
+      'https://www.w3.org/WAI/ARIA/apg/patterns/tabs/',
+    );
+
+    // The platform kind names the element and claims nothing of its own.
+    await visit(page, '/components/button');
+    await expect(page.getByTestId('pattern')).toContainText(
+      'Semantics come from the native <button>',
+    );
+
+    // The deliberate none says it is deliberate, and points at the section that argues it.
+    await visit(page, '/components/badge');
+    const none = page.getByTestId('pattern');
+    await expect(none).toContainText('and none is invented');
+    await none.locator('a').click();
+    await expect(page.locator('#accessibility')).toBeInViewport();
+  });
+
   test('a component page shows the demo, and the code tab is its own source', async ({
     page,
   }) => {
