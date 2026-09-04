@@ -4,7 +4,7 @@
 **Entrypoint:** `@pacit/components/select`
 **Selector:** `pct-select`, `pct-multi-select`
 **Status:** released
-**Category:** Inputs
+**Category:** Choices
 **ARIA APG pattern:** [Combobox](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/) — the
 **select-only** one by default and the **editable, list-autocomplete** one with `filterable`:
 `role="combobox"` on the trigger plus `role="listbox"` in the panel, **focus stays on the

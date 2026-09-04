@@ -4,7 +4,7 @@
 **Entrypoint:** `@pacit/components/theme`
 **Selector:** `[pctTheme]`
 **Status:** released
-**Category:** Foundations
+**Category:** Layout & theming
 **ARIA APG pattern:** none — the directive writes one `data-*` attribute and touches
 nothing the accessibility tree carries. Named in the class JSDoc.
 

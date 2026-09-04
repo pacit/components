@@ -4,7 +4,7 @@
 **Entrypoint:** `@pacit/components/date`
 **Selector:** `pct-calendar`
 **Status:** released
-**Category:** Inputs
+**Category:** Choices
 **ARIA APG pattern:** the grid of
 [Date Picker Dialog](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/datepicker-dialog/) —
 a `<table role="grid">` walked by a roving tabindex

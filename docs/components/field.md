@@ -4,7 +4,7 @@
 **Entrypoint:** `@pacit/components/field`
 **Selector:** `pct-field`
 **Status:** released
-**Category:** Inputs
+**Category:** Text & numbers
 **ARIA APG pattern:** none — the wrapper has no role of its own: it supplies the label and
 the descriptions, and the control inside carries the role
 

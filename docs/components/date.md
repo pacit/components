@@ -4,7 +4,7 @@
 **Entrypoint:** `@pacit/components/date`
 **Selector:** `pct-date`
 **Status:** released
-**Category:** Inputs
+**Category:** Text & numbers
 **ARIA APG pattern:** [Date Picker Dialog](https://www.w3.org/WAI/ARIA/apg/patterns/dialog-modal/examples/datepicker-dialog/) —
 a plain textbox with a button beside it that opens a `role="dialog"` holding a
 [`role="grid"`](./calendar.md). The textbox is deliberately **not** a `combobox`: a combobox

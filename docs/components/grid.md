@@ -4,7 +4,7 @@
 **Entrypoint:** `@pacit/components/grid`
 **Selector:** `pct-grid`
 **Status:** released
-**Category:** Foundations
+**Category:** Layout & theming
 **ARIA APG pattern:** none — layout is presentational and this host carries **no ARIA at
 all** (0057). In particular it is **not** `role="grid"`: that role names a keyboard-walked
 widget of cells, and calling a card layout a grid widget is a claim screen-reader users pay

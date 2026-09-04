@@ -4,7 +4,7 @@
 **Entrypoint:** `@pacit/components/chips`
 **Selector:** `pct-chips` / `pct-chip`
 **Status:** released
-**Category:** Inputs
+**Category:** Choices
 **ARIA APG pattern:** none — there is no APG pattern for chips, and this component does not
 invent one ([0051](../decisions/0051-chips-are-a-list-the-user-shortens.md)). What there is:
 [`list` / `listitem`](https://www.w3.org/TR/wai-aria-1.2/#list) for the count a screen reader

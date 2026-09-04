@@ -56,12 +56,86 @@ const read = (p) => readFileSync(join(ROOT, p), 'utf8');
 const STRICT = new Set(['button']);
 /** The lead's ceiling: the longest of the thirty-three written is 106 characters. */
 const SUMMARY_MAX = 200;
+/* Six buckets and not the first five (plan 2.8, chosen off a sketch of six card variants).
+   The old split changed its cutting rule mid-way — `menu` filed by purpose, `popover` by
+   mechanism, though a menu IS a popover with a roving list in it — and kept a bucket named
+   by exclusion: "Feedback & display" held an interactive disclosure, a decoration and a
+   status readout, whose only shared property was not being one of the other four.
+
+   The fat bucket is what the redesign forced. `Inputs` at 12 of 33 costs nothing while a
+   tile is text 13rem wide; with a live preview under every name the card roughly doubles
+   in height, and twelve of them under one heading is four screens between one bucket and
+   the next. `Text & numbers` / `Choices` cuts at a joint the library itself cuts: `field`
+   wraps a control the reader types into, `select`/`radio`/`checkbox` ARE the control.
+
+   The ORDER of this array is the order of the page, and `Layout & theming` is last on
+   purpose — the disagreement with the component page's own index is deliberate. That index
+   is a FILING order for a reader already inside a page, who knows what they came for; the
+   gallery is a BROWSING order for a visitor who has just pressed "Components" and is
+   deciding whether the library is serious. `container`, `grid` and `stack` are scaffolding
+   one looks up while building and never while choosing, and they are the four weakest
+   pictures in the library — `theme` has 0 parts and 0 tokens and nothing at all to draw.
+   Opening a gallery whose whole claim is "here is what it looks like" with the four things
+   that look like almost nothing spends the screen that decides everything. */
 const CATEGORIES = [
-  'Foundations',
   'Actions & navigation',
-  'Inputs',
+  'Text & numbers',
+  'Choices',
   'Overlays',
-  'Feedback & display',
+  'Data & status',
+  'Layout & theming',
+];
+
+/* The order the reader meets them, and the only place it is written. Alphabetical is a
+   filing order and a gallery is not a filing cabinet: each bucket leads with its wrapper
+   or its workhorse (`button`, `field`, `select`, `dialog`, `accordion`, `container`), and
+   the page as a whole opens on the best picture the library has of itself.
+
+   Kept here rather than as an `**Order:**` field on the cards because it is a fact about
+   the PAGE, not about the component. The gate below is what keeps the two from drifting:
+   this list must be a permutation of the cards on disk, and each category must be a
+   contiguous run in it — a card refiled without being moved here splits its own bucket in
+   two and fails the build rather than rendering a heading twice. */
+const CARD_ORDER = [
+  // Actions & navigation
+  'button',
+  'menu',
+  'tabs',
+  'breadcrumb',
+  'pagination',
+  // Text & numbers
+  'field',
+  'text',
+  'textarea',
+  'number',
+  'date',
+  // Choices
+  'select',
+  'checkbox',
+  'radio',
+  'switch',
+  'chips',
+  'slider',
+  'calendar',
+  // Overlays
+  'dialog',
+  'drawer',
+  'popover',
+  'toast',
+  'tooltip',
+  // Data & status
+  'accordion',
+  'tree',
+  'stepper',
+  'progress',
+  'badge',
+  'avatar',
+  'skeleton',
+  // Layout & theming
+  'container',
+  'grid',
+  'stack',
+  'theme',
 ];
 const warnings = [];
 const warn = (id, message) => warnings.push({ id, message });
@@ -1067,6 +1141,43 @@ const entry = (card) => {
   };
 };
 const full = cards.map(entry);
+
+/* One order for every surface downstream — the gallery, the component page's index, the
+   machine catalogue and llms.txt all read this array, so sorting it once is the whole of
+   it. The two gates first, because a silent misorder is the failure mode this replaces. */
+{
+  const listed = new Set(CARD_ORDER);
+  if (listed.size !== CARD_ORDER.length)
+    throw new Error('content pass: CARD_ORDER repeats an id');
+  const missing = full.map((c) => c.id).filter((id) => !listed.has(id));
+  const unknown = CARD_ORDER.filter((id) => !cardIds.has(id));
+  if (missing.length || unknown.length)
+    throw new Error(
+      `content pass: CARD_ORDER is not the cards on disk — missing ${missing.join(', ') || 'none'}, unknown ${unknown.join(', ') || 'none'}`,
+    );
+
+  const rank = new Map(CARD_ORDER.map((id, i) => [id, i]));
+  full.sort((a, b) => rank.get(a.id) - rank.get(b.id));
+
+  // Each category has to be ONE run, or the page renders its heading twice.
+  const runs = [];
+  for (const card of full)
+    if (runs.at(-1) !== card.category) runs.push(card.category);
+  const split = runs.filter((c, i) => runs.indexOf(c) !== i);
+  if (split.length)
+    throw new Error(
+      `content pass: ${[...new Set(split)].join(', ')} is not contiguous in CARD_ORDER`,
+    );
+  const stray = runs.filter((c) => !CATEGORIES.includes(c));
+  if (stray.length)
+    throw new Error(`content pass: ${stray.join(', ')} is not a category`);
+  // The buckets appear in the order CATEGORIES states, so the two cannot disagree.
+  const expected = CATEGORIES.filter((c) => runs.includes(c));
+  if (runs.join('|') !== expected.join('|'))
+    throw new Error(
+      `content pass: CARD_ORDER runs (${runs.join(', ')}) do not follow CATEGORIES (${expected.join(', ')})`,
+    );
+}
 
 for (const card of full) {
   if (!card.usage) warn(card.id, 'the card has no `## Usage` fence');

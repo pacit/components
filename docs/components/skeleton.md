@@ -4,7 +4,7 @@
 **Entrypoint:** `@pacit/components/skeleton`
 **Selector:** `pct-skeleton`
 **Status:** released
-**Category:** Feedback & display
+**Category:** Data & status
 **ARIA APG pattern:** none — a skeleton is not a widget and announces nothing. It is
 `aria-hidden="true"` outright, the second component in the library to be after `pct-icon`;
 what a screen reader has to hear is

@@ -4,7 +4,7 @@
 **Entrypoint:** `@pacit/components/container`
 **Selector:** `pct-container`
 **Status:** released
-**Category:** Foundations
+**Category:** Layout & theming
 **ARIA APG pattern:** none — layout is presentational and this host carries **no ARIA at
 all**: no role, no label, not one `aria-*` attribute. The unit suite pins the absence
 itself, so a future "helpful" attribute is a red test. Named in the class JSDoc.

@@ -4,7 +4,7 @@
 **Entrypoint:** `@pacit/components/accordion`
 **Selector:** `pct-accordion` (the group) and `pct-accordion-item` (a section)
 **Status:** released
-**Category:** Feedback & display
+**Category:** Data & status
 **ARIA APG pattern:** [Accordion](https://www.w3.org/WAI/ARIA/apg/patterns/accordion/) — named
 in the class JSDoc
 

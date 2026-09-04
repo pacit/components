@@ -4,7 +4,7 @@
 **Entrypoint:** `@pacit/components/radio`
 **Selector:** `pct-radio-group`, `pct-radio`
 **Status:** released
-**Category:** Inputs
+**Category:** Choices
 **ARIA APG pattern:** [Radio Group](https://www.w3.org/WAI/ARIA/apg/patterns/radio/) —
 `role="radiogroup"`, `aria-labelledby`, `aria-orientation`
 

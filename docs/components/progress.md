@@ -4,7 +4,7 @@
 **Entrypoint:** `@pacit/components/progress`
 **Selector:** `pct-progress`
 **Status:** released
-**Category:** Feedback & display
+**Category:** Data & status
 **ARIA APG pattern:** none — there is no APG pattern for a progress bar. What there is is the
 [`progressbar` role](https://www.w3.org/TR/wai-aria-1.2/#progressbar), and this component does
 not write it: the bar **is** a `<progress>`, so the role, the bounds, the value and the

@@ -4,7 +4,7 @@
 **Entrypoint:** `@pacit/components/checkbox`
 **Selector:** `pct-checkbox`
 **Status:** released
-**Category:** Inputs
+**Category:** Choices
 **ARIA APG pattern:** [Checkbox (tri-state)](https://www.w3.org/WAI/ARIA/apg/patterns/checkbox/)
 — the indeterminate state through `aria-checked="mixed"`
 

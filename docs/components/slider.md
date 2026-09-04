@@ -4,7 +4,7 @@
 **Entrypoint:** `@pacit/components/slider`
 **Selector:** `pct-slider`
 **Status:** released
-**Category:** Inputs
+**Category:** Choices
 **ARIA APG pattern:** [Slider](https://www.w3.org/WAI/ARIA/apg/patterns/slider/) — in the
 variant the APG's own HTML example is: a native `<input type="range">`, which carries the
 role, the value, both bounds and the whole keyboard without a line from us

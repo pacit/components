@@ -4,7 +4,7 @@
 **Entrypoint:** `@pacit/components/switch`
 **Selector:** `pct-switch`
 **Status:** released
-**Category:** Inputs
+**Category:** Choices
 **ARIA APG pattern:** [Switch](https://www.w3.org/WAI/ARIA/apg/patterns/switch/) — the
 `role="switch"` variant built on a native checkbox, which the APG's own HTML example is
 

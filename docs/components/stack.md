@@ -4,7 +4,7 @@
 **Entrypoint:** `@pacit/components/stack`
 **Selector:** `pct-stack`
 **Status:** released
-**Category:** Foundations
+**Category:** Layout & theming
 **ARIA APG pattern:** none — layout is presentational and this host carries **no ARIA at
 all** (0057). The unit suite pins the absence itself. Named in the class JSDoc.
 

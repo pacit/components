@@ -4,7 +4,7 @@
 **Entrypoint:** `@pacit/components/avatar`
 **Selector:** `pct-avatar`
 **Status:** released
-**Category:** Feedback & display
+**Category:** Data & status
 **ARIA APG pattern:** none — an avatar is decoration, all the way down
 ([0052](../decisions/0052-an-avatar-is-a-picture-beside-a-name.md)). The host is
 `aria-hidden="true"` outright — the third component after `pct-icon` and `pct-skeleton` —

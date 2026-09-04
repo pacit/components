@@ -4,7 +4,7 @@
 **Entrypoint:** `@pacit/components/badge`
 **Selector:** `pct-badge`
 **Status:** released
-**Category:** Feedback & display
+**Category:** Data & status
 **ARIA APG pattern:** none — a badge is text and only text
 ([0053](../decisions/0053-a-badge-is-a-word-wearing-a-tone.md)): the word is projected,
 already part of the document's sentence, and the component adds a box around it and nothing

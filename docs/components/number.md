@@ -5,7 +5,7 @@
 **Selector:** `input[pctNumber]` — on an `<input type="text">`, a **deliberate exception** to
 [`req-api-platform`](../requirements/api.md#req-api-platform) ([0009](../decisions/0009-number-field.md))
 **Status:** released
-**Category:** Inputs
+**Category:** Text & numbers
 **ARIA APG pattern:** [Spinbutton](https://www.w3.org/WAI/ARIA/apg/patterns/spinbutton/) —
 `role="spinbutton"`, `aria-valuenow`, `aria-valuetext`
 

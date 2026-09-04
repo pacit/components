@@ -5,7 +5,7 @@
 **Selector:** `textarea[pctText][pctAutosize]` — **a directive**, not a component: `PctText`
 is already the component on that element and Angular matches one component to a node
 **Status:** released
-**Category:** Inputs
+**Category:** Text & numbers
 **ARIA APG pattern:** none — the APG has no pattern for a height. The control is a native
 `<textarea>` and stays one, so `placeholder`, `maxlength`, `spellcheck`, `wrap` and the mobile
 keyboard mode are the platform's and untouched

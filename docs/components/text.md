@@ -5,7 +5,7 @@
 **Selector:** `input[pctText]` — **a component on a native `<input>`**, not a directive
 (directives cannot have styles, and we do not want an API resting on `::ng-deep`)
 **Status:** released
-**Category:** Inputs
+**Category:** Text & numbers
 **ARIA APG pattern:** a native `<input>` — `type`, the browser's autofill and the mobile
 keyboard modes are all preserved
 
