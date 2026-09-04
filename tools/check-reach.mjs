@@ -51,8 +51,15 @@ const TOKEN = /[A-Za-z0-9_@.*/-]{3,}/g;
  * `@pacit/components/button` is that directory's `index.ts` — without these completions
  * every source file in the library would look unreached, since almost nothing names them
  * with the extension.
+ *
+ * `.scss` is the same idiom one language over: sass `@use '../../hero-edge'` opens
+ * `hero-edge.scss`, and until the docs app grew a stylesheet shared between two pages
+ * (2026-09-04) nothing in the repository wrote that line, so the gate had never needed to
+ * follow it. Sass's own `_` prefix is deliberately NOT completed here: a partial named
+ * `_hero-edge.scss` would be reachable through a spelling no other tool in this repository
+ * uses, and the shared sheet is plainly named instead.
  */
-const COMPLETIONS = ['.ts', '.mjs', '.mts', '/index.ts'];
+const COMPLETIONS = ['.ts', '.mjs', '.mts', '.scss', '/index.ts'];
 
 /**
  * A violation of one of the five points. It carries the point's identifier, so the

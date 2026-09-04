@@ -312,3 +312,35 @@ export const EXAMPLES: Readonly<Record<string, readonly DocsExample[]>> = {
     },
   ],
 };
+
+/**
+ * The gallery's own scenes (plan 2.8). A card's stage is 272 × 144px of room and the
+ * canonical demos are authored for the component page's 675px one, so seven of the
+ * thirty-three overflowed it — measured in chromium at three columns: `button` by 227px,
+ * `stepper` by 138px, `theme` by 96px and `chips` by 41px across, `container` by 316px,
+ * `grid` by 180px and `calendar` by 68px down. That is the trade `0061` already names:
+ * what goes in a fixed-width card is chosen by what fits it.
+ *
+ * Only those seven are here. Everything else falls back to `DEMOS`, so a component whose
+ * demo already fits has ONE scene and cannot drift into having two that disagree — and a
+ * card that grows out of its stage is caught by the gallery's measurement spec rather than
+ * by a reader noticing a cropped button.
+ *
+ * These files are `*.card.ts` and not `*.demo.ts` on purpose: the content pass claims every
+ * `<id>[.<key>].demo.ts` on disk and fails the build when one is not in `EXAMPLES`, and a
+ * card scene is not an example — it is never shown as code, because the gallery has no
+ * code tab to show it in.
+ */
+export const CARD_DEMOS: Readonly<
+  Record<string, () => Promise<Type<unknown>>>
+> = {
+  button: () => import('./cards/button.card').then((m) => m.ButtonCardScene),
+  calendar: () =>
+    import('./cards/calendar.card').then((m) => m.CalendarCardScene),
+  chips: () => import('./cards/chips.card').then((m) => m.ChipsCardScene),
+  container: () =>
+    import('./cards/container.card').then((m) => m.ContainerCardScene),
+  grid: () => import('./cards/grid.card').then((m) => m.GridCardScene),
+  stepper: () => import('./cards/stepper.card').then((m) => m.StepperCardScene),
+  theme: () => import('./cards/theme.card').then((m) => m.ThemeCardScene),
+};

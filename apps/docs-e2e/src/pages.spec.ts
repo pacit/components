@@ -37,13 +37,76 @@ test.describe('The pages', () => {
     page,
   }) => {
     await visit(page, '/components');
-    const tiles = page.getByTestId('gallery').locator('a');
+    // By the tile's own link and not by every `<a>` under the gallery: the cards run real
+    // components now, and breadcrumb's scene brings links of its own.
+    const tiles = page.getByTestId('card-link');
     await expect(tiles).toHaveCount(33);
 
-    await tiles.filter({ hasText: 'button' }).first().click();
+    await tiles.filter({ hasText: 'Button' }).first().click();
     await expect(page).toHaveURL(/\/components\/button$/);
     // The title now carries the status badge beside the name.
     await expect(page.locator('h1')).toContainText('Button');
+  });
+
+  /**
+   * The gallery's claim after the 2.8 redesign: every card carries the component itself,
+   * and it FITS. Both halves are load-bearing and neither is visible to a green suite that
+   * only counts tiles — a scene authored for the component page's 675px stage overflows a
+   * card silently, cropped by the stage, and the reader sees four of the button's six
+   * faces without being told one was cut. Seven of the thirty-three did exactly that before
+   * `CARD_DEMOS` was written; this is what keeps them from coming back.
+   *
+   * The stage is `inert` and `aria-hidden`, so the count of tab stops is the second claim:
+   * thirty-three cards, thirty-three stops, whatever the scenes hold.
+   */
+  test('every card renders its component, and the stage holds it', async ({
+    page,
+  }) => {
+    await visit(page, '/components');
+
+    const stages = page.getByTestId('gallery').locator('.card__stage');
+    await expect(stages).toHaveCount(33);
+
+    // Each scene against its own stage, in one evaluation — 33 round trips would be a
+    // minute of wall clock to learn the same thing.
+    const overflowing = await page.evaluate(() => {
+      const bad: {
+        name: string | undefined;
+        over: number;
+        down: number;
+        empty: boolean;
+      }[] = [];
+      for (const card of document.querySelectorAll('.card')) {
+        const stage = card.querySelector('.card__stage');
+        const scene = card.querySelector('.card__scene');
+        const name = card.querySelector('.card__name')?.textContent?.trim();
+        // A card with no stage at all is the other way this claim fails: the demo never
+        // resolved, and the tile is back to being three lines of text.
+        if (!stage || !scene) {
+          bad.push({ name, over: 0, down: 0, empty: true });
+          continue;
+        }
+        // The scene is centred inside a 16px padding, so it overflows the moment it is
+        // wider or taller than the stage's content box.
+        const over = Math.round(scene.scrollWidth - stage.clientWidth + 32);
+        const down = Math.round(scene.scrollHeight - stage.clientHeight + 32);
+        if (over > 0 || down > 0) bad.push({ name, over, down, empty: false });
+      }
+      return bad;
+    });
+    expect(overflowing, 'a card scene is cropped by its stage').toEqual([]);
+
+    // The stage is inert, so a card is one tab stop — its name — and never the controls
+    // its scene happens to hold.
+    const stops = await page
+      .getByTestId('gallery')
+      .locator(
+        'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      )
+      .evaluateAll(
+        (nodes) => nodes.filter((n) => !n.closest('[inert]')).length,
+      );
+    expect(stops).toBe(33);
   });
 
   /**

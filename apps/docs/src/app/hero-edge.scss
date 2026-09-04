@@ -1,0 +1,184 @@
+/* The hero edge and the hero name — the landing's hover idiom, in one place.
+ *
+ * The landing grew this for the three live cards of "Live, not screenshots" and the
+ * gallery now wants the same gesture on all thirty-three (plan 2.8). It is NOT a
+ * decoration one re-types: three of its rules are measurements, each of which cost a
+ * silent defect to find, and a second hand-written copy is where they drift apart —
+ * the argument `AGENTS.md` makes about this file and `CLAUDE.md`.
+ *
+ * `home.scss` still carries its own copy at the time of writing: the file is open in
+ * another working session, so switching the landing over to this mixin is a separate
+ * one-line commit rather than a conflict taken here. The two are bit-for-bit the same
+ * today, `docs-drift-edge` included — an identical redefinition of a keyframe is inert,
+ * and the duplicate ends the moment the landing takes the `@include`.
+ *
+ * Both selectors are parameters because the two pages name their nodes differently, and
+ * because a mixin that hard-codes `.card` cannot be read at the call site.
+ */
+
+@mixin hero-edge($card: '.card', $name: '.card__name') {
+  #{$card} {
+    position: relative;
+
+    /* The stops the name takes. Same as the edge's until the ground goes dark. */
+    --docs-name-hero: var(--pct-hero);
+    --docs-name-hero-via: var(--pct-hero-via);
+    --docs-name-hero-to: var(--pct-hero-to);
+  }
+
+  /* The two conditions the token system itself uses, in its own order: an explicit theme
+     wins, the system preference fills the silence.
+
+     Through `:host-context` and not a plain ancestor selector, and that is not decoration:
+     this is a COMPONENT stylesheet, so emulated encapsulation stamps its content attribute
+     on every compound of a selector, `<html>` included — `[data-theme='dark'] .card`
+     compiles to `[data-theme=dark][_ngcontent-x] …`, asking the document element to carry
+     an attribute only this component's own nodes ever get. Measured on the landing,
+     2026-09-04: the first version could not match anything, and the symptom was the dark
+     name painted in the light theme's stops — the failing safety measure, silent. */
+  :host-context([data-theme='dark']) #{$card} {
+    --docs-name-hero: color-mix(
+      in srgb,
+      var(--pct-hero) 70%,
+      var(--pct-slate-0)
+    );
+    --docs-name-hero-via: color-mix(
+      in srgb,
+      var(--pct-hero-via) 70%,
+      var(--pct-slate-0)
+    );
+    --docs-name-hero-to: color-mix(
+      in srgb,
+      var(--pct-hero-to) 70%,
+      var(--pct-slate-0)
+    );
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :host-context(html:not([data-theme])) #{$card} {
+      --docs-name-hero: color-mix(
+        in srgb,
+        var(--pct-hero) 70%,
+        var(--pct-slate-0)
+      );
+      --docs-name-hero-via: color-mix(
+        in srgb,
+        var(--pct-hero-via) 70%,
+        var(--pct-slate-0)
+      );
+      --docs-name-hero-to: color-mix(
+        in srgb,
+        var(--pct-hero-to) 70%,
+        var(--pct-slate-0)
+      );
+    }
+  }
+
+  /* The edge is a masked pseudo-element and not `border-image`: that one cannot round a
+     corner, and the padding-box/border-box background stack would take the card's own
+     background hostage. `inset: -1px` because an absolute box is laid out against the
+     PADDING box — at `0` the gradient would sit inside the card's own border and draw a
+     second line beside it, at `-1px` it covers it.
+
+     Behind `@supports` on purpose: an engine without the mask would not lose the
+     decoration, it would paint the gradient over the WHOLE card. The failure mode of a
+     missing feature has to be nothing, not a filled card. */
+  @supports ((mask-composite: exclude) or (-webkit-mask-composite: xor)) {
+    #{$card}::after {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      padding: 2px;
+      background-image: linear-gradient(
+        120deg,
+        var(--pct-hero),
+        var(--pct-hero-via),
+        var(--pct-hero-to),
+        var(--pct-hero)
+      );
+      background-size: 200% 100%;
+      /* Both shorthands first, both composites after them, and the order is the whole
+         rule: firefox aliases `-webkit-mask` to `mask`, so a `-webkit-mask` written BELOW
+         `mask-composite` resets the composite to `add` — and `add` does not punch the
+         middle out, it paints the gradient over the entire card. Measured 2026-09-04, in
+         firefox only: chromium and webkit kept their own composite either way, so the
+         defect had exactly one engine and no symptom anywhere a green suite could look. */
+      mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+      -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+      mask-composite: exclude;
+      -webkit-mask-composite: xor;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity var(--pct-motion-transition-duration)
+        var(--pct-motion-transition-easing);
+      /* Half the button's drift over two thirds of its gradient. What the eye catches is
+         the hue crossing a point, and that is a matter of how much gradient passes per
+         second — a thumb-wide button reads 8s as movement, a card's rim reads it as a
+         still picture. The duration stays a DIVISION of the axis token rather than a
+         number of its own, so reduced motion still freezes it: `calc(0s / 2)` is `0s`. */
+      animation: docs-drift-edge calc(var(--pct-motion-drift-duration) / 2)
+        linear infinite;
+    }
+
+    #{$card}:hover::after,
+    #{$card}:focus-within::after {
+      opacity: 1;
+    }
+  }
+
+  /* The NAME takes the gradient; the selector or the import beside it does not. The
+     string a reader copies is not decoration — so it keeps its own colour, and it keeps
+     it by standing in its own element rather than by fighting the clip: text painted
+     through `background-clip` clips to every glyph inside the box, descendants included. */
+  @supports ((background-clip: text) or (-webkit-background-clip: text)) {
+    #{$card}:hover #{$name},
+    #{$card}:focus-within #{$name} {
+      background-image: linear-gradient(
+        100deg,
+        var(--docs-name-hero),
+        var(--docs-name-hero-via),
+        var(--docs-name-hero-to),
+        var(--docs-name-hero)
+      );
+      background-size: 200% 100%;
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      animation: docs-drift-edge calc(var(--pct-motion-drift-duration) / 2)
+        linear infinite;
+    }
+  }
+
+  /* Forced colours strips colours and keeps IMAGES — left alone, both the rim and the
+     name would go on painting over the forced Canvas. Dropped outright: the card keeps
+     the edge its own border draws, and the name its CanvasText. */
+  @media (forced-colors: active) {
+    #{$card}::after {
+      background-image: none;
+    }
+
+    #{$card}:hover #{$name},
+    #{$card}:focus-within #{$name} {
+      background-image: none;
+      color: CanvasText;
+      animation: none;
+    }
+  }
+}
+
+/* Outside the mixin: a keyframe is global whatever the encapsulation, so it is declared
+   once per stylesheet that includes the mixin and never once per card. */
+@mixin hero-edge-keyframes {
+  @keyframes docs-drift-edge {
+    to {
+      /* pct-exception background-position: the sweep is a closed loop with no beginning
+         to find — a logical property would move nothing but its first frame. */
+      background-position: 200% 0;
+    }
+  }
+}

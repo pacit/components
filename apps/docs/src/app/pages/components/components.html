@@ -1,18 +1,65 @@
 <pct-container>
   <header class="head">
-    <h1 class="head__title">{{ cards.length }} components</h1>
+    <h1 class="head__title">{{ total }} components</h1>
     <p class="head__lead">
-      Each page renders its live demo, the demo's own source, the card the
-      repository gates, and the parts and tokens that are its public contract.
+      Every one of them running on this page — the same demo its own page opens
+      with, not a screenshot of it. Each card leads to the live instance, the
+      demo's own source, the parts and the tokens that are its public contract.
     </p>
   </header>
-  <pct-grid class="gallery" data-testid="gallery">
-    @for (card of cards; track card.id) {
-    <a class="gallery__item" [routerLink]="['/components', card.id]">
-      <span class="gallery__name">{{ card.id }}</span>
-      <span class="gallery__role">{{ card.role }}</span>
-      <code class="gallery__selector">{{ card.selector }}</code>
-    </a>
+
+  <div class="gallery" data-testid="gallery">
+    @for (bucket of buckets; track bucket.name) {
+    <section class="bucket">
+      <h2 class="bucket__name">
+        {{ bucket.name }}
+        <span class="bucket__count">{{ bucket.cards.length }}</span>
+      </h2>
+
+      <pct-grid class="bucket__grid">
+        @for (card of bucket.cards; track card.id) {
+        <!--
+          An <article> and not an <a>: the stage holds real components, and an
+          interactive control inside a link is invalid HTML and an axe
+          `nested-interactive` failure. The link sits on the NAME alone — so the
+          accessible name is "Select" and not the run-together blob of three
+          fields the old tile announced — and `.card__link::after` spreads its hit
+          area over the whole card. One tab stop per card, and the stage is inert.
+        -->
+        <article class="card">
+          <div class="card__body">
+            <h3 class="card__title">
+              <a
+                class="card__link"
+                [routerLink]="['/components', card.id]"
+                data-testid="card-link"
+                ><span class="card__name">{{ card.name }}</span></a
+              >
+            </h3>
+            <p class="card__lead" [innerHTML]="card.summary"></p>
+            @if (card.entrypoint) {
+            <code class="card__entry">{{ card.entrypoint }}</code>
+            }
+          </div>
+
+          @if (demos().get(card.id); as type) {
+          <!--
+            `inert` and `aria-hidden` are plain attributes, true in the static
+            HTML with no script: a reader on the keyboard walks thirty-three
+            names, not thirty-three sets of form controls, and a screen reader is
+            told the card's sentence rather than made to read a demo out of
+            context.
+          -->
+          <div class="card__stage" inert aria-hidden="true">
+            <div class="card__scene">
+              <ng-container *ngComponentOutlet="type" />
+            </div>
+          </div>
+          }
+        </article>
+        }
+      </pct-grid>
+    </section>
     }
-  </pct-grid>
+  </div>
 </pct-container>
