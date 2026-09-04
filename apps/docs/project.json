@@ -10,6 +10,7 @@
   "implicitDependencies": ["tokens"],
   "// typecheck": "The same override as in `sandbox`, for the same measured reason: the inferred target runs `tsconfig.app.json` only. This application has no spec config yet — the day it grows one, the second command lands here the way it stands in `sandbox`.",
   "// build budgets": "The component page (2.7.3) is the site's richest stylesheet — three columns on container queries, the API tables, the scorecard and the evidence tiles — measured at 11.63 kB on 2026-09-04, which leaves 0.37 kB under the 12 kB error. The floor is the page, not bloat: the next page that crosses it argues first, and on this showing the next argument is due.",
+  "// build cache": "`dependentTasksOutputFiles` is the load-bearing entry, not tidiness. The content pass writes into src/generated, which is gitignored — so Nx never hashes it, and with only `production` inputs this build's key did not move when the generated data did. Measured: a lesson added to docs/lessons.md re-ran `content` and then RESTORED a cached bundle over it, and the site served 151 lessons from a file holding 153 while every gate stayed green. Hashing the dependency's own output files is what ties the two together; it costs cache hits, and a bundle that disagrees with its data costs more.",
   "targets": {
     "content": {
       "executor": "nx:run-commands",
@@ -46,7 +47,14 @@
     "build": {
       "cache": true,
       "dependsOn": ["^build", "content"],
-      "inputs": ["production", "^production"],
+      "inputs": [
+        "production",
+        "^production",
+        {
+          "dependentTasksOutputFiles": "**/*",
+          "transitive": false
+        }
+      ],
       "executor": "@angular/build:application",
       "outputs": ["{options.outputPath}"],
       "defaultConfiguration": "production",

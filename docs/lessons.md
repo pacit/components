@@ -4121,3 +4121,36 @@ flip, the case fails. The rule: a case about a handler must put the event where 
 listens, and the way to know it did is a control in which the same delivery produces the opposite
 outcome — otherwise "nothing happened" is indistinguishable from "the feature worked", which is
 [`req-axis`](00-axis.md) read on the keyboard.
+
+### <a id="lesson-154"></a>`lesson-154` — A generated file the hasher cannot see is a build that goes stale without ever going red
+
+The site's /trust page said 151 lessons out of a file holding 153, and nothing was wrong
+anywhere a gate could look: `docs/lessons.md` had the entries, the content pass reported 153,
+the generated payload on disk carried `"id": 152` and `"id": 153`, every gate was green, and
+the e2e case that reads the page failed in all three engines against a page that could not
+say where its own number came from.
+
+Two separate mechanisms had to be told apart, and the first attempt blamed the wrong one.
+
+The one that produced the red was Playwright's `reuseExistingServer: true`. A dev server had
+been running on the port since hours earlier — started by hand to look at the page — and the
+suite attached to it instead of starting its own, so it measured a bundle built before the
+content changed. The suite never built anything; the reading was about a machine, not about
+the code, exactly as [`lesson-149`](lessons.md#lesson-149) says about stillness.
+
+The one underneath it is real and was found by looking: `docs:build` declared
+`inputs: ["production", "^production"]`, and the content pass writes into
+`apps/docs/src/generated/`, which is **gitignored**. Nx hashes the workspace's files through
+a map that honours `.gitignore`, so those files are invisible to the hasher; `production`
+names none of them, and `^production` reaches dependency PROJECTS, not the `content` task of
+the same one. Measured, twice, with a probe lesson appended and removed: before the fix, a
+new lesson re-ran `content` and then RESTORED a cached bundle over its output — the built
+page stayed at 153 with a probe that should have made it 154, replaying a bundle timestamped
+minutes earlier. With `{ "dependentTasksOutputFiles": "**/*", "transitive": false }` in the
+build's inputs, the same probe rebuilt and the page read 154, and removing it rebuilt back to 153.
+
+The rule: when one task's OUTPUT is another task's SOURCE, say so in the inputs — a
+`dependsOn` orders the two but does not tie their hashes together, and a generated directory
+that is gitignored is invisible to the hasher no matter how many things read it. The failure
+mode is the quiet one: not a broken build, but a correct build of yesterday's data, served
+under today's gates with every one of them green.

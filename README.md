@@ -301,10 +301,20 @@ equal the one the peer ranges admit, so the document and the manifest cannot dri
 repository's license ([CONTRIBUTING.md](CONTRIBUTING.md)), and what that choice costs us is in
 [decision 0015](docs/decisions/0015-license-and-model.md).
 
-The license covers the code, not the name: `pacit`, the npm scope `@pacit` and the domain
-`pacit.pl` belong to the entity in the `Copyright` line. Releasing under MIT cannot be undone,
-so what goes out under it, and when, is settled by
+The license covers the code, not the name and not the mark: `pacit`, the npm scope `@pacit`,
+the domain `pacit.pl` and the PacIT logo — the drawing inlined in the documentation site's
+topbar and shipped as its favicon — belong to the entity in the `Copyright` line. Releasing
+under MIT cannot be undone, so what goes out under it, and when, is settled by
 [decision 0016](docs/decisions/0016-mit-irreversibility.md).
+
+What that means in practice, because a trademark notice that only says "all rights reserved"
+tells a fork nothing it can act on: **the code is yours to fork, the mark is not yours to
+wear.** Copy, modify and redistribute the library under MIT, with or without attribution
+beyond the license text. A fork that keeps the logo, the name or the scope in its own
+published identity — an npm package, a site, an application store listing — is claiming to be
+this project, and that is the one thing MIT does not grant. Replace the mark with your own,
+and say what you forked from in words instead. Referring to the project by name to say what
+your work is built on, or to review or criticise it, needs no permission from anybody.
 
 The LICENSE file ships in the package and two gates watch it: `check-package` reads the `dist`
 directory, `check-consumer` the archive after `npm pack` — because the `files` field stands

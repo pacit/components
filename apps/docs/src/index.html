@@ -5,7 +5,17 @@
     <title>@pacit/components — components that prove themselves</title>
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <!-- The mark from the logo pack, `mark-solid-blue` — the square carries its own ground,
+         so one file works on a light tab strip and a dark one alike. Two declarations because
+         one format does not reach every browser: the SVG is the drawing and scales to whatever
+         the tab strip asks for, the 32px PNG is what a browser without SVG icon support takes
+         instead. Both are the same drawing; the PNG was rasterised from the SVG, not redrawn. -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon.png" />
+    <!-- The home-screen icon, square and full-bleed on purpose: iOS masks it with a radius
+         of its own, so the pack's rounded corners would be transparent pixels composited
+         over by the platform — a blue mark with black shoulders. Same drawing, `rx` at 0. -->
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
     <!-- The one face the pages set (font-display: block) — preloaded so the block
          window is spent downloading, not discovering (2.1.8, measured by Lighthouse). -->
     <link

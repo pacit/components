@@ -41,24 +41,66 @@
 .wordmark {
   display: inline-flex;
   align-items: center;
-  gap: var(--pct-space-3);
   color: var(--pct-text);
-  font-size: var(--pct-font-size-lg);
-  font-weight: 700;
   text-decoration: none;
 }
 
-.wordmark::before {
-  content: '';
-  inline-size: 10px;
-  block-size: 10px;
-  border-radius: 50%;
-  background: linear-gradient(
-    135deg,
-    var(--pct-hero),
-    var(--pct-hero-via),
-    var(--pct-hero-to)
-  );
+/* The lockup is sized by its HEIGHT and the width follows the viewBox — 26px of mark inside
+   a 56px bar, above the pack's 24px floor for a lockup (below it the bowl of the P closes
+   up). `flex: none` because the bar is a flex row and a squeezed logo is a redrawn one. */
+.wordmark__logo {
+  flex: none;
+  block-size: 26px;
+  inline-size: auto;
+}
+
+/* The colour, from the stylesheet rather than from `fill=` attributes, so it is tokens that
+   decide and one media query can answer for all of it. Two blues, and which token each shape
+   takes follows from what the shape has to carry rather than from taste.
+
+   The SQUARE carries white: the P is cut out of the fill, not drawn beside it. So it takes
+   `--pct-hero`, the site's one blue that is the same #2563eb on both themes — white on it
+   reads 5.17:1, where the dark theme's `--pct-primary` (#60a5fa) would give the cut 2.26:1
+   and a letter that dissolves into its own square.
+
+   The LIGATURE carries itself, against the page. So it takes `--pct-primary`, which lightens
+   with the theme for exactly that reason: measured on the bar, the hero blue sits at 1.86:1
+   against the dark ground — legible, but visibly duller than the nav link beside it — and
+   primary's #60a5fa at 7.04:1. On the light theme the two tokens are the same value, so the
+   logo is one blue there and lifts only where the ground goes dark. */
+.wordmark__mark {
+  fill: var(--pct-hero);
+}
+
+.wordmark__cut {
+  stroke: var(--pct-surface);
+}
+
+/* "Pac" rides the bar's own text colour and flips with the theme; "IT" is the accent. */
+.wordmark__pac {
+  stroke: currentColor;
+}
+
+.wordmark__it {
+  stroke: var(--pct-primary);
+}
+
+/* Forced colours drops every colour we chose, and a letter cut out of a fill is exactly the
+   drawing that disappears when the fill and the cut are forced to the same ink. So the two
+   are named on opposite sides of the mode's own pair (`lesson-70` — `@media` lends no
+   specificity, and these selectors match the base rules above one for one). */
+@media (forced-colors: active) {
+  .wordmark__mark {
+    fill: CanvasText;
+  }
+
+  .wordmark__cut {
+    stroke: Canvas;
+  }
+
+  .wordmark__it {
+    stroke: CanvasText;
+  }
 }
 
 .topbar__nav {
