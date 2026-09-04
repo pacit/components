@@ -42,6 +42,25 @@ test.describe('The landing', () => {
     const strip = page.getByTestId('evidence');
     await expect(strip).toContainText('WCAG 2.2 AA');
     await expect(strip).toContainText('machine-audited');
+
+    // The order is an argument and not an accident, so it is pinned: the accessibility
+    // claim leads because it is what the library is for, the agent surface stands second
+    // because it is what nobody else offers, and the three numbers behind them are the
+    // evidence for the first (chosen 2026-09-04).
+    await expect(strip.locator('.fact').first()).toContainText('WCAG 2.2 AA');
+    await expect(strip.locator('.fact').nth(1)).toContainText('AI-ready');
+
+    // The facts arrive one at a time as the strip is scrolled to, and the arrival must not
+    // be able to leave one behind: every one of the five is visible once the section is.
+    await strip.scrollIntoViewIfNeeded();
+    const facts = strip.locator('.fact');
+    await expect(facts).toHaveCount(5);
+    for (let at = 0; at < 5; at++) await expect(facts.nth(at)).toBeVisible();
+    // Opaque at every moment, revealed or not: the arrival moves the fact and never fades
+    // it, because a fact waiting its turn below the fold at zero opacity is text axe reads
+    // as unreadable — measured, webkit, 1.01:1 (2026-09-04).
+    for (let at = 0; at < 5; at++)
+      await expect(facts.nth(at)).toHaveCSS('opacity', '1');
     // The certification sentence waits for 2.2's ACR — the page must not jump the gun.
     await expect(strip).not.toContainText(/conformant/i);
     // The AI tile points at files this same build really serves.

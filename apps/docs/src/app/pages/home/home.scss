@@ -153,19 +153,77 @@
   border-block: 1px solid var(--pct-border);
 }
 
-/* The separators are the grid's own 1px gaps over a border-coloured ground — hairlines
-   that follow every wrap the auto-fit computes, with no media query and no first/last
-   bookkeeping. */
-.evidence__grid {
-  --pct-grid-min-width: 11rem;
-  --pct-grid-gap: 1px;
+/* The facts step down alternate sides. There is no rail between them and no dot on each:
+   a spine is a claim about ORDER, and these five have none — nothing about the colour pairs
+   comes after the WCAG claim. The alternation alone is what gives each fact its own turn.
 
-  background: var(--pct-border);
+   Half the column, less the gutter between the two sides; the odd ones are pushed past the
+   middle. Everything is logical, so the whole rhythm mirrors in RTL with nothing to set. */
+.evidence__facts {
+  padding-block: var(--pct-space-5);
 }
 
 .fact {
-  background: var(--pct-surface);
-  padding: var(--pct-space-6) var(--pct-space-5);
+  inline-size: calc(50% - var(--pct-space-6));
+  padding-block: var(--pct-space-5);
+}
+
+.fact:nth-child(odd) {
+  text-align: end;
+}
+
+.fact:nth-child(even) {
+  margin-inline-start: calc(50% + var(--pct-space-6));
+}
+
+/* The arrival: a SLIDE, and deliberately not a fade.
+
+   The first version faded the facts in from `opacity: 0`, and the site's own axe pass threw
+   it out — webkit, the landing, `color-contrast` at 1.01:1 with `#fcfdfd` measured on
+   `#ffffff`. That is not a race with the transition: axe reads the whole page without
+   scrolling, so every fact still waiting its turn below the fold is text at zero opacity
+   blended into the ground, and it is right to call that unreadable. Hiding it from the
+   accessibility tree instead (`visibility: hidden`) would quiet the gate by making the
+   content genuinely absent, which is worse than the thing the gate complained about.
+
+   So nothing here touches opacity. The facts are opaque at every moment and only their
+   POSITION arrives, which reads as the same movement and cannot fail a contrast check.
+
+   Armed by SCRIPT rather than written on by default, for the same family of reason: this
+   page is prerendered, and a fact displaced in the static HTML is a fact sitting off its
+   mark for a reader whose JavaScript never runs. */
+.evidence__facts.is-armed .fact {
+  transform: translateX(var(--from));
+  transition: transform 520ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.evidence__facts.is-armed .fact:nth-child(odd) {
+  --from: -36px;
+}
+
+.evidence__facts.is-armed .fact:nth-child(even) {
+  --from: 36px;
+}
+
+.evidence__facts.is-armed .fact.is-in {
+  transform: none;
+}
+
+/* Below the fold of a narrow window the two sides have no room to be two: the facts take the
+   full width and the stagger stops, which is the layout the alternation was decorating. */
+@media (max-width: 719px) {
+  .fact {
+    inline-size: 100%;
+    text-align: start;
+  }
+
+  .fact:nth-child(odd) {
+    text-align: start;
+  }
+
+  .fact:nth-child(even) {
+    margin-inline-start: 0;
+  }
 }
 
 .fact__number,

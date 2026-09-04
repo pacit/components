@@ -55,7 +55,23 @@
      the content pass throws on a count it cannot read from the tracked files. -->
 <section class="evidence" aria-label="Measured accessibility evidence">
   <pct-container>
-    <pct-grid class="evidence__grid" data-testid="evidence">
+    <!--
+      The facts step down alternate sides rather than standing in one row: five equal cards
+      compete, and a fact that gets its own turn is read. No rail and no dots between them —
+      a spine reads as a sequence, and nothing here comes after anything else (sketch B,
+      chosen 2026-09-04, with its rail dropped for that reason).
+
+      The order is the argument's, not the measurement's: the accessibility claim leads
+      because it is what the library is for, and the agent surface stands second because it
+      is what nobody else offers. The three numbers behind them are the evidence for the
+      first.
+    -->
+    <div
+      #strip
+      class="evidence__facts"
+      [class.is-armed]="armed()"
+      data-testid="evidence"
+    >
       <article class="fact">
         <p class="fact__word">WCAG 2.2 AA</p>
         <p class="fact__what">
@@ -63,6 +79,17 @@
           every commit
         </p>
         <p class="fact__src"><code>a11y.spec.ts</code> × three engines</p>
+      </article>
+      <article class="fact">
+        <p class="fact__word">AI-ready</p>
+        <p class="fact__what">
+          a machine catalogue of every selector, part and token — your copilot
+          can verify what it suggests
+        </p>
+        <p class="fact__src">
+          <a href="/llms.txt">llms.txt</a> ·
+          <a href="/components.json">components.json</a>
+        </p>
       </article>
       <article class="fact">
         <p class="fact__number" data-testid="fact-contrast">
@@ -90,20 +117,9 @@
         </p>
         <p class="fact__src"><code>--pct-target-min</code></p>
       </article>
-      <article class="fact">
-        <p class="fact__word">AI-ready</p>
-        <p class="fact__what">
-          a machine catalogue of every selector, part and token — your copilot
-          can verify what it suggests
-        </p>
-        <p class="fact__src">
-          <a href="/llms.txt">llms.txt</a> ·
-          <a href="/components.json">components.json</a>
-        </p>
-      </article>
-    </pct-grid>
+    </div>
     <p class="evidence__machinery" data-testid="machinery">
-      For the auditor: the whole proof machinery — {{ evidence.mutation.mutants
+      For the sceptic: the whole proof machinery — {{ evidence.mutation.mutants
       }} mutants at a measured {{ evidence.mutation.score }}%, a registry of {{
       evidence.requirements.total }} gated promises, {{ evidence.decisions }}
       decisions and {{ evidence.lessons }} lessons on record — lives on
