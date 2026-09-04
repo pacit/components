@@ -4180,3 +4180,33 @@ twelve of twelve with three repeats, in both themes, unchanged.
 The rule: a still cannot hold a state that JavaScript has yet to write. When a picture and a
 motion meet, take the picture in the mode that has no motion — and leave the arrival to the
 test that can wait for it, which is where it was already proven.
+
+### <a id="lesson-156"></a>`lesson-156` — A `-webkit-` shorthand is an alias, and an alias undoes the longhand above it
+
+The live cards' gradient rim is a masked pseudo-element: two mask layers, one clipped to
+the content box, composited so that the middle is punched out and only the rim paints. It
+was written in the order the two vendorings suggest — the standard `mask` and its
+`mask-composite`, then `-webkit-mask` and its `-webkit-mask-composite` — and it was correct
+in chromium and in webkit.
+
+In firefox `mask-composite` computed to `add`. `add` does not punch anything out, so the
+gradient covered the **whole card** rather than its edge, on hover, in one engine of three.
+Firefox implements `-webkit-mask` as an alias of `mask`, so the shorthand written below
+`mask-composite: exclude` reset the composite to its initial value; chromium and webkit
+keep their own composite property either way, which is why the same source was right in two
+engines and wrong in the third. The fix is ordering: both shorthands first, both composites
+after them.
+
+What is worth keeping is not the ordering rule but how it was found. The suite had 337 green
+cases across three engines, including axe on every route, and not one of them could see it:
+the defect was a hover state, the baselines are chromium-only by their own law
+([`lesson-155`](lessons.md#lesson-155) is the other half of that law), and no assertion had
+ever read the property that carried the whole effect. The line that caught it was added
+deliberately, out of suspicion rather than evidence — _the guard matching is not the same as
+the punch-out happening_ — and it failed on the first run it ever made. A gate written for a
+defect nobody has seen yet is the only kind that can catch one nobody would.
+
+The rule: when a declaration exists in a vendored and a standard spelling, order every
+shorthand before every longhand of that family, and **assert the computed value in each
+engine**. A property that decides whether an effect happens at all is a property a test
+should read out loud, not one a picture is trusted to imply.
