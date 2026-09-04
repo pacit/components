@@ -248,7 +248,9 @@
       @for (card of cards; track card.id) {
       <a class="gallery__item" [routerLink]="['/components', card.id]">
         <span class="gallery__name">{{ card.id }}</span>
-        <code class="gallery__selector">{{ card.selector }}</code>
+        <!-- The ROOT selector only, the first the card names: this tile is an index entry
+             on one ellipsised line, and the rest of the list is on the page it links to. -->
+        <code class="gallery__selector">{{ card.selectors[0] }}</code>
       </a>
       }
     </pct-grid>

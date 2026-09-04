@@ -68,10 +68,17 @@
             <span class="spec__label">Import</span
             ><code>{{ p.entrypoint }}</code>
           </li>
+          <!-- Plural where the card is: ten components name more than one selector, and a
+               comma-joined list is itself a valid selector list, so the line stays a single
+               string a reader can copy. A card that says "none" — toast, whose surface is a
+               service — gets no row at all rather than a mark it denies having. -->
+          @if (p.selectors.length) {
           <li>
-            <span class="spec__label">Selector</span
-            ><code data-testid="selector">{{ p.selector }}</code>
+            <span class="spec__label"
+              >{{ p.selectors.length === 1 ? 'Selector' : 'Selectors' }}</span
+            ><code data-testid="selector">{{ p.selectors.join(', ') }}</code>
           </li>
+          }
         </ul>
         <!-- The conformance claim, in a sentence of its own. It used to be the third item on
              the spec line above, cut out of the card's field at its first dash — which left

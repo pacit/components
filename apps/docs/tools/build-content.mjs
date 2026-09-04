@@ -234,6 +234,71 @@ const patternClaim = (pattern, file) => {
   );
 };
 
+/**
+ * A card's `**Selector:**` field, read as a LIST of selectors.
+ *
+ * The field is a HEAD followed by prose, and only the head is machine data:
+ *
+ *   `pct-stepper`, `pct-step`                        joined by `,` `/` `·` or the word "and"
+ *   `pct-tabs` (the strip) and `pct-tab` (a panel)   each item may carry a parenthesised gloss
+ *   `input[pctNumber]` — on an `<input type="text">` prose after the head, holding marks
+ *   `[pctTooltip]` (the panel it opens is `pct-tooltip`, `PctTooltipPanel`)
+ *   none — the surface is a service. …               no selector at all, deliberately
+ *
+ * So the head is walked item by item and stops at the first thing that is not "separator then
+ * code mark". Harvesting every code mark instead would publish `<input type="text">` as text's
+ * selector and the CLASS `PctTooltipPanel` as tooltip's: a parenthesis or a dash is the card's
+ * own way of saying "the mark after this is prose", and both are obeyed rather than parsed.
+ *
+ * Measured 2026-09-04, on the three ways this used to be wrong. It read the singular name
+ * only, so `breadcrumb`, `stepper` and `tree` — the three cards that write `**Selectors:**`,
+ * and the three with the richest surface — published `null`. It then took the FIRST code mark
+ * of the field, so `toast`, whose card says "none — the surface is a service", published
+ * `<pct-toast-viewport>` out of the sentence explaining that nobody writes it. And a card
+ * naming three selectors published one. The two throws below are why the same silence cannot
+ * come back: a field that is neither "none" nor a code mark, and a mark that is not a
+ * selector, stop the build with the file named instead of emitting a plausible wrong value.
+ */
+const SELECTOR_MARK = /^`([^`]+)`/;
+const SELECTOR_GLOSS = /^ \([^)]*\)/;
+const SELECTOR_JOIN = /^(?:,| and| \/| ·) /;
+
+const selectorsOf = (text, file) => {
+  // `Selectors?` and not `Selector`: the plural is the card's own spelling when it names more
+  // than one, and reading only the singular is what left three cards empty.
+  const raw = field(text, 'Selectors?');
+  if (raw === null)
+    throw new Error(`content pass: ${file} carries no **Selector:** field`);
+  if (/^none\b/.test(raw)) return [];
+
+  const found = [];
+  let rest = raw;
+  for (;;) {
+    const mark = rest.match(SELECTOR_MARK);
+    if (!mark) break;
+    found.push(mark[1]);
+    rest = rest.slice(mark[0].length).replace(SELECTOR_GLOSS, '');
+    const join = rest.match(SELECTOR_JOIN);
+    if (!join) break;
+    rest = rest.slice(join[0].length);
+  }
+
+  if (!found.length)
+    throw new Error(
+      `content pass: ${file} opens its **Selector:** with "${raw.slice(0, 60)}" — neither ` +
+        `the word "none" nor a code mark, and a selector is not guessed out of prose`,
+    );
+  // A selector is one token: no whitespace, and no angle brackets. `<pct-toast-viewport>` is
+  // an element written as a tag, which is exactly the value this field used to publish.
+  const prose = found.find((s) => /[\s<>]/.test(s));
+  if (prose)
+    throw new Error(
+      `content pass: ${file} names \`${prose}\` as a selector — a selector carries no ` +
+        `whitespace and no angle brackets, so this is prose or an element, not one`,
+    );
+  return found;
+};
+
 /** The body of one `## name` section, or null when the card has none. */
 const sectionOf = (text, name) =>
   text
@@ -284,7 +349,7 @@ const cards = await Promise.all(
     const role = dash === -1 ? '' : title.slice(dash + 1).trim();
 
     const entrypoint = field(text, 'Entrypoint')?.replaceAll('`', '') ?? null;
-    const selector = field(text, 'Selector') ?? null;
+    const selectors = selectorsOf(text, file);
     const status = field(text, 'Status') ?? null;
     const pattern = field(text, 'ARIA APG pattern') ?? null;
     const claim = patternClaim(pattern, file);
@@ -378,9 +443,7 @@ const cards = await Promise.all(
       classes,
       role,
       entrypoint,
-      // The selector field can carry a parenthesised note beside the code mark — the
-      // pages want the bare machine name, the note stays in the rendered card.
-      selector: selector?.match(/`([^`]+)`/)?.[1] ?? null,
+      selectors,
       status,
       category,
       pattern: pattern ? inline(pattern) : null,
@@ -1205,7 +1268,7 @@ const lean = full.map((card) => ({
   classes: card.classes,
   role: card.role,
   entrypoint: card.entrypoint,
-  selector: card.selector,
+  selectors: card.selectors,
   status: card.status,
   category: card.category,
   summary: card.summary,
@@ -1221,7 +1284,8 @@ export interface DocsCard {
   readonly classes: readonly string[];
   readonly role: string;
   readonly entrypoint: string | null;
-  readonly selector: string | null;
+  /** Every selector the card names, in its order; empty when the card says "none". */
+  readonly selectors: readonly string[];
   readonly status: string | null;
   readonly category: string;
   readonly summary: string;
@@ -1247,7 +1311,7 @@ const pages = Object.fromEntries(
       role: c.role,
       status: c.status,
       entrypoint: c.entrypoint,
-      selector: c.selector,
+      selectors: c.selectors,
       pattern: c.pattern,
       patternClaim: c.patternClaim,
       summary: c.summary,
@@ -1356,7 +1420,7 @@ export interface ComponentPage {
   readonly role: string;
   readonly status: string | null;
   readonly entrypoint: string | null;
-  readonly selector: string | null;
+  readonly selectors: readonly string[];
   readonly pattern: string | null;
   readonly patternClaim: PatternClaim | null;
   readonly summary: string;
@@ -1442,7 +1506,7 @@ writeFileSync(
       role: card.role,
       category: card.category,
       entrypoint: card.entrypoint,
-      selector: card.selector,
+      selectors: card.selectors,
       status: card.status,
       parts: card.parts.map((p) => p.name),
       tokens: card.tokens.map((t) => t.name),
