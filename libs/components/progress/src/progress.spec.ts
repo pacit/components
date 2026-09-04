@@ -461,3 +461,167 @@ describe('PctProgress — the parts a consumer may style', () => {
     expect(fill().parentElement).toBe(bound());
   });
 });
+
+/**
+ * The component's own compiled stylesheet, found by a rule nothing else in the document can
+ * carry. Its rules are read one by one rather than through `getComputedStyle`, and both halves
+ * of that are measured rather than preferred:
+ *
+ * the host's own rule never reaches `getComputedStyle` here at all. Sass prints
+ * `@charset "UTF-8";` at the top of this sheet — the comments in it are not ASCII — and
+ * jsdom's CSS parser folds that line into the FIRST selector, so the rule matches nothing.
+ * Measured: with the clip in place `getComputedStyle(host).overflow` is `''` while the rule's
+ * own `style` carries `hidden`;
+ *
+ * and no media query of forced-colors mode matches in this environment, so the block at the
+ * bottom of the sheet has no other reading than this one.
+ *
+ * What this cannot do is see the picture — jsdom computes no layout, so no case here watches a
+ * band leave a groove. The declarations are the mechanism; the pixels are owed to a browser
+ * (`apps/sandbox-e2e`).
+ */
+function sheet(): CSSStyleSheet {
+  const found = (Array.from(document.styleSheets) as CSSStyleSheet[]).find(
+    (candidate) =>
+      Array.from(candidate.cssRules).some((rule) =>
+        rule.cssText.includes('pct-progress__fill'),
+      ),
+  );
+  if (!found)
+    throw new Error(
+      'progress.scss is not in the document: the cases below would read nothing',
+    );
+  return found;
+}
+
+const styleRules = (rules: CSSRuleList): CSSStyleRule[] =>
+  Array.from(rules).filter(
+    (rule): rule is CSSStyleRule => 'selectorText' in rule,
+  );
+
+/**
+ * The one rule of the host box itself. `:host` compiles to an `_nghost-…` attribute, which the
+ * size rules and the indeterminate rule also carry — hence the second half of the filter. A
+ * count other than one is thrown rather than picked from, because a silent `[0]` is how a
+ * selector that stopped matching becomes a case that stopped asking.
+ */
+function only(rules: CSSStyleRule[], what: string): CSSStyleRule {
+  if (rules.length !== 1)
+    throw new Error(`expected exactly one ${what} rule, found ${rules.length}`);
+  return rules[0];
+}
+
+const hostRule = (rules: CSSRuleList) =>
+  only(
+    styleRules(rules).filter(
+      (rule) =>
+        rule.selectorText.includes('_nghost') &&
+        !rule.selectorText.includes('data-pct'),
+    ),
+    'host',
+  );
+
+/** The `<progress>` itself, without the three engine pseudo-elements written beside it. */
+const trackRule = (rules: CSSRuleList) =>
+  only(
+    styleRules(rules).filter(
+      (rule) =>
+        rule.selectorText.includes('pct-progress__track') &&
+        !rule.selectorText.includes('::'),
+    ),
+    'track',
+  );
+
+/** The band's travel, as `{ from, to }` of the property it moves by. */
+function travel(rules: CSSRuleList): Record<string, string> {
+  const frames = Array.from(rules).find(
+    (rule): rule is CSSKeyframesRule =>
+      rule.constructor.name === 'CSSKeyframesRule',
+  );
+  if (!frames) throw new Error('the band has no keyframes in this sheet');
+  return Object.fromEntries(
+    (Array.from(frames.cssRules) as CSSKeyframeRule[]).map((frame) => [
+      frame.keyText,
+      frame.style.getPropertyValue('inset-inline-start'),
+    ]),
+  );
+}
+
+/** The rules of `@media (forced-colors: active)`, which nothing in jsdom matches. */
+function forcedColours(rules: CSSRuleList): CSSRuleList {
+  const block = Array.from(rules).find(
+    (rule): rule is CSSMediaRule =>
+      rule.constructor.name === 'CSSMediaRule' &&
+      (rule as CSSMediaRule).media.mediaText.includes('forced-colors'),
+  );
+  if (!block) throw new Error('the sheet has no forced-colors block');
+  return block.cssRules;
+}
+
+describe('PctProgress — the pipe the indeterminate band travels inside', () => {
+  it('reads the component’s own sheet, and says so when there is nothing to read', async () => {
+    await render(Host);
+    const rules = sheet().cssRules;
+
+    // The denominator of the two cases below (`lesson-48`): they ask three rules three
+    // questions, and a sheet that arrived without any of them would let them pass by having
+    // nothing to contradict. Here the finders run for their own sake — each throws by name.
+    expect(hostRule(rules).style.cssText).not.toBe('');
+    expect(trackRule(rules).style.cssText).not.toBe('');
+    expect(Object.keys(travel(rules)).sort()).toEqual(['from', 'to']);
+    expect(styleRules(forcedColours(rules)).length).toBeGreaterThan(0);
+  });
+
+  it('clips the band, because the band’s own travel takes it outside the groove', async () => {
+    await render(Host);
+    const rules = sheet().cssRules;
+
+    // The escape first, since it is the reason the clip exists: the band starts a whole
+    // band-width BEFORE the groove and ends a whole groove-width past it, so for most of every
+    // loop it is drawn outside the bar — over whatever the consumer put beside it.
+    expect(travel(rules)).toEqual({
+      from: 'calc(-1 * var(--pct-progress-fill-size))',
+      to: '100%',
+    });
+
+    // What stops it is the box it is positioned against, which is the host: the fill is
+    // absolute and the host is the containing block, so the host's overflow is the boundary of
+    // its painting.
+    expect(getComputedStyle(fill()).position).toBe('absolute');
+    const host = hostRule(rules);
+    expect(host.style.getPropertyValue('position')).toBe('relative');
+    expect(host.style.getPropertyValue('overflow')).toBe('hidden');
+
+    // And the clip is as round as the groove. Measured in chromium: a square clip over a
+    // pill-shaped groove cuts the band's ends straight and leaves the groove's own corners
+    // showing beside them — the same defect one radius smaller.
+    expect(host.style.getPropertyValue('border-radius')).toBe(
+      'var(--pct-progress-track-radius)',
+    );
+  });
+
+  it('draws the groove’s forced-colors ring on the box that clips, not on the box it clips', async () => {
+    await render(Host);
+    const forced = forcedColours(sheet().cssRules);
+
+    // The price of the clip above, and the reason this case exists. An outline is painted
+    // OUTSIDE the box that draws it, so the clip decides where the ring may be written.
+    // Measured in chromium, both halves: a clipping box erases a DESCENDANT's outline outright
+    // — a 30px ring on a child that fills the box paints nothing at all, and widening the ring
+    // changes nothing, so it is a clip and not a bleed — while the ring the clipping box draws
+    // ITSELF is untouched by its own `overflow`. Moved back onto the `<progress>`, the ring
+    // would be a groove with no visible extent in the one mode it exists for, and no screenshot
+    // in ordinary colours would show it: the two boxes are one rectangle, so the drawing is
+    // identical everywhere else.
+    expect(hostRule(forced).style.getPropertyValue('outline')).toBe(
+      '1px solid CanvasText',
+    );
+    expect(trackRule(forced).style.getPropertyValue('outline')).toBe('');
+
+    // The groove keeps its surface where it always was: the ring says where it ends, `Field`
+    // says the middle of it is a groove and not the page.
+    expect(trackRule(forced).style.getPropertyValue('background')).toBe(
+      'Field',
+    );
+  });
+});

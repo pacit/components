@@ -48,7 +48,7 @@ before an application ships them.
 ./menu 20193 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
 ./pagination 13651 ./core,./icon @angular/common,@angular/core
 ./popover 14500 ./core @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
-./progress 7099 ./core @angular/core
+./progress 7179 ./core @angular/core
 ./radio 15417 ./core @angular/core
 ./select 69036 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core
 ./skeleton 2997 - @angular/core

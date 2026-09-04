@@ -1,8 +1,28 @@
 /* The host is the box the bar fills — it paints nothing itself, and it is the containing
-   block the fill is positioned against, which is the whole reason it is `relative`. */
+   block the fill is positioned against, which is the whole reason it is `relative`.
+
+   And it is the PIPE the indeterminate band travels inside, which is what `overflow` is for.
+   The band's keyframes take it from entirely BEFORE the groove to entirely PAST it, so with
+   nothing clipping it, it is painted outside the bar for most of every loop — a stripe
+   crossing whatever the consumer put beside the bar. The radius is the groove's own token
+   rather than decoration: measured in chromium, a square clip over a pill-shaped groove cuts
+   the band's ends straight and leaves the groove's rounded corners showing through beside
+   them.
+
+   `hidden` and not `auto`: an `overflow: auto` box takes focus in chromium and firefox
+   ([`lesson-137`](../../../../docs/lessons.md#lesson-137)), and this component's keyboard map
+   is empty precisely because nothing here is reachable — `hidden` takes focus in no engine.
+
+   The skeleton clips its travelling sheen the same way one component over, and there the
+   clipping box is the track itself, because a `<div>` can hold the sheen. Here it cannot: a
+   `<progress>` renders no children in any engine, so the fill is a sibling and the box that
+   clips it is the host. That is also why the groove's forced-colors outline is written for the
+   host and not for the `<progress>` — see the bottom of this sheet. */
 :host {
   display: block;
   position: relative;
+  overflow: hidden;
+  border-radius: var(--pct-progress-track-radius);
 }
 
 /* The `<progress>` element is the groove. Painting it needs `appearance: none` in every
@@ -63,6 +83,10 @@
   transition: none;
 }
 
+/* Both ends of the travel are OUTSIDE the groove, deliberately: the band enters at one edge
+   and leaves at the other rather than appearing and vanishing inside the bar. That is only a
+   drawing anybody wants because the host clips — the two rules are one mechanism, and the
+   spec keeps them tied together for that reason. */
 @keyframes pct-progress-band {
   from {
     inset-inline-start: calc(-1 * var(--pct-progress-fill-size));
@@ -81,7 +105,7 @@
   --pct-progress-track-height: var(--pct-progress-track-height-lg);
 }
 
-/* Forced colours. Two things are measured here rather than assumed
+/* Forced colours. Three things are measured here rather than assumed
    ([`lesson-134`](../../../../docs/lessons.md#lesson-134)):
 
    a background COLOUR named as a system colour survives the mode, which is why the fill is an
@@ -89,14 +113,26 @@
    outright in this mode, so a band painted that way is invisible exactly where the contrast
    matters most;
 
-   and the groove keeps its extent through an `outline` rather than a `border`, because the
-   fill is positioned against the host and a border would put a line under it. `@media` adds
-   no specificity, so both rules are written out in full
+   the groove keeps its extent through an `outline` rather than a `border`, because the fill is
+   positioned against the host and a border would put a line under it;
+
+   and that outline is drawn on the HOST rather than on the `<progress>`, which is what the
+   clip at the top of this sheet costs. Measured in chromium, both halves of it: a clipping box
+   erases a DESCENDANT's outline outright — a 30 px ring on a child that fills the box paints
+   nothing at all, and widening the ring changes nothing, so it is a clip and not a bleed —
+   while the outline the clipping element draws ITSELF is untouched by its own `overflow`,
+   because `overflow` clips what is inside the box and an outline is drawn outside it. The two
+   boxes are one rectangle (the track is `inline-size: 100%` and the host has no padding and no
+   border), so the ring lands where it always did, and it takes the host's radius rather than
+   squaring the pill off. `@media` adds no specificity, so every rule is written out in full
    ([`lesson-70`](../../../../docs/lessons.md#lesson-70)). */
 @media (forced-colors: active) {
+  :host {
+    outline: 1px solid CanvasText;
+  }
+
   .pct-progress__track {
     background: Field;
-    outline: 1px solid CanvasText;
   }
 
   /* The three engine parts are cleared here as well as above, and the repetition is the
