@@ -90,6 +90,17 @@ vitest.config.*.timestamp*
 # run whose config lives elsewhere. Nothing reads it back here.
 /test-results/
 
+# Stryker's sandbox, a full copy of the repository — some 150 MB. `stryker.config.json`
+# puts it under `tmp/stryker`, which the `tmp` rule above already covers, but that setting
+# exists only while that config is loaded: a bare `stryker run` — an ad-hoc `--mutate`
+# iteration, say — finds no configuration in the root and falls back to the default
+# `.stryker-tmp/` inside the current working directory. The same run loses `ignorePatterns` with it,
+# so it copies the whole tree rather than the files git knows. `cleanTempDir` deletes the
+# directory after a run that FINISHES, and the runs that leave it behind are exactly the
+# ones that do not — an out-of-memory kill, a Ctrl-C — which is how it twice stood in
+# `git status` as untracked, one `git add -A` away from a commit.
+.stryker-tmp/
+
 # Visual test baselines (apps/sandbox-e2e/src/__screenshots__) ARE in the repository
 # and have to stay: without them Playwright records a baseline on the first run and
 # stores it as correct, so the gate can never fire. Only the output of a failed
