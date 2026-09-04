@@ -63,11 +63,11 @@ needed: no `afterNextRender` gate stands in front of a template branch.
 **What inline gives up, per component.** These change meaning, not appearance, and each is
 pinned by a test that fails without it:
 
-| | drops | keeps |
-| --- | --- | --- |
-| `dialog` | `aria-modal`, the backdrop, the focus trap, the scroll lock, the closing stack | `role="dialog"`, the heading and label wiring, `tabindex="-1"` for programmatic focus |
-| `menu` | the trigger's `aria-expanded`, the missing-trigger warning, close-on-choice | `role="menu"`, the arrow walk, `Home`/`End`, typeahead, roving focus |
-| `popover` | the anchor positioning, `aria-haspopup` on a control that reveals in-page content | `role="dialog"`, `tabindex="-1"` |
+|           | drops                                                                             | keeps                                                                                 |
+| --------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `dialog`  | `aria-modal`, the backdrop, the focus trap, the scroll lock, the closing stack    | `role="dialog"`, the heading and label wiring, `tabindex="-1"` for programmatic focus |
+| `menu`    | the trigger's `aria-expanded`, the missing-trigger warning, close-on-choice       | `role="menu"`, the arrow walk, `Home`/`End`, typeahead, roving focus                  |
+| `popover` | the anchor positioning, `aria-haspopup` on a control that reveals in-page content | `role="dialog"`, `tabindex="-1"`                                                      |
 
 All three drop `createOverlayRef`, the position and scroll strategies, and the four properties
 `pctOverlayPanel` hands a panel that has left the tree ([`lesson-35`](../lessons.md#lesson-35))
