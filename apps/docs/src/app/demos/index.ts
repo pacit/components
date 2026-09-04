@@ -340,8 +340,11 @@ export const CARD_DEMOS: Readonly<
   chips: () => import('./cards/chips.card').then((m) => m.ChipsCardScene),
   container: () =>
     import('./cards/container.card').then((m) => m.ContainerCardScene),
+  dialog: () => import('./cards/dialog.card').then((m) => m.DialogCardScene),
   drawer: () => import('./cards/drawer.card').then((m) => m.DrawerCardScene),
   grid: () => import('./cards/grid.card').then((m) => m.GridCardScene),
+  menu: () => import('./cards/menu.card').then((m) => m.MenuCardScene),
+  popover: () => import('./cards/popover.card').then((m) => m.PopoverCardScene),
   stepper: () => import('./cards/stepper.card').then((m) => m.StepperCardScene),
   theme: () => import('./cards/theme.card').then((m) => m.ThemeCardScene),
   toast: () => import('./cards/toast.card').then((m) => m.ToastCardScene),
