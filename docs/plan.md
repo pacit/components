@@ -2172,6 +2172,32 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     a reduced-motion context or a settled wait before `analyze()` would pin it
   - binds at: **the next red it causes** — today it is a retry's cost, and the fix
     belongs beside the a11y spec, not inside 2.1 · _notes:_ —
+- [ ] **4.36 — the loud face is equipment the consumer cannot ask for: three hand copies,
+      no gate**
+  - the brand gradient exists once as API — the button's `variant="hero"`
+    ([0058](decisions/0058-the-hero-face-is-paint-and-a-gradient-is-three-contrast-checks.md))
+    — and three more times as hand-written CSS in the site's own stylesheet: the headline
+    clips it to text, the identity tiles take a stop each for a border, and the live cards
+    light a rim and paint a component's name (2026-09-04). `lesson-21` asked for the
+    extraction before the second copy
+  - the shape is decided, not the build:
+    [0065](decisions/0065-a-treatment-that-paints-is-a-component.md) — a component with an
+    attribute selector, `pctHero="edge | text | fill"` and `show="always | interact"`, one
+    face per element. A directive was refused because it carries no stylesheet and this
+    package ships no global rules to lend it one
+  - what the extraction BUYS is the argument for it: point 7 of `check-tokens` demands a
+    contrast entry for every colour a library stylesheet paints, so the face's stops become
+    checks that fail a build. Today the site's headline is painted in three colours nothing
+    has ever measured, and axe cannot help — text clipped from a background carries
+    `color: transparent`, so it reports that it cannot tell rather than that it is wrong
+  - what it needs first: **two new primitives** (a violet and a cyan near the 400 level) so
+    the `text` face has a dark ground it can stand on — the brand's own stops are 3.13–3.45
+    there, legal as an edge at the 3:1 bar and not as 16px text at 4.5 — and a
+    `mask-composite` probe in three engines, whose first bill is already paid
+    ([`lesson-156`](lessons.md#lesson-156))
+  - binds at: **the site's design pass (4.34)**, which is where a fourth copy would be
+    written, or the first consumer who asks for the face outside the button — whichever
+    lands first · _notes:_ —
 
 ## 5. Gaps with no deadline
 
