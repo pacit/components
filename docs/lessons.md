@@ -4210,3 +4210,35 @@ The rule: when a declaration exists in a vendored and a standard spelling, order
 shorthand before every longhand of that family, and **assert the computed value in each
 engine**. A property that decides whether an effect happens at all is a property a test
 should read out loud, not one a picture is trusted to imply.
+
+### <a id="lesson-157"></a>`lesson-157` — Emulated encapsulation rewrites the selector, so it rewrites the specificity
+
+Two rules were written in one day for the landing, both correct as CSS, both silently
+powerless as Angular component styles.
+
+The first said `[data-theme='dark'] .live .card { … }` and compiled to
+`[data-theme=dark][_ngcontent-x] .live[_ngcontent-x] .card[_ngcontent-x]`. Emulated
+encapsulation stamps the content attribute on **every compound of the selector**, `<html>`
+included — so the rule asked the document element to carry an attribute only this component's
+own nodes ever get, and could not match anything. The symptom was not an error: it was the
+dark theme's card name painted in the light theme's gradient stops, which is exactly what a
+reader would see if the tokens had simply been chosen badly.
+
+The second said `.hero__inner > * { animation: … }` with the stagger written as
+`animation-delay` on each child. The parent rule compiles to
+`.hero__inner[_ngcontent-x] > *[_ngcontent-x]` — two classes' worth of weight — while the
+child's `.hero__title[_ngcontent-x]` carries one, so the shorthand won and reset every delay
+to zero. The symptom was a stagger that was not one: five parts arriving together, which
+looks like a design choice.
+
+Both are the same fact seen twice: **the selector that runs is not the selector that was
+written**, and its specificity is not the one counted while writing it. The fixes differ
+because the shapes differ — `:host-context()` for the ancestor case, since the compiler
+leaves its argument alone, and a custom property carried inside the shorthand for the
+stagger, because a variable is inherited rather than cascaded against and so has nothing to
+lose. What generalises is the diagnosis: when a component rule looks ignored, read the
+EMITTED css before rereading the source, because the source is not what the browser was
+given.
+
+And both were found the same way — by measuring what the page computed rather than by
+looking at it. A rule that does nothing renders a page that looks deliberate.
