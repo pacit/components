@@ -341,6 +341,193 @@
   }
 }
 
+/* ── the hero edge, and the name in the same three stops ──────────────────────
+   The third copy of the hero idiom in this stylesheet — the headline clips it to text,
+   the identity tiles take one stop each for a top border — and the reason it is worth a
+   library primitive rather than a fourth copy (lesson-21's extraction law). Site chrome
+   until that decision is taken.
+
+   Two choices here carry measurements, both taken 2026-09-04 with the WCAG formula over
+   the tokens' own values:
+
+   · the EDGE keeps the brand's three stops in both themes. A boundary is non-text, so
+     its bar is 3:1 (SC 1.4.11), and the stops stand at 4.72–5.70 on the light card and
+     3.13–3.45 on the dark one.
+   · the NAME cannot have them in the dark. It is 16px text, so its bar is 4.5:1, and
+     those same three stops measure 3.13, 3.45 and 3.33 against the dark card — the very
+     colours the huge headline gets away with, because text at 24px and over is measured
+     against 3:1 too. In the dark the name takes them lifted 70% of the way to white:
+     5.91, 5.43 and 5.88, and the evenness is worth as much as the numbers, because no
+     stop of the sweep is then the weak one nobody looked at.
+
+   Worth saying plainly: nothing MEASURES this. Text painted through `background-clip`
+   carries `color: transparent`, so axe reports that it cannot tell rather than that it is
+   wrong, and the contrast policy watches hero as a BACKGROUND — three entries, the
+   button's label over each stop. Point 7 of `check-tokens` would demand these three the
+   moment a library stylesheet painted them as text; here they are a comment. That gap is
+   the argument for the primitive, not an excuse for the copy. */
+.live .card {
+  position: relative;
+
+  /* The stops the name takes. Same as the edge's until the ground goes dark. */
+  --docs-name-hero: var(--pct-hero);
+  --docs-name-hero-via: var(--pct-hero-via);
+  --docs-name-hero-to: var(--pct-hero-to);
+}
+
+/* The two conditions the token system itself uses, in its own order: an explicit theme
+   wins, the system preference fills the silence (the shiki switch in `styles.scss` is the
+   same pair, for the same reason).
+
+   Through `:host-context` and not a plain ancestor selector, and that is not decoration:
+   this is a COMPONENT stylesheet, so emulated encapsulation stamps its content attribute
+   on every compound of a selector, `<html>` included — `[data-theme='dark'] .live .card`
+   compiles to `[data-theme=dark][_ngcontent-x] …`, asking the document element to carry an
+   attribute only this component's own nodes ever get. Measured here, 2026-09-04: the first
+   version of these rules could not match anything, and the symptom was the dark name
+   painted in the light theme's stops — the failing safety measure, silent, again. */
+:host-context([data-theme='dark']) .live .card {
+  --docs-name-hero: color-mix(in srgb, var(--pct-hero) 70%, var(--pct-slate-0));
+  --docs-name-hero-via: color-mix(
+    in srgb,
+    var(--pct-hero-via) 70%,
+    var(--pct-slate-0)
+  );
+  --docs-name-hero-to: color-mix(
+    in srgb,
+    var(--pct-hero-to) 70%,
+    var(--pct-slate-0)
+  );
+}
+
+@media (prefers-color-scheme: dark) {
+  :host-context(html:not([data-theme])) .live .card {
+    --docs-name-hero: color-mix(
+      in srgb,
+      var(--pct-hero) 70%,
+      var(--pct-slate-0)
+    );
+    --docs-name-hero-via: color-mix(
+      in srgb,
+      var(--pct-hero-via) 70%,
+      var(--pct-slate-0)
+    );
+    --docs-name-hero-to: color-mix(
+      in srgb,
+      var(--pct-hero-to) 70%,
+      var(--pct-slate-0)
+    );
+  }
+}
+
+/* The edge is a masked pseudo-element and not `border-image`: that one cannot round a
+   corner, and the padding-box/border-box background stack would take the card's own
+   background hostage. `inset: -1px` because an absolute box is laid out against the
+   PADDING box — at `0` the gradient would sit inside the card's own border and draw a
+   second line beside it, at `-1px` it covers it.
+
+   Behind `@supports` on purpose: an engine without the mask would not lose the
+   decoration, it would paint the gradient over the WHOLE card. The failure mode of a
+   missing feature has to be nothing, not a filled card. */
+@supports ((mask-composite: exclude) or (-webkit-mask-composite: xor)) {
+  .live .card::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 2px;
+    background-image: linear-gradient(
+      120deg,
+      var(--pct-hero),
+      var(--pct-hero-via),
+      var(--pct-hero-to),
+      var(--pct-hero)
+    );
+    background-size: 200% 100%;
+    /* Both shorthands first, both composites after them, and the order is the whole
+       rule: firefox aliases `-webkit-mask` to `mask`, so a `-webkit-mask` written BELOW
+       `mask-composite` resets the composite to `add` — and `add` does not punch the
+       middle out, it paints the gradient over the entire card. Measured 2026-09-04, in
+       firefox only: chromium and webkit kept their own composite either way, so the
+       defect had exactly one engine and no symptom anywhere a green suite could look. */
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    -webkit-mask-composite: xor;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--pct-motion-transition-duration)
+      var(--pct-motion-transition-easing);
+    /* Half the button's drift over two thirds of its gradient — four times the sweep the
+       first attempt showed, which was the note this pass answered. The button is a thumb
+       wide and reads 8s as movement; a 373px rim reads the same 8s as a still picture,
+       because what the eye catches is the hue crossing a point, and that is a matter of
+       how much gradient passes per second. The duration stays a DIVISION of the axis
+       token rather than a number of its own, so reduced motion still freezes it:
+       `calc(0s / 2)` is `0s`. */
+    animation: docs-drift-edge calc(var(--pct-motion-drift-duration) / 2) linear
+      infinite;
+  }
+
+  .live .card:hover::after,
+  .live .card:focus-within::after {
+    opacity: 1;
+  }
+}
+
+@keyframes docs-drift-edge {
+  to {
+    /* pct-exception background-position: the sweep is a closed loop with no beginning to
+       find, the button's own reasoning one stylesheet over — a logical property would move
+       nothing but its first frame. */
+    background-position: 200% 0;
+  }
+}
+
+/* The NAME takes the gradient; the selector beside it does not. A component's selector is
+   the string a reader copies, not decoration — so it keeps its own colour, and it keeps it
+   by standing in its own element rather than by fighting the clip: text painted through
+   `background-clip` clips to every glyph inside the box, descendants included. */
+@supports ((background-clip: text) or (-webkit-background-clip: text)) {
+  .live .card:hover .card__name,
+  .live .card:focus-within .card__name {
+    background-image: linear-gradient(
+      100deg,
+      var(--docs-name-hero),
+      var(--docs-name-hero-via),
+      var(--docs-name-hero-to),
+      var(--docs-name-hero)
+    );
+    background-size: 200% 100%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    animation: docs-drift-edge calc(var(--pct-motion-drift-duration) / 2) linear
+      infinite;
+  }
+}
+
+/* Forced colours strips colours and keeps IMAGES — left alone, both the rim and the name
+   would go on painting over the forced Canvas (the hero button's rule, one library over).
+   Dropped outright: the card keeps the edge its own border draws, and the name its
+   CanvasText. */
+@media (forced-colors: active) {
+  .live .card::after {
+    background-image: none;
+  }
+
+  .live .card:hover .card__name,
+  .live .card:focus-within .card__name {
+    background-image: none;
+    color: CanvasText;
+    animation: none;
+  }
+}
+
 .card__row {
   display: flex;
   align-items: center;

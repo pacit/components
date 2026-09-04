@@ -88,6 +88,47 @@ test.describe('The landing', () => {
     ).toContainText('Proxies');
   });
 
+  test('hovering a live card lights its rim, and paints the name only', async ({
+    page,
+  }) => {
+    await visit(page, '/');
+    const card = page.getByTestId('live').locator('.card').first();
+    const rim = () =>
+      card.evaluate((el) => getComputedStyle(el, '::after').opacity);
+    const name = card.locator('.card__name');
+    const selector = card.locator('.card__title code');
+    const selectorColour = await selector.evaluate(
+      (el) => getComputedStyle(el).color,
+    );
+
+    // At rest the card is what it always was. A rim reading `1` here means the engine
+    // has no `mask-composite`, so the `@supports` block never applied and the gradient
+    // would be covering the whole card rather than its edge — worth a red, not a skip.
+    expect(await rim()).toBe('0');
+
+    await card.hover();
+    await expect.poll(rim).toBe('1');
+
+    // The punch-out itself, not only the guard that let it in: an engine that matched
+    // `@supports` and then dropped the composite would paint the gradient over the whole
+    // card rather than around it, and every assertion below would still pass.
+    const composite = await card.evaluate((el) => {
+      const style = getComputedStyle(el, '::after');
+      return [style.maskComposite, style.webkitMaskComposite].join(' ');
+    });
+    expect(composite).toMatch(/xor|exclude/);
+
+    // The name takes the three stops: its own colour goes transparent and the gradient
+    // arrives behind the glyphs.
+    await expect(name).toHaveCSS('color', 'rgba(0, 0, 0, 0)');
+    await expect(name).not.toHaveCSS('background-image', 'none');
+
+    // The selector is the string a reader copies, not decoration — it keeps its colour
+    // and takes no gradient of its own.
+    await expect(selector).toHaveCSS('color', selectorColour);
+    await expect(selector).toHaveCSS('background-image', 'none');
+  });
+
   test('removing a chip shortens the row; restore brings it back', async ({
     page,
   }) => {
@@ -130,11 +171,22 @@ test.describe('The landing', () => {
         .locator('.hero__grad')
         .evaluate((el) => getComputedStyle(el).animationDuration);
 
+    // The card rim divides the same token rather than naming a duration of its own —
+    // which is the whole point: `calc(0s / 2)` is `0s`, so one axis freezes both.
+    const rim = () =>
+      page
+        .getByTestId('live')
+        .locator('.card')
+        .first()
+        .evaluate((el) => getComputedStyle(el, '::after').animationDuration);
+
     await visit(page, '/', { reducedMotion: 'no-preference' });
     expect(await drift()).toBe('8s');
+    expect(await rim()).toBe('4s');
 
     await page.emulateMedia({ reducedMotion: 'reduce' });
     expect(await drift()).toBe('0s');
+    expect(await rim()).toBe('0s');
   });
 
   test('forced colors hands the gradient text back to the palette', async ({
@@ -150,6 +202,25 @@ test.describe('The landing', () => {
     // hands the colour back and this reads anything BUT transparent.
     expect(
       await grad.evaluate((el) => getComputedStyle(el).color),
+    ).not.toContain('rgba(0, 0, 0, 0)');
+
+    // The live card carries the same two drawings, and forced colors keeps IMAGES: the
+    // rim and the hovered name would go on painting over the forced Canvas without the
+    // guard that drops them.
+    const card = page.getByTestId('live').locator('.card').first();
+    await card.hover();
+    expect(
+      await card.evaluate(
+        (el) => getComputedStyle(el, '::after').backgroundImage,
+      ),
+    ).toBe('none');
+
+    const name = card.locator('.card__name');
+    expect(
+      await name.evaluate((el) => getComputedStyle(el).backgroundImage),
+    ).toBe('none');
+    expect(
+      await name.evaluate((el) => getComputedStyle(el).color),
     ).not.toContain('rgba(0, 0, 0, 0)');
   });
 });
