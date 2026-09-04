@@ -10,7 +10,8 @@ import { PctProgress } from '@pacit/components/progress';
 @Component({
   selector: 'demo-progress-states',
   imports: [PctProgress],
-  styles: ':host { display: grid; gap: 14px; max-inline-size: 28rem; }',
+  // A width, not only a ceiling — see `progress.demo.ts` (`lesson-160`).
+  styles: ':host { display: grid; gap: 14px; inline-size: min(28rem, 100%); }',
   template: `
     <pct-progress [value]="3" [max]="8" ariaLabel="Uploaded files" />
     <pct-progress ariaLabel="Connecting" />

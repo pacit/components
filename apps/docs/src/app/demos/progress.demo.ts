@@ -6,7 +6,9 @@ import { PctProgress } from '@pacit/components/progress';
 @Component({
   selector: 'demo-progress',
   imports: [PctButton, PctProgress],
-  styles: ':host { display: grid; gap: 12px; max-inline-size: 24rem; }',
+  // A width, not only a ceiling: a bar 100% of a container that is as wide as its content
+  // is a bar as wide as the button beside it (`lesson-160`).
+  styles: ':host { display: grid; gap: 12px; inline-size: min(24rem, 100%); }',
   template: `
     <pct-progress [value]="done()" ariaLabel="Uploading" />
     <pct-progress ariaLabel="Connecting" />
