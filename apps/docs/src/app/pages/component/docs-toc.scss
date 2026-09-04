@@ -14,29 +14,52 @@
   list-style: none;
 }
 
+/* The reading line is a RAIL, not a fill. Every entry carries a hairline at its inline start
+   and the active one repaints that hairline in the primary, so what changes when the line
+   moves is a 2px stroke and the weight of one word. The fill this replaces was
+   `primary-100`, which on the dark theme is blue-800 on slate-900 — a block of colour — and a
+   section with its first entry active stacked two of them. The nested list steps in by
+   padding rather than by a rail of its own, so a section's stroke and its entries' strokes
+   are one continuous line. */
 .toc__list a {
   display: block;
-  padding: 5px 10px;
-  border-radius: var(--pct-radius-md);
+  box-sizing: border-box;
+  /* Every entry is a touch target and SC 2.5.8 wants 24px of it: the route sweep's axe run
+     read 200 × 23 when this was `4px` of padding, with 22px of safe space between
+     neighbours — so the floor is written out, and the padding is what the previous
+     drawing had. */
+  min-block-size: 24px;
+  padding: 5px 12px;
+  border-inline-start: 2px solid var(--pct-border);
   color: var(--pct-text-muted);
   font-size: var(--pct-font-size-sm);
   text-decoration: none;
+  transition:
+    color var(--pct-motion-transition-duration)
+      var(--pct-motion-transition-easing),
+    border-color var(--pct-motion-transition-duration)
+      var(--pct-motion-transition-easing);
 
   &:hover {
     color: var(--pct-text);
-    background: var(--pct-surface-100);
   }
 
-  /* The soft pair, measured on both themes — primary on an 11% tint read 4.44:1. */
+  /* The entry the line stands on: the page's own text colour, and the stroke in the primary. */
   &.is-active {
-    color: var(--pct-on-primary-100);
+    color: var(--pct-text);
     font-weight: 600;
-    background: var(--pct-primary-100);
+    border-color: var(--pct-primary);
+  }
+
+  /* A section one of whose entries is the active one: lifted to the text colour and nothing
+     else — the stroke is the entry's, so it is drawn once. */
+  &.has-active {
+    color: var(--pct-text);
   }
 }
 
 .toc__list--nested a {
-  padding-inline-start: 22px;
+  padding-inline-start: 24px;
   font-size: 12.5px;
 }
 

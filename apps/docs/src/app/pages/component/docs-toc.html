@@ -6,7 +6,8 @@
       <a
         [routerLink]="[]"
         [fragment]="item.id"
-        [class.is-active]="isActive(item)"
+        [class.is-active]="active() === item.id"
+        [class.has-active]="holdsActive(item)"
         [attr.aria-current]="active() === item.id ? 'location' : null"
       >
         {{ item.label }}

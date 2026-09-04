@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { visit } from './support/dom';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
@@ -259,15 +259,75 @@ test.describe('The pages', () => {
     ).toBe('rgb(15, 118, 110)');
   });
 
-  test('the table of contents follows the reading line', async ({ page }) => {
+  /** The offset the stylesheet declares — the one number the router and a native jump share. */
+  const anchorOffset = (page: Page) =>
+    page.evaluate(() =>
+      parseFloat(
+        getComputedStyle(document.documentElement).getPropertyValue(
+          '--docs-anchor-offset',
+        ),
+      ),
+    );
+
+  /** Where an anchor's box begins, against the viewport — the number a reader sees. */
+  const topOf = (page: Page, id: string) =>
+    page
+      .locator(`#${id}`)
+      .evaluate((el) => Math.round(el.getBoundingClientRect().top));
+
+  /**
+   * Two things measured in one walk. The reading line: one entry lit at a time, its section
+   * lifted and never lit beside it. And where a followed link LANDS: the router positions the
+   * target itself and reads no `scroll-margin`, so before `setOffset` a heading arrived at y=0
+   * under a 56px bar (`lesson-159`) — the case asserts the offset to the pixel rather than
+   * "below the bar", because the stylesheet and the router are meant to hold one number.
+   */
+  test('the table of contents follows the reading line, and a link lands its heading below the bar', async ({
+    page,
+  }) => {
     await page.setViewportSize({ width: 1400, height: 900 });
     await visit(page, '/components/button');
     // The rail's copy — the fold above the page holds another, hidden at this width.
     const toc = page.locator('.rail--toc [data-testid="toc"]');
     await expect(toc.locator('a.is-active')).toHaveText('Preview');
-    await page.locator('#api').scrollIntoViewIfNeeded();
-    await page.evaluate(() => window.scrollBy(0, 40));
-    await expect(toc.locator('a.is-active').first()).toHaveText('API');
+
+    const offset = await anchorOffset(page);
+    const bar = await page.locator('.topbar').boundingBox();
+    expect(offset).toBeGreaterThan(bar?.height ?? Infinity);
+
+    // To the pixel, less one: webkit lands a fragment at 89 where the other two engines
+    // land it at 88 — a rounding of the scroll position, not a second offset — and the
+    // claim is that the heading sits at the offset and not at zero.
+    const landed = async (id: string) =>
+      Math.abs((await topOf(page, id)) - offset) <= 1;
+
+    await toc.getByRole('link', { name: 'API', exact: true }).click();
+    await expect.poll(() => landed('api')).toBe(true);
+    await expect(toc.locator('a.is-active')).toHaveText('API');
+    await expect(toc.locator('a.has-active')).toHaveCount(0);
+
+    await toc.getByRole('link', { name: 'Inputs', exact: true }).click();
+    await expect.poll(() => landed('api-inputs')).toBe(true);
+    await expect(toc.locator('a.is-active')).toHaveText('Inputs');
+    await expect(toc.locator('a.has-active')).toHaveText('API');
+  });
+
+  /**
+   * A fragment in the address is followed when the navigation ends, and the demos land AFTER
+   * that as lazy chunks — every heading below the preview then moves down by what arrived.
+   * Measured before the page asked for its anchor a second time: `#ex-faces` at 160px where
+   * the offset had put it at 88.
+   */
+  test('a fragment in the address lands its heading below the bar once the demos are in', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1400, height: 900 });
+    await visit(page, '/components/button#ex-faces');
+    await expect(page.locator('#ex-faces .stage').first()).toBeVisible();
+    const offset = await anchorOffset(page);
+    await expect
+      .poll(async () => Math.abs((await topOf(page, 'ex-faces')) - offset) <= 1)
+      .toBe(true);
   });
 
   test('the index filters the components and marks the current one', async ({

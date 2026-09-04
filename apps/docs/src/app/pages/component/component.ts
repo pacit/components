@@ -1,7 +1,8 @@
-import { DOCUMENT, NgComponentOutlet } from '@angular/common';
+import { DOCUMENT, NgComponentOutlet, ViewportScroller } from '@angular/common';
 import {
   Component,
   DestroyRef,
+  Injector,
   PendingTasks,
   Type,
   afterNextRender,
@@ -12,7 +13,7 @@ import {
   signal,
 } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { PctBadge } from '@pacit/components/badge';
 import {
   PctBreadcrumb,
@@ -74,6 +75,9 @@ export class ComponentPageView {
   private readonly tasks = inject(PendingTasks);
   private readonly document = inject(DOCUMENT);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly route = inject(ActivatedRoute);
+  private readonly scroller = inject(ViewportScroller);
+  private readonly injector = inject(Injector);
 
   readonly id = input.required<string>();
 
@@ -253,6 +257,16 @@ export class ComponentPageView {
         if (this.id() === id) {
           this.demo.set(type);
           this.examples.set(new Map(pairs));
+          // The router followed the address's fragment when the navigation ended, and the
+          // demos have landed AFTER it — every heading below the preview has just moved
+          // down by the height of what arrived (measured: `#ex-faces` at 160px where the
+          // offset had put it at 88). So the anchor is asked for once more, from the same
+          // scroller with the same offset, in the render that holds the demos.
+          const fragment = this.route.snapshot.fragment;
+          if (fragment)
+            afterNextRender(() => this.scroller.scrollToAnchor(fragment), {
+              injector: this.injector,
+            });
         }
         done();
       });

@@ -23,11 +23,13 @@ export class DocsToc {
   readonly active = input<string | null>(null);
   readonly cardPath = input.required<string>();
 
-  /** A section lights when it or one of its own entries is the active one. */
-  protected isActive(item: TocItem): boolean {
+  /**
+   * Whether one of a section's OWN entries is the active one — the state the section shows
+   * as lifted text and no stroke. It used to share the active class with its entry, so the
+   * reading line was drawn twice, one fill stacked on another; the stroke is the entry's.
+   */
+  protected holdsActive(item: TocItem): boolean {
     const active = this.active();
-    return (
-      active === item.id || Boolean(item.children?.some((c) => c.id === active))
-    );
+    return Boolean(item.children?.some((c) => c.id === active));
   }
 }

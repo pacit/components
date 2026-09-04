@@ -1,4 +1,4 @@
-import { DOCUMENT } from '@angular/common';
+import { DOCUMENT, ViewportScroller } from '@angular/common';
 import {
   ApplicationRef,
   Component,
@@ -74,6 +74,23 @@ export class App {
   protected readonly menuOpen = signal(false);
 
   constructor() {
+    // The router's anchor scrolling positions a fragment's target ITSELF — `scrollTo` on
+    // the element's rectangle — and reads neither `scroll-padding` nor `scroll-margin`, so
+    // the offset the stylesheet declares for a native #fragment jump is invisible to it.
+    // Measured on the component page before this: a table-of-contents link put its heading
+    // at y=0, under the 56px bar (`lesson-159`). The router is handed the SAME number the
+    // stylesheet uses, read from it at each scroll rather than copied — `--docs-anchor-offset`
+    // is declared once, on `html`, and this is its second reader.
+    const document = this.document;
+    inject(ViewportScroller).setOffset(() => [
+      0,
+      parseFloat(
+        document.defaultView
+          ?.getComputedStyle(document.documentElement)
+          .getPropertyValue('--docs-anchor-offset') ?? '',
+      ) || 0,
+    ]);
+
     // The "the page is interactive" marker for the e2e suite — the sandbox's own idiom
     // (its lesson-30): until hydration the server's DOM can be clicked but nothing
     // listens, and with the demos arriving as lazy chunks the window between "visible"

@@ -254,7 +254,6 @@
 /* ── the hero stage: the sketch's card, on the library's tabs ─────────────── */
 .hero {
   margin-block-start: 28px;
-  scroll-margin-block-start: 88px;
 }
 
 .hero__panel {
@@ -382,7 +381,6 @@
 /* ── sections ─────────────────────────────────────────────────────────────── */
 .block {
   margin-block-start: 72px;
-  scroll-margin-block-start: 88px;
 }
 
 .block__head {
@@ -407,7 +405,6 @@
 
 .sub {
   margin-block-start: 40px;
-  scroll-margin-block-start: 88px;
 
   > h3 {
     margin: 0 0 var(--pct-space-3);
@@ -516,7 +513,6 @@ pre.plain {
 /* examples: the prose beside the stage, the code under both */
 .example {
   margin-block-start: var(--pct-space-5);
-  scroll-margin-block-start: 88px;
 }
 
 .example__card {

@@ -12,9 +12,15 @@
 
 /* The topbar is sticky, so a followed anchor must land BELOW it — without this, every
    /trust#lesson-N jump hides its own heading under the bar (56px of chrome plus a
-   breath). The router's anchorScrolling and the browser's #fragment both read it. */
+   breath). The browser's own #fragment jump reads the padding. The router's anchor
+   scrolling does NOT: it positions the target itself, with `scrollTo` on the element's
+   rectangle, and reads neither `scroll-padding` nor `scroll-margin` — measured on the
+   component page, where a table-of-contents link put its heading at y=0 under the bar
+   (`lesson-159`). So the number is a custom property, and the shell hands the router the
+   same one through `ViewportScroller.setOffset`: one offset, declared once, read twice. */
 html {
-  scroll-padding-block-start: 72px;
+  --docs-anchor-offset: 88px;
+  scroll-padding-block-start: var(--docs-anchor-offset);
 }
 
 body {
