@@ -4154,3 +4154,29 @@ The rule: when one task's OUTPUT is another task's SOURCE, say so in the inputs 
 that is gitignored is invisible to the hasher no matter how many things read it. The failure
 mode is the quiet one: not a broken build, but a correct build of yesterday's data, served
 under today's gates with every one of them green.
+
+### <a id="lesson-155"></a>`lesson-155` — A screenshot freezes the animation, not the class that starts it
+
+The landing's visual baseline went red in a full-suite run and green on its own, minutes
+apart, against a picture nobody had touched. The diff named the difference precisely: the
+evidence strip's five facts, each **36px** off — the first one left, the second right, the
+displacement the reveal starts from. One capture had the facts where they arrive, the other
+where they set out, and both were honest pictures of the page.
+
+`toHaveScreenshot` disables animations, and that is exactly as far as it goes: it
+fast-forwards what is already running. The strip's arrival is not running at load — it waits
+on a class an `IntersectionObserver` adds a task later, and a shot taken before that task is
+two identical frames of a page that has not started moving. Under a loaded machine that task
+lands late; on a quiet one it lands first. The baseline recorded on the quiet run then reads
+as the truth, and the flake ships with a green commit — which is how this one shipped.
+
+The fix is to take the picture where the race does not exist: every baseline now visits with
+`reducedMotion: 'reduce'`, and the reveal never arms, because the page's own rule is that
+less motion means the facts are simply present ([`lesson-151`](lessons.md#lesson-151) is why
+they are present rather than faded in). The proof that this **pins** the state instead of
+choosing a new one is that not a single pixel was re-recorded: the committed baselines passed
+twelve of twelve with three repeats, in both themes, unchanged.
+
+The rule: a still cannot hold a state that JavaScript has yet to write. When a picture and a
+motion meet, take the picture in the mode that has no motion — and leave the arrival to the
+test that can wait for it, which is where it was already proven.
