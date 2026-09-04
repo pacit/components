@@ -1,12 +1,19 @@
 <!--
-  Everything below is attached to a CDK overlay and lives outside the host tree — the host
-  element renders nothing. The panel therefore carries `pctOverlayPanel`: what the tree stops
-  handing it — theme, typeface, size, writing direction (`lesson-35`).
+  ONE panel, drawn in one of two places. Attached to a CDK overlay it lives outside the host
+  tree — the host element renders nothing — and it therefore carries `pctOverlayPanel`: what the
+  tree stops handing it, theme, typeface, size, writing direction (`lesson-35`). Rendered
+  `inline` it stands in the host, where the consumer wrote the component, and inherits all four
+  the ordinary way; `inherited()` is `null` there, so the same directive writes nothing
+  (`lesson-35` read as an absence, which is 0047's second paragraph).
+
+  A second panel written out for the inline case is the defect that input exists to avoid — one
+  set of classes, one set of parts, one stylesheet, or the two drift at the first edit of either.
 
   It is a panel of the kind that DOES take focus, which is the other declaration 0025 named —
   and `tabindex="-1"` is how it takes it itself rather than handing it to the first control
   inside. The panel is what carries the role and the name, so it is what a screen reader has to
-  announce before the user is anywhere.
+  announce before the user is anywhere. Inline nothing moves focus at all: the panel appears
+  where the reader already is.
 -->
 <ng-template #panel>
   <div
@@ -32,3 +39,12 @@
     </div>
   </div>
 </ng-template>
+
+<!--
+  The inline half. `open` still says whether the panel is shown, and this is a plain `@if` —
+  not a render hook, not an overlay — which is the property the input exists for: an open
+  inline popover is in the markup the server sends (`req-project-ssr`).
+-->
+@if (inline() && open()) {
+<ng-container [ngTemplateOutlet]="panel" />
+}

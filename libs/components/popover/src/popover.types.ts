@@ -14,6 +14,16 @@
  * - `api` — the value written from the outside, which includes every button a consumer put in
  *   the content. A popover cannot tell one of those from another, and pretending otherwise
  *   would be an invented distinction.
+ *
+ * **Inline leaves two of the five**, and the three that go are the three the overlay was
+ * delivering: `escape` and `outside` come from the closing stack, which has no entry for a
+ * panel that was never attached
+ * ([0024](../../../../docs/decisions/0024-the-closing-stack-is-the-dependency-s.md)), and
+ * `away` is the Tab splice of
+ * [0031](../../../../docs/decisions/0031-a-panel-s-tab-order-belongs-to-its-trigger.md), which
+ * a panel standing in the page's own order has no use for. A popover drawn in the page closes
+ * from its trigger or from the application, and the type says so rather than the boolean:
+ * `trigger` and `api` are all an inline close can carry.
  */
 export type PctPopoverCloseReason =
   'trigger' | 'escape' | 'outside' | 'away' | 'api';

@@ -127,6 +127,50 @@ class TwoTriggersHost {
   readonly open = signal(false);
 }
 
+/**
+ * The inline shape, and the wrapper is part of the measurement: `#column` is where the consumer
+ * wrote the component, and that is where the panel has to be found. `open` starts true, because
+ * the property the input exists for is a panel that is already there.
+ */
+@Component({
+  imports: [PctPopover, PctPopoverTrigger],
+  template: `<button id="elsewhere">elsewhere</button>
+    <button id="trigger" [pctPopoverTrigger]="pop">Filters</button>
+    <div id="column">
+      <pct-popover
+        #pop
+        [inline]="inline()"
+        [(open)]="open"
+        heading="Filters"
+        (closed)="reasons.push($event)"
+      >
+        <button id="inside">inside</button>
+      </pct-popover>
+    </div>
+    <button id="after">after</button>`,
+})
+class InlineHost {
+  readonly inline = signal(true);
+  readonly open = signal(true);
+  readonly reasons: PctPopoverCloseReason[] = [];
+}
+
+/**
+ * The shape the input was added for: a column of the page with no control to open it at all.
+ * `inline` stands as a bare attribute, which is the other half of what `booleanAttribute` is
+ * for — a consumer who never writes an expression.
+ */
+@Component({
+  imports: [PctPopover],
+  template: `<pct-popover inline [heading]="heading()" [(open)]="open"
+    >a column of the page</pct-popover
+  >`,
+})
+class InlineNoTriggerHost {
+  readonly heading = signal('Filters');
+  readonly open = signal(true);
+}
+
 describe('PctPopover', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -495,6 +539,260 @@ describe('PctPopover', () => {
       fixture.componentInstance.first.set(true);
       await settle(fixture);
       expect(panel()).not.toBeNull();
+    });
+  });
+
+  /**
+   * The panel drawn where the consumer wrote it. Every case below is a reading of something the
+   * component does **not** do any more — the overlay was doing all of it — and each one would
+   * pass by accident if the inline panel were a second copy of the markup rather than the same
+   * template rendered somewhere else.
+   */
+  describe('drawn in the page (`inline`)', () => {
+    /** The panel as the consumer's own tree holds it, which is the whole question. */
+    const inColumn = (fixture: ComponentFixture<unknown>) =>
+      fixture.nativeElement.querySelector(
+        '#column pct-popover [data-pct-part="panel"]',
+      ) as HTMLElement | null;
+
+    /** The CDK pane an attached popover overlay is drawn in, and nothing else has. */
+    const pane = () => document.querySelector('.pct-popover__pane');
+
+    /**
+     * The property the input exists for, and the server's own situation reproduced: a pass of
+     * change detection over the host view and NOTHING else — no `ApplicationRef` tick, so no
+     * `afterNextRender`, which is the hook that never runs on a server. The overlay half has
+     * not begun at that point and never would; the inline panel is already there, because it is
+     * markup of the host template gated on `inline()` and `open()` and on nothing more.
+     *
+     * The other half of the measurement — a real render that hydrates with no `NG05xx` — is
+     * `apps/sandbox-e2e/src/hydration.spec.ts`, which has a server under it.
+     */
+    it('needs no browser render, where an overlay popover needs one', () => {
+      const overlay = TestBed.createComponent(Host);
+      overlay.componentInstance.open.set(true);
+      overlay.changeDetectorRef.detectChanges();
+      expect(panel()).toBeNull();
+      overlay.destroy();
+
+      const fixture = TestBed.createComponent(InlineHost);
+      fixture.changeDetectorRef.detectChanges();
+
+      expect(inColumn(fixture)).not.toBeNull();
+      expect(pane()).toBeNull();
+    });
+
+    it('attaches no overlay, and the panel in the page is the only one', async () => {
+      const fixture = await render(InlineHost);
+      await settle(fixture);
+
+      expect(pane()).toBeNull();
+      expect(document.querySelectorAll('[data-pct-part="panel"]').length).toBe(
+        1,
+      );
+      expect(inColumn(fixture)).toBe(panel());
+      expect(part('content')?.querySelector('#inside')).not.toBeNull();
+    });
+
+    /** The role is the one thing about a popover that inline does not touch. */
+    it('keeps `role="dialog"`, `tabindex="-1"` and its name', async () => {
+      const fixture = await render(InlineHost);
+      const drawn = inColumn(fixture);
+
+      expect(drawn?.getAttribute('role')).toBe('dialog');
+      expect(drawn?.getAttribute('tabindex')).toBe('-1');
+      expect(drawn?.getAttribute('aria-modal')).toBeNull();
+      expect(drawn?.getAttribute('aria-labelledby')).toBe(part('heading')?.id);
+    });
+
+    /**
+     * Nothing was severed, so nothing is handed back (`lesson-35` read as an absence). The
+     * attributes are the four `pctOverlayPanel` writes: on an inline panel each of them would
+     * be a copy pinned over the live value it is standing in.
+     */
+    it('is handed nothing back, because nothing was severed', async () => {
+      const fixture = await render(InlineHost);
+      const drawn = inColumn(fixture);
+
+      expect(drawn?.getAttribute('dir')).toBeNull();
+      expect(drawn?.getAttribute('data-theme')).toBeNull();
+      expect(drawn?.style.fontFamily).toBe('');
+      expect(drawn?.style.fontSize).toBe('');
+    });
+
+    /**
+     * The responsive case the input exists for, and the two defects it can produce: a panel in
+     * the page with the layer still standing over it, and a `closed` for a popover that never
+     * closed. It moved.
+     */
+    it('a popover switched between the two modes moves, and does not close', async () => {
+      const fixture = await render(InlineHost);
+
+      fixture.componentInstance.inline.set(false);
+      await settle(fixture);
+      expect(pane()).not.toBeNull();
+      expect(inColumn(fixture)).toBeNull();
+      expect(panel()?.querySelector('#inside')).not.toBeNull();
+
+      fixture.componentInstance.inline.set(true);
+      await settle(fixture);
+      expect(pane()).toBeNull();
+      expect(document.querySelectorAll('[data-pct-part="panel"]').length).toBe(
+        1,
+      );
+      expect(inColumn(fixture)).toBe(panel());
+      expect(panel()?.querySelector('#inside')).not.toBeNull();
+      // And no reading carried back with it: a closed overlay keeps its last one, so the
+      // binding has to be the mode's rather than the layer's.
+      expect(panel()?.getAttribute('dir')).toBeNull();
+
+      expect(fixture.componentInstance.reasons).toEqual([]);
+    });
+
+    /**
+     * Focus into the panel is how a reader is told about something that appeared elsewhere in
+     * the document. Inline it appears where the reader already is — and this is an opening,
+     * not a bootstrap, so it is the moment the overlay would have moved focus.
+     */
+    it('does not take focus when it opens', async () => {
+      const fixture = await render(InlineHost);
+      fixture.componentInstance.open.set(false);
+      await settle(fixture);
+
+      byId('elsewhere')?.focus();
+      fixture.componentInstance.open.set(true);
+      await settle(fixture);
+
+      expect(panel()).not.toBeNull();
+      expect(document.activeElement).toBe(byId('elsewhere'));
+    });
+
+    /**
+     * 0031's splice is for a panel that stands at the end of the document's order however near
+     * its trigger it is drawn. This one stands where it looks like it stands, so a Tab that
+     * closed it would be shutting the panel behind a user walking past it.
+     */
+    it('leaves Tab alone in both directions', async () => {
+      const fixture = await render(InlineHost);
+
+      const forwards = tab(panel() as Element);
+      const backwards = tab(panel() as Element, true);
+      await settle(fixture);
+
+      expect(forwards.defaultPrevented).toBe(false);
+      expect(backwards.defaultPrevented).toBe(false);
+      expect(fixture.componentInstance.open()).toBe(true);
+      expect(fixture.componentInstance.reasons).toEqual([]);
+    });
+
+    /** Escape is the closing stack's, and the stack has no entry for a panel never attached. */
+    it('is not closed by Escape, from the document or from the panel', async () => {
+      const fixture = await render(InlineHost);
+
+      escape();
+      panel()?.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }),
+      );
+      await settle(fixture);
+
+      expect(fixture.componentInstance.open()).toBe(true);
+      expect(fixture.componentInstance.reasons).toEqual([]);
+    });
+
+    /** So is the outside press — and inline there is no inside and outside to tell apart. */
+    it('is not closed by a press outside it', async () => {
+      const fixture = await render(InlineHost);
+
+      pressOn(byId('elsewhere') as Element);
+      await settle(fixture);
+
+      expect(fixture.componentInstance.open()).toBe(true);
+      expect(fixture.componentInstance.reasons).toEqual([]);
+    });
+
+    it('closing takes the panel out at once, with no leaving state to wait out', async () => {
+      const fixture = await render(InlineHost);
+
+      fixture.componentInstance.open.set(false);
+      fixture.detectChanges();
+
+      expect(panel()).toBeNull();
+      expect(document.querySelector('[data-pct-leaving]')).toBeNull();
+      expect(fixture.componentInstance.reasons).toEqual(['api']);
+    });
+
+    it('a popover that was never shown says nothing when it is closed', async () => {
+      const fixture = TestBed.createComponent(InlineHost);
+      fixture.componentInstance.open.set(false);
+      await settle(fixture);
+
+      expect(panel()).toBeNull();
+      expect(fixture.componentInstance.reasons).toEqual([]);
+    });
+
+    /**
+     * The overlay half's promise, read where there is no overlay: a popover torn down while it
+     * is up says nothing, because nothing is left to hear it. The panel goes with the tree it
+     * stands in rather than with a layer that has to be disposed of.
+     */
+    it('destroyed while open says nothing', async () => {
+      const fixture = await render(InlineHost);
+      expect(panel()).not.toBeNull();
+
+      fixture.destroy();
+
+      expect(fixture.componentInstance.reasons).toEqual([]);
+    });
+
+    /**
+     * A trigger is optional inline rather than forbidden — a docked panel a button reveals is
+     * an ordinary disclosure. What goes is `aria-haspopup`: nothing pops up.
+     */
+    it('a trigger still toggles it, and no longer claims a popup', async () => {
+      const fixture = await render(InlineHost);
+      const trigger = byId('trigger');
+
+      expect(trigger?.getAttribute('aria-haspopup')).toBeNull();
+      expect(trigger?.getAttribute('aria-expanded')).toBe('true');
+      expect(trigger?.getAttribute('aria-controls')).toBe(panel()?.id);
+
+      trigger?.click();
+      await settle(fixture);
+
+      expect(panel()).toBeNull();
+      expect(fixture.componentInstance.reasons).toEqual(['trigger']);
+      expect(trigger?.getAttribute('aria-controls')).toBeNull();
+    });
+
+    /**
+     * The warning is true of an overlay and false twice over here: the panel is on the screen,
+     * and the shape the input was added for has no control to open it at all.
+     */
+    it('says nothing about a missing trigger', async () => {
+      const warn = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => undefined);
+      const fixture = await render(InlineNoTriggerHost);
+      await settle(fixture);
+
+      expect(panel()).not.toBeNull();
+      expect(warn).not.toHaveBeenCalled();
+      warn.mockRestore();
+    });
+
+    /** But the name is still the panel's own promise, and the role that needs it is unchanged. */
+    it('still reports an inline panel with no accessible name', async () => {
+      const warn = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => undefined);
+      const fixture = await render(InlineNoTriggerHost);
+      fixture.componentInstance.heading.set('');
+      await settle(fixture);
+
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('no accessible name'),
+      );
+      warn.mockRestore();
     });
   });
 });

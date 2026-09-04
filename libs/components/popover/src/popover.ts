@@ -6,9 +6,12 @@ import {
   OverlayRef,
 } from '@angular/cdk/overlay';
 import { TemplatePortal } from '@angular/cdk/portal';
+import { NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
+  booleanAttribute,
   Component,
+  computed,
   DestroyRef,
   Directive,
   DOCUMENT,
@@ -70,10 +73,19 @@ const OFFSET = 8;
  * it is drawn, and Tab therefore closes the panel and hands focus back to the trigger for the
  * page's own order to carry on from.
  *
- * **SSR**: nothing renders on the server. The panel is a template attached to an overlay by a
- * browser render, so a popover left `open` at bootstrap sends no markup and hydrates no
- * mismatch (`req-project-ssr`). The trigger's `aria-expanded` is the deliberate exception —
- * it is part of the control's markup rather than of an interaction.
+ * **Or it is a part of the page.** `inline` draws the same panel where the consumer wrote the
+ * component instead of in a layer over it — 0047's sentence about the drawer, made an input,
+ * because the shape a page really has is often both: a filter panel that stands permanently on
+ * a wide screen and hangs off a button on a narrow one is one panel with two lives, and the
+ * consumer is the only one who knows which page is which. Everything that goes with it is
+ * something the overlay was doing; the input's own comment holds the list.
+ *
+ * **SSR**: nothing renders on the server — unless it is `inline`, where the panel is markup of
+ * the host template and an open one is in what the server sends, which is the property that
+ * input exists for. Attached to an overlay it is a template waiting for a browser render, so a
+ * popover left `open` at bootstrap sends no markup and hydrates no mismatch
+ * (`req-project-ssr`). The trigger's `aria-expanded` is the deliberate exception — it is part
+ * of the control's markup rather than of an interaction.
  *
  * @example
  * <button pctButton [pctPopoverTrigger]="filters">Filters</button>
@@ -81,16 +93,22 @@ const OFFSET = 8;
  *   <pct-field label="Owner"><input pctText /></pct-field>
  *   <button pctButton (click)="filters.open.set(false)">Apply</button>
  * </pct-popover>
+ *
+ * <!-- the same panel, drawn where it stands -->
+ * <pct-popover inline [open]="true" heading="Filters">…</pct-popover>
  */
 @Component({
   selector: 'pct-popover',
-  imports: [PctOverlayPanel],
+  imports: [PctOverlayPanel, NgTemplateOutlet],
   templateUrl: './popover.html',
   styleUrl: './popover.scss',
   host: {
     class: 'pct-popover',
-    // The host renders nothing — everything it draws lives in the overlay. It stays in the
-    // tree because it is where the panel's severed properties are read from.
+    // The host draws nothing of its own in either mode: with an overlay everything it draws
+    // lives outside the tree, and it stays here because it is where the panel's severed
+    // properties are read from. `display: contents` is also what makes the inline panel land
+    // in the consumer's own layout — the host box is not there to be a wrapper between the
+    // page's grid and the panel it wrote into it.
     style: 'display: contents',
   },
 })
@@ -127,9 +145,43 @@ export class PctPopover {
   /**
    * Which side of the trigger it opens on — logical, so `end` is the right in an English page
    * and the left in an Arabic one. The window has the last word: a side with no room for the
-   * panel falls back to the one across the trigger (`pctPlacementPositions`).
+   * panel falls back to the one across the trigger (`pctPlacementPositions`). It says nothing
+   * `inline`: a panel drawn in the page is placed by the page.
    */
   readonly placement = input<PctPlacement>('bottom');
+
+  /**
+   * Draws the panel in the host, where the consumer wrote the component, instead of in an
+   * overlay over the page. The same template, the same classes, the same parts and the same
+   * stylesheet — a second panel written out for this case is the defect the input exists to
+   * avoid.
+   *
+   * **What it gives up is what the overlay was doing, and nothing else.** The anchoring goes
+   * with it, and so do the three ways out the layer delivered. Escape and the outside press
+   * come from the closing stack, which has no entry for a panel that was never attached
+   * ([0024](../../../../docs/decisions/0024-the-closing-stack-is-the-dependency-s.md)); Tab out
+   * is 0031's splice, and 0031 exists because an overlay stands at the END of the document's
+   * order however near its trigger it is drawn. Inline it stands exactly where its trigger
+   * does, the page's own order carries on from it, and a panel that closed behind a user
+   * walking past it could never be a place to park — which is the whole of
+   * [0047](../../../../docs/decisions/0047-a-drawer-is-a-region-of-the-page-not-a-layer-over-it.md),
+   * read one component over. `trigger` and `api` are therefore the only reasons an inline close
+   * can carry.
+   *
+   * **Nothing moves focus either.** Focus into the panel is how a reader is told about
+   * something that has appeared elsewhere in the document; a panel that appears where the
+   * reader already is has announced itself by being there — and an inline popover left `open`
+   * at bootstrap would otherwise pull focus the moment the page hydrated, which nobody asked
+   * for. It keeps `role="dialog"`, its name, and `tabindex="-1"`: out of the tab order itself,
+   * so Tab from the trigger goes into the content rather than onto the box around it.
+   *
+   * **It appears, and it goes.** The enter is the stylesheet's alone — `@starting-style` fires
+   * wherever the panel is inserted and needs no JavaScript — but the leave is not run: `leaving`
+   * never turns over inline and `data-pct-leaving` is an overlay attribute. The attribute exists
+   * to hold a node in the DOM until its fade has finished, and inline that node is holding a
+   * hole open in the page's own layout while it waits. An overlay has no layout to hold.
+   */
+  readonly inline = input(false, { transform: booleanAttribute });
 
   /** Why it closed. See `PctPopoverCloseReason`. */
   readonly closed = output<PctPopoverCloseReason>();
@@ -163,10 +215,28 @@ export class PctPopover {
     from: () => this.trigger() ?? this.host.nativeElement,
   });
 
-  protected readonly inherited = this.panelOverlay.inherited;
+  /**
+   * What the panel has to be handed because the tree stopped handing it — and `null` inline,
+   * where the tree never stopped. It is not merely unnecessary there: a popover that has been
+   * an overlay keeps the last reading (a closed panel has nothing to describe), so binding it
+   * to an inline panel would pin a copy of the trigger's theme, typeface and direction over the
+   * live ones it is standing in, and the responsive case this input exists for is exactly the
+   * one that switches mode after an opening.
+   */
+  protected readonly inherited = computed(() =>
+    this.inline() ? null : this.panelOverlay.inherited(),
+  );
 
   /** The overlay while it is up; `null` whenever the popover is closed. */
   private ref: OverlayRef | null = null;
+
+  /**
+   * Whether the panel is on the screen — attached to the overlay or standing in the host, which
+   * are two places and one state. It is what makes a close an event: the overlay half could
+   * answer that question with `ref`, the inline half has nothing to ask, and one field asked by
+   * both is one answer to "did this popover close" instead of two that can disagree.
+   */
+  private shown = false;
 
   /** The panel's view, so the leave can be put on the screen before it is waited for. */
   private view: EmbeddedViewRef<void> | null = null;
@@ -199,7 +269,16 @@ export class PctPopover {
     // second pass finds the panel attached and returns — but a run that exists only to
     // discover it has nothing to do is the near miss of [`lesson-94`](../../../../docs/lessons.md#lesson-94),
     // and the near miss is the one worth writing down.
+    //
+    // The mode is read FIRST and leaves through a return of its own, so that neither branch
+    // takes the other's dependencies: inline waits for no render — the panel is in the template
+    // — and the overlay half must not re-run on an `open` it cannot act on yet.
     effect(() => {
+      if (this.inline()) {
+        const open = this.open();
+        untracked(() => this.syncInline(open));
+        return;
+      }
       if (!this.rendered()) return;
       const trigger = this.trigger();
       const open = this.open();
@@ -269,6 +348,10 @@ export class PctPopover {
   // ── open and close ──────────────────────────────────────────────────────────────────────
 
   private attach(trigger: HTMLElement): void {
+    // Above the guard below, not inside it: a popover asked for again during its own leave has
+    // already announced the close it is about to turn round, so this is the state coming back.
+    this.shown = true;
+
     if (this.ref) {
       // Asked for again before its leave had finished — so the fade is turned round rather
       // than a second panel attached over the first.
@@ -341,15 +424,49 @@ export class PctPopover {
   }
 
   /**
-   * Puts the panel into its leaving state and detaches it once the motion is over. The
-   * `closed` event does **not** wait for that: it says the popover was closed, which is a
-   * decision, and the fade is what the pixels do about it afterwards.
+   * The inline half of open and close: what is left of both once there is no overlay to attach
+   * to. The panel itself is the template's — `@if (inline() && open())` — so what is left here
+   * is the bookkeeping around it, and the tear-down of a layer that was standing when the mode
+   * changed. **A popover that goes inline while it is up has moved, not closed**: no `closed`
+   * is emitted, and the overlay goes at once rather than fading, because a copy of the panel
+   * dissolving over the page beside the real one would read as two panels.
    */
-  private beginLeave(): void {
-    if (!this.ref || this.cancelLeave) return;
+  private syncInline(open: boolean): void {
+    this.cancelLeave?.();
+    this.detach();
 
+    if (open) {
+      this.shown = true;
+      return;
+    }
+    this.beginLeave();
+  }
+
+  /**
+   * Says the popover closed, once. `shown` is the whole of the guard: a popover that was never
+   * up did not close, and neither did one whose leave has already been announced. The event is
+   * the **decision** to close — the fade, where there is one, is what the pixels do about it
+   * afterwards.
+   */
+  private announceClose(): void {
+    if (!this.shown) return;
+    this.shown = false;
     this.closed.emit(this.reason);
     this.reason = 'api';
+  }
+
+  /**
+   * Puts the panel into its leaving state and detaches it once the motion is over — inline
+   * there is neither, and the announcement is all this is.
+   */
+  private beginLeave(): void {
+    if (this.cancelLeave) return;
+
+    this.announceClose();
+
+    // Nothing on the screen to hold in place: inline the template has already taken the panel
+    // out, and holding a node through its fade would hold a hole open in the page's own layout.
+    if (!this.ref) return;
 
     this.leaving.set(true);
     const panel = this.panelElement();
@@ -405,6 +522,16 @@ export class PctPopover {
    * It was refused on what the event really reports: `relatedTarget` is `null` both for focus
    * going nowhere in the page and for the whole WINDOW losing it, so a popover that closed on
    * that would be gone when the user came back from another application.
+   *
+   * **None of it applies inline, and no line here says so.** The premise of the paragraph above
+   * is that the panel is not where it looks like it is; inline it is exactly where it looks
+   * like it is, the document's own order carries on from it, and a Tab that closed it would be
+   * shutting the panel behind a user who was only walking past. What makes this handler inert
+   * there is the lookup below: `panelElement` answers for the overlay alone, so inline there is
+   * no panel to measure the edge of and the key is left to the page. A guard on the mode would
+   * read better and could **not fail** — the spec passes identically with it and without it —
+   * and a line no test can tell from its absence is a claim with nothing behind it. What holds
+   * the behaviour is the case that measures it: `leaves Tab alone in both directions`.
    */
   protected onKeydown(event: KeyboardEvent): void {
     if (event.key !== 'Tab') return;
@@ -452,6 +579,12 @@ export class PctPopover {
     this.trigger()?.focus();
   }
 
+  /**
+   * The overlay's panel, and only the overlay's. Every caller is on that side — the focus in,
+   * the edge of the tab order, the element the leave is waited out on — and each of the three
+   * is something an inline panel does not do, so a lookup in the host would be a branch nothing
+   * could reach.
+   */
   private panelElement(): HTMLElement | null {
     return (
       this.ref?.overlayElement.querySelector<HTMLElement>(
@@ -477,9 +610,14 @@ export class PctPopover {
   /**
    * A popover has to hang off something. Opened with no trigger registered it does nothing at
    * all — no panel, no error, no clue — and the missing piece is one attribute in a template.
+   *
+   * **Inline it hangs off nothing by construction**, and the warning would be false twice over:
+   * the panel is on the screen, and the shape the input was added for — a filter column that
+   * stands on a wide page — has no control to open it at all.
    */
   private warnOnNoTrigger(): void {
-    if (!this.rendered() || !this.open() || this.trigger()) return;
+    if (this.inline() || !this.rendered() || !this.open() || this.trigger())
+      return;
     console.warn(
       `[pct-popover] An open popover with no trigger: there is nothing for the panel to hang ` +
         `off, so nothing is shown. Put \`[pctPopoverTrigger]\` on the control that opens it.`,
@@ -495,7 +633,14 @@ export class PctPopover {
  * arrives at the button, open or closed — and a component that wrote it into an element
  * somewhere else in the template would be reaching into markup it does not own. `aria-controls`
  * is written **only while the panel is up**, which is the select's rule for the same reason: an
- * id that points at nothing is a reference into the void.
+ * id that points at nothing is a reference into the void. That rule holds for an `inline`
+ * popover too, and for once for the drawer's opposite reason: a drawer's panel is in the
+ * document whether it is open or not, an inline popover's is not.
+ *
+ * **`aria-haspopup` goes when the panel does not pop up.** The attribute says the control opens
+ * a dialog somewhere over the page; an `inline` popover is a piece of the page the button
+ * reveals, so what is left is `aria-expanded` and `aria-controls` — the plain disclosure the
+ * drawer's trigger is, which carries no `aria-haspopup` for the same reason.
  *
  * @example
  * <button pctButton [pctPopoverTrigger]="filters">Filters</button>
@@ -504,7 +649,7 @@ export class PctPopover {
 @Directive({
   selector: '[pctPopoverTrigger]',
   host: {
-    'aria-haspopup': 'dialog',
+    '[attr.aria-haspopup]': 'popover().inline() ? null : "dialog"',
     '[attr.aria-expanded]': 'popover().open()',
     '[attr.aria-controls]': 'popover().open() ? popover().panelId : null',
     '(click)': 'popover().toggle()',

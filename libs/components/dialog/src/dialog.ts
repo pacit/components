@@ -1,6 +1,7 @@
 import { FocusTrap, FocusTrapFactory } from '@angular/cdk/a11y';
 import { createOverlayRef, OverlayRef } from '@angular/cdk/overlay';
 import { TemplatePortal } from '@angular/cdk/portal';
+import { NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
   booleanAttribute,
@@ -43,6 +44,9 @@ import { PctDialogCloseReason } from './dialog.types';
  * the name is ours ([0013](../../../../docs/decisions/0013-no-headless-split.md)): a consumer
  * writes what this library promises, not what its dependency happens to be called this year.
  *
+ * It follows from "read by the trap" that an `inline` dialog does not read it at all: that
+ * mode has no trap, nothing captures, and focus stays where the user left it.
+ *
  * @example
  * <pct-dialog heading="Delete the project?">
  *   <button pctAutofocus (click)="cancel()">Cancel</button>
@@ -76,9 +80,19 @@ export class PctAutofocus {}
  * cannot be clicked, focused or reached by Tab, in blink, gecko and webkit alike
  * ([`lesson-89`](../../../../docs/lessons.md#lesson-89)).
  *
- * **SSR**: nothing renders on the server. The panel is a template attached to an overlay by a
- * browser render, so a dialog left `open` at bootstrap sends no markup and hydrates no
- * mismatch (`req-project-ssr`).
+ * **Or a section of the page, if the consumer says so.** `inline` renders the same panel in
+ * the host instead of in an overlay, and with it goes everything in the paragraphs above: the
+ * veil, `aria-modal`, the trap, the scroll lock and the closing stack. What is left is a
+ * non-modal `role="dialog"` — legal, and the shape a form that is a modal on one screen and a
+ * section on another needs. It is
+ * [0047](../../../../docs/decisions/0047-a-drawer-is-a-region-of-the-page-not-a-layer-over-it.md)'s
+ * cut ("a region of the page, not a layer over it") made by the consumer rather than once for
+ * the whole component.
+ *
+ * **SSR**: nothing renders on the server — unless `inline`, which is what that input is for.
+ * The overlay panel is a template attached by a **browser** render, so a modal dialog left
+ * `open` at bootstrap sends no markup and hydrates no mismatch (`req-project-ssr`); an inline
+ * one is `@if (open())` in the template and arrives in the HTML the server sends.
  *
  * @example
  * <button (click)="confirm.set(true)">Delete</button>
@@ -89,13 +103,15 @@ export class PctAutofocus {}
  */
 @Component({
   selector: 'pct-dialog',
-  imports: [PctIcon, PctOverlayPanel],
+  imports: [PctIcon, PctOverlayPanel, NgTemplateOutlet],
   templateUrl: './dialog.html',
   styleUrl: './dialog.scss',
   host: {
     class: 'pct-dialog',
-    // The host renders nothing — everything it draws lives in the overlay. It stays in the
-    // tree because it is what the panel reads its severed properties from.
+    // The host draws nothing of its own. As an overlay it renders nothing at all and stays in
+    // the tree because it is what the panel reads its severed properties from; `inline` it
+    // holds the panel, and `display: contents` is then what puts that panel exactly where the
+    // consumer's markup put the tag.
     style: 'display: contents',
   },
 })
@@ -113,6 +129,50 @@ export class PctDialog {
    * opens it, and the dialog closes itself on Escape, on the backdrop and on its own button.
    */
   readonly open = model(false);
+
+  /**
+   * Whether the panel is drawn **where the consumer wrote the tag** instead of in an overlay.
+   * The same `<ng-template>` either way — the same box, the same parts, the same stylesheet —
+   * so the two modes cannot drift apart the way a second hand-written panel would.
+   *
+   * **It gives up most of what a modal is, and each loss is the same fact from another side:
+   * there is no layer, so there is nothing to hold the page away with.** No backdrop, so
+   * `closeOnBackdrop` has nothing to answer for. No `aria-modal`, because nothing behind the
+   * panel stopped answering — and a non-modal `role="dialog"` is a legal dialog. No focus
+   * trap, and therefore no capture and no restore: focus stays where the user left it, and
+   * `[pctAutofocus]` decides nothing, because the mechanism under it is `cdkFocusInitial`,
+   * which the trap reads and nobody else does. No scroll lock. No registration in the closing
+   * stack — which is the road Escape travels ([0024](../../../../docs/decisions/0024-the-closing-stack-is-the-dependency-s.md)),
+   * so `closeOnEscape` is inert as well. The ways out that remain are the close button and
+   * whatever the content holds; the ways out that go were the layer's own.
+   *
+   * What it keeps: `role="dialog"`, the heading and both ARIA names, the close button, the
+   * `closed` reason, and `open` as the state — an inline dialog with `open` false renders
+   * nothing at all. There is no leave choreography to decide about, because this component
+   * animates nothing: the panel appears and disappears with the state, in both modes.
+   *
+   * **It renders on the server, and that is the property this input exists for.** An overlay
+   * needs a browser render to attach to; a template branch needs nothing.
+   *
+   * **A branch in the template, and not the panel hoisted out of the veil.**
+   * `.pct-dialog__backdrop` is three things in one element — the veil, the frame that centres
+   * the panel in the viewport, and the box a dialog taller than the window scrolls in — and
+   * that was chosen over a position strategy plus the dependency's own backdrop, which no
+   * stylesheet of this library can reach
+   * ([0029](../../../../docs/decisions/0029-a-modal-is-an-overlay-not-a-dialog-element.md)).
+   * A hoist would have to write all three somewhere else for the modal case; the branch writes
+   * none of them, and inline needs not one line of CSS added — the panel's box is complete on
+   * its own.
+   *
+   * The input is a `boolean` and not a breakpoint, because the component has no business
+   * knowing what a wide screen is: a consumer binds it (`[inline]="wide()"`) and a dialog
+   * crosses the line in either direction while open — the overlay is taken down, the panel is
+   * drawn in the host, and no `closed` is emitted, because the dialog did not close.
+   *
+   * @example
+   * <pct-dialog inline heading="Filters" [(open)]="shown">…</pct-dialog>
+   */
+  readonly inline = input(false, { transform: booleanAttribute });
 
   /**
    * The visible title, rendered as the panel's heading and used as its accessible name. A
@@ -165,8 +225,15 @@ export class PctDialog {
 
   protected readonly inherited = this.panelOverlay.inherited;
 
-  /** The overlay while it is up; `null` whenever the dialog is closed. */
+  /** The overlay while it is up; `null` whenever the dialog is closed — or inline. */
   private ref: OverlayRef | null = null;
+
+  /**
+   * Whether a panel is up, in either mode. This is what arms the close, and `ref` used to be:
+   * an inline dialog has no overlay and still closes, and reading the field that happens to
+   * hold one would have made `closed` an overlay's event rather than the dialog's.
+   */
+  private shown = false;
 
   /** The dependency's trap, created over the panel and destroyed with it. */
   private trap: FocusTrap | null = null;
@@ -185,6 +252,8 @@ export class PctDialog {
   /**
    * Whether a render has happened. There is none on the server, so this is the gate that keeps
    * the overlay a browser-only thing without the component asking which platform it is on.
+   * The inline panel stands outside this gate on purpose — a template branch needs no render
+   * to exist, and a panel that waited for one would be a panel the server never sends.
    */
   private readonly rendered = signal(false);
 
@@ -195,12 +264,25 @@ export class PctDialog {
     afterNextRender(() => this.rendered.set(true));
 
     effect(() => {
-      if (!this.rendered()) return;
-      if (this.open()) {
-        this.attach();
+      const open = this.open();
+      const inline = this.inline();
+
+      if (open) {
+        // Inline the panel is in the template and `open` has already drawn it — there is
+        // nothing to attach and no render to wait for. The `detach` is for the crossing: a
+        // dialog that was a layer a moment ago still has an overlay under it, and the panel
+        // is now standing in the host. It is not a close, so nothing is emitted.
+        if (inline) this.detach();
+        else if (this.rendered()) this.attach();
+        // Not inline and not drawn yet — that is the server, and there is no panel to close
+        // later either.
+        else return;
+        this.shown = true;
         return;
       }
-      if (!this.ref) return;
+
+      if (!this.shown) return;
+      this.shown = false;
       this.detach();
       this.closed.emit(this.reason);
       this.reason = 'api';
@@ -267,6 +349,10 @@ export class PctDialog {
     });
   }
 
+  /**
+   * Takes the overlay down. A no-op when there is none, which is the whole of what an inline
+   * dialog ever needs from it — and the reason the effect can call it on either road.
+   */
   private detach(): void {
     const ref = this.ref;
     if (!ref) return;
@@ -336,9 +422,14 @@ export class PctDialog {
    * its own — a confirm dialog that insists on an answer, a wizard step that ignores a stray
    * click — and all three together is WCAG 2.1.2, a keyboard trap, with the content's own
    * buttons as the only escape. That last road is real, so this reports rather than repairs.
+   *
+   * Inline it says nothing, and not out of leniency: there is no trap to be caught in. The
+   * panel is a region of the page and the keyboard tabs out of it the way it tabs out of a
+   * paragraph, while two of the three switches are already off by construction — a warning
+   * there would fire on the wide half of every responsive dialog and mean nothing on either.
    */
   private warnOnNoWayOut(): void {
-    if (!this.open()) return;
+    if (!this.open() || this.inline()) return;
     if (this.closeOnEscape() || this.closeOnBackdrop() || this.closeButton())
       return;
     console.warn(

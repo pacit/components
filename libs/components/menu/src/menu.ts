@@ -5,8 +5,10 @@ import {
   OverlayRef,
 } from '@angular/cdk/overlay';
 import { TemplatePortal } from '@angular/cdk/portal';
+import { NgTemplateOutlet } from '@angular/common';
 import {
   afterNextRender,
+  booleanAttribute,
   Component,
   computed,
   contentChildren,
@@ -99,22 +101,36 @@ export const PCT_MENU_ITEM = new InjectionToken<PctMenuItemApi>(
  * is what the two roles are: a combobox is an editable value with a list behind it, so focus
  * belongs to the thing being edited, while a menu is a list of commands and nothing else — the
  * item IS what the user is on. Everything else follows: the items are the roving focus, the
- * panel is focused only when it has no items to hand focus to, and no item is ever a Tab stop.
+ * panel is focused only when it has no items to hand focus to, and no item on a layer is ever a
+ * Tab stop.
  *
- * **Tab does not walk it.** Every item carries `tabindex="-1"` and Tab closes the whole tree,
- * giving focus back to the control that opened it
+ * **Tab does not walk a panel on a layer.** Every item there carries `tabindex="-1"` and Tab
+ * closes the whole tree, giving focus back to the control that opened it
  * ([0031](../../../../docs/decisions/0031-a-panel-s-tab-order-belongs-to-its-trigger.md)) —
- * the popover's rule, arriving here for its second consumer. A panel is a child of `body`, so
- * the tab order the DOM would give it runs off the end of the page.
+ * the popover's rule, arriving here for its second consumer. Such a panel is a child of `body`,
+ * so the tab order the DOM would give it runs off the end of the page.
  *
  * **A submenu is a menu.** There is no second component and no nesting depth written down
  * anywhere: an item carrying `[pctMenuTrigger]` opens another `pct-menu`, which learns from
  * that registration who its parent is and closes with it.
  *
- * **SSR**: nothing renders on the server. The panel is a template attached to an overlay by a
- * browser render, so a menu left `open` at bootstrap sends no markup and hydrates no mismatch
- * (`req-project-ssr`). The trigger's `aria-expanded` is the deliberate exception — it is part
- * of the control's markup rather than of an interaction.
+ * **`inline` makes it a region of the page rather than a layer over it.** The panel is then
+ * rendered in the host, where the consumer wrote the component — the same template, so the same
+ * classes, the same parts and the same sheet — and everything the layer was for goes: the
+ * overlay, the positioning, the trigger, the dismissals the closing stack delivered. What is
+ * left is the role, the walk and the roving focus, plus the one thing a layer never needed and
+ * a region cannot do without: a Tab stop, because the page's own order runs through the
+ * commands now. It is the cut
+ * [0047](../../../../docs/decisions/0047-a-drawer-is-a-region-of-the-page-not-a-layer-over-it.md)
+ * made for the drawer, arriving at a second component — and here it is the CONSUMER who makes
+ * it, per instance, rather than the library once for the whole type.
+ *
+ * **SSR**: over a layer, nothing renders on the server. The panel is a template attached to an
+ * overlay by a browser render, so a menu left `open` at bootstrap sends no markup and hydrates
+ * no mismatch (`req-project-ssr`); the trigger's `aria-expanded` is the deliberate exception —
+ * it is part of the control's markup rather than of an interaction. **Inline it is the other
+ * way round and deliberately so**: the panel is ordinary content of the host, so an open one is
+ * in the server's HTML with its commands in it, which is the property the mode exists for.
  *
  * @example
  * <button pctButton [pctMenuTrigger]="actions">Actions</button>
@@ -128,7 +144,7 @@ export const PCT_MENU_ITEM = new InjectionToken<PctMenuItemApi>(
  */
 @Component({
   selector: 'pct-menu',
-  imports: [PctOverlayPanel],
+  imports: [NgTemplateOutlet, PctOverlayPanel],
   templateUrl: './menu.html',
   styleUrl: './menu.scss',
   host: {
@@ -147,7 +163,9 @@ export class PctMenu {
   /**
    * Whether the panel is up. A `model`, because both directions are ordinary: an application
    * opens it, and the menu closes itself on a choice, on Escape, on a press outside, on the
-   * trigger and on Tab walking out.
+   * trigger and on Tab walking out — every one of which is a panel on a layer getting out of
+   * the page's way. An inline menu has nowhere to get out of, and writes this from nobody but
+   * the application (`inline`).
    */
   readonly open = model(false);
 
@@ -165,9 +183,41 @@ export class PctMenu {
   /**
    * Which side of the control it opens on — logical, so `end` is the right in an English page
    * and the left in an Arabic one. `bottom` is the menu button's side and `end` the submenu's;
-   * the window has the last word either way (`pctPlacementPositions`).
+   * the window has the last word either way (`pctPlacementPositions`). Inline it is read by
+   * nobody: a panel that is not positioned has no side to be on.
    */
   readonly placement = input<PctPlacement>('bottom');
+
+  /**
+   * Renders the panel **in the host**, where the component was written, instead of on a layer
+   * over the page — a column of commands docked into the page rather than one lifted off it.
+   *
+   * What it gives up is the layer and everything the layer was for: no overlay, no position
+   * strategy, no trigger, and none of the dismissals the closing stack delivered. **An inline
+   * menu never closes itself.** Escape and a press outside were the overlay's to hear, Tab now
+   * walks out of the panel instead of out of the menu, and a chosen command leaves the column
+   * standing — it is a region of the page, so there is nothing for it to get out of the way of
+   * and no control to hand the page back to. `closed` therefore only ever says `api` here.
+   *
+   * `open` still says whether it is shown, so a closed inline menu renders nothing. What it
+   * does not have is the leave: the overlay owned the wait, and a panel the template removes
+   * takes its transition with it. The enter is unchanged, because that half is the sheet's
+   * (`@starting-style`) — inline the panel fades in and then goes at once, and
+   * `data-pct-leaving` is never written on it.
+   *
+   * What it keeps is the role, the arrow walk, the typeahead and the roving focus — and it
+   * gains the Tab stop they never needed over a layer: exactly one command carries
+   * `tabindex="0"`, so the page's order runs into the menu and out the far side
+   * ([0031](../../../../docs/decisions/0031-a-panel-s-tab-order-belongs-to-its-trigger.md) read
+   * as an absence). Nothing pulls focus into an inline panel that appears — a region arriving
+   * is not a user asking to be moved.
+   *
+   * @example
+   * <pct-menu inline [open]="true" ariaLabel="Actions">
+   *   <button pctMenuItem (click)="rename()">Rename</button>
+   * </pct-menu>
+   */
+  readonly inline = input(false, { transform: booleanAttribute });
 
   /** Why it closed. See `PctMenuCloseReason`. */
   readonly closed = output<PctMenuCloseReason>();
@@ -232,10 +282,28 @@ export class PctMenu {
     from: () => this.trigger() ?? this.host.nativeElement,
   });
 
-  protected readonly inherited = this.panelOverlay.inherited;
+  /**
+   * What the overlay severed, handed back — and `null` inline, where nothing was severed: the
+   * panel stands in the consumer's own tree, so the theme, the typeface, the size and the
+   * writing direction reach it down the cascade (`lesson-35` read as an absence, 0047). It is a
+   * `computed` and not the reading itself because the mode can change under a standing panel:
+   * a menu that was a layer a moment ago holds the four properties it was handed there, and
+   * writing them onto markup that inherits its own would pin it to the theme of wherever it
+   * last popped up.
+   */
+  protected readonly inherited = computed(() =>
+    this.inline() ? null : this.panelOverlay.inherited(),
+  );
 
   /** The overlay while it is up; `null` whenever the menu is closed. */
   private ref: OverlayRef | null = null;
+
+  /**
+   * Whether the inline panel is on the screen — what `ref` is for the overlay, in the mode that
+   * has none. The close has bookkeeping to do (the reason, the walk) and it has to run once, on
+   * the way down, rather than on every pass of an effect that sees a menu already shut.
+   */
+  private inlineUp = false;
 
   /** The panel's view, so the leave can be put on the screen before it is waited for. */
   private view: EmbeddedViewRef<void> | null = null;
@@ -274,10 +342,19 @@ export class PctMenu {
     // every one of those would otherwise be a reason to run this again
     // ([`lesson-94`](../../../../docs/lessons.md#lesson-94)).
     effect(() => {
-      if (!this.rendered()) return;
+      // `rendered` is read before the branch rather than as a gate over it: inline there is no
+      // browser-only step to wait for — the panel is drawn by this component's own template —
+      // and an early return here would leave the mode untracked until the first render.
+      const rendered = this.rendered();
+      const inline = this.inline();
       const trigger = this.trigger();
       const open = this.open();
       untracked(() => {
+        if (inline) {
+          this.showInline(open);
+          return;
+        }
+        if (!rendered) return;
         if (open) {
           if (trigger) this.attach(trigger);
           return;
@@ -293,7 +370,7 @@ export class PctMenu {
       this.detach();
     });
 
-    if (isDevMode()) effect(() => this.warnOnNoTrigger());
+    if (isDevMode()) effect(() => this.warnOnTrigger());
   }
 
   // ── what the trigger and the items register ─────────────────────────────────────────────
@@ -367,6 +444,11 @@ export class PctMenu {
       const submenu = item.submenu();
       if (submenu && untracked(submenu.open)) submenu.closeBelow(reason);
     }
+    // An inline menu takes its submenus down and stays: it is the consumer's own markup, and a
+    // command chosen from a docked column has no business taking the column with it. This one
+    // line is every dismissal at once — the choice, Tab, and whatever a submenu asks of the
+    // tree it hangs in.
+    if (untracked(this.inline)) return;
     if (!untracked(this.open)) return;
     this.reason = reason;
     this.open.set(false);
@@ -383,7 +465,12 @@ export class PctMenu {
     const root = this.root();
     const trigger = untracked(root.trigger);
     root.closeBelow(reason);
-    if (restore) trigger?.focus();
+    if (!restore) return;
+    // An inline root has no control to hand the page back to, and the place the user came from
+    // is still on the screen: the command they walked into the submenu from. Without this the
+    // panel that had focus is removed and the page is left with focus on `body`.
+    if (trigger) trigger.focus();
+    else if (untracked(root.inline)) root.activeItem()?.element.focus();
   }
 
   /**
@@ -463,8 +550,9 @@ export class PctMenu {
     // `ArrowRight` walks INTO a submenu in a left-to-right menu and OUT of one in a
     // right-to-left menu: the direction of travel is the writing direction, exactly as
     // `start`/`end` are (`req-token-logical`).
-    const inwards = this.dir === 'rtl' ? 'ArrowLeft' : 'ArrowRight';
-    const outwards = this.dir === 'rtl' ? 'ArrowRight' : 'ArrowLeft';
+    const dir = this.direction();
+    const inwards = dir === 'rtl' ? 'ArrowLeft' : 'ArrowRight';
+    const outwards = dir === 'rtl' ? 'ArrowRight' : 'ArrowLeft';
 
     switch (key) {
       case 'ArrowDown':
@@ -484,6 +572,10 @@ export class PctMenu {
         this.step(() => this.nav.last());
         return;
       case 'Tab':
+        // Inline the key is left alone, and that is 0031 read the other way round: the panel
+        // stands where the consumer wrote it, so the order the DOM carries on with is the right
+        // one — Tab walks out of the commands and on into the page, closing nothing.
+        if (untracked(this.inline)) return;
         // The whole tree, and focus back on the control that opened it: an overlay is a child
         // of `body`, so the order the DOM would carry on with runs off the end of the page
         // ([0031](../../../../docs/decisions/0031-a-panel-s-tab-order-belongs-to-its-trigger.md)).
@@ -516,8 +608,63 @@ export class PctMenu {
     }
   }
 
+  /**
+   * Focus arriving where the walk did not send it, and the walk following it — the tab strip's
+   * answer one role over. It is what the Tab stop needs: the page's order puts the user on a
+   * command with the cursor still standing nowhere, and a movement from nowhere goes to the
+   * edge it comes from, so the first `ArrowDown` would step onto the very command the user is
+   * already on. Over a layer it changes nothing — every focus there is one the walk asked for.
+   *
+   * A focus that landed on no command — the panel's own padding, which `tabindex="-1"` makes
+   * focusable — leaves the cursor where it stands rather than putting it nowhere.
+   */
+  protected onFocusIn(event: FocusEvent): void {
+    const at = untracked(this.items).findIndex(
+      (item) => item.element === event.target,
+    );
+    if (at >= 0) this.nav.setActive(at);
+  }
+
+  /**
+   * The writing direction the arrow keys are read in. Over a layer it is the one read at the
+   * opening and kept, because there is nowhere to ask afterwards — the panel is outside the
+   * tree. Inline there is somewhere: the panel stands in the page, so the direction is read off
+   * it at the keypress, which is the only reading that can follow a page whose direction
+   * changes under a panel that never closes.
+   */
+  private direction(): PctDirection {
+    if (!untracked(this.inline)) return this.dir;
+    const panel = this.panelElement();
+    return panel && getComputedStyle(panel).direction === 'rtl' ? 'rtl' : 'ltr';
+  }
+
   private activeItem(): PctMenuItemApi | null {
     return untracked(this.items)[this.nav.activeIndex()] ?? null;
+  }
+
+  /**
+   * The command the page's Tab lands on, and `null` wherever there is no such thing: over a
+   * layer no row is ever a Tab stop (0031), and inline exactly one has to be — a panel every
+   * row of which was a stop would take as many Tab presses to cross as it has commands, and one
+   * where none was would be a region no keyboard could reach at all.
+   *
+   * It follows the walk, so leaving the menu and coming back returns to the command the user
+   * was on. Where the walk stands nowhere — before the first movement, and after a close — it
+   * is the first command that can be reached; and a walk standing on a disabled row hands it on
+   * for the same reason, since the platform will not focus a disabled `<button>` and the menu
+   * would drop out of the tab order behind it.
+   */
+  private readonly tabStop = computed<PctMenuItemApi | null>(() => {
+    if (!this.inline()) return null;
+    const items = this.items();
+    const active = items[this.nav.activeIndex()];
+    if (active && !active.disabled()) return active;
+    return items.find((item) => !item.disabled()) ?? null;
+  });
+
+  /** Whether this command is the one the page's tab order stops at. Read by `PctMenuItem`. */
+  holdsTabStop(item: PctMenuItemApi): boolean {
+    return this.tabStop() === item;
   }
 
   // ── the panel ───────────────────────────────────────────────────────────────────────────
@@ -594,6 +741,36 @@ export class PctMenu {
   }
 
   /**
+   * The inline mode's whole answer to `attach`, and it is short because the template does the
+   * work: the panel is `@if`-ed into the host, so what is left here is the bookkeeping a
+   * rendered panel cannot do for itself — saying that it closed — and taking down a layer the
+   * menu was on before `inline` was written to it.
+   *
+   * Nothing is focused on the way up. A menu that pops up was asked for by a press, and the
+   * user is waiting to be moved into it; a region of the page arriving on a wide screen was
+   * asked for by nobody, and pulling focus there would take the user off what they were doing.
+   */
+  private showInline(open: boolean): void {
+    this.cancelLeave?.();
+    this.detach();
+    if (open === this.inlineUp) return;
+    this.inlineUp = open;
+    if (!open) this.announceClose();
+  }
+
+  /**
+   * What a close says, wherever the panel stood: the reason, once, and a walk put back to
+   * nowhere. It is separate from the fade below because only one of the two is a fact — the
+   * event says the menu was closed, which is a decision, and the fade is what the pixels do
+   * about it afterwards. The mode with nothing to fade needs exactly this half.
+   */
+  private announceClose(): void {
+    this.closed.emit(this.reason);
+    this.reason = 'api';
+    this.nav.clear();
+  }
+
+  /**
    * Puts the panel into its leaving state and detaches it once the motion is over. The
    * `closed` event does **not** wait for that: it says the menu was closed, which is a
    * decision, and the fade is what the pixels do about it afterwards.
@@ -601,9 +778,7 @@ export class PctMenu {
   private beginLeave(): void {
     if (!this.ref || this.cancelLeave) return;
 
-    this.closed.emit(this.reason);
-    this.reason = 'api';
-    this.nav.clear();
+    this.announceClose();
 
     this.leaving.set(true);
     const panel = this.panelElement();
@@ -662,20 +837,42 @@ export class PctMenu {
     return !!panel && !!active && panel.contains(active);
   }
 
+  /**
+   * The panel, wherever this menu draws it: in the overlay it opened, or — inline — in the host
+   * the consumer wrote. The reading is by part rather than by a kept reference so that both
+   * modes answer the same question, and a menu with no panel up answers `null` in both.
+   */
   private panelElement(): HTMLElement | null {
-    return (
-      this.ref?.overlayElement.querySelector<HTMLElement>(
-        '[data-pct-part="panel"]',
-      ) ?? null
-    );
+    const root: ParentNode =
+      this.ref?.overlayElement ?? this.host.nativeElement;
+    return root.querySelector<HTMLElement>('[data-pct-part="panel"]');
   }
 
   /**
-   * A menu has to hang off something. Opened with no trigger registered it does nothing at
-   * all — no panel, no error, no clue — and the missing piece is one attribute in a template.
+   * A menu has to hang off something — **unless it is inline**, where it hangs off nothing by
+   * construction and the report below would fire on every correct use of the mode. Opened with
+   * no trigger registered it does nothing at all — no panel, no error, no clue — and the
+   * missing piece is one attribute in a template.
+   *
+   * The inline half is the other configuration that cannot be meant: a control that says
+   * `aria-haspopup="menu"` for a panel which never pops up. It is reported rather than
+   * repaired, and for the reason the two-trigger warning gives — either half may be the one the
+   * author wanted. A menu that is a layer on a narrow screen and a region on a wide one drops
+   * the control with the same condition that sets the input, and then there is nothing to say.
    */
-  private warnOnNoTrigger(): void {
-    if (!this.rendered() || !this.open() || this.trigger()) return;
+  private warnOnTrigger(): void {
+    if (!this.rendered()) return;
+    if (this.inline()) {
+      if (!this.trigger()) return;
+      console.warn(
+        `[pct-menu] A \`pctMenuTrigger\` for an inline menu: the panel is rendered where it ` +
+          `was written, so the control announces \`aria-haspopup="menu"\` and \`aria-expanded\` ` +
+          `for something that never pops up. Drop \`inline\`, or drop the trigger and write ` +
+          `\`open\` from the application.`,
+      );
+      return;
+    }
+    if (!this.open() || this.trigger()) return;
     console.warn(
       `[pct-menu] An open menu with no trigger: there is nothing for the panel to hang off, ` +
         `so nothing is shown. Put \`[pctMenuTrigger]\` on the control that opens it.`,

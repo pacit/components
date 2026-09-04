@@ -1,7 +1,8 @@
 <!--
-  Everything below is attached to a CDK overlay and lives outside the host tree — the host
-  element renders nothing. The panel therefore carries `pctOverlayPanel`: what the tree stops
-  handing it — theme, typeface, size, writing direction (`lesson-35`).
+  Over a layer, everything below is attached to a CDK overlay and lives outside the host tree —
+  the host element renders nothing. The panel therefore carries `pctOverlayPanel`: what the tree
+  stops handing it — theme, typeface, size, writing direction (`lesson-35`). Inline that binding
+  holds `null`, because nothing was severed and nothing is to be handed back.
 
   It is a panel of the kind that DOES take focus, which is the other declaration 0025 named.
   Unlike the popover it does not keep it: focus goes on to an ITEM, because in this pattern the
@@ -24,7 +25,19 @@
     [attr.aria-label]="ariaLabel() || null"
     [attr.aria-labelledby]="ariaLabelledby() || (ariaLabel() ? null : triggerId())"
     (keydown)="onKeydown($event)"
+    (focusin)="onFocusIn($event)"
   >
     <ng-content />
   </div>
 </ng-template>
+
+<!--
+  Inline, that same template is rendered HERE, in the host, where the consumer wrote the
+  component — never a second panel: one set of classes, one set of parts, one sheet, and no
+  second place for either to be changed in. `open` still says whether it is shown, so a closed
+  inline menu is markup nobody sends; an open one is markup the SERVER sends, which is the
+  property the mode exists for.
+-->
+@if (inline() && open()) {
+<ng-container [ngTemplateOutlet]="panel" />
+}

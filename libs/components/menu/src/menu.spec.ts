@@ -17,6 +17,20 @@ const panels = () =>
 
 const panel = () => panels()[0] ?? null;
 
+/** A panel on a layer — the mode that draws it outside the component's own tree. */
+const overlayPanels = () =>
+  Array.from(
+    document.querySelectorAll<HTMLElement>(
+      '.cdk-overlay-container [role="menu"]',
+    ),
+  );
+
+/** The panel inside the component's own tree, which is where an inline menu draws it. */
+const inlinePanel = (fixture: ComponentFixture<unknown>) =>
+  (fixture.nativeElement as HTMLElement).querySelector<HTMLElement>(
+    '[role="menu"]',
+  );
+
 const byId = (id: string) => document.getElementById(id) as HTMLElement | null;
 
 const focused = () => document.activeElement as HTMLElement | null;
@@ -201,6 +215,98 @@ class TwoTriggersHost {
   template: `<button pctMenuItem id="orphan">Rename</button>`,
 })
 class OrphanItemHost {}
+
+/**
+ * The mode where the panel is a region of the page: no trigger, no layer, and `open` true from
+ * the start — a column of commands docked into the markup the consumer wrote. The two buttons
+ * around it are the page's tab order, which is the one an inline panel stands in.
+ */
+@Component({
+  imports: [PctMenu, PctMenuItem],
+  template: `<button id="before">before</button>
+    <pct-menu
+      inline
+      [(open)]="open"
+      ariaLabel="Commands"
+      (closed)="reasons.push($event)"
+    >
+      <button
+        id="rename"
+        pctMenuItem
+        [disabled]="blocked()"
+        (click)="chosen.push('rename')"
+      >
+        Rename
+      </button>
+      <button id="duplicate" pctMenuItem (click)="chosen.push('duplicate')">
+        Duplicate
+      </button>
+      <button id="delete" pctMenuItem>Delete</button>
+    </pct-menu>
+    <button id="after">after</button>`,
+})
+class InlineHost {
+  readonly open = signal(true);
+  readonly blocked = signal(false);
+  readonly reasons: PctMenuCloseReason[] = [];
+  readonly chosen: string[] = [];
+}
+
+/**
+ * The menu the mode was asked for: a layer on a narrow screen and a region on a wide one, with
+ * the trigger drawn on the same condition that leaves `inline` off — which is the arrangement
+ * the dev-mode report below has to stay quiet about.
+ */
+@Component({
+  imports: [PctMenu, PctMenuItem, PctMenuTrigger],
+  template: `@if (!inline()) {
+      <button id="trigger" [pctMenuTrigger]="menu">Actions</button>
+    }
+    <pct-menu
+      #menu
+      [inline]="inline()"
+      [(open)]="open"
+      (closed)="reasons.push($event)"
+    >
+      <button id="rename" pctMenuItem>Rename</button>
+      <button id="delete" pctMenuItem>Delete</button>
+    </pct-menu>`,
+})
+class ResponsiveHost {
+  readonly inline = signal(false);
+  readonly open = signal(false);
+  readonly reasons: PctMenuCloseReason[] = [];
+}
+
+/** A control announcing a popup for a panel that never pops up — the pair that cannot be meant. */
+@Component({
+  imports: [PctMenu, PctMenuItem, PctMenuTrigger],
+  template: `<button id="trigger" [pctMenuTrigger]="menu">Actions</button>
+    <pct-menu #menu inline [(open)]="open"
+      ><button pctMenuItem>Rename</button></pct-menu
+    >`,
+})
+class InlineWithTriggerHost {
+  readonly open = signal(false);
+}
+
+/** A docked column with a way further in: the submenu is a layer, hanging off an inline row. */
+@Component({
+  imports: [PctMenu, PctMenuItem, PctMenuTrigger],
+  template: `<pct-menu inline [(open)]="open" ariaLabel="Commands">
+    <button id="first" pctMenuItem>Rename</button>
+    <button id="into" pctMenuItem [pctMenuTrigger]="sub">Move to</button>
+    <pct-menu #sub placement="end">
+      <button id="inbox" pctMenuItem (click)="chosen.push('inbox')">
+        Inbox
+      </button>
+    </pct-menu>
+  </pct-menu>`,
+})
+class InlineNestedHost {
+  readonly open = signal(true);
+  readonly chosen: string[] = [];
+}
 
 describe('PctMenu', () => {
   beforeEach(() => {
@@ -921,6 +1027,412 @@ describe('PctMenu', () => {
 
       await fixture.whenStable();
       warn.mockRestore();
+    });
+  });
+
+  describe('inline: the panel as a region of the page', () => {
+    /** The three commands, in the order they were written, as the page's Tab sees them. */
+    const tabIndexes = () =>
+      ['rename', 'duplicate', 'delete'].map((id) =>
+        byId(id)?.getAttribute('tabindex'),
+      );
+
+    it('draws the panel in the host, where the consumer wrote it', async () => {
+      const fixture = await render(InlineHost);
+
+      const panel = inlinePanel(fixture);
+      expect(panel).not.toBeNull();
+      expect(panel?.parentElement?.tagName.toLowerCase()).toBe('pct-menu');
+      // Nothing was lifted off the page: no overlay was ever created for it.
+      expect(overlayPanels()).toHaveLength(0);
+      expect(document.querySelectorAll('[data-pct-part="panel"]')).toHaveLength(
+        1,
+      );
+    });
+
+    /**
+     * It is the SAME template, not a second panel written for the mode — which is the defect
+     * the whole change exists to avoid, and the one that would give a consumer's stylesheet a
+     * panel it does not match and a screen reader a role it does not carry.
+     */
+    it('and it is the same panel: one role, one part, one id, the commands its own children', async () => {
+      const fixture = await render(InlineHost);
+      const panel = inlinePanel(fixture);
+
+      expect(panel?.className).toBe('pct-menu__panel');
+      expect(panel?.getAttribute('data-pct-part')).toBe('panel');
+      expect(panel?.getAttribute('role')).toBe('menu');
+      expect(panel?.id).toMatch(/^pct-menu-\d+-panel$/);
+      expect(panel?.getAttribute('aria-label')).toBe('Commands');
+      expect(Array.from(panel?.children ?? []).map((el) => el.id)).toEqual([
+        'rename',
+        'duplicate',
+        'delete',
+      ]);
+    });
+
+    /**
+     * The property the mode exists for, measured the way the server measures it: `ngServerMode`
+     * is the flag Angular's own `afterNextRender` reads, and this component's browser-only gate
+     * is that call. A panel that waited for a render is missing from the HTML the server sends
+     * — which is exactly what the overlay does, asserted here beside it so that the two claims
+     * are one measurement.
+     */
+    it('is in the markup a server sends, where the layer sends none', async () => {
+      const flags = globalThis as { ngServerMode?: boolean };
+      flags.ngServerMode = true;
+      try {
+        const region = await render(InlineHost);
+        const layer = await render(Host);
+        layer.componentInstance.open.set(true);
+        await settle(layer);
+
+        expect(inlinePanel(region)?.textContent).toContain('Rename');
+        expect(
+          Array.from(inlinePanel(region)?.children ?? []).map((el) => el.id),
+        ).toEqual(['rename', 'duplicate', 'delete']);
+        expect(overlayPanels()).toHaveLength(0);
+        expect(inlinePanel(layer)).toBeNull();
+      } finally {
+        flags.ngServerMode = false;
+      }
+    });
+
+    it('a closed inline menu renders nothing at all', async () => {
+      const fixture = await render(InlineHost);
+      fixture.componentInstance.open.set(false);
+      await settle(fixture);
+
+      expect(inlinePanel(fixture)).toBeNull();
+      expect(document.querySelectorAll('[data-pct-part="item"]')).toHaveLength(
+        0,
+      );
+    });
+
+    /**
+     * The close still says so, and says it once. It is the one thing the overlay used to carry
+     * that a rendered panel cannot do for itself — and `api` is the only reason an inline menu
+     * ever has, because nothing else closes it.
+     */
+    it('the application closing it says `api`, once, and it opens again after', async () => {
+      const fixture = await render(InlineHost);
+      fixture.componentInstance.open.set(false);
+      await settle(fixture);
+      await settle(fixture);
+
+      expect(fixture.componentInstance.reasons).toEqual(['api']);
+
+      fixture.componentInstance.open.set(true);
+      await settle(fixture);
+      expect(inlinePanel(fixture)).not.toBeNull();
+      expect(fixture.componentInstance.reasons).toEqual(['api']);
+    });
+
+    /**
+     * The close is a transition and not a state: an inline menu is asked about its openness on
+     * every pass of the effect that watches it, and one that has always been shut has closed
+     * nothing. Without the distinction a menu would announce a close at bootstrap, to an
+     * application that had never opened it.
+     */
+    it('and one that was never open says nothing', async () => {
+      const fixture = await render(ResponsiveHost);
+      fixture.componentInstance.inline.set(true);
+      await settle(fixture);
+
+      expect(fixture.componentInstance.reasons).toEqual([]);
+
+      // …and that silence is not a menu whose close was never wired: the same one, opened and
+      // shut, says it once.
+      fixture.componentInstance.open.set(true);
+      await settle(fixture);
+      fixture.componentInstance.open.set(false);
+      await settle(fixture);
+      expect(fixture.componentInstance.reasons).toEqual(['api']);
+    });
+
+    it('a chosen command runs and leaves the column standing', async () => {
+      const fixture = await render(InlineHost);
+
+      byId('duplicate')?.click();
+      await settle(fixture);
+
+      expect(fixture.componentInstance.chosen).toEqual(['duplicate']);
+      expect(fixture.componentInstance.open()).toBe(true);
+      expect(inlinePanel(fixture)).not.toBeNull();
+      expect(fixture.componentInstance.reasons).toEqual([]);
+    });
+
+    it('Tab walks out of it instead of closing it', async () => {
+      const fixture = await render(InlineHost);
+      const first = byId('rename') as HTMLElement;
+      first.focus();
+
+      const event = press(first, 'Tab');
+      await settle(fixture);
+
+      expect(event.defaultPrevented).toBe(false);
+      expect(inlinePanel(fixture)).not.toBeNull();
+      expect(fixture.componentInstance.open()).toBe(true);
+    });
+
+    /**
+     * Neither Escape nor a press outside is the inline panel's to answer: the first arrived
+     * through the closing stack, which only attached overlays are on, and the second through a
+     * dispatcher that has no panel of ours to be outside of. What would be left if the panel
+     * read the key itself is a region of the page that vanishes with no way to bring it back.
+     */
+    it('Escape and a press outside dismiss nothing', async () => {
+      const fixture = await render(InlineHost);
+      const first = byId('rename') as HTMLElement;
+      first.focus();
+
+      const event = press(first, 'Escape');
+      escape();
+      pressOn(byId('after') as HTMLElement);
+      await settle(fixture);
+
+      expect(event.defaultPrevented).toBe(false);
+      expect(inlinePanel(fixture)).not.toBeNull();
+      expect(fixture.componentInstance.reasons).toEqual([]);
+    });
+
+    describe('the Tab stop', () => {
+      /**
+       * The one thing the mode adds rather than drops. Over a layer no command is a Tab stop
+       * (0031); inline every command being one would make the menu as many Tab presses wide as
+       * it has rows, and none being one would make it a region no keyboard could reach.
+       */
+      it('is exactly one command inline, and none at all over a layer', async () => {
+        const region = await render(InlineHost);
+        expect(tabIndexes()).toEqual(['0', '-1', '-1']);
+
+        region.destroy();
+        const layer = await render(Host);
+        await open(layer);
+        expect(tabIndexes()).toEqual(['-1', '-1', '-1']);
+      });
+
+      it('follows the walk, so leaving and coming back lands where the user was', async () => {
+        const fixture = await render(InlineHost);
+        const first = byId('rename') as HTMLElement;
+        first.focus();
+
+        press(first, 'ArrowDown');
+        await settle(fixture);
+
+        expect(focused()?.id).toBe('duplicate');
+        expect(tabIndexes()).toEqual(['-1', '0', '-1']);
+      });
+
+      /**
+       * A `0` on a disabled `<button>` is a stop the platform will not stand on, so the menu
+       * would drop out of the page's tab order behind it — which is the same defect as having
+       * no stop at all, arrived at from the other side.
+       */
+      it('hands itself on rather than sit on a command the platform will not focus', async () => {
+        const fixture = await render(InlineHost);
+        (byId('rename') as HTMLElement).focus();
+        await settle(fixture);
+        expect(tabIndexes()).toEqual(['0', '-1', '-1']);
+
+        fixture.componentInstance.blocked.set(true);
+        await settle(fixture);
+
+        // The disabled command keeps its `-1`: it is off the tab order either way, and what
+        // moved is the `0` — onto the first command the platform will actually stand on.
+        expect(tabIndexes()).toEqual(['-1', '0', '-1']);
+      });
+    });
+
+    describe('the walk, which the mode keeps', () => {
+      /**
+       * The Tab stop and the walk have to agree, or the first arrow after tabbing in steps onto
+       * the command the user is already standing on: the shared walk starts at "nowhere", and a
+       * movement from nowhere goes to the edge it comes from.
+       */
+      it('starts where the page’s Tab left the user, not at the top', async () => {
+        const fixture = await render(InlineHost);
+        const second = byId('duplicate') as HTMLElement;
+        second.focus();
+
+        press(second, 'ArrowDown');
+        await settle(fixture);
+
+        expect(focused()?.id).toBe('delete');
+      });
+
+      /** A focus that landed on no command is not a walk to nowhere: the panel's own padding. */
+      it('and a focus on the panel itself leaves the cursor where it stands', async () => {
+        const fixture = await render(InlineHost);
+        const panel = inlinePanel(fixture) as HTMLElement;
+        (byId('duplicate') as HTMLElement).focus();
+
+        panel.focus();
+        press(panel, 'ArrowDown');
+        await settle(fixture);
+
+        expect(focused()?.id).toBe('delete');
+      });
+
+      it('the letters and the ends still move it', async () => {
+        const fixture = await render(InlineHost);
+        const first = byId('rename') as HTMLElement;
+        first.focus();
+
+        press(first, 'd');
+        await settle(fixture);
+        expect(focused()?.id).toBe('duplicate');
+
+        press(focused() as HTMLElement, 'End');
+        await settle(fixture);
+        expect(focused()?.id).toBe('delete');
+      });
+    });
+
+    describe('a way further in', () => {
+      it('opens on a layer, and choosing there leaves the column standing', async () => {
+        const fixture = await render(InlineNestedHost);
+        const into = byId('into') as HTMLElement;
+        into.focus();
+
+        press(into, 'ArrowRight');
+        await settle(fixture);
+        expect(overlayPanels()).toHaveLength(1);
+        expect(focused()?.id).toBe('inbox');
+
+        byId('inbox')?.click();
+        await settle(fixture);
+
+        expect(fixture.componentInstance.chosen).toEqual(['inbox']);
+        expect(overlayPanels()).toHaveLength(0);
+        expect(inlinePanel(fixture)).not.toBeNull();
+        expect(fixture.componentInstance.open()).toBe(true);
+        // The page is not left with focus on `body`: there is no control to hand it back to,
+        // and the command the user walked in from is still on the screen.
+        expect(focused()?.id).toBe('into');
+      });
+
+      /**
+       * The direction is read at the keypress here rather than kept from an opening, because
+       * an inline panel never had one — and it is read off the panel, which is in the page and
+       * therefore inherits it.
+       */
+      it('and in a right-to-left page the arrows swap', async () => {
+        const fixture = await render(InlineNestedHost);
+        const panel = inlinePanel(fixture) as HTMLElement;
+        panel.style.direction = 'rtl';
+        const into = byId('into') as HTMLElement;
+        into.focus();
+
+        press(into, 'ArrowLeft');
+        await settle(fixture);
+
+        expect(overlayPanels()).toHaveLength(1);
+        expect(focused()?.id).toBe('inbox');
+      });
+    });
+
+    describe('what it is reported for, and what it is not', () => {
+      it('an inline menu with no trigger is not reported: it has none by construction', async () => {
+        const warn = vi
+          .spyOn(console, 'warn')
+          .mockImplementation(() => undefined);
+        const fixture = await render(InlineHost);
+        await settle(fixture);
+
+        expect(warn).not.toHaveBeenCalled();
+
+        // …and the same silence has not swallowed the report the layer needs.
+        const orphan = await render(NoTriggerHost);
+        orphan.componentInstance.open.set(true);
+        await settle(orphan);
+        expect(warn).toHaveBeenCalled();
+        warn.mockRestore();
+      });
+
+      it('a control for an inline menu is reported: it announces a popup that never pops up', async () => {
+        const warn = vi
+          .spyOn(console, 'warn')
+          .mockImplementation(() => undefined);
+        const fixture = await render(InlineWithTriggerHost);
+        await settle(fixture);
+
+        expect(warn).toHaveBeenCalled();
+        const said = String(warn.mock.calls[0]?.[0] ?? '');
+        expect(said).toContain('inline menu');
+        expect(said).toContain('never pops up');
+        warn.mockRestore();
+      });
+
+      it('and the responsive arrangement is not: the control goes with the layer', async () => {
+        const warn = vi
+          .spyOn(console, 'warn')
+          .mockImplementation(() => undefined);
+        const fixture = await render(ResponsiveHost);
+        await open(fixture);
+
+        fixture.componentInstance.inline.set(true);
+        await settle(fixture);
+
+        expect(warn).not.toHaveBeenCalled();
+        warn.mockRestore();
+      });
+    });
+
+    describe('the mode changing under a standing panel', () => {
+      it('a layer that becomes a region takes itself down and keeps its commands', async () => {
+        const fixture = await render(ResponsiveHost);
+        await open(fixture);
+        expect(overlayPanels()).toHaveLength(1);
+
+        fixture.componentInstance.inline.set(true);
+        await settle(fixture);
+
+        expect(overlayPanels()).toHaveLength(0);
+        const panel = inlinePanel(fixture);
+        expect(panel).not.toBeNull();
+        expect(Array.from(panel?.children ?? []).map((el) => el.id)).toEqual([
+          'rename',
+          'delete',
+        ]);
+      });
+
+      it('and a region that becomes a layer goes back onto one', async () => {
+        const fixture = await render(ResponsiveHost);
+        fixture.componentInstance.inline.set(true);
+        await open(fixture);
+        expect(inlinePanel(fixture)).not.toBeNull();
+
+        fixture.componentInstance.inline.set(false);
+        await settle(fixture);
+
+        expect(inlinePanel(fixture)).toBeNull();
+        expect(overlayPanels()).toHaveLength(1);
+        expect(
+          Array.from(overlayPanels()[0].children).map((el) => el.id),
+        ).toEqual(['rename', 'delete']);
+      });
+
+      /**
+       * What a layer hands a panel is what the tree stopped handing it (`lesson-35`); a region
+       * is back in the tree, so keeping any of it would pin the panel to the theme of wherever
+       * it last popped up.
+       */
+      it('and gives back nothing the layer had handed it', async () => {
+        const fixture = await render(ResponsiveHost);
+        (fixture.nativeElement as HTMLElement).setAttribute(
+          'data-theme',
+          'brand',
+        );
+        await open(fixture);
+        expect(overlayPanels()[0].getAttribute('data-theme')).toBe('brand');
+
+        fixture.componentInstance.inline.set(true);
+        await settle(fixture);
+
+        expect(inlinePanel(fixture)?.getAttribute('data-theme')).toBeNull();
+        expect(inlinePanel(fixture)?.style.fontFamily).toBe('');
+      });
     });
   });
 });

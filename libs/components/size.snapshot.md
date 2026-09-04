@@ -40,14 +40,14 @@ before an application ships them.
 ./container 717 - @angular/core
 ./core 8318 - @angular/core
 ./date 39193 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
-./dialog 15421 ./core,./icon @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
+./dialog 16310 ./core,./icon @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
 ./drawer 14192 ./core,./icon @angular/common,@angular/core
 ./field 27273 ./core @angular/core,@angular/forms,@angular/forms/signals
 ./grid 673 - @angular/core
 ./icon 2552 - @angular/common,@angular/core
-./menu 18436 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core
+./menu 20193 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
 ./pagination 13651 ./core,./icon @angular/common,@angular/core
-./popover 13707 ./core @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/core
+./popover 14500 ./core @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
 ./progress 7099 ./core @angular/core
 ./radio 15417 ./core @angular/core
 ./select 69036 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core

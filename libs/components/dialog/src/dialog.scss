@@ -1,10 +1,14 @@
-/* The whole component lives in a CDK overlay, that is OUTSIDE the host tree — `:host(…)`
-   selectors describe nothing here, and every state that matters is on the elements themselves.
-   Tokens still work: they are defined on `:root`, which is the CSS-first approach paying for
-   itself a second time (the select's sheet says the same about its panel). */
+/* As a modal the whole component lives in a CDK overlay, that is OUTSIDE the host tree —
+   `:host(…)` selectors describe nothing there, and every state that matters is on the elements
+   themselves. Tokens still work: they are defined on `:root`, which is the CSS-first approach
+   paying for itself a second time (the select's sheet says the same about its panel). That is
+   also why `inline` needed not one rule added below: the panel's box is complete on its own,
+   and what the two modes do NOT share — the centring, the veil, the scroll frame — is all the
+   backdrop's, which an inline dialog does not draw. */
 
-/* The host renders nothing at all — its `display: contents` is in the decorator, so that a
-   consumer reading the DOM sees why the element is empty rather than looking for a rule. */
+/* The host draws nothing of its own — its `display: contents` is in the decorator, so that a
+   consumer reading the DOM sees why the element is empty rather than looking for a rule. It is
+   what puts an inline panel exactly where the tag stood, too. */
 
 /* The veil, and the frame that centres the panel in the viewport. It is `position: fixed`
    rather than a CDK position strategy on purpose: a strategy positions the PANE, and then the

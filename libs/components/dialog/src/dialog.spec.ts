@@ -6,7 +6,7 @@ import {
 } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { providePctTexts, PctModalBackground } from '@pacit/components/core';
-import { PctDialog } from './dialog';
+import { PctAutofocus, PctDialog } from './dialog';
 import { PctDialogCloseReason } from './dialog.types';
 
 /** The panel renders in a CDK overlay — outside the component's tree. */
@@ -108,6 +108,40 @@ class BareHost {
 class NestedHost {
   readonly outer = signal(false);
   readonly inner = signal(false);
+}
+
+/**
+ * The inline dialog, written the way a consumer writes the shape the input exists for: one
+ * component that is a layer on one screen and a section of the page on another, so `inline` is
+ * BOUND rather than set. The theme on the wrapper is there to be read at an opening — it is
+ * what an overlay has to be handed and what the host tree gives for nothing (`lesson-35`).
+ */
+@Component({
+  imports: [PctDialog, PctAutofocus],
+  template: `<button id="opener">open</button>
+    <div data-theme="brand">
+      <pct-dialog
+        [inline]="inline()"
+        [(open)]="open"
+        [heading]="heading()"
+        [closeOnEscape]="closeOnEscape()"
+        [closeOnBackdrop]="closeOnBackdrop()"
+        [closeButton]="closeButton()"
+        (closed)="reasons.push($event)"
+      >
+        <p id="inline-body">Body</p>
+        <button id="inline-control" pctAutofocus>inside</button>
+      </pct-dialog>
+    </div>`,
+})
+class InlineHost {
+  readonly inline = signal(true);
+  readonly open = signal(false);
+  readonly heading = signal('Filters');
+  readonly closeOnEscape = signal(true);
+  readonly closeOnBackdrop = signal(true);
+  readonly closeButton = signal(true);
+  readonly reasons: PctDialogCloseReason[] = [];
 }
 
 describe('PctDialog', () => {
@@ -523,6 +557,250 @@ describe('PctDialog', () => {
         expect(order[0]).toBe('released');
       } finally {
         observer.disconnect();
+      }
+    });
+  });
+
+  /**
+   * The panel drawn where the consumer wrote the tag. Every case here is a reading of what an
+   * inline dialog does **not** do — the veil, `aria-modal`, the trap, the lock and the closing
+   * stack are all the layer's, and the layer is what this mode gives up. What is left is a
+   * non-modal `role="dialog"`, which is a legal one, and the ways out that belong to the
+   * content rather than to the overlay.
+   */
+  describe('inline — a section of the page, not a layer over it', () => {
+    const openInline = async (fixture: ComponentFixture<InlineHost>) => {
+      fixture.componentInstance.open.set(true);
+      await settle(fixture);
+    };
+
+    /** The panel as the DOM around the consumer's tag holds it, not as the document holds it. */
+    const inHost = (fixture: ComponentFixture<InlineHost>) =>
+      fixture.nativeElement.querySelector(
+        '[data-pct-part="panel"]',
+      ) as HTMLElement | null;
+
+    it('the panel is drawn in the host, and the content with it', async () => {
+      const fixture = await render(InlineHost);
+      await openInline(fixture);
+
+      expect(inHost(fixture)).not.toBeNull();
+      expect(inHost(fixture)?.closest('pct-dialog')).not.toBeNull();
+      // The overlay's own pane carries this class and nothing else in the page does, so its
+      // absence is the assertion that no overlay was created at all.
+      expect(document.querySelector('.pct-dialog__pane')).toBeNull();
+      expect(part('content')?.querySelector('#inline-body')?.textContent).toBe(
+        'Body',
+      );
+    });
+
+    it('there is no veil — the surface `closeOnBackdrop` speaks about does not exist', async () => {
+      const fixture = await render(InlineHost);
+      await openInline(fixture);
+
+      expect(fixture.componentInstance.closeOnBackdrop()).toBe(true);
+      expect(part('backdrop')).toBeNull();
+    });
+
+    it('the panel makes no claim about the page behind it', async () => {
+      const fixture = await render(InlineHost);
+      await openInline(fixture);
+
+      // `aria-modal` says "everything else has stopped answering". Nothing has, so saying it
+      // would be a lie a screen reader acts on — it is what makes a reader confine its walk.
+      expect(panel()?.getAttribute('aria-modal')).toBeNull();
+      expect(panel()?.getAttribute('role')).toBe('dialog');
+      // `tabindex` stays: there is no trap to park focus here any more, but an application
+      // that moves the keyboard to a section it has just revealed needs somewhere to move it.
+      expect(panel()?.getAttribute('tabindex')).toBe('-1');
+      // The heading still names it — a non-modal dialog is announced by its name like any
+      // other, and this is the wiring inline keeps.
+      expect(panel()?.getAttribute('aria-labelledby')).toBe(
+        part('heading')?.id,
+      );
+    });
+
+    it('nothing goes inert and the page goes on scrolling', async () => {
+      const fixture = await render(InlineHost);
+      const outside = document.createElement('div');
+      document.body.append(outside);
+      try {
+        await openInline(fixture);
+
+        expect(outside.hasAttribute('inert')).toBe(false);
+        expect(root().style.overflow).toBe('');
+        // The service is the one place a leak would survive the fixture, so it is read as
+        // well as the two attributes it writes.
+        expect(TestBed.inject(PctModalBackground).depth()).toBe(0);
+      } finally {
+        outside.remove();
+      }
+    });
+
+    it('focus stays where the user left it, and `pctAutofocus` decides nothing', async () => {
+      const fixture = await render(InlineHost);
+      const opener = document.getElementById('opener') as HTMLElement;
+      opener.focus();
+
+      await openInline(fixture);
+
+      // The content carries `pctAutofocus`, which is `cdkFocusInitial` — read by a focus trap
+      // and by nothing else. Inline there is no trap, so nothing captures and the keyboard
+      // stays with whatever the user was doing. A section of a page that grabbed focus as it
+      // appeared would be the defect, not the feature.
+      expect(document.activeElement).toBe(opener);
+    });
+
+    it('Escape is the closing stack’s, and an inline dialog is not in it', async () => {
+      const fixture = await render(InlineHost);
+      await openInline(fixture);
+
+      const event = escape();
+      await settle(fixture);
+
+      // `closeOnEscape` is at its default `true` and the key still does nothing: it travels
+      // to the top-most ATTACHED OVERLAY, and there is none. A listener above the panel would
+      // answer for the page as well as for this dialog, which is the thing 0024 forbids.
+      expect(fixture.componentInstance.closeOnEscape()).toBe(true);
+      expect(inHost(fixture)).not.toBeNull();
+      expect(event.defaultPrevented).toBe(false);
+      expect(fixture.componentInstance.reasons).toEqual([]);
+    });
+
+    it('the close button closes it, and the reason still arrives', async () => {
+      const fixture = await render(InlineHost);
+      await openInline(fixture);
+
+      part('close')?.click();
+      await settle(fixture);
+
+      // The overlay used to be what a close was read from; an inline dialog has none and
+      // still closes, so `closed` had to stop being an overlay's event.
+      expect(inHost(fixture)).toBeNull();
+      expect(fixture.componentInstance.open()).toBe(false);
+      expect(fixture.componentInstance.reasons).toEqual(['close']);
+    });
+
+    it('a closed inline dialog draws nothing and reports nothing', async () => {
+      const fixture = await render(InlineHost);
+
+      expect(inHost(fixture)).toBeNull();
+      // `open` false at the first render is not a close: nobody saw a panel, so nobody is
+      // owed the reason it went.
+      expect(fixture.componentInstance.reasons).toEqual([]);
+    });
+
+    /**
+     * The property the whole mode exists for. `ngServerMode` is the flag Angular itself reads:
+     * `afterNextRender` returns a no-op reference while it is set, which is exactly the
+     * condition an overlay is never attached under. Flipping it is the closest a test without
+     * a browser comes to a render on the server — and it is what makes this case fail the day
+     * the inline panel starts waiting for a render it will not get.
+     */
+    it('an inline panel is in the markup a server sends; an overlay panel is not', async () => {
+      const globals = globalThis as Record<string, unknown>;
+      globals['ngServerMode'] = true;
+      try {
+        const inline = TestBed.createComponent(InlineHost);
+        // Set before the first render: a dialog left open at bootstrap, which is the case
+        // prerendering has to answer.
+        inline.componentInstance.open.set(true);
+        await settle(inline);
+
+        expect(inline.nativeElement.innerHTML).toContain(
+          'data-pct-part="panel"',
+        );
+        expect(inline.nativeElement.textContent).toContain('Filters');
+
+        const modal = TestBed.createComponent(Host);
+        modal.componentInstance.open.set(true);
+        await settle(modal);
+
+        // The other half of `req-project-ssr`, and the reason the two modes are one input
+        // rather than one default: a modal sends no markup, so it hydrates no mismatch.
+        expect(modal.nativeElement.innerHTML).not.toContain(
+          'data-pct-part="panel"',
+        );
+        expect(document.querySelector('.pct-dialog__pane')).toBeNull();
+      } finally {
+        delete globals['ngServerMode'];
+      }
+    });
+
+    it('crossing the line moves the panel and does not close the dialog', async () => {
+      const fixture = await render(InlineHost);
+      fixture.componentInstance.inline.set(false);
+      await openInline(fixture);
+
+      expect(document.querySelector('.pct-dialog__pane')).not.toBeNull();
+      expect(panel()?.getAttribute('data-theme')).toBe('brand');
+      expect(TestBed.inject(PctModalBackground).depth()).toBe(1);
+
+      fixture.componentInstance.inline.set(true);
+      await settle(fixture);
+
+      // One panel, in the host. Two would mean the overlay was left standing beside it.
+      expect(document.querySelectorAll('[data-pct-part="panel"]').length).toBe(
+        1,
+      );
+      expect(inHost(fixture)).not.toBeNull();
+      expect(document.querySelector('.pct-dialog__pane')).toBeNull();
+      // Nothing was severed on this side of the line, so nothing is handed back: the theme is
+      // the tree's again, and a `data-theme` frozen at the last opening would be a lie the
+      // moment the page changed skin (`lesson-35` read as an absence, 0047).
+      expect(panel()?.hasAttribute('data-theme')).toBe(false);
+      // The page was given back with the layer, and not one render later.
+      expect(TestBed.inject(PctModalBackground).depth()).toBe(0);
+      expect(root().style.overflow).toBe('');
+      // The dialog did not close — it changed where it draws, and a `closed` here would be an
+      // event the application acts on for a reason that never happened.
+      expect(fixture.componentInstance.open()).toBe(true);
+      expect(fixture.componentInstance.reasons).toEqual([]);
+
+      fixture.componentInstance.inline.set(false);
+      await settle(fixture);
+
+      expect(document.querySelector('.pct-dialog__pane')).not.toBeNull();
+      expect(inHost(fixture)).toBeNull();
+      expect(fixture.componentInstance.reasons).toEqual([]);
+    });
+
+    it('every way out switched off is not reported inline — there is no trap', async () => {
+      const warn = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => undefined);
+      try {
+        const fixture = await render(InlineHost);
+        fixture.componentInstance.closeOnEscape.set(false);
+        fixture.componentInstance.closeOnBackdrop.set(false);
+        fixture.componentInstance.closeButton.set(false);
+        await openInline(fixture);
+
+        // The same three switches that are a WCAG 2.1.2 keyboard trap in a modal. Here two of
+        // them govern nothing and the user tabs out of the panel the way they tab out of a
+        // paragraph, so the warning would fire on the wide half of every responsive dialog.
+        expect(warn).not.toHaveBeenCalled();
+      } finally {
+        warn.mockRestore();
+      }
+    });
+
+    it('an inline dialog with no accessible name is still reported', async () => {
+      const warn = vi
+        .spyOn(console, 'warn')
+        .mockImplementation(() => undefined);
+      try {
+        const fixture = await render(InlineHost);
+        fixture.componentInstance.heading.set('');
+        await openInline(fixture);
+
+        // The name is not the layer's — a `role="dialog"` with nothing to call it is
+        // announced as "dialog" wherever it stands.
+        expect(warn).toHaveBeenCalledWith(
+          expect.stringContaining('no accessible name'),
+        );
+      } finally {
+        warn.mockRestore();
       }
     });
   });

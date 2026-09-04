@@ -23,11 +23,18 @@ import { PCT_MENU_ITEM, PctMenu, PctMenuItemApi } from './menu';
  * stand on `::ng-deep`. Written as a directive, every rule for a row would silently miss the
  * rows ([`lesson-96`](../../../../docs/lessons.md#lesson-96)).
  *
- * **`tabindex="-1"`, always.** No item is ever a Tab stop: focus arrives here from the menu's
- * own walk and leaves by closing the menu
+ * **`tabindex="-1"` over a layer, always.** No item on an overlay is ever a Tab stop: focus
+ * arrives there from the menu's own walk and leaves by closing the menu
  * ([0031](../../../../docs/decisions/0031-a-panel-s-tab-order-belongs-to-its-trigger.md)). The
  * roving tabindex the pattern is usually written with would put a `0` on the active item so
- * that Tab could leave it — and here Tab does not leave the item, it leaves the menu.
+ * that Tab could leave it — and there Tab does not leave the item, it leaves the menu.
+ *
+ * **Inline it is that roving `0`**, and for the reason the sentence above gives, read the other
+ * way round: an inline panel stands where the consumer wrote it, so Tab there leaves the ITEM
+ * and the page's own order carries on. Exactly one command holds the `0` — the one the walk
+ * stands on — so the menu is one stop to tab into and one to tab out of, and the arrows do the
+ * walking in between. Which one that is, is the menu's answer and not the item's: only the menu
+ * knows where the walk stands.
  *
  * @example
  * <button pctMenuItem (click)="rename()">Rename</button>
@@ -41,7 +48,7 @@ import { PCT_MENU_ITEM, PctMenu, PctMenuItemApi } from './menu';
     class: 'pct-menu__item',
     'data-pct-part': 'item',
     role: 'menuitem',
-    tabindex: '-1',
+    '[attr.tabindex]': 'tabIndex()',
     // The PLATFORM's disabled state and not `aria-disabled`, and the reason is a
     // measurement rather than a preference: a consumer's `(click)` sits on this same element,
     // a directive's host listener is registered after it, and a listener registered second
@@ -80,6 +87,15 @@ export class PctMenuItem implements PctMenuItemApi {
           `tree drops, and no keyboard will ever reach it. Put it in the content of a ` +
           `\`<pct-menu>\`.`,
       );
+  }
+
+  /**
+   * Where the page's tab order stops, for the mode that has one. An item with no menu around it
+   * answers `-1` like every other: it is a row nobody walks, and putting it in the tab order
+   * would be the second half of a defect the constructor has already reported.
+   */
+  protected tabIndex(): string {
+    return this.menu?.holdsTabStop(this) ? '0' : '-1';
   }
 
   /** What typeahead matches a prefix against — the item's own text, as the user reads it. */
