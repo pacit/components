@@ -10,14 +10,16 @@ import {
 } from '@angular/core';
 
 /**
- * Which drawing a skeleton is: the lines of a paragraph, or one box.
+ * Which drawing a skeleton is: the lines of a paragraph, one box, or one disc.
  *
- * There is no `circle` here, and its absence is the shape of the whole styling contract: a
- * disc is a `block` with `--pct-skeleton-track-radius: 50%`, so it is a token a consumer sets
- * and not a third drawing this component has to know about
- * ([0013](../../../../docs/decisions/0013-no-headless-split.md)).
+ * `circle` is the shape 0050 refused and 0067 admits, and the reason is geometry rather than
+ * taste: a radius token on a `block` draws a disc only when the box already is a square, and
+ * a block is as wide as its container — so `--pct-skeleton-track-radius: 50%` on the box the
+ * consumer had drew an ellipse, and a square needed a width tied to a height, which no token
+ * of the skin can say. A disc is a box whose one axis follows the other, and that is a
+ * drawing, not a colour ([0067](../../../../docs/decisions/0067-a-disc-is-a-shape-because-a-radius-does-not-draw-one.md)).
  */
-export type PctSkeletonShape = 'text' | 'block';
+export type PctSkeletonShape = 'text' | 'block' | 'circle';
 
 /**
  * A skeleton: the shape of content that has not arrived, drawn where the content will be.
@@ -81,20 +83,26 @@ export class PctSkeleton {
   readonly lines = input(1, { transform: skeletonLines });
 
   /**
-   * Lines of text, or one box — `text` by default.
+   * Lines of text, one box, or one disc — `text` by default.
    *
-   * A `block` holds the place of something that is not type: a picture, a map, an avatar. Its
+   * A `block` holds the place of something that is not type: a picture, a map, a chart. Its
    * box is the consumer's, because only they know what is coming; with no size given it is
    * one line of the surrounding text tall, which is the smallest thing worth standing in for.
+   *
+   * A `circle` holds the place of an avatar, a badge, a dot. It is sized on EITHER axis —
+   * `inline-size` or `block-size`, whichever the consumer writes — and the other follows, so
+   * `block-size: var(--pct-avatar-size)` is a disc the avatar's own size; with nothing written
+   * it is one line of the surrounding text across. It stands inline, as the avatar it stands
+   * in for does, so a name can sit beside it with no layout of the consumer's.
    */
   readonly shape = input<PctSkeletonShape>('text');
 
   /**
-   * One entry per bar to draw. A `block` is one bar however many lines were asked for —
-   * `lines` counts lines of TEXT, and a box has none.
+   * One entry per bar to draw. A `block` and a `circle` are one bar however many lines were
+   * asked for — `lines` counts lines of TEXT, and neither a box nor a disc has any.
    */
   protected readonly bars = computed(() =>
-    Array.from({ length: this.shape() === 'block' ? 1 : this.lines() }),
+    Array.from({ length: this.shape() === 'text' ? this.lines() : 1 }),
   );
 
   constructor() {

@@ -6,7 +6,11 @@ import { PctSkeleton } from '@pacit/components/skeleton';
 @Component({
   selector: 'demo-skeleton',
   imports: [PctButton, PctSkeleton],
-  styles: ':host { display: grid; gap: 12px; max-inline-size: 24rem; }',
+  // A width and not only a ceiling: the stage centres its demo in a flex row, and a row hands a
+  // flex item the width of its content — which, for a component whose bars are 100% OF ITS
+  // CONTAINER, is nothing. Measured on the page before this line: a 0px skeleton, invisible,
+  // under a heading that promised one (`lesson-160`).
+  styles: ':host { display: grid; gap: 12px; inline-size: min(24rem, 100%); }',
   template: `
     <div [attr.aria-busy]="pending() ? 'true' : null">
       @if (pending()) {

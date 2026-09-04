@@ -49,7 +49,21 @@
   inset-block: 0;
   inset-inline-start: calc(-1 * var(--pct-skeleton-fill-size));
   inline-size: var(--pct-skeleton-fill-size);
-  background: var(--pct-skeleton-fill-bg);
+  /* The sheen has no edge. It is the fill token at its middle and the placeholder's own
+     colour at both ends, so what crosses the bar is a soft light and not a block with two
+     vertical sides — a block of the page colour sliding over a grey bar read as a second
+     placeholder passing behind the first. `90deg` is a physical angle and is safe here for
+     the one reason a symmetric gradient is: mirrored, it is itself, so the writing direction
+     has nothing to flip (`req-token-logical`). It stays an ELEMENT with a background, which
+     is 0050's whole point: under `forced-colors: active` the block at the bottom of this sheet
+     paints it in a solid palette colour, and a gradient nobody can see there is never what
+     carries the motion. */
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--pct-skeleton-fill-bg),
+    transparent
+  );
   animation: pct-skeleton-sheen var(--pct-motion-loop-duration) linear infinite;
 }
 
@@ -73,11 +87,45 @@
   min-block-size: 1lh;
 }
 
-:host([data-pct-shape='block']) .pct-skeleton__track {
+:host([data-pct-shape='block']) .pct-skeleton__track,
+:host([data-pct-shape='circle']) .pct-skeleton__track {
   position: absolute;
   inset: 0;
   block-size: auto;
   inline-size: auto;
+}
+
+/* A disc: the shape 0050 refused as "a block with a radius token" and 0067 admits, because a
+   radius does not draw one. A `block` is as wide as its container, so `border-radius: 50%` on
+   it is an ellipse unless the consumer has already squared the box by hand — and a square is a
+   width tied to a height, which no token can say. Here the tie is `aspect-ratio`, and the box
+   is sized on WHICHEVER axis the consumer writes: with `min-inline-size` as a floor and no
+   size declared on either axis, a `block-size` of theirs transfers to the width through the
+   ratio and an `inline-size` of theirs is taken as written — neither fights a declaration of
+   this sheet, which is the same reason the block above is a `min-block-size` and not a value.
+
+   Measured in chromium before this was written, one probe per arrangement: block flow, a flex
+   row, a stretched flex row, a flex column, a grid, and inline beside text — 1lh across with
+   nothing set, and the consumer's 48px on both axes whichever one they wrote. The last two
+   declarations are what the grid and the stretched row cost: a grid item and a flex item are
+   stretched across their free axis by default, and a stretched disc is 1217px across in a grid
+   and 24×80 in a row; `start` on both axes hands the ratio back. `inline-block` rather than
+   `block` for the same reason from the other side — a block-level box takes the whole line and
+   the ratio then makes it a disc the width of the page. Inline is also what the disc stands in
+   for: an avatar is inline-level, and a name sits beside it with no layout of the consumer's. */
+:host([data-pct-shape='circle']) {
+  display: inline-block;
+  vertical-align: top;
+  min-inline-size: 1lh;
+  aspect-ratio: 1;
+  justify-self: start;
+  align-self: start;
+}
+
+/* Half the box on a square box IS a circle, and no other value is one — the radius here is
+   the definition of the shape and not the skin's corner, which is why it is not the token. */
+:host([data-pct-shape='circle']) .pct-skeleton__track {
+  border-radius: 50%;
 }
 
 /* Forced colours. The mode replaces every author background with a colour from the user's

@@ -191,9 +191,7 @@ test.describe('PctSkeleton — the shape of content that has not arrived', () =>
     expect(forwards, `sheen offsets: ${samples.join(', ')}`).toBeGreaterThan(3);
   });
 
-  test('is the box it is given in the block shape, and a disc when the radius says so', async ({
-    page,
-  }) => {
+  test('is the box it is given in the block shape', async ({ page }) => {
     const picture = page.getByTestId('skeleton-block');
     await expect(picture).toHaveAttribute('data-pct-shape', 'block');
     const host = await boxOf(picture);
@@ -204,17 +202,34 @@ test.describe('PctSkeleton — the shape of content that has not arrived', () =>
     // 8rem, which is nothing this component chose: a block is the space the consumer knows
     // the picture will take.
     expect(host.height).toBeCloseTo(128, 0);
-
-    const avatar = page.getByTestId('skeleton-avatar');
-    const disc = await boxOf(avatar);
-    expect(disc.width).toBeCloseTo(disc.height, 0);
-    // There is no `circle` shape to choose, and this is why there does not have to be one.
-    expect(
-      await styleOf(tracks(page, 'skeleton-avatar'), 'border-radius'),
-    ).toBe('50%');
   });
 
-  test('draws one box in the block shape however many lines were asked for', async ({
+  /**
+   * The disc the shapes card used to draw as a block with a radius token, and 0067's reason
+   * it is a shape: the view writes ONE axis — `block-size: 3rem` and nothing else — and the
+   * width has to be the component's own transfer through the ratio, in three engines. A
+   * radius alone could not have done this; it rounded whatever box it was given, and a block
+   * is as wide as its container.
+   */
+  test('is a disc in the circle shape, sized on one axis with the other following', async ({
+    page,
+  }) => {
+    const avatar = page.getByTestId('skeleton-avatar');
+    await expect(avatar).toHaveAttribute('data-pct-shape', 'circle');
+    const disc = await boxOf(avatar);
+    expect(disc.height).toBeCloseTo(48, 0);
+    expect(disc.width).toBeCloseTo(disc.height, 0);
+
+    const track = tracks(page, 'skeleton-avatar');
+    const bar = await boxOf(track);
+    expect(bar.width).toBeCloseTo(disc.width, 0);
+    expect(bar.height).toBeCloseTo(disc.height, 0);
+    // Half of a square, which is the one radius that IS a circle — the shape's own, not the
+    // skin's corner token.
+    expect(await styleOf(track, 'border-radius')).toBe('50%');
+  });
+
+  test('draws one box in the block shape and one disc in the circle shape, however many lines were asked for', async ({
     page,
   }) => {
     await expect(tracks(page, 'skeleton-block')).toHaveCount(1);
@@ -236,6 +251,18 @@ test.describe('PctSkeleton — the shape of content that has not arrived', () =>
       // band's own number.
       expect(band.width / bar.width).toBeCloseTo(0.33, 2);
       expect(band.height).toBeCloseTo(bar.height, 0);
+
+      // And no edge: the sheen is the fill token at its middle fading to nothing at both
+      // ends, so what crosses the bar is a light and not a block with two sides. Read as the
+      // computed image, because that is where a gradient a stylesheet wrote can be lost —
+      // under forced colours it is, and `forced-colors.spec` measures the solid colour that
+      // stands in for it there.
+      expect(
+        await styleOf(
+          bars.nth(i).locator('[data-pct-part="fill"]').first(),
+          'background-image',
+        ),
+      ).toContain('linear-gradient');
 
       // What keeps the paint inside the rounded bar is the CLIP and not the geometry: the
       // band's box travels right out of the bar and past its end, which is what a bounding

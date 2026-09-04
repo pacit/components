@@ -1,6 +1,6 @@
 # 0050 — A skeleton is a picture of a wait, and the wait belongs to the region
 
-**Status:** accepted
+**Status:** accepted — the section "Two shapes, and a disc is neither of them" superseded by 0067
 **Implements:** [`req-a11y-built-in`](../requirements/a11y.md#req-a11y-built-in),
 [`req-api-platform`](../requirements/api.md#req-api-platform),
 [`req-a11y-forced-colors`](../requirements/a11y.md#req-a11y-forced-colors),

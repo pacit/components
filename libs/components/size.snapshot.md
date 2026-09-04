@@ -51,11 +51,11 @@ before an application ships them.
 ./progress 7179 ./core @angular/core
 ./radio 15417 ./core @angular/core
 ./select 69036 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core
-./skeleton 2997 - @angular/core
+./skeleton 3377 - @angular/core
 ./slider 17371 ./core @angular/core
 ./stack 879 - @angular/core
 ./stepper 10628 ./core,./icon @angular/common,@angular/core
-./switch 12371 ./core @angular/core
+./switch 12391 ./core @angular/core
 ./tabs 16115 ./core @angular/core
 ./theme 518 - @angular/core
 ./toast 15527 ./core,./icon @angular/common,@angular/core

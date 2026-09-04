@@ -60,6 +60,17 @@ class AttributeHost {}
 })
 class BlockHost {}
 
+/** The third drawing, with a `lines` that must not reach it either. */
+@Component({
+  imports: [PctSkeleton],
+  template: `
+    <div aria-busy="true">
+      <pct-skeleton data-testid="circle" shape="circle" [lines]="3" />
+    </div>
+  `,
+})
+class CircleHost {}
+
 /** A busy region three levels above the skeleton — the walk has to leave the parent. */
 @Component({
   imports: [PctSkeleton],
@@ -190,6 +201,17 @@ describe('PctSkeleton — what it draws', () => {
     await render(BlockHost);
 
     expect(tracks(skeleton('block'))).toHaveLength(1);
+  });
+
+  it('is one disc in the circle shape, however many lines were asked for', async () => {
+    // The same sentence for the third drawing: a disc has no lines either. The case is the
+    // one that tells `shape() === 'text'` from `shape() !== 'block'` — with only two shapes
+    // the two readings were the same reading.
+    await render(CircleHost);
+
+    expect(skeleton('circle').getAttribute('data-pct-shape')).toBe('circle');
+    expect(tracks(skeleton('circle'))).toHaveLength(1);
+    expect(parts('fill', skeleton('circle'))).toHaveLength(1);
   });
 
   it('says which drawing it is on the host, and says it with one attribute', async () => {
@@ -360,5 +382,69 @@ describe('PctSkeleton — the parts a skin reaches for', () => {
       expect(track.firstElementChild?.getAttribute('data-pct-part')).toBe(
         'fill',
       );
+  });
+});
+
+/**
+ * The rules of the sheet the component put in the document, read as the progress bar's spec
+ * reads its clip. jsdom lays nothing out — a disc's width following its height, and a
+ * gradient having no edge, are the sandbox's to measure in three engines — but the
+ * declarations those measurements depend on can be pinned here, so a sheet that loses one is
+ * red before any browser runs.
+ */
+const rulesOf = (selector: RegExp): CSSStyleRule[] =>
+  (Array.from(document.styleSheets) as CSSStyleSheet[])
+    .flatMap((sheet) => Array.from(sheet.cssRules))
+    .filter(
+      (rule): rule is CSSStyleRule =>
+        'selectorText' in rule &&
+        selector.test((rule as CSSStyleRule).selectorText),
+    );
+
+/** The circle shape's rules, however the compiler chose to quote the attribute's value. */
+const CIRCLE = /data-pct-shape=["']?circle/;
+
+const only = (rules: CSSStyleRule[], what: string): CSSStyleRule => {
+  if (rules.length !== 1)
+    throw new Error(`expected exactly one ${what} rule, found ${rules.length}`);
+  return rules[0];
+};
+
+describe('PctSkeleton — a disc is a shape, because a radius does not draw one', () => {
+  it('ties the two axes of a circle together and floors it at one line, with no size of its own on either axis', async () => {
+    await render(CircleHost);
+
+    // The host rule of the circle shape alone: the one carrying the attribute and no part.
+    const host = only(
+      rulesOf(CIRCLE).filter(
+        (rule) => !rule.selectorText.includes('pct-skeleton__'),
+      ),
+      'circle host',
+    );
+    expect(host.style.getPropertyValue('aspect-ratio')).toBe('1');
+    expect(host.style.getPropertyValue('min-inline-size')).toBe('1lh');
+    // Neither axis is given a VALUE — that is what lets the consumer write either one without
+    // fighting this sheet, the same reason the block shape floors its height rather than
+    // setting it (0067).
+    expect(host.style.getPropertyValue('inline-size')).toBe('');
+    expect(host.style.getPropertyValue('block-size')).toBe('');
+    // A grid item and a flex item are stretched across their free axis by default, and a
+    // stretched disc is not one: measured at 1217px across in a grid before these two.
+    expect(host.style.getPropertyValue('justify-self')).toBe('start');
+    expect(host.style.getPropertyValue('align-self')).toBe('start');
+  });
+
+  it('rounds the circle by half its box — the shape’s own radius, not the skin’s corner token', async () => {
+    await render(CircleHost);
+
+    const track = only(
+      rulesOf(CIRCLE).filter(
+        (rule) =>
+          rule.selectorText.includes('pct-skeleton__track') &&
+          rule.style.getPropertyValue('border-radius') !== '',
+      ),
+      'circle track',
+    );
+    expect(track.style.getPropertyValue('border-radius')).toBe('50%');
   });
 });

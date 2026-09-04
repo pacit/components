@@ -27,7 +27,7 @@ out of the consumer's own type — and it says nothing, because there is nothing
 |             |                                                                                                                                                                                                 |
 | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Value**   | none — a placeholder holds no value. What it holds is space                                                                                                                                     |
-| **Inputs**  | `lines` (`number`, default `1` — a count of LINE BOXES of the surrounding type), `shape` (`text \| block`, default `text`)                                                                      |
+| **Inputs**  | `lines` (`number`, default `1` — a count of LINE BOXES of the surrounding type), `shape` (`text \| block \| circle`, default `text`)                                                            |
 | **Outputs** | none — nothing happens to a skeleton. What ends the wait is the content, and the content is the application's                                                                                   |
 | **Slots**   | **none, deliberately.** The host is `aria-hidden`, and a slot is where a consumer puts a button — a control the keyboard reaches and a reader cannot describe (axe's `aria-hidden-focus`)       |
 | **Parts**   | `track` (one placeholder: a bar standing where a line of text will be, or the box standing where a picture will be), `fill` (the sheen travelling across it) — the progress bar's own two names |
@@ -44,6 +44,15 @@ text the skeleton stands in, so a placeholder in a heading is a heading's size a
 caption is a caption's, with nothing bound and nothing to keep in step. The progress bar kept a
 thickness of its own because a bar is not text; this component is text
 ([`lesson-136`](../lessons.md#lesson-136)).
+
+**Why a disc is a shape and not a radius.** It was a radius for a while — `shape="block"` with
+`--pct-skeleton-track-radius: 50%` — and the consumer who wrote that got an ellipse, because a
+block is as wide as its container and half of a wide box is not a circle. A disc is a box whose
+one axis follows the other, so `shape="circle"` ties them with `aspect-ratio` and floors the
+box at one line of the surrounding text; the consumer writes EITHER axis — `block-size:
+var(--pct-avatar-size)` for a disc the avatar's own size — and the other follows. It stands
+inline, as the avatar it stands in for does
+([0067](../decisions/0067-a-disc-is-a-shape-because-a-radius-does-not-draw-one.md)).
 
 **Where the busy state goes.** On the region, never on the skeleton:
 
@@ -123,13 +132,15 @@ element),
 name for content that has not arrived),
 [0049](../decisions/0049-a-progress-bar-is-the-platforms-element-under-our-paint.md) (the
 travelling band this sheen repeats, and the two part names it borrows),
-[0013](../decisions/0013-no-headless-split.md) (parts and tokens as the whole styling contract
-— which is why a disc is a radius and not a third shape).
+[0067](../decisions/0067-a-disc-is-a-shape-because-a-radius-does-not-draw-one.md) (why the
+disc is a third shape after all — a radius on a block drew an ellipse, and a square is a width
+tied to a height, which no token can say),
+[0013](../decisions/0013-no-headless-split.md) (parts and tokens as the whole styling contract).
 
 ## Known limitations
 
-- **`lines` does not reach a `block`.** It counts lines of text and a box has none, so
-  `shape="block" [lines]="3"` draws one box. The alternative — a box three line boxes tall —
+- **`lines` does not reach a `block` or a `circle`.** It counts lines of text, and neither a
+  box nor a disc has any, so `shape="block" [lines]="3"` draws one box. The alternative — a box three line boxes tall —
   needs the count inside the stylesheet, and a component may not invent a `--pct-…` property
   that is not a token of the skin.
 - **No `loading` input and no content slot.** The swap between the placeholder and the content

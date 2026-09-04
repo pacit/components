@@ -62,8 +62,8 @@
 </sbx-demo>
 
 <sbx-demo
-  heading="Lines, a box, and the disc that is neither"
-  summary="Two shapes and no third one: text is lines of a paragraph, block is one box the consumer sizes — a picture, a map. A disc is a block with a radius token, which is why there is no circle shape to choose."
+  heading="Lines, a box, and a disc"
+  summary="Three shapes: text is lines of a paragraph, block is one box the consumer sizes — a picture, a map — and circle is one disc, sized on either axis with the other following. The disc used to be a block with a radius token, and the reason it is a shape now is that a radius alone drew an ellipse: a block is as wide as its container (0067)."
   [reqs]="['req-api-attributes', 'req-token-override']"
   data-testid="demo-shapes"
 >
@@ -75,7 +75,7 @@
       data-testid="skeleton-block"
     />
     <pct-skeleton
-      shape="block"
+      shape="circle"
       class="view__avatar"
       data-testid="skeleton-avatar"
     />
@@ -84,12 +84,12 @@
 
 <sbx-demo
   heading="A card that is still coming"
-  summary="What the two shapes are for, arranged the way an application arranges them. One busy region holds the lot: the wait is a fact about the card, not about each of the five placeholders inside it."
+  summary="What the three shapes are for, arranged the way an application arranges them. One busy region holds the lot: the wait is a fact about the card, not about each of the five placeholders inside it."
   [reqs]="['req-a11y-built-in']"
   data-testid="demo-card"
 >
   <div class="view__card" aria-busy="true" data-testid="card">
-    <pct-skeleton shape="block" class="view__avatar" />
+    <pct-skeleton shape="circle" class="view__avatar" />
     <div class="view__card-body">
       <pct-skeleton class="view__card-title" />
       <pct-skeleton [lines]="3" />

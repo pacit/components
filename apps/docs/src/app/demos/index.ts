@@ -134,6 +134,11 @@ export const EXAMPLES: Readonly<Record<string, readonly DocsExample[]>> = {
       load: () =>
         import('./skeleton.shapes.demo').then((m) => m.SkeletonShapesDemo),
     },
+    {
+      key: 'card',
+      load: () =>
+        import('./skeleton.card.demo').then((m) => m.SkeletonCardDemo),
+    },
   ],
   progress: [
     {
