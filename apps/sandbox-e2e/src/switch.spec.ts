@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { boxOf, setRtl, visit } from './support/dom';
+import { styleOf } from './support/css';
 
 test.describe('PctSwitch — a setting that takes effect at once', () => {
   test.beforeEach(async ({ page }) => {
@@ -85,6 +86,37 @@ test.describe('PctSwitch — a setting that takes effect at once', () => {
     expect(hit.height).toBeGreaterThanOrEqual(24);
     expect(track.width - hit.width).toBeLessThanOrEqual(2);
     expect(track.height - hit.height).toBeLessThanOrEqual(2);
+  });
+
+  /**
+   * The knob is the one part of the switch that looks like the thing to press, and it was the
+   * one part that did nothing: it is painted OVER the transparent control, so a pointer put
+   * on it landed on a decoration and reached no input — measured with `elementFromPoint` at
+   * the knob's centre before the fix, which answered `thumb` and left the state where it was
+   * ([`lesson-158`](../../../docs/lessons.md#lesson-158)). Pressed by coordinates on purpose:
+   * a locator click on the thumb would refuse an element that takes no pointer events, and
+   * what is being measured is what a finger gets, not what a test runner allows.
+   */
+  test('a press on the knob itself toggles the state — the thumb lets the pointer through', async ({
+    page,
+  }) => {
+    const host = page.getByTestId('switch-wifi');
+    const control = host.locator('input');
+    const thumb = host.locator('[data-pct-part="thumb"]');
+    await expect(control).toBeChecked();
+    expect(await styleOf(thumb, 'pointer-events')).toBe('none');
+
+    const knob = await boxOf(thumb);
+    await page.mouse.click(knob.x + knob.width / 2, knob.y + knob.height / 2);
+    await expect(control).not.toBeChecked();
+
+    // And back, from where the knob has travelled to.
+    const moved = await boxOf(thumb);
+    await page.mouse.click(
+      moved.x + moved.width / 2,
+      moved.y + moved.height / 2,
+    );
+    await expect(control).toBeChecked();
   });
 
   /**

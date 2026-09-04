@@ -475,3 +475,47 @@ describe('PctSwitch', () => {
     });
   });
 });
+
+/**
+ * The one rule of the thumb's own box, read out of the sheet the component put in the
+ * document — the same reading the progress bar's spec takes of its clip. Not a computed style:
+ * jsdom lays nothing out, so `elementFromPoint` cannot say what a pointer lands on here; the
+ * sandbox measures that in three engines, and this case pins the declaration that reading
+ * depends on, so a sheet that loses it is red before any browser runs.
+ */
+const thumbRule = (): CSSStyleRule => {
+  const rules = (Array.from(document.styleSheets) as CSSStyleSheet[])
+    .flatMap((sheet) => Array.from(sheet.cssRules))
+    .filter(
+      (rule): rule is CSSStyleRule =>
+        'selectorText' in rule &&
+        (rule as CSSStyleRule).selectorText.includes('pct-switch__thumb') &&
+        !(rule as CSSStyleRule).selectorText.includes('data-pct') &&
+        (rule as CSSStyleRule).style.getPropertyValue('position') !== '',
+    );
+  if (rules.length !== 1)
+    throw new Error(`expected exactly one thumb rule, found ${rules.length}`);
+  return rules[0];
+};
+
+describe('PctSwitch — the knob lets the pointer through', () => {
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+  });
+
+  it('draws the thumb over the control and hands the pointer to the control beneath it', async () => {
+    const fixture = await render(Host);
+    const thumb = partOf(fixture, 'thumb');
+    const control = boxOf(fixture);
+
+    // The order is the mechanism: a later sibling is painted over an earlier one, so the
+    // thumb is above the transparent input — and a box above a control is what a pointer
+    // lands on, unless it declines the pointer (lesson-158).
+    expect(control.compareDocumentPosition(thumb)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+    expect(thumbRule().style.getPropertyValue('pointer-events')).toBe('none');
+  });
+});

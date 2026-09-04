@@ -59,6 +59,14 @@
   transform: translateY(-50%);
   width: var(--pct-switch-thumb-size);
   height: var(--pct-switch-thumb-size);
+  /* The thumb is the LATER sibling of the transparent input, so it is painted over it — and
+     a box painted over a control is the box the pointer lands on. Measured in chromium
+     before this line: `elementFromPoint` at the knob's centre answered `thumb`, and a click
+     there reached no input, so the one part of the switch that looks most like the thing to
+     press was the one part that did nothing. The knob is a drawing of the state, not a
+     control, and it lets the pointer through to the control beneath it
+     ([`lesson-158`](../../../../docs/lessons.md#lesson-158)). */
+  pointer-events: none;
   background: var(--pct-switch-thumb-bg);
   border-radius: var(--pct-switch-radius);
   transition:
