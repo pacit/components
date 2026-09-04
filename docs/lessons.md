@@ -4088,3 +4088,36 @@ panel's readiness two different moments, and a key sent between them is not late
 delivered somewhere else, to a listener that has no opinion about it. Nothing reports that: the
 key is simply gone, and the assertion downstream blames the component. Wait for the element that
 will RECEIVE the key to hold focus, never for the click that is supposed to give it.
+
+### <a id="lesson-153"></a>`lesson-153` — A key pressed where the handler cannot hear it proves the opposite of what the case claims: the drawer's `closeOnEscape=false`
+
+[`lesson-152`](lessons.md#lesson-152) is a key that arrives too early and makes a case FAIL for
+the wrong reason. This is the same key arriving in the wrong place, and it is worse: the case
+PASSES for the wrong reason, so nothing ever reports it.
+
+The sweep that followed 150 read every `page.keyboard.*` in the forty-four e2e specs against the
+step before it, and probed the seven openings where the answer was not settled by construction —
+twenty openings each, in all three engines, sampling `document.activeElement` at the instant the
+test would have pressed its key. Six were already sound and identically so in every engine: the
+menu's first item, the popover's panel, the select's trigger, a tree item, a tab, and the date
+panel's day cell, 60 of 60 each. `locator.focus()` is synchronous and a click lands on what it
+hits, so only an opening that moves focus by a later render is exposed at all.
+
+The seventh was `body`, 60 of 60: the drawer's `closeOnEscape=false` case. The drawer binds
+`(keydown.escape)` on its OWN host, deliberately — the page behind a non-modal panel keeps every
+other Escape ([0031](decisions/0031-a-panel-s-tab-order-belongs-to-its-trigger.md)) — and the
+bare drawer of the sandbox holds no cross, no link and nothing else focusable, so `bare.click()`
+focused nothing and the press went to `body`. The handler never ran. The drawer stayed open
+because the key went missing, and `closeOnEscape` was never read.
+
+The proof is a flip. With `[closeOnEscape]="true"` on that same drawer, the old case passed
+3 of 3 across the three engines — green on the exact opposite of what its title claims. The case
+was a second copy of its own neighbour, which already establishes for another drawer that an
+Escape from outside is left alone, with real keys and both halves.
+
+The case now dispatches the key AT the host, which is where the binding is, and stands a control
+in front of it: the same dispatch on the drawer that does answer Escape closes it. Against the
+flip, the case fails. The rule: a case about a handler must put the event where that handler
+listens, and the way to know it did is a control in which the same delivery produces the opposite
+outcome — otherwise "nothing happened" is indistinguishable from "the feature worked", which is
+[`req-axis`](00-axis.md) read on the keyboard.

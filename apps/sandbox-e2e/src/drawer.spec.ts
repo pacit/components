@@ -237,12 +237,27 @@ test.describe('PctDrawer — a region of the page, not a layer over it', () => {
   test('closeOnEscape=false leaves the key to the page, and the cross is gone with it', async ({
     page,
   }) => {
+    // The control stands first, and without it the assertion below is a claim about a key
+    // nobody proved was delivered: the same dispatch on the drawer that DOES answer Escape
+    // closes it. It also has to come first — an open drawer covers the other's trigger.
+    await trigger(page, 'trigger-nav').click();
+    const nav = drawer(page, 'drawer-nav');
+    await expect(nav).toHaveAttribute('data-pct-open', '');
+    await nav.dispatchEvent('keydown', { key: 'Escape', bubbles: true });
+    await expect(nav).not.toHaveAttribute('data-pct-open', /.*/);
+
     await trigger(page, 'trigger-bare').click();
     const bare = drawer(page, 'drawer-bare');
-
     await expect(bare.locator('[data-pct-part="close"]')).toHaveCount(0);
-    await bare.click();
-    await page.keyboard.press('Escape');
+
+    // DISPATCHED at the host rather than typed into the page, and that is what makes the case
+    // measure its own input. `(keydown.escape)` is bound on the drawer's host, so it runs only
+    // for a key on the panel or inside it — and this drawer holds nothing focusable, no cross
+    // and no link, so a real press lands on `body` (measured: 20 openings of 20 on each of the
+    // three engines). The handler then never ran, the drawer stayed open because the key went
+    // missing, and the assertion held exactly as it would have with `closeOnEscape` left true
+    // — which is the case above, on another drawer (`lesson-153`).
+    await bare.dispatchEvent('keydown', { key: 'Escape', bubbles: true });
     await expect(bare).toHaveAttribute('data-pct-open', '');
   });
 
