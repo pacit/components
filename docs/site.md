@@ -89,15 +89,16 @@ closes — the site's first measurable effect on the registry before it renders 
 
 ## Information architecture
 
-| route             | what it renders                                                                            | source (all generated or tracked)                                 |
-| ----------------- | ------------------------------------------------------------------------------------------ | ----------------------------------------------------------------- |
-| `/`               | the landing: hero, evidence strip, live components, gallery                                | snapshots + registry, read at build                               |
-| `/start`          | install, `ng add`, provide texts/theme, first form, SSR note                               | hand-written page (site-local)                                    |
-| `/components`     | the gallery: every component as a live card                                                | the cards' front matter + demo registry                           |
-| `/components/:id` | one component: live demos, code tabs, parts table, token table, a11y and keyboard sections | `docs/components/*.md` + parts snapshot + `libs/tokens/dist`      |
-| `/theming`        | the three token tiers, the full token inventory, dark/light, the override cookbook         | `libs/tokens/dist` names and values                               |
-| `/trust`          | the axis worn outward: the registry rendered, the gates, mutation, lessons                 | `registry.md`, `mutation.snapshot.md`, [`00-axis.md`](00-axis.md) |
-| `/support`        | versions, notice, codemods                                                                 | [`support.md`](support.md)                                        |
+| route             | what it renders                                                                                | source (all generated or tracked)                                 |
+| ----------------- | ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `/`               | the landing: hero, evidence strip, live components, gallery                                    | snapshots + registry, read at build                               |
+| `/start`          | install, `ng add`, provide texts/theme, first form, SSR note                                   | hand-written page (site-local)                                    |
+| `/components`     | the gallery: every component as a live card                                                    | the cards' front matter + demo registry                           |
+| `/components/:id` | one component: live demos, code tabs, parts table, token table, a11y and keyboard sections     | `docs/components/*.md` + parts snapshot + `libs/tokens/dist`      |
+| `/theming`        | the three token tiers, the full token inventory, dark/light, the override cookbook             | `libs/tokens/dist` names and values                               |
+| `/trust`          | the axis worn outward: the registry rendered, the gates, mutation, lessons                     | `registry.md`, `mutation.snapshot.md`, [`00-axis.md`](00-axis.md) |
+| `/support`        | versions, notice, codemods                                                                     | [`support.md`](support.md)                                        |
+| `/acr`            | the Accessibility Conformance Report: WCAG 2.2 A and AA, one row per criterion, from the gates | [`acr.md`](acr.md), held by `check-acr`                           |
 
 English, LTR, `lang="en"` — the site is prose and falls under
 [`req-project-language`](requirements/project.md#req-project-language) like everything

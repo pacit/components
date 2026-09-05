@@ -1,0 +1,10 @@
+{
+  "point": 2,
+  "check": "level",
+  "description": "The row for 1.1.1 answers \"Meets\". The ITI template has five words and a buyer's tooling reads exactly those; a sixth is read as none of them.",
+  "criteria": {
+    "1.1.1": {
+      "conformance": "Meets"
+    }
+  }
+}

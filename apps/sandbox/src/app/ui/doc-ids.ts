@@ -8,6 +8,7 @@
 
 /** A requirement identifier from `docs/requirements/`, or an axis one from `docs/00-axis.md`. */
 export type PctReqId =
+  | 'req-a11y-acr'
   | 'req-a11y-axe'
   | 'req-a11y-built-in'
   | 'req-a11y-forced-colors'

@@ -1,0 +1,14 @@
+{
+  "point": 2,
+  "check": "level",
+  "description": "The row for 1.1.1 keeps its level and loses every measuring citation, keeping the requirement. A requirement is prose about a gate; a level that rests on prose alone is the industry norm this gate exists to reverse.",
+  "criteria": {
+    "1.1.1": {
+      "evidence": [
+        {
+          "req": "req-a11y-built-in"
+        }
+      ]
+    }
+  }
+}

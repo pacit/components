@@ -1,0 +1,15 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "The row for 1.1.1 cites point 42 of the accessible-name gate, whose header numbers eight. A point that is not in the header is a citation of nothing — the gate that grows or loses a point must take its citations with it.",
+  "criteria": {
+    "1.1.1": {
+      "evidence": [
+        {
+          "gate": "tools/check-aria.mjs",
+          "points": [42]
+        }
+      ]
+    }
+  }
+}

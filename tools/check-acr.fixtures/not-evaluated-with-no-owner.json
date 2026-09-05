@@ -1,0 +1,10 @@
+{
+  "point": 2,
+  "check": "level",
+  "description": "The row for 1.4.4 stays Not Evaluated and loses its finding. A criterion nobody measures needs an owner in the plan, or the row is a shrug that will still read \"Not Evaluated\" in a year.",
+  "criteria": {
+    "1.4.4": {
+      "evidence": []
+    }
+  }
+}

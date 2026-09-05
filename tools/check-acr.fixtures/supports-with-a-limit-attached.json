@@ -1,0 +1,18 @@
+{
+  "point": 2,
+  "check": "level",
+  "description": "The row for 1.1.1 keeps Supports and gains a citation of an open finding. A limit with an owner is what Partially Supports is for; a Supports that names one contradicts itself.",
+  "criteria": {
+    "1.1.1": {
+      "evidence": [
+        {
+          "gate": "tools/check-aria.mjs",
+          "points": [2]
+        },
+        {
+          "finding": "4.8"
+        }
+      ]
+    }
+  }
+}

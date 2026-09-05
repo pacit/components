@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "The field's source is rewritten without the sentence the row quotes. A quoted sentence is a claim about the code; the day the code changes its mind, the quote has to follow.",
+  "texts": {
+    "libs/components/field/src/field.ts": "// activation on mousedown now\n"
+  }
+}

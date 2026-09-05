@@ -1,0 +1,8 @@
+{
+  "point": 6,
+  "check": "finding",
+  "description": "The plan marks 4.8 closed while 1.3.1 and 4.1.2 keep citing it as their limit. A limit that has gone is a level to raise, not a citation to keep; the report would otherwise understate the library on the day it improved.",
+  "plan": {
+    "4.8": "closed"
+  }
+}

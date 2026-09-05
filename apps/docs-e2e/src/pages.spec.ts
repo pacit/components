@@ -390,6 +390,28 @@ test.describe('The pages', () => {
     );
   });
 
+  test('/acr renders the conformance report the gate holds to its claims', async ({
+    page,
+  }) => {
+    await visit(page, '/acr');
+    const report = page.getByTestId('acr');
+    await expect(
+      report.getByRole('heading', { name: 'Summary' }),
+    ).toBeVisible();
+    await expect(report).toContainText('Not recorded');
+    await expect(report.getByRole('table').first()).toBeVisible();
+    // The trust page points at it through the router, not through a reload.
+    await visit(page, '/trust');
+    await page
+      .getByTestId('acr')
+      .getByRole('link', { name: 'Accessibility Conformance Report' })
+      .click();
+    await expect(page).toHaveURL(/\/acr$/);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(
+      'Accessibility conformance report',
+    );
+  });
+
   test('/support and /start render their documents', async ({ page }) => {
     await visit(page, '/support');
     await expect(page.getByTestId('policy')).toContainText('angular-majors');

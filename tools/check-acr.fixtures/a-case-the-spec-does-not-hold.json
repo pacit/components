@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "The tooltip spec is rewritten without the case \"Escape dismisses it and leaves focus where it was (WCAG 1.4.13)\". A title is the address of a measurement; a renamed or deleted case leaves the row pointing at air.",
+  "texts": {
+    "apps/sandbox-e2e/src/tooltip.spec.ts": "test('a hover opens it', async ({ page }) => {});\n"
+  }
+}

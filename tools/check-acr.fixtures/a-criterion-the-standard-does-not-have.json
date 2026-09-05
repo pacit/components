@@ -1,0 +1,16 @@
+{
+  "point": 1,
+  "check": "catalogue",
+  "description": "A row claims `9.9.9`, which WCAG 2.2 does not number. The report is the 55 criteria of the standard, in the standard's order, and nothing else — a stray row is a typo standing as a promise.",
+  "criteria": {
+    "9.9.9": {
+      "conformance": "Supports",
+      "remarks": "Made up.",
+      "evidence": [
+        {
+          "scan": "no-accesskey"
+        }
+      ]
+    }
+  }
+}

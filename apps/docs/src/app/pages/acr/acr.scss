@@ -1,0 +1,10 @@
+.page {
+  padding-block: var(--pct-space-6);
+  max-inline-size: 50rem;
+}
+
+.title {
+  margin: 0 0 var(--pct-space-5);
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  letter-spacing: -0.02em;
+}

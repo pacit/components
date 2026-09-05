@@ -1,0 +1,10 @@
+{
+  "point": 5,
+  "check": "cards",
+  "description": "The button's `Keyboard map` row is set to `none — gap` while 2.1.1 keeps saying Supports over the cards. The claim is the sum of 33 rows; one row that owes its reading is a claim that owes it.",
+  "cards": {
+    "button": {
+      "Keyboard map": "none — gap: the keys were never walked"
+    }
+  }
+}

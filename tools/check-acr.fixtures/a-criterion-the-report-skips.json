@@ -1,0 +1,8 @@
+{
+  "point": 1,
+  "check": "catalogue",
+  "description": "The claims lose the row for 1.1.1. A conformance report is read top to bottom against the standard, and a criterion with no row is taken for one nobody found wrong.",
+  "criteria": {
+    "1.1.1": null
+  }
+}

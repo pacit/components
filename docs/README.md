@@ -6,11 +6,13 @@ The whole repository is in English — [`req-project-language`](requirements/pro
 
 ```
 00-axis.md      LEVEL 0   the one requirement every other one is ordered by
-requirements/   LEVEL 1   promises: what has to be true                (86 entries)
+requirements/   LEVEL 1   promises: what has to be true                (87 entries)
 decisions/      LEVEL 2   why this way, and what it costs us           (67 ADRs)
 components/     LEVEL 3   whether this component keeps them            (filled-in DoD)
 lessons.md                the evidence base: what actually happened    (160 entries)
 support.md                what a consumer can count on: versions, notice, codemods
+acr.md                    GENERATED: the Accessibility Conformance Report — WCAG 2.2 A/AA, from the gates
+acr/                      the claims behind it: one entry per criterion, every citation held by check-acr
 registry.md               GENERATED: promise → gate → control → state
 plan.md                   the task list — the only place holding "done"
 site.md                   the documentation site (apps/docs), designed before it is built
@@ -25,6 +27,7 @@ Reading order is the reverse of writing order: **requirements come out of lesson
 | understand why something is built this way    | [`decisions/`](decisions/)                                                |
 | check what is still missing                   | [`registry.md`](registry.md) — do **not** read this from the requirements |
 | know what to do next and what is already done | [`plan.md`](plan.md)                                                      |
+| hand a buyer the conformance report           | [`acr.md`](acr.md) — rendered from the gates, never typed                 |
 | find out what went wrong in the past          | [`lessons.md`](lessons.md)                                                |
 | know how long a version is supported          | [`support.md`](support.md)                                                |
 | see how the site is designed, and build it    | [`site.md`](site.md)                                                      |

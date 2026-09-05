@@ -1,4 +1,5 @@
 import { Component, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { PctContainer } from '@pacit/components/container';
 import { PctStack } from '@pacit/components/stack';
@@ -18,7 +19,7 @@ import { describePage } from '../../seo';
  */
 @Component({
   selector: 'docs-trust',
-  imports: [PctContainer, PctStack],
+  imports: [PctContainer, PctStack, RouterLink],
   templateUrl: './trust.html',
   styleUrl: './trust.scss',
 })

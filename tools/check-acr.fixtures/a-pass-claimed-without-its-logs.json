@@ -1,0 +1,9 @@
+{
+  "point": 7,
+  "check": "pass",
+  "description": "The claims say the assistive-technology pass is recorded and the log directory is empty. \"Recorded\" is a claim about files on disk, and a screen-reader pass with no transcript is the industry's ACR — the one this repository does not write.",
+  "assistiveTechnology": {
+    "recorded": true
+  },
+  "atLogs": []
+}

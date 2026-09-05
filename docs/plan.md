@@ -57,8 +57,8 @@ Snapshot, `node tools/check-docs.mjs`:
 
 | measure                                     | value |
 | ------------------------------------------- | ----: |
-| requirements                                |    86 |
-| ✅ enforced                                 |    66 |
+| requirements                                |    87 |
+| ✅ enforced                                 |    67 |
 | 🟡 partial (deliberately without a control) |    16 |
 | ⛔ gap                                      |     4 |
 
@@ -867,14 +867,38 @@ routerLink>` CTAs until `a[pctButton]` exists (**4.33**), `select.scss` 7.69 kB
     made, and it belongs here or to 2.4 — both read the same source
   - the dev-mode warnings are rich and unindexed — an id per warning, extracted from sources
     the text gates already parse, makes every warning an address a consumer can search for
-- [ ] **2.2 — ACR / VPAT** out of the existing gates — you get the machine proof earlier than the
-      document, which is the reverse of the industry norm (the EAA enforceable since June 2025,
-      EN 301 549 in tenders)
+- [~] **2.2 — ACR / VPAT** out of the existing gates — you get the machine proof earlier than the
+  document, which is the reverse of the industry norm (the EAA enforceable since June 2025,
+  EN 301 549 in tenders)
   - _from the direction review:_ the document's inputs include **a recorded
     assistive-technology pass** (NVDA and VoiceOver over the sandbox views, logs kept). The
     a11y gates end where axe ends — DOM and CSS — and an ACR claiming screen-reader support
     with zero AT runs behind it is a promise without a gate, published to the exact audience
     that will check
+  - _notes (2026-09-05):_ **the machine half landed; the pass is what remains.**
+    `docs/acr.md` is rendered by `tools/check-acr.mjs --write` from `docs/acr/claims.json` —
+    one row per criterion of WCAG 2.2 at A and AA (55), in the ITI template's tables, each
+    resting on what already runs: a gate's numbered point, a case's title in a spec, a
+    sentence in a source, a scan over the library's templates and stylesheets for what the
+    criterion forbids, or the cards' own Checks rows summed (2.1.1 is the 33 keyboard rows,
+    2.5.8 the 33 touch rows). The gate holds every citation — a renamed case, a closed
+    finding, a gate that left CI, a `<video>` in a template all fire — and compares the
+    rendering byte for byte; sixteen prepared inputs prove it. The count on the day: 28
+    Supports, 4 Partially Supports (1.3.1 and 4.1.2 on 4.8's empty listbox, 1.3.5 on the
+    number field's `autocomplete="off"`, 2.2.2 on the `hero` drift), 19 Not Applicable (six
+    proved by a scan), 4 Not Evaluated (1.4.4, 1.4.10, 1.4.12, 2.4.11 — no gate, owned by
+    4.37), 0 Does Not Support. _Not Evaluated_ at AA is the report's one deviation from the
+    template, stated in its own section: a row nothing measured says so. `req-a11y-acr`
+    puts it in the registry (87 promises, 67 enforced); the site renders it at `/acr`, linked
+    from /trust, with 0061's wording law untouched — the landing still says
+    "machine-audited". **What remains is the assistive-technology pass**: NVDA with Firefox
+    on Windows and VoiceOver with Safari on macOS over the sandbox views, logs under
+    `docs/acr/at/`, a reading in every card's `Screen-reader log` row (19 rows exist, all
+    gaps; 14 cards have no row). None of it can run on this machine; point 7 of the gate is
+    armed for the day `recorded` flips to `true`, and Orca on this Linux box is a third
+    reader worth a log of its own. Deciding run: docs-e2e **355 of 355** in three engines
+    (the `/acr` route joined the axe sweep in both schemes, and the trust page's link is
+    walked)
 - [ ] **2.3 — benchmarks as a published number** + a performance regression that fails CI
 - [ ] **2.4 — DTCG ↔ Figma / Tokens Studio bridge** — the source of truth is already DTCG, an
       unused advantage
@@ -2234,6 +2258,27 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
   - binds at: **the site's design pass (4.34)**, which is where a fourth copy would be
     written, or the first consumer who asks for the face outside the button — whichever
     lands first · _notes:_ —
+
+- [ ] **4.37 — the conformance report's rows nothing measures, and two limits with no gate**
+  - the ACR (2.2, `docs/acr.md`) is rendered from what the gates prove, and four criteria of
+    WCAG 2.2 AA have no gate behind them at all, so their rows say _Not Evaluated_ and point
+    here: **1.4.4** Resize Text (no view rendered at 200 % text size), **1.4.10** Reflow (no
+    view laid out at 320 px), **1.4.12** Text Spacing (the overrides never applied and read
+    back), **2.4.11** Focus Not Obscured (nothing measures whether the toast stack or a panel
+    covers the focused element)
+  - and two rows say _Partially Supports_ on a limit that is the library's, not the gates':
+    **1.3.5** — `[pctNumber]` writes `autocomplete="off"` on its own input, so a numeric
+    purpose from the list (`bday-day`, `bday-year`) cannot be declared on it; **2.2.2** —
+    the `hero` face's gradient drifts for as long as the button stands, and the only thing
+    that stops it is `prefers-reduced-motion`, a user agent's mechanism rather than a control
+    on the page (a consumer who ships the face beside text the user reads owes one)
+  - the shape of the first four is one e2e spec over the sandbox views — a 320 px viewport,
+    a 200 % text size, the text-spacing declarations, a focused control under an open toast —
+    each asserting that nothing is clipped, overlapped or lost; the fifth is a decision about
+    the number field's `autocomplete`; the sixth a `pause` input on the face, or the
+    finding closed by 4.36's component
+  - binds at: **the first buyer who asks for the report**, or the site's design pass (4.34),
+    whichever comes first · _notes:_ —
 
 ## 5. Gaps with no deadline
 

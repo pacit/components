@@ -9,10 +9,10 @@ There is no "built, just unverified" state — see
 
 | state       | means                                                         |  count |
 | ----------- | ------------------------------------------------------------- | -----: |
-| ✅ enforced | gate and control exist and run in CI                          |     66 |
+| ✅ enforced | gate and control exist and run in CI                          |     67 |
 | 🟡 partial  | the gate is there, the negative control is not (deliberately) |     16 |
 | ⛔ gap      | gate or control missing, with a recorded deadline             |      4 |
-| **total**   |                                                               | **86** |
+| **total**   |                                                               | **87** |
 
 ## Gaps by urgency
 
@@ -41,6 +41,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-a11y-axe`](requirements/a11y.md#req-a11y-axe)                     | ✅ enforced | `apps/sandbox-e2e/src/a11y.spec.ts`                                    | `a11y.spec.ts › "the a11y gate really does detect violations (a contr… |
 | [`req-a11y-motion`](requirements/a11y.md#req-a11y-motion)               | ✅ enforced | `apps/sandbox-e2e/src/preferences.spec.ts` — the axis itself, in the … | `preferences.spec.ts › "with no preference the motion axis stands at … |
 | [`req-a11y-forced-colors`](requirements/a11y.md#req-a11y-forced-colors) | ✅ enforced | `apps/sandbox-e2e/src/forced-colors.spec.ts` — what the browser paint… | emulation goes through `page.emulateMedia()` in the `visit()` helper,… |
+| [`req-a11y-acr`](requirements/a11y.md#req-a11y-acr)                     | ✅ enforced | `tools/check-acr.mjs` — eight points: the catalogue is the standard's… | `tools/check-acr.fixtures/` — sixteen prepared inputs, each rejected … |
 
 ## API
 

@@ -1,0 +1,9 @@
+{
+  "point": 7,
+  "check": "pass",
+  "description": "The pass is claimed as recorded and a log stands on disk, while the cards' `Screen-reader log` rows still read `none — gap`. A pass that no card points at is a transcript nobody wired to the component it measured.",
+  "assistiveTechnology": {
+    "recorded": true
+  },
+  "atLogs": ["nvda-2026-09-05.md"]
+}

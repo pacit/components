@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "wired",
+  "description": "The CI workflow is rewritten without `check-aria` in its `nx affected -t` line. A gate that runs on nobody's push proves nothing about a commit, and a report citing it would be citing the last time somebody ran it by hand.",
+  "ci": "- run: npx nx affected -t lint test e2e check-tokens check-styles check-texts check-icons\n"
+}

@@ -46,4 +46,9 @@ export const appRoutes: Routes = [
     loadComponent: () =>
       import('./pages/support/support').then((m) => m.SupportPage),
   },
+  {
+    path: 'acr',
+    title: 'Accessibility conformance report — @pacit/components',
+    loadComponent: () => import('./pages/acr/acr').then((m) => m.AcrPage),
+  },
 ];

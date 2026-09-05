@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "evidence",
+  "description": "A template of the library gains a `<video>` element while 1.2.1 keeps resting on the scan that forbids one. \"Not applicable, by construction\" is a claim about the sources, and the sources moved.",
+  "sources": {
+    "libs/components/avatar/src/avatar.html": "<video controls></video>\n"
+  }
+}

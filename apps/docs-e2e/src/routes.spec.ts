@@ -26,6 +26,7 @@ const ROUTES = [
   '/theming',
   '/trust',
   '/support',
+  '/acr',
   ...CARD_ROUTES,
 ];
 

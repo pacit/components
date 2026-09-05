@@ -22,7 +22,9 @@
         "{workspaceRoot}/*.cts",
         "{workspaceRoot}/tsconfig.root.json",
         "{workspaceRoot}/tsconfig.base.json",
-        { "externalDependencies": ["typescript"] }
+        {
+          "externalDependencies": ["typescript"]
+        }
       ],
       "options": {
         "command": "tsc --noEmit -p tsconfig.root.json"
@@ -31,7 +33,12 @@
     "check-typecheck": {
       "executor": "nx:run-commands",
       "cache": true,
-      "dependsOn": [{ "projects": "tokens", "target": "build" }],
+      "dependsOn": [
+        {
+          "projects": "tokens",
+          "target": "build"
+        }
+      ],
       "inputs": [
         "{workspaceRoot}/**/*.ts",
         "{workspaceRoot}/**/*.mts",
@@ -42,7 +49,9 @@
         "{workspaceRoot}/nx.json",
         "{workspaceRoot}/tools/check-typecheck.mjs",
         "{workspaceRoot}/tools/check-typecheck.fixtures/**/*",
-        { "externalDependencies": ["typescript"] }
+        {
+          "externalDependencies": ["typescript"]
+        }
       ],
       "options": {
         "command": "node tools/check-typecheck.mjs"
@@ -51,7 +60,12 @@
     "check-tokens": {
       "executor": "nx:run-commands",
       "cache": true,
-      "dependsOn": [{ "projects": "tokens", "target": "build" }],
+      "dependsOn": [
+        {
+          "projects": "tokens",
+          "target": "build"
+        }
+      ],
       "inputs": [
         "{workspaceRoot}/libs/tokens/src/**/*.json",
         "{workspaceRoot}/libs/tokens/build.mjs",
@@ -60,8 +74,12 @@
         "{workspaceRoot}/libs/components/**/*.scss",
         "{workspaceRoot}/tools/check-tokens.mjs",
         "{workspaceRoot}/tools/check-tokens.fixtures/**/*",
-        { "externalDependencies": ["sass"] },
-        { "dependentTasksOutputFiles": "**/*" }
+        {
+          "externalDependencies": ["sass"]
+        },
+        {
+          "dependentTasksOutputFiles": "**/*"
+        }
       ],
       "options": {
         "command": "node tools/check-tokens.mjs"
@@ -70,7 +88,12 @@
     "check-parts": {
       "executor": "nx:run-commands",
       "cache": true,
-      "dependsOn": [{ "projects": "components", "target": "build" }],
+      "dependsOn": [
+        {
+          "projects": "components",
+          "target": "build"
+        }
+      ],
       "inputs": [
         "{workspaceRoot}/libs/components/**/*.ts",
         "{workspaceRoot}/libs/components/**/*.html",
@@ -78,7 +101,9 @@
         "{workspaceRoot}/docs/components/*.md",
         "{workspaceRoot}/tools/check-parts.mjs",
         "{workspaceRoot}/tools/check-parts.fixtures/**/*",
-        { "dependentTasksOutputFiles": "**/*" }
+        {
+          "dependentTasksOutputFiles": "**/*"
+        }
       ],
       "options": {
         "command": "node tools/check-parts.mjs"
@@ -106,7 +131,9 @@
         "{workspaceRoot}/libs/components/icon/src/icon.ts",
         "{workspaceRoot}/tools/check-icons.mjs",
         "{workspaceRoot}/tools/check-icons.fixtures/**/*",
-        { "externalDependencies": ["@angular/compiler"] }
+        {
+          "externalDependencies": ["@angular/compiler"]
+        }
       ],
       "options": {
         "command": "node tools/check-icons.mjs"
@@ -123,7 +150,9 @@
         "{workspaceRoot}/.github/workflows/ci.yml",
         "{workspaceRoot}/tools/check-browsers.mjs",
         "{workspaceRoot}/tools/check-browsers.fixtures/**/*",
-        { "externalDependencies": ["@playwright/test", "playwright"] }
+        {
+          "externalDependencies": ["@playwright/test", "playwright"]
+        }
       ],
       "options": {
         "command": "node tools/check-browsers.mjs"
@@ -132,13 +161,20 @@
     "check-language": {
       "executor": "nx:run-commands",
       "cache": true,
-      "dependsOn": [{ "projects": "components", "target": "build" }],
+      "dependsOn": [
+        {
+          "projects": "components",
+          "target": "build"
+        }
+      ],
       "inputs": [
         "{workspaceRoot}/**/*",
         "{workspaceRoot}/tools/check-language.mjs",
         "{workspaceRoot}/tools/language.policy.json",
         "{workspaceRoot}/tools/check-language.fixtures/**/*",
-        { "dependentTasksOutputFiles": "**/*" }
+        {
+          "dependentTasksOutputFiles": "**/*"
+        }
       ],
       "options": {
         "command": "node tools/check-language.mjs"
@@ -171,6 +207,30 @@
       ],
       "options": {
         "command": "node tools/check-support.mjs"
+      }
+    },
+    "check-acr": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/docs/acr/**/*",
+        "{workspaceRoot}/docs/acr.md",
+        "{workspaceRoot}/docs/components/*.md",
+        "{workspaceRoot}/docs/plan.md",
+        "{workspaceRoot}/docs/lessons.md",
+        "{workspaceRoot}/docs/00-axis.md",
+        "{workspaceRoot}/docs/requirements/*.md",
+        "{workspaceRoot}/docs/decisions/*.md",
+        "{workspaceRoot}/apps/sandbox-e2e/src/**/*.ts",
+        "{workspaceRoot}/libs/components/*/src/**/*",
+        "{workspaceRoot}/libs/components/package.json",
+        "{workspaceRoot}/libs/tokens/src/**/*",
+        "{workspaceRoot}/tools/check-*.mjs",
+        "{workspaceRoot}/tools/check-acr.fixtures/**/*",
+        "{workspaceRoot}/.github/workflows/ci.yml"
+      ],
+      "options": {
+        "command": "node tools/check-acr.mjs"
       }
     },
     "check-index": {
