@@ -331,21 +331,37 @@ export class PctMenu {
   /**
    * Whether a render has happened. There is none on the server, so this is the gate that keeps
    * the overlay a browser-only thing without the component asking which platform it is on.
+   *
+   * A field and not a signal, and the difference is a whole pass of the application: a signal
+   * written after the first render is a second render for every consumer of the page, which
+   * is what the cost record read on every preview holding one of these (plan 4.38). What the
+   * effect below would have done on that write is done once, in the callback that flips it.
    */
-  private readonly rendered = signal(false);
+  private rendered = false;
 
   constructor() {
-    afterNextRender(() => this.rendered.set(true));
+    afterNextRender(() => {
+      this.rendered = true;
+      // Open what was asked open before there was a render to open into, and say what the
+      // development warning has to say now that it can — the two things the flip used to
+      // trigger through the effect.
+      if (!untracked(this.inline) && untracked(this.open)) {
+        const trigger = untracked(this.trigger);
+        if (trigger) this.attach(trigger);
+      }
+      if (isDevMode()) this.warnOnTrigger();
+    });
 
     // The popover's effect, and its `untracked` body for the popover's reason: attaching reads
     // the placement, the template and the properties the overlay layer has just written, and
     // every one of those would otherwise be a reason to run this again
     // ([`lesson-94`](../../../../docs/lessons.md#lesson-94)).
     effect(() => {
-      // `rendered` is read before the branch rather than as a gate over it: inline there is no
-      // browser-only step to wait for — the panel is drawn by this component's own template —
-      // and an early return here would leave the mode untracked until the first render.
-      const rendered = this.rendered();
+      // The three signals are read before any branch, so that every one of them is tracked
+      // from the first run: inline there is no browser-only step to wait for — the panel is
+      // drawn by this component's own template — and an early return on `rendered` before the
+      // reads would leave `open` and `trigger` untracked until something else re-ran this.
+      const rendered = this.rendered;
       const inline = this.inline();
       const trigger = this.trigger();
       const open = this.open();
@@ -861,9 +877,14 @@ export class PctMenu {
    * the control with the same condition that sets the input, and then there is nothing to say.
    */
   private warnOnTrigger(): void {
-    if (!this.rendered()) return;
-    if (this.inline()) {
-      if (!this.trigger()) return;
+    // The signals are read before the gate so that the effect running this tracks them from
+    // its first run — `rendered` is a field, and flips nothing.
+    const inline = this.inline();
+    const trigger = this.trigger();
+    const open = this.open();
+    if (!this.rendered) return;
+    if (inline) {
+      if (!trigger) return;
       console.warn(
         `[pct-menu] A \`pctMenuTrigger\` for an inline menu: the panel is rendered where it ` +
           `was written, so the control announces \`aria-haspopup="menu"\` and \`aria-expanded\` ` +
@@ -872,7 +893,7 @@ export class PctMenu {
       );
       return;
     }
-    if (!this.open() || this.trigger()) return;
+    if (!open || trigger) return;
     console.warn(
       `[pct-menu] An open menu with no trigger: there is nothing for the panel to hang off, ` +
         `so nothing is shown. Put \`[pctMenuTrigger]\` on the control that opens it.`,

@@ -4299,3 +4299,32 @@ width of its own; the two that were not are the two whose only content sizes its
 container. The rule that generalises is the platform's, not the stage's: **`100%` of an
 element sized by its content is a circle, and the browser resolves it to zero without a
 word.**
+
+### <a id="lesson-161"></a>`lesson-161` — A signal written after the first render is a second render for everybody, and so is a view attached then
+
+The cost record (plan 2.3) read **2 renders** for the `menu`, `popover` and `toast` previews
+and 1 for the other thirty, and the three had one shape in common: something flipped in
+`afterNextRender`. The menu and the popover kept a `rendered` signal — the gate that keeps the
+overlay a browser-only thing without asking which platform it is on — and an effect read it;
+the toaster kept a `mounted` signal gating the computed the viewport's template reads, and
+behind it attached the viewport to the application and set its input. A signal write notifies
+its live consumers before anybody looks at the value it produced, and attaching a view or
+setting an input tells the scheduler to run the application again whatever the view's state
+(`updateAncestorTraversalFlagsOnAttach` notifies first and reads the flags after) — so every
+page holding one of these paid a whole pass, whether or not anything had changed: the toaster's
+gate flipped over an empty list on every page load.
+
+The fix was not "move the write into `afterNextRender`", which is where it already stood.
+It was to write no signal at all: the flag is a field, and the one thing the flip used to
+trigger through the effect — opening what was asked open before there was a render to open
+into, and saying what the development warning has to say — is done once in the callback that
+flips it, with the effect's signals read **before** the gate so that they are tracked from its
+first run (the first version forgot that, and the warnings' effects never ran again). The
+toaster keeps a queue for messages raised before the region exists, renders the empty region
+by hand, and joins change detection with its first message — which is a pass anyway. The
+record reads 1 for all three and the gate holds it there.
+
+The rule that generalises: **`afterNextRender` is the right time for DOM work and the wrong
+time for anything the scheduler is told about** — a signal a template or an effect reads, an
+input set, a view attached. Each is a render, and a render is charged to every consumer of
+the page.

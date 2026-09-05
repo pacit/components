@@ -2371,7 +2371,7 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
   - binds at: **the first buyer who asks for the report**, or the site's design pass (4.34),
     whichever comes first · _notes:_ —
 
-- [ ] **4.38 — three previews settle in two render passes**
+- [x] **4.38 — three previews settle in two render passes**
   - the cost record (2.3, `apps/docs/bench.snapshot.md`) reads **2 renders** for the `menu`,
     `popover` and `toast` previews and 1 for the other thirty: after the first pass
     something wrote a signal a template had already read, and the application went round
@@ -2383,7 +2383,25 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     to construction or to `afterNextRender`; the record then reads 1 and the gate makes
     the change visible, which is the point of the record
   - binds at: **the next change to the overlay trigger or the toaster** — the file will be
-    open · _notes:_ —
+    open · _notes:_ **closed the same day, from the record's own reading.** Not one shared
+    piece but one shared shape, and behind the toaster's a second cause of its own: the menu
+    and the popover kept a `rendered` signal flipped in `afterNextRender` — the gate that
+    keeps the overlay a browser-only thing — and an effect read it, so the flip after the
+    first render was a whole pass of the application on every page holding one; the toaster
+    kept a `mounted` signal gating the viewport's list the same way, and attached the
+    viewport to the application and set its input after that render, which the scheduler
+    answers with a pass unconditionally. The flag is a field now, and what its flip used to
+    trigger through the effect is done once in the callback that flips it — with the
+    effect's signals read before the gate, because the first version forgot that and the
+    development warnings' effects never ran again (three unit cases said so); the toaster
+    keeps a queue for messages raised before the region exists and joins change detection
+    with its first message, which is a pass anyway. The record reads **1** for all three,
+    0 scenes settling in more than one render, and `check-bench` holds it there
+    ([`lesson-161`](lessons.md#lesson-161)). Unit: 1150 of 1150. Sandbox-e2e for the three, chromium: 52 of 52.
+    Deciding run, after 2.6 and this: docs-e2e **364 of 364** in three engines — 360 on the
+    first pass, the four left being the trust page counting 160 lessons off a dev server that
+    had not picked up the regenerated content (161 on disk, and on the page once the server
+    was restarted) and one firefox anchor timing, all six green alone
 
 ## 5. Gaps with no deadline
 

@@ -257,11 +257,26 @@ export class PctPopover {
   /**
    * Whether a render has happened. There is none on the server, so this is the gate that keeps
    * the overlay a browser-only thing without the component asking which platform it is on.
+   *
+   * A field and not a signal, and the difference is a whole pass of the application: a signal
+   * written after the first render is a second render for every consumer of the page, which
+   * is what the cost record read on every preview holding one of these (plan 4.38). What the
+   * effect below would have done on that write is done once, in the callback that flips it.
    */
-  private readonly rendered = signal(false);
+  private rendered = false;
 
   constructor() {
-    afterNextRender(() => this.rendered.set(true));
+    afterNextRender(() => {
+      this.rendered = true;
+      // Open what was asked open before there was a render to open into, and say what the
+      // development warning has to say now that it can — the two things the flip used to
+      // trigger through the effects.
+      if (!untracked(this.inline) && untracked(this.open)) {
+        const trigger = untracked(this.trigger);
+        if (trigger) this.attach(trigger);
+      }
+      if (isDevMode()) this.warnOnNoTrigger();
+    });
 
     // Three dependencies and no more, which is why the body is `untracked`: attaching reads
     // the placement, the template and the properties the overlay layer has just written, and
@@ -272,16 +287,19 @@ export class PctPopover {
     //
     // The mode is read FIRST and leaves through a return of its own, so that neither branch
     // takes the other's dependencies: inline waits for no render — the panel is in the template
-    // — and the overlay half must not re-run on an `open` it cannot act on yet.
+    // — and the overlay half acts on an `open` only once there has been a render to act in.
     effect(() => {
       if (this.inline()) {
         const open = this.open();
         untracked(() => this.syncInline(open));
         return;
       }
-      if (!this.rendered()) return;
+      // Both signals are read before the gate on `rendered`, a field and not a signal (see it
+      // above): were the return to come first, nothing would re-run this on the first `open`
+      // after the render, because nothing would have been tracked.
       const trigger = this.trigger();
       const open = this.open();
+      if (!this.rendered) return;
       untracked(() => {
         if (open) {
           if (trigger) this.attach(trigger);
@@ -616,8 +634,12 @@ export class PctPopover {
    * stands on a wide page — has no control to open it at all.
    */
   private warnOnNoTrigger(): void {
-    if (this.inline() || !this.rendered() || !this.open() || this.trigger())
-      return;
+    // All three read before the gate, so that the effect running this tracks them from its
+    // first run — `rendered` is a field, and flips nothing.
+    const inline = this.inline();
+    const open = this.open();
+    const trigger = this.trigger();
+    if (inline || !this.rendered || !open || trigger) return;
     console.warn(
       `[pct-popover] An open popover with no trigger: there is nothing for the panel to hang ` +
         `off, so nothing is shown. Put \`[pctPopoverTrigger]\` on the control that opens it.`,

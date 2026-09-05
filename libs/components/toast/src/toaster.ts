@@ -2,7 +2,6 @@ import {
   afterNextRender,
   ApplicationRef,
   ComponentRef,
-  computed,
   createComponent,
   DestroyRef,
   DOCUMENT,
@@ -78,17 +77,25 @@ export class PctToaster implements PctToastHost {
   };
 
   private readonly list = signal<readonly PctToastState[]>([]);
-  private readonly mounted = signal(false);
 
   /**
-   * What the viewport draws. Empty until the region exists, so that the first render of a
-   * `role="log"` is a render of an empty one — a message raised before the application has
-   * been shown waits for the pass after, rather than arriving inside a region nothing has
-   * registered.
+   * Messages raised before the region existed. They wait here, off the screen, and move into
+   * the list on the pass after the viewport's first render — so that the first render of a
+   * `role="log"` is a render of an empty one, and a message never arrives inside a region
+   * nothing has registered. A queue, and not a `mounted` signal gating a computed the
+   * viewport reads: a signal written after the first render is a second pass for every
+   * consumer of the page, and the gate wrote one on every page whether or not anything was
+   * waiting (plan 4.38). With a queue the only write after the first render is the one that
+   * shows a message.
    */
-  readonly toasts = computed(() => (this.mounted() ? this.list() : []));
+  private pending: PctToastState[] = [];
+
+  /** What the viewport draws. Empty until the region exists — see {@link pending}. */
+  readonly toasts = this.list.asReadonly();
 
   private viewport: ComponentRef<PctToastViewport> | null = null;
+  /** Whether the viewport is in the application's change detection — see {@link attach}. */
+  private attached = false;
   private lastId = 0;
   private held = false;
   /** Whether the stack is in the top layer — see {@link raise}. */
@@ -135,21 +142,28 @@ export class PctToaster implements PctToastHost {
       this.clocks.set(id, { remaining: duration, armedAt: 0, timer: null });
     }
 
-    this.list.update((list) =>
-      this.capped([
-        ...list,
-        { id, text: source.text, urgent, actionLabel: action?.label ?? '' },
-      ]),
-    );
-    if (this.viewport !== null) {
-      // Read on every message and not once at the opening, for the reason `pctOverlay` reads
-      // on every open: a theme is switched, a direction is switched, and a viewport created at
-      // bootstrap would otherwise be showing the page as it was then. There is nothing to
-      // repaint in between — a stack with nothing in it is not on the screen.
-      this.viewport.setInput('inherited', pctInheritedFrom(this.root()));
-      this.raise();
-      this.arm(id);
+    const toast: PctToastState = {
+      id,
+      text: source.text,
+      urgent,
+      actionLabel: action?.label ?? '',
+    };
+    if (this.viewport === null) {
+      // No screen yet — on a server there never is one — so the message waits with the
+      // others, in order; `open()` shows them on the pass after the empty render.
+      this.pending.push(toast);
+      return { id, dismiss: () => this.dismiss(id) };
     }
+
+    this.attach();
+    this.list.update((list) => this.capped([...list, toast]));
+    // Read on every message and not once at the opening, for the reason `pctOverlay` reads
+    // on every open: a theme is switched, a direction is switched, and a viewport created at
+    // bootstrap would otherwise be showing the page as it was then. There is nothing to
+    // repaint in between — a stack with nothing in it is not on the screen.
+    this.viewport.setInput('inherited', pctInheritedFrom(this.root()));
+    this.raise();
+    this.arm(id);
 
     return { id, dismiss: () => this.dismiss(id) };
   }
@@ -157,6 +171,7 @@ export class PctToaster implements PctToastHost {
   /** Takes one message down. Unknown or already-gone ids are a no-op. */
   dismiss(id: number): void {
     this.forget(id);
+    this.pending = this.pending.filter((toast) => toast.id !== id);
     this.list.update((list) => list.filter((toast) => toast.id !== id));
     // Nothing left to hover or to focus: the hold cannot be handed back by an event that
     // will not arrive, because the element that would have fired it has gone.
@@ -165,7 +180,9 @@ export class PctToaster implements PctToastHost {
 
   /** Takes every message down — for a route change, or a sign-out. */
   clear(): void {
-    for (const toast of this.list()) this.forget(toast.id);
+    for (const toast of [...this.pending, ...this.list()])
+      this.forget(toast.id);
+    this.pending = [];
     this.list.set([]);
     if (this.held) this.release();
   }
@@ -235,6 +252,18 @@ export class PctToaster implements PctToastHost {
     clock.timer = setTimeout(() => this.dismiss(id), clock.remaining);
   }
 
+  /**
+   * Puts the viewport into the application's change detection — once, with the first message.
+   * Attaching a view tells the scheduler to run the application again whatever the view's
+   * state, so an empty region attached on the first render was a second pass on every page
+   * holding a toaster (plan 4.38); a message is a pass anyway, and the viewport joins on it.
+   */
+  private attach(): void {
+    if (this.attached || this.viewport === null) return;
+    this.appRef.attachView(this.viewport.hostView);
+    this.attached = true;
+  }
+
   private open(): void {
     const ref = createComponent(PctToastViewport, {
       environmentInjector: this.environmentInjector,
@@ -244,11 +273,14 @@ export class PctToaster implements PctToastHost {
       }),
     });
     this.document.body.appendChild(ref.location.nativeElement);
-    this.appRef.attachView(ref.hostView);
-    ref.setInput('inherited', pctInheritedFrom(this.root()));
-    // The empty render, and the whole reason `toasts` is gated on `mounted` rather than
-    // being the list itself: the region has to be in the document and registered before it
-    // holds a sentence.
+    // The empty render, and the whole reason a message raised before this waits in
+    // `pending` rather than standing in the list: the region has to be in the document and
+    // registered before it holds a sentence. Rendered by hand, not yet attached to the
+    // application and not yet told what it inherits: attaching a view and setting an input
+    // both tell the scheduler to run the whole application again, unconditionally, and an
+    // empty region has nothing to show for that pass (plan 4.38). It joins change detection
+    // with its first message (`attach`), which is a pass anyway, and takes what it inherits
+    // on every message, as it always did.
     ref.changeDetectorRef.detectChanges();
 
     this.viewport = ref;
@@ -260,9 +292,15 @@ export class PctToaster implements PctToastHost {
     // an ordinary fixed box — but a region is registered on the strength of what the platform
     // does by default, not of what a stylesheet talks it out of.)
     this.raise();
-    this.mounted.set(true);
-    // The clocks of whatever was raised before there was a screen to be on.
-    for (const toast of this.list()) this.arm(toast.id);
+    // Whatever was raised before there was a screen to be on — shown now, on the pass after
+    // the empty render, and written only when there is something to show (see `pending`).
+    if (this.pending.length) {
+      this.attach();
+      const waiting = this.pending;
+      this.pending = [];
+      this.list.update((list) => this.capped([...list, ...waiting]));
+      for (const toast of waiting) this.arm(toast.id);
+    }
   }
 
   /**
@@ -302,15 +340,17 @@ export class PctToaster implements PctToastHost {
   }
 
   private close(): void {
-    for (const toast of this.list()) this.forget(toast.id);
+    for (const toast of [...this.pending, ...this.list()])
+      this.forget(toast.id);
+    this.pending = [];
     this.list.set([]);
     if (this.viewport === null) return;
-    this.appRef.detachView(this.viewport.hostView);
+    if (this.attached) this.appRef.detachView(this.viewport.hostView);
+    this.attached = false;
     this.viewport.destroy();
     this.viewport.location.nativeElement.remove();
     this.viewport = null;
     this.shown = false;
-    this.mounted.set(false);
   }
 
   /**

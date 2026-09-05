@@ -30,10 +30,10 @@ dialog 3 2 3 1
 drawer 14 6 4 1
 field 14 4 4 1
 grid 7 2 0 1
-menu 4 2 8 2
+menu 4 2 8 1
 number 13 4 5 1
 pagination 27 7 8 1
-popover 3 2 1 2
+popover 3 2 1 1
 progress 11 3 2 1
 radio 18 5 10 1
 select 8 6 4 1
@@ -46,7 +46,7 @@ tabs 12 4 12 1
 text 13 4 4 1
 textarea 13 4 6 1
 theme 4 3 0 1
-toast 5 2 6 2
+toast 5 2 6 1
 tooltip 2 2 7 1
 tree 21 7 10 1
 ```
@@ -64,37 +64,37 @@ day as the counts beside them. jsdom lays nothing out, so this is the library's 
 work — templates, signals, listeners — and not a browser's.
 
 ```
-accordion 8138
-avatar 3426
-badge 1739
-breadcrumb 5989
-button 4738
-calendar 20768
-checkbox 6338
-chips 5423
-container 1186
-date 5025
-dialog 3256
-drawer 4507
-field 5993
-grid 1438
-menu 4767
-number 5602
-pagination 6357
-popover 3450
-progress 3782
-radio 4595
-select 5421
-skeleton 3113
-slider 5790
-stack 1197
-stepper 5589
-switch 2572
-tabs 4782
-text 3875
-textarea 10011
-theme 1761
-toast 2243
-tooltip 2161
-tree 5764
+accordion 8340
+avatar 3429
+badge 1771
+breadcrumb 5682
+button 4759
+calendar 21499
+checkbox 6961
+chips 5877
+container 1304
+date 5539
+dialog 3463
+drawer 5055
+field 6360
+grid 1524
+menu 4650
+number 5992
+pagination 6662
+popover 3139
+progress 3941
+radio 4751
+select 5577
+skeleton 3343
+slider 5296
+stack 1300
+stepper 5608
+switch 2480
+tabs 4666
+text 4103
+textarea 10506
+theme 1845
+toast 2458
+tooltip 1768
+tree 5441
 ```
