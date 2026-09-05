@@ -67,7 +67,7 @@
       "bytes": 400,
       "pulled": ["./rig"],
       "external": ["@angular/cdk/testing"],
-      "inText": ["./alpha", "./beta", "./kernel"],
+      "inText": ["./alpha", "./beta"],
       "residue": []
     }
   },

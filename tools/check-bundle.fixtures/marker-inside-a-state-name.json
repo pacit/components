@@ -1,0 +1,9 @@
+{
+  "// defect": "`./alpha`'s own probe names `pct-alpha` only inside `\"pct-alphabet\"` and `\"data-pct-alphabet\"` — a selector and a state attribute of something else — while the metafile counts the entrypoint in. A read taking the substring for the token would find the two reads in agreement, and the drift would be hidden by the name of a stranger.",
+  "point": 7,
+  "check": "markers",
+  "probeText": {
+    "ep": "./alpha",
+    "text": "let a=class{};a.ɵcmp=i0.ɵɵdefineComponent({type:a,selectors:[[\"pct-alphabet\"]],hostVars:1,hostBindings:function(e,n){e&2&&i0.ɵɵattribute(\"data-pct-alphabet\",n.chosen())}});let k=class{};k.ɵdir=i0.ɵɵdefineDirective({type:k,selectors:[[\"\",\"pctKernelPanel\",\"\"]]});"
+  }
+}

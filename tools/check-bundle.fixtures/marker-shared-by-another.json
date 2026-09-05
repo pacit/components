@@ -1,0 +1,9 @@
+{
+  "// defect": "The marker `pct-alpha` is exported by `./beta` as well as by `./alpha` — a re-export — so the text read reports both entrypoints wherever either really is.",
+  "point": 4,
+  "check": "presence",
+  "addMarker": {
+    "ep": "./beta",
+    "markers": ["pct-alpha", "pct-beta"]
+  }
+}

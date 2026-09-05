@@ -4328,3 +4328,28 @@ The rule that generalises: **`afterNextRender` is the right time for DOM work an
 time for anything the scheduler is told about** — a signal a template or an effect reads, an
 input set, a view attached. Each is a render, and a render is charged to every consumer of
 the page.
+
+### <a id="lesson-162"></a>`lesson-162` — A rule on the inputs of an imprecise read is the workaround written down
+
+`check-bundle` read an entrypoint's presence in a bundle by searching the text for its
+selector, as a plain substring — and `pct-select` is inside `data-pct-selected`, so every
+bundle holding a calendar read as holding the select. The calendar's day was renamed
+`chosen` on the spot; a month later the tabs wanted `selected` for the same reason and took
+`chosen` for the same reason, with the token beside it still named `selected` because a
+token's name is not scanned. Two components now wrote one idea with two words, and the thing
+deciding which was a gate's accident nobody had written down. The item that recorded it
+offered two closes: a word-boundary in the read, or a rule in `check-parts` that no state
+name may contain a selector.
+
+The second would have been the accident made permanent. A marker is kept because it survives
+linking as DATA, and data stands in a bundle as a string literal — `[["pct-select"]]` — so the
+read has a boundary of its own to use: the quotes. Read that way, `"data-pct-selected"` and
+`"pct-select-option"` contain the token and neither is it, and the guard that had stood in for
+the missing boundary (no marker a substring of another's) had nothing left to guard. It
+narrowed to what a literal read still cannot tell apart — two entrypoints exporting one
+selector — and the read itself got a control over a prepared text.
+
+The rule that generalises: **when a gate misreads a name, fix the read, and never legislate
+the names around it.** A naming rule that exists to keep a read from misfiring is enforced on
+people who cannot see the read, and the second of them finds the workaround and not the
+reason — which is the shape the item itself described, one floor down.

@@ -347,19 +347,23 @@ const checkBundle = (input) => {
         `textual one`,
     );
 
-  //    d) one entrypoint's marker must not be a substring of another's — a search over
-  //       the text would then hit on somebody else's content.
+  //    d) no two entrypoints share a marker — the text read tells entrypoints apart by
+  //       their selectors, and a selector two of them export (a re-export, say) reads as
+  //       both wherever either really is. A marker INSIDE another's used to be guarded
+  //       here too, and is not a case any more: the read takes the literal, quotes
+  //       included (`holds`), so `pct-select` stands apart from `pct-select-option` the way
+  //       it stands apart from `data-pct-selected`. A guard on the names would have been a
+  //       workaround for the read (plan 4.13).
   const allMarkers = Object.entries(markers).flatMap(([e, m]) =>
     m.map((marker) => ({ e, marker })),
   );
   for (const a of allMarkers)
     for (const b of allMarkers)
-      if (a.e !== b.e && b.marker.includes(a.marker))
+      if (a.e !== b.e && a.marker === b.marker)
         throw new BundleError(
           'presence',
-          `marker \`${a.marker}\` (${a.e}) is a substring of marker \`${b.marker}\` ` +
-            `(${b.e}) — a textual read would report \`${a.e}\` everywhere \`${b.e}\` ` +
-            `really is`,
+          `marker \`${a.marker}\` is exported by \`${a.e}\` and by \`${b.e}\` — a ` +
+            `textual read cannot tell the two apart`,
         );
 
   // 5. Did the probe measure what a consumer carries? Points 9 and 10 read a NUMBER, and a
@@ -793,6 +797,12 @@ const entrypointFiles = (manifest) => {
  *
  * Of a selector's tokens only those with the `pct` prefix are kept — `button` in
  * `button[pctButton]` is an HTML tag name and would match anything.
+ *
+ * And a marker is read the way it stands: as a STRING LITERAL, quotes included (`holds`).
+ * A plain substring read found `pct-select` inside `"data-pct-selected"`, a state attribute
+ * of the calendar, and reported the select in every bundle holding a calendar — the name
+ * was changed by hand, twice, and the second time the token beside it kept the word (plan
+ * 4.13). The ambiguity was the read's, not the name's.
  */
 const collectMarkers = async (dist, files) => {
   await import('@angular/compiler');
@@ -822,6 +832,25 @@ const collectMarkers = async (dist, files) => {
   }
   return { markers: markersOf, plain: plainOf };
 };
+
+/**
+ * Whether a bundle's text holds a marker: the token as a string literal, either quote,
+ * because that is the form a selector takes in a linked bundle — `[["pct-select"]]`,
+ * `[["button","pctButton",""]]` — and the one form nothing else takes. `"data-pct-selected"`
+ * and `"pct-select-option"` both contain `pct-select` and neither is it. What this read
+ * gives up is nothing: a marker is data in the bundle, and data is quoted.
+ */
+const holds = (text, marker) =>
+  new RegExp(`(["'])${marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\1`).test(
+    text,
+  );
+
+/** The entrypoints whose markers a bundle's text holds. */
+const presentIn = (text, markers) =>
+  Object.entries(markers)
+    .filter(([, m]) => m.some((x) => holds(text, x)))
+    .map(([e]) => e)
+    .sort();
 
 /**
  * The directory in which the probes see the package UNDER ITS OWN NAME, through
@@ -958,10 +987,7 @@ const probe = async (
     external: [
       ...new Set(output.imports.filter((i) => i.external).map((i) => i.path)),
     ].sort(),
-    inText: Object.entries(markers)
-      .filter(([, m]) => m.length > 0 && m.some((x) => text.includes(x)))
-      .map(([e]) => e)
-      .sort(),
+    inText: presentIn(text, markers),
     residue: RESIDUE.filter((name) => text.includes(name)),
   };
 };
@@ -1055,10 +1081,7 @@ const builderProbe = (dist, markers, entrypoints) => {
 
   return {
     entrypoints,
-    found: Object.entries(markers)
-      .filter(([, m]) => m.length > 0 && m.some((x) => bundle.includes(x)))
-      .map(([e]) => e)
-      .sort(),
+    found: presentIn(bundle, markers),
     overlay: bundle.includes(MARKER_OVERLAY),
   };
 };
@@ -1205,6 +1228,13 @@ const buildFixture = (fx) => {
       ...input.probes[fx.addPulled.ep].pulled,
       fx.addPulled.what,
     ].sort();
+  // The read itself, over a prepared TEXT: `inText` is computed by the same `presentIn`
+  // the probes use, so a case here holds the read and not only the comparison behind it.
+  if (fx.probeText)
+    input.probes[fx.probeText.ep].inText = presentIn(
+      fx.probeText.text,
+      input.markers,
+    );
   if (fx.addInText)
     input.probes[fx.addInText.ep].inText = [
       ...input.probes[fx.addInText.ep].inText,

@@ -1787,7 +1787,7 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     either the next one with a parser (a time field, a masked input) or 4.12 itself being
     picked up as filler · _notes:_ —
 
-- [ ] **4.13 — a state attribute that contains another entrypoint's selector is read as that
+- [x] **4.13 — a state attribute that contains another entrypoint's selector is read as that
       entrypoint**
   - `check-bundle` point 7 reads an entrypoint's presence in a probe two ways — the bundler's
     metafile and a search of the bundle's TEXT for a marker, which is a component's selector
@@ -1811,6 +1811,19 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     `--pct-tabs-tab-border-selected`, because a token name is not scanned. So one idea is now
     written with two words in two components, and what decides which is a rule nothing
     enforces: the second person to want it will find the workaround and not the reason
+  - _notes:_ **closed on the read, not on the names (2026-09-05).** The ambiguity was the
+    gate's: a marker is a selector token kept because it survives linking as DATA, and data
+    stands in a bundle as a string literal — `[["pct-select"]]`, `[["button","pctButton",""]]`
+    — so that is what the read looks for now, quotes included, in both probes. `"data-pct-selected"`
+    and `"pct-select-option"` contain the token and neither is it. The guard that had stood
+    in for the read — no marker a substring of another's — has nothing left to guard and is
+    narrowed to what a literal read still cannot tell apart, two entrypoints exporting one
+    selector; its fixture became `marker-shared-by-another/`, and a new one holds the read
+    itself over a prepared text (`marker-inside-a-state-name/`, through the same `presentIn`
+    the probes call): 30 doctored inputs, the live run's point 4 the positive side. No rule
+    went into `check-parts`, because a naming rule would have been the workaround written
+    down — `selected` is a word a state may have again; `chosen` stays where it is, a name
+    two components carry and nobody asked to move ([`lesson-162`](lessons.md#lesson-162))
 
 - [ ] **4.14 — a message reports nothing by colour, and the channel that would repair it is a
       decision nobody has made**

@@ -178,8 +178,9 @@ exemption would cover every entrypoint the day the linker stopped attaching `ɵc
 declaration: it exists, it exports no component, a `silent` one carries no marker in its text,
 and a `quotes` one (`./testing`, whose harnesses carry every selector as data) is held by the
 metafile alone. The rest is the denominator: two readings of the entrypoint list, presence of the
-measured entrypoint in the probe, a second reading of isolation from the bundle text, a
-differential check, and a repeat of the measurement with the **real**
+measured entrypoint in the probe, a second reading of isolation from the bundle text — a
+marker read as the string literal it is in a linked bundle, so a state attribute or a longer
+selector containing it is not it — a differential check, and a repeat of the measurement with the **real**
 `@angular/build:application`. Point 12 holds the FILE rather than the measurement: the
 snapshot is exactly what the renderer writes, prose included — the points above read it
 through a map of its rows, so a paragraph rewritten in the renderer used to stay out of the
@@ -188,8 +189,10 @@ file until some byte happened to move with it
 what the tarball weighs: point 5 requires the probe to be built the way a consumer builds —
 the Angular linker run over the package and `ngDevMode` folded — and the two together take a
 component entrypoint to some 60% of its unlinked size
-**Control:** `tools/check-bundle.fixtures/` — 29 doctored inputs, each rejected on its own
+**Control:** `tools/check-bundle.fixtures/` — 30 doctored inputs, each rejected on its own
 point; among them `entrypoint-pulls-neighbour/` (importing `./alpha` pulls in `./beta`),
+`marker-inside-a-state-name/` (a probe's text holds a selector only inside a stranger's name,
+and the read that takes the literal does not take it for the entrypoint),
 `plain-entrypoint-with-a-component/`, `plain-entrypoint-undeclared/` and
 `plain-declaration-naming-nobody/` (a plain declaration that is stale, missing or names
 nobody), `quotes-entrypoint-pulls-neighbour/` (the entrypoint whose text is never read pulls a

@@ -1,9 +1,0 @@
-{
-  "// defect": "The marker `pct-alpha` is a substring of the marker `pct-alpha-strong` from another entrypoint, so a text search would report `./alpha` everywhere `./beta` really is.",
-  "point": 4,
-  "check": "presence",
-  "addMarker": {
-    "ep": "./beta",
-    "markers": ["pct-alpha-strong"]
-  }
-}
