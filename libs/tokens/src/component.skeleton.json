@@ -26,16 +26,16 @@
         "$value": "{pct.border}",
         "$description": "Background of the track."
       },
-      "$comment-fill-bg": "The sheen is the page's own colour travelling across the placeholder, which is why it is `surface` and not a third colour: it lightens the bar on a light theme and darkens it on a dark one, and in both it is a colour the skin already has.",
+      "$comment-fill-bg": "The sheen is the page's own colour travelling across the placeholder, which is why it is `surface` and not a third colour: it lightens the bar on a light theme and darkens it on a dark one, and in both it is a colour the skin already has. The sheet paints it as a shadow rather than a band — a gradient from nothing to this colour at sixty per cent and back — so what a theme sets here is the colour of the shade at its middle.",
       "fill-bg": {
         "$type": "color",
         "$value": "{pct.surface}",
         "$description": "Colour of the shimmer."
       },
-      "$comment-fill-size": "How much of the bar the sheen covers, the progress band's number and for the same reason: wide enough to be seen crossing at the loop duration, narrow enough that the placeholder behind it stays a placeholder.",
+      "$comment-fill-size": "How much of the bar the sheen covers. Two thirds, and no longer the progress band's third: the sheen is a gradient from nothing to its middle and back, so this width is the length of the ramp — a third of the bar on each side — and a band a third wide would ramp in a sixth and show an edge. The placeholder behind it stays a placeholder because the middle is faint, not because the shade is narrow.",
       "fill-size": {
         "$type": "dimension",
-        "$value": "33%",
+        "$value": "66%",
         "$description": "Width of the shimmer."
       }
     }

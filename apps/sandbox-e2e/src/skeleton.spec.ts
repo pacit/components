@@ -1,6 +1,6 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { boxOf, visit } from './support/dom';
-import { firstDurationMs, styleOf } from './support/css';
+import { firstDurationMs, rootToken, styleOf } from './support/css';
 
 /**
  * What is measured here is mostly SPACE, and that is the component: a skeleton exists to hold
@@ -154,13 +154,27 @@ test.describe('PctSkeleton — the shape of content that has not arrived', () =>
     await expect(region).not.toHaveAttribute('aria-busy', 'true');
   });
 
-  test('takes its sheen’s duration from the motion axis', async ({ page }) => {
+  test('takes its sheen’s duration from the motion axis — three loops of it', async ({
+    page,
+  }) => {
     const sheen = fill(page, 'skeleton-text');
     // Waited for rather than read once: a style read before the first resolution answers with
     // an empty string, which is indistinguishable from a wrong value (the progress bar's own
-    // red, `plan 4.2`).
-    await expect(sheen).toHaveCSS('animation-duration', '0.6s');
-    expect(await firstDurationMs(sheen, 'animation-duration')).toBe(600);
+    // red, `plan 4.2`). Three loops and not one: the loop is a band's tempo and a shadow at
+    // that tempo flickers — and the factor is read against the token, so the claim stays
+    // "derived from the axis" rather than "is 1.8s".
+    // The token is written in milliseconds and the browser serialises a duration in
+    // seconds, so the reading is kept in whole milliseconds and converted once — `0.6 * 3`
+    // is `1.7999999999999998` in JavaScript, and a string built from it matches nothing.
+    const loopMs = Math.round(
+      parseFloat(await rootToken(page, '--pct-motion-loop-duration')),
+    );
+    expect(loopMs).toBe(600);
+    await expect(sheen).toHaveCSS(
+      'animation-duration',
+      `${(loopMs * 3) / 1000}s`,
+    );
+    expect(await firstDurationMs(sheen, 'animation-duration')).toBe(loopMs * 3);
   });
 
   test('travels the sheen across the placeholder', async ({ page }) => {
@@ -247,9 +261,14 @@ test.describe('PctSkeleton — the shape of content that has not arrived', () =>
         bars.nth(i).locator('[data-pct-part="fill"]').first(),
       );
 
-      // A third of the bar and as tall as it — `--pct-skeleton-fill-size`, the progress
-      // band's own number.
-      expect(band.width / bar.width).toBeCloseTo(0.33, 2);
+      // As wide as the token says and as tall as the bar — two thirds, read from the token
+      // rather than typed, because the width is the length of the shade's ramp and the
+      // number is the token's to decide.
+      const size = parseFloat(
+        await rootToken(page, '--pct-skeleton-fill-size'),
+      );
+      expect(size).toBe(66);
+      expect(band.width / bar.width).toBeCloseTo(size / 100, 2);
       expect(band.height).toBeCloseTo(bar.height, 0);
 
       // And no edge: the sheen is the fill token at its middle fading to nothing at both

@@ -91,28 +91,46 @@ The transfer from `block-size` to width is then read in three engines by the san
 shapes card writes `block-size: 3rem` and nothing else on its disc, and the case asserts the
 width against the height and the track's radius against `50%`.
 
-## The sheen loses its edge, and stays an element
+## The sheen is a shadow, and stays an element
 
 The same review found the sheen sharp — a block of the page's colour sliding across a grey
-bar, which reads as a second placeholder passing behind the first rather than as a light. It
-is now the fill token at its middle and nothing at both ends:
+bar, which reads as a second placeholder passing behind the first rather than as a light —
+and the second look asked for less still: very soft, slower, at an angle, "only a shadow".
+Four numbers do that, and each was tried against the page before it was written down:
+
+- **two thirds of the bar wide** (`--pct-skeleton-fill-size`, 33% → 66%): the shade is a
+  gradient from nothing to its middle and back, so its width is the length of the ramp — a
+  third of the bar on each side. A third-wide band ramps in a sixth and shows an edge;
+- **the fill token at sixty per cent** over the placeholder, through `color-mix` as the
+  dialog's backdrop and not through `opacity` (`req-token-no-opacity`): at full strength
+  the middle of the shade is a stripe, and a shadow has no stripe;
+- **ten degrees off the vertical** (`100deg`): a line of text is too thin to show a lean,
+  but a box or a disc is where the shade reads as a light crossing at an angle;
+- **three loops of the motion axis** (`calc(var(--pct-motion-loop-duration) * 3)`): the
+  loop is 0.6s, a band's tempo, and a shadow at that tempo flickers. Three is 1.8s — and
+  the axis's reduced answer, 1.5s, scales to 4.5s with it rather than being replaced, so
+  `prefers-reduced-motion` is still answered once for the whole library
+  (`req-a11y-motion`). The sandbox reads both against the token, not as literals.
 
 ```scss
-background: linear-gradient(90deg, transparent, var(--pct-skeleton-fill-bg), transparent);
+background: linear-gradient(100deg, transparent, color-mix(in srgb, var(--pct-skeleton-fill-bg) 60%, transparent), transparent);
 ```
 
 This is inside 0050, not against it. 0050 refused a gradient as the CARRIER of the motion,
-because `forced-colors: active` drops every `background-image` that is not a `url()` — and the
-carrier is still an element travelling by `inset-inline-start`, painted in a solid palette
-colour by the forced-colours block, which is what `apps/sandbox-e2e/src/forced-colors.spec.ts`
-measures. What the gradient changes is the drawing in every other mode. `90deg` is a physical
-angle and is safe for the one reason a symmetric gradient is: mirrored, it is itself, so the
-writing direction has nothing to flip.
+because `forced-colors: active` drops every `background-image` that is not a `url()` — and
+the carrier is still an element travelling by `inset-inline-start`, painted in a solid
+palette colour by the forced-colours block, which is what `apps/sandbox-e2e/src/forced-colors.spec.ts`
+measures. What the gradient changes is the drawing in every other mode. `100deg` is a
+physical angle, deliberately: the shade itself travels by a logical property and mirrors
+with the writing direction, and the lean is decoration on the shade, not a fact about where
+anything starts (`req-token-logical` is about the second, and the RTL screenshot holds it).
+What 0050 wrote as the reduced duration, 1500 ms, is now three times that, for the reason
+above.
 
 ## Consequences
 
-**`./skeleton` grows by 380 B, 2997 → 3377**, which is two rules, one selector list and a
-gradient — a 12.7% step on the smallest component entrypoint in the
+**`./skeleton` grows by 426 B, 2997 → 3423**, which is two rules, one selector list and a
+shaded gradient — a 14.2% step on the smallest component entrypoint in the
 library, recorded in the size snapshot. It still carries no `./core`, no text and no icon:
 the shape is an attribute the sheet reads, and nothing was injected to draw it.
 
