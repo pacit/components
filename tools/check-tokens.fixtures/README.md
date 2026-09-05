@@ -1,6 +1,6 @@
 # Negative control of the token gate
 
-Deliberately defective inputs. `tools/check-tokens.mjs` runs all nine of its checks on
+Deliberately defective inputs. `tools/check-tokens.mjs` runs all ten of its checks on
 each of them and **requires every one to be rejected — and rejected by the point it
 declares**. An input that passes is a fault; an input that fires for a reason other than
 the one written in its `fixture.json` is a fault just the same, because it proves
@@ -88,38 +88,42 @@ would be writing the same code a second time in markdown.
 
 ## The cases
 
-| directory                      | point | check        | rule                     | defect                                                      |
-| ------------------------------ | ----: | ------------ | ------------------------ | ----------------------------------------------------------- |
-| `artifact-without-token`       |     1 | `set`        | —                        | `dist/pct.css` carries less than the sources declare        |
-| `token-in-two-layers`          |     1 | `set`        | —                        | the same token in a component and a semantic file           |
-| `union-without-token`          |     2 | `surface`    | —                        | a token left the `PctCssVar` union, stayed in `pctTokens`   |
-| `prefix-without-coverage`      |     2 | `surface`    | —                        | a private prefix no token uses                              |
-| `state-before-property`        |     3 | `schema`     | —                        | `disabled-bg` instead of `bg-disabled`                      |
-| `word-outside-dictionary`      |     3 | `schema`     | —                        | `bg-over` — right order, wrong word                         |
-| `component-without-entrypoint` |     3 | `schema`     | —                        | `component.dialog.json` with no `dialog` entrypoint         |
-| `file-unlike-prefix`           |     3 | `schema`     | —                        | `component.button.json` carrying a `pct.knob.*` token       |
-| `dead-word`                    |     4 | `dictionary` | —                        | a state declared and unused                                 |
-| `stale-snapshot`               |     5 | `snapshot`   | —                        | a rename with no snapshot update                            |
-| `snapshot-removed`             |     5 | `snapshot`   | —                        | no snapshot file                                            |
-| `colour-under-semantics`       |     6 | `levels`     | `colour-under-semantics` | a component colour straight on a primitive                  |
-| `colour-literal`               |     6 | `levels`     | `colour-literal`         | a component colour typed in by hand                         |
-| `sideways-reference`           |     6 | `levels`     | `sideways-reference`     | a component token on SOMEBODY ELSE'S component token        |
-| `primitive-with-reference`     |     6 | `levels`     | `primitive-not-literal`  | a primitive stops being the model's floor                   |
-| `shared-axis-dead`             |     6 | `levels`     | `axis-dead`              | a shared axis no token uses                                 |
-| `shared-axis-coloured`         |     6 | `levels`     | `axis-coloured`          | a colour axis added to the shared axes                      |
-| `undeclared-axis`              |     6 | `levels`     | `axis-undeclared`        | a reference to an axis outside the policy                   |
-| `upward-reference`             |     6 | `levels`     | `upward-reference`       | a semantic token on a component one                         |
-| `unmeasured-colour`            |     7 | `pairs`      | `unmeasured`             | a sheet paints a background with a token outside the policy |
-| `pair-removed-from-policy`     |     7 | `pairs`      | `unmeasured`             | the pair leaves the policy, the painting stays              |
-| `dimension-painted-as-colour`  |     7 | `pairs`      | `not-a-colour`           | a dimension token in a colour slot                          |
-| `dimension-mixed-as-colour`    |     7 | `pairs`      | `not-a-colour`           | the same, in the colour slot of a `color-mix()`             |
-| `token-outside-theme`          |     7 | `pairs`      | `token-outside-theme`    | a sheet paints with a token the theme does not know         |
-| `dead-on-pair`                 |     7 | `pairs`      | `on-dead`                | a `--pct-on-surface` nobody uses                            |
-| `on-without-surface`           |     7 | `pairs`      | `on-without-surface`     | `--pct-on-danger` with no `--pct-danger`                    |
-| `sheet-removed`                |     7 | `pairs`      | `denominator`            | an input with not one stylesheet                            |
-| `sheet-reads-a-stranger`       |     8 | `names`      | `read-unknown`           | a sheet reads `--pct-button-heigth` outside a colour slot   |
-| `sheet-declares-a-stranger`    |     8 | `names`      | `declared-unknown`       | a sheet sets a `--pct-…` name the skin does not carry       |
-| `dead-primitive`               |     9 | `palette`    | `primitive-dead`         | a ramp step no token references and no sheet reads          |
+| directory                      | point | check        | rule                        | defect                                                      |
+| ------------------------------ | ----: | ------------ | --------------------------- | ----------------------------------------------------------- |
+| `artifact-without-token`       |     1 | `set`        | —                           | `dist/pct.css` carries less than the sources declare        |
+| `token-in-two-layers`          |     1 | `set`        | —                           | the same token in a component and a semantic file           |
+| `union-without-token`          |     2 | `surface`    | —                           | a token left the `PctCssVar` union, stayed in `pctTokens`   |
+| `prefix-without-coverage`      |     2 | `surface`    | —                           | a private prefix no token uses                              |
+| `state-before-property`        |     3 | `schema`     | —                           | `disabled-bg` instead of `bg-disabled`                      |
+| `word-outside-dictionary`      |     3 | `schema`     | —                           | `bg-over` — right order, wrong word                         |
+| `component-without-entrypoint` |     3 | `schema`     | —                           | `component.dialog.json` with no `dialog` entrypoint         |
+| `file-unlike-prefix`           |     3 | `schema`     | —                           | `component.button.json` carrying a `pct.knob.*` token       |
+| `dead-word`                    |     4 | `dictionary` | —                           | a state declared and unused                                 |
+| `stale-snapshot`               |     5 | `snapshot`   | —                           | a rename with no snapshot update                            |
+| `snapshot-removed`             |     5 | `snapshot`   | —                           | no snapshot file                                            |
+| `colour-under-semantics`       |     6 | `levels`     | `colour-under-semantics`    | a component colour straight on a primitive                  |
+| `colour-literal`               |     6 | `levels`     | `colour-literal`            | a component colour typed in by hand                         |
+| `sideways-reference`           |     6 | `levels`     | `sideways-reference`        | a component token on SOMEBODY ELSE'S component token        |
+| `primitive-with-reference`     |     6 | `levels`     | `primitive-not-literal`     | a primitive stops being the model's floor                   |
+| `shared-axis-dead`             |     6 | `levels`     | `axis-dead`                 | a shared axis no token uses                                 |
+| `shared-axis-coloured`         |     6 | `levels`     | `axis-coloured`             | a colour axis added to the shared axes                      |
+| `undeclared-axis`              |     6 | `levels`     | `axis-undeclared`           | a reference to an axis outside the policy                   |
+| `upward-reference`             |     6 | `levels`     | `upward-reference`          | a semantic token on a component one                         |
+| `unmeasured-colour`            |     7 | `pairs`      | `unmeasured`                | a sheet paints a background with a token outside the policy |
+| `pair-removed-from-policy`     |     7 | `pairs`      | `unmeasured`                | the pair leaves the policy, the painting stays              |
+| `dimension-painted-as-colour`  |     7 | `pairs`      | `not-a-colour`              | a dimension token in a colour slot                          |
+| `dimension-mixed-as-colour`    |     7 | `pairs`      | `not-a-colour`              | the same, in the colour slot of a `color-mix()`             |
+| `token-outside-theme`          |     7 | `pairs`      | `token-outside-theme`       | a sheet paints with a token the theme does not know         |
+| `dead-on-pair`                 |     7 | `pairs`      | `on-dead`                   | a `--pct-on-surface` nobody uses                            |
+| `on-without-surface`           |     7 | `pairs`      | `on-without-surface`        | `--pct-on-danger` with no `--pct-danger`                    |
+| `sheet-removed`                |     7 | `pairs`      | `denominator`               | an input with not one stylesheet                            |
+| `sheet-reads-a-stranger`       |     8 | `names`      | `read-unknown`              | a sheet reads `--pct-button-heigth` outside a colour slot   |
+| `sheet-declares-a-stranger`    |     8 | `names`      | `declared-unknown`          | a sheet sets a `--pct-…` name the skin does not carry       |
+| `dead-primitive`               |     9 | `palette`    | `primitive-dead`            | a ramp step no token references and no sheet reads          |
+| `layer-in-the-order-undefined` |    10 | `layers`     | `layer-undefined`           | the order names a `veil` the policy does not define         |
+| `overlay-number-unread`        |    10 | `layers`     | `layer-unread`              | the dependency's container rule carries no `z-index`        |
+| `z-index-outside-the-order`    |    10 | `layers`     | `z-index-outside-the-order` | a `--pct-button-z-index` no layer places                    |
+| `drawer-over-the-overlay`      |    10 | `layers`     | `order-broken`              | the drawer's token at 1200, above the overlay container     |
 
 The two cases on point 3, one for the order and one for the dictionary, are kept apart on
 purpose: they are two different halves of the same promise and they break independently.

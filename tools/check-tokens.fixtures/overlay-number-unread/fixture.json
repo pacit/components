@@ -1,0 +1,9 @@
+{
+  "point": 10,
+  "check": "layers",
+  "rule": "layer-unread",
+  "description": "The dependency's stylesheet is there and its overlay container rule carries no `z-index` any more — the shape of a CDK bump that moved the number elsewhere, or dropped it for the top layer. A number that cannot be read is a middle the order does not hold, and the case says so instead of keeping yesterday's 1000.",
+  "dependencies": {
+    "node_modules/@angular/cdk/overlay-prebuilt.css": ".cdk-overlay-container {\n  position: fixed;\n  pointer-events: none;\n  top: 0;\n  left: 0;\n  height: 100%;\n  width: 100%;\n}\n"
+  }
+}

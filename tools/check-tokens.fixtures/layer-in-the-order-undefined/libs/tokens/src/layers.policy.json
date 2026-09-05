@@ -1,0 +1,19 @@
+{
+  "order": ["page", "drawer", "veil", "overlay", "toast"],
+  "layers": {
+    "page": {
+      "value": 0
+    },
+    "drawer": {
+      "token": "pct.drawer.z-index"
+    },
+    "overlay": {
+      "dependency": "@angular/cdk",
+      "file": "node_modules/@angular/cdk/overlay-prebuilt.css",
+      "selector": ".cdk-overlay-container"
+    },
+    "toast": {
+      "token": "pct.toast.z-index"
+    }
+  }
+}

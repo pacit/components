@@ -1,0 +1,24 @@
+{
+  "$comment": "The library's stacking order (req-token-layers, plan 4.21): an ORDER, and not three numbers in three files. Two of the layers are numbers of the library's own, held in tokens so that an application with a layer of its own between the page and ours, or above ours, has a place to say so; one is the dependency's, read on every run from the stylesheet both applications load rather than remembered in a comment (a comment described what the dependency used to do, lesson-122); the page is the floor. Point 10 of `check-tokens` reads every number from where it lives and holds the order strictly increasing, and a `z-index` token this list does not place fires — the fourth component to want a layer says here where it stands instead of inferring the middle of two token files. Where the top layer exists the order things were SHOWN in outranks every number here (the toast is a shown popover, and stands over a modal because it came last); where it does not, this order is what holds.",
+  "order": ["page", "drawer", "overlay", "toast"],
+  "layers": {
+    "page": {
+      "$comment": "What the page draws in flow — `z-index: auto`, the floor the order counts up from.",
+      "value": 0
+    },
+    "drawer": {
+      "$comment": "Docked to an edge of the window and part of the page: a panel opened from inside it (a select's listbox, a dialog) has to stand above it, so it stays below the overlay.",
+      "token": "pct.drawer.z-index"
+    },
+    "overlay": {
+      "$comment": "The CDK's overlay container, in the stylesheet `apps/sandbox` and `apps/docs` load. Not a number of this library's: it is read from the dependency's file on every run, so a bump that moved it moves the middle of this order and fires here.",
+      "dependency": "@angular/cdk",
+      "file": "node_modules/@angular/cdk/overlay-prebuilt.css",
+      "selector": ".cdk-overlay-container"
+    },
+    "toast": {
+      "$comment": "A message raised by a dialog's own button has to be visible over that dialog, so the stack stands above the overlay — by this number where there is no top layer, and by being shown last where there is one.",
+      "token": "pct.toast.z-index"
+    }
+  }
+}

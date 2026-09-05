@@ -1,0 +1,6 @@
+{
+  "point": 10,
+  "check": "layers",
+  "rule": "order-broken",
+  "description": "The drawer's token moves to 1200 — above the dependency's overlay container. Every number is read from where it lives and the order says drawer < overlay, so a listbox opened from inside the drawer would now be drawn under it; the toast's 1100 read backwards, and the hit test in `drawer.spec.ts` the last thing to notice."
+}

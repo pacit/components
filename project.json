@@ -75,7 +75,7 @@
         "{workspaceRoot}/tools/check-tokens.mjs",
         "{workspaceRoot}/tools/check-tokens.fixtures/**/*",
         {
-          "externalDependencies": ["sass"]
+          "externalDependencies": ["sass", "@angular/cdk"]
         },
         {
           "dependentTasksOutputFiles": "**/*"

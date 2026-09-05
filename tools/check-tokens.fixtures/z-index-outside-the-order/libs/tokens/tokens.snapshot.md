@@ -24,6 +24,7 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-button-label-fg color component public
 --pct-button-padding-x dimension component public
 --pct-button-padding-x-sm dimension component public
+--pct-button-z-index number component public
 --pct-drawer-z-index number component public
 --pct-motion-transition-duration duration primitive public
 --pct-on-primary color semantic public

@@ -1,0 +1,10 @@
+{
+  "pct": {
+    "drawer": {
+      "z-index": {
+        "$type": "number",
+        "$value": 900
+      }
+    }
+  }
+}

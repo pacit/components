@@ -1,0 +1,6 @@
+{
+  "point": 10,
+  "check": "layers",
+  "rule": "layer-undefined",
+  "description": "The order names a `veil` between the drawer and the overlay, and the policy defines no such layer. An order over a name with no number behind it holds nothing there — and reads as a fourth layer somebody already placed."
+}

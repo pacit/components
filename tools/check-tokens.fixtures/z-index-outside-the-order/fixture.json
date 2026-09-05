@@ -1,0 +1,6 @@
+{
+  "point": 10,
+  "check": "layers",
+  "rule": "z-index-outside-the-order",
+  "description": "A `--pct-button-z-index` token appears and no layer of the policy places it — the fourth stacking number, picked the way the first three were: by opening two token files and inferring the middle. The order exists so that this is a line in the policy and not a guess."
+}

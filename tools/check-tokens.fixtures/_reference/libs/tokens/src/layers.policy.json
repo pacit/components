@@ -1,0 +1,20 @@
+{
+  "$comment": "The reference input's stacking order, the repository's shape: the page, a drawer below the dependency's overlay container, a toast above it. The overlay's number is read from the real dependency's stylesheet, which `buildFixture` lays down from the repository, so the control re-probes the dependency exactly as the live run does.",
+  "order": ["page", "drawer", "overlay", "toast"],
+  "layers": {
+    "page": {
+      "value": 0
+    },
+    "drawer": {
+      "token": "pct.drawer.z-index"
+    },
+    "overlay": {
+      "dependency": "@angular/cdk",
+      "file": "node_modules/@angular/cdk/overlay-prebuilt.css",
+      "selector": ".cdk-overlay-container"
+    },
+    "toast": {
+      "token": "pct.toast.z-index"
+    }
+  }
+}

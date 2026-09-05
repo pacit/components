@@ -14,7 +14,7 @@
         "$value": "{pct.space.3}",
         "$description": "Gap between stacked toasts."
       },
-      "$comment-z-index": "Above the CDK overlay container, which the dependency stamps at 1000: a message raised by a dialog's own save button has to be visible over that dialog, and a toast behind a modal is a message nobody reads. It is a token and not a number in the sheet because an application with a layer of its own above ours has nowhere else to say so.",
+      "$comment-z-index": "Above the CDK overlay container — the dependency's own number, read from its stylesheet by `check-tokens` on every run and held below this one (`layers.policy.json`): a message raised by a dialog's own save button has to be visible over that dialog, and a toast behind a modal is a message nobody reads. It is a token and not a number in the sheet because an application with a layer of its own above ours has nowhere else to say so.",
       "z-index": {
         "$type": "number",
         "$value": 1100,

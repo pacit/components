@@ -9,10 +9,10 @@ There is no "built, just unverified" state — see
 
 | state       | means                                                         |  count |
 | ----------- | ------------------------------------------------------------- | -----: |
-| ✅ enforced | gate and control exist and run in CI                          |     72 |
+| ✅ enforced | gate and control exist and run in CI                          |     73 |
 | 🟡 partial  | the gate is there, the negative control is not (deliberately) |     16 |
 | ⛔ gap      | gate or control missing, with a recorded deadline             |      4 |
-| **total**   |                                                               | **92** |
+| **total**   |                                                               | **93** |
 
 ## Gaps by urgency
 
@@ -137,13 +137,14 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-token-tiers`](requirements/tokens.md#req-token-tiers)               | ✅ enforced | `tools/check-tokens.mjs` (target `check-tokens` in the root project, … | `tools/check-tokens.fixtures/` — one input per rule: `colour-under-se… |
 | [`req-token-references`](requirements/tokens.md#req-token-references)     | ✅ enforced | `apps/sandbox-e2e/src/theme.spec.ts` — overriding a semantic token ch… | the test compares the component token in `:root` **and** in a scope —… |
 | [`req-token-closure`](requirements/tokens.md#req-token-closure)           | ✅ enforced | `apps/sandbox-e2e/src/theme.spec.ts` — a **component** token compared… | the run from `lesson-17`: before the fix `--pct-surface` was correctl… |
-| [`req-token-names`](requirements/tokens.md#req-token-names)               | ✅ enforced | `tools/check-tokens.mjs` (target `check-tokens` in the root project, … | `tools/check-tokens.fixtures/` — 28 inputs, each rejected on its own … |
+| [`req-token-names`](requirements/tokens.md#req-token-names)               | ✅ enforced | `tools/check-tokens.mjs` (target `check-tokens` in the root project, … | `tools/check-tokens.fixtures/` — 34 inputs, each rejected on its own … |
 | [`req-token-text-pairs`](requirements/tokens.md#req-token-text-pairs)     | ✅ enforced | `tools/check-tokens.mjs` (target `check-tokens` in the root project, … | `tools/check-tokens.fixtures/` — `unmeasured-colour` (a stylesheet pa… |
 | [`req-token-contrast`](requirements/tokens.md#req-token-contrast)         | ✅ enforced | `libs/tokens/build.mjs` (target `tokens:build`, in CI through `^build… | the run from `lesson-6`: the original guard let `disabled` through at… |
 | [`req-token-no-opacity`](requirements/tokens.md#req-token-no-opacity)     | ✅ enforced | `tools/check-styles.mjs` (target `check-styles`, in CI) — point 6: `o… | `tools/check-styles.fixtures/partial-opacity/` (a state expressed thr… |
 | [`req-token-css`](requirements/tokens.md#req-token-css)                   | ✅ enforced | `apps/sandbox-e2e/src/theme.spec.ts`, `libs/components/check-package.… | `tools/check-package.fixtures/token-without-declaration/` — a package… |
 | [`req-token-scss`](requirements/tokens.md#req-token-scss)                 | 🟡 partial  | none — deliberately: the file extension is visible in review, and a s… | not applicable ---                                                     |
 | [`req-token-override`](requirements/tokens.md#req-token-override)         | ✅ enforced | `apps/sandbox-e2e/src/theme.spec.ts`                                   | as in `req-token-closure` — comparing the component token, not the se… |
+| [`req-token-layers`](requirements/tokens.md#req-token-layers)             | ✅ enforced | `tools/check-tokens.mjs` (target `check-tokens` in the root project, … | `tools/check-tokens.fixtures/` — `layer-in-the-order-undefined` (an o… |
 | [`req-token-scoped`](requirements/tokens.md#req-token-scoped)             | ✅ enforced | `apps/sandbox-e2e/src/theme.spec.ts`, `apps/sandbox-e2e/src/a11y.spec… | see `req-token-closure`                                                |
 | [`req-token-directive`](requirements/tokens.md#req-token-directive)       | ✅ enforced | `libs/components/theme/src/theme.spec.ts` — the attribute written, fo… | `theme.spec.ts › "the directive and the raw attribute are the same th… |
 | [`req-token-system`](requirements/tokens.md#req-token-system)             | ✅ enforced | `apps/sandbox-e2e/src/preferences.spec.ts`                             | `preferences.spec.ts › "with no dark preference :root stays light (th… |
@@ -279,7 +280,7 @@ Which lesson feeds which requirement. Generated from the **Lessons** fields.
 | [`lesson-119`](lessons.md#lesson-119) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-120`](lessons.md#lesson-120) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-121`](lessons.md#lesson-121) | — _(not cited)_                                                                                                                                                   |
-| [`lesson-122`](lessons.md#lesson-122) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-122`](lessons.md#lesson-122) | `req-token-layers`                                                                                                                                                |
 | [`lesson-123`](lessons.md#lesson-123) | `req-quality-unit`                                                                                                                                                |
 | [`lesson-124`](lessons.md#lesson-124) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-125`](lessons.md#lesson-125) | — _(not cited)_                                                                                                                                                   |

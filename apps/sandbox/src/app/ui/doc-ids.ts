@@ -89,6 +89,7 @@ export type PctReqId =
   | 'req-token-directive'
   | 'req-token-distribution'
   | 'req-token-dtcg'
+  | 'req-token-layers'
   | 'req-token-logical'
   | 'req-token-names'
   | 'req-token-no-opacity'

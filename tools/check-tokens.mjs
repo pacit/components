@@ -13,7 +13,9 @@
  *  6. TIERS: references point downwards — component → semantic → primitive → literal,
  *  7. PAIRS: every colour the library REALLY paints stands in the contrast policy,
  *  8. NAMES: every `--pct-…` a stylesheet touches is a token of the skin,
- *  9. PALETTE: every primitive is read by a token or by a stylesheet.
+ *  9. PALETTE: every primitive is read by a token or by a stylesheet,
+ * 10. LAYERS: the stacking order is a list, every number in it is read from where it lives —
+ *     a token, or the dependency's stylesheet — and it comes out strictly increasing.
  *
  * Point 5 stands before 6 and 7: a snapshot fires on every change of a name, including one
  * point 3 can name precisely. Point 7 reads `libs/components` stylesheets through sass.
@@ -28,6 +30,7 @@ import {
   cpSync,
   existsSync,
   globSync,
+  mkdirSync,
   mkdtempSync,
   readFileSync,
   readdirSync,
@@ -49,6 +52,7 @@ const SNAPSHOT = `${TOKENS}/tokens.snapshot.md`;
 const NAMES_POLICY = `${TOKENS}/src/names.policy.json`;
 const LEVELS_POLICY = `${TOKENS}/src/levels.policy.json`;
 const CONTRAST_POLICY = `${TOKENS}/src/contrast.policy.json`;
+const LAYERS_POLICY = `${TOKENS}/src/layers.policy.json`;
 const FIXTURES = join(ROOT, 'tools/check-tokens.fixtures');
 const REFERENCE = '_reference';
 
@@ -162,6 +166,8 @@ const checkTokens = (input) => {
     ts,
     snapshot,
     entrypoints,
+    layers,
+    dependencies,
   } = input;
 
   // 1. SET — two independent reads of the same list.
@@ -864,6 +870,104 @@ const checkTokens = (input) => {
       'primitive-dead',
     );
 
+  // 10. LAYERS — the stacking order (`req-token-layers`). Three numbers stood in three files
+  //     with no rule between them: a toast at 1100 "above the CDK overlay container", a
+  //     drawer at 900 "below" it, and the container's own number — the dependency's — in
+  //     neither file, no policy and no gate, so the fourth component to need a layer would
+  //     pick its number by opening two token files and inferring the middle (plan 4.21).
+  //     The order is a LIST in `layers.policy.json`; every number in it is read from where
+  //     it lives — a token from the sources, the dependency's from the stylesheet the
+  //     applications load, on every run, because a fact about a dependency stops holding at
+  //     a bump and not at a change here (lesson-122) — and a `z-index` token the list does
+  //     not place fires, so a new layer is a line here and not a guess.
+  const placed = new Map();
+  for (const name of layers.order ?? []) {
+    const spec = layers.layers?.[name];
+    if (spec === undefined)
+      throw new TokenError(
+        'layers',
+        `the order in ${LAYERS_POLICY} names the layer \`${name}\`, and the policy ` +
+          `defines no such layer — an order over a name with no number holds nothing`,
+        'layer-undefined',
+      );
+    let value;
+    if (typeof spec.value === 'number') value = spec.value;
+    else if (typeof spec.token === 'string') {
+      const entry = fromSources.get(cssVar(spec.token));
+      const literal = entry?.values
+        .map((v) => v.value)
+        .find((v) => typeof v === 'number');
+      if (literal === undefined)
+        throw new TokenError(
+          'layers',
+          `layer \`${name}\` is the token \`${spec.token}\`, and the sources carry no ` +
+            `number under that name — a layer whose number cannot be read is a layer the ` +
+            `order does not hold`,
+          'layer-unread',
+        );
+      value = literal;
+    } else if (typeof spec.file === 'string') {
+      const text = dependencies[spec.file];
+      const found = text === null ? null : zIndexOf(text, spec.selector);
+      if (found === null)
+        throw new TokenError(
+          'layers',
+          `layer \`${name}\` is \`${spec.selector}\` in \`${spec.file}\` (${spec.dependency}), ` +
+            `and ${text === null ? 'the file is not there' : 'no rule for that selector carries a z-index'} — ` +
+            `the dependency's number is read on every run so that a bump moves this order ` +
+            `rather than a comment, and today it cannot be read at all`,
+          'layer-unread',
+        );
+      value = found;
+    } else
+      throw new TokenError(
+        'layers',
+        `layer \`${name}\` names neither a value, a token nor a dependency's file`,
+        'layer-undefined',
+      );
+    placed.set(name, value);
+  }
+  for (const name of Object.keys(layers.layers ?? {}))
+    if (!placed.has(name))
+      throw new TokenError(
+        'layers',
+        `the policy defines the layer \`${name}\` and the order does not place it`,
+        'layer-undefined',
+      );
+  const inOrder = [...placed.keys()].map(
+    (name) => `${name} ${placed.get(name)}`,
+  );
+  const zIndexTokens = names
+    .map((n) => n.name)
+    .filter((name) => /-z-index$/.test(name));
+  const orderedTokens = new Set(
+    Object.values(layers.layers ?? {})
+      .filter((spec) => typeof spec.token === 'string')
+      .map((spec) => cssVar(spec.token)),
+  );
+  const outside = zIndexTokens.filter((name) => !orderedTokens.has(name));
+  if (outside.length)
+    throw new TokenError(
+      'layers',
+      `${outside.length} z-index token(s) stand in no layer of ${LAYERS_POLICY}:\n` +
+        `${list(outside)}\n    A stacking number outside the order is the number picked by ` +
+        `opening two token files and inferring the middle — say where it stands instead`,
+      'z-index-outside-the-order',
+    );
+  for (let i = 1; i < layers.order.length; i++) {
+    const below = layers.order[i - 1];
+    const above = layers.order[i];
+    if (!(placed.get(above) > placed.get(below)))
+      throw new TokenError(
+        'layers',
+        `the order says \`${below}\` < \`${above}\` and the numbers say ` +
+          `${placed.get(below)} and ${placed.get(above)}:\n${list(inOrder)}\n` +
+          `    The order is the promise and the numbers are read from where they live — ` +
+          `one of them moved, in a token or in the dependency`,
+        'order-broken',
+      );
+  }
+
   const publicCount = publicNames.size;
   return {
     description:
@@ -873,9 +977,26 @@ const checkTokens = (input) => {
       `${entrypoints.size} entrypoints, ` +
       `${painted.size} colours painted and ${touched.size} names touched across ` +
       `${sheets.length} stylesheets, ` +
-      `${contrast.checks.length} pairs in the policy`,
+      `${contrast.checks.length} pairs in the policy, ` +
+      `${placed.size} layers in order (${inOrder.join(' < ')})`,
     snapshot: content,
   };
+};
+
+/**
+ * The `z-index` a stylesheet gives a selector, or `null`: the first rule whose selector list
+ * carries it exactly. A textual read of the dependency's CSS rather than a parser, because
+ * the file is the prebuilt one both applications load and its rules are one selector to one
+ * block; a rule that carried the selector in a longer list would still be found.
+ */
+const zIndexOf = (cssText, selector) => {
+  for (const m of cssText.matchAll(/([^{}]+)\{([^}]*)\}/g)) {
+    const selectors = m[1].split(',').map((x) => x.trim());
+    if (!selectors.includes(selector)) continue;
+    const z = m[2].match(/z-index\s*:\s*(-?\d+)/);
+    if (z) return Number(z[1]);
+  }
+  return null;
 };
 
 /**
@@ -1168,10 +1289,24 @@ const collectInput = (root, files) => {
       css: sass.compile(join(root, file), { style: 'expanded' }).css,
     }));
 
+  // The dependency's stylesheet a layer names, read from THIS root: the repository's
+  // `node_modules` for the live run, the copy `buildFixture` lays down for a prepared one.
+  const layers = JSON.parse(read(root, LAYERS_POLICY));
+  const dependencies = Object.fromEntries(
+    Object.values(layers.layers ?? {})
+      .filter((spec) => typeof spec.file === 'string')
+      .map((spec) => [
+        spec.file,
+        existsSync(join(root, spec.file)) ? read(root, spec.file) : null,
+      ]),
+  );
+
   return {
     policy: JSON.parse(read(root, NAMES_POLICY)),
     levels: JSON.parse(read(root, LEVELS_POLICY)),
     contrast: JSON.parse(read(root, CONTRAST_POLICY)),
+    layers,
+    dependencies,
     sources,
     sheets,
     css: read(root, `${TOKENS}/dist/pct.css`),
@@ -1245,6 +1380,26 @@ const buildFixture = (name, fx) => {
     stdio: 'pipe',
   });
   if (name !== REFERENCE) overlay();
+  // The dependency's stylesheet point 10 reads: the REAL one from the repository, so the
+  // reference re-probes the dependency exactly as the live run does, unless the case brings
+  // a doctored one in `fixture.json` (`dependencies: { [file]: css }`) — a `node_modules`
+  // path is nothing git would track, so the doctored text lives in the case's descriptor.
+  const layersPolicy = join(pointsAt, LAYERS_POLICY);
+  if (existsSync(layersPolicy))
+    for (const spec of Object.values(
+      JSON.parse(readFileSync(layersPolicy, 'utf8')).layers ?? {},
+    )) {
+      if (typeof spec.file !== 'string') continue;
+      const doctored = fx.dependencies?.[spec.file];
+      const target = join(pointsAt, spec.file);
+      if (doctored !== undefined) {
+        mkdirSync(dirname(target), { recursive: true });
+        writeFileSync(target, doctored);
+      } else if (existsSync(join(ROOT, spec.file))) {
+        mkdirSync(dirname(target), { recursive: true });
+        cpSync(join(ROOT, spec.file), target);
+      }
+    }
   for (const file of globSync('**/*.ts.txt', { cwd: pointsAt }))
     renameSync(
       join(pointsAt, file),

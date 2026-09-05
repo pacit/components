@@ -57,8 +57,8 @@ Snapshot, `node tools/check-docs.mjs`:
 
 | measure                                     | value |
 | ------------------------------------------- | ----: |
-| requirements                                |    92 |
-| ✅ enforced                                 |    72 |
+| requirements                                |    93 |
+| ✅ enforced                                 |    73 |
 | 🟡 partial (deliberately without a control) |    16 |
 | ⛔ gap                                      |     4 |
 
@@ -2045,7 +2045,7 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     rule asks the element whether a user lands on it, and no list at all. The live verdict
     did not move: 58 components, 14 naming a widget of their own
 
-- [ ] **4.21 — the library's layer order is three numbers in three files and no rule**
+- [x] **4.21 — the library's layer order is three numbers in three files and no rule**
   - `--pct-toast-z-index` is **1100** and its comment says why: above the CDK's overlay
     container. `--pct-drawer-z-index` is **900** and its comment says why: below the same
     container. The number both of them are written against — the **1000** the dependency
@@ -2059,7 +2059,23 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     toast), the CDK's number is a fact about a dependency, and a fact about a dependency is what
     `check-browsers` point 6 already re-probes on every run rather than remembers
   - binds at: **the third `z-index` token in this library**, or the first `@angular/cdk` bump
-    that moves the overlay container's number · _notes:_ —
+    that moves the overlay container's number · _notes:_ **closed as filler (2026-09-05), and
+    the promise is [`req-token-layers`](requirements/tokens.md#req-token-layers).** The order
+    is a list in `libs/tokens/src/layers.policy.json` — page < drawer < overlay < toast — and
+    point 10 of `check-tokens` reads every number from where it lives: the two tokens from the
+    sources, the page's floor as a value, and the overlay's from
+    `node_modules/@angular/cdk/overlay-prebuilt.css` on every run, the file both applications
+    load, so a bump that moved the container's number moves the middle of the order and fires
+    at the gate rather than going stale in a comment (the two token comments carried the
+    literal 1000 and carry none now). Held strictly increasing — today **page 0 < drawer 900
+    < overlay 1000 < toast 1100** — and a `z-index` token no layer places fires, which is
+    this item's own trigger made a rule. Four prepared inputs, one per rule (34 in all); the
+    reference re-probes the real dependency, laid down from the repository, and a case
+    doctors it through its descriptor because a `node_modules` path is nothing git tracks.
+    Two things on the way: five older cases carried their own copies of the names policy or
+    the snapshot and fired on the reference's new tokens until they learned the word, and the
+    rule that read the names list read objects for strings and fired on nothing — the case
+    written for it said so on the first run
 
 - [ ] **4.22 — a fixed panel's containing block belongs to the consumer, and only prose says so**
   - `pct-drawer` is the first component here drawn **in place** and positioned against the

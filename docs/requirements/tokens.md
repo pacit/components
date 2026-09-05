@@ -195,7 +195,7 @@ requires every `--pct-…` a stylesheet reads or declares to be a token of the s
 property. Points 1, 2 and 4 guard the denominator: two independent readings of the list
 (`dist/pct.css` against the DTCG sources), agreement of `tokens.ts` with that list, and a ban
 on dead words in the dictionary
-**Control:** `tools/check-tokens.fixtures/` — 28 inputs, each rejected on its own point **and
+**Control:** `tools/check-tokens.fixtures/` — 34 inputs, each rejected on its own point **and
 its own rule**; plus runs against the repository: renaming to another valid name fires point 5,
 `disabled-bg` instead of `bg-disabled` fires point 3, `component.dialog.json` with no
 entrypoint fires point 3, a stale `dist` fires point 1, a word added to the dictionary without
@@ -335,6 +335,36 @@ not the semantic one
 **Lessons:** [`lesson-17`](../lessons.md#lesson-17)
 
 ---
+
+### <a id="req-token-layers"></a>`req-token-layers` — The stacking order is a list, and every number in it is read
+
+**Promise.** What stands above what is one order — page < drawer < overlay < toast — written
+once, in `libs/tokens/src/layers.policy.json`, and not three numbers in three files. The
+library's own layers are tokens (`--pct-drawer-z-index`, `--pct-toast-z-index`), so an
+application with a layer of its own between the page and ours, or above ours, has a place to
+say so; the overlay's number is the dependency's, the `z-index` the CDK stamps on its overlay
+container, and it is read from the stylesheet the applications load rather than remembered in
+a comment. A fourth component that needs a layer says where it stands in the list instead of
+inferring the middle of two token files. Where the top layer exists, the order things were
+shown in outranks every number here ([`lesson-122`](../lessons.md#lesson-122)); where it does
+not, this order is what holds.
+
+**Gate:** `tools/check-tokens.mjs` (target `check-tokens` in the root project, in CI) — point
+10: every layer of the order is defined, every number is read from where it lives — a token
+from the sources, the dependency's from `node_modules/@angular/cdk/overlay-prebuilt.css` on
+every run, so that a bump moves this order and not a comment — the numbers come out strictly
+increasing along the order, and a `z-index` token no layer places fires. Plus the two hit
+tests: `apps/sandbox-e2e/src/drawer.spec.ts › a panel opened from inside the drawer stands
+above it` and `apps/sandbox-e2e/src/toast.spec.ts › a message raised while the modal is up
+stands over it`, in three engines
+**Control:** `tools/check-tokens.fixtures/` — `layer-in-the-order-undefined` (an order naming a
+layer with no number), `overlay-number-unread` (the dependency's stylesheet with no `z-index`
+on its container, the shape of a bump), `z-index-outside-the-order` (a `--pct-button-z-index`
+no layer places) and `drawer-over-the-overlay` (the drawer's token at 1200) — each rejected on
+its own rule of point 10; the reference input re-probes the real dependency's file, laid down
+from the repository
+**Decision:** [0047 — a drawer is a region of the page, not a layer over it](../decisions/0047-a-drawer-is-a-region-of-the-page-not-a-layer-over-it.md)
+**Lessons:** [`lesson-122`](../lessons.md#lesson-122)
 
 ### <a id="req-token-scoped"></a>`req-token-scoped` — A theme for part of an app
 

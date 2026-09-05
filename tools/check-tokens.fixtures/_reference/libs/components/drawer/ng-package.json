@@ -1,0 +1,6 @@
+{
+  "$comment": "The reference input's `drawer` entrypoint \u2014 the layer of that name is a token with this prefix, and point 3 asks that the prefix be an entrypoint.",
+  "lib": {
+    "entryFile": "src/index.ts"
+  }
+}

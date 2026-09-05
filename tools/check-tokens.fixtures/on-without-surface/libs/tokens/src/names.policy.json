@@ -12,7 +12,7 @@
   },
   "component": {
     "parts": ["label"],
-    "properties": ["bg", "fg", "padding-x"],
+    "properties": ["bg", "fg", "padding-x", "z-index"],
     "states": ["hover"],
     "sizes": {
       "list": ["sm"]
