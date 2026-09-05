@@ -243,6 +243,122 @@ describe('PctDrawer', () => {
     });
   });
 
+  /**
+   * `position: fixed` means the window — unless an ancestor says otherwise, and the drawer
+   * cannot undo that: what it does is say so. jsdom has no layout, so the platform's answer
+   * (`offsetParent`, null for a panel the window holds and the catching ancestor otherwise —
+   * measured in three engines, `drawer.spec.ts` in `sandbox-e2e`) is DOCTORED here, and what
+   * these cases hold is the sentence: whole, with the ancestor and the reason named.
+   */
+  describe('the containing block', () => {
+    const quiet = () =>
+      vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+    /** The platform's answer, written by hand: `offsetParent` of the bound drawer. */
+    function caughtBy(ancestor: HTMLElement | null): void {
+      Object.defineProperty(bound(), 'offsetParent', {
+        configurable: true,
+        get: () => ancestor,
+      });
+    }
+
+    function ancestor(style: string, id = ''): HTMLElement {
+      const el = document.createElement('div');
+      if (id) el.id = id;
+      el.style.cssText = style;
+      document.body.appendChild(el);
+      return el;
+    }
+
+    afterEach(() => {
+      document.body.style.cssText = '';
+      for (const el of Array.from(document.body.querySelectorAll('div[id]')))
+        el.remove();
+    });
+
+    it('a drawer an ancestor has caught is reported in dev mode, with the ancestor and the reason named', async () => {
+      const warn = quiet();
+      const fixture = await render(Host);
+      fixture.componentInstance.heading.set('Sections');
+      caughtBy(ancestor('transform: translateX(10px)', 'card'));
+      fixture.componentInstance.open.set(true);
+      await settle(fixture);
+
+      // The whole sentence, for the reason the unnamed case gives.
+      expect(warn.mock.calls[0][0]).toBe(
+        '[pct-drawer] An open drawer docked to <div#card> and not to the window: that ' +
+          'ancestor establishes a containing block (`transform: translateX(10px)`), and ' +
+          '`position: fixed` docks to it. Move the drawer out from under it, or take the ' +
+          'property off — a transform, a filter, `contain: paint`, ' +
+          '`content-visibility: auto` or a `will-change` naming one of them is enough.',
+      );
+      expect(warn).toHaveBeenCalledTimes(1);
+      warn.mockRestore();
+    });
+
+    it('and the reason is read off the ancestor — or left out when nothing readable is on it', async () => {
+      const reasons: ReadonlyArray<readonly [style: string, named: string]> = [
+        ['contain: paint', ' (`contain: paint`)'],
+        ['filter: blur(2px)', ' (`filter: blur(2px)`)'],
+        ['will-change: transform', ' (`will-change: transform`)'],
+        // An ancestor the platform says caught the panel with nothing this reader knows:
+        // the report is one clause shorter, not absent.
+        ['color: red', ''],
+      ];
+      for (const [style, named] of reasons) {
+        const warn = quiet();
+        const fixture = await render(Host);
+        fixture.componentInstance.heading.set('Sections');
+        caughtBy(ancestor(style));
+        fixture.componentInstance.open.set(true);
+        await settle(fixture);
+
+        expect(warn.mock.calls[0][0]).toContain(
+          `<div> and not to the window: that ancestor establishes a containing block${named}, and`,
+        );
+        warn.mockRestore();
+        TestBed.resetTestingModule();
+      }
+    });
+
+    it('and a drawer the window holds says nothing', async () => {
+      const warn = quiet();
+      const fixture = await render(Host);
+      fixture.componentInstance.heading.set('Sections');
+      // jsdom's own answer is the window's: null, the same value an engine gives.
+      expect(bound().offsetParent).toBeNull();
+      fixture.componentInstance.open.set(true);
+      await settle(fixture);
+
+      expect(warn).not.toHaveBeenCalled();
+      warn.mockRestore();
+    });
+
+    it('and <body> is named only with a reason read off it', async () => {
+      // Chromium answers `<body>` for a `zoom` above the drawer while the panel stays at the
+      // window — so the body alone is not a report, and the body with a transform is.
+      const warn = quiet();
+      const fixture = await render(Host);
+      fixture.componentInstance.heading.set('Sections');
+      caughtBy(document.body);
+      fixture.componentInstance.open.set(true);
+      await settle(fixture);
+      expect(warn).not.toHaveBeenCalled();
+
+      document.body.style.transform = 'translateX(10px)';
+      fixture.componentInstance.open.set(false);
+      await settle(fixture);
+      fixture.componentInstance.open.set(true);
+      await settle(fixture);
+
+      expect(warn).toHaveBeenCalledTimes(1);
+      expect(warn.mock.calls[0][0]).toContain(
+        'docked to <body> and not to the window: that ancestor establishes a containing block (`transform: translateX(10px)`)',
+      );
+      warn.mockRestore();
+    });
+  });
+
   describe('the trigger', () => {
     it('says aria-expanded about itself and points at the panel either way', async () => {
       const fixture = await render(Host);

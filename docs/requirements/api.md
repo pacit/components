@@ -299,7 +299,14 @@ whole of the input's implementation, in three engines
 It carries an expiring case of its own with the sign reversed — `interpolate-size` is
 chromium's alone today, which is why nothing animates, and the case goes red when a second
 engine ships it: a road nobody could take opening, rather than a borrowed one losing its last
-consumer
+consumer;
+`apps/sandbox-e2e/src/drawer.spec.ts › "an ancestor with a transform catches the panel"` — the
+fourth kind: a **containing block** the platform assigns. A `transform` on the demo card takes
+the drawer's fixed panel off the window and onto the card's padding box, in three engines, and
+the drawer neither prevents nor repairs it — it asks the platform who caught it (`offsetParent`,
+null for a panel the window holds) and reports the ancestor and the property in dev mode; with
+no transform the panel spans the viewport and nothing is said. `libs/components/drawer/src/drawer.spec.ts › the containing block`
+holds the sentence whole, over doctored answers ([`lesson-163`](../lessons.md#lesson-163))
 **Control:** the keyboard half has none — deliberately: a navigation test has no mode in which
 it passes without a working keyboard. The layout half does, and it is recorded rather than
 prepared, because the two roads fail in different engines: the `field-sizing` declaration

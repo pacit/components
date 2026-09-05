@@ -41,7 +41,7 @@ before an application ships them.
 ./core 8318 - @angular/core
 ./date 39193 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
 ./dialog 16310 ./core,./icon @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
-./drawer 14192 ./core,./icon @angular/common,@angular/core
+./drawer 15503 ./core,./icon @angular/common,@angular/core
 ./field 27273 ./core @angular/core,@angular/forms,@angular/forms/signals
 ./grid 673 - @angular/core
 ./icon 2552 - @angular/common,@angular/core

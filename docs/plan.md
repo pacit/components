@@ -2085,7 +2085,7 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     rule that read the names list read objects for strings and fired on nothing — the case
     written for it said so on the first run
 
-- [ ] **4.22 — a fixed panel's containing block belongs to the consumer, and only prose says so**
+- [x] **4.22 — a fixed panel's containing block belongs to the consumer, and only prose says so**
   - `pct-drawer` is the first component here drawn **in place** and positioned against the
     window: `position: fixed`, docked to an edge, no overlay. That is the whole of
     [0047](decisions/0047-a-drawer-is-a-region-of-the-page-not-a-layer-over-it.md) and it comes
@@ -2104,7 +2104,21 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
   - the cost of not having it is asymmetric: the consumer cannot diagnose it without knowing
     the rule, and the library can detect it in three lines
   - binds at: **the second component drawn in place and positioned against the window**, or the
-    first consumer report that a drawer is in the wrong place · _notes:_ —
+    first consumer report that a drawer is in the wrong place · _notes:_ **closed (2026-09-05),
+    the rule measured first.** Twenty-seven ancestor properties in three engines:
+    `container-type` — in the card, in 0047 and in this item's own first bullet — catches
+    nothing; `content-visibility: auto`, `will-change: transform`, the individual transforms,
+    `perspective`, `backdrop-filter`, `offset-path` and `preserve-3d` do, and not one was
+    listed ([`lesson-163`](lessons.md#lesson-163)). The detector is the platform's:
+    `offsetParent` of a fixed element is `null` while the window holds it and the catching
+    ancestor otherwise, so `warnOnCaught` asks that on open and reads `CAPTURING` only to
+    name the reason — chromium's `<body>` for a `zoom` is the one measured quirk, and the body
+    is named only with a reason on it. Unit: the sentence whole, four reasons and none, the
+    body rule, over doctored answers (31 cases, 4 new); e2e: the demo card given a `transform`
+    takes the panel onto its padding box and the report names `<sbx-demo>` and the matrix,
+    without it the panel spans the viewport and nothing is said — 39 of 39 in three engines.
+    `./drawer` +1311 B, a dev-mode sentence and its list, recorded. The card, 0047 and
+    `req-api-platform`'s gate carry it as the fourth kind of borrowing
 
 - [ ] **4.23 — the sandbox's own navigation is inside six component baselines**
   - `visual.spec.ts` states the rule in its own comment: a screenshot is of an **element**, not

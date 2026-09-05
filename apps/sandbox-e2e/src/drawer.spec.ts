@@ -180,6 +180,81 @@ test.describe('PctDrawer — a region of the page, not a layer over it', () => {
   });
 
   /**
+   * `position: fixed` means the window — unless an ancestor says otherwise, and that is the
+   * platform's rule rather than the drawer's: a `transform` on any element above the panel
+   * makes that element the containing block, and the panel docks to it (0047). Measured here
+   * rather than taken from the specification, in three engines: the demo card is given a
+   * transform, and the panel takes the card's padding box instead of the window. The drawer
+   * cannot undo that, so what it does is SAY it — `offsetParent` is the platform's own answer
+   * to "who caught it", null for a panel the window holds — and the report names the card
+   * and the property. Without the transform the panel spans the viewport and nothing is
+   * said, which is the control ([`lesson-163`](../../../docs/lessons.md#lesson-163)).
+   */
+  test('an ancestor with a transform catches the panel, and the drawer says so in dev mode', async ({
+    page,
+  }) => {
+    const warnings: string[] = [];
+    page.on('console', (message) => {
+      if (message.type() === 'warning') warnings.push(message.text());
+    });
+    const reports = () => warnings.filter((w) => w.startsWith('[pct-drawer]'));
+    const box = () =>
+      drawer(page, 'drawer-nav').evaluate((el) => {
+        const rect = el.getBoundingClientRect();
+        const card = el.closest('[data-testid="demo-basic"]') as HTMLElement;
+        const cardRect = card.getBoundingClientRect();
+        const cardStyle = getComputedStyle(card);
+        const borderTop = parseFloat(cardStyle.borderTopWidth);
+        const borderBottom = parseFloat(cardStyle.borderBottomWidth);
+        return {
+          top: rect.top,
+          height: rect.height,
+          viewport: window.innerHeight,
+          // A containing block is the ancestor's PADDING box.
+          cardTop: cardRect.top + borderTop,
+          cardHeight: cardRect.height - borderTop - borderBottom,
+          offsetParent: (el as HTMLElement).offsetParent?.tagName ?? null,
+        };
+      });
+
+    await trigger(page, 'trigger-nav').click();
+    await expect(drawer(page, 'drawer-nav')).toHaveAttribute(
+      'data-pct-open',
+      '',
+    );
+    const held = await box();
+    expect(held.offsetParent).toBeNull();
+    expect(held.top).toBe(0);
+    expect(held.height).toBe(held.viewport);
+    expect(reports()).toEqual([]);
+
+    // Shut from the cross — the open panel covers the trigger, which is the card's own
+    // limitation and not this case's — caught, and opened again: the report is written on
+    // the open.
+    await drawer(page, 'drawer-nav').locator('[data-pct-part="close"]').click();
+    await expect(drawer(page, 'drawer-nav')).not.toHaveAttribute(
+      'data-pct-open',
+    );
+    await page.addStyleTag({
+      content: '[data-testid="demo-basic"] { transform: translateZ(0); }',
+    });
+    await trigger(page, 'trigger-nav').click();
+    await expect(drawer(page, 'drawer-nav')).toHaveAttribute(
+      'data-pct-open',
+      '',
+    );
+
+    const caught = await box();
+    expect(caught.offsetParent).toBe('SBX-DEMO');
+    expect(caught.top).toBeCloseTo(caught.cardTop, 1);
+    expect(caught.height).toBeCloseTo(caught.cardHeight, 1);
+    expect(reports()).toHaveLength(1);
+    expect(reports()[0]).toContain(
+      'An open drawer docked to <sbx-demo> and not to the window: that ancestor establishes a containing block (`transform: matrix',
+    );
+  });
+
+  /**
    * The reason `--pct-drawer-z-index` is 900 and not a bigger number. A filter drawer is
    * exactly where a select goes, and the panel it opens is a CDK overlay stamped at 1000 —
    * so the composition is the measurement, and a hit test is what asks it.

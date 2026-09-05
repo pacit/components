@@ -4353,3 +4353,30 @@ The rule that generalises: **when a gate misreads a name, fix the read, and neve
 the names around it.** A naming rule that exists to keep a read from misfiring is enforced on
 people who cannot see the read, and the second of them finds the workaround and not the
 reason — which is the shape the item itself described, one floor down.
+
+### <a id="lesson-163"></a>`lesson-163` — A platform rule written from memory is a claim, and the platform's own answer is the detector
+
+The drawer's card and its decision listed the properties that take a `position: fixed` panel
+away from the window — `transform`, `filter`, `contain: paint`, `container-type` — from
+memory of the specification, in a section a consumer reads only once the panel has already
+landed in the wrong place. Measured on 2026-09-05 in three engines, over twenty-seven
+ancestor properties: `container-type` catches nothing, in any of them (its layout containment
+left the specification years ago, and the memory was of the older text); `content-visibility:
+auto`, `will-change: transform`, the individual `translate` / `rotate` / `scale`,
+`perspective`, `backdrop-filter`, `offset-path` and `transform-style: preserve-3d` all catch,
+and not one of them was on the list. A list kept by hand was wrong in both directions, and
+nothing could have said so, because prose has no run.
+
+What the same measurement gave was the detector. `offsetParent` of a fixed element is `null`
+while the window holds it and the catching ancestor otherwise — the same answer in all three
+engines, for every property that catches. The report the drawer now writes asks the platform
+that question and reads properties only to NAME the reason, so a property the list does not
+know still produces a report, one clause shorter. One quirk is measured rather than assumed:
+chromium answers `<body>` for a `zoom` above the panel while the panel stays at the window, so
+the body is named only with a reason read off it.
+
+The rule: **a rule about the platform that is only written down is a claim; where the
+platform can be asked, ask it, and keep the list for the sentence.** The list is still worth
+keeping — it is what turns "an ancestor caught it" into "the `transform` on your card" — but
+it is not what decides, and the day it is wrong again the report is wrong by a name, not by
+a silence.

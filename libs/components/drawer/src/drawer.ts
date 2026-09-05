@@ -177,7 +177,9 @@ export class PctDrawer {
       untracked(() => this.sync(open));
     });
 
+    // One guard per call, because that is the shape `check-texts` reads a guard in.
     if (isDevMode()) effect(() => this.warnOnUnnamed());
+    if (isDevMode()) effect(() => this.warnOnCaught());
   }
 
   /**
@@ -257,6 +259,44 @@ export class PctDrawer {
     this.close('close');
   }
 
+  /**
+   * `position: fixed` means the window — unless an ancestor says otherwise. A `transform`, a
+   * `filter`, `contain: paint`, `content-visibility: auto` or a `will-change` naming one of
+   * them on ANY element above the drawer makes that element the containing block, and the
+   * panel docks to it: it lands in the middle of the page, at an edge nobody asked for, and
+   * nothing in the drawer is wrong. The consumer cannot diagnose that without knowing the
+   * rule, and the platform knows which element it was: `offsetParent` of a fixed element is
+   * `null` while it belongs to the window and the catching ancestor otherwise — measured in
+   * three engines, over every property in `CAPTURING` and a dozen that do not catch
+   * (`container-type` among them, whatever the first draft of the card said). So that is
+   * what is asked, and the properties are read only to NAME the reason.
+   */
+  private warnOnCaught(): void {
+    if (!this.open()) return;
+    const view = this.document.defaultView;
+    const caught = this.element.offsetParent;
+    if (!view || !caught) return;
+    const reason = capturingProperty(view.getComputedStyle(caught));
+    // Chromium answers `<body>` for a `zoom` above the drawer while the panel stays at the
+    // window, so the body (and the root) is reported only with a reason read off it.
+    if (
+      !reason &&
+      (caught === this.document.body ||
+        caught === this.document.documentElement)
+    )
+      return;
+    const name =
+      caught.tagName.toLowerCase() + (caught.id ? `#${caught.id}` : '');
+    console.warn(
+      `[pct-drawer] An open drawer docked to <${name}> and not to the window: that ` +
+        `ancestor establishes a containing block` +
+        (reason ? ` (\`${reason}\`)` : '') +
+        `, and \`position: fixed\` docks to it. Move the drawer out from under it, or ` +
+        `take the property off — a transform, a filter, \`contain: paint\`, ` +
+        `\`content-visibility: auto\` or a \`will-change\` naming one of them is enough.`,
+    );
+  }
+
   /** An open region with no accessible name is announced as "region" and nothing else. */
   private warnOnUnnamed(): void {
     if (!this.open()) return;
@@ -268,4 +308,44 @@ export class PctDrawer {
         `announced as "region" and the user has to read the panel to find out what it is.`,
     );
   }
+}
+
+/**
+ * The properties that make an element the containing block of its fixed descendants, each
+ * with the value that means "off" — measured in chromium, firefox and webkit on 2026-09-05.
+ * `contain` and `will-change` are lists and are read below. `container-type`, `overflow`,
+ * `isolation`, `opacity`, `zoom`, `position` and `contain: size | style` were measured too and
+ * catch nothing.
+ */
+const CAPTURING: ReadonlyArray<readonly [property: string, off: string]> = [
+  ['transform', 'none'],
+  ['translate', 'none'],
+  ['rotate', 'none'],
+  ['scale', 'none'],
+  ['perspective', 'none'],
+  ['filter', 'none'],
+  ['backdrop-filter', 'none'],
+  ['offset-path', 'none'],
+  ['transform-style', 'flat'],
+  ['content-visibility', 'visible'],
+];
+
+/** The property an ancestor caught the panel with, as `name: value`, or `null` when none is read. */
+function capturingProperty(style: CSSStyleDeclaration): string | null {
+  for (const [property, off] of CAPTURING) {
+    const value = style.getPropertyValue(property);
+    // jsdom answers '' for a property nobody set; an engine answers the "off" value.
+    if (value !== '' && value !== off) return `${property}: ${value}`;
+  }
+  const contain = style.getPropertyValue('contain');
+  if (/\b(paint|layout|strict|content)\b/.test(contain))
+    return `contain: ${contain}`;
+  const willChange = style.getPropertyValue('will-change');
+  if (
+    /\b(transform|translate|rotate|scale|perspective|filter|backdrop-filter|offset-path|contain|content-visibility)\b/.test(
+      willChange,
+    )
+  )
+    return `will-change: ${willChange}`;
+  return null;
 }
