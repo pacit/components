@@ -107,12 +107,25 @@ export class PctSlider implements FormValueControl<number>, PctFieldControl {
 
   // --- FormUiControl (kept in sync by the FormField directive) ---
 
+  /** Blocks the control and greys it — the native `disabled`, so it leaves the tab order as well. With `[formField]` the directive writes it, as it writes every input of the `FormUiControl` contract. */
   readonly disabled = input(false, { transform: booleanAttribute });
+
+  /** A native range has no `readonly`, so a move is undone here instead; the thumb stays focusable, unlike under `disabled`, and `aria-readonly` says so. */
   readonly readonly = input(false, { transform: booleanAttribute });
+
+  /** The form's verdict; shown only once `touched`, so an empty form does not open red. */
   readonly invalid = input(false, { transform: booleanAttribute });
+
+  /** Whether the user has left the field once; with `invalid` it gates the error face. */
   readonly touched = input(false, { transform: booleanAttribute });
+
+  /** Marks the label with the required sign; with `[formField]` it follows the schema's `required()`. */
   readonly required = input(false, { transform: booleanAttribute });
+
+  /** The form's validation errors; the first one's `message` takes the hint's place once the field is touched. */
   readonly errors = input<readonly ValidationError.WithOptionalFieldTree[]>([]);
+
+  /** The native `name` — what a form submission calls the value. */
   readonly name = input<string>('');
 
   /**
@@ -125,6 +138,8 @@ export class PctSlider implements FormValueControl<number>, PctFieldControl {
    * bounds is not a slider, and 0–100 is what `<input type="range">` means by nothing.
    */
   readonly min = input(undefined, { transform: optionalNumber });
+
+  /** The upper bound — as `min`: the form's and the native `max` in one; `100` when absent. */
   readonly max = input(undefined, { transform: optionalNumber });
 
   protected readonly lower = computed(() => this.min() ?? 0);
@@ -154,7 +169,10 @@ export class PctSlider implements FormValueControl<number>, PctFieldControl {
 
   // --- component API ---
 
+  /** The visible label, rendered by the control itself when it stands outside a `pct-field`; inside one, the field's label is the name. */
   readonly label = input<string>('');
+
+  /** A line of help under the control, outside a `pct-field`; the first error message takes its place while the field is invalid and touched. */
   readonly hint = input<string>('');
 
   /**

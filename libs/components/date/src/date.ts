@@ -113,12 +113,25 @@ export class PctDate
 
   // --- FormUiControl (kept in sync by the FormField directive) ---
 
+  /** Blocks the control and greys it — the native `disabled`, so it leaves the tab order as well. With `[formField]` the directive writes it, as it writes every input of the `FormUiControl` contract. */
   readonly disabled = input(false, { transform: booleanAttribute });
+
+  /** Keeps the value: the input takes the native `readonly` and the calendar button is disabled with it, while the field stays focusable. */
   readonly readonly = input(false, { transform: booleanAttribute });
+
+  /** The form's verdict; shown only once `touched`, so an empty form does not open red. */
   readonly invalid = input(false, { transform: booleanAttribute });
+
+  /** Whether the user has left the field once; with `invalid` it gates the error face. */
   readonly touched = input(false, { transform: booleanAttribute });
+
+  /** Marks the label with the required sign; with `[formField]` it follows the schema's `required()`. */
   readonly required = input(false, { transform: booleanAttribute });
+
+  /** The form's validation errors; the first one's `message` takes the hint's place once the field is touched. */
   readonly errors = input<readonly ValidationError.WithOptionalFieldTree[]>([]);
+
+  /** The native `name` — what a form submission calls the value. */
   readonly name = input<string>('');
 
   /**
@@ -131,6 +144,8 @@ export class PctDate
    * where the user can see why.
    */
   readonly min = input(undefined, { transform: optionalDay });
+
+  /** The latest day — as `min`, a bound on the calendar's walk and not a rewrite of what was typed. */
   readonly max = input(undefined, { transform: optionalDay });
 
   /** Days inside the bounds that still cannot be picked — weekends, holidays, taken slots. */
@@ -141,7 +156,10 @@ export class PctDate
 
   // --- component API ---
 
+  /** The visible label, rendered by the control itself when it stands outside a `pct-field`; inside one, the field's label is the name. */
   readonly label = input<string>('');
+
+  /** A line of help under the control, outside a `pct-field`; the first error message takes its place while the field is invalid and touched. */
   readonly hint = input<string>('');
 
   /**
@@ -165,6 +183,7 @@ export class PctDate
   /** Whether the format hint stands in the field while it is empty (`dd.mm.yyyy`). */
   readonly showFormat = input(true, { transform: booleanAttribute });
 
+  /** Height 28 / 36 / 44 px — the axis every field shares; from `providePctConfig` by default (req-api-config). */
   readonly size = input<PctSize>(this.config.defaultSize);
 
   /** Which edge of the field the panel lines up with. */

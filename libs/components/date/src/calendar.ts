@@ -117,6 +117,8 @@ export class PctCalendar {
 
   /** The earliest and latest day the walk may reach; absent means no bound on that side. */
   readonly min = input(undefined, { transform: optionalDay });
+
+  /** The latest day the walk may reach; absent means no bound on that side — the other half of `min`. */
   readonly max = input(undefined, { transform: optionalDay });
 
   /**
@@ -126,6 +128,7 @@ export class PctCalendar {
    */
   readonly dateDisabled = input<PctDayPredicate | null>(null);
 
+  /** Freezes the grid: no day can be picked, the walk and the month buttons stop, and `aria-disabled` says so. */
   readonly disabled = input(false, { transform: booleanAttribute });
 
   /** Overrides the application's `LOCALE_ID`, as on `[pctNumber]` and `<pct-slider>`. */
@@ -138,10 +141,13 @@ export class PctCalendar {
    */
   readonly firstDayOfWeek = input(0, { transform: numberAttribute });
 
+  /** Scales the grid with the field sizes, so a panel matches the field it opens from; from `providePctConfig` by default (req-api-config). */
   readonly size = input<PctSize>(this.config.defaultSize);
 
   /** The accessible name of the grid; the panel that owns one passes its own. */
   readonly ariaLabel = input<string>('');
+
+  /** As `ariaLabel`, for a name that already stands somewhere on the page. */
   readonly ariaLabelledby = input<string>('');
 
   /**

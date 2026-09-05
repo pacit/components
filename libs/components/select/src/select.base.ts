@@ -247,14 +247,28 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
 
   // --- FormUiControl (kept in sync by the FormField directive) ---
 
+  /** Blocks the control and greys it — the native `disabled`, so it leaves the tab order as well. With `[formField]` the directive writes it, as it writes every input of the `FormUiControl` contract. */
   readonly disabled = input(false, { transform: booleanAttribute });
+
+  /** Holds the value and keeps the panel closed while the control stays focusable; `aria-readonly` says so. */
   readonly readonly = input(false, { transform: booleanAttribute });
+
+  /** The form's verdict; shown only once `touched`, so an empty form does not open red. */
   readonly invalid = input(false, { transform: booleanAttribute });
+
+  /** Whether the user has left the field once; with `invalid` it gates the error face. */
   readonly touched = input(false, { transform: booleanAttribute });
+
+  /** Marks the label with the required sign; with `[formField]` it follows the schema's `required()`. */
   readonly required = input(false, { transform: booleanAttribute });
+
+  /** The form's validation errors; the first one's `message` takes the hint's place once the field is touched. */
   readonly errors = input<readonly ValidationError.WithOptionalFieldTree[]>([]);
+
+  /** The native `name` — what a form submission calls the value. */
   readonly name = input<string>('');
 
+  /** Emitted on blur — lets the form mark the field as touched. */
   readonly touch = output<void>();
 
   // --- component API ---
@@ -285,7 +299,11 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
    * inside a group would put `aria-activedescendant` and the keyboard on different rows.
    */
   readonly options = input<readonly PctSelectItem<T>[]>([]);
+
+  /** The visible label, rendered by the control itself when it stands outside a `pct-field`; inside one, the field's label is the name. */
   readonly label = input<string>('');
+
+  /** A line of help under the control, outside a `pct-field`; the first error message takes its place while the field is invalid and touched. */
   readonly hint = input<string>('');
 
   /**
@@ -319,6 +337,8 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
    * things.
    */
   readonly placeholder = input<string>();
+
+  /** Height 28 / 36 / 44 px — the axis every field shares; from `providePctConfig` by default (req-api-config). */
   readonly size = input<PctSize>(this.config.defaultSize);
 
   /**

@@ -1017,9 +1017,24 @@ routerLink>` CTAs until `a[pctButton]` exists (**4.33**), `select.scss` 7.69 kB
         component-button baselines red on the change itself and regenerated after; sandbox-e2e
         tabs 24 in chromium, `tabs-strip` and `tabs-segmented` regenerated 24px and 48px
         shorter. No TypeScript in the library moved, so the mutation snapshot stands._
-  - [ ] **2.7.4 — the sweep** — a JSDoc line on every input, model and output of the library,
+  - [x] **2.7.4 — the sweep** — a JSDoc line on every input, model and output of the library,
         a `$description` on every component token, `Parts`/`Usage`/`Theming` in every card,
-        examples per component batched by category; the tripwires of 2.7.2 flip to throw
+        examples per component batched by category; the tripwires of 2.7.2 flip to throw.
+        _Closed 2026-09-05. Most of it had landed with the pages: of the 799 readings 2.7.2
+        counted, 94 were left, and every one was the same line — the form-control block
+        (`disabled` / `readonly` / `invalid` / `touched` / `required` / `errors` / `name` /
+        `touch`, then `label` / `hint` / `size` / `max`) declared without a word in eight
+        controls, the calendar and the field: 4.26's eight hand copies, read from the
+        documentation side. 83 lines written, each saying what the input DOES in that control
+        rather than what the contract calls it (a checkbox has no `readonly`, so its line
+        says the click is swallowed; a range undoes the move; the group carries
+        `aria-readonly` because the `radio` role has none). The tripwires are gone as
+        tripwires: STRICT covered `button` alone, now any reading owed fails the build with
+        the list grouped by card, and `DOCS_WARNINGS` had nothing left to print and went
+        with it. Negative control recorded: one JSDoc line removed, the pass exits 1 naming
+        `text.ts: touch (output)`. The library's TypeScript moved by comments only, so the
+        mutation snapshot is stale by text and not by mutants — re-measured on the next run,
+        not on this one (the maintainer's call, with more changes still coming)._
   - [ ] **2.7.5 — the mono face** — JetBrains Mono vendored beside Inter (OFL, the licence
         next to it), first in the code stack; the baselines that hold code regenerated
 
@@ -2021,7 +2036,10 @@ direction` expecting index 32 and getting 31 in the first, its right-to-left twi
   - two roads: a host-directive carrying the block (it stands under nobody's template, so
     [0013](decisions/0013-no-headless-split.md) does not speak against it), or a structural
     gate over the eight declarations
-  - binds at: **the ninth control that takes the block** · _notes:_ —
+  - binds at: **the ninth control that takes the block** · _notes:_ the sweep (2.7.4,
+    2026-09-05) wrote the block's JSDoc into all eight copies by a script keyed on the member
+    names — a ninth copy of the same drift, in prose. The gate, when the trigger fires, holds
+    the lines as well as the transforms
 
 - [x] **4.27 — two meta-gates trust a fact about nx that nothing re-measures**
   - `check-docs` point 3 proves CI wiring by matching the `nx affected -t` **text** in

@@ -60,7 +60,10 @@ import { PctFieldSize } from './field.types';
 export class PctField implements PctFieldApi {
   private readonly config = inject(PCT_CONFIG);
 
+  /** The visible `<label>` of the row, wired to the control by `for` or by `aria-labelledby` — whichever the control's `labelStrategy` asks for. */
   readonly label = input<string>('');
+
+  /** A line of help under the row; the error message takes its place while one shows (one message at a time, req-api-message). */
   readonly hint = input<string>('');
 
   /**

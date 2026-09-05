@@ -104,14 +104,28 @@ export class PctNumber
 
   // --- FormUiControl (kept in sync by the FormField directive) ---
 
+  /** Blocks the control and greys it — the native `disabled`, so it leaves the tab order as well. With `[formField]` the directive writes it, as it writes every input of the `FormUiControl` contract. */
   readonly disabled = input(false, { transform: booleanAttribute });
+
+  /** Keeps the value from being edited while the field stays focusable and readable — the native `readonly`. */
   readonly readonly = input(false, { transform: booleanAttribute });
+
+  /** The form's verdict; shown only once `touched`, so an empty form does not open red. */
   readonly invalid = input(false, { transform: booleanAttribute });
+
+  /** Whether the user has left the field once; with `invalid` it gates the error face. */
   readonly touched = input(false, { transform: booleanAttribute });
+
+  /** The native `required`; a `pct-field` around the control reads it to mark the label. */
   readonly required = input(false, { transform: booleanAttribute });
+
+  /** The form's validation errors; a `pct-field` around the control shows the first one's `message` in place of the hint once the field is touched. */
   readonly errors = input<readonly ValidationError.WithOptionalFieldTree[]>([]);
+
+  /** The native `name` — what a form submission calls the value. */
   readonly name = input<string>('');
 
+  /** Emitted on blur — lets the form mark the field as touched. */
   readonly touch = output<void>();
 
   // --- component API ---
@@ -122,6 +136,8 @@ export class PctNumber
    * need to repeat them in the template. The value is clamped to them on commit.
    */
   readonly min = input(undefined, { transform: optionalNumber });
+
+  /** The upper bound — as `min`: filled by the directive from the schema's `max()`, and the value is clamped to it on commit. */
   readonly max = input(undefined, { transform: optionalNumber });
 
   /** The up/down arrow step; PageUp/PageDown jumps ten times as far. */
