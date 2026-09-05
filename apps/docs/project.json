@@ -32,6 +32,8 @@
         "{projectRoot}/src/app/demos/*.demo.ts",
         "{projectRoot}/src/snippets/*.txt",
         "{workspaceRoot}/libs/components/*/src/*.ts",
+        "{workspaceRoot}/libs/components/*/src/*.html",
+        "{workspaceRoot}/libs/components/package.json",
         "{workspaceRoot}/libs/tokens/src/*.json",
         "{workspaceRoot}/apps/sandbox-e2e/src/*.spec.ts",
         "{workspaceRoot}/apps/sandbox-e2e/src/__screenshots__/**",

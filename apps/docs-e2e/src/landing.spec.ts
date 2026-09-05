@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { visit } from './support/dom';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /**
@@ -68,6 +68,56 @@ test.describe('The landing', () => {
       const served = await page.request.get(address);
       expect(served.ok(), `${address} is a live address`).toBe(true);
     }
+  });
+
+  test('the machine catalogue is the inventory the site renders, read from the same sources', async ({
+    page,
+  }) => {
+    // The tripwire of plan 2.5: the catalogue cannot drift from the pages because both are
+    // one pass over the tracked sources — so this reads those sources itself and holds the
+    // served file to them: the cards on disk, the texts channel in its source.
+    const cards = readdirSync(join(ROOT, 'docs/components'))
+      .filter(
+        (f) => f.endsWith('.md') && f !== 'README.md' && f !== '_template.md',
+      )
+      .map((f) => f.replace(/\.md$/, ''))
+      .sort();
+    const channel = tracked('libs/components/core/src/texts.ts');
+    const keys = [
+      ...(
+        channel.match(/export interface PctTexts \{([\s\S]*?)^\}/m)?.[1] ?? ''
+      ).matchAll(/readonly (\w+): string;/g),
+    ]
+      .map((m) => m[1])
+      .sort();
+
+    const served = await page.request.get('/components.json');
+    expect(served.ok()).toBe(true);
+    const catalogue = await served.json();
+    expect(
+      catalogue.components.map((c: { id: string }) => c.id).sort(),
+    ).toEqual(cards);
+    expect(
+      catalogue.texts.keys.map((k: { key: string }) => k.key).sort(),
+    ).toEqual(keys);
+    expect(Object.keys(catalogue.texts.template).sort()).toEqual(keys);
+    for (const key of catalogue.texts.keys) {
+      expect(key.meaning, `${key.key} has a meaning`).not.toBe('');
+      expect(typeof key.default, `${key.key} has a default`).toBe('string');
+    }
+    // Every component names the page that documents it — a route routes.spec walks, so
+    // no request is made here: thirty-three server renders from this test would load the
+    // dev server the hover test next door is timing against — with its canonical usage
+    // as text and its cost reading.
+    for (const component of catalogue.components) {
+      expect(component.docs).toBe(`/components/${component.id}`);
+      expect(component.usage?.code, `${component.id} has a usage`).toBeTruthy();
+      expect(component.evidence.cost.elements).toBeGreaterThan(0);
+    }
+    // llms.txt carries the same channel in prose, for a reader that takes markdown.
+    const llms = await (await page.request.get('/llms.txt')).text();
+    expect(llms).toContain('## Texts');
+    for (const key of keys) expect(llms).toContain(`\`${key}\``);
   });
 
   test('the tabs card follows the arrow keys, not a screenshot', async ({

@@ -57,8 +57,8 @@ Snapshot, `node tools/check-docs.mjs`:
 
 | measure                                     | value |
 | ------------------------------------------- | ----: |
-| requirements                                |    89 |
-| ✅ enforced                                 |    69 |
+| requirements                                |    90 |
+| ✅ enforced                                 |    70 |
 | 🟡 partial (deliberately without a control) |    16 |
 | ⛔ gap                                      |     4 |
 
@@ -942,12 +942,35 @@ routerLink>` CTAs until `a[pctButton]` exists (**4.33**), `select.scss` 7.69 kB
     road, the folder is the interface; and the typed token names (`PctCssVar`) still leave
     the repository only through the site's inventory, which the 2.1 note already records ·
     cost: ~half a day
-- [ ] **2.5 — a surface for AI agents**: `llms.txt`, a machine-readable component catalogue from
+- [x] **2.5 — a surface for AI agents**: `llms.txt`, a machine-readable component catalogue from
       the same source as the docs, canonical examples
   - built **with** 2.1, not after it: the catalogue falls out of the same generators the site
     renders, and locale packs for the `PCT_TEXTS` keys (a dictionary per language is an
     afternoon, and drift is a type error) share the generator. Being the first library an
     agent can verify claims about is this repository's own axis, worn outward
+  - _notes (2026-09-05):_ **the catalogue grew up, and the dictionaries stayed the
+    consumer's.** `components.json` is one object now: every component with its canonical
+    usage and examples as text (the card's fence and the demo files the pages run), its
+    API with types and defaults, parts, tokens with both themes' defaults, keyboard map,
+    the `texts().key` reads scanned from its sources and templates, and its evidence with
+    the cost record of 2.3; the `PctTexts` channel with the meaning of every key (its
+    JSDoc), the English default, which components read it, and a template typed against
+    the interface; `llms.txt` carries the usage beside every component and the channel in
+    prose. **Locale packs are not shipped, and the reason is a gate, not an afternoon**:
+    `check-language` measures the built package for one language with no register at all
+    and calls a register that could excuse a directory "the second language's way back
+    in" — a Polish dictionary under `libs/` would need that gate to grow the hole it was
+    built not to have, and a German or Spanish one the maintainer cannot review would ship
+    under the library's name. So the generator emits what makes the afternoon short — the
+    keys, their meanings, the defaults, the template — and the type makes drift a compile
+    error where the dictionary lives. **The tripwire**: the content pass throws on a key
+    with no meaning or no default, a default with no key, a card with no usage, a preview
+    with no cost; docs-e2e reads the cards on disk and the channel's source and holds the
+    served file to both, every documented address answering. `req-api-catalogue` puts it
+    in the registry (90 promises, 70 enforced). Deciding run, after 2.3, 2.4 and this:
+    docs-e2e **361 of 361** in three engines (the first pass had the landing's two
+    baselines to rewrite for the AI tile's new line, and one webkit timing under full-suite
+    load that is green alone) · cost: ~a quarter of a day
 - [ ] **2.6 — `@pacit/components/testing`**: consumer-facing harnesses on the `data-pct-part`
       contract
   - the parts are already a snapshot-gated public surface, so a harness per card is thin and

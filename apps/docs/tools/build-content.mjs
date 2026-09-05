@@ -453,6 +453,8 @@ const cards = await Promise.all(
       summary: inline(summary),
       notesHtml: notes ? paragraphs(notes) : null,
       usage: usage ? { code: await highlight(usage.code, usage.lang) } : null,
+      // The catalogue (2.5) wants the fence as text, not as highlighted HTML.
+      usageRaw: usage ? { code: usage.code, lang: usage.lang } : null,
       theming: theming
         ? {
             code: await highlight(theming.code, theming.lang),
@@ -470,6 +472,7 @@ const cards = await Promise.all(
         ]),
       ),
       keyboard: keyboard ? await render(keyboard) : null,
+      keyboardRaw: keyboard ? keyboard.trim() : null,
       limitations: limitations ? await render(limitations) : null,
       checks,
       decisionIds,
@@ -1224,6 +1227,88 @@ for (const file of readdirSync(SNIPPETS_DIR).sort()) {
   );
 }
 
+// ── 5b. the texts channel, for the catalogue (plan 2.5) ─────────────────────
+
+/** Rendered HTML → the text a machine reads: tags gone, the few entities back. */
+const plain = (html) =>
+  String(html ?? '')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, ' ')
+    .trim();
+
+/**
+ * The `PctTexts` channel read from its source: every key with the JSDoc that explains it
+ * and the English default `PCT_DEFAULT_TEXTS` gives it. Two keys under one JSDoc (the three
+ * letters of a date hint) share the block. A key with no meaning or no default throws —
+ * the catalogue must never publish a channel the library does not hold, and `check-texts`
+ * holds the same set from the other side.
+ */
+const textsChannel = (() => {
+  const source = read('libs/components/core/src/texts.ts');
+  const fields =
+    source.match(/export interface PctTexts \{([\s\S]*?)^\}/m)?.[1] ?? '';
+  const keys = [];
+  let doc = null;
+  for (const m of fields.matchAll(
+    /(\/\*\*[\s\S]*?\*\/)?\s*readonly (\w+): string;/g,
+  )) {
+    if (m[1]) doc = m[1];
+    if (!doc)
+      throw new Error(
+        `content pass: \`PctTexts.${m[2]}\` carries no JSDoc — the catalogue would publish a key with no meaning`,
+      );
+    keys.push({
+      key: m[2],
+      meaning: plain(inline(firstParagraph(jsdocText(doc)))),
+    });
+  }
+  const defaults = Object.fromEntries(
+    [
+      ...(
+        source.match(
+          /export const PCT_DEFAULT_TEXTS[^=]*=\s*\{([\s\S]*?)^\};/m,
+        )?.[1] ?? ''
+      ).matchAll(/^\s*(\w+): '((?:[^'\\]|\\.)*)',?$/gm),
+    ].map(([, k, v]) => [k, v]),
+  );
+  if (keys.length === 0)
+    throw new Error('content pass: no key read from `PctTexts`');
+  for (const { key } of keys)
+    if (!(key in defaults))
+      throw new Error(
+        `content pass: \`PctTexts.${key}\` has no default in \`PCT_DEFAULT_TEXTS\``,
+      );
+  for (const key of Object.keys(defaults))
+    if (!keys.some((k) => k.key === key))
+      throw new Error(
+        `content pass: \`PCT_DEFAULT_TEXTS.${key}\` is no field of \`PctTexts\``,
+      );
+  return {
+    keys: keys.map((k) => ({ ...k, default: defaults[k.key] })),
+    template: defaults,
+  };
+})();
+
+/** The keys an entry point reads (`texts().key`, the one road after 0014), in its sources and templates. */
+const textsReadBy = (suffix) => {
+  const dir = join(LIB_DIR, suffix, 'src');
+  const keys = new Set();
+  for (const file of readdirSync(dir))
+    if (/\.(ts|html)$/.test(file) && !file.endsWith('.spec.ts'))
+      for (const m of readFileSync(join(dir, file), 'utf8').matchAll(
+        /texts\(\)\.(\w+)/g,
+      ))
+        keys.add(m[1]);
+  return [...keys].sort();
+};
+
+const manifest = JSON.parse(read('libs/components/package.json'));
+
 // ── 6. assemble, then emit ───────────────────────────────────────────────────
 
 mkdirSync(join(OUT_DIR, 'public'), { recursive: true });
@@ -1581,28 +1666,107 @@ export const SNIPPET_CODE: Readonly<Record<string, string>> = ${JSON.stringify(s
 `,
 );
 
+/**
+ * The machine catalogue (plan 2.5): the same inventory the pages render, as one JSON object
+ * an agent can read whole — every component with its canonical usage and examples as text,
+ * its API, parts, tokens, keyboard map, the texts it prints, and the evidence behind it,
+ * plus the texts channel with the meaning of every key and a template typed against it.
+ * Nothing here is typed by hand: a field is a reading of a tracked source, or it is absent.
+ */
+const catalogue = {
+  library: manifest.name,
+  version: manifest.version,
+  angular: manifest.peerDependencies['@angular/core'],
+  install: `npm install ${manifest.name}`,
+  generated:
+    'by apps/docs/tools/build-content.mjs from the tracked sources the site renders — every number is a gate’s, every description a JSDoc line or a card row',
+  site: {
+    component: '/components/<id>',
+    theming: '/theming',
+    trust: '/trust',
+    acr: '/acr',
+  },
+  evidence: {
+    mutation: evidence.mutation,
+    requirements: evidence.requirements,
+    decisions: evidence.decisions,
+    lessons: evidence.lessons,
+    engines: evidence.engines,
+    cost: {
+      measured: costRecord.measured,
+      machine: costRecord.machine,
+      record: 'apps/docs/bench.snapshot.md',
+    },
+  },
+  texts: {
+    provider: 'providePctTexts',
+    entrypoint: manifest.name,
+    contract:
+      'The strings a component prints by itself; English by default, overridden in part or in full, read at render time from a signal so a language can change without a reload. A dictionary for another language is an object typed PctTexts, so a key the library adds is a compile error in the application and never a blank string.',
+    keys: textsChannel.keys.map((k) => ({
+      ...k,
+      readBy: full
+        .filter(
+          (c) =>
+            c.entrypoint &&
+            textsReadBy(c.entrypoint.split('/').pop()).includes(k.key),
+        )
+        .map((c) => c.id),
+    })),
+    template: textsChannel.template,
+  },
+  components: full.map((card) => ({
+    id: card.id,
+    classes: card.classes,
+    role: card.role,
+    category: card.category,
+    status: card.status,
+    entrypoint: card.entrypoint,
+    selectors: card.selectors,
+    docs: `/components/${card.id}`,
+    summary: plain(card.summary),
+    usage: card.usageRaw,
+    examples: card.examples.map((e) => ({
+      key: e.key,
+      title: e.title,
+      code: e.source,
+    })),
+    api: card.api.map((c) => ({
+      name: c.name,
+      kind: c.kind,
+      selector: c.selector,
+      description: plain(c.description),
+      members: c.members.map((m) => ({
+        name: m.name,
+        kind: m.kind,
+        required: m.required,
+        type: m.type,
+        default: m.default,
+        description: plain(m.description),
+      })),
+      host: c.host,
+    })),
+    exports: card.exports.map((e) => ({
+      ...e,
+      description: plain(e.description),
+    })),
+    parts: card.parts.map((p) => ({
+      name: p.name,
+      description: plain(p.description),
+    })),
+    tokens: card.tokens.map((t) => ({
+      ...t,
+      description: plain(t.description),
+    })),
+    texts: card.entrypoint ? textsReadBy(card.entrypoint.split('/').pop()) : [],
+    keyboard: card.keyboardRaw,
+    decisions: card.decisions.map((d) => ({ id: d.id, title: plain(d.title) })),
+    evidence: card.evidence,
+  })),
+};
 writeFileSync(
   join(OUT_DIR, 'public/components.json'),
-  JSON.stringify(
-    full.map((card) => ({
-      id: card.id,
-      classes: card.classes,
-      role: card.role,
-      category: card.category,
-      entrypoint: card.entrypoint,
-      selectors: card.selectors,
-      status: card.status,
-      parts: card.parts.map((p) => p.name),
-      tokens: card.tokens.map((t) => t.name),
-      inputs: card.api.flatMap((c) =>
-        c.members
-          .filter((m) => m.kind !== 'output')
-          .map((m) => `${c.name}.${m.name}`),
-      ),
-    })),
-    null,
-    2,
-  ) + '\n',
+  JSON.stringify(catalogue, null, 2) + '\n',
 );
 
 const llms = [
@@ -1622,12 +1786,27 @@ const llms = [
     .filter((c) => c.entrypoint)
     .map(
       (c) =>
-        `- [${c.classes.join(' / ')}](/components/${c.id}): ${c.role || c.id} — \`${c.entrypoint}\``,
+        `- [${c.classes.join(' / ')}](/components/${c.id}): ${c.role || c.id} — \`${c.entrypoint}\`` +
+        (c.usageRaw && !c.usageRaw.code.includes('\n')
+          ? ` — \`${c.usageRaw.code}\``
+          : ''),
     ),
+  '',
+  '## Texts',
+  '',
+  `The strings a component prints by itself go through \`providePctTexts()\` from \`${manifest.name}\`: English by default, overridden in part or in full, read at render time from a signal. A dictionary for another language is an object typed \`PctTexts\`, so a key the library adds is a compile error in the application, never a blank string. The keys, with their English defaults:`,
+  '',
+  ...textsChannel.keys.map(
+    (k) => `- \`${k.key}\` (${JSON.stringify(k.default)}): ${k.meaning}`,
+  ),
+  '',
+  '## Cost',
+  '',
+  `Every component page's preview is measured in jsdom — elements, depth, listeners, renders to settle, and a dated clock — and the record (\`apps/docs/bench.snapshot.md\`, measured ${costRecord.measured}) is held exactly by a gate, the clock excepted. Each component carries its reading under \`evidence.cost\` in the catalogue.`,
   '',
   '## Machine catalogue',
   '',
-  '- [components.json](/components.json): the same inventory with selectors, parts, token names and input names, one JSON object per component.',
+  "- [components.json](/components.json): the same inventory as one JSON object — every component with its canonical usage and examples as text, its API with types and defaults, parts, tokens with both themes' defaults, keyboard map, the texts it prints and the evidence behind it; the texts channel with the meaning of every key and a template typed `PctTexts`; the repository's evidence numbers.",
   '',
 ].join('\n');
 writeFileSync(join(OUT_DIR, 'public/llms.txt'), llms + '\n');

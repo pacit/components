@@ -580,6 +580,36 @@ field, a literal in an interpolation, a static `aria-label` in a `host` block)
 
 ---
 
+### <a id="req-api-catalogue"></a>`req-api-catalogue` — The contract is machine-readable, from the same sources as the pages
+
+**Promise.** The site serves `llms.txt` and `components.json` at known addresses, emitted by
+**the same pass** that renders the component pages (`apps/docs/tools/build-content.mjs`):
+every component with its canonical usage and examples as text, its API with types and
+defaults, parts, tokens with both themes' defaults, keyboard map, the texts it prints, and
+the evidence behind it — plus the `PctTexts` channel with the meaning of every key, its
+English default, which components read it, and a template typed against the interface. An
+agent reads what the pages show and can verify what it suggests; a dictionary for another
+language is an object typed `PctTexts`, so a key the library adds is a compile error in the
+application and never a blank string. **The library ships no dictionary of its own**: the
+package is measured for one language with no register at all
+([`req-project-language`](project.md#req-project-language), `check-language` point 3), and
+that law is worth more than an afternoon's translations the maintainer cannot review.
+
+**Gate:** `apps/docs/tools/build-content.mjs` (target `content` of the `docs` project, on
+the road of every build in CI) — a card without a usage, a member without its JSDoc, a key
+without a meaning or a default, a default with no key, a preview with no cost reading all
+throw; `apps/docs-e2e/src/landing.spec.ts › "the machine catalogue is the inventory the
+site renders…"` reads the cards on disk and the channel in its source and holds the served
+file to both, every documented address answering
+**Control:** the content pass's tripwires fired twice while 2.7.4 was writing the readings
+they owed (the registry's bold total and its three-column rows) and again on the first
+strict build (94 readings owed, then none); the e2e case is held by the same law as the
+landing's strip — a card renamed on disk or a key added to `PctTexts` fails it until the
+served file follows, which it does by being generated
+**Decision:** [0014 — texts as a signal](../decisions/0014-texts-as-signal.md)
+
+---
+
 ## Overlays and motion
 
 ### <a id="req-api-overlay"></a>`req-api-overlay` — The overlay comes out of the control's visible edge

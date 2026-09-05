@@ -216,7 +216,12 @@ with the repository because it has no hand-typed copy of anything the repository
 The same pass emits **`llms.txt` and the machine-readable catalogue** — plan item 2.5,
 which was always ordered "built with 2.1, not after it". Being the first component library
 an agent can verify claims about is the axis worn outward, and it costs one extra emitter
-on a generator that exists anyway.
+on a generator that exists anyway. Since 2026-09-05 the catalogue is one object: every
+component's canonical usage and examples as text, its API, parts, tokens, keyboard map, the
+texts it prints and its evidence (the cost record included), and the `PctTexts` channel
+with a meaning per key, the English defaults and a template typed against the interface —
+a dictionary for another language is the consumer's file, because the package is measured
+for one language with no register (`req-api-catalogue`).
 
 ## The bar the site itself meets
 

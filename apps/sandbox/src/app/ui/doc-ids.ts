@@ -17,6 +17,7 @@ export type PctReqId =
   | 'req-a11y-wcag'
   | 'req-api-animations'
   | 'req-api-attributes'
+  | 'req-api-catalogue'
   | 'req-api-config'
   | 'req-api-container'
   | 'req-api-foundation'

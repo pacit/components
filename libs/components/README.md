@@ -482,6 +482,12 @@ The token carries a **signal**, so changing language does not need a page reload
 can speak a different language than the rest. Development warnings are not part of this channel:
 they are English, and silent outside development mode.
 
+A dictionary for a whole language is an object typed `PctTexts`, so a key a later version adds is
+a compile error in your application and never a blank string. The keys, what each one means, the
+English defaults and which components read them are in the site's machine catalogue
+(`/components.json`, under `texts`, with a template to copy) — the library ships no dictionary of
+its own.
+
 ## Icons
 
 The library ships **no icon set** — it ships the swap. Every icon a component draws sits inside
