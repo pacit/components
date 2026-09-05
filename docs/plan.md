@@ -2401,7 +2401,10 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     Deciding run, after 2.6 and this: docs-e2e **364 of 364** in three engines — 360 on the
     first pass, the four left being the trust page counting 160 lessons off a dev server that
     had not picked up the regenerated content (161 on disk, and on the page once the server
-    was restarted) and one firefox anchor timing, all six green alone
+    was restarted) and one firefox anchor timing, all six green alone. **The bytes came the
+    commit after**: `check-bundle` was not among the runs above, and the size record stood
+    at the old numbers for one commit — `./menu` +93, `./popover` +98, `./toast` +316 B,
+    the field and the queue — written the moment the next gate run read it
 
 ## 5. Gaps with no deadline
 

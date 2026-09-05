@@ -45,9 +45,9 @@ before an application ships them.
 ./field 27273 ./core @angular/core,@angular/forms,@angular/forms/signals
 ./grid 673 - @angular/core
 ./icon 2552 - @angular/common,@angular/core
-./menu 20193 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
+./menu 20286 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
 ./pagination 13651 ./core,./icon @angular/common,@angular/core
-./popover 14500 ./core @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
+./popover 14598 ./core @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
 ./progress 7179 ./core @angular/core
 ./radio 15417 ./core @angular/core
 ./select 69036 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core
@@ -59,7 +59,7 @@ before an application ships them.
 ./tabs 16115 ./core @angular/core
 ./testing 7998 - @angular/cdk/testing
 ./theme 518 - @angular/core
-./toast 15527 ./core,./icon @angular/common,@angular/core
+./toast 15843 ./core,./icon @angular/common,@angular/core
 ./tooltip 13216 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core
 ./tree 9158 ./icon @angular/common,@angular/core
 ```
