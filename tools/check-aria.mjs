@@ -51,6 +51,7 @@
  * Usage: node tools/check-aria.mjs
  */
 import { parseTemplate } from '@angular/compiler';
+import axe from 'axe-core';
 import { execFileSync } from 'node:child_process';
 import {
   cpSync,
@@ -228,80 +229,128 @@ const COMMENT = /<!--[\s\S]*?-->/g;
 /** An opening tag with its attribute text; quoted values may hold `>`. */
 const OPENING_TAG = /<([a-zA-Z][\w-]*)((?:"[^"]*"|'[^']*'|[^>"'])*)>/g;
 /** The same tags counted without parsing, as the denominator of the parse. */
-const FOCUSABLE_COUNTER =
-  /<(?:a|button|input|meter|progress|select|summary|textarea)(?=[\s/>])/gi;
+const widgetCounter = (tables) =>
+  new RegExp(
+    `<(?:${[...tables.focusable, ...tables.namedTags].sort().join('|')})(?=[\\s/>])`,
+    'gi',
+  );
 const ATTRIBUTE = /([^\s=/>"']+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g;
 
-/**
- * The tags a user can land on with no `tabindex` written anywhere. `summary` is the newest and
- * the one that shows what the list is FOR: it is the disclosure the platform ships, it takes
- * focus and it is announced as a control, and until the accordion was built this gate could
- * not see it — a component whose only widget was a `<summary>` counted zero widgets, was asked
- * for no name inputs, and passed green with a heading a consumer had no way to name.
- *
- * The reading is deliberately coarser than the platform's: a `<summary>` is focusable only as
- * the first summary child of a `<details>`, and one written anywhere else is not. Counting
- * that one too costs a false demand for name inputs in a template that has no business holding
- * such a tag at all — where the alternative, the state this list was in, costs a component
- * that cannot be named and a gate that says nothing about it.
- */
-const FOCUSABLE_TAGS = new Set([
-  'a',
-  'button',
-  'input',
-  'select',
-  'summary',
-  'textarea',
-]);
+// ── the platform's tables ──────────────────────────────────────────────────────
 
 /**
- * The ARIA roles a name belongs on although the element itself never takes focus. A
- * **composite** widget is named as a whole and the keyboard lands on its children: a
- * `role="tablist"` is named "Account settings" while every `<button role="tab">` inside it
- * carries a name of its own, and the strip's name is the one a consumer supplies.
+ * What the gate knows about tags and roles comes from `axe-core`'s tables — the same tables
+ * the audit in `a11y.spec.ts` reads over a rendered page, so the reading at build time and
+ * the one at run time have ONE source. Three lists used to stand here by hand: six focusable
+ * tags, nine composite roles, two named tags, each grown by one entry the day a component
+ * showed it was missing (`summary`, then `progress`), and each with a denominator nobody
+ * measured — a tag the list never looked at was indistinguishable from a tag it approved
+ * (plan 4.20). They are derived now:
  *
- * Without this the proxy for "carries a role" was `tabindex`, which is how a role on a `div`
- * became a widget — and a composite that needs no `tabindex`, because its children take the
- * focus, was invisible: the gate counted zero widgets, asked for no name inputs, and passed a
- * component whose strip could not be named at all.
+ *   `focusable` — the tags axe holds natively focusable in SOME variant (`a[href]`, an
+ *                 `input` not hidden, `button`, `select`, `textarea`, `summary`, `area`):
+ *                 its own `isNativelyFocusable`, asked over a virtual element for every tag
+ *                 of its element table.
+ *   `named`     — the roles ARIA names as a whole, by attribute: the ones whose superclass
+ *                 chain passes through `composite` (a widget the keyboard enters through its
+ *                 children — `tablist`, `listbox`, `menu`, `grid`, `tree`) and the ones the
+ *                 table says must carry a name they cannot take from their content
+ *                 (`toolbar`, `dialog`, `progressbar`, `img`). Not "any role": `alert` is a
+ *                 live region and `tab` is named by its text, and asking either for name
+ *                 inputs would be the over-reach point 2 refuses in the other direction.
+ *   `namedTags` — the tags whose implicit role is one of those, which axe holds focusable in
+ *                 no variant and which HTML names by no method of its own (`progress`,
+ *                 `meter`, `dialog`): announced with a name, and only ARIA can give one.
  *
- * It is a closed list of the composite roles and deliberately **not** "any role". A
- * `role="alert"` on a message part is a live region, not a widget a consumer names; treating
- * every role as one would ask every component with an error line for two inputs it has no use
- * for — the same over-reach point 2 refuses in the other direction.
+ * What the tables do NOT hold is a fact about axe, measured rather than remembered (three
+ * engines, 2026-09-05): `iframe`, `audio` and `video` with `controls`, `embed`, `object`, an
+ * open `<dialog>` and an editing host all take focus, and axe's focusability knows none of
+ * them; a `<details>` with no summary it holds focusable and no engine does, which the
+ * virtual summary child below settles. The gate reads `contenteditable` itself, as an
+ * attribute beside `tabindex`, because an editing host is a textbox by any other name; the
+ * six tags it leaves to axe — the day a template here draws one, the audit on the page will
+ * not see it either. One source, one blind spot, and a table upstream to correct rather
+ * than a list here to remember.
  */
-const COMPOSITE_ROLES = new Set([
-  'grid',
-  'listbox',
-  'menu',
-  'menubar',
-  'radiogroup',
-  'tablist',
-  'toolbar',
-  'tree',
-  'treegrid',
-]);
+const ANCHORS = {
+  focusable: 'summary',
+  named: 'tablist',
+  namedTags: 'progress',
+};
 
 /**
- * The tags whose IMPLICIT role has to be named although nothing can focus them and no `role`
- * attribute is written anywhere. They are the third way a widget hid from this gate, after the
- * composite roles and `<summary>`, and the narrowest: the two lists above both rest on
- * something a user does — landing on the element, or landing on its children. A `<progress>`
- * offers neither. It is not focusable in any engine (measured in three), it carries no role
- * attribute because the role is the tag's own, and a screen reader still announces it — as
- * "progressbar", with whatever name it has, which for an unnamed one is nothing at all. axe
- * says the same from the other side and calls it `aria-progressbar-name`.
- *
- * So a component whose only widget is a bar counted zero widgets, was asked for no name inputs
- * and passed green, exactly as the accordion's `<summary>` did. `<meter>` is here for the same
- * reason and before the fact rather than after it — it is the same shape of element and this
- * library does not draw one yet.
- *
- * It stays a closed list of TAGS and not "any element with an implicit role", for the reason
- * `COMPOSITE_ROLES` is closed: `<p>` has one too, and asking a paragraph for name inputs would
- * be the over-reach point 2 refuses in the other direction.
+ * An element as axe sees one, carrying nothing but what decides focusability: `href` on a
+ * link, `type` on an input, `tabindex` on anything. A bound attribute (`[attr.href]`,
+ * `[tabindex]`) stands for a present one, with the value that keeps the element focusable —
+ * the WORST case, which is the one a name has to be able to reach. A `disabled` binding is
+ * not passed on: axe would read it as "takes no focus", and a control that is sometimes
+ * disabled still has to be namable. A `<details>` gets a summary child, because the element
+ * a user lands on is the summary — the platform's own when the template draws none — so the
+ * tag itself is never the widget.
  */
-const NAMED_TAGS = new Set(['meter', 'progress']);
+const DECIDING = { href: '', type: '', tabindex: '-1' };
+const virtual = (tag, attrs) => {
+  const attributes = {};
+  for (const [name, fallback] of Object.entries(DECIDING)) {
+    const bound = attrs.has(`[${name}]`) || attrs.has(`[attr.${name}]`);
+    const value = attrs.get(name) ?? (bound ? fallback : undefined);
+    if (value !== undefined) attributes[name] = value;
+  }
+  const node = new axe.SerialVirtualNode({ nodeName: tag, attributes });
+  node.children =
+    tag === 'details'
+      ? [new axe.SerialVirtualNode({ nodeName: 'summary' })]
+      : [];
+  return node;
+};
+
+const platformTables = () => {
+  const { ariaRoles, htmlElms } = axe._audit.standards;
+  const implicit = axe.commons.standards.implicitHtmlRoles;
+  const chain = (role, seen = new Set()) => {
+    if (!ariaRoles[role] || seen.has(role)) return [];
+    seen.add(role);
+    return [
+      role,
+      ...(ariaRoles[role].superclassRole ?? []).flatMap((s) => chain(s, seen)),
+    ];
+  };
+  const byAttribute = (role) =>
+    ariaRoles[role]?.accessibleNameRequired === true &&
+    !ariaRoles[role].nameFromContent;
+  const named = new Set(
+    Object.keys(ariaRoles).filter(
+      (role) =>
+        ariaRoles[role].type !== 'abstract' &&
+        (chain(role).slice(1).includes('composite') || byAttribute(role)),
+    ),
+  );
+  const focusable = new Set(
+    Object.keys(htmlElms).filter((tag) =>
+      axe.commons.dom.isNativelyFocusable(
+        virtual(
+          tag,
+          new Map([
+            ['href', ''],
+            ['type', ''],
+          ]),
+        ),
+      ),
+    ),
+  );
+  const namedTags = new Set(
+    Object.keys(htmlElms).filter(
+      (tag) =>
+        typeof implicit[tag] === 'string' &&
+        byAttribute(implicit[tag]) &&
+        !htmlElms[tag].namingMethods &&
+        !focusable.has(tag),
+    ),
+  );
+  return { focusable, named, namedTags };
+};
+
+const TABLES = platformTables();
 
 const attributesOf = (text) => {
   const attrs = new Map();
@@ -313,37 +362,34 @@ const attributesOf = (text) => {
 /**
  * A widget — that is, an element whose accessible name is announced, so that a name the
  * consumer supplies has somewhere to land. Three ways in: the user can focus it, it carries a
- * composite role and its children are what the user focuses, or its TAG has a role that is
- * announced with a name although nobody can land on it at all. A link without an address is
- * not focusable, nor is a hidden input; a `tabindex` makes anything focusable, which is how a
- * role written onto a `div` becomes a widget.
+ * role ARIA names as a whole (a composite whose children are what the user focuses, a
+ * `toolbar`, a `dialog`), or its TAG has such a role although nobody can land on it at all.
+ * A link without an address is not focusable, nor is a hidden input; a `tabindex` makes
+ * anything focusable, which is how a role written onto a `div` becomes a widget.
  */
-const isWidget = (tag, attrs) =>
-  COMPOSITE_ROLES.has(attrs.get('role')) ||
-  NAMED_TAGS.has(tag) ||
+const isWidget = (tag, attrs, tables) =>
+  tables.named.has(attrs.get('role')) ||
+  tables.namedTags.has(tag) ||
   isFocusable(tag, attrs);
 
 /**
  * The narrower question inside the one above: can a user LAND on this element. It is the whole
  * of what point 8 asks — a `<progress>` inside a hidden subtree is announced to nobody and
  * that is the intent, while a `<button>` there is a control the keyboard reaches and the
- * reader cannot describe.
+ * reader cannot describe. axe answers for the tag and its deciding attributes; an editing
+ * host is the one thing the gate answers for itself, because the platform focuses it and
+ * axe's table does not know (see the tables above).
  */
-const isFocusable = (tag, attrs) => {
-  if (
-    attrs.has('tabindex') ||
-    attrs.has('[tabindex]') ||
-    attrs.has('[attr.tabindex]')
-  )
-    return true;
-  if (!FOCUSABLE_TAGS.has(tag)) return false;
-  if (tag === 'a')
-    return attrs.has('href') || attrs.has('[href]') || attrs.has('[attr.href]');
-  if (tag === 'input') return attrs.get('type') !== 'hidden';
-  return true;
-};
+const EDITING_HOST = [
+  'contenteditable',
+  '[contenteditable]',
+  '[attr.contenteditable]',
+];
+const isFocusable = (tag, attrs) =>
+  EDITING_HOST.some((key) => attrs.has(key)) ||
+  axe.commons.dom.isFocusable(virtual(tag, attrs));
 
-const readTemplate = (content) => {
+const readTemplate = (content, tables) => {
   const text = content.replace(COMMENT, '');
   const tags = [...text.matchAll(OPENING_TAG)].map((m) => ({
     tag: m[1].toLowerCase(),
@@ -354,15 +400,12 @@ const readTemplate = (content) => {
   }));
   return {
     widgets: tags
-      .filter((t) => isWidget(t.tag, t.attrs))
-      .map((t) => ({
-        ...t,
-        composite: COMPOSITE_ROLES.has(t.attrs.get('role')),
-      })),
+      .filter((t) => isWidget(t.tag, t.attrs, tables))
+      .map((t) => ({ ...t })),
     parsed: tags.filter(
-      (t) => FOCUSABLE_TAGS.has(t.tag) || NAMED_TAGS.has(t.tag),
+      (t) => tables.focusable.has(t.tag) || tables.namedTags.has(t.tag),
     ).length,
-    counted: countOf(text, FOCUSABLE_COUNTER),
+    counted: countOf(text, widgetCounter(tables)),
   };
 };
 
@@ -475,8 +518,28 @@ class AriaError extends Error {
   }
 }
 
-const checkAria = ({ components, counted, templates, documents }) => {
+const checkAria = ({ components, counted, templates, documents, tables }) => {
   // ── 1. denominator ───────────────────────────────────────────────────────────
+  // The tables the classification below reads. Absent, the gate would classify against
+  // nothing and pass every template as widget-free; and each holds the entry that named it
+  // when it was a list here — a table that lost one is either a reading this gate has
+  // stopped making or a fact about the platform that moved, and both are a verdict to
+  // reach rather than a silence.
+  if (!tables)
+    throw new AriaError(
+      'denominator',
+      `the platform tables were not read — with no tag held focusable and no role held ` +
+        `named, every template below counts zero widgets and passes`,
+    );
+  for (const [table, anchor] of Object.entries(ANCHORS))
+    if (!tables[table]?.has(anchor))
+      throw new AriaError(
+        'denominator',
+        `the \`${table}\` table read from axe-core holds no \`${anchor}\` — the entry that ` +
+          `named this table when it was a list here, and the one a prepared input still ` +
+          `stands on. Either the read stopped reading or the platform's table moved; ` +
+          `decide which before anything below is believed`,
+      );
   if (components.length !== counted)
     throw new AriaError(
       'denominator',
@@ -541,7 +604,7 @@ const checkAria = ({ components, counted, templates, documents }) => {
     );
 
   for (const template of templates) {
-    const read = readTemplate(template.content);
+    const read = readTemplate(template.content, tables);
     if (read.parsed !== read.counted)
       throw new AriaError(
         'denominator',
@@ -576,7 +639,7 @@ const checkAria = ({ components, counted, templates, documents }) => {
   for (const component of components) {
     const tags = hostTags(component.selector);
     component.hostIsWidget =
-      (tags.length > 0 && tags.every((t) => FOCUSABLE_TAGS.has(t))) ||
+      (tags.length > 0 && tags.every((t) => tables.focusable.has(t))) ||
       component.host.has('role') ||
       component.host.has('[attr.role]');
     const template = component.templatePath
@@ -650,10 +713,15 @@ const checkAria = ({ components, counted, templates, documents }) => {
       );
     // The pairwise rule is about the FOCUSABLE carriers, because that is what "two names for
     // one control" means: two things a user can land on, each announcing the same name. A
-    // composite container named alongside the control that owns it is not that — it is the
-    // APG's own arrangement, and `pct-select` is the case: the combobox trigger and the
-    // `role="listbox"` it opens carry one name between them, deliberately.
-    const landable = carriers.filter((widget) => !widget.composite);
+    // container named alongside the control that owns it is not that — it is the APG's own
+    // arrangement, and `pct-select` is the case: the combobox trigger and the `role="listbox"`
+    // it opens carry one name between them, deliberately. "Container" is asked of the element
+    // and not of a list of roles: the thing the user lands on is the one that counts, and a
+    // `role="combobox"` on a `<button>` is that thing although ARIA files the role under
+    // `composite` (plan 4.20).
+    const landable = carriers.filter((widget) =>
+      isFocusable(widget.tag, widget.attrs),
+    );
     const together = landable.flatMap((widget, i) =>
       landable.slice(i + 1).filter((other) => !exclusive(widget, other)),
     );
@@ -799,6 +867,7 @@ const isCard = (p) =>
 const read = (root, path) => readFileSync(join(root, path), 'utf8');
 
 const collectInput = (root, files) => ({
+  tables: TABLES,
   ...readSources(root, files.filter(isSource)),
   templates: files
     .filter(isTemplate)
@@ -849,13 +918,31 @@ const buildFixture = (name) => {
   return target;
 };
 
-const fixtureInput = (directory) =>
-  collectInput(
+const fixtureInput = (directory, tables = TABLES) => ({
+  ...collectInput(
     directory,
     globSync('**/*.{ts,html,md}', { cwd: directory })
       .map((p) => p.split('\\').join('/'))
       .sort(),
+  ),
+  tables,
+});
+
+/**
+ * The tables a case asks for: the live ones, none at all (`"tables": null`), or the live
+ * ones with entries taken out (`"tables": { "drop": { "focusable": ["summary"] } }`) — the
+ * derivation's own denominator, doctored the way the file-based cases doctor a template.
+ */
+const tablesFor = (fx) => {
+  if (!('tables' in fx)) return TABLES;
+  if (fx.tables === null) return null;
+  const tables = Object.fromEntries(
+    Object.entries(TABLES).map(([name, set]) => [name, new Set(set)]),
   );
+  for (const [name, entries] of Object.entries(fx.tables.drop ?? {}))
+    for (const entry of entries) tables[name]?.delete(entry);
+  return tables;
+};
 
 // ── the run ────────────────────────────────────────────────────────────────────
 
@@ -903,7 +990,7 @@ for (const name of cases) {
   );
   const directory = buildFixture(name);
   try {
-    checkAria(fixtureInput(directory));
+    checkAria(fixtureInput(directory, tablesFor(fx)));
     problems.push(
       `${name}: the prepared input PASSED and was meant not to — point ${fx.point} ` +
         `(\`${fx.check}\`) stopped examining anything`,

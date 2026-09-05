@@ -130,7 +130,8 @@
         "{workspaceRoot}/libs/components/*/src/**/*.html",
         "{workspaceRoot}/docs/components/*.md",
         "{workspaceRoot}/tools/check-aria.mjs",
-        "{workspaceRoot}/tools/check-aria.fixtures/**/*"
+        "{workspaceRoot}/tools/check-aria.fixtures/**/*",
+        { "externalDependencies": ["axe-core", "@angular/compiler"] }
       ],
       "options": {
         "command": "node tools/check-aria.mjs"

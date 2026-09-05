@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "tables": { "drop": { "focusable": ["summary"] } },
+  "$reason": "The focusable table read from axe-core has lost `summary` — the entry that named the table when it was a list here, and the one `summary-without-inputs` still stands on. A derived table can lose an entry in a package bump with no line in this repository moving, and a gate that classified against the smaller table would pass a disclosure nobody can name, exactly as the list did before `summary` was added to it. The anchor makes that loss a verdict rather than a silence."
+}

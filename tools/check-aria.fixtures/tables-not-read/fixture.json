@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "tables": null,
+  "$reason": "The platform tables the classification reads are not there at all — the state the gate would be in if `axe-core` stopped exposing its standards, or the import quietly returned something else. With no tag held focusable and no role held named, every template counts zero widgets, is asked for no name inputs, and passes; the reference input passes too, which is why this is a denominator case and not a shrug."
+}

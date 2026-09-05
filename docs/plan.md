@@ -1986,7 +1986,7 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     The honest cheap version for both non-`.ts` halves is the recorded disarming per claim
     this item already names
 
-- [ ] **4.20 — the list of what the platform makes focusable is written by hand, and nobody
+- [x] **4.20 — the list of what the platform makes focusable is written by hand, and nobody
       counts what is missing**
   - `check-aria`'s widget test rests on `FOCUSABLE_TAGS`, five tags until this step and six
     now. `summary` was the missing one and it was found the way these are always found: by
@@ -2022,6 +2022,28 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     `NAMED_TAGS` — and `contenteditable` belongs to the focusability check's attributes
     rather than to any tag list. Whatever derivation settles this settles all three from one
     source
+  - _notes:_ **derived (2026-09-05), all three from one source: `axe-core`'s tables, the
+    same ones the audit in `a11y.spec.ts` reads on a rendered page.** The focusable tags are
+    axe's own `isNativelyFocusable` asked over a virtual element for every tag of its element
+    table (seven: `a[href]`, `area[href]`, `button`, `input` not hidden, `select`, `summary`,
+    `textarea`); the named roles are the ones whose ARIA superclass chain passes through
+    `composite` plus the ones the table says must carry a name they cannot take from content
+    (`toolbar`, `dialog`, `progressbar`, `img` — 22 in all); the named tags are the tags whose
+    implicit role is one of those, focusable in no variant and named by no HTML method
+    (`progress`, `meter`, `dialog`). Per element the question goes to axe too, with the
+    deciding attributes only — `href`, `type`, `tabindex`, a binding standing for the worst
+    case and a `disabled` never passed on. Each table holds an anchor (`summary`, `tablist`,
+    `progress`), so a table that loses one in a bump is a verdict and not a silence; two
+    prepared inputs hold that, 21 in all. **What the derivation does not reach is now
+    counted**, in three engines: `iframe`, `audio`/`video` with `controls`, `embed`, `object`,
+    an open `<dialog>` and an editing host take focus and axe's table knows none of them —
+    the editing host the gate reads itself, as an attribute beside `tabindex`; the six tags
+    stay axe's blind spot, and the audit on the page shares it, which is what one source
+    means. One surprise on the way: the union put `combobox` among the roles named as a
+    whole (axe files it under `select`), and point 4's pairwise rule, which had excluded
+    composites from "two names for one control", stopped seeing two named triggers — so that
+    rule asks the element whether a user lands on it, and no list at all. The live verdict
+    did not move: 58 components, 14 naming a widget of their own
 
 - [ ] **4.21 — the library's layer order is three numbers in three files and no rule**
   - `--pct-toast-z-index` is **1100** and its comment says why: above the CDK's overlay
