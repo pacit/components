@@ -4380,3 +4380,24 @@ platform can be asked, ask it, and keep the list for the sentence.** The list is
 keeping — it is what turns "an ancestor caught it" into "the `transform` on your card" — but
 it is not what decides, and the day it is wrong again the report is wrong by a name, not by
 a silence.
+
+### <a id="lesson-164"></a>`lesson-164` — A flake's record names the line the stack names, not the line the story ends on
+
+The dialog's scroll-lock case failed one run in three in WebKit on 2026-09-02, and the item
+that recorded it (plan 4.32) said WHERE: "at the `Escape` step — the panel is still in the
+DOM when `toHaveCount(0)` asks", with a suspicion to match, a wheel racing the keydown.
+Measured again on 2026-09-05 at that day's commit, four runs of twelve failed, every one at
+line 161 — `expect(await scrollY()).toBe(locked)`, the LOCK assertion three lines above the
+Escape, with `locked` read while the first wheel was still in flight. That is
+[`lesson-149`](#lesson-149) to the letter, and the commit that wrote lesson-149 the next
+morning made the same twelve runs green; the current code passes 197 of 197 across isolation,
+a probe that presses Escape with no settle at all, and eight workers of load. The item stood
+for three days pointing at a step that never failed, and a fix along its suspicion would have
+been a wait nobody needed beside a lock that was working.
+
+The record went wrong at the reading: Playwright prints a code frame that ends on the line
+after the failing expression, and `toHaveCount(0)` was the last line of the frame. The rule:
+**a flake's record names the line the stack names — `at file:line:col` — and quotes the
+assertion standing on it; the code frame is context, and the last line of a story is not
+where it broke.** Written that way, the item would have been closed by the fix that landed
+the next day instead of surviving it.

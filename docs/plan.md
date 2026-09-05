@@ -2385,7 +2385,7 @@ direction` expecting index 32 and getting 31 in the first, its right-to-left twi
     hash, and the gate now runs on machines that never had a `/usr/share/dict` at all —
     decision 0040's split, applied to the gate's biggest input
 
-- [ ] **4.32 — the dialog's scroll-lock case is a coin toss in WebKit, and only there**
+- [x] **4.32 — the dialog's scroll-lock case is a coin toss in WebKit, and only there**
   - measured on 2026-09-02, in isolation and idle (not under the 22-worker load that
     excuses an ordinary flake): `dialog.spec.ts › "the page stops scrolling, and starts
 again"` fails **1 run in 3** in WebKit at the `Escape` step — the panel is still in
@@ -2397,7 +2397,16 @@ again"` fails **1 run in 3** in WebKit at the `Escape` step — the panel is sti
     modal in WebKit may move focus or leave the scroll settle racing the keydown, and
     `settledScrollY` waits for the page, not for the panel's focus
   - binds at: **the next red CI run it causes** — a retry currently absorbs it, and a
-    fix belongs beside the dialog, not inside 2.1 · _notes:_ —
+    fix belongs beside the dialog, not inside 2.1 · _notes:_ **closed (2026-09-05),
+    re-measured at the commit it was written on.** Four runs of twelve red in WebKit at
+    the commit this item was written on (the parent of 0c20b25) — every one at the LOCK assertion, `expect(await scrollY()).toBe(locked)`, with
+    `locked` read mid-flight: [`lesson-149`](lessons.md#lesson-149)'s defect, not the Escape
+    step this item named, and the commit that wrote lesson-149 the next morning (0c20b25)
+    makes the same twelve green. The suspicion here pointed at a step that never failed — a
+    probe pressing Escape with no settle at all is 20 of 20 in WebKit. Today: 42 of 42 in
+    isolation, 135 of 135 over eight workers in three engines; nothing to fix beside the
+    dialog. What was wrong was the record, and that is
+    [`lesson-164`](lessons.md#lesson-164)
 - [ ] **4.33 — the button's faces stop at `<button>`, and the site is the consumer that
       noticed**
   - `PctButton` dresses `button[pctButton]` only; a link that should look like a button
