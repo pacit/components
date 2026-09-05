@@ -34,7 +34,7 @@ libs/components/core/src/field.ts 96.97 32(0) 1 0 0
 libs/components/core/src/focus.ts 100.00 1(0) 0 0 0
 libs/components/core/src/id.ts 100.00 5(0) 0 0 0
 libs/components/core/src/list.ts 99.07 107(0) 1 0 0
-libs/components/core/src/modal.ts 78.33 47(0) 9 4 0
+libs/components/core/src/modal.ts 80.00 48(0) 8 4 0
 libs/components/core/src/motion.ts 86.21 50(0) 8 0 0
 libs/components/core/src/overlay.ts 100.00 15(0) 0 0 2
 libs/components/core/src/placement.ts 89.23 58(0) 7 0 0
@@ -44,7 +44,7 @@ libs/components/date/src/calendar.ts 73.60 131(0) 45 2 4
 libs/components/date/src/date.ts 66.18 135(0) 67 2 8
 libs/components/date/src/day.ts 95.83 138(2) 6 0 0
 libs/components/date/src/locale.ts 80.49 132(2) 27 5 0
-libs/components/dialog/src/dialog.ts 73.73 87(1) 31 0 3
+libs/components/dialog/src/dialog.ts 79.03 98(1) 26 0 4
 libs/components/drawer/src/drawer-trigger.ts 100.00 6(0) 0 0 2
 libs/components/drawer/src/drawer.ts 96.97 64(0) 1 0 2
 libs/components/field/src/autosize.ts 75.34 55(0) 17 1 2
@@ -52,11 +52,11 @@ libs/components/field/src/field.ts 71.56 78(0) 27 2 1
 libs/components/field/src/number.ts 80.35 184(0) 43 2 11
 libs/components/field/src/text.ts 86.05 37(0) 6 0 5
 libs/components/icon/src/icon.ts 92.11 35(0) 3 0 2
-libs/components/menu/src/menu-item.ts 75.86 22(0) 4 1 1
+libs/components/menu/src/menu-item.ts 78.79 26(0) 4 1 1
 libs/components/menu/src/menu-trigger.ts 79.31 23(0) 6 0 2
-libs/components/menu/src/menu.ts 78.57 209(0) 51 5 2
+libs/components/menu/src/menu.ts 83.04 279(0) 51 5 3
 libs/components/pagination/src/pagination.ts 96.43 108(0) 4 0 4
-libs/components/popover/src/popover.ts 65.61 124(0) 55 10 2
+libs/components/popover/src/popover.ts 72.04 152(0) 47 10 3
 libs/components/progress/src/progress.ts 92.31 48(0) 4 0 2
 libs/components/radio/src/radio-group.ts 90.63 87(1) 9 0 5
 libs/components/radio/src/radio.ts 90.24 37(0) 3 1 1
@@ -76,5 +76,5 @@ libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0
 libs/components/toast/src/toaster.ts 71.71 109(0) 42 1 0
 libs/components/tooltip/src/tooltip.ts 70.54 182(0) 71 5 8
 libs/components/tree/src/tree.ts 93.28 111(0) 7 1 4
-TOTAL 82.80 3823/4617
+TOTAL 83.43 3937/4719
 ```
