@@ -915,13 +915,15 @@ routerLink>` CTAs until `a[pctButton]` exists (**4.33**), `select.scss` 7.69 kB
     (`libs/components/testing/src/dom.ts` says so in its header) and a consumer re-derives
     by hand the selectors the library treats as contract. A library that ships promises
     should ship the instrument a consumer's own suite holds them with after an upgrade
-- [ ] **2.7 — the component page, redesigned to the approved sketch** — the reviewer's second
+- [x] **2.7 — the component page, redesigned to the approved sketch** — the reviewer's second
       item (2026-09-03): "the worst-looking part of the site". Two static sketches were
       shown before a line of code moved (the rule he set); the decision is the second
       sketch's character with the first one's tables — layout B (a component index on the
       left, the page, a pinned table of contents on the right), ONE long page rather than
       top tabs, JetBrains Mono as the vendored code face, the accessibility gaps shown in
-      public beside the measurements
+      public beside the measurements. _Closed 2026-09-05 with its last two steps, 2.7.4
+      and 2.7.5; seven steps in all, the two reviews included, and the page it leaves
+      behind is the one the sketch promised._
   - [x] **2.7.1 — the strip's scrollbar** — the reviewer's guess was right: `pct-tabs` always
         showed a scrollbar at the strip's end, and scrolling it by a pixel thickened the
         chosen tab's edge. Library fix under the full regime, and first, because the page's
