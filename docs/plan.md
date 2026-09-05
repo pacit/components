@@ -2374,7 +2374,7 @@ again"` fails **1 run in 3** in WebKit at the `Escape` step — the panel is sti
     measured least
   - binds at: **the next site session** — it opens with the reviewer's list of concrete
     screens, not with a guess · _notes:_ —
-- [ ] **4.35 — the popover's axe audit can catch a button mid-transition, in two
+- [x] **4.35 — the popover's axe audit can catch a button mid-transition, in two
       engines at once**
   - CI run 33680164640's sibling (2026-09-02, run 33681596258): `a11y.spec.ts › an open
 popover has no violations` flaked in firefox AND webkit on the same measured pair —
@@ -2385,7 +2385,22 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     the panel, and a colour `transition` is still travelling when axe reads the pixels —
     a reduced-motion context or a settled wait before `analyze()` would pin it
   - binds at: **the next red it causes** — today it is a retry's cost, and the fix
-    belongs beside the a11y spec, not inside 2.1 · _notes:_ —
+    belongs beside the a11y spec, not inside 2.1 · _notes:_ **closed as filler (2026-09-05),
+    with the suspicion measured first.** A probe in three engines at the moment
+    `toBeVisible()` resolves for the popover's panel found two CSS transitions running at
+    0–35% of their 150 ms — the panel's own `opacity` fade from `@starting-style` and the
+    trigger's `background-color` travelling back — so the audit read the panel's colours
+    composed over the page at a third of their opacity, which is where a label at 4.09:1 on a
+    background that is no resting state comes from. The fix is one wait in `audit()`:
+    `settled(page)` in `support/dom.ts` waits for every transition and finite animation on
+    the page (`document.getAnimations()`, infinite ones left running — a spinner's loop and
+    the hero's drift are the resting state), so every audit in the file reads the page at
+    rest and no case has to know which transition its click set off. Reduced motion was the
+    other road and is the wrong one: it audits a state most users never see. A control case
+    slows the motion axis to two seconds through its token and holds both halves — something
+    in flight when the panel is first visible, nothing finite once waited for. The panel
+    audits (popover, menu, dialog, tooltip, the toast stack) and the control, three times each
+    in three engines: **108 of 108**
 - [ ] **4.36 — the loud face is equipment the consumer cannot ask for: three hand copies,
       no gate**
   - the brand gradient exists once as API — the button's `variant="hero"`

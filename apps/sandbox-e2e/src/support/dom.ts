@@ -139,6 +139,36 @@ export async function visit(
 }
 
 /**
+ * Waits for every transition and every finite animation on the page to finish, and returns
+ * how many there were to wait for.
+ *
+ * A panel here fades in (`opacity` from `@starting-style`) and a pressed trigger's background
+ * travels back, both over the motion axis's duration — and `toBeVisible()` resolves the
+ * moment the panel has any opacity at all. Measured in three engines: at that moment two
+ * transitions are running at 0–35% of their way, so anything that reads COMPOSED colours
+ * then — an axe contrast rule, a screenshot — reads a state no user rests in, and reads a
+ * different one on every run (plan 4.35: `panel-apply`'s label at 4.09:1 in firefox and
+ * webkit at once, a pair that is no resting state of the button).
+ *
+ * Every animation is asked, not a named one: the thing settled here is the PAGE, and a case
+ * should not have to know which of the library's transitions its click set off. Infinite
+ * ones — a spinner's loop, the hero's drift — are left running, because they never finish and
+ * they are the resting state; `finished` rejects when an animation is cancelled (its element
+ * removed), and a cancelled animation is settled too.
+ */
+export async function settled(page: Page): Promise<number> {
+  return page.evaluate(async () => {
+    const finite = document
+      .getAnimations()
+      .filter((a) =>
+        Number.isFinite(a.effect?.getComputedTiming().endTime ?? Infinity),
+      );
+    await Promise.all(finite.map((a) => a.finished.catch(() => undefined)));
+    return finite.length;
+  });
+}
+
+/**
  * Switches the sandbox to right-to-left writing — through the settings bar, that is
  * the way a person would do it, not by injecting an attribute. The difference
  * matters: a `dir` set from outside would check the CSS alone, while this way it is

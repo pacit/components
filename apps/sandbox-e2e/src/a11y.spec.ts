@@ -1,6 +1,6 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, Page, test } from '@playwright/test';
-import { setRtl, visit } from './support/dom';
+import { setRtl, settled, visit } from './support/dom';
 import { SBX_ROUTES } from './support/views';
 
 /**
@@ -29,7 +29,15 @@ function report(violations: readonly Violation[]): string {
     .join('\n\n');
 }
 
+/**
+ * The audit reads the page at REST. A contrast rule composes colours as they stand at the
+ * moment of reading, and a case audits right after the interaction that opened its panel —
+ * while the panel is still fading in and the trigger's background still travelling
+ * (`settled`, and the control at the end of this file). An audit taken then measures a frame
+ * no user rests in, and a different frame on every run.
+ */
 async function audit(page: Page, scope?: string) {
+  await settled(page);
   let builder = new AxeBuilder({ page }).withTags(WCAG_22_AA);
   if (scope) builder = builder.include(scope);
   const results = await builder.analyze();
@@ -338,6 +346,39 @@ test.describe('Accessibility (axe-core, WCAG 2.2 AA)', () => {
    * (after a bad tag configuration, say) gives false confidence — this test makes
    * sure the engine really runs the rules and can break them.
    */
+  /**
+   * A control of the wait in `audit`: right after the popover's panel is visible there IS
+   * something in flight to wait for — the fade and the trigger's background, measured in
+   * three engines at 0–35% of their 150 ms — and once waited for, nothing finite is left
+   * running. Without the first half the wait would be a sentence; without the second, a wait
+   * that returned early would look exactly like one that worked. The motion axis is slowed
+   * to two seconds for this case alone, through the token an application would use, so that
+   * "in flight" is a fact and not a race against a 150 ms fade on a loaded machine.
+   */
+  test('the audit waits for the page to settle (a control of the wait)', async ({
+    page,
+  }) => {
+    await visit(page, '/popover');
+    await page.addStyleTag({
+      content: ':root { --pct-motion-transition-duration: 2s; }',
+    });
+    await page.getByTestId('panel-trigger').click();
+    await expect(page.locator('[data-pct-part="panel"]')).toBeVisible();
+
+    const inFlight = await page.evaluate(
+      () =>
+        document
+          .getAnimations()
+          .filter((a) =>
+            Number.isFinite(a.effect?.getComputedTiming().endTime ?? Infinity),
+          ).length,
+    );
+    expect(inFlight).toBeGreaterThan(0);
+
+    expect(await settled(page)).toBeGreaterThanOrEqual(0);
+    expect(await settled(page)).toBe(0);
+  });
+
   test('the a11y gate really does detect violations (a control of the gate)', async ({
     page,
   }) => {
