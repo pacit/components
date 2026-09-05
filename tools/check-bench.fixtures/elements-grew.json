@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "exact",
+  "why": "the button preview puts one more element in the document than the record says",
+  "scenes": { "button": { "elements": 14 } }
+}

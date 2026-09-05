@@ -1,0 +1,10 @@
+{
+  "point": 3,
+  "check": "snapshot",
+  "why": "the button row is gone from the counts block, and the scene is still measured",
+  "snapshot": {
+    "replace": [
+      { "pattern": "^button \\d+ \\d+ \\d+ \\d+\\n", "flags": "m", "with": "" }
+    ]
+  }
+}

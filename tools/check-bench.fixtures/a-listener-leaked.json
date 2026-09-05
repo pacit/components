@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "exact",
+  "why": "the button preview holds one listener it did not hold when the record was written",
+  "scenes": { "button": { "listeners": 1 } }
+}

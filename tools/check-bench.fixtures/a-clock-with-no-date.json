@@ -1,0 +1,14 @@
+{
+  "point": 5,
+  "check": "clock",
+  "why": "the dated line of the clock section reads `someday` — a clock nobody dated is not a reading",
+  "snapshot": {
+    "replace": [
+      {
+        "pattern": "^Measured \\d{4}-\\d{2}-\\d{2} on",
+        "flags": "m",
+        "with": "Measured someday on"
+      }
+    ]
+  }
+}

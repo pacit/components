@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "exact",
+  "why": "the button preview is one level deeper than the record says",
+  "scenes": { "button": { "depth": 3 } }
+}

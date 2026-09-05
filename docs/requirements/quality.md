@@ -412,6 +412,48 @@ configuration) — each on a different rule
 
 ---
 
+## Cost
+
+### <a id="req-quality-benchmark"></a>`req-quality-benchmark` — What a component costs is a published number
+
+**Promise.** Every component page's preview is rendered by the cost run
+(`nx run docs:bench` — the demo the page shows, in jsdom) and five readings per scene are
+recorded in `apps/docs/bench.snapshot.md`: elements in the document, depth, listeners
+registered and not taken back, renders before the scene holds still, and microseconds from
+creation to stable. **The counts are held exactly and in both directions; the clock is
+published, dated, attributed to its machine — and compared by nobody.** The split is
+[0023](../decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md) applied to
+performance: a count comes out the same on every machine, so a band on it would only let the
+record age; a clock wobbles with the load, so a gate on it is either flaky or so wide it
+never fires. A wrapper added, a listener leaked or a second render pass therefore fails CI
+until it is written down beside the change that caused it, and the page shows the reading
+in its Evidence tiles — a number nothing measured does not appear.
+
+**Gate:** `tools/check-bench.mjs` (target `check-bench` of the `docs` project, in CI) — six
+points: the report is there, dated, attributed and whole; the scenes are exactly the demo
+registry's previews, read a second time from the registry's own text; the record has a row
+per scene and no other; the four counts equal the record, both ways; a clock reading stands
+for every scene and parses; the file is byte for byte what the renderer writes. The
+measurement itself is `apps/docs/bench/previews.bench.ts`
+**Control:** `tools/check-bench.fixtures/` — 17 prepared inputs, each rejected on its own
+point: among them `a-preview-the-run-skipped.json` (the registry shows a preview the report
+has no scene for), `elements-shrank.json` (one element fewer fails exactly as one more does),
+`a-listener-leaked.json`, `a-second-render.json`, `a-scene-nobody-timed.json` (a clock row
+gone while the date above still stands) and `prose-drift.json` (every row right and one
+sentence of the record rewritten). Plus the run that settled the design: the counts came out
+identical in two consecutive runs of the 33 scenes, and the clock moved by up to 15% between
+them — which is why the first four are a gate and the fifth is a dated number
+**Decision:** [0023 — a tolerance is for a measurement that wobbles](../decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md)
+**Lessons:** [`lesson-78`](../lessons.md#lesson-78), [`lesson-79`](../lessons.md#lesson-79)
+
+> jsdom on purpose, and not a browser: there is no layout in it, so the clock reads the
+> library's own work — the compiled templates, the signals, the listeners it wires — and not
+> the engine's. That is the part this repository can change. What a browser adds on top (style
+> recalculation, layout, paint) scales with the first two counts, which is why they are the
+> ones held exactly.
+
+---
+
 ## The sandbox — input for the gates
 
 ### <a id="req-quality-views"></a>`req-quality-views` — The sandbox is split into views

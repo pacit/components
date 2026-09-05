@@ -57,6 +57,7 @@ export type PctReqId =
   | 'req-project-ssr'
   | 'req-project-tokens-lib'
   | 'req-project-tree-shaking'
+  | 'req-quality-benchmark'
   | 'req-quality-browsers'
   | 'req-quality-card'
   | 'req-quality-consumer'

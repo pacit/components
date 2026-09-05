@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "report",
+  "why": "the button scene reports 12.5 elements — half an element is a parser reading a number it did not measure",
+  "scenes": { "button": { "elements": 12.5 } }
+}

@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "report",
+  "why": "the button scene reports -1 listeners — a run that miscounted",
+  "scenes": { "button": { "listeners": -1 } }
+}

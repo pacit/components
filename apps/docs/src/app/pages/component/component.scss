@@ -831,7 +831,8 @@ table.api {
 
 @container content (min-width: 840px) {
   .tiles {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    // Five since 2.3: the cost tile joined the four, and a strip reads as one row.
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 }
 

@@ -1,0 +1,7 @@
+{
+  "point": 1,
+  "check": "report",
+  "why": "the report has no `measured` date — a clock nobody dated is not a reading",
+  "$comment": "The date rides in the report and not in the case, so `scenes` cannot reach it; the report is rebuilt without it.",
+  "reportWithout": "measured"
+}

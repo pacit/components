@@ -1,0 +1,10 @@
+{
+  "point": 6,
+  "check": "verbatim",
+  "why": "every row right, and the sentence saying the clock is compared by nobody rewritten to say the opposite",
+  "snapshot": {
+    "replace": [
+      { "pattern": "compared by nobody", "with": "compared by everybody" }
+    ]
+  }
+}

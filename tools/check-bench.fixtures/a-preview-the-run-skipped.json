@@ -1,0 +1,6 @@
+{
+  "point": 2,
+  "check": "denominator",
+  "why": "the registry shows the button preview and the report has no scene for it",
+  "scenes": { "button": null }
+}

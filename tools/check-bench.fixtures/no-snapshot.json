@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "snapshot",
+  "why": "the record is not on disk — every count is then a change nobody can see",
+  "snapshot": null
+}

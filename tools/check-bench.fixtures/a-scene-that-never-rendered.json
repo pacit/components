@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "report",
+  "why": "the button scene reports 0 renders — a scene that never rendered is not a measurement",
+  "scenes": { "button": { "renders": 0 } }
+}

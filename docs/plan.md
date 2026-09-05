@@ -57,8 +57,8 @@ Snapshot, `node tools/check-docs.mjs`:
 
 | measure                                     | value |
 | ------------------------------------------- | ----: |
-| requirements                                |    87 |
-| ✅ enforced                                 |    67 |
+| requirements                                |    88 |
+| ✅ enforced                                 |    68 |
 | 🟡 partial (deliberately without a control) |    16 |
 | ⛔ gap                                      |     4 |
 
@@ -899,7 +899,26 @@ routerLink>` CTAs until `a[pctButton]` exists (**4.33**), `select.scss` 7.69 kB
     reader worth a log of its own. Deciding run: docs-e2e **355 of 355** in three engines
     (the `/acr` route joined the axe sweep in both schemes, and the trust page's link is
     walked)
-- [ ] **2.3 — benchmarks as a published number** + a performance regression that fails CI
+- [x] **2.3 — benchmarks as a published number** + a performance regression that fails CI
+  - _notes (2026-09-05):_ **the cost run and its gate.** `nx run docs:bench`
+    (`apps/docs/bench/previews.bench.ts`) renders every card's preview — the demo the page
+    shows — in jsdom and reads five things per scene: elements, depth, listeners held,
+    renders to settle, and microseconds from creation to stable; `tools/check-bench.mjs`
+    (`check-bench`, in CI) holds the record `apps/docs/bench.snapshot.md` to it. **The design
+    is 0023 applied to performance**: the four counts came out identical in two consecutive
+    runs and are held exactly, both ways, so a wrapper added, a listener leaked or a second
+    render pass is red until written down beside its change; the clock moved by up to 15%
+    between the same two runs and is therefore published, dated and attributed to its
+    machine, and compared by nobody — a band on it would be flaky or blind, and a band on
+    the counts would only let the record age. Seventeen prepared inputs prove the six points
+    (among them a drop of one element, which fails exactly as a growth does). The page shows
+    the reading in its Evidence tiles (`data-testid="cost"`, the fifth tile; docs-e2e reads
+    the same file the content pass reads and holds the tile to it), `req-quality-benchmark`
+    puts it in the registry (88 promises, 68 enforced). Measured on the day: **450 elements
+    and 175 listeners over 33 scenes**, three of them settling in two passes — a finding
+    with an address (4.38), not a number to hide. **What this is not**: a browser number.
+    jsdom lays nothing out, so the clock is the library's own work; what an engine adds
+    scales with the first two counts, which is why those are the ones held · cost: ~half a day
 - [ ] **2.4 — DTCG ↔ Figma / Tokens Studio bridge** — the source of truth is already DTCG, an
       unused advantage
 - [ ] **2.5 — a surface for AI agents**: `llms.txt`, a machine-readable component catalogue from
@@ -2281,6 +2300,20 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     finding closed by 4.36's component
   - binds at: **the first buyer who asks for the report**, or the site's design pass (4.34),
     whichever comes first · _notes:_ —
+
+- [ ] **4.38 — three previews settle in two render passes**
+  - the cost record (2.3, `apps/docs/bench.snapshot.md`) reads **2 renders** for the `menu`,
+    `popover` and `toast` previews and 1 for the other thirty: after the first pass
+    something wrote a signal a template had already read, and the application went round
+    again. Each of the three owns an overlay trigger, so the suspect is one shared piece —
+    the trigger's registration of the panel, or the toaster's viewport — and not three
+    separate faults
+  - the shape of the fix is a read of what writes in the first pass (`afterEveryRender`
+    with a counter is the whole rig, and the bench already has it), then the write moved
+    to construction or to `afterNextRender`; the record then reads 1 and the gate makes
+    the change visible, which is the point of the record
+  - binds at: **the next change to the overlay trigger or the toaster** — the file will be
+    open · _notes:_ —
 
 ## 5. Gaps with no deadline
 

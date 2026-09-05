@@ -1,0 +1,14 @@
+{
+  "point": 2,
+  "check": "denominator",
+  "why": "the run measured a `ghost` scene the demo registry does not show",
+  "scenes": {
+    "ghost": {
+      "elements": 3,
+      "depth": 1,
+      "listeners": 0,
+      "renders": 1,
+      "micros": 900
+    }
+  }
+}

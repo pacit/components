@@ -1,0 +1,8 @@
+{
+  "point": 5,
+  "check": "clock",
+  "why": "the button row is gone from the clock block — every scene is timed, or the date above means nothing",
+  "snapshot": {
+    "replace": [{ "pattern": "^button \\d+\\n", "flags": "m", "with": "" }]
+  }
+}

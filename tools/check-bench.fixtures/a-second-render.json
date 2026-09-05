@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "exact",
+  "why": "the button preview took two passes to hold still — something wrote a signal a template had already read",
+  "scenes": { "button": { "renders": 2 } }
+}

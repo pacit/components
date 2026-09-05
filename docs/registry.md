@@ -9,10 +9,10 @@ There is no "built, just unverified" state — see
 
 | state       | means                                                         |  count |
 | ----------- | ------------------------------------------------------------- | -----: |
-| ✅ enforced | gate and control exist and run in CI                          |     67 |
+| ✅ enforced | gate and control exist and run in CI                          |     68 |
 | 🟡 partial  | the gate is there, the negative control is not (deliberately) |     16 |
 | ⛔ gap      | gate or control missing, with a recorded deadline             |      4 |
-| **total**   |                                                               | **87** |
+| **total**   |                                                               | **88** |
 
 ## Gaps by urgency
 
@@ -109,6 +109,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-quality-package`](requirements/quality.md#req-quality-package)                   | ✅ enforced | `libs/components/check-package.mjs` (target `check-package`, in CI)    | `tools/check-package.fixtures/` — seven doctored packages, one per po… |
 | [`req-quality-consumer`](requirements/quality.md#req-quality-consumer)                 | ✅ enforced | `tools/check-consumer.mjs` (target `check-consumer`, in CI) — seven p… | `tools/check-consumer.fixtures/` — 28 doctored inputs, each rejected … |
 | [`req-quality-browsers`](requirements/quality.md#req-quality-browsers)                 | ✅ enforced | `apps/sandbox-e2e/playwright.config.mts` — three projects (chromium, … | `tools/check-browsers.fixtures/` — 25 doctored inputs, each rejected … |
+| [`req-quality-benchmark`](requirements/quality.md#req-quality-benchmark)               | ✅ enforced | `tools/check-bench.mjs` (target `check-bench` of the `docs` project, … | `tools/check-bench.fixtures/` — 17 prepared inputs, each rejected on … |
 | [`req-quality-views`](requirements/quality.md#req-quality-views)                       | ✅ enforced | `apps/sandbox-e2e/src/a11y.spec.ts`, `hydration.spec.ts` — both itera… | `apps/sandbox/src/app/app.spec.ts` — the view registry against the ro… |
 | [`req-quality-card`](requirements/quality.md#req-quality-card)                         | ✅ enforced | `apps/sandbox/src/app/ui/demo.spec.ts`; `tools/check-docs.mjs` — ever… | `tools/check-docs.fixtures/` — a card with a non-existent identifier … |
 | [`req-quality-stage`](requirements/quality.md#req-quality-stage)                       | ✅ enforced | `apps/sandbox-e2e/src/theme.spec.ts`, `apps/sandbox-e2e/src/shell.spe… | `preferences.spec.ts › "with no dark preference :root stays light (th… |
@@ -230,8 +231,8 @@ Which lesson feeds which requirement. Generated from the **Lessons** fields.
 | [`lesson-75`](lessons.md#lesson-75)   | `req-quality-index`                                                                                                                                               |
 | [`lesson-76`](lessons.md#lesson-76)   | `req-api-message`                                                                                                                                                 |
 | [`lesson-77`](lessons.md#lesson-77)   | — _(not cited)_                                                                                                                                                   |
-| [`lesson-78`](lessons.md#lesson-78)   | `req-project-tree-shaking`                                                                                                                                        |
-| [`lesson-79`](lessons.md#lesson-79)   | `req-project-tree-shaking`, `req-quality-index`, `req-quality-unit`                                                                                               |
+| [`lesson-78`](lessons.md#lesson-78)   | `req-project-tree-shaking`, `req-quality-benchmark`                                                                                                               |
+| [`lesson-79`](lessons.md#lesson-79)   | `req-project-tree-shaking`, `req-quality-index`, `req-quality-unit`, `req-quality-benchmark`                                                                      |
 | [`lesson-80`](lessons.md#lesson-80)   | — _(not cited)_                                                                                                                                                   |
 | [`lesson-81`](lessons.md#lesson-81)   | — _(not cited)_                                                                                                                                                   |
 | [`lesson-82`](lessons.md#lesson-82)   | `req-api-overlay`                                                                                                                                                 |

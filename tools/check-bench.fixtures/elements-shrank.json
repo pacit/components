@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "exact",
+  "why": "one element fewer — a drop fails exactly as a growth does, because the record is the history and not a ceiling",
+  "scenes": { "button": { "elements": 12 } }
+}

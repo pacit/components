@@ -750,6 +750,16 @@
             <span class="tile__l">visual baselines</span>
             <span class="tile__f">Chromium, the sandbox's own pictures</span>
           </div>
+          <div class="tile" data-testid="cost">
+            <span class="tile__n">{{ p.evidence.cost.elements }}</span>
+            <span class="tile__l">elements in the preview</span>
+            <span class="tile__f"
+              >{{ p.evidence.cost.listeners }} listeners · {{
+              p.evidence.cost.renders }} render{{ p.evidence.cost.renders === 1
+              ? '' : 's' }} to settle · {{ p.evidence.cost.micros }} µs in
+              jsdom, held exactly but for the clock</span
+            >
+          </div>
         </div>
 
         @if (h.notes) {

@@ -199,8 +199,9 @@ of code moved (plan 2.7): the second sketch's character with the first one's tab
   themes' defaults resolved, a theming fence applied live to a second instance.
 - **Accessibility**: the keyboard map, and the card's Checks table read as a scorecard —
   the gaps shown in public beside the measurements, each naming its requirement.
-- **Evidence**: the component's own mutation score, e2e cases, colour pairs and baselines
-  from the tracked snapshots; the card's design note — why it is built this way, with every
+- **Evidence**: the component's own mutation score, e2e cases, colour pairs, baselines and
+  what its preview costs to render (elements, listeners, renders, and a dated clock — plan
+  2.3) from the tracked snapshots; the card's design note — why it is built this way, with every
   link it needs; the decisions and lessons the card cites; the limitations.
 - Copy is `pct-button`, the status is `pct-badge`, the filter is `pct-field`. Syntax
   highlighting is **shiki at build time**: zero highlighter shipped, both themes once.

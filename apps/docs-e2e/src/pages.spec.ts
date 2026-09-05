@@ -142,6 +142,26 @@ test.describe('The pages', () => {
     await expect(page.locator('#accessibility')).toBeInViewport();
   });
 
+  test('the evidence tiles show the cost record, not a number typed in', async ({
+    page,
+  }) => {
+    // The same tracked file the content pass reads (plan 2.3): the tile's number is the
+    // button row of the record, and the record is what `check-bench` holds the run to.
+    const record = readFileSync(
+      join(__dirname, '../../docs/bench.snapshot.md'),
+      'utf8',
+    );
+    const [, elements, , listeners, renders] =
+      /^button (\d+) (\d+) (\d+) (\d+)$/m.exec(record)!;
+    await visit(page, '/components/button');
+    const cost = page.getByTestId('cost');
+    await expect(cost.locator('.tile__n')).toHaveText(elements);
+    await expect(cost).toContainText(`${listeners} listeners`);
+    await expect(cost).toContainText(`${renders} render`);
+    // The clock is on the tile with its unit, and nothing here compares its value.
+    await expect(cost).toContainText(/\d+ µs/);
+  });
+
   test('a component page shows the demo, and the code tab is its own source', async ({
     page,
   }) => {

@@ -2,8 +2,8 @@
  * The docs site's content pass (plan 2.1.5, grown by 2.1.7 and 2.7.2; site.md "The pipeline").
  *
  * The site renders what the repository already generates and gates — the component cards,
- * the parts snapshot, the token snapshot, the registry, the mutation snapshot, and since
- * 2.7.2 the library's own SOURCE — and this script is the whole of how that content
+ * the parts snapshot, the token snapshot, the registry, the mutation snapshot, the cost
+ * record (2.3), and since 2.7.2 the library's own SOURCE — and this script is the whole of how that content
  * reaches the app: one deterministic pass from tracked sources to typed data. Nothing is
  * written twice; the site cannot disagree with the repository because it holds no
  * hand-typed copy of anything the repository measures.
@@ -1007,6 +1007,60 @@ const SPEC_ALIAS = {
   grid: 'layout',
 };
 
+/**
+ * The cost record (plan 2.3): `bench.snapshot.md`, held by `check-bench` to what the cost
+ * run measured. Read here the way the mutation snapshot is — a reading the parser cannot
+ * make throws, because the tile would otherwise show a number nothing measured.
+ */
+const costRecord = (() => {
+  const text = read('apps/docs/bench.snapshot.md');
+  const blocks = [...text.matchAll(/^```\n([\s\S]*?)\n```$/gm)].map(
+    (m) => m[1],
+  );
+  const measured = text.match(
+    /^Measured (\d{4}-\d{2}-\d{2}) on (.+) \(\d+ cores\)/m,
+  );
+  if (blocks.length < 2 || !measured)
+    throw new Error(
+      'content pass: apps/docs/bench.snapshot.md does not parse — run `node tools/check-bench.mjs --write`',
+    );
+  const rows = (block) =>
+    block
+      .split('\n')
+      .filter(Boolean)
+      .map((l) => l.split(' '));
+  const clock = new Map(rows(blocks[1]).map(([id, us]) => [id, Number(us)]));
+  return {
+    measured: measured[1],
+    machine: measured[2],
+    scenes: new Map(
+      rows(blocks[0]).map(([id, elements, depth, listeners, renders]) => [
+        id,
+        {
+          elements: Number(elements),
+          depth: Number(depth),
+          listeners: Number(listeners),
+          renders: Number(renders),
+          micros: clock.get(id),
+        },
+      ]),
+    ),
+  };
+})();
+
+const costOf = (id) => {
+  const cost = costRecord.scenes.get(id);
+  if (!cost || !Number.isInteger(cost.micros))
+    throw new Error(
+      `content pass: no cost reading for \`${id}\` in apps/docs/bench.snapshot.md — run \`node tools/check-bench.mjs --write\``,
+    );
+  return {
+    ...cost,
+    measured: costRecord.measured,
+    machine: costRecord.machine,
+  };
+};
+
 const evidenceOf = (card, api) => {
   const files = new Set(api.map((c) => c.file));
   const rows = mutationRows.filter((r) => files.has(r.file));
@@ -1039,6 +1093,7 @@ const evidenceOf = (card, api) => {
     pairs: contrastChecks.filter((c) => c.name.startsWith(`${card.id}/`))
       .length,
     baselines: baselineFiles.filter((f) => f.startsWith(`${card.id}-`)).length,
+    cost: costOf(card.id),
   };
 };
 
@@ -1466,6 +1521,16 @@ export interface ComponentPage {
     readonly e2e: { readonly cases: number; readonly spec: string } | null;
     readonly pairs: number;
     readonly baselines: number;
+    /** The cost record (plan 2.3): four counts the gate holds exactly, and a dated clock it does not. */
+    readonly cost: {
+      readonly elements: number;
+      readonly depth: number;
+      readonly listeners: number;
+      readonly renders: number;
+      readonly micros: number;
+      readonly measured: string;
+      readonly machine: string;
+    };
   };
 }
 
