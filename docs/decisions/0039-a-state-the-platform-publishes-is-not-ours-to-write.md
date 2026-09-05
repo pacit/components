@@ -23,7 +23,8 @@ That sentence settles the packaging and none of the three questions the control 
 1. **What element carries `role="switch"`?** The APG shows two examples, one on a native
    checkbox and one on a `<div>` the author wires up.
 2. **Does the component write `aria-checked`?** `switch` declares it as a **required** state,
-   and `PctCheckbox` one directory over writes it on every render.
+   and `PctCheckbox` one directory over writes it on every render (it did until plan item 4.9
+   took the binding out on this decision's own measurement — inert there as well).
 3. **Is there a third state?** The checkbox has `indeterminate`, and the two controls share a
    contract.
 

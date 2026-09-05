@@ -165,15 +165,31 @@ describe('PctCheckbox', () => {
     expect(fixture.componentInstance.checked()).toBe(false);
   });
 
-  it('the indeterminate state sets aria-checked="mixed" and the native property', async () => {
+  /**
+   * The checkbox's half of 0039. On a native `<input type="checkbox">` the checked state is
+   * the element's own checkedness and the third state is the `indeterminate` PROPERTY; an
+   * `aria-checked` written beside them is ignored in both directions, measured in three
+   * engines and in Chromium's own accessibility tree (`lesson-112`). So none is written, and
+   * what is asserted is the ABSENCE in all three states — an attribute that cannot be wrong
+   * is one that can drift with nothing to notice.
+   */
+  it('never writes aria-checked — the checkedness and the indeterminate property are the state', async () => {
     const fixture = await render(Host);
+    const box = boxOf(fixture);
+
+    expect(box.checked).toBe(false);
+    expect(box.getAttribute('aria-checked')).toBeNull();
+
+    box.click();
+    await fixture.whenStable();
+    expect(box.checked).toBe(true);
+    expect(box.getAttribute('aria-checked')).toBeNull();
+
     fixture.componentInstance.indeterminate.set(true);
     fixture.detectChanges();
     await fixture.whenStable();
-
-    const box = boxOf(fixture);
     expect(box.indeterminate).toBe(true);
-    expect(box.getAttribute('aria-checked')).toBe('mixed');
+    expect(box.getAttribute('aria-checked')).toBeNull();
   });
 
   it('readonly blocks the state change but the field stays focusable', async () => {

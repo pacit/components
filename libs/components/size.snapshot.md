@@ -35,7 +35,7 @@ before an application ships them.
 ./badge 1706 - @angular/core
 ./breadcrumb 9144 ./core,./icon @angular/common,@angular/core
 ./button 8539 ./core @angular/core
-./checkbox 14962 ./core,./icon @angular/common,@angular/core
+./checkbox 14852 ./core,./icon @angular/common,@angular/core
 ./chips 10650 ./core,./icon @angular/common,@angular/core
 ./container 717 - @angular/core
 ./core 8318 - @angular/core

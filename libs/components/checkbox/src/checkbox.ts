@@ -105,7 +105,14 @@ export class PctCheckbox implements FormCheckboxControl, PctFieldControl {
    */
   readonly ariaLabelledby = input<string>('');
 
-  /** Indeterminate state (a partial choice in a group, say); ARIA: `aria-checked="mixed"`. */
+  /**
+   * Indeterminate state (a partial choice in a group, say). It is the native `indeterminate`
+   * PROPERTY and nothing else: the accessible tree reports it as `mixed` from the property
+   * alone, and an `aria-checked` written beside it would be ignored in both directions —
+   * measured in three engines and in Chromium's own tree, so none is written
+   * ([0039](../../../../docs/decisions/0039-a-state-the-platform-publishes-is-not-ours-to-write.md),
+   * [`lesson-112`](../../../../docs/lessons.md#lesson-112)).
+   */
   readonly indeterminate = input(false, { transform: booleanAttribute });
 
   private readonly control =
@@ -154,11 +161,6 @@ export class PctCheckbox implements FormCheckboxControl, PctFieldControl {
           [this.errorId, this.showError()],
           [this.hintId, !this.showError() && this.hint() !== ''],
         ]),
-  );
-
-  /** `aria-checked` has to be "mixed" for the indeterminate state. */
-  protected readonly ariaChecked = computed(() =>
-    this.indeterminate() ? 'mixed' : this.checked() ? 'true' : 'false',
   );
 
   constructor() {

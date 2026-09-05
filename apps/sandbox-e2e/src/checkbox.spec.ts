@@ -26,19 +26,37 @@ test.describe('PctCheckbox — signal forms', () => {
     await label.click();
 
     await expect(control).toBeChecked();
-    await expect(control).toHaveAttribute('aria-checked', 'true');
+    // No `aria-checked` — the checkedness IS the state, and the accessible tree computed
+    // off the DOM says so without the attribute (0039, `lesson-112`).
+    await expect(control).not.toHaveAttribute('aria-checked', /.*/);
+    await expect(field).toMatchAriaSnapshot(`
+      - checkbox "Consents" [checked]
+    `);
     await expect(mark).toBeVisible();
     // --pct-checkbox-bg-checked -> --pct-primary -> blue-600
     await expect(box).toHaveCSS('background-color', 'rgb(37, 99, 235)');
   });
 
-  test('the indeterminate state has aria-checked="mixed"', async ({ page }) => {
-    const control = page.getByTestId('checkbox-mixed').locator('input');
+  /**
+   * The third state is the native `indeterminate` PROPERTY and nothing else. The attribute
+   * this component used to write beside it was inert — an unchecked box carrying
+   * `aria-checked="true"` still came out unchecked, and the property with nothing written
+   * came out `mixed` (`lesson-112`) — so what is read here is the accessible tree, in three
+   * engines, and the absence of the echo.
+   */
+  test('the indeterminate state is the native property, read as mixed', async ({
+    page,
+  }) => {
+    const host = page.getByTestId('checkbox-mixed');
+    const control = host.locator('input');
 
-    await expect(control).toHaveAttribute('aria-checked', 'mixed');
     expect(
       await control.evaluate((el: HTMLInputElement) => el.indeterminate),
     ).toBe(true);
+    await expect(control).not.toHaveAttribute('aria-checked', /.*/);
+    await expect(host).toMatchAriaSnapshot(`
+      - checkbox "The indeterminate state, read as mixed" [checked=mixed]
+    `);
   });
 
   test('the clickable area is at least 24x24 px (WCAG 2.2 SC 2.5.8)', async ({

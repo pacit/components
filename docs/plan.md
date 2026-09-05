@@ -1656,7 +1656,7 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
   - binds at: **the next step that touches the empty panel** — nothing built since opens a
     listbox, so this is a filler item · _notes:_ —
 
-- [ ] **4.9 — the checkbox writes an `aria-checked` that no engine reads**
+- [x] **4.9 — the checkbox writes an `aria-checked` that no engine reads**
   - `checkbox.html` binds `[attr.aria-checked]="ariaChecked()"`, a computed of its own feeds
     it, and `apps/sandbox-e2e/src/checkbox.spec.ts` asserts the value it produces. All three
     measure a string this library writes to itself: on a native `<input type="checkbox">` the
@@ -1685,7 +1685,15 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     reader's log fixture there covers the class. And the cheap intermediate between an
     attribute echo and a reader's log exists and is unused: Playwright's aria snapshots
     (`toMatchAriaSnapshot`) assert what the engine actually exposes — role, name, state —
-    per component state, and diff the way the parts snapshot already does
+    per component state, and diff the way the parts snapshot already does · **closed
+    (2026-09-05), the copy made.** The binding, the computed and the assertion are gone; the
+    unit case asserts the absence in all three states, and the e2e reads the accessible tree
+    in three engines — `[checked]` from the checkedness and `[checked=mixed]` from the
+    `indeterminate` property alone, the aria snapshots this note named put to their first
+    use here. 15 e2e cases and 25 unit cases green in chromium/firefox/webkit; `./checkbox`
+    −110 B. The sandbox label that named the attribute now names the reading, and the card,
+    `req-a11y-built-in`'s gate and 0039's context say what the checkbox no longer writes.
+    `announce.ts` and the reader's log stay where this note put them
 
 - [x] **4.10 — the two READMEs list the entrypoints, and no gate reads either list**
   - the npm page's **Entrypoints** table

@@ -21,6 +21,6 @@ export class CheckboxView {
     required(p.terms, { message: 'You have to accept the terms' });
   });
 
-  /** The indeterminate state — a demonstration of aria-checked="mixed". */
+  /** The indeterminate state — the native property, which the accessible tree reads as `mixed`. */
   protected readonly partial = signal(true);
 }

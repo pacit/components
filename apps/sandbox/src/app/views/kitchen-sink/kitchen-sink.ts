@@ -124,7 +124,7 @@ export class KitchenSink {
     this.price.set(null);
   }
 
-  /** The indeterminate state — a demonstration of aria-checked="mixed". */
+  /** The indeterminate state — the native property, which the accessible tree reads as `mixed`. */
   protected readonly partial = signal(true);
 
   /** The horizontal radiogroup layout demo. */
