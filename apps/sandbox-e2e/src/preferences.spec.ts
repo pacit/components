@@ -169,10 +169,10 @@ test.describe('prefers-reduced-motion', () => {
       .getByTestId('skeleton-text')
       .locator('[data-pct-part="fill"]')
       .first();
-    // Three loops of the reduced token, because the sheen is three loops of the axis in
-    // every mode: the reduction is answered once, by the token, and the sheet's factor
-    // scales it rather than replacing it — 4.5s here, 1.8s without the preference.
-    expect(await firstDurationMs(sheen, 'animation-duration')).toBe(3 * 1500);
+    // Three and a half loops of the reduced token, because the sheen is that many loops of
+    // the axis in every mode: the reduction is answered once, by the token, and the sheet's
+    // factor scales it rather than replacing it — 5.25s here, 2.1s without the preference.
+    expect(await firstDurationMs(sheen, 'animation-duration')).toBe(3.5 * 1500);
   });
 });
 

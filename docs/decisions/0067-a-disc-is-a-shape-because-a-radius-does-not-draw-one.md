@@ -95,42 +95,59 @@ width against the height and the track's radius against `50%`.
 
 The same review found the sheen sharp — a block of the page's colour sliding across a grey
 bar, which reads as a second placeholder passing behind the first rather than as a light —
-and the second look asked for less still: very soft, slower, at an angle, "only a shadow".
-Four numbers do that, and each was tried against the page before it was written down:
+and the looks that followed asked for less each time: very soft, slower, at an angle, "only
+a shadow", then softer still — "longer and gentler, the disc shows it is too sharp" — and
+then a touch back: "minimally stronger and a little faster". Five numbers do that, and each
+was tried against the page before it was written down:
 
-- **two thirds of the bar wide** (`--pct-skeleton-fill-size`, 33% → 66%): the shade is a
-  gradient from nothing to its middle and back, so its width is the length of the ramp — a
-  third of the bar on each side. A third-wide band ramps in a sixth and shows an edge;
-- **the fill token at sixty per cent** over the placeholder, through `color-mix` as the
+- **as wide as the bar** (`--pct-skeleton-fill-size`, 33% → 66% → 100%): the shade is a
+  gradient from nothing to its middle and back, so its width is the length of the ramp —
+  half the bar on each side. A third-wide band ramped in a sixth and showed an edge;
+- **the fill token at seventy per cent** over the placeholder, through `color-mix` as the
   dialog's backdrop and not through `opacity` (`req-token-no-opacity`): at full strength
-  the middle of the shade is a stripe, and a shadow has no stripe;
+  the middle of the shade is a stripe, and a shadow has no stripe; sixty was the first
+  number, and with the blur taking some of the middle away it read a shade too faint;
 - **ten degrees off the vertical** (`100deg`): a line of text is too thin to show a lean,
   but a box or a disc is where the shade reads as a light crossing at an angle;
-- **three loops of the motion axis** (`calc(var(--pct-motion-loop-duration) * 3)`): the
-  loop is 0.6s, a band's tempo, and a shadow at that tempo flickers. Three is 1.8s — and
-  the axis's reduced answer, 1.5s, scales to 4.5s with it rather than being replaced, so
-  `prefers-reduced-motion` is still answered once for the whole library
-  (`req-a11y-motion`). The sandbox reads both against the token, not as literals.
+- **blurred by 6px** (`--pct-skeleton-fill-blur`, the dialog's backdrop blur one component
+  over): a ramp written as a share of the bar SHRINKS with the element. At two thirds of
+  the bar the same gradient was a soft light across the 448px picture and, on the 44px
+  disc, a stripe with two sides — which is what the second look saw. A blur in pixels is
+  the same softness at every size; the picture hardly changes and the disc is where it is
+  felt — eight pixels was the first number, and on the disc it took enough of the middle
+  away that the review asked for a notch of it back. `filter: blur` costs one composited
+  layer per bar, moved and not repainted as it
+  travels, and the forced-colours block takes it away, because that mode's reading of the
+  sheen is a solid band in the user's palette and a blurred one is a fainter version of the
+  one thing the mode is for;
+- **three and a half loops of the motion axis** (`calc(var(--pct-motion-loop-duration) *
+3.5)`): the loop is 0.6s, a band's tempo, and a shadow at that tempo flickers. Three and
+  a half is 2.1s for a crossing twice the bar long — four was a shade slow, three a shade
+  brisk — and the axis's reduced answer, 1.5s, scales to 5.25s with it rather than being
+  replaced, so `prefers-reduced-motion` is still answered once for the whole library
+  (`req-a11y-motion`). The sandbox reads the width, the blur and the duration against the
+  tokens, not as literals.
 
 ```scss
-background: linear-gradient(100deg, transparent, color-mix(in srgb, var(--pct-skeleton-fill-bg) 60%, transparent), transparent);
+background: linear-gradient(100deg, transparent, color-mix(in srgb, var(--pct-skeleton-fill-bg) 70%, transparent), transparent);
+filter: blur(var(--pct-skeleton-fill-blur));
 ```
 
 This is inside 0050, not against it. 0050 refused a gradient as the CARRIER of the motion,
 because `forced-colors: active` drops every `background-image` that is not a `url()` — and
 the carrier is still an element travelling by `inset-inline-start`, painted in a solid
 palette colour by the forced-colours block, which is what `apps/sandbox-e2e/src/forced-colors.spec.ts`
-measures. What the gradient changes is the drawing in every other mode. `100deg` is a
-physical angle, deliberately: the shade itself travels by a logical property and mirrors
-with the writing direction, and the lean is decoration on the shade, not a fact about where
-anything starts (`req-token-logical` is about the second, and the RTL screenshot holds it).
-What 0050 wrote as the reduced duration, 1500 ms, is now three times that, for the reason
-above.
+measures. What the gradient and the blur change is the drawing in every other mode.
+`100deg` is a physical angle, deliberately: the shade itself travels by a logical property
+and mirrors with the writing direction, and the lean is decoration on the shade, not a
+fact about where anything starts (`req-token-logical` is about the second, and the RTL
+screenshot holds it). What 0050 wrote as the reduced duration, 1500 ms, is now three and a
+half times that, for the reason above.
 
 ## Consequences
 
-**`./skeleton` grows by 426 B, 2997 → 3423**, which is two rules, one selector list and a
-shaded gradient — a 14.2% step on the smallest component entrypoint in the
+**`./skeleton` grows by 483 B, 2997 → 3480**, which is two rules, one selector list, a
+shaded gradient and a blur — a 16.1% step on the smallest component entrypoint in the
 library, recorded in the size snapshot. It still carries no `./core`, no text and no icon:
 the shape is an attribute the sheet reads, and nothing was injected to draw it.
 

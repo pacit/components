@@ -26,17 +26,23 @@
         "$value": "{pct.border}",
         "$description": "Background of the track."
       },
-      "$comment-fill-bg": "The sheen is the page's own colour travelling across the placeholder, which is why it is `surface` and not a third colour: it lightens the bar on a light theme and darkens it on a dark one, and in both it is a colour the skin already has. The sheet paints it as a shadow rather than a band — a gradient from nothing to this colour at sixty per cent and back — so what a theme sets here is the colour of the shade at its middle.",
+      "$comment-fill-bg": "The sheen is the page's own colour travelling across the placeholder, which is why it is `surface` and not a third colour: it lightens the bar on a light theme and darkens it on a dark one, and in both it is a colour the skin already has. The sheet paints it as a shadow rather than a band — a gradient from nothing to this colour at seventy per cent and back — so what a theme sets here is the colour of the shade at its middle.",
       "fill-bg": {
         "$type": "color",
         "$value": "{pct.surface}",
         "$description": "Colour of the shimmer."
       },
-      "$comment-fill-size": "How much of the bar the sheen covers. Two thirds, and no longer the progress band's third: the sheen is a gradient from nothing to its middle and back, so this width is the length of the ramp — a third of the bar on each side — and a band a third wide would ramp in a sixth and show an edge. The placeholder behind it stays a placeholder because the middle is faint, not because the shade is narrow.",
+      "$comment-fill-size": "How much of the bar the sheen covers. The whole of it, and no longer the progress band's third: the sheen is a gradient from nothing to its middle and back, so this width is the length of the ramp — half the bar on each side — and a band a third wide ramped in a sixth and showed an edge. The placeholder behind it stays a placeholder because the middle is faint, not because the shade is narrow.",
       "fill-size": {
         "$type": "dimension",
-        "$value": "66%",
+        "$value": "100%",
         "$description": "Width of the shimmer."
+      },
+      "$comment-fill-blur": "How far the shade is blurred, in pixels and not in a share of the bar, because a ramp written as a percentage shrinks with the element: on a 44px disc the same gradient that is a soft light across a picture is a stripe with two sides. A blur in pixels is the same softness on every size — the picture, already soft, hardly changes; the disc is where it is felt. Six and not eight: eight took enough of the shade's middle away on the disc that the shade was almost not there, and the review asked for it back by a notch. It is the dialog's backdrop blur one component over, and a token for the same reason: the one number that decides whether the sheen reads as a shadow.",
+      "fill-blur": {
+        "$type": "dimension",
+        "$value": "6px",
+        "$description": "Blur radius of the shimmer."
       }
     }
   }

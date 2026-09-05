@@ -49,33 +49,40 @@
   inset-block: 0;
   inset-inline-start: calc(-1 * var(--pct-skeleton-fill-size));
   inline-size: var(--pct-skeleton-fill-size);
-  /* The sheen is a SHADOW passing over the placeholder, and three things make it one rather
-     than a band: it is two thirds of the bar wide, so the ramp from nothing to its middle and
-     back is a third of the bar on each side and there is no edge anywhere to see; its middle
-     is the fill token at sixty per cent over the placeholder's own colour — `color-mix`, as the
-     dialog's backdrop, and not an `opacity` (`req-token-no-opacity`); and it leans ten degrees
-     off the vertical, so on a box or a disc it reads as a light crossing at an angle where a
-     line of text is too thin to show one. The first version was a full-strength block of the
-     page colour with two vertical sides, which read as a second placeholder passing behind
-     the first. `100deg` is a physical angle, deliberately: the shade travels by a logical
-     property and mirrors with the writing direction, and the lean is decoration on the shade,
-     not a fact about where anything starts. It stays an ELEMENT with a background, which is
-     0050's whole point: under `forced-colors: active` the block at the bottom of this sheet
-     paints it in a solid palette colour, and a gradient nobody can see there is never what
-     carries the motion. */
+  /* The sheen is a SHADOW passing over the placeholder, and four things make it one rather
+     than a band. It is as wide as the bar, so the ramp from nothing to its middle and back is
+     half the bar on each side and there is no edge anywhere to see. Its middle is the fill
+     token at seventy per cent over the placeholder's own colour — `color-mix`, as the dialog's
+     backdrop, and not an `opacity` (`req-token-no-opacity`); sixty was the first number, and
+     with the blur taking some of the middle away it read a shade too faint. It leans ten degrees off the
+     vertical, so on a box or a disc it reads as a light crossing at an angle where a line of
+     text is too thin to show one. And it is BLURRED, by a token in pixels, because a ramp
+     written as a share of the bar shrinks with the element: the same gradient that is a soft
+     light across a 448px picture was, on a 44px disc, a stripe with two sides — measured on
+     the page at two thirds of the bar, and the disc is where the blur is felt. The first
+     version of all this was a full-strength block of the page colour with two vertical sides,
+     which read as a second placeholder passing behind the first. `100deg` is a physical
+     angle, deliberately: the shade travels by a logical property and mirrors with the writing
+     direction, and the lean is decoration on the shade, not a fact about where anything
+     starts. It stays an ELEMENT with a background, which is 0050's whole point: under
+     `forced-colors: active` the block at the bottom of this sheet paints it in a solid palette
+     colour and takes the blur away, and a gradient nobody can see there is never what carries
+     the motion. */
   background: linear-gradient(
     100deg,
     transparent,
-    color-mix(in srgb, var(--pct-skeleton-fill-bg) 60%, transparent),
+    color-mix(in srgb, var(--pct-skeleton-fill-bg) 70%, transparent),
     transparent
   );
-  /* Three loops of the motion axis per crossing, not a token of its own: the loop is 0.6s,
-     which is a band's tempo, and a shadow at that tempo flickers; three of them is 1.8s, and
-     the axis's reduced answer (1.5s) scales with it to 4.5s instead of being replaced — so
-     `prefers-reduced-motion` is still answered in one place for the whole library
-     (`req-a11y-motion`). */
-  animation: pct-skeleton-sheen calc(var(--pct-motion-loop-duration) * 3) linear
-    infinite;
+  filter: blur(var(--pct-skeleton-fill-blur));
+  /* Three and a half loops of the motion axis per crossing, not a token of its own: the loop
+     is 0.6s, which is a band's tempo, and a shadow at that tempo flickers; three and a half of
+     them is 2.1s for a crossing twice the bar long — four was a shade slow, three a shade
+     brisk — and the axis's reduced answer (1.5s) scales with it to 5.25s instead of being
+     replaced, so `prefers-reduced-motion` is still answered in one place for the whole
+     library (`req-a11y-motion`). */
+  animation: pct-skeleton-sheen calc(var(--pct-motion-loop-duration) * 3.5)
+    linear infinite;
 }
 
 @keyframes pct-skeleton-sheen {
@@ -157,7 +164,11 @@
     outline: 1px solid GrayText;
   }
 
+  /* Solid and sharp: the mode's reading of the sheen is a band in the user's own palette
+     crossing the box, which 0050 measured, and a blurred band is a fainter version of the one
+     thing this mode is for. */
   .pct-skeleton__fill {
     background: GrayText;
+    filter: none;
   }
 }

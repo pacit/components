@@ -395,6 +395,7 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-select-radius dimension component public
 --pct-shadow-panel shadow semantic public
 --pct-skeleton-fill-bg color component public
+--pct-skeleton-fill-blur dimension component public
 --pct-skeleton-fill-size dimension component public
 --pct-skeleton-track-bg color component public
 --pct-skeleton-track-height dimension component public
