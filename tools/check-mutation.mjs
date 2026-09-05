@@ -61,9 +61,11 @@ const NOT_A_SOURCE = [
   // Re-export barrels. `export * from './x'` promises nothing that the file it names does
   // not promise itself — and the same three lines stand in `mutate` as exclusions.
   (p) => p.endsWith('/index.ts'),
-  // Testing utilities. They have no `ng-package.json`, so they do not travel in the
-  // package, and a defect in them shows up as a broken test rather than as a silent one
-  // downstream (the same exception `check-coverage` makes, for the same reason).
+  // The harness entrypoint (`@pacit/components/testing`). Its harnesses are declarations
+  // over the parts inventory, held to the built package by `check-harness` in both
+  // directions, and the base class's few methods are driven by the harness spec; the
+  // mutation run's scope is the components' own logic (`mutation.policy.json`), and a
+  // defect here reaches nobody's application — the entrypoint is imported by tests alone.
   (p) => p.startsWith(`${PROJECT}/testing/`),
   // The version stamp `stamp-version` writes — one constant, whose agreement with the
   // manifest is `check-package`'s point 4 and not a unit test's.

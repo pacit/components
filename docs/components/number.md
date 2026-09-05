@@ -25,6 +25,7 @@
 | **Inputs**      | `FormValueControl` + `FormUiControl`, plus `min`, `max`, `step`, `minFractionDigits`, `maxFractionDigits`, `useGrouping`, `locale`                                          |
 | **Bounds**      | `min`/`max` belong to `FormUiControl` — with `[formField]` the directive fills them from the schema's `min()`/`max()` validators. **They are not repeated in the template** |
 | **DI contract** | `PCT_FIELD`; `fieldAppearance: 'boxed'`, `fieldCursor: 'text'`                                                                                                              |
+| **Harness**     | `PctNumberHarness`                                                                                                                                                          |
 
 ## Parts
 

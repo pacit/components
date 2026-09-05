@@ -1,0 +1,8 @@
+{
+  "point": 1,
+  "check": "set",
+  "why": "PctButtonHarness lists label twice — a list that is not a set cannot be compared with one.",
+  "harnesses": {
+    "PctButtonHarness": { "parts": ["label", "label", "spinner"] }
+  }
+}

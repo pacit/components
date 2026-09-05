@@ -36,6 +36,7 @@ on every partial trail.
 | **Outputs** | none — activation is navigation, and navigation is the platform's                                                                                                     |
 | **Slots**   | the crumbs (children of `pct-breadcrumb`), and each crumb's content — an anchor wearing `pctCrumbLink`, or bare text for a current step that is not a link            |
 | **Parts**   | `list` (the `role="list"` box), `separator` (the chevron in every crumb; the first one is hidden by `:first-of-type`)                                                 |
+| **Harness** | `PctBreadcrumbHarness`, `PctCrumbHarness`, `PctCrumbLinkHarness`                                                                                                      |
 | **Tokens**  | the `--pct-breadcrumb-*` prefix plus four entries in `contrast.policy.json`; the name dictionary grew the parts `link` and `separator` and the state `current` for it |
 | **Strings** | `breadcrumbLabel` — the landmark's default name, the pagination's key one landmark over                                                                               |
 

@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "set",
+  "why": "The packed manifest exports no ./testing — the harnesses exist in the sources and reach no consumer.",
+  "entrypoint": null
+}

@@ -1,0 +1,9 @@
+{
+  "// defect": "An entrypoint declared plain exports a component. Either the declaration is stale or the entrypoint grew what it promised never to hold — both hide a component under an exemption.",
+  "point": 4,
+  "check": "presence",
+  "addMarker": {
+    "ep": "./rig",
+    "markers": ["pct-rig"]
+  }
+}

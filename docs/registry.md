@@ -9,10 +9,10 @@ There is no "built, just unverified" state — see
 
 | state       | means                                                         |  count |
 | ----------- | ------------------------------------------------------------- | -----: |
-| ✅ enforced | gate and control exist and run in CI                          |     70 |
+| ✅ enforced | gate and control exist and run in CI                          |     71 |
 | 🟡 partial  | the gate is there, the negative control is not (deliberately) |     16 |
 | ⛔ gap      | gate or control missing, with a recorded deadline             |      4 |
-| **total**   |                                                               | **90** |
+| **total**   |                                                               | **91** |
 
 ## Gaps by urgency
 
@@ -64,6 +64,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-api-generic`](requirements/api.md#req-api-generic)           | ✅ enforced | `libs/components/select/src/select.spec.ts` — the generic contract, p… | the probe from `lesson-37` — five deliberately contradictory bindings… |
 | [`req-api-parts`](requirements/api.md#req-api-parts)               | ✅ enforced | `tools/check-parts.mjs` (target `check-parts` in the root project, in… | `tools/check-parts.fixtures/` — 22 inputs, each rejected on its own p… |
 | [`req-api-parts-unique`](requirements/api.md#req-api-parts-unique) | ✅ enforced | `tools/check-parts.mjs` point 6 — a component whose parts share a pre… | `tools/check-parts.fixtures/part-outside-namespace`, and a run agains… |
+| [`req-api-harness`](requirements/api.md#req-api-harness)           | ✅ enforced | `tools/check-harness.mjs` (target `check-harness` in the `components`… | `tools/check-harness.fixtures/` — 17 prepared inputs, each rejected o… |
 | [`req-api-templates`](requirements/api.md#req-api-templates)       | ✅ enforced | `libs/components/core/src/core.spec.ts` — `pctReportOrphanSlot` under… | two recorded runs that fail on different cases. `pctReportOrphanSlot`… |
 | [`req-api-icons`](requirements/api.md#req-api-icons)               | ✅ enforced | `tools/check-icons.mjs` (target `check-icons`) — six points over the … | `tools/check-icons.fixtures/` — six prepared inputs, each rejected on… |
 | [`req-api-icons-custom`](requirements/api.md#req-api-icons-custom) | 🟡 partial  | `libs/components/check-package.mjs` — the absence of icon files in th… | none — deliberately: the violation here is **adding** something, not … |
@@ -85,7 +86,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-project-entrypoints`](requirements/project.md#req-project-entrypoints)   | ✅ enforced | `libs/components/check-package.mjs` — the `exports` map in the packed… | `tools/check-package.fixtures/theme-outside-exports/` — a file presen… |
 | [`req-project-core`](requirements/project.md#req-project-core)                 | 🟡 partial  | `libs/components/field/src/field-controls.spec.ts` — the shared messa… | none — deliberately: the violation here is **duplication**, not a fai… |
 | [`req-project-tokens-lib`](requirements/project.md#req-project-tokens-lib)     | ✅ enforced | `libs/components/project.json` → `implicitDependencies: ["tokens"]` +… | `tools/check-package.fixtures/theme-missing/` — a package without `th… |
-| [`req-project-tree-shaking`](requirements/project.md#req-project-tree-shaking) | ✅ enforced | `tools/check-bundle.mjs` (target `check-bundle` in `components`, in C… | `tools/check-bundle.fixtures/` — 25 doctored inputs, each rejected on… |
+| [`req-project-tree-shaking`](requirements/project.md#req-project-tree-shaking) | ✅ enforced | `tools/check-bundle.mjs` (target `check-bundle` in `components`, in C… | `tools/check-bundle.fixtures/` — 29 doctored inputs, each rejected on… |
 | [`req-project-files`](requirements/project.md#req-project-files)               | ⛔ gap      | none — gap: a check of the entrypoint directory layout (a script in t… | none — gap: an entrypoint with an inline template has to fire the gate |
 | [`req-project-prefix`](requirements/project.md#req-project-prefix)             | 🟡 partial  | `libs/components/eslint.config.mjs` — the `@angular-eslint/component-… | none — deliberately: an ESLint rule fires on the first violation and … |
 | [`req-project-language`](requirements/project.md#req-project-language)         | ✅ enforced | `tools/check-language.mjs` (target `check-language` in the root proje… | `tools/check-language.fixtures/` — 32 doctored inputs, each rejected … |

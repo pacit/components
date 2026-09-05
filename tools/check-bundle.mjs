@@ -91,6 +91,23 @@ const RESIDUE = ['ngDeclare', 'setClassMetadata', 'setClassDebugInfo'];
 const PRIMARY = '.';
 
 /**
+ * Entrypoints with no component or directive of their own — DECLARED here rather than
+ * computed off the package, because computed, the exemption would cover every entrypoint
+ * the day the linker stopped attaching `ɵcmp`, and the gate would go blind exactly when it
+ * matters (`lesson-48`'s shape, one floor up). Each carries what its probe's TEXT may hold:
+ *   `silent` — no marker at all. The primary re-exports providers from `./core` and must
+ *              not carry the directive, and the text is the read that tells the two apart
+ *              (`lesson-81`).
+ *   `quotes` — other entrypoints' selectors, as data: a harness's `hostSelector` IS the
+ *              component's selector, so the text of `./testing` names every component and
+ *              holds none. The text read says nothing about such an entrypoint; the
+ *              metafile read (points 6 and 8) is the one that holds it.
+ * A plain entrypoint not declared here fires point 4 — which is the friction intended: the
+ * package cannot grow a componentless entrypoint without a sentence here saying why.
+ */
+const PLAIN = { [PRIMARY]: 'silent', './testing': 'quotes' };
+
+/**
  * A violation of one of the twelve checks. It carries the check's identifier, not just the
  * message: the negative control has to verify that a prepared input fired ON ITS OWN
  * point — a fixture failing for a reason other than the one written into it proves
@@ -113,6 +130,9 @@ const list = (items) => [...items].sort().join(', ') || '(empty)';
  *   `manifest`  — the packed `package.json` (the `exports` map, `sideEffects`),
  *   `snapshot`  — the file's contents, or `null`,
  *   `markers`   — `{ entrypoint: [selectors] }` from the built package,
+ *   `plain`     — `{ entrypoint: boolean }`, whether it exports anything but components,
+ *   `declaredPlain` — `{ entrypoint: 'silent' | 'quotes' }`, the entrypoints declared to
+ *                  have no component of their own (`PLAIN` for the live run),
  *   `probes`     — `{ entrypoint: { bytes, pulled, external, inText, residue } }`,
  *   `pair`      — `{ entrypoints: [a, b], bytes }`,
  *   `builder`   — `[{ entrypoints, found, overlay }]` from a real build.
@@ -222,6 +242,7 @@ const checkBundle = (input) => {
   const probes = input.probes ?? {};
   const markers = input.markers ?? {};
   const plain = input.plain ?? {};
+  const declaredPlain = input.declaredPlain ?? {};
 
   //    a) a probe brings its own entrypoint in. A probe the bundler threw the whole
   //       library out of passes every point about isolation — it holds NOTHING.
@@ -274,16 +295,47 @@ const checkBundle = (input) => {
         `imported`,
     );
 
+  //    b') the other declared-plain entrypoints. A declaration is a claim the package has
+  //       to keep: the entrypoint exists, its module exports no component or directive,
+  //       and a `silent` one holds no marker in its text either. A `quotes` one holds
+  //       everybody's, by construction, and its text is not read — its contents are the
+  //       metafile's to report (points 6 and 8), which is exactly what the declaration
+  //       says and the reason it has to be a declaration.
+  for (const [e, text] of Object.entries(declaredPlain)) {
+    if (!sources.includes(e))
+      throw new BundleError(
+        'presence',
+        `\`${e}\` is declared plain and is not an entrypoint of the package — a stale ` +
+          `declaration is an exemption waiting for something to hide under it`,
+      );
+    if (withComponents(e))
+      throw new BundleError(
+        'presence',
+        `\`${e}\` is declared plain and exports a component or directive: ` +
+          `${list(markers[e] ?? [])}.\n    Either the declaration is stale or the entrypoint ` +
+          `grew a component it was promised never to hold`,
+      );
+    const inText = probes[e]?.inText ?? [];
+    if (text === 'silent' && e !== PRIMARY && inText.length)
+      throw new BundleError(
+        'presence',
+        `\`${e}\` is declared silent and its probe's text carries ${list(inText)}`,
+      );
+  }
+
   //    c) every entrypoint some probe has to prove ABSENT can be recognised. An
   //       entrypoint with no marker would always pass point 6 — there is nothing to look
-  //       for. Primary is exempt by (b), and an entrypoint every probe brings in (today
-  //       `./core`) is nowhere proved absent.
+  //       for. The declared-plain ones are exempt by (b) and (b') — they are held by the
+  //       metafile, and the declaration is the sentence that says so — and an entrypoint
+  //       every probe brings in (today `./core`) is nowhere proved absent.
   const absentSomewhere = sources.filter(
     (e) =>
       e !== PRIMARY &&
       sources.some((x) => !(probes[x]?.pulled ?? []).includes(e)),
   );
-  const withoutMarker = absentSomewhere.filter((e) => !withComponents(e));
+  const withoutMarker = absentSomewhere.filter(
+    (e) => !withComponents(e) && !(e in declaredPlain),
+  );
   if (withoutMarker.length)
     throw new BundleError(
       'presence',
@@ -376,6 +428,10 @@ const checkBundle = (input) => {
   //    it and none of them but `./select` takes its directive. An entrypoint of components
   //    alone has no such half, so for those the direction stands as it did.
   for (const e of sources) {
+    // A `quotes` entrypoint's text names every component by construction, so read it and
+    // every marker is "content with no metafile entry". Its contents are the metafile's
+    // to report (point 6) — the declaration in `PLAIN` is the sentence that says so.
+    if (declaredPlain[e] === 'quotes') continue;
     const inText = new Set(probes[e]?.inText ?? []);
     const pulled = new Set(probes[e]?.pulled ?? []);
     const unassigned = [...inText].filter((x) => !pulled.has(x));
@@ -519,8 +575,13 @@ const checkBundle = (input) => {
     // Taken from `pulled` it compared a text read against a module read, and the day an
     // entrypoint held both a directive and a provider the two stopped meaning the same
     // thing (point 7 above, `lesson-81`).
+    // A `quotes` entrypoint's text would put every marker into the expectation; the
+    // builder runs are made of component entrypoints and never hold one, and this filter
+    // is what keeps that true if the runs ever change.
     const expected = new Set(
-      (p.entrypoints ?? []).flatMap((e) => probes[e]?.inText ?? []),
+      (p.entrypoints ?? [])
+        .filter((e) => declaredPlain[e] !== 'quotes')
+        .flatMap((e) => probes[e]?.inText ?? []),
     );
     const found = new Set(p.found ?? []);
     if (!equal(found, expected))
@@ -1073,6 +1134,7 @@ const measureRepository = async () => {
         : null,
       markers,
       plain,
+      declaredPlain: PLAIN,
       probes,
       pair: pairMeasurement
         ? { entrypoints: pair, bytes: pairMeasurement.bytes }
@@ -1118,6 +1180,7 @@ const buildFixture = (fx) => {
     manifest: structuredClone(reference.manifest),
     markers: structuredClone(reference.markers),
     plain: structuredClone(reference.plain),
+    declaredPlain: structuredClone(reference.declaredPlain ?? {}),
     probes: structuredClone(reference.probes),
     pair: structuredClone(reference.pair),
     builder: structuredClone(reference.builder),
@@ -1134,6 +1197,8 @@ const buildFixture = (fx) => {
       fx.probeWithoutItsOwn
     ].pulled.filter((e) => e !== fx.probeWithoutItsOwn);
   if (fx.dropMarkers) input.markers[fx.dropMarkers] = [];
+  if (fx.undeclare) delete input.declaredPlain[fx.undeclare];
+  if (fx.declare) input.declaredPlain[fx.declare.ep] = fx.declare.text;
   if (fx.addMarker) input.markers[fx.addMarker.ep] = fx.addMarker.markers;
   if (fx.addPulled)
     input.probes[fx.addPulled.ep].pulled = [

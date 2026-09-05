@@ -1,0 +1,6 @@
+{
+  "point": 6,
+  "check": "cards",
+  "why": "The button card names PctNobodyHarness, which the package does not export.",
+  "cards": { "button.md": { "harnesses": ["PctNobodyHarness"] } }
+}

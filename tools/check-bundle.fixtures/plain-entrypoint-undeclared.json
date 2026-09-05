@@ -1,0 +1,6 @@
+{
+  "// defect": "The componentless entrypoint is not declared plain. Nothing then says why it has no marker, and the gate cannot tell it from a component entrypoint the linker stripped.",
+  "point": 4,
+  "check": "presence",
+  "undeclare": "./rig"
+}

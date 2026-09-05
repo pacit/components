@@ -1,0 +1,3 @@
+{
+  "$comment": "The reference input is the repository itself: the built package in dist/libs/components (its testing module, its component definitions after linking and its declaration file) and the cards in docs/components, as they stand at the commit under test. Nothing is stored here on purpose — a stored copy would measure the repository as it was the day somebody stored it. Every case is built on a copy of that live input with one thing broken (see README.md)."
+}

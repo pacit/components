@@ -1,9 +1,9 @@
 import type { ComponentFixture } from '@angular/core/testing';
 
 /**
- * DOM helpers for unit tests. Test-only — the `testing/` directory is listed in neither
- * `tsconfig.lib.json` nor an `ng-package.json` of its own, so it never reaches the published
- * package.
+ * DOM helpers for a plain fixture — the road for a test that does not run the CDK's harness
+ * environment. Published from `@pacit/components/testing` beside the harnesses, and imported
+ * by tests alone: the entrypoint is not part of an application bundle.
  *
  * They return a non-nullable element and throw with a description when there is none. Tests
  * then need no `!` (the `@typescript-eslint/no-non-null-assertion` rule), and a failed query

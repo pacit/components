@@ -43,6 +43,7 @@ itself is untouched by its own `overflow`.
 | **Outputs** | none — a progress bar reports, it does not emit. What changes the value is the task, and the task is the application's.                                                                                                              |
 | **Slots**   | none — the bar draws a groove and a fill. The sentence beside it ("Copying files", "129 of 256") is the consumer's, and it is also what `ariaLabelledby` should point at.                                                            |
 | **Parts**   | `track` (the `<progress>` itself, which is the groove), `fill` (the sibling drawn over it — the value in the determinate state, the travelling band in the indeterminate one)                                                        |
+| **Harness** | `PctProgressHarness`                                                                                                                                                                                                                 |
 | **Tokens**  | the `--pct-progress-*` prefix plus three entries in `contrast.policy.json`                                                                                                                                                           |
 | **Strings** | **none.** The first component in five to add nothing to `PCT_TEXTS` and therefore nothing to every other entrypoint's bytes — it draws no text at all.                                                                               |
 

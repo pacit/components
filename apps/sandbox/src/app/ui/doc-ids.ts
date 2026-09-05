@@ -23,6 +23,7 @@ export type PctReqId =
   | 'req-api-foundation'
   | 'req-api-frame'
   | 'req-api-generic'
+  | 'req-api-harness'
   | 'req-api-icons'
   | 'req-api-icons-custom'
   | 'req-api-message'

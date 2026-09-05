@@ -1,0 +1,13 @@
+{
+  "point": 5,
+  "check": "types",
+  "why": "The declaration offers only label while the list holds label and spinner — a right call on the spinner is a compile error.",
+  "declarations": {
+    "replace": [
+      {
+        "pattern": "PctButtonHarness extends PctHarness<'label' \\| 'spinner'>",
+        "with": "PctButtonHarness extends PctHarness<'label'>"
+      }
+    ]
+  }
+}

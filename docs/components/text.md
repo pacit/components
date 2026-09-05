@@ -25,6 +25,7 @@ keyboard modes are all preserved
 | **Inputs**      | `value` (`model`), `disabled`, `readonly`, `invalid`, `touched`, `required`, `errors`, `name`, `touch` — i.e. `FormValueControl` + `FormUiControl` |
 | **Outputs**     | `valueChange` (through `model`)                                                                                                                    |
 | **Parts**       | inherits the wrapper's parts; exposes none of its own                                                                                              |
+| **Harness**     | `PctTextHarness`                                                                                                                                   |
 | **DI contract** | registers through `PCT_FIELD`; `fieldAppearance: 'boxed'`, `fieldCursor: 'text'`                                                                   |
 
 ## Parts

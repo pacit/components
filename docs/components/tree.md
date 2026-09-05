@@ -43,6 +43,7 @@ carve-out extends to `tree`), so the role is static.
 | **Outputs** | the two models' change emitters — nothing else happens to a map of files                                                                                                  |
 | **Slots**   | the items (nested in the tree and in each other — the two-slot projection pulls nested items into the branch's `role="group"`, everything else is the label)              |
 | **Parts**   | `label` (the row), `arrow` (the disclosure chevron — reserved on every row, drawn on branches)                                                                            |
+| **Harness** | `PctTreeHarness`, `PctTreeItemHarness`                                                                                                                                    |
 | **Tokens**  | the `--pct-tree-*` prefix plus four entries in `contrast.policy.json`; the name dictionary grew the property `indent`                                                     |
 | **Strings** | **none** — the fifth component adding nothing to `PCT_TEXTS`: every word is the consumer's, and the fold state is `aria-expanded`, which a reader says itself             |
 

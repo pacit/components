@@ -225,6 +225,28 @@ test.describe('The pages', () => {
     await expect(page.getByTestId('host')).toContainText('aria-busy');
   });
 
+  /**
+   * The harness line (plan 2.6) is read off the card's **Harness** row, and the row is held
+   * to the built package by `check-harness` — so the name on the page is a class a test can
+   * import, not a name somebody typed.
+   */
+  test('the parts section names the harness a test holds them with', async ({
+    page,
+  }) => {
+    await visit(page, '/components/button');
+    const line = page.getByTestId('harness');
+    await expect(line).toContainText('PctButtonHarness');
+    await expect(line).toContainText('@pacit/components/testing');
+    const card = readFileSync(
+      join(__dirname, '../../../docs/components/button.md'),
+      'utf8',
+    );
+    const row = card.match(/^\|\s*\*\*Harness\*\*\s*\|(.*)\|\s*$/m);
+    expect(row).not.toBeNull();
+    for (const [, name] of (row as RegExpMatchArray)[1].matchAll(/`(\w+)`/g))
+      await expect(line).toContainText(name);
+  });
+
   test('every token of the page carries a meaning and both defaults', async ({
     page,
   }) => {

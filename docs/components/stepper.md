@@ -41,6 +41,7 @@ move one component over.
 | **Outputs** | none — a map does not move the traveller                                                                                                                                                                  |
 | **Slots**   | the steps (children of `pct-stepper`), and each step's label — the application's text, or its own link/button when a step should answer a press                                                           |
 | **Parts**   | `marker` (the circle: ordinal, or the check when done), `track` (the connector; the first step's is hidden by `:first-of-type`)                                                                           |
+| **Harness** | `PctStepperHarness`, `PctStepHarness`                                                                                                                                                                     |
 | **Tokens**  | the `--pct-stepper-*` prefix plus seven entries in `contrast.policy.json`; the name dictionary grew the state `done`                                                                                      |
 | **Strings** | `stepDone` — the word a reader gets for the drawn check, riding INSIDE the content after the label ("Payment, Completed"), never in an `aria-label` that would replace the label                          |
 

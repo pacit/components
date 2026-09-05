@@ -1,8 +1,8 @@
 {
   "// why": "The reference input of the `check-bundle` negative control. Every case beside it is built ON A COPY OF IT, so a case file holds nothing but its own defect. This input MUST pass: were it defective itself, every case would fire because of it rather than because of its own.",
   "// why data, not a real measurement": "Building a dozen esbuild probes for each of the seventeen cases would cost minutes per run, and with Angular's real builder — quarters of an hour. The same choice as in `check-zoneless` and `check-parts`. The price is visible: the fixtures do NOT exercise the bundling code, they exercise the whole arrangement of checks. Bundling is exercised on every run against the real repository.",
-  "// why a fake library": "The entrypoints are called `alpha`, `beta`, `kernel` rather than `button`, `select`, `core` — a copy of the real measurement would drift from the repository at every new component, and the fixtures would then need maintenance although they examine nothing that changed. `kernel` is pulled in by EVERY probe (like the real `./core`), it is MIXED — a directive beside its providers, as `./core` has been since D2 — and only `beta` takes that directive, the way only `./select` takes `pctOverlayPanel`. `beta` alone reaches for the CDK overlay (like the real `./select`).",
-  "sources": [".", "./alpha", "./beta", "./kernel"],
+  "// why a fake library": "The entrypoints are called `alpha`, `beta`, `kernel` rather than `button`, `select`, `core` — a copy of the real measurement would drift from the repository at every new component, and the fixtures would then need maintenance although they examine nothing that changed. `kernel` is pulled in by EVERY probe (like the real `./core`), it is MIXED — a directive beside its providers, as `./core` has been since D2 — and only `beta` takes that directive, the way only `./select` takes `pctOverlayPanel`. `beta` alone reaches for the CDK overlay (like the real `./select`). `rig` is the plain entrypoint of the `quotes` kind (like the real `./testing`): no component of its own, every other entrypoint's selector in its text as data, held by the metafile alone.",
+  "sources": [".", "./alpha", "./beta", "./kernel", "./rig"],
   "manifest": {
     "sideEffects": false,
     "exports": {
@@ -21,6 +21,9 @@
       "./themes/*": "./themes/*",
       "./package.json": {
         "default": "./package.json"
+      },
+      "./rig": {
+        "default": "./fesm2022/rig.mjs"
       }
     }
   },
@@ -28,7 +31,8 @@
     ".": [],
     "./alpha": ["pct-alpha"],
     "./beta": ["pct-beta"],
-    "./kernel": ["pctKernelPanel"]
+    "./kernel": ["pctKernelPanel"],
+    "./rig": []
   },
   "probes": {
     ".": {
@@ -58,6 +62,13 @@
       "external": ["@angular/core"],
       "inText": ["./kernel"],
       "residue": []
+    },
+    "./rig": {
+      "bytes": 400,
+      "pulled": ["./rig"],
+      "external": ["@angular/cdk/testing"],
+      "inText": ["./alpha", "./beta", "./kernel"],
+      "residue": []
     }
   },
   "pair": {
@@ -85,6 +96,11 @@
     ".": true,
     "./alpha": false,
     "./beta": false,
-    "./kernel": true
+    "./kernel": true,
+    "./rig": true
+  },
+  "declaredPlain": {
+    ".": "silent",
+    "./rig": "quotes"
   }
 }

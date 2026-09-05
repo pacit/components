@@ -521,6 +521,14 @@
 
         <div class="sub" id="styling-parts" data-spy>
           <h3>Parts</h3>
+          <p class="sub__lead" data-testid="harness">
+            In a test, @for (name of p.harnesses; track name; let last = $last)
+            {<code>{{ name }}</code>@if (!last) {, }} from
+            <code>&#64;pacit/components/testing</code>
+            {{ p.harnesses.length === 1 ? 'reads' : 'read' }} a part by the name
+            below and a state by its attribute — the harness gate holds the
+            names to the package.
+          </p>
           @if (h.parts.length) {
           <div
             class="tablewrap"

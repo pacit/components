@@ -31,6 +31,7 @@ engines before anything was written.
 | **Outputs** | none — a failed picture is answered by the chain, not announced; nothing else happens to a decoration                                                                                     |
 | **Slots**   | **none, deliberately.** The host is `aria-hidden`, and a slot is where a consumer puts a control — the skeleton's argument at the next hidden component                                   |
 | **Parts**   | `image` (the photograph, `alt=""`), `initials` (the drawn letters), `silhouette` (the drawing of last resort) — exactly one is in the document at a time                                  |
+| **Harness** | `PctAvatarHarness`                                                                                                                                                                        |
 | **Tokens**  | the `--pct-avatar-*` prefix plus three entries in `contrast.policy.json`                                                                                                                  |
 | **Strings** | **none.** The third component in the library to add nothing to `PCT_TEXTS` and therefore nothing to any other entrypoint's bytes — a component that says nothing has nothing to translate |
 

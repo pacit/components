@@ -1,0 +1,6 @@
+{
+  "point": 6,
+  "check": "cards",
+  "why": "The button card has no Harness row — the page tells a consumer nothing about the instrument.",
+  "cards": { "button.md": { "harnesses": null } }
+}

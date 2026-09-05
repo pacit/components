@@ -1,0 +1,13 @@
+{
+  "point": 5,
+  "check": "types",
+  "why": "The declaration offers an icon the list does not hold — the editor completes a name that throws.",
+  "declarations": {
+    "replace": [
+      {
+        "pattern": "PctButtonHarness extends PctHarness<'label' \\| 'spinner'>",
+        "with": "PctButtonHarness extends PctHarness<'icon' | 'label' | 'spinner'>"
+      }
+    ]
+  }
+}

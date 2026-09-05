@@ -32,6 +32,7 @@ the same computed surface.
 | **Outputs** | none                                                                                                                                    |
 | **Slots**   | not applicable — an attribute directive on the consumer's own element                                                                   |
 | **Parts**   | none — it draws nothing                                                                                                                 |
+| **Harness** | `PctThemeHarness`                                                                                                                       |
 | **Tokens**  | **none of its own, deliberately** — the tokens are the skin's; this directive only writes the attribute their theme blocks are keyed on |
 | **Strings** | none                                                                                                                                    |
 

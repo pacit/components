@@ -31,6 +31,7 @@ out of the consumer's own type — and it says nothing, because there is nothing
 | **Outputs** | none — nothing happens to a skeleton. What ends the wait is the content, and the content is the application's                                                                                   |
 | **Slots**   | **none, deliberately.** The host is `aria-hidden`, and a slot is where a consumer puts a button — a control the keyboard reaches and a reader cannot describe (axe's `aria-hidden-focus`)       |
 | **Parts**   | `track` (one placeholder: a bar standing where a line of text will be, or the box standing where a picture will be), `fill` (the sheen travelling across it) — the progress bar's own two names |
+| **Harness** | `PctSkeletonHarness`                                                                                                                                                                            |
 | **Tokens**  | the `--pct-skeleton-*` prefix plus two entries in `contrast.policy.json`                                                                                                                        |
 | **Strings** | **none.** The second component in a row to add nothing to `PCT_TEXTS` and therefore nothing to every other entrypoint's bytes — a component that says nothing has nothing to translate          |
 

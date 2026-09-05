@@ -1,0 +1,11 @@
+{
+  "point": 2,
+  "check": "host",
+  "why": "A second harness answers to button[pctButton] — two declarations of one contract drift apart the first time one is edited.",
+  "harnesses": {
+    "PctButtonAgainHarness": {
+      "hostSelector": "button[pctButton]",
+      "parts": ["label", "spinner"]
+    }
+  }
+}

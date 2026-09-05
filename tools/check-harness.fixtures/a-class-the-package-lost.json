@@ -1,0 +1,6 @@
+{
+  "point": 2,
+  "check": "host",
+  "why": "PctButton is gone from the package while its harness stays — the harness stands on nobody.",
+  "classes": { "PctButton": null }
+}

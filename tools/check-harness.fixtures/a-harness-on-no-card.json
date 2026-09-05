@@ -1,0 +1,6 @@
+{
+  "point": 6,
+  "check": "cards",
+  "why": "The button card is gone and PctButtonHarness stands on no page — an instrument nobody is told about.",
+  "cards": { "button.md": null }
+}

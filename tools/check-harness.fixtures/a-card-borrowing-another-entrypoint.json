@@ -1,0 +1,6 @@
+{
+  "point": 6,
+  "check": "cards",
+  "why": "The button card names PctSelectHarness — a real harness of another entrypoint, and the wrong instrument for the page.",
+  "cards": { "button.md": { "harnesses": ["PctSelectHarness"] } }
+}

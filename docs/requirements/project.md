@@ -172,7 +172,12 @@ only when a run fails but when the record is written
 ([0023](../decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md)). Point 4 watches that the primary entrypoint carries no component
 at all — read over the probe's **text**, because primary re-exports `providePctConfig` from
 `./core` and so pulls that entrypoint whatever it takes from it
-([`lesson-81`](../lessons.md#lesson-81)). The rest is the denominator: two readings of the entrypoint list, presence of the
+([`lesson-81`](../lessons.md#lesson-81)); the same point holds every entrypoint **declared**
+plain in the gate's `PLAIN` list — declared rather than computed, because a computed
+exemption would cover every entrypoint the day the linker stopped attaching `ɵcmp` — to its
+declaration: it exists, it exports no component, a `silent` one carries no marker in its text,
+and a `quotes` one (`./testing`, whose harnesses carry every selector as data) is held by the
+metafile alone. The rest is the denominator: two readings of the entrypoint list, presence of the
 measured entrypoint in the probe, a second reading of isolation from the bundle text, a
 differential check, and a repeat of the measurement with the **real**
 `@angular/build:application`. Point 12 holds the FILE rather than the measurement: the
@@ -183,8 +188,12 @@ file until some byte happened to move with it
 what the tarball weighs: point 5 requires the probe to be built the way a consumer builds —
 the Angular linker run over the package and `ngDevMode` folded — and the two together take a
 component entrypoint to some 60% of its unlinked size
-**Control:** `tools/check-bundle.fixtures/` — 25 doctored inputs, each rejected on its own
+**Control:** `tools/check-bundle.fixtures/` — 29 doctored inputs, each rejected on its own
 point; among them `entrypoint-pulls-neighbour/` (importing `./alpha` pulls in `./beta`),
+`plain-entrypoint-with-a-component/`, `plain-entrypoint-undeclared/` and
+`plain-declaration-naming-nobody/` (a plain declaration that is stale, missing or names
+nobody), `quotes-entrypoint-pulls-neighbour/` (the entrypoint whose text is never read pulls a
+component in, and the metafile read fires),
 `new-external-dependency/` (an entrypoint reaches for the CDK overlay),
 `probe-without-its-entrypoint/` (the measurement stopped pulling anything in),
 `probe-not-linked/` (the probe measures the package's bytes rather than the consumer's),

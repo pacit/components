@@ -62,14 +62,15 @@ where one element is enough:
 
 ## Contract
 
-|                             |                                                                                           |
-| --------------------------- | ----------------------------------------------------------------------------------------- |
-| **Value**                   | type, empty value, `compareWith`                                                          |
-| **Inputs**                  | list with types                                                                           |
-| **Outputs**                 | list                                                                                      |
-| **Slots**                   | `<ng-content select="…">`                                                                 |
-| **Parts** (`data-pct-part`) | list — must match the inventory ([`req-api-parts`](../requirements/api.md#req-api-parts)) |
-| **Tokens**                  | the `--pct-<name>-*` prefix plus an entry in `contrast.policy.json`                       |
+|                             |                                                                                                                           |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| **Value**                   | type, empty value, `compareWith`                                                                                          |
+| **Inputs**                  | list with types                                                                                                           |
+| **Outputs**                 | list                                                                                                                      |
+| **Slots**                   | `<ng-content select="…">`                                                                                                 |
+| **Parts** (`data-pct-part`) | list — must match the inventory ([`req-api-parts`](../requirements/api.md#req-api-parts))                                 |
+| **Harness**                 | `PctNameHarness` — from `@pacit/components/testing`; one per class the card names, held to the package by `check-harness` |
+| **Tokens**                  | the `--pct-<name>-*` prefix plus an entry in `contrast.policy.json`                                                       |
 
 ## Parts
 

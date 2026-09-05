@@ -38,6 +38,7 @@ stylesheet names no width anywhere.
 | **Outputs** | none                                                                                                                                                        |
 | **Slots**   | one default slot: the cards, flowed in DOM order                                                                                                            |
 | **Parts**   | none — the host is the whole drawing                                                                                                                        |
+| **Harness** | `PctGridHarness`                                                                                                                                            |
 | **Tokens**  | `--pct-grid-min-width`, `--pct-grid-gap`; **no entry in `contrast.policy.json`, deliberately** — the component paints no colour                             |
 | **Strings** | none                                                                                                                                                        |
 

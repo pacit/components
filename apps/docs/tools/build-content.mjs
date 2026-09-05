@@ -404,6 +404,21 @@ const cards = await Promise.all(
     const usage = fenceOf(sectionOf(text, 'Usage'));
     const theming = fenceOf(sectionOf(text, 'Theming'));
     const partsTable = tableOf(sectionOf(text, 'Parts'));
+    // The harness a consumer's test holds the parts with (plan 2.6): the **Harness** row of
+    // the Contract table, read as the names in backticks. A card without the row is a page
+    // that names no instrument, and `check-harness` holds the names to the package.
+    const harnessRow = (tableOf(sectionOf(text, 'Contract'))?.rows ?? []).find(
+      (r) => r[0] === '**Harness**',
+    );
+    if (!harnessRow)
+      throw new Error(
+        `content pass: ${file} has no **Harness** row in its Contract table`,
+      );
+    const harnesses = [...harnessRow[1].matchAll(/`(\w+)`/g)].map((m) => m[1]);
+    if (!harnesses.length)
+      throw new Error(
+        `content pass: ${file}'s **Harness** row names no harness`,
+      );
     const keyboard = sectionOf(text, 'Keyboard map');
     const limitations = sectionOf(text, 'Known limitations');
     const checksTable = tableOf(sectionOf(text, 'Checks'));
@@ -465,6 +480,7 @@ const cards = await Promise.all(
               .join('; '),
           }
         : null,
+      harnesses,
       partsDescribed: new Map(
         (partsTable?.rows ?? []).map((r) => [
           r[0].replaceAll('`', ''),
@@ -1469,6 +1485,7 @@ const pages = Object.fromEntries(
       status: c.status,
       entrypoint: c.entrypoint,
       selectors: c.selectors,
+      harnesses: c.harnesses,
       pattern: c.pattern,
       patternClaim: c.patternClaim,
       summary: c.summary,
@@ -1578,6 +1595,8 @@ export interface ComponentPage {
   readonly status: string | null;
   readonly entrypoint: string | null;
   readonly selectors: readonly string[];
+  /** The harnesses of @pacit/components/testing the card names (plan 2.6). */
+  readonly harnesses: readonly string[];
   readonly pattern: string | null;
   readonly patternClaim: PatternClaim | null;
   readonly summary: string;
@@ -1698,6 +1717,29 @@ const catalogue = {
       record: 'apps/docs/bench.snapshot.md',
     },
   },
+  testing: {
+    entrypoint: `${manifest.name}/testing`,
+    base: 'PctHarness — the CDK’s ComponentHarness over the data-pct-part inventory',
+    loader:
+      "TestbedHarnessEnvironment.loader(fixture) from '@angular/cdk/testing/testbed', or the CDK’s WebDriver environment",
+    methods: {
+      part: 'the element of a part by its inventory name — typed; throws naming the parts drawn',
+      parts: 'every element of a part; an empty list is an answer',
+      has: 'whether the part is drawn right now',
+      text: 'the part’s text, trimmed',
+      state:
+        "a data-pct-* attribute read off the host — state('size') reads data-pct-size",
+      with: 'a HarnessPredicate with the CDK’s filters (selector, ancestor)',
+    },
+    helpers: {
+      part: 'part(fixture, name): the part’s element in a plain fixture; throws naming what is there',
+      allParts: 'allParts(fixture, name): every element of a part',
+      query:
+        'query(fixture, selector): the first element of a selector; throws when none',
+    },
+    contract:
+      'One harness per component, a declaration over the parts contract: the host selector is the component’s own, verbatim, and the parts are exactly the ones the package draws — both held to the built package by the check-harness gate, with the union type the editor offers and the names on every component page. Each component lists its harnesses under harnesses.',
+  },
   texts: {
     provider: 'providePctTexts',
     entrypoint: manifest.name,
@@ -1723,6 +1765,7 @@ const catalogue = {
     status: card.status,
     entrypoint: card.entrypoint,
     selectors: card.selectors,
+    harnesses: card.harnesses,
     docs: `/components/${card.id}`,
     summary: plain(card.summary),
     usage: card.usageRaw,
@@ -1799,6 +1842,10 @@ const llms = [
   ...textsChannel.keys.map(
     (k) => `- \`${k.key}\` (${JSON.stringify(k.default)}): ${k.meaning}`,
   ),
+  '',
+  '## Testing',
+  '',
+  `Every component has a harness in \`${manifest.name}/testing\`, built on the CDK's \`ComponentHarness\`: \`getHarness(PctButtonHarness)\` through \`TestbedHarnessEnvironment.loader(fixture)\`, then \`part('label')\`, \`parts\`, \`has\`, \`text\` by a part's inventory name (typed) and \`state('size')\` for a \`data-pct-*\` attribute. A harness is a declaration held to the built package by a gate — the host selector verbatim, the parts exactly the ones drawn — so a renamed part fails a test by name. Each component's harnesses are listed on its page and under \`harnesses\` in the catalogue; \`part\`, \`allParts\` and \`query\` from the same entrypoint serve a fixture without the CDK.`,
   '',
   '## Cost',
   '',

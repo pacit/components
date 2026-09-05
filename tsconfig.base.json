@@ -32,6 +32,7 @@
       "@pacit/components/drawer": ["./libs/components/drawer/src/index.ts"],
       "@pacit/components/field": ["./libs/components/field/src/index.ts"],
       "@pacit/components/icon": ["./libs/components/icon/src/index.ts"],
+      "@pacit/components/testing": ["./libs/components/testing/src/index.ts"],
       "@pacit/components/tooltip": ["./libs/components/tooltip/src/index.ts"],
       "@pacit/components/popover": ["./libs/components/popover/src/index.ts"],
       "@pacit/components/menu": ["./libs/components/menu/src/index.ts"],

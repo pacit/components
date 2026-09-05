@@ -57,8 +57,8 @@ Snapshot, `node tools/check-docs.mjs`:
 
 | measure                                     | value |
 | ------------------------------------------- | ----: |
-| requirements                                |    90 |
-| ✅ enforced                                 |    70 |
+| requirements                                |    91 |
+| ✅ enforced                                 |    71 |
 | 🟡 partial (deliberately without a control) |    16 |
 | ⛔ gap                                      |     4 |
 
@@ -971,13 +971,39 @@ routerLink>` CTAs until `a[pctButton]` exists (**4.33**), `select.scss` 7.69 kB
     docs-e2e **361 of 361** in three engines (the first pass had the landing's two
     baselines to rewrite for the AI tile's new line, and one webkit timing under full-suite
     load that is green alone) · cost: ~a quarter of a day
-- [ ] **2.6 — `@pacit/components/testing`**: consumer-facing harnesses on the `data-pct-part`
+- [x] **2.6 — `@pacit/components/testing`**: consumer-facing harnesses on the `data-pct-part`
       contract
   - the parts are already a snapshot-gated public surface, so a harness per card is thin and
-    gate-able the way the cards are; today the only helpers are explicitly unpublished
-    (`libs/components/testing/src/dom.ts` says so in its header) and a consumer re-derives
+    gate-able the way the cards are; before this the only helpers were explicitly unpublished
+    (`libs/components/testing/src/dom.ts` said so in its header) and a consumer re-derived
     by hand the selectors the library treats as contract. A library that ships promises
     should ship the instrument a consumer's own suite holds them with after an upgrade
+  - _notes (2026-09-05):_ **shipped, as declarations held to the package.** The entrypoint
+    carries 51 harnesses on the CDK's `ComponentHarness` — one per component and directive a
+    card names, each four lines: the host selector, verbatim the class's own, and the parts
+    it draws, with the union type an editor offers after `part(`. The base has five methods
+    (`part`, `parts`, `has`, `text`, `state`) and `with` for the CDK's filters, and no
+    `open()` anywhere, on purpose
+    ([0068](decisions/0068-a-harness-is-a-declaration-over-the-parts-contract.md)).
+    `check-harness` (six points, 17 prepared inputs) reads `ɵcmp` after linking the way
+    `check-parts` does and holds every declaration in both directions, the declared union to
+    the list, and the cards' new **Harness** rows to the names — the row the page renders
+    under Parts and the catalogue carries under `harnesses`, with a `testing` section of its
+    own and a paragraph in `llms.txt`. The old test-only helpers (`part`, `allParts`,
+    `query`) are published from the same entrypoint. **What it moved elsewhere:**
+    `check-bundle` had no way to see an entrypoint with no component of its own — its
+    presence read is a selector in the bundle's text, and a harness's `hostSelector` is every
+    component's selector as data — so the gate grew a declared `PLAIN` list (`silent` for
+    primary, `quotes` for `./testing`), declared rather than computed because a computed
+    exemption would blind the gate the day the linker stopped attaching `ɵcmp`; four
+    prepared inputs hold the declaration (29 now), and the size row reads
+    `./testing 7998 - @angular/cdk/testing`. Coverage counts `testing/` now — the skip's
+    reason died with the entrypoint; the mutation run keeps its exclusion with a reason of
+    its own. `req-api-harness` puts it in the registry (91 promises, 71 enforced). Unit:
+    **1150 of 1150**; every fast gate green. Deciding run for this step: docs-e2e in chromium, **120 of 120** over the pages, landing,
+    routes and shell specs (118 on the first pass against a dev server compiling its first
+    requests — the two landing timings, green alone) and the visual spec 4 of 4 with not one
+    baseline moved, the harness line standing below the fold of the button page's viewport · cost: half a day
 - [x] **2.7 — the component page, redesigned to the approved sketch** — the reviewer's second
       item (2026-09-03): "the worst-looking part of the site". Two static sketches were
       shown before a line of code moved (the rule he set); the decision is the second

@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "set",
+  "why": "PctButtonHarness is a class of its own, not a PctHarness — it has a hostSelector and no part(), and a test that compiled against the base breaks at run time.",
+  "harnesses": { "PctButtonHarness": { "base": false } }
+}

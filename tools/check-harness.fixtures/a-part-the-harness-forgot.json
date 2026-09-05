@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "parts",
+  "why": "PctButtonHarness forgot the spinner — a part the package draws that no harness can name.",
+  "harnesses": { "PctButtonHarness": { "parts": ["label"] } }
+}

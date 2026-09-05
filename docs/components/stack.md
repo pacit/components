@@ -33,6 +33,7 @@ flush with the host: three properties margins never manage together.
 | **Outputs** | none                                                                                                                                                 |
 | **Slots**   | one default slot: the blocks, spaced in DOM order                                                                                                    |
 | **Parts**   | none — the host is the whole drawing                                                                                                                 |
+| **Harness** | `PctStackHarness`                                                                                                                                    |
 | **Tokens**  | `--pct-stack-gap`, `--pct-stack-gap-sm`, `--pct-stack-gap-lg`; **no entry in `contrast.policy.json`, deliberately** — the component paints no colour |
 | **Strings** | none                                                                                                                                                 |
 

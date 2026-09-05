@@ -1,0 +1,6 @@
+{
+  "point": 5,
+  "check": "types",
+  "why": "The declaration file is not in the package — the consumer's editor offers no names at all.",
+  "declarations": null
+}

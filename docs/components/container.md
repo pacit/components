@@ -33,6 +33,7 @@ guessing at a viewport a sidebar may have eaten half of.
 | **Outputs** | none — nothing happens to a column                                                                                                                                            |
 | **Slots**   | one default slot: the column's content                                                                                                                                        |
 | **Parts**   | none — the host is the whole drawing, and there is nothing inside it but the consumer's own content                                                                           |
+| **Harness** | `PctContainerHarness`                                                                                                                                                         |
 | **Tokens**  | `--pct-container-max-width`, `--pct-container-padding-x`; **no entry in `contrast.policy.json`, deliberately** — the component paints no colour at all                        |
 | **Strings** | none — the component draws no text                                                                                                                                            |
 

@@ -1,0 +1,9 @@
+{
+  "// defect": "The quotes entrypoint, whose text is never read, pulls a component entrypoint in per the metafile. The declaration hands it to the metafile read — this is that read firing.",
+  "point": 6,
+  "check": "isolation",
+  "addPulled": {
+    "ep": "./rig",
+    "what": "./alpha"
+  }
+}

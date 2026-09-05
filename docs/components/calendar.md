@@ -30,6 +30,7 @@ booking screen puts it in a column.
 | **Bounds**      | `min` / `max` clamp where the keyboard can GO; `dateDisabled` marks days inside them that still cannot be taken. **The bounds are the range and the predicate is the holes in it** |
 | **Naming**      | `ariaLabel` / `ariaLabelledby` are inputs, bound on the grid. With neither, the grid is named by the month caption above it                                                        |
 | **Parts**       | `nav`, `caption`, `grid`, `weekday`, `week`, `day`                                                                                                                                 |
+| **Harness**     | `PctCalendarHarness`                                                                                                                                                               |
 | **Tokens**      | `--pct-date-*` — the same tier as the field, because a token name carries the ENTRYPOINT and a `--pct-calendar-…` name would promise a package that does not exist                 |
 | **Strings**     | `datePreviousMonth`, `dateNextMonth` — through `PCT_TEXTS`. The month, the weekday names and the day numbers come from `Intl` and are nobody's to translate                        |
 | **DI contract** | `PCT_CONFIG`, `PCT_TEXTS`, `LOCALE_ID`                                                                                                                                             |

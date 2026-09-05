@@ -26,6 +26,7 @@ keyboard mode are the platform's and untouched
 | **Inputs**      | `rows` (the floor, in lines — the platform's own attribute, read and written back), `maxRows` (the ceiling, in lines; `0` is none)                   |
 | **Outputs**     | none                                                                                                                                                 |
 | **Parts**       | none of its own — it adds no element, so there is nothing new to name                                                                                |
+| **Harness**     | `PctTextHarness`, `PctAutosizeHarness`                                                                                                               |
 | **DI contract** | requires `PctText` on the same element (the selector says so): the rules that carry the feature live in `text.scss`, which is `PctText`'s stylesheet |
 | **Attributes**  | writes `data-pct-autosize` (the sheet's hook), `data-pct-capped` when there is a ceiling, `--_pct-text-rows` and `max-block-size` in `lh`            |
 

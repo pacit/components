@@ -23,6 +23,7 @@
 | **Naming**      | `ariaLabel` / `ariaLabelledby` are **inputs and not attributes on the tag**: the role sits on the `<input>` inside, the host carries no role, and an ARIA name on a roleless element is ignored. Both win over `label` (`tools/check-aria.mjs`) |
 | **Binding**     | `model()` does not accept `booleanAttribute`, so `[checked]="true"` in brackets — a bare attribute does not compile                                                                                                                             |
 | **Parts**       | `control`, `track`, `thumb`, `label`, `hint`, `error`                                                                                                                                                                                           |
+| **Harness**     | `PctSwitchHarness`                                                                                                                                                                                                                              |
 | **DI contract** | `PCT_FIELD`; `fieldAppearance: 'bare'` — a frame around a switch looks alien, exactly as around a checkbox                                                                                                                                      |
 
 **What it does not have, and why.** No `aria-checked` and no `indeterminate` — both follow

@@ -1,0 +1,9 @@
+{
+  "// defect": "A plain declaration names an entrypoint the package does not have — a stale exemption waiting for something to hide under it.",
+  "point": 4,
+  "check": "presence",
+  "declare": {
+    "ep": "./ghost",
+    "text": "quotes"
+  }
+}

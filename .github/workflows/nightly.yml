@@ -69,6 +69,6 @@ jobs:
       # deliberate: the two heaviest gates (mutation, e2e) run in a second, SEPARATE step,
       # so their wall-clock and their wobble are readable per run straight off the job's
       # step timings — which is the number the plan's CI item exists to learn.
-      - run: npx nx run-many -t lint test vite:test build content typecheck check-package check-coverage check-bench check-zoneless check-typecheck check-styles check-texts check-tokens check-bridge check-parts check-aria check-icons check-bundle check-consumer check-browsers check-language check-reach check-support check-acr check-docs check-index
+      - run: npx nx run-many -t lint test vite:test build content typecheck check-package check-coverage check-bench check-zoneless check-typecheck check-styles check-texts check-tokens check-bridge check-parts check-harness check-aria check-icons check-bundle check-consumer check-browsers check-language check-reach check-support check-acr check-docs check-index
 
       - run: npx nx run-many -t mutation check-mutation e2e

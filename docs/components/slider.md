@@ -24,6 +24,7 @@ role, the value, both bounds and the whole keyboard without a line from us
 | **Bounds**      | `min` / `max` belong to the `FormUiControl` contract, so `[formField]` fills them from the schema's `min()` / `max()` validators — and they are the **native attributes** at the same time. Absent, they are `0`–`100` |
 | **Naming**      | `ariaLabel` / `ariaLabelledby` are **inputs and not attributes on the tag**: the role sits on the `<input>` inside, the host carries no role, and an ARIA name on a roleless element is ignored                        |
 | **Parts**       | `control`, `track`, `fill`, `mark`, `thumb`, `bubble`, `label`, `hint`, `error`                                                                                                                                        |
+| **Harness**     | `PctSliderHarness`                                                                                                                                                                                                     |
 | **DI contract** | `PCT_FIELD`; `fieldAppearance: 'bare'` — a frame around a slider looks foreign, the same call the switch made                                                                                                          |
 
 **What it does not write, and why.** No `role`, no `aria-valuenow` / `aria-valuemin` /

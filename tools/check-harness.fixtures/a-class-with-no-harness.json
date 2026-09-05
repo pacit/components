@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "every",
+  "why": "PctChip draws label and remove, and no harness reaches them — a consumer copies the selectors by hand again.",
+  "harnesses": { "PctChipHarness": null }
+}

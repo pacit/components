@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "parts",
+  "why": "PctButtonHarness offers an icon part the button never draws — part(\"icon\") throws in every consumer suite that trusts the list.",
+  "harnesses": { "PctButtonHarness": { "parts": ["icon", "label", "spinner"] } }
+}

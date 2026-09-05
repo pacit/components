@@ -1,0 +1,6 @@
+{
+  "point": 2,
+  "check": "host",
+  "why": "PctButtonHarness stands on pct-phantom, the selector of no class in the package — a test finds nothing and says the button is missing.",
+  "harnesses": { "PctButtonHarness": { "hostSelector": "pct-phantom" } }
+}

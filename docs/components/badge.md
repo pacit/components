@@ -30,6 +30,7 @@ palette with the border carrying the box.
 | **Outputs** | none — nothing happens to a word                                                                                                                                                                                         |
 | **Slots**   | the content — the word, and any glyph the consumer projects beside it (the gap is a token, not a slot)                                                                                                                   |
 | **Parts**   | none — the host is the box                                                                                                                                                                                               |
+| **Harness** | `PctBadgeHarness`                                                                                                                                                                                                        |
 | **Tokens**  | the `--pct-badge-*` prefix plus five entries in `contrast.policy.json`; the skin gained `on-danger`, the pair `semantic.light.json` promised back "with the first component painting a background with the error colour" |
 | **Strings** | **none.** The fourth component in the library to add nothing to `PCT_TEXTS` — the word is the consumer's                                                                                                                 |
 

@@ -39,7 +39,8 @@
     "grid/**/*.ts",
     "theme/**/*.ts",
     "field/**/*.ts",
-    "icon/**/*.ts"
+    "icon/**/*.ts",
+    "testing/**/*.ts"
   ],
   "exclude": ["**/*.spec.ts", "**/*.test.ts"]
 }

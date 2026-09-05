@@ -441,6 +441,38 @@ unit tests did **not** see it, because they queried a specific element
 
 ---
 
+### <a id="req-api-harness"></a>`req-api-harness` — A harness per component, on the parts contract
+
+**Promise.** `@pacit/components/testing` ships a harness for every component and directive a
+card names, built on the CDK's `ComponentHarness`: the host selector is the component's own,
+verbatim, a part is read by the name the card documents (`part('label')`, typed, so an editor
+completes it and a name the component does not draw is a compile error) and a state by its
+attribute (`state('size')` reads `data-pct-size`). A consumer's suite holds the library's
+promises with it after an upgrade — a renamed part fails a test **by name**, not through a
+selector copied out of the DOM. A harness is a declaration and nothing more; what makes the
+declaration true is the gate. For a fixture without the CDK, `part`, `allParts` and `query`
+from the same entrypoint do the query and throw naming what is there.
+
+**Gate:** `tools/check-harness.mjs` (target `check-harness` in the `components` project, in
+CI) — six points over the **built package**, read the way `check-parts` reads it: the
+entrypoint is exported and every harness is a `PctHarness` of the right shape; a
+`hostSelector` is verbatim the selector list of exactly one exported class; every class that
+draws a part has a harness; a harness names exactly the parts its class draws, in both
+directions; the union the declaration file offers a consumer's editor is that same list; and
+every card's **Harness** row names harnesses of its own entrypoint that exist, every harness
+standing on some card. Plus `libs/components/testing/src/harness.spec.ts` — the base class
+driven over a button, an accordion item whose host is its own part, and a select whose panel
+is drawn in an overlay outside the host
+**Control:** `tools/check-harness.fixtures/` — 17 prepared inputs, each rejected on its own
+point: the entrypoint gone, a harness off the base, a part named twice, a selector nobody
+answers to, one wider than the class, two harnesses for one class, a class the package lost,
+a class with no harness, a part the component does not draw, a part the harness forgot, the
+declaration file gone, a union narrower and one wider than the list, a card with no row, one
+naming nobody, one borrowing another entrypoint's harness, a harness on no card
+**Decision:** [0068 — a harness is a declaration over the parts contract](../decisions/0068-a-harness-is-a-declaration-over-the-parts-contract.md)
+
+---
+
 ### <a id="req-api-templates"></a>`req-api-templates` — Customisation through projection and templates
 
 **Promise.** Two mechanisms, and the line between them is whether the component renders the
