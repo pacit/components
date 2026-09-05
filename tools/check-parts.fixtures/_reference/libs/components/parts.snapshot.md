@@ -16,6 +16,7 @@ from the **built package** (`ɵcmp.consts` and `ɵdir.hostAttrs` after linking),
 from what the browser really gets.
 
 ```
+./widget PctMarker widget-base
 ./widget PctMarker widget-marker
 ./widget PctWidget label
 ./widget PctWidget value

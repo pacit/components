@@ -57,8 +57,8 @@ Snapshot, `node tools/check-docs.mjs`:
 
 | measure                                     | value |
 | ------------------------------------------- | ----: |
-| requirements                                |    93 |
-| ✅ enforced                                 |    73 |
+| requirements                                |    94 |
+| ✅ enforced                                 |    74 |
 | 🟡 partial (deliberately without a control) |    16 |
 | ⛔ gap                                      |     4 |
 
@@ -1559,7 +1559,7 @@ thousandth row` timed out with the list still showing row 44, and the forced-col
     filter field would make it three copies, and three is where "one file, compiled n times"
     stops reading as a rounding error · _notes:_ —
 
-- [ ] **4.5 — inheritance was taught to the two gates that fired, and to none of the rest**
+- [x] **4.5 — inheritance was taught to the two gates that fired, and to none of the rest**
   - a component's surface can now come from a base class, and two gates said so out loud:
     `check-aria` reported a combobox that "declares no `ariaLabel`", `check-texts` a class the
     package does not export. Both follow `extends` now
@@ -1577,7 +1577,19 @@ thousandth row` timed out with the list still showing row 44, and the forced-col
     proved by the repository and not by a fixture
   - binds at: **the second base class in this library** — at one, the two gates that fire are
     the measurement; at two, "which gates read a class body" has to be a list somebody keeps ·
-    _notes:_ —
+    _notes:_ **closed (2026-09-05), the list written and the third gate taught.** What a base
+    passes on is Angular's own list — `ɵɵInheritDefinitionFeature` copies inputs, outputs,
+    host attributes, host bindings, queries and features, and leaves the template, the styles
+    and `onPush` to the subclass's decorator — so the seven gates that read a class were
+    sorted by which half they read: `check-aria` and `check-texts` follow `extends` already;
+    `check-parts` did not and was right by accident — a base with a host part would have fired
+    point 2 on both sides, loudly — and follows it now, with the reference's `PctMarkerBase`
+    whose part the package puts on `PctMarker` and a `base-not-read` case at point 1 (25
+    inputs); `check-zoneless`, `check-styles` and `check-icons` read what a base cannot pass
+    on, and `check-harness` reads the compiler's declarations. The smaller sibling closed with
+    `speaking-attribute-on-a-base-host/`, the merge proved by the one kind of attribute the
+    reference cannot carry (32 inputs). The list is `req-quality-inheritance`, so a gate that
+    reads a class and is not on it is a named gap rather than a green
 
 - [ ] **4.6 — the mutation snapshot cannot say that a mutant errored**
   - the columns are `score · killed (of that, by the clock) · surviving · not covered ·

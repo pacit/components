@@ -1,0 +1,16 @@
+import { Directive } from '@angular/core';
+
+/**
+ * A base a directive takes part of its host block from — the shape `PctSelectBase` has in the
+ * library. The package data does NOT list it, because an internal base is not exported: the
+ * linker writes its part onto the SUBCLASS (`ɵɵInheritDefinitionFeature`), so `widget-base`
+ * stands on `PctMarker` in `package.json`, in the snapshot and on the marker's card. The
+ * reference passes only while the gate reads inheritance that way — merged into what extends
+ * it, and not demanded from the package under a name the package has not got.
+ */
+@Directive({
+  host: {
+    'data-pct-part': 'widget-base',
+  },
+})
+export abstract class PctMarkerBase {}

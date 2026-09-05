@@ -5,7 +5,8 @@
  * component this library leaves (decision 0013) and the one public API whose change gives
  * no red test: a rename moves the template and the sheet together.
  *
- *  1. DENOMINATOR: every decorator parsed, every template owned, every occurrence read,
+ *  1. DENOMINATOR: every decorator parsed, every base read, every template owned, every
+ *     occurrence read,
  *  2. SET: the parts read from the sources match those read from the BUILT package,
  *  3. STATICNESS: a part's name is nowhere bound by an expression,
  *  4. SURFACE: the **Parts** rows in `docs/components/` carry exactly the exposed names,
@@ -14,7 +15,11 @@
  *  7. README: the package README's entrypoint table matches the packed manifest.
  *
  * Two independent reads are the point: the source read catches a part that never reached
- * the package, the package read (JIT over `dist/`) one our scanner cannot see.
+ * the package, the package read (JIT over `dist/`) one our scanner cannot see. A part can
+ * also come from a BASE CLASS: Angular merges a decorated base's host attributes into the
+ * definition of every class that extends it (`ɵɵInheritDefinitionFeature`), so the package
+ * read finds the part on the subclass — and the source read follows `extends` to put it
+ * there too, the way `check-aria` and `check-texts` do (`lesson-100`, `req-quality-inheritance`).
  *
  * Usage: node tools/check-parts.mjs [--write [<fixture>]]  (--write: rewrite the snapshot)
  */
@@ -83,8 +88,10 @@ const sorted = (set) => [...set].sort();
  * components alone would pronounce on an inventory without them.
  */
 const DECORATOR =
-  /^@(Component|Directive)\(\{\r?\n([\s\S]*?)^\}\)\r?\n(?:export\s+)?(?:abstract\s+)?class\s+([A-Za-z_$][\w$]*)/gm;
+  /^@(Component|Directive)\(\{\r?\n([\s\S]*?)^\}\)\r?\n(?:export\s+)?(?:abstract\s+)?class\s+([A-Za-z_$][\w$]*)([^{]*)\{/gm;
 const DECORATOR_COUNTER = /^[ \t]*@(?:Component|Directive)\(/gm;
+/** `class X extends Y` — the base whose `host` block is the subclass's too. */
+const EXTENDS = /\bextends\s+([A-Za-z_$][\w$]*)/;
 
 /** `templateUrl: './x.html'` — one occurrence per decorator. */
 const TEMPLATE_URL = /templateUrl\s*:\s*(['"])([^'"]*)\1/;
@@ -142,13 +149,16 @@ const readSources = (root, files) => {
     const content = readFileSync(join(root, file), 'utf8');
     declarations += countOf(content, DECORATOR_COUNTER);
 
-    for (const [, kind, body, className] of content.matchAll(DECORATOR)) {
+    for (const [, kind, body, className, heritage] of content.matchAll(
+      DECORATOR,
+    )) {
       const url = TEMPLATE_URL.exec(body);
       const inline = TEMPLATE_INLINE.exec(body);
       classes.push({
         file,
         className,
         kind,
+        base: EXTENDS.exec(heritage ?? '')?.[1] ?? null,
         entrypoint: entrypointFromPath(file),
         template: url
           ? relative(root, resolve(join(root, dirname(file)), url[2]))
@@ -302,9 +312,51 @@ const checkParts = (input) => {
         `not quietly.`,
     );
 
+  // Inheritance, resolved before the two reads are compared. What a base's `host` block
+  // declares is merged INTO the classes that extend it, because that is where the linker
+  // puts it (`ɵɵInheritDefinitionFeature` merges `hostAttrs` down the chain); a base no
+  // entrypoint exports stops being a class of its own, because that is what the package
+  // does with it. A template is not merged: `templateUrl` is the subclass's own, and a base
+  // cannot pass one on. A base the scan cannot see is a denominator fault — the package
+  // read would then find its parts on the subclass and the source read never would.
+  const declared = new Map(classes.map((k) => [k.className, k]));
+  const exported = new Set(pkg.map((p) => p.className));
+  const extended = new Set(
+    classes.map((k) => k.base).filter((base) => base !== null),
+  );
+  const unresolved = classes.filter(
+    (k) => k.base !== null && !declared.has(k.base),
+  );
+  if (unresolved.length)
+    throw new PartsError(
+      'denominator',
+      `${unresolved.length} classes extend a base the scan did not read:\n` +
+        list(
+          unresolved.map(
+            (k) => `${k.file}: ${k.className} extends \`${k.base}\``,
+          ),
+        ) +
+        `\n    Whatever that base writes into a \`host\` block is part of this class in ` +
+        `the package, and point 2 would compare the half declared here against the whole ` +
+        `of what ships (lesson-100).`,
+    );
+  const whole = (k, seen = new Set()) => {
+    if (k.base === null || seen.has(k.className)) return k;
+    seen.add(k.className);
+    const base = whole(declared.get(k.base), seen);
+    return {
+      ...k,
+      parts: new Set([...base.parts, ...k.parts]),
+      dynamic: base.dynamic + k.dynamic,
+    };
+  };
+  const resolved = classes
+    .map((k) => whole(k))
+    .filter((k) => !(extended.has(k.className) && !exported.has(k.className)));
+
   // Parts from the sources: the `host` block plus the template named by `templateUrl`.
   const fromSources = new Map(); // className -> { entrypoint, file, parts, dynamic }
-  for (const k of classes) {
+  for (const k of resolved) {
     const fromTemplate = k.template ? scans.get(k.template) : null;
     const parts = new Set([...k.parts, ...(fromTemplate?.parts ?? [])]);
     if (!parts.size && !k.dynamic && !fromTemplate?.dynamic) continue;

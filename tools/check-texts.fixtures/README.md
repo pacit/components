@@ -42,7 +42,7 @@ gate's fixture may not be another's defect.
 
 The reading from the built package arrives as data (`package.json`) rather than from a real
 Angular build — the same choice as in `check-parts` and `check-zoneless` and for the same
-reason: a build for each of the thirty-one cases would cost minutes, and the gate runs on
+reason: a build for each of the thirty-two cases would cost minutes, and the gate runs on
 every commit. The price is outright: the code reading `ɵcmp.consts` and `ɵdir.hostAttrs` is
 not exercised here once. It is exercised instead by **every** run against the real
 repository.

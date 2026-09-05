@@ -38,6 +38,51 @@ rejected
 
 ---
 
+### <a id="req-quality-inheritance"></a>`req-quality-inheritance` — A gate that reads a class reads the whole of it
+
+**Promise.** A component's surface can come from a base class: Angular merges a decorated
+base's inputs, outputs, host attributes, host bindings, queries and features into the
+definition of every class that extends it, and leaves the template, the styles and the
+change-detection flag to the subclass's own decorator (`ɵɵInheritDefinitionFeature` in
+`@angular/core`). A gate that reads one class body therefore reads half a component, and the
+half it reads is green whatever the other half says
+([`lesson-100`](../lessons.md#lesson-100)). So every gate that reads a decorator or a class
+body is listed here, with what it reads and why the read is whole — it follows `extends` and
+merges what a base declares, or what it reads is one of the things a base cannot pass on, or
+it reads the built package, where the merge has already happened. A gate that reads a class
+and is not on this list is the gap this requirement exists to name.
+
+**Gate:** the list, one entry per gate that reads a class:
+`tools/check-aria.mjs` (target `check-aria`) — inputs and `host` blocks, merged down
+`extends`, and a base the scan cannot see is a denominator fault;
+`tools/check-texts.mjs` (target `check-texts`) — `host` attributes and the literals in their
+bindings, merged the same way, and point 4 reads signal factories per FILE rather than per
+class, so a base's default is read where it stands;
+`tools/check-parts.mjs` (target `check-parts`) — `host` parts, merged the same way since plan
+4.5, and the template through `templateUrl`, which a base cannot pass on;
+`tools/check-zoneless.mjs` (target `check-zoneless`) — `changeDetection` and `standalone` from
+every `@Component` decorator, an abstract base's included, and `onPush` from the package,
+where nothing is inherited;
+`tools/check-styles.mjs` (target `check-styles`) — `styleUrl` per `@Component`; styles are the
+subclass's own, so each decorator is the whole truth;
+`tools/check-icons.mjs` (target `check-icons`) — templates and `icon.ts`; a template is not
+inherited;
+`tools/check-harness.mjs` (target `check-harness`) — the harness declarations the compiler
+emits (`declare class X extends PctHarness<…>`), where the one `extends` is the harness base
+and the part list is the declaration's own
+**Control:** `tools/check-aria.fixtures/base-not-read/`,
+`tools/check-texts.fixtures/base-without-declaration/` and
+`tools/check-texts.fixtures/speaking-attribute-on-a-base-host/` — the merge proved by a
+speaking attribute, the one kind the reference input cannot carry without being a violation
+itself; `tools/check-parts.fixtures/base-not-read/`, with the reference's `PctMarkerBase`
+whose part the package puts on `PctMarker` and the source read has to put there too. The
+four gates that read what a base cannot pass on have no fixture, deliberately: the thing that
+would be inherited is not, by the feature named above, and a fixture of it would measure
+Angular rather than the gate
+**Lessons:** [`lesson-100`](../lessons.md#lesson-100)
+
+---
+
 ### <a id="req-quality-registry"></a>`req-quality-registry` — The promise → gate → control registry
 
 **Promise.** Every requirement points **machine-readably** at what enforces it and at what

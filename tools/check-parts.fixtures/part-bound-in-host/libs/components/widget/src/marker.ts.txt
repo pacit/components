@@ -1,4 +1,5 @@
 import { Directive } from '@angular/core';
+import { PctMarkerBase } from './base';
 
 @Directive({
   selector: '[pctMarker]',
@@ -8,4 +9,4 @@ import { Directive } from '@angular/core';
     '[attr.data-pct-part]': 'part()',
   },
 })
-export class PctMarker {}
+export class PctMarker extends PctMarkerBase {}

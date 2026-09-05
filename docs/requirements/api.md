@@ -433,7 +433,7 @@ compares `libs/components/parts.snapshot.md` with the current inventory, and poi
 the denominator: every decorator and every occurrence of the attribute in a template must be
 recognised, and the list of parts is built **twice** — from the sources and from the built
 package (`ɵcmp.consts`, `ɵdir.hostAttrs` after linking)
-**Control:** `tools/check-parts.fixtures/` — 22 inputs, each rejected on its own
+**Control:** `tools/check-parts.fixtures/` — 25 inputs, each rejected on its own
 point; plus runs against the repository: renaming a part fires point 2 with a stale `dist`,
 point 4 after a rebuild and point 5 once the card is reconciled; `[attr.data-pct-part]` in
 a template fires point 3 from both readings at once; a part removed from a card fires point 4;
@@ -629,7 +629,7 @@ read by `parseTemplate` from `@angular/compiler`, and the list of static classes
 attributes is built **twice** — from the sources and from the built package. Plus
 `libs/components/select/src/select.spec.ts` — a partial override leaves the rest at the
 defaults, and a runtime language change reaches the strings
-**Control:** `tools/check-texts.fixtures/` — 29 doctored inputs, each rejected on its own
+**Control:** `tools/check-texts.fixtures/` — 32 doctored inputs, each rejected on its own
 **rule** (not merely its point); plus nine runs against the repository (a literal in
 a template, an `aria-label` with a string before and after a rebuild, a text read inside an
 input's default value, `console.warn` without `isDevMode()`, a field with no default, a dead

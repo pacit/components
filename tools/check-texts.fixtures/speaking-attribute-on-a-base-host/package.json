@@ -1,0 +1,61 @@
+{
+  "$comment": "The reading from the BUILT package given as data \u2014 see the comment beside `buildFixture` in tools/check-texts.mjs. Building an Angular package for every case would cost minutes per run, and the gate runs on every commit. `attributes` are the static name/value pairs exactly as the linker writes them into `\u0275cmp.consts` and `\u0275dir.hostAttrs`.",
+  "classes": [
+    {
+      "entrypoint": "./widget",
+      "className": "PctWidget",
+      "attributes": [
+        [
+          "data-pct-part",
+          "label"
+        ],
+        [
+          "aria-hidden",
+          "true"
+        ],
+        [
+          "data-pct-part",
+          "toggle"
+        ],
+        [
+          "type",
+          "button"
+        ],
+        [
+          "data-pct-part",
+          "list"
+        ],
+        [
+          "data-pct-part",
+          "item"
+        ],
+        [
+          "data-pct-part",
+          "empty"
+        ],
+        [
+          "role",
+          "group"
+        ]
+      ]
+    },
+    {
+      "entrypoint": "./widget",
+      "className": "PctMarker",
+      "attributes": [
+        [
+          "role",
+          "note"
+        ],
+        [
+          "aria-label",
+          "A note"
+        ],
+        [
+          "data-pct-part",
+          "widget-marker"
+        ]
+      ]
+    }
+  ]
+}

@@ -18,7 +18,8 @@
       "entrypoint": "./widget",
       "className": "PctMarker",
       "parts": [
-        "widget-marker"
+        "widget-marker",
+        "widget-base"
       ],
       "dynamic": 0
     }

@@ -1,0 +1,16 @@
+import { Directive, input } from '@angular/core';
+
+/**
+ * The reference base with one thing added: a SPEAKING attribute in its host block. Nothing in
+ * this file is a violation by itself — the string reaches the user only through the classes
+ * that extend it, which is where Angular puts it and where point 3 has to find it.
+ */
+@Directive({
+  host: {
+    role: 'note',
+    'aria-label': 'A note',
+  },
+})
+export abstract class PctMarkerBase {
+  readonly size = input<'sm' | 'md' | 'lg'>('md');
+}

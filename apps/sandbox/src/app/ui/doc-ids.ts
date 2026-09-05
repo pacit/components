@@ -68,6 +68,7 @@ export type PctReqId =
   | 'req-quality-e2e'
   | 'req-quality-hydration'
   | 'req-quality-index'
+  | 'req-quality-inheritance'
   | 'req-quality-negative-control'
   | 'req-quality-package'
   | 'req-quality-prefix'

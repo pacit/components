@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "template",
+  "rule": "speaking-attribute",
+  "description": "A speaking attribute written into a BASE's host block. The reference exercises the merge through `role`, which is a keyword and not text, so this is the one arrangement in which the merge decides whether point 3 fires at all: without it the string would stand on a class the package has not got and be compared against nothing. The entry in `package.json` is here so that point 2 agrees and the defect is the declared one alone."
+}

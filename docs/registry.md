@@ -9,10 +9,10 @@ There is no "built, just unverified" state — see
 
 | state       | means                                                         |  count |
 | ----------- | ------------------------------------------------------------- | -----: |
-| ✅ enforced | gate and control exist and run in CI                          |     73 |
+| ✅ enforced | gate and control exist and run in CI                          |     74 |
 | 🟡 partial  | the gate is there, the negative control is not (deliberately) |     16 |
 | ⛔ gap      | gate or control missing, with a recorded deadline             |      4 |
-| **total**   |                                                               | **93** |
+| **total**   |                                                               | **94** |
 
 ## Gaps by urgency
 
@@ -63,13 +63,13 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-api-platform`](requirements/api.md#req-api-platform)         | ✅ enforced | `apps/sandbox-e2e/src/radio.spec.ts` — keyboard navigation; `apps/san… | the keyboard half has none — deliberately: a navigation test has no m… |
 | [`req-api-number`](requirements/api.md#req-api-number)             | ⛔ gap      | `libs/components/field/src/number.spec.ts`, `apps/sandbox-e2e/src/num… | none — gap: property tests for the parser (`parse(format(n)) === n` f… |
 | [`req-api-generic`](requirements/api.md#req-api-generic)           | ✅ enforced | `libs/components/select/src/select.spec.ts` — the generic contract, p… | the probe from `lesson-37` — five deliberately contradictory bindings… |
-| [`req-api-parts`](requirements/api.md#req-api-parts)               | ✅ enforced | `tools/check-parts.mjs` (target `check-parts` in the root project, in… | `tools/check-parts.fixtures/` — 22 inputs, each rejected on its own p… |
+| [`req-api-parts`](requirements/api.md#req-api-parts)               | ✅ enforced | `tools/check-parts.mjs` (target `check-parts` in the root project, in… | `tools/check-parts.fixtures/` — 25 inputs, each rejected on its own p… |
 | [`req-api-parts-unique`](requirements/api.md#req-api-parts-unique) | ✅ enforced | `tools/check-parts.mjs` point 6 — a component whose parts share a pre… | `tools/check-parts.fixtures/part-outside-namespace`, and a run agains… |
 | [`req-api-harness`](requirements/api.md#req-api-harness)           | ✅ enforced | `tools/check-harness.mjs` (target `check-harness` in the `components`… | `tools/check-harness.fixtures/` — 17 prepared inputs, each rejected o… |
 | [`req-api-templates`](requirements/api.md#req-api-templates)       | ✅ enforced | `libs/components/core/src/core.spec.ts` — `pctReportOrphanSlot` under… | two recorded runs that fail on different cases. `pctReportOrphanSlot`… |
 | [`req-api-icons`](requirements/api.md#req-api-icons)               | ✅ enforced | `tools/check-icons.mjs` (target `check-icons`) — six points over the … | `tools/check-icons.fixtures/` — six prepared inputs, each rejected on… |
 | [`req-api-icons-custom`](requirements/api.md#req-api-icons-custom) | 🟡 partial  | `libs/components/check-package.mjs` — the absence of icon files in th… | none — deliberately: the violation here is **adding** something, not … |
-| [`req-api-texts`](requirements/api.md#req-api-texts)               | ✅ enforced | `tools/check-texts.mjs` (target `check-texts`) — six points: a string… | `tools/check-texts.fixtures/` — 29 doctored inputs, each rejected on … |
+| [`req-api-texts`](requirements/api.md#req-api-texts)               | ✅ enforced | `tools/check-texts.mjs` (target `check-texts`) — six points: a string… | `tools/check-texts.fixtures/` — 32 doctored inputs, each rejected on … |
 | [`req-api-catalogue`](requirements/api.md#req-api-catalogue)       | ✅ enforced | `apps/docs/tools/build-content.mjs` (target `content` of the `docs` p… | the content pass's tripwires fired twice while 2.7.4 was writing the … |
 | [`req-api-overlay`](requirements/api.md#req-api-overlay)           | ✅ enforced | `apps/sandbox-e2e/src/select.spec.ts` — measuring the panel's width a… | the measurement from `lesson-35` (a 301 px field ⇒ a 275 px panel, of… |
 | [`req-api-size`](requirements/api.md#req-api-size)                 | ✅ enforced | `apps/sandbox-e2e/src/size.spec.ts` — measured in the browser          | the test checks that the heights are equal *_and what that height is_… |
@@ -102,6 +102,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | requirement                                                                            | state       | gate                                                                   | control                                                                |
 | -------------------------------------------------------------------------------------- | ----------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | [`req-quality-negative-control`](requirements/quality.md#req-quality-negative-control) | ✅ enforced | `tools/check-docs.mjs` — the **Control** field is required on every r… | `tools/check-docs.fixtures/` — a requirement with a gate but no contr… |
+| [`req-quality-inheritance`](requirements/quality.md#req-quality-inheritance)           | ✅ enforced | the list, one entry per gate that reads a class: `tools/check-aria.mj… | `tools/check-aria.fixtures/base-not-read/`, `tools/check-texts.fixtur… |
 | [`req-quality-registry`](requirements/quality.md#req-quality-registry)                 | ✅ enforced | `tools/check-docs.mjs` (target `check-docs`, in CI) — the six checks … | `tools/check-docs.fixtures/` — a set of deliberately broken requireme… |
 | [`req-quality-index`](requirements/quality.md#req-quality-index)                       | ✅ enforced | `tools/check-index.mjs` (target `check-index` in the root project, in… | `tools/check-index.fixtures/` — 23 prepared inputs, each rejected on … |
 | [`req-quality-typecheck`](requirements/quality.md#req-quality-typecheck)               | ✅ enforced | `tools/check-typecheck.mjs` (target `check-typecheck`, in CI) — four … | `tools/check-typecheck.fixtures/` — eleven doctored inputs, each reje… |
@@ -258,7 +259,7 @@ Which lesson feeds which requirement. Generated from the **Lessons** fields.
 | [`lesson-97`](lessons.md#lesson-97)   | `req-api-generic`                                                                                                                                                 |
 | [`lesson-98`](lessons.md#lesson-98)   | `req-api-generic`                                                                                                                                                 |
 | [`lesson-99`](lessons.md#lesson-99)   | `req-api-generic`                                                                                                                                                 |
-| [`lesson-100`](lessons.md#lesson-100) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-100`](lessons.md#lesson-100) | `req-quality-inheritance`                                                                                                                                         |
 | [`lesson-101`](lessons.md#lesson-101) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-102`](lessons.md#lesson-102) | `req-a11y-built-in`                                                                                                                                               |
 | [`lesson-103`](lessons.md#lesson-103) | — _(not cited)_                                                                                                                                                   |
