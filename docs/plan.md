@@ -1035,8 +1035,26 @@ routerLink>` CTAs until `a[pctButton]` exists (**4.33**), `select.scss` 7.69 kB
         `text.ts: touch (output)`. The library's TypeScript moved by comments only, so the
         mutation snapshot is stale by text and not by mutants — re-measured on the next run,
         not on this one (the maintainer's call, with more changes still coming)._
-  - [ ] **2.7.5 — the mono face** — JetBrains Mono vendored beside Inter (OFL, the licence
-        next to it), first in the code stack; the baselines that hold code regenerated
+  - [x] **2.7.5 — the mono face** — JetBrains Mono vendored beside Inter (OFL, the licence
+        next to it), first in the code stack; the baselines that hold code regenerated.
+        _Closed 2026-09-05. Half of it had been written before the file existed: the
+        component page named `'JetBrains Mono'` first in its stack since 2.7.3 and every
+        visitor fell through to the system's monospace, while the three other code seats
+        (the claim's inline code, the fenced blocks, the trust page's gate names) named
+        no face at all. Vendored the way Inter is — `public/JetBrainsMono-latin.woff2`
+        (40 kB, the variable weight, the Latin cut of a site that is English by law), the
+        OFL beside it, `font-display: block` and a preload like Inter's; the source is
+        `@fontsource-variable/jetbrains-mono` 5.3.0, the Google Fonts build of JetBrains'
+        own release. A second cut (`latin-ext`, 15 kB, split by `unicode-range`) was in
+        the first version and went: the language gate reads the hex of a range as words,
+        and the honest answer to that was not a dictionary entry but the file the site
+        does not need. The stack is declared once, as `--docs-font-mono` on the
+        root, and the four seats read it — a fourth hand copy was the state lesson-21
+        exists to prevent. Baselines: the two component-button pictures regenerated (7 270
+        and 7 470 pixels of glyphs, 1 % of the frame); the landing's did not move, because
+        its code sits below the first viewport. Deciding run: docs-e2e **346 of 346** in
+        three engines, 13.0 min; `nx build docs` copies the three files into dist and the
+        component page's sheet fell from 11.63 to 11.46 kB on the shorter stack._
 
 ## 3. Publication
 

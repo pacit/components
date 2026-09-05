@@ -225,9 +225,10 @@ as satire:
 - **axe across every route in three engines**, the sandbox's a11y gate transplanted.
 - **Visual baselines** for the landing and one component page, light and dark.
 - **Performance read before written:** fonts self-hosted (Inter var, the face the e2e
-  suite already pinned), no runtime highlighter, no `@angular/animations` (the package
-  gate's ban extends by construction — motion is CSS), and Lighthouse numbers **measured
-  and recorded in the plan before any number is published on the page**.
+  suite already pinned, and JetBrains Mono for code since 2.7.5), no runtime highlighter,
+  no `@angular/animations` (the package gate's ban extends by construction — motion is
+  CSS), and Lighthouse numbers **measured and recorded in the plan before any number is
+  published on the page**.
 - SEO plumbing: titles, descriptions, Open Graph, `sitemap.xml`, `robots.txt`.
 
 ## Deploy — decided later, built for now

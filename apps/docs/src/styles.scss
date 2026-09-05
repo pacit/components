@@ -10,6 +10,22 @@
   font-display: block;
 }
 
+/* The code face is vendored the same way (2.7.5): JetBrains Mono, variable in weight, in
+   the one cut a site that is English by law reaches (req-project-language) —
+   public/JetBrainsMono-latin.woff2 under the SIL OFL, the licence next to it as
+   public/JetBrainsMono-LICENSE.txt. No `unicode-range`: a glyph the cut does not hold
+   falls through to the next face of the stack on its own, one glyph at a time. The stack is
+   declared ONCE, as `--docs-font-mono` on the root, and every code seat reads it — the
+   component page had named the face before the file existed, and a stack written four
+   times is the copy lesson-21 warns about. */
+@font-face {
+  font-family: 'JetBrains Mono';
+  src: url('/JetBrainsMono-latin.woff2') format('woff2');
+  font-weight: 100 800;
+  font-style: normal;
+  font-display: block;
+}
+
 /* The topbar is sticky, so a followed anchor must land BELOW it — without this, every
    /trust#lesson-N jump hides its own heading under the bar (56px of chrome plus a
    breath). The browser's own #fragment jump reads the padding. The router's anchor
@@ -20,6 +36,8 @@
    same one through `ViewportScroller.setOffset`: one offset, declared once, read twice. */
 html {
   --docs-anchor-offset: 88px;
+  --docs-font-mono:
+    'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
   scroll-padding-block-start: var(--docs-anchor-offset);
 }
 
@@ -97,7 +115,7 @@ body {
   background: var(--pct-surface-100);
   border-radius: 4px;
   padding: 1px 5px;
-  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-family: var(--docs-font-mono);
   font-size: 0.86em;
 }
 
@@ -155,7 +173,7 @@ body {
   line-height: 1.6;
 
   code {
-    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-family: var(--docs-font-mono);
   }
 }
 

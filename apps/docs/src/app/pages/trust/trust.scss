@@ -105,6 +105,6 @@ h2 {
 .log__id {
   flex: none;
   color: var(--pct-text-muted);
-  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-family: var(--docs-font-mono);
   font-size: var(--pct-font-size-sm);
 }
