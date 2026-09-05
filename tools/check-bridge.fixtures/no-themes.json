@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "sets",
+  "why": "`$themes.json` is gone — light and dark become two files with the same names",
+  "drop": ["$themes.json"]
+}

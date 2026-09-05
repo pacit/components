@@ -27,6 +27,47 @@ tools (Figma / Tokens Studio).
 
 ---
 
+### <a id="req-token-bridge"></a>`req-token-bridge` — The sources round-trip through Tokens Studio
+
+**Promise.** `libs/tokens/bridge.mjs` writes the DTCG sources as the multi-file layout
+Tokens Studio for Figma syncs to — one file per set in the plugin's DTCG dialect,
+`$themes.json` (light and dark on a scheme axis, full and reduced on a motion axis) and
+`$metadata.json` (the order the build resolves in) — and reads the plugin's export back,
+writing a changed `$value` or `$description` into the source token it belongs to and
+**nothing else**. A set, a name, a type and a modifier are decisions made here: the import
+refuses them ([0020](../decisions/0020-the-palette-carries-no-spares.md) — the exported
+palette is the ramp as it is, holes and all). Shadows and easings are CSS in the sources and
+objects in the plugin; the bridge translates on the way out and back, and a value that comes
+back unchanged leaves its source text exactly as it stood, so `import(export(src)) === src`
+byte for byte — `$comment` keys included, which is why the bridge parses the files with an
+order-keeping parser of its own rather than `JSON.parse` (an object puts `200` before a
+`$comment` that stood between `100` and `200`).
+
+**Gate:** `tools/check-bridge.mjs` (target `check-bridge` in the root project, in CI) — six
+points: every set exported and ordered once, with themes; every token's type and value shape
+in the plugin's dialect; every reference resolving inside every theme that enables its set;
+every set enabled by some theme, theme names unique per group; the round trip the identity;
+and the three refusals measured live on a doctored export. `nx run tokens:bridge` writes the
+folder for a designer (the `tokens-studio` directory of the library's build output, ignored
+by git like the rest of it); the gate exports in memory and depends on no artefact
+**Control:** `tools/check-bridge.fixtures/` — 16 prepared inputs, each rejected on its own
+point: among them `a-shadow-as-a-string.json` (the CSS string the sources write, which the
+plugin shows blank), `a-reference-outside-the-theme.json` (the dark theme stops enabling the
+light semantics, and a component token dangles in Figma while CSS still resolves it),
+`a-value-changed-in-figma.json` (an export that is no longer the mirror — the change comes
+in through the import, where the build and `check-tokens` judge it) and
+`a-modifier-from-figma.json`. Plus the run that shaped the parser: the first import through
+`JSON.parse` moved `primitive.json`'s ramp comment — a round trip "with no changes" that
+rewrote a file
+**Decision:** [0020 — the palette carries no spares](../decisions/0020-the-palette-carries-no-spares.md)
+
+> One token is a length the plugin stores and Figma cannot hold as a variable:
+> `pct.container.padding-x` is a `clamp()`. It rides through the export as the string it is —
+> the dialect point admits a CSS function as a length — and a designer sees the expression
+> rather than a number. That is the honest reading of a fluid value, not a bridge defect.
+
+---
+
 ### <a id="req-token-artifacts"></a>`req-token-artifacts` — The build generates artifacts from the source
 
 **Promise.** Out of the DTCG source come **two** artifacts: CSS with custom properties (the

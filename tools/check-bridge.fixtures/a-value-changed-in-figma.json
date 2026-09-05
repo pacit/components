@@ -1,0 +1,8 @@
+{
+  "point": 5,
+  "check": "round-trip",
+  "why": "a designer moved `pct.primary` to `{pct.blue.500}` in the tool and the export on disk carries it — a value comes in through the import, not by being the mirror",
+  "sets": {
+    "semantic.light.json": { "pct.primary": { "$value": "{pct.blue.500}" } }
+  }
+}

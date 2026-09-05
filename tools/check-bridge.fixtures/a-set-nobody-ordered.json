@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "sets",
+  "why": "`$metadata.json` no longer orders the button set",
+  "metadata": { "drop": ["component.button"] }
+}

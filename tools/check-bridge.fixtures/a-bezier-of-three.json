@@ -1,0 +1,10 @@
+{
+  "point": 2,
+  "check": "dialect",
+  "why": "the easing comes out as three numbers, not four",
+  "sets": {
+    "primitive.json": {
+      "pct.motion.transition.easing": { "$value": [0.25, 0.1, 0.25] }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "point": 2,
+  "check": "dialect",
+  "why": "the button background comes out as `spacing`, a legacy name the DTCG mode does not read",
+  "sets": {
+    "component.button.json": { "pct.button.bg": { "$type": "spacing" } }
+  }
+}

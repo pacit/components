@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "references",
+  "why": "the dark theme stops enabling the primitives, and every semantic token refers to a ramp step no set the theme enables defines — CSS still resolves it, Figma cannot",
+  "themes": { "dark": { "selectedTokenSets": { "primitive": "disabled" } } }
+}

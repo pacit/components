@@ -1,0 +1,6 @@
+{
+  "point": 6,
+  "check": "refusal",
+  "why": "`pct.primary` comes back as a dimension",
+  "sets": { "semantic.light.json": { "pct.primary": { "$type": "dimension" } } }
+}

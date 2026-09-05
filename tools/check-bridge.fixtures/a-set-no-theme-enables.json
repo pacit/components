@@ -1,0 +1,8 @@
+{
+  "point": 4,
+  "check": "themes",
+  "why": "the reduced-motion theme disables its own set, and no theme enables `motion.reduced` any more",
+  "themes": {
+    "reduced": { "selectedTokenSets": { "motion.reduced": "disabled" } }
+  }
+}

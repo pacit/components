@@ -1,0 +1,10 @@
+{
+  "point": 2,
+  "check": "dialect",
+  "why": "the panel shadow comes out as the CSS string the sources write, not the object the plugin reads",
+  "sets": {
+    "semantic.light.json": {
+      "pct.shadow-panel": { "$value": "0 8px 24px rgba(15, 23, 42, 0.14)" }
+    }
+  }
+}

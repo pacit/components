@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "sets",
+  "why": "the button set is gone from the export — a set left out reads as no tokens there",
+  "drop": ["component.button.json"]
+}

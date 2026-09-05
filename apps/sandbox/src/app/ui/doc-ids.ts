@@ -78,6 +78,7 @@ export type PctReqId =
   | 'req-release-semver'
   | 'req-release-support'
   | 'req-token-artifacts'
+  | 'req-token-bridge'
   | 'req-token-closure'
   | 'req-token-contrast'
   | 'req-token-css'

@@ -1,0 +1,6 @@
+{
+  "point": 6,
+  "check": "refusal",
+  "why": "the button background is gone from what comes back — a component token, which nothing else refers to, so the loss reaches the import rather than point 3",
+  "sets": { "component.button.json": { "pct.button.bg": null } }
+}

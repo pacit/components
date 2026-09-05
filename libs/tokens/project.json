@@ -14,6 +14,17 @@
         "command": "node build.mjs",
         "cwd": "libs/tokens"
       }
+    },
+    "bridge": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": ["{projectRoot}/src/**/*.json", "{projectRoot}/bridge.mjs"],
+      "outputs": ["{projectRoot}/dist/tokens-studio"],
+      "options": {
+        "command": "node bridge.mjs export",
+        "cwd": "libs/tokens"
+      }
     }
-  }
+  },
+  "// bridge": "The Tokens Studio export (plan 2.4, req-token-bridge): one file per set in the plugin's DTCG dialect, plus $themes.json and $metadata.json, under dist/tokens-studio — the folder a designer syncs the plugin to. The reverse direction is `node libs/tokens/bridge.mjs import <dir>`, run by hand on what the plugin wrote back; `check-bridge` (root project) holds the round trip and the dialect, so nothing here depends on this target having run."
 }

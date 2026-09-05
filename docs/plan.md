@@ -57,8 +57,8 @@ Snapshot, `node tools/check-docs.mjs`:
 
 | measure                                     | value |
 | ------------------------------------------- | ----: |
-| requirements                                |    88 |
-| ✅ enforced                                 |    68 |
+| requirements                                |    89 |
+| ✅ enforced                                 |    69 |
 | 🟡 partial (deliberately without a control) |    16 |
 | ⛔ gap                                      |     4 |
 
@@ -919,8 +919,29 @@ routerLink>` CTAs until `a[pctButton]` exists (**4.33**), `select.scss` 7.69 kB
     with an address (4.38), not a number to hide. **What this is not**: a browser number.
     jsdom lays nothing out, so the clock is the library's own work; what an engine adds
     scales with the first two counts, which is why those are the ones held · cost: ~half a day
-- [ ] **2.4 — DTCG ↔ Figma / Tokens Studio bridge** — the source of truth is already DTCG, an
+- [x] **2.4 — DTCG ↔ Figma / Tokens Studio bridge** — the source of truth is already DTCG, an
       unused advantage
+  - _notes (2026-09-05):_ **the bridge and its gate.** `libs/tokens/bridge.mjs` writes the
+    sources as the multi-file layout Tokens Studio syncs to (`nx run tokens:bridge` →
+    `dist/tokens-studio/`: 32 sets in the plugin's DTCG dialect, `$themes.json` with light
+    and dark on a scheme axis and full and reduced on a motion axis, `$metadata.json` in the
+    build's resolution order) and reads the plugin's export back (`bridge.mjs import <dir>`),
+    writing a changed value or description into the token it belongs to and nothing else.
+    **The law is 0020's**: a set, a name, a type and a modifier are decisions made here, and
+    the import refuses them in four sentences. Shadows and easings are CSS in the sources and
+    objects in the plugin — translated both ways, and a value that comes back unchanged leaves
+    its text exactly as it stood, so the round trip is the identity byte for byte.
+    `tools/check-bridge.mjs` (`check-bridge`, in CI) holds six points — sets, dialect,
+    references per theme, themes, the round trip, the three refusals measured live on a
+    doctored export — and sixteen prepared inputs prove them; `req-token-bridge` puts it in
+    the registry (89 promises, 69 enforced). **Two things the run taught**: `JSON.parse`
+    puts `200` before a `$comment` that stood between `100` and `200` of a ramp, so the
+    first "no-change" import rewrote `primitive.json` and the bridge got an order-keeping
+    parser of its own; and two cases had to be aimed twice (the README says where). **Not
+    done, and named**: nothing here talks to Figma's REST variables API — the plugin is the
+    road, the folder is the interface; and the typed token names (`PctCssVar`) still leave
+    the repository only through the site's inventory, which the 2.1 note already records ·
+    cost: ~half a day
 - [ ] **2.5 — a surface for AI agents**: `llms.txt`, a machine-readable component catalogue from
       the same source as the docs, canonical examples
   - built **with** 2.1, not after it: the catalogue falls out of the same generators the site

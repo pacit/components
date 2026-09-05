@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "themes",
+  "why": "the dark theme is renamed `light` — two themes of one name in one group",
+  "themes": { "dark": { "name": "light" } }
+}

@@ -1,0 +1,10 @@
+{
+  "point": 2,
+  "check": "dialect",
+  "why": "a dimension of `8` — a number with no unit is a length the plugin cannot place",
+  "sets": {
+    "component.button.json": {
+      "pct.button.radius": { "$type": "dimension", "$value": "8" }
+    }
+  }
+}

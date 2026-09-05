@@ -1,0 +1,10 @@
+{
+  "point": 6,
+  "check": "refusal",
+  "why": "a `pct.primary-soft` the sources do not have comes back from the tool",
+  "sets": {
+    "semantic.light.json": {
+      "pct.primary-soft": { "$type": "color", "$value": "{pct.blue.100}" }
+    }
+  }
+}

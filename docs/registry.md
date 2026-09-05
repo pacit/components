@@ -9,10 +9,10 @@ There is no "built, just unverified" state — see
 
 | state       | means                                                         |  count |
 | ----------- | ------------------------------------------------------------- | -----: |
-| ✅ enforced | gate and control exist and run in CI                          |     68 |
+| ✅ enforced | gate and control exist and run in CI                          |     69 |
 | 🟡 partial  | the gate is there, the negative control is not (deliberately) |     16 |
 | ⛔ gap      | gate or control missing, with a recorded deadline             |      4 |
-| **total**   |                                                               | **88** |
+| **total**   |                                                               | **89** |
 
 ## Gaps by urgency
 
@@ -129,6 +129,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | requirement                                                               | state       | gate                                                                   | control                                                                |
 | ------------------------------------------------------------------------- | ----------- | ---------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | [`req-token-dtcg`](requirements/tokens.md#req-token-dtcg)                 | 🟡 partial  | `libs/tokens/build.mjs` — the build will not start on a malformed sou… | none — deliberately: a parse error is immediate and loud               |
+| [`req-token-bridge`](requirements/tokens.md#req-token-bridge)             | ✅ enforced | `tools/check-bridge.mjs` (target `check-bridge` in the root project, … | `tools/check-bridge.fixtures/` — 16 prepared inputs, each rejected on… |
 | [`req-token-artifacts`](requirements/tokens.md#req-token-artifacts)       | ✅ enforced | the `typecheck` target of the `sandbox-e2e` project — the `tokenOf` /… | swapping one name for a wrong one produces 6 type errors — a run docu… |
 | [`req-token-tiers`](requirements/tokens.md#req-token-tiers)               | ✅ enforced | `tools/check-tokens.mjs` (target `check-tokens` in the root project, … | `tools/check-tokens.fixtures/` — one input per rule: `colour-under-se… |
 | [`req-token-references`](requirements/tokens.md#req-token-references)     | ✅ enforced | `apps/sandbox-e2e/src/theme.spec.ts` — overriding a semantic token ch… | the test compares the component token in `:root` **and** in a scope —… |

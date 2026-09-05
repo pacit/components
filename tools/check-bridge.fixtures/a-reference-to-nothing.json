@@ -1,0 +1,8 @@
+{
+  "point": 3,
+  "check": "references",
+  "why": "`pct.primary` refers to `{pct.blue.999}`, a step the ramp does not have",
+  "sets": {
+    "semantic.light.json": { "pct.primary": { "$value": "{pct.blue.999}" } }
+  }
+}

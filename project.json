@@ -85,6 +85,19 @@
         "command": "node tools/check-tokens.mjs"
       }
     },
+    "check-bridge": {
+      "executor": "nx:run-commands",
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/libs/tokens/src/**/*",
+        "{workspaceRoot}/libs/tokens/bridge.mjs",
+        "{workspaceRoot}/tools/check-bridge.mjs",
+        "{workspaceRoot}/tools/check-bridge.fixtures/**/*"
+      ],
+      "options": {
+        "command": "node tools/check-bridge.mjs"
+      }
+    },
     "check-parts": {
       "executor": "nx:run-commands",
       "cache": true,

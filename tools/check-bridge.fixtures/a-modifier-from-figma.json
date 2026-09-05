@@ -1,0 +1,14 @@
+{
+  "point": 6,
+  "check": "refusal",
+  "why": "`pct.primary` comes back with a `$extensions` modifier — the bridge carries values, and a modifier lives in Figma",
+  "sets": {
+    "semantic.light.json": {
+      "pct.primary": {
+        "$extensions": {
+          "studio.tokens": { "modify": { "type": "lighten", "value": "0.2" } }
+        }
+      }
+    }
+  }
+}

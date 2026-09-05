@@ -1,0 +1,3 @@
+{
+  "$comment": "The reference input is the repository itself: the DTCG sources under libs/tokens/src and the export the bridge writes from them, in memory, at the commit under test. Nothing is stored here on purpose — a stored copy would measure the sources as they were the day somebody stored it. Every case is built on a copy of that live export with one thing broken (see README.md)."
+}
