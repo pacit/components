@@ -2,6 +2,16 @@ import { expect, Locator, Page, test } from '@playwright/test';
 import { attrOf, boxOf, setRtl, visit } from './support/dom';
 
 /**
+ * Every case in this file runs with the browser's clock in Kiritimati — UTC+14, the farthest a
+ * clock gets from the meridian — and not in whatever timezone the machine happens to be in.
+ * A day here is a calendar day and never an instant (0043), so nothing below may move when
+ * the browser stands fourteen hours east of the server that stored the value; a case that
+ * did move would be the defect the type exists to refuse, measured where the machine's own
+ * timezone would have hidden it (plan 4.29).
+ */
+test.use({ timezoneId: 'Pacific/Kiritimati' });
+
+/**
  * The date field and its calendar, in a real browser.
  *
  * Every case here is about something jsdom has no answer for: what a browser's own

@@ -57,8 +57,8 @@ Snapshot, `node tools/check-docs.mjs`:
 
 | measure                                     | value |
 | ------------------------------------------- | ----: |
-| requirements                                |    91 |
-| ✅ enforced                                 |    71 |
+| requirements                                |    92 |
+| ✅ enforced                                 |    72 |
 | 🟡 partial (deliberately without a control) |    16 |
 | ⛔ gap                                      |     4 |
 
@@ -2240,7 +2240,7 @@ direction` expecting index 32 and getting 31 in the first, its right-to-left twi
     default and its absence is a violation rather than a silence
   - binds at: **the next component with an overlay panel** · _notes:_ —
 
-- [ ] **4.29 — the date field's UTC promise is prose, and no run stands in a hostile timezone**
+- [x] **4.29 — the date field's UTC promise is prose, and no run stands in a hostile timezone**
   - `day.ts` says "every day in this file is midnight UTC", so no arithmetic can cross a
     boundary — a design claim with no measurement behind it: no Playwright project sets a
     `timezoneId`, no unit case runs at a DST boundary, and the suite's machine is the
@@ -2249,7 +2249,19 @@ direction` expecting index 32 and getting 31 in the first, its right-to-left twi
     from the meridian) on the date spec plus one DST-boundary unit case is the negative
     control the sentence is missing
   - binds at: **the next change under `date/src`**, or the first timezone bug report ·
-    _notes:_ —
+    _notes:_ **closed as filler (2026-09-05), and the promise is in the registry now:
+    [`req-api-day`](requirements/api.md#req-api-day).** Two unit cases stand where the
+    sentence stood: Node reads `TZ` on every local-time call, so one pins the clock to
+    Kiritimati (UTC+14 — noon UTC on the 28th is already the 29th where the user is, and the
+    one local read, `pctToday`, says so) and one to Warsaw across both switches of 2026, the
+    23-hour 29 March and the 25-hour 25 October — where a `PctDay` is 24 hours from the next
+    on both and the local-time `Date` built from the same three fields serialises as the day
+    before (`2026-03-28T23:00:00.000Z`, and `…T10:00:00.000Z` in Kiritimati), measured in the
+    run beside the value it refuses to be. Every e2e case of the date field runs with the
+    browser's clock in Kiritimati (`test.use({ timezoneId })`), against values the view writes
+    from a fixed calendar, so nothing but the `today` marker may move and nothing did: **51 of
+    51** in three engines; `day.spec.ts` 18 of 18. The spec program carries no Node types by
+    design, so `process` is declared in the one spec that reads it
 
 - [x] **4.30 — six e2e cases measure the machine's fonts, and CI's machine has different ones**
   - the second CI run failed the textarea's width-follow case **in all three engines**, the

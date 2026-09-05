@@ -195,3 +195,91 @@ describe('pctMonthGrid', () => {
     }
   });
 });
+
+/**
+ * The suite's machine is the timezone it happens to be, and "every day in this file is
+ * midnight UTC" was a sentence with no run standing anywhere hostile behind it (plan 4.29).
+ * These cases pin the clock: Node reads `TZ` on every local-time call, so a case can stand in
+ * Kiritimati — UTC+14, the farthest a clock gets from the meridian — and on both sides of
+ * Warsaw's daylight-saving switch, whatever the machine is set to.
+ */
+// Node's, and the one spec that reads it: the spec program carries no Node types by design
+// (a component's tests run where a component runs), so the shape is declared here rather
+// than pulled in for every spec.
+declare const process: { env: Record<string, string | undefined> };
+
+describe('in a hostile timezone', () => {
+  const machine = process.env['TZ'];
+  afterEach(() => {
+    if (machine === undefined) delete process.env['TZ'];
+    else process.env['TZ'] = machine;
+  });
+
+  it('is the same day fourteen hours east of the meridian', () => {
+    process.env['TZ'] = 'Pacific/Kiritimati';
+    expect(new Date(2026, 2, 29, 12).getTimezoneOffset()).toBe(-840);
+
+    // The one local read: noon UTC on the 28th is already the 29th where the user stands.
+    expect(pctToday(new Date('2026-03-28T12:00:00Z'))).toBe('2026-03-29');
+    // And what a `Date` built from those three fields would have serialised as — the
+    // day before, which is the defect the type refuses (0043).
+    expect(new Date(2026, 2, 29).toISOString()).toBe(
+      '2026-03-28T10:00:00.000Z',
+    );
+    expect(pctDayAsUtc('2026-03-29').toISOString()).toBe(
+      '2026-03-29T00:00:00.000Z',
+    );
+    // The arithmetic never asks where it is.
+    expect(pctAddDays('2026-03-29', 1)).toBe('2026-03-30');
+    expect(pctAddMonths('2026-03-29', 1)).toBe('2026-04-29');
+    expect(pctWeekday('2026-03-29')).toBe(7);
+    expect(
+      pctMonthGrid(2026, 3, 1)
+        .flat()
+        .filter((d) => d === '2026-03-29'),
+    ).toHaveLength(1);
+  });
+
+  it('crosses a daylight-saving switch without a 23- or 25-hour day', () => {
+    process.env['TZ'] = 'Europe/Warsaw';
+    // 29 March 2026: 02:00 becomes 03:00, and the local day is 23 hours long.
+    expect(new Date(2026, 2, 28, 12).getTimezoneOffset()).toBe(-60);
+    expect(new Date(2026, 2, 29, 12).getTimezoneOffset()).toBe(-120);
+    const localSpring =
+      new Date(2026, 2, 30).getTime() - new Date(2026, 2, 29).getTime();
+    expect(localSpring).toBe(23 * 3_600_000);
+    // 25 October 2026: 03:00 becomes 02:00, and the local day is 25 hours long.
+    const localAutumn =
+      new Date(2026, 9, 26).getTime() - new Date(2026, 9, 25).getTime();
+    expect(localAutumn).toBe(25 * 3_600_000);
+
+    // A day here is 24 hours long on both of them, because it is never local.
+    for (const [from, to] of [
+      ['2026-03-29', '2026-03-30'],
+      ['2026-10-25', '2026-10-26'],
+    ] as const) {
+      expect(pctDayAsUtc(to).getTime() - pctDayAsUtc(from).getTime()).toBe(
+        24 * 3_600_000,
+      );
+      expect(pctAddDays(from, 1)).toBe(to);
+      expect(pctAddDays(to, -1)).toBe(from);
+    }
+    // Midnight local on the switch day, serialised, is the day before — the shape of the
+    // defect, measured here so that the sentence above it is not the only evidence.
+    expect(new Date(2026, 2, 29).toISOString()).toBe(
+      '2026-03-28T23:00:00.000Z',
+    );
+    expect(pctDayAsUtc('2026-03-29').toISOString()).toBe(
+      '2026-03-29T00:00:00.000Z',
+    );
+    // The grid of the two months walks day by day across the switch.
+    for (const [year, month] of [
+      [2026, 3],
+      [2026, 10],
+    ] as const) {
+      const days = pctMonthGrid(year, month, 1).flat();
+      for (let i = 1; i < days.length; i++)
+        expect(days[i]).toBe(pctAddDays(days[i - 1], 1));
+    }
+  });
+});

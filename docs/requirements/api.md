@@ -124,6 +124,27 @@ regression in [`lesson-26`](../lessons.md#lesson-26) was invisible
 **Lessons:** [`lesson-9`](../lessons.md#lesson-9), [`lesson-20`](../lessons.md#lesson-20),
 [`lesson-26`](../lessons.md#lesson-26)
 
+### <a id="req-api-day"></a>`req-api-day` — A day is a calendar day, the same in every timezone
+
+**Promise.** The date field's value is a calendar day written `YYYY-MM-DD` (`PctDay`), never a
+`Date`: the day a user picked in one timezone is the day an application stores, serialises and
+reads back in any other, and the arithmetic behind the calendar — a step of a day or a month,
+a weekday, the grid of a month — gives the same answer on every machine, on both sides of a
+daylight-saving switch included. The one read of local time is "what day is it", and that
+one is deliberately where the user stands.
+
+**Gate:** `libs/components/date/src/day.spec.ts › in a hostile timezone` — the clock pinned
+to `Pacific/Kiritimati` (UTC+14) and to `Europe/Warsaw` across the 23-hour day of 29 March
+2026 and the 25-hour day of 25 October 2026, with the local-time `Date` measured beside the
+day so that the defect the type refuses is in the run and not only in the prose; and
+`apps/sandbox-e2e/src/date.spec.ts`, every case of which runs with the browser's clock in
+Kiritimati (`test.use({ timezoneId })`) against values written on a server-side calendar,
+in three engines
+**Control:** the same cases build the day the old way beside the new — `new Date(2026, 2, 29)`
+serialises as `2026-03-28T23:00:00.000Z` in Warsaw and `…T10:00:00.000Z` in Kiritimati — so
+a `PctDay` that came out a day short would fail against a number the run itself produced
+**Decision:** [0043 — a day is not an instant](../decisions/0043-a-day-is-not-an-instant.md)
+
 ---
 
 ### <a id="req-api-container"></a>`req-api-container` — In a composite component the control is the container

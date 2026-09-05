@@ -20,6 +20,7 @@ export type PctReqId =
   | 'req-api-catalogue'
   | 'req-api-config'
   | 'req-api-container'
+  | 'req-api-day'
   | 'req-api-foundation'
   | 'req-api-frame'
   | 'req-api-generic'
