@@ -1,6 +1,11 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, Page, test } from '@playwright/test';
 import { setRtl, settled, visit } from './support/dom';
+import {
+  panelOwners,
+  readPartsSnapshot,
+  stageDrift,
+} from './support/inventory';
 import { SBX_ROUTES } from './support/views';
 
 /**
@@ -104,125 +109,296 @@ test.describe('Accessibility (axe-core, WCAG 2.2 AA)', () => {
   });
 
   /**
-   * A grouped listbox is three levels where the walk over the routes only ever sees two, and
-   * the closed panel is a panel axe has nothing to say about. What is being asked here is
-   * whether the options are still OWNED once a heading stands between them and the listbox:
-   * `option` names `group` and `listbox` as its context, `listbox` names `group` and `option`
-   * as what it may own, and only the rendered tree says which of the two we actually built.
+   * A panel that is not attached is a panel axe has nothing to say about — every overlay in
+   * the sandbox starts shut, so the walk over the routes never sees one open. The states
+   * below are therefore brought up by hand, and the LIST of them is not: every class that
+   * exposes a `panel` part in `libs/components/parts.snapshot.md` has to have a stage here,
+   * both ways (the two cases after the table). A new component with a panel joins the audit
+   * by default — as a red case asking for its stage rather than as a silence, which is the
+   * inversion 4.11 gave the mutation inventory. What the derivation does not reach is written
+   * beside it: the toast's stack is an `item` and not a `panel`, and stays a case by hand.
    */
-  test('an open panel with headings has no violations', async ({ page }) => {
-    await visit(page, '/select');
-    await page
-      .getByTestId('select-groups')
-      .locator('[data-pct-part="trigger"]')
-      .click();
-    await expect(page.locator('[data-pct-part="panel"]')).toBeVisible();
+  interface Stage {
+    /** The case's name — `… has no violations`. */
+    readonly title: string;
+    readonly route: string;
+    /** Brings the panel up; `null` for a panel the route already holds open, which is asserted. */
+    readonly open: ((page: Page) => Promise<void>) | null;
+    /** A selector to scope the audit to; the whole page otherwise. */
+    readonly scope?: string;
+  }
 
-    const violations = await audit(page, '[data-pct-part="panel"]');
-    expect(report(violations)).toBe('');
-  });
+  const openTrigger = (testId: string) => async (page: Page) => {
+    await page.getByTestId(testId).locator('[data-pct-part="trigger"]').click();
+    await expect(page.locator('[data-pct-part="panel"]')).toBeVisible();
+  };
+
+  const STAGES: Readonly<Record<string, readonly Stage[]>> = {
+    PctSelect: [
+      /**
+       * A grouped listbox is three levels where the walk over the routes only ever sees two,
+       * and the closed panel is a panel axe has nothing to say about. What is being asked here
+       * is whether the options are still OWNED once a heading stands between them and the
+       * listbox: `option` names `group` and `listbox` as its context, `listbox` names `group`
+       * and `option` as what it may own, and only the rendered tree says which of the two we
+       * actually built.
+       */
+      {
+        title: 'an open panel with headings',
+        route: '/select',
+        open: openTrigger('select-groups'),
+        scope: '[data-pct-part="panel"]',
+      },
+      /**
+       * A filtering combobox with its panel open, and audited WHOLE-PAGE rather than scoped
+       * to the panel: what is new here is a relation between two elements that live in
+       * different trees. The trigger is an `<input role="combobox">` in the page and the
+       * listbox is in the overlay container, so `aria-controls` and `aria-activedescendant`
+       * are references crossing between them — and a reference to an id that is not in the
+       * document is exactly what `aria-valid-attr-value` reports. The question typed leaves
+       * one row standing under one heading, which is also the narrowed list's own audit.
+       */
+      {
+        title: 'a filtering combobox with a narrowed panel',
+        route: '/select',
+        open: async (page) => {
+          await page
+            .getByTestId('select-filter')
+            .locator('[data-pct-part="trigger"]')
+            .fill('lat');
+          await expect(page.locator('[data-pct-part="panel"]')).toBeVisible();
+        },
+      },
+      /**
+       * A listbox with nothing in it — the state an async control is in before its list
+       * arrives, and the first EMPTY one this suite audits. `aria-required-children` is what
+       * has an opinion about it: a `listbox` must own options, and a panel waiting for its
+       * rows owns none. The way out is not a placeholder row but the state the specification
+       * has for exactly this, and axe implements it — a container marked `aria-busy` is a
+       * container whose content has not arrived, so the rule stands down until it does
+       * ([0037](../../../docs/decisions/0037-loading-is-a-fact-about-the-list.md)).
+       */
+      {
+        title: 'a panel waiting for its list',
+        route: '/select',
+        open: openTrigger('select-async'),
+      },
+      /**
+       * A panel drawing eleven rows of five thousand, scrolled into the middle of them — the
+       * state a window is FOR, and the one the geometry only exists in a browser to reach.
+       *
+       * Two things are being asked here and only one of them has a rule. The one that has:
+       * the listbox is still the element that scrolls, and it stays that way because the
+       * exemption keeping a panel of unfocusable rows out of `scrollable-region-focusable`
+       * is for a combobox's own popup — put the scrolling one element in, which is exactly
+       * what a virtual-scroll viewport does, and the same tree is a serious violation
+       * ([0038](../../../docs/decisions/0038-a-window-is-measured-and-its-spacer-is-not-an-element.md)).
+       * The one that has not: `aria-setsize` and `aria-posinset` exist for a set the DOM does
+       * not hold, and axe has no rule about them at all — a windowed listbox that says
+       * neither is green here and lies to the reader about how long the list is. That
+       * promise is measured in `select.spec.ts`, and this case is why it has to be.
+       */
+      {
+        title: 'a panel drawing a window of a long list',
+        route: '/select',
+        open: async (page) => {
+          await openTrigger('select-many')(page);
+          const panel = page.locator('[data-pct-part="panel"]');
+          // Into the middle of the list, where the panel is drawing a window with a spacer
+          // on both sides of it — the top of a list is the one place a window looks like an
+          // ordinary panel.
+          await panel.evaluate((el) => {
+            el.scrollTop = el.scrollHeight / 2;
+          });
+          await expect(
+            page.locator('[data-pct-part="option"]').first(),
+          ).not.toHaveText('Row 0');
+        },
+      },
+    ],
+    PctMultiSelect: [
+      /**
+       * A many-choice listbox. `aria-multiselectable` belongs to the listbox and
+       * `aria-selected` to every option under it — including the ones that are NOT chosen,
+       * which is the half a single-choice panel never has to say. The panel is an overlay,
+       * so the closed one is again something axe has nothing to say about.
+       */
+      {
+        title: 'an open panel that takes many answers',
+        route: '/select',
+        open: openTrigger('select-multi'),
+        scope: '[data-pct-part="panel"]',
+      },
+    ],
+    PctDate: [
+      /**
+       * An open calendar, and the field it belongs to — the one panel of the library the
+       * audit had never opened until the list was derived. The `/date` view holds an INLINE
+       * calendar too, so the grid itself was audited attached from the start; what only the
+       * overlay has is the relation across trees — the toggle's `aria-expanded` and
+       * `aria-controls` pointing at a panel in the overlay container — and the roving cell
+       * that takes focus when the panel opens
+       * ([0032](../../../docs/decisions/0032-a-grid-moves-focus-and-does-not-point-at-it.md)),
+       * so the audit runs whole-page.
+       */
+      {
+        title: 'an open calendar and the field it belongs to',
+        route: '/date',
+        open: async (page) => {
+          await page
+            .getByTestId('date-standalone')
+            .locator('[data-pct-part="toggle"]')
+            .click();
+          await expect(page.locator('[data-pct-part="panel"]')).toBeVisible();
+        },
+      },
+    ],
+    PctDialog: [
+      /**
+       * An open modal is the one state the walk over the routes cannot reach: every dialog
+       * in the sandbox starts closed, and a panel that is not attached is a panel axe has
+       * nothing to say about. The audit is scoped to the panel, because the rest of the page
+       * is `inert` while it is up — and axe reads the tree as rendered, which is the whole
+       * point of running it here rather than over a template.
+       */
+      {
+        title: 'an open dialog',
+        route: '/dialog',
+        open: async (page) => {
+          await page.getByTestId('open-with-select').click();
+          await expect(page.locator('[data-pct-part="panel"]')).toBeVisible();
+        },
+        scope: '[data-pct-part="panel"]',
+      },
+    ],
+    PctTooltipPanel: [
+      /**
+       * An open tooltip, for the same reason as the open dialog: the walk over the routes
+       * finds every panel closed. The trigger is the icon-only button — the one place where
+       * a violation would be a real one rather than a sandbox artefact, since the tooltip is
+       * the only name it has ([`lesson-65`](../../../docs/lessons.md#lesson-65)).
+       */
+      {
+        title: 'an open tooltip and the button it names',
+        route: '/tooltip',
+        open: async (page) => {
+          await page.getByTestId('names-trigger').hover();
+          await expect(page.locator('[data-pct-part="panel"]')).toBeVisible();
+        },
+        scope: '[data-testid="demo-names"]',
+      },
+    ],
+    PctPopover: [
+      /**
+       * An open popover, and the WHOLE page with it rather than the panel alone. The
+       * dialog's audit is scoped to its panel because everything else is `inert` while it is
+       * up; here nothing is, so the page and the panel are one tree a reader walks — and the
+       * trigger's `aria-expanded`/`aria-controls` only mean anything measured together with
+       * what they point at.
+       */
+      {
+        title: 'an open popover, page and panel together',
+        route: '/popover',
+        open: async (page) => {
+          await page.getByTestId('panel-trigger').click();
+          await expect(page.locator('[data-pct-part="panel"]')).toBeVisible();
+        },
+      },
+    ],
+    PctMenu: [
+      /**
+       * An open menu with a submenu beside it, and the whole page with them — the popover's
+       * reading of the audit, for the popover's reason: nothing here is `inert`, so the
+       * trigger, the panel and the row that opened the second panel are one tree a reader
+       * walks. The submenu is open on purpose: `role="menu"` has required children and
+       * `role="menuitem"` a required parent, and a nested panel is the arrangement where
+       * either could go wrong.
+       */
+      {
+        title: 'an open menu with a submenu',
+        route: '/menu',
+        open: async (page) => {
+          await page.getByTestId('file-trigger').click();
+          await expect(page.locator('[role="menu"]').first()).toBeVisible();
+          await page.getByTestId('file-move').hover();
+          await expect(page.locator('[role="menu"]')).toHaveCount(2);
+        },
+      },
+    ],
+    PctAccordionItem: [
+      /**
+       * A panel drawn IN the page: a `<details>` the sandbox holds open, so the walk over the
+       * routes audits it already. The stage exists to say so — the day the sandbox shuts
+       * every section, the walk goes on passing and this case asks where the panel went.
+       */
+      {
+        title: 'a section standing open in the walk',
+        route: '/accordion',
+        open: null,
+      },
+    ],
+    PctTab: [
+      /**
+       * The same for a strip's panel: one tab is chosen on every strip of the sandbox, so its
+       * panel is in the walk from the start, and the case holds the claim rather than the
+       * audit.
+       */
+      {
+        title: "a strip's panel standing open in the walk",
+        route: '/tabs',
+        open: null,
+      },
+    ],
+  };
+
+  for (const stages of Object.values(STAGES))
+    for (const stage of stages)
+      test(`${stage.title} has no violations`, async ({ page }) => {
+        await visit(page, stage.route);
+        if (stage.open) await stage.open(page);
+        else
+          await expect(
+            page.locator('[data-pct-part="panel"]:visible').first(),
+          ).toBeVisible();
+
+        const violations = await audit(page, stage.scope);
+        expect(report(violations)).toBe('');
+      });
 
   /**
-   * A many-choice listbox. `aria-multiselectable` belongs to the listbox and `aria-selected`
-   * to every option under it — including the ones that are NOT chosen, which is the half a
-   * single-choice panel never has to say. The panel is an overlay, so the closed one is again
-   * something axe has nothing to say about.
+   * The denominator: the stages above against the inventory `check-parts` writes from the
+   * built package. Both directions — an owner with no stage is a panel the audit never
+   * opens, a stage with no owner is an audit of nothing.
    */
-  test('an open panel that takes many answers has no violations', async ({
-    page,
-  }) => {
-    await visit(page, '/select');
-    await page
-      .getByTestId('select-multi')
-      .locator('[data-pct-part="trigger"]')
-      .click();
-    await expect(page.locator('[data-pct-part="panel"]')).toBeVisible();
-
-    const violations = await audit(page, '[data-pct-part="panel"]');
-    expect(report(violations)).toBe('');
-  });
-
-  /**
-   * A filtering combobox with its panel open, and audited WHOLE-PAGE rather than scoped to the
-   * panel: what is new here is a relation between two elements that live in different trees.
-   * The trigger is an `<input role="combobox">` in the page and the listbox is in the overlay
-   * container, so `aria-controls` and `aria-activedescendant` are references crossing between
-   * them — and a reference to an id that is not in the document is exactly what
-   * `aria-valid-attr-value` reports. The question typed leaves one row standing under one
-   * heading, which is also the narrowed list's own audit.
-   */
-  test('a filtering combobox with a narrowed panel has no violations', async ({
-    page,
-  }) => {
-    await visit(page, '/select');
-    await page
-      .getByTestId('select-filter')
-      .locator('[data-pct-part="trigger"]')
-      .fill('lat');
-    await expect(page.locator('[data-pct-part="panel"]')).toBeVisible();
-
-    const violations = await audit(page);
-    expect(report(violations)).toBe('');
-  });
-
-  /**
-   * A listbox with nothing in it — the state an async control is in before its list arrives,
-   * and the first EMPTY one this suite audits. `aria-required-children` is what has an
-   * opinion about it: a `listbox` must own options, and a panel waiting for its rows owns
-   * none. The way out is not a placeholder row but the state the specification has for
-   * exactly this, and axe implements it — a container marked `aria-busy` is a container whose
-   * content has not arrived, so the rule stands down until it does
-   * ([0037](../../../docs/decisions/0037-loading-is-a-fact-about-the-list.md)).
-   */
-  test('a panel waiting for its list has no violations', async ({ page }) => {
-    await visit(page, '/select');
-    await page
-      .getByTestId('select-async')
-      .locator('[data-pct-part="trigger"]')
-      .click();
-    await expect(page.locator('[data-pct-part="panel"]')).toBeVisible();
-
-    const violations = await audit(page);
-    expect(report(violations)).toBe('');
-  });
-
-  /**
-   * A panel drawing eleven rows of five thousand, scrolled into the middle of them — the state
-   * a window is FOR, and the one the geometry only exists in a browser to reach.
-   *
-   * Two things are being asked here and only one of them has a rule. The one that has: the
-   * listbox is still the element that scrolls, and it stays that way because the exemption
-   * keeping a panel of unfocusable rows out of `scrollable-region-focusable` is for a
-   * combobox's own popup — put the scrolling one element in, which is exactly what a
-   * virtual-scroll viewport does, and the same tree is a serious violation
-   * ([0038](../../../docs/decisions/0038-a-window-is-measured-and-its-spacer-is-not-an-element.md)).
-   * The one that has not: `aria-setsize` and `aria-posinset` exist for a set the DOM does not
-   * hold, and axe has no rule about them at all — a windowed listbox that says neither is
-   * green here and lies to the reader about how long the list is. That promise is measured in
-   * `select.spec.ts`, and this case is why it has to be.
-   */
-  test('a panel drawing a window of a long list has no violations', async ({
-    page,
-  }) => {
-    await visit(page, '/select');
-    await page
-      .getByTestId('select-many')
-      .locator('[data-pct-part="trigger"]')
-      .click();
-    const panel = page.locator('[data-pct-part="panel"]');
-    await expect(panel).toBeVisible();
-
-    // Into the middle of the list, where the panel is drawing a window with a spacer on both
-    // sides of it — the top of a list is the one place a window looks like an ordinary panel.
-    await panel.evaluate((el) => {
-      el.scrollTop = el.scrollHeight / 2;
+  test('every owner of a panel part has a stage here (the denominator)', async () => {
+    const owners = panelOwners(readPartsSnapshot());
+    expect(owners.length).toBeGreaterThan(0);
+    expect(stageDrift(owners, Object.keys(STAGES))).toEqual({
+      unstaged: [],
+      ownerless: [],
     });
-    await expect(
-      page.locator('[data-pct-part="option"]').first(),
-    ).not.toHaveText('Row 0');
+  });
 
-    const violations = await audit(page);
-    expect(report(violations)).toBe('');
+  /**
+   * A control of the denominator: the same comparison over a doctored inventory has to name
+   * the panel nobody staged, and a doctored stage list the stage nobody owns — else the case
+   * above is a sentence that always agrees.
+   */
+  test('the denominator really compares (a control of the derivation)', async () => {
+    const owners = panelOwners(readPartsSnapshot());
+    const doctored = readPartsSnapshot().replace(
+      /^```\s*$/m,
+      '```\n./widget PctWidget panel',
+    );
+    expect(panelOwners(doctored)).toContain('PctWidget');
+    expect(stageDrift(panelOwners(doctored), Object.keys(STAGES))).toEqual({
+      unstaged: ['PctWidget'],
+      ownerless: [],
+    });
+    expect(stageDrift(owners, [...Object.keys(STAGES), 'PctGone'])).toEqual({
+      unstaged: [],
+      ownerless: ['PctGone'],
+    });
   });
 
   /**
@@ -240,76 +416,6 @@ test.describe('Accessibility (axe-core, WCAG 2.2 AA)', () => {
     await expect(
       page.getByTestId('select-clear').locator('[data-pct-part="clear"]'),
     ).toBeVisible();
-
-    const violations = await audit(page);
-    expect(report(violations)).toBe('');
-  });
-
-  /**
-   * An open modal is the one state the walk over the routes cannot reach: every dialog in the
-   * sandbox starts closed, and a panel that is not attached is a panel axe has nothing to say
-   * about. The audit is scoped to the panel, because the rest of the page is `inert` while it
-   * is up — and axe reads the tree as rendered, which is the whole point of running it here
-   * rather than over a template.
-   */
-  test('an open dialog has no violations', async ({ page }) => {
-    await visit(page, '/dialog');
-    await page.getByTestId('open-with-select').click();
-    await expect(page.locator('[data-pct-part="panel"]')).toBeVisible();
-
-    const violations = await audit(page, '[data-pct-part="panel"]');
-    expect(report(violations)).toBe('');
-  });
-
-  /**
-   * An open tooltip, for the same reason as the open dialog above: the walk over the routes
-   * finds every panel closed, and a panel that is not attached is one axe has nothing to say
-   * about. The trigger is the icon-only button — the one place where a violation would be a
-   * real one rather than a sandbox artefact, since the tooltip is the only name it has
-   * ([`lesson-65`](../../../docs/lessons.md#lesson-65)).
-   */
-  test('an open tooltip and the button it names have no violations', async ({
-    page,
-  }) => {
-    await visit(page, '/tooltip');
-    await page.getByTestId('names-trigger').hover();
-    await expect(page.locator('[data-pct-part="panel"]')).toBeVisible();
-
-    const violations = await audit(page, '[data-testid="demo-names"]');
-    expect(report(violations)).toBe('');
-  });
-
-  /**
-   * An open popover, and the WHOLE page with it rather than the panel alone. The dialog's
-   * audit is scoped to its panel because everything else is `inert` while it is up; here
-   * nothing is, so the page and the panel are one tree a reader walks — and the trigger's
-   * `aria-expanded`/`aria-controls` only mean anything measured together with what they
-   * point at.
-   */
-  test('an open popover has no violations, page and panel together', async ({
-    page,
-  }) => {
-    await visit(page, '/popover');
-    await page.getByTestId('panel-trigger').click();
-    await expect(page.locator('[data-pct-part="panel"]')).toBeVisible();
-
-    const violations = await audit(page);
-    expect(report(violations)).toBe('');
-  });
-
-  /**
-   * An open menu with a submenu beside it, and the whole page with them — the popover's
-   * reading of the audit, for the popover's reason: nothing here is `inert`, so the trigger,
-   * the panel and the row that opened the second panel are one tree a reader walks. The
-   * submenu is open on purpose: `role="menu"` has required children and `role="menuitem"` a
-   * required parent, and a nested panel is the arrangement where either could go wrong.
-   */
-  test('an open menu with a submenu has no violations', async ({ page }) => {
-    await visit(page, '/menu');
-    await page.getByTestId('file-trigger').click();
-    await expect(page.locator('[role="menu"]').first()).toBeVisible();
-    await page.getByTestId('file-move').hover();
-    await expect(page.locator('[role="menu"]')).toHaveCount(2);
 
     const violations = await audit(page);
     expect(report(violations)).toBe('');

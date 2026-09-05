@@ -2268,7 +2268,7 @@ direction` expecting index 32 and getting 31 in the first, its right-to-left twi
     probed over `docs/plan.md` it fires naming the three missing projects; restored,
     the gate is green
 
-- [ ] **4.28 — the axe audit's denominator is a hand-curated list of opened panels**
+- [x] **4.28 — the axe audit's denominator is a hand-curated list of opened panels**
   - `a11y.spec.ts` says it in its own comments, three times over: "a panel that is not
     attached is a panel axe has nothing to say about" — and then opens, by hand, the panels
     it knows about. A new overlay component's open state joins the audit only if somebody
@@ -2276,7 +2276,18 @@ direction` expecting index 32 and getting 31 in the first, its right-to-left twi
   - the stage list can be derived from an inventory the gates already own — the parts
     snapshot, or the sandbox's views registry — so a new open state is inside the audit by
     default and its absence is a violation rather than a silence
-  - binds at: **the next component with an overlay panel** · _notes:_ —
+  - binds at: **the next component with an overlay panel** · _notes:_ **closed (2026-09-05),
+    derived from the parts snapshot.** The hand-opened cases became a `STAGES` table keyed by
+    the class that owns a `panel` part, and one case holds the table to
+    `libs/components/parts.snapshot.md` both ways — an owner with no stage, a stage with no
+    owner — with a control over a doctored inventory and a doctored table
+    (`support/inventory.ts`, pure readers). The derivation asked for three stages the hand
+    had not written: the **open calendar** with the field it belongs to, the one overlay the
+    audit had never opened (green in three engines, whole-page), and the accordion's and the
+    tabs' panels, drawn in the page and held open by the sandbox, whose stages hold that
+    claim rather than an audit of their own. Nine owners, thirteen stages; the whole file
+    264 of 264 in three engines. What the derivation does not reach is written beside it: the
+    toast's stack is an `item`, not a `panel`, and stays a case by hand
 
 - [x] **4.29 — the date field's UTC promise is prose, and no run stands in a hostile timezone**
   - `day.ts` says "every day in this file is midnight UTC", so no arithmetic can cross a
