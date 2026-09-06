@@ -4401,3 +4401,27 @@ after the failing expression, and `toHaveCount(0)` was the last line of the fram
 assertion standing on it; the code frame is context, and the last line of a story is not
 where it broke.** Written that way, the item would have been closed by the fix that landed
 the next day instead of surviving it.
+
+### <a id="lesson-165"></a>`lesson-165` — A blanked element is still a layer, and taking the layer away moved four pictures in another column
+
+The stage of the visual tests was given a rule to blank the sandbox's navigation before the
+seven viewport pictures (plan 4.23), and its first version was `visibility: hidden`. The
+seven re-recorded as expected — and then four CARD pictures went red, `select-filter-trigger`,
+`select-clear-trigger` and their RTL twins at 743–924 pixels each, on cards that contain no
+navigation at all; the same four were green under the committed spec, run alone. The differing
+pixels were every pixel of the triggers' value text and nothing else, and magnified they said
+why: grayscale antialiasing in the baseline, subpixel fringes in the run (an orange
+`255, 240, 208` beside a blue on the edges of every glyph). Nothing about the text had changed.
+The sticky column beside the content had stopped painting, chromium stopped keeping a
+compositing layer for it, its overlap decisions for the content beside that column changed,
+and text that had been drawn on a composited layer — grayscale, because such a layer is not
+opaque — was drawn on the root one with LCD fringes. `opacity: 0` on the same column keeps the
+layer and takes only the paint: the seven viewport pictures match the ones recorded under
+`visibility: hidden`, the four cards match their old baselines, and both halves of the
+stage's control hold.
+
+The rule: **a pixel of text depends on the compositing of the elements AROUND it as much as
+on the text, so a stage that blanks something keeps its layer (`opacity`) rather than its box
+alone (`visibility`) — and a red card in a column the change never touched is read as
+antialiasing before it is read as a regression.** The diff image tells the two apart: a
+regression moves shapes, antialiasing colours edges.

@@ -286,7 +286,10 @@ test.describe('Date — the walk', () => {
   }) => {
     const before = await focusedIndex(page);
     await page.keyboard.press('ArrowRight');
-    expect(await focusedIndex(page)).toBe(before + 1);
+    // The cell is focused by the pass that moved the cursor, not by the keypress itself, so
+    // the reading waits for it (lesson-130): read one frame early under load, this case went
+    // red twice on a step that never touched the calendar (plan 4.23).
+    await expect.poll(() => focusedIndex(page)).toBe(before + 1);
   });
 
   test('a step into another month carries focus with it', async ({ page }) => {
@@ -354,7 +357,7 @@ test.describe('Date — right to left', () => {
     await page.keyboard.press('ArrowRight');
     // The cell BEFORE, because the row is drawn the other way round: the key follows the
     // eye, not the DOM.
-    expect(await focusedIndex(page)).toBe(before - 1);
+    await expect.poll(() => focusedIndex(page)).toBe(before - 1);
   });
 });
 

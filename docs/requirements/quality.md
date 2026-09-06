@@ -304,9 +304,13 @@ metrics across two files
 
 **Promise.** e2e tests on Playwright, including **visual tests** (screenshot diff). What gets
 compared are **sandbox cards** (`toHaveScreenshot` on an element), not whole pages — so
-a change in the shell does not invalidate every component's references at once. The
-references live in `apps/sandbox-e2e/src/__screenshots__/{platform}/` and **are in the
-repository**.
+a change in the shell does not invalidate every component's references at once. Seven
+pictures are of the whole viewport, each for a reason its case states (the dialog's veil,
+the surface a popover and a menu are drawn on, the window's edges a toast stack and a drawer
+land against), and for those the stage **blanks the sandbox's navigation** — `visibility:
+hidden`, the column kept — so a row added to that list, which is what every new view is,
+moves no pixel of them (plan 4.23; `opacity`, not `visibility`, because the layer has to stay — [`lesson-165`](../lessons.md#lesson-165)). The references live in
+`apps/sandbox-e2e/src/__screenshots__/{platform}/` and **are in the repository**.
 
 **Gate:** `apps/sandbox-e2e/src/visual.spec.ts` and the remaining e2e specs
 **Control:** there are **two** thresholds and both come from measurement. The pixel count is
@@ -317,9 +321,15 @@ a fractional threshold (`maxDiffPixelRatio: 0.01`), **let that regression throug
 (`threshold: 0.005`), because the default `0.2` decides which pixels **reach** that budget at
 all: one step of the ramp `blue-500` → `blue-400` is 0.0163 in pixelmatch's metric, so
 repainting the entire button produced **zero** differing pixels
-([`lesson-53`](../lessons.md#lesson-53))
+([`lesson-53`](../lessons.md#lesson-53)). The stage's blanking has a control of its own —
+`visual.spec.ts › "a row added to the navigation moves no pixel of a viewport picture (a
+control of the stage)"`: a row put at the top of the list moves nothing with the navigation
+blanked and moves pixels with it shown, so the first half is a comparison that can fail. Its
+first version appended the row at the bottom of a list that reaches past the frame, and the
+shown half caught it moving nothing ([`lesson-50`](../lessons.md#lesson-50))
 **Lessons:** [`lesson-13`](../lessons.md#lesson-13), [`lesson-23`](../lessons.md#lesson-23),
-[`lesson-30`](../lessons.md#lesson-30), [`lesson-39`](../lessons.md#lesson-39)
+[`lesson-30`](../lessons.md#lesson-30), [`lesson-39`](../lessons.md#lesson-39),
+[`lesson-50`](../lessons.md#lesson-50), [`lesson-165`](../lessons.md#lesson-165)
 
 > Two things decide whether such a test measures the code or the machine. **The typeface** is
 > pinned for the duration of the screenshot (`Liberation Sans`), because `system-ui` resolves

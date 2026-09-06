@@ -2132,7 +2132,7 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     `./drawer` +1311 B, a dev-mode sentence and its list, recorded. The card, 0047 and
     `req-api-platform`'s gate carry it as the fourth kind of borrowing
 
-- [ ] **4.23 — the sandbox's own navigation is inside six component baselines**
+- [x] **4.23 — the sandbox's own navigation is inside six component baselines**
   - `visual.spec.ts` states the rule in its own comment: a screenshot is of an **element**, not
     of the whole page, "so a change in the sandbox shell does not invalidate the baselines of
     every component at once". Six shots take the page anyway — `dialog-open`, `dialog-open-rtl`,
@@ -2201,6 +2201,26 @@ direction` expecting index 32 and getting 31 in the first, its right-to-left twi
     worker is descheduled that minute. The repair is unchanged and so is the priority — a
     picture that moves is read by a person, an assertion that flips at random is read as a
     defect in a component nobody touched
+  - **closed (2026-09-06), both halves, and the repair was two properties wide.** The
+    pictures: `visual.spec.ts`'s stage blanks the sandbox's navigation before any picture is
+    taken — `opacity: 0`, the column kept, so the content stands where a user sees it — and
+    the seven pictures of the viewport (the six above and the drawer's `drawer-docked`, which
+    had joined them since) are re-recorded for the last time on this account; the drawer's own
+    panel stands over the column, so its picture never held a row and came back identical. A
+    control in the same suite puts a row at the top of the navigation list and compares the
+    viewport with itself byte for byte: nothing moves blanked, pixels move shown. Its first
+    version appended the row at the BOTTOM of a list that reaches past the frame and passed the
+    blanked half for the wrong reason, and the shown half caught it
+    ([`lesson-50`](lessons.md#lesson-50)). The blanking's first version was `visibility:
+hidden`, and it turned four CARD pictures of the select's triggers red at 743–924 pixels
+    each — their antialiasing, because a sticky column that stops painting stops being a
+    compositing layer and the text beside it moves to the root one; `opacity` keeps the layer
+    ([`lesson-165`](lessons.md#lesson-165)). The behaviour: the dialog's lock case decides its
+    own room (`min-height: 300vh` on the view column, put there by the case), and the
+    calendar's two arrow walks poll the focused index instead of reading it one frame after
+    the key ([`lesson-130`](lessons.md#lesson-130)); the mid-flight baseline read the dialog
+    case had actually died of was 0c20b25's, measured at 4.32. Measured: visual on chromium
+    with dialog and date in three engines, **172 of 172** in one run
 
 - [x] **4.24 — the three-API promise names a gate that measures something else**
   - _closed the night before 3.0:_ the Gate line names the eight per-control interop suites

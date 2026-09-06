@@ -32,6 +32,20 @@ const VIEWPORT = { width: 1280, height: 900 };
  * the test turns into a generator of false alarms. So we pin a typeface that exists
  * both locally and in the CI image (`playwright install --with-deps` pulls in
  * `fonts-liberation`).
+ *
+ * The sandbox's own navigation is blanked for the same reason. Seven pictures here are of
+ * the whole viewport — the dialog's veil, the page surface a popover and a menu are drawn
+ * on, the window's edges a toast stack and a drawer land against — and the navigation
+ * stands inside every one of them. Three consecutive views each re-recorded all seven for
+ * one more row in that list: 1594 pixels of `menu-open`, every one of them in the sidebar,
+ * the menu byte for byte the same (plan 4.23). `opacity: 0` keeps the column's width, so
+ * the content stands where a user sees it, and paints nothing in it, so a row more or fewer
+ * is not a pixel. NOT `visibility: hidden`, which was the first version and which moved
+ * four pictures of the select's triggers by their antialiasing: a sticky column that stops
+ * painting stops being a compositing layer, chromium's overlap decisions for the content
+ * beside it change, and text that was drawn grayscale on a composited layer is drawn with
+ * subpixel fringes on the root one. Opacity keeps the layer and takes only the paint
+ * (lesson-165). The control at the end of the first suite is what says the blanking works.
  */
 /**
  * The instant every baseline is taken at.
@@ -55,6 +69,9 @@ async function stage(page: Page, path: string): Promise<void> {
       code, kbd, samp, pre {
         font-family: 'Liberation Mono', 'Courier New', monospace !important;
       }
+      .shell__nav {
+        opacity: 0 !important;
+      }
     `,
   });
   // Swapping the typeface recomputes the layout — without this a screenshot can
@@ -66,7 +83,9 @@ async function stage(page: Page, path: string): Promise<void> {
 /**
  * The cards to compare. A screenshot of an ELEMENT, not of the whole page: a card
  * contains neither the navigation nor the settings bar, so a change in the sandbox
- * shell does not invalidate the baselines of every component at once.
+ * shell does not invalidate the baselines of every component at once. The pictures of
+ * the whole viewport further down keep that promise through the stage instead, which
+ * blanks the navigation before any of them is taken.
  */
 const CARDS: ReadonlyArray<
   readonly [path: string, testId: string, name: string]
@@ -361,6 +380,52 @@ test.describe('Appearance — compared with the baseline', () => {
       '',
     );
     await expect(page).toHaveScreenshot('drawer-docked.png');
+  });
+
+  /**
+   * The stage's blanking of the navigation, measured — a control over the seven pictures
+   * of the viewport (plan 4.23). A row is added to the sandbox's navigation list, which is
+   * exactly what a new view does, and the viewport is compared byte for byte with itself
+   * from before the row: nothing may move. Then the navigation is shown again and the row
+   * taken out, and NOW the pixels move — the same comparison with the blanking off, so
+   * that the first half is not a comparison that could not fail
+   * (req-quality-negative-control). No baseline file: the subject is the stage, not a
+   * component, and two shots of one page are the whole of the evidence.
+   */
+  test('a row added to the navigation moves no pixel of a viewport picture (a control of the stage)', async ({
+    page,
+  }) => {
+    await stage(page, '/menu');
+    const rows = (delta: 1 | -1) =>
+      page.evaluate((delta) => {
+        const list = document.querySelector('.shell__nav ul');
+        if (!list?.firstElementChild) {
+          throw new Error('the navigation has no rows to add to');
+        }
+        // At the TOP of the list, so that every row below it moves — a row appended at
+        // the bottom of a list that reaches past the viewport moves nothing, and the first
+        // version of this control passed both halves that way.
+        if (delta === 1) list.prepend(list.firstElementChild.cloneNode(true));
+        else list.firstElementChild.remove();
+      }, delta);
+
+    const blanked = await page.screenshot();
+    await rows(1);
+    expect(
+      (await page.screenshot()).equals(blanked),
+      'a row in the blanked navigation moved pixels of the viewport',
+    ).toBe(true);
+
+    // The blanking off — the same rule, later in the cascade, so it wins.
+    await page.addStyleTag({
+      content: '.shell__nav { opacity: 1 !important; }',
+    });
+    const shown = await page.screenshot();
+    await rows(-1);
+    expect(
+      (await page.screenshot()).equals(shown),
+      'a row in the SHOWN navigation moved nothing — the control compares nothing',
+    ).toBe(false);
   });
 
   /**

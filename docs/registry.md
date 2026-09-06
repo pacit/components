@@ -209,7 +209,7 @@ Which lesson feeds which requirement. Generated from the **Lessons** fields.
 | [`lesson-47`](lessons.md#lesson-47)   | `req-quality-typecheck`                                                                                                                                           |
 | [`lesson-48`](lessons.md#lesson-48)   | `req-token-logical`                                                                                                                                               |
 | [`lesson-49`](lessons.md#lesson-49)   | — _(not cited)_                                                                                                                                                   |
-| [`lesson-50`](lessons.md#lesson-50)   | — _(not cited)_                                                                                                                                                   |
+| [`lesson-50`](lessons.md#lesson-50)   | `req-quality-e2e`                                                                                                                                                 |
 | [`lesson-51`](lessons.md#lesson-51)   | `req-project-tree-shaking`                                                                                                                                        |
 | [`lesson-52`](lessons.md#lesson-52)   | — _(not cited)_                                                                                                                                                   |
 | [`lesson-53`](lessons.md#lesson-53)   | — _(not cited)_                                                                                                                                                   |
@@ -324,3 +324,4 @@ Which lesson feeds which requirement. Generated from the **Lessons** fields.
 | [`lesson-162`](lessons.md#lesson-162) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-163`](lessons.md#lesson-163) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-164`](lessons.md#lesson-164) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-165`](lessons.md#lesson-165) | `req-quality-e2e`                                                                                                                                                 |
