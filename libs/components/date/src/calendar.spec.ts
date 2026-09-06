@@ -8,7 +8,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { providePctTexts } from '@pacit/components/core';
 
 import { PctCalendar } from './calendar';
-import { PctDay, pctToday } from './day';
+import { PctDay, pctMonthGrid, pctToday } from './day';
+import { pctFirstDayOfWeek } from './locale';
 
 const partOf = (f: ComponentFixture<unknown>, part: string) =>
   f.nativeElement.querySelector(`[data-pct-part="${part}"]`) as HTMLElement;
@@ -120,19 +121,25 @@ describe('PctCalendar — the grid', () => {
     expect(selected[0].textContent?.trim()).toBe('27');
 
     // Today is a different fact, and it is drawn where today is — the neighbouring rows
-    // INCLUDED. This grid is fixed by the value (August 2026, weeks from Sunday), so its
-    // range is a constant, 26 July to 5 September — the same arithmetic that makes the
-    // outside-days case count 11. What moves through it is `today`; the old expectation
-    // ("one mark only while today is in August") forgot the September days August's grid
-    // also draws, and on the first of September it called the correct mark a defect — in
-    // every environment at once, the first morning after it was written.
+    // INCLUDED. This grid is fixed by the value (August 2026) and by the week start the
+    // locale gives it, so its range is the grid's own — the same arithmetic that makes the
+    // outside-days case count 11 — and NOT a constant: the first version forgot the
+    // September days August's grid also draws and went red on the first of September, the
+    // second wrote the range down for weeks from Sunday and went red on the sixth, the first
+    // Sunday after it, on a machine whose locale (the Host's `en-GB`) starts the week on Monday and
+    // draws one more day. What moves through the range is `today`; what fixes the range is the grid.
     const today = pctToday();
+    const grid = pctMonthGrid(
+      2026,
+      8,
+      pctFirstDayOfWeek(f.componentInstance.locale()),
+    );
+    const first = grid[0][0];
+    const last = grid[grid.length - 1][6];
     const marked = partsOf(f, 'day').filter((d) =>
       d.hasAttribute('data-pct-today'),
     );
-    expect(marked.length).toBe(
-      today >= '2026-07-26' && today <= '2026-09-05' ? 1 : 0,
-    );
+    expect(marked.length).toBe(today >= first && today <= last ? 1 : 0);
     for (const cell of marked)
       expect(cell.getAttribute('aria-current')).toBe('date');
   });
