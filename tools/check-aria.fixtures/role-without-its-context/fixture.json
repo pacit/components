@@ -1,0 +1,5 @@
+{
+  "point": 9,
+  "check": "context",
+  "$reason": "An `option` drawn at the root of a template whose host is a `radiogroup`. The walk runs out of template without meeting a `listbox` or a `group`, asks the host, and the host is a role an option cannot stand in — the defect one element up from the case beside it, and the one a component draws when it borrows a row from another pattern."
+}

@@ -21,7 +21,12 @@
  *     never neighbours (`req-api-message`),
  *  7. ANNOUNCEMENT: an error part IS the live region that speaks it (`role="alert"`),
  *  8. HIDDEN: a component taken out of the accessibility tree holds nothing to land on and
- *     no name of its own.
+ *     no name of its own,
+ *  9. CONTEXT: an element whose role requires a context (`option` in a `listbox` or a
+ *     `group`, `tab` in a `tablist`, `treeitem` in a `tree`) has nothing but that context
+ *     between it and the root of its template — read off the tree, so the relation the
+ *     audit measures only on a page that opens the panel is held for every template from
+ *     its first commit (plan 4.3).
  *
  * Points 3 and 4 are one rule split at the place it breaks: declaring the inputs is what a
  * consumer sees in the type, binding them is what the screen reader sees. Points 4, 6 and 7
@@ -38,6 +43,22 @@
  * axe reports it only on a page that renders it, which is `lesson-65`'s shape again. The
  * other half of the same point is a name declared by such a component: an `ariaLabel` on a
  * hidden host is read by nobody, so an input for it promises what it cannot deliver.
+ *
+ * Point 9 is the audit's `aria-required-children` and `aria-required-parent` moved to build
+ * time, for the half of them a template can decide. The select draws a heading inside its
+ * list as `role="group"`, and the options under it are owned by the listbox THROUGH the
+ * group — take the role off the wrapper and axe answers with a critical violation, from a
+ * page that renders the open panel and from nowhere else (`lesson-65`'s shape). The table of
+ * which role requires which context is axe's own (`requiredContext`), anchored like the
+ * others; the walk stops at the first ancestor with a role, explicit or implicit (a `<tr>`
+ * is a `row`, a `<ul>` a `list`), passes through `presentation`/`none`, role-less elements
+ * that carry no ARIA and take no focus (axe's own line — a wrapper with an `aria-labelledby`
+ * and no role is an element the listbox owns, and may not) and the Angular containers that
+ * never reach the DOM, and where it runs out of template it asks the host: a
+ * host role that is the context settles it, a host role that is not is the same defect one
+ * element up, and a host with no role leaves the answer to the consumer's template — counted
+ * and reported, not guessed. A BOUND role anywhere on the path is a value the template does
+ * not hold, and the walk says so instead of reading it.
  *
  * Point 7 is the half point 6 never had. A message that leaves and re-enters the DOM is a
  * change nobody is pointed at, and the library's answer to that is written down twice: the
@@ -113,6 +134,8 @@ const BOUND_LIVE = new Set([
   'aria-live',
   'attr.aria-live',
 ]);
+/** A role arriving from an expression — for point 9 a path the template cannot decide. */
+const BOUND_ROLE = new Set(['role', 'attr.role']);
 /** The same parts counted without parsing, as the denominator of the walk. */
 const MESSAGE_COUNTER = /data-pct-part="(?:[a-z-]*-)?(?:hint|error)"/g;
 
@@ -276,7 +299,15 @@ const ANCHORS = {
   focusable: 'summary',
   named: 'tablist',
   namedTags: 'progress',
+  contexts: 'option',
 };
+/** Roles that are not in the tree at all, so an element wearing one is looked through. */
+const TRANSPARENT_ROLES = new Set(['presentation', 'none']);
+/** Angular's own tags, which never reach the DOM and never stand between two roles. */
+const TRANSPARENT_TAGS = new Set(['ng-container', 'ng-template', 'ng-content']);
+/** The same roles counted without parsing, as the denominator of the walk of point 9. */
+const contextCounter = (tables) =>
+  new RegExp(`\\srole="(${[...tables.contexts.keys()].join('|')})"`, 'g');
 
 /**
  * An element as axe sees one, carrying nothing but what decides focusability: `href` on a
@@ -347,7 +378,20 @@ const platformTables = () => {
         !focusable.has(tag),
     ),
   );
-  return { focusable, named, namedTags };
+  // The context a role requires, from the same standard the audit reads: `option` names
+  // `group` and `listbox`, `tab` names `tablist`. And the roles the platform gives a tag with
+  // none written on it, for the ancestors the walk of point 9 passes — the string-valued
+  // entries only; a tag whose implicit role depends on where it stands (`td`, `th`) is read
+  // as generic, which is the conservative reading (a generic ancestor is looked through).
+  const contexts = new Map(
+    Object.entries(ariaRoles)
+      .filter(([, definition]) => definition.requiredContext?.length)
+      .map(([role, definition]) => [role, new Set(definition.requiredContext)]),
+  );
+  const implicitRoles = new Map(
+    Object.entries(implicit).filter(([, role]) => typeof role === 'string'),
+  );
+  return { focusable, named, namedTags, contexts, implicitRoles };
 };
 
 const TABLES = platformTables();
@@ -419,13 +463,18 @@ const readTemplate = (content, tables) => {
  * side block (`@empty`, `@placeholder`, `@loading`, `@error`) against their own body, so
  * the body is branch 0 and each side block one after it.
  */
-const walkTemplate = (nodes, path, state) => {
+const walkTemplate = (nodes, path, state, ancestors = []) => {
   for (const node of nodes) {
     const branches = node.branches ?? node.cases ?? null;
     if (branches) {
       const block = state.blocks++;
       branches.forEach((branch, i) =>
-        walkTemplate(branch.children ?? [], [...path, `${block}#${i}`], state),
+        walkTemplate(
+          branch.children ?? [],
+          [...path, `${block}#${i}`],
+          state,
+          ancestors,
+        ),
       );
       continue;
     }
@@ -437,12 +486,18 @@ const walkTemplate = (nodes, path, state) => {
     ].filter(Boolean);
     if (sides.length) {
       const block = state.blocks++;
-      walkTemplate(node.children ?? [], [...path, `${block}#0`], state);
+      walkTemplate(
+        node.children ?? [],
+        [...path, `${block}#0`],
+        state,
+        ancestors,
+      );
       sides.forEach((side, i) =>
         walkTemplate(
           side.children ?? [],
           [...path, `${block}#${i + 1}`],
           state,
+          ancestors,
         ),
       );
       continue;
@@ -465,7 +520,37 @@ const walkTemplate = (nodes, path, state) => {
           null,
         boundRole: (node.inputs ?? []).some((i) => BOUND_LIVE.has(i.name)),
       });
-    walkTemplate(node.children ?? [], path, state);
+    // Point 9 reads every element with a role, and the roles standing above it in THIS
+    // template — the tree's own answer to "what owns this", as far as a template can give it.
+    const element =
+      typeof node.name === 'string'
+        ? {
+            tag: node.name.toLowerCase(),
+            role:
+              node.attributes?.find((a) => a.name === LIVE_ATTRIBUTE)?.value ??
+              null,
+            boundRole: (node.inputs ?? []).some((i) => BOUND_ROLE.has(i.name)),
+            // What keeps a role-less element from being looked through, in axe's own
+            // reading of `aria-required-children`: a global ARIA attribute, or a way to land
+            // on it. Static or bound — a binding says the attribute exists in some state.
+            aria:
+              (node.attributes ?? []).some((a) => a.name.startsWith('aria-')) ||
+              (node.inputs ?? []).some((i) => /^(attr\.)?aria-/.test(i.name)),
+            tabindex:
+              (node.attributes ?? []).some((a) => a.name === 'tabindex') ||
+              (node.inputs ?? []).some((i) =>
+                /^(attr\.)?tabindex$/.test(i.name),
+              ),
+          }
+        : null;
+    if (element?.role !== null && element?.role !== undefined)
+      state.roles.push({ ...element, ancestors });
+    walkTemplate(
+      node.children ?? [],
+      path,
+      state,
+      element ? [element, ...ancestors] : ancestors,
+    );
   }
 };
 
@@ -488,11 +573,12 @@ const exclusive = (a, b) =>
 const readMessages = (file, content) => {
   const text = content.replace(COMMENT, '');
   const parsed = parseTemplate(text, file, { preserveWhitespaces: false });
-  const state = { blocks: 0, messages: [], paths: new Map() };
+  const state = { blocks: 0, messages: [], paths: new Map(), roles: [] };
   if (!parsed.errors?.length) walkTemplate(parsed.nodes, [], state);
   return {
     messages: state.messages,
     paths: state.paths,
+    roles: state.roles,
     errors: parsed.errors ?? [],
     counted: countOf(text, MESSAGE_COUNTER),
   };
@@ -630,6 +716,19 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
       );
     byPath.get(template.file).said = said.messages;
     byPath.get(template.file).paths = said.paths;
+    byPath.get(template.file).roles = said.roles;
+    const contextual = said.roles.filter((r) => tables.contexts.has(r.role));
+    const contextsCounted = countOf(
+      template.content.replace(COMMENT, ''),
+      contextCounter(tables),
+    );
+    if (contextual.length !== contextsCounted)
+      throw new AriaError(
+        'denominator',
+        `${template.file}: ${contextsCounted} element(s) wearing a role that requires a ` +
+          `context in the text, ${contextual.length} walked — an element the walk does not ` +
+          `reach is one point 9 does not examine`,
+      );
   }
 
   // ── classification ───────────────────────────────────────────────────────────
@@ -845,12 +944,110 @@ const checkAria = ({ components, counted, templates, documents, tables }) => {
       );
   }
 
+  // ── 9. a role stands in the context it requires ──────────────────────────
+  // The relation itself, read off the template: the first ancestor with a role — written, or
+  // the platform's own for the tag — either IS the context the role requires or is the
+  // defect. Generic elements, `presentation`/`none` and Angular's containers are looked
+  // through. Where the template runs out, the host answers, and a host with no role hands the
+  // question to the consumer's template — reported as such, because a static reader that
+  // guessed there would be passing on a relation nobody has seen.
+  let examined = 0;
+  let ownedHere = 0;
+  let leftToHost = 0;
+  let leftToConsumer = 0;
+  const contextOf = (role) => sorted(tables.contexts.get(role)).join(' / ');
+  for (const template of templates) {
+    const owners = components.filter((c) => c.templatePath === template.file);
+    for (const element of byPath.get(template.file).roles) {
+      const required = tables.contexts.get(element.role);
+      if (!required) continue;
+      examined++;
+      let settled = false;
+      for (const ancestor of element.ancestors) {
+        if (TRANSPARENT_TAGS.has(ancestor.tag)) continue;
+        if (ancestor.boundRole)
+          throw new AriaError(
+            'context',
+            `${template.file}: <${element.tag} role="${element.role}"> stands under ` +
+              `<${ancestor.tag}> whose role is BOUND, so what owns it is not in the ` +
+              `template — a role that requires a context (${contextOf(element.role)}) ` +
+              `wants an owner a reader of the source can see`,
+          );
+        const role =
+          ancestor.role ?? tables.implicitRoles.get(ancestor.tag) ?? null;
+        if (TRANSPARENT_ROLES.has(role)) continue;
+        if (role === null) {
+          // Looked through — unless it carries ARIA or takes focus, which is the line axe
+          // draws: such an element is in the tree, and a listbox may not own it. The select's
+          // own measured case (plan 4.3) is this one: `role="group"` taken off a wrapper that
+          // keeps its `aria-labelledby`.
+          const held = ancestor.aria
+            ? 'an ARIA attribute'
+            : ancestor.tabindex || tables.focusable.has(ancestor.tag)
+              ? 'a way to land on it'
+              : null;
+          if (held === null) continue;
+          throw new AriaError(
+            'context',
+            `${template.file}: <${element.tag} role="${element.role}"> stands under ` +
+              `<${ancestor.tag}> with no role and ${held} — such an element is not looked ` +
+              `through, so it is what owns the \`${element.role}\`, and nothing but ` +
+              `${contextOf(element.role)} may. The audit reports it as a critical ` +
+              `\`aria-required-children\` naming the wrapper, on a page that opens the ` +
+              `panel and nowhere else`,
+          );
+        }
+        if (required.has(role)) {
+          settled = true;
+          ownedHere++;
+          break;
+        }
+        throw new AriaError(
+          'context',
+          `${template.file}: <${element.tag} role="${element.role}"> stands under ` +
+            `<${ancestor.tag}${ancestor.role ? ` role="${ancestor.role}"` : ''}> (${role}), ` +
+            `and nothing but ${contextOf(element.role)} may stand between a ` +
+            `\`${element.role}\` and its owner — the audit reports this as a critical ` +
+            `\`aria-required-children\` on a page that opens the panel, and no page has to`,
+        );
+      }
+      if (settled) continue;
+      // The template ran out: the owner is the host, or it is outside this component.
+      const hosts = owners.map((owner) => ({
+        owner,
+        role: owner.host.get('role') ?? null,
+        bound: owner.host.has('[attr.role]'),
+      }));
+      for (const host of hosts) {
+        if (host.bound)
+          throw new AriaError(
+            'context',
+            `${template.file}: <${element.tag} role="${element.role}"> reaches the root of ` +
+              `its template and ${host.owner.className}'s host binds its role — the owner ` +
+              `a \`${element.role}\` requires (${contextOf(element.role)}) is not in the source`,
+          );
+        if (host.role !== null && !required.has(host.role))
+          throw new AriaError(
+            'context',
+            `${template.file}: <${element.tag} role="${element.role}"> reaches the root of ` +
+              `its template and the host of ${host.owner.className} is a ` +
+              `\`${host.role}\` — a \`${element.role}\` requires ${contextOf(element.role)} ` +
+              `above it, and the host is the last element this template can put there`,
+          );
+      }
+      if (hosts.some((host) => host.role !== null)) leftToHost++;
+      else leftToConsumer++;
+    }
+  }
+
   return {
     description:
       `${components.length} components, ${naming.length} of them naming a widget of their ` +
       `own (${sorted(naming.map((c) => c.selector)).join(', ')}); ${pairs} hint/error pair(s) ` +
       `on separate branches, ${announced} error part(s) announcing themselves, ` +
-      `${hidden.length} hidden from the tree with nothing to land on`,
+      `${hidden.length} hidden from the tree with nothing to land on; ${examined} role(s) ` +
+      `requiring a context — ${ownedHere} owned in their own template, ${leftToHost} by ` +
+      `the host, ${leftToConsumer} left to the consumer's template`,
   };
 };
 

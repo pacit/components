@@ -1,0 +1,5 @@
+{
+  "point": 9,
+  "check": "context",
+  "$reason": "A `role=\"list\"` wrapper between the listbox and its options — the shape a component takes when its rows are a `<ul>` somebody gave a role to. The options are then owned by the list, which cannot own an `option`, and the listbox owns a list, which it cannot own either: the audit reports it as a critical `aria-required-children`, from a page that renders the open panel and from nowhere else. The template says it before any page exists."
+}

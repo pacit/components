@@ -1518,7 +1518,7 @@ thousandth row` timed out with the list still showing row 44, and the forced-col
     a drift of +0.19 into the gate's ±2, in the predicted direction and a tenth of the
     predicted size. The starved-snapshot decision holds its first night
 
-- [ ] **4.3 — an option's owner is measured only where a page renders the panel**
+- [x] **4.3 — an option's owner is measured only where a page renders the panel**
   - `pct-select` draws a named section as `role="group"`, and the options below it are owned by
     the listbox **through** it — `option` names `group` and `listbox` as its context, `listbox`
     names `group` and `option` as what it may own. That relation is what makes a heading legal
@@ -1537,7 +1537,22 @@ thousandth row` timed out with the list still showing row 44, and the forced-col
     element with `role="option"` may have `role="listbox"` or `role="group"` between it and its
     panel, and nothing else. The fixtures have a home already
   - binds at: **1.1**, at the first component after the select to draw a heading inside a list —
-    or sooner, the first time a grouped panel is written that no page renders · _notes:_ —
+    or sooner, the first time a grouped panel is written that no page renders · _notes:_
+    **closed (2026-09-06), as `check-aria` point 9.** The relation is read off the template's
+    tree: for every element whose role requires a context — axe's own `requiredContext` table,
+    anchored on `option` like the three tables before it — the first ancestor with a role,
+    written or the platform's own for the tag, either is that context or is the defect;
+    `presentation`/`none`, Angular's containers and role-less elements that carry no ARIA and
+    take no focus are looked through, and a role-less wrapper that keeps an `aria-labelledby`
+    is not, which is axe's own line and the case this item measured. Where the template runs
+    out the host answers — a host role that is the context settles it, one that is not is the
+    defect one element up, none leaves the question to the consumer's template and is counted
+    as such. A bound role anywhere on the path is reported, not read. The library today: two
+    such elements (the select's `option`, the tabs' `tab`), both owned in their own template.
+    Four prepared inputs — a `role="list"` between a listbox and its options, the group wrapper
+    with its role off, an `option` at the root of a `radiogroup`'s template, the context table
+    without its anchor — 25 in all, each rejected on its own point; the reference grew the
+    legal shape (a listbox owning options directly and through a heading's group)
 
 - [ ] **4.4 — one template, compiled twice, and nothing says when that stops being worth it**
   - `pct-select` and `pct-multi-select` share `select.html` and `select.scss` in the sources

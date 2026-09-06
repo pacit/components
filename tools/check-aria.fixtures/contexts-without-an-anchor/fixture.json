@@ -1,0 +1,10 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "tables": {
+    "drop": {
+      "contexts": ["option"]
+    }
+  },
+  "$reason": "The table of required contexts read from axe-core has lost `option` — the entry that named it when point 9 was written, and the one both cases beside this stand on. Dropped, point 9 walks nothing for an option and passes the two of them; the anchor makes that loss a verdict rather than a silence, as it does for the three tables before it."
+}

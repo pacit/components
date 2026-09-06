@@ -24,16 +24,12 @@
   }
 </span>
 
-<!-- The panel: a listbox owning its options directly and THROUGH a heading's group, which is
-     the relation point 9 reads off the tree — the group is one of the two contexts an option
-     may stand in, and nothing else may. -->
 @if (open()) {
 <div class="pct-widget__panel" role="listbox">
-  <div role="group" aria-labelledby="pct-widget-nearby">
-    <div class="pct-widget__heading" id="pct-widget-nearby">Nearby</div>
-    <div role="option">Poland</div>
-  </div>
-  <div role="option">Anywhere</div>
+  <ul role="list">
+    <li role="option">Poland</li>
+    <li role="option">Anywhere</li>
+  </ul>
 </div>
 }
 
