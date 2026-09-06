@@ -4,7 +4,8 @@
  * a measurement behind it, or a sentence in the documentation that both sides broke while
  * it stood? A second language leaves NO RED TEST: it compiles, it renders, it ships.
  *
- *  1. DENOMINATOR: the scan can see, split and look up — proved on a built-in probe,
+ *  1. DENOMINATOR: the scan can see, split and look up — proved on a built-in probe, and
+ *     the sixth limb (a one-letter Polish word, read by its company) on a probe of its own,
  *  2. REPOSITORY: no Polish in the git index outside the register,
  *  3. ARTIFACT: no Polish in the built package — with no register at all,
  *  4. the register of exceptions is alive and justified,
@@ -329,6 +330,81 @@ const SUFFIXES = [
 const PROBE_DERIVED = 'specyfikator';
 
 /**
+ * The sixth limb: a ONE-LETTER Polish word, read by the company it keeps and not by any
+ * dictionary. `w`, `z`, `o`, `u` and `i` are all Polish words and all things an English
+ * source writes constantly — an index, a width, a loop variable — so a list cannot judge
+ * them; and the dictionaries cannot either, because `american-english` lists the whole
+ * alphabet, so every letter is subtracted as English before anything looks at it. That is
+ * how `has no card at all w \`docs/components/\`` walked through the gate (plan 4.1): not a
+ * floor on word length, which this gate never had, but a dictionary that holds `w` as a word.
+ *
+ * What decides is CONTEXT. The letter counts when it stands in prose — between two words,
+ * a single space either side, the word before it at least two letters long and the thing
+ * after it a word or a quoted one — and prose is a Markdown line outside a fence, a comment,
+ * or a string literal; an inline code span is not prose, and neither is code. `a` is left
+ * out: it is the English article, and no context tells the two apart. Lowercase only, on
+ * purpose — the English pronoun is `I`.
+ */
+const ONE_LETTER = new Set(['i', 'o', 'u', 'w', 'z']);
+const ONE_LETTER_AT =
+  /(?<=(?:^|[^\p{L}`'"])[\p{L}]{2,} )([iouwz])(?= (?:[\p{L}]{2,}|\\?[`'"„«(][\p{L}]))/gu;
+const COMMENT_START = /^\s*(\/\/|\*|\/\*|<!--|#)/;
+const PROBE_ONE_LETTER = '// it has no card at all w `docs/components/`';
+
+/**
+ * The odd-count test: is `position` inside a run opened by `mark` on this line? An escaped
+ * mark (`\\\``) opens nothing — it is how a template literal quotes a path.
+ */
+const inside = (line, position, mark) =>
+  (line.slice(0, position).match(new RegExp(`(?<!\\\\)\\${mark}`, 'g')) ?? [])
+    .length %
+    2 ===
+  1;
+
+/**
+ * Whether the letter at `position` stands in prose. The three homes of prose and the one
+ * thing that is never prose inside any of them, an inline code span; in source that is not
+ * a comment, a string is the prose and a template literal is a string.
+ */
+const proseAt = (line, position, { markdown, fenced }) => {
+  if (markdown) return !fenced && !inside(line, position, '`');
+  const comment = line.search(/\/\/|<!--/);
+  if (COMMENT_START.test(line) || (comment !== -1 && comment < position)) {
+    const from = Math.max(0, line.search(/\/\/|<!--|\/\*|\*|#/));
+    return !inside(line.slice(from), position - from, '`');
+  }
+  if (inside(line, position, "'") || inside(line, position, '"'))
+    return !inside(line, position, '`');
+  return inside(line, position, '`');
+};
+
+/**
+ * Every one-letter Polish word standing in prose, with its line — and `seen`, how many
+ * such letters stood between two words at all, prose or not: the denominator of this limb,
+ * which is the number the item that asked for it said nobody measures. The fence state is
+ * kept across lines, because a Markdown code block is prose to no reader.
+ */
+export const oneLetterWords = (text, path = '') => {
+  const markdown = path.endsWith('.md');
+  const found = [];
+  let seen = 0;
+  let fenced = false;
+  text.split('\n').forEach((line, i) => {
+    if (markdown && /^\s*```/.test(line)) {
+      fenced = !fenced;
+      return;
+    }
+    for (const m of line.matchAll(ONE_LETTER_AT)) {
+      if (!ONE_LETTER.has(m[1])) continue;
+      seen++;
+      if (proseAt(line, m.index, { markdown, fenced }))
+        found.push({ word: m[1], line: i + 1 });
+    }
+  });
+  return { found, seen };
+};
+
+/**
  * The fifth limb over one word: `null`, or the split that makes it a Polish word derived
  * from another. `english` ends the question, as in the fourth limb — a word an English list
  * holds is an English word. `polish` is the set the SECOND limb flags on, read here for
@@ -453,6 +529,7 @@ export const checkLanguage = ({
   probe: text,
   inflected,
   derived,
+  oneLetter,
 }) => {
   const confirmed = new Set(polish ?? []);
   const known = new Set(english ?? []);
@@ -578,6 +655,18 @@ export const checkLanguage = ({
         `and every agent noun this language makes of its own words rides through again.`,
     );
 
+  const company = oneLetter ?? PROBE_ONE_LETTER;
+  if (!oneLetterWords(company, 'probe.mjs').found.length)
+    throw new LanguageError(
+      'denominator',
+      'one-letter-blind',
+      `the probe \`${company}\` yields no one-letter Polish word standing in prose.\n` +
+        `    The sixth limb is the only one that can see \`w\`, \`z\`, \`o\`, \`u\` or ` +
+        `\`i\`: the dictionaries subtract every letter of the alphabet as English before ` +
+        `looking, so a context rule that stops reading leaves the whole class invisible — ` +
+        `and a preposition in a message a maintainer reads walked through exactly there.`,
+    );
+
   // 5. VOCABULARY, before it is used. A register that excuses a shape excuses everything of
   // that shape, and it has to be unwritable rather than discouraged — so the format is
   // checked before the words are trusted to silence anything.
@@ -654,6 +743,7 @@ export const checkLanguage = ({
   // knows no register, because a consumer cannot read one.
   const excused = new Set(exceptions.map((e) => e?.file));
   const hits = new Map(); // path -> [{ line, word, limb }]
+  let lettersSeen = 0;
 
   for (const file of files ?? []) {
     const found = [];
@@ -664,6 +754,10 @@ export const checkLanguage = ({
       const mark = line.match(DIACRITIC);
       if (mark) found.push({ line: i + 1, word: mark[0], limb: 'diacritics' });
     });
+    const letters = oneLetterWords(text, file.path);
+    lettersSeen += letters.seen;
+    for (const { word, line } of letters.found)
+      found.push({ line, word, limb: 'one-letter' });
     for (const { word, line } of wordsOf(text)) {
       if (vocabulary.has(word)) continue;
       if (confirmed.has(word)) {
@@ -813,7 +907,8 @@ export const checkLanguage = ({
   return (
     `${repository.length} files of the repository and ${artifact.length} of the package, ` +
     `${words.size} distinct words, ${vocabulary.size} excused, ` +
-    `${exceptions.length} exceptions, ${specimens.length} specimens`
+    `${exceptions.length} exceptions, ${specimens.length} specimens, ` +
+    `${lettersSeen} one-letter words read by their company`
   );
 };
 
@@ -1029,6 +1124,7 @@ const buildFixture = (fx) => {
   if (fx.probe !== undefined) w.probe = fx.probe;
   if (fx.inflected !== undefined) w.inflected = fx.inflected;
   if (fx.derived !== undefined) w.derived = fx.derived;
+  if (fx.oneLetter !== undefined) w.oneLetter = fx.oneLetter;
 
   return w;
 };

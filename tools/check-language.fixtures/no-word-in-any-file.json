@@ -6,10 +6,15 @@
     "docs/README.md",
     "tools/legacy.mjs",
     "libs/components/src/button.ts",
-    "dist/libs/components/types/button.d.ts"
+    "dist/libs/components/types/button.d.ts",
+    "tools/letters.mjs"
   ],
   "addFiles": [
-    { "path": "docs/numbers.md", "scope": "repository", "text": "1 2 3\n" },
+    {
+      "path": "docs/numbers.md",
+      "scope": "repository",
+      "text": "1 2 3\n"
+    },
     {
       "path": "dist/libs/components/version.json",
       "scope": "artifact",

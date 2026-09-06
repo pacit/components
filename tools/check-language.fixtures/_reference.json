@@ -44,6 +44,11 @@
         "path": "dist/libs/components/types/button.d.ts",
         "scope": "artifact",
         "text": "/** The button's configuration. */\nexport declare const config: { label: string };\n"
+      },
+      {
+        "path": "tools/letters.mjs",
+        "scope": "repository",
+        "text": "// A width and a loop index, a table cell and an inline span: none of these is prose.\n// | w | z |\n// the `npm i zone.js` step\nfor (const w of list) {\n  const z = w + i;\n  total = z * o;\n}\n"
       }
     ],
     "polish": [
@@ -55,5 +60,6 @@
       "wartosc"
     ],
     "english": ["build", "script"]
-  }
+  },
+  "$letters": "`tools/letters.mjs` is the sixth limb's half of the reference: `w`, `z`, `o` and `i` as identifiers, in a table cell and inside an inline code span, which is every place a one-letter Polish word is NOT — the reference passing is what says the context rule does not fire on code."
 }

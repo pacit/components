@@ -272,7 +272,13 @@ in NEITHER dictionary and therefore invisible to the three above
 ([`lesson-77`](../lessons.md#lesson-77)), and — the fifth limb — a **Polish stem carrying a
 derivational suffix**, which is in neither list for the opposite reason: the word list holds
 the noun it is made from and the abstract noun made from that one, and never got round to the
-agent noun made from either ([`lesson-80`](../lessons.md#lesson-80)). Those two limbs name the
+agent noun made from either ([`lesson-80`](../lessons.md#lesson-80)), and — the sixth limb — a
+**one-letter Polish word read by its company**: `w`, `z`, `o`, `u` and `i` are in both
+dictionaries, because `american-english` lists the whole alphabet, so every letter is
+subtracted as English before anything looks at it (plan 4.1); the limb reads the context
+instead — the letter between two words in prose, a Markdown line, a comment or a string, and
+never in code or in an inline code span — and reports how many such letters it read, which
+is the denominator the item said nobody measured. Those two limbs name the
 37 endings and the 26 suffixes they look for in the gate's own source, which is the inverse of
 what the register may do and not an exception to it: an excused shape lets a whole class
 through, a hunted shape lets a whole class be seen — and the rule holds wherever the shape is
@@ -291,8 +297,10 @@ read at all), a word the dictionary carries **only** with diacritics confirmed (
 folded), a word both languages share **not** confirmed (the English list was subtracted), and
 an English word confirmed as a **stem** — the fourth limb's failure is silence, not noise
 ([`lesson-48`](../lessons.md#lesson-48))
-**Control:** `tools/check-language.fixtures/` — 32 doctored inputs, each rejected on its own
-**rule**: a Polish comment in a file outside the register; a constant in `SCREAMING_CASE`
+**Control:** `tools/check-language.fixtures/` — 35 doctored inputs, each rejected on its own
+**rule**: a Polish comment in a file outside the register; a one-letter preposition between an
+English word and a quoted path, in a comment and in a template literal, with the limb's own
+probe blinded as the third; a constant in `SCREAMING_CASE`
 with no diacritics anywhere; diacritics the dictionary does not confirm; the opening quote;
 an English stem with a Polish ending, which no dictionary can be asked about; a Polish stem
 with a Polish suffix, which one can be asked about and answers with the two words either side

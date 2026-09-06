@@ -912,7 +912,7 @@ const measureRepository = async () => {
     const stylesAfter = readJson(join(app, 'angular.json'))?.projects?.consumer
       ?.architect?.build?.options?.styles;
 
-    // 5. build z SSR.
+    // 5. build with SSR.
     const build = run(process.execPath, [cli, 'build', 'consumer'], {
       cwd: app,
       maxBuffer: 32 * 1024 * 1024,

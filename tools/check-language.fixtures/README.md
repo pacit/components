@@ -32,7 +32,7 @@ the one thing at issue. The reference input is checked separately and first: wer
 defective itself, every case would fire because of it rather than because of its own —
 that is, this whole control would become what it stands against.
 
-## The five limbs, and why each has a case of its own
+## The six limbs, and why each has a case of its own
 
 Each limb is blind where the next one sees, so a case proving one proves nothing about
 the others:
@@ -54,6 +54,15 @@ the others:
   the noun it is made from and the abstract noun made from that one, and never got round
   to the agent noun. This one rode through the four limbs above in a neighbouring gate
   ([`lesson-80`](../../docs/lessons.md#lesson-80)).
+- `one-letter-word-in-prose` and `one-letter-in-a-message` — a ONE-LETTER Polish word,
+  `w`, standing between an English word and a quoted path, once in a comment and once in
+  a template literal. No dictionary can see it: `w` is in both, and `american-english`
+  lists the whole alphabet, so every letter is subtracted as English before anything looks
+  at it — which is how `has no card at all w \`docs/components/\``walked through the gate
+(plan 4.1). The sixth limb reads the company the letter keeps instead, and the reference
+holds the same letters as identifiers, in a table cell and inside a code span, which is
+every place the rule must stay quiet.`one-letter-blind` is its probe with the prose
+  taken out — the denominator case of this limb.
 
 ## The denominator has ten cases, not one
 

@@ -1,0 +1,6 @@
+{
+  "$what": "The sixth limb's probe with the prose taken out of it: the same letter as an identifier beside an operator, which no company makes a word. A limb that recognises nothing on its probe has stopped reading, and the class it alone can see goes invisible — which is green, not red.",
+  "check": "denominator",
+  "rule": "one-letter-blind",
+  "oneLetter": "const w = width;"
+}

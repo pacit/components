@@ -1312,7 +1312,7 @@ and everything a stranger can see still waits for 2.1 and a sentence.
 Small, good filler between the bigger items. Each is verified in the code and still current,
 and every one is held by a **binds at** rather than by anybody's mood.
 
-- [ ] **4.1 — a one-letter Polish word walks through the language gate**
+- [x] **4.1 — a one-letter Polish word walks through the language gate**
   - `tools/check-parts.mjs` said `has no card at all w \`docs/components/\`` — a Polish
 preposition in a message a maintainer reads, in the repository whose whole first rule is
 one language ([`req-project-language`](requirements/project.md#req-project-language))
@@ -1328,7 +1328,22 @@ one language ([`req-project-language`](requirements/project.md#req-project-langu
     the dictionary has a denominator nobody measures, and a word it never looks at is
     indistinguishable from a word it approved
   - binds at: the next language-gate task, or the first time a second one of these is found ·
-    _notes:_ —
+    _notes:_ **closed (2026-09-06), and the floor was not a floor.** The gate never had a
+    length limit: `american-english` lists the whole alphabet, so every one-letter word is
+    subtracted as English before anything looks at it — `w` walked through as a word the
+    other dictionary holds too. The sixth limb reads the COMPANY instead: `i`, `o`, `u`, `w`
+    or `z` between two words, a single space either side, the word before at least two
+    letters and the thing after a word or a quoted one; prose being a Markdown line outside
+    a fence, a comment or a string literal, and an inline code span or code being not. `a`
+    is left out as the English article, and the match is lowercase because the English
+    pronoun is `I`. Measured over the repository before the rule was written: ten such
+    letters stand between two words, one of them in prose — `build z SSR` in a comment of
+    `check-consumer.mjs`, translated — and one near-miss shaped the rule, `npm i zone.js`
+    inside a code span. The limb has the denominator this item asked for: the summary line
+    reports how many letters it read, and its own probe with the prose taken out is the
+    blind case. Three prepared inputs (the comment, the template literal that was the
+    original defect, the blinded probe), 35 in all; the reference holds the same letters as
+    identifiers, in a table cell and inside a code span
 
 - [ ] **4.2 — the two longest gates share one runner, and CI gives them half the cores**
   - measured, from the `task_history` table nx keeps in `.nx/workspace-data`:

@@ -1,0 +1,12 @@
+{
+  "$what": "A one-letter Polish preposition in a comment, between an English word and a quoted path — the sentence `check-parts` printed for a card that was missing (plan 4.1). No dictionary can see it: `w` is in both, and `american-english` lists the whole alphabet. Its company is what says it is Polish.",
+  "check": "repository",
+  "rule": "polish-outside-register",
+  "addFiles": [
+    {
+      "path": "tools/fresh.mjs",
+      "scope": "repository",
+      "text": "// has no card at all w `docs/components/`\nexport const value = 2;\n"
+    }
+  ]
+}

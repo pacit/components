@@ -60,6 +60,10 @@
       "reason": "U+201E, in the position it really appears in."
     },
     {
+      "file": "tools/check-language.fixtures/one-letter-word-in-prose.json",
+      "reason": "The one-letter preposition of plan 4.1, in the company that makes it a word: between an English word and a quoted path, in a comment."
+    },
+    {
       "file": "tools/check-language.fixtures/polish-comment-outside-register.json",
       "reason": "The plainest case there is: a comment nobody translated."
     },

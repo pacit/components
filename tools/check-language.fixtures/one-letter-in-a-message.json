@@ -1,0 +1,12 @@
+{
+  "$what": "The same word inside a template literal — the shape of the original defect, a message a maintainer reads, standing in code rather than in a comment. A string is prose; the backtick that opens it is not a code span.",
+  "check": "repository",
+  "rule": "polish-outside-register",
+  "addFiles": [
+    {
+      "path": "tools/fresh.mjs",
+      "scope": "repository",
+      "text": "export const message = (card) => `${card} has no card at all w \\`docs/components/\\``;\n"
+    }
+  ]
+}
