@@ -34,7 +34,7 @@
     [attr.required]="required() || null"
     [attr.aria-label]="ariaLabel() || null"
     [attr.aria-labelledby]="ariaLabelledby() || null"
-    [attr.aria-invalid]="showInvalid() || malformed() ? 'true' : null"
+    [attr.aria-invalid]="showInvalid() ? 'true' : null"
     [attr.aria-describedby]="describedBy()"
     (input)="onInput()"
     (blur)="onBlur()"

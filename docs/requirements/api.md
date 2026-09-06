@@ -214,10 +214,17 @@ knocks over the control's entire test suite
 hint otherwise. The rule is the same for the chrome's footer and for a control drawing its own
 messages, so wrapping a control in `pct-field` does not change what it shows. The message that
 gives way **leaves the DOM** rather than being hidden, and `aria-describedby` names exactly the
-one on the screen.
+one on the screen. What a control knows and the form cannot — text that is not a date, not a
+number — goes **first** on that line and waits for no touch, through the contract's second
+channel, `ownErrors`
+([0070](../decisions/0070-what-the-control-knows-and-the-form-cannot-is-a-second-channel.md)).
 
 **Gate:** `libs/components/field/src/field-controls.spec.ts` — the three controls that draw
-their own messages, each in both states; `tools/check-aria.mjs` (point 6, target `check-aria`)
+their own messages, each in both states; `libs/components/core/src/core.spec.ts ›
+pctFieldMessages` — the control's own error first and gated by nothing, the form's after it and
+once touched; `libs/components/date/src/date.spec.ts › junk in the field` and
+`libs/components/field/src/number.spec.ts` — the sentence in the control's own line and in the
+chrome's; `tools/check-aria.mjs` (point 6, target `check-aria`)
 — every template of the library, so a component nobody has written yet is covered from its
 first commit
 **Control:** `tools/check-aria.fixtures/hint-beside-error` — the same two messages in two
@@ -326,7 +333,10 @@ platform has at all — what it borrows is the row, which is a button)
 **Promise.** `[pctNumber]` stands on `<input type="text">` with `role="spinbutton"`,
 `aria-valuenow` / `aria-valuetext` and parsing of its own built on `Intl.NumberFormat`. The
 value is `number | null` (empty is `null`, never `0` or `NaN`). The `min`/`max` bounds come
-from the schema validators, not from a repetition in the template.
+from the schema validators, not from a repetition in the template. Text that is not a number
+is **kept** in the field and named — the native control's failing, an empty value with no way
+back to what was typed, is not repeated one floor up
+([0070](../decisions/0070-what-the-control-knows-and-the-form-cannot-is-a-second-channel.md)).
 
 **Gate:** `libs/components/field/src/number.spec.ts`,
 `apps/sandbox-e2e/src/number.spec.ts`

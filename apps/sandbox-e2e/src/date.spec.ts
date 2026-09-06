@@ -129,6 +129,14 @@ test.describe('Date — the field', () => {
     await expect(input).toHaveValue('not a date');
     await expect(input).toHaveAttribute('aria-invalid', 'true');
     await expect(host).toHaveAttribute('data-pct-malformed', '');
+    // And says so in the message line, in the language the application gave it — the
+    // control's own channel (0070), which the form's `errors` input could not carry.
+    const error = host.locator('[data-pct-part="error"]');
+    await expect(error).toHaveText('Pas une date');
+    await expect(input).toHaveAttribute(
+      'aria-describedby',
+      await attrOf(error, 'id'),
+    );
 
     // What the platform's own control would have done with the same keystrokes, measured on
     // the same page rather than quoted: an empty value and no way back to what was typed.

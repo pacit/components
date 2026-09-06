@@ -85,6 +85,17 @@ export interface PctTexts {
   readonly dateMonthLetter: string;
   readonly dateYearLetter: string;
   /**
+   * Date: the sentence the field says about text that is not a date. The control's own
+   * error, first in the message line ahead of the form's — the form sees `null` and would
+   * call three typed numbers "required" (0070).
+   */
+  readonly dateMalformed: string;
+  /**
+   * Number: the same sentence for text that is not a number, which the field now keeps
+   * instead of clearing — a user is shown what they typed, and told what it is not (0070).
+   */
+  readonly numberMalformed: string;
+  /**
    * Toast: the accessible name of the cross that takes a message down. The button draws
    * nothing but the cross, so this string is the only name it has — the dialog's `dialogClose`
    * one component over, and deliberately a second key rather than a shared one: "close" is
@@ -160,6 +171,8 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   dateDayLetter: 'd',
   dateMonthLetter: 'm',
   dateYearLetter: 'y',
+  dateMalformed: 'Not a date',
+  numberMalformed: 'Not a number',
   toastDismiss: 'Dismiss',
   drawerClose: 'Close',
   paginationLabel: 'Pagination',

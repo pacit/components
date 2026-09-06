@@ -1841,7 +1841,7 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
   - four rules and four fixtures (38 → 42), each proved by disarming it: all four answer
     "PASSED", none moves onto a neighbour
 
-- [ ] **4.12 — a control knows its text is not a date and has no channel to say so**
+- [x] **4.12 — a control knows its text is not a date and has no channel to say so**
   - `<pct-date>` reports malformed text with `aria-invalid="true"` and a `data-pct-malformed`
     state, and puts **no sentence** in the message line. Not a wording decision: `errors` is an
     `input` the form owns, and `PctFieldControl.errors` is the signal the chrome reads — so a
@@ -1856,7 +1856,21 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     complaint about `<input type="number">` committed one floor down
   - binds at: **the first control that has to say something the form cannot know**, which is
     either the next one with a parser (a time field, a masked input) or 4.12 itself being
-    picked up as filler · _notes:_ —
+    picked up as filler · _notes:_ **closed (2026-09-06), as the contract's second channel.**
+    `PctFieldControl.ownErrors` is an optional signal of what the control knows and the form
+    cannot; `pctFieldMessages` reads it FIRST and gates it by nothing, and the chrome merges
+    it the same way, so a control drawing its own line and one wrapped in `pct-field` say the
+    same sentence in the same place
+    ([0070](decisions/0070-what-the-control-knows-and-the-form-cannot-is-a-second-channel.md)).
+    The date field says `Not a date`; the number field now KEEPS text it cannot parse and
+    says `Not a number`, taking the report back on a keystroke or a value from outside —
+    both `PctTexts` keys, both translated in the sandbox. What it cost: `./core` +112 B,
+    `./date` +192 B, `./field` +515 B and 58 B on every other entrypoint, because the default
+    texts travel with `core`. Measured: the core, date and field unit specs green, the eight
+    static gates green, and date, number, field and their audits **138 of 138** in three
+    engines. On the way, a calendar case went red on its own — the today mark's range was a
+    constant written for weeks from Sunday, and the Host's locale starts them on Monday
+    (5e347bb, its own commit)
 
 - [x] **4.13 — a state attribute that contains another entrypoint's selector is read as that
       entrypoint**

@@ -46,12 +46,29 @@ test.describe('PctNumber', () => {
     await expect(price).toHaveValue('12,34');
   });
 
-  test('content that cannot be parsed is rejected', async ({ page }) => {
+  /**
+   * Rejected and KEPT (0070): the value is empty, the text stays, and the wrapper's message
+   * line says what it is not — the control's own sentence, in the application's language.
+   * The field used to clear the text, which is `<input type="number">`'s own failing.
+   */
+  test('content that cannot be parsed is rejected, kept and named', async ({
+    page,
+  }) => {
     const price = page.getByTestId('number-price');
+    const error = page
+      .getByTestId('field-price')
+      .locator('[data-pct-part="field-error"]');
 
     await price.fill('abc');
     await price.blur();
-    await expect(price).toHaveValue('');
+    await expect(price).toHaveValue('abc');
+    await expect(price).toHaveAttribute('aria-invalid', 'true');
+    await expect(error).toHaveText('Pas un nombre');
+
+    await price.fill('12');
+    await price.blur();
+    await expect(price).toHaveValue('12,00');
+    await expect(error).toHaveCount(0);
   });
 
   test('the arrows change the value by step', async ({ page }) => {

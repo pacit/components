@@ -12,6 +12,7 @@ import {
   numberAttribute,
   output,
   signal,
+  untracked,
 } from '@angular/core';
 import { NgControl } from '@angular/forms';
 import { FormField } from '@angular/forms/signals';
@@ -19,10 +20,12 @@ import type { FormValueControl, ValidationError } from '@angular/forms/signals';
 import {
   nextPctId,
   PCT_FIELD,
+  PCT_TEXTS,
   pctAttachToField,
   PctFieldControl,
   PctFieldCursor,
   PctLabelStrategy,
+  PctValidationError,
 } from '@pacit/components/core';
 
 /**
@@ -98,6 +101,7 @@ export class PctNumber
 {
   private readonly el = inject<ElementRef<HTMLInputElement>>(ElementRef);
   private readonly field = inject(PCT_FIELD, { optional: true });
+  protected readonly texts = inject(PCT_TEXTS);
 
   /** The value — `null` means the field is empty. */
   readonly value = model<number | null>(null);
@@ -168,8 +172,22 @@ export class PctNumber
 
   protected readonly describedBy = signal<string | null>(null);
 
+  // --- the state the form cannot see ---
+
+  /**
+   * There is text in the field and it is not a number. Kept where the user left it and said
+   * so, through the contract's second channel (0070) — the field used to clear it on blur,
+   * which is `<input type="number">`'s own failing committed one floor up (`req-api-number`).
+   */
+  private readonly rejected = signal<string | null>(null);
+  readonly ownErrors = computed<readonly PctValidationError[]>(() =>
+    this.rejected() !== null && !this.disabled()
+      ? [{ message: this.texts().numberMalformed }]
+      : [],
+  );
+
   protected readonly showInvalid = computed(
-    () => this.invalid() && this.touched(),
+    () => (this.invalid() && this.touched()) || this.ownErrors().length > 0,
   );
 
   /** With no fractions the mobile keyboard can be purely numeric. */
@@ -234,11 +252,20 @@ export class PctNumber
   constructor() {
     pctAttachToField(this.field, this);
 
+    // What the field shows: the value formatted, or — while there is none — the text the
+    // user left behind that is not a number. A value arriving from outside takes the
+    // report back, which is the one thing a commit cannot see (the date field's reading).
     effect(() => {
       const v = this.value();
       if (this.typing()) return;
       const el = this.el.nativeElement;
-      const text = v === null ? '' : this.formatter().format(v);
+      if (v === null) {
+        const junk = untracked(() => this.rejected()) ?? '';
+        if (el.value !== junk) el.value = junk;
+        return;
+      }
+      untracked(() => this.rejected.set(null));
+      const text = this.formatter().format(v);
       if (el.value !== text) el.value = text;
     });
 
@@ -296,6 +323,8 @@ export class PctNumber
   protected onInput(): void {
     this.typing.set(true);
     const text = this.el.nativeElement.value;
+    // The report is taken back on the first keystroke and put back, if at all, on commit.
+    this.rejected.set(null);
     if (text.trim() === '') {
       this.value.set(null);
       return;
@@ -307,8 +336,13 @@ export class PctNumber
   }
 
   protected onBlur(): void {
-    // The commit reads the text, not the signal: it rejects junk, rounds and clamps.
-    this.commit(this.parse(this.el.nativeElement.value));
+    // The commit reads the text, not the signal: it rejects junk, rounds and clamps. Junk is
+    // rejected and KEPT — the value is empty and the text is not, and the sentence saying
+    // so is this control's own (0070).
+    const text = this.el.nativeElement.value;
+    const parsed = this.parse(text);
+    this.rejected.set(text.trim() !== '' && parsed === null ? text : null);
+    this.commit(parsed);
     this.touch.emit();
   }
 

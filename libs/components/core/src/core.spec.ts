@@ -83,6 +83,30 @@ describe('@pacit/components/core', () => {
       expect(errorText()).toBe('');
     });
 
+    /**
+     * The second channel (0070): what the control knows and the form cannot goes first,
+     * and needs no touch — it is written on commit, which is the field being left.
+     */
+    it("the control's own error comes first, and is gated by nothing", () => {
+      const own = signal<readonly { message?: string }[]>([]);
+      const { errorText, showInvalid, showError } = pctFieldMessages({
+        ...source({ invalid: true, errors: [{ message: 'Required' }] }),
+        own,
+      });
+
+      expect(errorText()).toBe('Required');
+      expect(showInvalid()).toBe(false);
+
+      own.set([{ message: 'Not a date' }]);
+      expect(errorText()).toBe('Not a date');
+      expect(showInvalid()).toBe(true);
+      expect(showError()).toBe(true);
+
+      own.set([]);
+      expect(errorText()).toBe('Required');
+      expect(showInvalid()).toBe(false);
+    });
+
     it('the error state lights up only after a touch', () => {
       const src = source({ invalid: true, errors: [{ message: 'Required' }] });
       const { showInvalid, showError } = pctFieldMessages(src);

@@ -270,7 +270,13 @@ describe('PctNumber', () => {
       expect(inputOf(fixture).value).toBe('1\u00a0234');
     });
 
-    it('a commit rejects content that cannot be parsed', async () => {
+    /**
+     * Junk is rejected and KEPT (0070): the value is empty, the text stays where the user
+     * left it, and the control says what it is not — `aria-invalid` and a sentence of its
+     * own. The field used to clear it, which is `<input type="number">`'s failing one floor
+     * up (`req-api-number`).
+     */
+    it('a commit rejects content that cannot be parsed, and keeps it', async () => {
       const fixture = await render(Host);
       fixture.componentInstance.value.set(7);
       await fixture.whenStable();
@@ -279,7 +285,43 @@ describe('PctNumber', () => {
       await blur(fixture);
 
       expect(fixture.componentInstance.value()).toBeNull();
-      expect(inputOf(fixture).value).toBe('');
+      expect(inputOf(fixture).value).toBe('abc');
+      expect(inputOf(fixture).getAttribute('aria-invalid')).toBe('true');
+
+      // A keystroke takes the report back; a number typed over it commits as ever.
+      await type(fixture, '12');
+      expect(inputOf(fixture).getAttribute('aria-invalid')).toBeNull();
+      await blur(fixture);
+      expect(fixture.componentInstance.value()).toBe(12);
+      expect(inputOf(fixture).value).toBe('12');
+    });
+
+    it('a value arriving from outside takes the report back', async () => {
+      const fixture = await render(Host);
+      await type(fixture, 'abc');
+      await blur(fixture);
+      expect(inputOf(fixture).getAttribute('aria-invalid')).toBe('true');
+
+      fixture.componentInstance.value.set(5);
+      await fixture.whenStable();
+
+      expect(inputOf(fixture).value).toBe('5');
+      expect(inputOf(fixture).getAttribute('aria-invalid')).toBeNull();
+    });
+
+    it("inside the wrapper the sentence is the chrome's, ahead of the form's", async () => {
+      const fixture = await render(NumberInFieldHost);
+      await type(fixture, 'abc');
+      await blur(fixture);
+
+      const error = fixture.nativeElement.querySelector(
+        '[data-pct-part="field-error"]',
+      ) as HTMLElement | null;
+      expect(error?.textContent?.trim()).toBe('Not a number');
+      expect(inputOf(fixture).getAttribute('aria-describedby')).toBe(error?.id);
+      expect(
+        fixture.nativeElement.querySelector('[data-pct-part="field-hint"]'),
+      ).toBeNull();
     });
   });
 

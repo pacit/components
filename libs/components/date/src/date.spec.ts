@@ -6,6 +6,7 @@ import {
 } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
+import { requiredError, type ValidationError } from '@angular/forms/signals';
 import { providePctTexts } from '@pacit/components/core';
 import { PctField } from '@pacit/components/field';
 
@@ -65,6 +66,9 @@ async function blur(f: ComponentFixture<unknown>) {
     [readonly]="readonly()"
     [required]="required()"
     [showFormat]="showFormat()"
+    [invalid]="invalid()"
+    [touched]="touched()"
+    [errors]="errors()"
     (touch)="touched.set(true)"
   />`,
 })
@@ -84,6 +88,8 @@ class Host {
   readonly required = signal(false);
   readonly showFormat = signal(true);
   readonly touched = signal(false);
+  invalid = signal(false);
+  errors = signal<readonly ValidationError.WithOptionalFieldTree[]>([]);
 }
 
 @Component({
@@ -184,6 +190,55 @@ describe('PctDate — junk in the field', () => {
           .querySelector('pct-date')
           ?.hasAttribute('data-pct-malformed'),
     ).toBe(true);
+  });
+
+  /**
+   * The sentence, through the contract's second channel (0070): the form sees `null` and
+   * calls a required field empty, so its message would stand beside three numbers the user
+   * typed. The control's own goes first, in the default wording and in the application's.
+   */
+  it('says it is not a date in the message line, ahead of the form', async () => {
+    const f = await render(Host);
+    f.componentInstance.invalid.set(true);
+    f.componentInstance.errors.set([
+      requiredError({ message: 'Start date is required' }),
+    ]);
+    await type(f, 'not a date');
+    await blur(f);
+
+    const error = f.nativeElement.querySelector(
+      '[data-pct-part="error"]',
+    ) as HTMLElement | null;
+    expect(error?.textContent?.trim()).toBe('Not a date');
+    expect(controlOf(f).getAttribute('aria-describedby')).toBe(error?.id);
+
+    // A date typed over it takes the sentence back, and the form's own stands again.
+    await type(f, '01/12/2026');
+    await blur(f);
+    expect(
+      f.nativeElement
+        .querySelector('[data-pct-part="error"]')
+        ?.textContent?.trim(),
+    ).toBe('Start date is required');
+  });
+
+  it('says it in the language the application gave it', async () => {
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({
+      providers: [
+        provideZonelessChangeDetection(),
+        providePctTexts({ dateMalformed: 'Pas une date' }),
+      ],
+    });
+    const f = await render(Host);
+    await type(f, 'junk');
+    await blur(f);
+
+    expect(
+      f.nativeElement
+        .querySelector('[data-pct-part="error"]')
+        ?.textContent?.trim(),
+    ).toBe('Pas une date');
   });
 
   it('says nothing about a date half-typed', async () => {

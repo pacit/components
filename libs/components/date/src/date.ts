@@ -33,6 +33,7 @@ import {
   PctLabelStrategy,
   PctOverlayPanel,
   PctSize,
+  PctValidationError,
 } from '@pacit/components/core';
 import { PctIcon } from '@pacit/components/icon';
 
@@ -219,10 +220,30 @@ export class PctDate
   /** What the chrome hands over inside a field; `null` standing alone. */
   private readonly fieldDescribedBy = signal<string | null>(null);
 
+  // --- the state the form cannot see ---
+
+  /**
+   * There is text in the field and it is not a date.
+   *
+   * The form sees `null` and calls it empty, which for a required field means the user is
+   * told "this is required" while looking at three numbers they typed. The control knows
+   * better and says so with `aria-invalid`, a state attribute and — through `ownErrors`, the
+   * contract's second channel (0070) — a sentence of its own in the message line, ahead of
+   * the form's, whether the field draws that line itself or a `pct-field` does.
+   */
+  private readonly rejected = signal<string | null>(null);
+  protected readonly malformed = computed(
+    () => this.rejected() !== null && !this.disabled(),
+  );
+  readonly ownErrors = computed<readonly PctValidationError[]>(() =>
+    this.malformed() ? [{ message: this.texts().dateMalformed }] : [],
+  );
+
   private readonly messages = pctFieldMessages({
     invalid: this.invalid,
     touched: this.touched,
     errors: this.errors,
+    own: this.ownErrors,
   });
   protected readonly errorText = this.messages.errorText;
   protected readonly showInvalid = this.messages.showInvalid;
@@ -258,22 +279,6 @@ export class PctDate
     // The read is defensive from the first version rather than after the first exception.
     return day !== null && isPctDay(day) ? this.format().format(day) : '';
   });
-
-  // --- the state the form cannot see ---
-
-  /**
-   * There is text in the field and it is not a date.
-   *
-   * The form sees `null` and calls it empty, which for a required field means the user is
-   * told "this is required" while looking at three numbers they typed. The control knows
-   * better and says so with `aria-invalid` and a state attribute — **and with nothing else,
-   * because there is nowhere to say it**: the message line belongs to `errors`, and `errors`
-   * is an input the form owns.
-   */
-  private readonly rejected = signal<string | null>(null);
-  protected readonly malformed = computed(
-    () => this.rejected() !== null && !this.disabled(),
-  );
 
   /**
    * While the user is typing the field's content is not rewritten — otherwise the caret would

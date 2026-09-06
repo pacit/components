@@ -56,6 +56,14 @@ export interface PctFieldControl {
   readonly required: Signal<boolean>;
   readonly disabled: Signal<boolean>;
   readonly errors: Signal<readonly PctValidationError[]>;
+  /**
+   * What the control knows and the form cannot (0070): text in the field that is not a date,
+   * not a number. The form sees `null` and calls a required field empty while the user looks
+   * at what they typed, so the control's own sentence goes FIRST in the message line and is
+   * gated by nothing — it exists only once the field was left. Optional: most controls have
+   * nothing the form does not see.
+   */
+  readonly ownErrors?: Signal<readonly PctValidationError[]>;
   /** The chrome passes the hint and error ids; the control exposes them on itself. */
   setDescribedBy(ids: string | null): void;
   /**
@@ -140,10 +148,20 @@ export function pctFieldMessages(src: {
   invalid: Signal<boolean>;
   touched: Signal<boolean>;
   errors: Signal<readonly PctValidationError[]>;
+  /** The control's own channel (0070): ahead of the form's verdict, and gated by nothing. */
+  own?: Signal<readonly PctValidationError[]>;
 }) {
-  const errorText = computed(() => src.errors()?.[0]?.message ?? '');
-  /** An error is signalled only once touched — an empty form does not glow red. */
-  const showInvalid = computed(() => src.invalid() && src.touched());
+  const own = computed(() => src.own?.() ?? []);
+  const errorText = computed(
+    () => own()[0]?.message ?? src.errors()?.[0]?.message ?? '',
+  );
+  /**
+   * The form's error is signalled only once touched — an empty form does not glow red. The
+   * control's own is not gated: it is written on commit, which is the field being left.
+   */
+  const showInvalid = computed(
+    () => (src.invalid() && src.touched()) || own().length > 0,
+  );
   const showError = computed(() => showInvalid() && errorText() !== '');
   return { errorText, showInvalid, showError };
 }

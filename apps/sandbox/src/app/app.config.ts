@@ -40,6 +40,8 @@ export const appConfig: ApplicationConfig = {
       dateDayLetter: 'j',
       dateMonthLetter: 'm',
       dateYearLetter: 'a',
+      dateMalformed: 'Pas une date',
+      numberMalformed: 'Pas un nombre',
     }),
     // The number field formats by LOCALE_ID — here that gives a decimal comma and a
     // narrow no-break space as the thousands separator. Deliberately not English:

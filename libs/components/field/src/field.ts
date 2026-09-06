@@ -96,11 +96,14 @@ export class PctField implements PctFieldApi {
     () => this.control()?.disabled() ?? false,
   );
   private readonly errors = computed(() => this.control()?.errors() ?? []);
+  /** What the control knows and the form cannot — ahead of the form's verdict (0070). */
+  private readonly own = computed(() => this.control()?.ownErrors?.() ?? []);
 
   private readonly messages = pctFieldMessages({
     invalid: this.invalid,
     touched: this.touched,
     errors: this.errors,
+    own: this.own,
   });
   protected readonly errorText = this.messages.errorText;
   protected readonly showInvalid = this.messages.showInvalid;
