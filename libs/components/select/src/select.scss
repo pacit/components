@@ -281,13 +281,37 @@ input.pct-select__trigger::placeholder {
      size — see `panelFont`). The token is a fallback in case the panel renders before that
      read. The options inherit it from the panel, so one rule describes the whole list. */
   font-size: var(--pct-select-font-size);
-  max-height: var(--pct-select-panel-max-height);
-  overflow-y: auto;
   background: var(--pct-select-panel-bg);
   border: 1px solid var(--pct-select-panel-border);
   border-radius: var(--pct-select-panel-radius);
   box-shadow: var(--pct-select-panel-shadow);
+}
+
+/* The list is the element that scrolls, and it has to be (0038, 0069): axe's
+   `scrollable-region-focusable` exempts a combobox's own popup — the listbox the trigger
+   controls — and a scrolling surface AROUND that listbox is a serious violation on the same
+   rows. The cap is the panel's token less the border, which is the panel's: the token says
+   how tall the panel gets, border included, as it did when the panel was the list. */
+.pct-select__list {
+  /* Border-box like the panel was: the cap counts the padding, or the list stands one
+     padding taller than the panel it replaced (measured: 248 px against 240). */
+  box-sizing: border-box;
+  max-height: calc(var(--pct-select-panel-max-height) - 2px);
+  overflow-y: auto;
   padding: var(--pct-space-2) 0;
+  /* The panel's own surface, said again on the element that scrolls: a scroller is a
+     compositing layer, and text on a layer with no opaque background loses its subpixel
+     antialiasing — five panel pictures moved by their edges and nothing else when the list
+     first scrolled with no background of its own (lesson-165's shape, one element in). */
+  background: var(--pct-select-panel-bg);
+  /* Inside the panel's border, so the radius is the panel's less that border — a square
+     opaque box in a rounded surface paints its corners over the page (24 pixels). */
+  border-radius: calc(var(--pct-select-panel-radius) - 1px);
+
+  /* Nothing drawn, nothing to pad: the sentence beside it carries its own room. */
+  &:empty {
+    padding: 0;
+  }
 }
 
 /* The space the rows a window did not draw would have taken, and it is a PSEUDO-ELEMENT
@@ -307,21 +331,21 @@ input.pct-select__trigger::placeholder {
    property is written by the component on the element itself and is deliberately NOT a
    `--pct-…` name — the prefix is the promise that a skin may set it, and a number the window
    computes is not a skin's to move. */
-.pct-select__panel[data-pct-virtual]::before,
-.pct-select__panel[data-pct-virtual]::after,
-.pct-select__panel[data-pct-virtual] .pct-select__group::before,
-.pct-select__panel[data-pct-virtual] .pct-select__group::after {
+.pct-select__list[data-pct-virtual]::before,
+.pct-select__list[data-pct-virtual]::after,
+.pct-select__list[data-pct-virtual] .pct-select__group::before,
+.pct-select__list[data-pct-virtual] .pct-select__group::after {
   content: '';
   display: block;
 }
 
-.pct-select__panel[data-pct-virtual]::before,
-.pct-select__panel[data-pct-virtual] .pct-select__group::before {
+.pct-select__list[data-pct-virtual]::before,
+.pct-select__list[data-pct-virtual] .pct-select__group::before {
   block-size: var(--_pct-select-lead, 0);
 }
 
-.pct-select__panel[data-pct-virtual]::after,
-.pct-select__panel[data-pct-virtual] .pct-select__group::after {
+.pct-select__list[data-pct-virtual]::after,
+.pct-select__list[data-pct-virtual] .pct-select__group::after {
   block-size: var(--_pct-select-tail, 0);
 }
 
@@ -339,7 +363,7 @@ input.pct-select__trigger::placeholder {
    right, so RTL mirrors with it). The rule is scoped to the panel of a many-choice control:
    the two controls draw ONE template, and a single-choice row that became a flex box would be
    a layout change nobody asked for. */
-.pct-select__panel[data-pct-multiple] .pct-select__option {
+.pct-select__list[data-pct-multiple] .pct-select__option {
   display: flex;
   align-items: center;
   gap: var(--pct-space-3);
@@ -388,6 +412,8 @@ input.pct-select__trigger::placeholder {
 }
 
 .pct-select__empty {
+  /* The room the list's padding gave it while it stood inside — the same picture. */
+  margin-block: var(--pct-space-2);
   padding: var(--pct-select-option-padding-y) var(--pct-select-option-padding-x);
   color: var(--pct-select-hint-fg);
 }

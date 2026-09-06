@@ -366,6 +366,7 @@ export class PctMultiSelectHarness extends PctHarness<
   | 'group-label'
   | 'hint'
   | 'label'
+  | 'list'
   | 'option'
   | 'option-check'
   | 'panel'
@@ -383,6 +384,7 @@ export class PctMultiSelectHarness extends PctHarness<
     'group-label',
     'hint',
     'label',
+    'list',
     'option',
     'option-check',
     'panel',
@@ -402,6 +404,7 @@ export class PctSelectHarness extends PctHarness<
   | 'group-label'
   | 'hint'
   | 'label'
+  | 'list'
   | 'option'
   | 'option-check'
   | 'panel'
@@ -419,6 +422,7 @@ export class PctSelectHarness extends PctHarness<
     'group-label',
     'hint',
     'label',
+    'list',
     'option',
     'option-check',
     'panel',

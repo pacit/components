@@ -12,6 +12,9 @@ test.describe('PctSelect — a combobox with a panel', () => {
   ) => page.getByTestId(id).locator('[data-pct-part="trigger"]');
   const panel = (page: import('@playwright/test').Page) =>
     page.locator('[data-pct-part="panel"]');
+  /** The listbox inside the panel — the list, and the element that scrolls (0069). */
+  const list = (page: import('@playwright/test').Page) =>
+    page.locator('[data-pct-part="list"]');
   const options = (page: import('@playwright/test').Page) =>
     page.locator('[data-pct-part="option"]');
 
@@ -345,6 +348,28 @@ test.describe('PctSelect — a combobox with a panel', () => {
       await expect(live(page, 'assertive')).toHaveText('');
     });
 
+    /**
+     * The sentence is the panel's, not the list's (0069). A `listbox` may own options and
+     * groups and nothing else — a message row inside it was a critical
+     * `aria-required-children` on this very demo, from the day the select was built to the
+     * day `a11y.spec.ts` first opened an empty panel (plan 4.8) — and an empty listbox is a
+     * state, which axe marks for review and does not fail. The audit is the gate; this case
+     * is the shape it passes on.
+     */
+    test('the sentence stands beside the list, not in it', async ({ page }) => {
+      await trigger(page, 'select-empty').click();
+      await expect(panel(page)).toBeVisible();
+
+      await expect(list(page)).toHaveRole('listbox');
+      await expect(list(page).locator('*')).toHaveCount(0);
+      await expect(panel(page).locator('[data-pct-part="empty"]')).toHaveText(
+        'Aucune option',
+      );
+      await expect(list(page).locator('[data-pct-part="empty"]')).toHaveCount(
+        0,
+      );
+    });
+
     test('closing withdraws it, and the next opening says it again', async ({
       page,
     }) => {
@@ -399,12 +424,12 @@ test.describe('PctSelect — a combobox with a panel', () => {
       page,
     }) => {
       await multi(page).click();
-      await expect(panel(page)).toHaveAttribute('aria-multiselectable', 'true');
+      await expect(list(page)).toHaveAttribute('aria-multiselectable', 'true');
       await page.keyboard.press('Escape');
 
       await trigger(page).click();
       await expect(panel(page)).toBeVisible();
-      await expect(panel(page)).not.toHaveAttribute('aria-multiselectable');
+      await expect(list(page)).not.toHaveAttribute('aria-multiselectable');
     });
 
     test('a pick does not end the question, and a second one takes it back', async ({
@@ -478,16 +503,17 @@ test.describe('PctSelect — a combobox with a panel', () => {
         await attrOf(heading, 'id'),
       );
 
-      // The loose option above the first heading is the listbox's own child; the rest hang
-      // under a group. `role="option"` inside a plain wrapper would be an option with no
-      // owner, which is why the nameless section is drawn with no element at all.
+      // The loose option above the first heading is the listbox's own child — the `list`
+      // inside the panel (0069); the rest hang under a group. `role="option"` inside a plain
+      // wrapper would be an option with no owner, which is why the nameless section is drawn
+      // with no element at all.
       const first = options(page).first();
       await expect(first).toHaveText('Anywhere');
       expect(
         await first.evaluate((el) =>
           el.parentElement?.getAttribute('data-pct-part'),
         ),
-      ).toBe('panel');
+      ).toBe('list');
       expect(
         await options(page)
           .nth(1)
@@ -959,7 +985,7 @@ test.describe('PctSelect — a combobox with a panel', () => {
       // two it replaces, so an application that translated the library is not told in English
       // that its list is late (req-api-texts).
       await expect(empty(page)).toHaveText('Chargement…');
-      await expect(panel(page)).toHaveAttribute('aria-busy', 'true');
+      await expect(list(page)).toHaveAttribute('aria-busy', 'true');
       // Announced as well, because focus stays on the trigger: with no option to point at,
       // nothing inside the panel has a reader.
       await expect(page.locator('[data-pct-live="polite"]')).toHaveText(
@@ -979,7 +1005,7 @@ test.describe('PctSelect — a combobox with a panel', () => {
       await expect(options(page).first()).toHaveText('Poland');
       // The state comes off with the request: a panel left busy is one every reader keeps
       // treating as unfinished.
-      await expect(panel(page)).not.toHaveAttribute('aria-busy', 'true');
+      await expect(list(page)).not.toHaveAttribute('aria-busy', 'true');
       await expect(page.locator('[data-pct-live="polite"]')).toHaveText('');
     });
 
@@ -1036,7 +1062,7 @@ test.describe('PctSelect — a combobox with a panel', () => {
       // whole of what a stale reading needs.
       await send(page, 'ask');
 
-      await expect(panel(page)).toHaveAttribute('aria-busy', 'true');
+      await expect(list(page)).toHaveAttribute('aria-busy', 'true');
       await expect(empty(page)).toHaveText('Chargement…');
       // And the cursor goes with the rows: an id left in the attribute would name nothing.
       await expect(combo(page)).not.toHaveAttribute('aria-activedescendant');
@@ -1102,7 +1128,7 @@ test.describe('PctSelect — a combobox with a panel', () => {
         '5000',
       );
       await expect(options(page).first()).toHaveAttribute('aria-posinset', '1');
-      await expect(panel(page)).toHaveAttribute('data-pct-virtual', '');
+      await expect(list(page)).toHaveAttribute('data-pct-virtual', '');
     });
 
     test('the same list drawn whole puts five thousand rows on the page', async ({
@@ -1128,13 +1154,11 @@ test.describe('PctSelect — a combobox with a panel', () => {
       page,
     }) => {
       await whole(page).click();
-      const real = await panel(page).evaluate((el) => el.scrollHeight);
+      const real = await list(page).evaluate((el) => el.scrollHeight);
       await page.keyboard.press('Escape');
 
       await windowed(page).click();
-      const windowedHeight = await panel(page).evaluate(
-        (el) => el.scrollHeight,
-      );
+      const windowedHeight = await list(page).evaluate((el) => el.scrollHeight);
 
       // One pixel of tolerance for the subpixel rounding of a single row, and not one row's
       // worth: a window built on a rounded height would be out by two thousand.
@@ -1147,7 +1171,7 @@ test.describe('PctSelect — a combobox with a panel', () => {
       await windowed(page).click();
       await expect(options(page).first()).toHaveText('Row 0');
 
-      await panel(page).evaluate((el) => {
+      await list(page).evaluate((el) => {
         el.scrollTop = el.scrollHeight;
       });
       await expect(options(page).last()).toHaveText('Row 4999');
@@ -1156,7 +1180,7 @@ test.describe('PctSelect — a combobox with a panel', () => {
       // pointing at a row nobody drew is a reference to nothing.
       await expect(windowed(page)).not.toHaveAttribute('aria-activedescendant');
 
-      await panel(page).evaluate((el) => {
+      await list(page).evaluate((el) => {
         el.scrollTop = 0;
       });
       await expect(options(page).first()).toHaveText('Row 0');
@@ -1208,7 +1232,7 @@ test.describe('PctSelect — a combobox with a panel', () => {
       await trigger(page, 'select-many-groups').click();
       await expect(groups.first()).toBeVisible();
 
-      await panel(page).evaluate((el) => {
+      await list(page).evaluate((el) => {
         el.scrollTop = el.scrollHeight / 2;
       });
 

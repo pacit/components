@@ -45,6 +45,10 @@ const triggerOf = (f: ComponentFixture<unknown>) =>
 const panel = () =>
   document.querySelector('[data-pct-part="panel"]') as HTMLElement | null;
 
+/** The listbox inside the panel — the list, and the element that scrolls (0069). */
+const list = () =>
+  document.querySelector('[data-pct-part="list"]') as HTMLElement | null;
+
 const optionsInPanel = () =>
   Array.from(
     document.querySelectorAll('[data-pct-part="option"]'),
@@ -513,11 +517,11 @@ describe('PctSelect', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    expect(panel()?.getAttribute('role')).toBe('listbox');
+    expect(list()?.getAttribute('role')).toBe('listbox');
     expect(optionsInPanel()).toHaveLength(4);
     expect(triggerOf(fixture).getAttribute('aria-expanded')).toBe('true');
     expect(triggerOf(fixture).getAttribute('aria-controls')).toBe(
-      part(document, 'panel').id,
+      part(document, 'list').id,
     );
   });
 
@@ -953,6 +957,25 @@ describe('PctSelect', () => {
       await openEmpty();
 
       expect(live()).toBe('No options');
+    });
+
+    /**
+     * The sentence stands BESIDE the list, not in it (0069): a `listbox` may own options
+     * and groups and nothing else, so a message row inside it was a critical
+     * `aria-required-children` — measured over `select-empty` in `a11y.spec.ts`, on a panel
+     * four audits stood over and none had opened — and an empty listbox is a state, which
+     * axe marks for review and does not fail.
+     */
+    it('the sentence stands beside the list, not in it', async () => {
+      await openEmpty();
+
+      const listbox = list();
+      const empty = document.querySelector('[data-pct-part="empty"]');
+      expect(listbox?.getAttribute('role')).toBe('listbox');
+      expect(listbox?.children.length).toBe(0);
+      expect(empty?.textContent?.trim()).toBe('No options');
+      expect(listbox?.contains(empty)).toBe(false);
+      expect(empty?.parentElement).toBe(panel());
     });
 
     it('a panel with options says nothing', async () => {
@@ -1486,7 +1509,7 @@ describe('PctSelect', () => {
       ).toBeNull();
 
       await press(fixture, 'ArrowDown');
-      expect(panel()?.getAttribute('aria-label')).toBe('Shipping country');
+      expect(list()?.getAttribute('aria-label')).toBe('Shipping country');
     });
 
     it('ariaLabelledby replaces the internal label rather than joining it', async () => {
@@ -1502,7 +1525,7 @@ describe('PctSelect', () => {
       );
 
       await press(fixture, 'ArrowDown');
-      expect(panel()?.getAttribute('aria-labelledby')).toBe('shipping-heading');
+      expect(list()?.getAttribute('aria-labelledby')).toBe('shipping-heading');
     });
 
     it('with neither input the visible label still names the trigger', async () => {
@@ -2638,14 +2661,14 @@ describe('PctSelect', () => {
     it('the listbox says it is busy, and stops saying it', async () => {
       const fixture = await openAsync();
 
-      expect(part(document, 'panel').getAttribute('aria-busy')).toBe('true');
+      expect(part(document, 'list').getAttribute('aria-busy')).toBe('true');
 
       fixture.componentInstance.loading.set(false);
       await settle(fixture);
 
       // `aria-busy="false"` is the default value: written out it would stand in the tree of
       // every panel on the page and say nothing.
-      expect(part(document, 'panel').hasAttribute('aria-busy')).toBe(false);
+      expect(part(document, 'list').hasAttribute('aria-busy')).toBe(false);
     });
 
     it('the rows already on the screen are marked, not taken away', async () => {
@@ -2877,7 +2900,7 @@ describe('PctSelect', () => {
       Object.defineProperty(proto, 'clientHeight', {
         configurable: true,
         get(this: HTMLElement) {
-          return this.getAttribute('data-pct-part') === 'panel' ? viewport : 0;
+          return this.getAttribute('data-pct-part') === 'list' ? viewport : 0;
         },
       });
       return () => {
@@ -2891,7 +2914,7 @@ describe('PctSelect', () => {
       fixture: ComponentFixture<unknown>,
       top: number,
     ) => {
-      const element = panel() as HTMLElement & { scrollTop: number };
+      const element = list() as HTMLElement & { scrollTop: number };
       element.scrollTop = top;
       element.dispatchEvent(new Event('scroll'));
       fixture.detectChanges();
@@ -2912,7 +2935,7 @@ describe('PctSelect', () => {
       await fixture.whenStable();
 
       expect(optionsInPanel()).toHaveLength(1000);
-      expect(panel()?.getAttribute('data-pct-virtual')).toBeNull();
+      expect(list()?.getAttribute('data-pct-virtual')).toBeNull();
     });
 
     it('a window draws forty of them, and the list is still a thousand long', async () => {
@@ -2924,7 +2947,7 @@ describe('PctSelect', () => {
       const rows = optionsInPanel();
       expect(rows).toHaveLength(40);
       expect(rows[0].textContent?.trim()).toBe('Row 0');
-      expect(panel()?.getAttribute('data-pct-virtual')).toBe('');
+      expect(list()?.getAttribute('data-pct-virtual')).toBe('');
 
       // The pair a window owes the reader, and the one no audit asks for: the length the DOM
       // no longer carries, and where in it this row stands.
@@ -2991,9 +3014,9 @@ describe('PctSelect', () => {
         // Rows 0..6 fill the 240 px on the screen, four more are drawn past the bottom edge,
         // and the top edge has nothing to overscan into.
         expect(rows).toHaveLength(11);
-        expect(lead(panel())).toBe('0px');
+        expect(lead(list())).toBe('0px');
         // Everything below the window: 1000 rows of 36 px, less the eleven drawn.
-        expect(tail(panel())).toBe(`${(1000 - 11) * 36}px`);
+        expect(tail(list())).toBe(`${(1000 - 11) * 36}px`);
       } finally {
         restore();
       }
@@ -3014,7 +3037,7 @@ describe('PctSelect', () => {
         // view: the panel is moved by the geometry, and the window follows the scrollbar it
         // moved. The other way round is a deadlock — the row waits for the scroll and the
         // scroll waits for the row.
-        expect((panel() as HTMLElement).scrollTop).toBe(1000 * 36 - 240);
+        expect((list() as HTMLElement).scrollTop).toBe(1000 * 36 - 240);
         const drawn = optionsInPanel();
         expect(drawn[drawn.length - 1].textContent?.trim()).toBe('Row 999');
         expect(triggerOf(fixture).getAttribute('aria-activedescendant')).toBe(
@@ -3074,16 +3097,16 @@ describe('PctSelect', () => {
         // The id names the section it belongs to and not its position in the window: the
         // first group was not drawn at all, and this one is still the second.
         expect(groups[0].getAttribute('aria-labelledby')).toBe(
-          panel()?.querySelector('[data-pct-part="group-label"]')?.id,
+          list()?.querySelector('[data-pct-part="group-label"]')?.id,
         );
         expect(
-          panel()?.querySelector('[data-pct-part="group-label"]')?.textContent,
+          list()?.querySelector('[data-pct-part="group-label"]')?.textContent,
         ).toContain('Second');
 
         // Its own skipped rows are the group's, and everything above the heading is the
         // panel's — a nameless section would have had nowhere to put either.
         expect(lead(groups[0])).toBe(`${6 * 36}px`);
-        expect(lead(panel())).toBe(`${24 + 100 * 36}px`);
+        expect(lead(list())).toBe(`${24 + 100 * 36}px`);
       } finally {
         restore();
       }
@@ -3139,7 +3162,7 @@ describe('PctSelect', () => {
         fixture.detectChanges();
         await fixture.whenStable();
 
-        expect((panel() as HTMLElement).scrollTop).toBe(360);
+        expect((list() as HTMLElement).scrollTop).toBe(360);
       } finally {
         restore();
       }
@@ -3158,7 +3181,7 @@ describe('PctSelect', () => {
         // row 7 moves the panel by what hangs over it and by nothing more: 7×36 + 36 − 240.
         for (let i = 0; i < 7; i++) await press(fixture, 'ArrowDown');
 
-        expect((panel() as HTMLElement).scrollTop).toBe(7 * 36 + 36 - 240);
+        expect((list() as HTMLElement).scrollTop).toBe(7 * 36 + 36 - 240);
       } finally {
         restore();
       }
@@ -3209,15 +3232,16 @@ describe('PctSelect', () => {
         await fixture.whenStable();
 
         // There is no row to read a height from, so the measurement has to survive having
-        // nothing to measure — and the panel is the ordinary empty one.
+        // nothing to measure — and the panel is the ordinary empty one: the sentence beside
+        // an empty list (0069).
         expect(optionsInPanel()).toHaveLength(0);
         expect(
           panel()
             ?.querySelector('[data-pct-part="empty"]')
             ?.textContent?.trim(),
         ).toBe('No options');
-        expect(lead(panel())).toBe('0px');
-        expect(tail(panel())).toBe('0px');
+        expect(lead(list())).toBe('0px');
+        expect(tail(list())).toBe('0px');
       } finally {
         restore();
       }
@@ -3243,7 +3267,7 @@ describe('PctSelect', () => {
         // both headings and the whole of the first section: 24 + 100×36 + 24 + 99×36, plus the
         // row itself, less the panel.
         const last = 24 + 100 * 36 + 24 + 99 * 36;
-        expect((panel() as HTMLElement).scrollTop).toBe(last + 36 - 240);
+        expect((list() as HTMLElement).scrollTop).toBe(last + 36 - 240);
       } finally {
         restore();
       }
@@ -3291,7 +3315,7 @@ describe('PctSelect', () => {
       Object.defineProperty(proto, 'clientHeight', {
         configurable: true,
         get(this: HTMLElement) {
-          return this.getAttribute('data-pct-part') === 'panel' ? 240 : 0;
+          return this.getAttribute('data-pct-part') === 'list' ? 240 : 0;
         },
       });
       proto.getBoundingClientRect = function (this: HTMLElement) {
@@ -3315,7 +3339,7 @@ describe('PctSelect', () => {
         fixture.detectChanges();
         await fixture.whenStable();
         await scrollTo(fixture, 0);
-        expect(tail(panel())).toBe(`${(1000 - 11) * 36}px`);
+        expect(tail(list())).toBe(`${(1000 - 11) * 36}px`);
 
         // Firefox reports a row as two values a fifteen-millionth of a pixel apart and
         // alternates between them, because each reading writes the spacer that decides where
@@ -3323,12 +3347,12 @@ describe('PctSelect', () => {
         // without that, the panel never settles (`lesson-111`).
         row = 36 + 1 / 128;
         await scrollTo(fixture, 0);
-        expect(tail(panel())).toBe(`${(1000 - 11) * 36}px`);
+        expect(tail(list())).toBe(`${(1000 - 11) * 36}px`);
 
         // A row that really changed height — a type size, not a rounding — is a new reading.
         row = 40;
         await scrollTo(fixture, 0);
-        expect(tail(panel())).not.toBe(`${(1000 - 11) * 36}px`);
+        expect(tail(list())).not.toBe(`${(1000 - 11) * 36}px`);
       } finally {
         proto.getBoundingClientRect = rect;
         if (client) Object.defineProperty(proto, 'clientHeight', client);
@@ -3349,8 +3373,8 @@ describe('PctSelect', () => {
         expect(rows[rows.length - 1].textContent?.trim()).toBe('Row 110');
 
         const drawn = rows.length * 36;
-        const above = Number.parseInt(lead(panel()), 10);
-        const below = Number.parseInt(tail(panel()), 10);
+        const above = Number.parseInt(lead(list()), 10);
+        const below = Number.parseInt(tail(list()), 10);
         expect(above).toBe(96 * 36);
         expect(above + drawn + below).toBe(1000 * 36);
       } finally {

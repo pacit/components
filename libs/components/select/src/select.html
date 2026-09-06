@@ -199,98 +199,110 @@
     `pctFocusStays`: the panel takes no focus, so the trigger keeps it and every key below
     still has an owner — a press on the panel's own surface would otherwise land on `body`.
 
-    `aria-busy` goes HERE and nowhere else, because it is the listbox's content that is late:
-    a shut panel is not a stale reading of anything, and while there is none there is nothing
-    on the screen for the state to be about (0037). Written only while it is true —
-    `aria-busy="false"` is the default value, so spelling it out would stand in the tree of
-    every panel on the page. It gets no `data-` twin either: this is the platform's own name
-    for the fact, and `[aria-busy="true"]` is already a selector a skin can use.
+    The panel is a SURFACE and the list inside it is the listbox (0069): a `listbox` may own
+    options and groups and nothing else, so the sentence an empty panel shows stands beside
+    the list rather than in it — inside, it was a critical `aria-required-children` from the
+    day the select was built, on a panel no audit had opened. The list is also the element
+    that SCROLLS, and it has to be: axe's `scrollable-region-focusable` exempts a combobox's
+    own popup — the listbox the trigger controls — and nothing else (0038).
   -->
   <div
-    #panel
     class="pct-select__panel"
     data-pct-part="panel"
-    role="listbox"
-    [id]="listboxId"
-    [attr.aria-multiselectable]="multiple ? 'true' : null"
-    [attr.data-pct-multiple]="multiple ? '' : null"
-    [attr.aria-busy]="loading() ? 'true' : null"
-    [attr.data-pct-virtual]="virtual() ? '' : null"
-    [style.--_pct-select-lead]="panelView().lead + 'px'"
-    [style.--_pct-select-tail]="panelView().tail + 'px'"
     [pctOverlayPanel]="inherited()"
     pctFocusStays
-    [attr.aria-label]="ariaLabel() || null"
-    [attr.aria-labelledby]="ariaLabelledby() || (label() ? labelId : null)"
   >
-    <!-- The row, declared once: a named section wraps it in `role="group"`, a nameless one
+    <!--
+      `aria-busy` goes HERE and nowhere else, because it is the listbox's content that is
+      late: a shut panel is not a stale reading of anything, and while there is none there is
+      nothing on the screen for the state to be about (0037). Written only while it is true —
+      `aria-busy="false"` is the default value, so spelling it out would stand in the tree of
+      every panel on the page. It gets no `data-` twin either: this is the platform's own
+      name for the fact, and `[aria-busy="true"]` is already a selector a skin can use.
+    -->
+    <div
+      #list
+      class="pct-select__list"
+      data-pct-part="list"
+      role="listbox"
+      [id]="listboxId"
+      [attr.aria-multiselectable]="multiple ? 'true' : null"
+      [attr.data-pct-multiple]="multiple ? '' : null"
+      [attr.aria-busy]="loading() ? 'true' : null"
+      [attr.data-pct-virtual]="virtual() ? '' : null"
+      [style.--_pct-select-lead]="panelView().lead + 'px'"
+      [style.--_pct-select-tail]="panelView().tail + 'px'"
+      [attr.aria-label]="ariaLabel() || null"
+      [attr.aria-labelledby]="ariaLabelledby() || (label() ? labelId : null)"
+    >
+      <!-- The row, declared once: a named section wraps it in `role="group"`, a nameless one
          does not, and a second copy of it is a second row to keep in step. The context is
          the section's INDEX, so everything the row binds is typed by `sectionRows()` — an
          `<ng-template>`'s own `let-` is `any` (`lesson-84`). -->
-    <ng-template #optionRows let-s>
-      @for (row of sectionRows(s); track row.index) {
-      <!--
+      <ng-template #optionRows let-s>
+        @for (row of sectionRows(s); track row.index) {
+        <!--
         The ARIA listbox pattern: focus stays on the trigger, and the active option is pointed
         at by `aria-activedescendant` (lesson-18). Options are by design not focusable and have
         no keyboard handling of their own — that sits on the trigger. Both rules are false
         positives here.
       -->
-      <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
-      <div
-        class="pct-select__option"
-        data-pct-part="option"
-        role="option"
-        [id]="optionId(row.index)"
-        [attr.aria-selected]="isSelected(row.index)"
-        [attr.aria-disabled]="row.disabled ? 'true' : null"
-        [attr.aria-setsize]="setSize()"
-        [attr.aria-posinset]="setSize() === null ? null : row.index + 1"
-        [attr.data-pct-active]="row.index === activeIndex() ? '' : null"
-        [attr.data-pct-selected]="isSelected(row.index) ? '' : null"
-        [attr.data-pct-disabled]="row.disabled ? '' : null"
-        (click)="selectAt(row.index)"
-        (mouseenter)="row.disabled ? null : activateAt(row.index)"
-      >
-        @if (optionTemplate(); as slot) {
-        <ng-container
-          [ngTemplateOutlet]="slot.template"
-          [ngTemplateOutletContext]="optionContext(row)"
-        />
-        } @else { {{ row.option.label }} }
+        <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+        <div
+          class="pct-select__option"
+          data-pct-part="option"
+          role="option"
+          [id]="optionId(row.index)"
+          [attr.aria-selected]="isSelected(row.index)"
+          [attr.aria-disabled]="row.disabled ? 'true' : null"
+          [attr.aria-setsize]="setSize()"
+          [attr.aria-posinset]="setSize() === null ? null : row.index + 1"
+          [attr.data-pct-active]="row.index === activeIndex() ? '' : null"
+          [attr.data-pct-selected]="isSelected(row.index) ? '' : null"
+          [attr.data-pct-disabled]="row.disabled ? '' : null"
+          (click)="selectAt(row.index)"
+          (mouseenter)="row.disabled ? null : activateAt(row.index)"
+        >
+          @if (optionTemplate(); as slot) {
+          <ng-container
+            [ngTemplateOutlet]="slot.template"
+            [ngTemplateOutletContext]="optionContext(row)"
+          />
+          } @else { {{ row.option.label }} }
 
-        <!--
+          <!--
           A many-choice list marks its rows with a glyph and not with a surface alone: several
           chosen rows plus the keyboard cursor are three states carried by two backgrounds, and
           in forced-colors mode the substitution leaves them fewer than that. Drawn only where
           it is true, and `aria-hidden` because `aria-selected` on the row has already said it.
         -->
-        @if (multiple && isSelected(row.index)) {
-        <pct-icon
-          class="pct-select__check"
-          data-pct-part="option-check"
-          name="check"
-          aria-hidden="true"
-        >
-          <svg
-            viewBox="0 0 16 16"
-            width="100%"
-            height="100%"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            focusable="false"
+          @if (multiple && isSelected(row.index)) {
+          <pct-icon
+            class="pct-select__check"
+            data-pct-part="option-check"
+            name="check"
+            aria-hidden="true"
           >
-            <path d="M3.5 8.5l3 3 6-6.5" />
-          </svg>
-        </pct-icon>
+            <svg
+              viewBox="0 0 16 16"
+              width="100%"
+              height="100%"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              focusable="false"
+            >
+              <path d="M3.5 8.5l3 3 6-6.5" />
+            </svg>
+          </pct-icon>
+          }
+        </div>
         }
-      </div>
-      }
-    </ng-template>
+      </ng-template>
 
-    <!--
+      <!--
       The sections the panel DRAWS, which is every one of them until a window cuts the list.
       Tracked by the section's own index rather than by its position here: with a window the
       two differ, and a heading's id has to name the same section however the window moved
@@ -300,34 +312,37 @@
       draws no element and carries none — what it skips is on the panel, which is where it
       can only ever be: a section in the middle of a window is drawn whole.
     -->
-    @for (section of panelView().sections; track section.index; let s = $index)
-    { @if (section.label !== null) {
-    <div
-      class="pct-select__group"
-      data-pct-part="group"
-      role="group"
-      [attr.aria-labelledby]="groupId(section.index)"
-      [style.--_pct-select-lead]="section.lead + 'px'"
-      [style.--_pct-select-tail]="section.tail + 'px'"
-    >
+      @for (section of panelView().sections; track section.index; let s =
+      $index) { @if (section.label !== null) {
       <div
-        class="pct-select__group-label"
-        data-pct-part="group-label"
-        [id]="groupId(section.index)"
+        class="pct-select__group"
+        data-pct-part="group"
+        role="group"
+        [attr.aria-labelledby]="groupId(section.index)"
+        [style.--_pct-select-lead]="section.lead + 'px'"
+        [style.--_pct-select-tail]="section.tail + 'px'"
       >
-        {{ section.label }}
+        <div
+          class="pct-select__group-label"
+          data-pct-part="group-label"
+          [id]="groupId(section.index)"
+        >
+          {{ section.label }}
+        </div>
+        <ng-container
+          [ngTemplateOutlet]="optionRows"
+          [ngTemplateOutletContext]="{ $implicit: s }"
+        />
       </div>
+      } @else {
       <ng-container
         [ngTemplateOutlet]="optionRows"
         [ngTemplateOutletContext]="{ $implicit: s }"
       />
+      } }
     </div>
-    } @else {
-    <ng-container
-      [ngTemplateOutlet]="optionRows"
-      [ngTemplateOutletContext]="{ $implicit: s }"
-    />
-    } } @empty {
+    <!-- The sentence is the panel's: a message about the list is not an item in it (0069). -->
+    @if (panelView().sections.length === 0) {
     <div class="pct-select__empty" data-pct-part="empty">{{ emptyText() }}</div>
     }
   </div>

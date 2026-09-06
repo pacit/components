@@ -454,7 +454,9 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
   // always is, which is what keeps the query `required`.
   protected readonly trigger =
     viewChild.required<ElementRef<HTMLElement>>('trigger');
-  private readonly panel = viewChild<ElementRef<HTMLElement>>('panel');
+  // The list — the listbox, and the element that scrolls (0069); the panel around it is a
+  // surface and the geometry below never asks it anything.
+  private readonly list = viewChild<ElementRef<HTMLElement>>('list');
 
   // --- templates (req-api-templates) ---
 
@@ -1087,25 +1089,25 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
     // move ([`lesson-94`](../../../../docs/lessons.md#lesson-94) is the shape this avoids).
     afterRenderEffect(() => {
       if (!this.virtual()) return;
-      // Read, so a window that moved is measured again — the panel's own height changes with
+      // Read, so a window that moved is measured again — the list's own height changes with
       // the rows in it while the list is short.
       this.panelView();
-      const panel = this.panel()?.nativeElement;
-      if (panel) this.measure(panel);
+      const list = this.list()?.nativeElement;
+      if (list) this.measure(list);
     });
 
     // The scroll listener, added rather than bound in the template. An `(scroll)` binding runs
     // change detection on every scroll frame of every panel — including the ones drawn whole,
     // which is a pass over the entire list for a window nobody asked for.
     effect((onCleanup) => {
-      const panel = this.panel()?.nativeElement;
-      if (!panel || !this.virtual()) return;
+      const list = this.list()?.nativeElement;
+      if (!list || !this.virtual()) return;
       const onScroll = (): void => {
-        this.scrolled.set(panel.scrollTop);
-        this.measure(panel);
+        this.scrolled.set(list.scrollTop);
+        this.measure(list);
       };
-      panel.addEventListener('scroll', onScroll, { passive: true });
-      onCleanup(() => panel.removeEventListener('scroll', onScroll));
+      list.addEventListener('scroll', onScroll, { passive: true });
+      onCleanup(() => list.removeEventListener('scroll', onScroll));
     });
 
     if (isDevMode()) afterRenderEffect(() => this.warnOnUnevenRows());
@@ -1191,31 +1193,29 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
    * The row the cursor names, brought into view — `block: 'nearest'` written out.
    */
   private keepInView(i: number): void {
-    const panel = this.panel()?.nativeElement;
-    if (!panel) return;
+    const list = this.list()?.nativeElement;
+    if (!list) return;
 
     // With a window the row may not be there to scroll to, and that is not a detail: a
     // cursor put on the four thousandth row by `End` would wait for a scroll that waits for
-    // the row. So the panel is scrolled by ARITHMETIC — the geometry knows where the row
+    // the row. So the list is scrolled by ARITHMETIC — the geometry knows where the row
     // stands whether or not anything drew it — and the window follows the scrollbar it
     // moved. `block: 'nearest'` written out: a row already in view is left alone.
     const top = this.rowTop(i);
     if (top !== null) {
       const height = this.metrics()?.row ?? 0;
-      const view = panel.clientHeight;
-      if (top < panel.scrollTop) panel.scrollTop = top;
-      else if (top + height > panel.scrollTop + view)
-        panel.scrollTop = top + height - view;
+      const view = list.clientHeight;
+      if (top < list.scrollTop) list.scrollTop = top;
+      else if (top + height > list.scrollTop + view)
+        list.scrollTop = top + height - view;
       // The listener is what tells the window; setting `scrollTop` fires no event of its own
       // in every engine, so the reading is taken here as well.
-      this.scrolled.set(panel.scrollTop);
+      this.scrolled.set(list.scrollTop);
       return;
     }
 
     const wanted = this.optionId(i);
-    const rows = panel.querySelectorAll<HTMLElement>(
-      '[data-pct-part="option"]',
-    );
+    const rows = list.querySelectorAll<HTMLElement>('[data-pct-part="option"]');
     for (const row of rows)
       if (row.id === wanted) {
         row.scrollIntoView?.({ block: 'nearest' });
@@ -1244,11 +1244,11 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
     return null;
   }
 
-  private measure(panel: HTMLElement): void {
-    const row = panel.querySelector<HTMLElement>('[data-pct-part="option"]');
+  private measure(list: HTMLElement): void {
+    const row = list.querySelector<HTMLElement>('[data-pct-part="option"]');
     const height = row?.getBoundingClientRect().height ?? 0;
     if (height <= 0) return;
-    const heading = panel.querySelector<HTMLElement>(
+    const heading = list.querySelector<HTMLElement>(
       '[data-pct-part="group-label"]',
     );
     this.metrics.set({
@@ -1257,7 +1257,7 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
         heading?.getBoundingClientRect().height ??
         this.metrics()?.heading ??
         height,
-      viewport: panel.clientHeight,
+      viewport: list.clientHeight,
     });
   }
 
@@ -1272,7 +1272,7 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
    */
   private warnOnUnevenRows(): void {
     if (!this.virtual() || !this.open()) return;
-    const rows = this.panel()?.nativeElement.querySelectorAll<HTMLElement>(
+    const rows = this.list()?.nativeElement.querySelectorAll<HTMLElement>(
       '[data-pct-part="option"]',
     );
     if (!rows || rows.length < 2) return;

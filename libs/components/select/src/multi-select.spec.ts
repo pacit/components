@@ -44,6 +44,10 @@ const triggerOf = (f: ComponentFixture<unknown>) =>
 const panel = () =>
   document.querySelector('[data-pct-part="panel"]') as HTMLElement | null;
 
+/** The listbox inside the panel — the list, and the element that scrolls (0069). */
+const list = () =>
+  document.querySelector('[data-pct-part="list"]') as HTMLElement | null;
+
 const optionsInPanel = () =>
   Array.from(
     document.querySelectorAll('[data-pct-part="option"]'),
@@ -219,7 +223,7 @@ describe('PctMultiSelect', () => {
     expect(triggerOf(fixture).id).toMatch(/^pct-multi-select-\d+-trigger$/);
 
     await open(fixture);
-    expect(panel()?.id).toMatch(/^pct-multi-select-\d+-listbox$/);
+    expect(list()?.id).toMatch(/^pct-multi-select-\d+-listbox$/);
     expect(optionsInPanel()[0].id).toMatch(/^pct-multi-select-\d+-option-0$/);
   });
 
@@ -227,8 +231,8 @@ describe('PctMultiSelect', () => {
     const fixture = await render(Host);
     await open(fixture);
 
-    expect(panel()?.getAttribute('role')).toBe('listbox');
-    expect(panel()?.getAttribute('aria-multiselectable')).toBe('true');
+    expect(list()?.getAttribute('role')).toBe('listbox');
+    expect(list()?.getAttribute('aria-multiselectable')).toBe('true');
   });
 
   it('adds a choice and LEAVES THE PANEL OPEN', async () => {
@@ -296,7 +300,7 @@ describe('PctMultiSelect', () => {
 
     expect(optionsInPanel()[0].getAttribute('aria-selected')).toBe('true');
     expect(checksInPanel()).toHaveLength(0);
-    expect(panel()?.getAttribute('aria-multiselectable')).toBeNull();
+    expect(list()?.getAttribute('aria-multiselectable')).toBeNull();
   });
 
   it('gives the value back in the LIST order, whatever order the picking took', async () => {

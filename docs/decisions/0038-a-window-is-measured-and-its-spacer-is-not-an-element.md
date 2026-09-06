@@ -38,6 +38,10 @@ than by a preference.
 
 ## Where the scroll lives: the listbox, and not one element in
 
+> _Since [0069](0069-a-message-about-the-list-is-not-an-item-in-it.md) (2026-09-06) the
+> listbox is the `list` part inside the `panel` surface, and it is still the element that
+> scrolls — this section is what decided which of the two does._
+
 The obvious implementation is `@angular/cdk/scrolling`: a `cdk-virtual-scroll-viewport` that
 scrolls, with the rows inside a content wrapper it transforms. The CDK is already a peer here,
 so this looked like the cheap road.

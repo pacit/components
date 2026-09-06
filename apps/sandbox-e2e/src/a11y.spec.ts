@@ -184,14 +184,29 @@ test.describe('Accessibility (axe-core, WCAG 2.2 AA)', () => {
         open: openTrigger('select-async'),
       },
       /**
+       * A listbox with nothing in it and NO excuse: the list is genuinely empty, `aria-busy`
+       * is not written, and the sentence saying so is the panel's, standing beside the list
+       * ([0069](../../../docs/decisions/0069-a-message-about-the-list-is-not-an-item-in-it.md)).
+       * The same tree with the sentence inside the listbox was a critical
+       * `aria-required-children` this suite had never opened a panel to find (plan 4.8):
+       * axe marks an empty listbox for review and fails one holding content it cannot own.
+       */
+      {
+        title: 'an empty panel',
+        route: '/select',
+        open: openTrigger('select-empty'),
+      },
+      /**
        * A panel drawing eleven rows of five thousand, scrolled into the middle of them — the
        * state a window is FOR, and the one the geometry only exists in a browser to reach.
        *
        * Two things are being asked here and only one of them has a rule. The one that has:
-       * the listbox is still the element that scrolls, and it stays that way because the
-       * exemption keeping a panel of unfocusable rows out of `scrollable-region-focusable`
-       * is for a combobox's own popup — put the scrolling one element in, which is exactly
-       * what a virtual-scroll viewport does, and the same tree is a serious violation
+       * the listbox — the `list` part inside the panel since
+       * [0069](../../../docs/decisions/0069-a-message-about-the-list-is-not-an-item-in-it.md)
+       * — is still the element that scrolls, and it stays that way because the exemption
+       * keeping a panel of unfocusable rows out of `scrollable-region-focusable` is for a
+       * combobox's own popup — put the scrolling one element in, which is exactly what a
+       * virtual-scroll viewport does, and the same tree is a serious violation
        * ([0038](../../../docs/decisions/0038-a-window-is-measured-and-its-spacer-is-not-an-element.md)).
        * The one that has not: `aria-setsize` and `aria-posinset` exist for a set the DOM does
        * not hold, and axe has no rule about them at all — a windowed listbox that says
@@ -203,11 +218,11 @@ test.describe('Accessibility (axe-core, WCAG 2.2 AA)', () => {
         route: '/select',
         open: async (page) => {
           await openTrigger('select-many')(page);
-          const panel = page.locator('[data-pct-part="panel"]');
+          const list = page.locator('[data-pct-part="list"]');
           // Into the middle of the list, where the panel is drawing a window with a spacer
           // on both sides of it — the top of a list is the one place a window looks like an
           // ordinary panel.
-          await panel.evaluate((el) => {
+          await list.evaluate((el) => {
             el.scrollTop = el.scrollHeight / 2;
           });
           await expect(

@@ -183,8 +183,9 @@ test.describe('Appearance — compared with the baseline', () => {
     const panel = page.locator('[data-pct-part="panel"]');
     await expect(panel).toBeVisible();
     // A round number of rows down, so the picture is the same one every time: a scroll to a
-    // fraction of a row would put a different sliver of the first one on every engine.
-    await panel.evaluate((el) => {
+    // fraction of a row would put a different sliver of the first one on every engine. The
+    // LIST is what scrolls — the listbox inside the panel (0069).
+    await page.locator('[data-pct-part="list"]').evaluate((el) => {
       el.scrollTop = 2000 * 35.59375;
     });
     await expect(

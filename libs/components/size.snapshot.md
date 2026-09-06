@@ -50,14 +50,14 @@ before an application ships them.
 ./popover 14598 ./core @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
 ./progress 7179 ./core @angular/core
 ./radio 15417 ./core @angular/core
-./select 69036 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core
+./select 70024 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core
 ./skeleton 3480 - @angular/core
 ./slider 17371 ./core @angular/core
 ./stack 879 - @angular/core
 ./stepper 10628 ./core,./icon @angular/common,@angular/core
 ./switch 12391 ./core @angular/core
 ./tabs 16115 ./core @angular/core
-./testing 7998 - @angular/cdk/testing
+./testing 8012 - @angular/cdk/testing
 ./theme 518 - @angular/core
 ./toast 15843 ./core,./icon @angular/common,@angular/core
 ./tooltip 13216 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core

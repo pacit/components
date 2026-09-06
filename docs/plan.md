@@ -1646,7 +1646,7 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     case (`value.set(undefined as …)`) would kill both; it waits for the next full run,
     because a kill the snapshot does not record is a red planted under a future one
 
-- [ ] **4.8 — an empty listbox is a critical violation, and no case had ever opened one**
+- [x] **4.8 — an empty listbox is a critical violation, and no case had ever opened one**
   - measured while auditing the waiting panel of the select's async step: axe reports
     `aria-required-children` at **critical** on a `role="listbox"` that owns no
     `role="option"`, from the listbox itself ("Required ARIA children role not present:
@@ -1666,7 +1666,28 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     settled is that the audit will hold the answer: the case is `a11y.spec.ts` with
     `select-empty` in place of `select-async`, and it is red today
   - binds at: **the next step that touches the empty panel** — nothing built since opens a
-    listbox, so this is a filler item · _notes:_ —
+    listbox, so this is a filler item · _notes:_ **closed (2026-09-06), by the fourth answer the
+    three above had hidden.** The panel was one element — the listbox, the surface, the scroll
+    and the sentence — so the sentence had nowhere to stand but inside the list. Now the panel
+    is a surface and the list inside it is the listbox, a new part `list` on both classes, and
+    the sentence is the panel's, drawn beside the list
+    ([0069](decisions/0069-a-message-about-the-list-is-not-an-item-in-it.md)). Read off axe's
+    own source: `aria-required-children` fails a listbox holding content it cannot own and
+    marks an EMPTY one for review, which the audit does not count; and
+    `scrollable-region-focusable` stands down for a combobox's own popup alone, so the list is
+    also the element that scrolls, as [0038](decisions/0038-a-window-is-measured-and-its-spacer-is-not-an-element.md)
+    found. The stage this suite had never opened — `select-empty` — is the audit's fourteenth,
+    red at **critical** before the change and green after, in three engines. Three things the
+    scroller inside a surface needed that the surface which scrolled did not, each found by a
+    picture: `box-sizing: border-box` (the panel stood 248 px against its 240 px token), the
+    panel's background said again on the list (a scrolling layer with no opaque paint draws
+    text without subpixel antialiasing), and the panel's radius less its border (24 pixels of
+    square corners). Two baselines re-recorded for antialiasing alone, `select-panel-multiple`
+    and its RTL twin: under the old geometry the many-choice rows' text was grayscale and the
+    single-choice rows' subpixel, the list as the scroller draws both alike, and the same page
+    with the scroll put back on the panel differs from the old picture by 33 pixels. Measured:
+    the select's unit specs green, the eight static gates green (`./select` +988 B, `./testing`
+    +14 B), and select, audit, visual and drawer cases **467 of 467** in three engines
 
 - [x] **4.9 — the checkbox writes an `aria-checked` that no engine reads**
   - `checkbox.html` binds `[attr.aria-checked]="ariaChecked()"`, a computed of its own feeds

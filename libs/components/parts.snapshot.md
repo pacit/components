@@ -100,6 +100,7 @@ from what the browser really gets.
 ./select PctMultiSelect group-label
 ./select PctMultiSelect hint
 ./select PctMultiSelect label
+./select PctMultiSelect list
 ./select PctMultiSelect option
 ./select PctMultiSelect option-check
 ./select PctMultiSelect panel
@@ -114,6 +115,7 @@ from what the browser really gets.
 ./select PctSelect group-label
 ./select PctSelect hint
 ./select PctSelect label
+./select PctSelect list
 ./select PctSelect option
 ./select PctSelect option-check
 ./select PctSelect panel
