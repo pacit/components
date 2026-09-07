@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "pairs",
+  "rule": "unmeasured",
+  "description": "A gradient's stop is `var(--pct-text-muted)` — a colour the policy does not know — and it is painted through `background-image`, which for a long time matched none of the reader's three roles. This is not an invented case: that is exactly what `button.scss`'s hero face was, and its three stops stood in the policy because 0058's author put them there."
+}

@@ -1,0 +1,6 @@
+/* The case's defect, and nothing else: a colour outside the policy, painted as a gradient
+   stop under `background-image`. The sheet is the drawer's rather than the button's so
+   that the case directory holds the defect alone and does not drift from the reference. */
+:host {
+  background-image: linear-gradient(120deg, var(--pct-text-muted), transparent);
+}

@@ -4,12 +4,14 @@
    `--pct-hero-text*` trio for what a WORD takes, because a word is measured at 4.5:1 and the
    brand's own stops read 3.13–3.45 on the dark ground.
 
-   Every gradient here is written as `background:` and not `background-image:`, and that is
-   not a spelling: point 7 of `check-tokens` reads the colours a stylesheet paints off the
-   compiled CSS by PROPERTY NAME, and `background-image` matches none of its three roles. The
-   button's hero face escapes the gate for exactly that reason and its three policy entries
-   are there because a person put them there; these six are there because the gate would
-   otherwise say the stops are unmeasured (plan 4.39).
+   Every gradient here is written as `background:` and not `background-image:`, and it no
+   longer has to be: the shorthand was chosen when point 7 of `check-tokens` read the colours
+   a stylesheet paints by PROPERTY NAME, so `background-image` matched none of its roles and
+   a gradient's stops stood in the policy only because a person had put them there. Plan 4.39
+   taught the reader both spellings ([`lesson-168`](../../../../docs/lessons.md#lesson-168)),
+   so the two are now the same to every gate the repository owns and the sheet keeps what it
+   was written with. `button.scss` still spells the longhand: the library has two spellings
+   for one paint, and after 4.39 that is a matter of taste rather than of measurement.
 
    **The size and the travel are one number written twice.** A drift moves the image by
    `position × (box − image)`, so at `background-size: 200%` a travel of `200%` is exactly one

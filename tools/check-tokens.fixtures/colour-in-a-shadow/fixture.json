@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "pairs",
+  "rule": "unmeasured",
+  "description": "The same colour outside the policy, painted as a RING: a `box-shadow` whose spread is a length and whose colour is a token. The two cases are kept apart because the reader treats the two values differently — a gradient is a colour outright, a shadow is a composite in which the skin's `$type` decides — so disarming one leaves the other red."
+}

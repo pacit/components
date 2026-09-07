@@ -226,17 +226,27 @@ a surface is inverted relative to the page, its text token is named `--pct-on-*`
 **Gate:** `tools/check-tokens.mjs` (target `check-tokens` in the root project, in CI) —
 point 7. The denominator is not the list of names ending in `-bg` and `-fg` but the **sass**
 output for the `libs/components` stylesheets: a token brought in by a mixin or assigned to
-another custom property paints too. The `on-*` rule does read names, because a pair that is
+another custom property paints too. The reading is in two shapes, because a property name
+promises different things: where the whole value is a colour (`background`, `background-image`,
+`color`, a border) every `var()` under it is one, and where the value is **composite** — a
+`box-shadow`'s offsets and its colour side by side — the property decides nothing and the
+skin's own `$type` decides instead. **What this reading still cannot say is named here
+rather than only in the code:** inside a composite value a token whose `$type` is not
+`color` takes no role, so a dimension token standing in a shadow's COLOUR slot is caught by
+nothing — the browser answers it by dropping the declaration, and the gate says nothing.
+The `on-*` rule does read names, because a pair that is
 declared and never painted leaves no trace in a stylesheet. The thresholds are still computed
 by `libs/tokens/build.mjs` ([`req-token-contrast`](#req-token-contrast)) — this point only
 makes sure it has something to compute
 **Control:** `tools/check-tokens.fixtures/` — `unmeasured-colour` (a stylesheet painting
 a background with a token outside the policy), `pair-removed-from-policy` (the same rule from
-the other side), `dead-on-pair`, `on-without-surface`, `dimension-painted-as-colour`,
-`token-outside-theme` and `sheet-removed` for the denominator; plus runs against the
-repository: a new `background: var(--pct-surface-disabled)` declaration in `button.scss`
-fires, removing the `button/solid — label` pair from the policy fires, restoring the dead
-`--pct-on-danger` fires once the snapshot is accepted
+the other side), `colour-in-a-gradient` and `colour-in-a-shadow` (the same rule reached
+through the two properties the reader was blind to), `dead-on-pair`, `on-without-surface`,
+`dimension-painted-as-colour`, `token-outside-theme` and `sheet-removed` for the denominator;
+plus runs against the repository: a new `background: var(--pct-surface-disabled)` declaration
+in `button.scss` fires, removing the `button/solid — label` pair from the policy fires,
+removing `UI: the ring around today` fires as of 4.39 and was silent before it, restoring the
+dead `--pct-on-danger` fires once the snapshot is accepted
 
 > **The policy was once silent about 27 colours.** The contrast gate counted 38
 > pairs and was green; outside its reach stood every hover and disabled state of the button,
@@ -249,6 +259,15 @@ fires, removing the `button/solid — label` pair from the policy fires, restori
 > Adding the missing pairs **immediately knocked the build over**: three of them failed AA in
 > the dark theme (the button label on hover 3.45:1, on active 2.66:1, the outline variant's
 > label on hover 3.98:1) — see [`lesson-52`](../lessons.md#lesson-52).
+>
+> **And it went on being silent about two more paintings, one floor down.** The rule was
+> repaired; the READER under it still keyed on the property name, so neither the hero
+> gradient's `background-image` nor the ring's `box-shadow` was a declaration it read. The
+> ring's colour was therefore in no denominator at all, and the gradient's stops counted only
+> because a second stylesheet spelled them as a `background`. Both had policy entries and
+> both entries were there because a person put them there:
+> deleting `UI: the ring around today` was a green run until 4.39 taught the reader the two
+> shapes of a value — [`lesson-168`](../lessons.md#lesson-168).
 
 ---
 

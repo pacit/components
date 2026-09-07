@@ -111,6 +111,8 @@ would be writing the same code a second time in markdown.
 | `upward-reference`             |     6 | `levels`     | `upward-reference`          | a semantic token on a component one                         |
 | `unmeasured-colour`            |     7 | `pairs`      | `unmeasured`                | a sheet paints a background with a token outside the policy |
 | `pair-removed-from-policy`     |     7 | `pairs`      | `unmeasured`                | the pair leaves the policy, the painting stays              |
+| `colour-in-a-gradient`         |     7 | `pairs`      | `unmeasured`                | the same, as a gradient stop under `background-image`       |
+| `colour-in-a-shadow`           |     7 | `pairs`      | `unmeasured`                | the same, as the ring of a `box-shadow`                     |
 | `dimension-painted-as-colour`  |     7 | `pairs`      | `not-a-colour`              | a dimension token in a colour slot                          |
 | `dimension-mixed-as-colour`    |     7 | `pairs`      | `not-a-colour`              | the same, in the colour slot of a `color-mix()`             |
 | `token-outside-theme`          |     7 | `pairs`      | `token-outside-theme`       | a sheet paints with a token the theme does not know         |
@@ -132,6 +134,30 @@ that its only defect is the order of the segments — `fg-disabled` stands besid
 parses faultlessly. In the same way `unmeasured-colour` and `pair-removed-from-policy`
 describe the same rule from two sides: once a painting arrives with no pair, once the pair
 disappears from under a painting, and those are two different human moves.
+
+`colour-in-a-gradient` and `colour-in-a-shadow` fire on the same rule as `unmeasured-colour`
+and are not a third copy of it: they measure the READER rather than the rule. Point 7 keyed
+its denominator on the property NAME until 4.39, so neither declaration was one it read: a
+colour reaching the policy from under one of them was not a colour the gate had approved, it
+was a colour nothing had asked about. Each
+case is a control for its own half and for nothing else, measured: dropping `-image` from the
+background pattern turns `colour-in-a-gradient` green and leaves the shadow one red, and
+emptying the composite table does the reverse. Both bring a stylesheet of their own —
+`libs/components/drawer/src/drawer.scss`, an entrypoint the reference already declares —
+rather than a copy of the button's, so the case directory holds the defect alone and cannot
+drift when the reference's own sheet changes.
+
+The reference input's stylesheet carries the other side of that reading: a `box-shadow` whose
+spread is a **dimension** token and whose colour is a colour one. A shadow's value is
+composite — a length and a colour side by side, both legal — so the reader takes the role from
+the skin's `$type` rather than from the property, and that exemption is code the negative
+control has to walk. Measured the same way: with the `$type` test removed the reference itself
+fires `not-a-colour` on `--pct-button-padding-x` — and on `--pct-button-padding-x-sm`
+behind it, which the assignment expansion carries, so one line walks the direct read and the
+expansion alike. That is exactly the false positive the exemption exists to prevent. What the
+line does NOT control is the other half: the colour beside the dimension is painted by the
+sheet's own `background` already, and the case that measures a colour reaching the
+denominator through a shadow is `colour-in-a-shadow`.
 
 The reference input's stylesheet also carries the one line point 9 needs: a `transition`
 reading `--pct-motion-transition-duration`. The motion axis is referenced by no token — it has

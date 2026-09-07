@@ -675,7 +675,10 @@ const checkTokens = (input) => {
   //    The `on-*` rule works the other way round: it reads NAMES, because a pair declared
   //    and never painted leaves no trace in a stylesheet. Two reads, two different
   //    blindnesses.
-  const { painted, assignments } = paintedColours(sheets);
+  // `byName` stands before the reading and not inside it: a composite value's `var()` takes
+  // a role from the skin's `$type` rather than from the property carrying it.
+  const byName = new Map(names.map((n) => [n.name, n]));
+  const { painted, assignments } = paintedColours(sheets, byName);
 
   // Point 7's denominator is measured on the RESULT, not on the input. The first version
   // asked only about the number of stylesheets — and passed green, printing "0 colours
@@ -700,7 +703,6 @@ const checkTokens = (input) => {
   const wPolicy = new Set(
     contrast.checks.flatMap((c) => [cssVar(c.fg), cssVar(c.bg)]),
   );
-  const byName = new Map(names.map((n) => [n.name, n]));
 
   const pairViolations = [];
   for (const [token, role] of [...painted].sort()) {
@@ -1008,12 +1010,24 @@ const zIndexOf = (cssText, selector) => {
  * and outline (SC 1.4.11). A property outside that list brings no colour into a contrast
  * judgement — `transition: background-color …` names a property rather than painting with it.
  *
+ * TWO READINGS, and the difference is what a property name can promise. Where the whole
+ * value is a colour the property alone decides, and every `var()` under it is a colour.
+ * Where the value is COMPOSITE — a shadow's offsets and its colour side by side — the
+ * property decides nothing and the skin's `$type` decides instead. The second reading
+ * arrived with the first face this point could not see: the reader keyed on the property
+ * name, so a ring under `box-shadow` painted a colour the denominator never held, and a
+ * gradient under `background-image` counted only where a second stylesheet happened to
+ * spell the shorthand. The policy entries covering both were there because a person put
+ * them there (plan 4.39, [`lesson-168`](../docs/lessons.md)).
+ *
  * Assignments to another custom property (`--pct-button-height: var(--pct-button-height-sm)`
  * — the size axis pattern) are EXPANDED to a fixed point: the token on the right inherits
  * the roles of the token on the left. Without that, `--pct-button-bg: var(--pct-surface-100)`
  * in a stylesheet would hide the surface from the denominator, and it would look like no
- * problem at all. Measured, not assumed: today that pattern concerns the size axes alone,
- * that is, dimension tokens, so it brings in not one colour role.
+ * problem at all. It is not the size axes alone and has not been since the badge: `[tone]`
+ * swaps its triple by assigning `--pct-badge-bg: var(--pct-badge-bg-danger)`, so the fixed
+ * point carries a real colour role through an assignment — which is the expansion earning
+ * its keep rather than an exception to it.
  */
 /**
  * A value with the AMOUNT slots of every `color-mix()` cut out of it.
@@ -1062,15 +1076,78 @@ const withoutMixAmounts = (value) => {
   }
 };
 
-const paintedColours = (sheets) => {
+const paintedColours = (sheets, byName) => {
+  // A value the point reads as a colour outright: every `var()` standing in one names a
+  // colour, and a dimension there is the defect `not-a-colour` exists for.
+  //
+  // "Outright" is the point's MODEL and not a fact about CSS, and the difference is the
+  // limit of this table. Three of these are shorthands whose value holds slots that are not
+  // colours — `border: 1px solid …` carries a width and a style, `background` a position and
+  // a repeat, and the value of `background-image` is an IMAGE whose colour STOPS are the
+  // colours in it. Put a token in one of those slots (`border: var(--pct-space-2) solid …`,
+  // or a gradient stop written as `var(--pct-a) var(--pct-space-6)`) and the point calls a
+  // dimension a colour on correct CSS. Not one stylesheet in the library does — every width,
+  // style and stop position here is a literal — so this is a stated limit rather than a
+  // defect, and the shape is already solved one function over: `withoutMixAmounts` cuts
+  // exactly such a slot out of a `color-mix()`, and is where the answer goes if a stylesheet
+  // ever asks. `background-image` joins the list on the same terms as `background`, which
+  // has carried them since the first version of this point.
   const ROLE = [
-    [/^background(-color)?$/, 'background'],
+    [/^background(-color|-image)?$/, 'background'],
     [/^(color|fill|stroke|caret-color|-webkit-text-fill-color)$/, 'text'],
     [
       /^border(-(block|inline)(-(start|end))?)?(-color)?$|^outline(-color)?$/,
       'outline',
     ],
   ];
+  // A COMPOSITE value holds lengths and a colour side by side, both legal: `box-shadow:
+  // inset 0 0 0 1px var(--pct-date-day-border-today)` is an offset, a spread and a colour
+  // in one declaration. So here the property name no longer says what a `var()` IS, and
+  // the skin's own `$type` has to — a colour takes the role, everything else is left where
+  // it stands.
+  //
+  // Why this property and not the shorthands above it, which are composite too: because the
+  // library really does put a non-colour token in this one. Every width and stop position in
+  // a `border` or a gradient here is a literal, and eight stylesheets write
+  // `box-shadow: var(--pct-…-shadow)` where the token is the WHOLE shadow. A model can stay
+  // a model until an input contradicts it; this is the input.
+  //
+  // `outline` and not `background`, because a shadow the library paints as a ring is a
+  // non-text boundary under SC 1.4.11 — the role a `border-color` takes one line up. The
+  // word is a DESCRIPTION and not a threshold: the roles here are printed in the violation
+  // and nothing else reads them, and what a pair is measured against is the `level` a
+  // person wrote beside it in the policy. The eight drop shadows would take the same word
+  // if they ever carried a colour token, and it would fit neither of them.
+  //
+  // What this reading does NOT buy, measured against the flat alternative and written down
+  // rather than left to be found. Inside these properties the
+  // rules `not-a-colour` and `token-outside-theme` cannot fire, and the three things that
+  // buys are not equal: a length in a length slot is CORRECT and had to stop firing; a name
+  // outside the skin is caught by point 8 anyway (`touchedTokens` reads every property);
+  // but a token of the skin with a non-colour `$type` standing in the COLOUR slot —
+  // `box-shadow: 0 0 0 var(--pct-space-2) var(--pct-space-3)` — is caught by nothing here,
+  // and the browser answers it by dropping the declaration. That last one is not a LOSS and
+  // the difference is worth the word: before this reading the property was not walked at
+  // all, so nothing caught it then either. It is the one thing the new reading still cannot
+  // say, and the price of a value CSS lets an author write in any order.
+  //
+  // What is NOT given up is the rule that matters — a colour with no pair in the policy is
+  // still `unmeasured`.
+  //
+  // One property and not two: `text-shadow` has the same value shape and no reader in the
+  // library, and a pattern covering nothing is what this file refuses four times over (a
+  // dead prefix, a dead word, a dead `on-` pair, a dead primitive). It arrives with the
+  // first stylesheet that paints one, together with its case — the palette's own rule, one
+  // floor up (`0020`).
+  //
+  // A `$type: shadow` token — `--pct-popover-panel-shadow` and its seven siblings — is a
+  // whole shadow rather than a colour, and its own colour goes unmeasured by decision
+  // rather than by oversight: the library's panels separate themselves with
+  // `border-strong` precisely because a shadow does not, and forced colours takes a shadow
+  // away in two engines of three (`lesson-119`: `none` in chromium and firefox, the author's
+  // own value in webkit). That sentence stands in three of the component token files —
+  // `component.menu.json`, `component.popover.json` and `component.toast.json`.
+  const COMPOSITE = [[/^box-shadow$/, 'outline']];
   const direct = new Map(); // token -> Set(role)
   const assignments = new Map(); // target token -> Set(tokens on the right)
 
@@ -1090,9 +1167,18 @@ const paintedColours = (sheets) => {
         continue;
       }
       const role = ROLE.find(([pattern]) => pattern.test(property))?.[1];
-      if (!role) continue;
+      if (role) {
+        for (const t of used)
+          direct.set(t, (direct.get(t) ?? new Set()).add(role));
+        continue;
+      }
+      const composite = COMPOSITE.find(([pattern]) =>
+        pattern.test(property),
+      )?.[1];
+      if (!composite) continue;
       for (const t of used)
-        direct.set(t, (direct.get(t) ?? new Set()).add(role));
+        if (byName.get(t)?.type === 'color')
+          direct.set(t, (direct.get(t) ?? new Set()).add(composite));
     }
 
   const painted = new Map([...direct].map(([t, r]) => [t, new Set(r)]));

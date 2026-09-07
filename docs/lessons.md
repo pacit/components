@@ -4476,3 +4476,39 @@ that changes one changes the other — so a stylesheet with two sizes needs two 
 for the size they travel.** And the reading that would have caught it belongs in the e2e beside
 the paint: assert the size and the animation of each face together, because the invariant is
 between them and not inside either.
+
+### <a id="lesson-168"></a>`lesson-168` — A reader keyed on the property name cannot see the colour inside a value
+
+Point 7 of `check-tokens` asks what the library really paints, and it asked the compiled CSS
+by PROPERTY NAME: `background`, `color`, a border. Two of the library's paintings are not
+written that way. The hero gradient is a `background-image`, and its stops are colour
+functions inside the value; the ring around today is a `box-shadow`, and its colour stands
+beside two lengths. Both had entries in `contrast.policy.json`, so the gate was green and the
+policy looked complete — and both entries were there because a person had put them there.
+
+Measured, before and after: deleting `UI: the ring around today` from the policy was a green
+run, and after the reader learned the two properties it is
+`[unmeasured] --pct-date-day-border-today: painted (outline) and stands in no pair of the
+policy`. The denominator moved by exactly one colour, 239 to 240 — and that number is not the
+size of what was hidden. The gradient's three stops had entered it the day before, when a new
+component happened to spell the shorthand; had they not, the same repair would have moved it
+by four. A denominator built by pattern hides an amount nobody can read off the run.
+
+The repair is not one more property in a list, because the two properties are not the same
+shape. Where the whole value is a colour, the property name is the authority and every
+`var()` under it is a colour — a dimension there is a defect. Where the value is **composite**
+— a shadow's offsets, spread and colour, all legal side by side — the property name is
+authority over nothing, and the only thing that can say which `var()` is a colour is the
+skin's own `$type`. Written as one list it is a false positive on the first shadow the
+library already paints — `box-shadow: var(--pct-popover-panel-shadow)`, a token that IS a
+whole shadow — and on the first spread written as a length token; measured: with the `$type`
+test removed, the library's eight
+`$type: shadow` tokens fire `not-a-colour` at once, and so do the reference fixture's own
+two dimensions — one of them reached through the assignment expansion, which is the second
+half of the same reading.
+
+The rule: **a gate that reads declarations reads VALUES, and where a value is composite the
+property name stops being evidence — the skin's type is.** And the cheaper half of the same
+rule: when a gate's denominator is built by pattern, the entry that pattern misses is
+indistinguishable from the entry it approved, so the control to write is not "does the gate
+pass" but "does deleting this policy line turn it red".

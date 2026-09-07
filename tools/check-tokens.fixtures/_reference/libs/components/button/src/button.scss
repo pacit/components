@@ -28,3 +28,16 @@
 .pct-button__label {
   color: var(--pct-button-label-fg);
 }
+
+/*
+ * Here for point 7's SECOND reading. A shadow is a composite value — a spread and a
+ * colour side by side, both legal — so the reader takes the role from the skin's `$type`
+ * rather than from the property. What this line controls is the DIMENSION half: it must not
+ * fire `not-a-colour`, and without the line the exemption would be code no input of the
+ * negative control ever walks. The colour beside it is only there to make the declaration a
+ * real one — `bg` is painted on line 14 already and its pair predates this — and the half
+ * that measures a colour reaching the denominator through a shadow is `colour-in-a-shadow`.
+ */
+:host(:focus-visible) {
+  box-shadow: inset 0 0 0 var(--pct-button-padding-x) var(--pct-button-bg);
+}

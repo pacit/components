@@ -2695,8 +2695,11 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     and a cyan near the 400 level so the `text` face has a ground it stands on at 4.5
     rather than at the brand's own 3.13–3.45. 0020 says the palette carries no spares
     and it is kept: both primitives have a consumer the day they land, because the face
-    is what asks for them — and point 7 of `check-tokens` then turns the site's three
-    unmeasured headline colours into contrast entries that can fail a build
+    is what asks for them — and point 7 of `check-tokens` then turns the three unmeasured
+    headline colours into contrast entries that can fail a build. Said more precisely than
+    it was: the point's denominator is the `libs/components` stylesheets, so the SITE's
+    copies stay outside it whatever the gate learns — what the extraction buys is a
+    measured face the site can use, not a measurement reaching the site
   - **done (2026-09-07): the equipment exists, the gate exists, and the copies outlived
     both — on purpose.** `[pctHero]` is the 34th entrypoint: `edge`, `text` and `fill`,
     `show="always | interact"`, one face per element, exactly the shape 0065 decided. The
@@ -2716,7 +2719,9 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     face has never been in that denominator either, and its three policy entries are there
     because a person put them there. The component writes `background:` instead, which the
     point does read: the stops of a library gradient are now measured because the gate
-    demands them, not because somebody remembered
+    demands them, not because somebody remembered. **4.39 closed the other half** — the
+    reader now reads a value rather than a property name, so the button's face is in the
+    denominator too and the sentence above is history rather than a description
   - the probe 0065 asked for, before the code: `mask-composite` reads `xor, xor` in all three
     engines — one value per mask LAYER, not per property, which is what the first version of
     the case got wrong — and the rim is a rim rather than a filled card in every one of them
@@ -2812,11 +2817,11 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     at the old numbers for one commit — `./menu` +93, `./popover` +98, `./toast` +316 B,
     the field and the queue — written the moment the next gate run read it
 
-- [ ] **4.39 — the gate that measures painted colours cannot see a gradient**
+- [x] **4.39 — the gate that measures painted colours cannot see a gradient**
   - point 7 of `check-tokens` builds its denominator from the compiled CSS **by property
-    name**: `/^background(-color)?$/` is the background role, and `background-image` matches
-    it and nothing else. So a stylesheet that paints with `background-image` paints colours
-    the gate never counts — and the library has exactly one such place,
+    name**: `/^background(-color)?$/` is the background role, and it matches `background`
+    and `background-color` and nothing else. So a stylesheet that paints with
+    `background-image` paints colours the gate never counts — and the library has exactly one such place,
     `button.scss`'s hero face, whose three stops therefore stand in `contrast.policy.json`
     because 0058's author put them there and not because anything demanded them
   - found on the way into 4.36, which is why the new component writes `background:` for every
@@ -2831,7 +2836,91 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     hand-placed because no gate could ask for them. The first is the repository's own
     argument; the second is what it does today without saying so
   - binds at: **the next gradient or shadow a library stylesheet paints**, or the first time
-    a policy entry is deleted and nothing goes red · _notes:_ —
+    a policy entry is deleted and nothing goes red · _notes:_ **done (2026-09-07), and the
+    fork went the repository's own way: the reader was taught, not the header.**
+  - the point reads a VALUE now, in two shapes, because a property name promises two
+    different things. Where the whole value is a colour — `background`, and
+    `background-image` beside it — every `var()` under it is a colour and a dimension there
+    is still `not-a-colour`. Where the value is COMPOSITE — a `box-shadow`'s offsets, spread
+    and colour, all legal side by side — the property is authority over nothing and the
+    skin's own `$type` decides. Written as one list instead, it is a false positive on the
+    first shadow: measured, eight `$type: shadow` tokens fire `not-a-colour` at once
+  - **the gain, measured rather than asserted.** The denominator moved 239 → 240 colours, and
+    the one that arrived is `--pct-date-day-border-today` — the ring around today, painted
+    only through a `box-shadow`. Deleting `UI: the ring around today` from
+    `contrast.policy.json` was a green run before this step and is
+    `[unmeasured] … stands in no pair of the policy` after it. The hero stops moved the other
+    way: they were in the denominator only because 4.36's component spells the shorthand, and
+    now `button.scss` demands them on its own
+  - two cases and one line in the reference, each a control for its own half and measured as
+    such: dropping `-image` from the background pattern turns `colour-in-a-gradient` green
+    and leaves `colour-in-a-shadow` red, emptying the composite table does the reverse, and
+    removing the `$type` test makes the reference itself fire on its own two dimensions —
+    the second reached through the assignment expansion. 36 prepared inputs now, from 34
+  - what the composite reading does NOT buy, measured against the flat alternative and
+    written down where it happens — and the three are not equal. A length in a length slot is CORRECT and had to stop firing; a name
+    outside the skin is point 8's, which reads every property; but a token of the skin with
+    a non-colour `$type` in the COLOUR slot — a `box-shadow` whose colour is
+    `var(--pct-space-3)` — is caught by nothing, and the browser answers it by dropping the
+    declaration. **That last one is not a loss**, and the adversarial pass is what got the
+    word right: before this reading the property was not walked at all, so nothing caught it
+    then either. It is the one thing the new reading still cannot say. The eight `$type: shadow` tokens stay unmeasured by decision
+    rather than by oversight, and the decision is already written in three component token
+    files (menu, popover, toast): the panels separate themselves with `border-strong`
+    precisely because a shadow does not, and forced colours takes a shadow away in two
+    engines of three ([`lesson-119`](lessons.md#lesson-119))
+  - **one property and not two, and that was a correction.** The first cut had `text-shadow`
+    beside `box-shadow` on the argument that they are one value shape — and the library
+    paints not one, so it was a pattern covering nothing, which is the construction this very
+    file refuses four times over (a dead prefix, a dead word, a dead `on-` pair, a dead
+    primitive). It arrives with the first stylesheet that paints one, together with its case
+  - two limits of the reading, stated here rather than discovered later. The first is
+    older than this step and now written down: "the whole value is a colour" is the point's
+    MODEL, not a fact about CSS — `border: 1px solid …` carries a width, `background` a
+    position, and a gradient carries stop positions, so a token in one of those slots would
+    fire `not-a-colour` on correct CSS. Every one of them in this library is a literal, and
+    the answer if that changes is `withoutMixAmounts`, one function over. The second is the
+    declaration scanner stopping at the first `;`, which a data URI carries — the hole 4.40
+    is about, and `background-image` is the property that attracts them
+  - [`lesson-168`](lessons.md#lesson-168): a gate that reads declarations reads values, and
+    the control to write for a pattern-built denominator is not "does the gate pass" but
+    "does deleting this policy line turn it red"
+  - **no decision record, and that is a choice rather than an omission.** The fork had a real
+    alternative and a real cost, which is the shape a decision takes here — but the normative
+    half already has a home in a requirement (`req-token-text-pairs`' gate paragraph carries
+    both the two readings and the blind spot), and the evidence has one in the lesson. An ADR
+    would be a fourth copy of the same sentence, and this repository's rule for a fourth copy
+    is the one it applies to tokens
+
+- [ ] **4.40 — a word with a colon inside a comment eats the declaration after it**
+  - the declaration scanner —
+    `/^\s*(-{0,2}[a-z][a-z0-9-]*)\s*:\s*([^;{}]+);/gm`, written twice in `check-tokens`:
+    once for point 7 (what is painted) and once for point 8 (what is touched), which point 9
+    then reads for its list of readers — walks the COMPILED CSS, and sass keeps a loud
+    comment in it. A comment line whose prose contains `word:` therefore parses as a property
+    whose value runs to the next `;`, swallowing the real declaration that follows
+  - **measured over the library, not deduced**: four declarations are misread today, each
+    losing its property to the word before it — `left: 50%` in `checkbox.scss` and `radio.scss` (read as `improvement`),
+    `container-type: inline-size` in `container.scss` (read as `stage`) and, the only one
+    carrying tokens, the `max-block-size` of `menu.scss` (read as `screen`), which is a
+    `min()` of `--pct-menu-panel-max-height` and a viewport height less two `--pct-space-5`
+  - **what is lost is the PROPERTY, not the tokens** — measured after a first reading of this
+    got it backwards. The captured value runs from `screen:` through the real declaration, so
+    the `var()` names inside it are still extracted: point 8 records both menu tokens as read,
+    and it is the only record `--pct-menu-panel-max-height` has anywhere. What no point can
+    see is which property they were painting, and that is exactly the question point 7 asks.
+    Harmless today because all four declarations carry dimensions
+  - what the hole really says is that the gate's reach depends on the prose above a
+    declaration — the day a swallowed line paints a colour, point 7 counts nothing and stays
+    green, which is [`lesson-33`](lessons.md#lesson-33)'s shape reached by a comma
+  - found on the way out of 4.39, by a sweep that asked what the reader cannot see rather
+    than what it reports. The same `[^;{}]+` also stops at the `;` inside a data URI, and
+    `background-image` — the property 4.39 just taught it — is the one that attracts them
+  - the fork: strip loud comments before the walk (one line, and it changes what three
+    points measure at once, so it wants its own fixture), or parse rather than match. The
+    first is the proportionate one
+  - binds at: **the next declaration a gate has to see that stands under a comment with a
+    colon in it**, or the first data URI in a library stylesheet · _notes:_ —
 
 ## 5. Gaps with no deadline
 

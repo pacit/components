@@ -1,0 +1,6 @@
+/* The case's defect: a colour outside the policy, painted as the ring of a `box-shadow`.
+   The `1px` is written as a literal on purpose — a dimension token beside it would be
+   legal here, and this case is about the colour. */
+:host {
+  box-shadow: inset 0 0 0 1px var(--pct-text-muted);
+}
