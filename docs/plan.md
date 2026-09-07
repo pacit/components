@@ -2802,6 +2802,17 @@ again"` fails **1 run in 3** in WebKit at the `Escape` step — the panel is sti
     NAME from the CARD's hover — a trigger `show="interact"` cannot say, because it reads the
     attention on the element wearing the face. Each is a question for the pass, and the
     fourth copy the item warned about is the thing to refuse while answering them
+  - **the landing's two sketches went out on 2026-09-07, and the pass waits on a yes.** Same
+    words, same numbers, same components in both — no fact added, dropped or rounded — and the
+    difference is what a reader meets first. **A, the instrument panel:** the hero splits, the
+    claim on the left and a gate readout on the right, monospace and tabular, with the evidence
+    strip rebuilt as one hairline instrument and the inventory as a four-column dotted index.
+    **B, the quiet proof:** a narrow measure, a seal instead of a badge row, the demos set as
+    figures with their captions beside them, and the five numbers arriving once, after them
+  - what the sketches ask for besides A or B: **the gradient's budget** (both cut it back to
+    two words and the CTA, which is also where 4.36's three hand-copies get decided), and
+    **whether mono becomes a second face** — a decision that reaches the gallery and the
+    component card, not this page alone
 - [x] **4.35 — the popover's axe audit can catch a button mid-transition, in two
       engines at once**
   - CI run 33680164640's sibling (2026-09-02, run 33681596258): `a11y.spec.ts › an open
