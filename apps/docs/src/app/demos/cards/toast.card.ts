@@ -14,8 +14,14 @@ import {
  * show for it.
  */
 const MESSAGES: readonly PctToastState[] = [
-  { id: 1, text: 'Draft saved.', urgent: false, actionLabel: '' },
-  { id: 2, text: 'Message deleted.', urgent: false, actionLabel: 'Undo' },
+  { id: 1, text: 'Draft saved.', urgent: false, tone: null, actionLabel: '' },
+  {
+    id: 2,
+    text: 'Message deleted.',
+    urgent: false,
+    tone: null,
+    actionLabel: 'Undo',
+  },
 ];
 
 /**

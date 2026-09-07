@@ -337,7 +337,13 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-primary-active color semantic public
 --pct-primary-hover color semantic public
 --pct-progress-fill-bg color component public
+--pct-progress-fill-bg-danger color component public
+--pct-progress-fill-bg-info color component public
+--pct-progress-fill-bg-success color component public
+--pct-progress-fill-bg-warning color component public
 --pct-progress-fill-size dimension component public
+--pct-progress-icon-gap dimension component public
+--pct-progress-icon-size dimension component public
 --pct-progress-track-bg color component public
 --pct-progress-track-height dimension component public
 --pct-progress-track-height-lg dimension component public

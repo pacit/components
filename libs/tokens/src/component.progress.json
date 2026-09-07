@@ -38,28 +38,34 @@
       "$comment-tones": "A tone paints the fill and the mark beside it, and the mark takes this same value — one tone, one colour, so a skin that recolours a toned bar recolours both. The fill is the loud half and the mark is the one that survives a forced palette and a reader who does not separate red from green (`req-a11y-forced-colors`, plan 4.14).",
       "fill-bg-success": {
         "$type": "color",
-        "$value": "{pct.success}"
+        "$value": "{pct.success}",
+        "$description": "Colour of the filled part of a bar whose work succeeded."
       },
       "fill-bg-warning": {
         "$type": "color",
-        "$value": "{pct.warning}"
+        "$value": "{pct.warning}",
+        "$description": "Colour of the filled part of a bar whose work needs attention."
       },
       "fill-bg-danger": {
         "$type": "color",
-        "$value": "{pct.danger}"
+        "$value": "{pct.danger}",
+        "$description": "Colour of the filled part of a bar whose work failed."
       },
       "fill-bg-info": {
         "$type": "color",
-        "$value": "{pct.info}"
+        "$value": "{pct.info}",
+        "$description": "Colour of the filled part of a bar reporting something informational."
       },
       "$comment-icon": "The mark's box and the room beside the bar. `16px` and not `1em`, for the toast's reason one component over: the bar has no type of its own to scale with, and a mark that grew with the consumer's font would leave the groove looking different on every page.",
       "icon-size": {
         "$type": "dimension",
-        "$value": "16px"
+        "$value": "16px",
+        "$description": "Size of the box the tone's mark is drawn in, beside the bar."
       },
       "icon-gap": {
         "$type": "dimension",
-        "$value": "{pct.space.2}"
+        "$value": "{pct.space.2}",
+        "$description": "Space between the tone's mark and the bar."
       },
       "fill-size": {
         "$type": "dimension",

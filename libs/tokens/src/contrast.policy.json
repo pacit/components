@@ -1015,6 +1015,70 @@
       "severity": "error"
     },
     {
+      "$comment": "The message's own colour, which is what an untoned message would draw if it ever drew a mark. It is measured beside the four tones rather than left out: a base that failed here would fail silently, since nothing in the library paints it today.",
+      "name": "UI: toast tone icon (no tone)",
+      "fg": "pct.toast.icon-fg",
+      "bg": "pct.toast.item-bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: the filled part of a progress bar against the groove (success)",
+      "fg": "pct.progress.fill-bg-success",
+      "bg": "pct.progress.track-bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: the filled part of a progress bar against the page (success)",
+      "fg": "pct.progress.fill-bg-success",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: the filled part of a progress bar against the groove (warning)",
+      "fg": "pct.progress.fill-bg-warning",
+      "bg": "pct.progress.track-bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: the filled part of a progress bar against the page (warning)",
+      "fg": "pct.progress.fill-bg-warning",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: the filled part of a progress bar against the groove (danger)",
+      "fg": "pct.progress.fill-bg-danger",
+      "bg": "pct.progress.track-bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: the filled part of a progress bar against the page (danger)",
+      "fg": "pct.progress.fill-bg-danger",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: the filled part of a progress bar against the groove (info)",
+      "fg": "pct.progress.fill-bg-info",
+      "bg": "pct.progress.track-bg",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: the filled part of a progress bar against the page (info)",
+      "fg": "pct.progress.fill-bg-info",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
       "$comment": "The tone's two paints, measured one by one. The ICON is what a tone really is here, so it is held to SC 1.4.11 like any other meaningful non-text mark; the edge is measured against the page exactly as the untoned edge above it. Both readings are per tone, because a policy that measured \"the tone\" once would be measuring whichever tone somebody wrote first (plan 4.14).",
       "name": "UI: toast tone icon (success)",
       "fg": "pct.toast.icon-fg-success",

@@ -79,10 +79,12 @@ mode, the same way `pct-drawer` reports an unnamed panel.
 
 ## Parts
 
-| part    | what it is            |
-| ------- | --------------------- |
-| `track` | the full length       |
-| `fill`  | the part that is done |
+| part    | what it is                                                  |
+| ------- | ----------------------------------------------------------- |
+| `bar`   | the box that clips — the groove and the fill live inside it |
+| `track` | the full length                                             |
+| `fill`  | the part that is done                                       |
+| `icon`  | the tone's mark, drawn only when the bar carries a tone     |
 
 ## Theming
 

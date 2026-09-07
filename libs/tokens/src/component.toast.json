@@ -70,45 +70,55 @@
       "$comment-icon": "The tone's drawing and the colour it takes. The ICON is the tone — a message painted in colour alone is a state carried by colour alone (`req-a11y-forced-colors`), and a reader who cannot tell red from green, or a forced palette that throws both away, still has the shape (plan 4.14). The base `icon-fg` is the message's own text colour, which is what a toast with no tone would draw if it ever drew one: the four variants below are the only reason this token exists.",
       "icon-fg": {
         "$type": "color",
-        "$value": "{pct.text}"
+        "$value": "{pct.text}",
+        "$description": "Colour of the tone's mark when a message carries no tone of its own."
       },
       "icon-fg-success": {
         "$type": "color",
-        "$value": "{pct.success}"
+        "$value": "{pct.success}",
+        "$description": "Colour of the mark on a message that reports success."
       },
       "icon-fg-warning": {
         "$type": "color",
-        "$value": "{pct.warning}"
+        "$value": "{pct.warning}",
+        "$description": "Colour of the mark on a message that reports a warning."
       },
       "icon-fg-danger": {
         "$type": "color",
-        "$value": "{pct.danger}"
+        "$value": "{pct.danger}",
+        "$description": "Colour of the mark on a message that reports a failure."
       },
       "icon-fg-info": {
         "$type": "color",
-        "$value": "{pct.info}"
+        "$value": "{pct.info}",
+        "$description": "Colour of the mark on an informational message."
       },
       "$comment-icon-size": "One `em` would tie the drawing to the message's font size, which is `sm`; a message that is a sentence and an icon that is a road sign do not scale together. A dimension of its own, and the same 16px the close cross is drawn on.",
       "icon-size": {
         "$type": "dimension",
-        "$value": "16px"
+        "$value": "16px",
+        "$description": "Size of the box the tone's mark is drawn in."
       },
       "$comment-item-border-tones": "The edge takes the tone too, and that is not a second channel — it is the same one, louder. What makes the tone legible is the drawing beside the sentence; the border is what makes it visible from across a room, and it is measured against the page like the untoned edge above it.",
       "item-border-success": {
         "$type": "color",
-        "$value": "{pct.success}"
+        "$value": "{pct.success}",
+        "$description": "Edge of a message that reports success."
       },
       "item-border-warning": {
         "$type": "color",
-        "$value": "{pct.warning}"
+        "$value": "{pct.warning}",
+        "$description": "Edge of a message that reports a warning."
       },
       "item-border-danger": {
         "$type": "color",
-        "$value": "{pct.danger}"
+        "$value": "{pct.danger}",
+        "$description": "Edge of a message that reports a failure."
       },
       "item-border-info": {
         "$type": "color",
-        "$value": "{pct.info}"
+        "$value": "{pct.info}",
+        "$description": "Edge of an informational message."
       },
       "message-font-size": {
         "$type": "dimension",
