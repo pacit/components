@@ -113,6 +113,7 @@ would be writing the same code a second time in markdown.
 | `pair-removed-from-policy`     |     7 | `pairs`      | `unmeasured`                | the pair leaves the policy, the painting stays              |
 | `colour-in-a-gradient`         |     7 | `pairs`      | `unmeasured`                | the same, as a gradient stop under `background-image`       |
 | `colour-in-a-shadow`           |     7 | `pairs`      | `unmeasured`                | the same, as the ring of a `box-shadow`                     |
+| `colour-under-a-comment`       |     7 | `pairs`      | `unmeasured`                | the same, under prose the scanner read as a declaration     |
 | `dimension-painted-as-colour`  |     7 | `pairs`      | `not-a-colour`              | a dimension token in a colour slot                          |
 | `dimension-mixed-as-colour`    |     7 | `pairs`      | `not-a-colour`              | the same, in the colour slot of a `color-mix()`             |
 | `token-outside-theme`          |     7 | `pairs`      | `token-outside-theme`       | a sheet paints with a token the theme does not know         |
@@ -146,6 +147,16 @@ emptying the composite table does the reverse. Both bring a stylesheet of their 
 `libs/components/drawer/src/drawer.scss`, an entrypoint the reference already declares —
 rather than a copy of the button's, so the case directory holds the defect alone and cannot
 drift when the reference's own sheet changes.
+
+`colour-under-a-comment` fires on that same rule and measures something below the reader
+again: the TEXT it is handed. Sass keeps a loud comment in its output, so prose is input, and
+two things have to meet before a declaration disappears into it — the comment stands inside a
+rule (a captured value may hold no `{`, so a comment above a selector swallows nothing) and
+the word carrying the colon begins a line (a property is anchored to the start of one). The
+case spells both out because either alone is harmless, and both were true of all four
+declarations the library really lost. Measured: with the strip disarmed the case passes and
+the harness reports the input as one that "stopped examining anything" — which is the whole
+statement, since a swallowed painting is not a wrong answer but no answer.
 
 The reference input's stylesheet carries the other side of that reading: a `box-shadow` whose
 spread is a **dimension** token and whose colour is a colour one. A shadow's value is

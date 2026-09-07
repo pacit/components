@@ -225,8 +225,10 @@ a surface is inverted relative to the page, its text token is named `--pct-on-*`
 
 **Gate:** `tools/check-tokens.mjs` (target `check-tokens` in the root project, in CI) —
 point 7. The denominator is not the list of names ending in `-bg` and `-fg` but the **sass**
-output for the `libs/components` stylesheets: a token brought in by a mixin or assigned to
-another custom property paints too. The reading is in two shapes, because a property name
+output for the `libs/components` stylesheets, **with the comments taken out of it first**: a
+token brought in by a mixin or assigned to another custom property paints too, and a loud
+comment survives compilation, so prose carrying a colon at the start of a line reads as a
+property whose value swallows the declaration under it. The reading is in two shapes, because a property name
 promises different things: where the whole value is a colour (`background`, `background-image`,
 `color`, a border) every `var()` under it is one, and where the value is **composite** — a
 `box-shadow`'s offsets and its colour side by side — the property decides nothing and the
@@ -242,7 +244,8 @@ makes sure it has something to compute
 a background with a token outside the policy), `pair-removed-from-policy` (the same rule from
 the other side), `colour-in-a-gradient` and `colour-in-a-shadow` (the same rule reached
 through the two properties the reader was blind to), `dead-on-pair`, `on-without-surface`,
-`dimension-painted-as-colour`, `token-outside-theme` and `sheet-removed` for the denominator;
+`dimension-painted-as-colour`, `token-outside-theme`, `colour-under-a-comment` (a painting
+standing under prose the scanner read as a declaration) and `sheet-removed` for the denominator;
 plus runs against the repository: a new `background: var(--pct-surface-disabled)` declaration
 in `button.scss` fires, removing the `button/solid — label` pair from the policy fires,
 removing `UI: the ring around today` fires as of 4.39 and was silent before it, restoring the
@@ -268,6 +271,15 @@ dead `--pct-on-danger` fires once the snapshot is accepted
 > both entries were there because a person put them there:
 > deleting `UI: the ring around today` was a green run until 4.39 taught the reader the two
 > shapes of a value — [`lesson-168`](../lessons.md#lesson-168).
+>
+> **And a third time, one floor further down, in the INPUT.** The rule was right and the
+> reader was right, and the text they were given was not: sass keeps a loud comment, so four
+> declarations of the library reached the scanner under the last word of the prose above them
+> rather than under their own property (4.40). All four carry dimensions, so nothing was red
+> and nothing was wrong — what the day cost was the guarantee, since a painting under such a
+> comment would have been a colour the point never counted, and green. Three silences, three
+> floors, one shape: the gate examined only what it was handed
+> ([`lesson-169`](../lessons.md#lesson-169)).
 
 ---
 

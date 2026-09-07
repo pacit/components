@@ -1,0 +1,6 @@
+{
+  "point": 7,
+  "check": "pairs",
+  "rule": "unmeasured",
+  "description": "The same colour outside the policy, painted under a LOUD COMMENT whose prose carries a colon. Sass keeps the comment in its output, so before the strip the declaration scanner read `note` as the property and swallowed the `background` under it — the painting reached no denominator and the point stayed green with nothing to report."
+}

@@ -1002,6 +1002,21 @@ const zIndexOf = (cssText, selector) => {
 };
 
 /**
+ * The compiled CSS with its comments taken out, which is how every reader in this file
+ * receives it. Sass keeps a loud comment (`/* … *\/`) in its output, and the declaration
+ * scanner below is a regular expression: prose is text like any other to it, so a comment
+ * carrying `word:` reads as a declaration whose value runs to the next `;` — and the real
+ * declaration under it disappears into that value. The measurement and the reason for the
+ * SPACE it leaves behind stand at the call site.
+ *
+ * Not a parser, and the difference is the item's own fork: a parser would also settle the
+ * `;` inside a data URI, which is the same pattern's other blind spot. No stylesheet in this
+ * library holds one, and a rule covering nothing is what this file refuses four times over,
+ * so it waits for the first — with its case.
+ */
+const withoutComments = (css) => css.replace(/\/\*[\s\S]*?\*\//g, ' ');
+
+/**
  * What the stylesheets REALLY paint with which token — from sass's output, not from the
  * source text (the same reason as point 2 in `check-styles`: a property composed by a mixin
  * or an interpolation reaches the browser without standing in the text anywhere).
@@ -1363,6 +1378,28 @@ const collectInput = (root, files) => {
   // `libs/components/themes/` carries the generated skin, copied there as an asset of the
   // package: a stylesheet landing in that directory would be measured as if the library
   // painted with every token of the skin at once.
+  //
+  // The comments come out before anybody reads the CSS, and that one call is the whole of
+  // point 4.40. A loud comment SURVIVES sass, and the declaration scanner of points 7 and 8
+  // is a regular expression with no notion of one: a comment whose prose contains `word:`
+  // parses as a property whose value runs to the next `;`, so it swallows the real
+  // declaration standing under it. Measured over the library rather than deduced — four
+  // declarations were read under the wrong property, `left: 50%` in `checkbox.scss` and
+  // `radio.scss` (as `improvement`), `container-type` in `container.scss` (as `stage`) and
+  // the `max-block-size` of `menu.scss` (as `screen`) — and all four carry dimensions, so
+  // nothing was red. What was lost is the PROPERTY, which is precisely the question point 7
+  // asks: the day a swallowed line paints a colour, the point counts nothing and stays green.
+  //
+  // A space and not an empty string: a comment can end in the middle of a line, and the
+  // scanner requires a declaration to BEGIN one. Replacing the comment with a space keeps
+  // every newline that stood outside it, so a declaration that followed one on its own line
+  // still starts a line, and a comment between a property and its colon leaves a space the
+  // pattern already allows.
+  //
+  // `check-styles` does the opposite on purpose and reads the same output WITH its comments:
+  // its exceptions are written as `/* pct-exception left: … */`. One repository, two gates,
+  // and the same text is evidence to one and noise to the other — which is why the strip
+  // stands here, at this gate's own input, and not in a shared reader.
   const sheets = files
     .filter(
       (p) =>
@@ -1372,7 +1409,9 @@ const collectInput = (root, files) => {
     )
     .map((file) => ({
       file,
-      css: sass.compile(join(root, file), { style: 'expanded' }).css,
+      css: withoutComments(
+        sass.compile(join(root, file), { style: 'expanded' }).css,
+      ),
     }));
 
   // The dependency's stylesheet a layer names, read from THIS root: the repository's

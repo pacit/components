@@ -1,0 +1,12 @@
+/* The case's defect is one painting, and the comment above it is the other half of it. */
+:host {
+  /* A loud comment survives sass, and a scanner with no notion of one reads its prose as
+     text like any other. Two things have to meet for a declaration to disappear into it,
+     and the case spells both out because either alone is harmless. The comment stands
+     INSIDE the rule, since a captured value may hold no `{` and a comment above a selector
+     therefore swallows nothing; and the word carrying the colon BEGINS a line, since the
+     scanner anchors a property to the start of one. That is the shape of every one of the
+     four declarations the library really lost, and it is an ordinary
+     note: the prose reads as a property, and the painting below reads as its value. */
+  background: var(--pct-text-muted);
+}

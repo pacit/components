@@ -4512,3 +4512,36 @@ property name stops being evidence — the skin's type is.** And the cheaper hal
 rule: when a gate's denominator is built by pattern, the entry that pattern misses is
 indistinguishable from the entry it approved, so the control to write is not "does the gate
 pass" but "does deleting this policy line turn it red".
+
+---
+
+### <a id="lesson-169"></a>`lesson-169` — A comment is input, and one repository can need it read both ways
+
+Sass keeps a loud comment in its output, and the declaration scanner of `check-tokens` is a
+regular expression. So the prose above a declaration is text the gate parses like any other:
+a line beginning `improvement:` reads as a property whose value runs to the next `;`, and the
+`left: 50%` under it disappears into that value. Four declarations of this library were read
+that way — in `checkbox.scss`, `radio.scss`, `container.scss` and `menu.scss` — and not one
+of them was red, because all four carry dimensions and the points that lost them ask about
+colours. A gate can be wrong in a way that costs nothing today and voids the promise anyway:
+what was lost is the PROPERTY, which is the whole question point 7 asks, so a painting under
+such a comment would have been a colour in no denominator and a green run.
+
+Two conditions have to meet, and knowing which is what made the case reproducible: the
+comment stands **inside a rule** — a captured value may hold no `{`, so a comment above a
+selector swallows nothing and the scanner recovers on the next line — and the word carrying
+the colon **begins a line**, since a property is anchored to the start of one. The first
+fixture written for this had the comment above the selector and the word mid-line, passed
+armed and disarmed alike, and proved nothing.
+
+The repair is one call on the gate's own input, and where it stands is the lesson's second
+half. `check-styles` reads the same compiled output and **must** see the comments: its
+exceptions are written as `/* pct-exception left: … */`, and the very comment that swallowed
+the checkbox's `left` is one of them. Two gates, one text, opposite needs — so the strip
+belongs to the reader that must not see them, at its own input, and a shared "read the CSS"
+helper would have had to choose for both.
+
+The rule: **the text a gate is handed is part of the gate.** A rule can be right and a reader
+can be right while the input under them is something else, and that floor is the one nothing
+reports from — the run stays green, because a swallowed declaration is not a wrong answer but
+no answer at all.

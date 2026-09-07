@@ -2892,7 +2892,7 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     would be a fourth copy of the same sentence, and this repository's rule for a fourth copy
     is the one it applies to tokens
 
-- [ ] **4.40 — a word with a colon inside a comment eats the declaration after it**
+- [x] **4.40 — a word with a colon inside a comment eats the declaration after it**
   - the declaration scanner —
     `/^\s*(-{0,2}[a-z][a-z0-9-]*)\s*:\s*([^;{}]+);/gm`, written twice in `check-tokens`:
     once for point 7 (what is painted) and once for point 8 (what is touched), which point 9
@@ -2920,7 +2920,32 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     points measure at once, so it wants its own fixture), or parse rather than match. The
     first is the proportionate one
   - binds at: **the next declaration a gate has to see that stands under a comment with a
-    colon in it**, or the first data URI in a library stylesheet · _notes:_ —
+    colon in it**, or the first data URI in a library stylesheet
+  - _notes:_ **done (2026-09-07): the comments come out of the input, one call, at the
+    gate's own reader.** The proportionate fork of the two, as written above. What it buys
+    is measured and it is not a red line: the live run is unchanged — 240 colours painted,
+    496 names touched, the same numbers before and after — because all four recovered
+    declarations carry dimensions and the points that lost them ask about colours. What
+    changes is that the four now reach the scanner under their own property, so the
+    guarantee is no longer conditional on the prose above a declaration
+  - **where the strip stands is half the step.** `check-styles` reads the same compiled
+    output and MUST see the comments — its exceptions are written `/* pct-exception left: … */`
+    — and the comment that swallowed the checkbox's `left` is one of them. Two gates, one
+    text, opposite needs: the strip belongs to the reader that must not see them and not to
+    a shared helper, which would have had to choose for both
+  - control: `colour-under-a-comment`, a painting under prose the scanner reads as a
+    declaration. Disarmed — the strip made an identity — the case PASSES and the harness
+    reports point 7 as having "stopped examining anything", which is the exact statement: a
+    swallowed painting is not a wrong answer but no answer. 37 prepared inputs now, from 36
+  - **the first version of that case proved nothing and the disarm caught it.** Two
+    conditions have to meet: the comment stands inside a rule (a captured value may hold no
+    `{`, so a comment above a selector swallows nothing) and the word carrying the colon
+    begins a line (a property is anchored to the start of one). The first draft had neither
+    and was green both ways — [`lesson-169`](lessons.md#lesson-169) carries both halves
+  - the data URI is NOT taken: the same `[^;{}]+` does stop at a `;` inside one, and no
+    stylesheet in this library holds one. A rule covering nothing is what this file refuses
+    four times over, so it waits for the first — with its case. Recorded in the code beside
+    the strip rather than left as a plan line nobody reads
 
 ## 5. Gaps with no deadline
 
