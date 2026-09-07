@@ -61,15 +61,16 @@
     },
     {
       "id": "1.3.1",
-      "conformance": "Partially Supports",
-      "remarks": "A label reaches its control through `for` or `aria-labelledby`, a hint and an error through `aria-describedby`, a group through its role and its name — the wiring is the library's and gated, the text is the consumer's. One relation is known wrong: a `pct-select` whose option list is empty renders a `role=\"listbox\"` owning no `role=\"option\"`, which axe rates critical (finding 4.8).",
+      "conformance": "Supports",
+      "remarks": "A label reaches its control through `for` or `aria-labelledby`, a hint and an error through `aria-describedby`, a group through its role and its name — the wiring is the library's and gated, the text is the consumer's. The one relation that was known wrong — an empty `pct-select` panel rendering a `role=\"listbox\"` that owned no `role=\"option\"`, which axe rates critical — was repaired on 2026-09-06: the panel is a surface, the listbox is the list inside it, and the empty panel is a scene of the audit in its own right.",
       "evidence": [
         { "gate": "tools/check-aria.mjs", "points": [3, 4, 6] },
         {
           "spec": "apps/sandbox-e2e/src/a11y.spec.ts",
           "titles": [
             "a form in the error state has no violations",
-            "an open panel with headings has no violations"
+            "an open panel with headings",
+            "an empty panel"
           ]
         },
         {
@@ -78,8 +79,7 @@
             "the wrapper renders the validation error and binds it to the control"
           ]
         },
-        { "req": "req-a11y-built-in" },
-        { "finding": "4.8" }
+        { "req": "req-a11y-built-in" }
       ]
     },
     {
@@ -388,7 +388,7 @@
         { "gate": "tools/check-aria.mjs", "points": [2, 3, 4, 5] },
         {
           "spec": "apps/sandbox-e2e/src/a11y.spec.ts",
-          "titles": ["an open dialog has no violations"]
+          "titles": ["an open dialog"]
         }
       ]
     },
@@ -636,7 +636,7 @@
     {
       "id": "4.1.2",
       "conformance": "Partially Supports",
-      "remarks": "Every widget is native where the platform has one and an APG pattern where it has not; the name written on the host reaches the element with the role, states are attributes, and axe's ARIA rules run over every view and every special state in three engines. The one known wrong value is the empty select's listbox (finding 4.8); what a screen reader makes of the rest is the pass this report still owes.",
+      "remarks": "Every widget is native where the platform has one and an APG pattern where it has not; the name written on the host reaches the element with the role, states are attributes, and axe's ARIA rules run over every view and every special state in three engines. The one value known wrong — the empty select's listbox — was repaired on 2026-09-06; what a screen reader makes of the rest is the pass this report still owes.",
       "evidence": [
         { "gate": "tools/check-aria.mjs", "points": [1, 2, 3, 4, 8] },
         {
@@ -648,7 +648,7 @@
         },
         { "req": "req-a11y-built-in" },
         { "req": "req-a11y-axe" },
-        { "finding": "4.8" }
+        { "cards": "Screen-reader test log" }
       ]
     },
     {
