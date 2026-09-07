@@ -1532,6 +1532,14 @@ thousandth row` timed out with the list still showing row 44, and the forced-col
     report in 2.9s. The score CI lands: **82.59 against the starved snapshot's 82.40** —
     a drift of +0.19 into the gate's ±2, in the predicted direction and a tenth of the
     predicted size. The starved-snapshot decision holds its first night
+  - **decided (2026-09-07): the nightly splits into a matrix, one runner per heavy
+    gate.** `mutation` and `e2e` stop sharing a job, so the clock column stops being
+    decided by what else the run is doing and the snapshot can go back to recording a
+    run that lands its kills. The price is a second `npm ci` — 58 s on the first nightly
+    — and a second Playwright restore per night, against ~138 minutes of critical path
+    either way. The `--write` after the split is the step that re-reads the files this
+    item names; whether `mutation` ever joins a pull request stays parked for 3.1, where
+    it belongs
 
 - [x] **4.3 — an option's owner is measured only where a page renders the panel**
   - `pct-select` draws a named section as `role="group"`, and the options below it are owned by
@@ -1587,7 +1595,12 @@ thousandth row` timed out with the list still showing row 44, and the forced-col
     is what that move gets wrong when it is done in a hurry)
   - binds at: **the third tag over this template** — an autocomplete or a combobox with a
     filter field would make it three copies, and three is where "one file, compiled n times"
-    stops reading as a rounding error · _notes:_ —
+    stops reading as a rounding error · _notes:_ **decided (2026-09-07): measure before
+    extracting.** A probe in `check-bundle` that imports `PctSelect` alone records what
+    a consumer of one tag really pays, and the panel component of the road out waits for
+    its trigger. If the second class does fall away, the item closes on a number instead
+    of on everybody's "of course, ESM"; if it does not, the extraction has the argument
+    it lacks today
 
 - [x] **4.5 — inheritance was taught to the two gates that fired, and to none of the rest**
   - a component's surface can now come from a base class, and two gates said so out loud:
@@ -1655,6 +1668,12 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     opened by find-in-page, focus inside, Escape. So the guard is measured, the measurement
     works, and the snapshot cannot say either — which is the clearest statement of this item
     there is going to be
+  - **decided (2026-09-07): a sixth column, and an errored mutant keeps counting against
+    the score.** The row becomes `score · killed (of that, by the clock) · surviving ·
+errored · not covered · ignored`, and point 6's parser and the five fixtures that
+    spell a row out literally grow with it. The denominator stays stricter than
+    Stryker's own: a mutant after which the worker dies is not a case that stated
+    anything. The arithmetic then reads on the five rows that carry one
 
 - [x] **4.7 — the guard that keeps `null` away from a consumer's comparator is promised and not
       measured**
@@ -1939,6 +1958,13 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     decision, which is what this item said would happen; what it changes is the trigger, since
     "the second component that wants a tone" has been met and the decision is still the right
     one to make once rather than twice
+  - **decided (2026-09-07): tones exist, and the second channel is an icon the library
+    draws.** A `tone` input on the toast and on the progress bar, and four names into
+    `PctIconName` at once — `success`, `warning`, `danger`, `info` — each with a drawing
+    the component ships and a consumer's set can replace (0011). Six public names become
+    ten, and the set is settled once for the field's error, the dialog's confirm and
+    whatever the banner turns out to be, which is the whole reason this item refused to
+    let the first component decide it
 
 - [ ] **4.15 — the assertive channel has no consumer, and therefore no gate**
   - `PctAnnouncer` opens two regions and has done since the live announcer was built. The
@@ -1959,7 +1985,13 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     screen, or take the region out and let a consumer pass `'assertive'` into a channel opened
     on demand, which is the very failure 0026 refused
   - binds at: **the first message in this library that has no home** — or the next change to
-    `announce.ts`, whichever comes first · _notes:_ —
+    `announce.ts`, whichever comes first · _notes:_ **decided (2026-09-07): the region
+    stays open, and a demo is its consumer.** 0026 is untouched — the pair is opened by
+    a render and not by the first message — and what changes is that the assertive half
+    stops being a promise with no gate: a sandbox view calls `announce(…, 'assertive')`,
+    and an e2e case reads that the sentence lands in the assertive region and not in the
+    polite one. The mechanism is measured without inventing a library message that has
+    no home, which is the prediction 0026 already got wrong twice
 
 - [ ] **4.16 — a control in the corner is last in the page's tab order, and nothing carries the
       keyboard to it**
@@ -1987,6 +2019,12 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     mechanism: the toast has nowhere in the document to be, the drawer has somewhere and it is
     the wrong somewhere. Whatever answers this has to answer both, which is the argument for
     settling it once rather than per component
+  - **decided (2026-09-07): the keystroke is the consumer's to install.** The library
+    ships the mechanism — one that moves focus through the regions, F6 by default and
+    the key configurable — and mounts nothing on the document by itself. It answers both
+    sides this item names, the toast that has nowhere in the document to be and the
+    drawer that is somewhere wrong, and it takes no keystroke from an application that
+    never asked to give one up
 
 - [ ] **4.17 — a snapshot with no tolerance drifted with nothing to point at**
   - `libs/components/size.snapshot.md` records `./toast` at **15311 B**. Built today from the
@@ -2014,6 +2052,12 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     came back at **15346** and every other row was unchanged, the new `./accordion` line being
     the only difference. So the 35 bytes moved once and have stayed moved — which rules out a
     measurement that wobbles and leaves the dependency bump as the suspect it always was
+  - **decided (2026-09-07): find the 35 bytes first, then decide what the gate
+    declares.** A walk over the lockfile's history, the same sources built at each step,
+    names the bump that moved them; only with the cause in hand is it clear whether the
+    snapshot should carry the versions it measures (Angular, the linker, esbuild, the
+    token build) or whether this was one artefact. A tolerance is refused outright —
+    0023 says what a tolerance is for, and this is exactly the drift it would hide
 
 - [x] **4.18 — a guard the pointer makes unreachable, found by the mutant that survived it**
   - `PctTabs.onPress` opens with `if (tab.disabled()) return;` and the mutation run says the
@@ -2070,6 +2114,12 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     ordering), not promises, so a deleted declaration that a case depends on dies silently.
     The honest cheap version for both non-`.ts` halves is the recorded disarming per claim
     this item already names
+  - **decided (2026-09-07): a recorded disarming per claim.** Every promise of a
+    component that is mostly the platform gets a negative control written down the way a
+    gate's fixtures are: the mechanism disarmed by hand, the case that turns red named,
+    the result in the card. No new tool is built — a mutator over templates is refused
+    as machinery this repository would then own and maintain — and the snapshot's header
+    says what a score over 74 lines is a true statement about
 
 - [x] **4.20 — the list of what the platform makes focusable is written by hand, and nobody
       counts what is missing**
@@ -2343,6 +2393,12 @@ hidden`, and it turned four CARD pictures of the select's triggers red at 743–
     2026-09-05) wrote the block's JSDoc into all eight copies by a script keyed on the member
     names — a ninth copy of the same drift, in prose. The gate, when the trigger fires, holds
     the lines as well as the transforms
+  - **decided (2026-09-07): a structural gate, not a host directive.** A point reads the
+    eight declarations and holds the transforms, the defaults and the JSDoc as well as
+    the member names, so the ninth copy missing `booleanAttribute` is red with a file
+    named. The host directive is refused for a measured reason rather than a taste: its
+    inputs would still have to be listed by name in every component, so the duplication
+    moves into a list of strings, and eight public classes change shape to buy that
 
 - [x] **4.27 — two meta-gates trust a fact about nx that nothing re-measures**
   - `check-docs` point 3 proves CI wiring by matching the `nx affected -t` **text** in
@@ -2503,7 +2559,12 @@ again"` fails **1 run in 3** in WebKit at the `Escape` step — the panel is sti
     (decision, e2e in three engines — a link keeps its role and its underline policy,
     focus-visible parity with the button, forced-colors reading — mutation, card)
   - binds at: **the premiere's link audit (2.1.8/3.1)**, or the first consumer who asks
-    for a link in button's clothes — whichever lands first · _notes:_ —
+    for a link in button's clothes — whichever lands first · _notes:_ **decided
+    (2026-09-07): widen the selector now, ahead of the site's design pass.**
+    `a[pctButton]` at the full 1.1 regime — decision, e2e in three engines, mutation,
+    card — so the pass has a link in button's clothes to paint with instead of rewriting
+    the landing's CTAs twice. The trigger named above is met early on purpose: the
+    consumer that noticed is the site, and the site is the next thing to be rebuilt
 - [ ] **4.34 — the first human review of the site: good in parts, owed a design pass**
   - delivered 2026-09-02 over the running preview, the day 2.1 closed: parts of the site
     look very good, a lot does not — and the direction is explicit: the site will still
@@ -2512,7 +2573,13 @@ again"` fails **1 run in 3** in WebKit at the `Escape` step — the panel is sti
     stand; the gap is visual design — composition, rhythm, polish — the one axis 2.1
     measured least
   - binds at: **the next site session** — it opens with the reviewer's list of concrete
-    screens, not with a guess · _notes:_ —
+    screens, not with a guess · _notes:_ **decided (2026-09-07): landing, then the
+    gallery, then a component's card, then the rest.** The order is the visitor's own
+    walk — `theming`, `start` and the trust pages come last, because whoever reaches
+    them is already convinced. Each screen goes the way the component card went: a
+    sketch to look at, a yes, then the sketch carried over literally with the library's
+    semantics underneath it. So the pass opens with the landing's sketch and not with an
+    edit to its stylesheet
 - [x] **4.35 — the popover's axe audit can catch a button mid-transition, in two
       engines at once**
   - CI run 33680164640's sibling (2026-09-02, run 33681596258): `a11y.spec.ts › an open
@@ -2565,7 +2632,13 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     ([`lesson-156`](lessons.md#lesson-156))
   - binds at: **the site's design pass (4.34)**, which is where a fourth copy would be
     written, or the first consumer who asks for the face outside the button — whichever
-    lands first · _notes:_ —
+    lands first · _notes:_ **decided (2026-09-07): three faces, and the palette takes
+    the two primitives.** `pctHero="edge | text | fill"` as 0065 has it, and a violet
+    and a cyan near the 400 level so the `text` face has a ground it stands on at 4.5
+    rather than at the brand's own 3.13–3.45. 0020 says the palette carries no spares
+    and it is kept: both primitives have a consumer the day they land, because the face
+    is what asks for them — and point 7 of `check-tokens` then turns the site's three
+    unmeasured headline colours into contrast entries that can fail a build
 
 - [ ] **4.37 — the conformance report's rows nothing measures, and two limits with no gate**
   - the ACR (2.2, `docs/acr.md`) is rendered from what the gates prove, and four criteria of
@@ -2586,7 +2659,16 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     the number field's `autocomplete`; the sixth a `pause` input on the face, or the
     finding closed by 4.36's component
   - binds at: **the first buyer who asks for the report**, or the site's design pass (4.34),
-    whichever comes first · _notes:_ —
+    whichever comes first · _notes:_ **decided (2026-09-07), for the two rows that are
+    limits rather than gaps.** 1.3.5: `[pctNumber]` takes an `autocomplete` input
+    defaulting to `off`, so a consumer can declare `bday-day` and nobody who ships the
+    field today sees a change; the row goes to Supports. 2.2.2: the hero's gradient
+    stops being perpetual — it runs its pass and settles inside five seconds, so the
+    criterion does not apply and no pause control has to be invented, nor the duty of
+    drawing one handed to every consumer of the face. The four Not Evaluated rows keep
+    the shape written above: one e2e spec over the sandbox views at 320 px, at 200 %
+    text, with the text-spacing declarations applied, and with a focused control under
+    an open toast
 
 - [x] **4.38 — three previews settle in two render passes**
   - the cost record (2.3, `apps/docs/bench.snapshot.md`) reads **2 renders** for the `menu`,
