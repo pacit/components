@@ -159,8 +159,16 @@ twenty points while the rest make up for it. The snapshot watches every file sep
 and watches it **both ways**: downwards, because that is what a deleted assertion looks
 like, upwards, because a floor ten points below the measurement stops measuring.
 
-Columns: file · score · killed (of that, by the clock) · surviving · not covered ·
-ignored. Tolerance: ±%TOLERANCE% of a percentage point.
+An **errored** mutant is one after which the test worker DIED rather than a test failing —
+\`if (row === null) return;\` removed, and the next line dereferences \`null\` inside a DOM
+listener. It counts towards the denominator here, which is stricter than Stryker's own
+score: a mutant that took the run down with it stated nothing about the tests. It has a
+column because without one the arithmetic of a row that has any does not work, and a reader
+checking it finds a mistake that is not one.
+
+Columns: file · score · killed (of that, by the clock) · surviving · errored · not covered ·
+ignored. The score follows from them — \`killed / (killed + surviving + errored + not
+covered)\` — and the gate checks that it does. Tolerance: ±%TOLERANCE% of a percentage point.
 `;
 
 const renderSnapshot = (report, tolerance) => {
@@ -170,8 +178,8 @@ const renderSnapshot = (report, tolerance) => {
       const count = (st) => data.mutants.filter((m) => m.status === st).length;
       return (
         `${file} ${s.score.toFixed(2)} ${count('Killed') + count('Timeout')}` +
-        `(${count('Timeout')}) ${count('Survived')} ${count('NoCoverage')} ` +
-        `${count('Ignored')}`
+        `(${count('Timeout')}) ${count('Survived')} ${count('RuntimeError')} ` +
+        `${count('NoCoverage')} ${count('Ignored')}`
       );
     })
     .sort();
@@ -194,6 +202,45 @@ const snapshotRows = (text) =>
     .split('\n')
     .map((l) => l.trim())
     .filter((l) => /^(?:[\w./-]+\.ts|TOTAL) \d/.test(l));
+
+/** A file's row: `path score killed(timeout) surviving errored notCovered ignored`. */
+const FILE_ROW =
+  /^(\S+) (\d+(?:\.\d+)?) (\d+)\((\d+)\) (\d+) (\d+) (\d+) (\d+)$/;
+/** The last row: `TOTAL score detected/denominator`. */
+const TOTAL_ROW = /^TOTAL (\d+(?:\.\d+)?) (\d+)\/(\d+)$/;
+
+/**
+ * A row read as the numbers it claims, or `null` if it does not carry them. Both shapes
+ * state the same thing twice — a score, and the counts it was computed from — which is what
+ * makes the row checkable at all. Before the errored column that arithmetic was impossible
+ * for any file with an errored mutant, and the four rows that had one looked like mistakes.
+ */
+const rowArithmetic = (row) => {
+  const file = FILE_ROW.exec(row);
+  if (file) {
+    const [, name, score, killed, , surviving, errored, notCovered] = file;
+    const denominator =
+      Number(killed) + Number(surviving) + Number(errored) + Number(notCovered);
+    return {
+      row,
+      name,
+      score: Number(score),
+      computed: denominator === 0 ? 100 : (Number(killed) / denominator) * 100,
+    };
+  }
+  const total = TOTAL_ROW.exec(row);
+  if (!total) return null;
+  const [, score, detected, denominator] = total;
+  return {
+    row,
+    name: 'TOTAL',
+    score: Number(score),
+    computed:
+      Number(denominator) === 0
+        ? 100
+        : (Number(detected) / Number(denominator)) * 100,
+  };
+};
 
 // ── checks ──────────────────────────────────────────────────────────────────
 
@@ -644,13 +691,50 @@ export const checkMutation = (input) => {
         `pass CI green today.`,
     );
 
+  // The file's own arithmetic, before any of its numbers is read as evidence below. A row
+  // states a score AND the counts it came from, so it can contradict itself — and until the
+  // errored column arrived it did, on every file with an errored mutant: `select.ts 88.89
+  // 32(0) 3 0 0` is 32 of 36 with four mutants nowhere on the line. The rule reads a
+  // generated file, which is not a tautology: `--write` is the only writer and a hand is the
+  // likelier one, the rows are the half `stale-prose` deliberately does not compare, and a
+  // renderer that stopped agreeing with the score it prints beside would say so here.
+  const rows = snapshotRows(input.snapshot).map(
+    (row) => rowArithmetic(row) ?? { row, name: null },
+  );
+  const malformed = rows.filter((r) => r.name === null);
+  if (malformed.length)
+    throw new MutationError(
+      'score',
+      'columns-adrift',
+      `${malformed.length} row(s) of \`${SNAPSHOT}\` do not carry the columns the file ` +
+        `declares:\n` +
+        list(malformed.map((r) => r.row)) +
+        `\n    Columns: file · score · killed (of that, by the clock) · surviving · ` +
+        `errored · not covered · ignored. Remedy: ` +
+        `\`node tools/check-mutation.mjs --write\`.`,
+    );
+  const contradictory = rows.filter(
+    (r) => Math.abs(r.score - r.computed) > 0.005,
+  );
+  if (contradictory.length)
+    throw new MutationError(
+      'score',
+      'columns-adrift',
+      `${contradictory.length} row(s) of \`${SNAPSHOT}\` carry a score their own ` +
+        `columns do not give:\n` +
+        list(
+          contradictory.map(
+            (r) => `${r.row}  → the columns say ${percent(r.computed)}`,
+          ),
+        ) +
+        `\n    A score is \`killed / (killed + surviving + errored + not covered)\`, and ` +
+        `\`ignored\` is outside it by decision (point 5). A row that does not add up is ` +
+        `either a hand edit of a generated file or a renderer that no longer agrees with ` +
+        `itself. Remedy: \`node tools/check-mutation.mjs --write\`.`,
+    );
+
   const fromSnapshot = new Map(
-    snapshotRows(input.snapshot)
-      .filter((l) => !l.startsWith('TOTAL'))
-      .map((l) => {
-        const [file, score] = l.split(/\s+/);
-        return [file, Number(score)];
-      }),
+    rows.filter((r) => r.name !== 'TOTAL').map((r) => [r.name, r.score]),
   );
   const missing = files.filter((p) => !fromSnapshot.has(p));
   if (missing.length)

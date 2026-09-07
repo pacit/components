@@ -57,9 +57,24 @@ Four readings arrive here as data rather than from a real run:
 
 This is the same choice as in `check-browsers` and for the same reason: four readings from disk and
 from the graph are four functions of a dozen lines each, while the checks are seven points and
-thirty-eight rules, and that is where all the content sits. The readings are guarded by runs against
+forty-three rules, and that is where all the content sits. The readings are guarded by runs against
 the real repository, recorded in the **Control** of
 [`req-quality-unit`](../../docs/requirements/quality.md#req-quality-unit).
+
+## The two cases on one rule, and why they are two
+
+`columns-adrift` holds a row to its own arithmetic — a row states a score AND the counts
+behind it, so `killed / (killed + surviving + errored + not covered)` has to give what stands
+beside them. It breaks in two ways that are two different human moves, so it has two cases:
+`row-without-columns` is a row that cannot be READ (five numbers where the format declares
+six — a half-finished format change), `columns-adrift` is a row that reads and contradicts
+itself (9 killed against 5 surviving, printed as 90.00).
+
+Both replace an EXISTING row rather than inventing one, and that is deliberate:
+`libs/fake/alpha.ts` stays inside the measurement, so `expired-snapshot` has nothing to say
+and the disarm of `columns-adrift` gives a green run — "PASSED" — instead of quietly moving
+the case onto a neighbour. Measured: with the arithmetic disarmed the second case passes, and
+the first moves to `incomplete-snapshot`, because a row nobody can read is a file with no row.
 
 ## The rule that outlives disarming Stryker itself
 

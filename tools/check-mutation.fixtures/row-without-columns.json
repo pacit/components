@@ -1,0 +1,7 @@
+{
+  "check": "score",
+  "rule": "columns-adrift",
+  "// defect": "A row carrying five numbers where the format declares six — what a half-finished change of the row format leaves behind, and what a hand edit that deletes a column looks like. The rule has two halves and they break differently: this one is a row that cannot be read, `columns-adrift.json` is a row that reads and contradicts itself.",
+  "dropSnapshotRow": ["libs/fake/alpha.ts"],
+  "addSnapshotRow": ["libs/fake/alpha.ts 90.00 9(0) 1 0"]
+}

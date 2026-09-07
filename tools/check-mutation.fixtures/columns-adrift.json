@@ -1,0 +1,8 @@
+{
+  "check": "score",
+  "rule": "columns-adrift",
+  "// defect": "A row whose score does not follow from its own columns: 9 killed against 5 surviving is 64.29, and the row says 90.00. The score itself is the true one, so the comparisons that read it stay quiet and the only thing wrong with the row is that it contradicts itself — which is what a hand edit of a generated file looks like, and what every row with an errored mutant looked like before the column arrived: `select.ts 88.89 32(0) 3 0 0` was 32 of 36 with four mutants nowhere on the line.",
+  "// the row it replaces": "`libs/fake/alpha.ts` stays IN the measurement — the row is dropped and put back rather than invented — so `expired-snapshot` has nothing to say and the disarm of this rule gives a green run rather than a neighbouring rule.",
+  "dropSnapshotRow": ["libs/fake/alpha.ts"],
+  "addSnapshotRow": ["libs/fake/alpha.ts 90.00 9(0) 5 0 0 1"]
+}

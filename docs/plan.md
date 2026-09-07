@@ -1661,7 +1661,7 @@ thousandth row` timed out with the list still showing row 44, and the forced-col
     reference cannot carry (32 inputs). The list is `req-quality-inheritance`, so a gate that
     reads a class and is not on it is a named gap rather than a green
 
-- [ ] **4.6 — the mutation snapshot cannot say that a mutant errored**
+- [x] **4.6 — the mutation snapshot cannot say that a mutant errored**
   - the columns are `score · killed (of that, by the clock) · surviving · not covered ·
 ignored`, and `RuntimeError` is in none of them — while `check-mutation` counts it in the
     **denominator**, deliberately and stricter than Stryker's own score. Two lines of the
@@ -1695,8 +1695,33 @@ ignored`, and `RuntimeError` is in none of them — while `check-mutation` count
     opened by find-in-page, focus inside, Escape. So the guard is measured, the measurement
     works, and the snapshot cannot say either — which is the clearest statement of this item
     there is going to be
-  - **decided (2026-09-07): a sixth column, and an errored mutant keeps counting against
-    the score.** The row becomes `score · killed (of that, by the clock) · surviving ·
+  - **done (2026-09-07): the sixth column, and the arithmetic the item's own binds-at asked
+    for as the alternative — both, because the second is what makes the first earn its
+    place.** The row is now `score · killed (of that, by the clock) · surviving · errored ·
+not covered · ignored`, and a new rule `score/columns-adrift` requires the score to
+    follow from the columns beside it: `killed / (killed + surviving + errored + not
+covered)`. Before the column that arithmetic was impossible on any row with an errored
+    mutant; now it holds on every row and on the TOTAL, and a hand edit of a generated file
+    is red
+  - **it is nine rows, not the two the item opens with and not the five it counted up to.**
+    Measured off the report the snapshot is written from: twelve errored mutants over
+    `drawer.ts`, `field.ts`, `menu-item.ts`, `menu.ts`, `popover.ts`, `multi-select.ts`,
+    `select.ts`, `tab.ts` and `tabs.ts`. Every one of those rows now adds up
+  - and **one fixture spelled a row out literally, not five**: `expired-snapshot`, whose row
+    grew a column. The other cases' snapshots come from the same renderer as the production
+    one, so they followed the format on their own — which is the reason the fixture harness
+    renders them rather than storing them
+  - controls: two cases on the new rule, because it breaks in two human ways —
+    `row-without-columns` (five numbers where six are declared: a half-finished format
+    change) and `columns-adrift` (a row that reads and contradicts itself). Both REPLACE an
+    existing row rather than adding one for a stranger, so the disarm gives "PASSED" on the
+    second instead of moving it onto `expired-snapshot`. 44 prepared inputs now, 43 rules
+  - the snapshot was rewritten with `--write` from the report already on disk, and **not one
+    score moved** — verified row by row. The rewrite is the column and the header's new
+    paragraph and nothing else, which is what makes it safe to do while the gate is red on
+    `stale-measurement` for a file the next run has to re-measure anyway
+  - _superseded (the decision this replaces):_ **a sixth column, and an errored mutant keeps
+    counting against the score.** The row becomes `score · killed (of that, by the clock) · surviving ·
 errored · not covered · ignored`, and point 6's parser and the five fixtures that
     spell a row out literally grow with it. The denominator stays stricter than
     Stryker's own: a mutant after which the worker dies is not a case that stated
