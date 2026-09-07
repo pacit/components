@@ -64,3 +64,33 @@ before an application ships them.
 ./tooltip 13274 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core
 ./tree 9158 ./icon @angular/common,@angular/core
 ```
+
+And the second reading, for the entrypoints that carry more than one tag. The rows
+are: entrypoint · the class a probe imported BY NAME · how many tags the entrypoint
+has · the bytes of that one class · the bytes of a probe importing EVERY tag of it.
+It answers the question everybody answers with "of course, ESM": whether importing one
+tag of an entrypoint sheds the rest of it. The two numbers side by side are the whole
+reading — where they are equal, nothing was shed and the entrypoint is the unit a
+consumer pays in; where they differ, that difference is what the other tags cost.
+
+It is measured in bytes and NOT by looking for the other tags in the text, and that
+is a measurement rather than a preference: searched for, `pct-select` is in a bundle
+that imported `PctMultiSelect` alone — inside the shared base's own
+`get tag() { return this.multiple ? 'pct-multi-select' : 'pct-select' }` — and
+`pct-tree-item` is in one that imported `PctTree` alone, as its content-projection
+selector. Two false positives in seven rows, both of them a string that equals a
+selector without being a component.
+
+```
+./accordion PctAccordion 2 4162 11333
+./breadcrumb PctBreadcrumb 3 4256 9043
+./chips PctChip 2 10567 10569
+./date PctCalendar 2 22123 38901
+./field PctField 3 16059 24895
+./menu PctMenu 2 19134 19136
+./radio PctRadio 2 15359 15361
+./select PctMultiSelect 2 69904 69907
+./stepper PctStep 2 10543 10545
+./tabs PctTab 2 16005 16007
+./tree PctTree 2 9020 9022
+```

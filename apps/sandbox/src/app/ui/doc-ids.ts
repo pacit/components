@@ -274,7 +274,8 @@ export type PctLessonId =
   | 'lesson-167'
   | 'lesson-168'
   | 'lesson-169'
-  | 'lesson-170';
+  | 'lesson-170'
+  | 'lesson-171';
 
 /** Anything a sandbox card may refer to. */
 export type PctDocId = PctReqId | PctLessonId;

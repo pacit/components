@@ -162,7 +162,7 @@ used but not declared in the package must fire point 3
 version. Components are imported through secondary entrypoints — which forces tree-shaking
 and explicit imports.
 
-**Gate:** `tools/check-bundle.mjs` (target `check-bundle` in `components`, in CI) — twelve
+**Gate:** `tools/check-bundle.mjs` (target `check-bundle` in `components`, in CI) — thirteen
 points. The probes bundle the **artifact** through `node_modules` and the `exports` map, the
 same way a consumer does: point 6 watches which entrypoints an import of one of them pulls
 in, point 8 which external dependencies come along (CDK Overlay is allowed in `./select`
@@ -181,15 +181,26 @@ metafile alone. The rest is the denominator: two readings of the entrypoint list
 measured entrypoint in the probe, a second reading of isolation from the bundle text — a
 marker read as the string literal it is in a linked bundle, so a state attribute or a longer
 selector containing it is not it — a differential check, and a repeat of the measurement with the **real**
-`@angular/build:application`. Point 12 holds the FILE rather than the measurement: the
+`@angular/build:application`. Point 13 holds the FILE rather than the measurement: the
 snapshot is exactly what the renderer writes, prose included — the points above read it
 through a map of its rows, so a paragraph rewritten in the renderer used to stay out of the
 file until some byte happened to move with it
-([`lesson-79`](../lessons.md#lesson-79)). The budget's number is what an **application** carries, not
+([`lesson-79`](../lessons.md#lesson-79)). Point 12 asks the question one floor **inside** an
+entrypoint: eleven of them carry more than one component, and what a consumer importing ONE
+tag pays is measured rather than assumed — a probe importing one class by name beside a probe
+importing every class of that entrypoint, both recorded. The answer is not the "of course,
+ESM" everybody gives: `./accordion` is 4162 B for one tag against 11333 for both and
+`./field` 16059 against 24895, while `./select` reads 69904 against 69907 — three bytes, so a
+consumer of one select tag carries the other whole. Six of the seven entrypoints that shed
+nothing are parent/child pairs where the child injects the container, which is a reference
+the bundler is right to keep; `./select` is a pair of SIBLINGS and is the finding. The point
+itself holds the measurement — a named probe with no bytes measured nothing, and one class
+cannot cost more than every class — while the numbers are held by point 13 with every other
+row. The budget's number is what an **application** carries, not
 what the tarball weighs: point 5 requires the probe to be built the way a consumer builds —
 the Angular linker run over the package and `ngDevMode` folded — and the two together take a
 component entrypoint to some 60% of its unlinked size
-**Control:** `tools/check-bundle.fixtures/` — 30 doctored inputs, each rejected on its own
+**Control:** `tools/check-bundle.fixtures/` — 32 doctored inputs, each rejected on its own
 point; among them `entrypoint-pulls-neighbour/` (importing `./alpha` pulls in `./beta`),
 `marker-inside-a-state-name/` (a probe's text holds a selector only inside a stranger's name,
 and the read that takes the literal does not take it for the entrypoint),
@@ -202,11 +213,15 @@ component in, and the metafile read fires),
 `probe-not-linked/` (the probe measures the package's bytes rather than the consumer's),
 `size-grew/` (one byte, the smallest thing the point can be asked to see),
 `snapshot-not-the-render/` (every row right, and the prose still describing the band 0023
-removed) and `pair-no-larger-than-single/` — literally "an app importing two entrypoints must
-produce a noticeably bigger bundle". Plus runs against the real repository: the exact
+removed), `named-probe-empty/` and `named-probe-larger/` (the one-tag measurement produced no
+bytes, and one class costing more than every class) and `pair-no-larger-than-single/` —
+literally "an app importing two entrypoints must produce a noticeably bigger bundle". Plus runs against the real repository: the exact
 comparison's first run was red on `./checkbox`, `./radio` and `./select`, 76 B each, a drift
 of the single message line that the old ±5% band had recorded nowhere, and point 12's first run was green — the
-paragraphs 0023 rewrote had reached the file on the back of the rows that moved with them
+paragraphs 0023 rewrote had reached the file on the back of the rows that moved with them;
+point 12 was measured the same way — with its two rules disarmed both cases pass, and the
+first reading it produced was WRONG, because it looked for the sibling's selector in the
+text instead of weighing it ([`lesson-171`](../lessons.md#lesson-171))
 **Decision:** [0023 — a tolerance is for a measurement that wobbles](../decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md)
 **Lessons:** [`lesson-51`](../lessons.md#lesson-51), [`lesson-73`](../lessons.md#lesson-73),
 [`lesson-78`](../lessons.md#lesson-78), [`lesson-79`](../lessons.md#lesson-79)

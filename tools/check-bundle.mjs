@@ -15,11 +15,12 @@
  *   9. `size`         — the bytes per entrypoint, EXACTLY as recorded, both ways,
  *  10. `differential` — a two-entrypoint probe is noticeably larger than either single one,
  *  11. `builder`      — the same measured by Angular's REAL builder,
- *  12. `verbatim`     — the snapshot file is EXACTLY what the renderer writes.
+ *  12. `shaken`       — DENOMINATOR: what ONE TAG of a multi-tag entrypoint really costs,
+ *  13. `verbatim`     — the snapshot file is EXACTLY what the renderer writes.
  *
  * Points 6 and 8 are the promise itself (8 is where "no CDK Overlay with `button`" lives);
- * 4, 5, 7, 10 and 11 watch the DENOMINATOR — without them "the `button` bundle holds no
- * `PctField`" is vacuously true exactly when the measurement stopped measuring. Point 12
+ * 4, 5, 7, 10, 11 and 12 watch the DENOMINATOR — without them "the `button` bundle holds
+ * no `PctField`" is vacuously true exactly when the measurement stopped measuring. Point 13
  * watches the FILE: everything before it reads the snapshot through a map of its rows, so
  * the prose the same renderer writes around them was compared by nobody.
  *
@@ -161,7 +162,7 @@ const checkBundle = (input) => {
    */
   const writable = (check, description) =>
     Object.assign(new BundleError(check, description), {
-      snapshot: renderSnapshot(sources, input.probes ?? {}),
+      snapshot: renderSnapshot(sources, input.probes ?? {}, input.named ?? {}),
     });
 
   // 1. The entrypoint list from two reads. The same move as point 1 in `check-tokens` and
@@ -612,7 +613,58 @@ const checkBundle = (input) => {
       );
   }
 
-  // 12. The file IS the render. Points 3, 6, 8 and 9 read the snapshot through
+  // 12. WHAT ONE TAG COSTS. Eleven entrypoints carry more than one component, and what a
+  //     consumer importing ONE of them pays is the question everybody answers with "of
+  //     course, ESM". Measured, the answer is "it depends, and the difference is 60% of
+  //     the bundle": `./accordion` is 4162 B for one tag against 11333 for both,
+  //     `./date` 22123 against 38901, `./field` 16059 against 24895 — while `./chips`,
+  //     `./menu`, `./radio`, `./stepper`, `./tabs`, `./tree` and `./select` shed nothing
+  //     at all, their two numbers standing 2 or 3 bytes apart.
+  //
+  //     Six of those seven are parent/child pairs: a chip injects its container, a tab
+  //     injects the strip, so importing the child names the parent and the bundler is
+  //     right to keep it. `./select` is the exception and the reason this point exists —
+  //     `pct-select` and `pct-multi-select` are SIBLINGS with no reference between them
+  //     (0034: one template, compiled twice), and a consumer of one still pays for the
+  //     other. Why the bundler keeps it is not measured here and is written down as a
+  //     finding rather than guessed at.
+  //
+  //     It is measured in BYTES and not by looking for the sibling's selector in the text,
+  //     and that was a measurement too: `pct-select` stands in a bundle that imported
+  //     `PctMultiSelect` alone, inside the shared base's own
+  //     `get tag() { … 'pct-multi-select' : 'pct-select' }`, and `pct-tree-item` stands in
+  //     a `PctTree`-only bundle as its content-projection selector. Two false positives in
+  //     seven rows — a string equal to a selector is not a component.
+  //
+  //     What this point holds is the MEASUREMENT, not the answer: a probe that pulled
+  //     nothing measured nothing, and one class cannot cost more than every class. The
+  //     answer itself is a row of the snapshot, held by point 13 with every other row — so
+  //     the day a bundler starts shedding the sibling, the gate is red and somebody reads
+  //     why.
+  const namedProbes = Object.entries(input.named ?? {});
+  for (const [e, measurement] of namedProbes) {
+    if (!measurement.bytes)
+      throw new BundleError(
+        'shaken',
+        `the probe importing \`${measurement.export}\` from ` +
+          `\`@pacit/components${e === PRIMARY ? '' : e.slice(1)}\` produced no bytes.\n` +
+          `    A named import the bundler dropped entirely measures nothing, and the row ` +
+          `it writes would read as "one tag costs nothing" — the most flattering possible ` +
+          `reading of a probe that failed`,
+      );
+    if (measurement.bytes > measurement.all)
+      throw new BundleError(
+        'shaken',
+        `importing \`${measurement.export}\` alone (${measurement.bytes} B) is LARGER ` +
+          `than importing all ${measurement.tags} tags of \`${e}\` ` +
+          `(${measurement.all} B).\n` +
+          `    One class cannot cost more than every class, so the two probes are not ` +
+          `measuring the same entrypoint — the usual cause is a class name that no longer ` +
+          `stands in the package and an import the bundler resolved elsewhere`,
+      );
+  }
+
+  // 13. The file IS the render. Points 3, 6, 8 and 9 read the snapshot through
   //     `snapshotRows`, that is, through a map keyed by entrypoint — and everything the
   //     renderer writes around those rows is compared by nobody. Rewrite a paragraph of
   //     the explanation and the file keeps yesterday's text until some byte happens to
@@ -623,9 +675,10 @@ const checkBundle = (input) => {
   //
   //     It stands LAST, and for a reason of its own rather than point 5's. Every point
   //     before it names WHAT moved — a size, an entrypoint, a dependency — while this one
-  //     can only say "the file is not the render"; and with 10 or 11 red the MEASUREMENT
-  //     is in doubt, so its rendering is not a record anybody should be told to write down.
-  const rendered = renderSnapshot(sources, probes);
+  //     can only say "the file is not the render"; and with 10, 11 or 12 red the
+  //     MEASUREMENT is in doubt, so its rendering is not a record anybody should be told
+  //     to write down.
+  const rendered = renderSnapshot(sources, probes, input.named ?? {});
   if (input.snapshot !== rendered) {
     const have = String(input.snapshot ?? '').split('\n');
     const want = rendered.split('\n');
@@ -649,7 +702,7 @@ const checkBundle = (input) => {
       `${sources.length} entrypoints, ${total} B in total, largest ` +
       `${sources.reduce((a, b) => ((probes[a]?.bytes ?? 0) >= (probes[b]?.bytes ?? 0) ? a : b))}; ` +
       `${runs.length} probes through the real builder`,
-    snapshot: renderSnapshot(sources, probes),
+    snapshot: renderSnapshot(sources, probes, input.named ?? {}),
   };
 };
 
@@ -663,7 +716,7 @@ const equal = (a, b) => a.size === b.size && [...a].every((x) => b.has(x));
  * prettier pads its columns to the longest cell, so one long name rewrites the WHOLE file
  * and the diff stops showing what really changed.
  */
-const renderSnapshot = (sources, probes) =>
+const renderSnapshot = (sources, probes, named = {}) =>
   [
     '# Entrypoint size and isolation snapshot',
     '',
@@ -709,6 +762,32 @@ const renderSnapshot = (sources, probes) =>
     ),
     '```',
     '',
+    'And the second reading, for the entrypoints that carry more than one tag. The rows',
+    'are: entrypoint · the class a probe imported BY NAME · how many tags the entrypoint',
+    'has · the bytes of that one class · the bytes of a probe importing EVERY tag of it.',
+    'It answers the question everybody answers with "of course, ESM": whether importing one',
+    'tag of an entrypoint sheds the rest of it. The two numbers side by side are the whole',
+    'reading — where they are equal, nothing was shed and the entrypoint is the unit a',
+    'consumer pays in; where they differ, that difference is what the other tags cost.',
+    '',
+    'It is measured in bytes and NOT by looking for the other tags in the text, and that',
+    'is a measurement rather than a preference: searched for, `pct-select` is in a bundle',
+    "that imported `PctMultiSelect` alone — inside the shared base's own",
+    "`get tag() { return this.multiple ? 'pct-multi-select' : 'pct-select' }` — and",
+    '`pct-tree-item` is in one that imported `PctTree` alone, as its content-projection',
+    'selector. Two false positives in seven rows, both of them a string that equals a',
+    'selector without being a component.',
+    '',
+    '```',
+    ...Object.keys(named)
+      .sort()
+      .map((e) =>
+        [e, named[e].export, named[e].tags, named[e].bytes, named[e].all].join(
+          ' ',
+        ),
+      ),
+    '```',
+    '',
   ].join('\n');
 
 /**
@@ -724,7 +803,13 @@ const renderSnapshot = (sources, probes) =>
  */
 const snapshotRows = (content) => {
   const out = new Map();
-  for (const w of (content ?? '').split('\n')) {
+  // The FIRST code block and not the whole file: the second one carries a row per
+  // multi-tag entrypoint (point 12), and its rows begin with an entrypoint too. Read
+  // whole, `./accordion PctAccordion 2 4162 11333` parses as an entrypoint that pulls in
+  // "2" — measured, and it is the same shape as `lesson-50` one line down: two readings
+  // of one file, and the narrower one has to say where it stops.
+  const block = String(content ?? '').split('```')[1] ?? '';
+  for (const w of block.split('\n')) {
     if (!/^\.(\/[a-z0-9-]+)?\s/.test(w)) continue;
     const [e, bytes, pulled, external] = w.trim().split(/\s+/);
     out.set(e, {
@@ -808,17 +893,31 @@ const collectMarkers = async (dist, files) => {
   await import('@angular/compiler');
   const markersOf = {};
   const plainOf = {};
+  const componentsOf = {};
   for (const [input, file] of files) {
     const module = await import(
       pathToFileURL(join(dist, file.replace(/^\.\//, ''))).href
     );
     const markers = new Set();
+    const components = [];
     let plain = false;
-    for (const value of Object.values(module)) {
+    for (const [name, value] of Object.entries(module)) {
       const def =
         typeof value === 'function'
           ? (value['ɵcmp'] ?? value['ɵdir'])
           : undefined;
+      // The COMPONENTS by their export name, which is what an import names. Components and
+      // not directives, because the question underneath is about TAGS: `pct-select` and
+      // `pct-multi-select` are two tags over one template (0034), and what point 13 asks is
+      // what a consumer of one of them pays for the other.
+      if (typeof value === 'function' && value['ɵcmp'])
+        components.push({
+          name,
+          markers: (value['ɵcmp'].selectors ?? [])
+            .flat()
+            .filter((t) => typeof t === 'string' && /^pct[-A-Z]/.test(t))
+            .sort(),
+        });
       // Anything that is not a component or a directive: a token, a provider factory, a
       // function. Types do not count — they are gone by the time this module is imported,
       // which is the point of reading the artifact rather than the sources.
@@ -829,8 +928,11 @@ const collectMarkers = async (dist, files) => {
     }
     markersOf[input] = [...markers].sort();
     plainOf[input] = plain;
+    componentsOf[input] = components.sort((a, b) =>
+      a.name.localeCompare(b.name),
+    );
   }
-  return { markers: markersOf, plain: plainOf };
+  return { markers: markersOf, plain: plainOf, components: componentsOf };
 };
 
 /**
@@ -947,18 +1049,28 @@ const probe = async (
   markers,
   byFile,
   entrypoints,
+  // The export names to import BY NAME instead of taking the namespace, or null for the
+  // namespace. One entrypoint only — the question it serves is about what is inside one.
+  only = null,
 ) => {
   // The input file's name is FIXED, because the bundle's size is the measured quantity
   // here: a name with a counter or a timestamp can end up in the output and the budget
   // starts measuring the length of a path. The probes run in turn and the file is removed
   // after each.
   const input = join(directory, 'probe.mjs');
+  // `only` names ONE export instead of taking the namespace, and that is the whole
+  // difference between "what an entrypoint costs" and "what one of its tags costs".
+  // A namespace import is a reference to every export at once, so it forbids by
+  // construction the shaking point 13 asks about.
   writeFileSync(
     input,
-    entrypoints
-      .map((e, i) => `import * as m${i} from '${specifierOf(e)}';`)
-      .join('\n') +
-      `\nglobalThis.__pctProbe = [${entrypoints.map((_, i) => `m${i}`).join(',')}];\n`,
+    only
+      ? `import { ${only.join(', ')} } from '${specifierOf(entrypoints[0])}';\n` +
+          `globalThis.__pctProbe = [${only.join(', ')}];\n`
+      : entrypoints
+          .map((e, i) => `import * as m${i} from '${specifierOf(e)}';`)
+          .join('\n') +
+          `\nglobalThis.__pctProbe = [${entrypoints.map((_, i) => `m${i}`).join(',')}];\n`,
   );
   const result = await esbuild.build({
     entryPoints: [input],
@@ -1109,7 +1221,7 @@ const measureRepository = async () => {
     [...files].map(([e, file]) => [file.split('/').pop(), e]),
   );
 
-  const { markers, plain } = await collectMarkers(dist, files);
+  const { markers, plain, components } = await collectMarkers(dist, files);
   const esbuild = await import('esbuild');
   const linker = await angularLinker(dist);
   const directory = prepareProbeDirectory(dist);
@@ -1119,6 +1231,44 @@ const measureRepository = async () => {
     const probes = {};
     for (const e of files.keys())
       probes[e] = await probe(esbuild, linker, directory, markers, byFile, [e]);
+
+    /**
+     * What ONE TAG of a multi-tag entrypoint costs. The entrypoints measured here are
+     * DISCOVERED — every one carrying more than one component — rather than named, so the
+     * day a second tag joins another entrypoint the measurement follows by itself; a
+     * hard-coded `./select` would be a gate that stopped seeing at the first new pair.
+     *
+     * The class taken is the first by export name, and which one it is does not matter:
+     * the question is symmetric, and measured it answers the same either way.
+     */
+    const named = {};
+    for (const [e, list] of Object.entries(components)) {
+      if (list.length < 2 || !files.has(e)) continue;
+      const one = await probe(
+        esbuild,
+        linker,
+        directory,
+        markers,
+        byFile,
+        [e],
+        [list[0].name],
+      );
+      const all = await probe(
+        esbuild,
+        linker,
+        directory,
+        markers,
+        byFile,
+        [e],
+        list.map((c) => c.name),
+      );
+      named[e] = {
+        export: list[0].name,
+        tags: list.length,
+        bytes: one.bytes,
+        all: all.bytes,
+      };
+    }
 
     /**
      * The two halves of the differential control have to be entrypoints a consumer imports
@@ -1157,6 +1307,8 @@ const measureRepository = async () => {
         : null,
       markers,
       plain,
+      components,
+      named,
       declaredPlain: PLAIN,
       probes,
       pair: pairMeasurement
@@ -1205,6 +1357,7 @@ const buildFixture = (fx) => {
     plain: structuredClone(reference.plain),
     declaredPlain: structuredClone(reference.declaredPlain ?? {}),
     probes: structuredClone(reference.probes),
+    named: structuredClone(reference.named ?? {}),
     pair: structuredClone(reference.pair),
     builder: structuredClone(reference.builder),
   };
@@ -1215,6 +1368,11 @@ const buildFixture = (fx) => {
   if (fx.dropFromExports) delete input.manifest.exports[fx.dropFromExports];
   if (fx.sideEffects !== undefined) input.manifest.sideEffects = fx.sideEffects;
   if (fx.dropProbe) delete input.probes[fx.dropProbe];
+  if (fx.namedProbe)
+    input.named[fx.namedProbe.ep] = {
+      ...input.named[fx.namedProbe.ep],
+      ...fx.namedProbe.is,
+    };
   if (fx.probeWithoutItsOwn)
     input.probes[fx.probeWithoutItsOwn].pulled = input.probes[
       fx.probeWithoutItsOwn
@@ -1261,7 +1419,16 @@ const buildFixture = (fx) => {
   // The snapshot is rendered from the REFERENCE measurement and broken separately
   // afterwards — so the cases aiming at points 5, 7 and 8 break the MEASUREMENT rather
   // than the record, that is, exactly the side of the comparison at issue.
-  let snapshot = renderSnapshot(reference.sources, reference.probes);
+  // The snapshot is rendered from the reference's probes and from the CASE's named
+  // measurement, and the asymmetry is the point of each: points 5–9 compare a measurement
+  // against a record, so their cases break the measurement and leave the record standing;
+  // point 12 compares a measurement against ITSELF, so a record disagreeing with it would
+  // take its two cases away to `verbatim` and the rule would never be shown to fire alone.
+  let snapshot = renderSnapshot(
+    reference.sources,
+    reference.probes,
+    input.named ?? {},
+  );
   if (fx.dropSnapshot) snapshot = null;
   else if (fx.snapshotWithoutRow)
     snapshot = snapshot

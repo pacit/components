@@ -4579,3 +4579,43 @@ six different true sentences here — a native checkbox has none and swallows th
 field hands it to the input and disables the calendar button. Holding text identical across
 copies is only right where the text is a fact about the CONTRACT; where it is a fact about
 the control, one sentence for all of them is a worse document, not a tidier one.
+
+---
+
+### <a id="lesson-171"></a>`lesson-171` — A string equal to a selector is not a component, and a probe that skips the linker measures the wrong package
+
+The question was 4.4's: does a consumer importing `PctSelect` alone shed `PctMultiSelect`,
+its template and its styles? Everybody answers "of course, ESM". Two measurements were taken
+before one of them was true.
+
+**The first was wrong because the pipeline was.** A throwaway script bundled the package with
+esbuild and an Angular linker plugin copied out of `check-bundle` — and the copy tested
+`path.startsWith(dist)` against the repository's `dist`, while the probe resolved the package
+through a COPY of it in a temporary `node_modules`. The test was false for every file, so the
+linker never ran, and an unlinked FESM carries `ɵɵngDeclareClassMetadata(…)` as a top-level
+call naming every class in it: nothing can be shaken out of a module like that. The script
+reported that importing one tag sheds 228 B of 127828 — a confident, precise, entirely
+artificial number. The gate's own probe, which runs the linker because its `dist` is the one
+the probe resolves, answers 4162 B against 11333 for `./accordion`.
+
+**The second was wrong because the reading was.** With the pipeline fixed, the first version
+of the point asked whether the sibling's SELECTOR was in the bundle text. Seven rows came
+back with a sibling present and two of them were false: `pct-select` stands in a bundle that
+imported `PctMultiSelect` alone — inside the shared base's own
+`get tag() { return this.multiple ? 'pct-multi-select' : 'pct-select' }` — and
+`pct-tree-item` stands in a `PctTree`-only bundle as its content-projection selector. Both
+are strings that equal a selector without being a component. The reading that cannot be
+fooled is arithmetic: bundle one class, bundle every class, compare the bytes.
+
+The answer, once both were fixed: **it depends, and the difference is up to 60% of the
+bundle.** `./accordion`, `./breadcrumb`, `./date` and `./field` shed the tags a consumer does
+not name; `./chips`, `./menu`, `./radio`, `./stepper`, `./tabs` and `./tree` do not, and are
+right not to — a chip injects its container, so importing the child names the parent.
+`./select` is the one that is neither: two siblings with no reference between them, three
+bytes apart.
+
+The rule: **a measurement of what is inside a bundle is a measurement of BYTES.** Text in a
+bundle is evidence of text. And the second rule, older and re-learnt: a probe that skips a
+step of the consumer's build measures a different artefact, so a shortcut copy of a gate's
+pipeline is a different gate — the one place a measurement like this belongs is inside the
+gate that already gets the pipeline right.

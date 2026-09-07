@@ -71,6 +71,15 @@
       "residue": []
     }
   },
+  "// why a named probe": "What ONE TAG of a multi-tag entrypoint costs (point 12). `./beta` carries two components here, the way the real `./select` carries `pct-select` and `pct-multi-select`: the numbers say the second tag is shed — 500 B of 1400 — which is the answer the real library gives for `./accordion` and refuses for `./select`. The reference states the HEALTHY reading, so each case can break one half of it.",
+  "named": {
+    "./beta": {
+      "export": "PctBeta",
+      "tags": 2,
+      "bytes": 900,
+      "all": 1400
+    }
+  },
   "pair": {
     "entrypoints": ["./alpha", "./beta"],
     "bytes": 36500

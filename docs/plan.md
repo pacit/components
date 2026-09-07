@@ -1604,7 +1604,7 @@ thousandth row` timed out with the list still showing row 44, and the forced-col
     without its anchor — 25 in all, each rejected on its own point; the reference grew the
     legal shape (a listbox owning options directly and through a heading's group)
 
-- [ ] **4.4 — one template, compiled twice, and nothing says when that stops being worth it**
+- [x] **4.4 — one template, compiled twice, and nothing says when that stops being worth it**
   - `pct-select` and `pct-multi-select` share `select.html` and `select.scss` in the sources
     and duplicate both in the artefact: an `@Component` compiles its own template and carries
     its own styles, so the entrypoint went 29058 → **46749 B** and became the largest in the
@@ -1628,6 +1628,32 @@ thousandth row` timed out with the list still showing row 44, and the forced-col
     its trigger. If the second class does fall away, the item closes on a number instead
     of on everybody's "of course, ESM"; if it does not, the extraction has the argument
     it lacks today
+  - **done (2026-09-07): point 12 of `check-bundle`, and the extraction has its argument.**
+    The probe imports ONE class by name beside a probe importing every class of the same
+    entrypoint, for every entrypoint carrying more than one component — discovered from the
+    package, not named, so the day a second tag joins another entrypoint the reading follows
+  - the measurement, recorded in `size.snapshot.md`: **`./select` 69904 B for one tag against
+    69907 for both.** Three bytes. A consumer who imports `pct-select` alone carries
+    `pct-multi-select` whole, so the duplication 0034 accepted is paid by every consumer of
+    either tag, and "of course, ESM" is refuted where it was assumed
+  - **and it is refuted only here.** Tree-shaking inside an entrypoint works elsewhere:
+    `./accordion` 4162 against 11333, `./breadcrumb` 4256 against 9043, `./date` 22123
+    against 38901, `./field` 16059 against 24895 — up to 63% shed. Of the seven that shed
+    nothing, six are parent/child pairs where the child injects the container, which is a
+    reference the bundler is right to keep. `./select` is the only pair of SIBLINGS with no
+    reference between them, and why the bundler keeps the second is not measured — it opens
+    as 4.42 rather than being guessed at here
+  - so the road out (a panel component both triggers hold) keeps its trigger — the third tag
+    — and gains a number: what it would save is the duplication, and the duplication is not
+    shed by anybody
+  - the reading was wrong twice before it was right, both times in a way that looked precise:
+    a throwaway probe that never ran the linker, and a first version of the point that looked
+    for the sibling's SELECTOR in the bundle text — two false positives in seven rows
+    ([`lesson-171`](lessons.md#lesson-171)). What holds now is arithmetic on bytes
+  - controls: `named-probe-empty` and `named-probe-larger`, 32 prepared inputs from 30. Both
+    disarm to "PASSED" rather than to a neighbour, and that needed the harness to render the
+    case's snapshot from the case's own measurement: point 12 compares a measurement against
+    ITSELF, so a record disagreeing with it would take both cases to `verbatim`
 
 - [x] **4.5 — inheritance was taught to the two gates that fired, and to none of the rest**
   - a component's surface can now come from a base class, and two gates said so out loud:
@@ -3046,6 +3072,26 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     decision was about which runner starts what, and this is about what a runner may skip
   - binds at: **the first nightly that goes red on a file the commit did not touch**, or the
     first CI bill · _notes:_ —
+
+- [ ] **4.42 — one select tag brings the other, and no reference between them says why**
+  - measured by point 12 of `check-bundle` (4.4): `./select` costs **69904 B** for
+    `PctMultiSelect` alone and **69907 B** for both tags. The second component is three bytes,
+    which means it was already there
+  - what makes it a finding rather than a fact of bundling is that the neighbours behave
+    differently. `./accordion`, `./breadcrumb`, `./date` and `./field` shed the tags a
+    consumer does not name — up to 63% of the bundle — so the pipeline shakes. The six that
+    do not are parent/child pairs, where the child injects the container and the reference is
+    real. `./select` is neither: a search finds no mention of `PctSelect` in any source of the
+    entrypoint outside its own file, and the two classes share only an abstract base
+  - the candidates, none of them measured: the linker's output for two components over one
+    base (`usesInheritance`), a top-level call in the FESM naming both, or the shared
+    `PCT_SELECT_IMPORTS` constant tying their definitions together. Each is testable by
+    building the two probes against a doctored package, which is an afternoon and a number
+  - why it matters beyond one entrypoint: the answer decides whether 4.4's road out — one
+    panel component both triggers hold — would actually save a consumer anything, and whether
+    the same trap is waiting for the next entrypoint that grows a sibling tag
+  - binds at: **the third tag over the select's template**, or the first entrypoint whose two
+    numbers stop agreeing with the explanation above · _notes:_ —
 
 ## 5. Gaps with no deadline
 
