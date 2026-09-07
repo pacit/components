@@ -4807,3 +4807,38 @@ unreachable in this library anyway: the two components that read slots read the 
 The general shape is worth keeping: **a mechanism that already knows the answer is cheaper than
 a channel built to ask it.** DI was a way for the host to say something the host was already
 doing.
+
+### <a id="lesson-177"></a>`lesson-177` — Eleven floors, and every one of them measured for the first time
+
+`lesson-174` found one promise held by something other than the mechanism named beside it: the
+accordion's touch-target case stays green with `min-block-size` deleted, because the row's
+padding clears 24 px on its own. Ten more controls declare a `*-target-min` token of their own,
+and none of them had been disarmed either.
+
+**One spec, eleven controls, and the disarming is in the case rather than beside it.** Each row
+injects a stylesheet that sets every OTHER custom property giving that element size to zero,
+hides what it holds and zeroes its text — so what is left is the floor and nothing else — and
+then reads the box. Every one of the eleven lands on exactly 24 px, except the switch's track at
+26: a 1 px border on each side of a content-box element, which is a literal in the stylesheet
+and not a token to zero.
+
+**The upper bound is half the case.** Asserting `>= 24` alone would pass on a control whose
+padding survived the disarming, which is the very defect being closed, so each row also states
+how far above 24 the box may read — measured, not chosen.
+
+**And each case carries its own negative control**: with the floor's own token ALSO at zero the
+box has to fall through 24 px. Without that second reading the first would still pass on a
+component that had stopped reading its token and written `24px` into the sheet — the same defect
+one floor down.
+
+The proof that the file measures what it claims is the disarming that motivated it. With
+`min-block-size: var(--pct-accordion-heading-target-min)` deleted from the stylesheet:
+
+| case                                                             | verdict          |
+| ---------------------------------------------------------------- | ---------------- |
+| `accordion.spec.ts` — the whole heading row is the touch target  | green, as before |
+| `target-min.spec.ts` — accordion heading, everything else zeroed | red: `height: 0` |
+
+Three things this does not say. It reads eleven controls on one page each, not every control on
+every route; it runs at the sandbox's font size, so a consumer whose skin sets a larger one is
+outside it; and 24 px is the AA minimum (SC 2.5.8), not the 44 px that AAA asks for.

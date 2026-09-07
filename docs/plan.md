@@ -3286,7 +3286,7 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     waits for `afterNextRender`, so it says nothing during server-side rendering, where there
     is no render to be after
 
-- [ ] **4.44 — a floor the case above it does not stand on**
+- [x] **4.44 — a floor the case above it does not stand on**
   - found by 4.19's disarming: `--pct-accordion-heading-target-min` is a `min-block-size` on
     the heading row, and the e2e case that measures the row at 24 px stays **green with the
     floor removed** — the padding clears 24 px on its own. The promise (`req-a11y-touch`) is
@@ -3308,6 +3308,24 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     is written once for the accordion and then carried to every control with a `*-target-min`
     token: the tabs, the pagination, the chips. Not the `check-styles` point, which would
     measure that a declaration is present rather than what an engine lays out
+  - **done (2026-09-07): `apps/sandbox-e2e/src/target-min.spec.ts`, eleven controls, three
+    engines, 36 runs.** Not the accordion alone: every control in the library that declares a
+    `*-target-min` token is in the table — the accordion heading, a tab, a pagination item,
+    the chip's remove, a menu item, a breadcrumb link, the checkbox and radio controls, the
+    switch's track, the date toggle and the field's control. Each row names the custom
+    properties that would otherwise give that element size, and the case sets them to zero,
+    hides what the element holds and zeroes its text before reading the box
+  - measured: ten of the eleven land on **exactly 24 px** with everything else gone, the
+    switch's track on 26 — a 1 px border either side of a content-box element, a literal in
+    the stylesheet and not a token to zero. Each row carries that number as its CEILING, so a
+    padding that survived the disarming would fail the case rather than pass it unnoticed
+  - and each case carries its own negative control: with the floor's own token also at zero
+    the box has to fall through 24 px, which is what a component that had stopped reading its
+    token and written `24px` into the sheet would fail
+  - the proof it measures the mechanism: with `min-block-size` deleted from
+    `accordion-item.scss`, `accordion.spec.ts`'s 24 px case stays **green** and the new one
+    goes **red at `height: 0`** ([`lesson-177`](lessons.md#lesson-177)). The accordion's card
+    is corrected in both places it said the floor was held by nothing
 
 ## 5. Gaps with no deadline
 
