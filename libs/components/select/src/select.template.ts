@@ -63,9 +63,11 @@ export class PctSelectOptionTemplate<T> {
     alias: 'pctSelectOption',
   });
 
-  constructor() {
-    pctReportOrphanSlot('pctSelectOption');
-  }
+  /**
+   * What the select calls when its content query finds this template — the whole claim that
+   * the slot is home. A slot no query reaches is claimed by nobody, and that is the report.
+   */
+  readonly read = pctReportOrphanSlot('pctSelectOption');
 
   /**
    * What tells the compiler `let-option` is an option. The body cannot be anything but

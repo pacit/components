@@ -1827,8 +1827,8 @@ describe('PctSelect', () => {
         await render(MisplacedSlotHost);
         expect(warn).toHaveBeenCalledTimes(1);
         expect(String(warn.mock.calls[0][0])).toContain(
-          '[pctSelectOption] This template fills a slot of a component that is not ' +
-            'among its ancestors',
+          '[pctSelectOption] This template fills a slot of a component that does not ' +
+            'read it',
         );
       } finally {
         warn.mockRestore();

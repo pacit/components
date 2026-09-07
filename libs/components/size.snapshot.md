@@ -29,39 +29,39 @@ and the class metadata carries the decorator a second time, and both are compile
 before an application ships them.
 
 ```
-. 3647 ./core @angular/core
-./accordion 11505 ./core,./icon @angular/common,@angular/core
-./avatar 8609 ./core,./icon @angular/common,@angular/core
+. 3614 ./core @angular/core
+./accordion 11471 ./core,./icon @angular/common,@angular/core
+./avatar 8575 ./core,./icon @angular/common,@angular/core
 ./badge 1706 - @angular/core
-./breadcrumb 9202 ./core,./icon @angular/common,@angular/core
-./button 9669 ./core @angular/core
-./checkbox 14964 ./core,./icon @angular/common,@angular/core
-./chips 10708 ./core,./icon @angular/common,@angular/core
+./breadcrumb 9168 ./core,./icon @angular/common,@angular/core
+./button 9636 ./core @angular/core
+./checkbox 14930 ./core,./icon @angular/common,@angular/core
+./chips 10674 ./core,./icon @angular/common,@angular/core
 ./container 717 - @angular/core
-./core 8430 - @angular/core
-./date 39385 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
-./dialog 16368 ./core,./icon @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
-./drawer 15561 ./core,./icon @angular/common,@angular/core
-./field 27866 ./core @angular/core,@angular/forms,@angular/forms/signals
+./core 8157 - @angular/core
+./date 39351 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
+./dialog 16334 ./core,./icon @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
+./drawer 15527 ./core,./icon @angular/common,@angular/core
+./field 27832 ./core @angular/core,@angular/forms,@angular/forms/signals
 ./grid 673 - @angular/core
 ./hero 5594 - @angular/core
 ./icon 2552 - @angular/common,@angular/core
-./menu 20344 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
-./pagination 13709 ./core,./icon @angular/common,@angular/core
-./popover 14656 ./core @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
-./progress 7237 ./core @angular/core
-./radio 15529 ./core @angular/core
-./select 70136 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core
+./menu 20310 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
+./pagination 13675 ./core,./icon @angular/common,@angular/core
+./popover 14622 ./core @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
+./progress 7204 ./core @angular/core
+./radio 15495 ./core @angular/core
+./select 69803 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core
 ./skeleton 3480 - @angular/core
-./slider 17483 ./core @angular/core
+./slider 17449 ./core @angular/core
 ./stack 879 - @angular/core
-./stepper 10686 ./core,./icon @angular/common,@angular/core
-./switch 12503 ./core @angular/core
-./tabs 16173 ./core @angular/core
+./stepper 10652 ./core,./icon @angular/common,@angular/core
+./switch 12469 ./core @angular/core
+./tabs 16139 ./core @angular/core
 ./testing 8116 - @angular/cdk/testing
 ./theme 518 - @angular/core
-./toast 15901 ./core,./icon @angular/common,@angular/core
-./tooltip 13274 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core
+./toast 15867 ./core,./icon @angular/common,@angular/core
+./tooltip 13240 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core
 ./tree 9158 ./icon @angular/common,@angular/core
 ```
 
@@ -98,21 +98,27 @@ every row below (plan 4.42). Two things keep a tag nobody imported:
 The reading is DIRECTIONAL, because the probe imports the first export name: `PctSelect`
 is shed or not shed by a bundle that asked for `PctMultiSelect`, and the other direction
 can differ — an entrypoint whose group declares providers pins the group when a consumer
-imports only the child. `./select` is the row that neither half of the usual answer
-explains: the two classes share a base and nothing else, no source of the entrypoint
-names one from the other, and it is the orphan-slot report in each one's `providers`
-that costs a consumer importing one tag 24458 B — the whole of the other one.
+imports only the child.
+
+`./select` used to be the row neither half explained, and the answer was the first half
+after all: the orphan-slot report stood in each tag's `providers`, so a consumer who
+imported one carried the other, 24458 B for a `console.warn` their production build
+cannot print. The report now reads the content query that finds it instead of an
+injector — the query IS the claim — and no component in this package declares
+`providers` for a message any more (plan 4.43,
+[`lesson-176`](../../docs/lessons.md#lesson-176)). The row below is what that repair is
+worth, and it is the largest single number this file has ever moved.
 
 ```
-./accordion PctAccordion 2 4162 11333
-./breadcrumb PctBreadcrumb 3 4256 9043
-./chips PctChip 2 10567 10569
-./date PctCalendar 2 22123 38901
-./field PctField 3 16071 24973
-./menu PctMenu 2 19134 19136
-./radio PctRadio 2 15359 15361
-./select PctMultiSelect 2 69904 69907
-./stepper PctStep 2 10543 10545
-./tabs PctTab 2 16005 16007
+./accordion PctAccordion 2 4129 11299
+./breadcrumb PctBreadcrumb 3 4223 9009
+./chips PctChip 2 10533 10535
+./date PctCalendar 2 22089 38867
+./field PctField 3 16037 24939
+./menu PctMenu 2 19100 19102
+./radio PctRadio 2 15325 15327
+./select PctMultiSelect 2 45181 69573
+./stepper PctStep 2 10509 10511
+./tabs PctTab 2 15971 15973
 ./tree PctTree 2 9020 9022
 ```

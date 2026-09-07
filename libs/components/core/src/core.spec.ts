@@ -1,8 +1,10 @@
 import { OverlayModule } from '@angular/cdk/overlay';
 import {
   Component,
+  contentChild,
   createEnvironmentInjector,
   Directive,
+  effect,
   EnvironmentInjector,
   Injector,
   provideZonelessChangeDetection,
@@ -21,11 +23,7 @@ import { PctModalBackground } from './modal';
 import { pctAfterTransition } from './motion';
 import { pctOverlay, PctOverlayInherited, PctOverlayPanel } from './overlay';
 import { pctPlacementPositions } from './placement';
-import {
-  PCT_TEMPLATE_HOST,
-  pctReportOrphanSlot,
-  providePctTemplateHost,
-} from './template';
+import { pctReportOrphanSlot } from './template';
 import { PCT_TEXTS } from './texts';
 
 /**
@@ -1489,7 +1487,6 @@ describe('@pacit/components/core', () => {
       ['PCT_FIELD', PCT_FIELD],
       ['PCT_CONFIG', PCT_CONFIG],
       ['PCT_TEXTS', PCT_TEXTS],
-      ['PCT_TEMPLATE_HOST', PCT_TEMPLATE_HOST],
     ])('%s', (name, token) => {
       // A token's description is the only thing the consumer gets in NG0201 — a
       // token without one gives a message about "InjectionToken" with no hint as to
@@ -1510,38 +1507,40 @@ describe('@pacit/components/core', () => {
   describe('a slot that stands where nothing reads it', () => {
     @Directive({ selector: 'ng-template[pctProbeSlot]' })
     class ProbeSlot {
-      constructor() {
-        pctReportOrphanSlot('pctProbeSlot');
-      }
+      readonly read = pctReportOrphanSlot('pctProbeSlot');
     }
 
-    /** A component that offers the slot — the shape `pct-select` has. */
+    /** A slot of another name, so a host can offer slots and not this one. */
+    @Directive({ selector: 'ng-template[pctProbeOther]' })
+    class ProbeOtherSlot {
+      readonly read = pctReportOrphanSlot('pctProbeOther');
+    }
+
+    /** A component that reads the slot — the shape `pct-select` has. */
     @Component({
       selector: 'pct-probe-host',
       template: `<i>host</i>`,
-      providers: [
-        providePctTemplateHost('pct-probe-host', [
-          'pctProbeSlot',
-          'pctProbeOther',
-        ]),
-      ],
     })
-    class ProbeHost {}
+    class ProbeHost {
+      // The claim, and the whole of it: the query finding a template is the statement that
+      // the template will be rendered.
+      private readonly slot = contentChild(ProbeSlot);
+      constructor() {
+        effect(() => this.slot()?.read());
+      }
+    }
 
-    /** One that offers slots, but not this one. */
+    /** One that reads slots, but not this one. */
     @Component({
       selector: 'pct-probe-other',
       template: `<i>other</i>`,
-      // Two slots rather than one: the message joins their names, and a separator with a
-      // single name to print is a separator no case has ever seen.
-      providers: [
-        providePctTemplateHost('pct-probe-other', [
-          'pctProbeOther',
-          'pctProbeThird',
-        ]),
-      ],
     })
-    class ProbeOther {}
+    class ProbeOther {
+      private readonly slot = contentChild(ProbeOtherSlot);
+      constructor() {
+        effect(() => this.slot()?.read());
+      }
+    }
 
     @Component({
       imports: [ProbeHost, ProbeSlot],
@@ -1576,6 +1575,11 @@ describe('@pacit/components/core', () => {
     class WrappedInControlFlow {
       readonly shown = signal(true);
     }
+
+    const ORPHAN =
+      '[pctProbeSlot] This template fills a slot of a component that does not read it. ' +
+      'A slot is read by the component it stands directly inside, and this one is ' +
+      'rendered by nobody.';
 
     const silenced = () =>
       vi.spyOn(console, 'warn').mockImplementation(() => undefined);
@@ -1613,16 +1617,15 @@ describe('@pacit/components/core', () => {
       }
     });
 
-    it('names the component that does offer slots, and the ones it offers', async () => {
+    it('fires when the component above it reads other slots and not this one', async () => {
+      // The host is there, it queries slots, and none of them is this one — so nothing
+      // calls the claim and the report stands. The message no longer names that host:
+      // an unclaimed slot has no way to ask who it stood under (plan 4.43).
       const warn = silenced();
       try {
         await render(WrongHost);
         expect(warn).toHaveBeenCalledTimes(1);
-        expect(String(warn.mock.calls[0][0])).toBe(
-          '[pctProbeSlot] This template fills a slot of `pct-probe-other`, which offers ' +
-            '`pctProbeOther`, `pctProbeThird` and not this one. A slot is read by the ' +
-            'component it stands directly inside, and this one is rendered by nobody.',
-        );
+        expect(String(warn.mock.calls[0][0])).toBe(ORPHAN);
       } finally {
         warn.mockRestore();
       }
@@ -1633,11 +1636,7 @@ describe('@pacit/components/core', () => {
       try {
         await render(NoHost);
         expect(warn).toHaveBeenCalledTimes(1);
-        expect(String(warn.mock.calls[0][0])).toBe(
-          '[pctProbeSlot] This template fills a slot of a component that is not among ' +
-            'its ancestors. A slot is read by the component it stands directly ' +
-            'inside, and this one is rendered by nobody.',
-        );
+        expect(String(warn.mock.calls[0][0])).toBe(ORPHAN);
       } finally {
         warn.mockRestore();
       }

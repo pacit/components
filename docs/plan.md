@@ -3231,7 +3231,7 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
   - the reading is **directional**, which the snapshot now says: the probe imports the first
     export name, so `./accordion` sheds the item and would not shed the group
 
-- [ ] **4.43 — a dev-mode message costs a consumer 24458 B, and it is in the `providers`**
+- [x] **4.43 — a dev-mode message costs a consumer 24458 B, and it is in the `providers`**
   - measured in 4.42: `PctSelect` and `PctMultiSelect` each carry
     `providers: [providePctTemplateHost('pct-…', ['pctSelectOption'])]`, and that array is
     what pins each of them into a bundle that imported only the other one. The report it
@@ -3261,6 +3261,30 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     lands is the reading itself: a template written inside an `ng-container`, or projected in
     from somewhere else, is not a child of the host tag in the DOM the directive sees — if
     that case cannot be read, the road is the second one and not this one
+  - **done (2026-09-07), and the chosen road was refuted before a line of it was written.** A
+    probe rendered the five shapes a slot can take and read `nativeElement.parentElement` on
+    each: `null` for a template written directly inside `<pct-select>`, `null` inside an
+    `<ng-container>`, `null` inside an `@if` — and an element for the two WRONG placements.
+    An `<ng-template>` in a component's content is unprojected content and Angular never
+    inserts its anchor into the document, so the DOM answers for every case the report exists
+    to accuse and for none of the cases it exists to bless
+    ([`lesson-176`](lessons.md#lesson-176))
+  - what shipped is the second road, and it needed no new channel at all: the host already
+    queries the slot (`contentChild(PctSelectOptionTemplate)`), and finding the template IS
+    the statement that it will be rendered. So the query claims what it finds, a slot nobody
+    claims reports itself after the first render, and both `providers` arrays are gone with
+    `PCT_TEMPLATE_HOST` and `providePctTemplateHost` — a breaking removal from `./core`
+  - measured: the probe that imports `PctMultiSelect` alone from `./select` falls from
+    **69904 B to 45175 B** (−24729, the whole of the other tag), `./select` itself from 70136
+    to 69796, `./core` from 8430 to 8157, and every entrypoint sheds the ~34 B of the token it
+    no longer carries — 436938 B to **435587 B** over the package. No component in the library
+    declares `providers` for a message any more
+  - what it costs, written down rather than discovered later: the message no longer names a
+    host that offers other slots, because an unclaimed slot has no way to ask who it stood
+    under. That branch had a case in `core.spec.ts` and was unreachable in the shipped
+    library — the only two components that read slots read the same one. And the report now
+    waits for `afterNextRender`, so it says nothing during server-side rendering, where there
+    is no render to be after
 
 - [ ] **4.44 — a floor the case above it does not stand on**
   - found by 4.19's disarming: `--pct-accordion-heading-target-min` is a `min-block-size` on

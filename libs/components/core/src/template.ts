@@ -1,53 +1,38 @@
-import { inject, InjectionToken, isDevMode, Provider } from '@angular/core';
+import { afterNextRender, isDevMode } from '@angular/core';
 
 /**
- * What a component that offers template slots says about itself, for the message a slot with
- * no home has to print.
+ * What a slot hands back, so that the component reading it can say the slot is home.
+ *
+ * Calling it is the whole claim: a slot nobody calls is a slot nobody renders, and that is
+ * what the report below is about.
  */
-export interface PctTemplateHost {
-  /** The element name that offers the slots. */
-  readonly host: string;
-  /** The slot attributes it reads. */
-  readonly slots: readonly string[];
-}
+export type PctSlotRead = () => void;
 
-/** The channel through which a component tells the slots below it that it reads them. */
-export const PCT_TEMPLATE_HOST = new InjectionToken<PctTemplateHost>(
-  'PCT_TEMPLATE_HOST',
-);
-
-/**
- * Declares the slots a component offers, so a slot written under it can tell that it is home.
- *
- * A **slot** is a piece of a component's rendering a consumer may write instead
- * (`req-api-templates`): the select's option row, an icon, a row of a table. The consumer
- * supplies it as an `<ng-template>` carrying the slot's own directive.
- *
- * **A slot is a directive of its own and not a name in a string, and that is a measurement
- * rather than a taste.** The usual shape — `*pctTemplate="'option'"` — buys neither half of
- * what a template needs checked: a name inside a string is invisible to the compiler, and one
- * directive serving many names has nowhere to put the context guard that types each of them
- * ([0027](../../../../docs/decisions/0027-a-slot-is-a-directive.md),
- * [`lesson-84`](../../../../docs/lessons.md#lesson-84)).
- *
- * @example
- * providers: [providePctTemplateHost('pct-select', ['pctSelectOption'])]
- */
-export function providePctTemplateHost(
-  host: string,
-  slots: readonly string[],
-): Provider {
-  return { provide: PCT_TEMPLATE_HOST, useValue: { host, slots } };
-}
+/** Production's answer. Nothing is reported there, so nothing has to be claimed. */
+const UNREPORTED: PctSlotRead = () => undefined;
 
 /**
  * Reports a slot standing where nothing reads it — under `isDevMode()` and nowhere else.
  *
- * Called from a slot directive's constructor. The slot is a node of the **consumer's**
- * template, a child of the component's element, so it resolves the host's providers the way
- * `pct-select` resolves `PCT_FIELD` from the chrome around it: through the element injector.
- * Nothing there means the slot was written under a component that does not offer it — or
- * under no component at all — and it will never be rendered.
+ * Called from a slot directive's constructor, and the handle it returns is called by the
+ * component that queried the slot: `contentChild(PctSelectOptionTemplate)` finding one is
+ * exactly the statement "this template is mine, and I will render it". A slot no query
+ * reaches is claimed by nobody, and that is the report.
+ *
+ * **Why the host does not declare itself, though it used to.** The first shape of this was
+ * DI: the host carried `providers: [providePctTemplateHost('pct-select', […])]` and the slot
+ * resolved it through the element injector. It worked, and it cost 24458 B — a `providers`
+ * array compiles to `features: [ɵɵProvidersFeature([…])]`, a call to an imported function
+ * inside the static initialiser of the class, which no bundler may treat as pure. So a
+ * consumer who imported `pct-select` alone carried `pct-multi-select` with it, for a
+ * `console.warn` their production build cannot print ([`lesson-173`](../../../../docs/lessons.md#lesson-173),
+ * plan 4.42/4.43).
+ *
+ * **And why the DOM does not answer it either**, which is the road that was chosen and then
+ * measured shut: an `<ng-template>` written inside `<pct-select>` is unprojected content, so
+ * Angular never inserts its anchor into the document — `nativeElement.parentElement` is
+ * `null` for the CORRECT usage and an element for the wrong one. The one case the report
+ * exists to bless is the one case the DOM cannot see.
  *
  * **What this cannot see, and why nothing can.** A slot whose attribute is *misspelt* matches
  * no directive, so there is no instance to report anything: `<ng-template pctSelectOptoin>`
@@ -59,26 +44,38 @@ export function providePctTemplateHost(
  * is the compiler, one step earlier: a slot carries a required input, so the correctly spelt
  * name left unbound is `NG8008` rather than silence.
  *
+ * **What it no longer says.** The message used to name the host a slot stood under when that
+ * host offered other slots. Nothing knows that any more — an unclaimed slot has no way to
+ * ask who its neighbours are — so one sentence covers both cases. The branch it loses was
+ * never reachable in this library: the only two components that read slots read the same one.
+ *
+ * The report waits for `afterNextRender`, because the claim arrives with the host's content
+ * query and a constructor is too early to know. That also means it says nothing during
+ * server-side rendering, where there is no render to be after — a dev-mode `console.warn` is
+ * for the browser the consumer is looking at.
+ *
  * @param slot the attribute this directive is written as, which is what the message names
  *
  * @example
- * constructor() { pctReportOrphanSlot('pctSelectOption'); }
+ * readonly read = pctReportOrphanSlot('pctSelectOption');
  */
-export function pctReportOrphanSlot(slot: string): void {
-  if (!isDevMode()) return;
+export function pctReportOrphanSlot(slot: string): PctSlotRead {
+  if (!isDevMode()) return UNREPORTED;
 
-  const home = inject(PCT_TEMPLATE_HOST, { optional: true });
-  if (home !== null && home.slots.includes(slot)) return;
+  let claimed = false;
+  afterNextRender(() => {
+    // Twice, and neither is spare: the return above keeps production from registering a hook
+    // it would only run to do nothing, and this one stands where the call does, which is the
+    // form `check-texts` reads and the form that stays true if the callback is ever moved.
+    if (claimed || !isDevMode()) return;
+    console.warn(
+      `[${slot}] This template fills a slot of a component that does not read it. A slot ` +
+        `is read by the component it stands directly inside, and this one is rendered by ` +
+        `nobody.`,
+    );
+  });
 
-  const where =
-    home === null
-      ? 'a component that is not among its ancestors'
-      : `\`${home.host}\`, which offers ${home.slots
-          .map((s) => `\`${s}\``)
-          .join(', ')} and not this one`;
-
-  console.warn(
-    `[${slot}] This template fills a slot of ${where}. A slot is read by the ` +
-      `component it stands directly inside, and this one is rendered by nobody.`,
-  );
+  return () => {
+    claimed = true;
+  };
 }

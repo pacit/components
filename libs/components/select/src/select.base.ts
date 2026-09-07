@@ -1112,6 +1112,12 @@ export abstract class PctSelectBase<T> implements PctFieldControl {
 
     if (isDevMode()) afterRenderEffect(() => this.warnOnUnevenRows());
 
+    // The slot cannot tell where it stands: an `<ng-template>` in a component's content is
+    // never inserted into the document, so it has no parent to read and no provider to
+    // resolve that a bundler would let go of (plan 4.43). What knows is this query — finding
+    // the template IS the statement that it will be rendered.
+    if (isDevMode()) effect(() => this.optionTemplate()?.read());
+
     // An effect and not a one-off: `options` is an input, so the list that duplicates a value
     // is often the second one — the one that arrived from the server.
     if (isDevMode()) effect(() => this.warnOnDuplicateValues());

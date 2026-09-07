@@ -535,8 +535,9 @@ naming nobody, one borrowing another entrypoint's harness, a harness on no card
 content **once** or **per item**. Content it merely places comes in through
 `<ng-content select="…">` — the chrome's prefix, suffix and label aux. Content it draws per
 item comes in through a **slot**: an `<ng-template>` carrying a directive of that slot's own
-(`pctSelectOption` is the first), typed by a context guard, registered with the component
-through `PCT_TEMPLATE_HOST`. A slot replaces what is inside the item and never the item —
+(`pctSelectOption` is the first), typed by a context guard, and read by the component through
+a content query — which is also what tells a slot written where nothing reads it that it is
+rendered by nobody. A slot replaces what is inside the item and never the item —
 `role`, the id, `aria-selected` and the key map stay with the component.
 
 **`*pctTemplate` is deliberately not the shape**, and the reason is measured rather than

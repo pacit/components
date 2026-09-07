@@ -60,9 +60,16 @@ Three consequences follow from that one sentence:
 2. **The correctly spelt name cannot be left dangling**, because the input is
    `input.required` — `<ng-template pctSelectOption>` with no binding is `NG8008` at build
    time rather than a template that renders nowhere.
-3. **A slot standing where nothing reads it says so**, under `isDevMode()`, through the element
-   injector: the component provides `PCT_TEMPLATE_HOST` naming the slots it offers, and a slot
-   that resolves nothing — or resolves a component offering other slots — reports itself.
+3. **A slot standing where nothing reads it says so**, under `isDevMode()`: the component's
+   own content query is the claim — finding the template is the statement that it will be
+   rendered — and a slot no query reaches reports itself after the first render.
+   _Revised 2026-09-07 (plan 4.43): this was the element injector, with the component
+   providing `PCT_TEMPLATE_HOST` and the slot resolving it. That cost 24458 B, because a
+   `providers` array pins its component into any bundle that imports a sibling from the same
+   file ([`lesson-173`](../lessons.md#lesson-173)), and the obvious repair — reading the host
+   off the DOM — is measured shut: unprojected content is never inserted, so the anchor of a
+   CORRECTLY written slot has no parent at all. What the change costs is one sentence of the
+   message, which used to name a host offering other slots._
 
 **The component keeps what the role owns.** A slot replaces what is _inside_ the option row,
 never the row: `role="option"`, the id `aria-activedescendant` names, `aria-selected`, the

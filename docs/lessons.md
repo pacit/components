@@ -4772,3 +4772,38 @@ And the three criteria that passed on the first run are worth as much as the one
 They were claimed by nobody until the day the spec was written: a row that says _Not Evaluated_
 is not a row that is failing, it is a row where nobody knows, and the difference is what a
 conformance report exists to state.
+
+### <a id="lesson-176"></a>`lesson-176` — The template that has no parent: a report that had to stop asking DI
+
+`lesson-173` measured what a `providers` array costs: 24458 B, because the call Angular writes
+into the static `ɵcmp` initialiser pins its class into any bundle that imports a sibling from
+the same file. The only thing that array bought here was a dev-mode message about a slot
+standing where nothing reads it, so the plan chose the obvious repair — have the slot read its
+host's tag off the element it stands on, no DI at all (4.43).
+
+**The repair was measured before it was written, and it does not work.** A probe rendering the
+four shapes a slot can take reads:
+
+| where the slot stands                             | `nativeElement.parentElement` |
+| ------------------------------------------------- | ----------------------------- |
+| directly inside `<pct-select>` — the RIGHT markup | `null`                        |
+| inside an `<ng-container>` inside it              | `null`                        |
+| inside an `@if` inside it                         | `null`                        |
+| beside the select, inside `pct-field`             | `span`                        |
+| inside another component that projects it         | `div`                         |
+
+An `<ng-template>` in a component's content is unprojected content, and Angular never inserts
+its anchor comment into the document. So the DOM answers for every case the report exists to
+ACCUSE and for none of the cases it exists to bless: the correct markup is exactly the markup
+that is invisible.
+
+**What answers instead is the query that already existed.** `contentChild(PctSelectOptionTemplate)`
+finding a template IS the statement that the template will be rendered, so the host claims what
+it finds and a slot nobody claims reports itself after the first render. No token, no provider,
+no reference from the slot to any host — and the message no longer names a host that offers
+other slots, because an unclaimed slot has no way to ask who it stood under. That branch was
+unreachable in this library anyway: the two components that read slots read the same one.
+
+The general shape is worth keeping: **a mechanism that already knows the answer is cheaper than
+a channel built to ask it.** DI was a way for the host to say something the host was already
+doing.

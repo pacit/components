@@ -1,6 +1,5 @@
 import { Component, computed, model } from '@angular/core';
 import type { FormValueControl } from '@angular/forms/signals';
-import { providePctTemplateHost } from '@pacit/components/core';
 import { PCT_SELECT_IMPORTS, PctSelectBase } from './select.base';
 
 /**
@@ -32,8 +31,6 @@ import { PCT_SELECT_IMPORTS, PctSelectBase } from './select.base';
   imports: [...PCT_SELECT_IMPORTS],
   templateUrl: './select.html',
   styleUrl: './select.scss',
-  // The slots this component reads, so one written where nothing reads it can say so.
-  providers: [providePctTemplateHost('pct-multi-select', ['pctSelectOption'])],
 })
 export class PctMultiSelect<T = string>
   extends PctSelectBase<T>
