@@ -180,12 +180,22 @@
       }
     },
     "violet": {
+      "400": {
+        "$type": "color",
+        "$value": "#a78bfa"
+      },
+      "$comment": "Two steps, and the second is not a spare: `600` is the gradient's middle stop on a light ground, `400` the same stop on a dark one — the brand's own violet measures 3.13:1 as TEXT against the dark surface, which is legal for an edge at 3:1 and not for a word at 4.5:1 (0065).",
       "600": {
         "$type": "color",
         "$value": "#7c3aed"
       }
     },
     "cyan": {
+      "500": {
+        "$type": "color",
+        "$value": "#06b6d4"
+      },
+      "$comment": "The same pair, and the LEVEL is a measurement rather than a mirror of violet's: `cyan.400` reads 9.88:1 on the dark surface against violet.400's 6.56 and blue.400's 7.02, so the sweep would have one end that shouts. `500` lands at 7.35 and the three stand together.",
       "700": {
         "$type": "color",
         "$value": "#0e7490"

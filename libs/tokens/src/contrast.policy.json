@@ -96,6 +96,50 @@
       "severity": "error"
     },
     {
+      "$comment": "The other direction of the same gradient: the `text` face of `pctHero` cuts the sweep out of the WORD, so each stop is a foreground on the page's own surface and each is measured at AA — three checks again, and the weakest of the three is the one nobody looks at.",
+      "name": "hero/text — the first stop as a word",
+      "fg": "pct.hero-text",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "hero/text — the middle stop as a word",
+      "fg": "pct.hero-text-via",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "name": "hero/text — the last stop as a word",
+      "fg": "pct.hero-text-to",
+      "bg": "pct.surface",
+      "level": "AA",
+      "severity": "error"
+    },
+    {
+      "$comment": "The `edge` face is a boundary, so it is non-text and measured at 3:1 (SC 1.4.11) against the surface it is drawn on — the brand's own stops, which is why this face needs no lifted trio.",
+      "name": "UI: hero/edge — the first stop",
+      "fg": "pct.hero",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: hero/edge — the middle stop",
+      "fg": "pct.hero-via",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
+      "name": "UI: hero/edge — the last stop",
+      "fg": "pct.hero-to",
+      "bg": "pct.surface",
+      "level": "UI",
+      "severity": "error"
+    },
+    {
       "name": "UI: button border",
       "fg": "pct.button.border",
       "bg": "pct.surface",

@@ -29,6 +29,19 @@
       "$type": "color",
       "$value": "{pct.blue.200}"
     },
+    "hero-text": {
+      "$comment": "The gradient as TEXT, lifted for the dark ground. The surface stops (`hero`, `hero-via`, `hero-to`) are NOT overridden here on purpose — the brand's gradient is the same blue on both themes, and it is only the word cut out of it that has to move: 7.02, 6.56 and 7.35 against `surface`, where the unlifted stops read 3.45, 3.13 and 3.33.",
+      "$type": "color",
+      "$value": "{pct.blue.400}"
+    },
+    "hero-text-via": {
+      "$type": "color",
+      "$value": "{pct.violet.400}"
+    },
+    "hero-text-to": {
+      "$type": "color",
+      "$value": "{pct.cyan.500}"
+    },
     "surface": {
       "$type": "color",
       "$value": "{pct.slate.900}"

@@ -21,6 +21,7 @@ export const DEMOS: Readonly<Record<string, () => Promise<Type<unknown>>>> = {
   drawer: () => import('./drawer.demo').then((m) => m.DrawerDemo),
   field: () => import('./field.demo').then((m) => m.FieldDemo),
   grid: () => import('./grid.demo').then((m) => m.GridDemo),
+  hero: () => import('./hero.demo').then((m) => m.HeroDemo),
   menu: () => import('./menu.demo').then((m) => m.MenuDemo),
   number: () => import('./number.demo').then((m) => m.NumberDemo),
   pagination: () => import('./pagination.demo').then((m) => m.PaginationDemo),
@@ -80,6 +81,13 @@ export const EXAMPLES: Readonly<Record<string, readonly DocsExample[]>> = {
     {
       key: 'form',
       load: () => import('./button.form.demo').then((m) => m.ButtonFormDemo),
+    },
+  ],
+  hero: [
+    {
+      key: 'interact',
+      load: () =>
+        import('./hero.interact.demo').then((m) => m.HeroInteractDemo),
     },
   ],
   tabs: [

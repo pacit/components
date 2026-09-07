@@ -40,7 +40,7 @@ test.describe('The pages', () => {
     // By the tile's own link and not by every `<a>` under the gallery: the cards run real
     // components now, and breadcrumb's scene brings links of its own.
     const tiles = page.getByTestId('card-link');
-    await expect(tiles).toHaveCount(33);
+    await expect(tiles).toHaveCount(34);
 
     await tiles.filter({ hasText: 'Button' }).first().click();
     await expect(page).toHaveURL(/\/components\/button$/);
@@ -57,7 +57,7 @@ test.describe('The pages', () => {
    * `CARD_DEMOS` was written; this is what keeps them from coming back.
    *
    * The stage is `inert` and `aria-hidden`, so the count of tab stops is the second claim:
-   * thirty-three cards, thirty-three stops, whatever the scenes hold.
+   * thirty-four cards, thirty-four stops, whatever the scenes hold.
    */
   test('every card renders its component, and the stage holds it', async ({
     page,
@@ -65,9 +65,9 @@ test.describe('The pages', () => {
     await visit(page, '/components');
 
     const stages = page.getByTestId('gallery').locator('.card__stage');
-    await expect(stages).toHaveCount(33);
+    await expect(stages).toHaveCount(34);
 
-    // Each scene against its own stage, in one evaluation — 33 round trips would be a
+    // Each scene against its own stage, in one evaluation — 34 round trips would be a
     // minute of wall clock to learn the same thing.
     const overflowing = await page.evaluate(() => {
       const bad: {
@@ -106,7 +106,7 @@ test.describe('The pages', () => {
       .evaluateAll(
         (nodes) => nodes.filter((n) => !n.closest('[inert]')).length,
       );
-    expect(stops).toBe(33);
+    expect(stops).toBe(34);
   });
 
   /**

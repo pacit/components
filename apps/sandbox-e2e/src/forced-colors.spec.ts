@@ -857,6 +857,36 @@ test.describe('forced-colors: active', () => {
   });
 
   /**
+   * Forced colours strips colours and keeps IMAGES, so a gradient left alone goes on painting
+   * over the forced Canvas — the skeleton's shimmer and the site's own rim in one. All three
+   * faces of `pctHero` drop theirs, and the word comes back as a word: `CanvasText` is what
+   * the mode paints prose in, and a system colour is the one thing an author rule may still
+   * say here (0065).
+   */
+  test('every face of the hero drops its gradient, and the word comes back', async ({
+    page,
+  }) => {
+    await visit(page, '/hero', { media: FORCED });
+    const sys = await systemColors(page);
+
+    const imageOf = (testId: string, pseudo: string | null = null) =>
+      page
+        .getByTestId(testId)
+        .evaluate(
+          (el, pseudo) =>
+            getComputedStyle(el, pseudo || undefined).backgroundImage,
+          pseudo,
+        );
+
+    expect(await imageOf('hero-edge', '::after')).toBe('none');
+    expect(await imageOf('hero-fill')).toBe('none');
+    expect(await imageOf('hero-text')).toBe('none');
+    expect(await styleOf(page.getByTestId('hero-text'), 'color')).toBe(
+      sys.CanvasText,
+    );
+  });
+
+  /**
    * The same face on a link, and the mode reads it as a link whatever the stylesheet
    * said: an `<a>` is painted `LinkText` on `Canvas` where a `<button>` gets
    * `ButtonText` on `ButtonFace`. So the edge the boundary-less faces get back has to

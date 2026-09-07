@@ -44,6 +44,7 @@ before an application ships them.
 ./drawer 15561 ./core,./icon @angular/common,@angular/core
 ./field 27788 ./core @angular/core,@angular/forms,@angular/forms/signals
 ./grid 673 - @angular/core
+./hero 5594 - @angular/core
 ./icon 2552 - @angular/common,@angular/core
 ./menu 20344 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
 ./pagination 13709 ./core,./icon @angular/common,@angular/core
@@ -57,7 +58,7 @@ before an application ships them.
 ./stepper 10686 ./core,./icon @angular/common,@angular/core
 ./switch 12503 ./core @angular/core
 ./tabs 16173 ./core @angular/core
-./testing 8026 - @angular/cdk/testing
+./testing 8116 - @angular/cdk/testing
 ./theme 518 - @angular/core
 ./toast 15901 ./core,./icon @angular/common,@angular/core
 ./tooltip 13274 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core

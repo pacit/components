@@ -129,6 +129,7 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-control-height-lg dimension primitive public
 --pct-control-height-md dimension primitive public
 --pct-control-height-sm dimension primitive public
+--pct-cyan-500 color primitive private
 --pct-cyan-700 color primitive private
 --pct-danger color semantic public
 --pct-date-bg color component public
@@ -261,6 +262,9 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-grid-gap dimension component public
 --pct-grid-min-width dimension component public
 --pct-hero color semantic public
+--pct-hero-text color semantic public
+--pct-hero-text-to color semantic public
+--pct-hero-text-via color semantic public
 --pct-hero-to color semantic public
 --pct-hero-via color semantic public
 --pct-menu-item-bg color component public
@@ -549,5 +553,6 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-tree-label-padding-y dimension component public
 --pct-tree-label-radius dimension component public
 --pct-tree-label-target-min dimension component public
+--pct-violet-400 color primitive private
 --pct-violet-600 color primitive private
 ```

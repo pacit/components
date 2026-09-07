@@ -23,11 +23,11 @@ interface Bucket {
 
 /**
  * The gallery: every documented component under the bucket its card files it in, each one
- * carrying the component itself (plan 2.8, sketch variant A — "thirty-three stages").
+ * carrying the component itself (plan 2.8, sketch variant A — "thirty-three stages", thirty-four of them today).
  *
  * The tile shows the card's `**Summary:**` and its entry point, and NOT the `role` and the
  * `selector` it used to: `role` is sliced out of the card's H1 after the em dash, so nine
- * of the thirty-three read `button — button`, and three cards write `**Selectors:**` in the
+ * of the thirty-four read `button — button`, and three cards write `**Selectors:**` in the
  * plural and land here as `null`, drawing an empty `<code>`. The summary is the one
  * sentence the content pass actually gates — present, under 200 characters, no link and no
  * requirement number in it — and the entry point is the string a reader types first.
@@ -35,7 +35,7 @@ interface Bucket {
  * The preview is the component, not a picture of it: the same `DEMOS` registry the
  * component page mounts, with `CARD_DEMOS` standing in for the seven whose canonical demo
  * is authored for a 675px stage and overflows a card. Both resolve inside ONE
- * `PendingTasks` span so the thirty-three are in the prerendered HTML — a stage that
+ * `PendingTasks` span so all thirty-four are in the prerendered HTML — a stage that
  * arrived after hydration would be a stage nobody without JavaScript ever sees, and this
  * page is static by construction.
  */

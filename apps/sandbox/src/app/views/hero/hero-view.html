@@ -1,0 +1,117 @@
+<h2 class="view__title">Hero</h2>
+<p class="muted view__intro">
+  The brand gradient as equipment: an attribute component on the element that is
+  already there. <code>pctHero</code> names which surface takes the sweep —
+  <code>edge</code>, <code>text</code> or <code>fill</code> — and
+  <code>show</code> names when. One face per element, which two components on
+  one host make unrepresentable rather than merely discouraged.
+</p>
+
+<sbx-demo
+  heading="The three faces"
+  summary="A rim, a word and a surface. The rim and the fill take the brand's own stops — a boundary is measured at 3:1 and the fill carries its on-hero pair — while the word takes the lifted trio, because text under 24px is measured at 4.5:1 and the brand stops read 3.13–3.45 on the dark ground."
+  [reqs]="['req-token-contrast', 'req-a11y-forced-colors']"
+  data-testid="demo-faces"
+>
+  <div class="row">
+    <article class="view__card" pctHero="edge" data-testid="hero-edge">
+      <h3 class="view__card-name">Tabs</h3>
+      <p class="view__card-text">A rim, and the card keeps its own surface.</p>
+    </article>
+
+    <div class="view__panel" pctHero="fill" data-testid="hero-fill">
+      <strong>Get started</strong>
+      <!-- No muted class in here: the fill's text is `--pct-on-hero`, the pair the policy
+           measures against all three stops, and a page colour written over it would be a
+           contrast nobody measured. -->
+      <p class="view__panel-text">
+        A surface, and its text is the measured pair.
+      </p>
+    </div>
+  </div>
+
+  <p class="view__headline" pctHero="text" data-testid="hero-text">
+    Components that prove themselves
+  </p>
+</sbx-demo>
+
+<sbx-demo
+  heading="When it paints"
+  summary='show="interact" is hover OR :focus-visible, never hover alone — a treatment only a mouse can summon is one a keyboard cannot. On a device with no hover the pair falls to focus and a press.'
+  [reqs]="['req-a11y-wcag']"
+  data-testid="demo-show"
+>
+  <div class="row">
+    <a
+      class="view__card"
+      href="/hero"
+      pctHero="edge"
+      show="interact"
+      data-testid="hero-edge-interact"
+    >
+      <h3 class="view__card-name">Under attention</h3>
+      <p class="view__card-text">
+        The rim is drawn and hidden, so the reveal is an opacity.
+      </p>
+    </a>
+
+    <a
+      class="view__headline"
+      href="/hero"
+      pctHero="text"
+      show="interact"
+      data-testid="hero-text-interact"
+    >
+      Read the case
+    </a>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  heading="No face at all"
+  summary="A condition needs no API of its own: the face is an input, so it takes a binding, and null leaves the element exactly as it was found — the attribute is not written, and the trigger goes with it."
+  [reqs]="['req-api-attributes']"
+  data-testid="demo-none"
+>
+  <article
+    class="view__card"
+    [pctHero]="null"
+    show="interact"
+    data-testid="hero-none"
+  >
+    <h3 class="view__card-name">Plain</h3>
+    <p class="view__card-text">The same card, wearing nothing.</p>
+  </article>
+</sbx-demo>
+
+<h3 class="view__title">The word, on both grounds</h3>
+<p class="muted view__intro">
+  The surface stops are the same blue on both themes — the brand's gradient does
+  not change colour with the skin. What changes is the word cut out of it: on
+  the dark ground the same three stops read 3.13–3.45 as text, so the dark theme
+  lifts them to 7.02, 6.56 and 7.35 while the rim and the fill keep theirs.
+</p>
+
+<div class="grid-2">
+  <sbx-demo
+    heading="Light"
+    scheme="light"
+    [controls]="[]"
+    data-testid="demo-light"
+  >
+    <p class="view__headline" pctHero="text" data-testid="hero-text-light">
+      Measured, not asserted
+    </p>
+  </sbx-demo>
+
+  <sbx-demo
+    heading="Dark"
+    scheme="dark"
+    [controls]="[]"
+    data-testid="demo-dark"
+  >
+    <p class="view__headline" pctHero="text" data-testid="hero-text-dark">
+      Measured, not asserted
+    </p>
+  </sbx-demo>
+</div>

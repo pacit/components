@@ -93,6 +93,26 @@ test.describe('prefers-reduced-motion', () => {
   });
 
   /**
+   * The hero face divides the axis rather than naming a duration of its own — a card's rim
+   * reads 8s as a still picture, so it drifts at half that. The division is what makes the
+   * freeze survive: `calc(0s / 2)` is `0s`, and a component that had written `4s` would go on
+   * moving under a preference that asked it not to.
+   */
+  test('a face that halves the drift is still frozen by the preference', async ({
+    page,
+  }) => {
+    await visit(page, '/hero', { media: { reducedMotion: 'no-preference' } });
+    const rim = page.getByTestId('hero-edge');
+    const drift = () =>
+      rim.evaluate((el) => getComputedStyle(el, '::after').animationDuration);
+    expect(await drift()).toBe('4s');
+
+    await visit(page, '/hero', { media: REDUCE });
+    expect(await rootToken(page, '--pct-motion-drift-duration')).toBe('0s');
+    expect(await drift()).toBe('0s');
+  });
+
+  /**
    * A regression against the state from before the motion axis: `prefers-reduced-motion`
    * was a single exception in `button.scss` back then, so the other controls animated
    * their border despite the preference. Since time became a token, one rule is

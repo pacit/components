@@ -137,6 +137,7 @@ const CARD_ORDER = [
   'container',
   'grid',
   'stack',
+  'hero',
   'theme',
 ];
 const warnings = [];

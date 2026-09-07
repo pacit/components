@@ -2631,6 +2631,13 @@ again"` fails **1 run in 3** in WebKit at the `Escape` step — the panel is sti
     sketch to look at, a yes, then the sketch carried over literally with the library's
     semantics underneath it. So the pass opens with the landing's sketch and not with an
     edit to its stylesheet
+  - **and it inherits three hand copies of the brand gradient from 4.36.** The component
+    exists now (`[pctHero]`), and none of the three is a swap that can be made without a
+    design decision: the headline's two-beat entrance is not the library's, the identity
+    tiles use one stop as a rule rather than the `edge` face, and the live cards paint the
+    NAME from the CARD's hover — a trigger `show="interact"` cannot say, because it reads the
+    attention on the element wearing the face. Each is a question for the pass, and the
+    fourth copy the item warned about is the thing to refuse while answering them
 - [x] **4.35 — the popover's axe audit can catch a button mid-transition, in two
       engines at once**
   - CI run 33680164640's sibling (2026-09-02, run 33681596258): `a11y.spec.ts › an open
@@ -2658,7 +2665,7 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     in flight when the panel is first visible, nothing finite once waited for. The panel
     audits (popover, menu, dialog, tooltip, the toast stack) and the control, three times each
     in three engines: **108 of 108**
-- [ ] **4.36 — the loud face is equipment the consumer cannot ask for: three hand copies,
+- [x] **4.36 — the loud face is equipment the consumer cannot ask for: three hand copies,
       no gate**
   - the brand gradient exists once as API — the button's `variant="hero"`
     ([0058](decisions/0058-the-hero-face-is-paint-and-a-gradient-is-three-contrast-checks.md))
@@ -2690,6 +2697,55 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     and it is kept: both primitives have a consumer the day they land, because the face
     is what asks for them — and point 7 of `check-tokens` then turns the site's three
     unmeasured headline colours into contrast entries that can fail a build
+  - **done (2026-09-07): the equipment exists, the gate exists, and the copies outlived
+    both — on purpose.** `[pctHero]` is the 34th entrypoint: `edge`, `text` and `fill`,
+    `show="always | interact"`, one face per element, exactly the shape 0065 decided. The
+    palette took the two primitives with the consumer that asks for them — and the LEVEL is
+    a measurement rather than a mirror: `cyan.400` reads 9.88:1 on the dark surface against
+    `violet.400`'s 6.56 and `blue.400`'s 7.02, so the sweep would have had one end that
+    shouts. `cyan.500` lands at 7.35 and the three stand together, which matters as much as
+    the numbers because a gradient's weakest stop is the one nobody looks at
+  - the `text` face got its own trio (`--pct-hero-text*`), and only the DARK theme lifts it:
+    the surface stops stay the brand's one blue on both skins, and it is the word cut out of
+    them that has to move — 7.02, 6.56 and 7.35 in the dark, where the unlifted stops read
+    3.45, 3.13 and 3.33. Six entries in the contrast policy, three at AA for the word and
+    three at UI for the boundary, all six printed by every token build in both themes
+  - **and the gate this step was supposed to buy turned out to need one more thing.** Point 7
+    of `check-tokens` reads the colours a stylesheet paints off the compiled CSS by PROPERTY
+    NAME, and `background-image` matches none of its three roles — so the button's own hero
+    face has never been in that denominator either, and its three policy entries are there
+    because a person put them there. The component writes `background:` instead, which the
+    point does read: the stops of a library gradient are now measured because the gate
+    demands them, not because somebody remembered
+  - the probe 0065 asked for, before the code: `mask-composite` reads `xor, xor` in all three
+    engines — one value per mask LAYER, not per property, which is what the first version of
+    the case got wrong — and the rim is a rim rather than a filled card in every one of them
+  - **and the extraction carried a defect no gate here could have seen.** It kept the button's
+    keyframe (`background-position: 300%`) beside the site's sizes (`background-size: 200%`),
+    which are two numbers that have to be one: the travel is `position × (box − image)`, so
+    200% over 200% is a closed loop and 300% over 200% is one and a HALF — the sweep snapping
+    back half a gradient at every repeat, on every rim and every headline. A frozen picture
+    cannot show it, the cases read `background-image` and `animation-duration`, `check-styles`
+    reads patterns rather than arithmetic between two declarations, and a stylesheet has no
+    mutants. It came out of reading the extracted sheet against the two it was extracted from.
+    Two keyframes now, one per size, and a case reads the SIZE and the ANIMATION of each face
+    together, because the invariant lives between them ([`lesson-167`](lessons.md#lesson-167))
+  - **what did NOT move, and why it is not a silent narrowing.** The site's three copies stay
+    where they are, because not one of them is a like-for-like swap: the landing's headline
+    adds a two-beat entrance (a bloom, then the drift) that the library does not own; the
+    identity tiles take ONE stop each as a top rule, which is not the `edge` face at all; and
+    the `hero-edge` mixin's trigger is the CARD's hover painting the NAME inside it, while
+    `show="interact"` is the attention on the element wearing the face. That last one is a
+    shape 0065 did not name, and it is the site's design pass (4.34) that decides whether the
+    component grows a way to say it or the pages change to fit what it says
+  - measured: 4 unit cases, six e2e cases over three engines (18 runs) plus the forced-colours reading and
+    the reduced-motion one (the face divides the axis, so `calc(0s / 2)` is what freezes it);
+    `./hero` **5594 B** on `@angular/core` alone, `./testing` +90 B, tokens 534 → 539. The
+    mutation row for `hero.ts` is owed with `button.ts`'s, in the evening pass
+  - **and it inherits the debt 4.37 decided the same day.** All three faces drift for as long
+    as the element stands, which is the state 2.2.2 is about — the decision recorded hours
+    earlier is that the sweep runs its pass and settles inside five seconds, so this component
+    is the second place that has to change when 4.37 lands, not an exception to it
 
 - [ ] **4.37 — the conformance report's rows nothing measures, and two limits with no gate**
   - the ACR (2.2, `docs/acr.md`) is rendered from what the gates prove, and four criteria of
@@ -2755,6 +2811,27 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     commit after**: `check-bundle` was not among the runs above, and the size record stood
     at the old numbers for one commit — `./menu` +93, `./popover` +98, `./toast` +316 B,
     the field and the queue — written the moment the next gate run read it
+
+- [ ] **4.39 — the gate that measures painted colours cannot see a gradient**
+  - point 7 of `check-tokens` builds its denominator from the compiled CSS **by property
+    name**: `/^background(-color)?$/` is the background role, and `background-image` matches
+    it and nothing else. So a stylesheet that paints with `background-image` paints colours
+    the gate never counts — and the library has exactly one such place,
+    `button.scss`'s hero face, whose three stops therefore stand in `contrast.policy.json`
+    because 0058's author put them there and not because anything demanded them
+  - found on the way into 4.36, which is why the new component writes `background:` for every
+    gradient and says so in its own header. Two rules of one library now spell the same paint
+    differently, and only one of them is measured
+  - the same hole is one property wider than gradients: `box-shadow` is invisible to the point
+    too, and `calendar.scss` paints today's ring with a token through it — the policy carries
+    that entry by hand as well
+  - the fork is small and real: teach the point the two properties (a gradient's stops are
+    colour FUNCTIONS inside a value, so the reader has to walk the value rather than the
+    property alone), or leave it and record in the policy's header which entries are
+    hand-placed because no gate could ask for them. The first is the repository's own
+    argument; the second is what it does today without saying so
+  - binds at: **the next gradient or shadow a library stylesheet paints**, or the first time
+    a policy entry is deleted and nothing goes red · _notes:_ —
 
 ## 5. Gaps with no deadline
 

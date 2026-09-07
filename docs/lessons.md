@@ -4450,3 +4450,29 @@ element — `stopImmediatePropagation` from it is a coin toss decided by registr
 and a component that must refuse an interaction on the consumer's behalf attaches its own
 capture listener at construction and proves it with a press on the element and a press on
 what it projects.**
+
+### <a id="lesson-167"></a>`lesson-167` — A drifting gradient's travel is its size written twice, and one frozen picture cannot see the difference
+
+The hero face was extracted from the site's own stylesheet into a component (plan 4.36) and
+kept both of the numbers it found there — the button's `background-position: 300% 0` in the
+keyframe, the site's `background-size: 200% 100%` on the rim and the word — without noticing
+that they had never met. They are one number: a drift moves the image by
+`position × (box − image)`, so at `background-size: 200%` a travel of `200%` is exactly one
+gradient and the loop closes, while `300%` is one and a **half** — at every repeat the sweep
+jumps back half a gradient, blue to cyan, on every rim and every headline the library paints.
+The button is right (300% over 300%) and the site's mixin is right (200% over 200%); the
+extraction took one of each.
+
+What makes it worth writing down is that nothing in this repository could see it. The visual
+baseline is one frame with animations disabled, so a picture of the seam is a picture of
+nothing; the e2e cases read `background-image`, `mask-composite` and `animation-duration`,
+none of which move; `check-styles` reads rule patterns, not arithmetic between two
+declarations; and the mutation run does not read a stylesheet at all. It was found by reading
+the extracted sheet against the two it was extracted from — the review that asks "what did the
+copy drop that the original had for a measured reason".
+
+The rule: **`background-size` and the keyframe's `background-position` are a pair, and a face
+that changes one changes the other — so a stylesheet with two sizes needs two keyframes, named
+for the size they travel.** And the reading that would have caught it belongs in the e2e beside
+the paint: assert the size and the animation of each face together, because the invariant is
+between them and not inside either.

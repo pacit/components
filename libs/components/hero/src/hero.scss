@@ -1,0 +1,219 @@
+/* The brand gradient as equipment (0065). Three faces on the element the consumer already
+   has: a rim, a word, a surface. The sweep is the semantic tier's — `--pct-hero`,
+   `--pct-hero-via`, `--pct-hero-to` for what a surface and a boundary take, and the lifted
+   `--pct-hero-text*` trio for what a WORD takes, because a word is measured at 4.5:1 and the
+   brand's own stops read 3.13–3.45 on the dark ground.
+
+   Every gradient here is written as `background:` and not `background-image:`, and that is
+   not a spelling: point 7 of `check-tokens` reads the colours a stylesheet paints off the
+   compiled CSS by PROPERTY NAME, and `background-image` matches none of its three roles. The
+   button's hero face escapes the gate for exactly that reason and its three policy entries
+   are there because a person put them there; these six are there because the gate would
+   otherwise say the stops are unmeasured (plan 4.39).
+
+   **The size and the travel are one number written twice.** A drift moves the image by
+   `position × (box − image)`, so at `background-size: 200%` a travel of `200%` is exactly one
+   gradient and the loop has no seam, while a travel of `300%` is one and a HALF and the sweep
+   snaps back half a gradient every time it repeats. There is therefore one keyframe per size,
+   and a face that changes one has to change the other ([`lesson-167`](../../../../docs/lessons.md#lesson-167)). */
+
+/* The sweep, in one place per face it paints. */
+@mixin surface-sweep($size) {
+  background: linear-gradient(
+    120deg,
+    var(--pct-hero),
+    var(--pct-hero-via),
+    var(--pct-hero-to),
+    var(--pct-hero)
+  );
+  background-size: $size 100%;
+}
+
+@mixin word-sweep {
+  background: linear-gradient(
+    100deg,
+    var(--pct-hero-text),
+    var(--pct-hero-text-via),
+    var(--pct-hero-text-to),
+    var(--pct-hero-text)
+  );
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  /* Not a token and not a colour the policy could measure: the glyphs are painted by the
+     background above, and the three stops that really carry the word stand in the policy as
+     foregrounds against `surface`. */
+  color: transparent;
+  /* Half the axis, and the reason is the site's own measurement: what the eye catches is how
+     much gradient crosses a point per second, so a thumb-wide button reads 8s as movement and
+     a headline reads it as a still picture. A DIVISION of the token rather than a number of
+     its own, so reduced motion still freezes it — `calc(0s / 2)` is `0s`. */
+  animation: pct-hero-drift calc(var(--pct-motion-drift-duration) / 2) linear
+    infinite;
+}
+
+/* The face is paint and nothing else: no box, no layout, no display of its own — the element
+   keeps whatever it was. The `edge` face is the one exception and it takes only
+   `position`, because its rim is an absolutely positioned pseudo-element. */
+:host([data-pct-hero='edge']) {
+  position: relative;
+}
+
+/* The rim is a masked pseudo-element and not `border-image`: that one cannot round a corner,
+   and the padding-box/border-box stack would take the element's own background hostage.
+   `inset: -1px` because an absolute box is laid out against the PADDING box — at `0` the
+   gradient sits inside the element's own border and draws a second line beside it.
+
+   Behind `@supports` on purpose: an engine without the mask would not lose a decoration, it
+   would paint the gradient over the WHOLE element. The failure mode of a missing feature has
+   to be nothing, not a filled box. */
+@supports ((mask-composite: exclude) or (-webkit-mask-composite: xor)) {
+  :host([data-pct-hero='edge'])::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 2px;
+    @include surface-sweep(200%);
+    /* Both shorthands first, both composites after them, and the order is the whole rule:
+       firefox aliases `-webkit-mask` to `mask`, so a `-webkit-mask` written BELOW
+       `mask-composite` resets the composite to `add` — and `add` does not punch the middle
+       out, it paints the gradient over the entire element. One engine, no symptom anywhere a
+       green suite could look (`lesson-156`). */
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    -webkit-mask-composite: xor;
+    pointer-events: none;
+    animation: pct-hero-drift calc(var(--pct-motion-drift-duration) / 2) linear
+      infinite;
+    transition: opacity var(--pct-motion-transition-duration)
+      var(--pct-motion-transition-easing);
+  }
+
+  /* `interact` hides the rim and keeps its layer, so the reveal is an opacity and not a
+     repaint. */
+  :host([data-pct-hero='edge'][data-pct-show='interact'])::after {
+    opacity: 0;
+  }
+
+  :host([data-pct-hero='edge'][data-pct-show='interact']:hover)::after,
+  :host([data-pct-hero='edge'][data-pct-show='interact']:focus-visible)::after,
+  :host([data-pct-hero='edge'][data-pct-show='interact']:focus-within)::after {
+    opacity: 1;
+  }
+
+  /* Attention on a touch screen is a press, so the face answers a press — and this is not
+     decoration on a decoration: with no hover and no focus, an element that is not focusable
+     would never paint at all. */
+  @media (hover: none) {
+    :host([data-pct-hero='edge'][data-pct-show='interact']:active)::after {
+      opacity: 1;
+    }
+  }
+}
+
+/* The word takes the sweep. Behind `@supports` for the same reason as the rim, and with a
+   sharper failure: without the clip, `color: transparent` would be a headline nobody can
+   read. */
+@supports ((background-clip: text) or (-webkit-background-clip: text)) {
+  :host([data-pct-hero='text']:not([data-pct-show='interact'])) {
+    @include word-sweep;
+  }
+
+  :host([data-pct-hero='text'][data-pct-show='interact']:hover),
+  :host([data-pct-hero='text'][data-pct-show='interact']:focus-visible),
+  :host([data-pct-hero='text'][data-pct-show='interact']:focus-within) {
+    @include word-sweep;
+  }
+
+  @media (hover: none) {
+    :host([data-pct-hero='text'][data-pct-show='interact']:active) {
+      @include word-sweep;
+    }
+  }
+}
+
+/* The surface takes it, and the text on it is the pair the policy measures — the same three
+   checks the button's hero face stands on, at the same 300% the button uses. */
+:host([data-pct-hero='fill']:not([data-pct-show='interact'])) {
+  @include surface-sweep(300%);
+  color: var(--pct-on-hero);
+  animation: pct-hero-drift-wide var(--pct-motion-drift-duration) linear
+    infinite;
+}
+
+:host([data-pct-hero='fill'][data-pct-show='interact']:hover),
+:host([data-pct-hero='fill'][data-pct-show='interact']:focus-visible),
+:host([data-pct-hero='fill'][data-pct-show='interact']:focus-within) {
+  @include surface-sweep(300%);
+  color: var(--pct-on-hero);
+  animation: pct-hero-drift-wide var(--pct-motion-drift-duration) linear
+    infinite;
+}
+
+@media (hover: none) {
+  :host([data-pct-hero='fill'][data-pct-show='interact']:active) {
+    @include surface-sweep(300%);
+    color: var(--pct-on-hero);
+    animation: pct-hero-drift-wide var(--pct-motion-drift-duration) linear
+      infinite;
+  }
+}
+
+/* One keyframe per size, and the pair is the point: the travel has to be a whole number of
+   gradients or the loop snaps (`lesson-167`). */
+@keyframes pct-hero-drift {
+  to {
+    /* pct-exception background-position: the sweep is a closed loop whose start no eye can
+       find — like the button's drift, it has no writing direction, and a logical version
+       would move nothing but the first frame. */
+    background-position: 200% 0;
+  }
+}
+
+@keyframes pct-hero-drift-wide {
+  to {
+    /* pct-exception background-position: the same closed loop over the wider image the fill
+       paints — one number with the `background-size` above it and no direction of its own. */
+    background-position: 300% 0;
+  }
+}
+
+/* Forced colours strips colours and keeps IMAGES — left alone, every face here would go on
+   painting over the forced Canvas, which is the skeleton's shimmer and the site's own rim in
+   one. Dropped outright, and the selectors REPEAT the base rules' compounds — every one of
+   them, the `(hover: none)` press included — because `@media` adds no specificity of its own
+   (`lesson-70`, and point 7 of `check-styles` holds it). */
+@media (forced-colors: active) {
+  :host([data-pct-hero='edge'])::after {
+    background: none;
+    animation: none;
+  }
+
+  :host([data-pct-hero='text']:not([data-pct-show='interact'])),
+  :host([data-pct-hero='text'][data-pct-show='interact']:hover),
+  :host([data-pct-hero='text'][data-pct-show='interact']:focus-visible),
+  :host([data-pct-hero='text'][data-pct-show='interact']:focus-within),
+  :host([data-pct-hero='text'][data-pct-show='interact']:active) {
+    background: none;
+    /* The word comes back as a word: `CanvasText` is what the mode paints prose in, and it
+       is the one thing an author rule may still say here. */
+    color: CanvasText;
+    animation: none;
+  }
+
+  :host([data-pct-hero='fill']:not([data-pct-show='interact'])),
+  :host([data-pct-hero='fill'][data-pct-show='interact']:hover),
+  :host([data-pct-hero='fill'][data-pct-show='interact']:focus-visible),
+  :host([data-pct-hero='fill'][data-pct-show='interact']:focus-within),
+  :host([data-pct-hero='fill'][data-pct-show='interact']:active) {
+    background: none;
+    color: CanvasText;
+    animation: none;
+  }
+}

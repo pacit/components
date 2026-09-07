@@ -241,6 +241,13 @@ export const SBX_VIEWS: readonly SbxView[] = [
       ),
   },
   {
+    path: 'hero',
+    title: 'Hero',
+    summary: 'The brand gradient as equipment — a rim, a word, a surface.',
+    group: 'components',
+    load: () => import('./views/hero/hero-view').then((m) => m.HeroView),
+  },
+  {
     path: 'stepper',
     title: 'Stepper',
     summary: 'A map of a journey — one number in, the whole map out.',

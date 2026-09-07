@@ -44,6 +44,19 @@
       "$type": "color",
       "$value": "{pct.slate.0}"
     },
+    "hero-text": {
+      "$comment": "The gradient when it paints TEXT rather than a surface. On a light ground it is the brand's own stops — 5.17, 5.70 and 5.36 as a foreground — and the dark theme lifts all three, because there the same colours are 3.13–3.45 and a word is measured at 4.5 (0065).",
+      "$type": "color",
+      "$value": "{pct.blue.600}"
+    },
+    "hero-text-via": {
+      "$type": "color",
+      "$value": "{pct.violet.600}"
+    },
+    "hero-text-to": {
+      "$type": "color",
+      "$value": "{pct.cyan.700}"
+    },
     "surface": {
       "$type": "color",
       "$value": "{pct.slate.0}"

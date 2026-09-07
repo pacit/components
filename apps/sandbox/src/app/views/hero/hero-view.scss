@@ -1,0 +1,35 @@
+.view__card {
+  box-sizing: border-box;
+  padding: var(--pct-space-4);
+  border: 1px solid var(--pct-border);
+  border-radius: var(--pct-radius-lg);
+  background: var(--pct-surface);
+  inline-size: 220px;
+}
+
+.view__card-name {
+  margin: 0 0 var(--pct-space-2);
+  font-size: var(--pct-font-size-lg);
+}
+
+.view__card-text {
+  margin: 0;
+  color: var(--pct-text-muted);
+}
+
+.view__headline {
+  margin: 0;
+  font-size: 40px;
+  line-height: 1.1;
+}
+
+.view__panel-text {
+  margin: 0;
+}
+
+.view__panel {
+  box-sizing: border-box;
+  padding: var(--pct-space-4);
+  border-radius: var(--pct-radius-lg);
+  inline-size: 220px;
+}
