@@ -383,10 +383,17 @@
     {
       "id": "2.2.2",
       "conformance": "Partially Supports",
-      "remarks": "Two things move on their own for longer than five seconds: the `hero` face's drifting gradient and the skeleton's sheen. Both answer `prefers-reduced-motion` through the motion axis — the gradient freezes, the sheen slows — which is the user agent's mechanism and not a control on the page; a consumer who ships the `hero` face beside text the user reads owes a pause control of their own (finding 4.37).",
+      "remarks": "The brand's gradient no longer runs unattended: every face of `[pctHero]` and the button's `hero` variant run ONE pass of four seconds and then stand still, so the second of the criterion's three conditions is not met for them, and `paused` gives a page a stop of its own besides. Three mechanisms, in this order: `prefers-reduced-motion` is the reader's and outranks both, `paused` is the page's, and the settle is what happens when neither has spoken. What remains is the skeleton's sheen, which travels for as long as the wait does and is meant to: a busy indicator that stopped would say the work had finished. It is `aria-hidden`, so the wait itself is announced by the `aria-busy` region a consumer writes around it, and the movement is that same fact in the sighted channel. Whether that meets the criterion's own “essential” exception is an argument rather than a measurement, so this row says Partially Supports and names both the owner (finding 4.45) and the consumer's part: end the wait, and the motion ends with it.",
       "evidence": [
         {
           "cards": "prefers-reduced-motion"
+        },
+        {
+          "spec": "apps/sandbox-e2e/src/hero.spec.ts",
+          "titles": [
+            "the sweep runs its pass and stands still inside five seconds",
+            "`paused` stops the sweep where it stands"
+          ]
         },
         {
           "spec": "apps/sandbox-e2e/src/preferences.spec.ts",
@@ -400,7 +407,7 @@
           "points": [9]
         },
         {
-          "finding": "4.37"
+          "finding": "4.45"
         }
       ]
     },

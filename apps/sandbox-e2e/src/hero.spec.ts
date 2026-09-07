@@ -182,4 +182,67 @@ test.describe('PctHero — the brand gradient as equipment', () => {
     // The rim's rule is keyed on the face, so with no face the pseudo-element draws nothing.
     expect(await styleOf(plain, 'content', '::after')).toBe('none');
   });
+  /**
+   * 2.2.2 Pause, Stop, Hide — the half that is the library's, measured as behaviour.
+   *
+   * The criterion is about motion that starts on its own and runs for more than five seconds
+   * beside other content. The sweep now runs ONE pass — four seconds, half the motion axis —
+   * and then stands still, which takes the criterion off the table for a consumer who does
+   * nothing (plan 4.37). This case reads that as movement rather than as a declaration: the
+   * computed `background-position` moves early and is the same value at 5.2 s and at 6 s.
+   *
+   * The first reading is the negative control and it is not decoration: without it the case
+   * would pass on a face whose animation had been deleted altogether.
+   */
+  test('the sweep runs its pass and stands still inside five seconds', async ({
+    page,
+  }) => {
+    await visit(page, '/hero');
+    const face = page.getByTestId('hero-fill');
+    const position = () =>
+      face.evaluate((el) => getComputedStyle(el).backgroundPosition);
+
+    const first = await position();
+    await page.waitForTimeout(400);
+    const moving = await position();
+    expect(moving, 'the sweep is not moving at all').not.toBe(first);
+
+    await page.waitForTimeout(4800);
+    const settled = await position();
+    await page.waitForTimeout(800);
+    expect(
+      await position(),
+      'the sweep is still moving after five seconds',
+    ).toBe(settled);
+  });
+
+  /**
+   * The other half: a page that wants the pass stopped before it ends says so, and the sweep
+   * freezes where it stands rather than jumping to an end frame.
+   */
+  test('`paused` stops the sweep where it stands', async ({ page }) => {
+    await visit(page, '/hero');
+    const face = page.getByTestId('hero-paused');
+    const position = () =>
+      face.evaluate((el) => getComputedStyle(el).backgroundPosition);
+
+    await page.getByTestId('toggle-paused').click();
+    await expect(face).toHaveAttribute('data-pct-paused', '');
+
+    const held = await position();
+    expect(
+      await face.evaluate((el) => getComputedStyle(el).animationPlayState),
+    ).toBe('paused');
+    await page.waitForTimeout(600);
+    expect(await position(), 'a paused sweep moved anyway').toBe(held);
+
+    // And it is a stop the page can take back — the input is a binding, not a one-way door.
+    await page.getByTestId('toggle-paused').click();
+    await expect(face).not.toHaveAttribute('data-pct-paused', '');
+    await page.waitForTimeout(400);
+    expect(
+      await position(),
+      'the sweep did not start again when the page let it',
+    ).not.toBe(held);
+  });
 });

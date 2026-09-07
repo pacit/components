@@ -17,11 +17,14 @@ import { PctHeroFace, PctHeroShow } from './hero.types';
  */
 @Component({
   imports: [PctHero],
-  template: `<h3 [pctHero]="face()" [show]="show()">Tabs</h3>`,
+  template: `<h3 [pctHero]="face()" [show]="show()" [paused]="paused()">
+    Tabs
+  </h3>`,
 })
 class Host {
   readonly face = signal<PctHeroFace | null>('text');
   readonly show = signal<PctHeroShow>('always');
+  readonly paused = signal(false);
 }
 
 const heading = () => document.querySelector('h3') as HTMLElement;
@@ -83,5 +86,23 @@ describe('PctHero — the brand gradient as equipment', () => {
     // trigger, which without a face names nothing (0065).
     expect(heading().hasAttribute('data-pct-hero')).toBe(false);
     expect(heading().hasAttribute('data-pct-show')).toBe(false);
+  });
+  it('the page\u2019s own stop is a state attribute, and it is written only when asked', async () => {
+    // What the attribute reaches is one declaration in the stylesheet
+    // (`animation-play-state`), so the case that matters is in a browser
+    // (`apps/sandbox-e2e/src/hero.spec.ts`). Here: the flag is a flag, and an unpressed stop
+    // writes nothing at all — the element of a consumer who never asked is left as it was.
+    const fixture = await render(Host);
+    expect(heading().hasAttribute('data-pct-paused')).toBe(false);
+
+    fixture.componentInstance.paused.set(true);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(heading().getAttribute('data-pct-paused')).toBe('');
+
+    fixture.componentInstance.paused.set(false);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(heading().hasAttribute('data-pct-paused')).toBe(false);
   });
 });

@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { booleanAttribute, Component, input } from '@angular/core';
 import { PctHeroFace, PctHeroShow } from './hero.types';
 
 /**
@@ -30,6 +30,7 @@ import { PctHeroFace, PctHeroShow } from './hero.types';
     class: 'pct-hero',
     '[attr.data-pct-hero]': 'pctHero()',
     '[attr.data-pct-show]': 'pctHero() ? show() : null',
+    '[attr.data-pct-paused]': 'paused() ? "" : null',
   },
 })
 export class PctHero {
@@ -45,4 +46,19 @@ export class PctHero {
 
   /** `always`, or only under hover and `:focus-visible` — never hover alone, because a treatment only a mouse can summon is one a keyboard cannot. */
   readonly show = input<PctHeroShow>('always');
+
+  /**
+   * Stops the sweep where it stands, for a page that wants it stopped.
+   *
+   * The sweep already ends by itself — one pass and it settles, which is what keeps
+   * [SC 2.2.2](https://www.w3.org/WAI/WCAG22/Understanding/pause-stop-hide.html) off the
+   * table for a consumer who does nothing (plan 4.37). This is the OTHER half: a page that
+   * puts the face beside text somebody is reading can stop the pass without waiting it out,
+   * and stop it again on every hover of an `interact` face.
+   *
+   * It does not override the reader. `prefers-reduced-motion` freezes the sweep through the
+   * motion axis whatever this says — the user agent's answer wins over the page's, which is
+   * the only order that can be right ([`req-a11y-motion`](../../../../docs/requirements/a11y.md#req-a11y-motion)).
+   */
+  readonly paused = input(false, { transform: booleanAttribute });
 }

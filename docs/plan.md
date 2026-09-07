@@ -2899,7 +2899,7 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     revision hours later makes that two changes here and not one, since the page gets a
     control over the sweep as well as a pass that ends by itself
 
-- [ ] **4.37 — the conformance report's rows nothing measures, and two limits with no gate**
+- [x] **4.37 — the conformance report's rows nothing measures, and two limits with no gate**
   - the ACR (2.2, `docs/acr.md`) is rendered from what the gates prove, and four criteria of
     WCAG 2.2 AA have no gate behind them at all, so their rows say _Not Evaluated_ and point
     here: **1.4.4** Resize Text (no view rendered at 200 % text size), **1.4.10** Reflow (no
@@ -2967,6 +2967,29 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     was loose: nothing here is stable yet, so a name costs a card, a gate and a demo rather
     than a break — and 0011 and 4.14 argue for deciding a set ONCE, not for having fewer of
     them
+  - **done (2026-09-07): the sweep ends, the page can stop it, and the row's remaining half is
+    an argument stated rather than a limit hidden.** Every face of `[pctHero]` and the button's
+    `hero` variant run one pass of `calc(var(--pct-motion-drift-duration) / 2)` — four seconds
+    — and then stand still, so the criterion's second condition is not met and no consumer owes
+    a control. `paused` on `[pctHero]` is the other half, a boolean input that freezes the
+    sweep where it stands (`animation-play-state`), and the precedence is written into the
+    stylesheet and the card: reduced motion beats the page, the page beats the settle
+  - measured: two e2e cases read it as MOVEMENT rather than as a declaration — the computed
+    `background-position` moves within 400 ms, is the same value at 5.2 s and at 6 s, and with
+    `paused` does not move at all and then moves again when the page lets it. A unit case holds
+    the attribute, and a sandbox demo is the control it documents (`/hero`, "Stopped by the
+    page")
+  - the visual consequence, which is what this repository shows before it ships: **the still
+    picture does not change at all**. 78 visual baselines pass untouched, because the travel is
+    a whole gradient and the frame it settles on is the frame it started from. What changed is
+    the tempo — the face reads twice as brisk during its one pass — and that it now has an end
+  - what did NOT change, and why the row stays Partially Supports: the skeleton's sheen travels
+    for as long as the wait does, because a busy indicator that stopped would say the work had
+    finished. The remark now states the argument — the sheen is `aria-hidden`, the wait is
+    announced by the consumer's `aria-busy` region, and whether the movement is "essential" in
+    the criterion's sense is an argument rather than a measurement — instead of pointing at
+    this item. Both limits the item named now have a gate, which is what it asked for
+    ([`lesson-178`](lessons.md#lesson-178))
 
 - [x] **4.38 — three previews settle in two render passes**
   - the cost record (2.3, `apps/docs/bench.snapshot.md`) reads **2 renders** for the `menu`,
@@ -3326,6 +3349,28 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     `accordion-item.scss`, `accordion.spec.ts`'s 24 px case stays **green** and the new one
     goes **red at `height: 0`** ([`lesson-177`](lessons.md#lesson-177)). The accordion's card
     is corrected in both places it said the floor was held by nothing
+
+- [ ] **4.45 — the sheen that can outlast five seconds, and the wait that owns it**
+  - left standing by 4.37, which closed the other half. Every sweep in the library now runs
+    one pass and settles, and `[pctHero]` takes a `paused` input besides — but the skeleton's
+    sheen travels for as long as the wait does, by design: a busy indicator that stopped would
+    say the work had finished ([0050](decisions/0050-a-skeleton-is-a-picture-of-a-wait.md))
+  - SC 2.2.2 asks for a mechanism to pause, stop or hide motion that starts on its own, lasts
+    more than five seconds and stands in parallel with other content — unless the movement is
+    **essential**. A wait under five seconds never reaches the criterion; a slow one does, and
+    then the question is whether the sheen is essential in the criterion's own sense. It is
+    `aria-hidden`, the wait is announced by the `aria-busy` region the consumer writes around
+    it, and the movement is that same fact in the sighted channel. That is an argument, and
+    the ACR says so rather than asserting a verdict
+  - the roads: a stop of the page's own, the shape `[pctHero]` now has (`paused`, and the
+    consumer decides when a wait has gone on too long); the argument written out and the row
+    raised to Supports; or a cap after N passes, which is the one road that lies — a
+    placeholder that stops moving while the work goes on says the work stopped
+  - what it is NOT: a defect anybody has hit. A skeleton that stands for more than five
+    seconds is already a page with a problem, and the repair is upstream of this component
+  - binds at: **the first consumer whose wait is long enough to notice**, or the buyer who
+    reads the conformance report and asks about the one Partially Supports row that is not
+    the disabled state's contrast · _notes:_ —
 
 ## 5. Gaps with no deadline
 

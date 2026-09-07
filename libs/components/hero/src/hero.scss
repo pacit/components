@@ -49,9 +49,15 @@
   /* Half the axis, and the reason is the site's own measurement: what the eye catches is how
      much gradient crosses a point per second, so a thumb-wide button reads 8s as movement and
      a headline reads it as a still picture. A DIVISION of the token rather than a number of
-     its own, so reduced motion still freezes it — `calc(0s / 2)` is `0s`. */
-  animation: pct-hero-drift calc(var(--pct-motion-drift-duration) / 2) linear
-    infinite;
+     its own, so reduced motion still freezes it — `calc(0s / 2)` is `0s`.
+
+     ONE pass and then it stands still (plan 4.37). Four seconds is inside the five that
+     [SC 2.2.2](https://www.w3.org/WAI/WCAG22/Understanding/pause-stop-hide.html) allows
+     motion to run unattended, so a consumer who ships this face owes no pause control of
+     their own — and the travel is a whole gradient, so where it settles is where it began
+     and no eye can find the end (`lesson-167`). A skin that lengthens the motion axis past
+     ten seconds takes that answer back and owes the criterion its own. */
+  animation: pct-hero-drift calc(var(--pct-motion-drift-duration) / 2) linear 1;
 }
 
 /* The face is paint and nothing else: no box, no layout, no display of its own — the element
@@ -92,7 +98,7 @@
     -webkit-mask-composite: xor;
     pointer-events: none;
     animation: pct-hero-drift calc(var(--pct-motion-drift-duration) / 2) linear
-      infinite;
+      1;
     transition: opacity var(--pct-motion-transition-duration)
       var(--pct-motion-transition-easing);
   }
@@ -145,8 +151,8 @@
 :host([data-pct-hero='fill']:not([data-pct-show='interact'])) {
   @include surface-sweep(300%);
   color: var(--pct-on-hero);
-  animation: pct-hero-drift-wide var(--pct-motion-drift-duration) linear
-    infinite;
+  animation: pct-hero-drift-wide calc(var(--pct-motion-drift-duration) / 2)
+    linear 1;
 }
 
 :host([data-pct-hero='fill'][data-pct-show='interact']:hover),
@@ -154,16 +160,16 @@
 :host([data-pct-hero='fill'][data-pct-show='interact']:focus-within) {
   @include surface-sweep(300%);
   color: var(--pct-on-hero);
-  animation: pct-hero-drift-wide var(--pct-motion-drift-duration) linear
-    infinite;
+  animation: pct-hero-drift-wide calc(var(--pct-motion-drift-duration) / 2)
+    linear 1;
 }
 
 @media (hover: none) {
   :host([data-pct-hero='fill'][data-pct-show='interact']:active) {
     @include surface-sweep(300%);
     color: var(--pct-on-hero);
-    animation: pct-hero-drift-wide var(--pct-motion-drift-duration) linear
-      infinite;
+    animation: pct-hero-drift-wide calc(var(--pct-motion-drift-duration) / 2)
+      linear 1;
   }
 }
 
@@ -184,6 +190,21 @@
        paints — one number with the `background-size` above it and no direction of its own. */
     background-position: 300% 0;
   }
+}
+
+/* The page's own stop, and the whole of it: the sweep is paint, so freezing it where it
+   stands is `animation-play-state` and nothing else. It is the OTHER half of 2.2.2's answer —
+   the pass above ends by itself, and this is for a page that wants it stopped before it does,
+   or stopped on every hover of an `interact` face.
+
+   Three attributes in the compound and not one, because `animation` is a SHORTHAND: every
+   rule above resets `animation-play-state` to `running` on its way past, so a rule that pauses
+   has to outrank the strongest of them — `[data-pct-show]` is written by the host whenever a
+   face is, and the press rule under `(hover: none)` is the one being matched (`lesson-70`,
+   and point 7 of `check-styles` is this same shape one media query over). */
+:host([data-pct-hero][data-pct-show][data-pct-paused]),
+:host([data-pct-hero][data-pct-show][data-pct-paused])::after {
+  animation-play-state: paused;
 }
 
 /* Forced colours strips colours and keeps IMAGES — left alone, every face here would go on

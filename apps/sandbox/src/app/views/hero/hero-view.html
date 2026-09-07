@@ -84,6 +84,35 @@
   </article>
 </sbx-demo>
 
+<sbx-demo
+  heading="Stopped by the page"
+  summary="The sweep ends by itself: one pass of four seconds, inside the five SC 2.2.2 allows motion to run with no control beside it. `paused` is the other half — a page that wants it stopped before it settles, or stopped again on every hover of an `interact` face, says so. It never outranks the reader: `prefers-reduced-motion` freezes the sweep whatever this button says."
+  [reqs]="['req-a11y-motion']"
+  data-testid="demo-paused"
+>
+  <div
+    class="view__panel"
+    pctHero="fill"
+    [paused]="stopped()"
+    data-testid="hero-paused"
+  >
+    <h3 class="view__card-name">Featured</h3>
+    <p class="view__card-text">
+      The same fill, with a stop the page can press.
+    </p>
+  </div>
+  <p>
+    <button
+      pctButton
+      type="button"
+      (click)="stopped.set(!stopped())"
+      data-testid="toggle-paused"
+    >
+      {{ stopped() ? 'Let the sweep run' : 'Stop the sweep' }}
+    </button>
+  </p>
+</sbx-demo>
+
 <h3 class="view__title">The word, on both grounds</h3>
 <p class="muted view__intro">
   The surface stops are the same blue on both themes — the brand's gradient does

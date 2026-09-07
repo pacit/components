@@ -119,7 +119,14 @@
   );
   background-size: 300% 100%;
   color: var(--pct-on-hero);
-  animation: pct-button-drift var(--pct-motion-drift-duration) linear infinite;
+  /* One pass of half the axis, and then the gradient stands still (plan 4.37). Four seconds
+     is inside the five that SC 2.2.2 allows motion to run with no control beside it, and the
+     travel is a whole gradient, so the frame it settles on is the frame it started from. The
+     face was 8s and endless: what changed is that it now ENDS, and the cost is that it reads
+     twice as brisk while it runs. A division of the token rather than a number of its own, so
+     `prefers-reduced-motion` still freezes it — `calc(0s / 2)` is `0s`. */
+  animation: pct-button-drift calc(var(--pct-motion-drift-duration) / 2) linear
+    1;
   transition: transform var(--pct-motion-transition-duration)
     var(--pct-motion-transition-easing);
 }

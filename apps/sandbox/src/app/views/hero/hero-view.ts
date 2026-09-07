@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
+import { PctButton } from '@pacit/components/button';
 import { PctHero } from '@pacit/components/hero';
 import { SbxDemo } from '../../ui/demo';
 
@@ -10,8 +11,11 @@ import { SbxDemo } from '../../ui/demo';
  */
 @Component({
   selector: 'sbx-hero-view',
-  imports: [SbxDemo, PctHero],
+  imports: [SbxDemo, PctButton, PctHero],
   templateUrl: './hero-view.html',
   styleUrl: './hero-view.scss',
 })
-export class HeroView {}
+export class HeroView {
+  /** The page's own stop, wired to a button so the demo is the control it documents. */
+  readonly stopped = signal(false);
+}

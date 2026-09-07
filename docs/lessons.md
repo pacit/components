@@ -4842,3 +4842,42 @@ The proof that the file measures what it claims is the disarming that motivated 
 Three things this does not say. It reads eleven controls on one page each, not every control on
 every route; it runs at the sandbox's font size, so a consumer whose skin sets a larger one is
 outside it; and 24 px is the AA minimum (SC 2.5.8), not the 44 px that AAA asks for.
+
+### <a id="lesson-178"></a>`lesson-178` — Motion that ends, and the order of three ways to stop it
+
+SC 2.2.2 asks for a mechanism to pause, stop or hide motion that starts on its own and runs
+longer than five seconds. The library had two such motions and one answer for both:
+`prefers-reduced-motion`, which is the user agent's mechanism and not a control on the page.
+
+**The cheapest answer to a criterion is often the one that stops the criterion applying.** The
+brand's sweep now runs ONE pass — half the motion axis, four seconds — and then stands still,
+so condition (2) is not met and no consumer owes a pause control. It costs one word in the
+stylesheet (`infinite` → `1`) and one division of the token, and the whole visual consequence
+is a tempo: the face reads twice as brisk while it runs. The still picture is untouched,
+because the travel is a whole gradient — the frame it settles on is the frame it started from,
+which 78 visual baselines confirmed without a single byte moving.
+
+**Then a page got a stop of its own anyway**, because being outside a criterion is not the same
+as giving a page control over what it paints. Three mechanisms can now stop one sweep, and the
+order between them is the part worth writing down:
+
+| what           | whose         | wins over  |
+| -------------- | ------------- | ---------- |
+| reduced motion | the reader's  | both       |
+| `paused`       | the page's    | the settle |
+| the settle     | the library's | —          |
+
+A page may never overrule the reader; that is the only order that can be right.
+
+**And a shorthand quietly resets what it does not name.** `animation-play-state: paused` in a
+rule of lower specificity loses to `animation: …` in a rule of higher specificity, because the
+shorthand sets play-state to `running` on its way past. The pause rule therefore repeats enough
+of the compound to outrank the strongest face rule — the same shape as the forced-colors rules
+one media query over (`lesson-70`).
+
+**What did not change is as considered as what did.** The skeleton's sheen still travels for as
+long as the wait: a busy indicator that stopped would say the work had finished. That leaves one
+row of the conformance report at Partially Supports with the argument stated rather than a
+verdict asserted — the sheen is `aria-hidden`, the wait is announced by the consumer's
+`aria-busy` region, and whether the movement is "essential" in the criterion's sense is an
+argument, not a measurement.

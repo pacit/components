@@ -34,7 +34,7 @@ before an application ships them.
 ./avatar 8575 ./core,./icon @angular/common,@angular/core
 ./badge 1706 - @angular/core
 ./breadcrumb 9168 ./core,./icon @angular/common,@angular/core
-./button 9636 ./core @angular/core
+./button 9639 ./core @angular/core
 ./checkbox 14930 ./core,./icon @angular/common,@angular/core
 ./chips 10674 ./core,./icon @angular/common,@angular/core
 ./container 717 - @angular/core
@@ -44,7 +44,7 @@ before an application ships them.
 ./drawer 15527 ./core,./icon @angular/common,@angular/core
 ./field 27832 ./core @angular/core,@angular/forms,@angular/forms/signals
 ./grid 673 - @angular/core
-./hero 5594 - @angular/core
+./hero 5845 - @angular/core
 ./icon 2552 - @angular/common,@angular/core
 ./menu 20310 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
 ./pagination 13675 ./core,./icon @angular/common,@angular/core
