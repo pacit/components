@@ -1,7 +1,10 @@
-/* The host is the box the bar fills — it paints nothing itself, and it is the containing
-   block the fill is positioned against, which is the whole reason it is `relative`.
+/* The host is a row: a mark, when the bar has a tone, and the bar itself. It paints nothing
+   and it clips nothing — both of those moved to `.pct-progress__bar` below the day a tone
+   needed something to stand beside the groove (plan 4.14).
 
-   And it is the PIPE the indeterminate band travels inside, which is what `overflow` is for.
+   THE BAR is the containing block the fill is positioned against, which is the whole reason it
+   is `relative`. And it is the PIPE the indeterminate band travels inside, which is what
+   `overflow` is for.
    The band's keyframes take it from entirely BEFORE the groove to entirely PAST it, so with
    nothing clipping it, it is painted outside the bar for most of every loop — a stripe
    crossing whatever the consumer put beside the bar. The radius is the groove's own token
@@ -16,10 +19,21 @@
    The skeleton clips its travelling sheen the same way one component over, and there the
    clipping box is the track itself, because a `<div>` can hold the sheen. Here it cannot: a
    `<progress>` renders no children in any engine, so the fill is a sibling and the box that
-   clips it is the host. That is also why the groove's forced-colors outline is written for the
-   host and not for the `<progress>` — see the bottom of this sheet. */
+   clips it is their wrapper. That is also why the groove's forced-colors outline is written
+   for that wrapper and not for the `<progress>` — see the bottom of this sheet. */
 :host {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: var(--pct-progress-icon-gap);
+}
+
+/* The pipe, moved off the host the day a tone needed a mark beside the bar (plan 4.14). It
+   carries everything the host used to: the containing block, the clip, the groove's radius —
+   and `flex: 1` so the bar is still the whole width when nothing stands next to it. An untoned
+   bar therefore measures what it always measured; a toned one is as tall as its mark. */
+.pct-progress__bar {
+  flex: 1;
+  min-inline-size: 0;
   position: relative;
   overflow: hidden;
   border-radius: var(--pct-progress-track-radius);
@@ -85,7 +99,7 @@
 
 /* Both ends of the travel are OUTSIDE the groove, deliberately: the band enters at one edge
    and leaves at the other rather than appearing and vanishing inside the bar. That is only a
-   drawing anybody wants because the host clips — the two rules are one mechanism, and the
+   drawing anybody wants because the bar clips — the two rules are one mechanism, and the
    spec keeps them tied together for that reason. */
 @keyframes pct-progress-band {
   from {
@@ -95,6 +109,31 @@
   to {
     inset-inline-start: 100%;
   }
+}
+
+/* The tone paints two things and means one: the mark says WHAT, the fill says it again for
+   whoever reads colour faster. The mark takes the same colour as the fill rather than a token
+   of its own — one tone, one value, and a skin that recolours a toned bar recolours both. */
+.pct-progress__icon {
+  flex: none;
+  font-size: var(--pct-progress-icon-size);
+  color: var(--pct-progress-fill-bg);
+}
+
+:host([data-pct-tone='success']) {
+  --pct-progress-fill-bg: var(--pct-progress-fill-bg-success);
+}
+
+:host([data-pct-tone='warning']) {
+  --pct-progress-fill-bg: var(--pct-progress-fill-bg-warning);
+}
+
+:host([data-pct-tone='danger']) {
+  --pct-progress-fill-bg: var(--pct-progress-fill-bg-danger);
+}
+
+:host([data-pct-tone='info']) {
+  --pct-progress-fill-bg: var(--pct-progress-fill-bg-info);
 }
 
 :host([data-pct-size='sm']) {
@@ -116,19 +155,27 @@
    the groove keeps its extent through an `outline` rather than a `border`, because the fill is
    positioned against the host and a border would put a line under it;
 
-   and that outline is drawn on the HOST rather than on the `<progress>`, which is what the
-   clip at the top of this sheet costs. Measured in chromium, both halves of it: a clipping box
+   and that outline is drawn on the CLIPPING BOX rather than on the `<progress>`, which is what
+   the clip at the top of this sheet costs. That box was the host until tones arrived and is
+   `.pct-progress__bar` now; the reading below was taken on the host and holds unchanged,
+   because what it measures is the relationship between a clip and an outline. Measured in chromium, both halves of it: a clipping box
    erases a DESCENDANT's outline outright — a 30 px ring on a child that fills the box paints
    nothing at all, and widening the ring changes nothing, so it is a clip and not a bleed —
    while the outline the clipping element draws ITSELF is untouched by its own `overflow`,
    because `overflow` clips what is inside the box and an outline is drawn outside it. The two
-   boxes are one rectangle (the track is `inline-size: 100%` and the host has no padding and no
+   boxes are one rectangle (the track is `inline-size: 100%` and the bar has no padding and no
    border), so the ring lands where it always did, and it takes the host's radius rather than
    squaring the pill off. `@media` adds no specificity, so every rule is written out in full
    ([`lesson-70`](../../../../docs/lessons.md#lesson-70)). */
 @media (forced-colors: active) {
-  :host {
+  .pct-progress__bar {
     outline: 1px solid CanvasText;
+  }
+
+  /* The tone's colour goes the way every author colour goes here, and the tone survives it:
+     what is left is the mark, which is the channel that was worth having. */
+  .pct-progress__icon {
+    color: CanvasText;
   }
 
   .pct-progress__track {

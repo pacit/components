@@ -61,7 +61,7 @@ before an application ships them.
 ./menu 20310 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
 ./pagination 13675 ./core,./icon @angular/common,@angular/core
 ./popover 14622 ./core @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
-./progress 7204 ./core @angular/core
+./progress 11625 ./core,./icon @angular/common,@angular/core
 ./radio 15495 ./core @angular/core
 ./select 69803 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core
 ./skeleton 3480 - @angular/core
@@ -70,9 +70,9 @@ before an application ships them.
 ./stepper 10652 ./core,./icon @angular/common,@angular/core
 ./switch 12469 ./core @angular/core
 ./tabs 16139 ./core @angular/core
-./testing 8116 - @angular/cdk/testing
+./testing 8136 - @angular/cdk/testing
 ./theme 518 - @angular/core
-./toast 15867 ./core,./icon @angular/common,@angular/core
+./toast 19473 ./core,./icon @angular/common,@angular/core
 ./tooltip 13240 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core
 ./tree 9158 ./icon @angular/common,@angular/core
 ```

@@ -35,6 +35,32 @@
         "$description": "Background of the fill."
       },
       "$comment-fill-size": "How much of the groove the fill covers while the bar is INDETERMINATE — the travelling band. It is a token because it is the one number that decides whether the motion reads as travel or as a pulse: a third is wide enough to be seen crossing at the loop duration and narrow enough that the groove behind it stays visible. In the determinate state the fill's width is the value, and no token has anything to say about it.",
+      "$comment-tones": "A tone paints the fill and the mark beside it, and the mark takes this same value — one tone, one colour, so a skin that recolours a toned bar recolours both. The fill is the loud half and the mark is the one that survives a forced palette and a reader who does not separate red from green (`req-a11y-forced-colors`, plan 4.14).",
+      "fill-bg-success": {
+        "$type": "color",
+        "$value": "{pct.success}"
+      },
+      "fill-bg-warning": {
+        "$type": "color",
+        "$value": "{pct.warning}"
+      },
+      "fill-bg-danger": {
+        "$type": "color",
+        "$value": "{pct.danger}"
+      },
+      "fill-bg-info": {
+        "$type": "color",
+        "$value": "{pct.info}"
+      },
+      "$comment-icon": "The mark's box and the room beside the bar. `16px` and not `1em`, for the toast's reason one component over: the bar has no type of its own to scale with, and a mark that grew with the consumer's font would leave the groove looking different on every page.",
+      "icon-size": {
+        "$type": "dimension",
+        "$value": "16px"
+      },
+      "icon-gap": {
+        "$type": "dimension",
+        "$value": "{pct.space.2}"
+      },
       "fill-size": {
         "$type": "dimension",
         "$value": "33%",

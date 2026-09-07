@@ -82,7 +82,9 @@ from what the browser really gets.
 ./popover PctPopover content
 ./popover PctPopover heading
 ./popover PctPopover panel
+./progress PctProgress bar
 ./progress PctProgress fill
+./progress PctProgress icon
 ./progress PctProgress track
 ./radio PctRadio circle
 ./radio PctRadio control
@@ -146,6 +148,7 @@ from what the browser really gets.
 ./tabs PctTabs tab
 ./toast PctToastViewport action
 ./toast PctToastViewport close
+./toast PctToastViewport icon
 ./toast PctToastViewport item
 ./toast PctToastViewport message
 ./tooltip PctTooltipPanel panel

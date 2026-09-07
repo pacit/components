@@ -86,6 +86,40 @@
 </sbx-demo>
 
 <sbx-demo
+  heading="Tones"
+  summary="What the work IS, not how far it got: a failed upload is `danger` at whatever percentage it stopped at. Two channels, always — a mark beside the bar and the fill's colour — because a bar that turns red says nothing to a reader who does not separate red from green, and nothing at all in forced colours, where the fill is `Highlight` whatever the author asked for. An untoned bar draws no mark and measures exactly what it always did."
+  [reqs]="['req-a11y-forced-colors', 'req-api-icons']"
+  data-testid="demo-tones"
+>
+  <div class="view__stack">
+    <pct-progress
+      [value]="100"
+      tone="success"
+      ariaLabel="Backup finished"
+      data-testid="progress-success"
+    />
+    <pct-progress
+      [value]="62"
+      tone="warning"
+      ariaLabel="Half the rows imported"
+      data-testid="progress-warning"
+    />
+    <pct-progress
+      [value]="41"
+      tone="danger"
+      ariaLabel="Upload failed"
+      data-testid="progress-danger"
+    />
+    <pct-progress
+      [value]="null"
+      tone="info"
+      ariaLabel="Checking for updates"
+      data-testid="progress-info"
+    />
+  </div>
+</sbx-demo>
+
+<sbx-demo
   heading="The size axis"
   summary="Thickness, not the shared control height: nothing lands on a progress bar and nothing is pressed, so lining it up with a field's box would say it were a control."
   [reqs]="['req-api-size']"

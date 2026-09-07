@@ -1,4 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
+import { PctTone } from '@pacit/components/core';
 import { PctButton } from '@pacit/components/button';
 import { PctDialog } from '@pacit/components/dialog';
 import { PctToaster } from '@pacit/components/toast';
@@ -21,6 +22,20 @@ import { SbxDemo } from '../../ui/demo';
 })
 export class ToastView {
   private readonly toaster = inject(PctToaster);
+
+  /** One message per tone, standing so the four can be looked at together. */
+  protected toned(tone: PctTone): void {
+    this.toaster.show({
+      text: {
+        success: 'Backup finished.',
+        warning: 'Half the rows imported.',
+        danger: 'Could not save.',
+        info: 'A new version is available.',
+      }[tone],
+      tone,
+      duration: null,
+    });
+  }
 
   protected readonly confirm = signal(false);
   protected readonly undone = signal(0);

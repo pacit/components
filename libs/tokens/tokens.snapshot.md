@@ -28,6 +28,8 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-accordion-item-border color component public
 --pct-accordion-marker-fg color component public
 --pct-accordion-panel-padding-y dimension component public
+--pct-amber-400 color primitive private
+--pct-amber-700 color primitive private
 --pct-avatar-bg color component public
 --pct-avatar-border color component public
 --pct-avatar-fg color component public
@@ -259,6 +261,8 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-font-size-md dimension primitive public
 --pct-font-size-sm dimension primitive public
 --pct-font-weight-medium fontWeight primitive public
+--pct-green-400 color primitive private
+--pct-green-700 color primitive private
 --pct-grid-gap dimension component public
 --pct-grid-min-width dimension component public
 --pct-hero color semantic public
@@ -267,6 +271,7 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-hero-text-via color semantic public
 --pct-hero-to color semantic public
 --pct-hero-via color semantic public
+--pct-info color semantic public
 --pct-menu-item-bg color component public
 --pct-menu-item-bg-active color component public
 --pct-menu-item-fg color component public
@@ -465,6 +470,7 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-stepper-marker-size dimension component public
 --pct-stepper-track-bg color component public
 --pct-stepper-track-size dimension component public
+--pct-success color semantic public
 --pct-surface color semantic public
 --pct-surface-100 color semantic public
 --pct-surface-disabled color semantic public
@@ -522,9 +528,19 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-toast-close-radius dimension component public
 --pct-toast-close-size dimension component public
 --pct-toast-gap dimension component public
+--pct-toast-icon-fg color component public
+--pct-toast-icon-fg-danger color component public
+--pct-toast-icon-fg-info color component public
+--pct-toast-icon-fg-success color component public
+--pct-toast-icon-fg-warning color component public
+--pct-toast-icon-size dimension component public
 --pct-toast-inset dimension component public
 --pct-toast-item-bg color component public
 --pct-toast-item-border color component public
+--pct-toast-item-border-danger color component public
+--pct-toast-item-border-info color component public
+--pct-toast-item-border-success color component public
+--pct-toast-item-border-warning color component public
 --pct-toast-item-fg color component public
 --pct-toast-item-gap dimension component public
 --pct-toast-item-max-width dimension component public
@@ -555,4 +571,5 @@ the public `PctCssVar` union (see `private.prefixes` in
 --pct-tree-label-target-min dimension component public
 --pct-violet-400 color primitive private
 --pct-violet-600 color primitive private
+--pct-warning color semantic public
 ```

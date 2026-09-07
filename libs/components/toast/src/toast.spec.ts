@@ -173,6 +173,62 @@ describe('PctToaster', () => {
       expect(items()[1].getAttribute('role')).toBe('alert');
     });
 
+    it('draws a tone as a mark and a state attribute, or as nothing at all', async () => {
+      const { toaster } = await boot();
+
+      // Four at a time and not five: the stack is capped, and a fifth message would push the
+      // first one out from under the assertions below.
+      toaster.show({ text: 'Could not save.', tone: 'danger' });
+      toaster.show({ text: 'Half the rows imported.', tone: 'warning' });
+      toaster.show({ text: 'Backup finished.', tone: 'success' });
+      toaster.show({ text: 'A new version is available.', tone: 'info' });
+      flush();
+
+      for (const [i, tone] of [
+        'danger',
+        'warning',
+        'success',
+        'info',
+      ].entries()) {
+        const item = items()[i];
+        expect(item.getAttribute('data-pct-tone')).toBe(tone);
+        // The drawing is the half a colour cannot carry — a reader who does not separate red
+        // from green, or a forced palette that throws both away, still has the shape. One
+        // name per tone and one path per name: a set that resolved to one icon would be a
+        // colour again.
+        const icon = item.querySelector('[data-pct-part="icon"]');
+        expect(icon?.getAttribute('name')).toBe(tone);
+        expect(icon?.querySelectorAll('svg')).toHaveLength(1);
+      }
+    });
+
+    it('draws no mark and writes no attribute when a message has no tone', async () => {
+      const { toaster } = await boot();
+
+      // The absence IS the neutral, which is why the union has no member for it: a consumer
+      // who never thought about tones ships exactly the message they shipped before.
+      toaster.show('Draft saved.');
+      flush();
+
+      expect(items()[0].hasAttribute('data-pct-tone')).toBe(false);
+      expect(items()[0].querySelector('[data-pct-part="icon"]')).toBeNull();
+    });
+
+    it('keeps urgency and tone apart, because they answer different questions', async () => {
+      const { toaster } = await boot();
+
+      // What INTERRUPTS and what HAPPENED are two facts: a failure a user can deal with later
+      // is `danger` and not urgent, and a session about to expire interrupts whatever its tone.
+      toaster.show({ text: 'Could not save.', tone: 'danger' });
+      toaster.show({ text: 'Session expires in a minute.', urgent: true });
+      flush();
+
+      expect(items()[0].getAttribute('role')).toBeNull();
+      expect(items()[0].getAttribute('data-pct-tone')).toBe('danger');
+      expect(items()[1].getAttribute('role')).toBe('alert');
+      expect(items()[1].hasAttribute('data-pct-tone')).toBe(false);
+    });
+
     it('carries the cross, named through PCT_TEXTS', async () => {
       const { toaster } = await boot([
         providePctTexts({ toastDismiss: 'Take it down' }),

@@ -594,7 +594,18 @@ test.describe('forced-colors: active', () => {
     // The groove is the page's own surface in this mode, so what says where it ends is the
     // outline — and the fill has to stay distinguishable from it.
     expect(await styleOf(groove, 'background-color')).toBe(sys.Field);
-    expect(await styleOf(groove, 'outline-color')).toBe(sys.CanvasText);
+
+    // The ring is read on the box that DRAWS it, and that is the part the card names: an
+    // outline is erased by an ancestor's clip, so it is written on the clipping box itself.
+    // This assertion used to stand on the `track`, where `outline-color` with no outline
+    // computes to `currentColor` — `CanvasText` here — so it passed on the fallback and asked
+    // nothing. The width is read beside the colour for exactly that reason (plan 4.14).
+    const clip = page
+      .getByTestId('progress-value')
+      .locator('[data-pct-part="bar"]');
+    expect(await styleOf(clip, 'outline-color')).toBe(sys.CanvasText);
+    expect(await styleOf(clip, 'outline-width')).toBe('1px');
+    expect(await styleOf(clip, 'outline-style')).toBe('solid');
     expect(await styleOf(groove, 'background-color')).not.toBe(sys.Highlight);
   });
 

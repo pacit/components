@@ -1,11 +1,102 @@
 <!--
-  Two elements, and the split between them is the whole component (0049).
+  The tone, and the half of it that is not a colour: a bar whose fill turns red says nothing to
+  a reader who cannot separate red from green, and nothing at all in forced colours, where the
+  fill is `Highlight` whatever the author asked for. So a toned bar draws a mark beside itself,
+  and the mark stands OUTSIDE the pipe below — the pipe clips, and anything inside it is cut to
+  the height of a groove (plan 4.14, `req-a11y-forced-colors`).
+
+  A literal name per branch and not `[name]="tone()"`: `check-icons` reads the names a template
+  draws out of its own text, so an expression that spells none of them leaves four public names
+  undrawn (point 5). Nothing here is announced — `pct-icon` is `aria-hidden`, what a reader
+  hears is the `<progress>` below and the consumer's own sentence beside it (0039).
+-->
+@switch (tone()) { @case ('success') {
+<pct-icon class="pct-progress__icon" data-pct-part="icon" name="success">
+  <svg
+    viewBox="0 0 16 16"
+    width="100%"
+    height="100%"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    focusable="false"
+  >
+    <circle cx="8" cy="8" r="6" />
+    <path d="M5.4 8.3l1.8 1.8 3.4-3.9" />
+  </svg>
+</pct-icon>
+} @case ('warning') {
+<pct-icon class="pct-progress__icon" data-pct-part="icon" name="warning">
+  <svg
+    viewBox="0 0 16 16"
+    width="100%"
+    height="100%"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    focusable="false"
+  >
+    <path d="M8 2.6L14.5 13.4h-13z" />
+    <path d="M8 6.6v2.6" />
+    <path d="M8 11.4h.01" />
+  </svg>
+</pct-icon>
+} @case ('danger') {
+<pct-icon class="pct-progress__icon" data-pct-part="icon" name="danger">
+  <svg
+    viewBox="0 0 16 16"
+    width="100%"
+    height="100%"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    focusable="false"
+  >
+    <circle cx="8" cy="8" r="6" />
+    <path d="M8 4.8v3.4" />
+    <path d="M8 11h.01" />
+  </svg>
+</pct-icon>
+} @case ('info') {
+<pct-icon class="pct-progress__icon" data-pct-part="icon" name="info">
+  <svg
+    viewBox="0 0 16 16"
+    width="100%"
+    height="100%"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    focusable="false"
+  >
+    <circle cx="8" cy="8" r="6" />
+    <path d="M8 7.4v3.4" />
+    <path d="M8 4.8h.01" />
+  </svg>
+</pct-icon>
+} }
+
+<!--
+  The pipe, and an element of its own since tones arrived rather than the host it used to be:
+  the host now has a marker to stand beside the bar, and a marker inside the clipping box is a
+  marker cut to the height of a groove. Everything the host carried moved here unchanged — the
+  containing block the fill is positioned against, the clip the indeterminate band travels
+  inside, the groove's radius — so an untoned bar measures exactly what it measured before.
+
+  Two elements inside it, and the split between them is the whole component (0049).
 
   The `<progress>` is the semantics AND the groove: it carries the role, the bounds, the
-  value — and, when the `value` attribute is absent, the indeterminate state, which reaches
-  the accessibility tree as no value at all rather than as a number somebody had to invent.
-  Nothing here writes `role`, `aria-valuenow`, `aria-valuemin` or `aria-valuemax`: they are
-  the element's, and an attribute we wrote beside them would be an echo nobody reads (0039,
+  value — and, when the `value` attribute is absent, the indeterminate state, which reaches the
+  accessibility tree as no value at all rather than as a number somebody had to invent. Nothing
+  here writes `role`, `aria-valuenow`, `aria-valuemin` or `aria-valuemax`: they are the
+  element's, and an attribute we wrote beside them would be an echo nobody reads (0039,
   `lesson-112`).
 
   The fill is a sibling and not a child, because a `<progress>` renders no children in any
@@ -14,26 +105,28 @@
   `appearance: none`, which takes the engine's indeterminate animation away and leaves the
   three engines disagreeing about what an indeterminate bar looks like (`lesson-133`).
 
-  `aria-label` and `aria-labelledby` land HERE, on the element that has the role. Written on
-  the `<pct-progress>` tag they would stand on an element ARIA gives no role to, where a
-  screen reader ignores them (`req-a11y-built-in`, the defect `check-aria` exists for).
+  `aria-label` and `aria-labelledby` land on the element that has the role. Written on the
+  `<pct-progress>` tag they would stand on an element ARIA gives no role to, where a screen
+  reader ignores them (`req-a11y-built-in`, the defect `check-aria` exists for).
 -->
-<progress
-  class="pct-progress__track"
-  data-pct-part="track"
-  [attr.value]="reported()"
-  [attr.max]="upper()"
-  [attr.aria-label]="ariaLabel() || null"
-  [attr.aria-labelledby]="ariaLabelledby() || null"
-></progress>
+<div class="pct-progress__bar" data-pct-part="bar">
+  <progress
+    class="pct-progress__track"
+    data-pct-part="track"
+    [attr.value]="reported()"
+    [attr.max]="upper()"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-labelledby]="ariaLabelledby() || null"
+  ></progress>
 
-<!--
-  The width is the only thing bound: while indeterminate it is `null`, so the inline style
-  disappears and the band's width in the stylesheet answers instead. An inline `0%` would win
-  over it and there would be nothing to see.
--->
-<div
-  class="pct-progress__fill"
-  data-pct-part="fill"
-  [style.inline-size.%]="percent()"
-></div>
+  <!--
+    The width is the only thing bound: while indeterminate it is `null`, so the inline style
+    disappears and the band's width in the stylesheet answers instead. An inline `0%` would win
+    over it and there would be nothing to see.
+  -->
+  <div
+    class="pct-progress__fill"
+    data-pct-part="fill"
+    [style.inline-size.%]="percent()"
+  ></div>
+</div>

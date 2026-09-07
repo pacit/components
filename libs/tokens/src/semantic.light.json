@@ -90,6 +90,20 @@
       "$type": "color",
       "$value": "{pct.slate.0}"
     },
+    "$comment-tones": "The three colours a tone needs beside `danger`, which the skin has had since the badge. They paint an ICON first and a fill second, because a tone that is only a colour is a state carried by colour alone (`req-a11y-forced-colors`, plan 4.14) — the drawing is the channel that survives a forced palette and a reader who cannot tell red from green. No `on-` pair for any of them: nothing in this library sets text on a toned background yet, and a declared-and-unused pair looks like coverage that does not exist (the note above `danger` records what that cost the last time).",
+    "success": {
+      "$type": "color",
+      "$value": "{pct.green.700}"
+    },
+    "warning": {
+      "$type": "color",
+      "$value": "{pct.amber.700}"
+    },
+    "$comment-info": "Info is the brand blue, and deliberately the same value as `primary`: an informational message is not an alarm, the skin has exactly one calm accent, and a fourth hue invented for it would be a colour with no meaning behind it. The name is separate because the ROLE is — a theme that recolours its brand should not have to think about what that does to a message.",
+    "info": {
+      "$type": "color",
+      "$value": "{pct.blue.600}"
+    },
     "$comment-scrim": "The veil a modal draws over the page, and the reason it is a SEMANTIC token rather than a value in a component sheet: how much a modal takes the page away is a property of the skin, not of the dialog. Here it is the ramp's darkest ordinary step — over a light page that reads as a dimming rather than as a blackout. The dark theme answers differently, which is the whole point of the tier.",
     "scrim": {
       "$type": "color",

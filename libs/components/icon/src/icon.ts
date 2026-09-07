@@ -27,9 +27,26 @@ import {
  * is a promise that some component draws it and that supplying one replaces that drawing
  * ([0011](../../../../docs/decisions/0011-icons.md)). `check-icons` holds both directions:
  * a name nothing draws is a promise nobody keeps, a drawing with no name cannot be swapped.
+ *
+ * **The four tones arrived together, and that was the point of waiting.** `success`, `warning`,
+ * `danger` and `info` are the second channel a tone needs — a state painted in colour alone is
+ * a state carried by colour alone ([`req-a11y-forced-colors`](../../../../docs/requirements/a11y.md#req-a11y-forced-colors))
+ * — and the set is one nobody's single component could judge: the toast wanted it, the progress
+ * bar wanted the same four, and the field's error, the dialog's confirm and whatever the banner
+ * turns out to be will want them too. Four names added once, by a decision, rather than one at a
+ * time by whoever needed the first (plan 4.14).
  */
 export type PctIconName =
-  'calendar' | 'check' | 'chevron-down' | 'close' | 'indeterminate' | 'user';
+  | 'calendar'
+  | 'check'
+  | 'chevron-down'
+  | 'close'
+  | 'danger'
+  | 'indeterminate'
+  | 'info'
+  | 'success'
+  | 'user'
+  | 'warning';
 
 /**
  * The consumer's icon set: **a component whose templates are the icons**.

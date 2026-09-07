@@ -67,6 +67,49 @@
         "$value": "{pct.space.3}",
         "$description": "Gap between a toast's message and its action."
       },
+      "$comment-icon": "The tone's drawing and the colour it takes. The ICON is the tone — a message painted in colour alone is a state carried by colour alone (`req-a11y-forced-colors`), and a reader who cannot tell red from green, or a forced palette that throws both away, still has the shape (plan 4.14). The base `icon-fg` is the message's own text colour, which is what a toast with no tone would draw if it ever drew one: the four variants below are the only reason this token exists.",
+      "icon-fg": {
+        "$type": "color",
+        "$value": "{pct.text}"
+      },
+      "icon-fg-success": {
+        "$type": "color",
+        "$value": "{pct.success}"
+      },
+      "icon-fg-warning": {
+        "$type": "color",
+        "$value": "{pct.warning}"
+      },
+      "icon-fg-danger": {
+        "$type": "color",
+        "$value": "{pct.danger}"
+      },
+      "icon-fg-info": {
+        "$type": "color",
+        "$value": "{pct.info}"
+      },
+      "$comment-icon-size": "One `em` would tie the drawing to the message's font size, which is `sm`; a message that is a sentence and an icon that is a road sign do not scale together. A dimension of its own, and the same 16px the close cross is drawn on.",
+      "icon-size": {
+        "$type": "dimension",
+        "$value": "16px"
+      },
+      "$comment-item-border-tones": "The edge takes the tone too, and that is not a second channel — it is the same one, louder. What makes the tone legible is the drawing beside the sentence; the border is what makes it visible from across a room, and it is measured against the page like the untoned edge above it.",
+      "item-border-success": {
+        "$type": "color",
+        "$value": "{pct.success}"
+      },
+      "item-border-warning": {
+        "$type": "color",
+        "$value": "{pct.warning}"
+      },
+      "item-border-danger": {
+        "$type": "color",
+        "$value": "{pct.danger}"
+      },
+      "item-border-info": {
+        "$type": "color",
+        "$value": "{pct.info}"
+      },
       "message-font-size": {
         "$type": "dimension",
         "$value": "{pct.font.size.sm}",

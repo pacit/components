@@ -146,6 +146,7 @@ export class PctToaster implements PctToastHost {
       id,
       text: source.text,
       urgent,
+      tone: source.tone ?? null,
       actionLabel: action?.label ?? '',
     };
     if (this.viewport === null) {

@@ -87,6 +87,50 @@
   }
 }
 
+/* The tone: a drawing and an edge, and the drawing is the half that survives. What a colour
+   cannot do is be seen by a reader who does not separate red from green, or survive a forced
+   palette where the author's greens are not invited — so the icon carries the meaning and the
+   border carries the volume (`req-a11y-forced-colors`, plan 4.14). The base `icon-fg` is the
+   message's own colour, which is what an untoned message would draw if it ever drew one. */
+.pct-toast__icon {
+  flex: none;
+  align-self: start;
+  font-size: var(--pct-toast-icon-size);
+  color: var(--pct-toast-icon-fg);
+}
+
+.pct-toast__item[data-pct-tone='success'] .pct-toast__icon {
+  color: var(--pct-toast-icon-fg-success);
+}
+
+.pct-toast__item[data-pct-tone='warning'] .pct-toast__icon {
+  color: var(--pct-toast-icon-fg-warning);
+}
+
+.pct-toast__item[data-pct-tone='danger'] .pct-toast__icon {
+  color: var(--pct-toast-icon-fg-danger);
+}
+
+.pct-toast__item[data-pct-tone='info'] .pct-toast__icon {
+  color: var(--pct-toast-icon-fg-info);
+}
+
+.pct-toast__item[data-pct-tone='success'] {
+  border-color: var(--pct-toast-item-border-success);
+}
+
+.pct-toast__item[data-pct-tone='warning'] {
+  border-color: var(--pct-toast-item-border-warning);
+}
+
+.pct-toast__item[data-pct-tone='danger'] {
+  border-color: var(--pct-toast-item-border-danger);
+}
+
+.pct-toast__item[data-pct-tone='info'] {
+  border-color: var(--pct-toast-item-border-info);
+}
+
 .pct-toast__message {
   /* The sentence takes the room the two buttons do not, and `min-inline-size: 0` is what lets
      it wrap instead of pushing them off the card. */
@@ -158,6 +202,24 @@
   }
 
   .pct-toast__message {
+    color: CanvasText;
+  }
+
+  /* The tone's colours go with every other author colour in this mode, and the tone survives
+     it anyway: what is left is the drawing, which is the channel that was worth having. The
+     selectors repeat the toned compounds one by one, because `@media` adds no specificity and
+     a bare `.pct-toast__item` here would lose to each of them (`lesson-70`). */
+  .pct-toast__item[data-pct-tone='success'],
+  .pct-toast__item[data-pct-tone='warning'],
+  .pct-toast__item[data-pct-tone='danger'],
+  .pct-toast__item[data-pct-tone='info'] {
+    border-color: CanvasText;
+  }
+
+  .pct-toast__item[data-pct-tone='success'] .pct-toast__icon,
+  .pct-toast__item[data-pct-tone='warning'] .pct-toast__icon,
+  .pct-toast__item[data-pct-tone='danger'] .pct-toast__icon,
+  .pct-toast__item[data-pct-tone='info'] .pct-toast__icon {
     color: CanvasText;
   }
 

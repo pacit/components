@@ -70,6 +70,28 @@
         "$value": "#000000"
       }
     },
+    "green": {
+      "$comment": "The palette's first green, and the two steps are the red ramp's shape for the red ramp's reason: `700` is the step that clears 4.5:1 as text on the light surface (5.02:1 measured) and `400` the one that clears it on the dark (10.25:1). Both are steps of the same scale every other hue here comes from, so a tone is a colour the skin already knew how to make rather than a hue somebody picked. It exists because a message with no second channel is a state carried by colour alone (plan 4.14) — the icon is that channel, and this is what paints it.",
+      "400": {
+        "$type": "color",
+        "$value": "#4ade80"
+      },
+      "700": {
+        "$type": "color",
+        "$value": "#15803d"
+      }
+    },
+    "amber": {
+      "$comment": "The same two steps for the warning tone, and the level is a measurement rather than a mirror of green's: an amber light enough to read as a warning is dark enough to fail as text, so `700` is where it clears 4.5:1 on white (5.02:1) and `400` where it clears it on `slate.900` (10.69:1). A `600` amber, which is the shade most palettes reach for, measures 3.19:1 on white — enough for a UI edge and not for a word.",
+      "400": {
+        "$type": "color",
+        "$value": "#fbbf24"
+      },
+      "700": {
+        "$type": "color",
+        "$value": "#b45309"
+      }
+    },
     "red": {
       "400": {
         "$type": "color",

@@ -10,4 +10,5 @@ export * from './overlay';
 export * from './placement';
 export * from './template';
 export * from './texts';
+export * from './tone';
 export * from './value';

@@ -5,7 +5,7 @@ import {
   Type,
 } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { PctSize, providePctConfig } from '@pacit/components/core';
+import { PctSize, PctTone, providePctConfig } from '@pacit/components/core';
 import { PctProgress } from './progress';
 
 /**
@@ -31,6 +31,7 @@ import { PctProgress } from './progress';
       [ariaLabel]="ariaLabel()"
       [ariaLabelledby]="ariaLabelledby()"
       [size]="size()"
+      [tone]="tone()"
     />
   `,
 })
@@ -40,6 +41,7 @@ class Host {
   readonly ariaLabel = signal('Uploading');
   readonly ariaLabelledby = signal('');
   readonly size = signal<PctSize>('md');
+  readonly tone = signal<PctTone | null>(null);
 }
 
 @Component({
@@ -444,12 +446,44 @@ describe('PctProgress — the size axis', () => {
 });
 
 describe('PctProgress — the parts a consumer may style', () => {
-  it('draws exactly two: the groove and the fill', async () => {
-    await render(Host);
+  it('draws three with no tone: the bar, the groove and the fill', async () => {
+    const fixture = await render(Host);
 
     expect(track().tagName).toBe('PROGRESS');
     expect(fill().tagName).toBe('DIV');
-    expect(bound().querySelectorAll('[data-pct-part]')).toHaveLength(2);
+    expect(part('bar').tagName).toBe('DIV');
+    expect(bound().querySelectorAll('[data-pct-part]')).toHaveLength(3);
+
+    // The mark is the fourth, and it exists only when there is something for it to mean: a
+    // bar with no tone is the bar this component drew before tones existed (plan 4.14).
+    fixture.componentInstance.tone.set('danger');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(bound().querySelectorAll('[data-pct-part]')).toHaveLength(4);
+    expect(part('icon').getAttribute('name')).toBe('danger');
+  });
+
+  it('writes the tone as a state attribute, and nothing when there is none', async () => {
+    const fixture = await render(Host);
+    expect(bound().hasAttribute('data-pct-tone')).toBe(false);
+    expect(part('icon')).toBeNull();
+
+    for (const tone of ['success', 'warning', 'danger', 'info'] as const) {
+      fixture.componentInstance.tone.set(tone);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(bound().getAttribute('data-pct-tone')).toBe(tone);
+      // The drawing is the half a colour cannot carry, so each tone has its own name and
+      // each name its own path — a set that all resolved to one icon would be a colour again.
+      expect(part('icon').getAttribute('name')).toBe(tone);
+      expect(part('icon').querySelectorAll('svg')).toHaveLength(1);
+    }
+
+    fixture.componentInstance.tone.set(null);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(bound().hasAttribute('data-pct-tone')).toBe(false);
+    expect(part('icon')).toBeNull();
   });
 
   it('draws the fill outside the element, because a <progress> renders no children', async () => {
@@ -458,7 +492,10 @@ describe('PctProgress — the parts a consumer may style', () => {
     // Measured in three engines before it was written this way: the content of a `<progress>`
     // is fallback for browsers that predate it, and no engine here paints it.
     expect(track().children).toHaveLength(0);
-    expect(fill().parentElement).toBe(bound());
+    // The bar and not the host, since tones arrived: the clip moved down one element so a
+    // mark could stand beside the groove rather than be cut to its height.
+    expect(fill().parentElement).toBe(part('bar'));
+    expect(part('bar').parentElement).toBe(bound());
   });
 });
 
@@ -510,6 +547,15 @@ function only(rules: CSSStyleRule[], what: string): CSSStyleRule {
     throw new Error(`expected exactly one ${what} rule, found ${rules.length}`);
   return rules[0];
 }
+
+/** The clipping box's own rule — the host's until tones moved the pipe down one element. */
+const barRule = (rules: CSSRuleList) =>
+  only(
+    styleRules(rules).filter((rule) =>
+      rule.selectorText.includes('pct-progress__bar'),
+    ),
+    'bar',
+  );
 
 const hostRule = (rules: CSSRuleList) =>
   only(
@@ -584,11 +630,12 @@ describe('PctProgress — the pipe the indeterminate band travels inside', () =>
       to: '100%',
     });
 
-    // What stops it is the box it is positioned against, which is the host: the fill is
-    // absolute and the host is the containing block, so the host's overflow is the boundary of
-    // its painting.
+    // What stops it is the box it is positioned against, which is the BAR: the fill is
+    // absolute and the bar is the containing block, so the bar's overflow is the boundary of
+    // its painting. That box was the host until a tone needed a mark beside the groove — and
+    // the mark could not stand inside a box that clips to the height of a groove.
     expect(getComputedStyle(fill()).position).toBe('absolute');
-    const host = hostRule(rules);
+    const host = barRule(rules);
     expect(host.style.getPropertyValue('position')).toBe('relative');
     expect(host.style.getPropertyValue('overflow')).toBe('hidden');
 
@@ -613,7 +660,7 @@ describe('PctProgress — the pipe the indeterminate band travels inside', () =>
     // would be a groove with no visible extent in the one mode it exists for, and no screenshot
     // in ordinary colours would show it: the two boxes are one rectangle, so the drawing is
     // identical everywhere else.
-    expect(hostRule(forced).style.getPropertyValue('outline')).toBe(
+    expect(barRule(forced).style.getPropertyValue('outline')).toBe(
       '1px solid CanvasText',
     );
     expect(trackRule(forced).style.getPropertyValue('outline')).toBe('');

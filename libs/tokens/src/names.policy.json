@@ -7,7 +7,9 @@
       "pct.red.",
       "pct.slate.",
       "pct.violet.",
-      "pct.cyan."
+      "pct.cyan.",
+      "pct.green.",
+      "pct.amber."
     ]
   },
   "primitive": {
@@ -16,6 +18,8 @@
       "blue",
       "slate",
       "red",
+      "green",
+      "amber",
       "violet",
       "cyan",
       "space",
@@ -27,7 +31,7 @@
     ]
   },
   "semantic": {
-    "$comment": "The semantic tier: `[on-]{role}[-{variant}]`. The `on-` prefix is not a role of its own but the text/background pair rule (req-token-text-pairs) — thanks to which `--pct-on-danger` is guessable from the mere existence of `--pct-danger` rather than from a list.",
+    "$comment": "The semantic tier: `[on-]{role}[-{variant}]`. `success`, `warning` and `info` joined `danger` as roles the day tones landed (plan 4.14), and they are three words rather than one `tone-*` family for the reason the dictionary exists: a name is guessable when it says what it means, and `--pct-tone-2` says nothing. The `on-` prefix is not a role of its own but the text/background pair rule (req-token-text-pairs) — thanks to which `--pct-on-danger` is guessable from the mere existence of `--pct-danger` rather than from a list.",
     "roles": [
       "primary",
       "surface",
@@ -36,6 +40,9 @@
       "hero",
       "hero-text",
       "danger",
+      "success",
+      "warning",
+      "info",
       "focus-ring",
       "scrim",
       "shadow-panel"
@@ -118,6 +125,7 @@
       "checked",
       "current",
       "danger",
+      "info",
       "disabled",
       "done",
       "focus",
@@ -126,7 +134,9 @@
       "last",
       "muted",
       "selected",
-      "today"
+      "success",
+      "today",
+      "warning"
     ],
     "sizes": {
       "$comment": "Size is a variant like a state and stands in the same place — at the end. `md` does not appear in a name, because it is the base value: `--pct-button-height` IS the `md` height (req-api-size).",

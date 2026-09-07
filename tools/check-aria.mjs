@@ -465,7 +465,11 @@ const readTemplate = (content, tables) => {
  */
 const walkTemplate = (nodes, path, state, ancestors = []) => {
   for (const node of nodes) {
-    const branches = node.branches ?? node.cases ?? null;
+    // `groups` and not only `cases`: an `@switch` carries its branches under that name in
+    // Angular 22, and a walk that knew the other two names alone stepped over every switch
+    // block in the library. Found by point 1's own denominator, which counted five icons in
+    // the text of the toast's template and one in the tree (plan 4.14, `lesson-180`).
+    const branches = node.branches ?? node.cases ?? node.groups ?? null;
     if (branches) {
       const block = state.blocks++;
       branches.forEach((branch, i) =>

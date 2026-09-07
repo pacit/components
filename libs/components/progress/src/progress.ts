@@ -7,7 +7,8 @@ import {
   isDevMode,
   numberAttribute,
 } from '@angular/core';
-import { PCT_CONFIG, PctSize } from '@pacit/components/core';
+import { PCT_CONFIG, PctSize, PctTone } from '@pacit/components/core';
+import { PctIcon } from '@pacit/components/icon';
 
 /**
  * A progress bar: how far along a task is, or that it is under way at all.
@@ -41,6 +42,7 @@ import { PCT_CONFIG, PctSize } from '@pacit/components/core';
  */
 @Component({
   selector: 'pct-progress',
+  imports: [PctIcon],
   templateUrl: './progress.html',
   styleUrl: './progress.scss',
   host: {
@@ -50,6 +52,7 @@ import { PCT_CONFIG, PctSize } from '@pacit/components/core';
     // where the paint is — the ARIA half of the same fact is the `<progress>`'s own, and this
     // component writes no ARIA anywhere (0039).
     '[attr.data-pct-indeterminate]': 'value() === null ? "" : null',
+    '[attr.data-pct-tone]': 'tone()',
   },
 })
 export class PctProgress {
@@ -101,6 +104,20 @@ export class PctProgress {
 
   /** Size; taken from the global configuration by default (`req-api-config`). */
   readonly size = input<PctSize>(this.config.defaultSize);
+
+  /**
+   * What the work IS, drawn as a mark beside the bar and as the colour of the fill — not how
+   * far it got, which is `value`. A failed upload is `tone: 'danger'` at whatever percentage
+   * it stopped at; a finished one is `'success'` at 100. An indeterminate bar may carry a tone
+   * too: "retrying, and the last attempt failed" is a real state, and nothing here pretends to
+   * know what the work will do next.
+   *
+   * `null` — the default — draws no mark at all and leaves the geometry exactly as it was
+   * before tones existed. The mark is the half that survives a forced palette and a reader who
+   * does not separate red from green, which is why a tone here is never only a colour
+   * ({@link PctTone}, plan 4.14).
+   */
+  readonly tone = input<PctTone | null>(null);
 
   /** The scale, with anything that is not a positive finite number replaced by the default. */
   protected readonly upper = computed(() => {

@@ -1,4 +1,5 @@
 import { InjectionToken, Provider, Signal } from '@angular/core';
+import { PctTone } from '@pacit/components/core';
 
 /**
  * The one thing a toast can offer besides going away: a label and what pressing it does.
@@ -26,6 +27,12 @@ export interface PctToastAction {
 export interface PctToastNotice {
   readonly text: string;
   readonly duration?: number | null;
+  /**
+   * What the message is about, drawn as an icon beside the sentence and as the colour of the
+   * card's edge. Left out, the message carries no tone and no icon at all — see {@link PctTone}
+   * for why the union has no `neutral` in it.
+   */
+  readonly tone?: PctTone;
   readonly urgent?: never;
   readonly action?: never;
 }
@@ -46,12 +53,18 @@ export interface PctToastStanding {
    * around it stays polite
    * ([0044](../../../../docs/decisions/0044-a-toast-is-a-change-in-a-region-that-was-already-there.md)).
    *
-   * It is deliberately **not** a colour. A tone drawn in colour alone is a state carried by
-   * colour alone (`req-a11y-forced-colors`), and the channel that would repair it is an icon
-   * per tone — a public name and a promise about a drawing, which is exactly the kind of set
-   * one consumer cannot judge.
+   * It is deliberately **not** a colour, and it is not {@link PctToastStanding.tone} either:
+   * urgency is about INTERRUPTING, tone is about what happened. A failure a user can deal with
+   * later is `tone: 'danger'` and not urgent; a session about to expire is urgent whatever its
+   * tone. The two are drawn by different halves of the component and read by different people.
    */
   readonly urgent?: boolean;
+  /**
+   * What the message is about — the icon beside the sentence and the colour of the edge.
+   * The icon is the half that survives a forced palette and a reader who does not separate
+   * red from green, which is why a tone is never only a colour here ({@link PctTone}).
+   */
+  readonly tone?: PctTone;
   readonly action?: PctToastAction;
   readonly duration?: never;
 }
@@ -75,6 +88,8 @@ export interface PctToastState {
   readonly id: number;
   readonly text: string;
   readonly urgent: boolean;
+  /** The tone, or `null` for a message that named none — the view then draws no icon. */
+  readonly tone: PctTone | null;
   /** The action's label, `''` when there is none — the view draws no button for an empty one. */
   readonly actionLabel: string;
 }

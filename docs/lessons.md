@@ -4918,3 +4918,38 @@ the file still names the old one fires point 13.
 The general form, and the reason this took an evening: **a baseline records a number and
 forgets the conditions**, and every question about it afterwards is archaeology. The cheapest
 moment to write down what produced a measurement is the moment it is produced.
+
+### <a id="lesson-180"></a>`lesson-180` — Four names at once, and the gate that could not see inside a switch
+
+Tones existed as a refusal in two cards for months: success and failure look alike, deliberately,
+because a tone painted in colour alone is a state carried by colour alone and the second channel
+would be an icon — four public names, a set no single component could judge. The toast refused it
+first, the progress bar refused it second for the same reason, and two components standing on one
+unmade decision is what the plan said would happen (4.14).
+
+**What the decision bought, and what it cost.** Four names into `PctIconName` at once, two ramps
+the palette did not have (`green`, `amber`), three semantic colours beside `danger`, and a `tone`
+on both components. Every colour is a measurement rather than a taste: the light theme's steps
+are the ones that clear 4.5:1 as text on the page (5.02, 5.02, 5.17) and the dark theme's the
+ones that clear it on `slate.900` (10.25, 10.69, 7.02). The `600` amber most palettes reach for
+measures 3.19:1 — enough for an edge, not for a word.
+
+The bytes are the part worth stating out loud: `./progress` went from **7204 B to 11625 B**,
+because a template that names `pct-icon` carries the icon component whether or not a consumer
+ever passes a tone. That is `lesson-173` in its third disguise — an unconditional reference pins
+— and here it is the price of the promise rather than an accident.
+
+**A bar had nowhere to put a mark.** The progress host WAS the pipe: `position: relative;
+overflow: hidden` on the element itself, because a `<progress>` renders no children and the fill
+is a sibling. A mark inside a box that clips to the height of a groove is a mark cut to 8 px, so
+the pipe moved down onto a new `bar` part and the host became a row. An untoned bar measures
+exactly what it measured before — a case reads the host's box against the groove's to keep that
+true.
+
+**And the gate caught itself.** `check-icons` point 1 counts the `<pct-icon>` tags in a template's
+TEXT and compares that with what its walk reached; the toast's new template read "1 in the tree,
+5 in the text". The walk followed `node.branches ?? node.cases`, and in Angular 22 an `@switch`
+carries its branches under **`groups`** — so every switch block in the library was invisible to
+it, and to `check-aria`'s identical walk. Nothing had been missed yet because no icon had ever
+stood inside a switch, which is exactly what a denominator is for: **a walk that reaches nothing
+looks like a walk that found nothing wrong** ([`lesson-48`](#lesson-48) again, one AST node over).

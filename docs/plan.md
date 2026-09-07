@@ -2007,7 +2007,7 @@ errored · not covered · ignored`, and point 6's parser and the five fixtures t
     down — `selected` is a word a state may have again; `chosen` stays where it is, a name
     two components carry and nobody asked to move ([`lesson-162`](lessons.md#lesson-162))
 
-- [ ] **4.14 — a message reports nothing by colour, and the channel that would repair it is a
+- [x] **4.14 — a message reports nothing by colour, and the channel that would repair it is a
       decision nobody has made**
   - every toast is drawn the same: one surface, one edge, one sentence. Success, warning and
     failure look alike, and the only thing that separates an urgent message from an ordinary
@@ -2043,6 +2043,41 @@ errored · not covered · ignored`, and point 6's parser and the five fixtures t
     ten, and the set is settled once for the field's error, the dialog's confirm and
     whatever the banner turns out to be, which is the whole reason this item refused to
     let the first component decide it
+  - **done (2026-09-07): four names, two ramps, three semantic colours and a `tone` on both
+    components.** `PctTone` lives in `./core` because the set is one set — `'success' |
+'warning' | 'danger' | 'info'`, with no `neutral` member: a component with no tone takes no
+    `tone`, and the absence is the neutral. The toast takes it as a field on the spec (it has
+    no inputs — the surface is a service), the bar as an input; both draw a mark the library
+    ships and a consumer's set replaces (0011)
+  - **every colour is a measurement.** The palette had no green and no amber, so both ramps
+    were added at the two steps that clear 4.5:1 as text: `green.700`/`amber.700` on the light
+    surface (5.02:1 each) and `green.400`/`amber.400` on the dark (10.25 and 10.69). `info` is
+    the brand blue and deliberately the same value as `primary` — an informational message is
+    not an alarm, and a fourth hue invented for it would be a colour with no meaning behind it.
+    Sixteen new pairs in `contrast.policy.json`, two per tone per component, because a policy
+    that measured "the tone" once would be measuring whichever tone somebody wrote first
+  - **the bar had nowhere to put a mark**, and that is the structural half of this step: its
+    host WAS the pipe (`position: relative; overflow: hidden`), so a mark inside it would be
+    cut to the height of a groove. The pipe moved onto a new `bar` part and the host became a
+    row; an untoned bar measures exactly what it measured before, and a case reads the host's
+    box against the groove's to keep that true
+  - **the cost, stated rather than discovered:** `./progress` **7204 → 11625 B** and `./toast`
+    **15867 → 19473 B** — a template that names `pct-icon` carries the icon component whether
+    or not a consumer ever passes a tone (`lesson-173` in its third disguise). The package is
+    435841 → 443888 B
+  - **and the icon gate caught itself.** Point 1's denominator read "1 `<pct-icon>` in the
+    tree, 5 in the text" of the toast's new template: the walk followed `branches ?? cases`,
+    and an `@switch` in Angular 22 carries its branches under `groups` — so every switch block
+    in the library was invisible to `check-icons` and to `check-aria`'s identical walk. Both
+    are fixed ([`lesson-180`](lessons.md#lesson-180))
+  - measured: 1180 unit cases green, `tones.spec.ts` with six cases over three engines (the
+    four names, four colours on the mark and the edge, the mark beside the groove and not
+    inside it, the untoned bar unchanged, and both components under `forced-colors: active`
+    where the colour goes and the mark stays). The progress bar's forced-colours ring is
+    re-pointed at the same time: it was read on `track`, where `outline-color` with no outline
+    computes to `currentColor` and the assertion passed on the fallback
+  - what is NOT in this step and is now cheap: `PctBadgeTone` is still `'neutral' | 'danger'`,
+    with its own note saying the union grows the day the ramps land. They have landed
 
 - [x] **4.15 — the assertive channel has no consumer, and therefore no gate**
   - `PctAnnouncer` opens two regions and has done since the live announcer was built. The

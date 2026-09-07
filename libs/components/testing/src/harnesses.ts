@@ -329,9 +329,11 @@ export class PctPopoverTriggerHarness extends PctHarness<never> {
 // ── @pacit/components/progress ──────────────────────────────────────────────────
 
 /** `pct-progress` — `PctProgress`. */
-export class PctProgressHarness extends PctHarness<'fill' | 'track'> {
+export class PctProgressHarness extends PctHarness<
+  'bar' | 'fill' | 'icon' | 'track'
+> {
   static hostSelector = 'pct-progress';
-  static override readonly parts = ['fill', 'track'] as const;
+  static override readonly parts = ['bar', 'fill', 'icon', 'track'] as const;
 }
 
 // ── @pacit/components/radio ─────────────────────────────────────────────────────
@@ -541,12 +543,13 @@ export class PctThemeHarness extends PctHarness<never> {
 
 /** `pct-toast-viewport` — `PctToastViewport`. */
 export class PctToastViewportHarness extends PctHarness<
-  'action' | 'close' | 'item' | 'message'
+  'action' | 'close' | 'icon' | 'item' | 'message'
 > {
   static hostSelector = 'pct-toast-viewport';
   static override readonly parts = [
     'action',
     'close',
+    'icon',
     'item',
     'message',
   ] as const;

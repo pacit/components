@@ -59,6 +59,28 @@
 </sbx-demo>
 
 <sbx-demo
+  heading="Tones"
+  summary="What the message is about, in two channels at once: a mark the library draws and a colour on the edge. Never the colour alone — a state painted in colour is a state a reader who does not separate red from green never receives, and in forced-colours mode the author's greens are not invited at all. The mark is what survives both. A message with no tone carries no attribute and draws nothing."
+  [reqs]="['req-a11y-forced-colors', 'req-api-icons']"
+  data-testid="demo-tones"
+>
+  <div class="row">
+    <button pctButton (click)="toned('success')" data-testid="raise-success">
+      Success
+    </button>
+    <button pctButton (click)="toned('warning')" data-testid="raise-warning">
+      Warning
+    </button>
+    <button pctButton (click)="toned('danger')" data-testid="raise-danger">
+      Danger
+    </button>
+    <button pctButton (click)="toned('info')" data-testid="raise-info">
+      Info
+    </button>
+  </div>
+</sbx-demo>
+
+<sbx-demo
   heading="With an action"
   summary="A toast carrying a control does not expire: the control is at the very end of the page's tab order, and a clock running underneath that walk is a promise the library cannot keep."
   [reqs]="['req-a11y-wcag', 'req-a11y-touch']"
