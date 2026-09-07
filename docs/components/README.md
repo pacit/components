@@ -10,7 +10,7 @@ a machine; prose with a missing paragraph is not.
 
 | component                        | entrypoint                     | role                                      |
 | -------------------------------- | ------------------------------ | ----------------------------------------- |
-| [`PctButton`](button.md)         | `@pacit/components/button`     | button                                    |
+| [`PctButton`](button.md)         | `@pacit/components/button`     | button, or a link wearing its face        |
 | [`PctField`](field.md)           | `@pacit/components/field`      | form control wrapper                      |
 | [`PctText`](text.md)             | `@pacit/components/field`      | text field on a native `<input>`          |
 | [`PctAutosize`](textarea.md)     | `@pacit/components/field`      | a textarea as tall as its text            |

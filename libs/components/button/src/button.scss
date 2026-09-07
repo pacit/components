@@ -24,11 +24,11 @@
     var(--pct-motion-transition-easing);
 }
 
-:host(:hover:not([disabled])) {
+:host(:hover:not([data-pct-disabled])) {
   background: var(--pct-button-bg-hover);
 }
 
-:host(:active:not([disabled])) {
+:host(:active:not([data-pct-disabled])) {
   background: var(--pct-button-bg-active);
 }
 
@@ -38,11 +38,20 @@
   outline-offset: 2px;
 }
 
+/* The link face. An `<a>` arrives underlined and painted by the user agent, and a link
+   dressed as a button has to read as a button — so the underline goes and the colour comes
+   from the same token the button's does. What does NOT go is the role: this is still a link,
+   the reader is told so, and the underline policy it leaves behind belongs to links in prose
+   ([0071](../../../../docs/decisions/0071-a-link-in-button-s-clothes-is-a-link.md)). */
+:host(a) {
+  text-decoration: none;
+}
+
 /* The disabled state expressed by explicit colour tokens — no opacity, so that the contrast is
    verifiable by the policy gate (req-a11y-wcag, req-token-text-pairs). The compound selector
    also beats the outline variant whatever the rule order. */
-:host([disabled]:not([data-pct-loading])),
-:host([disabled][data-pct-variant='outline']:not([data-pct-loading])) {
+:host([data-pct-disabled]:not([data-pct-loading])),
+:host([data-pct-disabled][data-pct-variant='outline']:not([data-pct-loading])) {
   background: var(--pct-button-bg-disabled);
   color: var(--pct-button-fg-disabled);
   border-color: var(--pct-button-border-disabled);
@@ -50,7 +59,7 @@
 }
 
 /* Loading keeps the variant's colour (primary), only without interaction. */
-:host([disabled]) {
+:host([data-pct-disabled]) {
   cursor: not-allowed;
 }
 
@@ -60,7 +69,7 @@
   color: var(--pct-primary);
 }
 
-:host([data-pct-variant='outline']:hover:not([disabled])) {
+:host([data-pct-variant='outline']:hover:not([data-pct-disabled])) {
   background: var(--pct-surface-100);
 }
 
@@ -73,8 +82,8 @@
   color: var(--pct-primary);
 }
 
-:host([data-pct-variant='ghost']:hover:not([disabled])),
-:host([data-pct-variant='ghost']:active:not([disabled])) {
+:host([data-pct-variant='ghost']:hover:not([data-pct-disabled])),
+:host([data-pct-variant='ghost']:active:not([data-pct-disabled])) {
   background: var(--pct-surface-100);
 }
 
@@ -88,8 +97,8 @@
   color: var(--pct-on-primary-100);
 }
 
-:host([data-pct-variant='soft']:hover:not([disabled])),
-:host([data-pct-variant='soft']:active:not([disabled])) {
+:host([data-pct-variant='soft']:hover:not([data-pct-disabled])),
+:host([data-pct-variant='soft']:active:not([data-pct-disabled])) {
   background: var(--pct-primary-200);
 }
 
@@ -117,11 +126,11 @@
 
 /* Hover answers with lift, not colour: the surface is already in motion, and a transform
    does not fight the background animation for the same property. */
-:host([data-pct-variant='hero']:hover:not([disabled])) {
+:host([data-pct-variant='hero']:hover:not([data-pct-disabled])) {
   transform: translateY(-1px);
 }
 
-:host([data-pct-variant='hero']:active:not([disabled])) {
+:host([data-pct-variant='hero']:active:not([data-pct-disabled])) {
   transform: translateY(0);
 }
 
@@ -186,11 +195,13 @@
   }
 
   /* The selector repeats the base rule's, and it has to: `@media` adds no specificity of its
-     own, so the shorter `:host([disabled])` loses to it and this rule paints nothing
+     own, so the shorter `:host([data-pct-disabled])` loses to it and this rule paints nothing
      (lesson-70). Loading keeps the variant's colour here as well — greying out a button that
      is working would say "unavailable" about it. */
-  :host([disabled]:not([data-pct-loading])),
-  :host([disabled][data-pct-variant='outline']:not([data-pct-loading])) {
+  :host([data-pct-disabled]:not([data-pct-loading])),
+  :host(
+    [data-pct-disabled][data-pct-variant='outline']:not([data-pct-loading])
+  ) {
     color: GrayText;
     border-color: GrayText;
   }
@@ -209,6 +220,15 @@
   :host([data-pct-variant='soft']),
   :host([data-pct-variant='hero']) {
     border-color: ButtonText;
+  }
+
+  /* The same edge on a link, in the colour this mode keeps for links. The user agent paints
+     an `<a>` in `LinkText` whatever the stylesheet said, so a boundary in `ButtonText` beside
+     it would be the one part of the control disagreeing with the rest of it. */
+  :host(a[data-pct-variant='ghost']),
+  :host(a[data-pct-variant='soft']),
+  :host(a[data-pct-variant='hero']) {
+    border-color: LinkText;
   }
 
   /* The spinner draws the gap in the ring rather than a colour: had the substitution painted

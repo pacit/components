@@ -855,4 +855,28 @@ test.describe('forced-colors: active', () => {
       ).toBe(sys.ButtonText);
     }
   });
+
+  /**
+   * The same face on a link, and the mode reads it as a link whatever the stylesheet
+   * said: an `<a>` is painted `LinkText` on `Canvas` where a `<button>` gets
+   * `ButtonText` on `ButtonFace`. So the edge the boundary-less faces get back has to
+   * be the link's colour too, or the control disagrees with itself — and the disabled
+   * link keeps `GrayText`, because a system colour is the one thing an author rule may
+   * still say here (0071).
+   */
+  test('a link wearing the face is painted as a link, edge and all', async ({
+    page,
+  }) => {
+    await visit(page, '/button', { media: FORCED });
+    const sys = await systemColors(page);
+
+    const hero = page.getByTestId('link-hero');
+    expect(await styleOf(hero, 'background-image')).toBe('none');
+    expect(await styleOf(hero, 'color')).toBe(sys.LinkText);
+    expect(await styleOf(hero, 'border-color')).toBe(sys.LinkText);
+
+    expect(await styleOf(page.getByTestId('link-disabled'), 'color')).toBe(
+      sys.GrayText,
+    );
+  });
 });

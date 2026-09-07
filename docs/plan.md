@@ -2548,7 +2548,7 @@ again"` fails **1 run in 3** in WebKit at the `Escape` step — the panel is sti
     isolation, 135 of 135 over eight workers in three engines; nothing to fix beside the
     dialog. What was wrong was the record, and that is
     [`lesson-164`](lessons.md#lesson-164)
-- [ ] **4.33 — the button's faces stop at `<button>`, and the site is the consumer that
+- [x] **4.33 — the button's faces stop at `<button>`, and the site is the consumer that
       noticed**
   - `PctButton` dresses `button[pctButton]` only; a link that should look like a button
     — the landing's hero CTA, any "Get started" pointing at a route — has no library
@@ -2565,6 +2565,57 @@ again"` fails **1 run in 3** in WebKit at the `Escape` step — the panel is sti
     card — so the pass has a link in button's clothes to paint with instead of rewriting
     the landing's CTAs twice. The trigger named above is met early on purpose: the
     consumer that noticed is the site, and the site is the next thing to be rebuilt
+  - **done (2026-09-07), and the widening was the easy half.** The selector is
+    `button[pctButton], a[pctButton]`, one component over two tags as
+    `input[pctText], textarea[pctText]` already is, and the decision is
+    [0071](decisions/0071-a-link-in-button-s-clothes-is-a-link.md). What the tag really
+    costs is the one state the platform has on one element and not the other: the paint
+    moved off `[disabled]` — an attribute an `<a>` can never carry — onto
+    `data-pct-disabled`, written on both, while the native attribute stays on the button
+    and `aria-disabled` plus a refusal stands on the link. The disabled link keeps its
+    place in the tab order deliberately, and a real `Tab` walks onto it in the case
+  - **the refusal had to be measured, and the obvious spelling of it is wrong.** A
+    `(click)` in `host` calling `stopImmediatePropagation()` does not stop the consumer's
+    own `(click)` on the same element: at the target both listeners run in REGISTRATION
+    order and the template's is first. What works is a capture listener attached in the
+    constructor, and both halves are needed — the early registration for a press on the
+    element, the capture phase for a press on the projected label. Two unit cases, one
+    each, and [`lesson-166`](lessons.md#lesson-166)
+  - **and the gate's own negative control had already predicted this step.**
+    `check-harness` kept a fixture whose whole content was "the harness also answers to
+    `a[pctButton]`, which the component does not" — the moment the component did, the
+    fixture stopped failing, which is the one way a gate lies quietly. Re-pointed at
+    `span[pctButton]`, and its neighbour (a second harness on the button's selector)
+    re-pointed at the new list so it fires for the reason it claims
+  - **and the cost record caught the first version paying for all of it on every button.**
+    The listener was attached in the constructor unconditionally, so `check-bench` read
+    `button: listeners 0 → 6` on a preview holding six buttons — six subscriptions for a
+    refusal only a link can need, in every application that draws a button. It is attached
+    on the anchor alone now and the record reads 0 again, which is the whole argument for
+    a gate that counts what a page really holds rather than what a diff looks like
+  - measured: 16 unit cases over the two tags; four e2e cases in three engines — the role
+    and the name from the accessibility tree, nine computed properties identical to the
+    button beside it with `text-decoration-line: none` on top, the focus ring lit by a
+    real `Tab` and equal to the button's, and a disabled `routerLink` refused by pointer
+    and by `Enter`; one forced-colours case reading `LinkText` on the face's edge and
+    `GrayText` on the disabled link. The full suite: 1739 of 1741, the two red ones a
+    known flake of this section's own 4.2 (green 3 of 3 alone) and a card picture that
+    moved because a card was inserted above it (`lesson-165`'s family — the same text at
+    a different height is antialiased differently), re-recorded. `docs-e2e` 362 of 364,
+    the two the component page's own pictures, re-recorded for the example that was added;
+    the landing's pictures did not move a pixel when its CTAs became anchors.
+    `./button` 8597 → 9669 B, `./testing` +14 B
+  - **left open on purpose:** the mutation row for `button.ts` (`100.00 7(0) 0 0 2`) is
+    NOT re-measured here — the run is ~50 minutes and it is deferred to an evening pass
+    over several steps at once (2026-09-07, the maintainer's call). The branch that reads
+    the tag and the handler that refuses a press are both new mutants, so the row is
+    known-stale until then, and the nightly is the first thing that will say so
+  - two things the step found rather than fixed: Playwright's own actionability reads
+    `aria-disabled` as disabled and waits out the timeout, so the press that has to be
+    refused is made with `force` (a second reading of the state, from a tool nobody told);
+    and the card's `**ARIA APG pattern:**` grammar states ONE platform element, so the
+    link is stated in the prose after the dash. The site is the consumer this closes for:
+    the landing's two hero CTAs are anchors now, and 0062's cost is marked paid
 - [ ] **4.34 — the first human review of the site: good in parts, owed a design pass**
   - delivered 2026-09-02 over the running preview, the day 2.1 closed: parts of the site
     look very good, a lot does not — and the direction is explicit: the site will still

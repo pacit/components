@@ -1,8 +1,10 @@
 {
   "point": 2,
   "check": "host",
-  "why": "PctButtonHarness also answers to a[pctButton], which the component does not — a test finds an anchor the directive never touched.",
+  "why": "PctButtonHarness also answers to span[pctButton], which the component does not — a test finds an element the directive never touched.",
   "harnesses": {
-    "PctButtonHarness": { "hostSelector": "button[pctButton], a[pctButton]" }
+    "PctButtonHarness": {
+      "hostSelector": "button[pctButton], a[pctButton], span[pctButton]"
+    }
   }
 }

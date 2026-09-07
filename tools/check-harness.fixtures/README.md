@@ -40,7 +40,7 @@ it from two layers:
 | [`a-harness-off-the-base.json`](a-harness-off-the-base.json)                           | `PctButtonHarness` does not extend `PctHarness`                  | 1     | `set`   |
 | [`a-part-named-twice.json`](a-part-named-twice.json)                                   | `PctButtonHarness` lists `label` twice                           | 1     | `set`   |
 | [`a-selector-nobody-answers-to.json`](a-selector-nobody-answers-to.json)               | `PctButtonHarness` stands on `pct-phantom`                       | 2     | `host`  |
-| [`a-selector-wider-than-the-class.json`](a-selector-wider-than-the-class.json)         | `PctButtonHarness` also answers to `a[pctButton]`                | 2     | `host`  |
+| [`a-selector-wider-than-the-class.json`](a-selector-wider-than-the-class.json)         | `PctButtonHarness` also answers to `span[pctButton]`             | 2     | `host`  |
 | [`two-harnesses-for-one-class.json`](two-harnesses-for-one-class.json)                 | a second harness answers to `button[pctButton]`                  | 2     | `host`  |
 | [`a-class-the-package-lost.json`](a-class-the-package-lost.json)                       | `PctButton` is gone from the package and its harness stays       | 2     | `host`  |
 | [`a-class-with-no-harness.json`](a-class-with-no-harness.json)                         | `PctChip` draws two parts and has no harness                     | 3     | `every` |

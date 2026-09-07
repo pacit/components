@@ -57,7 +57,9 @@ lessons log is.
 
 - The hero CTAs are `<button routerLink>`: `pctButton` dresses `button[pctButton]` only,
   and an anchor wearing the button's faces is **library work** at the full regime —
-  named in the plan (4.33), not smuggled into the site.
+  named in the plan (4.33), not smuggled into the site. _Paid off on 2026-09-07:
+  [0071](0071-a-link-in-button-s-clothes-is-a-link.md) widened the selector and the two CTAs
+  are anchors._
 - The shiki theme switch (`[data-theme='dark'] … !important`) mirrors the token system's
   two conditions but not a light island nested inside a dark scope; no page nests themes
   around code today, and the day one does, the switch needs the island's third rule.

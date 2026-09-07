@@ -1,7 +1,9 @@
 import {
+  ApplicationRef,
   Component,
   input,
   provideZonelessChangeDetection,
+  signal,
 } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { providePctConfig } from '@pacit/components/core';
@@ -34,6 +36,37 @@ class StateHost {
   template: `<button pctButton>Save</button>`,
 })
 class BareHost {}
+
+/**
+ * The other element the face is allowed on: a real `<a href>`, with the consumer's own
+ * click handler beside the library's, because what a disabled link must refuse is not only
+ * the navigation but that handler too (0071).
+ */
+@Component({
+  imports: [PctButton],
+  template: `<a
+    pctButton
+    href="/start"
+    [variant]="variant()"
+    [loading]="loading()"
+    [disabled]="disabled()"
+    (click)="presses.set(presses() + 1)"
+    >Get started</a
+  >`,
+})
+class LinkHost {
+  variant = input<PctButtonVariant>('solid');
+  loading = input(false);
+  disabled = input(false);
+  readonly presses = signal(0);
+}
+
+// The one shape the dev-mode sentence is about: painted like a button, and nowhere to go.
+@Component({
+  imports: [PctButton],
+  template: `<a pctButton>Get started</a>`,
+})
+class HrefLessHost {}
 
 const btnOf = (f: ComponentFixture<unknown>) =>
   f.nativeElement.querySelector('button') as HTMLButtonElement;
@@ -124,5 +157,116 @@ describe('PctButton', () => {
     });
     const btn = await stableBare();
     expect(btn.getAttribute('data-pct-size')).toBe('lg');
+  });
+});
+
+/**
+ * The same component, the other element. What is measured here is only what differs — the
+ * state that has no platform mechanism behind it, and the refusal written in its place
+ * ([0071](../../../../docs/decisions/0071-a-link-in-button-s-clothes-is-a-link.md)). The
+ * paint is the button's and is measured there.
+ */
+describe('PctButton — the same face on a link', () => {
+  const linkOf = (f: ComponentFixture<unknown>) =>
+    f.nativeElement.querySelector('a') as HTMLAnchorElement;
+
+  /** A spy that keeps the dev-mode sentence out of the run's output and readable in a case. */
+  const warnings = () =>
+    vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+  async function linkHost(inputs: Record<string, unknown> = {}) {
+    const fixture = TestBed.createComponent(LinkHost);
+    for (const [k, v] of Object.entries(inputs))
+      fixture.componentRef.setInput(k, v);
+    fixture.detectChanges();
+    await TestBed.inject(ApplicationRef).whenStable();
+    return { fixture, link: linkOf(fixture) };
+  }
+
+  /** A click a listener can refuse — `cancelable`, as a real press is. */
+  const press = (el: HTMLElement) => {
+    const event = new MouseEvent('click', { bubbles: true, cancelable: true });
+    el.dispatchEvent(event);
+    return event;
+  };
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [provideZonelessChangeDetection()],
+    });
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('is still a link: the tag, the href and no role written over it', async () => {
+    const { link } = await linkHost();
+    expect(link.tagName).toBe('A');
+    expect(link.getAttribute('role')).toBeNull();
+    expect(link.getAttribute('href')).toBe('/start');
+    expect(link.classList.contains('pct-button')).toBe(true);
+    expect(link.getAttribute('data-pct-variant')).toBe('solid');
+    expect(link.getAttribute('data-pct-size')).toBe('md');
+  });
+
+  it('a disabled link says so where a link can — and not with an attribute it has no use for', async () => {
+    const { link } = await linkHost({ disabled: true });
+    expect(link.getAttribute('aria-disabled')).toBe('true');
+    expect(link.hasAttribute('disabled')).toBe(false);
+    // The stylesheet's own hook, written on both elements so the sheet needs no tag.
+    expect(link.hasAttribute('data-pct-disabled')).toBe(true);
+  });
+
+  it("a click on a disabled link is refused, and so is the consumer's own handler", async () => {
+    const { fixture, link } = await linkHost({ disabled: true });
+    const event = press(link);
+    expect(event.defaultPrevented).toBe(true);
+    expect(fixture.componentInstance.presses()).toBe(0);
+  });
+
+  it('and it is refused from the label too — where a real press lands', async () => {
+    const { fixture, link } = await linkHost({ disabled: true });
+    const label = link.querySelector(
+      '[data-pct-part="label"]',
+    ) as HTMLElement | null;
+    expect(label).not.toBeNull();
+
+    const event = press(label as HTMLElement);
+
+    expect(event.defaultPrevented).toBe(true);
+    expect(fixture.componentInstance.presses()).toBe(0);
+  });
+
+  it('loading refuses the navigation too, and says the link is working', async () => {
+    const { fixture, link } = await linkHost({ loading: true });
+    expect(link.getAttribute('aria-busy')).toBe('true');
+    expect(link.querySelector('[data-pct-part="spinner"]')).toBeTruthy();
+    expect(press(link).defaultPrevented).toBe(true);
+    expect(fixture.componentInstance.presses()).toBe(0);
+  });
+
+  it("an enabled link is left alone — the navigation is the platform's", async () => {
+    const { fixture, link } = await linkHost();
+    expect(press(link).defaultPrevented).toBe(false);
+    expect(fixture.componentInstance.presses()).toBe(1);
+    expect(link.getAttribute('aria-disabled')).toBeNull();
+  });
+
+  it('a link with nowhere to go is reported once, in dev mode', async () => {
+    const warn = warnings();
+    const fixture = TestBed.createComponent(HrefLessHost);
+    fixture.detectChanges();
+    await TestBed.inject(ApplicationRef).whenStable();
+
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0][0]).toContain('[pctButton]');
+    expect(warn.mock.calls[0][0]).toContain('no href');
+  });
+
+  it('a link that has somewhere to go is not', async () => {
+    const warn = warnings();
+    await linkHost();
+    expect(warn).not.toHaveBeenCalled();
   });
 });

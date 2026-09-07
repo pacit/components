@@ -4425,3 +4425,28 @@ on the text, so a stage that blanks something keeps its layer (`opacity`) rather
 alone (`visibility`) — and a red card in a column the change never touched is read as
 antialiasing before it is read as a regression.** The diff image tells the two apart: a
 regression moves shapes, antialiasing colours edges.
+
+### <a id="lesson-166"></a>`lesson-166` — A host listener cannot get in front of the consumer's own, and a disabled link needs it to
+
+`PctButton` grew a second tag (`a[pctButton]`, plan 4.33) and with it the one state a link has
+no platform mechanism for: `disabled`. The first version wrote the refusal the obvious way — a
+`(click)` in the component's `host` block calling `preventDefault()` and
+`stopImmediatePropagation()`, which is what a disabled button gets from the browser for free.
+The navigation was refused, and the consumer's own handler on the same element ran anyway: a
+case pressing `<a pctButton disabled (click)="…">` counted one press where it expected none.
+`stopImmediatePropagation` was not too weak, it was too late — for an event whose target IS
+the element, every listener on it runs in **registration order regardless of the capture
+flag**, and the template's `(click)` is registered before the directive's host listener.
+
+What answers it is two properties at once, and neither alone: the listener is attached in the
+component's constructor, when the directive is instantiated and therefore before the
+template's listener instruction runs, and it listens in the **capture** phase, which is what
+gets in front for the other half of the problem — a real press lands on the projected label,
+not on the element, and there the capture phase precedes the target phase outright. Both are
+measured: one case presses the host, one presses the part.
+
+The rule: **a host listener is not a way to pre-empt the consumer's listener on the same
+element — `stopImmediatePropagation` from it is a coin toss decided by registration order —
+and a component that must refuse an interaction on the consumer's behalf attaches its own
+capture listener at construction and proves it with a press on the element and a press on
+what it projects.**

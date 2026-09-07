@@ -130,12 +130,12 @@ and pairs have gates of their own; the promises they answer for are in
 The contract, keyboard map and known limits of each are in
 [docs/components/](docs/components/README.md).
 
-`PctButton` (`@pacit/components/button`) — an attribute selector on a native `<button>`, variants
-`solid|outline`, sizes `sm|md|lg`, states `disabled`/`loading`. State is exposed as `data-pct-*`,
-inner elements as `data-pct-part`.
+`PctButton` (`@pacit/components/button`) — an attribute selector on a native `<button>` or on a
+native `<a>`, variants `solid|outline|ghost|soft|hero`, sizes `sm|md|lg`, states
+`disabled`/`loading`. State is exposed as `data-pct-*`, inner elements as `data-pct-part`.
 
 ```html
-<button pctButton variant="outline" size="lg">Save</button>
+<button pctButton variant="outline" size="lg">Save</button> <a pctButton href="/start">Get started</a>
 ```
 
 `PctField` (`@pacit/components/field`) — the **field wrapper**: label, hint, error message,

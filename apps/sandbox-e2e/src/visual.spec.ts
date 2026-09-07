@@ -93,6 +93,7 @@ const CARDS: ReadonlyArray<
   ['/button', 'demo-variants', 'button-variants'],
   ['/button', 'demo-sizes', 'button-sizes'],
   ['/button', 'demo-states', 'button-states'],
+  ['/button', 'demo-links', 'button-links'],
   ['/button', 'demo-dark', 'button-dark-card'],
   ['/field', 'demo-basics', 'field-basics'],
   ['/field', 'demo-affix', 'field-affixes'],

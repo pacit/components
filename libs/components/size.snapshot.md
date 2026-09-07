@@ -34,7 +34,7 @@ before an application ships them.
 ./avatar 8609 ./core,./icon @angular/common,@angular/core
 ./badge 1706 - @angular/core
 ./breadcrumb 9202 ./core,./icon @angular/common,@angular/core
-./button 8597 ./core @angular/core
+./button 9669 ./core @angular/core
 ./checkbox 14964 ./core,./icon @angular/common,@angular/core
 ./chips 10708 ./core,./icon @angular/common,@angular/core
 ./container 717 - @angular/core
@@ -57,7 +57,7 @@ before an application ships them.
 ./stepper 10686 ./core,./icon @angular/common,@angular/core
 ./switch 12503 ./core @angular/core
 ./tabs 16173 ./core @angular/core
-./testing 8012 - @angular/cdk/testing
+./testing 8026 - @angular/cdk/testing
 ./theme 518 - @angular/core
 ./toast 15901 ./core,./icon @angular/common,@angular/core
 ./tooltip 13274 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core

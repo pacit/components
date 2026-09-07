@@ -69,9 +69,9 @@ export class PctCrumbLinkHarness extends PctHarness<never> {
 
 // ── @pacit/components/button ────────────────────────────────────────────────────
 
-/** `button[pctButton]` — `PctButton`. */
+/** `button[pctButton], a[pctButton]` — `PctButton`. */
 export class PctButtonHarness extends PctHarness<'label' | 'spinner'> {
-  static hostSelector = 'button[pctButton]';
+  static hostSelector = 'button[pctButton], a[pctButton]';
   static override readonly parts = ['label', 'spinner'] as const;
 }
 

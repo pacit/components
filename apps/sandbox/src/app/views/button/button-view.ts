@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { PctButton } from '@pacit/components/button';
 import { SbxDemo } from '../../ui/demo';
 
@@ -9,7 +10,7 @@ import { SbxDemo } from '../../ui/demo';
  */
 @Component({
   selector: 'sbx-button-view',
-  imports: [PctButton, SbxDemo],
+  imports: [PctButton, RouterLink, SbxDemo],
   templateUrl: './button-view.html',
   styleUrl: './button-view.scss',
 })

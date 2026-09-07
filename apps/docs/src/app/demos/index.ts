@@ -60,6 +60,10 @@ export const EXAMPLES: Readonly<Record<string, readonly DocsExample[]>> = {
       load: () => import('./button.faces.demo').then((m) => m.ButtonFacesDemo),
     },
     {
+      key: 'link',
+      load: () => import('./button.link.demo').then((m) => m.ButtonLinkDemo),
+    },
+    {
       key: 'sizes',
       load: () => import('./button.sizes.demo').then((m) => m.ButtonSizesDemo),
     },

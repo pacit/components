@@ -89,12 +89,15 @@ does not pay for a select. The primary entrypoint carries configuration only.
 ### Button
 
 An attribute selector on a native `<button>` — the element keeps its type, its form behaviour
-and its keyboard handling.
+and its keyboard handling — or on a native `<a>` when the control navigates, which keeps its
+role, its middle click and its place in a crawler's index.
 
 ```html
 <button pctButton variant="outline" size="lg">Save</button>
 
 <button pctButton [loading]="saving()">Save</button>
+
+<a pctButton variant="hero" href="/start">Get started</a>
 ```
 
 `variant` is `solid | outline`, `size` is `sm | md | lg`, and `disabled` / `loading` are boolean

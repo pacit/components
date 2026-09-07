@@ -20,9 +20,10 @@
         at build time.
       </p>
       <div class="hero__cta">
-        <!-- Buttons, not anchors: pctButton dresses `<button>` only today, and routerLink
-             navigates it — the a[pctButton] face is named library work (plan 4.33). -->
-        <button
+        <!-- Anchors, because that is what these are: both go somewhere, so both keep the
+             middle click, the address bar's preview and a crawler's road through the site
+             (0071, plan 4.33). -->
+        <a
           pctButton
           variant="hero"
           size="lg"
@@ -30,10 +31,10 @@
           data-testid="cta-hero"
         >
           Get started
-        </button>
-        <button pctButton variant="outline" size="lg" routerLink="/components">
+        </a>
+        <a pctButton variant="outline" size="lg" routerLink="/components">
           Browse components
-        </button>
+        </a>
       </div>
       <div class="hero__install">
         <code data-testid="install-line">{{ install }}</code>

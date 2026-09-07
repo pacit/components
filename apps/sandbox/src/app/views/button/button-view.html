@@ -1,7 +1,8 @@
 <h2 class="view__title">Button</h2>
 <p class="muted view__intro">
-  An attribute selector on a native <code>&lt;button&gt;</code> — the semantics,
-  the keyboard and the focus come from the browser.
+  An attribute selector on a native <code>&lt;button&gt;</code>, or on a native
+  <code>&lt;a&gt;</code> when the control navigates — the semantics, the
+  keyboard and the focus come from the browser either way.
 </p>
 
 <sbx-demo
@@ -93,6 +94,47 @@
     </button>
     <button pctButton variant="outline" [size]="states.activeSize()" loading>
       Outline loading
+    </button>
+  </div>
+</sbx-demo>
+
+<sbx-demo
+  #links
+  heading="Links"
+  summary="The same face on a native <a>: a link keeps its role, its middle-click and its place in a crawler's index — only the underline goes, because the button face carries its own hover."
+  [reqs]="['req-api-platform', 'req-a11y-built-in']"
+  data-testid="demo-links"
+>
+  <div class="row">
+    <a
+      pctButton
+      href="/select"
+      [size]="links.activeSize()"
+      data-testid="link-solid"
+    >
+      Get started
+    </a>
+    <a
+      pctButton
+      variant="hero"
+      href="/tabs"
+      [size]="links.activeSize()"
+      data-testid="link-hero"
+    >
+      Hero link
+    </a>
+    <a
+      pctButton
+      variant="outline"
+      routerLink="/select"
+      [size]="links.activeSize()"
+      disabled
+      data-testid="link-disabled"
+    >
+      Disabled link
+    </a>
+    <button pctButton [size]="links.activeSize()" data-testid="link-twin">
+      Get started
     </button>
   </div>
 </sbx-demo>
