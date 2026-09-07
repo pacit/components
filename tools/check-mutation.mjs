@@ -166,6 +166,17 @@ score: a mutant that took the run down with it stated nothing about the tests. I
 column because without one the arithmetic of a row that has any does not work, and a reader
 checking it finds a mistake that is not one.
 
+**What a score is a true statement about.** This file measures \`.ts\`, and only \`.ts\`. A
+component that borrows more from the platform than it writes has most of itself in a template
+and a stylesheet, where no mutant is ever thrown: \`accordion-item.ts\` and \`accordion.ts\` are
+74 lines between them, 20 mutants, and the exclusive group, the disclosure state, the keyboard
+and the searchability of a closed section are all outside the two files this run reads. A green
+95% there is true about a small thing and reads like a statement about a component. What
+answers for the other half is a **recorded disarming** — every mechanism taken out by hand and
+the case that turned red written into the card, the way \`docs/components/accordion.md\` does it
+(plan 4.19). A mutator over templates was refused: it is machinery this repository would then
+own, and the disarming is a measurement anybody can repeat with an editor.
+
 Columns: file · score · killed (of that, by the clock) · surviving · errored · not covered ·
 ignored. The score follows from them — \`killed / (killed + surviving + errored + not
 covered)\` — and the gate checks that it does. Tolerance: ±%TOLERANCE% of a percentage point.

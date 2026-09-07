@@ -4697,3 +4697,41 @@ The rule to carry: **a `providers` array is a public cost, not a private conveni
 the difference between a consumer paying for the tag they wrote and paying for every tag the
 entrypoint has, and in the select's case that is 24458 B for a dev-mode message about a slot
 in the wrong place.
+
+---
+
+### <a id="lesson-174"></a>`lesson-174` — Twelve mechanisms taken out one at a time: what a suite holds is not what its case names say
+
+4.19 asked what measures a component whose implementation is a browser. The accordion is 74
+lines of TypeScript and a template, a stylesheet and `<details>`; the mutation run reads the 74
+lines and nothing else, so its 95% is a true statement about a small thing that reads like a
+statement about a component. The answer the item decided on — a recorded disarming per claim —
+was carried out, and it is worth its own entry for what the readings said rather than for the
+practice.
+
+**Twelve mechanisms, disarmed one at a time, the suite run over each hole.** Eight of the
+twelve are in the template or the stylesheet, where no mutant is ever thrown. Ten turned a case
+red; two are held by the unit suite alone, and one is held by nothing that names it.
+
+**The one that is held by nothing: the touch-target floor.** The card said "every heading row's
+box measured outright; the floor is `--pct-accordion-heading-target-min` on the row itself".
+Take the floor out and the case stays green — the padding clears 24 px without help. The case
+is not wrong and the promise is kept; what the sentence implied, that this case is what keeps
+the floor honest, is not true, and only the disarming could say so. **A green case names a
+promise, not a mechanism**, and the two are told apart by taking the mechanism away.
+
+**The two that only the unit suite holds** are both places where the platform does the work
+anyway: `onToggle` writing the element's state back through the two-way binding — every browser
+case presses and then reads the ELEMENT, which the platform updates whether we listen or not —
+and the generated group name, because a second accordion on one page is a thing no sandbox view
+draws.
+
+**And the readings that came out exactly as the card said** are the cheap half of the value:
+the exclusive `name`, the heading level, `preventDefault()` on a refused press, `aria-disabled`
+beside it, `[open]`, the marker's place in an RTL row, the platform's triangle taken away, and
+two lines of the forced-colours block — each of them turned a named case red, and the case's
+name is now written next to the line that holds it.
+
+The practice, cheap enough to repeat: an editor, a dev server, one spec file and the unit
+suite. It is not a tool, it is not machinery this repository has to own, and it is the only
+thing that has ever said which of a component's cases are load-bearing.

@@ -2181,7 +2181,7 @@ and to no other` has announced on the assertive channel since the announcer was 
     read `placement.ts 64(6) → 64(7)` over untouched code — 4.2's wobble in the clock
     column with the arithmetic cancelling, on schedule
 
-- [ ] **4.19 — a component that is mostly the platform has almost nothing a mutation run can
+- [x] **4.19 — a component that is mostly the platform has almost nothing a mutation run can
       hold**
   - `accordion.ts` and `accordion-item.ts` are **74 lines of code between them** and the rest
     is a template and a stylesheet. What that buys is written down
@@ -2217,6 +2217,27 @@ and to no other` has announced on the assertive channel since the announcer was 
     the result in the card. No new tool is built — a mutator over templates is refused
     as machinery this repository would then own and maintain — and the snapshot's header
     says what a score over 74 lines is a true statement about
+  - **done (2026-09-07): twelve mechanisms disarmed one at a time, and the readings are in
+    the card.** Every line the accordion actually writes was taken out by hand, the suite run
+    over the hole, and what turned red written into a `## Negative controls` table of
+    `docs/components/accordion.md` — mechanism, file, how it was disarmed, the case by name.
+    Eight of the twelve are in the template or the stylesheet, where no mutant is ever thrown
+  - ten turned a named case red. Two are held by the **unit suite alone**, and both for the
+    same reason: `onToggle` writing the platform's state back (every browser case presses and
+    then reads the ELEMENT, which the platform updates whether we listen or not) and the
+    generated group name (a second accordion on one page is a thing no sandbox view draws)
+  - **one is held by nothing that names it**, and only the disarming could say so. The card
+    read "every heading row's box measured outright; the floor is
+    `--pct-accordion-heading-target-min` on the row itself" — take the floor out and the 24 px
+    case stays green, because the padding clears 24 px without help. The case holds the
+    PROMISE and not this line; the card now says that, and 4.44 is opened for the shape
+  - the mutation snapshot's header now says what a score over 74 lines is a true statement
+    about, and names the disarming as what answers for the other half
+    ([`lesson-174`](lessons.md#lesson-174))
+  - what the readings do NOT say: they were taken in **chromium**, so a mechanism held only by
+    gecko or webkit reads the same as one held by nothing. And nothing disarms the platform —
+    the press, `Enter`, the tab stop, find-in-page — because there is no line of ours to take
+    out, which is the whole of 0046
 
 - [x] **4.20 — the list of what the platform makes focusable is written by hand, and nobody
       counts what is missing**
@@ -3192,6 +3213,23 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     dev-only one is the select's
   - binds at: **the next component that adds `providers` for a dev-mode report**, or the
     first consumer who reads the size snapshot's second block and asks · _notes:_ —
+
+- [ ] **4.44 — a floor the case above it does not stand on**
+  - found by 4.19's disarming: `--pct-accordion-heading-target-min` is a `min-block-size` on
+    the heading row, and the e2e case that measures the row at 24 px stays **green with the
+    floor removed** — the padding clears 24 px on its own. The promise (`req-a11y-touch`) is
+    kept and measured; the mechanism named beside it is not what keeps it
+  - what makes it more than a wording fix: the floor is the line that survives a **skin**. A
+    consumer who sets `--pct-accordion-heading-padding-y` to `0` gets a row that is 24 px
+    because of the token, and nothing in the suite would notice if the token stopped working.
+    The same shape stands wherever a `*-target-min` token does — the tabs, the pagination, the
+    chips — and none of those has been disarmed yet
+  - the roads: a case that renders the component with the padding tokens at zero and reads the
+    box (a demo of its own, or a page-level style in the spec); a `check-styles` point that
+    the target token is used by every control that claims the criterion; or the honest
+    minimum, which is already done — the card says what its case really holds
+  - binds at: **the second component whose disarming finds the same hole**, or the first skin
+    that sets a padding token to zero · _notes:_ —
 
 ## 5. Gaps with no deadline
 
