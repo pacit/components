@@ -4735,3 +4735,40 @@ name is now written next to the line that holds it.
 The practice, cheap enough to repeat: an editor, a dev server, one spec file and the unit
 suite. It is not a tool, it is not machinery this repository has to own, and it is the only
 thing that has ever said which of a component's cases are load-bearing.
+
+---
+
+### <a id="lesson-175"></a>`lesson-175` — The four criteria nobody measured: three defects, and two of them belonged to the harness
+
+Four rows of the conformance report said _Not Evaluated_ — 1.4.4 Resize Text, 1.4.10 Reflow,
+1.4.12 Text Spacing, 2.4.11 Focus Not Obscured — for one reason: **every measurement this suite
+takes is taken at the size the author chose.** The visual baselines run at one desktop
+viewport, the geometry cases measure boxes at that same width, and the axe audit resizes
+nothing. Four criteria about a reader changing the page had, between them, no case at all.
+
+The spec that fills them (`adaptation.spec.ts`) is one afternoon's work and its first run was
+red on one of the four. Nine of the thirty-five views scrolled sideways at 320 px, and the
+causes are worth keeping apart:
+
+- **`align-items: flex-start` on a container that becomes a column.** In a row it means "do not
+  stretch to my height", which is what the sandbox's shell wanted; the mobile breakpoint turns
+  the same container into a column, where the identical line means "be as wide as your own
+  content". One word, `stretch`, and seven of the nine views were fixed.
+- **`minmax(280px, 1fr)`.** A track floor wider than the window is a track wider than the
+  window. `minmax(min(280px, 100%), 1fr)` is the whole repair.
+- **A component with no `min-width: 0`.** `pct-field` is a flex item, and a flex item's
+  automatic minimum is its content's min-content size — for a field that is the native input's
+  own twenty-character intrinsic width, measured at 282 px. The control and the message inside
+  the field already carried the line; the field itself did not, so it pushed the page sideways
+  instead of shrinking. That one is the library's, and it is the only one a consumer would have
+  hit too.
+
+Two of the three defects were the harness rather than the library, which is the part worth
+remembering: **a reflow gate over an application measures the application first.** It is still
+the right place for it — a component library cannot reflow a page it does not lay out — but a
+red run has to be read twice before anything in `libs/` is touched.
+
+And the three criteria that passed on the first run are worth as much as the one that did not.
+They were claimed by nobody until the day the spec was written: a row that says _Not Evaluated_
+is not a row that is failing, it is a row where nobody knows, and the difference is what a
+conformance report exists to state.

@@ -16,8 +16,14 @@
       "conformance": "Supports",
       "remarks": "The library draws no image that carries meaning on its own. Icons stand inside `<pct-icon>` with `aria-hidden` and take their meaning from the control that holds them; a control's accessible name is written on the tag the consumer types and forwarded to the element that carries the role, so a name is never written where nothing reads it. The words of a name are the consumer's.",
       "evidence": [
-        { "gate": "tools/check-aria.mjs", "points": [2, 3, 4] },
-        { "gate": "tools/check-icons.mjs", "points": [2, 3] },
+        {
+          "gate": "tools/check-aria.mjs",
+          "points": [2, 3, 4]
+        },
+        {
+          "gate": "tools/check-icons.mjs",
+          "points": [2, 3]
+        },
         {
           "source": "libs/components/icon/src/icon.ts",
           "says": "'aria-hidden': 'true'"
@@ -26,45 +32,70 @@
           "spec": "apps/sandbox-e2e/src/a11y.spec.ts",
           "titles": ["the ${path} view has no violations"]
         },
-        { "req": "req-a11y-built-in" }
+        {
+          "req": "req-a11y-built-in"
+        }
       ]
     },
     {
       "id": "1.2.1",
       "conformance": "Not Applicable",
       "remarks": "No component renders audio or video: the templates hold no `<audio>` and no `<video>` element, and the gate scans them for one on every run.",
-      "evidence": [{ "scan": "no-media-elements" }]
+      "evidence": [
+        {
+          "scan": "no-media-elements"
+        }
+      ]
     },
     {
       "id": "1.2.2",
       "conformance": "Not Applicable",
       "remarks": "No media, so nothing to caption — the same scan as 1.2.1.",
-      "evidence": [{ "scan": "no-media-elements" }]
+      "evidence": [
+        {
+          "scan": "no-media-elements"
+        }
+      ]
     },
     {
       "id": "1.2.3",
       "conformance": "Not Applicable",
       "remarks": "No media, so nothing to describe — the same scan as 1.2.1.",
-      "evidence": [{ "scan": "no-media-elements" }]
+      "evidence": [
+        {
+          "scan": "no-media-elements"
+        }
+      ]
     },
     {
       "id": "1.2.4",
       "conformance": "Not Applicable",
       "remarks": "No media, live or recorded — the same scan as 1.2.1.",
-      "evidence": [{ "scan": "no-media-elements" }]
+      "evidence": [
+        {
+          "scan": "no-media-elements"
+        }
+      ]
     },
     {
       "id": "1.2.5",
       "conformance": "Not Applicable",
       "remarks": "No media — the same scan as 1.2.1.",
-      "evidence": [{ "scan": "no-media-elements" }]
+      "evidence": [
+        {
+          "scan": "no-media-elements"
+        }
+      ]
     },
     {
       "id": "1.3.1",
       "conformance": "Supports",
       "remarks": "A label reaches its control through `for` or `aria-labelledby`, a hint and an error through `aria-describedby`, a group through its role and its name — the wiring is the library's and gated, the text is the consumer's. The one relation that was known wrong — an empty `pct-select` panel rendering a `role=\"listbox\"` that owned no `role=\"option\"`, which axe rates critical — was repaired on 2026-09-06: the panel is a surface, the listbox is the list inside it, and the empty panel is a scene of the audit in its own right.",
       "evidence": [
-        { "gate": "tools/check-aria.mjs", "points": [3, 4, 6] },
+        {
+          "gate": "tools/check-aria.mjs",
+          "points": [3, 4, 6]
+        },
         {
           "spec": "apps/sandbox-e2e/src/a11y.spec.ts",
           "titles": [
@@ -79,7 +110,9 @@
             "the wrapper renders the validation error and binds it to the control"
           ]
         },
-        { "req": "req-a11y-built-in" }
+        {
+          "req": "req-a11y-built-in"
+        }
       ]
     },
     {
@@ -87,7 +120,10 @@
       "conformance": "Supports",
       "remarks": "Reading order is DOM order. No stylesheet names a physical side of the inline axis, so nothing is moved somewhere the DOM does not say, and the right-to-left direction is measured rather than assumed.",
       "evidence": [
-        { "gate": "tools/check-styles.mjs", "points": [5] },
+        {
+          "gate": "tools/check-styles.mjs",
+          "points": [5]
+        },
         {
           "spec": "apps/sandbox-e2e/src/rtl.spec.ts",
           "titles": [
@@ -102,26 +138,41 @@
       "conformance": "Supports",
       "remarks": "The library's own sentences come through `PCT_TEXTS` — every one of them, the gate refuses a literal in a template — and none names a shape, a size, a position or a sound. Instructions around a component are the consumer's.",
       "evidence": [
-        { "gate": "tools/check-texts.mjs", "points": [3, 5] },
-        { "cards": "Strings through" }
+        {
+          "gate": "tools/check-texts.mjs",
+          "points": [3, 5]
+        },
+        {
+          "cards": "Strings through"
+        }
       ]
     },
     {
       "id": "1.3.4",
       "conformance": "Supports",
       "remarks": "No stylesheet reads the orientation; the components lay out the same either way. The gate scans every stylesheet for an `orientation` media feature.",
-      "evidence": [{ "scan": "no-orientation-lock" }]
+      "evidence": [
+        {
+          "scan": "no-orientation-lock"
+        }
+      ]
     },
     {
       "id": "1.3.5",
-      "conformance": "Partially Supports",
-      "remarks": "The text and date fields are the native `<input>` the consumer writes, so an `autocomplete` purpose written on the tag stays on the element. The number field writes `autocomplete=\"off\"` on its own input, so a numeric purpose from the list (`bday-day`, `bday-year`) cannot be declared on it (finding 4.37).",
+      "conformance": "Supports",
+      "remarks": "The text and date fields are the native `<input>` the consumer writes, so an `autocomplete` purpose written on the tag stays on the element. The number field writes `autocomplete=\"off\"` by default — a browser's formatted string is a value its parser refuses — and takes an `autocomplete` input typed as the platform's own `AutoFill`, so the three numeric purposes on the criterion's list (`bday-day`, `bday-month`, `bday-year`) can be declared on it.",
       "evidence": [
         {
-          "source": "libs/components/field/src/number.ts",
-          "says": "autocomplete: 'off'"
+          "spec": "libs/components/field/src/number.spec.ts",
+          "titles": [
+            "refuses autofill until a consumer asks for it",
+            "takes the purpose a consumer declares"
+          ]
         },
-        { "finding": "4.37" }
+        {
+          "source": "libs/components/field/src/number.ts",
+          "says": "readonly autocomplete = input<AutoFill>('off');"
+        }
       ]
     },
     {
@@ -129,29 +180,43 @@
       "conformance": "Supports",
       "remarks": "No state is carried by colour alone: forced colours strip every author colour and the suite reads each state back through position, text or the system palette; an error is a sentence in an alert, not a red edge; the chosen tab, the checked box and the current page each carry an attribute.",
       "evidence": [
-        { "cards": "forced-colors: active" },
+        {
+          "cards": "forced-colors: active"
+        },
         {
           "spec": "apps/sandbox-e2e/src/forced-colors.spec.ts",
           "titles": [
             "the switch carries its state in the thumb’s position, not in a colour"
           ]
         },
-        { "gate": "tools/check-styles.mjs", "points": [7] },
-        { "req": "req-a11y-forced-colors" }
+        {
+          "gate": "tools/check-styles.mjs",
+          "points": [7]
+        },
+        {
+          "req": "req-a11y-forced-colors"
+        }
       ]
     },
     {
       "id": "1.4.2",
       "conformance": "Not Applicable",
       "remarks": "Nothing plays sound — the same scan as 1.2.1.",
-      "evidence": [{ "scan": "no-media-elements" }]
+      "evidence": [
+        {
+          "scan": "no-media-elements"
+        }
+      ]
     },
     {
       "id": "1.4.3",
       "conformance": "Supports",
       "remarks": "Every colour a stylesheet paints stands as a foreground/background pair in the contrast policy, measured on every token build for both themes at 4.5:1 for text and 3:1 for large text; axe measures the composed DOM again, in three engines, every view.",
       "evidence": [
-        { "gate": "tools/check-tokens.mjs", "points": [7] },
+        {
+          "gate": "tools/check-tokens.mjs",
+          "points": [7]
+        },
         {
           "source": "libs/tokens/src/contrast.policy.json",
           "says": "\"level\": \"AA\""
@@ -160,33 +225,56 @@
           "spec": "apps/sandbox-e2e/src/a11y.spec.ts",
           "titles": ["a card with a dark stage has no violations"]
         },
-        { "req": "req-token-contrast" }
+        {
+          "req": "req-token-contrast"
+        }
       ]
     },
     {
       "id": "1.4.4",
-      "conformance": "Not Evaluated",
-      "remarks": "No gate renders a view at 200 % text size and reads the result; until one does the report says nothing here (finding 4.37).",
-      "evidence": [{ "finding": "4.37" }]
+      "conformance": "Supports",
+      "remarks": "Every component of the library stands on one page (`/all`) with the root font size doubled, and no box that clips is left with content outside it. Text alone is enlarged rather than the page zoomed — zoom scales the layout with the text and would measure nothing.",
+      "evidence": [
+        {
+          "spec": "apps/sandbox-e2e/src/adaptation.spec.ts",
+          "titles": ["text at 200 % cuts nothing off"]
+        }
+      ]
     },
     {
       "id": "1.4.5",
       "conformance": "Not Applicable",
       "remarks": "The library ships no image of text: icons are glyph drawings without a `<text>` element, and every word is live text. The gate scans the templates and the drawings for one.",
-      "evidence": [{ "scan": "no-svg-text" }]
+      "evidence": [
+        {
+          "scan": "no-svg-text"
+        }
+      ]
     },
     {
       "id": "1.4.10",
-      "conformance": "Not Evaluated",
-      "remarks": "No gate lays a view out at a 320 px width; the visual baselines run at one desktop viewport (finding 4.37).",
-      "evidence": [{ "finding": "4.37" }]
+      "conformance": "Supports",
+      "remarks": "All thirty-five sandbox views laid out at 320 CSS pixels, one case each, in three engines: the document may not be scrolled on the inline axis at all. Two harness defects and one library one came out of the first run — a column of flex items sized to their own content, a grid track with a 280 px floor, and a field whose automatic minimum was the native input's twenty-character intrinsic width; `pct-field` now carries `min-width: 0` so it shrinks instead of pushing the page sideways.",
+      "evidence": [
+        {
+          "spec": "apps/sandbox-e2e/src/adaptation.spec.ts",
+          "titles": ["lays out at 320 px with nothing to scroll sideways"]
+        },
+        {
+          "source": "libs/components/field/src/field.scss",
+          "says": "min-width: 0;"
+        }
+      ]
     },
     {
       "id": "1.4.11",
       "conformance": "Supports",
       "remarks": "Borders, the focus ring and the states of the controls are `UI` pairs in the same contrast policy as the text, held at 3:1 in both themes on every token build.",
       "evidence": [
-        { "gate": "tools/check-tokens.mjs", "points": [7] },
+        {
+          "gate": "tools/check-tokens.mjs",
+          "points": [7]
+        },
         {
           "source": "libs/tokens/src/contrast.policy.json",
           "says": "UI: focus ring"
@@ -195,9 +283,14 @@
     },
     {
       "id": "1.4.12",
-      "conformance": "Not Evaluated",
-      "remarks": "No gate applies the text-spacing overrides (line height 1.5, paragraph spacing 2, letter spacing 0.12 em, word spacing 0.16 em) and reads the result (finding 4.37).",
-      "evidence": [{ "finding": "4.37" }]
+      "conformance": "Supports",
+      "remarks": "The criterion's own four declarations — line height 1.5, letter spacing 0.12 em, word spacing 0.16 em, paragraph spacing 2 em — applied with `!important` over everything on the page that holds every component, with no box that clips left holding content outside it.",
+      "evidence": [
+        {
+          "spec": "apps/sandbox-e2e/src/adaptation.spec.ts",
+          "titles": ["own text spacing cuts nothing off"]
+        }
+      ]
     },
     {
       "id": "1.4.13",
@@ -219,14 +312,18 @@
       "conformance": "Supports",
       "remarks": "Every component's keyboard map is tested key by key in three engines, or its card argues why the map is empty (nothing focusable) or the platform's own (a native button).",
       "evidence": [
-        { "cards": "Keyboard map" },
+        {
+          "cards": "Keyboard map"
+        },
         {
           "spec": "apps/sandbox-e2e/src/select.spec.ts",
           "titles": [
             "the keyboard: the arrows, Home/End, Enter and aria-activedescendant"
           ]
         },
-        { "req": "req-api-platform" }
+        {
+          "req": "req-api-platform"
+        }
       ]
     },
     {
@@ -256,8 +353,13 @@
       "conformance": "Supports",
       "remarks": "The only single-character keys are the type-ahead of a list, a menu and a select, active while that component has focus and nowhere else — the exception the criterion names. No `accesskey` is written anywhere; the gate scans for one.",
       "evidence": [
-        { "scan": "no-accesskey" },
-        { "source": "libs/components/core/src/list.ts", "says": "typeahead" }
+        {
+          "scan": "no-accesskey"
+        },
+        {
+          "source": "libs/components/core/src/list.ts",
+          "says": "typeahead"
+        }
       ]
     },
     {
@@ -273,7 +375,9 @@
           "source": "libs/components/toast/src/toaster.ts",
           "says": "get paused(): boolean"
         },
-        { "decision": "0044" }
+        {
+          "decision": "0044"
+        }
       ]
     },
     {
@@ -281,7 +385,9 @@
       "conformance": "Partially Supports",
       "remarks": "Two things move on their own for longer than five seconds: the `hero` face's drifting gradient and the skeleton's sheen. Both answer `prefers-reduced-motion` through the motion axis — the gradient freezes, the sheen slows — which is the user agent's mechanism and not a control on the page; a consumer who ships the `hero` face beside text the user reads owes a pause control of their own (finding 4.37).",
       "evidence": [
-        { "cards": "prefers-reduced-motion" },
+        {
+          "cards": "prefers-reduced-motion"
+        },
         {
           "spec": "apps/sandbox-e2e/src/preferences.spec.ts",
           "titles": [
@@ -289,8 +395,13 @@
             "a skeleton’s sheen slows to the loop token and does not stop"
           ]
         },
-        { "gate": "tools/check-styles.mjs", "points": [9] },
-        { "finding": "4.37" }
+        {
+          "gate": "tools/check-styles.mjs",
+          "points": [9]
+        },
+        {
+          "finding": "4.37"
+        }
       ]
     },
     {
@@ -298,8 +409,13 @@
       "conformance": "Supports",
       "remarks": "Nothing flashes. The fastest periodic motion in the library is the spinner's turn and the sheen's loop, both far below three cycles a second, and every duration comes from the motion axis rather than from a stylesheet.",
       "evidence": [
-        { "gate": "tools/check-styles.mjs", "points": [9] },
-        { "source": "libs/tokens/src/motion.reduced.json" },
+        {
+          "gate": "tools/check-styles.mjs",
+          "points": [9]
+        },
+        {
+          "source": "libs/tokens/src/motion.reduced.json"
+        },
         {
           "spec": "apps/sandbox-e2e/src/preferences.spec.ts",
           "titles": [
@@ -334,7 +450,9 @@
       "conformance": "Supports",
       "remarks": "Focus order is DOM order: no positive `tabindex` anywhere (scanned), a dialog takes focus on open and gives it back on close, a menu and a popover return it to their trigger. A toast's action stands at the end of the document because the stack is a child of `body` — reachable, and far; 4.16 in the plan keeps that walk in view.",
       "evidence": [
-        { "scan": "no-positive-tabindex" },
+        {
+          "scan": "no-positive-tabindex"
+        },
         {
           "spec": "apps/sandbox-e2e/src/dialog.spec.ts",
           "titles": ["it takes focus on open and gives it back on close"]
@@ -371,7 +489,9 @@
             "the current page is announced as current, and only one is"
           ]
         },
-        { "cards": "Strings through" }
+        {
+          "cards": "Strings through"
+        }
       ]
     },
     {
@@ -385,7 +505,10 @@
       "conformance": "Supports",
       "remarks": "A dialog is named by its heading, a field by its label, a group by its legend — wired by the library, worded by the consumer; the gate refuses a name written where nothing reads it.",
       "evidence": [
-        { "gate": "tools/check-aria.mjs", "points": [2, 3, 4, 5] },
+        {
+          "gate": "tools/check-aria.mjs",
+          "points": [2, 3, 4, 5]
+        },
         {
           "spec": "apps/sandbox-e2e/src/a11y.spec.ts",
           "titles": ["an open dialog"]
@@ -397,7 +520,10 @@
       "conformance": "Supports",
       "remarks": "One focus ring, one token, drawn with `:focus-visible` by every control that takes focus (a field draws it around its whole row) and measured as a `UI` pair at 3:1 in both themes; under forced colours it is drawn in `Highlight`.",
       "evidence": [
-        { "gate": "tools/check-tokens.mjs", "points": [7] },
+        {
+          "gate": "tools/check-tokens.mjs",
+          "points": [7]
+        },
         {
           "source": "libs/tokens/src/contrast.policy.json",
           "says": "UI: focus ring"
@@ -416,9 +542,14 @@
     },
     {
       "id": "2.4.11",
-      "conformance": "Not Evaluated",
-      "remarks": "The library keeps one fixed layer on screen — the toast stack, in a corner — and anchors every panel to its trigger; no gate measures whether a focused element stays at least partly visible under them (finding 4.37).",
-      "evidence": [{ "finding": "4.37" }]
+      "conformance": "Supports",
+      "remarks": "The library keeps one fixed layer on screen — the toast stack, in a corner — and anchors every panel to its trigger. With a standing toast open, every focusable of the view is focused in turn and the element under the middle of its own box is asked for: it is the control itself and not the stack. `elementsFromPoint` and not a rectangle comparison, because a box that overlaps another is not obscured if it is the one in front.",
+      "evidence": [
+        {
+          "spec": "apps/sandbox-e2e/src/adaptation.spec.ts",
+          "titles": ["a standing toast leaves every control in front of it"]
+        }
+      ]
     },
     {
       "id": "2.5.1",
@@ -453,7 +584,10 @@
       "conformance": "Supports",
       "remarks": "The visible label is the accessible name: `<label for>` and `aria-labelledby` point at the very text that is shown, so the name contains what is read; an icon-only button is named by the tooltip that shows on it.",
       "evidence": [
-        { "gate": "tools/check-aria.mjs", "points": [3, 4] },
+        {
+          "gate": "tools/check-aria.mjs",
+          "points": [3, 4]
+        },
         {
           "spec": "apps/sandbox-e2e/src/breadcrumb.spec.ts",
           "titles": [
@@ -470,7 +604,11 @@
       "id": "2.5.4",
       "conformance": "Not Applicable",
       "remarks": "Nothing listens to device motion or orientation; the gate scans the sources for a listener.",
-      "evidence": [{ "scan": "no-device-motion" }]
+      "evidence": [
+        {
+          "scan": "no-device-motion"
+        }
+      ]
     },
     {
       "id": "2.5.7",
@@ -490,8 +628,12 @@
       "conformance": "Supports",
       "remarks": "A stricter promise than the criterion: 24 × 24 px outright, with no spacing exception, measured per control — the smallest control height is 28 px, and a field's border and affixes are part of its hit area.",
       "evidence": [
-        { "cards": "Touch target" },
-        { "req": "req-a11y-touch" },
+        {
+          "cards": "Touch target"
+        },
+        {
+          "req": "req-a11y-touch"
+        },
         {
           "spec": "apps/sandbox-e2e/src/field-hitarea.spec.ts",
           "titles": ["a click on the left border padding focuses the field"]
@@ -502,7 +644,9 @@
             "the field and the button at size ${size} have the same height"
           ]
         },
-        { "lesson": "lesson-14" }
+        {
+          "lesson": "lesson-14"
+        }
       ]
     },
     {
@@ -516,8 +660,13 @@
       "conformance": "Not Applicable",
       "remarks": "The library renders no text in a language of its own: every string it speaks comes through `PCT_TEXTS`, so a passage in another language cannot come from the library.",
       "evidence": [
-        { "gate": "tools/check-texts.mjs", "points": [3, 5] },
-        { "cards": "Strings through" }
+        {
+          "gate": "tools/check-texts.mjs",
+          "points": [3, 5]
+        },
+        {
+          "cards": "Strings through"
+        }
       ]
     },
     {
@@ -567,7 +716,12 @@
       "id": "3.2.4",
       "conformance": "Not Applicable",
       "remarks": "A criterion across pages. Within the library one component is one role and one naming rule, held by the gate; the words are the consumer's.",
-      "evidence": [{ "gate": "tools/check-aria.mjs", "points": [2, 3] }]
+      "evidence": [
+        {
+          "gate": "tools/check-aria.mjs",
+          "points": [2, 3]
+        }
+      ]
     },
     {
       "id": "3.2.6",
@@ -580,7 +734,10 @@
       "conformance": "Supports",
       "remarks": "An error is a sentence: the field's alert region speaks the schema's message, the control says `aria-invalid`, and the message replaces the hint below the field — one line, never two.",
       "evidence": [
-        { "gate": "tools/check-aria.mjs", "points": [6, 7] },
+        {
+          "gate": "tools/check-aria.mjs",
+          "points": [6, 7]
+        },
         {
           "spec": "apps/sandbox-e2e/src/field.spec.ts",
           "titles": [
@@ -588,7 +745,9 @@
             "there is one line below the field: the error replaces the hint"
           ]
         },
-        { "req": "req-api-message" }
+        {
+          "req": "req-api-message"
+        }
       ]
     },
     {
@@ -596,7 +755,10 @@
       "conformance": "Supports",
       "remarks": "Every control takes a `label`, a `hint` and a required sign, drawn by the control outside a field and by the field inside one; a control whose widget sits inside its template exposes `ariaLabel` and `ariaLabelledby`, and the gate holds both.",
       "evidence": [
-        { "gate": "tools/check-aria.mjs", "points": [3, 4, 5] },
+        {
+          "gate": "tools/check-aria.mjs",
+          "points": [3, 4, 5]
+        },
         {
           "spec": "apps/sandbox-e2e/src/a11y.spec.ts",
           "titles": ["a form in the error state has no violations"]
@@ -612,7 +774,10 @@
           "source": "libs/components/core/src/field.ts",
           "says": "the text of the first error"
         },
-        { "gate": "tools/check-aria.mjs", "points": [6, 7] }
+        {
+          "gate": "tools/check-aria.mjs",
+          "points": [6, 7]
+        }
       ]
     },
     {
@@ -638,7 +803,10 @@
       "conformance": "Partially Supports",
       "remarks": "Every widget is native where the platform has one and an APG pattern where it has not; the name written on the host reaches the element with the role, states are attributes, and axe's ARIA rules run over every view and every special state in three engines. The one value known wrong — the empty select's listbox — was repaired on 2026-09-06; what a screen reader makes of the rest is the pass this report still owes.",
       "evidence": [
-        { "gate": "tools/check-aria.mjs", "points": [1, 2, 3, 4, 8] },
+        {
+          "gate": "tools/check-aria.mjs",
+          "points": [1, 2, 3, 4, 8]
+        },
         {
           "spec": "apps/sandbox-e2e/src/a11y.spec.ts",
           "titles": [
@@ -646,9 +814,15 @@
             "the a11y gate really does detect violations (a control of the gate)"
           ]
         },
-        { "req": "req-a11y-built-in" },
-        { "req": "req-a11y-axe" },
-        { "cards": "Screen-reader test log" }
+        {
+          "req": "req-a11y-built-in"
+        },
+        {
+          "req": "req-a11y-axe"
+        },
+        {
+          "cards": "Screen-reader test log"
+        }
       ]
     },
     {
@@ -668,8 +842,13 @@
           "spec": "apps/sandbox-e2e/src/date.spec.ts",
           "titles": ["a refused day is reached, announced and not takeable"]
         },
-        { "gate": "tools/check-aria.mjs", "points": [7] },
-        { "decision": "0044" }
+        {
+          "gate": "tools/check-aria.mjs",
+          "points": [7]
+        },
+        {
+          "decision": "0044"
+        }
       ]
     }
   ]

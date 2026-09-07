@@ -119,6 +119,13 @@ class NumberTypeHost {
 })
 class BareHost {}
 
+/** A field that declares what it collects (WCAG 1.3.5). */
+@Component({
+  imports: [PctNumber],
+  template: `<input pctNumber autocomplete="bday-year" />`,
+})
+class PurposeHost {}
+
 /** The error state given directly, with no form — the gating on `touched`. */
 @Component({
   imports: [PctNumber],
@@ -602,6 +609,22 @@ describe('PctNumber', () => {
 
       expect(el.hasAttribute('aria-valuenow')).toBe(false);
       expect(el.hasAttribute('aria-valuetext')).toBe(false);
+    });
+
+    /**
+     * WCAG 1.3.5 Identify Input Purpose. The control writes `autocomplete="off"` by itself —
+     * a browser filling a formatted string into a field with a parser of its own is a value
+     * the parser refuses — and the input is what lets a consumer declare one of the three
+     * numeric purposes the criterion's list holds (`bday-day`, `bday-month`, `bday-year`).
+     */
+    it('refuses autofill until a consumer asks for it', async () => {
+      const fixture = await render(BareHost);
+      expect(inputOf(fixture).getAttribute('autocomplete')).toBe('off');
+    });
+
+    it('takes the purpose a consumer declares', async () => {
+      const fixture = await render(PurposeHost);
+      expect(inputOf(fixture).getAttribute('autocomplete')).toBe('bday-year');
     });
 
     it('the keyboard mode follows the fractions allowed', async () => {

@@ -78,7 +78,7 @@ function escapeRegExp(value: string): string {
     class: 'pct-text pct-number',
     type: 'text',
     role: 'spinbutton',
-    autocomplete: 'off',
+    '[attr.autocomplete]': 'autocomplete()',
     '[id]': 'controlId',
     '[attr.inputmode]': 'inputMode()',
     '[disabled]': 'disabled()',
@@ -128,6 +128,31 @@ export class PctNumber
 
   /** The native `name` — what a form submission calls the value. */
   readonly name = input<string>('');
+
+  /**
+   * The field's purpose for a browser's autofill, `off` by default — the value the control
+   * wrote by itself until it took this input.
+   *
+   * **Why the default is `off` and why it is nevertheless an input.** This is not an
+   * `<input type="number">` but a text field with a parser of its own
+   * (`req-api-number`), and a browser filling it with a formatted string — a card number
+   * with spaces, a phone number with dashes — hands the parser something it will refuse.
+   * So the control refuses autofill unless asked. But WCAG 2.2 **1.3.5 Identify Input
+   * Purpose** asks that a field collecting information ABOUT THE USER declares which one,
+   * and three of the list's entries are numbers a person types here: `bday-day`,
+   * `bday-month`, `bday-year`. With `autocomplete` nailed shut those three could not be
+   * declared on this control at all, which is what the conformance report said out loud
+   * (plan 4.37).
+   *
+   * The type is the platform's own `AutoFill`, so a misspelt purpose is a compile error
+   * rather than an attribute a browser ignores.
+   *
+   * @example
+   * <pct-field label="Year of birth">
+   *   <input pctNumber autocomplete="bday-year" [(value)]="year" />
+   * </pct-field>
+   */
+  readonly autocomplete = input<AutoFill>('off');
 
   /** Emitted on blur — lets the form mark the field as touched. */
   readonly touch = output<void>();

@@ -94,8 +94,14 @@
 }
 
 @media (max-width: 720px) {
+  /* A column of full-width blocks, and `align-items` is the whole of it: the row layout
+     above wants `flex-start` so a short navigation does not stretch to the view's height,
+     and in a COLUMN the same line means each item is as wide as its own content — which is
+     how every demo wider than the window pushed the page sideways at 320 px
+     (`adaptation.spec.ts`, WCAG 1.4.10). */
   .shell__body {
     flex-direction: column;
+    align-items: stretch;
   }
 
   .shell__nav {

@@ -83,10 +83,13 @@ body {
   }
 }
 
-/* Two cards side by side — a layout for comparing "the same in another theme". */
+/* Two cards side by side — a layout for comparing "the same in another theme". The track's
+   floor is `min(280px, 100%)` and not `280px`: a bare minimum wider than the window is a
+   track wider than the window, and the page then scrolls sideways at 320 px, which is
+   WCAG 1.4.10 (`adaptation.spec.ts`). */
 .grid-2 {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
   gap: 20px;
 }
 

@@ -3,6 +3,13 @@
   flex-direction: column;
   gap: var(--pct-field-label-gap);
   font-family: inherit;
+  /* The field shrinks instead of pushing its container apart — the same line the control and
+     the message already carry, one level up. A flex item's automatic minimum is its content's
+     min-content size, and for a field that is the native input's own twenty-character
+     intrinsic width: measured at 282 px, which is wider than a 320 px window has room for
+     once a page has any padding at all. Without this the field is the one thing in the
+     library that makes a page scroll sideways (WCAG 1.4.10, `adaptation.spec.ts`). */
+  min-width: 0;
 }
 
 /* Size driven by a state attribute (req-api-attributes), as in the button: a variant swaps the

@@ -2915,6 +2915,33 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     each asserting that nothing is clipped, overlapped or lost; the fifth is a decision about
     the number field's `autocomplete`; the sixth a `pause` input on the face, or the
     finding closed by 4.36's component
+  - **done (2026-09-07): the four Not Evaluated rows are gone and 1.3.5 is closed; only
+    2.2.2 is left, and this item stays open for it.** `apps/sandbox-e2e/src/adaptation.spec.ts`
+    measures all four: every one of the thirty-five views at 320 px (one case per route, three
+    engines), the kitchen sink at 200 % text and under the criterion's own text-spacing
+    declarations, and a focused control under a standing toast read with `elementsFromPoint`
+    rather than by comparing rectangles. The report now has **no Not Evaluated row at all** —
+    34 supports, 2 partially supports
+  - **the first run was red, and three of the four defects were real.** Nine of the
+    thirty-five views scrolled sideways at 320 px: the sandbox's shell is a column of flex
+    items with `align-items: flex-start`, which in a column means "as wide as your own
+    content"; its two-card grid had a `minmax(280px, 1fr)` floor wider than the window; and
+    `pct-field` had no `min-width: 0`, so its automatic minimum was the native input's
+    twenty-character intrinsic width — 282 px measured, which a 320 px window has no room for
+    once a page has any padding. The first two are the harness, the third is the library and
+    is fixed here (`./field` 27788 → 27866 B). The other three criteria passed on the first
+    run, which is worth as much as the failures: they were claimed by nobody until today
+    ([`lesson-175`](lessons.md#lesson-175))
+  - 1.3.5: `[pctNumber]` takes an `autocomplete` input typed as the platform's own `AutoFill`,
+    defaulting to `off` — so nobody who ships the field today sees a change, and a consumer
+    collecting a date of birth can declare `bday-year`. Two unit cases, and the row is
+    Supports
+  - **what is left is 2.2.2, and it is not the row this item described.** The claim names two
+    perpetual motions, the `hero` face's gradient AND the skeleton's sheen; the decision above
+    settles the first and says nothing about the second, which is a component another pass is
+    changing as this is written. Beyond that, making the brand's one loud face stop after a
+    pass is a change to what the library LOOKS like, and the visual consequence is the kind of
+    thing this repository shows before it ships
   - binds at: **the first buyer who asks for the report**, or the site's design pass (4.34),
     whichever comes first · _notes:_ **decided (2026-09-07), for the two rows that are
     limits rather than gaps.** 1.3.5: `[pctNumber]` takes an `autocomplete` input

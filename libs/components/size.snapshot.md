@@ -42,7 +42,7 @@ before an application ships them.
 ./date 39385 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
 ./dialog 16368 ./core,./icon @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
 ./drawer 15561 ./core,./icon @angular/common,@angular/core
-./field 27788 ./core @angular/core,@angular/forms,@angular/forms/signals
+./field 27866 ./core @angular/core,@angular/forms,@angular/forms/signals
 ./grid 673 - @angular/core
 ./hero 5594 - @angular/core
 ./icon 2552 - @angular/common,@angular/core
@@ -108,7 +108,7 @@ that costs a consumer importing one tag 24458 B — the whole of the other one.
 ./breadcrumb PctBreadcrumb 3 4256 9043
 ./chips PctChip 2 10567 10569
 ./date PctCalendar 2 22123 38901
-./field PctField 3 16059 24895
+./field PctField 3 16071 24973
 ./menu PctMenu 2 19134 19136
 ./radio PctRadio 2 15359 15361
 ./select PctMultiSelect 2 69904 69907
