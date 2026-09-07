@@ -52,6 +52,36 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PROJECT = 'libs/components';
 const DIST = 'dist/libs/components';
 const SNAPSHOT = `${PROJECT}/size.snapshot.md`;
+/**
+ * The packages whose version decides what a byte count means.
+ *
+ * A number with no tolerance is a promise that the same sources give the same bytes, and
+ * that promise is only ever true of ONE toolchain: the compiler that emits the code, the
+ * linker the probe runs over the package, and the bundler that weighs it. Recording them
+ * beside the rows is what turns "35 bytes moved and nothing in the diff explains it" into a
+ * line of the same diff (plan 4.17).
+ */
+const TOOLCHAIN = [
+  '@angular/core',
+  '@angular/compiler-cli',
+  '@angular/build',
+  'ng-packagr',
+  'esbuild',
+];
+
+/** Their installed versions, which the lockfile decides — so every machine reads the same. */
+const readToolchain = () =>
+  TOOLCHAIN.map((name) => {
+    try {
+      const manifest = JSON.parse(
+        readFileSync(join(ROOT, 'node_modules', name, 'package.json'), 'utf8'),
+      );
+      return `${name} ${manifest.version}`;
+    } catch {
+      return `${name} (not installed)`;
+    }
+  });
+
 const FIXTURES = join(ROOT, 'tools/check-bundle.fixtures');
 const REFERENCE = '_reference.json';
 const WRITE = process.argv.includes('--write');
@@ -162,7 +192,12 @@ const checkBundle = (input) => {
    */
   const writable = (check, description) =>
     Object.assign(new BundleError(check, description), {
-      snapshot: renderSnapshot(sources, input.probes ?? {}, input.named ?? {}),
+      snapshot: renderSnapshot(
+        sources,
+        input.probes ?? {},
+        input.named ?? {},
+        input.toolchain ?? [],
+      ),
     });
 
   // 1. The entrypoint list from two reads. The same move as point 1 in `check-tokens` and
@@ -678,7 +713,12 @@ const checkBundle = (input) => {
   //     can only say "the file is not the render"; and with 10, 11 or 12 red the
   //     MEASUREMENT is in doubt, so its rendering is not a record anybody should be told
   //     to write down.
-  const rendered = renderSnapshot(sources, probes, input.named ?? {});
+  const rendered = renderSnapshot(
+    sources,
+    probes,
+    input.named ?? {},
+    input.toolchain ?? [],
+  );
   if (input.snapshot !== rendered) {
     const have = String(input.snapshot ?? '').split('\n');
     const want = rendered.split('\n');
@@ -702,7 +742,12 @@ const checkBundle = (input) => {
       `${sources.length} entrypoints, ${total} B in total, largest ` +
       `${sources.reduce((a, b) => ((probes[a]?.bytes ?? 0) >= (probes[b]?.bytes ?? 0) ? a : b))}; ` +
       `${runs.length} probes through the real builder`,
-    snapshot: renderSnapshot(sources, probes, input.named ?? {}),
+    snapshot: renderSnapshot(
+      sources,
+      probes,
+      input.named ?? {},
+      input.toolchain ?? [],
+    ),
   };
 };
 
@@ -716,7 +761,7 @@ const equal = (a, b) => a.size === b.size && [...a].every((x) => b.has(x));
  * prettier pads its columns to the longest cell, so one long name rewrites the WHOLE file
  * and the diff stops showing what really changed.
  */
-const renderSnapshot = (sources, probes, named = {}) =>
+const renderSnapshot = (sources, probes, named = {}, toolchain = []) =>
   [
     '# Entrypoint size and isolation snapshot',
     '',
@@ -737,6 +782,14 @@ const renderSnapshot = (sources, probes, named = {}) =>
     '`node tools/check-bundle.mjs --write`. There is no tolerance, because a tolerance',
     'decides two things and is argued about one — when the gate fails, and when this file',
     'is written ([0023](../../docs/decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md)).',
+    '',
+    '**Taken with**, and the list is part of the measurement rather than trivia about it:',
+    'a promise that the same sources give the same bytes is only ever true of ONE toolchain,',
+    'and the day one of these moves, the bytes move in the same diff as the reason. It is',
+    'the answer to a drift of 35 bytes that cost an evening and was never explained, because',
+    'nothing here recorded what the numbers had been produced BY (plan 4.17).',
+    '',
+    ...(toolchain.length ? toolchain : ['(not recorded)']).map((t) => `- ${t}`),
     '',
     'Columns: entrypoint · size in bytes · other entrypoints brought in · external',
     'dependencies. The size is the raw size of a **production** bundle of an application',
@@ -1330,6 +1383,7 @@ const measureRepository = async () => {
     return {
       sources,
       manifest,
+      toolchain: readToolchain(),
       snapshot: existsSync(join(ROOT, SNAPSHOT))
         ? readFileSync(join(ROOT, SNAPSHOT), 'utf8')
         : null,
@@ -1386,6 +1440,7 @@ const buildFixture = (fx) => {
     declaredPlain: structuredClone(reference.declaredPlain ?? {}),
     probes: structuredClone(reference.probes),
     named: structuredClone(reference.named ?? {}),
+    toolchain: structuredClone(reference.toolchain ?? []),
     pair: structuredClone(reference.pair),
     builder: structuredClone(reference.builder),
   };
@@ -1456,7 +1511,13 @@ const buildFixture = (fx) => {
     reference.sources,
     reference.probes,
     input.named ?? {},
+    // The snapshot is rendered with the toolchain the CASE may have moved away from, which
+    // is what makes `toolchainMoved` a real case rather than a rewritten file.
+    fx.toolchainMoved
+      ? structuredClone(reference.toolchain ?? [])
+      : (input.toolchain ?? []),
   );
+  if (fx.toolchainMoved) input.toolchain = fx.toolchainMoved;
   if (fx.dropSnapshot) snapshot = null;
   else if (fx.snapshotWithoutRow)
     snapshot = snapshot

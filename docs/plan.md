@@ -2123,7 +2123,7 @@ and to no other` has announced on the assertive channel since the announcer was 
     drawer that is somewhere wrong, and it takes no keystroke from an application that
     never asked to give one up
 
-- [ ] **4.17 — a snapshot with no tolerance drifted with nothing to point at**
+- [x] **4.17 — a snapshot with no tolerance drifted with nothing to point at**
   - `libs/components/size.snapshot.md` records `./toast` at **15311 B**. Built today from the
     same sources it reads **15346 B**, and the drift is at **HEAD**: measured with the tabs
     work stashed, so `check-bundle` was already red on `main` before this step touched
@@ -2155,6 +2155,25 @@ and to no other` has announced on the assertive channel since the announcer was 
     snapshot should carry the versions it measures (Angular, the linker, esbuild, the
     token build) or whether this was one artefact. A tolerance is refused outright —
     0023 says what a tolerance is for, and this is exactly the drift it would hide
+  - **done (2026-09-07): the three suspects were tested and all three are refuted; what
+    shipped is the second half of the question.** The window between the two readings holds no
+    `package-lock.json` change at all, so no bump could have moved them. A worktree at the
+    commit that wrote 15311, built from its own tree, reads **15346**. The same worktree with
+    its own `node_modules` installed fresh from that day's lockfile (`npm ci`) and rebuilt
+    without the task cache reads **15346** again — and the five packages that decide what a
+    byte count means are identical then and now (`@angular/core` 22.0.6, `@angular/compiler-cli`
+    22.0.6, `@angular/build` 22.0.6, `ng-packagr` 22.0.1, `esbuild` 0.27.7)
+  - so the recorded number is not reproducible from the tree it names or the toolchain it
+    named, and the mechanism that would have caught a stale artefact — `freshInputsFor`, from
+    C29 — already stood at that commit. What is left is a state of `dist` nobody can
+    reconstruct, and an evening spent proving it
+  - what shipped instead of a tolerance: **the snapshot now records the toolchain the numbers
+    were produced by**, five versions beside the rows, with a negative control of its own
+    (`a-toolchain-that-moved.json` fires point 13 when a compiler is bumped and the file still
+    names the old one). The next drift with nothing in the diff is answered by the same diff —
+    the toolchain either moved with the bytes or it did not
+    ([`lesson-179`](lessons.md#lesson-179))
+  - 0023 stands untouched: a tolerance would have hidden exactly this
 
 - [x] **4.18 — a guard the pointer makes unreachable, found by the mutant that survived it**
   - `PctTabs.onPress` opens with `if (tab.disabled()) return;` and the mutation run says the

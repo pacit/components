@@ -18,6 +18,18 @@ lands here, in both directions, and it lands in the diff of the change that move
 decides two things and is argued about one — when the gate fails, and when this file
 is written ([0023](../../docs/decisions/0023-a-tolerance-is-for-a-wobbling-measurement.md)).
 
+**Taken with**, and the list is part of the measurement rather than trivia about it:
+a promise that the same sources give the same bytes is only ever true of ONE toolchain,
+and the day one of these moves, the bytes move in the same diff as the reason. It is
+the answer to a drift of 35 bytes that cost an evening and was never explained, because
+nothing here recorded what the numbers had been produced BY (plan 4.17).
+
+- @angular/core 22.0.6
+- @angular/compiler-cli 22.0.6
+- @angular/build 22.0.6
+- ng-packagr 22.0.1
+- esbuild 0.27.7
+
 Columns: entrypoint · size in bytes · other entrypoints brought in · external
 dependencies. The size is the raw size of a **production** bundle of an application
 that imports **only** this one entrypoint: Angular external, so it measures the

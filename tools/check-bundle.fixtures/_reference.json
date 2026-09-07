@@ -27,6 +27,14 @@
       }
     }
   },
+  "// why a toolchain": "The versions the numbers were produced BY, recorded beside them: a size with no tolerance is a promise about ONE toolchain, and the day a compiler moves, the bytes move in the same diff as the reason (plan 4.17). Fictional here, like every other number in this file.",
+  "toolchain": [
+    "@angular/core 22.0.0",
+    "@angular/compiler-cli 22.0.0",
+    "@angular/build 22.0.0",
+    "ng-packagr 22.0.0",
+    "esbuild 0.25.0"
+  ],
   "markers": {
     ".": [],
     "./alpha": ["pct-alpha"],

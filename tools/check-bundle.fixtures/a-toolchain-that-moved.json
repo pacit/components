@@ -1,0 +1,12 @@
+{
+  "point": 13,
+  "check": "verbatim",
+  "description": "The compiler was bumped and the snapshot still names the old one. Nothing about the ROWS is wrong here — every byte matches — which is exactly why this has to fire: the file's promise is that these numbers come from that toolchain, and a baseline whose toolchain is a guess cannot explain the next drift. It is the case that would have answered the 35 bytes of plan 4.17 in a line instead of an evening.",
+  "toolchainMoved": [
+    "@angular/core 22.1.0",
+    "@angular/compiler-cli 22.1.0",
+    "@angular/build 22.1.0",
+    "ng-packagr 22.0.0",
+    "esbuild 0.25.0"
+  ]
+}

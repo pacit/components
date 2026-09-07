@@ -4881,3 +4881,40 @@ row of the conformance report at Partially Supports with the argument stated rat
 verdict asserted — the sheen is `aria-hidden`, the wait is announced by the consumer's
 `aria-busy` region, and whether the movement is "essential" in the criterion's sense is an
 argument, not a measurement.
+
+### <a id="lesson-179"></a>`lesson-179` — Thirty-five bytes with three suspects, all three refuted
+
+`./toast` was recorded at **15311 B** and read **15346 B** ever after, with nothing in the diff
+to blame. The file has no tolerance by decision (0023), so a row that cannot be explained is a
+promise that has quietly stopped being one. The suspects were a dependency bump, the sources
+themselves, and a measurement that wobbles. Each was tested.
+
+**The window.** The row was written at the toast's own commit and moved at the tabs commit,
+three commits later. `git log package-lock.json` over that range: empty. So no bump happened
+between the two readings — the first suspect never had an opportunity.
+
+**The sources.** A worktree at the commit that wrote 15311, built from its own tree with
+today's installed packages: **15346**. The sources at that commit do not produce the number
+recorded beside them.
+
+**The dependency tree.** The same worktree, with its own `node_modules` installed fresh from
+the lockfile of that day (`npm ci`), rebuilt without the task cache: **15346** again — and the
+five packages that decide what a byte count means read identically then and now
+(`@angular/core` 22.0.6, `@angular/compiler-cli` 22.0.6, `@angular/build` 22.0.6, `ng-packagr`
+22.0.1, `esbuild` 0.27.7).
+
+So the recorded number is not reproducible from the tree it names, the toolchain it named, or
+any combination of the two — and the mechanism that would have kept it honest was already in
+place: `freshInputsFor` (C29) rebuilds without the cache on every `--write`, and it existed at
+that commit. What is left is a state of the artefact nobody can reconstruct: a build that had
+not finished, a tree that was not the tree, a copy interrupted.
+
+**An unexplained measurement is not a reason for a tolerance; it is a reason to record what the
+measurement was made WITH.** The snapshot now carries the five versions above beside its rows,
+so the next drift with nothing in the diff is answered by the same diff — the toolchain either
+moved with the bytes or it did not. A negative control holds the line: a compiler bumped while
+the file still names the old one fires point 13.
+
+The general form, and the reason this took an evening: **a baseline records a number and
+forgets the conditions**, and every question about it afterwards is archaeology. The cheapest
+moment to write down what produced a measurement is the moment it is produced.
