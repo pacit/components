@@ -40,5 +40,6 @@ export const SBX_ROUTES = [
   '/layout',
   '/size',
   '/states',
+  '/announce',
   '/all',
 ] as const;

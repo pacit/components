@@ -1,0 +1,12 @@
+/* The card has no drawing of its own: what it demonstrates is invisible by design. */
+.view__row {
+  display: flex;
+  gap: var(--pct-space-3);
+  align-items: center;
+}
+
+.view__last {
+  margin-block: var(--pct-space-4) 0;
+  color: var(--pct-text-muted);
+  font-size: var(--pct-font-size-sm);
+}

@@ -2044,7 +2044,7 @@ errored · not covered · ignored`, and point 6's parser and the five fixtures t
     whatever the banner turns out to be, which is the whole reason this item refused to
     let the first component decide it
 
-- [ ] **4.15 — the assertive channel has no consumer, and therefore no gate**
+- [x] **4.15 — the assertive channel has no consumer, and therefore no gate**
   - `PctAnnouncer` opens two regions and has done since the live announcer was built. The
     polite one is read by the
     select's empty panel and measured in `core.spec.ts`; the assertive one is created, hidden,
@@ -2070,6 +2070,25 @@ errored · not covered · ignored`, and point 6's parser and the five fixtures t
     and an e2e case reads that the sentence lands in the assertive region and not in the
     polite one. The mechanism is measured without inventing a library message that has
     no home, which is the prediction 0026 already got wrong twice
+  - **done (2026-09-07): the sandbox's `announce` view and `announce.spec.ts`, four cases in
+    three engines.** Two of them are the promise: the sentence in the region it named, and
+    the OTHER region empty — which a one-region implementation would still fail. One reads
+    that both regions are open and empty before anything is said, the last that a region
+    holding a sentence takes no space and stays in the tree (clipped, never `display: none`,
+    which would take the announcement out of the tree with the element —
+    [`lesson-83`](lessons.md#lesson-83))
+  - **one sentence of this item was wrong and the code says so:** "no unit case puts a
+    sentence on it" — `core.spec.ts › PctAnnouncer › a message goes to the channel it names
+and to no other` has announced on the assertive channel since the announcer was built.
+    What was really missing is what the item's title says: a CONSUMER, and with it a run in
+    which a real component injects the service, a render opens the pair and a press speaks
+  - 0026 is untouched, and the view says why in its own header: the pair is opened by a
+    render and not by the first message, and every interruption this library could have had
+    turned out to have a place on the screen instead. The consumer is therefore an
+    application, and the sandbox is the application this repository has
+  - what the cases do NOT claim: that anybody HEARS anything. jsdom has no assistive
+    technology and neither has Playwright, so the promise ends at "the right region holds the
+    right sentence" — written into the spec's own header rather than left to be assumed
 
 - [ ] **4.16 — a control in the corner is last in the page's tab order, and nothing carries the
       keyboard to it**

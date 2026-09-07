@@ -1,0 +1,37 @@
+<h2 class="view__title">Live regions</h2>
+<p class="muted view__intro">
+  Two regions, one per politeness, opened once for the whole document by the
+  first render that asks for them — not by the first message. A screen reader
+  registers a live region when it enters the tree and reads
+  <code>aria-live</code> then, so one element whose politeness is rewritten per
+  call announces the previous politeness at least once. Hence two.
+</p>
+
+<sbx-demo
+  heading="A sentence with nowhere to be"
+  summary="Press either button and nothing on the page changes — that is the whole point of the mechanism. The sentence lands in the library's hidden region for that politeness, where a screen reader reads it: politely, waiting for the sentence it is on to end, or assertively, interrupting. Everything this library says for itself has a place on the screen instead (0026), so the assertive channel's consumer is an application — here, this card."
+  [reqs]="['req-a11y-built-in', 'lesson-83']"
+  data-testid="demo-announce"
+>
+  <div class="view__row">
+    <button
+      pctButton
+      variant="outline"
+      (click)="say('polite')"
+      data-testid="say-polite"
+    >
+      Announce politely
+    </button>
+    <button pctButton (click)="say('assertive')" data-testid="say-assertive">
+      Interrupt
+    </button>
+  </div>
+
+  <!-- Not a live region and deliberately not one: this is the page saying what the last
+       press sent, for a person reading the screen. The announcement itself is in the
+       library's own regions, and a second copy of it here would be a second thing a
+       screen reader reads. -->
+  <p class="view__last" data-testid="last">
+    {{ last() || 'Nothing sent yet.' }}
+  </p>
+</sbx-demo>

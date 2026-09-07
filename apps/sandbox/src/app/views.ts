@@ -285,6 +285,15 @@ export const SBX_VIEWS: readonly SbxView[] = [
     load: () => import('./views/states/states-view').then((m) => m.StatesView),
   },
   {
+    path: 'announce',
+    title: 'Live regions',
+    summary:
+      "The two channels the library opens, and the assertive one's only consumer.",
+    group: 'cross',
+    load: () =>
+      import('./views/announce/announce-view').then((m) => m.AnnounceView),
+  },
+  {
     path: 'all',
     title: 'Everything at once',
     summary:
