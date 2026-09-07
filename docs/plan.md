@@ -2895,7 +2895,9 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
   - **and it inherits the debt 4.37 decided the same day.** All three faces drift for as long
     as the element stands, which is the state 2.2.2 is about — the decision recorded hours
     earlier is that the sweep runs its pass and settles inside five seconds, so this component
-    is the second place that has to change when 4.37 lands, not an exception to it
+    is the second place that has to change when 4.37 lands, not an exception to it — and the
+    revision hours later makes that two changes here and not one, since the page gets a
+    control over the sweep as well as a pass that ends by itself
 
 - [ ] **4.37 — the conformance report's rows nothing measures, and two limits with no gate**
   - the ACR (2.2, `docs/acr.md`) is rendered from what the gates prove, and four criteria of
@@ -2953,6 +2955,18 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     the shape written above: one e2e spec over the sandbox views at 320 px, at 200 %
     text, with the text-spacing declarations applied, and with a focused control under
     an open toast
+  - **revised the same day (2026-09-07): both mechanisms, and what has to be settled is the
+    order between them.** The settle stays the default — the sweep runs its pass and comes to
+    rest inside five seconds, which is what takes 2.2.2 off the table for a consumer who does
+    nothing — and the page gets a control besides, so a face standing next to text somebody is
+    reading can be stopped where it is without waiting the pass out. Three things can then
+    stop one motion, and the precedence is not negotiable: `prefers-reduced-motion` is the
+    reader's and wins over both, the page's input comes next, and the settle is what happens
+    when neither has spoken. The name of the input, and whether releasing it replays the pass,
+    belong to the step that writes it. The objection to a second public name was mine and it
+    was loose: nothing here is stable yet, so a name costs a card, a gate and a demo rather
+    than a break — and 0011 and 4.14 argue for deciding a set ONCE, not for having fewer of
+    them
 
 - [x] **4.38 — three previews settle in two render passes**
   - the cost record (2.3, `apps/docs/bench.snapshot.md`) reads **2 renders** for the `menu`,
@@ -3240,6 +3254,13 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     dev-only one is the select's
   - binds at: **the next component that adds `providers` for a dev-mode report**, or the
     first consumer who reads the size snapshot's second block and asks · _notes:_ —
+  - **decided (2026-09-07): the slot reads its host off the DOM, and the component declares
+    nothing for it.** In dev mode the directive looks at the element it stands on and takes
+    the host's tag from there, so the report survives word for word and the array that pins a
+    component nobody imported goes away with the providers. What has to be measured before it
+    lands is the reading itself: a template written inside an `ng-container`, or projected in
+    from somewhere else, is not a child of the host tag in the DOM the directive sees — if
+    that case cannot be read, the road is the second one and not this one
 
 - [ ] **4.44 — a floor the case above it does not stand on**
   - found by 4.19's disarming: `--pct-accordion-heading-target-min` is a `min-block-size` on
@@ -3257,6 +3278,12 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     minimum, which is already done — the card says what its case really holds
   - binds at: **the second component whose disarming finds the same hole**, or the first skin
     that sets a padding token to zero · _notes:_ —
+  - **decided (2026-09-07): a case renders the control with its padding tokens at zero and
+    reads the box.** The floor then holds the promise standing beside it — take the
+    `min-block-size` out and the case goes red, which is the reading 4.19 could not take. It
+    is written once for the accordion and then carried to every control with a `*-target-min`
+    token: the tabs, the pagination, the chips. Not the `check-styles` point, which would
+    measure that a declaration is present rather than what an engine lays out
 
 ## 5. Gaps with no deadline
 
