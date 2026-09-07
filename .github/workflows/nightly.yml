@@ -4,6 +4,23 @@
 # plan's CI item has been missing), toolchain and dependency rot between pushes, and the
 # environment-dependent roads (the consumer gate's registry, the dictionary restore's
 # archive on a cold cache) that only fail when the world under them moves.
+#
+# TWO JOBS, and the split is the whole point of the arrangement. `mutation` and `e2e` used
+# to share one runner in one `run-many` line, so nx was free to start both at once on four
+# vCPUs — and a mutant killed by the CLOCK is killed only while the machine cooperates.
+# Measured over identical code, that is worth 3.5 points on `core/src/motion.ts` and 9 on
+# `core/src/placement.ts`: a red gate on a file nobody edited. Since they run on runners of
+# their own, the clock column of a nightly is no longer decided by what the OTHER heavy gate
+# is doing.
+#
+# The price is one more `npm ci` per night — ~58 s, on a runner nothing else is waiting for.
+# It is NOT a second Playwright restore: the mutation job is vitest and needs no browser, so
+# it takes the shorter setup and the browsers stay in the job that uses them.
+#
+# What the split does NOT buy is the four vCPUs themselves. Stryker still runs with the
+# workers a small runner allows, so whether the nightly starts LANDING the clock-kills the
+# snapshot was written from is a question the first night after this answers, not one this
+# comment may.
 name: Nightly
 
 on:
@@ -65,10 +82,31 @@ jobs:
 
       - run: npx nx format:check
 
-      # The full set ci.yml runs on a diff, run over everything. One divergence is
-      # deliberate: the two heaviest gates (mutation, e2e) run in a second, SEPARATE step,
-      # so their wall-clock and their wobble are readable per run straight off the job's
-      # step timings — which is the number the plan's CI item exists to learn.
-      - run: npx nx run-many -t lint test vite:test build content typecheck check-package check-coverage check-bench check-zoneless check-typecheck check-styles check-texts check-tokens check-bridge check-parts check-harness check-aria check-icons check-bundle check-consumer check-browsers check-language check-reach check-support check-acr check-docs check-index
+      # The full set ci.yml runs on a diff, run over everything. It stays a step of its own
+      # rather than joining the line below, so its wall-clock is readable per run straight
+      # off the job's step timings — the number the plan's CI item exists to learn.
+      - run: npx nx run-many -t lint test vite:test build content typecheck check-package check-coverage check-bench check-zoneless check-typecheck check-styles check-texts check-tokens check-forms check-bridge check-parts check-harness check-aria check-icons check-bundle check-consumer check-browsers check-language check-reach check-support check-acr check-docs check-index
 
-      - run: npx nx run-many -t mutation check-mutation e2e
+      - run: npx nx run-many -t e2e
+
+  # The other heavy gate, on a runner of its own. The setup is deliberately the short one:
+  # no browsers and no word lists — Stryker runs vitest here, and `check-mutation` reads the
+  # report this job's own run leaves on this runner's disk, which is why the two targets are
+  # one line and cannot be moved apart.
+  mutation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          filter: tree:0
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: 'npm'
+
+      - run: npm ci
+
+      - run: npx nx run-many -t mutation check-mutation

@@ -1345,7 +1345,7 @@ one language ([`req-project-language`](requirements/project.md#req-project-langu
     original defect, the blinded probe), 35 in all; the reference holds the same letters as
     identifiers, in a table cell and inside a code span
 
-- [ ] **4.2 — the two longest gates share one runner, and CI gives them half the cores**
+- [x] **4.2 — the two longest gates share one runner, and CI gives them half the cores**
   - measured, from the `task_history` table nx keeps in `.nx/workspace-data`:
     `components:mutation` **1052 s and 1030 s** on two clean runs, `sandbox-e2e:e2e`
     **603 s** — that is 17½ and 10 minutes on an **eight-core** machine, and they are the two
@@ -1540,6 +1540,33 @@ thousandth row` timed out with the list still showing row 44, and the forced-col
     either way. The `--write` after the split is the step that re-reads the files this
     item names; whether `mutation` ever joins a pull request stays parked for 3.1, where
     it belongs
+  - **done (2026-09-07): two jobs, and the second one takes the shorter setup.**
+    `nightly.yml` now runs the fast set and `e2e` in one job and `mutation check-mutation`
+    in a job of its own, so nx is no longer free to start the two heaviest targets at once
+    on four vCPUs — which is the arrangement every reading above measured. The two targets
+    stay on ONE line because `check-mutation` reads the report the run leaves on that
+    runner's disk; separating them would separate a measurement from its evidence
+  - **the price came in under the estimate.** One more `npm ci` (~58 s, on a runner nothing
+    waits for) and **no** second Playwright restore: the mutation job is vitest and needs no
+    browser, no word lists and no dictionary cache, so the browsers stay in the job that
+    uses them
+  - **a matrix was the recorded shape and was refused for a measured reason.** With one
+    templated `run` line, the targets stand behind `${{ matrix.… }}` — and point 7 of
+    `check-mutation` reads WORDS on every `nx` line of both workflows, so the gate that
+    exists to notice `mutation` leaving CI would stop being able to see it there. Two jobs
+    with literal lines keep the workflow readable to the gate and to a person by the same
+    property. The duplication it costs is four steps
+  - **what the split does not buy, said here rather than left to be assumed:** the four
+    vCPUs. Stryker still runs with the workers a small runner allows, so whether the nightly
+    starts LANDING the clock-kills the snapshot was written from is the first night's
+    measurement and not this step's claim. If it does, the starved-snapshot decision above
+    is the next thing to revisit; if it does not, the decision holds with one fewer variable
+    behind it
+  - the nightly's fast line was missing `check-forms` on the day it was added, and this step
+    put it there: `ci.yml` gained the target with the gate and `nightly.yml` did not, which
+    is the shape of a "run everything" list that is maintained by hand twice
+  - the task-cache thread this item carried is **not** closed and moves to
+    [4.41](#4-open-findings) rather than out of the plan with the tick
 
 - [x] **4.3 — an option's owner is measured only where a page renders the panel**
   - `pct-select` draws a named section as `role="group"`, and the options below it are owned by
@@ -2973,6 +3000,27 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     stylesheet in this library holds one. A rule covering nothing is what this file refuses
     four times over, so it waits for the first — with its case. Recorded in the code beside
     the strip rather than left as a plan line nobody reads
+
+- [ ] **4.41 — CI restores the dependencies and none of the task results**
+  - `ci.yml` and `nightly.yml` both cache `npm` and the Playwright browsers, and neither
+    restores an **nx task result**. So a dependency bump — or any change the graph calls
+    affected — reruns every gate from nothing, including the two that take hours
+  - what makes this more than a speed note is 4.2's own measurement: a **restored** result is
+    a reading taken from a run that already happened, and a rerun of `components:mutation` is
+    a fresh throw of the clock-kill dice. On the numbers in 4.2 that is up to nine points on
+    a file nobody edited. A cache here is a **correctness** aid before it is a speed one,
+    which inverts the usual argument for one
+  - and the usual argument against one inverts with it: a stale cache is normally the risk,
+    while here the risk of NOT caching is a red gate on an innocent file. What has to be
+    settled is which side of that trade the repository wants, and the answer is not obvious —
+    a restored mutation result is also a result nobody re-measured
+  - the shape: `actions/cache` over `.nx/cache` keyed on the lockfile and the commit, or the
+    hosted remote cache (which is a service and therefore a decision about a dependency, not
+    a setting). The first is free and weaker; the second is neither
+  - found by the direction review inside 4.2 and left behind by its tick, deliberately: 4.2's
+    decision was about which runner starts what, and this is about what a runner may skip
+  - binds at: **the first nightly that goes red on a file the commit did not touch**, or the
+    first CI bill · _notes:_ —
 
 ## 5. Gaps with no deadline
 
