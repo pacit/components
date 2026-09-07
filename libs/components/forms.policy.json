@@ -1,0 +1,15 @@
+{
+  "// why": "The STATE BLOCK of the signal-forms contract (req-api-signal-forms): the members every control of this library carries, so that a form bound to any of them writes the same state into all of them. The gate `tools/check-forms.mjs` holds every control to this list and holds the eight declarations to one shape.",
+  "// why-a-list": "It cannot be derived from `@angular/forms`. Every member of `FormUiControl` is OPTIONAL — the only required one is `value` — so the dependency admits a control that declares none of them, and `implements FormValueControl` is not the proof it looks like. The list is therefore a decision of this library, and the gate's point 2 holds it to the contract so that a misspelt member cannot enter it: a name outside the contract is an input the `Field` directive never binds and nothing reports.",
+  "// why-not-more": "`min`, `max` and `step` are contract members too and are NOT here: they belong to a value with an order, so the date field and the slider carry them and the checkbox has no business with them. The block is what EVERY control carries.",
+  "block": [
+    "disabled",
+    "readonly",
+    "invalid",
+    "touched",
+    "required",
+    "errors",
+    "name",
+    "touch"
+  ]
+}

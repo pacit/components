@@ -95,7 +95,7 @@ jobs:
       # a metered runner cannot pay ~50 minutes of Stryker per push, and the first full
       # run measured exactly the co-scheduling the plan's CI item predicted. The docs
       # gate reads both workflows, so the pair still counts as wired into CI.
-      - run: npx nx affected -t lint test vite:test build content typecheck check-package check-coverage check-bench check-zoneless check-typecheck check-styles check-texts check-tokens check-bridge check-parts check-harness check-aria check-icons check-bundle check-consumer check-browsers check-language check-reach check-support check-acr check-docs check-index e2e
+      - run: npx nx affected -t lint test vite:test build content typecheck check-package check-coverage check-bench check-zoneless check-typecheck check-styles check-texts check-tokens check-forms check-bridge check-parts check-harness check-aria check-icons check-bundle check-consumer check-browsers check-language check-reach check-support check-acr check-docs check-index e2e
 
       # A red e2e on a runner is unreadable without its evidence: the third run failed two
       # visual baselines and the diff images died with the machine, so the failure could

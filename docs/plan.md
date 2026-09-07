@@ -2380,7 +2380,7 @@ hidden`, and it turned four CARD pictures of the select's triggers red at 743–
   - binds at: **before 3.1** — the boundary is written before a stranger reads the promise ·
     _notes:_ —
 
-- [ ] **4.26 — one input block, eight hand-written copies, and only the names are checked**
+- [x] **4.26 — one input block, eight hand-written copies, and only the names are checked**
   - the form-control quartet (`readonly` / `invalid` / `touched` / `errors`) is declared
     verbatim in eight controls. `implements FormValueControl` checks the member names; the
     **transforms and defaults** it does not — a ninth control missing `booleanAttribute` on
@@ -2399,6 +2399,33 @@ hidden`, and it turned four CARD pictures of the select's triggers red at 743–
     named. The host directive is refused for a measured reason rather than a taste: its
     inputs would still have to be listed by name in every component, so the duplication
     moves into a list of strings, and eight public classes change shape to buy that
+  - **done (2026-09-07): `tools/check-forms.mjs`, four points, eight prepared inputs, in
+    CI.** The block is declared in `libs/components/forms.policy.json` and held against
+    `FormUiControl` read from `@angular/forms`'s OWN declarations — a member list typed into
+    the gate would be a promise about somebody else's package that nothing re-measures
+  - **two numbers in the title are wrong and the gate corrected both.** It is **nine**
+    controls, not eight: `pct-switch` implements `FormCheckboxControl`, and the count came
+    from a search for `FormValueControl`. And they carry **eight** copies, not nine, because
+    `pct-select` and `pct-multi-select` are two tags over one abstract base — the inheritance
+    the reading walks, and which the reference fixture carries so that the walk is code the
+    negative control exercises. Disarmed, the reference fires on all four members of its
+    block and the repository on sixteen
+  - **the premise was understated, too.** `implements` does not check the member names:
+    in `FormUiControl` every member is OPTIONAL — the one required member is `value` — so a
+    control with no `touched` satisfies the contract as fully as one with it
+    ([`lesson-170`](lessons.md#lesson-170))
+  - **the JSDoc half of the decision is refused, on a measurement.** Holding the prose
+    identical would mean deleting seven true sentences: `readonly` has six different
+    descriptions across the nine controls and every one is right about its own — a native
+    checkbox has no `readonly` and swallows the click, a date field hands it to the input and
+    disables the calendar button. What the decision was protecting against — a member with no
+    documentation at all — is already red one gate over, in the content pass. The evidence
+    is 2.7.4's own: of the 94 readings it owed, every one was a line of this block, and the
+    83 it wrote each say what the input DOES in that control rather than what the contract
+    calls it
+  - live control: `booleanAttribute` taken off the checkbox's `invalid` reports the file, the
+    line and the eight sites that disagree with it. `check-index` counts the tree (13 case
+    tables over 24), `check-reach` reaches it, and the target is on the `affected` line of CI
 
 - [x] **4.27 — two meta-gates trust a fact about nx that nothing re-measures**
   - `check-docs` point 3 proves CI wiring by matching the `nx affected -t` **text** in

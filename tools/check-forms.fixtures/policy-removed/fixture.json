@@ -1,0 +1,7 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "rule": "no-policy",
+  "description": "The block's declaration removed. The list cannot be derived from the contract — every member of `FormUiControl` is optional — so with no policy the members a control carries are whatever the last control written happens to have.",
+  "drop": ["libs/components/forms.policy.json"]
+}

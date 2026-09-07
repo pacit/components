@@ -1,0 +1,4 @@
+import { InjectionToken } from '@angular/core';
+
+/** A source file of the library that declares no class — legal, and the whole case. */
+export const PCT_WIDGET = new InjectionToken<string>('pct.widget');

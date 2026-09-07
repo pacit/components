@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "shape",
+  "rule": "shape-drift",
+  "description": "The ninth control this item was written for: `invalid` declared with no `booleanAttribute`. The member is there, the contract is satisfied and the compiler is content — and `<pct-widget invalid>` now passes the string `''`, which is falsy, so the control is valid for ever."
+}

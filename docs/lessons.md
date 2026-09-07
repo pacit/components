@@ -4545,3 +4545,37 @@ The rule: **the text a gate is handed is part of the gate.** A rule can be right
 can be right while the input under them is something else, and that floor is the one nothing
 reports from — the run stays green, because a swallowed declaration is not a wrong answer but
 no answer at all.
+
+---
+
+### <a id="lesson-170"></a>`lesson-170` — An interface whose members are all optional proves nothing, and `implements` looks like proof
+
+`PctCheckbox implements FormCheckboxControl` reads as a contract being checked. It is not. In
+`FormUiControl` — the base of both signal-forms contracts — **every member is optional**; the
+one required member in `FormValueControl` is `value`. So a control that declares no
+`touched`, no `errors` and no `invalid` implements the contract perfectly, and the form it is
+bound to writes state into members that are not there. Worse than absence is presence in the
+wrong shape: `readonly invalid = input(false)` without `booleanAttribute` compiles, satisfies
+the contract, and turns `<pct-x invalid>` into the string `''` — which is falsy, so the
+control is valid for ever while the consumer's template says otherwise.
+
+Nine controls of this library carry that block, from eight declaration sites, and every copy
+agreed with every other one on the day the gate was written. That is the state a gate is for:
+agreement nobody has written down is agreement that lasts until the next hurried copy.
+Measured on the repository — `booleanAttribute` taken off the checkbox's `invalid` — the
+report names the file, the line and the eight sites that disagree with it.
+
+**Nine, and the plan said eight.** The count came from a search for `FormValueControl`, and
+`pct-switch` implements `FormCheckboxControl` instead: a denominator built by searching for
+one of two names misses everything under the other. The same reading corrected the other
+number from the other direction — `pct-select` and `pct-multi-select` are two controls over
+one abstract base, so eight sites carry nine controls. Neither error was visible from the
+inside; both fell out of a reading that walked the heritage instead of grepping for a word.
+
+The rule: **when a dependency's type says everything is optional, the type is not the gate —
+it is the list of names a gate can be written against.** And its corollary about prose: the
+same reading refused to hold the JSDoc above those members identical, because `readonly` has
+six different true sentences here — a native checkbox has none and swallows the click, a date
+field hands it to the input and disables the calendar button. Holding text identical across
+copies is only right where the text is a fact about the CONTRACT; where it is a fact about
+the control, one sentence for all of them is a worse document, not a tidier one.

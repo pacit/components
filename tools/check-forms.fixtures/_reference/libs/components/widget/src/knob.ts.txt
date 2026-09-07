@@ -1,0 +1,35 @@
+import { booleanAttribute, input, model, output } from '@angular/core';
+import { FormValueControl, ValidationError } from '@angular/forms/signals';
+
+/**
+ * A control whose block stands on its BASE, which is the shape `pct-select` and
+ * `pct-multi-select` have: two tags over one abstract class. The leaf declares the contract
+ * and not one member of the block, so the reference walks the inheritance every run — with
+ * the base read out of the reading, this input fires point 3 on all four members.
+ */
+export abstract class PctKnobBase {
+  /** Blocks the control and greys it. */
+  readonly disabled = input(false, { transform: booleanAttribute });
+
+  /** The form's verdict; shown only once `touched`. */
+  readonly invalid = input(false, { transform: booleanAttribute });
+
+  /** Whether the user has left the field once. */
+  readonly touched = input(false, { transform: booleanAttribute });
+
+  /** The form's validation errors. */
+  readonly errors = input<readonly ValidationError.WithOptionalFieldTree[]>([]);
+
+  /** Emitted on blur. */
+  readonly touch = output<void>();
+}
+
+/** The tag over that base — one line of its own, and the whole block behind it. */
+@Component({ selector: 'pct-knob', template: '' })
+export class PctKnob
+  extends PctKnobBase
+  implements FormValueControl<number | null>
+{
+  /** The value — the contract's one required member. */
+  readonly value = model<number | null>(null);
+}

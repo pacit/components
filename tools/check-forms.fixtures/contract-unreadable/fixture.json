@@ -1,0 +1,7 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "rule": "no-contract",
+  "description": "No `signals.d.ts` under the dependency. Point 2 then has nothing to hold the block against, so a misspelt member would be a name nobody binds and nobody reports — the gate refuses to run on half its inputs rather than reporting the half it has.",
+  "contract": null
+}

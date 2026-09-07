@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "rule": "no-controls",
+  "description": "Classes, members, a policy and a contract — and not one class implementing either form contract. Points 3 and 4 would walk an empty list and pass, which is how a gate goes quiet when the sources move under it."
+}

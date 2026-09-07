@@ -107,9 +107,23 @@ component, because after that it is a breaking change in every one of them
 
 **Promise.** Controls implement `FormValueControl` (or `FormCheckboxControl`) from
 `@angular/forms/signals`. **`ControlValueAccessor` is NOT implemented** — and yet
-`[formControl]`, `formControlName` and `[(ngModel)]` work with no compatibility layer.
+`[formControl]`, `formControlName` and `[(ngModel)]` work with no compatibility layer. And
+the contract is carried **whole and identically**: every control declares the state block
+(`disabled`, `readonly`, `invalid`, `touched`, `required`, `errors`, `name`, `touch`) with
+the same transforms and the same defaults, so a form bound to any of them writes the same
+state into all of them.
 
-**Gate:** the classic-forms interop suites in the per-control specs —
+**Gate:** `tools/check-forms.mjs` (target `check-forms` in the root project, in CI) for the
+second half — the block is declared in `libs/components/forms.policy.json`, held against
+`FormUiControl` in `@angular/forms`'s own declarations, and every control is held to it
+through its base class. It exists because `implements` proves almost nothing here: **every
+member of `FormUiControl` is optional** — the one required member is `value` — so a control
+missing `touched`, or declaring `invalid` with no `booleanAttribute`, compiles and satisfies
+the contract. The prose above those members is deliberately NOT held: what `readonly` means
+is the control's own knowledge, and six of the nine say it differently and truly. A member
+with no JSDoc at all is already red in the content pass
+([`req-api-catalogue`](#req-api-catalogue)).
+And, for the first half — the classic-forms interop suites in the per-control specs —
 `libs/components/field/src/field.spec.ts`, `libs/components/field/src/number.spec.ts`,
 `libs/components/select/src/select.spec.ts`, `libs/components/checkbox/src/checkbox.spec.ts`,
 `libs/components/switch/src/switch.spec.ts`, `libs/components/radio/src/radio.spec.ts`,
@@ -119,7 +133,11 @@ the signal-forms half. The lines used to point at `field-controls.spec.ts`, whic
 none of those tests: deleting the interop suites would have failed nothing this requirement
 named
 **Control:** the tests start from a **non-empty** initial value — with an empty model the
-regression in [`lesson-26`](../lessons.md#lesson-26) was invisible
+regression in [`lesson-26`](../lessons.md#lesson-26) was invisible; and
+`tools/check-forms.fixtures/` for the structural half — eight prepared inputs, of which
+`transform-dropped` is the defect the gate was written for and `member-missing` its other
+half, plus a run against the repository: `booleanAttribute` taken off the checkbox's
+`invalid` fires with the file, the line and the eight sites that disagree with it
 **Decision:** [0005 — signal forms without CVA](../decisions/0005-signal-forms-without-cva.md)
 **Lessons:** [`lesson-9`](../lessons.md#lesson-9), [`lesson-20`](../lessons.md#lesson-20),
 [`lesson-26`](../lessons.md#lesson-26)

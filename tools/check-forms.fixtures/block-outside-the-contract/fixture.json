@@ -1,0 +1,6 @@
+{
+  "point": 2,
+  "check": "contract",
+  "rule": "outside-the-contract",
+  "description": "The block names `invalidated`, which is no member of `FormUiControl`. Every control would then declare an input the `Field` directive never binds — and nothing would report it, because the contract's members are all optional and an input outside it is simply an input of this library."
+}

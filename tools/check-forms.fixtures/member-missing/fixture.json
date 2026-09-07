@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "block",
+  "rule": "member-missing",
+  "description": "A control with no `touched` at all. It compiles and it is a legal `FormValueControl`, because every member of `FormUiControl` is optional — the control just never learns the state, and an invalid field that opens red only once touched then never opens red at all."
+}

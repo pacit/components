@@ -1,0 +1,4 @@
+{
+  "// why": "The reference input's block — the same shape as the repository's, with the members its two controls carry. Shorter than the real one on purpose: a name here that no control declares would make the reference itself fire point 3, so the list holds what the fixture really has.",
+  "block": ["disabled", "invalid", "touched", "errors"]
+}

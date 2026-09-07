@@ -1,0 +1,27 @@
+import { booleanAttribute, input, model, output } from '@angular/core';
+import { FormValueControl, ValidationError } from '@angular/forms/signals';
+
+/** A control that carries the block itself — the ordinary shape, seven of eight here. */
+@Component({ selector: 'pct-widget', template: '' })
+export class PctWidget implements FormValueControl<string> {
+  /** The value — the contract's one required member. */
+  readonly value = model('');
+
+  /** Blocks the control and greys it. */
+  readonly disabled = input(false, { transform: booleanAttribute });
+
+  /** The form's verdict; shown only once `touched`. */
+  readonly invalid = input(false);
+
+  /** Whether the user has left the field once. */
+  readonly touched = input(false, { transform: booleanAttribute });
+
+  /** The form's validation errors. */
+  readonly errors = input<readonly ValidationError.WithOptionalFieldTree[]>([]);
+
+  /** Emitted on blur. */
+  readonly touch = output<void>();
+
+  /** A member outside the block, so the reading is shown not to demand a closed set. */
+  readonly label = input<string>('');
+}

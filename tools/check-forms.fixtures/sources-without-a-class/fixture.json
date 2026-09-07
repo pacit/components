@@ -1,0 +1,10 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "rule": "no-classes",
+  "description": "Source files that parse to no class at all — the shape a reading takes on the day the sources move or the scanner's anchor stops matching. Every point below would be measuring an empty set and reporting success.",
+  "drop": [
+    "libs/components/widget/src/widget.ts.txt",
+    "libs/components/widget/src/knob.ts.txt"
+  ]
+}
