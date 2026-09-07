@@ -81,6 +81,28 @@ that imported `PctMultiSelect` alone — inside the shared base's own
 selector. Two false positives in seven rows, both of them a string that equals a
 selector without being a component.
 
+WHY a row sheds or does not, measured one doctored declaration at a time and true of
+every row below (plan 4.42). Two things keep a tag nobody imported:
+
+1. **It declares `providers`.** Angular compiles them into
+   `features: [ɵɵProvidersFeature([…])]` — a call to an EXTERNAL function, standing in
+   the static `ɵcmp` initialiser of the class itself. A bundler cannot know that call is
+   pure, so the statement that defines the class has a side effect and the class stays,
+   with its template and its stylesheet. `sideEffects: false` on the package does not
+   reach inside a module that something else in it is imported from.
+2. **Something reaches it.** The child injects the parent CLASS as its token —
+   `inject(PctStepper)`, `inject(PctRadioGroup)` — which is a reference like any other.
+   Where the channel is a token declared beside the class instead (`PCT_ACCORDION`,
+   `PCT_TABS`), there is no reference and this half does not apply.
+
+The reading is DIRECTIONAL, because the probe imports the first export name: `PctSelect`
+is shed or not shed by a bundle that asked for `PctMultiSelect`, and the other direction
+can differ — an entrypoint whose group declares providers pins the group when a consumer
+imports only the child. `./select` is the row that neither half of the usual answer
+explains: the two classes share a base and nothing else, no source of the entrypoint
+names one from the other, and it is the orphan-slot report in each one's `providers`
+that costs a consumer importing one tag 24458 B — the whole of the other one.
+
 ```
 ./accordion PctAccordion 2 4162 11333
 ./breadcrumb PctBreadcrumb 3 4256 9043

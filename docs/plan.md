@@ -3120,7 +3120,7 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
   - the remote cache stays refused for now for the reason the item gave: it is a service,
     and therefore a dependency decision rather than a setting
 
-- [ ] **4.42 — one select tag brings the other, and no reference between them says why**
+- [x] **4.42 — one select tag brings the other, and no reference between them says why**
   - measured by point 12 of `check-bundle` (4.4): `./select` costs **69904 B** for
     `PctMultiSelect` alone and **69907 B** for both tags. The second component is three bytes,
     which means it was already there
@@ -3138,7 +3138,60 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     panel component both triggers hold — would actually save a consumer anything, and whether
     the same trap is waiting for the next entrypoint that grows a sibling tag
   - binds at: **the third tag over the select's template**, or the first entrypoint whose two
-    numbers stop agreeing with the explanation above · _notes:_ —
+    numbers stop agreeing with the explanation above · _notes:_ **closed (2026-09-07): it is
+    the `providers` array, and the explanation this item wrote down was wrong.**
+  - measured one doctored declaration at a time on the BUILT package, with the gate's own
+    probe doing the bundling (`lesson-171`'s rule: no second pipeline). Pristine, `./select`
+    reads 69904 for `PctMultiSelect` alone against 69907 for both. Take `providers` out of
+    **`PctSelect`** — the class nobody imported — and the one-tag probe falls to **45446 B**,
+    24458 B shed. Take it out of `PctMultiSelect` instead, the class the bundle asked for,
+    and the reading is 69828: its own 76 bytes, with the sibling still there. The pin is on
+    the class nobody named
+  - the mechanism: Angular compiles `providers` into `features: [ɵɵProvidersFeature([…])]`,
+    a call to a function imported from `@angular/core`, standing in the static `ɵcmp`
+    initialiser of the class itself. External, so no bundler may assume it is pure — the
+    statement defining the class has a side effect and the class stays, template and
+    stylesheet with it. `sideEffects: false` on the package does not reach inside a module
+    something else in it is imported from, and hoisting the author's call into a module
+    constant does not help either (69916 against 69919): the call that pins is the one the
+    LINKER writes ([`lesson-173`](lessons.md#lesson-173))
+  - **the candidate this item led with is refuted.** With the inheritance cut out of the FESM
+    — `class PctSelect` no longer extending the base, `usesInheritance: false` — the two
+    numbers are still three bytes apart. `PCT_SELECT_IMPORTS` is likewise innocent: it names
+    directives both classes keep anyway
+  - **and the explanation this item gave for the OTHER rows was a coincidence.** "The six
+    that do not shed are parent/child pairs, where the child injects the container and the
+    reference is real" is true for exactly two of them: `inject(PctStepper)` and
+    `inject(PctRadioGroup)` name the parent CLASS. The other four (chips, menu, tabs, tree)
+    are pinned by the sibling's own `providers`, and the accordion — whose child injects a
+    TOKEN declared beside the class, `PCT_ACCORDION` — sheds. Two mechanisms account for all
+    eleven rows, and the snapshot's own prose now carries them
+  - the reading is **directional**, which the snapshot now says: the probe imports the first
+    export name, so `./accordion` sheds the item and would not shed the group
+
+- [ ] **4.43 — a dev-mode message costs a consumer 24458 B, and it is in the `providers`**
+  - measured in 4.42: `PctSelect` and `PctMultiSelect` each carry
+    `providers: [providePctTemplateHost('pct-…', ['pctSelectOption'])]`, and that array is
+    what pins each of them into a bundle that imported only the other one. The report it
+    feeds is `pctReportOrphanSlot` — a `console.warn` under `isDevMode()` about an
+    `<ng-template>` written where nothing reads it. A consumer who imports one select tag
+    pays **24458 B**, a third of the entrypoint, for a message their production bundle
+    cannot print
+  - what makes it a decision rather than a deletion: the report is the only thing that
+    catches a slot under the wrong host, and 0027's whole argument is that a slot is a
+    directive precisely so that the compiler and the runtime can both say something about
+    it. Taking the providers out would leave every correctly placed slot reporting itself as
+    an orphan, which is worse than silence
+  - the roads, none of them measured: the slot directive reads the host's tag from its own
+    element in dev mode instead of resolving a provider (no `providers`, same message);
+    the host declares itself through something that is not a component provider; or the cost
+    is accepted and written into the card, which is at least a true sentence about what the
+    tag costs
+  - the same shape stands over every component that declares `providers` for a reason a
+    consumer never asked for — `check-bundle`'s second block is the list, and today the only
+    dev-only one is the select's
+  - binds at: **the next component that adds `providers` for a dev-mode report**, or the
+    first consumer who reads the size snapshot's second block and asks · _notes:_ —
 
 ## 5. Gaps with no deadline
 

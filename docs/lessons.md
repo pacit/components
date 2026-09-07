@@ -4654,3 +4654,46 @@ here: a documentation-only push restored 12 of 17 tasks, and the five that ran a
 whose inputs name documentation — plus `check-support`, which is `cache: false` because it
 reads git history. The inputs lists were doing exactly what their comments claim. A dependency
 bump still reruns everything, because `package-lock.json` is in `sharedGlobals`.
+
+---
+
+### <a id="lesson-173"></a>`lesson-173` — `providers` on a component pin it into its entrypoint, and a consumer who never named it pays for it whole
+
+4.4 measured that importing one tag of a multi-tag entrypoint sheds the others — sometimes.
+`./accordion` sheds 63% of itself, `./select` sheds three bytes of 69907. 4.42 asked why, and
+the answer is one line of a component's decorator, measured one doctored declaration at a
+time on the built package, with the gate's own probe doing the bundling.
+
+**A component that declares `providers` cannot be shaken out.** Angular compiles them into
+`features: [ɵɵProvidersFeature([…])]`, and that call stands in the static `ɵcmp` initialiser
+of the class itself. It is a call to a function imported from `@angular/core` — external to
+the bundle — so no bundler may assume it is pure: the statement that defines the class has a
+side effect, and the class survives with its template and its stylesheet. Removing that one
+key from `PctSelect`'s declaration takes a bundle that imported `PctMultiSelect` alone from
+**69904 B to 45446 B**. Removing it from `PctMultiSelect` — the class the bundle actually
+asked for — takes it to 69828, its own 76 bytes and no more: the pin is on the class nobody
+imported.
+
+**`sideEffects: false` does not save it**, and the package declares it. The flag lets a
+bundler drop a module nothing imports; it does not license dropping a side-effectful statement
+out of a module something else in it is imported from.
+
+**Hoisting the author's call does not save it either.** `const HOST =
+providePctTemplateHost(…)` at module scope, with `providers: [HOST]` in the decorator, reads
+like the obvious repair and measures 69916 against 69919 — nothing shed. The call that pins is
+the one the LINKER writes, not the one the author wrote, and every shape of `providers`
+produces it.
+
+**Two mechanisms, and they explain all eleven rows.** Either the sibling declares providers
+(chips, menu, select, tabs, tree), or something reaches it: `inject(PctStepper)`,
+`inject(PctRadioGroup)` — the child injecting the parent CLASS as its token. Where the channel
+is a token declared beside the class instead (`PCT_ACCORDION`), there is no reference, and
+where the sibling also declares nothing, the row sheds: accordion, breadcrumb, date, field.
+The candidate everybody suggests first — two components over one shared base, `usesInheritance`
+in the declaration — was measured and refuted: with the inheritance cut out of the FESM the
+two numbers were still three bytes apart.
+
+The rule to carry: **a `providers` array is a public cost, not a private convenience.** It is
+the difference between a consumer paying for the tag they wrote and paying for every tag the
+entrypoint has, and in the select's case that is 24458 B for a dev-mode message about a slot
+in the wrong place.
