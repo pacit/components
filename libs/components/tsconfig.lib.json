@@ -27,6 +27,7 @@
     "menu/**/*.ts",
     "pagination/**/*.ts",
     "progress/**/*.ts",
+    "regions/**/*.ts",
     "skeleton/**/*.ts",
     "chips/**/*.ts",
     "avatar/**/*.ts",

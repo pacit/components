@@ -11,6 +11,7 @@ import {
   withEventReplay,
 } from '@angular/platform-browser';
 import { providePctConfig, providePctTexts } from '@pacit/components';
+import { providePctRegions } from '@pacit/components/regions';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -22,6 +23,10 @@ export const appConfig: ApplicationConfig = {
     provideRouter(appRoutes),
     // The global configuration of the library (req-api-config).
     providePctConfig({ defaultSize: 'md' }),
+    // The region cycle, installed the way an application installs it: a provider here and a
+    // key in the shell's template. Nothing in the library provides it, so an application that
+    // says nothing carries a token and no mechanism (0072, plan 4.16).
+    providePctRegions(),
     // The library texts are English (req-api-texts). The sandbox runs under a locale
     // that is not — see LOCALE_ID below — so it translates them here. This is the one
     // place where that channel is really used: were it to stop working, the first

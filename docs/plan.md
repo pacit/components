@@ -2125,7 +2125,7 @@ and to no other` has announced on the assertive channel since the announcer was 
     technology and neither has Playwright, so the promise ends at "the right region holds the
     right sentence" — written into the spec's own header rather than left to be assumed
 
-- [ ] **4.16 — a control in the corner is last in the page's tab order, and nothing carries the
+- [x] **4.16 — a control in the corner is last in the page's tab order, and nothing carries the
       keyboard to it**
   - a toast's `Undo` is a real control on a real card, and it is a child of `body` — so it
     stands after every control on the page. A keyboard user who wants it walks the whole
@@ -2157,6 +2157,42 @@ and to no other` has announced on the assertive channel since the announcer was 
     sides this item names, the toast that has nowhere in the document to be and the
     drawer that is somewhere wrong, and it takes no keystroke from an application that
     never asked to give one up
+  - **done (2026-09-08): the mechanism is in `./core`, the key is the consumer's, and the hole
+    in the honest default is a word rather than a silence.** `PctRegions` holds the registered
+    places and moves focus between them in the DOCUMENT's order, read at the press;
+    `[pctRegion]` declares a place and names it; `[pctRegionKey]` listens on the element a
+    consumer puts it on, F6 by default and the key an input. The toast's stack registers itself
+    and answers the same key from inside the stack — a press there can never reach the element
+    the key was mounted on ([0072](decisions/0072-a-region-key-is-the-consumers-to-install.md))
+  - **the default cannot hear a cold page, and that was measured rather than reasoned about.**
+    A keydown reaches an element only when focus is already inside it, and a page that has just
+    loaded has focus on `body`. The first e2e case pressed F6 on a fresh page and focus stayed
+    where it was. `listenOn="document"` closes it and is a word the CONSUMER writes: the library
+    still installs nothing anywhere by itself, and an application that writes it has decided
+    the key is free for it to take. The sandbox writes it, because a sandbox is an application
+  - measured: five unit cases (the walk and its wrap, landing on the place and not the control,
+    the key as an input, the refusal — F6 with nothing mounted moves nothing — and a region
+    letting go when its element goes) and four e2e cases in three engines, of which the one
+    that matters reads **one press** from the button that raised a message to the stack whose
+    action is otherwise last in the tab order
+  - two things found on the way and written into [`lesson-181`](lessons.md#lesson-181): a
+    component's own `host` block cannot apply a directive to itself (the attribute is written
+    and nothing is instantiated — directive matching happens over a template), and one key can
+    now have two listeners, so both handlers step aside on `event.defaultPrevented`
+  - **and where it lives was a measurement of its own.** In `./core` the mechanism cost
+    **+19111 B over the package** — a root service is an impure static initialiser, so every
+    entrypoint importing core carried a cycle it never used. It moved to
+    `@pacit/components/regions` with `providePctRegions()`, leaving core the interfaces and a
+    `PCT_REGIONS` token that answers `null`: **5515 B nobody pays until they import it**, core
+    +108 B, the toast +570 for the optional integration and the region's name
+  - two things found in the move and worth the hour they cost: a new entrypoint directory has
+    to be listed in `tsconfig.lib.json` and `tsconfig.spec.json` — outside them the compilation
+    is not the same one and a static attribute silently stops reaching a signal input — and the
+    texts gate reads a capitalised default as prose, so `F1`–`F24` are named as the one class
+    of capitalised literals nobody translates
+  - the drawer, the other side this item named, needs nothing of its own: a consumer writes
+    `pctRegion` on it and it is in the cycle. What the library owed was the mechanism, and a
+    component that is drawn where the consumer put it was never the hard half
 
 - [x] **4.17 — a snapshot with no tolerance drifted with nothing to point at**
   - `libs/components/size.snapshot.md` records `./toast` at **15311 B**. Built today from the

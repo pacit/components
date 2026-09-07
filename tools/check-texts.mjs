@@ -90,7 +90,21 @@ const LETTER = /\p{L}/u;
  * `input<string>` is arbitrary text by definition, so a literal in its default fires
  * whatever its shape.
  */
-const isProse = (v) => LETTER.test(v) && (/^\p{Lu}/u.test(v) || /\s/.test(v));
+/**
+ * A function key's name, which the platform spells with a capital and no language translates.
+ *
+ * The one class the shape below cannot tell from prose, and it is named RATHER THAN excused by
+ * a rule about length or case: `F6` is a `KeyboardEvent.key` value — `[pctRegionKey]`'s default
+ * (0072) — and there is no language in which a translator would touch it. The pattern is the
+ * platform's own list and nothing wider: `Enter`, `Home` and `Delete` are key names too, and
+ * they are also English words a component could put on a button, so they stay visible here.
+ */
+const FUNCTION_KEY = /^F([1-9]|1\d|2[0-4])$/;
+
+const isProse = (v) =>
+  !FUNCTION_KEY.test(v) &&
+  LETTER.test(v) &&
+  (/^\p{Lu}/u.test(v) || /\s/.test(v));
 
 const list = (entries) => entries.map((w) => `      ${w}`).join('\n');
 

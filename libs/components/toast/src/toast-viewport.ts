@@ -1,5 +1,15 @@
-import { Component, inject } from '@angular/core';
-import { PCT_TEXTS, PctOverlayPanel } from '@pacit/components/core';
+import {
+  Component,
+  computed,
+  DestroyRef,
+  ElementRef,
+  inject,
+} from '@angular/core';
+import {
+  PCT_REGIONS,
+  PCT_TEXTS,
+  PctOverlayPanel,
+} from '@pacit/components/core';
 import { PctIcon } from '@pacit/components/icon';
 import { PCT_TOAST_HOST, PctToastState } from './toast';
 
@@ -49,19 +59,57 @@ import { PCT_TOAST_HOST, PctToastState } from './toast';
     // `manual`: the stack is not light-dismissed and does not answer Escape — it is not a
     // panel the user opened. `PctToaster` shows it; nothing else ever hides it.
     popover: 'manual',
+    '[attr.aria-label]': 'texts().toastRegion',
     '[attr.data-pct-block]': 'host.placement.block',
     '[attr.data-pct-inline]': 'host.placement.inline',
     '(pointerenter)': 'pointer(true)',
     '(pointerleave)': 'pointer(false)',
     '(focusin)': 'focus(true)',
     '(focusout)': 'onFocusOut($event)',
+    // The stack is a child of `body`, so a press inside it never reaches the element a
+    // consumer mounted the region key on. It answers the same key here, and only when a
+    // consumer has chosen one — the library still mounts nothing on the document (plan 4.16).
+    '(keydown)': 'onRegionKey($event)',
   },
 })
 export class PctToastViewport {
   protected readonly host = inject(PCT_TOAST_HOST);
   protected readonly texts = inject(PCT_TEXTS);
+  private readonly regions = inject(PCT_REGIONS);
+  private readonly element = inject<ElementRef<HTMLElement>>(ElementRef);
 
   protected readonly toasts = this.host.toasts;
+
+  constructor() {
+    // The stack is a region whether or not anybody cycles through them: registering costs
+    // nothing until a consumer mounts the key, and a stack that registered itself only once
+    // somebody pressed something would be a region that is not there when it is looked for.
+    // `null` unless an application installed the cycle, and then this whole constructor is
+    // three lines that do nothing — which is what "the consumer installs it" costs a consumer
+    // who did not (0072).
+    const remove = this.regions?.register({
+      element: this.element.nativeElement,
+      label: computed(() => this.texts().toastRegion),
+    });
+    if (remove) inject(DestroyRef).onDestroy(remove);
+  }
+
+  /**
+   * The region key, answered from inside the stack.
+   *
+   * A press here cannot reach the element the consumer mounted `pctRegionKey` on — the stack
+   * is a child of `body` and the application is somewhere else in the tree — so the same key
+   * is read from the service, and only when a consumer has actually chosen one. That is the
+   * difference between shipping a mechanism and taking a keystroke: with no
+   * `[pctRegionKey]` anywhere, F6 does here exactly what it did before this existed (0072).
+   */
+  protected onRegionKey(event: KeyboardEvent): void {
+    if (event.defaultPrevented) return;
+    const key = this.regions?.key() ?? null;
+    if (key === null || event.key !== key) return;
+    if (event.altKey || event.ctrlKey || event.metaKey) return;
+    if (this.regions?.next(document.activeElement)) event.preventDefault();
+  }
 
   /** The two reasons a clock stops, kept apart so that neither can release the other's hold. */
   private pointerInside = false;

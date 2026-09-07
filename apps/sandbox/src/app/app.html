@@ -16,8 +16,13 @@
   />
 </header>
 
-<div class="shell__body">
-  <nav class="shell__nav" aria-label="Sandbox views">
+<!--
+  The region key, mounted where an application mounts it. The library installs nothing on the
+  document by itself — which key is free is a question only an application can answer (0072,
+  plan 4.16) — so the sandbox says so here, in one word, and takes F6.
+-->
+<div class="shell__body" pctRegionKey listenOn="document">
+  <nav class="shell__nav" aria-label="Sandbox views" pctRegion>
     @for (group of groups; track group.id) {
     <h2 class="shell__nav-heading">{{ group.label }}</h2>
     <ul class="shell__nav-list">
@@ -37,7 +42,7 @@
     }
   </nav>
 
-  <main class="shell__view">
+  <main class="shell__view" pctRegion="Main view">
     <router-outlet />
   </main>
 </div>

@@ -42,6 +42,7 @@
         "./libs/components/pagination/src/index.ts"
       ],
       "@pacit/components/progress": ["./libs/components/progress/src/index.ts"],
+      "@pacit/components/regions": ["./libs/components/regions/src/index.ts"],
       "@pacit/components/skeleton": ["./libs/components/skeleton/src/index.ts"],
       "@pacit/components/chips": ["./libs/components/chips/src/index.ts"],
       "@pacit/components/avatar": ["./libs/components/avatar/src/index.ts"],

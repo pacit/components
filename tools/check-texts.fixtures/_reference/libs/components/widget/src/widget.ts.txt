@@ -24,6 +24,10 @@ export class PctWidget {
 
   readonly label = input<string>('');
   readonly size = input<PctWidgetSize>('md');
+  // A function key, which is the one capitalised default that is not prose: nobody translates
+  // `KeyboardEvent.key`. Widen `FUNCTION_KEY` to any short capitalised word and the case below
+  // (`literal-in-string-input`) stops firing — the exemption is named, not shaped.
+  readonly hotkey = input('F6');
   readonly items = input<readonly string[]>([]);
 
   /** A library string read AT RENDER TIME, not at construction. */

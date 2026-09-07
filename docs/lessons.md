@@ -4953,3 +4953,56 @@ carries its branches under **`groups`** — so every switch block in the library
 it, and to `check-aria`'s identical walk. Nothing had been missed yet because no icon had ever
 stood inside a switch, which is exactly what a denominator is for: **a walk that reaches nothing
 looks like a walk that found nothing wrong** ([`lesson-48`](#lesson-48) again, one AST node over).
+
+### <a id="lesson-181"></a>`lesson-181` — A key nobody may install, and the hole in the honest default
+
+A toast's `Undo` stands after every control on the page, because the card it sits on is a child
+of `body`. The usual repair is a global F6 the library installs on the document — and the
+disagreement between implementations (F6 here, F8 there) is the whole argument against doing it:
+**a component library does not get to spend the host application's keyboard.**
+
+So the library ships the mechanism — a service, a `[pctRegion]` to declare a place, and a
+`[pctRegionKey]` that listens on the element a consumer puts it on — and mounts nothing.
+
+**Then the e2e case refused to pass, and that was the finding.** `page.keyboard.press('F6')` on
+a freshly loaded page goes to `document.activeElement`, which is `body` — a node ABOVE the
+element the key was mounted on, so the event never passes through it on its way to the document.
+Focus has to be inside the page for a key mounted inside the page to hear anything. Every
+implementation that reaches for `document` reaches for it for this reason, and the reason is
+real.
+
+What closes it here is one word the CONSUMER writes: `listenOn="document"`. The library still
+installs nothing by itself; an application that writes it has decided the key is free for it to
+take. Two values, one conservative and one that works from a cold page, with the cost of each
+written where the consumer chooses.
+
+**Two more things measured on the way.**
+
+A component's own `host` block cannot apply a directive to itself: `host: { pctRegionKey: '' }`
+writes the attribute and instantiates nothing, because directive matching happens over a
+TEMPLATE. The key went onto an element in the shell's template instead (`hostDirectives` is the
+other road).
+
+And two listeners for one key is a real possibility once `listenOn="document"` exists — the toast's
+stack answers the key itself, then the same event continues to the document. `event.defaultPrevented`
+at the top of both handlers is what keeps one press one hop.
+
+**And where it lives cost 19111 B before it cost anything else.** Written into `./core`, the
+service and its two directives are carried by every entrypoint that imports core, used or not: a
+`providedIn: 'root'` service is a static initialiser calling an imported function, which no
+bundler may treat as pure (`lesson-173`, a fourth time). Measured: the package went 443888 →
+462999 B, `./core` 8157 → 10113. Moved into `@pacit/components/regions` with a
+`providePctRegions()` and a `null`-by-default token left behind in core, the same mechanism is
+**5515 B nobody pays until they import it**, and core grows by 108.
+
+Two more things the move taught, both of them the kind that cost an hour if nobody writes them
+down. A brand-new entrypoint directory has to be added to `tsconfig.lib.json` AND
+`tsconfig.spec.json` — outside them the Angular compilation is not the same one, and the symptom
+is silent: `pctRegion="Navigation"` left the signal input at its default, and every region
+registered with an empty name. And the texts gate reads a capitalised default as prose, which is
+right for every string but a `KeyboardEvent.key`: the exemption is `F1`–`F24` by name, because
+`Enter`, `Home` and `Delete` are key names AND words a component could put on a button.
+
+The shape worth keeping: **when a mechanism cannot do its job without taking something from the
+consumer, the honest design is the one that makes the consumer hand it over in a word** — not
+the one that takes it quietly, and not the one that refuses to work.

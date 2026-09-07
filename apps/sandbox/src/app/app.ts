@@ -5,6 +5,7 @@ import {
   inject,
 } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { PctRegionDirective, PctRegionKey } from '@pacit/components/regions';
 import { SbxControls } from './ui/controls';
 import { SbxSettings } from './ui/settings';
 import { SBX_VIEW_GROUPS, viewsOf } from './views';
@@ -19,7 +20,14 @@ import { SBX_VIEW_GROUPS, viewsOf } from './views';
  */
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, SbxControls],
+  imports: [
+    RouterOutlet,
+    RouterLink,
+    RouterLinkActive,
+    SbxControls,
+    PctRegionDirective,
+    PctRegionKey,
+  ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
   host: {

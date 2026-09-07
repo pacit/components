@@ -46,42 +46,43 @@ it works in a zoneless application and renders on the server.
 Components are imported from **secondary entrypoints**, so an application that uses a button
 does not pay for a select. The primary entrypoint carries configuration only.
 
-| entrypoint                     | what is in it                                                                                                           |
-| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
-| `@pacit/components`            | `providePctConfig`, `providePctTexts`, their tokens, `PCT_VERSION`                                                      |
-| `@pacit/components/accordion`  | `PctAccordion`, `PctAccordionItem`                                                                                      |
-| `@pacit/components/avatar`     | `PctAvatar`                                                                                                             |
-| `@pacit/components/badge`      | `PctBadge`                                                                                                              |
-| `@pacit/components/breadcrumb` | `PctBreadcrumb`, `PctCrumb`, `PctCrumbLink`                                                                             |
-| `@pacit/components/stepper`    | `PctStepper`, `PctStep`                                                                                                 |
-| `@pacit/components/tree`       | `PctTree`, `PctTreeItem`                                                                                                |
-| `@pacit/components/button`     | `PctButton`                                                                                                             |
-| `@pacit/components/checkbox`   | `PctCheckbox`                                                                                                           |
-| `@pacit/components/chips`      | `PctChips`, `PctChip`                                                                                                   |
-| `@pacit/components/container`  | `PctContainer`                                                                                                          |
-| `@pacit/components/stack`      | `PctStack`                                                                                                              |
-| `@pacit/components/grid`       | `PctGrid`                                                                                                               |
-| `@pacit/components/hero`       | `PctHero`                                                                                                               |
-| `@pacit/components/theme`      | `PctTheme`                                                                                                              |
-| `@pacit/components/date`       | `PctDate`, `PctCalendar`, the `PctDay` helpers                                                                          |
-| `@pacit/components/dialog`     | `PctDialog`, `PctAutofocus`                                                                                             |
-| `@pacit/components/drawer`     | `PctDrawer`, `PctDrawerTrigger`                                                                                         |
-| `@pacit/components/field`      | `PctField`, `PctText`, `PctNumber`, `PctAutosize`, `PctPrefix`, `PctSuffix`                                             |
-| `@pacit/components/icon`       | `PctIcon`, `PctIconTemplate`, `providePctIcons`, `PCT_ICONS`                                                            |
-| `@pacit/components/menu`       | `PctMenu`, `PctMenuItem`, `PctMenuTrigger`                                                                              |
-| `@pacit/components/pagination` | `PctPagination`                                                                                                         |
-| `@pacit/components/popover`    | `PctPopover`, `PctPopoverTrigger`                                                                                       |
-| `@pacit/components/progress`   | `PctProgress`                                                                                                           |
-| `@pacit/components/radio`      | `PctRadioGroup`, `PctRadio`                                                                                             |
-| `@pacit/components/select`     | `PctSelect`, `PctMultiSelect`, `PctSelectOptionTemplate`, the filter helpers                                            |
-| `@pacit/components/skeleton`   | `PctSkeleton`                                                                                                           |
-| `@pacit/components/slider`     | `PctSlider`                                                                                                             |
-| `@pacit/components/switch`     | `PctSwitch`                                                                                                             |
-| `@pacit/components/tabs`       | `PctTabs`, `PctTab`                                                                                                     |
-| `@pacit/components/toast`      | `PctToaster`, `PctToastViewport`, `providePctToastConfig`                                                               |
-| `@pacit/components/tooltip`    | `PctTooltip`                                                                                                            |
-| `@pacit/components/testing`    | `PctButtonHarness` and its fifty siblings on the CDK's `ComponentHarness`, `part`, `allParts`, `query` — for tests only |
-| `@pacit/components/core`       | what the controls share: `PCT_FIELD`, `PctAnnouncer`, template slots, id helpers                                        |
+| entrypoint                     | what is in it                                                                                                               |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| `@pacit/components`            | `providePctConfig`, `providePctTexts`, their tokens, `PCT_VERSION`                                                          |
+| `@pacit/components/accordion`  | `PctAccordion`, `PctAccordionItem`                                                                                          |
+| `@pacit/components/avatar`     | `PctAvatar`                                                                                                                 |
+| `@pacit/components/badge`      | `PctBadge`                                                                                                                  |
+| `@pacit/components/breadcrumb` | `PctBreadcrumb`, `PctCrumb`, `PctCrumbLink`                                                                                 |
+| `@pacit/components/stepper`    | `PctStepper`, `PctStep`                                                                                                     |
+| `@pacit/components/tree`       | `PctTree`, `PctTreeItem`                                                                                                    |
+| `@pacit/components/button`     | `PctButton`                                                                                                                 |
+| `@pacit/components/checkbox`   | `PctCheckbox`                                                                                                               |
+| `@pacit/components/chips`      | `PctChips`, `PctChip`                                                                                                       |
+| `@pacit/components/container`  | `PctContainer`                                                                                                              |
+| `@pacit/components/stack`      | `PctStack`                                                                                                                  |
+| `@pacit/components/grid`       | `PctGrid`                                                                                                                   |
+| `@pacit/components/hero`       | `PctHero`                                                                                                                   |
+| `@pacit/components/theme`      | `PctTheme`                                                                                                                  |
+| `@pacit/components/regions`    | `providePctRegions`, `PctRegionDirective`, `PctRegionKey` — the keyboard's road to a place the reading order puts elsewhere |
+| `@pacit/components/date`       | `PctDate`, `PctCalendar`, the `PctDay` helpers                                                                              |
+| `@pacit/components/dialog`     | `PctDialog`, `PctAutofocus`                                                                                                 |
+| `@pacit/components/drawer`     | `PctDrawer`, `PctDrawerTrigger`                                                                                             |
+| `@pacit/components/field`      | `PctField`, `PctText`, `PctNumber`, `PctAutosize`, `PctPrefix`, `PctSuffix`                                                 |
+| `@pacit/components/icon`       | `PctIcon`, `PctIconTemplate`, `providePctIcons`, `PCT_ICONS`                                                                |
+| `@pacit/components/menu`       | `PctMenu`, `PctMenuItem`, `PctMenuTrigger`                                                                                  |
+| `@pacit/components/pagination` | `PctPagination`                                                                                                             |
+| `@pacit/components/popover`    | `PctPopover`, `PctPopoverTrigger`                                                                                           |
+| `@pacit/components/progress`   | `PctProgress`                                                                                                               |
+| `@pacit/components/radio`      | `PctRadioGroup`, `PctRadio`                                                                                                 |
+| `@pacit/components/select`     | `PctSelect`, `PctMultiSelect`, `PctSelectOptionTemplate`, the filter helpers                                                |
+| `@pacit/components/skeleton`   | `PctSkeleton`                                                                                                               |
+| `@pacit/components/slider`     | `PctSlider`                                                                                                                 |
+| `@pacit/components/switch`     | `PctSwitch`                                                                                                                 |
+| `@pacit/components/tabs`       | `PctTabs`, `PctTab`                                                                                                         |
+| `@pacit/components/toast`      | `PctToaster`, `PctToastViewport`, `providePctToastConfig`                                                                   |
+| `@pacit/components/tooltip`    | `PctTooltip`                                                                                                                |
+| `@pacit/components/testing`    | `PctButtonHarness` and its fifty siblings on the CDK's `ComponentHarness`, `part`, `allParts`, `query` — for tests only     |
+| `@pacit/components/core`       | what the controls share: `PCT_FIELD`, `PctAnnouncer`, template slots, id helpers                                            |
 
 `@pacit/components/themes/pct.css` is the built skin — see [Theming](#theming).
 

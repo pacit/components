@@ -104,6 +104,15 @@ export interface PctTexts {
    */
   readonly toastDismiss: string;
   /**
+   * Toast: what the stack of messages is called when a keyboard arrives at it as a region.
+   * The stack is a `role="log"` that stands outside the page's reading order, so the region
+   * cycle ({@link PctRegions}) is how a keyboard reaches it in one hop — and a place the
+   * keyboard lands on with nothing to announce is a place the user has to guess at. It names
+   * the region and not the messages: what is IN it is read as it arrives, by the live region
+   * itself.
+   */
+  readonly toastRegion: string;
+  /**
    * Drawer: the accessible name of the cross that shuts a docked panel. The button draws
    * nothing but the cross, so this string is the only name it has — and it is a key of its own
    * rather than the dialog's, which the English default makes look like duplication and is
@@ -174,6 +183,7 @@ export const PCT_DEFAULT_TEXTS: PctTexts = {
   dateMalformed: 'Not a date',
   numberMalformed: 'Not a number',
   toastDismiss: 'Dismiss',
+  toastRegion: 'Notifications',
   drawerClose: 'Close',
   paginationLabel: 'Pagination',
   paginationPrevious: 'Previous page',

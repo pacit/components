@@ -41,39 +41,40 @@ and the class metadata carries the decorator a second time, and both are compile
 before an application ships them.
 
 ```
-. 3614 ./core @angular/core
-./accordion 11471 ./core,./icon @angular/common,@angular/core
-./avatar 8575 ./core,./icon @angular/common,@angular/core
+. 3706 ./core @angular/core
+./accordion 11564 ./core,./icon @angular/common,@angular/core
+./avatar 8668 ./core,./icon @angular/common,@angular/core
 ./badge 1706 - @angular/core
-./breadcrumb 9168 ./core,./icon @angular/common,@angular/core
-./button 9639 ./core @angular/core
-./checkbox 14930 ./core,./icon @angular/common,@angular/core
-./chips 10674 ./core,./icon @angular/common,@angular/core
+./breadcrumb 9261 ./core,./icon @angular/common,@angular/core
+./button 9731 ./core @angular/core
+./checkbox 15023 ./core,./icon @angular/common,@angular/core
+./chips 10767 ./core,./icon @angular/common,@angular/core
 ./container 717 - @angular/core
-./core 8157 - @angular/core
-./date 39351 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
-./dialog 16334 ./core,./icon @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
-./drawer 15527 ./core,./icon @angular/common,@angular/core
-./field 27832 ./core @angular/core,@angular/forms,@angular/forms/signals
+./core 8265 - @angular/core
+./date 39444 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core,@angular/forms,@angular/forms/signals
+./dialog 16427 ./core,./icon @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
+./drawer 15620 ./core,./icon @angular/common,@angular/core
+./field 27925 ./core @angular/core,@angular/forms,@angular/forms/signals
 ./grid 673 - @angular/core
 ./hero 5845 - @angular/core
 ./icon 2552 - @angular/common,@angular/core
-./menu 20310 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
-./pagination 13675 ./core,./icon @angular/common,@angular/core
-./popover 14622 ./core @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
-./progress 11625 ./core,./icon @angular/common,@angular/core
-./radio 15495 ./core @angular/core
-./select 69803 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core
+./menu 20403 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
+./pagination 13768 ./core,./icon @angular/common,@angular/core
+./popover 14715 ./core @angular/cdk/a11y,@angular/cdk/overlay,@angular/cdk/portal,@angular/common,@angular/core
+./progress 11718 ./core,./icon @angular/common,@angular/core
+./radio 15588 ./core @angular/core
+./regions 5515 ./core @angular/core
+./select 69892 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core
 ./skeleton 3480 - @angular/core
-./slider 17449 ./core @angular/core
+./slider 17542 ./core @angular/core
 ./stack 879 - @angular/core
-./stepper 10652 ./core,./icon @angular/common,@angular/core
-./switch 12469 ./core @angular/core
-./tabs 16139 ./core @angular/core
+./stepper 10745 ./core,./icon @angular/common,@angular/core
+./switch 12562 ./core @angular/core
+./tabs 16232 ./core @angular/core
 ./testing 8136 - @angular/cdk/testing
 ./theme 518 - @angular/core
-./toast 19473 ./core,./icon @angular/common,@angular/core
-./tooltip 13240 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core
+./toast 20043 ./core,./icon @angular/common,@angular/core
+./tooltip 13333 ./core @angular/cdk/overlay,@angular/cdk/portal,@angular/core
 ./tree 9158 ./icon @angular/common,@angular/core
 ```
 
@@ -122,15 +123,15 @@ injector — the query IS the claim — and no component in this package declare
 worth, and it is the largest single number this file has ever moved.
 
 ```
-./accordion PctAccordion 2 4129 11299
-./breadcrumb PctBreadcrumb 3 4223 9009
-./chips PctChip 2 10533 10535
-./date PctCalendar 2 22089 38867
-./field PctField 3 16037 24939
-./menu PctMenu 2 19100 19102
-./radio PctRadio 2 15325 15327
-./select PctMultiSelect 2 45181 69573
-./stepper PctStep 2 10509 10511
-./tabs PctTab 2 15971 15973
+./accordion PctAccordion 2 4221 11392
+./breadcrumb PctBreadcrumb 3 4315 9102
+./chips PctChip 2 10626 10628
+./date PctCalendar 2 22182 38960
+./field PctField 3 16130 25032
+./menu PctMenu 2 19193 19195
+./radio PctRadio 2 15418 15420
+./select PctMultiSelect 2 45270 69662
+./stepper PctStep 2 10602 10604
+./tabs PctTab 2 16064 16066
 ./tree PctTree 2 9020 9022
 ```
