@@ -144,7 +144,11 @@ describe('PctHarness', () => {
     await fixture.whenStable();
 
     expect(await select.has('panel')).toBe(true);
-    expect(await (await select.part('panel')).getAttribute('role')).toBe(
+    // The panel is the surface and the list inside it is the listbox (0069) — the part a
+    // harness reaches for a ROLE is therefore `list`, and the two are asserted together so
+    // that the day one of them moves the other says where it went.
+    expect(await (await select.part('panel')).getAttribute('role')).toBeNull();
+    expect(await (await select.part('list')).getAttribute('role')).toBe(
       'listbox',
     );
     expect(await select.parts('option')).toHaveLength(3);
