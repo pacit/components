@@ -21,6 +21,15 @@
 # workers a small runner allows, so whether the nightly starts LANDING the clock-kills the
 # snapshot was written from is a question the first night after this answers, not one this
 # comment may.
+#
+# NEITHER JOB CACHES nx task results, and unlike ci.yml — which does, over `.nx/cache` and
+# the workspace-data database together — that is the point of this workflow rather than an
+# omission. Everything here is a re-measurement from nothing: the clock-kill distribution of
+# the mutation gate, the rot between pushes, the roads that depend on the world outside the
+# repository. A restored result is a reading another machine took on another day, so a cache
+# here would answer the one question this file exists to ask. The wobble on an untouched file
+# is answered by the runner split above and by the snapshot it is measured against — not by
+# freezing the reading that measures it.
 name: Nightly
 
 on:

@@ -80,6 +80,43 @@ jobs:
           path: tools/.dictionaries
           key: dictionaries-${{ hashFiles('tools/dictionaries.lock.json') }}
 
+      # The nx task cache, and it names TWO directories because it IS two halves. The
+      # artifacts of a cached task live in `.nx/cache/<hash>/`; the index that says such a
+      # hash exists at all — its exit code, its terminal output — lives in the database
+      # under `.nx/workspace-data`. Measured here on nx 23.1, each half restored on its own:
+      # `.nx/cache` alone reads 0/1 hit and reruns the task (that is the snippet copied all
+      # over the internet, and it was written for the nx that kept its index beside the
+      # artifacts); the database alone reads 1/1 hit for `tokens:build` — and leaves
+      # `libs/tokens/dist` NOT EXISTING, a green build with no artifact for every gate
+      # downstream to read. So they are one entry under one key: restored together or
+      # missed together, never one without the other.
+      #
+      # What it buys, measured over the fourteen gates of the root project on a developer
+      # machine: a push that touches documentation alone restored 12 of 17 tasks and took
+      # 11.2 s instead of 50.8 s. The five that ran are the honest ones — `check-docs`,
+      # `check-acr`, `check-language` and `check-reach` all name documentation among their
+      # inputs, and `check-support` is `cache: false` because it reads git history, which is
+      # not a file pattern.
+      #
+      # What it does NOT buy is the case that reads worst: a dependency bump still reruns
+      # every gate, because `package-lock.json` is in `sharedGlobals` and every task's hash
+      # carries it. That is deliberate — a gate answered from a run taken before the bump is
+      # exactly what nobody here wants (`check-forms`'s `externalDependencies` note in
+      # project.json argues the same thing one target down). This file is in `sharedGlobals`
+      # too, so the first run after this step lands is a full one by construction.
+      #
+      # The nightly has no step like this, and that is a decision rather than an omission:
+      # it exists to re-measure everything from nothing, and a restored result is a reading
+      # somebody else's machine took on another day.
+      - uses: actions/cache@v4
+        with:
+          path: |
+            .nx/cache
+            .nx/workspace-data
+            !.nx/workspace-data/d
+          key: nx-${{ runner.os }}-${{ github.sha }}
+          restore-keys: nx-${{ runner.os }}-
+
       - run: npx nx format:check
 
       # One line runs every gate. Which promise each of them proves — and which

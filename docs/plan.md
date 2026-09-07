@@ -3071,7 +3071,7 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     four times over, so it waits for the first — with its case. Recorded in the code beside
     the strip rather than left as a plan line nobody reads
 
-- [ ] **4.41 — CI restores the dependencies and none of the task results**
+- [x] **4.41 — CI restores the dependencies and none of the task results**
   - `ci.yml` and `nightly.yml` both cache `npm` and the Playwright browsers, and neither
     restores an **nx task result**. So a dependency bump — or any change the graph calls
     affected — reruns every gate from nothing, including the two that take hours
@@ -3090,7 +3090,35 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
   - found by the direction review inside 4.2 and left behind by its tick, deliberately: 4.2's
     decision was about which runner starts what, and this is about what a runner may skip
   - binds at: **the first nightly that goes red on a file the commit did not touch**, or the
-    first CI bill · _notes:_ —
+    first CI bill · _notes:_ **closed (2026-09-07): the cache lands in `ci.yml` and is
+    refused in `nightly.yml`, and both halves are written into the workflows themselves.**
+  - **the shape this item proposed does not work, and that was measured before it was
+    written.** `actions/cache` over `.nx/cache` — the snippet copied everywhere — restores
+    the ARTIFACTS of a cached task and not the INDEX that says the hash exists: since nx 20
+    that lives in a SQLite table (`cache_outputs`) under `.nx/workspace-data`. Restored on
+    its own it reads **0/1 hit**; the database on its own reads **1/1 hit for
+    `tokens:build` and leaves `libs/tokens/dist` not existing** — a green build with no
+    artifact. So the step names both directories under one key, restored together or missed
+    together ([`lesson-172`](lessons.md#lesson-172))
+  - what it buys, measured over the root project's fourteen gates on a developer machine: a
+    documentation-only push restored **12 of 17 tasks**, 11.2 s against 50.8 s. The five
+    that ran are the five whose inputs name documentation — plus `check-support`, which is
+    `cache: false` because point 4 reads git history. The inputs lists every gate's comment
+    argues for are exactly what decides this, which is why the reading is worth having: it
+    is a measurement OF those lists
+  - what it does **not** buy is this item's own headline. A dependency bump still reruns
+    every gate, because `package-lock.json` is in `sharedGlobals` and every task's hash
+    carries it — deliberately, and for the reason `check-forms`'s `externalDependencies`
+    note gives one target down: a gate answered from a run taken before the bump is a gate
+    that did not see it
+  - **the correctness argument is refused where it was aimed.** The item's strongest line —
+    a restored mutation result does not re-throw the clock-kill dice — would freeze the very
+    distribution the nightly exists to sample, and the item's own next sentence says why
+    ("a restored mutation result is also a result nobody re-measured"). The wobble on an
+    untouched file is answered by 4.2's runner split and by the snapshot it is measured
+    against. `nightly.yml` therefore caches nothing, and its header says so in those words
+  - the remote cache stays refused for now for the reason the item gave: it is a service,
+    and therefore a dependency decision rather than a setting
 
 - [ ] **4.42 — one select tag brings the other, and no reference between them says why**
   - measured by point 12 of `check-bundle` (4.4): `./select` costs **69904 B** for

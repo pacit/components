@@ -4619,3 +4619,38 @@ bundle is evidence of text. And the second rule, older and re-learnt: a probe th
 step of the consumer's build measures a different artefact, so a shortcut copy of a gate's
 pipeline is a different gate — the one place a measurement like this belongs is inside the
 gate that already gets the pipeline right.
+
+---
+
+### <a id="lesson-172"></a>`lesson-172` — Half a cache is not half a speed-up: one half restores nothing, the other restores a green with no artifact
+
+The step was 4.41's, and it starts with the snippet everybody copies into a GitHub workflow:
+`actions/cache` over `.nx/cache`, keyed on the lockfile. It was measured before it was
+written, one task at a time on nx 23.1, with `NX_CACHE_DIRECTORY` and
+`NX_WORKSPACE_DATA_DIRECTORY` pointed at a scratch pair so nothing in the repository moved.
+
+**`.nx/cache` alone reads 0/1 hit.** The directory holds the artifacts of a cached task —
+`<hash>/` with its outputs, `terminalOutputs/<hash>` with what it printed. What it does not
+hold is the statement that the hash exists: `cache_outputs` (hash, exit code, size) is a table
+in the SQLite database under `.nx/workspace-data`. Restore the artifacts without the database
+and every task is a miss, the run is exactly as long as it was, and CI is green — a cache that
+restores nothing looks precisely like a cache that works.
+
+**The database alone reads 1/1 hit — and leaves the output directory missing.** With the
+database restored and `.nx/cache` deleted, `tokens:build` reported `[local cache]`,
+"Successfully ran target build", 100% hit, in 21 ms; `libs/tokens/dist` did not exist
+afterwards. That is the dangerous half: a build that never ran, reported as done, with the
+artifact every downstream gate reads absent from the disk.
+
+So the two directories are one thing under one key — restored together or missed together —
+and that is how the step is written. The general shape is older than nx: **a cache is a pair
+of an index and a store, and any advice that names one of them is advice for a version that
+kept them in the same place.** The measurement that catches it is not "is the cache smaller
+than expected" but the two readings above: hits with the store gone, misses with the index
+gone.
+
+What the same measurement also said, and what went into the workflow's comment rather than
+here: a documentation-only push restored 12 of 17 tasks, and the five that ran are the five
+whose inputs name documentation — plus `check-support`, which is `cache: false` because it
+reads git history. The inputs lists were doing exactly what their comments claim. A dependency
+bump still reruns everything, because `package-lock.json` is in `sharedGlobals`.
