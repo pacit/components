@@ -455,7 +455,7 @@
     {
       "id": "2.4.3",
       "conformance": "Supports",
-      "remarks": "Focus order is DOM order: no positive `tabindex` anywhere (scanned), a dialog takes focus on open and gives it back on close, a menu and a popover return it to their trigger. A toast's action stands at the end of the document because the stack is a child of `body` — reachable, and far; 4.16 in the plan keeps that walk in view.",
+      "remarks": "Focus order is DOM order: no positive `tabindex` anywhere (scanned), a dialog takes focus on open and gives it back on close, a menu and a popover return it to their trigger. A toast's action stands at the end of the document because the stack is a child of `body` — reachable, and far, which is why the library also ships a way out of that walk: `@pacit/components/regions` registers the stack as a region and moves focus to it on a key the CONSUMER mounts, F6 by default. The cycle changes no reading order and takes no keystroke by itself; with nothing mounted, this row reads exactly as it did before (0072).",
       "evidence": [
         {
           "scan": "no-positive-tabindex"
