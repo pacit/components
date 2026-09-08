@@ -5,13 +5,66 @@
       Every one of them running on this page — the same demo its own page opens
       with, not a screenshot of it. Each card leads to the live instance, the
       demo's own source, the parts and the tokens that are its public contract.
+      Type to narrow the list — with no JavaScript the field stands quiet and
+      all {{ total }} are here.
     </p>
+
+    <!--
+      The finder the site already ships, on the page that has thirty-four of everything:
+      `docs-index` filters this same list by the same rule in the component page's rail and
+      in the shell's drawer, and `find.ts` holds the rule so the two cannot disagree. The
+      count is `pct-field`'s own label add-on — the slot its card describes as "an i icon, a
+      counter" — so it sits at the end of the label row and outside the input's accessible
+      name.
+    -->
+    <pct-field class="find" label="Find a component">
+      <input
+        pctText
+        type="search"
+        [value]="query()"
+        (input)="onFilter($event)"
+        data-testid="gallery-filter"
+      />
+      <span
+        pctLabelAux
+        class="find__count"
+        aria-live="polite"
+        data-testid="gallery-count"
+        >{{ shown() }} of {{ total }}</span
+      >
+    </pct-field>
+
+    <!--
+      The anchors made visible. Six links, one per band, and every one of them owes the 24 px
+      of SC 2.5.8 on its own — which is the whole cost of this bar and the reason it wraps to
+      three or four rows on a narrow page rather than shrinking. The lit one is read by the
+      same scroll spy the component page's table of contents runs, so the bar says where the
+      reader IS and not only where they can go. A band the filter has emptied leaves with its
+      header: every chip here points at something that is on the page.
+    -->
+    <nav class="bar" aria-label="Sections" data-testid="gallery-bar">
+      @for (bucket of buckets(); track bucket.name) {
+      <a
+        class="bar__chip"
+        [routerLink]="[]"
+        [fragment]="bucket.slug"
+        [class.is-active]="active() === bucket.slug"
+        [attr.aria-current]="active() === bucket.slug ? 'location' : null"
+        >{{ bucket.name }} <b>{{ bucket.cards.length }}</b></a
+      >
+      }
+    </nav>
   </header>
 
   <div class="gallery" data-testid="gallery">
-    @for (bucket of buckets; track bucket.name) {
+    @for (bucket of buckets(); track bucket.name) {
     <section class="bucket">
-      <h2 class="bucket__name">
+      <!--
+        The `id` is the whole of the anchor: `scroll-padding-block-start` on the root and
+        `ViewportScroller.setOffset` both read `--docs-anchor-offset` already, so a band of
+        this page becomes addressable the moment it has a name to be addressed by.
+      -->
+      <h2 class="bucket__name" [id]="bucket.slug" data-spy>
         {{ bucket.name }}
         <span class="bucket__count">{{ bucket.cards.length }}</span>
       </h2>
@@ -60,6 +113,11 @@
         }
       </pct-grid>
     </section>
+    } @empty {
+    <!-- The index's own sentence, because it is the same list answering the same typing. -->
+    <p class="gallery__empty" data-testid="gallery-empty">
+      No component answers to that.
+    </p>
     }
   </div>
 </pct-container>

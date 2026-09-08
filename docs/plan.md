@@ -2932,6 +2932,35 @@ again"` fails **1 run in 3** in WebKit at the `Escape` step — the panel is sti
   - **mono does not become a second face.** It carries the strings — selectors, entry points,
     tokens, the landing's index — and that is a rule anybody can state; a mono heading makes it
     decoration and spends the distinction the same page depends on
+  - **built 2026-09-08, and the gallery's answer is a field, a bar and six addresses.** Plate B
+    with A's bar inside it, carried over as drawn and nothing else on the page touched — no
+    card, no wash, no grid. One `pct-field` above the buckets, its count sitting in the field's
+    own label add-on (`34 of 34`, tabular, a polite live region, outside the input's accessible
+    name); six `id`s on the `<h2>`, `#actions-navigation` through `#layout-theming`, so that
+    `/components#choices` lands at **88 px**, the offset `--docs-anchor-offset` declares; the
+    bar of six chips that makes those addresses visible; and the index's own sentence when
+    nothing answers. The match rule moved out to `apps/docs/src/app/find.ts` and `docs-index`
+    reads it from there, so the rail, the drawer and the gallery cannot answer one word three
+    ways — the second copy `lesson-21` warns about was refused before it was written
+  - what the build measured that the sketch had drawn by hand: typing `date` narrows to **1 of
+    34** and not the 2 the mock showed — `calendar` carries the string neither in its id nor in
+    `PctCalendar`, and the rule here is the one the site already ships rather than a better one
+    invented for this page. The cost that had to be proved is the outlet: narrowing DESTROYS
+    the component under every card it drops, and clearing the field brings all thirty-four
+    stages and their scenes back. Three e2e cases hold it — one the narrowing, the empty state
+    and the rebuild, one the six addresses and where the third of them lands, one the bar
+  - **the bar cost what plate A said it would cost, measured rather than argued.** Every chip is
+    a link, so every chip owes SC 2.5.8's 24 px outright and takes it from the same primitive
+    the library's own controls stand on: **26 px** each, one row at 1280 px, two at 780, and
+    **four rows / 116 px** at 390 — inside the 100–170 px the plate predicted, and no sideways
+    scroll at any of them. Two things the plate did not settle, decided in the build: the lit
+    chip is read by the **scroll spy the component page's table of contents already runs**, so
+    the bar says where the reader IS and not only where they can go — and the reading moved to
+    `apps/docs/src/app/spy.ts` rather than being written a second time, which is the same refusal
+    `find.ts` is. And the bar follows the filter: a band the filter empties leaves with its
+    header, so every chip standing is the address of something that is on the page
+  - **the pass is not over.** The order that stands is landing, gallery, a component's card,
+    then the rest; two of the four are answered and the card is next
 - [x] **4.35 — the popover's axe audit can catch a button mid-transition, in two
       engines at once**
   - CI run 33680164640's sibling (2026-09-02, run 33681596258): `a11y.spec.ts › an open

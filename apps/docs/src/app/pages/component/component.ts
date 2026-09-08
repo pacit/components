@@ -30,6 +30,7 @@ import {
 } from '../../../generated/component-pages';
 import { DEMOS, EXAMPLES } from '../../demos';
 import { describePage } from '../../seo';
+import { spyOnSections } from '../../spy';
 import { DocsIndex } from './docs-index';
 import { DocsToc, TocItem } from './docs-toc';
 
@@ -273,39 +274,13 @@ export class ComponentPageView {
     });
 
     // The scroll spy: the last heading that passed the reading line owns the table of
-    // contents; a subsection lights its section too. Browser only, and it reads the DOM
-    // fresh on every frame, so a page swap under the same view needs no rewiring.
-    afterNextRender(() => {
-      const view = this.document.defaultView;
-      if (!view) return;
-      let ticking = false;
-      const spy = () => {
-        ticking = false;
-        const targets = Array.from(
-          this.document.querySelectorAll<HTMLElement>('[data-spy]'),
-        );
-        if (!targets.length) return;
-        let current = targets[0];
-        for (const target of targets)
-          if (target.getBoundingClientRect().top <= 120) current = target;
-        if (
-          view.innerHeight + view.scrollY >=
-          this.document.body.offsetHeight - 2
-        )
-          current = targets[targets.length - 1];
-        this.active.set(current.id);
-      };
-      const onScroll = () => {
-        if (ticking) return;
-        ticking = true;
-        view.requestAnimationFrame(spy);
-      };
-      view.addEventListener('scroll', onScroll, { passive: true });
-      this.destroyRef.onDestroy(() =>
-        view.removeEventListener('scroll', onScroll),
-      );
-      spy();
-    });
+    // contents; a subsection lights its section too. The reading itself is `spy.ts`, because
+    // the gallery's band bar asks the same question of the same DOM.
+    afterNextRender(() =>
+      spyOnSections(this.document, this.destroyRef, (id) =>
+        this.active.set(id),
+      ),
+    );
   }
 
   protected isSectionActive(

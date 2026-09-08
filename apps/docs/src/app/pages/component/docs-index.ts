@@ -2,6 +2,7 @@ import { Component, computed, input, output, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { PctField, PctText } from '@pacit/components/field';
 import { DOCS_CARDS, DOCS_CATEGORIES } from '../../../generated/content';
+import { answersTo, asNeedle } from '../../find';
 
 /**
  * The component index (2.7.3, layout B): every card under the category its own header
@@ -22,16 +23,13 @@ export class DocsIndex {
 
   protected readonly filter = signal('');
 
+  /** The rule itself lives in `find.ts`: the gallery filters the same list by the same one. */
   protected readonly groups = computed(() => {
-    const needle = this.filter().trim().toLowerCase();
+    const needle = asNeedle(this.filter());
     return DOCS_CATEGORIES.map((name) => ({
       name,
       cards: DOCS_CARDS.filter(
-        (card) =>
-          card.category === name &&
-          (!needle ||
-            card.id.includes(needle) ||
-            card.classes.some((c) => c.toLowerCase().includes(needle))),
+        (card) => card.category === name && answersTo(card, needle),
       ),
     })).filter((group) => group.cards.length);
   });

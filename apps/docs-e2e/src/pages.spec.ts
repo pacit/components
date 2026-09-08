@@ -15,6 +15,13 @@ const BUTTON_TOKENS = Object.keys(
     readFileSync(join(ROOT, 'libs/tokens/src/component.button.json'), 'utf8'),
   ).pct.button,
 ).filter((k) => !k.startsWith('$')).length;
+// SC 2.5.8's floor, read from the primitive the library's own controls stand on — a skin that
+// moves it moves the gallery's band bar with it.
+const TARGET_FLOOR = Number.parseInt(
+  JSON.parse(readFileSync(join(ROOT, 'libs/tokens/src/primitive.json'), 'utf8'))
+    .pct.target.min.$value,
+  10,
+);
 const ADRS = readdirSync(join(ROOT, 'docs/decisions')).filter((f) =>
   /^\d{4}-/.test(f),
 ).length;
@@ -107,6 +114,130 @@ test.describe('The pages', () => {
         (nodes) => nodes.filter((n) => !n.closest('[inert]')).length,
       );
     expect(stops).toBe(34);
+  });
+
+  /**
+   * The finder (4.34, plate B): the gallery filters by the rule `docs-index` already
+   * filters by, and `apps/docs/src/app/find.ts` is the one copy of it, so the rail, the
+   * drawer and this page cannot answer the same typing three ways. Both halves are on
+   * trial, and the second is the one that can break in silence — narrowing DESTROYS the
+   * outlet under every card it drops, and a filter that cannot rebuild them leaves a page
+   * of empty cards that still counts thirty-four names.
+   */
+  test('the finder narrows the gallery, and clearing it brings the demos back', async ({
+    page,
+  }) => {
+    await visit(page, '/components');
+    const gallery = page.getByTestId('gallery');
+    const count = page.getByTestId('gallery-count');
+    const filter = page.getByTestId('gallery-filter');
+    await expect(count).toHaveText('34 of 34');
+
+    await filter.fill('date');
+    await expect(count).toHaveText('1 of 34');
+    await expect(gallery.locator('.card__name')).toHaveText(['Date']);
+    // A bucket with nothing to show goes with its header, rather than standing empty.
+    await expect(gallery.locator('.bucket')).toHaveCount(1);
+
+    await filter.fill('nothing answers to this');
+    await expect(count).toHaveText('0 of 34');
+    await expect(gallery.locator('.card')).toHaveCount(0);
+    await expect(page.getByTestId('gallery-empty')).toHaveText(
+      'No component answers to that.',
+    );
+
+    await filter.fill('');
+    await expect(count).toHaveText('34 of 34');
+    await expect(gallery.locator('.card')).toHaveCount(34);
+    // The half that costs something: thirty-four stages, each with its component back in it.
+    await expect(gallery.locator('.card__stage')).toHaveCount(34);
+    await expect(gallery.locator('.card__scene > *')).toHaveCount(34);
+  });
+
+  /**
+   * Six bands, six addresses (4.34). The `<h2>` carried no `id` at all, so
+   * `/components#choices` did not exist and nothing on the site — not the landing, not a
+   * card, not a sentence of prose — could point past 1758 px of page at the bucket a reader
+   * already knew the name of. The six are typed out here because they are published
+   * addresses: one that changes quietly breaks every link ever made to it.
+   */
+  test('every band of the gallery has an address, and it clears the header', async ({
+    page,
+  }) => {
+    await visit(page, '/components');
+    const ids = await page
+      .getByTestId('gallery')
+      .locator('.bucket__name')
+      .evaluateAll((heads) => heads.map((head) => head.id));
+    expect(ids).toEqual([
+      'actions-navigation',
+      'text-numbers',
+      'choices',
+      'overlays',
+      'data-status',
+      'layout-theming',
+    ]);
+
+    await visit(page, '/components#choices');
+    const landing = await page.evaluate(() => ({
+      top: Math.round(
+        document.getElementById('choices')?.getBoundingClientRect().top ??
+          Number.NaN,
+      ),
+      offset: Number.parseInt(
+        getComputedStyle(document.documentElement).getPropertyValue(
+          '--docs-anchor-offset',
+        ),
+        10,
+      ),
+      header: Math.round(
+        document.querySelector('header')?.getBoundingClientRect().bottom ?? 0,
+      ),
+    }));
+    // Both failures this catches are far outside the band: no `id` leaves the heading 1758 px
+    // down the page, and no offset puts it under a sticky header that is 57 px deep.
+    expect(landing.offset).toBeGreaterThan(landing.header);
+    expect(landing.top).toBeGreaterThanOrEqual(landing.offset - 4);
+    expect(landing.top).toBeLessThanOrEqual(landing.offset + 40);
+  });
+
+  /**
+   * The bar is those six addresses made visible (4.34, plate A inside plate B). What it costs
+   * is checked here rather than argued: every chip is a LINK, so every chip owes SC 2.5.8's
+   * floor outright — the reason this bar wraps to three or four rows on a narrow page instead
+   * of shrinking. And it says where the reader IS, through the same scroll spy the component
+   * page's table of contents runs, which is the one copy of that reading (`apps/docs/src/app/spy.ts`).
+   */
+  test('the band bar carries the addresses, and says which band the reader is in', async ({
+    page,
+  }) => {
+    await visit(page, '/components');
+    const bar = page.getByTestId('gallery-bar');
+    const chips = bar.locator('.bar__chip');
+    await expect(chips).toHaveCount(6);
+    await expect(chips.first()).toContainText('Actions & navigation');
+    await expect(chips.first().locator('b')).toHaveText('5');
+
+    const heights = await chips.evaluateAll((els) =>
+      els.map((el) => el.getBoundingClientRect().height),
+    );
+    expect(Math.min(...heights)).toBeGreaterThanOrEqual(TARGET_FLOOR);
+
+    // Before the reader has moved they are in the first band, and the bar says so.
+    await expect(bar.locator('.bar__chip.is-active')).toContainText(
+      'Actions & navigation',
+    );
+
+    await chips.nth(3).click();
+    await expect(page).toHaveURL(/#overlays$/);
+    await expect(bar.locator('.bar__chip.is-active')).toContainText('Overlays');
+    await expect(bar.locator('[aria-current="location"]')).toHaveCount(1);
+
+    // The bar follows the list it indexes: a band the filter emptied leaves with its header,
+    // so every chip standing is an address of something that is on the page.
+    await page.getByTestId('gallery-filter').fill('button');
+    await expect(chips).toHaveCount(1);
+    await expect(chips.first().locator('b')).toHaveText('1');
   });
 
   /**
