@@ -3595,7 +3595,7 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     runs; until then the run is a hand run, and this item is the record that a hand run can go
     three days unnoticed
 
-- [ ] **4.47 — the run that came back after three days found the new code thinly measured**
+- [x] **4.47 — the run that came back after three days found the new code thinly measured**
   - the first full mutation run since 2026-09-05 (5014 mutants, **81.69%** against the 80%
     floor, 80 minutes at `--concurrency 4`) is recorded, and the snapshot's diff is the point
     of the file: **83.43 → 81.69** over four days of new code. The floor holds; three files do
@@ -3624,7 +3624,44 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     shape as the hero's; `select.template.ts` 50.00 → 33.33 is one mutant of two
   - binds at: **the next batch of unit work** — every repair here is a spec, none is a source
     change, so they can land together and be measured by ONE run rather than one each. Until
-    they do, the snapshot is the honest record of what the tests hold · _notes:_ —
+    they do, the snapshot is the honest record of what the tests hold · _notes:_ **closed
+    2026-09-08 in one run of 72 minutes at `--concurrency 4`: 81.69 → 82.19** (4096 → 4121 of
+    5014), and every repair was a spec, exactly as the item said they would be
+  - `toast-viewport.ts` **45.65 → 91.30**, and the 25 mutants nobody covered are 0: seven cases
+    against a FAKED cycle, because the real one has its own cases next door and what a browser
+    cannot enumerate is the branches. Three survivors stand, and two of them are equivalent
+    rather than missed — worth naming so nobody spends an evening on them. `key === null`
+    cannot be told apart from the `event.key !== key` beside it, because a `KeyboardEvent`'s
+    `key` is never `null`, so the second operand answers for both; and `this.regions?.next(…)`
+    cannot be reached with a null cycle at all, because the guard two lines above has already
+    returned. The third — `holding === this.holding` in `sync()` — is older than this item.
+    One more comes back as a **RuntimeError** rather than a kill: `this.regions.key()` on a
+    null cycle throws inside a DOM event listener, which the runner reports as an unhandled
+    error rather than a failed expectation. Not a survivor, and not a kill either
+  - `hero.ts` **0.00 → 100.00** on one host that binds nothing, and `skeleton.ts`
+    **88.89 → 92.59** on one line added to the bare host it already had — the fourth and fifth
+    time this month that the repair for a default was a host that declines to bind it
+  - `core/regions.ts` **25.00 → 50.00**: `factory: () => null` is dead, which is the half that
+    is 0072's promise. What survives is the token's description string and its
+    `providedIn: 'root'`, and neither is observable — the description is a dev-mode label, and
+    with a factory present the token resolves the same way through `TestBed` either way
+- [ ] **4.48 — the cycle's own mechanism is the file 4.47 did not name**
+  - `libs/components/regions/src/regions.ts` stands at **52.94, with 25 survivors and 7 mutants
+    nobody covers** — unchanged by 4.47 and unchanged since it was first measured. 4.47 read
+    the token at one end (`core/regions.ts`) and the toast's stack at the other, and the
+    mechanism between them was never on its list
+  - the 7 uncovered are one thing: **`listenOn="document"`**, the whole effect that mounts a
+    listener on the document and takes it down again. `regions.spec.ts` mounts `[pctRegionKey]`
+    on an element and only on an element, so the directive's other seat has never been rendered
+    by a unit case at all — and it is the seat an application with no single element to hang the
+    key on would use
+  - the 25 survivors are three shapes: the **defaults** nobody observes (`label` `''`, `key`
+    `'F6'`, `listenOn` `'host'`), which is the bare-host hole for the sixth time; the **guards**
+    (`regions.length === 0`, `target === undefined`, the modifier check, the `tabindex` branch);
+    and the **sort comparator** that is the whole of "the document's order"
+  - binds at: **the next batch of unit work.** Spec-only again, so it rides with whatever else
+    needs a run — a mutation run is 72 minutes and nothing here deserves one of its own
+    · _notes:_ —
 
 ## 5. Gaps with no deadline
 

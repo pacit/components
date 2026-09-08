@@ -57,7 +57,7 @@ libs/components/core/src/modal.ts 80.00 48(0) 8 0 4 0
 libs/components/core/src/motion.ts 86.21 50(0) 8 0 0 0
 libs/components/core/src/overlay.ts 100.00 15(0) 0 0 0 2
 libs/components/core/src/placement.ts 89.23 58(0) 7 0 0 0
-libs/components/core/src/regions.ts 25.00 1(0) 3 0 0 0
+libs/components/core/src/regions.ts 50.00 2(0) 2 0 0 0
 libs/components/core/src/template.ts 93.33 14(0) 1 0 0 0
 libs/components/core/src/texts.ts 97.30 36(0) 1 0 0 0
 libs/components/date/src/calendar.ts 73.03 130(0) 46 0 2 4
@@ -71,7 +71,7 @@ libs/components/field/src/autosize.ts 75.34 55(0) 17 0 1 2
 libs/components/field/src/field.ts 72.81 83(0) 27 2 2 1
 libs/components/field/src/number.ts 80.08 209(0) 50 0 2 11
 libs/components/field/src/text.ts 86.05 37(0) 6 0 0 5
-libs/components/hero/src/hero.ts 0.00 0(0) 2 0 0 1
+libs/components/hero/src/hero.ts 100.00 2(0) 0 0 0 1
 libs/components/icon/src/icon.ts 92.11 35(0) 3 0 0 2
 libs/components/menu/src/menu-item.ts 78.79 26(0) 4 2 1 1
 libs/components/menu/src/menu-trigger.ts 79.31 23(0) 6 0 0 2
@@ -86,17 +86,17 @@ libs/components/select/src/multi-select.ts 97.14 34(0) 0 1 0 0
 libs/components/select/src/select.base.ts 84.91 574(1) 100 0 2 9
 libs/components/select/src/select.template.ts 33.33 1(0) 0 0 2 2
 libs/components/select/src/select.ts 88.89 32(0) 3 1 0 0
-libs/components/skeleton/src/skeleton.ts 88.89 24(0) 3 0 0 2
+libs/components/skeleton/src/skeleton.ts 92.59 25(0) 2 0 0 2
 libs/components/slider/src/slider.ts 79.44 143(0) 36 0 1 9
 libs/components/stack/src/stack.ts 100.00 1(0) 0 0 0 0
 libs/components/stepper/src/stepper.ts 89.80 44(0) 5 0 0 2
 libs/components/switch/src/switch.ts 96.30 52(0) 2 0 0 5
 libs/components/tabs/src/tab.ts 91.43 32(0) 2 1 0 1
 libs/components/tabs/src/tabs.ts 93.50 115(0) 7 1 0 2
-libs/components/toast/src/toast-viewport.ts 45.65 21(0) 3 0 22 0
+libs/components/toast/src/toast-viewport.ts 91.30 42(0) 3 1 0 0
 libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0 0
 libs/components/toast/src/toaster.ts 65.91 116(0) 49 0 11 0
 libs/components/tooltip/src/tooltip.ts 70.54 182(0) 71 0 5 8
 libs/components/tree/src/tree.ts 93.28 111(0) 7 0 1 4
-TOTAL 81.69 4096/5014
+TOTAL 82.19 4121/5014
 ```
