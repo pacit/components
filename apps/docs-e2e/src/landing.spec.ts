@@ -70,6 +70,45 @@ test.describe('The landing', () => {
     }
   });
 
+  /**
+   * The index of components, and the criterion the SITE has to keep as much as the library.
+   *
+   * Every row is a link, so every row is a target: SC 2.5.8 asks for 24 px, and the first cut
+   * of this list measured EXACTLY 24 with nothing between the rows — the floor scraped rather
+   * than cleared, which is what it looked like on the page. The floor is read from the same
+   * token the library's own controls stand on, so a skin that moves it moves this too.
+   */
+  test('every row of the index is a target a finger can find', async ({
+    page,
+  }) => {
+    await visit(page, '/');
+    const rows = page.getByTestId('gallery').locator('a');
+    await expect(rows).toHaveCount(34);
+
+    const floor = Number.parseInt(FLOOR, 10);
+    const boxes = await rows.evaluateAll((els) =>
+      els.map((el) => {
+        const r = el.getBoundingClientRect();
+        return {
+          name: el.textContent?.trim().split(/\s+/)[0] ?? '?',
+          h: r.height,
+        };
+      }),
+    );
+    const short = boxes.filter((b) => b.h < floor);
+    expect(
+      short,
+      `rows under ${floor}px: ${short.map((b) => `${b.name} ${b.h}`).join(', ')}`,
+    ).toEqual([]);
+
+    // And clear of it rather than sitting on it: the row that only just reaches the floor is
+    // the row nobody can hit twice in a row, and this list is thirty-four of them stacked.
+    const tightest = Math.min(...boxes.map((b) => b.h));
+    expect(tightest, `the tightest row is ${tightest}px`).toBeGreaterThan(
+      floor,
+    );
+  });
+
   test('the machine catalogue is the inventory the site renders, read from the same sources', async ({
     page,
   }) => {

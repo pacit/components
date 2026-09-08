@@ -471,25 +471,40 @@
    review kept (plan 4.34).
 
    Still `pct-grid`, because the paragraph above the list says it is and a page that says so
-   has to be it: the track is narrowed to four columns' worth on a wide page and the primitive
-   folds it by itself on a narrow one, with no media query in this file. The row gap is zero —
-   the dotted rule under each entry is what separates them, and a gap between them would leave
-   the leaders floating. */
+   has to be it: the track is narrowed to three columns' worth on a wide page and the
+   primitive folds it by itself on a narrow one, with no media query in this file.
+
+   **Every row is a link, so every row is a target**, and the first cut of this list measured
+   exactly 24 px with nothing between the rows — the SC 2.5.8 floor scraped rather than
+   cleared, which is what it looked like. The type is the shared `sm` step instead of a
+   number of its own, the line box is 1.5 (the height a reader's own text spacing asks for
+   under SC 1.4.12, so this list does not move when they set it), and the padding is a token.
+   The row gap stays zero on purpose: the dotted rule under each entry is what separates
+   them, and a gap would leave the leaders floating between two rows that belong to nobody.
+
+   The padding is deliberately UNEVEN — all of it above the text, none below: a leader rule
+   belongs to the entry it sits under, and a row padded evenly reads as though the line below
+   it were floating between two rows that both own it. What is left under the words is the
+   line box's own half-leading, 5.5 px at this size, which is enough of a gap to read as one
+   and small enough to keep the rule tied to the name. The air goes on top, where it does the
+   separating. */
 .gallery {
-  --pct-grid-min-width: 16.5rem;
-  --pct-grid-gap: 0 var(--pct-space-5);
+  --pct-grid-min-width: 19rem;
+  --pct-grid-gap: 0 var(--pct-space-6);
 }
 
 .gallery__item {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: var(--pct-space-3);
-  padding-block: 4px;
+  gap: var(--pct-space-5);
+  min-block-size: var(--pct-target-min);
+  padding-block: var(--pct-space-5) 0;
   border-block-end: 1px dotted var(--pct-border);
   color: inherit;
   font-family: var(--docs-font-mono);
-  font-size: 0.72rem;
+  font-size: var(--pct-font-size-sm);
+  line-height: 1.5;
   text-decoration: none;
   transition: color var(--pct-motion-transition-duration)
     var(--pct-motion-transition-easing);
