@@ -35,7 +35,7 @@ menu 4 2 8 1
 number 13 4 5 1
 pagination 27 7 8 1
 popover 3 2 1 1
-progress 11 3 2 1
+progress 13 3 2 1
 radio 18 5 10 1
 select 8 6 4 1
 skeleton 10 4 1 1
@@ -47,14 +47,14 @@ tabs 12 4 12 1
 text 13 4 4 1
 textarea 13 4 6 1
 theme 4 3 0 1
-toast 5 2 6 1
+toast 5 2 7 1
 tooltip 2 2 7 1
 tree 21 7 10 1
 ```
 
 ## The clock
 
-Measured 2026-09-07 on Intel(R) Core(TM) i7-3612QM CPU @ 2.10GHz (8 cores), node v24.18.0, jsdom 22.1.0.
+Measured 2026-09-08 on Intel(R) Core(TM) i7-3612QM CPU @ 2.10GHz (8 cores), node v24.18.0, jsdom 22.1.0.
 
 Microseconds from creation to stable, the median of fifteen rounds after three warm-ups.
 A clock wobbles with the machine and the load, so this section is published, dated and
@@ -65,38 +65,38 @@ day as the counts beside them. jsdom lays nothing out, so this is the library's 
 work — templates, signals, listeners — and not a browser's.
 
 ```
-accordion 8038
-avatar 3306
-badge 1589
-breadcrumb 5447
-button 4352
-calendar 18832
-checkbox 5739
-chips 5144
-container 1085
-date 4821
-dialog 2938
-drawer 4827
-field 5763
-grid 1402
-hero 3234
-menu 5123
-number 5633
-pagination 6127
-popover 3001
-progress 3614
-radio 4513
-select 5589
-skeleton 2952
-slider 5020
-stack 1166
-stepper 6005
-switch 2682
-tabs 4483
-text 3468
-textarea 9886
-theme 1822
-toast 2099
-tooltip 1949
-tree 4982
+accordion 8603
+avatar 3402
+badge 1819
+breadcrumb 5901
+button 4636
+calendar 19334
+checkbox 6182
+chips 6428
+container 1289
+date 4953
+dialog 3469
+drawer 4686
+field 6122
+grid 1413
+hero 2330
+menu 5922
+number 5750
+pagination 5950
+popover 3116
+progress 4211
+radio 4830
+select 5843
+skeleton 3181
+slider 7074
+stack 2232
+stepper 6143
+switch 3056
+tabs 4414
+text 3565
+textarea 10507
+theme 1908
+toast 2198
+tooltip 1782
+tree 5557
 ```
