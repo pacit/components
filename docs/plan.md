@@ -3566,6 +3566,37 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     runs; until then the run is a hand run, and this item is the record that a hand run can go
     three days unnoticed
 
+- [ ] **4.47 — the run that came back after three days found the new code thinly measured**
+  - the first full mutation run since 2026-09-05 (5014 mutants, **81.69%** against the 80%
+    floor, 80 minutes at `--concurrency 4`) is recorded, and the snapshot's diff is the point
+    of the file: **83.43 → 81.69** over four days of new code. The floor holds; three files do
+    not deserve to be behind it
+  - **`toast-viewport.ts` 95.00 → 45.65, with 25 of its 46 mutants NOT COVERED.** Every one is
+    in the region registration and the key handler 4.16 added (lines 90–109): the optional
+    chain onto `PCT_REGIONS`, the `key === null || event.key !== key` guard, the whole
+    `afterNextRender` block. Three engines walk it in `regions.spec.ts` and no unit case ever
+    constructs the viewport with a `PCT_REGIONS` provider, so the mutation run sees dead code
+    where the browser sees a working cycle. A browser case is not a substitute here — the
+    mutants are in branches an e2e cannot enumerate
+  - **`hero.ts` 0.00, and the reason is a spec that binds too much.** Two survivors, both
+    DEFAULTS — `show` at `''` and `paused` at `false` — because `hero.spec.ts` binds
+    `[paused]="paused()"` and `[show]="show()"` on its only host, and a bound input is never
+    the default. It is the shape the skeleton's spec already names in its own header ("**bare**
+    binds nothing … the only place the defaults are ever observed") and that the accordion,
+    the pagination and the progress bar each paid for once. The repair is a second host that
+    binds nothing
+  - **`core/regions.ts` 25.00** — three survivors on the injection token's description string
+    and its `factory: () => null`. The `null` default is the whole promise of 0072 ("with no
+    `providePctRegions()` this resolves to `null` and the component does nothing") and no unit
+    case reads it
+  - smaller, and named so the diff is not read as noise: `drawer.ts` 96.97 → 79.19 and
+    `button.ts` 100.00 → 81.25 are four days of new code arriving at once, not a regression in
+    what was measured before; `skeleton.ts` 92.31 → 88.89 is `paused`'s own default, the same
+    shape as the hero's; `select.template.ts` 50.00 → 33.33 is one mutant of two
+  - binds at: **the next batch of unit work** — every repair here is a spec, none is a source
+    change, so they can land together and be measured by ONE run rather than one each. Until
+    they do, the snapshot is the honest record of what the tests hold · _notes:_ —
+
 ## 5. Gaps with no deadline
 
 Waiting for the trigger written in their **Binds at** field. They are not forgotten — they

@@ -13,19 +13,13 @@
   "files": [
     "libs/components/accordion/src/accordion-item.ts",
     "libs/components/accordion/src/accordion.ts",
-    "libs/components/button/src/button.ts",
     "libs/components/avatar/src/avatar.ts",
     "libs/components/badge/src/badge.ts",
     "libs/components/breadcrumb/src/breadcrumb.ts",
+    "libs/components/button/src/button.ts",
     "libs/components/checkbox/src/checkbox.ts",
-    "libs/components/stepper/src/stepper.ts",
-    "libs/components/tree/src/tree.ts",
     "libs/components/chips/src/chips.ts",
     "libs/components/container/src/container.ts",
-    "libs/components/stack/src/stack.ts",
-    "libs/components/grid/src/grid.ts",
-    "libs/components/hero/src/hero.ts",
-    "libs/components/theme/src/theme.ts",
     "libs/components/core/src/announce.ts",
     "libs/components/core/src/config.ts",
     "libs/components/core/src/field.ts",
@@ -36,8 +30,10 @@
     "libs/components/core/src/motion.ts",
     "libs/components/core/src/overlay.ts",
     "libs/components/core/src/placement.ts",
+    "libs/components/core/src/regions.ts",
     "libs/components/core/src/template.ts",
     "libs/components/core/src/texts.ts",
+    "libs/components/core/src/tone.ts",
     "libs/components/core/src/value.ts",
     "libs/components/date/src/calendar.ts",
     "libs/components/date/src/date.ts",
@@ -51,31 +47,46 @@
     "libs/components/field/src/field.ts",
     "libs/components/field/src/number.ts",
     "libs/components/field/src/text.ts",
+    "libs/components/grid/src/grid.ts",
+    "libs/components/hero/src/hero.ts",
     "libs/components/icon/src/icon.ts",
     "libs/components/menu/src/menu-item.ts",
     "libs/components/menu/src/menu-trigger.ts",
     "libs/components/menu/src/menu.ts",
     "libs/components/pagination/src/pagination.ts",
-    "libs/components/progress/src/progress.ts",
     "libs/components/popover/src/popover.ts",
+    "libs/components/progress/src/progress.ts",
     "libs/components/radio/src/radio-group.ts",
     "libs/components/radio/src/radio.ts",
+    "libs/components/regions/src/regions.ts",
     "libs/components/select/src/multi-select.ts",
     "libs/components/select/src/select.base.ts",
     "libs/components/select/src/select.template.ts",
     "libs/components/select/src/select.ts",
     "libs/components/skeleton/src/skeleton.ts",
     "libs/components/slider/src/slider.ts",
+    "libs/components/stack/src/stack.ts",
+    "libs/components/stepper/src/stepper.ts",
     "libs/components/switch/src/switch.ts",
     "libs/components/tabs/src/tab.ts",
     "libs/components/tabs/src/tabs.ts",
+    "libs/components/theme/src/theme.ts",
     "libs/components/toast/src/toast-viewport.ts",
     "libs/components/toast/src/toast.ts",
     "libs/components/toast/src/toaster.ts",
-    "libs/components/tooltip/src/tooltip.ts"
+    "libs/components/tooltip/src/tooltip.ts",
+    "libs/components/tree/src/tree.ts"
   ],
   "// noMutants": "A file inside the measurement out of which Stryker can make not one mutant does NOT appear in the report. Without this list it would be indistinguishable from a file that dropped out of the measurement — and those are two different things, only one of them in order. An entry requires a reason and stops being true on the day the file gets its first mutant: the gate fires then.",
   "noMutants": [
+    {
+      "file": "libs/components/container/src/container.ts",
+      "reason": "An empty class under a decorator: `PctContainer {}` is a selector, a template of one slot and a host class, all of it metadata Stryker leaves alone. The component's whole behaviour is `container.scss` reading its tokens, and behaviour written in CSS is measured by the e2e ruler (`layout.spec.ts` reads the column's width at three viewports), not by mutants. Zero is the correct result of the measurement, and the day the class grows a first member this entry stops being true and the gate fires."
+    },
+    {
+      "file": "libs/components/core/src/tone.ts",
+      "reason": "One exported union of four string literals and nothing else: `PctTone` is a TYPE, and a type is gone at compilation. There is no condition here, no runtime literal, no call with an argument — the four names live on in the components that take the input, and that is where their mutants are thrown. Zero is the correct result of the measurement, not its absence."
+    },
     {
       "file": "libs/components/core/src/value.ts",
       "reason": "The file carries the type `PctCompareWith` and one assignment, `export const pctSameValue = Object.is`. The type vanishes at compilation, and assigning a reference to a built-in function has nothing to mutate: there is no condition here, no literal, no call with an argument. Zero mutants is the correct result of the measurement here, not the absence of one."
@@ -83,10 +94,6 @@
     {
       "file": "libs/components/field/src/aux.ts",
       "reason": "Two directives with an EMPTY body: `PctLabelAux` and `PctMessageAux` are a selector and a `data-pct-part` each, and both of those live in the decorator, which Stryker leaves alone. There is no condition here, no call and no literal outside the metadata, so zero mutants is the correct result of the measurement rather than the absence of one — what the two really promise is a slot in `field.html`, and that is `check-parts`."
-    },
-    {
-      "file": "libs/components/container/src/container.ts",
-      "reason": "An empty class under a decorator: `PctContainer {}` is a selector, a template of one slot and a host class, all of it metadata Stryker leaves alone. The component's whole behaviour is `container.scss` reading its tokens, and behaviour written in CSS is measured by the e2e ruler (`layout.spec.ts` reads the column's width at three viewports), not by mutants. Zero is the correct result of the measurement, and the day the class grows a first member this entry stops being true and the gate fires."
     },
     {
       "file": "libs/components/grid/src/grid.ts",
