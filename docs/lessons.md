@@ -5006,3 +5006,42 @@ right for every string but a `KeyboardEvent.key`: the exemption is `F1`–`F24` 
 The shape worth keeping: **when a mechanism cannot do its job without taking something from the
 consumer, the honest design is the one that makes the consumer hand it over in a word** — not
 the one that takes it quietly, and not the one that refuses to work.
+
+### <a id="lesson-182"></a>`lesson-182` — A gate that cannot start is a gate nobody hears stop
+
+The mutation run died on **2026-09-05** and nobody learnt of it until **2026-09-08**. Not a
+wrong score, not a slow run: the DRY run failed, so Stryker threw no mutant at all and exited
+before it had measured anything.
+
+The failing case was three days old and correct — `day.spec.ts` sets `process.env.TZ` to
+`Pacific/Kiritimati` and asks the clock for `-840`, which is how "a day is the same day
+fourteen hours east of the meridian" is measured rather than asserted. Under the `test` target
+it passes. Under the mutation run it read the machine's own `-120`.
+
+**Three layers, and only the third is the cause.** `@analogjs/vite-plugin-angular` defaults the
+pool to `vmThreads`; a config can override that, and `pool: 'forks'` made a direct run green.
+It changed nothing for the mutation run, because `@stryker-mutator/vitest-runner` passes
+`pool: 'threads'` to `createVitest` ITSELF, and a caller's option outranks a config file. And
+vitest's thread pool hands its workers a SHARED environment: the write to `process.env.TZ`
+lands in the parent's store, so the tz cache of the thread doing the reading is never
+invalidated. A plain `worker_threads` worker honours the same write — measured — so it is the
+pool and not the thread.
+
+**What made it invisible for three days is the other half of the lesson.** `mutation` and
+`check-mutation` are not in `ci.yml` while the stage is private; they run in `nightly.yml`, and
+nothing has been pushed for a nightly to run. Meanwhile `check-mutation` reads
+`tmp/mutation/mutation.json` — whatever report is lying on disk — so a snapshot rewritten on
+2026-09-07 recorded a run from before the breakage and said nothing, truthfully, about rows
+that had not moved.
+
+The repair is two words in a spec: `describe.skipIf('__stryker__' in globalThis)`. Not a probe
+of the platform — Stryker's own marker, so both ways this can go wrong are **loud**. Skipped
+there and running in `test`, which CI executes on every commit: if the zone ever stops moving
+there the cases go red rather than quietly not running, and if a Stryker upgrade renames its
+namespace the mutation run goes red instead. What a guard must never buy is a silent third
+state.
+
+**And the general shape:** a gate whose only automatic runner is a workflow that has never
+executed is a gate with no negative control on its own liveness. `check-mutation` guards the
+report's contents in seven points and has nothing to say about whether a report was produced
+today, because the run and the reading are two targets and only the second one speaks.

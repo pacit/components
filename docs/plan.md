@@ -3483,6 +3483,35 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     reads the conformance report and asks about the one Partially Supports row that is not
     the disabled state's contrast · _notes:_ —
 
+- [x] **4.46 — the mutation gate had been dead for three days, and nothing could have said so**
+  - found 2026-09-08 while running the pass 4.14–4.16 left owing: `stryker run` ended in its
+    DRY run, threw no mutant at all, and had done so since **2026-09-05** — the day
+    `day.spec.ts` gained the two cases that stand in a hostile timezone
+  - the cause is three layers deep and only the third one is it. `@analogjs/vite-plugin-angular`
+    defaults the pool to `vmThreads`; `pool: 'forks'` in `mutation.vitest.config.mts` fixes a
+    DIRECT run and changes nothing here, because `@stryker-mutator/vitest-runner` passes
+    `pool: 'threads'` to `createVitest` itself and a caller's option outranks a config file.
+    Vitest's thread pool hands its workers a SHARED environment, so `process.env.TZ = …` lands
+    in the parent's store and the reading thread's tz cache is never invalidated — a plain
+    `worker_threads` worker honours the same write, measured, so it is the pool and not the
+    thread ([`lesson-182`](lessons.md#lesson-182))
+  - **why three days passed.** `mutation` and `check-mutation` are not in `ci.yml` while the
+    stage is private — they run in `nightly.yml`, and nothing has been pushed for a nightly to
+    run. `check-mutation` reads whatever report is lying in `tmp/mutation`, so the snapshot
+    rewritten on 2026-09-07 recorded a run from before the breakage and said nothing untrue
+    about rows that had not moved
+  - **the repair:** `describe.skipIf('__stryker__' in globalThis)` — Stryker's own marker and
+    not a probe of the platform, so both failure directions are loud: the cases run in `test`,
+    which CI executes on every commit, and go red there if the zone ever stops moving; and if
+    an upgrade renames the namespace the mutation run goes red instead. The pool line stays in
+    the config with what it cannot do written beside it
+  - **what is still open, and it is the shape and not this bug:** a gate whose only automatic
+    runner is a workflow that has never executed has no control over its own liveness, and
+    `check-mutation` guards a report's contents in seven points while saying nothing about
+    whether a report was produced today. Both close the day 3.0 pushes and a nightly actually
+    runs; until then the run is a hand run, and this item is the record that a hand run can go
+    three days unnoticed
+
 ## 5. Gaps with no deadline
 
 Waiting for the trigger written in their **Binds at** field. They are not forgotten — they

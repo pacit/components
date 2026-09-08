@@ -30,6 +30,24 @@ export default defineConfig(() => ({
   plugins: [angular({ jit: false }), nxViteTsPaths()],
   test: {
     name: 'components-mutation',
+    /**
+     * `forks`, for a DIRECT run of this file — and it is written down because of what it
+     * cannot do. `@analogjs/vite-plugin-angular` defaults the pool to `vmThreads`
+     * (`angular-vitest-plugin.js`: `pool: userConfig.test?.pool ?? 'vmThreads'`), and in a VM
+     * inside a worker thread an assignment to `process.env.TZ` never reaches the clock: vitest
+     * hands its workers a SHARED env, so the write lands in the parent's store and the tz cache
+     * of the thread doing the reading is never invalidated. A plain `worker_threads` worker
+     * does honour it — measured, so the pool and not the thread is the cause. Under `forks`
+     * every spec file gets a process of its own and the zone moves, which is what the `test`
+     * target gets from vitest's own default.
+     *
+     * What it cannot do is govern the MUTATION run: `@stryker-mutator/vitest-runner` passes
+     * `pool: 'threads'` to `createVitest` itself (`vitest-test-runner.js`, beside
+     * `maxThreads: 1`), and a caller's option outranks a config file. So the mutation run is in
+     * `threads` whatever stands here, and the two cases that need a zone of their own stand
+     * down there and say so (`date/src/day.spec.ts`).
+     */
+    pool: 'forks',
     watch: false,
     globals: true,
     environment: 'jsdom',

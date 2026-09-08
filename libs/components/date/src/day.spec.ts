@@ -208,7 +208,28 @@ describe('pctMonthGrid', () => {
 // than pulled in for every spec.
 declare const process: { env: Record<string, string | undefined> };
 
-describe('in a hostile timezone', () => {
+/**
+ * And a place these two cases cannot stand: the MUTATION run.
+ *
+ * `@stryker-mutator/vitest-runner` passes `pool: 'threads'` to `createVitest` itself, which
+ * outranks anything `mutation.vitest.config.mts` says — and vitest's thread pool shares one
+ * environment between its workers, so a write to `process.env.TZ` lands in the parent's store
+ * and the tz cache of the thread doing the reading is never invalidated. The zone does not
+ * move, `getTimezoneOffset()` answers the machine's own -120 where the case asks for -840, and
+ * a failure in the DRY run ends the whole run before it throws its first mutant. That is how
+ * the gate stood dead from 2026-09-05 to 2026-09-08 with nobody the wiser: `mutation` runs in
+ * the NIGHTLY workflow, and nothing has been pushed for a nightly to run.
+ *
+ * So the two stand down where a zone cannot be set, and the marker is Stryker's own — not a
+ * probe of the platform, because both ways this can go wrong should be LOUD. Skipped here and
+ * running in `test`, which is what CI executes on every commit: if the zone ever stops moving
+ * there, these cases go red rather than quietly not running. And if a Stryker upgrade renames
+ * its namespace, the skip stops applying and the mutation run goes red — pointing at this
+ * comment. What is never available is a silent third state.
+ */
+const UNDER_MUTATION = '__stryker__' in globalThis;
+
+describe.skipIf(UNDER_MUTATION)('in a hostile timezone', () => {
   const machine = process.env['TZ'];
   afterEach(() => {
     if (machine === undefined) delete process.env['TZ'];
