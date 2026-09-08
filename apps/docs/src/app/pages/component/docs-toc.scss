@@ -72,6 +72,11 @@
   font-size: var(--pct-font-size-sm);
 
   a {
+    /* Links, so targets — and they take the floor from the same primitive as everything else
+       this page measures itself against. */
+    display: inline-flex;
+    align-items: center;
+    min-block-size: var(--pct-target-min);
     color: var(--pct-text-muted);
     text-decoration: none;
 

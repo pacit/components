@@ -90,6 +90,12 @@
   padding: var(--pct-space-3) var(--pct-space-4);
 
   summary {
+    /* The only way to open the contents under about 995px, and it owes SC 2.5.8's floor like
+       any other control — read from the same primitive the library's own controls stand on,
+       which the accessibility section of this very page cites. */
+    display: flex;
+    align-items: center;
+    min-block-size: var(--pct-target-min);
     cursor: pointer;
     font-size: var(--pct-font-size-sm);
     font-weight: 600;
@@ -294,6 +300,20 @@
   z-index: 1;
   display: flex;
   gap: 4px;
+}
+
+/* Out of the strip's row and into one of its own, on a screen where the two do not fit.
+   The tools' left edge is `viewport − 241px` and the switch's right edge is a constant
+   165px, so below about 406px they overlap — measured 16px of a 57px tab at 390 and 46 of
+   57 at 360, with `elementFromPoint` inside the Code tab returning the "Flip the stage"
+   button. An absolutely positioned control that lands on top of another control is not a
+   near miss: it is a tap that does the wrong thing, on the page's own centrepiece. */
+@container content (max-width: 420px) {
+  .hero__tools {
+    position: static;
+    justify-content: flex-end;
+    padding: 12px 14px 0;
+  }
 }
 
 /* The tabs, as the segmented switch. Every value the library exposes as a token dresses

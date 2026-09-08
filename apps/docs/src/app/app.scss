@@ -139,6 +139,20 @@
   display: none;
 }
 
+/* The drawer's button carries the component index, and the left rail carries it back at
+   `@container shell (min-width: 1180px)` — a container, not a viewport, so it returns at
+   about 1275px of window. Hiding this button at 719 left a band between the two where the
+   index existed in NEITHER seat: measured at 1000px, the rail 0x0 and the button 0x0, and
+   the only way to another component was the browser's back. Every tablet in landscape and
+   every small laptop lands in it. The number is the rail's threshold read back through the
+   shell's own padding, and it is a media query because a button in the top bar cannot ask
+   about a container it is not inside. */
+@media (max-width: 1274px) {
+  .topbar__menu {
+    display: inline-flex;
+  }
+}
+
 @media (max-width: 719px) {
   .topbar__nav,
   .topbar__start {
@@ -147,10 +161,6 @@
 
   .topbar__theme {
     margin-inline-start: auto;
-  }
-
-  .topbar__menu {
-    display: inline-flex;
   }
 }
 

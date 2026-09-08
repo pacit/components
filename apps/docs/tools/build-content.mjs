@@ -937,19 +937,33 @@ const tokensOf = (card) => {
 
 const mutation = read('libs/components/mutation.snapshot.md');
 const total = mutation.match(/^TOTAL ([\d.]+) (\d+)\/(\d+)$/m);
-// Columns (the snapshot's own legend): file · score · killed (of that, by the clock) ·
-// surviving · not covered · ignored. The denominator is what was measured: ignored is out.
+// Columns, and they are READ from the snapshot's own legend rather than trusted to memory:
+// file · score · killed (of that, by the clock) · surviving · errored · not covered · ignored.
+// The denominator is what was measured — ignored is out, errored is in, which is the formula
+// the snapshot prints beside the legend and the mutation gate checks.
+//
+// The `errored` column arrived on 2026-09-05 and this regex kept asking for six fields, so it
+// matched NOTHING and every page rendered the empty case — a tile that says "no mutants to
+// kill" over a component with twenty-six of them. Hence the throw below: a snapshot that
+// parses to zero rows is a broken parser, and the one thing it must not do is look like a
+// measurement that came back empty.
 const mutationRows = [
   ...mutation.matchAll(
-    /^(libs\/components\/\S+) ([\d.]+) (\d+)\((\d+)\) (\d+) (\d+) (\d+)$/gm,
+    /^(libs\/components\/\S+) ([\d.]+) (\d+)\((\d+)\) (\d+) (\d+) (\d+) (\d+)$/gm,
   ),
 ].map((m) => ({
   file: m[1],
   score: Number(m[2]),
   killed: Number(m[3]),
   survived: Number(m[5]),
-  notCovered: Number(m[6]),
+  errored: Number(m[6]),
+  notCovered: Number(m[7]),
 }));
+
+if (mutationRows.length === 0)
+  throw new Error(
+    'the mutation snapshot parsed to no rows — its column layout has moved under this parser',
+  );
 
 const registry = read('docs/registry.md');
 const count = (label) =>
@@ -969,6 +983,73 @@ const contrastChecks = JSON.parse(
   read('libs/tokens/src/contrast.policy.json'),
 ).checks;
 const contrastPairs = contrastChecks.length;
+
+/**
+ * Whether a contrast check belongs to a component, and it takes two readings because the
+ * policy answers in two grammars.
+ *
+ * The TOKENS are the exact answer where they apply: a check comparing `pct.progress.fill-bg`
+ * against `pct.progress.track-bg` is the progress bar's whatever its sentence calls it, and
+ * 207 of the 223 entries name a component's namespace on one side or the other. The NAME
+ * answers the other sixteen — `button/outline — label` measures `pct.primary` on
+ * `pct.surface`, primitives that belong to no component, and the only thing that says which
+ * component asked for the measurement is the word at the front of its name.
+ *
+ * The rule this replaces asked for `<id>/` and nothing else, which 30 of the 223 entries
+ * happen to be written as — so a page that measures nineteen pairs printed 1, and the
+ * progress bar's eleven printed 0. Three checks belong to no component and still do not:
+ * `body text`, `muted text` and the focus ring are the page's, not a component's.
+ */
+/**
+ * The classes the import line has to name, which is not the same list as the classes the card
+ * documents.
+ *
+ * The line exists to be pasted, and what a reader pastes it above is the fence printed two
+ * blocks below it — so it has to carry every class that fence actually uses. `toast` documents
+ * `PctToaster` and its usage mounts `<pct-toast-viewport />`; `field` documents `PctField` and
+ * its usage puts `pctText` on an input. Naming only the card's own class handed out an import
+ * that does not compile the snippet under it, on every page whose shortest use takes more than
+ * one class.
+ *
+ * Read off the fence rather than declared: an export is needed when the fence mentions its
+ * SELECTOR (an element or an attribute) or its NAME (a service reached through `inject`). The
+ * card's own classes stay in the list whatever the fence does — they are the page's subject,
+ * and a reader who came for `PctSelect` gets `PctSelect`.
+ */
+const importsFor = (card, exports) => {
+  const fence = card.usageRaw?.code ?? '';
+  const needed = new Set(card.classes);
+  for (const row of exports) {
+    if (row.name !== row.name.replace(/[^\w]/g, '')) continue;
+    const selectors = (row.selector ?? '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    const mentioned =
+      selectors.some((selector) => {
+        const bare = selector.replace(/^[\w-]*\[|\]$/g, '');
+        return new RegExp(`[<\\s]${bare}[\\s/>=]`).test(fence);
+      }) || new RegExp(`\\b${row.name}\\b`).test(fence);
+    if (mentioned) needed.add(row.name);
+  }
+  // The card's own classes first, in the card's order — they are what the page is about —
+  // and whatever the fence added after them, in the exports table's order.
+  const rest = exports
+    .map((row) => row.name)
+    .filter((name) => needed.has(name) && !card.classes.includes(name));
+  return [...card.classes.filter((name) => needed.has(name)), ...rest];
+};
+
+const paintsFor = (id, check) => {
+  const namespace = `pct.${id}.`;
+  if (check.fg.startsWith(namespace) || check.bg.startsWith(namespace))
+    return true;
+  // `UI: ` is the policy's own prefix for a non-text pair; under it the grammar is the same.
+  const name = check.name.startsWith('UI: ') ? check.name.slice(4) : check.name;
+  return name === id || /^[\s/\u2014(]/.test(name.slice(id.length))
+    ? name.startsWith(id)
+    : false;
+};
 const touchTarget = JSON.parse(read('libs/tokens/src/primitive.json')).pct
   .target.min.$value;
 if (!/^\d+px$/.test(touchTarget))
@@ -1086,8 +1167,9 @@ const evidenceOf = (card, api) => {
   const rows = mutationRows.filter((r) => files.has(r.file));
   const killed = rows.reduce((n, r) => n + r.killed, 0);
   const survived = rows.reduce((n, r) => n + r.survived, 0);
+  const errored = rows.reduce((n, r) => n + r.errored, 0);
   const notCovered = rows.reduce((n, r) => n + r.notCovered, 0);
-  const measured = killed + survived + notCovered;
+  const measured = killed + survived + errored + notCovered;
   const spec = `${SPEC_ALIAS[card.id] ?? card.id}.spec.ts`;
   const specPath = join(E2E_DIR, spec);
   return {
@@ -1110,8 +1192,7 @@ const evidenceOf = (card, api) => {
           spec: `apps/sandbox-e2e/src/${spec}`,
         }
       : null,
-    pairs: contrastChecks.filter((c) => c.name.startsWith(`${card.id}/`))
-      .length,
+    pairs: contrastChecks.filter((c) => paintsFor(card.id, c)).length,
     baselines: baselineFiles.filter((f) => f.startsWith(`${card.id}-`)).length,
     cost: costOf(card.id),
   };
@@ -1340,10 +1421,12 @@ const entry = (card) => {
         card.id,
         `the Parts table names \`${name}\`, which the inventory does not hold`,
       );
+  const exports = suffix ? exportsOf(suffix) : [];
   return {
     ...card,
     api,
-    exports: suffix ? exportsOf(suffix) : [],
+    exports,
+    imports: importsFor(card, exports),
     parts: partNames.map((name) => ({
       name,
       description: card.partsDescribed.get(name) ?? '',
@@ -1496,6 +1579,7 @@ const pages = Object.fromEntries(
       examples: c.examples,
       api: c.api,
       exports: c.exports,
+      imports: c.imports,
       parts: c.parts,
       tokens: c.tokens,
       theming: c.theming,
@@ -1607,6 +1691,8 @@ export interface ComponentPage {
   readonly examples: readonly ExampleDoc[];
   readonly api: readonly ApiClass[];
   readonly exports: readonly ExportRow[];
+  /** What the import line names: the card's classes plus whatever its usage fence uses. */
+  readonly imports: readonly string[];
   readonly parts: readonly PartDoc[];
   readonly tokens: readonly TokenDoc[];
   readonly theming: { readonly code: string; readonly style: string } | null;

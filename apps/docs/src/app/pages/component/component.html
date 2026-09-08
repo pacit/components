@@ -150,15 +150,22 @@
       <section class="hero" id="preview" data-spy>
         <div class="hero__panel" [class.is-code]="tab() === 'code'">
           <div class="hero__tools">
+            <!--
+              A flip, not a toggle, and it is dressed as what it is. The old label said "Dark
+              stage" on every page and the old `aria-pressed` said `true` for a stage that had
+              just been made LIGHT — on a dark page both the word and the state described the
+              opposite of what the press did. The stage goes to whatever the page is not, so the
+              only honest label is the one that names the action rather than a destination this
+              component cannot read.
+            -->
             <button
               pctButton
               variant="ghost"
               size="sm"
               (click)="flipStage()"
-              [attr.aria-pressed]="stageTheme() !== null"
               data-testid="stage-theme"
             >
-              Dark stage
+              {{ stageTheme() ? "Back to the page's theme" : 'Flip the stage' }}
             </button>
             <button
               pctButton

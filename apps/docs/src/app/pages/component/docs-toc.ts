@@ -1,4 +1,5 @@
-import { Component, input } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { Component, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 export interface TocItem {
@@ -31,5 +32,28 @@ export class DocsToc {
   protected holdsActive(item: TocItem): boolean {
     const active = this.active();
     return Boolean(item.children?.some((c) => c.id === active));
+  }
+
+  private readonly document = inject(DOCUMENT);
+
+  /**
+   * The page moves; the keyboard has to move with it.
+   *
+   * The router scrolls to the fragment and leaves focus on the link — and this rail is the
+   * LAST thing in the shell, so the next Tab walks out the rest of the contents and then out
+   * of the document. A reader who navigates by the index could not then read what they had
+   * navigated to, which is the whole of what an index is for.
+   *
+   * `tabindex="-1"` on arrival rather than in the template: a section is a place, not a
+   * control, and it should be landed on without becoming a tab stop of its own — the same
+   * rule the region cycle states. `preventScroll` because the scrolling is the router's, and
+   * it is the one that reads `--docs-anchor-offset`; a second scroll from `focus()` would
+   * fight it and win at the wrong offset.
+   */
+  protected onJump(id: string): void {
+    const target = this.document.getElementById(id);
+    if (!target) return;
+    if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+    target.focus({ preventScroll: true });
   }
 }

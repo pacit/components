@@ -241,6 +241,165 @@ test.describe('The pages', () => {
   });
 
   /**
+   * The nine defects the five readings found on this page (4.34), as the cases that keep them
+   * from coming back. Two of them had been wrong for weeks in the one place on the site whose
+   * whole job is to prove that nothing here is wrong quietly — which is what a gate is for.
+   */
+  test('the evidence tiles carry numbers, not the empty case', async ({
+    page,
+  }) => {
+    // The snapshot grew an `errored` column and the content pass's row regex kept asking for
+    // six fields, so it matched nothing and every one of the 34 pages printed "—" over the
+    // sentence "no mutants to kill — the policy says why". `button.ts` has 32.
+    for (const id of ['button', 'toast', 'select', 'progress']) {
+      await visit(page, `/components/${id}`);
+      const tiles = page.getByTestId('evidence');
+      await expect(tiles).not.toContainText('no mutants to kill');
+      await expect(tiles.locator('.tile__n').first()).toHaveText(/^\d/);
+      // And the colour-pairs tile, which used to match a naming accident: it asked for checks
+      // called `<id>/…` while the policy writes `select — label` and `UI: select border`.
+      // The number and its label are separate spans with no whitespace between them.
+      await expect(tiles).toContainText(/[1-9]\d*\s*colour pairs measured/);
+    }
+  });
+
+  test('the import you copy names what the fence below it uses', async ({
+    page,
+  }) => {
+    // `toast` documents `PctToaster` and its shortest use mounts `<pct-toast-viewport />`.
+    // An import line derived from the card's own class alone does not compile the snippet
+    // printed two blocks under the button that hands it over.
+    await visit(page, '/components/toast');
+    const line = page.locator('#usage pre.plain code');
+    await expect(line).toContainText('PctToaster');
+    await expect(line).toContainText('PctToastViewport');
+
+    await visit(page, '/components/field');
+    await expect(page.locator('#usage pre.plain code')).toContainText(
+      'PctText',
+    );
+  });
+
+  test('every entry of the table of contents points at a section that is there', async ({
+    page,
+  }) => {
+    // `toast` and `tooltip` offered "On the element" and rendered no such block: the contents
+    // asked one question and the template another. A link that writes a fragment, moves
+    // nothing and is then shareable is worse than no link.
+    for (const id of ['toast', 'tooltip', 'button', 'select']) {
+      await visit(page, `/components/${id}`);
+      const missing = await page
+        .locator('.rail--toc .toc a[href*="#"]')
+        .evaluateAll((links) =>
+          links
+            .map((a) => a.getAttribute('href')?.split('#')[1] ?? '')
+            .filter((id) => id && !document.getElementById(id)),
+        );
+      expect(missing, `${id}: the contents point at nothing`).toEqual([]);
+    }
+  });
+
+  test('a jump from the contents takes the keyboard with it', async ({
+    page,
+  }) => {
+    // The rail is the last element of the shell, so focus left behind in it runs the reader
+    // out of the document rather than into what they chose.
+    await visit(page, '/components/button');
+    await page
+      .locator('.rail--toc [data-testid="toc"]')
+      .getByRole('link', { name: 'API', exact: true })
+      .click();
+
+    await expect(page).toHaveURL(/#api$/);
+    const landed = await page.evaluate(() => ({
+      id: document.activeElement?.id ?? '',
+      top: Math.round(
+        document.getElementById('api')?.getBoundingClientRect().top ??
+          Number.NaN,
+      ),
+    }));
+    expect(landed.id).toBe('api');
+    // And the router still owns the scrolling, at the offset the stylesheet declares.
+    expect(landed.top).toBeGreaterThanOrEqual(80);
+    expect(landed.top).toBeLessThanOrEqual(128);
+  });
+
+  test('the component index is reachable at every width', async ({ page }) => {
+    // The drawer's button stopped at 719 and the rail returned at a CONTAINER width of 1180 —
+    // about 1275 of window. Between them the index was in neither seat and the only way to
+    // another component was the browser's back button.
+    for (const width of [390, 800, 1000, 1200, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      await visit(page, '/components/button');
+      const seats = await page.evaluate(() => {
+        const shown = (selector: string) => {
+          const el = document.querySelector(selector);
+          if (!el) return false;
+          const box = el.getBoundingClientRect();
+          return box.width > 0 && box.height > 0;
+        };
+        return { rail: shown('.rail--index'), menu: shown('.topbar__menu') };
+      });
+      expect(
+        seats.rail || seats.menu,
+        `at ${width}px the index has no seat`,
+      ).toBe(true);
+    }
+    await page.setViewportSize({ width: 1280, height: 900 });
+  });
+
+  test('the stage flip says what it does, and claims no state', async ({
+    page,
+  }) => {
+    // It sets the stage to whatever the page is NOT, so "Dark stage" was false on a dark page
+    // — and `aria-pressed="true"` for a stage it had just made light was false to everybody.
+    await visit(page, '/components/button');
+    const flip = page.getByTestId('stage-theme');
+    await expect(flip).toHaveText('Flip the stage');
+    await expect(flip).not.toHaveAttribute('aria-pressed', /.*/);
+
+    await flip.click();
+    await expect(flip).toHaveText("Back to the page's theme");
+    await expect(flip).not.toHaveAttribute('aria-pressed', /.*/);
+  });
+
+  test('the stage tools clear the switch on a phone, and the rails clear the floor', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await visit(page, '/components/button');
+
+    // Absolutely positioned tools used to sit on top of the Preview/Code switch: a tap meant
+    // for the source landed on the theme button.
+    const stolen = await page.evaluate(() => {
+      const tab = Array.from(document.querySelectorAll('[role="tab"]')).find(
+        (t) => t.textContent?.trim() === 'Code',
+      );
+      if (!tab) return -1;
+      const box = tab.getBoundingClientRect();
+      const y = Math.round((box.top + box.bottom) / 2);
+      let taken = 0;
+      for (let x = Math.ceil(box.left); x < box.right; x++)
+        if (!document.elementFromPoint(x, y)?.closest('[role="tab"]')) taken++;
+      return taken;
+    });
+    expect(stolen, 'the stage tools cover the Code tab').toBe(0);
+
+    await page.setViewportSize({ width: 900, height: 900 });
+    await visit(page, '/components/button');
+    const handles = await page
+      .locator('.toc-fold summary, .toc__meta a')
+      .evaluateAll((els) =>
+        els
+          .map((el) => el.getBoundingClientRect().height)
+          .filter((height) => height > 0),
+      );
+    expect(handles.length).toBeGreaterThan(0);
+    expect(Math.min(...handles)).toBeGreaterThanOrEqual(TARGET_FLOOR);
+    await page.setViewportSize({ width: 1280, height: 900 });
+  });
+
+  /**
    * The conformance claim, stated as a sentence under the description (sketch C). It is the
    * one thing in the head that is a CLAIM rather than an address, and it has three readings:
    * a W3C pattern implemented, the platform carrying the semantics, or no pattern applying

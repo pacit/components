@@ -91,10 +91,16 @@ export class ComponentPageView {
     return id.charAt(0).toUpperCase() + id.slice(1);
   });
 
+  /**
+   * The line the copy button hands over, and it names what the fence below it USES — the
+   * content pass reads that off the usage fence, because `classes` is what the card
+   * documents and the two are not the same list: `toast` documents `PctToaster` and mounts
+   * `<pct-toast-viewport />`.
+   */
   protected readonly importLine = computed(() => {
     const page = this.page();
     return page
-      ? `import { ${page.classes.join(', ')} } from '${page.entrypoint}';`
+      ? `import { ${page.imports.join(', ')} } from '${page.entrypoint}';`
       : '';
   });
 
@@ -164,12 +170,18 @@ export class ComponentPageView {
   protected readonly toc = computed<readonly TocItem[]>(() => {
     const page = this.page();
     if (!page) return [];
+    // The same question the template asks at `@if (c.host.length)`. Asked in one place and
+    // not the other, the contents offered `#api-host` on `toast` and `tooltip`, where the
+    // block is never rendered — a link that writes a fragment into the URL, does not move the
+    // page, and is then shareable and lands nowhere.
     const api: TocItem[] =
       page.api.length === 1
         ? [
             { id: 'api-inputs', label: 'Inputs' },
             { id: 'api-outputs', label: 'Outputs' },
-            { id: 'api-host', label: 'On the element' },
+            ...(page.api[0].host.length
+              ? [{ id: 'api-host', label: 'On the element' }]
+              : []),
           ]
         : page.api.map((c) => ({ id: `api-${c.name}`, label: c.name }));
     return [
