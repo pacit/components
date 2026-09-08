@@ -96,3 +96,32 @@
     </div>
   </div>
 </sbx-demo>
+
+<sbx-demo
+  heading="A wait the page decided had gone on long enough"
+  summary="The sheen travels for as long as the wait does, and that is the promise: a placeholder that went still would say the work had finished. SC 2.2.2 asks for a stop once motion passes five seconds, so `paused` hands it to the page — the only side that knows how long its own wait has been. It never outranks the reader: `prefers-reduced-motion` slows the sheen through the motion axis whatever this button says."
+  [reqs]="['req-a11y-motion', 'req-a11y-wcag']"
+  data-testid="demo-paused"
+>
+  <div class="view__card" aria-busy="true" data-testid="slow-card">
+    <pct-skeleton shape="circle" class="view__avatar" />
+    <div class="view__card-body">
+      <pct-skeleton class="view__card-title" [paused]="stopped()" />
+      <pct-skeleton
+        [lines]="3"
+        [paused]="stopped()"
+        data-testid="skeleton-paused"
+      />
+    </div>
+  </div>
+  <p>
+    <button
+      pctButton
+      type="button"
+      (click)="stopped.set(!stopped())"
+      data-testid="toggle-paused"
+    >
+      {{ stopped() ? 'Let the sheen run' : 'Stop the sheen' }}
+    </button>
+  </p>
+</sbx-demo>

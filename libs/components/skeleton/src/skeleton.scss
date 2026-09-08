@@ -85,6 +85,19 @@
     linear infinite;
 }
 
+/* The page's own stop (`paused`, 0073). Two attributes to the base rule's one class, so it
+   outranks the `animation` shorthand above without an `!important` and without the shorthand
+   having to be split — the same arrangement the hero's pause uses one component over.
+
+   `animation-play-state` and not `animation: none`: a stopped animation would put the sheen
+   back at its start edge, and a page that stops a long wait wants the drawing to stand still
+   where it is, not to twitch. Under `prefers-reduced-motion` the sheen is already slowed by
+   the motion axis and this makes it still; under `forced-colors: active` the band is solid and
+   stops the same way, because it is the same animation on the same element. */
+:host([data-pct-paused]) .pct-skeleton__fill {
+  animation-play-state: paused;
+}
+
 @keyframes pct-skeleton-sheen {
   from {
     inset-inline-start: calc(-1 * var(--pct-skeleton-fill-size));

@@ -302,3 +302,95 @@ test.describe('PctSkeleton — the shape of content that has not arrived', () =>
     }
   });
 });
+
+/**
+ * The stop the page throws, and the reason the component will not throw it itself
+ * (plan 4.45, [0073](../../../docs/decisions/0073-the-stop-a-long-wait-needs-is-the-pages-to-throw.md)).
+ *
+ * SC 2.2.2 asks for a mechanism once motion runs past five seconds beside other content, and a
+ * skeleton's sheen runs for as long as the wait does — by design, since a placeholder that
+ * went still would say the work had finished. So the mechanism is an input, and what these
+ * cases hold is that it is a real one in a browser: the shade freezes WHERE IT STANDS rather
+ * than snapping back to its start edge, and the page can let it go again.
+ */
+test.describe('PctSkeleton — the stop belongs to the page', () => {
+  test('`paused` freezes the sheen where it stands, and lets it go again', async ({
+    page,
+  }) => {
+    await visit(page, '/skeleton');
+    const host = page.getByTestId('skeleton-paused');
+    const shade = host.locator('[data-pct-part="fill"]').first();
+    // The travelled distance, read off the property the animation actually moves — a
+    // `transform` would have been the usual reading and this component moves neither.
+    const position = () => styleOf(shade, 'inset-inline-start');
+
+    const first = await position();
+    await page.waitForTimeout(500);
+    expect(await position(), 'the sheen is not moving at all').not.toBe(first);
+
+    await page.getByTestId('toggle-paused').click();
+    await expect(host).toHaveAttribute('data-pct-paused', '');
+    expect(await styleOf(shade, 'animation-play-state')).toBe('paused');
+
+    // A hundred and fifty milliseconds before the reading, and it hides nothing: webkit
+    // applies the pause on a later FRAME than the one the click lands in, so a value read in
+    // the same task is a few frames stale and differs from the one the sheen actually stops
+    // on — measured at 197.72px against the 214.13px it then held for the rest of the run,
+    // with the animation's own `currentTime` already frozen at both readings
+    // ([`lesson-183`](../../../docs/lessons.md#lesson-183)). The window below is 700ms, so a
+    // sheen that had gone on travelling would be caught many times over.
+    await page.waitForTimeout(150);
+
+    const held = await position();
+    const clock = () =>
+      shade.evaluate((el) => el.getAnimations()[0]?.currentTime ?? null);
+    const stopped = await clock();
+    await page.waitForTimeout(700);
+    expect(await position(), 'a paused sheen travelled anyway').toBe(held);
+    // And the platform's own statement beside the geometry: the animation's clock did not
+    // advance either, which is a reading no engine's style resolution can disagree about.
+    expect(await clock(), 'the animation clock advanced under the pause').toBe(
+      stopped,
+    );
+    // Frozen mid-crossing and not sent home: the start edge is the negative of the shade's
+    // own width, and a stop that reset the animation would be sitting exactly there.
+    expect(held, 'the sheen jumped back to its start edge').not.toBe(first);
+
+    await page.getByTestId('toggle-paused').click();
+    await expect(host).not.toHaveAttribute('data-pct-paused', '');
+    await page.waitForTimeout(500);
+    expect(
+      await position(),
+      'the sheen did not start again when the page let it',
+    ).not.toBe(held);
+  });
+
+  test('the stop is one page’s and not the library’s: every other skeleton keeps moving', async ({
+    page,
+  }) => {
+    await visit(page, '/skeleton');
+    const other = page
+      .getByTestId('skeleton-text')
+      .locator('[data-pct-part="fill"]')
+      .first();
+
+    await page.getByTestId('toggle-paused').click();
+    await expect(page.getByTestId('skeleton-paused')).toHaveAttribute(
+      'data-pct-paused',
+      '',
+    );
+
+    // The negative control for the whole mechanism: an input on one instance is not a
+    // document-level switch, and a page that stopped every placeholder it did not name would
+    // be the library deciding what a wait means.
+    expect(await styleOf(other, 'animation-play-state')).toBe('running');
+    const moving = await other.evaluate(
+      (el) => getComputedStyle(el).insetInlineStart,
+    );
+    await page.waitForTimeout(500);
+    expect(
+      await other.evaluate((el) => getComputedStyle(el).insetInlineStart),
+      'an unnamed skeleton stopped with the named one',
+    ).not.toBe(moving);
+  });
+});

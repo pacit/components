@@ -107,6 +107,20 @@ class QuietHost {
   readonly lines = signal(2);
 }
 
+/** The page's own stop, thrown and let go again (0073). */
+@Component({
+  imports: [PctSkeleton],
+  template: `
+    <div aria-busy="true">
+      <pct-skeleton data-testid="stoppable" [lines]="2" [paused]="stopped()" />
+      <pct-skeleton data-testid="written-stop" [lines]="2" paused />
+    </div>
+  `,
+})
+class PausedHost {
+  readonly stopped = signal(false);
+}
+
 /**
  * A rendered page, waited for through the `ApplicationRef` — which is what this component
  * needs and a `detectChanges()` alone would not give: the dev-mode reading is taken in an
@@ -446,5 +460,75 @@ describe('PctSkeleton — a disc is a shape, because a radius does not draw one'
       'circle track',
     );
     expect(track.style.getPropertyValue('border-radius')).toBe('50%');
+  });
+});
+
+describe('PctSkeleton — the stop belongs to the page, not to a count of passes', () => {
+  it('writes the attribute a stylesheet can see, and takes it back', async () => {
+    const fixture = await render(PausedHost);
+    const host = skeleton('stoppable');
+
+    // The default is the promise: a wait that is still a wait is still drawn as one.
+    expect(host.hasAttribute('data-pct-paused')).toBe(false);
+
+    fixture.componentInstance.stopped.set(true);
+    await settle(fixture);
+    expect(host.getAttribute('data-pct-paused')).toBe('');
+
+    // And let go again, because a page that stops a long wait may find it is not over.
+    fixture.componentInstance.stopped.set(false);
+    await settle(fixture);
+    expect(host.hasAttribute('data-pct-paused')).toBe(false);
+  });
+
+  it('takes the bare attribute as a yes, the way every boolean input of this library does', async () => {
+    await render(PausedHost);
+
+    expect(skeleton('written-stop').getAttribute('data-pct-paused')).toBe('');
+  });
+
+  it('stops the sheen where it stands rather than sending it home', async () => {
+    await render(PausedHost);
+
+    const rule = only(
+      rulesOf(/data-pct-paused/).filter((r) =>
+        r.selectorText.includes('pct-skeleton__fill'),
+      ),
+      'paused sheen',
+    );
+    expect(rule.style.getPropertyValue('animation-play-state')).toBe('paused');
+    // `animation: none` would put the shade back at its start edge, which is a twitch where a
+    // page asked for stillness — and it would also drop the whole declaration the reduced
+    // reading depends on.
+    expect(rule.style.getPropertyValue('animation')).toBe('');
+    expect(rule.style.getPropertyValue('animation-name')).toBe('');
+  });
+
+  it('outranks the running sheen without an `!important` anywhere in the sheet', async () => {
+    await render(PausedHost);
+
+    // Two attributes against one class: the pause rule wins on specificity, which is the only
+    // way it can win without splitting the shorthand above it.
+    const paused = only(
+      rulesOf(/data-pct-paused/).filter((r) =>
+        r.selectorText.includes('pct-skeleton__fill'),
+      ),
+      'paused sheen',
+    ).style;
+    expect(paused.getPropertyPriority('animation-play-state')).toBe('');
+
+    // The running rule, as the compiler wrote it — one class plus the encapsulation
+    // attribute, and no mention of the pause. The forced-colours reading is inside a
+    // `@media` block, which this walk does not descend into.
+    const running = only(
+      rulesOf(/pct-skeleton__fill/).filter(
+        (r) => !r.selectorText.includes('data-pct-paused'),
+      ),
+      'running sheen',
+    );
+    expect(running.style.getPropertyValue('animation-play-state')).toBe('');
+    expect(running.style.getPropertyValue('animation')).toContain(
+      'pct-skeleton-sheen',
+    );
   });
 });

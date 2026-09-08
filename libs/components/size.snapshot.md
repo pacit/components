@@ -65,7 +65,7 @@ before an application ships them.
 ./radio 15588 ./core @angular/core
 ./regions 5515 ./core @angular/core
 ./select 69892 ./core,./icon @angular/cdk/overlay,@angular/common,@angular/core
-./skeleton 3480 - @angular/core
+./skeleton 3690 - @angular/core
 ./slider 17542 ./core @angular/core
 ./stack 879 - @angular/core
 ./stepper 10745 ./core,./icon @angular/common,@angular/core

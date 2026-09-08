@@ -7,9 +7,9 @@ The whole repository is in English — [`req-project-language`](requirements/pro
 ```
 00-axis.md      LEVEL 0   the one requirement every other one is ordered by
 requirements/   LEVEL 1   promises: what has to be true                (94 entries)
-decisions/      LEVEL 2   why this way, and what it costs us           (72 ADRs)
+decisions/      LEVEL 2   why this way, and what it costs us           (73 ADRs)
 components/     LEVEL 3   whether this component keeps them            (filled-in DoD)
-lessons.md                the evidence base: what actually happened    (182 entries)
+lessons.md                the evidence base: what actually happened    (183 entries)
 support.md                what a consumer can count on: versions, notice, codemods
 acr.md                    GENERATED: the Accessibility Conformance Report — WCAG 2.2 A/AA, from the gates
 acr/                      the claims behind it: one entry per criterion, every citation held by check-acr

@@ -5045,3 +5045,30 @@ state.
 executed is a gate with no negative control on its own liveness. `check-mutation` guards the
 report's contents in seven points and has nothing to say about whether a report was produced
 today, because the run and the reading are two targets and only the second one speaks.
+
+### <a id="lesson-183"></a>`lesson-183` — A pause is true before it is visible, and webkit reports it in that order
+
+The skeleton's `paused` input froze the sheen in chromium and firefox and travelled 40 px in
+webkit — with `getComputedStyle(el).animationPlayState` already reading `paused` when the case
+took its first measurement.
+
+The probe that settled it read four things at once, four times: the shade's own x against its
+track, the resolved `inset-inline-start`, the animation's `playState` and its `currentTime`.
+**The clock was frozen at the very first reading** — 1820 ms, identical in all four — while the
+resolved position moved once, from 197.72 px to 214.13 px, and then held 214.13 for the rest of
+the run. So webkit stops the animation immediately and lets the STYLE RESOLUTION catch up a few
+frames later; the value a case reads in the click's own task is the one the sheen was leaving,
+not the one it stops on.
+
+Two things follow, and the second is the general one.
+
+A case that reads a paused animation has to let a frame or two pass first, and the wait hides
+nothing as long as the measurement window is much longer than it: 150 ms before the reading
+against 700 ms of watching, so a sheen that had gone on travelling would be caught many times
+over.
+
+And where a platform offers a reading of its OWN state, take it beside the geometry rather than
+instead of it. `el.getAnimations()[0].currentTime` is a number no engine's style resolution can
+disagree about, and it was already telling the truth in the reading that looked like a failure.
+The geometry is what a user sees; the clock is what the platform did. A case that asserts both
+says which of the two an engine got wrong.

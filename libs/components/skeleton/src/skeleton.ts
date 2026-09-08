@@ -1,5 +1,6 @@
 import {
   afterNextRender,
+  booleanAttribute,
   Component,
   computed,
   ElementRef,
@@ -67,6 +68,7 @@ export type PctSkeletonShape = 'text' | 'block' | 'circle';
     // the region, and the region is not ours to write on.
     'aria-hidden': 'true',
     '[attr.data-pct-shape]': 'shape()',
+    '[attr.data-pct-paused]': 'paused() ? "" : null',
   },
 })
 export class PctSkeleton {
@@ -96,6 +98,30 @@ export class PctSkeleton {
    * in for does, so a name can sit beside it with no layout of the consumer's.
    */
   readonly shape = input<PctSkeletonShape>('text');
+
+  /**
+   * Stop the sheen where it stands — `false` by default, and the default is the promise.
+   *
+   * **What the criterion asks and what this component would not do.** SC 2.2.2 wants a
+   * mechanism to pause, stop or hide motion that starts on its own, runs past five seconds and
+   * stands beside other content — unless the movement is essential. A wait under five seconds
+   * never reaches it; a slow one does. What this component refuses is to answer that by
+   * STOPPING ITSELF after some number of passes: a placeholder that goes still while the work
+   * goes on says the work has finished, which is the one thing a picture of a wait must never
+   * say ([0050](../../../../docs/decisions/0050-a-skeleton-is-a-picture-of-a-wait.md)). So the
+   * switch is handed to the page, which is the only side that knows a wait has gone on too
+   * long, and it is the same switch `[pctHero]` takes
+   * ([0073](../../../../docs/decisions/0073-the-stop-a-long-wait-needs-is-the-pages-to-throw.md)).
+   *
+   * Three mechanisms, in this order: `prefers-reduced-motion` is the reader's and outranks
+   * everything — it slows the sheen through the motion axis and never stops it, since a still
+   * placeholder would be that same lie in a quieter voice; `paused` is the page's; and with
+   * neither spoken the sheen travels for as long as the wait does.
+   *
+   * @example
+   * <pct-skeleton [lines]="3" [paused]="waited() > 5000" />
+   */
+  readonly paused = input(false, { transform: booleanAttribute });
 
   /**
    * One entry per bar to draw. A `block` and a `circle` are one bar however many lines were

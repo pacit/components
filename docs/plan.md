@@ -3461,7 +3461,7 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     goes **red at `height: 0`** ([`lesson-177`](lessons.md#lesson-177)). The accordion's card
     is corrected in both places it said the floor was held by nothing
 
-- [ ] **4.45 — the sheen that can outlast five seconds, and the wait that owns it**
+- [x] **4.45 — the sheen that can outlast five seconds, and the wait that owns it**
   - left standing by 4.37, which closed the other half. Every sweep in the library now runs
     one pass and settles, and `[pctHero]` takes a `paused` input besides — but the skeleton's
     sheen travels for as long as the wait does, by design: a busy indicator that stopped would
@@ -3481,7 +3481,23 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     seconds is already a page with a problem, and the repair is upstream of this component
   - binds at: **the first consumer whose wait is long enough to notice**, or the buyer who
     reads the conformance report and asks about the one Partially Supports row that is not
-    the disabled state's contrast · _notes:_ —
+    the disabled state's contrast · _notes:_ **closed 2026-09-08 on the first of the three
+    roads, and the second one is what was refused.** `paused` on `pct-skeleton`, `false` by
+    default — the same word `[pctHero]` took on 4.37, and for the same criterion
+    ([0073](decisions/0073-the-stop-a-long-wait-needs-is-the-pages-to-throw.md)). The
+    argument for the "essential" exception is real and was written out, and then not used:
+    a row that says Supports because we reasoned well is the shape of claim the whole report
+    exists to avoid. The cap after N passes stays refused outright — a placeholder that goes
+    still while the work runs says the work finished. Three mechanisms and an order between
+    them: `prefers-reduced-motion` is the reader's and only SLOWS the sheen, `paused` is the
+    page's, and with neither spoken the motion is the wait itself. Measured: four unit cases
+    (the attribute both ways, the bare attribute, `animation-play-state` rather than
+    `animation: none` so the shade freezes where it stands, and the specificity that beats the
+    shorthand with no `!important`), two e2e cases in three engines, the second of them the
+    negative control — a second skeleton the page did not name keeps moving, which is what
+    makes this an input and not a document-level switch. **SC 2.2.2 rises to Supports**, and
+    the report now stands at 35 Supports, 1 Partially (4.1.2, the assistive-technology pass
+    2.2 owes), 19 Not Applicable, 0 Not Evaluated
 
 - [x] **4.46 — the mutation gate had been dead for three days, and nothing could have said so**
   - found 2026-09-08 while running the pass 4.14–4.16 left owing: `stryker run` ended in its

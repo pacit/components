@@ -20,6 +20,9 @@ export class SkeletonView {
   /** Whether the content of the first card has arrived — the whole demo is this one flag. */
   protected readonly pending = signal(true);
 
+  /** The page's own stop for a wait it has decided is a long one (0073). */
+  protected readonly stopped = signal(false);
+
   protected toggle(): void {
     this.pending.update((waiting) => !waiting);
   }
