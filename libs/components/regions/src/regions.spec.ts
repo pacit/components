@@ -4,7 +4,7 @@ import {
   signal,
   Type,
 } from '@angular/core';
-import { TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { PCT_REGIONS } from '@pacit/components/core';
 import { PctRegionDirective, PctRegionKey, providePctRegions } from './regions';
 
@@ -40,16 +40,92 @@ describe('@pacit/components/regions', () => {
     })
     class Outside {}
 
+    /**
+     * Binds nothing: `pctRegionKey` and no more, which is what a consumer writes first. `Page`
+     * above binds `[key]`, and a bound input is never the default — so this is the only host on
+     * which the shipped answers to "which key" and "listening where" can be read at all.
+     */
+    @Component({
+      imports: [PctRegionDirective, PctRegionKey],
+      template: `<div pctRegionKey data-testid="app">
+        <nav pctRegion="Navigation" data-testid="nav">
+          <a href="#a">One</a>
+        </nav>
+        <main pctRegion="Main" data-testid="main">
+          <button type="button">Two</button>
+        </main>
+      </div>`,
+    })
+    class BarePage {}
+
+    /** The other seat of the same directive, and the one the sandbox uses. */
+    @Component({
+      imports: [PctRegionDirective, PctRegionKey],
+      template: `<div pctRegionKey listenOn="document" data-testid="app">
+        <nav pctRegion="Navigation" data-testid="nav">
+          <a href="#a">One</a>
+        </nav>
+        <main pctRegion="Main" data-testid="main">
+          <button type="button">Two</button>
+        </main>
+      </div>`,
+    })
+    class DocumentPage {}
+
+    /**
+     * A region that arrives after the one below it in the document — the `@if` the class comment
+     * names, and the only arrangement in which "the document's order" and "the order they
+     * registered in" are two different answers.
+     */
+    @Component({
+      imports: [PctRegionDirective],
+      template: `@if (early()) {
+          <nav pctRegion="Navigation" data-testid="nav"></nav>
+        }
+        <main pctRegion="Main" data-testid="main"></main>`,
+    })
+    class LatePage {
+      readonly early = signal(false);
+    }
+
+    /** The key mounted over nothing at all. */
+    @Component({
+      imports: [PctRegionKey],
+      template: `<div pctRegionKey data-testid="app"></div>`,
+    })
+    class NoRegions {}
+
+    /** A region the consumer has already made focusable, on their own terms. */
+    @Component({
+      imports: [PctRegionDirective, PctRegionKey],
+      template: `<div pctRegionKey data-testid="app">
+        <nav pctRegion="Navigation" tabindex="0" data-testid="nav"></nav>
+      </div>`,
+    })
+    class OwnTabIndex {}
+
     const at = (testid: string) =>
       document.querySelector<HTMLElement>(`[data-testid="${testid}"]`)!;
 
     const press = (
       key: string,
-      target: Element | null = document.activeElement,
+      target: EventTarget | null = document.activeElement,
+      init: KeyboardEventInit = {},
     ) =>
       target?.dispatchEvent(
-        new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }),
+        new KeyboardEvent('keydown', {
+          key,
+          bubbles: true,
+          cancelable: true,
+          ...init,
+        }),
       );
+
+    /** A change and the render that follows it, for a case that toggles an `@if`. */
+    const settle = async (fixture: ComponentFixture<unknown>) => {
+      fixture.detectChanges();
+      await fixture.whenStable();
+    };
 
     const render = async <T>(type: Type<T>) => {
       const fixture = TestBed.createComponent(type);
@@ -126,6 +202,126 @@ describe('@pacit/components/regions', () => {
       expect(TestBed.inject(PCT_REGIONS)!.regions()).toHaveLength(2);
       fixture.destroy();
       expect(TestBed.inject(PCT_REGIONS)!.regions()).toHaveLength(0);
+    });
+
+    it('lets go of ONE region and keeps the rest', async () => {
+      // The remover has to be the region's own. A teardown that empties the list passes the
+      // case above and loses a page's other regions the first time an `@if` closes.
+      const fixture = await render(LatePage);
+      fixture.componentInstance.early.set(true);
+      await settle(fixture);
+      expect(TestBed.inject(PCT_REGIONS)!.regions()).toHaveLength(2);
+
+      fixture.componentInstance.early.set(false);
+      await settle(fixture);
+
+      const left = TestBed.inject(PCT_REGIONS)!.regions();
+      expect(left).toHaveLength(1);
+      expect(left[0].label()).toBe('Main');
+    });
+
+    it('reads the order off the document and not off the registrations', async () => {
+      // The `@if` the class comment names: `Navigation` registers SECOND and stands FIRST,
+      // because a region that arrives late is still where it is on the page. A comparator that
+      // kept the order it was handed would answer this backwards and nothing else would notice.
+      const fixture = await render(LatePage);
+      expect(
+        TestBed.inject(PCT_REGIONS)!
+          .regions()
+          .map((r) => r.label()),
+      ).toEqual(['Main']);
+
+      fixture.componentInstance.early.set(true);
+      await settle(fixture);
+
+      expect(
+        TestBed.inject(PCT_REGIONS)!
+          .regions()
+          .map((r) => r.label()),
+      ).toEqual(['Navigation', 'Main']);
+    });
+
+    it('has nowhere to go on a page with no regions, and says so', async () => {
+      await render(NoRegions);
+      const regions = TestBed.inject(PCT_REGIONS)!;
+      expect(regions.regions()).toEqual([]);
+      expect(regions.next(null)).toBe(false);
+
+      // And the key is left to the application: nothing moved, so nothing was answered.
+      expect(press('F6', at('app'))).toBe(true);
+    });
+
+    it('leaves a tabindex the consumer wrote where it is', async () => {
+      // `-1` is what a place needs to be landed on. A place the consumer has already put IN the
+      // tab order is a decision, and overwriting it would take a stop off their page.
+      await render(OwnTabIndex);
+      TestBed.inject(PCT_REGIONS)!.next(null);
+
+      expect(at('nav').getAttribute('tabindex')).toBe('0');
+      expect(document.activeElement).toBe(at('nav'));
+    });
+
+    it('a consumer who binds nothing gets F6, on this element and not on the document', async () => {
+      await render(BarePage);
+      const regions = TestBed.inject(PCT_REGIONS)!;
+
+      // The default key, read where it can be read: the service carries it for the parts of the
+      // library standing outside this element, so the default is API and not an implementation.
+      expect(regions.key()).toBe('F6');
+
+      // `host` is the default seat, and it has the hole its own comment names: a press that
+      // never reaches the element is a press this directive never sees.
+      document.body.focus();
+      press('F6', document);
+      expect(document.activeElement).not.toBe(at('nav'));
+
+      press('F6', at('app'));
+      expect(document.activeElement).toBe(at('nav'));
+    });
+
+    it('answers the key on the document when the consumer says the word', async () => {
+      // The other seat, and the reason it exists: on a cold page focus is on `body`, outside
+      // every element, so `host` cannot hear the first press. This can.
+      await render(DocumentPage);
+      document.body.focus();
+
+      expect(press('F6', document)).toBe(false);
+      expect(document.activeElement).toBe(at('nav'));
+    });
+
+    it('takes the document listener down with the element that asked for it', async () => {
+      const fixture = await render(DocumentPage);
+      const nav = at('nav');
+      fixture.destroy();
+
+      document.body.focus();
+      expect(press('F6', document)).toBe(true);
+      expect(document.activeElement).not.toBe(nav);
+    });
+
+    it('leaves alone a press somebody has already answered, and any press with a modifier', async () => {
+      // Two listeners for one key is what `listenOn: 'document'` makes possible — the stack
+      // answers inside itself and this steps aside. And a modifier means the user asked the
+      // browser for something, not us.
+      await render(BarePage);
+
+      const answered = new KeyboardEvent('keydown', {
+        key: 'F6',
+        bubbles: true,
+        cancelable: true,
+      });
+      answered.preventDefault();
+      at('app').dispatchEvent(answered);
+      expect(document.activeElement).not.toBe(at('nav'));
+
+      for (const modifier of ['altKey', 'ctrlKey', 'metaKey'] as const) {
+        expect(press('F6', at('app'), { [modifier]: true })).toBe(true);
+        expect(document.activeElement).not.toBe(at('nav'));
+      }
+
+      // And the same press without one still works, so the guard is a guard and not a wall.
+      press('F6', at('app'));
+      expect(document.activeElement).toBe(at('nav'));
     });
   });
 
