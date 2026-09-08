@@ -254,7 +254,26 @@
     },
     "fragments": {
       "reason": "Not words at all — what the split cuts out of text that is not prose, and the one class this list may hold without naming a language. Each is written down singly, with the string it comes from, because a rule saying `skip regular expressions` or `skip base64` would blind the scan to whole files instead of to one word: `za` from `[A-Za-z]`, `bis` from `\\bis`, `oo` from `[Oo]nly`, `bj` and `ww` from a `sha512-` integrity string, `cw` from a base64 data URI, `eb` and `ff` from the hex colours `#2563eb` and `#eff6ff`, `ade` from `#4ade80`, the green a tone is painted in, `fb` and `ce` from the sha256 pins in `tools/dictionaries.lock.json` (hand-written prose around recorded hashes, so the `generated` list would be a lie about it), `fes` from the plural `FESMs`, `fi` from the shell's `if … fi`, `rf` from `rm -rf`, `vu` from `DejaVu`, `zm` from the avatar silhouette's SVG path (`…5.4Zm-5.2…` — an arc's end meeting a moveto, split as a word in the built artifact), `cy` from the `<circle cy=…>` of the avatar view's inline photo, `mw` from the initials `'MW'` an avatar case expects of `Mary Jane Watson`.",
-      "words": ["ade", "bis", "bj", "ce", "cw", "cy", "eb", "fb", "fes", "ff", "fi", "mw", "oo", "rf", "vu", "ww", "za", "zm"]
+      "words": [
+        "ade",
+        "bis",
+        "bj",
+        "ce",
+        "cw",
+        "cy",
+        "eb",
+        "fb",
+        "fes",
+        "ff",
+        "fi",
+        "mw",
+        "oo",
+        "rf",
+        "vu",
+        "ww",
+        "za",
+        "zm"
+      ]
     },
     "derivations": {
       "reason": "The false positives of the fifth limb, which reads a word standing in neither dictionary as a Polish stem carrying a derivational suffix. All six are English agent nouns whose stem, once the suffix comes off, is a form the Polish list happens to hold — and the stems are not quoted here, because a word that list holds is exactly what the second limb fires on, and the first draft of this entry made the file it stands in red. Each is written down singly for the reason the whole file exists: what they share is that the English verb behind them (`locate`, `paginate`, `activate`) — or, for the one that names a platform API, the noun `Intl.Collator` is spelt with — stands in `american-english`, and three lines in the detector reading that would have silenced the whole class where point 5 cannot see it. A shape may be named to SEE a class, never to stop seeing one.",
