@@ -3679,7 +3679,7 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     is 0072's promise. What survives is the token's description string and its
     `providedIn: 'root'`, and neither is observable — the description is a dev-mode label, and
     with a factory present the token resolves the same way through `TestBed` either way
-- [ ] **4.48 — the cycle's own mechanism is the file 4.47 did not name**
+- [x] **4.48 — the cycle's own mechanism is the file 4.47 did not name**
   - `libs/components/regions/src/regions.ts` stands at **52.94, with 25 survivors and 7 mutants
     nobody covers** — unchanged by 4.47 and unchanged since it was first measured. 4.47 read
     the token at one end (`core/regions.ts`) and the toast's stack at the other, and the
@@ -3695,7 +3695,22 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     and the **sort comparator** that is the whole of "the document's order"
   - binds at: **the next batch of unit work.** Spec-only again, so it rides with whatever else
     needs a run — a mutation run is 72 minutes and nothing here deserves one of its own
-    · _notes:_ —
+    · _notes:_ **closed 2026-09-08: 52.94 → 89.71**, and the file's 7 uncovered mutants are
+    down to 1. Nine cases, all spec: the `document` seat and its teardown, a host that binds
+    nothing for the three defaults a bound input hides, an `@if` whose region registers second
+    and stands first, one region leaving without the others, an empty cycle, a `tabindex` the
+    consumer wrote, and the two guards on the press. TOTAL 82.19 → **82.69**
+  - six survivors stand and they are worth naming, because three of them cannot be killed and
+    two can. **Equivalent:** `label`'s `''` default (the selector IS the input's alias, so a
+    static `pctRegion` always sets it and the default is never observed); `listenOn`'s `'host'`
+    → `''` (the effect asks `!== 'document'`, so every string but that one behaves the same);
+    and the pair at lines 84 and 88, which **shadow each other** — with `regions.length === 0`
+    gone, `(−1 + 1) % 0` is `NaN`, `regions[NaN]` is `undefined`, and the second guard returns
+    the same `false`. **Killable, and named so the next batch can take them:** deleting the
+    first of those two guards would leave one guard that a case can reach; and the document
+    listener's cleanup survives because a leaked listener on a destroyed page moves nothing —
+    the case that would catch it renders a SECOND page and watches one press advance the cycle
+    twice. Both are cheap and neither deserves a 74-minute run of its own
 
 ## 5. Gaps with no deadline
 

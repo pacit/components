@@ -81,7 +81,7 @@ libs/components/popover/src/popover.ts 70.45 155(0) 50 2 13 3
 libs/components/progress/src/progress.ts 92.31 48(0) 4 0 0 2
 libs/components/radio/src/radio-group.ts 90.63 87(1) 9 0 0 5
 libs/components/radio/src/radio.ts 90.24 37(0) 3 0 1 1
-libs/components/regions/src/regions.ts 52.94 36(0) 25 0 7 2
+libs/components/regions/src/regions.ts 89.71 61(0) 6 0 1 2
 libs/components/select/src/multi-select.ts 97.14 34(0) 0 1 0 0
 libs/components/select/src/select.base.ts 84.91 574(1) 100 0 2 9
 libs/components/select/src/select.template.ts 33.33 1(0) 0 0 2 2
@@ -98,5 +98,5 @@ libs/components/toast/src/toast.ts 80.00 8(0) 2 0 0 0
 libs/components/toast/src/toaster.ts 65.91 116(0) 49 0 11 0
 libs/components/tooltip/src/tooltip.ts 70.54 182(0) 71 0 5 8
 libs/components/tree/src/tree.ts 93.28 111(0) 7 0 1 4
-TOTAL 82.19 4121/5014
+TOTAL 82.69 4146/5014
 ```
