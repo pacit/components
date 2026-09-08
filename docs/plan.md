@@ -2884,6 +2884,16 @@ again"` fails **1 run in 3** in WebKit at the `Escape` step — the panel is sti
     two words and the CTA, which is also where 4.36's three hand-copies get decided), and
     **whether mono becomes a second face** — a decision that reaches the gallery and the
     component card, not this page alone
+  - **answered 2026-09-08, and the answer is neither plate.** The landing as it stands is the
+    one that has had the work — it has moved a long way since this item was written — so it
+    stays. What the review kept is **one part of plate A: the inventory**, which reads better
+    as an index than as thirty-four boxes. Carried over literally: a dotted-leader list, name
+    and root selector, monospace, four columns on a wide page — still `pct-grid`, because the
+    paragraph above the list says it is and a page that says so has to be it. The toast's row
+    says `service` rather than standing empty, which is what its card says too
+  - so the pass does NOT open with the landing any more. The order that stands is the gallery,
+    then a component's card, then the rest — and the gradient's budget and the mono question
+    are open where they always were, with 4.36's three hand-copies still inherited
 - [x] **4.35 — the popover's axe audit can catch a button mid-transition, in two
       engines at once**
   - CI run 33680164640's sibling (2026-09-02, run 33681596258): `a11y.spec.ts › an open

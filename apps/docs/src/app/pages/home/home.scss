@@ -466,9 +466,18 @@
 
 /* ── 4 · the gallery ──────────────────────────────────────────────────────── */
 
+/* The inventory as an INDEX. Thirty-four boxes made a wall; a reference reads as a list, and
+   the list is what the landing sketch's plate A got right — the one part of that pass the
+   review kept (plan 4.34).
+
+   Still `pct-grid`, because the paragraph above the list says it is and a page that says so
+   has to be it: the track is narrowed to four columns' worth on a wide page and the primitive
+   folds it by itself on a narrow one, with no media query in this file. The row gap is zero —
+   the dotted rule under each entry is what separates them, and a gap between them would leave
+   the leaders floating. */
 .gallery {
-  --pct-grid-min-width: 10rem;
-  --pct-grid-gap: var(--pct-space-3);
+  --pct-grid-min-width: 16.5rem;
+  --pct-grid-gap: 0 var(--pct-space-5);
 }
 
 .gallery__item {
@@ -476,28 +485,30 @@
   align-items: baseline;
   justify-content: space-between;
   gap: var(--pct-space-3);
-  border: 1px solid var(--pct-border);
-  border-radius: var(--pct-radius-md);
-  padding: var(--pct-space-3) var(--pct-space-4);
+  padding-block: 4px;
+  border-block-end: 1px dotted var(--pct-border);
   color: inherit;
+  font-family: var(--docs-font-mono);
+  font-size: 0.72rem;
   text-decoration: none;
-  transition: border-color var(--pct-motion-transition-duration)
+  transition: color var(--pct-motion-transition-duration)
     var(--pct-motion-transition-easing);
+}
 
-  &:hover {
-    border-color: var(--pct-primary);
-  }
+.gallery__item:hover .gallery__name,
+.gallery__item:focus-visible .gallery__name {
+  color: var(--pct-primary);
 }
 
 .gallery__name {
-  font-size: var(--pct-font-size-sm);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .gallery__selector {
   overflow: hidden;
   color: var(--pct-text-muted);
-  font-size: 0.72rem;
+  font-family: inherit;
+  font-size: inherit;
   text-overflow: ellipsis;
   white-space: nowrap;
 }

@@ -245,13 +245,23 @@
       grid is <code>pct-grid</code>: resize the window, not one media query
       fires.
     </p>
+    <!-- An INDEX and not a wall of cards: thirty-four names read faster as a reference than
+         as thirty-four boxes, and the shape a reference takes is a dotted-leader list. It is
+         still `pct-grid` — the sentence above says so and has to stay true — with the track
+         narrowed until the list falls into four columns on a wide page and folds by itself
+         on a narrow one. Carried over from the landing sketch's plate A, which is the one
+         part of that pass the review kept (plan 4.34). -->
     <pct-grid class="gallery" data-testid="gallery">
       @for (card of cards; track card.id) {
       <a class="gallery__item" [routerLink]="['/components', card.id]">
         <span class="gallery__name">{{ card.id }}</span>
-        <!-- The ROOT selector only, the first the card names: this tile is an index entry
-             on one ellipsised line, and the rest of the list is on the page it links to. -->
-        <code class="gallery__selector">{{ card.selectors[0] }}</code>
+        <!-- The ROOT selector only, the first the card names: this row is an index entry
+             on one ellipsised line, and the rest of the list is on the page it links to.
+             The toast has none — its surface is a service, which is what its card says and
+             what this row says instead of leaving the column blank. -->
+        <code class="gallery__selector"
+          >{{ card.selectors[0] || 'service' }}</code
+        >
       </a>
       }
     </pct-grid>
