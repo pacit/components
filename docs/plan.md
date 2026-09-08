@@ -2959,8 +2959,42 @@ again"` fails **1 run in 3** in WebKit at the `Escape` step — the panel is sti
     `apps/docs/src/app/spy.ts` rather than being written a second time, which is the same refusal
     `find.ts` is. And the bar follows the filter: a band the filter empties leaves with its
     header, so every chip standing is the address of something that is on the page
+  - **the component page was read on 2026-09-08, five ways, and it did not come off like the
+    gallery did.** Same method — independent readings, then every objection argued against by a
+    reader trying to refute it: arrival, composition, the evidence surface, the path to working
+    code, the frame and the keyboard. **30 objections raised, 27 stand.** The gallery's four
+    readings left 2 of 24; this page is not in that condition
+  - what the measurement says, at 1440×900: the page is **10 224 px** on `button`, **22 943** on
+    `select`, **6 306** on `stack` — and the demo is a fixed **296 px** on all three, the smallest
+    section of every one of them. It is **1.3%** of the select page, whose API tables are 45% and
+    35× larger; `select`'s examples, the only part that teaches anybody to use it, are 544 px,
+    smaller than its parts table. On `stack` the accessibility section alone (1 745) is larger
+    than the demo, the usage, the examples and the whole API together (1 834). The page is
+    ordered by what the repository has to say, not by what a visitor came to ask
+  - **and nine of the twenty-seven are defects, not design** — they do not wait on a plate. Five
+    re-measured here against the files and the running page: the **mutation tile is an em dash on
+    all thirty-four pages** and prints "no mutants to kill — the policy says why" under it, because
+    the snapshot grew an `errored` column and the content pass's row regex still expects six
+    fields (`build-content.mjs:943`); the **colour-pairs tile** matches `<id>/` while the policy
+    writes `select — label`, so it reads 0 on most pages; the **import you copy does not compile
+    the snippet under it** (`toast` needs `PctToastViewport`, the card names `PctToaster`); the
+    **index exists in neither seat between 720 px and ~1275 px** (the drawer's button stops at 719,
+    the rail starts at `@container shell (min-width: 1180px)` — measured hidden/hidden at 1000);
+    and the table of contents offers **`#api-host` on `toast` and `tooltip`**, where no such
+    section is rendered. Four more are the readings' own and not re-measured: the stage's theme
+    control reports `aria-pressed` for the opposite of what it did, a jump from the contents
+    strands the keyboard in the rail, the stage tools cover the Code tab below ~405 px, and the
+    rails' own handles are 16 px against the 24 px floor the same page cites
+  - the sketch went out as an artifact with two plates and the pass waits on a yes, the same order
+    the landing and the gallery went in. **A: the first screen is the component** — the head loses
+    what is identical on all 34 pages and gains the line that is not (the numbers), the stage takes
+    the rest of the screen, the paste moves above the exports catalogue, and each long register
+    gains a verdict line rather than losing its table. **B: the proof is a column** — the right rail
+    stops being a table of contents and becomes the evidence, permanently on screen. Recommended:
+    **A with one line of B**, the evidence strip in the head; B costs a skeleton and answers
+    nothing about the 45%
   - **the pass is not over.** The order that stands is landing, gallery, a component's card,
-    then the rest; two of the four are answered and the card is next
+    then the rest; two of the four are answered and the card is the one on the table
 - [x] **4.35 — the popover's axe audit can catch a button mid-transition, in two
       engines at once**
   - CI run 33680164640's sibling (2026-09-02, run 33681596258): `a11y.spec.ts › an open
