@@ -27,7 +27,21 @@ class Host {
   readonly paused = signal(false);
 }
 
+/**
+ * Binds nothing but the face, which is the reading most consumers write: `pctHero="edge"` and
+ * nothing else. `Host` above binds all three inputs, and a bound input is never the default —
+ * so the defaults have no other place they can be observed at all, and every one of them is
+ * API the same way the union is. It is the hole the accordion's, the pagination's and the
+ * progress bar's mutation runs each found once.
+ */
+@Component({
+  imports: [PctHero],
+  template: `<h4 pctHero="edge">Tabs</h4>`,
+})
+class BareHost {}
+
 const heading = () => document.querySelector('h3') as HTMLElement;
+const bare = () => document.querySelector('h4') as HTMLElement;
 
 async function render<T>(type: new () => T): Promise<ComponentFixture<T>> {
   const fixture = TestBed.createComponent(type);
@@ -87,7 +101,7 @@ describe('PctHero — the brand gradient as equipment', () => {
     expect(heading().hasAttribute('data-pct-hero')).toBe(false);
     expect(heading().hasAttribute('data-pct-show')).toBe(false);
   });
-  it('the page\u2019s own stop is a state attribute, and it is written only when asked', async () => {
+  it('the page’s own stop is a state attribute, and it is written only when asked', async () => {
     // What the attribute reaches is one declaration in the stylesheet
     // (`animation-play-state`), so the case that matters is in a browser
     // (`apps/sandbox-e2e/src/hero.spec.ts`). Here: the flag is a flag, and an unpressed stop
@@ -104,5 +118,17 @@ describe('PctHero — the brand gradient as equipment', () => {
     fixture.detectChanges();
     await fixture.whenStable();
     expect(heading().hasAttribute('data-pct-paused')).toBe(false);
+  });
+
+  it('a consumer who binds nothing gets the defaults, and the defaults are the documented ones', async () => {
+    await render(BareHost);
+
+    // `show` is `always`: a face asked for and not qualified is on, rather than waiting for an
+    // attention nobody said it should wait for. And nothing is stopped until a page stops it —
+    // the sweep ends by itself after one pass, which is what keeps SC 2.2.2 off the table for a
+    // consumer who does nothing (0073).
+    expect(bare().getAttribute('data-pct-hero')).toBe('edge');
+    expect(bare().getAttribute('data-pct-show')).toBe('always');
+    expect(bare().hasAttribute('data-pct-paused')).toBe(false);
   });
 });

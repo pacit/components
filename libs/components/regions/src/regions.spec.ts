@@ -128,4 +128,33 @@ describe('@pacit/components/regions', () => {
       expect(TestBed.inject(PCT_REGIONS)!.regions()).toHaveLength(0);
     });
   });
+
+  /**
+   * The channel, read by an application that installed nothing — which is every application
+   * until one calls `providePctRegions()`.
+   *
+   * This is the whole promise of 0072 and the reason the token lives in `./core` rather than a
+   * service with `providedIn: 'root'`: a root service compiles to a static initialiser no
+   * bundler may drop, and a cycle declared once would be a cycle every entrypoint carries,
+   * measured at +19111 B (`lesson-181`). What makes that trade honest is the default being
+   * `null` and not a working cycle nobody asked for — so the components that reach for it
+   * (`pct-toast-viewport` is the one this was built for) find nothing and do nothing.
+   */
+  describe('PCT_REGIONS — the channel with nobody on it', () => {
+    beforeEach(() => {
+      TestBed.configureTestingModule({
+        providers: [provideZonelessChangeDetection()],
+      });
+    });
+
+    it('resolves to null when no application installed a cycle', () => {
+      expect(TestBed.inject(PCT_REGIONS)).toBeNull();
+    });
+
+    it('and to a cycle the moment one does', () => {
+      TestBed.configureTestingModule({ providers: [providePctRegions()] });
+      expect(TestBed.inject(PCT_REGIONS)).not.toBeNull();
+      expect(TestBed.inject(PCT_REGIONS)!.key()).toBeNull();
+    });
+  });
 });

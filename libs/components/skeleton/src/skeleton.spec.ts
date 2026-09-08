@@ -201,6 +201,9 @@ describe('PctSkeleton — what it draws', () => {
     // `text` blanked, every arrangement that binds the input keeps drawing what it always did.
     expect(tracks(skeleton('bare'))).toHaveLength(1);
     expect(skeleton('bare').getAttribute('data-pct-shape')).toBe('text');
+    // `paused` is the third default and the same hole again: `PausedHost` binds it, so this is
+    // the only skeleton on which a sheen nobody stopped can be seen not stopped (0073).
+    expect(skeleton('bare').hasAttribute('data-pct-paused')).toBe(false);
   });
 
   it('reads the count written as an attribute', async () => {

@@ -3,9 +3,15 @@ import {
   Component,
   Provider,
   provideZonelessChangeDetection,
+  signal,
 } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { providePctTexts } from '@pacit/components/core';
+import {
+  PCT_REGIONS,
+  providePctTexts,
+  type PctRegion,
+  type PctRegionsApi,
+} from '@pacit/components/core';
 import { providePctToastConfig } from './toast';
 import { PctToaster } from './toaster';
 
@@ -503,6 +509,153 @@ describe('PctToaster', () => {
       flush();
 
       expect(items()).toEqual([]);
+    });
+  });
+
+  /**
+   * The stack as a region of the page (plan 4.16, 0072).
+   *
+   * The cycle is FAKED here rather than installed: the real one has its own cases in
+   * `@pacit/components/regions`, and what is on trial in this file is the three lines the
+   * viewport spends on a mechanism that may not be there at all. Three engines already walk
+   * the working cycle end to end in `apps/sandbox-e2e`; what a browser cannot enumerate is the
+   * branches — a key nobody chose, a key that is not this one, a modifier held, an event
+   * somebody already answered — and those are what a stack that took F6 from an application
+   * would break on.
+   */
+  describe('the region cycle', () => {
+    /** A cycle an application installed, faked down to what the stack actually asks of it. */
+    function fakeCycle(over: Partial<PctRegionsApi> = {}) {
+      const registered = signal<readonly PctRegion[]>([]);
+      const asked: (Element | null)[] = [];
+      let released = 0;
+
+      const api: PctRegionsApi = {
+        regions: registered,
+        key: signal<string | null>('F6'),
+        useKey: () => undefined,
+        register: (place: PctRegion) => {
+          registered.update((all) => [...all, place]);
+          return () => {
+            released += 1;
+          };
+        },
+        next: (from: Element | null) => {
+          asked.push(from);
+          return true;
+        },
+        ...over,
+      };
+
+      return {
+        providers: [{ provide: PCT_REGIONS, useValue: api }],
+        places: () => registered(),
+        asked,
+        released: () => released,
+      };
+    }
+
+    const press = (key: string, init: KeyboardEventInit = {}) => {
+      const event = new KeyboardEvent('keydown', {
+        key,
+        bubbles: true,
+        cancelable: true,
+        ...init,
+      });
+      region()?.dispatchEvent(event);
+      return event;
+    };
+
+    it('registers the stack, under the label a reader hears on arrival', async () => {
+      const cycle = fakeCycle();
+      await boot([
+        ...cycle.providers,
+        providePctTexts({ toastRegion: 'Alerts' }),
+      ]);
+
+      expect(cycle.places()).toHaveLength(1);
+      expect(cycle.places()[0].element).toBe(region());
+      // The label is a signal reading the texts service, not a string captured in a
+      // constructor — so it says what the region SAYS, and both readings are the same one.
+      expect(cycle.places()[0].label()).toBe('Alerts');
+      expect(region()?.getAttribute('aria-label')).toBe('Alerts');
+    });
+
+    it('gives the place back when the application that opened it goes', async () => {
+      const cycle = fakeCycle();
+      await boot(cycle.providers);
+      expect(cycle.released()).toBe(0);
+
+      TestBed.resetTestingModule();
+
+      expect(cycle.released()).toBe(1);
+    });
+
+    it('answers the key the consumer chose, from inside a stack the press cannot leave', async () => {
+      const cycle = fakeCycle();
+      await boot(cycle.providers);
+      document.body.focus();
+
+      const event = press('F6');
+
+      // Identity, not equality: two DOM nodes compared structurally is a walk of the whole
+      // document, and what the claim is about is WHICH element the cycle was handed.
+      expect(cycle.asked).toHaveLength(1);
+      expect(cycle.asked[0]).toBe(document.activeElement);
+      expect(event.defaultPrevented).toBe(true);
+    });
+
+    it('answers no other key, and no key under a modifier', async () => {
+      const cycle = fakeCycle();
+      await boot(cycle.providers);
+
+      expect(press('F7').defaultPrevented).toBe(false);
+      expect(press('F6', { altKey: true }).defaultPrevented).toBe(false);
+      expect(press('F6', { ctrlKey: true }).defaultPrevented).toBe(false);
+      expect(press('F6', { metaKey: true }).defaultPrevented).toBe(false);
+      expect(cycle.asked).toEqual([]);
+    });
+
+    it('leaves an event somebody has already answered alone', async () => {
+      const cycle = fakeCycle();
+      await boot(cycle.providers);
+
+      const event = new KeyboardEvent('keydown', {
+        key: 'F6',
+        bubbles: true,
+        cancelable: true,
+      });
+      event.preventDefault();
+      region()?.dispatchEvent(event);
+
+      expect(cycle.asked).toEqual([]);
+    });
+
+    it('takes no keystroke while nobody has chosen a key', async () => {
+      const cycle = fakeCycle({ key: signal<string | null>(null) });
+      await boot(cycle.providers);
+
+      expect(press('F6').defaultPrevented).toBe(false);
+      expect(cycle.asked).toEqual([]);
+    });
+
+    it('leaves the event alone when the cycle had nowhere to go', async () => {
+      const cycle = fakeCycle({ next: () => false });
+      await boot(cycle.providers);
+
+      expect(press('F6').defaultPrevented).toBe(false);
+    });
+
+    /**
+     * The reading 0072 exists for: no `providePctRegions()` anywhere, so `PCT_REGIONS` is
+     * `null`, the constructor is three lines that do nothing, and F6 does here exactly what it
+     * did before any of this was written.
+     */
+    it('registers nothing and takes nothing when no cycle was installed', async () => {
+      await boot();
+
+      expect(region()).not.toBeNull();
+      expect(press('F6').defaultPrevented).toBe(false);
     });
   });
 });
