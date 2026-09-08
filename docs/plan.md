@@ -2894,6 +2894,44 @@ again"` fails **1 run in 3** in WebKit at the `Escape` step — the panel is sti
   - so the pass does NOT open with the landing any more. The order that stands is the gallery,
     then a component's card, then the rest — and the gradient's budget and the mono question
     are open where they always were, with 4.36's three hand-copies still inherited
+  - **the gallery was read on 2026-09-08, and almost nothing about it is wrong.** Four
+    independent readings over `/components` — one for finding a component among 34, one for
+    composition and rhythm, one for the brand's budget, one for the card itself — raised
+    **24 objections; 2 survived being argued against**, each verified against the files rather
+    than accepted. The rhythm I went in expecting to repair is not broken: every card is
+    **330 px** to the pixel (body 119, stage 209) in every row of every bucket, and the
+    screenshots that read otherwise were scaled. The sketch went out as an artifact and the
+    pass waits on a yes, the same order the landing went in
+  - what STANDS, and both are one defect: **the page cannot be arrived at.** The six `<h2>`
+    carry no `id`, so `/components#choices` does not exist and nothing on the site can point at
+    a band of it — while the anchor mechanism is already paid for twice (`--docs-anchor-offset`
+    for the native jump, `ViewportScroller.setOffset` for the router's) and fragment links
+    already ship on the component page and its table of contents. 5430 px of page, and
+    **1758 px down to `select`** for a visitor who already knows it is filed under "Choices".
+    Two plates: **A**, six anchor chips under the lead — cheap, and each chip is a link owing
+    the 24 px floor outright, so below ~800 px it wraps to 3–4 rows and costs 100–170 px rather
+    than the 40 it looks like ([`lesson-139`](lessons.md#lesson-139)); **B**, the finder the
+    site ALREADY ships — `docs-index` filters this same list on `id` and class name with an
+    empty state written, and appears only in the drawer below 720 px and in the component
+    page's left column. Recommended: **B with A's anchors inside it**, which moves nothing else
+    on the page
+  - and what stands second is a deletion, recorded so it is not proposed a third time:
+    **`auto-fit` cannot repair the nine ragged cells.** `pct-grid` already declares it, and it
+    collapses empty TRACKS, not empty cells — five items across three columns collapse nothing.
+    Stretching the survivors needs flexbox, and a wider card renders its demo at a width no
+    other card uses, on a page whose first sentence promises the demo its own page opens with
+  - **the gradient's budget is answered, and the answer is: leave this page alone.** Five
+    separate objections to the 34 stages — wallpaper, contrast, forced colours, an invisible
+    animation, "replace it with a quiet surface" — and every one was refuted against the files:
+    it is ONE rule for all 34 stages, it is the component page's own stage at a card's size, and
+    the quiet-surface replacement measured worse than leaving it. The debt that is real is the
+    hand copy itself, now measured: **`hero-edge.scss` still runs `linear infinite`** while 4.37
+    made every sweep in the library one pass of four seconds and then stillness. The site's copy
+    has drifted from the component it was copied from, which is an argument for the extraction
+    and not for repainting the gallery
+  - **mono does not become a second face.** It carries the strings — selectors, entry points,
+    tokens, the landing's index — and that is a rule anybody can state; a mono heading makes it
+    decoration and spends the distinction the same page depends on
 - [x] **4.35 — the popover's axe audit can catch a button mid-transition, in two
       engines at once**
   - CI run 33680164640's sibling (2026-09-02, run 33681596258): `a11y.spec.ts › an open
