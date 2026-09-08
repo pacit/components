@@ -18,18 +18,11 @@
       "evidence": [
         {
           "gate": "tools/check-aria.mjs",
-          "points": [
-            2,
-            3,
-            4
-          ]
+          "points": [2, 3, 4]
         },
         {
           "gate": "tools/check-icons.mjs",
-          "points": [
-            2,
-            3
-          ]
+          "points": [2, 3]
         },
         {
           "source": "libs/components/icon/src/icon.ts",
@@ -37,9 +30,7 @@
         },
         {
           "spec": "apps/sandbox-e2e/src/a11y.spec.ts",
-          "titles": [
-            "the ${path} view has no violations"
-          ]
+          "titles": ["the ${path} view has no violations"]
         },
         {
           "req": "req-a11y-built-in"
@@ -103,11 +94,7 @@
       "evidence": [
         {
           "gate": "tools/check-aria.mjs",
-          "points": [
-            3,
-            4,
-            6
-          ]
+          "points": [3, 4, 6]
         },
         {
           "spec": "apps/sandbox-e2e/src/a11y.spec.ts",
@@ -135,9 +122,7 @@
       "evidence": [
         {
           "gate": "tools/check-styles.mjs",
-          "points": [
-            5
-          ]
+          "points": [5]
         },
         {
           "spec": "apps/sandbox-e2e/src/rtl.spec.ts",
@@ -155,10 +140,7 @@
       "evidence": [
         {
           "gate": "tools/check-texts.mjs",
-          "points": [
-            3,
-            5
-          ]
+          "points": [3, 5]
         },
         {
           "cards": "Strings through"
@@ -209,9 +191,7 @@
         },
         {
           "gate": "tools/check-styles.mjs",
-          "points": [
-            7
-          ]
+          "points": [7]
         },
         {
           "req": "req-a11y-forced-colors"
@@ -235,9 +215,7 @@
       "evidence": [
         {
           "gate": "tools/check-tokens.mjs",
-          "points": [
-            7
-          ]
+          "points": [7]
         },
         {
           "source": "libs/tokens/src/contrast.policy.json",
@@ -245,9 +223,7 @@
         },
         {
           "spec": "apps/sandbox-e2e/src/a11y.spec.ts",
-          "titles": [
-            "a card with a dark stage has no violations"
-          ]
+          "titles": ["a card with a dark stage has no violations"]
         },
         {
           "req": "req-token-contrast"
@@ -261,9 +237,7 @@
       "evidence": [
         {
           "spec": "apps/sandbox-e2e/src/adaptation.spec.ts",
-          "titles": [
-            "text at 200 % cuts nothing off"
-          ]
+          "titles": ["text at 200 % cuts nothing off"]
         }
       ]
     },
@@ -284,9 +258,7 @@
       "evidence": [
         {
           "spec": "apps/sandbox-e2e/src/adaptation.spec.ts",
-          "titles": [
-            "lays out at 320 px with nothing to scroll sideways"
-          ]
+          "titles": ["lays out at 320 px with nothing to scroll sideways"]
         },
         {
           "source": "libs/components/field/src/field.scss",
@@ -301,9 +273,7 @@
       "evidence": [
         {
           "gate": "tools/check-tokens.mjs",
-          "points": [
-            7
-          ]
+          "points": [7]
         },
         {
           "source": "libs/tokens/src/contrast.policy.json",
@@ -318,9 +288,7 @@
       "evidence": [
         {
           "spec": "apps/sandbox-e2e/src/adaptation.spec.ts",
-          "titles": [
-            "own text spacing cuts nothing off"
-          ]
+          "titles": ["own text spacing cuts nothing off"]
         }
       ]
     },
@@ -372,15 +340,11 @@
         },
         {
           "spec": "apps/sandbox-e2e/src/menu.spec.ts",
-          "titles": [
-            "Escape closes it and gives focus back to the trigger"
-          ]
+          "titles": ["Escape closes it and gives focus back to the trigger"]
         },
         {
           "spec": "apps/sandbox-e2e/src/popover.spec.ts",
-          "titles": [
-            "Escape closes it and gives focus back to the trigger"
-          ]
+          "titles": ["Escape closes it and gives focus back to the trigger"]
         }
       ]
     },
@@ -405,9 +369,7 @@
       "evidence": [
         {
           "spec": "apps/sandbox-e2e/src/toast.spec.ts",
-          "titles": [
-            "an urgent message is an alert, and it waits"
-          ]
+          "titles": ["an urgent message is an alert, and it waits"]
         },
         {
           "source": "libs/components/toast/src/toaster.ts",
@@ -449,9 +411,7 @@
         },
         {
           "gate": "tools/check-styles.mjs",
-          "points": [
-            9
-          ]
+          "points": [9]
         }
       ]
     },
@@ -462,9 +422,7 @@
       "evidence": [
         {
           "gate": "tools/check-styles.mjs",
-          "points": [
-            9
-          ]
+          "points": [9]
         },
         {
           "source": "libs/tokens/src/motion.reduced.json"
@@ -484,15 +442,11 @@
       "evidence": [
         {
           "spec": "apps/sandbox-e2e/src/breadcrumb.spec.ts",
-          "titles": [
-            "a named landmark holding a counted list of steps"
-          ]
+          "titles": ["a named landmark holding a counted list of steps"]
         },
         {
           "spec": "apps/sandbox-e2e/src/pagination.spec.ts",
-          "titles": [
-            "the pager is a named landmark with a list inside it"
-          ]
+          "titles": ["the pager is a named landmark with a list inside it"]
         }
       ]
     },
@@ -512,9 +466,7 @@
         },
         {
           "spec": "apps/sandbox-e2e/src/dialog.spec.ts",
-          "titles": [
-            "it takes focus on open and gives it back on close"
-          ]
+          "titles": ["it takes focus on open and gives it back on close"]
         },
         {
           "spec": "apps/sandbox-e2e/src/menu.spec.ts",
@@ -566,18 +518,11 @@
       "evidence": [
         {
           "gate": "tools/check-aria.mjs",
-          "points": [
-            2,
-            3,
-            4,
-            5
-          ]
+          "points": [2, 3, 4, 5]
         },
         {
           "spec": "apps/sandbox-e2e/src/a11y.spec.ts",
-          "titles": [
-            "an open dialog"
-          ]
+          "titles": ["an open dialog"]
         }
       ]
     },
@@ -588,9 +533,7 @@
       "evidence": [
         {
           "gate": "tools/check-tokens.mjs",
-          "points": [
-            7
-          ]
+          "points": [7]
         },
         {
           "source": "libs/tokens/src/contrast.policy.json",
@@ -615,9 +558,7 @@
       "evidence": [
         {
           "spec": "apps/sandbox-e2e/src/adaptation.spec.ts",
-          "titles": [
-            "a standing toast leaves every control in front of it"
-          ]
+          "titles": ["a standing toast leaves every control in front of it"]
         }
       ]
     },
@@ -634,9 +575,7 @@
         },
         {
           "spec": "apps/sandbox-e2e/src/tooltip.spec.ts",
-          "titles": [
-            "a long press opens it, a tap does not"
-          ]
+          "titles": ["a long press opens it, a tap does not"]
         }
       ]
     },
@@ -658,10 +597,7 @@
       "evidence": [
         {
           "gate": "tools/check-aria.mjs",
-          "points": [
-            3,
-            4
-          ]
+          "points": [3, 4]
         },
         {
           "spec": "apps/sandbox-e2e/src/breadcrumb.spec.ts",
@@ -671,9 +607,7 @@
         },
         {
           "spec": "apps/sandbox-e2e/src/tooltip.spec.ts",
-          "titles": [
-            "an icon-only button is named by its tooltip, open or not"
-          ]
+          "titles": ["an icon-only button is named by its tooltip, open or not"]
         }
       ]
     },
@@ -713,9 +647,7 @@
         },
         {
           "spec": "apps/sandbox-e2e/src/field-hitarea.spec.ts",
-          "titles": [
-            "a click on the left border padding focuses the field"
-          ]
+          "titles": ["a click on the left border padding focuses the field"]
         },
         {
           "spec": "apps/sandbox-e2e/src/size.spec.ts",
@@ -741,10 +673,7 @@
       "evidence": [
         {
           "gate": "tools/check-texts.mjs",
-          "points": [
-            3,
-            5
-          ]
+          "points": [3, 5]
         },
         {
           "cards": "Strings through"
@@ -758,9 +687,7 @@
       "evidence": [
         {
           "spec": "apps/sandbox-e2e/src/tooltip.spec.ts",
-          "titles": [
-            "the keyboard opens it and a click does not"
-          ]
+          "titles": ["the keyboard opens it and a click does not"]
         },
         {
           "spec": "apps/sandbox-e2e/src/select.spec.ts",
@@ -803,10 +730,7 @@
       "evidence": [
         {
           "gate": "tools/check-aria.mjs",
-          "points": [
-            2,
-            3
-          ]
+          "points": [2, 3]
         }
       ]
     },
@@ -823,10 +747,7 @@
       "evidence": [
         {
           "gate": "tools/check-aria.mjs",
-          "points": [
-            6,
-            7
-          ]
+          "points": [6, 7]
         },
         {
           "spec": "apps/sandbox-e2e/src/field.spec.ts",
@@ -847,17 +768,11 @@
       "evidence": [
         {
           "gate": "tools/check-aria.mjs",
-          "points": [
-            3,
-            4,
-            5
-          ]
+          "points": [3, 4, 5]
         },
         {
           "spec": "apps/sandbox-e2e/src/a11y.spec.ts",
-          "titles": [
-            "a form in the error state has no violations"
-          ]
+          "titles": ["a form in the error state has no violations"]
         }
       ]
     },
@@ -872,10 +787,7 @@
         },
         {
           "gate": "tools/check-aria.mjs",
-          "points": [
-            6,
-            7
-          ]
+          "points": [6, 7]
         }
       ]
     },
@@ -904,13 +816,7 @@
       "evidence": [
         {
           "gate": "tools/check-aria.mjs",
-          "points": [
-            1,
-            2,
-            3,
-            4,
-            8
-          ]
+          "points": [1, 2, 3, 4, 8]
         },
         {
           "spec": "apps/sandbox-e2e/src/a11y.spec.ts",
@@ -940,27 +846,19 @@
       "evidence": [
         {
           "spec": "apps/sandbox-e2e/src/toast.spec.ts",
-          "titles": [
-            "an urgent message is an alert, and it waits"
-          ]
+          "titles": ["an urgent message is an alert, and it waits"]
         },
         {
           "spec": "apps/sandbox-e2e/src/select.spec.ts",
-          "titles": [
-            "opening it announces the text the application translated"
-          ]
+          "titles": ["opening it announces the text the application translated"]
         },
         {
           "spec": "apps/sandbox-e2e/src/date.spec.ts",
-          "titles": [
-            "a refused day is reached, announced and not takeable"
-          ]
+          "titles": ["a refused day is reached, announced and not takeable"]
         },
         {
           "gate": "tools/check-aria.mjs",
-          "points": [
-            7
-          ]
+          "points": [7]
         },
         {
           "decision": "0044"
