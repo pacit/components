@@ -7,6 +7,7 @@ import {
   signal,
 } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
+import { RouterLink } from '@angular/router';
 import { PctButton } from '@pacit/components/button';
 import { PctContainer } from '@pacit/components/container';
 import {
@@ -34,7 +35,7 @@ import { spyOnSections } from '../../spy';
  */
 @Component({
   selector: 'docs-acr',
-  imports: [DocsToc, PctButton, PctContainer],
+  imports: [DocsToc, RouterLink, PctButton, PctContainer],
   templateUrl: './acr.html',
   styleUrl: './acr.scss',
 })

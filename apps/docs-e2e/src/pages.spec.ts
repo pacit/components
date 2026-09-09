@@ -888,6 +888,10 @@ test.describe('The pages', () => {
     ]);
     await expect(facts).toContainText('WCAG 2.2, levels A and AA');
     await expect(page.getByTestId('acr-print')).toBeVisible();
+    // /trust points here; a reader who arrives at the report first gets the way back.
+    await facts.getByRole('link', { name: /registry it is read from/ }).click();
+    await expect(page).toHaveURL(/\/trust$/);
+    await page.goBack();
 
     // And the document itself is whole: the pass frames it, a gate holds it to its claims.
     await expect(
