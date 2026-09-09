@@ -5072,3 +5072,50 @@ instead of it. `el.getAnimations()[0].currentTime` is a number no engine's style
 disagree about, and it was already telling the truth in the reading that looked like a failure.
 The geometry is what a user sees; the clock is what the platform did. A case that asserts both
 says which of the two an engine got wrong.
+
+---
+
+### <a id="lesson-184"></a>`lesson-184` — The server under the suite is a client of the page, and it can navigate it
+
+A case went red once in a full three-engine sweep and passed five times out of five alone:
+`landing.spec`'s copy button clicked, and the toast it raises was **not found** for the whole
+five seconds. Everything about it invited the usual diagnosis — a click before hydration, a
+toast that expired between polls, a worker starved of CPU — and every one of those is wrong.
+
+The call log carried one line that none of them explains:
+
+```
+- waiting for" http://localhost:4300/" navigation to finish...
+- navigated to "http://localhost:4300/"
+```
+
+Playwright emits that line from exactly one branch, and only when the main frame holds a
+**pending document request** at the moment the assertion begins its pre-checks. The test's own
+navigation cannot be it: `visit()` awaits `goto`, then `html[data-docs-ready]`, then
+`document.fonts.ready`, and all three require a committed document. So a SECOND navigation to
+the same URL arrived between the helper returning and the click returning — it replaced the
+document that received the click, and the toast went with it.
+
+Nothing in the application can issue one. The control is a native `<button>` with no `href`,
+there is no `<form>` in the landing template or in the shell that hosts the outlet, so the
+default `type="submit"` has no form owner to submit to, and the handler touches only the
+clipboard and the toaster. **The sender was the dev server the suite runs against**, and it has
+two of them: `@angular/build`'s HMR channel after a rebuild ("Page reload sent to client(s)"),
+and Vite's own dependency optimizer — which needs no file change at all and fires during cold
+start, as the first request for a lazy route reveals a bare import the prebundle did not have
+("optimized dependencies changed. reloading"). A long sweep is exactly the shape that first
+requests a lazy route.
+
+Two things follow.
+
+The first is the repair: a suite's server may not be a page's second author. `liveReload: false`
+shuts Angular's channel and `prebundle: false` shuts Vite's — the second is the optimizer's own
+call and is not under the first flag — and `reuseExistingServer` goes to `false`, because with
+it true a `docs:serve` somebody left running on the port is attached to instead and the
+configuration is bypassed entirely.
+
+The second is why it took a sweep and a workflow to see: `trace: 'on-first-retry'` traced
+nothing, because the preset sets `retries` to 2 in CI and 0 everywhere else. A local flake was
+never retried, so it was never traced, and the only evidence it left was the call log it was
+lucky to print. A trace setting that depends on a retry that never happens is not a trace
+setting. `retain-on-failure` costs a file and answers the next occurrence on its own.

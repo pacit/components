@@ -10,6 +10,7 @@
   "implicitDependencies": ["tokens"],
   "// typecheck": "The same override as in `sandbox`, for the same measured reason: the inferred target runs `tsconfig.app.json` only. The second command is the cost run's own program (tsconfig.bench.json, plan 2.3) — the site's first TypeScript outside the application; the day it grows specs, a third command lands here the same way.",
   "// build budgets": "The component page (2.7.3) is the site's richest stylesheet — three columns on container queries, the API tables, the scorecard and the evidence tiles — measured at 11.63 kB on 2026-09-04, which leaves 0.37 kB under the 12 kB error. The floor is the page, not bloat: the next page that crosses it argues first, and on this showing the next argument is due.",
+  "// serve:e2e": "The same dev server with its two reload channels shut. A dev server pushes {type:'full-reload'} to every connected page from two senders, and either one lands on a page a test is in the middle of: @angular/build's hmr.js after a rebuild ('Page reload sent to client(s).'), and Vite's own dependency optimizer, which needs NO file change — it fires during cold start as first-requested lazy routes reveal new bare imports ('optimized dependencies changed. reloading'). liveReload:false shuts the first; the second is Vite's own call and is not under that flag, so prebundle:false shuts it. Measured: landing.spec's copy-button case went red once in a full sweep with a document navigation to '/' pending at the assertion's first check, and passed 5 of 5 alone (lesson-184).",
   "// build cache": "`dependentTasksOutputFiles` is the load-bearing entry, not tidiness. The content pass writes into src/generated, which is gitignored — so Nx never hashes it, and with only `production` inputs this build's key did not move when the generated data did. Measured: a lesson added to docs/lessons.md re-ran `content` and then RESTORED a cached bundle over it, and the site served 151 lessons from a file holding 153 while every gate stayed green. Hashing the dependency's own output files is what ties the two together; it costs cache hits, and a bundle that disagrees with its data costs more.",
   "targets": {
     "content": {
@@ -127,6 +128,11 @@
         },
         "development": {
           "buildTarget": "docs:build:development"
+        },
+        "e2e": {
+          "buildTarget": "docs:build:development",
+          "liveReload": false,
+          "prebundle": false
         }
       }
     },
