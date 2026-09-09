@@ -33,9 +33,6 @@ export class DocsFinder {
   readonly shown = input.required<number>();
   readonly total = input.required<number>();
 
-  /** What the count is counting, in the plural — `components`, `tokens`, `requirements`. */
-  readonly noun = input<string>('');
-
   readonly testid = input<string | null>(null);
   readonly countTestid = input<string | null>(null);
 

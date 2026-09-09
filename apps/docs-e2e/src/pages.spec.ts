@@ -25,12 +25,17 @@ const TARGET_FLOOR = Number.parseInt(
 const ADRS = readdirSync(join(ROOT, 'docs/decisions')).filter((f) =>
   /^\d{4}-/.test(f),
 ).length;
-// The register's own size, from the file the content pass reads.
-const REQUIREMENTS = (
-  readFileSync(join(ROOT, 'docs/registry.md'), 'utf8').match(
-    /^\| \[`req-[a-z0-9-]+`\]/gm,
-  ) ?? []
-).length;
+// The register's own size, from the file the content pass reads. Unique ids and not rows:
+// the file ends with a "Gaps by urgency" table that lists four of them a second time, which
+// the pass skips by name and a row count would have believed (measured: 98 rows, 94
+// requirements).
+const REQUIREMENTS = new Set(
+  [
+    ...readFileSync(join(ROOT, 'docs/registry.md'), 'utf8').matchAll(
+      /^\| \[`(req-[a-z0-9-]+)`\]/gm,
+    ),
+  ].map((m) => m[1]),
+).size;
 const LESSONS = (
   readFileSync(join(ROOT, 'docs/lessons.md'), 'utf8').match(
     /^### <a id="lesson-\d+"/gm,

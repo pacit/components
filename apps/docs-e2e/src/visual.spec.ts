@@ -43,6 +43,25 @@ const SHOTS = [
     // strip: the numbers are pages.spec's to check.
     masked: ['[data-testid="evidence"]'],
   },
+  {
+    // The two screens of the 4.34 pass whose point is how they LOOK: a getting-started page
+    // that finally renders something, and a theming page that reads as two moves before it
+    // reads as an inventory. Their frames are watched here so a later edit cannot quietly
+    // undo the drawing they were built from.
+    route: '/start',
+    name: 'start',
+    settled: '.snippet .shiki',
+    masked: [],
+  },
+  {
+    route: '/theming',
+    name: 'theming',
+    settled: '.move .shiki',
+    // Only the digits: the field and the chips are the frame this picture is for, and it is
+    // their COUNTS that the token snapshot repaints — the landing's law, at the smallest
+    // mask that obeys it. The numbers themselves are pages.spec's to check.
+    masked: ['[data-testid="theming-count"]', 'docs-bar b'],
+  },
 ] as const;
 
 test.describe('Visual baselines', () => {
