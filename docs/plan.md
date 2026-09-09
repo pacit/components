@@ -3012,6 +3012,49 @@ again"` fails **1 run in 3** in WebKit at the `Escape` step — the panel is sti
     `start` and the trust pages, which are last because whoever reaches them is already
     convinced. Two of the three screens looked at kept their design, which is a fact about
     where the site's remaining weakness is and is worth carrying into the fourth
+  - **the last three screens were read on 2026-09-09, and they did not come off like the other
+    two.** Same method and the same order — read first, draw second — measured at 1440×900
+    against the running site. `start` is **1 548 px** and renders **no component at all**: three
+    snippets, none carrying the copy control the component page and the landing both ship, a form
+    that is printed and never run, and an SSR section that names `provideClientHydration()`
+    without showing it. `theming` is **21 167 px** of which **18 251 (86%)** is one alphabetical
+    table of 486 component variables — every one of them already documented on its own
+    component's page under _Parts to select_ — while the two moves the page exists to teach are
+    **324 px, 1.5%**. `trust` is **14 094 px**, 94% of it three flat lists (registry 5 966,
+    lessons 5 196, decisions 2 116) with no filter, no addresses and no link to the text any
+    entry names. `acr` is **8 971 px** and `support` **2 929**, both a single prose column with
+    no furniture
+  - **and one of the findings is a defect rather than a design question**, the third of its kind
+    after the mutation tile and the colour-pairs tile: **94 registry rows print half a sentence
+    and an ellipsis.** `docs/registry.md` clips its cells with `…` (96 of them) to keep a
+    markdown table narrow, and the content pass renders the clip verbatim — so the page an
+    auditor reads as the product says things like "property tests for the parser (`parse(…`".
+    What makes it cheap to answer is that the material is already tracked: **93 of the 94
+    requirements carry a `` `req-id` — Title `` heading in their own file**, so every row can
+    gain the promise it makes in one readable line, and the pass can throw on the 94th the way
+    it already throws when the row count disagrees with the stated total
+  - **the sketch went out as one artifact on 2026-09-09 and the pass waits on a yes**, four
+    screens in the site's own skin — its palette read off the running page, its shiki theme, its
+    Inter and JetBrains Mono — and drawn concretely rather than as plates, which is the one
+    thing the component-page round said was missing. What each asks for: `start` gains three
+    copy controls, one live demo whose source **is** the snippet beside it, the SSR snippet and a
+    closing "you should see" (≈ 2 150 px, one component rendered); `theming` puts the two moves
+    first and gives the inventory the gallery's own field and bar, with the component tier folded
+    into **28 groups by prefix** (`date 58, select 37, toast 31 …`) — ≈ 3 400 px with all 536
+    tokens still on the page; `trust` gains the promise line, a bar of its seven axes, a filter
+    over 94 rows, and the landing's dotted two-column index for the 256 decisions and lessons
+    (≈ 6 000 px); `acr` and `support` gain `docs-toc` and, for the report, a document header of
+    the fields it already states — **their 13 heading addresses have been stable since the day
+    they were first rendered and nothing on the site points at one**
+  - what the sketch refuses, recorded so it is not proposed later: **no colour swatch** beside a
+    colour token (the snapshot carries `name` and `type`, not a value, and a value differs by
+    theme — the rule the mutation tile broke), **no deletion of the inventory or the registry**
+    (both are contracts, and a contract you have to visit 34 pages to read is a worse page and
+    not a shorter one), **no widening of `docs/registry.md`** (a gate reads that file; the page
+    stops depending on the clipped cell instead), **no conformance percentage on the ACR** (a
+    VPAT states criteria, and a headline number nobody measured is the claim the gates exist to
+    prevent), and **no edit to either tracked document** — the page may frame them and may not
+    rewrite them
 - [x] **4.35 — the popover's axe audit can catch a button mid-transition, in two
       engines at once**
   - CI run 33680164640's sibling (2026-09-02, run 33681596258): `a11y.spec.ts › an open
