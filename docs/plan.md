@@ -3104,6 +3104,36 @@ again"` fails **1 run in 3** in WebKit at the `Escape` step — the panel is sti
     defined.** The declaration was invalid at computed-value time, so the count inherited the
     chip's colour and the page looked right for the wrong reason — dropping the line renders the
     identical pixel and stops the stylesheet naming a token no theme can answer
+  - **and one more, found by a reader of the finished page rather than by a gate: the button's
+    RTL row was red for a reason that was false.** The card said `req-token-logical` **has no
+    gate**, while the registry has it ✅ enforced by `tools/check-styles.mjs` point 5, with a
+    negative control — the button's own three physical declarations carry `pct-exception`
+    markers, which is that gate working. Checked across all 34 cards: **seven said `none — gap`
+    for RTL and all seven have `dir="rtl"` baselines** — twelve shots, taken by `visual.spec.ts`'s
+    own RTL loop, which the file annotates `req-token-logical`. Two of the seven have a NAMED
+    behavioural test besides: `field` (the affix measured on both sides as geometry, that file's
+    own reference control) and `select` (the panel's computed direction against the trigger's,
+    with the panel proved to sit outside `app-root`, `lesson-35`)
+  - what the repair needed that the scorecard did not have: **a fourth state.** `number` and
+    `radio` really do have something unmeasured left — a bidi digit string, the Left/Right swap
+    under `orientation="horizontal"` — so `none` was false (a baseline exists) and a plain
+    citation would have hidden a real gap. A cell may now open with `partly`; the pill reads
+    **In part** and its dot is the warning tone, colour AND word, the law the gap's pill already
+    stated. And the sentence cannot come back: **`check-docs` point 7** rejects a card that says a
+    requirement has no gate when that requirement's own **Gate** field says otherwise, with a
+    card-shaped negative control carrying the sentence the button really shipped
+  - **the suite's own flake was the third thing found, and it was not the suite's fault.**
+    `landing.spec`'s copy-button case went red once in a full sweep and passed 5 of 5 alone. The
+    call log named it: Playwright logs `waiting for" …" navigation to finish` from one branch
+    only, when the main frame holds a PENDING DOCUMENT at the assertion's first check — and
+    `visit()` cannot be it, since it awaits three things that each need a committed document. The
+    sender was **the dev server**, which pushes a full reload to every client it has, from two
+    places: `@angular/build`'s HMR channel after a rebuild, and Vite's dependency optimizer,
+    which needs no file change and fires on cold start as the first request for a lazy route
+    reveals a bare import. A long sweep is that shape. `docs:serve:e2e` shuts both
+    (`liveReload: false`, `prebundle: false` — the second is Vite's own call and not under the
+    first flag) and `reuseExistingServer` goes to `false`, or a server somebody left on the port
+    is attached to instead ([`lesson-184`](lessons.md#lesson-184)). 428 e2e cases green against it
 - [x] **4.35 — the popover's axe audit can catch a button mid-transition, in two
       engines at once**
   - CI run 33680164640's sibling (2026-09-02, run 33681596258): `a11y.spec.ts › an open
