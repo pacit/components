@@ -2993,8 +2993,25 @@ again"` fails **1 run in 3** in WebKit at the `Escape` step — the panel is sti
     stops being a table of contents and becomes the evidence, permanently on screen. Recommended:
     **A with one line of B**, the evidence strip in the head; B costs a skeleton and answers
     nothing about the 45%
-  - **the pass is not over.** The order that stands is landing, gallery, a component's card,
-    then the rest; two of the four are answered and the card is the one on the table
+  - **answered 2026-09-09, against the running preview: the component page stays as it is.**
+    The plate was looked at beside the live page and refused — no head compaction, no taller
+    stage, no folded registers. That is the second of the three screens to come back "leave
+    it", after the landing, and it is worth writing down that this is the process working
+    rather than failing: sketch, then a yes, then a literal transfer, in that order, so a no
+    costs a sketch and never a stylesheet. What a plate cannot buy is what the reading bought
+    anyway
+  - **and the reading was not wasted, which is the whole argument for reading before drawing.**
+    The five readings raised 30 objections; the nine that were defects rather than design
+    landed on 2026-09-08 with seven e2e cases behind them, and two of those were the page
+    stating measurements it did not have — a mutation tile that had been an em dash on all
+    thirty-four pages for three days under the sentence "no mutants to kill", and a colour-pair
+    tile counting a naming accident. Neither would have been found by looking at the page, and
+    neither needed a design decision to fix
+  - **the pass is not over, and what is left is what the item put last.** The order stands:
+    landing (stays), gallery (rebuilt), a component's card (stays) — and then `theming`,
+    `start` and the trust pages, which are last because whoever reaches them is already
+    convinced. Two of the three screens looked at kept their design, which is a fact about
+    where the site's remaining weakness is and is worth carrying into the fourth
 - [x] **4.35 — the popover's axe audit can catch a button mid-transition, in two
       engines at once**
   - CI run 33680164640's sibling (2026-09-02, run 33681596258): `a11y.spec.ts › an open
