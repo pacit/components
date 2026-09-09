@@ -11,7 +11,9 @@
  *     and the graph fact that line stands on is re-probed, never remembered,
  *  4. no dangling citations — every `req-*` / `lesson-*` in the repo resolves,
  *  5. freshness — `docs/registry.md` and the generated ID union agree with the source,
- *  6. negative control — the broken requirements in `check-docs.fixtures/` are rejected.
+ *  6. negative control — the broken requirements in `check-docs.fixtures/` are rejected,
+ *  7. no card denies a gate — a component card that says a requirement has no gate must
+ *     agree with that requirement's own **Gate** field.
  *
  * Usage:
  *   node tools/check-docs.mjs           verifies (CI)
@@ -576,6 +578,56 @@ if (WRITE) {
   }
 }
 
+// ── 7. a card may not deny a gate the requirement declares ───────────────────
+
+/**
+ * A component card's scorecard says what is measured for that component and what is not, and
+ * where it says nothing is, it may name the requirement that would close the gap. It may then
+ * say something about that requirement which is simply false. `docs/components/button.md`
+ * carried "`req-token-logical` has no gate" while the gate had existed all along — point 5 of
+ * `tools/check-styles.mjs`, with a negative control of its own — and every reader of
+ * `/components/button` was shown the sentence (4.34).
+ *
+ * The rule is narrow on purpose. It polices ONE assertion — "this requirement has no gate" —
+ * against the one place that knows, which is the requirement's own **Gate** field. A card may
+ * still say that a COMPONENT has no evidence of its own while the requirement is enforced
+ * across the library; that is a different claim, and this gate has no way to check it.
+ */
+const NO_GATE = /\bno gate\b/i;
+const CARD_CITATION = /`(req-[a-z][a-z0-9-]*[a-z0-9])`/g;
+
+const gateStateOf = new Map(requirements.map((r) => [r.id, r.gateState]));
+
+/** Every requirement a table cell of this card claims has no gate. */
+const gateDenialsIn = (text) => {
+  const denied = [];
+  for (const line of text.split('\n')) {
+    if (!line.startsWith('|')) continue;
+    for (const cell of line.split('|')) {
+      if (!NO_GATE.test(cell)) continue;
+      for (const [, id] of cell.matchAll(CARD_CITATION)) denied.push(id);
+    }
+  }
+  return denied;
+};
+
+const checkCardClaims = (rel, text, report) => {
+  for (const id of gateDenialsIn(text)) {
+    const state = gateStateOf.get(id);
+    // A citation that resolves to nothing is point 4's to report, in its own words.
+    if (state === undefined) continue;
+    if (state !== 'gap')
+      report(
+        rel,
+        `says \`${id}\` has no gate, and that requirement's **Gate** field is ` +
+          `\`${state}\` — a card may not deny a machine the requirement declares`,
+      );
+  }
+};
+
+for (const rel of globSync('docs/components/*.md', { cwd: ROOT }).sort())
+  checkCardClaims(rel, read(rel), fail);
+
 // ── 6. negative control ───────────────────────────────────────────────────────
 
 const FIXTURES = 'tools/check-docs.fixtures';
@@ -621,6 +673,27 @@ if (!WRITE) {
       fail(
         fx,
         'the negative control PASSED and was meant not to — the gate stopped examining anything',
+      );
+  }
+
+  // Point 7's control is a CARD and not a requirement, so it stands in its own directory —
+  // the loop above parses everything beside it as a requirement.
+  const cards = globSync(`${FIXTURES}/cards/*.md`, { cwd: ROOT }).sort();
+  if (cards.length === 0)
+    fail(
+      `${FIXTURES}/cards`,
+      'no negative control for point 7 — a gate with no proof that it can fire is one ' +
+        'more silent defect (req-quality-negative-control)',
+    );
+  for (const fx of cards) {
+    const before = problems.length;
+    checkCardClaims(fx, read(fx), fail);
+    const rejected = problems.length > before;
+    problems.length = before;
+    if (!rejected)
+      fail(
+        fx,
+        'the negative control PASSED and was meant not to — point 7 stopped examining anything',
       );
   }
 }
