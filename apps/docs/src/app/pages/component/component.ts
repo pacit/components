@@ -36,6 +36,7 @@ import { DocsToc, TocItem } from '../../docs-toc';
 
 const STATE_LABEL = {
   measured: 'Measured',
+  partial: 'In part',
   gap: 'Gap',
   deliberate: 'By design',
   na: 'n/a',

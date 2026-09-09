@@ -824,6 +824,16 @@ table.api {
     color: var(--pct-on-primary-100);
   }
 
+  /* Measured, and something named is not: the word says "In part" and the dot only
+     underlines it, the same law the gap's pill states above. */
+  &[data-state='partial'] {
+    color: var(--pct-text);
+
+    &::before {
+      background: var(--pct-warning);
+    }
+  }
+
   &[data-state='gap'] {
     color: var(--pct-text);
 

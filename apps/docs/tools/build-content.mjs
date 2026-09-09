@@ -442,13 +442,20 @@ const cards = await Promise.all(
         return row[i === -1 ? fallback : i] ?? '';
       };
       const evidence = at('evidence', row.length - 1);
+      // `partly` is the fourth word this column may open with, and it exists because three
+      // were not enough to say the truth. Seven cards read `none — gap` for RTL while a
+      // `dir="rtl"` baseline of each one was on disk; two of the seven — radio and number —
+      // really do have something unmeasured left (an arrow swap, a bidi digit), so neither
+      // `none` nor a plain citation was honest about them (4.34).
       const state = /^not applicable/i.test(evidence)
         ? 'na'
         : /^none\s*[—-]\s*deliberately/i.test(evidence)
           ? 'deliberate'
           : /^none\b/i.test(evidence)
             ? 'gap'
-            : 'measured';
+            : /^partly\b/i.test(evidence)
+              ? 'partial'
+              : 'measured';
       return {
         criterion: inline(at('criterion', 0)),
         evidence: inline(evidence),
@@ -1770,7 +1777,7 @@ export interface PartDoc {
 export interface CheckRow {
   readonly criterion: string;
   readonly evidence: string;
-  readonly state: 'measured' | 'gap' | 'deliberate' | 'na';
+  readonly state: 'measured' | 'partial' | 'gap' | 'deliberate' | 'na';
 }
 
 export interface DemoDoc {

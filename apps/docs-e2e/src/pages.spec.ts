@@ -574,6 +574,30 @@ test.describe('The pages', () => {
     await expect(faces).toContainText('variant="hero"');
   });
 
+  test('the RTL row states the gate the repository really has', async ({
+    page,
+  }) => {
+    const rtlRow = (p: Page) =>
+      p
+        .getByTestId('checks')
+        .locator('.score__item')
+        .filter({ has: p.locator('.score__what', { hasText: /^\s*RTL\s*$/ }) });
+
+    await visit(page, '/components/button');
+    // The card said `req-token-logical` has no gate while check-styles point 5 had held it
+    // all along, and the page printed the sentence to everyone who read it (4.34).
+    await expect(rtlRow(page)).toHaveAttribute('data-state', 'measured');
+    await expect(rtlRow(page)).toContainText('check-styles.mjs');
+    await expect(page.locator('body')).not.toContainText('has no gate');
+
+    // And where something really is unmeasured, the row says so in a state of its own
+    // rather than by denying what IS measured beside it.
+    await visit(page, '/components/radio');
+    await expect(rtlRow(page)).toHaveAttribute('data-state', 'partial');
+    await expect(rtlRow(page).locator('.pill')).toHaveText('In part');
+    await expect(rtlRow(page)).toContainText('arrows have to swap');
+  });
+
   test('the scorecard shows the measurements and the gaps side by side', async ({
     page,
   }) => {
