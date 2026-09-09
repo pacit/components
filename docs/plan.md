@@ -3728,6 +3728,15 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     listener's cleanup survives because a leaked listener on a destroyed page moves nothing —
     the case that would catch it renders a SECOND page and watches one press advance the cycle
     twice. Both are cheap and neither deserves a 74-minute run of its own
+  - **taken 2026-09-09, and the file is at its ceiling: 89.71 → 96.88.** 62 killed, 2 survived,
+    and both survivors are the equivalent pair above — there is nothing left in this file that
+    a case could reach. The guard went, and one thing was learned in the taking: the case that
+    would have caught the leaked listener is NOT the one that was proposed. A second page does
+    not see a double hop, because the stale handler answers first, calls `preventDefault`, and
+    the live one steps aside on `event.defaultPrevented` — the guard that exists so two seats
+    make one hop also hides the leak. What sees it is the cycle being ASKED at all, which is a
+    spy and not a screenful. TOTAL 82.69 → **82.77**, over 5010 mutants rather than 5014,
+    because the deleted guard took four of them with it
 
 ## 5. Gaps with no deadline
 
