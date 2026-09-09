@@ -3030,7 +3030,7 @@ again"` fails **1 run in 3** in WebKit at the `Escape` step — the panel is sti
     markdown table narrow, and the content pass renders the clip verbatim — so the page an
     auditor reads as the product says things like "property tests for the parser (`parse(…`".
     What makes it cheap to answer is that the material is already tracked: **93 of the 94
-    requirements carry a `` `req-id` — Title `` heading in their own file**, so every row can
+    requirements carry a `` `<the id>` — Title `` heading in their own file**, so every row can
     gain the promise it makes in one readable line, and the pass can throw on the 94th the way
     it already throws when the row count disagrees with the stated total
   - **the sketch went out as one artifact on 2026-09-09 and the pass waits on a yes**, four
@@ -3055,6 +3055,55 @@ again"` fails **1 run in 3** in WebKit at the `Escape` step — the panel is sti
     VPAT states criteria, and a headline number nobody measured is the claim the gates exist to
     prevent), and **no edit to either tracked document** — the page may frame them and may not
     rewrite them
+  - **answered 2026-09-09, and this time the answer is yes to all four.** The reply carried one
+    condition and it is the right one: that the pages be BUILT on the library's components and
+    end up looking like the drawings rather than beside them. So the transfer opened with the
+    parts, before any page could grow a second copy of one: `docs-finder` (the `pct-field` with
+    its count in the label add-on), `docs-bar` (the chip row, every chip a link owing the 24 px
+    floor) and `docs-toc`, which moved up out of `pages/component/` with its `cardPath` renamed
+    `sourcePath` — it was a component card's file and is about to stand under two tracked
+    documents. The gallery was switched onto all three and renders the same page: six chips at
+    26 px, `34 of 34` in the same slot, the same markup and class names
+  - **`/start`: 1 548 px and no component, to 2 179 px and one that runs.** The first form is
+    now ONE file — `apps/docs/src/app/pages/start/first-form.ts` is the component the page
+    renders, and the content pass reads that same file for the snippet above it, so the code and
+    the thing under it cannot drift. Four steps in an ordered list (the ordinal is the list's,
+    not a digit typed into four headings), each snippet carrying the component page's own copy
+    button over a new `SNIPPET_TEXT` channel — a button handing over shiki's HTML would hand over
+    the wrong thing — SSR its own snippet, and a closing "you should see" of three claims the
+    e2e holds. Measured: tabbing out of the field empty names the schema's own message and
+    `aria-describedby` moves from the hint to the error
+  - **`/theming`: 21 167 px to 4 008, with all 536 tokens still on it.** The two moves first and
+    side by side, one snippet file each; the three tiers with addresses, a bar and the finder;
+    the component tier folded into **28 groups by prefix**, the attribution the snapshot already
+    states and the pass now emits as `owner`, each group carrying its count and the link to the
+    page that says what those dials paint. A tier the filter empties leaves with its heading, and
+    a group the filter narrows to opens itself — typing `select` gives 49 of 536 in five groups,
+    all open
+  - **`/trust`: the ellipsis is gone, and 350 rows have a way in.** Every row carries the
+    requirement's own title above the clipped cells, read from `docs/requirements/` and
+    `docs/00-axis.md`, and the pass throws when a row has no titled section of its own — the
+    same shape as the row-count check beside it. The register gains the finder (over id and
+    promise, not over the gate cell, which is a file list) and a bar of its seven axes with the
+    section head first; the state becomes a pill with its own stroke; the 73 decisions and 183
+    lessons become the landing's dotted two-column index, each entry opening the file it names.
+    **What the sketch got wrong, said plainly: it predicted ≈6 000 px and the page is 13 805
+    against 14 094** — the index saved 1 642 and the promise lines spent 1 353. The fix costs
+    height, and height was never this page's defect
+  - **`/acr` and `/support`: thirteen addresses that now have something pointing at them.** Both
+    take `docs-toc` over sections the pass reads out of the rendered document, and the headings
+    are marked for the spy **by the pass** rather than by a client hook — the prose arrives
+    through `[innerHTML]`, and a mark written at build is part of the document from the first
+    byte the server sends. The report also gains the header a VPAT reader looks for first, its
+    four identifying fields lifted out of its prose in the order it states them, with a Print
+    control beside them and a print stylesheet behind it; the pass throws if the report opens
+    with fewer than four. `/support` gains the rail and nothing else: it is a policy, not a
+    report, and has no identifying fields to check it by
+  - and one thing the transfer found on its own, which is the argument for touching a file at
+    all: **`docs-bar`'s chip count asked for `--pct-text-subtle`, a token this system has never
+    defined.** The declaration was invalid at computed-value time, so the count inherited the
+    chip's colour and the page looked right for the wrong reason — dropping the line renders the
+    identical pixel and stops the stylesheet naming a token no theme can answer
 - [x] **4.35 — the popover's axe audit can catch a button mid-transition, in two
       engines at once**
   - CI run 33680164640's sibling (2026-09-02, run 33681596258): `a11y.spec.ts › an open
