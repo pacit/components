@@ -81,9 +81,12 @@ export class PctRegions implements PctRegionsApi {
    */
   next(from: Element | null): boolean {
     const regions = this.regions();
-    if (regions.length === 0) return false;
-
     const here = regions.findIndex((r) => r.element.contains(from));
+    // One guard and not two. An `if (regions.length === 0) return false` above this line
+    // shadowed the one below it — with no regions, `(-1 + 1) % 0` is `NaN`, `regions[NaN]`
+    // is `undefined`, and this returns the same `false` by the same road. Two guards where
+    // one answers means neither can be measured: each is equivalent while the other stands,
+    // and the mutation run said so in the only way it can (4.48).
     const target = regions[(here + 1) % regions.length];
     if (target === undefined) return false;
 

@@ -299,6 +299,23 @@ describe('@pacit/components/regions', () => {
       expect(document.activeElement).not.toBe(nav);
     });
 
+    it('and the listener really goes, which nothing visible would show', async () => {
+      // The case above passes with the cleanup deleted, and that is the point of this one: a
+      // destroyed page takes its regions with it, so a listener left behind on the document
+      // answers the key, finds nothing to move to, and returns quietly. Nothing on the screen
+      // is different. The only way to see it is to watch whether the cycle was ASKED — and it
+      // is worth seeing, because the leak is per mounted page and an application that swaps
+      // routes collects one listener per visit.
+      const fixture = await render(DocumentPage);
+      const cycle = TestBed.inject(PCT_REGIONS)!;
+      const asked = vi.spyOn(cycle, 'next');
+      fixture.destroy();
+
+      press('F6', document);
+
+      expect(asked).not.toHaveBeenCalled();
+    });
+
     it('leaves alone a press somebody has already answered, and any press with a modifier', async () => {
       // Two listeners for one key is what `listenOn: 'document'` makes possible — the stack
       // answers inside itself and this steps aside. And a modifier means the user asked the
