@@ -85,31 +85,6 @@ h2 {
   font-size: var(--pct-font-size-sm);
 }
 
-/* A state is read at a glance or it is not read: a pill, and its colour AND its stroke —
-   a state told by hue alone says nothing to a reader who cannot separate two hues. */
-.state {
-  display: inline-flex;
-  align-items: center;
-  border: 1px solid currentcolor;
-  border-radius: 999px;
-  padding: 0 var(--pct-space-3);
-  font-size: var(--pct-font-size-sm);
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.state[data-state='enforced'] {
-  color: var(--pct-success);
-}
-
-.state[data-state='partial'] {
-  color: var(--pct-warning);
-}
-
-.state[data-state='gap'] {
-  color: var(--pct-danger);
-}
-
 /* The way into 94 rows: the field and the bar, above the first axis. */
 .ways {
   display: grid;

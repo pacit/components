@@ -177,6 +177,40 @@ body {
   }
 }
 
+/* A verdict, told as a chip. Two registers on this site state one — the conformance report
+   row by row and the promise registry axis by axis — and they say it in one shape and one
+   set of tones, so a reader who has learned one has learned the other. Colour AND stroke,
+   never hue alone: a verdict a reader cannot separate by hue is still a word in a pill. */
+.level {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid currentcolor;
+  border-radius: 999px;
+  padding: 0 var(--pct-space-3);
+  font-size: var(--pct-font-size-sm);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.level[data-level='good'] {
+  color: var(--pct-success);
+}
+
+.level[data-level='caution'] {
+  color: var(--pct-warning);
+}
+
+.level[data-level='bad'] {
+  color: var(--pct-danger);
+}
+
+/* Not a verdict at all: the criterion is about something the library does not ship. It keeps
+   the shape so a column of them reads as one column, and drops the colour so it does not
+   claim a finding. */
+.level[data-level='none'] {
+  color: var(--pct-text-muted);
+}
+
 /* ── a tracked document ───────────────────────────────────────────────────────
    The conformance report and the support policy are the same shape: one markdown file the
    repository tracks, rendered whole, beside the contents rail the component page already

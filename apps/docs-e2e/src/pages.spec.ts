@@ -740,10 +740,11 @@ test.describe('The pages', () => {
     await expect(page.locator('#req-token-contrast .promise')).toHaveText(
       'The contrast gate as a skin policy',
     );
-    // The state is a pill and not a hue alone: it says the word too.
-    await expect(page.locator('#req-token-contrast .state')).toHaveText(
-      'enforced',
-    );
+    // The state is a chip and not a hue alone: it says the word too, in the one shape the
+    // conformance report states its own verdicts in.
+    const chip = page.locator('#req-token-contrast .level');
+    await expect(chip).toHaveText('enforced');
+    await expect(chip).toHaveAttribute('data-level', 'good');
   });
 
   test('the register has a way in, and both logs open what they name', async ({
@@ -898,6 +899,15 @@ test.describe('The pages', () => {
       page.getByTestId('acr').getByRole('heading', { name: 'Summary' }),
     ).toBeVisible();
     await expect(page.getByTestId('acr')).toContainText('Not recorded');
+
+    // The verdict is a chip, in the shape and the tones the promise registry states its own
+    // in — one vocabulary of colour across the two places this site states a finding.
+    const first = page.getByTestId('acr').locator('.level').first();
+    await expect(first).toHaveText('Supports');
+    await expect(first).toHaveAttribute('data-level', 'good');
+    await expect(
+      page.getByTestId('acr').locator('.level[data-level="none"]').first(),
+    ).toHaveText('Not Applicable');
 
     // The rail's entries are the document's own headings, and they land on them.
     await entries.nth(4).click();

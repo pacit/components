@@ -1322,6 +1322,30 @@ if (acrFacts.length < 4)
 const acrHtml = await render(acrBody);
 
 /**
+ * The conformance level a report's row states, told as a chip rather than as a word in a
+ * column of words. Five vocabularies of one register map onto the four tones the trust page
+ * already uses, so the two places this site states a verdict state it the same way: what a
+ * gate found, what it could not reach, and what does not apply.
+ *
+ * A WHOLE cell and nothing less — the words appear in the prose around the tables too, and a
+ * chip painted over a sentence would be a claim about that sentence.
+ */
+const LEVEL_TONE = {
+  Supports: 'good',
+  'Partially Supports': 'caution',
+  'Does Not Support': 'bad',
+  'Not Applicable': 'none',
+  'Not Evaluated': 'caution',
+};
+const levelled = (html) =>
+  html.replace(/<td>([^<]+)<\/td>/g, (cell, text) => {
+    const tone = LEVEL_TONE[text.trim()];
+    return tone
+      ? `<td><span class="level" data-level="${tone}">${text.trim()}</span></td>`
+      : cell;
+  });
+
+/**
  * A tracked document's headings, marked for the scroll spy.
  *
  * The attribute is put on HERE and not by the page. The prose arrives through `[innerHTML]`,
@@ -1874,7 +1898,7 @@ export const SUPPORT_HTML = ${JSON.stringify(spied(supportHtml))};
 
 export const SUPPORT_SECTIONS: readonly DocSection[] = ${JSON.stringify(sectionsOf(supportHtml), null, 2)};
 
-export const ACR_HTML = ${JSON.stringify(spied(acrHtml))};
+export const ACR_HTML = ${JSON.stringify(levelled(spied(acrHtml)))};
 
 export const ACR_SECTIONS: readonly DocSection[] = ${JSON.stringify(sectionsOf(acrHtml), null, 2)};
 

@@ -114,7 +114,7 @@
                 <span class="promise" [innerHTML]="row.promiseHtml"></span>
               </td>
               <td>
-                <span class="state" [attr.data-state]="row.state">
+                <span class="level" [attr.data-level]="tone(row.state)">
                   {{ row.state }}
                 </span>
               </td>

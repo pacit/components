@@ -150,6 +150,19 @@ export class TrustPage {
     href: `${BLOB}docs/lessons.md#lesson-${lesson.id}`,
   }));
 
+  /**
+   * The register's three states in the four tones the site states a verdict in, which the
+   * conformance report's five words map onto too — one chip, defined once, so a reader who
+   * has learned the register has learned the report.
+   */
+  protected tone(state: RegistryRow['state']): string {
+    return state === 'enforced'
+      ? 'good'
+      : state === 'partial'
+        ? 'caution'
+        : 'bad';
+  }
+
   protected onQuery(typed: string): void {
     this.query.set(typed);
   }
