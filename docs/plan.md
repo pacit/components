@@ -2851,7 +2851,7 @@ again"` fails **1 run in 3** in WebKit at the `Escape` step — the panel is sti
     and the card's `**ARIA APG pattern:**` grammar states ONE platform element, so the
     link is stated in the prose after the dash. The site is the consumer this closes for:
     the landing's two hero CTAs are anchors now, and 0062's cost is marked paid
-- [ ] **4.34 — the first human review of the site: good in parts, owed a design pass**
+- [x] **4.34 — the first human review of the site: good in parts, owed a design pass**
   - delivered 2026-09-02 over the running preview, the day 2.1 closed: parts of the site
     look very good, a lot does not — and the direction is explicit: the site will still
     change heavily, toward more professional and prettier pages
@@ -3012,6 +3012,12 @@ again"` fails **1 run in 3** in WebKit at the `Escape` step — the panel is sti
     `start` and the trust pages, which are last because whoever reaches them is already
     convinced. Two of the three screens looked at kept their design, which is a fact about
     where the site's remaining weakness is and is worth carrying into the fourth
+  - **closed 2026-09-09.** Six screens read, four rebuilt, two kept after being looked at
+    beside their sketches; the gradient's three hand copies answered; and three defects found
+    on the way that no plate would have caught — the mutation tile, the colour-pairs tile and
+    the seven RTL rows, each one the page stating something the repository does not. What the
+    pass leaves behind is the method rather than the pixels: read first, draw second, transfer
+    literally, and let a no cost a sketch instead of a stylesheet
   - **the last three screens were read on 2026-09-09, and they did not come off like the other
     two.** Same method and the same order — read first, draw second — measured at 1440×900
     against the running site. `start` is **1 548 px** and renders **no component at all**: three
@@ -3122,6 +3128,28 @@ again"` fails **1 run in 3** in WebKit at the `Escape` step — the panel is sti
     stated. And the sentence cannot come back: **`check-docs` point 7** rejects a card that says a
     requirement has no gate when that requirement's own **Gate** field says otherwise, with a
     card-shaped negative control carrying the sentence the button really shipped
+  - **the gradient's three hand copies, answered 2026-09-09 — two given to the component, one
+    recorded as the component's blind spot.** 4.36 asked for the extraction before a second copy
+    existed; there were three, and `hero-edge.scss` had drifted besides: `linear infinite` on
+    every card of two pages while the component it was copied from settled after one four-second
+    pass (4.37). **The cards' rim is `[pctHero]`'s now** — `edge` under `interact`, on all
+    thirty-four of the gallery and the landing's three, so the masked pseudo-element, the
+    `inset: -1px`, the `@supports` guard and firefox's composite order (`lesson-156`) are
+    measured once instead of twice. **The headline is the `text` face**, which changes two
+    things and both are gains: the words were painted in the trio measured for a BOUNDARY at
+    3:1 and now take the lifted trio measured for a WORD (7.02, 6.56, 7.35 dark against
+    3.13–3.45), and an endless drift became one pass, which is the whole of why a consumer who
+    ships that face owes SC 2.2.2 no control. What is lost is the page's own two-beat entrance,
+    which the library has no room for — the price of not being the third copy
+  - what stays hand-written, and why, so it is not proposed again: **the card's NAME.**
+    `show="interact"` reads the attention on the element WEARING the face, and this gradient is
+    the CARD's hover painting the card's name — a face on the name would light when the pointer
+    reached the word and not when it reached the card. Nothing in the API says "another
+    element's attention", and inventing an input for one page's gesture is the wrong order. It
+    keeps its own stops and now ends after one pass like everything else. **The identity tiles
+    stay too**: they take one stop each as a 2px rule, which is three tokens used as a palette
+    and not a copy of the treatment — the `edge` face would give all three the same rim and
+    lose the thing that tells them apart
   - **the suite's own flake was the third thing found, and it was not the suite's fault.**
     `landing.spec`'s copy-button case went red once in a full sweep and passed 5 of 5 alone. The
     call log named it: Playwright logs `waiting for" …" navigation to finish` from one branch
