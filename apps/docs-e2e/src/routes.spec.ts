@@ -39,6 +39,16 @@ test.describe('Every route', () => {
       test(`${route} (${scheme}) renders silent and passes the axe bar`, async ({
         page,
       }) => {
+        /* An axe pass over this site's biggest pages costs real seconds in webkit, and the
+           default 30 s is not enough of them under a full sweep. Measured idle on one worker,
+           2026-09-09: `/components/button` 14.8 s, `/trust` 11.8 s, `/components/date` 10.6 s,
+           `/acr` 6.1 s — and four workers on eight cores turn the top of that into a timeout,
+           which is how `/trust (light)` and `/components/date (light)` went red in webkit with
+           nothing wrong on either page. Sixty seconds is four times the worst measurement and
+           still short enough that a page which never settles fails rather than hangs. The
+           sibling bound is `pages.spec`'s 90 s, taken the same way (2026-09-03). */
+        test.setTimeout(60_000);
+
         const errors: string[] = [];
         page.on('console', (msg) => {
           if (msg.type() === 'error') errors.push(msg.text());
