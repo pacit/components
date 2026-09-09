@@ -10,6 +10,6 @@
   control fires on the sentence that was shipped rather than on an invented one.
 -->
 
-| criterion | evidence                                                                                                  |
-| --------- | --------------------------------------------------------------------------------------------------------- |
-| RTL       | none — gap: [`req-token-logical`](../../../docs/requirements/tokens.md#req-token-logical) has no gate       |
+| criterion | evidence                                                                                              |
+| --------- | ----------------------------------------------------------------------------------------------------- |
+| RTL       | none — gap: [`req-token-logical`](../../../docs/requirements/tokens.md#req-token-logical) has no gate |
