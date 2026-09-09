@@ -1,6 +1,17 @@
 <pct-container>
   <div class="page">
     <h1 class="title">Support and deprecation policy</h1>
-    <div class="docs-prose" [innerHTML]="html" data-testid="policy"></div>
+
+    <div class="doc">
+      <docs-toc
+        class="doc__rail"
+        [items]="sections"
+        [active]="active()"
+        sourcePath="docs/support.md"
+      />
+      <div class="doc__body">
+        <div class="docs-prose" [innerHTML]="html" data-testid="policy"></div>
+      </div>
+    </div>
   </div>
 </pct-container>

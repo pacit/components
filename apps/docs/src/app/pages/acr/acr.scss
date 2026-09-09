@@ -1,6 +1,8 @@
 .page {
   padding-block: var(--pct-space-6);
-  max-inline-size: 50rem;
+  /* Wider than a reading measure, because the document now stands beside its contents; the
+     prose itself keeps its measure through `.docs-prose`. */
+  max-inline-size: 64rem;
 }
 
 .title {

@@ -177,6 +177,115 @@ body {
   }
 }
 
+/* ── a tracked document ───────────────────────────────────────────────────────
+   The conformance report and the support policy are the same shape: one markdown file the
+   repository tracks, rendered whole, beside the contents rail the component page already
+   runs. The layout is here rather than in either page because it belongs to both, and
+   because the prose it frames is styled here for the same reason. */
+.doc {
+  display: grid;
+  gap: var(--pct-space-6);
+}
+
+@media (min-width: 900px) {
+  .doc {
+    grid-template-columns: 14rem minmax(0, 1fr);
+  }
+
+  .doc__rail {
+    position: sticky;
+    inset-block-start: var(--docs-anchor-offset);
+    align-self: start;
+  }
+}
+
+.doc__body {
+  min-inline-size: 0;
+}
+
+/* The report's identifying fields: what a procurement reader checks before reading a row.
+   The words are the document's own — this is a frame, not a rewrite. */
+.facts {
+  margin-block-end: var(--pct-space-6);
+  border: 1px solid var(--pct-border);
+  border-radius: var(--pct-radius-md);
+  padding: var(--pct-space-5);
+}
+
+.facts__list {
+  display: grid;
+  gap: var(--pct-space-4) var(--pct-space-6);
+  margin: 0;
+
+  dt {
+    color: var(--pct-text-muted);
+    font-family: var(--docs-font-mono);
+    font-size: var(--pct-font-size-sm);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  dd {
+    margin: 0;
+    color: var(--pct-text-muted);
+  }
+}
+
+@media (min-width: 620px) {
+  .facts__list {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .facts__list dt {
+    grid-column: 1;
+  }
+
+  .facts__list dd {
+    grid-column: 2;
+  }
+}
+
+.facts__actions {
+  margin-block-start: var(--pct-space-5);
+  padding-block-start: var(--pct-space-4);
+  border-block-start: 1px solid var(--pct-border);
+}
+
+/* The conformance report is the one page of this site somebody prints, and a printer is
+   given a page it can read: the shell's chrome goes, the rail goes with it, and the ink is
+   black on white. The `!important` is the price of overriding token-coloured text a printer
+   would otherwise render as white on white: a stylesheet can override a colour and cannot
+   set the theme attribute those colours come from. */
+@media print {
+  .topbar,
+  .doc__rail,
+  .facts__actions,
+  pct-toast-viewport {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  .page,
+  .docs-prose,
+  .docs-prose *,
+  .facts,
+  .facts * {
+    background: transparent !important;
+    color: black !important;
+  }
+
+  .docs-prose table,
+  .docs-prose th,
+  .docs-prose td,
+  .facts {
+    border-color: gray !important;
+  }
+}
+
 /* A snippet a reader is meant to copy carries its button in the block's own corner, so the
    code has to keep clear of it. The rule is here and not on the page because the highlighted
    markup arrives through `[innerHTML]` and carries no component's encapsulation attribute. */

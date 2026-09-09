@@ -861,6 +861,46 @@ test.describe('The pages', () => {
     );
   });
 
+  test('both tracked documents have a way in, and the report has a header', async ({
+    page,
+  }) => {
+    await visit(page, '/acr');
+
+    // Six addresses since the day it was first rendered, and nothing pointed at one (4.34).
+    const rail = page.getByTestId('toc');
+    const entries = rail.locator('.toc__list a');
+    await expect(entries).toHaveCount(6);
+    await expect(entries.first()).toHaveText('The words');
+
+    // The fields a report is read by, in the order the report states them, lifted out of its
+    // prose — its own words, framed and not rewritten.
+    const facts = page.getByTestId('acr-facts');
+    await expect(facts.locator('dt')).toHaveText([
+      'Product',
+      'Standard',
+      'Report date',
+      'Evaluation methods',
+    ]);
+    await expect(facts).toContainText('WCAG 2.2, levels A and AA');
+    await expect(page.getByTestId('acr-print')).toBeVisible();
+
+    // And the document itself is whole: the pass frames it, a gate holds it to its claims.
+    await expect(
+      page.getByTestId('acr').getByRole('heading', { name: 'Summary' }),
+    ).toBeVisible();
+    await expect(page.getByTestId('acr')).toContainText('Not recorded');
+
+    // The rail's entries are the document's own headings, and they land on them.
+    await entries.nth(4).click();
+    await expect(page).toHaveURL(/#the-assistive-technology-pass$/);
+
+    await visit(page, '/support');
+    await expect(page.getByTestId('toc').locator('.toc__list a')).toHaveCount(
+      7,
+    );
+    await expect(page.getByTestId('acr-facts')).toHaveCount(0);
+  });
+
   test('/support and /start render their documents', async ({ page }) => {
     await visit(page, '/support');
     await expect(page.getByTestId('policy')).toContainText('angular-majors');

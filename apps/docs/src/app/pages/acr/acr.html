@@ -1,6 +1,48 @@
 <pct-container>
   <div class="page">
     <h1 class="title">Accessibility conformance report</h1>
-    <div class="docs-prose" [innerHTML]="html" data-testid="acr"></div>
+
+    <div class="doc">
+      <!--
+        The rail the component page has run since 2.7.3, over addresses this document has
+        carried since the day it was first rendered — `markdown.mjs` slugs its headings the
+        way GitHub does, and until now nothing on the site pointed at one (4.34).
+      -->
+      <docs-toc
+        class="doc__rail"
+        [items]="sections"
+        [active]="active()"
+        sourcePath="docs/acr.md"
+      />
+
+      <div class="doc__body">
+        <!--
+          The fields a report is read by, in the order the report states them and in its own
+          words. It frames them; it does not rewrite them — check-acr holds this file to its
+          claims and a page may not edit what a gate reads.
+        -->
+        <div class="facts" data-testid="acr-facts">
+          <dl class="facts__list">
+            @for (fact of facts; track fact.label) {
+            <dt>{{ fact.label }}</dt>
+            <dd [innerHTML]="fact.valueHtml"></dd>
+            }
+          </dl>
+          <div class="facts__actions">
+            <button
+              pctButton
+              variant="outline"
+              size="sm"
+              (click)="print()"
+              data-testid="acr-print"
+            >
+              Print
+            </button>
+          </div>
+        </div>
+
+        <div class="docs-prose" [innerHTML]="html" data-testid="acr"></div>
+      </div>
+    </div>
   </div>
 </pct-container>
