@@ -314,9 +314,12 @@ test.describe('The landing', () => {
   test('the headline drift rides the motion axis and freezes under reduced motion', async ({
     page,
   }) => {
+    // The headline is `[pctHero]`'s `text` face since the gradient's hand copies went to the
+    // component (4.34/4.36) — so this reads the face's own sweep, which is what the page
+    // used to write out for itself.
     const drift = () =>
       page
-        .locator('.hero__grad')
+        .locator('[data-pct-hero="text"]')
         .evaluate((el) => getComputedStyle(el).animationDuration);
 
     // The card rim divides the same token rather than naming a duration of its own —
@@ -329,13 +332,22 @@ test.describe('The landing', () => {
         .evaluate((el) => getComputedStyle(el, '::after').animationDuration);
 
     await visit(page, '/', { reducedMotion: 'no-preference' });
-    // Two animations on one span: the colour sweeps onto the words once, then the endless
-    // drift takes over at the position it let go of. Both are divisions of one token.
-    expect(await drift()).toBe('0.8s, 8s');
+    // ONE animation on the words now, not two: the page's own two-beat entrance went with
+    // its hand copy, and what is left is the face's single pass — the same division of the
+    // same token the rim takes, which is why one axis freezes both.
+    expect(await drift()).toBe('4s');
     expect(await rim()).toBe('4s');
 
+    // And it ENDS. An endless drift is what this copy had drifted into while the component
+    // settled after one pass (4.37) — the reason a consumer owes SC 2.2.2 no control.
+    expect(
+      await page
+        .locator('[data-pct-hero="text"]')
+        .evaluate((el) => getComputedStyle(el).animationIterationCount),
+    ).toBe('1');
+
     await page.emulateMedia({ reducedMotion: 'reduce' });
-    expect(await drift()).toBe('0s, 0s');
+    expect(await drift()).toBe('0s');
     expect(await rim()).toBe('0s');
   });
 
@@ -344,7 +356,7 @@ test.describe('The landing', () => {
   }) => {
     await visit(page, '/', { forcedColors: 'active' });
 
-    const grad = page.locator('.hero__grad');
+    const grad = page.locator('[data-pct-hero="text"]');
     expect(
       await grad.evaluate((el) => getComputedStyle(el).backgroundImage),
     ).toBe('none');
