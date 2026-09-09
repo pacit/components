@@ -34,7 +34,10 @@
       var(--pct-motion-transition-easing);
 
   b {
-    color: var(--pct-text-subtle);
+    /* No colour of its own: `--pct-text-subtle` is a token this system has never defined,
+       so the declaration that named it was invalid at computed-value time and the count
+       inherited the chip's colour anyway. It is told apart by weight and by figures, which
+       is the difference that survives a theme. */
     font-weight: 400;
     letter-spacing: 0;
     font-variant-numeric: tabular-nums;

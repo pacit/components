@@ -1316,14 +1316,36 @@ for (const file of readdirSync(DEMOS_DIR).sort()) {
 }
 
 const snippetCode = {};
+const snippetText = {};
+
+/** Highlighted for the page to show, and raw for the button that hands it over. */
+const addSnippet = async (name, source, lang) => {
+  snippetText[name] = source;
+  snippetCode[name] = await highlight(source, lang);
+};
+
 for (const file of readdirSync(SNIPPETS_DIR).sort()) {
   const m = file.match(/^([a-z-]+)\.([a-z]+)\.txt$/);
   if (!m) continue;
-  snippetCode[m[1]] = await highlight(
+  await addSnippet(
+    m[1],
     readFileSync(join(SNIPPETS_DIR, file), 'utf8').trimEnd(),
     m[2] === 'sh' ? 'shellscript' : m[2],
   );
 }
+
+// The first form is not a snippet file: it is the component the start page RENDERS, read
+// here so that the code on the page and the thing under it are one file and cannot drift
+// (4.34 — the page taught a form it never showed). Named in full, because a generated
+// lookup reaches no file by itself (req-project-reach).
+await addSnippet(
+  'form',
+  readFileSync(
+    join(ROOT, 'apps/docs/src/app/pages/start/first-form.ts'),
+    'utf8',
+  ).trimEnd(),
+  'angular-ts',
+);
 
 // ── 5b. the texts channel, for the catalogue (plan 2.5) ─────────────────────
 
@@ -1769,6 +1791,9 @@ writeFileSync(
   `${banner}
 /** The start page's snippets, shiki-highlighted for both themes. */
 export const SNIPPET_CODE: Readonly<Record<string, string>> = ${JSON.stringify(snippetCode, null, 2)};
+
+/** The same snippets as text, for the button that puts one on the clipboard. */
+export const SNIPPET_TEXT: Readonly<Record<string, string>> = ${JSON.stringify(snippetText, null, 2)};
 `,
 );
 

@@ -26,6 +26,124 @@ h2 {
   color: var(--pct-text-muted);
 }
 
+/* The steps, numbered by the list rather than by a digit typed into each heading. The rail
+   is one hairline behind the ordinals: it says the four are one road, which four headings
+   with the same weight as every other heading on the site did not. */
+.steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+  display: grid;
+  gap: var(--pct-space-6);
+}
+
+.step {
+  position: relative;
+  counter-increment: step;
+  padding-inline-start: calc(var(--pct-target-min) + var(--pct-space-5));
+
+  &::before {
+    content: counter(step);
+    position: absolute;
+    inset-inline-start: 0;
+    inset-block-start: 0;
+    display: grid;
+    place-items: center;
+    inline-size: var(--pct-target-min);
+    block-size: var(--pct-target-min);
+    border: 1px solid var(--pct-border-strong);
+    border-radius: 50%;
+    color: var(--pct-text-muted);
+    font-family: var(--docs-font-mono);
+    font-size: var(--pct-font-size-sm);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* The rail runs from under one ordinal to the next, and stops at the last one. */
+  &:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    inset-inline-start: calc(var(--pct-target-min) / 2);
+    inset-block-start: calc(var(--pct-target-min) + var(--pct-space-3));
+    block-size: calc(100% - var(--pct-target-min));
+    border-inline-start: 1px solid var(--pct-border);
+  }
+}
+
+.step__name {
+  /* The ordinal sits on this line, so the heading has to start on it too. */
+  margin-block-start: 0;
+  line-height: var(--pct-target-min);
+}
+
+/* The copy control rides in the block's own corner; the code keeps clear of it through one
+   global rule, because `[innerHTML]` content carries no encapsulation attribute to style. */
+.snippet {
+  position: relative;
+}
+
+.snippet__copy {
+  position: absolute;
+  inset-block-start: var(--pct-space-4);
+  inset-inline-end: var(--pct-space-4);
+}
+
+/* The component the snippet above is, running: a figure, because the caption is about the
+   thing beside it and not about the section. */
+.running {
+  margin: 0 0 var(--pct-space-4);
+  padding: var(--pct-space-5);
+  border: 1px solid var(--pct-border);
+  border-radius: var(--pct-radius-md);
+  background: var(--pct-surface-100);
+
+  app-first-form {
+    display: block;
+    max-inline-size: 24rem;
+  }
+
+  figcaption {
+    margin-block-start: var(--pct-space-5);
+    color: var(--pct-text-muted);
+    font-size: var(--pct-font-size-sm);
+  }
+}
+
+/* What the reader should be looking at once the four steps are done — the page's only
+   claim about itself, so it is a list of three things and not a paragraph. */
+.check {
+  padding: var(--pct-space-5);
+  border: 1px solid var(--pct-border);
+  border-radius: var(--pct-radius-md);
+  background: var(--pct-surface-100);
+
+  h2 {
+    margin-block-end: var(--pct-space-4);
+  }
+}
+
+.check__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--pct-space-3);
+  color: var(--pct-text-muted);
+
+  li {
+    padding-inline-start: var(--pct-space-6);
+    position: relative;
+
+    &::before {
+      content: '✓';
+      position: absolute;
+      inset-inline-start: 0;
+      color: var(--pct-success);
+    }
+  }
+}
+
 .next {
   margin: 0;
   color: var(--pct-text-muted);

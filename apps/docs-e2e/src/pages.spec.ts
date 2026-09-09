@@ -749,10 +749,64 @@ test.describe('The pages', () => {
     await expect(page.getByTestId('policy')).toContainText('angular-majors');
 
     await visit(page, '/start');
-    await expect(page.locator('.shiki')).toHaveCount(3);
+    // Four now: install, provide, the first form, and the one line that renders on a server
+    // (4.34 — the page named `provideClientHydration()` and never showed it).
+    await expect(page.locator('.shiki')).toHaveCount(4);
     await expect(page.locator('.shiki').first()).toContainText(
       'npm install @pacit/components',
     );
+    await expect(page.locator('.shiki').last()).toContainText(
+      'provideClientHydration()',
+    );
+  });
+
+  test('the first form on /start is the component the snippet above it is', async ({
+    page,
+  }) => {
+    await visit(page, '/start');
+
+    // The claim the page could not make before: a getting-started page that renders nothing
+    // on a site whose whole argument is that components prove themselves (4.34). The snippet
+    // is read from this component's own file by the content pass, so the class the code
+    // declares and the thing under it are one file — and the test says so from both ends.
+    await expect(page.locator('.shiki').nth(2)).toContainText(
+      'class FirstForm',
+    );
+    const running = page.getByTestId('first-form');
+    const field = running.getByRole('textbox', { name: /Workspace name/ });
+    await expect(field).toBeVisible();
+    await expect(running).toContainText('Lowercase, dashes allowed');
+
+    await field.click();
+    await field.press('Tab');
+    // The schema's own message, and the input pointing at the line that carries it.
+    await expect(
+      running.getByText('Every workspace needs a name'),
+    ).toBeVisible();
+    await expect(field).toHaveAttribute('aria-invalid', 'true');
+    const describedBy = await field.getAttribute('aria-describedby');
+    await expect(running.locator(`#${describedBy}`)).toContainText(
+      'Every workspace needs a name',
+    );
+  });
+
+  test('every step of /start is a step, and hands its snippet over', async ({
+    page,
+  }) => {
+    await visit(page, '/start');
+
+    // The ordinal is the list's, not a digit typed into four headings: a reader on a screen
+    // reader is told these are four items of one sequence.
+    const steps = page.locator('.steps > li');
+    await expect(steps).toHaveCount(4);
+    await expect(steps.first().getByRole('heading')).toHaveText('Install');
+
+    const copies = page.locator('.snippet__copy');
+    await expect(copies).toHaveCount(4);
+    await copies.first().click();
+    await expect(
+      page.locator('pct-toast-viewport [data-pct-part="item"]'),
+    ).toBeVisible();
   });
 
   test('the top bar navigates; the narrow drawer takes over below the fold', async ({

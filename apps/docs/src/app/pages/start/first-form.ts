@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { FormField, form, required } from '@angular/forms/signals';
 import { PctField, PctText } from '@pacit/components/field';
 
+/** The first form: a model that is a signal, a schema that is a function, one required rule. */
 @Component({
   selector: 'app-first-form',
   imports: [FormField, PctField, PctText],

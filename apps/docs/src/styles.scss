@@ -177,6 +177,13 @@ body {
   }
 }
 
+/* A snippet a reader is meant to copy carries its button in the block's own corner, so the
+   code has to keep clear of it. The rule is here and not on the page because the highlighted
+   markup arrives through `[innerHTML]` and carries no component's encapsulation attribute. */
+.snippet .shiki {
+  padding-inline-end: calc(var(--pct-space-6) * 3);
+}
+
 [data-theme='dark'] .shiki {
   background-color: var(--shiki-dark-bg) !important;
   color: var(--shiki-dark) !important;

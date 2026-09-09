@@ -4,45 +4,132 @@
       <h1 class="title">Get started</h1>
       <p class="lead">
         Standalone components on Angular 22 — zoneless, signal forms, SSR-ready.
-        Three steps from an empty app to a validated field.
+        Three steps from an empty app to a validated field, and a fourth if you
+        render on the server.
       </p>
     </header>
 
-    <section>
-      <h2>1 · Install</h2>
-      <div class="docs-code" [innerHTML]="snippet('install')"></div>
-      <p class="note">
-        No <code>zone.js</code> anywhere in the tree — the package refuses it by
-        gate, not by convention.
-      </p>
-    </section>
+    <!--
+      An ordered list and not four headings with a number typed into each: the steps ARE a
+      sequence, the ordinal comes from the list itself, and a reader on a screen reader is
+      told "list of 4 items" rather than having to collect that from the prose.
+    -->
+    <ol class="steps">
+      <li class="step">
+        <h2 class="step__name">Install</h2>
+        <div class="snippet">
+          <div class="docs-code" [innerHTML]="code('install')"></div>
+          <button
+            pctButton
+            variant="outline"
+            size="sm"
+            class="snippet__copy"
+            (click)="copy('install')"
+            data-testid="copy-install"
+          >
+            Copy
+          </button>
+        </div>
+        <p class="note">
+          No <code>zone.js</code> anywhere in the tree — the package refuses it
+          by gate, not by convention.
+        </p>
+      </li>
 
-    <section>
-      <h2>2 · Provide</h2>
-      <p class="note">
-        The library reads one optional config for defaults; the application
-        stays the owner of policy — locale, texts, theme.
-      </p>
-      <div class="docs-code" [innerHTML]="snippet('provide')"></div>
-    </section>
+      <li class="step">
+        <h2 class="step__name">Provide</h2>
+        <p class="note">
+          The library reads one optional config for defaults; the application
+          stays the owner of policy — locale, texts, theme.
+        </p>
+        <div class="snippet">
+          <div class="docs-code" [innerHTML]="code('provide')"></div>
+          <button
+            pctButton
+            variant="outline"
+            size="sm"
+            class="snippet__copy"
+            (click)="copy('provide')"
+            data-testid="copy-provide"
+          >
+            Copy
+          </button>
+        </div>
+      </li>
 
-    <section>
-      <h2>3 · A first form</h2>
-      <p class="note">
-        Signal forms end to end: the model is a signal, the schema is a
-        function, the field wrapper wires the label, hint and error lines.
-      </p>
-      <div class="docs-code" [innerHTML]="snippet('form')"></div>
-    </section>
+      <li class="step">
+        <h2 class="step__name">A first form</h2>
+        <p class="note">
+          Signal forms end to end: the model is a signal, the schema is a
+          function, the field wrapper wires the label, hint and error lines.
+        </p>
+        <div class="snippet">
+          <div class="docs-code" [innerHTML]="code('form')"></div>
+          <button
+            pctButton
+            variant="outline"
+            size="sm"
+            class="snippet__copy"
+            (click)="copy('form')"
+            data-testid="copy-form"
+          >
+            Copy
+          </button>
+        </div>
 
-    <section>
-      <h2>Server-side rendering</h2>
-      <p class="note">
-        Every component hydrates cleanly — the sandbox suite measures it per
-        view, in three engines. Add <code>provideClientHydration()</code> and
-        prerender or SSR as your host prefers; this documentation site is itself
-        prerendered from the same package.
-      </p>
+        <!--
+          The component the snippet above IS, running. The content pass reads that same file
+          for the code, so a page that teaches a form finally shows one — and the two cannot
+          drift, because there is only one of them (4.34).
+        -->
+        <figure class="running" data-testid="first-form">
+          <app-first-form />
+          <figcaption>
+            The component above, running. Tab out of the field while it is empty
+            and the schema's own message is what you hear.
+          </figcaption>
+        </figure>
+      </li>
+
+      <li class="step">
+        <h2 class="step__name">Server-side rendering</h2>
+        <p class="note">
+          Every component hydrates cleanly — the sandbox suite measures it per
+          view, in three engines. One line more than step 2, and this
+          documentation site is itself prerendered from the same package.
+        </p>
+        <div class="snippet">
+          <div class="docs-code" [innerHTML]="code('ssr')"></div>
+          <button
+            pctButton
+            variant="outline"
+            size="sm"
+            class="snippet__copy"
+            (click)="copy('ssr')"
+            data-testid="copy-ssr"
+          >
+            Copy
+          </button>
+        </div>
+      </li>
+    </ol>
+
+    <section class="check" data-testid="check">
+      <h2>You should see</h2>
+      <ul class="check__list">
+        <li>
+          the field with its label above it and its hint below, at the size the
+          config set
+        </li>
+        <li>
+          tabbing out of it empty names the error, and the input points at that
+          line with <code>aria-describedby</code>
+        </li>
+        <li>
+          the page hydrating with nothing in the console — no
+          <code>zone.js</code>, no mismatch
+        </li>
+      </ul>
     </section>
 
     <p class="next">
