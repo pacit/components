@@ -714,12 +714,61 @@ test.describe('The pages', () => {
     page,
   }) => {
     await visit(page, '/theming');
+
+    // The two moves, first and side by side — 324 px under 18 251 before (4.34).
+    await expect(page.locator('.move')).toHaveCount(2);
+    await expect(page.locator('.move').first()).toContainText(
+      'data-theme="dark"',
+    );
+    await expect(page.locator('.move').last()).toContainText('--pct-surface:');
+
     await expect(page.getByTestId('tier-semantic')).toContainText(
       '--pct-surface',
     );
-    await expect(page.getByTestId('tier-component')).toContainText(
-      '--pct-button-height-sm',
+
+    // The component tier is 28 groups and not one alphabetical run of 486 rows. The
+    // inventory is all still here: opening a group shows the dials it counts.
+    const groups = page.getByTestId('token-groups').locator('details');
+    await expect(groups).toHaveCount(28);
+    const button = page.getByTestId('group-button');
+    await button.locator('summary').click();
+    await expect(button).toContainText('--pct-button-height-sm');
+    await button
+      .getByRole('link', { name: /What button paints with them/ })
+      .click();
+    await expect(page).toHaveURL(/\/components\/button$/);
+  });
+
+  test('the finder on /theming narrows all three tiers, and the bar follows', async ({
+    page,
+  }) => {
+    await visit(page, '/theming');
+    const count = page.getByTestId('theming-count');
+    await expect(count).toHaveText('536 of 536');
+    await expect(page.getByTestId('theming-bar').getByRole('link')).toHaveCount(
+      3,
     );
+
+    // Narrowing DESTROYS what it drops — the tiers a filter empties leave with their
+    // headings, so every chip standing is the address of something on the page.
+    await page.getByTestId('theming-filter').fill('select');
+    await expect(count).toHaveText(/^\d+ of 536$/);
+    await expect(page.getByTestId('tier-primitive')).toHaveCount(0);
+    await expect(page.getByTestId('tier-semantic')).toHaveCount(0);
+    const bands = page.getByTestId('theming-bar').getByRole('link');
+    await expect(bands).toHaveCount(1);
+    await expect(bands.first()).toContainText('Component');
+    // A group the filter has narrowed to opens itself: a reader who typed a name is
+    // looking at that component's dials, not at a closed row bearing it.
+    await expect(
+      page.getByTestId('token-groups').locator('details[open]').first(),
+    ).toContainText('--pct-select-bg');
+
+    await page.getByTestId('theming-filter').fill('nothing-answers-to-this');
+    await expect(page.getByTestId('theming-empty')).toBeVisible();
+
+    await page.getByTestId('theming-filter').fill('');
+    await expect(count).toHaveText('536 of 536');
   });
 
   test('/acr renders the conformance report the gate holds to its claims', async ({

@@ -10,19 +10,107 @@
 
 .lead {
   margin: 0;
-  max-inline-size: 62ch;
   color: var(--pct-text-muted);
   font-size: var(--pct-font-size-lg);
+  max-inline-size: 46rem;
 }
 
 h2 {
-  margin: 0 0 var(--pct-space-3);
+  margin: 0 0 var(--pct-space-4);
   font-size: var(--pct-font-size-lg);
   letter-spacing: -0.01em;
 }
 
 .note {
-  margin: 0 0 var(--pct-space-4);
-  max-inline-size: 62ch;
+  margin: 0 0 var(--pct-space-5);
+  color: var(--pct-text-muted);
+  max-inline-size: 46rem;
+}
+
+.note__aside {
+  display: block;
+  margin-block-start: var(--pct-space-3);
+  font-size: var(--pct-font-size-sm);
+}
+
+/* The two moves side by side where there is room for both, and stacked where there is not —
+   they are a pair a reader compares, not a sequence they walk. */
+.moves__pair {
+  display: grid;
+  gap: var(--pct-space-5);
+  grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr));
+}
+
+.move {
+  min-inline-size: 0;
+}
+
+.move__name {
+  margin: 0 0 var(--pct-space-3);
+  color: var(--pct-text-muted);
+  font-size: var(--pct-font-size-sm);
+  font-weight: var(--pct-font-weight-medium);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* The way in: the field and the bar, one above the other, both above every table. */
+.ways {
+  display: grid;
+  gap: var(--pct-space-5);
+}
+
+/* One component's dials. Closed, a group is a row of the same height as a chip — the
+   inventory reads as a list of 28 components before it reads as a list of 486 strings. */
+.groups {
+  border: 1px solid var(--pct-border);
+  border-radius: var(--pct-radius-md);
+  overflow: hidden;
+}
+
+.group + .group {
+  border-block-start: 1px solid var(--pct-border);
+}
+
+.group__head {
+  display: flex;
+  align-items: center;
+  gap: var(--pct-space-4);
+  min-block-size: var(--pct-target-min);
+  padding: var(--pct-space-3) var(--pct-space-5);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--pct-surface-100);
+  }
+}
+
+.group__name {
+  font-family: var(--docs-font-mono);
+  font-size: var(--pct-font-size-sm);
+}
+
+.group__count {
+  margin-inline-start: auto;
+  color: var(--pct-text-muted);
+  font-family: var(--docs-font-mono);
+  font-size: var(--pct-font-size-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.group__body {
+  padding: 0 var(--pct-space-5) var(--pct-space-5);
+}
+
+.group__page {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: var(--pct-target-min);
+  color: var(--pct-primary);
+  font-size: var(--pct-font-size-sm);
+}
+
+.empty {
+  margin: 0;
   color: var(--pct-text-muted);
 }

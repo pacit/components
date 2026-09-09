@@ -842,6 +842,14 @@ for (const line of fenced(read('libs/tokens/tokens.snapshot.md')).split('\n')) {
       type: inventory[2],
       tier: inventory[3],
       visibility: inventory[4],
+      // Which component's dial this is, by the one rule the prefix already states — the
+      // same attribution `tokensByComponent` below makes for the component pages. The
+      // theming page groups 486 dials by it rather than running them alphabetically past
+      // a reader for 18 251 px (4.34); `null` for the two tiers that belong to nobody.
+      owner:
+        inventory[3] === 'component'
+          ? (inventory[1].match(/^--pct-([a-z0-9]+)-/)?.[1] ?? null)
+          : null,
     });
   const m = line.match(/^(--pct-([a-z0-9]+)-\S+) \S+ component public$/);
   if (!m) continue;
@@ -1776,6 +1784,8 @@ export interface TokenRow {
   readonly type: string;
   readonly tier: string;
   readonly visibility: string;
+  /** The card whose dial this is, for a component-tier row; null for the other tiers. */
+  readonly owner: string | null;
 }
 
 export const THEMING_TOKENS: readonly TokenRow[] = ${JSON.stringify(tokenRows, null, 2)};

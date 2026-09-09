@@ -9,19 +9,50 @@
       </p>
     </header>
 
-    <section>
+    <!--
+      The two moves, first and side by side. They were 324 px under a page that spent 18 251
+      on an alphabetical list, which is the wrong way round for the one thing a reader comes
+      here to learn (4.34).
+    -->
+    <section class="moves">
       <h2>The two moves</h2>
       <p class="note">
-        Pin a theme with an attribute anywhere in the tree, or override a token
-        where you need it — both are plain CSS, visible in devtools, no build
-        step of yours involved.
+        Both are plain CSS, visible in devtools, no build step of yours
+        involved.
       </p>
-      <div class="docs-code" [innerHTML]="example"></div>
+      <div class="moves__pair">
+        <article class="move">
+          <h3 class="move__name">1 · Pin a theme</h3>
+          <div class="docs-code" [innerHTML]="pin"></div>
+        </article>
+        <article class="move">
+          <h3 class="move__name">2 · Override a token</h3>
+          <div class="docs-code" [innerHTML]="scope"></div>
+        </article>
+      </div>
     </section>
 
-    @for (tier of tiers(); track tier.tier) {
+    <div class="ways">
+      <docs-finder
+        label="Find a token"
+        [value]="query()"
+        [shown]="shown()"
+        [total]="total"
+        (query)="onQuery($event)"
+        testid="theming-filter"
+        countTestid="theming-count"
+      />
+      <docs-bar
+        [bands]="bands()"
+        [active]="active()"
+        label="Tiers"
+        testid="theming-bar"
+      />
+    </div>
+
+    @for (tier of tiers(); track tier.tier) { @if (tier.tokens.length) {
     <section [attr.data-testid]="'tier-' + tier.tier">
-      <h2>{{ tier.heading }}</h2>
+      <h2 [id]="tier.slug" data-spy>{{ tier.heading }}</h2>
       <p class="note">{{ tier.tells }}</p>
       <div class="docs-table">
         <table>
@@ -42,11 +73,66 @@
         </table>
       </div>
     </section>
-    }
+    } } @if (groups().length) {
+    <section data-testid="tier-component">
+      <h2 id="component" data-spy>Component — the per-part dials</h2>
+      <p class="note">
+        One component, one prefix: override a single control without touching
+        the system. {{ componentCount }} dials across {{ groupCount }}
+        components — every one of them also on its own component's page, beside
+        what it paints.
+        <span class="note__aside"
+          >{{ privateCount }} further tokens are private plumbing: present in
+          the snapshot, absent from this contract on purpose.</span
+        >
+      </p>
 
-    <p class="note">
-      {{ privateCount }} further tokens are private plumbing — present in the
-      snapshot, absent from this contract on purpose.
-    </p>
+      <!--
+        Closed until asked, and opened by the finder — the whole inventory is still on the
+        page, which is the point: the public tier is the contract. `[open]` follows the
+        narrowing so a reader who types `select` is looking at select's dials rather than at
+        a list of one closed row.
+      -->
+      <div class="groups" data-testid="token-groups">
+        @for (group of groups(); track group.id) {
+        <details
+          class="group"
+          [open]="narrowing()"
+          [attr.data-testid]="'group-' + group.id"
+        >
+          <summary class="group__head">
+            <span class="group__name">{{ group.id }}</span>
+            <span class="group__count">{{ group.tokens.length }}</span>
+          </summary>
+          <div class="group__body">
+            <div class="docs-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th>token</th>
+                    <th>type</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of group.tokens; track row.name) {
+                  <tr>
+                    <td><code>{{ row.name }}</code></td>
+                    <td>{{ row.type }}</td>
+                  </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            <a class="group__page" [routerLink]="['/components', group.id]"
+              >What {{ group.id }} paints with them ↗</a
+            >
+          </div>
+        </details>
+        }
+      </div>
+    </section>
+    } @if (!shown()) {
+    <p class="empty" data-testid="theming-empty">No token answers to that.</p>
+    }
   </pct-stack>
 </pct-container>

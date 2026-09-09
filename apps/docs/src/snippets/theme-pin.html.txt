@@ -1,0 +1,4 @@
+<!-- On the page root, or on any subtree below it: -->
+<html data-theme="dark">
+  ...
+</html>

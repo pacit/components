@@ -1,0 +1,4 @@
+<!-- Scoped exactly where you write it: -->
+<aside style="--pct-surface: #0f172a; --pct-text: #f1f5f9">
+  A dark island inside a light page.
+</aside>
