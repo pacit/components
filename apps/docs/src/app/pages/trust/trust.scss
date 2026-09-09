@@ -75,36 +75,103 @@ h2 {
   color: var(--pct-text-muted);
 }
 
+/* The promise the row makes, above the two cells that summarise how it is held. Those two
+   are the registry table's own words and end where its column ran out; this line is the
+   requirement's own title and does not (4.34). */
+.promise {
+  display: block;
+  margin-block-start: var(--pct-space-2);
+  color: var(--pct-text);
+  font-size: var(--pct-font-size-sm);
+}
+
+/* A state is read at a glance or it is not read: a pill, and its colour AND its stroke —
+   a state told by hue alone says nothing to a reader who cannot separate two hues. */
 .state {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid currentcolor;
+  border-radius: 999px;
+  padding: 0 var(--pct-space-3);
   font-size: var(--pct-font-size-sm);
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .state[data-state='enforced'] {
-  color: var(--pct-primary);
+  color: var(--pct-success);
+}
+
+.state[data-state='partial'] {
+  color: var(--pct-warning);
 }
 
 .state[data-state='gap'] {
-  color: var(--pct-danger, currentcolor);
+  color: var(--pct-danger);
 }
 
-.log {
+/* The way into 94 rows: the field and the bar, above the first axis. */
+.ways {
+  display: grid;
+  gap: var(--pct-space-5);
+  margin-block-end: var(--pct-space-5);
+}
+
+.empty {
+  margin: 0;
+  color: var(--pct-text-muted);
+}
+
+/* The dotted index the landing adopted for its inventory: id, title, leader, and the file
+   the entry names — two columns where there is room, because 256 entries in one file-wide
+   column is a list nobody reaches the end of. */
+.index {
   margin: 0;
   padding: 0;
   list-style: none;
-  display: grid;
-  gap: var(--pct-space-3);
-
-  li {
-    display: flex;
-    gap: var(--pct-space-4);
-    align-items: baseline;
-  }
+  columns: 2;
+  column-gap: var(--pct-space-6);
 }
 
-.log__id {
+.index li {
+  display: flex;
+  gap: var(--pct-space-4);
+  align-items: baseline;
+  break-inside: avoid;
+  padding-block: var(--pct-space-2);
+}
+
+.index__id {
   flex: none;
   color: var(--pct-text-muted);
   font-family: var(--docs-font-mono);
   font-size: var(--pct-font-size-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.index__title {
+  color: var(--pct-text-muted);
+}
+
+.index__dots {
+  flex: 1 1 auto;
+  min-inline-size: var(--pct-space-5);
+  border-block-end: 1px dotted var(--pct-border);
+  translate: 0 -0.25em;
+}
+
+.index__open {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  /* Every entry's link is a target of its own, so it owes SC 2.5.8's floor outright. */
+  min-block-size: var(--pct-target-min);
+  color: var(--pct-primary);
+  font-size: var(--pct-font-size-sm);
+}
+
+@media (max-width: 719px) {
+  .index {
+    columns: 1;
+  }
 }

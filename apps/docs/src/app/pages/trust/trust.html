@@ -64,14 +64,33 @@
     </section>
 
     <section data-testid="registry">
-      <h2>The promise registry</h2>
+      <h2 id="registry" data-spy>The promise registry</h2>
       <p class="note">
-        One row per requirement: the gate that holds it and the negative control
-        that proves the gate can fire. The component cards link straight into
-        these anchors.
+        One row per requirement: the promise it makes, the gate that holds it
+        and the negative control that proves the gate can fire. The component
+        cards link straight into these anchors.
       </p>
-      @for (group of axes; track group.axis) {
-      <h3 class="axis">{{ group.axis }}</h3>
+
+      <div class="ways">
+        <docs-finder
+          label="Find a requirement"
+          [value]="query()"
+          [shown]="shown()"
+          [total]="total"
+          (query)="onQuery($event)"
+          testid="registry-filter"
+          countTestid="registry-count"
+        />
+        <docs-bar
+          [bands]="bands()"
+          [active]="active()"
+          label="Axes"
+          testid="registry-bar"
+        />
+      </div>
+
+      @for (group of axes(); track group.axis) {
+      <h3 class="axis" [id]="group.slug" data-spy>{{ group.axis }}</h3>
       <div class="docs-table">
         <table>
           <thead>
@@ -85,19 +104,31 @@
           <tbody>
             @for (row of group.rows; track row.id) {
             <tr [id]="row.id">
-              <td><code>{{ row.id }}</code></td>
+              <td>
+                <code>{{ row.id }}</code>
+                <!--
+                  The promise, whole. The two cells beside it are the registry table's own
+                  summary and end in an ellipsis where its column ran out — this line is the
+                  requirement's own title, from the file that makes the promise (4.34).
+                -->
+                <span class="promise" [innerHTML]="row.promiseHtml"></span>
+              </td>
               <td>
                 <span class="state" [attr.data-state]="row.state">
                   {{ row.state }}
                 </span>
               </td>
-              <td [innerHTML]="row.gate"></td>
-              <td [innerHTML]="row.control"></td>
+              <td [innerHTML]="row.gateHtml"></td>
+              <td [innerHTML]="row.controlHtml"></td>
             </tr>
             }
           </tbody>
         </table>
       </div>
+      } @empty {
+      <p class="empty" data-testid="registry-empty">
+        No requirement answers to that.
+      </p>
       }
     </section>
 
@@ -107,11 +138,20 @@
         Why this way and what it costs — an ADR per irreversible choice, kept
         even when the plan that scheduled it is long gone.
       </p>
-      <ol class="log">
+      <!--
+        The dotted index the landing adopted for its inventory on 2026-09-08, in two columns
+        on a wide page: 73 titles and 183 more below them were 7 312 px of single-file list,
+        and an index of things nothing linked to.
+      -->
+      <ol class="index">
         @for (decision of decisions; track decision.id) {
         <li [id]="'adr-' + decision.id">
-          <span class="log__id">{{ decision.id }}</span>
-          <span [innerHTML]="decision.title"></span>
+          <span class="index__id">{{ decision.id }}</span>
+          <span class="index__title" [innerHTML]="decision.titleHtml"></span>
+          <span class="index__dots" aria-hidden="true"></span>
+          <a class="index__open" [href]="decision.href" rel="noopener"
+            >read ↗</a
+          >
         </li>
         }
       </ol>
@@ -124,11 +164,13 @@
         diary, published because an audit reads character from how mistakes are
         handled.
       </p>
-      <ol class="log">
+      <ol class="index">
         @for (lesson of lessons; track lesson.id) {
         <li [id]="'lesson-' + lesson.id">
-          <span class="log__id">{{ lesson.id }}</span>
-          <span [innerHTML]="lesson.title"></span>
+          <span class="index__id">{{ lesson.id }}</span>
+          <span class="index__title" [innerHTML]="lesson.titleHtml"></span>
+          <span class="index__dots" aria-hidden="true"></span>
+          <a class="index__open" [href]="lesson.href" rel="noopener">read ↗</a>
         </li>
         }
       </ol>

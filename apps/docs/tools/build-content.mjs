@@ -1239,6 +1239,39 @@ const registryRows = [];
     );
 }
 
+// The promise each row makes, in the requirement's own words.
+//
+// docs/registry.md clips its cells with an ellipsis — 96 of them — to stay a markdown table
+// narrow enough to read, and the page rendered the clip verbatim: 94 rows ended mid-sentence
+// on the page an auditor reads as the product (4.34). The full line was tracked all along.
+// Every requirement opens its own section with `<id>` — Title, in docs/requirements/ and, for
+// the one that stands apart, docs/00-axis.md (named in full — a generated lookup reaches no
+// file by itself, req-project-reach). A row without one throws, the way a row count that
+// disagrees with the stated total already does.
+{
+  const titles = new Map();
+  const files = [
+    'docs/00-axis.md',
+    ...readdirSync(join(ROOT, 'docs/requirements'))
+      .filter((f) => f.endsWith('.md'))
+      .sort()
+      .map((f) => `docs/requirements/${f}`),
+  ];
+  for (const file of files)
+    for (const m of read(file).matchAll(
+      /^#{2,3} <a id="(req-[a-z0-9-]+)"><\/a>`req-[a-z0-9-]+` — (.+)$/gm,
+    ))
+      titles.set(m[1], inline(m[2].trim()));
+  for (const row of registryRows) {
+    const promise = titles.get(row.id);
+    if (!promise)
+      throw new Error(
+        `content pass: ${row.id} is in the registry with no titled section of its own`,
+      );
+    row.promise = promise;
+  }
+}
+
 const decisions = readdirSync(join(ROOT, 'docs/decisions'))
   .filter((f) => /^\d{4}-/.test(f))
   .sort()
@@ -1249,7 +1282,7 @@ const decisions = readdirSync(join(ROOT, 'docs/decisions'))
     ).match(/^# \d{4} — (.*)$/m)?.[1];
     if (!title)
       throw new Error(`content pass: ${file} opens with no "# NNNN — title"`);
-    return { id: file.slice(0, 4), title: renderInline(title) };
+    return { id: file.slice(0, 4), title: renderInline(title), file };
   });
 const decisionTitle = new Map(decisions.map((d) => [d.id, d.title]));
 
@@ -1767,13 +1800,20 @@ export interface RegistryRow {
   readonly id: string;
   readonly axis: string;
   readonly state: 'enforced' | 'partial' | 'gap';
+  /** The requirement's own title: the promise the row makes, whole. */
+  readonly promise: string;
   readonly gate: string;
   readonly control: string;
 }
 
 export const TRUST_REGISTRY: readonly RegistryRow[] = ${JSON.stringify(registryRows, null, 2)};
 
-export const TRUST_DECISIONS: readonly { readonly id: string; readonly title: string }[] = ${JSON.stringify(decisions, null, 2)};
+export const TRUST_DECISIONS: readonly {
+  readonly id: string;
+  readonly title: string;
+  /** The file under docs/decisions/, so the index can open what it names. */
+  readonly file: string;
+}[] = ${JSON.stringify(decisions, null, 2)};
 
 export const TRUST_LESSONS: readonly { readonly id: number; readonly title: string }[] = ${JSON.stringify(lessons, null, 2)};
 

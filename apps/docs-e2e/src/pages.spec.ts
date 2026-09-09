@@ -25,6 +25,12 @@ const TARGET_FLOOR = Number.parseInt(
 const ADRS = readdirSync(join(ROOT, 'docs/decisions')).filter((f) =>
   /^\d{4}-/.test(f),
 ).length;
+// The register's own size, from the file the content pass reads.
+const REQUIREMENTS = (
+  readFileSync(join(ROOT, 'docs/registry.md'), 'utf8').match(
+    /^\| \[`req-[a-z0-9-]+`\]/gm,
+  ) ?? []
+).length;
 const LESSONS = (
   readFileSync(join(ROOT, 'docs/lessons.md'), 'utf8').match(
     /^### <a id="lesson-\d+"/gm,
@@ -707,6 +713,68 @@ test.describe('The pages', () => {
     await expect(page.getByTestId('decisions').locator('li')).toHaveCount(ADRS);
     await expect(page.getByTestId('lessons').locator('li')).toHaveCount(
       LESSONS,
+    );
+  });
+
+  test("every promise on /trust is a whole sentence, not the table's clip", async ({
+    page,
+  }) => {
+    await visit(page, '/trust');
+
+    // The registry file clips its cells with an ellipsis to stay a readable markdown table,
+    // and this page printed the clip: 94 rows ended mid-sentence on the page an auditor
+    // reads as the product (4.34). Every row carries the requirement's own title now.
+    const promises = page.getByTestId('registry').locator('.promise');
+    await expect(promises).toHaveCount(REQUIREMENTS);
+    for (const promise of await promises.all())
+      expect(await promise.innerText()).not.toMatch(/…$/);
+
+    await expect(page.locator('#req-axis .promise')).toHaveText(
+      'Nothing breaks silently',
+    );
+    await expect(page.locator('#req-token-contrast .promise')).toHaveText(
+      'The contrast gate as a skin policy',
+    );
+    // The state is a pill and not a hue alone: it says the word too.
+    await expect(page.locator('#req-token-contrast .state')).toHaveText(
+      'enforced',
+    );
+  });
+
+  test('the register has a way in, and both logs open what they name', async ({
+    page,
+  }) => {
+    await visit(page, '/trust');
+    const count = page.getByTestId('registry-count');
+    await expect(count).toHaveText(`${REQUIREMENTS} of ${REQUIREMENTS}`);
+
+    // The whole register, then one axis per chip — and the head of the section first, so a
+    // reader who has narrowed to one axis still has the way back to all of them.
+    const bands = page.getByTestId('registry-bar').getByRole('link');
+    await expect(bands.first()).toContainText('All');
+    await expect(bands.filter({ hasText: 'tokens' })).toHaveCount(1);
+
+    // The promise is findable by what it says, not only by the id a reader may not know.
+    await page.getByTestId('registry-filter').fill('contrast');
+    await expect(count).toHaveText(
+      new RegExp(`^[1-9]\\d* of ${REQUIREMENTS}$`),
+    );
+    await expect(page.locator('#req-token-contrast')).toBeVisible();
+    await expect(page.locator('#req-project-language')).toHaveCount(0);
+
+    await page.getByTestId('registry-filter').fill('nothing-answers-to-this');
+    await expect(page.getByTestId('registry-empty')).toBeVisible();
+    await page.getByTestId('registry-filter').fill('');
+
+    // An index of 256 entries that pointed at nothing was an index of nothing.
+    await expect(
+      page.locator('#adr-0072').getByRole('link', { name: /read/ }),
+    ).toHaveAttribute('href', /docs\/decisions\/0072-.*\.md$/);
+    await expect(
+      page.locator(`#lesson-${LESSONS}`).getByRole('link', { name: /read/ }),
+    ).toHaveAttribute(
+      'href',
+      new RegExp(`docs/lessons\\.md#lesson-${LESSONS}$`),
     );
   });
 
