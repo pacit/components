@@ -11,28 +11,19 @@
 
     <!--
       The finder the site already ships, on the page that has thirty-four of everything:
-      `docs-index` filters this same list by the same rule in the component page's rail and
-      in the shell's drawer, and `find.ts` holds the rule so the two cannot disagree. The
-      count is `pct-field`'s own label add-on — the slot its card describes as "an i icon, a
-      counter" — so it sits at the end of the label row and outside the input's accessible
-      name.
+      `docs-finder` is the same field on `/theming` and `/trust`, and `find.ts` holds THIS
+      page's rule — what a component answers to — so the rail, the drawer and the gallery
+      cannot answer one word three ways.
     -->
-    <pct-field class="find" label="Find a component">
-      <input
-        pctText
-        type="search"
-        [value]="query()"
-        (input)="onFilter($event)"
-        data-testid="gallery-filter"
-      />
-      <span
-        pctLabelAux
-        class="find__count"
-        aria-live="polite"
-        data-testid="gallery-count"
-        >{{ shown() }} of {{ total }}</span
-      >
-    </pct-field>
+    <docs-finder
+      label="Find a component"
+      [value]="query()"
+      [shown]="shown()"
+      [total]="total"
+      (query)="onQuery($event)"
+      testid="gallery-filter"
+      countTestid="gallery-count"
+    />
 
     <!--
       The anchors made visible. Six links, one per band, and every one of them owes the 24 px
@@ -42,18 +33,7 @@
       reader IS and not only where they can go. A band the filter has emptied leaves with its
       header: every chip here points at something that is on the page.
     -->
-    <nav class="bar" aria-label="Sections" data-testid="gallery-bar">
-      @for (bucket of buckets(); track bucket.name) {
-      <a
-        class="bar__chip"
-        [routerLink]="[]"
-        [fragment]="bucket.slug"
-        [class.is-active]="active() === bucket.slug"
-        [attr.aria-current]="active() === bucket.slug ? 'location' : null"
-        >{{ bucket.name }} <b>{{ bucket.cards.length }}</b></a
-      >
-      }
-    </nav>
+    <docs-bar [bands]="bands()" [active]="active()" testid="gallery-bar" />
   </header>
 
   <div class="gallery" data-testid="gallery">

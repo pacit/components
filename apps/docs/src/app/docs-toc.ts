@@ -12,6 +12,11 @@ export interface TocItem {
  * The pinned table of contents (2.7.3, the reviewer's item 6): two levels, each entry a
  * fragment link the router scrolls to under the sticky bar, the active one lit by the
  * page's own scroll spy — the list is data, the page decides what is active.
+ *
+ * It lived under `pages/component/` while a component card was the only page long enough to
+ * need it. The conformance report is 8 971 px with six sections and the support policy 2 929
+ * with seven, and neither had a way in (4.34) — so the rail moved up here rather than being
+ * written a second time, which is the same refusal `find.ts` and `spy.ts` already are.
  */
 @Component({
   selector: 'docs-toc',
@@ -22,7 +27,8 @@ export interface TocItem {
 export class DocsToc {
   readonly items = input.required<readonly TocItem[]>();
   readonly active = input<string | null>(null);
-  readonly cardPath = input.required<string>();
+  /** The tracked file this page is rendered from — what "Edit this page" opens. */
+  readonly sourcePath = input.required<string>();
 
   /**
    * Whether one of a section's OWN entries is the active one — the state the section shows

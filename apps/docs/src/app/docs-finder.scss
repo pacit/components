@@ -1,0 +1,14 @@
+:host {
+  display: block;
+}
+
+/* A measure, not a bar. 22rem is the sketch's own width and it is enough for the longest id
+   and a hint of what follows it — a field stretched across three columns would read as the
+   page's subject rather than as a way past it. */
+.find {
+  max-inline-size: 22rem;
+}
+
+.find__count {
+  font-variant-numeric: tabular-nums;
+}

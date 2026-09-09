@@ -32,7 +32,7 @@ import { DEMOS, EXAMPLES } from '../../demos';
 import { describePage } from '../../seo';
 import { spyOnSections } from '../../spy';
 import { DocsIndex } from './docs-index';
-import { DocsToc, TocItem } from './docs-toc';
+import { DocsToc, TocItem } from '../../docs-toc';
 
 const STATE_LABEL = {
   measured: 'Measured',

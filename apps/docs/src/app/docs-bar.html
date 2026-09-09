@@ -1,0 +1,12 @@
+<nav class="bar" [attr.aria-label]="label()" [attr.data-testid]="testid()">
+  @for (band of bands(); track band.slug) {
+  <a
+    class="bar__chip"
+    [routerLink]="[]"
+    [fragment]="band.slug"
+    [class.is-active]="active() === band.slug"
+    [attr.aria-current]="active() === band.slug ? 'location' : null"
+    >{{ band.label }} <b>{{ band.count }}</b></a
+  >
+  }
+</nav>

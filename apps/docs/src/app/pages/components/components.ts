@@ -11,10 +11,11 @@ import {
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { PctContainer } from '@pacit/components/container';
-import { PctField, PctLabelAux, PctText } from '@pacit/components/field';
 import { PctGrid } from '@pacit/components/grid';
 import { DOCS_CARDS, DOCS_CATEGORIES } from '../../../generated/content';
 import { CARD_DEMOS, DEMOS } from '../../demos';
+import { DocsBand, DocsBar } from '../../docs-bar';
+import { DocsFinder } from '../../docs-finder';
 import { answersTo, asNeedle } from '../../find';
 import { describePage } from '../../seo';
 import { spyOnSections } from '../../spy';
@@ -85,11 +86,10 @@ const slugOf = (name: string): string =>
   imports: [
     NgComponentOutlet,
     RouterLink,
+    DocsBar,
+    DocsFinder,
     PctContainer,
-    PctField,
     PctGrid,
-    PctLabelAux,
-    PctText,
   ],
   templateUrl: './components.html',
   styleUrl: './components.scss',
@@ -126,6 +126,15 @@ export class ComponentsPage {
     this.buckets().reduce((n, bucket) => n + bucket.cards.length, 0),
   );
 
+  /** The bar's own reading of the buckets: a band the filter has emptied is not on it. */
+  protected readonly bands = computed<readonly DocsBand[]>(() =>
+    this.buckets().map((bucket) => ({
+      slug: bucket.slug,
+      label: bucket.name,
+      count: bucket.cards.length,
+    })),
+  );
+
   /** The band the reader is in, or none — set by the spy, and never in the prerender. */
   protected readonly active = signal<string | null>(null);
 
@@ -157,7 +166,7 @@ export class ComponentsPage {
     });
   }
 
-  protected onFilter(event: Event): void {
-    this.query.set((event.target as HTMLInputElement).value);
+  protected onQuery(typed: string): void {
+    this.query.set(typed);
   }
 }

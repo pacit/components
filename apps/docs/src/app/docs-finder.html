@@ -1,0 +1,16 @@
+<pct-field class="find" [label]="label()">
+  <input
+    pctText
+    type="search"
+    [value]="value()"
+    (input)="onInput($event)"
+    [attr.data-testid]="testid()"
+  />
+  <span
+    pctLabelAux
+    class="find__count"
+    aria-live="polite"
+    [attr.data-testid]="countTestid()"
+    >{{ shown() }} of {{ total() }}{{ noun() ? ' ' + noun() : '' }}</span
+  >
+</pct-field>

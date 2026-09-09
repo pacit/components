@@ -19,68 +19,12 @@
   color: var(--pct-text-muted);
 }
 
-/* The finder: a measure, not a bar. 22rem is the sketch's own width and it is enough for
-   the longest id and a hint of what follows it — a field stretched across three columns
-   would read as the page's subject rather than as a way past it. */
-.find {
-  max-inline-size: 22rem;
+/* The finder and the band bar are `docs-finder` and `docs-bar` — the same two on `/theming`
+   and `/trust`, so three long pages answer typing and name their bands the same way. What
+   stays here is the only part that is this page's: how far each one stands from the lead. */
+docs-finder,
+docs-bar {
   margin-block-start: var(--pct-space-5);
-}
-
-.find__count {
-  font-variant-numeric: tabular-nums;
-}
-
-/* The band bar: the six anchors, drawn as the page's own eyebrow rather than as a second
-   language — the same uppercase, the same letter-spacing and the same muted colour the bucket
-   headers below it already use, so the bar reads as a smaller copy of the list it indexes. */
-.bar {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--pct-space-2);
-  margin-block-start: var(--pct-space-5);
-}
-
-.bar__chip {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--pct-space-2);
-  /* SC 2.5.8, from the same primitive the library's own controls stand on: every chip is a
-     link, so every chip is a target, and the padding alone would leave it at 22 px. */
-  min-block-size: var(--pct-target-min);
-  padding-inline: var(--pct-space-3);
-  border: 1px solid var(--pct-border);
-  border-radius: var(--pct-radius-md);
-  color: var(--pct-text-muted);
-  font-size: var(--pct-font-size-sm);
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  text-decoration: none;
-  transition:
-    border-color var(--pct-motion-transition-duration)
-      var(--pct-motion-transition-easing),
-    color var(--pct-motion-transition-duration)
-      var(--pct-motion-transition-easing);
-
-  b {
-    color: var(--pct-text-subtle);
-    font-weight: 400;
-    letter-spacing: 0;
-    font-variant-numeric: tabular-nums;
-  }
-
-  &:hover {
-    color: var(--pct-text);
-    border-color: var(--pct-border-strong);
-  }
-
-  /* The band the reader is in. One rule, and it is a colour AND a line — a lit chip that
-     differed only in hue would say nothing to a reader who cannot separate the two. */
-  &.is-active {
-    color: var(--pct-primary);
-    border-color: var(--pct-primary);
-  }
 }
 
 .gallery__empty {
