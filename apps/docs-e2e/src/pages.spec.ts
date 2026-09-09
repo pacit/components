@@ -135,6 +135,32 @@ test.describe('The pages', () => {
    * outlet under every card it drops, and a filter that cannot rebuild them leaves a page
    * of empty cards that still counts thirty-four names.
    */
+  test('the cards wear the library face, and the rim answers attention', async ({
+    page,
+  }) => {
+    await visit(page, '/components');
+
+    // The rim was a hand copy of `[pctHero]`'s `edge` face — the masked pseudo-element,
+    // `inset: -1px`, the @supports guard and firefox's composite order, all written twice
+    // (4.34, 4.36). It is the component's now, on all thirty-four cards.
+    const card = page.locator('.card').first();
+    await expect(card).toHaveAttribute('data-pct-hero', 'edge');
+    await expect(card).toHaveAttribute('data-pct-show', 'interact');
+
+    const rim = () =>
+      card.evaluate((el) => getComputedStyle(el, '::after').opacity);
+    expect(await rim()).toBe('0');
+    await card.hover();
+    await expect.poll(rim).toBe('1');
+
+    // And the sweep ENDS, which is the line the copy had drifted from: the library settled
+    // after one pass in 4.37 while this page ran `infinite` on every card of two pages.
+    const iterations = await card.evaluate(
+      (el) => getComputedStyle(el, '::after').animationIterationCount,
+    );
+    expect(iterations).toBe('1');
+  });
+
   test('the finder narrows the gallery, and clearing it brings the demos back', async ({
     page,
   }) => {

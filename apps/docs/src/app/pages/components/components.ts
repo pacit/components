@@ -12,6 +12,7 @@ import {
 import { RouterLink } from '@angular/router';
 import { PctContainer } from '@pacit/components/container';
 import { PctGrid } from '@pacit/components/grid';
+import { PctHero } from '@pacit/components/hero';
 import { DOCS_CARDS, DOCS_CATEGORIES } from '../../../generated/content';
 import { CARD_DEMOS, DEMOS } from '../../demos';
 import { DocsBand, DocsBar } from '../../docs-bar';
@@ -90,6 +91,7 @@ const slugOf = (name: string): string =>
     DocsFinder,
     PctContainer,
     PctGrid,
+    PctHero,
   ],
   templateUrl: './components.html',
   styleUrl: './components.scss',

@@ -15,6 +15,7 @@ import { PctChip, PctChips } from '@pacit/components/chips';
 import { PctContainer } from '@pacit/components/container';
 import { PctField, PctText } from '@pacit/components/field';
 import { PctGrid } from '@pacit/components/grid';
+import { PctHero } from '@pacit/components/hero';
 import { PctProgress } from '@pacit/components/progress';
 import { PctStack } from '@pacit/components/stack';
 import { PctSwitch } from '@pacit/components/switch';
@@ -50,6 +51,7 @@ const TOPICS = ['Angular', 'zoneless', 'signals', 'a11y'];
     PctTab,
     PctTabs,
     PctText,
+    PctHero,
   ],
   templateUrl: './home.html',
   styleUrl: './home.scss',

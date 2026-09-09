@@ -65,51 +65,18 @@
   text-wrap: balance;
 }
 
-/* The drifting gradient: the same idiom as the button's hero face — an oversized image,
-   `background-position` walking a closed loop, the duration from the motion axis. The
-   fourth stop repeats the first so the loop has no visible seam. */
-.hero__grad {
-  background-image: linear-gradient(
-    100deg,
-    var(--pct-hero),
-    var(--pct-hero-via),
-    var(--pct-hero-to),
-    var(--pct-hero)
-  );
-  background-size: 300% 100%;
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-  /* Two beats, and the second is the resting state: the colour sweeps ONTO the words
-     once, then hands over to the endless drift at exactly the position it left off, so
-     the arrival and the rest are one sentence rather than two. Both durations are
-     divisions of the same axis token, which is what makes the whole thing freeze on its
-     LAST frame under reduced motion rather than its first. */
-  animation:
-    docs-bloom calc(var(--pct-motion-drift-duration) / 10)
-      cubic-bezier(0.3, 0, 0.2, 1) backwards,
-    docs-drift var(--pct-motion-drift-duration) linear
-      calc(var(--pct-motion-drift-duration) / 10) infinite;
-}
+/* The headline's gradient is `[pctHero]`'s `text` face now, not a third hand copy of it
+   (0065, plan 4.34 and 4.36). Two things changed with the swap and both are gains.
 
-@keyframes docs-drift {
-  to {
-    background-position: 300% 0;
-  }
-}
+   The stops. This page painted the WORDS in `--pct-hero/-via/-to`, the trio measured for a
+   BOUNDARY at 3:1; the face takes the lifted `--pct-hero-text*` trio, measured for a word —
+   7.02, 6.56 and 7.35 on the dark surface against these three's 3.13–3.45. The headline is
+   large text, so it cleared its bar either way; it clears it now with room.
 
-/* The sweep starts far to the left of the resting position and lands on it. `backwards`
-   and not `forwards`: what follows is the drift, whose own first frame IS the resting
-   position, so the bloom must let go of the property rather than hold it. */
-@keyframes docs-bloom {
-  from {
-    background-position: -180% 0;
-  }
-
-  to {
-    background-position: 0 0;
-  }
-}
+   The motion. The copy ran a bloom and then an ENDLESS drift; the face sweeps once over four
+   seconds and settles, which is the whole of why a consumer who ships it owes SC 2.2.2 no
+   pause control (plan 4.37). What is lost is the bloom — an arrival this page wrote and the
+   library has no room for — and losing it is the price of not being the third copy. */
 
 /* ── the hero arrives, and hides nothing to do it ─────────────────────────────
    Five parts settle into place from 14px below, 90ms apart, in the order a reader
@@ -178,16 +145,12 @@
   }
 }
 
-/* Forced colors strips author COLOURS but keeps images and alpha: the gradient would
-   survive while `color: transparent` stays transparent — invisible text. The same move
-   as the button's: drop the image by hand, hand the text back to the palette. */
+/* Forced colours strips author COLOURS but keeps images and alpha, so a gradient would
+   survive while `color: transparent` stayed transparent — invisible text. The headline's
+   answer went with its paint: `[pctHero]` drops its own image and hands the word back to
+   `CanvasText` under this same query. What is left here is the wash behind the hero, which
+   is this page's and nobody else's. */
 @media (forced-colors: active) {
-  .hero__grad {
-    background-image: none;
-    color: CanvasText;
-    animation: none;
-  }
-
   .hero::before {
     background: none;
   }

@@ -92,62 +92,17 @@
     }
   }
 
-  /* The edge is a masked pseudo-element and not `border-image`: that one cannot round a
-     corner, and the padding-box/border-box background stack would take the card's own
-     background hostage. `inset: -1px` because an absolute box is laid out against the
-     PADDING box — at `0` the gradient would sit inside the card's own border and draw a
-     second line beside it, at `-1px` it covers it.
+  /* The RIM is gone from here and is `[pctHero]`'s: `edge` under `interact` lights on the
+     card's hover and its `:focus-within`, which is the gesture this file hand-wrote. The
+     masked pseudo-element, `inset: -1px`, the `@supports` guard and firefox's composite
+     order (`lesson-156`) are the component's now — measured once instead of twice
+     (0065, plan 4.34 and 4.36). What is left here is the half the component cannot do.
 
-     Behind `@supports` on purpose: an engine without the mask would not lose the
-     decoration, it would paint the gradient over the WHOLE card. The failure mode of a
-     missing feature has to be nothing, not a filled card. */
-  @supports ((mask-composite: exclude) or (-webkit-mask-composite: xor)) {
-    #{$card}::after {
-      content: '';
-      position: absolute;
-      inset: -1px;
-      border-radius: inherit;
-      padding: 2px;
-      background-image: linear-gradient(
-        120deg,
-        var(--pct-hero),
-        var(--pct-hero-via),
-        var(--pct-hero-to),
-        var(--pct-hero)
-      );
-      background-size: 200% 100%;
-      /* Both shorthands first, both composites after them, and the order is the whole
-         rule: firefox aliases `-webkit-mask` to `mask`, so a `-webkit-mask` written BELOW
-         `mask-composite` resets the composite to `add` — and `add` does not punch the
-         middle out, it paints the gradient over the entire card. Measured 2026-09-04, in
-         firefox only: chromium and webkit kept their own composite either way, so the
-         defect had exactly one engine and no symptom anywhere a green suite could look. */
-      mask:
-        linear-gradient(#000 0 0) content-box,
-        linear-gradient(#000 0 0);
-      -webkit-mask:
-        linear-gradient(#000 0 0) content-box,
-        linear-gradient(#000 0 0);
-      mask-composite: exclude;
-      -webkit-mask-composite: xor;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity var(--pct-motion-transition-duration)
-        var(--pct-motion-transition-easing);
-      /* Half the button's drift over two thirds of its gradient. What the eye catches is
-         the hue crossing a point, and that is a matter of how much gradient passes per
-         second — a thumb-wide button reads 8s as movement, a card's rim reads it as a
-         still picture. The duration stays a DIVISION of the axis token rather than a
-         number of its own, so reduced motion still freezes it: `calc(0s / 2)` is `0s`. */
-      animation: docs-drift-edge calc(var(--pct-motion-drift-duration) / 2)
-        linear infinite;
-    }
-
-    #{$card}:hover::after,
-    #{$card}:focus-within::after {
-      opacity: 1;
-    }
-  }
+     Why the NAME stays hand-written. `show="interact"` reads the attention on the element
+     WEARING the face, and this gradient is the CARD's hover painting the card's NAME — a
+     face on the name would light when the pointer reached the word, not when it reached the
+     card. Nothing in the component's API says "another element's attention", and inventing
+     an input for one page's gesture is the wrong order. Recorded rather than worked around. */
 
   /* The NAME takes the gradient; the selector or the import beside it does not. The
      string a reader copies is not decoration — so it keeps its own colour, and it keeps
@@ -167,19 +122,18 @@
       background-clip: text;
       -webkit-background-clip: text;
       color: transparent;
+      /* ONE pass and then it stands still — the library's own answer since 4.37, and the
+         line this copy had drifted from: it ran `infinite` on every card of two pages while
+         the component it was copied from settled after four seconds. */
       animation: docs-drift-edge calc(var(--pct-motion-drift-duration) / 2)
-        linear infinite;
+        linear 1;
     }
   }
 
   /* Forced colours strips colours and keeps IMAGES — left alone, both the rim and the
-     name would go on painting over the forced Canvas. Dropped outright: the card keeps
-     the edge its own border draws, and the name its CanvasText. */
+     name would go on painting over the forced Canvas. Dropped outright: the name keeps its
+     CanvasText — and the rim is the component's to answer for, which it does. */
   @media (forced-colors: active) {
-    #{$card}::after {
-      background-image: none;
-    }
-
     #{$card}:hover #{$name},
     #{$card}:focus-within #{$name} {
       background-image: none;
