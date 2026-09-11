@@ -172,6 +172,8 @@
     "codes": {
       "reason": "Identifiers out of somebody else's code list — ISO country and currency codes, BCP-47 language subtags. They stand in test data, in demo rows and in the calendar's table of the regions whose week does not start on Monday, where translating them would break the thing they name.",
       "words": [
+        "bn",
+        "cn",
         "cz",
         "en",
         "eur",
@@ -182,7 +184,8 @@
         "pln",
         "sa",
         "sv",
-        "ua"
+        "ua",
+        "vn"
       ]
     },
     "english": {

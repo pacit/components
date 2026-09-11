@@ -43,6 +43,14 @@ function escapeRegExp(value: string): string {
 }
 
 /**
+ * What a formatted number carries besides its digits and separators. `\s` already covers the
+ * spaces locales group with — U+00A0 in `pl-PL`, U+202F in `fr-FR` — and covers no bidi mark
+ * at all, which is the half that matters: `Intl` writes U+200E in front of the minus in
+ * `he-IL`, so a parser blind to it reads the text this very control just formatted as junk.
+ */
+const BLANK = /[\s\u200e\u200f\u061c\u2066-\u2069]/g;
+
+/**
  * Number field: a component on a native `<input type="text">` with the `spinbutton` role, a
  * value of type `number | null` and locale-aware formatting.
  *
@@ -248,6 +256,23 @@ export class PctNumber
     };
   });
 
+  /**
+   * The ten digits of the locale's own numbering system, mapped back to ASCII — `null` where
+   * they already are ASCII, which is most of the world and the whole of the fast path.
+   *
+   * `Intl` formats `ar-EG` and `fa-IR` in Arabic-Indic digits (`٠١٢`), and a parser that
+   * knows only `\d` refuses the text this control wrote into its own input: the value
+   * formats, the user blurs, and the field reports its own output as not a number.
+   */
+  private readonly digits = computed(() => {
+    const format = new Intl.NumberFormat(this.activeLocale(), {
+      useGrouping: false,
+    });
+    const local = Array.from({ length: 10 }, (_, d) => format.format(d));
+    if (local.every((digit, d) => digit === String(d))) return null;
+    return new Map(local.map((digit, d) => [digit, String(d)]));
+  });
+
   /** The text a screen reader announces — formatted, not the raw number. */
   protected readonly valueText = computed(() => {
     const v = this.value();
@@ -302,22 +327,44 @@ export class PctNumber
   }
 
   /**
-   * Parses text per locale. It accepts more widely than it formats: the grouping separator is
-   * removed only where it actually separates thousands, and the decimal separator accepted is
-   * the local one plus both the dot and the comma — a numeric keypad gives a dot whatever the
-   * region.
+   * Parses text per locale. It accepts more widely than it formats: the digits of the
+   * locale's numbering system and ASCII alike, the grouping separator removed only where it
+   * actually separates thousands, and the decimal separator accepted is the local one plus
+   * both the comma and the dot — a numeric keypad gives a dot whatever the region.
+   *
+   * **The dot cannot mean both things in a locale that groups with it.** In `de-DE` or
+   * `tr-TR` a typed `0.123` is read as the grouped 123, not as nought point one two three:
+   * three digits and then the end is exactly the shape `Intl` writes a thousand in, and
+   * grouping has to win the tie — losing it would mean this control could not read back the
+   * text it had just written into its own input, which is the one law it cannot break.
+   *
+   * The three widenings past `pl`/`en` were measured, not thought up. The sweep in
+   * `number.property.spec.ts` runs `parse(format(n)) === n` over 22 locales, and disabling
+   * one of them alone turns 2, 3 and 3 of its six sweeps red — the bidi marks `Intl` writes in
+   * `he-IL`, `ar-EG` and `fa-IR`; the Arabic-Indic and Devanagari digits of four locales,
+   * without which this control cannot read back the `٠` it wrote itself; and the Indian
+   * grouping of `hi-IN`, `bn-IN` and `ne-NP` (`req-api-number`, plan 5.1).
    */
   private parse(text: string): number | null {
     const raw = text.trim();
     if (raw === '') return null;
 
     const { decimal, group } = this.separators();
-    // Locales group with a non-breaking space (pl-PL: U+00A0) — `\s` does not catch it.
-    let s = raw.replace(/[\s\u00a0\u202f]/g, '');
+    let s = raw.replace(BLANK, '');
+
+    const digits = this.digits();
+    if (digits !== null)
+      s = Array.from(s)
+        .map((character) => digits.get(character) ?? character)
+        .join('');
 
     if (group.trim() !== '') {
       const g = escapeRegExp(group);
-      s = s.replace(new RegExp(`${g}(?=\\d{3}(\\D|$))`, 'g'), '');
+      // Where a separator really stands between thousands: three digits and then no digit,
+      // or — the Indian grouping of `hi-IN`, `1,23,456` — two digits and a second separator.
+      // Anything else stays where it is, so a German `1.23` remains one and twenty-three
+      // hundredths instead of becoming a hundred and twenty-three.
+      s = s.replace(new RegExp(`${g}(?=\\d{3}(\\D|$)|\\d{2}${g})`, 'g'), '');
     }
     s = s.split(decimal).join('.').replace(/,/g, '.');
     // The typographic minus appears in values formatted by Intl.
