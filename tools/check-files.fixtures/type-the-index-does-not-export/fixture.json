@@ -1,0 +1,6 @@
+{
+  "point": 10,
+  "check": "index",
+  "rule": "type-not-exported",
+  "description": "A type the entrypoint declares beside its component and the index never names. Everything about it looks finished: the type compiles, the library resolves it wherever it is used, the specs pass and the package builds — and the consumer, who can reach only what the index re-exports, cannot write it down anywhere. This is what the narrowed promise of the requirement is about: not which file a type stands in, but whether anyone outside the entrypoint can name it."
+}

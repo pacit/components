@@ -1,6 +1,7 @@
 {
-  "// why": "The register of the file-structure gate (req-project-files). It holds the one thing that gate cannot read out of the tree: WHICH components keep in their decorator what decision 0001 sends to a file, and why each of them cannot do otherwise. `tools/check-files.mjs` consults it at points 4 and 5 before it fires, and audits it at point 9 — the split is deliberate and is `check-mutation`'s: an entry excuses on its PRESENCE, so a register gone stale reads as a defect of the register rather than as a component quietly losing its file.",
+  "// why": "The register of the file-structure gate (req-project-files). It holds the two things that gate cannot read out of the tree: WHICH components keep in their decorator what decision 0001 sends to a file, and WHICH exported types an entrypoint deliberately keeps off its index — with the reason each of them cannot do otherwise. `tools/check-files.mjs` consults `inline` at points 4 and 5 and `internal` at point 10 before either fires, and audits both at point 9 — the split is deliberate and is `check-mutation`'s: an entry excuses on its PRESENCE, so a register gone stale reads as a defect of the register rather than as a component quietly losing its file or a type quietly leaving the public surface.",
   "// inline": "An entry names a declaration exactly — the source file, the class and the decorator member — because a component is not a file: `breadcrumb.ts` holds three of them, and an excuse written per file would cover two components nobody looked at. An entry that names no declaration this gate read, one with no reason, and one excusing something that is no longer happening are all failures of point 9: the second would say `this component keeps its template in the decorator`, which is what the decorator says anyway, and the third stands ready to cover the next case silently.",
+  "// internal": "An entry names one exported type exactly — the source file and the name — because the unit of point 10 is the name and not the module: `select.base.ts` exports four of these and an excuse written per file would cover the fifth one nobody looked at. The reason has to say why a consumer will never need to name the type, and what would put it back on the surface; an entry naming a type nothing exports, one with no reason, and one excusing a type the index does export are all failures of point 9. The list is short on purpose. A type a public input, output or method carries does not belong here — that is the defect point 10 exists for, and the fix is the index line, not an entry.",
   "inline": [
     {
       "file": "libs/components/field/src/text.ts",
@@ -13,6 +14,13 @@
       "class": "PctNumber",
       "member": "template",
       "reason": "The same shape as `PctText` above, on `input[pctNumber]`: the host is the native input, the template is empty, and the sheet it shares is `./text.scss` — the one place where two declarations of this library take their styles from one file, because the two controls paint the same box."
+    }
+  ],
+  "internal": [
+    {
+      "file": "libs/components/testing/src/property.testkit.ts",
+      "type": "PctArbitrary",
+      "reason": "What a property sweep draws from. `testing/src/index.ts` publishes none of the testkit on purpose: what `@pacit/components/testing` offers a consumer is the harnesses and the DOM helpers, while `property.testkit.ts` is this repository's own instrument, imported by four specs over a relative path and never through the package. Publishing the interface publishes the sweep around it — `pctForAll`, the shrink, the seed — and turns a thing we change whenever a law needs a new generator into somebody else's contract. The entry retires if the testkit is ever published, which is a question the plan holds open."
     }
   ]
 }

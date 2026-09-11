@@ -1,0 +1,13 @@
+/**
+ * A source the entrypoint keeps to itself: `index.ts` names `./field` and `./text` and not
+ * this file. The type below is the wrapper's own drawing unit — no input, output or public
+ * method carries it — so it stands in the `internal` list of `files.policy.json`, and point 10
+ * lets it through on that entry.
+ *
+ * The reference carries the shape deliberately: an excuse is a branch like any other, and one
+ * nothing ever exercises is one that can rot without a sound.
+ */
+export interface FxFieldRow {
+  readonly label: string;
+  readonly index: number;
+}

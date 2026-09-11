@@ -1,0 +1,12 @@
+{
+  "// why": "The register of the file-structure gate, with the internal list empty: the tree it belongs to exports no type at all, so there is nothing for that list to excuse.",
+  "inline": [
+    {
+      "file": "libs/components/field/src/text.ts",
+      "class": "FxText",
+      "member": "template",
+      "reason": "The host IS the native input: the component projects nothing and renders nothing of its own, so its template is the empty string. A file holding it would hold no characters, and a reader opening `text.html` to see what the control draws would learn less than the decorator tells them."
+    }
+  ],
+  "internal": []
+}

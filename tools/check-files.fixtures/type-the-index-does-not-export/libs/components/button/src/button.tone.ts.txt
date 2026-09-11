@@ -1,0 +1,4 @@
+// Declared beside the component, exported from this module, and named by no line of
+// `button/src/index.ts` — the one arrangement in which a public type is invisible from
+// outside while everything inside the entrypoint resolves it perfectly.
+export type FxButtonTone = 'neutral' | 'danger';

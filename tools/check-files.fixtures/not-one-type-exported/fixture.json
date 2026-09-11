@@ -1,0 +1,7 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "rule": "no-exported-type",
+  "description": "Sources by the dozen and not one `type`, `interface` or `enum` among them. The denominator of point 10 is the exported type, so a pattern that has stopped reading them holds every index of the library to an empty list of names and finds it kept — the same silence as a parse that stops finding decorators, one point further on. A library that really declared no type would be a library with no public surface to speak of, which is why the answer here is always the reader and never the tree.",
+  "drop": ["libs/components/field/src/field.base.ts.txt"]
+}

@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "register",
+  "rule": "internal-entry-unused",
+  "description": "An entry excusing a type the index has since exported. The type went public and the excuse stayed, which is the cheapest way for a register to stop meaning anything: from here on it stands ready to cover the same name silently on the day somebody removes that index line, and the reading of the file — the list of what this library keeps to itself — is wrong by one line nobody can see."
+}

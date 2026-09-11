@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "register",
+  "rule": "internal-entry-without-type",
+  "description": "The internal list excuses a type nothing exports. An excuse for a type the rule never asks about excuses nothing, and in the register it reads as though this library kept one more shape to itself than it does — so the next person counts the entries and concludes that two of these are deliberate. A rename, or a type that has since lost its `export`, leaves exactly this behind."
+}

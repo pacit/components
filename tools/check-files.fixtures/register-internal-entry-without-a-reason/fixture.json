@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "register",
+  "rule": "internal-entry-without-reason",
+  "description": "The entry names a type this gate really read and says nothing about it. Without a reason it states that the type is internal, which is what its absence from the index states anyway — and what a reader needs is the other half: why no consumer will ever need the name, and what would put it back on the surface. The floor is the same forty characters as everywhere else here, and it is a floor against the rubber stamp rather than a measure of quality."
+}

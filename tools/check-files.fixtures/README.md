@@ -1,6 +1,6 @@
 # Negative control of the file-structure gate
 
-Deliberately defective trees. `tools/check-files.mjs` runs all nine of its points on each of
+Deliberately defective trees. `tools/check-files.mjs` runs all ten of its points on each of
 them and **requires every one to be rejected — and rejected by the point and the rule it
 declares**. A tree that passes is a fault; a tree that fires for a reason other than the one
 written in its `fixture.json` is a fault just the same, because it proves something other than
@@ -21,7 +21,7 @@ at all until this directory existed: nothing in the toolchain was ever going to 
 
 ## The two denominators, and why there are two
 
-The layout points (2, 3 and 8) run over **entrypoints**, because `ng-package.json` and
+The layout points (2, 3, 8 and 10) run over **entrypoints**, because `ng-package.json` and
 `index.ts` are an entrypoint's files and there is exactly one of each per directory. The
 template and stylesheet points (4 to 7) run over **`@Component` declarations**, because an
 entrypoint is not a component: `breadcrumb/` declares three of them in a single source file,
@@ -31,15 +31,35 @@ written; a rule written per declaration asks every component the same question. 
 tree carries both shapes for that reason — one entrypoint with two components in one file, and
 one with no component in it anywhere.
 
-## What the gate does not measure
+## Why the index, and not the filename
 
-The promise names `button.types.ts` among a component's files, and the repository does not keep
-that half of it: of the 30 entrypoints that declare a component, **18 have no `*.types.ts` at
-all**, and 13 export a public type from the component's own source instead. A point demanding
-one would have been red on the day it was written — that is a plan, not a gate — and eighteen
-entries in the register would have been the same thing with more words. So point 8 measures
-what a types file must do **once it exists**, and the disagreement is written down here and in
-the requirement rather than papered over.
+The promise this gate measures used to name `button.types.ts` among a component's files, and
+the library never kept that half of it: of the 30 entrypoints that declare a component, **18
+have no `*.types.ts` at all**, and 13 export a public type from the component's own source
+instead. A point demanding the file would have been red on the day it was written — a plan, not
+a gate — and eighteen entries in the register would have been the same thing with more words.
+`select.types.ts` argues the other side of it: the file exists, and what it exports includes
+`pctFilterByLabel` and `pctKeepAll`, which are functions — so even where the convention is kept,
+the name on the file says nothing certain about what stands inside.
+
+So the promise was narrowed to what this library really does, and then the narrowed promise was
+gated on the axis that pays. What a consumer is hurt by is not which file a type lives in but
+whether they can **name** it: an `input()` typed `PctBadgeTone` that the entrypoint's index
+never exports is an input nobody can write a variable for, nobody can wrap and nobody can hold a
+test to — and the library compiles over it, ships it and reports nothing, because inside the
+entrypoint the name resolves perfectly. That is point 10, and it is the half of the old promise
+worth keeping.
+
+Point 8 stays beside it rather than folding into it. It rules over a different set — the files
+whose whole reason for existing is to be exported — and it sees one thing point 10, which reads
+types, cannot: a `*.types.ts` holding runtime values on a day when it declares no type at all.
+
+A type that is deliberately internal — one no public signature carries — goes into the
+`internal` list of [`files.policy.json`](_reference/libs/components/files.policy.json) with a
+reason, and point 9 holds that reason to the same forty characters as every other excuse here.
+The library has five such types today, in two files. The list is meant to stay short: a type a
+public input, output or method carries does not belong in it, because that is the defect point
+10 exists for and the fix is the missing line of the index.
 
 ## How a case is built
 
@@ -68,40 +88,47 @@ from a fixture or from the library.
 
 **The reference tree must pass.** Were it defective itself, every case would fire because of it
 rather than because of its own defect, and every "rejected" would be false — that is, this whole
-negative control would become exactly what it stands against. It carries the four shapes that
+negative control would become exactly what it stands against. It carries the five shapes that
 are easy to leave unexercised: an entrypoint with two components in one source file and a
 template named after neither, a plain entrypoint with no component in it, the package's own
 entrypoint (which point 3 asks nothing of, being named after the package and not after a
-component), and a component whose host **is** a native input — the one that stands in the
-register.
+component), a component whose host **is** a native input, and a source holding a type the index
+deliberately passes over. The last two are the ones that stand in the register — an excuse is a
+branch like any other, and one nothing exercises is one that can rot without a sound.
 
 ## The cases
 
-| case                                                                                  | point | check                  | rule                        | defect                                                                    |
-| ------------------------------------------------------------------------------------- | ----: | ---------------------- | --------------------------- | ------------------------------------------------------------------------- |
-| [`no-entrypoint-in-the-project`](no-entrypoint-in-the-project/)                       |     1 | `denominator`          | `no-entrypoint`             | the walk finds no `ng-package.json`, so the layout points rule on nothing |
-| [`no-source-under-an-entrypoint`](no-source-under-an-entrypoint/)                     |     1 | `denominator`          | `no-source`                 | the manifests are counted and every `src/` is gone                        |
-| [`not-one-component-declared`](not-one-component-declared/)                           |     1 | `denominator`          | `no-declaration`            | sources by the dozen and no `@Component` among them                       |
-| [`decorator-off-the-anchor`](decorator-off-the-anchor/)                               |     1 | `denominator`          | `decorator-unparsed`        | a decorator the parser misses and the counter sees                        |
-| [`register-the-gate-cannot-read`](register-the-gate-cannot-read/)                     |     1 | `denominator`          | `register-unreadable`       | `inline` is an object where the gate reads a list                         |
-| [`sources-without-an-entrypoint-manifest`](sources-without-an-entrypoint-manifest/)   |     2 | `entrypoint`           | `no-manifest`               | code that compiles, tests, lints and reaches no consumer                  |
-| [`entrypoint-without-an-index`](entrypoint-without-an-index/)                         |     2 | `entrypoint`           | `no-index`                  | a manifest pointing at an entry file that is not there                    |
-| [`component-entrypoint-not-named-after-it`](component-entrypoint-not-named-after-it/) |     3 | `component-entrypoint` | `no-eponymous-source`       | `button/` declares a component and holds no `button.ts`                   |
-| [`component-entrypoint-without-its-spec`](component-entrypoint-without-its-spec/)     |     3 | `component-entrypoint` | `no-eponymous-spec`         | the same entrypoint with no `button.spec.ts`                              |
-| [`template-in-the-decorator`](template-in-the-decorator/)                             |     4 | `template`             | `inline-template`           | the named control of the requirement: `template:` in a decorator          |
-| [`component-naming-no-template`](component-naming-no-template/)                       |     4 | `template`             | `no-template`               | neither a file nor a string — the point's own denominator                 |
-| [`styles-in-the-decorator`](styles-in-the-decorator/)                                 |     5 | `styles`               | `inline-styles`             | styles that no stylesheet rule can see                                    |
-| [`component-naming-no-stylesheet`](component-naming-no-stylesheet/)                   |     5 | `styles`               | `no-styles`                 | neither `styleUrl` nor `styles`                                           |
-| [`template-from-another-directory`](template-from-another-directory/)                 |     6 | `sibling`              | `not-a-sibling`             | a template in a file, and the file in somebody else's directory           |
-| [`template-that-is-not-in-the-tree`](template-that-is-not-in-the-tree/)               |     6 | `sibling`              | `missing-file`              | a sibling the git index does not carry                                    |
-| [`stylesheet-that-is-plain-css`](stylesheet-that-is-plain-css/)                       |     6 | `sibling`              | `wrong-extension`           | a `.css` beside the component, outside every SCSS rule                    |
-| [`a-template-no-declaration-names`](a-template-no-declaration-names/)                 |     7 | `orphan`               | —                           | the file a rename left behind                                             |
-| [`types-file-the-index-does-not-export`](types-file-the-index-does-not-export/)       |     8 | `types`                | —                           | types written, compiled, used — and invisible to the consumer             |
-| [`register-entry-for-a-class-that-is-gone`](register-entry-for-a-class-that-is-gone/) |     9 | `register`             | `entry-without-declaration` | an excuse naming a class no source declares                               |
-| [`register-entry-without-a-reason`](register-entry-without-a-reason/)                 |     9 | `register`             | `entry-without-reason`      | an entry that says what the decorator already says                        |
-| [`register-entry-nothing-uses`](register-entry-nothing-uses/)                         |     9 | `register`             | `entry-unused`              | the component was fixed and the excuse stayed                             |
+| case                                                                                                  | point | check                  | rule                            | defect                                                                    |
+| ----------------------------------------------------------------------------------------------------- | ----: | ---------------------- | ------------------------------- | ------------------------------------------------------------------------- |
+| [`no-entrypoint-in-the-project`](no-entrypoint-in-the-project/)                                       |     1 | `denominator`          | `no-entrypoint`                 | the walk finds no `ng-package.json`, so the layout points rule on nothing |
+| [`no-source-under-an-entrypoint`](no-source-under-an-entrypoint/)                                     |     1 | `denominator`          | `no-source`                     | the manifests are counted and every `src/` is gone                        |
+| [`not-one-component-declared`](not-one-component-declared/)                                           |     1 | `denominator`          | `no-declaration`                | sources by the dozen and no `@Component` among them                       |
+| [`decorator-off-the-anchor`](decorator-off-the-anchor/)                                               |     1 | `denominator`          | `decorator-unparsed`            | a decorator the parser misses and the counter sees                        |
+| [`not-one-type-exported`](not-one-type-exported/)                                                     |     1 | `denominator`          | `no-exported-type`              | sources by the dozen and no `type`, `interface` or `enum` among them      |
+| [`register-the-gate-cannot-read`](register-the-gate-cannot-read/)                                     |     1 | `denominator`          | `register-unreadable`           | `inline` is an object where the gate reads a list                         |
+| [`sources-without-an-entrypoint-manifest`](sources-without-an-entrypoint-manifest/)                   |     2 | `entrypoint`           | `no-manifest`                   | code that compiles, tests, lints and reaches no consumer                  |
+| [`entrypoint-without-an-index`](entrypoint-without-an-index/)                                         |     2 | `entrypoint`           | `no-index`                      | a manifest pointing at an entry file that is not there                    |
+| [`component-entrypoint-not-named-after-it`](component-entrypoint-not-named-after-it/)                 |     3 | `component-entrypoint` | `no-eponymous-source`           | `button/` declares a component and holds no `button.ts`                   |
+| [`component-entrypoint-without-its-spec`](component-entrypoint-without-its-spec/)                     |     3 | `component-entrypoint` | `no-eponymous-spec`             | the same entrypoint with no `button.spec.ts`                              |
+| [`template-in-the-decorator`](template-in-the-decorator/)                                             |     4 | `template`             | `inline-template`               | the named control of the requirement: `template:` in a decorator          |
+| [`component-naming-no-template`](component-naming-no-template/)                                       |     4 | `template`             | `no-template`                   | neither a file nor a string — the point's own denominator                 |
+| [`styles-in-the-decorator`](styles-in-the-decorator/)                                                 |     5 | `styles`               | `inline-styles`                 | styles that no stylesheet rule can see                                    |
+| [`component-naming-no-stylesheet`](component-naming-no-stylesheet/)                                   |     5 | `styles`               | `no-styles`                     | neither `styleUrl` nor `styles`                                           |
+| [`template-from-another-directory`](template-from-another-directory/)                                 |     6 | `sibling`              | `not-a-sibling`                 | a template in a file, and the file in somebody else's directory           |
+| [`template-that-is-not-in-the-tree`](template-that-is-not-in-the-tree/)                               |     6 | `sibling`              | `missing-file`                  | a sibling the git index does not carry                                    |
+| [`stylesheet-that-is-plain-css`](stylesheet-that-is-plain-css/)                                       |     6 | `sibling`              | `wrong-extension`               | a `.css` beside the component, outside every SCSS rule                    |
+| [`a-template-no-declaration-names`](a-template-no-declaration-names/)                                 |     7 | `orphan`               | —                               | the file a rename left behind                                             |
+| [`types-file-the-index-does-not-export`](types-file-the-index-does-not-export/)                       |     8 | `types`                | —                               | types written, compiled, used — and invisible to the consumer             |
+| [`register-entry-for-a-class-that-is-gone`](register-entry-for-a-class-that-is-gone/)                 |     9 | `register`             | `entry-without-declaration`     | an excuse naming a class no source declares                               |
+| [`register-entry-without-a-reason`](register-entry-without-a-reason/)                                 |     9 | `register`             | `entry-without-reason`          | an entry that says what the decorator already says                        |
+| [`register-entry-nothing-uses`](register-entry-nothing-uses/)                                         |     9 | `register`             | `entry-unused`                  | the component was fixed and the excuse stayed                             |
+| [`register-internal-entry-for-a-type-that-is-gone`](register-internal-entry-for-a-type-that-is-gone/) |     9 | `register`             | `internal-entry-without-type`   | an excuse naming a type no source exports                                 |
+| [`register-internal-entry-without-a-reason`](register-internal-entry-without-a-reason/)               |     9 | `register`             | `internal-entry-without-reason` | an entry that says what the missing index line already says               |
+| [`register-internal-entry-nothing-uses`](register-internal-entry-nothing-uses/)                       |     9 | `register`             | `internal-entry-unused`         | the type went public and the excuse stayed                                |
+| [`type-the-index-does-not-export`](type-the-index-does-not-export/)                                   |    10 | `index`                | `type-not-exported`             | a public type the consumer has no way to name                             |
+| [`re-export-the-gate-cannot-follow`](re-export-the-gate-cannot-follow/)                               |    10 | `index`                | `re-export-not-followed`        | a star re-export that leaves the index's surface open                     |
 
-Point 1 has five cases and that is not thoroughness for its own sake: each names a different way
+Point 1 has six cases and that is not thoroughness for its own sake: each names a different way
 for this gate to examine **nothing** and report it in green. Two of them are the shape the
 sibling gates were actually caught by — a git pathspec is not a shell glob, so a pattern with a
 star returns an empty list rather than an error ([`lesson-48`](../../docs/lessons.md#lesson-48)).
@@ -116,12 +143,22 @@ directions are needed, and a rename is what shows why: it moves the decorator to
 leaves the old template behind, where nothing compiles it, nothing ships it and nothing reports
 it.
 
-The three cases of point 9 are the whole life cycle of an excuse: one that never named anything
-real, one that names something real and says nothing about it, and one that has outlived what it
-was written for. The third is the one that matters most, and it is the reason the register is
-read at points 4 and 5 but audited at point 9 — an entry excuses on its **presence**, so a
-register gone stale reads as a defect of the register rather than as a component quietly losing
-its file. The split is `check-mutation`'s, one floor down.
+Point 9 keeps two lists — the components excused their inline member, and the types excused
+their absence from an index — and the three cases of each are the whole life cycle of an excuse:
+one that never named anything real, one that names something real and says nothing about it, and
+one that has outlived what it was written for. The third is the one that matters most, and it is
+the reason the register is read at points 4, 5 and 10 but audited at point 9 — an entry excuses
+on its **presence**, so a register gone stale reads as a defect of the register rather than as a
+component quietly losing its file or a type quietly leaving the public surface. The split is
+`check-mutation`'s, one floor down.
+
+Point 10's second case is not about a defect in a library at all: it is about this gate losing
+the ability to rule on one. The surface of an index is built by following its re-exports, and a
+star hands on every name of the module it points at — so an edge the walk cannot read (a package
+specifier, `export * as ns from`, a path to no source of the tree) leaves the surface open, and
+over an open list "this type is not exported" has no evidence behind it. Reporting the edge is
+the only honest answer; passing the entrypoint would be the silence this whole directory exists
+against.
 
 ## Adding a new point to the gate
 

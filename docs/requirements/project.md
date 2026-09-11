@@ -230,29 +230,49 @@ text instead of weighing it ([`lesson-171`](../lessons.md#lesson-171))
 
 ### <a id="req-project-files"></a>`req-project-files` — A fixed component file structure
 
-**Promise.** Per component: `button.ts`, `button.html`, `button.scss`, `button.spec.ts`,
-`button.types.ts`, `index.ts`, `ng-package.json`. Template and styles **always** in separate
-files.
+**Promise.** The shape of a component entrypoint is fixed: the eponymous source, template,
+stylesheet and spec — `button.ts`, `button.html`, `button.scss`, `button.spec.ts` — beside the
+entrypoint's `index.ts` and `ng-package.json`. Template and styles **always** in separate files.
+A `button.types.ts` is **not** part of that fixed shape: it is what a component reaches for when
+its types outgrow the source that owns them or when two sources of the entrypoint share them,
+and where it exists it is named after the component and exported by the index. What is promised
+of a type is not the file it stands in but the **index**: a type a source of an entrypoint
+exports is exported by that entrypoint's `src/index.ts` too — or it stands, with a reason, in
+the `internal` list of `libs/components/files.policy.json`.
 
-**Gate:** `tools/check-files.mjs` (target `check-files`, in CI) — nine points over the files
-of `libs/components` as the **git index** carries them: 1 the denominator (entrypoints,
-sources, declarations and the register, plus a second count of `@Component(` taken differently
-from the parser's, so a decorator nobody parsed cannot pass for a component nobody faulted), 2
-an entrypoint's `ng-package.json` and `src/index.ts` — read in **both** directions, so a
-directory of sources with no manifest beside it fires too, 3 the eponymous pair of a component
-entrypoint (`button.ts` and `button.spec.ts`), 4 and 5 no `template:` and no `styles:` in a
-decorator, 6 what a declaration names is a **sibling**, under the extension it promises, and in
-the index, 7 the other direction — no template or sheet a rename left behind, 8 a `*.types.ts`
-exported by the index of its entrypoint, 9 the register `libs/components/files.policy.json`,
-where every excuse names a declaration, carries a reason and is still needed. The run measures
-35 entrypoints, 43 declarations and 81 templates and sheets, and excuses two components whose
-host **is** a native `<input>` and whose template is therefore the empty string. One limb of the
-promise is deliberately **not** among the points: `*.types.ts`. Measured — of the 30 entrypoints
-that declare a component, 18 have no such file and 13 export a public type from the component's
-own source, so a point demanding one would have been red on the day it was written, which is a
-plan and not a gate; point 8 holds a types file to what it must do once it exists, and the
-disagreement is recorded rather than papered over (`tools/check-files.fixtures/README.md`)
-**Control:** `tools/check-files.fixtures/` — 21 prepared trees, each rejected on its own point
+The axis is the index because that is where the consumer is. Which file a type lives in is a
+question for whoever opens the directory; whether the index names it decides whether anybody
+outside can write the type down at all — an `input()` typed `PctBadgeTone` that `badge`'s index
+passes over is an input nobody can declare a variable for, wrap, or hold a test to, while the
+library compiles over it and ships it without a word. The filename half was also measured and
+was never true here: of the 30 entrypoints that declare a component, 18 have no `*.types.ts` at
+all and 13 export a public type from the component's own source, so a point demanding the file
+would have been red on the day it was written — a plan, not a gate. And `select.types.ts` shows
+the demand would have been for the wrong thing anyway: it exports `pctFilterByLabel` and
+`pctKeepAll`, which are functions, so even where the convention is kept the name on the file
+says nothing certain about what is inside it.
+
+**Gate:** `tools/check-files.mjs` (target `check-files`, in CI) — ten points over the files of
+`libs/components` as the **git index** carries them: 1 the denominator (entrypoints, sources,
+declarations, exported types and the register, plus a second count of `@Component(` taken
+differently from the parser's, so a decorator nobody parsed cannot pass for a component nobody
+faulted), 2 an entrypoint's `ng-package.json` and `src/index.ts` — read in **both** directions,
+so a directory of sources with no manifest beside it fires too, 3 the eponymous pair of a
+component entrypoint (`button.ts` and `button.spec.ts`), 4 and 5 no `template:` and no `styles:`
+in a decorator, 6 what a declaration names is a **sibling**, under the extension it promises, and
+in the index, 7 the other direction — no template or sheet a rename left behind, 8 a `*.types.ts`
+exported by the index of its entrypoint, 9 the register `libs/components/files.policy.json` in
+both of its lists, where every excuse names what it excuses, carries a reason and is still
+needed, 10 a type a source exports is named by its entrypoint's index — followed through the
+index's own re-exports, and an edge that walk cannot read (a package specifier, `export * as ns
+from`) is reported rather than passed over, because over a list of names known to be short
+"this type is not exported" has nothing behind it. The run measures 35 entrypoints, 43
+declarations, 81 templates and sheets and 82 exported types, and excuses seven things: two
+components whose host **is** a native `<input>` and whose template is therefore the empty
+string, and five types no public signature carries — the four view shapes of the select panel,
+which type `protected` members of a base class the index does not export either, and
+`PctArbitrary`, the property sweep's generator, which the `testing` entrypoint publishes none of
+**Control:** `tools/check-files.fixtures/` — 27 prepared trees, each rejected on its own point
 **and its own rule**, among them this requirement's named control
 `template-in-the-decorator/` (a component keeping its template in the decorator — the defect
 that arrives looking like Angular's own advice), `styles-in-the-decorator/` (styles no rule of
@@ -260,15 +280,26 @@ that arrives looking like Angular's own advice), `styles-in-the-decorator/` (sty
 `a-template-no-declaration-names/` (the file a rename left behind),
 `stylesheet-that-is-plain-css/` (a sibling that exists and has left every SCSS rule),
 `decorator-off-the-anchor/` (the parser misses a declaration and the counter says so),
-`register-entry-nothing-uses/` (the component was fixed and the excuse stayed) and five cases
-of point 1 alone, each a different way for the gate to examine nothing and report it green.
-Plus a run against the real repository: with the register entry for `PctText` removed, the gate
-names `libs/components/field/src/text.ts` and the line of its decorator
+`type-the-index-does-not-export/` (a public type with no line of the index to carry it),
+`re-export-the-gate-cannot-follow/` (a star re-export that leaves an entrypoint's surface open,
+so point 10 stops being able to rule on it), `register-internal-entry-nothing-uses/` (the type
+went public and the excuse stayed), `register-entry-nothing-uses/` (the component was fixed and
+the excuse stayed) and six cases of point 1 alone, each a different way for the gate to examine
+nothing and report it green. Plus two runs against the real repository: with the register entry
+for `PctText` removed, the gate names `libs/components/field/src/text.ts` and the line of its
+decorator; with `export * from './accordion';` taken out of
+`libs/components/accordion/src/index.ts`, it names `PctAccordionApi`, the line it is declared on
+and the index that no longer carries it
 **Decision:** [0001 — templates and styles in separate files](../decisions/0001-separate-files.md)
 
 > This is a **deliberate departure** from Angular's official guidance to "prefer inline
 > templates for smaller components" — dictated by consistency across a library of dozens of
 > components.
+>
+> Decision 0001 lists `button.types.ts` among a component's files. What it **decides** —
+> template and styles in files of their own — is untouched by the narrowing above; the file
+> list beside it was written from expected scale, before anything had been measured, and the
+> measurement is in the paragraphs above.
 
 ---
 

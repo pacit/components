@@ -1,11 +1,18 @@
 {
-  "// why": "The register of the file-structure gate (req-project-files), in miniature: the components that keep a decorator member the rule sends to a file, and the reason each of them cannot. `tools/check-files.mjs` reads it at points 4 and 5 before it fires, and audits it at point 9 — an entry naming no declaration, carrying no reason or excusing something that is no longer happening is itself a failure.",
+  "// why": "The register of the file-structure gate (req-project-files), in miniature: the components that keep a decorator member the rule sends to a file, and the types an entrypoint keeps off its index — with the reason each of them cannot do otherwise. `tools/check-files.mjs` reads `inline` at points 4 and 5 and `internal` at point 10 before either fires, and audits both at point 9 — an entry naming nothing this gate read, carrying no reason or excusing something that is no longer happening is itself a failure.",
   "inline": [
     {
       "file": "libs/components/field/src/text.ts",
       "class": "FxText",
       "member": "template",
       "reason": "The host IS the native input: the component projects nothing and renders nothing of its own, so its template is the empty string. A file holding it would hold no characters, and a reader opening `text.html` to see what the control draws would learn less than the decorator tells them."
+    }
+  ],
+  "internal": [
+    {
+      "file": "libs/components/field/src/field.base.ts",
+      "type": "FxFieldRow",
+      "reason": "The wrapper's own drawing unit, and the entrypoint's index says nothing about it on purpose: no input, output or public method of `FxField` carries the type, so a consumer has no expression in which they could need the name. It leaves the internal list the day a public signature names it."
     }
   ]
 }

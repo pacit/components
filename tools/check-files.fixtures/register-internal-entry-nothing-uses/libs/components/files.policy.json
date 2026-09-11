@@ -1,17 +1,11 @@
 {
-  "// why": "The register of the file-structure gate, with an entry that has outlived the exception it was written for.",
+  "// why": "The register of the file-structure gate, with an internal entry that has outlived the exception it was written for.",
   "inline": [
     {
       "file": "libs/components/field/src/text.ts",
       "class": "FxText",
       "member": "template",
       "reason": "The host IS the native input: the component projects nothing and renders nothing of its own, so its template is the empty string. A file holding it would hold no characters, and a reader opening `text.html` to see what the control draws would learn less than the decorator tells them."
-    },
-    {
-      "file": "libs/components/button/src/button.ts",
-      "class": "FxButton",
-      "member": "template",
-      "reason": "Written while the button's template was still a string in the decorator, and left standing after it was moved into `button.html` in the same afternoon."
     }
   ],
   "internal": [
@@ -19,6 +13,11 @@
       "file": "libs/components/field/src/field.base.ts",
       "type": "FxFieldRow",
       "reason": "The wrapper's own drawing unit, and the entrypoint's index says nothing about it on purpose: no input, output or public method of `FxField` carries the type, so a consumer has no expression in which they could need the name. It leaves the internal list the day a public signature names it."
+    },
+    {
+      "file": "libs/components/button/src/button.types.ts",
+      "type": "FxButtonVariant",
+      "reason": "Written while the variant union was still the button's own business, and left standing after `index.ts` began exporting `./button.types` in the same afternoon."
     }
   ]
 }

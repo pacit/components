@@ -1,0 +1,3 @@
+// The same source as in the reference tree with its one exported type taken out, so that the
+// whole library declares none and point 10 has nothing left to hold an index to.
+export const defaultTone = 'neutral';

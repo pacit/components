@@ -1,0 +1,6 @@
+{
+  "point": 10,
+  "check": "index",
+  "rule": "re-export-not-followed",
+  "description": "An index with a star re-export leading out of the tree this gate reads. A star hands on every name of the module it points at, so the walk that builds an entrypoint's surface cannot finish the list — and over a list known to be short, `this type is not exported` is a sentence with no evidence behind it. Silence would be the wrong answer twice over: the entrypoint would stop being measured, and the gate would go on reporting the library green."
+}

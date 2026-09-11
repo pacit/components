@@ -7,5 +7,12 @@
       "member": "template",
       "reason": "empty template"
     }
+  ],
+  "internal": [
+    {
+      "file": "libs/components/field/src/field.base.ts",
+      "type": "FxFieldRow",
+      "reason": "The wrapper's own drawing unit, and the entrypoint's index says nothing about it on purpose: no input, output or public method of `FxField` carries the type, so a consumer has no expression in which they could need the name. It leaves the internal list the day a public signature names it."
+    }
   ]
 }

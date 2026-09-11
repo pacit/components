@@ -75,14 +75,14 @@ export const PCT_SELECT_IMPORTS = [
  * it — a group's `disabled` reaches its options, and rewriting them would hand a consumer's
  * `let-option` an object their own list does not contain.
  */
-export interface PctSelectRow<T> {
+interface PctSelectRow<T> {
   readonly option: PctSelectOption<T>;
   readonly index: number;
   readonly disabled: boolean;
 }
 
 /** A heading with its rows, or — when `label` is `null` — the rows standing before any. */
-export interface PctSelectSection<T> {
+interface PctSelectSection<T> {
   readonly label: string | null;
   readonly rows: readonly PctSelectRow<T>[];
 }
@@ -97,7 +97,7 @@ export interface PctSelectSection<T> {
  * A nameless section draws no element, so it carries none: what it skips folds into the
  * panel's, which is where the arithmetic below puts it.
  */
-export interface PctSelectPanelSection<T> {
+interface PctSelectPanelSection<T> {
   readonly index: number;
   readonly label: string | null;
   readonly rows: readonly PctSelectRow<T>[];
@@ -106,7 +106,7 @@ export interface PctSelectPanelSection<T> {
 }
 
 /** The list as the panel draws it, with the space the rows it did not draw would have taken. */
-export interface PctSelectPanelView<T> {
+interface PctSelectPanelView<T> {
   readonly sections: readonly PctSelectPanelSection<T>[];
   readonly lead: number;
   readonly tail: number;

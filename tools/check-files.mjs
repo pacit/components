@@ -8,8 +8,8 @@
  * the cost of one more file — and a departure nothing measures is a convention, which is to
  * say a thing that holds until somebody is in a hurry.
  *
- *  1. DENOMINATOR: entrypoints, sources, declarations and the register are all there to be
- *     ruled on, and every `@Component(` in the sources reached the parser,
+ *  1. DENOMINATOR: entrypoints, sources, declarations, exported types and the register are
+ *     all there to be ruled on, and every `@Component(` in the sources reached the parser,
  *  2. ENTRYPOINT: a directory of sources is an entrypoint, and an entrypoint has an index,
  *  3. COMPONENT ENTRYPOINT: one that declares a component carries the two files named after
  *     it — `button/src/button.ts` and `button/src/button.spec.ts`,
@@ -19,10 +19,11 @@
  *     repository really carries it,
  *  7. ORPHAN: every template and stylesheet is named by a declaration,
  *  8. TYPES: a `*.types.ts` is exported by the index of its entrypoint,
- *  9. REGISTER: every excuse in `libs/components/files.policy.json` names a declaration,
- *     carries a reason, and is still needed.
+ *  9. REGISTER: every excuse in `libs/components/files.policy.json`, in either of its two
+ *     lists, names what it excuses, carries a reason, and is still needed,
+ * 10. INDEX: a type a source of an entrypoint exports is named by that entrypoint's index.
  *
- * WHAT THE DENOMINATOR IS, and why it is two denominators. The layout points (2, 3, 8) run
+ * WHAT THE DENOMINATOR IS, and why it is two denominators. The layout points (2, 3, 8, 10) run
  * over ENTRYPOINTS, because `index.ts` and `ng-package.json` are an entrypoint's files and
  * there is exactly one of each per directory. The template and stylesheet points (4 to 7)
  * run over `@Component` DECLARATIONS, because an entrypoint is not a component: `breadcrumb/`
@@ -30,13 +31,27 @@
  * per entrypoint would have to demand a `.html` of `core/`, and would be excused on the day
  * it was written; a rule written per declaration asks each component the same question.
  *
- * WHAT THIS GATE DOES NOT MEASURE. The promise names `button.types.ts` among a component's
- * files, and the repository does not keep that half: 18 of its 30 component entrypoints have
- * no `*.types.ts` at all, and 13 of them export a public type from the component's own source
- * instead. A point demanding one would therefore be red on the day it was written, which is
- * not a gate but a plan — so point 8 measures what a types file must do ONCE IT EXISTS, and
- * the disagreement between the promise and the tree is written down (in the requirement and
- * in the fixtures README) rather than papered over with eighteen excuses.
+ * WHY THE AXIS IS THE INDEX AND NOT THE FILENAME. The promise used to name `button.types.ts`
+ * among a component's files, and this library never kept that half of it: of the 30
+ * entrypoints that declare a component, 18 have no `*.types.ts` at all and 13 export a public
+ * type from the component's own source instead. A point demanding the file would have been red
+ * on the day it was written, which is a plan and not a gate — and `select.types.ts` shows that
+ * the demand would have been for the wrong thing anyway: it exports `pctFilterByLabel` and
+ * `pctKeepAll`, which are functions, so the name on the file says nothing certain about what
+ * stands inside it even where the file exists.
+ *
+ * What a consumer is actually hurt by is not which file a type lives in but whether they can
+ * NAME it. An `input()` typed `PctBadgeTone` that the entrypoint's index never exports is an
+ * input nobody can write a variable for, nobody can wrap and nobody can test against — and the
+ * library compiles over it, ships it and reports nothing, because internally the name resolves
+ * perfectly (`req-axis`). So the promise was narrowed to what this library does — the
+ * eponymous four files, the index and the manifest are the fixed shape, a `*.types.ts` is what
+ * a component reaches for when its types outgrow it — and point 10 gates the narrowed promise
+ * on the axis that pays: the index.
+ *
+ * Point 8 stays beside it rather than folding into it. It rules over a different set, and it
+ * can see a thing point 10 cannot: a types file holding runtime values (again `select.types.ts`)
+ * is a file the index must name even on a day when it declares no type at all.
  *
  * Usage: node tools/check-files.mjs
  */
@@ -99,6 +114,39 @@ const INLINE_STYLES = /^\s*styles\s*:/m;
 /** A path that can be predicted without opening the directory: `./name.ext`, and nothing else. */
 const SIBLING = /^\.\/[^/]+$/;
 
+/**
+ * An exported TYPE declaration — `type`, `interface`, `enum`. Read at the same column-zero
+ * anchor as the decorator and for the same reason: `nx format:check` puts a top-level
+ * declaration there, so the anchor is a fact about the tree rather than a hope about it. What
+ * it cannot see it does not count either: a type declared without `export` and let out further
+ * down the file by `export { type X };` is a name this pattern never reads, and point 10 never
+ * asks the index about it.
+ *
+ * A class is deliberately outside the numerator, though a class is a type as well as a value.
+ * A class the index passes over is a component nobody can import, and that shows itself the
+ * moment anybody tries — the demo does not compile, the harness resolves nothing. A type is
+ * the silent half: the library goes on compiling, every spec passes, and the only person who
+ * finds out is the consumer, who has no route to the name but the index.
+ */
+const EXPORTED_TYPE =
+  /^export\s+(?:declare\s+)?(?:type|interface|(?:const\s+)?enum)\s+([A-Za-z_$][\w$]*)/gm;
+
+/** `export class X`, `export const x`, `export function x` — what a module lets out as a value. */
+const EXPORTED_VALUE =
+  /^export\s+(?:declare\s+)?(?:abstract\s+)?(?:class|const|let|var|function|async\s+function)\s+([A-Za-z_$][\w$]*)/gm;
+
+/** `export { a, b as c };` — a list with no `from`, so the names are the module's own. */
+const EXPORT_LIST = /^export\s+(?:type\s+)?\{([^}]*)\}\s*;/gm;
+
+/**
+ * A re-export, in the shapes this library writes: `export * from './x'`, `export { a } from
+ * './x'` and `export type { A } from './x'`. `export * as ns from './x'` matches too and is
+ * deliberately NOT followed — see `surfaceOf`, where an edge the walk cannot read leaves the
+ * index's surface open instead of quietly short.
+ */
+const RE_EXPORT =
+  /^export\s+(?:type\s+)?(\*(?:\s+as\s+[A-Za-z_$][\w$]*)?|\{[^}]*\})\s*from\s*(['"])([^'"]+)\2/gm;
+
 /** `libs/components/button/src/…` and `libs/components/src/…` — the two shapes of a source root. */
 const SOURCE_ROOT = new RegExp(`^(${PROJECT}/(?:[^/]+/)?src)/`);
 const MANIFEST = new RegExp(`^${PROJECT}/(?:[^/]+/)?ng-package\\.json$`);
@@ -154,6 +202,47 @@ const declarationsOf = (file, text) => {
 };
 
 /**
+ * The names a list of specifiers lets out: `a`, `a as b`, `type a as b`. BOTH sides of an `as`
+ * are kept, and deliberately: point 10 asks whether the consumer can name a declaration at all,
+ * and a type re-exported under an alias is one they can name — under the alias. Keeping only
+ * the alias would report the declaration missing; keeping only the local name would miss the
+ * name they actually write.
+ */
+const specifiers = (list) =>
+  list
+    .split(',')
+    .map((s) => s.trim().replace(/^type\s+/, ''))
+    .filter(Boolean)
+    .flatMap((s) => s.split(/\s+as\s+/));
+
+/**
+ * What one module exports, as points 9 and 10 need it: the types it declares — each with the
+ * line it stands on, so a message can send a person to a place — every name it lets out under
+ * its own roof, and its re-export edges, which are the only way the names of one module reach
+ * the index of another.
+ */
+const exportsOf = (file, text) => ({
+  types: [...text.matchAll(EXPORTED_TYPE)].map((match) => ({
+    file,
+    name: match[1],
+    line: lineOf(text, match.index),
+  })),
+  names: new Set([
+    ...[...text.matchAll(EXPORTED_TYPE)].map((m) => m[1]),
+    ...[...text.matchAll(EXPORTED_VALUE)].map((m) => m[1]),
+    ...[...text.matchAll(EXPORT_LIST)].flatMap((m) => specifiers(m[1])),
+  ]),
+  edges: [...text.matchAll(RE_EXPORT)].map((match) => ({
+    clause: match[1].replace(/\s+/g, ' '),
+    star: match[1].startsWith('*'),
+    namespace: /^\*\s+as\s/.test(match[1]),
+    names: match[1].startsWith('*') ? [] : specifiers(match[1].slice(1, -1)),
+    from: match[3],
+    line: lineOf(text, match.index),
+  })),
+});
+
+/**
  * The register, read defensively. Every shape it can arrive in that this gate cannot rule on
  * comes back as `{ error }` and becomes a message from point 1 — a malformed policy file is a
  * sentence a person acts on, never a `TypeError` two hundred lines further down.
@@ -180,7 +269,12 @@ const readPolicy = (root) => {
     return { error: 'its top level is not an object' };
   if (!Array.isArray(parsed.inline))
     return { error: 'it carries no `inline` array' };
-  return { inline: parsed.inline };
+  // Both lists are required, and the missing one is a failure rather than an empty set: a
+  // register that has lost half of itself excuses nothing, so the run that follows measures a
+  // library nobody wrote — loud here, and a page of findings about untouched code further down.
+  if (!Array.isArray(parsed.internal))
+    return { error: 'it carries no `internal` array' };
+  return { inline: parsed.inline, internal: parsed.internal };
 };
 
 /**
@@ -211,10 +305,15 @@ const collectInput = (root, files) => {
 
   let counted = 0;
   const declarations = [];
+  const modules = new Map();
+  const exportedTypes = [];
   for (const file of sources) {
     const text = readFileSync(join(root, file), 'utf8');
     counted += (text.match(DECLARATION_COUNT) ?? []).length;
     declarations.push(...declarationsOf(file, text));
+    const exported = exportsOf(file, text);
+    modules.set(file, exported);
+    exportedTypes.push(...exported.types);
   }
 
   return {
@@ -226,6 +325,8 @@ const collectInput = (root, files) => {
     assets,
     declarations,
     counted,
+    modules,
+    exportedTypes,
     policy: readPolicy(root),
     read: (file) => readFileSync(join(root, file), 'utf8'),
   };
@@ -243,12 +344,14 @@ const checkFiles = (input) => {
   entrypoint(input);
   componentEntrypoint(input);
   const excused = register(input);
-  template(input, excused);
-  styles(input, excused);
+  template(input, excused.members);
+  styles(input, excused.members);
   const referenced = sibling(input);
   orphan(input, referenced);
   types(input);
-  registerEntries(input);
+  const surfaces = indexSurfaces(input);
+  registerEntries(input, surfaces);
+  indexExports(input, surfaces, excused.types);
 
   const components = new Set(
     input.declarations.map((d) => entrypointOf(d.file)),
@@ -256,7 +359,8 @@ const checkFiles = (input) => {
   return (
     `${input.entrypoints.length} entrypoints (${components.size} declaring a component), ` +
     `${input.declarations.length} declarations over ${input.assets.length} templates and ` +
-    `sheets, ${input.policy.inline.length} excused`
+    `sheets, ${input.exportedTypes.length} exported types, ` +
+    `${input.policy.inline.length + input.policy.internal.length} excused`
   );
 };
 
@@ -279,6 +383,7 @@ const denominator = ({
   sources,
   declarations,
   counted,
+  exportedTypes,
   policy,
 }) => {
   if (!entrypoints.length)
@@ -313,12 +418,21 @@ const denominator = ({
         `written otherwise than prettier formats it (\`@Component({\` and \`})\` in column ` +
         `zero).`,
     );
+  if (!exportedTypes.length)
+    throw new FilesError(
+      'denominator',
+      'no-exported-type',
+      `not one exported \`type\`, \`interface\` or \`enum\` in ${sources.length} source ` +
+        `files — point 10 then holds every index of the library to an empty list of names ` +
+        `and passes. This library publishes 80-odd types, so the answer is a pattern that ` +
+        `has stopped reading them, not a library that has stopped declaring them.`,
+    );
   if (policy.error)
     throw new FilesError(
       'denominator',
       'register-unreadable',
-      `\`${POLICY}\` cannot be read: ${policy.error}. The register is what points 4 and 5 ` +
-        `consult before they fire, so a file they cannot read would either excuse ` +
+      `\`${POLICY}\` cannot be read: ${policy.error}. The register is what points 4, 5 and ` +
+        `10 consult before they fire, so a file they cannot read would either excuse ` +
         `everything or nothing — and neither answer is one anybody chose.`,
     );
 };
@@ -632,26 +746,157 @@ const types = ({ has, sources, read }) => {
     );
 };
 
+/** `'./button.types'` read from an index, as a source file this gate really has in hand. */
+const resolveModule = (modules, from, spec) => {
+  if (!spec.startsWith('.')) return null;
+  const path = join(dirname(from), spec).split('\\').join('/');
+  return [`${path}.ts`, `${path}/index.ts`].find((c) => modules.has(c)) ?? null;
+};
+
 /**
- * The register, as the pair of points that read it needs it: a set of `file | class | member`
- * keys. Read before points 4 and 5 so that they can consult it, audited after them by point 9
- * — that split is deliberate and is `check-mutation`'s: an entry excuses on its PRESENCE, and
- * whether it deserves to exist is a finding about the register rather than about the code.
+ * What one index really exports, followed through the entrypoint's own re-exports — because
+ * `export * from './button'` hands on every name of `button.ts`, and a walk that stopped at the
+ * index would call all of them missing.
+ *
+ * The set is complete only where the walk can read every edge it meets. One it cannot — a
+ * package specifier, `export * as ns from`, a relative path to no source in this tree — hands
+ * on a list of names this gate has never seen, and the set is then OPEN: it can still say that
+ * a name IS exported, and it can no longer say that one is not. Those edges come back as
+ * `opaque` and are point 10's first rule. The alternative is the failure this repository is
+ * named after: a point that has quietly stopped measuring an entrypoint and reports it green.
  */
-const register = ({ policy }) =>
-  new Set(
-    policy.inline.map(
-      (e) => `${e?.file ?? ''}\u0000${e?.class ?? ''}\u0000${e?.member ?? ''}`,
-    ),
+const surfaceOf = (
+  modules,
+  file,
+  names = new Set(),
+  opaque = [],
+  seen = new Set(),
+) => {
+  if (seen.has(file)) return { names, opaque };
+  seen.add(file);
+  const module = modules.get(file);
+  for (const name of module.names) names.add(name);
+  for (const edge of module.edges) {
+    if (!edge.star) {
+      for (const name of edge.names) names.add(name);
+      continue;
+    }
+    const target = edge.namespace
+      ? null
+      : resolveModule(modules, file, edge.from);
+    if (!target) {
+      opaque.push({ file, edge });
+      continue;
+    }
+    surfaceOf(modules, target, names, opaque, seen);
+  }
+  return { names, opaque };
+};
+
+/**
+ * The surface of every entrypoint that has one, by entrypoint directory. An entrypoint with no
+ * `src/index.ts` is left out rather than reported: that is point 2's finding, and a second
+ * voice on one defect is how a gate starts being read for the noise it makes.
+ */
+const indexSurfaces = ({ entrypoints, modules }) =>
+  new Map(
+    entrypoints
+      // The index this gate has READ, not merely one the file list mentions: the walk below
+      // needs the module in hand, and the two lists can only disagree if the reader upstream
+      // has changed under it.
+      .filter((dir) => modules.has(`${dir}/src/index.ts`))
+      .map((dir) => [dir, surfaceOf(modules, `${dir}/src/index.ts`)]),
   );
 
 /**
- * 9. REGISTER — an excuse names a declaration that exists, carries a reason, and is still
- * needed. The third rule is the one that keeps a register honest: an entry whose component
- * has since moved its template into a file goes on reading as though something here were
- * still an exception, and the next person writes their own entry beside it.
+ * 10. INDEX — a type a source of an entrypoint exports is a type that entrypoint's index
+ * exports too. This is the narrowed promise of `req-project-files`, on the axis that pays: not
+ * WHICH file a type stands in, but whether a consumer can name it at all.
+ *
+ * The defect it fires on has no other symptom. A `PctBadgeTone` that `badge/src/index.ts` never
+ * re-exports resolves perfectly inside the library — the component compiles, the spec passes,
+ * the demo renders — and the person outside, holding `@pacit/components/badge`, cannot write
+ * the variable that receives it, cannot type the wrapper they were going to put around it and
+ * cannot say in their own test what they expect back. Nothing in the toolchain is even looking:
+ * ng-packagr publishes what the index names and reports nothing about the rest.
+ *
+ * A type that is deliberately internal — one no public signature carries — goes into the
+ * `internal` list of the register with a reason, and point 9 holds that reason to the same
+ * floor as every other excuse here.
  */
-const registerEntries = ({ declarations, policy }) => {
+const indexExports = ({ exportedTypes }, surfaces, excused) => {
+  const opaque = [...surfaces.values()].flatMap((surface) => surface.opaque);
+  if (opaque.length)
+    throw new FilesError(
+      'index',
+      're-export-not-followed',
+      `${opaque.length} re-export(s) reached from an entrypoint's index lead where this ` +
+        `gate cannot follow:\n` +
+        list(
+          opaque.map(
+            ({ file, edge }) =>
+              `${file}:${edge.line} — \`export ${edge.clause} from '${edge.from}'\` is an edge this walk does not follow`,
+          ),
+        ) +
+        `\n    A star hands on every name of the module it points at, and this walk reads only ` +
+        `the sources of the tree under a plain \`export *\`: a package specifier, a namespace ` +
+        `re-export or a path to no source here leaves the index's surface open-ended — and over ` +
+        `an open set "this type is not exported" is a sentence with no evidence behind it. The ` +
+        `entrypoint would stop being measured, and nothing would say so.`,
+    );
+
+  const missing = exportedTypes.filter(
+    (type) =>
+      !excused.has(`${type.file}\u0000${type.name}`) &&
+      surfaces.get(entrypointOf(type.file))?.names.has(type.name) === false,
+  );
+  if (missing.length)
+    throw new FilesError(
+      'index',
+      'type-not-exported',
+      `${missing.length} exported type(s) their entrypoint's index does not name:\n` +
+        list(
+          missing.map(
+            ({ file, line, name }) =>
+              `${file}:${line} — \`${name}\` is nowhere in \`${entrypointOf(file)}/src/index.ts\``,
+          ),
+        ) +
+        `\n    The index is the whole of what an entrypoint exports, and a type outside it is ` +
+        `one the consumer cannot write down: not in a variable, not in a signature of their ` +
+        `own, not in a test. The library compiles over it without a word, because inside the ` +
+        `entrypoint the name resolves. A type that is meant to stay in goes into the ` +
+        `\`internal\` list of \`${POLICY}\` with a reason.`,
+    );
+};
+
+/**
+ * The register, as the points that read it need it: a set of `file | class | member` keys for
+ * the inline list and one of `file | type` keys for the internal list. Read before points 4, 5
+ * and 10 so that they can consult it, audited by point 9 on its own — that split is deliberate
+ * and is `check-mutation`'s: an entry excuses on its PRESENCE, and whether it deserves to exist
+ * is a finding about the register rather than about the code.
+ */
+const register = ({ policy }) => ({
+  members: new Set(
+    policy.inline.map(
+      (e) => `${e?.file ?? ''}\u0000${e?.class ?? ''}\u0000${e?.member ?? ''}`,
+    ),
+  ),
+  types: new Set(
+    policy.internal.map((e) => `${e?.file ?? ''}\u0000${e?.type ?? ''}`),
+  ),
+});
+
+/**
+ * 9. REGISTER — an excuse names the thing it excuses, carries a reason, and is still needed.
+ * Six rules, because the register keeps two lists: `inline`, the components whose decorator
+ * holds what decision 0001 sends to a file, and `internal`, the types an entrypoint keeps to
+ * itself. The third rule of each pair is the one that keeps a register honest: an entry whose
+ * component has since moved its template into a file, or whose type the index has since
+ * exported, goes on reading as though something here were still an exception, and the next
+ * person writes their own entry beside it.
+ */
+const registerEntries = ({ declarations, exportedTypes, policy }, surfaces) => {
   const byKey = new Map(
     declarations.map((d) => [`${d.file}\u0000${d.className}`, d]),
   );
@@ -721,6 +966,79 @@ const registerEntries = ({ declarations, policy }) => {
         `\n    The component was fixed and the excuse stayed. From here on it stands ready ` +
         `to cover the next one silently, and the next person reads the register as the ` +
         `list of what this library tolerates.`,
+    );
+
+  const byType = new Map(
+    exportedTypes.map((t) => [`${t.file}\u0000${t.name}`, t]),
+  );
+  const internal = policy.internal.map((entry, position) => ({
+    position,
+    file: typeof entry?.file === 'string' ? entry.file : null,
+    type: typeof entry?.type === 'string' ? entry.type : null,
+    reason: typeof entry?.reason === 'string' ? entry.reason : '',
+    declaration: byType.get(`${entry?.file}\u0000${entry?.type}`) ?? null,
+  }));
+
+  const nameless = internal.filter((e) => !e.declaration);
+  if (nameless.length)
+    throw new FilesError(
+      'register',
+      'internal-entry-without-type',
+      `${nameless.length} entry(ies) of the \`internal\` list of \`${POLICY}\` name no ` +
+        `exported type this gate read:\n` +
+        list(
+          nameless.map(
+            (e) =>
+              `entry ${e.position + 1}: \`${e.type ?? '(no type)'}\` in \`${e.file ?? '(no file)'}\``,
+          ),
+        ) +
+        `\n    An excuse for a type nothing exports excuses nothing, and in the register it ` +
+        `reads as though the library kept one more shape to itself than it does. A rename, or ` +
+        `a type that has since lost its \`export\`, leaves exactly this behind.`,
+    );
+
+  const unexplained = internal.filter(
+    (e) => e.reason.trim().length < MIN_REASON,
+  );
+  if (unexplained.length)
+    throw new FilesError(
+      'register',
+      'internal-entry-without-reason',
+      `${unexplained.length} entry(ies) of the \`internal\` list of \`${POLICY}\` carry no ` +
+        `reason:\n` +
+        list(
+          unexplained.map(
+            (e) =>
+              `${e.file}: ${e.type} (${e.reason.trim().length} of ${MIN_REASON} characters)`,
+          ),
+        ) +
+        `\n    Without one the entry says "this type is internal", which is what its absence ` +
+        `from the index says anyway. What the reason has to say is why a consumer will never ` +
+        `need the name — and what would put it back on the surface.`,
+    );
+
+  // An entrypoint whose surface is open is one point 10 refuses to rule on, so this rule has
+  // nothing to stand on there either: it would read "the index does not export it" out of a
+  // list of names known to be short. Point 10 reports that entrypoint on its own rule.
+  const stale = internal.filter((e) => {
+    const surface = surfaces.get(entrypointOf(e.file));
+    return surface && !surface.opaque.length && surface.names.has(e.type);
+  });
+  if (stale.length)
+    throw new FilesError(
+      'register',
+      'internal-entry-unused',
+      `${stale.length} entry(ies) of the \`internal\` list of \`${POLICY}\` excuse a type ` +
+        `the index exports:\n` +
+        list(
+          stale.map(
+            (e) =>
+              `${e.file}:${e.declaration.line} — \`${e.type}\` is exported by \`${entrypointOf(e.file)}/src/index.ts\``,
+          ),
+        ) +
+        `\n    The type went public and the excuse stayed. From here on it stands ready to ` +
+        `cover the next type that quietly drops off the surface, and the register — which is ` +
+        `read as the list of what this library keeps to itself — is wrong by one line.`,
     );
 };
 
