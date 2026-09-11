@@ -1,0 +1,17 @@
+{
+  "check": "tests",
+  "rule": "excuse-without-spec",
+  "// defect": "The `coversNothing` register excuses a spec the library does not have. An excuse for a file the point never asks about excuses nothing, and in the register it reads as though it did — which is what a rename leaves behind.",
+  "policy": {
+    "coversNothing": [
+      {
+        "spec": "libs/fake/epsilon.spec.ts",
+        "reason": "Its only subject is the fake library's own test helper, which `patterns` strikes out of the measurement — so it covers no mutant and the report lists it nowhere."
+      },
+      {
+        "spec": "libs/fake/zeta.spec.ts",
+        "reason": "A spec that was renamed away and left its excuse standing here, where nothing compares it against the git index."
+      }
+    ]
+  }
+}

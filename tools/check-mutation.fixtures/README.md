@@ -8,7 +8,7 @@ what it declares.
 
 Every case carries the pair `check` + `rule`, not the point number alone — straight from
 [`lesson-50`](../../docs/lessons.md#lesson-50). Measured on this gate: disarming
-**twelve of the forty-two** rules moves their cases onto a neighbouring rule, and
+**twelve of the forty-five** rules moves their cases onto a neighbouring rule, and
 without that field all twelve runs would be green.
 
 The reason it exists is the same as for every other gate
@@ -57,7 +57,7 @@ Four readings arrive here as data rather than from a real run:
 
 This is the same choice as in `check-browsers` and for the same reason: four readings from disk and
 from the graph are four functions of a dozen lines each, while the checks are seven points and
-forty-three rules, and that is where all the content sits. The readings are guarded by runs against
+forty-six rules, and that is where all the content sits. The readings are guarded by runs against
 the real repository, recorded in the **Control** of
 [`req-quality-unit`](../../docs/requirements/quality.md#req-quality-unit).
 
@@ -75,6 +75,25 @@ Both replace an EXISTING row rather than inventing one, and that is deliberate:
 and the disarm of `columns-adrift` gives a green run — "PASSED" — instead of quietly moving
 the case onto a neighbour. Measured: with the arithmetic disarmed the second case passes, and
 the first moves to `incomplete-snapshot`, because a row nobody can read is a file with no row.
+
+## The spec that can kill nothing
+
+`epsilon.spec.ts` is the fake library's `delta.ts` one floor down: it stands in `specs` and
+NOT in `testFiles`, and the only thing that makes the reference input pass is its entry in
+`coversNothing`. Which is the whole point — a per-test report lists the tests that cover a
+mutant, so a spec whose subject was struck out of `patterns` is absent from it for a reason
+that is not drift, and point 3 has no way of telling that apart from a spec the run never saw.
+
+Three cases stand around it, each breaking one thing: an excuse for a spec the library does
+not have (`excuse-without-spec`), an excuse for a spec that does cover mutants
+(`excuse-that-covers`), and an excuse with no sentence (`excuse-without-reason`). The first
+two carry `epsilon`'s valid entry BESIDE the defective one, deliberately: strip it and
+`spec-outside-measurement` fires first, and the case would then prove a neighbour's rule
+rather than its own — which is the fault this whole tree is built to refuse.
+
+The live entry is `libs/components/testing/src/property.spec.ts`, which holds the property
+sweep four of this library's specs rest on and mutates nothing, because
+`!libs/components/testing/**` is in `patterns`.
 
 ## The rule that outlives disarming Stryker itself
 

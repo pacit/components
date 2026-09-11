@@ -1,0 +1,17 @@
+{
+  "check": "tests",
+  "rule": "excuse-that-covers",
+  "// defect": "A spec excused for covering no mutant covers some. The entry has outlived its reason, and from here on it would excuse that spec's real absence too — which is the one thing point 3 exists to catch.",
+  "policy": {
+    "coversNothing": [
+      {
+        "spec": "libs/fake/epsilon.spec.ts",
+        "reason": "Its only subject is the fake library's own test helper, which `patterns` strikes out of the measurement — so it covers no mutant and the report lists it nowhere."
+      },
+      {
+        "spec": "libs/fake/alpha.spec.ts",
+        "reason": "Written when this spec covered nothing, and left standing after it grew a subject inside the measurement."
+      }
+    ]
+  }
+}

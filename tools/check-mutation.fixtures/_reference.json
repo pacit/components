@@ -63,7 +63,13 @@
       "libs/fake/alpha.spec.ts",
       "libs/fake/beta.spec.ts"
     ],
-    "specs": ["libs/fake/alpha.spec.ts", "libs/fake/beta.spec.ts"],
+    "specs": [
+      "libs/fake/alpha.spec.ts",
+      "libs/fake/beta.spec.ts",
+      "libs/fake/epsilon.spec.ts"
+    ],
+    "// testFiles": "Written out rather than derived from `specs`, so that one spec of the fake library covers no mutant — `epsilon.spec.ts`, which `coversNothing` excuses. Without it the register would have nothing to be true ABOUT here, and its three cases would each be proving a rule the reference input never exercises.",
+    "testFiles": ["libs/fake/alpha.spec.ts", "libs/fake/beta.spec.ts"],
     "policy": {
       "patterns": [
         "libs/fake/*.ts",
@@ -85,6 +91,12 @@
         {
           "file": "libs/fake/delta.ts",
           "reason": "Instrumented, the file brings the initial test run down: the alias in its `input()` configuration stops being readable statically, so an attribute carrying a value stops being a binding. Not a file with a low score — a file the measurement cannot hold."
+        }
+      ],
+      "coversNothing": [
+        {
+          "spec": "libs/fake/epsilon.spec.ts",
+          "reason": "Its only subject is the fake library's own test helper, which `patterns` strikes out of the measurement — so it covers no mutant and the report lists it nowhere. It ran; it killed nothing."
         }
       ],
       "threshold": 80,
