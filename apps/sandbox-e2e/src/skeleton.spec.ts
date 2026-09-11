@@ -332,19 +332,34 @@ test.describe('PctSkeleton — the stop belongs to the page', () => {
     await expect(host).toHaveAttribute('data-pct-paused', '');
     expect(await styleOf(shade, 'animation-play-state')).toBe('paused');
 
-    // A hundred and fifty milliseconds before the reading, and it hides nothing: webkit
-    // applies the pause on a later FRAME than the one the click lands in, so a value read in
-    // the same task is a few frames stale and differs from the one the sheen actually stops
-    // on — measured at 197.72px against the 214.13px it then held for the rest of the run,
-    // with the animation's own `currentTime` already frozen at both readings
-    // ([`lesson-183`](../../../docs/lessons.md#lesson-183)). The window below is 700ms, so a
-    // sheen that had gone on travelling would be caught many times over.
-    await page.waitForTimeout(150);
-
-    const held = await position();
+    // Webkit applies the pause on a later FRAME than the one the click lands in, so a value
+    // read in the same task is a few frames stale and differs from the one the sheen actually
+    // stops on — measured at 197.72px against the 214.13px it then held for the rest of the
+    // run ([`lesson-183`](../../../docs/lessons.md#lesson-183)).
+    //
+    // That lesson also recorded the animation's own `currentTime` as already frozen at both
+    // readings, and a fixed 150ms wait stood here on that reading. It does not always hold:
+    // 3 of 30 webkit runs on an idle machine had the clock still settling at that mark and
+    // falling BACK afterwards — 4280 then 4086, which is 194ms in the direction no running
+    // animation can go ([`lesson-192`](../../../docs/lessons.md#lesson-192)). So the
+    // baseline is not a point in time but the first reading that repeats: the assertion
+    // below was always meant to be about a clock that has stopped, and now it waits for one
+    // instead of assuming a number.
     const clock = () =>
       shade.evaluate((el) => el.getAnimations()[0]?.currentTime ?? null);
-    const stopped = await clock();
+    const settled = async () => {
+      let previous = await clock();
+      for (let attempt = 0; attempt < 40; attempt++) {
+        await page.waitForTimeout(50);
+        const now = await clock();
+        if (now === previous) return now;
+        previous = now;
+      }
+      throw new Error('the sheen’s clock never settled under the pause');
+    };
+
+    const stopped = await settled();
+    const held = await position();
     await page.waitForTimeout(700);
     expect(await position(), 'a paused sheen travelled anyway').toBe(held);
     // And the platform's own statement beside the geometry: the animation's clock did not

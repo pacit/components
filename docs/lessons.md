@@ -5301,3 +5301,34 @@ file reads like it is running. The local battery is not a convenience next to CI
 the branch stands unpushed it is the only reading there is, and the things outside it
 (`check-bundle`, `check-index`, `vite:test` for an app nothing else renders) are the things
 that go quietly red.
+
+---
+
+### <a id="lesson-192"></a>`lesson-192` — A measurement taken once became a constant, and the constant was the flake
+
+[`lesson-183`](#lesson-183) recorded a real thing about webkit: it commits an animation's
+pause on a later frame than the one the click lands in, so a geometry read in the same task
+is a few frames stale. It recorded one more observation beside it — that the animation's own
+`currentTime` was **already frozen** at both of those readings — and `skeleton.spec.ts` built
+on that: a fixed `waitForTimeout(150)`, then one reading of the clock as the baseline the
+next 700ms had to match.
+
+The full battery at the end of 2026-09-11 failed that case once in 2062, in webkit alone.
+Stressed on an idle machine it reproduced **3 times in 30**: at the 150ms mark the clock read
+4280 and 700ms later it read 4086 — 194ms **backwards**, which is the one direction a running
+animation cannot go, and a `playState` of `paused` at both ends. A probe over
+`getAnimations()` killed the obvious suspect: one animation on that element, the right one,
+identical clocks in every passing run. What is actually happening is the settling itself —
+webkit's commit of the pause is not bounded by anything the test can name, and 150ms is
+inside the distribution rather than past it.
+
+So the defect was never in the product and never in the assertion. It was in a **number**: an
+observation true of the run it was taken from, written down as a constant and then asked to
+hold for every run. The repair is to stop naming a duration and wait for the condition the
+assertion was always about — the first clock reading that repeats is a clock that has
+stopped, and from there "did it advance" means what it says.
+
+The general shape, and the reason this is worth a number of its own: a measurement in a
+comment is evidence, and evidence is about the past. The moment it becomes a literal in the
+code beside it, it is a claim about the future, and nothing in the file marks where one
+turned into the other.
