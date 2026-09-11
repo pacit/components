@@ -5276,3 +5276,28 @@ landed — not the gate, and not a reading of the gate.
 
 The repair is a rule about the source's own naming rather than another exception list: a set
 whose file name carries an axis word belongs to that axis's group, and a base is what is left.
+
+---
+
+### <a id="lesson-191"></a>`lesson-191` — The backstop named in the rules has not run in 144 commits
+
+The full battery run at the end of 5.4 turned up a red that belonged to neither item:
+`sandbox:vite:test`, three of seven cases, `TypeError: Cannot read properties of null
+(reading 'register')`. `954047f` (2026-09-08) put `pctRegionKey` and three `pctRegion`s into
+the sandbox shell's template and `providePctRegions()` into `app.config.ts`; `app.spec.ts`
+renders that same shell through a TestBed of its own and never got the provider. The
+application was fine — the e2e suite exercises the regions on every run — and the unit spec
+for the shell had been crashing for **three days and some thirty commits**.
+
+The interesting part is not the missing provider. It is that `vite:test` stands in the CI
+line in `.github/workflows/ci.yml`, which is where several documents here point when they say
+a thing is guarded. `git rev-list --count origin/main..HEAD` at that moment: **144**. Nothing
+in this window has reached CI, deliberately — the push waits for an explicit word
+([3.0](plan.md)) — so for the whole of it the CI line has been a description of what would
+happen, not a report of what did.
+
+That is why [`lesson-188`](#lesson-188)'s shape keeps recurring: a target named in a workflow
+file reads like it is running. The local battery is not a convenience next to CI here; while
+the branch stands unpushed it is the only reading there is, and the things outside it
+(`check-bundle`, `check-index`, `vite:test` for an app nothing else renders) are the things
+that go quietly red.

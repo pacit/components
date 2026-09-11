@@ -1,6 +1,7 @@
 import { provideZonelessChangeDetection } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { providePctRegions } from '@pacit/components/regions';
 import { App } from './app';
 import { appRoutes } from './app.routes';
 import { SbxSettings } from './ui/settings';
@@ -11,7 +12,16 @@ describe('App (the sandbox shell)', () => {
     await TestBed.configureTestingModule({
       imports: [App],
       // The tests run zoneless, just like the application (req-project-angular).
-      providers: [provideZonelessChangeDetection(), provideRouter(appRoutes)],
+      // The regions provider is here because the shell's own template asks for it:
+      // `app.html` carries `pctRegionKey` and three `pctRegion`s, and the directive
+      // injects `PCT_REGIONS` with a non-null assertion. A TestBed that renders the shell
+      // without it is not a lighter setup, it is a crash — which is what this file did for
+      // three days (`lesson-191`).
+      providers: [
+        provideZonelessChangeDetection(),
+        provideRouter(appRoutes),
+        providePctRegions(),
+      ],
     }).compileComponents();
   });
 
