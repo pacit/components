@@ -13,7 +13,35 @@
  *  5. freshness — `docs/registry.md` and the generated ID union agree with the source,
  *  6. negative control — the broken requirements in `check-docs.fixtures/` are rejected,
  *  7. no card denies a gate — a component card that says a requirement has no gate must
- *     agree with that requirement's own **Gate** field.
+ *     agree with that requirement's own **Gate** field,
+ *  8. the plan and the registry agree — a task of `docs/plan.md` that names a requirement
+ *     on its own title line is held to that requirement's state.
+ *
+ * WHAT POINT 8 READS, AND HOW LITTLE THAT IS. `docs/plan.md` is written by hand and
+ * `docs/registry.md` is generated, both speak about the same identifiers, and until this
+ * point nothing compared them: a task offering a requirement's gate stood unticked for 149
+ * commits while that requirement's own state had read enforced the whole time. The cost of
+ * that is not a red build. It is a plan read as the list of what is left, and work that is
+ * therefore taken twice.
+ *
+ * The identifier is read from the item's FIRST LINE — the line carrying its mark — and from
+ * nowhere else. That line is where the plan writes its titles, in the two shapes the file
+ * really uses: the title that IS an identifier (`**5.5 — `req-project-concise`**`) and the
+ * claim written just after it (`→ closes `req-project-apps``). Both assert something about
+ * that requirement. A citation below the first line is context, not a claim, and reading it
+ * would be a false fire rather than a wider net: when this point was written the plan held
+ * 89 tasks, 7 of which named a requirement on their title line and a further 27 of which
+ * named one only in their body — among them three open findings whose whole subject is a
+ * defect one floor up from an enforced requirement. The live figure is printed on the
+ * summary line, because a point that reads 7 of 89 items owes the reader that number.
+ *
+ * The marks come from the plan's own Notation table. `[ ]` must name a gap and `[x]` must
+ * not — the fourth clause of the file's definition of done is that the entry has gone from
+ * the gap list. `[-]`, deliberately dropped, is read like `[x]`: the notation says the
+ * requirement then gets `none — deliberately: <reason>`, which is any state but a gap.
+ * `[~]` is excluded, and that is the whole reason the mark exists — work in flight is
+ * exactly the state where the gate has landed and the control has not, so a rule firing on
+ * it would fire on every task the moment somebody started it.
  *
  * Usage:
  *   node tools/check-docs.mjs           verifies (CI)
@@ -35,6 +63,19 @@ const fail = (where, msg) => problems.push(`${where}: ${msg}`);
 // ── sources ────────────────────────────────────────────────────────────────────
 
 const read = (rel) => readFileSync(join(ROOT, rel), 'utf8');
+
+/**
+ * The same, for a file whose absence is a FINDING rather than a crash. Point 8 reads two
+ * files it does not own — the plan and a fixture's plan — and a gate that dies with a
+ * stack trace over a renamed file has reported nothing a person can act on.
+ */
+const readOrNull = (rel) => {
+  try {
+    return readFileSync(join(ROOT, rel), 'utf8');
+  } catch {
+    return null;
+  }
+};
 
 const REQ_FILES = [
   'docs/00-axis.md',
@@ -149,6 +190,21 @@ const classify = (value, req, fieldName) => {
   return 'enforced';
 };
 
+/**
+ * The state the registry renders, out of the two fields it is derived from. Named rather
+ * than inlined because point 8's negative control derives it too, over the requirements of
+ * its own reference — a control computing the state its own way would be proving something
+ * about its arithmetic and not about this gate.
+ */
+const deriveState = (gateState, controlState) =>
+  gateState === 'enforced' && controlState === 'enforced'
+    ? 'enforced'
+    : gateState === 'gap' || controlState === 'gap'
+      ? 'gap'
+      : gateState === null || controlState === null
+        ? 'ERROR'
+        : 'partial';
+
 for (const req of requirements) {
   if (!req.fields.Promise?.trim()) fail(req.id, 'no **Promise** field');
   if (req.fields.Gate === undefined) fail(req.id, 'no **Gate** field');
@@ -157,14 +213,7 @@ for (const req of requirements) {
   req.gateState = classify(req.fields.Gate, req, 'Gate');
   req.controlState = classify(req.fields.Control, req, 'Control');
 
-  req.state =
-    req.gateState === 'enforced' && req.controlState === 'enforced'
-      ? 'enforced'
-      : req.gateState === 'gap' || req.controlState === 'gap'
-        ? 'gap'
-        : req.gateState === null || req.controlState === null
-          ? 'ERROR'
-          : 'partial';
+  req.state = deriveState(req.gateState, req.controlState);
 
   if (req.state === 'gap' && !req.fields['Binds at']?.trim())
     fail(
@@ -628,6 +677,175 @@ const checkCardClaims = (rel, text, report) => {
 for (const rel of globSync('docs/components/*.md', { cwd: ROOT }).sort())
   checkCardClaims(rel, read(rel), fail);
 
+// ── 8. the plan and the registry say the same thing about an identifier ───────
+
+const PLAN = 'docs/plan.md';
+
+/** A task line: one of the four marks the plan's Notation table declares, then its title. */
+const PLAN_ITEM = /^[ \t]*- \[([ x~-])\] ?(.*)$/;
+
+/**
+ * The same lines counted a second time and by a different question: a bullet whose box
+ * holds AT MOST ONE character, whatever that character is. The parser above accepts only
+ * the four declared marks, so the two counts part company exactly where an item carries a
+ * mark nobody declared — an invented `[?]`, an empty box — and such an item would otherwise
+ * drop out of this point without a trace. A markdown link bullet (`- [label](url)`) holds
+ * more than one character between its brackets and is therefore not a box.
+ */
+const PLAN_BOX = /^[ \t]*- \[(.?)\]/gm;
+
+/** A requirement named in backticks — how the plan, the cards and the registry all write one. */
+const PLAN_CITATION = /`(req-[a-z][a-z0-9-]*[a-z0-9])`/g;
+
+/** `[x]` closed and `[-]` dropped are both finished business. `[~]` is neither; see above. */
+const PLAN_SETTLED = new Set(['x', '-']);
+
+/**
+ * The text with every fenced block blanked out, LINE FOR LINE so that the numbers this
+ * point reports stay the numbers a person scrolls to. The plan documents its own notation
+ * and its own commands, and a task line quoted inside a code block is an example of a task
+ * rather than one. Both counts below read the stripped text, so an example can never make
+ * them disagree with each other either.
+ */
+const withoutFences = (text) => {
+  let open = false;
+  return String(text ?? '')
+    .split('\n')
+    .map((line) => {
+      if (/^\s*```/.test(line)) {
+        open = !open;
+        return '';
+      }
+      return open ? '' : line;
+    })
+    .join('\n');
+};
+
+/** Every task of a plan: its mark, the line it stands on, the requirements its title names. */
+const planItems = (text) => {
+  const out = [];
+  const lines = String(text ?? '').split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    const m = lines[i].match(PLAN_ITEM);
+    if (!m) continue;
+    out.push({
+      line: i + 1,
+      mark: m[1],
+      ids: [...new Set([...m[2].matchAll(PLAN_CITATION)].map((c) => c[1]))],
+    });
+  }
+  return out;
+};
+
+/**
+ * Holds a plan to the states its own identifiers are in. `states` maps a requirement id to
+ * `{ state, home }` — the state the registry renders and the place a reader opens to see
+ * why. `report` takes the RULE FIRST, because the negative control has to verify that a
+ * prepared plan fired on the rule it declares: a case rejected by a neighbouring rule
+ * proves something other than what it was written for.
+ *
+ * Returns what it read, so the summary line can say it out loud.
+ */
+const checkPlanClaims = (rel, text, states, report) => {
+  if (typeof text !== 'string' || !text.trim()) {
+    report(
+      'no-plan',
+      rel,
+      `point 8 (plan) rule \`no-plan\`: \`${rel}\` is missing or empty, so this point ` +
+        `compared the hand-written plan against the generated registry not at all, ` +
+        `which without this rule would have read as agreement. If the plan has ` +
+        `moved, the constant naming it here moves with it.`,
+    );
+    return { items: 0, compared: 0 };
+  }
+
+  const body = withoutFences(text);
+  const items = planItems(body);
+  const boxes = (body.match(PLAN_BOX) ?? []).length;
+
+  if (!items.length) {
+    report(
+      'no-item',
+      rel,
+      `point 8 (plan) rule \`no-item\`: not one task line in \`${rel}\` — the marks are ` +
+        `\`- [ ]\`, \`- [x]\`, \`- [~]\` and \`- [-]\`. Tasks are the denominator of this ` +
+        `point, and over an empty one it passes having compared nothing. The usual cause ` +
+        `is a parse that has stopped matching the file's shape, not a plan with no work in it.`,
+    );
+    return { items: 0, compared: 0 };
+  }
+
+  if (items.length !== boxes)
+    report(
+      'item-unparsed',
+      rel,
+      `point 8 (plan) rule \`item-unparsed\`: the parse read ${items.length} of ${boxes} ` +
+        `task lines in \`${rel}\`. The rest carry a mark the Notation table does not ` +
+        `declare — an invented \`[?]\`, an empty box — and they leave this point silently ` +
+        `rather than loudly. Either the mark becomes one of the four, or the notation ` +
+        `grows one and this parser learns it.`,
+    );
+
+  const claiming = items.filter((i) => i.ids.length);
+  if (!claiming.length) {
+    report(
+      'no-claim',
+      rel,
+      `point 8 (plan) rule \`no-claim\`: none of the ${items.length} tasks in \`${rel}\` ` +
+        `names a requirement on its own title line, so this point compared nothing. An ` +
+        `item claims a requirement by naming it in backticks on the line that carries its ` +
+        `mark; a citation in the body below is context and is deliberately not read. If ` +
+        `the plan really stopped naming requirements, this point has lost its subject.`,
+    );
+    return { items: items.length, compared: 0 };
+  }
+
+  for (const item of claiming) {
+    if (item.mark === '~') continue;
+    for (const id of item.ids) {
+      const known = states.get(id);
+      // An identifier that resolves to nothing is point 4's to report, in its own words,
+      // and `ERROR` is point 1's — a second voice on one defect helps nobody.
+      if (!known || known.state === 'ERROR') continue;
+      if (item.mark === ' ' && known.state !== 'gap')
+        report(
+          'open-but-closed',
+          `${rel}:${item.line}`,
+          `point 8 (plan) rule \`open-but-closed\`: the task is marked \`[ ]\` and names ` +
+            `\`${id}\`, whose state is \`${known.state}\` and not a gap (${known.home}). ` +
+            `The plan is read as the list of what is left, so an open item offering work ` +
+            `the repository has already done is an invitation to do it a second time. ` +
+            `Tick it, or write into it what remains beyond the requirement it names.`,
+        );
+      if (PLAN_SETTLED.has(item.mark) && known.state === 'gap')
+        report(
+          'closed-but-open',
+          `${rel}:${item.line}`,
+          `point 8 (plan) rule \`closed-but-open\`: the task is marked \`[${item.mark}]\` ` +
+            `— finished business — and names \`${id}\`, which is still \`gap\` ` +
+            `(${known.home}). The fourth clause of the plan's own definition of done is ` +
+            `that the entry has gone from the gap list, and it has not: either the gate ` +
+            `never reached the requirement's **Gate** field, or the mark was hopeful.`,
+        );
+    }
+  }
+
+  return { items: items.length, compared: claiming.length };
+};
+
+const planStates = new Map(
+  requirements.map((r) => [
+    r.id,
+    { state: r.state, home: `${r.file}#${r.id}` },
+  ]),
+);
+const planRead = checkPlanClaims(
+  PLAN,
+  readOrNull(PLAN),
+  planStates,
+  (rule, where, message) => fail(where, message),
+);
+
 // ── 6. negative control ───────────────────────────────────────────────────────
 
 const FIXTURES = 'tools/check-docs.fixtures';
@@ -696,6 +914,110 @@ if (!WRITE) {
         'the negative control PASSED and was meant not to — point 7 stopped examining anything',
       );
   }
+
+  // Point 8's controls are DIRECTORIES, because a plan means nothing without the
+  // requirements it is read against. Those requirements are shared — `_reference/`, whose
+  // `_` keeps it out of the case list of `tools/check-index.mjs` as well — so a case holds
+  // only its own defect: a plan differing from the reference plan by the one line the case
+  // is about. The reference is run too, and must PASS: a case rejected because the material
+  // around it is broken proves nothing about the rule written into it.
+  const REFERENCE = `${FIXTURES}/_reference`;
+  const refReqs = `${REFERENCE}/requirements.md`;
+  const refPlan = `${REFERENCE}/plan.md`;
+
+  if (!existsSync(join(ROOT, refReqs)) || !existsSync(join(ROOT, refPlan))) {
+    fail(
+      REFERENCE,
+      `point 8 has no reference — \`requirements.md\` and \`plan.md\` are the material ` +
+        `every case of that point is measured against, and without them the cases below ` +
+        `cannot be run at all`,
+    );
+  } else {
+    const before = problems.length;
+    const refStates = new Map();
+    for (const r of parseRequirements(read(refReqs), refReqs))
+      refStates.set(r.id, {
+        state: deriveState(
+          classify(r.fields.Gate, r, 'Gate'),
+          classify(r.fields.Control, r, 'Control'),
+        ),
+        home: `${refReqs}#${r.id}`,
+      });
+    problems.length = before; // the reference is READ here, not judged — that is point 1's job
+
+    // The two states the rules turn on. A reference holding only one of them would let a
+    // case pass its control while the rule it declares had never been reachable.
+    const states = [...refStates.values()].map((v) => v.state);
+    if (!states.includes('enforced') || !states.includes('gap'))
+      fail(
+        refReqs,
+        `point 8's reference needs one requirement that is a gap and one that is not — it ` +
+          `has ${states.join(', ') || 'none'}. Both rules read that difference, so a ` +
+          `one-sided reference makes one of them impossible to trip`,
+      );
+
+    const refFired = [];
+    checkPlanClaims(refPlan, readOrNull(refPlan), refStates, (rule) =>
+      refFired.push(rule),
+    );
+    if (refFired.length)
+      fail(
+        refPlan,
+        `point 8's reference plan agrees with \`${refReqs}\` by construction and was ` +
+          `rejected anyway (\`${[...new Set(refFired)].join('`, `')}\`) — every case ` +
+          `beside it is then rejected for the reference's defect and not for its own`,
+      );
+
+    let planCases = 0;
+    for (const decl of globSync(`${FIXTURES}/*/fixture.json`, {
+      cwd: ROOT,
+    }).sort()) {
+      let declared;
+      try {
+        declared = JSON.parse(read(decl));
+      } catch (error) {
+        fail(
+          decl,
+          `the case declares itself in a file that is not readable JSON ` +
+            `(${error.message.split('\n')[0]}) — a case nobody can read is a case nobody runs`,
+        );
+        continue;
+      }
+      if (declared?.point !== 8) continue;
+      planCases++;
+
+      const dir = dirname(decl);
+      const fired = [];
+      checkPlanClaims(
+        `${dir}/plan.md`,
+        readOrNull(`${dir}/plan.md`),
+        refStates,
+        (rule) => fired.push(rule),
+      );
+      const unique = [...new Set(fired)];
+      if (!unique.length)
+        fail(
+          dir,
+          `the negative control PASSED and was meant not to — point 8 rule ` +
+            `\`${declared.rule}\` stopped examining anything`,
+        );
+      else if (unique.length > 1 || unique[0] !== declared.rule)
+        fail(
+          dir,
+          `the case fired point 8 rule \`${unique.join('`, `')}\` and declares ` +
+            `\`${declared.rule}\` — a case rejected by a neighbouring rule leaves its own ` +
+            `rule unproven, which is the fault of the case and not of the gate`,
+        );
+    }
+
+    if (planCases === 0)
+      fail(
+        FIXTURES,
+        `no negative control for point 8 — not one case declares \`"point": 8\`, so the ` +
+          `comparison between the plan and the registry has no proof that it can fire ` +
+          `(req-quality-negative-control)`,
+      );
+  }
 }
 
 // ── result ────────────────────────────────────────────────────────────────────
@@ -713,5 +1035,6 @@ const counts = requirements.reduce(
 );
 console.log(
   `v Documentation gate: ${requirements.length} requirements, ${lessonIds.size} lessons — ` +
-    `enforced ${counts.enforced ?? 0}, partial ${counts.partial ?? 0}, gap ${counts.gap ?? 0}`,
+    `enforced ${counts.enforced ?? 0}, partial ${counts.partial ?? 0}, gap ${counts.gap ?? 0}` +
+    `; plan: ${planRead.compared} of ${planRead.items} tasks name a requirement and were compared`,
 );

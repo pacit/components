@@ -1,0 +1,6 @@
+{
+  "point": 8,
+  "check": "plan",
+  "rule": "open-but-closed",
+  "description": "An open task offering work the repository has already done: the box is empty and the requirement it names has left the gap list. This is the disagreement the point was built for — the plan is read as the list of what is left, so the line invites the same work a second time."
+}

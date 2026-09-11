@@ -1,0 +1,6 @@
+{
+  "point": 8,
+  "check": "plan",
+  "rule": "item-unparsed",
+  "description": "Two bullets with a box, one of them under a mark the Notation table does not declare. The undeclared one drops out of the comparison in silence, which is the shape of defect this whole gate exists against; the declared one agrees with its requirement so that nothing else can fire."
+}

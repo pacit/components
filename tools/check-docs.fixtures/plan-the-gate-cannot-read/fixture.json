@@ -1,0 +1,6 @@
+{
+  "point": 8,
+  "check": "plan",
+  "rule": "no-plan",
+  "description": "The case is a directory with no plan in it. A plan this point cannot open is the state in which it compares nothing at all, and a renamed or moved file would otherwise turn the whole point green rather than red."
+}

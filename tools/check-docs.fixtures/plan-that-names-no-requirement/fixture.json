@@ -1,0 +1,6 @@
+{
+  "point": 8,
+  "check": "plan",
+  "rule": "no-claim",
+  "description": "A plan of tasks, none of which names a requirement on its title line. One of them names one in its body, which this point deliberately does not read — so the comparison has no subject, and saying so is the difference between a green run and a measured one."
+}

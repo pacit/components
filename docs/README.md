@@ -130,7 +130,7 @@ of names.
 `tools/check-docs.mjs`, target `check-docs`, in CI. Same idiom as `check-package.mjs`:
 numbered checks, a header explaining **why the script exists**, `exit 1` on a violation.
 
-It checks six things:
+It checks eight things:
 
 1. **Completeness.** Every requirement has `Promise`, `Gate` and `Control`; every
    `none — gap` also has `Binds at`.
@@ -145,6 +145,16 @@ It checks six things:
 5. **Registry freshness.** `registry.md` on disk equals a freshly generated one.
 6. **Negative control.** A set of deliberately broken requirements in
    `tools/check-docs.fixtures/` — **every one** of them has to be rejected.
+7. **No card denies a gate.** A component card that says a requirement has no gate has to
+   agree with that requirement's own **Gate** field — a card is read by somebody choosing
+   whether to trust a component, and the registry is the thing that knows.
+8. **The plan and the registry agree.** A task of `plan.md` naming a requirement on its own
+   title line is held to that requirement's state: an open task whose requirement is no
+   longer a gap is work being offered twice, and a ticked one whose requirement is still a
+   gap is a mark that was hopeful. Both directions fire. The comparison exists because
+   neither document could see the other — one is generated from the requirements and one is
+   kept by hand, and the only thing joining them is an identifier written in both
+   ([`lesson-189`](lessons.md#lesson-189)).
 
 Point 6 is not decoration. The registry is itself a gate, so it falls under
 [`req-quality-negative-control`](requirements/quality.md#req-quality-negative-control) like

@@ -1,0 +1,6 @@
+{
+  "point": 8,
+  "check": "plan",
+  "rule": "no-item",
+  "description": "A plan whose prose survives and whose task lines do not — the one thing that looks like a task stands inside a code fence, which the point blanks out before either count is taken. Tasks are this point's denominator, and over an empty one it would pass having compared nothing; the usual cause is a parse that stopped matching the file's shape."
+}

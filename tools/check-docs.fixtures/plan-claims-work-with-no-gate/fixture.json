@@ -1,0 +1,6 @@
+{
+  "point": 8,
+  "check": "plan",
+  "rule": "closed-but-open",
+  "description": "A ticked task whose requirement is still a gap. The plan's own definition of done ends at the entry having gone from the gap list, so the mark claims work that left no machine behind."
+}
