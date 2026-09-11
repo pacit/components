@@ -1,0 +1,6 @@
+{
+  "point": 5,
+  "check": "styles",
+  "rule": "inline-styles",
+  "description": "The component keeps its styles in the decorator. Those styles are not SCSS, so they fall outside every rule the stylesheets of this library are held to — logical properties, forced colours, the motion axis — and `check-styles` reports the library clean because it reads sheets and not decorators. One gate's blind spot is the other's point."
+}

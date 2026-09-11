@@ -1,0 +1,6 @@
+{
+  "point": 6,
+  "check": "sibling",
+  "rule": "missing-file",
+  "description": "The declaration names a sibling the repository does not carry. The gate reads the git index rather than the disk, and that is the sharp edge of this case: a template present on one machine and never added to the index builds there and nowhere else, which is the failure that reaches CI as somebody else's problem."
+}

@@ -1,0 +1,3 @@
+// The package's own entrypoint, named after the package and not after a component: point 3
+// asks nothing of it, and there is no `components.ts` for it to ask about.
+export type { FxSize } from '@fx/components/core';

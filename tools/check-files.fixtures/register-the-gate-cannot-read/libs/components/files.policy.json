@@ -1,0 +1,4 @@
+{
+  "// why": "The register of the file-structure gate, with `inline` written as an object instead of the list the gate reads.",
+  "inline": {}
+}

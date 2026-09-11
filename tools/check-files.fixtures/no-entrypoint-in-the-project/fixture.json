@@ -1,0 +1,7 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "rule": "no-entrypoint",
+  "description": "The walk finds no `ng-package.json` at all. This is not a theoretical case: a git pathspec is not a shell glob, and a pattern with a star in it returns an EMPTY list rather than an error — the sibling gates were caught by exactly that (lesson-48). With no entrypoint the layout points rule over nothing and the run ends green, having read the library not once.",
+  "drop": ["libs/components"]
+}

@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "register",
+  "rule": "entry-without-reason",
+  "description": "The entry names a real declaration and says nothing about it. Without a reason the register states that this component keeps its template in the decorator, which is what the decorator states anyway — the reason is the whole entry. The floor is the same forty characters as in `check-mutation`, and it is a floor against the rubber stamp, not a measure of quality."
+}

@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "template",
+  "rule": "inline-template",
+  "description": "The named control of `req-project-files`: an entrypoint whose component keeps its template in the decorator. Angular's own guidance recommends exactly this for a small component, so the defect arrives looking like good practice and nothing in the toolchain minds it — the build, the tests and the linter are all content. `PctSelect` began as a trigger with a list, which is the whole argument of decision 0001: `small` is not a permanent state."
+}

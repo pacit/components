@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "rule": "decorator-unparsed",
+  "description": "One decorator written otherwise than prettier formats it — indented, so the parser's column-zero anchor misses it and the component drops out of points 4 to 7 without a trace. The counter is what notices, and it notices only because it does NOT repeat the parser's anchor: the first version of `check-styles` used one pattern in both places, both sides agreed on the same wrong number and the gate went green over a component it had stopped reading (lesson-48)."
+}

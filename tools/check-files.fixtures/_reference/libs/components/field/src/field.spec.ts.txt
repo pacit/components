@@ -1,0 +1,11 @@
+import { describe, expect, it } from 'vitest';
+
+import { FxField } from './field';
+import { FxText } from './text';
+
+describe('FxField', () => {
+  it('declares the wrapper and the control', () => {
+    expect(new FxField()).toBeInstanceOf(FxField);
+    expect(new FxText()).toBeInstanceOf(FxText);
+  });
+});

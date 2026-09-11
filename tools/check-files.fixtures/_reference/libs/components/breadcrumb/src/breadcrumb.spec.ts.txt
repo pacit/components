@@ -1,0 +1,10 @@
+import { describe, expect, it } from 'vitest';
+
+import { FxBreadcrumb, FxCrumb } from './breadcrumb';
+
+describe('FxBreadcrumb', () => {
+  it('declares the trail and the crumb', () => {
+    expect(new FxBreadcrumb()).toBeInstanceOf(FxBreadcrumb);
+    expect(new FxCrumb()).toBeInstanceOf(FxCrumb);
+  });
+});

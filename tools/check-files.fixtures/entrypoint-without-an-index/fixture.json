@@ -1,0 +1,7 @@
+{
+  "point": 2,
+  "check": "entrypoint",
+  "rule": "no-index",
+  "description": "A manifest pointing at an entry file that is not there. The index is the entrypoint's whole public surface — it is what a consumer's import resolves to — and its absence is the kind of thing a rename produces in one keystroke.",
+  "drop": ["libs/components/button/src/index.ts.txt"]
+}

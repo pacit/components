@@ -1,0 +1,5 @@
+{
+  "point": 7,
+  "check": "orphan",
+  "description": "A template nothing renders. Points 4 to 6 run from the declaration towards the file; this one runs back, and it is the direction a rename breaks: the decorator moves to the new name and the old file stays behind. Nothing compiles it, nothing ships it and nothing reports it — and it reads like a component's template to the next person who opens the directory."
+}

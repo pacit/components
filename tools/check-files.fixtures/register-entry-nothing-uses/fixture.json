@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "register",
+  "rule": "entry-unused",
+  "description": "An entry excusing a component that has since moved its template into a file. The component was fixed and the excuse stayed, which is the cheapest way for a register to stop meaning anything: from here on it stands ready to cover the next inline template silently, and the reading of the file — the list of what this library tolerates — is wrong by one line nobody can see."
+}

@@ -1,0 +1,6 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "rule": "register-unreadable",
+  "description": "The register is valid JSON and the wrong shape: `inline` is an object where the gate reads a list. Points 4 and 5 consult it before they fire, so a file they cannot read would either excuse everything or nothing — and neither answer is one anybody chose. The defensive read is the whole rule here: a malformed policy is a sentence a person acts on, never a `TypeError` two hundred lines further down."
+}

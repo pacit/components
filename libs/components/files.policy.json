@@ -1,0 +1,18 @@
+{
+  "// why": "The register of the file-structure gate (req-project-files). It holds the one thing that gate cannot read out of the tree: WHICH components keep in their decorator what decision 0001 sends to a file, and why each of them cannot do otherwise. `tools/check-files.mjs` consults it at points 4 and 5 before it fires, and audits it at point 9 — the split is deliberate and is `check-mutation`'s: an entry excuses on its PRESENCE, so a register gone stale reads as a defect of the register rather than as a component quietly losing its file.",
+  "// inline": "An entry names a declaration exactly — the source file, the class and the decorator member — because a component is not a file: `breadcrumb.ts` holds three of them, and an excuse written per file would cover two components nobody looked at. An entry that names no declaration this gate read, one with no reason, and one excusing something that is no longer happening are all failures of point 9: the second would say `this component keeps its template in the decorator`, which is what the decorator says anyway, and the third stands ready to cover the next case silently.",
+  "inline": [
+    {
+      "file": "libs/components/field/src/text.ts",
+      "class": "PctText",
+      "member": "template",
+      "reason": "A component on a native `<input>`, not a wrapper around one (`req-api-platform`): the host IS the element, so the component projects nothing and draws nothing of its own — its template is the empty string. It is a component rather than a directive only because a directive cannot carry styles and the API is not to stand on `::ng-deep`. A `text.html` holding this template would hold no characters, and a reader who opened it to see what the control draws would learn less than the decorator tells them."
+    },
+    {
+      "file": "libs/components/field/src/number.ts",
+      "class": "PctNumber",
+      "member": "template",
+      "reason": "The same shape as `PctText` above, on `input[pctNumber]`: the host is the native input, the template is empty, and the sheet it shares is `./text.scss` — the one place where two declarations of this library take their styles from one file, because the two controls paint the same box."
+    }
+  ]
+}

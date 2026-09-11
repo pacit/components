@@ -1,0 +1,11 @@
+{
+  "// why": "The register of the file-structure gate (req-project-files), in miniature: the components that keep a decorator member the rule sends to a file, and the reason each of them cannot. `tools/check-files.mjs` reads it at points 4 and 5 before it fires, and audits it at point 9 — an entry naming no declaration, carrying no reason or excusing something that is no longer happening is itself a failure.",
+  "inline": [
+    {
+      "file": "libs/components/field/src/text.ts",
+      "class": "FxText",
+      "member": "template",
+      "reason": "The host IS the native input: the component projects nothing and renders nothing of its own, so its template is the empty string. A file holding it would hold no characters, and a reader opening `text.html` to see what the control draws would learn less than the decorator tells them."
+    }
+  ]
+}

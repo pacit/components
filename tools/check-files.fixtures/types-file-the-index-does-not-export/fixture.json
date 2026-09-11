@@ -1,0 +1,5 @@
+{
+  "point": 8,
+  "check": "types",
+  "description": "The types file is written, it compiles, the component imports it — and the entrypoint's index passes over it, so the consumer, who can only see what the index re-exports, cannot name one of those types. It is the arrangement here that looks finished from every side: nothing is missing, nothing is red, and the public surface is short by a name that was meant to be on it."
+}

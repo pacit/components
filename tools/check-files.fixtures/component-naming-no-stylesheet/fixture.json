@@ -1,0 +1,6 @@
+{
+  "point": 5,
+  "check": "styles",
+  "rule": "no-styles",
+  "description": "A declaration with neither `styleUrl` nor `styles`. The mirror of `component-naming-no-template`, and needed for the same reason: a component of this library paints the box it draws — its own spacing, its own focus ring — so a declaration with no sheet is far more often a sheet this gate could not read than a component that needs none."
+}

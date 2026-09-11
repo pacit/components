@@ -1,0 +1,9 @@
+import { describe, expect, it } from 'vitest';
+
+import { FxButton } from './button';
+
+describe('FxButton', () => {
+  it('starts on the solid variant', () => {
+    expect(new FxButton().variant).toBe('solid');
+  });
+});

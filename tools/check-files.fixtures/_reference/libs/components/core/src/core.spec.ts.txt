@@ -1,0 +1,9 @@
+import { describe, expect, it } from 'vitest';
+
+import { defaultTone } from './tone';
+
+describe('the tone', () => {
+  it('starts neutral', () => {
+    expect(defaultTone).toBe('neutral');
+  });
+});

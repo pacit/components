@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "component-entrypoint",
+  "rule": "no-eponymous-source",
+  "description": "The component of `button/` was moved into `trigger.ts` and nothing complains: it compiles, it is exported, it ships. What is lost is the one thing decision 0001 claims for the whole rule — that the path to a component's artefacts can be predicted without opening the directory. A consumer importing `@pacit/components/button` and a maintainer opening the directory are to find the same word.",
+  "drop": ["libs/components/button/src/button.ts.txt"]
+}

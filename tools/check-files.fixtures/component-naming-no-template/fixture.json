@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "template",
+  "rule": "no-template",
+  "description": "A declaration that names no template at all — neither a file nor a string. This is the point's own denominator: a `templateUrl` this gate failed to read looks exactly like a component obeying the rule, and point 6 then has no path to check. A rule that only ever asks `is it inline?` answers `no` to both a component with a file and a component the parser lost."
+}

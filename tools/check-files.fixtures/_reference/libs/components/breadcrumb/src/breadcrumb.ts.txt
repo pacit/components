@@ -1,0 +1,19 @@
+import { Component } from '@angular/core';
+
+// One entrypoint, two components, one source file — the shape points 4 to 7 exist for. The
+// unit of those points is the declaration: each of the two names a template and a sheet of
+// its own, and neither is named after the file it stands in.
+
+@Component({
+  selector: 'fx-breadcrumb',
+  templateUrl: './breadcrumb.html',
+  styleUrl: './breadcrumb.scss',
+})
+export class FxBreadcrumb {}
+
+@Component({
+  selector: 'fx-crumb',
+  templateUrl: './crumb.html',
+  styleUrl: './crumb.scss',
+})
+export class FxCrumb {}

@@ -1,0 +1,12 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "rule": "no-declaration",
+  "description": "Sources by the dozen and not one `@Component` among them. The denominator of points 4 to 7 is the declaration, not the file, so a parse that stops finding decorators leaves four points comparing an empty set with an empty set — which is the one comparison that can never fail.",
+  "drop": [
+    "libs/components/button/src/button.ts.txt",
+    "libs/components/breadcrumb/src/breadcrumb.ts.txt",
+    "libs/components/field/src/field.ts.txt",
+    "libs/components/field/src/text.ts.txt"
+  ]
+}

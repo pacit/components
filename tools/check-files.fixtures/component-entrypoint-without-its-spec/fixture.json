@@ -1,0 +1,7 @@
+{
+  "point": 3,
+  "check": "component-entrypoint",
+  "rule": "no-eponymous-spec",
+  "description": "The entrypoint declares a component and carries no spec named after it. This is kept apart from the source rule for the reason every pair here is kept apart: the two drift independently — a component can be renamed while its spec keeps the old name, and the specs of the other entrypoints go on passing, so the run stays green over a component nothing exercises.",
+  "drop": ["libs/components/button/src/button.spec.ts.txt"]
+}

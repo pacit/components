@@ -1,0 +1,6 @@
+{
+  "point": 9,
+  "check": "register",
+  "rule": "entry-without-declaration",
+  "description": "The register excuses a class no source declares. An excuse for something the rule never asks about excuses nothing — and in the register it reads as though it did, which is worse than an empty file: the next person counts the entries and concludes that this library tolerates two of these. A rename leaves exactly this behind."
+}

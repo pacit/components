@@ -234,10 +234,36 @@ text instead of weighing it ([`lesson-171`](../lessons.md#lesson-171))
 `button.types.ts`, `index.ts`, `ng-package.json`. Template and styles **always** in separate
 files.
 
-**Gate:** none — gap: a check of the entrypoint directory layout (a script in the spirit of
-`check-package.mjs`, reading `libs/components/*/src`)
-**Control:** none — gap: an entrypoint with an inline template has to fire the gate
-**Binds at:** the first component added by somebody other than the author of this rule
+**Gate:** `tools/check-files.mjs` (target `check-files`, in CI) — nine points over the files
+of `libs/components` as the **git index** carries them: 1 the denominator (entrypoints,
+sources, declarations and the register, plus a second count of `@Component(` taken differently
+from the parser's, so a decorator nobody parsed cannot pass for a component nobody faulted), 2
+an entrypoint's `ng-package.json` and `src/index.ts` — read in **both** directions, so a
+directory of sources with no manifest beside it fires too, 3 the eponymous pair of a component
+entrypoint (`button.ts` and `button.spec.ts`), 4 and 5 no `template:` and no `styles:` in a
+decorator, 6 what a declaration names is a **sibling**, under the extension it promises, and in
+the index, 7 the other direction — no template or sheet a rename left behind, 8 a `*.types.ts`
+exported by the index of its entrypoint, 9 the register `libs/components/files.policy.json`,
+where every excuse names a declaration, carries a reason and is still needed. The run measures
+35 entrypoints, 43 declarations and 81 templates and sheets, and excuses two components whose
+host **is** a native `<input>` and whose template is therefore the empty string. One limb of the
+promise is deliberately **not** among the points: `*.types.ts`. Measured — of the 30 entrypoints
+that declare a component, 18 have no such file and 13 export a public type from the component's
+own source, so a point demanding one would have been red on the day it was written, which is a
+plan and not a gate; point 8 holds a types file to what it must do once it exists, and the
+disagreement is recorded rather than papered over (`tools/check-files.fixtures/README.md`)
+**Control:** `tools/check-files.fixtures/` — 21 prepared trees, each rejected on its own point
+**and its own rule**, among them this requirement's named control
+`template-in-the-decorator/` (a component keeping its template in the decorator — the defect
+that arrives looking like Angular's own advice), `styles-in-the-decorator/` (styles no rule of
+`check-styles` can see, because that gate reads sheets and not decorators),
+`a-template-no-declaration-names/` (the file a rename left behind),
+`stylesheet-that-is-plain-css/` (a sibling that exists and has left every SCSS rule),
+`decorator-off-the-anchor/` (the parser misses a declaration and the counter says so),
+`register-entry-nothing-uses/` (the component was fixed and the excuse stayed) and five cases
+of point 1 alone, each a different way for the gate to examine nothing and report it green.
+Plus a run against the real repository: with the register entry for `PctText` removed, the gate
+names `libs/components/field/src/text.ts` and the line of its decorator
 **Decision:** [0001 — templates and styles in separate files](../decisions/0001-separate-files.md)
 
 > This is a **deliberate departure** from Angular's official guidance to "prefer inline

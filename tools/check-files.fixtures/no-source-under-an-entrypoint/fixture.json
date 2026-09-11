@@ -1,0 +1,13 @@
+{
+  "point": 1,
+  "check": "denominator",
+  "rule": "no-source",
+  "description": "The manifests are there and every `src/` is gone. The other side of the same silence: the entrypoints are counted, so the walk looks alive, and there is not one source file to read a declaration out of — points 4 to 7 then pronounce a library clean without opening it.",
+  "drop": [
+    "libs/components/src",
+    "libs/components/button/src",
+    "libs/components/breadcrumb/src",
+    "libs/components/field/src",
+    "libs/components/core/src"
+  ]
+}

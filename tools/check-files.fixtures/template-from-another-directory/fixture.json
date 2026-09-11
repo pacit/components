@@ -1,0 +1,6 @@
+{
+  "point": 6,
+  "check": "sibling",
+  "rule": "not-a-sibling",
+  "description": "The template is in a file, and the file is in somebody else's directory. Angular resolves the path and builds it without a word, so the arrangement works — and the payoff decision 0001 claims for the whole rule is gone: the path to a component's artefacts can no longer be predicted without opening the directory, and a second entrypoint now owns a file this one renders."
+}

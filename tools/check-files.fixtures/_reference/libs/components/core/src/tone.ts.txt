@@ -1,0 +1,6 @@
+// A plain entrypoint: no `@Component` anywhere in it, so points 3 to 7 ask it nothing. `core`
+// and `testing` are the two of this shape in the repository, and a rule demanding a `.html`
+// of either would have been excused on the day it was written.
+export type FxTone = 'neutral' | 'danger';
+
+export const defaultTone: FxTone = 'neutral';

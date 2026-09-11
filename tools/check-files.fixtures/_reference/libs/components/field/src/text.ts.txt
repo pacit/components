@@ -1,0 +1,13 @@
+import { Component } from '@angular/core';
+
+/**
+ * A component on a native `<input>`: the host IS the element, so the component projects
+ * nothing and its template is the empty string. This is the shape the register exists for —
+ * `files.policy.json` carries the entry, and point 9 holds that entry to a reason.
+ */
+@Component({
+  selector: 'input[fxText]',
+  template: '',
+  styleUrl: './text.scss',
+})
+export class FxText {}

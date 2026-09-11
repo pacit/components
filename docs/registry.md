@@ -9,9 +9,9 @@ There is no "built, just unverified" state — see
 
 | state       | means                                                         |  count |
 | ----------- | ------------------------------------------------------------- | -----: |
-| ✅ enforced | gate and control exist and run in CI                          |     75 |
+| ✅ enforced | gate and control exist and run in CI                          |     76 |
 | 🟡 partial  | the gate is there, the negative control is not (deliberately) |     16 |
-| ⛔ gap      | gate or control missing, with a recorded deadline             |      3 |
+| ⛔ gap      | gate or control missing, with a recorded deadline             |      2 |
 | **total**   |                                                               | **94** |
 
 ## Gaps by urgency
@@ -21,7 +21,6 @@ The order comes from the **Binds at** field, not from a requirement number.
 | requirement                                                          | what is missing                                                        | binds at                                                     |
 | -------------------------------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------ |
 | [`req-project-concise`](requirements/project.md#req-project-concise) | a prose volume budget per file, a **two-sided** snapshot in the idiom… | the close of the compression pass — **not earlier**. A snap… |
-| [`req-project-files`](requirements/project.md#req-project-files)     | a check of the entrypoint directory layout (a script in the spirit of… | the first component added by somebody other than the author… |
 | [`req-token-density`](requirements/tokens.md#req-token-density)      | the DTCG sources contain **not one** density token                     | once the size axis has settled. Note: density will drop bel… |
 
 ## axis
@@ -87,7 +86,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-project-core`](requirements/project.md#req-project-core)                 | 🟡 partial  | `libs/components/field/src/field-controls.spec.ts` — the shared messa… | none — deliberately: the violation here is **duplication**, not a fai… |
 | [`req-project-tokens-lib`](requirements/project.md#req-project-tokens-lib)     | ✅ enforced | `libs/components/project.json` → `implicitDependencies: ["tokens"]` +… | `tools/check-package.fixtures/theme-missing/` — a package without `th… |
 | [`req-project-tree-shaking`](requirements/project.md#req-project-tree-shaking) | ✅ enforced | `tools/check-bundle.mjs` (target `check-bundle` in `components`, in C… | `tools/check-bundle.fixtures/` — 32 doctored inputs, each rejected on… |
-| [`req-project-files`](requirements/project.md#req-project-files)               | ⛔ gap      | none — gap: a check of the entrypoint directory layout (a script in t… | none — gap: an entrypoint with an inline template has to fire the gate |
+| [`req-project-files`](requirements/project.md#req-project-files)               | ✅ enforced | `tools/check-files.mjs` (target `check-files`, in CI) — nine points o… | `tools/check-files.fixtures/` — 21 prepared trees, each rejected on i… |
 | [`req-project-prefix`](requirements/project.md#req-project-prefix)             | 🟡 partial  | `libs/components/eslint.config.mjs` — the `@angular-eslint/component-… | none — deliberately: an ESLint rule fires on the first violation and … |
 | [`req-project-language`](requirements/project.md#req-project-language)         | ✅ enforced | `tools/check-language.mjs` (target `check-language` in the root proje… | `tools/check-language.fixtures/` — 35 doctored inputs, each rejected … |
 | [`req-project-concise`](requirements/project.md#req-project-concise)           | ⛔ gap      | none — gap: a prose volume budget per file, a **two-sided** snapshot … | none — gap: a file with a paragraph added beyond the tolerance has to… |

@@ -1,0 +1,6 @@
+{
+  "point": 6,
+  "check": "sibling",
+  "rule": "wrong-extension",
+  "description": "The sheet is a sibling, it exists, and it is a `.css`. Angular compiles it happily and the component paints exactly as before — and the file has left every rule the SCSS of this library is held to, because `check-styles` reads `**/*.scss`. The consequence decision 0001 writes down in one line: a component's styles are an SCSS file so that they fall under the same lint rules as everything else."
+}

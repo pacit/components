@@ -1,0 +1,7 @@
+import { describe, expect, it } from 'vitest';
+
+describe('the public surface', () => {
+  it('re-exports the core types', () => {
+    expect(true).toBe(true);
+  });
+});

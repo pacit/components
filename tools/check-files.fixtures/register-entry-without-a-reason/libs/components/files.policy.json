@@ -1,0 +1,11 @@
+{
+  "// why": "The register of the file-structure gate, with the reason rubbed down to a stamp.",
+  "inline": [
+    {
+      "file": "libs/components/field/src/text.ts",
+      "class": "FxText",
+      "member": "template",
+      "reason": "empty template"
+    }
+  ]
+}

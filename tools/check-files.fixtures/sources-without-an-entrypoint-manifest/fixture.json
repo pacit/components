@@ -1,0 +1,7 @@
+{
+  "point": 2,
+  "check": "entrypoint",
+  "rule": "no-manifest",
+  "description": "A directory of sources with no `ng-package.json` beside it. Everything about it looks healthy: the code compiles, the specs run, the linter is content — and ng-packagr never learns the directory is a thing to publish, so the consumer has no path to reach it by. The check runs from the sources towards the manifests on purpose; taken the other way round it would ask only about directories that already declare themselves.",
+  "drop": ["libs/components/button/ng-package.json"]
+}
