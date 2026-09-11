@@ -58,11 +58,11 @@ Snapshot, `node tools/check-docs.mjs`:
 | measure                                     | value |
 | ------------------------------------------- | ----: |
 | requirements                                |    94 |
-| ✅ enforced                                 |    75 |
+| ✅ enforced                                 |    76 |
 | 🟡 partial (deliberately without a control) |    16 |
-| ⛔ gap                                      |     3 |
+| ⛔ gap                                      |     2 |
 
-All 3 gaps have an owner below — in sections 2 and 5. If adding a requirement raises the gap
+All 2 gaps have an owner below, both of them in section 5. If adding a requirement raises the gap
 count and no task changes, this list has stopped being complete, and that is a fault of this
 list, not of the registry.
 
@@ -3888,7 +3888,7 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     spy and not a screenful. TOTAL 82.69 → **82.77**, over 5010 mutants rather than 5014,
     because the deleted guard took four of them with it
 
-- [ ] **4.40 — the entrypoint a consumer tests with is measured by nothing**
+- [ ] **4.49 — the entrypoint a consumer tests with is measured by nothing**
 
   - `@pacit/components/testing` is PUBLISHED code: `dom.ts`, `harness.ts`, `harnesses.ts` ship
     to a consumer and their suite leans on them. `stryker.config.json` strikes the whole of
@@ -3906,6 +3906,42 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     components it measures. The second is defensible and nobody has argued it
   - binds at: the first consumer-reported defect in a harness, or the premiere's own review of
     what `@pacit/components/testing` promises (3.1) — whichever lands first
+
+- [ ] **4.50 — a third of the file promise is a plan, not a rule**
+
+  - `req-project-files` promises a `button.types.ts` per component. Measured by the gate 5.2
+    just built: of the 30 entrypoints that declare a component, **18 have no `*.types.ts` at
+    all** — avatar, badge, breadcrumb, checkbox, chips, container, date, grid, icon, progress,
+    radio, skeleton, slider, stack, stepper, switch, toast, tree — and 13 export a public type
+    from the component's own source
+  - so the limb was left ungated deliberately: a point demanding one would have been red on the
+    day it was written, which is a plan and not a gate, and 18 register entries would be the
+    same thing with more words. Point 8 holds a types file to what it must do **once it
+    exists** — be exported by its entrypoint's index — and nothing holds the tree to having one
+  - the fork, neither half free: move the types out of 18 component sources, or narrow the
+    promise to what this library actually does and say why a small component's types belong
+    beside it. **The registry reads ✅ enforced either way**, which is the part that earns this
+    a number rather than a comment
+  - `select/src/select.types.ts` is a third answer already in the tree: it exports
+    `pctFilterByLabel` and `pctKeepAll`, which are runtime values — so "a types file holds
+    types" is not true today either, and no rule of the new gate says it should be
+  - binds at: whichever lands first — the next component added, or the premiere's API review (3.1)
+
+- [ ] **4.51 — the plan and the registry disagreed for 149 commits and nothing asked**
+
+  - 5.3 stood unticked while `req-token-directive` read ✅ enforced. Two documents here, one
+    generated from the requirements and one hand-kept, saying opposite things about the same
+    identifier — and nothing compares them
+  - it is mechanically checkable and cheap. An item of section 5 names a `req-` id in its
+    title, `check-docs` already parses every requirement's state, and an open item whose
+    requirement has left `gap` is a stale line. The mirror deserves the same rule: a ticked
+    item whose requirement is still a gap
+  - this is [`lesson-188`](lessons.md#lesson-188)'s shape one floor up. There the set nobody
+    runs was a habit; here the comparison nobody makes is a habit, and both report green by
+    never being asked
+  - what it costs is not a red build. It is a plan read as the list of what is left — 5.1 was
+    taken ahead of its trigger on exactly that reading, and 5.3 would have been done twice
+  - binds at: the next session that opens this file to choose work, which is the next one
 
 ## 5. Gaps with no deadline
 
@@ -3959,10 +3995,40 @@ are deferred.
   - the bill: 1254 unit cases where there were 966 at the direction review, the four sweeps at
     9 484 generated cases a run (2 560 + 840 + 5 800 + 284), `./date` +288 B and `./field`
     +317 B in the size snapshot
-- [ ] **5.2 — `req-project-files`**: a check on the entrypoint directory layout. Binds at the first
-      component added by somebody other than the author of the rule
-- [ ] **5.3 — `req-token-directive`**: a theme directive instead of a hand-written `data-theme`.
-      Binds once setting the attribute from a template starts repeating
+- [x] **5.2 — `req-project-files`**: a check on the entrypoint directory layout — **taken
+      2026-09-11, ahead of its trigger, on the maintainer's word**
+  - `tools/check-files.mjs`, nine points over `libs/components` as the **git index** carries
+    it: the denominator first — with a second count of `@Component(` written differently from
+    the parser's own anchor, so a decorator nobody parsed cannot pass for a component nobody
+    faulted — then an entrypoint's manifest and index read in BOTH directions, the eponymous
+    pair (`button.ts` and `button.spec.ts`), no `template:` and no `styles:` in a decorator,
+    what a declaration names as a **sibling** under the extension it promises, the other
+    direction for the file a rename left behind, a types file its index exports, and the
+    register that excuses the rest. The run measures 35 entrypoints, 43 declarations, 81
+    templates and sheets, 2 excused
+  - the negative control is 21 prepared trees, each rejected **on its own point and its own
+    rule** — a case that fires for a neighbouring rule of the same point is reported as a fault
+    of the case, not as a pass. The requirement's named control is among them: a component
+    keeping its template in the decorator, the defect that arrives looking like Angular's own
+    advice and that the build, the tests and the linter are all content with
+  - **the two excuses are one shape.** `PctText` and `PctNumber` sit on a native `<input>`, so
+    the host IS the element and the template is the empty string. The register holds them by
+    DECLARATION rather than by file, because `breadcrumb.ts` declares three components and an
+    excuse written per file would cover two nobody had looked at
+  - **one limb of the promise is deliberately not a point**, and the measurement that says so
+    is the item's own finding — 4.50
+- [x] **5.3 — `req-token-directive`**: a theme directive instead of a hand-written
+      `data-theme` — **done since 2026-09-02; only this line had not heard**
+  - `698091e` built `[pctTheme]`, its unit spec and its e2e control, and that commit's own
+    title says `req-token-directive closes`. The registry has read ✅ enforced ever since. This
+    checkbox stayed open for **149 commits** ([`lesson-189`](lessons.md#lesson-189))
+  - verified before ticking rather than taken on the registry's word:
+    `libs/components/theme/src/theme.ts` declares it, `theme.spec.ts` holds three unit cases,
+    `apps/sandbox-e2e/src/theme.spec.ts` holds the named control — a hand-written `data-theme`
+    panel and a `[pctTheme]` panel reading the same computed `--pct-surface` — and
+    `apps/sandbox/src/app/ui/demo.html` sets every demo card's theme through the directive, so
+    the suite exercises the sugar on every themed card it renders
+  - what it cost to find is 4.51
 - [ ] **5.4 — `req-token-density`**: the DTCG sources contain **not one** density token. Binds once
       the size axis settles — note that density will go below the touch-target threshold, so it
       has to arrive together with a gate, not before one

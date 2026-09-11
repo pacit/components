@@ -5233,3 +5233,23 @@ battery either, so a scoped `format:write` on a clean tree formats nothing and C
 thing that says so. Three occurrences is a pattern, and the pattern is not a weak memory: it
 is an unwritten list. Written down where a reader can see what it leaves out, the omission
 becomes an argument somebody can lose.
+
+---
+
+### <a id="lesson-189"></a>`lesson-189` — A plan item can be stale in the direction of DONE
+
+On 2026-09-11, asked for "the next two items of section 5", the first thing the reading turned
+up was that one of them had shipped nine days earlier. `698091e` built `[pctTheme]`, its unit
+spec and its e2e control, and that commit's own title says `req-token-directive closes`. The
+registry has read ✅ enforced ever since. The checkbox stayed open for **149 commits**.
+
+Every habit this repository has against a lying document watches the other direction — a plan
+claiming something is done when it is not. This one **under**-claimed, which is exactly why
+nothing caught it: an unticked box asks nobody a question. It is not harmless. A maintainer
+reads this file to choose what to work on, so an item left open is work offered, and the only
+thing standing between that and doing it twice was a session that happened to check first.
+
+The two documents were each right about themselves and neither could see the other: the
+registry is generated from the requirements, the plan is hand-kept, and the one thing joining
+them is a `req-` identifier written in both. That identifier is the comparison, and making it
+costs a loop ([4.51](plan.md)).
