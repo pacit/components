@@ -44,5 +44,5 @@
     "icon/**/*.ts",
     "testing/**/*.ts"
   ],
-  "exclude": ["**/*.spec.ts", "**/*.test.ts"]
+  "exclude": ["**/*.spec.ts", "**/*.test.ts", "**/*.testkit.ts"]
 }
