@@ -5253,3 +5253,26 @@ The two documents were each right about themselves and neither could see the oth
 registry is generated from the requirements, the plan is hand-kept, and the one thing joining
 them is a `req-` identifier written in both. That identifier is the comparison, and making it
 costs a loop ([4.51](plan.md)).
+
+---
+
+### <a id="lesson-190"></a>`lesson-190` — "Enabled somewhere" is not a placement rule
+
+`libs/tokens/bridge.mjs` writes the Figma side of the token sources: sets, and themes over
+those sets. It builds the base theme by **naming the sets to leave out** —
+`semantic.dark`, `motion.reduced` — so on 2026-09-11 the new `density.compact` fell straight
+into it and was enabled in the light theme and the dark one at once. A designer opening
+Tokens Studio would have read 26/32/38 as this library's default control heights.
+
+`check-bridge` has sixteen negative-control cases and it stayed green, because the question it
+asks is whether every set is enabled **somewhere**. A set enabled in the wrong place is
+enabled somewhere. The gate was not weak about placement; it had no opinion about placement at
+all, and a reader of its green line has no way to tell the two apart.
+
+The shape is [`lesson-188`](#lesson-188)'s and [4.51](plan.md)'s a third time: a list kept by
+naming its exceptions grows silently wrong, and only the thing it forgot ever notices. What
+found this one was building a second thing over the same sources and watching where it
+landed — not the gate, and not a reading of the gate.
+
+The repair is a rule about the source's own naming rather than another exception list: a set
+whose file name carries an axis word belongs to that axis's group, and a base is what is left.

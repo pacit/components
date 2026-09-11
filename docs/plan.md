@@ -58,11 +58,11 @@ Snapshot, `node tools/check-docs.mjs`:
 | measure                                     | value |
 | ------------------------------------------- | ----: |
 | requirements                                |    94 |
-| ✅ enforced                                 |    76 |
+| ✅ enforced                                 |    77 |
 | 🟡 partial (deliberately without a control) |    16 |
-| ⛔ gap                                      |     2 |
+| ⛔ gap                                      |     1 |
 
-All 2 gaps have an owner below, both of them in section 5. If adding a requirement raises the gap
+The 1 gap left has an owner below, in section 5. If adding a requirement raises the gap
 count and no task changes, this list has stopped being complete, and that is a fault of this
 list, not of the registry.
 
@@ -3943,6 +3943,37 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     taken ahead of its trigger on exactly that reading, and 5.3 would have been done twice
   - binds at: the next session that opens this file to choose work, which is the next one
 
+- [ ] **4.52 — a new set lands in the base, and the gate that guards the base asks the wrong question**
+
+  - building the density axis turned one up in `libs/tokens/bridge.mjs`: `themesOf` hardcodes
+    the axes and builds the base by NAMING the two override sets to leave out
+    (`semantic.dark`, `motion.reduced`), so `density.compact` landed in the base — enabled in
+    the light theme and the dark one both. A designer opening Tokens Studio would have read
+    the dense metrics as this library's defaults
+  - fixed for the instance (a `density` group, 7bc1bd4). **The class is open**: the next
+    override set does the same thing, because `check-bridge` asks only that every set be
+    enabled SOMEWHERE, and a set enabled in the wrong place is enabled somewhere
+    ([`lesson-190`](lessons.md#lesson-190))
+  - the repair is a sentence, not a rewrite: a set whose file name carries an axis word
+    belongs to that axis's group and to no base — which is a rule about the source's own
+    naming and needs no list to drift
+  - binds at: the next set added to `libs/tokens/src/` — the third axis, whatever it is
+
+- [ ] **4.53 — the touch floor has sixteen declarations and its own spec measures nine**
+
+  - `req-a11y-touch` is measured by `apps/sandbox-e2e/src/target-min.spec.ts`. Sixteen names
+    in `libs/components/*/src/*.scss` declare that floor; the spec names nine of them. Not
+    measured there: `--pct-slider-target-min`, `--pct-tree-label-target-min`, the bare
+    `--pct-target-min` on the toast viewport (`toast-viewport.scss:147`), and the three close
+    buttons that take the floor through `close-size` — dialog, drawer, toast
+  - 5.4's sweep took two of them off the list by accident rather than by design: it measures
+    the slider row and the tree label by selector, but only under `compact`. The three close
+    buttons and the toast viewport are measured by **neither** spec, in either density
+  - found by building a second sweep over the same promise and noticing the two lists did not
+    agree — which is the only reason it was found at all, and is the argument for the
+    denominator being read out of the stylesheets rather than typed into a spec
+  - binds at: the next control that takes the floor, or the premiere's a11y review (2.1)
+
 ## 5. Gaps with no deadline
 
 Waiting for the trigger written in their **Binds at** field. They are not forgotten — they
@@ -4029,9 +4060,44 @@ are deferred.
     `apps/sandbox/src/app/ui/demo.html` sets every demo card's theme through the directive, so
     the suite exercises the sugar on every themed card it renders
   - what it cost to find is 4.51
-- [ ] **5.4 — `req-token-density`**: the DTCG sources contain **not one** density token. Binds once
-      the size axis settles — note that density will go below the touch-target threshold, so it
-      has to arrive together with a gate, not before one
+- [x] **5.4 — `req-token-density`**: the density axis — **taken 2026-09-11, ahead of its
+      trigger, on the maintainer's word**
+  - **it is a scope, not an input.** `libs/tokens/src/density.compact.json` re-points metric
+    PRIMITIVES — the shared control axis 28/36/44 to 26/32/38, and the space scale one step
+    tighter — and `build.mjs` emits `[data-pct-density="comfortable"]` and
+    `[data-pct-density="compact"]` with the transitive closure, so a component reading
+    `--pct-control-height-md` gets the dense value without learning a second word. **Not one
+    component changed**, and no name is new: 83 declarations under each of two selectors and
+    `tokens.snapshot.md` does not move, which is the design's central claim made checkable
+    ([0074](decisions/0074-density-is-a-scope-that-re-points-metrics-not-an-input.md))
+  - **the corner this item was written around is where the axis ends.** 26px is the one number
+    measured rather than chosen: a field's 1px border plus `min-block-size: var(--pct-target-min)`
+    on its control column means 26 outside is exactly 24 inside, and at 25 the floor pushes the
+    row back out to 26 — the token stops being the height, which is the failure
+    [0004](decisions/0004-explicit-height.md) exists to prevent. So `compact` + `sm` is the
+    smallest anything here gets, and it arrives before the size axis alone would have
+  - **the gate came in the same commit, because this item said it had to.** Point 11 of
+    `check-tokens`, four rules — an axis that re-points nothing, a name one scope moves and the
+    other does not, a compact `--pct-target-min` under the base one, and a compact value that
+    takes a control's box under that floor. What counts as a box is derived from the name
+    dictionary rather than typed in. Four fixture cases, each on its own rule; disarming
+    `density-floor-lowered` moves its case onto `density-below-floor`, which is
+    [`lesson-50`](lessons.md#lesson-50)'s shape and the reason the `rule` field exists
+  - **the browser is the half a static reading cannot do.** `density.spec.ts`, 22 cases: the
+    rows read 26/32/38 outright rather than "smaller", the button follows the field into the
+    dense scope, the dense stage reads the same `--pct-surface` as the roomy one — and all
+    thirteen controls declaring a `--pct-…-target-min` clear 24 × 24 with the page compact.
+    Six of them read 24 in BOTH densities, because they were already on their floor: the floors
+    hold this, not the padding. Falsified rather than trusted — re-pointing the floor to 16px
+    turns 8 of the 22 red
+  - `[pctDensity]` is deliberately **not** here. [0059](decisions/0059-a-theme-is-an-attribute-the-skin-reads.md)'s
+    rule is that sugar arrives when the attribute starts repeating; density has one writer
+    today, and a directive is an entrypoint — a bundle row, a card, a mutation scope. The
+    trigger is written into 0074
+  - two findings on the way, both recorded rather than decided: **4.52** (a new set lands in
+    the Figma base and `check-bridge` cannot see it — this axis would have shown a designer
+    the dense metrics as the library's defaults) and **4.53** (the touch floor has sixteen
+    declarations and its own spec measures nine)
 - [ ] **5.5 — `req-project-concise`**: the prose volume budget per file, in the idiom of the
       size snapshot. Binds at the close of the compression pass — **not earlier**, for
       [`lesson-49`](lessons.md#lesson-49)'s reason: a snapshot laid on today's headers would

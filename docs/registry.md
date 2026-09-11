@@ -9,9 +9,9 @@ There is no "built, just unverified" state — see
 
 | state       | means                                                         |  count |
 | ----------- | ------------------------------------------------------------- | -----: |
-| ✅ enforced | gate and control exist and run in CI                          |     76 |
+| ✅ enforced | gate and control exist and run in CI                          |     77 |
 | 🟡 partial  | the gate is there, the negative control is not (deliberately) |     16 |
-| ⛔ gap      | gate or control missing, with a recorded deadline             |      2 |
+| ⛔ gap      | gate or control missing, with a recorded deadline             |      1 |
 | **total**   |                                                               | **94** |
 
 ## Gaps by urgency
@@ -21,7 +21,6 @@ The order comes from the **Binds at** field, not from a requirement number.
 | requirement                                                          | what is missing                                                        | binds at                                                     |
 | -------------------------------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------ |
 | [`req-project-concise`](requirements/project.md#req-project-concise) | a prose volume budget per file, a **two-sided** snapshot in the idiom… | the close of the compression pass — **not earlier**. A snap… |
-| [`req-token-density`](requirements/tokens.md#req-token-density)      | the DTCG sources contain **not one** density token                     | once the size axis has settled. Note: density will drop bel… |
 
 ## axis
 
@@ -149,7 +148,7 @@ The order comes from the **Binds at** field, not from a requirement number.
 | [`req-token-system`](requirements/tokens.md#req-token-system)             | ✅ enforced | `apps/sandbox-e2e/src/preferences.spec.ts`                             | `preferences.spec.ts › "with no dark preference :root stays light (th… |
 | [`req-token-skin`](requirements/tokens.md#req-token-skin)                 | ✅ enforced | `libs/tokens/build.mjs` — but **only for the built-in skin**           | see `req-token-contrast`                                               |
 | [`req-token-distribution`](requirements/tokens.md#req-token-distribution) | ✅ enforced | `libs/components/check-package.mjs` — points 1 and 2: the skin is in … | `tools/check-package.fixtures/theme-missing/` — a package with no ski… |
-| [`req-token-density`](requirements/tokens.md#req-token-density)           | ⛔ gap      | none — gap: the DTCG sources contain **not one** density token         | none — gap: a layout with the `compact` density token must pass the t… |
+| [`req-token-density`](requirements/tokens.md#req-token-density)           | ✅ enforced | `tools/check-tokens.mjs` (target `check-tokens` in the root project, … | `tools/check-tokens.fixtures/` — four prepared inputs, each rejected … |
 | [`req-token-logical`](requirements/tokens.md#req-token-logical)           | ✅ enforced | `tools/check-styles.mjs` (target `check-styles`, in CI) — point 5: a … | `tools/check-styles.fixtures/physical-padding/` (a property name) and… |
 
 ## Reverse index — lesson → requirements
@@ -347,3 +346,4 @@ Which lesson feeds which requirement. Generated from the **Lessons** fields.
 | [`lesson-187`](lessons.md#lesson-187) | `req-api-number`                                                                                                                                                  |
 | [`lesson-188`](lessons.md#lesson-188) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-189`](lessons.md#lesson-189) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-190`](lessons.md#lesson-190) | — _(not cited)_                                                                                                                                                   |

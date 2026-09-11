@@ -31,7 +31,8 @@ tools (Figma / Tokens Studio).
 
 **Promise.** `libs/tokens/bridge.mjs` writes the DTCG sources as the multi-file layout
 Tokens Studio for Figma syncs to — one file per set in the plugin's DTCG dialect,
-`$themes.json` (light and dark on a scheme axis, full and reduced on a motion axis) and
+`$themes.json` (light and dark on a scheme axis, full and reduced on a motion axis,
+comfortable and compact on a density axis) and
 `$metadata.json` (the order the build resolves in) — and reads the plugin's export back,
 writing a changed `$value` or `$description` into the source token it belongs to and
 **nothing else**. A set, a name, a type and a modifier are decisions made here: the import
@@ -486,14 +487,63 @@ manual
 **Promise.** A separate token dimension (`comfortable` / `compact`) switched by
 attribute/scope, independent of the colour theme.
 
-**Gate:** none — gap: the DTCG sources contain **not one** density token
-**Control:** none — gap: a layout with the `compact` density token must pass the touch-target
-threshold, or the gate has to fire
-**Binds at:** once the size axis has settled. Note: density will drop below the touch-target
-threshold **sooner** than the `sm` size, so `--pct-target-min` has to be tested alongside it
-([`req-a11y-touch`](a11y.md#req-a11y-touch))
+The switch is `data-pct-density="compact"` on any element, and the mechanism is the cascade:
+`libs/tokens/src/density.compact.json` re-points metric primitives — the shared control axis
+(26 / 32 / 38 px against 28 / 36 / 44) and the space scale, one step tighter — and the build
+emits both scopes with the transitive closure, so a component reading
+`--pct-control-height-md` gets the dense value without learning a second word. **Not one
+component changed.** Colour stays the theme's; the two axes may sit on the same element or on
+different ones.
 
-> The size axis ([`req-api-size`](api.md#req-api-size)) is a ready pattern to repeat.
+**Gate:** `tools/check-tokens.mjs` (target `check-tokens` in the root project, in CI) — point
+11, four rules. `density-denominator` refuses to rule on an axis that is not there or that
+re-points nothing; `density-unpaired` requires `[data-pct-density="comfortable"]` and
+`[data-pct-density="compact"]` to declare **the same names**, each also declared in `:root` —
+a metric one scope moves and the other does not can be switched one way and not back;
+`density-floor-lowered` refuses a compact `--pct-target-min` below the base one; and
+`density-below-floor` refuses a compact value that takes a control's **box** under that floor.
+What counts as a box is derived rather than typed in — a primitive read by a component token
+whose property word is `height` or `size`, which on this skin is
+`pct.control.height.{sm,md,lg}` and `pct.target.min` itself. Plus `libs/tokens/build.mjs`,
+which emits the two scopes: an axis that stopped being emitted fires point 11's first rule
+**Control:** `tools/check-tokens.fixtures/` — four prepared inputs, each rejected on its own
+rule of point 11: `density-axis-empty` (an axis emitted as a pair of empty braces),
+`density-only-in-compact` (a `dist/pct.css` whose comfortable scope lost a name — the case
+carries the artefact, because the two scopes drifting apart is invisible in the sources),
+`density-lowers-the-floor` and `density-under-the-floor`. Measured: disarming
+`density-floor-lowered` moves its case onto `density-below-floor`, and without the `rule`
+field that run would be green; disarming any of the other three turns its own case into
+"PASSED and was meant not to". **And the browser measurement the promise really needs** —
+`apps/sandbox-e2e/src/density.spec.ts` on the `/density` view: the compact rows read
+26 / 32 / 38 px outright (not merely "smaller"), the button follows the field into the dense
+scope, the dense stage reads the same `--pct-surface` as the roomy one beside it, and
+`Every touch target under compact` walks all thirteen controls that declare a
+`--pct-…-target-min` — on their own routes, with the whole page compact — and requires
+24 × 24 of each. The corner case `the corner: compact at size sm keeps every target at 24 px`
+is the one the gap note named
+**Decision:** [0074 — density is a scope that re-points metrics, not an input](../decisions/0074-density-is-a-scope-that-re-points-metrics-not-an-input.md)
+
+> **The floor is what stops the shrinking, and it stops it exactly.** The smallest compact
+> step is a measurement rather than a taste: a field draws a 1px border with
+> `box-sizing: border-box` and its control column carries
+> `min-block-size: var(--pct-target-min)`, so a 26px row lands on exactly 24px inside. At 25
+> the floor would push the row back out to 26 and the token would stop being the height —
+> the failure [0004](../decisions/0004-explicit-height.md) exists to prevent. Measured in
+> chromium under compact: the chip remove, the checkbox, the radio, the date toggle, the
+> breadcrumb link and the slider row read exactly 24px in **both** densities, because they
+> were already sitting on their floor; the accordion heading went 40 → 36, the tab 36 → 32,
+> the field's control column 34 → 30, and the compact `sm` field column landed on 24.00.
+>
+> **What the static gate cannot see is a layout**, which is why the control is a browser
+> measurement and not a second reading of the tokens. Point 11 catches the shape of the
+> mistake — an unpaired name, a moved floor, a box below it — and `density.spec.ts` catches
+> the fact.
+>
+> **`[pctDensity]` is deliberately not here yet.** The rule is
+> [0059](../decisions/0059-a-theme-is-an-attribute-the-skin-reads.md)'s: sugar arrives when
+> the attribute starts to repeat. Density has one writer today, and a directive is an
+> entrypoint — a bundle row, a card, a mutation scope. See
+> [`req-token-directive`](#req-token-directive) for the shape it will take.
 
 ---
 
