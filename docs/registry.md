@@ -343,7 +343,7 @@ Which lesson feeds which requirement. Generated from the **Lessons** fields.
 | [`lesson-182`](lessons.md#lesson-182) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-183`](lessons.md#lesson-183) | — _(not cited)_                                                                                                                                                   |
 | [`lesson-184`](lessons.md#lesson-184) | — _(not cited)_                                                                                                                                                   |
-| [`lesson-185`](lessons.md#lesson-185) | `req-api-number`                                                                                                                                                  |
-| [`lesson-186`](lessons.md#lesson-186) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-185`](lessons.md#lesson-185) | — _(not cited)_                                                                                                                                                   |
+| [`lesson-186`](lessons.md#lesson-186) | `req-api-number`                                                                                                                                                  |
 | [`lesson-187`](lessons.md#lesson-187) | `req-api-number`                                                                                                                                                  |
 | [`lesson-188`](lessons.md#lesson-188) | — _(not cited)_                                                                                                                                                   |

@@ -219,7 +219,7 @@ hidden: it runs under `fr-FR` and carries fields in three locales, and
   the only reason the trade is right is the one that made the value a string in the first place
   — a day this shape cannot write is not a day `<input type="date">`, JSON or SQL `DATE` can
   carry either. A property sweep found both ends; neither had a symptom
-  ([`lesson-186`](../lessons.md#lesson-186)).
+  ([`lesson-185`](../lessons.md#lesson-185)).
 - **The eighty regions are a copy of somebody else's data** and will drift the day CLDR
   moves. The gate is what makes that a red test instead of a wrong calendar in Cairo.
 

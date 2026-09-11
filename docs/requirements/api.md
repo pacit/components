@@ -171,7 +171,7 @@ while the year is four digits **or more**, so `'2026-01-01'` read as later than
 `'10000-01-01'` — a day `pctAddDays('9999-12-31', 1)` produces — and the clamp pulled a day
 past `max` down to `min`; and `pad(-1, 4)` is `'00-1'`, so a step back off year zero
 returned a string this module's own reader crashes on
-([`lesson-186`](../lessons.md#lesson-186))
+([`lesson-185`](../lessons.md#lesson-185))
 **Decision:** [0043 — a day is not an instant](../decisions/0043-a-day-is-not-an-instant.md)
 
 ---
@@ -385,7 +385,7 @@ called it two hundred, or a descent that reported the case which found a break r
 smallest one, would take every sweep in this library down without a word
 **Decision:** [0009 — the number field on `type="text"`](../decisions/0009-number-field.md)
 **Lessons:** [`lesson-32`](../lessons.md#lesson-32),
-[`lesson-187`](../lessons.md#lesson-187), [`lesson-185`](../lessons.md#lesson-185)
+[`lesson-187`](../lessons.md#lesson-187), [`lesson-186`](../lessons.md#lesson-186)
 
 ---
 

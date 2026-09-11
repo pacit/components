@@ -5122,26 +5122,7 @@ setting. `retain-on-failure` costs a file and answers the next occurrence on its
 
 ---
 
-### <a id="lesson-185"></a>`lesson-185` — A sweep's seed belongs to the mutation snapshot, and its shrink is a lead
-
-Two honesties a generated suite owes, and neither is obvious until it costs something.
-
-**The seed is a constant.** A mutation score is a measurement of the suite, and a suite that
-draws different cases every morning is a different suite: a mutant killed by the case a
-Tuesday seed reached survives on Wednesday, `check-mutation` compares against a tracked file,
-and the drift reads exactly like a deleted assertion. So the run is a function of
-`PCT_PROPERTY_SEED`, which nothing in CI sets, and hunting is what that variable is for.
-
-**The shrink assumes the body is a function of its case, and a body driving a fixture is
-not.** The descent replays candidates against whatever state the run has already left in that
-`TestBed`. Measured: disabling the number parser's bidi strip turns the rounding sweep red,
-and the descent walks to `en-US` — a locale that strip cannot reach, a case that does not fail
-on its own. Which sweeps went red is the part that holds; the counterexample says where to
-start looking, and for a stateful sweep it says no more than that.
-
----
-
-### <a id="lesson-186"></a>`lesson-186` — A day's string is not fixed-width, and two functions had assumed it was
+### <a id="lesson-185"></a>`lesson-185` — A day's string is not fixed-width, and two functions had assumed it was
 
 The first property sweep over `day.ts` found two holes, and both sat exactly where the
 module's own documentation was **wider than its code**. The type's header says the shape is
@@ -5173,6 +5154,25 @@ What generalises is not the arithmetic. A hand-written case is written by somebo
 the intended range, and the intended range is precisely where neither of these holes was.
 Both stood one step outside it, both were reachable by the module's own arithmetic, and
 neither had a single symptom before a generator walked there.
+
+---
+
+### <a id="lesson-186"></a>`lesson-186` — A sweep's seed belongs to the mutation snapshot, and its shrink is a lead
+
+Two honesties a generated suite owes, and neither is obvious until it costs something.
+
+**The seed is a constant.** A mutation score is a measurement of the suite, and a suite that
+draws different cases every morning is a different suite: a mutant killed by the case a
+Tuesday seed reached survives on Wednesday, `check-mutation` compares against a tracked file,
+and the drift reads exactly like a deleted assertion. So the run is a function of
+`PCT_PROPERTY_SEED`, which nothing in CI sets, and hunting is what that variable is for.
+
+**The shrink assumes the body is a function of its case, and a body driving a fixture is
+not.** The descent replays candidates against whatever state the run has already left in that
+`TestBed`. Measured: disabling the number parser's bidi strip turns the rounding sweep red,
+and the descent walks to `en-US` — a locale that strip cannot reach, a case that does not fail
+on its own. Which sweeps went red is the part that holds; the counterexample says where to
+start looking, and for a stateful sweep it says no more than that.
 
 ---
 

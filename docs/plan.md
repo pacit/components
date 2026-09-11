@@ -3888,6 +3888,25 @@ popover has no violations` flaked in firefox AND webkit on the same measured pai
     spy and not a screenful. TOTAL 82.69 → **82.77**, over 5010 mutants rather than 5014,
     because the deleted guard took four of them with it
 
+- [ ] **4.40 — the entrypoint a consumer tests with is measured by nothing**
+
+  - `@pacit/components/testing` is PUBLISHED code: `dom.ts`, `harness.ts`, `harnesses.ts` ship
+    to a consumer and their suite leans on them. `stryker.config.json` strikes the whole of
+    `libs/components/testing/**` out of `mutate`, so not one of those files has a mutation
+    score, and `dom.ts` sits at 73% of lines in the coverage report — the lowest reading in
+    the library
+  - found on the way into 5.1, from the other end: the property sweep's own spec covers no
+    mutant BECAUSE of that exclusion, and point 3 of `check-mutation` could not tell a spec
+    that covered nothing from a spec that never ran. That got a register
+    (`coversNothing`, with three cases of its own), which is the right repair for the GATE and
+    leaves this question exactly where it was
+  - the fork: mutate `testing/**` — four files into `files`, four rows into the snapshot, one
+    79-minute run, and a TOTAL that will move down before it moves up — or write down in
+    `mutation.policy.json` why a consumer's instrument is held to a lower standard than the
+    components it measures. The second is defensible and nobody has argued it
+  - binds at: the first consumer-reported defect in a harness, or the premiere's own review of
+    what `@pacit/components/testing` promises (3.1) — whichever lands first
+
 ## 5. Gaps with no deadline
 
 Waiting for the trigger written in their **Binds at** field. They are not forgotten — they
@@ -3902,7 +3921,7 @@ are deferred.
     a generator that drew one case and called it two hundred would take every sweep with it.
     The seed is a **constant**: a sweep that draws differently each morning moves the mutation
     score without a line changing, and `check-mutation` reads that as a deleted assertion
-    ([`lesson-185`](lessons.md#lesson-185))
+    ([`lesson-186`](lessons.md#lesson-186))
   - **the parser: three widenings past `pl`/`en`, none of them thought up.** A 56-locale probe
     of `parse(format(n)) === n` broke on six, in three families — the bidi mark `Intl` writes
     before a minus in `he-IL`, the Arabic-Indic and Devanagari digits of `ar-EG`, `fa-IR`,
@@ -3911,7 +3930,7 @@ are deferred.
     silently wrong rather than refused. Fixed, and the sweep that named them now ships over 22
     locales; disabling one widening at a time turns 2, 3 and 3 of its six sweeps red
   - **the day arithmetic: two defects at the two ends of the shape, and both sat where the
-    module's own prose was wider than its code** ([`lesson-186`](lessons.md#lesson-186)).
+    module's own prose was wider than its code** ([`lesson-185`](lessons.md#lesson-185)).
     `pctCompareDays` compared strings under a comment saying the shape is fixed-width, while
     the type's header says four digits **or more** — so `'2026-01-01'` read as later than the
     `'10000-01-01'` that `pctAddDays('9999-12-31', 1)` produces, and `pctClampDay` pulled a

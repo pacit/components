@@ -164,7 +164,7 @@ export function pctAddMonths(day: PctDay, n: number): PctDay {
  * LATER of the two — silently, in the direction nothing checks — and `pctClampDay` pulled a
  * day four thousand years past `max` down to `min`, the wrong bound entirely. A property
  * sweep of the ordering laws named it, which is what plan 5.1 was for
- * ([`lesson-186`](../../../../docs/lessons.md#lesson-186)).
+ * ([`lesson-185`](../../../../docs/lessons.md#lesson-185)).
  */
 export function pctCompareDays(a: PctDay, b: PctDay): number {
   const left = pctDayParts(a);
