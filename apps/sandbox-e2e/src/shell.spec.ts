@@ -91,6 +91,17 @@ test.describe('The sandbox shell and the demo card', () => {
       .getByTestId('control-scheme')
       .getByRole('radio', { name: 'dark' })
       .check();
+    // What the press stands for is the PAGE having gone dark, and that is a change
+    // detection later than the radio's own state: `check()` waits for the input, the shell
+    // writes `data-theme` from the setting on the pass after it. Every reading below is
+    // taken in that window — the button's colour through a `.first()` — and a token read
+    // before the attribute lands is the light theme's, which is the value this case
+    // demands anyway ([`lesson-192`](../../../docs/lessons.md#lesson-192)). So it would
+    // pass on a build where the dark theme never arrived.
+    await expect(page.locator('app-root')).toHaveAttribute(
+      'data-theme',
+      'dark',
+    );
 
     const surfaceOf = (testid: string) =>
       page

@@ -1,0 +1,6 @@
+{
+  "point": 2,
+  "check": "parser",
+  "rule": "unbalanced",
+  "why": "A spec whose blocks do not close. The scanner loses the thread at that point and every statement after it falls out of the measurement — silently, because a shorter list of statements looks exactly like a file with fewer races in it."
+}

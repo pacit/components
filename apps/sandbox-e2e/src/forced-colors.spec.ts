@@ -66,7 +66,13 @@ test.describe('forced-colors: active', () => {
       .first();
     // With no explicit rule the ring gets the forced border colour and merges with
     // the field border — it disappears exactly where it is needed most.
-    expect(await styleOf(row, 'outline-color')).toBe(sys.Highlight);
+    //
+    // `toHaveCSS` and not a read of the same value: `focus()` returns before the row has
+    // been restyled around the focused input, and `.first()` resolved in that instant
+    // answers for a row that is not focused yet — the forced border colour, read as the ring
+    // having been drawn in the wrong one ([`lesson-192`](../../../docs/lessons.md#lesson-192)).
+    // The claim is the same one; it retries, and every retry resolves the locator again.
+    await expect(row).toHaveCSS('outline-color', sys.Highlight);
   });
 
   /**

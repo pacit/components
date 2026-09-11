@@ -319,7 +319,13 @@ hidden`, the column kept — so a row added to that list, which is what every ne
 moves no pixel of them (plan 4.23; `opacity`, not `visibility`, because the layer has to stay — [`lesson-165`](../lessons.md#lesson-165)). The references live in
 `apps/sandbox-e2e/src/__screenshots__/{platform}/` and **are in the repository**.
 
-**Gate:** `apps/sandbox-e2e/src/visual.spec.ts` and the remaining e2e specs
+**Gate:** `apps/sandbox-e2e/src/visual.spec.ts` and the remaining e2e specs; and over those
+specs themselves `tools/check-e2e.mjs` (target `check-e2e`, in CI) — four points over both
+suites, the first two the denominator (a corpus to read, and a scanner that read all of it
+rather than losing the thread in the middle of a file) and the last two the rules: a
+positional locator (`.last()`, `.first()`, `.nth(n)`) read in the window an action opened
+with no auto-retrying assertion between, and a bare `waitForTimeout` whose next statement
+takes the baseline a later assertion is measured against
 **Control:** there are **two** thresholds and both come from measurement. The pixel count is
 absolute (`maxDiffPixels: 20`): a repeated run of the same code gives **0** differing pixels,
 while changing `border-radius` from 8 px to 1 px gives **74**; the first version, with
@@ -333,10 +339,17 @@ repainting the entire button produced **zero** differing pixels
 control of the stage)"`: a row put at the top of the list moves nothing with the navigation
 blanked and moves pixels with it shown, so the first half is a comparison that can fail. Its
 first version appended the row at the bottom of a list that reaches past the frame, and the
-shown half caught it moving nothing ([`lesson-50`](../lessons.md#lesson-50))
+shown half caught it moving nothing ([`lesson-50`](../lessons.md#lesson-50)). The race gate
+has a control of its own: `tools/check-e2e.fixtures/` — eight prepared corpora, three for the
+denominator, two for the scanner and three for the rules, each rejected **by the point and
+the rule it declares**, and a reference corpus that must pass. That reference carries the two
+real bugs in their FIXED shape, so a rule grown until it fires on the accepted cure is caught
+by the reference refusing to pass rather than out in a spec somebody then rewrites to please
+a gate
 **Lessons:** [`lesson-13`](../lessons.md#lesson-13), [`lesson-23`](../lessons.md#lesson-23),
 [`lesson-30`](../lessons.md#lesson-30), [`lesson-39`](../lessons.md#lesson-39),
-[`lesson-50`](../lessons.md#lesson-50), [`lesson-165`](../lessons.md#lesson-165)
+[`lesson-50`](../lessons.md#lesson-50), [`lesson-165`](../lessons.md#lesson-165),
+[`lesson-192`](../lessons.md#lesson-192)
 
 > Two things decide whether such a test measures the code or the machine. **The typeface** is
 > pinned for the duration of the screenshot (`Liberation Sans`), because `system-ui` resolves
@@ -345,6 +358,16 @@ shown half caught it moving nothing ([`lesson-50`](../lessons.md#lesson-50))
 >
 > Geometry tests check what somebody thought to ask about; a screenshot also catches what
 > nobody asked about, because it compares the whole image.
+>
+> **The third thing is the race**, and it was the one nobody was watching. Two full runs of
+> the suite came back 1 red of 2062 and a different test each time, both defects of the test
+> rather than of the product, and aimed at with `--repeat-each=30` they answered 3 of 30 and
+> 2 of 30 ([`lesson-192`](../lessons.md#lesson-192)). The family is not "timing": each had a
+> number or an index standing where a condition belonged — a measured wait taken for the
+> moment an animation's clock has stopped, and a `.last()` read in the instant after the
+> click that fills it. A 7-to-10 % case is a coin-flip across a suite this size, and a green
+> full run says nothing about whether it is there; so the gate is over the SHAPE, which costs
+> a second and does not have to be believed twice.
 
 ---
 

@@ -146,8 +146,17 @@ test.describe('Adaptation — the reader changes the page and the content stays'
    */
   test('text at 200 % cuts nothing off', async ({ page }) => {
     await visit(page, '/all');
+    const rootFontSize = () =>
+      page.evaluate(() => getComputedStyle(document.documentElement).fontSize);
+
+    const before = await rootFontSize();
     await page.addStyleTag({ content: 'html { font-size: 200% !important; }' });
-    await page.waitForTimeout(200);
+    // The doubling HAVING TAKEN, and not a fifth of a second in which it probably did.
+    // This is the one direction a conformance case may not fail in: a page still laid out
+    // at the old size clips nothing, so 1.4.4 would pass because the measurement had not
+    // happened yet ([`lesson-192`](../../../docs/lessons.md#lesson-192)). The root's own
+    // computed size is what the number stood for, and the page will say it.
+    await expect.poll(rootFontSize).toBe(`${parseFloat(before) * 2}px`);
 
     const cut = await clipped(page);
     expect(cut, `clipped at 200 % text:\n${cut.join('\n')}`).toHaveLength(0);
@@ -161,8 +170,23 @@ test.describe('Adaptation — the reader changes the page and the content stays'
    */
   test('the reader’s own text spacing cuts nothing off', async ({ page }) => {
     await visit(page, '/all');
+    const letterSpacing = () =>
+      page.evaluate(() => getComputedStyle(document.body).letterSpacing);
+
+    // 0.12em of the body's own size — the criterion's number read back as the engine
+    // computes it, rather than typed in beside it.
+    const spaced = `${
+      0.12 *
+      parseFloat(
+        await page.evaluate(() => getComputedStyle(document.body).fontSize),
+      )
+    }px`;
     await page.addStyleTag({ content: TEXT_SPACING });
-    await page.waitForTimeout(200);
+    // The overrides HAVING TAKEN, for 1.4.4's reason one test up: text that has not been
+    // re-spaced yet fits every box it was laid out in, so the fifth of a second decided
+    // whether this criterion was measured at all
+    // ([`lesson-192`](../../../docs/lessons.md#lesson-192)).
+    await expect.poll(letterSpacing).toBe(spaced);
 
     const cut = await clipped(page);
     expect(

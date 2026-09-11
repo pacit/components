@@ -63,7 +63,13 @@ test.describe('PctBreadcrumb — the way here, told in links', () => {
     );
 
     await rest.hover();
-    expect(await styleOf(rest, 'text-decoration-line')).toBe('underline');
+    // `toHaveCSS` and not a read of the same value: the hover returns before the engine has
+    // restyled the link, and `.first()` resolved in that instant answers for a link nobody
+    // is pointing at, whose `text-decoration-line` is `none` — a red saying the hover rule
+    // was never written, when all that happened is that it had not been painted yet
+    // ([`lesson-192`](../../../docs/lessons.md#lesson-192)). The claim is unchanged; it
+    // retries, and every retry resolves the locator again.
+    await expect(rest).toHaveCSS('text-decoration-line', 'underline');
     await current.hover();
     expect(await styleOf(current, 'text-decoration-line')).toBe('none');
   });

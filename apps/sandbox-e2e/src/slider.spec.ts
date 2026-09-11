@@ -310,15 +310,38 @@ test.describe('PctSlider — the platform’s range, drawn', () => {
     await expect(marks).toHaveCount(7);
 
     await control.focus();
+    // The ticks do not move — seven of them, and the count above says so — so the race here
+    // was never `.first()`: it is the THUMB, the one thing that travels. Its VALUE lands in
+    // the key press's own task, because that half is the platform's; the drawing follows a
+    // change detection later, so a centre read between the two is the thumb's old place
+    // ([`lesson-192`](../../../docs/lessons.md#lesson-192)).
+    //
+    // The claim itself therefore retries, instead of a barrier standing in front of a
+    // one-shot read. That is the stronger of the two shapes and the cheaper one: a barrier
+    // has to NAME what it is waiting for, and the only name for "the thumb has been redrawn"
+    // is a private custom property this suite has no business reading. The distance is the
+    // thing under test, so the distance is what polls.
     await page.keyboard.press('Home');
-    const first = await centreOf(marks.first());
-    const atMin = await centreOf(partOf(host, 'thumb'));
-    expect(Math.abs(first.x - atMin.x)).toBeLessThanOrEqual(1);
+    await expect(control).toHaveValue('20');
+    await expect
+      .poll(async () =>
+        Math.abs(
+          (await centreOf(marks.first())).x -
+            (await centreOf(partOf(host, 'thumb'))).x,
+        ),
+      )
+      .toBeLessThanOrEqual(1);
 
     await page.keyboard.press('End');
-    const last = await centreOf(marks.last());
-    const atMax = await centreOf(partOf(host, 'thumb'));
-    expect(Math.abs(last.x - atMax.x)).toBeLessThanOrEqual(1);
+    await expect(control).toHaveValue('80');
+    await expect
+      .poll(async () =>
+        Math.abs(
+          (await centreOf(marks.last())).x -
+            (await centreOf(partOf(host, 'thumb'))).x,
+        ),
+      )
+      .toBeLessThanOrEqual(1);
   });
 
   /**

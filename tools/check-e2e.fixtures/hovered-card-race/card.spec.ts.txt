@@ -1,0 +1,16 @@
+import { expect, test } from '@playwright/test';
+import { styleOf } from './support/css';
+import { visit } from './support/dom';
+
+/**
+ * A positional locator that is never bound to a name: the index stands inside the read.
+ * The colour is asked for in the same task as the hover, so it is whatever the card was
+ * painted last frame — and on a loaded runner that is the resting colour.
+ */
+test('the hovered card takes the accent rim', async ({ page }) => {
+  await visit(page, '/');
+  await page.locator('.card').first().hover();
+  expect(await styleOf(page.locator('.card').first(), 'border-color')).toBe(
+    'rgb(37, 99, 235)',
+  );
+});

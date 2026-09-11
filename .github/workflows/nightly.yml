@@ -94,7 +94,7 @@ jobs:
       # The full set ci.yml runs on a diff, run over everything. It stays a step of its own
       # rather than joining the line below, so its wall-clock is readable per run straight
       # off the job's step timings — the number the plan's CI item exists to learn.
-      - run: npx nx run-many -t lint test vite:test build content typecheck check-package check-coverage check-bench check-zoneless check-typecheck check-styles check-files check-texts check-tokens check-forms check-bridge check-parts check-harness check-aria check-icons check-bundle check-consumer check-browsers check-language check-reach check-support check-acr check-docs check-index
+      - run: npx nx run-many -t lint test vite:test build content typecheck check-package check-coverage check-bench check-zoneless check-typecheck check-styles check-files check-texts check-tokens check-forms check-bridge check-parts check-harness check-aria check-icons check-bundle check-consumer check-browsers check-e2e check-language check-reach check-support check-acr check-docs check-index
 
       - run: npx nx run-many -t e2e
 

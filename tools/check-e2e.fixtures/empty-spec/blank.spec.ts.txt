@@ -1,0 +1,3 @@
+// A spec file holding nothing but this note: no import, no test, no statement. It is
+// collected by its name and contributes nothing, and a gate that counts it among the files
+// it examined has quietly made its own denominator one larger than its measurement.

@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "race",
+  "rule": "read-after-action",
+  "why": "The same point by the other road: the index is written into the read itself rather than bound to a name first, so a rule that only followed `const` bindings would pass over it. The hover is the action, the computed border colour is the reading, and nothing between them says the pointer has landed."
+}

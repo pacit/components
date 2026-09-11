@@ -1,0 +1,7 @@
+{
+  "point": 1,
+  "check": "corpus",
+  "rule": "specs",
+  "why": "Every spec removed and the support tree left standing. The gate then walks a corpus of nothing and has nothing to disagree with — points 3 and 4 pass having read not one test. This is not a hypothesis: a git pathspec is not a shell glob, and the first version of check-styles passed green on an empty source list (lesson-48).",
+  "drop": ["toast.spec.ts.txt", "sheen.spec.ts.txt", "static.spec.ts.txt"]
+}

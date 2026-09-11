@@ -1,0 +1,13 @@
+import { expect, test } from '@playwright/test';
+import { visit } from './support/dom';
+
+/**
+ * A block this file never closes. Nothing below the `if` reaches the rules, and the run is
+ * green for exactly the reason the axis is about: the default answer of a scanner that has
+ * lost its place is "nothing found".
+ */
+test('a banner that is there says so', async ({ page }) => {
+  await visit(page, '/');
+  if (await page.getByTestId('banner').isVisible()) {
+    await expect(page.getByTestId('banner')).toHaveText('Sandbox');
+});

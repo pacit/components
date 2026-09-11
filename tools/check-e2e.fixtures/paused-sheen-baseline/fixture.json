@@ -1,0 +1,6 @@
+{
+  "point": 4,
+  "check": "baseline",
+  "rule": "wait-then-baseline",
+  "why": "The paused sheen as it stood before 2af78c7 — the second real bug, reconstructed. A hundred and fifty milliseconds, measured once and written down as a constant, decide when the baseline the assertions are compared against is taken. On 3 of 30 webkit runs the animation's clock was still settling at that mark and fell BACK afterwards — 194 ms in the one direction a running animation cannot go."
+}

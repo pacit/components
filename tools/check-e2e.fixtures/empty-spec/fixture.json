@@ -1,0 +1,6 @@
+{
+  "point": 2,
+  "check": "parser",
+  "rule": "empty-file",
+  "why": "A spec file the scanner makes no statement of. Playwright collects it by its name and this gate reads it as examined — a file counted in the denominator and measured by nothing, which is a denominator fault wearing the look of coverage."
+}

@@ -1,0 +1,31 @@
+import { expect, test } from '@playwright/test';
+import { styleOf } from './support/css';
+import { visit } from './support/dom';
+
+const TONES = ['success', 'warning', 'danger', 'info'] as const;
+
+/**
+ * The toast case in the shape it has SINCE the fix (58c1918). It is in the reference and
+ * not in a case directory on purpose: a rule that started firing on the accepted cure
+ * would be caught here, by the reference refusing to pass, rather than out in a spec
+ * somebody then rewrites to please a gate.
+ */
+test.describe('Tones — the colour a toast was raised with', () => {
+  test('every tone paints a mark of its own', async ({ page }) => {
+    await visit(page, '/toast');
+    const marks: string[] = [];
+
+    for (const tone of TONES) {
+      await page.getByTestId(`raise-${tone}`).click();
+      const item = page.locator('[data-part="toast"]').last();
+      // The wait is what makes `.last()` mean the toast THIS iteration raised. A style
+      // read resolves the locator once, at the instant it runs, and the item is appended
+      // a frame after the click — so without this the reading is the previous toast's
+      // paint. `toHaveAttribute` retries, and every retry resolves `.last()` again.
+      await expect(item).toHaveAttribute('data-tone', tone);
+      marks.push(await styleOf(item, 'color'));
+    }
+
+    expect(new Set(marks).size, `marks: ${marks.join(', ')}`).toBe(TONES.length);
+  });
+});

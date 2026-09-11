@@ -1,0 +1,18 @@
+import { expect, test } from '@playwright/test';
+import { boxOf, visit } from './support/dom';
+
+/**
+ * The common and perfectly safe shape, here so that point 3 has to tell it apart from the
+ * two above: an index into a list nothing is appending to, read after an auto-retrying
+ * assertion has said how long the list is. A rule that fired on this would fire on most of
+ * the real suite and would be switched off within a week.
+ */
+test('the cells of a settled grid stand in a row', async ({ page }) => {
+  await visit(page, '/date');
+  const cells = page.locator('[data-part="day"]');
+  await expect(cells).toHaveCount(42);
+
+  const first = await boxOf(cells.nth(0));
+  const second = await boxOf(cells.nth(1));
+  expect(second.y, 'the first two cells are not on one row').toBe(first.y);
+});

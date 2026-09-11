@@ -1,0 +1,43 @@
+import { expect, test } from '@playwright/test';
+import { styleOf } from './support/css';
+import { visit } from './support/dom';
+
+/**
+ * The paused sheen as it stood BEFORE the fix. The 150 was a real measurement, taken once
+ * and true of the run it was taken from; beside a reading it is a claim about every run
+ * to come.
+ */
+test.describe('Skeleton — the stop belongs to the page', () => {
+  test('a paused sheen stands still, and its clock stands with it', async ({
+    page,
+  }) => {
+    await visit(page, '/skeleton');
+    const host = page.getByTestId('skeleton-paused');
+    const shade = host.locator('[data-part="fill"]').first();
+
+    const travelled = await styleOf(shade, 'inset-inline-start');
+    await page.getByTestId('toggle-paused').click();
+    await expect(host).toHaveAttribute('data-paused', '');
+
+    // A hundred and fifty milliseconds before the reading: webkit applies the pause on a
+    // later FRAME than the one the click lands in, and the clock was measured as already
+    // frozen at this mark.
+    await page.waitForTimeout(150);
+
+    const held = await styleOf(shade, 'inset-inline-start');
+    const stopped = await shade.evaluate(
+      (el) => el.getAnimations()[0]?.currentTime ?? null,
+    );
+    // Seven hundred milliseconds in which nothing may change — this half was never the
+    // defect, and the gate has to go on saying nothing about it.
+    await page.waitForTimeout(700);
+    expect(await styleOf(shade, 'inset-inline-start'), 'it travelled').toBe(
+      held,
+    );
+    expect(
+      await shade.evaluate((el) => el.getAnimations()[0]?.currentTime ?? null),
+      'the clock advanced under the pause',
+    ).toBe(stopped);
+    expect(held, 'the sheen jumped back to its start edge').not.toBe(travelled);
+  });
+});

@@ -103,6 +103,14 @@ test.describe('PctSelect — a combobox with a panel', () => {
         .locator('[data-pct-part="field-row"]'),
     );
     await trigger(page, 'select-width-auto').click();
+    // The panel is a CDK overlay: the click returns before it is in the document, and the
+    // options arrive with it. `.nth(2)` resolved in that window is a locator matching
+    // nothing — or, once the list can be rebuilt, a row that is not the third one yet — and
+    // both reads below are then measurements of whatever stood there at that instant
+    // ([`lesson-192`](../../../docs/lessons.md#lesson-192)). The third option being there is
+    // exactly what the second read expects, so that is what the case waits for; it retries,
+    // and every retry resolves `.nth(2)` again.
+    await expect(options(page).nth(2)).toBeVisible();
     const panelBox = await boxOf(panel(page));
 
     expect(panelBox.width).toBeGreaterThan(rowBox.width);

@@ -1,0 +1,6 @@
+{
+  "point": 3,
+  "check": "race",
+  "rule": "read-after-action",
+  "why": "The toast case as it stood before 58c1918 — the real bug, reconstructed. `items(page).last()` bound in the instant after the click that raises the toast, and its colour read by `styleOf` with no auto-retrying assertion between: the item is appended a frame later, so the reading is the PREVIOUS toast's paint. It failed 2 of 30 chromium runs and once in 2062 in a full one, where it reads as a tone that quietly lost its colour rather than as a race."
+}

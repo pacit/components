@@ -1,0 +1,25 @@
+import { expect, test } from '@playwright/test';
+import { styleOf } from './support/css';
+import { visit } from './support/dom';
+
+const TONES = ['success', 'warning', 'danger', 'info'] as const;
+
+/**
+ * The toast case as it stood BEFORE the fix. Nothing between the click and the reading
+ * says the toast this iteration raised has arrived, so `.last()` answers with whatever was
+ * last in the list at the instant `styleOf` ran.
+ */
+test.describe('Tones — the colour a toast was raised with', () => {
+  test('every tone paints a mark of its own', async ({ page }) => {
+    await visit(page, '/toast');
+    const marks: string[] = [];
+
+    for (const tone of TONES) {
+      await page.getByTestId(`raise-${tone}`).click();
+      const item = page.locator('[data-part="toast"]').last();
+      marks.push(await styleOf(item, 'color'));
+    }
+
+    expect(new Set(marks).size, `marks: ${marks.join(', ')}`).toBe(TONES.length);
+  });
+});

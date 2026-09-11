@@ -1,0 +1,7 @@
+{
+  "point": 1,
+  "check": "corpus",
+  "rule": "material",
+  "why": "A corpus of real specs holding neither a positional locator nor a bare wait. Both shapes are everywhere in a Playwright suite, so their absence says the scanner stopped reading rather than that the suite got better — and points 3 and 4 would report that silence as agreement.",
+  "drop": ["toast.spec.ts.txt", "sheen.spec.ts.txt", "static.spec.ts.txt"]
+}

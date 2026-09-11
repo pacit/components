@@ -202,12 +202,41 @@ test.describe('PctHero — the brand gradient as equipment', () => {
     const position = () =>
       face.evaluate((el) => getComputedStyle(el).backgroundPosition);
 
-    const first = await position();
-    await page.waitForTimeout(400);
-    const moving = await position();
-    expect(moving, 'the sweep is not moving at all').not.toBe(first);
+    /** Whether the engine still has something to run on this element. */
+    const running = () =>
+      face.evaluate((el) =>
+        el.getAnimations().some((a) => a.playState === 'running'),
+      );
 
-    await page.waitForTimeout(4800);
+    // The negative control, and the 400 ms that stood here was a guess at when the first
+    // frame lands. What the number meant is the reading CHANGING, which is a condition the
+    // page can answer for ([`lesson-192`](../../../docs/lessons.md#lesson-192)) — and on a
+    // runner slow enough to miss that mark, a face whose animation had been deleted and one
+    // that has not started yet read exactly alike.
+    const first = await position();
+    await expect
+      .poll(position, { message: 'the sweep is not moving at all' })
+      .not.toBe(first);
+
+    // And the pass ENDS inside the criterion's five seconds. The 4800 ms decided when the
+    // baseline was taken, so what the window below compares against was the runner's clock
+    // and not the sweep's: at that mark the sweep may still have been travelling, and the
+    // case would then be asking whether it holds a position it never came to rest on.
+    // Measured here, 4 runs in chromium: the animation reads `running` at this line and
+    // ends 4048–4128 ms later, so the number was standing on some 700 ms of margin — an
+    // idle machine's, and nothing in the file said so
+    // ([`lesson-192`](../../../docs/lessons.md#lesson-192)). The five seconds are the
+    // poll's own bound now — that is the half of this claim which is about a duration —
+    // and the condition is the engine's own statement that it has nothing left to run.
+    await expect
+      .poll(running, {
+        message: 'the sweep is still running after five seconds',
+        timeout: 5000,
+      })
+      .toBe(false);
+
+    // The baseline is read BEFORE the window and has to survive it, which is the one shape
+    // of wait that is not a guess: a longer one makes the claim stronger.
     const settled = await position();
     await page.waitForTimeout(800);
     expect(

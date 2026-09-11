@@ -1,0 +1,57 @@
+import { expect, test } from '@playwright/test';
+import { styleOf } from './support/css';
+import { visit } from './support/dom';
+
+/**
+ * The paused sheen in the shape it has SINCE the fix (2af78c7), and it carries all three
+ * kinds of wait this gate deliberately says nothing about: the poll that leaves on a
+ * condition, and the window in which nothing may change. If point 4 ever grows to cover
+ * one of them, the reference stops passing and says so here.
+ */
+test.describe('Skeleton — the stop belongs to the page', () => {
+  test('a paused sheen stands still, and its clock stands with it', async ({
+    page,
+  }) => {
+    await visit(page, '/skeleton');
+    const host = page.getByTestId('skeleton-paused');
+    const shade = host.locator('[data-part="fill"]').first();
+
+    const travelled = await styleOf(shade, 'inset-inline-start');
+    await page.getByTestId('toggle-paused').click();
+    await expect(host).toHaveAttribute('data-paused', '');
+
+    // The baseline is not a point in time but the first reading that repeats: a clock
+    // reading the same twice fifty milliseconds apart is a clock that has stopped, which
+    // is what the assertion below always meant to say. A running animation cannot produce
+    // that pair, so the loop leaves on the condition instead of on a measured number.
+    let previous = await shade.evaluate(
+      (el) => el.getAnimations()[0]?.currentTime ?? null,
+    );
+    let stopped = previous;
+    for (let attempt = 0; attempt < 40; attempt += 1) {
+      await page.waitForTimeout(50);
+      const now = await shade.evaluate(
+        (el) => el.getAnimations()[0]?.currentTime ?? null,
+      );
+      if (now === previous) {
+        stopped = now;
+        break;
+      }
+      previous = now;
+    }
+
+    const held = await styleOf(shade, 'inset-inline-start');
+    // Seven hundred milliseconds in which nothing may change. The reading it is measured
+    // against was taken BEFORE the wait, so a longer wait makes this claim stronger and
+    // never weaker — which is the whole difference from a baseline.
+    await page.waitForTimeout(700);
+    expect(await styleOf(shade, 'inset-inline-start'), 'it travelled').toBe(
+      held,
+    );
+    expect(
+      await shade.evaluate((el) => el.getAnimations()[0]?.currentTime ?? null),
+      'the clock advanced under the pause',
+    ).toBe(stopped);
+    expect(held, 'the sheen jumped back to its start edge').not.toBe(travelled);
+  });
+});

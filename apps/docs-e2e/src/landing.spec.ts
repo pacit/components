@@ -371,6 +371,14 @@ test.describe('The landing', () => {
     // guard that drops them.
     const card = page.getByTestId('live').locator('.card').first();
     await card.hover();
+    // The rim's reveal is what says the hover landed: `interact` holds the layer at
+    // `opacity: 0` and travels it to 1, and forced colours drops the drawing without
+    // touching that half. Read in the instant after the hover, every `none` below is what
+    // a card nobody is pointing at reads anyway — the guard would then pass because the
+    // gesture it answers had not arrived, which is a conformance case failing GREEN
+    // ([`lesson-192`](../../../docs/lessons.md#lesson-192)). `toHaveCSS` retries, and each
+    // retry resolves `.first()` again.
+    await expect(card).toHaveCSS('opacity', '1', { pseudo: 'after' });
     expect(
       await card.evaluate(
         (el) => getComputedStyle(el, '::after').backgroundImage,

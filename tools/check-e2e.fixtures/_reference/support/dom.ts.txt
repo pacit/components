@@ -1,0 +1,25 @@
+import type { Locator, Page } from '@playwright/test';
+
+/** The rectangle of an element; `boundingBox()` has no publicly exported type. */
+type Box = NonNullable<Awaited<ReturnType<Locator['boundingBox']>>>;
+
+/** The rectangle of an element; throws when the element is not visible. */
+export async function boxOf(locator: Locator): Promise<Box> {
+  const box = await locator.boundingBox();
+  if (!box) {
+    throw new Error('the element has no rectangle — it is not visible');
+  }
+  return box;
+}
+
+/**
+ * Entering a page — it waits for the shell's marker, not for `load` alone.
+ *
+ * It navigates and then waits on a CONDITION, which is why the gate reads it as a barrier
+ * and not as an action: a call that ends by waiting leaves the page settled, whatever it
+ * did on the way there.
+ */
+export async function visit(page: Page, path: string): Promise<void> {
+  await page.goto(path);
+  await page.locator('html[data-ready]').waitFor();
+}

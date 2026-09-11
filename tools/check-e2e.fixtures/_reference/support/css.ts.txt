@@ -1,0 +1,14 @@
+import type { Locator } from '@playwright/test';
+
+/**
+ * Reading the values COMPUTED by the browser — the reference suite's own `styleOf`, cut
+ * down to what this gate has to be able to see: a helper that is a `locator.evaluate`
+ * under another name. Point 1 derives the reader vocabulary from definitions like this
+ * one, so a corpus without them is a corpus whose readings are invisible.
+ */
+export function styleOf(locator: Locator, property: string): Promise<string> {
+  return locator.evaluate(
+    (el, prop) => getComputedStyle(el).getPropertyValue(prop).trim(),
+    property,
+  );
+}

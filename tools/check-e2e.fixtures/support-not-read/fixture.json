@@ -1,0 +1,7 @@
+{
+  "point": 1,
+  "check": "corpus",
+  "rule": "readers",
+  "why": "The support tree gone, the specs left as they are. Every reading this suite takes goes through a helper — styleOf, boxOf — so a vocabulary that resolves nothing past Playwright's own names cannot see a single one of them, and point 3 walks the specs reporting agreement. The specs still call the helpers; it is the gate that has gone blind, which is the exact shape the axis is named after.",
+  "drop": ["support"]
+}
