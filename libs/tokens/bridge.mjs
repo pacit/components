@@ -5,9 +5,11 @@
  * a decision made here** — the bridge carries values across, never names.
  *
  *   export  src/*.json ─→ dist/tokens-studio/   one file per set in the plugin's DTCG
- *                                                dialect, plus `$themes.json` (light, dark;
- *                                                full, reduced motion) and `$metadata.json`
- *                                                (the set order the build resolves in),
+ *                                                dialect, plus `$themes.json` (a base, and
+ *                                                over it the three axes the sets declare:
+ *                                                light/dark, full/reduced, comfortable/compact)
+ *                                                and `$metadata.json` (the set order the build
+ *                                                resolves in),
  *   import  <dir> ─→ src/*.json                  the plugin's export read back: a value or a
  *                                                description a designer changed is written
  *                                                into the source token it belongs to, and
@@ -352,20 +354,74 @@ export const setOrder = (names) => {
 };
 
 /**
- * The plugin's themes over the sets: a scheme axis, a motion axis and a density axis, every
- * set enabled somewhere. An override set belongs to ITS OWN axis and never to the base —
- * `density.compact` left in the base would show a designer the dense metrics as the library's
- * defaults, which is the one thing the axis is not.
+ * The axes the sources declare, derived from what the sets DO rather than from a list of the
+ * names to leave out of the base. A set file is named `stem` or `stem.qualifier`, and the
+ * qualifier is exactly what makes `component.button` look like `semantic.dark` in a directory
+ * listing. They are not alike, and the tokens say which is which: `component.button` declares
+ * nineteen names no other set has (`pct.button.*`), while `semantic.dark` declares twenty-eight
+ * and every one of them already stands in `semantic.light`. A set that only RE-POINTS names
+ * another set has already declared adds no layer to the base — it is one OPTION of an axis, and
+ * a designer has to switch it on to see it.
+ *
+ * So: a qualified set that re-points a name an earlier set declares is an option of the axis its
+ * stem names — `semantic.dark` of `semantic`, `motion.reduced` of `motion`, `density.compact` of
+ * `density`. `semantic.light` carries the same stem as `semantic.dark` and stays in the base,
+ * because it declares its names instead of re-pointing them: that axis's other option IS the
+ * base, which is the very reason the base cannot be written down as "everything except the sets
+ * somebody remembered".
+ *
+ * "Re-points A name" rather than "re-points every name", deliberately. An axis set that one day
+ * grew a token of its own would fall back into the base under the stricter reading, and fall
+ * back SILENTLY, which is the one way this must not be wrong (`req-axis`). Read this way it
+ * stays an option; and a base set that ever re-pointed something would be pulled OUT of the
+ * base, where no theme enables it and point 4 of `tools/check-bridge.mjs` says so out loud.
+ *
+ * @param {Map<string, Set<string>>} tokens set name -> its token paths, IN RESOLUTION ORDER
+ * @returns {Map<string, string[]>} axis stem -> its option sets, in that same order
  */
-export const themesOf = (order) => {
+export const axesOf = (tokens) => {
+  const axes = new Map();
+  if (!(tokens instanceof Map)) return axes;
+  const declared = new Set();
+  for (const [name, paths] of tokens) {
+    const own = paths instanceof Set ? paths : new Set();
+    const repoints = [...own].some((path) => declared.has(path));
+    for (const path of own) declared.add(path);
+    const at = String(name).indexOf('.');
+    if (at <= 0 || !repoints) continue;
+    const stem = String(name).slice(0, at);
+    axes.set(stem, [...(axes.get(stem) ?? []), name]);
+  }
+  return axes;
+};
+
+/**
+ * The plugin's themes over the sets: a scheme axis, a motion axis and a density axis, every set
+ * enabled somewhere. **The base is what the axes leave over** — not a list of names to leave
+ * out. `density.compact` was added to the sources on 2026-09-11 and fell straight into that
+ * list's blind spot, enabled in the light theme and the dark one at once, so a designer opening
+ * Tokens Studio would have read the dense metrics as this library's defaults
+ * ([`lesson-190`](../../docs/lessons.md#lesson-190)). A base derived from the sets' own shape
+ * has no blind spot to fall into: the next axis is out of it the day its file lands.
+ *
+ * The words a designer reads stay written here, because they cannot be derived and should not
+ * be invented: `density.compact.json` names the option `compact` and nowhere says that the
+ * other option of that axis is called `comfortable`. A new axis therefore still owes this
+ * function two lines — and it owes them LOUDLY, because until they are written no theme enables
+ * its set and point 4 of `tools/check-bridge.mjs` refuses the export. What it no longer owes is
+ * a correction to a list it cannot see.
+ */
+export const themesOf = (order, tokens) => {
+  if (!Array.isArray(order) || !(tokens instanceof Map))
+    throw new BridgeRefusal(
+      "themesOf takes the set order and the sets' token paths — the base is DERIVED from " +
+        'which sets only re-point names another set declares, and a caller passing names alone ' +
+        'would get the old answer: a base that is correct until the next axis is added',
+    );
   const enabled = (...names) =>
     Object.fromEntries(names.map((n) => [n, 'enabled']));
-  const base = order.filter(
-    (n) =>
-      n !== 'semantic.dark' &&
-      n !== 'motion.reduced' &&
-      n !== 'density.compact',
-  );
+  const options = new Set([...axesOf(tokens).values()].flat());
+  const base = order.filter((n) => !options.has(n));
   return [
     {
       id: 'pct.scheme.light',
@@ -428,18 +484,30 @@ export const exportSets = (src = SRC) => {
   const names = files.map((f) => basename(f, '.json'));
   const order = setOrder(names);
   const out = new Map();
-  for (const file of files)
-    out.set(
-      file,
-      stringifyOrdered(
-        exportTree(parseOrdered(readFileSync(join(src, file), 'utf8')), file),
-      ) + '\n',
+  // The token paths of each set, kept while the file is parsed anyway: `themesOf` derives the
+  // base from them, because a set's NAME alone cannot say whether the dot in it separates an
+  // axis from an option (`density.compact`) or a tier from a component (`component.button`).
+  const paths = new Map();
+  for (const file of files) {
+    const tree = parseOrdered(readFileSync(join(src, file), 'utf8'));
+    paths.set(
+      basename(file, '.json'),
+      new Set(tokensOf(tree).map(([path]) => path)),
     );
+    out.set(file, stringifyOrdered(exportTree(tree, file)) + '\n');
+  }
   out.set(
     '$metadata.json',
     JSON.stringify({ tokenSetOrder: order }, null, 2) + '\n',
   );
-  out.set('$themes.json', JSON.stringify(themesOf(order), null, 2) + '\n');
+  out.set(
+    '$themes.json',
+    JSON.stringify(
+      themesOf(order, new Map(order.map((name) => [name, paths.get(name)]))),
+      null,
+      2,
+    ) + '\n',
+  );
   return out;
 };
 

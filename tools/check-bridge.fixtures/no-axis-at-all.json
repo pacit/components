@@ -1,0 +1,7 @@
+{
+  "point": 7,
+  "check": "axes",
+  "rule": "axis-denominator",
+  "why": "a coherent library whose three override sets were never written: every set declares names of its own, so the parse finds no axis and point 7 would pass having pronounced on nothing",
+  "withoutSets": ["semantic.dark", "motion.reduced", "density.compact"]
+}

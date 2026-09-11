@@ -44,20 +44,36 @@ byte for byte — `$comment` keys included, which is why the bridge parses the f
 order-keeping parser of its own rather than `JSON.parse` (an object puts `200` before a
 `$comment` that stood between `100` and `200`).
 
-**Gate:** `tools/check-bridge.mjs` (target `check-bridge` in the root project, in CI) — six
+**Gate:** `tools/check-bridge.mjs` (target `check-bridge` in the root project, in CI) — seven
 points: every set exported and ordered once, with themes; every token's type and value shape
 in the plugin's dialect; every reference resolving inside every theme that enables its set;
 every set enabled by some theme, theme names unique per group; the round trip the identity;
-and the three refusals measured live on a doctored export. `nx run tokens:bridge` writes the
-folder for a designer (the `tokens-studio` directory of the library's build output, ignored
+the three refusals measured live on a doctored export; and point 7, three rules over the axes.
+An option set that themes of two groups enable, or that every theme of its own group enables,
+is part of the base whatever it is called (`axis-in-the-base`); a group holding one option is
+a switch that cannot be switched back (`axis-of-one`); and a parse that finds no axis at all
+fails rather than passing on nothing (`axis-denominator`). Point 4 asks whether every set is
+enabled SOMEWHERE, and a set enabled in the wrong place is enabled somewhere — point 7 asks
+where. Both the gate and `themesOf` DERIVE the axes from the sets rather than naming the sets
+to leave out of the base: a qualified set that re-points a name another set already declares is
+one option of the axis its stem names, which is what tells `semantic.dark` (twenty-eight names,
+all of them `semantic.light`'s) from `component.button` (nineteen names no other set has), and
+what puts the next axis outside the base the day its file lands. `nx run tokens:bridge` writes
+the folder for a designer (the `tokens-studio` directory of the library's build output, ignored
 by git like the rest of it); the gate exports in memory and depends on no artefact
-**Control:** `tools/check-bridge.fixtures/` — 16 prepared inputs, each rejected on its own
-point: among them `a-shadow-as-a-string.json` (the CSS string the sources write, which the
+**Control:** `tools/check-bridge.fixtures/` — 19 prepared inputs, each rejected on its own
+point and, where the point has more than one sentence, on its own rule: among them
+`a-shadow-as-a-string.json` (the CSS string the sources write, which the
 plugin shows blank), `a-reference-outside-the-theme.json` (the dark theme stops enabling the
 light semantics, and a component token dangles in Figma while CSS still resolves it),
 `a-value-changed-in-figma.json` (an export that is no longer the mirror — the change comes
-in through the import, where the build and `check-tokens` judge it) and
-`a-modifier-from-figma.json`. Plus the run that shaped the parser: the first import through
+in through the import, where the build and `check-tokens` judge it),
+`a-modifier-from-figma.json`, and the three of point 7: `an-axis-set-in-the-base.json` (the
+light theme enables `density.compact`, which is the defect of 2026-09-11 as an input),
+`an-axis-of-one-option.json` and `no-axis-at-all.json`. Measured: disarming `axis-of-one` moves
+its case onto `axis-in-the-base` and, without the `rule` field, that run would be green;
+disarming either of the other two turns its own case into "PASSED and was meant not to". Plus
+the run that shaped the parser: the first import through
 `JSON.parse` moved `primitive.json`'s ramp comment — a round trip "with no changes" that
 rewrote a file
 **Decision:** [0020 — the palette carries no spares](../decisions/0020-the-palette-carries-no-spares.md)

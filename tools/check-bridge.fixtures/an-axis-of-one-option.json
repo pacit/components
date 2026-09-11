@@ -1,0 +1,7 @@
+{
+  "point": 7,
+  "check": "axes",
+  "rule": "axis-of-one",
+  "why": "the density group loses `comfortable` and keeps `compact` — an axis with one option is a switch that cannot be switched back, which is what a new axis looks like when its second theme was never written",
+  "dropThemes": ["comfortable"]
+}

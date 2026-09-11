@@ -1,0 +1,9 @@
+{
+  "point": 7,
+  "check": "axes",
+  "rule": "axis-in-the-base",
+  "why": "the light theme enables `density.compact` — the dense metrics are then on whichever density a designer picks, and Tokens Studio shows them as this library's defaults (lesson-190)",
+  "themes": {
+    "light": { "selectedTokenSets": { "density.compact": "enabled" } }
+  }
+}
